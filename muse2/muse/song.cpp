@@ -1073,6 +1073,11 @@ void Song::clearTrackRec()
 //---------------------------------------------------------
 void Song::setRecord(bool f, bool autoRecEnable)
       {
+      if (f && museProject == museProjectInitPath ) { // check that there is a project stored before commencing
+        // no project, we need to create one.
+        if (!muse->saveAs())
+          return; // could not store project, won't enable record
+      }
       if (recordFlag != f) {
             if (f && autoRecEnable) {
                 bool alreadyRecEnabled = false;
@@ -1114,6 +1119,14 @@ void Song::setRecord(bool f, bool autoRecEnable)
                             f = false;
                             }
                       }
+                // prepare recording of wave files for all record enabled wave tracks
+                for (iWaveTrack i = wtl->begin(); i != wtl->end(); ++i) {
+                      if((*i)->recordFlag())
+                      {
+                        (*i)->prepareRecording();
+                      }
+                }
+
 #if 0
                   // check for midi devices suitable for recording
                   bool portFound = false;
@@ -1612,6 +1625,7 @@ void Song::setMType(MType t)
       {
 //   printf("set MType %d\n", t);
       _mtype = t;
+      song->update(SC_SONG_TYPE);  // p4.0.7 Tim.
       }
 
 //---------------------------------------------------------
@@ -1751,6 +1765,7 @@ void Song::setRecordFlag(Track* track, bool val)
             }
 //      updateFlags |= SC_RECFLAG;
       update(SC_RECFLAG);
+
       }
 
 //---------------------------------------------------------

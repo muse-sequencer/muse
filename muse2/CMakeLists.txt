@@ -67,6 +67,7 @@ SET(MusE_VERSION_PATCH 0)
 SET(MusE_VERSION       "2.0alpha")
 SET(MusE_VERSION_FULL  "2.0alpha")
 SET(MusE_INSTALL_NAME  "muse-2.0alpha")
+SET(MusE_EXEC_NAME     "muse2")
 
 ## The library where we will install the shared components:
 SET(MusE_MODULES_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/modules)
@@ -80,7 +81,7 @@ SET(MusE_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/plugins)
 
 ## Top documentation dir
 IF(NOT DEFINED MusE_DOC_DIR)
-      SET(MusE_DOC_DIR ${SHARE_INSTALL_PREFIX}/doc/${PROJECT_NAME}-${MusE_VERSION_FULL}/)
+      SET(MusE_DOC_DIR ${SHARE_INSTALL_PREFIX}/doc/${MusE_INSTALL_NAME}/)
 ENDIF(NOT DEFINED MusE_DOC_DIR)
 
 ## Data directory
@@ -348,7 +349,7 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
   INCLUDE(CPack)
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
-set(CMAKE_CXX_FLAGS         "-Wl,-rpath,${QT_LIBRARY_DIR} -Wall -Wextra -Winvalid-pch -fno-exceptions ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS         "-Wall -Wextra -Winvalid-pch -fno-exceptions ${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fstrength-reduce ${CMAKE_CXX_FLAGS_RELEASE}")
 set(CMAKE_CXX_FLAGS_DEBUG   "-g -DQT_DEBUG ${CMAKE_CXX_FLAGS_DEBUG}")
 
@@ -357,7 +358,7 @@ set(CMAKE_CXX_FLAGS_DEBUG   "-g -DQT_DEBUG ${CMAKE_CXX_FLAGS_DEBUG}")
 #subdirs(al lib grepmidi plugins muse share demos synti )
 # NOTE: share/ directory needs to be at the end so that the translations
 #       are scanned before coming to share/locale
-subdirs(al awl grepmidi plugins muse synti packaging utils demos share)
+subdirs(al awl grepmidi man plugins muse synti packaging utils demos share)
 
 ## Install doc files
 file (GLOB doc_files

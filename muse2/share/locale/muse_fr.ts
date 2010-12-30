@@ -2916,7 +2916,7 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
         <translation type="unfinished">&amp;Fonctions</translation>
     </message>
     <message>
-        <source>Set fixed length</source>
+        <source>Set Fixed Length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7233,7 +7233,7 @@ pour l&apos;enregistrement:
         <translation>Panneau de Contrôle</translation>
     </message>
     <message>
-        <source>Bigtime window</source>
+        <source>Bigtime Window</source>
         <translation>Fenêtre GrandeHorloge</translation>
     </message>
     <message>
@@ -7333,8 +7333,8 @@ pour l&apos;enregistrement:
         <translation>Init. Instr.</translation>
     </message>
     <message>
-        <source>local off</source>
-        <translation>local off</translation>
+        <source>Local Off</source>
+        <translation>Local Off</translation>
     </message>
     <message>
         <source>&amp;Audio</source>
@@ -7699,7 +7699,7 @@ destination</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&amp;Insert empty measure</source>
+        <source>&amp;Insert Empty Measure</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7711,7 +7711,7 @@ destination</translation>
         <translation type="unfinished">Forme d&apos;Onde</translation>
     </message>
     <message>
-        <source>Song info</source>
+        <source>Song Info</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -7771,7 +7771,7 @@ destination</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&amp;MusE homepage</source>
+        <source>&amp;MusE Homepage</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8550,7 +8550,7 @@ Likely the selected track is the wrong type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&amp;Event color</source>
+        <source>&amp;Event Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8566,11 +8566,11 @@ Likely the selected track is the wrong type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Set fixed length</source>
+        <source>Set Fixed Length</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Delete overlaps</source>
+        <source>Delete Overlaps</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

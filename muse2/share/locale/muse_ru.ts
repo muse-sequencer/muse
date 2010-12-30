@@ -2767,7 +2767,7 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
         <translation>Muse: Сохранить драм-карту</translation>
     </message>
     <message>
-        <source>Set fixed length</source>
+        <source>Set Fixed Length</source>
         <translation>Установить фикс. длительность</translation>
     </message>
     <message>
@@ -7347,7 +7347,7 @@ recording:
         <translation>Панель транспорта</translation>
     </message>
     <message>
-        <source>Bigtime window</source>
+        <source>Bigtime Window</source>
         <translation>Окно хронометра</translation>
     </message>
     <message>
@@ -7415,7 +7415,7 @@ recording:
         <translation>Запустить Инстр.</translation>
     </message>
     <message>
-        <source>local off</source>
+        <source>Local Off</source>
         <translation>откл. локальное управление</translation>
     </message>
     <message>
@@ -7586,7 +7586,7 @@ Save Current Project?</source>
         <translation>&amp;Руководство</translation>
     </message>
     <message>
-        <source>&amp;MusE homepage</source>
+        <source>&amp;MusE Homepage</source>
         <translation>&amp;Домашняя страница MusE</translation>
     </message>
     <message>
@@ -7710,7 +7710,7 @@ failed: </source>
         <translation>Вставить клон в &amp;трек</translation>
     </message>
     <message>
-        <source>&amp;Insert empty measure</source>
+        <source>&amp;Insert Empty Measure</source>
         <translation>&amp;Вставить пустой такт</translation>
     </message>
     <message>
@@ -7718,7 +7718,7 @@ failed: </source>
         <translation>Wave</translation>
     </message>
     <message>
-        <source>Song info</source>
+        <source>Song Info</source>
         <translation>Проект инфо</translation>
     </message>
     <message>
@@ -8316,7 +8316,7 @@ Likely the selected track is the wrong type.</source>
         <translation>Добавить панель контроллеров</translation>
     </message>
     <message>
-        <source>Set fixed length</source>
+        <source>Set Fixed Length</source>
         <translation>Установить фикс. длину</translation>
     </message>
     <message>
@@ -8364,7 +8364,7 @@ Likely the selected track is the wrong type.</source>
         <translation>&amp;Следующая партия</translation>
     </message>
     <message>
-        <source>&amp;Event color</source>
+        <source>&amp;Event Color</source>
         <translation>&amp;Цвет события</translation>
     </message>
     <message>
@@ -8380,7 +8380,7 @@ Likely the selected track is the wrong type.</source>
         <translation>&amp;Цвета скорости нажатия</translation>
     </message>
     <message>
-        <source>Delete overlaps</source>
+        <source>Delete Overlaps</source>
         <translation>Удалить наложения</translation>
     </message>
     <message>

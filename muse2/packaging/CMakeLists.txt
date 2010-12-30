@@ -18,10 +18,24 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
+#
+# produce the .desktop file
+#
+configure_file (
+      muse.desktop.in
+      ${PROJECT_BINARY_DIR}/packaging/muse.desktop
+      )
+
+#
+# install the desktop and mime files
+#
 install( FILES muse_icon.png
       DESTINATION ${SHARE_INSTALL_PREFIX}/icons/hicolor/64x64/apps/
       )
-install( FILES muse.desktop
+install( FILES ${PROJECT_BINARY_DIR}/packaging/muse.desktop
       DESTINATION ${SHARE_INSTALL_PREFIX}/applications/
+      )
+install( FILES muse.xml
+      DESTINATION ${SHARE_INSTALL_PREFIX}/mime/packages/
       )
 

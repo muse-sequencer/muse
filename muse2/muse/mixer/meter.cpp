@@ -135,9 +135,15 @@ void Meter::paintEvent(QPaintEvent* /*ev*/)
         ymax = maxVal == 0 ? 0 : int(((maxScale - (fast_log10(maxVal) * 20.0)) * h)/range);
       else
         ymax = maxVal == 0 ? 0 : int(((maxScale - maxVal) * h)/range);
-      p.setPen(Qt::white);
+      p.setPen(QColor(1,149,176));//floating vu levels
       p.drawLine(0, ymax, w, ymax);
-      }
+      int y1 = int((maxScale - redScale) * h / range);
+      int y2 = int((maxScale - yellowScale) * h / range);
+      p.setPen(QColor(209,0,0));//0 db
+	  p.drawLine(0, y1, w, y1);
+      p.setPen(QColor(209,197,0));//-10 db
+	  p.drawLine(0, y2, w, y2);
+}
 
 //---------------------------------------------------------
 //   drawVU
@@ -145,54 +151,76 @@ void Meter::paintEvent(QPaintEvent* /*ev*/)
 
 void Meter::drawVU(QPainter& p, int w, int h, int yv)
 {
+	  QColor bgColor = QColor(0,12,16);
       if(mtype == DBMeter) 
       {
         double range = maxScale - minScale;
         int y1 = int((maxScale - redScale) * h / range);
         int y2 = int((maxScale - yellowScale) * h / range);
+	    QLinearGradient vuGrad(QPointF(0, 0), QPointF(0, h));
+	    vuGrad.setColorAt(1, Qt::white);
+	    vuGrad.setColorAt(0.9, Qt::blue);
+	    vuGrad.setColorAt(0, Qt::red);
+	    p.fillRect(0, yv,  w, h,        QBrush(vuGrad));
         
-        if(yv < y1)
-        {
-          // Red section:
-          p.fillRect(0, 0,  w, yv,        QBrush(0x8e0000));     // dark red  
-          p.fillRect(0, yv, w, y1-yv,     QBrush(0xff0000));     // light red
-          
-          // Yellow section:
-          p.fillRect(0, y1, w, y2-y1,     QBrush(0xffff00));     // light yellow
-          
-          // Green section:
-          p.fillRect(0, y2, w, h-y2,      QBrush(0x00ff00));     // light green
-        }
-        else
-        if(yv < y2)
-        {
-          // Red section:
-          p.fillRect(0, 0,  w, y1,        QBrush(0x8e0000));     // dark red  
-          
-          // Yellow section:
-          p.fillRect(0, y1, w, yv-y1,     QBrush(0x8e8e00));     // dark yellow
-          p.fillRect(0, yv, w, y2-yv,     QBrush(0xffff00));     // light yellow
-          
-          // Green section:
-          p.fillRect(0, y2, w, h-y2,      QBrush(0x00ff00));     // light green
-        }
-        else
-        //if(yv <= y3)   
-        {
-          // Red section:
-          p.fillRect(0, 0,  w, y1,        QBrush(0x8e0000));     // dark red  
-          
-          // Yellow section:
-          p.fillRect(0, y1, w, y2-y1,     QBrush(0x8e8e00));     // dark yellow
-          
-          // Green section:
-          p.fillRect(0, y2, w, yv-y2,     QBrush(0x007000));     // dark green
-          p.fillRect(0, yv, w, h-yv,      QBrush(0x00ff00));     // light green
-        }
+       // if(yv < y1)
+       // {
+       //   // Red section:
+       p.fillRect(0, 0,  w, yv,        QBrush(bgColor));     // dark red  
+       //   //p.fillRect(0, yv, w, y1-yv,     QBrush(0xff0000));     // light red
+       //   
+       //   // Yellow section:
+       //   //p.fillRect(0, y1, w, y2-y1,     QBrush(0xffff00));     // light yellow
+       //   
+       //   // Green section:
+       //   //p.fillRect(0, y2, w, h-y2,      QBrush(0x00ff00));     // light green
+
+	   //   QLinearGradient vuGrad(QPointF(0, 0), QPointF(0, yv));
+	   //   vuGrad.setColorAt(1, Qt::white);
+	   //   vuGrad.setColorAt(0.9, Qt::blue);
+	   //   vuGrad.setColorAt(0, Qt::red);
+	   //   p.fillRect(0, 0,  w, y1,        QBrush(vuGrad));
+       // }
+       // else
+       // if(yv < y2)
+       // {
+       //   // Red section:
+       //   p.fillRect(0, 0,  w, y1,        QBrush(bgColor));     // dark red  
+       //   
+       //   // Yellow section:
+       //   p.fillRect(0, y1, w, yv-y1,     QBrush(bgColor));     // dark yellow
+       //   //p.fillRect(0, yv, w, y2-yv,     QBrush(0xffff00));     // light yellow
+       //   
+       //   // Green section:
+       //   //p.fillRect(0, y2, w, h-y2,      QBrush(0x00ff00));     // light green
+	   //   QLinearGradient vuGrad(QPointF(0, 0), QPointF(0, yv));
+	   //   vuGrad.setColorAt(1, Qt::white);
+	   //   vuGrad.setColorAt(0.9, Qt::blue);
+	   //   vuGrad.setColorAt(0, Qt::red);
+	   //   p.fillRect(0, 0,  w, y1,        QBrush(vuGrad));
+       // }
+       // else
+       // //if(yv <= y3)   
+       // {
+       //   // Red section:
+       //   p.fillRect(0, 0,  w, y1,        QBrush(bgColor));     // dark red  
+       //   
+       //   // Yellow section:
+       //   p.fillRect(0, y1, w, y2-y1,     QBrush(bgColor));     // dark yellow
+       //   
+       //   // Green section:
+       //   p.fillRect(0, y2, w, yv-y2,     QBrush(bgColor));     // dark green
+       //   //p.fillRect(0, yv, w, h-yv,      QBrush(0x00ff00));     // light green
+	   //   QLinearGradient vuGrad(QPointF(0, yv), QPointF(0, h));
+	   //   vuGrad.setColorAt(1, Qt::white);
+	   //   vuGrad.setColorAt(0.9, Qt::blue);
+	   //   vuGrad.setColorAt(0, Qt::red);
+	   //   p.fillRect(0, yv,  w, h-yv,        QBrush(vuGrad));
+       // }
       }  
       else
       {
-        p.fillRect(0, 0,  w, yv,   QBrush(0x007000));   // dark green
+        p.fillRect(0, 0,  w, yv,   QBrush(bgColor));   // dark green
         p.fillRect(0, yv, w, h-yv, QBrush(0x00ff00));   // light green
       }
 }

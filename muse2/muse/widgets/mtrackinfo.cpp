@@ -33,8 +33,16 @@
 
 void MidiTrackInfo::setTrack(Track* t)
 {
+  if(!t)
+  {
+    selected = 0;
+    return;
+  }  
+  
+  if(!t->isMidiTrack())
+    return;
   selected = t;
-  //updateTrackInfo(-1);
+  updateTrackInfo(-1);
 }
 
 //---------------------------------------------------------
@@ -54,18 +62,15 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
   pan      = -65;
   volume   = -1;
   
+  setFont(config.fonts[2]);
+  
   //iChanDetectLabel->setPixmap(*darkgreendotIcon);
   iChanDetectLabel->setPixmap(*darkRedLedIcon);
   
   QIcon recEchoIconSet;
-  //recEchoIconSet.addPixmap(*recEchoIconOn, QIcon::Normal, QIcon::On);
-  //recEchoIconSet.addPixmap(*recEchoIconOff, QIcon::Normal, QIcon::Off);
-  recEchoIconSet.addPixmap(*midiConnectorRedBorderIcon, QIcon::Normal, QIcon::On);
-  recEchoIconSet.addPixmap(*edit_midiIcon, QIcon::Normal, QIcon::Off);
+  recEchoIconSet.addPixmap(*midiThruOnIcon, QIcon::Normal, QIcon::On);
+  recEchoIconSet.addPixmap(*midiThruOffIcon, QIcon::Normal, QIcon::Off);
   recEchoButton->setIcon(recEchoIconSet);
-  //recEchoButton->setIcon(QIcon(*edit_midiIcon));
-  //recEchoButton->setIconSize(edit_midiIcon->size());  
-  
   
   // MusE-2: AlignCenter and WordBreak are set in the ui(3) file, but not supported by QLabel. Turn them on here.
   trackNameLabel->setAlignment(Qt::AlignCenter);
@@ -87,10 +92,11 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
   trackNameLabel->setFrameStyle(QFrame::Sunken | QFrame::StyledPanel);
   trackNameLabel->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
   
-  // Added by Tim. p3.3.9
   setLabelText();
   setLabelFont();
 
+  //setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding));
+  
   connect(iPatch, SIGNAL(released()), SLOT(instrPopup()));
 
   ///pop = new QMenu(iPatch);
@@ -126,9 +132,12 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
   connect(iRButton, SIGNAL(pressed()), SLOT(inRoutesPressed()));
   
   // TODO: Works OK, but disabled for now, until we figure out what to do about multiple out routes and display values...
-  oRButton->setEnabled(false);
-  oRButton->setVisible(false);
-  connect(oRButton, SIGNAL(pressed()), SLOT(outRoutesPressed()));
+  //oRButton->setEnabled(false);
+  //oRButton->setVisible(false);
+  //connect(oRButton, SIGNAL(pressed()), SLOT(outRoutesPressed()));
+  
+  connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+  connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
   
   connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
 }
@@ -158,12 +167,12 @@ void MidiTrackInfo::heartBeat()
       MidiPort* mp = &midiPorts[outPort];
       
       // Set record echo.
-      if(recEchoButton->isChecked() != track->recEcho())
-      {
-        recEchoButton->blockSignals(true);
-        recEchoButton->setChecked(track->recEcho());
-        recEchoButton->blockSignals(false);
-      }
+      //if(recEchoButton->isChecked() != track->recEcho())
+      //{
+      //  recEchoButton->blockSignals(true);
+      //  recEchoButton->setChecked(track->recEcho());
+      //  recEchoButton->blockSignals(false);
+      //}
       
       // Check for detection of midi general activity on chosen channels...
       int mpt = 0;
@@ -425,63 +434,40 @@ void MidiTrackInfo::heartBeat()
 }
 
 //---------------------------------------------------------
+//   configChanged
+//---------------------------------------------------------
+
+void MidiTrackInfo::configChanged()
+      {
+      //printf("MidiTrackInfo::configChanged\n");
+      
+      //if (config.canvasBgPixmap.isEmpty()) {
+      //      canvas->setBg(config.partCanvasBg);
+      //      canvas->setBg(QPixmap());
+      //}
+      //else {
+      //      canvas->setBg(QPixmap(config.canvasBgPixmap));
+      //}
+      
+      setFont(config.fonts[2]);
+      //updateTrackInfo(type);
+      }
+
+//---------------------------------------------------------
 //   songChanged
 //---------------------------------------------------------
 
 void MidiTrackInfo::songChanged(int type)
-      {
-      // Is it simply a midi controller value adjustment? Forget it.
-      if(type != SC_MIDI_CONTROLLER)
-      {
-/*        
-        unsigned endTick = song->len();
-        int offset  = AL::sigmap.ticksMeasure(endTick);
-        hscroll->setRange(-offset, endTick + offset);  //DEBUG
-        canvas->setOrigin(-offset, 0);
-        time->setOrigin(-offset, 0);
-  
-        int bar, beat;
-        unsigned tick;
-        AL::sigmap.tickValues(endTick, &bar, &beat, &tick);
-        if (tick || beat)
-              ++bar;
-        lenEntry->blockSignals(true);
-        lenEntry->setValue(bar);
-        lenEntry->blockSignals(false);
-  
-        trackSelectionChanged();
-        canvas->partsChanged();
-        typeBox->setCurrentIndex(int(song->mtype()));
-        if (type & SC_SIG)
-              time->redraw();
-        if (type & SC_TEMPO)
-              setGlobalTempo(tempomap.globalTempo());
-              
-        if(type & SC_TRACK_REMOVED)
-        {
-          AudioStrip* w = (AudioStrip*)(trackInfo->getWidget(2));
-          if(w)
-          {
-            Track* t = w->getTrack();
-            if(t)
-            {
-              TrackList* tl = song->tracks();
-              iTrack it = tl->find(t);
-              if(it == tl->end())
-              {
-                delete w;
-                trackInfo->addWidget(0, 2);
-                selected = 0;
-              } 
-            }   
-          } 
-        }
-*/
-      
-      }
-            
-      updateTrackInfo(type);
-    }
+{
+  // Is it simply a midi controller value adjustment? Forget it.
+  if(type == SC_MIDI_CONTROLLER)
+    return;
+  if(type == SC_SELECTION)
+    return;
+  if(!isVisible())  
+    return;
+  updateTrackInfo(type);
+}      
 
 //---------------------------------------------------------
 //   setLabelText
@@ -502,9 +488,9 @@ void MidiTrackInfo::setLabelText()
 
 void MidiTrackInfo::setLabelFont()
 {
-      MidiTrack* track = (MidiTrack*)selected;
-      if(!track)
-        return;
+      //if(!selected)
+      //  return;
+      //MidiTrack* track = (MidiTrack*)selected;
         
       // Use the new font #6 I created just for these labels (so far).
       // Set the label's font.
@@ -520,6 +506,8 @@ void MidiTrackInfo::setLabelFont()
 void MidiTrackInfo::iOutputChannelChanged(int channel)
       {
       --channel;
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       if (channel != track->outChannel()) {
             // Changed by T356.
@@ -531,7 +519,7 @@ void MidiTrackInfo::iOutputChannelChanged(int channel)
             
             // may result in adding/removing mixer strip:
             //song->update(-1);
-            song->update(SC_MIDI_CHANNEL);
+            song->update(SC_MIDI_TRACK_PROP);
             }
       }
 
@@ -541,6 +529,8 @@ void MidiTrackInfo::iOutputChannelChanged(int channel)
 
 void MidiTrackInfo::iOutputPortChanged(int index)
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       if (index == track->outPort())
             return;
@@ -551,8 +541,7 @@ void MidiTrackInfo::iOutputPortChanged(int index)
       track->setOutPortAndUpdate(index);
       audio->msgIdle(false);
       
-      ///list->redraw();
-      emit outputPortChanged(index);  
+      song->update(SC_MIDI_TRACK_PROP);  
       }
 
 //---------------------------------------------------------
@@ -641,7 +630,7 @@ void MidiTrackInfo::outRoutesPressed()
   connect(pup, SIGNAL(triggered(QAction*)), SLOT(routingPopupMenuActivated(QAction*)));
   connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
   pup->popup(QCursor::pos());
-  oRButton->setDown(false);     
+  ///oRButton->setDown(false);     
   return;
 }
 
@@ -651,6 +640,8 @@ void MidiTrackInfo::outRoutesPressed()
 
 void MidiTrackInfo::iProgHBankChanged()
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int channel = track->outChannel();
       int port    = track->outPort();
@@ -727,6 +718,8 @@ void MidiTrackInfo::iProgHBankChanged()
 
 void MidiTrackInfo::iProgLBankChanged()
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int channel = track->outChannel();
       int port    = track->outPort();
@@ -803,6 +796,8 @@ void MidiTrackInfo::iProgLBankChanged()
 
 void MidiTrackInfo::iProgramChanged()
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int channel = track->outChannel();
       int port    = track->outPort();
@@ -881,6 +876,8 @@ void MidiTrackInfo::iProgramChanged()
 
 void MidiTrackInfo::iLautstChanged(int val)
     {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int outPort = track->outPort();
       int chan = track->outChannel();
@@ -908,8 +905,11 @@ void MidiTrackInfo::iLautstChanged(int val)
 
 void MidiTrackInfo::iTranspChanged(int val)
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       track->transposition = val;
+      song->update(SC_MIDI_TRACK_PROP);  
       }
 
 //---------------------------------------------------------
@@ -918,8 +918,11 @@ void MidiTrackInfo::iTranspChanged(int val)
 
 void MidiTrackInfo::iAnschlChanged(int val)
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       track->velocity = val;
+      song->update(SC_MIDI_TRACK_PROP);  
       }
 
 //---------------------------------------------------------
@@ -928,8 +931,11 @@ void MidiTrackInfo::iAnschlChanged(int val)
 
 void MidiTrackInfo::iVerzChanged(int val)
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       track->delay = val;
+      song->update(SC_MIDI_TRACK_PROP);  
       }
 
 //---------------------------------------------------------
@@ -938,8 +944,11 @@ void MidiTrackInfo::iVerzChanged(int val)
 
 void MidiTrackInfo::iLenChanged(int val)
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       track->len = val;
+      song->update(SC_MIDI_TRACK_PROP);  
       }
 
 //---------------------------------------------------------
@@ -948,8 +957,11 @@ void MidiTrackInfo::iLenChanged(int val)
 
 void MidiTrackInfo::iKomprChanged(int val)
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       track->compression = val;
+      song->update(SC_MIDI_TRACK_PROP);  
       }
 
 //---------------------------------------------------------
@@ -958,6 +970,8 @@ void MidiTrackInfo::iKomprChanged(int val)
 
 void MidiTrackInfo::iPanChanged(int val)
     {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int port    = track->outPort();
       int chan = track->outChannel();
@@ -986,6 +1000,8 @@ void MidiTrackInfo::iPanChanged(int val)
 
 void MidiTrackInfo::instrPopup()
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int channel = track->outChannel();
       int port    = track->outPort();
@@ -1020,10 +1036,11 @@ void MidiTrackInfo::instrPopup()
 
 void MidiTrackInfo::recEchoToggled(bool v)
 {
+  if(!selected)
+    return;
   MidiTrack* track = (MidiTrack*)selected;
   track->setRecEcho(v);
-  
-  //song->update(SC_???);
+  song->update(SC_MIDI_TRACK_PROP);  
 }
 
 //---------------------------------------------------------
@@ -1032,6 +1049,8 @@ void MidiTrackInfo::recEchoToggled(bool v)
 
 void MidiTrackInfo::iProgramDoubleClicked()
 {
+  if(!selected)
+    return;
   MidiTrack* track = (MidiTrack*)selected;
   int port = track->outPort();
   int chan = track->outChannel();
@@ -1088,6 +1107,8 @@ void MidiTrackInfo::iProgramDoubleClicked()
 
 void MidiTrackInfo::iLautstDoubleClicked()
 {
+  if(!selected)
+    return;
   MidiTrack* track = (MidiTrack*)selected;
   int port = track->outPort();
   int chan = track->outChannel();
@@ -1144,6 +1165,8 @@ void MidiTrackInfo::iLautstDoubleClicked()
 
 void MidiTrackInfo::iPanDoubleClicked()
 {
+  if(!selected)
+    return;
   MidiTrack* track = (MidiTrack*)selected;
   int port = track->outPort();
   int chan = track->outChannel();
@@ -1201,15 +1224,16 @@ void MidiTrackInfo::iPanDoubleClicked()
 
 void MidiTrackInfo::updateTrackInfo(int flags)
 {
-      if(!selected)
-        return;
-      
-      MidiTrack* track = (MidiTrack*)selected;
-      
       // Is it simply a midi controller value adjustment? Forget it.
       if(flags == SC_MIDI_CONTROLLER)
         return;
+      if(flags == SC_SELECTION)
+        return;
         
+      if(!selected)
+        return;
+      MidiTrack* track = (MidiTrack*)selected;
+      
       // p3.3.47 Update the routing popup menu if anything relevant changes.
       //if(gRoutingPopupMenuMaster == midiTrackInfo && selected && (flags & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))) 
       if(flags & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))     // p3.3.50
@@ -1222,13 +1246,31 @@ void MidiTrackInfo::updateTrackInfo(int flags)
       setLabelText();
       setLabelFont();
         
-      //{
+      if(flags & (SC_MIDI_TRACK_PROP))  
+      {
+        iTransp->blockSignals(true);
+        iAnschl->blockSignals(true);
+        iVerz->blockSignals(true);
+        iLen->blockSignals(true);
+        iKompr->blockSignals(true);
+        iTransp->setValue(track->transposition);
+        iAnschl->setValue(track->velocity);
+        iVerz->setValue(track->delay);
+        iLen->setValue(track->len);
+        iKompr->setValue(track->compression);
+        iTransp->blockSignals(false);
+        iAnschl->blockSignals(false);
+        iVerz->blockSignals(false);
+        iLen->blockSignals(false);
+        iKompr->blockSignals(false);
+        
         int outChannel = track->outChannel();
         ///int inChannel  = track->inChannelMask();
         int outPort    = track->outPort();
         //int inPort     = track->inPortMask();
         ///unsigned int inPort     = track->inPortMask();
   
+        iOutput->blockSignals(true);
         //iInput->clear();
         iOutput->clear();
   
@@ -1239,6 +1281,8 @@ void MidiTrackInfo::updateTrackInfo(int flags)
               if (i == outPort)
                     iOutput->setCurrentIndex(i);
               }
+        iOutput->blockSignals(false);
+        
         //iInput->setText(bitmap2String(inPort));
         ///iInput->setText(u32bitmap2String(inPort));
         
@@ -1250,7 +1294,9 @@ void MidiTrackInfo::updateTrackInfo(int flags)
         //      iName->home(false);
         //      }
         
+        iOutputChannel->blockSignals(true);
         iOutputChannel->setValue(outChannel+1);
+        iOutputChannel->blockSignals(false);
         ///iInputChannel->setText(bitmap2String(inChannel));
         
         // Set record echo.
@@ -1260,7 +1306,10 @@ void MidiTrackInfo::updateTrackInfo(int flags)
           recEchoButton->setChecked(track->recEcho());
           recEchoButton->blockSignals(false);
         }
+      }
         
+        int outChannel = track->outChannel();
+        int outPort    = track->outPort();
         MidiPort* mp = &midiPorts[outPort];
         int nprogram = mp->hwCtrlState(outChannel, CTRL_PROGRAM);
         if(nprogram == CTRL_VAL_UNKNOWN)
@@ -1363,20 +1412,6 @@ void MidiTrackInfo::updateTrackInfo(int flags)
         iPan->blockSignals(false);
       //}
       
-      
-      // Does it include a midi controller value adjustment? Then handle it...
-      //if(flags & SC_MIDI_CONTROLLER)
-      //  seek();
-
-      // Is it simply a midi controller value adjustment? Forget it.
-      //if(flags != SC_MIDI_CONTROLLER)
-      //{
-        iTransp->setValue(track->transposition);
-        iAnschl->setValue(track->velocity);
-        iVerz->setValue(track->delay);
-        iLen->setValue(track->len);
-        iKompr->setValue(track->compression);
-      //}
 }
 
 //---------------------------------------------------------
@@ -1385,6 +1420,8 @@ void MidiTrackInfo::updateTrackInfo(int flags)
 
 void MidiTrackInfo::progRecClicked()
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int portno       = track->outPort();
       int channel      = track->outChannel();
@@ -1409,6 +1446,8 @@ void MidiTrackInfo::progRecClicked()
 
 void MidiTrackInfo::volRecClicked()
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int portno       = track->outPort();
       int channel      = track->outChannel();
@@ -1432,6 +1471,8 @@ void MidiTrackInfo::volRecClicked()
 
 void MidiTrackInfo::panRecClicked()
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int portno       = track->outPort();
       int channel      = track->outChannel();
@@ -1455,6 +1496,8 @@ void MidiTrackInfo::panRecClicked()
 
 void MidiTrackInfo::recordClicked()
       {
+      if(!selected)
+        return;
       MidiTrack* track = (MidiTrack*)selected;
       int portno       = track->outPort();
       int channel      = track->outChannel();

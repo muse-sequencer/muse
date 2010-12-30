@@ -38,7 +38,6 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
       void iKomprChanged(int);
       void iPanChanged(int);
       void iPanDoubleClicked();
-      void songChanged(int);
       void recordClicked();
       void volRecClicked();
       void panRecClicked();
@@ -52,8 +51,11 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
       virtual void heartBeat();
 
    public slots:
+	  void setTrack(Track*);
+	  void configChanged();
       void instrPopup();
       void progRecClicked();
+      void songChanged(int);
 
    signals:
       void outputPortChanged(int);  
@@ -62,7 +64,6 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
    public:
       MidiTrackInfo(QWidget*, Track* = 0);
       Track* track() const { return selected; }
-      void setTrack(Track*); 
       void setLabelText();
       void setLabelFont();
       void updateTrackInfo(int);

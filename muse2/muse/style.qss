@@ -63,6 +63,7 @@ border: 0px solid #595966;
 }
 
 QMainWindow { background-color: #595966 }
+QWidget { background-color: #595966 }
 /*QMainWindow::toolBarBreak { color: green }*/
 
 QToolBar { 

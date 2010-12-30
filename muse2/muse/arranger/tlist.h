@@ -89,7 +89,8 @@ class TList : public QWidget {
       void songChanged(int flags);
 
    signals:
-      void selectionChanged();
+      ///void selectionChanged();
+      void selectionChanged(Track*);
       void keyPressExt(QKeyEvent*);
       void redirectWheelEvent(QWheelEvent*);
 

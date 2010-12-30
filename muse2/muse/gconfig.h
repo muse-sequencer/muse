@@ -114,6 +114,7 @@ struct GlobalConfigValues {
       int canvasShowPartEvent;      //
       bool canvasShowGrid;
       QString canvasBgPixmap;
+      QStringList canvasCustomBgList;
       QString styleSheetFile;
       QString style;
 
@@ -126,6 +127,8 @@ struct GlobalConfigValues {
       bool vstInPlace; // Enable VST in-place processing
       int dummyAudioSampleRate; 
       int dummyAudioBufSize;
+      QString projectBaseFolder;
+      bool projectStoreInFolder;
       };
 
 extern GlobalConfigValues config;

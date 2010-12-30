@@ -1,3 +1,55 @@
+29.12.2010:
+        - Fixed Bigtime display when using a style sheet for MusE. (Tim)
+          Set window font using a style sheet. Bigtime used QFont::setPixelSize(). 
+          Application style sheets (even a blank one) override with the fixed application 
+          font size (evidenced by adjusting MusE config font#0, then bigtime font size changed). 
+          TODO: Darn, the tooltips fonts are as big as the labels! Must fix.
+        - Added 2 wallpapers from Geoff Beasly.
+        - Fixed focus stealing of transport (rj)
+28.12.2010:
+        - Tweaked and added some delays during project load to counter threading
+          issues during loading of projects (rj)
+        - Commented out the comment placeholder text line in projectcreateimpl.cpp. It
+          broke the compilation against Qt-4.7. (Orcan)
+        - Fixed the shift modifier issue in renaming parts in the arranger. (Orcan)
+        - Fixed the 'no selected track' trackinfo background MusE logo display. (Tim)
+          It was a memory leak as well. Was a simple fix in Arranger::genTrackInfo().
+27.12.2010:
+        - Added a first try at project creation dialog, we'll see how much territory
+          it covers, intentionally it's only used upon creation of a project, later 'Save As'
+          operations use the old dialog so multiple .med files can be saved for the
+          same project (rj)
+        - deferred creating *.wav files until the global record button is clicked,
+          if a project does not exist at that time, pop up the new project dialog (rj)
+        - changed 'new' project from listing PROJECT_VIEW to GLOBAL_VIEW where the
+          templates reside, an enhancement would be to list USER_VIEW if it's template
+          dir exists (rj)
+        - Added myself to the AUTHORS list. Oops. (Orcan)
+        - Added a mimetype file for *.med, *.med.gz, *.med.bz2 and associated MusE with this
+          mimetype (and also midi and xml mimetypes) in the .desktop file. (Orcan)
+        - Got manpages from Debian by Daniel Kobras, and updated them for MusE2. (Orcan)
+        - Remove rem'd preview code in filedialog.cpp. I reimplemented it in appearance.cpp. (Orcan)
+        - Remove the environment variables info from the usage output. (Orcan)
+        - midiedit links to ctrl. (Orcan)
+        - Merged changes from ccherrett into pianroll (h-splittter). (Tim)
+        - changed open dialog to view stored project directory for PROJECT_VIEW (rj)
+        - Fixed midi track info size issues. (Tim)
+26.12.2010:
+        - Initial addition of midi track info to pianoroll. WORK IN PROGRESS. (Tim)
+          TODO: Just to get off the hard drive. A few things still need to be linked up!
+                And we really need icons to replace those 'T' 'C' 'S' 'X' buttons.
+        - Fix minor issues that surfaced when I built an RPM for the alpha release (Orcan):
+              o Added missing AudioVideo category to the .desktop file.
+              o Fixed the executable name in the .desktop file.
+              o Converted README.softsynth, synti/vam/README, README.de, SECURITY to UTF8.
+              o Made the default MusE_DOC_DIR consistent with other default definitions.
+              o Removed explicit rpath to ${QT_LIBRARY_DIR}. cmake should add it automatically
+                if there's need.
+              o Removed unnecessary linkage to libQtSvg.
+              o utils are installed with executable permissons.
+25.12.2010:
+        - Added fancy background selection widget with live preview to Appearance Settings. (Orcan)
+        - Applied Geoff King's second capitalization patch.
 23.12.2010:
         - MidiTrackInfo is now self-contained. (Tim)
           Moved all of its members from Arranger into MidiTrackInfo. Removed trackinfo.cpp

@@ -210,10 +210,6 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "   -L       don't use LASH\n");
 #endif
       fprintf(stderr, "   -l  xx   force locale to the given language/country code (xx = %s)\n", localeList().toLatin1().constData());
-      fprintf(stderr, "useful environment variables:\n");
-      fprintf(stderr, "   MUSE             override library and shared directories location\n");
-      fprintf(stderr, "   MUSEHOME         override user home directory (HOME/)\n");
-      fprintf(stderr, "   MUSEINSTRUMENTS  override user instrument directory (MUSEHOME/muse_instruments)\n");
       }
 
 //---------------------------------------------------------

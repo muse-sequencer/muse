@@ -53,7 +53,8 @@ class WidgetStack : public QWidget {
       QWidget* getWidget(unsigned int idx);
       QWidget* visibleWidget() const;
       int curIdx() const { return top; }
-      QSize minimumSizeHint() const;
+      virtual QSize minimumSizeHint() const;
+      //QSize minimumSize() const { return minimumSizeHint(); }
       };
 
 //---------------------------------------------------------
@@ -145,6 +146,8 @@ class Arranger : public QWidget {
              CMD_INSERT_PART, CMD_INSERT_EMPTYMEAS };
 
       Arranger(QMainWindow* parent, const char* name = 0);
+
+      PartCanvas* getCanvas() { return canvas; }
       void setMode(int);
       void reset();
       

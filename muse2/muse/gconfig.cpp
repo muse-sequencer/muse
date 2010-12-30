@@ -123,6 +123,7 @@ GlobalConfigValues config = {
       5,                            // canvasShowPartEvent
       true,                        // canvasShowGrid;
       QString(""),                  // canvasBgPixmap;
+      QStringList(),                // canvasCustomBgList
       QString(":/style.qss"),       // default styleSheetFile
       QString(""),                  // style
       QString("sweep"),             // externalWavEditor
@@ -133,6 +134,8 @@ GlobalConfigValues config = {
       true,                         // showDidYouKnow
       false,                        // vstInPlace  Enable VST in-place processing
       44100,                        // Dummy audio preferred sample rate
-      512                           // Dummy audio buffer size
+      512,                          // Dummy audio buffer size
+      QString("./"),                // projectBaseFolder
+      true                          // projectStoreInFolder
     };
 

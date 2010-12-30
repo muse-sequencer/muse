@@ -91,8 +91,10 @@ set_target_properties( midiedit
 target_link_libraries ( midiedit
       ${QT_LIBRARIES}
       al
+      ctrl
       icons
       widgets
+      ctrl
       )
 
 ##

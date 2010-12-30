@@ -16,6 +16,7 @@
 #include "icons.h"
 #include "filedialog.h"
 #include "../globals.h"
+#include "gconfig.h"
 
 MFileDialog::ViewType MFileDialog::lastViewUsed = GLOBAL_VIEW;
 QString MFileDialog::lastUserDir = "";
@@ -130,7 +131,8 @@ void MFileDialog::projectToggled(bool flag)
             if (museProject == museProjectInitPath ) {
                   // if project path is uninitialized, meaning it is still set to museProjectInitPath.
                   // then project path is set to current pwd instead.
-                  s = QString(getcwd(0,0)) + QString("/");
+                  //s = QString(getcwd(0,0)) + QString("/");
+                  s = config.projectBaseFolder;
                   }
             else
                   s = museProject + QString("/"); // + baseDir;
@@ -247,36 +249,6 @@ void MFileDialog::directoryChanged(const QString&)
             }
       }
 
-/* ORCAN - disable preview for now. It is not available in qt4. We will
-           need to implement it ourselves.
-//---------------------------------------------------------
-//   ContentsPreview
-//---------------------------------------------------------
-
-ContentsPreview::~ContentsPreview()
-      {
-      if (bg)
-            delete bg;
-      }
-
-//---------------------------------------------------------
-//   ContentsPreview::showPreview
-//---------------------------------------------------------
-
-void ContentsPreview::previewUrl(const Q3Url& url)
-      {
-      if (!url.isLocalFile())
-            return;
-      if (url.path() == path)
-            return;
-      path = url.path();
-      if (bg)
-            delete bg;
-      bg  = new QPixmap(path);
-      if (bg)
-            setBackgroundPixmap(*bg);
-      }
-*/
 
 //---------------------------------------------------------
 //   getFilterExtension
@@ -308,15 +280,19 @@ QString getFilterExtension(const QString &filter)
 //---------------------------------------------------------
 //   getOpenFileName
 //---------------------------------------------------------
-
 QString getOpenFileName(const QString &startWith,
-   //const char** filters, QWidget* parent, const QString& name, bool* all)
-   const QStringList& filters, QWidget* parent, const QString& name, bool* all)
+                        const QStringList& filters, QWidget* parent, const QString& name, bool* all, MFileDialog::ViewType viewType)
       {
       QString initialSelection;  // FIXME Tim.
       MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, false);
       dlg->setNameFilters(filters);
       dlg->setWindowTitle(name);
+      if (viewType == MFileDialog::GLOBAL_VIEW)
+        dlg->globalToggled(true);
+      else if (viewType == MFileDialog::PROJECT_VIEW)
+        dlg->projectToggled(true);
+      else if (viewType == MFileDialog::USER_VIEW)
+        dlg->userToggled(true);
       if (all) {
             dlg->buttons.loadAllGroup->setVisible(true);
             //dlg->buttons.globalButton->setVisible(false);

@@ -48,6 +48,7 @@
 #include "transport.h"
 #include "transpose.h"
 #include "waveedit.h"
+#include "widgets/projectcreateimpl.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -951,7 +952,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       editPasteCloneAction = new QAction(QIcon(*editpasteCloneIconSet), tr("Paste c&lone"), this);
       editPaste2TrackAction = new QAction(QIcon(*editpaste2TrackIconSet), tr("Paste to &track"), this);
       editPasteC2TAction = new QAction(QIcon(*editpasteClone2TrackIconSet), tr("Paste clone to trac&k"), this);
-      editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert empty measure"), this);
+      editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert Empty Measure"), this);
       editDeleteSelectedAction = new QAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"), this);
 
 
@@ -983,12 +984,12 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       midiTransposeAction = new QAction(QIcon(*midi_transposeIcon), tr("Transpose"), this);
       midiTransformerAction = new QAction(QIcon(*midi_transformIcon), tr("Midi &Transform"), this);
 
-      editSongInfoAction = new QAction(QIcon(*edit_listIcon), tr("Song info"), this);
+      editSongInfoAction = new QAction(QIcon(*edit_listIcon), tr("Song Info"), this);
 
       //-------- View Actions
       viewTransportAction = new QAction(QIcon(*view_transport_windowIcon), tr("Transport Panel"), this);
       viewTransportAction->setCheckable(true);
-      viewBigtimeAction = new QAction(QIcon(*view_bigtime_windowIcon), tr("Bigtime window"),  this);
+      viewBigtimeAction = new QAction(QIcon(*view_bigtime_windowIcon), tr("Bigtime Window"),  this);
       viewBigtimeAction->setCheckable(true);
       viewMixerAAction = new QAction(QIcon(*mixerSIcon), tr("Mixer A"), this);
       viewMixerAAction->setCheckable(true);
@@ -1022,7 +1023,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 #endif
       midiResetInstAction = new QAction(QIcon(*midi_reset_instrIcon), tr("Reset Instr."), this);
       midiInitInstActions = new QAction(QIcon(*midi_init_instrIcon), tr("Init Instr."), this);
-      midiLocalOffAction = new QAction(QIcon(*midi_local_offIcon), tr("local off"), this);
+      midiLocalOffAction = new QAction(QIcon(*midi_local_offIcon), tr("Local Off"), this);
 
       //-------- Audio Actions
       audioBounce2TrackAction = new QAction(QIcon(*audio_bounce_to_trackIcon), tr("Bounce to Track"), this);
@@ -1056,7 +1057,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       //-------- Help Actions
       helpManualAction = new QAction(tr("&Manual"), this);
-      helpHomepageAction = new QAction(tr("&MusE homepage"), this);
+      helpHomepageAction = new QAction(tr("&MusE Homepage"), this);
       helpReportAction = new QAction(tr("&Report Bug..."), this);
       helpAboutAction = new QAction(tr("&About MusE"), this);
 
@@ -1627,6 +1628,7 @@ void MusE::loadProjectFile(const QString& name)
 
 void MusE::loadProjectFile(const QString& name, bool songTemplate, bool loadAll)
       {
+      QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
       //
       // stop audio threads if running
       //
@@ -1639,14 +1641,15 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool loadAll)
                   }
             seqStop();
             }
-      microSleep(200000);
+      microSleep(100000);
       loadProjectFile1(name, songTemplate, loadAll);
-      microSleep(200000);
+      microSleep(100000);
       if (restartSequencer)
             seqStart();
 
       if (song->getSongInfo().length()>0)
           startSongInfo(false);
+      QApplication::restoreOverrideCursor();
       }
 
 //---------------------------------------------------------
@@ -1678,6 +1681,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
                   return;
                   }
             project.setFile("untitled");
+            museProject = museProjectInitPath;
             }
       else {
             printf("Setting project path to %s\n", fi.absolutePath().toLatin1().constData());
@@ -1832,7 +1836,7 @@ void MusE::setUntitledProject()
       {
       setConfigDefaults();
       QString name("untitled");
-      museProject = QFileInfo(name).absolutePath();
+      museProject = "./"; //QFileInfo(name).absolutePath();
       project.setFile(name);
       setWindowTitle(tr("MusE: Song: ") + project.completeBaseName());
       }
@@ -1913,7 +1917,7 @@ void MusE::loadProject()
 void MusE::loadTemplate()
       {
       QString fn = getOpenFileName(QString("templates"), med_file_pattern, this,
-         tr("MusE: load template"), 0);
+                                   tr("MusE: load template"), 0, MFileDialog::GLOBAL_VIEW);
       if (!fn.isEmpty()) {
             // museProject = QFileInfo(fn).absolutePath();
             loadProjectFile(fn, true, true);
@@ -3046,10 +3050,25 @@ PopupView* MusE::prepareRoutingPopupView(Track* track, bool dst)
 
 bool MusE::saveAs()
       {
-//      QString name = getSaveFileName(museProject, med_file_pattern, this,
-//      QString name = getSaveFileName(QString(""), med_file_pattern, this,
-      QString name = getSaveFileName(QString(""), med_file_save_pattern, this,
-         tr("MusE: Save As"));
+      QString name;
+      if (museProject == museProjectInitPath ) {
+        ProjectCreateImpl pci(muse);
+        if (pci.exec() == QDialog::Rejected) {
+          return false;
+        }
+
+        name = pci.getProjectPath();
+        song->setSongInfo(pci.getSongInfo());
+        museProject = QFileInfo(name).absolutePath();
+        QDir dirmanipulator;
+        if (!dirmanipulator.mkpath(museProject)) {
+          QMessageBox::warning(this,"Path error","Can't create project path", QMessageBox::Ok);
+          return false;
+        }
+      }
+      else {
+        name = getSaveFileName(QString(""), med_file_save_pattern, this, tr("MusE: Save As"));
+      }
       bool ok = false;
       if (!name.isEmpty()) {
             QString tempOldProj = museProject;
@@ -4429,6 +4448,7 @@ bool MusE::clearSong()
             while (audio->isPlaying())
                   qApp->processEvents();
             }
+      microSleep(100000);
 
 again:
       for (iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
@@ -4448,7 +4468,9 @@ again:
                         goto again;
                   }
             }
+      microSleep(100000);
       song->clear(false);
+      microSleep(100000);
       return false;
       }
 
@@ -4843,4 +4865,3 @@ void MusE::execUserScript(int id)
 {
       song->executeScript(song->getScriptPath(id, false).toLatin1().constData(), song->getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
 }
-

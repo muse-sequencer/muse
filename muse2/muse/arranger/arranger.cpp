@@ -298,7 +298,9 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       // Do this now that the list is available.
       genTrackInfo(tracklist);
       
-      connect(list, SIGNAL(selectionChanged()), SLOT(trackSelectionChanged()));
+      ///connect(list, SIGNAL(selectionChanged()), SLOT(trackSelectionChanged()));
+      connect(list, SIGNAL(selectionChanged(Track*)), SLOT(trackSelectionChanged()));
+      connect(list, SIGNAL(selectionChanged(Track*)), midiTrackInfo, SLOT(setTrack(Track*)));
       connect(header, SIGNAL(sectionResized(int,int,int)), list, SLOT(redraw()));
       connect(header, SIGNAL(sectionMoved(int,int,int)), list, SLOT(redraw()));
       connect(header, SIGNAL(sectionMoved(int,int,int)), this, SLOT(headerMoved()));
@@ -399,6 +401,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       connect(canvas, SIGNAL(startEditor(PartList*,int)),   SIGNAL(startEditor(PartList*, int)));
 
       connect(song,   SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      //connect(song,   SIGNAL(mTypeChanged(MType)), SLOT(setMode((int)MType)));    // p4.0.7 Tim.
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
       connect(canvas, SIGNAL(selectionChanged()), SIGNAL(selectionChanged()));
       connect(canvas, SIGNAL(dropSongFile(const QString&)), SIGNAL(dropSongFile(const QString&)));
@@ -412,6 +415,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       //connect(time, SIGNAL(addMarker(int)), SIGNAL(addMarker(int)));
       
       configChanged();  // set configuration values
+      if(canvas->part())
+        midiTrackInfo->setTrack(canvas->part()->track());   // Tim.
       showTrackInfo(showTrackinfoFlag);
       }
 
@@ -483,7 +488,6 @@ void Arranger::dclickPart(Track* t)
 
 void Arranger::configChanged()
       {
-      // Added by Tim. p3.3.6
       //printf("Arranger::configChanged\n");
       
       if (config.canvasBgPixmap.isEmpty()) {
@@ -496,7 +500,7 @@ void Arranger::configChanged()
             //printf("Arranger::configChanged - bitmap %s!\n", config.canvasBgPixmap.ascii());
             canvas->setBg(QPixmap(config.canvasBgPixmap));
       }
-      midiTrackInfo->setFont(config.fonts[2]);
+      ///midiTrackInfo->setFont(config.fonts[2]);
       //updateTrackInfo(type);
       }
 
@@ -533,6 +537,9 @@ void Arranger::songChanged(int type)
         lenEntry->setValue(bar);
         lenEntry->blockSignals(false);
   
+        if(type & SC_SONG_TYPE)    // p4.0.7 Tim.
+          setMode(song->mtype());
+          
         trackSelectionChanged();
         canvas->partsChanged();
         typeBox->setCurrentIndex(int(song->mtype()));
@@ -601,7 +608,10 @@ void Arranger::modeChange(int mode)
 
 void Arranger::setMode(int mode)
       {
+      typeBox->blockSignals(true);          //
+      // This will only set if different.
       typeBox->setCurrentIndex(mode);
+      typeBox->blockSignals(false);         //
       }
 
 //---------------------------------------------------------
@@ -874,7 +884,10 @@ QWidget* WidgetStack::visibleWidget() const
 QSize WidgetStack::minimumSizeHint() const
       {
       if (top == -1)
+      {
+            //printf("WidgetStack::minimumSizeHint top is -1\n");
             return (QSize(0, 0));
+      }      
       QSize s(0,0);
       for (unsigned int i = 0; i < stack.size(); ++i) {
             if (stack[i]) {
@@ -884,6 +897,7 @@ QSize WidgetStack::minimumSizeHint() const
                   s = s.expandedTo(ss);
                   }
             }
+      //printf("WidgetStack::minimumSizeHint width:%d height:%d\n", s.width(), s.height());  
       return s;
       }
 
@@ -931,16 +945,13 @@ void Arranger::genTrackInfo(QWidget* parent)
       trackInfo = new WidgetStack(parent, "trackInfoStack");
 
       noTrackInfo          = new QWidget(trackInfo);
+      noTrackInfo->setAutoFillBackground(true);
       QPixmap *noInfoPix   = new QPixmap(160, 1000); //muse_leftside_logo_xpm);
       const QPixmap *logo  = new QPixmap(*museLeftSideLogo);
       noInfoPix->fill(noTrackInfo->palette().color(QPalette::Window) );
-      // Orcan - check
-      //copyBlt(noInfoPix, 10, 0, logo, 0,0, logo->width(), logo->height());
-      QPainter p;
-      p.begin(noInfoPix);
-      p.drawImage(10, 0, logo->toImage(), 0,0, logo->width(), logo->height());
+      QPainter p(noInfoPix);
+      p.drawPixmap(10, 0, *logo, 0,0, logo->width(), logo->height());
 
-      //noTrackInfo->setPaletteBackgroundPixmap(*noInfoPix);
       QPalette palette;
       palette.setBrush(noTrackInfo->backgroundRole(), QBrush(*noInfoPix));
       noTrackInfo->setPalette(palette);
@@ -953,7 +964,6 @@ void Arranger::genTrackInfo(QWidget* parent)
       trackInfo->addWidget(0, 2);
 
 ///      genMidiTrackInfo();
-      connect(midiTrackInfo, SIGNAL(outputPortChanged(int)), list, SLOT(redraw()));
       }
 
 //---------------------------------------------------------
@@ -972,9 +982,13 @@ void Arranger::updateTrackInfo(int flags)
             }
       if (selected->isMidiTrack()) {
             switchInfo(1);
-            ///updateMidiTrackInfo(flags);
-            midiTrackInfo->setTrack(selected);
-            midiTrackInfo->updateTrackInfo(flags);
+            // If a new part was selected, and only if it's different.
+            if((flags & SC_SELECTION) && midiTrackInfo->track() != selected)
+              // Set a new track and do a complete update.
+              midiTrackInfo->setTrack(selected);
+            else  
+              // Otherwise just regular update with specific flags.
+              midiTrackInfo->updateTrackInfo(flags);
             }
       else {
             switchInfo(2);
