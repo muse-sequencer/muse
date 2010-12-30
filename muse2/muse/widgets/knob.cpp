@@ -112,23 +112,29 @@ void Knob::drawKnob(QPainter* p, const QRect& r)
     //
     // draw button face
     //
-    p->setPen(Qt::NoPen);
-    p->setBrush(d_curFaceColor);
-    p->drawEllipse(aRect);
+   // p->setPen(Qt::NoPen);
+   // p->setBrush(d_curFaceColor);
+   // p->drawEllipse(aRect);
 
     //
     // draw button shades
     //
-    pn.setWidth(d_borderWidth);
+   // pn.setWidth(d_borderWidth);
 
 
-    pn.setColor(pal.color(QPalette::Light));
-    p->setPen(pn);
-    p->drawArc(aRect, 45*16,180*16);
+   // pn.setColor(pal.color(QPalette::Light));
+   // p->setPen(pn);
+   // p->drawArc(aRect, 45*16,180*16);
 
-    pn.setColor(pal.color(QPalette::Dark));
-    p->setPen(pn);
-    p->drawArc(aRect, 225*16,180*16);
+   // pn.setColor(pal.color(QPalette::Dark));
+   // p->setPen(pn);
+   // p->drawArc(aRect, 225*16,180*16);
+	QPixmap dial;
+	bool loaded = dial.load(":images/knob.png");
+	if(loaded)
+    	p->drawPixmap(aRect, dial);
+ 		 
+		 printf("\n\n\nButton size is X:%d : Y:%d : W:%d : H:%d \n\n\n\n",aRect.x(), aRect.y(), aRect.width(), aRect.height());
 
       //
       // draw marker

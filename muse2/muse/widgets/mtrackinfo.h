@@ -59,7 +59,6 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
 
    signals:
       void outputPortChanged(int);  
-	  void programChangeAdded(Track*);
    
    public:
       MidiTrackInfo(QWidget*, Track* = 0);

@@ -1421,13 +1421,6 @@ void PianoRoll::execUserScript(int id)
       song->executeScript(scriptfile.toAscii().data(), parts(), quant(), true);
 }
 
-void PianoRoll::deleteSelectedProgramChange()
-{
-	/*song->startUndo();
-	audio->msgDeleteEvent(evt, mprt, true, true, true);
-	song->endUndo(SC_EVENT_MODIFIED);*/
-}
-
 //---------------------------------------------------------
 //   newCanvasWidth
 //---------------------------------------------------------

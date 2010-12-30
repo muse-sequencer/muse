@@ -17,6 +17,40 @@
 		<file>images/spindown_pressed.png</file>
 		<file>images/toolbar_handle.png</file>
 		<file>images/slider_thumb.png</file>
+		<file>images/knob.png</file>
+		<file>images/icons/add_tracks.png</file>
+		<file>images/icons/delete_track.png</file>
+		<file>images/icons/eraser.png</file>
+		<file>images/icons/eventfilter.png</file>
+		<file>images/icons/eventlist.png</file>
+		<file>images/icons/manage-midi-devices.png</file>
+		<file>images/icons/matrix.png</file>
+		<file>images/icons/matrix-percussion.png</file>
+		<file>images/icons/move.png</file>
+		<file>images/icons/move_track_down.png</file>
+		<file>images/icons/move_track_up.png</file>
+		<file>images/icons/mute-all.png</file>
+		<file>images/icons/pencil.png</file>
+		<file>images/icons/programchange.png</file>
+		<file>images/icons/quantize.png</file>
+		<file>images/icons/resize.png</file>
+		<file>images/icons/select.png</file>
+		<file>images/icons/split.png</file>
+		<file>images/icons/step_by_step.png</file>
+		<file>images/icons/transport-cursor-to-pointer.png</file>
+		<file>images/icons/transport-ffwd.png</file>
+		<file>images/icons/transport-ffwd-end.png</file>
+		<file>images/icons/transport-panic.png</file>
+		<file>images/icons/transport-play.png</file>
+		<file>images/icons/transport-pointer-to-cursor.png</file>
+		<file>images/icons/transport-record.png</file>
+		<file>images/icons/transport-rewind.png</file>
+		<file>images/icons/transport-rewind-end.png</file>
+		<file>images/icons/transport-solo.png</file>
+		<file>images/icons/transport-stop.png</file>
+		<file>images/icons/transport-tracking.png</file>
+		<file>images/icons/un-mute-all.png</file>
+		<file>images/icons/velocity.png</file>
 	</qresource>
 </RCC>
 

@@ -1296,25 +1296,6 @@ void PianoCanvas::cmd(int cmd, int quantStrength,
             case CMD_DELETE_MEASURE:
             case CMD_CREATE_MEASURE:
                   break;
-            case CMD_DELETE_PROGRAM:
-				printf("Delete event recieved\n");
-                  if (selectionSize()) {
-				  		printf("Found Selection\n");
-                        song->startUndo();
-                        for (iCItem i = items.begin(); i != items.end(); ++i) {
-                              if (!i->second->isSelected())
-                                    continue;
-                              Event ev = i->second->event();
-                              // Indicate no undo, and do not do port controller values and clone parts. 
-							  if(ev.type() == Controller)
-							  {
-							  	printf("Selected Controller Type found for deletion\n");
-                              		audio->msgDeleteEvent(ev, i->second->part(), false, false, false);
-							  }
-                        }
-                        song->endUndo(SC_EVENT_REMOVED);
-                  }
-                  return;
             default:
 //                  printf("unknown ecanvas cmd %d\n", cmd);
                   break;
