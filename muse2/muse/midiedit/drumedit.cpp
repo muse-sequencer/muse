@@ -451,6 +451,9 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       if(pos > MAXINT)
         pos = MAXINT;
       hscroll->setOffset((int)pos);
+      
+      // As a final act, open a default velocity controller.
+      addCtrl();
       }
 
 //---------------------------------------------------------

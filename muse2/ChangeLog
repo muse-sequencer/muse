@@ -1,4 +1,5 @@
 30.12.2010:
+        - Suggestion by OOM team: Add default velocity controllers to pianoroll and drum edit. (Tim)
         *Feature: Appearance part color names now can now be edited. (Tim)
           TODO: Add per-song settings and add toolbar with some colour goodies.
         *Feature: Mixer label colours can now be edited in the appearance settings. (Tim)

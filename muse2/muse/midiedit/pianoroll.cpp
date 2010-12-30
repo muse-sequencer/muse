@@ -542,6 +542,9 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       if(pos > MAXINT)
         pos = MAXINT;
       hscroll->setOffset((int)pos);
+      
+      // As a final act, open a default velocity controller.
+      addCtrl();
       }
 
 //---------------------------------------------------------
