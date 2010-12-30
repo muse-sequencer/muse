@@ -35,6 +35,8 @@
 #include "filedialog.h"
 #include "marker/marker.h"
 
+// Moved into global config by Tim.
+/* 
 const char* partColorNames[] = {
       "Default",
       "Refrain",
@@ -54,6 +56,8 @@ const char* partColorNames[] = {
       "Piano",
       "Saxophon",
       };
+*/      
+      
 /*
 //---------------------------------------------------------
 //   ColorListItem
@@ -749,7 +753,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
 
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
             //ColorListItem* item = new ColorListItem(config.partColors[i], h, fontMetrics().height(), partColorNames[i]); //ddskrjo
-            QAction *act_color = colorPopup->addAction(colorRect(config.partColors[i], 80, 80), partColorNames[i]);
+            QAction *act_color = colorPopup->addAction(colorRect(config.partColors[i], 80, 80), config.partColorNames[i]);
             act_color->setData(20+i);
             }
 

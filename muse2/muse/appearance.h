@@ -22,6 +22,7 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       QTreeWidgetItem* user_bg;
       QTreeWidgetItem* global_bg;
       QTreeWidgetItem* lastSelectedBgItem;
+      QTreeWidgetItem* lastSelectedColorItem;
 
       Q_OBJECT
       void updateFonts();
@@ -56,6 +57,7 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       void addToPaletteClicked();
       void paletteClicked(int);
       void bgSelectionChanged(QTreeWidgetItem*);
+      void colorNameEditFinished();
 
    public:
       Appearance(Arranger*, QWidget* parent=0);

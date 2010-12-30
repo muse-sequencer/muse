@@ -51,17 +51,27 @@ struct GlobalConfigValues {
       int globalAlphaBlend;
       QColor palette[16];
       QColor partColors[NUM_PARTCOLORS];
-	QColor transportHandleColor;
-	QColor bigTimeForegroundColor;
-	QColor bigTimeBackgroundColor;
+      QString partColorNames[NUM_PARTCOLORS];
+      QColor transportHandleColor;
+      QColor bigTimeForegroundColor;
+      QColor bigTimeBackgroundColor;
       QColor waveEditBackgroundColor;
       //QFont fonts[6];
       QFont fonts[NUM_FONTS];
       QColor trackBg;
       QColor selectTrackBg;
       QColor selectTrackFg;
+      
+      QColor midiTrackLabelBg;
+      QColor drumTrackLabelBg;
+      QColor waveTrackLabelBg;
+      QColor outputTrackLabelBg;
+      QColor inputTrackLabelBg;
+      QColor groupTrackLabelBg;
+      QColor auxTrackLabelBg;
+      QColor synthTrackLabelBg;
+
       QColor midiTrackBg;
-      QColor ctrlGraphFg;
       QColor drumTrackBg;
       QColor waveTrackBg;
       QColor outputTrackBg;
@@ -69,7 +79,9 @@ struct GlobalConfigValues {
       QColor groupTrackBg;
       QColor auxTrackBg;
       QColor synthTrackBg;
+      
       QColor partCanvasBg;
+      QColor ctrlGraphFg;
       QColor mixerBg;
 
       int division;

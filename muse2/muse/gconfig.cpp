@@ -46,10 +46,29 @@ GlobalConfigValues config = {
         QColor(0x7f, 0x00, 0x7f),
         QColor(0x00, 0x7f, 0xff),
         QColor(0x00, 0x3f, 0x3f)
-        },
-	QColor(0, 0, 255),      // transportHandleColor;
-	QColor(255, 0, 0),      // bigTimeForegroundColor;
-	QColor(0, 0, 0),        // bigTimeBackgroundColor;
+      },
+      {
+        QString("Default"),   // Default part color names
+        QString("Refrain"),
+        QString("Bridge"),
+        QString("Intro"),
+        QString("Coda"),
+        QString("Chorus"),
+        QString("Solo"),
+        QString("Brass"),
+        QString("Percussion"),
+        QString("Drums"),
+        QString("Guitar"),
+        QString("Bass"),
+        QString("Flute"),
+        QString("Strings"),
+        QString("Keyboard"),
+        QString("Piano"),
+        QString("Saxophone")
+      },
+      QColor(0, 0, 255),      // transportHandleColor;
+      QColor(255, 0, 0),      // bigTimeForegroundColor;
+      QColor(0, 0, 0),        // bigTimeBackgroundColor;
       QColor(200, 200, 200),  // waveEditBackgroundColor;
       {
         QFont(QString("arial"), 10, QFont::Normal),
@@ -64,8 +83,17 @@ GlobalConfigValues config = {
       QColor(84, 97, 114),     // trackBg;
       QColor(0x80, 0xff, 0x80),     // selected track Bg;
       QColor(0x00, 0x00, 0x00),     // selected track Fg;
+      
+      QColor(0, 160, 255),          // midiTrackLabelBg;   // Med blue
+      QColor(0, 160, 255),          // drumTrackLabelBg;   // Med blue
+      Qt::magenta,                  // waveTrackLabelBg;
+      Qt::green,                    // outputTrackLabelBg;
+      Qt::red,                      // inputTrackLabelBg;
+      Qt::yellow,                   // groupTrackLabelBg;
+      QColor(120, 255, 255),        // auxTrackLabelBg;    // Light blue
+      QColor(255, 130, 0),          // synthTrackLabelBg;  // Med orange
+      
       QColor(220, 220, 220),     // midiTrackBg;
-      QColor(255, 170, 0),       // ctrlGraphFg;    Medium orange
       QColor(220, 220, 220),     // drumTrackBg;
       QColor(220, 220, 220),     // waveTrackBg;
       QColor(189, 220, 193),     // outputTrackBg;
@@ -73,8 +101,10 @@ GlobalConfigValues config = {
       QColor(220, 220, 220),     // groupTrackBg;
       QColor(220, 220, 220),     // auxTrackBg;
       QColor(220, 220, 220),     // synthTrackBg;
-      QColor(98, 124, 168),         // part canvas bg
-      QColor(0, 0, 0),              // mixerBg;
+      
+      QColor(98, 124, 168),      // part canvas bg
+      QColor(255, 170, 0),       // ctrlGraphFg;    Medium orange
+      QColor(0, 0, 0),           // mixerBg;
 
       384,                          // division;
       1024,                         // rtcTicks
