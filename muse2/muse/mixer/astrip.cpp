@@ -790,13 +790,14 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       slider->setValue(fast_log10(t->volume())*20.0);
 
       sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
-
+      		 
       for (int i = 0; i < channel; ++i) {
             //meter[i]->setRange(config.minSlider, 10.0);
             meter[i]->setRange(config.minMeter, 10.0);
             meter[i]->setFixedWidth(15);
             connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
-            sliderGrid->addWidget(meter[i], 0, i+1, Qt::AlignHCenter);
+				sliderGrid->addWidget(meter[i], 0, i+1);//, Qt::AlignHCenter);
+				
             sliderGrid->setColumnStretch(i, 50);
             }
       grid->addLayout(sliderGrid, _curGridRow++, 0, 1, 2); 

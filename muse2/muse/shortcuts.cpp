@@ -199,9 +199,9 @@ void initShortCuts()
       defShrt(SHRT_DELETE_MEASURE,   0, "Edit: Delete Measure", PROLL_SHRT, "midi_delete_measure");
       defShrt(SHRT_CREATE_MEASURE,   0, "Edit: Create Measure", PROLL_SHRT, "midi_create_measure");
       defShrt(SHRT_EVENT_COLOR,      Qt::Key_E, "Edit: Change Event Color", PROLL_SHRT, "change_event_color");
-      defShrt(SHRT_ADD_PROGRAM,      Qt::Key_Backslash, "Edit: Insert Program Change", PROLL_SHRT, "add program change");
-      defShrt(SHRT_DEL_PROGRAM,      Qt::CTRL + Qt::Key_Backslash, "Edit: Delete Program Change", PROLL_SHRT, "delete program change");
-      defShrt(SHRT_SEL_INSTRUMENT,   Qt::Key_I, "Edit: Select Instrument", PROLL_SHRT, "midi instrument");
+      defShrt(SHRT_ADD_PROGRAM,      Qt::Key_Backslash, "Edit: Insert Program Change", PROLL_SHRT, "add_program_change");
+      defShrt(SHRT_DEL_PROGRAM,      Qt::CTRL + Qt::Key_Backslash, "Edit: Delete Program Change", PROLL_SHRT, "delete_program_change");
+      defShrt(SHRT_SEL_INSTRUMENT,   Qt::Key_I, "Edit: Select Instrument", PROLL_SHRT, "midi_instrument");
 
 
       // Shortcuts for tools

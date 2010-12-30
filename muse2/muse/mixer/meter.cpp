@@ -23,7 +23,7 @@
 
 Meter::Meter(QWidget* parent, MeterType type)
    : QFrame(parent) //Qt::WNoAutoErase
-      {
+{
       setBackgroundRole(QPalette::NoRole);
       setAttribute(Qt::WA_NoSystemBackground);
       setAttribute(Qt::WA_StaticContents);
@@ -41,7 +41,10 @@ Meter::Meter(QWidget* parent, MeterType type)
       redScale    = 0;
       setLineWidth(0);
       setMidLineWidth(0);
-      }
+	  green = QColor(49,175,197);
+	  yellow = QColor(156,85,115);
+	  red = QColor(197,49,87);
+}
 
 //---------------------------------------------------------
 //   setVal
@@ -135,14 +138,28 @@ void Meter::paintEvent(QPaintEvent* /*ev*/)
         ymax = maxVal == 0 ? 0 : int(((maxScale - (fast_log10(maxVal) * 20.0)) * h)/range);
       else
         ymax = maxVal == 0 ? 0 : int(((maxScale - maxVal) * h)/range);
-      p.setPen(QColor(1,149,176));//floating vu levels
-      p.drawLine(0, ymax, w, ymax);
+      
       int y1 = int((maxScale - redScale) * h / range);
       int y2 = int((maxScale - yellowScale) * h / range);
-      p.setPen(QColor(209,0,0));//0 db
-	  p.drawLine(0, y1, w, y1);
-      p.setPen(QColor(209,197,0));//-10 db
-	  p.drawLine(0, y2, w, y2);
+	  QPen myPen = QPen(green, 5, Qt::SolidLine, Qt::RoundCap );
+	  if(ymax <= y1)
+	  {
+	  	myPen.setColor(red);
+	  }
+	  else if(ymax <= y2 && ymax > y1)
+	  {
+	  	myPen.setColor(yellow);
+	  }
+	  p.setPen(myPen);//floating vu levels
+      p.drawLine(5, ymax, w-5, ymax);
+	  
+	  myPen.setWidth(1);
+	  myPen.setColor(QColor(63,74,80));
+      p.setPen(myPen);//0 db
+	  p.drawLine(3, y1, w-4, y1);
+	  //myPen.setColor(QColor(122,122,122));
+      p.setPen(myPen);//-10 db
+	  p.drawLine(3, y2, w-4, y2);
 }
 
 //---------------------------------------------------------
@@ -152,77 +169,80 @@ void Meter::paintEvent(QPaintEvent* /*ev*/)
 void Meter::drawVU(QPainter& p, int w, int h, int yv)
 {
 	  QColor bgColor = QColor(0,12,16);
-      if(mtype == DBMeter) 
-      {
+      /*if(mtype == DBMeter) 
+      {*/
         double range = maxScale - minScale;
         int y1 = int((maxScale - redScale) * h / range);
         int y2 = int((maxScale - yellowScale) * h / range);
 	    QLinearGradient vuGrad(QPointF(0, 0), QPointF(0, h));
-	    vuGrad.setColorAt(1, Qt::white);
-	    vuGrad.setColorAt(0.9, Qt::blue);
-	    vuGrad.setColorAt(0, Qt::red);
-	    p.fillRect(0, yv,  w, h,        QBrush(vuGrad));
-        
-       // if(yv < y1)
-       // {
-       //   // Red section:
-       p.fillRect(0, 0,  w, yv,        QBrush(bgColor));     // dark red  
-       //   //p.fillRect(0, yv, w, y1-yv,     QBrush(0xff0000));     // light red
-       //   
-       //   // Yellow section:
-       //   //p.fillRect(0, y1, w, y2-y1,     QBrush(0xffff00));     // light yellow
-       //   
-       //   // Green section:
-       //   //p.fillRect(0, y2, w, h-y2,      QBrush(0x00ff00));     // light green
+	    vuGrad.setColorAt(1, green);
+	    //vuGrad.setColorAt(0.3, yellow);
+	    vuGrad.setColorAt(0, red);
+	  	QPen myPen = QPen();
+		//myPen.setCapStyle(Qt::RoundCap);
+		myPen.setStyle(Qt::DashLine);
+		myPen.setBrush(QBrush(vuGrad));
+		//myPen.setWidth(w-8);
+		myPen.setWidth(1);
+		p.setPen(myPen);	
+		//QBrush brush(vuGrad);
+		//brush.setPen(myPen);
+		//p.setBrush(brush);
+	    //p.fillRect(4, yv,  w-8, h, brush);
 
-	   //   QLinearGradient vuGrad(QPointF(0, 0), QPointF(0, yv));
-	   //   vuGrad.setColorAt(1, Qt::white);
-	   //   vuGrad.setColorAt(0.9, Qt::blue);
-	   //   vuGrad.setColorAt(0, Qt::red);
-	   //   p.fillRect(0, 0,  w, y1,        QBrush(vuGrad));
-       // }
-       // else
-       // if(yv < y2)
-       // {
-       //   // Red section:
-       //   p.fillRect(0, 0,  w, y1,        QBrush(bgColor));     // dark red  
-       //   
-       //   // Yellow section:
-       //   p.fillRect(0, y1, w, yv-y1,     QBrush(bgColor));     // dark yellow
-       //   //p.fillRect(0, yv, w, y2-yv,     QBrush(0xffff00));     // light yellow
-       //   
-       //   // Green section:
-       //   //p.fillRect(0, y2, w, h-y2,      QBrush(0x00ff00));     // light green
-	   //   QLinearGradient vuGrad(QPointF(0, 0), QPointF(0, yv));
-	   //   vuGrad.setColorAt(1, Qt::white);
-	   //   vuGrad.setColorAt(0.9, Qt::blue);
-	   //   vuGrad.setColorAt(0, Qt::red);
-	   //   p.fillRect(0, 0,  w, y1,        QBrush(vuGrad));
-       // }
-       // else
-       // //if(yv <= y3)   
-       // {
-       //   // Red section:
-       //   p.fillRect(0, 0,  w, y1,        QBrush(bgColor));     // dark red  
-       //   
-       //   // Yellow section:
-       //   p.fillRect(0, y1, w, y2-y1,     QBrush(bgColor));     // dark yellow
-       //   
-       //   // Green section:
-       //   p.fillRect(0, y2, w, yv-y2,     QBrush(bgColor));     // dark green
-       //   //p.fillRect(0, yv, w, h-yv,      QBrush(0x00ff00));     // light green
-	   //   QLinearGradient vuGrad(QPointF(0, yv), QPointF(0, h));
-	   //   vuGrad.setColorAt(1, Qt::white);
-	   //   vuGrad.setColorAt(0.9, Qt::blue);
-	   //   vuGrad.setColorAt(0, Qt::red);
-	   //   p.fillRect(0, yv,  w, h-yv,        QBrush(vuGrad));
-       // }
+        p.fillRect(0, 0,  w, h,        QBrush(bgColor));     // dark red  
+	    p.drawLine(4, 0, 4, h);
+	    p.drawLine(5, 0, 5, h);
+	    p.drawLine(6, 0, 6, h);
+	    p.drawLine(7, 0, 7, h);
+	    p.drawLine(8, 0, 8, h);
+	    p.drawLine(9, 0, 9, h);
+	    p.drawLine(10, 0, 10, h);
+        p.fillRect(0, 0,  w, yv,        QBrush(bgColor));     // dark red  
+        
+       /* if(yv < y1)
+        {
+          // Red section:
+          p.fillRect(0, 0,  w, yv,        QBrush(bgColor));     // dark red  
+          p.fillRect(0, yv, w, y1-yv,     QBrush(0xff0000));     // light red
+          
+          // Yellow section:
+          p.fillRect(0, y1, w, y2-y1,     QBrush(0xffff00));     // light yellow
+          
+          // Green section:
+          p.fillRect(0, y2, w, h-y2,      QBrush(0x00ff00));     // light green
+
+        }
+        else
+        if(yv < y2)
+        {
+          // Red section:
+          p.fillRect(0, 0,  w, y1,        QBrush(bgColor));     // dark red  
+          
+          // Yellow section:
+          p.fillRect(0, yv, w, y2-yv,     QBrush(0xffff00));     // light yellow
+          
+          // Green section:
+          p.fillRect(0, y2, w, h-y2,      QBrush(0x00ff00));     // light green
+        }
+        else
+        //if(yv <= y3)   
+        {
+          // Red section:
+          p.fillRect(0, 0,  w, y1,        QBrush(bgColor));     // dark red  
+          
+          // Yellow section:
+          p.fillRect(0, y1, w, y2-y1,     QBrush(bgColor));     // dark yellow
+          
+          // Green section:
+          p.fillRect(0, yv, w, h-yv,      QBrush(0x00ff00));     // light green
+        }
       }  
       else
       {
         p.fillRect(0, 0,  w, yv,   QBrush(bgColor));   // dark green
         p.fillRect(0, yv, w, h-yv, QBrush(0x00ff00));   // light green
-      }
+      }*/
 }
 
 //---------------------------------------------------------
@@ -230,16 +250,16 @@ void Meter::drawVU(QPainter& p, int w, int h, int yv)
 //---------------------------------------------------------
 
 void Meter::resizeEvent(QResizeEvent* /*ev*/)
-    {
+{
     
-    }
+}
 
 //---------------------------------------------------------
 //   mousePressEvent
 //---------------------------------------------------------
 
 void Meter::mousePressEvent(QMouseEvent*)
-      {
+{
       emit mousePress();
-      }
+}
 

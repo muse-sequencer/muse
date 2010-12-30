@@ -3,7 +3,11 @@
  */
 /*PopupMenu { font-size: 8pt }*/
 
-
+DoubleLabel
+{
+	/*color: #e2e5e5; border-radius: 3px; padding: 5px; 
+	background-color: red;*/
+}
 
 QPushButton 
 { 
@@ -202,7 +206,21 @@ QSlider::handle:horizontal
     margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
     border-radius: 3px;
 }
-QSlider::groove:vertical 
+/*
+Slider
+{
+
+	background-color: red;
+	border: 1px solid green;
+	border-radius: 3px;
+
+}
+Slider::groove:vertical
+{
+	background-color: blue;
+}
+*/
+QSlider::groove:vertical  
 {
     border: 1px solid #393941;
     width: 8px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
