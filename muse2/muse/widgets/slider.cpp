@@ -288,7 +288,7 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
 		 bool loaded = thumbp.load(":images/slider_thumb.png");
 		 int knobx = cr.x()+2;
 		 int knoby = ipos-12;
-		 printf("Slider: Knob position X: %d  Y: %d\n", knobx, knoby);
+		 //printf("Slider: Knob position X: %d  Y: %d\n", knobx, knoby);
 		 if(loaded)
          p->drawPixmap(knobx, knoby, thumbp);
  		// if (lineDist > 1)
