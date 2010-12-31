@@ -46,14 +46,21 @@ class BgPreviewWidget : public QWidget {
             int w = t_widget->width() - 65;
             p.drawTiledPixmap(1,1,w,BG_ITEM_HEIGHT-2, pixmap);
 
+           const QPalette& pal = palette();
+           QColor dark = pal.dark().color();
            // We can also draw a rectangle behind the text:
-           //const QPalette& pal = palette();
-           //QColor dark = pal.dark().color();
            //p.fillRect(QRect(w/2 - text_w/2,6,text_w + 20,text_h+4), dark);
 
            QFontMetrics fm = p.fontMetrics();
            text_w = fm.width(imagefile);
            text_h = fm.height();
+
+           // Do the text shadow first
+           p.save();
+           p.setPen(dark);
+           p.drawText(w/2 - text_w/2 + 1, 7, text_w + 20, text_h+4, Qt::AlignCenter, imagefile);
+           p.restore();
+
            p.drawText(w/2 - text_w/2,6, text_w + 20, text_h+4, Qt::AlignCenter, imagefile);
            QWidget::paintEvent(event);
            }
