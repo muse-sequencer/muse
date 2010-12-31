@@ -242,7 +242,7 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
  		 //qDrawShadePanel(p,ipos, cr.y(), d_thumbLength, cr.height(),
  		 //    pal, FALSE, d_borderWidth, &brBack);
 		 QPixmap thumbp;
-		 bool loaded = thumbp.load(":images/slider_thumb.png");
+		 bool loaded = thumbp.load(":images/slider_thumb_h.png");
 		 if(loaded)
          p->drawPixmap(ipos, cr.y(), thumbp);
  		 
@@ -263,7 +263,7 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
       
     }
     else
-    {
+    {//Vertical slider
 	  	 dist1 = int(double(cr.height() - d_thumbLength) * (1.0 - rpos));
  		 ipos = cr.y() + dist1;
  		 markerPos = ipos + d_thumbHalf;
@@ -286,8 +286,11 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
  		 //    pal,FALSE,d_borderWidth, &brBack);
 		 QPixmap thumbp;
 		 bool loaded = thumbp.load(":images/slider_thumb.png");
+		 int knobx = cr.x()+2;
+		 int knoby = ipos-12;
+		 printf("Slider: Knob position X: %d  Y: %d\n", knobx, knoby);
 		 if(loaded)
-         p->drawPixmap(cr.x()+2, ipos-12, thumbp);
+         p->drawPixmap(knobx, knoby, thumbp);
  		// if (lineDist > 1)
  		//    qDrawShadeLine(p, cr.x() + lineDist , markerPos,
  		//       cr.x() + cr.width() - lineDist, markerPos,
