@@ -410,6 +410,8 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       canvas              = new PianoCanvas(this, split1, xscale, yscale);
       vscroll             = new ScrollScale(-3, 7, yscale, KH * 75, Qt::Vertical, split1);
       
+      setFocusProxy(canvas);   // Tim.
+      
       int offset = -(config.division/4);
       canvas->setOrigin(offset, 0);
       canvas->setCanvasTools(pianorollTools);

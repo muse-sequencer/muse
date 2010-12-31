@@ -21,6 +21,7 @@ class QMenu;
 class QScrollBar;
 class QToolButton;
 class QWheelEvent;
+class QKeyEvent;
 
 class Header;
 class TList;

@@ -1,3 +1,7 @@
+31.12.2010:
+        - Possible fix for arranger focussing problems. (Tim)
+          Added parent->setFocusProxy(canvas) just after canvas created.
+          Also added to pianoroll.
 30.12.2010:
         - Suggestion by OOM team: Add default velocity controllers to pianoroll and drum edit. (Tim)
         *Feature: Appearance part color names now can now be edited. (Tim)
