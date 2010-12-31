@@ -608,12 +608,18 @@ Knob* AudioStrip::addKnob(int type, int id, DoubleLabel** dlabel)
             knob->setRange(-1.0, +1.0);
       else
             knob->setRange(config.minSlider-0.1, 10.0);
-      knob->setBackgroundRole(QPalette::Mid);
+      		knob->setBackgroundRole(QPalette::Mid);
 
       if (type == 0)
+	  {
             knob->setToolTip(tr("panorama"));
+            knob->setKnobImage(":/images/knob.png");
+	  }
       else
+	  {
+            knob->setKnobImage(":/images/knob_aux.png");
             knob->setToolTip(tr("aux send level"));
+	  }
 
       DoubleLabel* pl;
       if (type == 0)
@@ -773,6 +779,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
                   ///grid->addSpacing((STRIP_WIDTH/2 + 2) * auxsSize);  // ???
             }
 
+      grid->addItem(new QSpacerItem(0, 16), _curGridRow++, 0);
       //---------------------------------------------------
       //    slider, label, meter
       //---------------------------------------------------
@@ -796,6 +803,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
             meter[i]->setRange(config.minMeter, 10.0);
             meter[i]->setFixedWidth(15);
             connect(meter[i], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
+            connect(meter[i], SIGNAL(meterClipped()), this, SLOT(playbackClipped()));
 			sliderGrid->addWidget(meter[i], 0, i+1);//, Qt::AlignHCenter);
 				
             sliderGrid->setColumnStretch(i, 50);
@@ -811,6 +819,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       sl->setPrecision(0);
       sl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum));
       sl->setValue(fast_log10(t->volume()) * 20.0);
+	  slDefaultStyle = sl->styleSheet();
 
       connect(sl, SIGNAL(valueChanged(double,int)), SLOT(volLabelChanged(double)));
       //connect(sl, SIGNAL(valueChanged(double,int)), SLOT(volumeChanged(double)));
@@ -1923,5 +1932,20 @@ void AudioStrip::oRoutePressed()
       connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
       pup->popup(ppt);
       oR->setDown(false);     
+}
+
+void AudioStrip::playbackClipped()
+{
+	sl->setStyleSheet("DoubleLabel { border-image: url(:/images/frame_clipping.png) 4; background-color: #d2002c; color: #550012; font-weight: bold;}");
+}
+
+//---------------------------------------------------------
+//   resetPeaks
+//---------------------------------------------------------
+
+void AudioStrip::resetPeaks()
+{
+	track->resetPeaks();
+	sl->setStyleSheet(slDefaultStyle);
 }
 

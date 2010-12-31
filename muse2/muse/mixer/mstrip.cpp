@@ -56,19 +56,24 @@ void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
       {
       int ctl = CTRL_PANPOT, mn, mx, v;
       int chan  = ((MidiTrack*)track)->outChannel();
+	  QString img;
       switch(idx)
       {
-        //case KNOB_PAN:
+        case KNOB_PAN:
         //  ctl = CTRL_PANPOT;
-        //break;
+           img = QString(":images/knob.png");  
+		break;
         case KNOB_VAR_SEND:
           ctl = CTRL_VARIATION_SEND;
+           img = QString(":images/knob_aux.png");  
         break;
         case KNOB_REV_SEND:
           ctl = CTRL_REVERB_SEND;
+           img = QString(":images/knob_aux.png");  
         break;
         case KNOB_CHO_SEND:
           ctl = CTRL_CHORUS_SEND;
+           img = QString(":images/knob_aux.png");  
         break;
       }
       MidiPort* mp = &midiPorts[((MidiTrack*)track)->outPort()];
@@ -79,6 +84,7 @@ void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
       Knob* knob = new Knob(this);
       knob->setRange(double(mn), double(mx), 1.0);
       knob->setId(ctl);
+      knob->setKnobImage(img);
       
       controller[idx].knob = knob;
       knob->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));

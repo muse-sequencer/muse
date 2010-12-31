@@ -108,6 +108,7 @@ QListWidget#EffectRack::item:selected:active, QListWidget::item:selected {
 	 background-color: #410122;
 	 color: #dcc3d1;
 	 text-decoration: none;
+	 font-family: "fixed";
 }
 
 /*QListWidgetItem { background-color: #595966 }*/
@@ -141,6 +142,7 @@ QTabBar::tab:selected {
 QTabBar::tab:!selected {
 	margin-top: 2px; /* make non-selected tabs look smaller */
 }
+
 
 QMainWindow, MidiTrackInfo, MidiStrip, AudioStrip, QMenu, Spinner, DoubleRange, SliderBase, QDialog, QTabWidget, QMessageBox, QScrollArea { background-color: #595966 }
 /*QMainWindow::toolBarBreak { color: green }*/

@@ -42,6 +42,7 @@ class Knob : public SliderBase, public ScaleIf
       QColor d_curFaceColor;
       QColor d_altFaceColor;
       QColor d_markerColor;
+      QString  knobImage;
 
       void recalcAngle();
       void valueChange();
@@ -71,6 +72,7 @@ class Knob : public SliderBase, public ScaleIf
       void setAltFaceColor(const QColor c);
       QColor markerColor() { return d_markerColor; }
       void setMarkerColor(const QColor c);
+      void setKnobImage(const QString img);
       };
 
 

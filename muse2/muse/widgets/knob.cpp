@@ -130,7 +130,15 @@ void Knob::drawKnob(QPainter* p, const QRect& r)
    // p->setPen(pn);
    // p->drawArc(aRect, 225*16,180*16);
 	QPixmap dial;
-	bool loaded = dial.load(":images/knob.png");
+	bool loaded;
+	if(!knobImage.isEmpty())
+	{	
+		loaded = dial.load(knobImage);
+	}
+	else
+	{
+		loaded = dial.load(":images/knob.png");
+	}
 	if(loaded)
     	p->drawPixmap(aRect, dial);
  		 
@@ -510,6 +518,14 @@ void Knob::selectFaceColor(bool alt)
     d_curFaceColor = d_faceColor; 
   //update(FALSE);
   repaint();
+}
+
+//------------------------------------------------------------
+//  setKnobImage
+//------------------------------------------------------------
+void Knob::setKnobImage(const QString img) 
+{ 
+   knobImage = img;	
 }
 
 //------------------------------------------------------------

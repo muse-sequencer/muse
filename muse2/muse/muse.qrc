@@ -3,6 +3,7 @@
    <qresource prefix="/">
 		<file>style.qss</file>
 		<file>images/frame.png</file>
+		<file>images/frame_clipping.png</file>
 	    <file>images/up_arrow.png</file>
     	<file>images/up_arrow_disabled.png</file>
      	<file>images/down_arrow.png</file>
@@ -18,6 +19,7 @@
 		<file>images/toolbar_handle.png</file>
 		<file>images/slider_thumb.png</file>
 		<file>images/knob.png</file>
+		<file>images/knob_aux.png</file>
 		<file>images/icons/add_tracks.png</file>
 		<file>images/icons/delete_track.png</file>
 		<file>images/icons/eraser.png</file>

@@ -43,6 +43,7 @@ class Meter : public QFrame {
 
    signals:
       void mousePress();
+	  void meterClipped();
 
    public:
       Meter(QWidget* parent, MeterType type = DBMeter);

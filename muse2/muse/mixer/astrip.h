@@ -52,6 +52,8 @@ class AudioStrip : public Strip {
       double volume;
       double panVal;
 
+	  QString slDefaultStyle; 
+
       //QToolButton* iR;
       //QToolButton* oR;
       
@@ -82,6 +84,8 @@ class AudioStrip : public Strip {
       void auxLabelChanged(double, unsigned int);
       void volumeRightClicked(const QPoint &);
       void panRightClicked(const QPoint &);
+	  void playbackClipped();
+	  void resetPeaks();
 
    protected slots:
       virtual void heartBeat();
