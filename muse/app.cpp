@@ -764,6 +764,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       
       setIconSize(ICON_SIZE);
       setFocusPolicy(Qt::WheelFocus);
+      //setFocusPolicy(Qt::NoFocus);
       muse                  = this;    // hack
       clipListEdit          = 0;
       midiSyncConfig        = 0;
@@ -1469,7 +1470,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       arranger = new Arranger(this, "arranger");
       setCentralWidget(arranger);
-
+      
       connect(tools1, SIGNAL(toolChanged(int)), arranger, SLOT(setTool(int)));
       connect(arranger, SIGNAL(editPart(Track*)), SLOT(startEditor(Track*)));
       connect(arranger, SIGNAL(dropSongFile(const QString&)), SLOT(loadProjectFile(const QString&)));
@@ -3417,6 +3418,24 @@ void MusE::kbAccel(int key)
       else if (key == shortcuts[SHRT_PLAY_SONG].key ) {
             song->setPlay(true);
             }
+      
+      /*
+      else if (key == shortcuts[SHRT_POS_DEC].key) {
+            int pos = song->pos();
+            int frames = pos - AL::sigmap.rasterStep(pos, *_raster);
+            if (frames < 0)
+                  frames = 0;
+            Pos p(frames,true);
+            song->setPos(0, p, true, true, true);
+            return;
+            }
+      else if (key == shortcuts[SHRT_POS_INC].key) {
+            Pos p(pos[0] + AL::sigmap.rasterStep(pos[0], *_raster), true);
+            song->setPos(0, p, true, true, true); //CDW
+            return;
+            }
+      */
+            
       else if (key == shortcuts[SHRT_GOTO_LEFT].key) {
             if (!song->record())
                   song->setPos(0, song->lPos());

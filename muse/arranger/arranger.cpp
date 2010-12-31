@@ -107,6 +107,9 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       showTrackinfoFlag = true;
       
       cursVal = MAXINT;
+      
+      //setFocusPolicy(Qt::StrongFocus);
+      
       //---------------------------------------------------
       //  ToolBar
       //    create toolbar in toplevel widget
@@ -137,7 +140,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       raster->setCurrentIndex(1);
       toolbar->addWidget(raster);
       connect(raster, SIGNAL(activated(int)), SLOT(_setRaster(int)));
-      raster->setFocusPolicy(Qt::NoFocus);
+      ///raster->setFocusPolicy(Qt::NoFocus);
+      raster->setFocusPolicy(Qt::TabFocus);
 
       // Song len
       label = new QLabel(tr("Len"));
@@ -163,7 +167,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       typeBox->setCurrentIndex(0);
       typeBox->setToolTip(tr("midi song type"));
       typeBox->setWhatsThis(tr("midi song type"));
-      typeBox->setFocusPolicy(Qt::NoFocus);
+      ///typeBox->setFocusPolicy(Qt::NoFocus);
+      typeBox->setFocusPolicy(Qt::TabFocus);
       toolbar->addWidget(typeBox);
       connect(typeBox, SIGNAL(activated(int)), SLOT(modeChange(int)));
 
@@ -365,6 +370,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       canvas->setCanvasTools(arrangerTools);
       canvas->setOrigin(-offset, 0);
       canvas->setFocus();
+      parent->setFocusProxy(canvas);   // Tim.
+
       connect(canvas, SIGNAL(setUsedTool(int)), this, SIGNAL(setUsedTool(int)));
       connect(canvas, SIGNAL(trackChanged(Track*)), list, SLOT(selectTrack(Track*)));
       connect(list, SIGNAL(keyPressExt(QKeyEvent*)), canvas, SLOT(redirKeypress(QKeyEvent*)));
@@ -417,6 +424,14 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       if(canvas->part())
         midiTrackInfo->setTrack(canvas->part()->track());   // Tim.
       showTrackInfo(showTrackinfoFlag);
+      
+      // Take care of some tabbies!
+      setTabOrder(tempo200, trackInfo);
+      setTabOrder(trackInfo, infoScroll);
+      setTabOrder(infoScroll, list);
+      setTabOrder(list, canvas);
+      setTabOrder(canvas, ib);
+      setTabOrder(ib, hscroll);
       }
 
 //---------------------------------------------------------
@@ -942,6 +957,7 @@ void Arranger::showTrackInfo(bool flag)
 void Arranger::genTrackInfo(QWidget* parent)
       {
       trackInfo = new WidgetStack(parent, "trackInfoStack");
+      //trackInfo->setFocusPolicy(Qt::TabFocus);  // p4.0.9
 
       noTrackInfo          = new QWidget(trackInfo);
       noTrackInfo->setAutoFillBackground(true);
@@ -958,6 +974,7 @@ void Arranger::genTrackInfo(QWidget* parent)
       noTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding));
 
       midiTrackInfo = new MidiTrackInfo(trackInfo);
+      //midiTrackInfo->setFocusPolicy(Qt::TabFocus);    // p4.0.9
       trackInfo->addWidget(noTrackInfo,   0);
       trackInfo->addWidget(midiTrackInfo, 1);
       trackInfo->addWidget(0, 2);
@@ -1006,11 +1023,13 @@ void Arranger::switchInfo(int n)
                   if (w)
                         delete w;
                   w = new AudioStrip(trackInfo, (AudioTrack*)selected);
+                  //w->setFocusPolicy(Qt::TabFocus);  // p4.0.9
                   connect(song, SIGNAL(songChanged(int)), w, SLOT(songChanged(int)));
                   connect(muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
                   w->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
                   trackInfo->addWidget(w, 2);
                   w->show();
+                  //setTabOrder(midiTrackInfo, w); // p4.0.9
                   tgrid->activate();
                   tgrid->update();   // muse-2 Qt4
                   }
