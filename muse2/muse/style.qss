@@ -79,8 +79,42 @@ QFrame {
 border: 0px solid #595966;
 background-color: #595966
 }
-MidiRack, EffectRack    { font-size: 8pt }
 
+/*QListWidget#EffectRack    { 
+	background-color: red;
+	color:black;
+}*/
+MidiRack, EffectRack    { 
+	 border-radius: 6px;
+     padding: 3px;
+     /*border-image: url(:/images/frame.png) 4;*/
+	 /*background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #000c10, stop: 1.0 #1b0019);*/
+     border-width: 1;
+	 border-color: #b883a1;
+	 background-color: #000c10;
+	 color: #b883a1;
+}
+/*
+QListWidget::item::focus{ border-style: none; }
+QListWidget::item:selected:active::text { border-style: none; }
+QListWidget::item::text
+{
+	border-style: none;
+}
+*/
+QListWidget#EffectRack::item:selected:active, QListWidget::item:selected {
+	 border-radius: 3px;
+     border: 1px solid #b883a1;
+	 background-color: #410122;
+	 color: #dcc3d1;
+	 text-decoration: none;
+}
+
+/*QListWidgetItem { background-color: #595966 }*/
+QWidget#MixerCenter { background-color: #595966 }
+/*QWidget#EffectRack { 
+	background-color: #595966; 
+}*/
 QMainWindow { background-color: #595966 }
 /*QWidget { background-color: #595966 }*/
 
@@ -108,7 +142,7 @@ QTabBar::tab:!selected {
 	margin-top: 2px; /* make non-selected tabs look smaller */
 }
 
-QMainWindow, MidiTrackInfo, MidiStrip, AudioStrip, QMenu, Spinner, DoubleRange, SliderBase, QDialog, QTabWidget, QMessageBox{ background-color: #595966 }
+QMainWindow, MidiTrackInfo, MidiStrip, AudioStrip, QMenu, Spinner, DoubleRange, SliderBase, QDialog, QTabWidget, QMessageBox, QScrollArea { background-color: #595966 }
 /*QMainWindow::toolBarBreak { color: green }*/
 
 QToolButton {

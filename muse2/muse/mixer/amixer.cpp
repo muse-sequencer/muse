@@ -207,6 +207,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
       setCentralWidget(view);
       
       central = new QWidget(view);
+	  central->setObjectName("MixerCenter");
       layout = new QHBoxLayout();
       central->setLayout(layout);
       layout->setSpacing(0);

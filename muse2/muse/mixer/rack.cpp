@@ -85,9 +85,9 @@ EffectRack::EffectRack(QWidget* parent, AudioTrack* t)
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
 
       setSpacing(0);
-      QPalette qpal;
-      qpal.setColor(QPalette::Base, QColor(palette().midlight().color()));
-      setPalette(qpal);
+      //QPalette qpal;
+      //qpal.setColor(QPalette::Base, QColor(palette().midlight().color()));
+      //setPalette(qpal);
 
       setAcceptDrops(true);
       }
@@ -97,7 +97,7 @@ void EffectRack::updateContents()
 	for (int i = 0; i < PipelineDepth; ++i) {
               QString name = track->efxPipe()->name(i);
               item(i)->setText(name);
-              item(i)->setBackground(track->efxPipe()->isOn(i) ? palette().mid() : palette().dark());
+              //item(i)->setBackground(track->efxPipe()->isOn(i) ? palette().mid() : palette().dark());
               item(i)->setToolTip(name == QString("empty") ? tr("effect rack") : name );
 	}
       }

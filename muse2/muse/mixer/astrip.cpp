@@ -701,6 +701,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       AudioTrack* t = (AudioTrack*)track;
       channel       = at->channels();
       ///setMinimumWidth(STRIP_WIDTH);
+	  grid->setVerticalSpacing(4);
       
       int ch = 0;
       for (; ch < channel; ++ch)
