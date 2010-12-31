@@ -7,6 +7,7 @@
            these settable colours.
         *Fixed: Appearance settings palette was broken. (Tim)
           Note: A few odd Qt styles are wacky (Motif, Windows). Your mileage may vary.
+        - In ctrl canvas, draw the grid before anything else. (Orcan)
 29.12.2010:
         - Fixed Bigtime display when using a style sheet for MusE. (Tim)
           Set window font using a style sheet. Bigtime used QFont::setPixelSize(). 
