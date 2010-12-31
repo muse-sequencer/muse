@@ -1389,6 +1389,13 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
       int w = rect.width() + 2;
       int h = rect.height();
       
+      //---------------------------------------------------
+      // draw the grid
+      //---------------------------------------------------
+
+      p.save();
+      View::pdraw(p, rect);
+      p.restore();
 
       //---------------------------------------------------
       // draw Canvas Items
@@ -1412,10 +1419,6 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
         pdrawItems(p, rect, curPart, true, true);
       }
       
-      p.save();
-      View::pdraw(p, rect);
-      p.restore();
-
       //---------------------------------------------------
       //    draw marker
       //---------------------------------------------------
