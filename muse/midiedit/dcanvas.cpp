@@ -748,17 +748,40 @@ void DrumCanvas::cmd(int cmd)
                   break;
             case CMD_LEFT:
                   {
-                  int frames = pos[0] - editor->rasterStep(pos[0]);
-                  if (frames < 0)
-                        frames = 0;
-                  Pos p(frames,true);
+                  int spos = pos[0];
+                  if(spos > 0) 
+                  {
+                    spos -= 1;     // Nudge by -1, then snap down with raster1.
+                    spos = AL::sigmap.raster1(spos, editor->rasterStep(pos[0]));
+                  }  
+                  if(spos < 0)
+                    spos = 0;
+                  Pos p(spos,true);
                   song->setPos(0, p, true, true, true);
                   }
                   break;
             case CMD_RIGHT:
                   {
+                  int spos = AL::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
+                  Pos p(spos,true);
+                  song->setPos(0, p, true, true, true); 
+                  }
+                  break;
+            case CMD_LEFT_NOSNAP:
+                  {
+                  int spos = pos[0] - editor->rasterStep(pos[0]);
+                  if (spos < 0)
+                        spos = 0;
+                  Pos p(spos,true);
+                  song->setPos(0, p, true, true, true); //CDW
+                  }
+                  break;
+            case CMD_RIGHT_NOSNAP:
+                  {
                   Pos p(pos[0] + editor->rasterStep(pos[0]), true);
-                  song->setPos(0, p, true, true, true);
+                  //if (p > part->tick())
+                  //      p = part->tick();
+                  song->setPos(0, p, true, true, true); //CDW
                   }
                   break;
             case CMD_MODIFY_VELOCITY:

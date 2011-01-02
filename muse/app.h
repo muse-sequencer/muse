@@ -210,6 +210,7 @@ class MusE : public QMainWindow
       void updateConfiguration();
 
       virtual void focusInEvent(QFocusEvent*);
+      virtual void keyPressEvent(QKeyEvent*);  // p4.0.10 Tim.
 
       QSignalMapper *editSignalMapper;
       QSignalMapper *midiPluginSignalMapper;

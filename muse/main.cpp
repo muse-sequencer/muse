@@ -107,10 +107,10 @@ class MuseApplication : public QApplication {
 
       bool notify(QObject* receiver, QEvent* event) {
             //if (event->type() == QEvent::KeyPress)
-            //  printf("notify key press before app::notify accepted:%d\n", event->isAccepted());  
+            //  printf("notify key press before app::notify accepted:%d\n", event->isAccepted());  // REMOVE Tim
             bool flag = QApplication::notify(receiver, event);
             if (event->type() == QEvent::KeyPress) {
-              //printf("notify key press after app::notify accepted:%d\n", event->isAccepted());   
+              //printf("notify key press after app::notify accepted:%d\n", event->isAccepted());   // REMOVE Tim
                   QKeyEvent* ke = (QKeyEvent*)event;
                   ///globalKeyState = ke->stateAfter();
                   globalKeyState = ke->modifiers();

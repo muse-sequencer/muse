@@ -3386,6 +3386,16 @@ void MusE::ctrlChanged()
 #endif
 
 //---------------------------------------------------------
+//   keyPressEvent
+//---------------------------------------------------------
+
+void MusE::keyPressEvent(QKeyEvent* event)
+      {
+      // Pass it on to arranger part canvas.
+      arranger->getCanvas()->redirKeypress(event);
+      }
+
+//---------------------------------------------------------
 //   kbAccel
 //---------------------------------------------------------
 
@@ -3419,22 +3429,42 @@ void MusE::kbAccel(int key)
             song->setPlay(true);
             }
       
-      /*
+      // p4.0.10 Tim. Normally each editor window handles these, to inc by the editor's raster snap value.
+      // But users were asking for a global version - "they don't work when I'm in mixer or transport".
+      // Since no editor claimed the key event, we don't know a specific editor's snap setting,
+      //  so adopt a policy where the arranger is the 'main' raster reference, I guess...
       else if (key == shortcuts[SHRT_POS_DEC].key) {
-            int pos = song->pos();
-            int frames = pos - AL::sigmap.rasterStep(pos, *_raster);
-            if (frames < 0)
-                  frames = 0;
-            Pos p(frames,true);
+            int spos = song->cpos();
+            if(spos > 0) 
+            {
+              spos -= 1;     // Nudge by -1, then snap down with raster1.
+              spos = AL::sigmap.raster1(spos, song->arrangerRaster());
+            }  
+            if(spos < 0)
+              spos = 0;
+            Pos p(spos,true);
             song->setPos(0, p, true, true, true);
             return;
             }
       else if (key == shortcuts[SHRT_POS_INC].key) {
-            Pos p(pos[0] + AL::sigmap.rasterStep(pos[0], *_raster), true);
+            int spos = AL::sigmap.raster2(song->cpos() + 1, song->arrangerRaster());    // Nudge by +1, then snap up with raster2.
+            Pos p(spos,true);
             song->setPos(0, p, true, true, true); //CDW
             return;
             }
-      */
+      else if (key == shortcuts[SHRT_POS_DEC_NOSNAP].key) {
+            int spos = song->cpos() - AL::sigmap.rasterStep(song->cpos(), song->arrangerRaster());
+            if(spos < 0)
+              spos = 0;
+            Pos p(spos,true);
+            song->setPos(0, p, true, true, true);
+            return;
+            }
+      else if (key == shortcuts[SHRT_POS_INC_NOSNAP].key) {
+            Pos p(song->cpos() + AL::sigmap.rasterStep(song->cpos(), song->arrangerRaster()), true);
+            song->setPos(0, p, true, true, true);
+            return;
+            }
             
       else if (key == shortcuts[SHRT_GOTO_LEFT].key) {
             if (!song->record())

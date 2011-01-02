@@ -34,6 +34,7 @@ BigTime::BigTime(QWidget* parent)
       fmtButton->resize(18,18);
       fmtButton->setChecked(true);
       fmtButton->setToolTip(tr("format display"));
+      fmtButton->setFocusPolicy(Qt::NoFocus);
       barLabel   = new QLabel(dwin);
       beatLabel  = new QLabel(dwin);
       tickLabel  = new QLabel(dwin);

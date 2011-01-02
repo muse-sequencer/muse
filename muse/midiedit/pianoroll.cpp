@@ -410,7 +410,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       canvas              = new PianoCanvas(this, split1, xscale, yscale);
       vscroll             = new ScrollScale(-3, 7, yscale, KH * 75, Qt::Vertical, split1);
       
-      setFocusProxy(canvas);   // Tim.
+      //setFocusProxy(canvas);   // Tim.
       
       int offset = -(config.division/4);
       canvas->setOrigin(offset, 0);
@@ -1079,6 +1079,14 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             }
       else if (key == shortcuts[SHRT_POS_DEC].key) {
             pc->pianoCmd(CMD_LEFT);
+            return;
+            }
+      else if (key == shortcuts[SHRT_POS_INC_NOSNAP].key) {
+            pc->pianoCmd(CMD_RIGHT_NOSNAP);
+            return;
+            }
+      else if (key == shortcuts[SHRT_POS_DEC_NOSNAP].key) {
+            pc->pianoCmd(CMD_LEFT_NOSNAP);
             return;
             }
       else if (key == shortcuts[SHRT_INSERT_AT_LOCATION].key) {
