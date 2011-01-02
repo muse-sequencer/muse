@@ -5,6 +5,7 @@
           Moves by, and snaps to, snap setting of either an editor, or globally to arranger by default. 
         - Added transport position "Shift + +/-" keys, for no snapping. (Tim)
         - Removed (hopefully) the last bits of Qt3sepport functions from .ui files. (Orcan)
+        - fixed patch loading for deicsonze and reverted to it's standard colortheme (rj)
 31.12.2010:
         - Possible fix for arranger focussing problems. (Tim)
           Added parent->setFocusProxy(canvas) just after canvas created.

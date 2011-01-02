@@ -473,20 +473,20 @@ class DeicsOnze : public Mess {
   void initPluginDelay(Plugin*);
   
   void setReverbParam(int i, double val);
-  double getReverbParam(int i);
+  double getReverbParam(int i) const;
   void setChorusParam(int i, double val);
-  double getChorusParam(int i);
+  double getChorusParam(int i) const;
   void setDelayBPM(float val);
   void setDelayBeatRatio(float val);
   void setDelayFeedback(float val);
   void setDelayLFOFreq(float val);
   void setDelayLFODepth(float val);
   void setDelayDryWet(float val);
-  float getDelayBPM();
-  float getDelayBeatRatio();
-  float getDelayFeedback();
-  float getDelayLFOFreq();
-  float getDelayLFODepth();
+  float getDelayBPM() const;
+  float getDelayBeatRatio() const;
+  float getDelayFeedback() const;
+  float getDelayLFOFreq() const;
+  float getDelayLFODepth() const;
 
   //Filter
   LowFilter* _dryFilter;
@@ -584,7 +584,8 @@ class DeicsOnze : public Mess {
 
   virtual int getControllerInfo(int arg1, const char** arg2, 
 				int* arg3, int* arg4, int* arg5);
-  virtual void getInitData(int* length, const unsigned char** data);
+  virtual void getInitData(int* length, const unsigned char** data) const;
+
   virtual bool playNote(int channel, int pitch, int velo);
   virtual void process(float** buffer, int offset, int n);
   

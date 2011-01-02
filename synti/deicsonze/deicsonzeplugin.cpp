@@ -172,7 +172,7 @@ void DeicsOnze::setChorusParam(int index, double val) {
   else printf("Warning : no DeicsOnze chorus loaded\n");
 }
 
-double DeicsOnze::getReverbParam(int index) {
+double DeicsOnze::getReverbParam(int index) const {
   ///if(_pluginIReverb) return _pluginIReverb->controller(index)->curVal().f; 
   if(_pluginIReverb) return _pluginIReverb->param(index); 
   else {
@@ -181,7 +181,7 @@ double DeicsOnze::getReverbParam(int index) {
   }
 }
 
-double DeicsOnze::getChorusParam(int index) {
+double DeicsOnze::getChorusParam(int index) const {
   ///if(_pluginIChorus) return _pluginIChorus->controller(index)->curVal().f;
   if(_pluginIChorus) return _pluginIChorus->param(index);
   else {
@@ -506,7 +506,7 @@ void DeicsOnze::setDelayBeatRatio(float val) {
   if(_pluginIDelay) _pluginIDelay->setParam(1, val);
   else printf("Warning : no DeicsOnze delay loaded\n");
 }
-float DeicsOnze::getDelayBPM() {
+float DeicsOnze::getDelayBPM() const {
   ///if(_pluginIDelay) return _pluginIDelay->controller(0)->curVal().f;
   if(_pluginIDelay) return _pluginIDelay->param(0);
   else {
@@ -514,7 +514,7 @@ float DeicsOnze::getDelayBPM() {
     return 0.0;
   }
 }
-float DeicsOnze::getDelayBeatRatio() {
+float DeicsOnze::getDelayBeatRatio() const {
   ///if(_pluginIDelay) return _pluginIDelay->controller(1)->curVal().f;
   if(_pluginIDelay) return _pluginIDelay->param(1);
   else {
@@ -527,7 +527,7 @@ void DeicsOnze::setDelayFeedback(float val) {
   if(_pluginIDelay) return _pluginIDelay->setParam(2, val);
   else printf("Warning : no DeicsOnze delay loaded\n");
 }
-float DeicsOnze::getDelayFeedback() {
+float DeicsOnze::getDelayFeedback() const {
   ///if(_pluginIDelay) return _pluginIDelay->controller(2)->curVal().f;
   if(_pluginIDelay) return _pluginIDelay->param(2);
   else {
@@ -540,7 +540,7 @@ void DeicsOnze::setDelayLFOFreq(float val) {
   if(_pluginIDelay) _pluginIDelay->setParam(3, val);
   else printf("Warning : no DeicsOnze delay loaded\n");
 }
-float DeicsOnze::getDelayLFOFreq() {
+float DeicsOnze::getDelayLFOFreq() const {
   ///if(_pluginIDelay) return _pluginIDelay->controller(3)->curVal().f;
   if(_pluginIDelay) return _pluginIDelay->param(3);
   else {
@@ -553,7 +553,7 @@ void DeicsOnze::setDelayLFODepth(float val) {
   if(_pluginIDelay) _pluginIDelay->setParam(4, val);
   else printf("Warning : no DeicsOnze delay loaded\n");
 }
-float DeicsOnze::getDelayLFODepth() {
+float DeicsOnze::getDelayLFODepth() const {
   ///if(_pluginIDelay) return _pluginIDelay->controller(4)->curVal().f;
   if(_pluginIDelay) return _pluginIDelay->param(4);
   else {
