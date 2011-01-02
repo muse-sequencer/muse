@@ -1,3 +1,5 @@
+02.01.2011:
+        - Removed (hopefully) the last bits of Qt3sepport functions from .ui files. (Orcan)
 31.12.2010:
         - Possible fix for arranger focussing problems. (Tim)
           Added parent->setFocusProxy(canvas) just after canvas created.

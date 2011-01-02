@@ -394,7 +394,6 @@ Enabled inputs in the list will
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
  <tabstops>
   <tabstop>mtcOffH</tabstop>
   <tabstop>mtcOffM</tabstop>
