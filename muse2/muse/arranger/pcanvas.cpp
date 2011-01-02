@@ -1103,16 +1103,35 @@ void PartCanvas::keyPress(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_POS_DEC].key) {
-            int frames = pos[0] - AL::sigmap.rasterStep(pos[0], *_raster);
-            if (frames < 0)
-                  frames = 0;
-            Pos p(frames,true);
+            int spos = pos[0];
+            if(spos > 0) 
+            {
+              spos -= 1;     // Nudge by -1, then snap down with raster1.
+              spos = AL::sigmap.raster1(spos, *_raster);
+            }  
+            if(spos < 0)
+              spos = 0;
+            Pos p(spos,true);
             song->setPos(0, p, true, true, true);
             return;
             }
       else if (key == shortcuts[SHRT_POS_INC].key) {
+            int spos = AL::sigmap.raster2(pos[0] + 1, *_raster);    // Nudge by +1, then snap up with raster2.
+            Pos p(spos,true);
+            song->setPos(0, p, true, true, true); 
+            return;
+            }
+      else if (key == shortcuts[SHRT_POS_DEC_NOSNAP].key) {
+            int spos = pos[0] - AL::sigmap.rasterStep(pos[0], *_raster);
+            if(spos < 0)
+              spos = 0;
+            Pos p(spos,true);
+            song->setPos(0, p, true, true, true);
+            return;
+            }
+      else if (key == shortcuts[SHRT_POS_INC_NOSNAP].key) {
             Pos p(pos[0] + AL::sigmap.rasterStep(pos[0], *_raster), true);
-            song->setPos(0, p, true, true, true); //CDW
+            song->setPos(0, p, true, true, true);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_POINTER].key) {

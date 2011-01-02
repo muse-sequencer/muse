@@ -131,7 +131,7 @@ class Song : public QObject {
       int _cycleMode;
       bool _click;
       bool _quantize;
-      int _recRaster;        // Used for audio rec new part snapping. Set by Arranger snap combo box.
+      int _arrangerRaster;        // Used for audio rec new part snapping. Set by Arranger snap combo box.
       unsigned _len;         // song len in ticks
       FollowMode _follow;
       int _globalPitchShift;
@@ -263,8 +263,8 @@ class Song : public QObject {
       void cmdChangePart(Part* oldPart, Part* newPart, bool doCtrls, bool doClones);
       void cmdRemovePart(Part* part);
       void cmdAddPart(Part* part);
-      int recRaster() { return _recRaster; }        // Used by Song::cmdAddRecordedWave to snap new wave parts
-      void setRecRaster(int r) { _recRaster = r; }  // Used by Arranger snap combo box
+      int arrangerRaster() { return _arrangerRaster; }        // Used by Song::cmdAddRecordedWave to snap new wave parts
+      void setArrangerRaster(int r) { _arrangerRaster = r; }  // Used by Arranger snap combo box
 
       //-----------------------------------------
       //   track manipulations

@@ -15,6 +15,7 @@
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QInputEvent>
+#include <QChar>
 
 ShortcutCaptureDialog::ShortcutCaptureDialog(QWidget* parent, int index)
    : QDialog(parent)
@@ -40,11 +41,19 @@ void ShortcutCaptureDialog::keyPressEvent(QKeyEvent* e)
       bool shift, alt, ctrl, conflict = false, realkey = false;
       QString msgString = "";
       int temp_key;
-      shift = ((QInputEvent*)e)->modifiers() & Qt::ShiftModifier;
-      ctrl  = ((QInputEvent*)e)->modifiers() & Qt::ControlModifier;
-      alt   = ((QInputEvent*)e)->modifiers() & Qt::AltModifier;
+      Qt::KeyboardModifiers mods = ((QInputEvent*)e)->modifiers();
+      shift = mods & Qt::ShiftModifier;
+      ctrl  = mods & Qt::ControlModifier;
+      alt   = mods & Qt::AltModifier;
       //printf("Key total: %d, alt: %d, ctrl: %d shift: %d\n",e->key(), alt, ctrl, shift);
       temp_key = e->key();
+      
+      QChar keychar(temp_key);
+      bool ispunct = keychar.isPunct();
+      bool issymbol = keychar.isSymbol();
+      //printf("Key:%x, alt:%d, ctrl:%d shift:%d ispunct:%d issymbol:%d text:%s\n",
+      //  e->key(), alt, ctrl, shift, ispunct, issymbol, e->text().toLatin1().constData());  // REMOVE Tim.
+      
       temp_key += (shift ? (int)Qt::SHIFT : 0);    // (int) Tim
       temp_key += (ctrl  ? (int)Qt::CTRL  : 0);    //
       temp_key += (alt   ? (int)Qt::ALT   : 0);    //
@@ -58,6 +67,7 @@ void ShortcutCaptureDialog::keyPressEvent(QKeyEvent* e)
             key = temp_key;
             realkey = true;
             QKeySequence q = QKeySequence(key);
+            //QKeySequence q = QKeySequence(k, mods);
             QString keyString = q;
             if (keyString != QString::null)
                   nshrtLabel->setText(q);

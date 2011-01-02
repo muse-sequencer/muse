@@ -1,4 +1,9 @@
 02.01.2011:
+        - Fixed arranger focussing problems again. (Tim)
+          Scratch setFocusProxy() fix of 31.12. Gave MusE a keyPress handler and pass it on to canvas.
+        - Fixed transport +/- position snapping. Works globally now too. (Tim)
+          Moves by, and snaps to, snap setting of either an editor, or globally to arranger by default. 
+        - Added transport position "Shift + +/-" keys, for no snapping. (Tim)
         - Removed (hopefully) the last bits of Qt3sepport functions from .ui files. (Orcan)
 31.12.2010:
         - Possible fix for arranger focussing problems. (Tim)

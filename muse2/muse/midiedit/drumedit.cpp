@@ -1066,6 +1066,15 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             return;
             }
 
+      else if (key == shortcuts[SHRT_POS_INC_NOSNAP].key) {
+            dc->cmd(DrumCanvas::CMD_RIGHT_NOSNAP);
+            return;
+            }
+      else if (key == shortcuts[SHRT_POS_DEC_NOSNAP].key) {
+            dc->cmd(DrumCanvas::CMD_LEFT_NOSNAP);
+            return;
+            }
+
       else if (key == shortcuts[SHRT_TOOL_POINTER].key) {
             tools2->set(PointerTool);
             return;

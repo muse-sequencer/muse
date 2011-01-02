@@ -679,7 +679,11 @@ void TList::keyPressEvent(QKeyEvent* e)
                   }
             }
       emit keyPressExt(e); //redirect keypress events to main app
-      e->ignore();
+      
+      // p4.0.10 Removed by Tim. keyPressExt are sent to part canvas, where they are 
+      //  ignored *only* if necessary.
+      //e->ignore();  
+      
       /*
       int key = e->key();
       switch (key) {
@@ -1402,7 +1406,7 @@ void TList::setYPos(int y)
 //   resizeEvent
 //---------------------------------------------------------
 
-void TList::resizeEvent(QResizeEvent* ev)
+void TList::resizeEvent(QResizeEvent* /*ev*/)
       {
       
       }

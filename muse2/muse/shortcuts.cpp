@@ -214,8 +214,44 @@ void initShortCuts()
       defShrt(SHRT_TOOL_MUTE,        0, "Tool: Mute", ARRANG_SHRT, "mute_tool");
 
       //Increase/decrease current position, is going to be in arranger & drumeditor as well
+      // p4.0.10 Editors and arranger handle these by themselves, otherwise global handler will now use them, too.
       defShrt(SHRT_POS_INC,          Qt::Key_Plus, "Transport: Increase current position", GLOBAL_SHRT, "curpos_increase");
-      defShrt(SHRT_POS_DEC,          Qt::Key_Minus, "Transport: Decrease current position", GLOBAL_SHRT,  "curpos_decrease");
+      defShrt(SHRT_POS_DEC,          Qt::Key_Minus, "Transport: Decrease current position", GLOBAL_SHRT, "curpos_decrease");
+      
+      defShrt(SHRT_POS_INC_NOSNAP,   Qt::SHIFT + Qt::Key_Plus, "Transport: Increase current position, no snap", GLOBAL_SHRT, "curpos_increase_nosnap");
+      defShrt(SHRT_POS_DEC_NOSNAP,   Qt::SHIFT + Qt::Key_Minus, "Transport: Increase current position, no snap", GLOBAL_SHRT,  "curpos_decrease_nosnap");
+      
+      /*
+      defShrt(SHRT_POS_INC_BAR,      Qt::CTRL + Qt::ALT + Qt::Key_Plus, "Transport: Increase current position", GLOBAL_SHRT, "curpos_increase_bar");
+      defShrt(SHRT_POS_DEC_BAR,      Qt::CTRL + Qt::ALT + Qt::Key_Minus, "Transport: Decrease current position", GLOBAL_SHRT,  "curpos_decrease_bar");
+      defShrt(SHRT_POS_INC_BAR_NOSNAP,   Qt::SHIFT + Qt::CTRL + Qt::ALT + Qt::Key_Plus, "Transport: Increase current position", GLOBAL_SHRT, "curpos_increase_bar_nosnap");
+      defShrt(SHRT_POS_DEC_BAR_NOSNAP,   Qt::SHIFT + Qt::CTRL + Qt::ALT + Qt::Key_Minus, "Transport: Decrease current position", GLOBAL_SHRT,  "curpos_decrease_bar_nosnap");
+      
+      defShrt(SHRT_POS_INC_BEAT,      Qt::ALT + Qt::Key_Plus, "Transport: Increase current position", GLOBAL_SHRT, "curpos_increase_beat");
+      defShrt(SHRT_POS_DEC_BEAT,      Qt::ALT + Qt::Key_Minus, "Transport: Decrease current position", GLOBAL_SHRT,  "curpos_decrease_beat");
+      defShrt(SHRT_POS_INC_BEAT_NOSNAP,   Qt::SHIFT + Qt::ALT + Qt::Key_Plus, "Transport: Increase current position", GLOBAL_SHRT, "curpos_increase_beat_nosnap");
+      defShrt(SHRT_POS_DEC_BEAT_NOSNAP,   Qt::SHIFT + Qt::ALT + Qt::Key_Minus, "Transport: Decrease current position", GLOBAL_SHRT,  "curpos_decrease_beat_nosnap");
+      
+      defShrt(SHRT_POS_INC_TICK,      Qt::CTRL + Qt::Key_Plus, "Transport: Increase current position", GLOBAL_SHRT, "curpos_increase_tick");
+      defShrt(SHRT_POS_DEC_TICK,      Qt::CTRL + Qt::Key_Minus, "Transport: Decrease current position", GLOBAL_SHRT,  "curpos_decrease_tick");
+      defShrt(SHRT_POS_INC_TICK_NOSNAP,      Qt::SHIFT + Qt::CTRL + Qt::Key_Plus, "Transport: Increase current position", GLOBAL_SHRT, "curpos_increase_tick");
+      defShrt(SHRT_POS_DEC_TICK_NOSNAP,      Qt::SHIFT + Qt::CTRL + Qt::Key_Minus, "Transport: Decrease current position", GLOBAL_SHRT,  "curpos_decrease_tick");
+      
+      defShrt(SHRT_POS_INC_FRAME,      Qt::Key_N, "Transport: Increase current position", GLOBAL_SHRT, "curpos_increase_frame");
+      defShrt(SHRT_POS_DEC_FRAME,      Qt::Key_B, "Transport: Decrease current position", GLOBAL_SHRT,  "curpos_decrease_frame");
+      
+      defShrt(SHRT_POS_INC_SECOND,      Qt::CTRL + Qt::Key_N, "Transport: Increase current position", GLOBAL_SHRT, "curpos_increase_second");
+      defShrt(SHRT_POS_DEC_SECOND,      Qt::CTRL + Qt::Key_B, "Transport: Decrease current position", GLOBAL_SHRT,  "curpos_decrease_second");
+      defShrt(SHRT_POS_INC_SECOND_NOSNAP,   Qt::SHIFT + Qt::CTRL + Qt::Key_N, "Transport: Increase current position", GLOBAL_SHRT, "curpos_increase_second_nosnap");
+      defShrt(SHRT_POS_DEC_SECOND_NOSNAP,   Qt::SHIFT + Qt::CTRL + Qt::Key_B, "Transport: Decrease current position", GLOBAL_SHRT,  "curpos_decrease_second_nosnap");
+      
+      defShrt(SHRT_POS_INC_MINUTE,      Qt::ALT + Qt::Key_N, "Transport: Increase current position", GLOBAL_SHRT, "curpos_increase_minute");
+      defShrt(SHRT_POS_DEC_MINUTE,      Qt::ALT + Qt::Key_B, "Transport: Decrease current position", GLOBAL_SHRT,  "curpos_decrease_minute");
+      defShrt(SHRT_POS_INC_MINUTE_NOSNAP,   Qt::SHIFT + Qt::ALT + Qt::Key_N, "Transport: Increase current position", GLOBAL_SHRT, "curpos_increase_minute_nosnap");
+      defShrt(SHRT_POS_DEC_MINUTE_NOSNAP,   Qt::SHIFT + Qt::ALT + Qt::Key_B, "Transport: Decrease current position", GLOBAL_SHRT,  "curpos_decrease_minute_nosnap");
+      */
+      
+      
       defShrt(SHRT_SET_QUANT_1,      Qt::Key_1, "Quantize: Set quantize to 1/1 note",  PROLL_SHRT, "midi_quant_1");
       defShrt(SHRT_SET_QUANT_2,      Qt::Key_2, "Quantize: Set quantize to 1/2 note",  PROLL_SHRT, "midi_quant_2");
       defShrt(SHRT_SET_QUANT_3,      Qt::Key_3, "Quantize: Set quantize to 1/4 note",  PROLL_SHRT, "midi_quant_3");

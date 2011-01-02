@@ -138,6 +138,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       for (int i = 0; i < 6; i++)
             raster->insertItem(i, tr(rastval[i]));
       raster->setCurrentIndex(1);
+      // Set the audio record part snapping. Set to 0 (bar), the same as this combo box intial raster.
+      song->setArrangerRaster(0);
       toolbar->addWidget(raster);
       connect(raster, SIGNAL(activated(int)), SLOT(_setRaster(int)));
       ///raster->setFocusPolicy(Qt::NoFocus);
@@ -266,6 +268,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       ib->setText(tr("TrackInfo"));
       ib->setCheckable(true);
       ib->setChecked(showTrackinfoFlag);
+      ib->setFocusPolicy(Qt::NoFocus);
       connect(ib, SIGNAL(toggled(bool)), SLOT(showTrackInfo(bool)));
 
       header = new Header(tracklist, "header");
@@ -337,6 +340,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
 
       int offset = AL::sigmap.ticksMeasure(0);
       hscroll = new ScrollScale(-1000, -10, xscale, song->len(), Qt::Horizontal, editor, -offset);
+      hscroll->setFocusPolicy(Qt::NoFocus);
       ib->setFixedHeight(hscroll->sizeHint().height());
 
       // Changed p3.3.43 Too small steps for me...
@@ -370,7 +374,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       canvas->setCanvasTools(arrangerTools);
       canvas->setOrigin(-offset, 0);
       canvas->setFocus();
-      parent->setFocusProxy(canvas);   // Tim.
+      //parent->setFocusProxy(canvas);   // Tim.
 
       connect(canvas, SIGNAL(setUsedTool(int)), this, SIGNAL(setUsedTool(int)));
       connect(canvas, SIGNAL(trackChanged(Track*)), list, SLOT(selectTrack(Track*)));
@@ -430,8 +434,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       setTabOrder(trackInfo, infoScroll);
       setTabOrder(infoScroll, list);
       setTabOrder(list, canvas);
-      setTabOrder(canvas, ib);
-      setTabOrder(ib, hscroll);
+      //setTabOrder(canvas, ib);
+      //setTabOrder(ib, hscroll);
       }
 
 //---------------------------------------------------------
@@ -698,7 +702,7 @@ void Arranger::_setRaster(int index)
             };
       _raster = rasterTable[index];
       // Set the audio record part snapping.
-      song->setRecRaster(_raster);
+      song->setArrangerRaster(_raster);
       canvas->redraw();
       }
 

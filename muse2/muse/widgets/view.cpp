@@ -235,7 +235,7 @@ void View::paintEvent(QPaintEvent* ev)
       
       //bitBlt(this, ev->rect().topLeft(), &pm, ev->rect(), CopyROP, true);
       QPainter p(this);
-      p.setCompositionMode(QPainter::CompositionMode_Source);
+      //p.setCompositionMode(QPainter::CompositionMode_Source);
       p.drawPixmap(ev->rect().topLeft(), pm, ev->rect());
       
       #else
