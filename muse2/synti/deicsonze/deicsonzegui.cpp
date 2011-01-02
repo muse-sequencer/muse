@@ -447,8 +447,8 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   updateBackgroundPixPath
     (sharePath + QString("/wallpapers/paper2.jpg"));    // Tim.
     
-  updateBackgroundPixCheckBox(true);
-  applyBackgroundPix();
+  updateBackgroundPixCheckBox(false);
+  //applyBackgroundPix();
 }
 
 //-----------------------------------------------------------
