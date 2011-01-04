@@ -10,12 +10,31 @@
 
 
 #include <QLocale>
+#include <QColor>
 //#include <stdlib.h>
 
 #include "globals.h"
 #include "ctrl.h"
 #include "xml.h"
 // #include "audio.h"
+
+void CtrlList::initColor(int i)
+{
+  if (i == 0)
+  _displayColor = Qt::red;
+  else if (i == 1)
+    _displayColor = Qt::yellow;
+  else
+    _displayColor = Qt::black;
+
+  if (i < 2)
+    _visible = true;
+  else
+    _visible = false;
+
+}
+
+
 
 //---------------------------------------------------------
 //   CtrlList
@@ -27,11 +46,12 @@ CtrlList::CtrlList(int id)
       _default = 0.0;
       _curVal  = 0.0;
       _mode    = INTERPOLATE;
+      initColor(id);
       }
 //---------------------------------------------------------
 //   CtrlList
 //---------------------------------------------------------
-CtrlList::CtrlList(int id, QString name, double min, double max)
+CtrlList::CtrlList(int id, QString name, double min, double max, bool dontShow)
 {
       _id      = id;
       _default = 0.0;
@@ -40,6 +60,8 @@ CtrlList::CtrlList(int id, QString name, double min, double max)
       _name    = name;
       _min     = min;
       _max     = max;
+      _dontShow = dontShow;
+      initColor(id);
 }
 //---------------------------------------------------------
 //   CtrlList
@@ -51,6 +73,7 @@ CtrlList::CtrlList()
       _default = 0.0;
       _curVal  = 0.0;
       _mode    = INTERPOLATE;
+      initColor(0);
       }
 
 //---------------------------------------------------------

@@ -67,7 +67,7 @@ void Arranger::setHeaderToolTips()
       header->setToolTip(COL_OCHANNEL,   tr("Midi output channel number or audio channels"));
       header->setToolTip(COL_OPORT,      tr("Midi output port or synth midi port"));
       header->setToolTip(COL_TIMELOCK,   tr("Time Lock"));
-      //header->setToolTip(COL_AUTOMATION, tr("Automation parameter selection"));
+      header->setToolTip(COL_AUTOMATION, tr("Automation parameter selection"));
       }
 
 
@@ -287,7 +287,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       header->setColumnLabel(tr("Port"), COL_OPORT, 60);
       header->setColumnLabel(tr("Ch"), COL_OCHANNEL, 30);
       header->setColumnLabel(tr("T"), COL_TIMELOCK, fm1.width('T')+fw);
-      //header->setColumnLabel(tr("Automation"), COL_AUTOMATION, 30);
+      header->setColumnLabel(tr("Automation"), COL_AUTOMATION, 75);
       header->setResizeMode(COL_RECORD, QHeaderView::Fixed);
       header->setResizeMode(COL_MUTE, QHeaderView::Fixed);
       header->setResizeMode(COL_SOLO, QHeaderView::Fixed);
@@ -296,7 +296,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       header->setResizeMode(COL_OPORT, QHeaderView::Interactive);
       header->setResizeMode(COL_OCHANNEL, QHeaderView::Fixed);
       header->setResizeMode(COL_TIMELOCK, QHeaderView::Fixed);
-      //header->setResizeMode(COL_AUTOMATION, QHeaderView::Interactive);
+      header->setResizeMode(COL_AUTOMATION, QHeaderView::Interactive);
 
       setHeaderToolTips();
       setHeaderWhatsThis();

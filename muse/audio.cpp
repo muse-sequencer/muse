@@ -1359,8 +1359,10 @@ void Audio::recordStop()
                   // Or _recFile may have been discarded (no new recorded part created).
                   // Regardless, we are done with the pointer itself. Set to zero so
                   //  song->setRecordFlag knows about it...
-                  track->setRecFile(0);
-                  song->setRecordFlag(track, false);
+
+                  track->setRecFile(0);              // flush out the old file
+                  song->setRecordFlag(track, false); // and re-arm the track
+                  song->setRecordFlag(track, true);  // here
                   }
             }
       MidiTrackList* ml = song->midis();

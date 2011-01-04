@@ -5,13 +5,16 @@
           TODO: Fix trackinfo scrollbar not showing at right time.
         - Replace all QWidget::setShown() calls with setVisible(). (Tim)
           It's supposed to be a Qt3 function, but still supported.
+        - Enabled displaying of audio automation on tracks (rj)
+        - Added right-click on track ARM buttons, now enables/disables all tracks of it's kind (rj)
+        - leave audio tracks ARMED after record, same as midi tracks (rj)
 02.01.2011:
         - Fixed arranger focussing problems again. (Tim)
           Scratch setFocusProxy() fix of 31.12. Gave MusE a keyPress handler and pass it on to canvas.
         - Fixed transport +/- position snapping. Works globally now too. (Tim)
           Moves by, and snaps to, snap setting of either an editor, or globally to arranger by default. 
         - Added transport position "Shift + +/-" keys, for no snapping. (Tim)
-        - Removed (hopefully) the last bits of Qt3sepport functions from .ui files. (Orcan)
+        - Removed (hopefully) the last bits of Qt3support functions from .ui files. (Orcan)
         - fixed patch loading for deicsonze and reverted to it's standard colortheme (rj)
 31.12.2010:
         - Possible fix for arranger focussing problems. (Tim)
