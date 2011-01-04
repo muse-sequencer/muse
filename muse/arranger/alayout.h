@@ -25,6 +25,7 @@ class TLLayout : public QLayout
       {
       Q_OBJECT
 
+      bool _inSetGeometry;
       QList<QLayoutItem*> ilist;
       QLayoutItem* li[6];
       QScrollBar* sb;
@@ -32,7 +33,7 @@ class TLLayout : public QLayout
 
     public:
       //TLLayout(QWidget *parent) : QLayout(parent, 0, -1) {}
-      TLLayout(QWidget *parent) : QLayout(parent) { setContentsMargins(0, 0, 0, 0); setSpacing(-1); }
+      TLLayout(QWidget *parent) : QLayout(parent) { _inSetGeometry = false; setContentsMargins(0, 0, 0, 0); setSpacing(-1); }
       ~TLLayout() { clear(); }
 
       void addItem(QLayoutItem *item) { ilist.append(item); }

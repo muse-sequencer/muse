@@ -1,3 +1,10 @@
+04.01.2011:
+        - Added saving and restoring of pianoroll trackinfo h-splitter state. (Tim)
+          TODO: Fix multiple velocity controllers appearing on reload.
+        - Fixed arranger trackinfo widgets sizing - were allowed to shrink vertically. (Tim)
+          TODO: Fix trackinfo scrollbar not showing at right time.
+        - Replace all QWidget::setShown() calls with setVisible(). (Tim)
+          It's supposed to be a Qt3 function, but still supported.
 02.01.2011:
         - Fixed arranger focussing problems again. (Tim)
           Scratch setFocusProxy() fix of 31.12. Gave MusE a keyPress handler and pass it on to canvas.

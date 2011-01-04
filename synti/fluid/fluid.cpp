@@ -283,7 +283,7 @@ bool ISynth::guiVisible() const
 
 void ISynth::showGui(bool flag)
       {
-      gui->setShown(flag);
+      gui->setVisible(flag);
       }
 
 //---------------------------------------------------------

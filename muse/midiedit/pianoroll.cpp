@@ -915,7 +915,8 @@ void PianoRoll::writeStatus(int level, Xml& xml) const
       xml.tag(level++, "pianoroll");
       MidiEditor::writeStatus(level, xml);
       splitter->writeStatus(level, xml);
-
+      hsplitter->writeStatus(level, xml);  
+      
       for (std::list<CtrlEdit*>::const_iterator i = ctrlEditList.begin();
          i != ctrlEditList.end(); ++i) {
             (*i)->writeStatus(level, xml);
@@ -971,6 +972,8 @@ void PianoRoll::readStatus(Xml& xml)
                               }
                         else if (tag == splitter->objectName())
                               splitter->readStatus(xml);
+                        else if (tag == hsplitter->objectName())
+                              hsplitter->readStatus(xml);
                         else if (tag == "quantStrength")
                               _quantStrength = xml.parseInt();
                         else if (tag == "quantLimit")
