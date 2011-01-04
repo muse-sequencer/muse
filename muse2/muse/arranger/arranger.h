@@ -22,6 +22,7 @@ class QScrollBar;
 class QToolButton;
 class QWheelEvent;
 class QKeyEvent;
+//class QStackedWidget;
 
 class Header;
 class TList;
@@ -55,7 +56,8 @@ class WidgetStack : public QWidget {
       QWidget* visibleWidget() const;
       int curIdx() const { return top; }
       virtual QSize minimumSizeHint() const;
-      //QSize minimumSize() const { return minimumSizeHint(); }
+      //QSize minimumSize() const;
+      //int minimumHeight() const;
       };
 
 //---------------------------------------------------------
@@ -75,6 +77,7 @@ class Arranger : public QWidget {
       SpinBox* lenEntry;
       bool showTrackinfoFlag;
       WidgetStack* trackInfo;
+      //QStackedWidget* trackInfo;
       QScrollBar* infoScroll;
       //MidiTrackInfoBase* midiTrackInfo;
       MidiTrackInfo* midiTrackInfo;

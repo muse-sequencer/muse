@@ -993,7 +993,7 @@ bool VAM::guiVisible() const
 
 void VAM::showGui(bool val)
       {
-      gui->setShown(val);
+      gui->setVisible(val);
       }
 
 //---------------------------------------------------------

@@ -474,7 +474,7 @@ void addRoute(Route src, Route dst)
       {
         if(src.type != Route::TRACK_ROUTE || dst.type != Route::TRACK_ROUTE)  // p3.3.49
         {
-          fprintf(stderr, "addRoute: source and destination are not track routes\n");
+          fprintf(stderr, "addRoute: source or destination are not track routes\n");
           return;
         }
         

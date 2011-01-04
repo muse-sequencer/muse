@@ -273,7 +273,7 @@ bool DeicsOnze::guiVisible() const
 //---------------------------------------------------------
 void DeicsOnze::showGui(bool val)
 {
-    _gui->setShown(val);
+    _gui->setVisible(val);
 }
 
 //---------------------------------------------------------

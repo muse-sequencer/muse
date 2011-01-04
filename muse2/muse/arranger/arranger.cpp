@@ -22,6 +22,7 @@
 #include <QVBoxLayout>
 #include <QWheelEvent>
 #include <QPainter>
+//#include <QStackedWidget>
 
 #include "arranger.h"
 #include "song.h"
@@ -569,6 +570,7 @@ void Arranger::songChanged(int type)
         if(type & SC_TRACK_REMOVED)
         {
           AudioStrip* w = (AudioStrip*)(trackInfo->getWidget(2));
+          //AudioStrip* w = (AudioStrip*)(trackInfo->widget(2));
           if(w)
           {
             Track* t = w->getTrack();
@@ -580,6 +582,7 @@ void Arranger::songChanged(int type)
               {
                 delete w;
                 trackInfo->addWidget(0, 2);
+                //trackInfo->insertWidget(2, 0);
                 selected = 0;
               } 
             }   
@@ -915,7 +918,7 @@ QSize WidgetStack::minimumSizeHint() const
                   s = s.expandedTo(ss);
                   }
             }
-      //printf("WidgetStack::minimumSizeHint width:%d height:%d\n", s.width(), s.height());  
+      //printf("WidgetStack::minimumSizeHint width:%d height:%d\n", s.width(), s.height());  // REMOVE Tim.
       return s;
       }
 
@@ -949,8 +952,8 @@ void Arranger::controllerChanged(Track *t)
 void Arranger::showTrackInfo(bool flag)
       {
       showTrackinfoFlag = flag;
-      trackInfo->setShown(flag);
-      infoScroll->setShown(flag);
+      trackInfo->setVisible(flag);
+      infoScroll->setVisible(flag);
       updateTrackInfo(-1);
       }
 
@@ -962,6 +965,7 @@ void Arranger::genTrackInfo(QWidget* parent)
       {
       trackInfo = new WidgetStack(parent, "trackInfoStack");
       //trackInfo->setFocusPolicy(Qt::TabFocus);  // p4.0.9
+      //trackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
       noTrackInfo          = new QWidget(trackInfo);
       noTrackInfo->setAutoFillBackground(true);
@@ -979,6 +983,7 @@ void Arranger::genTrackInfo(QWidget* parent)
 
       midiTrackInfo = new MidiTrackInfo(trackInfo);
       //midiTrackInfo->setFocusPolicy(Qt::TabFocus);    // p4.0.9
+      //midiTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
       trackInfo->addWidget(noTrackInfo,   0);
       trackInfo->addWidget(midiTrackInfo, 1);
       trackInfo->addWidget(0, 2);
@@ -1045,3 +1050,16 @@ void Arranger::switchInfo(int n)
       tgrid->update();   // muse-2 Qt4
       }
 
+/*
+QSize WidgetStack::minimumSize() const 
+{ 
+  printf("WidgetStack::minimumSize\n");  // REMOVE Tim.
+  return minimumSizeHint(); 
+}
+
+int WidgetStack::minimumHeight() const 
+{ 
+  printf("WidgetStack::minimumHeight\n");  // REMOVE Tim.  
+  return minimumSizeHint().height(); 
+}
+*/

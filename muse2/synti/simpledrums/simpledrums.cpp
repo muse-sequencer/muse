@@ -854,7 +854,7 @@ void SimpleSynth::process(float** out, int offset, int len)
 void SimpleSynth::showGui(bool val)
       {
       SS_TRACE_IN
-      gui->setShown(val);
+      gui->setVisible(val);
       SS_TRACE_OUT
       }
 

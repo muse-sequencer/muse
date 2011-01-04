@@ -738,7 +738,7 @@ bool FluidSynth::guiVisible() const
 
 void FluidSynth::showGui(bool val)
       {
-      gui->setShown(val);
+      gui->setVisible(val);
       }
 
 //---------------------------------------------------------
