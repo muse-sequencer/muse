@@ -7,7 +7,6 @@
           It's supposed to be a Qt3 function, but still supported.
         - Enabled displaying of audio automation on tracks (rj)
         - Added right-click on track ARM buttons, now enables/disables all tracks of it's kind (rj)
-        - leave audio tracks ARMED after record, same as midi tracks (rj)
 02.01.2011:
         - Fixed arranger focussing problems again. (Tim)
           Scratch setFocusProxy() fix of 31.12. Gave MusE a keyPress handler and pass it on to canvas.

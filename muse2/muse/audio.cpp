@@ -1361,8 +1361,9 @@ void Audio::recordStop()
                   //  song->setRecordFlag knows about it...
 
                   track->setRecFile(0);              // flush out the old file
-                  song->setRecordFlag(track, false); // and re-arm the track
-                  song->setRecordFlag(track, true);  // here
+                  song->setRecordFlag(track, false); //
+                  //track->setRecordFlag1(true);       // and re-arm the track here
+                  //song->setRecordFlag(track, true);  // here
                   }
             }
       MidiTrackList* ml = song->midis();
