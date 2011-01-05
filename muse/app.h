@@ -254,10 +254,10 @@ class MusE : public QMainWindow
       void startListEditor();
       void startListEditor(PartList*);
       void startDrumEditor();
-      void startDrumEditor(PartList*);
+      void startDrumEditor(PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
       void startEditor(Track*);
       void startPianoroll();
-      void startPianoroll(PartList* pl);
+      void startPianoroll(PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
       void startWaveEditor();
       void startWaveEditor(PartList*);
       void startSongInfo(bool editable=true);

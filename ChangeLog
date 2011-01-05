@@ -1,6 +1,6 @@
 04.01.2011:
         - Added saving and restoring of pianoroll trackinfo h-splitter state. (Tim)
-          TODO: Fix multiple velocity controllers appearing on reload.
+        - Fixed multiple velocity controllers appearing on song reload. Tested OK. (Tim)
         - Fixed arranger trackinfo widgets sizing - were allowed to shrink vertically. (Tim)
           TODO: Fix trackinfo scrollbar not showing at right time.
         - Replace all QWidget::setShown() calls with setVisible(). (Tim)

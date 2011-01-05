@@ -91,7 +91,7 @@ class DrumEdit : public MidiEditor {
       void setRaster(int);
       void setQuant(int);
       void noteinfoChanged(NoteInfo::ValType type, int val);
-      CtrlEdit* addCtrl();
+      //CtrlEdit* addCtrl();
       void removeCtrl(CtrlEdit* ctrl);
       void cmd(int);
       void clipboardChanged(); // enable/disable "Paste"
@@ -110,6 +110,7 @@ class DrumEdit : public MidiEditor {
       void soloChanged(bool);       // called by Solo button
       void execDeliveredScript(int);
       void execUserScript(int);
+      CtrlEdit* addCtrl();
       
       virtual void updateHScrollRange();
    signals:
