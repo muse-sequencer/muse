@@ -3093,9 +3093,9 @@ bool MusE::saveAs()
 void MusE::startEditor(PartList* pl, int type)
       {
       switch (type) {
-            case 0: startPianoroll(pl); break;
+            case 0: startPianoroll(pl, true); break;
             case 1: startListEditor(pl); break;
-            case 3: startDrumEditor(pl); break;
+            case 3: startDrumEditor(pl, true); break;
             case 4: startWaveEditor(pl); break;
             }
       }
@@ -3107,7 +3107,7 @@ void MusE::startEditor(PartList* pl, int type)
 void MusE::startEditor(Track* t)
       {
       switch (t->type()) {
-            case Track::MIDI: startPianoroll(); break;
+            case Track::MIDI: startPianoroll(); break;  
             case Track::DRUM: startDrumEditor(); break;
             case Track::WAVE: startWaveEditor(); break;
             default:
@@ -3138,14 +3138,16 @@ void MusE::startPianoroll()
       PartList* pl = getMidiPartsToEdit();
       if (pl == 0)
             return;
-      startPianoroll(pl);
+      startPianoroll(pl, true);
       }
 
-void MusE::startPianoroll(PartList* pl)
+void MusE::startPianoroll(PartList* pl, bool showDefaultCtrls)
       {
       
       PianoRoll* pianoroll = new PianoRoll(pl, this, 0, arranger->cursorValue());
       pianoroll->show();
+      if(showDefaultCtrls)       // p4.0.12
+        pianoroll->addCtrl();
       toplevels.push_back(Toplevel(Toplevel::PIANO_ROLL, (unsigned long)(pianoroll), pianoroll));
       connect(pianoroll, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
       connect(muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
@@ -3206,14 +3208,16 @@ void MusE::startDrumEditor()
       PartList* pl = getMidiPartsToEdit();
       if (pl == 0)
             return;
-      startDrumEditor(pl);
+      startDrumEditor(pl, true);
       }
 
-void MusE::startDrumEditor(PartList* pl)
+void MusE::startDrumEditor(PartList* pl, bool showDefaultCtrls)
       {
       
       DrumEdit* drumEditor = new DrumEdit(pl, this, 0, arranger->cursorValue());
       drumEditor->show();
+      if(showDefaultCtrls)       // p4.0.12
+        drumEditor->addCtrl();
       toplevels.push_back(Toplevel(Toplevel::DRUM, (unsigned long)(drumEditor), drumEditor));
       connect(drumEditor, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
       connect(muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
