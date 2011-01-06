@@ -8,19 +8,28 @@
 #define __MTRACKINFO_H__
 
 #include "ui_mtrackinfobase.h"
+#include "pctablemodel.h"
+#include "pctable.h"
 
 class Track;
+class QTableView;
+class QStandardItem;
 
 //---------------------------------------------------------
 //   MidiTrackInfo
 //---------------------------------------------------------
 
-class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase 
+class MidiTrackInfo : public QFrame/*QWidget*/, public Ui::MidiTrackInfoBase 
 {
       Q_OBJECT
       Track* selected;
       bool _midiDetect;
       int program, pan, volume;
+	  int _progRowNum;
+	  ProgramChangeTable* tableView;
+	  QList<int>* _matrix;
+	  ProgramChangeTableModel* _tableModel;
+	  bool editing;
       
    private slots:
       void iOutputChannelChanged(int);
@@ -46,6 +55,12 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
       void outRoutesPressed();
       void routingPopupMenuActivated(QAction*);
       //void routingPopupViewActivated(const QModelIndex&);
+	  void toggleAdvanced(int);
+	  void matrixItemChanged(QStandardItem*);
+	  void rebuildMatrix();
+	  void deleteSelectedPatches(bool);
+	  void movePatchUp(bool);
+	  void movePatchDown(bool);
       
    protected slots:
       virtual void heartBeat();
@@ -56,6 +71,7 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
       void instrPopup();
       void progRecClicked();
       void songChanged(int);
+	  void insertMatrixEvent();
 
    signals:
       void outputPortChanged(int);  

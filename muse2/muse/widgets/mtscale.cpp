@@ -294,7 +294,7 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
               
               if(xp >= 0)
               {
-                p.setPen(Qt::green);
+                p.setPen(QColor(243,191,124));
                 p.drawLine(xp, y, xp, height());
               }  
             }  

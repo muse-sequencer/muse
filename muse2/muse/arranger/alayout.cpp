@@ -82,6 +82,10 @@ TLLayout::~TLLayout()
 
 void TLLayout::setGeometry(const QRect &rect)
       {
+      //if(_inSetGeometry)  // p4.0.11 Tim
+      //  return;
+      //_inSetGeometry = true;
+      
       int w = rect.width();
       int h = rect.height();
 
@@ -109,19 +113,22 @@ void TLLayout::setGeometry(const QRect &rect)
       int x1 = s0.width();
       int x2 = x1 + s1.width();
 
-      li[0]->setGeometry(QRect(0,  0,  s0.width(), y2));
+      li[0]->setGeometry(QRect(0,  0,  s0.width(), y2));  
 
       QWidget* widget = stack->visibleWidget();
       int range = s0.height() - y2;
       if (range < 0)
             range = 0;
-      sb->setShown(range != 0);
+      // Note this appears to cause a single recursive call to this function - jumps to beginning,
+      //  because now the scroll bar wants to be put in the layout.
+      sb->setVisible(range != 0);
       if (range)
             sb->setMaximum(range);
 
       if (widget) {
-            QSize r(s0.width(), y2);
-            widget->setGeometry(0, 0, r.width(), r.height());
+            //QSize r(s0.width(), y2);
+            QSize r(s0.width(), y2 < s0.height() ? s0.height() : y2);   // p4.0.11 Tim
+            widget->setGeometry(0, 0, r.width(), r.height()); 
             }
 
       li[1]->setGeometry(QRect(x1, 0,  s1.width(), y2));
@@ -129,6 +136,8 @@ void TLLayout::setGeometry(const QRect &rect)
       li[3]->setGeometry(QRect(x2, y1, aw,        ah));
       li[4]->setGeometry(QRect(0,  y2,  w,        s4.height()));
       li[5]->setGeometry(QRect(3,  y3,  s5.width(), s5.height()));
+      
+      //_inSetGeometry = false;
       }
 
 //---------------------------------------------------------
@@ -138,6 +147,8 @@ void TLLayout::setGeometry(const QRect &rect)
 QSize TLLayout::sizeHint() const
       {
       return QSize(150, 100);
+      // p4.0.11 Tim. 100 was allowing vertically shrunk trackinfo widgets. Nope, no help.
+      //return minimumSize();
       }
 
 //---------------------------------------------------------
@@ -148,7 +159,10 @@ QSize TLLayout::minimumSize() const
       {
       int w = stack->minimumSizeHint().width();
       w += li[1]->sizeHint().width();
+      
       return QSize(w, 50);
+      // p4.0.11 Tim. 50 was allowing vertically shrunk trackinfo widgets. Nope, no help.
+      //return QSize(w, stack->minimumSizeHint().height());  
       }
 
 //---------------------------------------------------------

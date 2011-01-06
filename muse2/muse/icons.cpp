@@ -329,6 +329,7 @@ QPixmap* cafterIcon;
 QPixmap* pafterIcon;
 QPixmap* flagIcon;
 QPixmap* flagIconS;
+QPixmap* flagIconSP;
 QPixmap* lockIcon;
 QPixmap* tocIcon;
 QPixmap* exitIconS;
@@ -342,6 +343,11 @@ QPixmap* speakerIcon;
 QPixmap* buttondownIcon;
 QPixmap* configureIcon;
 
+QPixmap* blankRecord;
+QPixmap* preIcon;
+QPixmap* preIconOn;
+QPixmap* mixerIn;
+QPixmap* mixerOut;
 QPixmap* recEchoIconOn;
 QPixmap* recEchoIconOff;
 QPixmap* muteIconOn;
@@ -356,6 +362,10 @@ QIcon* soloIconSet2;
 QPixmap* editmuteIcon;
 QPixmap* editmuteSIcon;
 QPixmap* panicIcon;
+
+QPixmap* garbagePCIcon;
+QPixmap* upPCIcon;
+QPixmap* downPCIcon;
 
 QIcon* pianoIconSet;
 QIcon* scoreIconSet;
@@ -466,25 +476,25 @@ QPixmap* sawIcon;
 void initIcons()
       {
       track_commentIcon = new MPIXMAP(track_comment_xpm, NULL);
-      pointerIcon  = new MPIXMAP(pointer_xpm, NULL);
-      pencilIcon   = new MPIXMAP(pencil_xpm, NULL);
-      deleteIcon   = new MPIXMAP(delete_xpm, "draw-eraser");
+      pointerIcon  = new MPIXMAP(":/images/icons/select.png", NULL);
+      pencilIcon   = new MPIXMAP(":/images/icons/pencil.png", NULL);
+      deleteIcon   = new MPIXMAP(":/images/icons/eraser.png", "draw-eraser");
       punchinIcon  = new MPIXMAP(punchin_xpm, NULL);
       punchoutIcon = new MPIXMAP(punchout_xpm, NULL);
       punchin1Icon = new MPIXMAP(punchin1_xpm, NULL);
       punchout1Icon = new MPIXMAP(punchout1_xpm, NULL);
       loopIcon     = new MPIXMAP(loop_xpm, NULL);
       loop1Icon    = new MPIXMAP(loop1_xpm, NULL);
-      playIcon     = new MPIXMAP(play_xpm, "media-playback-start");
+      playIcon     = new MPIXMAP(":/images/icons/transport-play.png", "media-playback-start");
 
-      record1_Icon  = new MPIXMAP(record1_xpm, NULL);
-      record_on_Icon = new MPIXMAP(record_on_xpm, NULL);
-      record_off_Icon = new MPIXMAP(record_off_xpm, NULL);
-      recordIcon   = new MPIXMAP(record_xpm, "media-record");
-      stopIcon     = new MPIXMAP(stop_xpm, "media-playback-stop");
-      startIcon    = new MPIXMAP(start_xpm, "media-skip-backward");
-      fforwardIcon = new MPIXMAP(fforward_xpm, "media-seek-forward");
-      frewindIcon  = new MPIXMAP(frewind_xpm, "media-seek-backward");
+      record1_Icon  = new MPIXMAP(":/images/icons/mixer-record.png", NULL);
+      record_on_Icon = new MPIXMAP(":/images/icons/mixer-record_on.png", NULL);
+      record_off_Icon = new MPIXMAP(":/images/icons/mixer-record.png", NULL);
+      recordIcon   = new MPIXMAP(":/images/icons/transport-record.png", "media-record");
+      stopIcon     = new MPIXMAP(":/images/icons/transport-stop.png", "media-playback-stop");
+      startIcon    = new MPIXMAP(":/images/icons/transport-rewind-end.png", "media-skip-backward");
+      fforwardIcon = new MPIXMAP(":/images/icons/transport-ffwd.png", "media-seek-forward");
+      frewindIcon  = new MPIXMAP(":/images/icons/transport-rewind.png", "media-seek-backward");
       dotIcon      = new MPIXMAP(dot_xpm, "dialog-ok-apply");
       dothIcon     = new MPIXMAP(doth_xpm, "draw-circle");
       dot1Icon     = new MPIXMAP(dot1_xpm, NULL);
@@ -497,8 +507,10 @@ void initIcons()
       markIcon[1]  = new MPIXMAP(lmark_xpm, NULL);
       markIcon[2]  = new MPIXMAP(rmark_xpm, NULL);
       cutIcon      = new MPIXMAP(cut_xpm, "edit-cut");
-      steprecIcon  = new MPIXMAP(steprec_xpm, NULL);
+      //steprecIcon  = new MPIXMAP(steprec_xpm, NULL);
+      steprecIcon  = new MPIXMAP(":/images/icons/step_by_step.png", NULL);
       glueIcon     = new MPIXMAP(glue_xpm, NULL);
+      //drawIcon     = new MPIXMAP(draw_xpm, NULL);
       drawIcon     = new MPIXMAP(draw_xpm, NULL);
       quantIcon    = new MPIXMAP(quant_xpm, NULL);
       saveIcon     = new MPIXMAP(filesave_xpm, "document-save");
@@ -531,6 +543,10 @@ void initIcons()
       pafterIcon  = new MPIXMAP(pafter_xpm, NULL);
       flagIcon    = new MPIXMAP(flag_xpm, NULL);
       flagIconS   = new MPIXMAP(flagS_xpm, NULL);
+      flagIconSP  = new MPIXMAP(":/images/flagSP.png", NULL);//ProgramChange Flag
+      upPCIcon 	  = new MPIXMAP(":/images/icons/up.png", NULL);//ProgramChange Flag
+      downPCIcon   = new MPIXMAP(":/images/icons/down.png", NULL);//ProgramChange Flag
+      garbagePCIcon = new MPIXMAP(":/images/icons/garbage.png", NULL);//ProgramChange Flag
       lockIcon    = new MPIXMAP(lock_xpm, NULL);
       tocIcon     = new MPIXMAP(toc_xpm, NULL);
       exitIconS   = new MPIXMAP(exitS_xpm, "application-exit");
@@ -546,7 +562,7 @@ void initIcons()
 
       editmuteIcon  = new MPIXMAP(editmute_xpm, NULL);
       editmuteSIcon = new MPIXMAP(editmuteS_xpm, NULL);
-      panicIcon  = new MPIXMAP(panic_xpm, NULL);
+      panicIcon  = new MPIXMAP(":/images/icons/transport-panic.png", NULL);
 
       editcutIconSet       = new MICON(editcutS_xpm, "edit-cut"); // ddskrjo
       editcopyIconSet      = new MICON(editcopyS_xpm, "edit-copy");
@@ -564,21 +580,26 @@ void initIcons()
       editpaste2TrackIcon       = new MICON(editpaste2track_xpm, NULL);
       editpasteClone2TrackIcon  = new MICON(editpasteclone2track_xpm, NULL);
       */
-      exitIcon             = new MPIXMAP(exit_xpm, "application-exit");
-      exit1Icon            = new MPIXMAP(exit1_xpm, "application-exit");
+      exitIcon             = new MPIXMAP(":/images/icons/mixer-exit.png", "application-exit");
+      exit1Icon            = new MPIXMAP(":/images/icons/mixer-exit_on.png", "application-exit");
 
       // 2 lines odd code
       newmuteIcon          = new MPIXMAP(newmutebutton_xpm, NULL);
       soloIcon             = new MPIXMAP(solobutton_xpm, NULL);
 
-      recEchoIconOn        = new MPIXMAP(rec_echo_on_xpm, NULL);
-      recEchoIconOff       = new MPIXMAP(rec_echo_off_xpm, NULL);
-      muteIconOn           = new MPIXMAP(mutebutton_on_xpm, NULL);
-      muteIconOff          = new MPIXMAP(mutebutton_off_xpm, NULL);
-      soloIconOn           = new MPIXMAP(solobutton_on_xpm, NULL);
-      soloIconOff          = new MPIXMAP(solobutton_off_xpm, NULL);
-      soloblksqIconOn      = new MPIXMAP(solobutton_on_blksq_xpm, NULL);
-      soloblksqIconOff     = new MPIXMAP(solobutton_off_blksq_xpm, NULL);
+      blankRecord          = new MPIXMAP(":/images/icons/blank_record.png", NULL);
+      preIcon        	   = new MPIXMAP(":/images/icons/mixer-pre.png", NULL);
+      preIconOn        	   = new MPIXMAP(":/images/icons/mixer-pre_on.png", NULL);
+      mixerIn        	   = new MPIXMAP(":/images/icons/mixer-in.png", NULL);
+      mixerOut        	   = new MPIXMAP(":/images/icons/mixer-out.png", NULL);
+      recEchoIconOn        = new MPIXMAP(":/images/icons/mixer-record.png", NULL);
+      recEchoIconOff       = new MPIXMAP(":/images/icons/mixer-record.png", NULL);
+      muteIconOn           = new MPIXMAP(":/images/icons/mixer-mute.png", NULL);
+      muteIconOff          = new MPIXMAP(":/images/icons/mixer-mute_on.png", NULL);
+      soloIconOn           = new MPIXMAP(":/images/icons/mixer-solo_on.png", NULL);
+      soloIconOff          = new MPIXMAP(":/images/icons/mixer-solo.png", NULL);
+      soloblksqIconOn      = new MPIXMAP(":/images/icons/mixer-solo_on.png", NULL);
+      soloblksqIconOff     = new MPIXMAP(":/images/icons/mixer-solo.png", NULL);
       soloIconSet1         = new QIcon(); 
       soloIconSet2         = new QIcon();
       soloIconSet1->addPixmap(*soloIconOn, QIcon::Normal, QIcon::On);
@@ -674,8 +695,8 @@ void initIcons()
       view_mixerIcon                                = new MPIXMAP(view_mixer_xpm, NULL);
       view_transport_windowIcon                     = new MPIXMAP(view_transport_window_xpm, NULL);
 
-      monoIcon                                      = new MPIXMAP(mono_xpm, NULL);
-      stereoIcon                                    = new MPIXMAP(stereo_xpm, NULL);
+      monoIcon                                      = new MPIXMAP(":/images/icons/mixer-mono.png", NULL);
+      stereoIcon                                    = new MPIXMAP(":/images/icons/mixer-stereo.png", NULL);
 
       museIcon                                      = new MPIXMAP(muse_icon_xpm, NULL);
       aboutMuseImage                                = new MPIXMAP(about_muse_xpm, NULL);

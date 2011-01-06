@@ -650,7 +650,7 @@ bool Organ::guiVisible() const
 
 void Organ::showGui(bool val)
       {
-      gui->setShown(val);
+      gui->setVisible(val);
       }
 
 //---------------------------------------------------------

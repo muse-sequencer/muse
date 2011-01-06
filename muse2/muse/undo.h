@@ -35,7 +35,8 @@ struct UndoOp {
             AddSig,   DeleteSig,
             SwapTrack,
             ModifyClip,
-            ModifyMarker
+            ModifyMarker,
+			AddTrackView, DeleteTrackView, ModifyTrackView
             };
       UndoType type;
 
@@ -77,6 +78,11 @@ struct UndoOp {
                   Marker* realMarker;
                   Marker* copyMarker;
                 };
+            struct {
+                  int d;
+                  int e;
+                  int f;
+                  };
             };
       Event oEvent;
       Event nEvent;

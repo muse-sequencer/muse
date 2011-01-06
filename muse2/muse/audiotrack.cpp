@@ -81,7 +81,7 @@ AudioTrack::AudioTrack(TrackType t)
       setChannels(2);
       addController(new CtrlList(AC_VOLUME,"Volume",0.0,1.0));
       addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0));
-      addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0));
+      addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0, true /*dont show in arranger */));
       
       // Changed by Tim. p3.3.15
       //outBuffers = new float*[MAX_CHANNELS];

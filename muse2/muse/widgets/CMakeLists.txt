@@ -48,6 +48,9 @@ QT4_WRAP_CPP (widget_mocs
       mlabel.h  
       mtscale.h  
       pcscale.h  
+	  tvieweditor.h
+	  pctablemodel.h
+	  pctable.h
       mtrackinfo.h
       nentry.h  
       noteinfo.h  
@@ -109,6 +112,7 @@ file (GLOB widgets_ui_files
       transformbase.ui  
       transposebase.ui  
       velocitybase.ui
+	  trackvieweditorbase.ui
       )
 QT4_WRAP_UI (widget_ui_headers ${widgets_ui_files})
 
@@ -143,8 +147,11 @@ file (GLOB widgets_source_files
       mlabel.cpp 
       mmath.cpp
       mtrackinfo.cpp
+	  tvieweditor.cpp
       mtscale.cpp 
       pcscale.cpp 
+	  pctablemodel.cpp
+	  pctable.cpp
       nentry.cpp 
       noteinfo.cpp 
       pitchedit.cpp 

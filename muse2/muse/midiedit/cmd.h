@@ -21,6 +21,8 @@
 #define CMD_7      10
 #define CMD_T      11
 #define CMD_period 12
+#define CMD_LEFT_NOSNAP   13
+#define CMD_RIGHT_NOSNAP  14
 
 #endif
 

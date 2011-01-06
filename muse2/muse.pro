@@ -161,8 +161,11 @@ HEADERS = \
 ./muse/widgets/noteinfo.h \
 ./muse/widgets/mtscale.h \
 ./muse/widgets/pcscale.h \
+./muse/widgets/pctablemodel.h \
+./muse/widgets/pctable.h \
 ./muse/widgets/transposebase.h \
 ./muse/widgets/dentry.h \
+./muse/widgets/trackvieweditorbase.h \
 ./muse/event.h \
 ./muse/sync.h \
 ./muse/confmport.h \
@@ -170,6 +173,7 @@ HEADERS = \
 ./muse/route.h \
 ./muse/xml.h \
 ./muse/track.h \
+./muse/trackview.h \
 ./muse/audio.h \
 ./muse/vst.h \
 ./muse/mixer/astrip.h \
@@ -406,8 +410,12 @@ SOURCES =  \
 ./muse/widgets/moc_spinbox.cpp \
 ./muse/widgets/moc_mtscale.cpp \
 ./muse/widgets/moc_pcscale.cpp \
+./muse/widgets/moc_pctablemodel.cpp \
+./muse/widgets/moc_pctable.cpp \
 ./muse/widgets/mtscale.cpp \
 ./muse/widgets/pcscale.cpp \
+./muse/widgets/pctablemodel.cpp \
+./muse/widgets/pctable.cpp \
 ./muse/widgets/ttoolbutton.cpp \
 ./muse/widgets/spinbox.cpp \
 ./muse/widgets/drange.cpp \
@@ -548,6 +556,7 @@ SOURCES =  \
 ./muse/moc_song.cpp \
 ./muse/audiotrack.cpp \
 ./muse/track.cpp \
+./muse/trackview.cpp \
 ./muse/liste/moc_editevent.cpp \
 ./muse/liste/listedit.cpp \
 ./muse/liste/moc_listedit.cpp \
@@ -666,6 +675,7 @@ FORMS3 = \
 ./muse/widgets/mittransposebase.ui \
 ./muse/widgets/midisync.ui \
 ./muse/widgets/cliplisteditorbase.ui \
+./muse/widgets/trackvieweditorbase.ui \
 ./muse/mixer/midiportroutebase.ui \
 ./muse/mixer/routedialogbase.ui \
 ./muse/liste/editctrlbase.ui \

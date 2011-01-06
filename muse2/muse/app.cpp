@@ -764,6 +764,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       
       setIconSize(ICON_SIZE);
       setFocusPolicy(Qt::WheelFocus);
+      //setFocusPolicy(Qt::NoFocus);
       muse                  = this;    // hack
       clipListEdit          = 0;
       midiSyncConfig        = 0;
@@ -1216,7 +1217,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //--------------------------------------------------
       
       tools = addToolBar(tr("File Buttons"));
-
       tools->addAction(fileNewAction);
       tools->addAction(fileOpenAction);
       tools->addAction(fileSaveAction);
@@ -1470,7 +1470,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       arranger = new Arranger(this, "arranger");
       setCentralWidget(arranger);
-
+      
       connect(tools1, SIGNAL(toolChanged(int)), arranger, SLOT(setTool(int)));
       connect(arranger, SIGNAL(editPart(Track*)), SLOT(startEditor(Track*)));
       connect(arranger, SIGNAL(dropSongFile(const QString&)), SLOT(loadProjectFile(const QString&)));
@@ -3093,9 +3093,9 @@ bool MusE::saveAs()
 void MusE::startEditor(PartList* pl, int type)
       {
       switch (type) {
-            case 0: startPianoroll(pl); break;
+            case 0: startPianoroll(pl, true); break;
             case 1: startListEditor(pl); break;
-            case 3: startDrumEditor(pl); break;
+            case 3: startDrumEditor(pl, true); break;
             case 4: startWaveEditor(pl); break;
             }
       }
@@ -3107,7 +3107,7 @@ void MusE::startEditor(PartList* pl, int type)
 void MusE::startEditor(Track* t)
       {
       switch (t->type()) {
-            case Track::MIDI: startPianoroll(); break;
+            case Track::MIDI: startPianoroll(); break;  
             case Track::DRUM: startDrumEditor(); break;
             case Track::WAVE: startWaveEditor(); break;
             default:
@@ -3138,14 +3138,16 @@ void MusE::startPianoroll()
       PartList* pl = getMidiPartsToEdit();
       if (pl == 0)
             return;
-      startPianoroll(pl);
+      startPianoroll(pl, true);
       }
 
-void MusE::startPianoroll(PartList* pl)
+void MusE::startPianoroll(PartList* pl, bool showDefaultCtrls)
       {
       
       PianoRoll* pianoroll = new PianoRoll(pl, this, 0, arranger->cursorValue());
       pianoroll->show();
+      if(showDefaultCtrls)       // p4.0.12
+        pianoroll->addCtrl();
       toplevels.push_back(Toplevel(Toplevel::PIANO_ROLL, (unsigned long)(pianoroll), pianoroll));
       connect(pianoroll, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
       connect(muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
@@ -3206,14 +3208,16 @@ void MusE::startDrumEditor()
       PartList* pl = getMidiPartsToEdit();
       if (pl == 0)
             return;
-      startDrumEditor(pl);
+      startDrumEditor(pl, true);
       }
 
-void MusE::startDrumEditor(PartList* pl)
+void MusE::startDrumEditor(PartList* pl, bool showDefaultCtrls)
       {
       
       DrumEdit* drumEditor = new DrumEdit(pl, this, 0, arranger->cursorValue());
       drumEditor->show();
+      if(showDefaultCtrls)       // p4.0.12
+        drumEditor->addCtrl();
       toplevels.push_back(Toplevel(Toplevel::DRUM, (unsigned long)(drumEditor), drumEditor));
       connect(drumEditor, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
       connect(muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
@@ -3386,6 +3390,16 @@ void MusE::ctrlChanged()
 #endif
 
 //---------------------------------------------------------
+//   keyPressEvent
+//---------------------------------------------------------
+
+void MusE::keyPressEvent(QKeyEvent* event)
+      {
+      // Pass it on to arranger part canvas.
+      arranger->getCanvas()->redirKeypress(event);
+      }
+
+//---------------------------------------------------------
 //   kbAccel
 //---------------------------------------------------------
 
@@ -3418,6 +3432,44 @@ void MusE::kbAccel(int key)
       else if (key == shortcuts[SHRT_PLAY_SONG].key ) {
             song->setPlay(true);
             }
+      
+      // p4.0.10 Tim. Normally each editor window handles these, to inc by the editor's raster snap value.
+      // But users were asking for a global version - "they don't work when I'm in mixer or transport".
+      // Since no editor claimed the key event, we don't know a specific editor's snap setting,
+      //  so adopt a policy where the arranger is the 'main' raster reference, I guess...
+      else if (key == shortcuts[SHRT_POS_DEC].key) {
+            int spos = song->cpos();
+            if(spos > 0) 
+            {
+              spos -= 1;     // Nudge by -1, then snap down with raster1.
+              spos = AL::sigmap.raster1(spos, song->arrangerRaster());
+            }  
+            if(spos < 0)
+              spos = 0;
+            Pos p(spos,true);
+            song->setPos(0, p, true, true, true);
+            return;
+            }
+      else if (key == shortcuts[SHRT_POS_INC].key) {
+            int spos = AL::sigmap.raster2(song->cpos() + 1, song->arrangerRaster());    // Nudge by +1, then snap up with raster2.
+            Pos p(spos,true);
+            song->setPos(0, p, true, true, true); //CDW
+            return;
+            }
+      else if (key == shortcuts[SHRT_POS_DEC_NOSNAP].key) {
+            int spos = song->cpos() - AL::sigmap.rasterStep(song->cpos(), song->arrangerRaster());
+            if(spos < 0)
+              spos = 0;
+            Pos p(spos,true);
+            song->setPos(0, p, true, true, true);
+            return;
+            }
+      else if (key == shortcuts[SHRT_POS_INC_NOSNAP].key) {
+            Pos p(song->cpos() + AL::sigmap.rasterStep(song->cpos(), song->arrangerRaster()), true);
+            song->setPos(0, p, true, true, true);
+            return;
+            }
+            
       else if (key == shortcuts[SHRT_GOTO_LEFT].key) {
             if (!song->record())
                   song->setPos(0, song->lPos());

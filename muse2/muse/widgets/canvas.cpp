@@ -138,7 +138,7 @@ void Canvas::setPos(int idx, unsigned val, bool adjustScrollbar)
 //---------------------------------------------------------
 
 void Canvas::draw(QPainter& p, const QRect& rect)
-      {
+{
 //      printf("draw canvas %x virt %d\n", this, virt());
 
       int x = rect.x();
@@ -268,7 +268,7 @@ void Canvas::draw(QPainter& p, const QRect& rect)
                   }
             p.save();
             setPainter(p);
-            }
+      }
 
       //---------------------------------------------------
       //    draw marker
@@ -284,36 +284,38 @@ void Canvas::draw(QPainter& p, const QRect& rect)
                   }
             }
 
-      //---------------------------------------------------
-      //    draw location marker
-      //---------------------------------------------------
+     // //---------------------------------------------------
+     // //    draw location marker
+     // //---------------------------------------------------
 
-      p.setPen(Qt::blue);
-      if (pos[1] >= unsigned(x) && pos[1] < unsigned(x2)) 
-	  {
-            p.drawLine(pos[1], y, pos[1], y2);
-      }
-      if (pos[2] >= unsigned(x) && pos[2] < unsigned(x2))
-            p.drawLine(pos[2], y, pos[2], y2);
-	  
-	  //QPen playbackPen(QColor(0,58,72), 9, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-	  //p.setPen(playbackPen);
-	  p.setPen(Qt::red);
+     // p.setPen(Qt::blue);
+     // if (pos[1] >= unsigned(x) && pos[1] < unsigned(x2)) 
+	 // {
+     //       p.drawLine(pos[1], y, pos[1], y2);
+     // }
+     // if (pos[2] >= unsigned(x) && pos[2] < unsigned(x2))
+     //       p.drawLine(pos[2], y, pos[2], y2);
+	 // 
+	 // QPen playbackPen(QColor(51,56,55), 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+	 // p.setPen(playbackPen);
+	 // //p.setPen(Qt::red);
 
-      if (pos[0] >= unsigned(x) && pos[0] < unsigned(x2)) 
-	  {
-            p.drawLine(pos[0], y, pos[0], y2);
-      }
-      
+     // if (pos[0] >= unsigned(x) && pos[0] < unsigned(x2)) 
+	 // {
+     //       p.drawLine(pos[0], y, pos[0], y2);
+     // }
+     // 
+
       //---------------------------------------------------
       //    draw lasso
       //---------------------------------------------------
 
-      if (drag == DRAG_LASSO) {
-            p.setPen(Qt::blue);
+      if (drag == DRAG_LASSO) 
+	  {
+            p.setPen(QColor(181,109,16));
             p.setBrush(Qt::NoBrush);
             p.drawRect(lasso);
-            }
+      }
       
       //---------------------------------------------------
       //    draw moving items
@@ -331,7 +333,30 @@ void Canvas::draw(QPainter& p, const QRect& rect)
           drawMoving(p, i->second, rect);
         setPainter(p);
       }
+      //---------------------------------------------------
+      //    draw location marker
+      //---------------------------------------------------
+
+      //p.setPen(Qt::blue);
+      p.setPen(QColor(139,225,69));
+      if (pos[1] >= unsigned(x) && pos[1] < unsigned(x2)) 
+	  {
+            p.drawLine(pos[1], y, pos[1], y2);
       }
+      if (pos[2] >= unsigned(x) && pos[2] < unsigned(x2))
+            p.drawLine(pos[2], y, pos[2], y2);
+	  
+	  //QPen playbackPen(QColor(8,193,156), 1);
+	  //p.setPen(playbackPen);
+	  //p.setPen(Qt::green);
+	  p.setPen(QColor(0,186,255));
+
+      if (pos[0] >= unsigned(x) && pos[0] < unsigned(x2)) 
+	  {
+            p.drawLine(pos[0], y, pos[0], y2);
+      }
+      
+}
 
 #define WHEEL_STEPSIZE 40
 #define WHEEL_DELTA   120
@@ -360,31 +385,31 @@ void Canvas::wheelEvent(QWheelEvent* ev)
       //setYPos(newYpos);
       emit verticalScroll((unsigned)newYpos);
 
-      }
+}
 
 void Canvas::redirectedWheelEvent(QWheelEvent* ev)
-      {
+{
       wheelEvent(ev);
-      }
+}
 
 //---------------------------------------------------------
 //   deselectAll
 //---------------------------------------------------------
 
 void Canvas::deselectAll()
-      {
+{
       for (iCItem i = items.begin(); i != items.end(); ++i)
             i->second->setSelected(false);
-      }
+}
 
 //---------------------------------------------------------
 //   selectItem
 //---------------------------------------------------------
 
 void Canvas::selectItem(CItem* e, bool flag)
-      {
+{
       e->setSelected(flag);
-      }
+}
 
 //---------------------------------------------------------
 //   startMoving
@@ -392,7 +417,7 @@ void Canvas::selectItem(CItem* e, bool flag)
 //---------------------------------------------------------
 
 void Canvas::startMoving(const QPoint& pos, DragType)
-      {
+{
       for (iCItem i = items.begin(); i != items.end(); ++i) {
             if (i->second->isSelected()) {
                   i->second->setMoving(true);
@@ -400,7 +425,7 @@ void Canvas::startMoving(const QPoint& pos, DragType)
                   }
             }
       moveItems(pos, 0);
-      }
+}
 
 //---------------------------------------------------------
 //   moveItems
@@ -410,7 +435,7 @@ void Canvas::startMoving(const QPoint& pos, DragType)
 //---------------------------------------------------------
 
 void Canvas::moveItems(const QPoint& pos, int dir = 0, bool rasterize)
-      {
+{
       int dp;
       if(rasterize)
         dp = y2pitch(pos.y()) - y2pitch(start.y());
@@ -437,13 +462,14 @@ void Canvas::moveItems(const QPoint& pos, int dir = 0, bool rasterize)
               ny = y + dp;
               mp = QPoint(nx, ny);
             }  
-            if (i->second->mp() != mp) {
+            if (i->second->mp() != mp) 
+			{
                   i->second->setMp(mp);
                   itemMoved(i->second, mp);
-                  }
             }
-      redraw();
       }
+      redraw();
+}
 
 //---------------------------------------------------------
 //   viewKeyPressEvent

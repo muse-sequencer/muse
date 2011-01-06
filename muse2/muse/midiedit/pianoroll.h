@@ -156,7 +156,7 @@ class PianoRoll : public MidiEditor {
    private slots:
       void setSelection(int, Event&, Part*);
       void noteinfoChanged(NoteInfo::ValType, int);
-      CtrlEdit* addCtrl();
+      //CtrlEdit* addCtrl();
       void removeCtrl(CtrlEdit* ctrl);
       void soloChanged(bool flag);
       //void trackInfoScroll(int);
@@ -188,6 +188,8 @@ class PianoRoll : public MidiEditor {
       virtual void updateHScrollRange();
       void execDeliveredScript(int id);
       void execUserScript(int id);
+      CtrlEdit* addCtrl();
+      
    public:
       PianoRoll(PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
       ~PianoRoll();

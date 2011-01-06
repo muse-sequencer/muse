@@ -19,6 +19,7 @@
 #include "al/sig.h"
 #include "undo.h"
 #include "track.h"
+#include "trackview.h"
 
 class QAction;
 class QFont;
@@ -75,6 +76,9 @@ class AudioDevice;
 #define SC_MIDI_CONTROLLER_ADD 0x8000000   // a hardware midi controller was added or deleted
 #define SC_MIDI_TRACK_PROP    0x10000000   // a midi track's properties changed (channel, compression etc)
 #define SC_SONG_TYPE          0x20000000   // the midi song type (mtype) changed
+#define SC_TRACKVIEW_INSERTED 0x30000000
+#define SC_TRACKVIEW_REMOVED  0x40000000
+#define SC_TRACKVIEW_MODIFIED 0x50000000
 
 #define REC_NOTE_FIFO_SIZE    16
 
@@ -106,6 +110,7 @@ class Song : public QObject {
       int updateFlags;
 
       TrackList _tracks;      // tracklist as seen by arranger
+	  TrackViewList _tviews;  // trackviewlist as seen by arranger
       MidiTrackList  _midis;
       WaveTrackList _waves;
       InputList _inputs;      // audio input ports
@@ -131,7 +136,7 @@ class Song : public QObject {
       int _cycleMode;
       bool _click;
       bool _quantize;
-      int _recRaster;        // Used for audio rec new part snapping. Set by Arranger snap combo box.
+      int _arrangerRaster;        // Used for audio rec new part snapping. Set by Arranger snap combo box.
       unsigned _len;         // song len in ticks
       FollowMode _follow;
       int _globalPitchShift;
@@ -263,22 +268,22 @@ class Song : public QObject {
       void cmdChangePart(Part* oldPart, Part* newPart, bool doCtrls, bool doClones);
       void cmdRemovePart(Part* part);
       void cmdAddPart(Part* part);
-      int recRaster() { return _recRaster; }        // Used by Song::cmdAddRecordedWave to snap new wave parts
-      void setRecRaster(int r) { _recRaster = r; }  // Used by Arranger snap combo box
+      int arrangerRaster() { return _arrangerRaster; }        // Used by Song::cmdAddRecordedWave to snap new wave parts
+      void setArrangerRaster(int r) { _arrangerRaster = r; }  // Used by Arranger snap combo box
 
       //-----------------------------------------
       //   track manipulations
       //-----------------------------------------
 
-      TrackList* tracks()       { return &_tracks;  }
-      MidiTrackList* midis()    { return &_midis;   }
-      WaveTrackList* waves()    { return &_waves;   }
-      InputList* inputs()       { return &_inputs;  }
-      OutputList* outputs()     { return &_outputs; }
-      GroupList* groups()       { return &_groups;  }
-      AuxList* auxs()           { return &_auxs;    }
-      SynthIList* syntis()      { return &_synthIs; }
-      
+      TrackList* tracks()         { return &_tracks;  }
+      MidiTrackList* midis()      { return &_midis;   }
+      WaveTrackList* waves()      { return &_waves;   }
+      InputList* inputs()         { return &_inputs;  }
+      OutputList* outputs()       { return &_outputs; }
+      GroupList* groups()         { return &_groups;  }
+      AuxList* auxs()             { return &_auxs;    }
+      SynthIList* syntis()        { return &_synthIs; }
+
       void cmdRemoveTrack(Track* track);
       void removeTrack0(Track* track);
       void removeTrack1(Track* track);
@@ -307,6 +312,14 @@ class Song : public QObject {
       void updateSoloStates();
       //void chooseMidiRoutes(QButton* /*parent*/, MidiTrack* /*track*/, bool /*dst*/);
 
+	  // TrackView
+	  TrackViewList* trackviews() { return &_tviews;  }
+      TrackView* findTrackView(const QString& name) const;
+      void insertTrackView(TrackView*, int idx);
+	  void removeTrackView(TrackView*);
+	  void cmdRemoveTrackView(TrackView*);
+      void msgInsertTrackView(TrackView*, int idx, bool u = true);
+      
       //-----------------------------------------
       //   undo, redo
       //-----------------------------------------
@@ -390,8 +403,10 @@ class Song : public QObject {
       void seqSignal(int fd);
       Track* addTrack(int);
       Track* addNewTrack(QAction* action);
+	  TrackView* addNewTrackView(int);
       QString getScriptPath(int id, bool delivered);
       void populateScriptMenu(QMenu* menuPlugins, QObject* receiver);
+      TrackView* addTrackView(int);
 
    signals:
       void songChanged(int);

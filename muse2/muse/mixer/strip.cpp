@@ -78,6 +78,7 @@ void Strip::heartBeat()
 
 void Strip::setLabelFont()
 {
+	return;
   // Use the new font #6 I created just for these labels (so far).
   // Set the label's font.
   label->setFont(config.fonts[6]);
@@ -91,40 +92,46 @@ void Strip::setLabelFont()
 
 void Strip::setLabelText()
 {
-      QColor c;
-      switch(track->type()) {
-            case Track::AUDIO_OUTPUT:
-                  c = Qt::green;
-                  break;
-            case Track::AUDIO_GROUP:
-                  c = Qt::yellow;
-                  break;
-            case Track::AUDIO_AUX:
-                  c = QColor(120, 255, 255);   // Light blue
-                  break;
-            case Track::WAVE:
-                  c = Qt::magenta;
-                  break;
-            case Track::AUDIO_INPUT:
-                  c = Qt::red;
-                  break;
-            case Track::AUDIO_SOFTSYNTH:
-                  c = QColor(255, 130, 0);  // Med orange
-                  break;
-            case Track::MIDI:
-            case Track::DRUM:
-                  {
-                  c = QColor(0, 160, 255); // Med blue
-                  }
-                  break;
-            default:
-                  return;      
-            }
+     // QColor c;
+     // switch(track->type()) {
+     //       case Track::AUDIO_OUTPUT:
+     //             c = Qt::green;
+     //             break;
+     //       case Track::AUDIO_GROUP:
+     //             c = Qt::yellow;
+     //             break;
+     //       case Track::AUDIO_AUX:
+     //             c = QColor(120, 255, 255);   // Light blue
+     //             break;
+     //       case Track::WAVE:
+     //             c = Qt::magenta;
+     //             break;
+     //       case Track::AUDIO_INPUT:
+     //             c = Qt::red;
+     //             break;
+     //       case Track::AUDIO_SOFTSYNTH:
+     //             c = QColor(255, 130, 0);  // Med orange
+     //             break;
+     //       case Track::MIDI:
+     //       case Track::DRUM:
+     //             {
+     //             c = QColor(0, 160, 255); // Med blue
+     //             }
+     //             break;
+     //       default:
+     //             return;      
+     //       }
       
-      label->setText(track->name());
-      QPalette palette;
-      palette.setColor(label->backgroundRole(), c);
-      label->setPalette(palette);
+	  QString trackName = track->name();
+	  if(track->name().length() > 8)
+	  	trackName = track->name().mid(0,7) + "..";
+
+      label->setText(trackName);
+	  label->setToolTip(track->name());
+      //QPalette palette;
+      //palette.setColor(label->backgroundRole(), c);
+      //label->setPalette(palette);
+      //label->setStyleSheet(QString("background-color: ") + c.name());
 }
 
 //---------------------------------------------------------
@@ -181,6 +188,10 @@ Strip::Strip(QWidget* parent, Track* t)
       //setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding)); // TESTING Tim.
       setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding)); // TESTING Tim.
       
+      rackgrid = new QVBoxLayout();
+      rackgrid->setContentsMargins(0, 0, 0, 0);
+      rackgrid->setSpacing(0);
+
       grid = new QGridLayout();
       grid->setContentsMargins(0, 0, 0, 0);
       grid->setSpacing(0);
@@ -194,7 +205,32 @@ Strip::Strip(QWidget* parent, Track* t)
       // NOTE: This was required, otherwise the strip labels have no colour in the mixer only - track info OK !
       // Not sure why...
       label = new QLabel(this);
-      label->setObjectName(track->cname());
+      switch(track->type()) {
+            case Track::AUDIO_OUTPUT:
+                  label->setObjectName("MixerAudioOutLabel");
+                  break;
+            case Track::AUDIO_GROUP:
+                  label->setObjectName("MixerAudioGroupLabel");
+                  break;
+            case Track::AUDIO_AUX:
+                  label->setObjectName("MixerAuxLabel");
+                  break;
+            case Track::WAVE:
+                  label->setObjectName("MixerWaveLabel");
+                  break;
+            case Track::AUDIO_INPUT:
+                  label->setObjectName("MixerAudioInLabel");
+                  break;
+            case Track::AUDIO_SOFTSYNTH:
+                  label->setObjectName("MixerSynthLabel");
+                  break;
+            case Track::MIDI:
+            case Track::DRUM:
+                  {
+                  label->setObjectName("MidiTrackLabel");
+                  }
+                  break;
+            }
       
       // Moved by Tim. p3.3.9
       //setLabelText();
@@ -220,7 +256,7 @@ Strip::Strip(QWidget* parent, Track* t)
       //label->setAlignment(Qt::AlignCenter | Qt::TextWordWrap | Qt::TextWrapAnywhere);
       // changed by Orcan: We can't use Qt::TextWordWrap in alignment in Qt4.
       label->setAlignment(Qt::AlignCenter);
-      label->setWordWrap(true);
+      label->setWordWrap(false);
       label->setAutoFillBackground(true);
       label->setLineWidth(2);
       label->setFrameStyle(Sunken | StyledPanel);
@@ -230,10 +266,16 @@ Strip::Strip(QWidget* parent, Track* t)
       
       // Added by Tim. p3.3.9
       setLabelText();
-      setLabelFont();
+      //setLabelFont();
       
-      //layout->addWidget(label);
+	  //Add you top image here
+	  QLabel* toprack = new QLabel();
+	  toprack->setPixmap(QPixmap(":/images/top_rack.png"));
+      grid->addWidget(toprack, _curGridRow++, 0, 1, 2);
+	  //layout->addWidget(label);
       grid->addWidget(label, _curGridRow++, 0, 1, 2);
+	  //rackgrid->addLayout(grid);
+	  //rackgrid->addWidget(toprack);
       }
 
 //---------------------------------------------------------

@@ -57,7 +57,7 @@ static QToolButton* newButton(const QPixmap* pm, const QString& tt,
       {
       QToolButton* button = new QToolButton(parent);
       button->setFixedHeight(25);
-      button->setIcon(QIcon(*pm));
+      //button->setIcon(QIcon(*pm));
       button->setCheckable(toggle);
       button->setToolTip(tt);
       button->setFocusPolicy(Qt::NoFocus);

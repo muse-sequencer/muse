@@ -241,12 +241,16 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
 	}
 
 	scale  = new QSlider (o);
+        // Added by Tim. For some reason focus was on. 
+        // It messes up tabbing, and really should have a shortcut instead.
+        scale->setFocusPolicy(Qt::NoFocus);  
         scale->setMinimum(0);
         scale->setMaximum(1024);
 	scale->setPageStep(1);
 	scale->setValue(cur);	
 
 	scroll = new QScrollBar ( o );
+        //scroll->setFocusPolicy(Qt::NoFocus);  // Tim.
 	setScale ( cur );
 
 	if ( o == Qt::Horizontal )

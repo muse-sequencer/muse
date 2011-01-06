@@ -142,7 +142,7 @@ void Knob::drawKnob(QPainter* p, const QRect& r)
 	if(loaded)
     	p->drawPixmap(aRect, dial);
  		 
-		 printf("\n\n\nButton size is X:%d : Y:%d : W:%d : H:%d \n\n\n\n",aRect.x(), aRect.y(), aRect.width(), aRect.height());
+		 //printf("\n\n\nButton size is X:%d : Y:%d : W:%d : H:%d \n\n\n\n",aRect.x(), aRect.y(), aRect.width(), aRect.height());
 
       //
       // draw marker

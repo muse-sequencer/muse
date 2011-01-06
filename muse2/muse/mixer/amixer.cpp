@@ -290,10 +290,40 @@ void AudioMixerApp::addStrip(Track* t, int idx)
       else {
             Strip* strip;
             if (t->isMidiTrack())
+			{
                   strip = new MidiStrip(central, (MidiTrack*)t);
-            else
+            }
+			else
+			{
                   strip = new AudioStrip(central, (AudioTrack*)t);
-            layout->insertWidget(idx, strip);
+            }
+            switch(t->type()) {/*{{{*/
+                case Track::AUDIO_OUTPUT:
+                    strip->setObjectName("MixerAudioOutStrip");
+                    break;
+                case Track::AUDIO_GROUP:
+                    strip->setObjectName("MixerAudioGroupStrip");
+                    break;
+                case Track::AUDIO_AUX:
+                    strip->setObjectName("MixerAuxStrip");
+                    break;
+                case Track::WAVE:
+                    strip->setObjectName("MixerWaveStrip");
+                    break;
+                case Track::AUDIO_INPUT:
+                    strip->setObjectName("MixerAudioInStrip");
+                    break;
+                case Track::AUDIO_SOFTSYNTH:
+                    strip->setObjectName("MixerSynthStrip");
+                    break;
+                case Track::MIDI:
+                case Track::DRUM:
+                {
+                    strip->setObjectName("MidiTrackStrip");
+                }
+                  break;
+            }/*}}}*/
+			layout->insertWidget(idx, strip);
             stripList.insert(si, strip);
             strip->show();  
             }

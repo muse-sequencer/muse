@@ -175,9 +175,11 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       chorusSend  = CTRL_VAL_UNKNOWN;
       reverbSend  = CTRL_VAL_UNKNOWN;
       
+      grid->addItem(new QSpacerItem(0, 10), _curGridRow++, 0);
       addKnob(KNOB_VAR_SEND, tr("VariationSend"), tr("Var"), SLOT(setVariSend(double)), false);
       addKnob(KNOB_REV_SEND, tr("ReverbSend"), tr("Rev"), SLOT(setReverbSend(double)), false);
       addKnob(KNOB_CHO_SEND, tr("ChorusSend"), tr("Cho"), SLOT(setChorusSend(double)), false);
+      grid->addItem(new QSpacerItem(0, 5), _curGridRow++, 0);
       ///int auxsSize = song->auxs()->size();
       ///if (auxsSize)
             //layout->addSpacing((STRIP_WIDTH/2 + 1) * auxsSize);
@@ -206,6 +208,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       meter[0]->setFixedWidth(15);
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
       
+      grid->addItem(new QSpacerItem(0, 10), _curGridRow++, 0);
       sliderGrid = new QGridLayout(); 
       sliderGrid->setRowStretch(0, 100);
       sliderGrid->addWidget(slider, 0, 0, Qt::AlignRight);
@@ -264,7 +267,9 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       connect(sl, SIGNAL(valueChanged(double, int)), SLOT(volLabelChanged(double)));
       connect(sl, SIGNAL(doubleClicked(int)), SLOT(labelDoubleClicked(int)));
       
+      grid->addItem(new QSpacerItem(0, 5), _curGridRow++, 0);
       grid->addWidget(sl, _curGridRow++, 0, 1, 2, Qt::AlignCenter); 
+      grid->addItem(new QSpacerItem(0, 10), _curGridRow++, 0);
 
       //---------------------------------------------------
       //    pan, balance
@@ -272,6 +277,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
 
       addKnob(KNOB_PAN, tr("Pan/Balance"), tr("Pan"), SLOT(setPan(double)), true);
 
+      grid->addItem(new QSpacerItem(0, 9), _curGridRow++, 0);
       updateControls();
       
       //---------------------------------------------------
@@ -291,6 +297,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       record->setIcon(iconSet);
       record->setIconSize(record_on_Icon->size());  
       record->setToolTip(tr("record"));
+	  record->setObjectName("btnRecord");
       record->setChecked(track->recordFlag());
       connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
 
@@ -302,6 +309,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       mute->setIconSize(muteIconOn->size());  
       mute->setCheckable(true);
       mute->setToolTip(tr("mute"));
+	  mute->setObjectName("btnMute");
       mute->setChecked(track->mute());
       mute->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
@@ -324,6 +332,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       //solo->setToolTip(tr("pre fader listening"));
       solo->setToolTip(tr("solo mode"));
       solo->setCheckable(true);
+	  solo->setObjectName("btnSolo");
       solo->setChecked(t->solo());
       solo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
@@ -374,6 +383,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       off->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       off->setCheckable(true);
       off->setToolTip(tr("off"));
+	  off->setObjectName("btnExit");
       off->setChecked(t->off());
       connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
 
@@ -389,22 +399,29 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       iR = new QToolButton();
       iR->setFont(config.fonts[1]);
       iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      iR->setText(tr("iR"));
+      //iR->setText(tr("iR"));
+      iR->setIcon(*mixerIn);
+      iR->setIconSize(mixerIn->size());  
       iR->setCheckable(false);
       iR->setToolTip(tr("input routing"));
+	  iR->setObjectName("btnIns");
       grid->addWidget(iR, _curGridRow, 0);
       connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
       oR = new QToolButton();
       oR->setFont(config.fonts[1]);
       oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      oR->setText(tr("oR"));
+      //oR->setText(tr("oR"));
+      oR->setIcon(*mixerOut);
+      oR->setIconSize(mixerIn->size());  
       oR->setCheckable(false);
+	  oR->setObjectName("btnOuts");
       // TODO: Works OK, but disabled for now, until we figure out what to do about multiple out routes and display values...
       oR->setEnabled(false);
       oR->setToolTip(tr("output routing"));
       grid->addWidget(oR, _curGridRow++, 1);
       connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
 
+      grid->addItem(new QSpacerItem(0, 5), _curGridRow++, 0);
       //---------------------------------------------------
       //    automation mode
       //---------------------------------------------------
@@ -432,6 +449,10 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       
       //connect(autoType, SIGNAL(activated(int,int)), SLOT(setAutomationType(int,int)));
       grid->addWidget(autoType, _curGridRow++, 0, 1, 2);
+      grid->addItem(new QSpacerItem(0, 5), _curGridRow++, 0);
+	  QLabel* toprack = new QLabel();
+	  toprack->setPixmap(QPixmap(":/images/bottom_rack.png"));
+      grid->addWidget(toprack, _curGridRow++, 0, 1, 2);
       connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       inHeartBeat = false;
       }

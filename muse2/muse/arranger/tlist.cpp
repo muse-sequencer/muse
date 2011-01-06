@@ -21,6 +21,7 @@
 #include <QScrollBar>
 #include <QWheelEvent>
 
+#include "popupmenu.h"
 #include "globals.h"
 #include "icons.h"
 #include "scrollscale.h"
@@ -329,19 +330,19 @@ void TList::paint(const QRect& r)
                               p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
                               }
                               break;
-//                        case COL_AUTOMATION:
-//                              {
-//                              QString s="-";
-//
-//                              if (!track->isMidiTrack()) {
-//                                    int count = ((AudioTrack*)track)->controller()->size();
-//                                    s.sprintf("%d", count);
-//                                    }
-//
-//
-//                              p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
-//                              }
-//                              break;
+                        case COL_AUTOMATION:
+                              {
+                              QString s="-";
+
+                              if (!track->isMidiTrack()) {
+                                    int count = ((AudioTrack*)track)->controller()->size();
+                                    s.sprintf("%d viewed", count);
+                                    }
+
+
+                              p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
+                              }
+                              break;
                         default:
                               break;
                         }
@@ -679,7 +680,11 @@ void TList::keyPressEvent(QKeyEvent* e)
                   }
             }
       emit keyPressExt(e); //redirect keypress events to main app
-      e->ignore();
+      
+      // p4.0.10 Removed by Tim. keyPressExt are sent to part canvas, where they are 
+      //  ignored *only* if necessary.
+      //e->ignore();  
+      
       /*
       int key = e->key();
       switch (key) {
@@ -769,6 +774,25 @@ TrackList TList::getRecEnabledTracks()
 //---------------------------------------------------------
 //   mousePressEvent
 //---------------------------------------------------------
+
+void TList::changeAutomation(QAction* act)
+{
+  printf("changeAutomation!\n");
+  if (editTrack->type() == Track::MIDI) {
+    printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
+    return;
+  }
+
+  CtrlListList* cll = ((AudioTrack*)editTrack)->controller();
+  int index=0;
+  for(CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
+    if (act->data() == index++) { // got it, change state
+      CtrlList *cl = icll->second;
+      cl->setVisible(!cl->isVisible());
+    }
+  }
+  song->update(SC_TRACK_MODIFIED);
+}
 
 void TList::mousePressEvent(QMouseEvent* ev)
       {
@@ -915,24 +939,73 @@ void TList::mousePressEvent(QMouseEvent* ev)
       mode = START_DRAG;
 
       switch (col) {
+              case COL_AUTOMATION:
+                {
+                if (t->type() != Track::MIDI) {
+                    editTrack = t;
+                    PopupMenu* p = new PopupMenu();
+                    p->disconnect();
+                    p->clear();
+                    p->setTitle(tr("Viewable automation"));
+                    CtrlListList* cll = ((AudioTrack*)t)->controller();
+                    QAction* act = 0;
+                    int index=0;
+                    for(CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
+                      CtrlList *cl = icll->second;
+                      if (cl->dontShow())
+                        continue;
+                      act = p->addAction(cl->name());
+                      act->setCheckable(true);
+                      act->setChecked(cl->isVisible());
+                      act->setData(index++);
+                    }
+                    connect(p, SIGNAL(triggered(QAction*)), SLOT(changeAutomation(QAction*)));
+                    //connect(p, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
+                    //p->popup(QCursor::pos());
+                    p->exec(QCursor::pos());
+
+                    delete p;
+                  }
+                  break;
+                }
+
             case COL_RECORD:
                   {
-                  bool val = !(t->recordFlag());
-                  if (!t->isMidiTrack()) {
-                        if (t->type() == Track::AUDIO_OUTPUT) {
-                              if (val && t->recordFlag() == false) {
-                                    muse->bounceToFile((AudioOutput*)t);
+                      bool val = !(t->recordFlag());
+                      if (button == Qt::LeftButton) {
+                        if (!t->isMidiTrack()) {
+                              if (t->type() == Track::AUDIO_OUTPUT) {
+                                    if (val && t->recordFlag() == false) {
+                                          muse->bounceToFile((AudioOutput*)t);
+                                          }
+                                    audio->msgSetRecord((AudioOutput*)t, val);
+                                    if (!((AudioOutput*)t)->recFile())
+                                          val = false;
+                                    else
+                                          return;
                                     }
-                              audio->msgSetRecord((AudioOutput*)t, val);
-                              if (!((AudioOutput*)t)->recFile())
-                                    val = false;
-                              else
-                                    return;
+                              song->setRecordFlag(t, val);
                               }
-                        song->setRecordFlag(t, val);
+                        else
+                              song->setRecordFlag(t, val);
+                      } else if (button == Qt::RightButton) {
+                        // enable or disable ALL tracks of this type
+                        if (!t->isMidiTrack()) {
+                              if (t->type() == Track::AUDIO_OUTPUT) {
+                                    return;
+                                    }
+                              WaveTrackList* wtl = song->waves();
+                              foreach (WaveTrack *wt, *wtl) {
+                                song->setRecordFlag(wt, val);
+                              }
+                              }
+                        else {
+                          MidiTrackList* mtl = song->midis();
+                          foreach (MidiTrack *mt, *mtl) {
+                            song->setRecordFlag(mt, val);
+                          }
                         }
-                  else
-                        song->setRecordFlag(t, val);
+                      }
                   }
                   break;
             case COL_NONE:
@@ -997,7 +1070,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         mode = NORMAL;
                         QMenu* p = new QMenu;
                         //p->clear();
-                        p->addAction(QIcon(*automation_clear_dataIcon), tr("Delete Track"))->setData(0); // ddskrjo
+                        p->addAction(QIcon(*automation_clear_dataIcon), tr("Delete Track"))->setData(0);
                         p->addAction(QIcon(*track_commentIcon), tr("Track Comment"))->setData(1);
                         QAction* act = p->exec(ev->globalPos(), 0);
                         if (act) {
@@ -1234,7 +1307,7 @@ void TList::mouseReleaseEvent(QMouseEvent* ev)
             setCursor(QCursor(Qt::ArrowCursor));
             redraw();
             }
-      if (editTrack)
+      if (editTrack && editor && editor->isVisible())
             editor->setFocus();
       adjustScrollbar();
       }
@@ -1261,7 +1334,7 @@ void TList::wheelEvent(QWheelEvent* ev)
             case COL_NONE:
             case COL_CLASS:
             case COL_NAME:
-            //case COL_AUTOMATION:
+            case COL_AUTOMATION:
                   break;
             case COL_MUTE:
                   // p3.3.29
@@ -1402,7 +1475,7 @@ void TList::setYPos(int y)
 //   resizeEvent
 //---------------------------------------------------------
 
-void TList::resizeEvent(QResizeEvent* ev)
+void TList::resizeEvent(QResizeEvent* /*ev*/)
       {
       
       }

@@ -48,8 +48,9 @@ Slider::Slider(QWidget *parent, const char *name,
             d_thumbWidth = 30;
             }
       else {
-            d_thumbLength = 30;
-            d_thumbHalf = 15;
+            //d_thumbLength = 30;
+            d_thumbLength = 32;
+            d_thumbHalf = 16;
             d_thumbWidth = 16;
             }
 
@@ -196,9 +197,9 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
       int lineDist;
 
       if (d_bwTrough > 0) {
-            qDrawShadePanel(p, r.x(), r.y(),
-      r.width(), r.height(),
-      pal, TRUE, d_bwTrough,0);
+      //      qDrawShadePanel(p, r.x(), r.y(),
+      //r.width(), r.height(),
+      //pal, TRUE, d_bwTrough,0);
         cr.setRect(r.x() + d_bwTrough,
        r.y() + d_bwTrough,
        r.width() - 2*d_bwTrough,
@@ -276,9 +277,9 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
  		 }
  		 else
  		 {
- 		     p->fillRect(cr.x(),cr.y(),cr.width(),ipos,brMid);
- 		     p->fillRect(cr.x(), ipos + d_thumbLength, cr.width(),
- 		     cr.height() - d_thumbLength - dist1, brMid);
+ 		     //p->fillRect(cr.x(),cr.y(),cr.width(),ipos,brMid);
+ 		     //p->fillRect(cr.x(), ipos + d_thumbLength, cr.width(),
+ 		     //cr.height() - d_thumbLength - dist1, brMid);
  		 }
  		 
 		 //This adds the thumb slider
@@ -288,9 +289,15 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
 		 bool loaded = thumbp.load(":images/slider_thumb.png");
 		 int knobx = cr.x()+2;
 		 int knoby = ipos-12;
+		 QRect knobRect(knobx, knoby, 18, 33); 
 		 //printf("Slider: Knob position X: %d  Y: %d\n", knobx, knoby);
 		 if(loaded)
-         p->drawPixmap(knobx, knoby, thumbp);
+		 {
+		    p->setCompositionMode(QPainter::CompositionMode_SourceAtop);//QPainter::CompositionMode_SourceOver);
+         	//p->drawPixmap(knobx, knoby, thumbp);
+			p->setClipping(false);
+         	p->drawPixmap(knobRect, thumbp);
+         }
  		// if (lineDist > 1)
  		//    qDrawShadeLine(p, cr.x() + lineDist , markerPos,
  		//       cr.x() + cr.width() - lineDist, markerPos,
@@ -456,12 +463,11 @@ void Slider::drawVsBgSlot(QPainter *p, const QRect &rBound, const QRect &rThumb,
     if (rThumb.top() > rBound.top())
     {
  		 p->setPen(lightColor);
- 		 p->fillRect(rBound.x(),rBound.y(), rSlot.left() - rBound.left(),dTop, brBack);
- 		 p->fillRect(rSlot.right() + 1, rBound.y(),
- 		       rBound.right() - rSlot.right(), dTop,brBack);
- 		 if (hPos > rBound.top())
- 		    p->fillRect(rSlot.x(),rBound.y(), ws,
- 		          hPos - rBound.top(),brBack);
+ 		 //p->fillRect(rBound.x(),rBound.y(), rSlot.left() - rBound.left(),dTop, brBack);
+ 		 //p->fillRect(rSlot.right() + 1, rBound.y(),
+ 		 //      rBound.right() - rSlot.right(), dTop,brBack);
+ 		 //if (hPos > rBound.top())
+ 		 //   p->fillRect(rSlot.x(),rBound.y(), ws, hPos - rBound.top(),brBack);
 
  		 //p->setPen(pal.dark().color());
  		 p->setPen(darkColor);
@@ -474,8 +480,7 @@ void Slider::drawVsBgSlot(QPainter *p, const QRect &rBound, const QRect &rThumb,
  		     p->drawLine(rSlot.left(), rThumb.top() - 1, rSlot.left(), rSlot.top());
  		     //p->setPen(pal.light().color());
  		 	 p->setPen(lightColor);
- 		     p->drawLine(rSlot.right(), rSlot.top() + 1, rSlot.right(),
- 		     rThumb.top() - 1);
+ 		     p->drawLine(rSlot.right(), rSlot.top() + 1, rSlot.right(), rThumb.top() - 1);
  		 
  		     p->fillRect(rSlot.x() - 1, rSlot.y() + 1, rSlot.width() + 2,
  		     dTop - ds -1, QBrush(pal.currentColorGroup() == QPalette::Disabled ? 
@@ -487,14 +492,14 @@ void Slider::drawVsBgSlot(QPainter *p, const QRect &rBound, const QRect &rThumb,
  		   lPos = qwtMax(rSlot.bottom(), rThumb.bottom()) + 1;
  		   if (rThumb.bottom() < rBound.bottom())
  		   {
- 				 p->fillRect(rBound.left(), rThumb.bottom() + 1,
- 				       rSlot.left() - rBound.left(),
- 				       rBound.bottom() - rThumb.bottom(), brBack);
- 				 p->fillRect(rSlot.right() + 1, rThumb.bottom() + 1,
- 				       rBound.right() - rSlot.right(),
- 				       rBound.bottom() - rThumb.bottom(), brBack);
- 				 if (lPos <= rBound.bottom())
- 				    p->fillRect(rSlot.left(), lPos, ws, rBound.bottom() - lPos + 1, brBack);
+ 				// p->fillRect(rBound.left(), rThumb.bottom() + 1,
+ 				//       rSlot.left() - rBound.left(),
+ 				//       rBound.bottom() - rThumb.bottom(), brBack);
+ 				// p->fillRect(rSlot.right() + 1, rThumb.bottom() + 1,
+ 				//       rBound.right() - rSlot.right(),
+ 				//       rBound.bottom() - rThumb.bottom(), brBack);
+ 				 //if (lPos <= rBound.bottom())
+ 				 //   p->fillRect(rSlot.left(), lPos, ws, rBound.bottom() - lPos + 1, brBack);
 
  		 	 	 p->setPen(lightColor);
  				 //p->setPen(pal.dark().color());

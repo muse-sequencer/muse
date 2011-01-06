@@ -13,6 +13,7 @@
 
 #include <map>
 #include <list>
+#include <qcolor.h>
 
 const int AC_VOLUME = 0;
 const int AC_PAN    = 1;
@@ -87,11 +88,15 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       QString _name;
       double _min, _max;  
       CtrlValueType _valueType;
+      QColor _displayColor;
+      bool _visible;
+      bool _dontShow; // when this is true the control exists but is not compatible with viewing in the arranger
+      void initColor(int i);
 
    public:
       CtrlList();
       CtrlList(int id);
-      CtrlList(int id, QString name, double min, double max);
+      CtrlList(int id, QString name, double min, double max, bool dontShow=false);
 
       Mode mode() const          { return _mode; }
       void setMode(Mode m)       { _mode = m; }
@@ -117,6 +122,12 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       void add(int tick, double value);
       void del(int tick);
       void read(Xml& xml);
+
+      void setColor( QColor c ) { _displayColor = c;}
+      QColor color() { return _displayColor; }
+      void setVisible(bool v) { _visible = v; }
+      bool isVisible() { return _visible; }
+      bool dontShow() { return _dontShow; }
       };
 
 //---------------------------------------------------------

@@ -6,6 +6,8 @@
 
 #include <QTimer>
 #include <QMessageBox>
+#include <QStandardItemModel>
+#include <QStandardItem>
 
 #include <math.h>
 #include <string.h>
@@ -26,6 +28,7 @@
 #include "app.h"
 #include "route.h"
 #include "popupmenu.h"
+#include "pctable.h"
 
 //---------------------------------------------------------
 //   setTrack
@@ -42,6 +45,14 @@ void MidiTrackInfo::setTrack(Track* t)
   if(!t->isMidiTrack())
     return;
   selected = t;
+  
+  QPalette pal;
+  if(selected->type() == Track::DRUM)
+    pal.setColor(trackNameLabel->backgroundRole(), config.drumTrackLabelBg); 
+  else  
+    pal.setColor(trackNameLabel->backgroundRole(), config.midiTrackLabelBg); 
+  trackNameLabel->setPalette(pal);
+  
   updateTrackInfo(-1);
 }
 
@@ -49,11 +60,17 @@ void MidiTrackInfo::setTrack(Track* t)
 //   midiTrackInfo
 //---------------------------------------------------------
 
-MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent)
+MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QFrame(parent)//QWidget(parent)
 { 
   setupUi(this); 
   _midiDetect = false; 
-  
+  _progRowNum = 0;
+  editing = false;
+  _matrix = new QList<int>;
+  _tableModel = new ProgramChangeTableModel(this);//new QStandardItemModel();
+  tableView = new ProgramChangeTable(this);
+  tableView->setMinimumHeight(150);
+  tableBox->addWidget(tableView);
   selected = sel_track;
   
   // Since program covers 3 controls at once, it is in 'midi controller' units rather than 'gui control' units.
@@ -71,6 +88,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
   recEchoIconSet.addPixmap(*midiThruOnIcon, QIcon::Normal, QIcon::On);
   recEchoIconSet.addPixmap(*midiThruOffIcon, QIcon::Normal, QIcon::Off);
   recEchoButton->setIcon(recEchoIconSet);
+  recEchoButton->setIconSize(midiThruOnIcon->size());  
   
   // MusE-2: AlignCenter and WordBreak are set in the ui(3) file, but not supported by QLabel. Turn them on here.
   trackNameLabel->setAlignment(Qt::AlignCenter);
@@ -81,10 +99,23 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
   //trackNameLabel->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Minimum));
   
   if(selected)
+  {
     trackNameLabel->setObjectName(selected->cname());
-  QPalette pal;
-  pal.setColor(trackNameLabel->backgroundRole(), QColor(0, 160, 255)); // Med blue
-  trackNameLabel->setPalette(pal);
+    QPalette pal;
+    //pal.setColor(trackNameLabel->backgroundRole(), QColor(0, 160, 255)); // Med blue
+    if(selected->type() == Track::DRUM)
+      pal.setColor(trackNameLabel->backgroundRole(), config.drumTrackLabelBg); 
+    else  
+      pal.setColor(trackNameLabel->backgroundRole(), config.midiTrackLabelBg); 
+    trackNameLabel->setPalette(pal);
+  }    
+  //else
+  //{
+  //  pal.setColor(trackNameLabel->backgroundRole(), config.midiTrackLabelBg); 
+  //  trackNameLabel->setPalette(pal);
+  //}  
+  
+  //trackNameLabel->setStyleSheet(QString("background-color: ") + QColor(0, 160, 255).name()); // Med blue
   trackNameLabel->setWordWrap(true);
   trackNameLabel->setAutoFillBackground(true);
   trackNameLabel->setTextFormat(Qt::PlainText);
@@ -94,6 +125,21 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
   
   setLabelText();
   setLabelFont();
+  tableView->setModel(_tableModel);
+  tableView->setColumnWidth(0, 32);
+  btnUp->setIcon(*upPCIcon);
+  btnDown->setIcon(*downPCIcon);
+  btnDelete->setIcon(*garbagePCIcon);
+  btnUp->setIconSize(upPCIcon->size());
+  btnDown->setIconSize(downPCIcon->size());
+  btnDelete->setIconSize(garbagePCIcon->size());
+  
+  connect(tableView, SIGNAL(rowOrderChanged()), SLOT(rebuildMatrix()));
+  connect(_tableModel, SIGNAL(itemChanged(QStandardItem*)), SLOT(matrixItemChanged(QStandardItem*)));
+  connect(chkAdvanced, SIGNAL(stateChanged(int)), SLOT(toggleAdvanced(int)));
+  connect(btnDelete, SIGNAL(clicked(bool)), SLOT(deleteSelectedPatches(bool)));
+  connect(btnUp, SIGNAL(clicked(bool)), SLOT(movePatchUp(bool)));
+  connect(btnDown, SIGNAL(clicked(bool)), SLOT(movePatchDown(bool)));
 
   //setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding));
   
@@ -101,7 +147,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
 
   ///pop = new QMenu(iPatch);
   //pop->setCheckable(false); // not needed in Qt4
-
+  
   // Removed by Tim. p3.3.9
   //connect(iName, SIGNAL(returnPressed()), SLOT(iNameChanged()));
   
@@ -592,7 +638,7 @@ void MidiTrackInfo::inRoutesPressed()
                                    QMessageBox::Ok | QMessageBox::Cancel,
                                    QMessageBox::Ok);
     if (ret == QMessageBox::Ok) {
-        printf("open config midi ports\n");
+        // printf("open config midi ports\n");
         muse->configMidiPorts();
     }
     return;
@@ -999,7 +1045,7 @@ void MidiTrackInfo::iPanChanged(int val)
 //---------------------------------------------------------
 
 void MidiTrackInfo::instrPopup()
-      {
+{
       if(!selected)
         return;
       MidiTrack* track = (MidiTrack*)selected;
@@ -1021,14 +1067,68 @@ void MidiTrackInfo::instrPopup()
       ///QAction *act = pop->exec(iPatch->mapToGlobal(QPoint(10,5)));
       QAction *act = pup->exec(iPatch->mapToGlobal(QPoint(10,5)));
       if (act) {
-            int rv = act->data().toInt();
-            MidiPlayEvent ev(0, port, channel, ME_CONTROLLER, CTRL_PROGRAM, rv);
+            //int rv = act->data().toInt();
+            QVariant _data = act->data();
+			QStringList lst = _data.toStringList();
+			QString str = lst.at(0);
+			QString pg = "";//lst.at(1);
+			int rv = str.toInt();
+
+			MidiPlayEvent ev(0, port, channel, ME_CONTROLLER, CTRL_PROGRAM, rv);
             audio->msgPlayMidiEvent(&ev);
             updateTrackInfo(-1);
-            }
+			
+			//At this point we add the event to the list.
+			if(lst.size() > 1)
+			{
+				pg = lst.at(1);
+			}
+			QString label = pg + (pg.isEmpty() ? "" : ": ") + act->text();
+			//QList<QStandardItem*> found = _tableModel->findItems(label, Qt::MatchExactly, 1);
+			//if(found.size() == 0)
+			//{
+				QList<QStandardItem*> rowData;
+				QStandardItem* chk = new QStandardItem(true);
+				chk->setCheckable(true);
+				chk->setCheckState(Qt::Checked);
+				chk->setToolTip(tr("Add to Matrix sequence"));
+				rowData.append(chk);
+				//_tableModel->setItem(row, 0, chk);
+				QStandardItem* patch = new QStandardItem(label);
+				patch->setToolTip(label);
+				patch->setEditable(false);
+				rowData.append(patch);
+				rowData.append(new QStandardItem(str));
+				//_tableModel->setItem(row, 1, patch);
+				//_tableModel->setItem(row, 2, new QStandardItem(str));
+				for(int i=0; i < _tableModel->rowCount(); ++i)
+				{
+					QStandardItem* item = _tableModel->item(i, 0);
+					item->setCheckState(Qt::Unchecked);
+				}
+				_tableModel->insertRow(0, rowData);
+				tableView->resizeRowToContents(0);
+				tableView->selectRow(0);
+				_matrix->append(0);
+  				tableView->setColumnWidth(0, 20);
+  				tableView->setColumnWidth(2, 1);
+			/*}
+			else
+			{
+				for(int i=0; i < _tableModel->rowCount(); ++i)
+				{
+					QStandardItem* item = _tableModel->item(i, 0);
+					item->setCheckState(Qt::Unchecked);
+				}
+				//Select the patch that was a duplicate only
+				QStandardItem* dup = found.at(0);
+				QStandardItem* dchk = _tableModel->item(dup->row(), 0);
+				dchk->setCheckState(Qt::Checked);
+			}*/
+      }
             
       delete pup;      
-      }
+}
 
 //---------------------------------------------------------
 //   recEchoToggled
@@ -1532,3 +1632,168 @@ void MidiTrackInfo::recordClicked()
       }
     }
 
+void MidiTrackInfo::toggleAdvanced(int checked)
+{
+	if(checked == Qt::Checked)
+	{
+		frame->show();//setFrameRect(state);
+	}
+	else
+	{
+		//state = scrollArea->frameRect();
+		//QRect r = QRect(state.x(), state.y()+state.height(), state.width(), 1);
+		frame->hide();//setFrameRect(r);
+	}
+}
+
+
+void MidiTrackInfo::rebuildMatrix()
+{
+	//Clear the matrix
+	_matrix->erase(_matrix->begin(), _matrix->end());
+	//Rebuild from order of selected table items
+	for(int i=0; i < _tableModel->rowCount(); ++i)
+	{
+		QStandardItem* item = _tableModel->item(i, 0);
+		if(item->checkState() == Qt::Checked)
+			_matrix->append(item->row());
+	}
+	tableView->resizeRowsToContents();
+}
+
+void MidiTrackInfo::matrixItemChanged(QStandardItem* item)
+{
+	rebuildMatrix();
+	//if(item->column() != -1 && item->column() == 0 && item->isCheckable())
+	//{
+	//	if(item->checkState() == Qt::Checked)
+	//	{
+	//		printf("Adding item to matrix %d\n", item->row());
+	//		_matrix->append(item->row());
+	//	}
+	//	else
+	//	{
+	//		int ind = _matrix->indexOf(item->row());
+	//		if(ind != -1)
+	//		{
+	//			printf("Removing item from matrix %d\n",ind);
+	//			_matrix->removeAt(ind);
+	//		}
+	//	}
+	//}
+}
+
+void MidiTrackInfo::insertMatrixEvent()
+{
+	if(!selected)
+		return;
+	MidiTrack* track = (MidiTrack*)selected;
+	int channel = track->outChannel();
+	int port    = track->outPort();
+	if(_matrix->size() == 1)
+	{
+		//Get the QStandardItem in the hidden third column
+		//This column contains the ID of the Patch
+		int row = _matrix->at(0);
+		QStandardItem* item = _tableModel->item(row, 2);
+		int id = item->text().toInt();
+		MidiPlayEvent ev(0, port, channel, ME_CONTROLLER, CTRL_PROGRAM, id);
+		audio->msgPlayMidiEvent(&ev);
+		updateTrackInfo(-1);
+		tableView->selectRow(item->row());
+		progRecClicked();
+	}
+	else if(_matrix->size() > 1)
+	{
+		int row = _matrix->takeFirst();
+		tableView->selectRow(_matrix->at(0));
+		//printf("Adding Program Change for row: %d\n", row);
+		if(row != -1 && row < _tableModel->rowCount())
+		{
+			QStandardItem* item = _tableModel->item(row, 2);
+			int id = item->text().toInt();
+			MidiPlayEvent ev(0, port, channel, ME_CONTROLLER, CTRL_PROGRAM, id);
+			audio->msgPlayMidiEvent(&ev);
+			updateTrackInfo(-1);
+			progRecClicked();
+		}
+		_matrix->push_back(row);
+	}
+}
+
+void MidiTrackInfo::deleteSelectedPatches(bool b)
+{
+	QList<int> rows = tableView->getSelectedRows();
+	if(!rows.isEmpty())
+	{
+		int id = rows.at(0);
+		if(!_matrix->isEmpty())
+		{
+			int mid = _matrix->indexOf(0);
+			if(mid != -1)
+				_matrix->takeAt(mid);
+		}
+		_tableModel->removeRow(id);
+		_tableModel->emit_layoutChanged();
+		tableView->resizeRowsToContents();
+		int c = _tableModel->rowCount();
+		//printf("Row Count: %d - Deleted  Row:%d\n",c ,id);
+		if(c > id)
+			tableView->selectRow(id);
+		else 
+		{
+			tableView->selectRow(0);
+		}
+	}
+/*	for(int i =0; i < rows.size(); ++i)
+	{
+		if(!_matrix->isEmpty())
+		{
+			int mid = _matrix->indexOf(i);
+			if(mid != -1)
+				_matrix->takeAt(mid);
+		}
+		_tableModel->removeRow(i);
+	}
+	*/
+}
+
+void MidiTrackInfo::movePatchDown(bool b)
+{
+	QList<int> rows = tableView->getSelectedRows();
+	if(!rows.isEmpty())
+	{
+		int id = rows.at(0);
+		if((id + 1) >= _tableModel->rowCount())
+			return;
+		int row = (id + 1);
+		QList<QStandardItem*> item = _tableModel->takeRow(id);
+		QStandardItem* txt = item.at(1);
+		txt->setEditable(false);
+		_tableModel->insertRow(row, item);
+		tableView->resizeRowsToContents();
+  		tableView->setColumnWidth(0, 20);
+  		tableView->setColumnWidth(2, 1);
+		tableView->selectRow(row);
+	}
+}
+
+void MidiTrackInfo::movePatchUp(bool clicked)
+{
+	QList<int> rows = tableView->getSelectedRows();
+	if(!rows.isEmpty())
+	{
+		int id = rows.at(0);
+		if((id - 1) < 0)
+			return;
+		int row = (id - 1);
+		QList<QStandardItem*> item = _tableModel->takeRow(id);
+		QStandardItem* txt = item.at(1);
+		txt->setEditable(false);
+		_tableModel->insertRow(row, item);
+		tableView->resizeRowsToContents();
+  		tableView->setColumnWidth(0, 20);
+  		tableView->setColumnWidth(2, 1);
+		tableView->selectRow(row);
+	}
+}

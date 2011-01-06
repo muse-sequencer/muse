@@ -34,6 +34,7 @@
 //#include "mixer/amixer.h"              // p4.0.2
 #include "conf.h"
 #include "driver/jackmidi.h"
+#include "trackview.h"
 
 //struct ClonePart {
       //const EventList* el;
@@ -1324,7 +1325,12 @@ void Song::read(Xml& xml)
                               }
                         else if (tag == "drummap")
                               readDrumMap(xml, false);
-                        else
+						else if (tag == "trackview")
+						{//Read in our trackviews
+							TrackView* tv = new TrackView();
+							tv->read(xml);
+						}
+						else
                               xml.unknown("Song");
                         break;
                   case Xml::Attribut:
@@ -1438,6 +1444,11 @@ void Song::write(int level, Xml& xml) const
       CloneList copyCloneList = cloneList;
       cloneList.clear();
 
+	  // write track views
+	  for (ciTrackView i = _tviews.begin(); i != _tviews.end(); ++i)
+	  {
+	  	(*i)->write(level, xml);
+	  }
       // write tracks
       for (ciTrack i = _tracks.begin(); i != _tracks.end(); ++i)
             (*i)->write(level, xml);
@@ -1481,6 +1492,24 @@ void Song::write(int level, Xml& xml) const
       cloneList.clear();
       cloneList = copyCloneList;
       }
+
+//---------------------------------------------------------
+//   TrackView::write
+//---------------------------------------------------------
+
+void TrackView::write(int level, Xml& xml) const /*{{{*/
+{
+	QString tag = "trackview";
+	
+	xml.put(level, "<%s name=\"%s\" selected=\"%d\" type=\"%d\"", tag, _name, _selected, _type);
+	
+	//for(iTrack* t = _tracks.begin(); t != _tracks.end(); ++t)
+	for (ciTrack t = _tracks.begin(); t != _tracks.end(); ++t)
+	{
+		xml.strTag(level++, "vtrack", (*t)->name());
+	}
+	xml.put(level++, "</%s>", tag);
+}/*}}}*/
 
 //---------------------------------------------------------
 //   write

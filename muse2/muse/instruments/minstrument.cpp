@@ -13,6 +13,7 @@
 #include <QFileInfo>
 #include <QMenu>
 #include <QMessageBox>
+#include <QList>
 
 #include "minstrument.h"
 #include "midiport.h"
@@ -882,6 +883,7 @@ void MidiInstrument::populatePatchPopup(QMenu* menu, int chan, MType songType, b
                   QMenu* pm = menu->addMenu(pgp->name);
                   pm->setFont(config.fonts[0]);
                   const PatchList& pl = pgp->patches;
+				  QString& gname = pgp->name;
                   for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
                         const Patch* mp = *ipl;
                         if ((mp->typ & mask) && 
@@ -892,7 +894,12 @@ void MidiInstrument::populatePatchPopup(QMenu* menu, int chan, MType songType, b
                                          + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
                               QAction* act = pm->addAction(mp->name);
                               //act->setCheckable(true);
-                              act->setData(id);
+							  QString strId = QString::number(id);
+							  QStringList _data = (QStringList() << strId << gname);
+							  //_data->append(strId);
+							  //_data->append(gname);
+                              //act->setData(id);
+							  act->setData(_data);
                             }
                               
                         }
@@ -908,7 +915,11 @@ void MidiInstrument::populatePatchPopup(QMenu* menu, int chan, MType songType, b
                                  + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
                         QAction* act = menu->addAction(mp->name);
                         //act->setCheckable(true);
-                        act->setData(id);
+						QString strId = QString::number(id);
+						QStringList _data = (QStringList() << strId);
+						//_data->append(strId);
+                        //act->setData(id);
+						act->setData(_data);
                         }
                   }
             }

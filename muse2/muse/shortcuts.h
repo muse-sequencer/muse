@@ -175,7 +175,7 @@ enum {
       SHRT_SEL_TRACK_BELOW,
       SHRT_SEL_TRACK_ABOVE,
 
-      //To be in arranger, pianoroll & drumeditor
+      //To be in arranger, pianoroll & drumeditor. p4.0.10 now globally handled, too.
       SHRT_SELECT_ALL, //Ctrl+A
       SHRT_SELECT_NONE, //Ctrl+Shift+A
       SHRT_SELECT_INVERT, //Ctrl+I
@@ -191,6 +191,40 @@ enum {
       SHRT_DEC_PITCH,
       SHRT_INC_POS,
       SHRT_DEC_POS,
+      
+      SHRT_POS_INC_NOSNAP,
+      SHRT_POS_DEC_NOSNAP,
+      
+      /*
+      SHRT_POS_INC_BAR,   
+      SHRT_POS_DEC_BAR,     
+      SHRT_POS_INC_BAR_NOSNAP, 
+      SHRT_POS_DEC_BAR_NOSNAP, 
+      
+      SHRT_POS_INC_BEAT,    
+      SHRT_POS_DEC_BEAT,    
+      SHRT_POS_INC_BEAT_NOSNAP,
+      SHRT_POS_DEC_BEAT_NOSNAP,
+      
+      SHRT_POS_INC_TICK,    
+      SHRT_POS_DEC_TICK,    
+      SHRT_POS_INC_TICK_NOSNAP,
+      SHRT_POS_DEC_TICK_NOSNAP,
+      
+      SHRT_POS_INC_MINUTE,     
+      SHRT_POS_DEC_MINUTE,     
+      SHRT_POS_INC_MINUTE_NOSNAP,
+      SHRT_POS_DEC_MINUTE_NOSNAP,
+      
+      SHRT_POS_INC_SECOND,     
+      SHRT_POS_DEC_SECOND,     
+      SHRT_POS_INC_SECOND_NOSNAP,
+      SHRT_POS_DEC_SECOND_NOSNAP,
+      
+      SHRT_POS_INC_FRAME,      
+      SHRT_POS_DEC_FRAME,      
+      */
+      
       SHRT_LOCATORS_TO_SELECTION, //Alt+P, currently in arranger & pianoroll
       SHRT_INSERT_AT_LOCATION, //Shift+CrsrRight
       SHRT_INCREASE_LEN,

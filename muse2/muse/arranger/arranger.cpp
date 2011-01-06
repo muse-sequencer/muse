@@ -22,6 +22,7 @@
 #include <QVBoxLayout>
 #include <QWheelEvent>
 #include <QPainter>
+//#include <QStackedWidget>
 
 #include "arranger.h"
 #include "song.h"
@@ -51,6 +52,7 @@
 #include "gconfig.h"
 #include "mixer/astrip.h"
 #include "spinbox.h"
+#include "tvieweditor.h"
 
 //---------------------------------------------------------
 //   Arranger::setHeaderToolTips
@@ -66,7 +68,7 @@ void Arranger::setHeaderToolTips()
       header->setToolTip(COL_OCHANNEL,   tr("Midi output channel number or audio channels"));
       header->setToolTip(COL_OPORT,      tr("Midi output port or synth midi port"));
       header->setToolTip(COL_TIMELOCK,   tr("Time Lock"));
-      //header->setToolTip(COL_AUTOMATION, tr("Automation parameter selection"));
+      header->setToolTip(COL_AUTOMATION, tr("Automation parameter selection"));
       }
 
 
@@ -107,6 +109,9 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       showTrackinfoFlag = true;
       
       cursVal = MAXINT;
+      
+      //setFocusPolicy(Qt::StrongFocus);
+      
       //---------------------------------------------------
       //  ToolBar
       //    create toolbar in toplevel widget
@@ -125,6 +130,12 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
 	  cursorPos->setObjectName("arrangerCursor");
       toolbar->addWidget(cursorPos);
 
+      /*QToolButton* testView  = new QToolButton();
+      testView->setText(QString("TG"));
+      toolbar->addWidget(testView);
+      connect(testView, SIGNAL(clicked()), SLOT(showTrackViews()));
+	  */
+
       const char* rastval[] = {
             QT_TRANSLATE_NOOP("@default", "Off"), QT_TRANSLATE_NOOP("@default", "Bar"), "1/2", "1/4", "1/8", "1/16"
             };
@@ -136,9 +147,12 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       for (int i = 0; i < 6; i++)
             raster->insertItem(i, tr(rastval[i]));
       raster->setCurrentIndex(1);
+      // Set the audio record part snapping. Set to 0 (bar), the same as this combo box intial raster.
+      song->setArrangerRaster(0);
       toolbar->addWidget(raster);
       connect(raster, SIGNAL(activated(int)), SLOT(_setRaster(int)));
-      raster->setFocusPolicy(Qt::NoFocus);
+      ///raster->setFocusPolicy(Qt::NoFocus);
+      raster->setFocusPolicy(Qt::TabFocus);
 
       // Song len
       label = new QLabel(tr("Len"));
@@ -164,7 +178,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       typeBox->setCurrentIndex(0);
       typeBox->setToolTip(tr("midi song type"));
       typeBox->setWhatsThis(tr("midi song type"));
-      typeBox->setFocusPolicy(Qt::NoFocus);
+      ///typeBox->setFocusPolicy(Qt::NoFocus);
+      typeBox->setFocusPolicy(Qt::TabFocus);
       toolbar->addWidget(typeBox);
       connect(typeBox, SIGNAL(activated(int)), SLOT(modeChange(int)));
 
@@ -262,6 +277,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       ib->setText(tr("TrackInfo"));
       ib->setCheckable(true);
       ib->setChecked(showTrackinfoFlag);
+      ib->setFocusPolicy(Qt::NoFocus);
       connect(ib, SIGNAL(toggled(bool)), SLOT(showTrackInfo(bool)));
 
       header = new Header(tracklist, "header");
@@ -279,7 +295,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       header->setColumnLabel(tr("Port"), COL_OPORT, 60);
       header->setColumnLabel(tr("Ch"), COL_OCHANNEL, 30);
       header->setColumnLabel(tr("T"), COL_TIMELOCK, fm1.width('T')+fw);
-      //header->setColumnLabel(tr("Automation"), COL_AUTOMATION, 30);
+      header->setColumnLabel(tr("Automation"), COL_AUTOMATION, 75);
       header->setResizeMode(COL_RECORD, QHeaderView::Fixed);
       header->setResizeMode(COL_MUTE, QHeaderView::Fixed);
       header->setResizeMode(COL_SOLO, QHeaderView::Fixed);
@@ -288,7 +304,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       header->setResizeMode(COL_OPORT, QHeaderView::Interactive);
       header->setResizeMode(COL_OCHANNEL, QHeaderView::Fixed);
       header->setResizeMode(COL_TIMELOCK, QHeaderView::Fixed);
-      //header->setResizeMode(COL_AUTOMATION, QHeaderView::Interactive);
+      header->setResizeMode(COL_AUTOMATION, QHeaderView::Interactive);
 
       setHeaderToolTips();
       setHeaderWhatsThis();
@@ -333,6 +349,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
 
       int offset = AL::sigmap.ticksMeasure(0);
       hscroll = new ScrollScale(-1000, -10, xscale, song->len(), Qt::Horizontal, editor, -offset);
+      hscroll->setFocusPolicy(Qt::NoFocus);
       ib->setFixedHeight(hscroll->sizeHint().height());
 
       // Changed p3.3.43 Too small steps for me...
@@ -366,6 +383,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       canvas->setCanvasTools(arrangerTools);
       canvas->setOrigin(-offset, 0);
       canvas->setFocus();
+      //parent->setFocusProxy(canvas);   // Tim.
+
       connect(canvas, SIGNAL(setUsedTool(int)), this, SIGNAL(setUsedTool(int)));
       connect(canvas, SIGNAL(trackChanged(Track*)), list, SLOT(selectTrack(Track*)));
       connect(list, SIGNAL(keyPressExt(QKeyEvent*)), canvas, SLOT(redirKeypress(QKeyEvent*)));
@@ -418,6 +437,14 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       if(canvas->part())
         midiTrackInfo->setTrack(canvas->part()->track());   // Tim.
       showTrackInfo(showTrackinfoFlag);
+      
+      // Take care of some tabbies!
+      setTabOrder(tempo200, trackInfo);
+      setTabOrder(trackInfo, infoScroll);
+      setTabOrder(infoScroll, list);
+      setTabOrder(list, canvas);
+      //setTabOrder(canvas, ib);
+      //setTabOrder(ib, hscroll);
       }
 
 //---------------------------------------------------------
@@ -551,6 +578,7 @@ void Arranger::songChanged(int type)
         if(type & SC_TRACK_REMOVED)
         {
           AudioStrip* w = (AudioStrip*)(trackInfo->getWidget(2));
+          //AudioStrip* w = (AudioStrip*)(trackInfo->widget(2));
           if(w)
           {
             Track* t = w->getTrack();
@@ -562,6 +590,7 @@ void Arranger::songChanged(int type)
               {
                 delete w;
                 trackInfo->addWidget(0, 2);
+                //trackInfo->insertWidget(2, 0);
                 selected = 0;
               } 
             }   
@@ -614,6 +643,11 @@ void Arranger::setMode(int mode)
       typeBox->blockSignals(false);         //
       }
 
+void Arranger::showTrackViews()
+{
+	TrackViewEditor* ted = new TrackViewEditor(this);
+	ted->show();
+}
 //---------------------------------------------------------
 //   writeStatus
 //---------------------------------------------------------
@@ -684,7 +718,7 @@ void Arranger::_setRaster(int index)
             };
       _raster = rasterTable[index];
       // Set the audio record part snapping.
-      song->setRecRaster(_raster);
+      song->setArrangerRaster(_raster);
       canvas->redraw();
       }
 
@@ -897,7 +931,7 @@ QSize WidgetStack::minimumSizeHint() const
                   s = s.expandedTo(ss);
                   }
             }
-      //printf("WidgetStack::minimumSizeHint width:%d height:%d\n", s.width(), s.height());  
+      //printf("WidgetStack::minimumSizeHint width:%d height:%d\n", s.width(), s.height());  // REMOVE Tim.
       return s;
       }
 
@@ -931,8 +965,8 @@ void Arranger::controllerChanged(Track *t)
 void Arranger::showTrackInfo(bool flag)
       {
       showTrackinfoFlag = flag;
-      trackInfo->setShown(flag);
-      infoScroll->setShown(flag);
+      trackInfo->setVisible(flag);
+      infoScroll->setVisible(flag);
       updateTrackInfo(-1);
       }
 
@@ -943,6 +977,8 @@ void Arranger::showTrackInfo(bool flag)
 void Arranger::genTrackInfo(QWidget* parent)
       {
       trackInfo = new WidgetStack(parent, "trackInfoStack");
+      //trackInfo->setFocusPolicy(Qt::TabFocus);  // p4.0.9
+      //trackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
       noTrackInfo          = new QWidget(trackInfo);
       noTrackInfo->setAutoFillBackground(true);
@@ -959,6 +995,8 @@ void Arranger::genTrackInfo(QWidget* parent)
       noTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding));
 
       midiTrackInfo = new MidiTrackInfo(trackInfo);
+      //midiTrackInfo->setFocusPolicy(Qt::TabFocus);    // p4.0.9
+      //midiTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
       trackInfo->addWidget(noTrackInfo,   0);
       trackInfo->addWidget(midiTrackInfo, 1);
       trackInfo->addWidget(0, 2);
@@ -1007,15 +1045,43 @@ void Arranger::switchInfo(int n)
                   if (w)
                         delete w;
                   w = new AudioStrip(trackInfo, (AudioTrack*)selected);
+           	      switch(selected->type()) {/*{{{*/
+           	          case Track::AUDIO_OUTPUT:
+           	              w->setObjectName("MixerAudioOutStrip");
+           	              break;
+           	          case Track::AUDIO_GROUP:
+           	              w->setObjectName("MixerAudioGroupStrip");
+           	              break;
+           	          case Track::AUDIO_AUX:
+           	              w->setObjectName("MixerAuxStrip");
+           	              break;
+           	          case Track::WAVE:
+           	              w->setObjectName("MixerWaveStrip");
+           	              break;
+           	          case Track::AUDIO_INPUT:
+           	              w->setObjectName("MixerAudioInStrip");
+           	              break;
+           	          case Track::AUDIO_SOFTSYNTH:
+           	              w->setObjectName("MixerSynthStrip");
+           	              break;
+           	          case Track::MIDI:
+           	          case Track::DRUM:
+           	          {
+           	              w->setObjectName("MidiTrackStrip");
+           	          }
+           	            break;
+           	      }/*}}}*/
+                  //w->setFocusPolicy(Qt::TabFocus);  // p4.0.9
                   connect(song, SIGNAL(songChanged(int)), w, SLOT(songChanged(int)));
                   connect(muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
                   w->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
                   trackInfo->addWidget(w, 2);
                   w->show();
+                  //setTabOrder(midiTrackInfo, w); // p4.0.9
                   tgrid->activate();
                   tgrid->update();   // muse-2 Qt4
-                  }
             }
+      }
       if (trackInfo->curIdx() == n)
             return;
       trackInfo->raiseWidget(n);
@@ -1023,3 +1089,16 @@ void Arranger::switchInfo(int n)
       tgrid->update();   // muse-2 Qt4
       }
 
+/*
+QSize WidgetStack::minimumSize() const 
+{ 
+  printf("WidgetStack::minimumSize\n");  // REMOVE Tim.
+  return minimumSizeHint(); 
+}
+
+int WidgetStack::minimumHeight() const 
+{ 
+  printf("WidgetStack::minimumHeight\n");  // REMOVE Tim.  
+  return minimumSizeHint().height(); 
+}
+*/

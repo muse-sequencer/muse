@@ -161,6 +161,7 @@ HEADERS = \
       ./shortcuts.h           \
       ./memory.h        \
       ./helper.h        \
+      ./trackview.h        \
       ./plugin.h
 
 SOURCES =  \

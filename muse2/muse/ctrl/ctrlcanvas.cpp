@@ -106,9 +106,10 @@ void CEventList::clearDelete()
 
 CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
    const char* name, CtrlPanel* pnl) : View(parent, xmag, 1, name)
-      {
-      setBg(QColor(165,174,173));
-      editor = e;
+   {
+      setBg(QColor(195,198,196));
+    
+	  editor = e;
       drag   = DRAG_OFF;
       tool   = PointerTool;
       pos[0] = 0;
@@ -1255,17 +1256,56 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MidiPart* part
       if (tick > x+w)
             break;
       int y1 = wh - (e->val() * wh / 128);
+	  //p.setPen(QPen(Qt::black, 1));
+      //p.drawLine(tick+3, wh, tick+3, y1);
       // fg means 'draw selected parts'.
       if(fg)
-        p.setPen(QPen(config.ctrlGraphFg, 3));
+	  {
+	  	int velo2 = e->val();
+		QColor color = QColor(147,186,195,127);
+		if(velo2 <= 11)
+        	color.setRgb(147,186,195,127);
+		else if(velo2 <= 22)
+        	color.setRgb(119,169,181,127);
+		else if(velo2 <= 33)
+        	color.setRgb(85,157,175,127);
+		else if(velo2 <= 44)
+        	color.setRgb(58,152,176,127);
+		else if(velo2 <= 55)
+        	color.setRgb(33,137,163,127);
+		else if(velo2 <= 66)
+        	color.setRgb(30,136,162,127);
+		else if(velo2 <= 77)
+        	color.setRgb(13,124,151,127);
+		else if(velo2 <= 88)
+        	color.setRgb(0,110,138,127);
+		else if(velo2 <= 99)
+        	color.setRgb(0,99,124,127);
+		else if(velo2 <= 110)
+        	color.setRgb(0,77,96,127);
+		else if(velo2 <= 121)
+        	color.setRgb(0,69,86,127);
+		else
+        	color.setRgb(0,58,72,127);
+	    
+		p.setPen(QPen(color, 6));
+		
+		//p.setPen(QPen(config.ctrlGraphFg, 3));
+
+	  }
       else  
-        p.setPen(QPen(Qt::darkGray, 3));
-      p.drawLine(tick, wh, tick, y1);
+        p.setPen(QPen(QColor(172,172,172), 6));
+
+      p.drawLine(tick+4, wh, tick+4, y1);
+	  
+	  //p.setPen(QPen(Qt::black, 1));
+      //p.drawLine(tick-3, wh, tick-3, y1);
     }
   }
   else
   {
-    MidiTrack* mt = part->track();
+   
+   MidiTrack* mt = part->track();
     MidiPort* mp;
     
     if((mt->type() == Track::DRUM) && (curDrumInstrument != -1) && ((_cnum & 0xff) == 0xff)) 
@@ -1293,6 +1333,19 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MidiPart* part
     int x1   = rect.x();
     int lval = CTRL_VAL_UNKNOWN;
     noEvents=false;
+	QColor color = QColor();
+		QColor green = QColor(119,169,181,127);
+		QColor yellow = QColor(41,130,140);
+		QColor red = QColor(0,37,46,127);
+		QLinearGradient vuGrad(QPointF(0, 0), QPointF(0, height()));
+		vuGrad.setColorAt(1, green);
+		//vuGrad.setColorAt(0.45, yellow);
+		//vuGrad.setColorAt(0.3, yellow);
+		vuGrad.setColorAt(0, red);
+		QPen myPen = QPen();
+		//myPen.setCapStyle(Qt::RoundCap);
+		//myPen.setStyle(Qt::DashLine);
+		myPen.setBrush(QBrush(vuGrad));
     for (iCEvent i = items.begin(); i != items.end(); ++i) 
     {
       CEvent* e = *i;
@@ -1314,7 +1367,8 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MidiPart* part
         else  
           pval = (val & 0x7f) + 1;
       }
-      if (tick <= x) {
+      if (tick <= x) 
+	  {
             if (val == CTRL_VAL_UNKNOWN)
                   lval = CTRL_VAL_UNKNOWN;
             else
@@ -1325,14 +1379,41 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MidiPart* part
                     lval = wh - ((val - min - bias) * wh / (max - min));
             }
             continue;
-            }
+      }
       if (tick > x+w)
             break;
-      if (lval == CTRL_VAL_UNKNOWN)
+		int velo2 = e->val();
+		/*if(velo2 <= 11)
+	    	color.setRgb(75,145,47);
+		else if(velo2 <= 22)
+	    	color.setRgb(64,139,83);
+		else if(velo2 <= 33)
+	    	color.setRgb(61,138,92);
+		else if(velo2 <= 44)
+	    	color.setRgb(57,135,107);
+		else if(velo2 <= 55)
+	    	color.setRgb(54,133,120);
+		else if(velo2 <= 66)
+	    	color.setRgb(50,131,133);
+		else if(velo2 <= 77)
+	    	color.setRgb(47,130,143);
+		else if(velo2 <= 88)
+	    	color.setRgb(57,121,144);
+		else if(velo2 <= 99)
+	    	color.setRgb(70,110,143);
+		else if(velo2 <= 110)
+	    	color.setRgb(82,100,142);
+		else if(velo2 <= 121)
+	    	color.setRgb(94,90,142);
+		else
+	    	color.setRgb(110,76,141);
+		*/
+   
+   	  if (lval == CTRL_VAL_UNKNOWN)
       {
         // fg means 'draw unselected parts'.
         if(!fg)
-          p.fillRect(x1, 0, tick - x1, wh, Qt::darkGray);
+          p.fillRect(x1, 0, tick - x1, wh, QColor(192,192,192,127));
       }
       else
       {
@@ -1342,7 +1423,10 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MidiPart* part
           p.drawLine(x1, lval, tick, lval);
         }  
         else
-          p.fillRect(x1, lval, tick - x1, wh - lval, config.ctrlGraphFg);
+		{
+          p.setPen(myPen);
+          p.fillRect(x1, lval, tick - x1, wh - lval, QBrush(vuGrad));//, config.ctrlGraphFg);
+		}
       }
       
       
@@ -1359,20 +1443,24 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MidiPart* part
     }
     if (lval == CTRL_VAL_UNKNOWN)
     {
-      if(!fg) {
-        p.fillRect(x1, 0, (x+w) - x1, wh, Qt::darkGray);
-	noEvents=true;
+      if(!fg) 
+	  {
+        p.fillRect(x1, 0, (x+w) - x1, wh, QColor(192,192,192,127));
+		noEvents=true;
       }
     }
     else
     {
       if(fg)
       {  
-        p.setPen(Qt::gray);
+        p.setPen(QColor(192,192,192,127));
         p.drawLine(x1, lval, x + w, lval);
       }  
       else
-        p.fillRect(x1, lval, (x+w) - x1, wh - lval, config.ctrlGraphFg);
+	  {
+        p.setPen(myPen);
+        p.fillRect(x1, lval, (x+w) - x1, wh - lval, QBrush(vuGrad));//, config.ctrlGraphFg);
+	  }
     }
   }       
 }
@@ -1389,6 +1477,13 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
       int w = rect.width() + 2;
       int h = rect.height();
       
+      //---------------------------------------------------
+      // draw the grid
+      //---------------------------------------------------
+
+      p.save();
+      View::pdraw(p, rect);
+      p.restore();
 
       //---------------------------------------------------
       // draw Canvas Items
@@ -1412,29 +1507,32 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
         pdrawItems(p, rect, curPart, true, true);
       }
       
-      p.save();
-      View::pdraw(p, rect);
-      p.restore();
-
       //---------------------------------------------------
       //    draw marker
       //---------------------------------------------------
 
       int xp = mapx(pos[0]);
-      if (xp >= x && xp < x+w) {
-            p.setPen(Qt::red);
+      if (xp >= x && xp < x+w) 
+	  {
+            //p.setPen(Qt::red);
+	  		p.setPen(QColor(0,186,255));
+      		//p.setPen(QColor(139,225,69));
             p.drawLine(xp, y, xp, y+h);
-            }
+      }
       xp = mapx(pos[1]);
-      if (xp >= x && xp < x+w) {
-            p.setPen(Qt::blue);
+      if (xp >= x && xp < x+w) 
+	  {
+      		p.setPen(QColor(139,225,69));
+            //p.setPen(Qt::blue);
             p.drawLine(xp, y, xp, y+h);
-            }
+      }
       xp = mapx(pos[2]);
-      if (xp >= x && xp < x+w) {
-            p.setPen(Qt::blue);
+      if (xp >= x && xp < x+w) 
+	  {
+      		p.setPen(QColor(139,225,69));
+            //p.setPen(Qt::blue);
             p.drawLine(xp, y, xp, y+h);
-            }
+      }
 
       //---------------------------------------------------
       //    draw lasso
@@ -1442,7 +1540,8 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
 
       if (drag == DRAG_LASSO) {
             setPainter(p);
-            p.setPen(Qt::blue);
+            p.setPen(QColor(181,109,16,127));
+            //p.setPen(Qt::blue);
             p.setBrush(Qt::NoBrush);
             p.drawRect(lasso);
             }
@@ -1486,7 +1585,7 @@ QRect CtrlCanvas::overlayRect() const
 //---------------------------------------------------------
 
 void CtrlCanvas::draw(QPainter& p, const QRect& rect)
-      {
+{
       drawTickRaster(p, rect.x(), rect.y(),
          //rect.width(), rect.height(), editor->quant());
          rect.width(), rect.height(), editor->raster());
@@ -1495,11 +1594,14 @@ void CtrlCanvas::draw(QPainter& p, const QRect& rect)
       //    draw line tool
       //---------------------------------------------------
 
-      if (drawLineMode && (tool == DrawTool)) {
-            p.setPen(Qt::black);
+      if (drawLineMode && (tool == DrawTool)) 
+	  {
+	  		p.setRenderHint(QPainter::Antialiasing, true);
+            //p.setPen(Qt::black);
+      		p.setPen(QColor(247,206,107));
             p.drawLine(line1x, line1y, line2x, line2y);
-            }
       }
+}
 
 //---------------------------------------------------------
 //   setCurDrumInstrument

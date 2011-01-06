@@ -9,27 +9,24 @@
     <midiFilterCtrl2>0</midiFilterCtrl2>
     <midiFilterCtrl3>0</midiFilterCtrl3>
     <midiFilterCtrl4>0</midiFilterCtrl4>
-    <txDeviceId>127</txDeviceId>
-    <rxDeviceId>127</rxDeviceId>
-    <txSyncPort>1</txSyncPort>
-    <rxSyncPort>-1</rxSyncPort>
     <mtctype>1</mtctype>
     <mtcoffset>00:00:00:00:00</mtcoffset>
+    <sendClockDelay>1</sendClockDelay>
+    <useJackTransport>1</useJackTransport>
+    <jackTransportMaster>1</jackTransportMaster>
     <extSync>0</extSync>
-    <genMTCSync>0</genMTCSync>
-    <genMCSync>0</genMCSync>
-    <genMMC>0</genMMC>
-    <acceptMTC>0</acceptMTC>
-    <acceptMMC>1</acceptMMC>
-    <acceptMC>1</acceptMC>
     <bigtimeVisible>0</bigtimeVisible>
     <transportVisible>0</transportVisible>
-    <mixerVisible>0</mixerVisible>
+    <markerVisible>0</markerVisible>
+    <geometryMain x="0" y="0" w="1172" h="489"></geometryMain>
+    <geometryTransport x="0" y="0" w="598" h="88"></geometryTransport>
+    <mixer1Visible>0</mixer1Visible>
+    <mixer2Visible>0</mixer2Visible>
     <arranger>
       <info>1</info>
-      <split>440 799 </split>
+      <split>418 751 </split>
       <list>
-        <header> 7 6 5 4 3 2 1 0 </header>
+        <header> 8 7 6 5 4 3 2 1 0 </header>
         </list>
       <xpos>0</xpos>
       <xmag>266</xmag>
@@ -52,6 +49,7 @@
         <preroll>0</preroll>
         <midiClickEnable>1</midiClickEnable>
         <audioClickEnable>0</audioClickEnable>
+        <audioClickVolume>0.5</audioClickVolume>
         </metronom>
       <rcEnable>0</rcEnable>
       <rcStop>28</rcStop>
@@ -89,6 +87,7 @@
       </waveedit>
     </configuration>
   <song>
+    <info></info>
     <automation>1</automation>
     <cpos>0</cpos>
     <rpos>0</rpos>
@@ -117,19 +116,25 @@
       <locked>0</locked>
       <selected>1</selected>
       <prefader>0</prefader>
-      <automation>1</automation>
-      <controller id="0" cur="1.02164">
+      <sendMetronome>0</sendMetronome>
+      <automation>0</automation>
+      <controller id="0" cur="1">
+        0 1,         
         </controller>
       <controller id="1" cur="0">
+        0 0,         
+        </controller>
+      <controller id="2" cur="0">
+        0 0,         
         </controller>
       </AudioOutput>
-    <Route>
-      <srcNode>1:Out 1</srcNode>
-      <dstNode>alsa_pcm:playback_1</dstNode>
+    <Route channel="0">
+      <source name="Out 1"/>
+      <dest type="1" name="system:playback_1"/>
       </Route>
-    <Route>
-      <srcNode>2:Out 1</srcNode>
-      <dstNode>alsa_pcm:playback_2</dstNode>
+    <Route channel="1">
+      <source name="Out 1"/>
+      <dest type="1" name="system:playback_2"/>
       </Route>
     <tempolist fix="500000">
       <tempo at="21474837">
@@ -147,4 +152,6 @@
     <drummap>
       </drummap>
     </song>
+  <toplevels>
+    </toplevels>
   </muse>

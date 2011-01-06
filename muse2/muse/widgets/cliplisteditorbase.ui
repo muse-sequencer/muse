@@ -164,5 +164,4 @@
       <container>0</container>
     </customwidget>
   </customwidgets>
-  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
 </ui>

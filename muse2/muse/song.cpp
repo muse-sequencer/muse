@@ -43,6 +43,7 @@
 ///#include "sig.h"
 #include "al/sig.h"
 #include <sys/wait.h>
+#include "trackview.h"
 
 extern void clearMidiTransforms();
 extern void clearMidiInputTransforms();
@@ -76,7 +77,7 @@ Song::Song(const char* name)
    :QObject(0)
       {
       setObjectName(name);
-      _recRaster     = 0; // Set to measure, the same as Arranger intial value. Arranger snap combo will set this.
+      _arrangerRaster     = 0; // Set to measure, the same as Arranger intial value. Arranger snap combo will set this.
       noteFifoSize   = 0;
       noteFifoWindex = 0;
       noteFifoRindex = 0;
@@ -204,7 +205,7 @@ Track* Song::addNewTrack(QAction* action)
 }          
           
       
-//---------------------------------------------------------
+//---------------------------------------------------------/*{{{*/
 //    addTrack
 //    called from GUI context
 //---------------------------------------------------------
@@ -333,7 +334,7 @@ Track* Song::addTrack(int t)
             }
       audio->msgUpdateSoloStates();
       return track;
-      }
+      }/*}}}*/
 
 //---------------------------------------------------------
 //   cmdRemoveTrack
@@ -798,9 +799,9 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
             //startTick = roundDownBar(startTick);
             //endTick   = roundUpBar(endTick);
             // Round the start down using the Arranger part snap raster value. 
-            startTick = AL::sigmap.raster1(startTick, recRaster());
+            startTick = AL::sigmap.raster1(startTick, arrangerRaster());
             // Round the end up using the Arranger part snap raster value. 
-            endTick   = AL::sigmap.raster2(endTick, recRaster());
+            endTick   = AL::sigmap.raster2(endTick, arrangerRaster());
             
             part->setTick(startTick);
             part->setLenTick(endTick - startTick);
@@ -835,7 +836,7 @@ void Song::cmdAddRecordedEvents(MidiTrack* mt, EventList* events, unsigned start
             // Added by Tim. p3.3.8
             
             // Round the end up (again) using the Arranger part snap raster value. 
-            endTick   = AL::sigmap.raster2(endTick, recRaster());
+            endTick   = AL::sigmap.raster2(endTick, arrangerRaster());
             
             // Remove all of the part's port controller values. Indicate do not do clone parts.
             removePortCtrlEvents(part, false);
@@ -2177,6 +2178,8 @@ void Song::cleanupForQuit()
       redoList->clear();    // Check this - Should we do a clearDelete? IIRC it was OK this way - no clearDelete in case of same items in both lists.
       
       _markerList->clear();
+
+	  _tviews.clear();
       
       if(debugMsg)
         printf("deleting transforms\n");
@@ -3137,6 +3140,110 @@ void Song::chooseMidiRoutes(QButton* parent, MidiTrack* track, bool dst)
   //}  
 }
 */
+
+//---------------------------------------------------------
+// insertTrackView
+//    add a new trackview for the arranger
+//---------------------------------------------------------
+
+void Song::insertTrackView(TrackView* tv, int idx)
+{
+	iTrackView i = _tviews.index2iterator(idx);
+	_tviews.insert(i, tv);
+}
+
+//---------------------------------------------------------
+//   cmdRemoveTrackView
+//---------------------------------------------------------
+
+void Song::cmdRemoveTrackView(TrackView* tv)
+{
+	int idx = _tviews.index(tv);
+	//undoOp(UndoOp::DeleteTrackView, idx, tv);
+	removeTrackView(tv);
+	updateFlags |= SC_TRACKVIEW_REMOVED;
+}
+
+//---------------------------------------------------------
+// removeTrackView
+//    add a new trackview for the arranger
+//---------------------------------------------------------
+
+void Song::removeTrackView(TrackView* tv)
+{
+	_tviews.erase(tv);
+}
+
+//---------------------------------------------------------
+// addNewTrackView
+//    add a new trackview for the arranger
+//---------------------------------------------------------
+
+TrackView* Song::addNewTrackView(int idx)
+{
+	TrackView* tv = addTrackView((Track::TrackType)idx);
+	return tv;
+}
+
+//---------------------------------------------------------/*{{{*/
+//    addTrackView
+//    called from GUI context
+//---------------------------------------------------------
+
+TrackView* Song::addTrackView(int t)
+{
+	Track::TrackType type = (Track::TrackType) t;
+	TrackView* tv = new TrackView();
+	switch(type) {
+		case Track::MIDI:
+			tv->setType(Track::MIDI);
+			break;
+		case Track::DRUM:
+			tv->setType(Track::MIDI);
+			break;
+		case Track::WAVE:
+			tv->setType(Track::WAVE);
+			break;
+		case Track::AUDIO_OUTPUT:
+			tv->setType(Track::AUDIO_OUTPUT);
+			break;
+		case Track::AUDIO_GROUP:
+			tv->setType(Track::AUDIO_GROUP);
+			break;
+		case Track::AUDIO_AUX:
+			tv->setType(Track::AUDIO_AUX);
+			break;
+		case Track::AUDIO_INPUT:
+			tv->setType(Track::AUDIO_INPUT);
+			break;
+		case Track::AUDIO_SOFTSYNTH:
+			printf("not implemented: Song::addTrackView(SOFTSYNTH)\n");
+			break;
+		default:
+			printf("Song::addTrackView() illegal type %d\n", type);
+			abort();
+	}
+	tv->setDefaultName();
+	//msgInsertTrackView(tv, -1, true);
+	
+	return tv;
+}/*}}}*/
+
+//---------------------------------------------------------
+//   findTrackView
+//    find track view by name
+//---------------------------------------------------------
+
+TrackView* Song::findTrackView(const QString& name) const
+{
+	for (ciTrackView i = _tviews.begin(); i != _tviews.end(); ++i)
+	{
+		if ((*i)->viewName() == name)
+			return *i;
+	}
+	return 0;
+}
+
 
 //---------------------------------------------------------
 //   insertTrack0

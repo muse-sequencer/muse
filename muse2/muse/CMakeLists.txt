@@ -124,6 +124,7 @@ file (GLOB core_source_files
       thread.cpp
       ticksynth.cpp 
       track.cpp
+	  trackview.cpp
       transport.cpp
       transpose.cpp
       undo.cpp

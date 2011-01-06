@@ -609,6 +609,44 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               config.partColors[16] = readColor(xml);
                         else if (tag == "partColor17")
                               config.partColors[17] = readColor(xml);
+                        
+                        else if (tag == "partColorName0")
+                              config.partColorNames[0] = xml.parse1();
+                        else if (tag == "partColorName1")
+                              config.partColorNames[1] = xml.parse1();
+                        else if (tag == "partColorName2")
+                              config.partColorNames[2] = xml.parse1();
+                        else if (tag == "partColorName3")
+                              config.partColorNames[3] = xml.parse1();
+                        else if (tag == "partColorName4")
+                              config.partColorNames[4] = xml.parse1();
+                        else if (tag == "partColorName5")
+                              config.partColorNames[5] = xml.parse1();
+                        else if (tag == "partColorName6")
+                              config.partColorNames[6] = xml.parse1();
+                        else if (tag == "partColorName7")
+                              config.partColorNames[7] = xml.parse1();
+                        else if (tag == "partColorName8")
+                              config.partColorNames[8] = xml.parse1();
+                        else if (tag == "partColorName9")
+                              config.partColorNames[9] = xml.parse1();
+                        else if (tag == "partColorName10")
+                              config.partColorNames[10] = xml.parse1();
+                        else if (tag == "partColorName11")
+                              config.partColorNames[11] = xml.parse1();
+                        else if (tag == "partColorName12")
+                              config.partColorNames[12] = xml.parse1();
+                        else if (tag == "partColorName13")
+                              config.partColorNames[13] = xml.parse1();
+                        else if (tag == "partColorName14")
+                              config.partColorNames[14] = xml.parse1();
+                        else if (tag == "partColorName15")
+                              config.partColorNames[15] = xml.parse1();
+                        else if (tag == "partColorName16")
+                              config.partColorNames[16] = xml.parse1();
+                        else if (tag == "partColorName17")
+                              config.partColorNames[17] = xml.parse1();
+                        
                         else if (tag == "partCanvasBg")
                               config.partCanvasBg = readColor(xml);
                         else if (tag == "trackBg")
@@ -617,6 +655,26 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               config.selectTrackBg = readColor(xml);
                         else if (tag == "selectTrackFg")
                               config.selectTrackFg = readColor(xml);
+                        
+                        else if (tag == "mixerBg")
+                              config.mixerBg = readColor(xml);
+                        else if (tag == "midiTrackLabelBg")
+                              config.midiTrackLabelBg = readColor(xml);
+                        else if (tag == "drumTrackLabelBg")
+                              config.drumTrackLabelBg = readColor(xml);
+                        else if (tag == "waveTrackLabelBg")
+                              config.waveTrackLabelBg = readColor(xml);
+                        else if (tag == "outputTrackLabelBg")
+                              config.outputTrackLabelBg = readColor(xml);
+                        else if (tag == "inputTrackLabelBg")
+                              config.inputTrackLabelBg = readColor(xml);
+                        else if (tag == "groupTrackLabelBg")
+                              config.groupTrackLabelBg = readColor(xml);
+                        else if (tag == "auxTrackLabelBg")
+                              config.auxTrackLabelBg = readColor(xml);
+                        else if (tag == "synthTrackLabelBg")
+                              config.synthTrackLabelBg = readColor(xml);
+                        
                         else if (tag == "midiTrackBg")
                               config.midiTrackBg = readColor(xml);
                         else if (tag == "ctrlGraphFg")
@@ -635,6 +693,7 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               config.auxTrackBg = readColor(xml);
                         else if (tag == "synthTrackBg")
                               config.synthTrackBg = readColor(xml);
+                        
                         else if (tag == "extendedMidi")
                               config.extendedMidi = xml.parseInt();
                         else if (tag == "midiExportDivision")
@@ -1141,10 +1200,27 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
             xml.colorTag(level, buffer, config.partColors[i]);
             }
 
+      for (int i = 0; i < NUM_PARTCOLORS; ++i) {
+            char buffer[32];
+            sprintf(buffer, "partColorName%d", i);
+            xml.strTag(level, buffer, config.partColorNames[i]);
+            }
+
       xml.colorTag(level, "partCanvasBg",  config.partCanvasBg);
       xml.colorTag(level, "trackBg",       config.trackBg);
       xml.colorTag(level, "selectTrackBg", config.selectTrackBg);
       xml.colorTag(level, "selectTrackFg", config.selectTrackFg);
+      
+      xml.colorTag(level, "mixerBg",            config.mixerBg);
+      xml.colorTag(level, "midiTrackLabelBg",   config.midiTrackLabelBg);
+      xml.colorTag(level, "drumTrackLabelBg",   config.drumTrackLabelBg);
+      xml.colorTag(level, "waveTrackLabelBg",   config.waveTrackLabelBg);
+      xml.colorTag(level, "outputTrackLabelBg", config.outputTrackLabelBg);
+      xml.colorTag(level, "inputTrackLabelBg",  config.inputTrackLabelBg);
+      xml.colorTag(level, "groupTrackLabelBg",  config.groupTrackLabelBg);
+      xml.colorTag(level, "auxTrackLabelBg",    config.auxTrackLabelBg);
+      xml.colorTag(level, "synthTrackLabelBg",  config.synthTrackLabelBg);
+      
       xml.colorTag(level, "midiTrackBg",   config.midiTrackBg);
       xml.colorTag(level, "ctrlGraphFg",   config.ctrlGraphFg);
       xml.colorTag(level, "drumTrackBg",   config.drumTrackBg);

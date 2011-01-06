@@ -11,7 +11,7 @@
     <x>0</x>
     <y>0</y>
     <width>754</width>
-    <height>592</height>
+    <height>550</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -55,7 +55,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="cbmGroups">
+      <widget class="QComboBox" name="cmbViews">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>1</horstretch>
@@ -100,7 +100,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QTextEdit" name="txtName">
+      <widget class="QLineEdit" name="txtName">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
          <horstretch>1</horstretch>
@@ -173,7 +173,7 @@
         <bool>true</bool>
        </property>
        <property name="selectionMode">
-        <enum>QAbstractItemView::MultiSelection</enum>
+        <enum>QAbstractItemView::ExtendedSelection</enum>
        </property>
       </widget>
      </item>
@@ -202,7 +202,13 @@
         <enum>QFrame::StyledPanel</enum>
        </property>
        <property name="horizontalScrollBarPolicy">
-        <enum>Qt::ScrollBarAlwaysOff</enum>
+        <enum>Qt::ScrollBarAsNeeded</enum>
+       </property>
+       <property name="alternatingRowColors">
+        <bool>true</bool>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
        </property>
       </widget>
      </item>

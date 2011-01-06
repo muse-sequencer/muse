@@ -170,12 +170,12 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
 	  p.setPen(mainPen);
 	  
 	  QColor colMoving;
-      colMoving.setRgb(220, 220, 120);
+      colMoving.setRgb(220, 220, 120, 127);
 
 	  QPen movingPen(Qt::darkGray, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
                   
 	  QColor colSelected;
-      colSelected.setRgb(243, 206, 105);
+      colSelected.setRgb(243, 206, 105, 127);
 
       NEvent* nevent   = (NEvent*) item;
       Event event = nevent->event();
@@ -194,7 +194,7 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
 			else
 			{
 	  		  p.setPen(movingPen);
-              p.setBrush(Qt::lightGray);
+              p.setBrush(QColor(192,192,192,127));
 			}
       }      
       else {
@@ -213,7 +213,7 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
 			{
                   QColor color;
                   //color.setRgb(80, 102, 143);
-                  color.setRgb(13,124,151);
+                  color.setRgb(13,124,151,127);
                   switch(colorMode) 
 				  {
                         case 0:
@@ -221,7 +221,7 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
                         case 1:     // pitch
                         {
                               Triple* c = &myColors/*Qt::color1*/[event.pitch() % 12];
-                              color.setRgb(c->r, c->g, c->b);
+                              color.setRgb(c->r, c->g, c->b, 127);
                         }
                         break;
                         case 2:     // velocity
@@ -261,29 +261,29 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
 							  */
 
 							  if(velo <= 11)
-                              	color.setRgb(147,186,195);
+                              	color.setRgb(147,186,195,127);
 							  else if(velo <= 22)
-                              	color.setRgb(119,169,181);
+                              	color.setRgb(119,169,181,127);
 							  else if(velo <= 33)
-                              	color.setRgb(85,157,175);
+                              	color.setRgb(85,157,175,127);
 							  else if(velo <= 44)
-                              	color.setRgb(58,152,176);
+                              	color.setRgb(58,152,176,127);
 							  else if(velo <= 55)
-                              	color.setRgb(33,137,163);
+                              	color.setRgb(33,137,163,127);
 							  else if(velo <= 66)
-                              	color.setRgb(30,136,162);
+                              	color.setRgb(30,136,162,127);
 							  else if(velo <= 77)
-                              	color.setRgb(13,124,151);
+                              	color.setRgb(13,124,151,127);
 							  else if(velo <= 88)
-                              	color.setRgb(0,110,138);
+                              	color.setRgb(0,110,138,127);
 							  else if(velo <= 99)
-                              	color.setRgb(0,99,124);
+                              	color.setRgb(0,99,124,127);
 							  else if(velo <= 110)
-                              	color.setRgb(0,77,96);
+                              	color.setRgb(0,77,96,127);
 							  else if(velo <= 121)
-                              	color.setRgb(0,69,86);
+                              	color.setRgb(0,69,86,127);
 							  else
-                              	color.setRgb(0,58,72);
+                              	color.setRgb(0,58,72,127);
 							  	
                         }
                         break;
@@ -743,14 +743,35 @@ void PianoCanvas::pianoCmd(int cmd)
       switch(cmd) {
             case CMD_LEFT:
                   {
-                  int frames = pos[0] - editor->rasterStep(pos[0]);
-                  if (frames < 0)
-                        frames = 0;
-                  Pos p(frames,true);
-                  song->setPos(0, p, true, true, true); //CDW
+                  int spos = pos[0];
+                  if(spos > 0) 
+                  {
+                    spos -= 1;     // Nudge by -1, then snap down with raster1.
+                    spos = AL::sigmap.raster1(spos, editor->rasterStep(pos[0]));
+                  }  
+                  if(spos < 0)
+                    spos = 0;
+                  Pos p(spos,true);
+                  song->setPos(0, p, true, true, true);
                   }
                   break;
             case CMD_RIGHT:
+                  {
+                  int spos = AL::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
+                  Pos p(spos,true);
+                  song->setPos(0, p, true, true, true); 
+                  }
+                  break;
+            case CMD_LEFT_NOSNAP:
+                  {
+                  int spos = pos[0] - editor->rasterStep(pos[0]);
+                  if (spos < 0)
+                        spos = 0;
+                  Pos p(spos,true);
+                  song->setPos(0, p, true, true, true); //CDW
+                  }
+                  break;
+            case CMD_RIGHT_NOSNAP:
                   {
                   Pos p(pos[0] + editor->rasterStep(pos[0]), true);
                   //if (p > part->tick())

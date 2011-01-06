@@ -312,7 +312,7 @@ void PCScale::pdraw(QPainter& p, const QRect& r)
 						//  coordinate limitations in the underlying window system. Some platforms may 
 						//  behave incorrectly with coordinates as small as +/-4000."
 						if(xp >= -32)
-							p.drawPixmap(xp, 0, *flagIconS);
+							p.drawPixmap(xp, 0, *flagIconSP);
 						  
 					//	if(xp >= -1023)
 					//	{
@@ -322,11 +322,12 @@ void PCScale::pdraw(QPainter& p, const QRect& r)
 					//		p.drawText(r, Qt::AlignLeft|Qt::AlignVCenter, "Test"/*pcevt.name()*/);
 					//	}  
 						
-						if(xp >= 0)
-						{
-							p.setPen(Qt::green);
-							p.drawLine(xp, y, xp, height());
-						}  
+						//Andrew Commenting this line to test the new flag
+						//if(xp >= 0)
+						//{
+						//	p.setPen(Qt::red);
+						//	p.drawLine(xp, y, xp, height());
+						//}  
 					}//END if(wr.isEmpty)
 				}//END if(CTRL_PROGRAM)
 			}//END if(!isNote)

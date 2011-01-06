@@ -20,7 +20,7 @@
 
 class Track;
 class QLabel;
-//class QVBoxLayout;
+class QVBoxLayout;
 class Meter;
 class QToolButton;
 class QGridLayout;
@@ -40,6 +40,7 @@ class Strip : public QFrame {
       QLabel* label;
       //QVBoxLayout* layout;
       QGridLayout* grid;
+      QVBoxLayout* rackgrid;
       int _curGridRow;
       Meter* meter[MAX_CHANNELS];
       bool useSoloIconSet2;

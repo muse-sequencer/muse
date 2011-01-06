@@ -273,7 +273,7 @@ bool DeicsOnze::guiVisible() const
 //---------------------------------------------------------
 void DeicsOnze::showGui(bool val)
 {
-    _gui->setShown(val);
+    _gui->setVisible(val);
 }
 
 //---------------------------------------------------------
@@ -2268,8 +2268,7 @@ void DeicsOnze::writeConfiguration(AL::Xml* xml) {
 //---------------------------------------------------------
 // getInitData
 //---------------------------------------------------------
-void DeicsOnze::getInitData(int* length, const unsigned char** data) {
-  
+void DeicsOnze::getInitData(int* length, const unsigned char** data) const {
   //write the set in a temporary file and in a QByteArray
   QTemporaryFile file;
   file.open();

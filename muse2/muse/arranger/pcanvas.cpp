@@ -35,6 +35,8 @@
 #include "filedialog.h"
 #include "marker/marker.h"
 
+// Moved into global config by Tim.
+/* 
 const char* partColorNames[] = {
       "Default",
       "Refrain",
@@ -54,6 +56,8 @@ const char* partColorNames[] = {
       "Piano",
       "Saxophon",
       };
+*/      
+      
 /*
 //---------------------------------------------------------
 //   ColorListItem
@@ -749,7 +753,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
 
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
             //ColorListItem* item = new ColorListItem(config.partColors[i], h, fontMetrics().height(), partColorNames[i]); //ddskrjo
-            QAction *act_color = colorPopup->addAction(colorRect(config.partColors[i], 80, 80), partColorNames[i]);
+            QAction *act_color = colorPopup->addAction(colorRect(config.partColors[i], 80, 80), config.partColorNames[i]);
             act_color->setData(20+i);
             }
 
@@ -1099,16 +1103,35 @@ void PartCanvas::keyPress(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_POS_DEC].key) {
-            int frames = pos[0] - AL::sigmap.rasterStep(pos[0], *_raster);
-            if (frames < 0)
-                  frames = 0;
-            Pos p(frames,true);
+            int spos = pos[0];
+            if(spos > 0) 
+            {
+              spos -= 1;     // Nudge by -1, then snap down with raster1.
+              spos = AL::sigmap.raster1(spos, *_raster);
+            }  
+            if(spos < 0)
+              spos = 0;
+            Pos p(spos,true);
             song->setPos(0, p, true, true, true);
             return;
             }
       else if (key == shortcuts[SHRT_POS_INC].key) {
+            int spos = AL::sigmap.raster2(pos[0] + 1, *_raster);    // Nudge by +1, then snap up with raster2.
+            Pos p(spos,true);
+            song->setPos(0, p, true, true, true); 
+            return;
+            }
+      else if (key == shortcuts[SHRT_POS_DEC_NOSNAP].key) {
+            int spos = pos[0] - AL::sigmap.rasterStep(pos[0], *_raster);
+            if(spos < 0)
+              spos = 0;
+            Pos p(spos,true);
+            song->setPos(0, p, true, true, true);
+            return;
+            }
+      else if (key == shortcuts[SHRT_POS_INC_NOSNAP].key) {
             Pos p(pos[0] + AL::sigmap.rasterStep(pos[0], *_raster), true);
-            song->setPos(0, p, true, true, true); //CDW
+            song->setPos(0, p, true, true, true);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_POINTER].key) {
@@ -2864,33 +2887,40 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
 //     printf("drawAudioTrack %d x %d y %d w %d h %d\n",t, r.x(), r.y(), r.width(), r.height());
      //int v2=r.x()+r.width();
      //printf("v2=%d mapx=%d rmapx=%d mapxdev=%d rmapxdev=%d\n",v2, mapx(v2),rmapx(v2),mapxDev(v2),rmapxDev(v2));
-     return;
+     //return;
 
-     p.setPen(QPen(Qt::black, 2, Qt::SolidLine));
+//     p.setPen(QPen(Qt::black, 2, Qt::SolidLine));
      int height=r.bottom()-r.top()-4; // limit height
 
      CtrlListList* cll = t->controller();
-     QColor cols[10];
-     cols[0]=Qt::white;
-     cols[1]=Qt::red;
-     cols[2]=Qt::yellow;
-     cols[3]=Qt::black;
-     cols[4]=Qt::blue;
-     int colIndex=0;
+//     QColor cols[10];
+//     cols[0]=Qt::white;
+//     cols[1]=Qt::red;
+//     cols[2]=Qt::yellow;
+//     cols[3]=Qt::black;
+//     cols[4]=Qt::blue;
+     //int colIndex=0;
      bool firstRun=true;
      for(CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll)
      {
        //iCtrlList *icl = icll->second;
        CtrlList *cl = icll->second;
+       if (cl->dontShow())
+         continue;
        double prevVal;
        iCtrl ic=cl->begin();
-       p.setPen(QPen(cols[colIndex++],1,Qt::SolidLine));
+       if (!cl->isVisible())
+          continue; // skip this iteration if this controller isn't in the visible list
+       p.setPen(QPen(cl->color(),1,Qt::SolidLine));
 
-       if (ic!=cl->end()) { // if there are no automation values we don't draw at all
+       // First check that there ARE automation, ic == cl->end means no automation
+       if (ic != cl->end()) {
          CtrlVal cvFirst = ic->second;
          ic++;
          int prevPos=cvFirst.frame;
          prevVal = cvFirst.val;
+
+         // prepare prevVal
          if (cl->id() == AC_VOLUME ) { // use db scale for volume
            prevVal = (20.0*log10(cvFirst.val)+60) / 70.0; // represent volume between 0 and 1
            if (prevVal < 0) prevVal = 0.0;
@@ -2901,6 +2931,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
            cl->range(&min,&max);
            prevVal = (prevVal- min)/(max-min);
          }
+
          for (; ic !=cl->end(); ++ic)
          {
             CtrlVal cv = ic->second;
@@ -2915,29 +2946,27 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
               cl->range(&min,&max);
               nextVal = (nextVal- min)/(max-min);
             }
-            //printf("volume automation event %d %f %f %d\n",cv.frame,cv.val, tempomap.frame2tick(cv.frame));
-            //p.drawLine(r.x(),(r.bottom()-2)-lastVal*height,r.x()+r.width(),(r.bottom()-2)-curVal*height); // debuggingtest
             int leftX=tempomap.frame2tick(prevPos);
             if (firstRun && leftX>r.x()) {
-              printf("first run\n");
               leftX=r.x();
             }
 
-            printf("inner draw\n");
-            p.drawLine(leftX,(r.bottom()-2)-prevVal*height,tempomap.frame2tick(cv.frame),(r.bottom()-2)-prevVal*height);
+            p.drawLine( leftX,
+                       (r.bottom()-2)-prevVal*height,
+                        tempomap.frame2tick(cv.frame),
+                       (r.bottom()-2)-nextVal*height);
             firstRun=false;
             //printf("draw line: %d %f %d %f\n",tempomap.frame2tick(lastPos),r.bottom()-lastVal*height,tempomap.frame2tick(cv.frame),r.bottom()-curVal*height);
             prevPos=cv.frame;
             prevVal=nextVal;
          }
-         printf("outer draw %f\n", cvFirst.val);
-         p.drawLine(tempomap.frame2tick(prevPos),(r.bottom()-2)-prevVal*height,tempomap.frame2tick(prevPos)+r.width(),(r.bottom()-2)-prevVal*height);
-         //printf("draw last line: %d %f %d %f\n",tempomap.frame2tick(lastPos),r.bottom()-lastVal*height,150000,r.bottom()-lastVal*height);
+         //printf("outer draw %f\n", cvFirst.val );
+         p.drawLine(tempomap.frame2tick(prevPos),
+                   (r.bottom()-2)-prevVal*height,
+                    r.x()+r.width(),
+                   (r.bottom()-2)-prevVal*height);
+         //printf("draw last line: %d %f %d %f\n",tempomap.frame2tick(prevPos),(r.bottom()-2)-prevVal*height,tempomap.frame2tick(prevPos)+r.width(),(r.bottom()-2)-prevVal*height);
        }
-//       if (height >100) {
-//          p.drawText(tempomap.frame2tick(0)+1000,40,"FOOO");
-//          printf("drawText %s\n", cl->name().toLatin1().constData());
-//        }
      }
 }
 

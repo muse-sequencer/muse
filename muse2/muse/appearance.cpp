@@ -46,14 +46,21 @@ class BgPreviewWidget : public QWidget {
             int w = t_widget->width() - 65;
             p.drawTiledPixmap(1,1,w,BG_ITEM_HEIGHT-2, pixmap);
 
+           const QPalette& pal = palette();
+           QColor dark = pal.dark().color();
            // We can also draw a rectangle behind the text:
-           //const QPalette& pal = palette();
-           //QColor dark = pal.dark().color();
            //p.fillRect(QRect(w/2 - text_w/2,6,text_w + 20,text_h+4), dark);
 
            QFontMetrics fm = p.fontMetrics();
            text_w = fm.width(imagefile);
            text_h = fm.height();
+
+           // Do the text shadow first
+           p.save();
+           p.setPen(dark);
+           p.drawText(w/2 - text_w/2 + 1, 7, text_w + 20, text_h+4, Qt::AlignCenter, imagefile);
+           p.restore();
+
            p.drawText(w/2 - text_w/2,6, text_w + 20, text_h+4, Qt::AlignCenter, imagefile);
            QWidget::paintEvent(event);
            }
@@ -99,6 +106,9 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       color  = 0;
       config = new GlobalConfigValues;
 
+      lastSelectedColorItem = 0;
+      lastSelectedBgItem = 0;
+      
       fontName0->setToolTip(tr("Main application font, and default font for any\n controls not defined here."));
       fontName1->setToolTip(tr("For small controls like mixer strips.\nAlso timescale small numbers, arranger part name overlay,\n and effects rack."));
       fontName2->setToolTip(tr("Midi track info panel. Transport controls."));
@@ -159,6 +169,8 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       itemList->clear();
       aid = new IdListViewItem(0, itemList, "Arranger");
       id = new IdListViewItem(0, aid, "PartColors");
+           // Names moved into global config by Tim.
+           /*
            new IdListViewItem(0x400, id, "Default");
            new IdListViewItem(0x401, id, "Refrain");
            new IdListViewItem(0x402, id, "Bridge");
@@ -176,6 +188,10 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x40e, id, "Keyboard");
            new IdListViewItem(0x40f, id, "Piano");
            new IdListViewItem(0x410, id, "Saxophon");
+           */
+           for(int i = 0; i < NUM_PARTCOLORS; ++i)
+             new IdListViewItem(0x400 + i, id, ::config.partColorNames[i]);
+           
            new IdListViewItem(0x41c, aid, "part canvas background");
       id = new IdListViewItem(0, aid, "Track List");
            new IdListViewItem(0x411, id, "background");
@@ -198,7 +214,20 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x41d, id, "controller graph");
       id = new IdListViewItem(0, itemList, "Wave Editor");
            new IdListViewItem(0x300, id, "background");
+      id = new IdListViewItem(0, itemList, "Mixer");
+           new IdListViewItem(0x500, id, "background");
+           new IdListViewItem(0x501, id, "midi label");
+           new IdListViewItem(0x502, id, "drum label");
+           new IdListViewItem(0x503, id, "wave label");
+           new IdListViewItem(0x504, id, "audio output label");
+           new IdListViewItem(0x505, id, "audio input label");
+           new IdListViewItem(0x506, id, "group label");
+           new IdListViewItem(0x507, id, "aux label");
+           new IdListViewItem(0x508, id, "synth label");
 
+      colorNameLineEdit->setEnabled(false);
+      
+      connect(colorNameLineEdit, SIGNAL(editingFinished()), SLOT(colorNameEditFinished()));
       connect(itemList, SIGNAL(itemSelectionChanged()), SLOT(colorItemSelectionChanged()));
       connect(aPalette, SIGNAL(buttonClicked(int)), SLOT(paletteClicked(int)));
       connect(globalAlphaSlider, SIGNAL(valueChanged(int)), SLOT(asliderChanged(int)));
@@ -282,6 +311,7 @@ void Appearance::resetValues()
 
       QPalette pal;
       
+      /*
       pal.setColor(palette0->backgroundRole(), config->palette[0]);
       palette0->setPalette(pal);
       pal.setColor(palette1->backgroundRole(), config->palette[1]);
@@ -314,7 +344,95 @@ void Appearance::resetValues()
       palette14->setPalette(pal);
       pal.setColor(palette15->backgroundRole(), config->palette[15]);
       palette15->setPalette(pal);
+      */
 
+      /*
+      pal.setColor(QPalette::Window, config->palette[0]);
+      palette0->setPalette(pal);
+      pal.setColor(QPalette::Window, config->palette[1]);
+      palette1->setPalette(pal);
+      pal.setColor(QPalette::Window, config->palette[2]);
+      palette2->setPalette(pal);
+      pal.setColor(QPalette::Window, config->palette[3]);
+      palette3->setPalette(pal);
+      pal.setColor(QPalette::Window, config->palette[4]);
+      palette4->setPalette(pal);
+      pal.setColor(QPalette::Window, config->palette[5]);
+      palette5->setPalette(pal);
+      pal.setColor(QPalette::Window, config->palette[6]);
+      palette6->setPalette(pal);
+      pal.setColor(QPalette::Window, config->palette[7]);
+      palette7->setPalette(pal);
+      pal.setColor(QPalette::Window, config->palette[8]);
+      palette8->setPalette(pal);
+      pal.setColor(QPalette::Window, config->palette[9]);
+      palette9->setPalette(pal);
+      pal.setColor(QPalette::Window, config->palette[10]);
+      palette10->setPalette(pal);
+      pal.setColor(QPalette::Window, config->palette[11]);
+      palette11->setPalette(pal);
+      pal.setColor(QPalette::Window, config->palette[12]);
+      palette12->setPalette(pal);
+      pal.setColor(QPalette::Window, config->palette[13]);
+      palette13->setPalette(pal);
+      pal.setColor(QPalette::Window, config->palette[14]);
+      palette14->setPalette(pal);
+      pal.setColor(QPalette::Window, config->palette[15]);
+      palette15->setPalette(pal);
+      */
+      
+      /*
+      pal.setColor(QPalette::Button, config->palette[0]);
+      palette0->setPalette(pal);
+      pal.setColor(QPalette::Button, config->palette[1]);
+      palette1->setPalette(pal);
+      pal.setColor(QPalette::Button, config->palette[2]);
+      palette2->setPalette(pal);
+      pal.setColor(QPalette::Button, config->palette[3]);
+      palette3->setPalette(pal);
+      pal.setColor(QPalette::Button, config->palette[4]);
+      palette4->setPalette(pal);
+      pal.setColor(QPalette::Button, config->palette[5]);
+      palette5->setPalette(pal);
+      pal.setColor(QPalette::Button, config->palette[6]);
+      palette6->setPalette(pal);
+      pal.setColor(QPalette::Button, config->palette[7]);
+      palette7->setPalette(pal);
+      pal.setColor(QPalette::Button, config->palette[8]);
+      palette8->setPalette(pal);
+      pal.setColor(QPalette::Button, config->palette[9]);
+      palette9->setPalette(pal);
+      pal.setColor(QPalette::Button, config->palette[10]);
+      palette10->setPalette(pal);
+      pal.setColor(QPalette::Button, config->palette[11]);
+      palette11->setPalette(pal);
+      pal.setColor(QPalette::Button, config->palette[12]);
+      palette12->setPalette(pal);
+      pal.setColor(QPalette::Button, config->palette[13]);
+      palette13->setPalette(pal);
+      pal.setColor(QPalette::Button, config->palette[14]);
+      palette14->setPalette(pal);
+      pal.setColor(QPalette::Button, config->palette[15]);
+      palette15->setPalette(pal);
+      */
+      
+      palette0->setStyleSheet(QString("background-color: ") + config->palette[0].name());
+      palette1->setStyleSheet(QString("background-color: ") + config->palette[1].name());
+      palette2->setStyleSheet(QString("background-color: ") + config->palette[2].name());
+      palette3->setStyleSheet(QString("background-color: ") + config->palette[3].name());
+      palette4->setStyleSheet(QString("background-color: ") + config->palette[4].name());
+      palette5->setStyleSheet(QString("background-color: ") + config->palette[5].name());
+      palette6->setStyleSheet(QString("background-color: ") + config->palette[6].name());
+      palette7->setStyleSheet(QString("background-color: ") + config->palette[7].name());
+      palette8->setStyleSheet(QString("background-color: ") + config->palette[8].name());
+      palette9->setStyleSheet(QString("background-color: ") + config->palette[9].name());
+      palette10->setStyleSheet(QString("background-color: ") + config->palette[10].name());
+      palette11->setStyleSheet(QString("background-color: ") + config->palette[11].name());
+      palette12->setStyleSheet(QString("background-color: ") + config->palette[12].name());
+      palette13->setStyleSheet(QString("background-color: ") + config->palette[13].name());
+      palette14->setStyleSheet(QString("background-color: ") + config->palette[14].name());
+      palette15->setStyleSheet(QString("background-color: ") + config->palette[15].name());
+      
       global_bg->takeChildren();
       user_bg->takeChildren();
 
@@ -368,19 +486,19 @@ void Appearance::resetValues()
       eventButtonGroup->setEnabled(config->canvasShowPartType & 2);
       arrGrid->setChecked(config->canvasShowGrid);
 
-      themeComboBox->clear();
+      //themeComboBox->clear();
       QString cs = muse->style()->objectName();
       //printf("Appearance::resetValues style:%s\n", cs.toAscii().data());  // REMOVE Tim
       //printf("Appearance::resetValues App styleSheet:%s\n", qApp->styleSheet().toAscii().data());  // REMOVE Tim
       cs = cs.toLower();
 
-      themeComboBox->insertItems(0, QStyleFactory::keys());
-      for (int i = 0; i < themeComboBox->count(); ++i) {
+      //themeComboBox->insertItems(0, QStyleFactory::keys());
+      /*for (int i = 0; i < themeComboBox->count(); ++i) {
             if (themeComboBox->itemText(i).toLower() == cs) {
                   themeComboBox->setCurrentIndex(i);
                   }
             }
-
+	  */
       globalAlphaSlider->blockSignals(true);
       globalAlphaVal->blockSignals(true);
       globalAlphaSlider->setValue(config->globalAlphaBlend);
@@ -552,7 +670,7 @@ void Appearance::apply()
       config->fonts[6].setItalic(italic6->isChecked());
       config->fonts[6].setBold(bold6->isChecked());
 
-      config->style = themeComboBox->currentText();
+      //config->style = themeComboBox->currentText();
     	// setting up a new theme might change the fontsize, so re-read
       fontSize0->setValue(QApplication::font().pointSize());
 
@@ -564,6 +682,29 @@ void Appearance::apply()
       ::config = *config;
       muse->changeConfig(true);
       }
+
+//---------------------------------------------------------
+//   colorNameEditFinished
+//---------------------------------------------------------
+
+void Appearance::colorNameEditFinished()
+{
+  if(!lastSelectedColorItem)
+    return;
+    
+  IdListViewItem* item = (IdListViewItem*)lastSelectedColorItem;
+  int id = item->id();
+  if(id == 0) 
+    return;
+  
+  QString etxt = colorNameLineEdit->text();
+  QString txt = item->text(0);
+  // We only support part color names, for now.
+  if(id >= 0x400 && id < (0x400 + NUM_PARTCOLORS))
+    config->partColorNames[id & 0xff] = etxt;
+  if(etxt != txt)
+    item->setText(0, etxt);
+}
 
 //---------------------------------------------------------
 //   ok
@@ -643,12 +784,16 @@ void Appearance::clearBackground()
 void Appearance::colorItemSelectionChanged()
       {
       IdListViewItem* item = (IdListViewItem*)itemList->selectedItems()[0];
+      lastSelectedColorItem = 0;
       QString txt = item->text(0);
       int id = item->id();
       if (id == 0) {
             color = 0;
+            lastSelectedColorItem = 0;
+            colorNameLineEdit->setEnabled(false);
             return;
             }
+      bool enle = false;
       switch(id) {
             case 0x400: // "Default"
             case 0x401: // "Refrain"
@@ -667,7 +812,9 @@ void Appearance::colorItemSelectionChanged()
             case 0x40e: // "Keyboard
             case 0x40f: // "Piano
             case 0x410: // "Saxophon
+                  lastSelectedColorItem = item;
                   color = &config->partColors[id & 0xff];
+                  enle = true;
                   break;
             case 0x100: color = &config->bigTimeBackgroundColor; break;
             case 0x101: color = &config->bigTimeForegroundColor; break;
@@ -687,10 +834,25 @@ void Appearance::colorItemSelectionChanged()
             case 0x41c: color = &config->partCanvasBg; break;
             case 0x41d: color = &config->ctrlGraphFg; break;
 
+            case 0x500: color = &config->mixerBg;   break;
+            case 0x501: color = &config->midiTrackLabelBg;   break;
+            case 0x502: color = &config->drumTrackLabelBg;   break;
+            case 0x503: color = &config->waveTrackLabelBg;   break;
+            case 0x504: color = &config->outputTrackLabelBg; break;
+            case 0x505: color = &config->inputTrackLabelBg;  break;
+            case 0x506: color = &config->groupTrackLabelBg;  break;
+            case 0x507: color = &config->auxTrackLabelBg;    break;
+            case 0x508: color = &config->synthTrackLabelBg;  break;
+            
             default:
                   color = 0;
                   break;
             }
+      colorNameLineEdit->setEnabled(enle);
+      QString s;
+      if(enle)
+        s = config->partColorNames[id & 0xff];
+      colorNameLineEdit->setText(s);
       updateColor();
       }
 
@@ -875,9 +1037,12 @@ void Appearance::addToPaletteClicked()
       if (button) {
             int id = aPalette->id(button);
             config->palette[id] = *color;
-	    QPalette pal;
-	    pal.setColor(button->backgroundRole(), *color);
-	    button->setPalette(pal);
+	    //QPalette pal;
+	    //pal.setColor(button->backgroundRole(), *color);
+            //pal.setColor(QPalette::Window, *color);
+            //pal.setColor(QPalette::Button, *color);
+	    //button->setPalette(pal);
+            button->setStyleSheet(QString("background-color: ") + color->name());
             button->update();   //??
             }
       }
@@ -893,6 +1058,7 @@ void Appearance::paletteClicked(int id)
       QAbstractButton* button = (QAbstractButton*)aPalette->button(id); // ddskrjo
       if (button) {
 	QColor c = button->palette().color(QPalette::Window);
+        //QColor c = button->palette().color(button->backgroundRole());
             int r, g, b;
             c.getRgb(&r, &g, &b);
             if (r == 0xff && g == 0xff && b == 0xff)

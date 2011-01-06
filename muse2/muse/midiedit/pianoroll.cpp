@@ -284,11 +284,13 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       tools = addToolBar(tr("Pianoroll tools"));          
       tools->addActions(undoRedo->actions());
       tools->addSeparator();
+	  tools->setIconSize(QSize(22,22));
 
       srec  = new QToolButton();
       srec->setToolTip(tr("Step Record"));
       srec->setIcon(*steprecIcon);
       srec->setCheckable(true);
+	  //srec->setObjectName("StepRecord");
       tools->addWidget(srec);
 
       midiin  = new QToolButton();
@@ -304,6 +306,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       tools->addWidget(speaker);
 
       tools2 = new EditToolBar(this, pianorollTools);
+	  tools2->setIconSize(QSize(22,22));
       addToolBar(tools2);
 
       QToolBar* panicToolbar = new QToolBar(tr("panic"));
@@ -316,6 +319,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 	  addToolBar(Qt::BottomToolBarArea, transport);
       transport->addActions(transportAction->actions());
 	  transport->setAllowedAreas(Qt::BottomToolBarArea);
+	  transport->setIconSize(QSize(22,22));
 	  addToolBar(Qt::BottomToolBarArea, panicToolbar);         
 
       //addToolBarBreak();
@@ -360,18 +364,20 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 
       midiTrackInfo       = new MidiTrackInfo(mainw);        
 	  midiTrackInfo->setObjectName("prTrackInfo");
-      int mtiw = midiTrackInfo->width(); // Save this.
+      //int mtiw = midiTrackInfo->width(); // Save this.
       midiTrackInfo->setMinimumWidth(100);   
-      midiTrackInfo->setMaximumWidth(180);   
+      //midiTrackInfo->setMaximumWidth(180);   
 
       //midiTrackInfo->setSizePolicy(QSizePolicy(/*QSizePolicy::Ignored*/QSizePolicy::Preferred, QSizePolicy::Expanding));
       infoScroll          = new QScrollArea;
       infoScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);  
       infoScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded); 
-      infoScroll->setMaximumWidth(180);
+      //infoScroll->setMaximumWidth(180);
 	  //infoScroll->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding));
       infoScroll->setWidget(midiTrackInfo);
       infoScroll->setWidgetResizable(true);
+      //infoScroll->setObjectName("trackInfoScroll");
+	  //infoScroller->setAttribute(Qt::WA_NoBackground);
       //infoScroll->setVisible(false);
       //infoScroll->setEnabled(false);
 
@@ -421,7 +427,8 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       canvas              = new PianoCanvas(this, split1, xscale, yscale);
       vscroll             = new ScrollScale(-3, 7, yscale, KH * 75, Qt::Vertical, split1);
       
-
+      //setFocusProxy(canvas);   // Tim.
+      
       int offset = -(config.division/4);
       canvas->setOrigin(offset, 0);
       canvas->setCanvasTools(pianorollTools);
@@ -470,9 +477,9 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 
       // Tim.
       QList<int> mops;
-      mops.append(mtiw + 30);  // 30 for possible scrollbar
-      mops.append(width() - mtiw - 30);
-      //hsplitter->setSizes(mops);
+      mops.append(180);  // 30 for possible scrollbar
+      mops.append(width() - 180);
+      hsplitter->setSizes(mops);
       
       connect(tools2, SIGNAL(toolChanged(int)), canvas,   SLOT(setTool(int)));
 
@@ -934,7 +941,8 @@ void PianoRoll::writeStatus(int level, Xml& xml) const
       xml.tag(level++, "pianoroll");
       MidiEditor::writeStatus(level, xml);
       splitter->writeStatus(level, xml);
-
+      hsplitter->writeStatus(level, xml);  
+      
       for (std::list<CtrlEdit*>::const_iterator i = ctrlEditList.begin();
          i != ctrlEditList.end(); ++i) {
             (*i)->writeStatus(level, xml);
@@ -990,6 +998,8 @@ void PianoRoll::readStatus(Xml& xml)
                               }
                         else if (tag == splitter->objectName())
                               splitter->readStatus(xml);
+                        else if (tag == hsplitter->objectName())
+                              hsplitter->readStatus(xml);
                         else if (tag == "quantStrength")
                               _quantStrength = xml.parseInt();
                         else if (tag == "quantLimit")
@@ -1100,6 +1110,14 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             pc->pianoCmd(CMD_LEFT);
             return;
             }
+      else if (key == shortcuts[SHRT_POS_INC_NOSNAP].key) {
+            pc->pianoCmd(CMD_RIGHT_NOSNAP);
+            return;
+            }
+      else if (key == shortcuts[SHRT_POS_DEC_NOSNAP].key) {
+            pc->pianoCmd(CMD_LEFT_NOSNAP);
+            return;
+            }
       else if (key == shortcuts[SHRT_INSERT_AT_LOCATION].key) {
             pc->pianoCmd(CMD_INSERT);
             return;
@@ -1153,11 +1171,11 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
 		return;
 	  }
 	  else if (key == shortcuts[SHRT_ADD_PROGRAM].key) {
-		midiTrackInfo->progRecClicked();
+		midiTrackInfo->insertMatrixEvent();//progRecClicked();
 		return;
 	  }
 	  else if (key == shortcuts[SHRT_DEL_PROGRAM].key) {
-	  	printf("Delete KeyStroke recieved\n");
+	  	//printf("Delete KeyStroke recieved\n");
 		int x = song->cpos();
 		Track* track = song->findTrack(curCanvasPart());/*{{{*/
 		PartList* parts = track->parts();
@@ -1169,19 +1187,19 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
 			{
 				//Get event type.
 				Event pcevt = evt->second;
-				printf("Found events %d \n", pcevt.type());
+				//printf("Found events %d \n", pcevt.type());
 				if(!pcevt.isNote())
 				{
-					printf("Found none Note events of type: %d with dataA: %d\n", pcevt.type(), pcevt.dataA());
+					//printf("Found none Note events of type: %d with dataA: %d\n", pcevt.type(), pcevt.dataA());
 					if(pcevt.type() == Controller && pcevt.dataA() == CTRL_PROGRAM)
 					{
-						printf("Found Program Change event type\n");
-						printf("Pos x: %d\n", x);
+						//printf("Found Program Change event type\n");
+						//printf("Pos x: %d\n", x);
 						int xp = pcevt.tick()+mprt->tick();
-						printf("Event x: %d\n", xp);
+						//printf("Event x: %d\n", xp);
 						if(xp >= x && xp <= (x+50))
 						{
-							printf("Found Program Change to delete at: %d\n", x);
+							//printf("Found Program Change to delete at: %d\n", x);
 							song->startUndo();
 							audio->msgDeleteEvent(evt->second, p->second, true, true, true);
 							song->endUndo(SC_EVENT_MODIFIED);

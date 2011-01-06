@@ -1078,9 +1078,9 @@ void Song::cmdAddRecordedWave(WaveTrack* track, Pos s, Pos e)
         return;
       }
       // Round the start down using the Arranger part snap raster value. 
-      unsigned startTick = AL::sigmap.raster1(s.tick(), song->recRaster());
+      unsigned startTick = AL::sigmap.raster1(s.tick(), song->arrangerRaster());
       // Round the end up using the Arranger part snap raster value. 
-      unsigned endTick   = AL::sigmap.raster2(e.tick(), song->recRaster());
+      unsigned endTick   = AL::sigmap.raster2(e.tick(), song->arrangerRaster());
 
       f->update();
 

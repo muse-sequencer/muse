@@ -34,9 +34,9 @@ enum TrackColumn {
       COL_OPORT,
       COL_OCHANNEL,
       COL_TIMELOCK,
+      COL_AUTOMATION,
       COL_NONE = -1
       };
-//      COL_AUTOMATION, -- not enabled
 
 //---------------------------------------------------------
 //   TList
@@ -87,6 +87,7 @@ class TList : public QWidget {
    private slots:
       void returnPressed();
       void songChanged(int flags);
+      void changeAutomation(QAction*);
 
    signals:
       ///void selectionChanged();

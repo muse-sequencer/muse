@@ -54,6 +54,27 @@
 		<file>images/icons/transport-tracking.png</file>
 		<file>images/icons/un-mute-all.png</file>
 		<file>images/icons/velocity.png</file>
+		<file>images/icons/mixer-record.png</file>
+		<file>images/icons/mixer-record_on.png</file>
+		<file>images/icons/mixer-solo.png</file>
+		<file>images/icons/mixer-solo_on.png</file>
+		<file>images/icons/mixer-mute.png</file>
+		<file>images/icons/mixer-mute_on.png</file>
+		<file>images/icons/mixer-stereo.png</file>
+		<file>images/icons/mixer-mono.png</file>
+		<file>images/icons/mixer-exit.png</file>
+		<file>images/icons/mixer-exit_on.png</file>
+		<file>images/icons/mixer-in.png</file>
+		<file>images/icons/mixer-out.png</file>
+		<file>images/icons/mixer-pre.png</file>
+		<file>images/icons/mixer-pre_on.png</file>
+		<file>images/icons/blank_record.png</file>
+		<file>images/top_rack.png</file>
+		<file>images/bottom_rack.png</file>
+		<file>images/flagSP.png</file>
+		<file>images/icons/up.png</file>
+		<file>images/icons/down.png</file>
+		<file>images/icons/garbage.png</file>
 	</qresource>
 </RCC>
 
