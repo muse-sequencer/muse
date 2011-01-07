@@ -1501,14 +1501,14 @@ void TrackView::write(int level, Xml& xml) const /*{{{*/
 {
 	QString tag = "trackview";
 	
-	xml.put(level, "<%s name=\"%s\" selected=\"%d\" type=\"%d\"", tag, _name, _selected, _type);
+        xml.put(level, "<%s name=\"%s\" selected=\"%d\" type=\"%d\"", tag.toUtf8().data(), _name.toUtf8().data(), _selected, _type);
 	
 	//for(iTrack* t = _tracks.begin(); t != _tracks.end(); ++t)
 	for (ciTrack t = _tracks.begin(); t != _tracks.end(); ++t)
 	{
 		xml.strTag(level++, "vtrack", (*t)->name());
 	}
-	xml.put(level++, "</%s>", tag);
+        xml.put(level++, "</%s>", tag.toUtf8().data());
 }/*}}}*/
 
 //---------------------------------------------------------
