@@ -575,8 +575,18 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
         pos = initPos;
       if(pos > MAXINT)
         pos = MAXINT;
-      hscroll->setOffset((int)pos);
-      }
+
+      // At this point in time the range of the canvas hasn't
+      // been calculated right ?
+      // Also, why wanting to restore some initPos, what is initPos?
+      // To me, it seems to make a lot more sense to use the actual
+      // current song cpos.
+
+//      hscroll->setOffset((int)pos); // changed that to:
+
+      follow(song->cpos());
+
+}
 
 //---------------------------------------------------------
 //   songChanged1
