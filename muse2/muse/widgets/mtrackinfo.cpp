@@ -67,9 +67,10 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QFrame(parent)
   _progRowNum = 0;
   editing = false;
   _matrix = new QList<int>;
-  _tableModel = new ProgramChangeTableModel(this);//new QStandardItemModel();
+  _tableModel = new ProgramChangeTableModel(this);
   tableView = new ProgramChangeTable(this);
   tableView->setMinimumHeight(150);
+  tableView->horizontalHeader()->setStretchLastSection(true);//setResizeMode(1,QHeaderView::Stretch);
   tableBox->addWidget(tableView);
   selected = sel_track;
   
@@ -125,8 +126,20 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QFrame(parent)
   
   setLabelText();
   setLabelFont();
+  
+  QStandardItem* hid = new QStandardItem(tr("I"));
+  QStandardItem* hstat = new QStandardItem(true);
+  hstat->setCheckable(true);
+  hstat->setCheckState(Qt::Unchecked);
+  QStandardItem* hpatch = new QStandardItem(tr("Patch"));
+  _tableModel->setHorizontalHeaderItem(0, hid);
+  _tableModel->setHorizontalHeaderItem(1, hstat);
+  _tableModel->setHorizontalHeaderItem(2, hpatch);
+  
   tableView->setModel(_tableModel);
-  tableView->setColumnWidth(0, 32);
+  tableView->setColumnWidth(1, 20);
+  tableView->setColumnHidden(0, true);
+
   btnUp->setIcon(*upPCIcon);
   btnDown->setIcon(*downPCIcon);
   btnDelete->setIcon(*garbagePCIcon);
@@ -317,7 +330,7 @@ void MidiTrackInfo::heartBeat()
         if(nprogram == CTRL_VAL_UNKNOWN) 
         {
           //const char* n = "<unknown>";
-          const QString n(tr("<unknown>"));
+          const QString n(tr("Select Patch"));
           //if(strcmp(iPatch->text().toLatin1().constData(), n) != 0)
           if(iPatch->text() != n)
           {
@@ -585,6 +598,8 @@ void MidiTrackInfo::iOutputPortChanged(int index)
       audio->msgIdle(true);
       //audio->msgSetTrackOutPort(track, index);
       track->setOutPortAndUpdate(index);
+	  _tableModel->clear();
+	  rebuildMatrix();
       audio->msgIdle(false);
       
       song->update(SC_MIDI_TRACK_PROP);  
@@ -1070,61 +1085,75 @@ void MidiTrackInfo::instrPopup()
             //int rv = act->data().toInt();
             QVariant _data = act->data();
 			QStringList lst = _data.toStringList();
-			QString str = lst.at(0);
-			QString pg = "";//lst.at(1);
-			int rv = str.toInt();
+			if(!lst.isEmpty())
+			{
+				QString str = lst.at(0);
+				QString pg = "";//lst.at(1);
+				int rv = str.toInt();
 
-			MidiPlayEvent ev(0, port, channel, ME_CONTROLLER, CTRL_PROGRAM, rv);
-            audio->msgPlayMidiEvent(&ev);
-            updateTrackInfo(-1);
-			
-			//At this point we add the event to the list.
-			if(lst.size() > 1)
-			{
-				pg = lst.at(1);
+				MidiPlayEvent ev(0, port, channel, ME_CONTROLLER, CTRL_PROGRAM, rv);
+        	    audio->msgPlayMidiEvent(&ev);
+        	    updateTrackInfo(-1);
+				
+				//At this point we add the event to the list.
+				if(lst.size() > 1)
+				{
+					pg = lst.at(1);
+				}
+				//QLabel label;
+				//label.setText(pg);
+				QString label = "  " + pg + (pg.isEmpty() ? "" : ":\n  ") + act->text();
+				//QList<QStandardItem*> found = _tableModel->findItems(label, Qt::MatchExactly, 1);
+				//if(found.size() == 0)
+				//{
+					QList<QStandardItem*> rowData;
+					QStandardItem* chk = new QStandardItem(true);
+					chk->setCheckable(true);
+					chk->setCheckState(Qt::Checked);
+					chk->setToolTip(tr("Add to patch sequence"));
+					//_tableModel->setItem(row, 0, chk);
+					QStandardItem* patch = new QStandardItem(label);
+					patch->setToolTip(label);
+					patch->setEditable(false);
+					rowData.append(new QStandardItem(str));
+					rowData.append(chk);
+					rowData.append(patch);
+					//_tableModel->setItem(row, 1, patch);
+					//_tableModel->setItem(row, 2, new QStandardItem(str));
+					for(int i=0; i < _tableModel->rowCount(); ++i)
+					{
+						QStandardItem* item = _tableModel->item(i, 1);
+						item->setCheckState(Qt::Unchecked);
+					}
+					_tableModel->insertRow(0, rowData);
+					tableView->resizeRowToContents(0);
+					tableView->selectRow(0);
+					_matrix->append(0);
+  					tableView->setColumnWidth(1, 20);
+  					tableView->setColumnWidth(0, 1);
+  				/*	tableView->setColumnHidden(0, true);
+					if(_tableModel->rowCount() == 1)
+					{
+  						QStringList headers;
+  						headers.append(tr("I"));
+  						headers.append(tr("M"));
+  						headers.append(tr("Patch"));
+  						_tableModel->setHorizontalHeaderLabels(headers);
+					}*/
+				/*}
+				else
+				{
+					for(int i=0; i < _tableModel->rowCount(); ++i)
+					{
+						QStandardItem* item = _tableModel->item(i, 0);
+						item->setCheckState(Qt::Unchecked);
+					}
+					//Select the patch that was a duplicate only
+					QStandardItem* dup = found.at(0);
+					QStandardItem* dchk = _tableModel->item(dup->row(), 0);
+					dchk->setCheckState(Qt::Checked);
+				}*/
 			}
-			QString label = pg + (pg.isEmpty() ? "" : ": ") + act->text();
-			//QList<QStandardItem*> found = _tableModel->findItems(label, Qt::MatchExactly, 1);
-			//if(found.size() == 0)
-			//{
-				QList<QStandardItem*> rowData;
-				QStandardItem* chk = new QStandardItem(true);
-				chk->setCheckable(true);
-				chk->setCheckState(Qt::Checked);
-				chk->setToolTip(tr("Add to Matrix sequence"));
-				rowData.append(chk);
-				//_tableModel->setItem(row, 0, chk);
-				QStandardItem* patch = new QStandardItem(label);
-				patch->setToolTip(label);
-				patch->setEditable(false);
-				rowData.append(patch);
-				rowData.append(new QStandardItem(str));
-				//_tableModel->setItem(row, 1, patch);
-				//_tableModel->setItem(row, 2, new QStandardItem(str));
-				for(int i=0; i < _tableModel->rowCount(); ++i)
-				{
-					QStandardItem* item = _tableModel->item(i, 0);
-					item->setCheckState(Qt::Unchecked);
-				}
-				_tableModel->insertRow(0, rowData);
-				tableView->resizeRowToContents(0);
-				tableView->selectRow(0);
-				_matrix->append(0);
-  				tableView->setColumnWidth(0, 20);
-  				tableView->setColumnWidth(2, 1);
-			/*}
-			else
-			{
-				for(int i=0; i < _tableModel->rowCount(); ++i)
-				{
-					QStandardItem* item = _tableModel->item(i, 0);
-					item->setCheckState(Qt::Unchecked);
-				}
-				//Select the patch that was a duplicate only
-				QStandardItem* dup = found.at(0);
-				QStandardItem* dchk = _tableModel->item(dup->row(), 0);
-				dchk->setCheckState(Qt::Checked);
-			}*/
       }
             
       delete pup;      
@@ -1428,7 +1457,7 @@ void MidiTrackInfo::updateTrackInfo(int flags)
           nprogram = mp->lastValidHWCtrlState(outChannel, CTRL_PROGRAM);
           if(nprogram == CTRL_VAL_UNKNOWN) 
             //iPatch->setText(QString("<unknown>"));
-            iPatch->setText(tr("<unknown>"));
+            iPatch->setText(tr("Select Patch"));
           else
           {
             MidiInstrument* instr = mp->instrument();
@@ -1636,13 +1665,11 @@ void MidiTrackInfo::toggleAdvanced(int checked)
 {
 	if(checked == Qt::Checked)
 	{
-		frame->show();//setFrameRect(state);
+		frame->show();
 	}
 	else
 	{
-		//state = scrollArea->frameRect();
-		//QRect r = QRect(state.x(), state.y()+state.height(), state.width(), 1);
-		frame->hide();//setFrameRect(r);
+		frame->hide();
 	}
 }
 
@@ -1654,7 +1681,7 @@ void MidiTrackInfo::rebuildMatrix()
 	//Rebuild from order of selected table items
 	for(int i=0; i < _tableModel->rowCount(); ++i)
 	{
-		QStandardItem* item = _tableModel->item(i, 0);
+		QStandardItem* item = _tableModel->item(i, 1);
 		if(item->checkState() == Qt::Checked)
 			_matrix->append(item->row());
 	}
@@ -1695,7 +1722,7 @@ void MidiTrackInfo::insertMatrixEvent()
 		//Get the QStandardItem in the hidden third column
 		//This column contains the ID of the Patch
 		int row = _matrix->at(0);
-		QStandardItem* item = _tableModel->item(row, 2);
+		QStandardItem* item = _tableModel->item(row, 0);
 		int id = item->text().toInt();
 		MidiPlayEvent ev(0, port, channel, ME_CONTROLLER, CTRL_PROGRAM, id);
 		audio->msgPlayMidiEvent(&ev);
@@ -1710,7 +1737,7 @@ void MidiTrackInfo::insertMatrixEvent()
 		//printf("Adding Program Change for row: %d\n", row);
 		if(row != -1 && row < _tableModel->rowCount())
 		{
-			QStandardItem* item = _tableModel->item(row, 2);
+			QStandardItem* item = _tableModel->item(row, 0);
 			int id = item->text().toInt();
 			MidiPlayEvent ev(0, port, channel, ME_CONTROLLER, CTRL_PROGRAM, id);
 			audio->msgPlayMidiEvent(&ev);
@@ -1768,12 +1795,12 @@ void MidiTrackInfo::movePatchDown(bool b)
 			return;
 		int row = (id + 1);
 		QList<QStandardItem*> item = _tableModel->takeRow(id);
-		QStandardItem* txt = item.at(1);
+		QStandardItem* txt = item.at(2);
 		txt->setEditable(false);
 		_tableModel->insertRow(row, item);
 		tableView->resizeRowsToContents();
-  		tableView->setColumnWidth(0, 20);
-  		tableView->setColumnWidth(2, 1);
+  		tableView->setColumnWidth(1, 20);
+  		tableView->setColumnWidth(0, 1);
 		tableView->selectRow(row);
 	}
 }
@@ -1788,12 +1815,17 @@ void MidiTrackInfo::movePatchUp(bool clicked)
 			return;
 		int row = (id - 1);
 		QList<QStandardItem*> item = _tableModel->takeRow(id);
-		QStandardItem* txt = item.at(1);
+		QStandardItem* txt = item.at(2);
 		txt->setEditable(false);
 		_tableModel->insertRow(row, item);
 		tableView->resizeRowsToContents();
-  		tableView->setColumnWidth(0, 20);
-  		tableView->setColumnWidth(2, 1);
+  		tableView->setColumnWidth(1, 20);
+  		tableView->setColumnWidth(0, 1);
 		tableView->selectRow(row);
 	}
+}
+
+void MidiTrackInfo::updateSize()
+{
+	tableView->resizeRowsToContents();
 }

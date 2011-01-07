@@ -364,15 +364,17 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 
       midiTrackInfo       = new MidiTrackInfo(mainw);        
 	  midiTrackInfo->setObjectName("prTrackInfo");
-      //int mtiw = midiTrackInfo->width(); // Save this.
+      int mtiw = 280;//midiTrackInfo->width(); // Save this.
       midiTrackInfo->setMinimumWidth(100);   
-      //midiTrackInfo->setMaximumWidth(180);   
+      //midiTrackInfo->setMaximumWidth(300);   
+	  connect(hsplitter, SIGNAL(splitterMoved(int, int)), midiTrackInfo, SLOT(updateSize()));
 
       //midiTrackInfo->setSizePolicy(QSizePolicy(/*QSizePolicy::Ignored*/QSizePolicy::Preferred, QSizePolicy::Expanding));
       infoScroll          = new QScrollArea;
       infoScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);  
       infoScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded); 
-      //infoScroll->setMaximumWidth(180);
+      //infoScroll->setMaximumWidth(300);
+      infoScroll->setMinimumWidth(100);
 	  //infoScroll->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding));
       infoScroll->setWidget(midiTrackInfo);
       infoScroll->setWidgetResizable(true);
@@ -477,9 +479,11 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 
       // Tim.
       QList<int> mops;
-      mops.append(180);  // 30 for possible scrollbar
-      mops.append(width() - 180);
+      mops.append(mtiw);  // 30 for possible scrollbar
+      mops.append(width() - mtiw);
       hsplitter->setSizes(mops);
+	  hsplitter->setStretchFactor(0, 0);
+	  hsplitter->setStretchFactor(1, 15);
       
       connect(tools2, SIGNAL(toolChanged(int)), canvas,   SLOT(setTool(int)));
 

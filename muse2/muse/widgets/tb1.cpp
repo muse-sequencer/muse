@@ -27,11 +27,12 @@ static int rasterTable[] = {
       1, 9, 18, 36, 72, 144, 288, 576, 1152, 2304
       };
 
-static const char* rasterStrings[] = {
+static const char* rasterStrings[] = 
+{
       QT_TRANSLATE_NOOP("@default", "Off"), "2pp", "5pp", "64T", "32T", "16T", "8T", "4T", "2T", "1T",
       QT_TRANSLATE_NOOP("@default", "Off"), "3pp", "6pp", "64",  "32",  "16",  "8",  "4",  "2",  "1",
       QT_TRANSLATE_NOOP("@default", "Off"), "4pp", "7pp", "64.", "32.", "16.", "8.", "4.", "2.", "1."
-      };
+};
 
 static int quantTable[] = {
       1, 16, 32,  64, 128, 256,  512, 1024,

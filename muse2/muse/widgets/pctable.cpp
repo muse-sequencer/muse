@@ -19,6 +19,8 @@ ProgramChangeTable::ProgramChangeTable(QWidget *parent) : QTableView(parent)
 	setAutoFillBackground(true);
 	setTextElideMode(Qt::ElideNone);
 	setSelectionBehavior(QAbstractItemView::SelectRows);
+	setAlternatingRowColors(true);
+	setWordWrap(false);
 }
 
 void ProgramChangeTable::dropEvent(QDropEvent *evt)

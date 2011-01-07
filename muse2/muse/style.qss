@@ -20,10 +20,47 @@ TrackViewEditor QListView, TrackViewEditor QTextField, QTableView
 /*MidiTrackInfo styles*/
 MidiTrackInfo QTableView 
 {
-	background-color: white;
+	background-color: #d8dbe8;
 	border: 1px solid #29292a;
-	border-radius: 3px;
-	padding: 8px;
+	border-radius: 0px;
+	padding: 0px;
+	color: black;
+	font-size: 12px;
+	alternate-background-color: #bec0cf;
+}
+
+MidiTrackInfo QTableView QHeaderView::section 
+{
+	text-align: left;
+	border: 0px solid black;
+	border-radius: 0px;
+	padding: 5px;
+	/*background-color: #936b9c;*/
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #727180, stop:0.1 #727180, stop:0.3 #4a4d5a, stop:1 #4a4d5a);
+	font-size: 12px;
+	color: #d6dfd6;
+}
+
+MidiTrackInfo QTableView::item 
+{
+	padding-top: 8px;
+	padding-bottom: 8px;
+}
+
+MidiTrackInfo QTableView::item:selected 
+{
+	background-color: #3d3e44;
+	border: none;
+}
+
+MidiTrackInfo QTableView::item:selected:active 
+{
+	border: none;
+}
+
+MidiTrackInfo QTableView::item:selected:!active 
+{
+	border: none;
 }
 
 

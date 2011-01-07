@@ -72,6 +72,7 @@ class MidiTrackInfo : public QFrame/*QWidget*/, public Ui::MidiTrackInfoBase
       void progRecClicked();
       void songChanged(int);
 	  void insertMatrixEvent();
+	  void updateSize();
 
    signals:
       void outputPortChanged(int);  
