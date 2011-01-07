@@ -860,7 +860,7 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
       if (hasAuxSend()) {
             int naux = song->auxs()->size();
             for (int idx = 0; idx < naux; ++idx) {
-                  QString s("<auxSend idx=%1>%2</auxSend>\n");
+                  QString s("<auxSend idx=\"%1\">%2</auxSend>\n");
                   xml.nput(level, s.arg(idx).arg(_auxSend[idx]).toAscii().constData());
                   }
             }
