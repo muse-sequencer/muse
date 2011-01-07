@@ -152,6 +152,7 @@ class PianoRoll : public MidiEditor {
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
       virtual void resizeEvent(QResizeEvent*);
+      virtual void showEvent(QShowEvent *);
 
    private slots:
       void setSelection(int, Event&, Part*);

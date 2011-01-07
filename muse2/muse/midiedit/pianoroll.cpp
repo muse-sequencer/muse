@@ -581,11 +581,9 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       // Also, why wanting to restore some initPos, what is initPos?
       // To me, it seems to make a lot more sense to use the actual
       // current song cpos.
+      // This is now done via the showEvent();
 
 //      hscroll->setOffset((int)pos); // changed that to:
-
-      follow(song->cpos());
-
 }
 
 //---------------------------------------------------------
@@ -1373,6 +1371,22 @@ void PianoRoll::resizeEvent(QResizeEvent* ev)
       _heightInit = ev->size().height();
       }
 
+//---------------------------------------------------------
+//   showEvent
+//   Now that every gui element is created, including
+//   the scroll bars, what about updating the scrollbars
+//   so that the play cursor is in the center of the viewport?
+//---------------------------------------------------------
+
+void PianoRoll::showEvent(QShowEvent *)
+{
+        // maybe add a bool flag to follow: centered ?
+        // couldn't find a function that does that directly.
+        follow(song->cpos());
+        // now that the cursor is in the view, move the view
+        // half the canvas width so the cursor is centered.
+        hscroll->setPos(hscroll->pos() - (canvas->width()/2));
+}
 
 /*
 //---------------------------------------------------------
