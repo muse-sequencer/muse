@@ -1,11 +1,11 @@
 09.01.2011:
         - These changes marked as p4.0.14:
         - Applied aux send fix AudioTrack::writeProperties() by Remon. Thanks. (Tim)
+        - Fixed very slow midi trackinfo property adjustments with mixer shown. In AudioMixerApp::songChanged(). (Tim)  
         * Feature!: Complete soloing system (after 4 years). Support chaining Midi Port/Audio Out -> Audio In. (Tim)
           Click on audio strip iR, or midi strip oR, or midi track info oR buttons to see new additions.
           Tested thoroughly, but of course this major change needs wider testing. 
           TODO TODO: Fix trackinfo width (a minor button placement gui issue).
-        - Fixed very slow midi trackinfo property adjustments with mixer shown. In AudioMixerApp::songChanged(). (Tim)  
 04.01.2011:
         - Added saving and restoring of pianoroll trackinfo h-splitter state. (Tim)
         - Fixed multiple velocity controllers appearing on song reload. Tested OK. (Tim)
