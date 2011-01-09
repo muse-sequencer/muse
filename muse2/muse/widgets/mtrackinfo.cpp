@@ -154,9 +154,10 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
   connect(iRButton, SIGNAL(pressed()), SLOT(inRoutesPressed()));
   
   // TODO: Works OK, but disabled for now, until we figure out what to do about multiple out routes and display values...
+  // Enabled (for Midi Port to Audio Input routing). p4.0.14 Tim.
   //oRButton->setEnabled(false);
   //oRButton->setVisible(false);
-  //connect(oRButton, SIGNAL(pressed()), SLOT(outRoutesPressed()));
+  connect(oRButton, SIGNAL(pressed()), SLOT(outRoutesPressed()));
   
   connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
   connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
@@ -541,7 +542,10 @@ void MidiTrackInfo::iOutputChannelChanged(int channel)
             
             // may result in adding/removing mixer strip:
             //song->update(-1);
-            song->update(SC_MIDI_TRACK_PROP);
+            //song->update(SC_MIDI_TRACK_PROP);
+            audio->msgUpdateSoloStates();                   // p4.0.14
+            //song->update(SC_MIDI_TRACK_PROP | SC_ROUTE);  //
+            song->update(SC_MIDI_TRACK_PROP);               //
             }
       }
 
@@ -563,7 +567,10 @@ void MidiTrackInfo::iOutputPortChanged(int index)
       track->setOutPortAndUpdate(index);
       audio->msgIdle(false);
       
-      song->update(SC_MIDI_TRACK_PROP);  
+      //song->update(SC_MIDI_TRACK_PROP);  
+      audio->msgUpdateSoloStates();                   // p4.0.14
+      //song->update(SC_MIDI_TRACK_PROP | SC_ROUTE);  //
+      song->update(SC_MIDI_TRACK_PROP);               //
       }
 
 //---------------------------------------------------------
@@ -652,7 +659,7 @@ void MidiTrackInfo::outRoutesPressed()
   connect(pup, SIGNAL(triggered(QAction*)), SLOT(routingPopupMenuActivated(QAction*)));
   connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
   pup->popup(QCursor::pos());
-  ///oRButton->setDown(false);     
+  oRButton->setDown(false);     
   return;
 }
 

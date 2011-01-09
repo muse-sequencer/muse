@@ -49,6 +49,7 @@
 #include "transpose.h"
 #include "waveedit.h"
 #include "widgets/projectcreateimpl.h"
+#include "widgets/menutitleitem.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -2188,7 +2189,7 @@ PopupMenu* MusE::getRoutingPopupMenu()
 
 void MusE::updateRouteMenus(Track* track, QObject* master)    
 {
-      // NOTE: The puropse of this routine is to make sure the items actually reflect
+      // NOTE: The purpose of this routine is to make sure the items actually reflect
       //  the routing status. And with MusE-1 QT3, it was also required to actually
       //  check the items since QT3 didn't do it for us.
       // But now with MusE-2 and QT4, QT4 checks an item when it is clicked.
@@ -2218,9 +2219,84 @@ void MusE::updateRouteMenus(Track* track, QObject* master)
       {
         // p3.3.50 Ignore the 'toggle' items.
         if(imm->second.type == Route::MIDI_PORT_ROUTE && 
-           imm->first >= (MIDI_PORTS * MIDI_CHANNELS) && imm->first < (MIDI_PORTS * MIDI_CHANNELS + MIDI_PORTS))   
+           //imm->first >= (MIDI_PORTS * MIDI_CHANNELS) && imm->first < (MIDI_PORTS * MIDI_CHANNELS + MIDI_PORTS))   
+           imm->second.channel == (1 << MIDI_CHANNELS) - 1)  // p4.0.14 See if all channels are set, rather than using ID.
           continue;
           
+        
+        // p4.0.14 TODO FIXME Couldn't quite figure out the logic yet. It should be possible (I hope). 
+        // But not really required for now, as per above note.
+        if(gIsOutRoutingPopupMenu && track->isMidiTrack() &&
+          imm->second.type == Route::TRACK_ROUTE && imm->second.track->type() == Track::AUDIO_INPUT)
+          return;
+        #if 0
+        printf("imm route:\n");  // REMOVE Tim.
+        imm->second.dump();
+        if(track->isMidiTrack())
+        {
+          if(imm->second.type == Route::TRACK_ROUTE && imm->second.track->type() == Track::AUDIO_INPUT)
+          {
+            Route &aRoute = imm->second;
+            int chbit = aRoute.channel;
+            ///Route bRoute(track, chbit);
+            ///int mdidx = bRoute.midiPort;
+            int port = ((MidiTrack*)track)->outPort();
+            if(port < 0 || port >= MIDI_PORTS)
+              continue;
+            int tchbit = 1 << ((MidiTrack*)track)->outChannel();
+            
+            MidiPort* mp = &midiPorts[port];
+            
+            ///Route bRoute(port, chbit);
+            
+            //int chmask = 0;                   
+            bool found = false;
+            RouteList* mprl = gIsOutRoutingPopupMenu ? mp->outRoutes() : mp->inRoutes();
+            iRoute ir = mprl->begin();
+            for(; ir != mprl->end(); ++ir) 
+            {
+              printf("mp route:\n");  // REMOVE Tim.
+              ir->dump(); // REMOVE Tim.
+              ///if(aRoute.type == Route::TRACK_ROUTE)                                     // Is the map route a track route?
+              {
+                if(ir->type == Route::TRACK_ROUTE && ir->track == aRoute.track)  // Is the track route a midi port route?
+                  //&& (ir->channel & chbit) == chbit)               
+                  //&& (ir->channel & tchbit))               // Is the exact channel mask bit(s) set?
+                {
+                  printf("track matches\n");  // REMOVE Tim.
+                  if(ir->channel & tchbit)
+                  {
+                    found = true;
+                    printf("found: bit matches\n");  // REMOVE Tim.
+                  }  
+                  break;
+                }
+              }
+              ///else
+              ///if(*ir == aRoute)
+              ///{
+                //found = true;
+              ///  break;
+              ///}
+            }
+            //pup->setItemChecked(imm->first, found);
+            //printf("MusE::updateRouteMenus setItemChecked\n");
+            // TODO: MusE-2: Convert this, fastest way is to change the routing map, otherwise this requires a lookup.
+            //if(pup->isItemChecked(imm->first) != (irl != rl->end()))
+            //  pup->setItemChecked(imm->first, irl != rl->end());
+            QAction* act = pup->findActionFromData(imm->first);  
+            //printf("set act checked to:%d\n", ir != mprl->end());  // REMOVE Tim.
+            //if(act && act->isChecked() != (ir != mprl->end()))
+            //  act->setChecked(ir != mprl->end());
+            printf("set act checked to:%d\n", found);  // REMOVE Tim.
+            if(act && act->isChecked() != found)
+              act->setChecked(found);
+            
+            //return;
+          }
+        }
+        #endif
+        
         //bool found = false;
         iRoute irl = rl->begin();
         for(; irl != rl->end(); ++irl) 
@@ -2278,6 +2354,69 @@ void MusE::routingPopupMenuActivated(Track* track, int n)
         iRouteMenuMap imm = gRoutingMenuMap.find(n);
         if(imm == gRoutingMenuMap.end())
           return;
+        
+        // Support Midi Port to Audio Input track routes. p4.0.14 Tim.
+        if(imm->second.type == Route::TRACK_ROUTE)
+        {
+          //if(gIsOutRoutingPopupMenu)    // Try to avoid splitting like this. 
+          {
+            Route &aRoute = imm->second;
+            int chbit = aRoute.channel;
+            int port = ((MidiTrack*)track)->outPort();
+            if(port < 0 || port >= MIDI_PORTS)
+              return;
+            
+            MidiPort* mp = &midiPorts[port];
+            ///MidiDevice* md = mp->device();
+            
+            // This is desirable, but could lead to 'hidden' routes unless we add more support
+            //  such as removing the existing routes when user changes flags.
+            // So for now, just list all valid ports whether read or write.
+            ///if(!md)
+            ///  return;
+            ///if(!(md->rwFlags() & (gIsOutRoutingPopupMenu ? 1 : 2)))
+            ///  return;
+            
+            //int channel = ((MidiTrack*)track->outChannel();
+            Route bRoute(port, chbit);
+            
+            int chmask = 0;                   
+            RouteList* mprl = gIsOutRoutingPopupMenu ? mp->outRoutes() : mp->inRoutes();
+            iRoute ir = mprl->begin();
+            for (; ir != mprl->end(); ++ir) 
+            {
+              if(ir->type == Route::TRACK_ROUTE && ir->track == aRoute.track)    // Is there already a route to this port?
+              {
+                    chmask = ir->channel;  // Grab the channel mask.
+                    break;
+              }      
+            }
+            //if (iir != rl->end()) 
+            if ((chmask & chbit) == chbit)             // Is the channel's bit(s) set?
+            {
+              // disconnect
+              if(gIsOutRoutingPopupMenu)
+                audio->msgRemoveRoute(bRoute, aRoute);
+              else
+                audio->msgRemoveRoute(aRoute, bRoute);
+            }
+            else 
+            {
+              // connect
+              if(gIsOutRoutingPopupMenu)
+                audio->msgAddRoute(bRoute, aRoute);
+              else
+                audio->msgAddRoute(aRoute, bRoute);
+            }
+            
+            audio->msgUpdateSoloStates();
+            song->update(SC_ROUTE);
+            
+          }
+          return;
+        }
+        
+        
         if(imm->second.type != Route::MIDI_PORT_ROUTE)
           return;
         Route &aRoute = imm->second;
@@ -2580,45 +2719,71 @@ PopupMenu* MusE::prepareRoutingPopupMenu(Track* track, bool dst)
   if(!track)
     return 0;
     
-  //QPoint ppt = QCursor::pos();
-  
   if(track->isMidiTrack())
   {
+    RouteList* rl = dst ? track->outRoutes() : track->inRoutes();
+    //Route dst(track, -1);
   
-    //QPoint ppt = parent->rect().bottomLeft();
+    PopupMenu* pup = getRoutingPopupMenu();
+    pup->disconnect();
+    //connect(pup, SIGNAL(activated(int)), SLOT(routingPopupMenuActivated(int)));
+    //connect(pup, SIGNAL(aboutToHide()), SLOT(routingPopupMenuAboutToHide()));
       
-    //if(dst)
-    //{
-      // TODO 
-      
-    //}
-    //else
-    //{
-      RouteList* rl = dst ? track->outRoutes() : track->inRoutes();
-      //Route dst(track, -1);
+    pup->clear();
+    gRoutingMenuMap.clear();
     
-      PopupMenu* pup = getRoutingPopupMenu();
-      pup->disconnect();
-      //connect(pup, SIGNAL(activated(int)), SLOT(routingPopupMenuActivated(int)));
-      //connect(pup, SIGNAL(aboutToHide()), SLOT(routingPopupMenuAboutToHide()));
+    int gid = 0;
+    QAction* act = 0;
+    
+    if(dst)   
+    {
+      // Support Midi Port to Audio Input track routes. p4.0.14 Tim.
+      int port = ((MidiTrack*)track)->outPort();
+      if(port >= 0 && port < MIDI_PORTS)
+      {
+        MidiPort* mp = &midiPorts[port];
+        RouteList* mprl = mp->outRoutes();
+        int chbits = 1 << ((MidiTrack*)track)->outChannel();
+        //MidiDevice* md = mp->device();
+        //if(!md)
+        //  continue;
         
-      int gid = 0;
-      //int n;    
-      QAction* act = 0;
-      
-    // Routes can't be re-read until the message sent from msgAddRoute1() 
-    //  has had time to be sent and actually affected the routes.
-    ///_redisplay:
-      
-      pup->clear();
-      gRoutingMenuMap.clear();
-      gid = 0;
-      
-      //MidiInPortList* tl = song->midiInPorts();
-      //for(iMidiInPort i = tl->begin();i != tl->end(); ++i) 
+        pup->addSeparator();
+        pup->addAction(new MenuTitleItem(tr("Soloing chain"), pup)); 
+        PopupMenu* subp = new PopupMenu(pup);
+        subp->setTitle(tr("Audio returns")); 
+        pup->addMenu(subp);
+        
+        InputList* al = song->inputs();
+        for (iAudioInput i = al->begin(); i != al->end(); ++i) 
+        {
+          Track* t = *i;
+          QString s(t->name());
+          
+          act = subp->addAction(s);
+          act->setData(gid);
+          act->setCheckable(true);
+          
+          Route r(t, chbits);
+          
+          gRoutingMenuMap.insert( pRouteMenuMap(gid, r) );
+          
+          for(iRoute ir = mprl->begin(); ir != mprl->end(); ++ir) 
+          {
+            if(ir->type == Route::TRACK_ROUTE && ir->track == t && (ir->channel & chbits))
+            {
+              act->setChecked(true);
+              break;
+            }  
+          }
+          ++gid;      
+        }
+      }     
+    }
+    else
+    {
       for(int i = 0; i < MIDI_PORTS; ++i)
       {
-        //MidiInPort* track = *i;
         // NOTE: Could possibly list all devices, bypassing ports, but no, let's stick with ports.
         MidiPort* mp = &midiPorts[i];
         MidiDevice* md = mp->device();
@@ -2630,10 +2795,6 @@ PopupMenu* MusE::prepareRoutingPopupMenu(Track* track, bool dst)
           
         //printf("MusE::prepareRoutingPopupMenu adding submenu portnum:%d\n", i);
         
-        //QMenu* m = menu->addMenu(track->name());
-        //QPopupMenu* subp = new QPopupMenu(parent);
-        //PopupMenu* subp = new PopupMenu(this);
-        //PopupMenu* subp = new PopupMenu();
         PopupMenu* subp = new PopupMenu(pup);
         subp->setTitle(md->name()); 
         
@@ -2656,101 +2817,46 @@ PopupMenu* MusE::prepareRoutingPopupMenu(Track* track, bool dst)
         
         for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
         {
-          //QAction* a = m->addAction(QString("Channel %1").arg(ch+1));
-          //subp->insertItem(QT_TRANSLATE_NOOP("@default", QString("Channel %1").arg(ch+1)), i * MIDI_CHANNELS + ch);
-          gid = i * MIDI_CHANNELS + ch;
-          
-          //printf("MusE::prepareRoutingPopupMenu inserting gid:%d\n", gid);
-          
           act = subp->addAction(QString("Channel %1").arg(ch+1));
           act->setCheckable(true);
           act->setData(gid);
-          //a->setCheckable(true);
-          //Route src(track, ch, RouteNode::TRACK);
-          //Route src(md, ch);
-          //Route r = Route(src, dst);
-          //a->setData(QVariant::fromValue(r));
-          //a->setChecked(rl->indexOf(r) != -1);
           
-          //Route srcRoute(md, ch);
-          //Route srcRoute(i, ch);     // p3.3.49 New: Midi port route.
           int chbit = 1 << ch;
           Route srcRoute(i, chbit);    // p3.3.50 In accordance with new channel mask, use the bit position.
           
           gRoutingMenuMap.insert( pRouteMenuMap(gid, srcRoute) );
           
-          //for(iRoute ir = rl->begin(); ir != rl->end(); ++ir)   // p3.3.50 Removed.
-          //{
-            //if(*ir == dst) 
-          //  if(*ir == srcRoute) 
-          //  {
-          //    subp->setItemChecked(id, true);
-          //    break;
-          //  }
-          //}
           if(chanmask & chbit)                  // p3.3.50 Is the channel already set? Show item check mark.
             act->setChecked(true);
+          
+          ++gid;  
         }
-        //subp->insertItem(QString("Toggle all"), 1000+i);
-        // p3.3.50 One route with all channel bits set.
-        gid = MIDI_PORTS * MIDI_CHANNELS + i;           // Make sure each 'toggle' item gets a unique id.
+        //gid = MIDI_PORTS * MIDI_CHANNELS + i;           // Make sure each 'toggle' item gets a unique id.
         act = subp->addAction(QString("Toggle all"));
         //act->setCheckable(true);
         act->setData(gid);
         Route togRoute(i, (1 << MIDI_CHANNELS) - 1);    // Set all channel bits.
         gRoutingMenuMap.insert( pRouteMenuMap(gid, togRoute) );
-        
+        ++gid;
         pup->addMenu(subp);
       }
-          
-      /*
-      QPopupMenu* pup = new QPopupMenu(iR);
-      pup->setCheckable(true);
-      //MidiTrack* t = (MidiTrack*)track;
-      RouteList* irl = track->inRoutes();
-  
-      MidiTrack* t = (MidiTrack*)track;
-      int gid = 0;
-      for (int i = 0; i < channel; ++i) 
-      {
-            char buffer[128];
-            snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), i+1);
-            MenuTitleItem* titel = new MenuTitleItem(QString(buffer));
-            pup->insertItem(titel);
-  
-            if (!checkAudioDevice()) return;
-            std::list<QString> ol = audioDevice->outputPorts();
-            for (std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) {
-                  int id = pup->insertItem(*ip, (gid * 16) + i);
-                  Route dst(*ip, true, i);
-                  ++gid;
-                  for (iRoute ir = irl->begin(); ir != irl->end(); ++ir) {
-                        if (*ir == dst) {
-                              pup->setItemChecked(id, true);
-                              break;
-                              }
-                        }
-                  }
-            if (i+1 != channel)
-                  pup->addSeparator();
-      }
-      */
-      
-      if(pup->actions().isEmpty())
-      {
-        gRoutingPopupMenuMaster = 0;
-        //pup->clear();
-        //pup->disconnect();
-        gRoutingMenuMap.clear();
-        //oR->setDown(false);     
-        return 0;
-      }
-      
-      gIsOutRoutingPopupMenu = dst;
-      return pup;
+    }
+        
+    if(pup->actions().isEmpty())
+    {
+      gRoutingPopupMenuMaster = 0;
+      //pup->clear();
+      //pup->disconnect();
+      gRoutingMenuMap.clear();
+      //oR->setDown(false);     
+      return 0;
     }
     
-    return 0;
+    gIsOutRoutingPopupMenu = dst;
+    return pup;
+  }
+  
+  return 0;
 }
 
 #if 0
@@ -3145,9 +3251,9 @@ void MusE::startPianoroll(PartList* pl, bool showDefaultCtrls)
       {
       
       PianoRoll* pianoroll = new PianoRoll(pl, this, 0, arranger->cursorValue());
-      pianoroll->show();
       if(showDefaultCtrls)       // p4.0.12
         pianoroll->addCtrl();
+      pianoroll->show();
       toplevels.push_back(Toplevel(Toplevel::PIANO_ROLL, (unsigned long)(pianoroll), pianoroll));
       connect(pianoroll, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
       connect(muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
@@ -3215,9 +3321,9 @@ void MusE::startDrumEditor(PartList* pl, bool showDefaultCtrls)
       {
       
       DrumEdit* drumEditor = new DrumEdit(pl, this, 0, arranger->cursorValue());
-      drumEditor->show();
       if(showDefaultCtrls)       // p4.0.12
         drumEditor->addCtrl();
+      drumEditor->show();
       toplevels.push_back(Toplevel(Toplevel::DRUM, (unsigned long)(drumEditor), drumEditor));
       connect(drumEditor, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
       connect(muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));

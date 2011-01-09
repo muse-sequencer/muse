@@ -131,9 +131,25 @@
         <string>input routing</string>
        </property>
        <property name="text">
-        <string>In</string>
+        <string>iR</string>
        </property>
       </widget>
+     </item>
+     <item>
+       <widget class="QToolButton" name="oRButton">
+         <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+           </sizepolicy>
+         </property>
+         <property name="toolTip">
+           <string>output routing</string>
+         </property>
+         <property name="text">
+           <string>oR</string>
+         </property>
+       </widget>
      </item>
      <item>
       <widget class="QLabel" name="iChanDetectLabel">

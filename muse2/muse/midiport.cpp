@@ -62,7 +62,7 @@ MidiPort::MidiPort()
       // to make midi mixer operational
       //
       for (int i = 0; i < MIDI_CHANNELS; ++i) {
-            addManagedController(i, CTRL_PROGRAM);
+            addManagedController(i, CTRL_PROGRAM);   
             addManagedController(i, CTRL_VOLUME);
             addManagedController(i, CTRL_PANPOT);
             _automationType[i] = AUTO_READ;
@@ -1013,8 +1013,10 @@ void MidiPort::writeRouting(int level, Xml& xml) const
       {
         if(r->type == Route::TRACK_ROUTE && !r->name().isEmpty())
         {
-          //xml.tag(level++, "Route");
-          
+          // Ignore Midi Port to Audio Input routes. Handled by Track route writer. p4.0.14 Tim.
+          if(r->track && r->track->type() == Track::AUDIO_INPUT)
+            continue;
+            
           s = QT_TRANSLATE_NOOP("@default", "Route");
           if(r->channel != -1 && r->channel != 0)  
             s += QString(QT_TRANSLATE_NOOP("@default", " channelMask=\"%1\"")).arg(r->channel);  // Use new channel mask.

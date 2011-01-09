@@ -132,3 +132,25 @@ void CtrlEdit::setCanvasWidth(int w)
 { 
   canvas->setFixedWidth(w); 
 }
+
+void CtrlEdit::setController(int n)
+{
+  canvas->setController(n);
+}
+
+void CtrlEdit::setController(const QString& name)
+{
+  int portno = canvas->track()->outPort();
+  MidiPort* port = &midiPorts[portno];
+  MidiInstrument* instr = port->instrument();
+  MidiControllerList* mcl = instr->controller();
+
+  for (iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) 
+  {
+    if (ci->second->name() == name) 
+    {
+      canvas->setController(ci->second->num());
+      break;
+    }
+  }
+}

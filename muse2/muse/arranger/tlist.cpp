@@ -1027,6 +1027,9 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   //if(button == QMouseEvent::LeftButton)
                   //  portsPopupMenu(t, x, t->y() - ypos);
                     
+                  audio->msgUpdateSoloStates(); // p4.0.14
+                  //song->update(SC_ROUTE);       //
+                  
                   break;
             case COL_MUTE:
                   // p3.3.29
@@ -1141,7 +1144,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
                             // may result in adding/removing mixer strip:
                             //song->update(-1);
                             //song->update(SC_CHANNELS);
-                            song->update(SC_MIDI_TRACK_PROP);
+                            //song->update(SC_MIDI_TRACK_PROP);
+                            audio->msgUpdateSoloStates();                   // p4.0.14
+                            //song->update(SC_MIDI_TRACK_PROP | SC_ROUTE);  //
+                            song->update(SC_MIDI_TRACK_PROP);               //
                       }
                     }
                     else

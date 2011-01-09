@@ -739,40 +739,43 @@ bool Track::readProperties(Xml& xml, const QString& tag)
 void Track::writeRouting(int level, Xml& xml) const
 {
       QString s;
-      
       if (type() == Track::AUDIO_INPUT) 
       {
         const RouteList* rl = &_inRoutes;
         for (ciRoute r = rl->begin(); r != rl->end(); ++r) 
         {
+          // Support Midi Port to Audio Input track routes. p4.0.14 Tim. 
+          if(r->type == Route::MIDI_PORT_ROUTE)
+          {
+            s = QT_TRANSLATE_NOOP("@default", "Route");
+            if(r->channel != -1 && r->channel != 0)  
+              s += QString(QT_TRANSLATE_NOOP("@default", " channelMask=\"%1\"")).arg(r->channel);  // Use new channel mask.
+            xml.tag(level++, s.toLatin1().constData());
+            
+            xml.tag(level, "source mport=\"%d\"/", r->midiPort);
+            
+            s = QT_TRANSLATE_NOOP("@default", "dest");
+            s += QString(QT_TRANSLATE_NOOP("@default", " name=\"%1\"/")).arg(Xml::xmlString(name()));
+            xml.tag(level, s.toLatin1().constData());
+            
+            xml.etag(level--, "Route");
+          }
+          else
           if(!r->name().isEmpty())
           {
             s = QT_TRANSLATE_NOOP("@default", "Route");
             if(r->channel != -1)
               s += QString(QT_TRANSLATE_NOOP("@default", " channel=\"%1\"")).arg(r->channel);
             
-            ///Route dst(name(), true, r->channel);
-            //xml.tag(level++, "Route");
             xml.tag(level++, s.toAscii().constData());
             
             // p3.3.38 New routing scheme.
-            ///xml.strTag(level, "srcNode", r->name());
-            //xml.tag(level, "source type=\"%d\" name=\"%s\"/", r->type, r->name().toLatin1().constData());
             s = QT_TRANSLATE_NOOP("@default", "source");
             if(r->type != Route::TRACK_ROUTE)
               s += QString(QT_TRANSLATE_NOOP("@default", " type=\"%1\"")).arg(r->type);
-            //s += QString(QT_TRANSLATE_NOOP("@default", " name=\"%1\"/")).arg(r->name());
             s += QString(QT_TRANSLATE_NOOP("@default", " name=\"%1\"/")).arg(Xml::xmlString(r->name()));
             xml.tag(level, s.toAscii().constData());
             
-            ///xml.strTag(level, "dstNode", dst.name());
-            
-            //if(r->channel != -1)
-            //  xml.tag(level, "dest type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->channel, name().toLatin1().constData());
-            //else  
-            //  xml.tag(level, "dest type=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, name().toLatin1().constData());
-
-            //xml.tag(level, "dest name=\"%s\"/", name().toLatin1().constData());
             xml.tag(level, "dest name=\"%s\"/", Xml::xmlString(name()).toLatin1().constData());
             
             xml.etag(level--, "Route");
@@ -783,16 +786,13 @@ void Track::writeRouting(int level, Xml& xml) const
       const RouteList* rl = &_outRoutes;
       for (ciRoute r = rl->begin(); r != rl->end(); ++r) 
       {
-        //if(!r->name().isEmpty())
+        // p4.0.14 Ignore Audio Output to Audio Input routes. 
+        // They are taken care of by Audio Input in the section above.
+        if(r->type == Route::TRACK_ROUTE && r->track && r->track->type() == Track::AUDIO_INPUT) 
+          continue;
+            
         if(r->midiPort != -1 || !r->name().isEmpty()) // p3.3.49
         {
-          ///QString src(name());
-          ///if (type() == Track::AUDIO_OUTPUT) 
-          ///{ 
-                ///Route s(src, false, r->channel);
-                ///src = s.name();
-          ///}
-          
           s = QT_TRANSLATE_NOOP("@default", "Route");
           if(r->type == Route::MIDI_PORT_ROUTE)  // p3.3.50
           {
@@ -809,44 +809,10 @@ void Track::writeRouting(int level, Xml& xml) const
           if(r->remoteChannel != -1)
             s += QString(QT_TRANSLATE_NOOP("@default", " remch=\"%1\"")).arg(r->remoteChannel);
           
-          //xml.tag(level++, "Route");
           xml.tag(level++, s.toAscii().constData());
           
-          ///xml.strTag(level, "srcNode", src);
-          //if(r->channel != -1)
-          
           // Allow for a regular mono or stereo track to feed a multi-channel synti. 
-          // thisChannel is the 'starting' channel of this source if feeding a regular track.
-          //if(r->type == Route::TRACK_ROUTE && r->track->isSynti() && r->channel != -1)
-          //if(isSynti() && r->thisChannel != -1)
-            //xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->channel, name().toLatin1().constData());
-          //  xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->thisChannel, name().toLatin1().constData());
-          //else
-          
-          //if(r->channel != -1)
-          //  xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, r->channel, name().toLatin1().constData());
-          //else  
-          //  xml.tag(level, "source type=\"%d\" name=\"%s\"/", Route::TRACK_ROUTE, name().toLatin1().constData());
-          //xml.tag(level, "source name=\"%s\"/", name().toLatin1().constData());
           xml.tag(level, "source name=\"%s\"/", Xml::xmlString(name()).toLatin1().constData());
-          
-          ///xml.strTag(level, "dstNode", r->name());
-          //if(r->channel != -1)
-          //  xml.tag(level, "dest type=\"%d\" channel=\"%d\" name=\"%s\"/", r->type, r->channel, r->name().toLatin1().constData());
-          //else  
-          //  xml.tag(level, "dest type=\"%d\" name=\"%s\"/", r->type, r->name().toLatin1().constData());
-          
-          // Allow for a regular mono or stereo track to feed a multi-channel synti. 
-          // Channel is the 'starting' channel of the destination.
-          //if(r->type == Route::TRACK_ROUTE && r->track->isSynti() && r->channel != -1)
-          
-          //if(r->type == Route::TRACK_ROUTE && r->track->type() == Track::AUDIO_SOFTSYNTH && r->remoteChannel != -1)
-          //  xml.tag(level, "dest type=\"%d\" channel=\"%d\" name=\"%s\"/", r->type, r->remoteChannel, r->name().toLatin1().constData());
-          //else  
-          //if(r->type == Route::MIDI_DEVICE_ROUTE)
-          //  xml.tag(level, "dest devtype=\"%d\" name=\"%s\"/", r->device->deviceType(), r->name().toLatin1().constData());
-          //else  
-          //  xml.tag(level, "dest type=\"%d\" name=\"%s\"/", r->type, r->name().toLatin1().constData());
           
           s = QT_TRANSLATE_NOOP("@default", "dest");
           
