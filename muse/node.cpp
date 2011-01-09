@@ -208,9 +208,21 @@ void MidiTrack::updateSoloStates(bool noDec)
   
   if(outPort() >= 0)
   {
-    MidiDevice *md = midiPorts[outPort()].device();
+    MidiPort* mp = &midiPorts[outPort()];
+    MidiDevice *md = mp->device();
     if(md && md->isSynti())
       ((SynthI*)md)->updateInternalSoloStates();
+      
+    // Support Midi Port -> Audio Input solo chains. p4.0.14 Tim.
+    const int chbits = 1 << outChannel();
+    const RouteList* rl = mp->outRoutes();
+    for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
+    {
+      if(ir->type == Route::TRACK_ROUTE && ir->track && ir->track->type() == Track::AUDIO_INPUT && (ir->channel & chbits) )
+      {
+        ir->track->updateInternalSoloStates();
+      }  
+    }
   }
 }
 
@@ -245,6 +257,18 @@ void AudioTrack::updateSoloStates(bool noDec)
     {
       if(ir->type == Route::TRACK_ROUTE)
         ir->track->updateInternalSoloStates();
+      else  
+      // Support Midi Port -> Audio Input solo chains. p4.0.14 Tim.
+      if(ir->type == Route::MIDI_PORT_ROUTE)    
+      {
+        const MidiTrackList* ml = song->midis();
+        for(ciMidiTrack im = ml->begin(); im != ml->end(); ++im)
+        {
+          MidiTrack* mt = *im;
+          if(mt->outPort() == ir->midiPort && ((1 << mt->outChannel()) & ir->channel) )
+            mt->updateInternalSoloStates();
+        }
+      }
     }
   }  
   _tmpSoloChainDoIns = false;

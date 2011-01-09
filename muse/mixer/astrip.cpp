@@ -68,6 +68,11 @@ QWidget* MenuTitleItem::createWidget(QWidget *parent)
 {
   QLabel* l = new QLabel(s, parent);
   l->setAlignment(Qt::AlignCenter);
+  l->setAutoFillBackground(true);
+  //QPalette palette;
+  //palette.setColor(label->backgroundRole(), c);
+  //l->setPalette(palette);
+  l->setBackgroundRole(QPalette::Dark);
   return l;
 }
 
@@ -1542,6 +1547,181 @@ static int nonSyntiTrackAddSyntis(AudioTrack* t, PopupMenu* lb, int id, RouteMen
 }
 
 //---------------------------------------------------------
+//   addMidiPorts
+//---------------------------------------------------------
+
+static int addMidiPorts(AudioTrack* t, PopupMenu* pup, int id, RouteMenuMap& mm, bool isOutput)
+{
+  QAction* act;
+  for(int i = 0; i < MIDI_PORTS; ++i)
+  {
+    MidiPort* mp = &midiPorts[i];
+    MidiDevice* md = mp->device();
+    
+    // This is desirable, but could lead to 'hidden' routes unless we add more support
+    //  such as removing the existing routes when user changes flags.
+    // So for now, just list all valid ports whether read or write.
+    if(!md)
+      continue;
+    //if(!(md->rwFlags() & (isOutput ? 1 : 2)))
+    //  continue;
+          
+    RouteList* rl = isOutput ? t->outRoutes() : t->inRoutes();
+    
+    PopupMenu* subp = new PopupMenu(pup);
+    subp->setTitle(md->name()); 
+    
+    int chanmask = 0;
+    // To reduce number of routes required, from one per channel to just one containing a channel mask. 
+    // Look for the first route to this midi port. There should always be only a single route for each midi port, now.
+    for(iRoute ir = rl->begin(); ir != rl->end(); ++ir)   
+    {
+      if(ir->type == Route::MIDI_PORT_ROUTE && ir->midiPort == i) 
+      {
+        // We have a route to the midi port. Grab the channel mask.
+        chanmask = ir->channel;
+        break;
+      }
+    }
+    
+    for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+    {
+      act = subp->addAction(QString("Channel %1").arg(ch+1));
+      act->setCheckable(true);
+      act->setData(id);
+      
+      int chbit = 1 << ch;
+      Route srcRoute(i, chbit);    // In accordance with new channel mask, use the bit position.
+      
+      mm.insert( pRouteMenuMap(id, srcRoute) );
+      
+      if(chanmask & chbit)                  // Is the channel already set? Show item check mark.
+        act->setChecked(true);
+      
+      ++id;
+    }
+    
+    //gid = MIDI_PORTS * MIDI_CHANNELS + i;           // Make sure each 'toggle' item gets a unique id.
+    act = subp->addAction(QString("Toggle all"));
+    //act->setCheckable(true);
+    act->setData(id);
+    Route togRoute(i, (1 << MIDI_CHANNELS) - 1);    // Set all channel bits.
+    mm.insert( pRouteMenuMap(id, togRoute) );
+    ++id;
+    
+    pup->addMenu(subp);
+  }    
+  return id;      
+}
+
+//---------------------------------------------------------
+//   routingPopupMenuActivated
+//---------------------------------------------------------
+
+void AudioStrip::routingPopupMenuActivated(QAction* act)
+{
+      if(!track || gRoutingPopupMenuMaster != this || track->isMidiTrack())
+        return;
+      
+      PopupMenu* pup = muse->getRoutingPopupMenu();
+      
+      if(pup->actions().isEmpty())
+        return;
+        
+      AudioTrack* t = (AudioTrack*)track;
+      RouteList* rl = gIsOutRoutingPopupMenu ? t->outRoutes() : t->inRoutes();
+      
+      int n = act->data().toInt();
+      if (n == -1) 
+        return;
+      
+      iRouteMenuMap imm = gRoutingMenuMap.find(n);
+      if(imm == gRoutingMenuMap.end())
+        return;
+        
+      if(gIsOutRoutingPopupMenu)
+      {  
+        Route srcRoute(t, imm->second.channel, imm->second.channels);
+        srcRoute.remoteChannel = imm->second.remoteChannel;
+        
+        Route &dstRoute = imm->second;
+
+        // check if route src->dst exists:
+        iRoute irl = rl->begin();
+        for (; irl != rl->end(); ++irl) {
+              if (*irl == dstRoute)
+                    break;
+              }
+        if (irl != rl->end()) {
+              // disconnect if route exists
+              audio->msgRemoveRoute(srcRoute, dstRoute);
+              }
+        else {
+              // connect if route does not exist
+              audio->msgAddRoute(srcRoute, dstRoute);
+              }
+        audio->msgUpdateSoloStates();
+        song->update(SC_ROUTE);
+      }  
+      else
+      {
+        Route &srcRoute = imm->second;
+        
+        // Support Midi Port to Audio Input routes. p4.0.14 Tim.
+        if(track->type() == Track::AUDIO_INPUT && srcRoute.type == Route::MIDI_PORT_ROUTE)
+        {
+          int chbit = srcRoute.channel;
+          Route dstRoute(t, chbit);
+          int mdidx = srcRoute.midiPort;
+          int chmask = 0;                   
+          iRoute iir = rl->begin();
+          for (; iir != rl->end(); ++iir) 
+          {
+            if(iir->type == Route::MIDI_PORT_ROUTE && iir->midiPort == mdidx)    // Is there already a route to this port?
+            {
+              chmask = iir->channel;  // Grab the channel mask.
+              break;
+            }      
+          }
+          
+          if ((chmask & chbit) == chbit)             // Is the channel's bit(s) set?
+          {
+            //printf("astrip: removing src route ch:%d dst route ch:%d\n", srcRoute.channel, dstRoute.channel); 
+            audio->msgRemoveRoute(srcRoute, dstRoute);
+          }
+          else 
+          {
+            //printf("astrip: adding src route ch:%d dst route ch:%d\n", srcRoute.channel, dstRoute.channel); 
+            audio->msgAddRoute(srcRoute, dstRoute);
+          }
+          
+          audio->msgUpdateSoloStates();
+          song->update(SC_ROUTE);
+          return;
+        }
+        
+        Route dstRoute(t, imm->second.channel, imm->second.channels);
+        dstRoute.remoteChannel = imm->second.remoteChannel;
+
+        iRoute irl = rl->begin();
+        for (; irl != rl->end(); ++irl) {
+              if (*irl == srcRoute)
+                    break;
+              }
+        if (irl != rl->end()) {
+              // disconnect
+              audio->msgRemoveRoute(srcRoute, dstRoute);
+              }
+        else {
+              // connect
+              audio->msgAddRoute(srcRoute, dstRoute);
+              }
+        audio->msgUpdateSoloStates();
+        song->update(SC_ROUTE);
+      }
+}
+
+//---------------------------------------------------------
 //   iRoutePressed
 //---------------------------------------------------------
 
@@ -1564,7 +1744,7 @@ void AudioStrip::iRoutePressed()
 
       QAction* act = 0;
       int gid = 0;
-      int id = 0;
+      //int id = 0;
       
       pup->clear();
       gRoutingMenuMap.clear();
@@ -1592,13 +1772,15 @@ void AudioStrip::iRoutePressed()
             std::list<QString> ol = audioDevice->outputPorts();
             for(std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) 
             {
-              id = gid * 16 + i;
+              //id = gid * 16 + i;        // IDs removed p4.0.14 Tim.
               act = pup->addAction(*ip);
-              act->setData(id);
+              //act->setData(id);
+              act->setData(gid);
               act->setCheckable(true);
               
               Route dst(*ip, true, i, Route::JACK_ROUTE);
-              gRoutingMenuMap.insert( pRouteMenuMap(id, dst) );
+              //gRoutingMenuMap.insert( pRouteMenuMap(id, dst) );
+              gRoutingMenuMap.insert( pRouteMenuMap(gid, dst) );
               ++gid;
               for(iRoute ir = irl->begin(); ir != irl->end(); ++ir) 
               {
@@ -1612,6 +1794,29 @@ void AudioStrip::iRoutePressed()
             if(i+1 != channel)
               pup->addSeparator();
           }
+          
+          // p4.0.14
+          //
+          // Display using separate menus for midi ports and audio outputs:
+          //
+          pup->addSeparator();
+          pup->addAction(new MenuTitleItem(tr("Soloing chain"), pup)); 
+          PopupMenu* subp = new PopupMenu(pup);
+          subp->setTitle(tr("Audio sends")); 
+          pup->addMenu(subp);
+          gid = addOutPorts(t, subp, gid, gRoutingMenuMap, -1, -1, false);  
+          subp = new PopupMenu(pup);
+          subp->setTitle(tr("Midi sends")); 
+          pup->addMenu(subp);
+          addMidiPorts(t, subp, gid, gRoutingMenuMap, false);
+          //
+          // Display all in the same menu:
+          //
+          //pup->addAction(new MenuTitleItem(tr("Audio sends"), pup)); 
+          //gid = addOutPorts(t, pup, gid, gRoutingMenuMap, -1, -1, false);  
+          //pup->addSeparator();
+          //pup->addAction(new MenuTitleItem(tr("Midi sends"), pup)); 
+          //addMidiPorts(t, pup, gid, gRoutingMenuMap, false);
         }
         break;
         //case Track::AUDIO_OUTPUT:
@@ -1661,140 +1866,7 @@ void AudioStrip::iRoutePressed()
       pup->popup(ppt);
       iR->setDown(false);     
       }
-
-//---------------------------------------------------------
-//   routingPopupMenuActivated
-//---------------------------------------------------------
-
-void AudioStrip::routingPopupMenuActivated(QAction* act)
-{
-      if(!track || gRoutingPopupMenuMaster != this || track->isMidiTrack())
-        return;
       
-      PopupMenu* pup = muse->getRoutingPopupMenu();
-      
-      if(pup->actions().isEmpty())
-        return;
-        
-      AudioTrack* t = (AudioTrack*)track;
-      RouteList* rl = gIsOutRoutingPopupMenu ? t->outRoutes() : t->inRoutes();
-      
-      int n = act->data().toInt();
-      if (n == -1) 
-        return;
-      
-      if(gIsOutRoutingPopupMenu)
-      {  
-        if(track->type() == Track::AUDIO_OUTPUT)
-        {
-          
-          int chan = n & 0xf;
-          
-          Route srcRoute(t, chan);
-          Route dstRoute(act->text(), true, -1, Route::JACK_ROUTE);
-          dstRoute.channel = chan;
-
-          // check if route src->dst exists:
-          iRoute irl = rl->begin();
-          for (; irl != rl->end(); ++irl) {
-                if (*irl == dstRoute)
-                      break;
-                }
-          if (irl != rl->end()) {
-                // disconnect if route exists
-                audio->msgRemoveRoute(srcRoute, dstRoute);
-                }
-          else {
-                // connect if route does not exist
-                audio->msgAddRoute(srcRoute, dstRoute);
-                }
-          audio->msgUpdateSoloStates();
-          song->update(SC_ROUTE);
-          return;
-        }
-        
-        iRouteMenuMap imm = gRoutingMenuMap.find(n);
-        if(imm == gRoutingMenuMap.end())
-          return;
-        
-        Route srcRoute(t, imm->second.channel, imm->second.channels);
-        srcRoute.remoteChannel = imm->second.remoteChannel;
-        
-        Route &dstRoute = imm->second;
-
-        // check if route src->dst exists:
-        iRoute irl = rl->begin();
-        for (; irl != rl->end(); ++irl) {
-              if (*irl == dstRoute)
-                    break;
-              }
-        if (irl != rl->end()) {
-              // disconnect if route exists
-              audio->msgRemoveRoute(srcRoute, dstRoute);
-              }
-        else {
-              // connect if route does not exist
-              audio->msgAddRoute(srcRoute, dstRoute);
-              }
-        audio->msgUpdateSoloStates();
-        song->update(SC_ROUTE);
-      }  
-      else
-      {
-        if(track->type() == Track::AUDIO_INPUT)
-        {
-          int chan = n & 0xf;
-          
-          Route srcRoute(act->text(), false, -1, Route::JACK_ROUTE);
-          Route dstRoute(t, chan);
-          
-          srcRoute.channel = chan;
-          
-          iRoute irl = rl->begin();
-          for(; irl != rl->end(); ++irl) 
-          {
-            if(*irl == srcRoute)
-              break;
-          }
-          if(irl != rl->end()) 
-            // disconnect
-            audio->msgRemoveRoute(srcRoute, dstRoute);
-          else 
-            // connect
-            audio->msgAddRoute(srcRoute, dstRoute);
-          
-          audio->msgUpdateSoloStates();
-          song->update(SC_ROUTE);
-          return;
-        }
-        
-        iRouteMenuMap imm = gRoutingMenuMap.find(n);
-        if(imm == gRoutingMenuMap.end())
-          return;
-        
-        Route &srcRoute = imm->second;
-        
-        Route dstRoute(t, imm->second.channel, imm->second.channels);
-        dstRoute.remoteChannel = imm->second.remoteChannel;
-
-        iRoute irl = rl->begin();
-        for (; irl != rl->end(); ++irl) {
-              if (*irl == srcRoute)
-                    break;
-              }
-        if (irl != rl->end()) {
-              // disconnect
-              audio->msgRemoveRoute(srcRoute, dstRoute);
-              }
-        else {
-              // connect
-              audio->msgAddRoute(srcRoute, dstRoute);
-              }
-        audio->msgUpdateSoloStates();
-        song->update(SC_ROUTE);
-      }
-}
-
 //---------------------------------------------------------
 //   oRoutePressed
 //---------------------------------------------------------
@@ -1817,7 +1889,7 @@ void AudioStrip::oRoutePressed()
 
       QAction* act = 0;
       int gid = 0;
-      int id = 0;
+      //int id = 0;
       
       pup->clear();
       gRoutingMenuMap.clear();
@@ -1845,13 +1917,15 @@ void AudioStrip::oRoutePressed()
             std::list<QString> ol = audioDevice->inputPorts();
             for(std::list<QString>::iterator ip = ol.begin(); ip != ol.end(); ++ip) 
             {
-              id = gid * 16 + i;
+              //id = gid * 16 + i;        // IDs removed p4.0.14 Tim.
               act = pup->addAction(*ip);
-              act->setData(id);
+              //act->setData(id);
+              act->setData(gid);
               act->setCheckable(true);
               
               Route dst(*ip, true, i, Route::JACK_ROUTE);
-              gRoutingMenuMap.insert( pRouteMenuMap(id, dst) );
+              //gRoutingMenuMap.insert( pRouteMenuMap(id, dst) );
+              gRoutingMenuMap.insert( pRouteMenuMap(gid, dst) );
               ++gid;
               for(iRoute ir = orl->begin(); ir != orl->end(); ++ir) 
               {
@@ -1865,6 +1939,24 @@ void AudioStrip::oRoutePressed()
             if(i+1 != channel)
               pup->addSeparator();
           }      
+          
+          // p4.0.14
+          //
+          // Display using separate menu for audio inputs:
+          //
+          pup->addSeparator();
+          pup->addAction(new MenuTitleItem(tr("Soloing chain"), pup)); 
+          PopupMenu* subp = new PopupMenu(pup);
+          subp->setTitle(tr("Audio returns")); 
+          pup->addMenu(subp);
+          gid = addInPorts(t, subp, gid, gRoutingMenuMap, -1, -1, true);  
+          //
+          // Display all in the same menu:
+          //
+          //pup->addSeparator();
+          //MenuTitleItem* title = new MenuTitleItem(tr("Audio returns"), pup);
+          //pup->addAction(title); 
+          //gid = addInPorts(t, pup, gid, gRoutingMenuMap, -1, -1, true);  
         }
         break;
         //case Track::AUDIO_INPUT:

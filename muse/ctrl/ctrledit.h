@@ -37,6 +37,8 @@ class CtrlEdit : public QWidget {
       void setXPos(int val)           { canvas->setXPos(val); }
       void setXMag(int val)           { canvas->setXMag(val); }
       void setCanvasWidth(int w);
+      void setController(int /*n*/);
+      
    signals:
       void timeChanged(unsigned);
       void destroyedCtrl(CtrlEdit*);
@@ -48,6 +50,7 @@ class CtrlEdit : public QWidget {
          bool expand = false, const char* name = 0);
       void readStatus(Xml&);
       void writeStatus(int, Xml&);
+      void setController(const QString& name);
       };
 
 #endif

@@ -538,7 +538,8 @@ void AudioMixerApp::songChanged(int flags)
             action = STRIP_INSERTED;
       else if (flags & SC_MIDI_TRACK_PROP)
             action = UPDATE_MIDI;
-      if (action != NO_UPDATE)
+      //if (action != NO_UPDATE)
+      if (action != NO_UPDATE && action != UPDATE_MIDI)  // p4.0.14 Fix for very slow track prop adjusting. 
             updateMixer(action);
       if (action != UPDATE_ALL) {
             StripList::iterator si = stripList.begin();

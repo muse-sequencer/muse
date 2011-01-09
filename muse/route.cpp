@@ -348,6 +348,59 @@ void addRoute(Route src, Route dst)
               fprintf(stderr, "addRoute: source is midi port:%d, but destination is not track\n", src.midiPort);
               return;
             }
+            
+            // p4.0.14
+            /*
+            if(dst.track->type() == Track::AUDIO_INPUT)
+            {
+              if(src.channel < 1 || src.channel >= (1 << MIDI_CHANNELS))
+              {
+                fprintf(stderr, "addRoute: source is midi port:%d, but channel mask:%d out of range\n", src.midiPort, src.channel);
+                return;
+              }
+              
+              MidiPort *mp = &midiPorts[src.midiPort];
+              //src.channel = dst.channel = -1;
+              RouteList* outRoutes = mp->outRoutes();
+              iRoute ir = outRoutes->begin();                                      
+              for ( ; ir != outRoutes->end(); ++ir) 
+              {
+                //if (*i == dst)    // route already there
+                ir->dump(); // REMOVE Tim.
+                if (ir->type == Route::TRACK_ROUTE && ir->track == dst.track)     // Does a route to the track exist?
+                {
+                  //#ifdef ROUTE_DEBUG
+                  fprintf(stderr, "addRoute: src midi port:%d dst audio in track:%s out route already exists. ir->channel:%d |= dst.channel:%d\n", 
+                    src.midiPort, dst.track->name().toLatin1().constData(), ir->channel, dst.channel);  // REMOVE Tim.
+                  //#endif
+                  ir->channel |= dst.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
+                  break;
+                  //return;
+                }      
+              }
+              if(ir == outRoutes->end())    // Only if route not found, add the route, with the requested channel bits as mask to start with. 
+                outRoutes->push_back(dst);
+            
+              RouteList* inRoutes = dst.track->inRoutes();
+              
+              ir = inRoutes->begin();
+              for ( ; ir != inRoutes->end(); ++ir)         
+              {
+                if (ir->type == Route::MIDI_PORT_ROUTE && ir->midiPort == src.midiPort)  // Does a route to the midi port exist?
+                {
+                  fprintf(stderr, "addRoute: src midi port:%d dst audio in track:%s in route already exists. ir->channel:%d |= src.channel:%d\n", 
+                    src.midiPort, dst.track->name().toLatin1().constData(), ir->channel, src.channel);  // REMOVE Tim.
+                  ir->channel |= src.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
+                  break;
+                }      
+              }
+              if(ir == inRoutes->end())    // Only if route not found, add the route, with the requested channel bits as mask to start with. 
+                inRoutes->push_back(src);
+            
+              return;
+            }
+            */
+            
             if(dst.channel < 1 || dst.channel >= (1 << MIDI_CHANNELS))
             {
               fprintf(stderr, "addRoute: source is midi port:%d, but destination channel mask:%d out of range\n", src.midiPort, dst.channel);
@@ -752,14 +805,18 @@ void removeRoute(Route src, Route dst)
           for (iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
           {
             //if (*i == dst) 
-            if (i->type == Route::TRACK_ROUTE && i->track == dst.track)  // p3.3.50 Is there a route to the track?
+            if(i->type == Route::TRACK_ROUTE && i->track == dst.track)  // p3.3.50 Is there a route to the track?
             {
+              //printf("i->channel:%x dst.channel:%x\n", i->channel, dst.channel);   
               i->channel &= ~dst.channel;        // p3.3.50 Unset the desired channel bits.
               if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
+              {
+                //printf("erasing out route from midi port:%d\n", src.midiPort);   
                 outRoutes->erase(i);
-                
+              }  
+              
               break;                             // For safety, keep looking and remove any more found.
-                                                 // No, must break, else crash. There should only be one route anyway...
+                                                  // No, must break, else crash. There should only be one route anyway...
             }
           }
         }
@@ -777,9 +834,9 @@ void removeRoute(Route src, Route dst)
               i->channel &= ~src.channel;        // p3.3.50 Unset the desired channel bits.
               if(i->channel == 0)                // Only if there are no channel bits set, erase the route.
                 inRoutes->erase(i);
-                
+              
               break;                             // For safety, keep looking and remove any more found.
-                                                 // No, must break, else crash. There should only be one route anyway...
+                                                  // No, must break, else crash. There should only be one route anyway...
             }
           }
         }
