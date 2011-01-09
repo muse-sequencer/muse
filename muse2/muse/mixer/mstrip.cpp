@@ -396,7 +396,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       // TODO: Works OK, but disabled for now, until we figure out what to do about multiple out routes and display values...
       // Enabled (for Midi Port to Audio Input routing). p4.0.14 Tim.
       //oR->setEnabled(false);
-      //oR->setToolTip(tr("output routing"));
+      oR->setToolTip(tr("output routing"));
       grid->addWidget(oR, _curGridRow++, 1);
       connect(oR, SIGNAL(pressed()), SLOT(oRoutePressed()));
 
