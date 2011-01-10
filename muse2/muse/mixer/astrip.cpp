@@ -1806,7 +1806,7 @@ void AudioStrip::iRoutePressed()
           pup->addMenu(subp);
           gid = addOutPorts(t, subp, gid, gRoutingMenuMap, -1, -1, false);  
           subp = new PopupMenu(pup);
-          subp->setTitle(tr("Midi sends")); 
+          subp->setTitle(tr("Midi port sends")); 
           pup->addMenu(subp);
           addMidiPorts(t, subp, gid, gRoutingMenuMap, false);
           //
