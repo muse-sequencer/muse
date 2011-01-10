@@ -6,6 +6,7 @@
           Click on audio strip iR, or midi strip oR, or midi track info oR buttons to see new additions.
           Tested thoroughly, but of course this major change needs wider testing. 
           TODO TODO: Fix trackinfo width (a minor button placement gui issue).
+        * Some tweaks for automation viewing, more to do. (rj)
 04.01.2011:
         - Added saving and restoring of pianoroll trackinfo h-splitter state. (Tim)
         - Fixed multiple velocity controllers appearing on song reload. Tested OK. (Tim)

@@ -335,8 +335,17 @@ void TList::paint(const QRect& r)
                               QString s="-";
 
                               if (!track->isMidiTrack()) {
+                                    CtrlListList* cll = ((AudioTrack*)track)->controller();
+                                    int countAll=0, countVisible=0;
+                                    for(CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
+                                        CtrlList *cl = icll->second;
+                                        if (!cl->dontShow())
+                                            countAll++;
+                                        if (cl->isVisible())
+                                            countVisible++;
+                                    }
                                     int count = ((AudioTrack*)track)->controller()->size();
-                                    s.sprintf("%d viewed", count);
+                                    s.sprintf(" %d(%d) visible",countVisible, countAll);
                                     }
 
 
@@ -778,18 +787,16 @@ TrackList TList::getRecEnabledTracks()
 void TList::changeAutomation(QAction* act)
 {
   printf("changeAutomation!\n");
-  if (editTrack->type() == Track::MIDI) {
+  if (editAutomation->type() == Track::MIDI) {
     printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
     return;
   }
 
-  CtrlListList* cll = ((AudioTrack*)editTrack)->controller();
-  int index=0;
+  CtrlListList* cll = ((AudioTrack*)editAutomation)->controller();
   for(CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
-    if (act->data() == index++) { // got it, change state
-      CtrlList *cl = icll->second;
-      cl->setVisible(!cl->isVisible());
-    }
+    CtrlList *cl = icll->second;
+    if (act->data() == cl->id())  // got it, change state
+        cl->setVisible(!cl->isVisible());
   }
   song->update(SC_TRACK_MODIFIED);
 }
@@ -942,22 +949,22 @@ void TList::mousePressEvent(QMouseEvent* ev)
               case COL_AUTOMATION:
                 {
                 if (t->type() != Track::MIDI) {
-                    editTrack = t;
+                    editAutomation = t;
                     PopupMenu* p = new PopupMenu();
                     p->disconnect();
                     p->clear();
                     p->setTitle(tr("Viewable automation"));
                     CtrlListList* cll = ((AudioTrack*)t)->controller();
                     QAction* act = 0;
-                    int index=0;
                     for(CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
                       CtrlList *cl = icll->second;
+                      printf("id = %d", cl->id());
                       if (cl->dontShow())
                         continue;
                       act = p->addAction(cl->name());
                       act->setCheckable(true);
                       act->setChecked(cl->isVisible());
-                      act->setData(index++);
+                      act->setData(cl->id());
                     }
                     connect(p, SIGNAL(triggered(QAction*)), SLOT(changeAutomation(QAction*)));
                     //connect(p, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
