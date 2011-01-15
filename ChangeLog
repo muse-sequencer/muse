@@ -1,3 +1,7 @@
+15.01.2011:
+        - fixed: bug were wave track appeared to be rec enabled but no file was created. (rj)
+        - made create project dialog optional, also some minor tweaks to the dialog (rj)
+        -
 09.01.2011:
         - These changes marked as p4.0.14:
         - Applied aux send fix AudioTrack::writeProperties() by Remon. Thanks. (Tim)

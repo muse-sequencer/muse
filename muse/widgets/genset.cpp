@@ -132,6 +132,7 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       externalWavEditorSelect->setText(config.externalWavEditor);
       oldStyleStopCheckBox->setChecked(config.useOldStyleStopShortCut);
       moveArmedCheckBox->setChecked(config.moveArmedCheckBox);
+      projectSaveCheckBox->setChecked(config.useProjectSaveDialog);
       
       //updateSettings();    // TESTING
       
@@ -236,6 +237,7 @@ void GlobalSettingsConfig::updateSettings()
       externalWavEditorSelect->setText(config.externalWavEditor);
       oldStyleStopCheckBox->setChecked(config.useOldStyleStopShortCut);
       moveArmedCheckBox->setChecked(config.moveArmedCheckBox);
+      projectSaveCheckBox->setChecked(config.useProjectSaveDialog);
 }
 
 //---------------------------------------------------------
@@ -314,6 +316,8 @@ void GlobalSettingsConfig::apply()
       config.externalWavEditor = externalWavEditorSelect->text();
       config.useOldStyleStopShortCut = oldStyleStopCheckBox->isChecked();
       config.moveArmedCheckBox = moveArmedCheckBox->isChecked();
+      config.useProjectSaveDialog = projectSaveCheckBox->isChecked();
+
       //muse->showMixer(config.mixerVisible);
       muse->showMixer1(config.mixer1Visible);
       muse->showMixer2(config.mixer2Visible);

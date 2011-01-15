@@ -1073,6 +1073,9 @@ void Song::clearTrackRec()
 //---------------------------------------------------------
 void Song::setRecord(bool f, bool autoRecEnable)
       {
+      if(debugMsg)
+        printf("setRecord recordflag =%d f(record state)=%d autoRecEnable=%d\n", recordFlag, f, autoRecEnable);
+
       if (f && museProject == museProjectInitPath ) { // check that there is a project stored before commencing
         // no project, we need to create one.
         if (!muse->saveAs())
@@ -1121,8 +1124,9 @@ void Song::setRecord(bool f, bool autoRecEnable)
                       }
                 // prepare recording of wave files for all record enabled wave tracks
                 for (iWaveTrack i = wtl->begin(); i != wtl->end(); ++i) {
-                      if((*i)->recordFlag())
-                      {
+                      if((*i)->recordFlag() || (selectedTrack == (*i) && autoRecEnable)) // prepare if record flag or if it is set to recenable
+                      {                                                                  // setRecordFlag may take too long time to complete
+                                                                                         // so we try this case specifically
                         (*i)->prepareRecording();
                       }
                 }

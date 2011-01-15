@@ -1569,36 +1569,14 @@ bool AudioTrack::setRecordFlag1(bool f)
       if (f == _recordFlag)
             return true;
       if (f) {
-            if (_recFile == 0) {
-                  //
-                  // create soundfile for recording
-                  //
-                  char buffer[128];
-                  QFile fil;
-                  for (;;++recFileNumber) {
-                     sprintf(buffer, "%s/rec%d.wav",
-                        museProject.toLatin1().constData(),
-                        recFileNumber);
-                     fil.setFileName(QString(buffer));
-                     if (!fil.exists())
-                        break;
-                        }
-                  _recFile = new SndFile(QString(buffer));
-                  _recFile->setFormat(
-                     SF_FORMAT_WAV | SF_FORMAT_FLOAT,
-                     _channels, sampleRate);
-                  }
-//            if(_recFile->openWrite())
-//                  {
-//                  QMessageBox::critical(NULL, "MusE write error.", "Error creating target wave file\n"
-//                                                                  "Check your configuration.");
-//                  return false;
-//
-//                  }
-            if (debugMsg)
-                  printf("AudioNode::setRecordFlag1: create internal file %s\n",
-                     _recFile->path().toLatin1().constData());
-            }
+        // do nothing
+        if (_recFile == 0 && song->record()) {
+          // this rec-enables a track if the global arm already was done
+          // the standard case would be that rec-enable be done there
+          prepareRecording();
+        }
+
+      }
       else {
             if (_recFile) {
               // this file has not been processed and can be
@@ -1614,14 +1592,49 @@ bool AudioTrack::setRecordFlag1(bool f)
               
               remove(s.toLatin1().constData());
               if(debugMsg)
-                printf("AudioNode::setRecordFlag1: remove file %s\n", s.toLatin1().constData());
+                printf("AudioNode::setRecordFlag1: remove file %s if it exists\n", s.toLatin1().constData());
               //_recFile = 0;
-                  }
             }
+          }
       return true;
       }
+
+
+//---------------------------------------------------------
+//   prepareRecording
+//     normally called from song->setRecord to defer creating
+//     wave files until MusE is globally rec-enabled
+//     also called from track->setRecordFlag (above)
+//     if global rec enable already was done
+//---------------------------------------------------------
 bool AudioTrack::prepareRecording()
 {
+      if(debugMsg)
+        printf("prepareRecording for track %s\n", _name.toLatin1().constData());
+
+      if (_recFile == 0) {
+            //
+            // create soundfile for recording
+            //
+            char buffer[128];
+            QFile fil;
+            for (;;++recFileNumber) {
+               sprintf(buffer, "%s/rec%d.wav",
+                  museProject.toLatin1().constData(),
+                  recFileNumber);
+               fil.setFileName(QString(buffer));
+               if (!fil.exists())
+                  break;
+                  }
+            _recFile = new SndFile(QString(buffer));
+            _recFile->setFormat(
+               SF_FORMAT_WAV | SF_FORMAT_FLOAT,
+               _channels, sampleRate);
+      }
+
+      if (debugMsg)
+            printf("AudioNode::setRecordFlag1: init internal file %s\n", _recFile->path().toLatin1().constData());
+
       if(_recFile->openWrite())
             {
             QMessageBox::critical(NULL, "MusE write error.", "Error creating target wave file\n"
