@@ -1044,6 +1044,9 @@ int ClipList::idx(const Clip& clip) const
 //void Song::cmdAddRecordedWave(WaveTrack* track, const Pos& s, const Pos& e)
 void Song::cmdAddRecordedWave(WaveTrack* track, Pos s, Pos e)
       {
+      if (debugMsg)
+          printf("cmdAddRecordedWave - loopCount = %d, punchin = %d", audio->loopCount(), punchin());
+
       SndFile* f = track->recFile();
       if (f == 0) {
             printf("cmdAddRecordedWave: no snd file for track <%s>\n",
@@ -1068,13 +1071,13 @@ void Song::cmdAddRecordedWave(WaveTrack* track, Pos s, Pos e)
       // No part to be created? Delete the rec sound file.
       if(s.tick() >= e.tick())
       {
-        QString s = f->path();
+        QString st = f->path();
         delete f;
         // The function which calls this function already does this immediately after. But do it here anyway.
         track->setRecFile(0);
-        remove(s.toLatin1().constData());
+        remove(st.toLatin1().constData());
         if(debugMsg)
-          printf("Song::cmdAddRecordedWave: remove file %s\n", s.toLatin1().constData());
+          printf("Song::cmdAddRecordedWave: remove file %s - start=%d end=%d\n", st.toLatin1().constData(), s.tick(), e.tick());
         return;
       }
       // Round the start down using the Arranger part snap raster value. 

@@ -41,10 +41,15 @@ void ProjectCreateImpl::selectDirectory()
 
 void ProjectCreateImpl::updateDirectoryPath()
 {
+  QString name = "";
   if (createFolderCheckbox->isChecked()) {
-    storageDirEdit->setText(directoryPath + projectNameEdit->text() + "/" + projectNameEdit->text() + ".med");
+    if (!projectNameEdit->text().isEmpty())
+      name = projectNameEdit->text() + "/" + projectNameEdit->text() + ".med";
+    storageDirEdit->setText(directoryPath + name );
   }  else {
-    storageDirEdit->setText(directoryPath + projectNameEdit->text() + ".med");
+    if (!projectNameEdit->text().isEmpty())
+      name = projectNameEdit->text() + ".med";
+    storageDirEdit->setText(directoryPath + projectNameEdit->text() + name);
   }
 }
 

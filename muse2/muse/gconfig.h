@@ -141,6 +141,7 @@ struct GlobalConfigValues {
       int dummyAudioBufSize;
       QString projectBaseFolder;
       bool projectStoreInFolder;
+      bool useProjectSaveDialog;
       };
 
 extern GlobalConfigValues config;

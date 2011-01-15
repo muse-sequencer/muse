@@ -435,7 +435,8 @@ bool MusE::seqStart()
         if (midiSeqRunning)
           break;
         usleep(1000);
-        printf("looping waiting for sequencer thread to start\n");
+        if(debugMsg)
+          printf("looping waiting for sequencer thread to start\n");
       }
       if(!midiSeqRunning)
       {
@@ -3158,13 +3159,21 @@ bool MusE::saveAs()
       {
       QString name;
       if (museProject == museProjectInitPath ) {
-        ProjectCreateImpl pci(muse);
-        if (pci.exec() == QDialog::Rejected) {
-          return false;
-        }
+        printf("config.useProjectSaveDialog=%d\n", config.useProjectSaveDialog);
+        if (config.useProjectSaveDialog) {
+            ProjectCreateImpl pci(muse);
+            if (pci.exec() == QDialog::Rejected) {
+              return false;
+            }
 
-        name = pci.getProjectPath();
-        song->setSongInfo(pci.getSongInfo());
+            song->setSongInfo(pci.getSongInfo());
+            name = pci.getProjectPath();
+          } else {
+            name = getSaveFileName(QString(""), med_file_save_pattern, this, tr("MusE: Save As"));
+            if (name.isEmpty())
+              return false;
+          }
+
         museProject = QFileInfo(name).absolutePath();
         QDir dirmanipulator;
         if (!dirmanipulator.mkpath(museProject)) {
