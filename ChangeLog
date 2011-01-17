@@ -1,3 +1,6 @@
+17.01.2011
+        - fixed: panic button (rj)
+	- fixed: initialization crash when loading a new project (rj)
 15.01.2011:
         - fixed: bug were wave track appeared to be rec enabled but no file was created. (rj)
         - made create project dialog optional, also some minor tweaks to the dialog (rj)

@@ -116,7 +116,7 @@ class MidiPort {
       void sendMMCStop(int devid = -1);
       void sendMMCDeferredPlay(int devid = -1);
       
-      bool sendEvent(const MidiPlayEvent&);
+      bool sendEvent(const MidiPlayEvent&, bool forceSend = false );
       AutomationType automationType(int channel) { return _automationType[channel]; }
       void setAutomationType(int channel, AutomationType t) {
             _automationType[channel] = t;

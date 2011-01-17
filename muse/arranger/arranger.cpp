@@ -933,6 +933,7 @@ void Arranger::clear()
             delete w;
       trackInfo->addWidget(0, 2);
       selected = 0;
+      midiTrackInfo->setTrack(0);
       }
 
 void Arranger::wheelEvent(QWheelEvent* ev)
