@@ -49,7 +49,7 @@ void ProjectCreateImpl::updateDirectoryPath()
   }  else {
     if (!projectNameEdit->text().isEmpty())
       name = projectNameEdit->text() + ".med";
-    storageDirEdit->setText(directoryPath + projectNameEdit->text() + name);
+    storageDirEdit->setText(directoryPath +"/" + name);
   }
 }
 

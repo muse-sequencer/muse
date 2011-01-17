@@ -636,8 +636,10 @@ void Audio::panic()
             if (port == 0)   // ??
                   continue;
             for (int chan = 0; chan < MIDI_CHANNELS; ++chan) {
-                  port->sendEvent(MidiPlayEvent(0, i, chan, ME_CONTROLLER, CTRL_ALL_SOUNDS_OFF, 0));
-                  port->sendEvent(MidiPlayEvent(0, i, chan, ME_CONTROLLER, CTRL_RESET_ALL_CTRL, 0));
+                  if (debugMsg)
+                    printf("send all sound of to midi port %d channel %d\n", i, chan);
+                  port->sendEvent(MidiPlayEvent(0, i, chan, ME_CONTROLLER, CTRL_ALL_SOUNDS_OFF, 0), true);
+                  port->sendEvent(MidiPlayEvent(0, i, chan, ME_CONTROLLER, CTRL_RESET_ALL_CTRL, 0), true);
                   }
             }
       }
