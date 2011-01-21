@@ -88,7 +88,7 @@ class Canvas : public View {
 
       virtual void mousePress(QMouseEvent*) {}
       virtual void keyPress(QKeyEvent*);
-      virtual void mouseMove(const QPoint&) = 0;
+      virtual void mouseMove(QMouseEvent* event) = 0;
       virtual void mouseRelease(const QPoint&) {}
       virtual void drawCanvas(QPainter&, const QRect&) = 0;
       virtual void drawItem(QPainter&, const CItem*, const QRect&) = 0;

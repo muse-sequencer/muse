@@ -34,6 +34,7 @@ const char* infoQuant = QT_TRANSLATE_NOOP("@default", "select Quantize Tool:\n"
 const char* infoDraw = QT_TRANSLATE_NOOP("@default", "select Drawing Tool");
 const char* infoMute = QT_TRANSLATE_NOOP("@default", "select Muting Tool:\n"
       "click on part to mute/unmute");
+const char* infoAutomation = QT_TRANSLATE_NOOP("@default", "Manipulate automation");
 
 ToolB toolList[] = {
       {&pointerIcon,  QT_TRANSLATE_NOOP("@default", "pointer"),     infoPointer },
@@ -45,6 +46,7 @@ ToolB toolList[] = {
       {&quantIcon,    QT_TRANSLATE_NOOP("@default", "quantize"),    infoQuant   },
       {&drawIcon,     QT_TRANSLATE_NOOP("@default", "draw"),        infoDraw    },
       {&editmuteIcon, QT_TRANSLATE_NOOP("@default", "mute parts"),  infoMute    },
+      {&drawIcon, QT_TRANSLATE_NOOP("@default", "edit automation"),    infoAutomation},
       };
 
 //---------------------------------------------------------

@@ -123,10 +123,10 @@ void EventCanvas::endUndo(DragType dtype, int flags)
 //   mouseMove
 //---------------------------------------------------------
 
-void EventCanvas::mouseMove(const QPoint& pos)
+void EventCanvas::mouseMove(QMouseEvent* event)
       {
-      emit pitchChanged(y2pitch(pos.y()));
-      int x = pos.x();
+      emit pitchChanged(y2pitch(event->pos().y()));
+      int x = event->pos().x();
       emit timeChanged(editor->rasterVal(x));
       }
 

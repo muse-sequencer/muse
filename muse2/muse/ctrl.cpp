@@ -197,6 +197,23 @@ void CtrlList::read(Xml& xml)
                               if(!ok)
                                 printf("CtrlList::read failed reading _curVal string: %s\n", xml.s2().toLatin1().constData());
                         }        
+                        else if (tag == "visible")
+                        {
+                              _visible = loc.toInt(xml.s2(), &ok);
+                              if(!ok)
+                                printf("CtrlList::read failed reading _visible string: %s\n", xml.s2().toLatin1().constData());
+                        }
+                        else if (tag == "color")
+                        {
+#if QT_VERSION >= 0x040700
+                              ok = _displayColor.isValidColor(xml.s2());
+                              if (!ok) {
+                                printf("CtrlList::read failed reading color string: %s\n", xml.s2().toLatin1().constData());
+                                break;
+                              }
+#endif
+                              _displayColor.setNamedColor(xml.s2());
+                        }
                         else
                               printf("unknown tag %s\n", tag.toLatin1().constData());
                         break;

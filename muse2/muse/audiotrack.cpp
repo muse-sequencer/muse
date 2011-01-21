@@ -871,8 +871,10 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
             }
       for (ciCtrlList icl = _controller.begin(); icl != _controller.end(); ++icl) {
             const CtrlList* cl = icl->second;
-            QString s("controller id=\"%1\" cur=\"%2\"");
-            xml.tag(level++, s.arg(cl->id()).arg(cl->curVal()).toAscii().constData());
+
+            QString s= QString("controller id=\"%1\" cur=\"%2\"").arg(cl->id()).arg(cl->curVal()).toAscii().constData();
+            s += QString(" color=\"%1\" visible=\"%2\"").arg(cl->color().name()).arg(cl->isVisible());
+            xml.tag(level++, s.toAscii().constData());
             int i = 0;
             for (ciCtrl ic = cl->begin(); ic != cl->end(); ++ic) {
                   QString s("%1 %2, ");
@@ -967,7 +969,7 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
       else if (tag == "controller") {
             CtrlList* l = new CtrlList();
             l->read(xml);
-            
+
             // Since (until now) muse wrote a 'zero' for plugin controller current value 
             //  in the XML file, we can't use that value, now that plugin automation is added.
             // We must take the value from the plugin control value.
@@ -995,8 +997,9 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
                         d->insert(std::pair<const int, CtrlVal> (i->first, i->second));
                   
                   if(!ctlfound)
-                  d->setCurVal(l->curVal());
-                  
+                        d->setCurVal(l->curVal());
+                  d->setColor(l->color());
+                  d->setVisible(l->isVisible());
                   d->setDefault(l->getDefault());
                   delete l;
                   l = d;

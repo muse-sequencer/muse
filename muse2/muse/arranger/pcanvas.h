@@ -37,10 +37,17 @@ class NPart : public CItem {
       Track* track() const           { return part()->track(); }
       };
 
+struct AutomationObject {
+  CtrlVal *currentCtrl;
+  CtrlList *currentCtrlList;
+  Track *currentTrack;
+};
+
 class QLineEdit;
 class MidiEditor;
 class QMenu;
 class Xml;
+class CtrlVal;
 
 //---------------------------------------------------------
 //   PartCanvas
@@ -56,11 +63,14 @@ class PartCanvas : public Canvas {
       int curColorIndex;
       bool editMode;
 
+      AutomationObject automation;
+      bool moveController;
+
       std::vector<TrackAutomationView*> automationViews;
       Q_OBJECT
       virtual void keyPress(QKeyEvent*);
       virtual void mousePress(QMouseEvent*);
-      virtual void mouseMove(const QPoint&);
+      virtual void mouseMove(QMouseEvent* event);
       virtual void mouseRelease(const QPoint&);
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void leaveEvent(QEvent*e);
@@ -103,6 +113,8 @@ class PartCanvas : public Canvas {
       Track* y2Track(int) const;
       void drawAudioTrack(QPainter& p, const QRect& r, AudioTrack* track);
       void drawAutomation(QPainter& p, const QRect& r, AudioTrack* track);
+      void checkAutomation(Track * t, const QPoint& pointer, bool addNewCtrl);
+      void processAutomationMovements(QMouseEvent *event);
 
 
    protected:
