@@ -1040,7 +1040,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                   break;
             }
                   
-      mouseMove(ev_pos);
+      mouseMove(event);
       }
 
 //---------------------------------------------------------
@@ -1141,6 +1141,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
       if (redrawFlag)
             redraw();
       setCursor();
+      mouseRelease(pos);
       }
 
 //---------------------------------------------------------
@@ -1347,6 +1348,9 @@ void Canvas::setCursor()
                               break;
                         case MuteTool:
                               QWidget::setCursor(QCursor(*editmuteIcon, 4, 15));
+                              break;
+                        case AutomationTool:
+                              QWidget::setCursor(QCursor(Qt::PointingHandCursor));
                               break;
                         default:
                               QWidget::setCursor(QCursor(Qt::ArrowCursor));

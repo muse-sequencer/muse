@@ -44,7 +44,7 @@ class EventCanvas : public Canvas {
       virtual void startUndo(DragType);
       
       virtual void endUndo(DragType, int flags = 0);
-      virtual void mouseMove(const QPoint&);
+      virtual void mouseMove(QMouseEvent* event);
 
    protected:
       bool _playEvents;
