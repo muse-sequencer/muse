@@ -79,7 +79,7 @@ AudioTrack::AudioTrack(TrackType t)
       _automationType = AUTO_OFF;
       //setChannels(1);
       setChannels(2);
-      addController(new CtrlList(AC_VOLUME,"Volume",0.0,1.0));
+      addController(new CtrlList(AC_VOLUME,"Volume",0.0,3.16 /* roughly 10 db */));
       addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0));
       addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0, true /*dont show in arranger */));
       

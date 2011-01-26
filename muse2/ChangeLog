@@ -1,3 +1,6 @@
+26.01.2011:
+        - moved automation lines ontop of parts (rj)
+        - fixes to automation editing, still many bugs though (rj)
 21.01.2011:
         - Added: graphical editing of automation, also now stores which parameters are visible (rj)
                  Edit with new automation tool in arranger, to create new points hold down ctrl.
