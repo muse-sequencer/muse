@@ -1,6 +1,11 @@
-17.01.2011
+21.01.2011:
+        - Added: graphical editing of automation, also now stores which parameters are visible (rj)
+                 Edit with new automation tool in arranger, to create new points hold down ctrl.
+           TODO: Easy selection of colors, create new points need improvement, and probably a
+                 bunch of bugs, drawing does not always work for instance, and some cleaning
+17.01.2011:
         - fixed: panic button (rj)
-	- fixed: initialization crash when loading a new project (rj)
+        - fixed: initialization crash when loading a new project (rj)
 15.01.2011:
         - fixed: bug were wave track appeared to be rec enabled but no file was created. (rj)
         - made create project dialog optional, also some minor tweaks to the dialog (rj)
