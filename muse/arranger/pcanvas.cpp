@@ -142,7 +142,8 @@ PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
       drag          = DRAG_OFF;
       curColorIndex = 0;
       automation.currentCtrl = 0;
-      moveController = 0;
+      automation.controllerState = doNothing;
+      automation.moveController = false;
       partsChanged();
       }
 
@@ -1025,9 +1026,9 @@ void PartCanvas::mousePress(QMouseEvent* event)
                   break;
                   }
             case AutomationTool:
-                  if (automation.currentCtrl || (automation.currentCtrlList && event->modifiers() & Qt::ControlModifier))
-                    moveController=true;
-                  break;
+                    if (automation.controllerState != doNothing)
+                        automation.moveController=true;
+                    break;
             }
       }
 
@@ -1037,7 +1038,9 @@ void PartCanvas::mousePress(QMouseEvent* event)
 
 void PartCanvas::mouseRelease(const QPoint&)
       {
-          moveController=false;
+          // clear all the automation parameters
+          automation.moveController=false;
+          automation.controllerState = doNothing;
           automation.currentCtrl=0;
           automation.currentTrack=0;
           automation.currentCtrlList=0;
@@ -2868,9 +2871,39 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
 }
 
 //---------------------------------------------------------
+//   drawLast
+//---------------------------------------------------------
+void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
+{
+    int x = rect.x();
+    int y = rect.y();
+    int w = rect.width();
+    int h = rect.height();
+
+    QColor baseColor(config.partCanvasBg.light(104));
+    p.setPen(baseColor);
+
+    TrackList* tl = song->tracks();
+    int yy = 0;
+    int th;
+    for (iTrack it = tl->begin(); it != tl->end(); ++it) {
+          if (yy > y + h)
+                break;
+          Track* track = *it;
+          th = track->height();
+          if (!track->isMidiTrack()) { // draw automation
+                QRect r = rect & QRect(x, yy, w, track->height());
+                drawAutomation(p, r, (AudioTrack*)track);
+                p.setPen(baseColor);
+
+          }
+          yy += track->height();
+          }
+}
+
+//---------------------------------------------------------
 //   drawAudioTrack
 //---------------------------------------------------------
-
 void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, AudioTrack* /* t */)
 {
       // NOTE: For one-pixel border use first line and don't bother with setCosmetic.
@@ -2927,7 +2960,8 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
 
          // prepare prevVal
          if (cl->id() == AC_VOLUME ) { // use db scale for volume
-           prevVal = (20.0*log10(cvFirst.val)+60) / 70.0; // represent volume between 0 and 1
+           printf("volume cvval=%f\n", cvFirst.val);
+           prevVal = dbToVal(cvFirst.val); // represent volume between 0 and 1
            if (prevVal < 0) prevVal = 0.0;
          }
          else {
@@ -2945,7 +2979,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
             CtrlVal cv = ic->second;
             double nextVal = cv.val; // was curVal
             if (cl->id() == AC_VOLUME ) { // use db scale for volume
-              nextVal = (20.0*log10(cv.val)+60) / 70.0; // represent volume between 0 and 1
+              nextVal = dbToVal(cv.val); // represent volume between 0 and 1
               if (nextVal < 0) nextVal = 0.0;
             }
             else {
@@ -2985,9 +3019,21 @@ quitDrawing:
        p.restore();
 }
 
+
+//---------------------------------------------------------
+//  checkAutomation
+//    compares the current mouse pointer with the automation
+//    lines on the track under it.
+//    if there is a controller to be moved it is marked
+//    in the automation object
+//    if addNewCtrl is set and a valid line is found the
+//    automation object will also be set but no
+//    controller added.
+//---------------------------------------------------------
+
 void PartCanvas::checkAutomation(Track * t, const QPoint &pointer, bool addNewCtrl)
 {
-    int circumference = 4;
+    int circumference = 5;
     if (t->isMidiTrack())
       return;
     //printf("checkAutomation p.x()=%d p.y()=%d\n", mapx(pointer.x()), mapx(pointer.y()));
@@ -3009,6 +3055,7 @@ void PartCanvas::checkAutomation(Track * t, const QPoint &pointer, bool addNewCt
         int oldY=-1;
         int ypixel;
         int xpixel;
+
         // First check that there ARE automation, ic == cl->end means no automation
         if (ic != cl->end()) {
           for (; ic !=cl->end(); ic++)
@@ -3016,7 +3063,7 @@ void PartCanvas::checkAutomation(Track * t, const QPoint &pointer, bool addNewCt
              CtrlVal &cv = ic->second;
              double y;
              if (cl->id() == AC_VOLUME ) { // use db scale for volume
-                y = (20.0*log10(cv.val)+60) / 70.0; // represent volume between 0 and 1
+                y = dbToVal(cv.val); // represent volume between 0 and 1
                if (y < 0) y = 0;
              }
              else {
@@ -3062,10 +3109,13 @@ void PartCanvas::checkAutomation(Track * t, const QPoint &pointer, bool addNewCt
 
              if (foundIt) {
                QWidget::setCursor(Qt::CrossCursor);
-               if (addNewCtrl)
-                 automation.currentCtrl = 0; // the logic relies on this to be zero if a new controller is to be added
-               else
+               if (addNewCtrl) {
+                 automation.currentCtrl = 0;
+                 automation.controllerState = addNewController;
+               }else {
                  automation.currentCtrl=&cv;
+                 automation.controllerState = movingController;
+               }
                automation.currentCtrlList = cl;
                automation.currentTrack = t;
                return;
@@ -3074,30 +3124,28 @@ void PartCanvas::checkAutomation(Track * t, const QPoint &pointer, bool addNewCt
         } // if
 
         if (addNewCtrl) {
-           // check if we are reasonably close to a line, we only need to check Y as this is the line is straight after the last controller
-          //printf("LAST ypixel=%d oldY=%d currY=%d\n", ypixel, oldY, currY);
+           // check if we are reasonably close to a line, we only need to check Y
+           // as the line is straight after the last controller
           bool foundIt=false;
           if ( ypixel == oldY && abs(currY-ypixel) < circumference) {
-             //printf("found it!\n");
              foundIt=true;
           }
 
           if (foundIt) {
             QWidget::setCursor(Qt::CrossCursor);
+            automation.controllerState = addNewController;
             automation.currentCtrlList = cl;
             automation.currentTrack = t;
             automation.currentCtrl = 0;
             return;
           }
-
-
         }
-
       }
+      // if there are no hits we default to clearing all the data
+      automation.controllerState = doNothing;
       automation.currentCtrl = 0;
       automation.currentCtrlList = 0;
       automation.currentTrack = 0;
-      //
       setCursor();
 }
 
@@ -3110,88 +3158,95 @@ void PartCanvas::processAutomationMovements(QMouseEvent *event)
 {
 
   if (_tool == AutomationTool) {
-      bool addNewPoints=false;
-      if (event->modifiers() & Qt::ControlModifier) {
-          addNewPoints=true;
+
+      if (!automation.moveController) { // currently nothing going lets's check for some action.
+          Track * t = y2Track(event->pos().y());
+          if (t) {
+             bool addNewPoints=false;
+             if (event->modifiers() & Qt::ControlModifier)
+                 addNewPoints=true;
+             checkAutomation(t, event->pos(), addNewPoints);
+          }
+          return;
       }
-      if (moveController) {
-        //printf("update automation for controller=%d\n", automation.currentCtrl);
-        // update currentController to this position
 
-        int prevFrame = 0;
-        int nextFrame = -1;
+    // automation.moveController is set, lets rock.
 
-        if (addNewPoints && automation.currentCtrl == 0) // we don't have a controller, create one!
-        {
-           //printf("adding a new ctrler!\n");
-           int frame = tempomap.tick2frame(event->pos().x());
-           automation.currentCtrlList->add( frame, 1.0 /*dummy value */);
+    int prevFrame = 0;
+    int nextFrame = -1;
 
-           iCtrl ic=automation.currentCtrlList->begin();
-           for (; ic !=automation.currentCtrlList->end(); ic++) {
-             CtrlVal &cv = ic->second;
-             if (cv.frame == frame) {
-               automation.currentCtrl = &cv;
-               break;
-             }
-           }
+    if (automation.controllerState == addNewController)
+    {
+       //printf("adding a new ctrler!\n");
+       int frame = tempomap.tick2frame(event->pos().x());
+       automation.currentCtrlList->add( frame, 1.0 /*dummy value */);
 
-        }
+       iCtrl ic=automation.currentCtrlList->begin();
+       for (; ic !=automation.currentCtrlList->end(); ic++) {
+         CtrlVal &cv = ic->second;
+         if (cv.frame == frame) {
+           automation.currentCtrl = &cv;
+           automation.controllerState = movingController;
+           break;
+         }
+       }
+    }
 
-        // get previous and next frame position to give x bounds for this event.
-        iCtrl ic=automation.currentCtrlList->begin();
-        for (; ic !=automation.currentCtrlList->end(); ic++)
-        {
-           CtrlVal &cv = ic->second;
-           if (&cv == automation.currentCtrl)
-             break;
-           prevFrame = cv.frame;
-        }
-        if ( ++ic != automation.currentCtrlList->end()) {
-          CtrlVal &cv = ic->second;
-          nextFrame = cv.frame;
-        }
-        int currFrame = tempomap.tick2frame(event->pos().x());
-        if (currFrame < prevFrame) currFrame=prevFrame+1;
-        if (nextFrame!=-1 && currFrame > nextFrame) currFrame=nextFrame-1;
-        automation.currentCtrl->frame = currFrame;
+    // get previous and next frame position to give x bounds for this event.
+    iCtrl ic=automation.currentCtrlList->begin();
+    for (; ic !=automation.currentCtrlList->end(); ic++)
+    {
+       CtrlVal &cv = ic->second;
+       if (&cv == automation.currentCtrl)
+         break;
+       prevFrame = cv.frame;
+    }
+    if ( ++ic != automation.currentCtrlList->end()) {
+      CtrlVal &cv = ic->second;
+      nextFrame = cv.frame;
+    }
+    int currFrame = tempomap.tick2frame(event->pos().x());
+    if (currFrame < prevFrame) currFrame=prevFrame+1;
+    if (nextFrame!=-1 && currFrame > nextFrame) currFrame=nextFrame-1;
+    automation.currentCtrl->frame = currFrame;
 
-        int mouseY = automation.currentTrack->height() - (mapy(event->pos().y()) - automation.currentTrack->y())-2;
-        double yfraction = ((double)mouseY)/automation.currentTrack->height();
+    int mouseY = automation.currentTrack->height() - (mapy(event->pos().y()) - automation.currentTrack->y())-2;
+    double yfraction = ((double)mouseY)/automation.currentTrack->height();
 
-        if (automation.currentCtrlList->id() == AC_VOLUME ) { // use db scale for volume
-           //y = (20.0*log10(cv.val)+60) / 70.0; // represent volume between 0 and 1
+    if (automation.currentCtrlList->id() == AC_VOLUME ) { // use db scale for volume
 
-           double cvval = exp10((yfraction*70.0-60)/20.0);
-           //printf("calc yfraction = %f v=%f ",yfraction,cvval);
-           double min, max;
-           automation.currentCtrlList->range(&min,&max);
-           if (cvval< min) cvval=min;
-           if (cvval>max) cvval=max;
-           automation.currentCtrl->val=cvval;
+       double cvval = valToDb(yfraction);
+       //printf("calc yfraction = %f v=%f ",yfraction,cvval);
+       double min, max;
+       automation.currentCtrlList->range(&min,&max);
+       if (cvval< min) cvval=min;
+       if (cvval>max) cvval=max;
+       automation.currentCtrl->val=cvval;
 
-        }
-        else {
-          // we need to set curVal between 0 and 1
-          double min, max;
-          automation.currentCtrlList->range(&min,&max);
-          double cvval = yfraction * (max-min) + min;
+    }
+    else {
+      // we need to set curVal between 0 and 1
+      double min, max;
+      automation.currentCtrlList->range(&min,&max);
+      double cvval = yfraction * (max-min) + min;
 
-          if (cvval< min) cvval=min;
-          if (cvval>max) cvval=max;
-          automation.currentCtrl->val = cvval;
-          //printf("calc cvval=%f yfraction=%f ", cvval, yfraction);
-        }
-        //printf("mouseY=%d\n", mouseY);
-        controllerChanged(automation.currentTrack);
+      if (cvval< min) cvval=min;
+      if (cvval>max) cvval=max;
+      automation.currentCtrl->val = cvval;
+      //printf("calc cvval=%f yfraction=%f ", cvval, yfraction);
+    }
+    //printf("mouseY=%d\n", mouseY);
+    controllerChanged(automation.currentTrack);
 
-      } else {
-
-        Track * t = y2Track(event->pos().y());
-        if (t) {
-           checkAutomation(t, event->pos(), addNewPoints);
-        }
-      }
   }
 
+}
+
+double PartCanvas::dbToVal(double inDb)
+{
+    return (20.0*log10(inDb)+60) / 70.0;
+}
+double PartCanvas::valToDb(double inV)
+{
+    return exp10((inV*70.0-60)/20.0);
 }

@@ -209,6 +209,11 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
       p.drawRect(r);
       }
 
+//---------------------------------------------------------
+//   drawTopItem
+//---------------------------------------------------------
+void PianoCanvas::drawTopItem(QPainter& , const QRect&)
+{}
 
 //---------------------------------------------------------
 //   drawMoving

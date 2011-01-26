@@ -189,9 +189,12 @@ void Canvas::draw(QPainter& p, const QRect& rect)
             to = moving.lower_bound(x2);
             for (iCItem i = moving.begin(); i != to; ++i) 
             {
-                        drawItem(p, i->second, rect);
-                  }
+                  drawItem(p, i->second, rect);
             }
+
+            drawTopItem(p,rect);
+
+      }
       else {  
             p.save();
             setPainter(p);
@@ -266,6 +269,7 @@ void Canvas::draw(QPainter& p, const QRect& rect)
                   {
                         drawItem(p, i->second, rect);
                   }
+            drawTopItem(p, QRect(x,y,w,h));
             p.save();
             setPainter(p);
             }
