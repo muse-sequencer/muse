@@ -61,7 +61,7 @@ file (GLOB mplugins_source_files
 ##
 ## Define target
 ##
-add_library ( mplugins SHARED
+add_library ( mplugins ${MODULES_BUILD}
       ${mplugins_source_files}
       ${mplugins_mocs}
       ${mplugins_uis}
@@ -87,7 +87,7 @@ set (FILES_TO_TRANSLATE
 #
 set_target_properties ( mplugins
       # PROPERTIES PREFIX ""
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_mplugins
       )
 
@@ -103,7 +103,8 @@ target_link_libraries( mplugins
 ##
 ## Install location
 ##
-install(TARGETS mplugins
-      DESTINATION ${MusE_MODULES_DIR}
-      )
-
+if ( ${MODULES_BUILD} STREQUAL SHARED )
+      install(TARGETS mplugins
+            DESTINATION ${MusE_MODULES_DIR}
+            )
+endif ( ${MODULES_BUILD} STREQUAL SHARED )

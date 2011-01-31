@@ -63,7 +63,7 @@ file (GLOB midiedit_source_files
 ##
 ## Define target
 ##
-add_library ( midiedit SHARED
+add_library ( midiedit ${MODULES_BUILD}
       ${midiedit_source_files}
       ${midiedit_mocs}
       )
@@ -81,7 +81,7 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties( midiedit
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_midiedit
       )
 
@@ -94,12 +94,15 @@ target_link_libraries ( midiedit
       ctrl
       icons
       widgets
-      ctrl
       )
 
 ##
 ## Install location
 ##
-install(TARGETS midiedit
-      DESTINATION ${MusE_MODULES_DIR}
-      )
+if ( ${MODULES_BUILD} STREQUAL SHARED )
+      install(TARGETS midiedit
+            DESTINATION ${MusE_MODULES_DIR}
+            )
+else ( ${MODULES_BUILD} STREQUAL SHARED )
+      target_link_libraries (midiedit core)
+endif ( ${MODULES_BUILD} STREQUAL SHARED )

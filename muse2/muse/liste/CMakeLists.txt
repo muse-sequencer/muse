@@ -55,7 +55,7 @@ file (GLOB liste_source_files
 ##
 ## Define target
 ##
-add_library ( liste SHARED
+add_library ( liste ${MODULES_BUILD}
       ${liste_source_files}
       ${liste_mocs}
       ${liste_uis}
@@ -75,7 +75,7 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties( liste
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_liste
       )
 
@@ -91,7 +91,8 @@ target_link_libraries ( liste
 ##
 ## Install location
 ##
-install(TARGETS liste
-      DESTINATION ${MusE_MODULES_DIR}
-      )
-
+if ( ${MODULES_BUILD} STREQUAL SHARED )
+      install(TARGETS liste
+            DESTINATION ${MusE_MODULES_DIR}
+            )
+endif ( ${MODULES_BUILD} STREQUAL SHARED )

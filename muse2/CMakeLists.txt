@@ -57,7 +57,6 @@ ENDIF(NOT DEFINED SHARE_INSTALL_PREFIX)
 # set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # The MusE version number.
@@ -69,9 +68,8 @@ SET(MusE_VERSION_FULL  "2.0alpha")
 SET(MusE_INSTALL_NAME  "muse-2.0alpha")
 SET(MusE_EXEC_NAME     "muse2")
 
-## The library where we will install the shared components:
+## The directory where we will install the shared components:
 SET(MusE_MODULES_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/modules)
-SET(CMAKE_INSTALL_RPATH ${MusE_MODULES_DIR})
 
 ## Synthesizers directory
 SET(MusE_SYNTHI_DIR ${CMAKE_INSTALL_LIBDIR}/${MusE_INSTALL_NAME}/synthi)
@@ -110,6 +108,15 @@ option ( ENABLE_FLUID       "enable fluidsynth softsynth plugins"               
 option ( ENABLE_EXPERIMENTAL "enable building experimental features"                         OFF)
 option ( UPDATE_TRANSLATIONS "Update source translation share/locale/*.ts files 
          (WARNING: This will modify the .ts files in the source tree!!)"                     OFF)
+option ( MODULES_BUILD_STATIC "Build type of internal modules"                               OFF)
+
+if ( MODULES_BUILD_STATIC )
+      SET(MODULES_BUILD STATIC )
+else ( MODULES_BUILD_STATIC )
+      SET(MODULES_BUILD SHARED )
+      SET(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+      SET(CMAKE_INSTALL_RPATH ${MusE_MODULES_DIR})
+endif ( MODULES_BUILD_STATIC )
 
 ##
 ## Just print a notice if this is OS X
@@ -349,9 +356,9 @@ IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
   INCLUDE(CPack)
 ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
 
-set(CMAKE_CXX_FLAGS         "-Wall -Wextra -Winvalid-pch -fno-exceptions ${CMAKE_CXX_FLAGS}")
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fstrength-reduce ${CMAKE_CXX_FLAGS_RELEASE}")
-set(CMAKE_CXX_FLAGS_DEBUG   "-g -DQT_DEBUG ${CMAKE_CXX_FLAGS_DEBUG}")
+set(CMAKE_CXX_FLAGS         "-Wall -Wextra -Winvalid-pch -fno-exceptions -fPIC ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fstrength-reduce -fPIC ${CMAKE_CXX_FLAGS_RELEASE}")
+set(CMAKE_CXX_FLAGS_DEBUG   "-g -DQT_DEBUG -fPIC ${CMAKE_CXX_FLAGS_DEBUG}")
 
 # subdirs(al awl grepmidi plugins midiplugins muse share synti)
 # subdirs(al lib grepmidi plugins xpm muse share demos doc synti utils)
@@ -395,6 +402,12 @@ summary_add("VST support" VST_SUPPORT)
 summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)
 summary_add("Experimental features" ENABLE_EXPERIMENTAL)
 summary_show()
+
+if ( MODULES_BUILD_STATIC )
+    message (" Internal modules will be built statically into the final binary.")
+else ( MODULES_BUILD_STATIC )
+    message (" Internal modules will be built as shared components.")
+endif ( MODULES_BUILD_STATIC )
 
 ## Make the user aware of what type they're building.
 if (NOT CMAKE_BUILD_TYPE)

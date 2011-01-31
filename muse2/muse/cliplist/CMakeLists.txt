@@ -35,7 +35,7 @@ file (GLOB cliplist_source_files
 ##
 ## Define target
 ##
-add_library ( cliplist SHARED
+add_library ( cliplist ${MODULES_BUILD}
       ${cliplist_source_files}
       ${cliplist_mocs}
       )
@@ -53,7 +53,7 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties( cliplist
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_cliplist
       )
 
@@ -69,8 +69,9 @@ target_link_libraries ( cliplist
 ##
 ## Install location
 ##
-install(TARGETS cliplist
-      DESTINATION ${MusE_MODULES_DIR}
-      )
-
+if ( ${MODULES_BUILD} STREQUAL SHARED )
+      install(TARGETS cliplist
+            DESTINATION ${MusE_MODULES_DIR}
+            )
+endif ( ${MODULES_BUILD} STREQUAL SHARED )
 

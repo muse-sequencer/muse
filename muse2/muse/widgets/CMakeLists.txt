@@ -180,7 +180,7 @@ file (GLOB widgets_source_files
 ##
 ## Define target
 ##
-add_library ( widgets SHARED 
+add_library ( widgets ${MODULES_BUILD} 
       ${widget_ui_headers}
       ${widget_mocs}
       ${widgets_source_files}
@@ -201,7 +201,7 @@ set (FILES_TO_TRANSLATE
 ##
 set_target_properties( widgets
       # PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti "
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti -fPIC"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h ${MUSECXXFLAGS} -I../ -I${PROJECT_SOURCE_DIR}/synti"
       OUTPUT_NAME muse_widgets
       )
 
@@ -216,12 +216,8 @@ target_link_libraries ( widgets
 ##
 ## Install location
 ##
-install(TARGETS widgets
-      DESTINATION
-      ${MusE_MODULES_DIR}
-      )
-
-
-
-
-
+if ( ${MODULES_BUILD} STREQUAL SHARED )
+      install(TARGETS widgets
+            DESTINATION ${MusE_MODULES_DIR}
+            )
+endif ( ${MODULES_BUILD} STREQUAL SHARED )

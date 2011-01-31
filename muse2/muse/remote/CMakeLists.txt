@@ -28,7 +28,7 @@ file (GLOB remote_source_files
 ##
 ## Define target
 ##
-add_library(remote SHARED
+add_library(remote ${MODULES_BUILD}
       ${remote_source_files}
       ${PROJECT_BINARY_DIR}/all.h.pch
       )
@@ -47,12 +47,14 @@ set (FILES_TO_TRANSLATE
 ##
 set_source_files_properties(
       pyapi.cpp
-      PROPERTIES COMPILE_FLAGS "-fPIC -include ${PROJECT_BINARY_DIR}/all.h -include ${PYTHON_INCLUDES} -DENABLE_PYTHON"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -include ${PYTHON_INCLUDES} -DENABLE_PYTHON"
       )
 
 ##
 ## Install location
 ##
-install(TARGETS remote
-      DESTINATION ${MusE_MODULES_DIR}
-      )
+if ( ${MODULES_BUILD} STREQUAL SHARED )
+      install(TARGETS remote
+            DESTINATION ${MusE_MODULES_DIR}
+            )
+endif ( ${MODULES_BUILD} STREQUAL SHARED )

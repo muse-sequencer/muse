@@ -37,7 +37,7 @@ file (GLOB synti_source_files
 ##
 ## Define target
 ##
-add_library(synti SHARED
+add_library(synti ${MODULES_BUILD}
       ${PROJECT_BINARY_DIR}/all-pic.h.pch
       ${synti_source_files}
       )
@@ -54,17 +54,16 @@ set (FILES_TO_TRANSLATE
 ##
 ## Compilation flags and target name
 ##
-#
-# -fPIC is necessary for 64 bit systems
-#
 set_target_properties( synti
-      PROPERTIES COMPILE_FLAGS "-fPIC -include ${PROJECT_BINARY_DIR}/all-pic.h"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all-pic.h"
       OUTPUT_NAME muse_synti
       )
 
 ##
 ## Install location
 ##
-install(TARGETS synti 
-      DESTINATION ${MusE_MODULES_DIR}
-      )
+if ( ${MODULES_BUILD} STREQUAL SHARED )
+      install(TARGETS synti 
+            DESTINATION ${MusE_MODULES_DIR}
+            )
+endif ( ${MODULES_BUILD} STREQUAL SHARED )
