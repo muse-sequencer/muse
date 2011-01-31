@@ -90,7 +90,7 @@ file (GLOB awl_source_files
 ##
 ## Define target
 ##
-add_library ( awl SHARED
+add_library ( awl ${MODULES_BUILD}
       ${awl_source_files}
       ${awl_mocs}
       )
@@ -108,7 +108,7 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties( awl
-      PROPERTIES COMPILE_FLAGS "-fPIC -include ${PROJECT_BINARY_DIR}/all.h"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_awl
       )
 
@@ -123,7 +123,8 @@ target_link_libraries ( awl
 ##
 ## Install location
 ##
-install(TARGETS awl
-      DESTINATION ${MusE_MODULES_DIR}
-      )
-
+if ( ${MODULES_BUILD} STREQUAL SHARED )
+      install(TARGETS awl
+            DESTINATION ${MusE_MODULES_DIR}
+            )
+endif ( ${MODULES_BUILD} STREQUAL SHARED )

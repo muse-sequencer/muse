@@ -144,7 +144,7 @@ file (GLOB icons_source_files
 ##
 ## Define target
 ##
-add_library ( core SHARED
+add_library ( core ${MODULES_BUILD}
       ${muse_qrc_files}
       ${muse_moc_headers}
       ${core_source_files}
@@ -152,7 +152,7 @@ add_library ( core SHARED
 add_executable ( muse
       ${main_source_files}
       )
-add_library ( icons SHARED
+add_library ( icons ${MODULES_BUILD}
       ${icons_source_files}
       )
 
@@ -200,7 +200,7 @@ set_target_properties( core
       # PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       # PROPERTIES COMPILE_FLAGS "-Imidiedit -Iarranger -Iliste -Iwidgets -Imixer -Idriver -Iwaveedit -Implugins -Iinstruments -Iremote ${PYREM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h "
       # PROPERTIES COMPILE_FLAGS "${PYREM_CPP_FLAGS} -DINSTPREFIX='\"${CMAKE_INSTALL_PREFIX}\"' -DINSTLIBDIR='\"${LIBRARY_OUTPUT_DIRECTORY}\"' -include ${PROJECT_BINARY_DIR}/all.h "
-      PROPERTIES COMPILE_FLAGS "${PYREM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      PROPERTIES COMPILE_FLAGS "${PYREM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_core
       )
 set_target_properties( muse
@@ -264,8 +264,9 @@ target_link_libraries(icons
 install( TARGETS muse 
       RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/
       )
-install(TARGETS core icons
-      DESTINATION
-      ${MusE_MODULES_DIR}
-      )
+if ( ${MODULES_BUILD} STREQUAL SHARED )
+      install(TARGETS core icons
+            DESTINATION ${MusE_MODULES_DIR}
+            )
+endif ( ${MODULES_BUILD} STREQUAL SHARED )
 

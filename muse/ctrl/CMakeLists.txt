@@ -42,7 +42,7 @@ file (GLOB ctrl_source_files
 ##
 ## Define target
 ##
-add_library ( ctrl SHARED
+add_library ( ctrl ${MODULES_BUILD}
       # configmidictrl.cpp
       # definemidictrl.cpp
       # ctrldialog.cpp
@@ -64,7 +64,7 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties( ctrl
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_ctrl
       )
 
@@ -79,7 +79,8 @@ target_link_libraries ( ctrl
 ##
 ## Install location
 ##
-install(TARGETS ctrl
-      DESTINATION ${MusE_MODULES_DIR}
-      )
-
+if ( ${MODULES_BUILD} STREQUAL SHARED )
+      install(TARGETS ctrl
+            DESTINATION ${MusE_MODULES_DIR}
+            )
+endif ( ${MODULES_BUILD} STREQUAL SHARED )

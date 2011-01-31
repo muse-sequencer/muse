@@ -47,7 +47,7 @@ file (GLOB waveedit_source_files
 ##
 ## Define target
 ##
-add_library ( waveedit SHARED
+add_library ( waveedit ${MODULES_BUILD}
       ${waveedit_source_files}
       ${waveedit_ui_headers}
       ${waveedit_mocs}
@@ -67,7 +67,7 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties( waveedit
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_waveedit
       )
 
@@ -82,6 +82,8 @@ target_link_libraries( waveedit
 ##
 ## Install location
 ##
-install(TARGETS waveedit
-      DESTINATION ${MusE_MODULES_DIR}
-      )
+if ( ${MODULES_BUILD} STREQUAL SHARED )
+      install(TARGETS waveedit
+            DESTINATION ${MusE_MODULES_DIR}
+            )
+endif ( ${MODULES_BUILD} STREQUAL SHARED )

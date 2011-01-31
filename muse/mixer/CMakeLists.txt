@@ -59,7 +59,7 @@ file (GLOB mixer_source_files
 ##
 ## Define target
 ##
-add_library ( mixer SHARED
+add_library ( mixer ${MODULES_BUILD}
       ${mixer_source_files}
       ${mixer_mocs}
       ${mixer_uis}
@@ -79,7 +79,7 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties ( mixer
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_mixer
       )
 
@@ -94,8 +94,9 @@ target_link_libraries ( mixer
 ##
 ## Install location
 ##
-install(TARGETS mixer
-      DESTINATION ${MusE_MODULES_DIR}
-      )
-
+if ( ${MODULES_BUILD} STREQUAL SHARED )
+      install(TARGETS mixer
+            DESTINATION ${MusE_MODULES_DIR}
+            )
+endif ( ${MODULES_BUILD} STREQUAL SHARED )
 

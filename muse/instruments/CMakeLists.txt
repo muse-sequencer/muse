@@ -48,7 +48,7 @@ file (GLOB instruments_source_files
 ##
 ## Define target
 ##
-add_library ( instruments SHARED
+add_library ( instruments ${MODULES_BUILD}
    ${instruments_source_files}
    ${instruments_mocs}
    ${instruments_uis}
@@ -68,7 +68,7 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties( instruments
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_instruments
       )
 
@@ -83,7 +83,8 @@ target_link_libraries ( instruments
 ##
 ## Install location
 ##
-install(TARGETS instruments
-      DESTINATION ${MusE_MODULES_DIR}
-      )
-
+if ( ${MODULES_BUILD} STREQUAL SHARED )
+      install(TARGETS instruments
+            DESTINATION ${MusE_MODULES_DIR}
+            )
+endif ( ${MODULES_BUILD} STREQUAL SHARED )

@@ -36,7 +36,7 @@ file (GLOB marker_source_files
 ##
 ## Define target
 ##
-add_library ( marker SHARED
+add_library ( marker ${MODULES_BUILD}
       ${marker_source_files}
       # ${marker_ui_headers}
       ${marker_mocs}
@@ -55,7 +55,7 @@ set (FILES_TO_TRANSLATE
 ## Compilation flags and target name
 ##
 set_target_properties( marker
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -fPIC"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_marker
       )
 
@@ -71,6 +71,8 @@ target_link_libraries ( marker
 ##
 ## Install location
 ##
-install(TARGETS marker
-      DESTINATION ${MusE_MODULES_DIR}
-      )
+if ( ${MODULES_BUILD} STREQUAL SHARED )
+      install(TARGETS marker
+            DESTINATION ${MusE_MODULES_DIR}
+            )
+endif ( ${MODULES_BUILD} STREQUAL SHARED )

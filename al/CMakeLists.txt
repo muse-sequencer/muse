@@ -40,7 +40,7 @@ endif (USE_SSE)
 ##
 ## Define target
 ##
-add_library(al SHARED
+add_library(al ${MODULES_BUILD}
       ${PROJECT_BINARY_DIR}/all.h.pch
       ${al_source_files}
       )
@@ -57,7 +57,7 @@ set_source_files_properties(
       dspXMM.cpp
       sig.cpp
       xml.cpp
-      PROPERTIES COMPILE_FLAGS "-fPIC -include ${PROJECT_BINARY_DIR}/all.h"
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
       )
 set_source_files_properties(
       dspSSE.cpp
@@ -74,6 +74,8 @@ target_link_libraries ( al
 ##
 ## Install location
 ##
-install(TARGETS al 
-      DESTINATION ${MusE_MODULES_DIR}
-      )
+if ( ${MODULES_BUILD} STREQUAL SHARED )
+      install(TARGETS al 
+            DESTINATION ${MusE_MODULES_DIR}
+            )
+endif ( ${MODULES_BUILD} STREQUAL SHARED )
