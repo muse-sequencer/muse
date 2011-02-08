@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <cstddef>
 #include <map>
 
 // most of the following code is based on examples
