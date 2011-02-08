@@ -1,3 +1,5 @@
+08.02.2011:
+        - made muse compilable under gcc-4.6. ptrdiff_t type requires inclusion of cstddef. (Orcan)
 31.01.2011:
         - added cmake option (-DMODULES_BUILD_STATIC=ON) to build the internal modules
           statically. It should be possible to run muse from the build tree. (Orcan)
