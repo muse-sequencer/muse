@@ -157,7 +157,7 @@ class SynthI : public AudioTrack, public MidiDevice,
 
    protected:
       Synth* synthesizer;
-      MidiFifo putFifo;
+      // MidiFifo putFifo;  // Moved into MidiDevice p4.0.15
       
       // List of initial floating point parameters, for synths which use them. 
       // Used once upon song reload, then discarded.

@@ -945,12 +945,29 @@ void Audio::processMidi()
       for (iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) {
             MidiDevice* md = *id;
 
-            MPEventList* playEvents = md->playEvents();
             //
             // erase already played events:
             //
-            iMPEvent nextPlayEvent  = md->nextPlayEvent();
-            playEvents->erase(playEvents->begin(), nextPlayEvent);
+            ///MPEventList* playEvents = md->playEvents();     
+            ///iMPEvent nextPlayEvent  = md->nextPlayEvent();  
+            
+            //if(md->playEvents()->size())       
+            //{
+              //printf("Audio::processMidi before erase md play events size:%d nextPlayEvent isEnd:%d\n", md->playEvents()->size(), md->nextPlayEvent() == md->playEvents()->end());  
+            //  printf("Audio::processMidi md play events size:%d first item:\n", md->playEvents()->size());  
+            //  md->playEvents()->begin()->dump();  
+            //}  
+            
+            // p4.0.15 Tim. Moved into MidiJackDevice::processMidi (for Jack), and MidiSeq::processTimerTick (for ALSA).
+            // Why do this here? Instead, let each device erase their just-played events.
+            ///playEvents->erase(playEvents->begin(), nextPlayEvent);
+            
+            //if(playEvents->size())  
+            //{
+            //  printf("Audio::processMidi after erase md play events size:%d nextPlayEvent isEnd:%d events:\n", playEvents->size(), nextPlayEvent == playEvents->end());  
+              //for(iMPEvent ie = playEvents->begin(); ie != playEvents->end(); ++ie)
+              //  ie->dump();
+            //}  
 
             // klumsy hack for synti devices:
             if(md->isSynti())
@@ -974,9 +991,11 @@ void Audio::processMidi()
             md->beforeProcess();
             }
 
-      MPEventList* playEvents = metronome->playEvents();
-      iMPEvent nextPlayEvent  = metronome->nextPlayEvent();
-      playEvents->erase(playEvents->begin(), nextPlayEvent);
+      // p4.0.15 Tim. Moved into SynthI::getData.
+      // Why do this here? Instead, let each device erase their just-played events.
+      ///MPEventList* playEvents = metronome->playEvents();
+      ///iMPEvent nextPlayEvent  = metronome->nextPlayEvent();
+      ///playEvents->erase(playEvents->begin(), nextPlayEvent);
 
       // p3.3.25
       bool extsync = extSyncFlag.value();
@@ -1075,7 +1094,7 @@ void Audio::processMidi()
                           if(!dev->sysexFIFOProcessed())
                           {
                             // Set to the sysex fifo at first.
-                            MidiFifo& rf = dev->recordEvents(MIDI_CHANNELS);
+                            MidiRecFifo& rf = dev->recordEvents(MIDI_CHANNELS);
                             // Get the frozen snapshot of the size.
                             int count = dev->tmpRecordCount(MIDI_CHANNELS);
                           
@@ -1140,7 +1159,7 @@ void Audio::processMidi()
                             }
                             */
                             
-                            MidiFifo& rf = dev->recordEvents(channel);
+                            MidiRecFifo& rf = dev->recordEvents(channel);
                             int count = dev->tmpRecordCount(channel);
                             
                             //for (iMREvent ie = el->begin(); ie != el->end(); ++ie) 
@@ -1343,11 +1362,14 @@ void Audio::processMidi()
                   }
             }
             // Added by Tim. p3.3.8
-            if(md)
-            {  
-              
-              md->setNextPlayEvent(playEvents->begin());
-            }
+            // Removed p4.0.15
+            ///if(md)
+            ///  md->setNextPlayEvent(playEvents->begin());
+            //if(md)  
+            //{
+            //  if(md->nextPlayEvent() != playEvents->begin())
+            //    printf("Audio::processMidi md->nextPlayEvent() != playEvents->begin()\n");  
+            //}  
       }
 
       //
@@ -1390,7 +1412,10 @@ void Audio::processMidi()
                   playEvents->add(ev);
                   }
             stuckNotes->erase(stuckNotes->begin(), k);
-            md->setNextPlayEvent(playEvents->begin());
+            // Removed p4.0.15 Tim.
+            ///md->setNextPlayEvent(playEvents->begin());
+            //if(md->nextPlayEvent() != playEvents->begin())   
+            //  printf("Audio::processMidi clear notes: md->nextPlayEvent() != playEvents->begin()\n");  
             }
 
       //---------------------------------------------------
@@ -1473,10 +1498,24 @@ void Audio::processMidi()
                               state = START_PLAY;
                         }
                   }
-            if (md)
-                  md->setNextPlayEvent(playEvents->begin());
-            if (audioClickFlag)
-                  metronome->setNextPlayEvent(metronome->playEvents()->begin());
+            // Removed p4.0.15 Tim.
+            ///if (md)
+            ///      md->setNextPlayEvent(playEvents->begin());
+            //if(md)  
+            //{
+            //  if(md->nextPlayEvent() != playEvents->begin())   
+            //    printf("Audio::processMidi metronome: md->nextPlayEvent() != playEvents->begin()\n");  
+            //}    
+            
+            // Removed p4.0.15 Tim.
+            ///if (audioClickFlag)
+            ///      metronome->setNextPlayEvent(metronome->playEvents()->begin());
+            //if(audioClickFlag)  
+            //{
+            //  if(metronome->nextPlayEvent() != metronome->playEvents()->begin())   
+            //    printf("Audio::processMidi metronome: metronome->nextPlayEvent() != metronome->playEvents->begin()\n");  
+            //}    
+            
             }
 
       if (state == STOP) {

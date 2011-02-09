@@ -181,8 +181,15 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
                       ///{  
 ///#endif
                         // Note the addition of bias!
-                        _device->putEvent(MidiPlayEvent(0, portno(), chan,
+                        //_device->putEvent(MidiPlayEvent(0, portno(), chan,
+                        //  ME_CONTROLLER, ctl, mc->initVal() + mc->bias()));
+                        // Retry added. Use default attempts and delay. p4.0.15
+                        _device->putEventWithRetry(MidiPlayEvent(0, portno(), chan,  
                           ME_CONTROLLER, ctl, mc->initVal() + mc->bias()));
+                        //if(_device->putEventWithRetry(MidiPlayEvent(0, portno(), chan,  
+                        //  ME_CONTROLLER, ctl, mc->initVal() + mc->bias())))
+                        //  return;  
+                        
 ///#ifdef DSSI_SUPPORT
                       ///}
 ///#endif
@@ -214,8 +221,15 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
                       ///if(!_device->isSynti() || (dynamic_cast<DssiSynthIF*>(((SynthI*)_device)->sif()) == 0))
                       ///{  
 ///#endif
-                        _device->putEvent(MidiPlayEvent(0, portno(), channel,
-                          ME_CONTROLLER, cntrl, val));
+                        //_device->putEvent(MidiPlayEvent(0, portno(), channel,
+                        //  ME_CONTROLLER, cntrl, val));
+                        // Retry added. Use default attempts and delay. p4.0.15
+                        _device->putEventWithRetry(MidiPlayEvent(0, portno(), channel,
+                          ME_CONTROLLER, cntrl, val));                          
+                        //if(_device->putEventWithRetry(MidiPlayEvent(0, portno(), channel,
+                        //  ME_CONTROLLER, cntrl, val)))
+                        //  return;                          
+                          
 ///#ifdef DSSI_SUPPORT
                       ///}
 ///#endif
@@ -320,6 +334,8 @@ void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
             //MidiPlayEvent ev(song->cpos(), portno(), chan, ME_CONTROLLER, ctl, initval + mc->bias());
             MidiPlayEvent ev(0, portno(), chan, ME_CONTROLLER, ctl, initval + mc->bias());
             _device->putEvent(ev);
+            // Retry added. Use default attempts and delay. p4.0.15
+            //_device->putEventWithRetry(ev);
           }  
           // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
           //setHwCtrlState(chan, ctl, initval + mc->bias());
@@ -337,6 +353,8 @@ void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
     //MidiPlayEvent ev(song->cpos(), portno(), chan, ME_CONTROLLER, ctl, val);
     MidiPlayEvent ev(0, portno(), chan, ME_CONTROLLER, ctl, val);
     _device->putEvent(ev);
+    // Retry added. Use default attempts and delay. p4.0.15
+    //_device->putEventWithRetry(ev);
   }  
   // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
   //setHwCtrlState(chan, ctl, val);

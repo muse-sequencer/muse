@@ -1,5 +1,25 @@
 09.02.2011:
         - fixed regression with Bounce to File and Bounce to Track (rj)
+        [[[ By Tim. Marked as p4.0.15 ...
+        - Removed MidiDevice::nextPlayEvent, and instead of erasing 'already played events' at top of 
+           Audio::processMidi(), let each device erase played events immediately after playing them.
+          Still a bit uneasy with this one, but nextPlayEvent was causing some problems. 
+          This required forced event erasure, if the track is off, in SynthI::preProcessAlways(),
+           which may need more tweaking for other non-processed circumstances.
+        - Added MidiDevice::putEventWithRetry() which will wait and retry sending an event. 
+          So far it is only used in MidiPort::setMidiDevice(), which runs in the GUI thread where 
+           it can wait a bit.
+        - Increased playback MidiFifo size from 512 to 2100, to accommodate large block sends, 
+           such as in MidiInstrument::reset() which sends 2048 events at once.
+          Created new recording MidiRecFifo with reduced size of 160 instead of previous 512.
+          Replaced SynthI::putFifo and MidiJackDevice::eventFifo with unified MidiDevice::eventFifo.
+          TODO: Allow ALSA devices to also make use of it, in case events cannot be delivered.
+        - Added a timestamp to OscControlFifo events. To be used for better, faster OSC processing - TODO.
+        - Fixed DSSI processing timing in DssiSynthIF::getData(). Should be much better now, tested OK.
+        - Fixed Jack Midi 'lost event' messages due to full buffers. Now it waits until next cycle if buffer is full.
+          Slight mod: SysEx events forced to be lost, since it is most likely that the sysex is too big and Jack Midi 
+           could never allocate enough space for it, meaning the event would linger around forever attempting to
+           be sent, tying up other events. ]]]
 08.02.2011:
         - made muse compilable under gcc-4.6. ptrdiff_t type requires inclusion of cstddef. (Orcan)
 31.01.2011:

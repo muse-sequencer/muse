@@ -831,7 +831,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
 
       pan = addKnob(0, 0, &panl);
       pan->setValue(t->pan());
-
+      
       //---------------------------------------------------
       //    mute, solo, record
       //---------------------------------------------------

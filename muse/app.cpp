@@ -2231,7 +2231,7 @@ void MusE::updateRouteMenus(Track* track, QObject* master)
           imm->second.type == Route::TRACK_ROUTE && imm->second.track->type() == Track::AUDIO_INPUT)
           return;
         #if 0
-        printf("imm route:\n");  // REMOVE Tim.
+        printf("imm route:\n");  
         imm->second.dump();
         if(track->isMidiTrack())
         {
@@ -2256,19 +2256,19 @@ void MusE::updateRouteMenus(Track* track, QObject* master)
             iRoute ir = mprl->begin();
             for(; ir != mprl->end(); ++ir) 
             {
-              printf("mp route:\n");  // REMOVE Tim.
-              ir->dump(); // REMOVE Tim.
+              printf("mp route:\n");  
+              ir->dump(); 
               ///if(aRoute.type == Route::TRACK_ROUTE)                                     // Is the map route a track route?
               {
                 if(ir->type == Route::TRACK_ROUTE && ir->track == aRoute.track)  // Is the track route a midi port route?
                   //&& (ir->channel & chbit) == chbit)               
                   //&& (ir->channel & tchbit))               // Is the exact channel mask bit(s) set?
                 {
-                  printf("track matches\n");  // REMOVE Tim.
+                  printf("track matches\n");  
                   if(ir->channel & tchbit)
                   {
                     found = true;
-                    printf("found: bit matches\n");  // REMOVE Tim.
+                    printf("found: bit matches\n");  
                   }  
                   break;
                 }
@@ -2286,10 +2286,10 @@ void MusE::updateRouteMenus(Track* track, QObject* master)
             //if(pup->isItemChecked(imm->first) != (irl != rl->end()))
             //  pup->setItemChecked(imm->first, irl != rl->end());
             QAction* act = pup->findActionFromData(imm->first);  
-            //printf("set act checked to:%d\n", ir != mprl->end());  // REMOVE Tim.
+            //printf("set act checked to:%d\n", ir != mprl->end());  
             //if(act && act->isChecked() != (ir != mprl->end()))
             //  act->setChecked(ir != mprl->end());
-            printf("set act checked to:%d\n", found);  // REMOVE Tim.
+            printf("set act checked to:%d\n", found);  
             if(act && act->isChecked() != found)
               act->setChecked(found);
             

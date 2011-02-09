@@ -488,8 +488,8 @@ void Appearance::resetValues()
 
       themeComboBox->clear();
       QString cs = muse->style()->objectName();
-      //printf("Appearance::resetValues style:%s\n", cs.toAscii().data());  // REMOVE Tim
-      //printf("Appearance::resetValues App styleSheet:%s\n", qApp->styleSheet().toAscii().data());  // REMOVE Tim
+      //printf("Appearance::resetValues style:%s\n", cs.toAscii().data());  
+      //printf("Appearance::resetValues App styleSheet:%s\n", qApp->styleSheet().toAscii().data());  
       cs = cs.toLower();
 
       themeComboBox->insertItems(0, QStyleFactory::keys());

@@ -518,7 +518,7 @@ void EventCanvas::viewDropEvent(QDropEvent* event)
       {
       QString text;
       if (event->source() == this) {
-            printf("local DROP\n");      // REMOVE Tim  
+            printf("local DROP\n");      
             //event->acceptProposedAction();     
             //event->ignore();                     // TODO CHECK Tim.
             return;

@@ -2454,6 +2454,10 @@ int PluginI::oscControl(unsigned long port, float value)
     OscControlValue cv;
     //cv.idx = cport;
     cv.value = value;
+    // Time-stamp the event. Looks like no choice but to use the (possibly slow) call to gettimeofday via timestamp(),
+    //  because these are asynchronous events arriving from OSC.  timestamp() is more or less an estimate of the
+    //  current frame. (This is exactly how ALSA events are treated when they arrive in our ALSA driver.) p4.0.15 Tim. 
+    cv.frame = audio->timestamp();  
     if(cfifo->put(cv))
     {
       fprintf(stderr, "PluginI::oscControl: fifo overflow: in control number:%ld\n", cport);

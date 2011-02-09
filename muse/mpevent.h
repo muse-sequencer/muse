@@ -14,7 +14,14 @@
 #include "evdata.h"
 #include "memory.h"
 
-#define MIDI_FIFO_SIZE    512
+// Play events ring buffer size
+//#define MIDI_FIFO_SIZE    512  
+// Increased. FE/6/11 p4.0.15 Tim.
+#define MIDI_FIFO_SIZE    2100         
+
+// Record events ring buffer size
+//#define MIDI_REC_FIFO_SIZE  512
+#define MIDI_REC_FIFO_SIZE  160
 
 class Event;
 class EvData;
@@ -132,8 +139,9 @@ class MidiPlayEvent : public MEvent {
 typedef std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, audioRTalloc<MidiPlayEvent> > MPEL;
 
 struct MPEventList : public MPEL {
-      void add(const MidiPlayEvent& ev) { MPEL::insert(ev); }
-      };
+      //void add(const MidiPlayEvent& ev) { MPEL::insert(ev); }
+      iterator add(const MidiPlayEvent& ev) { return MPEL::insert(ev); }  // p4.0.15 We need the iterator.
+};
 
 typedef MPEventList::iterator iMPEvent;
 typedef MPEventList::const_iterator ciMPEvent;
@@ -170,9 +178,31 @@ class MidiFifo {
 
    public:
       MidiFifo()  { clear(); }
-      bool put(const MidiPlayEvent& event);   // returns true on fifo overflow
+      bool put(const MidiPlayEvent& /*event*/);   // returns true on fifo overflow
       MidiPlayEvent get();
-      const MidiPlayEvent& peek(int n = 0);
+      const MidiPlayEvent& peek(int = 0);
+      void remove();
+      bool isEmpty() const { return size == 0; }
+      void clear()         { size = 0, wIndex = 0, rIndex = 0; }
+      int getSize() const  { return size; }
+      };
+
+//---------------------------------------------------------
+//   MidiRecFifo
+//   (Same as MidiFifo, but with a smaller size.)
+//---------------------------------------------------------
+
+class MidiRecFifo {
+      MidiPlayEvent fifo[MIDI_REC_FIFO_SIZE];
+      volatile int size;
+      int wIndex;
+      int rIndex;
+
+   public:
+      MidiRecFifo()  { clear(); }
+      bool put(const MidiPlayEvent& /*event*/);   // returns true on fifo overflow
+      MidiPlayEvent get();
+      const MidiPlayEvent& peek(int = 0);
       void remove();
       bool isEmpty() const { return size == 0; }
       void clear()         { size = 0, wIndex = 0, rIndex = 0; }

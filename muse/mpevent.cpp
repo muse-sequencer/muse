@@ -105,7 +105,6 @@ bool MEvent::operator<(const MEvent& e) const
       return map[channel()] < map[e.channel()];
       }
 
-
 //---------------------------------------------------------
 //   put
 //    return true on fifo overflow
@@ -153,6 +152,58 @@ const MidiPlayEvent& MidiFifo::peek(int n)
 void MidiFifo::remove()
       {
       rIndex = (rIndex + 1) % MIDI_FIFO_SIZE;
+      // q_atomic_decrement(&size);
+      --size;
+      }
+
+
+//---------------------------------------------------------
+//   put
+//    return true on fifo overflow
+//---------------------------------------------------------
+
+bool MidiRecFifo::put(const MidiPlayEvent& event)
+      {
+      if (size < MIDI_REC_FIFO_SIZE) {
+            fifo[wIndex] = event;
+            wIndex = (wIndex + 1) % MIDI_REC_FIFO_SIZE;
+            // q_atomic_increment(&size);
+            ++size;
+            return false;
+            }
+      return true;
+      }
+
+//---------------------------------------------------------
+//   get
+//---------------------------------------------------------
+
+MidiPlayEvent MidiRecFifo::get()
+      {
+      MidiPlayEvent event(fifo[rIndex]);
+      rIndex = (rIndex + 1) % MIDI_REC_FIFO_SIZE;
+      // q_atomic_decrement(&size);
+      --size;
+      return event;
+      }
+
+//---------------------------------------------------------
+//   peek
+//---------------------------------------------------------
+
+const MidiPlayEvent& MidiRecFifo::peek(int n)
+      {
+      int idx = (rIndex + n) % MIDI_REC_FIFO_SIZE;
+      return fifo[idx];
+      }
+
+//---------------------------------------------------------
+//   remove
+//---------------------------------------------------------
+
+void MidiRecFifo::remove()
+      {
+      rIndex = (rIndex + 1) % MIDI_REC_FIFO_SIZE;
       // q_atomic_decrement(&size);
       --size;
       }

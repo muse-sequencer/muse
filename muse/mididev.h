@@ -28,7 +28,10 @@ class Xml;
 class MidiDevice {
       MPEventList _stuckNotes;
       MPEventList _playEvents;
-      iMPEvent _nextPlayEvent;
+      
+      // Removed p4.0.15 Tim.
+      //iMPEvent _nextPlayEvent;
+      
       ///MREventList _recordEvents;
       ///MREventList _recordEvents2;
       
@@ -53,10 +56,14 @@ class MidiDevice {
       //bool _sysexWritingChunks;
       bool _sysexReadingChunks;
       
+      // Fifo for midi events sent from gui direct to midi port:
+      MidiFifo eventFifo;  // p4.0.15
+      
       // Recording fifo. 
       //MidiFifo _recordFifo;
       // Recording fifos. To speed up processing, one per channel plus one special system 'channel' for channel-less events like sysex.
-      MidiFifo _recordFifo[MIDI_CHANNELS + 1];
+      //MidiFifo _recordFifo[MIDI_CHANNELS + 1];
+      MidiRecFifo _recordFifo[MIDI_CHANNELS + 1];   // p4.0.15
       
       RouteList _inRoutes, _outRoutes;
       
@@ -109,6 +116,9 @@ class MidiDevice {
       virtual void recordEvent(MidiRecordEvent&);
 
       virtual bool putEvent(const MidiPlayEvent&);
+      // This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
+      // Since it waits, it should not be used in RT or other time-sensitive threads. p4.0.15
+      bool putEventWithRetry(const MidiPlayEvent&, int /*tries*/ = 2, long /*delayUs*/ = 50000);  // 2 tries, 50 mS by default.
       
       // For Jack-based devices - called in Jack audio process callback
       virtual void collectMidiEvents() {}   
@@ -125,7 +135,7 @@ class MidiDevice {
       //int tmpRecordCount() { return _tmpRecordCount; }
       int tmpRecordCount(const unsigned int ch)     { return _tmpRecordCount[ch]; }
       //MidiFifo& recordEvents() { return _recordFifo; }
-      MidiFifo& recordEvents(const unsigned int ch) { return _recordFifo[ch]; }
+      MidiRecFifo& recordEvents(const unsigned int ch) { return _recordFifo[ch]; }
       bool sysexFIFOProcessed()                     { return _sysexFIFOProcessed; }
       void setSysexFIFOProcessed(bool v)            { _sysexFIFOProcessed = v; }
       //bool sysexWritingChunks() { return _sysexWritingChunks; }
@@ -134,8 +144,10 @@ class MidiDevice {
       void setSysexReadingChunks(bool v) { _sysexReadingChunks = v; }
       //virtual void getEvents(unsigned /*from*/, unsigned /*to*/, int /*channel*/, MPEventList* /*dst*/);
       
-      iMPEvent nextPlayEvent()           { return _nextPlayEvent; }
-      void setNextPlayEvent(iMPEvent i)  { _nextPlayEvent = i; }
+      // Removed p4.0.15 Tim.
+      //iMPEvent nextPlayEvent()           { return _nextPlayEvent; }
+      //void setNextPlayEvent(iMPEvent i)  { _nextPlayEvent = i; }
+      
       bool sendNullRPNParams(int, bool);
       };
 

@@ -68,8 +68,8 @@ MidiControllerList defaultMidiController;
 MidiController veloCtrl("Velocity",                 CTRL_VELOCITY,      0, 127,   0);
 static MidiController pitchCtrl("PitchBend",        CTRL_PITCH,     -8192, +8191, 0);
 static MidiController programCtrl("Program",        CTRL_PROGRAM,       0, 0xffffff, 0);
-// Removed p3.3.37
-//static MidiController mastervolCtrl("MasterVolume", CTRL_MASTER_VOLUME, 0, 0x3fff, 0x3000);
+// Removed p3.3.37 Re-added p4.0.15
+static MidiController mastervolCtrl("MasterVolume", CTRL_MASTER_VOLUME, 0, 0x3fff, 0x3000);
 static MidiController volumeCtrl("MainVolume",      CTRL_VOLUME,        0, 127, 100);
 static MidiController panCtrl("Pan",                CTRL_PANPOT,      -64, 63,    0);
 
@@ -132,8 +132,8 @@ void initMidiController()
       defaultMidiController.add(&veloCtrl);
       defaultMidiController.add(&pitchCtrl);
       defaultMidiController.add(&programCtrl);
-      // Removed p3.3.37
-      //defaultMidiController.add(&mastervolCtrl);
+      // Removed p3.3.37 Re-added p4.0.15
+      defaultMidiController.add(&mastervolCtrl);
       defaultMidiController.add(&volumeCtrl);
       defaultMidiController.add(&panCtrl);
       }

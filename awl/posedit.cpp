@@ -93,7 +93,7 @@ bool PosEdit::event(QEvent* event)
             QKeyEvent* ke = static_cast<QKeyEvent*>(event);
             if (ke->key() == Qt::Key_Return) 
             {
-              //printf("key press event Return\n");   // REMOVE Tim.
+              //printf("key press event Return\n");   
               //enterPressed();
               finishEdit();
               emit returnPressed();
@@ -103,7 +103,7 @@ bool PosEdit::event(QEvent* event)
             
             if (ke->key() == Qt::Key_Escape) 
             {
-              //printf("key press event Escape\n");   // REMOVE Tim.
+              //printf("key press event Escape\n");   
               if(lineEdit())
                 lineEdit()->undo(); 
               // "By default, isAccepted() is set to true, but don't rely on this as subclasses may 
@@ -363,8 +363,8 @@ void PosEdit::fixup(QString& input) const
 
 QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
 {
-      //printf("validate string:%s int:%d\n", s.toLatin1().data(), i);  // REMOVE Tim.
-      //printf("validate string:%s\n", s.toLatin1().data());  // REMOVE Tim.
+      //printf("validate string:%s int:%d\n", s.toLatin1().data(), i);  
+      //printf("validate string:%s\n", s.toLatin1().data());  
       
       QStringList sl = s.split(_smpte ? ':' : '.');
       QValidator::State state;
@@ -436,7 +436,7 @@ QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
         int bm = tm / tb;
 
         validator->setRange(1, 9999);
-        //printf("validate substring 0:%s\n", sl[0].toLatin1().data());  // REMOVE Tim.
+        //printf("validate substring 0:%s\n", sl[0].toLatin1().data());  
         // Special hack because validator says 0000 is intermediate.
         if(sl[0] == "0000")
           return QValidator::Invalid;
@@ -447,7 +447,7 @@ QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
           rv = state;
           
         validator->setRange(1, bm);
-        //printf("validate substring 1:%s\n", sl[1].toLatin1().data());  // REMOVE Tim.
+        //printf("validate substring 1:%s\n", sl[1].toLatin1().data());  
         // Special hack because validator says 00 is intermediate.
         if(sl[1] == "00")
           return QValidator::Invalid;
@@ -458,7 +458,7 @@ QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
           rv = state;
           
         validator->setRange(0, tb-1);
-        //printf("validate substring 2:%s\n", sl[2].toLatin1().data());  // REMOVE Tim.
+        //printf("validate substring 2:%s\n", sl[2].toLatin1().data());  
         state = validator->validate(sl[2], dpos);
         if(state == QValidator::Invalid)
           return state;

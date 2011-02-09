@@ -48,7 +48,7 @@ struct OscControlValue
 {
   //int idx;
   float value;
-  // maybe timestamp, too ?
+  int frame;    // Added p4.0.15
 };
 
 //---------------------------------------------------------

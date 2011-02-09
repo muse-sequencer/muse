@@ -366,12 +366,12 @@ void addRoute(Route src, Route dst)
               for ( ; ir != outRoutes->end(); ++ir) 
               {
                 //if (*i == dst)    // route already there
-                ir->dump(); // REMOVE Tim.
+                ir->dump(); 
                 if (ir->type == Route::TRACK_ROUTE && ir->track == dst.track)     // Does a route to the track exist?
                 {
                   //#ifdef ROUTE_DEBUG
                   fprintf(stderr, "addRoute: src midi port:%d dst audio in track:%s out route already exists. ir->channel:%d |= dst.channel:%d\n", 
-                    src.midiPort, dst.track->name().toLatin1().constData(), ir->channel, dst.channel);  // REMOVE Tim.
+                    src.midiPort, dst.track->name().toLatin1().constData(), ir->channel, dst.channel);  
                   //#endif
                   ir->channel |= dst.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
                   break;
@@ -389,7 +389,7 @@ void addRoute(Route src, Route dst)
                 if (ir->type == Route::MIDI_PORT_ROUTE && ir->midiPort == src.midiPort)  // Does a route to the midi port exist?
                 {
                   fprintf(stderr, "addRoute: src midi port:%d dst audio in track:%s in route already exists. ir->channel:%d |= src.channel:%d\n", 
-                    src.midiPort, dst.track->name().toLatin1().constData(), ir->channel, src.channel);  // REMOVE Tim.
+                    src.midiPort, dst.track->name().toLatin1().constData(), ir->channel, src.channel);  
                   ir->channel |= src.channel;    // Bitwise OR the desired channel bit with the existing bit mask.
                   break;
                 }      
