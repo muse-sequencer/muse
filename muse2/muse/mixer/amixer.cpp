@@ -226,7 +226,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
 /*
 bool AudioMixerApp::event(QEvent* event)
 {
-  printf("AudioMixerApp::event type:%d\n", event->type());   // REMOVE Tim.
+  printf("AudioMixerApp::event type:%d\n", event->type());   
   
   // Let it do the layout now, before we emit.
   QMainWindow::event(event);
@@ -246,7 +246,7 @@ void AudioMixerApp::setSizing()
       {
             //w += (*si)->frameGeometry().width();
             //Strip* s = *si;
-            //printf("AudioMixerApp::setSizing width:%d frame width:%d\n", s->width(), s->frameWidth());  // REMOVE Tim
+            //printf("AudioMixerApp::setSizing width:%d frame width:%d\n", s->width(), s->frameWidth());  
             //w += s->width() + 2 * (s->frameWidth() + s->lineWidth() + s->midLineWidth());
             //w += s->width() + 2 * s->frameWidth();
             w += (*si)->width();
@@ -359,7 +359,7 @@ void AudioMixerApp::updateMixer(UpdateAction action)
                   stripList.erase(ssi);
                   }
                   
-            //printf("AudioMixerApp::updateMixer STRIP_REMOVED\n");  // REMOVE Tim
+            //printf("AudioMixerApp::updateMixer STRIP_REMOVED\n");  
             
             //setMaximumWidth(STRIP_WIDTH * stripList.size() + __WIDTH_COMPENSATION);  
 ///            int w = computeWidth();      
@@ -410,7 +410,7 @@ void AudioMixerApp::updateMixer(UpdateAction action)
                 addStrip(*i, idx++);
             }
       
-            //printf("AudioMixerApp::updateMixer UPDATE_MIDI\n");  // REMOVE Tim
+            //printf("AudioMixerApp::updateMixer UPDATE_MIDI\n");  
             
             //setMaximumWidth(STRIP_WIDTH * stripList.size() + __WIDTH_COMPENSATION);  
 ///            int w = computeWidth();      
@@ -500,7 +500,7 @@ void AudioMixerApp::updateMixer(UpdateAction action)
             addStrip(*i, idx++);
       }
       
-      //printf("AudioMixerApp::updateMixer other\n");  // REMOVE Tim
+      //printf("AudioMixerApp::updateMixer other\n");  
       
       //setMaximumWidth(STRIP_WIDTH * idx + __WIDTH_COMPENSATION);     
 ///      int w = computeWidth();      

@@ -53,7 +53,7 @@ void ShortcutCaptureDialog::keyPressEvent(QKeyEvent* e)
       bool ispunct = keychar.isPunct();
       bool issymbol = keychar.isSymbol();
       //printf("Key:%x, alt:%d, ctrl:%d shift:%d ispunct:%d issymbol:%d text:%s\n",
-      //  e->key(), alt, ctrl, shift, ispunct, issymbol, e->text().toLatin1().constData());  // REMOVE Tim.
+      //  e->key(), alt, ctrl, shift, ispunct, issymbol, e->text().toLatin1().constData());  
       
       temp_key += (shift ? (int)Qt::SHIFT : 0);    // (int) Tim
       temp_key += (ctrl  ? (int)Qt::CTRL  : 0);    //

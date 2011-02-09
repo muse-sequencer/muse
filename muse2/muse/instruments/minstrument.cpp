@@ -16,6 +16,9 @@
 
 #include "minstrument.h"
 #include "midiport.h"
+#include "mididev.h"  // p4.0.15
+#include "audio.h"    // p4.0.15
+#include "midi.h"    // p4.0.15
 #include "globals.h"
 #include "xml.h"
 #include "event.h"
@@ -508,22 +511,39 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
 //---------------------------------------------------------
 
 void MidiInstrument::reset(int portNo, MType)
+{
+      MidiPort* port = &midiPorts[portNo];
+      //if (port == 0)
+      //      return;
+      if(port->device() == 0)  // p4.0.15
       {
+        //printf("MidiInstrument::reset port device is 0\n"); 
+        return;
+      }  
       MidiPlayEvent ev;
       ev.setType(0x90);
-      MidiPort* port = &midiPorts[portNo];
-      if (port == 0)
-            return;
       ev.setPort(portNo);
-      for (int chan = 0; chan < MIDI_CHANNELS; ++chan) {
+      ev.setTime(0);          // p4.0.15
+      //ev.setTime(audio->getFrameOffset() + audio->pos().frame());  
+      
+      for (int chan = 0; chan < MIDI_CHANNELS; ++chan) 
+      {
             ev.setChannel(chan);
-            for (int pitch = 0; pitch < 128; ++pitch) {
+            for (int pitch = 0; pitch < 128; ++pitch) 
+            {
                   ev.setA(pitch);
                   ev.setB(0);
+                  //printf("MidiInstrument::reset adding event channel:%d pitch:%d\n", chan, pitch); 
+                  //ev.dump();    
+                  
                   port->sendEvent(ev);
-                  }
+                  // Changed to use play events list instead of putEvent FIFO.
+                  // These loops send 2048 events, which is more than our FIFO (or Jack buffer) can handle!   p4.0.15 Tim.
+                  // Nope, instead, increased FIFO sizes to accommodate.
+                  //port->device()->playEvents()->add(ev);
             }
       }
+}
 
 //---------------------------------------------------------
 //   readPatchGroup
@@ -770,7 +790,7 @@ void MidiInstrument::write(int level, Xml& xml)
       xml.put(">");
 
       // -------------
-      // What about Init, Reset, State, and InitScript ?
+      // TODO: What about Init, Reset, State, and InitScript ?
       // -------------
       
       //std::vector<PatchGroup>* pg = groups();

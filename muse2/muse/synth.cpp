@@ -851,6 +851,31 @@ void SynthI::preProcessAlways()
   if(_sif)
     _sif->preProcessAlways();
   _processed = false;  
+  
+  // TODO: p4.0.15 Tim. Erasure of already-played events was moved from Audio::processMidi() 
+  //  to each of the midi devices - ALSA, Jack, or Synth in SynthI::getData() below. 
+  // If a synth track is 'off', AudioTrack::copyData() does not call our getData().
+  // So there is no processing of midi play events, or putEvent FIFOs.
+  // Hence the play events list and putEvent FIFOs will then accumulate events, sometimes
+  //  thousands. Only when the Synth track is turned on again, are all these events 
+  //  processed. Whether or not we want this is a question.
+  //
+  // If we DON'T want the events to accumulate, we NEED this following piece of code.
+  // Without this code: When a song is loaded, if a Synth track is off, various controller init events
+  //  can remain queued up so that when the Synth track is turned on, those initializations 
+  //  will be processed. Otherwise we, or the user, will have to init every time the track is turned on.
+  // Con: Thousands of events can accumulate. For example selecting "midi -> Reset Instr." sends a flood 
+  //  of 2048 note-off events, one for each note in each channel! Each time, the 2048, 4096, 8192 etc. 
+  //  events remain in the list.
+  // Variation: Maybe allow certain types, or groups, of events through, especially bulk init or note offs.
+  if(off())
+  {
+    // Clear any accumulated play events.
+    playEvents()->clear();
+    // Eat up any fifo events.
+    while(!eventFifo.isEmpty()) 
+      eventFifo.get();  
+  }    
 }
 
 void MessSynthIF::preProcessAlways()
@@ -872,11 +897,21 @@ bool SynthI::getData(unsigned pos, int ports, unsigned n, float** buffer)
       MidiPort* mp = (p != -1) ? &midiPorts[p] : 0;
       MPEventList* el = playEvents();
                
-      iMPEvent ie = nextPlayEvent();
+      ///iMPEvent ie = nextPlayEvent();
+      iMPEvent ie = el->begin();      // p4.0.15 Tim.
       
       ie = _sif->getData(mp, el, ie, pos, ports, n, buffer);
       
-      setNextPlayEvent(ie);
+      ///setNextPlayEvent(ie);
+      // p4.0.15 We are done with these events. Let us erase them here instead of Audio::processMidi.
+      // That way we can simply set the next play event to the beginning.
+      // This also allows other events to be inserted without the problems caused by the next play event 
+      //  being at the 'end' iterator and not being *easily* set to some new place beginning of the newer insertions. 
+      // The way that MPEventList sorts made it difficult to predict where the iterator of the first newly inserted items was.
+      // The erasure in Audio::processMidi was missing some events because of that.
+      el->erase(el->begin(), ie);
+      // setNextPlayEvent(el->begin());   // Removed p4.0.15
+      
       return true;
       }
 

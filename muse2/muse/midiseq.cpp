@@ -54,9 +54,11 @@ void MidiSeq::processMsg(const ThreadMsg* m)
       {
       AudioMsg* msg = (AudioMsg*)m;
       switch(msg->id) {
-            case MS_PROCESS:
-                  audio->processMidi();
-                  break;
+            // This does not appear to be used anymore. Was sent in Audio::process1, 
+            //  now Audio::processMidi is called directly. p4.0.15 Tim.
+            //case MS_PROCESS:
+            //      audio->processMidi();
+            //      break;
             case SEQM_SEEK:
                   processSeek();
                   break;
@@ -149,7 +151,7 @@ void MidiSeq::processStop()
                   pel->add(ev);
                   }
             sel->clear();
-            md->setNextPlayEvent(pel->begin());
+            //md->setNextPlayEvent(pel->begin());  // Removed p4.0.15
             }
       }
 
@@ -188,8 +190,11 @@ void MidiSeq::processSeek()
                         }
                   sel->clear();
                   }
-            else
-                  el->erase(el->begin(), dev->nextPlayEvent());
+            //else
+                    // Removed p4.0.15 Device now leaves beginning pointing at next event,
+                    //  immediately after playing some notes.  
+                    // NOTE: This removal needs testing. I'm not sure about this.
+            //      el->erase(el->begin(), dev->nextPlayEvent());  
             
             for (iMidiCtrlValList ivl = cll->begin(); ivl != cll->end(); ++ivl) {
                   MidiCtrlValList* vl = ivl->second;
@@ -208,7 +213,7 @@ void MidiSeq::processSeek()
                       el->add(MidiPlayEvent(0, port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val));
                   }
                 }
-            dev->setNextPlayEvent(el->begin());
+            //dev->setNextPlayEvent(el->begin());    // Removed p4.0.15
             }
       }
 
@@ -543,7 +548,7 @@ void MidiSeq::processTimerTick()
             return;
       }
       if (midiBusy) {
-            // we hit audio: midiSeq->msgProcess
+            // we hit audio: midiSeq->msgProcess (actually this has been audio->processMidi for some time now - Tim)
             // miss this timer tick
             return;
             }
@@ -650,7 +655,6 @@ void MidiSeq::processTimerTick()
                       printf("Dropped %d midi out clock(s). curTick:%d midiClock:%d div:%d\n", perr, curTick, midiClock, div);
                   //}
                     
-                  // Keeping in mind how (receiving end) Phase Locked Loops (usually) operate...
                   // Increment as if we had caught the timer exactly on the mark, even if the timer
                   //  has passed beyond the mark, or even beyond 2 * div.
                   // If we missed some chances to send clock, resume the count where it would have been, 
@@ -690,7 +694,7 @@ void MidiSeq::processTimerTick()
       //
       for (iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) {
             MidiDevice* md = *id;
-            // Is it a Jack midi device? p3.3.36 
+            // Is it a Jack midi device? They are iterated in Audio::processMidi. p3.3.36 
             //MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(md);
             //if(mjd)
             if(md->deviceType() == MidiDevice::JACK_MIDI)
@@ -702,7 +706,10 @@ void MidiSeq::processTimerTick()
             MPEventList* el = md->playEvents();
             if (el->empty())
                   continue;
-            iMPEvent i = md->nextPlayEvent();
+            
+            ///iMPEvent i = md->nextPlayEvent();
+            iMPEvent i = el->begin();            // p4.0.15 Tim.
+            
             for (; i != el->end(); ++i) {
                   // p3.3.25
                   // If syncing to external midi sync, we cannot use the tempo map.
@@ -722,7 +729,15 @@ void MidiSeq::processTimerTick()
                               break;
                         }
                   }
-            md->setNextPlayEvent(i);
+            ///md->setNextPlayEvent(i);
+            // p4.0.15 We are done with these events. Let us erase them here instead of Audio::processMidi.
+            // That way we can simply set the next play event to the beginning.
+            // This also allows other events to be inserted without the problems caused by the next play event 
+            //  being at the 'end' iterator and not being *easily* set to some new place beginning of the newer insertions. 
+            // The way that MPEventList sorts made it difficult to predict where the iterator of the first newly inserted items was.
+            // The erasure in Audio::processMidi was missing some events because of that.
+            el->erase(el->begin(), i);
+            //md->setNextPlayEvent(el->begin());  // Removed p4.0.15
             }
       }
 
@@ -758,7 +773,8 @@ void MidiSeq::msgSetMidiDevice(MidiPort* port, MidiDevice* device)
       Thread::sendMsg(&msg);
       }
 
-void MidiSeq::msgProcess()      { msgMsg(MS_PROCESS); }
+// This does not appear to be used anymore. Was called in Audio::process1, now Audio::processMidi is called directly. p4.0.15 Tim.
+//void MidiSeq::msgProcess()      { msgMsg(MS_PROCESS); }
 void MidiSeq::msgSeek()         { msgMsg(SEQM_SEEK); }
 void MidiSeq::msgStop()         { msgMsg(MS_STOP); }
 void MidiSeq::msgSetRtc()       { msgMsg(MS_SET_RTC); }

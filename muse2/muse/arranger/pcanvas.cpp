@@ -1731,7 +1731,7 @@ void PartCanvas::drawWavePart(QPainter& p,
                   //
                   //    combine multi channels into one waveform
                   //
-                  //printf("PartCanvas::drawWavePart i:%d ex:%d\n", i, ex);  // REMOVE Tim.
+                  //printf("PartCanvas::drawWavePart i:%d ex:%d\n", i, ex);  
                   
                   for (; i < ex; i++) {
                         SampleV sa[channels];

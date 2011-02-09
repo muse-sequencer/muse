@@ -1050,7 +1050,7 @@ void DrumCanvas::dragEnterEvent(QDragEnterEvent* event)
 
 void DrumCanvas::dragMoveEvent(QDragMoveEvent*)
       {
-      //printf("drag move %x\n", this);   // REMOVE Tim
+      //printf("drag move %x\n", this);   
       //event->acceptProposedAction();  
       }
 
@@ -1060,7 +1060,7 @@ void DrumCanvas::dragMoveEvent(QDragMoveEvent*)
 
 void DrumCanvas::dragLeaveEvent(QDragLeaveEvent*)
       {
-      //printf("drag leave\n");           // REMOVE Tim
+      //printf("drag leave\n");           
       //event->acceptProposedAction();  
       }
 
@@ -1073,7 +1073,7 @@ void DrumCanvas::viewDropEvent(QDropEvent* event)
       {
       QString text;
       if (event->source() == this) {
-            printf("local DROP\n");      // REMOVE Tim  
+            printf("local DROP\n");      
             //event->acceptProposedAction();     
             //event->ignore();                     // TODO CHECK Tim.
             return;

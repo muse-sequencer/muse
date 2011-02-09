@@ -28,7 +28,7 @@
 //MidiSyncPort midiSyncPorts[MIDI_PORTS];
 int volatile curMidiSyncInPort = -1;
 
-bool debugSync = true;
+bool debugSync = false;
 
 int mtcType     = 1;
 MTC mtcOffset;
@@ -637,7 +637,6 @@ void MidiSeq::mtcInputQuarter(int port, unsigned char c)
       {
       static int hour, min, sec, frame;
 
-      // p3.3.28
       //printf("MidiSeq::mtcInputQuarter c:%h\n", c);
       
       int valL = c & 0xf;
@@ -924,7 +923,6 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   if(port != curMidiSyncInPort)
                     break;
                   
-                  // p3.3.31
                   //printf("midi clock:%f\n", curTime());
                   
                   // Re-transmit clock to other devices if clock out turned on.
@@ -1235,7 +1233,6 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   if (debugSync)
                         printf("   start\n");
                   
-                  // p3.3.31
                   //printf("midi start:%f\n", curTime());
                   
                   if (1 /* !audio->isPlaying()*/ /*state == IDLE*/) {
@@ -1285,7 +1282,6 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   if (debugSync)
                         printf("realtimeSystemInput continue\n");
                   
-                  // p3.3.31
                   //printf("continue:%f\n", curTime());
                   
                   if (1 /* !audio->isPlaying() */ /*state == IDLE */) {
@@ -1321,7 +1317,6 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                     //lastStoppedBeat = (audio->tickPos() * 4) / config.division;
                     //curExtMidiSyncTick = (config.division * lastStoppedBeat) / 4;
                     
-                    // p3.3.31
                     //printf("stop:%f\n", curTime());
                     
                     if (audio->isPlaying() /*state == PLAY*/) {

@@ -918,7 +918,7 @@ QSize WidgetStack::minimumSizeHint() const
                   s = s.expandedTo(ss);
                   }
             }
-      //printf("WidgetStack::minimumSizeHint width:%d height:%d\n", s.width(), s.height());  // REMOVE Tim.
+      //printf("WidgetStack::minimumSizeHint width:%d height:%d\n", s.width(), s.height());  
       return s;
       }
 
@@ -1054,13 +1054,13 @@ void Arranger::switchInfo(int n)
 /*
 QSize WidgetStack::minimumSize() const 
 { 
-  printf("WidgetStack::minimumSize\n");  // REMOVE Tim.
+  printf("WidgetStack::minimumSize\n");  
   return minimumSizeHint(); 
 }
 
 int WidgetStack::minimumHeight() const 
 { 
-  printf("WidgetStack::minimumHeight\n");  // REMOVE Tim.  
+  printf("WidgetStack::minimumHeight\n");  
   return minimumSizeHint().height(); 
 }
 */

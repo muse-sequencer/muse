@@ -184,6 +184,7 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
           continue;
         
         //DssiSynthIF* instance = (DssiSynthIF*)synti->sif();
+        // TODO: Fix this dynamic cast - it may be a slowdown.
         DssiSynthIF* instance = dynamic_cast<DssiSynthIF*>(synti->sif());
         if(!instance)
           break;

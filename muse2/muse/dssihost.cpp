@@ -1728,83 +1728,6 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         // Since we absorbed the message as a ladspa control change, return false - the event is not filled.
         return false;
       //}
-     
-      // p3.3.39 Removed.
-      // "Hosts should not deliver through run_synth any MIDI controller events that have already
-      //   been mapped to control port values."
-      // D'oh! My mistake, did not understand that the mapping is only a *request* that the app map MIDI 
-      //  controller events to a LADSPA port, and must do the conversion, not to actually *send* them via MIDI...
-      /*
-      else
-      {
-        switch(midiControllerType(a))
-        {
-          case MidiController::Controller7:
-                #ifdef DSSI_DEBUG 
-                //fprintf(stderr, "DssiSynthIF::processEvent midi event is Controller7. Changing to DSSI_CC type. Current dataA:%d\n", a);
-                fprintf(stderr, "DssiSynthIF::processEvent midi event is Controller7. Current dataA:%d\n", a);
-                #endif  
-                //a = DSSI_CC(a);
-                a &= 0x7f;
-                ctlnum = DSSI_CC_NUMBER(ctlnum);
-                break;
-          case MidiController::NRPN14:
-                #ifdef DSSI_DEBUG 
-                //  fprintf(stderr, "DssiSynthIF::processEvent midi event is NRPN. Changing to DSSI_NRPN type. Current dataA:%d\n", a);
-                fprintf(stderr, "DssiSynthIF::processEvent midi event is NRPN. Current dataA:%d\n", a);
-                #endif  
-                //a = DSSI_NRPN(a - CTRL_NRPN14_OFFSET);
-                a &= 0x3fff;
-                ctlnum = DSSI_NRPN_NUMBER(ctlnum);
-                break;
-          case MidiController::Controller14:
-                a &= 0x7f;
-                break;
-          case MidiController::Pitch:
-                #ifdef DSSI_DEBUG 
-                fprintf(stderr, "DssiSynthIF::processEvent midi event is Pitch. DataA:%d\n", a);
-                #endif
-                a &= 0x3fff;
-                break;
-          case MidiController::Program:
-                #ifdef DSSI_DEBUG 
-                fprintf(stderr, "DssiSynthIF::processEvent midi event is Program. DataA:%d\n", a);
-                #endif
-                a &= 0x3fff;
-                break;
-          case MidiController::RPN:
-          case MidiController::RPN14:
-          case MidiController::NRPN:
-          default: 
-                #ifdef DSSI_DEBUG 
-                fprintf(stderr, "DssiSynthIF::processEvent midi event is RPN, RPN14, or NRPN type. DataA:%d\n", a);
-                #endif
-                break;      
-        }
-        
-        // Verify it's the same number.
-        if(ctlnum != a)
-        {
-          #ifdef DSSI_DEBUG 
-          printf("DssiSynthIF::processEvent Error! ctlnum:%d != event dataA:%d\n", ctlnum, a);
-          #endif
-          // Event not filled. Return false.
-          
-          // TEMP: TODO: Turn on later
-          //return false;
-        }  
-        
-        // Fill the event.
-        // FIXME: Darn! We get to this point, but no change in sound (later). Nothing happens, at least with LTS - 
-        //         which is the only one I found so far with midi controllers.
-        //        Tried with/without converting to DSSI_CC and DSSI_NRPN. What could be wrong here?
-        #ifdef DSSI_DEBUG 
-        printf("DssiSynthIF::processEvent filling event chn:%d dataA:%d dataB:%d\n", chn, a, b);
-        #endif
-        snd_seq_ev_set_controller(event, chn, a, b);
-      }
-      */
-      
     }
     break;
     case ME_PITCHBEND:
@@ -1910,7 +1833,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
 //---------------------------------------------------------
 
 //void DssiSynthIF::getData(MidiEventList* el, unsigned pos, int ch, unsigned samples, float** data)
-iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent /*i*/, unsigned pos, int ports, unsigned n, float** buffer)
+iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, unsigned pos, int ports, unsigned n, float** buffer)
 {
   //#ifdef DSSI_DEBUG 
   //  fprintf(stderr, "DssiSynthIF::getData elsize:%d pos:%d ports:%d samples:%d processed already?:%d\n", el->size(), pos, ports, n, synti->processed());
@@ -1920,11 +1843,11 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent /*i*/,
   
   // FIXME: Add 10(?) for good luck in case volatile size changes (increments) while we're processing.
   //unsigned long nevents = el->size();
-  unsigned long nevents = el->size() + synti->putFifo.getSize() + 10; 
+  unsigned long nevents = el->size() + synti->eventFifo.getSize() + 10; 
 
   /*
-  while (!synti->putFifo.isEmpty()) {
-        MidiEvent event = synti->putFifo.get();
+  while (!synti->eventFifo.isEmpty()) {
+        MidiEvent event = synti->eventFifo.get();
         printf("Dssi: FIFO\n");
         }
   */
@@ -1933,21 +1856,14 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent /*i*/,
   memset(events, 0, sizeof(events));
   nevents = 0;
 
-  //int curPos      = pos;
-  //unsigned endPos = pos + samples;
   unsigned endPos = pos + n;
-  //int off         = pos;
   int frameOffset = audio->getFrameOffset();
   
-  //iMidiEvent i = el->begin();
-  iMPEvent i = el->begin();
+  //iMPEvent i = el->begin();     // Removed p4.0.15
   
   // Process event list events...
   for(; i != el->end(); ++i) 
   {
-    //if(i->time() >= endPos)                // Doesn't work, at least here in muse-1. The event times are all 
-                                            //  just slightly after the endPos, EVEN IF transport is stopped.
-                                            // So it misses all the notes.
     if(i->time() >= (endPos + frameOffset))  // NOTE: frameOffset? Tested, examined printouts of times: Seems OK for playback.
       break;
       
@@ -1987,23 +1903,56 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent /*i*/,
     }
         
     if(processEvent(*i, &events[nevents]))
+    {
+      // Time-stamp the event.   p4.0.15 Tim.
+      int ft = i->time() - frameOffset - pos;
+      if(ft < 0)
+        ft = 0;
+      if (ft >= (int)segmentSize) 
+      {
+        printf("DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d (seg=%d)\n", i->time(), pos, frameOffset, ft, segmentSize);
+        ///if (ft > (int)segmentSize)
+          ft = segmentSize - 1;
+      }
+      // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count. 
+      //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
+      events[nevents].time.tick = ft;
+      
       ++nevents;
+    }  
   }
   
   // Now process putEvent events...
-  while(!synti->putFifo.isEmpty()) 
+  while(!synti->eventFifo.isEmpty()) 
   {
-    MidiPlayEvent e = synti->putFifo.get();  
+    MidiPlayEvent e = synti->eventFifo.get();  
     
     #ifdef DSSI_DEBUG 
-    fprintf(stderr, "DssiSynthIF::getData putFifo event time:%d\n", e.time());
+    fprintf(stderr, "DssiSynthIF::getData eventFifo event time:%d\n", e.time());
     #endif
     
-    // Set to the current time.
-    // FIXME: FIXME: Wrong - we should be setting some kind of linear realtime wallclock here, not song pos.
-    e.setTime(pos);
+    // Maybe TODO: 
+    //if(e.time() >= (endPos + frameOffset))  
+    //  break;
+    
     if(processEvent(e, &events[nevents]))
+    {
+      // Time-stamp the event.   p4.0.15 Tim.
+      int ft = e.time() - frameOffset - pos;
+      if(ft < 0)
+        ft = 0;
+      if (ft >= (int)segmentSize) 
+      {
+        printf("DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d (seg=%d)\n", e.time(), pos, frameOffset, ft, segmentSize);
+        ///if (ft > (int)segmentSize)
+          ft = segmentSize - 1;
+      }
+      // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count. 
+      //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
+      events[nevents].time.tick = ft;
+      
       ++nevents;
+    }  
   }
   
   // Now process OSC gui input control fifo events.
@@ -2018,6 +1967,8 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent /*i*/,
       continue;
       
     // If there are 'events' in the fifo, get exactly one 'event' per control per process cycle...
+    // TODO: The OSC events are now time-stamped. Split up the processing below between parameter changes
+    //        and get rid of this slooow control processing!   p4.0.15
     if(!cfifo->isEmpty()) 
     {
       OscControlValue v = cfifo->get();  
@@ -2041,40 +1992,9 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent /*i*/,
     }
   }  
   #endif
-  
-/*  // This is from MESS... Tried this here, didn't work, need to re-adapt, try again.
-    int evTime = i->time(); 
-    if(evTime == 0) 
-    {
-      printf("DssiSynthIF::getData - time is 0!\n");
-      //continue;
-      evTime=frameOffset; // will cause frame to be zero, problem?
-    }
-    
-    int frame = evTime - frameOffset;
-      
-    if(frame >= endPos) 
-    {
-      printf("DssiSynthIF::getData frame > endPos!! frame = %d >= endPos %d, i->time() %d, frameOffset %d curPos=%d\n", frame, endPos, i->time(), frameOffset,curPos);
-      continue;
-    }
-    
-    if(frame > curPos) 
-    {
-      if(frame < pos)
-        printf("DssiSynthIF::getData should not happen: missed event %d\n", pos -frame);
-      else 
-      {
-*/        
-      
-/*     
-      }
-      curPos = frame;
-    }  
-*/  
-//  }
 
-  el->erase(el->begin(), i);
+  ///el->erase(el->begin(), i);      // Removed p4.0.15 Let SynthI::getData() do this.
+  
   //END: Process midi events
   
   //BEGIN: Run the synth
@@ -2197,7 +2117,7 @@ bool DssiSynthIF::putEvent(const MidiPlayEvent& ev)
       if (midiOutputTrace)
             ev.dump();
       
-      return synti->putFifo.put(ev);
+      return synti->eventFifo.put(ev);
       
       //return false;
       }
@@ -2599,6 +2519,10 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
     OscControlValue cv;
     //cv.idx = cport;
     cv.value = value;
+    // Time-stamp the event. Looks like no choice but to use the (possibly slow) call to gettimeofday via timestamp(),
+    //  because these are asynchronous events arriving from OSC.  timestamp() is more or less an estimate of the
+    //  current frame. (This is exactly how ALSA events are treated when they arrive in our ALSA driver.) p4.0.15 Tim. 
+    cv.frame = audio->timestamp();  
     if(cfifo->put(cv))
     {
       fprintf(stderr, "DssiSynthIF::oscControl: fifo overflow: in control number:%ld\n", cport);

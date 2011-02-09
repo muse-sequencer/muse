@@ -19,7 +19,7 @@
 #include "route.h"
 
 class QString;
-class MidiFifo;
+//class MidiFifo;
 class MidiRecordEvent;
 class MidiPlayEvent;
 //class RouteList;
@@ -93,7 +93,7 @@ class MidiJackDevice : public MidiDevice {
    private:
       // fifo for midi events sent from gui
       // direct to midi port:
-      MidiFifo eventFifo;
+      //MidiFifo eventFifo;  // Moved into MidiDevice p4.0.15
 
       //static int _nextOutIdNum;
       //static int _nextInIdNum;
@@ -109,7 +109,7 @@ class MidiJackDevice : public MidiDevice {
       virtual void close();
       //bool putEvent(int*);
       
-      void processEvent(const MidiPlayEvent&);
+      bool processEvent(const MidiPlayEvent&);
       // Port is not midi port, it is the port(s) created for MusE.
       bool queueEvent(const MidiPlayEvent&);
       

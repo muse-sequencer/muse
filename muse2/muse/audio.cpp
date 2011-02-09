@@ -695,8 +695,12 @@ void Audio::processMsg(AudioMsg* msg)
                   break;
 
             case SEQM_RESET_DEVICES:
-                  for (int i = 0; i < MIDI_PORTS; ++i)
-                        midiPorts[i].instrument()->reset(i, song->mtype());
+                  //printf("Audio::processMsg SEQM_RESET_DEVICES\n");  
+                  for (int i = 0; i < MIDI_PORTS; ++i)                         
+                  {      
+                    if(!midiPorts[i].device()) continue;                        // p4.0.15
+                    midiPorts[i].instrument()->reset(i, song->mtype());
+                  }      
                   break;
             case SEQM_INIT_DEVICES:
                   initDevices();

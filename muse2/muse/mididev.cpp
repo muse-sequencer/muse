@@ -73,7 +73,7 @@ void MidiDevice::init()
       _rwFlags       = 3;
       _openFlags     = 3;
       _port          = -1;
-      _nextPlayEvent = _playEvents.begin();
+      // _nextPlayEvent = _playEvents.begin(); // Removed p4.0.15 Tim.
       }
 
 //---------------------------------------------------------
@@ -443,9 +443,34 @@ bool MidiDevice::sendNullRPNParams(int chn, bool nrpn)
 }
 
 //---------------------------------------------------------
+//   putEventWithRetry
+//    return true if event cannot be delivered
+//    This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
+//    NOTE: Since it waits, it should not be used in RT or other time-sensitive threads. p4.0.15 Tim.
+//---------------------------------------------------------
+
+bool MidiDevice::putEventWithRetry(const MidiPlayEvent& ev, int tries, long delayUs)
+{
+  // TODO: Er, probably not the best way to do this.
+  //       Maybe try to correlate with actual audio buffer size instead of blind time delay.
+  for( ; tries > 0; --tries)
+  { 
+    if(!putEvent(ev))  // Returns true if event cannot be delivered.
+      return false;
+      
+    bool sleepOk = -1;
+    while(sleepOk == -1)
+      sleepOk = usleep(delayUs);   // FIXME: usleep is supposed to be depricated!
+  }  
+  return true;
+}
+      
+//---------------------------------------------------------
 //   putEvent
 //    return true if event cannot be delivered
 //    TODO: retry on controller putMidiEvent
+//    (Note: Since putEvent is virtual and there are different versions, 
+//     a retry facility is now found in putEventWithRetry. p4.0.15 Tim)
 //---------------------------------------------------------
 
 bool MidiDevice::putEvent(const MidiPlayEvent& ev)
