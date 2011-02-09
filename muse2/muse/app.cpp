@@ -4451,11 +4451,15 @@ void MusE::bounceToTrack()
             return;
           }  
       }
+
+      song->setPos(0,song->lPos(),0,true,true);
       song->bounceOutput = out;
       song->bounceTrack = track;
       song->setRecord(true);
       song->setRecordFlag(track, true);
+      track->prepareRecording();
       audio->msgBounce();
+      song->setPlay(true);
       }
 
 //---------------------------------------------------------
@@ -4473,7 +4477,7 @@ void MusE::bounceToFile(AudioOutput* ao)
         if(ol->empty())
         {
           QMessageBox::critical(this,
-              tr("MusE: Bounce to Track"),
+              tr("MusE: Bounce to File"),
               tr("No audio output tracks found")
               );
           return;
@@ -4513,11 +4517,15 @@ void MusE::bounceToFile(AudioOutput* ao)
       if (sf == 0)
             return;
             
+      song->setPos(0,song->lPos(),0,true,true);
       song->bounceOutput = ao;
       ao->setRecFile(sf);
+      printf("ao->setRecFile %d\n", sf);
       song->setRecord(true, false);
       song->setRecordFlag(ao, true);
+      ao->prepareRecording();
       audio->msgBounce();
+      song->setPlay(true);
       }
 
 #ifdef HAVE_LASH

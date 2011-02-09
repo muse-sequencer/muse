@@ -1,3 +1,5 @@
+09.02.2011:
+        - fixed regression with Bounce to File and Bounce to Track (rj)
 08.02.2011:
         - made muse compilable under gcc-4.6. ptrdiff_t type requires inclusion of cstddef. (Orcan)
 31.01.2011:
