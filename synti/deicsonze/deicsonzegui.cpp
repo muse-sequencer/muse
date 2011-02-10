@@ -417,6 +417,12 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
   connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
 
+  QString sharePath(museGlobalShare);
+  // Tim.
+  updateInitSetPath(sharePath + QString("/presets/deicsonze/SutulaBank.dei"));    // Tim.
+  updateBackgroundPixPath(sharePath + QString("/wallpapers/paper2.jpg"));    // Tim.
+  updateBackgroundPixCheckBox(false);
+
   setTextColor(reinterpret_cast<const QColor &>(*tColor));
   setBackgroundColor(reinterpret_cast<const QColor &>(*bColor));
   setEditTextColor(reinterpret_cast<const QColor &>(*etColor));
@@ -439,16 +445,7 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   _enabledPreset = true;
   setEnabledPreset(false);
   
-  // Tim.
-  QString sharePath(museGlobalShare);                            
-  updateInitSetPath
-    (sharePath + QString("/presets/deicsonze/SutulaBank.dei"));    // Tim.
     
-  updateBackgroundPixPath
-    (sharePath + QString("/wallpapers/paper2.jpg"));    // Tim.
-    
-  updateBackgroundPixCheckBox(false);
-  //applyBackgroundPix();
 }
 
 //-----------------------------------------------------------
@@ -1628,7 +1625,6 @@ void DeicsOnzeGui::processEvent(const MidiPlayEvent& ev) {
       break;
     case SYSEX_BACKGROUNDPIXPATH :
       updateBackgroundPixPath(QString((char*)&data[1]));
-      applyBackgroundPix();
       break;
     case SYSEX_UPDATESETGUI :
       setSet();
@@ -4343,6 +4339,7 @@ void DeicsOnzeGui::updateBackgroundPixPath(QString s) {
   imagePathLineEdit->blockSignals(false);
 }
 void DeicsOnzeGui::applyBackgroundPix() {
+  printf("applyBackgroundPix\n");
   QPalette p = this->palette();
   QPixmap pixmap = QPixmap(imagePathLineEdit->text());
   p.setBrush((this)->backgroundRole(), QBrush(pixmap));
