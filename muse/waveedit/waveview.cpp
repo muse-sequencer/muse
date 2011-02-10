@@ -14,6 +14,7 @@
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QMouseEvent>
+#include <QFile>
 
 #include "editgain.h"
 #include "globals.h"
@@ -499,6 +500,15 @@ void WaveView::cmd(int n)
                   selectionStart = selectionStop = 0;
                   redraw();
                   break;
+            case WaveEdit::CMD_EDIT_COPY:
+                  modifyoperation = COPY;
+                  break;
+            case WaveEdit::CMD_EDIT_CUT:
+                  modifyoperation = CUT;
+                  break;
+            case WaveEdit::CMD_EDIT_PASTE:
+                  modifyoperation = PASTE;
+                  break;
 
             case WaveEdit::CMD_MUTE:
                   modifyoperation = MUTE;
@@ -561,7 +571,7 @@ void WaveView::cmd(int n)
             }
 
       if (modifyoperation != -1) {
-            if (selectionStart == selectionStop) {
+            if (selectionStart == selectionStop && modifyoperation!=PASTE) {
                   printf("No selection. Ignoring\n"); //@!TODO: Disable menu options when no selection
                   QMessageBox::information(this, 
                      QString("MusE"),
@@ -643,6 +653,18 @@ void WaveView::modifySelection(int operation, unsigned startpos, unsigned stoppo
       {
          song->startUndo();
 
+         if (operation == PASTE) {
+           // we need to redefine startpos and stoppos
+           if (copiedPart =="")
+             return;
+           SndFile pasteFile(copiedPart);
+           pasteFile.openRead();
+           startpos = pos[0];
+           stoppos = startpos+ pasteFile.samples(); // possibly this is wrong if there are tempo changes
+           pasteFile.close();
+           pos[0]=stoppos;
+         }
+
          WaveSelectionList selection = getSelection(startpos, stoppos);
          for (iWaveSelection i = selection.begin(); i != selection.end(); i++) {
                WaveEventSelection w = *i;
@@ -706,6 +728,20 @@ void WaveView::modifySelection(int operation, unsigned startpos, unsigned stoppo
                      case GAIN:
                            applyGain(file_channels, tmpdata, tmpdatalen, paramA);
                            break;
+                     case CUT:
+                           copySelection(file_channels, tmpdata, tmpdatalen, true, file.format(), file.samplerate());
+                           break;
+                     case COPY:
+                           copySelection(file_channels, tmpdata, tmpdatalen, false, file.format(), file.samplerate());
+                           break;
+                     case PASTE:
+                           {
+                           SndFile pasteFile(copiedPart);
+                           pasteFile.openRead();
+                           pasteFile.seek(tmpdataoffset, 0);
+                           pasteFile.readWithHeap(file_channels, tmpdata, tmpdatalen);
+                           }
+                           break;
 
                      case EDIT_EXTERNAL:
                            editExternal(file.format(), file.samplerate(), file_channels, tmpdata, tmpdatalen);
@@ -735,6 +771,34 @@ void WaveView::modifySelection(int operation, unsigned startpos, unsigned stoppo
          song->endUndo(SC_CLIP_MODIFIED);
          redraw();
       }
+
+//---------------------------------------------------------
+//   copySelection
+//---------------------------------------------------------
+void WaveView::copySelection(unsigned file_channels, float** tmpdata, unsigned length, bool blankData, unsigned format, unsigned sampleRate)
+{
+      if (copiedPart!="") {
+        QFile::remove(copiedPart);
+      }
+      if (!getUniqueTmpfileName(copiedPart)) {
+            return;
+            }
+
+      SndFile tmpFile(copiedPart);
+      tmpFile.setFormat(format, file_channels, sampleRate);
+      tmpFile.openWrite();
+      tmpFile.write(file_channels, tmpdata, length);
+      tmpFile.close();
+
+      if (blankData) {
+        // Set everything to 0!
+        for (unsigned i=0; i<file_channels; i++) {
+              for (unsigned j=0; j<length; j++) {
+                    tmpdata[i][j] = 0;
+                    }
+              }
+        }
+}
 
 //---------------------------------------------------------
 //   muteSelection
