@@ -776,7 +776,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   act_pianoroll->setData(10);
                   QAction *act_mlist = partPopup->addAction(QIcon(*edit_listIcon), tr("list"));
        	          act_mlist->setData(12);
-                  QAction *act_mexport = partPopup->addAction(tr("export"));
+                  QAction *act_mexport = partPopup->addAction(tr("save part to disk"));
                   act_mexport->setData(16);
                   }
                   break;
@@ -785,14 +785,14 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
                   act_dlist->setData(12);
                   QAction *act_drums = partPopup->addAction(QIcon(*edit_drummsIcon), tr("drums"));
                   act_drums->setData(13);
-                  QAction *act_dexport = partPopup->addAction(tr("export"));
+                  QAction *act_dexport = partPopup->addAction(tr("save part to disk"));
                   act_dexport->setData(16);
                   }
                   break;
             case Track::WAVE: {
                   QAction *act_wedit = partPopup->addAction(QIcon(*edit_waveIcon), tr("wave edit"));
                   act_wedit->setData(14);
-                  QAction *act_wexport = partPopup->addAction(tr("export"));
+                  QAction *act_wexport = partPopup->addAction(tr("save part to disk"));
                   act_wexport->setData(16);
                   QAction *act_wfinfo = partPopup->addAction(tr("file info"));
                   act_wfinfo->setData(17);
