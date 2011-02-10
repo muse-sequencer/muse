@@ -42,10 +42,11 @@ class WaveView : public View {
       int endSample;
 
       WavePart* curPart;
+      QString copiedPart;
       int curPartId;
 
       enum { NORMAL, DRAG } mode;
-      enum { MUTE = 0, NORMALIZE, FADE_IN, FADE_OUT, REVERSE, GAIN, EDIT_EXTERNAL }; //!< Modify operations
+      enum { MUTE = 0, NORMALIZE, FADE_IN, FADE_OUT, REVERSE, GAIN, EDIT_EXTERNAL, CUT, COPY, PASTE }; //!< Modify operations
 
       unsigned selectionStart, selectionStop, dragstartx;
 
@@ -69,6 +70,7 @@ class WaveView : public View {
       void fadeOutSelection(unsigned channels, float** data, unsigned length); //!< Linear fade out of selection
       void reverseSelection(unsigned channels, float** data, unsigned length); //!< Reverse selection
       void applyGain(unsigned channels, float** data, unsigned length, double gain); //!< Apply gain to selection
+      void copySelection(unsigned file_channels, float** tmpdata, unsigned tmpdatalen, bool blankData, unsigned format, unsigned sampleRate);
 
       void editExternal(unsigned file_format, unsigned file_samplerate, unsigned channels, float** data, unsigned length);
 

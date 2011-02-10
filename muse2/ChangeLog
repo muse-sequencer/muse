@@ -1,3 +1,5 @@
+10.02.2011:
+        - added cut/copy/paste and keyboard shortcuts to wave editor (rj)
 09.02.2011:
         - fixed regression with Bounce to File and Bounce to Track (rj)
         [[[ By Tim. Marked as p4.0.15 ...

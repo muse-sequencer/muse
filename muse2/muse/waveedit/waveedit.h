@@ -40,6 +40,9 @@ class WaveEdit : public MidiEditor {
       PosLabel* pos2;
       QAction* selectAllAction;
       QAction* selectNoneAction;
+      QAction* cutAction;
+      QAction* copyAction;
+      QAction* pasteAction;
       
       static int _widthInit, _heightInit;
 
@@ -49,6 +52,8 @@ class WaveEdit : public MidiEditor {
       virtual void keyPressEvent(QKeyEvent*);
 
       QMenu* menuFunctions, *select, *menuGain;
+
+      void initShortcuts();
 
    private slots:
       void cmd(int);
@@ -75,6 +80,7 @@ class WaveEdit : public MidiEditor {
 
       enum { CMD_MUTE=0, CMD_NORMALIZE, CMD_FADE_IN, CMD_FADE_OUT, CMD_REVERSE,
              CMD_GAIN_FREE, CMD_GAIN_200, CMD_GAIN_150, CMD_GAIN_75, CMD_GAIN_50, CMD_GAIN_25,
+             CMD_EDIT_COPY, CMD_EDIT_CUT, CMD_EDIT_PASTE,
              CMD_EDIT_EXTERNAL,
              CMD_SELECT_ALL, CMD_SELECT_NONE };
       };

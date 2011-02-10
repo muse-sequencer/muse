@@ -100,6 +100,19 @@ WaveEdit::WaveEdit(PartList* pl)
       
       menuFunctions->addSeparator();
 
+      copyAction = menuEdit->addAction(tr("&Copy"));
+      mapper->setMapping(copyAction, CMD_EDIT_COPY);
+      connect(copyAction, SIGNAL(triggered()), mapper, SLOT(map()));
+
+      cutAction = menuEdit->addAction(tr("C&ut"));
+      mapper->setMapping(cutAction, CMD_EDIT_CUT);
+      connect(cutAction, SIGNAL(triggered()), mapper, SLOT(map()));
+
+      pasteAction = menuEdit->addAction(tr("&Paste"));
+      mapper->setMapping(pasteAction, CMD_EDIT_PASTE);
+      connect(pasteAction, SIGNAL(triggered()), mapper, SLOT(map()));
+
+
       act = menuEdit->addAction(tr("Edit in E&xternal Editor"));
       mapper->setMapping(act, CMD_EDIT_EXTERNAL);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
@@ -226,6 +239,9 @@ WaveEdit::WaveEdit(PartList* pl)
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged1(int)));
+
+
+      initShortcuts();
       
       updateHScrollRange();
       configChanged();
@@ -235,6 +251,15 @@ WaveEdit::WaveEdit(PartList* pl)
         WavePart* part = (WavePart*)(parts()->begin()->second);
         solo->setChecked(part->track()->solo());
       }
+      }
+
+void WaveEdit::initShortcuts()
+      {
+      cutAction->setShortcut(shortcuts[SHRT_CUT].key);
+      copyAction->setShortcut(shortcuts[SHRT_COPY].key);
+      pasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
+      selectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
+      selectNoneAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
       }
 
 //---------------------------------------------------------
