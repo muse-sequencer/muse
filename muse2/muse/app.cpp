@@ -12,6 +12,7 @@
 #include <QSignalMapper>
 #include <QTimer>
 #include <QWhatsThis>
+#include <QSettings>
 
 #include "app.h"
 #include "master/lmaster.h"
@@ -1219,9 +1220,11 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //--------------------------------------------------
       
       tools = addToolBar(tr("File Buttons"));
+      tools->setObjectName("File Buttons");
       tools->addAction(fileNewAction);
       tools->addAction(fileOpenAction);
       tools->addAction(fileSaveAction);
+
       
       //
       //    Whats This
@@ -1233,11 +1236,14 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       tools1 = new EditToolBar(this, arrangerTools);
       addToolBar(tools1);
+      tools1->setObjectName("arrangerTools");
 
       QToolBar* transportToolbar = addToolBar(tr("Transport"));
+      transportToolbar->setObjectName("Transport");
       transportToolbar->addActions(transportAction->actions());
 
       QToolBar* panicToolbar = addToolBar(tr("Panic"));
+      panicToolbar->setObjectName("Panic");
       panicToolbar->addAction(panicAction);
 
       if (realTimePriority < sched_get_priority_min(SCHED_FIFO))
@@ -1560,7 +1566,11 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       }
       song->blockSignals(false);
       loadProjectFile(name, useTemplate, true);
+
       changeConfig(false);
+      QSettings settings("MusE", "MusE-qt");
+      //restoreGeometry(settings.value("MusE/geometry").toByteArray());
+      restoreState(settings.value("MusE/windowState").toByteArray());
 
       song->update();
       }
@@ -2035,6 +2045,10 @@ void MusE::closeEvent(QCloseEvent* event)
                   }
             }
 
+      QSettings settings("MusE", "MusE-qt");
+      //settings.setValue("MusE/geometry", saveGeometry());
+      settings.setValue("MusE/windowState", saveState());
+
       // save "Open Recent" list
       QString prjPath(configPath);
       prjPath += "/projects";
@@ -2046,13 +2060,13 @@ void MusE::closeEvent(QCloseEvent* event)
             fclose(f);
             }
       if(debugMsg)
-        printf("Muse: Exiting JackAudio\n");
+        printf("MusE: Exiting JackAudio\n");
       exitJackAudio();
       if(debugMsg)
-        printf("Muse: Exiting DummyAudio\n");
+        printf("MusE: Exiting DummyAudio\n");
       exitDummyAudio();
       if(debugMsg)
-        printf("Muse: Exiting Metronome\n");
+        printf("MusE: Exiting Metronome\n");
       exitMetronome();
       
       // p3.3.47
@@ -2091,18 +2105,18 @@ void MusE::closeEvent(QCloseEvent* event)
       if(lash_client)
       {
         if(debugMsg)
-          printf("Muse: Disconnecting from LASH\n");
+          printf("MusE: Disconnecting from LASH\n");
         lash_event_t* lashev = lash_event_new_with_type (LASH_Quit);
         lash_send_event(lash_client, lashev);
       }
 #endif      
       
       if(debugMsg)
-        printf("Muse: Exiting Dsp\n");
+        printf("MusE: Exiting Dsp\n");
       AL::exitDsp();
       
       if(debugMsg)
-        printf("Muse: Exiting OSC\n");
+        printf("MusE: Exiting OSC\n");
       exitOSC();
       
       // p3.3.47

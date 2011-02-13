@@ -57,6 +57,7 @@ ToolB toolList[] = {
 EditToolBar::EditToolBar(QWidget* parent, int tools, const char*)
    : QToolBar(tr("Edit Tools"), parent)
       {
+      setObjectName("Edit Tools");
       QActionGroup* action = new QActionGroup(parent);  // Parent needed.
       action->setExclusive(true);
 

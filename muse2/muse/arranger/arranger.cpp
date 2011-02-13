@@ -118,6 +118,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
 
       parent->addToolBarBreak();
       QToolBar* toolbar = parent->addToolBar(tr("Arranger"));
+      toolbar->setObjectName("ArrangerToolbar");
       
       QLabel* label = new QLabel(tr("Cursor"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);

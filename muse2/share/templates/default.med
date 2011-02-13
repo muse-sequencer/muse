@@ -18,8 +18,6 @@
     <bigtimeVisible>0</bigtimeVisible>
     <transportVisible>0</transportVisible>
     <markerVisible>0</markerVisible>
-    <geometryMain x="0" y="0" w="1172" h="489"></geometryMain>
-    <geometryTransport x="0" y="0" w="598" h="88"></geometryTransport>
     <mixer1Visible>0</mixer1Visible>
     <mixer2Visible>0</mixer2Visible>
     <arranger>

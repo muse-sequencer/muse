@@ -20,6 +20,7 @@
 #include <QSizeGrip>
 #include <QToolButton>
 #include <QWhatsThis>
+#include <QSettings>
 
 #include "drumedit.h"
 #include "mtscale.h"
@@ -133,6 +134,10 @@ void DrumEdit::setHeaderToolTips()
 
 void DrumEdit::closeEvent(QCloseEvent* e)
       {
+      QSettings settings("MusE", "MusE-qt");
+      //settings.setValue("Drumedit/geometry", saveGeometry());
+      settings.setValue("Drumedit/windowState", saveState());
+
       //Store values of the horizontal splitter
       QList<int> sizes = split2->sizes();
       QList<int>::iterator it = sizes.begin();
@@ -245,6 +250,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       //---------------------------------------------------
 
       tools = addToolBar(tr("Drum tools"));
+      tools->setObjectName("Drum tools");
       
       QToolButton *ldm = new QToolButton();
       ldm->setToolTip(tr("Load Drummap"));
@@ -280,9 +286,11 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       addToolBar(tools2);
 
       QToolBar* panicToolbar = addToolBar(tr("panic"));         
+      panicToolbar->setObjectName("panic");
       panicToolbar->addAction(panicAction);
       
       QToolBar* transport = addToolBar(tr("transport"));
+      transport->setObjectName("transport");
       transport->addActions(transportAction->actions());
       
       addToolBarBreak();
@@ -451,6 +459,10 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       if(pos > MAXINT)
         pos = MAXINT;
       hscroll->setOffset((int)pos);
+
+      QSettings settings("MusE", "MusE-qt");
+      //restoreGeometry(settings.value("Drumedit/geometry").toByteArray());
+      restoreState(settings.value("Drumedit/windowState").toByteArray());
       }
 
 //---------------------------------------------------------
