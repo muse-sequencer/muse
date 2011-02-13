@@ -1246,6 +1246,11 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       panicToolbar->setObjectName("Panic");
       panicToolbar->addAction(panicAction);
 
+      
+      //rlimit lim;
+      //getrlimit(RLIMIT_RTPRIO, &lim);
+      //printf("RLIMIT_RTPRIO soft:%d hard:%d\n", lim.rlim_cur, lim.rlim_max);    // Reported 80, 80 even with non-RT kernel.
+      
       if (realTimePriority < sched_get_priority_min(SCHED_FIFO))
             realTimePriority = sched_get_priority_min(SCHED_FIFO);
       else if (realTimePriority > sched_get_priority_max(SCHED_FIFO))
