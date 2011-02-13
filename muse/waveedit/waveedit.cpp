@@ -5,6 +5,22 @@
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
 //=========================================================
 
+#include <QMenu>
+#include <QSignalMapper>
+#include <QToolBar>
+#include <QToolButton>
+#include <QLayout>
+#include <QSizeGrip>
+#include <QScrollBar>
+#include <QLabel>
+#include <QSlider>
+#include <QMenuBar>
+#include <QAction>
+#include <QCloseEvent>
+#include <QResizeEvent>
+#include <QKeyEvent>
+#include <QSettings>
+
 #include "app.h"
 #include "xml.h"
 #include "waveedit.h"
@@ -21,20 +37,6 @@
 #include "icons.h"
 #include "shortcuts.h"
 
-#include <QMenu>
-#include <QSignalMapper>
-#include <QToolBar>
-#include <QToolButton>
-#include <QLayout>
-#include <QSizeGrip>
-#include <QScrollBar>
-#include <QLabel>
-#include <QSlider>
-#include <QMenuBar>
-#include <QAction>
-#include <QCloseEvent>
-#include <QResizeEvent>
-#include <QKeyEvent>
 
 extern QColor readColor(Xml& xml);
 
@@ -47,6 +49,9 @@ int WaveEdit::_heightInit = 400;
 
 void WaveEdit::closeEvent(QCloseEvent* e)
       {
+      QSettings settings("MusE", "MusE-qt");
+      //settings.setValue("Waveedit/geometry", saveGeometry());
+      settings.setValue("Waveedit/windowState", saveState());
       emit deleted((unsigned long)this);
       e->accept();
       }
@@ -148,21 +153,25 @@ WaveEdit::WaveEdit(PartList* pl)
       connect(selectNoneAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
       //---------ToolBar----------------------------------
-      tools = addToolBar(tr("Wave edit tools"));          
+      tools = addToolBar(tr("Wave edit tools"));
+      tools->setObjectName("Wave edit tools");
+
       tools->addActions(undoRedo->actions());
 
       connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
       //--------------------------------------------------
       //    Transport Bar
-      QToolBar* transport = addToolBar(tr("transport"));          
+      QToolBar* transport = addToolBar(tr("transport"));
+      transport->setObjectName("transport");
       transport->addActions(transportAction->actions());
 
       //--------------------------------------------------
       //    ToolBar:   Solo  Cursor1 Cursor2
 
       addToolBarBreak();
-      tb1 = addToolBar(tr("Pianoroll tools"));          
+      tb1 = addToolBar(tr("Pianoroll tools"));
+      tb1->setObjectName("Pianoroll tools");
 
       //tb1->setLabel(tr("weTools"));
       solo = new QToolButton();
@@ -251,6 +260,10 @@ WaveEdit::WaveEdit(PartList* pl)
         WavePart* part = (WavePart*)(parts()->begin()->second);
         solo->setChecked(part->track()->solo());
       }
+      QSettings settings("MusE", "MusE-qt");
+      //restoreGeometry(settings.value("Waveedit/geometry").toByteArray());
+      restoreState(settings.value("Waveedit/windowState").toByteArray());
+
       }
 
 void WaveEdit::initShortcuts()

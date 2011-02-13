@@ -1,3 +1,9 @@
+13.02.2011:
+        - restore toolbar locations for main window and editors (rj)
+        - fixed some layout issues in general settings (rj)
+        - removed window geometry from default template, TODO add a menu option for creating
+          templates, which might not contain certain types of data, including geometry (rj)
+        - fixed bug if jack zombifies during project load which led to a crash (rj)
 10.02.2011:
         - added cut/copy/paste and keyboard shortcuts to wave editor (rj)
 09.02.2011:

@@ -53,6 +53,7 @@ static const char* quantStrings[] = {
 Toolbar1::Toolbar1(QWidget* parent, int r, int q, bool sp)    
    : QToolBar(QString("Quant'n'Snap-tools"), parent)
       {
+      setObjectName("Quant'n'Snap-tools");
       pitch = 0;
       showPitch = sp;
       // ORCAN - FIXME: Check this:

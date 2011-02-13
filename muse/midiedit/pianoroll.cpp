@@ -25,6 +25,7 @@
 #include <QCloseEvent>
 #include <QMimeData>
 #include <QScrollArea>
+#include <QSettings>
 
 #include <stdio.h>
 
@@ -280,7 +281,8 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       connect(mapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
       
       //---------ToolBar----------------------------------
-      tools = addToolBar(tr("Pianoroll tools"));          
+      tools = addToolBar(tr("Pianoroll tools"));
+      tools->setObjectName("Pianoroll tools");
       tools->addActions(undoRedo->actions());
       tools->addSeparator();
 
@@ -306,11 +308,13 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       addToolBar(tools2);
 
       QToolBar* panicToolbar = addToolBar(tr("panic"));         
+      panicToolbar->setObjectName("panic");
       panicToolbar->addAction(panicAction);
 
       //-------------------------------------------------------------
       //    Transport Bar
       QToolBar* transport = addToolBar(tr("transport"));
+      transport->setObjectName("transport");
       transport->addActions(transportAction->actions());
 
       addToolBarBreak();
@@ -544,6 +548,11 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       if(pos > MAXINT)
         pos = MAXINT;
       hscroll->setOffset((int)pos);
+
+      QSettings settings("MusE", "MusE-qt");
+      //restoreGeometry(settings.value("Pianoroll/geometry").toByteArray());
+      restoreState(settings.value("Pianoroll/windowState").toByteArray());
+
       }
 
 //---------------------------------------------------------
@@ -802,6 +811,10 @@ void PianoRoll::removeCtrl(CtrlEdit* ctrl)
 
 void PianoRoll::closeEvent(QCloseEvent* e)
       {
+      QSettings settings("MusE", "MusE-qt");
+      //settings.setValue("Pianoroll/geometry", saveGeometry());
+      settings.setValue("Pianoroll/windowState", saveState());
+
       emit deleted((unsigned long)this);
       e->accept();
       }

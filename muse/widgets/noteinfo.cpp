@@ -26,6 +26,7 @@
 NoteInfo::NoteInfo(QWidget* parent)
    : QToolBar(tr("Note Info"), parent)
       {
+      setObjectName("Note Info");
       deltaMode = false;
 
       //QLabel* label = new QLabel(tr("Start"), this, "Start");
