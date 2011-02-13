@@ -100,7 +100,7 @@ void Thread::start(int prio, void* ptr)
 
 
       int rv = pthread_create(&thread, attributes, ::loop, this); 
-      if(!thread)
+      if(rv)
       {
         // p4.0.16: realTimeScheduling is unreliable. It is true even in some clearly non-RT cases.
         // I cannot seem to find a reliable answer to the question of "are we RT or not".
@@ -110,7 +110,7 @@ void Thread::start(int prio, void* ptr)
           rv = pthread_create(&thread, NULL, ::loop, this); 
       }
 
-      if(rv || !thread)
+      if(rv)
           fprintf(stderr, "creating thread <%s> failed: %s\n", _name, strerror(rv));
 
       if (attributes)                      // p4.0.16
