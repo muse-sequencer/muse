@@ -4,6 +4,8 @@
         - removed window geometry from default template, TODO add a menu option for creating
           templates, which might not contain certain types of data, including geometry (rj)
         - fixed bug if jack zombifies during project load which led to a crash (rj)
+        - Fixed MusE failing with non-RT kernel. Now falls back to normal 'OTHER' scheduling. (Tim p4.0.16)
+        - Fixed dummy audio thread not running FIFO with RT kernel - set PTHREAD_EXPLICIT_SCHED. (Tim p4.0.16)
 10.02.2011:
         - added cut/copy/paste and keyboard shortcuts to wave editor (rj)
 09.02.2011:

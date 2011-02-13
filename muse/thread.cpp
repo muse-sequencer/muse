@@ -63,7 +63,8 @@ void Thread::start(int prio, void* ptr)
 //      pthread_mutex_lock(&lock);
 
 
-      if (_realTimePriority) {
+      //if (_realTimePriority) {
+      if (realTimeScheduling && _realTimePriority > 0) {                        // p4.0.16
             attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
             pthread_attr_init(attributes);
 
@@ -98,14 +99,26 @@ void Thread::start(int prio, void* ptr)
       */
 
 
-      int rv;
-      if ((rv = pthread_create(&thread, attributes, ::loop, this))) 
+      int rv = pthread_create(&thread, attributes, ::loop, this); 
+      if(!thread)
       {
-            fprintf(stderr, "creating thread <%s> failed: %s\n",
-               _name, strerror(rv));
-            thread = 0;
+        // p4.0.16: realTimeScheduling is unreliable. It is true even in some clearly non-RT cases.
+        // I cannot seem to find a reliable answer to the question of "are we RT or not".
+        // MusE was failing with a stock kernel because of PTHREAD_EXPLICIT_SCHED.
+        // So we'll just have to try again without attributes.
+        if (realTimeScheduling && _realTimePriority > 0) 
+          rv = pthread_create(&thread, NULL, ::loop, this); 
       }
 
+      if(rv || !thread)
+          fprintf(stderr, "creating thread <%s> failed: %s\n", _name, strerror(rv));
+
+      if (attributes)                      // p4.0.16
+      {
+        pthread_attr_destroy(attributes);
+        free(attributes);
+      }
+      
       //undoSetuid();
       }
 
@@ -316,7 +329,7 @@ void Thread::loop()
       if (debugMsg)
             printf("Thread <%s, id %p> has %s priority %d\n",
                _name, (void *)pthread_self(), policy == SCHED_FIFO ? "SCHED_FIFO" : "SCHED_OTHER",
-                _realTimePriority);
+                policy == SCHED_FIFO ? _realTimePriority : 0);
 
 
 //      pthread_mutex_lock(&lock);

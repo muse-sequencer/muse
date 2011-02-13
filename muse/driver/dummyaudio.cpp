@@ -411,38 +411,54 @@ static void* dummyLoop(void* ptr)
 
 //void DummyAudioDevice::start()
 void DummyAudioDevice::start(int priority)
-      {
-      //realTimePriority = priority;
+{
       _realTimePriority = priority;
       pthread_attr_t* attributes = 0;
 
-      //if (priority) {
-      if (realTimeScheduling && priority > 0) {
+      if (realTimeScheduling && _realTimePriority > 0) {
             attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
             pthread_attr_init(attributes);
 
             if (pthread_attr_setschedpolicy(attributes, SCHED_FIFO)) {
-                  printf("cannot set FIFO scheduling class for RT thread\n");
+                  printf("cannot set FIFO scheduling class for dummy RT thread\n");
                   }
             if (pthread_attr_setscope (attributes, PTHREAD_SCOPE_SYSTEM)) {
-                  printf("Cannot set scheduling scope for RT thread\n");
+                  printf("Cannot set scheduling scope for dummy RT thread\n");
                   }
+            // p4.0.16 Dummy was not running FIFO because this is needed.
+            if (pthread_attr_setinheritsched(attributes, PTHREAD_EXPLICIT_SCHED)) {
+                  printf("Cannot set setinheritsched for dummy RT thread\n");
+                  }
+                  
             struct sched_param rt_param;
             memset(&rt_param, 0, sizeof(rt_param));
             rt_param.sched_priority = priority;
             if (pthread_attr_setschedparam (attributes, &rt_param)) {
-                  printf("Cannot set scheduling priority %d for RT thread (%s)\n",
+                  printf("Cannot set scheduling priority %d for dummy RT thread (%s)\n",
                      priority, strerror(errno));
                   }
             }
       
-      //pthread_attr_t* attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
-      //pthread_attr_init(attributes);
-      if (pthread_create(&dummyThread, attributes, ::dummyLoop, this))
-            perror("creating thread failed:");
-      if (priority)
-        pthread_attr_destroy(attributes);
+      int rv = pthread_create(&dummyThread, attributes, ::dummyLoop, this); 
+      if(!dummyThread)
+      {  
+        // p4.0.16: realTimeScheduling is unreliable. It is true even in some clearly non-RT cases.
+        // I cannot seem to find a reliable answer to the question of "are we RT or not".
+        // MusE was failing with a stock kernel because of PTHREAD_EXPLICIT_SCHED.
+        // So we'll just have to try again without attributes.
+        if (realTimeScheduling && _realTimePriority > 0) 
+          rv = pthread_create(&dummyThread, NULL, ::dummyLoop, this); 
       }
+      
+      if(rv || !dummyThread)
+          fprintf(stderr, "creating dummy audio thread failed: %s\n", strerror(rv));
+
+      if (attributes)                      // p4.0.16
+      {
+        pthread_attr_destroy(attributes);
+        free(attributes);
+      }
+}
 
 void DummyAudioDevice::stop ()
       {

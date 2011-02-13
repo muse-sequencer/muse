@@ -381,7 +381,15 @@ int main(int argc, char* argv[])
       else
             realTimeScheduling = audioDevice->isRealtime();
 
+      
+      // What unreliable nonsense. With Jack2 this reports true even if it is not running realtime. 
+      // Jack says: "Cannot use real-time scheduling (RR/10)(1: Operation not permitted)". The kernel is non-RT.
+      // I cannot seem to find a reliable answer to the question, even with dummy audio and system calls.
+      //if (debugMsg) 
+      //  printf("realTimeScheduling:%d\n", realTimeScheduling);
+
       useJackTransport.setValue(true);
+      
       // setup the prefetch fifo length now that the segmentSize is known
       // Changed by Tim. p3.3.17
       // Changed to 4 *, JUST FOR TEST!!!
