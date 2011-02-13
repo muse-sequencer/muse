@@ -185,6 +185,7 @@ DummyAudioDevice::DummyAudioDevice()
       //posix_memalign((void**)&buffer, 16, sizeof(float) * dummyFrames);
       posix_memalign((void**)&buffer, 16, sizeof(float) * config.dummyAudioBufSize);
       
+      dummyThread = 0;
       realtimeFlag = false;
       state = Audio::STOP;
       _framePos = 0;
@@ -440,7 +441,7 @@ void DummyAudioDevice::start(int priority)
             }
       
       int rv = pthread_create(&dummyThread, attributes, ::dummyLoop, this); 
-      if(!dummyThread)
+      if(rv)
       {  
         // p4.0.16: realTimeScheduling is unreliable. It is true even in some clearly non-RT cases.
         // I cannot seem to find a reliable answer to the question of "are we RT or not".
@@ -450,7 +451,7 @@ void DummyAudioDevice::start(int priority)
           rv = pthread_create(&dummyThread, NULL, ::dummyLoop, this); 
       }
       
-      if(rv || !dummyThread)
+      if(rv)
           fprintf(stderr, "creating dummy audio thread failed: %s\n", strerror(rv));
 
       if (attributes)                      // p4.0.16
