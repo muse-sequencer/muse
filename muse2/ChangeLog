@@ -1,3 +1,5 @@
+14.02.2011:
+        - Fixed midi track info panel layout and spacing. Should be much better now. (Tim)
 13.02.2011:
         - restore toolbar locations for main window and editors (rj)
         - fixed some layout issues in general settings (rj)
