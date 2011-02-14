@@ -96,7 +96,7 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
    public:
       CtrlList();
       CtrlList(int id);
-      CtrlList(int id, QString name, double min, double max, bool dontShow=false);
+      CtrlList(int id, QString name, double min, double max, CtrlValueType v, bool dontShow=false);
 
       Mode mode() const          { return _mode; }
       void setMode(Mode m)       { _mode = m; }

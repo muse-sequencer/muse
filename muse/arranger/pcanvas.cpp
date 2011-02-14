@@ -2959,8 +2959,8 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
          prevVal = cvFirst.val;
 
          // prepare prevVal
-         if (cl->id() == AC_VOLUME ) { // use db scale for volume
-           printf("volume cvval=%f\n", cvFirst.val);
+         if (cl->valueType() == VAL_LOG ) { // use db scale for volume
+           //printf("volume cvval=%f\n", cvFirst.val);
            prevVal = dbToVal(cvFirst.val); // represent volume between 0 and 1
            if (prevVal < 0) prevVal = 0.0;
          }
@@ -2973,12 +2973,13 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
 
          // draw a square around the point
          p.drawRect(mapx(tempomap.frame2tick(prevPosFrame))-1, (rr.bottom()-2)-prevVal*height-1, 3, 3);
+         p.drawRect(mapx(tempomap.frame2tick(prevPosFrame))-2, (rr.bottom()-2)-prevVal*height-2, 5, 5);
 
          for (; ic !=cl->end(); ++ic)
          {
             CtrlVal cv = ic->second;
             double nextVal = cv.val; // was curVal
-            if (cl->id() == AC_VOLUME ) { // use db scale for volume
+            if (cl->valueType() == VAL_LOG ) { // use db scale for volume
               nextVal = dbToVal(cv.val); // represent volume between 0 and 1
               if (nextVal < 0) nextVal = 0.0;
             }
@@ -3005,7 +3006,8 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
                 goto quitDrawing;
 
             // draw a square around the point
-            p.drawRect(mapx(tempomap.frame2tick(prevPosFrame))-1, (rr.bottom()-2)-prevVal*height-1, 3, 3);
+            p.drawRect(mapx(tempomap.frame2tick(prevPosFrame))-2, (rr.bottom()-2)-prevVal*height-2, 5, 5);
+            p.drawRect(mapx(tempomap.frame2tick(prevPosFrame))-1, (rr.bottom()-1)-prevVal*height-2, 3, 3);
          }
          //printf("outer draw %f\n", cvFirst.val );
          p.drawLine(mapx(tempomap.frame2tick(prevPosFrame)),
@@ -3036,7 +3038,7 @@ void PartCanvas::checkAutomation(Track * t, const QPoint &pointer, bool addNewCt
     int circumference = 5;
     if (t->isMidiTrack())
       return;
-    //printf("checkAutomation p.x()=%d p.y()=%d\n", mapx(pointer.x()), mapx(pointer.y()));
+    //printf("checkAutomation p.x()=%d p.y()=%d\n", mapx(pointer.x()), mapy(pointer.y()));
 
     int currX =  mapx(pointer.x());
     int currY =  mapy(pointer.y());
@@ -3053,16 +3055,16 @@ void PartCanvas::checkAutomation(Track * t, const QPoint &pointer, bool addNewCt
 
         int oldX=-1;
         int oldY=-1;
-        int ypixel;
-        int xpixel;
+        int ypixel=0;
+        int xpixel=-1;
 
-        // First check that there ARE automation, ic == cl->end means no automation
+        // First check that there IS automation, ic == cl->end means no automation
         if (ic != cl->end()) {
           for (; ic !=cl->end(); ic++)
           {
              CtrlVal &cv = ic->second;
              double y;
-             if (cl->id() == AC_VOLUME ) { // use db scale for volume
+             if (cl->valueType() == VAL_LOG ) { // use db scale for volume
                 y = dbToVal(cv.val); // represent volume between 0 and 1
                if (y < 0) y = 0;
              }
@@ -3210,10 +3212,15 @@ void PartCanvas::processAutomationMovements(QMouseEvent *event)
     if (nextFrame!=-1 && currFrame > nextFrame) currFrame=nextFrame-1;
     automation.currentCtrl->frame = currFrame;
 
-    int mouseY = automation.currentTrack->height() - (mapy(event->pos().y()) - automation.currentTrack->y())-2;
+    int posy=mapy(event->pos().y());
+    int tracky = mapy(automation.currentTrack->y());
+    int trackHeight = automation.currentTrack->height();
+    //printf("posy=%d tracky=%d trackHeight=%d\n", posy,tracky,trackHeight);
+
+    int mouseY = trackHeight - (posy - tracky)-2;
     double yfraction = ((double)mouseY)/automation.currentTrack->height();
 
-    if (automation.currentCtrlList->id() == AC_VOLUME ) { // use db scale for volume
+    if (automation.currentCtrlList->valueType() == VAL_LOG  ) { // use db scale for volume
 
        double cvval = valToDb(yfraction);
        //printf("calc yfraction = %f v=%f ",yfraction,cvval);

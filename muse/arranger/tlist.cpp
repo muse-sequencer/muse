@@ -20,6 +20,7 @@
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QWheelEvent>
+#include <QIcon>
 
 #include "popupmenu.h"
 #include "globals.h"
@@ -52,6 +53,7 @@ extern QMenu* populateAddSynth(QWidget* parent);
 
 static const int MIN_TRACKHEIGHT = 20;
 static const int WHEEL_DELTA = 120;
+QColor collist[] = { Qt::red, Qt::yellow, Qt::blue , Qt::black, Qt::white, Qt::green };
 
 //---------------------------------------------------------
 //   TList
@@ -781,26 +783,90 @@ TrackList TList::getRecEnabledTracks()
 }
 
 //---------------------------------------------------------
-//   mousePressEvent
+//   changeAutomation
 //---------------------------------------------------------
 
 void TList::changeAutomation(QAction* act)
 {
-  printf("changeAutomation!\n");
+  //printf("changeAutomation %d\n", act->data().toInt());
   if (editAutomation->type() == Track::MIDI) {
     printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
     return;
   }
+  int colindex = act->data().toInt() & 0xff;
+  int id = (act->data().toInt() & 0x00ffffff) / 256;
+  if (colindex < 100)
+      return; // this was meant for changeAutomationColor
+              // one of these days I'll rewrite this so it's understandable
+              // this is just to get it up and running...
+
 
   CtrlListList* cll = ((AudioTrack*)editAutomation)->controller();
   for(CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
     CtrlList *cl = icll->second;
-    if (act->data() == cl->id())  // got it, change state
-        cl->setVisible(!cl->isVisible());
+    if (id == cl->id())  // got it, change state
+        cl->setVisible(act->isChecked());
   }
   song->update(SC_TRACK_MODIFIED);
 }
 
+//---------------------------------------------------------
+//   changeAutomation
+//---------------------------------------------------------
+void TList::changeAutomationColor(QAction* act)
+{
+  if (editAutomation->type() == Track::MIDI) {
+    printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
+    return;
+  }
+  int colindex = act->data().toInt() & 0xff;
+  int id = (act->data().toInt() & 0x00ffffff) / 256;
+
+  if (colindex > 100)
+      return; // this was meant for changeAutomation
+              // one of these days I'll rewrite this so it's understandable
+              // this is just to get it up and running...
+
+  //printf("change automation color %d %d\n", id, colindex);
+
+  CtrlListList* cll = ((AudioTrack*)editAutomation)->controller();
+  for(CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
+    CtrlList *cl = icll->second;
+    if (cl->id() == id) // got it, change color
+        cl->setColor(collist[colindex]);
+  }
+  song->update(SC_TRACK_MODIFIED);
+}
+
+//---------------------------------------------------------
+//   colorMenu
+//---------------------------------------------------------
+QMenu* TList::colorMenu(QColor c, int id)
+{
+  QMenu * m = new QMenu(this);
+  for (int i = 0; i< 6; i++) {
+    QPixmap pix(10,10);
+    QPainter p(&pix);
+    p.fillRect(0,0,10,10,collist[i]);
+    p.setPen(Qt::black);
+    p.drawRect(0,0,10,10);
+    QIcon icon(pix);
+    QAction *act = m->addAction(icon,"");
+    act->setCheckable(true);
+    if (c == collist[i])
+        act->setChecked(true);
+    int data = id * 256; // shift 8 bits
+    data += i; // color in the bottom 8 bits
+    act->setData(data);
+  }
+  connect(m, SIGNAL(triggered(QAction*)), SLOT(changeAutomationColor(QAction*)));
+  return m;
+
+}
+
+//---------------------------------------------------------
+//   mousePressEvent
+//---------------------------------------------------------
 void TList::mousePressEvent(QMouseEvent* ev)
       {
       int x       = ev->x();
@@ -958,13 +1024,17 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     QAction* act = 0;
                     for(CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll) {
                       CtrlList *cl = icll->second;
-                      printf("id = %d", cl->id());
+                      //printf("id = %d", cl->id());
                       if (cl->dontShow())
                         continue;
                       act = p->addAction(cl->name());
                       act->setCheckable(true);
                       act->setChecked(cl->isVisible());
-                      act->setData(cl->id());
+                      int data = cl->id() * 256; // shift 8 bits
+                      data += 150; // illegal color > 100
+                      act->setData(data);
+                      QMenu *m = colorMenu(cl->color(), cl->id());
+                      act->setMenu(m);
                     }
                     connect(p, SIGNAL(triggered(QAction*)), SLOT(changeAutomation(QAction*)));
                     //connect(p, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));

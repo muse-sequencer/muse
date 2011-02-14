@@ -1,6 +1,10 @@
 14.02.2011:
         - Fixed midi track info panel layout and spacing. Should be much better now. (Tim)
         - Added patch to remove warnings from WillyFoobar (rj)
+        - Fixes to graphical automation (rj)
+           * select color in menu
+           * offset bug, can now edit automation although it's scrolled down
+           TODO redrawing issues when using slider automation for instance.
 13.02.2011:
         - restore toolbar locations for main window and editors (rj)
         - fixed some layout issues in general settings (rj)

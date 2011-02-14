@@ -19,6 +19,7 @@ class QPaintEvent;
 class QResizeEvent;
 class QScrollBar;
 class QWheelEvent;
+class QMenu;
 
 class ScrollScale;
 class Track;
@@ -84,11 +85,13 @@ class TList : public QWidget {
       void classesPopupMenu(Track*, int x, int y);
       TrackList getRecEnabledTracks();
       void setHeaderToolTips();
+      QMenu* colorMenu(QColor c, int id);
 
    private slots:
       void returnPressed();
       void songChanged(int flags);
       void changeAutomation(QAction*);
+      void changeAutomationColor(QAction*);
 
    signals:
       ///void selectionChanged();
