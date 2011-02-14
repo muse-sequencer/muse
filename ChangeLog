@@ -5,6 +5,7 @@
            * select color in menu
            * offset bug, can now edit automation although it's scrolled down
            TODO redrawing issues when using slider automation for instance.
+        - mixer slider now updates canvas to get automation updated (rj)
 13.02.2011:
         - restore toolbar locations for main window and editors (rj)
         - fixed some layout issues in general settings (rj)
