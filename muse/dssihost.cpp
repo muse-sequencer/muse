@@ -2009,7 +2009,9 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
   //  memset(audioInBuffers[k], 0, sizeof(float) * n);
   
   // Watch our limits.
-  np = ports > synth->_outports ? synth->_outports : ports;
+  //willyfoobar-2011-02-13
+  //old code//np = ports > synth->_outports ? synth->_outports : ports;
+  np = ((unsigned long) ports) > synth->_outports ? synth->_outports : ((unsigned long) ports);
   
   const DSSI_Descriptor* dssi = synth->dssi;
   const LADSPA_Descriptor* descr = dssi->LADSPA_Plugin;
@@ -2939,7 +2941,10 @@ int DssiSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* mi
 
 int DssiSynthIF::channels() const 
 { 
-  return synth->_outports > MAX_CHANNELS ? MAX_CHANNELS : synth->_outports; 
+    //willyfoobar-2011-02-13
+    //!! either change return type to unsigend long or do this change
+    //old code //return synth->_outports > MAX_CHANNELS ? MAX_CHANNELS : synth->_outports; 
+    return ((int)synth->_outports) > MAX_CHANNELS ? MAX_CHANNELS : ((int)synth->_outports) ;
 }
 
 int DssiSynthIF::totalOutChannels() const 

@@ -1041,10 +1041,19 @@ void SimpleSynth::parseInitData(const unsigned char* data)
 
                if (SS_DEBUG_INIT) {
                      printf("Channel %d:\n", ch);
+                     //willyfoobar-2011-02-13
+                     // ptr-data might be long long on 64 bit machine --> cast to "long"
+                     // *(ptr+...) has type byte --> use %hhd as format item
+                     /* old code  
                      printf("buffer[%ld] - channels[ch].volume_ctrlval = \t%d\n", ptr-data, *ptr);
                      printf("buffer[%ld] - channels[ch].pan = \t\t%d\n", ptr-data+1, *(ptr+1));
                      printf("buffer[%ld] - channels[ch].noteoff_ignore = \t%d\n", ptr-data+2, *(ptr+2));
                      printf("buffer[%ld] - channels[ch].channel_on = \t%d\n", ptr-data+3, *(ptr+3));
+                     */
+                     printf("buffer[%ld] - channels[ch].volume_ctrlval = \t%hhd\n", long(ptr-data), *ptr);
+                     printf("buffer[%ld] - channels[ch].pan = \t\t%hhd\n", long(ptr-data+1), *(ptr+1));
+                     printf("buffer[%ld] - channels[ch].noteoff_ignore = \t%hhd\n", long(ptr-data+2), *(ptr+2));
+                     printf("buffer[%ld] - channels[ch].channel_on = \t%hhd\n", long(ptr-data+3), *(ptr+3));
                      }
                updateVolume(ch, *(ptr));
                guiUpdateVolume(ch, *(ptr));
@@ -1117,8 +1126,13 @@ void SimpleSynth::parseInitData(const unsigned char* data)
       ptr++;
 
       for (int i=0; i<SS_NR_OF_SENDEFFECTS; i++) {
-            if (SS_DEBUG_INIT)
-                  printf("buffer[%ld] - sendeffect[%d], labelnamelen=%d\n", ptr-data, i, *ptr);
+          if (SS_DEBUG_INIT){
+                  //wilyfoobar-2011-02-13
+                  // arg2 :pointer diifference might be 64 bit (long long)  on 64 bit machine,  this requires cast to long
+                  // arg4: *ptr is type byte, not int, this requires format %hhd
+                  //old code //printf("buffer[%ld] - sendeffect[%d], labelnamelen=%d\n", ptr-data, i, *ptr);
+                  printf("buffer[%ld] - sendeffect[%d], labelnamelen=%hhd\n", long(ptr-data), i, *ptr);
+                  }
             int labelnamelen = *(ptr);
 
             if (labelnamelen != SS_NO_PLUGIN) {
@@ -1148,8 +1162,13 @@ void SimpleSynth::parseInitData(const unsigned char* data)
                   gui->writeEvent(ev);
 
                   for (int j=0; j<params; j++) {
-                        if (SS_DEBUG_INIT)
-                              printf("buffer[%ld] - sendeffect[%d], parameter[%d]=%d\n", ptr-data, i, j, *ptr);
+                      if (SS_DEBUG_INIT){
+                          //wilyfoobar-2011-02-13
+                          // arg2 :pointer diifference might be 64 bit (long long)  on 64 bit machine,  this requires cast to long
+                          // arg5: *ptr is type byte, not int, this requires format %hhd
+                          //old code//printf("buffer[%ld] - sendeffect[%d], parameter[%d]=%d\n", long(ptr-data, i, j, *ptr);
+                          printf("buffer[%ld] - sendeffect[%d], parameter[%d]=%hhd\n", long(ptr-data), i, j, *ptr);
+                          }
                         setFxParameter(i, j, sendEffects[i].plugin->convertGuiControlValue(j, *(ptr)));
                         ptr++;
                         }
@@ -1271,7 +1290,11 @@ static void* loadSampleThread(void* p)
             smp->samples = smp->frames * smp->channels;
 
             if (SS_DEBUG) {
-                  printf("Resampling from %ld frames to %ld frames - srcration: %lf\n", sfi.frames, smp->frames, srcratio);
+                  //wilyfoobar-2011-02-13
+                  // arg2 :sfi.frames is of type sf_count_t (== 64 bit)  (long long)  
+                  // this requires format %lld (twice 'l' in format string (arg1)
+                  // old code//printf("Resampling from %ld frames to %ld frames - srcration: %lf\n", sfi.frames, smp->frames, srcratio);
+                  printf("Resampling from %lld frames to %ld frames - srcration: %lf\n", sfi.frames, smp->frames, srcratio);
                   printf("Nr of new samples: %ld\n", smp->samples);
                   }
 

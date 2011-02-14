@@ -4539,7 +4539,9 @@ void MusE::bounceToFile(AudioOutput* ao)
       song->setPos(0,song->lPos(),0,true,true);
       song->bounceOutput = ao;
       ao->setRecFile(sf);
-      printf("ao->setRecFile %d\n", sf);
+      //willfoobar-2011-02-13
+      //old code//printf("ao->setRecFile %d\n", sf);
+      printf("ao->setRecFile %ld\n", (unsigned long)sf);
       song->setRecord(true, false);
       song->setRecordFlag(ao, true);
       ao->prepareRecording();
