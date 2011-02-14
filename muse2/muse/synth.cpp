@@ -941,7 +941,10 @@ iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigne
                    }
 
             if (frame > curPos) {
-                  if (frame < pos)
+                //willyfoobar-2011-02-13
+                //!!! comparison of signed with unsigened 
+                //old code//if (frame < pos)
+                  if (frame < (int) pos)
                         printf("should not happen: missed event %d\n", pos -frame);
                   else 
                   {
