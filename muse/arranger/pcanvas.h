@@ -118,7 +118,7 @@ class PartCanvas : public Canvas {
       void drawTopItem(QPainter& p, const QRect& rect);
 
       void checkAutomation(Track * t, const QPoint& pointer, bool addNewCtrl);
-      void processAutomationMovements(QMouseEvent *event);
+      void processAutomationMovements(QPoint pos, bool addPoint);
       double dbToVal(double inDb);
       double valToDb(double inV);
 

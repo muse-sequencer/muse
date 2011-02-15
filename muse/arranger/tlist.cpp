@@ -1014,7 +1014,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
       switch (col) {
               case COL_AUTOMATION:
                 {
-                if (t->type() != Track::MIDI) {
+                if (!t->isMidiTrack()) {
                     editAutomation = t;
                     PopupMenu* p = new PopupMenu();
                     p->disconnect();

@@ -13,6 +13,9 @@
 #include <QColor>
 //#include <stdlib.h>
 
+#include "gconfig.h"
+#include "fastlog.h"
+#include "math.h"
 #include "globals.h"
 #include "ctrl.h"
 #include "xml.h"
@@ -79,19 +82,20 @@ CtrlList::CtrlList()
 //---------------------------------------------------------
 
 double CtrlList::value(int frame)
-      {
+{
       if (!automation || empty()) {
             return _curVal;
             }
-      ciCtrl i = upper_bound(frame);
-      if (i == end()) {
+
+      ciCtrl i = upper_bound(frame); // get the index after current frame
+
+      if (i == end()) { // if we are past all items just return the last value
             ciCtrl i = end();
             --i;
             const CtrlVal& val = i->second;
             _curVal = val.val;
             }
-      else
-      if(_mode == DISCRETE)
+      else if(_mode == DISCRETE)
       {
         if(i == begin())
           _curVal = _default;
@@ -103,28 +107,43 @@ double CtrlList::value(int frame)
         }  
       }
       else {
-            int frame2 = i->second.frame;
-            double val2 = i->second.val;
-            int frame1;
-            double val1;
-            if (i == begin()) {
-                  frame1 = 0;
-                  val1   = _default;
-                  }
-            else {
-                  --i;
-                  frame1 = i->second.frame;
-                  val1   = i->second.val;
-                  }
-            frame -= frame1;
-            val2  -= val1;
-            frame2 -= frame1;
-            val1 += (frame * val2)/frame2;
-            _curVal = val1;
-            }
+        int frame2 = i->second.frame;
+        double val2 = i->second.val;
+        int frame1;
+        double val1;
+        if (i == begin()) {
+            frame1 = 0;
+            val1   = _default;
+        }
+        else {
+            --i;
+            frame1 = i->second.frame;
+            val1   = i->second.val;
+        }
+        //printf("before val1=%f val2=%f\n", val1,val2);
+        if (_valueType == VAL_LOG) {
+          val1 = 20.0*fast_log10(val1);
+          if (val1 < config.minSlider)
+            val1=config.minSlider;
+          val2 = 20.0*fast_log10(val2);
+          if (val2 < config.minSlider)
+            val2=config.minSlider;
+        }
+        //printf("after val1=%f val2=%f\n", val1,val2);
+        frame -= frame1;
+        val2  -= val1;
+        frame2 -= frame1;
+        val1 += (double(frame) * val2)/double(frame2);
+
+        if (_valueType == VAL_LOG) {
+          val1 = exp10(val1/20.0);
+        }
+        //printf("after val1=%f\n", val1);
+        _curVal = val1;
+      }
 // printf("autoVal %d %f\n", frame, _curVal);
       return _curVal;
-      }
+}
 
 
 //---------------------------------------------------------

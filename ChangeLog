@@ -1,3 +1,5 @@
+15.02.2011:
+        - Automation fixes, better detection, not perfect (rj)
 14.02.2011:
         - Fixed midi track info panel layout and spacing. Should be much better now. (Tim)
         - Added patch to remove warnings from WillyFoobar (rj)
