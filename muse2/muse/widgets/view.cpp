@@ -568,6 +568,7 @@ int View::mapyDev(int y) const
             return (y + ypos + rmapy(yorg) + ymag / 2) / ymag;
       }
 
+// r == relative conversion
 int View::rmapx(int x) const
       {
       if (xmag < 0)

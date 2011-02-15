@@ -19,7 +19,9 @@
 #include <QMessageBox>
 #include <QPainter>
 #include <QUrl>
+#include <QPoint>
 
+#include "fastlog.h"
 #include "widgets/tools.h"
 #include "pcanvas.h"
 #include "midieditor.h"
@@ -1056,7 +1058,8 @@ void PartCanvas::mouseMove(QMouseEvent* event)
       if (x < 0)
             x = 0;
 
-      processAutomationMovements(event);
+      if (_tool == AutomationTool)
+          processAutomationMovements(event->pos(), event->modifiers() & Qt::ControlModifier);
 
       emit timeChanged(AL::sigmap.raster(x, *_raster));
       }
@@ -1085,6 +1088,17 @@ Track* PartCanvas::y2Track(int y) const
 void PartCanvas::keyPress(QKeyEvent* event)
       {
       int key = event->key();
+
+//      if (_tool == AutomationTool) { // can't get the cursor pos to work right, skipping for now
+//        // clear all the automation parameters
+//        automation.moveController=false;
+//        automation.controllerState = doNothing;
+//        automation.currentCtrl=0;
+//        automation.currentTrack=0;
+//        automation.currentCtrlList=0;
+//
+//        processAutomationMovements(mapDev(QCursor::pos()),event->key()& Qt::Key_Control);
+//      }
       if (editMode)
             {
             if ( key == Qt::Key_Return || key == Qt::Key_Enter ) 
@@ -2958,6 +2972,8 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
          int prevPosFrame=cvFirst.frame;
          prevVal = cvFirst.val;
 
+
+
          // prepare prevVal
          if (cl->valueType() == VAL_LOG ) { // use db scale for volume
            //printf("volume cvval=%f\n", cvFirst.val);
@@ -2994,6 +3010,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
               leftX=rr.x();
             }
             int currentPixel = mapx(tempomap.frame2tick(cv.frame));
+
             p.drawLine( leftX,
                        (rr.bottom()-2)-prevVal*height,
                         currentPixel,
@@ -3038,7 +3055,6 @@ void PartCanvas::checkAutomation(Track * t, const QPoint &pointer, bool addNewCt
     int circumference = 5;
     if (t->isMidiTrack())
       return;
-    //printf("checkAutomation p.x()=%d p.y()=%d\n", mapx(pointer.x()), mapy(pointer.y()));
 
     int currX =  mapx(pointer.x());
     int currY =  mapy(pointer.y());
@@ -3094,20 +3110,48 @@ void PartCanvas::checkAutomation(Track * t, const QPoint &pointer, bool addNewCt
              if (addNewCtrl) {
                 // check if we are reasonably close to a line
                //printf("xpixel=%d oldX=%d\n", xpixel, oldX);
-                if ( xpixel == oldX && abs(currX-xpixel) < circumference)
-                  foundIt=true;
+               double firstX=oldX;
+               double lastX=xpixel;
+               double firstY=oldY;
+               double lastY=ypixel;
+
+               double proportion = (currX-firstX)/(lastX-firstX);
+
+               if (    (currX > lastX && firstY!=lastY) // omit special cases.
+                    || firstX==lastX ) {
+                    oldX = xpixel;
+                    oldY = ypixel;
+                    continue; // not the right region
+               }
+
+               //printf("firstX=%f lastX=%f firstY=%f lastY=%f proportion=%f currX=%d\n", firstX,lastX,firstY,lastY,proportion, currX);
+
+               // 10   X(15)   20
+               // proportion = 0.5
+               //              10
+               //          /
+               //      Y(5)
+               //   /
+               // 1
+               double calcY = (lastY-firstY)*proportion+firstY;
+               //printf("calcY=%f currY=%d\n", calcY, currY);
+               if ( abs(calcY-currY) < circumference*4)
+                 foundIt=true;
+
+               if ( xpixel == oldX && abs(currX-xpixel) < circumference)
+                 foundIt=true;
+
+             } else {
+               int x1 = abs(currX - xpixel) ;
+               int y1 = abs(currY - ypixel);
+               if (x1 < circumference &&  y1 < circumference && pointer.x() > 0 && pointer.y() > 0) {
+                 foundIt=true;
+               }
 
              }
-
              //printf("point at x=%d xdiff=%d y=%d ydiff=%d\n", mapx(tempomap.frame2tick(cv.frame)), x1, mapx(ypixel), y1);
              oldX = xpixel;
              oldY = ypixel;
-
-             int x1 = abs(currX - xpixel) ;
-             int y1 = abs(currY - ypixel);
-             if (!addNewCtrl && x1 < circumference &&  y1 < circumference && pointer.x() > 0 && pointer.y() > 0) {
-               foundIt=true;
-             }
 
              if (foundIt) {
                QWidget::setCursor(Qt::CrossCursor);
@@ -3156,18 +3200,16 @@ void PartCanvas::controllerChanged(Track* /* t */)
   redraw();
 }
 
-void PartCanvas::processAutomationMovements(QMouseEvent *event)
+void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
 {
 
+  //printf("processAutomationMovements %d %d %d %d %d %d\n", pos.x(), pos.y(),mapx(pos.x()), mapy(pos.y()), xpos, ypos);
   if (_tool == AutomationTool) {
 
       if (!automation.moveController) { // currently nothing going lets's check for some action.
-          Track * t = y2Track(event->pos().y());
+          Track * t = y2Track(pos.y());
           if (t) {
-             bool addNewPoints=false;
-             if (event->modifiers() & Qt::ControlModifier)
-                 addNewPoints=true;
-             checkAutomation(t, event->pos(), addNewPoints);
+             checkAutomation(t, pos, addPoint);
           }
           return;
       }
@@ -3180,7 +3222,7 @@ void PartCanvas::processAutomationMovements(QMouseEvent *event)
     if (automation.controllerState == addNewController)
     {
        //printf("adding a new ctrler!\n");
-       int frame = tempomap.tick2frame(event->pos().x());
+       int frame = tempomap.tick2frame(pos.x());
        automation.currentCtrlList->add( frame, 1.0 /*dummy value */);
 
        iCtrl ic=automation.currentCtrlList->begin();
@@ -3207,12 +3249,12 @@ void PartCanvas::processAutomationMovements(QMouseEvent *event)
       CtrlVal &cv = ic->second;
       nextFrame = cv.frame;
     }
-    int currFrame = tempomap.tick2frame(event->pos().x());
+    int currFrame = tempomap.tick2frame(pos.x());
     if (currFrame < prevFrame) currFrame=prevFrame+1;
     if (nextFrame!=-1 && currFrame > nextFrame) currFrame=nextFrame-1;
     automation.currentCtrl->frame = currFrame;
 
-    int posy=mapy(event->pos().y());
+    int posy=mapy(pos.y());
     int tracky = mapy(automation.currentTrack->y());
     int trackHeight = automation.currentTrack->height();
     //printf("posy=%d tracky=%d trackHeight=%d\n", posy,tracky,trackHeight);
@@ -3251,9 +3293,9 @@ void PartCanvas::processAutomationMovements(QMouseEvent *event)
 
 double PartCanvas::dbToVal(double inDb)
 {
-    return (20.0*log10(inDb)+60) / 70.0;
+    return (20.0*fast_log10(inDb)+60.0) / 70.0;
 }
 double PartCanvas::valToDb(double inV)
 {
-    return exp10((inV*70.0-60)/20.0);
+    return exp10((inV*70.0-60.0)/20.0);
 }
