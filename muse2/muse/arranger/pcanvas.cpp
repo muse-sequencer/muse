@@ -1180,7 +1180,10 @@ void PartCanvas::keyPress(QKeyEvent* event)
             emit setUsedTool(CutTool);
             return;
             }
-      else if (key == shortcuts[SHRT_TOOL_GLUE].key) {
+      else if (key == shortcuts[SHRT_TOOL_LINEDRAW].key) {
+            emit setUsedTool(AutomationTool);
+            return;
+            }      else if (key == shortcuts[SHRT_TOOL_GLUE].key) {
             emit setUsedTool(GlueTool);
             return;
             }
