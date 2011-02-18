@@ -158,7 +158,7 @@ GlobalConfigValues config = {
       QString(""),                  // style
       QString("sweep"),             // externalWavEditor
       false,                        // useOldStyleStopShortCut
-      true,                        // moveArmedCheckBox
+      false,                        // moveArmedCheckBox
       true,                         // useDenormalBias
       false,                        // useOutputLimiter
       true,                         // showDidYouKnow

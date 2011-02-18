@@ -1076,7 +1076,7 @@ void Song::setRecord(bool f, bool autoRecEnable)
       if(debugMsg)
         printf("setRecord recordflag =%d f(record state)=%d autoRecEnable=%d\n", recordFlag, f, autoRecEnable);
 
-      if (f && museProject == museProjectInitPath ) { // check that there is a project stored before commencing
+      if (f && config.useProjectSaveDialog && museProject == museProjectInitPath ) { // check that there is a project stored before commencing
         // no project, we need to create one.
         if (!muse->saveAs())
           return; // could not store project, won't enable record
