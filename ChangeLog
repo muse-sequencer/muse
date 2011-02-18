@@ -1,3 +1,6 @@
+18.02.2011:
+        - Disable saveAs dialog for rec when project dialog isn't used (rj)
+        - changed the default setting for move single rec with track, default is to NOT move (rj)
 15.02.2011:
         - Automation fixes, better detection, not perfect (rj)
 14.02.2011:
