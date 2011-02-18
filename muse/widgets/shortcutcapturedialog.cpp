@@ -53,7 +53,7 @@ void ShortcutCaptureDialog::keyPressEvent(QKeyEvent* e)
       bool ispunct = keychar.isPunct();
       bool issymbol = keychar.isSymbol();
       //printf("Key:%x, alt:%d, ctrl:%d shift:%d ispunct:%d issymbol:%d text:%s\n",
-      //  e->key(), alt, ctrl, shift, ispunct, issymbol, e->text().toLatin1().constData());  
+      //  e->key(), alt, ctrl, shift, ispunct, issymbol, e->text().toLatin1().constData());
       
       temp_key += (shift ? (int)Qt::SHIFT : 0);    // (int) Tim
       temp_key += (ctrl  ? (int)Qt::CTRL  : 0);    //
@@ -76,11 +76,14 @@ void ShortcutCaptureDialog::keyPressEvent(QKeyEvent* e)
 
             // Check against conflicting shortcuts
             for (int i=0; i < SHRT_NUM_OF_ELEMENTS; i++) {
-                  if (shortcuts[i].key == key && (shortcuts[i].type & (shortcuts[shortcutindex].type | GLOBAL_SHRT | INVIS_SHRT))) {
-                        msgString = tr("Shortcut conflicts with ") + QString(shortcuts[i].descr);
-                        conflict = true;
-                        break;
-                        }
+                  if (shortcuts[i].key == key &&  // use the same key
+                      (( shortcuts[i].type  & (shortcuts[shortcutindex].type | INVIS_SHRT)) ||
+                         shortcuts[i].type & GLOBAL_SHRT ||
+                         shortcuts[shortcutindex].type & GLOBAL_SHRT)) { // affect the same scope
+                      msgString = tr("Shortcut conflicts with ") + QString(shortcuts[i].descr);
+                      conflict = true;
+                      break;
+                      }
                   }
             }
             messageLabel->setText(msgString);
