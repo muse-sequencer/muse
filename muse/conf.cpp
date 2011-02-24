@@ -211,8 +211,11 @@ static void readConfigMidiPort(Xml& xml)
       
       int openFlags = 1;
       bool thruFlag = false;
-      int dic = 0;
-      int doc = 0;
+      //int dic = 0;
+      //int doc = 0;
+      int dic = -1;   // p4.0.17
+      int doc = -1;
+      
       MidiSyncInfo tmpSi;
       int type = MidiDevice::ALSA_MIDI;
 
@@ -288,9 +291,16 @@ static void readConfigMidiPort(Xml& xml)
                               MidiPort* mp = &midiPorts[idx];
                               
                               mp->setInstrument(registerMidiInstrument(instrument));  // By Tim.
-                              mp->setDefaultInChannels(dic);
-                              mp->setDefaultOutChannels(doc);
-                              
+                              if(dic != -1)                      // p4.0.17 Leave them alone unless set by song.
+                                mp->setDefaultInChannels(dic);
+                              if(doc != -1)
+                                // p4.0.17 Turn on if and when multiple output routes supported.
+                                #if 0
+                                mp->setDefaultOutChannels(doc);
+                                #else
+                                setPortExclusiveDefOutChan(idx, doc);
+                                #endif
+                                
                               mp->syncInfo().copyParams(tmpSi);
                               // p3.3.50 Indicate the port was found in the song file, even if no device is assigned to it.
                               mp->setFoundInSongFile(true);
@@ -1037,10 +1047,18 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
             for (int i = 0; i < MIDI_PORTS; ++i) {
                   bool used = false;
                   MidiPort* mport = &midiPorts[i];
+                  MidiDevice* dev = mport->device();
                   // Route check by Tim. Port can now be used for routing even if no device.
                   // Also, check for other non-defaults and save port, to preserve settings even if no device.
                   if(!mport->noInRoute() || !mport->noOutRoute() || 
-                     mport->defaultInChannels() || mport->defaultOutChannels() ||
+                  // p4.0.17 Since MidiPort:: and MidiDevice::writeRouting() ignore ports with no device, ignore them here, too.
+                  // This prevents bogus routes from being saved and propagated in the med file.
+                  // Hmm tough decision, should we save if no device? That would preserve routes in case user upgrades HW, 
+                  //  or ALSA reorders or renames devices etc etc, then we have at least kept the track <-> port routes.
+                  //if(((!mport->noInRoute() || !mport->noOutRoute()) && dev) || 
+                     //mport->defaultInChannels() || mport->defaultOutChannels() ||
+                     mport->defaultInChannels() != (1<<MIDI_CHANNELS)-1 ||   // p4.0.17 Default is now to connect to all channels.
+                     mport->defaultOutChannels() ||
                      (!mport->instrument()->iname().isEmpty() && mport->instrument()->iname() != "GM") ||
                      !mport->syncInfo().isDefault()) 
                     used = true;  
@@ -1058,12 +1076,12 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                     }
                   }  
                   
-                  MidiDevice* dev = mport->device();
                   if (!used && !dev)
                         continue;
                   xml.tag(level++, "midiport idx=\"%d\"", i);
                   
-                  if(mport->defaultInChannels())
+                  //if(mport->defaultInChannels())
+                  if(mport->defaultInChannels() != (1<<MIDI_CHANNELS)-1)     // p4.0.17 Default is now to connect to all channels.
                     xml.intTag(level, "defaultInChans", mport->defaultInChannels());
                   if(mport->defaultOutChannels())
                     xml.intTag(level, "defaultOutChans", mport->defaultOutChannels());

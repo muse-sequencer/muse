@@ -168,7 +168,8 @@ class Song : public QObject {
       QString getSongInfo() { return songInfoStr; }
       void setSongInfo(QString info) { songInfoStr = info; }
 
-      void clear(bool signal);
+      // If clear_all is false, it will not touch things like midi ports.
+      void clear(bool signal, bool clear_all = true);  
       void update(int flags = -1);
       void cleanupForQuit();
 

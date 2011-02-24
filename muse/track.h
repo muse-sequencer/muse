@@ -239,8 +239,11 @@ class MidiTrack : public Track {
 
       void setOutChannel(int i)       { _outChannel = i; }
       void setOutPort(int i)          { _outPort = i; }
-      void setOutChanAndUpdate(int i);
-      void setOutPortAndUpdate(int i);
+      // These will transfer controller data to the new selected port and/or channel.
+      void setOutChanAndUpdate(int /*chan*/);
+      void setOutPortAndUpdate(int /*port*/);
+      // Combines both port and channel operations.
+      void setOutPortAndChannelAndUpdate(int /*port*/, int /*chan*/);
       
       //void setInPortMask(int i)       { _inPortMask = i; }
       ///void setInPortMask(unsigned int i) { _inPortMask = i; }  // Obsolete

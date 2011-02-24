@@ -545,6 +545,7 @@ void TList::portsPopupMenu(Track* t, int x, int y)
                                 track->setOutPortAndUpdate(n);
                               }
                               audio->msgIdle(false);
+                              audio->msgUpdateSoloStates();                   // (p4.0.14)  p4.0.17
                               song->update();
                         }
                         else
@@ -569,7 +570,9 @@ void TList::portsPopupMenu(Track* t, int x, int y)
                           //audio->msgSetTrackOutPort(track, n);
                           track->setOutPortAndUpdate(n);
                           audio->msgIdle(false);
-                          song->update();
+                          //song->update();
+                          audio->msgUpdateSoloStates();                   // (p4.0.14) p4.0.17
+                          song->update(SC_MIDI_TRACK_PROP);               //
                         }
                       }
                   delete p;
@@ -1104,7 +1107,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   //if(button == QMouseEvent::LeftButton)
                   //  portsPopupMenu(t, x, t->y() - ypos);
                     
-                  audio->msgUpdateSoloStates(); // p4.0.14
+                  //audio->msgUpdateSoloStates(); // p4.0.14
                   //song->update(SC_ROUTE);       //
                   
                   break;
@@ -1459,7 +1462,9 @@ void TList::wheelEvent(QWheelEvent* ev)
                               mt->setOutPortAndUpdate(port);
                               audio->msgIdle(false);
                               
-                              song->update(SC_ROUTE);
+                              audio->msgUpdateSoloStates();     // p4.0.14
+                              //song->update(SC_ROUTE);
+                              song->update(SC_MIDI_TRACK_PROP); // p4.0.17
                               }
                         }
                   break;
@@ -1483,7 +1488,8 @@ void TList::wheelEvent(QWheelEvent* ev)
                               
                               // may result in adding/removing mixer strip:
                               //song->update(-1);
-                              song->update(SC_MIDI_TRACK_PROP);
+                              audio->msgUpdateSoloStates();         // p4.0.14
+                              song->update(SC_MIDI_TRACK_PROP);     
                               }
                         }
                   else {

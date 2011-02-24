@@ -190,7 +190,8 @@ class MusE : public QMainWindow
       void processTrack(MidiTrack* track);
 
       void write(Xml& xml) const;
-      bool clearSong();
+      // If clear_all is false, it will not touch things like midi ports.
+      bool clearSong(bool clear_all = true);
       bool save(const QString&, bool);
       void setUntitledProject();
       void setConfigDefaults();

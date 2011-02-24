@@ -260,17 +260,20 @@ Track* Song::addTrack(int t)
       {
         MidiTrack* mt = (MidiTrack*)track;
         int c, cbi, ch;
-        bool defOutFound = false;                /// TODO: Remove this when multiple out routes supported.
+        bool defOutFound = false;                /// TODO: Remove this if and when multiple output routes supported.
         for(int i = 0; i < MIDI_PORTS; ++i)
         {
           MidiPort* mp = &midiPorts[i];
           
-          c = mp->defaultInChannels();
-          if(c)
+          if(mp->device())  // Only if device is valid. p4.0.17 
           {
-            audio->msgAddRoute(Route(i, c), Route(track, c));
-            updateFlags |= SC_ROUTE;
-          }
+            c = mp->defaultInChannels();
+            if(c)
+            {
+              audio->msgAddRoute(Route(i, c), Route(track, c));
+              updateFlags |= SC_ROUTE;
+            }
+          }  
           
           if(!defOutFound)                       ///
           {
@@ -278,7 +281,7 @@ Track* Song::addTrack(int t)
             if(c)
             {
               
-        /// TODO: Switch when multiple out routes supported.
+        /// TODO: Switch if and when multiple output routes supported.
         #if 0
               audio->msgAddRoute(Route(track, c), Route(i, c));
               updateFlags |= SC_ROUTE;
@@ -290,7 +293,8 @@ Track* Song::addTrack(int t)
                 {
                   defOutFound = true;
                   mt->setOutPort(i);
-                  mt->setOutChannel(ch);
+                  if(type != Track::DRUM)  // p4.0.17 Leave drum tracks at channel 10.
+                    mt->setOutChannel(ch);
                   updateFlags |= SC_ROUTE;
                   break;               
                 }
@@ -2019,9 +2023,10 @@ void Song::panic()
 //    signal - emit signals for changes if true
 //    called from constructor as clear(false) and
 //    from MusE::clearSong() as clear(false)
+//    If clear_all is false, it will not touch things like midi ports.  
 //---------------------------------------------------------
 
-void Song::clear(bool signal)
+void Song::clear(bool signal, bool /*clear_all*/)
       {
       if(debugMsg)
         printf("Song::clear\n");
@@ -2046,8 +2051,9 @@ void Song::clear(bool signal)
         // p3.3.50 Reset this.
         midiPorts[i].setFoundInSongFile(false);
 
-        // This will also close the device.
-        midiPorts[i].setMidiDevice(0);
+        //if(clear_all)  // Allow not touching devices. p4.0.17  TESTING: Maybe some problems...
+          // This will also close the device.
+          midiPorts[i].setMidiDevice(0);
       }
       
       _synthIs.clearDelete();
@@ -2064,15 +2070,18 @@ void Song::clear(bool signal)
           //if((*imd)->deviceType() == MidiDevice::JACK_MIDI)
           if(dynamic_cast< MidiJackDevice* >(*imd))
           {
-            // Remove the device from the list.
-            midiDevices.erase(imd);
-            // Since Jack midi devices are created dynamically, we must delete them.
-            // The destructor unregisters the device from Jack, which also disconnects all device-to-jack routes.
-            // This will also delete all midi-track-to-device routes, they point to non-existant midi tracks 
-            //  which were all deleted above
-            delete (*imd);
-            loop = true;
-            break;
+            //if(clear_all)  // Allow not touching devices. p4.0.17  TESTING: Maybe some problems...
+            {
+              // Remove the device from the list.
+              midiDevices.erase(imd);
+              // Since Jack midi devices are created dynamically, we must delete them.
+              // The destructor unregisters the device from Jack, which also disconnects all device-to-jack routes.
+              // This will also delete all midi-track-to-device routes, they point to non-existant midi tracks 
+              //  which were all deleted above
+              delete (*imd);
+              loop = true;
+              break;
+            }  
           }  
           else
           //if((*imd)->deviceType() == MidiDevice::ALSA_MIDI)

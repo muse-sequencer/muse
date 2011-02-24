@@ -32,6 +32,7 @@
 OrganGui::OrganGui()
    : QWidget(0, Qt::Window), MessGui()
       {
+      setupUi(this);  // p4.0.17
       QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
       connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
 

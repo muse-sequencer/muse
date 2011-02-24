@@ -1687,7 +1687,8 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
       if (mixer2)
             mixer2->clear();
       arranger->clear();      // clear track info
-      if (clearSong())
+      //if (clearSong())
+      if (clearSong(loadAll))  // Allow not touching things like midi ports. p4.0.17 TESTING: Maybe some problems...
             return;
 
       QFileInfo fi(name);
@@ -1937,7 +1938,16 @@ void MusE::loadTemplate()
                                    tr("MusE: load template"), 0, MFileDialog::GLOBAL_VIEW);
       if (!fn.isEmpty()) {
             // museProject = QFileInfo(fn).absolutePath();
+            
             loadProjectFile(fn, true, true);
+            // With templates, don't clear midi ports. 
+            // Any named ports in the template file are useless since they likely 
+            //  would not be found on other users' machines.
+            // So keep whatever the user currently has set up for ports.  
+            // Note that this will also keep the current window configurations etc.
+            //  but actually that's also probably a good thing. p4.0.17 Tim.  TESTING: Maybe some problems...
+            //loadProjectFile(fn, true, false);
+            
             setUntitledProject();
             }
       }
@@ -2210,13 +2220,9 @@ PopupMenu* MusE::getRoutingPopupMenu()
 void MusE::updateRouteMenus(Track* track, QObject* master)    
 {
       // NOTE: The purpose of this routine is to make sure the items actually reflect
-      //  the routing status. And with MusE-1 QT3, it was also required to actually
-      //  check the items since QT3 didn't do it for us.
-      // But now with MusE-2 and QT4, QT4 checks an item when it is clicked.
-      // So this routine is less important now, since 99% of the time, the items
-      //  will be in the right checked state.
-      // But we still need this in case for some reason a route could not be
-      //  added (or removed). Then the item will be properly un-checked (or checked) here.
+      //  the routing status. 
+      // In case for some reason a route could not be added (or removed). 
+      // Then the item will be properly un-checked (or checked) here.
       
       //if(!track || track != gRoutingPopupMenuMaster || track->type() == Track::AUDIO_AUX)
       //if(!track || track->type() == Track::AUDIO_AUX)
@@ -2371,6 +2377,12 @@ void MusE::routingPopupMenuActivated(Track* track, int n)
         if(n == -1) 
           return;
         
+        if(n == 0)      // p4.0.17
+        {
+          muse->configMidiPorts();
+          return;
+        }
+        
         iRouteMenuMap imm = gRoutingMenuMap.find(n);
         if(imm == gRoutingMenuMap.end())
           return;
@@ -2446,11 +2458,12 @@ void MusE::routingPopupMenuActivated(Track* track, int n)
 
         MidiPort* mp = &midiPorts[mdidx];
         MidiDevice* md = mp->device();
-        if(!md)
-          return;
+        //if(!md)    // Removed p4.0.17 Allow connections to ports with no device.
+        //  return;
         
         //if(!(md->rwFlags() & 2))
-        if(!(md->rwFlags() & (gIsOutRoutingPopupMenu ? 1 : 2)))
+        //if(!(md->rwFlags() & (gIsOutRoutingPopupMenu ? 1 : 2)))
+        if(md && !(md->rwFlags() & (gIsOutRoutingPopupMenu ? 1 : 2)))   // p4.0.17
           return;
         
         int chmask = 0;                   
@@ -2802,21 +2815,45 @@ PopupMenu* MusE::prepareRoutingPopupMenu(Track* track, bool dst)
     }
     else
     {
+      // Warn if no devices available. Add an item to open midi config. p4.0.17 
+      int pi = 0;
+      for( ; pi < MIDI_PORTS; ++pi)
+      {
+        MidiDevice* md = midiPorts[pi].device();
+        if(md && !md->isSynti() && (md->rwFlags() & 2))
+          break;
+      }
+      if(pi == MIDI_PORTS)
+      {
+        act = pup->addAction(tr("Warning: No midi input devices!"));
+        act->setCheckable(false);
+        act->setData(-1);
+        pup->addSeparator();
+      }
+      act = pup->addAction(QIcon(*settings_midiport_softsynthsIcon), tr("Open midi config..."));
+      act->setCheckable(false);
+      act->setData(gid);
+      pup->addSeparator();
+      ++gid;
+      
+      pup->addAction(new MenuTitleItem("Midi input ports", pup)); 
+      
       for(int i = 0; i < MIDI_PORTS; ++i)
       {
         // NOTE: Could possibly list all devices, bypassing ports, but no, let's stick with ports.
         MidiPort* mp = &midiPorts[i];
         MidiDevice* md = mp->device();
-        if(!md)
-          continue;
+        //if(!md)
+        //  continue;
         
-        if(!(md->rwFlags() & (dst ? 1 : 2)))
+        // p4.0.17 Do not list synth devices!
+        if(md && md->isSynti())
+          continue;
+          
+        if(md && !(md->rwFlags() & 2))
           continue;
           
         //printf("MusE::prepareRoutingPopupMenu adding submenu portnum:%d\n", i);
-        
-        PopupMenu* subp = new PopupMenu(pup);
-        subp->setTitle(md->name()); 
         
         // MusE-2: Check this - needed with QMenu? Help says no. No - verified, it actually causes double triggers!
         //connect(subp, SIGNAL(triggered(QAction*)), pup, SIGNAL(triggered(QAction*)));
@@ -2825,7 +2862,8 @@ PopupMenu* MusE::prepareRoutingPopupMenu(Track* track, bool dst)
         int chanmask = 0;
         // p3.3.50 To reduce number of routes required, from one per channel to just one containing a channel mask. 
         // Look for the first route to this midi port. There should always be only a single route for each midi port, now.
-        for(iRoute ir = rl->begin(); ir != rl->end(); ++ir)   
+        iRoute ir = rl->begin();
+        for( ; ir != rl->end(); ++ir)   
         {
           if(ir->type == Route::MIDI_PORT_ROUTE && ir->midiPort == i) 
           {
@@ -2834,6 +2872,12 @@ PopupMenu* MusE::prepareRoutingPopupMenu(Track* track, bool dst)
             break;
           }
         }
+        // p4.0.17 List ports with no device, but with routes to this track, in the main popup.
+        if(!md && ir == rl->end())
+          continue;
+        
+        PopupMenu* subp = new PopupMenu(pup);
+        subp->setTitle(QString("%1:").arg(i+1) + (md ? md->name() : tr("<none>"))); 
         
         for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
         {
@@ -2852,7 +2896,7 @@ PopupMenu* MusE::prepareRoutingPopupMenu(Track* track, bool dst)
           ++gid;  
         }
         //gid = MIDI_PORTS * MIDI_CHANNELS + i;           // Make sure each 'toggle' item gets a unique id.
-        act = subp->addAction(QString("Toggle all"));
+        act = subp->addAction(tr("Toggle all"));
         //act->setCheckable(true);
         act->setData(gid);
         Route togRoute(i, (1 << MIDI_CHANNELS) - 1);    // Set all channel bits.
@@ -2860,6 +2904,61 @@ PopupMenu* MusE::prepareRoutingPopupMenu(Track* track, bool dst)
         ++gid;
         pup->addMenu(subp);
       }
+      
+      #if 0
+      // p4.0.17 List ports with no device and no in routes, in a separate popup.
+      PopupMenu* morep = new PopupMenu(pup);
+      morep->setTitle(tr("More...")); 
+      for(int i = 0; i < MIDI_PORTS; ++i)
+      {
+        MidiPort* mp = &midiPorts[i];
+        if(mp->device())
+          continue;
+        
+        PopupMenu* subp = new PopupMenu(morep);
+        subp->setTitle(QString("%1:").arg(i) + tr("<none>")); 
+        
+        // MusE-2: Check this - needed with QMenu? Help says no. No - verified, it actually causes double triggers!
+        //connect(subp, SIGNAL(triggered(QAction*)), pup, SIGNAL(triggered(QAction*)));
+        //connect(subp, SIGNAL(aboutToHide()), pup, SIGNAL(aboutToHide()));
+        
+        iRoute ir = rl->begin();
+        for( ; ir != rl->end(); ++ir)   
+        {
+          if(ir->type == Route::MIDI_PORT_ROUTE && ir->midiPort == i) 
+            break;
+        }
+        if(ir != rl->end())
+          continue;
+        
+        for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+        {
+          act = subp->addAction(QString("Channel %1").arg(ch+1));
+          act->setCheckable(true);
+          act->setData(gid);
+          
+          int chbit = 1 << ch;
+          Route srcRoute(i, chbit);    // In accordance with new channel mask, use the bit position.
+          
+          gRoutingMenuMap.insert( pRouteMenuMap(gid, srcRoute) );
+          
+          //if(chanmask & chbit)                  // Is the channel already set? Show item check mark.
+          //  act->setChecked(true);
+          
+          ++gid;  
+        }
+        //gid = MIDI_PORTS * MIDI_CHANNELS + i;           // Make sure each 'toggle' item gets a unique id.
+        act = subp->addAction(QString("Toggle all"));
+        //act->setCheckable(true);
+        act->setData(gid);
+        Route togRoute(i, (1 << MIDI_CHANNELS) - 1);    // Set all channel bits.
+        gRoutingMenuMap.insert( pRouteMenuMap(gid, togRoute) );
+        ++gid;
+        morep->addMenu(subp);
+      }      
+      pup->addMenu(morep);
+      #endif
+      
     }
         
     if(pup->actions().isEmpty())
@@ -4615,9 +4714,10 @@ MusE::lash_idle_cb ()
 //   clearSong
 //    return true if operation aborted
 //    called with sequencer stopped
+//    If clear_all is false, it will not touch things like midi ports.
 //---------------------------------------------------------
 
-bool MusE::clearSong()
+bool MusE::clearSong(bool clear_all)
       {
       if (song->dirty) {
             int n = 0;
@@ -4665,7 +4765,7 @@ again:
                   }
             }
       microSleep(100000);
-      song->clear(false);
+      song->clear(false, clear_all);
       microSleep(100000);
       return false;
       }

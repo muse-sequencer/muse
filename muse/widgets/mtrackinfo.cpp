@@ -614,18 +614,30 @@ void MidiTrackInfo::inRoutesPressed()
   PopupMenu* pup = muse->prepareRoutingPopupMenu(selected, false);
   //PopupView* pup = muse->prepareRoutingPopupView(selected, false);
 
-  if(!pup) {
-    int ret = QMessageBox::warning(this, tr("No inputs"),
-                                   tr("There are no midi inputs.\n"
+  /*
+  QPoint ppt = QCursor::pos();
+  
+  int i = 0;
+  for( ; i < MIDI_PORTS; ++i)
+  {
+    if(midiPorts[i].device() && !midiPorts[pi].device()->isSynti())
+      break;
+  }
+  if(!pup || i == MIDI_PORTS)
+  {
+    int ret = QMessageBox::warning(this, tr("No devices"),
+                                   tr("There are no midi port devices defined.\n"
                                       "Do you want to open the midi configuration dialog?"),
                                    QMessageBox::Ok | QMessageBox::Cancel,
                                    QMessageBox::Ok);
     if (ret == QMessageBox::Ok) {
-        printf("open config midi ports\n");
+        //printf("open config midi ports\n");
         muse->configMidiPorts();
     }
-    return;
+    if(!pup)
+      return;
   }
+  */
   
   ///gRoutingPopupMenuMaster = midiTrackInfo;
   gRoutingPopupMenuMaster = this;

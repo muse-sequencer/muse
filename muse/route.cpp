@@ -401,6 +401,15 @@ void addRoute(Route src, Route dst)
             }
             */
             
+            MidiPort *mp = &midiPorts[src.midiPort];
+            
+            // p4.0.17 Do not allow ports with synth midi devices to connect to audio ins!
+            if(dst.track->type() == Track::AUDIO_INPUT && mp->device() && mp->device()->isSynti())
+            {
+              fprintf(stderr, "addRoute: destination is audio in, but source midi port:%d is synth device\n", src.midiPort);
+              return;
+            }
+            
             if(dst.channel < 1 || dst.channel >= (1 << MIDI_CHANNELS))
             {
               fprintf(stderr, "addRoute: source is midi port:%d, but destination channel mask:%d out of range\n", src.midiPort, dst.channel);
@@ -413,8 +422,6 @@ void addRoute(Route src, Route dst)
             //  fprintf(stderr, "addRoute: source is midi port, but no destination port device\n");
             //  return;
             //}
-            
-            MidiPort *mp = &midiPorts[src.midiPort];
             
             src.channel = dst.channel;
             RouteList* outRoutes = mp->outRoutes();
