@@ -127,6 +127,11 @@ class MidiPort {
 extern MidiPort midiPorts[MIDI_PORTS];
 extern void initMidiPorts();
 
+// p4.0.17 Turn off if and when multiple output routes supported.
+#if 1
+extern void setPortExclusiveDefOutChan(int /*port*/, int /*chan*/);
+#endif
+
 class QMenu;
 class QWidget;
 //extern QPopupMenu* midiPortsPopup(QWidget*);

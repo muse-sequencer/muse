@@ -1568,7 +1568,11 @@ static int addMidiPorts(AudioTrack* t, PopupMenu* pup, int id, RouteMenuMap& mm,
     //if(!(md->rwFlags() & (isOutput ? 1 : 2)))
     //  continue;
           
-    RouteList* rl = isOutput ? t->outRoutes() : t->inRoutes();
+    // p4.0.17 Do not list synth devices!
+    if(md->isSynti())
+      continue;
+          
+   RouteList* rl = isOutput ? t->outRoutes() : t->inRoutes();
     
     PopupMenu* subp = new PopupMenu(pup);
     subp->setTitle(md->name()); 

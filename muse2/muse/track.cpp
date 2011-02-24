@@ -447,6 +447,23 @@ void MidiTrack::setOutPortAndUpdate(int i)
 }
 
 //---------------------------------------------------------
+//   setOutPortAndChannelAndUpdate
+//---------------------------------------------------------
+
+void MidiTrack::setOutPortAndChannelAndUpdate(int port, int ch)
+{
+  if(_outPort == port && _outChannel == ch)
+    return;
+  
+  //removePortCtrlEvents();
+  removePortCtrlEvents(this);
+  _outPort = port; 
+  _outChannel = ch;
+  //addPortCtrlEvents();
+  addPortCtrlEvents(this);
+}
+
+//---------------------------------------------------------
 //   setInPortAndChannelMask
 //   For old song files with port mask (max 32 ports) and channel mask (16 channels), 
 //    before midi routing was added (the iR button). p3.3.48

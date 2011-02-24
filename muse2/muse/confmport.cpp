@@ -12,6 +12,7 @@
 #include <stdio.h>
 
 #include <QMenu>
+#include <QAction>
 #include <QMessageBox>
 #include <QPixmap>
 #include <QTableWidget>
@@ -37,14 +38,183 @@
 #include "audiodev.h"
 #include "menutitleitem.h"
 #include "utils.h"
+#include "popupmenu.h"
 
 extern std::vector<Synth*> synthis;
 
 enum { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INSTR, DEVCOL_NAME,
-       //DEVCOL_STATE };
-       //DEVCOL_ROUTES, DEVCOL_STATE };
-       //DEVCOL_INROUTES, DEVCOL_OUTROUTES, DEVCOL_STATE };  // p3.3.55
        DEVCOL_INROUTES, DEVCOL_OUTROUTES, DEVCOL_DEF_IN_CHANS, DEVCOL_DEF_OUT_CHANS, DEVCOL_STATE };  
+
+//---------------------------------------------------------
+//   changeDefInputRoutes
+//---------------------------------------------------------
+
+void MPConfig::changeDefInputRoutes(QAction* act)
+{
+  QTableWidgetItem* item = mdevView->currentItem();
+  if(item == 0)
+    return;
+  QString id = mdevView->item(item->row(), DEVCOL_NO)->text();
+  int no = atoi(id.toLatin1().constData()) - 1;
+  if(no < 0 || no >= MIDI_PORTS)
+    return;
+  int actid = act->data().toInt();
+  int allch = (1 << MIDI_CHANNELS) - 1;  
+  int defch = midiPorts[no].defaultInChannels();  
+  
+  if(actid == MIDI_CHANNELS + 1)  // Apply to all tracks now.
+  {
+    // Are there tracks, and is there a port device? 
+    // Tested: Hmm, allow ports with no device since that is a valid situation.
+    if(!song->midis()->empty()) // && midiPorts[no].device())  
+    {
+      int ret = QMessageBox::question(this, tr("Default input connections"),
+                                    tr("Are you sure you want to apply to all existing midi tracks now?"),
+                                    QMessageBox::Ok | QMessageBox::Cancel,
+                                    QMessageBox::Cancel);
+      if(ret == QMessageBox::Ok) 
+      {
+        MidiTrackList* mtl = song->midis();
+        for(iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
+        {
+          // Remove all routes from this port to the tracks first.
+          audio->msgRemoveRoute(Route(no, allch), Route(*it, allch));
+          if(defch)
+            audio->msgAddRoute(Route(no, defch), Route(*it, defch));
+        }  
+        //audio->msgUpdateSoloStates();
+        song->update(SC_ROUTE);                    
+      }
+    }  
+  }
+  else
+  {
+    int chbits;
+    if(actid == MIDI_CHANNELS)              // Toggle all.
+    {
+      chbits = (defch == allch) ? 0 : allch;
+      if(defpup)
+        for(int i = 0; i < MIDI_CHANNELS; ++i)
+        {
+          QAction* act = defpup->findActionFromData(i);  
+          if(act)
+            act->setChecked(chbits);
+        }    
+    }  
+    else
+      chbits = defch ^ (1 << actid);
+    midiPorts[no].setDefaultInChannels(chbits);
+    mdevView->item(item->row(), DEVCOL_DEF_IN_CHANS)->setText(bitmap2String(chbits));
+  }  
+}
+
+//---------------------------------------------------------
+//   changeDefOutputRoutes
+//---------------------------------------------------------
+
+void MPConfig::changeDefOutputRoutes(QAction* act)
+{
+  QTableWidgetItem* item = mdevView->currentItem();
+  if(item == 0)
+    return;
+  QString id = mdevView->item(item->row(), DEVCOL_NO)->text();
+  int no = atoi(id.toLatin1().constData()) - 1;
+  if(no < 0 || no >= MIDI_PORTS)
+    return;
+  int actid = act->data().toInt();
+  int defch = midiPorts[no].defaultOutChannels();  
+  // Turn on if and when multiple output routes are supported.
+  #if 0
+  int allch = (1 << MIDI_CHANNELS) - 1;  
+  #endif
+  
+  if(actid == MIDI_CHANNELS + 1)  // Apply to all tracks now.
+  {
+    // Are there tracks, and is there a port device? 
+    // Tested: Hmm, allow ports with no device since that is a valid situation.
+    if(!song->midis()->empty()) // && midiPorts[no].device())
+    {
+      int ret = QMessageBox::question(this, tr("Default output connections"),
+                                    tr("Are you sure you want to apply to all existing midi tracks now?"),
+                                    QMessageBox::Ok | QMessageBox::Cancel,
+                                    QMessageBox::Cancel);
+      if(ret == QMessageBox::Ok) 
+      {
+        MidiTrackList* mtl = song->midis();
+        // Turn on if and when multiple output routes are supported.
+        #if 0
+        for(iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
+        {
+          // Remove all routes from this port to the tracks first.
+          audio->msgRemoveRoute(Route(no, allch), Route(*it, allch));
+          if(defch)
+            audio->msgAddRoute(Route(no, defch), Route(*it, defch));
+        }  
+        audio->msgUpdateSoloStates();
+        song->update(SC_ROUTE);                    
+        #else
+        int ch = 0;
+        for( ; ch < MIDI_CHANNELS; ++ch)
+          if(defch & (1 << ch)) break;
+           
+        audio->msgIdle(true);
+        for(iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
+        {
+          // Leave drum track channel at current setting.
+          if((*it)->type() == Track::DRUM)
+            (*it)->setOutPortAndUpdate(no);
+          else
+            (*it)->setOutPortAndChannelAndUpdate(no, ch);
+        }  
+        audio->msgIdle(false);
+        audio->msgUpdateSoloStates();
+        song->update(SC_MIDI_TRACK_PROP);                    
+        #endif
+      }
+    }  
+  }
+  else
+  {
+    #if 0          // Turn on if and when multiple output routes are supported.
+    int chbits;
+    if(actid == MIDI_CHANNELS)              // Toggle all.
+    {
+      chbits = (defch == allch) ? 0 : allch;
+      if(defpup)
+        for(int i = 0; i < MIDI_CHANNELS; ++i)
+        {
+          QAction* act = defpup->findActionFromData(i);  
+          if(act)
+            act->setChecked(chbits);
+        }    
+    }  
+    else
+      chbits = defch ^ (1 << actid);
+    midiPorts[no].setDefaultOutChannels(chbits);
+    mdevView->item(item->row(), DEVCOL_DEF_OUT_CHANS)->setText(bitmap2String(chbits));
+    #else
+    if(actid < MIDI_CHANNELS)
+    {
+      int chbits = 1 << actid;
+      // Multiple out routes not supported. Make the setting exclusive to this port - exclude all other ports.
+      setPortExclusiveDefOutChan(no, chbits);
+      int j = mdevView->rowCount();
+      for(int i = 0; i < j; ++i)
+        mdevView->item(i, DEVCOL_DEF_OUT_CHANS)->setText(bitmap2String(i == no ? chbits : 0));
+      if(defpup)
+      {
+        QAction* a;
+        for(int i = 0; i < MIDI_CHANNELS; ++i)
+        {
+          a = defpup->findActionFromData(i);  
+          if(a)
+            a->setChecked(i == actid);
+        }  
+      }  
+    }    
+    #endif
+  }  
+}
 
 //---------------------------------------------------------
 //   mdevViewItemRenamed
@@ -59,26 +229,81 @@ void MPConfig::mdevViewItemRenamed(QTableWidgetItem* item)
     return;
   switch(col)
   {
+    // Enabled: Use editor (Not good - only responds if text changed. We need to respond always).
+    // Disabled: Use pop-up menu.
+    #if 0
     case DEVCOL_DEF_IN_CHANS:
     {
       QString id = item->tableWidget()->item(item->row(), DEVCOL_NO)->text();
       int no = atoi(id.toLatin1().constData()) - 1;
       if(no < 0 || no >= MIDI_PORTS)
         return;
-      midiPorts[no].setDefaultInChannels(((1 << MIDI_CHANNELS) - 1) & string2bitmap(s));
+      int allch = (1 << MIDI_CHANNELS) - 1;  
+      int ch = allch & string2bitmap(s);  
+      midiPorts[no].setDefaultInChannels(ch);
+      
+      if(!song->midis()->empty() && midiPorts[no].device())  // Only if there are tracks, and device is valid. 
+      {
+        int ret = QMessageBox::question(this, tr("Default input connections"),
+                                      tr("Setting will apply to new midi tracks.\n"
+                                          "Do you want to apply to all existing midi tracks now?"),
+                                      QMessageBox::Yes | QMessageBox::No,
+                                      QMessageBox::No);
+        if(ret == QMessageBox::Yes) 
+        {
+          MidiTrackList* mtl = song->midis();
+          for(iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
+          {
+            // Remove all routes from this port to the tracks first.
+            audio->msgRemoveRoute(Route(no, allch), Route(*it, allch));
+            if(ch)
+              audio->msgAddRoute(Route(no, ch), Route(*it, ch));
+          }  
+        }  
+      }
       song->update();
     }
     break;    
+    #endif
+    
+    // Enabled: Use editor (Not good - only responds if text changed. We need to respond always).
+    // Disabled: Use pop-up menu.
+    // Only turn on if and when multiple output routes are supported.
+    #if 0
     case DEVCOL_DEF_OUT_CHANS:
     {
       QString id = item->tableWidget()->item(item->row(), DEVCOL_NO)->text();
       int no = atoi(id.toLatin1().constData()) - 1;
       if(no < 0 || no >= MIDI_PORTS)
         return;
-      midiPorts[no].setDefaultOutChannels(((1 << MIDI_CHANNELS) - 1) & string2bitmap(s));
+      int allch = (1 << MIDI_CHANNELS) - 1;  
+      int ch = allch & string2bitmap(s);  
+      midiPorts[no].setDefaultOutChannels(ch);
+      
+      if(!song->midis()->empty() && midiPorts[no].device())  // Only if there are tracks, and device is valid. 
+      {
+        int ret = QMessageBox::question(this, tr("Default output connections"),
+                                      tr("Setting will apply to new midi tracks.\n"
+                                          "Do you want to apply to all existing midi tracks now?"),
+                                      QMessageBox::Yes | QMessageBox::No,
+                                      QMessageBox::No);
+        if(ret == QMessageBox::Yes) 
+        {
+          MidiTrackList* mtl = song->midis();
+          for(iMidiTrack it = mtl->begin(); it != mtl->end(); ++it)
+          {
+            // Remove all routes from the tracks to this port first.
+            audio->msgRemoveRoute(Route(*it, allch), Route(no, allch));
+            if(ch)
+              audio->msgAddRoute(Route(*it, ch), Route(no, ch));
+          }  
+        }  
+      }
       song->update();
     }
     break;    
+    # endif
+    
     case DEVCOL_NAME:
     {
       QString id = item->tableWidget()->item(item->row(), DEVCOL_NO)->text();
@@ -134,93 +359,76 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
       int rwFlags         = dev ? dev->rwFlags() : 0;
       int openFlags       = dev ? dev->openFlags() : 0;
       QTableWidget* listView = item->tableWidget();
-      //printf("MPConfig::rbClicked            cpt x:%d y:%d\n", cpt.x(), cpt.y());
-      //printf("MPConfig::rbClicked        new cpt x:%d y:%d\n", cpt.x(), cpt.y());
-      //printf("MPConfig::rbClicked new mapped cpt x:%d y:%d\n", cpt.x(), cpt.y());
       QPoint ppt          = listView->visualItemRect(item).bottomLeft();
       QPoint mousepos     = QCursor::pos();
-      //printf("MPConfig::rbClicked            ppt x:%d y:%d\n", ppt.x(), ppt.y());
       int col = item->column();
       ppt += QPoint(0, listView->horizontalHeader()->height());
-      //printf("MPConfig::rbClicked        new ppt x:%d y:%d\n", ppt.x(), ppt.y());
       ppt  = listView->mapToGlobal(ppt);
-      //printf("MPConfig::rbClicked new mapped ppt x:%d y:%d\n", ppt.x(), ppt.y());
 
       switch (col) {
             case DEVCOL_GUI:
                   if (dev == 0)
-                        //break;
                         return;
                   if (port->hasGui())
                   {
                         port->instrument()->showGui(!port->guiVisible());
                         item->setIcon(port->guiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   }
-                  //break;
                   return;
                   
             case DEVCOL_REC:
                   if (dev == 0 || !(rwFlags & 2))
-                        //break;
                         return;
                   openFlags ^= 0x2;
                   dev->setOpenFlags(openFlags);
                   midiSeq->msgSetMidiDevice(port, dev);       // reopen device
                   item->setIcon(openFlags & 2 ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   
-                  // p3.3.55
                   if(dev->deviceType() == MidiDevice::JACK_MIDI)
                   {
                     if(dev->openFlags() & 2)  
                     {
-                      //item->setPixmap(DEVCOL_INROUTES, *buttondownIcon);
+                      item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setIcon(QIcon(*buttondownIcon));
 		      item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setText(tr("in"));
 		    }
                     else
                     {
-                      //item->setPixmap(DEVCOL_INROUTES, *buttondownIcon);
+                      item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setIcon(QIcon());
 		      item->tableWidget()->item(item->row(), DEVCOL_INROUTES)->setText("");
                     }  
                   }
-            
-                  //break;
                   return;
                   
             case DEVCOL_PLAY:
                   if (dev == 0 || !(rwFlags & 1))
-                        //break;
                         return;
                   openFlags ^= 0x1;
                   dev->setOpenFlags(openFlags);
                   midiSeq->msgSetMidiDevice(port, dev);       // reopen device
                   item->setIcon(openFlags & 1 ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   
-                  // p3.3.55
                   if(dev->deviceType() == MidiDevice::JACK_MIDI)
                   {
                     if(dev->openFlags() & 1)  
                     {
-                      //item->setPixmap(DEVCOL_OUTROUTES, *buttondownIcon);
+                      item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setIcon(QIcon(*buttondownIcon));
 		      item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setText(tr("out"));
                     }
                     else  
                     {
-                      //item->setPixmap(DEVCOL_OUTROUTES, *buttondownIcon);
+                      item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setIcon(QIcon());
 		      item->tableWidget()->item(item->row(), DEVCOL_OUTROUTES)->setText("");
                     }
                   }
-            
-                  //break;
                   return;
                   
-            //case DEVCOL_ROUTES:
-            case DEVCOL_INROUTES:  // p3.3.55
+            case DEVCOL_INROUTES:  
             case DEVCOL_OUTROUTES:
                   {
                     if(!checkAudioDevice())
                       return;
                       
-                    if(audioDevice->deviceType() != AudioDevice::JACK_AUDIO)  // p3.3.52  Only if Jack is running.
+                    if(audioDevice->deviceType() != AudioDevice::JACK_AUDIO)  // Only if Jack is running.
                       return;
                       
                     if(!dev)
@@ -232,13 +440,12 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     if(dev->deviceType() != MidiDevice::JACK_MIDI)  
                       return;
                     
-                    //if(!(dev->rwFlags() & 3))
-                    //if(!(dev->rwFlags() & ((col == DEVCOL_OUTROUTES) ? 1 : 2)))    // p3.3.55
+                    //if(!(dev->rwFlags() & ((col == DEVCOL_OUTROUTES) ? 1 : 2)))    
                     if(!(dev->openFlags() & ((col == DEVCOL_OUTROUTES) ? 1 : 2)))    
                       return;
                       
                     //RouteList* rl = (dev->rwFlags() & 1) ? dev->outRoutes() : dev->inRoutes();
-                    RouteList* rl = (col == DEVCOL_OUTROUTES) ? dev->outRoutes() : dev->inRoutes();   // p3.3.55
+                    RouteList* rl = (col == DEVCOL_OUTROUTES) ? dev->outRoutes() : dev->inRoutes();   
                     QMenu* pup = 0;
                     int gid = 0;
                     std::list<QString> sl;
@@ -250,7 +457,6 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     
                     // Jack input ports if device is writable, and jack output ports if device is readable.
                     //sl = (dev->rwFlags() & 1) ? audioDevice->inputPorts(true, _showAliases) : audioDevice->outputPorts(true, _showAliases);
-                    // p3.3.55
                     sl = (col == DEVCOL_OUTROUTES) ? audioDevice->inputPorts(true, _showAliases) : audioDevice->outputPorts(true, _showAliases);
                     
                     //for (int i = 0; i < channel; ++i) 
@@ -283,7 +489,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         
                         //Route dst(*ip, true, i);
                         //Route rt(*ip, (dev->rwFlags() & 1), -1, Route::JACK_ROUTE);
-                        Route rt(*ip, (col == DEVCOL_OUTROUTES), -1, Route::JACK_ROUTE);   // p3.3.55
+                        Route rt(*ip, (col == DEVCOL_OUTROUTES), -1, Route::JACK_ROUTE);   
                         for(iRoute ir = rl->begin(); ir != rl->end(); ++ir) 
                         {
                           if (*ir == rt) 
@@ -324,8 +530,8 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       
                       QString s(act->text());
                       
-                      //if(dev->rwFlags() & 1) // Writable
-                      if(col == DEVCOL_OUTROUTES) // Writable  p3.3.55
+                      //if(dev->rwFlags() & 1) // Writeable
+                      if(col == DEVCOL_OUTROUTES) // Writeable  
                       {
                         Route srcRoute(dev, -1);
                         Route dstRoute(s, true, -1, Route::JACK_ROUTE);
@@ -345,7 +551,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       }
                       else
                       //if(dev->rwFlags() & 2) // Readable
-                      //if(col == DEVCOL_INROUTES) // Readable    p3.3.55
+                      //if(col == DEVCOL_INROUTES) // Readable    
                       {
                         Route srcRoute(s, false, -1, Route::JACK_ROUTE);
                         Route dstRoute(dev, -1);
@@ -367,7 +573,6 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       audio->msgUpdateSoloStates();
                       song->update(SC_ROUTE);
                       
-                      // p3.3.46
                       //delete pup;
                       // FIXME:
                       // Routes can't be re-read until the message sent from msgAddRoute1() 
@@ -381,11 +586,86 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   return;
                   
             case DEVCOL_DEF_IN_CHANS:
-            case DEVCOL_DEF_OUT_CHANS:
-                  {
-                  }
-                  //break;
+                  // Enabled: Use editor (Not good - only responds if text changed. We need to respond always).
+                  // Disabled: Use pop-up menu.
+                  #if 0
                   return;
+                  #else
+                  {
+                    defpup = new PopupMenu(this);
+                    defpup->addAction(new MenuTitleItem("Channel", defpup)); 
+                    QAction* act = 0;
+                    int chbits = midiPorts[no].defaultInChannels();
+                    for(int i = 0; i < MIDI_CHANNELS; ++i) 
+                    {
+                      act = defpup->addAction(QString().setNum(i + 1));
+                      act->setData(i);
+                      act->setCheckable(true);
+                      act->setChecked((1 << i) & chbits);
+                    }
+                    
+                    act = defpup->addAction(tr("Toggle all"));
+                    act->setData(MIDI_CHANNELS);
+                    
+                    defpup->addSeparator();
+                    act = defpup->addAction(tr("Change all tracks now"));
+                    act->setData(MIDI_CHANNELS + 1);
+                    // Enable only if there are tracks, and port has a device.
+                    // Tested: Hmm, allow ports with no device since that is a valid situation.
+                    act->setEnabled(!song->midis()->empty());  // && midiPorts[no].device());
+                    
+                    connect(defpup, SIGNAL(triggered(QAction*)), SLOT(changeDefInputRoutes(QAction*)));
+                    //connect(defpup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
+                    //defpup->popup(QCursor::pos());
+                    defpup->exec(QCursor::pos());
+                    delete defpup;
+                    defpup = 0;
+                  }
+                  return;                  
+                  #endif
+                  
+            case DEVCOL_DEF_OUT_CHANS:
+                  // Enabled: Use editor (Not good - only responds if text changed. We need to respond always).
+                  // Disabled: Use pop-up menu.
+                  // Only turn on if and when multiple output routes are supported.
+                  #if 0
+                  return;
+                  #else
+                  {
+                    defpup = new PopupMenu(this);
+                    defpup->addAction(new MenuTitleItem("Channel", defpup)); 
+                    QAction* act = 0;
+                    int chbits = midiPorts[no].defaultOutChannels();
+                    for(int i = 0; i < MIDI_CHANNELS; ++i) 
+                    {
+                      act = defpup->addAction(QString().setNum(i + 1));
+                      act->setData(i);
+                      act->setCheckable(true);
+                      act->setChecked((1 << i) & chbits);
+                    }  
+                    
+                    // Turn on if and when multiple output routes are supported.
+                    #if 0
+                    act = defpup->addAction(tr("Toggle all"));
+                    act->setData(MIDI_CHANNELS);
+                    #endif
+                    
+                    defpup->addSeparator();
+                    act = defpup->addAction(tr("Change all tracks now"));
+                    act->setData(MIDI_CHANNELS + 1);
+                    // Enable only if there are tracks, and port has a device.
+                    // Tested: Hmm, allow ports with no device since that is a valid situation.
+                    act->setEnabled(!song->midis()->empty());  // && midiPorts[no].device());
+                    
+                    connect(defpup, SIGNAL(triggered(QAction*)), SLOT(changeDefOutputRoutes(QAction*)));
+                    //connect(defpup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
+                    //defpup->popup(QCursor::pos());
+                    defpup->exec(QCursor::pos());
+                    delete defpup;
+                    defpup = 0;
+                  }
+                  return;
+                  #endif
                   
             case DEVCOL_NAME:
                   {
@@ -550,7 +830,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       if(n < 0x10000000)
                       {
                         delete pup;
-                        if(n <= 2)  // p3.3.55
+                        if(n <= 2)  
                         {
                           sdev = MidiJackDevice::createJackMidiDevice(); 
 
@@ -615,7 +895,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                           instrPopup->addAction((*i)->iname());
                      }
                   
-                  QAction* act = instrPopup->exec(ppt, 0);
+                  QAction* act = instrPopup->exec(ppt);
                   if(!act)
                     //break;
                     return;
@@ -652,8 +932,13 @@ void MPConfig::setToolTip(QTableWidgetItem *item, int col)
             //case DEVCOL_ROUTES: item->setToolTip(tr("Jack midi ports")); break;
             case DEVCOL_INROUTES:  item->setToolTip(tr("Connections from Jack Midi outputs")); break;
             case DEVCOL_OUTROUTES: item->setToolTip(tr("Connections to Jack Midi inputs")); break;
-            case DEVCOL_DEF_IN_CHANS:   item->setToolTip(tr("Connect these to new midi tracks")); break;
-            case DEVCOL_DEF_OUT_CHANS:  item->setToolTip(tr("Connect new midi tracks to this (first listed only)")); break;
+            case DEVCOL_DEF_IN_CHANS:   item->setToolTip(tr("Auto-connect these channels to new midi tracks")); break;
+            // Turn on if and when multiple output routes are supported.
+            #if 0
+            case DEVCOL_DEF_OUT_CHANS:  item->setToolTip(tr("Auto-connect new midi tracks to these channels")); break;
+            #else
+            case DEVCOL_DEF_OUT_CHANS:  item->setToolTip(tr("Auto-connect new midi tracks to this channel")); break;
+            #endif
             case DEVCOL_STATE:  item->setToolTip(tr("Device state")); break;
             default: return;
             }
@@ -686,17 +971,21 @@ void MPConfig::setWhatsThis(QTableWidgetItem *item, int col)
             case DEVCOL_OUTROUTES:
                   item->setWhatsThis(tr("Connections to Jack Midi input ports")); break;
             case DEVCOL_DEF_IN_CHANS:
-                  item->setWhatsThis(tr("Connect these channels, on this port, to new midi tracks.\n"
-                                        "Example:\n"
-                                        " 1 2 3    channel 1 2 and 3\n"
-                                        " 1-3      same\n"
-                                        " 1-3 5    channel 1 2 3 and 5\n"
-                                        " all      all channels\n"
-                                        " none     no channels")); break;
+                  //item->setWhatsThis(tr("Auto-connect these channels, on this port, to new midi tracks.\n"
+                  //                      "Example:\n"
+                  //                      " 1 2 3    channel 1 2 and 3\n"
+                  //                      " 1-3      same\n"
+                  //                      " 1-3 5    channel 1 2 3 and 5\n"
+                  //                      " all      all channels\n"
+                  //                      " none     no channels")); break;
+                  item->setWhatsThis(tr("Auto-connect these channels, on this port, to new midi tracks.")); break;
             case DEVCOL_DEF_OUT_CHANS:
-                  item->setWhatsThis(tr("Connect new midi tracks to these channels, on this port.\n"
-                                        "See default in channels.\n"
-                                        "NOTE: Currently only one output port and channel supported (first found)")); break;
+                  // Turn on if and when multiple output routes are supported.
+                  #if 0
+                  item->setWhatsThis(tr("Connect new midi tracks to these channels, on this port.")); break;
+                  #else                      
+                  item->setWhatsThis(tr("Connect new midi tracks to this channel, on this port.")); break;
+                  #endif                      
             case DEVCOL_STATE:
                   item->setWhatsThis(tr("State: result of opening the device")); break;
             default:
@@ -732,6 +1021,7 @@ MPConfig::MPConfig(QWidget* parent)
 
       //popup      = 0;
       instrPopup = 0;
+      defpup = 0;
       _showAliases = -1; // 0: Show first aliases, if available. Nah, stick with -1: none at first.
       
       QStringList columnnames;
@@ -768,7 +1058,8 @@ MPConfig::MPConfig(QWidget* parent)
       connect(synthList, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), SLOT(addInstanceClicked())); 
       connect(removeInstance, SIGNAL(clicked()), SLOT(removeInstanceClicked()));
       connect(instanceList,  SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), SLOT(removeInstanceClicked()));
-      songChanged(0);
+      //songChanged(0);
+      songChanged(SC_CONFIG);  
       }
 
   
@@ -793,7 +1084,10 @@ void MPConfig::selectionChanged()
 void MPConfig::songChanged(int flags)
       {
       // Is it simply a midi controller value adjustment? Forget it.
-      if(flags == SC_MIDI_CONTROLLER)
+      //if(flags == SC_MIDI_CONTROLLER)
+      //  return;
+      // No need for anything but this, yet.
+      if(!(flags & SC_CONFIG))
         return;
     
       // Get currently selected index...
@@ -809,6 +1103,7 @@ void MPConfig::songChanged(int flags)
       
       sitem = 0;
       mdevView->clearContents();
+      int defochs = 0;
       for (int i = MIDI_PORTS-1; i >= 0; --i) 
       {
             mdevView->blockSignals(true); // otherwise itemChanged() is triggered and bad things happen.
@@ -849,14 +1144,50 @@ void MPConfig::songChanged(int flags)
 	    QTableWidgetItem* itemin = new QTableWidgetItem;
 	    addItem(i, DEVCOL_INROUTES, itemin, mdevView);
 	    itemin->setFlags(Qt::ItemIsEnabled);
-            QTableWidgetItem* itemdefin = new QTableWidgetItem(bitmap2String(port->defaultInChannels()));
+            //QTableWidgetItem* itemdefin = new QTableWidgetItem(bitmap2String(port->defaultInChannels()));
+            // Ignore synth devices. Default input routes make no sense for them (right now).
+            QTableWidgetItem* itemdefin = new QTableWidgetItem((dev && dev->isSynti()) ? 
+                                               QString() : bitmap2String(port->defaultInChannels()));
             addItem(i, DEVCOL_DEF_IN_CHANS, itemdefin, mdevView);
-            itemdefin->setFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled);
+            // Enabled: Use editor (not good). Disabled: Use pop-up menu.
+            #if 0
+            itemdefin->setFlags((dev && dev->isSynti()) ? Qt::NoItemFlags : Qt::ItemIsEditable | Qt::ItemIsEnabled);
+            # else
+            if(dev && dev->isSynti())
+              itemdefin->setFlags(Qt::NoItemFlags);
+            else
+            {
+              itemdefin->setFlags(Qt::ItemIsEnabled);
+              itemdefin->setIcon(QIcon(*buttondownIcon));
+            }  
+            #endif
+            
+            // Turn on if and when multiple output routes are supported.
+            #if 0
             QTableWidgetItem* itemdefout = new QTableWidgetItem(bitmap2String(port->defaultOutChannels()));
             addItem(i, DEVCOL_DEF_OUT_CHANS, itemdefout, mdevView);
             itemdefout->setFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled);
-	    mdevView->blockSignals(false);
-
+            #else
+            //QTableWidgetItem* itemdefout = new QTableWidgetItem(QString("--"));
+            QTableWidgetItem* itemdefout = new QTableWidgetItem(bitmap2String(0));
+            defochs = port->defaultOutChannels();
+            if(defochs)
+            {
+              for(int ch = 0; ch < MIDI_CHANNELS; ++ch)
+              {
+                if(defochs & (1 << ch))
+                {
+                  itemdefout->setText(QString().setNum(ch + 1));
+                  break;
+                }
+              }
+            }  
+            addItem(i, DEVCOL_DEF_OUT_CHANS, itemdefout, mdevView);
+            itemdefout->setFlags(Qt::ItemIsEnabled);
+            itemdefout->setIcon(QIcon(*buttondownIcon));
+	    #endif
+            
+            mdevView->blockSignals(false);
 
             if (dev) {
 	          itemname->setText(dev->name());
@@ -898,20 +1229,23 @@ void MPConfig::songChanged(int flags)
               //item->setPixmap(DEVCOL_ROUTES, *buttondownIcon);
               //item->setText(DEVCOL_ROUTES, tr("routes"));
               
-              // p3.3.55
               if(dev->rwFlags() & 1)  
               //if(dev->openFlags() & 1)  
               {
-		itemout->setIcon(QIcon(*buttondownIcon));
                 if(dev->openFlags() & 1)  
+                {
+                  itemout->setIcon(QIcon(*buttondownIcon));
 		  itemout->setText(tr("out"));
+                }  
               }  
               if(dev->rwFlags() & 2)  
               //if(dev->openFlags() & 2)  
               {
-		itemin->setIcon(QIcon(*buttondownIcon));
                 if(dev->openFlags() & 2)  
+                {
+                  itemin->setIcon(QIcon(*buttondownIcon));
 		  itemin->setText(tr("in"));
+                }  
               }  
             }
             

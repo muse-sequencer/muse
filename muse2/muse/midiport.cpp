@@ -40,6 +40,9 @@ void initMidiPorts()
             ///port->setInstrument(genericMidiInstrument);
             port->setInstrument(registerMidiInstrument("GM")); // Changed by Tim. 
             port->syncInfo().setPort(i);
+            // p4.0.17 Set the first channel on the first port to auto-connect to midi track outputs.
+            if(i == 0)
+              port->setDefaultOutChannels(1);      
             }
       }
 
@@ -50,7 +53,8 @@ void initMidiPorts()
 MidiPort::MidiPort()
    : _state("not configured")
       {
-      _defaultInChannels  = 0;
+      //_defaultInChannels  = 0;
+      _defaultInChannels  = (1 << MIDI_CHANNELS) -1;  // p4.0.17 Default is now to connect to all channels.
       _defaultOutChannels = 0;
       _device     = 0;
       _instrument = 0;
@@ -1026,15 +1030,16 @@ void MidiPort::setNullSendValue(int v)
 }
 
 //---------------------------------------------------------
-//   writeRouting    // p3.3.50
+//   writeRouting    
 //---------------------------------------------------------
 
 void MidiPort::writeRouting(int level, Xml& xml) const
 {
       // If this device is not actually in use by the song, do not write any routes.
       // This prevents bogus routes from being saved and propagated in the med file.
-      if(!device())
-        return;
+      // p4.0.17 Reverted. Allow ports with no device to save.
+      //if(!device())
+      //  return;
      
       QString s;
       
@@ -1062,3 +1067,20 @@ void MidiPort::writeRouting(int level, Xml& xml) const
       }
 }
     
+// p4.0.17 Turn off if and when multiple output routes supported.
+#if 1
+//---------------------------------------------------------
+//   setPortExclusiveDefOutChan    
+//---------------------------------------------------------
+
+void setPortExclusiveDefOutChan(int port, int c) 
+{ 
+  if(port < 0 || port >= MIDI_PORTS)
+    return;
+  midiPorts[port].setDefaultOutChannels(c);
+  for(int i = 0; i < MIDI_PORTS; ++i)
+    if(i != port)
+      midiPorts[i].setDefaultOutChannels(0);
+}
+#endif
+

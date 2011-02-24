@@ -18,6 +18,8 @@ class QTreeWidget;
 class QTableWidget;
 class QPoint;
 class QMenu;
+class QAction;
+class PopupMenu;
 class Xml;
 
 //---------------------------------------------------------
@@ -28,6 +30,7 @@ class Xml;
 class MPConfig : public QDialog, Ui::SynthConfigBase {
       QMenu* instrPopup;
       //QMenu* popup;
+      PopupMenu* defpup;
       int _showAliases; // -1: None. 0: First aliases. 1: Second aliases etc.
       void setWhatsThis(QTableWidgetItem *item, int col);
       void setToolTip(QTableWidgetItem *item, int col);
@@ -42,6 +45,8 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
       void selectionChanged();
       void addInstanceClicked();
       void removeInstanceClicked();
+      void changeDefInputRoutes(QAction* act);
+      void changeDefOutputRoutes(QAction* act);
 
    public:
       MPConfig(QWidget* parent=0);

@@ -1,3 +1,10 @@
+24.02.2011:
+        - Improved default midi auto-connections. (Tim p4.0.17)
+          Midi ports list default input routes column now shows 'all' by default.
+          Improved and fixed default input and output routes columns.
+          With those two columns' popup menus, users can now apply defaults to all existing tracks.
+        - Fixed Organ synth crashing. Added setupUi(this) in OrganGui::OrganGui(). (Tim)
+        - Fixed synth devices should not be listed as soloing chain popup items. (Tim)
 18.02.2011:
         - Disable saveAs dialog for rec when project dialog isn't used (rj)
         - changed the default setting for move single rec with track, default is to NOT move (rj)
