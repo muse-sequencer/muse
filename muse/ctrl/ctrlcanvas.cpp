@@ -1390,35 +1390,80 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
       int h = rect.height();
       
       //---------------------------------------------------
-      // draw the grid
-      //---------------------------------------------------
-
-      p.save();
-      View::pdraw(p, rect);
-      p.restore();
-
-      //---------------------------------------------------
       // draw Canvas Items
       //---------------------------------------------------
 
       bool velo = (midiControllerType(_controller->num()) == MidiController::Velo);
-      if(!velo) 
+      if(velo) 
       {
+        //---------------------------------------------------
+        // draw the grid and markers now - before velocity items
+        //---------------------------------------------------
+        p.save();
+        View::pdraw(p, rect);
+        p.restore();
+        
+        int xp = mapx(pos[0]);
+        if (xp >= x && xp < x+w) {
+              p.setPen(Qt::red);
+              p.drawLine(xp, y, xp, y+h);
+              }
+        xp = mapx(pos[1]);
+        if (xp >= x && xp < x+w) {
+              p.setPen(Qt::blue);
+              p.drawLine(xp, y, xp, y+h);
+              }
+        xp = mapx(pos[2]);
+        if (xp >= x && xp < x+w) {
+              p.setPen(Qt::blue);
+              p.drawLine(xp, y, xp, y+h);
+              }
+      }  
+      else
+        // Draw non-fg non-velocity items for the current part
         pdrawItems(p, rect, curPart, false, false);
-      }
+        
       for(iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip) 
       {
         MidiPart* part = (MidiPart*)(ip->second);
         //if((velo && part == curPart) || (!velo && part != curPart))
         if(part == curPart)
           continue;
+        // Draw items for all parts - other than current part
         pdrawItems(p, rect, part, velo, !velo);
       }
       if(velo) 
       {
+        // Draw fg velocity items for the current part
         pdrawItems(p, rect, curPart, true, true);
       }
+      else
+      {
+        //---------------------------------------------------
+        // draw the grid and markers now - after non-velocity items
+        //---------------------------------------------------
+        p.save();
+        View::pdraw(p, rect);
+        p.restore();
+        
+        int xp = mapx(pos[0]);
+        if (xp >= x && xp < x+w) {
+              p.setPen(Qt::red);
+              p.drawLine(xp, y, xp, y+h);
+              }
+        xp = mapx(pos[1]);
+        if (xp >= x && xp < x+w) {
+              p.setPen(Qt::blue);
+              p.drawLine(xp, y, xp, y+h);
+              }
+        xp = mapx(pos[2]);
+        if (xp >= x && xp < x+w) {
+              p.setPen(Qt::blue);
+              p.drawLine(xp, y, xp, y+h);
+              }
+      }
       
+      /*
       //---------------------------------------------------
       //    draw marker
       //---------------------------------------------------
@@ -1438,7 +1483,8 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
             p.setPen(Qt::blue);
             p.drawLine(xp, y, xp, y+h);
             }
-
+      */
+      
       //---------------------------------------------------
       //    draw lasso
       //---------------------------------------------------
@@ -1457,15 +1503,17 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
 
 void CtrlCanvas::drawOverlay(QPainter& p)
       {
-      QString s(_controller->name());
+      //QString s(_controller->name());
+      QString s(_controller ? _controller->name() : QString(""));
       p.setFont(config.fonts[3]);
       p.setPen(Qt::black);
       QFontMetrics fm(config.fonts[3]);
       int y = fm.lineSpacing() + 2;
+      //printf("CtrlCanvas::drawOverlay fm w:%d h:%d\n", fm.width(_controller ? _controller->name() : QString("")), fm.height()); 
       p.drawText(2, y, s);
       if (noEvents) {
-           p.setFont(config.fonts[3]);
-           p.setPen(Qt::black);
+           //p.setFont(config.fonts[3]);
+           //p.setPen(Qt::black);
            p.drawText(width()/2-100,height()/2-10, "Use shift + pencil or line tool to draw new events");
            //p.drawText(2 , y * 2, "Use shift + pencil or line tool to draw new events");
            }
@@ -1477,12 +1525,21 @@ void CtrlCanvas::drawOverlay(QPainter& p)
 //---------------------------------------------------------
 
 QRect CtrlCanvas::overlayRect() const
-      {
+{
       QFontMetrics fm(config.fonts[3]);
       QRect r(fm.boundingRect(_controller ? _controller->name() : QString("")));
-      r.translate(2, 2);   // top/left margin
-      return r;
+      //QRect r(0, 0, fm.width(_controller ? _controller->name() : QString("")), fm.height());
+      //r.translate(2, 2);                    // top/left margin
+      r.translate(2, fm.lineSpacing() + 2);   //
+      if (noEvents) 
+      {
+        QRect r2(fm.boundingRect(QString("Use shift + pencil or line tool to draw new events")));
+        r2.translate(width()/2-100, height()/2-10);   
+        r |= r2;
       }
+      
+      return r;
+}
 
 //---------------------------------------------------------
 //   draw
