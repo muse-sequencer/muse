@@ -141,6 +141,12 @@ void View::setXPos(int x)
       
       #else
       scroll(delta, 0);
+      QRect olr = overlayRect().translated(delta, 0);
+      //olr.setHeight(height());
+      //olr.setWidth(olr.width() * 2);
+      //printf("scroll update: x:%d y:%d w:%d h:%d\n", olr.x(), olr.y(), olr.width(), olr.height()); 
+      //repaint(overlayRect().translated(delta, 0));
+      update(olr);
       #endif
       }
 
@@ -195,6 +201,8 @@ void View::setYPos(int y)
       
       #else
       scroll(0, delta);
+      //repaint(overlayRect().translate(0, delta));
+      update(overlayRect().translated(0, delta));
       #endif
       }
 
@@ -202,7 +210,7 @@ void View::setYPos(int y)
 //   resizeEvent
 //---------------------------------------------------------
 
-void View::resizeEvent(QResizeEvent* ev)
+void View::resizeEvent(QResizeEvent* /*ev*/)
       {
       #ifdef VIEW_USE_DOUBLE_BUFFERING
       //pm.resize(ev->size());
@@ -239,7 +247,39 @@ void View::paintEvent(QPaintEvent* ev)
       p.drawPixmap(ev->rect().topLeft(), pm, ev->rect());
       
       #else
+      
+      /*
+      QRect er = ev->rect();
+      QRect or = overlayRect();
+      // Is there an overlay to be drawn? Is it not already fully contained by the requested paint rectangle?
+      if(!or.isNull() && !er.contains(or))
+      {
+        // Is at least part of the overlay contained by the paint rectangle?
+        if(!(er & or).isNull())
+        {
+          // Then we only need one paint pass...
+          // TODO: Controller canvas ignores paint rectangle height. 
+          //        So we can get away with just uniting the rectangles.
+          //        When controller canvas is finally optimized to respect height,
+          //         this should be more optimized by drawing only 'subtraction' 
+          //         of intersection result from the overlay rectangle. 
+          //        Something like:   paint(er); paint(or - (er & or));
+          //        But there's no '-' operator. Hmm how to do that... 
+          paint(er | or);
+        }
+        else
+        {
+          // Then we need two separate paint passes...
+          // Paint the requested rectangle as usual.
+          paint(er);
+          // Paint the overlay rectangle portion as well.
+          paint(or);
+        }
+      }
+      */
+      
       paint(ev->rect());
+      //paint(er);
       #endif
       }
 
