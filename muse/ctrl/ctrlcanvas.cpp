@@ -12,6 +12,7 @@
 #include <QCursor>
 #include <QMouseEvent>
 
+#include "app.h"
 #include "globals.h"
 #include "ctrledit.h"
 #include "midieditor.h"
@@ -108,6 +109,7 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
    const char* name, CtrlPanel* pnl) : View(parent, xmag, 1, name)
       {
       setBg(Qt::white);
+      setFont(config.fonts[3]);  
       editor = e;
       drag   = DRAG_OFF;
       tool   = PointerTool;
@@ -133,6 +135,7 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
             setCurTrackAndPart();
             }
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
       
       curDrumInstrument = editor->curDrumInstrument();
       //printf("CtrlCanvas::CtrlCanvas curDrumInstrument:%d\n", curDrumInstrument);
@@ -339,6 +342,15 @@ bool CtrlCanvas::setCurTrackAndPart()
 }
 
 //---------------------------------------------------------
+//   configChanged
+//---------------------------------------------------------
+
+void CtrlCanvas::configChanged()    
+{ 
+  songChanged(SC_CONFIG); 
+}
+
+//---------------------------------------------------------
 //   songChanged
 //    all marked parts are added to the internal event list
 //---------------------------------------------------------
@@ -349,6 +361,9 @@ void CtrlCanvas::songChanged(int type)
   if(type == SC_MIDI_CONTROLLER)
     return;
             
+  if(type & SC_CONFIG)
+    setFont(config.fonts[3]);  
+  
   bool changed = false;
   if(type & (SC_CONFIG | SC_PART_MODIFIED | SC_SELECTION))
     changed = setCurTrackAndPart();
@@ -1240,8 +1255,11 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MidiPart* part
   int w = rect.width() + 2;
   int wh = height();
   
+  noEvents=true;
+
   if(velo) 
   {
+    noEvents=false;
     for(iCEvent i = items.begin(); i != items.end(); ++i) 
     {
       CEvent* e = *i;
@@ -1292,9 +1310,10 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MidiPart* part
     }
     int x1   = rect.x();
     int lval = CTRL_VAL_UNKNOWN;
-    noEvents=false;
+    ///noEvents=false;
     for (iCEvent i = items.begin(); i != items.end(); ++i) 
     {
+      noEvents=false;
       CEvent* e = *i;
       // Draw unselected part controller events (lines) on top of selected part events (bars).
       //if((fg && (e->part() == part)) || (!fg && (e->part() != part)))
@@ -1361,7 +1380,7 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MidiPart* part
     {
       if(!fg) {
         p.fillRect(x1, 0, (x+w) - x1, wh, Qt::darkGray);
-	noEvents=true;
+	///noEvents=true;
       }
     }
     else
@@ -1463,28 +1482,6 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
               }
       }
       
-      /*
-      //---------------------------------------------------
-      //    draw marker
-      //---------------------------------------------------
-
-      int xp = mapx(pos[0]);
-      if (xp >= x && xp < x+w) {
-            p.setPen(Qt::red);
-            p.drawLine(xp, y, xp, y+h);
-            }
-      xp = mapx(pos[1]);
-      if (xp >= x && xp < x+w) {
-            p.setPen(Qt::blue);
-            p.drawLine(xp, y, xp, y+h);
-            }
-      xp = mapx(pos[2]);
-      if (xp >= x && xp < x+w) {
-            p.setPen(Qt::blue);
-            p.drawLine(xp, y, xp, y+h);
-            }
-      */
-      
       //---------------------------------------------------
       //    draw lasso
       //---------------------------------------------------
@@ -1503,19 +1500,23 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
 
 void CtrlCanvas::drawOverlay(QPainter& p)
       {
-      //QString s(_controller->name());
       QString s(_controller ? _controller->name() : QString(""));
-      p.setFont(config.fonts[3]);
+      
+      //p.setFont(config.fonts[3]);  // Use widget font instead. 
+      p.setFont(font());
+      
       p.setPen(Qt::black);
-      QFontMetrics fm(config.fonts[3]);
-      int y = fm.lineSpacing() + 2;
-      //printf("CtrlCanvas::drawOverlay fm w:%d h:%d\n", fm.width(_controller ? _controller->name() : QString("")), fm.height()); 
+      
+      //QFontMetrics fm(config.fonts[3]);  // Use widget font metrics instead. 
+      //int y = fm.lineSpacing() + 2;
+      int y = fontMetrics().lineSpacing() + 2;
+      
       p.drawText(2, y, s);
       if (noEvents) {
            //p.setFont(config.fonts[3]);
            //p.setPen(Qt::black);
-           p.drawText(width()/2-100,height()/2-10, "Use shift + pencil or line tool to draw new events");
-           //p.drawText(2 , y * 2, "Use shift + pencil or line tool to draw new events");
+           //p.drawText(width()/2-100,height()/2-10, "Use shift + pencil or line tool to draw new events");
+           p.drawText(2 , y * 2, "Use shift + pencil or line tool to draw new events");
            }
       }
 
@@ -1526,18 +1527,22 @@ void CtrlCanvas::drawOverlay(QPainter& p)
 
 QRect CtrlCanvas::overlayRect() const
 {
-      QFontMetrics fm(config.fonts[3]);
+      //QFontMetrics fm(config.fonts[3]);   // Use widget font metrics instead (and set a widget font) !!! 
+      QFontMetrics fm(fontMetrics());
       QRect r(fm.boundingRect(_controller ? _controller->name() : QString("")));
-      //QRect r(0, 0, fm.width(_controller ? _controller->name() : QString("")), fm.height());
+      
       //r.translate(2, 2);                    // top/left margin
-      r.translate(2, fm.lineSpacing() + 2);   //
+      int y = fm.lineSpacing() + 2;
+      r.translate(2, y);   
       if (noEvents) 
       {
         QRect r2(fm.boundingRect(QString("Use shift + pencil or line tool to draw new events")));
-        r2.translate(width()/2-100, height()/2-10);   
+        //r2.translate(width()/2-100, height()/2-10);   
+        r2.translate(2, y * 2);   
         r |= r2;
       }
       
+      //printf("CtrlCanvas::overlayRect x:%d y:%d w:%d h:%d\n", r.x(), r.y(), r.width(), r.height()); 
       return r;
 }
 
