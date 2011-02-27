@@ -674,7 +674,7 @@ void WaveView::modifySelection(int operation, unsigned startpos, unsigned stoppo
                unsigned file_channels = file.channels();
 
                QString tmpWavFile = QString::null;
-               if (!getUniqueTmpfileName(tmpWavFile)) {
+               if (!getUniqueTmpfileName("tmp_musewav",".wav", tmpWavFile)) {
                      break;
                      }
 
@@ -780,7 +780,7 @@ void WaveView::copySelection(unsigned file_channels, float** tmpdata, unsigned l
       if (copiedPart!="") {
         QFile::remove(copiedPart);
       }
-      if (!getUniqueTmpfileName(copiedPart)) {
+      if (!getUniqueTmpfileName("tmp_musewav",".wav", copiedPart)) {
             return;
             }
 
@@ -897,7 +897,7 @@ void WaveView::editExternal(unsigned file_format, unsigned file_samplerate, unsi
       {
       // Create yet another tmp-file
       QString exttmpFileName;
-      if (!getUniqueTmpfileName(exttmpFileName)) {
+      if (!getUniqueTmpfileName("tmp_musewav",".wav", exttmpFileName)) {
             printf("Could not create temp file - aborting...\n");
             return;
             }
@@ -961,50 +961,6 @@ void WaveView::editExternal(unsigned file_format, unsigned file_samplerate, unsi
             dir.remove(exttmpFileName);
             dir.remove(exttmpFile.basename() + ".wca");
             }
-      }
-
-//---------------------------------------------------------
-//   getUniqueTmpfileName
-//---------------------------------------------------------
-bool WaveView::getUniqueTmpfileName(QString& newFilename)
-      {
-      // Check if tmp-directory exists under project path
-      QString tmpWavDir = museProject + "/tmp_musewav"; //!@TODO: Don't hardcode like this
-      QFileInfo tmpdirfi(tmpWavDir);
-      if (!tmpdirfi.isDir()) {
-            // Try to create a tmpdir
-            QDir projdir(museProject);
-            if (!projdir.mkdir("tmp_musewav")) {
-                  printf("Could not create undo dir!\n");
-                  return false;
-                  }
-            }
-
-
-      tmpdirfi.setFile(tmpWavDir);
-
-      if (!tmpdirfi.isWritable()) {
-            printf("Temp directory is not writable - aborting\n");
-            return false;
-            }
-
-      QDir tmpdir = tmpdirfi.dir();
-
-      // Find a new filename
-      for (int i=0; i<10000; i++) {
-            QString filename = "muse_tmp";
-            filename.append(QString::number(i));
-            filename.append(".wav");
-
-            if (!tmpdir.exists(tmpWavDir +"/" + filename)) {
-                  newFilename = tmpWavDir + "/" + filename;
-                  return true;
-                  }
-
-            }
-
-      printf("Could not find a suitable tmpfilename (more than 10000 tmpfiles in tmpdir - clean up!\n");
-      return false;
       }
 
 

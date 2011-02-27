@@ -375,7 +375,18 @@ void EffectRack::savePreset(int idx)
 
 void EffectRack::startDrag(int idx)
       {
-      FILE* tmp = tmpfile();
+        if (idx < 0) {
+            printf("illegal to drag index %d\n",idx);
+            return;
+        }
+      FILE *tmp;
+      if (debugMsg) {
+          QString fileName;
+          getUniqueTmpfileName("tmp","preset", fileName);
+          tmp = fopen(fileName.toLatin1().data(), "w+");
+      }
+      else
+          tmp = tmpfile();
       if (tmp == 0) {
             fprintf(stderr, "EffectRack::startDrag fopen failed: %s\n",
                strerror(errno));
@@ -416,12 +427,15 @@ void EffectRack::startDrag(int idx)
 
 Qt::DropActions EffectRack::supportedDropActions () const
       {
-      return Qt::CopyAction;
+    return Qt::CopyAction | Qt::MoveAction;
       }
 
 QStringList EffectRack::mimeTypes() const
       {
-      return QStringList("text/x-muse-plugin");
+      QStringList mTypes;
+      mTypes << "text/uri-list";
+      mTypes << "text/x-muse-plugin";
+      return mTypes;
       }
 
 void EffectRack::dropEvent(QDropEvent *event)
@@ -501,8 +515,7 @@ void EffectRack::dropEvent(QDropEvent *event)
 
 void EffectRack::dragEnterEvent(QDragEnterEvent *event)
       {
-      ///event->accept(Q3TextDrag::canDecode(event));
-      event->acceptProposedAction();  // TODO CHECK Tim.
+          event->acceptProposedAction();  // TODO CHECK Tim.
       }
 
 void EffectRack::mousePressEvent(QMouseEvent *event)
@@ -525,7 +538,7 @@ void EffectRack::mousePressEvent(QMouseEvent *event)
       }
 
 void EffectRack::mouseMoveEvent(QMouseEvent *event)
-      {
+{
       if (event->buttons() & Qt::LeftButton) {
             Pipeline* pipe = track->efxPipe();
             if(!pipe)
@@ -539,12 +552,14 @@ void EffectRack::mouseMoveEvent(QMouseEvent *event)
             int distance = (dragPos-event->pos()).manhattanLength();
             if (distance > QApplication::startDragDistance()) {
                   QListWidgetItem *i = itemAt( event->pos() );
-                  int idx = row(i);
-                  startDrag(idx);
-                  }
+                  if (i) {
+                    int idx = row(i);
+                    startDrag(idx);
+                }
             }
-      QListWidget::mouseMoveEvent(event);  
       }
+      QListWidget::mouseMoveEvent(event);
+}
 
 
 void EffectRack::initPlugin(Xml xml, int idx)

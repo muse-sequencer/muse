@@ -58,7 +58,7 @@ class WaveView : public View {
       virtual void viewMouseReleaseEvent(QMouseEvent*);
       virtual void wheelEvent(QWheelEvent*);
 
-      bool getUniqueTmpfileName(QString& newFilename); //!< Generates unique filename for temporary SndFile
+      //bool getUniqueTmpfileName(QString& newFilename); //!< Generates unique filename for temporary SndFile
       WaveSelectionList getSelection(unsigned startpos, unsigned stoppos);
 
       int lastGainvalue; //!< Stores the last used gainvalue when specifiying gain value in the editgain dialog
