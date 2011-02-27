@@ -1,7 +1,8 @@
+27.02.2011:
+        - Fixed piano roll controller graph text drawing (finally!). (Tim)
 26.02.2011:
         - Fixed some piano roll controller graph drawing issues. (Tim)
           Draw velocities on top of grid, but draw non-velocity items behind grid.
-          Working on text overlay smearing...
 24.02.2011:
         - Improved default midi auto-connections. (Tim p4.0.17)
           Midi ports list default input routes column now shows 'all' by default.

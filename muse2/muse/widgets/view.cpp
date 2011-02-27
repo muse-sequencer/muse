@@ -141,12 +141,39 @@ void View::setXPos(int x)
       
       #else
       scroll(delta, 0);
-      QRect olr = overlayRect().translated(delta, 0);
-      //olr.setHeight(height());
-      //olr.setWidth(olr.width() * 2);
-      //printf("scroll update: x:%d y:%d w:%d h:%d\n", olr.x(), olr.y(), olr.width(), olr.height()); 
-      //repaint(overlayRect().translated(delta, 0));
-      update(olr);
+      QRect olr = overlayRect();
+      // Is there an overlay?
+      if(!olr.isNull())
+      {
+        // Are we shifting right (moving left)?
+        if(delta >= 0)
+        {
+          // Translate not good - need to set x to delta.
+          //olr.translate(delta, 0);
+          olr.setX(delta);
+          olr.setWidth(olr.x() + olr.width() + delta);
+        }
+        else
+        // We are shifting left (moving right).
+        {
+          // Translate not good - need to limit x to 0.
+          //olr.translate(delta, 0);
+          olr.setX(olr.x() + delta);
+        }
+        
+        if(olr.x() < 0)
+          olr.setX(0);
+        if(olr.right() > width())
+          olr.setRight(width());
+        
+        if(olr.y() < 0)
+          olr.setY(0);
+        if(olr.bottom() > height())
+          olr.setBottom(height());
+        
+        //printf("scroll X update: x:%d y:%d w:%d h:%d\n", olr.x(), olr.y(), olr.width(), olr.height()); 
+        update(olr);
+      }  
       #endif
       }
 
@@ -201,8 +228,39 @@ void View::setYPos(int y)
       
       #else
       scroll(0, delta);
-      //repaint(overlayRect().translate(0, delta));
-      update(overlayRect().translated(0, delta));
+      QRect olr = overlayRect();
+      // Is there an overlay?
+      if(!olr.isNull())
+      {
+        // Are we shifting down (moving up)?
+        if(delta >= 0)
+        {
+          // Translate not good - need to set y to delta.
+          //olr.translate(0, delta);
+          olr.setY(delta);
+          olr.setHeight(olr.y() + olr.height() + delta);
+        }
+        else
+        // We are shifting up (moving down).
+        {
+          // Translate not good - need to limit y to 0.
+          //olr.translate(0, delta);
+          olr.setY(olr.y() + delta);
+        }
+        
+        if(olr.x() < 0)
+          olr.setX(0);
+        if(olr.right() > width())
+          olr.setRight(width());
+        
+        if(olr.y() < 0)
+          olr.setY(0);
+        if(olr.bottom() > height())
+          olr.setBottom(height());
+        
+        //printf("scroll Y update: x:%d y:%d w:%d h:%d\n", olr.x(), olr.y(), olr.width(), olr.height()); 
+        update(olr);
+      }  
       #endif
       }
 
@@ -247,39 +305,7 @@ void View::paintEvent(QPaintEvent* ev)
       p.drawPixmap(ev->rect().topLeft(), pm, ev->rect());
       
       #else
-      
-      /*
-      QRect er = ev->rect();
-      QRect or = overlayRect();
-      // Is there an overlay to be drawn? Is it not already fully contained by the requested paint rectangle?
-      if(!or.isNull() && !er.contains(or))
-      {
-        // Is at least part of the overlay contained by the paint rectangle?
-        if(!(er & or).isNull())
-        {
-          // Then we only need one paint pass...
-          // TODO: Controller canvas ignores paint rectangle height. 
-          //        So we can get away with just uniting the rectangles.
-          //        When controller canvas is finally optimized to respect height,
-          //         this should be more optimized by drawing only 'subtraction' 
-          //         of intersection result from the overlay rectangle. 
-          //        Something like:   paint(er); paint(or - (er & or));
-          //        But there's no '-' operator. Hmm how to do that... 
-          paint(er | or);
-        }
-        else
-        {
-          // Then we need two separate paint passes...
-          // Paint the requested rectangle as usual.
-          paint(er);
-          // Paint the overlay rectangle portion as well.
-          paint(or);
-        }
-      }
-      */
-      
       paint(ev->rect());
-      //paint(er);
       #endif
       }
 

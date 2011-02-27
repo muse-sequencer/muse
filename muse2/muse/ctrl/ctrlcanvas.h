@@ -141,6 +141,7 @@ class CtrlCanvas : public View {
 
    private slots:
       void songChanged(int type);
+      void configChanged();    
       void setCurDrumInstrument(int);
 
    public slots:
