@@ -33,7 +33,7 @@ class FileDialogButtonsWidget : public QWidget, public Ui::FileDialogButtons
 class MFileDialog : public QFileDialog {
       Q_OBJECT
 
-      static QString  lastUserDir, lastGlobalDir;
+      QString  lastUserDir, lastGlobalDir;
       bool showButtons;
       QString baseDir;
 

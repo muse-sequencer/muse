@@ -462,6 +462,8 @@ bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
             }
       if (ntrack >= tracks->size()) {
             ntrack = tracks->size();
+            if (debugMsg)
+                printf("PartCanvas::moveItem - add new track\n");
             Track* newTrack = song->addTrack(int(type));
             if (type == Track::WAVE) {
                   WaveTrack* st = (WaveTrack*) track;
@@ -471,7 +473,6 @@ bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
             emit tracklistChanged();
             }
       Track* dtrack = tracks->index(ntrack);
-
       if (dtrack->type() != type) {
             QMessageBox::critical(this, QString("MusE"),
                tr("Cannot copy/move/clone to different Track-Type"));
@@ -525,16 +526,19 @@ bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
       else if (t == MOVE_MOVE) {
             dpart->setSelected(spart->selected());
             // These will increment ref count if not a clone, and will chain clones...
-            if (dtrack->type() == Track::WAVE)
+
+            if (dtrack->type() == Track::WAVE) {
                   // Indicate no undo, and do not do port controller values and clone parts. 
                   //audio->msgChangePart((WavePart*)spart, (WavePart*)dpart,false);
                   audio->msgChangePart((WavePart*)spart, (WavePart*)dpart, false, false, false);
-            else
+              }
+            else {
                   // Indicate no undo, and do port controller values but not clone parts. 
                   //audio->msgChangePart(spart, dpart, false);
                   audio->msgChangePart(spart, dpart, false, true, false);
-            
+              }
             spart->setSelected(false);
+
             }
       //printf("PartCanvas::moveItem after add/changePart spart:%p events:%p refs:%d Arefs:%d dpart:%p events:%p refs:%d Arefs:%d\n", spart, spart->events(), spart->events()->refCount(), spart->events()->arefCount(), dpart, dpart->events(), dpart->events()->refCount(), dpart->events()->arefCount());
       
@@ -2686,7 +2690,8 @@ void PartCanvas::dragLeaveEvent(QDragLeaveEvent*)
 
 void PartCanvas::viewDropEvent(QDropEvent* event)
       {
-      //printf("void PartCanvas::viewDropEvent(QDropEvent* event)\n");
+      if (debugMsg)
+            printf("void PartCanvas::viewDropEvent(QDropEvent* event)\n");
       if (event->source() == this) {
             printf("local DROP\n");    
             //event->ignore();                     // TODO CHECK Tim.
@@ -2718,6 +2723,7 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
       
       if (type == 1) 
       {
+          printf("type1\n");
             text = QString(event->mimeData()->data("text/partlist"));
             
             int x = AL::sigmap.raster(event->pos().x(), *_raster);
@@ -2735,23 +2741,32 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
       }
       else if (type == 2) 
       {
-            // Multiple urls not supported here. Grab the first one.
-            text = event->mimeData()->urls()[0].path();
+          unsigned trackNo = y2pitch(event->pos().y());
+          Track* track = 0;
+          if (trackNo < tracks->size())
+                track = tracks->index(trackNo);
+          printf("trackNo=%d\n, trackNo track=%d\n", trackNo, track);
+          int x = AL::sigmap.raster(event->pos().x(), *_raster);
+          if (x < 0)
+                x = 0;
+
+          foreach(QUrl url, event->mimeData()->urls())
+          {
+            text = url.path();
             
             if (text.endsWith(".wav",Qt::CaseInsensitive) || 
                 text.endsWith(".ogg",Qt::CaseInsensitive) || 
                 text.endsWith(".mpt", Qt::CaseInsensitive) )
             {
-                int x = AL::sigmap.raster(event->pos().x(), *_raster);
-                if (x < 0)
-                      x = 0;
-                unsigned trackNo = y2pitch(event->pos().y());
-                Track* track = 0;
-                if (trackNo < tracks->size())
-                      track = tracks->index(trackNo);
-                if (track)
-                    {
-                    if (track->type() == Track::WAVE && 
+
+                if (!track) { // we need to create a track for this drop
+                    if (text.endsWith(".mpt", Qt::CaseInsensitive)) {
+                        track = song->addTrack((Track::MIDI));
+                    } else {
+                        track = song->addTrack((Track::WAVE));
+                    }
+                }
+                if (track->type() == Track::WAVE &&
                         (text.endsWith(".wav", Qt::CaseInsensitive) || 
                           (text.endsWith(".ogg", Qt::CaseInsensitive))))
                         {
@@ -2764,11 +2779,11 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
                         unsigned tick = x;
                         muse->importPartToTrack(text, tick, track);
                         }
-                    }
             }
             else if(text.endsWith(".med",Qt::CaseInsensitive))
             {
                 emit dropSongFile(text);
+                break; // we only support ONE drop of this kind
             }                        
             else if(text.endsWith(".mid",Qt::CaseInsensitive))
             {
@@ -2778,6 +2793,8 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
             {
                 printf("dropped... something...  no hable...\n");
             }
+            track=0;
+          }
       }
             
       // Restore backup of the clone list, to retain any 'copy' items,

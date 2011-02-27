@@ -187,5 +187,7 @@ extern uid_t euid, ruid;
 extern void doSetuid();
 extern void undoSetuid();
 extern bool checkAudioDevice();
+extern bool getUniqueTmpfileName(QString subDir, QString ext, QString& newFilename);
+
 #endif
 

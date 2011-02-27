@@ -19,8 +19,8 @@
 #include "gconfig.h"
 
 MFileDialog::ViewType MFileDialog::lastViewUsed = GLOBAL_VIEW;
-QString MFileDialog::lastUserDir = "";
-QString MFileDialog::lastGlobalDir = "";
+//QString MFileDialog::lastUserDir = "";
+//QString MFileDialog::lastGlobalDir = "";
 
 //---------------------------------------------------------
 //   createDir
@@ -155,6 +155,9 @@ MFileDialog::MFileDialog(const QString& dir,
   : QFileDialog(parent, QString(), QString("."), filter)
       {
       showButtons = false;
+      lastUserDir = "";
+      lastGlobalDir = "";
+
       if (dir.length() > 0 && dir[0] == QChar('/')) {
             setDirectory(dir);
             }
