@@ -26,6 +26,7 @@ class QSignalMapper;
 class QString;
 class QToolBar;
 class QToolButton;
+class QProgressDialog;
 
 class Part;
 class PartList;
@@ -343,6 +344,7 @@ class MusE : public QMainWindow
       ~MusE();
       Arranger* arranger;
       QRect configGeometryMain;
+      QProgressDialog *progress;
       bool importMidi(const QString name, bool merge);
       void kbAccel(int);
       void changeConfig(bool writeFlag);

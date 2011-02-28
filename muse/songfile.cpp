@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <uuid/uuid.h>
+#include <QProgressDialog>
 
 #include "app.h"
 #include "song.h"
@@ -1206,6 +1207,9 @@ void Song::read(Xml& xml)
       {
       cloneList.clear();
       for (;;) {
+            if (muse->progress)
+              muse->progress->setValue(muse->progress->value()+1);
+
             Xml::Token token;
             token = xml.parse();
             const QString& tag = xml.s1();
@@ -1353,6 +1357,8 @@ void MusE::read(Xml& xml, bool skipConfig)
       {
       bool skipmode = true;
       for (;;) {
+            if (progress)
+                progress->setValue(progress->value()+1);
             Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
             switch (token) {

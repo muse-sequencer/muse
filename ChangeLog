@@ -1,3 +1,6 @@
+28.02.2011:
+        - Added progress dialog for loading projects (rj)
+        - Aligned meters on mixer strip (rj)
 27.02.2011:
         - Fixed piano roll controller graph text drawing (finally!). (Tim)
         - Fixed crashes in drag & drop for plugins and drag presets from outside muse into a plugin (rj)

@@ -13,6 +13,7 @@
 #include <QTimer>
 #include <QWhatsThis>
 #include <QSettings>
+#include <QProgressDialog>
 
 #include "app.h"
 #include "master/lmaster.h"
@@ -791,6 +792,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       watchdogThread        = 0;
       editInstrument        = 0;
       routingPopupMenu      = 0;
+      progress              = 0;
       //routingPopupView      = 0;
       
       appName               = QString("MusE");
@@ -1646,9 +1648,38 @@ void MusE::loadProjectFile(const QString& name)
 void MusE::loadProjectFile(const QString& name, bool songTemplate, bool loadAll)
       {
       QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+
+      if(!progress)
+        progress = new QProgressDialog();
+      QString label = "loading project "+QFileInfo(name).fileName();
+        if (!songTemplate) {
+          switch (random()%10) {
+        case 0:
+            label.append("\nThe best song in the world?");
+          break;
+        case 1:
+            label.append("\nAwesome stuff!");
+          break;
+        case 2:
+            label.append("\nCool rhythms!");
+          break;
+        case 3:
+            label.append("\nA truly lovely song");
+          break;
+        default:
+          break;
+        }
+      }
+      progress->setLabelText(label);
+      progress->setWindowModality(Qt::WindowModal);
+      progress->setCancelButton(0);
+      if (!songTemplate)
+        progress->setMinimumDuration(0); // if we are loading a template it will probably be fast and we can wait before showing the dialog
+      //progress->show();
       //
       // stop audio threads if running
       //
+      progress->setValue(0);
       bool restartSequencer = audio->isRunning();
       if (restartSequencer) {
             if (audio->isPlaying()) {
@@ -1659,13 +1690,18 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool loadAll)
             seqStop();
             }
       microSleep(100000);
+      progress->setValue(10);
       loadProjectFile1(name, songTemplate, loadAll);
       microSleep(100000);
+      progress->setValue(90);
       if (restartSequencer)
             seqStart();
 
       if (song->getSongInfo().length()>0)
           startSongInfo(false);
+      progress->setValue(100);
+      delete progress;
+      progress=0;
       QApplication::restoreOverrideCursor();
       }
 
@@ -1690,6 +1726,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
       //if (clearSong())
       if (clearSong(loadAll))  // Allow not touching things like midi ports. p4.0.17 TESTING: Maybe some problems...
             return;
+      progress->setValue(20);
 
       QFileInfo fi(name);
       if (songTemplate) {
@@ -1716,7 +1753,6 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
       if((mex == "gz") || (mex == "bz2"))
         mex = ex.section('.', -2, -2);  
         
-      //if (ex.isEmpty() || ex == "med.") {
       if (ex.isEmpty() || mex == "med") {
             //
             //  read *.med file
@@ -1760,6 +1796,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             setWindowTitle(QString("MusE: Song: ") + project.completeBaseName());
             }
       song->dirty = false;
+      progress->setValue(30);
 
       viewTransportAction->setChecked(config.transportVisible);
       viewBigtimeAction->setChecked(config.bigTimeVisible);
@@ -1801,6 +1838,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             transport->move(config.geometryTransport.topLeft());
             showTransport(config.transportVisible);
             }
+      progress->setValue(40);
 
       transport->setMasterFlag(song->masterFlag());
       punchinAction->setChecked(song->punchin());
@@ -1810,7 +1848,8 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
       song->updatePos();
       clipboardChanged(); // enable/disable "Paste"
       selectionChanged(); // enable/disable "Copy" & "Paste"
-      
+      progress->setValue(50);
+
       // p3.3.53 Try this AFTER the song update above which does a mixer update... Tested OK - mixers resize properly now.
       if (loadAll) 
       {
@@ -2024,6 +2063,7 @@ void MusE::quitDoc()
 
 void MusE::closeEvent(QCloseEvent* event)
       {
+      QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
       song->setStop(true);
       //
       // wait for sequencer
