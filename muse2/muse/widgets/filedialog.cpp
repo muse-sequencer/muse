@@ -12,6 +12,7 @@
 #include <QPixmap>
 #include <QSplitter>
 #include <QStringList>
+#include <QHeaderView>
 
 #include "icons.h"
 #include "filedialog.h"

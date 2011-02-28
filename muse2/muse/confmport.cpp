@@ -17,6 +17,7 @@
 #include <QPixmap>
 #include <QTableWidget>
 #include <QTableWidgetItem>
+#include <QHeaderView>
 
 #include "confmport.h"
 #include "app.h"

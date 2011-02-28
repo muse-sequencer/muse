@@ -34,6 +34,7 @@
 #include <QTreeWidget>
 #include <QVBoxLayout>
 #include <QWhatsThis>
+#include <QHeaderView>
 
 #include "globals.h"
 #include "gconfig.h"

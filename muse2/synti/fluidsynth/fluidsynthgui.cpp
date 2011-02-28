@@ -17,6 +17,7 @@
 #include <QSocketNotifier>
 #include <QTableWidgetItem>
 #include <QTreeWidgetItem>
+#include <QHeaderView>
 
 #include "muse/midi.h"
 #include "icons.h"

@@ -12,6 +12,7 @@
 #include <QStringList>
 #include <QTimer>
 #include <QTreeWidgetItem>
+#include <QHeaderView>
 
 #include "app.h"
 #include "song.h"
