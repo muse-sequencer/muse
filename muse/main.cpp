@@ -14,6 +14,7 @@
 #include <QSplashScreen>
 #include <QTimer>
 #include <QTranslator>
+#include <QIcon>
 
 #include <sys/mman.h>
 #include <alsa/asoundlib.h>

@@ -2,6 +2,7 @@
         - Fixed piano roll controller graph text drawing (finally!). (Tim)
         - Fixed crashes in drag & drop for plugins and drag presets from outside muse into a plugin (rj)
         - Support for multiple drops of files to arranger, e.g easy import of a bunch of wave files (rj)
+        - Added some missing Qt headers, found by Flo on Debian Lenny. (Tim)
 26.02.2011:
         - Fixed some piano roll controller graph drawing issues. (Tim)
           Draw velocities on top of grid, but draw non-velocity items behind grid.

@@ -19,6 +19,7 @@
 #include <QLabel>
 //#include <QFileInfo>
 #include <QGroupBox>
+#include <QHeaderView>
 
 #include "libsynti/gui.h"
 #include "ui_simpledrumsguibase.h"
