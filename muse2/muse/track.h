@@ -45,6 +45,7 @@ class Track {
       PartList _parts;
 
       void init();
+      static bool _isVisible;
 
    protected:
       static unsigned int _soloRefCnt;
@@ -98,7 +99,7 @@ class Track {
 
       int y() const;
       void setY(int n)                { _y = n;         }
-      int height() const              { return _height; }
+      virtual int height() const = 0;
       void setHeight(int n)           { _height = n;    }
 
       bool selected() const           { return _selected; }
@@ -186,6 +187,8 @@ class Track {
       virtual bool canRecord() const { return false; }
       virtual AutomationType automationType() const    = 0;
       virtual void setAutomationType(AutomationType t) = 0;
+      static void setVisible(bool t) { }
+
       };
 
 //---------------------------------------------------------
@@ -205,6 +208,7 @@ class MidiTrack : public Track {
 
       EventList* _events;     // tmp Events during midi import
       MPEventList* _mpevents; // tmp Events druring recording
+      static bool _isVisible;
 
    public:
       MidiTrack();
@@ -232,6 +236,7 @@ class MidiTrack : public Track {
       virtual void read(Xml&);
       virtual void write(int, Xml&) const;
 
+      virtual int height() const;
       virtual MidiTrack* newTrack() const { return new MidiTrack(); }
       //virtual MidiTrack* clone() const { return new MidiTrack(*this); }
       virtual MidiTrack* clone(bool cloneParts) const { return new MidiTrack(*this, cloneParts); }
@@ -267,6 +272,7 @@ class MidiTrack : public Track {
       //bool soloMode() const           { return _soloRefCnt; }
       
       virtual bool canRecord() const  { return true; }
+      static void setVisible(bool t) { _isVisible = t; }
       };
 
 //---------------------------------------------------------
@@ -298,6 +304,7 @@ class AudioTrack : public Track {
       
       //void readRecfile(Xml& xml);
       void readAuxSend(Xml& xml);
+
 
    protected:
       float** outBuffers;
@@ -425,6 +432,7 @@ class AudioTrack : public Track {
 class AudioInput : public AudioTrack {
       void* jackPorts[MAX_CHANNELS];
       virtual bool getData(unsigned, int, unsigned, float**);
+      static bool _isVisible;
 
    public:
       AudioInput();
@@ -441,7 +449,9 @@ class AudioInput : public AudioTrack {
       void setJackPort(int channel, void*p) { jackPorts[channel] = p; }
       virtual void setChannels(int n);
       virtual bool hasAuxSend() const { return true; }
-      };
+      static void setVisible(bool t) { _isVisible = t; }
+      virtual int height() const;
+    };
 
 //---------------------------------------------------------
 //   AudioOutput
@@ -452,6 +462,7 @@ class AudioOutput : public AudioTrack {
       float* buffer[MAX_CHANNELS];
       float* buffer1[MAX_CHANNELS];
       unsigned long _nframes;
+      static bool _isVisible;
 
       float* _monitorBuffer[MAX_CHANNELS];
 
@@ -470,7 +481,6 @@ class AudioOutput : public AudioTrack {
       void setJackPort(int channel, void*p) { jackPorts[channel] = p; }
       virtual void setChannels(int n);
 //      virtual bool isMute() const;
-
       void processInit(unsigned);
       void process(unsigned pos, unsigned offset, unsigned);
       void processWrite();
@@ -478,13 +488,16 @@ class AudioOutput : public AudioTrack {
       virtual bool canRecord() const { return true; }
 
       float** monitorBuffer() { return _monitorBuffer; }
-      };
+      static void setVisible(bool t) { _isVisible = t; }
+      virtual int height() const;
+    };
 
 //---------------------------------------------------------
 //   AudioGroup
 //---------------------------------------------------------
 
 class AudioGroup : public AudioTrack {
+      static bool _isVisible;
    public:
       AudioGroup() : AudioTrack(AUDIO_GROUP) {  }
       //AudioGroup* clone() const { return new AudioGroup(*this); }
@@ -493,7 +506,9 @@ class AudioGroup : public AudioTrack {
       virtual void read(Xml&);
       virtual void write(int, Xml&) const;
       virtual bool hasAuxSend() const { return true; }
-      };
+      static  void setVisible(bool t) { _isVisible = t; }
+      virtual int height() const;
+    };
 
 //---------------------------------------------------------
 //   AudioAux
@@ -501,7 +516,7 @@ class AudioGroup : public AudioTrack {
 
 class AudioAux : public AudioTrack {
       float* buffer[MAX_CHANNELS];
-
+      static bool _isVisible;
    public:
       AudioAux();
       //AudioAux* clone() const { return new AudioAux(*this); }
@@ -513,7 +528,9 @@ class AudioAux : public AudioTrack {
       virtual bool getData(unsigned, int, unsigned, float**);
       virtual void setChannels(int n);
       float** sendBuffer() { return buffer; }
-      };
+      static  void setVisible(bool t) { _isVisible = t; }
+      virtual int height() const;
+    };
 
 //---------------------------------------------------------
 //   WaveTrack
@@ -521,9 +538,9 @@ class AudioAux : public AudioTrack {
 
 class WaveTrack : public AudioTrack {
       Fifo _prefetchFifo;  // prefetch Fifo
+      static bool _isVisible;
 
    public:
-      static bool firstWaveTrack;
 
       WaveTrack() : AudioTrack(Track::WAVE) {  }
       //WaveTrack(const WaveTrack& wt) : AudioTrack(wt) {}
@@ -548,7 +565,9 @@ class WaveTrack : public AudioTrack {
       virtual bool hasAuxSend() const { return true; }
       bool canEnableRecord() const;
       virtual bool canRecord() const { return true; }
-      };
+      static void setVisible(bool t) { _isVisible = t; }
+      virtual int height() const;
+    };
 
 //---------------------------------------------------------
 //   TrackList

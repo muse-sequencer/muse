@@ -39,6 +39,7 @@
 std::vector<Synth*> synthis;  // array of available synthis
 
 extern void connectNodes(AudioTrack*, AudioTrack*);
+bool SynthI::_isVisible=true;
 
 /*
 //---------------------------------------------------------
@@ -241,6 +242,18 @@ SynthI::SynthI()
       setVolume(1.0);
       setPan(0.0);
       }
+
+
+//---------------------------------------------------------
+//   height in arranger
+//---------------------------------------------------------
+int SynthI::height() const
+{
+  if (_isVisible)
+    return _height;
+  return 0;
+}
+
 
 //---------------------------------------------------------
 //   open
@@ -989,3 +1002,4 @@ bool MessSynthIF::putEvent(const MidiPlayEvent& ev)
             return _mess->processEvent(ev);
       return true;
       }
+

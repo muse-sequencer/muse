@@ -76,7 +76,8 @@ QT4_WRAP_CPP (widget_mocs
       ttoolbutton.h  
       velocity.h  
       view.h  
-      vscale.h  
+      vscale.h
+      visibletracks.h
       )
 
 ##
@@ -175,6 +176,7 @@ file (GLOB widgets_source_files
       velocity.cpp 
       view.cpp    
       vscale.cpp
+      visibletracks.cpp
       )
 
 ##

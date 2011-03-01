@@ -153,6 +153,7 @@ class SynthIF {
 class SynthI : public AudioTrack, public MidiDevice,
    public MidiInstrument
       {
+      static bool _isVisible;
       SynthIF* _sif;
 
    protected:
@@ -246,6 +247,8 @@ class SynthI : public AudioTrack, public MidiDevice,
       void deactivate3();
       bool isActivated() const         { return synthesizer && _sif; }
       virtual bool hasAuxSend() const  { return true; }
+      static void setVisible(bool t) { _isVisible = t; }
+      virtual int height() const;
       };
 
 //---------------------------------------------------------

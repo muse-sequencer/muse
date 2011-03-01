@@ -18,6 +18,9 @@
 #include "globaldefs.h"
 #include "route.h"
 
+bool MidiTrack::_isVisible=true;
+bool Track::_isVisible=true;
+
 unsigned int Track::_soloRefCnt = 0;
 Track* Track::_tmpSoloChainTrack = 0;
 bool Track::_tmpSoloChainDoIns   = false;
@@ -413,6 +416,16 @@ void MidiTrack::init()
       compression    = 100;          // percent
       _recEcho       = true;
       }
+
+//---------------------------------------------------------
+//   height
+//---------------------------------------------------------
+int MidiTrack::height() const
+{
+  if (_isVisible)
+    return _height;
+  return 0;
+}
 
 //---------------------------------------------------------
 //   setOutChanAndUpdate
