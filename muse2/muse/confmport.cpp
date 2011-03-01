@@ -18,6 +18,7 @@
 #include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QHeaderView>
+#include <QSettings>
 
 #include "confmport.h"
 #include "app.h"
@@ -46,6 +47,15 @@ extern std::vector<Synth*> synthis;
 enum { DEVCOL_NO = 0, DEVCOL_GUI, DEVCOL_REC, DEVCOL_PLAY, DEVCOL_INSTR, DEVCOL_NAME,
        DEVCOL_INROUTES, DEVCOL_OUTROUTES, DEVCOL_DEF_IN_CHANS, DEVCOL_DEF_OUT_CHANS, DEVCOL_STATE };  
 
+//---------------------------------------------------------
+//   closeEvent
+//---------------------------------------------------------
+void MPConfig::closeEvent(QCloseEvent *event)
+{
+    QSettings settings("MusE", "MusE-qt");
+    settings.setValue("MPConfig/geometry", saveGeometry());
+    QWidget::closeEvent(event);
+}
 //---------------------------------------------------------
 //   changeDefInputRoutes
 //---------------------------------------------------------
@@ -1015,6 +1025,9 @@ MPConfig::MPConfig(QWidget* parent)
    : QDialog(parent)
       {
       setupUi(this);
+      QSettings settings("MusE", "MusE-qt");
+      restoreGeometry(settings.value("MPConfig/geometry").toByteArray());
+
       mdevView->setRowCount(MIDI_PORTS);
       mdevView->verticalHeader()->hide();
       mdevView->setSelectionMode(QAbstractItemView::SingleSelection);

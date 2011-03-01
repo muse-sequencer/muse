@@ -1,6 +1,7 @@
 01.03.2011:
         - Added feature to show/hide track-types from arranger, this far only with toolbuttons
           and no persistent storage (rj)
+        - restore window geometry for Midi configuration dialog (rj)
 28.02.2011:
         - Added progress dialog for loading projects (rj)
         - Aligned meters on mixer strip (rj)
