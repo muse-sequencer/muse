@@ -21,6 +21,12 @@
 #include "plugin.h"
 #include "audiodev.h"
 
+bool AudioAux::_isVisible=true;
+bool AudioInput::_isVisible=true;
+bool AudioOutput::_isVisible=true;
+bool AudioGroup::_isVisible = true;
+bool WaveTrack::_isVisible=true;
+
 // By T356. For caching jack in/out routing names BEFORE file save. 
 // Jack often shuts down during file save, causing the routes to be lost in the file.
 // cacheJackRouteNames() is ONLY called from MusE::save() in app.cpp
@@ -1666,4 +1672,38 @@ void AudioTrack::setAuxSend(int idx, double v)
             }
       _auxSend[idx] = v;
       }
+
+//---------------------------------------------------------
+//   height
+//---------------------------------------------------------
+int AudioOutput::height() const
+{
+  if (_isVisible)
+    return _height;
+  return 0;
+}
+int AudioInput::height() const
+{
+  if (_isVisible)
+    return _height;
+  return 0;
+}
+int AudioAux::height() const
+{
+  if (_isVisible)
+    return _height;
+  return 0;
+}
+int AudioGroup::height() const
+{
+  if (_isVisible)
+    return _height;
+  return 0;
+}
+int WaveTrack::height() const
+{
+  if (_isVisible)
+    return _height;
+  return 0;
+}
 

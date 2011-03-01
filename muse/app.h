@@ -11,7 +11,7 @@
 
 #include "config.h"
 #include "cobject.h"
-#include "tools.h"
+//#include "tools.h"
 
 #include <QFileInfo>
 
@@ -27,6 +27,8 @@ class QString;
 class QToolBar;
 class QToolButton;
 class QProgressDialog;
+class VisibleTracks;
+class EditToolBar;
 
 class Part;
 class PartList;
@@ -145,6 +147,7 @@ class MusE : public QMainWindow
       QFileInfo project;
       QToolBar *tools;
       EditToolBar *tools1;
+      VisibleTracks *visTracks;
 
       Transport* transport;
       BigTime* bigtime;

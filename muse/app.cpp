@@ -52,6 +52,8 @@
 #include "waveedit.h"
 #include "widgets/projectcreateimpl.h"
 #include "widgets/menutitleitem.h"
+#include "tools.h"
+#include "visibletracks.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -1248,6 +1250,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       panicToolbar->setObjectName("Panic");
       panicToolbar->addAction(panicAction);
 
+      visTracks = new VisibleTracks(this);
+      addToolBar(visTracks);
+
       
       //rlimit lim;
       //getrlimit(RLIMIT_RTPRIO, &lim);
@@ -1487,6 +1492,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       setCentralWidget(arranger);
       
       connect(tools1, SIGNAL(toolChanged(int)), arranger, SLOT(setTool(int)));
+      connect(visTracks, SIGNAL(visibilityChanged()), song, SLOT(update()) );
       connect(arranger, SIGNAL(editPart(Track*)), SLOT(startEditor(Track*)));
       connect(arranger, SIGNAL(dropSongFile(const QString&)), SLOT(loadProjectFile(const QString&)));
       connect(arranger, SIGNAL(dropMidiFile(const QString&)), SLOT(importMidi(const QString&)));

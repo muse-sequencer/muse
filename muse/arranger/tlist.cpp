@@ -175,6 +175,8 @@ void TList::paint(const QRect& r)
             Track* track = *i;
             Track::TrackType type = track->type();
             int trackHeight = track->height();
+            if (trackHeight==0) // not visible
+                  continue;
             if (yy >= (y + h))
                   break;
             if ((yy + trackHeight) < y)

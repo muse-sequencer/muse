@@ -170,7 +170,6 @@ class Song : public QObject {
 
       // If clear_all is false, it will not touch things like midi ports.
       void clear(bool signal, bool clear_all = true);  
-      void update(int flags = -1);
       void cleanupForQuit();
 
       int globalPitchShift() const      { return _globalPitchShift; }
@@ -363,6 +362,7 @@ class Song : public QObject {
       void executeScript(const char* scriptfile, PartList* parts, int quant, bool onlyIfSelected);
 
    public slots:
+      void update(int flags = -1);
       void beat();
 
       void undo();
