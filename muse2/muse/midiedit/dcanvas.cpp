@@ -988,17 +988,6 @@ int DrumCanvas::pasteAt(const QString& pt, int pos)
 
 void DrumCanvas::paste()
       {
-/*
-//      Q3CString subtype("eventlist"); // ddskrjo
-      QString subtype("eventlist");
-      QMimeSource* ms = QApplication::clipboard()->data();
-      QString pt;
-      if (!Q3TextDrag::decode(ms, pt, subtype)) {
-            printf("cannot paste: bad data type\n");
-            return;
-            }
-      pasteAt(pt, song->cpos());
-*/      
       QString stype("x-muse-eventlist");
       
       //QString s = QApplication::clipboard()->text(stype, QClipboard::Selection);  

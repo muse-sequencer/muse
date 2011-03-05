@@ -532,22 +532,21 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       const Pos cpos=song->cPos();
       canvas->setPos(0, cpos.tick(), true);
       canvas->selectAtTick(cpos.tick());
-      //canvas->selectFirst();
-//      
+      //canvas->selectFirst();//      
+        
+      unsigned pos=0;
+      if(initPos >= MAXINT)
+        pos = song->cpos();
+      if(pos > MAXINT)
+        pos = MAXINT;
+      if (pos)
+        hscroll->setOffset((int)pos);
+
       if(canvas->track())
       {
         updateTrackInfo();
         toolbar->setSolo(canvas->track()->solo());
       }
-        
-      unsigned pos;
-      if(initPos >= MAXINT)
-        pos = song->cpos();
-      else
-        pos = initPos;
-      if(pos > MAXINT)
-        pos = MAXINT;
-      hscroll->setOffset((int)pos);
 
       QSettings settings("MusE", "MusE-qt");
       //restoreGeometry(settings.value("Pianoroll/geometry").toByteArray());

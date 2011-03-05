@@ -45,7 +45,6 @@ class Track {
       PartList _parts;
 
       void init();
-      static bool _isVisible;
 
    protected:
       static unsigned int _soloRefCnt;
@@ -273,6 +272,7 @@ class MidiTrack : public Track {
       
       virtual bool canRecord() const  { return true; }
       static void setVisible(bool t) { _isVisible = t; }
+      static bool visible() { return _isVisible; }
       };
 
 //---------------------------------------------------------
@@ -451,6 +451,7 @@ class AudioInput : public AudioTrack {
       virtual bool hasAuxSend() const { return true; }
       static void setVisible(bool t) { _isVisible = t; }
       virtual int height() const;
+      static bool visible() { return _isVisible; }
     };
 
 //---------------------------------------------------------
@@ -489,6 +490,7 @@ class AudioOutput : public AudioTrack {
 
       float** monitorBuffer() { return _monitorBuffer; }
       static void setVisible(bool t) { _isVisible = t; }
+      static bool visible() { return _isVisible; }
       virtual int height() const;
     };
 
@@ -508,6 +510,7 @@ class AudioGroup : public AudioTrack {
       virtual bool hasAuxSend() const { return true; }
       static  void setVisible(bool t) { _isVisible = t; }
       virtual int height() const;
+      static bool visible() { return _isVisible; }
     };
 
 //---------------------------------------------------------
@@ -530,6 +533,7 @@ class AudioAux : public AudioTrack {
       float** sendBuffer() { return buffer; }
       static  void setVisible(bool t) { _isVisible = t; }
       virtual int height() const;
+      static bool visible() { return _isVisible; }
     };
 
 //---------------------------------------------------------
@@ -567,6 +571,7 @@ class WaveTrack : public AudioTrack {
       virtual bool canRecord() const { return true; }
       static void setVisible(bool t) { _isVisible = t; }
       virtual int height() const;
+      static bool visible() { return _isVisible; }
     };
 
 //---------------------------------------------------------

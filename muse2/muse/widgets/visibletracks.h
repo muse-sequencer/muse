@@ -41,6 +41,7 @@ class VisibleTracks : public QToolBar {
 
    public:
       VisibleTracks(QWidget* /*parent*/, const char* name = 0);  // Needs a parent !
+      void updateVisibleTracksButtons();
       ~VisibleTracks();
       };
 

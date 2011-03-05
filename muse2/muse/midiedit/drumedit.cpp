@@ -447,18 +447,17 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       canvas->setPos(0, cpos.tick(), true);
       canvas->selectAtTick(cpos.tick());
       //canvas->selectFirst();
+        
+      unsigned pos=0;
+      if(initPos >= MAXINT)
+        pos = song->cpos();
+      if(pos > MAXINT)
+        pos = MAXINT;
+      if (pos)
+        hscroll->setOffset((int)pos);
 
       if(canvas->track())
         toolbar->setSolo(canvas->track()->solo());
-        
-      unsigned pos;
-      if(initPos >= MAXINT)
-        pos = song->cpos();
-      else
-        pos = initPos;
-      if(pos > MAXINT)
-        pos = MAXINT;
-      hscroll->setOffset((int)pos);
 
       QSettings settings("MusE", "MusE-qt");
       //restoreGeometry(settings.value("Drumedit/geometry").toByteArray());
@@ -1103,6 +1102,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
                   zoomlvl++;
 
             int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+
             hscroll->setMag(newmag);
             //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
             return;

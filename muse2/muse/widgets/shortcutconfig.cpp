@@ -12,6 +12,7 @@
 #include <QCloseEvent>
 #include <QKeySequence>
 #include <QString>
+#include <QSettings>
 
 #include "shortcutconfig.h"
 #include "shortcutcapturedialog.h"
@@ -21,6 +22,9 @@ ShortcutConfig::ShortcutConfig(QWidget* parent)
    : QDialog(parent)
    {
    setupUi(this);
+   QSettings settings("MusE", "MusE-qt");
+   restoreGeometry(settings.value("ShortcutConfig/geometry").toByteArray());
+
    connect(cgListView, SIGNAL(itemActivated(QTreeWidgetItem*, int )),
 	     this, SLOT(categorySelChanged(QTreeWidgetItem*, int)));
    connect(scListView, SIGNAL(itemActivated(QTreeWidgetItem*, int )),
@@ -46,6 +50,7 @@ ShortcutConfig::ShortcutConfig(QWidget* parent)
    if(selItem)
      cgListView->setCurrentItem(selItem);  // Tim
    updateSCListView();
+
    }
 
 void ShortcutConfig::updateSCListView(int category)
@@ -116,6 +121,8 @@ void ShortcutConfig::shortcutSelChanged(QTreeWidgetItem* in_item, int /*column*/
 
 void ShortcutConfig::closeEvent(QCloseEvent* /*e*/) // prevent compiler warning : unused variable
       {
+      QSettings settings("MusE", "MusE-qt");
+      settings.setValue("ShortcutConfig/geometry", saveGeometry());
       done(_config_changed);
       }
 
