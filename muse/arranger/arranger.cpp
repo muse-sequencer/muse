@@ -52,6 +52,7 @@
 #include "gconfig.h"
 #include "mixer/astrip.h"
 #include "spinbox.h"
+#include "shortcuts.h"
 
 //---------------------------------------------------------
 //   Arranger::setHeaderToolTips
@@ -1065,3 +1066,39 @@ int WidgetStack::minimumHeight() const
   return minimumSizeHint().height(); 
 }
 */
+
+void Arranger::keyPressEvent(QKeyEvent* event)
+{
+  int key = event->key();
+  if (((QInputEvent*)event)->modifiers() & Qt::ShiftModifier)
+        key += Qt::SHIFT;
+  if (((QInputEvent*)event)->modifiers() & Qt::AltModifier)
+        key += Qt::ALT;
+  if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
+        key+= Qt::CTRL;
+
+  if (key == shortcuts[SHRT_ZOOM_IN].key) {
+        int mag = hscroll->mag();
+        int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+        if (zoomlvl < 23)
+              zoomlvl++;
+
+        int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+
+        hscroll->setMag(newmag);
+        return;
+        }
+  else if (key == shortcuts[SHRT_ZOOM_OUT].key) {
+        int mag = hscroll->mag();
+        int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+        if (zoomlvl > 1)
+              zoomlvl--;
+
+        int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+
+        hscroll->setMag(newmag);
+        return;
+        }
+
+  QWidget::keyPressEvent(event);
+}

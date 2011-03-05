@@ -137,6 +137,7 @@ class Arranger : public QWidget {
 
    protected:
       virtual void wheelEvent(QWheelEvent* e);
+      virtual void keyPressEvent(QKeyEvent* event);
 
    public slots:
       void dclickPart(Track*);

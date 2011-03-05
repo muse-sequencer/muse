@@ -1203,7 +1203,6 @@ void PartCanvas::keyPress(QKeyEvent* event)
             emit selectTrackBelow();
             return;
             }
-
       //
       // Shortcuts that require selected parts from here
       //
@@ -2880,6 +2879,8 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
                   break;
             Track* track = *it;
             th = track->height();
+            if (!th)
+              continue;
             ///if (/*config.canvasShowGrid ||*/ !track->isMidiTrack()) {
             if (config.canvasShowGrid && (track->isMidiTrack() || track->type() == Track::WAVE))   // Tim.
             {
@@ -2925,6 +2926,8 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
                 break;
           Track* track = *it;
           th = track->height();
+          if (!th)
+            continue;
           if (!track->isMidiTrack()) { // draw automation
                 QRect r = rect & QRect(x, yy, w, track->height());
                 drawAutomation(p, r, (AudioTrack*)track);

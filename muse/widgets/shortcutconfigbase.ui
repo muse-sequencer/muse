@@ -47,12 +47,6 @@
          <property name="text">
           <string>Shortcut Category</string>
          </property>
-         <property name="clickable">
-          <bool>true</bool>
-         </property>
-         <property name="resizable">
-          <bool>false</bool>
-         </property>
         </column>
        </widget>
       </item>
@@ -72,24 +66,12 @@
         </property>
         <column>
          <property name="text">
-          <string>Description</string>
-         </property>
-         <property name="clickable">
-          <bool>true</bool>
-         </property>
-         <property name="resizable">
-          <bool>true</bool>
+          <string>Shortcut</string>
          </property>
         </column>
         <column>
          <property name="text">
-          <string>Shortcut</string>
-         </property>
-         <property name="clickable">
-          <bool>true</bool>
-         </property>
-         <property name="resizable">
-          <bool>true</bool>
+          <string>Description</string>
          </property>
         </column>
        </widget>

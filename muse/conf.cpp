@@ -42,6 +42,7 @@
 #include "wave.h"
 #include "midiseq.h"
 #include "amixer.h"
+#include "track.h"
 
 extern void writeMidiTransforms(int level, Xml& xml);
 extern void readMidiTransform(Xml&);
@@ -734,6 +735,20 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               midiFilterCtrl3 = xml.parseInt();
                         else if (tag == "midiFilterCtrl4")
                               midiFilterCtrl4 = xml.parseInt();
+                        else if (tag == "waveTracksVisible")
+                                 WaveTrack::setVisible((bool)xml.parseInt());
+                        else if (tag == "auxTracksVisible")
+                                 AudioAux::setVisible((bool)xml.parseInt());
+                        else if (tag == "groupTracksVisible")
+                                 AudioGroup::setVisible((bool)xml.parseInt());
+                        else if (tag == "midiTracksVisible")
+                                 MidiTrack::setVisible((bool)xml.parseInt());
+                        else if (tag == "inputTracksVisible")
+                                 AudioInput::setVisible((bool)xml.parseInt());
+                        else if (tag == "outputTracksVisible")
+                                 AudioOutput::setVisible((bool)xml.parseInt());
+                        else if (tag == "synthTracksVisible")
+                                 SynthI::setVisible((bool)xml.parseInt());
                         else if (tag == "bigtimeVisible")
                               config.bigTimeVisible = xml.parseInt();
                         else if (tag == "transportVisible")
@@ -1360,6 +1375,14 @@ void MusE::writeConfiguration(int level, Xml& xml) const
       xml.intTag(level, "midiFilterCtrl2",  midiFilterCtrl2);
       xml.intTag(level, "midiFilterCtrl3",  midiFilterCtrl3);
       xml.intTag(level, "midiFilterCtrl4",  midiFilterCtrl4);
+
+      xml.intTag(level, "waveTracksVisible",  WaveTrack::visible());
+      xml.intTag(level, "auxTracksVisible",  AudioAux::visible());
+      xml.intTag(level, "groupTracksVisible",  AudioGroup::visible());
+      xml.intTag(level, "midiTracksVisible",  MidiTrack::visible());
+      xml.intTag(level, "inputTracksVisible",  AudioInput::visible());
+      xml.intTag(level, "outputTracksVisible",  AudioOutput::visible());
+      xml.intTag(level, "synthTracksVisible",  SynthI::visible());
       // Removed by Tim. p3.3.6
       
       //xml.intTag(level, "txDeviceId", txDeviceId);

@@ -249,6 +249,8 @@ class SynthI : public AudioTrack, public MidiDevice,
       virtual bool hasAuxSend() const  { return true; }
       static void setVisible(bool t) { _isVisible = t; }
       virtual int height() const;
+      static bool visible() { return _isVisible; }
+
       };
 
 //---------------------------------------------------------

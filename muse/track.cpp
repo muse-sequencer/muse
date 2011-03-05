@@ -19,7 +19,7 @@
 #include "route.h"
 
 bool MidiTrack::_isVisible=true;
-bool Track::_isVisible=true;
+//bool Track::_isVisible=true;
 
 unsigned int Track::_soloRefCnt = 0;
 Track* Track::_tmpSoloChainTrack = 0;

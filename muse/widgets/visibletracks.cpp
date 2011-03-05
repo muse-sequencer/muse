@@ -67,6 +67,20 @@ VisibleTracks::VisibleTracks(QWidget* parent, const char*)
       connect(action, SIGNAL(selected(QAction*)), SLOT(visibilityChanged(QAction*)));
       }
 
+
+//---------------------------------------------------------
+//   updateVisibleTracksButtons
+//---------------------------------------------------------
+void VisibleTracks::updateVisibleTracksButtons()
+{
+    actions[0]->setChecked(WaveTrack::visible());
+    actions[1]->setChecked(AudioGroup::visible());
+    actions[2]->setChecked(AudioAux::visible());
+    actions[3]->setChecked(AudioInput::visible());
+    actions[4]->setChecked(AudioOutput::visible());
+    actions[5]->setChecked(MidiTrack::visible());
+    actions[6]->setChecked(SynthI::visible());
+}
 //---------------------------------------------------------
 //   toolChanged
 //---------------------------------------------------------

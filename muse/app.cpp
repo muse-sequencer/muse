@@ -1378,8 +1378,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    popup View
       //-------------------------------------------------------------
 
-      menuView = menuBar()->addMenu(tr("View"));
-      //menuView->setCheckable(true);// not necessary with Qt4
+      menuView = menuBar()->addMenu(tr("&View"));
 
       menuView->addAction(viewTransportAction);
       menuView->addAction(viewBigtimeAction);
@@ -1442,7 +1441,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    popup Automation
       //-------------------------------------------------------------
 
-      menuAutomation = menuBar()->addMenu(tr("Automation"));
+      menuAutomation = menuBar()->addMenu(tr("A&utomation"));
       menuAutomation->addAction(autoMixerAction);
       menuAutomation->addSeparator();
       menuAutomation->addAction(autoSnapshotAction);
@@ -1452,7 +1451,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    popup Settings
       //-------------------------------------------------------------
 
-      menuSettings = menuBar()->addMenu(tr("Settings"));
+      menuSettings = menuBar()->addMenu(tr("S&ettings"));
       menuSettings->addAction(settingsGlobalAction);
       menuSettings->addAction(settingsShortcutsAction);
       menuSettings->addMenu(follow);
@@ -1705,6 +1704,8 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool loadAll)
 
       if (song->getSongInfo().length()>0)
           startSongInfo(false);
+
+      visTracks->updateVisibleTracksButtons();
       progress->setValue(100);
       delete progress;
       progress=0;
@@ -3323,7 +3324,6 @@ bool MusE::saveAs()
       {
       QString name;
       if (museProject == museProjectInitPath ) {
-        printf("config.useProjectSaveDialog=%d\n", config.useProjectSaveDialog);
         if (config.useProjectSaveDialog) {
             ProjectCreateImpl pci(muse);
             if (pci.exec() == QDialog::Rejected) {
@@ -3531,7 +3531,6 @@ void MusE::startWaveEditor(PartList* pl)
 //---------------------------------------------------------
 void MusE::startSongInfo(bool editable)
       {
-  printf("startSongInfo!!!!\n");
         SongInfoWidget info;
         info.songInfoText->setPlainText(song->getSongInfo());
         info.songInfoText->setReadOnly(!editable);
@@ -3549,7 +3548,6 @@ void MusE::startSongInfo(bool editable)
 void MusE::showDidYouKnowDialog()
       {
       if ((bool)config.showDidYouKnow == true) {
-            printf("show did you know dialog!!!!\n");
             DidYouKnowWidget dyk;
             dyk.tipText->setText("To get started with MusE why don't you try some demo songs available at http://demos.muse-sequencer.org/");
             dyk.show();

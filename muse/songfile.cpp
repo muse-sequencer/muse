@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <uuid/uuid.h>
 #include <QProgressDialog>
+#include <QMessageBox>
 
 #include "app.h"
 #include "song.h"
@@ -1246,6 +1247,11 @@ void Song::read(Xml& xml)
                               _len  = xml.parseInt();
                         else if (tag == "follow")
                               _follow  = FollowMode(xml.parseInt());
+                        else if (tag == "sampleRate") {
+                              int sRate  = xml.parseInt();
+                              if (sRate != sampleRate)
+                                QMessageBox::warning(muse,"Wrong sample rate", "The sample rate in this project and the current system setting differs, the project may not work as intended!");
+                            }
                         else if (tag == "tempolist") {
                               tempomap.read(xml);
                               }
@@ -1436,6 +1442,7 @@ void Song::write(int level, Xml& xml) const
       xml.intTag(level, "quantize", _quantize);
       xml.intTag(level, "len", _len);
       xml.intTag(level, "follow", _follow);
+      xml.intTag(level, "sampleRate", sampleRate);
       if (_globalPitchShift)
             xml.intTag(level, "globalPitchShift", _globalPitchShift);
 
