@@ -2936,6 +2936,43 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
           }
           yy += track->height();
           }
+
+    QRect rr = p.worldMatrix().mapRect(rect);
+
+    p.save();
+    p.resetTransform();
+
+    // primitive write recording while it happens
+    // should be enhanced/exchanged with solution that draws events and waveform
+    ypos=0;
+    if (song->record() && audio->isPlaying()) {
+      for (iTrack it = tl->begin(); it != tl->end(); ++it) {
+        Track* track = *it;
+        if (track->recordFlag()) {
+          int startPos = audio->getStartRecordPos().tick();
+          if (song->punchin())
+            startPos=song->lpos();
+          if (song->punchout() && song->cpos() > song->rpos()) {
+            continue; // no drawing if we are beyond punch out.
+          }
+
+
+          if (song->cpos() > startPos) {
+            int startx = mapx(startPos);
+            int width = mapx(song->cpos()) - mapx(startPos);
+
+            p.fillRect(startx,ypos, width, track->height(), config.partColors[0]);
+            p.setPen(Qt::black);
+            p.drawLine(startx,ypos,startx+width, ypos);
+            p.drawLine(startx,ypos+1,startx+width, ypos+1);
+            p.drawLine(startx,ypos+track->height(),startx+width, ypos+track->height());
+            p.drawLine(startx,ypos+track->height()-1,startx+width, ypos+track->height()-1);
+          }
+        }
+        ypos+=track->height();
+      }
+    }
+    p.restore();
 }
 
 //---------------------------------------------------------
