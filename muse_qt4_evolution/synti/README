@@ -1,0 +1,14 @@
+s1    is a simple demo of the MusE software synthesizer interface.
+      It has no gui and no parameters to set.
+
+organ is a demo synthesizer which shows how to implement 
+      polyphony and a gui
+
+fluid is demo synthesizer utilizing the fluid sythesizer library
+
+mus   is a program which can load any of the MusE synthsizer plugins
+      turning them into standalone synthesizer with a JACK audio and
+      midi interface
+
+
+      

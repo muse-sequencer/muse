@@ -1,0 +1,16 @@
+
+VAM-1.0beta2b (4/02 - 2002)
+    * Fix to prevent clicks on new notes
+    * Gui improvements (Thanks Werner and Bob)
+
+VAM-1.0beta2 (24/01 - 2002)
+    * Fix to make presets save and load correctly
+    * DSP improvements
+    * PW & PWM
+    * Some basic presets
+    * Small fixes
+    * Filter keytracking
+    * Load only preset meant for vam
+
+VAM-1.0beta1 (21/01 - 2002):
+    First release.

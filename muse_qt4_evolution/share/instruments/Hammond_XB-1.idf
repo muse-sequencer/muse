@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<muse version="1.0">
+    <MidiInstrument name="Hammond XB-1">
+        <PatchGroup name="Cancel">
+            <Patch name="Cancel" prog="000" hbank="0" lbank="0"/>
+        </PatchGroup>
+        <PatchGroup name="Bank A">
+            <Patch name="A-1" prog="001" hbank="0" lbank="0"/>
+            <Patch name="A-2" prog="002" hbank="0" lbank="0"/>
+            <Patch name="A-3" prog="003" hbank="0" lbank="0"/>
+            <Patch name="A-4" prog="004" hbank="0" lbank="0"/>
+            <Patch name="A-5" prog="005" hbank="0" lbank="0"/>
+            <Patch name="A-6" prog="006" hbank="0" lbank="0"/>
+            <Patch name="A-7" prog="007" hbank="0" lbank="0"/>
+            <Patch name="A-8" prog="008" hbank="0" lbank="0"/>
+        </PatchGroup>
+        <PatchGroup name="Bank B">
+            <Patch name="B-1" prog="009" hbank="0" lbank="0"/>
+            <Patch name="B-2" prog="010" hbank="0" lbank="0"/>
+            <Patch name="B-3" prog="011" hbank="0" lbank="0"/>
+            <Patch name="B-4" prog="012" hbank="0" lbank="0"/>
+            <Patch name="B-5" prog="013" hbank="0" lbank="0"/>
+            <Patch name="B-6" prog="014" hbank="0" lbank="0"/>
+            <Patch name="B-7" prog="015" hbank="0" lbank="0"/>
+            <Patch name="B-8" prog="016" hbank="0" lbank="0"/>
+        </PatchGroup>
+        <PatchGroup name="Bank C">
+            <Patch name="C-1" prog="017" hbank="0" lbank="0"/>
+            <Patch name="C-2" prog="018" hbank="0" lbank="0"/>
+            <Patch name="C-3" prog="019" hbank="0" lbank="0"/>
+            <Patch name="C-4" prog="020" hbank="0" lbank="0"/>
+            <Patch name="C-5" prog="021" hbank="0" lbank="0"/>
+            <Patch name="C-6" prog="022" hbank="0" lbank="0"/>
+            <Patch name="C-7" prog="023" hbank="0" lbank="0"/>
+            <Patch name="C-8" prog="024" hbank="0" lbank="0"/>
+        </PatchGroup>
+        <PatchGroup name="Bank D">
+            <Patch name="D-1" prog="025" hbank="0" lbank="0"/>
+            <Patch name="D-2" prog="026" hbank="0" lbank="0"/>
+            <Patch name="D-3" prog="027" hbank="0" lbank="0"/>
+            <Patch name="D-4" prog="028" hbank="0" lbank="0"/>
+            <Patch name="D-5" prog="029" hbank="0" lbank="0"/>
+            <Patch name="D-6" prog="030" hbank="0" lbank="0"/>
+            <Patch name="D-7" prog="031" hbank="0" lbank="0"/>
+            <Patch name="D-8" prog="032" hbank="0" lbank="0"/>
+        </PatchGroup>
+        <PatchGroup name="Bank E">
+            <Patch name="E-1" prog="033" hbank="0" lbank="0"/>
+            <Patch name="E-2" prog="034" hbank="0" lbank="0"/>
+            <Patch name="E-3" prog="035" hbank="0" lbank="0"/>
+            <Patch name="E-4" prog="036" hbank="0" lbank="0"/>
+            <Patch name="E-5" prog="037" hbank="0" lbank="0"/>
+            <Patch name="E-6" prog="038" hbank="0" lbank="0"/>
+            <Patch name="E-7" prog="039" hbank="0" lbank="0"/>
+            <Patch name="E-8" prog="040" hbank="0" lbank="0"/>
+        </PatchGroup>
+        <PatchGroup name="Bank F">
+            <Patch name="F-1" prog="041" hbank="0" lbank="0"/>
+            <Patch name="F-2" prog="042" hbank="0" lbank="0"/>
+            <Patch name="F-3" prog="043" hbank="0" lbank="0"/>
+            <Patch name="F-4" prog="044" hbank="0" lbank="0"/>
+            <Patch name="F-5" prog="045" hbank="0" lbank="0"/>
+            <Patch name="F-6" prog="046" hbank="0" lbank="0"/>
+            <Patch name="F-7" prog="047" hbank="0" lbank="0"/>
+            <Patch name="F-8" prog="048" hbank="0" lbank="0"/>
+        </PatchGroup>
+        <PatchGroup name="Bank G">
+            <Patch name="G-1" prog="049" hbank="0" lbank="0"/>
+            <Patch name="G-2" prog="050" hbank="0" lbank="0"/>
+            <Patch name="G-3" prog="051" hbank="0" lbank="0"/>
+            <Patch name="G-4" prog="052" hbank="0" lbank="0"/>
+            <Patch name="G-5" prog="053" hbank="0" lbank="0"/>
+            <Patch name="G-6" prog="054" hbank="0" lbank="0"/>
+            <Patch name="G-7" prog="055" hbank="0" lbank="0"/>
+            <Patch name="G-8" prog="056" hbank="0" lbank="0"/>
+        </PatchGroup>
+        <PatchGroup name="Bank H">
+            <Patch name="H-1" prog="057" hbank="0" lbank="0"/>
+            <Patch name="H-2" prog="058" hbank="0" lbank="0"/>
+            <Patch name="H-3" prog="059" hbank="0" lbank="0"/>
+            <Patch name="H-4" prog="060" hbank="0" lbank="0"/>
+            <Patch name="H-5" prog="061" hbank="0" lbank="0"/>
+            <Patch name="H-6" prog="062" hbank="0" lbank="0"/>
+            <Patch name="H-7" prog="063" hbank="0" lbank="0"/>
+            <Patch name="H-8" prog="064" hbank="0" lbank="0"/>
+        </PatchGroup>
+    </MidiInstrument>
+</muse>

@@ -1,0 +1,395 @@
+<?xml version="1.0"?>
+<muse version="2.1">
+  <configuration>
+    <txDeviceId>127</txDeviceId>
+    <rxDeviceId>127</rxDeviceId>
+    <mtctype>1</mtctype>
+    <mtcoffset>
+      00:00:00:00:00
+      </mtcoffset>
+    <extSync>0</extSync>
+    <genMTCSync>0</genMTCSync>
+    <genMCSync>0</genMCSync>
+    <genMMC>0</genMMC>
+    <acceptMTC>0</acceptMTC>
+    <acceptMMC>1</acceptMMC>
+    <acceptMC>1</acceptMC>
+    <bigtimeVisible>0</bigtimeVisible>
+    <transportVisible>0</transportVisible>
+    <geometryMain x="668" y="0" w="800" h="663" />
+    <geometryTransport x="0" y="0" w="763" h="108" />
+    <mixer1Visible>1</mixer1Visible>
+    <mixer2Visible>0</mixer2Visible>
+    <mixer1>
+      <geometry x="4" y="22" w="660" h="660" />
+      <showMidiTracks>0</showMidiTracks>
+      <showOutputTracks>1</showOutputTracks>
+      <showWaveTracks>1</showWaveTracks>
+      <showGroupTracks>1</showGroupTracks>
+      <showInputTracks>1</showInputTracks>
+      <showAuxTracks>1</showAuxTracks>
+      <showSyntiTracks>1</showSyntiTracks>
+      <showMidiInPorts>1</showMidiInPorts>
+      <showMidiOutPorts>1</showMidiOutPorts>
+      <showMidiChannels>1</showMidiChannels>
+      </mixer1>
+    </configuration>
+  <song>
+    <comment></comment>
+    <cpos>0</cpos>
+    <rpos>0</rpos>
+    <lpos>0</lpos>
+    <master>1</master>
+    <len>0</len>
+    <wavetrack>
+      <name>Track 1</name>
+      <mute>0</mute>
+      <channels>1</channels>
+      <autoRead>0</autoRead>
+      <selected>1</selected>
+      <controller id="0" name="Volume" cur="0" type="2" min="-3.00927" max="0.301887" default="0"/>
+      <controller id="1" name="Pan" cur="0" type="0" min="-1" max="1" default="0"/>
+      <controller id="3" name="AuxSend-1" cur="0" type="0" min="0" max="1" default="0"/>
+      <controller id="4" name="AuxSend-2" cur="0" type="0" min="0" max="1" default="0"/>
+      <height>31</height>
+      <prefader>0</prefader>
+      </wavetrack>
+    <wavetrack>
+      <name>Track 2</name>
+      <mute>0</mute>
+      <channels>1</channels>
+      <locked>1</locked>
+      <autoRead>0</autoRead>
+      <controller id="0" name="Volume" cur="0" type="2" min="-3.00927" max="0.301887" default="0"/>
+      <controller id="1" name="Pan" cur="0" type="0" min="-1" max="1" default="0"/>
+      <controller id="3" name="AuxSend-1" cur="0" type="0" min="0" max="1" default="0"/>
+      <controller id="4" name="AuxSend-2" cur="0" type="0" min="0" max="1" default="0"/>
+      <height>31</height>
+      <prefader>0</prefader>
+      </wavetrack>
+    <wavetrack>
+      <name>Track 3</name>
+      <mute>0</mute>
+      <channels>1</channels>
+      <autoRead>0</autoRead>
+      <controller id="0" name="Volume" cur="0" type="2" min="-3.00927" max="0.301887" default="0"/>
+      <controller id="1" name="Pan" cur="0" type="0" min="-1" max="1" default="0"/>
+      <controller id="3" name="AuxSend-1" cur="0" type="0" min="0" max="1" default="0"/>
+      <controller id="4" name="AuxSend-2" cur="0" type="0" min="0" max="1" default="0"/>
+      <height>31</height>
+      <prefader>0</prefader>
+      </wavetrack>
+    <wavetrack>
+      <name>Track 4</name>
+      <mute>0</mute>
+      <channels>1</channels>
+      <autoRead>0</autoRead>
+      <controller id="0" name="Volume" cur="0" type="2" min="-3.00927" max="0.301887" default="0"/>
+      <controller id="1" name="Pan" cur="0" type="0" min="-1" max="1" default="0"/>
+      <controller id="3" name="AuxSend-1" cur="0" type="0" min="0" max="1" default="0"/>
+      <controller id="4" name="AuxSend-2" cur="0" type="0" min="0" max="1" default="0"/>
+      <height>31</height>
+      <prefader>0</prefader>
+      </wavetrack>
+    <AudioGroup>
+      <name>Group 1</name>
+      <mute>0</mute>
+      <channels>1</channels>
+      <locked>1</locked>
+      <autoRead>0</autoRead>
+      <controller id="0" name="Volume" cur="0" type="2" min="-3.00927" max="0.301887" default="0"/>
+      <controller id="1" name="Pan" cur="0" type="0" min="-1" max="1" default="0"/>
+      <controller id="3" name="AuxSend-1" cur="0" type="0" min="0" max="1" default="0"/>
+      <controller id="4" name="AuxSend-2" cur="0" type="0" min="0" max="1" default="0"/>
+      <height>31</height>
+      <prefader>0</prefader>
+      </AudioGroup>
+    <AudioGroup>
+      <name>Group 2</name>
+      <mute>0</mute>
+      <channels>1</channels>
+      <autoRead>0</autoRead>
+      <controller id="0" name="Volume" cur="0" type="2" min="-3.00927" max="0.301887" default="0"/>
+      <controller id="1" name="Pan" cur="0" type="0" min="-1" max="1" default="0"/>
+      <controller id="3" name="AuxSend-1" cur="0" type="0" min="0" max="1" default="0"/>
+      <controller id="4" name="AuxSend-2" cur="0" type="0" min="0" max="1" default="0"/>
+      <height>31</height>
+      <prefader>0</prefader>
+      </AudioGroup>
+    <AudioAux>
+      <name>Aux 1</name>
+      <mute>0</mute>
+      <channels>2</channels>
+      <locked>1</locked>
+      <autoRead>0</autoRead>
+      <controller id="0" name="Volume" cur="0" type="2" min="-3.00927" max="0.301887" default="0"/>
+      <controller id="1" name="Pan" cur="0" type="0" min="-1" max="1" default="0"/>
+      <height>31</height>
+      <prefader>0</prefader>
+      </AudioAux>
+    <AudioAux>
+      <name>Aux 2</name>
+      <mute>0</mute>
+      <channels>2</channels>
+      <locked>1</locked>
+      <autoRead>0</autoRead>
+      <controller id="0" name="Volume" cur="0" type="2" min="-3.00927" max="0.301887" default="0"/>
+      <controller id="1" name="Pan" cur="0" type="0" min="-1" max="1" default="0"/>
+      <height>31</height>
+      <prefader>0</prefader>
+      </AudioAux>
+    <AudioInput>
+      <name>Input 1</name>
+      <mute>1</mute>
+      <channels>2</channels>
+      <locked>1</locked>
+      <autoRead>0</autoRead>
+      <controller id="0" name="Volume" cur="0" type="2" min="-3.00927" max="0.301887" default="0"/>
+      <controller id="1" name="Pan" cur="0" type="0" min="-1" max="1" default="0"/>
+      <controller id="3" name="AuxSend-1" cur="0" type="0" min="0" max="1" default="0"/>
+      <controller id="4" name="AuxSend-2" cur="0" type="0" min="0" max="1" default="0"/>
+      <height>31</height>
+      <prefader>0</prefader>
+      </AudioInput>
+    <AudioOutput>
+      <name>Out 1</name>
+      <mute>0</mute>
+      <channels>2</channels>
+      <locked>1</locked>
+      <autoRead>0</autoRead>
+      <controller id="0" name="Volume" cur="1" type="2" min="-3.00927" max="0.301887" default="0"/>
+      <controller id="1" name="Pan" cur="0" type="0" min="-1" max="1" default="0"/>
+      <height>31</height>
+      <prefader>0</prefader>
+      </AudioOutput>
+    <arranger>
+      <TrackConf type="0">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="4"/>
+          </group>
+        <group>
+          <element id="2"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="1">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="2"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="2">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="2"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="3">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="4"/>
+          </group>
+        <group>
+          <element id="2"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          <element id="8"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="4">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="2"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="5">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="2"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="6">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="4"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          <element id="8"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        <group>
+          <element id="7"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="7">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        <group>
+          <element id="10"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="8">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="9">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="9"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        <group>
+          <element id="11"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="10">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        </TrackConf>
+      <info>0</info>
+      <strip>1</strip>
+      <hmag>0.04</hmag>
+      <vmag>1</vmag>
+      <hpos>0</hpos>
+      <vpos>0</vpos>
+      <splitter>
+        <size>144</size>
+        <size>578</size>
+        </splitter>
+      </arranger>
+    <tempolist fix="500000">
+      <tempo at="21474837">
+        <tick>0</tick>
+        <val>500000</val>
+        </tempo>
+      </tempolist>
+    <siglist>
+      <sig at="21474836">
+        <tick>0</tick>
+        <nom>4</nom>
+        <denom>4</denom>
+        </sig>
+      </siglist>
+    </song>
+  <toplevels>
+    </toplevels>
+  </muse>

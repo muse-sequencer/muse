@@ -1,0 +1,998 @@
+<ui version="4.0" >
+ <class>EditInstrumentBase</class>
+ <widget class="QMainWindow" name="EditInstrumentBase" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>821</width>
+    <height>551</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>MusE: Instrument Editor</string>
+  </property>
+  <widget class="QWidget" name="widget" >
+   <layout class="QVBoxLayout" >
+    <property name="margin" >
+     <number>9</number>
+    </property>
+    <property name="spacing" >
+     <number>6</number>
+    </property>
+    <item>
+     <widget class="QSplitter" name="splitter_3" >
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QListWidget" name="instrumentList" >
+       <property name="sizePolicy" >
+        <sizepolicy>
+         <hsizetype>5</hsizetype>
+         <vsizetype>7</vsizetype>
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="resizeMode" >
+        <enum>QListView::Adjust</enum>
+       </property>
+       <property name="layoutMode" >
+        <enum>QListView::Batched</enum>
+       </property>
+      </widget>
+      <widget class="QWidget" name="layoutWidget" >
+       <layout class="QVBoxLayout" >
+        <property name="margin" >
+         <number>0</number>
+        </property>
+        <property name="spacing" >
+         <number>6</number>
+        </property>
+        <item>
+         <layout class="QHBoxLayout" >
+          <property name="margin" >
+           <number>0</number>
+          </property>
+          <property name="spacing" >
+           <number>6</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="label" >
+            <property name="text" >
+             <string>Instrument Name:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="instrumentName" />
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QTabWidget" name="tabWidget3" >
+          <property name="currentIndex" >
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="tab" >
+           <attribute name="title" >
+            <string>Patches</string>
+           </attribute>
+           <layout class="QVBoxLayout" >
+            <property name="margin" >
+             <number>9</number>
+            </property>
+            <property name="spacing" >
+             <number>6</number>
+            </property>
+            <item>
+             <widget class="QSplitter" name="splitter" >
+              <property name="orientation" >
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <widget class="QTreeWidget" name="patchView" >
+               <property name="sizePolicy" >
+                <sizepolicy>
+                 <hsizetype>5</hsizetype>
+                 <vsizetype>7</vsizetype>
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="rootIsDecorated" >
+                <bool>true</bool>
+               </property>
+               <column>
+                <property name="text" >
+                 <string>Patch/Group</string>
+                </property>
+               </column>
+              </widget>
+              <widget class="QWidget" name="layoutWidget" >
+               <layout class="QGridLayout" >
+                <property name="margin" >
+                 <number>0</number>
+                </property>
+                <property name="spacing" >
+                 <number>6</number>
+                </property>
+                <item row="0" column="1" colspan="2" >
+                 <widget class="QLineEdit" name="patchNameEdit" />
+                </item>
+                <item row="0" column="0" >
+                 <widget class="QLabel" name="textLabelPatchName" >
+                  <property name="text" >
+                   <string>Patch Name:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="0" >
+                 <widget class="QLabel" name="textLabel4_3" >
+                  <property name="text" >
+                   <string>Program:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="7" column="0" colspan="3" >
+                 <layout class="QHBoxLayout" >
+                  <property name="margin" >
+                   <number>0</number>
+                  </property>
+                  <property name="spacing" >
+                   <number>6</number>
+                  </property>
+                  <item>
+                   <widget class="QToolButton" name="deletePatch" >
+                    <property name="sizePolicy" >
+                     <sizepolicy>
+                      <hsizetype>5</hsizetype>
+                      <vsizetype>0</vsizetype>
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="text" >
+                     <string>&amp;Delete</string>
+                    </property>
+                    <property name="shortcut" >
+                     <string>Alt+D</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="newPatch" >
+                    <property name="sizePolicy" >
+                     <sizepolicy>
+                      <hsizetype>5</hsizetype>
+                      <vsizetype>1</vsizetype>
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="text" >
+                     <string>&amp;New Patch</string>
+                    </property>
+                    <property name="shortcut" >
+                     <string>Alt+N</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="newGroup" >
+                    <property name="text" >
+                     <string>New Group</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer>
+                    <property name="orientation" >
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType" >
+                     <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="sizeHint" >
+                     <size>
+                      <width>240</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="newCategory" >
+                    <property name="text" >
+                     <string>New Category</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item row="3" column="2" >
+                 <spacer>
+                  <property name="orientation" >
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType" >
+                   <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="sizeHint" >
+                   <size>
+                    <width>280</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="4" column="2" >
+                 <spacer>
+                  <property name="orientation" >
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType" >
+                   <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="sizeHint" >
+                   <size>
+                    <width>280</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="2" column="2" >
+                 <spacer>
+                  <property name="orientation" >
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeType" >
+                   <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="sizeHint" >
+                   <size>
+                    <width>280</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="3" column="1" >
+                 <widget class="QSpinBox" name="spinBoxLBank" >
+                  <property name="specialValueText" >
+                   <string>d.c.</string>
+                  </property>
+                  <property name="maximum" >
+                   <number>127</number>
+                  </property>
+                  <property name="minimum" >
+                   <number>-1</number>
+                  </property>
+                  <property name="value" >
+                   <number>-1</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0" >
+                 <widget class="QLabel" name="textLabel2_2" >
+                  <property name="text" >
+                   <string>High Bank:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0" >
+                 <widget class="QLabel" name="textLabel3_2" >
+                  <property name="text" >
+                   <string>Low Bank:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="6" column="2" >
+                 <spacer>
+                  <property name="orientation" >
+                   <enum>Qt::Vertical</enum>
+                  </property>
+                  <property name="sizeType" >
+                   <enum>QSizePolicy::Expanding</enum>
+                  </property>
+                  <property name="sizeHint" >
+                   <size>
+                    <width>20</width>
+                    <height>90</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="2" column="1" >
+                 <widget class="QSpinBox" name="spinBoxHBank" >
+                  <property name="specialValueText" >
+                   <string>d.c.</string>
+                  </property>
+                  <property name="maximum" >
+                   <number>127</number>
+                  </property>
+                  <property name="minimum" >
+                   <number>-1</number>
+                  </property>
+                  <property name="value" >
+                   <number>-1</number>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="1" >
+                 <widget class="QSpinBox" name="spinBoxProgram" />
+                </item>
+                <item row="5" column="0" colspan="3" >
+                 <layout class="QHBoxLayout" >
+                  <property name="margin" >
+                   <number>0</number>
+                  </property>
+                  <property name="spacing" >
+                   <number>6</number>
+                  </property>
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxDrum" >
+                    <property name="text" >
+                     <string>Drum</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxGM" >
+                    <property name="text" >
+                     <string>GM</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxGS" >
+                    <property name="text" >
+                     <string>GS</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxXG" >
+                    <property name="text" >
+                     <string>XG</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item row="1" column="1" >
+                 <widget class="QComboBox" name="category" >
+                  <property name="editable" >
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0" >
+                 <widget class="QLabel" name="label_6" >
+                  <property name="text" >
+                   <string>Category:</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab" >
+           <attribute name="title" >
+            <string>Controller</string>
+           </attribute>
+           <layout class="QVBoxLayout" >
+            <property name="margin" >
+             <number>9</number>
+            </property>
+            <property name="spacing" >
+             <number>6</number>
+            </property>
+            <item>
+             <widget class="QSplitter" name="splitter_2" >
+              <property name="orientation" >
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <widget class="QWidget" name="layoutWidget" >
+               <layout class="QVBoxLayout" >
+                <property name="margin" >
+                 <number>0</number>
+                </property>
+                <property name="spacing" >
+                 <number>6</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="textLabel1" >
+                  <property name="sizePolicy" >
+                   <sizepolicy>
+                    <hsizetype>5</hsizetype>
+                    <vsizetype>0</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="text" >
+                   <string>Controller List:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QListWidget" name="listController" >
+                  <property name="whatsThis" >
+                   <string>This is a list of commonly used midi controllers.
+Note that in MusE pitch and program changes are
+handled like normal controllers.</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="layoutWidget" >
+               <layout class="QVBoxLayout" >
+                <property name="margin" >
+                 <number>0</number>
+                </property>
+                <property name="spacing" >
+                 <number>6</number>
+                </property>
+                <item>
+                 <widget class="QGroupBox" name="GroupBox1" >
+                  <property name="sizePolicy" >
+                   <sizepolicy>
+                    <hsizetype>1</hsizetype>
+                    <vsizetype>5</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="title" >
+                   <string>Properties</string>
+                  </property>
+                  <layout class="QGridLayout" >
+                   <property name="margin" >
+                    <number>9</number>
+                   </property>
+                   <property name="spacing" >
+                    <number>6</number>
+                   </property>
+                   <item row="0" column="0" >
+                    <widget class="QLabel" name="TextLabel1_3" >
+                     <property name="text" >
+                      <string>Name</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="2" >
+                    <widget class="QLineEdit" name="ctrlName" />
+                   </item>
+                   <item row="1" column="0" colspan="2" >
+                    <widget class="QLabel" name="label_2" >
+                     <property name="text" >
+                      <string>Comment</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="2" >
+                    <widget class="QTextEdit" name="ctrlComment" />
+                   </item>
+                   <item row="2" column="0" >
+                    <widget class="QLabel" name="TextLabel2_4" >
+                     <property name="text" >
+                      <string>Type</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1" colspan="2" >
+                    <layout class="QHBoxLayout" >
+                     <property name="margin" >
+                      <number>2</number>
+                     </property>
+                     <property name="spacing" >
+                      <number>6</number>
+                     </property>
+                     <item>
+                      <widget class="QComboBox" name="ctrlType" >
+                       <item>
+                        <property name="text" >
+                         <string>Controller-7Bit</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text" >
+                         <string>Controller-14Bit</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text" >
+                         <string>RPN-7Bit</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text" >
+                         <string>NRPN-7Bit</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text" >
+                         <string>RPN-14Bit</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text" >
+                         <string>NRPN-14Bit</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text" >
+                         <string>Pitch</string>
+                        </property>
+                       </item>
+                       <item>
+                        <property name="text" >
+                         <string>Program</string>
+                        </property>
+                       </item>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="TextLabel3_2" >
+                       <property name="text" >
+                        <string>H-Ctrl</string>
+                       </property>
+                       <property name="indent" >
+                        <number>10</number>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QSpinBox" name="spinBoxHCtrlNo" >
+                       <property name="toolTip" >
+                        <string>Midi Controller Number High Byte</string>
+                       </property>
+                       <property name="maximum" >
+                        <number>127</number>
+                       </property>
+                       <property name="minimum" >
+                        <number>0</number>
+                       </property>
+                       <property name="value" >
+                        <number>1</number>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="TextLabel2_3_2" >
+                       <property name="text" >
+                        <string>L-Ctrl</string>
+                       </property>
+                       <property name="indent" >
+                        <number>10</number>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QSpinBox" name="spinBoxLCtrlNo" >
+                       <property name="toolTip" >
+                        <string>Midi Controller Number Low Byte</string>
+                       </property>
+                       <property name="maximum" >
+                        <number>127</number>
+                       </property>
+                       <property name="minimum" >
+                        <number>0</number>
+                       </property>
+                       <property name="value" >
+                        <number>1</number>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="3" column="0" >
+                    <widget class="QLabel" name="textLabel4_2" >
+                     <property name="text" >
+                      <string>Range</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1" colspan="2" >
+                    <layout class="QHBoxLayout" >
+                     <property name="margin" >
+                      <number>0</number>
+                     </property>
+                     <property name="spacing" >
+                      <number>6</number>
+                     </property>
+                     <item>
+                      <widget class="QLabel" name="TextLabel1_2_2" >
+                       <property name="text" >
+                        <string>Min</string>
+                       </property>
+                       <property name="indent" >
+                        <number>10</number>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QSpinBox" name="spinBoxMin" >
+                       <property name="maximum" >
+                        <number>16384</number>
+                       </property>
+                       <property name="minimum" >
+                        <number>-16385</number>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="TextLabel2_2_2" >
+                       <property name="text" >
+                        <string>Max</string>
+                       </property>
+                       <property name="indent" >
+                        <number>10</number>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QSpinBox" name="spinBoxMax" >
+                       <property name="maximum" >
+                        <number>8388607</number>
+                       </property>
+                       <property name="minimum" >
+                        <number>-16385</number>
+                       </property>
+                       <property name="value" >
+                        <number>127</number>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="textLabel1_3" >
+                       <property name="text" >
+                        <string>Default</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QSpinBox" name="spinBoxDefault" >
+                       <property name="specialValueText" >
+                        <string>??</string>
+                       </property>
+                       <property name="minimum" >
+                        <number>-1</number>
+                       </property>
+                      </widget>
+                     </item>
+                    </layout>
+                   </item>
+                   <item row="4" column="0" colspan="3" >
+                    <widget class="QCheckBox" name="moveWithPart" >
+                     <property name="text" >
+                      <string>Move Controller Values with Part</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" >
+                  <property name="margin" >
+                   <number>0</number>
+                  </property>
+                  <property name="spacing" >
+                   <number>6</number>
+                  </property>
+                  <item>
+                   <widget class="QPushButton" name="deleteController" >
+                    <property name="text" >
+                     <string>Delete</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="newController" >
+                    <property name="text" >
+                     <string>New Controller</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer>
+                    <property name="orientation" >
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" >
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="TabPage" >
+           <attribute name="title" >
+            <string>SysEx</string>
+           </attribute>
+           <layout class="QVBoxLayout" >
+            <property name="margin" >
+             <number>9</number>
+            </property>
+            <property name="spacing" >
+             <number>6</number>
+            </property>
+            <item>
+             <widget class="QSplitter" name="splitter_4" >
+              <property name="orientation" >
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <widget class="QWidget" name="layoutWidget" >
+               <layout class="QVBoxLayout" >
+                <property name="margin" >
+                 <number>0</number>
+                </property>
+                <property name="spacing" >
+                 <number>6</number>
+                </property>
+                <item>
+                 <widget class="QLabel" name="label_3" >
+                  <property name="text" >
+                   <string>SYSEX-List:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QListWidget" name="sysexList" >
+                  <property name="sizePolicy" >
+                   <sizepolicy>
+                    <hsizetype>7</hsizetype>
+                    <vsizetype>7</vsizetype>
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="resizeMode" >
+                   <enum>QListView::Adjust</enum>
+                  </property>
+                  <property name="uniformItemSizes" >
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="layoutWidget" >
+               <layout class="QVBoxLayout" >
+                <property name="margin" >
+                 <number>0</number>
+                </property>
+                <property name="spacing" >
+                 <number>6</number>
+                </property>
+                <item>
+                 <widget class="QGroupBox" name="groupBox" >
+                  <property name="title" >
+                   <string>Properties</string>
+                  </property>
+                  <layout class="QGridLayout" >
+                   <property name="margin" >
+                    <number>9</number>
+                   </property>
+                   <property name="spacing" >
+                    <number>6</number>
+                   </property>
+                   <item row="0" column="0" >
+                    <widget class="QLabel" name="label_4" >
+                     <property name="text" >
+                      <string>Name:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1" >
+                    <widget class="QLineEdit" name="sysexName" />
+                   </item>
+                   <item row="1" column="0" >
+                    <widget class="QLabel" name="label_5" >
+                     <property name="text" >
+                      <string>Comment:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1" >
+                    <widget class="QTextEdit" name="sysexComment" />
+                   </item>
+                   <item row="2" column="0" >
+                    <widget class="QLabel" name="textLabel1_2" >
+                     <property name="text" >
+                      <string>Data:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1" >
+                    <widget class="QTextEdit" name="sysexData" />
+                   </item>
+                  </layout>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout" >
+                  <property name="margin" >
+                   <number>0</number>
+                  </property>
+                  <property name="spacing" >
+                   <number>6</number>
+                  </property>
+                  <item>
+                   <widget class="QPushButton" name="deleteSysex" >
+                    <property name="text" >
+                     <string>Delete</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="newSysex" >
+                    <property name="text" >
+                     <string>New Sysex</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer>
+                    <property name="orientation" >
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" >
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="MenuBar" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>821</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="defaultUp" >
+    <bool>false</bool>
+   </property>
+   <widget class="QMenu" name="fileMenu" >
+    <property name="geometry" >
+     <rect>
+      <x>434</x>
+      <y>167</y>
+      <width>146</width>
+      <height>168</height>
+     </rect>
+    </property>
+    <property name="title" >
+     <string>&amp;File</string>
+    </property>
+    <addaction name="fileNewAction" />
+    <addaction name="fileSaveAction" />
+    <addaction name="fileSaveAsAction" />
+    <addaction name="separator" />
+    <addaction name="fileExitAction" />
+   </widget>
+   <addaction name="fileMenu" />
+  </widget>
+  <widget class="QToolBar" name="toolBar" >
+   <property name="orientation" >
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <attribute name="toolBarArea" >
+    <number>4</number>
+   </attribute>
+   <addaction name="fileExitAction" />
+   <addaction name="fileNewAction" />
+   <addaction name="fileSaveAction" />
+  </widget>
+  <action name="fileNewAction" >
+   <property name="icon" >
+    <iconset resource="../muse.qrc" >:/xpm/filenew.png</iconset>
+   </property>
+   <property name="text" >
+    <string>&amp;New</string>
+   </property>
+   <property name="iconText" >
+    <string>New</string>
+   </property>
+   <property name="shortcut" >
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="fileOpenAction" >
+   <property name="icon" >
+    <iconset resource="../muse.qrc" >:/xpm/fileopen.png</iconset>
+   </property>
+   <property name="text" >
+    <string>&amp;Open...</string>
+   </property>
+   <property name="iconText" >
+    <string>Open</string>
+   </property>
+   <property name="shortcut" >
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="fileSaveAction" >
+   <property name="icon" >
+    <iconset resource="../muse.qrc" >:/xpm/filesave.png</iconset>
+   </property>
+   <property name="text" >
+    <string>&amp;Save</string>
+   </property>
+   <property name="iconText" >
+    <string>Save</string>
+   </property>
+   <property name="shortcut" >
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="fileSaveAsAction" >
+   <property name="icon" >
+    <iconset resource="../muse.qrc" >:/xpm/fileopen.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Save &amp;As...</string>
+   </property>
+   <property name="iconText" >
+    <string>Save As</string>
+   </property>
+   <property name="shortcut" >
+    <string/>
+   </property>
+  </action>
+  <action name="fileExitAction" >
+   <property name="icon" >
+    <iconset resource="../muse.qrc" >:/xpm/off.svg</iconset>
+   </property>
+   <property name="text" >
+    <string>E&amp;xit</string>
+   </property>
+   <property name="iconText" >
+    <string>Exit</string>
+   </property>
+   <property name="shortcut" >
+    <string/>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11" />
+ <resources>
+  <include location="../muse.qrc" />
+ </resources>
+ <connections/>
+</ui>

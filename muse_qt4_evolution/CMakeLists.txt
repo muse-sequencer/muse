@@ -1,0 +1,335 @@
+#=============================================================================
+#  MusE
+#  Linux Music Editor
+#  $Id:$
+#
+#  Copyright (C) 2002-2008 by Werner Schweer and others
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License version 2.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software
+#  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+#=============================================================================
+
+project(muse)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.4.1)
+if (COMMAND cmake_policy)
+      cmake_policy(SET CMP0003 NEW)
+endif(COMMAND cmake_policy)
+
+# set libdir if not use -DCMAKE_INSTALL_LIBDIR
+if (NOT CMAKE_INSTALL_LIBDIR)
+	SET(CMAKE_INSTALL_LIBDIR "lib")
+endif (NOT CMAKE_INSTALL_LIBDIR)
+
+#set(CMAKE_BUILD_TYPE debug)
+#set(CMAKE_BUILD_TYPE release)
+
+# for debugging the make system uncomment next line:
+# set(CMAKE_VERBOSE_MAKEFILE ON)
+
+set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
+
+# The MusE version number.
+SET(MusE_VERSION_MAJOR 2)
+SET(MusE_VERSION_MINOR 0)
+SET(MusE_VERSION_PATCH 1)
+SET(MusE_VERSION       "2.0.1")
+SET(MusE_VERSION_FULL  "2.0.1")
+SET(MusE_INSTALL_NAME  "muse-2.0")
+
+include ( ${PROJECT_SOURCE_DIR}/cmake/UsePkgConfig1.cmake )
+include ( ${PROJECT_SOURCE_DIR}/cmake/TargetDoc.cmake)
+
+option ( ENABLE_DSSI        "enable Disposable Soft Synth Interface"  ON)
+option ( ENABLE_VST         "enable VST/win support"                  OFF)
+option ( ENABLE_FLUID       "enable fluidsynth softsynth plugins"     ON)
+option ( ENABLE_ZYNADDSUBFX "enable zyaddsubfx softsynth plugin"      ON)
+
+##
+## Just print a notice if this is OS X
+##
+if (APPLE)
+	message("OS X found.")
+else (APPLE)
+	if (UNIX)
+		message("Unix (probably linux) found")
+	endif(UNIX)
+
+endif (APPLE)
+
+##
+##  look for Qt4
+##
+
+set(QT_MIN_VERSION "4.3.0")
+set(QT_USE_QTXML TRUE)
+set(QT_USE_QTDESIGNER TRUE)
+set(QT_USE_QTNSPLUGIN TRUE)
+set(QT_USE_QTSVG TRUE)
+
+find_package(Qt4)
+
+if (NOT QT4_FOUND)
+      message(FATAL_ERROR "Fatal error: QT (version >= 4.3.0) required.\n"
+      "Cmake tries to detect QT4 by searching for 'qmake' in your PATH\n"
+      "If you have QT4 installed, make sure qmake is found in your PATH."
+      )
+endif (NOT QT4_FOUND)
+
+include(${QT_USE_FILE})
+
+##
+## find doxygen
+##    TODO
+
+##
+## alsa >= 0.9.0
+##
+
+if (APPLE)
+	message("Disabling ALSA support due to OS X build.")
+else (APPLE)
+PKGCONFIG (alsa 0.9.0 ALSA_INCDIR ALSA_LIBDIR ALSA_LIB ALSA_CPP )
+if (NOT ALSA_INCDIR)
+      message(FATAL_ERROR "Fatal error: ALSA >= 1.0.0 required")
+else (NOT ALSA_INCDIR)
+	message("Alsa found.")
+endif (NOT ALSA_INCDIR)
+endif (APPLE)
+
+##
+## find packages for zyaddsubfx
+##
+## fftw3
+## mxml
+## fltk + fluid
+##
+## problems with FLTK/CMake:
+##    - fltk is not found on kubuntu/ubuntu
+##    - cmake version > 2.4 crashes
+##    - there is an annoying (and wrong) usage message from cmake concerning FLTK
+##
+
+if (ENABLE_ZYNADDSUBFX)
+      # HACK:
+      set (FLTK_INCLUDE_DIR     "/usr/include")
+      set(FLTK_FLUID_EXECUTABLE "/usr/bin/fluid")
+
+      include (FindFLTK)
+      if (NOT FLTK_FOUND)
+            message("fltk toolkit not found, zynaddsubfx not build")
+            set(ENABLE_ZYNADDSUBFX OFF)
+      else (NOT FLTK_FOUND)
+            message("fltk toolkit found")
+      endif (NOT FLTK_FOUND)
+
+      PKGCONFIG (mxml 2.0 MXML_INCDIR MXML_LIBDIR MXML_LIB MXML_CPP )
+      if (NOT MXML_INCDIR)
+             message("mxml >= 2.0 not found, zynaddsubfx not build")
+             set(ENABLE_ZYNADDSUBFX OFF)
+      else (NOT MXML_INCDIR)
+             message("mxml found.")
+      endif (NOT MXML_INCDIR)
+      #
+      #  check for fftw3 library
+      #
+      PKGCONFIG (fftw3 3.1.2 FFTW_INCDIR FFTW_LIBDIR FFTW_LIB FFTW_CPP )
+      if (NOT FFTW_INCDIR)
+             message("fftw3 >= 3.1.2 not found, zynaddsubfx not build")
+             set(ENABLE_ZYNADDSUBFX OFF)
+      else (NOT FFTW_INCDIR)
+             message("fftw3 found.")
+      endif (NOT FFTW_INCDIR)
+endif (ENABLE_ZYNADDSUBFX)
+
+
+##
+## find sndfile >= 1.0.0
+##
+
+PKGCONFIG (sndfile 1.0.0 SNDFILE_INCDIR SNDFILE_LIBDIR SNDFILE_LIB SNDFILE_CPP )
+if (NOT SNDFILE_INCDIR)
+      message(FATAL_ERROR "Fatal error: libsndfile >= 1.0.0 required")
+else (NOT SNDFILE_INCDIR)
+	message("sndfile found.")
+endif (NOT SNDFILE_INCDIR)
+
+##
+## find libsamplerate >= 0.1.0
+##
+
+PKGCONFIG (samplerate 0.1.0 SAMPLERATE_INCDIR SAMPLERATE_LIBDIR SAMPLERATE_LIB SAMPLERATE_CPP )
+if (NOT SAMPLERATE_INCDIR)
+      message(FATAL_ERROR "Fatal error: libsamplerate >= 0.1.0 required")
+else (NOT SAMPLERATE_INCDIR)
+	message("samplerate found")
+endif (NOT SAMPLERATE_INCDIR)
+
+##
+## find jack >= 0.103.0
+##
+
+PKGCONFIG (jack 0.107.0 JACK_INCDIR JACK_LIBDIR JACK_LIB JACK_CPP )
+if (NOT JACK_INCDIR)
+      PKGCONFIG (jack 0.103.0 JACK_INCDIR JACK_LIBDIR JACK_LIB JACK_CPP )
+      if (NOT JACK_INCDIR)
+            message(FATAL_ERROR "Fatal error: JACK >= 0.103 required")
+      else (NOT JACK_INCDIR)
+	      message("JACK 0.103 found")
+            set(JACK103 ON)
+      endif (NOT JACK_INCDIR)
+else (NOT JACK_INCDIR)
+	message("JACK 0.107 found")
+      set(JACK107 ON)
+endif (NOT JACK_INCDIR)
+
+##
+## check for dssi
+##    dssi >= 0.9.0
+##    liblo >= 0.23
+##
+
+if (ENABLE_DSSI)
+      PKGCONFIG (dssi 0.9.0 DSSI_INCDIR DSSI_LIBDIR DSSI_LIB DSSI_CPP )
+      if (NOT DSSI_INCDIR)
+            message("Error: dssi >= 0.9.0 not found, disabling feature")
+            set ( ENABLE_DSSI OFF )
+      else (NOT DSSI_INCDIR)
+            PKGCONFIG (liblo 0.23 LIBLO_INCDIR LIBLO_LIBDIR LIBLO_LIB LIBLO_CPP )
+            if (NOT LIBLO_INCDIR)
+                  message("Error: liblo >= 0.23 not found, disabling DSSI")
+                  set ( ENABLE_DSSI OFF )
+            else (NOT LIBLO_INCDIR)
+                  message("liblo >= 0.23 found.")
+                  set (DSSI_SUPPORT TRUE)
+                  message("DSSI enabled")
+            endif (NOT LIBLO_INCDIR)
+      endif (NOT DSSI_INCDIR)
+else (ENABLE_DSSI)
+      message("DSSI disabled")
+endif (ENABLE_DSSI)
+
+if (ENABLE_VST)
+      message("VST support enabled")
+      set (VST_SUPPORT TRUE)
+else (ENABLE_VST)
+      message("VST support disabled")
+      set (VST_SUPPORT FALSE)
+endif (ENABLE_VST)
+
+##
+## TODO
+##
+## Optimizations
+##
+
+SET (USE_SSE false)
+
+##
+## check for fluidsynth
+##
+
+if ( ENABLE_FLUID )
+      PKGCONFIG (fluidsynth 1.0.0 FLUID_INCDIR FLUID_LIBDIR FLUID_LIB FLUID_CPP )
+      if (NOT FLUID_INCDIR)
+            message("Error: fluidsynth >= 0.9.0 not found, disabling feature")
+            set ( ENABLE_FLUID OFF )
+      else (NOT FLUID_INCDIR)
+	    message("Fluidsynth found")
+      endif (NOT FLUID_INCDIR)
+endif ( ENABLE_FLUID )
+
+#
+# produce config.h file
+#
+configure_file (
+      ${PROJECT_SOURCE_DIR}/config.h.in
+      ${PROJECT_BINARY_DIR}/config.h
+      )
+
+add_custom_command(
+      OUTPUT ${PROJECT_BINARY_DIR}/all.h
+      COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all.h
+      DEPENDS ${PROJECT_SOURCE_DIR}/all.h
+      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+      )
+
+add_custom_command(
+      OUTPUT ${PROJECT_BINARY_DIR}/all-pic.h
+      COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic.h
+      DEPENDS ${PROJECT_SOURCE_DIR}/all.h
+      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+      )
+
+add_custom_command(
+      OUTPUT ${PROJECT_BINARY_DIR}/all-pic-debug.h
+      COMMAND cp ${PROJECT_SOURCE_DIR}/all.h ${PROJECT_BINARY_DIR}/all-pic-debug.h
+      DEPENDS ${PROJECT_SOURCE_DIR}/all.h
+      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+      )
+
+include_directories(
+   .
+   ${PROJECT_SOURCE_DIR}
+   ${PROJECT_SOURCE_DIR}/muse
+   ${PROJECT_SOURCE_DIR}/muse/widgets
+   ${PROJECT_BINARY_DIR}
+   ${PROJECT_BINARY_DIR}/muse
+   ${PROJECT_BINARY_DIR}/muse/widgets
+   ${PROJECT_BINARY_DIR}/muse/instruments
+   ${PROJECT_BINARY_DIR}/muse/ctrl
+
+   ${ALSA_INCDIR}
+   ${JACK_INCDIR}
+   ${SNDFILE_INCDIR}
+   ${SAMPLERATE_INCDIR}
+   ${LIBLO_INCDIR}
+   ${DSSI_INCDIR}
+   )
+
+# include (pch.txt)
+
+#
+# If the cmake version includes cpack, use it
+#
+IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
+
+  IF(EXISTS "${CMAKE_ROOT}/Modules/InstallRequiredSystemLibraries.cmake")
+      SET(CMAKE_INSTALL_MFC_LIBRARIES 1)
+      INCLUDE(InstallRequiredSystemLibraries)
+  ENDIF(EXISTS "${CMAKE_ROOT}/Modules/InstallRequiredSystemLibraries.cmake")
+
+  SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "MusE is a virtual audio studio environment")
+  SET(CPACK_PACKAGE_VENDOR "Werner Schweer and others")
+  SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+  SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+  SET(CPACK_PACKAGE_VERSION_MAJOR "${MusE_VERSION_MAJOR}")
+  SET(CPACK_PACKAGE_VERSION_MINOR "${MusE_VERSION_MINOR}")
+  SET(CPACK_PACKAGE_VERSION_PATCH "${MusE_VERSION_PATCH}")
+  SET(CPACK_PACKAGE_INSTALL_DIRECTORY "CMake ${CMake_VERSION_MAJOR}.${CMake_VERSION_MINOR}")
+  SET(CPACK_SOURCE_PACKAGE_FILE_NAME "${MusE_INSTALL_NAME}")
+
+  SET(CPACK_SYSTEM_NAME ${CMAKE_SYSTEM_NAME})
+
+  SET(CPACK_PACKAGE_FILE_NAME "${CPACK_SOURCE_PACKAGE_FILE_NAME}-${CPACK_SYSTEM_NAME}")
+  SET(CPACK_STRIP_FILES "bin/muse;bin/grepmidi")
+  SET(CPACK_PACKAGE_EXECUTABLES "muse" "MusE" "grepmidi" "grepmidi")
+  INCLUDE(CPack)
+ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
+
+set(CMAKE_CXX_FLAGS         "-Wl,-rpath,${QT_LIBRARY_DIR} -Wall -Wextra -Winvalid-pch -fno-exceptions")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -fomit-frame-pointer -ffast-math -fstrength-reduce")
+set(CMAKE_CXX_FLAGS_DEBUG   "-g -DQT_DEBUG")
+
+subdirs(al awl grepmidi plugins midiplugins muse share synti)
+

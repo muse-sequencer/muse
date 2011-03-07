@@ -1,0 +1,63 @@
+MusE can create LADSPA GUI's (graphical user interfaces) from
+Qt designer *.ui files at runtime.
+This allows a user to create or modify customized LADSPA guis without
+recompiling MusE.
+
+======================
+   Installation
+=====================
+
+Copy the file muse/awl/libawlplugin.so and muse/awl/libawlplugin_debug.so
+into a directory were Qt (designer) can find it.
+
+Example:
+      if you installed Qt in /usr/qt4:
+      su -c "cp -af awlplugin.so /usr/qt4/plugins/designer"
+Check:
+      After starting the Qt designer you see all MusE specific widgets
+      in the widget box titled "MusE Awl Widgets". 
+      If you cannot find any MusE widgets, designer did not find the 
+      muse shared libs.
+      The MusE shared libs must have a signature qt designer understands.
+      If the signature is wrong, qt designer silently ignores the libs.
+
+======================
+   Environment
+======================
+
+Naming:
+      The Qt designer files are named after the LADSPA plugin ID.
+      Example: the "freeverb" plugin has the id "1050". A gui for
+            freeverb has to be named "1050.ui".
+      The plugin ID is shown in the MusE plugin browser.
+
+Path:
+      MusE looks for *ui files at (museglobalshare)/plugins/.
+      If you installed MusE at "/usr" (configured with --prefix=/usr)
+      MusE looks at "/usr/share/muse/plugins" for *ui files.
+
+======================
+   Creating *.ui file
+======================
+
+The association between LADSPA plugin parameters and Qt-Widgets is
+done by name. All input widgets which manipulate a LADSPA parameter
+must have a name starting with the letter "P".
+The "id" property of every widget must be set to the parameter index
+of the plugin,
+One parameter can be manipulated with more than one widgets.
+
+      Example:
+      A "Slider" widget which manipulates the 3th parameter of a
+      plugin has the name "Pslider" and the "id" property has a
+      value of "3".
+
+Supported Widgets:
+      "AwlSlider"       slider for float values
+      "AwlFloatEntry"   entry for float values
+      "AwlCheckbox"     to manipulate a on/off LADSPA parameter
+      "AwlComboBox"     select from a list of named values; sets
+                        integer LADSPA values
+
+(for more hints please look at the example *.ui files)
+

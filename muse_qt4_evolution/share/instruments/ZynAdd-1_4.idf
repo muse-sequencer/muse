@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<muse version="1.0">
+    <MidiInstrument name="ZynAddSubFX-1.4">
+      <Controller name="Pitch"              type="Pitch" />
+      <Controller name="Modulation"         type="Control" l="1" />
+      <Controller name="MainVolume"         type="Control" l="7" init="100" />
+      <Controller name="Pan"                type="Control" l="10" init="64" />
+      <Controller name="Expression"         type="Control" l="11" init="127" />
+      <Controller name="Sustain"            type="Control" l="64" />
+      <Controller name="Portamento"         type="Control" l="65" />
+      <Controller name="FilterQ"	        type="Control" l="71" init="64"/>
+      <Controller name="FilterCutoff"	  type="Control" l="74" init="64"/>
+      <Controller name="Bandwidth"          type="Control" l="75" init="64"/>
+      <Controller name="ModulationAmp"      type="Control" l="76" init="127"/>
+      <Controller name="ResonanceCenter"    type="Control" l="77" init="64"/>
+      <Controller name="ResonanceBandwidth" type="Control" l="78" init="64"/>
+      <Controller name="AllSoundsOff"       type="Control" l="120" />
+      <Controller name="ResetAllController" type="Control" l="121" />
+      <Controller name="AllNotesOff"        type="Control" l="123" />
+      </MidiInstrument>
+</muse>
+

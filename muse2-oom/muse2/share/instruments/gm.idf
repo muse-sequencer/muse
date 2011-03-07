@@ -1,0 +1,193 @@
+<?xml version="1.0"?>
+<muse version="1.0">
+  <MidiInstrument name="GM" nullparam="32639">
+    <PatchGroup name="Piano">
+      <Patch name="Grand Piano" prog="0" />
+      <Patch name="Bright Piano" prog="1" />
+      <Patch name="E.Grand" prog="2" />
+      <Patch name="Honky-tonk" prog="3" />
+      <Patch name="E.Piano" prog="4" />
+      <Patch name="E.Piano 2" prog="5" />
+      <Patch name="Harpsichord" prog="6" />
+      <Patch name="Clav." prog="7" />
+    </PatchGroup>
+    <PatchGroup name="Chromatic Perc">
+      <Patch name="Celesta" prog="8" />
+      <Patch name="Glockenspiel" prog="9" />
+      <Patch name="Music Box" prog="10" />
+      <Patch name="Vibraphone" prog="11" />
+      <Patch name="Marimba" prog="12" />
+      <Patch name="Xylophone" prog="13" />
+      <Patch name="Tubular Bells" prog="14" />
+      <Patch name="Dulcimer" prog="15" />
+    </PatchGroup>
+    <PatchGroup name="Organ">
+      <Patch name="Drawbar Organ" prog="16" />
+      <Patch name="Perc. Organ" prog="17" />
+      <Patch name="Rock Organ" prog="18" />
+      <Patch name="Church Organ" prog="19" />
+      <Patch name="Reed Organ" prog="20" />
+      <Patch name="Akkordion" prog="21" />
+      <Patch name="Harmonica" prog="22" />
+      <Patch name="Bandoneon" prog="23" />
+    </PatchGroup>
+    <PatchGroup name="Guitar">
+      <Patch name="Nylon Gtr." prog="24" />
+      <Patch name="Steel Gtr." prog="25" />
+      <Patch name="Jazz Guitar" prog="26" />
+      <Patch name="Clean Guitar" prog="27" />
+      <Patch name="Muted Guitar" prog="28" />
+      <Patch name="Overdrive Gtr" prog="29" />
+      <Patch name="Distortion Gtr" prog="30" />
+      <Patch name="Gtr. Harmonics" prog="31" />
+    </PatchGroup>
+    <PatchGroup name="Bass">
+      <Patch name="Acoustic Bass" prog="32" />
+      <Patch name="Fingered Bass" prog="33" />
+      <Patch name="Picked Bass" prog="34" />
+      <Patch name="Fretless Bass" prog="35" />
+      <Patch name="Slap Bass 1" prog="36" />
+      <Patch name="Slap Bass 2" prog="37" />
+      <Patch name="Synth Bass 1" prog="38" />
+      <Patch name="Synth Bass 2" prog="39" />
+    </PatchGroup>
+    <PatchGroup name="Strings/Orch">
+      <Patch name="Violin" prog="40" />
+      <Patch name="Viola" prog="41" />
+      <Patch name="Cello" prog="42" />
+      <Patch name="Contrabass" prog="43" />
+      <Patch name="Tremolo Str." prog="44" />
+      <Patch name="Pizzicato Str." prog="45" />
+      <Patch name="Harp" prog="46" />
+      <Patch name="Timpani" prog="47" />
+    </PatchGroup>
+    <PatchGroup name="Ensemble">
+      <Patch name="Strings 1" prog="48" />
+      <Patch name="Strings 2" prog="49" />
+      <Patch name="Syn. Strings 1" prog="50" />
+      <Patch name="Syn. Strings 2" prog="51" />
+      <Patch name="Choir Aahs" prog="52" />
+      <Patch name="Voice Oohs" prog="53" />
+      <Patch name="Synth Voice" prog="54" />
+      <Patch name="Orchestra Hit" prog="55" />
+    </PatchGroup>
+    <PatchGroup name="Brass">
+      <Patch name="Trumpet" prog="56" />
+      <Patch name="Trombone" prog="57" />
+      <Patch name="Tuba" prog="58" />
+      <Patch name="Muted Trumpet" prog="59" />
+      <Patch name="French Horn" prog="60" />
+      <Patch name="Brass Section" prog="61" />
+      <Patch name="Synth Brass 1" prog="62" />
+      <Patch name="Synth Brass 2" prog="63" />
+    </PatchGroup>
+    <PatchGroup name="Reed">
+      <Patch name="Soprano Sax" prog="64" />
+      <Patch name="Alto Sax" prog="65" />
+      <Patch name="Tenor Sax" prog="66" />
+      <Patch name="Baritone Sax" prog="67" />
+      <Patch name="Oboe" prog="68" />
+      <Patch name="English Horn" prog="69" />
+      <Patch name="Bassoon" prog="70" />
+      <Patch name="Clarinet" prog="71" />
+    </PatchGroup>
+    <PatchGroup name="Pipe">
+      <Patch name="Piccolo" prog="72" />
+      <Patch name="Flute" prog="73" />
+      <Patch name="Recorder" prog="74" />
+      <Patch name="Pan Flute" prog="75" />
+      <Patch name="Blown Bottle" prog="76" />
+      <Patch name="Shakuhachi" prog="77" />
+      <Patch name="Whistle" prog="78" />
+      <Patch name="Ocarina" prog="79" />
+    </PatchGroup>
+    <PatchGroup name="Synth Lead">
+      <Patch name="Square Wave" prog="80" />
+      <Patch name="Saw Wave" prog="81" />
+      <Patch name="Calliope" prog="82" />
+      <Patch name="Chiffer Lead" prog="83" />
+      <Patch name="Charang" prog="84" />
+      <Patch name="Solo Vox" prog="85" />
+      <Patch name="Fifth Saw" prog="86" />
+      <Patch name="Bass Lead" prog="87" />
+    </PatchGroup>
+    <PatchGroup name="Synth Pad">
+      <Patch name="New Age Pad" prog="88" />
+      <Patch name="Warm Pad" prog="89" />
+      <Patch name="Polysynth Pad" prog="90" />
+      <Patch name="Choir Pad" prog="91" />
+      <Patch name="Bowed Pad" prog="92" />
+      <Patch name="Metallic Pad" prog="93" />
+      <Patch name="Halo Pad" prog="94" />
+      <Patch name="Sweep Pad" prog="95" />
+    </PatchGroup>
+    <PatchGroup name="Synth FX">
+      <Patch name="Rain" prog="96" />
+      <Patch name="Soundtrack" prog="97" />
+      <Patch name="Crystal" prog="98" />
+      <Patch name="Athmosphere" prog="99" />
+      <Patch name="Brightness" prog="100" />
+      <Patch name="Goblins" prog="101" />
+      <Patch name="Echoes" prog="102" />
+      <Patch name="Sci-Fi" prog="103" />
+    </PatchGroup>
+    <PatchGroup name="Ethnic">
+      <Patch name="Sitar" prog="104" />
+      <Patch name="Banjo" prog="105" />
+      <Patch name="Shamisen" prog="106" />
+      <Patch name="Koto" prog="107" />
+      <Patch name="Kalimba" prog="108" />
+      <Patch name="Bagpipe" prog="109" />
+      <Patch name="Fiddle" prog="110" />
+      <Patch name="Shanai" prog="111" />
+    </PatchGroup>
+    <PatchGroup name="Percussive">
+      <Patch name="Tinkle Bell" prog="112" />
+      <Patch name="Agogo" prog="113" />
+      <Patch name="Steel Drums" prog="114" />
+      <Patch name="Woodblock" prog="115" />
+      <Patch name="Taiko Drum" prog="116" />
+      <Patch name="Melodic Drum" prog="117" />
+      <Patch name="Synth Drum" prog="118" />
+      <Patch name="Rev. Cymbal" prog="119" />
+    </PatchGroup>
+    <PatchGroup name="Special FX">
+      <Patch name="Gtr Fret Noise" prog="120" />
+      <Patch name="Breath Noise" prog="121" />
+      <Patch name="Seashore" prog="122" />
+      <Patch name="Bird Tweed" prog="123" />
+      <Patch name="Telephone" prog="124" />
+      <Patch name="Helicopter" prog="125" />
+      <Patch name="Applaus" prog="126" />
+      <Patch name="Gunshot" prog="127" />
+    </PatchGroup>
+    <Controller name="Modulation" l="1" />
+    <Controller name="PortamentoTime" l="5" />
+    <Controller name="MainVolume" l="7" init="100" />
+    <Controller name="Pan" l="10" min="-64" max="63" init="0" />
+    <Controller name="Expression" l="11" init="127" />
+    <Controller name="Sustain" l="64" />
+    <Controller name="Portamento" l="65" />
+    <Controller name="Sostenuto" l="66" />
+    <Controller name="FilterResonance" l="71" init="64" />
+    <Controller name="ReleaseTime" l="72" init="64" />
+    <Controller name="AttackTime" l="73" init="64" />
+    <Controller name="Brightness" l="74" init="64" />
+    <Controller name="DecayTime" l="75" init="64" />
+    <Controller name="VibrateRate" l="76" init="64" />
+    <Controller name="VibrateDepth" l="77" init="64" />
+    <Controller name="VibrateDelay" l="78" init="64" />
+    <Controller name="PortamentoControl" l="84" />
+    <Controller name="ReverbSendLevel" l="91" init="40" />
+    <Controller name="ChorusSendLevel" l="93" init="0" />
+    <Controller name="VariationSend" l="94" init="0" />
+    <Controller name="AllSoundsOff" l="120" />
+    <Controller name="ResetAllController" l="121" />
+    <Controller name="AllNotesOff" l="123" />
+    <Controller name="SoftPedal" l="67" />
+    <Controller name="PitchBendSensitivity" type="RPN" h="0" l="0" max="24" init="2" />
+    <Controller name="FineTuning" type="RPN" h="0" l="1" min="-64" max="63" init="0" />
+    <Controller name="Pitch" type="Pitch" />
+    <Controller name="Program" type="Program" />
+  </MidiInstrument>
+</muse>

@@ -1,0 +1,353 @@
+<?xml version="1.0"?>
+<muse version="2.1">
+  <configuration>
+    <txDeviceId>127</txDeviceId>
+    <rxDeviceId>127</rxDeviceId>
+    <mtctype>1</mtctype>
+    <mtcoffset>
+      00:00:00:00:00
+      </mtcoffset>
+    <extSync>0</extSync>
+    <genMTCSync>0</genMTCSync>
+    <genMCSync>0</genMCSync>
+    <genMMC>0</genMMC>
+    <acceptMTC>0</acceptMTC>
+    <acceptMMC>1</acceptMMC>
+    <acceptMC>1</acceptMC>
+    <bigtimeVisible>0</bigtimeVisible>
+    <transportVisible>0</transportVisible>
+    <geometryMain x="0" y="0" w="800" h="560" />
+    <geometryTransport x="0" y="0" w="763" h="108" />
+    <mixer1Visible>0</mixer1Visible>
+    <mixer2Visible>0</mixer2Visible>
+    </configuration>
+  <song>
+    <comment></comment>
+    <cpos>12288</cpos>
+    <rpos>0</rpos>
+    <lpos>0</lpos>
+    <master>1</master>
+    <len>18432</len>
+    <miditrack>
+      <name>Track 1</name>
+      <mute>0</mute>
+      <height>31</height>
+      <transposition>0</transposition>
+      <velocity>0</velocity>
+      <delay>0</delay>
+      <len>100</len>
+      <compression>100</compression>
+      <part>
+        <name>Track 1</name>
+        <poslen tick="0" len="18432"/>
+        <selected>0</selected>
+        <color>0</color>
+        </part>
+      </miditrack>
+    <AudioOutput>
+      <name>Out 1</name>
+      <mute>0</mute>
+      <channels>2</channels>
+      <controller id="0" name="Volume" cur="1.02164" type="2" min="-3.00927" max="0.301887" default="0"/>
+      <controller id="1" name="Pan" cur="0" type="0" min="-1" max="1" default="0"/>
+      <height>31</height>
+      <prefader>0</prefader>
+      </AudioOutput>
+    <SynthI>
+      <name>fluid-1</name>
+      <mute>0</mute>
+      <off>1</off>
+      <channels>2</channels>
+      <locked>1</locked>
+      <controller id="0" name="Volume" cur="1.41091" type="2" min="-3.00927" max="0.301887" default="0"/>
+      <controller id="1" name="Pan" cur="0" type="0" min="-1" max="1" default="0"/>
+      <height>31</height>
+      <prefader>0</prefader>
+      <class>fluid</class>
+      <guiVisible>0</guiVisible>
+      </SynthI>
+    <SynthI>
+      <name>organ-1</name>
+      <mute>0</mute>
+      <channels>1</channels>
+      <selected>1</selected>
+      <controller id="0" name="Volume" cur="1.02164" type="2" min="-3.00927" max="0.301887" default="0"/>
+      <controller id="1" name="Pan" cur="-0.04" type="0" min="-1" max="1" default="0"/>
+      <height>31</height>
+      <prefader>0</prefader>
+      <class>organ</class>
+      <guiVisible>0</guiVisible>
+      <geometry x="0" y="0" w="1" h="1" />
+      </SynthI>
+    <SynthI>
+      <name>s1-1</name>
+      <mute>0</mute>
+      <off>1</off>
+      <channels>1</channels>
+      <locked>1</locked>
+      <controller id="0" name="Volume" cur="0" type="2" min="-3.00927" max="0.301887" default="0"/>
+      <controller id="1" name="Pan" cur="0" type="0" min="-1" max="1" default="0"/>
+      <height>31</height>
+      <prefader>0</prefader>
+      <class>s1</class>
+      </SynthI>
+    <SynthI>
+      <name>vam-1</name>
+      <mute>0</mute>
+      <off>1</off>
+      <channels>1</channels>
+      <controller id="0" name="Volume" cur="0" type="2" min="-3.00927" max="0.301887" default="0"/>
+      <controller id="1" name="Pan" cur="0" type="0" min="-1" max="1" default="0"/>
+      <height>31</height>
+      <prefader>0</prefader>
+      <class>vam</class>
+      <guiVisible>0</guiVisible>
+      <geometry x="0" y="0" w="692" h="519" />
+      </SynthI>
+    <Route>
+      <srcNode type="SYNTIPORT">fluid-1</srcNode>
+      <dstNode type="TRACK">Out 1</dstNode>
+      </Route>
+    <Route>
+      <srcNode type="SYNTIPORT">organ-1</srcNode>
+      <dstNode type="TRACK">Out 1</dstNode>
+      </Route>
+    <Route>
+      <srcNode type="SYNTIPORT">s1-1</srcNode>
+      <dstNode type="TRACK">Out 1</dstNode>
+      </Route>
+    <Route>
+      <srcNode type="SYNTIPORT">vam-1</srcNode>
+      <dstNode type="TRACK">Out 1</dstNode>
+      </Route>
+    <arranger>
+      <TrackConf type="0">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="4"/>
+          </group>
+        <group>
+          <element id="2"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="1">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="2"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="2">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="2"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="3">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="4"/>
+          </group>
+        <group>
+          <element id="2"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          <element id="8"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="4">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="2"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="5">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="2"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="6">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="4"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          <element id="8"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        <group>
+          <element id="7"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="7">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        <group>
+          <element id="10"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="8">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="9">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="9"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        <group>
+          <element id="11"/>
+          </group>
+        </TrackConf>
+      <TrackConf type="10">
+        <group>
+          </group>
+        <group>
+          <element id="0"/>
+          </group>
+        <group>
+          <element id="1"/>
+          <element id="3"/>
+          </group>
+        <group>
+          <element id="5"/>
+          <element id="6"/>
+          </group>
+        </TrackConf>
+      <info>0</info>
+      <strip>1</strip>
+      <hmag>0.04</hmag>
+      <vmag>1</vmag>
+      <hpos>0</hpos>
+      <vpos>0</vpos>
+      <splitter>
+        <size>144</size>
+        <size>578</size>
+        </splitter>
+      </arranger>
+    <tempolist fix="500000">
+      <tempo at="21474837">
+        <tick>0</tick>
+        <val>500000</val>
+        </tempo>
+      </tempolist>
+    <siglist>
+      <sig at="21474836">
+        <tick>0</tick>
+        <nom>4</nom>
+        <denom>4</denom>
+        </sig>
+      </siglist>
+    </song>
+  <toplevels>
+    </toplevels>
+  </muse>

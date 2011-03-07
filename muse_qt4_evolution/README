@@ -1,0 +1,117 @@
+====================================================================
+      MusE  ---  Linux Music Editor
+====================================================================
+
+Welcome to MusE, the open source MIDI/Audio sequencer.
+
+MusE is distributed under the GNU General Public License (GPL).
+Please check out the file COPYING in this directory for more
+details.
+
+,-----------------------------------------------------------------.
+| NOTICE                                                          |
+|-----------------------------------------------------------------|
+| Some parts of MusE code are EXPERIMENTAL, and may well result   |
+| in a CRASH, and who knows what other ill effects.               |
+| RUN THIS SOFTWARE AT YOUR OWN RISK.                             |
+`-----------------------------------------------------------------'
+
+  =============================
+      Requirements
+  =============================
+
+      - CMake 2.4
+        http:/www.cmake.org/HTML/Download.html
+
+      - QT: Qt 4.2.0 or above
+        ftp://ftp.trolltech.com/qt/source
+        MusE does _not_ compile with older versions
+
+      - gcc 4.x.x
+
+      - libsndfile >= 1.0.1
+        http://www.zip.com.au/~erikd/libsndfile/
+
+      - libsamplerate
+
+      - JACK >= 0.103
+	  http://jackit.sourceforge.net/download/
+
+      Optional:
+
+      - fluidsynth-1.0.3 (formerly known as iiwusynth) from
+        http://savannah.nongnu.org/download/fluid
+
+      - DSSI
+
+      - ConTeXt (for building documentation, by default the build
+               script tries to build documentation, can be
+               disabled by setting ENABLE_DOCUMENTATION to OFF)
+
+  =============================
+      Compiling:
+  =============================
+
+      - download source from http://lmuse.sourceforge.net/
+
+      - unpack source:
+            tar xvofz muse-xyz.tar.gz </code>
+
+      - to compile MusE, run the following commands:
+            mkdir muse                    # create build directory
+            cd muse                       # enter build directory
+            cmake ../muse-xyz             # create make system
+            make                          # compile muse
+
+      - install MusE:
+            run "make install"
+
+  =============================
+      running MusE
+  =============================
+
+      MusE is a realtime program which requires special rights to
+      work poperly.
+      Recommended setup:
+
+      - check if you are running a sufficiently new linux kernel > 2.6.x
+
+      - create an "audio" group if it does not already exists
+        and put yourself into this group
+
+      - make sure you can acces the realtime clock (RTC)
+            chmod 660 /dev/rtc
+            chgrp audio /dev/rtc
+
+      - make sure MusE can set the rtc clock:
+            echo 8192 > /proc/sys/dev/rtc/max-user-freq
+            inspect with:
+            cat /proc/sys/dev/rtc/max-user-freq
+
+      - for MusE to gain RT priviledges load the "realtime-lsm"
+        modul; the modul should be configured to give all "audio"
+        group members realtime priviledges
+
+      - make sure the alsa sequencer modul is loaded:
+            /sbin/modprobe snd-seq
+        (same distros (ubuntu) do not load it by default :-( )
+
+      - start qjackctl
+            - start JACK with qjackctl
+
+      - start MusE
+
+      (JACK and all its clients (qjackctl & MusE) must run with the
+      same user id)
+
+
+  =============================
+      known bugs
+  =============================
+
+      - many
+
+====================================================================
+Let me know whether MusE works for you !!!
+Have a look at the webpage http://lmuse.sourceforge.net/ for details.
+

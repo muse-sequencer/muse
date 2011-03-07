@@ -1,0 +1,70 @@
+//=============================================================================
+//  MusE
+//  Linux Music Editor
+//  $Id:$
+//
+//  Copyright (C) 2002-2006 by Werner Schweer and others
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License version 2.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//=============================================================================
+
+#ifndef __MIDIOUTPORT_H__
+#define __MIDIOUTPORT_H__
+
+#include "miditrackbase.h"
+#include "midiout.h"
+
+struct SeqTime;
+
+//---------------------------------------------------------
+//   MidiOutPort
+//---------------------------------------------------------
+
+class MidiOutPort : public MidiTrackBase, public MidiOut {
+      Q_OBJECT
+
+      MidiInstrument* _instrument;
+      void routeEvent(const MidiEvent&);
+      void queueAlsaEvent(const MidiEvent& event);
+      void queueJackEvent(const MidiEvent& event);
+
+   signals:
+      void instrumentChanged();
+
+   public:
+      MidiOutPort();
+      ~MidiOutPort();
+      virtual TrackType type() const { return MIDI_OUT; }
+
+      virtual void setName(const QString& s);
+      virtual void write(Xml&) const;
+      virtual void read(QDomNode);
+      virtual bool isMute() const         { return _mute; }
+      virtual Part* newPart(Part*, bool)  { return 0; }
+
+      virtual MidiInstrument* instrument()  { return _instrument; }
+      virtual MidiOut* midiOut() { return this; }
+      void setInstrument(MidiInstrument* i);
+
+      bool guiVisible() const;
+      bool hasGui() const;
+
+      virtual void processMidi(const SeqTime*);
+      };
+
+typedef QList<MidiOutPort*> MidiOutPortList;
+typedef MidiOutPortList::iterator iMidiOutPort;
+typedef MidiOutPortList::const_iterator ciMidiOutPort;
+
+#endif
+

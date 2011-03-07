@@ -1,0 +1,62 @@
+Internationalisation
+
+If you want to contribute a translation the following hints
+may be of help to you:
+
+Step 1:
+      If you want to update an existing translation, skip to step 2.
+
+      If you want to do a new translation, start with creating an
+      empty translation file:
+
+            touch share/locale/muse_fr.ts
+
+Step 2:
+      If you want to update an existing translation and you downloaded
+      a stable release (not a snapshot) of MusE, skip to step 3.
+
+      Populate your .ts file with the newest strings
+
+            mkdir build
+            cd build
+            cmake -DUPDATE_TRANSLATIONS=ON ..
+            make translations
+            cmake -DUPDATE_TRANSLATIONS=OFF ..
+            cd ..
+
+      Your file share/locale/muse_fr.ts is now ready for translation. It
+      is recommended that you copy this file to some other place and
+      and work on the copy.
+      
+Step 3:
+      Edit "muse_fr.ts" manually or use the Qt "linguist" tool:
+
+            linguist muse_fr.ts
+
+Step 4:
+     Save the edited file "muse_fr.ts" from linguist and
+     start File->Release. This generates the file "muse_fr.qm".
+     Copy this file into your muse installation folder,
+     <prefix>/share/muse-2.0/locale/
+
+      or
+
+      Copy your edited "muse_fr.ts" into share/locale in the source tree
+      and rebuild/install muse
+
+            cd build
+            cmake -DUPDATE_TRANSLATIONS=OFF ..
+            make
+            sudo make install
+
+Step 5:
+      Test:
+            If your system locale is set to the same language as your 
+            translation, simply start MusE:
+
+                  muse2
+
+            Otherwise, start MusE with the desired locale using the -l flag
+
+                  muse2 -l fr
+

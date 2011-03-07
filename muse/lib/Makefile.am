@@ -1,0 +1,1 @@
+SUBDIRS = synthi plugins

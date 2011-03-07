@@ -1,0 +1,23 @@
+/* XPM */
+static const char *scoreS_xpm[]={
+"16 16 4 1",
+"# c #000000",
+". c #00ff00",
+"b c #dcdcdc",
+"a c #ffffff",
+"................",
+"..############..",
+"..aaaaaa#aaaaa..",
+"..aaaaaa##aaaa..",
+"..############..",
+"..aaaaaa#b#baa..",
+"..aaaaaa#bbbaa..",
+"..############..",
+"..aaaaaa#baaaa..",
+"..aaaa###baaaa..",
+"..############..",
+"..aaaa##bbaaaa..",
+"..aaaabbbaaaaa..",
+"..############..",
+"................",
+"................"};

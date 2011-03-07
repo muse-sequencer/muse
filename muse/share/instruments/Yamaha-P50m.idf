@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<muse version="1.0">
+  <MidiInstrument name="Yamaha-P50m" nullparam="32639">
+    <PatchGroup name="">
+      <Patch name="bright piano s+s" prog="0" />
+      <Patch name="bright piano s" prog="1" />
+      <Patch name="bright piano m+s" prog="2" />
+      <Patch name="bright piano m" prog="3" />
+      <Patch name="dark piano" prog="4" />
+      <Patch name="grand piano s+s" prog="5" />
+      <Patch name="grand piano s" prog="6" />
+      <Patch name="grand piano m+s" prog="7" />
+      <Patch name="grand piano m" prog="8" />
+      <Patch name="dance" prog="9" />
+      <Patch name="honkytonk" prog="10" />
+      <Patch name="hybrid piano" prog="11" />
+      <Patch name="cp80, mono" prog="12" />
+      <Patch name="cp80, mono s" prog="13" />
+      <Patch name="cp80+chorus" prog="14" />
+      <Patch name="dx ep" prog="15" />
+      <Patch name="dx pad" prog="16" />
+      <Patch name="dx ep+chorus" prog="17" />
+      <Patch name="roads" prog="18" />
+      <Patch name="roads+chorus" prog="19" />
+      <Patch name="soft roads" prog="20" />
+      <Patch name="hard roads" prog="21" />
+      <Patch name="dyno" prog="22" />
+      <Patch name="resonant dyno" prog="23" />
+      <Patch name="dyno+chorus" prog="24" />
+      <Patch name="wurli" prog="25" />
+      <Patch name="clavi" prog="26" />
+      <Patch name="clavi+wah" prog="27" />
+      <Patch name="no sound" prog="28" />
+    </PatchGroup>
+    <Controller name="Modulation" l="1" />
+    <Controller name="PortamentoTime" l="5" />
+    <Controller name="MainVolume" l="7" init="100" />
+    <Controller name="Pan" l="10" min="-64" max="63" init="0" />
+    <Controller name="Expression" l="11" init="127" />
+    <Controller name="Sustain" l="64" />
+    <Controller name="Portamento" l="65" />
+    <Controller name="Sostenuto" l="66" />
+    <Controller name="SoftPedal" l="67" />
+    <Controller name="HarmonicContent" l="71" />
+    <Controller name="ReleaseTime" l="72" />
+    <Controller name="AttackTime" l="73" />
+    <Controller name="Brightness" l="74" />
+    <Controller name="PortamentoControl" l="84" />
+    <Controller name="Effect1Depth" l="91" />
+    <Controller name="Effect3Depth" l="93" />
+    <Controller name="PitchBendSensitivity" type="RPN" h="0" l="0" max="24" init="2" />
+    <Controller name="FineTuning" type="RPN" h="0" l="1" min="-64" max="63" init="0" />
+    <Controller name="VibratoRate" type="NRPN" h="1" l="8" min="-100" max="100" />
+    <Controller name="VibratoDepth" type="NRPN" h="1" l="9" min="-100" max="100" />
+    <Controller name="VibratoDelay" type="NRPN" h="1" l="10" min="-100" max="100" />
+    <Controller name="FilterCutoffFrequency" type="NRPN" h="1" l="32" min="-100" max="100" />
+    <Controller name="FilterResonance" type="NRPN" h="1" l="33" min="-100" max="100" />
+    <Controller name="EgAttackTime" type="NRPN" h="1" l="99" min="-100" max="100" />
+    <Controller name="EgDecayTime" type="NRPN" h="1" l="100" min="-100" max="100" />
+    <Controller name="EgReleaseTime" type="NRPN" h="1" l="102" min="-100" max="100" />
+    <Controller name="Program" type="Program" />
+  </MidiInstrument>
+</muse>

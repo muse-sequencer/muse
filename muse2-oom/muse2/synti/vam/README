@@ -1,0 +1,42 @@
+VAM: Virtual Analog for MusE
+
+    by Josef Lindman Hörnlund
+
+
+*** WARNING! VAM has at the time some significant problems
+*** (esp. with the filter). Some parameters should not have
+*** high values ( like the filter resonance, the filter
+*** env mod or dco sustain )
+
+* What's VAM??
+
+    VAM is a soft synth for MusE (http://muse.seh.de) emulating
+    an old monophonic two oscillator analog synthesizer. It has
+    a simple interface and a quite fast synthesis engine.
+
+* Installation
+    MusE version >= 0.5.0 required (I think)
+    ( and everything that MusE requires, like Qt3 )
+
+    Unpack VAM in $MUSESOURCEDIR/synthi and run from vam/ make;
+    make install. VAM won't compile automaticly if you run make 
+    from $MUSESOURCEDIR.
+    $MUSESOURCEDIR is the directory you have the MusE source.
+    For optimizing add -march=(your arch) to the compiler arguments
+    in Makefile.
+
+* Using VAM:
+
+    To have fun with VAM MusE really should be started with -R.
+    Otherwise VAM will produce mostly noise, like clicks.
+    If you're familiar with analog or virtual analog synthesizers
+    using VAM souldn't be a problem.
+
+    If you add some cool LADSPA plugins like delay or chorus to VAM's
+    output, you'll get _much_ better sounds, playing without effects
+    is like eating beef without sauce.
+
+* Contact:
+
+    Please mail me at jotsif@linux.nu if you're having any
+    problems, suggestions, bugs, ideas or other comments.
