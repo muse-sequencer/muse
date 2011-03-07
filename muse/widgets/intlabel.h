@@ -8,7 +8,7 @@
 #ifndef __INTLABEL_H__
 #define __INTLABEL_H__
 
-#include <values.h>
+#include <limits.h>
 #include "nentry.h"
 
 class QString;
@@ -35,7 +35,7 @@ class IntLabel : public Nentry {
       void valueChanged(int);
 
    public:
-      IntLabel(int, int, int, QWidget*, int _off = MAXINT,
+      IntLabel(int, int, int, QWidget*, int _off = INT_MAX,
          const QString& = QString(""), int lpos = 0);
       void setOff(int v);
       void setSuffix(const QString& s) { suffix = s; }

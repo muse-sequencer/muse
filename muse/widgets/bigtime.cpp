@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <values.h>
+#include <limits.h>
 
 #include <QCheckBox>
 #include <QLabel>
@@ -65,7 +65,7 @@ BigTime::BigTime(QWidget* parent)
       //oldbar = oldbeat = oldtick = oldhour = oldmin = oldsec = oldframe = -1;
       oldbar = oldbeat = oldtick = oldmin = oldsec = oldframe = oldsubframe = -1;
       oldAbsTick = oldAbsFrame = -1;
-      setString(MAXINT);
+      setString(INT_MAX);
 
       dwin->setStyleSheet("font-size:10px; font-family:'Courier'; ");   // Tim p4.0.8
       
@@ -185,7 +185,7 @@ void BigTime::closeEvent(QCloseEvent *ev)
 
 bool BigTime::setString(unsigned v)
       {
-      if (v == MAXINT) {
+      if (v == INT_MAX) {
             barLabel->setText(QString("----"));
             beatLabel->setText(QString("--"));
             tickLabel->setText(QString("---"));
