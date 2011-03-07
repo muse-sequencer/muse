@@ -1,0 +1,13 @@
+ TODO
+
+o preset loading/saving
+o configuration loading/saving
+o soundfont information display
+o remembering the last directory that was dealt with
+o change gui<->synth communication to nrpns
+
+ DONE
+
+o get all controllers working
+o soundfont stack operations
+o patch name retrieval

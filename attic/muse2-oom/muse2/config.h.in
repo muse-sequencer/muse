@@ -1,0 +1,32 @@
+//=============================================================================
+//  MusE
+//  Linux Music Editor
+//  $Id:$
+//
+//  Copyright (C) 2002-2006 by Werner Schweer and others
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License version 2.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//=============================================================================
+
+#cmakedefine HAVE_LASH
+#cmakedefine OSC_SUPPORT
+#cmakedefine DSSI_SUPPORT
+#cmakedefine VST_SUPPORT
+#cmakedefine USE_SSE
+
+#define VERSION          "${MusE_VERSION_FULL}"
+#define SVNVERSION       "${MusE_SVNVER}"
+#define PACKAGE_NAME     "MusE"
+#define DOCDIR           "${MusE_DOC_DIR}"
+#define SHAREDIR         "${MusE_SHARE_DIR}"
+#define LIBDIR           "${MusE_LIB_DIR}"

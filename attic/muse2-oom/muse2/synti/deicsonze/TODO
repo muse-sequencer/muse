@@ -1,0 +1,13 @@
+- Fix sync
+- Eg Rate Scaling
+- Foot Control, Modulation Wheel, Breath Control, After Touch
+- analogue reverb
+- Change presetName subcategoryName category with SysEx
+- Internal restructure, private vs public, add comment, etc
+- Optimize the code
+- Remember the last directory
+- Pan per voices
+- Load BUMP preset
+- calibrate portamento and pitch envelope to fit real DX11
+- make deicsonze loadable as standalone by mus
+- It seems that there is still a bug on the note on, on some presets

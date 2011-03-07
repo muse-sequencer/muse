@@ -1,0 +1,29 @@
+MusE 0.7:
+      New features:
+
+      - MusE now depends on JACK; midi event timing is coupled
+        to JACK timing i.e
+      - simpler integration of internal software synthesizer;
+        midi events are now delivered directly to synthesizer without
+        ALSA. This eleminates the need of an extra realtime thread
+        for every synthesizer instance.
+      - instrument definition files "*.idf" files now describe
+        available midi controller for instrument
+      - software synthesizer show available midi controller
+        with name in controller editor pulldown
+      - 14 bit midi controllers (RPN'n NRPN's) can be handled in
+        graphical controller editor
+      - imported midi can be added to current song
+      - "New" now shows a selection of template songs to start with
+      - Keyboard shortcuts editor: most (all?) shortcuts can now be changed at
+        runtime.
+      - Redesigned audio-mixer with much improved routing capabilities
+        towards JACK.
+      - Track types extended, input, output, group, aux, wavetrack,
+        softsynth, miditrack, drumtrack
+      - The beginings of automation, only volume/pan at the moment.
+      - Improved RT performance, xruns should be a thing of the past. :)
+      - JACK transport integration
+      - support of JACK "freewheel" mode
+      - extended configuration - configurable shortcuts
+

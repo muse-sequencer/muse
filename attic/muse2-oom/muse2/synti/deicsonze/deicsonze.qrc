@@ -1,0 +1,26 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+   <qresource>
+      <file>pics/SHold.png</file>
+      <file>pics/algo1.png</file>
+      <file>pics/algo2.png</file>
+      <file>pics/algo3.png</file>
+      <file>pics/algo4.png</file>
+      <file>pics/algo5.png</file>
+      <file>pics/algo6.png</file>
+      <file>pics/algo7.png</file>
+      <file>pics/algo8.png</file>
+      <file>pics/sawUp.png</file>
+      <file>pics/square.png</file>
+      <file>pics/triangl.png</file>
+      <file>pics/wave1.png</file>
+      <file>pics/wave2.png</file>
+      <file>pics/wave3.png</file>
+      <file>pics/wave4.png</file>
+      <file>pics/wave5.png</file>
+      <file>pics/wave6.png</file>
+      <file>pics/wave7.png</file>
+      <file>pics/wave8.png</file>
+   </qresource>
+</RCC>
+
