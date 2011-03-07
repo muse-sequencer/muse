@@ -37,7 +37,7 @@ IF(NOT DEFINED SHARE_INSTALL_PREFIX)
         SET(SHARE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/share")
 ENDIF(NOT DEFINED SHARE_INSTALL_PREFIX)
 
-set(CMAKE_BUILD_TYPE debug)
+#set(CMAKE_BUILD_TYPE debug)
 #set(CMAKE_BUILD_TYPE release)
 
 # If no CMAKE_BUILD_TYPE is given on the command line,
@@ -54,7 +54,7 @@ set(CMAKE_BUILD_TYPE debug)
 
 
 # for debugging the make system uncomment next line:
-set(CMAKE_VERBOSE_MAKEFILE ON)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
@@ -150,7 +150,7 @@ if (NOT QT4_FOUND)
 endif (NOT QT4_FOUND)
 
 # Needed for plugins factory:
-#SET(QT_USE_QTUITOOLS TRUE)
+SET(QT_USE_QTUITOOLS TRUE)
 
 include(${QT_USE_FILE})
 
@@ -188,8 +188,8 @@ include_directories(${SAMPLERATE_INCLUDE_DIRS})
 ## find libuuid 
 ##
 
-#PKG_CHECK_MODULES(UUID REQUIRED uuid>=0.0.1)
-#include_directories(${UUID_INCLUDE_DIRS})
+PKG_CHECK_MODULES(UUID REQUIRED uuid>=0.0.1)
+include_directories(${UUID_INCLUDE_DIRS})
 
 ##
 ## find jack >= 0.103.0

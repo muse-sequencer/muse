@@ -20,6 +20,7 @@
 #include <QPainter>
 #include <QUrl>
 #include <QPoint>
+#include <QLinearGradient>
 
 #include "fastlog.h"
 #include "widgets/tools.h"
@@ -1507,8 +1508,12 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       if (part->mute()) {
             QColor c(Qt::white);
             c.setAlpha(config.globalAlphaBlend);
-            p.setBrush(c);
-            
+            QLinearGradient gradient(r.topLeft(), r.bottomLeft());
+            gradient.setColorAt(0, c);
+            gradient.setColorAt(1, c.darker());
+            QBrush cc(gradient);
+            p.setBrush(cc);
+
             // NOTE: For one-pixel border use first line For two-pixel border use second.
             p.drawRect(QRect(r.x(), r.y()-1, r.width(), r.height()));
             //p.drawRect(r);
@@ -1518,8 +1523,12 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       if (item->isMoving()) {
             QColor c(Qt::gray);
             c.setAlpha(config.globalAlphaBlend);
-            p.setBrush(c);
-            
+            QLinearGradient gradient(r.topLeft(), r.bottomLeft());
+            gradient.setColorAt(0, c);
+            gradient.setColorAt(1, c.darker());
+            QBrush cc(gradient);
+            p.setBrush(cc);
+
             // NOTE: For one-pixel border use first line. For two-pixel border use second.
             p.drawRect(QRect(r.x(), r.y()-1, r.width(), r.height()));
             //p.drawRect(r);
@@ -1540,7 +1549,11 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             // Hm, put some kind of lower limit? If so do that globally to the adjustment.
             QColor c(Qt::black);
             c.setAlpha(config.globalAlphaBlend);
-            p.setBrush(c);
+            QLinearGradient gradient(r.topLeft(), r.bottomLeft());
+            gradient.setColorAt(0, c);
+            gradient.setColorAt(1, c.darker());
+            QBrush cc(gradient);
+            p.setBrush(cc);
             p.drawRect(r);
             }
       else {
@@ -1554,8 +1567,12 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             p.setPen(pen);
             QColor c(config.partColors[i]);
             c.setAlpha(config.globalAlphaBlend);
-            p.setBrush(c);
-                       
+            QLinearGradient gradient(r.topLeft(), r.bottomLeft());
+            gradient.setColorAt(0, c);
+            gradient.setColorAt(1, c.darker());
+            QBrush cc(gradient);
+            p.setBrush(cc);
+
             p.drawRect(r);
             }
       
@@ -2944,7 +2961,7 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
 
     // primitive write recording while it happens
     // should be enhanced/exchanged with solution that draws events and waveform
-    ypos=0;
+    int yPos=0;
     if (song->record() && audio->isPlaying()) {
       for (iTrack it = tl->begin(); it != tl->end(); ++it) {
         Track* track = *it;
@@ -2961,15 +2978,15 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
             int startx = mapx(startPos);
             int width = mapx(song->cpos()) - mapx(startPos);
 
-            p.fillRect(startx,ypos, width, track->height(), config.partColors[0]);
+            p.fillRect(startx,yPos, width, track->height(), config.partColors[0]);
             p.setPen(Qt::black);
-            p.drawLine(startx,ypos,startx+width, ypos);
-            p.drawLine(startx,ypos+1,startx+width, ypos+1);
-            p.drawLine(startx,ypos+track->height(),startx+width, ypos+track->height());
-            p.drawLine(startx,ypos+track->height()-1,startx+width, ypos+track->height()-1);
+            p.drawLine(startx,yPos,startx+width, yPos);
+            p.drawLine(startx,yPos+1,startx+width, yPos+1);
+            p.drawLine(startx,yPos+track->height(),startx+width, yPos+track->height());
+            p.drawLine(startx,yPos+track->height()-1,startx+width, yPos+track->height()-1);
           }
         }
-        ypos+=track->height();
+        yPos+=track->height();
       }
     }
     p.restore();
@@ -2987,15 +3004,21 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, AudioTrack* /* t */
       //pen.setCosmetic(true);
       p.setPen(pen);
       //p.setBrush(Qt::gray);
+
       QColor c(Qt::gray);
       c.setAlpha(config.globalAlphaBlend);
-      p.setBrush(c);
-      
+      QLinearGradient gradient(r.topLeft(), r.bottomLeft());
+      gradient.setColorAt(0, c);
+      gradient.setColorAt(1, c.darker());
+      QBrush cc(gradient);
+      p.setBrush(cc);
+      p.drawRect(r);
+
       // Factor in pen stroking size:
       //QRect rr(r);
       //rr.setHeight(rr.height() -1);
       
-      p.drawRect(r);
+//      p.fillRect(r, cc);
 }
 
 //---------------------------------------------------------
