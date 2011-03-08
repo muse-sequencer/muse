@@ -2761,7 +2761,7 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
           Track* track = 0;
           if (trackNo < tracks->size())
                 track = tracks->index(trackNo);
-          printf("trackNo=%d\n, trackNo track=%d\n", trackNo, track);
+          //printf("trackNo=%d\n, trackNo track=%d\n", trackNo, track);
           int x = AL::sigmap.raster(event->pos().x(), *_raster);
           if (x < 0)
                 x = 0;
