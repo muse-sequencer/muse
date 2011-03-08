@@ -186,7 +186,7 @@ class Track {
       virtual bool canRecord() const { return false; }
       virtual AutomationType automationType() const    = 0;
       virtual void setAutomationType(AutomationType t) = 0;
-      static void setVisible(bool t) { }
+      static void setVisible(bool ) { }
 
       };
 
