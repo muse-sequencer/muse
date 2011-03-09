@@ -1509,8 +1509,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             QColor c(Qt::white);
             c.setAlpha(config.globalAlphaBlend);
             QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-            gradient.setColorAt(0, c);
-            gradient.setColorAt(1, c.darker());
+            gradient.setColorAt(0, c.lighter());
+            gradient.setColorAt(1, c);
             QBrush cc(gradient);
             p.setBrush(cc);
 
@@ -1524,8 +1524,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             QColor c(Qt::gray);
             c.setAlpha(config.globalAlphaBlend);
             QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-            gradient.setColorAt(0, c);
-            gradient.setColorAt(1, c.darker());
+            gradient.setColorAt(0, c.lighter());
+            gradient.setColorAt(1, c);
             QBrush cc(gradient);
             p.setBrush(cc);
 
@@ -1550,8 +1550,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             QColor c(Qt::black);
             c.setAlpha(config.globalAlphaBlend);
             QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-            gradient.setColorAt(0, c);
-            gradient.setColorAt(1, c.darker());
+            gradient.setColorAt(0, c.lighter());
+            gradient.setColorAt(1, c);
             QBrush cc(gradient);
             p.setBrush(cc);
             p.drawRect(r);
@@ -1568,8 +1568,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             QColor c(config.partColors[i]);
             c.setAlpha(config.globalAlphaBlend);
             QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-            gradient.setColorAt(0, c);
-            gradient.setColorAt(1, c.darker());
+            gradient.setColorAt(0, c.lighter());
+            gradient.setColorAt(1, c);
             QBrush cc(gradient);
             p.setBrush(cc);
 
@@ -2978,12 +2978,18 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
             int startx = mapx(startPos);
             int width = mapx(song->cpos()) - mapx(startPos);
 
-            p.fillRect(startx,yPos, width, track->height(), config.partColors[0]);
-            p.setPen(Qt::black);
-            p.drawLine(startx,yPos,startx+width, yPos);
-            p.drawLine(startx,yPos+1,startx+width, yPos+1);
-            p.drawLine(startx,yPos+track->height(),startx+width, yPos+track->height());
-            p.drawLine(startx,yPos+track->height()-1,startx+width, yPos+track->height()-1);
+            QPen pen(Qt::black, 0, Qt::SolidLine);
+            p.setPen(pen);
+
+            QColor c(config.partColors[0]);
+            c.setAlpha(config.globalAlphaBlend);
+            QLinearGradient gradient(QPoint(0,0), QPoint(0,track->height()));
+            gradient.setColorAt(0, c.lighter());
+            gradient.setColorAt(1, c);
+            QBrush cc(gradient);
+            p.setBrush(cc);
+
+            p.drawRect(startx,yPos, width, track->height());
           }
         }
         yPos+=track->height();
@@ -3008,8 +3014,8 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, AudioTrack* /* t */
       QColor c(Qt::gray);
       c.setAlpha(config.globalAlphaBlend);
       QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-      gradient.setColorAt(0, c);
-      gradient.setColorAt(1, c.darker());
+      gradient.setColorAt(0, c.lighter());
+      gradient.setColorAt(1, c);
       QBrush cc(gradient);
       p.setBrush(cc);
       p.drawRect(r);
