@@ -78,6 +78,7 @@
 #include "xpm/steprec.xpm"
 #include "xpm/glue.xpm"
 #include "xpm/draw.xpm"
+#include "xpm/cursor.xpm"
 #include "xpm/quant.xpm"
 #include "xpm/fileprint.xpm"
 #include "xpm/filesave.xpm"
@@ -298,6 +299,7 @@ QPixmap* cutIcon;
 QPixmap* steprecIcon;
 QPixmap* glueIcon;
 QPixmap* drawIcon;
+QPixmap* cursorIcon;
 QPixmap* quantIcon;
 QPixmap* printIcon;
 QPixmap* printIconS;
@@ -500,6 +502,7 @@ void initIcons()
       steprecIcon  = new MPIXMAP(steprec_xpm, NULL);
       glueIcon     = new MPIXMAP(glue_xpm, NULL);
       drawIcon     = new MPIXMAP(draw_xpm, NULL);
+      cursorIcon   = new MPIXMAP(cursor_xpm, NULL);
       quantIcon    = new MPIXMAP(quant_xpm, NULL);
       saveIcon     = new MPIXMAP(filesave_xpm, "document-save");
       saveasIcon     = new MPIXMAP(filesaveas_xpm, "document-save-as");

@@ -286,6 +286,13 @@ enum {
       // pianoroll and drum editor
       SHRT_TOOL_LINEDRAW,
 
+      // drum editor
+      SHRT_TOOL_CURSOR,
+      SHRT_ADDNOTE_1,
+      SHRT_ADDNOTE_2,
+      SHRT_ADDNOTE_3,
+      SHRT_ADDNOTE_4,
+
       // arranger
       SHRT_TOOL_SCISSORS,
       SHRT_TOOL_GLUE,

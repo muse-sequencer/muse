@@ -221,7 +221,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
       int y      = ev->y();
       int button = ev->button();
       ///bool shift = ev->state() & Qt::ShiftButton;
-      bool shift = ev->modifiers() & Qt::ShiftModifier;
+      //bool shift = ev->modifiers() & Qt::ShiftModifier;
       unsigned pitch = y / TH;
       DrumMap* dm = &drumMap[pitch];
 
@@ -302,21 +302,24 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   dm->len = val;
                   break;
             case COL_ANOTE:
-                  val = dm->anote + incVal;
-                  if (val < 0)
-                        val = 0;
-                  else if (val > 127)
-                        val = 127;
-                  if(val != dm->anote)
-                  {  
-                    audio->msgIdle(true);
-                    //audio->msgRemapPortDrumCtlEvents(pitch, val, -1, -1);
-                    song->remapPortDrumCtrlEvents(pitch, val, -1, -1);
-                    audio->msgIdle(false);
-                    dm->anote = val;
-                    song->update(SC_DRUMMAP);
+                  {
+                    val = dm->anote + incVal;
+                    if (val < 0)
+                          val = 0;
+                    else if (val > 127)
+                          val = 127;
+                    if(val != dm->anote)
+                    {
+                      audio->msgIdle(true);
+                      //audio->msgRemapPortDrumCtlEvents(pitch, val, -1, -1);
+                      song->remapPortDrumCtrlEvents(pitch, val, -1, -1);
+                      audio->msgIdle(false);
+                      dm->anote = val;
+                      song->update(SC_DRUMMAP);
+                    }
+                    int velocity = 127 * float(ev->x()) / width();
+                    emit keyPressed(pitch, velocity);//(dm->anote, shift);
                   }
-                  emit keyPressed(pitch, shift);//(dm->anote, shift);
                   break;
             case COL_CHANNEL:
                   val = dm->channel + incVal;
@@ -386,7 +389,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   dm->lv4 = val;
                   break;
             case COL_NAME:
-                  emit keyPressed(pitch, shift); //Mapping done on other side, send index
+                  emit keyPressed(pitch, 100); //Mapping done on other side, send index
                   break;
 #if 0
             case COL_CHANNEL:
@@ -749,4 +752,5 @@ int DList::getSelectedInstrument()
             return -1;
       return drumInmap[int(currentlySelected->enote)];
       }
+
 

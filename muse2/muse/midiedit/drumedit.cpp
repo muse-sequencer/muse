@@ -67,7 +67,7 @@ int DrumEdit::_toInit = 0;
 
 static const int xscale = -10;
 static const int yscale = 1;
-static const int drumeditTools = PointerTool | PencilTool | RubberTool;
+static const int drumeditTools = PointerTool | PencilTool | RubberTool | CursorTool;
 
 enum DrumColumn {
   COL_MUTE = 0,
@@ -388,7 +388,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       // p3.3.44
       setCurDrumInstrument(dlist->getSelectedInstrument());
       
-      connect(dlist, SIGNAL(keyPressed(int, bool)), canvas, SLOT(keyPressed(int, bool)));
+      connect(dlist, SIGNAL(keyPressed(int, int)), canvas, SLOT(keyPressed(int, int)));
       connect(dlist, SIGNAL(keyReleased(int, bool)), canvas, SLOT(keyReleased(int, bool)));
       connect(dlist, SIGNAL(mapChanged(int, int)), canvas, SLOT(mapChanged(int, int)));
 
@@ -415,7 +415,8 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       connect(hscroll, SIGNAL(scrollChanged(int)),   time,   SLOT(setXPos(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)), time,   SLOT(setXMag(int)));
 
-      connect(tools2, SIGNAL(toolChanged(int)), canvas, SLOT(setTool(int)));
+      connect(tools2, SIGNAL(toolChanged(int)), canvas, SLOT(setTool(int)));  // in Canvas
+      connect(tools2, SIGNAL(toolChanged(int)), canvas, SLOT(setTool2(int))); // in DrumCanvas
 
       connect(canvas, SIGNAL(selectionChanged(int, Event&, Part*)), this,
          SLOT(setSelection(int, Event&, Part*)));
@@ -921,6 +922,7 @@ CtrlEdit* DrumEdit::addCtrl()
       connect(ctrlEdit, SIGNAL(yposChanged(int)), toolbar, SLOT(setInt(int)));
       connect(tools2,   SIGNAL(toolChanged(int)),   ctrlEdit, SLOT(setTool(int)));
       connect(dlist,    SIGNAL(curDrumInstrumentChanged(int)), SLOT(setCurDrumInstrument(int)));
+      connect(dlist,    SIGNAL(curDrumInstrumentChanged(int)), canvas, SLOT(setCurDrumInstrument(int)));
 
       //printf("DrumEdit::addCtrl curDrumInstrument:%d\n", dlist->getSelectedInstrument());
       
@@ -1050,13 +1052,13 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             close();
             return;
             }
+      else if (key == Qt::Key_F2) {
+            dlist->lineEdit(dlist->getSelectedInstrument(),(int)DList::COL_NAME);
+            return;
+            }
       else if (key == Qt::Key_Up) {
             dlist->setCurDrumInstrument(dlist->getSelectedInstrument()-1);
             dlist->redraw();
-            return;
-            }
-      else if (key == Qt::Key_F2) {
-            dlist->lineEdit(dlist->getSelectedInstrument(),(int)DList::COL_NAME);
             return;
             }
       else if (key == Qt::Key_Down) {
@@ -1064,7 +1066,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             dlist->redraw();
             return;
             }
-      
+
       else if (key == shortcuts[SHRT_POS_INC].key) {
             dc->cmd(DrumCanvas::CMD_RIGHT);
             return;
@@ -1093,6 +1095,10 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             }
       else if (key == shortcuts[SHRT_TOOL_RUBBER].key) {
             tools2->set(RubberTool);
+            return;
+            }
+      else if (key == shortcuts[SHRT_TOOL_CURSOR].key) {
+            tools2->set(CursorTool);
             return;
             }
       else if (key == shortcuts[SHRT_ZOOM_IN].key) {

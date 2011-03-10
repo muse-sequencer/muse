@@ -35,18 +35,20 @@ const char* infoDraw = QT_TRANSLATE_NOOP("@default", "select Drawing Tool");
 const char* infoMute = QT_TRANSLATE_NOOP("@default", "select Muting Tool:\n"
       "click on part to mute/unmute");
 const char* infoAutomation = QT_TRANSLATE_NOOP("@default", "Manipulate automation");
+const char* infoCursor = QT_TRANSLATE_NOOP("@default", "Cursor tool");
 
 ToolB toolList[] = {
-      {&pointerIcon,  QT_TRANSLATE_NOOP("@default", "pointer"),     infoPointer },
-      {&pencilIcon,   QT_TRANSLATE_NOOP("@default", "pencil"),      infoPencil  },
-      {&deleteIcon,   QT_TRANSLATE_NOOP("@default", "eraser"),      infoDel     },
-      {&cutIcon,      QT_TRANSLATE_NOOP("@default", "cutter"),      infoCut     },
-      {&note1Icon,    QT_TRANSLATE_NOOP("@default", "score"),       infoScore   },
-      {&glueIcon,     QT_TRANSLATE_NOOP("@default", "glue"),        infoGlue    },
-      {&quantIcon,    QT_TRANSLATE_NOOP("@default", "quantize"),    infoQuant   },
-      {&drawIcon,     QT_TRANSLATE_NOOP("@default", "draw"),        infoDraw    },
-      {&editmuteIcon, QT_TRANSLATE_NOOP("@default", "mute parts"),  infoMute    },
-      {&drawIcon, QT_TRANSLATE_NOOP("@default", "edit automation"),    infoAutomation},
+      {&pointerIcon,  QT_TRANSLATE_NOOP("@default", "pointer"),        infoPointer },
+      {&pencilIcon,   QT_TRANSLATE_NOOP("@default", "pencil"),         infoPencil  },
+      {&deleteIcon,   QT_TRANSLATE_NOOP("@default", "eraser"),         infoDel     },
+      {&cutIcon,      QT_TRANSLATE_NOOP("@default", "cutter"),         infoCut     },
+      {&note1Icon,    QT_TRANSLATE_NOOP("@default", "score"),          infoScore   },
+      {&glueIcon,     QT_TRANSLATE_NOOP("@default", "glue"),           infoGlue    },
+      {&quantIcon,    QT_TRANSLATE_NOOP("@default", "quantize"),       infoQuant   },
+      {&drawIcon,     QT_TRANSLATE_NOOP("@default", "draw"),           infoDraw    },
+      {&editmuteIcon, QT_TRANSLATE_NOOP("@default", "mute parts"),     infoMute    },
+      {&drawIcon,     QT_TRANSLATE_NOOP("@default", "edit automation"),infoAutomation},
+      {&cursorIcon,     QT_TRANSLATE_NOOP("@default", "cursor"),         infoCursor},
       };
 
 //---------------------------------------------------------
