@@ -1788,7 +1788,7 @@ void PartCanvas::drawWavePart(QPainter& p,
                         rms  = (rms  * (hh-2)) >> 9;
                         p.setPen(QColor(Qt::darkGray));
                         p.drawLine(i, y - peak - cc, i, y + peak);
-                        p.setPen(QColor(Qt::black));
+                        p.setPen(QColor(Qt::darkGray).darker());
                         p.drawLine(i, y - rms - cc, i, y + rms);
                         }
                   }
@@ -1810,7 +1810,7 @@ void PartCanvas::drawWavePart(QPainter& p,
                               int rms  = (sa[k].rms  * (hm - 1)) >> 8;
                               p.setPen(QColor(Qt::darkGray));
                               p.drawLine(i, y - peak - cc, i, y + peak);
-                              p.setPen(QColor(Qt::black));
+                              p.setPen(QColor(Qt::darkGray).darker());
                               p.drawLine(i, y - rms - cc, i, y + rms);
                               
                               y  += 2 * hm;
@@ -2966,7 +2966,7 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
       for (iTrack it = tl->begin(); it != tl->end(); ++it) {
         Track* track = *it;
         if (track->recordFlag()) {
-          int startPos = audio->getStartRecordPos().tick();
+          unsigned int startPos = audio->getStartRecordPos().tick();
           if (song->punchin())
             startPos=song->lpos();
           if (song->punchout() && song->cpos() > song->rpos()) {

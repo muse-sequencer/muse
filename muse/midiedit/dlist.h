@@ -82,7 +82,7 @@ class DList : public View {
    signals:
       void channelChanged();
       void mapChanged(int, int);
-      void keyPressed(int, bool);
+      void keyPressed(int, int);
       void keyReleased(int, bool);
       void curDrumInstrumentChanged(int);
 

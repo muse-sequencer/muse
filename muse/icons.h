@@ -49,6 +49,8 @@ extern QPixmap* cutIcon;
 extern QPixmap* steprecIcon;
 extern QPixmap* glueIcon;
 extern QPixmap* drawIcon;
+extern QPixmap* cursorIcon;
+
 
 extern QPixmap* quantIcon;
 extern QPixmap* printIcon;

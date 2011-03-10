@@ -41,6 +41,9 @@ class PianoRoll;
 
 class DrumCanvas : public EventCanvas {
 
+      // Cursor tool position
+      QPoint cursorPos;
+
       Q_OBJECT
       virtual void drawCanvas(QPainter&, const QRect&);
       virtual void drawItem(QPainter&, const CItem*, const QRect&);
@@ -54,6 +57,7 @@ class DrumCanvas : public EventCanvas {
       virtual void resizeItem(CItem*, bool);
       virtual void newItem(CItem*, bool);
       virtual bool deleteItem(CItem*);
+      CItem* newItem(int tick, int instrument, int velocity);
 
       int y2pitch(int y) const;
       int pitch2y(int pitch) const;
@@ -72,8 +76,10 @@ class DrumCanvas : public EventCanvas {
 
    public slots:
       void mapChanged(int, int);
-      void keyPressed(int, bool);
+      void keyPressed(int, int);
       void keyReleased(int, bool);
+      void setTool2(int);
+      void setCurDrumInstrument(int);
 
    public:
       enum {
@@ -86,6 +92,8 @@ class DrumCanvas : public EventCanvas {
          const char* name = 0);
       void cmd(int);
       virtual void modifySelected(NoteInfo::ValType type, int delta);
+      virtual void keyPress(QKeyEvent* event);
+
       };
 #endif
 

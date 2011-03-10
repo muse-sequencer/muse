@@ -32,6 +32,8 @@
 #include "midiport.h"
 #include "audio.h"
 #include "velocity.h"
+#include "shortcuts.h"
+#include "icons.h"
 
 #define CARET   10
 #define CARET2   5
@@ -84,6 +86,7 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
    : EventCanvas(pr, parent, sx, sy, name)
       {
       setVirt(false);
+      cursorPos= QPoint(0,0);
       songChanged(SC_TRACK_INSERTED);
       }
 
@@ -376,14 +379,23 @@ CItem* DrumCanvas::newItem(const QPoint& p, int state)
       else if (state == (Qt::ControlModifier | Qt::ShiftModifier))
             velo = drumMap[instr].lv1;
       int tick = editor->rasterVal(p.x());
-      tick    -= curPart->tick();
-      Event e(Note);
-      e.setTick(tick);
-      e.setPitch(instr);
-      e.setVelo(velo);
-      e.setLenTick(drumMap[instr].len);
-      return new DEvent(e, curPart);
+      return newItem(tick, instr, velo);
       }
+
+//---------------------------------------------------------
+//   newItem
+//---------------------------------------------------------
+
+CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
+{
+  tick    -= curPart->tick();
+  Event e(Note);
+  e.setTick(tick);
+  e.setPitch(instrument);
+  e.setVelo(velocity);
+  e.setLenTick(drumMap[instrument].len);
+  return new DEvent(e, curPart);
+}
 
 //---------------------------------------------------------
 //   resizeItem
@@ -590,8 +602,17 @@ void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect)
 //---------------------------------------------------------
 //   drawTopItem
 //---------------------------------------------------------
-void DrumCanvas::drawTopItem(QPainter &, const QRect &)
+void DrumCanvas::drawTopItem(QPainter &p, const QRect &r)
 {
+  // draw cursor
+  if (_tool == CursorTool) {
+    p.setPen(Qt::black);
+
+    int y = TH * cursorPos.y();
+
+    p.drawPixmap(mapx(cursorPos.x())-TH/2,y,TH,TH, *cursorIcon);
+    // need to figure out a coordinate system for the cursor, complicated stuff.
+  }
 
 }
 //---------------------------------------------------------
@@ -682,38 +703,38 @@ void DrumCanvas::cmd(int cmd)
                   break;
             case CMD_SELECT_PREV_PART:     // select previous part
                   {
-                    Part* pt = editor->curCanvasPart();
-                    Part* newpt = pt;
-                    PartList* pl = editor->parts();
-                    for(iPart ip = pl->begin(); ip != pl->end(); ++ip)
-                      if(ip->second == pt) 
-                      {
-                        if(ip == pl->begin())
-                          ip = pl->end();
-                        --ip;
-                        newpt = ip->second;
-                        break;    
-                      }
-                    if(newpt != pt)
-                      editor->setCurCanvasPart(newpt);
+                      Part* pt = editor->curCanvasPart();
+                      Part* newpt = pt;
+                      PartList* pl = editor->parts();
+                      for(iPart ip = pl->begin(); ip != pl->end(); ++ip)
+                        if(ip->second == pt)
+                        {
+                          if(ip == pl->begin())
+                            ip = pl->end();
+                          --ip;
+                          newpt = ip->second;
+                          break;
+                        }
+                      if(newpt != pt)
+                        editor->setCurCanvasPart(newpt);
                   }
                   break;
             case CMD_SELECT_NEXT_PART:     // select next part
                   {
-                    Part* pt = editor->curCanvasPart();
-                    Part* newpt = pt;
-                    PartList* pl = editor->parts();
-                    for(iPart ip = pl->begin(); ip != pl->end(); ++ip)
-                      if(ip->second == pt) 
-                      {
-                        ++ip;
-                        if(ip == pl->end())
-                          ip = pl->begin();
-                        newpt = ip->second;
-                        break;    
-                      }
-                    if(newpt != pt)
-                      editor->setCurCanvasPart(newpt);
+                      Part* pt = editor->curCanvasPart();
+                      Part* newpt = pt;
+                      PartList* pl = editor->parts();
+                      for(iPart ip = pl->begin(); ip != pl->end(); ++ip)
+                        if(ip->second == pt)
+                        {
+                          ++ip;
+                          if(ip == pl->end())
+                            ip = pl->begin();
+                          newpt = ip->second;
+                          break;
+                        }
+                      if(newpt != pt)
+                        editor->setCurCanvasPart(newpt);
                   }
                   break;
             case CMD_DEL:
@@ -755,27 +776,28 @@ void DrumCanvas::cmd(int cmd)
                   break;
             case CMD_LEFT:
                   {
-                  int spos = pos[0];
-                  if(spos > 0) 
-                  {
-                    spos -= 1;     // Nudge by -1, then snap down with raster1.
-                    spos = AL::sigmap.raster1(spos, editor->rasterStep(pos[0]));
-                  }  
-                  if(spos < 0)
-                    spos = 0;
-                  Pos p(spos,true);
-                  song->setPos(0, p, true, true, true);
+                      int spos = pos[0];
+                      if(spos > 0)
+                      {
+                        spos -= 1;     // Nudge by -1, then snap down with raster1.
+                        spos = AL::sigmap.raster1(spos, editor->rasterStep(pos[0]));
+                      }
+                      if(spos < 0)
+                        spos = 0;
+                      Pos p(spos,true);
+                      song->setPos(0, p, true, true, true);
                   }
                   break;
             case CMD_RIGHT:
                   {
-                  int spos = AL::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
-                  Pos p(spos,true);
-                  song->setPos(0, p, true, true, true); 
+                      int spos = AL::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
+                      Pos p(spos,true);
+                      song->setPos(0, p, true, true, true);
                   }
                   break;
             case CMD_LEFT_NOSNAP:
                   {
+                    printf("left no snap\n");
                   int spos = pos[0] - editor->rasterStep(pos[0]);
                   if (spos < 0)
                         spos = 0;
@@ -912,7 +934,6 @@ Q3TextDrag* DrumCanvas::getTextDrag(QWidget* parent)
 
 void DrumCanvas::copy()
       {
-      //QDrag* drag = getTextDrag();
       QMimeData* md = getTextDrag();
       
       if (md)
@@ -1003,7 +1024,6 @@ void DrumCanvas::paste()
 void DrumCanvas::startDrag(CItem* /* item*/, bool copymode)
       {
       QMimeData* md = getTextDrag();
-      //QDrag* drag = getTextDrag();
       
       if (md) {
 //            QApplication::clipboard()->setData(drag, QClipboard::Clipboard);   // This line NOT enabled in muse-1 
@@ -1029,7 +1049,6 @@ void DrumCanvas::startDrag(CItem* /* item*/, bool copymode)
 
 void DrumCanvas::dragEnterEvent(QDragEnterEvent* event)
       {
-      ///event->accept(Q3TextDrag::canDecode(event));
       event->acceptProposedAction();  // TODO CHECK Tim.
       }
 
@@ -1039,8 +1058,6 @@ void DrumCanvas::dragEnterEvent(QDragEnterEvent* event)
 
 void DrumCanvas::dragMoveEvent(QDragMoveEvent*)
       {
-      //printf("drag move %x\n", this);   
-      //event->acceptProposedAction();  
       }
 
 //---------------------------------------------------------
@@ -1049,8 +1066,6 @@ void DrumCanvas::dragMoveEvent(QDragMoveEvent*)
 
 void DrumCanvas::dragLeaveEvent(QDragLeaveEvent*)
       {
-      //printf("drag leave\n");           
-      //event->acceptProposedAction();  
       }
 
 /*
@@ -1089,17 +1104,18 @@ void DrumCanvas::viewDropEvent(QDropEvent* event)
 */
 
 //---------------------------------------------------------
-//   keyPressed
+//   keyPressed - called from DList
 //---------------------------------------------------------
 
-void DrumCanvas::keyPressed(int index, bool)
+void DrumCanvas::keyPressed(int index, int velocity)
       {
+      // called from DList - play event
       int port = drumMap[index].port;
       int channel = drumMap[index].channel;
       int pitch = drumMap[index].anote;
 
       // play note:
-      MidiPlayEvent e(0, port, channel, 0x90, pitch, 127);
+      MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
       audio->msgPlayMidiEvent(&e);
       }
 
@@ -1109,6 +1125,7 @@ void DrumCanvas::keyPressed(int index, bool)
 
 void DrumCanvas::keyReleased(int index, bool)
       {
+      // called from DList - silence playing event
       int port = drumMap[index].port;
       int channel = drumMap[index].channel;
       int pitch = drumMap[index].anote;
@@ -1344,4 +1361,75 @@ void DrumCanvas::curPartChanged()
       {
       editor->setWindowTitle(getCaption());
       }
+
+void DrumCanvas::keyPress(QKeyEvent* event)
+{
+  if (_tool == CursorTool) {
+    int key = event->key();
+    ///if (event->state() & Qt::ShiftButton)
+    if (((QInputEvent*)event)->modifiers() & Qt::ShiftModifier)
+          key += Qt::SHIFT;
+    ///if (event->state() & Qt::AltButton)
+    if (((QInputEvent*)event)->modifiers() & Qt::AltModifier)
+          key += Qt::ALT;
+    ///if (event->state() & Qt::ControlButton)
+    if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
+          key+= Qt::CTRL;
+
+    int curpos = cursorPos.x();
+    // Select items by key (PianoRoll & DrumEditor)
+    if (key == shortcuts[SHRT_SEL_RIGHT].key) {
+      int newPos = AL::sigmap.raster2(curpos + 1, editor->rasterStep(curpos));    // Nudge by +1, then snap up with raster2.
+      cursorPos.setX(newPos);
+      update();
+      return;
+    }
+    else if (key == shortcuts[SHRT_SEL_LEFT].key) {
+      int newPos = AL::sigmap.raster1(curpos-1, editor->rasterStep(curpos));
+      cursorPos.setX(newPos);
+      if (cursorPos.x() < 0 )
+        cursorPos.setX(0);
+      update();
+      return;
+    }
+    else if (key == shortcuts[SHRT_ADDNOTE_1].key) {
+          newItem(newItem(cursorPos.x(), cursorPos.y(), drumMap[cursorPos.y()].lv1),false);
+          keyPressed(cursorPos.y(), drumMap[cursorPos.y()].lv1);
+          keyReleased(cursorPos.y(), false);
+          return;
+    }
+    else if (key == shortcuts[SHRT_ADDNOTE_2].key) {
+          newItem(newItem(cursorPos.x(), cursorPos.y(), drumMap[cursorPos.y()].lv2),false);
+          keyPressed(cursorPos.y(), drumMap[cursorPos.y()].lv2);
+          keyReleased(cursorPos.y(), false);
+          return;
+    }
+    else if (key == shortcuts[SHRT_ADDNOTE_3].key) {
+          newItem(newItem(cursorPos.x(), cursorPos.y(), drumMap[cursorPos.y()].lv3),false);
+          keyPressed(cursorPos.y(), drumMap[cursorPos.y()].lv3);
+          keyReleased(cursorPos.y(), false);
+          return;
+    }
+    else if (key == shortcuts[SHRT_ADDNOTE_4].key) {
+          newItem(newItem(cursorPos.x(), cursorPos.y(), drumMap[cursorPos.y()].lv4),false);
+          keyPressed(cursorPos.y(), drumMap[cursorPos.y()].lv4);
+          keyReleased(cursorPos.y(), false);
+          return;
+    }
+  }
+  EventCanvas::keyPress(event);
+}
+
+
+void DrumCanvas::setTool2(int)
+{
+  if (cursorPos.x() < curPart->tick())
+    cursorPos.setX(curPart->tick());
+  update();
+}
+void DrumCanvas::setCurDrumInstrument(int i)
+{
+  cursorPos.setY(i);
+  update();
+}
 

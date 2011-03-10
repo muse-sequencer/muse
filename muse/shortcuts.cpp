@@ -208,6 +208,14 @@ void initShortCuts()
       defShrt(SHRT_TOOL_RUBBER,      Qt::Key_R, "Tool: Eraser", ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "eraser_tool");
       // piano roll & drum editor
       defShrt(SHRT_TOOL_LINEDRAW,    Qt::Key_F, "Tool: Line Draw", ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "line_draw_tool");
+
+      // drum editor
+      defShrt(SHRT_TOOL_CURSOR,      Qt::Key_U, "Tool: Cursor", DEDIT_SHRT, "cursor_tool");
+      defShrt(SHRT_ADDNOTE_1,    Qt::Key_V, "Add note:: 1", DEDIT_SHRT, "add note velocity 1");
+      defShrt(SHRT_ADDNOTE_2,    Qt::Key_B, "Add note:: 2", DEDIT_SHRT, "add note velocity 2");
+      defShrt(SHRT_ADDNOTE_3,    Qt::Key_N, "Add note:: 3", DEDIT_SHRT, "add note velocity 3");
+      defShrt(SHRT_ADDNOTE_4,    Qt::Key_M, "Add note:: 4", DEDIT_SHRT, "add note velocity 4");
+
       // arranger
       defShrt(SHRT_TOOL_SCISSORS,    Qt::Key_S, "Tool: Scissor", ARRANG_SHRT, "scissor_tool");
       defShrt(SHRT_TOOL_GLUE,        Qt::Key_G, "Tool: Glue", ARRANG_SHRT, "glue_tool");

@@ -1,3 +1,9 @@
+10.03.2011:
+        - Added: Say hello to 'CURSOR MODE' in drum editor (rj)
+          the idea is to edit drums more like a mod tracker, doing all from the keyboard.
+          shortcuts defined for entering cursor mode (U) and V,B,N,M for entering notes.
+          TODO: Step parameter, auto scrolling, mouse integration and more
+        - color tweaks for wave tracks in arranger (rj)
 07.03.2011:
         - draw gradients in arranger (rj)
 06.03.2011:
