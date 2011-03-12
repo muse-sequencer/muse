@@ -50,8 +50,8 @@ void ShortcutCaptureDialog::keyPressEvent(QKeyEvent* e)
       temp_key = e->key();
       
       QChar keychar(temp_key);
-      bool ispunct = keychar.isPunct();
-      bool issymbol = keychar.isSymbol();
+      //bool ispunct = keychar.isPunct();
+      //bool issymbol = keychar.isSymbol();
       //printf("Key:%x, alt:%d, ctrl:%d shift:%d ispunct:%d issymbol:%d text:%s\n",
       //  e->key(), alt, ctrl, shift, ispunct, issymbol, e->text().toLatin1().constData());
       

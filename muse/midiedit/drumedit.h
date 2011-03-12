@@ -24,6 +24,7 @@ class QKeyEvent;
 class QResizeEvent;
 class QToolButton;
 class QWidget;
+class QComboBox;
 
 class MidiPart;
 class DrumCanvas;
@@ -63,6 +64,7 @@ class DrumEdit : public MidiEditor {
       DList* dlist;
       Header* header;
       QToolBar* tools;
+      QComboBox *stepLenWidget;
 
       static int _quantInit, _rasterInit;
       static int _widthInit, _heightInit;
@@ -104,6 +106,7 @@ class DrumEdit : public MidiEditor {
       void newCanvasWidth(int);
       void configChanged();
       void songChanged1(int);
+      void setStep(QString);
 
    public slots:
       void setSelection(int, Event&, Part*);

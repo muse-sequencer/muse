@@ -156,9 +156,9 @@ void initShortCuts()
       defShrt(SHRT_SELECT_OLOOP,     0, "Edit: Select events/parts outside locators", ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "sel_out_loc");
       defShrt(SHRT_SELECT_PREV_PART, Qt::ALT + Qt::Key_Left, "Edit: Select previous part", ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "sel_prv_prt");
       defShrt(SHRT_SELECT_NEXT_PART, Qt::ALT + Qt::Key_Right, "Edit: Select next part", ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "sel_nxt_prt");
-      defShrt(SHRT_SEL_LEFT,         Qt::Key_Left,  "Edit: Select nearest part/event to the left", ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "sel_left");
+      defShrt(SHRT_SEL_LEFT,         Qt::Key_Left,  "Edit: Select nearest part/event to the left or move cursor", ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "sel_left");
       defShrt(SHRT_SEL_LEFT_ADD,     Qt::Key_Left + Qt::SHIFT,  "Edit: Add nearest part/event to the left to selection", PROLL_SHRT + DEDIT_SHRT, "sel_left_add");
-      defShrt(SHRT_SEL_RIGHT,        Qt::Key_Right,  "Edit: Select nearest part/event to the right", ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,"sel_right");
+      defShrt(SHRT_SEL_RIGHT,        Qt::Key_Right,  "Edit: Select nearest part/event to the right or move cursor", ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT,"sel_right");
       defShrt(SHRT_SEL_RIGHT_ADD,    Qt::Key_Right + Qt::SHIFT, "Edit: Add nearest part/event to the right to selection", PROLL_SHRT + DEDIT_SHRT,"sel_right_add");
       defShrt(SHRT_LOCATORS_TO_SELECTION, Qt::ALT + Qt::Key_P, "Edit: Set locators to selection", ARRANG_SHRT + PROLL_SHRT + DEDIT_SHRT, "loc_to_sel");
       defShrt(SHRT_INC_PITCH,        Qt::CTRL + Qt::Key_Up, "Edit: Increase pitch", PROLL_SHRT + DEDIT_SHRT, "sel_inc_pitch");
@@ -211,10 +211,15 @@ void initShortCuts()
 
       // drum editor
       defShrt(SHRT_TOOL_CURSOR,      Qt::Key_U, "Tool: Cursor", DEDIT_SHRT, "cursor_tool");
-      defShrt(SHRT_ADDNOTE_1,    Qt::Key_V, "Add note:: 1", DEDIT_SHRT, "add note velocity 1");
-      defShrt(SHRT_ADDNOTE_2,    Qt::Key_B, "Add note:: 2", DEDIT_SHRT, "add note velocity 2");
-      defShrt(SHRT_ADDNOTE_3,    Qt::Key_N, "Add note:: 3", DEDIT_SHRT, "add note velocity 3");
-      defShrt(SHRT_ADDNOTE_4,    Qt::Key_M, "Add note:: 4", DEDIT_SHRT, "add note velocity 4");
+      defShrt(SHRT_ADDNOTE_1,    Qt::Key_V, "Add note velocity 1", DEDIT_SHRT, "add_note_velocity_1");
+      defShrt(SHRT_ADDNOTE_2,    Qt::Key_B, "Add note velocity 2", DEDIT_SHRT, "add_note_velocity_2");
+      defShrt(SHRT_ADDNOTE_3,    Qt::Key_N, "Add note velocity 3", DEDIT_SHRT, "add_note_velocity_3");
+      defShrt(SHRT_ADDNOTE_4,    Qt::Key_M, "Add note velocity 4", DEDIT_SHRT, "add_note_velocity_4");
+
+      defShrt(SHRT_CURSOR_STEP_UP,    Qt::Key_0, "Cursor step size: larger", DEDIT_SHRT, "cursor_step_up");
+      defShrt(SHRT_CURSOR_STEP_DOWN,    Qt::Key_9, "Cursor step size: smaller", DEDIT_SHRT, "cursor_step_down");
+      defShrt(SHRT_INSTRUMENT_STEP_UP,    Qt::Key_Up, "Instrument/Cursor up", DEDIT_SHRT, "instrument_up");
+      defShrt(SHRT_INSTRUMENT_STEP_DOWN,    Qt::Key_Down, "Instrument/Cursor down", DEDIT_SHRT, "instrument_down");
 
       // arranger
       defShrt(SHRT_TOOL_SCISSORS,    Qt::Key_S, "Tool: Scissor", ARRANG_SHRT, "scissor_tool");

@@ -87,6 +87,7 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
       {
       setVirt(false);
       cursorPos= QPoint(0,0);
+      _stepSize=1;
       songChanged(SC_TRACK_INSERTED);
       }
 
@@ -413,8 +414,11 @@ void DrumCanvas::resizeItem(CItem* item, bool)
 //---------------------------------------------------------
 //   newItem
 //---------------------------------------------------------
+void DrumCanvas::newItem(CItem* item, bool noSnap) {
+     newItem(item, noSnap,false);
+}
 
-void DrumCanvas::newItem(CItem* item, bool noSnap)
+void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
       {
       DEvent* nevent = (DEvent*) item;
       Event event    = nevent->event();
@@ -444,8 +448,12 @@ void DrumCanvas::newItem(CItem* item, bool noSnap)
                   // Indicate do undo, and do not do port controller values and clone parts. 
                   //audio->msgDeleteEvent(ev, nevent->part());
                   audio->msgDeleteEvent(ev, nevent->part(), true, false, false);
-                  return;
-                  }
+                  if (replace)
+                    break;
+                  else
+                    return;
+
+              }
             }
 
       // Added by T356.
@@ -454,7 +462,6 @@ void DrumCanvas::newItem(CItem* item, bool noSnap)
       int modified=SC_EVENT_MODIFIED;
       int diff = event.endTick()-part->lenTick();
       if (diff > 0)  {// too short part? extend it
-            //printf("extend Part!\n");
             Part* newPart = part->clone();
             newPart->setLenTick(newPart->lenTick()+diff);
             // Indicate no undo, and do port controller values but not clone parts. 
@@ -468,7 +475,6 @@ void DrumCanvas::newItem(CItem* item, bool noSnap)
       audio->msgAddEvent(event, part, false, false, false); 
       song->endUndo(modified);
       
-      //audio->msgAddEvent(event, nevent->part());
       }
 
 //---------------------------------------------------------
@@ -608,7 +614,7 @@ void DrumCanvas::drawTopItem(QPainter &p, const QRect &r)
   if (_tool == CursorTool) {
     p.setPen(Qt::black);
 
-    int y = TH * cursorPos.y();
+    int y = mapy(TH * cursorPos.y());
 
     p.drawPixmap(mapx(cursorPos.x())-TH/2,y,TH,TH, *cursorIcon);
     // need to figure out a coordinate system for the cursor, complicated stuff.
@@ -1362,9 +1368,36 @@ void DrumCanvas::curPartChanged()
       editor->setWindowTitle(getCaption());
       }
 
+//---------------------------------------------------------
+//   getNextStep - gets next tick in the chosen direction
+//                 when raster and stepSize are taken into account
+//---------------------------------------------------------
+int DrumCanvas::getNextStep(unsigned int pos, int basicStep, int stepSize)
+{
+  int newPos = pos;
+  for (int i =0; i<stepSize;i++) {
+    if (basicStep > 0) { // moving right
+      newPos = AL::sigmap.raster2(newPos + basicStep, editor->rasterStep(newPos));    // Nudge by +1, then snap up with raster2.
+      if (unsigned(newPos) > curPart->endTick()- editor->rasterStep(curPart->endTick()))
+        newPos = curPart->tick();
+    }
+    else { // moving left
+      newPos = AL::sigmap.raster1(newPos + basicStep, editor->rasterStep(newPos));    // Nudge by -1, then snap up with raster1.
+      if (unsigned(newPos) < curPart->tick() ) {
+        newPos = AL::sigmap.raster1(curPart->endTick()-1, editor->rasterStep(curPart->endTick()));
+      }
+    }
+  }
+  return newPos;
+}
+
+//---------------------------------------------------------
+//   keyPress
+//---------------------------------------------------------
 void DrumCanvas::keyPress(QKeyEvent* event)
 {
   if (_tool == CursorTool) {
+
     int key = event->key();
     ///if (event->state() & Qt::ShiftButton)
     if (((QInputEvent*)event)->modifiers() & Qt::ShiftModifier)
@@ -1376,44 +1409,63 @@ void DrumCanvas::keyPress(QKeyEvent* event)
     if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
           key+= Qt::CTRL;
 
-    int curpos = cursorPos.x();
     // Select items by key (PianoRoll & DrumEditor)
     if (key == shortcuts[SHRT_SEL_RIGHT].key) {
-      int newPos = AL::sigmap.raster2(curpos + 1, editor->rasterStep(curpos));    // Nudge by +1, then snap up with raster2.
-      cursorPos.setX(newPos);
+      cursorPos.setX(getNextStep(cursorPos.x(),1));
+
+      selectCursorEvent(getEventAtCursorPos());
+      if (mapx(cursorPos.x()) < 0 || mapx(cursorPos.x()) > width())
+        emit followEvent(cursorPos.x());
       update();
       return;
     }
     else if (key == shortcuts[SHRT_SEL_LEFT].key) {
-      int newPos = AL::sigmap.raster1(curpos-1, editor->rasterStep(curpos));
-      cursorPos.setX(newPos);
-      if (cursorPos.x() < 0 )
-        cursorPos.setX(0);
+      cursorPos.setX(getNextStep(cursorPos.x(),-1));
+
+      selectCursorEvent(getEventAtCursorPos());
+      if (mapx(cursorPos.x()) < 0 || mapx(cursorPos.x()) > width())
+        emit followEvent(cursorPos.x());
       update();
       return;
     }
     else if (key == shortcuts[SHRT_ADDNOTE_1].key) {
-          newItem(newItem(cursorPos.x(), cursorPos.y(), drumMap[cursorPos.y()].lv1),false);
+          newItem(newItem(cursorPos.x(), cursorPos.y(), drumMap[cursorPos.y()].lv1),false,true);
           keyPressed(cursorPos.y(), drumMap[cursorPos.y()].lv1);
           keyReleased(cursorPos.y(), false);
+          cursorPos.setX(getNextStep(cursorPos.x(),1, _stepSize));
+          selectCursorEvent(getEventAtCursorPos());
+          if (mapx(cursorPos.x()) < 0 || mapx(cursorPos.x()) > width())
+            emit followEvent(cursorPos.x());
           return;
     }
     else if (key == shortcuts[SHRT_ADDNOTE_2].key) {
-          newItem(newItem(cursorPos.x(), cursorPos.y(), drumMap[cursorPos.y()].lv2),false);
+          newItem(newItem(cursorPos.x(), cursorPos.y(), drumMap[cursorPos.y()].lv2),false,true);
           keyPressed(cursorPos.y(), drumMap[cursorPos.y()].lv2);
           keyReleased(cursorPos.y(), false);
+          cursorPos.setX(getNextStep(cursorPos.x(),1, _stepSize));
+          selectCursorEvent(getEventAtCursorPos());
+          if (mapx(cursorPos.x()) < 0 || mapx(cursorPos.x()) > width())
+            emit followEvent(cursorPos.x());
           return;
     }
     else if (key == shortcuts[SHRT_ADDNOTE_3].key) {
-          newItem(newItem(cursorPos.x(), cursorPos.y(), drumMap[cursorPos.y()].lv3),false);
+          newItem(newItem(cursorPos.x(), cursorPos.y(), drumMap[cursorPos.y()].lv3),false,true);
           keyPressed(cursorPos.y(), drumMap[cursorPos.y()].lv3);
           keyReleased(cursorPos.y(), false);
+          cursorPos.setX(getNextStep(cursorPos.x(),1, _stepSize));
+          selectCursorEvent(getEventAtCursorPos());
+          if (mapx(cursorPos.x()) < 0 || mapx(cursorPos.x()) > width())
+            emit followEvent(cursorPos.x());
           return;
     }
     else if (key == shortcuts[SHRT_ADDNOTE_4].key) {
-          newItem(newItem(cursorPos.x(), cursorPos.y(), drumMap[cursorPos.y()].lv4),false);
+          newItem(newItem(cursorPos.x(), cursorPos.y(), drumMap[cursorPos.y()].lv4),false,true);
           keyPressed(cursorPos.y(), drumMap[cursorPos.y()].lv4);
           keyReleased(cursorPos.y(), false);
+          cursorPos.setX(getNextStep(cursorPos.x(),1, _stepSize));
+          selectCursorEvent(getEventAtCursorPos());
+          if (mapx(cursorPos.x()) < 0 || mapx(cursorPos.x()) > width())
+            emit followEvent(cursorPos.x());
           return;
     }
   }
@@ -1421,15 +1473,68 @@ void DrumCanvas::keyPress(QKeyEvent* event)
 }
 
 
+//---------------------------------------------------------
+//   setTool2
+//---------------------------------------------------------
 void DrumCanvas::setTool2(int)
 {
-  if (cursorPos.x() < curPart->tick())
+  if (_tool == CursorTool)
+    deselectAll();
+  if (unsigned(cursorPos.x()) < curPart->tick())
     cursorPos.setX(curPart->tick());
   update();
 }
+//---------------------------------------------------------
+//   setCurDrumInstrument
+//---------------------------------------------------------
 void DrumCanvas::setCurDrumInstrument(int i)
 {
   cursorPos.setY(i);
   update();
 }
 
+//---------------------------------------------------------
+//   setStep
+//---------------------------------------------------------
+void DrumCanvas::setStep(int v)
+{
+  _stepSize=v;
+}
+
+//---------------------------------------------------------
+//   getEventAtCursorPos
+//---------------------------------------------------------
+Event *DrumCanvas::getEventAtCursorPos()
+{
+    if (_tool != CursorTool)
+      return 0;
+    EventList* el = curPart->events();
+    iEvent lower  = el->lower_bound(cursorPos.x()-curPart->tick());
+    iEvent upper  = el->upper_bound(cursorPos.x()-curPart->tick());
+    for (iEvent i = lower; i != upper; ++i) {
+      Event &ev = i->second;
+      if(!ev.isNote())
+        continue;
+      if (ev.pitch() == cursorPos.y()) {
+        return &ev;
+      }
+    }
+    return 0;
+}
+//---------------------------------------------------------
+//   selectCursorEvent
+//---------------------------------------------------------
+void DrumCanvas::selectCursorEvent(Event *ev)
+{
+  for (iCItem i = items.begin(); i != items.end(); ++i)
+  {
+        Event e = i->second->event();
+
+        if (ev && ev->tick() == e.tick() && ev->pitch() == e.pitch() && e.isNote())
+          i->second->setSelected(true);
+        else
+          i->second->setSelected(false);
+
+  }
+  updateSelection();
+}

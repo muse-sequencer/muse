@@ -21,6 +21,8 @@
 #include <QToolButton>
 #include <QWhatsThis>
 #include <QSettings>
+#include <QComboBox>
+#include <QLabel>
 
 #include "drumedit.h"
 #include "mtscale.h"
@@ -281,11 +283,31 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       midiin->setIcon(*midiinIcon);
       midiin->setCheckable(true);
       tools->addWidget(midiin);
+
       
       tools2 = new EditToolBar(this, drumeditTools);
       addToolBar(tools2);
 
-      QToolBar* panicToolbar = addToolBar(tr("panic"));         
+      QToolBar* cursorToolbar = addToolBar(tr("cursor tools"));
+      cursorToolbar->setObjectName("cursor");
+      QLabel *stepStr = new QLabel("Cursor step:");
+      cursorToolbar->addWidget(stepStr);
+      stepLenWidget = new QComboBox();
+      stepLenWidget->setToolTip(tr("Set step size for cursor edit"));
+      stepLenWidget->addItem("1");
+      stepLenWidget->addItem("2");
+      stepLenWidget->addItem("3");
+      stepLenWidget->addItem("4");
+      stepLenWidget->addItem("5");
+      stepLenWidget->addItem("6");
+      stepLenWidget->addItem("7");
+      stepLenWidget->addItem("8");
+      stepLenWidget->addItem("16");
+      stepLenWidget->setCurrentIndex(0);
+      connect(stepLenWidget, SIGNAL(currentIndexChanged(QString)), SLOT(setStep(QString)));
+      cursorToolbar->addWidget(stepLenWidget);
+
+      QToolBar* panicToolbar = addToolBar(tr("panic"));
       panicToolbar->setObjectName("panic");
       panicToolbar->addAction(panicAction);
       
@@ -1052,18 +1074,34 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             close();
             return;
             }
+      else if (key == shortcuts[SHRT_CURSOR_STEP_DOWN].key) {
+            int newIndex=stepLenWidget->currentIndex()-1;
+            if (newIndex<0)
+              newIndex=0;
+            stepLenWidget->setCurrentIndex(newIndex);
+            return;
+      }
+      else if (key == shortcuts[SHRT_CURSOR_STEP_UP].key) {
+            int newIndex=stepLenWidget->currentIndex()+1;
+            if (newIndex > stepLenWidget->count()-1)
+              newIndex=stepLenWidget->count()-1;
+            stepLenWidget->setCurrentIndex(newIndex);
+            return;
+      }
       else if (key == Qt::Key_F2) {
             dlist->lineEdit(dlist->getSelectedInstrument(),(int)DList::COL_NAME);
             return;
             }
-      else if (key == Qt::Key_Up) {
+      else if (key == shortcuts[SHRT_INSTRUMENT_STEP_UP].key) {
             dlist->setCurDrumInstrument(dlist->getSelectedInstrument()-1);
             dlist->redraw();
+            ((DrumCanvas*)canvas)->selectCursorEvent(((DrumCanvas*)canvas)->getEventAtCursorPos());
             return;
             }
-      else if (key == Qt::Key_Down) {
+      else if (key == shortcuts[SHRT_INSTRUMENT_STEP_DOWN].key) {
             dlist->setCurDrumInstrument(dlist->getSelectedInstrument()+1);
             dlist->redraw();
+            ((DrumCanvas*)canvas)->selectCursorEvent(((DrumCanvas*)canvas)->getEventAtCursorPos());
             return;
             }
 
@@ -1241,3 +1279,9 @@ void DrumEdit::execUserScript(int id)
       song->executeScript(scriptfile.toLatin1().constData(), parts(), quant(), true);
 }
 
+void DrumEdit::setStep(QString v)
+{
+  ((DrumCanvas*)canvas)->setStep(v.toInt());
+  stepLenWidget->setFocusPolicy(Qt::NoFocus);
+  canvas->setFocus();
+}
