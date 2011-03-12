@@ -43,6 +43,7 @@ class DrumCanvas : public EventCanvas {
 
       // Cursor tool position
       QPoint cursorPos;
+      int _stepSize;
 
       Q_OBJECT
       virtual void drawCanvas(QPainter&, const QRect&);
@@ -56,6 +57,7 @@ class DrumCanvas : public EventCanvas {
       virtual CItem* newItem(const QPoint&, int);
       virtual void resizeItem(CItem*, bool);
       virtual void newItem(CItem*, bool);
+      virtual void newItem(CItem*, bool, bool replace );
       virtual bool deleteItem(CItem*);
       CItem* newItem(int tick, int instrument, int velocity);
 
@@ -70,6 +72,7 @@ class DrumCanvas : public EventCanvas {
       virtual void addItem(Part*, Event&);
       virtual void resizeEvent(QResizeEvent*);
       virtual void curPartChanged();
+      int getNextStep(unsigned int pos, int basicStep, int stepSize=1);
 
    signals:
       void newWidth(int);
@@ -80,6 +83,7 @@ class DrumCanvas : public EventCanvas {
       void keyReleased(int, bool);
       void setTool2(int);
       void setCurDrumInstrument(int);
+      virtual void setStep(int);
 
    public:
       enum {
@@ -93,6 +97,8 @@ class DrumCanvas : public EventCanvas {
       void cmd(int);
       virtual void modifySelected(NoteInfo::ValType type, int delta);
       virtual void keyPress(QKeyEvent* event);
+      Event *getEventAtCursorPos();
+      void selectCursorEvent(Event *ev);
 
       };
 #endif

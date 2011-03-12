@@ -1,3 +1,14 @@
+12.03.2011:
+        - Cursor mode in drum editor should be usable now (rj)
+          Changes:
+          * delete current event with delete
+          * change edit step size on toolbar and using 0 and 9
+            Try setting step size to 16 with snap 16, place cursor on the first beat for kickdrum
+            hold down 'b' to add all kickdrums.
+            Now move to snare at position 8 hold down 'b' again.
+            A basic beat should now be entered kick/snare/kick/snare
+          * auto scrolling of view when event is outside view
+          * move current event as with standard event operations
 10.03.2011:
         - Added: Say hello to 'CURSOR MODE' in drum editor (rj)
           the idea is to edit drums more like a mod tracker, doing all from the keyboard.

@@ -1451,7 +1451,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    popup Settings
       //-------------------------------------------------------------
 
-      menuSettings = menuBar()->addMenu(tr("S&ettings"));
+      menuSettings = menuBar()->addMenu(tr("Se&ttings"));
       menuSettings->addAction(settingsGlobalAction);
       menuSettings->addAction(settingsShortcutsAction);
       menuSettings->addMenu(follow);

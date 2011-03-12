@@ -325,6 +325,9 @@ void EventCanvas::keyPress(QKeyEvent* event)
                            updateSelection();
                            }
                      }
+               //if (rightmost && mapx(rightmost->event().tick()) > width()) for some reason this doesn't this doesnt move the event in view
+               //   emit followEvent(rightmost->x());
+
             }
       //Select items by key: (PianoRoll & DrumEditor)
       else if (key == shortcuts[SHRT_SEL_LEFT].key || key == shortcuts[SHRT_SEL_LEFT_ADD].key) {
@@ -347,6 +350,8 @@ void EventCanvas::keyPress(QKeyEvent* event)
                                 updateSelection();
                                 }
                           }
+                    //if (leftmost && mapx(leftmost->event().tick())< 0 ) for some reason this doesn't this doesnt move the event in view
+                    //  emit followEvent(leftmost->x());
                   }
             }
       else if (key == shortcuts[SHRT_INC_PITCH].key) {
