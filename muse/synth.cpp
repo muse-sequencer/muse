@@ -941,12 +941,9 @@ iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigne
           if (evTime == 0) {
           //      printf("MessSynthIF::getData - time is 0!\n");
           //      continue;
-                evTime=frameOffset; // will cause frame to be zero, problem?
+                evTime=abs(frameOffset); // will cause frame to be zero, problem?
                 }
-          int frame = evTime - frameOffset;
-
-//TODO           if (frame > 0) // robert: ugly fix, don't really know what is going on here
-//                          // makes PPC work much better.
+          int frame = evTime - abs(frameOffset);
 
                if (frame >= endPos) {
                    printf("frame > endPos!! frame = %d >= endPos %d, i->time() %d, frameOffset %d curPos=%d\n", frame, endPos, i->time(), frameOffset,curPos);
