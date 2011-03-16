@@ -1,5 +1,6 @@
 16.03.2011:
         - Added: Midi events drawing while recording (rj)
+        - Fixed, hopefully, MESS synths sometimes being silent (rj)
 12.03.2011:
         - Cursor mode in drum editor should be usable now (rj)
           Changes:

@@ -1512,8 +1512,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             QColor c(Qt::white);
             c.setAlpha(config.globalAlphaBlend);
             QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-            gradient.setColorAt(0, c.lighter());
-            gradient.setColorAt(1, c);
+            gradient.setColorAt(0, c);
+            gradient.setColorAt(1, c.darker());
             QBrush cc(gradient);
             p.setBrush(cc);
 
@@ -1527,8 +1527,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             QColor c(Qt::gray);
             c.setAlpha(config.globalAlphaBlend);
             QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-            gradient.setColorAt(0, c.lighter());
-            gradient.setColorAt(1, c);
+            gradient.setColorAt(0, c);
+            gradient.setColorAt(1, c.darker());
             QBrush cc(gradient);
             p.setBrush(cc);
 
@@ -1553,8 +1553,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             QColor c(Qt::black);
             c.setAlpha(config.globalAlphaBlend);
             QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-            gradient.setColorAt(0, c.lighter());
-            gradient.setColorAt(1, c);
+            gradient.setColorAt(0, c);
+            gradient.setColorAt(1, c.darker());
             QBrush cc(gradient);
             p.setBrush(cc);
             p.drawRect(r);
@@ -1571,8 +1571,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             QColor c(config.partColors[i]);
             c.setAlpha(config.globalAlphaBlend);
             QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-            gradient.setColorAt(0, c.lighter());
-            gradient.setColorAt(1, c);
+            gradient.setColorAt(0, c);
+            gradient.setColorAt(1, c.darker());
             QBrush cc(gradient);
             p.setBrush(cc);
 
@@ -1656,7 +1656,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect& bb, EventList* events, M
             // Do not allow this, causes segfault.
             if(from <= to)
             {
-              p.setPen(Qt::darkGray);
+              p.setPen(QColor(80,80,80));
               //EventList* events = mp->events();
               iEvent ito(events->lower_bound(to));
 
@@ -1678,7 +1678,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect& bb, EventList* events, M
             }
       }
   else {      // show Cakewalk Style
-      p.setPen(Qt::darkGray);
+      p.setPen(QColor(80,80,80));
       //EventList* events = mp->events();
       iEvent ito(events->lower_bound(to));
       //printf("PartCanvas::drawItem pTick:%d from:%d to:%d\n", pTick, from, to);
@@ -2996,9 +2996,9 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
             p.setPen(pen);
             QColor c(config.partColors[0]);
             c.setAlpha(config.globalAlphaBlend);
-            QLinearGradient gradient(QPoint(0,0), QPoint(0,track->height()));
-            gradient.setColorAt(0, c.lighter());
-            gradient.setColorAt(1, c);
+            QLinearGradient gradient(QPoint(startx,yPos), QPoint(startx,yPos+track->height()));
+            gradient.setColorAt(0, c);
+            gradient.setColorAt(1, c.darker());
             QBrush cc(gradient);
             p.setBrush(cc);
 
@@ -3009,44 +3009,44 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
     }
     p.restore();
 
+    // draw midi events on
     yPos=0;
     if (song->record() && audio->isPlaying()) {
       for (iTrack it = tl->begin(); it != tl->end(); ++it) {
            Track* track = *it;
 
-           if (track->isMidiTrack()) {
+           if (track->isMidiTrack() && track->recordFlag()) {
                MidiTrack *mt = (MidiTrack*)track;
                QRect partRect(startPos,yPos, song->cpos()-startPos, track->height()); // probably the wrong rect
                EventList myEventList;
                MPEventList *el = mt->mpevents();
-               if (el->size() == 0)
-                 continue;
+               if (el->size()) {
 
-               //printf("num events %d\n", mt->mpevents()->size());
-               for (iMPEvent i = el->begin(); i != el->end(); ++i) {
-                  MidiPlayEvent pe = *i;
+                 //printf("num events %d\n", mt->mpevents()->size());
+                 for (iMPEvent i = el->begin(); i != el->end(); ++i) {
+                    MidiPlayEvent pe = *i;
 
-                  if (pe.isNote() && !pe.isNoteOff()) {
-                    Event e(Note);
-                    e.setPitch(pe.dataA());
-                    e.setTick(pe.time()-startPos);
-                    e.setLenTick(song->cpos()-pe.time());
-                    e.setC(1); // we abuse this value to determine that this note hasn't been concluded
-                    myEventList.add(e);
-                  }
-                  else if (pe.isNoteOff()) {
-                    for (iEvent i = myEventList.begin(); i != myEventList.end(); ++i) {
-                      Event &e = i->second;
-                      if (e.pitch() == pe.dataA() && e.dataC() == 1) {
-                        e.setLenTick(pe.time() - e.tick()- startPos);
-                        e.setC(0); // reset the variable we borrowed for state handling
-                        //printf("editing event tick=%d startPos=%d\n",e.tick(), startPos);
-                        continue;
+                    if (pe.isNote() && !pe.isNoteOff()) {
+                      Event e(Note);
+                      e.setPitch(pe.dataA());
+                      e.setTick(pe.time()-startPos);
+                      e.setLenTick(song->cpos()-pe.time());
+                      e.setC(1); // we abuse this value to determine that this note hasn't been concluded
+                      myEventList.add(e);
+                    }
+                    else if (pe.isNoteOff()) {
+                      for (iEvent i = myEventList.begin(); i != myEventList.end(); ++i) {
+                        Event &e = i->second;
+                        if (e.pitch() == pe.dataA() && e.dataC() == 1) {
+                          e.setLenTick(pe.time() - e.tick()- startPos);
+                          e.setC(0); // reset the variable we borrowed for state handling
+                          //printf("editing event tick=%d startPos=%d\n",e.tick(), startPos);
+                          continue;
+                        }
                       }
                     }
-                  }
+                 }
                }
-
                drawMidiPart(p, rect, &myEventList, mt, partRect,startPos,0,song->cpos()-startPos);
            }
            yPos+=track->height();
@@ -3072,8 +3072,8 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, AudioTrack* /* t */
       QColor c(Qt::gray);
       c.setAlpha(config.globalAlphaBlend);
       QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-      gradient.setColorAt(0, c.lighter());
-      gradient.setColorAt(1, c);
+      gradient.setColorAt(0, c);
+      gradient.setColorAt(1, c.darker());
       QBrush cc(gradient);
       p.setBrush(cc);
       p.drawRect(r);
