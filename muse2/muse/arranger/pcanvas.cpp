@@ -37,6 +37,9 @@
 #include "app.h"
 #include "filedialog.h"
 #include "marker/marker.h"
+#include "mpevent.h"
+#include "midievent.h"
+#include "midi.h"
 
 // Moved into global config by Tim.
 /* 
@@ -1586,74 +1589,13 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             mp = (MidiPart*)part;
             }
 
-      if (config.canvasShowPartType & 2) {      // show events
-            if (mp) 
-            {
-                  // Do not allow this, causes segfault.
-                  if(from <= to)
-                  {
-                    p.setPen(Qt::darkGray);
-                    EventList* events = mp->events();
-                    iEvent ito(events->lower_bound(to));
-                    
-                    for (iEvent i = events->lower_bound(from); i != ito; ++i) {
-                          EventType type = i->second.type();
-                          if (
-                            ((config.canvasShowPartEvent & 1) && (type == Note))
-                            || ((config.canvasShowPartEvent & 2) && (type == PAfter))
-                            || ((config.canvasShowPartEvent & 4) && (type == Controller))
-                            || ((config.canvasShowPartEvent &16) && (type == CAfter))
-                            || ((config.canvasShowPartEvent &64) && (type == Sysex || type == Meta))
-                            ) {
-                                int t = i->first + pTick;
-                                int th = part->track()->height();
-                                if(t >= r.left() && t <= r.right())
-                                  p.drawLine(t, r.y()+2, t, r.y()+th-4);
-                                }
-                          }
-                  }      
-            }
-            else if (wp)
-                  drawWavePart(p, rect, wp, r);
-            }
+      if (wp)
+          drawWavePart(p, rect, wp, r);
+      else if (mp)
+      {
+          drawMidiPart(p, rect, mp->events(),(MidiTrack*)part->track(), r, mp->tick(), from, to);
+      }
 
-      else {      // show Cakewalk Style
-            if (mp) {
-                  p.setPen(Qt::darkGray);
-                  EventList* events = mp->events();
-                  iEvent ito(events->lower_bound(to));
-                  //printf("PartCanvas::drawItem pTick:%d from:%d to:%d part len:%d\n", pTick, from, to, part->lenTick());
-                  
-                  for (iEvent i = events->begin(); i != ito; ++i) {
-                        int t  = i->first + pTick;
-                        int te = t + i->second.lenTick();
-
-                        if (t > (to + pTick))
-                        {
-                          printf("PartCanvas::drawItem t:%d > to:%d + pTick:%d i->first:%d\n", t, to, pTick, i->first);
-                          
-                          break;
-                        }
-                        
-                        if (te < (from + pTick))
-                              continue;
-
-                        if (te > (to + pTick))
-                              te = to + pTick;
-
-                        EventType type = i->second.type();
-                        if (type == Note) {
-                              int pitch = i->second.pitch();
-                              int th = int(part->track()->height() * 0.75); // only draw on three quarters
-                              int hoffset = (part->track()->height() - th ) / 2; // offset from bottom
-                              int y     =  hoffset + (r.y() + th - (pitch * (th) / 127));
-                              p.drawLine(t, y, te, y);
-                              }
-                        }
-                  }
-            else if (wp)
-                  drawWavePart(p, rect, wp, r);
-            }
       if (config.canvasShowPartType & 1) {     // show names
             // draw name
             // FN: Set text color depending on part color (black / white)
@@ -1699,6 +1641,76 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
         //p.drawRect(item->mp().x(), item->mp().y()+1, item->width(), item->height());
         p.drawRect(item->mp().x(), item->mp().y(), item->width(), item->height());
       }
+
+
+//---------------------------------------------------------
+//   drawWavePart
+//    bb - bounding box of paint area
+//    pr - part rectangle
+//---------------------------------------------------------
+
+void PartCanvas::drawMidiPart(QPainter& p, const QRect& bb, EventList* events, MidiTrack *mt, const QRect& r, int pTick, int from, int to)
+{
+  //printf("x=%d y=%d h=%d w=%d\n",r.x(),r.y(),r.height(),r.width());
+  if (config.canvasShowPartType & 2) {      // show events
+            // Do not allow this, causes segfault.
+            if(from <= to)
+            {
+              p.setPen(Qt::darkGray);
+              //EventList* events = mp->events();
+              iEvent ito(events->lower_bound(to));
+
+              for (iEvent i = events->lower_bound(from); i != ito; ++i) {
+                    EventType type = i->second.type();
+                    if (
+                      ((config.canvasShowPartEvent & 1) && (type == Note))
+                      || ((config.canvasShowPartEvent & 2) && (type == PAfter))
+                      || ((config.canvasShowPartEvent & 4) && (type == Controller))
+                      || ((config.canvasShowPartEvent &16) && (type == CAfter))
+                      || ((config.canvasShowPartEvent &64) && (type == Sysex || type == Meta))
+                      ) {
+                          int t = i->first + pTick;
+                          int th = mt->height();
+                          if(t >= r.left() && t <= r.right())
+                            p.drawLine(t, r.y()+2, t, r.y()+th-4);
+                          }
+                    }
+            }
+      }
+  else {      // show Cakewalk Style
+      p.setPen(Qt::darkGray);
+      //EventList* events = mp->events();
+      iEvent ito(events->lower_bound(to));
+      //printf("PartCanvas::drawItem pTick:%d from:%d to:%d\n", pTick, from, to);
+
+      for (iEvent i = events->begin(); i != ito; ++i) {
+            int t  = i->first + pTick;
+            int te = t + i->second.lenTick();
+
+            if (t > (to + pTick))
+            {
+              //printf("PartCanvas::drawItem t:%d > to:%d + pTick:%d i->first:%d\n", t, to, pTick, i->first);
+
+              break;
+            }
+
+            if (te < (from + pTick))
+                  continue;
+
+            if (te > (to + pTick))
+                  te = to + pTick;
+
+            EventType type = i->second.type();
+            if (type == Note) {
+                  int pitch = i->second.pitch();
+                  int th = int(mt->height() * 0.75); // only draw on three quarters
+                  int hoffset = (mt->height() - th ) / 2; // offset from bottom
+                  int y     =  hoffset + (r.y() + th - (pitch * (th) / 127));
+                  p.drawLine(t, y, te, y);
+            }
+      }
+  }
+}
 
 //---------------------------------------------------------
 //   drawWavePart
@@ -2956,31 +2968,32 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
 
     QRect rr = p.worldMatrix().mapRect(rect);
 
+
+    unsigned int startPos = audio->getStartRecordPos().tick();
+    if (song->punchin())
+      startPos=song->lpos();
+    int startx = mapx(startPos);
+    int width = mapx(song->cpos()) - mapx(startPos);
+
+    if (song->cpos() < startPos) {
+        return; // no drawing if we are before punch out
+    }
+    if (song->punchout() && song->cpos() > song->rpos()) {
+       return; // no drawing if we are beyond punch out.
+    }
+
     p.save();
     p.resetTransform();
 
-    // primitive write recording while it happens
-    // should be enhanced/exchanged with solution that draws events and waveform
+    // write recording while it happens to get feedback
+    // should be enhanced with solution that draws waveform also
     int yPos=0;
     if (song->record() && audio->isPlaying()) {
       for (iTrack it = tl->begin(); it != tl->end(); ++it) {
         Track* track = *it;
         if (track->recordFlag()) {
-          unsigned int startPos = audio->getStartRecordPos().tick();
-          if (song->punchin())
-            startPos=song->lpos();
-          if (song->punchout() && song->cpos() > song->rpos()) {
-            continue; // no drawing if we are beyond punch out.
-          }
-
-
-          if (song->cpos() > startPos) {
-            int startx = mapx(startPos);
-            int width = mapx(song->cpos()) - mapx(startPos);
-
             QPen pen(Qt::black, 0, Qt::SolidLine);
             p.setPen(pen);
-
             QColor c(config.partColors[0]);
             c.setAlpha(config.globalAlphaBlend);
             QLinearGradient gradient(QPoint(0,0), QPoint(0,track->height()));
@@ -2990,12 +3003,57 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
             p.setBrush(cc);
 
             p.drawRect(startx,yPos, width, track->height());
-          }
         }
         yPos+=track->height();
       }
     }
     p.restore();
+
+    yPos=0;
+    if (song->record() && audio->isPlaying()) {
+      for (iTrack it = tl->begin(); it != tl->end(); ++it) {
+           Track* track = *it;
+
+           if (track->isMidiTrack()) {
+               MidiTrack *mt = (MidiTrack*)track;
+               QRect partRect(startPos,yPos, song->cpos()-startPos, track->height()); // probably the wrong rect
+               EventList myEventList;
+               MPEventList *el = mt->mpevents();
+               if (el->size() == 0)
+                 continue;
+
+               //printf("num events %d\n", mt->mpevents()->size());
+               for (iMPEvent i = el->begin(); i != el->end(); ++i) {
+                  MidiPlayEvent pe = *i;
+
+                  if (pe.isNote() && !pe.isNoteOff()) {
+                    Event e(Note);
+                    e.setPitch(pe.dataA());
+                    e.setTick(pe.time()-startPos);
+                    e.setLenTick(song->cpos()-pe.time());
+                    e.setC(1); // we abuse this value to determine that this note hasn't been concluded
+                    myEventList.add(e);
+                  }
+                  else if (pe.isNoteOff()) {
+                    for (iEvent i = myEventList.begin(); i != myEventList.end(); ++i) {
+                      Event &e = i->second;
+                      if (e.pitch() == pe.dataA() && e.dataC() == 1) {
+                        e.setLenTick(pe.time() - e.tick()- startPos);
+                        e.setC(0); // reset the variable we borrowed for state handling
+                        //printf("editing event tick=%d startPos=%d\n",e.tick(), startPos);
+                        continue;
+                      }
+                    }
+                  }
+               }
+
+               drawMidiPart(p, rect, &myEventList, mt, partRect,startPos,0,song->cpos()-startPos);
+           }
+           yPos+=track->height();
+      }
+    }
+
+
 }
 
 //---------------------------------------------------------

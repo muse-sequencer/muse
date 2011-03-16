@@ -112,6 +112,7 @@ class PartCanvas : public Canvas {
       void movePartsTotheRight(unsigned int startTick, int length);
       //Part* readClone(Xml&, Track*, bool toTrack = true);
       void drawWavePart(QPainter&, const QRect&, WavePart*, const QRect&);
+      void drawMidiPart(QPainter&, const QRect& rect, EventList* events, MidiTrack *mt, const QRect& r, int pTick, int from, int to);
       Track* y2Track(int) const;
       void drawAudioTrack(QPainter& p, const QRect& r, AudioTrack* track);
       void drawAutomation(QPainter& p, const QRect& r, AudioTrack* track);
