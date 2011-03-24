@@ -341,7 +341,9 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       ctrl->setObjectName("Ctrl");
       ctrl->setFont(config.fonts[3]);
       ctrl->setToolTip(tr("Add Controller View"));
-      hscroll = new ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
+      //hscroll = new ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
+      // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. p4.0.18 Tim.
+      hscroll = new ScrollScale(-25, -1, xscale, 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(pianoWidth, hscroll->sizeHint().height());
       //ctrl->setFixedSize(pianoWidth / 2, hscroll->sizeHint().height());  // Tim.
       

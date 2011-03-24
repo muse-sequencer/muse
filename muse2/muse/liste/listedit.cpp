@@ -189,22 +189,55 @@ void ListEdit::songChanged(int type)
                   }
             liste->setSortingEnabled(false);
             if (type == SC_SELECTION) {
+                  
+                  // BUGFIX: I found the keyboard modifier states affect how QTreeWidget::setCurrentItem() operates.
+                  //         So for example (not) holding shift while lassoo-ing notes in piano roll affected 
+                  //          whether multiple items were selected in this event list editor! 
+                  //         Also blockSignals() definitely required - was messing up selections. p4.0.18 Tim.
+                  /*
                   bool update = false;
                   QTreeWidgetItem* ci = 0;
                   for (int row = 0; row < liste->topLevelItemCount(); ++row) {
                         QTreeWidgetItem* i = liste->topLevelItem(row);
-                        if (i->isSelected() ^ ((EventListItem*)i)->event.selected()) {
+                        if (i->isSelected() ^ ((EventListItem*)i)->event.selected()) 
+                        {
                                     i->setSelected(((EventListItem*)i)->event.selected());
                                     if (i->isSelected())
                                           ci = i;
                               update = true;
                               }
                         }
-                  if (update) {
+                  if (update) 
+                  {
                         if (ci)
+                        {
                               liste->setCurrentItem(ci);
+                        }      
                         //liste->update();
-                        }
+                  }
+                  */
+                  bool ci_done = false;
+                  liste->blockSignals(true);  
+                  // Go backwards to avoid QTreeWidget::setCurrentItem() dependency on KB modifiers!
+                  for (int row = liste->topLevelItemCount() -1; row >= 0 ; --row) 
+                  {
+                    //printf("ListEdit::songChanged row:%d\n", row);   
+                    QTreeWidgetItem* i = liste->topLevelItem(row);
+                    bool sel = ((EventListItem*)i)->event.selected();
+                    if (i->isSelected() ^ sel) 
+                    {
+                      //printf("ListEdit::songChanged changing row:%d sel:%d\n", row, sel);   
+                      // Do setCurrentItem() before setSelected().
+                      if(sel && !ci_done)
+                      {
+                        liste->setCurrentItem(i);
+                        ci_done = true;
+                      }  
+                      i->setSelected(sel);
+                    }
+                  }
+                  liste->blockSignals(false); 
+                  
                   }
             else {
                   curPart = 0;
@@ -215,6 +248,7 @@ void ListEdit::songChanged(int type)
                         if (part->sn() == curPartId)
                               curPart  = part;
                         EventList* el = part->events();
+                        liste->blockSignals(true);   // p4.0.18
                         for (iEvent i = el->begin(); i != el->end(); ++i) {
                               EventListItem* item = new EventListItem(liste, i->second, part);
                               for (int col = 0; col < liste->columnCount(); ++col)
@@ -226,13 +260,10 @@ void ListEdit::songChanged(int type)
                                     liste->scrollToItem(item, QAbstractItemView::EnsureVisible);
                                     }
                               }
+                        liste->blockSignals(false);   
                         }
                   }
             
-            // p3.3.34
-            //if (curPart == 0)
-            //      curPart  = (MidiPart*)(parts()->begin()->second);
-            //curTrack = curPart->track();
             if(!curPart)
             {
               if(!parts()->empty())
@@ -525,10 +556,6 @@ ListEdit::ListEdit(PartList* pl)
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       songChanged(-1);
 
-      // p3.3.34
-      // Was crashing because of -1 stored, because there was an invalid
-      //  part pointer stored. 
-      //curPart   = (MidiPart*)(pl->begin()->second);
       if(pl->empty())
       {
         curPart = 0;
@@ -564,7 +591,6 @@ ListEdit::~ListEdit()
 
 void ListEdit::editInsertNote()
       {
-      // p3.3.34
       if(!curPart)
         return;
         
@@ -578,7 +604,6 @@ void ListEdit::editInsertNote()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do not handle port controller values. 
-            //audio->msgAddEvent(event, curPart);
             audio->msgAddEvent(event, curPart, true, false, false);
             }
       }
@@ -589,7 +614,6 @@ void ListEdit::editInsertNote()
 
 void ListEdit::editInsertSysEx()
       {
-      // p3.3.34
       if(!curPart)
         return;
       
@@ -603,7 +627,6 @@ void ListEdit::editInsertSysEx()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do not handle port controller values. 
-            //audio->msgAddEvent(event, curPart);
             audio->msgAddEvent(event, curPart, true, false, false);
             }
       }
@@ -614,7 +637,6 @@ void ListEdit::editInsertSysEx()
 
 void ListEdit::editInsertCtrl()
       {
-      // p3.3.34
       if(!curPart)
         return;
       
@@ -628,7 +650,6 @@ void ListEdit::editInsertCtrl()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do port controller values and clone parts. 
-            //audio->msgAddEvent(event, curPart);
             audio->msgAddEvent(event, curPart, true, true, true);
             }
       }
@@ -639,7 +660,6 @@ void ListEdit::editInsertCtrl()
 
 void ListEdit::editInsertMeta()
       {
-      // p3.3.34
       if(!curPart)
         return;
       
@@ -653,7 +673,6 @@ void ListEdit::editInsertMeta()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do not handle port controller values. 
-            //audio->msgAddEvent(event, curPart);
             audio->msgAddEvent(event, curPart, true, false, false);
             }
       }
@@ -664,7 +683,6 @@ void ListEdit::editInsertMeta()
 
 void ListEdit::editInsertCAfter()
       {
-      // p3.3.34
       if(!curPart)
         return;
       
@@ -678,7 +696,6 @@ void ListEdit::editInsertCAfter()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do not handle port controller values. 
-            //audio->msgAddEvent(event, curPart);
             audio->msgAddEvent(event, curPart, true, false, false);
             }
       }
@@ -689,7 +706,6 @@ void ListEdit::editInsertCAfter()
 
 void ListEdit::editInsertPAfter()
       {
-      // p3.3.34
       if(!curPart)
         return;
       
@@ -704,7 +720,6 @@ void ListEdit::editInsertPAfter()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do not handle port controller values. 
-            //audio->msgAddEvent(event, curPart);
             audio->msgAddEvent(event, curPart, true, false, false);
             }
       }
@@ -750,11 +765,9 @@ void ListEdit::editEvent(Event& event, MidiPart* part)
             {
               if(event.type() == Controller)
                 // Indicate do undo, and do port controller values and clone parts. 
-                //audio->msgChangeEvent(event, nevent, part);
                 audio->msgChangeEvent(event, nevent, part, true, true, true);
               else  
                 // Indicate do undo, and do not do port controller values and clone parts. 
-                //audio->msgChangeEvent(event, nevent, part);
                 audio->msgChangeEvent(event, nevent, part, true, false, false);
             }      
           }
@@ -859,7 +872,6 @@ void ListEdit::cmd(int cmd)
                         if (i->isSelected() || item->event.selected()) {
                               deletedEvent=item;
                               // Indicate no undo, and do port controller values and clone parts. 
-                              //audio->msgDeleteEvent(item->event, item->part, false);
                               audio->msgDeleteEvent(item->event, item->part, false, true, true);
                               }
                         }

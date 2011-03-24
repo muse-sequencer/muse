@@ -1,3 +1,9 @@
+24.03.2011:
+        - Fixed: Problems with midi event list editor. (p4.0.18 Tim)
+          For ex. problems selecting items while pianroll open. Changed ListEdit::songChanged().
+        - Fixed: Some problems drawing/editing on pianoroll controller graphs. Also added drawing speed-ups. (Tim)
+        - Added: Pianoroll controller graph items can now be selected/highlighted. Sync'd with midi event list editor. (Tim) 
+          Just a step towards better editing of controller graphs. WIP (No copy/cut/paste/move yet.)
 16.03.2011:
         - Added: Midi events drawing while recording (rj)
         - Fixed, hopefully, MESS synths sometimes being silent (rj)

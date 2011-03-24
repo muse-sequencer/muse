@@ -33,7 +33,12 @@ class CtrlPanel;
 //---------------------------------------------------------
 
 class CEvent {
+   public:
+      //enum State { Normal, Selected };
+   
+   private:
       Event _event;
+      //State _state;
       int       _val;
       MidiPart* _part;
       int ex;
@@ -42,11 +47,17 @@ class CEvent {
       CEvent(Event e, MidiPart* part, int v);
       Event event() const          { return _event; }
       void setEvent(Event& ev)     { _event = ev; }
+      //State state() { return _state; }
+      //void setState(State s) { _state = s; }
+      //bool isSelected() { return _state == Selected; }
+      bool selected() const { return !_event.empty() && _event.selected(); }
+      void setSelected(bool v) { if(!_event.empty()) _event.setSelected(v); }
       int val() const              { return _val;   }
       void setVal(int v)           { _val = v; }
       void setEX(int v)            { ex = v; }
       MidiPart* part() const       { return _part;  }
-      bool contains(int x1, int x2) const;
+      bool contains(int /*x1*/, int /*x2*/) const;
+      bool intersects(const MidiController*, const QRect&, const int /*windowHeight*/) const;
       int x()                      { return ex; }
       };
 
@@ -100,7 +111,9 @@ class CtrlCanvas : public View {
       void changeValRamp(int x1, int x2, int y1, int y2);
       void newValRamp(int x1, int y1, int x2, int y2);
       void changeVal(int x1, int x2, int y);
-      void newVal(int x1, int x2, int y);
+      //void newVal(int x1, int x2, int y);
+      void newVal(int x1, int y);
+      void newVal(int x1, int y1, int x2, int y2);
       void deleteVal(int x1, int x2, int y);
 
       bool setCurTrackAndPart();
@@ -138,6 +151,7 @@ class CtrlCanvas : public View {
 
       void setMidiController(int);
       void updateItems();
+      void updateSelections();
 
    private slots:
       void songChanged(int type);
@@ -157,6 +171,7 @@ class CtrlCanvas : public View {
    public:
       CtrlCanvas(MidiEditor*, QWidget* parent, int,
          const char* name = 0, CtrlPanel* pnl = 0);
+      ~CtrlCanvas();   
       void setPanel(CtrlPanel* pnl) { _panel = pnl; }
       MidiCtrlValList* ctrlValList() { return ctrl; }
       MidiController* controller() { return _controller; }
