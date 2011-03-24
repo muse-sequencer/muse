@@ -332,7 +332,9 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       QPushButton* ctrl = new QPushButton(tr("ctrl"), mainw);
       ctrl->setObjectName("Ctrl");
       ctrl->setFont(config.fonts[3]);
-      hscroll           = new ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
+      //hscroll           = new ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
+      // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. p4.0.18 Tim.
+      hscroll           = new ScrollScale(-25, -1, xscale, 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(40, hscroll->sizeHint().height());
       ctrl->setToolTip(tr("Add Controller View"));
 
