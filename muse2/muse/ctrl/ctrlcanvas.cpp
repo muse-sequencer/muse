@@ -2018,6 +2018,7 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MidiPart* part
                   else  
                     lval = wh - ((val - min - bias) * wh / (max - min));
             }
+            selected = e->selected();     
             continue;
             }
       if (tick > x+w)
