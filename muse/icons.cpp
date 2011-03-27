@@ -644,7 +644,8 @@ void initIcons()
       select_inside_loopIcon        = new MPIXMAP(select_inside_loop_xpm, NULL);
       select_invert_selectionIcon   = new MPIXMAP(select_invert_selection, NULL);
       select_outside_loopIcon       = new MPIXMAP(select_outside_loop_xpm, NULL);
-      pianoIconSet                  = new MICON(edit_pianoroll_xpm, NULL); // ddskrjo
+      pianoIconSet                  = new MICON(edit_pianoroll_xpm, NULL);
+      scoreIconSet                  = new MICON(edit_score_xpm, NULL);
 
       audio_bounce_to_fileIcon                      = new MPIXMAP(audio_bounce_to_file_xpm, NULL);
       audio_bounce_to_trackIcon                     = new MPIXMAP(audio_bounce_to_track_xpm, NULL);

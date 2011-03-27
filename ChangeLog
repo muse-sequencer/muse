@@ -1,6 +1,7 @@
 27.03.2011:
         - Fixed end/off-screen selections not being drawn in midi controller graphs. (Tim)
         - Reverted Midi Track Info ui layout more or less to pre- Mar 5, with some improvements. (Tim)
+        - Added: placeholder for Score editor (rj)
 24.03.2011:
         - Fixed: Problems with midi event list editor. (p4.0.18 Tim)
           For ex. problems selecting items while pianroll open. Changed ListEdit::songChanged().

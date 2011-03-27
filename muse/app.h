@@ -109,7 +109,7 @@ class MusE : public QMainWindow
       QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;
       QAction *trackMidiAction, *trackDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
       QAction *trackAInputAction, *trackAAuxAction;
-      QAction *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
+      QAction *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction, *startScoreEditAction;
       QAction *masterGraphicAction, *masterListAction;
       QAction *midiTransposeAction;
       QAction *midiTransformerAction;
@@ -261,6 +261,8 @@ class MusE : public QMainWindow
       void startDrumEditor();
       void startDrumEditor(PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
       void startEditor(Track*);
+      void startScoreEdit();
+      void startScoreEdit(PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
       void startPianoroll();
       void startPianoroll(PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
       void startWaveEditor();

@@ -43,6 +43,7 @@
 #include "midiseq.h"
 #include "mixdowndialog.h"
 #include "pianoroll.h"
+#include "scoreedit.h"
 #include "popupmenu.h"
 #include "shortcutconfig.h"
 #include "songinfo.h"
@@ -976,6 +977,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       editOutsideLoopAction = new QAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"), this);
       editAllPartsAction = new QAction( QIcon(*select_all_parts_on_trackIcon), tr("All &Parts on Track"), this);
 
+      startScoreEditAction = new QAction(*scoreIconSet, tr("Score"), this);
       startPianoEditAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
       startDrumEditAction = new QAction(QIcon(*edit_drummsIcon), tr("Drums"), this);
       startListEditAction = new QAction(QIcon(*edit_listIcon), tr("List"), this);
@@ -1125,6 +1127,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(editSignalMapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
 
       connect(startPianoEditAction, SIGNAL(activated()), SLOT(startPianoroll()));
+      connect(startScoreEditAction, SIGNAL(activated()), SLOT(startScoreEdit()));
       connect(startDrumEditAction, SIGNAL(activated()), SLOT(startDrumEditor()));
       connect(startListEditAction, SIGNAL(activated()), SLOT(startListEditor()));
       connect(startWaveEditAction, SIGNAL(activated()), SLOT(startWaveEditor()));
@@ -1343,6 +1346,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       menuEdit->addSeparator();
 
       menuEdit->addAction(startPianoEditAction);
+      menuEdit->addAction(startScoreEditAction);
       menuEdit->addAction(startDrumEditAction);
       menuEdit->addAction(startListEditAction);
       menuEdit->addAction(startWaveEditAction);
@@ -3376,6 +3380,7 @@ void MusE::startEditor(PartList* pl, int type)
             case 1: startListEditor(pl); break;
             case 3: startDrumEditor(pl, true); break;
             case 4: startWaveEditor(pl); break;
+            //case 5: startScoreEdit(pl, true); break;
             }
       }
 
@@ -3406,6 +3411,30 @@ PartList* MusE::getMidiPartsToEdit()
             return 0;
             }
       return pl;
+      }
+
+//---------------------------------------------------------
+//   startScoreEdit
+//---------------------------------------------------------
+
+void MusE::startScoreEdit()
+      {
+      PartList* pl = getMidiPartsToEdit();
+      if (pl == 0)
+            return;
+      startScoreEdit(pl, true);
+      }
+
+void MusE::startScoreEdit(PartList* pl, bool showDefaultCtrls)
+      {
+
+      ScoreEdit* scoreedit = new ScoreEdit(pl, this, 0, arranger->cursorValue());
+      if(showDefaultCtrls)       // p4.0.12
+        scoreedit->addCtrl();
+      scoreedit->show();
+      toplevels.push_back(Toplevel(Toplevel::PIANO_ROLL, (unsigned long)(scoreedit), scoreedit));
+      connect(scoreedit, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+      connect(muse, SIGNAL(configChanged()), scoreedit, SLOT(configChanged()));
       }
 
 //---------------------------------------------------------
