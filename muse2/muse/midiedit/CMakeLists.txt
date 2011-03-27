@@ -35,7 +35,8 @@ QT4_WRAP_CPP ( midiedit_mocs
       piano.h 
       pianoroll.h 
       prcanvas.h 
-      quantconfig.h 
+      quantconfig.h
+      scoreedit.h
       )
 
 ##
@@ -58,6 +59,7 @@ file (GLOB midiedit_source_files
       pianoroll.cpp
       prcanvas.cpp
       quantconfig.cpp
+      scoreedit.cpp
       )
 
 ##
