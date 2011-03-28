@@ -265,6 +265,8 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
 		scroll->setMinimumHeight ( 50 );
 		scale->setMaximumHeight ( 70 );
 	}
+        box->setContentsMargins(0, 0, 0, 0);
+        box->setSpacing(0);  
 	box->addWidget ( scroll, 10 );
 	box->addWidget ( scale, 5 );
 	setLayout(box);
