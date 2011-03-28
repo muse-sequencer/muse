@@ -142,8 +142,8 @@ bool CEvent::intersects(const MidiController* mc, const QRect& r, const int tick
       }
       
       QRect er(tick1, y1, tick2 - tick1, wh - y1);   
-      printf("t1:%d t2:%d ex:%d r.x:%d r.y:%d r.w:%d r.h:%d  er.x:%d er.y:%d er.w:%d er.h:%d\n", 
-              tick1, tick2, ex, r.x(), r.y(), r.width(), r.height(), er.x(), er.y(), er.width(), er.height()); // REMOVE Tim.
+      //printf("t1:%d t2:%d ex:%d r.x:%d r.y:%d r.w:%d r.h:%d  er.x:%d er.y:%d er.w:%d er.h:%d\n", 
+      //        tick1, tick2, ex, r.x(), r.y(), r.width(), r.height(), er.x(), er.y(), er.width(), er.height()); 
       return r.intersects(er);
 }
 
