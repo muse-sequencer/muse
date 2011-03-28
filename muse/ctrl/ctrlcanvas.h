@@ -57,7 +57,7 @@ class CEvent {
       void setEX(int v)            { ex = v; }
       MidiPart* part() const       { return _part;  }
       bool contains(int /*x1*/, int /*x2*/) const;
-      bool intersects(const MidiController*, const QRect&, const int /*windowHeight*/) const;
+      bool intersects(const MidiController*, const QRect&, const int /*tickstep*/, const int /*windowHeight*/) const;
       int x()                      { return ex; }
       };
 
