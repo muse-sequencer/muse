@@ -109,7 +109,7 @@ CEvent::CEvent(Event e, MidiPart* pt, int v)
 //   intersects
 //---------------------------------------------------------
 
-bool CEvent::intersects(const MidiController* mc, const QRect& r, const int wh) const
+bool CEvent::intersects(const MidiController* mc, const QRect& r, const int tickstep, const int wh) const
 {
       if(_event.empty())
         return false;
@@ -125,9 +125,25 @@ bool CEvent::intersects(const MidiController* mc, const QRect& r, const int wh) 
       }
       
       int tick2 = ex + _part->tick();
+      
+      // Velocities don't use EX (set equal to event tick, giving zero width here),
+      //  and velocities are drawn three pixels wide, so adjust the width now. 
+      // Remember, each drawn pixel represents one tickstep which varies with zoom.
+      // So that's 3 x tickstep for each velocity line.
+      // Hmm, actually, for better pin-point accuracy just use one tickstep for now.
+      if(midiControllerType(mc->num()) == MidiController::Velo)
+      {
+        //tick1 -= tickstep;
+        //if(tick1 <= 0)
+        //  tick1 = 0;  
+        //tick2 += 2 * tickstep;
+        
+        tick2 += tickstep;
+      }
+      
       QRect er(tick1, y1, tick2 - tick1, wh - y1);   
-      //printf("ex:%d r.x:%d r.y:%d r.w:%d r.h:%d  er.x:%d er.y:%d er.w:%d er.h:%d\n", 
-      //        ex, r.x(), r.y(), r.width(), r.height(), er.x(), er.y(), er.width(), er.height()); 
+      printf("t1:%d t2:%d ex:%d r.x:%d r.y:%d r.w:%d r.h:%d  er.x:%d er.y:%d er.w:%d er.h:%d\n", 
+              tick1, tick2, ex, r.x(), r.y(), r.width(), r.height(), er.x(), er.y(), er.width(), er.height()); // REMOVE Tim.
       return r.intersects(er);
 }
 
@@ -762,7 +778,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
                       //      continue;
                       if (ax >= endTick)
                         break;
-                      if (ev->intersects(_controller, r, h)) 
+                      if (ev->intersects(_controller, r, tickstep, h)) 
                       {
                         if (shift && ev->selected())
                               deselectItem(ev);
@@ -911,10 +927,11 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
                     lasso = lasso.normalized();
                     int h = height();
                     //bool do_redraw = false;
+                    int tickstep = rmapxDev(1);
                     for (iCEvent i = items.begin(); i != items.end(); ++i) {
                           if((*i)->part() != curPart)
                             continue;
-                          if ((*i)->intersects(_controller, lasso, h)) {
+                          if ((*i)->intersects(_controller, lasso, tickstep, h)) {
                                 if (shift && (*i)->selected())
                                 {
                                     //if (!shift)         // Shift p4.0.18
