@@ -368,6 +368,8 @@ static void* dummyLoop(void* ptr)
                 {
                 /*int n = */  poll(&myPollFd, 1 /* npfd */, _pollWait);
                 count += timer.getTimerTicks();
+                // FIXME FIXME: There is a crash here (or near-lockup, a race condition?) while zipping 
+                //               the cursor around in an editor (pianoroll, master edit) while arranger is open.
                 while (drvPtr->cmdQueue.size())
                     {
                     Msg &msg = drvPtr->cmdQueue.back();
