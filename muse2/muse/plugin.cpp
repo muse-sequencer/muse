@@ -11,6 +11,7 @@
 #include <dlfcn.h>
 #include <cmath>
 #include <math.h>
+#include <sys/stat.h>
 
 #include <QButtonGroup>
 #include <QCheckBox>
@@ -1304,6 +1305,33 @@ bool Pipeline::isDssiPlugin(int idx) const
   return false;               
 }
 
+/*
+//---------------------------------------------------------
+//   dssi_ui_filename
+//---------------------------------------------------------
+
+QString dssi_ui_filename(int idx) const
+{
+  PluginI* p = (*this)[idx];
+  if(p)
+    return p->dssi_ui_filename();
+        
+  return QString();               
+}
+*/
+
+//---------------------------------------------------------
+//   has_dssi_ui
+//---------------------------------------------------------
+
+bool Pipeline::has_dssi_ui(int idx) const
+{
+  PluginI* p = (*this)[idx];
+  if(p)
+    return !p->dssi_ui_filename().isEmpty();
+        
+  return false;               
+}
 //---------------------------------------------------------
 //   showGui
 //---------------------------------------------------------
@@ -1431,6 +1459,57 @@ void Pipeline::apply(int ports, unsigned long nframes, float** buffer1)
       //fprintf(stderr, "Pipeline::apply after data: nframes:%ld %e %e %e %e\n", nframes, buffer1[0][0], buffer1[0][1], buffer1[0][2], buffer1[0][3]);
       
 }
+
+//---------------------------------------------------------
+//   PluginIBase
+//---------------------------------------------------------
+
+QString PluginIBase::dssi_ui_filename() const 
+{ 
+  //QString guiPath(info.path() + "/" + info.baseName());
+  //QString guiPath(synth->info.dirPath() + "/" + synth->info.baseName());
+  if(dirPath().isEmpty() || lib().isEmpty())
+    return QString();
+  
+  QString guiPath(dirPath() + "/" + lib());
+
+  //fprintf(stderr, "PluginIBase::dssi_ui_filename :%s\n", guiPath.toLatin1().constData()); 
+  
+  QDir guiDir(guiPath, "*", QDir::Unsorted, QDir::Files);
+  if(!guiDir.exists()) 
+    return QString();
+    
+  QStringList list = guiDir.entryList();
+  
+  for(int i = 0; i < list.count(); ++i) 
+  {
+    QFileInfo fi(guiPath + QString("/") + list[i]);
+    QString gui(fi.filePath());
+    if (gui.contains('_') == 0)
+          continue;
+    struct stat buf;
+    
+    if(stat(gui.toLatin1().constData(), &buf)) 
+    {
+    
+      //perror("stat failed");
+      //fprintf(stderr, "PluginIBase::dssi_ui_filename stat failed\n"); 
+      continue;
+    }
+
+    if (!((S_ISREG(buf.st_mode) || S_ISLNK(buf.st_mode)) &&
+        (buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH))))
+    {   
+      //perror("stat failed");
+      //fprintf(stderr, "PluginIBase::dssi_ui_filename File stat mode is wrong\n"); 
+      continue; 
+    }
+    
+    return gui;
+  }   
+  
+  return QString();
+};
 
 //---------------------------------------------------------
 //   PluginI
