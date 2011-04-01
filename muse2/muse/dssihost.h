@@ -235,6 +235,7 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       QString name() const;
       QString lib() const;            
       QString dirPath() const;
+      QString fileName() const;
       AudioTrack* track();          
       void enableController(int /*i*/, bool v = true); 
       bool controllerEnabled(int /*i*/) const;          

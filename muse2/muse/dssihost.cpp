@@ -2969,6 +2969,7 @@ QString DssiSynthIF::pluginLabel() const                     { return (synth && 
 QString DssiSynthIF::name() const                            { return synti->name(); }
 QString DssiSynthIF::lib() const                             { return synth ? synth->completeBaseName() : QString(); }
 QString DssiSynthIF::dirPath() const                         { return synth ? synth->absolutePath() : QString(); }
+QString DssiSynthIF::fileName() const                        { return synth ? synth->fileName() : QString(); }
 AudioTrack* DssiSynthIF::track()                             { return (AudioTrack*)synti; }
 void DssiSynthIF::enableController(int i, bool v)            { controls[i].enCtrl = v; } 
 bool DssiSynthIF::controllerEnabled(int i) const             { return controls[i].enCtrl; }  

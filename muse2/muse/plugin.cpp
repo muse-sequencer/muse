@@ -1466,14 +1466,13 @@ void Pipeline::apply(int ports, unsigned long nframes, float** buffer1)
 
 QString PluginIBase::dssi_ui_filename() const 
 { 
-  //QString guiPath(info.path() + "/" + info.baseName());
-  //QString guiPath(synth->info.dirPath() + "/" + synth->info.baseName());
-  if(dirPath().isEmpty() || lib().isEmpty())
+  QString libr(lib());
+  if(dirPath().isEmpty() || libr.isEmpty())
     return QString();
   
-  QString guiPath(dirPath() + "/" + lib());
+  QString guiPath(dirPath() + "/" + libr);
 
-  //fprintf(stderr, "PluginIBase::dssi_ui_filename :%s\n", guiPath.toLatin1().constData()); 
+  //fprintf(stderr, "PluginIBase::dssi_ui_filename guiPath:%s\n", guiPath.toLatin1().constData()); 
   
   QDir guiDir(guiPath, "*", QDir::Unsorted, QDir::Files);
   if(!guiDir.exists()) 
@@ -1481,33 +1480,58 @@ QString PluginIBase::dssi_ui_filename() const
     
   QStringList list = guiDir.entryList();
   
+  QString plug(pluginLabel());
+  QString lib_qt_ui;
+  QString lib_any_ui;
+  QString plug_qt_ui;
+  QString plug_any_ui;
+  
   for(int i = 0; i < list.count(); ++i) 
   {
     QFileInfo fi(guiPath + QString("/") + list[i]);
     QString gui(fi.filePath());
-    if (gui.contains('_') == 0)
-          continue;
     struct stat buf;
-    
     if(stat(gui.toLatin1().constData(), &buf)) 
-    {
-    
-      //perror("stat failed");
-      //fprintf(stderr, "PluginIBase::dssi_ui_filename stat failed\n"); 
       continue;
-    }
-
-    if (!((S_ISREG(buf.st_mode) || S_ISLNK(buf.st_mode)) &&
+    if(!((S_ISREG(buf.st_mode) || S_ISLNK(buf.st_mode)) &&
         (buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH))))
-    {   
-      //perror("stat failed");
-      //fprintf(stderr, "PluginIBase::dssi_ui_filename File stat mode is wrong\n"); 
       continue; 
-    }
     
-    return gui;
+    // FIXME: Qt::CaseInsensitive - a quick and dirty way to accept any suffix. Should be case sensitive...
+    if(!libr.isEmpty())
+    {
+      if(lib_qt_ui.isEmpty() && list[i].contains(libr + QString("_qt"), Qt::CaseInsensitive))
+        lib_qt_ui = gui;
+      if(lib_any_ui.isEmpty() && list[i].contains(libr + QString('_') /*, Qt::CaseInsensitive*/))
+        lib_any_ui = gui;
+    }  
+    if(!plug.isEmpty())
+    {
+      if(plug_qt_ui.isEmpty() && list[i].contains(plug + QString("_qt"), Qt::CaseInsensitive))
+        plug_qt_ui = gui;
+      if(plug_any_ui.isEmpty() && list[i].contains(plug + QString('_') /*, Qt::CaseInsensitive*/))
+        plug_any_ui = gui;
+    }
   }   
   
+  //fprintf(stderr, "PluginIBase::dssi_ui_filename plug_qt_ui:%s plug_any_ui:%s lib_qt_ui:%s lib_any_ui:%s\n", 
+  //        plug_qt_ui.toLatin1().constData(), plug_any_ui.toLatin1().constData(), 
+  //        lib_qt_ui.toLatin1().constData(), lib_any_ui.toLatin1().constData()); 
+
+  // Prefer qt plugin ui
+  if(!plug_qt_ui.isEmpty())
+    return plug_qt_ui;
+  // Prefer any plugin ui
+  if(!plug_any_ui.isEmpty())
+    return plug_any_ui;
+  // Prefer qt lib ui
+  if(!lib_qt_ui.isEmpty())
+    return lib_qt_ui;
+  // Prefer any lib ui
+  if(!lib_any_ui.isEmpty())
+    return lib_any_ui;
+
+  // No suitable UI file found
   return QString();
 };
 
