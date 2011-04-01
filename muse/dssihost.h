@@ -233,6 +233,8 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       int id();
       QString pluginLabel() const;  
       QString name() const;
+      QString lib() const;            
+      QString dirPath() const;
       AudioTrack* track();          
       void enableController(int /*i*/, bool v = true); 
       bool controllerEnabled(int /*i*/) const;          

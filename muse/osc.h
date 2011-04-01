@@ -140,7 +140,7 @@ class OscIF
       OscControlFifo* _oscControlFifos;
       
       virtual bool oscInitGui(const QString& /*typ*/, const QString& /*baseName*/, const QString& /*name*/, 
-                       const QString& /*label*/, const QString& /*filePath*/, const QString& /*dirPath*/);
+                       const QString& /*label*/, const QString& /*filePath*/, const QString& /*guiPath*/);
                        
    public:
       OscIF();

@@ -288,22 +288,25 @@ class PluginIBase
       virtual int id() = 0;
       virtual QString pluginLabel() const = 0;  
       virtual QString name() const = 0;
+      virtual QString lib() const = 0;
+      virtual QString dirPath() const = 0;
       
       virtual AudioTrack* track() = 0;          
       
-      virtual void enableController(int /*i*/, bool v = true) = 0; 
+      virtual void enableController(int /*i*/, bool /*v*/ = true) = 0; 
       virtual bool controllerEnabled(int /*i*/) const = 0;          
       virtual bool controllerEnabled2(int /*i*/) const = 0;          
       virtual void updateControllers() = 0;
       
       virtual void writeConfiguration(int /*level*/, Xml& /*xml*/) = 0;
-      virtual bool readConfiguration(Xml& /*xml*/, bool readPreset=false) = 0;
+      virtual bool readConfiguration(Xml& /*xml*/, bool /*readPreset*/=false) = 0;
       
       virtual int parameters() const = 0;          
       virtual void setParam(int /*i*/, double /*val*/) = 0; 
       virtual double param(int /*i*/) const = 0;        
       virtual const char* paramName(int /*i*/) = 0;     
       virtual LADSPA_PortRangeHint range(int /*i*/) = 0; 
+      QString dssi_ui_filename() const;
 };
 
 //---------------------------------------------------------
@@ -430,6 +433,7 @@ class PluginI : public PluginIBase {
       QString name() const           { return _name; }
       CtrlValueType valueType() const;
       QString lib() const            { return _plugin->lib(); }
+      QString dirPath() const        { return _plugin->dirPath(); }
 
       #ifdef OSC_SUPPORT
       OscEffectIF& oscIF() { return _oscif; }
@@ -502,6 +506,8 @@ class Pipeline : public std::vector<PluginI*> {
       QString name(int idx) const;
       void showGui(int, bool);
       bool isDssiPlugin(int) const; 
+      //QString dssi_ui_filename(int) const;
+      bool has_dssi_ui(int idx) const;
       void showNativeGui(int, bool);
       void deleteGui(int idx);
       void deleteAllGuis();

@@ -224,7 +224,8 @@ void EffectRack::menuRequested(QListWidgetItem* it)
                   upAction->setEnabled(true);
             if (idx == (PipelineDepth-1))
                   downAction->setEnabled(false);
-            if(!pipe->isDssiPlugin(idx))
+            //if(!pipe->isDssiPlugin(idx))
+            if(!pipe->has_dssi_ui(idx))     // p4.0.19 Tim.
                   showNativeGuiAction->setEnabled(false);
             }
 

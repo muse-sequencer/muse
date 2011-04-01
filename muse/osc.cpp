@@ -830,7 +830,7 @@ void OscIF::oscSendConfigure(const char *key, const char *val)
 
 //bool OscIF::oscInitGui()
 bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QString& name, 
-                       const QString& label, const QString& filePath, const QString& dirPath)
+                       const QString& label, const QString& filePath, const QString& guiPath)
 {
       // Are we already running? We don't want to allow another process do we...
       if((_oscGuiQProc != 0) && (_oscGuiQProc->state()))
@@ -842,6 +842,12 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
         return false;
       }
             
+      if(guiPath.isEmpty())
+      {  
+        fprintf(stderr, "OscIF::oscInitGui guiPath is empty\n");
+        return false;
+      }
+            
       //
       //  start gui
       //
@@ -849,52 +855,13 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
       //char oscUrl[1024];
       QString oscUrl;
       
-      /*
-      QString typ; 
-      QString baseName;
-      QString name;
-      QString label;
-      QString filePath;
-      QString dirPath;
-      #ifdef DSSI_SUPPORT
-      if(_oscSynthIF)
-      {
-        //snprintf(oscUrl, 1024, "%s/%s", url, synti->name().toAscii().data());
-        //snprintf(oscUrl, 1024, "%s/%s", url, synti->name().ascii());
-        //snprintf(oscUrl, 1024, "%s/%s/%s", url, synth->info.baseName().ascii(), synti->name().ascii());
-        typ = QT_TRANSLATE_NOOP("@default", "dssi_synth");
-        baseName = _oscSynthIF->dssiSynth()->baseName(false);
-        label = _oscSynthIF->dssiSynthI()->name();
-        name = _oscSynthIF->dssiSynth()->name();
-        
-        dirPath = _oscSynthIF->dssiSynth()->dirPath(false);
-        filePath = _oscSynthIF->dssiSynth()->filePath();
-      }
-      else  
-      #endif
-      if(_oscPluginI)
-      {
-        typ = QT_TRANSLATE_NOOP("@default", "ladspa_efx");
-        baseName = _oscPluginI->plugin()->lib(false);
-        //name = _oscPluginI->name();
-        name = _oscPluginI->plugin()->label();
-        label = _oscPluginI->label();
-        
-        dirPath = _oscPluginI->plugin()->dirPath(false);
-        //dirPath.replace("ladspa", "dssi", true);
-        
-        filePath = _oscPluginI->plugin()->filePath();
-        //filePath.replace("ladspa", "dssi", true);
-      }
-      else
-        return false;
-      */
-      
       //snprintf(oscUrl, 1024, "%s/%s/%s", url, baseName.ascii(), name.ascii());
       //snprintf(oscUrl, 1024, "%s%s/%s/%s", url, typ.toLatin1().constData(), baseName.toLatin1().constData(), name.toLatin1().constData());
       //oscUrl = QString("%1%2/%3/%4").arg(QString(QT_TRANSLATE_NOOP("@default", url))).arg(typ).arg(baseName).arg(name);
       oscUrl = QString("%1%2/%3/%4").arg(QString(QT_TRANSLATE_NOOP("@default", url))).arg(typ).arg(baseName).arg(label);
       
+      // Removed p4.0.19 Tim
+      /*
       //QString guiPath(info.path() + "/" + info.baseName());
       //QString guiPath(synth->info.dirPath() + "/" + synth->info.baseName());
       QString guiPath(dirPath + "/" + baseName);
@@ -944,20 +911,23 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
                       //synth->name().ascii());
                       name.toLatin1().constData());
                   #endif
+                  */      
                       
-                  if ((S_ISREG(buf.st_mode) || S_ISLNK(buf.st_mode)) &&
-                     (buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH))) 
-                  {
+                  //if ((S_ISREG(buf.st_mode) || S_ISLNK(buf.st_mode)) &&
+                  //   (buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH))) 
+                  //{
+                        
                         // Changed by T356.
                         // fork + execlp were causing the processes to remain after closing gui, requiring manual kill.
                         // Changed to QProcess, works OK now. 
                         //if((guiPid = fork()) == 0) 
-                        {
+                        //{
                               // No QProcess created yet? Do it now. Only once per SynthIF instance. Exists until parent destroyed.
                               if(_oscGuiQProc == 0)
                                 _oscGuiQProc = new QProcess(muse);                        
                               
-			      QString program(fi.filePath());
+			      //QString program(fi.filePath());
+                              QString program(guiPath);
 			      QStringList arguments;
 			      arguments << oscUrl
 					<< filePath
@@ -1012,11 +982,12 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
                                         "channel 1", (void*)0);
                                 */
                                         
-                                fprintf(stderr, "exec %s %s %s %s failed: %s\n",
+                                fprintf(stderr, "exec %s %s %s failed: %s\n",
                                         //fi.filePath().toAscii().data(),
                                         //fi.fileName().toAscii().data(),
-                                        fi.filePath().toLatin1().constData(),
-                                        fi.fileName().toLatin1().constData(),
+                                        //fi.filePath().toLatin1().constData(),
+                                        guiPath.toLatin1().constData(),
+                                        //fi.fileName().toLatin1().constData(),
                                         
                                         oscUrl.toLatin1().constData(),
                                         
@@ -1035,10 +1006,11 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
                               #ifdef OSC_DEBUG 
                               fprintf(stderr, "OscIF::oscInitGui after QProcess\n");
                               #endif
-                        }
-                  }
-            }
+                        //}
+                  //}
+            //}
             //synth->_hasGui = true;
+      /*
       }
       else {
             printf("OscIF::oscInitGui %s: no dir for gui found: %s\n",
@@ -1048,6 +1020,7 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
             
             //synth->_hasGui = false;
             }
+     */       
             
   return true;          
 }
@@ -1305,7 +1278,8 @@ bool OscDssiIF::oscInitGui()
     
   return OscIF::oscInitGui(QT_TRANSLATE_NOOP("@default", "dssi_synth"), _oscSynthIF->dssiSynth()->baseName(), 
                            _oscSynthIF->dssiSynth()->name(), _oscSynthIF->dssiSynthI()->name(), 
-                           _oscSynthIF->dssiSynth()->filePath(), _oscSynthIF->dssiSynth()->path());
+                           //_oscSynthIF->dssiSynth()->filePath(), _oscSynthIF->dssiSynth()->path());
+                           _oscSynthIF->dssiSynth()->filePath(), _oscSynthIF->dssi_ui_filename());    // p4.0.19
 }
       
 #endif   // DSSI_SUPPORT
@@ -1391,7 +1365,8 @@ bool OscEffectIF::oscInitGui()
     
   return OscIF::oscInitGui(QT_TRANSLATE_NOOP("@default", "ladspa_efx"), _oscPluginI->plugin()->lib(false), 
                            _oscPluginI->plugin()->label(), _oscPluginI->label(), 
-                           _oscPluginI->plugin()->filePath(), _oscPluginI->plugin()->dirPath(false));
+                           //_oscPluginI->plugin()->filePath(), _oscPluginI->plugin()->dirPath(false));
+                           _oscPluginI->plugin()->filePath(), _oscPluginI->dssi_ui_filename());    // p4.0.19
 }
       
 
