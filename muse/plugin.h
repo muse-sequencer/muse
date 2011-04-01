@@ -106,6 +106,7 @@ class Plugin {
       QString lib(bool complete = true) /*const*/  { return complete ? fi.completeBaseName() : fi.baseName(); } // ddskrjo const
       QString dirPath(bool complete = true) const  { return complete ? fi.absolutePath() : fi.path(); }
       QString filePath() const                     { return fi.filePath(); }
+      QString fileName() const                     { return fi.fileName(); }
       int references() const                       { return _references; }
       int incReferences(int);
       int instNo()                                 { return _instNo++;        }
@@ -290,6 +291,7 @@ class PluginIBase
       virtual QString name() const = 0;
       virtual QString lib() const = 0;
       virtual QString dirPath() const = 0;
+      virtual QString fileName() const = 0;
       
       virtual AudioTrack* track() = 0;          
       
@@ -434,6 +436,7 @@ class PluginI : public PluginIBase {
       CtrlValueType valueType() const;
       QString lib() const            { return _plugin->lib(); }
       QString dirPath() const        { return _plugin->dirPath(); }
+      QString fileName() const       { return _plugin->fileName(); }
 
       #ifdef OSC_SUPPORT
       OscEffectIF& oscIF() { return _oscif; }

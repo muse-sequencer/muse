@@ -63,6 +63,7 @@ class Synth {
       QString absolutePath() const                     { return info.absolutePath(); }
       QString path() const                             { return info.path(); }
       QString filePath() const                         { return info.filePath(); }
+      QString fileName() const                         { return info.fileName(); }
       QString description() const                      { return _description; }
       QString version() const                          { return _version; }
       //QString maker() const                            { return _version; } ??

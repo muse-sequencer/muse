@@ -934,6 +934,23 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
 					<< name
 					<< QString("channel-1");
 
+                              /*
+                              fprintf(stderr, "OscIF::oscInitGui  %s %s %s %s\n",
+                                //fi.filePath().toAscii().data(),
+                                //fi.fileName().toAscii().data(),
+                                guiPath.toLatin1().constData(),
+                                //fi.fileName().ascii(),
+                                
+                                oscUrl.toLatin1().constData(),
+                                
+                                //synth->info.filePath().ascii(),
+                                filePath.toLatin1().constData(),
+                                
+                                //name().toAscii().data(),
+                                //synth->name().ascii());
+                                name.toLatin1().constData());
+                              */  
+                      
 			      /* Leave out Qt3 stuff for reference - Orcan:
                               // Don't forget this, he he...
                               _oscGuiQProc->clearArguments();
@@ -1279,7 +1296,7 @@ bool OscDssiIF::oscInitGui()
   return OscIF::oscInitGui(QT_TRANSLATE_NOOP("@default", "dssi_synth"), _oscSynthIF->dssiSynth()->baseName(), 
                            _oscSynthIF->dssiSynth()->name(), _oscSynthIF->dssiSynthI()->name(), 
                            //_oscSynthIF->dssiSynth()->filePath(), _oscSynthIF->dssiSynth()->path());
-                           _oscSynthIF->dssiSynth()->filePath(), _oscSynthIF->dssi_ui_filename());    // p4.0.19
+                           _oscSynthIF->dssiSynth()->fileName(), _oscSynthIF->dssi_ui_filename());    // p4.0.19
 }
       
 #endif   // DSSI_SUPPORT
@@ -1366,7 +1383,7 @@ bool OscEffectIF::oscInitGui()
   return OscIF::oscInitGui(QT_TRANSLATE_NOOP("@default", "ladspa_efx"), _oscPluginI->plugin()->lib(false), 
                            _oscPluginI->plugin()->label(), _oscPluginI->label(), 
                            //_oscPluginI->plugin()->filePath(), _oscPluginI->plugin()->dirPath(false));
-                           _oscPluginI->plugin()->filePath(), _oscPluginI->dssi_ui_filename());    // p4.0.19
+                           _oscPluginI->plugin()->fileName(), _oscPluginI->dssi_ui_filename());    // p4.0.19
 }
       
 
