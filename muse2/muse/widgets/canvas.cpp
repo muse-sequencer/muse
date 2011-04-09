@@ -586,21 +586,14 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                               // Changed by T356. Alt is default reserved for moving the whole window in KDE. Changed to Shift-Alt.
                               // Hmm, nope, shift-alt is also reserved sometimes. Must find a way to bypass, 
                               //  why make user turn off setting? Left alone for now...
-                              if (shift)
+                              if (shift && !ctrl)
                                     drag = DRAG_COPY_START;
                               else if (alt) {
                                     drag = DRAG_CLONE_START;
                                     }
-                              //
-                              //if (shift)
-                              //{
-                              //  if (alt)
-                              //    drag = DRAG_CLONE_START;
-                              //  else
-                              //    drag = DRAG_COPY_START;
-                              //}       
                               else if (ctrl) { //Select all on the same pitch (e.g. same y-value)
-                                    deselectAll();
+                                    if (!shift)
+                                      deselectAll();
                                     //printf("Yes, ctrl and press\n");
                                     for (iCItem i = items.begin(); i != items.end(); ++i) {
                                           if (i->second->y() == curItem->y() )
