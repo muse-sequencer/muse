@@ -228,7 +228,7 @@ bool operator< (const note_pos_t& a, const note_pos_t& b)
 
 //TODO: all das unten richtig machen!
 #define TICKS_PER_WHOLE (config.division*4) 
-#define SONG_LENGTH (TICKS_PER_WHOLE*8)
+#define SONG_LENGTH (song->len())
 
 #define quant_max 3  //whole, half, quarter = 0,1,2
 #define quant_max_fraction (1 << quant_max) //whole, half, quarter= 1,2,4
@@ -271,7 +271,9 @@ ScoreEventList ScoreCanvas::createAppropriateEventList(PartList* pl, Track* trac
 
 	ScoreEventList result;
 	
-	//insert note on/off events
+	// phase one: fill the list -----------------------------------------
+	
+	//insert note on events
 	for (iPart partIt=pl->begin(); partIt!=pl->end(); partIt++)
 	{
 		Part* part=partIt->second;
@@ -289,9 +291,7 @@ ScoreEventList ScoreCanvas::createAppropriateEventList(PartList* pl, Track* trac
 					begin=flo_quantize(event.tick()+part->tick());
 					end=flo_quantize(event.endTick()+part->tick());
 					cout <<"inserting note on at "<<begin<<" with pitch="<<event.pitch()<<" and len="<<end-begin<<endl;
-					cout<< "\tinserting corresponding note off at "<<endl;
 					result.insert(pair<unsigned, FloEvent>(begin, FloEvent(begin,event.pitch(), event.velo(),end-begin,FloEvent::NOTE_ON,part,&it->second)));
-					result.insert(pair<unsigned, FloEvent>(end,   FloEvent(end,event.pitch(), event.veloOff(),0,FloEvent::NOTE_OFF,part,&it->second)));
 				}
 				//else ignore it
 			}
@@ -321,6 +321,31 @@ ScoreEventList ScoreCanvas::createAppropriateEventList(PartList* pl, Track* trac
 
 	//TODO FINDMICH MARKER
 	result.insert(pair<unsigned, FloEvent>(0,  FloEvent(0,FloEvent::KEY_CHANGE, C ) ) );
+	
+	
+	// phase two: deal with overlapping notes ---------------------------
+	ScoreEventList::iterator it, it2;
+	
+	//iterate through all note_on - events
+	for (it=result.begin(); it!=result.end(); it++)
+		if (it->second.type==FloEvent::NOTE_ON)
+		{
+			int end_tick=it->first + it->second.len;
+			
+			//iterate though all (relevant) later note_ons which are
+			//at the same pitch. if there's a collision, shorten it's len
+			for (it2=it, it2++; it2!=result.end() && it2->first < end_tick; it2++)
+				if ((it2->second.type==FloEvent::NOTE_ON) && (it2->second.pitch == it->second.pitch))
+					it->second.len=it2->first - it->first;
+		}
+		
+		
+		// phase three: eliminate zero-length-notes -------------------------
+		for (it=result.begin(); it!=result.end();)
+			if ((it->second.type==FloEvent::NOTE_ON) && (it->second.len<=0))
+				result.erase(it++);
+			else
+				it++;
 	
 	return result;
 }
@@ -613,7 +638,7 @@ list<note_len_t> ScoreCanvas::parse_note_len(int len_ticks, int begin_tick, vect
 }
 
 
-#define USED_CLEF BASS
+#define USED_CLEF VIOLIN
 
 #define YLEN 10
 #define YDIST (2*YLEN)
@@ -794,7 +819,7 @@ ScoreItemList ScoreCanvas::create_itemlist(ScoreEventList& eventlist)
 				tmplen=next_measure-t;
 				tied_note=true;
 				
-				//append the "rest" of the note to our EventList, so that
+				//append the "remainder" of the note to our EventList, so that
 				//it gets processed again when entering the new measure
 				int newlen=len-tmplen;
 				eventlist.insert(pair<unsigned, FloEvent>(next_measure, FloEvent(actual_tick,pitch, velo,0,FloEvent::NOTE_OFF, it->second.source_part, it->second.source_event)));
@@ -806,6 +831,9 @@ ScoreItemList ScoreCanvas::create_itemlist(ScoreEventList& eventlist)
 			{
 				tmplen=len;
 				tied_note=false;
+				
+				cout << "\t\tinserting NOTE OFF at "<<t+len<<endl;
+				eventlist.insert(pair<unsigned, FloEvent>(t+len,   FloEvent(t+len,pitch, velo,0,FloEvent::NOTE_OFF,it->second.source_part, it->second.source_event)));
 			}
 							
 			list<note_len_t> lens=parse_note_len(tmplen,t-last_measure,emphasize_list,true,true);

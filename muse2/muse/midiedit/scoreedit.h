@@ -149,8 +149,8 @@ class FloEvent
 		Event* source_event;
 		
 		int pitch;
-		int vel;
-		int len;
+		mutable int vel;
+		mutable int len;
 		
 		int num;
 		int denom;
