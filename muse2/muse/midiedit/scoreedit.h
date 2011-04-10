@@ -26,11 +26,13 @@
 #include <set>
 #include <map>
 #include <list>
+#include <vector>
 
 using std::set;
 using std::pair;
 using std::map;
 using std::list;
+using std::vector;
 
 class MidiPart;
 class TimeLabel;
@@ -404,7 +406,7 @@ class ScoreCanvas : public View
 		note_pos_t note_pos_(int note, tonart_t key);
 		note_pos_t note_pos (int note, tonart_t key, clef_t clef);
 		int calc_len(int l, int d);
-		list<note_len_t> parse_note_len(int len_ticks, bool allow_dots=true, bool allow_normal=true, int begin_tick=0);
+		list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, bool allow_dots=true, bool allow_normal=true);
 		void draw_tie (QPainter& p, int x1, int x4, int yo, bool up=true);
 		ScoreItemList create_itemlist(ScoreEventList& eventlist);
 		void process_itemlist(ScoreItemList& itemlist);
@@ -467,5 +469,10 @@ class ScoreCanvas : public View
 		~ScoreCanvas(){};
 
 };
+
+int calc_measure_len(const list<int>& nums, int denom);
+vector<int> create_emphasize_list(const list<int>& nums, int denom);
+vector<int> create_emphasize_list(int num, int denom);
+
 #endif
 

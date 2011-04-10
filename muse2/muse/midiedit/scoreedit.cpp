@@ -1,4 +1,6 @@
-//change FONT_PATH to the correct directory
+//you need to download http://home.arcor.de/michael.jung11/glyphs.tar.bz2
+//and extract it somewhere. then change FONT_PATH to the correct directory
+//the trailing slash is necessary
 #define FONT_PATH "/home/flo/muse-glyphs/"
 
 //=========================================================
@@ -170,6 +172,7 @@ string IntToStr(int i)
 
 
 
+#define FONT_PATH "/home/flo/AKTENKOFFER/programme/museueberlegungen/glyphs/"
 void ScoreCanvas::load_pixmaps()
 {
 	pix_whole.load(FONT_PATH "whole.png");
@@ -435,11 +438,86 @@ bool operator< (const note_len_t& a,const note_len_t& b) //TODO sane sorting ord
 	else return false;
 }
 
+
+
+int calc_measure_len(const list<int>& nums, int denom)
+{
+	int sum=0;
+	
+	for (list<int>::const_iterator it=nums.begin(); it!=nums.end(); it++)
+		sum+=*it;
+	
+	return 64* sum/denom;
+}
+
+vector<int> create_emphasize_list(const list<int>& nums, int denom)
+{
+	cout << "creating emphasize list for ";
+	for (list<int>::const_iterator it=nums.begin(); it!=nums.end(); it++)
+		cout << *it << " ";
+	cout << "/ "<<denom;
+	
+	//        |----- 8th -----|
+	int foo[]={4,7,6,7,5,7,6,7}; //if 64 changes, this also must change
+	int pos=0;
+	int len=calc_measure_len(nums, denom);
+
+	vector<int> result(len);
+	
+	for (int i=0;i<len;i++)
+		result[i]=foo[i%8];
+	
+	for (list<int>::const_iterator it=nums.begin(); it!=nums.end(); it++)
+	{
+		result[pos]=1;
+		for (int i=1;i<*it;i++)
+			result[pos + i*64/denom]=2;
+		pos+= *it * 64 / denom;
+	}
+	
+	result[0]=0;
+	
+	for (int i=0;i<len;i++)
+	{
+		if (i%8==0)
+			cout << endl<<i<<":\t";
+		cout << result[i]<<" ";
+	}
+	cout << endl;
+	
+	return result;
+}
+
+vector<int> create_emphasize_list(int num, int denom) //TODO FINDMICH
+{
+	list<int> nums;
+	
+	if (num%3 ==0)
+	{
+		for (int i=0;i<num/3;i++)
+			nums.push_back(3);
+	}
+	else if (num%2 ==0)
+	{
+		for (int i=0;i<num/2;i++)
+			nums.push_back(2);
+	}
+	else // num is odd
+	{
+		for (int i=0;i<(num-3)/2;i++)
+			nums.push_back(2);
+		
+		nums.push_back(3);
+	}
+	
+	return create_emphasize_list(nums, denom);
+}
+
 //quant_max must be in log(len), that is
 //whole, half, quarter, eighth = 0,1,2,3
 //NOT:  1,2,4,8! (think of 2^foo)
 //len is in ticks
-list<note_len_t> ScoreCanvas::parse_note_len(int len_ticks, bool allow_dots, bool allow_normal, int begin_tick)
+list<note_len_t> ScoreCanvas::parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, bool allow_dots, bool allow_normal)
 {
 	list<note_len_t> retval;
 	
@@ -458,10 +536,6 @@ list<note_len_t> ScoreCanvas::parse_note_len(int len_ticks, bool allow_dots, boo
 	
 	//if !allow_normal or if the above failed
 	
-	//         1       e       +       e       2       e       +       e       3       e       +       e       4       e       +       e
-	int foo[]={1,7,6,7,5,7,6,7,4,7,6,7,5,7,6,7,3,7,6,7,5,7,6,7,4,7,6,7,5,7,6,7,2,7,6,7,5,7,6,7,4,7,6,7,5,7,6,7,3,7,6,7,5,7,6,7,4,7,6,7,5,7,6,7};
-	#define foo_len (sizeof(foo)/sizeof(*foo))
-	
 	int begin=begin_tick * 64 / TICKS_PER_WHOLE;
 	int len=len_ticks * 64 / TICKS_PER_WHOLE;
 	
@@ -473,26 +547,42 @@ list<note_len_t> ScoreCanvas::parse_note_len(int len_ticks, bool allow_dots, boo
 		int len_now=0;
 		int last_number=foo[pos];
 		
-		while (! ((foo[pos]<last_number) || (len_done==len) || (pos==foo_len)) ) {pos++;len_done++;len_now++;}
+		do {pos++;len_done++;len_now++;} while (! ((foo[pos]<=last_number) || (len_done==len) || (pos==foo.size())) );
 
 		len_now=len_now*TICKS_PER_WHOLE/64;
 
 		cout << "add " << len_now << " ticks" << endl;
-		for (int i=0; i<=quant_max; i++)
+		if (allow_dots)
 		{
-			int tmp=calc_len(i,0);
-			if (tmp <= len_now)
+			int dot_max = quant_max;
+			
+			for (int i=0;i<=quant_max;i++)
+				for (int j=0;j<=dot_max-i;j++)
+					if (calc_len(i,j) == len_now)
+					{
+						retval.push_back(note_len_t (i,j));
+						len_now=0;
+					}
+		}
+			
+		if (len_now) //the above failed or allow_dots=false
+		{
+			for (int i=0; i<=quant_max; i++)
 			{
-				retval.push_back(note_len_t(i));
-				len_now-=tmp;
-				if (len_now==0) break;
+				int tmp=calc_len(i,0);
+				if (tmp <= len_now)
+				{
+					retval.push_back(note_len_t(i));
+					len_now-=tmp;
+					if (len_now==0) break;
+				}
 			}
 		}
 		
 		if (len_now!=0)
 			cout << "WARNING: THIS SHOULD NEVER HAPPEN. wasn't able to split note len properly; len_now="<<len_now << endl;
-		
-		if (pos==foo_len) //we cross measure boundaries?
+
+		if (pos==foo.size()) //we cross measure boundaries?
 			pos=0;
 	}
 
@@ -546,7 +636,7 @@ list<note_len_t> ScoreCanvas::parse_note_len(int len_ticks, bool allow_dots, boo
 #define STEM_LEN 30
 
 #define DOTTED_RESTS true
-#define UNSPLIT_RESTS true
+#define UNSPLIT_RESTS false
 
 #define AUX_LINE_LEN 1.5
 
@@ -602,6 +692,8 @@ ScoreItemList ScoreCanvas::create_itemlist(ScoreEventList& eventlist)
 	tonart_t tmp_key=C;
 	int lastevent=0;
 	int next_measure=-1;
+	int last_measure=0;
+	vector<int> emphasize_list=create_emphasize_list(4,4); //actually unneccessary, for safety
 
 	for (ScoreEventList::iterator it=eventlist.begin(); it!=eventlist.end(); it++)
 	{
@@ -629,7 +721,7 @@ ScoreItemList ScoreCanvas::create_itemlist(ScoreEventList& eventlist)
 			{
 				printf("\tend-of-measure: set rest at %i with len %i\n",lastevent,rest);
 				
-				list<note_len_t> lens=parse_note_len(rest,DOTTED_RESTS,UNSPLIT_RESTS,lastevent);
+				list<note_len_t> lens=parse_note_len(rest,lastevent-last_measure,emphasize_list,DOTTED_RESTS,UNSPLIT_RESTS);
 				unsigned tmppos=lastevent;
 				for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
 				{
@@ -641,6 +733,7 @@ ScoreItemList ScoreCanvas::create_itemlist(ScoreEventList& eventlist)
 			}
 			
 			lastevent=t;
+			last_measure=t;
 			next_measure=t+len;
 			
 			itemlist[t].insert( FloItem(FloItem::BAR,no_notepos,0,0) );
@@ -654,7 +747,7 @@ ScoreItemList ScoreCanvas::create_itemlist(ScoreEventList& eventlist)
 				// no need to check if the rest crosses measure boundaries;
 				// it can't.
 				
-				list<note_len_t> lens=parse_note_len(rest,DOTTED_RESTS,UNSPLIT_RESTS,lastevent);
+				list<note_len_t> lens=parse_note_len(rest,lastevent-last_measure,emphasize_list,DOTTED_RESTS,UNSPLIT_RESTS);
 				unsigned tmppos=lastevent;
 				for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
 				{
@@ -692,7 +785,7 @@ ScoreItemList ScoreCanvas::create_itemlist(ScoreEventList& eventlist)
 				tied_note=false;
 			}
 							
-			list<note_len_t> lens=parse_note_len(tmplen,true,true,t);
+			list<note_len_t> lens=parse_note_len(tmplen,t-last_measure,emphasize_list,true,true);
 			unsigned tmppos=t;
 			int n_lens=lens.size();
 			int count=0;			
@@ -721,6 +814,8 @@ ScoreItemList ScoreCanvas::create_itemlist(ScoreEventList& eventlist)
 		{
 			cout << "inserting TIME SIGNATURE "<<it->second.num<<"/"<<it->second.denom<<" at "<<t<<endl;
 			itemlist[t].insert( FloItem(FloItem::TIME_SIG, it->second.num, it->second.denom) );
+			
+			emphasize_list=create_emphasize_list(it->second.num, it->second.denom);
 		}
 		else if (type==FloEvent::KEY_CHANGE)
 		{
@@ -736,6 +831,8 @@ ScoreItemList ScoreCanvas::create_itemlist(ScoreEventList& eventlist)
 void ScoreCanvas::process_itemlist(ScoreItemList& itemlist)
 {
 	stdmap<int,int> occupied;
+	int last_measure=0;
+	vector<int> emphasize_list=create_emphasize_list(4,4); //unneccessary, only for safety
 
 	//iterate through all times with items
 	for (ScoreItemList::iterator it2=itemlist.begin(); it2!=itemlist.end(); it2++)
@@ -744,14 +841,19 @@ void ScoreCanvas::process_itemlist(ScoreItemList& itemlist)
 		
 		cout << "at t="<<it2->first<<endl;
 		
-		// phase 0: keep track of active notes and rests -------------------
-		//          (and occupied lines)
+		// phase 0: keep track of active notes, rests -------------------
+		//          (and occupied lines) and the last measure
+		//          and the current time signature (TODO FINDMICH)
 		for (set<FloItem, floComp>::iterator it=curr_items.begin(); it!=curr_items.end(); it++)
 		{
 			if ((it->type==FloItem::NOTE) || (it->type==FloItem::REST))
 				occupied[it->pos.height]++;
 			else if ((it->type==FloItem::NOTE_END) || (it->type==FloItem::REST_END))
 				occupied[it->pos.height]--;
+			else if (it->type==FloItem::BAR)
+				last_measure=it2->first;
+			else if (it->type==FloItem::TIME_SIG)
+				emphasize_list=create_emphasize_list(it->num, it->denom);
 		}
 		
 		cout << "occupied: ";
@@ -1080,7 +1182,7 @@ group_them_again:
 
 						itemlist[t].insert( FloItem(FloItem::NOTE_END,tmp.pos,0,0) );
 						
-						list<note_len_t> lens=parse_note_len(len_ticks_remaining,true,true,t);
+						list<note_len_t> lens=parse_note_len(len_ticks_remaining,t-last_measure,emphasize_list,true,true);
 						unsigned tmppos=t;
 						int n_lens=lens.size();
 						int count=0;			
@@ -1125,7 +1227,7 @@ group_them_again:
 
 						itemlist[t].insert( FloItem(FloItem::NOTE_END,tmp.pos,0,0) );
 						
-						list<note_len_t> lens=parse_note_len(len_ticks_remaining,true,true,t);
+						list<note_len_t> lens=parse_note_len(len_ticks_remaining,t-last_measure,emphasize_list,true,true);
 						unsigned tmppos=t;
 						int n_lens=lens.size();
 						int count=0;			
@@ -1882,38 +1984,23 @@ void ScoreCanvas::scroll_event(int x)
 //      every time something changes.
 
 
-
-
-
-//TODO WICHTIG TÖDLICH:
-// bei parse_note_len: BUG (siehe auch bug.mpt)
-// die anfangszeit wird in absoluten ticks statt
-// ticks seit taktbeginn gegeben -> fehler1
-// außerdem funzt die funktion nicht richtig, wenn
-// der takt nicht 4/4 ist!
-
-
-// TODO FINDMICH: tonart aus muses eventliste in meine übernehmen!
-
-// TODO: schöne funktionen fürs takt- und tonart-vorzeichen zeichnen
-//       (mit längenangabe!)
-
-
-// TODO: notenschlüssel zeichen!
-// TODO: balken bei 8teln und 16teln etc
-// TODO: die ItemList als map< pos_t , der_rest_t > umändern
-
-//TODO: ausweichen bei ganzen noten!
-
-
-
-//TODO: while dragging notes:
-//      send the correct events
-//      do undo() stuff
-//      etc.
-
-//TODO: support inserting and deleting notes
-//TODO: when a note gets resized so that len=0, erase it
-//      but watch out for quantisation stuff then!
-//      (when the start is slightly before the beat, len is 2 instead of 0)
-//TODO: deal with double notes?
+/* IMPORTANT TODO
+ *   o use a function for drawing timesig changes. support two(or more)-digit-numbers
+ *   o create nice functions for drawing keychange-accidentials
+ *   o draw clef, maybe support clef changes. support violin and bass at one time
+ *   o support inserting notes
+ *   o support erasing notes (resize to len=0? watch out for quantisation stuff)
+ *   o support undo when dragging notes
+ *   o eliminate overlapping notes (e.g. C from 0 with len=10 and C from 5 with len=10)
+ *
+ * less important stuff
+ *   o check if "moving away" works for whole notes
+ *   o use bars instead of flags over groups of 8ths / 16ths etc
+ *   o (change ItemList into map< pos_t , mutable_stuff_t >) [no]
+ *
+ * stuff for the other muse developers
+ *   o check if dragging notes works correctly (the pianoroll seems to be not informed :/ )
+ *   o process key from muse's event list (has to be implemented first in muse)
+ *   o process accurate timesignatures from muse's list (has to be implemented first in muse)
+ *      ( (2+2+3)/4 or (3+2+2)/4 instead of 7/4 )
+ */
