@@ -3,6 +3,14 @@
 //the trailing slash is necessary
 #define FONT_PATH "/home/flo/muse-glyphs/"
 
+//=========================================================
+//  MusE
+//  Linux Music Editor
+//  scoreedit.cpp
+//  (C) Copyright 2011 Florian Jung (florian.a.jung@web.de)
+//=========================================================
+
+
 #include <QLayout>
 #include <QSizeGrip>
 #include <QLabel>
@@ -175,6 +183,8 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 //fertig mit aufbereiten	
 	cout << "---------------- CALCULATING DONE ------------------" << endl;
 	
+	
+	connect(song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(pos_changed(int,unsigned,bool)));
 }
 
 void ScoreCanvas::song_changed(int)
@@ -188,7 +198,17 @@ void ScoreCanvas::song_changed(int)
 	redraw();
 	cout << "song had changed, recalculation complete" << endl;
 
-	emit canvas_width_changed(tick_to_x(itemlist.rbegin()->first));
+	emit canvas_width_changed(canvas_width());
+}
+
+int ScoreCanvas::canvas_width()
+{
+	return tick_to_x(itemlist.rbegin()->first);
+}
+
+int ScoreCanvas::viewport_width()
+{
+	return (width() - x_left);
 }
 
 //flo code starting here
@@ -740,8 +760,8 @@ list<note_len_t> ScoreCanvas::parse_note_len(int len_ticks, int begin_tick, vect
 
 #define ACCIDENTIAL_DIST 11
 #define KEYCHANGE_ACC_DIST 9
-#define KEYCHANGE_ACC_LEFTDIST 3
-#define KEYCHANGE_ACC_RIGHTDIST 3
+#define KEYCHANGE_ACC_LEFTDIST 9
+#define KEYCHANGE_ACC_RIGHTDIST 0
 
 
 #define stdmap std::map
@@ -802,7 +822,7 @@ ScoreItemList ScoreCanvas::create_itemlist(ScoreEventList& eventlist)
 	tonart_t tmp_key=C;
 	int lastevent=0;
 	int next_measure=-1;
-	int last_measure=0;
+	int last_measure=-1;
 	vector<int> emphasize_list=create_emphasize_list(4,4); //actually unneccessary, for safety
 
 	for (ScoreEventList::iterator it=eventlist.begin(); it!=eventlist.end(); it++)
@@ -825,23 +845,36 @@ ScoreItemList ScoreCanvas::create_itemlist(ScoreEventList& eventlist)
 				
 		if (type==FloEvent::BAR)
 		{
-			// if neccessary, insert rest at between last note and end-of-measure
-			int rest=t-lastevent;
-			if (rest)
+			if (last_measure!=-1) //i.e.: "this is NOT the first bar"
 			{
-				printf("\tend-of-measure: set rest at %i with len %i\n",lastevent,rest);
-				
-				list<note_len_t> lens=parse_note_len(rest,lastevent-last_measure,emphasize_list,DOTTED_RESTS,UNSPLIT_RESTS);
-				unsigned tmppos=lastevent;
-				for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
+				if (lastevent==last_measure) //there was no note?
 				{
-					cout << "\t\tpartial rest with len="<<x->len<<", dots="<<x->dots<<endl;
-					itemlist[tmppos].insert( FloItem(FloItem::REST,notepos,x->len,x->dots) );
-					tmppos+=calc_len(x->len,x->dots);
-					itemlist[tmppos].insert( FloItem(FloItem::REST_END,notepos,0,0) );
+					unsigned tmppos=(last_measure+t-FLO_QUANT)/2;
+					cout << "\tend-of-measure: this was an empty measure. inserting rest in between at t="<<tmppos << endl;
+					itemlist[tmppos].insert( FloItem(FloItem::REST,notepos,0,0) );
+					itemlist[t].insert( FloItem(FloItem::REST_END,notepos,0,0) );
+				}
+				else
+				{
+					// if neccessary, insert rest at between last note and end-of-measure
+					int rest=t-lastevent;
+					if (rest)
+					{
+						printf("\tend-of-measure: set rest at %i with len %i\n",lastevent,rest);
+						
+						list<note_len_t> lens=parse_note_len(rest,lastevent-last_measure,emphasize_list,DOTTED_RESTS,UNSPLIT_RESTS);
+						unsigned tmppos=lastevent;
+						for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
+						{
+							cout << "\t\tpartial rest with len="<<x->len<<", dots="<<x->dots<<endl;
+							itemlist[tmppos].insert( FloItem(FloItem::REST,notepos,x->len,x->dots) );
+							tmppos+=calc_len(x->len,x->dots);
+							itemlist[tmppos].insert( FloItem(FloItem::REST_END,notepos,0,0) );
+						}
+					}
 				}
 			}
-			
+						
 			lastevent=t;
 			last_measure=t;
 			next_measure=t+len;
@@ -1832,7 +1865,7 @@ void ScoreCanvas::draw_preamble(QPainter& p)
 
 
 	if (x_left_old!=x_left)
-		emit viewport_width_changed(width() - x_left);
+		emit viewport_width_changed(viewport_width());
 }
 
 
@@ -2283,12 +2316,33 @@ void ScoreCanvas::scroll_event(int x)
 //the position goto would set it to, nothing happens
 void ScoreCanvas::goto_tick(int tick, bool force)
 {
-	//TODO FINDMICH: implement force
-	
-	x_pos=tick_to_x(tick);
-	redraw();
-	
-	emit xpos_changed(x_pos);
+	if (!force)
+	{
+		if (tick < x_to_tick(x_pos))
+		{
+			x_pos=tick_to_x(tick) - x_left;
+			if (x_pos<0) x_pos=0;
+			if (x_pos>canvas_width()) x_pos=canvas_width();
+			
+			emit xpos_changed(x_pos);
+		}
+		else if (tick > x_to_tick(x_pos+viewport_width()*PAGESTEP))
+		{
+			x_pos=tick_to_x(tick);
+			if (x_pos<0) x_pos=0;
+			if (x_pos>canvas_width()) x_pos=canvas_width();
+			
+			emit xpos_changed(x_pos);
+		}
+	}
+	else
+	{
+		x_pos=tick_to_x(tick)-viewport_width()/2;
+		if (x_pos<0) x_pos=0;
+		if (x_pos>canvas_width()) x_pos=canvas_width();
+		
+		emit xpos_changed(x_pos);
+	}
 }
 
 //---------------------------------------------------------
@@ -2299,9 +2353,21 @@ void ScoreCanvas::resizeEvent(QResizeEvent* ev)
 {
 	QWidget::resizeEvent(ev); //TODO is this really neccessary?
 
-	emit viewport_width_changed( ev->size().width() - x_left  );
+	emit viewport_width_changed( viewport_width()  );
 }
 
+void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
+{
+	if ((index==0) && scroll) //potential need to scroll?
+	{
+		switch (song->follow())
+		{
+			case  Song::NO: break;
+			case Song::JUMP:  goto_tick(tick,false);  break;
+			case Song::CONTINUOUS:  goto_tick(tick,true);  break;
+		}
+	}
+}
 // TODO: testen: kommen die segfaults von muse oder von mir? [ von mir ]
 // TODO: testen, ob das noten-splitten korrekt arbeitet [ scheint zu klappen ]
 // TODO: testen, ob shift immer korrekt gesetzt wird [ scheint zu klappen ]
@@ -2348,7 +2414,6 @@ void ScoreCanvas::resizeEvent(QResizeEvent* ev)
  *   o let the user select the currently edited part
  *   o let the user select between "colors after the parts",
  *     "colors after selected/unselected part" and "all black"
- *   o automatically scroll when playing
  *   o support selections
  *
  * less important stuff
@@ -2356,7 +2421,6 @@ void ScoreCanvas::resizeEvent(QResizeEvent* ev)
  *   o let the user select whether the preamble should have
  *     a fixed length (?)
  *   o let the user select what the preamble has to contain
- *   o set distances properly
  *   o use timesig_t in all timesig-stuff
  *   o emit a "song-changed" signal instead of calling our
  *     internal song_changed() function
@@ -2368,10 +2432,9 @@ void ScoreCanvas::resizeEvent(QResizeEvent* ev)
  *   o deal with expanding parts or clip (expanding is better)
  *   o check if making the program clef-aware hasn't broken anything
  *     e.g. accidentials, creating notes, rendering etc.
- *   o replace all kinds of "full-measure-rests" with the whole rest
- *     in the middle of the measure
  *   o check if the new function for drawing accidential works
  *     the change was introduced after 873815e57a5d1edc147710b524936b6f6260f555
+ *   o set distances properly [looks okay, doesn't it?]
  *
  * stuff for the other muse developers
  *   o check if dragging notes is done correctly

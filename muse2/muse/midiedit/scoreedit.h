@@ -149,7 +149,7 @@ bool operator< (const note_pos_t& a, const note_pos_t& b);
 class FloEvent
 {
 	public:
-		enum typeEnum { NOTE_ON = 30, NOTE_OFF = 10, BAR = 20, TIME_SIG=23, KEY_CHANGE=26 }; //the order matters!
+		enum typeEnum { NOTE_ON = 30, NOTE_OFF = 10, BAR = 20, KEY_CHANGE=23, TIME_SIG=26 }; //the order matters!
 		typeEnum type;
 		unsigned tick;
 		Part* source_part;
@@ -196,7 +196,7 @@ class FloEvent
 class FloItem
 {
 	public:
-		enum typeEnum { NOTE=21, REST=22, NOTE_END=01, REST_END=02, BAR =10, TIME_SIG=13, KEY_CHANGE=16}; //the order matters!
+		enum typeEnum { NOTE=21, REST=22, NOTE_END=01, REST_END=02, BAR =10, KEY_CHANGE=13, TIME_SIG=16}; //the order matters!
 		typeEnum type;
 		unsigned begin_tick;
 		Event* source_event;
@@ -450,6 +450,10 @@ class ScoreCanvas : public View
 		int tick_to_x(int t);
 		int x_to_tick(int x);
 		int calc_posadd(int t);
+
+
+		int canvas_width();
+		int viewport_width();
 		
 		QPixmap pix_whole[NUM_PARTCOLORS+1], pix_half[NUM_PARTCOLORS+1], pix_quarter[NUM_PARTCOLORS+1];
 		QPixmap pix_r1, pix_r2, pix_r4, pix_r8, pix_r16;
@@ -502,8 +506,9 @@ class ScoreCanvas : public View
       void scroll_event(int);
       void song_changed(int);
 			void goto_tick(int,bool);
+			void pos_changed(int i, unsigned u, bool b);
 	
-		signals:
+	signals:
 			void xpos_changed(int);
 			void viewport_width_changed(int);
 			void canvas_width_changed(int);
