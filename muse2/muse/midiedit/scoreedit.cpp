@@ -33,6 +33,7 @@
 #include <QMimeData>
 #include <QScrollArea>
 #include <QSettings>
+#include <QImage>
 
 #include <stdio.h>
 #include <math.h>
@@ -64,7 +65,6 @@ using namespace std;
 #include "mtrackinfo.h"
 
 #include "sig.h"
-
 
 
 //---------------------------------------------------------
@@ -162,7 +162,7 @@ void ScoreCanvas::song_changed(int)
 {
 	cout << "song changed!" << endl;
 	pos_add_list.clear();
-	eventlist=createAppropriateEventList(editor->parts(), editor->parts()->begin()->second->track());
+	eventlist=createAppropriateEventList(editor->parts());
 	itemlist=create_itemlist(eventlist);
 	process_itemlist(itemlist); // do note- and rest-grouping and collision avoiding
 	calc_item_pos(itemlist);
@@ -179,19 +179,52 @@ string IntToStr(int i)
 	return s.str();
 }
 
+void load_colored_pixmaps(string file, QPixmap* array)
+{
+	QString fn(file.c_str());
+	QImage img(fn);
+	
+	int bytes=img.byteCount();
+	uchar* bits=img.bits();
+	uchar* ptr;
+	
+	array[BLACK_PIXMAP]=QPixmap::fromImage(img); //before anything was changed
+	//TODO: really color it black, don't rely on the userdata be correct
+	
+	for (int color_index=0;color_index<NUM_PARTCOLORS; color_index++)
+	{
+		ptr=bits;
+		int r,g,b;
+		config.partColors[color_index].getRgb(&r,&g,&b);
+		
+		for (int i=0; i<bytes/4; i++)
+		{
+			QRgb* rgb=((QRgb*)ptr);
+			(*rgb) = qRgba(r,g,b,qAlpha(*rgb));
+			
+			ptr+=4;
+		}
+
+		array[color_index]=QPixmap::fromImage(img);
+	}
+}
 
 
 void ScoreCanvas::load_pixmaps()
 {
-	pix_whole.load(FONT_PATH "whole.png");
-	pix_half.load(FONT_PATH "half.png");
-	pix_quarter.load(FONT_PATH "quarter.png");
+	load_colored_pixmaps(FONT_PATH "whole.png", pix_whole);
+	load_colored_pixmaps(FONT_PATH "half.png", pix_half);
+	load_colored_pixmaps(FONT_PATH "quarter.png", pix_quarter);
+	load_colored_pixmaps(FONT_PATH "dot.png", pix_dot);
+	load_colored_pixmaps(FONT_PATH "acc_none.png", pix_noacc);
+	load_colored_pixmaps(FONT_PATH "acc_sharp.png", pix_sharp);
+	load_colored_pixmaps(FONT_PATH "acc_b.png", pix_b);
+
 	pix_r1.load(FONT_PATH "rest1.png");
 	pix_r2.load(FONT_PATH "rest2.png");
 	pix_r4.load(FONT_PATH "rest4.png");
 	pix_r8.load(FONT_PATH "rest8.png");
 	pix_r16.load(FONT_PATH "rest16.png");
-	pix_dot.load(FONT_PATH "dot.png");
 	pix_flag_up[0].load(FONT_PATH "flags8u.png");
 	pix_flag_up[1].load(FONT_PATH "flags16u.png");
 	pix_flag_up[2].load(FONT_PATH "flags32u.png");
@@ -200,9 +233,6 @@ void ScoreCanvas::load_pixmaps()
 	pix_flag_down[1].load(FONT_PATH "flags16d.png");
 	pix_flag_down[2].load(FONT_PATH "flags32d.png");
 	pix_flag_down[3].load(FONT_PATH "flags64d.png");
-	pix_noacc.load(FONT_PATH "acc_none.png");
-	pix_sharp.load(FONT_PATH "acc_sharp.png");
-	pix_b.load(FONT_PATH "acc_b.png");
 	
 	for (int i=0;i<10;i++)
 		pix_num[i].load(QString((string(FONT_PATH "")+IntToStr(i)+string(".png")).c_str()));	
@@ -245,8 +275,8 @@ bool operator< (const note_pos_t& a, const note_pos_t& b)
  * it stores them sorted by their time (quantized); if more
  * events with the same time occur, the NOTE-OFFs are
  * put before the NOTE-ONs
- * it only operates on parts which a) are selected by the
- * editor and b) belong to track
+ * it only operates on parts which were selected in the
+ * arranger when the score viewer was started
  * 
  * this abstracts the rest of the renderer from muse's internal
  * data structures, making this easy to port to another application
@@ -264,7 +294,7 @@ int flo_quantize_floor(int tick)
 	return int(tick / FLO_QUANT) * FLO_QUANT;
 }
  
-ScoreEventList ScoreCanvas::createAppropriateEventList(PartList* pl, Track* track)
+ScoreEventList ScoreCanvas::createAppropriateEventList(PartList* pl)
 {
 	using AL::sigmap;
 	using AL::iSigEvent;
@@ -277,26 +307,22 @@ ScoreEventList ScoreCanvas::createAppropriateEventList(PartList* pl, Track* trac
 	for (iPart partIt=pl->begin(); partIt!=pl->end(); partIt++)
 	{
 		Part* part=partIt->second;
-		if (part->track()==track)
+		EventList* el=part->events();
+		
+		for (iEvent it=el->begin(); it!=el->end(); it++)
 		{
-			EventList* el=part->events();
+			Event& event=it->second;
 			
-			for (iEvent it=el->begin(); it!=el->end(); it++)
+			if (event.isNote() && !event.isNoteOff())
 			{
-				Event& event=it->second;
-				
-				if (event.isNote() && !event.isNoteOff())
-				{
-					unsigned begin, end;
-					begin=flo_quantize(event.tick()+part->tick());
-					end=flo_quantize(event.endTick()+part->tick());
-					cout <<"inserting note on at "<<begin<<" with pitch="<<event.pitch()<<" and len="<<end-begin<<endl;
-					result.insert(pair<unsigned, FloEvent>(begin, FloEvent(begin,event.pitch(), event.velo(),end-begin,FloEvent::NOTE_ON,part,&it->second)));
-				}
-				//else ignore it
+				unsigned begin, end;
+				begin=flo_quantize(event.tick()+part->tick());
+				end=flo_quantize(event.endTick()+part->tick());
+				cout <<"inserting note on at "<<begin<<" with pitch="<<event.pitch()<<" and len="<<end-begin<<endl;
+				result.insert(pair<unsigned, FloEvent>(begin, FloEvent(begin,event.pitch(), event.velo(),end-begin,FloEvent::NOTE_ON,part,&it->second)));
 			}
+			//else ignore it
 		}
-		//else ignore it
 	}
 
 	//insert bars and time signatures
@@ -702,7 +728,7 @@ list<note_len_t> ScoreCanvas::parse_note_len(int len_ticks, int begin_tick, vect
 #define TIE_HEIGHT 6
 #define TIE_THICKNESS 3
 
-void ScoreCanvas::draw_tie (QPainter& p, int x1, int x4, int yo, bool up)
+void ScoreCanvas::draw_tie (QPainter& p, int x1, int x4, int yo, bool up, QColor color)
 {
 	QPainterPath path;
 
@@ -728,8 +754,8 @@ void ScoreCanvas::draw_tie (QPainter& p, int x1, int x4, int yo, bool up)
 	path.cubicTo( x2,y2  ,  x3,y2  ,  x4,y1 );
 	path.cubicTo( x3,y3  ,  x2,y3  ,  x1,y1 );
 	
-	p.setPen(Qt::black);
- 	p.setBrush(Qt::black);
+	p.setPen(color);
+ 	p.setBrush(color);
 
 	p.drawPath(path);
 }
@@ -1338,6 +1364,8 @@ void ScoreCanvas::draw_note_lines(QPainter& p)
 {
 	int xend=width();
 	
+	p.setPen(Qt::black);
+	
 	for (int i=0;i<5;i++)
 		p.drawLine(0,YDIST+i*YLEN,xend,YDIST+i*YLEN);
 }
@@ -1362,9 +1390,9 @@ void ScoreCanvas::calc_item_pos(ScoreItemList& itemlist)
 				
 				switch (it->len)
 				{
-					case 0: it->pix=&pix_whole; break;
-					case 1: it->pix=&pix_half; break;
-					default: it->pix=&pix_quarter; break;
+					case 0: it->pix=pix_whole; break;
+					case 1: it->pix=pix_half; break;
+					default: it->pix=pix_quarter; break;
 				}
 				
 				it->stem_x=it->x;
@@ -1544,17 +1572,21 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 		
 				if (it->pos.height <= 0) //we need auxiliary lines on the bottom?
 				{ //Y_MARKER
+					p.setPen(Qt::black);
 					for (int i=0; i>=it->pos.height; i-=2)
 						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos,YDIST+4*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos,YDIST+4*YLEN  -  (i-2)*YLEN/2);
 				}
 				else if (it->pos.height >= 12) //we need auxiliary lines on the top?
 				{ //Y_MARKER
+					p.setPen(Qt::black);
 					for (int i=12; i<=it->pos.height; i+=2)
 						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos,YDIST+4*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos,YDIST+4*YLEN  -  (i-2)*YLEN/2);
 				}
 				
 								
-				draw_pixmap(p,it->x -x_pos,it->y,*it->pix);
+				draw_pixmap(p,it->x -x_pos,it->y,it->pix[it->source_part->colorIndex()]);
+				//TODO FINDMICH draw a margin around bright colors
+				//maybe draw the default color in black?
 				
 				//draw dots
 				
@@ -1571,7 +1603,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				
 				for (int i=0;i<it->dots;i++)
 				{
-					draw_pixmap(p,it->x+x_dot -x_pos,it->y+y_dot,pix_dot);
+					draw_pixmap(p,it->x+x_dot -x_pos,it->y+y_dot,pix_dot[it->source_part->colorIndex()]);
 					x_dot+=DOT_XDIST;
 				}
 
@@ -1583,11 +1615,11 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 					QPixmap* acc_pix;
 					switch (it->pos.vorzeichen)
 					{
-						case NONE: acc_pix=&pix_noacc; break;
-						case SHARP: acc_pix=&pix_sharp; break;
-						case B: acc_pix=&pix_b; break;
+						case NONE: acc_pix=pix_noacc; break;
+						case SHARP: acc_pix=pix_sharp; break;
+						case B: acc_pix=pix_b; break;
 					}
-					draw_pixmap(p,it->x-ACCIDENTIAL_DIST -x_pos,it->y, *acc_pix);
+					draw_pixmap(p,it->x-ACCIDENTIAL_DIST -x_pos,it->y, acc_pix[it->source_part->colorIndex()]);
 
 					curr_accidential[modulo(it->pos.height,7)]=it->pos.vorzeichen;
 				}
@@ -1597,7 +1629,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				if (it->is_tie_dest)
 				{
 					cout << "drawing tie" << endl;
-					draw_tie(p,it->tie_from_x-x_pos,it->x -x_pos,it->y, (it->len==0) ? true : (it->stem==DOWNWARDS)  );
+					draw_tie(p,it->tie_from_x-x_pos,it->x -x_pos,it->y, (it->len==0) ? true : (it->stem==DOWNWARDS) , config.partColors[it->source_part->colorIndex()]);
 					// in english: "if it's a whole note, tie is upwards (true). if not, tie is upwards if
 					//              stem is downwards and vice versa"
 				}
@@ -1625,7 +1657,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				
 				for (int i=0;i<it->dots;i++)
 				{
-					draw_pixmap(p,it->x+x_dot -x_pos,it->y+y_dot,pix_dot);
+					draw_pixmap(p,it->x+x_dot -x_pos,it->y+y_dot,pix_dot[BLACK_PIXMAP]);
 					x_dot+=DOT_XDIST;
 				}
 			}
@@ -1633,6 +1665,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 			{
 				cout << "\tBAR" << endl;
 				
+				p.setPen(Qt::black);
 				p.drawLine(it->x -x_pos,YDIST,it->x -x_pos,YDIST+4*YLEN);
 				
 				for (int i=0;i<7;i++)
@@ -1659,11 +1692,11 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				for (list<int>::iterator acc_it=aufloes_list.begin(); acc_it!=aufloes_list.end(); acc_it++)
 				{
 					int y_coord=YDIST+4*YLEN  -  ( *acc_it -2)*YLEN/2; //Y_MARKER
-					draw_pixmap(p,it->x + n_acc_drawn*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_LEFTDIST -x_pos,y_coord,pix_noacc);
+					draw_pixmap(p,it->x + n_acc_drawn*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_LEFTDIST -x_pos,y_coord,pix_noacc[BLACK_PIXMAP]);
 					n_acc_drawn++;
 				}
 				
-				QPixmap* pix = is_sharp_key(new_key) ? &pix_sharp : &pix_b;
+				QPixmap* pix = is_sharp_key(new_key) ? &pix_sharp[BLACK_PIXMAP] : &pix_b[BLACK_PIXMAP];
 				vorzeichen_t new_accidential = is_sharp_key(new_key) ? SHARP : B;
 				
 				for (int i=0;i<7;i++)
@@ -1685,10 +1718,11 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 			}
 		}
 		
+		p.setPen(Qt::black);
 		//note: y1 is bottom, y2 is top!
 		if (upstem_x!=-1)
 		{
-			upstem_x=upstem_x-pix_quarter.width()/2 +pix_quarter.width() -1;
+			upstem_x=upstem_x-pix_quarter[0].width()/2 +pix_quarter[0].width() -1;
 			p.drawLine(upstem_x -x_pos, upstem_y1, upstem_x -x_pos, upstem_y2-STEM_LEN);
 			
 			if (upflag>=3) //if the note needs a flag
@@ -1696,7 +1730,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 		}
 		if (downstem_x!=-1)
 		{
-			downstem_x=downstem_x-pix_quarter.width()/2;
+			downstem_x=downstem_x-pix_quarter[0].width()/2;
 			p.drawLine(downstem_x -x_pos, downstem_y1+STEM_LEN, downstem_x -x_pos, downstem_y2);
 
 			if (downflag>=3) //if the note needs a flag
@@ -2171,16 +2205,18 @@ void ScoreCanvas::scroll_event(int x)
  * 
  * IMPORTANT TODO
  *   o removing the part the score's working on isn't handled
- *   o handle multiple tracks, with different color (QColor c(config.partColors[part->colorIndex()]);)
  *   o let the user select the currently edited part
+ *   o let the user select between "colors after the parts",
+ *     "colors after selected/unselected part" and "all black"
  *   o draw clef, maybe support clef changes
  *   o support violin and bass at one time
- *   o eliminate overlapping notes (e.g. C from 0 with len=10 and C from 5 with len=10)
  *   o use correct scrolling bounds
  *   o automatically scroll when playing
  *   o support selections
  *
  * less important stuff
+ *   o draw a margin about notes which are in a bright color
+ *   o maybe override color 0 with "black"?
  *   o create nice functions for drawing keychange-accidentials
  *   o check if "moving away" works for whole notes [seems to NOT work properly]
  *   o use bars instead of flags over groups of 8ths / 16ths etc
@@ -2207,4 +2243,8 @@ void ScoreCanvas::scroll_event(int x)
  *   o offer dropdown-boxes for lengths of the inserted note
  *     (select between 16th, 8th, ... whole and "last used length")
  *   o offer a dropdown-box for the clef to use
+ *   o offer some way to setup the colorizing method to be used
  */
+
+
+

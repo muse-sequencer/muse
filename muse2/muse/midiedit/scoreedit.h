@@ -22,6 +22,7 @@
 #include "tools.h"
 #include "event.h"
 #include "view.h"
+#include "gconfig.h"
 
 #include <set>
 #include <map>
@@ -59,6 +60,9 @@ class QWidget;
 class QScrollBar;
 class MidiTrackInfo;
 class QScrollArea;
+
+
+
 
 //---------------------------------------------------------
 //   ScoreEdit
@@ -396,18 +400,19 @@ struct cumulative_t
 	}
 };
 
+#define BLACK_PIXMAP (NUM_PARTCOLORS)
 
 class ScoreCanvas : public View
 {
 	Q_OBJECT
 	private:
 		void load_pixmaps();
-		ScoreEventList createAppropriateEventList(PartList* pl, Track* track);
+		ScoreEventList createAppropriateEventList(PartList* pl);
 		note_pos_t note_pos_(int note, tonart_t key);
 		note_pos_t note_pos (int note, tonart_t key, clef_t clef);
 		int calc_len(int l, int d);
 		list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, bool allow_dots=true, bool allow_normal=true);
-		void draw_tie (QPainter& p, int x1, int x4, int yo, bool up=true);
+		void draw_tie (QPainter& p, int x1, int x4, int yo, bool up=true, QColor color=Qt::black);
 		ScoreItemList create_itemlist(ScoreEventList& eventlist);
 		void process_itemlist(ScoreItemList& itemlist);
 		void draw_pixmap(QPainter& p, int x, int y, const QPixmap& pm);
@@ -433,10 +438,10 @@ class ScoreCanvas : public View
 		int x_to_tick(int x);
 		int calc_posadd(int t);
 		
-		QPixmap pix_whole, pix_half, pix_quarter;
+		QPixmap pix_whole[NUM_PARTCOLORS+1], pix_half[NUM_PARTCOLORS+1], pix_quarter[NUM_PARTCOLORS+1];
 		QPixmap pix_r1, pix_r2, pix_r4, pix_r8, pix_r16;
-		QPixmap pix_dot, pix_flag_up[4], pix_flag_down[4];
-		QPixmap pix_b, pix_sharp, pix_noacc;
+		QPixmap pix_dot[NUM_PARTCOLORS+1], pix_flag_up[4], pix_flag_down[4];
+		QPixmap pix_b[NUM_PARTCOLORS+1], pix_sharp[NUM_PARTCOLORS+1], pix_noacc[NUM_PARTCOLORS+1];
 		QPixmap pix_num[10];
 		
 		
