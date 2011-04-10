@@ -3,14 +3,6 @@
 //the trailing slash is necessary
 #define FONT_PATH "/home/flo/muse-glyphs/"
 
-//=========================================================
-//  MusE
-//  Linux Music Editor
-//  scoreedit.cpp
-//  (C) Copyright 2011 Florian Jung (florian.a.jung@web.de)
-//=========================================================
-
-
 #include <QLayout>
 #include <QSizeGrip>
 #include <QLabel>
@@ -67,6 +59,10 @@ using namespace std;
 #include "sig.h"
 
 
+#define PAGESTEP 3/4
+//do NOT put parentheses around this!
+
+
 //---------------------------------------------------------
 //   ScoreEdit
 //---------------------------------------------------------
@@ -74,7 +70,6 @@ using namespace std;
 ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned initPos)
    : MidiEditor(0, 0, pl, parent, name)
 {
-	
 //	Splitter* hsplitter;
 	QPushButton* ctrl;
 /*	
@@ -100,19 +95,22 @@ ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned i
 */
 
 	ScoreCanvas* test=new ScoreCanvas(this, mainw, 1, 1);	
-	QScrollBar* hscroll = new QScrollBar(Qt::Horizontal, mainw);
+	hscroll = new QScrollBar(Qt::Horizontal, mainw);
 
 
 connect(hscroll, SIGNAL(valueChanged(int)), test,   SLOT(scroll_event(int)));
+connect(test, SIGNAL(xpos_changed(int)), hscroll,   SLOT(setValue(int)));
 connect(song, SIGNAL(songChanged(int)), test, SLOT(song_changed(int)));
+connect(test, SIGNAL(canvas_width_changed(int)), SLOT(canvas_width_changed(int)));
+connect(test, SIGNAL(viewport_width_changed(int)), SLOT(viewport_width_changed(int)));
 //	      mainGrid->setRowStretch(0, 100);
 //      mainGrid->setColumnStretch(1, 100);
       mainGrid->addWidget(test, 0, 0);
       mainGrid->addWidget(hscroll,1,0);
 
 hscroll->setMinimum(0);
-hscroll->setMaximum(1000);
-hscroll->setPageStep(100);
+test->song_changed(0);
+test->goto_tick(initPos,true);
 //	gridS1->addWidget(test,0,0);
 	
 //	gridS1->addWidget(canvas,                 0,    0);
@@ -128,6 +126,27 @@ ScoreEdit::~ScoreEdit()
 {
 	
 }
+
+
+void ScoreEdit::canvas_width_changed(int width)
+{
+	hscroll->setMaximum(width);
+}
+void ScoreEdit::viewport_width_changed(int width)
+{
+	hscroll->setPageStep(width * PAGESTEP);
+}
+
+void ScoreEdit::closeEvent(QCloseEvent* e)
+{
+	QSettings settings("MusE", "MusE-qt");
+	//settings.setValue("ScoreEdit/geometry", saveGeometry());
+	settings.setValue("ScoreEdit/windowState", saveState());
+
+	emit deleted((unsigned long)this);
+	e->accept();
+}
+
 
 
 ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
@@ -153,10 +172,9 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 	last_len=384;
 	new_len=-1;
 
-	song_changed(0);	
 //fertig mit aufbereiten	
 	cout << "---------------- CALCULATING DONE ------------------" << endl;
-
+	
 }
 
 void ScoreCanvas::song_changed(int)
@@ -169,6 +187,8 @@ void ScoreCanvas::song_changed(int)
 	calc_item_pos(itemlist);
 	redraw();
 	cout << "song had changed, recalculation complete" << endl;
+
+	emit canvas_width_changed(tick_to_x(itemlist.rbegin()->first));
 }
 
 //flo code starting here
@@ -1777,6 +1797,7 @@ int ScoreCanvas::clef_height(clef_t clef)
 
 void ScoreCanvas::draw_preamble(QPainter& p)
 {
+	int x_left_old=x_left;
 	int tick=x_to_tick(x_pos);
 
 	// draw clef --------------------------------------------------------
@@ -1809,6 +1830,9 @@ void ScoreCanvas::draw_preamble(QPainter& p)
 	p.setPen(Qt::black); //Y_MARKER
 	p.drawLine(x_left,YDIST,x_left,YDIST+4*YLEN);
 
+
+	if (x_left_old!=x_left)
+		emit viewport_width_changed(width() - x_left);
 }
 
 
@@ -2253,6 +2277,31 @@ void ScoreCanvas::scroll_event(int x)
 }
 
 
+//if force is true, it will always happen something
+//if force is false, it will only happen something, if
+//tick isn't visible at all. if it's visible, but not at
+//the position goto would set it to, nothing happens
+void ScoreCanvas::goto_tick(int tick, bool force)
+{
+	//TODO FINDMICH: implement force
+	
+	x_pos=tick_to_x(tick);
+	redraw();
+	
+	emit xpos_changed(x_pos);
+}
+
+//---------------------------------------------------------
+//   resizeEvent
+//---------------------------------------------------------
+
+void ScoreCanvas::resizeEvent(QResizeEvent* ev)
+{
+	QWidget::resizeEvent(ev); //TODO is this really neccessary?
+
+	emit viewport_width_changed( ev->size().width() - x_left  );
+}
+
 // TODO: testen: kommen die segfaults von muse oder von mir? [ von mir ]
 // TODO: testen, ob das noten-splitten korrekt arbeitet [ scheint zu klappen ]
 // TODO: testen, ob shift immer korrekt gesetzt wird [ scheint zu klappen ]
@@ -2291,10 +2340,10 @@ void ScoreCanvas::scroll_event(int x)
  *     operator/ rounds towards zero. (-5)/7=0, but should be -1
  * 
  * IMPORTANT TODO
+ *   o refuse to resize so that width gets smaller or equal than x_left
  *   o support violin and bass clefs at one time
  *   o support multiple note systems
  *   o let the user select which clef to use
- *   o use correct scrolling bounds
  *   o removing the part the score's working on isn't handled
  *   o let the user select the currently edited part
  *   o let the user select between "colors after the parts",
@@ -2303,6 +2352,7 @@ void ScoreCanvas::scroll_event(int x)
  *   o support selections
  *
  * less important stuff
+ *   o display only the part, not the whole song filled with rests?
  *   o let the user select whether the preamble should have
  *     a fixed length (?)
  *   o let the user select what the preamble has to contain

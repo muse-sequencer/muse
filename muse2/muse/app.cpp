@@ -3429,8 +3429,6 @@ void MusE::startScoreEdit(PartList* pl, bool showDefaultCtrls)
       {
 
       ScoreEdit* scoreedit = new ScoreEdit(pl, this, 0, arranger->cursorValue());
-      if(showDefaultCtrls)       // p4.0.12
-        scoreedit->addCtrl();
       scoreedit->show();
       toplevels.push_back(Toplevel(Toplevel::PIANO_ROLL, (unsigned long)(scoreedit), scoreedit));
       connect(scoreedit, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));

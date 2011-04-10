@@ -73,7 +73,9 @@ class ScoreEdit : public MidiEditor
 	Q_OBJECT
 
 	private:
+		virtual void closeEvent(QCloseEvent*);
 		
+		QScrollBar* hscroll;
 		
 	private slots:
 		
@@ -82,7 +84,8 @@ class ScoreEdit : public MidiEditor
 		void deleted(unsigned long);
 
 	public slots:
-		CtrlEdit* addCtrl() {return NULL;}; //TODO does nothing
+		void canvas_width_changed(int);
+		void viewport_width_changed(int);
 		
 	public:
 		ScoreEdit(PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
@@ -498,8 +501,13 @@ class ScoreCanvas : public View
    public slots:
       void scroll_event(int);
       void song_changed(int);
-
-		
+			void goto_tick(int,bool);
+	
+		signals:
+			void xpos_changed(int);
+			void viewport_width_changed(int);
+			void canvas_width_changed(int);
+			
 	protected:
 		virtual void draw(QPainter& p, const QRect& rect);
 		MidiEditor* editor;
@@ -507,6 +515,7 @@ class ScoreCanvas : public View
 		virtual void mousePressEvent (QMouseEvent* event);
 		virtual void mouseMoveEvent (QMouseEvent* event);
 		virtual void mouseReleaseEvent (QMouseEvent* event);
+		virtual void resizeEvent(QResizeEvent*);
 		
 	public:
 		ScoreCanvas(MidiEditor*, QWidget*, int, int);
