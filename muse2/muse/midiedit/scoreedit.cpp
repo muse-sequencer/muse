@@ -145,6 +145,12 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 	x_pos=0;
 	dragging=false;
 	mouse_erases_notes=false;
+	mouse_inserts_notes=true;
+
+	curr_part=editor->parts()->begin()->second;
+	
+	last_len=384;
+	new_len=-1;
 
 	song_changed(0);	
 //fertig mit aufbereiten	
@@ -280,8 +286,8 @@ ScoreEventList ScoreCanvas::createAppropriateEventList(PartList* pl, Track* trac
 				if (event.isNote() && !event.isNoteOff())
 				{
 					unsigned begin, end;
-					begin=flo_quantize(event.tick());
-					end=flo_quantize(event.endTick());
+					begin=flo_quantize(event.tick()+part->tick());
+					end=flo_quantize(event.endTick()+part->tick());
 					cout <<"inserting note on at "<<begin<<" with pitch="<<event.pitch()<<" and len="<<end-begin<<endl;
 					cout<< "\tinserting corresponding note off at "<<endl;
 					result.insert(pair<unsigned, FloEvent>(begin, FloEvent(begin,event.pitch(), event.velo(),end-begin,FloEvent::NOTE_ON,part,&it->second)));
@@ -1789,6 +1795,55 @@ int ScoreCanvas::x_to_tick(int x)
 	return t > min_t ? t : min_t;
 }
 
+tonart_t ScoreCanvas::key_at_tick(int t)
+{
+	tonart_t tmp;
+	for (ScoreEventList::iterator it=eventlist.begin(); it!=eventlist.end() && it->first<=t; it++)
+		if (it->second.type==FloEvent::KEY_CHANGE)
+			tmp=it->second.tonart;
+	
+	return tmp;
+}
+
+int ScoreCanvas::height_to_pitch(int h)
+{
+	int foo[]={0,2,4,5,7,9,11};
+		
+	return foo[modulo(h,7)] + ( (h/7)*12 ) + 60;
+}
+
+int ScoreCanvas::height_to_pitch(int h, tonart_t key)
+{
+	int add=0;
+	
+	int sharp_pos[]={10,7,11,8,5,9,6}; //TODO merge with draw function (where drawing accidentials)
+	int b_pos[]={6,9,5,8,4,7,3};
+	
+	int* acc_ptr = is_sharp_key(key) ? sharp_pos : b_pos;
+	
+	for (int i=0;i<n_accidentials(key);i++)
+	{
+		if (modulo(acc_ptr[i],7) == modulo(h,7))
+		{
+			add=is_sharp_key(key) ? 1 : -1;
+			break;
+		}
+	}
+	
+	return height_to_pitch(h)+add;
+}
+
+int ScoreCanvas::y_to_height(int y)
+{
+	//Y_MARKER
+	return int(rint(float(YDIST+4*YLEN  - y)*2/YLEN))+2 ;
+}
+
+int ScoreCanvas::y_to_pitch(int y, int t)
+{
+	return height_to_pitch(y_to_height(y), key_at_tick(t));
+}
+
 
 #define DRAG_INIT_DISTANCE 5
 
@@ -1876,25 +1931,66 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 		{
 			setMouseTracking(true);		
 			dragging=true;
+			song->startUndo();
 		}
 	}
+	else //we found nothing?
+	{
+		if ((event->button()==Qt::LeftButton) && (mouse_inserts_notes))
+		{
+			song->startUndo();
+			//stopping undo at the end of this function is unneccessary
+			//because we'll begin a drag right after it. finishing
+			//this drag will stop undo as well (in mouseReleaseEvent)
+			
+			Event newevent(Note);
+			newevent.setPitch(y_to_pitch(y,tick));
+			newevent.setVelo(64); //TODO
+			newevent.setVeloOff(64); //TODO
+			newevent.setTick(tick);
+			newevent.setLenTick((new_len>0)?new_len:last_len);
+			
+			audio->msgAddEvent(newevent, curr_part, false, false, false);
+			
+			dragged_event_part=curr_part;
+			dragged_event=newevent;
+			dragged_event_original_pitch=newevent.pitch();
+
+			mouse_down_pos=event->pos();
+			mouse_operation=NO_OP;
+			mouse_x_drag_operation=LENGTH;
+
+			setMouseTracking(true);	
+			dragging=true;
+			//song->startUndo(); unneccessary because we have started it already above
+		}
+	}
+
 }
 
 void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 {
 	if (event->button()==Qt::LeftButton)
 	{
-		if (dragging && mouse_operation==LENGTH)
+		if (dragging)
 		{
-			if (flo_quantize(dragged_event.lenTick()) <= 0)
+			if (mouse_operation==LENGTH)
 			{
-				cout << "new length <= 0, erasing item" << endl;
-				audio->msgDeleteEvent(dragged_event, dragged_event_part, true, false, false);
+				if (flo_quantize(dragged_event.lenTick()) <= 0)
+				{
+					cout << "new length <= 0, erasing item" << endl;
+					audio->msgDeleteEvent(dragged_event, dragged_event_part, false, false, false);
+				}
+				else
+				{
+					last_len=flo_quantize(dragged_event.lenTick());
+				}
 			}
+			
+			song->endUndo(SC_EVENT_MODIFIED);
+			setMouseTracking(false);
+			dragging=false;
 		}
-		
-		setMouseTracking(false);
-		dragging=false;
 	}
 }
 
@@ -2022,29 +2118,40 @@ void ScoreCanvas::scroll_event(int x)
 //      every time something changes.
 
 
-/* IMPORTANT TODO
- *   o support inserting notes
+/* BUGS and potential bugs
+ *   o bass-clef (and all other clefs than the violin-clef) will
+ *     cause strange behaviour, for example when drawing accidentials,
+ *     calling y_to_pitch etc.
+ *   o when dividing, use a function which always rounds downwards
+ *     operator/ rounds towards zero. (-5)/7=0, but should be -1
+ * 
+ * IMPORTANT TODO
+ *   o removing the part the score's working on isn't handled
+ * 
  *   o let the user select the currently edited part
- *   o BUG: selecting multiple parts causes weird behaviour
  *
  *   o use a function for drawing timesig changes. support two(or more)-digit-numbers
  *   o create nice functions for drawing keychange-accidentials
  *   o draw clef, maybe support clef changes. support violin and bass at one time
- *   o support undo when doing stuff
  *   o eliminate overlapping notes (e.g. C from 0 with len=10 and C from 5 with len=10)
  *
  * less important stuff
- *   o check if "moving away" works for whole notes
+ *   o check if "moving away" works for whole notes [seems to NOT work properly]
  *   o use bars instead of flags over groups of 8ths / 16ths etc
  *   o (change ItemList into map< pos_t , mutable_stuff_t >) [no]
  *   o deal with expanding parts or clip (expanding is better)
  *
  * stuff for the other muse developers
- *   o check if dragging notes works correctly (the pianoroll seems to be not informed :/ )
+ *   o check if dragging notes is done correctly
+ *   o after doing the undo stuff right, the "pianoroll isn't informed
+ *     about score-editor's changes"-bug has vanished. did it vanish
+ *     "by accident", or is that the correct solution for this?
  *   o process key from muse's event list (has to be implemented first in muse)
  *   o process accurate timesignatures from muse's list (has to be implemented first in muse)
  *      ( (2+2+3)/4 or (3+2+2)/4 instead of 7/4 )
  *
  * GUI stuff
- *   o offer a button for bool mouse_erases_notes
+ *   o offer a button for bool mouse_erases_notes and mouse_inserts_notes
+ *   o offer dropdown-boxes for lengths of the inserted note
+ *     (select between 16th, 8th, ... whole and "last used length")
  */

@@ -417,6 +417,12 @@ class ScoreCanvas : public View
 		void draw_items(QPainter& p, ScoreItemList& itemlist);
 		void calc_item_pos(ScoreItemList& itemlist);
 
+		int y_to_pitch(int y, int t);
+		int y_to_height(int y);
+		int height_to_pitch(int h, tonart_t key);
+		int height_to_pitch(int h);
+		
+		tonart_t key_at_tick(int t);
 		int tick_to_x(int t);
 		int x_to_tick(int x);
 		int calc_posadd(int t);
@@ -434,6 +440,10 @@ class ScoreCanvas : public View
 		int x_pos;
 
 
+		Part* curr_part;
+		int last_len;
+		int new_len; //when zero or negative, last_len is used
+
 		QPoint mouse_down_pos;
 		bool mouse_down;
 		enum operation_t
@@ -446,6 +456,7 @@ class ScoreCanvas : public View
 		operation_t mouse_operation;
 		operation_t mouse_x_drag_operation;
 		bool mouse_erases_notes;
+		bool mouse_inserts_notes;
 		
 		bool dragging;
 		Part* dragged_event_part;
