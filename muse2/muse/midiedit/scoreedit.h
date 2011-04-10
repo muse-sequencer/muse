@@ -445,7 +445,9 @@ class ScoreCanvas : public View
 		};
 		operation_t mouse_operation;
 		operation_t mouse_x_drag_operation;
+		bool mouse_erases_notes;
 		
+		bool dragging;
 		Part* dragged_event_part;
 		Event dragged_event;
 		int dragged_event_original_pitch;

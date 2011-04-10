@@ -74,6 +74,7 @@ using namespace std;
 ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned initPos)
    : MidiEditor(0, 0, pl, parent, name)
 {
+	
 //	Splitter* hsplitter;
 	QPushButton* ctrl;
 /*	
@@ -142,6 +143,8 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 	load_pixmaps();
 	
 	x_pos=0;
+	dragging=false;
+	mouse_erases_notes=false;
 
 	song_changed(0);	
 //fertig mit aufbereiten	
@@ -172,7 +175,6 @@ string IntToStr(int i)
 
 
 
-#define FONT_PATH "/home/flo/AKTENKOFFER/programme/museueberlegungen/glyphs/"
 void ScoreCanvas::load_pixmaps()
 {
 	pix_whole.load(FONT_PATH "whole.png");
@@ -243,6 +245,19 @@ bool operator< (const note_pos_t& a, const note_pos_t& b)
  * this abstracts the rest of the renderer from muse's internal
  * data structures, making this easy to port to another application
  */
+ 
+int flo_quantize(int tick)
+{
+	//TODO quantizing must be done with the proper functions!
+	return int(rint((float)tick / FLO_QUANT))*FLO_QUANT;
+}
+ 
+int flo_quantize_floor(int tick)
+{
+	//TODO quantizing must be done with the proper functions, see above
+	return int(tick / FLO_QUANT) * FLO_QUANT;
+}
+ 
 ScoreEventList ScoreCanvas::createAppropriateEventList(PartList* pl, Track* track)
 {
 	using AL::sigmap;
@@ -265,9 +280,8 @@ ScoreEventList ScoreCanvas::createAppropriateEventList(PartList* pl, Track* trac
 				if (event.isNote() && !event.isNoteOff())
 				{
 					unsigned begin, end;
-					//TODO quantizing must be done with the proper functions!
-					begin=int(rint((float)event.tick() / FLO_QUANT))*FLO_QUANT;
-					end=int(rint((float)event.endTick() / FLO_QUANT))*FLO_QUANT;
+					begin=flo_quantize(event.tick());
+					end=flo_quantize(event.endTick());
 					cout <<"inserting note on at "<<begin<<" with pitch="<<event.pitch()<<" and len="<<end-begin<<endl;
 					cout<< "\tinserting corresponding note off at "<<endl;
 					result.insert(pair<unsigned, FloEvent>(begin, FloEvent(begin,event.pitch(), event.velo(),end-begin,FloEvent::NOTE_ON,part,&it->second)));
@@ -1786,161 +1800,185 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 
 	int y=event->y();
 	int x=event->x()+x_pos;
-	int tick= int(x_to_tick(x) / FLO_QUANT) * FLO_QUANT;
+	int tick=flo_quantize_floor(x_to_tick(x));
 						//TODO quantizing must (maybe?) be done with the proper functions
 
 
 	cout << "mousePressEvent at "<<x<<"/"<<y<<"; tick="<<tick<<endl;
-	
-	for (set<FloItem, floComp>::iterator it=itemlist[tick].begin(); it!=itemlist[tick].end(); it++)
+	set<FloItem, floComp>::iterator it;
+	for (it=itemlist[tick].begin(); it!=itemlist[tick].end(); it++)
 		if (it->type==FloItem::NOTE)
 			if (it->bbox().contains(x,y))
+				break;
+	
+	if (it!=itemlist[tick].end()) //we found something?
+	{
+		mouse_down_pos=event->pos();
+		mouse_operation=NO_OP;
+		
+		int t=tick;
+		set<FloItem, floComp>::iterator found;
+		
+		do
+		{
+			found=itemlist[t].find(FloItem(FloItem::NOTE, it->pos));
+			if (found == itemlist[t].end())
 			{
-				mouse_down_pos=event->pos();
-				mouse_operation=NO_OP;
-				
-				int t=tick;
-				set<FloItem, floComp>::iterator found;
-				
-				do
-				{
-					found=itemlist[t].find(FloItem(FloItem::NOTE, it->pos));
-					if (found == itemlist[t].end())
-					{
-						cout << "FATAL: THIS SHOULD NEVER HAPPEN: could not find the note's tie-destination" << endl;
-						break;
-					}
-					else
-					{
-						t+=calc_len(found->len, found->dots);
-					}
-				} while (found->tied);
-				
-				int total_begin=it->begin_tick;
-				int total_end=t;
-				
-				int this_begin=tick;
-				int this_end=this_begin+calc_len(it->len, it->dots);
-				
-				//that's the only note corresponding to the event?
-				if (this_begin==total_begin && this_end==total_end)
-				{
-					if (x < it->x)
-						mouse_x_drag_operation=BEGIN;
-					else
-						mouse_x_drag_operation=LENGTH;
-				}
-				//that's NOT the only note?
-				else
-				{
-					if (this_begin==total_begin)
-						mouse_x_drag_operation=BEGIN;
-					else if (this_end==total_end)
-						mouse_x_drag_operation=LENGTH;
-					else
-						mouse_x_drag_operation=NO_OP;
-				}
-				
-				cout << "you clicked at a note with begin at "<<it->begin_tick<<" and end at "<<t<<endl;
-				cout << "x-drag-operation will be "<<mouse_x_drag_operation<<endl;
-				cout << "pointer to part is "<<it->source_part;
-				if (!it->source_part) cout << " (WARNING! THIS SHOULD NEVER HAPPEN!)";
-				cout << endl;
-				
-				dragged_event=*it->source_event;
-				dragged_event_part=it->source_part;
-				dragged_event_original_pitch=dragged_event.pitch();
-				
-				setMouseTracking(true);
-				
+				cout << "FATAL: THIS SHOULD NEVER HAPPEN: could not find the note's tie-destination" << endl;
 				break;
 			}
-	
+			else
+			{
+				t+=calc_len(found->len, found->dots);
+			}
+		} while (found->tied);
+		
+		int total_begin=it->begin_tick;
+		int total_end=t;
+		
+		int this_begin=tick;
+		int this_end=this_begin+calc_len(it->len, it->dots);
+		
+		//that's the only note corresponding to the event?
+		if (this_begin==total_begin && this_end==total_end)
+		{
+			if (x < it->x)
+				mouse_x_drag_operation=BEGIN;
+			else
+				mouse_x_drag_operation=LENGTH;
+		}
+		//that's NOT the only note?
+		else
+		{
+			if (this_begin==total_begin)
+				mouse_x_drag_operation=BEGIN;
+			else if (this_end==total_end)
+				mouse_x_drag_operation=LENGTH;
+			else
+				mouse_x_drag_operation=NO_OP;
+		}
+		
+		cout << "you clicked at a note with begin at "<<it->begin_tick<<" and end at "<<t<<endl;
+		cout << "x-drag-operation will be "<<mouse_x_drag_operation<<endl;
+		cout << "pointer to part is "<<it->source_part;
+		if (!it->source_part) cout << " (WARNING! THIS SHOULD NEVER HAPPEN!)";
+		cout << endl;
+		
+		dragged_event=*it->source_event;
+		dragged_event_part=it->source_part;
+		dragged_event_original_pitch=dragged_event.pitch();
+		
+		if ((mouse_erases_notes) || (event->button()==Qt::MidButton)) //erase?
+		{
+			audio->msgDeleteEvent(dragged_event, dragged_event_part, true, false, false);
+		}
+		else if (event->button()==Qt::LeftButton) //edit?
+		{
+			setMouseTracking(true);		
+			dragging=true;
+		}
+	}
 }
 
 void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 {
-	setMouseTracking(false);
+	if (event->button()==Qt::LeftButton)
+	{
+		if (dragging && mouse_operation==LENGTH)
+		{
+			if (flo_quantize(dragged_event.lenTick()) <= 0)
+			{
+				cout << "new length <= 0, erasing item" << endl;
+				audio->msgDeleteEvent(dragged_event, dragged_event_part, true, false, false);
+			}
+		}
+		
+		setMouseTracking(false);
+		dragging=false;
+	}
 }
 
 #define PITCH_DELTA 5
 
 void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 {
-	int dx=event->x()-mouse_down_pos.x();
-	int dy=event->y()-mouse_down_pos.y();
-
-	int y=event->y();
-	int x=event->x()+x_pos;
-	int tick= int(x_to_tick(x) / FLO_QUANT) * FLO_QUANT;
-
-	if (mouse_operation==NO_OP)
-	{		
-		if ((abs(dx)>DRAG_INIT_DISTANCE) && (mouse_x_drag_operation!=NO_OP))
-		{
-			cout << "mouse-operation is now "<<mouse_x_drag_operation<<endl;
-			mouse_operation=mouse_x_drag_operation;
-		}
-		else if (abs(dy)>DRAG_INIT_DISTANCE)
-		{
-			cout << "mouse-operation is now PITCH" << endl;
-			mouse_operation=PITCH;
-		}
-	}
-
-	int new_pitch;
-	
-	switch (mouse_operation)
+	if (dragging)
 	{
-		case NONE:
-			break;
-			
-		case PITCH:
-			cout << "changing pitch, delta="<<dy/PITCH_DELTA<<endl;
-			new_pitch=dragged_event_original_pitch - dy/PITCH_DELTA;
+		int dx=event->x()-mouse_down_pos.x();
+		int dy=event->y()-mouse_down_pos.y();
 
-			if (dragged_event.pitch()!=new_pitch)
+		int y=event->y();
+		int x=event->x()+x_pos;
+		int tick=flo_quantize_floor(x_to_tick(x));
+
+		if (mouse_operation==NO_OP)
+		{		
+			if ((abs(dx)>DRAG_INIT_DISTANCE) && (mouse_x_drag_operation!=NO_OP))
 			{
-				Event tmp=dragged_event.clone();
-				tmp.setPitch(dragged_event_original_pitch- dy/PITCH_DELTA);
-				
-				audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
-				dragged_event=tmp;
-				
-				song_changed(0);	
+				cout << "mouse-operation is now "<<mouse_x_drag_operation<<endl;
+				mouse_operation=mouse_x_drag_operation;
 			}
-			
-			break;
+			else if (abs(dy)>DRAG_INIT_DISTANCE)
+			{
+				cout << "mouse-operation is now PITCH" << endl;
+				mouse_operation=PITCH;
+			}
+		}
+
+		int new_pitch;
 		
-		case BEGIN:
-			if (dragged_event.tick() != tick)
-			{
-				Event tmp=dragged_event.clone();
-				tmp.setTick(tick);
+		switch (mouse_operation)
+		{
+			case NONE:
+				break;
 				
-				audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
-				dragged_event=tmp;
-				
-				song_changed(0);	
-			}
-			
-			break;
+			case PITCH:
+				cout << "changing pitch, delta="<<dy/PITCH_DELTA<<endl;
+				new_pitch=dragged_event_original_pitch - dy/PITCH_DELTA;
 
-		case LENGTH:
-			tick+=FLO_QUANT;
-			if (dragged_event.tick()+dragged_event.lenTick() != tick)
-			{
-				Event tmp=dragged_event.clone();
-				tmp.setLenTick(tick-dragged_event.tick());
+				if (dragged_event.pitch()!=new_pitch)
+				{
+					Event tmp=dragged_event.clone();
+					tmp.setPitch(dragged_event_original_pitch- dy/PITCH_DELTA);
+					
+					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
+					dragged_event=tmp;
+					
+					song_changed(0);	
+				}
 				
-				audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
-				dragged_event=tmp;
-				
-				song_changed(0);	
-			}
+				break;
 			
-			break;
-	}	
+			case BEGIN:
+				if (dragged_event.tick() != tick)
+				{
+					Event tmp=dragged_event.clone();
+					tmp.setTick(tick);
+					
+					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
+					dragged_event=tmp;
+					
+					song_changed(0);	
+				}
+				
+				break;
+
+			case LENGTH:
+				tick+=FLO_QUANT;
+				if (dragged_event.tick()+dragged_event.lenTick() != tick)
+				{
+					Event tmp=dragged_event.clone();
+					tmp.setLenTick(tick-dragged_event.tick());
+					
+					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
+					dragged_event=tmp;
+					
+					song_changed(0);	
+				}
+				
+				break;
+		}	
+	}
 }
 
 void ScoreCanvas::scroll_event(int x)
@@ -1985,22 +2023,28 @@ void ScoreCanvas::scroll_event(int x)
 
 
 /* IMPORTANT TODO
+ *   o support inserting notes
+ *   o let the user select the currently edited part
+ *   o BUG: selecting multiple parts causes weird behaviour
+ *
  *   o use a function for drawing timesig changes. support two(or more)-digit-numbers
  *   o create nice functions for drawing keychange-accidentials
  *   o draw clef, maybe support clef changes. support violin and bass at one time
- *   o support inserting notes
- *   o support erasing notes (resize to len=0? watch out for quantisation stuff)
- *   o support undo when dragging notes
+ *   o support undo when doing stuff
  *   o eliminate overlapping notes (e.g. C from 0 with len=10 and C from 5 with len=10)
  *
  * less important stuff
  *   o check if "moving away" works for whole notes
  *   o use bars instead of flags over groups of 8ths / 16ths etc
  *   o (change ItemList into map< pos_t , mutable_stuff_t >) [no]
+ *   o deal with expanding parts or clip (expanding is better)
  *
  * stuff for the other muse developers
  *   o check if dragging notes works correctly (the pianoroll seems to be not informed :/ )
  *   o process key from muse's event list (has to be implemented first in muse)
  *   o process accurate timesignatures from muse's list (has to be implemented first in muse)
  *      ( (2+2+3)/4 or (3+2+2)/4 instead of 7/4 )
+ *
+ * GUI stuff
+ *   o offer a button for bool mouse_erases_notes
  */
