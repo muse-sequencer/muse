@@ -67,9 +67,16 @@ using namespace std;
 #include "sig.h"
 
 
-#define PAGESTEP 3/4
-//do NOT put parentheses around this!
 
+//do NOT put parentheses around this!
+#define PAGESTEP 3/4
+
+
+#define SCROLL_MARGIN 10
+#define SCROLL_SPEED 5
+//SCROLL_SPEED is in (scroll_pixels per second) per mouse-move-pixel
+#define SCROLL_SPEED_MAX 500
+//SCROLL_SPEED_MAX is in scroll_pixels_per_second
 
 //---------------------------------------------------------
 //   ScoreEdit
@@ -183,6 +190,10 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 //fertig mit aufbereiten	
 	cout << "---------------- CALCULATING DONE ------------------" << endl;
 	
+	
+	scroll_speed=0;
+	scroll_pos=0;	
+	connect (heartBeatTimer, SIGNAL(timeout()), SLOT(heartbeat_timer_event()));
 	
 	connect(song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(pos_changed(int,unsigned,bool)));
 }
@@ -2215,11 +2226,14 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 			song->endUndo(SC_EVENT_MODIFIED);
 			setMouseTracking(false);
 			dragging=false;
+			
+			scroll_speed=0; scroll_pos=0;
 		}
 	}
 }
 
 #define PITCH_DELTA 5
+
 
 void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 {
@@ -2230,6 +2244,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 
 		int y=event->y();
 		int x=event->x()+x_pos-x_left;
+		
 		int tick=flo_quantize_floor(x_to_tick(x));
 
 		if (mouse_operation==NO_OP)
@@ -2299,6 +2314,48 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				
 				break;
 		}	
+	
+
+		if ((mouse_operation==LENGTH) || (mouse_operation==BEGIN)) //scrolling enabled?
+		{
+			int win_x=event->x();
+			
+			if (win_x < x_left + SCROLL_MARGIN)
+			{
+				scroll_speed=(win_x - (x_left + SCROLL_MARGIN)) * SCROLL_SPEED;
+				if (scroll_speed < -SCROLL_SPEED_MAX) scroll_speed=-SCROLL_SPEED_MAX;
+			}
+			else if (win_x > width() - SCROLL_MARGIN)
+			{
+				scroll_speed=(win_x - (width() - SCROLL_MARGIN)) * SCROLL_SPEED;
+				if (scroll_speed > SCROLL_SPEED_MAX) scroll_speed=SCROLL_SPEED_MAX;
+			}
+			else
+				scroll_speed=0;
+		}
+		else
+		{
+			scroll_speed=0;
+		}
+	}
+}
+
+void ScoreCanvas::heartbeat_timer_event()
+{
+	if (scroll_speed)
+	{
+		int old_xpos=x_pos;
+		
+		scroll_pos+=scroll_speed*heartBeatTimer->interval()/1000.0;
+		int tmp=int(scroll_pos);
+		if (tmp!=0)
+		x_pos+=tmp;
+		scroll_pos-=tmp;
+		
+		if (x_pos<0) x_pos=0;
+		if (x_pos>canvas_width()) x_pos=canvas_width();
+
+		if (old_xpos!=x_pos) emit xpos_changed(x_pos);
 	}
 }
 
@@ -2406,7 +2463,7 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  *     operator/ rounds towards zero. (-5)/7=0, but should be -1
  * 
  * IMPORTANT TODO
- *   o refuse to resize so that width gets smaller or equal than x_left
+ *   o when i want to add a low C in violin clef, some other note is created. wtf?
  *   o support violin and bass clefs at one time
  *   o support multiple note systems
  *   o let the user select which clef to use
@@ -2415,18 +2472,22 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  *   o let the user select between "colors after the parts",
  *     "colors after selected/unselected part" and "all black"
  *   o support selections
+ *   o emit a "song-changed" signal instead of calling our
+ *     internal song_changed() function
+ *   o check if "moving away" works for whole notes [seems to NOT work properly]
  *
  * less important stuff
+ *   o ties aren't always drawn correctly when the destination note
+ *     is out of view
+ *   o tied notes don't work properly when there's a key-change in
+ *     between, for example, when a cis is tied to a des
  *   o display only the part, not the whole song filled with rests?
  *   o let the user select whether the preamble should have
  *     a fixed length (?)
  *   o let the user select what the preamble has to contain
  *   o use timesig_t in all timesig-stuff
- *   o emit a "song-changed" signal instead of calling our
- *     internal song_changed() function
  *   o draw a margin around notes which are in a bright color
  *   o maybe override color 0 with "black"?
- *   o check if "moving away" works for whole notes [seems to NOT work properly]
  *   o use bars instead of flags over groups of 8ths / 16ths etc
  *   o (change ItemList into map< pos_t , mutable_stuff_t >) [no]
  *   o deal with expanding parts or clip (expanding is better)
@@ -2434,6 +2495,7 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  *     e.g. accidentials, creating notes, rendering etc.
  *   o check if the new function for drawing accidential works
  *     the change was introduced after 873815e57a5d1edc147710b524936b6f6260f555
+ *   o refuse to resize so that width gets smaller or equal than x_left
  *   o set distances properly [looks okay, doesn't it?]
  *
  * stuff for the other muse developers
@@ -2454,6 +2516,4 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  *   o offer a dropdown-box for the clef to use
  *   o offer some way to setup the colorizing method to be used
  */
-
-
-
+ 

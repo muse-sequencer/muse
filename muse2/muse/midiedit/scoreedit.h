@@ -14,6 +14,7 @@
 #include <QKeyEvent>
 #include <QPainter>
 #include <QPixmap>
+#include <QTimer>
 
 #include <values.h>
 #include "noteinfo.h"
@@ -462,7 +463,6 @@ class ScoreCanvas : public View
 		QPixmap pix_num[10];
 		QPixmap pix_clef_violin, pix_clef_bass;
 		
-		
 		std::map<int,int> pos_add_list;
 		ScoreEventList eventlist;
 		ScoreItemList itemlist;
@@ -477,6 +477,9 @@ class ScoreCanvas : public View
 		int x_pos;
 		int x_left;
 
+		//for mouse-scrolling
+		float scroll_speed;
+		float scroll_pos;
 
 		Part* curr_part;
 		int last_len;
@@ -507,6 +510,7 @@ class ScoreCanvas : public View
       void song_changed(int);
 			void goto_tick(int,bool);
 			void pos_changed(int i, unsigned u, bool b);
+			void heartbeat_timer_event();
 	
 	signals:
 			void xpos_changed(int);
@@ -531,6 +535,7 @@ class ScoreCanvas : public View
 int calc_measure_len(const list<int>& nums, int denom);
 vector<int> create_emphasize_list(const list<int>& nums, int denom);
 vector<int> create_emphasize_list(int num, int denom);
+
 
 #endif
 
