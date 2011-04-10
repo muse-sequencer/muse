@@ -1,13 +1,18 @@
+//change FONT_PATH to the correct directory
+#define FONT_PATH "/home/flo/muse-glyphs/"
+
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//    $Id: ScoreEdit.cpp,v 1.25.2.15 2009/11/16 11:29:33 lunar_shuttle Exp $
-//  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  scoreedit.cpp
+//  (C) Copyright 2011 Florian Jung (florian.a.jung@web.de)
 //=========================================================
+
 
 #include <QLayout>
 #include <QSizeGrip>
 #include <QLabel>
+#include <QScrollBar>
 #include <QPushButton>
 #include <QToolButton>
 #include <QToolTip>
@@ -28,6 +33,11 @@
 #include <QSettings>
 
 #include <stdio.h>
+#include <math.h>
+
+#include <iostream>
+#include <sstream>
+using namespace std;
 
 #include "xml.h"
 #include "mtscale.h"
@@ -51,20 +61,8 @@
 
 #include "mtrackinfo.h"
 
-int ScoreEdit::_quantInit = 96;
-int ScoreEdit::_rasterInit = 96;
-int ScoreEdit::_widthInit = 600;
-int ScoreEdit::_heightInit = 400;
-int ScoreEdit::_quantStrengthInit = 80;      // 1 - 100%
-int ScoreEdit::_quantLimitInit = 50;         // tick value
-bool ScoreEdit::_quantLenInit = false;
-int ScoreEdit::_toInit = 0;
-int ScoreEdit::colorModeInit = 0;
+#include "sig.h"
 
-static const int xscale = -10;
-static const int yscale = 1;
-static const int pianoWidth = 40;
-static int ScoreEditTools = PointerTool | PencilTool | RubberTool | DrawTool;
 
 
 //---------------------------------------------------------
@@ -72,1340 +70,1850 @@ static int ScoreEditTools = PointerTool | PencilTool | RubberTool | DrawTool;
 //---------------------------------------------------------
 
 ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned initPos)
-   : MidiEditor(_quantInit, _rasterInit, pl, parent, name)
-      {
-      deltaMode = false;
-      resize(_widthInit, _heightInit);
-      selPart        = 0;
-      quantConfig    = 0;
-      _playEvents    = false;
-      _quantStrength = _quantStrengthInit;
-      _quantLimit    = _quantLimitInit;
-      _quantLen      = _quantLenInit;
-      _to            = _toInit;
-      colorMode      = colorModeInit;
-      
-      QSignalMapper* mapper = new QSignalMapper(this);
-      QSignalMapper* colorMapper = new QSignalMapper(this);
-      
-      //---------Menu----------------------------------
-      
-      menuEdit = menuBar()->addMenu(tr("&Edit"));      
-      
-      menuEdit->addActions(undoRedo->actions());
-      
-      menuEdit->addSeparator();
-      
-      editCutAction = menuEdit->addAction(QIcon(*editcutIconSet), tr("C&ut"));
-      mapper->setMapping(editCutAction, PianoCanvas::CMD_CUT);
-      connect(editCutAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      editCopyAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("&Copy"));
-      mapper->setMapping(editCopyAction, PianoCanvas::CMD_COPY);
-      connect(editCopyAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      editPasteAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("&Paste"));
-      mapper->setMapping(editPasteAction, PianoCanvas::CMD_PASTE);
-      connect(editPasteAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      menuEdit->addSeparator();
-      
-      editDelEventsAction = menuEdit->addAction(tr("Delete &Events"));
-      mapper->setMapping(editDelEventsAction, PianoCanvas::CMD_DEL);
-      connect(editDelEventsAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      menuEdit->addSeparator();
+   : MidiEditor(0, 0, pl, parent, name)
+{
+//	Splitter* hsplitter;
+	QPushButton* ctrl;
+/*	
+	hsplitter = new Splitter(Qt::Vertical, mainw, "hsplitter");
+		hsplitter->setHandleWidth(2);
 
-      menuSelect = menuEdit->addMenu(QIcon(*selectIcon), tr("&Select"));
+		ctrl = new QPushButton(tr("ctrl"), mainw);
+			ctrl->setObjectName("Ctrl");
+			ctrl->setFont(config.fonts[3]);
+			ctrl->setToolTip(tr("Add Controller View"));
 
-      selectAllAction = menuSelect->addAction(QIcon(*select_allIcon), tr("Select &All"));
-      mapper->setMapping(selectAllAction, PianoCanvas::CMD_SELECT_ALL);
-      connect(selectAllAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      selectNoneAction = menuSelect->addAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"));
-      mapper->setMapping(selectNoneAction, PianoCanvas::CMD_SELECT_NONE);
-      connect(selectNoneAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      selectInvertAction = menuSelect->addAction(QIcon(*select_invert_selectionIcon), tr("Invert &Selection"));
-      mapper->setMapping(selectInvertAction, PianoCanvas::CMD_SELECT_INVERT);
-      connect(selectInvertAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      menuSelect->addSeparator();
-      
-      selectInsideLoopAction = menuSelect->addAction(QIcon(*select_inside_loopIcon), tr("&Inside Loop"));
-      mapper->setMapping(selectInsideLoopAction, PianoCanvas::CMD_SELECT_ILOOP);
-      connect(selectInsideLoopAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      selectOutsideLoopAction = menuSelect->addAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"));
-      mapper->setMapping(selectOutsideLoopAction, PianoCanvas::CMD_SELECT_OLOOP);
-      connect(selectOutsideLoopAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      menuSelect->addSeparator();
-      
-      //selectPrevPartAction = select->addAction(tr("&Previous Part"));
-      selectPrevPartAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Previous Part"));
-      mapper->setMapping(selectPrevPartAction, PianoCanvas::CMD_SELECT_PREV_PART);
-      connect(selectPrevPartAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      //selNextPartAction = select->addAction(tr("&Next Part"));
-      selectNextPartAction = menuSelect->addAction(QIcon(*select_all_parts_on_trackIcon), tr("&Next Part"));
-      mapper->setMapping(selectNextPartAction, PianoCanvas::CMD_SELECT_NEXT_PART);
-      connect(selectNextPartAction, SIGNAL(triggered()), mapper, SLOT(map()));
+		hsplitter->addWidget(ctrl);
+*/	
+	/*
+	QGridLayout* gridS1 = new QGridLayout(mainw);
+		gridS1->setContentsMargins(0, 0, 0, 0);
 
-      menuConfig = menuBar()->addMenu(tr("&Config"));      
-      
-      eventColor = menuConfig->addMenu(tr("&Event Color"));      
-      
-      QActionGroup* actgrp = new QActionGroup(this);
-      actgrp->setExclusive(true);
-      
-      //evColorBlueAction = eventColor->addAction(tr("&Blue"));
-      evColorBlueAction = actgrp->addAction(tr("&Blue"));
-      evColorBlueAction->setCheckable(true);
-      colorMapper->setMapping(evColorBlueAction, 0);
-      
-      //evColorPitchAction = eventColor->addAction(tr("&Pitch colors"));
-      evColorPitchAction = actgrp->addAction(tr("&Pitch colors"));
-      evColorPitchAction->setCheckable(true);
-      colorMapper->setMapping(evColorPitchAction, 1);
-      
-      //evColorVelAction = eventColor->addAction(tr("&Velocity colors"));
-      evColorVelAction = actgrp->addAction(tr("&Velocity colors"));
-      evColorVelAction->setCheckable(true);
-      colorMapper->setMapping(evColorVelAction, 2);
-      
-      connect(evColorBlueAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
-      connect(evColorPitchAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
-      connect(evColorVelAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
-      
-      eventColor->addActions(actgrp->actions());
-      
-      connect(colorMapper, SIGNAL(mapped(int)), this, SLOT(eventColorModeChanged(int)));
-      
-      menuFunctions = menuBar()->addMenu(tr("&Functions"));
-
-      menuFunctions->setTearOffEnabled(true);
-      
-      funcOverQuantAction = menuFunctions->addAction(tr("Over Quantize"));
-      mapper->setMapping(funcOverQuantAction, PianoCanvas::CMD_OVER_QUANTIZE);
-      connect(funcOverQuantAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcNoteOnQuantAction = menuFunctions->addAction(tr("Note On Quantize"));
-      mapper->setMapping(funcNoteOnQuantAction, PianoCanvas::CMD_ON_QUANTIZE);
-      connect(funcNoteOnQuantAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcNoteOnOffQuantAction = menuFunctions->addAction(tr("Note On/Off Quantize"));
-      mapper->setMapping(funcNoteOnOffQuantAction, PianoCanvas::CMD_ONOFF_QUANTIZE);
-      connect(funcNoteOnOffQuantAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcIterQuantAction = menuFunctions->addAction(tr("Iterative Quantize"));
-      mapper->setMapping(funcIterQuantAction, PianoCanvas::CMD_ITERATIVE_QUANTIZE);
-      connect(funcIterQuantAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      menuFunctions->addSeparator();
-      
-      funcConfigQuantAction = menuFunctions->addAction(tr("Config Quant..."));
-      connect(funcConfigQuantAction, SIGNAL(triggered()), this, SLOT(configQuant()));
-      
-      menuFunctions->addSeparator();
-      
-      funcGateTimeAction = menuFunctions->addAction(tr("Modify Gate Time"));
-      mapper->setMapping(funcGateTimeAction, PianoCanvas::CMD_MODIFY_GATE_TIME);
-      connect(funcGateTimeAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcModVelAction = menuFunctions->addAction(tr("Modify Velocity"));
-      mapper->setMapping(funcModVelAction, PianoCanvas::CMD_MODIFY_VELOCITY);
-      connect(funcModVelAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcCrescendoAction = menuFunctions->addAction(tr("Crescendo"));
-      mapper->setMapping(funcCrescendoAction, PianoCanvas::CMD_CRESCENDO);
-      funcCrescendoAction->setEnabled(false);
-      connect(funcCrescendoAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcTransposeAction = menuFunctions->addAction(tr("Transpose"));
-      mapper->setMapping(funcTransposeAction, PianoCanvas::CMD_TRANSPOSE);
-      funcTransposeAction->setEnabled(false);
-      connect(funcTransposeAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcThinOutAction = menuFunctions->addAction(tr("Thin Out"));
-      mapper->setMapping(funcThinOutAction, PianoCanvas::CMD_THIN_OUT);
-      funcThinOutAction->setEnabled(false);
-      connect(funcThinOutAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcEraseEventAction = menuFunctions->addAction(tr("Erase Event"));
-      mapper->setMapping(funcEraseEventAction, PianoCanvas::CMD_ERASE_EVENT);
-      funcEraseEventAction->setEnabled(false);
-      connect(funcEraseEventAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcNoteShiftAction = menuFunctions->addAction(tr("Note Shift"));
-      mapper->setMapping(funcNoteShiftAction, PianoCanvas::CMD_NOTE_SHIFT);
-      funcNoteShiftAction->setEnabled(false);
-      connect(funcNoteShiftAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcMoveClockAction = menuFunctions->addAction(tr("Move Clock"));
-      mapper->setMapping(funcMoveClockAction, PianoCanvas::CMD_MOVE_CLOCK);
-      funcMoveClockAction->setEnabled(false);
-      connect(funcMoveClockAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcCopyMeasureAction = menuFunctions->addAction(tr("Copy Measure"));
-      mapper->setMapping(funcCopyMeasureAction, PianoCanvas::CMD_COPY_MEASURE);
-      funcCopyMeasureAction->setEnabled(false);
-      connect(funcCopyMeasureAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcEraseMeasureAction = menuFunctions->addAction(tr("Erase Measure"));
-      mapper->setMapping(funcEraseMeasureAction, PianoCanvas::CMD_ERASE_MEASURE);
-      funcEraseMeasureAction->setEnabled(false);
-      connect(funcEraseMeasureAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcDelMeasureAction = menuFunctions->addAction(tr("Delete Measure"));
-      mapper->setMapping(funcDelMeasureAction, PianoCanvas::CMD_DELETE_MEASURE);
-      funcDelMeasureAction->setEnabled(false);
-      connect(funcDelMeasureAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcCreateMeasureAction = menuFunctions->addAction(tr("Create Measure"));
-      mapper->setMapping(funcCreateMeasureAction, PianoCanvas::CMD_CREATE_MEASURE);
-      funcCreateMeasureAction->setEnabled(false);
-      connect(funcCreateMeasureAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcSetFixedLenAction = menuFunctions->addAction(tr("Set Fixed Length"));
-      mapper->setMapping(funcSetFixedLenAction, PianoCanvas::CMD_FIXED_LEN);
-      connect(funcSetFixedLenAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcDelOverlapsAction = menuFunctions->addAction(tr("Delete Overlaps"));
-      mapper->setMapping(funcDelOverlapsAction, PianoCanvas::CMD_DELETE_OVERLAPS);
-      connect(funcDelOverlapsAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      menuPlugins = menuBar()->addMenu(tr("&Plugins"));
-      song->populateScriptMenu(menuPlugins, this);
-
-      connect(mapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
-      
-      //---------ToolBar----------------------------------
-      tools = addToolBar(tr("ScoreEdit tools"));
-      tools->setObjectName("ScoreEdit tools");
-      tools->addActions(undoRedo->actions());
-      tools->addSeparator();
-
-      srec  = new QToolButton();
-      srec->setToolTip(tr("Step Record"));
-      srec->setIcon(*steprecIcon);
-      srec->setCheckable(true);
-      tools->addWidget(srec);
-
-      midiin  = new QToolButton();
-      midiin->setToolTip(tr("Midi Input"));
-      midiin->setIcon(*midiinIcon);
-      midiin->setCheckable(true);
-      tools->addWidget(midiin);
-
-      speaker  = new QToolButton();
-      speaker->setToolTip(tr("Play Events"));
-      speaker->setIcon(*speakerIcon);
-      speaker->setCheckable(true);
-      tools->addWidget(speaker);
-
-      tools2 = new EditToolBar(this, ScoreEditTools);
-      addToolBar(tools2);
-
-      QToolBar* panicToolbar = addToolBar(tr("panic"));         
-      panicToolbar->setObjectName("panic");
-      panicToolbar->addAction(panicAction);
-
-      //-------------------------------------------------------------
-      //    Transport Bar
-      QToolBar* transport = addToolBar(tr("transport"));
-      transport->setObjectName("transport");
-      transport->addActions(transportAction->actions());
-
-      addToolBarBreak();
-      toolbar = new Toolbar1(this, _rasterInit, _quantInit);
-      addToolBar(toolbar);
-
-      addToolBarBreak();
-      info    = new NoteInfo(this);
-      addToolBar(info);
-
-      //---------------------------------------------------
-      //    split
-      //---------------------------------------------------
-
-      splitter = new Splitter(Qt::Vertical, mainw, "splitter");
-      splitter->setHandleWidth(2);  
-      
-      hsplitter = new Splitter(Qt::Horizontal, mainw, "hsplitter");
-      hsplitter->setChildrenCollapsible(true);
-      hsplitter->setHandleWidth(2);
-      
-      QPushButton* ctrl = new QPushButton(tr("ctrl"), mainw);
-      //QPushButton* ctrl = new QPushButton(tr("C"), mainw);  // Tim.
-      ctrl->setObjectName("Ctrl");
-      ctrl->setFont(config.fonts[3]);
-      ctrl->setToolTip(tr("Add Controller View"));
-      hscroll = new ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
-      ctrl->setFixedSize(pianoWidth, hscroll->sizeHint().height());
-      //ctrl->setFixedSize(pianoWidth / 2, hscroll->sizeHint().height());  // Tim.
-      
-      // Tim.
-      /*
-      QPushButton* trackInfoButton = new QPushButton(tr("T"), mainw);
-      trackInfoButton->setObjectName("TrackInfo");
-      trackInfoButton->setFont(config.fonts[3]);
-      trackInfoButton->setToolTip(tr("Show track info"));
-      trackInfoButton->setFixedSize(pianoWidth / 2, hscroll->sizeHint().height());
-      */
-      
-      QSizeGrip* corner = new QSizeGrip(mainw);
-
-      midiTrackInfo       = new MidiTrackInfo(mainw);        
-      int mtiw = midiTrackInfo->width(); // Save this.
-      midiTrackInfo->setMinimumWidth(100);   
-      //midiTrackInfo->setMaximumWidth(150);   
-
-      midiTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding));
-      infoScroll          = new QScrollArea;
-      infoScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);  
-      infoScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded); 
-      infoScroll->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding));
-      infoScroll->setWidget(midiTrackInfo);
-      infoScroll->setWidgetResizable(true);
-      //infoScroll->setVisible(false);
-      //infoScroll->setEnabled(false);
-
-      //hsplitter->addWidget(midiTrackInfo);
-      hsplitter->addWidget(infoScroll);  // Tim.
-      hsplitter->addWidget(splitter);
-          
       mainGrid->setRowStretch(0, 100);
       mainGrid->setColumnStretch(1, 100);
-      mainGrid->addWidget(hsplitter, 0, 1, 1, 3);
-      
-      // Original.
-      /*
-      mainGrid->setColumnStretch(1, 100);
-      mainGrid->addWidget(splitter, 0, 0, 1, 3);
-      mainGrid->addWidget(ctrl,    1, 0);
-      mainGrid->addWidget(hscroll, 1, 1);
-      mainGrid->addWidget(corner,  1, 2, Qt::AlignBottom|Qt::AlignRight);
-      */
-      
-      
-      // Tim.
-      /*
-      mainGrid->setColumnStretch(2, 100);
-      mainGrid->addWidget(splitter,           0, 0, 1, 4);
-      mainGrid->addWidget(trackInfoButton,    1, 0);
-      mainGrid->addWidget(ctrl,               1, 1);
-      mainGrid->addWidget(hscroll,            1, 2);
-      mainGrid->addWidget(corner,             1, 3, Qt::AlignBottom|Qt::AlignRight);
-      */
-      
-      //mainGrid->addRowSpacing(1, hscroll->sizeHint().height());
-      //mainGrid->addItem(new QSpacerItem(0, hscroll->sizeHint().height()), 1, 0); // Orig + Tim.
-      
-      QWidget* split1     = new QWidget(splitter);
-      split1->setObjectName("split1");
-      QGridLayout* gridS1 = new QGridLayout(split1);
-      gridS1->setContentsMargins(0, 0, 0, 0);
-      gridS1->setSpacing(0);  
-    //Defined and configure your program change bar here.
-    //This may well be a copy of MTScale extended for our needs
-      time                = new MTScale(&_raster, split1, xscale);
-      Piano* piano        = new Piano(split1, yscale);
-      canvas              = new PianoCanvas(this, split1, xscale, yscale);
-      vscroll             = new ScrollScale(-3, 7, yscale, KH * 75, Qt::Vertical, split1);
-      
-      //setFocusProxy(canvas);   // Tim.
-      
-      int offset = -(config.division/4);
-      canvas->setOrigin(offset, 0);
-      canvas->setCanvasTools(ScoreEditTools);
-      canvas->setFocus();
-      connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
-      time->setOrigin(offset, 0);
 
       gridS1->setRowStretch(2, 100);
       gridS1->setColumnStretch(1, 100);     
-      //gridS1->setColumnStretch(2, 100);  // Tim.
+*/
 
-      gridS1->addWidget(time,                   0, 1, 1, 2);
-      gridS1->addWidget(hLine(split1),          1, 0, 1, 3);
-      gridS1->addWidget(piano,                  2,    0);
-      gridS1->addWidget(canvas,                 2,    1);
-      gridS1->addWidget(vscroll,                2,    2);
+	ScoreCanvas* test=new ScoreCanvas(this, mainw, 1, 1);	
+	QScrollBar* hscroll = new QScrollBar(Qt::Horizontal, mainw);
 
-      // Tim.
-      /*      
-      gridS1->addWidget(time,                   0, 2, 1, 3);
-      gridS1->addWidget(hLine(split1),          1, 1, 1, 4);
-      //gridS1->addWidget(infoScroll,             2,    0);
-      gridS1->addWidget(infoScroll,             0, 0, 3, 1);
-      gridS1->addWidget(piano,                  2,    1);
-      gridS1->addWidget(canvas,                 2,    2);
-      gridS1->addWidget(vscroll,                2,    3);
-      */
 
-      ctrlLane = new Splitter(Qt::Vertical, splitter, "ctrllane");
-      QWidget* split2     = new QWidget(splitter);
-          split2->setMaximumHeight(hscroll->sizeHint().height());
-          split2->setMinimumHeight(hscroll->sizeHint().height());
-      QGridLayout* gridS2 = new QGridLayout(split2);
-      gridS2->setContentsMargins(0, 0, 0, 0);
-      gridS2->setSpacing(0);  
-      gridS2->setRowStretch(0, 100);
-      gridS2->setColumnStretch(1, 100);
-          gridS2->addWidget(ctrl,    0, 0);
-      gridS2->addWidget(hscroll, 0, 1);
-      gridS2->addWidget(corner,  0, 2, Qt::AlignBottom|Qt::AlignRight);
-          //splitter->setCollapsible(0, true);
-      
-      piano->setFixedWidth(pianoWidth);
+connect(hscroll, SIGNAL(valueChanged(int)), test,   SLOT(scroll_event(int)));
+connect(song, SIGNAL(songChanged(int)), test, SLOT(song_changed(int)));
+//	      mainGrid->setRowStretch(0, 100);
+//      mainGrid->setColumnStretch(1, 100);
+      mainGrid->addWidget(test, 0, 0);
+      mainGrid->addWidget(hscroll,1,0);
 
-      // Tim.
-      QList<int> mops;
-      mops.append(mtiw + 30);  // 30 for possible scrollbar
-      mops.append(width() - mtiw - 30);
-      hsplitter->setSizes(mops);
-      
-      connect(tools2, SIGNAL(toolChanged(int)), canvas,   SLOT(setTool(int)));
-
-      connect(ctrl, SIGNAL(clicked()), SLOT(addCtrl()));
-      //connect(trackInfoButton, SIGNAL(clicked()), SLOT(toggleTrackInfo()));  Tim.
-      connect(info, SIGNAL(valueChanged(NoteInfo::ValType, int)), SLOT(noteinfoChanged(NoteInfo::ValType, int)));
-      connect(vscroll, SIGNAL(scrollChanged(int)), piano,  SLOT(setYPos(int)));
-      connect(vscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setYPos(int)));
-      connect(vscroll, SIGNAL(scaleChanged(int)),  canvas, SLOT(setYMag(int)));
-      connect(vscroll, SIGNAL(scaleChanged(int)),  piano,  SLOT(setYMag(int)));
-
-      connect(hscroll, SIGNAL(scrollChanged(int)), canvas,   SLOT(setXPos(int)));
-      connect(hscroll, SIGNAL(scrollChanged(int)), time,     SLOT(setXPos(int)));
-
-      connect(hscroll, SIGNAL(scaleChanged(int)),  canvas,   SLOT(setXMag(int)));
-      connect(hscroll, SIGNAL(scaleChanged(int)),  time,     SLOT(setXMag(int)));
-
-      connect(canvas, SIGNAL(newWidth(int)), SLOT(newCanvasWidth(int)));
-      connect(canvas, SIGNAL(pitchChanged(int)), piano, SLOT(setPitch(int)));   
-      connect(canvas, SIGNAL(verticalScroll(unsigned)), vscroll, SLOT(setPos(unsigned)));
-      connect(canvas,  SIGNAL(horizontalScroll(unsigned)),hscroll, SLOT(setPos(unsigned)));
-      connect(canvas,  SIGNAL(horizontalScrollNoLimit(unsigned)),hscroll, SLOT(setPosNoLimit(unsigned))); 
-      connect(canvas, SIGNAL(selectionChanged(int, Event&, Part*)), this,
-         SLOT(setSelection(int, Event&, Part*)));
-
-      connect(piano, SIGNAL(keyPressed(int, int, bool)), canvas, SLOT(pianoPressed(int, int, bool)));
-      connect(piano, SIGNAL(keyReleased(int, bool)), canvas, SLOT(pianoReleased(int, bool)));
-      connect(srec, SIGNAL(toggled(bool)), SLOT(setSteprec(bool)));
-      connect(midiin, SIGNAL(toggled(bool)), canvas, SLOT(setMidiin(bool)));
-      connect(speaker, SIGNAL(toggled(bool)), SLOT(setSpeaker(bool)));
-      connect(canvas, SIGNAL(followEvent(int)), SLOT(follow(int)));
-
-      connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
-      piano->setYPos(KH * 30);
-      canvas->setYPos(KH * 30);
-      vscroll->setPos(KH * 30);
-      //setSelection(0, 0, 0); //Really necessary? Causes segfault when only 1 item selected, replaced by the following:
-      info->setEnabled(false);
-
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged1(int)));
-
-      setWindowTitle(canvas->getCaption());
-      
-      updateHScrollRange();
-      // connect to toolbar
-      connect(canvas,   SIGNAL(pitchChanged(int)), toolbar, SLOT(setPitch(int)));  
-      connect(canvas,   SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
-      connect(piano,    SIGNAL(pitchChanged(int)), toolbar, SLOT(setPitch(int)));
-      connect(time,     SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
-      connect(toolbar,  SIGNAL(quantChanged(int)), SLOT(setQuant(int)));
-      connect(toolbar,  SIGNAL(rasterChanged(int)),SLOT(setRaster(int)));
-      connect(toolbar,  SIGNAL(toChanged(int)),    SLOT(setTo(int)));
-      connect(toolbar,  SIGNAL(soloChanged(bool)), SLOT(soloChanged(bool)));
-
-      setFocusPolicy(Qt::StrongFocus);
-      setEventColorMode(colorMode);
-
-      QClipboard* cb = QApplication::clipboard();
-      connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
-
-      clipboardChanged(); // enable/disable "Paste"
-      selectionChanged(); // enable/disable "Copy" & "Paste"
-      initShortcuts(); // initialize shortcuts
-
-      const Pos cpos=song->cPos();
-      canvas->setPos(0, cpos.tick(), true);
-      canvas->selectAtTick(cpos.tick());
-      //canvas->selectFirst();//      
-        
-      unsigned pos=0;
-      if(initPos >= MAXINT)
-        pos = song->cpos();
-      if(pos > MAXINT)
-        pos = MAXINT;
-      if (pos)
-        hscroll->setOffset((int)pos);
-
-      if(canvas->track())
-      {
-        updateTrackInfo();
-        toolbar->setSolo(canvas->track()->solo());
-      }
-
-      QSettings settings("MusE", "MusE-qt");
-      //restoreGeometry(settings.value("ScoreEdit/geometry").toByteArray());
-      restoreState(settings.value("ScoreEdit/windowState").toByteArray());
-
-      }
-
-//---------------------------------------------------------
-//   songChanged1
-//---------------------------------------------------------
-
-void ScoreEdit::songChanged1(int bits)
-      {
-        
-        if (bits & SC_SOLO)
-        {
-            toolbar->setSolo(canvas->track()->solo());
-            return;
-        }      
-        songChanged(bits);
-        //trackInfo->songChanged(bits);
-        // We'll receive SC_SELECTION if a different part is selected.
-        if (bits & SC_SELECTION)
-          updateTrackInfo();  
-      }
-
-//---------------------------------------------------------
-//   configChanged
-//---------------------------------------------------------
-
-void ScoreEdit::configChanged()
-      {
-      initShortcuts();
-      //trackInfo->updateTrackInfo();
-      }
-
-//---------------------------------------------------------
-//   updateHScrollRange
-//---------------------------------------------------------
-
-void ScoreEdit::updateHScrollRange()
-{
-      int s, e;
-      canvas->range(&s, &e);
-      // Show one more measure.
-      e += AL::sigmap.ticksMeasure(e);  
-      // Show another quarter measure due to imprecise drawing at canvas end point.
-      e += AL::sigmap.ticksMeasure(e) / 4;
-      // Compensate for the fixed piano and vscroll widths. 
-      e += canvas->rmapxDev(pianoWidth - vscroll->width()); 
-      int s1, e1;
-      hscroll->range(&s1, &e1);
-      if(s != s1 || e != e1) 
-        hscroll->setRange(s, e);
+hscroll->setMinimum(0);
+hscroll->setMaximum(1000);
+hscroll->setPageStep(100);
+//	gridS1->addWidget(test,0,0);
+	
+//	gridS1->addWidget(canvas,                 0,    0);
+	//	hsplitter->addWidget(test);
 }
 
-void ScoreEdit::updateTrackInfo()
-{
-      selected = curCanvasPart()->track();
-      if (selected->isMidiTrack()) {
-            midiTrackInfo->setTrack(selected);
-            ///midiTrackInfo->updateTrackInfo(-1);
-      }
-}
-
-//---------------------------------------------------------
-//   follow
-//---------------------------------------------------------
-
-void ScoreEdit::follow(int pos)
-      {
-      int s, e;
-      canvas->range(&s, &e);
-
-      if (pos < e && pos >= s)
-            hscroll->setOffset(pos);
-      if (pos < s)
-            hscroll->setOffset(s);
-      }
-
-//---------------------------------------------------------
-//   setTime
-//---------------------------------------------------------
-
-void ScoreEdit::setTime(unsigned tick)
-      {
-      toolbar->setTime(tick);                      
-      time->setPos(3, tick, false);               
-      }
 
 //---------------------------------------------------------
 //   ~ScoreEdit
 //---------------------------------------------------------
 
 ScoreEdit::~ScoreEdit()
-      {
-      // undoRedo->removeFrom(tools);  // p4.0.6 Removed
-      }
-
-//---------------------------------------------------------
-//   cmd
-//    pulldown menu commands
-//---------------------------------------------------------
-
-void ScoreEdit::cmd(int cmd)
-      {
-      ((PianoCanvas*)canvas)->cmd(cmd, _quantStrength, _quantLimit, _quantLen, _to);
-      }
-
-//---------------------------------------------------------
-//   setSelection
-//    update Info Line
-//---------------------------------------------------------
-
-void ScoreEdit::setSelection(int tick, Event& e, Part* p)
-      {
-      int selections = canvas->selectionSize();
-
-      selEvent = e;
-      selPart  = (MidiPart*)p;
-      selTick  = tick;
-
-      if (selections > 1) {
-            info->setEnabled(true);
-            info->setDeltaMode(true);
-            if (!deltaMode) {
-                  deltaMode = true;
-                  info->setValues(0, 0, 0, 0, 0);
-                  tickOffset    = 0;
-                  lenOffset     = 0;
-                  pitchOffset   = 0;
-                  veloOnOffset  = 0;
-                  veloOffOffset = 0;
-                  }
-            }
-      else if (selections == 1) {
-            deltaMode = false;
-            info->setEnabled(true);
-            info->setDeltaMode(false);
-            info->setValues(tick,
-               selEvent.lenTick(),
-               selEvent.pitch(),
-               selEvent.velo(),
-               selEvent.veloOff());
-            }
-      else {
-            deltaMode = false;
-            info->setEnabled(false);
-            }
-      selectionChanged();
-      }
-
-//---------------------------------------------------------
-//    edit currently selected Event
-//---------------------------------------------------------
-
-void ScoreEdit::noteinfoChanged(NoteInfo::ValType type, int val)
-      {
-      int selections = canvas->selectionSize();
-
-      if (selections == 0) {
-            printf("noteinfoChanged while nothing selected\n");
-            }
-      else if (selections == 1) {
-            Event event = selEvent.clone();
-            switch(type) {
-                  case NoteInfo::VAL_TIME:
-                        event.setTick(val - selPart->tick());
-                        break;
-                  case NoteInfo::VAL_LEN:
-                        event.setLenTick(val);
-                        break;
-                  case NoteInfo::VAL_VELON:
-                        event.setVelo(val);
-                        break;
-                  case NoteInfo::VAL_VELOFF:
-                        event.setVeloOff(val);
-                        break;
-                  case NoteInfo::VAL_PITCH:
-                        event.setPitch(val);
-                        break;
-                  }
-            // Indicate do undo, and do not do port controller values and clone parts. 
-            //audio->msgChangeEvent(selEvent, event, selPart);
-            audio->msgChangeEvent(selEvent, event, selPart, true, false, false);
-            }
-      else {
-            // multiple events are selected; treat noteinfo values
-            // as offsets to event values
-
-            int delta = 0;
-            switch (type) {
-                  case NoteInfo::VAL_TIME:
-                        delta = val - tickOffset;
-                        tickOffset = val;
-                        break;
-                  case NoteInfo::VAL_LEN:
-                        delta = val - lenOffset;
-                        lenOffset = val;
-                        break;
-                  case NoteInfo::VAL_VELON:
-                        delta = val - veloOnOffset;
-                        veloOnOffset = val;
-                        break;
-                  case NoteInfo::VAL_VELOFF:
-                        delta = val - veloOffOffset;
-                        veloOffOffset = val;
-                        break;
-                  case NoteInfo::VAL_PITCH:
-                        delta = val - pitchOffset;
-                        pitchOffset = val;
-                        break;
-                  }
-            if (delta)
-                  canvas->modifySelected(type, delta);
-            }
-      }
-
-//---------------------------------------------------------
-//   addCtrl
-//---------------------------------------------------------
-
-CtrlEdit* ScoreEdit::addCtrl()
-      {
-      ///CtrlEdit* ctrlEdit = new CtrlEdit(splitter, this, xscale, false, "pianoCtrlEdit");  
-      CtrlEdit* ctrlEdit = new CtrlEdit(ctrlLane/*splitter*/, this, xscale, false, "pianoCtrlEdit");  // ccharrett
-      connect(tools2,   SIGNAL(toolChanged(int)),   ctrlEdit, SLOT(setTool(int)));
-      connect(hscroll,  SIGNAL(scrollChanged(int)), ctrlEdit, SLOT(setXPos(int)));
-      connect(hscroll,  SIGNAL(scaleChanged(int)),  ctrlEdit, SLOT(setXMag(int)));
-      connect(ctrlEdit, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
-      connect(ctrlEdit, SIGNAL(destroyedCtrl(CtrlEdit*)), SLOT(removeCtrl(CtrlEdit*)));
-      connect(ctrlEdit, SIGNAL(yposChanged(int)), toolbar, SLOT(setInt(int)));
-
-      ctrlEdit->setTool(tools2->curTool());
-      ctrlEdit->setXPos(hscroll->pos());
-      ctrlEdit->setXMag(hscroll->getScaleValue());
-
-      ctrlEdit->show();
-      ctrlEditList.push_back(ctrlEdit);
-      return ctrlEdit;
-      }
-
-//---------------------------------------------------------
-//   removeCtrl
-//---------------------------------------------------------
-
-void ScoreEdit::removeCtrl(CtrlEdit* ctrl)
-      {
-      for (std::list<CtrlEdit*>::iterator i = ctrlEditList.begin();
-         i != ctrlEditList.end(); ++i) {
-            if (*i == ctrl) {
-                  ctrlEditList.erase(i);
-                  break;
-                  }
-            }
-      }
-
-//---------------------------------------------------------
-//   closeEvent
-//---------------------------------------------------------
-
-void ScoreEdit::closeEvent(QCloseEvent* e)
-      {
-      QSettings settings("MusE", "MusE-qt");
-      //settings.setValue("ScoreEdit/geometry", saveGeometry());
-      settings.setValue("ScoreEdit/windowState", saveState());
-
-      emit deleted((unsigned long)this);
-      e->accept();
-      }
-
-//---------------------------------------------------------
-//   readConfiguration
-//---------------------------------------------------------
-
-void ScoreEdit::readConfiguration(Xml& xml)
-      {
-      for (;;) {
-            Xml::Token token = xml.parse();
-            if (token == Xml::Error || token == Xml::End)
-                  break;
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case Xml::TagStart:
-                        if (tag == "quant")
-                              _quantInit = xml.parseInt();
-                        else if (tag == "raster")
-                              _rasterInit = xml.parseInt();
-                        else if (tag == "quantStrength")
-                              _quantStrengthInit = xml.parseInt();
-                        else if (tag == "quantLimit")
-                              _quantLimitInit = xml.parseInt();
-                        else if (tag == "quantLen")
-                              _quantLenInit = xml.parseInt();
-                        else if (tag == "to")
-                              _toInit = xml.parseInt();
-                        else if (tag == "colormode")
-                              colorModeInit = xml.parseInt();
-                        else if (tag == "width")
-                              _widthInit = xml.parseInt();
-                        else if (tag == "height")
-                              _heightInit = xml.parseInt();
-                        else
-                              xml.unknown("ScoreEdit");
-                        break;
-                  case Xml::TagEnd:
-                        if (tag == "ScoreEdit")
-                              return;
-                  default:
-                        break;
-                  }
-            }
-      }
-
-//---------------------------------------------------------
-//   writeConfiguration
-//---------------------------------------------------------
-
-void ScoreEdit::writeConfiguration(int level, Xml& xml)
-      {
-      xml.tag(level++, "ScoreEdit");
-      xml.intTag(level, "quant", _quantInit);
-      xml.intTag(level, "raster", _rasterInit);
-      xml.intTag(level, "quantStrength", _quantStrengthInit);
-      xml.intTag(level, "quantLimit", _quantLimitInit);
-      xml.intTag(level, "quantLen", _quantLenInit);
-      xml.intTag(level, "to", _toInit);
-      xml.intTag(level, "width", _widthInit);
-      xml.intTag(level, "height", _heightInit);
-      xml.intTag(level, "colormode", colorModeInit);
-      xml.etag(level, "ScoreEdit");
-      }
-
-//---------------------------------------------------------
-//   soloChanged
-//    signal from solo button
-//---------------------------------------------------------
-
-void ScoreEdit::soloChanged(bool flag)
-      {
-      audio->msgSetSolo(canvas->track(), flag);
-      song->update(SC_SOLO);
-      }
-
-//---------------------------------------------------------
-//   setRaster
-//---------------------------------------------------------
-
-void ScoreEdit::setRaster(int val)
-      {
-      _rasterInit = val;
-      MidiEditor::setRaster(val);
-      canvas->redrawGrid();
-      canvas->setFocus();     // give back focus after kb input
-      }
-
-//---------------------------------------------------------
-//   setQuant
-//---------------------------------------------------------
-
-void ScoreEdit::setQuant(int val)
-      {
-      _quantInit = val;
-      MidiEditor::setQuant(val);
-      canvas->setFocus();
-      }
-
-//---------------------------------------------------------
-//   writeStatus
-//---------------------------------------------------------
-
-void ScoreEdit::writeStatus(int level, Xml& xml) const
-      {
-      writePartList(level, xml);
-      xml.tag(level++, "ScoreEdit");
-      MidiEditor::writeStatus(level, xml);
-      splitter->writeStatus(level, xml);
-      hsplitter->writeStatus(level, xml);  
-      
-      for (std::list<CtrlEdit*>::const_iterator i = ctrlEditList.begin();
-         i != ctrlEditList.end(); ++i) {
-            (*i)->writeStatus(level, xml);
-            }
-
-      xml.intTag(level, "steprec", canvas->steprec());
-      xml.intTag(level, "midiin", canvas->midiin());
-      xml.intTag(level, "tool", int(canvas->tool()));
-      xml.intTag(level, "quantStrength", _quantStrength);
-      xml.intTag(level, "quantLimit", _quantLimit);
-      xml.intTag(level, "quantLen", _quantLen);
-      xml.intTag(level, "playEvents", _playEvents);
-      xml.intTag(level, "xpos", hscroll->pos());
-      xml.intTag(level, "xmag", hscroll->mag());
-      xml.intTag(level, "ypos", vscroll->pos());
-      xml.intTag(level, "ymag", vscroll->mag());
-      xml.tag(level, "/ScoreEdit");
-      }
-
-//---------------------------------------------------------
-//   readStatus
-//---------------------------------------------------------
-
-void ScoreEdit::readStatus(Xml& xml)
-      {
-      for (;;) {
-            Xml::Token token = xml.parse();
-            if (token == Xml::Error || token == Xml::End)
-                  break;
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case Xml::TagStart:
-                        if (tag == "steprec") {
-                              int val = xml.parseInt();
-                              canvas->setSteprec(val);
-                              srec->setChecked(val);
-                              }
-                        else if (tag == "midiin") {
-                              int val = xml.parseInt();
-                              canvas->setMidiin(val);
-                              midiin->setChecked(val);
-                              }
-                        else if (tag == "tool") {
-                              int tool = xml.parseInt();
-                              canvas->setTool(tool);
-                              tools2->set(tool);
-                              }
-                        else if (tag == "midieditor")
-                              MidiEditor::readStatus(xml);
-                        else if (tag == "ctrledit") {
-                              CtrlEdit* ctrl = addCtrl();
-                              ctrl->readStatus(xml);
-                              }
-                        else if (tag == splitter->objectName())
-                              splitter->readStatus(xml);
-                        else if (tag == hsplitter->objectName())
-                              hsplitter->readStatus(xml);
-                        else if (tag == "quantStrength")
-                              _quantStrength = xml.parseInt();
-                        else if (tag == "quantLimit")
-                              _quantLimit = xml.parseInt();
-                        else if (tag == "quantLen")
-                              _quantLen = xml.parseInt();
-                        else if (tag == "playEvents") {
-                              _playEvents = xml.parseInt();
-                              canvas->playEvents(_playEvents);
-                              speaker->setChecked(_playEvents);
-                              }
-                        else if (tag == "xmag")
-                              hscroll->setMag(xml.parseInt());
-                        else if (tag == "xpos")
-                              hscroll->setPos(xml.parseInt());
-                        else if (tag == "ymag")
-                              vscroll->setMag(xml.parseInt());
-                        else if (tag == "ypos")
-                              vscroll->setPos(xml.parseInt());
-                        else
-                              xml.unknown("ScoreEdit");
-                        break;
-                  case Xml::TagEnd:
-                        if (tag == "ScoreEdit") {
-                              _quantInit  = _quant;
-                              _rasterInit = _raster;
-                              toolbar->setRaster(_raster);
-                              toolbar->setQuant(_quant);
-                              canvas->redrawGrid();
-                              return;
-                              }
-                  default:
-                        break;
-                  }
-            }
-      }
-
-static int rasterTable[] = {
-      //-9----8-  7    6     5     4    3(1/4)     2   1
-      4,  8, 16, 32,  64, 128, 256,  512, 1024,  // triple
-      6, 12, 24, 48,  96, 192, 384,  768, 1536,
-      9, 18, 36, 72, 144, 288, 576, 1152, 2304   // dot
-      };
-
-//---------------------------------------------------------
-//   viewKeyPressEvent
-//---------------------------------------------------------
-
-void ScoreEdit::keyPressEvent(QKeyEvent* event)
-      {
-      if (info->hasFocus()) {
-            event->ignore();
-            return;
-            }
-
-      int index;
-      int n = sizeof(rasterTable)/sizeof(*rasterTable);
-      for (index = 0; index < n; ++index)
-            if (rasterTable[index] == raster())
-                  break;
-      if (index == n) {
-            index = 0;
-            // raster 1 is not in table
-            }
-      int off = (index / 9) * 9;
-      index   = index % 9;
-
-      int val = 0;
-
-      PianoCanvas* pc = (PianoCanvas*)canvas;
-      int key = event->key();
-
-      //if (event->state() & Qt::ShiftButton)
-      if (((QInputEvent*)event)->modifiers() & Qt::ShiftModifier)
-            key += Qt::SHIFT;
-      //if (event->state() & Qt::AltButton)
-      if (((QInputEvent*)event)->modifiers() & Qt::AltModifier)
-            key += Qt::ALT;
-      //if (event->state() & Qt::ControlButton)
-      if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
-            key+= Qt::CTRL;
-
-      if (key == Qt::Key_Escape) {
-            close();
-            return;
-            }
-      else if (key == shortcuts[SHRT_TOOL_POINTER].key) {
-            tools2->set(PointerTool);
-            return;
-            }
-      else if (key == shortcuts[SHRT_TOOL_PENCIL].key) {
-            tools2->set(PencilTool);
-            return;
-            }
-      else if (key == shortcuts[SHRT_TOOL_RUBBER].key) {
-            tools2->set(RubberTool);
-            return;
-            }
-      else if (key == shortcuts[SHRT_TOOL_LINEDRAW].key) {
-            tools2->set(DrawTool);
-            return;
-            }
-      else if (key == shortcuts[SHRT_POS_INC].key) {
-            pc->pianoCmd(CMD_RIGHT);
-            return;
-            }
-      else if (key == shortcuts[SHRT_POS_DEC].key) {
-            pc->pianoCmd(CMD_LEFT);
-            return;
-            }
-      else if (key == shortcuts[SHRT_POS_INC_NOSNAP].key) {
-            pc->pianoCmd(CMD_RIGHT_NOSNAP);
-            return;
-            }
-      else if (key == shortcuts[SHRT_POS_DEC_NOSNAP].key) {
-            pc->pianoCmd(CMD_LEFT_NOSNAP);
-            return;
-            }
-      else if (key == shortcuts[SHRT_INSERT_AT_LOCATION].key) {
-            pc->pianoCmd(CMD_INSERT);
-            return;
-            }
-      else if (key == Qt::Key_Delete) {
-            pc->pianoCmd(CMD_DELETE);
-            return;
-            }
-      else if (key == shortcuts[SHRT_ZOOM_IN].key) {
-            int mag = hscroll->mag();
-            int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
-            if (zoomlvl < 23)
-                  zoomlvl++;
-
-            int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-            hscroll->setMag(newmag);
-            //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
-            return;
-            }
-      else if (key == shortcuts[SHRT_ZOOM_OUT].key) {
-            int mag = hscroll->mag();
-            int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
-            if (zoomlvl > 1)
-                  zoomlvl--;
-
-            int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-            hscroll->setMag(newmag);
-            //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
-            return;
-            }
-      else if (key == shortcuts[SHRT_GOTO_CPOS].key) {
-            PartList* p = this->parts();
-            Part* first = p->begin()->second;
-            hscroll->setPos(song->cpos() - first->tick() );
-            return;
-            }
-      else if (key == shortcuts[SHRT_SCROLL_LEFT].key) {
-            int pos = hscroll->pos() - config.division;
-            if (pos < 0)
-                  pos = 0;
-            hscroll->setPos(pos);
-            return;
-            }
-      else if (key == shortcuts[SHRT_SCROLL_RIGHT].key) {
-            int pos = hscroll->pos() + config.division;
-            hscroll->setPos(pos);
-            return;
-            }
-      else if (key == shortcuts[SHRT_SET_QUANT_1].key)
-            val = rasterTable[8 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_2].key)
-            val = rasterTable[7 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_3].key)
-            val = rasterTable[6 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_4].key)
-            val = rasterTable[5 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_5].key)
-            val = rasterTable[4 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_6].key)
-            val = rasterTable[3 + off];
-      else if (key == shortcuts[SHRT_SET_QUANT_7].key)
-            val = rasterTable[2 + off];
-      else if (key == shortcuts[SHRT_TOGGLE_TRIOL].key)
-            val = rasterTable[index + ((off == 0) ? 9 : 0)];
-      else if (key == shortcuts[SHRT_EVENT_COLOR].key) {
-            if (colorMode == 0)
-                  colorMode = 1;
-            else if (colorMode == 1)
-                  colorMode = 2;
-            else
-                  colorMode = 0;
-            setEventColorMode(colorMode);
-            return;
-            }
-      else if (key == shortcuts[SHRT_TOGGLE_PUNCT].key)
-            val = rasterTable[index + ((off == 18) ? 9 : 18)];
-
-      else if (key == shortcuts[SHRT_TOGGLE_PUNCT2].key) {//CDW
-            if ((off == 18) && (index > 2)) {
-                  val = rasterTable[index + 9 - 1];
-                  }
-            else if ((off == 9) && (index < 8)) {
-                  val = rasterTable[index + 18 + 1];
-                  }
-            else
-                  return;
-            }
-      else { //Default:
-            event->ignore();
-            return;
-            }
-      setQuant(val);
-      setRaster(val);
-      toolbar->setQuant(_quant);
-      toolbar->setRaster(_raster);
-      }
-
-//---------------------------------------------------------
-//   configQuant
-//---------------------------------------------------------
-
-void ScoreEdit::configQuant()
-      {
-      if (!quantConfig) {
-            quantConfig = new QuantConfig(_quantStrength, _quantLimit, _quantLen);
-            connect(quantConfig, SIGNAL(setQuantStrength(int)), SLOT(setQuantStrength(int)));
-            connect(quantConfig, SIGNAL(setQuantLimit(int)), SLOT(setQuantLimit(int)));
-            connect(quantConfig, SIGNAL(setQuantLen(bool)), SLOT(setQuantLen(bool)));
-            }
-      quantConfig->show();
-      }
-
-//---------------------------------------------------------
-//   setSteprec
-//---------------------------------------------------------
-
-void ScoreEdit::setSteprec(bool flag)
-      {
-      canvas->setSteprec(flag);
-      if (flag == false)
-            midiin->setChecked(flag);
-      }
-
-//---------------------------------------------------------
-//   eventColorModeChanged
-//---------------------------------------------------------
-
-void ScoreEdit::eventColorModeChanged(int mode)
-      {
-      colorMode = mode;
-      colorModeInit = colorMode;
-      
-      ((PianoCanvas*)(canvas))->setColorMode(colorMode);
-      }
-
-//---------------------------------------------------------
-//   setEventColorMode
-//---------------------------------------------------------
-
-void ScoreEdit::setEventColorMode(int mode)
-      {
-      colorMode = mode;
-      colorModeInit = colorMode;
-      
-      ///eventColor->setItemChecked(0, mode == 0);
-      ///eventColor->setItemChecked(1, mode == 1);
-      ///eventColor->setItemChecked(2, mode == 2);
-      evColorBlueAction->setChecked(mode == 0);
-      evColorPitchAction->setChecked(mode == 1);
-      evColorVelAction->setChecked(mode == 2);
-      
-      ((PianoCanvas*)(canvas))->setColorMode(colorMode);
-      }
-
-//---------------------------------------------------------
-//   clipboardChanged
-//---------------------------------------------------------
-
-void ScoreEdit::clipboardChanged()
-      {
-      editPasteAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-eventlist")));
-      }
-
-//---------------------------------------------------------
-//   selectionChanged
-//---------------------------------------------------------
-
-void ScoreEdit::selectionChanged()
-      {
-      bool flag = canvas->selectionSize() > 0;
-      editCutAction->setEnabled(flag);
-      editCopyAction->setEnabled(flag);
-      editDelEventsAction->setEnabled(flag);
-      }
-
-//---------------------------------------------------------
-//   setSpeaker
-//---------------------------------------------------------
-
-void ScoreEdit::setSpeaker(bool val)
-      {
-      _playEvents = val;
-      canvas->playEvents(_playEvents);
-      }
-
-//---------------------------------------------------------
-//   resizeEvent
-//---------------------------------------------------------
-
-void ScoreEdit::resizeEvent(QResizeEvent* ev)
-      {
-      QWidget::resizeEvent(ev);
-      _widthInit = ev->size().width();
-      _heightInit = ev->size().height();
-      }
-
-
-/*
-//---------------------------------------------------------
-//   trackInfoScroll
-//---------------------------------------------------------
-
-void ScoreEdit::trackInfoScroll(int y)
-      {
-      if (trackInfo->visibleWidget())
-            trackInfo->visibleWidget()->move(0, -y);
-      }
-*/
-
-//---------------------------------------------------------
-//   initShortcuts
-//---------------------------------------------------------
-
-void ScoreEdit::initShortcuts()
-      {
-      editCutAction->setShortcut(shortcuts[SHRT_CUT].key);
-      editCopyAction->setShortcut(shortcuts[SHRT_COPY].key);
-      editPasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
-      editDelEventsAction->setShortcut(shortcuts[SHRT_DELETE].key);
-      
-      selectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key); 
-      selectNoneAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
-      selectInvertAction->setShortcut(shortcuts[SHRT_SELECT_INVERT].key);
-      selectInsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_ILOOP].key);
-      selectOutsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
-      selectPrevPartAction->setShortcut(shortcuts[SHRT_SELECT_PREV_PART].key);
-      selectNextPartAction->setShortcut(shortcuts[SHRT_SELECT_NEXT_PART].key);
-      
-      eventColor->menuAction()->setShortcut(shortcuts[SHRT_EVENT_COLOR].key);
-      //evColorBlueAction->setShortcut(shortcuts[  ].key);
-      //evColorPitchAction->setShortcut(shortcuts[  ].key);
-      //evColorVelAction->setShortcut(shortcuts[  ].key);
-      
-      funcOverQuantAction->setShortcut(shortcuts[SHRT_OVER_QUANTIZE].key);
-      funcNoteOnQuantAction->setShortcut(shortcuts[SHRT_ON_QUANTIZE].key);
-      funcNoteOnOffQuantAction->setShortcut(shortcuts[SHRT_ONOFF_QUANTIZE].key);
-      funcIterQuantAction->setShortcut(shortcuts[SHRT_ITERATIVE_QUANTIZE].key);
-      
-      funcConfigQuantAction->setShortcut(shortcuts[SHRT_CONFIG_QUANT].key);
-      
-      funcGateTimeAction->setShortcut(shortcuts[SHRT_MODIFY_GATE_TIME].key);
-      funcModVelAction->setShortcut(shortcuts[SHRT_MODIFY_VELOCITY].key);
-      funcCrescendoAction->setShortcut(shortcuts[SHRT_CRESCENDO].key);
-      funcTransposeAction->setShortcut(shortcuts[SHRT_TRANSPOSE].key);
-      funcThinOutAction->setShortcut(shortcuts[SHRT_THIN_OUT].key);
-      funcEraseEventAction->setShortcut(shortcuts[SHRT_ERASE_EVENT].key);
-      funcNoteShiftAction->setShortcut(shortcuts[SHRT_NOTE_SHIFT].key);
-      funcMoveClockAction->setShortcut(shortcuts[SHRT_MOVE_CLOCK].key);
-      funcCopyMeasureAction->setShortcut(shortcuts[SHRT_COPY_MEASURE].key);
-      funcEraseMeasureAction->setShortcut(shortcuts[SHRT_ERASE_MEASURE].key);
-      funcDelMeasureAction->setShortcut(shortcuts[SHRT_DELETE_MEASURE].key);
-      funcCreateMeasureAction->setShortcut(shortcuts[SHRT_CREATE_MEASURE].key);
-      funcSetFixedLenAction->setShortcut(shortcuts[SHRT_FIXED_LEN].key);
-      funcDelOverlapsAction->setShortcut(shortcuts[SHRT_DELETE_OVERLAPS].key);
-      
-      }
-
-//---------------------------------------------------------
-//   execDeliveredScript
-//---------------------------------------------------------
-void ScoreEdit::execDeliveredScript(int id)
 {
-      //QString scriptfile = QString(INSTPREFIX) + SCRIPTSSUFFIX + deliveredScriptNames[id];
-      QString scriptfile = song->getScriptPath(id, true);
-      song->executeScript(scriptfile.toAscii().data(), parts(), quant(), true); 
+	
 }
 
-//---------------------------------------------------------
-//   execUserScript
-//---------------------------------------------------------
-void ScoreEdit::execUserScript(int id)
+
+ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
+   int sx, int sy) : View(parent, sx, sy)
 {
-      QString scriptfile = song->getScriptPath(id, false);
-      song->executeScript(scriptfile.toAscii().data(), parts(), quant(), true);
+	editor      = pr;
+	setFocusPolicy(Qt::StrongFocus);
+	setBg(Qt::white);
+	
+	setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
+//	setMinimumSize(400,600);
+	
+	load_pixmaps();
+	
+	x_pos=0;
+
+	song_changed(0);	
+//fertig mit aufbereiten	
+	cout << "---------------- CALCULATING DONE ------------------" << endl;
+
 }
 
-//---------------------------------------------------------
-//   newCanvasWidth
-//---------------------------------------------------------
-
-void ScoreEdit::newCanvasWidth(int /*w*/)
-      {
-/*      
-      int nw = w + (vscroll->width() - 18); // 18 is the fixed width of the CtlEdit VScale widget.
-      if(nw < 1)
-        nw = 1;
-        
-      for (std::list<CtrlEdit*>::iterator i = ctrlEditList.begin();
-         i != ctrlEditList.end(); ++i) {
-            // Changed by Tim. p3.3.7
-            //(*i)->setCanvasWidth(w);
-            (*i)->setCanvasWidth(nw);
-            }
-            
-      updateHScrollRange();
-*/      
-      }
-
-//---------------------------------------------------------
-//   toggleTrackInfo
-//---------------------------------------------------------
-
-void ScoreEdit::toggleTrackInfo()
+void ScoreCanvas::song_changed(int)
 {
-  bool vis = midiTrackInfo->isVisible();
-  infoScroll->setVisible(!vis);
-  infoScroll->setEnabled(!vis);
+	cout << "song changed!" << endl;
+	pos_add_list.clear();
+	eventlist=createAppropriateEventList(editor->parts(), editor->parts()->begin()->second->track());
+	itemlist=create_itemlist(eventlist);
+	process_itemlist(itemlist); // do note- and rest-grouping and collision avoiding
+	calc_item_pos(itemlist);
+	redraw();
+	cout << "song had changed, recalculation complete" << endl;
 }
+
+//flo code starting here
+
+string IntToStr(int i)
+{
+	ostringstream s;
+	s<<i;
+	return s.str();
+}
+
+
+
+void ScoreCanvas::load_pixmaps()
+{
+	pix_whole.load(FONT_PATH "whole.png");
+	pix_half.load(FONT_PATH "half.png");
+	pix_quarter.load(FONT_PATH "quarter.png");
+	pix_r1.load(FONT_PATH "rest1.png");
+	pix_r2.load(FONT_PATH "rest2.png");
+	pix_r4.load(FONT_PATH "rest4.png");
+	pix_r8.load(FONT_PATH "rest8.png");
+	pix_r16.load(FONT_PATH "rest16.png");
+	pix_dot.load(FONT_PATH "dot.png");
+	pix_flag_up[0].load(FONT_PATH "flags8u.png");
+	pix_flag_up[1].load(FONT_PATH "flags16u.png");
+	pix_flag_up[2].load(FONT_PATH "flags32u.png");
+	pix_flag_up[3].load(FONT_PATH "flags64u.png");
+	pix_flag_down[0].load(FONT_PATH "flags8d.png");
+	pix_flag_down[1].load(FONT_PATH "flags16d.png");
+	pix_flag_down[2].load(FONT_PATH "flags32d.png");
+	pix_flag_down[3].load(FONT_PATH "flags64d.png");
+	pix_noacc.load(FONT_PATH "acc_none.png");
+	pix_sharp.load(FONT_PATH "acc_sharp.png");
+	pix_b.load(FONT_PATH "acc_b.png");
+	
+	for (int i=0;i<10;i++)
+		pix_num[i].load(QString((string(FONT_PATH "")+IntToStr(i)+string(".png")).c_str()));	
+}
+
+
+
+int modulo(int a, int b) // similar to a % b
+{
+	return (((a%b)+b)%b);
+}
+
+#define DEFAULT_REST_HEIGHT 6 // TODO
+
+
+bool operator< (const note_pos_t& a, const note_pos_t& b)
+{
+	if (a.height<b.height) return true;
+	if (a.height>b.height) return false;
+	return a.vorzeichen<b.vorzeichen;
+}
+
+
+//TODO: all das unten richtig machen!
+#define TICKS_PER_WHOLE (config.division*4) 
+#define SONG_LENGTH (TICKS_PER_WHOLE*8)
+
+#define quant_max 3  //whole, half, quarter = 0,1,2
+#define quant_max_fraction (1 << quant_max) //whole, half, quarter= 1,2,4
+#define FLO_QUANT (TICKS_PER_WHOLE/quant_max_fraction)
+//FLO_QUANT = how many ticks has a single quantisation area?
+
+
+//FINDMICH MARKER
+//TODO: quant_max richtig setzen!
+
+/* builds the event list used by the score editor.
+ * that list contains only note-on and -off, time-sig- and
+ * key-change events.
+ * it stores them sorted by their time (quantized); if more
+ * events with the same time occur, the NOTE-OFFs are
+ * put before the NOTE-ONs
+ * it only operates on parts which a) are selected by the
+ * editor and b) belong to track
+ * 
+ * this abstracts the rest of the renderer from muse's internal
+ * data structures, making this easy to port to another application
+ */
+ScoreEventList ScoreCanvas::createAppropriateEventList(PartList* pl, Track* track)
+{
+	using AL::sigmap;
+	using AL::iSigEvent;
+
+	ScoreEventList result;
+	
+	//insert note on/off events
+	for (iPart partIt=pl->begin(); partIt!=pl->end(); partIt++)
+	{
+		Part* part=partIt->second;
+		if (part->track()==track)
+		{
+			EventList* el=part->events();
+			
+			for (iEvent it=el->begin(); it!=el->end(); it++)
+			{
+				Event& event=it->second;
+				
+				if (event.isNote() && !event.isNoteOff())
+				{
+					unsigned begin, end;
+					//TODO quantizing must be done with the proper functions!
+					begin=int(rint((float)event.tick() / FLO_QUANT))*FLO_QUANT;
+					end=int(rint((float)event.endTick() / FLO_QUANT))*FLO_QUANT;
+					cout <<"inserting note on at "<<begin<<" with pitch="<<event.pitch()<<" and len="<<end-begin<<endl;
+					cout<< "\tinserting corresponding note off at "<<endl;
+					result.insert(pair<unsigned, FloEvent>(begin, FloEvent(begin,event.pitch(), event.velo(),end-begin,FloEvent::NOTE_ON,part,&it->second)));
+					result.insert(pair<unsigned, FloEvent>(end,   FloEvent(end,event.pitch(), event.veloOff(),0,FloEvent::NOTE_OFF,part,&it->second)));
+				}
+				//else ignore it
+			}
+		}
+		//else ignore it
+	}
+
+	//insert bars and time signatures
+	for (iSigEvent it=sigmap.begin(); it!=sigmap.end(); it++)
+	{
+		unsigned from=it->second->tick;
+		unsigned to=it->first;
+		unsigned ticks_per_measure=sigmap.ticksMeasure(it->second->tick);
+		
+		if (to > unsigned(SONG_LENGTH))
+		{
+			cout << "time signature's end-of-validness is outside of our song, limiting it." << endl;
+			to=SONG_LENGTH;
+		}
+		
+		cout << "new signature from tick "<<from<<" to " << to << ": "<<it->second->sig.z<<"/"<<it->second->sig.n<<"; ticks per measure = "<<ticks_per_measure<<endl;
+		result.insert(pair<unsigned, FloEvent>(from,  FloEvent(from, FloEvent::TIME_SIG, it->second->sig.z, it->second->sig.n) ) );
+		for (unsigned t=from; t<to; t+=ticks_per_measure)
+			result.insert(pair<unsigned, FloEvent>(t,  FloEvent(t,0,0,ticks_per_measure,FloEvent::BAR) ) );
+	}
+
+
+	//TODO FINDMICH MARKER
+	result.insert(pair<unsigned, FloEvent>(0,  FloEvent(0,FloEvent::KEY_CHANGE, C ) ) );
+	
+	return result;
+}
+
+
+bool is_sharp_key(tonart_t t)
+{
+	return ((t>=SHARP_BEGIN) && (t<=SHARP_END));
+}
+bool is_b_key(tonart_t t)
+{
+	return ((t>=B_BEGIN) && (t<=B_END));
+}
+
+int n_accidentials(tonart_t t)
+{
+	if (is_sharp_key(t))
+		return t-SHARP_BEGIN-1;
+	else
+		return t-B_BEGIN-1;
+}
+
+
+//note needs to be 0..11
+note_pos_t ScoreCanvas::note_pos_(int note, tonart_t key)
+{
+	note_pos_t result;
+	           //C CIS D DIS E F FIS G GIS A AIS H
+	int foo[12]={0,-1, 1,-1, 2,3,-1, 4,-1, 5, -1,6};
+	
+	if ((note<0) || (note>=12))
+		cout << "WARNING: ILLEGAL FUNCTION CALL (note_pos, note out of range)" << endl;
+	
+	if (foo[note]!=-1)
+	{
+		result.height=foo[note];
+		result.vorzeichen=NONE;
+	}
+	else
+	{
+		if (is_sharp_key(key))
+		{
+			result.height=foo[note-1];
+			result.vorzeichen=SHARP;
+		}
+		else // if is_b_key
+		{
+			result.height=foo[note+1];
+			result.vorzeichen=B;			
+		}
+	}
+	
+	// Special cases for GES / FIS keys
+	if (key==GES)
+	{
+		// convert a H to a Ces
+		if (note==11)
+		{
+			result.height=12; 
+			result.vorzeichen=B;
+		}
+	}
+	else if (key==FIS)
+	{
+		// convert a F to an Eis
+		if (note==5)
+		{
+			result.height=2;
+			result.vorzeichen=SHARP;
+		}
+	}
+
+	return result;
+}
+
+
+//  V   --------------------------  <-- height=10
+//  I C --------------------------  <-- height=8
+//  O L --------------------------  <-- height=6
+//  L E --------------------------  <-- height=4
+//  I F --------------------------  <-- height=2
+//  N    --o--                      <-- this is C4. height=0
+
+// the "spaces" in between the lines have odd numbers.
+// that is, the space between line 2 and 4 is numbered 3.
+
+// these numbers do not change when clef changes. line 2
+// is always the "bottom line" of the system.
+// in violin clef, line 2 is E4
+// in bass clef, line 2 is G2
+
+note_pos_t ScoreCanvas::note_pos (int note, tonart_t key, clef_t clef)
+{
+	int octave=(note/12)-1; //integer division
+	note=note%12;
+	
+	//now octave contains the octave the note is in
+	//(A4 is the 440Hz tone. C4 is the "low C" in the violin clef
+	//and the "high C" in the bass clef.
+	//note contains 0 for C, 1 for Cis, ..., 11 for H (or B if you're not german)
+	
+	note_pos_t pos=note_pos_(note,key);
+	
+	switch (clef)
+	{
+		case VIOLIN:
+			pos.height=pos.height + (octave-4)*7;
+			break;
+			
+		case BASS:
+			pos.height=pos.height + (octave-3)*7 + 5;
+			break;
+	}
+	
+	return pos;
+}
+
+
+int ScoreCanvas::calc_len(int l, int d)
+{
+	// l=0,1,2 -> whole, half, quarter (think of 2^0, 2^1, 2^2)
+	// d=number of dots
+	
+	int tmp=0;
+	for (int i=0;i<=d;i++)
+		tmp+=TICKS_PER_WHOLE / pow(2, l+i);
+	
+	return tmp;
+}
+
+bool operator< (const note_len_t& a,const note_len_t& b) //TODO sane sorting order
+{
+	if (a.len<b.len) return true;
+	else if (a.dots<b.dots) return true;
+	else return false;
+}
+
+//quant_max must be in log(len), that is
+//whole, half, quarter, eighth = 0,1,2,3
+//NOT:  1,2,4,8! (think of 2^foo)
+//len is in ticks
+list<note_len_t> ScoreCanvas::parse_note_len(int len_ticks, bool allow_dots, bool allow_normal, int begin_tick)
+{
+	list<note_len_t> retval;
+	
+	if (allow_normal)
+	{
+		int dot_max = allow_dots ? quant_max : 0;
+		
+		for (int i=0;i<=quant_max;i++)
+			for (int j=0;j<=dot_max-i;j++)
+				if (calc_len(i,j) == len_ticks)
+				{
+					retval.push_back(note_len_t (i,j));
+					return retval;
+				}
+	}
+	
+	//if !allow_normal or if the above failed
+	
+	//         1       e       +       e       2       e       +       e       3       e       +       e       4       e       +       e
+	int foo[]={1,7,6,7,5,7,6,7,4,7,6,7,5,7,6,7,3,7,6,7,5,7,6,7,4,7,6,7,5,7,6,7,2,7,6,7,5,7,6,7,4,7,6,7,5,7,6,7,3,7,6,7,5,7,6,7,4,7,6,7,5,7,6,7};
+	#define foo_len (sizeof(foo)/sizeof(*foo))
+	
+	int begin=begin_tick * 64 / TICKS_PER_WHOLE;
+	int len=len_ticks * 64 / TICKS_PER_WHOLE;
+	
+	int pos=begin;
+	int len_done=0;
+	
+	while (len_done<len)
+	{
+		int len_now=0;
+		int last_number=foo[pos];
+		
+		while (! ((foo[pos]<last_number) || (len_done==len) || (pos==foo_len)) ) {pos++;len_done++;len_now++;}
+
+		len_now=len_now*TICKS_PER_WHOLE/64;
+
+		cout << "add " << len_now << " ticks" << endl;
+		for (int i=0; i<=quant_max; i++)
+		{
+			int tmp=calc_len(i,0);
+			if (tmp <= len_now)
+			{
+				retval.push_back(note_len_t(i));
+				len_now-=tmp;
+				if (len_now==0) break;
+			}
+		}
+		
+		if (len_now!=0)
+			cout << "WARNING: THIS SHOULD NEVER HAPPEN. wasn't able to split note len properly; len_now="<<len_now << endl;
+		
+		if (pos==foo_len) //we cross measure boundaries?
+			pos=0;
+	}
+
+	
+	return retval;
+}
+
+
+
+#define YLEN 10
+#define YDIST (2*YLEN)
+#define NOTE_XLEN 10
+#define NOTE_SHIFT 3
+#define PIXELS_PER_WHOLE (320) //how many px are between two wholes?
+#define PIXELS_PER_NOTEPOS (PIXELS_PER_WHOLE/quant_max_fraction)  //how many px are between the smallest drawn beats?
+
+//PIXELS_PER_NOTEPOS must be greater or equal to 3*NOTE_XLEN + 2*NOTE_SHIFT
+//because if tick 0 is at x=0: the notes can be shifted by NOTE_SHIFT.
+//additionally, they can be moved by NOTE_XLEN (collision avoiding)
+//then, they have their own width, which is NOTE_XLEN/2 into the x>0-area
+//the same thing applies to the x<0-area
+
+//  OOO
+//   |
+//   ^actual calculated x, without shifting or moving
+//  ^ and
+//    ^   : moved note (by XLEN)
+// additionally, a shift is possible
+// total_width = shift + move + note_xlen + move + shift, where move==note_xlen
+// total_width = 2*shift + 3*note_xlen
+// if total_width is greater than px_per_notepos, there will be collisions!
+
+#define NOTE_MOVE_X (PIXELS_PER_NOTEPOS/2)
+//TODO richtige werte finden!
+#define REST_AUSWEICH_X 10
+#define DOT_XDIST 6
+#define DOT_XBEGIN 10
+#define DOT_XBEGIN_REST 10
+
+#define TIMESIG_POSADD 20
+#define NUMBER_HEIGHT (pix_num[0].height())
+
+//kann 0 oder 1 sein:
+//bei notenkollisionen mit ungerader anzahl von kollidierenden
+//wird immer so ausgewichen, dass möglichst wenige ausweichen müssen
+//wenn die anzahl aber gerade ist, gibt es keine "bessere" lösung
+//in dem fall werden immer die geraden (0) bzw. ungeraden (1)
+//ausweichen.
+#define AUSWEICHEN_BEVORZUGT 0
+
+#define STEM_LEN 30
+
+#define DOTTED_RESTS true
+#define UNSPLIT_RESTS true
+
+#define AUX_LINE_LEN 1.5
+
+#define ACCIDENTIAL_DIST 11
+#define KEYCHANGE_ACC_DIST 9
+#define KEYCHANGE_ACC_LEFTDIST 3
+#define KEYCHANGE_ACC_RIGHTDIST 3
+
+
+#define stdmap std::map
+
+#define no_notepos note_pos_t()
+
+#define TIE_DIST 5
+#define TIE_HEIGHT 6
+#define TIE_THICKNESS 3
+
+void ScoreCanvas::draw_tie (QPainter& p, int x1, int x4, int yo, bool up)
+{
+	QPainterPath path;
+
+	int y1, y2, y3;
+
+	if (up)
+	{
+		y1 = yo - TIE_DIST;
+		y2 = y1 - TIE_HEIGHT;
+		y3=y2-TIE_THICKNESS;
+	}
+	else 
+	{
+		y1 = yo + TIE_DIST;
+		y2 = y1 + TIE_HEIGHT;
+		y3=y2+TIE_THICKNESS;
+	}
+	
+	int x2 = x1 + (x4-x1)/4;
+	int x3 = x4 - (x4-x1)/4;
+	
+	path.moveTo(x1,y1);
+	path.cubicTo( x2,y2  ,  x3,y2  ,  x4,y1 );
+	path.cubicTo( x3,y3  ,  x2,y3  ,  x1,y1 );
+	
+	p.setPen(Qt::black);
+ 	p.setBrush(Qt::black);
+
+	p.drawPath(path);
+}
+
+ScoreItemList ScoreCanvas::create_itemlist(ScoreEventList& eventlist)
+{
+	ScoreItemList itemlist;
+	tonart_t tmp_key=C;
+	int lastevent=0;
+	int next_measure=-1;
+
+	for (ScoreEventList::iterator it=eventlist.begin(); it!=eventlist.end(); it++)
+	{
+		int t, pitch, len, velo, actual_tick;
+		FloEvent::typeEnum type;
+		t=it->first;
+		pitch=it->second.pitch;
+		velo=it->second.vel;
+		len=it->second.len;
+		type=it->second.type;
+		actual_tick=it->second.tick;
+		if (actual_tick==-1) actual_tick=t;
+		
+		note_pos_t notepos=note_pos(pitch,tmp_key,VIOLIN); //TODO einstellmöglichkeiten
+		
+		printf("FLO: t=%i\ttype=%i\tpitch=%i\tvel=%i\tlen=%i\n",it->first, it->second.type, it->second.pitch, it->second.vel, it->second.len);
+		cout << "\tline="<<notepos.height<<"\tvorzeichen="<<notepos.vorzeichen << endl;
+		
+				
+		if (type==FloEvent::BAR)
+		{
+			// if neccessary, insert rest at between last note and end-of-measure
+			int rest=t-lastevent;
+			if (rest)
+			{
+				printf("\tend-of-measure: set rest at %i with len %i\n",lastevent,rest);
+				
+				list<note_len_t> lens=parse_note_len(rest,DOTTED_RESTS,UNSPLIT_RESTS,lastevent);
+				unsigned tmppos=lastevent;
+				for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
+				{
+					cout << "\t\tpartial rest with len="<<x->len<<", dots="<<x->dots<<endl;
+					itemlist[tmppos].insert( FloItem(FloItem::REST,notepos,x->len,x->dots) );
+					tmppos+=calc_len(x->len,x->dots);
+					itemlist[tmppos].insert( FloItem(FloItem::REST_END,notepos,0,0) );
+				}
+			}
+			
+			lastevent=t;
+			next_measure=t+len;
+			
+			itemlist[t].insert( FloItem(FloItem::BAR,no_notepos,0,0) );
+		}
+		else if (type==FloEvent::NOTE_ON)
+		{
+			int rest=t-lastevent;
+			if (rest)
+			{
+				printf("\tset rest at %i with len %i\n",lastevent,rest);
+				// no need to check if the rest crosses measure boundaries;
+				// it can't.
+				
+				list<note_len_t> lens=parse_note_len(rest,DOTTED_RESTS,UNSPLIT_RESTS,lastevent);
+				unsigned tmppos=lastevent;
+				for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
+				{
+					cout << "\t\tpartial rest with len="<<x->len<<", dots="<<x->dots<<endl;
+					itemlist[tmppos].insert( FloItem(FloItem::REST,notepos,x->len,x->dots) );
+					tmppos+=calc_len(x->len,x->dots);
+					itemlist[tmppos].insert( FloItem(FloItem::REST_END,notepos,0,0) );
+				}
+			}
+			
+			
+			
+			printf("\tset note at %i with len=%i\n", t, len);
+
+			int tmplen;
+			bool tied_note;
+
+			// if the note exceeds the current measure, split it.
+			if (t+len>next_measure)
+			{
+				tmplen=next_measure-t;
+				tied_note=true;
+				
+				//append the "rest" of the note to our EventList, so that
+				//it gets processed again when entering the new measure
+				int newlen=len-tmplen;
+				eventlist.insert(pair<unsigned, FloEvent>(next_measure, FloEvent(actual_tick,pitch, velo,0,FloEvent::NOTE_OFF, it->second.source_part, it->second.source_event)));
+				eventlist.insert(pair<unsigned, FloEvent>(next_measure, FloEvent(actual_tick,pitch, velo,newlen,FloEvent::NOTE_ON, it->second.source_part, it->second.source_event)));
+
+				cout << "\t\tnote was split to length "<<tmplen<<" + " << newlen<<endl;
+			}
+			else
+			{
+				tmplen=len;
+				tied_note=false;
+			}
+							
+			list<note_len_t> lens=parse_note_len(tmplen,true,true,t);
+			unsigned tmppos=t;
+			int n_lens=lens.size();
+			int count=0;			
+			for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
+			{
+				cout << "\t\tpartial note with len="<<x->len<<", dots="<<x->dots<<endl;
+				count++;
+				
+				bool tie;
+				
+				if (count<n_lens)
+					tie=true;      // all notes except the last are always tied
+				else
+					tie=tied_note; // only the last respects tied_note
+				
+				itemlist[tmppos].insert( FloItem(FloItem::NOTE,notepos,x->len,x->dots, tie, actual_tick, it->second.source_part, it->second.source_event) );
+				tmppos+=calc_len(x->len,x->dots);
+				itemlist[tmppos].insert( FloItem(FloItem::NOTE_END,notepos,0,0) );
+			}
+		}
+		else if (type==FloEvent::NOTE_OFF)
+		{
+			lastevent=t;
+		}
+		else if (type==FloEvent::TIME_SIG)
+		{
+			cout << "inserting TIME SIGNATURE "<<it->second.num<<"/"<<it->second.denom<<" at "<<t<<endl;
+			itemlist[t].insert( FloItem(FloItem::TIME_SIG, it->second.num, it->second.denom) );
+		}
+		else if (type==FloEvent::KEY_CHANGE)
+		{
+			cout << "inserting KEY CHANGE ("<<it->second.tonart<<") at "<<t<<endl;
+			itemlist[t].insert( FloItem(FloItem::KEY_CHANGE, it->second.tonart) );
+			tmp_key=it->second.tonart; // TODO FINDMICH MARKER das muss schöner werden
+		}
+	}	
+
+	return itemlist;
+}
+
+void ScoreCanvas::process_itemlist(ScoreItemList& itemlist)
+{
+	stdmap<int,int> occupied;
+
+	//iterate through all times with items
+	for (ScoreItemList::iterator it2=itemlist.begin(); it2!=itemlist.end(); it2++)
+	{
+		set<FloItem, floComp>& curr_items=it2->second;
+		
+		cout << "at t="<<it2->first<<endl;
+		
+		// phase 0: keep track of active notes and rests -------------------
+		//          (and occupied lines)
+		for (set<FloItem, floComp>::iterator it=curr_items.begin(); it!=curr_items.end(); it++)
+		{
+			if ((it->type==FloItem::NOTE) || (it->type==FloItem::REST))
+				occupied[it->pos.height]++;
+			else if ((it->type==FloItem::NOTE_END) || (it->type==FloItem::REST_END))
+				occupied[it->pos.height]--;
+		}
+		
+		cout << "occupied: ";
+		for (stdmap<int,int>::iterator i=occupied.begin(); i!=occupied.end(); i++)
+			if (i->second) cout << i->first << "("<<i->second<<")   ";
+		cout << endl;
+		
+		
+		
+		
+		
+		// phase 1: group rests together -----------------------------------
+		int n_groups=0;
+		bool dont_group=false;
+		
+		//iterate through all rests R at that time
+		//  iterate through all rests X at that time below R
+		//    if something is between X and R ("barrier"), stop
+		//    else: group them together
+		for (set<FloItem, floComp>::iterator it=curr_items.begin(); it!=curr_items.end();)
+		{
+			//only operate on rests; ignore rests which are created by this code
+			//(can be seen on already_grouped)
+			if ((it->type==FloItem::REST) && (it->already_grouped==false))
+			{
+				cout << "trying to group" << endl;
+				
+				int lastheight;
+				int height_cumulative=0;
+				int counter=0;
+				
+				lastheight=it->pos.height;
+				
+				set<FloItem, floComp>::iterator tmp;
+				for (tmp=it; tmp!=curr_items.end();)
+				{
+					cout << "checking if we can proceed with an item at height="<<tmp->pos.height<<endl;
+					
+					for (int i=lastheight+1; i<=tmp->pos.height-1; i++)
+						if (occupied[i]!=0)
+						{
+							cout << "we can NOT, because occ["<<i<<"] != 0" << endl;
+							//stop grouping that rest
+							goto get_out_here;
+						}
+					
+					lastheight=tmp->pos.height;
+					
+					// the current item is a rest with equal len? cool!
+					if (tmp->type==FloItem::REST && tmp->len==it->len && tmp->dots==it->dots)
+					{
+						// füge diese pause zur gruppe dazu und entferne sie von diesem set hier
+						// entfernen aber nur, wenn sie nicht it, also die erste pause ist, die brauchen wir noch!
+						cout << "\tgrouping rest at height="<<tmp->pos.height<<endl;
+						height_cumulative+=tmp->pos.height;
+						counter++;
+						if (tmp!=it)
+							curr_items.erase(tmp++);
+						else
+							tmp++;
+					}
+					else //it's something else? well, we can stop grouping that rest then
+					{
+						cout << "we can NOT, because that item is not a rest" << endl;
+						//stop grouping that rest
+						goto get_out_here;
+					}
+				}
+				cout << "no items to proceed on left, continuing" << endl;
+				get_out_here:
+				
+				n_groups++;
+				
+				// entferne it vom set und
+				// füge eine pause mit dem "mittelwert" ein.
+				// occupied und die "_END"-events bleiben unberührt
+
+				FloItem temp=*it;
+				temp.already_grouped=true;
+				
+				// have we grouped all available rests into one single?
+				if ( (n_groups==1) && (tmp==curr_items.end()) && !dont_group)
+				{
+					cout << "wow, we were able to group all rests into one single" << endl;
+					if (temp.len==0) //the whole rest is shifted one line (one space and one line)
+						temp.pos.height=DEFAULT_REST_HEIGHT+2;
+					else
+						temp.pos.height=DEFAULT_REST_HEIGHT;
+				}
+				else
+				{
+					cout << "creating group #"<<n_groups<<endl;
+					temp.pos.height=rint((float)height_cumulative/counter);
+				}
+				
+				// do NOT first insert, then erase, because if temp.height ==
+				// it->height, the set considers temp and it equal (it doesn't
+				// take already_grouped into account)
+				// the result of this: insert does nothing, and erase erases
+				// the item. effect: you don't have the rest at all
+				curr_items.erase(it++);
+				
+				cout << "replacing all grouped rests with a rest at height="<<temp.pos.height<<endl;
+				
+				curr_items.insert(temp);
+			}
+			else
+			{
+				if (it->type==FloItem::NOTE)
+					dont_group=true;
+				
+				it++;
+			}
+		}
+	
+		
+		
+		
+		
+		// phase 2: avoid collisions of items ------------------------------
+		set<FloItem, floComp>::iterator lastit, groupbegin, invalid;
+		invalid=curr_items.end();
+		lastit=invalid;
+		groupbegin=invalid;
+		int count;
+		
+		//TODO FINDMICH MARKER: is "grouping" notes and rests together okay?
+		// or is it better to ignore rests when grouping?
+		for (set<FloItem, floComp>::iterator it=curr_items.begin(); it!=curr_items.end(); it++)
+			if ( (it->type==FloItem::NOTE) || (it->type==FloItem::REST) )
+			{
+				if (lastit != invalid)
+				{
+					if (it->pos.height == lastit->pos.height+1) // they would collide?
+					{
+						if (groupbegin==invalid) // we have no group atm?
+						{
+							groupbegin=lastit;     // start a new group
+							count=1; // because lastit has to be taken into account.
+							         // for "it", there's a count++ later
+						}
+
+						// the following will work even on start-new-group, 
+						// because lastit will be "untouched", and that's why 
+						// still be initalized to "false"
+						it->ausweich=!lastit->ausweich;
+
+						count++;
+					}
+					else
+					{
+						if (groupbegin!=invalid) //this is the first item which 
+						{												 //doesn't belong to the previous group any more
+							if (count%2 == 0) //count is even?
+								if (modulo(groupbegin->pos.height, 2) == AUSWEICHEN_BEVORZUGT)
+									for (set<FloItem, floComp>::iterator tmp=groupbegin; tmp!=it; tmp++)
+										tmp->ausweich=!tmp->ausweich;
+							
+							groupbegin=invalid;
+						}
+						// else: everything is ok :)
+					}
+				}
+				
+				lastit=it;
+			}
+			
+			// this could be the case if the last processed item before end()
+			// still belonged to a group. finalize this last group as well:
+			if (groupbegin!=invalid) 
+			{
+				if (count%2 == 0) //count is even?
+					if (modulo(groupbegin->pos.height, 2) == AUSWEICHEN_BEVORZUGT)
+						for (set<FloItem, floComp>::iterator tmp=groupbegin; tmp!=curr_items.end(); tmp++)
+							tmp->ausweich=!tmp->ausweich;
+			}
+			// else: everything is ok :)
+	
+	
+	
+	
+	
+		// phase 3: group notes by their length and ------------------------
+		//          find out appropriate stem directions
+group_them_again:
+		stdmap<int, cumulative_t> lengths;
+		bool has_whole=false;
+		
+		// find out which note lengths are present at that time
+		for (set<FloItem, floComp>::iterator it=curr_items.begin(); it!=curr_items.end(); it++)
+			if (it->type==FloItem::NOTE)
+				lengths[it->len].add(it->pos.height);
+		
+		cout << "note lengths at that time are:";
+		for (stdmap<int, cumulative_t>::iterator it=lengths.begin(); it!=lengths.end(); it++)
+			cout << it->first << "("<< it->second.mean() <<")  ";
+		cout << endl;
+		
+		if (lengths.erase(0)) // in case "0" is in the set, erase it		
+			has_whole=true;     // but remember there were whole notes
+		
+		if (lengths.size()==0)
+		{
+			cout << "no notes other than wholes, or no notes at all. we can relax" << endl;
+		}
+		else if (lengths.size()==1)
+		{
+			pair<const int, cumulative_t>& group=*(lengths.begin());
+			stem_t stem;
+			int shift=0;
+			cout << "only one non-whole note group (len="<<group.first<<") at height="<<group.second.mean()<< endl;
+			
+			if (group.second.mean()>=6)
+			{
+				stem=DOWNWARDS;
+				if (has_whole)
+					shift=-1;
+			}
+			else
+			{
+				stem=UPWARDS;
+				if (has_whole)
+					shift=1;
+			}
+			
+			// for each note in that group
+			for (set<FloItem, floComp>::iterator it=curr_items.begin(); it!=curr_items.end(); it++)
+				if ( (it->type==FloItem::NOTE) && (it->len==group.first) )
+				{
+					it->stem=stem;
+					it->shift=shift;
+				}
+		}
+		else if (lengths.size()==2)
+		{
+			stdmap<int, cumulative_t>::iterator it=lengths.begin();
+			pair<const int, cumulative_t>& group1=*it;
+			it++;
+			pair<const int, cumulative_t>& group2=*it;
+			stem_t stem1, stem2;
+			int shift1=0, shift2=0;
+			cout << "two non-whole note group: len="<<group1.first<<" at height="<<group1.second.mean()<<"  and len="<<group2.first<<" at height="<<group2.second.mean()<< endl;
+			
+			if (group1.second.mean()<group2.second.mean())
+			{
+				stem1=DOWNWARDS;
+				stem2=UPWARDS;
+				shift1=-1;
+				if (has_whole)
+					shift2=1;
+			}
+			else
+			{
+				stem1=UPWARDS;
+				stem2=DOWNWARDS;
+				shift2=-1;
+				if (has_whole)
+					shift1=1;
+			}
+			
+			// for each note in group1
+			for (set<FloItem, floComp>::iterator it=curr_items.begin(); it!=curr_items.end(); it++)
+				if ( (it->type==FloItem::NOTE) && (it->len==group1.first) )
+				{
+					it->stem=stem1;
+					it->shift=shift1;
+				}
+
+			// for each note in group2
+			for (set<FloItem, floComp>::iterator it=curr_items.begin(); it!=curr_items.end(); it++)
+				if ( (it->type==FloItem::NOTE) && (it->len==group2.first) )
+				{
+					it->stem=stem2;
+					it->shift=shift2;
+				}
+		}
+		else //more than 2 groups
+		{
+			//at this time, there are no iterators pointing to curr_items.
+			//this means, we can erase and insert safely into curr_items here.
+			
+			//group1 contains the longer notes, group2 the shorter
+			
+			int group1_n=lengths.size()/2; //round down
+			int group2_n=lengths.size()-group1_n;
+			
+			int group1_len, group2_len;
+			int group1_len_ticks, group2_len_ticks;
+			
+
+			stdmap<int, cumulative_t>::iterator lit=lengths.begin();
+			for (int i=0;i<group1_n-1;i++) lit++; //go to the group1_n-th entry
+			group1_len=lit->first;
+			for (int i=0;i<group2_n;i++) lit++;  //go to the (group1_n+group2_n)-th entry (i.e., the last before end() )
+			group2_len=lit->first;
+			
+			group1_len_ticks=calc_len(group1_len,0);
+			group2_len_ticks=calc_len(group2_len,0);
+			
+			cout << "we have "<<lengths.size()<<" groups. putting the "<<group1_n<<" longest and the "<<group2_n<<"shortest groups together"<<endl;
+			cout << "\tgroup1 will have len="<<group1_len<<" ("<<group1_len_ticks<<" ticks), group2 will have len="<<group2_len<<" ("<<group2_len_ticks<<" ticks)"<<endl;
+			
+			for (set<FloItem, floComp>::iterator it=curr_items.begin(); it!=curr_items.end();)
+				if (it->type==FloItem::NOTE)
+				{
+					//if *it belongs to group1 and has not already its destination length
+					cout << "\tprocessing note-item with len="<<it->len<<endl;
+					if (it->len<group1_len)
+					{
+						cout << "\t\thas to be changed to fit into group 1" << endl;
+						FloItem tmp=*it;
+						curr_items.erase(it++);
+
+						int len_ticks_remaining=calc_len(tmp.len, tmp.dots)-group1_len_ticks;
+						bool tied_note=tmp.tied;
+						
+						
+						//shorten the current item to it's group's length
+						tmp.len=group1_len;
+						tmp.dots=0;
+						tmp.tied=true;
+						curr_items.insert(tmp);
+						
+						//create items for the remaining lengths (and a note_END for the just created shortened note)
+						int t=it2->first+group1_len_ticks;
+
+						itemlist[t].insert( FloItem(FloItem::NOTE_END,tmp.pos,0,0) );
+						
+						list<note_len_t> lens=parse_note_len(len_ticks_remaining,true,true,t);
+						unsigned tmppos=t;
+						int n_lens=lens.size();
+						int count=0;			
+						for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
+						{
+							cout << "\t\twhile regrouping: partial note with len="<<x->len<<", dots="<<x->dots<<endl;
+							count++;
+							
+							bool tie;
+							
+							if (count<n_lens)
+								tie=true;      // all notes except the last are always tied
+							else
+								tie=tied_note; // only the last respects tied_note
+							
+							itemlist[tmppos].insert( FloItem(FloItem::NOTE, tmp.pos,x->len,x->dots, tie, tmp.begin_tick, tmp.source_part, tmp.source_event) );
+							tmppos+=calc_len(x->len,x->dots);
+							itemlist[tmppos].insert( FloItem(FloItem::NOTE_END, tmp.pos,0,0) );
+						}
+
+					}
+					//else if *it belongs to group2 and has not already its destination length
+					else if ((it->len<group2_len) && (it->len>group1_len))
+					{
+						cout << "\t\thas to be changed to fit into group 2" << endl;
+						
+						FloItem tmp=*it;
+						curr_items.erase(it++);
+
+						int len_ticks_remaining=calc_len(tmp.len, tmp.dots)-group2_len_ticks;
+						bool tied_note=tmp.tied;
+						
+						
+						//shorten the current item to it's group's length
+						tmp.len=group2_len;
+						tmp.dots=0;
+						tmp.tied=true;
+						curr_items.insert(tmp);
+						
+						//create items for the remaining lengths (and a note_END for the just created shortened note)
+						int t=it2->first+group2_len_ticks;
+
+						itemlist[t].insert( FloItem(FloItem::NOTE_END,tmp.pos,0,0) );
+						
+						list<note_len_t> lens=parse_note_len(len_ticks_remaining,true,true,t);
+						unsigned tmppos=t;
+						int n_lens=lens.size();
+						int count=0;			
+						for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
+						{
+							cout << "\t\twhile regrouping: partial note with len="<<x->len<<", dots="<<x->dots<<endl;
+							count++;
+							
+							bool tie;
+							
+							if (count<n_lens)
+								tie=true;      // all notes except the last are always tied
+							else
+								tie=tied_note; // only the last respects tied_note
+							
+							itemlist[tmppos].insert( FloItem(FloItem::NOTE,tmp.pos,x->len,x->dots, tie, tmp.begin_tick, tmp.source_part, tmp.source_event) );
+							tmppos+=calc_len(x->len,x->dots);
+							itemlist[tmppos].insert( FloItem(FloItem::NOTE_END,tmp.pos,0,0) );
+						}
+
+					}
+					else //nothing to do?
+					{
+						cout << "\t\tnothing to do" << endl;
+						it++;
+					}
+				}
+				else
+					it++;
+			
+			goto group_them_again; //do it again
+		}
+
+	}
+}
+
+//draw a pixmap centered
+void ScoreCanvas::draw_pixmap(QPainter& p, int x, int y, const QPixmap& pm)
+{
+	cout << "drawing pixmap width size="<<pm.width()<<"/"<<pm.height()<<" at "<<x<<"/"<<y<<endl;
+	p.drawPixmap(x-pm.width()/2,y-pm.height()/2,pm);
+}
+
+QRect bbox_center(int x, int y, const QSize& size)
+{
+	//why x-foo/2+foo? because due to integer divisions,
+	// x-foo/2+foo can be smaller than x+foo/2!
+	return QRect(x-size.width()/2,y-size.height()/2,size.width(),size.height());
+}
+
+QRect FloItem::bbox() const
+{
+	return bbox_center(x,y,pix->size());
+}
+
+void ScoreCanvas::draw_note_lines(QPainter& p)
+{
+	int xend=width();
+	
+	for (int i=0;i<5;i++)
+		p.drawLine(0,YDIST+i*YLEN,xend,YDIST+i*YLEN);
+}
+
+
+void ScoreCanvas::calc_item_pos(ScoreItemList& itemlist)
+{
+	tonart_t curr_key=C;
+	int pos_add=0;
+	
+	for (ScoreItemList::iterator it2=itemlist.begin(); it2!=itemlist.end(); it2++)
+	{
+		for (set<FloItem, floComp>::iterator it=it2->second.begin(); it!=it2->second.end();it++)
+		{
+			//if this changes, also change the line(s) with Y_MARKER
+			it->x=it2->first * PIXELS_PER_WHOLE/TICKS_PER_WHOLE  +pos_add;
+			it->y=YDIST+4*YLEN  -  (it->pos.height-2)*YLEN/2;
+			
+			if (it->type==FloItem::NOTE)
+			{
+				it->x+=NOTE_MOVE_X + it->shift*NOTE_SHIFT;
+				
+				switch (it->len)
+				{
+					case 0: it->pix=&pix_whole; break;
+					case 1: it->pix=&pix_half; break;
+					default: it->pix=&pix_quarter; break;
+				}
+				
+				it->stem_x=it->x;
+				
+				if (it->ausweich)
+				{
+					if ((it->stem==UPWARDS) || (it->len==0))
+						it->x += it->pix->width()-1; //AUSWEICH_X
+					else
+						it->x -= it->pix->width()-1; //AUSWEICH_X
+				}
+				
+				//if there's a tie, try to find the tie's destination and set is_tie_dest
+				if (it->tied)
+				{
+					set<FloItem, floComp>::iterator dest;
+					set<FloItem, floComp>& desttime = itemlist[it2->first+calc_len(it->len,it->dots)];
+					for (dest=desttime.begin(); dest!=desttime.end();dest++)
+						if ((dest->type==FloItem::NOTE) && (dest->pos==it->pos))
+						{
+							dest->is_tie_dest=true;
+							dest->tie_from_x=it->x;
+							break;
+						}
+					
+					if (dest==desttime.end())
+						cout << "THIS SHOULD NEVER HAPPEN: did not find destination note for tie!" << endl;		
+				}
+			}
+			else if (it->type==FloItem::REST)
+			{
+				switch (it->len)
+				{
+					case 0: it->pix=&pix_r1; break;
+					case 1: it->pix=&pix_r2; break;
+					case 2: it->pix=&pix_r4; break;
+					case 3: it->pix=&pix_r8; break;
+					case 4: it->pix=&pix_r16; break;
+				}
+				
+				it->x+=NOTE_MOVE_X + (it->ausweich ? REST_AUSWEICH_X : 0); //AUSWEICH_X
+			}
+			else if (it->type==FloItem::BAR)
+			{
+				//nothing to do :)
+			}
+			else if (it->type==FloItem::TIME_SIG)
+			{
+				pos_add+=TIMESIG_POSADD;
+				
+				pos_add_list[it2->first]+=TIMESIG_POSADD;
+				//+= is used instead of =, because a key- and time-
+				//change can occur at the same time.
+			}
+			else if (it->type==FloItem::KEY_CHANGE)
+			{
+				tonart_t new_key=it->tonart;
+				
+				int aufloes_begin; //einschließlich
+				int aufloes_end; //ausschließlich!
+				int neue_vz_end; //ausschließlich!
+				
+				neue_vz_end=n_accidentials(new_key);
+				
+				int n_acc_drawn=0;
+				
+				//both are sharp or b keys?
+				if (is_sharp_key(curr_key) == is_sharp_key(new_key))
+				{
+					// wenn new weniger vorzeichen hat als curr:
+					// löse nur diese auf
+					if (n_accidentials(curr_key)>n_accidentials(new_key))
+					{
+						aufloes_begin=n_accidentials(new_key);
+						aufloes_end=n_accidentials(curr_key);
+					}
+					else
+					{
+						aufloes_begin=aufloes_end=0; //löse garnichts auf
+					}
+				}
+				else //different key-families (# and b mixed up)
+				{
+					aufloes_begin=0;
+					aufloes_end=n_accidentials(curr_key);
+				}
+				
+				n_acc_drawn=aufloes_end-aufloes_begin + neue_vz_end;
+				
+				pos_add+=n_acc_drawn*KEYCHANGE_ACC_DIST+ KEYCHANGE_ACC_LEFTDIST+ KEYCHANGE_ACC_RIGHTDIST;
+
+				pos_add_list[it2->first]+=n_acc_drawn*KEYCHANGE_ACC_DIST+ KEYCHANGE_ACC_LEFTDIST+ KEYCHANGE_ACC_RIGHTDIST;
+				//+= is used instead of =, because a key- and time-
+				//change can occur at the same time.
+				
+				curr_key=new_key;
+			}
+		}
+	}		
+}
+
+void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, int x1, int x2)
+{
+	int from_tick, to_tick;
+	ScoreItemList::iterator from_it, to_it;
+
+	//in general: drawing too much isn't bad. drawing too few is.
+
+	from_tick=x_to_tick(x1);
+	from_it=itemlist.lower_bound(from_tick);
+	//from_it now contains the first time which is fully drawn
+	//however, the previous beat could still be relevant, when it's
+	//partly drawn. so we decrement from_it
+	if (from_it!=itemlist.begin()) from_it--;
+
+	//decrement until we're at a time with a bar
+	//otherwise, drawing accidentials will be broken
+	while (from_it!=itemlist.begin() && from_it->second.find(FloItem(FloItem::BAR))==from_it->second.end())
+		from_it--;
+	
+	
+	to_tick=x_to_tick(x2);
+	to_it=itemlist.upper_bound(to_tick);
+	//to_it now contains the first time which is not drawn at all any more
+	//however, a tie from 1:04 to 2:01 is stored in 2:01, not in 1:04,
+	//so for drawing ties, we need to increment to_it, so that the
+	//"first time not drawn at all any more" is the last which gets
+	//actually drawn.
+	if (to_it!=itemlist.end()) to_it++; //do one tick more than neccessary. this will draw ties
+
+	draw_items(p,itemlist,from_it, to_it);	
+}
+
+void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist)
+{
+	draw_items(p,itemlist,x_pos,x_pos+width());
+}
+
+void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList::iterator from_it, ScoreItemList::iterator to_it)
+{
+	vorzeichen_t curr_accidential[7];
+	vorzeichen_t default_accidential[7];
+	for (int i=0;i<7;i++) default_accidential[i]=NONE;
+	tonart_t curr_key=C;
+
+	for (ScoreItemList::iterator it2=from_it; it2!=to_it; it2++)
+	{
+		cout << "at t="<<it2->first << endl;
+		
+		int upstem_y1 = -1, upstem_y2=-1, upstem_x=-1, upflag=-1;
+		int downstem_y1 = -1, downstem_y2=-1, downstem_x=-1, downflag=-1;
+		
+		for (set<FloItem, floComp>::iterator it=it2->second.begin(); it!=it2->second.end();it++)
+		{
+			if (it->type==FloItem::NOTE)
+			{
+				cout << "\tNOTE at line"<<it->pos.height<<" with acc.="<<it->pos.vorzeichen<<", len="<<pow(2,it->len);
+				for (int i=0;i<it->dots;i++) cout << ".";
+				cout << " , stem=";
+				if (it->stem==UPWARDS)
+					cout << "UPWARDS";
+				else
+					cout << "DOWNWARDS";
+				
+				cout << " , shift="<<it->shift<<", ausweich="<<it->ausweich<<", ";
+				if (!it->tied)	cout << "un";
+				cout << "tied, is_tie_dest="<<it->is_tie_dest<<endl;
+
+				if (it->len!=0) //only for non-whole notes the stems are relevant!
+				{
+					if (it->stem==UPWARDS)
+					{
+						if (upstem_y1 == -1)
+							upstem_y1=it->y;
+						
+						upstem_y2=it->y;
+						
+						
+						if ((upflag!=-1) && (upflag!=it->len))
+							cout << "WARNING: THIS SHOULD NEVER HAPPEN: upflag != this->flag" << endl;
+						upflag=it->len;
+						
+						if ((upstem_x!=-1) && (upstem_x!=it->stem_x ))
+							cout << "WARNING: THIS SHOULD NEVER HAPPEN: upstem_x != x_result" << endl;
+						upstem_x=it->stem_x;
+					}
+					else
+					{
+						if (downstem_y1 == -1)
+							downstem_y1=it->y;
+						
+						downstem_y2=it->y;
+						
+
+						if ((downflag!=-1) && (downflag!=it->len))
+							cout << "WARNING: THIS SHOULD NEVER HAPPEN: downflag != this->flag" << endl;
+						downflag=it->len;
+						
+						if ((downstem_x!=-1) && (downstem_x!=it->stem_x))
+							cout << "WARNING: THIS SHOULD NEVER HAPPEN: downstem_x != x_result" << endl;
+						downstem_x=it->stem_x; //important: before the below calculation!
+					}
+				}					
+
+		
+				if (it->pos.height <= 0) //we need auxiliary lines on the bottom?
+				{ //Y_MARKER
+					for (int i=0; i>=it->pos.height; i-=2)
+						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos,YDIST+4*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos,YDIST+4*YLEN  -  (i-2)*YLEN/2);
+				}
+				else if (it->pos.height >= 12) //we need auxiliary lines on the top?
+				{ //Y_MARKER
+					for (int i=12; i<=it->pos.height; i+=2)
+						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos,YDIST+4*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos,YDIST+4*YLEN  -  (i-2)*YLEN/2);
+				}
+				
+								
+				draw_pixmap(p,it->x -x_pos,it->y,*it->pix);
+				
+				//draw dots
+				
+				int x_dot=DOT_XBEGIN;
+				int y_dot;
+				if (modulo(it->pos.height, 2) == 0) //note is on a line?
+					y_dot=YLEN * 0.33; // actually 0.5, but that would be _exactly_ in the space
+				else //note is between two lines?
+					y_dot=YLEN * 0.1;
+				
+				if (it->stem==DOWNWARDS)
+					y_dot=-y_dot;
+				//else y_dot=y_dot;
+				
+				for (int i=0;i<it->dots;i++)
+				{
+					draw_pixmap(p,it->x+x_dot -x_pos,it->y+y_dot,pix_dot);
+					x_dot+=DOT_XDIST;
+				}
+
+
+				
+				//draw accidentials
+				if (it->pos.vorzeichen != curr_accidential[modulo(it->pos.height,7)])
+				{
+					QPixmap* acc_pix;
+					switch (it->pos.vorzeichen)
+					{
+						case NONE: acc_pix=&pix_noacc; break;
+						case SHARP: acc_pix=&pix_sharp; break;
+						case B: acc_pix=&pix_b; break;
+					}
+					draw_pixmap(p,it->x-ACCIDENTIAL_DIST -x_pos,it->y, *acc_pix);
+
+					curr_accidential[modulo(it->pos.height,7)]=it->pos.vorzeichen;
+				}
+
+				
+				//if needed, draw tie
+				if (it->is_tie_dest)
+				{
+					cout << "drawing tie" << endl;
+					draw_tie(p,it->tie_from_x-x_pos,it->x -x_pos,it->y, (it->len==0) ? true : (it->stem==DOWNWARDS)  );
+					// in english: "if it's a whole note, tie is upwards (true). if not, tie is upwards if
+					//              stem is downwards and vice versa"
+				}
+			}
+			else if (it->type==FloItem::REST)
+			{
+				cout << "\tREST at line"<<it->pos.height<<" with len="<<pow(2,it->len);
+				for (int i=0;i<it->dots;i++) cout << ".";
+				cout << " , ausweich="<<it->ausweich<<endl;
+				
+				draw_pixmap(p,it->x -x_pos,it->y,*it->pix);
+				
+
+				//draw dots
+				
+				int x_dot=DOT_XBEGIN_REST;
+				int y_dot;
+				if (modulo(it->pos.height, 2) == 0) //rest is on a line?
+					y_dot=YLEN * 0.33; // actually 0.5, but that would be _exactly_ in the space
+				else //note is between two lines?
+					y_dot=YLEN * 0.1;
+				
+				if (it->len!=0) // all rests except the whole are treated as 
+					y_dot=-y_dot; // if they had a downwards stem
+				
+				for (int i=0;i<it->dots;i++)
+				{
+					draw_pixmap(p,it->x+x_dot -x_pos,it->y+y_dot,pix_dot);
+					x_dot+=DOT_XDIST;
+				}
+			}
+			else if (it->type==FloItem::BAR)
+			{
+				cout << "\tBAR" << endl;
+				
+				p.drawLine(it->x -x_pos,YDIST,it->x -x_pos,YDIST+4*YLEN);
+				
+				for (int i=0;i<7;i++)
+					curr_accidential[i]=default_accidential[i];
+			}
+			else if (it->type==FloItem::TIME_SIG)
+			{
+				cout << "\tTIME SIGNATURE: "<<it->num<<"/"<<it->denom<<endl;
+
+				int y_coord=YDIST+2*YLEN;
+				p.drawPixmap(it->x + 5 -x_pos, y_coord, pix_num[it->denom]);
+				p.drawPixmap(it->x + 5 -x_pos, y_coord-NUMBER_HEIGHT, pix_num[it->num]);
+			}
+			else if (it->type==FloItem::KEY_CHANGE)
+			{
+				tonart_t new_key=it->tonart;
+				cout << "\tKEY CHANGE: from "<<curr_key<<" to "<<new_key<<endl;
+				
+				int sharp_pos[]={10,7,11,8,5,9,6};
+				int b_pos[]={6,9,5,8,4,7,3};
+				
+				int* aufloes_ptr;
+				int* neue_vz_ptr;
+				
+				aufloes_ptr = is_sharp_key(curr_key) ? sharp_pos : b_pos;
+				neue_vz_ptr = is_sharp_key(new_key) ? sharp_pos : b_pos;
+				
+				int aufloes_begin; //einschließlich
+				int aufloes_end; //ausschließlich!
+				int neue_vz_end; //ausschließlich!
+				
+				neue_vz_end=n_accidentials(new_key);
+				
+				int n_acc_drawn=0;
+				
+				//both are sharp or b keys?
+				if (is_sharp_key(curr_key) == is_sharp_key(new_key))
+				{
+					cout << "\tboth are # or b-keys" << endl;
+					// wenn new weniger vorzeichen hat als curr:
+					// löse nur diese auf
+					if (n_accidentials(curr_key)>n_accidentials(new_key))
+					{
+						aufloes_begin=n_accidentials(new_key);
+						aufloes_end=n_accidentials(curr_key);
+						cout << "\taufloesen im intervall ["<<aufloes_begin<<";"<<aufloes_end<<"["<<endl;
+					}
+					else
+					{
+						aufloes_begin=aufloes_end=0; //löse garnichts auf
+						cout << "\tnichts wird aufgeloest"<<endl;
+					}
+				}
+				else
+				{
+					cout << "\tdifferent key-families (# and b mixed up)" << endl;
+					// löse alle auf
+					aufloes_begin=0;
+					aufloes_end=n_accidentials(curr_key);
+					cout << "\talle werden aufgeloest" << endl;
+				}
+				
+				// vorzeichen von [aufloes_begin;aufloes_end[ aus curr_key auflösen
+				for (int i=aufloes_begin; i<aufloes_end; i++)
+				{
+					int y_coord=YDIST+4*YLEN  -  ( aufloes_ptr[i] -2)*YLEN/2; //Y_MARKER
+					draw_pixmap(p,it->x + n_acc_drawn*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_LEFTDIST -x_pos,y_coord,pix_noacc);
+					n_acc_drawn++;
+				}
+				
+				QPixmap* pix = is_sharp_key(new_key) ? &pix_sharp : &pix_b;
+				vorzeichen_t new_accidential = is_sharp_key(new_key) ? SHARP : B;
+				
+				for (int i=0;i<7;i++)
+					default_accidential[i]=NONE;
+				
+				// alle vorzeichen aus new_key zeichnen
+				for (int i=0; i<neue_vz_end; i++)
+				{
+					int y_coord=YDIST+4*YLEN  -  ( neue_vz_ptr[i] -2)*YLEN/2; //Y_MARKER
+					draw_pixmap(p,it->x + n_acc_drawn*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_LEFTDIST -x_pos,y_coord,*pix);
+					n_acc_drawn++;
+					
+					default_accidential[neue_vz_ptr[i]%7]=new_accidential;
+				}
+				
+				curr_key=new_key;
+				for (int i=0;i<7;i++)
+					curr_accidential[i]=default_accidential[i];
+			}
+		}
+		
+		//note: y1 is bottom, y2 is top!
+		if (upstem_x!=-1)
+		{
+			upstem_x=upstem_x-pix_quarter.width()/2 +pix_quarter.width() -1;
+			p.drawLine(upstem_x -x_pos, upstem_y1, upstem_x -x_pos, upstem_y2-STEM_LEN);
+			
+			if (upflag>=3) //if the note needs a flag
+				p.drawPixmap(upstem_x -x_pos,upstem_y2-STEM_LEN,pix_flag_up[upflag-3]);
+		}
+		if (downstem_x!=-1)
+		{
+			downstem_x=downstem_x-pix_quarter.width()/2;
+			p.drawLine(downstem_x -x_pos, downstem_y1+STEM_LEN, downstem_x -x_pos, downstem_y2);
+
+			if (downflag>=3) //if the note needs a flag
+				p.drawPixmap(downstem_x -x_pos,downstem_y1+STEM_LEN-pix_flag_down[downflag-3].height(),pix_flag_down[downflag-3]);
+		}
+	}		
+}
+
+
+void ScoreCanvas::draw(QPainter& p, const QRect& rect)
+{
+	cout <<"now in ScoreCanvas::draw"<<endl;
+
+	
+
+	p.setPen(Qt::black);
+	
+	draw_note_lines(p);
+	draw_items(p, itemlist);
+}
+
+int ScoreCanvas::tick_to_x(int t)
+{
+	int x=t*PIXELS_PER_WHOLE/TICKS_PER_WHOLE;
+	
+	for (std::map<int,int>::iterator it=pos_add_list.begin(); it!=pos_add_list.end() && it->first<=t; it++)
+		x+=it->second;
+	
+	return x;
+}
+
+int ScoreCanvas::calc_posadd(int t)
+{
+	int result=0;
+
+	for (std::map<int,int>::iterator it=pos_add_list.begin(); it!=pos_add_list.end() && it->first<t; it++)
+		result+=it->second;	
+
+	return result;
+}
+
+//doesn't round mathematically correct, but i don't think this
+//will be a problem, because a tick is pretty small
+int ScoreCanvas::x_to_tick(int x)
+{
+	int t=TICKS_PER_WHOLE * x/PIXELS_PER_WHOLE;
+	int min_t=0;
+	
+	cout << "t="<<t<<endl;
+	
+	for (std::map<int,int>::iterator it=pos_add_list.begin(); it!=pos_add_list.end() && it->first<t; it++)
+	{
+		cout << "at pos_add event at t="<<it->first<<", add="<<it->second<<endl;
+		min_t=it->first;
+		x-=it->second;
+		t=TICKS_PER_WHOLE * x/PIXELS_PER_WHOLE;
+	}
+	
+	return t > min_t ? t : min_t;
+}
+
+
+#define DRAG_INIT_DISTANCE 5
+
+void ScoreCanvas::mousePressEvent (QMouseEvent* event)
+{
+	// den errechneten tick immer ABrunden!
+	// denn der "bereich" eines schlags geht von schlag_begin bis nächsterschlag_begin-1
+	// noten werden aber genau in die mitte dieses bereiches gezeichnet
+
+	int y=event->y();
+	int x=event->x()+x_pos;
+	int tick= int(x_to_tick(x) / FLO_QUANT) * FLO_QUANT;
+						//TODO quantizing must (maybe?) be done with the proper functions
+
+
+	cout << "mousePressEvent at "<<x<<"/"<<y<<"; tick="<<tick<<endl;
+	
+	for (set<FloItem, floComp>::iterator it=itemlist[tick].begin(); it!=itemlist[tick].end(); it++)
+		if (it->type==FloItem::NOTE)
+			if (it->bbox().contains(x,y))
+			{
+				mouse_down_pos=event->pos();
+				mouse_operation=NO_OP;
+				
+				int t=tick;
+				set<FloItem, floComp>::iterator found;
+				
+				do
+				{
+					found=itemlist[t].find(FloItem(FloItem::NOTE, it->pos));
+					if (found == itemlist[t].end())
+					{
+						cout << "FATAL: THIS SHOULD NEVER HAPPEN: could not find the note's tie-destination" << endl;
+						break;
+					}
+					else
+					{
+						t+=calc_len(found->len, found->dots);
+					}
+				} while (found->tied);
+				
+				int total_begin=it->begin_tick;
+				int total_end=t;
+				
+				int this_begin=tick;
+				int this_end=this_begin+calc_len(it->len, it->dots);
+				
+				//that's the only note corresponding to the event?
+				if (this_begin==total_begin && this_end==total_end)
+				{
+					if (x < it->x)
+						mouse_x_drag_operation=BEGIN;
+					else
+						mouse_x_drag_operation=LENGTH;
+				}
+				//that's NOT the only note?
+				else
+				{
+					if (this_begin==total_begin)
+						mouse_x_drag_operation=BEGIN;
+					else if (this_end==total_end)
+						mouse_x_drag_operation=LENGTH;
+					else
+						mouse_x_drag_operation=NO_OP;
+				}
+				
+				cout << "you clicked at a note with begin at "<<it->begin_tick<<" and end at "<<t<<endl;
+				cout << "x-drag-operation will be "<<mouse_x_drag_operation<<endl;
+				cout << "pointer to part is "<<it->source_part;
+				if (!it->source_part) cout << " (WARNING! THIS SHOULD NEVER HAPPEN!)";
+				cout << endl;
+				
+				dragged_event=*it->source_event;
+				dragged_event_part=it->source_part;
+				dragged_event_original_pitch=dragged_event.pitch();
+				
+				setMouseTracking(true);
+				
+				break;
+			}
+	
+}
+
+void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
+{
+	setMouseTracking(false);
+}
+
+#define PITCH_DELTA 5
+
+void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
+{
+	int dx=event->x()-mouse_down_pos.x();
+	int dy=event->y()-mouse_down_pos.y();
+
+	int y=event->y();
+	int x=event->x()+x_pos;
+	int tick= int(x_to_tick(x) / FLO_QUANT) * FLO_QUANT;
+
+	if (mouse_operation==NO_OP)
+	{		
+		if ((abs(dx)>DRAG_INIT_DISTANCE) && (mouse_x_drag_operation!=NO_OP))
+		{
+			cout << "mouse-operation is now "<<mouse_x_drag_operation<<endl;
+			mouse_operation=mouse_x_drag_operation;
+		}
+		else if (abs(dy)>DRAG_INIT_DISTANCE)
+		{
+			cout << "mouse-operation is now PITCH" << endl;
+			mouse_operation=PITCH;
+		}
+	}
+
+	int new_pitch;
+	
+	switch (mouse_operation)
+	{
+		case NONE:
+			break;
+			
+		case PITCH:
+			cout << "changing pitch, delta="<<dy/PITCH_DELTA<<endl;
+			new_pitch=dragged_event_original_pitch - dy/PITCH_DELTA;
+
+			if (dragged_event.pitch()!=new_pitch)
+			{
+				Event tmp=dragged_event.clone();
+				tmp.setPitch(dragged_event_original_pitch- dy/PITCH_DELTA);
+				
+				audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
+				dragged_event=tmp;
+				
+				song_changed(0);	
+			}
+			
+			break;
+		
+		case BEGIN:
+			if (dragged_event.tick() != tick)
+			{
+				Event tmp=dragged_event.clone();
+				tmp.setTick(tick);
+				
+				audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
+				dragged_event=tmp;
+				
+				song_changed(0);	
+			}
+			
+			break;
+
+		case LENGTH:
+			tick+=FLO_QUANT;
+			if (dragged_event.tick()+dragged_event.lenTick() != tick)
+			{
+				Event tmp=dragged_event.clone();
+				tmp.setLenTick(tick-dragged_event.tick());
+				
+				audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
+				dragged_event=tmp;
+				
+				song_changed(0);	
+			}
+			
+			break;
+	}	
+}
+
+void ScoreCanvas::scroll_event(int x)
+{
+	cout << "SCROLL EVENT: x="<<x<<endl;
+	x_pos=x;
+	redraw();
+}
+
+
+// TODO: testen: kommen die segfaults von muse oder von mir? [ von mir ]
+// TODO: testen, ob das noten-splitten korrekt arbeitet [ scheint zu klappen ]
+// TODO: testen, ob shift immer korrekt gesetzt wird [ scheint zu klappen ]
+
+//the following assertions are made:
+//  pix_quarter.width() == pix_half.width()
+
+
+// pix->width()-1 + 1/2*pix->width() + SHIFT + ADD_SPACE
+// 10-1+5+3+3=20 <- um so viel wird der taktstrich verschoben
+// um das doppelte (20*2=40) werden die kleinsten schläge gegeneinander versetzt
+
+
+
+// bei änderung
+// takt- oder tonartänderung:
+//     alles ab der betreffenden position löschen
+//     alles ab dort neu berechnen
+// notenänderung:
+//     alle von der note betroffenen takte löschen und neuberechnen
+//     aus erstem betroffenen takt müssen tie-infos gesichert werden
+//     im takt nach dem letzten betroffenen müssen die tie-infos
+//     geupdated werden. ggf. löschen ist unnötig, da ties nur wandern,
+//     aber nicht verschwinden oder neu dazukommen werden.
+
+
+//hint: recalculating event- and itemlists "from zero"
+//      could happen in realtime, as it is pretty fast.
+//      however, this adds unneccessary cpu usage.
+//      it is NO problem to recalc the stuff "from zero"
+//      every time something changes.
+
+
+
+
+
+//TODO WICHTIG TÖDLICH:
+// bei parse_note_len: BUG (siehe auch bug.mpt)
+// die anfangszeit wird in absoluten ticks statt
+// ticks seit taktbeginn gegeben -> fehler1
+// außerdem funzt die funktion nicht richtig, wenn
+// der takt nicht 4/4 ist!
+
+
+// TODO FINDMICH: tonart aus muses eventliste in meine übernehmen!
+
+// TODO: schöne funktionen fürs takt- und tonart-vorzeichen zeichnen
+//       (mit längenangabe!)
+
+
+// TODO: notenschlüssel zeichen!
+// TODO: balken bei 8teln und 16teln etc
+// TODO: die ItemList als map< pos_t , der_rest_t > umändern
+
+//TODO: ausweichen bei ganzen noten!
+
+
+
+//TODO: while dragging notes:
+//      send the correct events
+//      do undo() stuff
+//      etc.
+
+//TODO: support inserting and deleting notes
+//TODO: when a note gets resized so that len=0, erase it
+//      but watch out for quantisation stuff then!
+//      (when the start is slightly before the beat, len is 2 instead of 0)
+//TODO: deal with double notes?
