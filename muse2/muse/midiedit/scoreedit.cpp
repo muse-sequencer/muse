@@ -345,6 +345,8 @@ int n_accidentials(tonart_t t)
 
 
 //note needs to be 0..11
+//always assumes violin clef
+//only for internal use
 note_pos_t ScoreCanvas::note_pos_(int note, tonart_t key)
 {
 	note_pos_t result;
@@ -424,7 +426,7 @@ note_pos_t ScoreCanvas::note_pos (int note, tonart_t key, clef_t clef)
 	
 	note_pos_t pos=note_pos_(note,key);
 	
-	switch (clef)
+	switch (clef) //CLEF_MARKER
 	{
 		case VIOLIN:
 			pos.height=pos.height + (octave-4)*7;
@@ -611,6 +613,7 @@ list<note_len_t> ScoreCanvas::parse_note_len(int len_ticks, int begin_tick, vect
 }
 
 
+#define USED_CLEF BASS
 
 #define YLEN 10
 #define YDIST (2*YLEN)
@@ -727,7 +730,7 @@ ScoreItemList ScoreCanvas::create_itemlist(ScoreEventList& eventlist)
 		actual_tick=it->second.tick;
 		if (actual_tick==-1) actual_tick=t;
 		
-		note_pos_t notepos=note_pos(pitch,tmp_key,VIOLIN); //TODO einstellmöglichkeiten
+		note_pos_t notepos=note_pos(pitch,tmp_key,USED_CLEF); //TODO einstellmöglichkeiten
 		
 		printf("FLO: t=%i\ttype=%i\tpitch=%i\tvel=%i\tlen=%i\n",it->first, it->second.type, it->second.pitch, it->second.vel, it->second.len);
 		cout << "\tline="<<notepos.height<<"\tvorzeichen="<<notepos.vorzeichen << endl;
@@ -1382,9 +1385,9 @@ void ScoreCanvas::calc_item_pos(ScoreItemList& itemlist)
 			}
 			else if (it->type==FloItem::TIME_SIG)
 			{
-				pos_add+=TIMESIG_POSADD;
-				
-				pos_add_list[it2->first]+=TIMESIG_POSADD;
+				int add=calc_timesig_width(it->num, it->denom);
+				pos_add+=add;
+				pos_add_list[it2->first]+=add;
 				//+= is used instead of =, because a key- and time-
 				//change can occur at the same time.
 			}
@@ -1392,39 +1395,11 @@ void ScoreCanvas::calc_item_pos(ScoreItemList& itemlist)
 			{
 				tonart_t new_key=it->tonart;
 				
-				int aufloes_begin; //einschließlich
-				int aufloes_end; //ausschließlich!
-				int neue_vz_end; //ausschließlich!
-				
-				neue_vz_end=n_accidentials(new_key);
-				
-				int n_acc_drawn=0;
-				
-				//both are sharp or b keys?
-				if (is_sharp_key(curr_key) == is_sharp_key(new_key))
-				{
-					// wenn new weniger vorzeichen hat als curr:
-					// löse nur diese auf
-					if (n_accidentials(curr_key)>n_accidentials(new_key))
-					{
-						aufloes_begin=n_accidentials(new_key);
-						aufloes_end=n_accidentials(curr_key);
-					}
-					else
-					{
-						aufloes_begin=aufloes_end=0; //löse garnichts auf
-					}
-				}
-				else //different key-families (# and b mixed up)
-				{
-					aufloes_begin=0;
-					aufloes_end=n_accidentials(curr_key);
-				}
-				
-				n_acc_drawn=aufloes_end-aufloes_begin + neue_vz_end;
-				
-				pos_add+=n_acc_drawn*KEYCHANGE_ACC_DIST+ KEYCHANGE_ACC_LEFTDIST+ KEYCHANGE_ACC_RIGHTDIST;
+				list<int> aufloes_list=calc_accidentials(curr_key, USED_CLEF, new_key);
+				list<int> new_acc_list=calc_accidentials(new_key, USED_CLEF);
 
+				int n_acc_drawn=aufloes_list.size() + new_acc_list.size();
+				pos_add+=n_acc_drawn*KEYCHANGE_ACC_DIST+ KEYCHANGE_ACC_LEFTDIST+ KEYCHANGE_ACC_RIGHTDIST;
 				pos_add_list[it2->first]+=n_acc_drawn*KEYCHANGE_ACC_DIST+ KEYCHANGE_ACC_LEFTDIST+ KEYCHANGE_ACC_RIGHTDIST;
 				//+= is used instead of =, because a key- and time-
 				//change can occur at the same time.
@@ -1640,62 +1615,22 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				cout << "\tTIME SIGNATURE: "<<it->num<<"/"<<it->denom<<endl;
 
 				int y_coord=YDIST+2*YLEN;
-				p.drawPixmap(it->x + 5 -x_pos, y_coord, pix_num[it->denom]);
-				p.drawPixmap(it->x + 5 -x_pos, y_coord-NUMBER_HEIGHT, pix_num[it->num]);
+				draw_timesig(p,  it->x - x_pos, y_coord, it->num, it->denom);
 			}
 			else if (it->type==FloItem::KEY_CHANGE)
 			{
 				tonart_t new_key=it->tonart;
 				cout << "\tKEY CHANGE: from "<<curr_key<<" to "<<new_key<<endl;
-				
-				int sharp_pos[]={10,7,11,8,5,9,6};
-				int b_pos[]={6,9,5,8,4,7,3};
-				
-				int* aufloes_ptr;
-				int* neue_vz_ptr;
-				
-				aufloes_ptr = is_sharp_key(curr_key) ? sharp_pos : b_pos;
-				neue_vz_ptr = is_sharp_key(new_key) ? sharp_pos : b_pos;
-				
-				int aufloes_begin; //einschließlich
-				int aufloes_end; //ausschließlich!
-				int neue_vz_end; //ausschließlich!
-				
-				neue_vz_end=n_accidentials(new_key);
-				
+								
 				int n_acc_drawn=0;
 				
-				//both are sharp or b keys?
-				if (is_sharp_key(curr_key) == is_sharp_key(new_key))
-				{
-					cout << "\tboth are # or b-keys" << endl;
-					// wenn new weniger vorzeichen hat als curr:
-					// löse nur diese auf
-					if (n_accidentials(curr_key)>n_accidentials(new_key))
-					{
-						aufloes_begin=n_accidentials(new_key);
-						aufloes_end=n_accidentials(curr_key);
-						cout << "\taufloesen im intervall ["<<aufloes_begin<<";"<<aufloes_end<<"["<<endl;
-					}
-					else
-					{
-						aufloes_begin=aufloes_end=0; //löse garnichts auf
-						cout << "\tnichts wird aufgeloest"<<endl;
-					}
-				}
-				else
-				{
-					cout << "\tdifferent key-families (# and b mixed up)" << endl;
-					// löse alle auf
-					aufloes_begin=0;
-					aufloes_end=n_accidentials(curr_key);
-					cout << "\talle werden aufgeloest" << endl;
-				}
+				list<int> aufloes_list=calc_accidentials(curr_key, USED_CLEF, new_key);
+				list<int> new_acc_list=calc_accidentials(new_key, USED_CLEF);
 				
-				// vorzeichen von [aufloes_begin;aufloes_end[ aus curr_key auflösen
-				for (int i=aufloes_begin; i<aufloes_end; i++)
+				// vorzeichen aus curr_key auflösen
+				for (list<int>::iterator acc_it=aufloes_list.begin(); acc_it!=aufloes_list.end(); acc_it++)
 				{
-					int y_coord=YDIST+4*YLEN  -  ( aufloes_ptr[i] -2)*YLEN/2; //Y_MARKER
+					int y_coord=YDIST+4*YLEN  -  ( *acc_it -2)*YLEN/2; //Y_MARKER
 					draw_pixmap(p,it->x + n_acc_drawn*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_LEFTDIST -x_pos,y_coord,pix_noacc);
 					n_acc_drawn++;
 				}
@@ -1707,13 +1642,13 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 					default_accidential[i]=NONE;
 				
 				// alle vorzeichen aus new_key zeichnen
-				for (int i=0; i<neue_vz_end; i++)
+				for (list<int>::iterator acc_it=new_acc_list.begin(); acc_it!=new_acc_list.end(); acc_it++)
 				{
-					int y_coord=YDIST+4*YLEN  -  ( neue_vz_ptr[i] -2)*YLEN/2; //Y_MARKER
+					int y_coord=YDIST+4*YLEN  -  ( *acc_it -2)*YLEN/2; //Y_MARKER
 					draw_pixmap(p,it->x + n_acc_drawn*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_LEFTDIST -x_pos,y_coord,*pix);
 					n_acc_drawn++;
 					
-					default_accidential[neue_vz_ptr[i]%7]=new_accidential;
+					default_accidential[*acc_it % 7]=new_accidential;
 				}
 				
 				curr_key=new_key;
@@ -1742,6 +1677,49 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 	}		
 }
 
+#define TIMESIG_LEFTMARGIN 5
+#define TIMESIG_RIGHTMARGIN 5
+#define DIGIT_YDIST 9
+#define DIGIT_WIDTH 12
+
+void ScoreCanvas::draw_timesig(QPainter& p, int x, int y, int num, int denom)
+{
+	int num_width=calc_number_width(num);
+	int denom_width=calc_number_width(denom);
+	int width=((num_width > denom_width) ? num_width : denom_width);
+	int num_indent=(width-num_width)/2 + TIMESIG_LEFTMARGIN;
+	int denom_indent=(width-denom_width)/2 + TIMESIG_LEFTMARGIN;
+	
+	draw_number(p, x+num_indent, y-DIGIT_YDIST, num);
+	draw_number(p, x+denom_indent, y+DIGIT_YDIST, denom);
+}
+
+int ScoreCanvas::calc_timesig_width(int num, int denom)
+{
+	int num_width=calc_number_width(num);
+	int denom_width=calc_number_width(denom);
+	int width=((num_width > denom_width) ? num_width : denom_width);
+	return width+TIMESIG_LEFTMARGIN+TIMESIG_RIGHTMARGIN;
+}
+
+int ScoreCanvas::calc_number_width(int n)
+{
+	string str=IntToStr(n);
+	return (str.length()*DIGIT_WIDTH);
+}
+
+void ScoreCanvas::draw_number(QPainter& p, int x, int y, int n)
+{
+	string str=IntToStr(n);
+	int curr_x=x+DIGIT_WIDTH/2;
+	
+	for (int i=0;i<str.length(); i++)
+	{
+		draw_pixmap(p, curr_x, y, pix_num[str[i]-'0']);
+		curr_x+=DIGIT_WIDTH;
+	}
+}
+
 
 void ScoreCanvas::draw(QPainter& p, const QRect& rect)
 {
@@ -1754,6 +1732,43 @@ void ScoreCanvas::draw(QPainter& p, const QRect& rect)
 	draw_note_lines(p);
 	draw_items(p, itemlist);
 }
+
+
+list<int> ScoreCanvas::calc_accidentials(tonart_t key, clef_t clef, tonart_t next_key)
+{
+	list<int> result;
+	
+	int violin_sharp_pos[]={10,7,11,8,5,9,6}; //CLEF_MARKER
+	int violin_b_pos[]={6,9,5,8,4,7,3};
+	int bass_sharp_pos[]={8,5,9,6,3,7,4};
+	int bass_b_pos[]={4,7,3,6,2,5,1};
+	
+	int* accidential_pos;
+	
+	switch (clef)
+	{
+		case VIOLIN: accidential_pos = is_sharp_key(key) ? violin_sharp_pos : violin_b_pos; break;
+		case BASS: accidential_pos = is_sharp_key(key) ? bass_sharp_pos : bass_b_pos; break;
+	}
+
+	int begin=0;
+	
+	if (is_sharp_key(key)==is_sharp_key(next_key)) //same kind of key (both b or both #)?
+		begin=n_accidentials(next_key);
+	else
+		begin=0;
+	
+	
+	int end=n_accidentials(key);
+	
+	for (int i=begin; i<end; i++)
+		result.push_back(accidential_pos[i]);
+	
+	return result;
+}
+
+
+
 
 int ScoreCanvas::tick_to_x(int t)
 {
@@ -1805,32 +1820,36 @@ tonart_t ScoreCanvas::key_at_tick(int t)
 	return tmp;
 }
 
-int ScoreCanvas::height_to_pitch(int h)
+int ScoreCanvas::height_to_pitch(int h, clef_t clef)
 {
 	int foo[]={0,2,4,5,7,9,11};
-		
-	return foo[modulo(h,7)] + ( (h/7)*12 ) + 60;
+	
+	switch(clef) //CLEF_MARKER
+	{
+		case VIOLIN:	return foo[modulo(h,7)] + ( (h/7)*12 ) + 60;
+		case BASS:		return foo[modulo((h-5),7)] + ( ((h-5)/7)*12 ) + 48;
+		default:
+			cout << "WARNING: THIS SHOULD NEVER HAPPEN: unknown clef in height_to_pitch" << endl;
+			return 60;
+	}
 }
 
-int ScoreCanvas::height_to_pitch(int h, tonart_t key)
+int ScoreCanvas::height_to_pitch(int h, clef_t clef, tonart_t key)
 {
 	int add=0;
 	
-	int sharp_pos[]={10,7,11,8,5,9,6}; //TODO merge with draw function (where drawing accidentials)
-	int b_pos[]={6,9,5,8,4,7,3};
+	list<int> accs=calc_accidentials(key,USED_CLEF);
 	
-	int* acc_ptr = is_sharp_key(key) ? sharp_pos : b_pos;
-	
-	for (int i=0;i<n_accidentials(key);i++)
+	for (list<int>::iterator it=accs.begin(); it!=accs.end(); it++)
 	{
-		if (modulo(acc_ptr[i],7) == modulo(h,7))
+		if (modulo(*it,7) == modulo(h,7))
 		{
 			add=is_sharp_key(key) ? 1 : -1;
 			break;
 		}
 	}
 	
-	return height_to_pitch(h)+add;
+	return height_to_pitch(h,clef)+add;
 }
 
 int ScoreCanvas::y_to_height(int y)
@@ -1839,9 +1858,9 @@ int ScoreCanvas::y_to_height(int y)
 	return int(rint(float(YDIST+4*YLEN  - y)*2/YLEN))+2 ;
 }
 
-int ScoreCanvas::y_to_pitch(int y, int t)
+int ScoreCanvas::y_to_pitch(int y, int t, clef_t clef)
 {
-	return height_to_pitch(y_to_height(y), key_at_tick(t));
+	return height_to_pitch(y_to_height(y), clef, key_at_tick(t));
 }
 
 
@@ -1944,7 +1963,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 			//this drag will stop undo as well (in mouseReleaseEvent)
 			
 			Event newevent(Note);
-			newevent.setPitch(y_to_pitch(y,tick));
+			newevent.setPitch(y_to_pitch(y,tick, USED_CLEF));
 			newevent.setVelo(64); //TODO
 			newevent.setVeloOff(64); //TODO
 			newevent.setTick(tick);
@@ -2119,27 +2138,30 @@ void ScoreCanvas::scroll_event(int x)
 
 
 /* BUGS and potential bugs
- *   o bass-clef (and all other clefs than the violin-clef) will
- *     cause strange behaviour, for example when drawing accidentials,
- *     calling y_to_pitch etc.
  *   o when dividing, use a function which always rounds downwards
  *     operator/ rounds towards zero. (-5)/7=0, but should be -1
  * 
  * IMPORTANT TODO
  *   o removing the part the score's working on isn't handled
- * 
+ *   o handle multiple tracks, with different color (QColor c(config.partColors[part->colorIndex()]);)
  *   o let the user select the currently edited part
- *
- *   o use a function for drawing timesig changes. support two(or more)-digit-numbers
- *   o create nice functions for drawing keychange-accidentials
- *   o draw clef, maybe support clef changes. support violin and bass at one time
+ *   o draw clef, maybe support clef changes
+ *   o support violin and bass at one time
  *   o eliminate overlapping notes (e.g. C from 0 with len=10 and C from 5 with len=10)
+ *   o use correct scrolling bounds
+ *   o automatically scroll when playing
+ *   o support selections
  *
  * less important stuff
+ *   o create nice functions for drawing keychange-accidentials
  *   o check if "moving away" works for whole notes [seems to NOT work properly]
  *   o use bars instead of flags over groups of 8ths / 16ths etc
  *   o (change ItemList into map< pos_t , mutable_stuff_t >) [no]
  *   o deal with expanding parts or clip (expanding is better)
+ *   o check if making the program clef-aware hasn't broken anything
+ *     e.g. accidentials, creating notes, rendering etc.
+ *   o replace all kinds of "full-measure-rests" with the whole rest
+ *     in the middle of the measure
  *
  * stuff for the other muse developers
  *   o check if dragging notes is done correctly
@@ -2149,9 +2171,12 @@ void ScoreCanvas::scroll_event(int x)
  *   o process key from muse's event list (has to be implemented first in muse)
  *   o process accurate timesignatures from muse's list (has to be implemented first in muse)
  *      ( (2+2+3)/4 or (3+2+2)/4 instead of 7/4 )
+ *   o maybe do expanding parts inside the msgChangeEvent or
+ *     msgNewEvent functions (see my e-mail)
  *
  * GUI stuff
  *   o offer a button for bool mouse_erases_notes and mouse_inserts_notes
  *   o offer dropdown-boxes for lengths of the inserted note
  *     (select between 16th, 8th, ... whole and "last used length")
+ *   o offer a dropdown-box for the clef to use
  */

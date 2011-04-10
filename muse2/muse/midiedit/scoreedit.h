@@ -416,11 +416,17 @@ class ScoreCanvas : public View
 		void draw_items(QPainter& p, ScoreItemList& itemlist, int x1, int x2);
 		void draw_items(QPainter& p, ScoreItemList& itemlist);
 		void calc_item_pos(ScoreItemList& itemlist);
+		list<int> calc_accidentials(tonart_t key, clef_t clef, tonart_t next_key=C);
 
-		int y_to_pitch(int y, int t);
+		void draw_timesig(QPainter& p, int x, int y, int num, int denom);
+		int calc_timesig_width(int num, int denom);
+		void draw_number(QPainter& p, int x, int y, int n);
+		int calc_number_width(int n);
+
+		int y_to_pitch(int y, int t, clef_t clef);
 		int y_to_height(int y);
-		int height_to_pitch(int h, tonart_t key);
-		int height_to_pitch(int h);
+		int height_to_pitch(int h, clef_t clef, tonart_t key);
+		int height_to_pitch(int h, clef_t clef);
 		
 		tonart_t key_at_tick(int t);
 		int tick_to_x(int t);
