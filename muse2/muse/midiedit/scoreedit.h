@@ -401,6 +401,11 @@ struct cumulative_t
 };
 
 #define BLACK_PIXMAP (NUM_PARTCOLORS)
+struct timesig_t
+{
+	int num;
+	int denom;
+};
 
 class ScoreCanvas : public View
 {
@@ -417,22 +422,27 @@ class ScoreCanvas : public View
 		void process_itemlist(ScoreItemList& itemlist);
 		void draw_pixmap(QPainter& p, int x, int y, const QPixmap& pm);
 		void draw_note_lines(QPainter& p);
+		void draw_preamble(QPainter& p);
 		void draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList::iterator from_it, ScoreItemList::iterator to_it);
 		void draw_items(QPainter& p, ScoreItemList& itemlist, int x1, int x2);
 		void draw_items(QPainter& p, ScoreItemList& itemlist);
 		void calc_item_pos(ScoreItemList& itemlist);
 		list<int> calc_accidentials(tonart_t key, clef_t clef, tonart_t next_key=C);
-
-		void draw_timesig(QPainter& p, int x, int y, int num, int denom);
+		void draw_accidentials(QPainter& p, int x, const list<int>& acc_list, const QPixmap& pix);
+		
+		void draw_timesig(QPainter& p, int x, int num, int denom);
 		int calc_timesig_width(int num, int denom);
 		void draw_number(QPainter& p, int x, int y, int n);
 		int calc_number_width(int n);
+
+		int clef_height(clef_t clef);
 
 		int y_to_pitch(int y, int t, clef_t clef);
 		int y_to_height(int y);
 		int height_to_pitch(int h, clef_t clef, tonart_t key);
 		int height_to_pitch(int h, clef_t clef);
 		
+		timesig_t timesig_at_tick(int t);
 		tonart_t key_at_tick(int t);
 		int tick_to_x(int t);
 		int x_to_tick(int x);
@@ -443,12 +453,22 @@ class ScoreCanvas : public View
 		QPixmap pix_dot[NUM_PARTCOLORS+1], pix_flag_up[4], pix_flag_down[4];
 		QPixmap pix_b[NUM_PARTCOLORS+1], pix_sharp[NUM_PARTCOLORS+1], pix_noacc[NUM_PARTCOLORS+1];
 		QPixmap pix_num[10];
+		QPixmap pix_clef_violin, pix_clef_bass;
 		
 		
 		std::map<int,int> pos_add_list;
 		ScoreEventList eventlist;
 		ScoreItemList itemlist;
+		
+		// the drawing area is split into a "preamble" containing clef,
+		// key and time signature, and the "item's area" containing the
+		// actual items (notes, bars, rests, etc.)
+		// x_pos is responsible for scrolling. an item with item->x==x_pos
+		// will be drawn exactly at the left beginning of the item's area
+		// x_left could also be called "preamble's width". it defines
+		// where the item's area begins
 		int x_pos;
+		int x_left;
 
 
 		Part* curr_part;

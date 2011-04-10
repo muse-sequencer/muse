@@ -143,6 +143,7 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 	load_pixmaps();
 	
 	x_pos=0;
+	x_left=0;
 	dragging=false;
 	mouse_erases_notes=false;
 	mouse_inserts_notes=true;
@@ -233,6 +234,9 @@ void ScoreCanvas::load_pixmaps()
 	pix_flag_down[1].load(FONT_PATH "flags16d.png");
 	pix_flag_down[2].load(FONT_PATH "flags32d.png");
 	pix_flag_down[3].load(FONT_PATH "flags64d.png");
+	
+	pix_clef_violin.load(FONT_PATH "clef_violin_big.png");
+	pix_clef_bass.load(FONT_PATH "clef_bass_big.png");
 	
 	for (int i=0;i<10;i++)
 		pix_num[i].load(QString((string(FONT_PATH "")+IntToStr(i)+string(".png")).c_str()));	
@@ -346,7 +350,8 @@ ScoreEventList ScoreCanvas::createAppropriateEventList(PartList* pl)
 
 
 	//TODO FINDMICH MARKER
-	result.insert(pair<unsigned, FloEvent>(0,  FloEvent(0,FloEvent::KEY_CHANGE, C ) ) );
+	result.insert(pair<unsigned, FloEvent>(0,  FloEvent(0,FloEvent::KEY_CHANGE, A ) ) );
+	result.insert(pair<unsigned, FloEvent>(4*384,  FloEvent(4*384,FloEvent::KEY_CHANGE, ES ) ) );
 	
 	
 	// phase two: deal with overlapping notes ---------------------------
@@ -696,7 +701,6 @@ list<note_len_t> ScoreCanvas::parse_note_len(int len_ticks, int begin_tick, vect
 #define DOT_XBEGIN 10
 #define DOT_XBEGIN_REST 10
 
-#define TIMESIG_POSADD 20
 #define NUMBER_HEIGHT (pix_num[0].height())
 
 //kann 0 oder 1 sein:
@@ -758,6 +762,18 @@ void ScoreCanvas::draw_tie (QPainter& p, int x1, int x4, int yo, bool up, QColor
  	p.setBrush(color);
 
 	p.drawPath(path);
+}
+
+void ScoreCanvas::draw_accidentials(QPainter& p, int x, const list<int>& acc_list, const QPixmap& pix)
+{
+	int n_acc_drawn=0;
+	
+	for (list<int>::const_iterator acc_it=acc_list.begin(); acc_it!=acc_list.end(); acc_it++)
+	{
+		int y_coord=YDIST+4*YLEN  -  ( *acc_it -2)*YLEN/2; //Y_MARKER
+		draw_pixmap(p,x + n_acc_drawn*KEYCHANGE_ACC_DIST,y_coord,pix);
+		n_acc_drawn++;
+	}
 }
 
 ScoreItemList ScoreCanvas::create_itemlist(ScoreEventList& eventlist)
@@ -1500,15 +1516,28 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, int x1, int x
 
 void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist)
 {
-	draw_items(p,itemlist,x_pos,x_pos+width());
+	draw_items(p,itemlist,x_pos,x_pos+width()-x_left);
 }
 
 void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList::iterator from_it, ScoreItemList::iterator to_it)
 {
+	// init accidentials properly
 	vorzeichen_t curr_accidential[7];
 	vorzeichen_t default_accidential[7];
-	for (int i=0;i<7;i++) default_accidential[i]=NONE;
-	tonart_t curr_key=C;
+	tonart_t curr_key;
+
+	curr_key=key_at_tick(from_it->first);
+	list<int> new_acc_list=calc_accidentials(curr_key, USED_CLEF);
+	QPixmap* pix = is_sharp_key(curr_key) ? &pix_sharp[BLACK_PIXMAP] : &pix_b[BLACK_PIXMAP];
+	vorzeichen_t new_accidential = is_sharp_key(curr_key) ? SHARP : B;
+
+	for (int i=0;i<7;i++)
+		curr_accidential[i]=default_accidential[i]=NONE;
+
+	for (list<int>::iterator acc_it=new_acc_list.begin(); acc_it!=new_acc_list.end(); acc_it++)
+		default_accidential[*acc_it % 7]=curr_accidential[*acc_it % 7]=new_accidential;
+
+
 
 	for (ScoreItemList::iterator it2=from_it; it2!=to_it; it2++)
 	{
@@ -1574,17 +1603,17 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				{ //Y_MARKER
 					p.setPen(Qt::black);
 					for (int i=0; i>=it->pos.height; i-=2)
-						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos,YDIST+4*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos,YDIST+4*YLEN  -  (i-2)*YLEN/2);
+						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos+x_left,YDIST+4*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos+x_left,YDIST+4*YLEN  -  (i-2)*YLEN/2);
 				}
 				else if (it->pos.height >= 12) //we need auxiliary lines on the top?
 				{ //Y_MARKER
 					p.setPen(Qt::black);
 					for (int i=12; i<=it->pos.height; i+=2)
-						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos,YDIST+4*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos,YDIST+4*YLEN  -  (i-2)*YLEN/2);
+						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos+x_left,YDIST+4*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos+x_left,YDIST+4*YLEN  -  (i-2)*YLEN/2);
 				}
 				
 								
-				draw_pixmap(p,it->x -x_pos,it->y,it->pix[it->source_part->colorIndex()]);
+				draw_pixmap(p,it->x -x_pos+x_left,it->y,it->pix[it->source_part->colorIndex()]);
 				//TODO FINDMICH draw a margin around bright colors
 				//maybe draw the default color in black?
 				
@@ -1603,7 +1632,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				
 				for (int i=0;i<it->dots;i++)
 				{
-					draw_pixmap(p,it->x+x_dot -x_pos,it->y+y_dot,pix_dot[it->source_part->colorIndex()]);
+					draw_pixmap(p,it->x+x_dot -x_pos+x_left,it->y+y_dot,pix_dot[it->source_part->colorIndex()]);
 					x_dot+=DOT_XDIST;
 				}
 
@@ -1619,7 +1648,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 						case SHARP: acc_pix=pix_sharp; break;
 						case B: acc_pix=pix_b; break;
 					}
-					draw_pixmap(p,it->x-ACCIDENTIAL_DIST -x_pos,it->y, acc_pix[it->source_part->colorIndex()]);
+					draw_pixmap(p,it->x-ACCIDENTIAL_DIST -x_pos+x_left,it->y, acc_pix[it->source_part->colorIndex()]);
 
 					curr_accidential[modulo(it->pos.height,7)]=it->pos.vorzeichen;
 				}
@@ -1629,7 +1658,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				if (it->is_tie_dest)
 				{
 					cout << "drawing tie" << endl;
-					draw_tie(p,it->tie_from_x-x_pos,it->x -x_pos,it->y, (it->len==0) ? true : (it->stem==DOWNWARDS) , config.partColors[it->source_part->colorIndex()]);
+					draw_tie(p,it->tie_from_x-x_pos+x_left,it->x -x_pos+x_left,it->y, (it->len==0) ? true : (it->stem==DOWNWARDS) , config.partColors[it->source_part->colorIndex()]);
 					// in english: "if it's a whole note, tie is upwards (true). if not, tie is upwards if
 					//              stem is downwards and vice versa"
 				}
@@ -1640,7 +1669,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				for (int i=0;i<it->dots;i++) cout << ".";
 				cout << " , ausweich="<<it->ausweich<<endl;
 				
-				draw_pixmap(p,it->x -x_pos,it->y,*it->pix);
+				draw_pixmap(p,it->x -x_pos+x_left,it->y,*it->pix);
 				
 
 				//draw dots
@@ -1657,7 +1686,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				
 				for (int i=0;i<it->dots;i++)
 				{
-					draw_pixmap(p,it->x+x_dot -x_pos,it->y+y_dot,pix_dot[BLACK_PIXMAP]);
+					draw_pixmap(p,it->x+x_dot -x_pos+x_left,it->y+y_dot,pix_dot[BLACK_PIXMAP]);
 					x_dot+=DOT_XDIST;
 				}
 			}
@@ -1665,8 +1694,8 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 			{
 				cout << "\tBAR" << endl;
 				
-				p.setPen(Qt::black);
-				p.drawLine(it->x -x_pos,YDIST,it->x -x_pos,YDIST+4*YLEN);
+				p.setPen(Qt::black); //Y_MARKER
+				p.drawLine(it->x -x_pos+x_left,YDIST,it->x -x_pos+x_left,YDIST+4*YLEN);
 				
 				for (int i=0;i<7;i++)
 					curr_accidential[i]=default_accidential[i];
@@ -1675,46 +1704,32 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 			{
 				cout << "\tTIME SIGNATURE: "<<it->num<<"/"<<it->denom<<endl;
 
-				int y_coord=YDIST+2*YLEN;
-				draw_timesig(p,  it->x - x_pos, y_coord, it->num, it->denom);
+				draw_timesig(p,  it->x - x_pos+x_left, it->num, it->denom);
 			}
 			else if (it->type==FloItem::KEY_CHANGE)
 			{
 				tonart_t new_key=it->tonart;
 				cout << "\tKEY CHANGE: from "<<curr_key<<" to "<<new_key<<endl;
 								
-				int n_acc_drawn=0;
-				
 				list<int> aufloes_list=calc_accidentials(curr_key, USED_CLEF, new_key);
 				list<int> new_acc_list=calc_accidentials(new_key, USED_CLEF);
 				
 				// vorzeichen aus curr_key auflösen
-				for (list<int>::iterator acc_it=aufloes_list.begin(); acc_it!=aufloes_list.end(); acc_it++)
-				{
-					int y_coord=YDIST+4*YLEN  -  ( *acc_it -2)*YLEN/2; //Y_MARKER
-					draw_pixmap(p,it->x + n_acc_drawn*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_LEFTDIST -x_pos,y_coord,pix_noacc[BLACK_PIXMAP]);
-					n_acc_drawn++;
-				}
-				
+				draw_accidentials(p, it->x + KEYCHANGE_ACC_LEFTDIST - x_pos+x_left, aufloes_list, pix_noacc[BLACK_PIXMAP]);
+								
+				// alle vorzeichen aus new_key zeichnen
 				QPixmap* pix = is_sharp_key(new_key) ? &pix_sharp[BLACK_PIXMAP] : &pix_b[BLACK_PIXMAP];
 				vorzeichen_t new_accidential = is_sharp_key(new_key) ? SHARP : B;
-				
+
+				draw_accidentials(p, it->x + aufloes_list.size()*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_LEFTDIST - x_pos+x_left, new_acc_list, *pix);
+
 				for (int i=0;i<7;i++)
-					default_accidential[i]=NONE;
+					curr_accidential[i]=default_accidential[i]=NONE;
 				
-				// alle vorzeichen aus new_key zeichnen
 				for (list<int>::iterator acc_it=new_acc_list.begin(); acc_it!=new_acc_list.end(); acc_it++)
-				{
-					int y_coord=YDIST+4*YLEN  -  ( *acc_it -2)*YLEN/2; //Y_MARKER
-					draw_pixmap(p,it->x + n_acc_drawn*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_LEFTDIST -x_pos,y_coord,*pix);
-					n_acc_drawn++;
-					
-					default_accidential[*acc_it % 7]=new_accidential;
-				}
+					default_accidential[*acc_it % 7]=curr_accidential[*acc_it % 7]=new_accidential;
 				
 				curr_key=new_key;
-				for (int i=0;i<7;i++)
-					curr_accidential[i]=default_accidential[i];
 			}
 		}
 		
@@ -1723,20 +1738,32 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 		if (upstem_x!=-1)
 		{
 			upstem_x=upstem_x-pix_quarter[0].width()/2 +pix_quarter[0].width() -1;
-			p.drawLine(upstem_x -x_pos, upstem_y1, upstem_x -x_pos, upstem_y2-STEM_LEN);
+			p.drawLine(upstem_x -x_pos+x_left, upstem_y1, upstem_x -x_pos+x_left, upstem_y2-STEM_LEN);
 			
 			if (upflag>=3) //if the note needs a flag
-				p.drawPixmap(upstem_x -x_pos,upstem_y2-STEM_LEN,pix_flag_up[upflag-3]);
+				p.drawPixmap(upstem_x -x_pos+x_left,upstem_y2-STEM_LEN,pix_flag_up[upflag-3]);
 		}
 		if (downstem_x!=-1)
 		{
 			downstem_x=downstem_x-pix_quarter[0].width()/2;
-			p.drawLine(downstem_x -x_pos, downstem_y1+STEM_LEN, downstem_x -x_pos, downstem_y2);
+			p.drawLine(downstem_x -x_pos+x_left, downstem_y1+STEM_LEN, downstem_x -x_pos+x_left, downstem_y2);
 
 			if (downflag>=3) //if the note needs a flag
-				p.drawPixmap(downstem_x -x_pos,downstem_y1+STEM_LEN-pix_flag_down[downflag-3].height(),pix_flag_down[downflag-3]);
+				p.drawPixmap(downstem_x -x_pos+x_left,downstem_y1+STEM_LEN-pix_flag_down[downflag-3].height(),pix_flag_down[downflag-3]);
 		}
 	}		
+}
+
+int ScoreCanvas::clef_height(clef_t clef)
+{
+	switch (clef) //CLEF_MARKER
+	{
+		case VIOLIN: return 4;
+		case BASS: return 8;
+		default:
+			cout << "WARNING: ILLEGAL FUNCTION CALL in clef_height()" << endl;
+			return 6;
+	}
 }
 
 #define TIMESIG_LEFTMARGIN 5
@@ -1744,13 +1771,55 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 #define DIGIT_YDIST 9
 #define DIGIT_WIDTH 12
 
-void ScoreCanvas::draw_timesig(QPainter& p, int x, int y, int num, int denom)
+#define CLEF_LEFTMARGIN 5
+#define CLEF_RIGHTMARGIN 5
+
+
+void ScoreCanvas::draw_preamble(QPainter& p)
+{
+	int tick=x_to_tick(x_pos);
+
+	// draw clef --------------------------------------------------------
+	QPixmap* pix_clef= (USED_CLEF==BASS) ? &pix_clef_bass : &pix_clef_violin;
+	int y_coord=YDIST+4*YLEN  -  ( clef_height(USED_CLEF) -2)*YLEN/2; //Y_MARKER
+	
+	draw_pixmap(p,CLEF_LEFTMARGIN + pix_clef->width()/2,y_coord,*pix_clef);
+	
+	x_left= CLEF_LEFTMARGIN + pix_clef->width() + CLEF_RIGHTMARGIN + KEYCHANGE_ACC_LEFTDIST;
+	
+
+	// draw accidentials ------------------------------------------------
+	tonart_t key=key_at_tick(tick);
+	QPixmap* pix_acc=is_sharp_key(key) ? &pix_sharp[BLACK_PIXMAP] : &pix_b[BLACK_PIXMAP];
+	list<int> acclist=calc_accidentials(key,USED_CLEF);
+	
+	draw_accidentials(p,x_left,acclist ,*pix_acc);
+	
+	x_left+=acclist.size()*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_RIGHTDIST + TIMESIG_LEFTMARGIN;
+
+
+	// draw time signature ----------------------------------------------
+	timesig_t timesig=timesig_at_tick(tick);
+
+	draw_timesig(p, x_left, timesig.num, timesig.denom);
+
+	x_left+=calc_timesig_width(timesig.num, timesig.denom)+TIMESIG_RIGHTMARGIN;
+	
+	// draw bar ---------------------------------------------------------
+	p.setPen(Qt::black); //Y_MARKER
+	p.drawLine(x_left,YDIST,x_left,YDIST+4*YLEN);
+
+}
+
+
+void ScoreCanvas::draw_timesig(QPainter& p, int x, int num, int denom)
 {
 	int num_width=calc_number_width(num);
 	int denom_width=calc_number_width(denom);
 	int width=((num_width > denom_width) ? num_width : denom_width);
 	int num_indent=(width-num_width)/2 + TIMESIG_LEFTMARGIN;
 	int denom_indent=(width-denom_width)/2 + TIMESIG_LEFTMARGIN;
+	int y=YDIST+2*YLEN;
 	
 	draw_number(p, x+num_indent, y-DIGIT_YDIST, num);
 	draw_number(p, x+denom_indent, y+DIGIT_YDIST, denom);
@@ -1792,7 +1861,10 @@ void ScoreCanvas::draw(QPainter& p, const QRect& rect)
 	p.setPen(Qt::black);
 	
 	draw_note_lines(p);
+	draw_preamble(p);
+	p.setClipRect(x_left+1,0,p.device()->width(),p.device()->height());
 	draw_items(p, itemlist);
+	p.setClipping(false);
 }
 
 
@@ -1882,6 +1954,19 @@ tonart_t ScoreCanvas::key_at_tick(int t)
 	return tmp;
 }
 
+timesig_t ScoreCanvas::timesig_at_tick(int t)
+{
+	timesig_t tmp;
+	for (ScoreEventList::iterator it=eventlist.begin(); it!=eventlist.end() && it->first<=t; it++)
+		if (it->second.type==FloEvent::TIME_SIG)
+		{
+			tmp.num=it->second.num;
+			tmp.denom=it->second.denom;
+		}
+	
+	return tmp;
+}
+
 int ScoreCanvas::height_to_pitch(int h, clef_t clef)
 {
 	int foo[]={0,2,4,5,7,9,11};
@@ -1935,7 +2020,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 	// noten werden aber genau in die mitte dieses bereiches gezeichnet
 
 	int y=event->y();
-	int x=event->x()+x_pos;
+	int x=event->x()+x_pos-x_left;
 	int tick=flo_quantize_floor(x_to_tick(x));
 						//TODO quantizing must (maybe?) be done with the proper functions
 
@@ -2041,6 +2126,8 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 			mouse_operation=NO_OP;
 			mouse_x_drag_operation=LENGTH;
 
+			song_changed(0);
+
 			setMouseTracking(true);	
 			dragging=true;
 			//song->startUndo(); unneccessary because we have started it already above
@@ -2085,7 +2172,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 		int dy=event->y()-mouse_down_pos.y();
 
 		int y=event->y();
-		int x=event->x()+x_pos;
+		int x=event->x()+x_pos-x_left;
 		int tick=flo_quantize_floor(x_to_tick(x));
 
 		if (mouse_operation==NO_OP)
@@ -2204,20 +2291,27 @@ void ScoreCanvas::scroll_event(int x)
  *     operator/ rounds towards zero. (-5)/7=0, but should be -1
  * 
  * IMPORTANT TODO
+ *   o support violin and bass clefs at one time
+ *   o support multiple note systems
+ *   o let the user select which clef to use
+ *   o use correct scrolling bounds
  *   o removing the part the score's working on isn't handled
  *   o let the user select the currently edited part
  *   o let the user select between "colors after the parts",
  *     "colors after selected/unselected part" and "all black"
- *   o draw clef, maybe support clef changes
- *   o support violin and bass at one time
- *   o use correct scrolling bounds
  *   o automatically scroll when playing
  *   o support selections
  *
  * less important stuff
- *   o draw a margin about notes which are in a bright color
+ *   o let the user select whether the preamble should have
+ *     a fixed length (?)
+ *   o let the user select what the preamble has to contain
+ *   o set distances properly
+ *   o use timesig_t in all timesig-stuff
+ *   o emit a "song-changed" signal instead of calling our
+ *     internal song_changed() function
+ *   o draw a margin around notes which are in a bright color
  *   o maybe override color 0 with "black"?
- *   o create nice functions for drawing keychange-accidentials
  *   o check if "moving away" works for whole notes [seems to NOT work properly]
  *   o use bars instead of flags over groups of 8ths / 16ths etc
  *   o (change ItemList into map< pos_t , mutable_stuff_t >) [no]
@@ -2226,6 +2320,8 @@ void ScoreCanvas::scroll_event(int x)
  *     e.g. accidentials, creating notes, rendering etc.
  *   o replace all kinds of "full-measure-rests" with the whole rest
  *     in the middle of the measure
+ *   o check if the new function for drawing accidential works
+ *     the change was introduced after 873815e57a5d1edc147710b524936b6f6260f555
  *
  * stuff for the other muse developers
  *   o check if dragging notes is done correctly
