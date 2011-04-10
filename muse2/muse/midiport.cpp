@@ -101,6 +101,24 @@ bool MidiPort::hasGui() const
       }
 
 //---------------------------------------------------------
+//   nativeGuiVisible
+//---------------------------------------------------------
+
+bool MidiPort::nativeGuiVisible() const
+      {
+      return _instrument ? _instrument->nativeGuiVisible() : false;
+      }
+
+//---------------------------------------------------------
+//   hasNativeGui
+//---------------------------------------------------------
+
+bool MidiPort::hasNativeGui() const
+      {
+      return _instrument ? _instrument->hasNativeGui() : false;
+      }
+
+//---------------------------------------------------------
 //   setDevice
 //---------------------------------------------------------
 

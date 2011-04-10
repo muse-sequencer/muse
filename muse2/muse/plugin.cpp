@@ -38,6 +38,7 @@
 #include <QHeaderView>
 
 #include "globals.h"
+#include "globaldefs.h"
 #include "gconfig.h"
 #include "filedialog.h"
 #include "slider.h"
@@ -578,6 +579,39 @@ void ladspaControlRange(const LADSPA_Descriptor* plugin, int i, float* min, floa
             *max = 1.0;
       }
 
+/*
+//---------------------------------------------------------
+//   PluginBase
+//---------------------------------------------------------
+
+//---------------------------------------------------------
+//   range
+//---------------------------------------------------------
+
+void PluginBase::range(unsigned long i, float* min, float* max) const
+      {
+      LADSPA_PortRangeHint range = plugin->PortRangeHints[i];
+      LADSPA_PortRangeHintDescriptor desc = range.HintDescriptor;
+      if (desc & LADSPA_HINT_TOGGLED) {
+            *min = 0.0;
+            *max = 1.0;
+            return;
+            }
+      float m = 1.0;
+      if (desc & LADSPA_HINT_SAMPLE_RATE)
+            m = float(sampleRate);
+
+      if (desc & LADSPA_HINT_BOUNDED_BELOW)
+            *min =  range.LowerBound * m;
+      else
+            *min = 0.0;
+      if (desc & LADSPA_HINT_BOUNDED_ABOVE)
+            *max =  range.UpperBound * m;
+      else
+            *max = 1.0;
+      }
+*/
+
 //---------------------------------------------------------
 //   Plugin
 //---------------------------------------------------------
@@ -859,6 +893,7 @@ int Plugin::incReferences(int val)
 
 void Plugin::range(unsigned long i, float* min, float* max) const
       {
+      /*
       LADSPA_PortRangeHint range = plugin->PortRangeHints[i];
       LADSPA_PortRangeHintDescriptor desc = range.HintDescriptor;
       if (desc & LADSPA_HINT_TOGGLED) {
@@ -878,6 +913,8 @@ void Plugin::range(unsigned long i, float* min, float* max) const
             *max =  range.UpperBound * m;
       else
             *max = 1.0;
+      */      
+      ladspaControlRange(plugin, i, min, max);  // p4.0.20
       }
 
 //---------------------------------------------------------
@@ -1464,6 +1501,17 @@ void Pipeline::apply(int ports, unsigned long nframes, float** buffer1)
 //   PluginIBase
 //---------------------------------------------------------
 
+PluginIBase::PluginIBase()
+{
+  _gui = 0;
+}
+ 
+PluginIBase::~PluginIBase()
+{
+  if(_gui)
+    delete _gui;
+} 
+ 
 QString PluginIBase::dssi_ui_filename() const 
 { 
   QString libr(lib());
@@ -1548,7 +1596,7 @@ void PluginI::init()
       controlsOut       = 0;
       controlPorts      = 0;
       controlOutPorts   = 0;
-      _gui              = 0;
+      //_gui              = 0;
       _on               = true;
       initControlValues = false;
       _showNativeGuiPending = false;
@@ -1572,8 +1620,8 @@ PluginI::~PluginI()
             deactivate();
             _plugin->incReferences(-1);
             }
-      if (_gui)
-            delete _gui;
+      //if (_gui)
+      //      delete _gui;
       if (controlsOut)
             delete[] controlsOut;
       if (controls)
@@ -2234,7 +2282,8 @@ bool PluginI::nativeGuiVisible()
 //   makeGui
 //---------------------------------------------------------
 
-void PluginI::makeGui()
+//void PluginI::makeGui()
+void PluginIBase::makeGui()
       {
       _gui = new PluginGui(this);
       }
@@ -2242,7 +2291,8 @@ void PluginI::makeGui()
 //---------------------------------------------------------
 //   deleteGui
 //---------------------------------------------------------
-void PluginI::deleteGui()
+//void PluginI::deleteGui()
+void PluginIBase::deleteGui()
 {
   if(_gui)
   {

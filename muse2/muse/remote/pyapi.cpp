@@ -12,6 +12,7 @@
 #include <QApplication>
 
 #include "pyapi.h"
+#include "globaldefs.h"
 #include "song.h"
 #include "tempo.h"
 #include "track.h"

@@ -53,10 +53,23 @@ Mess::~Mess()
 
 void Mess::getGeometry(int* x, int* y, int* w, int* h) const
       {
-      x = 0;
-      y = 0;
-      w = 0;
-      h = 0;
+      *x = 0;
+      *y = 0;
+      *w = 0;
+      *h = 0;
+      }
+
+//---------------------------------------------------------
+//   getNativeGeometry
+//    dummy
+//---------------------------------------------------------
+
+void Mess::getNativeGeometry(int* x, int* y, int* w, int* h) const
+      {
+      *x = 0;
+      *y = 0;
+      *w = 0;
+      *h = 0;
       }
 
 //---------------------------------------------------------

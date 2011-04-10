@@ -61,23 +61,23 @@ const char* MessSynth::version() const
       }
 */
 
-bool MessSynthIF::guiVisible() const
+bool MessSynthIF::nativeGuiVisible() const
       {
-      return _mess ? _mess->guiVisible() : false;
+      return _mess ? _mess->nativeGuiVisible() : false;
       }
 
-void MessSynthIF::showGui(bool v)
+void MessSynthIF::showNativeGui(bool v)
       {
-      if (v == guiVisible())
+      if (v == nativeGuiVisible())
             return;
       if (_mess)
-            _mess->showGui(v);
+            _mess->showNativeGui(v);
       }
 
-bool MessSynthIF::hasGui() const
+bool MessSynthIF::hasNativeGui() const
       {
       if (_mess)
-            return _mess->hasGui();
+            return _mess->hasNativeGui();
       return false;
       }
 
@@ -105,6 +105,18 @@ void MessSynthIF::setGeometry(int x, int y, int w, int h)
       {
       if (_mess)
             _mess->setGeometry(x, y, w, h);
+      }
+
+void MessSynthIF::getNativeGeometry(int* x, int* y, int* w, int* h) const
+      {
+      if (_mess)
+            _mess->getNativeGeometry(x, y, w, h);
+      }
+
+void MessSynthIF::setNativeGeometry(int x, int y, int w, int h)
+      {
+      if (_mess)
+            _mess->setNativeGeometry(x, y, w, h);
       }
 
 //---------------------------------------------------------
@@ -658,6 +670,17 @@ void SynthI::write(int level, Xml& xml) const
             getGeometry(&x, &y, &w, &h);
             if (h || w)
                   xml.qrectTag(level, "geometry", QRect(x, y, w, h));
+            //xml.geometryTag(level, "geometry", _gui);
+            }
+
+      if (hasNativeGui()) {
+            xml.intTag(level, "nativeGuiVisible", nativeGuiVisible());
+            int x, y, w, h;
+            w = 0;
+            h = 0;
+            getNativeGeometry(&x, &y, &w, &h);
+            if (h || w)
+                  xml.qrectTag(level, "nativeGeometry", QRect(x, y, w, h));
             }
 
       _stringParamMap.write(level, xml, "stringParam");
@@ -745,7 +768,8 @@ void SynthI::read(Xml& xml)
       
       int port = -1;
       bool startgui = false;
-      QRect r;
+      bool startngui = false;
+      QRect r, nr;
 
       for (;;) {
             Xml::Token token = xml.parse();
@@ -763,6 +787,8 @@ void SynthI::read(Xml& xml)
                               port  = xml.parseInt();
                         else if (tag == "guiVisible")
                               startgui = xml.parseInt();
+                        else if (tag == "nativeGuiVisible")
+                              startngui = xml.parseInt();
                         else if (tag == "midistate")
                               readMidiState(xml);
                         else if (tag == "param") {
@@ -775,6 +801,8 @@ void SynthI::read(Xml& xml)
                               readProgram(xml, tag);
                         else if (tag == "geometry")
                               r = readGeometry(xml, tag);
+                        else if (tag == "nativeGeometry")
+                              nr = readGeometry(xml, tag);
                         else if (AudioTrack::readProperties(xml, tag))
                               xml.unknown("softSynth");
                         break;
@@ -795,10 +823,13 @@ void SynthI::read(Xml& xml)
                               // No, initializing OSC without actually showing the gui doesn't work, at least for 
                               //  dssi-vst plugins - without showing the gui they exit after ten seconds.
                               //initGui();
-                              showGui(startgui);
-                              setGeometry(r.x(), r.y(), r.width(), r.height());
+                              showNativeGui(startngui);
+                              setNativeGeometry(nr.x(), nr.y(), nr.width(), nr.height());
                               
                               mapRackPluginsToControllers();
+                              
+                              showGui(startgui);
+                              setGeometry(r.x(), r.y(), r.width(), r.height());
                               
                               // Now that the track has been added to the lists in insertTrack2(), if it's a dssi synth 
                               //  OSC can find the track and its plugins, and start their native guis if required...

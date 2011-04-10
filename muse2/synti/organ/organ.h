@@ -182,11 +182,14 @@ class Organ : public Mess {
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const;
       virtual void getInitData(int*, const unsigned char**) const;
 
-      virtual bool guiVisible() const;
-      virtual void showGui(bool);
-      virtual bool hasGui() const { return true; }
-      virtual void getGeometry(int* x, int* y, int* w, int* h) const;
-      virtual void setGeometry(int x, int y, int w, int h);
+      //virtual bool guiVisible() const;
+      //virtual void showGui(bool);
+      //virtual bool hasGui() const { return true; }
+      virtual bool nativeGuiVisible() const;
+      virtual void showNativeGui(bool);
+      virtual bool hasNativeGui() const { return true; }
+      virtual void getNativeGeometry(int* x, int* y, int* w, int* h) const;
+      virtual void setNativeGeometry(int x, int y, int w, int h);
       virtual bool sysex(int, const unsigned char*);
       static SynthCtrl synthCtrl[];
       Organ(int sampleRate);

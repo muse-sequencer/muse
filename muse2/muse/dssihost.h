@@ -64,8 +64,8 @@ class DssiSynth : public Synth {
       const DSSI_Descriptor* dssi;
       DSSI_Descriptor_Function df;
       unsigned long _portCount, _inports, _outports, _controlInPorts, _controlOutPorts;
-      std::vector<unsigned long> pIdx;  // Control input index to port number. 
-      std::vector<unsigned long> opIdx; // Control output index to port number. This is sometimes a latency port and...?
+      //std::vector<unsigned long> pIdx;  // Control input index to port number. 
+      //std::vector<unsigned long> opIdx; // Control output index to port number. This is sometimes a latency port and...?
       std::vector<unsigned long> iIdx;  // Audio input index to port number.
       std::vector<unsigned long> oIdx;  // Audio output index to port number.
       std::vector<bool> iUsedIdx;       // During process, tells whether an audio input port was used by any input routes.
@@ -104,7 +104,7 @@ class DssiSynth : public Synth {
       unsigned long inControls()  const { return _controlInPorts; }
       unsigned long outControls() const { return _controlOutPorts; }
       
-      unsigned long inControlPortIdx(unsigned long i) { return pIdx[i]; }
+      //unsigned long inControlPortIdx(unsigned long i) { return pIdx[i]; }
       };
 
 //---------------------------------------------------------
@@ -160,10 +160,17 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       virtual bool initGui();
       virtual void guiHeartBeat();
       virtual bool guiVisible() const;
-      virtual void showGui(bool v);
-      virtual bool hasGui() const { return synth->_hasGui; }
-      virtual void getGeometry(int*, int*, int*, int*) const {}
+      virtual void showGui(bool);
+      //virtual bool hasGui() const { return synth->_hasGui; }
+      virtual bool hasGui() const { return true; }
+      virtual bool nativeGuiVisible() const;                                        // p4.0.20
+      virtual void showNativeGui(bool);                                             // 
+      //virtual bool hasNativeGui() const { /*return synth->_hasGui; */}            // 
+      virtual bool hasNativeGui() const { return !dssi_ui_filename().isEmpty(); }   // 
+      virtual void getGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
       virtual void setGeometry(int, int, int, int) {}
+      virtual void getNativeGeometry(int*x, int*y, int*w, int*h) const { *x=0;*y=0;*w=0;*h=0; }
+      virtual void setNativeGeometry(int, int, int, int) {}
       
       virtual void preProcessAlways();
       

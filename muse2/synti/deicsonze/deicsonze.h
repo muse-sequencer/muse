@@ -590,11 +590,14 @@ class DeicsOnze : public Mess {
   virtual void process(float** buffer, int offset, int n);
   
   // GUI interface routines
-  virtual bool hasGui() const { return true; }
-  virtual bool guiVisible() const;
-  virtual void showGui(bool);
-  virtual void getGeometry(int* x, int* y, int* w, int* h) const;
-  virtual void setGeometry(int, int, int, int);
+  //virtual bool hasGui() const { return true; }
+  //virtual bool guiVisible() const;
+  //virtual void showGui(bool);
+  virtual bool hasNativeGui() const { return true; }
+  virtual bool nativeGuiVisible() const;
+  virtual void showNativeGui(bool);
+  virtual void getNativeGeometry(int* x, int* y, int* w, int* h) const;
+  virtual void setNativeGeometry(int, int, int, int);
   
   DeicsOnze();
   ~DeicsOnze();

@@ -3431,6 +3431,8 @@ void Song::removeTrack1(Track* track)
                 SynthI* si = (SynthI*)track;
                 if(si->hasGui())
                   si->showGui(false);
+                if(si->hasNativeGui())       // p4.0.20
+                  si->showNativeGui(false);
                 }
               break;
           default:

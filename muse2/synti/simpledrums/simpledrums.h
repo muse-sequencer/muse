@@ -117,8 +117,10 @@ class SimpleSynth : public Mess
 
       virtual ~SimpleSynth();
 
-      virtual bool guiVisible() const;
-      virtual bool hasGui() const;
+      //virtual bool guiVisible() const;
+      //virtual bool hasGui() const;
+      virtual bool nativeGuiVisible() const;
+      virtual bool hasNativeGui() const;
       virtual bool playNote(int arg1, int arg2, int arg3);
       virtual bool processEvent(const MidiPlayEvent& arg1);
       virtual bool setController(int arg1, int arg2, int arg3);
@@ -128,7 +130,8 @@ class SimpleSynth : public Mess
       virtual int getControllerInfo(int arg1, const char** arg2, int* arg3, int* arg4, int* arg5, int* arg6) const;
       virtual void processMessages();
       virtual void process(float** data, int offset, int len);
-      virtual void showGui(bool arg1);
+      //virtual void showGui(bool arg1);
+      virtual void showNativeGui(bool arg1);
       virtual void getInitData(int*, const unsigned char**) const;
       bool init(const char* name);
       void guiSendSampleLoaded(bool success, int ch, const char* filename);

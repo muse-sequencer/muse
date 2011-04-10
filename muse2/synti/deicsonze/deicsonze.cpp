@@ -263,7 +263,7 @@ float* DeicsOnze::getSinusWaveTable() {
 //---------------------------------------------------------
 //   guiVisible
 //---------------------------------------------------------
-bool DeicsOnze::guiVisible() const
+bool DeicsOnze::nativeGuiVisible() const
 {
     return _gui->isVisible();
 }
@@ -271,16 +271,16 @@ bool DeicsOnze::guiVisible() const
 //---------------------------------------------------------
 // showGui
 //---------------------------------------------------------
-void DeicsOnze::showGui(bool val)
+void DeicsOnze::showNativeGui(bool val)
 {
     _gui->setVisible(val);
 }
 
 //---------------------------------------------------------
-//   getGeometry
+//   getNativeGeometry
 //---------------------------------------------------------
 
-void DeicsOnze::getGeometry(int* x, int* y, int* w, int* h) const {
+void DeicsOnze::getNativeGeometry(int* x, int* y, int* w, int* h) const {
   QPoint pos(_gui->pos());
   QSize size(_gui->size());
   *x = pos.x();
@@ -299,10 +299,10 @@ void DeicsOnze::setSampleRate(int sr) {
 }
 
 //---------------------------------------------------------
-//   setGeometry
+//   setNativeGeometry
 //---------------------------------------------------------
 
-void DeicsOnze::setGeometry(int x, int y, int w, int h) {
+void DeicsOnze::setNativeGeometry(int x, int y, int w, int h) {
     _gui->resize(QSize(w, h));
     _gui->move(QPoint(x, y));
 }
