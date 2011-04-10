@@ -115,9 +115,12 @@ public:
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const;
       virtual bool processEvent(const MidiPlayEvent&);
 
-      virtual bool hasGui() const { return true; }
-      virtual bool guiVisible() const;
-      virtual void showGui(bool val);
+      //virtual bool hasGui() const { return true; }
+      //virtual bool guiVisible() const;
+      //virtual void showGui(bool val);
+      virtual bool hasNativeGui() const { return true; }
+      virtual bool nativeGuiVisible() const;
+      virtual void showNativeGui(bool val);
 
       void sendError(const char*);
       void sendSoundFontData();

@@ -64,9 +64,12 @@ class ISynth : public Mess {
       virtual const MidiPatch* getPatchInfo(int, const MidiPatch *) const;
       virtual void getInitData(int*, const unsigned char**);
 
-      virtual bool guiVisible() const;
-      virtual void showGui(bool);
-      virtual bool hasGui() const { return true; }
+      //virtual bool guiVisible() const;
+      //virtual void showGui(bool);
+      //virtual bool hasGui() const { return true; }
+      virtual bool nativeGuiVisible() const;
+      virtual void showNativeGui(bool);
+      virtual bool hasNativeGui() const { return true; }
 
    public:
       ISynth();

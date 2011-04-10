@@ -83,7 +83,15 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       
       //DummyAudioDevice* dad = dynamic_cast<DummyAudioDevice*>(audioDevice);
       //dummyAudioRealRate->setText(dad ? QString().setNum(sampleRate) : "---");
-      dummyAudioRealRate->setText(QString().setNum(sampleRate));
+      //dummyAudioRealRate->setText(QString().setNum(sampleRate));  // Not used any more. p4.0.20 
+      // Just a record of what the gensetbase.ui file contained for dummyAudioRate whats this:
+      /*  <property name="whatsThis">
+             <string>Actual rate used depends on limitations of
+ timer used. If a high rate timer is available,
+ short periods can be used with high sample rates. 
+Period affects midi playback resolution. 
+Shorter periods are desirable.</string>
+            </property>                       */
       
       startSongEntry->setText(config.startSong);
       startSongGroup->button(config.startMode)->setChecked(true);
@@ -188,7 +196,7 @@ void GlobalSettingsConfig::updateSettings()
       
       //DummyAudioDevice* dad = dynamic_cast<DummyAudioDevice*>(audioDevice);
       //dummyAudioRealRate->setText(dad ? QString().setNum(sampleRate) : "---");
-      dummyAudioRealRate->setText(QString().setNum(sampleRate));
+      //dummyAudioRealRate->setText(QString().setNum(sampleRate));   // Not used any more. p4.0.20 
       
       startSongEntry->setText(config.startSong);
       startSongGroup->button(config.startMode)->setChecked(true);

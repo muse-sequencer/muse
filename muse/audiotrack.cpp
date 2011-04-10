@@ -12,6 +12,7 @@
 
 #include <QMessageBox>
 
+#include "globaldefs.h"
 #include "track.h"
 #include "event.h"
 #include "song.h"
@@ -20,6 +21,8 @@
 #include "xml.h"
 #include "plugin.h"
 #include "audiodev.h"
+#include "synth.h"
+#include "dssihost.h"
 
 bool AudioAux::_isVisible=true;
 bool AudioInput::_isVisible=true;
@@ -983,7 +986,8 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             //  controls would all be set to zero.
             // But we will allow for the (unintended, useless) possibility of a controller 
             //  with no matching plugin control.
-            PluginI* p = 0;
+            //PluginI* p = 0;
+            PluginIBase* p = 0;     
             bool ctlfound = false;
             int m = l->id() & AC_PLUGIN_CTL_ID_MASK;
             int n = (l->id() >> AC_PLUGIN_CTL_BASE_POW) - 1;
@@ -992,6 +996,25 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
               p = (*_efxPipe)[n];
               if(p && m < p->parameters())
                   ctlfound = true;
+            }
+            // Support a special block for dssi synth ladspa controllers. p4.0.20
+            else if(n == MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)    
+            {
+              SynthI* synti = dynamic_cast < SynthI* > (this);
+              if(synti)
+              {
+                SynthIF* sif = synti->sif();
+                if(sif)
+                {
+                  DssiSynthIF* dsif = dynamic_cast < DssiSynthIF* > (sif);
+                  if(dsif)
+                  {
+                    p = dsif;
+                    if(p && m < p->parameters())
+                        ctlfound = true;
+                  }
+                }
+              }
             }
             
             iCtrlList icl = _controller.find(l->id());
@@ -1128,7 +1151,7 @@ void AudioTrack::mapRackPluginsToControllers()
     }  
   }
   
-  // The loop is a safe way to delete while iterating 'non-linear' lists.
+  // FIXME: The loop is a safe way to delete while iterating lists.
   bool loop;
   do
   {
@@ -1142,7 +1165,28 @@ void AudioTrack::mapRackPluginsToControllers()
         continue;
       int param = id & AC_PLUGIN_CTL_ID_MASK;
       int idx = (id >> AC_PLUGIN_CTL_BASE_POW) - 1;
-      PluginI* p = (*_efxPipe)[idx];
+      //PluginI* p = (*_efxPipe)[idx];
+      
+      // p4.0.20
+      PluginIBase* p = 0;
+      if(idx >= 0 && idx < PipelineDepth)
+        p = (*_efxPipe)[idx];
+      // Support a special block for dssi synth ladspa controllers. 
+      else if(idx == MAX_PLUGINS && type() == AUDIO_SOFTSYNTH)    
+      {
+        SynthI* synti = dynamic_cast < SynthI* > (this);
+        if(synti)
+        {
+          SynthIF* sif = synti->sif();
+          if(sif)
+          {
+            DssiSynthIF* dsif = dynamic_cast < DssiSynthIF* > (sif);
+            if(dsif)
+              p = dsif;
+          }
+        }
+      }
+      
       // If there's no plugin at that rack position, or the param is out of range of
       //  the number of controls in the plugin, then it's a stray controller. Delete it.
       // Future: Leave room for possible bypass controller at AC_PLUGIN_CTL_ID_MASK -1.
@@ -1159,7 +1203,7 @@ void AudioTrack::mapRackPluginsToControllers()
   while (loop);
     
     
-    // Although this tested OK, and is the 'official' way to erase while iterating,
+    // FIXME: Although this tested OK, and is the 'official' way to erase while iterating,
     //  I don't trust it. I'm weary of this method. The technique didn't work 
     //  in Audio::msgRemoveTracks(), see comments there.
     /*

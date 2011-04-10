@@ -602,27 +602,47 @@ void TList::oportPropertyPopupMenu(Track* t, int x, int y)
         SynthI* synth = (SynthI*)t;
   
         QMenu* p = new QMenu;
-        QAction* act = p->addAction(tr("Show Gui"));
-        act->setCheckable(true);
+        //QAction* act = p->addAction(tr("Show Gui"));
+        QAction* gact = p->addAction(tr("show gui"));
+        //act->setCheckable(true);
+        gact->setCheckable(true);
         //printf("synth hasgui %d, gui visible %d\n",synth->hasGui(), synth->guiVisible());
-        act->setEnabled(synth->hasGui());
-        act->setChecked(synth->guiVisible());
+        //act->setEnabled(synth->hasGui());
+        //act->setChecked(synth->guiVisible());
+        gact->setEnabled(synth->hasGui());
+        gact->setChecked(synth->guiVisible());
+  
+        QAction* nact = p->addAction(tr("show native gui"));
+        //act->setCheckable(true);
+        nact->setCheckable(true);
+        //printf("synth hasgui %d, gui visible %d\n",synth->hasGui(), synth->guiVisible());
+        //act->setEnabled(synth->hasGui());
+        //act->setChecked(synth->guiVisible());
+        nact->setEnabled(synth->hasNativeGui());
+        nact->setChecked(synth->nativeGuiVisible());
   
         // If it has a gui but we don't have OSC, disable the action.
         #ifndef OSC_SUPPORT
         #ifdef DSSI_SUPPORT
         if(dynamic_cast<DssiSynthIF*>(synth->sif()))
         {
-          act->setChecked(false);
-          act->setEnabled(false);
+          //act->setChecked(false);
+          //act->setEnabled(false);
+          nact->setChecked(false);
+          nact->setEnabled(false);
         }  
         #endif
         #endif
         
         QAction* ract = p->exec(mapToGlobal(QPoint(x, y)), 0);
-        if (ract == act) {
+        //if (ract == act) {
+        if (ract == gact) {
               bool show = !synth->guiVisible();
               audio->msgShowInstrumentGui(synth, show);
+              }
+        else if (ract == nact) {
+              bool show = !synth->nativeGuiVisible();
+              audio->msgShowInstrumentNativeGui(synth, show);
               }
         delete p;
         return;
@@ -635,28 +655,45 @@ void TList::oportPropertyPopupMenu(Track* t, int x, int y)
       MidiPort* port = &midiPorts[oPort];
 
       QMenu* p = new QMenu;
-      QAction* act = p->addAction(tr("Show Gui"));
-      act->setCheckable(true);
+      //QAction* act = p->addAction(tr("Show Gui"));
+      QAction* gact = p->addAction(tr("show gui"));
+      //act->setCheckable(true);
+      gact->setCheckable(true);
       //printf("synth hasgui %d, gui visible %d\n",port->hasGui(), port->guiVisible());
-      act->setEnabled(port->hasGui());
-      act->setChecked(port->guiVisible());
+      //act->setEnabled(port->hasGui());
+      //act->setChecked(port->guiVisible());
+      gact->setEnabled(port->hasGui());
+      gact->setChecked(port->guiVisible());
 
+      QAction* nact = p->addAction(tr("show native gui"));
+      nact->setCheckable(true);
+      //printf("synth hasgui %d, gui visible %d\n",synth->hasGui(), synth->guiVisible());
+      nact->setEnabled(port->hasNativeGui());
+      nact->setChecked(port->nativeGuiVisible());
+        
       // If it has a gui but we don't have OSC, disable the action.
       #ifndef OSC_SUPPORT
       #ifdef DSSI_SUPPORT
       MidiDevice* dev = port->device();
       if(dev && dev->isSynti() && (dynamic_cast<DssiSynthIF*>(((SynthI*)dev)->sif())))
       {
-        act->setChecked(false);
-        act->setEnabled(false);
+        //act->setChecked(false);
+        //act->setEnabled(false);
+        nact->setChecked(false);
+        nact->setEnabled(false);
       }  
       #endif
       #endif
       
       QAction* ract = p->exec(mapToGlobal(QPoint(x, y)), 0);
-      if (ract == act) {
+      //if (ract == act) {
+      if (ract == gact) {
             bool show = !port->guiVisible();
             audio->msgShowInstrumentGui(port->instrument(), show);
+            }
+      else if (ract == nact) {
+            bool show = !port->nativeGuiVisible();
+            audio->msgShowInstrumentNativeGui(port->instrument(), show);
             }
       delete p;
       

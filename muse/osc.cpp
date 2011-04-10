@@ -105,8 +105,12 @@ static int oscDebugHandler(const char* path, const char* types, lo_arg** argv,
 
 int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
    int argc, void* data, void* user_data)
+   //int argc, lo_message data, void* user_data)
 {
   const char* p = path;
+  
+  // NOTE: Tried this, always returns 0 sec and 1 fractional. Shame, looks like timestamps are not used.
+  //lo_timetag lo_tt = lo_message_get_timestamp(data);
   
   #ifdef OSC_DEBUG 
   if(argc) 

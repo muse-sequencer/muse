@@ -57,6 +57,7 @@ class DummyAudioDevice : public AudioDevice {
       int _framePos;
       int playPos;
       bool realtimeFlag;
+      bool seekflag;
       
       DummyAudioDevice();
       virtual ~DummyAudioDevice()
@@ -117,8 +118,7 @@ class DummyAudioDevice : public AudioDevice {
       virtual int getState() { 
 //            if(DEBUG_DUMMY)
 //                printf("DummyAudioDevice::getState %d\n", state);
-      
-      return state; }
+            return state; }
       virtual unsigned getCurFrame() { 
             if(DEBUG_DUMMY)
                 printf("DummyAudioDevice::getCurFrame %d\n", _framePos);
@@ -133,10 +133,14 @@ class DummyAudioDevice : public AudioDevice {
       virtual void startTransport() {
             if(DEBUG_DUMMY)
                 printf("DummyAudioDevice::startTransport playPos=%d\n", playPos);
+#if 0            
             Msg trcmd;
             trcmd.cmd = trStart;
             trcmd.arg = playPos;
             cmdQueue.push_front(trcmd);
+#else
+            state = Audio::PLAY;
+#endif            
 /*            state = Audio::START_PLAY;
             audio->sync(state, playPos);            
             state = Audio::PLAY;*/
@@ -152,20 +156,33 @@ class DummyAudioDevice : public AudioDevice {
       {
             if(DEBUG_DUMMY)
                 printf("DummyAudioDevice::seekTransport frame=%d topos=%d\n",playPos, p.frame());
+#if 0            
             Msg trcmd;
             trcmd.cmd = trSeek;
             trcmd.arg = p.frame();
             cmdQueue.push_front(trcmd);
             playPos = p.frame();
+#else
+            seekflag = true;
+            //pos = n;
+            playPos = p.frame();
+#endif            
+            
       }
       virtual void seekTransport(unsigned pos) {
             if(DEBUG_DUMMY)
                 printf("DummyAudioDevice::seekTransport frame=%d topos=%d\n",playPos,pos);
+#if 0            
             Msg trcmd;
             trcmd.cmd = trSeek;
             trcmd.arg = pos;
             cmdQueue.push_front(trcmd);
             playPos = pos;
+#else
+            seekflag = true;
+            //pos = n;
+            playPos = pos;
+#endif            
 /*
             Audio::State tempState = state;
             state = Audio::START_PLAY;
@@ -187,7 +204,9 @@ DummyAudioDevice::DummyAudioDevice()
       
       dummyThread = 0;
       realtimeFlag = false;
+      seekflag = false;
       state = Audio::STOP;
+      //startTime = curTime();
       _framePos = 0;
       playPos = 0;
       cmdQueue.clear();
@@ -259,6 +278,7 @@ static void* dummyLoop(void* ptr)
       sampleRate = config.dummyAudioSampleRate;
       //segmentSize = dummyFrames;
       segmentSize = config.dummyAudioBufSize;
+#if 0      
       //unsigned int tickRate = sampleRate / dummyFrames;
       unsigned int tickRate = sampleRate / segmentSize;
       
@@ -289,13 +309,15 @@ static void* dummyLoop(void* ptr)
         
       sampleRate = tickRate * segmentSize;
       timer.startTimer();
+#endif        
 
       DummyAudioDevice *drvPtr = (DummyAudioDevice *)ptr;
 
-      pollfd myPollFd;
+      ///pollfd myPollFd;
 
-      myPollFd.fd = fd;
-      myPollFd.events = POLLIN;
+      ///myPollFd.fd = fd;
+      ///myPollFd.events = POLLIN;
+
 
       /*
       doSetuid();
@@ -360,6 +382,7 @@ static void* dummyLoop(void* ptr)
       undoSetuid();
 #endif
       
+#if 0      
       /* unsigned long tick = 0;*/    // prevent compiler warning: unused variable
       for (;;) {
             int _pollWait = 10;   // ms
@@ -408,7 +431,38 @@ static void* dummyLoop(void* ptr)
                   drvPtr->playPos+=increment;
                   }
             }
-      timer.stopTimer();
+#else
+      // Adapted from muse_qt4_evolution. p4.0.20       
+      for(;;) 
+      {
+            //if(audioState == AUDIO_RUNNING)
+            if(audio->isRunning())
+              //audio->process(segmentSize, drvPtr->state);
+              audio->process(segmentSize);
+            //else if (audioState == AUDIO_START1)
+            //  audioState = AUDIO_START2;
+            //usleep(dummyFrames*1000000/AL::sampleRate);
+            usleep(segmentSize*1000000/sampleRate);
+            //if(dummyAudio->seekflag) 
+            if(drvPtr->seekflag) 
+            {
+              //audio->sync(Audio::STOP, dummyAudio->pos);
+              //audio->sync(drvPtr->state, drvPtr->playPos);
+              audio->sync(Audio::STOP, drvPtr->playPos);
+              
+              //dummyAudio->seekflag = false;
+              drvPtr->seekflag = false;
+            }
+            
+            //if(dummyAudio->state == Audio::PLAY) 
+            //  dummyAudio->pos += dummyFrames;
+            drvPtr->_framePos += segmentSize;
+            if(drvPtr->state == Audio::PLAY) 
+              drvPtr->playPos += segmentSize;
+      }
+#endif
+            
+      ///timer.stopTimer();
       pthread_exit(0);
       }
 

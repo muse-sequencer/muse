@@ -65,6 +65,7 @@ const char* seqMsgList[] = {
       "SEQM_SET_AUX",
       "SEQM_UPDATE_SOLO_STATES",
       "MIDI_SHOW_INSTR_GUI",
+      "MIDI_SHOW_INSTR_NATIVE_GUI",
       "AUDIO_RECORD",
       "AUDIO_ROUTEADD", "AUDIO_ROUTEREMOVE", "AUDIO_REMOVEROUTES",
       "AUDIO_VOL", "AUDIO_PAN",
@@ -734,6 +735,9 @@ void Audio::processMsg(AudioMsg* msg)
                   alsaScanMidiPorts();
                   break;
             case MIDI_SHOW_INSTR_GUI:
+                  midiSeq->msgUpdatePollFd();
+                  break;
+            case MIDI_SHOW_INSTR_NATIVE_GUI:   // p4.0.20
                   midiSeq->msgUpdatePollFd();
                   break;
             case SEQM_ADD_TEMPO:

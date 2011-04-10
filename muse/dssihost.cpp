@@ -615,8 +615,9 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
           _controlInPorts = 0;
           _controlOutPorts = 0;
 
-          pIdx.clear(); 
-          opIdx.clear();
+          ///pIdx.clear(); 
+          ///opIdx.clear();
+          
           iIdx.clear(); 
           oIdx.clear(); 
           rpIdx.clear();
@@ -662,7 +663,7 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
               {
                 rpIdx.push_back(_controlInPorts);
                 ++_controlInPorts;
-                pIdx.push_back(k);
+                ///pIdx.push_back(k);
                 // Set to false at first.
                 //synti->_guiUpdateControls.push_back(false);
               }
@@ -670,7 +671,7 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
               {
                 rpIdx.push_back((unsigned long)-1);
                 ++_controlOutPorts;
-                opIdx.push_back(k);
+                ///opIdx.push_back(k);
               }
             }
           }
@@ -718,7 +719,8 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
 //   guiVisible
 //---------------------------------------------------------
 
-bool DssiSynthIF::guiVisible() const
+//bool DssiSynthIF::guiVisible() const
+bool DssiSynthIF::nativeGuiVisible() const
       {
       //return _guiVisible;
       #ifdef OSC_SUPPORT
@@ -727,11 +729,19 @@ bool DssiSynthIF::guiVisible() const
       return false;
       }
 
+bool DssiSynthIF::guiVisible() const
+      {
+      //return _guiVisible;
+      //return false;
+      return _gui && _gui->isVisible();
+      }
+
 //---------------------------------------------------------
 //   showGui
 //---------------------------------------------------------
 
-void DssiSynthIF::showGui(bool v)
+//void DssiSynthIF::showGui(bool v)    
+void DssiSynthIF::showNativeGui(bool v)
       {
       #ifdef OSC_SUPPORT
       
@@ -784,6 +794,26 @@ void DssiSynthIF::showGui(bool v)
       _guiVisible = v;
       */
       }
+
+//---------------------------------------------------------
+//   showGui
+//---------------------------------------------------------
+
+void DssiSynthIF::showGui(bool v)
+{
+  //if (_plugin) 
+  {
+        if (v) {
+                if (_gui == 0)
+                    makeGui();
+                _gui->show();
+                }
+        else {
+                if (_gui)
+                    _gui->hide();
+                }
+  }
+}
 
 //---------------------------------------------------------
 //   receiveEvent
@@ -866,8 +896,10 @@ bool DssiSynthIF::init(DssiSynth* s)
       synti->_guiUpdateControls.clear();
       synti->_guiUpdateProgram = false;
                 
+/*      
       for (int k = 0; k < controlPorts; ++k) {
                 int i = synth->pIdx[k];
+                controls[k].idx = i;    // p4.0.20
                 //controls[k].val = ladspaDefaultValue(ld, i);
                 ladspaDefaultValue(ld, i, &controls[k].val);
 		
@@ -937,85 +969,188 @@ bool DssiSynthIF::init(DssiSynth* s)
 
       for (int k = 0; k < controlOutPorts; ++k) {
                 int i = synth->opIdx[k];
+                controlsOut[k].idx = i;    // p4.0.20
     
                 #ifdef DSSI_DEBUG 
                 printf("DssiSynthIF::init control output port:%d port idx:%d name:%s\n", k, i, ld->PortNames[i]);
                 #endif
-                
-                // p3.3.39 Removed.
-                /*
-                
-                //controls[k].val = ladspaDefaultValue(ld, i);
-                ladspaDefaultValue(ld, i, &controlsOut[k].val);
-                
-                // This code is duplicated in ::getControllerInfo()
-                //
-                
-                int ctlnum = DSSI_NONE;
-                if(dssi->get_midi_controller_for_port)
-                  ctlnum = dssi->get_midi_controller_for_port(handle, i);
-                
-                // No controller number? Try to give it a unique one...
-                if(ctlnum == DSSI_NONE)
-                {
-                  // FIXME: Be more careful. Must make sure to pick numbers not already chosen or which WILL BE chosen.
-                  // Simple but flawed solution: Start them at 0x60000 + 0x3000 = 0x63000. Max NRPN number is 0x3fff.
-                  // TODO: CC etc. etc.
-                  ctlnum = CTRL_NRPN14_OFFSET + 0x3000 + k; 
-                }
-                else
-                {
-                  int c = ctlnum;
-                  // Can be both CC and NRPN! Prefer CC over NRPN.
-                  if(DSSI_IS_CC(ctlnum))
-                  {
-                    #ifdef DSSI_DEBUG 
-                    printf("DssiSynthIF::init is CC control\n");
-                    #endif
-                    
-                    ctlnum = DSSI_CC_NUMBER(c);
-                    
-                    #ifdef DSSI_DEBUG 
-                    if(DSSI_IS_NRPN(ctlnum))
-                      printf("DssiSynthIF::init is also NRPN control. Using CC.\n");
-                    #endif  
-                  }
-                  else
-                  if(DSSI_IS_NRPN(ctlnum))
-                  {
-                    #ifdef DSSI_DEBUG 
-                    printf("DssiSynthIF::init  is NRPN control\n");
-                    #endif
-                    
-                    ctlnum = DSSI_NRPN_NUMBER(c) + CTRL_NRPN14_OFFSET;
-                  }  
-                    
-                }
-                
-                #ifdef DSSI_DEBUG 
-                printf("DssiSynthIF::init inserting to midiCtl2PortMap: ctlnum:%d k:%d\n", ctlnum, k);
-                #endif
-                
-                // We have a controller number! Insert it and the DSSI port number into the map.
-                // p3.3.39 Removed. Doesn't say whether it's in or out! Don't need this for now. 
-                //synth->midiCtl2PortMap.insert(std::pair<int, int>(ctlnum, k));
-                    
-                */    
                     
                 //  - Control outs are not handled but still must be connected to something.
                 ld->connect_port(handle, i, &controlsOut[k].val);
             }
-
-      // Set the latency to zero.
-      //controls[controlPorts].val = 0.0;
-      // Insert a controller for latency and the DSSI port number into the map.
-      //synth->midiCtl2PortMap.insert(std::pair<int, int>(CTRL_NRPN14_OFFSET + 0x2000, controlPorts));
-      // Connect the port.
-      //ld->connect_port(handle, controlPorts, &controls[controlPorts].val);
-      
-      // Just a test. It works! We can instantiate a ladspa plugin for the synth. But it needs more work...
-      //plugins.add(&synth->info, LADSPA_Descriptor_Function(NULL), ld, false);
+*/
+      // p4.0.20
+      int cip = 0;
+      int cop = 0;
+      for (unsigned long k = 0; k < synth->_portCount; ++k) 
+      {
+        LADSPA_PortDescriptor pd = ld->PortDescriptors[k];
+        
+        #ifdef DSSI_DEBUG 
+        printf("DssiSynth::init ladspa plugin Port:%ld Name:%s descriptor:%x\n", k, ld->PortNames[k], pd);
+        #endif
+        
+        if (LADSPA_IS_PORT_CONTROL(pd)) 
+        {
+          if (LADSPA_IS_PORT_INPUT(pd)) 
+          {
+            controls[cip].idx = k;    
+            float val;
+            ladspaDefaultValue(ld, k, &val);
+            controls[cip].val    = val;
+            controls[cip].tmpVal = val;
+            controls[cip].enCtrl  = true;
+            controls[cip].en2Ctrl = true;
             
+            // Set to false at first.
+            synti->_guiUpdateControls.push_back(false);
+          
+            #ifdef DSSI_DEBUG 
+            printf("DssiSynthIF::init control port:%d port idx:%d name:%s\n", cip, k, ld->PortNames[k]);
+            #endif
+            
+            // This code is duplicated in ::getControllerInfo()
+            //
+            
+            int ctlnum = DSSI_NONE;
+            if(dssi->get_midi_controller_for_port)
+              ctlnum = dssi->get_midi_controller_for_port(handle, k);
+            
+            // No controller number? Try to give it a unique one...
+            if(ctlnum == DSSI_NONE)
+            {
+              // FIXME: Be more careful. Must make sure to pick numbers not already chosen or which WILL BE chosen.
+              // Simple but flawed solution: Start them at 0x60000 + 0x2000 = 0x62000. Max NRPN number is 0x3fff.
+              // TODO: Update: Actually we want to try to use CC Controller7 controllers if possible (or a choice) because what if
+              //  the user's controller hardware doesn't support RPN?
+              // If CC Controller7 is chosen we must make sure to use only non-common numbers. An already limited range
+              //  of 127 now becomes narrower. See the cool document midi-controllers.txt in the DSSI source for a 
+              //  nice roundup of numbers and how to choose them and how they relate to synths and DSSI synths etc. !
+              ctlnum = CTRL_NRPN14_OFFSET + 0x2000 + cip; 
+            }
+            else
+            {
+              int c = ctlnum;
+              // Can be both CC and NRPN! Prefer CC over NRPN.
+              if(DSSI_IS_CC(ctlnum))
+              {
+                #ifdef DSSI_DEBUG 
+                printf("DssiSynthIF::init is CC control\n");
+                #endif
+                
+                ctlnum = DSSI_CC_NUMBER(c);
+                #ifdef DSSI_DEBUG 
+                if(DSSI_IS_NRPN(ctlnum))
+                  printf("DssiSynthIF::init is also NRPN control. Using CC.\n");
+                #endif  
+              }
+              else
+              if(DSSI_IS_NRPN(ctlnum))
+              {
+                #ifdef DSSI_DEBUG 
+                printf("DssiSynthIF::init  is NRPN control\n");
+                #endif
+                
+                ctlnum = DSSI_NRPN_NUMBER(c) + CTRL_NRPN14_OFFSET;
+              }  
+                
+            }
+            
+            #ifdef DSSI_DEBUG 
+            printf("DssiSynthIF::init inserting to midiCtl2PortMap: ctlnum:%d k:%d\n", ctlnum, cip);
+            #endif
+            
+            // We have a controller number! Insert it and the DSSI port number into both maps.
+            synth->midiCtl2PortMap.insert(std::pair<int, int>(ctlnum, cip));
+            synth->port2MidiCtlMap.insert(std::pair<int, int>(cip, ctlnum));
+            
+            // Support a special block for dssi synth ladspa controllers. p4.0.20
+            // Put the ID at a special block after plugins (far after).
+            int id = genACnum(MAX_PLUGINS, cip);
+            const char* name = ld->PortNames[k];
+            float min, max;
+            ladspaControlRange(ld, k, &min, &max);
+            CtrlList* cl;
+            CtrlListList* cll = ((AudioTrack*)synti)->controller();
+            iCtrlList icl = cll->find(id);
+            if (icl == cll->end())
+            {
+              cl = new CtrlList(id);
+              cll->add(cl);
+              cl->setCurVal(controls[cip].val);
+            }
+            else 
+            {
+              cl = icl->second;
+              controls[cip].val = cl->curVal();
+            }
+            cl->setRange(min, max);
+            cl->setName(QString(name));
+            LADSPA_PortRangeHint range = ld->PortRangeHints[k];
+            if(LADSPA_IS_HINT_TOGGLED(range.HintDescriptor))
+            {    
+              cl->setMode(CtrlList::DISCRETE);
+              cl->setValueType(VAL_BOOL);
+            }  
+            else  
+            {
+              cl->setMode(CtrlList::INTERPOLATE);
+              cl->setValueType(VAL_LINEAR);
+            }  
+            
+            ld->connect_port(handle, k, &controls[cip].val);
+            
+            ++cip;
+          }
+          else if (LADSPA_IS_PORT_OUTPUT(pd))
+          {
+            controlsOut[cop].idx = k;    
+            controls[cop].val    = 0.0;
+            controls[cop].tmpVal = 0.0;
+            controls[cop].enCtrl  = false;
+            controls[cop].en2Ctrl = false;
+
+            #ifdef DSSI_DEBUG 
+            printf("DssiSynthIF::init control output port:%d port idx:%d name:%s\n", cop, k, ld->PortNames[k]);
+            #endif
+            
+            //  Control outs are not handled but still must be connected to something.
+            ld->connect_port(handle, k, &controlsOut[cop].val);
+            
+            ++cop;
+          }
+        }
+      }
+          
+      
+      /*
+      // Add the LADSPA controllers to the audio track controller list. p4.0.20
+      //int controller = plugin->parameters();
+      int controller = controlPorts;
+      for (int i = 0; i < controller; ++i) 
+      {
+        //int id = genACnum(idx, i);
+        // Put the ID at a special block after plugins (far after).
+        int id = genACnum(MAX_PLUGINS, i);
+        const char* name = plugin->paramName(i);
+        synth->dssi->LADSPA_Plugin->PortNames[controls[i].idx]
+        float min, max;
+        plugin->range(i, &min, &max);
+        CtrlValueType t = plugin->valueType();
+        CtrlList* cl = new CtrlList(id);
+        cl->setRange(min, max);
+        cl->setName(QString(name));
+        cl->setValueType(t);
+        LADSPA_PortRangeHint range = plugin->range(i);
+        if(LADSPA_IS_HINT_TOGGLED(range.HintDescriptor))
+          cl->setMode(CtrlList::DISCRETE);
+        else  
+          cl->setMode(CtrlList::INTERPOLATE);
+        cl->setCurVal(plugin->param(i));
+        addController(cl);
+      }
+      */
+      
       if (ld->activate)
             ld->activate(handle);
 
@@ -1654,7 +1789,8 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       //int num = ip->first;
       unsigned long k = ip->second;
       
-      unsigned long i = synth->pIdx[k];
+      ///unsigned long i = synth->pIdx[k];
+      unsigned long i = controls[k].idx;
       
       int ctlnum = DSSI_NONE;
       if(dssi->get_midi_controller_for_port)
@@ -2145,8 +2281,8 @@ void DssiSynth::incInstances(int val)
             handle = 0;
             dssi = NULL;
             df   = NULL;
-            pIdx.clear(); 
-            opIdx.clear();
+            ///pIdx.clear(); 
+            ///opIdx.clear();
             iIdx.clear(); 
             oIdx.clear(); 
             rpIdx.clear();
@@ -2334,8 +2470,9 @@ void DssiSynthIF::guiHeartBeat()
   {
     if(synti->_guiUpdateControls[i])
     {
-      unsigned long k = synth->pIdx[i];
-      _oscif.oscSendControl(k, controls[i].val);
+      ///unsigned long k = synth->pIdx[i];
+      ///_oscif.oscSendControl(k, controls[i].val);
+      _oscif.oscSendControl(controls[i].idx, controls[i].val);
     
       // Reset.
       synti->_guiUpdateControls[i] = false;
@@ -2376,8 +2513,10 @@ int DssiSynthIF::oscUpdate()
       unsigned long ports = synth->_controlInPorts;
       for(unsigned long i = 0; i < ports; ++i) 
       {
-        unsigned long k = synth->pIdx[i];
-        _oscif.oscSendControl(k, controls[i].val);
+        ///unsigned long k = synth->pIdx[i];
+        ///_oscif.oscSendControl(k, controls[i].val);
+        _oscif.oscSendControl(controls[i].idx, controls[i].val);
+        
         // Avoid overloading the GUI if there are lots and lots of ports. 
         if((i+1) % 50 == 0)
           usleep(300000);
@@ -2835,8 +2974,9 @@ int DssiSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* mi
   //int ctlnum = ip->first;
   //int k = ip->second;
   
-  int i = synth->pIdx[id];
+  ///int i = synth->pIdx[id];
   //int i = synth->pIdx[k];
+  int i = controls[id].idx;
   
   //ladspaDefaultValue(ld, i, &controls[id].val);
   
@@ -2964,7 +3104,8 @@ int DssiSynthIF::totalInChannels() const
 bool DssiSynthIF::on() const                                 { return true; }  // Synth is not part of a rack plugin chain. Always on.
 void DssiSynthIF::setOn(bool /*val*/)                        { }   
 int DssiSynthIF::pluginID()                                  { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->UniqueID : 0; } 
-int DssiSynthIF::id()                                        { return 0; } // Synth is not part of a rack plugin chain. Always 0.
+//int DssiSynthIF::id()                                        { return 0; } // Synth is not part of a rack plugin chain. Always 0.
+int DssiSynthIF::id()                                        { return MAX_PLUGINS; } // Set for special block reserved for dssi synth. p4.0.20
 QString DssiSynthIF::pluginLabel() const                     { return (synth && synth->dssi) ? QString(synth->dssi->LADSPA_Plugin->Label) : QString(); } 
 QString DssiSynthIF::name() const                            { return synti->name(); }
 QString DssiSynthIF::lib() const                             { return synth ? synth->completeBaseName() : QString(); }
@@ -2980,9 +3121,9 @@ bool DssiSynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return 
 int DssiSynthIF::parameters() const                          { return synth ? synth->_controlInPorts : 0; }
 void DssiSynthIF::setParam(int i, double val)                { setParameter(i, val); }
 double DssiSynthIF::param(int i) const                       { return getParameter(i); }
-const char* DssiSynthIF::paramName(int i)                    { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortNames[i] : 0; }
+const char* DssiSynthIF::paramName(int i)                    { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortNames[controls[i].idx] : 0; }
 //LADSPA_PortRangeHint DssiSynthIF::range(int i)               { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortRangeHints[i] : 0; }
-LADSPA_PortRangeHint DssiSynthIF::range(int i)               { return synth->dssi->LADSPA_Plugin->PortRangeHints[i]; }
+LADSPA_PortRangeHint DssiSynthIF::range(int i)               { return synth->dssi->LADSPA_Plugin->PortRangeHints[controls[i].idx]; }
 
 
 #else //DSSI_SUPPORT

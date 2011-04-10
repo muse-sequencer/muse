@@ -193,11 +193,14 @@ class VAM : public MessMono {
     public:
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const;
       virtual void getInitData(int* n, const unsigned char**p) const;
-      virtual bool guiVisible() const;
-      virtual void showGui(bool);
-      virtual bool hasGui() const { return true; }
-      virtual void getGeometry(int* x, int* y, int* w, int* h) const;
-      virtual void setGeometry(int x, int y, int w, int h);
+      //virtual bool guiVisible() const;
+      //virtual void showGui(bool);
+      //virtual bool hasGui() const { return true; }
+      virtual bool nativeGuiVisible() const;
+      virtual void showNativeGui(bool);
+      virtual bool hasNativeGui() const { return true; }
+      virtual void getNativeGeometry(int* x, int* y, int* w, int* h) const;
+      virtual void setNativeGeometry(int x, int y, int w, int h);
       virtual void processMessages();
       virtual void process(float**, int, int);
       virtual void note(int channel, int pitch, int velo);
@@ -979,28 +982,28 @@ bool VAM::sysex(int n, const unsigned char* data)
       }
 
 //---------------------------------------------------------
-//   guiVisible
+//   nativeGuiVisible
 //---------------------------------------------------------
 
-bool VAM::guiVisible() const
+bool VAM::nativeGuiVisible() const
       {
       return gui->isVisible();
       }
 
 //---------------------------------------------------------
-//   showGui
+//   showNativeGui
 //---------------------------------------------------------
 
-void VAM::showGui(bool val)
+void VAM::showNativeGui(bool val)
       {
       gui->setVisible(val);
       }
 
 //---------------------------------------------------------
-//   getGeometry
+//   getNativeGeometry
 //---------------------------------------------------------
 
-void VAM::getGeometry(int* x, int* y, int* w, int* h) const
+void VAM::getNativeGeometry(int* x, int* y, int* w, int* h) const
       {
       QPoint pos(gui->pos());
       QSize size(gui->size());
@@ -1011,10 +1014,10 @@ void VAM::getGeometry(int* x, int* y, int* w, int* h) const
       }
 
 //---------------------------------------------------------
-//   setGeometry
+//   setNativeGeometry
 //---------------------------------------------------------
 
-void VAM::setGeometry(int x, int y, int w, int h)
+void VAM::setNativeGeometry(int x, int y, int w, int h)
       {
       gui->resize(QSize(w, h));
       gui->move(QPoint(x, y));
