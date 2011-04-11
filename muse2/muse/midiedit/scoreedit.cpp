@@ -85,30 +85,6 @@ using namespace std;
 ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned initPos)
    : MidiEditor(0, 0, pl, parent, name)
 {
-//	Splitter* hsplitter;
-	QPushButton* ctrl;
-/*	
-	hsplitter = new Splitter(Qt::Vertical, mainw, "hsplitter");
-		hsplitter->setHandleWidth(2);
-
-		ctrl = new QPushButton(tr("ctrl"), mainw);
-			ctrl->setObjectName("Ctrl");
-			ctrl->setFont(config.fonts[3]);
-			ctrl->setToolTip(tr("Add Controller View"));
-
-		hsplitter->addWidget(ctrl);
-*/	
-	/*
-	QGridLayout* gridS1 = new QGridLayout(mainw);
-		gridS1->setContentsMargins(0, 0, 0, 0);
-
-      mainGrid->setRowStretch(0, 100);
-      mainGrid->setColumnStretch(1, 100);
-
-      gridS1->setRowStretch(2, 100);
-      gridS1->setColumnStretch(1, 100);     
-*/
-
 	ScoreCanvas* test=new ScoreCanvas(this, mainw, 1, 1);	
 	hscroll = new QScrollBar(Qt::Horizontal, mainw);
 
@@ -231,32 +207,37 @@ string IntToStr(int i)
 	return s.str();
 }
 
+void color_image(QImage& img, const QColor& color)
+{
+	uchar* ptr=img.bits();
+	int bytes=img.byteCount();
+	int r,g,b;
+	color.getRgb(&r,&g,&b);
+	
+	for (int i=0; i<bytes/4; i++)
+	{
+		QRgb* rgb=((QRgb*)ptr);
+		(*rgb) = qRgba(r,g,b,qAlpha(*rgb));
+		
+		ptr+=4;
+	}
+}
+
 void load_colored_pixmaps(string file, QPixmap* array)
 {
 	QString fn(file.c_str());
 	QImage img(fn);
+		
+	color_image(img, Qt::black);
+	array[BLACK_PIXMAP]=QPixmap::fromImage(img);
 	
-	int bytes=img.byteCount();
-	uchar* bits=img.bits();
-	uchar* ptr;
+	color_image(img, Qt::red);
+	array[HIGHLIGHTED_PIXMAP]=QPixmap::fromImage(img);
 	
-	array[BLACK_PIXMAP]=QPixmap::fromImage(img); //before anything was changed
-	//TODO: really color it black, don't rely on the userdata be correct
 	
 	for (int color_index=0;color_index<NUM_PARTCOLORS; color_index++)
 	{
-		ptr=bits;
-		int r,g,b;
-		config.partColors[color_index].getRgb(&r,&g,&b);
-		
-		for (int i=0; i<bytes/4; i++)
-		{
-			QRgb* rgb=((QRgb*)ptr);
-			(*rgb) = qRgba(r,g,b,qAlpha(*rgb));
-			
-			ptr+=4;
-		}
-
+		color_image(img, config.partColors[color_index]);
 		array[color_index]=QPixmap::fromImage(img);
 	}
 }
@@ -340,7 +321,7 @@ bool operator< (const note_pos_t& a, const note_pos_t& b)
 int flo_quantize(int tick)
 {
 	//TODO quantizing must be done with the proper functions!
-	return int(rint((float)tick / FLO_QUANT))*FLO_QUANT;
+	return int(nearbyint((float)tick / FLO_QUANT))*FLO_QUANT;
 }
  
 int flo_quantize_floor(int tick)
@@ -412,7 +393,7 @@ ScoreEventList ScoreCanvas::createAppropriateEventList(PartList* pl)
 	for (it=result.begin(); it!=result.end(); it++)
 		if (it->second.type==FloEvent::NOTE_ON)
 		{
-			int end_tick=it->first + it->second.len;
+			unsigned end_tick=it->first + it->second.len;
 			
 			//iterate though all (relevant) later note_ons which are
 			//at the same pitch. if there's a collision, shorten it's len
@@ -1103,7 +1084,7 @@ void ScoreCanvas::process_itemlist(ScoreItemList& itemlist)
 				else
 				{
 					cout << "creating group #"<<n_groups<<endl;
-					temp.pos.height=rint((float)height_cumulative/counter);
+					temp.pos.height=nearbyint((float)height_cumulative/counter);
 				}
 				
 				// do NOT first insert, then erase, because if temp.height ==
@@ -1592,7 +1573,6 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 
 	curr_key=key_at_tick(from_it->first);
 	list<int> new_acc_list=calc_accidentials(curr_key, USED_CLEF);
-	QPixmap* pix = is_sharp_key(curr_key) ? &pix_sharp[BLACK_PIXMAP] : &pix_b[BLACK_PIXMAP];
 	vorzeichen_t new_accidential = is_sharp_key(curr_key) ? SHARP : B;
 
 	for (int i=0;i<7;i++)
@@ -1675,10 +1655,17 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 					for (int i=12; i<=it->pos.height; i+=2)
 						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos+x_left,YDIST+4*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos+x_left,YDIST+4*YLEN  -  (i-2)*YLEN/2);
 				}
-				
 								
-				draw_pixmap(p,it->x -x_pos+x_left,it->y,it->pix[it->source_part->colorIndex()]);
-				//TODO FINDMICH draw a margin around bright colors
+				it->is_active= ( (song->cpos() >= it->source_event->tick() + it->source_part->tick()) &&
+				     			       (song->cpos() < it->source_event->endTick() + it->source_part->tick()) );
+
+				int color_index=it->source_part->colorIndex();
+
+				if (audio->isPlaying() && it->is_active)
+					color_index=HIGHLIGHTED_PIXMAP;
+					
+				draw_pixmap(p,it->x -x_pos+x_left,it->y,it->pix[color_index]);
+				//TODO FINDMICH maybe draw a margin around bright colors?
 				//maybe draw the default color in black?
 				
 				//draw dots
@@ -1696,7 +1683,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				
 				for (int i=0;i<it->dots;i++)
 				{
-					draw_pixmap(p,it->x+x_dot -x_pos+x_left,it->y+y_dot,pix_dot[it->source_part->colorIndex()]);
+					draw_pixmap(p,it->x+x_dot -x_pos+x_left,it->y+y_dot,pix_dot[color_index]);
 					x_dot+=DOT_XDIST;
 				}
 
@@ -1712,7 +1699,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 						case SHARP: acc_pix=pix_sharp; break;
 						case B: acc_pix=pix_b; break;
 					}
-					draw_pixmap(p,it->x-ACCIDENTIAL_DIST -x_pos+x_left,it->y, acc_pix[it->source_part->colorIndex()]);
+					draw_pixmap(p,it->x-ACCIDENTIAL_DIST -x_pos+x_left,it->y, acc_pix[color_index]);
 
 					curr_accidential[modulo(it->pos.height,7)]=it->pos.vorzeichen;
 				}
@@ -1722,7 +1709,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				if (it->is_tie_dest)
 				{
 					cout << "drawing tie" << endl;
-					draw_tie(p,it->tie_from_x-x_pos+x_left,it->x -x_pos+x_left,it->y, (it->len==0) ? true : (it->stem==DOWNWARDS) , config.partColors[it->source_part->colorIndex()]);
+					draw_tie(p,it->tie_from_x-x_pos+x_left,it->x -x_pos+x_left,it->y, (it->len==0) ? true : (it->stem==DOWNWARDS) , config.partColors[color_index]);
 					// in english: "if it's a whole note, tie is upwards (true). if not, tie is upwards if
 					//              stem is downwards and vice versa"
 				}
@@ -1816,6 +1803,49 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				p.drawPixmap(downstem_x -x_pos+x_left,downstem_y1+STEM_LEN-pix_flag_down[downflag-3].height(),pix_flag_down[downflag-3]);
 		}
 	}		
+}
+
+bool ScoreCanvas::need_redraw_for_hilighting()
+{
+	return need_redraw_for_hilighting(x_pos,x_pos+width()-x_left);
+}
+
+bool ScoreCanvas::need_redraw_for_hilighting(int x1, int x2)
+{
+	int from_tick, to_tick;
+	ScoreItemList::iterator from_it, to_it;
+
+	from_tick=x_to_tick(x1);
+	from_it=itemlist.lower_bound(from_tick);
+	//from_it now contains the first time which is fully drawn
+	//however, the previous beat could still be relevant, when it's
+	//partly drawn. so we decrement from_it
+	if (from_it!=itemlist.begin()) from_it--;	
+	
+	to_tick=x_to_tick(x2);
+	to_it=itemlist.upper_bound(to_tick);
+	//to_it now contains the first time which is not drawn at all any more
+
+	return need_redraw_for_hilighting(from_it, to_it);	
+}
+
+bool ScoreCanvas::need_redraw_for_hilighting(ScoreItemList::iterator from_it, ScoreItemList::iterator to_it)
+{
+	//if we aren't playing, there will never be a need for redrawing due to highlighting things
+	if (audio->isPlaying()==false)
+		return false;
+	
+	for (ScoreItemList::iterator it2=from_it; it2!=to_it; it2++)
+		for (set<FloItem, floComp>::iterator it=it2->second.begin(); it!=it2->second.end();it++)
+			if (it->type==FloItem::NOTE)
+			{
+				bool is_active= ( (song->cpos() >= it->source_event->tick() + it->source_part->tick()) &&
+				                  (song->cpos() < it->source_event->endTick() + it->source_part->tick()) );
+				if (it->is_active != is_active)
+					return true;
+			}
+			
+	return false;
 }
 
 int ScoreCanvas::clef_height(clef_t clef)
@@ -1912,7 +1942,7 @@ void ScoreCanvas::draw_number(QPainter& p, int x, int y, int n)
 	string str=IntToStr(n);
 	int curr_x=x+DIGIT_WIDTH/2;
 	
-	for (int i=0;i<str.length(); i++)
+	for (size_t i=0;i<str.length(); i++)
 	{
 		draw_pixmap(p, curr_x, y, pix_num[str[i]-'0']);
 		curr_x+=DIGIT_WIDTH;
@@ -2012,9 +2042,11 @@ int ScoreCanvas::x_to_tick(int x)
 	return t > min_t ? t : min_t;
 }
 
-tonart_t ScoreCanvas::key_at_tick(int t)
+tonart_t ScoreCanvas::key_at_tick(int t_)
 {
 	tonart_t tmp;
+	unsigned int t= (t_>=0) ? t_ : 0;
+	
 	for (ScoreEventList::iterator it=eventlist.begin(); it!=eventlist.end() && it->first<=t; it++)
 		if (it->second.type==FloEvent::KEY_CHANGE)
 			tmp=it->second.tonart;
@@ -2022,9 +2054,11 @@ tonart_t ScoreCanvas::key_at_tick(int t)
 	return tmp;
 }
 
-timesig_t ScoreCanvas::timesig_at_tick(int t)
+timesig_t ScoreCanvas::timesig_at_tick(int t_)
 {
 	timesig_t tmp;
+	unsigned int t= (t_>=0) ? t_ : 0;
+
 	for (ScoreEventList::iterator it=eventlist.begin(); it!=eventlist.end() && it->first<=t; it++)
 		if (it->second.type==FloEvent::TIME_SIG)
 		{
@@ -2070,7 +2104,7 @@ int ScoreCanvas::height_to_pitch(int h, clef_t clef, tonart_t key)
 int ScoreCanvas::y_to_height(int y)
 {
 	//Y_MARKER
-	return int(rint(float(YDIST+4*YLEN  - y)*2/YLEN))+2 ;
+	return int(nearbyint(float(YDIST+4*YLEN  - y)*2.0/YLEN))+2 ;
 }
 
 int ScoreCanvas::y_to_pitch(int y, int t, clef_t clef)
@@ -2172,33 +2206,37 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 	{
 		if ((event->button()==Qt::LeftButton) && (mouse_inserts_notes))
 		{
-			song->startUndo();
-			//stopping undo at the end of this function is unneccessary
-			//because we'll begin a drag right after it. finishing
-			//this drag will stop undo as well (in mouseReleaseEvent)
-			
-			Event newevent(Note);
-			newevent.setPitch(y_to_pitch(y,tick, USED_CLEF));
-			newevent.setVelo(64); //TODO
-			newevent.setVeloOff(64); //TODO
-			newevent.setTick(tick);
-			newevent.setLenTick((new_len>0)?new_len:last_len);
-			
-			audio->msgAddEvent(newevent, curr_part, false, false, false);
-			
-			dragged_event_part=curr_part;
-			dragged_event=newevent;
-			dragged_event_original_pitch=newevent.pitch();
+			signed int relative_tick=(signed) tick - curr_part->tick();
+			if (relative_tick>=0) //TODO FINDMICH do that better
+			{
+				song->startUndo();
+				//stopping undo at the end of this function is unneccessary
+				//because we'll begin a drag right after it. finishing
+				//this drag will stop undo as well (in mouseReleaseEvent)
+				
+				Event newevent(Note);
+				newevent.setPitch(y_to_pitch(y,tick, USED_CLEF));
+				newevent.setVelo(64); //TODO
+				newevent.setVeloOff(64); //TODO
+				newevent.setTick(relative_tick);
+				newevent.setLenTick((new_len>0)?new_len:last_len);
+				
+				audio->msgAddEvent(newevent, curr_part, false, false, false);
+				
+				dragged_event_part=curr_part;
+				dragged_event=newevent;
+				dragged_event_original_pitch=newevent.pitch();
 
-			mouse_down_pos=event->pos();
-			mouse_operation=NO_OP;
-			mouse_x_drag_operation=LENGTH;
+				mouse_down_pos=event->pos();
+				mouse_operation=NO_OP;
+				mouse_x_drag_operation=LENGTH;
 
-			song_changed(0);
+				song_changed(0);
 
-			setMouseTracking(true);	
-			dragging=true;
-			//song->startUndo(); unneccessary because we have started it already above
+				setMouseTracking(true);	
+				dragging=true;
+				//song->startUndo(); unneccessary because we have started it already above
+			}
 		}
 	}
 
@@ -2242,7 +2280,6 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 		int dx=event->x()-mouse_down_pos.x();
 		int dy=event->y()-mouse_down_pos.y();
 
-		int y=event->y();
 		int x=event->x()+x_pos-x_left;
 		
 		int tick=flo_quantize_floor(x_to_tick(x));
@@ -2286,10 +2323,12 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				break;
 			
 			case BEGIN:
-				if (dragged_event.tick() != tick)
+				if (dragged_event.tick()+dragged_event_part->tick() != tick)
 				{
 					Event tmp=dragged_event.clone();
-					tmp.setTick(tick);
+					
+					if (tick-signed(dragged_event_part->tick()) >= 0) //TODO FINDMICH do that better
+						tmp.setTick(tick-dragged_event_part->tick());
 					
 					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
 					dragged_event=tmp;
@@ -2301,10 +2340,12 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 
 			case LENGTH:
 				tick+=FLO_QUANT;
-				if (dragged_event.tick()+dragged_event.lenTick() != tick)
+				if (dragged_event.tick()+dragged_event.lenTick() + dragged_event_part->tick() != tick)
 				{
 					Event tmp=dragged_event.clone();
-					tmp.setLenTick(tick-dragged_event.tick());
+					
+					if (tick-signed(dragged_event.tick() -dragged_event_part->tick()) >= 0) //TODO FINDMICH do that better
+						tmp.setLenTick(tick-dragged_event.tick() -dragged_event_part->tick());
 					
 					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
 					dragged_event=tmp;
@@ -2415,19 +2456,22 @@ void ScoreCanvas::resizeEvent(QResizeEvent* ev)
 
 void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
 {
-	if ((index==0) && scroll) //potential need to scroll?
+	if (index==0)
 	{
-		switch (song->follow())
+		if (scroll) //potential need to scroll?
 		{
-			case  Song::NO: break;
-			case Song::JUMP:  goto_tick(tick,false);  break;
-			case Song::CONTINUOUS:  goto_tick(tick,true);  break;
+			switch (song->follow())
+			{
+				case  Song::NO: break;
+				case Song::JUMP:  goto_tick(tick,false);  break;
+				case Song::CONTINUOUS:  goto_tick(tick,true);  break;
+			}
 		}
+		
+		if (need_redraw_for_hilighting())
+			redraw();
 	}
 }
-// TODO: testen: kommen die segfaults von muse oder von mir? [ von mir ]
-// TODO: testen, ob das noten-splitten korrekt arbeitet [ scheint zu klappen ]
-// TODO: testen, ob shift immer korrekt gesetzt wird [ scheint zu klappen ]
 
 //the following assertions are made:
 //  pix_quarter.width() == pix_half.width()
@@ -2439,16 +2483,6 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
 
 
 
-// bei änderung
-// takt- oder tonartänderung:
-//     alles ab der betreffenden position löschen
-//     alles ab dort neu berechnen
-// notenänderung:
-//     alle von der note betroffenen takte löschen und neuberechnen
-//     aus erstem betroffenen takt müssen tie-infos gesichert werden
-//     im takt nach dem letzten betroffenen müssen die tie-infos
-//     geupdated werden. ggf. löschen ist unnötig, da ties nur wandern,
-//     aber nicht verschwinden oder neu dazukommen werden.
 
 
 //hint: recalculating event- and itemlists "from zero"
@@ -2477,6 +2511,11 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  *   o check if "moving away" works for whole notes [seems to NOT work properly]
  *
  * less important stuff
+ *   o when moving or resizing a note, so that its end is out-of-part,
+ *     there's strange behaviour
+ *   o redraw is called too often
+ *     for example, when scroll is continuous, and note-hilighting has
+ *     changed, redraw() is called twice
  *   o ties aren't always drawn correctly when the destination note
  *     is out of view
  *   o tied notes don't work properly when there's a key-change in
@@ -2497,6 +2536,7 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  *     the change was introduced after 873815e57a5d1edc147710b524936b6f6260f555
  *   o refuse to resize so that width gets smaller or equal than x_left
  *   o set distances properly [looks okay, doesn't it?]
+ *   o maybe eliminate all the compiler warnings
  *
  * stuff for the other muse developers
  *   o check if dragging notes is done correctly

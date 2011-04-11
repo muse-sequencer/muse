@@ -225,6 +225,8 @@ class FloItem
 		mutable int stem_x;
 		mutable QPixmap* pix;
 		
+		mutable bool is_active;
+		
 		QRect bbox() const;
 		
 
@@ -405,6 +407,8 @@ struct cumulative_t
 };
 
 #define BLACK_PIXMAP (NUM_PARTCOLORS)
+#define HIGHLIGHTED_PIXMAP (NUM_PARTCOLORS+1)
+
 struct timesig_t
 {
 	int num;
@@ -453,13 +457,18 @@ class ScoreCanvas : public View
 		int calc_posadd(int t);
 
 
+
+		bool need_redraw_for_hilighting(ScoreItemList::iterator from_it, ScoreItemList::iterator to_it);
+		bool need_redraw_for_hilighting(int x1, int x2);
+		bool need_redraw_for_hilighting();
+
 		int canvas_width();
 		int viewport_width();
 		
-		QPixmap pix_whole[NUM_PARTCOLORS+1], pix_half[NUM_PARTCOLORS+1], pix_quarter[NUM_PARTCOLORS+1];
+		QPixmap pix_whole[NUM_PARTCOLORS+2], pix_half[NUM_PARTCOLORS+2], pix_quarter[NUM_PARTCOLORS+2];
 		QPixmap pix_r1, pix_r2, pix_r4, pix_r8, pix_r16;
-		QPixmap pix_dot[NUM_PARTCOLORS+1], pix_flag_up[4], pix_flag_down[4];
-		QPixmap pix_b[NUM_PARTCOLORS+1], pix_sharp[NUM_PARTCOLORS+1], pix_noacc[NUM_PARTCOLORS+1];
+		QPixmap pix_dot[NUM_PARTCOLORS+2], pix_flag_up[4], pix_flag_down[4];
+		QPixmap pix_b[NUM_PARTCOLORS+2], pix_sharp[NUM_PARTCOLORS+2], pix_noacc[NUM_PARTCOLORS+2];
 		QPixmap pix_num[10];
 		QPixmap pix_clef_violin, pix_clef_bass;
 		
