@@ -178,7 +178,7 @@ void ScoreCanvas::song_changed(int)
 {
 	cout << "song changed!" << endl;
 	pos_add_list.clear();
-	eventlist=createAppropriateEventList(editor->parts());
+	eventlist=create_appropriate_eventlist(editor->parts());
 	itemlist=create_itemlist(eventlist);
 	process_itemlist(itemlist); // do note- and rest-grouping and collision avoiding
 	calc_item_pos(itemlist);
@@ -281,6 +281,11 @@ int modulo(int a, int b) // similar to a % b
 	return (((a%b)+b)%b);
 }
 
+int divide_floor(int a, int b) // similar to a / b
+{ //TODO can be done better :/
+	return int(floor(float(a)/float(b)));
+}
+
 #define DEFAULT_REST_HEIGHT 6 // TODO
 
 
@@ -330,7 +335,7 @@ int flo_quantize_floor(int tick)
 	return int(tick / FLO_QUANT) * FLO_QUANT;
 }
  
-ScoreEventList ScoreCanvas::createAppropriateEventList(PartList* pl)
+ScoreEventList ScoreCanvas::create_appropriate_eventlist(PartList* pl)
 {
 	using AL::sigmap;
 	using AL::iSigEvent;
@@ -502,9 +507,9 @@ note_pos_t ScoreCanvas::note_pos_(int note, tonart_t key)
 // in violin clef, line 2 is E4
 // in bass clef, line 2 is G2
 
-note_pos_t ScoreCanvas::note_pos (int note, tonart_t key, clef_t clef)
+note_pos_t ScoreCanvas::note_pos (unsigned note, tonart_t key, clef_t clef)
 {
-	int octave=(note/12)-1; //integer division
+	int octave=(note/12)-1; //integer division. note is unsigned
 	note=note%12;
 	
 	//now octave contains the octave the note is in
@@ -536,7 +541,7 @@ int ScoreCanvas::calc_len(int l, int d)
 	
 	int tmp=0;
 	for (int i=0;i<=d;i++)
-		tmp+=TICKS_PER_WHOLE / pow(2, l+i);
+		tmp+=TICKS_PER_WHOLE / (1 << (l+i));
 	
 	return tmp;
 }
@@ -631,6 +636,11 @@ list<note_len_t> ScoreCanvas::parse_note_len(int len_ticks, int begin_tick, vect
 {
 	list<note_len_t> retval;
 	
+	if (len_ticks<0)
+		cout << "WARNING: ILLEGAL FUNCTION CALL in parse_note_len: len_ticks < 0" << endl;
+	if (begin_tick<0)
+		cout << "WARNING: ILLEGAL FUNCTION CALL in parse_note_len: begin_tick < 0" << endl;
+	
 	if (allow_normal)
 	{
 		int dot_max = allow_dots ? quant_max : 0;
@@ -649,7 +659,7 @@ list<note_len_t> ScoreCanvas::parse_note_len(int len_ticks, int begin_tick, vect
 	int begin=begin_tick * 64 / TICKS_PER_WHOLE;
 	int len=len_ticks * 64 / TICKS_PER_WHOLE;
 	
-	int pos=begin;
+	unsigned pos=begin;
 	int len_done=0;
 	
 	while (len_done<len)
@@ -2075,8 +2085,8 @@ int ScoreCanvas::height_to_pitch(int h, clef_t clef)
 	
 	switch(clef) //CLEF_MARKER
 	{
-		case VIOLIN:	return foo[modulo(h,7)] + ( (h/7)*12 ) + 60;
-		case BASS:		return foo[modulo((h-5),7)] + ( ((h-5)/7)*12 ) + 48;
+		case VIOLIN:	return foo[modulo(h,7)] + ( divide_floor(h,7)*12 ) + 60;
+		case BASS:		return foo[modulo((h-5),7)] + ( divide_floor(h-5,7)*12 ) + 48;
 		default:
 			cout << "WARNING: THIS SHOULD NEVER HAPPEN: unknown clef in height_to_pitch" << endl;
 			return 60;
@@ -2306,13 +2316,13 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				break;
 				
 			case PITCH:
-				cout << "changing pitch, delta="<<dy/PITCH_DELTA<<endl;
-				new_pitch=dragged_event_original_pitch - dy/PITCH_DELTA;
+				cout << "changing pitch, delta="<<nearbyint((float)dy/PITCH_DELTA)<<endl;
+				new_pitch=dragged_event_original_pitch - nearbyint((float)dy/PITCH_DELTA);
 
 				if (dragged_event.pitch()!=new_pitch)
 				{
 					Event tmp=dragged_event.clone();
-					tmp.setPitch(dragged_event_original_pitch- dy/PITCH_DELTA);
+					tmp.setPitch(new_pitch);
 					
 					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
 					dragged_event=tmp;
@@ -2323,7 +2333,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				break;
 			
 			case BEGIN:
-				if (dragged_event.tick()+dragged_event_part->tick() != tick)
+				if (dragged_event.tick()+dragged_event_part->tick() != unsigned(tick)) //TODO FINDMICHJETZT tick kann unsigned werden
 				{
 					Event tmp=dragged_event.clone();
 					
@@ -2340,7 +2350,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 
 			case LENGTH:
 				tick+=FLO_QUANT;
-				if (dragged_event.tick()+dragged_event.lenTick() + dragged_event_part->tick() != tick)
+				if (dragged_event.tick()+dragged_event.lenTick() + dragged_event_part->tick() != unsigned(tick))
 				{
 					Event tmp=dragged_event.clone();
 					
@@ -2493,11 +2503,10 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
 
 
 /* BUGS and potential bugs
- *   o when dividing, use a function which always rounds downwards
- *     operator/ rounds towards zero. (-5)/7=0, but should be -1
+ *   o when changing color of a displayed part, note heads aren't redrawn
+ *   o when pressing "STOP", the active note isn't redrawn "normally"
  * 
  * IMPORTANT TODO
- *   o when i want to add a low C in violin clef, some other note is created. wtf?
  *   o support violin and bass clefs at one time
  *   o support multiple note systems
  *   o let the user select which clef to use
@@ -2511,6 +2520,9 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  *   o check if "moving away" works for whole notes [seems to NOT work properly]
  *
  * less important stuff
+ *   o use nearest part instead of curr_part, maybe expand
+ *   o draw measure numbers
+ *   o use "unsigned" whereever "unsigned" is meant
  *   o when moving or resizing a note, so that its end is out-of-part,
  *     there's strange behaviour
  *   o redraw is called too often
@@ -2557,3 +2569,31 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  *   o offer some way to setup the colorizing method to be used
  */
  
+
+
+/* how to use the score editor with multiple tracks
+ * ================================================
+ * 
+ * select parts, right-click, "display in new score window" or "display per-track in new score window"
+ * or "display in existing window -> 1,2,3,4" or "display per-track in existing..."
+ * 
+ * ScoreCanvas has a list of note systems, consisting of the following:
+ *   * all parts included in that view
+ *   * eventlist, itemlist
+ *   * used clef, transposing/octave settings
+ *   * enum { NOT_GROUPED, I_AM_TOP, I_AM_BOTTOM } group_state
+ *       NOT_GROUPED means "single note system"
+ *       I_AM_TOP and I_AM_BOTTOM mean that the two systems belong
+ *       together
+ * 
+ * when redrawing, we iterate through all systems.
+ * we add a distance according to group_state
+ * then we draw the system. if group_state is I_AM_BOTTOM, we
+ * draw our beams longer/higher, and we draw a bracket
+ * 
+ * when clicking around, we first determine which system has been clicked in
+ * (the systems have enough space in between, so there won't be notes
+ *  from sys1 in sys2. if there are, they're ignored for simplicity)
+ * then we proceed as usual (adding, removing, changing notes)
+ */
+

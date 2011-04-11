@@ -1,7 +1,7 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//  scoreedit.cpp
+//  scoreedit.h
 //  (C) Copyright 2011 Florian Jung (florian.a.jung@web.de)
 //=========================================================
 
@@ -420,9 +420,9 @@ class ScoreCanvas : public View
 	Q_OBJECT
 	private:
 		void load_pixmaps();
-		ScoreEventList createAppropriateEventList(PartList* pl);
+		ScoreEventList create_appropriate_eventlist(PartList* pl);
 		note_pos_t note_pos_(int note, tonart_t key);
-		note_pos_t note_pos (int note, tonart_t key, clef_t clef);
+		note_pos_t note_pos (unsigned note, tonart_t key, clef_t clef);
 		int calc_len(int l, int d);
 		list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, bool allow_dots=true, bool allow_normal=true);
 		void draw_tie (QPainter& p, int x1, int x4, int yo, bool up=true, QColor color=Qt::black);
@@ -483,6 +483,8 @@ class ScoreCanvas : public View
 		// will be drawn exactly at the left beginning of the item's area
 		// x_left could also be called "preamble's width". it defines
 		// where the item's area begins
+		// when multiple note systems are drawn into one window, the
+		// preamble's length is the same for each system
 		int x_pos;
 		int x_left;
 
