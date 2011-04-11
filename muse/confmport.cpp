@@ -380,10 +380,16 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
             case DEVCOL_GUI:
                   if (dev == 0)
                         return;
-                  if (port->hasGui())
+                  //if (port->hasGui())
+                  if (port->hasNativeGui())
                   {
-                        port->instrument()->showGui(!port->guiVisible());
-                        item->setIcon(port->guiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
+                        //bool v = port->nativeGuiVisible()
+                        //port->instrument()->showGui(!port->guiVisible());
+                        port->instrument()->showNativeGui(!port->nativeGuiVisible());
+                        //port->instrument()->showNativeGui(!v);
+                        //item->setIcon(port->guiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
+                        item->setIcon(port->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
+                        //item->setIcon(!v ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   }
                   return;
                   
@@ -1226,8 +1232,10 @@ void MPConfig::songChanged(int flags)
 		  itemrec->setIcon(QIcon(QPixmap()));
 		  itemplay->setIcon(QIcon(QPixmap()));
                   }
-            if (port->hasGui()) {
-                  itemgui->setIcon(port->guiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
+            //if (port->hasGui()) {
+            if (port->hasNativeGui()) {
+                  //itemgui->setIcon(port->guiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
+                  itemgui->setIcon(port->nativeGuiVisible() ? QIcon(*dotIcon) : QIcon(*dothIcon));
                   }
             else {
 	      itemgui->setIcon(QIcon(QPixmap()));
