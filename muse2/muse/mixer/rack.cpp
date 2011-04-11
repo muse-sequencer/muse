@@ -26,6 +26,7 @@
 #include "audio.h"
 #include "icons.h"
 #include "gconfig.h"
+#include "globaldefs.h"
 #include "plugin.h"
 #include "filedialog.h"
 

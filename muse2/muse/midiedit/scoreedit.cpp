@@ -90,8 +90,7 @@ ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned i
 
 
 connect(hscroll, SIGNAL(valueChanged(int)), test,   SLOT(scroll_event(int)));
-connect(test, SIGNAL(xpos_changed(int)), hscroll,   SLOT(setValue(int)));
-connect(song, SIGNAL(songChanged(int)), test, SLOT(song_changed(int)));
+connect(test, SIGNAL(xpos_changed(int)), hscroll,   SLOT(setValue(int)));connect(song, SIGNAL(songChanged(int)), test, SLOT(song_changed(int)));
 connect(test, SIGNAL(canvas_width_changed(int)), SLOT(canvas_width_changed(int)));
 connect(test, SIGNAL(viewport_width_changed(int)), SLOT(viewport_width_changed(int)));
 //	      mainGrid->setRowStretch(0, 100);
@@ -140,6 +139,17 @@ void ScoreEdit::closeEvent(QCloseEvent* e)
 
 
 
+//creation of the static variables
+QPixmap *ScoreCanvas::pix_whole, *ScoreCanvas::pix_half, *ScoreCanvas::pix_quarter;
+QPixmap *ScoreCanvas::pix_dot, *ScoreCanvas::pix_b, *ScoreCanvas::pix_sharp, *ScoreCanvas::pix_noacc;
+QPixmap *ScoreCanvas::pix_r1, *ScoreCanvas::pix_r2, *ScoreCanvas::pix_r4, *ScoreCanvas::pix_r8, *ScoreCanvas::pix_r16;
+QPixmap *ScoreCanvas::pix_flag_up, *ScoreCanvas::pix_flag_down;
+QPixmap *ScoreCanvas::pix_num;
+QPixmap *ScoreCanvas::pix_clef_violin, *ScoreCanvas::pix_clef_bass;
+bool ScoreCanvas::pixmaps_loaded=false;
+
+
+
 ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
    int sx, int sy) : View(parent, sx, sy)
 {
@@ -148,7 +158,6 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 	setBg(Qt::white);
 	
 	setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
-//	setMinimumSize(400,600);
 	
 	load_pixmaps();
 	
@@ -198,8 +207,6 @@ int ScoreCanvas::viewport_width()
 	return (width() - x_left);
 }
 
-//flo code starting here
-
 string IntToStr(int i)
 {
 	ostringstream s;
@@ -243,35 +250,67 @@ void load_colored_pixmaps(string file, QPixmap* array)
 }
 
 
+
 void ScoreCanvas::load_pixmaps()
 {
-	load_colored_pixmaps(FONT_PATH "whole.png", pix_whole);
-	load_colored_pixmaps(FONT_PATH "half.png", pix_half);
-	load_colored_pixmaps(FONT_PATH "quarter.png", pix_quarter);
-	load_colored_pixmaps(FONT_PATH "dot.png", pix_dot);
-	load_colored_pixmaps(FONT_PATH "acc_none.png", pix_noacc);
-	load_colored_pixmaps(FONT_PATH "acc_sharp.png", pix_sharp);
-	load_colored_pixmaps(FONT_PATH "acc_b.png", pix_b);
+	if (!pixmaps_loaded)
+	{
+		cout << "loading pixmaps..." << endl;
+		
+		pix_whole=new QPixmap[NUM_PARTCOLORS+2];
+		pix_half=new QPixmap[NUM_PARTCOLORS+2];
+		pix_quarter=new QPixmap[NUM_PARTCOLORS+2];
+		pix_dot=new QPixmap[NUM_PARTCOLORS+2];
+		pix_b=new QPixmap[NUM_PARTCOLORS+2];
+		pix_sharp=new QPixmap[NUM_PARTCOLORS+2];
+		pix_noacc=new QPixmap[NUM_PARTCOLORS+2];
+		pix_num=new QPixmap[10];
+		
+		pix_r1=new QPixmap;
+		pix_r2=new QPixmap;
+		pix_r4=new QPixmap;
+		pix_r8=new QPixmap;
+		pix_r16=new QPixmap;
+		
+		pix_clef_violin=new QPixmap;
+		pix_clef_bass=new QPixmap;
+		
+		pix_flag_up=new QPixmap[4];
+		pix_flag_down=new QPixmap[4];
+		
+		
+		
+		
+		load_colored_pixmaps(FONT_PATH "whole.png", pix_whole);
+		load_colored_pixmaps(FONT_PATH "half.png", pix_half);
+		load_colored_pixmaps(FONT_PATH "quarter.png", pix_quarter);
+		load_colored_pixmaps(FONT_PATH "dot.png", pix_dot);
+		load_colored_pixmaps(FONT_PATH "acc_none.png", pix_noacc);
+		load_colored_pixmaps(FONT_PATH "acc_sharp.png", pix_sharp);
+		load_colored_pixmaps(FONT_PATH "acc_b.png", pix_b);
 
-	pix_r1.load(FONT_PATH "rest1.png");
-	pix_r2.load(FONT_PATH "rest2.png");
-	pix_r4.load(FONT_PATH "rest4.png");
-	pix_r8.load(FONT_PATH "rest8.png");
-	pix_r16.load(FONT_PATH "rest16.png");
-	pix_flag_up[0].load(FONT_PATH "flags8u.png");
-	pix_flag_up[1].load(FONT_PATH "flags16u.png");
-	pix_flag_up[2].load(FONT_PATH "flags32u.png");
-	pix_flag_up[3].load(FONT_PATH "flags64u.png");
-	pix_flag_down[0].load(FONT_PATH "flags8d.png");
-	pix_flag_down[1].load(FONT_PATH "flags16d.png");
-	pix_flag_down[2].load(FONT_PATH "flags32d.png");
-	pix_flag_down[3].load(FONT_PATH "flags64d.png");
-	
-	pix_clef_violin.load(FONT_PATH "clef_violin_big.png");
-	pix_clef_bass.load(FONT_PATH "clef_bass_big.png");
-	
-	for (int i=0;i<10;i++)
-		pix_num[i].load(QString((string(FONT_PATH "")+IntToStr(i)+string(".png")).c_str()));	
+		pix_r1->load(FONT_PATH "rest1.png");
+		pix_r2->load(FONT_PATH "rest2.png");
+		pix_r4->load(FONT_PATH "rest4.png");
+		pix_r8->load(FONT_PATH "rest8.png");
+		pix_r16->load(FONT_PATH "rest16.png");
+		pix_flag_up[0].load(FONT_PATH "flags8u.png");
+		pix_flag_up[1].load(FONT_PATH "flags16u.png");
+		pix_flag_up[2].load(FONT_PATH "flags32u.png");
+		pix_flag_up[3].load(FONT_PATH "flags64u.png");
+		pix_flag_down[0].load(FONT_PATH "flags8d.png");
+		pix_flag_down[1].load(FONT_PATH "flags16d.png");
+		pix_flag_down[2].load(FONT_PATH "flags32d.png");
+		pix_flag_down[3].load(FONT_PATH "flags64d.png");
+		
+		pix_clef_violin->load(FONT_PATH "clef_violin_big.png");
+		pix_clef_bass->load(FONT_PATH "clef_bass_big.png");
+		
+		for (int i=0;i<10;i++)
+			pix_num[i].load(QString((string(FONT_PATH "")+IntToStr(i)+string(".png")).c_str()));	
+		
+		pixmaps_loaded=true;
+	}
 }
 
 
@@ -1497,11 +1536,11 @@ void ScoreCanvas::calc_item_pos(ScoreItemList& itemlist)
 			{
 				switch (it->len)
 				{
-					case 0: it->pix=&pix_r1; break;
-					case 1: it->pix=&pix_r2; break;
-					case 2: it->pix=&pix_r4; break;
-					case 3: it->pix=&pix_r8; break;
-					case 4: it->pix=&pix_r16; break;
+					case 0: it->pix=pix_r1; break;
+					case 1: it->pix=pix_r2; break;
+					case 2: it->pix=pix_r4; break;
+					case 3: it->pix=pix_r8; break;
+					case 4: it->pix=pix_r16; break;
 				}
 				
 				it->x+=NOTE_MOVE_X + (it->ausweich ? REST_AUSWEICH_X : 0); //AUSWEICH_X
@@ -1885,7 +1924,7 @@ void ScoreCanvas::draw_preamble(QPainter& p)
 	int tick=x_to_tick(x_pos);
 
 	// draw clef --------------------------------------------------------
-	QPixmap* pix_clef= (USED_CLEF==BASS) ? &pix_clef_bass : &pix_clef_violin;
+	QPixmap* pix_clef= (USED_CLEF==BASS) ? pix_clef_bass : pix_clef_violin;
 	int y_coord=YDIST+4*YLEN  -  ( clef_height(USED_CLEF) -2)*YLEN/2; //Y_MARKER
 	
 	draw_pixmap(p,CLEF_LEFTMARGIN + pix_clef->width()/2,y_coord,*pix_clef);
@@ -2545,7 +2584,6 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  *   o check if making the program clef-aware hasn't broken anything
  *     e.g. accidentials, creating notes, rendering etc.
  *   o check if the new function for drawing accidential works
- *     the change was introduced after 873815e57a5d1edc147710b524936b6f6260f555
  *   o refuse to resize so that width gets smaller or equal than x_left
  *   o set distances properly [looks okay, doesn't it?]
  *   o maybe eliminate all the compiler warnings

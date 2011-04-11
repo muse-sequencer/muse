@@ -723,20 +723,20 @@ void FluidSynth::dumpInfo()
       }
 
 //---------------------------------------------------------
-//   guiVisible
+//   nativeGuiVisible
 //---------------------------------------------------------
 
-bool FluidSynth::guiVisible() const
+bool FluidSynth::nativeGuiVisible() const
       {
       return gui->isVisible();
       }
 
 
 //---------------------------------------------------------
-//   showGui
+//   showNativeGui
 //---------------------------------------------------------
 
-void FluidSynth::showGui(bool val)
+void FluidSynth::showNativeGui(bool val)
       {
       gui->setVisible(val);
       }

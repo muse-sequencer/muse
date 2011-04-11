@@ -272,7 +272,7 @@ void ISynth::allNotesOff()
 //   guiVisible
 //---------------------------------------------------------
 
-bool ISynth::guiVisible() const
+bool ISynth::nativeGuiVisible() const
       {
       return gui->isVisible();
       }
@@ -281,7 +281,7 @@ bool ISynth::guiVisible() const
 //   showGui
 //---------------------------------------------------------
 
-void ISynth::showGui(bool flag)
+void ISynth::showNativeGui(bool flag)
       {
       gui->setVisible(flag);
       }

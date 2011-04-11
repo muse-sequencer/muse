@@ -61,6 +61,18 @@ class PluginLoader : public QUiLoader
       PluginLoader(QObject * parent = 0) : QUiLoader(parent) {}
 };
 
+/*
+//---------------------------------------------------------
+//   PluginBase
+//---------------------------------------------------------
+
+class PluginBase 
+{
+   protected:
+      void range(unsigned long i, float*, float*) const;
+};
+*/   
+   
 //---------------------------------------------------------
 //   Plugin
 //---------------------------------------------------------
@@ -243,6 +255,7 @@ struct GuiWidgets {
       };
 
 class PluginI;
+class PluginGui;
 
 /*
 class PluginBase 
@@ -282,7 +295,14 @@ class PluginBase
 
 class PluginIBase 
 {
+   protected:
+      PluginGui* _gui;
+
+      void makeGui();
+
    public:
+      PluginIBase(); 
+      ~PluginIBase(); 
       virtual bool on() const = 0;       
       virtual void setOn(bool /*val*/) = 0;   
       virtual int pluginID() = 0;
@@ -309,6 +329,11 @@ class PluginIBase
       virtual const char* paramName(int /*i*/) = 0;     
       virtual LADSPA_PortRangeHint range(int /*i*/) = 0; 
       QString dssi_ui_filename() const;
+      
+      //virtual void showGui(bool) = 0;         // p4.0.20
+      //virtual void showNativeGui(bool) = 0;   //
+      PluginGui* gui() const { return _gui; }
+      void deleteGui();
 };
 
 //---------------------------------------------------------
@@ -381,7 +406,7 @@ class PluginI : public PluginIBase {
 
       int controlPorts;
       int controlOutPorts;
-      PluginGui* _gui;
+      ///PluginGui* _gui;
       bool _on;
       bool initControlValues;
       QString _name;
@@ -397,7 +422,7 @@ class PluginI : public PluginIBase {
       bool _showNativeGuiPending;
 
       void init();
-      void makeGui();
+      ///void makeGui();
       
    public:
       PluginI();
@@ -406,8 +431,8 @@ class PluginI : public PluginIBase {
       Plugin* plugin() const { return _plugin; }
       bool on() const        { return _on; }
       void setOn(bool val)   { _on = val; }
-      PluginGui* gui() const { return _gui; }
-      void deleteGui();
+      ///PluginGui* gui() const { return _gui; }
+      ///void deleteGui();
       
       void setTrack(AudioTrack* t)  { _track = t; }
       AudioTrack* track()           { return _track; }
@@ -471,19 +496,11 @@ class PluginI : public PluginIBase {
       double defaultValue(unsigned int param) const;
       const char* paramName(int i)     { return _plugin->portName(controls[i].idx); }
       LADSPA_PortDescriptor portd(int i) const { return _plugin->portd(controls[i].idx); }
-      void range(int i, float* min, float* max) const {
-            _plugin->range(controls[i].idx, min, max);
-            }
-      bool isAudioIn(int k) {
-            return (_plugin->portd(k) & AUDIO_IN) == AUDIO_IN;
-            }
-      bool isAudioOut(int k) {
-            return (_plugin->portd(k) & AUDIO_OUT) == AUDIO_OUT;
-            }
+      void range(int i, float* min, float* max) const { _plugin->range(controls[i].idx, min, max); }
+      bool isAudioIn(int k) { return (_plugin->portd(k) & AUDIO_IN) == AUDIO_IN; }
+      bool isAudioOut(int k) { return (_plugin->portd(k) & AUDIO_OUT) == AUDIO_OUT; }
       bool inPlaceCapable() const { return _plugin->inPlaceCapable(); }
-      LADSPA_PortRangeHint range(int i) {
-            return _plugin->range(controls[i].idx);
-            }
+      LADSPA_PortRangeHint range(int i) { return _plugin->range(controls[i].idx); }
       };
 
 //---------------------------------------------------------
@@ -491,7 +508,7 @@ class PluginI : public PluginIBase {
 //    chain of connected efx inserts
 //---------------------------------------------------------
 
-const int PipelineDepth = 4;
+//const int PipelineDepth = 4;  // Moved to globaldefs.h
 
 class Pipeline : public std::vector<PluginI*> {
       float* buffer[MAX_CHANNELS];

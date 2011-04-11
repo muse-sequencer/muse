@@ -419,36 +419,50 @@ class ScoreCanvas : public View
 {
 	Q_OBJECT
 	private:
-		void load_pixmaps();
-		ScoreEventList create_appropriate_eventlist(PartList* pl);
-		note_pos_t note_pos_(int note, tonart_t key);
-		note_pos_t note_pos (unsigned note, tonart_t key, clef_t clef);
-		int calc_len(int l, int d);
-		list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, bool allow_dots=true, bool allow_normal=true);
-		void draw_tie (QPainter& p, int x1, int x4, int yo, bool up=true, QColor color=Qt::black);
-		ScoreItemList create_itemlist(ScoreEventList& eventlist);
+		static void load_pixmaps();
+		static void draw_pixmap(QPainter& p, int x, int y, const QPixmap& pm);
+		static void draw_tie (QPainter& p, int x1, int x4, int yo, bool up=true, QColor color=Qt::black);
+
+		static void draw_accidentials(QPainter& p, int x, const list<int>& acc_list, const QPixmap& pix);
+		static list<int> calc_accidentials(tonart_t key, clef_t clef, tonart_t next_key=C);
+
+		static void draw_timesig(QPainter& p, int x, int num, int denom);
+		static int calc_timesig_width(int num, int denom);
+
+		static void draw_number(QPainter& p, int x, int y, int n);
+		static int calc_number_width(int n);
+
+
+
+		static ScoreEventList create_appropriate_eventlist(PartList* pl);
+		static ScoreItemList create_itemlist(ScoreEventList& eventlist);
+
+		static note_pos_t note_pos_(int note, tonart_t key);
+		static note_pos_t note_pos (unsigned note, tonart_t key, clef_t clef);
+
+		static int calc_len(int l, int d);
+		static list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, bool allow_dots=true, bool allow_normal=true);
+
+		static int clef_height(clef_t clef);
+
+		static int height_to_pitch(int h, clef_t clef, tonart_t key);
+		static int height_to_pitch(int h, clef_t clef);
+		static int y_to_height(int y);
+		int y_to_pitch(int y, int t, clef_t clef);
+
+
+
+
 		void process_itemlist(ScoreItemList& itemlist);
-		void draw_pixmap(QPainter& p, int x, int y, const QPixmap& pm);
 		void draw_note_lines(QPainter& p);
 		void draw_preamble(QPainter& p);
 		void draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList::iterator from_it, ScoreItemList::iterator to_it);
 		void draw_items(QPainter& p, ScoreItemList& itemlist, int x1, int x2);
 		void draw_items(QPainter& p, ScoreItemList& itemlist);
 		void calc_item_pos(ScoreItemList& itemlist);
-		list<int> calc_accidentials(tonart_t key, clef_t clef, tonart_t next_key=C);
-		void draw_accidentials(QPainter& p, int x, const list<int>& acc_list, const QPixmap& pix);
 		
-		void draw_timesig(QPainter& p, int x, int num, int denom);
-		int calc_timesig_width(int num, int denom);
-		void draw_number(QPainter& p, int x, int y, int n);
-		int calc_number_width(int n);
 
-		int clef_height(clef_t clef);
 
-		int y_to_pitch(int y, int t, clef_t clef);
-		int y_to_height(int y);
-		int height_to_pitch(int h, clef_t clef, tonart_t key);
-		int height_to_pitch(int h, clef_t clef);
 		
 		timesig_t timesig_at_tick(int t);
 		tonart_t key_at_tick(int t);
@@ -464,13 +478,17 @@ class ScoreCanvas : public View
 
 		int canvas_width();
 		int viewport_width();
-		
-		QPixmap pix_whole[NUM_PARTCOLORS+2], pix_half[NUM_PARTCOLORS+2], pix_quarter[NUM_PARTCOLORS+2];
-		QPixmap pix_r1, pix_r2, pix_r4, pix_r8, pix_r16;
-		QPixmap pix_dot[NUM_PARTCOLORS+2], pix_flag_up[4], pix_flag_down[4];
-		QPixmap pix_b[NUM_PARTCOLORS+2], pix_sharp[NUM_PARTCOLORS+2], pix_noacc[NUM_PARTCOLORS+2];
-		QPixmap pix_num[10];
-		QPixmap pix_clef_violin, pix_clef_bass;
+
+
+// member variables ---------------------------------------------------
+
+		static QPixmap *pix_whole, *pix_half, *pix_quarter; // arrays [NUM_PARTCOLORS+2]
+		static QPixmap *pix_dot, *pix_b, *pix_sharp, *pix_noacc; // arrays [NUM_PARTCOLORS+2]
+		static QPixmap *pix_r1, *pix_r2, *pix_r4, *pix_r8, *pix_r16; // pointers
+		static QPixmap *pix_flag_up, *pix_flag_down; // arrays [4]
+		static QPixmap *pix_num; // array [10]
+		static QPixmap *pix_clef_violin, *pix_clef_bass; //pointers
+		static bool pixmaps_loaded;
 		
 		std::map<int,int> pos_add_list;
 		ScoreEventList eventlist;

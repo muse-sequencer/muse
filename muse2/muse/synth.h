@@ -120,8 +120,19 @@ class SynthIF {
       virtual bool guiVisible() const = 0;
       virtual void showGui(bool v) = 0;
       virtual bool hasGui() const = 0;
+      //virtual bool guiVisible() const { return false; }
+      //virtual void showGui(bool v)    { };
+      //virtual bool hasGui() const     { return false; }
+      virtual bool nativeGuiVisible() const = 0;
+      virtual void showNativeGui(bool v) = 0;
+      virtual bool hasNativeGui() const = 0;
+      //virtual bool nativeGuiVisible() const { return false; }
+      //virtual void showNativeGui(bool v) { };
+      //virtual bool hasNativeGui() const { return false; }
       virtual void getGeometry(int*, int*, int*, int*) const = 0;
       virtual void setGeometry(int, int, int, int) = 0;
+      virtual void getNativeGeometry(int*, int*, int*, int*) const = 0;
+      virtual void setNativeGeometry(int, int, int, int) = 0;
       virtual void preProcessAlways() = 0;
       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer) = 0;
       virtual bool putEvent(const MidiPlayEvent& ev) = 0;
@@ -233,11 +244,20 @@ class SynthI : public AudioTrack, public MidiDevice,
       bool guiVisible() const { return _sif->guiVisible(); }
       void showGui(bool v)    { _sif->showGui(v); }
       bool hasGui() const     { return _sif->hasGui(); }
+      bool nativeGuiVisible() const { return _sif->nativeGuiVisible(); }
+      void showNativeGui(bool v)    { _sif->showNativeGui(v); }
+      bool hasNativeGui() const     { return _sif->hasNativeGui(); }
       void getGeometry(int* x, int* y, int* w, int* h) const {
             _sif->getGeometry(x, y, w, h);
             }
       void setGeometry(int x, int y, int w, int h) {
             _sif->setGeometry(x, y, w, h);
+            }
+      void getNativeGeometry(int* x, int* y, int* w, int* h) const {
+            _sif->getNativeGeometry(x, y, w, h);
+            }
+      void setNativeGeometry(int x, int y, int w, int h) {
+            _sif->setNativeGeometry(x, y, w, h);
             }
 
       bool putEvent(const MidiPlayEvent& ev);
@@ -267,13 +287,18 @@ class MessSynthIF : public SynthIF {
       MessSynthIF(SynthI* s) : SynthIF(s) { _mess = 0; }
       virtual ~MessSynthIF() { }
 
-      virtual bool initGui()      { return true; };
-      virtual void guiHeartBeat()  {  }
-      virtual bool guiVisible() const;
-      virtual void showGui(bool v);
-      virtual bool hasGui() const;
+      virtual bool initGui()          { return true; }
+      virtual void guiHeartBeat()     { }
+      virtual bool guiVisible() const { return false; }
+      virtual void showGui(bool)    { };
+      virtual bool hasGui() const     { return false; }
+      virtual bool nativeGuiVisible() const;
+      virtual void showNativeGui(bool v);
+      virtual bool hasNativeGui() const;
       virtual void getGeometry(int*, int*, int*, int*) const;
       virtual void setGeometry(int, int, int, int);
+      virtual void getNativeGeometry(int*, int*, int*, int*) const;
+      virtual void setNativeGeometry(int, int, int, int);
       virtual void preProcessAlways();
       virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
       virtual bool putEvent(const MidiPlayEvent& ev);

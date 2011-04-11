@@ -21,9 +21,13 @@ enum AutomationType {
       };
 
 const int MAX_CHANNELS = 2;   // max audio channels
-const int MAX_PLUGINS  = 4;   // plugins in mixer rack
+// Absolute max number of plugins in mixer rack (if we ever want to increase PipelineDepth).
+// Used to determine the index where special blocks (dssi ladspa controls) appear in the list of controllers.
+// The special block(s) must appear AFTER any rack plugins, so we need this variable to help us
+//  leave some room in case we ever want to increase the number of rack plugins.
+const int MAX_PLUGINS  = 8;   
+const int PipelineDepth = 4;  // plugins in mixer rack, max up to MAX_PLUGINS
 
-//const int MIDI_PORTS   = 32;  // max Number of Midi Ports
 const int MIDI_PORTS   = 200;  // max Number of Midi Ports
 
 #ifndef MIDI_CHANNELS

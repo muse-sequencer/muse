@@ -42,9 +42,12 @@ class S1 : public MessMono {
       virtual void note(int channel, int pitch, int velo);
       //virtual void processMessages();
       virtual void process(float** buffer, int offset, int n);
-      virtual bool hasGui() const { return true; }
-      virtual bool guiVisible() const { return _showGui; }
-      virtual void showGui(bool);
+      //virtual bool hasGui() const { return true; }
+      //virtual bool guiVisible() const { return _showGui; }
+      //virtual void showGui(bool);
+      virtual bool hasNativeGui() const { return true; }
+      virtual bool nativeGuiVisible() const { return _showGui; }
+      virtual void showNativeGui(bool);
       virtual bool setController(int channel, int ctrl, int val);
       virtual int getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval) const;
 
@@ -76,7 +79,7 @@ S1::S1() : MessMono()
       param = 0;
       
       _showGui=false;
-      showGui(true);
+      showNativeGui(true);
       }
 
 //---------------------------------------------------------
@@ -165,7 +168,7 @@ void S1::process(float** buffer, int offset, int n)
 //---------------------------------------------------------
       
 
-void S1::showGui(bool show)
+void S1::showNativeGui(bool show)
       {
       if (show)
         QMessageBox::information( NULL, "S1",

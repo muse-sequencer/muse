@@ -1262,16 +1262,18 @@ static int addMultiChannelPorts(AudioTrack* t, PopupMenu* pup, int id, RouteMenu
       {
         
         case Track::AUDIO_INPUT:
-              id = addWavePorts(t, chpup, id, mm, ch, 1, isOutput);
+              //id = addWavePorts(t, chpup, id, mm, ch, 1, isOutput);  // Rem p4.0.20
         case Track::WAVE:
         case Track::AUDIO_GROUP:
         case Track::AUDIO_SOFTSYNTH:
+        case Track::AUDIO_AUX:        // p4.0.20
+              id = addWavePorts(t, chpup, id, mm, ch, 1, isOutput);
               id = addOutPorts(t, chpup, id, mm, ch, 1, isOutput);
               id = addGroupPorts(t, chpup, id, mm, ch, 1, isOutput);
               id = addSyntiPorts(t, chpup, id, mm, ch, 1, isOutput);
-              break;
-        case Track::AUDIO_AUX:
-              id = addOutPorts(t, chpup, id, mm, ch, 1, isOutput);
+              //break;                                                // Rem p4.0.20
+        //case Track::AUDIO_AUX:                                      //
+              //id = addOutPorts(t, chpup, id, mm, ch, 1, isOutput);  //
               break;
         default:
               break;
@@ -1290,13 +1292,14 @@ static int addMultiChannelPorts(AudioTrack* t, PopupMenu* pup, int id, RouteMenu
               id = addSyntiPorts(t, chpup, id, mm, ch, 1, isOutput);
               break;
         case Track::WAVE:
-              id = addInPorts(t, chpup, id, mm, ch, 1, isOutput);
-              break;
+              //id = addInPorts(t, chpup, id, mm, ch, 1, isOutput);    // Rem p4.0.20
+              //break;
         case Track::AUDIO_SOFTSYNTH:
         case Track::AUDIO_GROUP:
               id = addWavePorts(t, chpup, id, mm, ch, 1, isOutput);
               id = addInPorts(t, chpup, id, mm, ch, 1, isOutput);
               id = addGroupPorts(t, chpup, id, mm, ch, 1, isOutput);
+              id = addAuxPorts(t, chpup, id, mm, ch, 1, isOutput);     // p4.0.20
               id = addSyntiPorts(t, chpup, id, mm, ch, 1, isOutput);
               break;
         default:
@@ -1344,17 +1347,19 @@ static int addMultiChannelPorts(AudioTrack* t, PopupMenu* pup, int id, RouteMenu
         switch(t->type()) 
         {
           case Track::AUDIO_INPUT:
-                id = addWavePorts(t, chpup, id, mm, ch, 2, isOutput);
+                //id = addWavePorts(t, chpup, id, mm, ch, 2, isOutput);   // Rem p4.0.20
           case Track::WAVE:
           case Track::AUDIO_GROUP:
           case Track::AUDIO_SOFTSYNTH:
+          case Track::AUDIO_AUX:                                          // p4.0.20
+                id = addWavePorts(t, chpup, id, mm, ch, 2, isOutput);     // p4.0.20
                 id = addOutPorts(t, chpup, id, mm, ch, 2, isOutput);
                 id = addGroupPorts(t, chpup, id, mm, ch, 2, isOutput);
                 id = addSyntiPorts(t, chpup, id, mm, ch, 2, isOutput);
                 break;
-          case Track::AUDIO_AUX:
-                id = addOutPorts(t, chpup, id, mm, ch, 2, isOutput);
-                break;
+          //case Track::AUDIO_AUX:                                         // Rem p4.0.20
+          //      id = addOutPorts(t, chpup, id, mm, ch, 2, isOutput);
+          //      break;
           default:
                 break;
         }
@@ -1371,13 +1376,14 @@ static int addMultiChannelPorts(AudioTrack* t, PopupMenu* pup, int id, RouteMenu
                 id = addSyntiPorts(t, chpup, id, mm, ch, 2, isOutput);
                 break;
           case Track::WAVE:
-                id = addInPorts(t, chpup, id, mm, ch, 2, isOutput);
-                break;
+                //id = addInPorts(t, chpup, id, mm, ch, 2, isOutput);   // Rem p4.0.20
+                //break;
           case Track::AUDIO_SOFTSYNTH:
           case Track::AUDIO_GROUP:
                 id = addWavePorts(t, chpup, id, mm, ch, 2, isOutput);
                 id = addInPorts(t, chpup, id, mm, ch, 2, isOutput);
                 id = addGroupPorts(t, chpup, id, mm, ch, 2, isOutput);
+                id = addAuxPorts(t, chpup, id, mm, ch, 2, isOutput);     // p4.0.20
                 id = addSyntiPorts(t, chpup, id, mm, ch, 2, isOutput);
                 break;
           default:
@@ -1838,12 +1844,17 @@ void AudioStrip::iRoutePressed()
               gid = nonSyntiTrackAddSyntis(t, pup, gid, gRoutingMenuMap, false);
               break;
         case Track::WAVE:
+              gid = addWavePorts( t, pup, gid, gRoutingMenuMap, -1, -1, false);  // p4.0.20
               gid = addInPorts(   t, pup, gid, gRoutingMenuMap, -1, -1, false);
+              gid = addGroupPorts(t, pup, gid, gRoutingMenuMap, -1, -1, false);  //
+              gid = addAuxPorts(  t, pup, gid, gRoutingMenuMap, -1, -1, false);  //
+              gid = nonSyntiTrackAddSyntis(t, pup, gid, gRoutingMenuMap, false); //
               break;
         case Track::AUDIO_GROUP:
               gid = addWavePorts( t, pup, gid, gRoutingMenuMap, -1, -1, false);
               gid = addInPorts(   t, pup, gid, gRoutingMenuMap, -1, -1, false);
               gid = addGroupPorts(t, pup, gid, gRoutingMenuMap, -1, -1, false);
+              gid = addAuxPorts(  t, pup, gid, gRoutingMenuMap, -1, -1, false);  // p4.0.20
               gid = nonSyntiTrackAddSyntis(t, pup, gid, gRoutingMenuMap, false);
               break;
         
@@ -1975,11 +1986,12 @@ void AudioStrip::oRoutePressed()
         break;
         
         case Track::AUDIO_INPUT:
-              gid = addWavePorts(        t, pup, gid, gRoutingMenuMap, -1, -1, true);
+              //gid = addWavePorts(        t, pup, gid, gRoutingMenuMap, -1, -1, true);  // Rem p4.0.20
         case Track::WAVE:
         case Track::AUDIO_GROUP:
         case Track::AUDIO_AUX:
         //case Track::AUDIO_SOFTSYNTH:
+              gid = addWavePorts(        t, pup, gid, gRoutingMenuMap, -1, -1, true);  // p4.0.20
               gid = addOutPorts(         t, pup, gid, gRoutingMenuMap, -1, -1, true);
               gid = addGroupPorts(       t, pup, gid, gRoutingMenuMap, -1, -1, true);
               gid = nonSyntiTrackAddSyntis(t, pup, gid, gRoutingMenuMap, true);

@@ -361,7 +361,7 @@ void initVST()
 //   guiVisible
 //---------------------------------------------------------
 
-bool VstSynthIF::guiVisible() const
+bool VstSynthIF::nativeGuiVisible() const
       {
       return _guiVisible;
       }
@@ -371,9 +371,9 @@ bool VstSynthIF::guiVisible() const
 //   showGui
 //---------------------------------------------------------
 
-void VstSynthIF::showGui(bool v)
+void VstSynthIF::showNativeGui(bool v)
       {
-      if (v == guiVisible())
+      if (v == nativeGuiVisible())
             return;
       if (v)
             fst_run_editor(_fst);
@@ -395,7 +395,7 @@ MidiPlayEvent VstSynthIF::receiveEvent()
 //   hasGui
 //---------------------------------------------------------
 
-bool VstSynthIF::hasGui() const
+bool VstSynthIF::hasNativeGui() const
       {
       return _fst->plugin->flags & effFlagsHasEditor;
       }

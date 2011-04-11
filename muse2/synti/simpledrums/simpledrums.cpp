@@ -237,14 +237,14 @@ SimpleSynth::~SimpleSynth()
       }
 
 //---------------------------------------------------------
-//   guiVisible
+//   nativeGuiVisible
 /*!
-    \fn SimpleSynth::guiVisible
+    \fn SimpleSynth::nativeGuiVisible
     \brief Tells if the gui is hidden or shown
     \return true/false if gui is shown/hidden
  */
 //---------------------------------------------------------
-bool SimpleSynth::guiVisible() const
+bool SimpleSynth::nativeGuiVisible() const
       {
       SS_TRACE_IN
       bool v = gui->isVisible();
@@ -253,14 +253,14 @@ bool SimpleSynth::guiVisible() const
       }
 
 //---------------------------------------------------------
-//   hasGui
+//   hasNativeGui
 /*!
-    \fn SimpleSynth::hasGui
+    \fn SimpleSynth::hasNativeGui
     \brief Tells if the synth has a gui or not
     \return true if synth has gui, false it synth has no gui
  */
 //---------------------------------------------------------
-bool SimpleSynth::hasGui() const
+bool SimpleSynth::hasNativeGui() const
       {
       SS_TRACE_IN
       SS_TRACE_OUT
@@ -844,14 +844,14 @@ void SimpleSynth::process(float** out, int offset, int len)
       }
 
 //---------------------------------------------------------
-//   showGui
+//   showNativeGui
 /*!
-    \fn SimpleSynth::showGui
+    \fn SimpleSynth::showNativeGui
     \brief Displays or hides the gui window
     \param val true or false = gui shown or hidden
  */
 //---------------------------------------------------------
-void SimpleSynth::showGui(bool val)
+void SimpleSynth::showNativeGui(bool val)
       {
       SS_TRACE_IN
       gui->setVisible(val);

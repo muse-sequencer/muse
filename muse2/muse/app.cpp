@@ -1744,6 +1744,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             if (!fi.isReadable()) {
                   QMessageBox::critical(this, QString("MusE"),
                      tr("Cannot read template"));
+                  QApplication::restoreOverrideCursor();
                   return;
                   }
             project.setFile("untitled");
@@ -2087,17 +2088,19 @@ void MusE::closeEvent(QCloseEvent* event)
             n = QMessageBox::warning(this, appName,
                tr("The current Project contains unsaved data\n"
                "Save Current Project?"),
-               tr("&Save"), tr("&Skip"), tr("&Abort"), 0, 2);
+               tr("&Save"), tr("&Skip"), tr("&Cancel"), 0, 2);
             if (n == 0) {
                   if (!save())      // dont quit if save failed
                   {
                         event->ignore();
+                        QApplication::restoreOverrideCursor();
                         return;
                   }      
                   }
             else if (n == 2)
             {
                   event->ignore();
+                  QApplication::restoreOverrideCursor();
                   return;
             }      
             }

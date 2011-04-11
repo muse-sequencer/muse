@@ -66,6 +66,8 @@ class MidiPort {
 
       bool guiVisible() const;
       bool hasGui() const;
+      bool nativeGuiVisible() const;
+      bool hasNativeGui() const;
 
       int portno() const;
       bool foundInSongFile() const              { return _foundInSongFile; }

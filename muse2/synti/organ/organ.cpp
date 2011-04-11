@@ -636,28 +636,28 @@ int Organ::getControllerInfo(int id, const char** name, int* controller,
       }
 
 //---------------------------------------------------------
-//   guiVisible
+//   nativeGuiVisible
 //---------------------------------------------------------
 
-bool Organ::guiVisible() const
+bool Organ::nativeGuiVisible() const
       {
       return gui->isVisible();
       }
 
 //---------------------------------------------------------
-//   showGui
+//   showNativeGui
 //---------------------------------------------------------
 
-void Organ::showGui(bool val)
+void Organ::showNativeGui(bool val)
       {
       gui->setVisible(val);
       }
 
 //---------------------------------------------------------
-//   getGeometry
+//   getNativeGeometry
 //---------------------------------------------------------
 
-void Organ::getGeometry(int* x, int* y, int* w, int* h) const
+void Organ::getNativeGeometry(int* x, int* y, int* w, int* h) const
       {
       QPoint pos(gui->pos());
       QSize size(gui->size());
@@ -668,10 +668,10 @@ void Organ::getGeometry(int* x, int* y, int* w, int* h) const
       }
 
 //---------------------------------------------------------
-//   setGeometry
+//   setNativeGeometry
 //---------------------------------------------------------
 
-void Organ::setGeometry(int x, int y, int w, int h)
+void Organ::setNativeGeometry(int x, int y, int w, int h)
       {
       gui->resize(QSize(w, h));
       gui->move(QPoint(x, y));
