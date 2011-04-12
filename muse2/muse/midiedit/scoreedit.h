@@ -65,6 +65,11 @@ class QScrollArea;
 
 
 
+
+
+
+
+
 //---------------------------------------------------------
 //   ScoreEdit
 //---------------------------------------------------------
@@ -145,6 +150,37 @@ struct note_pos_t
 };
 
 bool operator< (const note_pos_t& a, const note_pos_t& b);
+
+
+
+// FINDMICH put that keymap-stuff to its appropriate place
+struct KeyEvent
+{
+	tonart_t key;
+	unsigned tick;
+	
+	KeyEvent(tonart_t k, unsigned t)
+	{
+		key=k;
+		tick=t;
+	}
+};
+
+typedef std::map<unsigned, KeyEvent, std::less<unsigned> > _KeyList;
+typedef _KeyList::iterator iKeyEvent;
+typedef _KeyList::const_iterator ciKeyEvent;
+typedef _KeyList::reverse_iterator riKeyEvent;
+typedef _KeyList::const_reverse_iterator criKeyEvent;
+
+class KeyList : public _KeyList
+{
+	public:
+		KeyList();
+		void clear();
+		tonart_t key_at_tick(unsigned tick);
+		//TODO FINDMICH: more functions, like add(), remove() have to be implemented
+};
+
 
 
 class FloEvent
@@ -467,7 +503,7 @@ class ScoreCanvas : public View
 		void draw_items(QPainter& p, int y, ScoreItemList& itemlist, int x1, int x2);
 		void draw_items(QPainter& p, int y, ScoreItemList& itemlist);
 		void calc_item_pos(ScoreItemList& itemlist);
-		
+		void calc_pos_add_list();
 
 
 		

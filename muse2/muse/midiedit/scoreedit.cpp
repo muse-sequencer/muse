@@ -97,6 +97,37 @@ using namespace std;
 
 #define STAFF_DISTANCE 100
 
+
+KeyList keymap;
+
+
+
+KeyList::KeyList()
+{
+	clear();
+}
+
+void KeyList::clear()
+{
+	_KeyList::clear(); //DEBUG -- remove these lines and use the commented out below
+	insert(std::pair<const unsigned, KeyEvent> (1536, KeyEvent(A, 0)));
+	insert(std::pair<const unsigned, KeyEvent> (MAX_TICK, KeyEvent(ES, 1536)));
+	
+	//insert(std::pair<const unsigned, KeyEvent> (MAX_TICK, KeyEvent(A, 0)));
+}
+
+tonart_t KeyList::key_at_tick(unsigned tick)
+{
+	ciKeyEvent it = upper_bound(tick);
+	if (it == end())
+	{
+		cout << "THIS SHOULD NEVER HAPPEN: key at "<<tick<<" not found!" << endl;
+		return C;
+	}
+
+	return it->second.key;
+}
+
 //---------------------------------------------------------
 //   ScoreEdit
 //---------------------------------------------------------
@@ -218,9 +249,11 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 void ScoreCanvas::song_changed(int)
 {
 	cout << "song changed!" << endl;
+	
+	calc_pos_add_list();
+	
 	for (list<staff_t>::iterator it=staffs.begin(); it!=staffs.end(); it++)
 	{
-		pos_add_list.clear(); //FINDMICHJETZT schöner machen
 		it->eventlist=create_appropriate_eventlist(it->parts);
 		it->itemlist=create_itemlist(it->eventlist);
 		process_itemlist(it->itemlist); // do note- and rest-grouping and collision avoiding
@@ -449,10 +482,9 @@ ScoreEventList ScoreCanvas::create_appropriate_eventlist(const set<Part*>& parts
 			result.insert(pair<unsigned, FloEvent>(t,  FloEvent(t,0,0,ticks_per_measure,FloEvent::BAR) ) );
 	}
 
-
-	//TODO FINDMICH MARKER
-	result.insert(pair<unsigned, FloEvent>(0,  FloEvent(0,FloEvent::KEY_CHANGE, A ) ) );
-	result.insert(pair<unsigned, FloEvent>(4*384,  FloEvent(4*384,FloEvent::KEY_CHANGE, ES ) ) );
+	//insert key changes
+	for (iKeyEvent it=keymap.begin(); it!=keymap.end(); it++)
+		result.insert(pair<unsigned, FloEvent>(it->second.tick,  FloEvent(it->second.tick,FloEvent::KEY_CHANGE, it->second.key ) ) );
 	
 	
 	// phase two: deal with overlapping notes ---------------------------
@@ -1578,9 +1610,6 @@ void ScoreCanvas::calc_item_pos(ScoreItemList& itemlist)
 			{
 				int add=calc_timesig_width(it->num, it->denom);
 				pos_add+=add;
-				pos_add_list[it2->first]+=add;
-				//+= is used instead of =, because a key- and time-
-				//change can occur at the same time.
 			}
 			else if (it->type==FloItem::KEY_CHANGE)
 			{
@@ -1591,9 +1620,6 @@ void ScoreCanvas::calc_item_pos(ScoreItemList& itemlist)
 
 				int n_acc_drawn=aufloes_list.size() + new_acc_list.size();
 				pos_add+=n_acc_drawn*KEYCHANGE_ACC_DIST+ KEYCHANGE_ACC_LEFTDIST+ KEYCHANGE_ACC_RIGHTDIST;
-				pos_add_list[it2->first]+=n_acc_drawn*KEYCHANGE_ACC_DIST+ KEYCHANGE_ACC_LEFTDIST+ KEYCHANGE_ACC_RIGHTDIST;
-				//+= is used instead of =, because a key- and time-
-				//change can occur at the same time.
 				
 				curr_key=new_key;
 			}
@@ -1601,12 +1627,39 @@ void ScoreCanvas::calc_item_pos(ScoreItemList& itemlist)
 	}		
 }
 
+void ScoreCanvas::calc_pos_add_list()
+{
+	using AL::sigmap;
+	using AL::iSigEvent;
+
+	
+	pos_add_list.clear();
+	
+	//process time signatures
+	for (iSigEvent it=sigmap.begin(); it!=sigmap.end(); it++)
+		pos_add_list[it->second->tick]+=calc_timesig_width(it->second->sig.z, it->second->sig.n);
+	
+	
+	//process key changes
+	tonart_t curr_key=C;
+	for (iKeyEvent it=keymap.begin(); it!=keymap.end(); it++)
+	{
+		tonart_t new_key=it->second.key;
+		list<int> aufloes_list=calc_accidentials(curr_key, USED_CLEF, new_key);
+		list<int> new_acc_list=calc_accidentials(new_key, USED_CLEF);
+		int n_acc_drawn=aufloes_list.size() + new_acc_list.size();
+		pos_add_list[it->second.tick]+=n_acc_drawn*KEYCHANGE_ACC_DIST+ KEYCHANGE_ACC_LEFTDIST+ KEYCHANGE_ACC_RIGHTDIST;
+		
+		curr_key=new_key;
+	}
+}
+
 void ScoreCanvas::draw_items(QPainter& p, int y, ScoreItemList& itemlist, int x1, int x2)
 {
 	int from_tick, to_tick;
 	ScoreItemList::iterator from_it, to_it;
 
-	//in general: drawing too much isn't bad. drawing too few is.
+	//drawing too much isn't bad. drawing too few is.
 
 	from_tick=x_to_tick(x1);
 	from_it=itemlist.lower_bound(from_tick);
@@ -2129,30 +2182,20 @@ int ScoreCanvas::x_to_tick(int x)
 	return t > min_t ? t : min_t;
 }
 
-tonart_t ScoreCanvas::key_at_tick(int t_) //FINDMICHJETZT besser lösen! nur übergangslösung!
+tonart_t ScoreCanvas::key_at_tick(int t_)
 {
-	tonart_t tmp;
 	unsigned int t= (t_>=0) ? t_ : 0;
 	
-	for (ScoreEventList::iterator it=staffs.begin()->eventlist.begin(); it!=staffs.begin()->eventlist.end() && it->first<=t; it++)
-		if (it->second.type==FloEvent::KEY_CHANGE)
-			tmp=it->second.tonart;
-	
-	return tmp;
+	return keymap.key_at_tick(t);
 }
 
-timesig_t ScoreCanvas::timesig_at_tick(int t_) //FINDMICHJETZT besser lösen! nur übergangslösung!
+timesig_t ScoreCanvas::timesig_at_tick(int t_)
 {
 	timesig_t tmp;
 	unsigned int t= (t_>=0) ? t_ : 0;
 
-	for (ScoreEventList::iterator it=staffs.begin()->eventlist.begin(); it!=staffs.begin()->eventlist.end() && it->first<=t; it++)
-		if (it->second.type==FloEvent::TIME_SIG)
-		{
-			tmp.num=it->second.num;
-			tmp.denom=it->second.denom;
-		}
-	
+	AL::sigmap.timesig(t, tmp.num, tmp.denom);
+
 	return tmp;
 }
 
@@ -2591,12 +2634,14 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
 
 
 /* BUGS and potential bugs
+ *   o when adding a note, it's added to the first stave
+ *     the problem is: there's always the first part selected
  *   o when changing color of a displayed part, note heads aren't redrawn
  *   o when pressing "STOP", the active note isn't redrawn "normally"
  * 
  * CURRENT TODO
  *   o menu entries etc for creating new staves etc.
- * 	 o proper mouse.y -> staff_no translation
+ * 	 o proper mouse.y -> staff_no translation (plus rounding problems)
  * 
  * IMPORTANT TODO
  *   o support adding staves to existing score window
@@ -2615,6 +2660,11 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  *   o check if "moving away" works for whole notes [seems to NOT work properly]
  *
  * less important stuff
+ *   o support different keys in different tracks at the same time
+ *       calc_pos_add_list and calc_item_pos will be affected by this
+ *       calc_pos_add_list must be called before calc_item_pos then,
+ *       and calc_item_pos must respect the pos_add_list instead of
+ *       keeping its own pos_add variable (which is only an optimisation)
  *   o use nearest part instead of curr_part, maybe expand
  *   o draw measure numbers
  *   o use "unsigned" whereever "unsigned" is meant
@@ -2631,7 +2681,7 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  *   o let the user select whether the preamble should have
  *     a fixed length (?)
  *   o let the user select what the preamble has to contain
- *   o use timesig_t in all timesig-stuff
+ * > o use timesig_t in all timesig-stuff
  *   o draw a margin around notes which are in a bright color
  *   o maybe override color 0 with "black"?
  *   o use bars instead of flags over groups of 8ths / 16ths etc
@@ -2642,16 +2692,16 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  *   o check if the new function for drawing accidential works
  *   o refuse to resize so that width gets smaller or equal than x_left
  *   o set distances properly [looks okay, doesn't it?]
- *   o maybe eliminate all the compiler warnings
  *   o change iterators into const iterators
  *   o add tracks in correct order to score
  *
  * stuff for the other muse developers
+ *   o OFFER A WAY TO EDIT THE KEYMAP (and integrate the keymap properly)
+ *
  *   o check if dragging notes is done correctly
  *   o after doing the undo stuff right, the "pianoroll isn't informed
  *     about score-editor's changes"-bug has vanished. did it vanish
  *     "by accident", or is that the correct solution for this?
- *   o process key from muse's event list (has to be implemented first in muse)
  *   o process accurate timesignatures from muse's list (has to be implemented first in muse)
  *      ( (2+2+3)/4 or (3+2+2)/4 instead of 7/4 )
  *   o maybe do expanding parts inside the msgChangeEvent or
