@@ -68,6 +68,21 @@ using namespace std;
 
 
 
+//TODO: all das unten richtig machen!
+#define TICKS_PER_WHOLE (config.division*4) 
+#define SONG_LENGTH (song->len())
+
+#define quant_max 3  //whole, half, quarter = 0,1,2
+#define quant_max_fraction (1 << quant_max) //whole, half, quarter= 1,2,4
+#define FLO_QUANT (TICKS_PER_WHOLE/quant_max_fraction)
+//FLO_QUANT = how many ticks has a single quantisation area?
+
+
+//FINDMICH MARKER
+//TODO: quant_max richtig setzen!
+
+
+
 //do NOT put parentheses around this!
 #define PAGESTEP 3/4
 
@@ -77,6 +92,10 @@ using namespace std;
 //SCROLL_SPEED is in (scroll_pixels per second) per mouse-move-pixel
 #define SCROLL_SPEED_MAX 500
 //SCROLL_SPEED_MAX is in scroll_pixels_per_second
+
+
+
+#define STAFF_DISTANCE 100
 
 //---------------------------------------------------------
 //   ScoreEdit
@@ -93,18 +112,13 @@ connect(hscroll, SIGNAL(valueChanged(int)), test,   SLOT(scroll_event(int)));
 connect(test, SIGNAL(xpos_changed(int)), hscroll,   SLOT(setValue(int)));connect(song, SIGNAL(songChanged(int)), test, SLOT(song_changed(int)));
 connect(test, SIGNAL(canvas_width_changed(int)), SLOT(canvas_width_changed(int)));
 connect(test, SIGNAL(viewport_width_changed(int)), SLOT(viewport_width_changed(int)));
-//	      mainGrid->setRowStretch(0, 100);
-//      mainGrid->setColumnStretch(1, 100);
+
       mainGrid->addWidget(test, 0, 0);
       mainGrid->addWidget(hscroll,1,0);
 
 hscroll->setMinimum(0);
 test->song_changed(0);
 test->goto_tick(initPos,true);
-//	gridS1->addWidget(test,0,0);
-	
-//	gridS1->addWidget(canvas,                 0,    0);
-	//	hsplitter->addWidget(test);
 }
 
 
@@ -172,8 +186,26 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 	last_len=384;
 	new_len=-1;
 
-//fertig mit aufbereiten	
-	cout << "---------------- CALCULATING DONE ------------------" << endl;
+
+
+	//each track gets its own staff
+	staff_t staff;
+	set<Track*> tracks;
+	
+	for (ciPart it=editor->parts()->begin(); it!=editor->parts()->end(); it++)
+		tracks.insert(it->second->track());
+	
+	for (set<Track*>::iterator it=tracks.begin(); it!=tracks.end(); it++)
+	{
+		staff.parts.clear();
+		for (ciPart part_it=editor->parts()->begin(); part_it!=editor->parts()->end(); part_it++)
+			if (part_it->second->track() == *it)
+				staff.parts.insert(part_it->second);
+
+		staffs.push_back(staff);
+	}
+	
+	
 	
 	
 	scroll_speed=0;
@@ -186,11 +218,15 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 void ScoreCanvas::song_changed(int)
 {
 	cout << "song changed!" << endl;
-	pos_add_list.clear();
-	eventlist=create_appropriate_eventlist(editor->parts());
-	itemlist=create_itemlist(eventlist);
-	process_itemlist(itemlist); // do note- and rest-grouping and collision avoiding
-	calc_item_pos(itemlist);
+	for (list<staff_t>::iterator it=staffs.begin(); it!=staffs.end(); it++)
+	{
+		pos_add_list.clear(); //FINDMICHJETZT schöner machen
+		it->eventlist=create_appropriate_eventlist(it->parts);
+		it->itemlist=create_itemlist(it->eventlist);
+		process_itemlist(it->itemlist); // do note- and rest-grouping and collision avoiding
+		calc_item_pos(it->itemlist);
+	}
+	
 	redraw();
 	cout << "song had changed, recalculation complete" << endl;
 
@@ -199,7 +235,8 @@ void ScoreCanvas::song_changed(int)
 
 int ScoreCanvas::canvas_width()
 {
-	return tick_to_x(itemlist.rbegin()->first);
+	//return tick_to_x(staffs.begin()->itemlist.rbegin()->first); 
+	return tick_to_x(SONG_LENGTH);
 }
 
 int ScoreCanvas::viewport_width()
@@ -336,31 +373,6 @@ bool operator< (const note_pos_t& a, const note_pos_t& b)
 }
 
 
-//TODO: all das unten richtig machen!
-#define TICKS_PER_WHOLE (config.division*4) 
-#define SONG_LENGTH (song->len())
-
-#define quant_max 3  //whole, half, quarter = 0,1,2
-#define quant_max_fraction (1 << quant_max) //whole, half, quarter= 1,2,4
-#define FLO_QUANT (TICKS_PER_WHOLE/quant_max_fraction)
-//FLO_QUANT = how many ticks has a single quantisation area?
-
-
-//FINDMICH MARKER
-//TODO: quant_max richtig setzen!
-
-/* builds the event list used by the score editor.
- * that list contains only note-on and -off, time-sig- and
- * key-change events.
- * it stores them sorted by their time (quantized); if more
- * events with the same time occur, the NOTE-OFFs are
- * put before the NOTE-ONs
- * it only operates on parts which were selected in the
- * arranger when the score viewer was started
- * 
- * this abstracts the rest of the renderer from muse's internal
- * data structures, making this easy to port to another application
- */
  
 int flo_quantize(int tick)
 {
@@ -373,8 +385,21 @@ int flo_quantize_floor(int tick)
 	//TODO quantizing must be done with the proper functions, see above
 	return int(tick / FLO_QUANT) * FLO_QUANT;
 }
+
  
-ScoreEventList ScoreCanvas::create_appropriate_eventlist(PartList* pl)
+/* builds the event list used by the score editor.
+ * that list contains only note-on and -off, time-sig- and
+ * key-change events.
+ * it stores them sorted by their time (quantized); if more
+ * events with the same time occur, the NOTE-OFFs are
+ * put before the NOTE-ONs
+ * it only operates on parts which were selected in the
+ * arranger when the score viewer was started
+ * 
+ * this abstracts the rest of the renderer from muse's internal
+ * data structures, making this easy to port to another application
+ */
+ScoreEventList ScoreCanvas::create_appropriate_eventlist(const set<Part*>& parts)
 {
 	using AL::sigmap;
 	using AL::iSigEvent;
@@ -384,9 +409,9 @@ ScoreEventList ScoreCanvas::create_appropriate_eventlist(PartList* pl)
 	// phase one: fill the list -----------------------------------------
 	
 	//insert note on events
-	for (iPart partIt=pl->begin(); partIt!=pl->end(); partIt++)
+	for (set<Part*>::const_iterator part_it=parts.begin(); part_it!=parts.end(); part_it++)
 	{
-		Part* part=partIt->second;
+		Part* part=*part_it;
 		EventList* el=part->events();
 		
 		for (iEvent it=el->begin(); it!=el->end(); it++)
@@ -845,14 +870,14 @@ void ScoreCanvas::draw_tie (QPainter& p, int x1, int x4, int yo, bool up, QColor
 	p.drawPath(path);
 }
 
-void ScoreCanvas::draw_accidentials(QPainter& p, int x, const list<int>& acc_list, const QPixmap& pix)
+void ScoreCanvas::draw_accidentials(QPainter& p, int x, int y_offset, const list<int>& acc_list, const QPixmap& pix)
 {
 	int n_acc_drawn=0;
 	
 	for (list<int>::const_iterator acc_it=acc_list.begin(); acc_it!=acc_list.end(); acc_it++)
 	{
 		int y_coord=YDIST+4*YLEN  -  ( *acc_it -2)*YLEN/2; //Y_MARKER
-		draw_pixmap(p,x + n_acc_drawn*KEYCHANGE_ACC_DIST,y_coord,pix);
+		draw_pixmap(p,x + n_acc_drawn*KEYCHANGE_ACC_DIST,y_offset + y_coord,pix);
 		n_acc_drawn++;
 	}
 }
@@ -1470,14 +1495,14 @@ QRect FloItem::bbox() const
 	return bbox_center(x,y,pix->size());
 }
 
-void ScoreCanvas::draw_note_lines(QPainter& p)
+void ScoreCanvas::draw_note_lines(QPainter& p, int y)
 {
 	int xend=width();
 	
 	p.setPen(Qt::black);
 	
 	for (int i=0;i<5;i++)
-		p.drawLine(0,YDIST+i*YLEN,xend,YDIST+i*YLEN);
+		p.drawLine(0,y + YDIST+i*YLEN,xend,y + YDIST+i*YLEN);
 }
 
 
@@ -1576,7 +1601,7 @@ void ScoreCanvas::calc_item_pos(ScoreItemList& itemlist)
 	}		
 }
 
-void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, int x1, int x2)
+void ScoreCanvas::draw_items(QPainter& p, int y, ScoreItemList& itemlist, int x1, int x2)
 {
 	int from_tick, to_tick;
 	ScoreItemList::iterator from_it, to_it;
@@ -1605,15 +1630,15 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, int x1, int x
 	//actually drawn.
 	if (to_it!=itemlist.end()) to_it++; //do one tick more than neccessary. this will draw ties
 
-	draw_items(p,itemlist,from_it, to_it);	
+	draw_items(p,y, from_it, to_it);	
 }
 
-void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist)
+void ScoreCanvas::draw_items(QPainter& p, int y, ScoreItemList& itemlist)
 {
-	draw_items(p,itemlist,x_pos,x_pos+width()-x_left);
+	draw_items(p,y, itemlist,x_pos,x_pos+width()-x_left);
 }
 
-void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList::iterator from_it, ScoreItemList::iterator to_it)
+void ScoreCanvas::draw_items(QPainter& p, int y_offset, ScoreItemList::iterator from_it, ScoreItemList::iterator to_it)
 {
 	// init accidentials properly
 	vorzeichen_t curr_accidential[7];
@@ -1696,13 +1721,13 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				{ //Y_MARKER
 					p.setPen(Qt::black);
 					for (int i=0; i>=it->pos.height; i-=2)
-						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos+x_left,YDIST+4*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos+x_left,YDIST+4*YLEN  -  (i-2)*YLEN/2);
+						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos+x_left,y_offset + YDIST+4*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos+x_left,y_offset + YDIST+4*YLEN  -  (i-2)*YLEN/2);
 				}
 				else if (it->pos.height >= 12) //we need auxiliary lines on the top?
 				{ //Y_MARKER
 					p.setPen(Qt::black);
 					for (int i=12; i<=it->pos.height; i+=2)
-						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos+x_left,YDIST+4*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos+x_left,YDIST+4*YLEN  -  (i-2)*YLEN/2);
+						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos+x_left,y_offset + YDIST+4*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos+x_left,y_offset + YDIST+4*YLEN  -  (i-2)*YLEN/2);
 				}
 								
 				it->is_active= ( (song->cpos() >= it->source_event->tick() + it->source_part->tick()) &&
@@ -1713,7 +1738,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				if (audio->isPlaying() && it->is_active)
 					color_index=HIGHLIGHTED_PIXMAP;
 					
-				draw_pixmap(p,it->x -x_pos+x_left,it->y,it->pix[color_index]);
+				draw_pixmap(p,it->x -x_pos+x_left,y_offset + it->y,it->pix[color_index]);
 				//TODO FINDMICH maybe draw a margin around bright colors?
 				//maybe draw the default color in black?
 				
@@ -1732,7 +1757,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				
 				for (int i=0;i<it->dots;i++)
 				{
-					draw_pixmap(p,it->x+x_dot -x_pos+x_left,it->y+y_dot,pix_dot[color_index]);
+					draw_pixmap(p,it->x+x_dot -x_pos+x_left,y_offset + it->y+y_dot,pix_dot[color_index]);
 					x_dot+=DOT_XDIST;
 				}
 
@@ -1748,7 +1773,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 						case SHARP: acc_pix=pix_sharp; break;
 						case B: acc_pix=pix_b; break;
 					}
-					draw_pixmap(p,it->x-ACCIDENTIAL_DIST -x_pos+x_left,it->y, acc_pix[color_index]);
+					draw_pixmap(p,it->x-ACCIDENTIAL_DIST -x_pos+x_left,y_offset + it->y, acc_pix[color_index]);
 
 					curr_accidential[modulo(it->pos.height,7)]=it->pos.vorzeichen;
 				}
@@ -1758,7 +1783,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				if (it->is_tie_dest)
 				{
 					cout << "drawing tie" << endl;
-					draw_tie(p,it->tie_from_x-x_pos+x_left,it->x -x_pos+x_left,it->y, (it->len==0) ? true : (it->stem==DOWNWARDS) , config.partColors[color_index]);
+					draw_tie(p,it->tie_from_x-x_pos+x_left,it->x -x_pos+x_left,y_offset + it->y, (it->len==0) ? true : (it->stem==DOWNWARDS) , config.partColors[color_index]);
 					// in english: "if it's a whole note, tie is upwards (true). if not, tie is upwards if
 					//              stem is downwards and vice versa"
 				}
@@ -1769,7 +1794,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				for (int i=0;i<it->dots;i++) cout << ".";
 				cout << " , ausweich="<<it->ausweich<<endl;
 				
-				draw_pixmap(p,it->x -x_pos+x_left,it->y,*it->pix);
+				draw_pixmap(p,it->x -x_pos+x_left,y_offset + it->y,*it->pix);
 				
 
 				//draw dots
@@ -1786,7 +1811,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				
 				for (int i=0;i<it->dots;i++)
 				{
-					draw_pixmap(p,it->x+x_dot -x_pos+x_left,it->y+y_dot,pix_dot[BLACK_PIXMAP]);
+					draw_pixmap(p,it->x+x_dot -x_pos+x_left,y_offset + it->y+y_dot,pix_dot[BLACK_PIXMAP]);
 					x_dot+=DOT_XDIST;
 				}
 			}
@@ -1795,7 +1820,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				cout << "\tBAR" << endl;
 				
 				p.setPen(Qt::black); //Y_MARKER
-				p.drawLine(it->x -x_pos+x_left,YDIST,it->x -x_pos+x_left,YDIST+4*YLEN);
+				p.drawLine(it->x -x_pos+x_left,y_offset + YDIST,it->x -x_pos+x_left,y_offset + YDIST+4*YLEN);
 				
 				for (int i=0;i<7;i++)
 					curr_accidential[i]=default_accidential[i];
@@ -1804,7 +1829,7 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 			{
 				cout << "\tTIME SIGNATURE: "<<it->num<<"/"<<it->denom<<endl;
 
-				draw_timesig(p,  it->x - x_pos+x_left, it->num, it->denom);
+				draw_timesig(p,  it->x - x_pos+x_left, y_offset, it->num, it->denom);
 			}
 			else if (it->type==FloItem::KEY_CHANGE)
 			{
@@ -1815,13 +1840,13 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 				list<int> new_acc_list=calc_accidentials(new_key, USED_CLEF);
 				
 				// vorzeichen aus curr_key auflösen
-				draw_accidentials(p, it->x + KEYCHANGE_ACC_LEFTDIST - x_pos+x_left, aufloes_list, pix_noacc[BLACK_PIXMAP]);
+				draw_accidentials(p, it->x + KEYCHANGE_ACC_LEFTDIST - x_pos+x_left, y_offset, aufloes_list, pix_noacc[BLACK_PIXMAP]);
 								
 				// alle vorzeichen aus new_key zeichnen
 				QPixmap* pix = is_sharp_key(new_key) ? &pix_sharp[BLACK_PIXMAP] : &pix_b[BLACK_PIXMAP];
 				vorzeichen_t new_accidential = is_sharp_key(new_key) ? SHARP : B;
 
-				draw_accidentials(p, it->x + aufloes_list.size()*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_LEFTDIST - x_pos+x_left, new_acc_list, *pix);
+				draw_accidentials(p, it->x + aufloes_list.size()*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_LEFTDIST - x_pos+x_left, y_offset, new_acc_list, *pix);
 
 				for (int i=0;i<7;i++)
 					curr_accidential[i]=default_accidential[i]=NONE;
@@ -1838,28 +1863,36 @@ void ScoreCanvas::draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList
 		if (upstem_x!=-1)
 		{
 			upstem_x=upstem_x-pix_quarter[0].width()/2 +pix_quarter[0].width() -1;
-			p.drawLine(upstem_x -x_pos+x_left, upstem_y1, upstem_x -x_pos+x_left, upstem_y2-STEM_LEN);
+			p.drawLine(upstem_x -x_pos+x_left, y_offset + upstem_y1, upstem_x -x_pos+x_left, y_offset + upstem_y2-STEM_LEN);
 			
 			if (upflag>=3) //if the note needs a flag
-				p.drawPixmap(upstem_x -x_pos+x_left,upstem_y2-STEM_LEN,pix_flag_up[upflag-3]);
+				p.drawPixmap(upstem_x -x_pos+x_left,y_offset + upstem_y2-STEM_LEN,pix_flag_up[upflag-3]);
 		}
 		if (downstem_x!=-1)
 		{
 			downstem_x=downstem_x-pix_quarter[0].width()/2;
-			p.drawLine(downstem_x -x_pos+x_left, downstem_y1+STEM_LEN, downstem_x -x_pos+x_left, downstem_y2);
+			p.drawLine(downstem_x -x_pos+x_left, y_offset + downstem_y1+STEM_LEN, downstem_x -x_pos+x_left, y_offset + downstem_y2);
 
 			if (downflag>=3) //if the note needs a flag
-				p.drawPixmap(downstem_x -x_pos+x_left,downstem_y1+STEM_LEN-pix_flag_down[downflag-3].height(),pix_flag_down[downflag-3]);
+				p.drawPixmap(downstem_x -x_pos+x_left,y_offset + downstem_y1+STEM_LEN-pix_flag_down[downflag-3].height(),pix_flag_down[downflag-3]);
 		}
 	}		
 }
 
 bool ScoreCanvas::need_redraw_for_hilighting()
 {
-	return need_redraw_for_hilighting(x_pos,x_pos+width()-x_left);
+	for (list<staff_t>::iterator it=staffs.begin(); it!=staffs.end(); it++)
+		if (need_redraw_for_hilighting(it->itemlist)) return true;
+	
+	return false;
 }
 
-bool ScoreCanvas::need_redraw_for_hilighting(int x1, int x2)
+bool ScoreCanvas::need_redraw_for_hilighting(ScoreItemList& itemlist)
+{
+	return need_redraw_for_hilighting(itemlist, x_pos,x_pos+width()-x_left);
+}
+
+bool ScoreCanvas::need_redraw_for_hilighting(ScoreItemList& itemlist, int x1, int x2)
 {
 	int from_tick, to_tick;
 	ScoreItemList::iterator from_it, to_it;
@@ -1917,8 +1950,7 @@ int ScoreCanvas::clef_height(clef_t clef)
 #define CLEF_LEFTMARGIN 5
 #define CLEF_RIGHTMARGIN 5
 
-
-void ScoreCanvas::draw_preamble(QPainter& p)
+void ScoreCanvas::draw_preamble(QPainter& p, int y_offset)
 {
 	int x_left_old=x_left;
 	int tick=x_to_tick(x_pos);
@@ -1927,7 +1959,7 @@ void ScoreCanvas::draw_preamble(QPainter& p)
 	QPixmap* pix_clef= (USED_CLEF==BASS) ? pix_clef_bass : pix_clef_violin;
 	int y_coord=YDIST+4*YLEN  -  ( clef_height(USED_CLEF) -2)*YLEN/2; //Y_MARKER
 	
-	draw_pixmap(p,CLEF_LEFTMARGIN + pix_clef->width()/2,y_coord,*pix_clef);
+	draw_pixmap(p,CLEF_LEFTMARGIN + pix_clef->width()/2,y_offset + y_coord,*pix_clef);
 	
 	x_left= CLEF_LEFTMARGIN + pix_clef->width() + CLEF_RIGHTMARGIN + KEYCHANGE_ACC_LEFTDIST;
 	
@@ -1937,7 +1969,7 @@ void ScoreCanvas::draw_preamble(QPainter& p)
 	QPixmap* pix_acc=is_sharp_key(key) ? &pix_sharp[BLACK_PIXMAP] : &pix_b[BLACK_PIXMAP];
 	list<int> acclist=calc_accidentials(key,USED_CLEF);
 	
-	draw_accidentials(p,x_left,acclist ,*pix_acc);
+	draw_accidentials(p,x_left, y_offset, acclist ,*pix_acc);
 	
 	x_left+=acclist.size()*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_RIGHTDIST + TIMESIG_LEFTMARGIN;
 
@@ -1945,13 +1977,13 @@ void ScoreCanvas::draw_preamble(QPainter& p)
 	// draw time signature ----------------------------------------------
 	timesig_t timesig=timesig_at_tick(tick);
 
-	draw_timesig(p, x_left, timesig.num, timesig.denom);
+	draw_timesig(p, x_left, y_offset, timesig.num, timesig.denom);
 
 	x_left+=calc_timesig_width(timesig.num, timesig.denom)+TIMESIG_RIGHTMARGIN;
 	
 	// draw bar ---------------------------------------------------------
 	p.setPen(Qt::black); //Y_MARKER
-	p.drawLine(x_left,YDIST,x_left,YDIST+4*YLEN);
+	p.drawLine(x_left,y_offset + YDIST,x_left,y_offset + YDIST+4*YLEN);
 
 
 	if (x_left_old!=x_left)
@@ -1959,7 +1991,7 @@ void ScoreCanvas::draw_preamble(QPainter& p)
 }
 
 
-void ScoreCanvas::draw_timesig(QPainter& p, int x, int num, int denom)
+void ScoreCanvas::draw_timesig(QPainter& p, int x, int y_offset, int num, int denom)
 {
 	int num_width=calc_number_width(num);
 	int denom_width=calc_number_width(denom);
@@ -1968,8 +2000,8 @@ void ScoreCanvas::draw_timesig(QPainter& p, int x, int num, int denom)
 	int denom_indent=(width-denom_width)/2 + TIMESIG_LEFTMARGIN;
 	int y=YDIST+2*YLEN;
 	
-	draw_number(p, x+num_indent, y-DIGIT_YDIST, num);
-	draw_number(p, x+denom_indent, y+DIGIT_YDIST, denom);
+	draw_number(p, x+num_indent, y_offset + y-DIGIT_YDIST, num);
+	draw_number(p, x+denom_indent, y_offset + y+DIGIT_YDIST, denom);
 }
 
 int ScoreCanvas::calc_timesig_width(int num, int denom)
@@ -1999,7 +2031,7 @@ void ScoreCanvas::draw_number(QPainter& p, int x, int y, int n)
 }
 
 
-void ScoreCanvas::draw(QPainter& p, const QRect& rect)
+void ScoreCanvas::draw(QPainter& p, const QRect&)
 {
 	cout <<"now in ScoreCanvas::draw"<<endl;
 
@@ -2007,11 +2039,17 @@ void ScoreCanvas::draw(QPainter& p, const QRect& rect)
 
 	p.setPen(Qt::black);
 	
-	draw_note_lines(p);
-	draw_preamble(p);
-	p.setClipRect(x_left+1,0,p.device()->width(),p.device()->height());
-	draw_items(p, itemlist);
-	p.setClipping(false);
+	int y=0;
+	for (list<staff_t>::iterator it=staffs.begin(); it!=staffs.end(); it++)
+	{
+		draw_note_lines(p,y);
+		draw_preamble(p,y);
+		p.setClipRect(x_left+1,0,p.device()->width(),p.device()->height());
+		draw_items(p,y, it->itemlist);
+		p.setClipping(false);
+		
+		y+=STAFF_DISTANCE;
+	}
 }
 
 
@@ -2091,24 +2129,24 @@ int ScoreCanvas::x_to_tick(int x)
 	return t > min_t ? t : min_t;
 }
 
-tonart_t ScoreCanvas::key_at_tick(int t_)
+tonart_t ScoreCanvas::key_at_tick(int t_) //FINDMICHJETZT besser lösen! nur übergangslösung!
 {
 	tonart_t tmp;
 	unsigned int t= (t_>=0) ? t_ : 0;
 	
-	for (ScoreEventList::iterator it=eventlist.begin(); it!=eventlist.end() && it->first<=t; it++)
+	for (ScoreEventList::iterator it=staffs.begin()->eventlist.begin(); it!=staffs.begin()->eventlist.end() && it->first<=t; it++)
 		if (it->second.type==FloEvent::KEY_CHANGE)
 			tmp=it->second.tonart;
 	
 	return tmp;
 }
 
-timesig_t ScoreCanvas::timesig_at_tick(int t_)
+timesig_t ScoreCanvas::timesig_at_tick(int t_) //FINDMICHJETZT besser lösen! nur übergangslösung!
 {
 	timesig_t tmp;
 	unsigned int t= (t_>=0) ? t_ : 0;
 
-	for (ScoreEventList::iterator it=eventlist.begin(); it!=eventlist.end() && it->first<=t; it++)
+	for (ScoreEventList::iterator it=staffs.begin()->eventlist.begin(); it!=staffs.begin()->eventlist.end() && it->first<=t; it++)
 		if (it->second.type==FloEvent::TIME_SIG)
 		{
 			tmp.num=it->second.num;
@@ -2170,89 +2208,100 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 	// denn der "bereich" eines schlags geht von schlag_begin bis nächsterschlag_begin-1
 	// noten werden aber genau in die mitte dieses bereiches gezeichnet
 
-	int y=event->y();
+	int staff_no= event->y() / STAFF_DISTANCE;
+	
+	cout << "STAFF NO = " << staff_no << endl;
+	
+	int y=event->y() - staff_no*STAFF_DISTANCE;
 	int x=event->x()+x_pos-x_left;
 	int tick=flo_quantize_floor(x_to_tick(x));
 						//TODO quantizing must (maybe?) be done with the proper functions
 
-
-	cout << "mousePressEvent at "<<x<<"/"<<y<<"; tick="<<tick<<endl;
-	set<FloItem, floComp>::iterator it;
-	for (it=itemlist[tick].begin(); it!=itemlist[tick].end(); it++)
-		if (it->type==FloItem::NOTE)
-			if (it->bbox().contains(x,y))
-				break;
+	list<staff_t>::iterator it=staffs.begin();
+	for (int i=0; i<staff_no && it!=staffs.end(); i++)
+		it++;
 	
-	if (it!=itemlist[tick].end()) //we found something?
+	if (it!=staffs.end())
 	{
-		mouse_down_pos=event->pos();
-		mouse_operation=NO_OP;
+		ScoreItemList& itemlist=it->itemlist;
+
+		cout << "mousePressEvent at "<<x<<"/"<<y<<"; tick="<<tick<<endl;
+		set<FloItem, floComp>::iterator it;
+		for (it=itemlist[tick].begin(); it!=itemlist[tick].end(); it++)
+			if (it->type==FloItem::NOTE)
+				if (it->bbox().contains(x,y))
+					break;
 		
-		int t=tick;
-		set<FloItem, floComp>::iterator found;
-		
-		do
+		if (it!=itemlist[tick].end()) //we found something?
 		{
-			found=itemlist[t].find(FloItem(FloItem::NOTE, it->pos));
-			if (found == itemlist[t].end())
+			mouse_down_pos=event->pos();
+			mouse_operation=NO_OP;
+			
+			int t=tick;
+			set<FloItem, floComp>::iterator found;
+			
+			do
 			{
-				cout << "FATAL: THIS SHOULD NEVER HAPPEN: could not find the note's tie-destination" << endl;
-				break;
+				found=itemlist[t].find(FloItem(FloItem::NOTE, it->pos));
+				if (found == itemlist[t].end())
+				{
+					cout << "FATAL: THIS SHOULD NEVER HAPPEN: could not find the note's tie-destination" << endl;
+					break;
+				}
+				else
+				{
+					t+=calc_len(found->len, found->dots);
+				}
+			} while (found->tied);
+			
+			int total_begin=it->begin_tick;
+			int total_end=t;
+			
+			int this_begin=tick;
+			int this_end=this_begin+calc_len(it->len, it->dots);
+			
+			//that's the only note corresponding to the event?
+			if (this_begin==total_begin && this_end==total_end)
+			{
+				if (x < it->x)
+					mouse_x_drag_operation=BEGIN;
+				else
+					mouse_x_drag_operation=LENGTH;
 			}
+			//that's NOT the only note?
 			else
 			{
-				t+=calc_len(found->len, found->dots);
+				if (this_begin==total_begin)
+					mouse_x_drag_operation=BEGIN;
+				else if (this_end==total_end)
+					mouse_x_drag_operation=LENGTH;
+				else
+					mouse_x_drag_operation=NO_OP;
 			}
-		} while (found->tied);
-		
-		int total_begin=it->begin_tick;
-		int total_end=t;
-		
-		int this_begin=tick;
-		int this_end=this_begin+calc_len(it->len, it->dots);
-		
-		//that's the only note corresponding to the event?
-		if (this_begin==total_begin && this_end==total_end)
-		{
-			if (x < it->x)
-				mouse_x_drag_operation=BEGIN;
-			else
-				mouse_x_drag_operation=LENGTH;
+			
+			cout << "you clicked at a note with begin at "<<it->begin_tick<<" and end at "<<t<<endl;
+			cout << "x-drag-operation will be "<<mouse_x_drag_operation<<endl;
+			cout << "pointer to part is "<<it->source_part;
+			if (!it->source_part) cout << " (WARNING! THIS SHOULD NEVER HAPPEN!)";
+			cout << endl;
+			
+			dragged_event=*it->source_event;
+			dragged_event_part=it->source_part;
+			dragged_event_original_pitch=dragged_event.pitch();
+			
+			if ((mouse_erases_notes) || (event->button()==Qt::MidButton)) //erase?
+			{
+				audio->msgDeleteEvent(dragged_event, dragged_event_part, true, false, false);
+			}
+			else if (event->button()==Qt::LeftButton) //edit?
+			{
+				setMouseTracking(true);		
+				dragging=true;
+				song->startUndo();
+			}
 		}
-		//that's NOT the only note?
-		else
+		else //we found nothing?
 		{
-			if (this_begin==total_begin)
-				mouse_x_drag_operation=BEGIN;
-			else if (this_end==total_end)
-				mouse_x_drag_operation=LENGTH;
-			else
-				mouse_x_drag_operation=NO_OP;
-		}
-		
-		cout << "you clicked at a note with begin at "<<it->begin_tick<<" and end at "<<t<<endl;
-		cout << "x-drag-operation will be "<<mouse_x_drag_operation<<endl;
-		cout << "pointer to part is "<<it->source_part;
-		if (!it->source_part) cout << " (WARNING! THIS SHOULD NEVER HAPPEN!)";
-		cout << endl;
-		
-		dragged_event=*it->source_event;
-		dragged_event_part=it->source_part;
-		dragged_event_original_pitch=dragged_event.pitch();
-		
-		if ((mouse_erases_notes) || (event->button()==Qt::MidButton)) //erase?
-		{
-			audio->msgDeleteEvent(dragged_event, dragged_event_part, true, false, false);
-		}
-		else if (event->button()==Qt::LeftButton) //edit?
-		{
-			setMouseTracking(true);		
-			dragging=true;
-			song->startUndo();
-		}
-	}
-	else //we found nothing?
-	{
 		if ((event->button()==Qt::LeftButton) && (mouse_inserts_notes))
 		{
 			signed int relative_tick=(signed) tick - curr_part->tick();
@@ -2288,7 +2337,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 			}
 		}
 	}
-
+	}
 }
 
 void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
@@ -2545,9 +2594,16 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  *   o when changing color of a displayed part, note heads aren't redrawn
  *   o when pressing "STOP", the active note isn't redrawn "normally"
  * 
+ * CURRENT TODO
+ *   o menu entries etc for creating new staves etc.
+ * 	 o proper mouse.y -> staff_no translation
+ * 
  * IMPORTANT TODO
- *   o support violin and bass clefs at one time
- *   o support multiple note systems
+ *   o support adding staves to existing score window
+ *   o support changing between "all into one" and "each gets one staff"
+ *   o do the STAFF_DISTANCE thingy better
+ *     (grand staffs have to be nearer, user-definable distance etc)
+ *   o support grand staves
  *   o let the user select which clef to use
  *   o removing the part the score's working on isn't handled
  *   o let the user select the currently edited part
@@ -2587,6 +2643,8 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  *   o refuse to resize so that width gets smaller or equal than x_left
  *   o set distances properly [looks okay, doesn't it?]
  *   o maybe eliminate all the compiler warnings
+ *   o change iterators into const iterators
+ *   o add tracks in correct order to score
  *
  * stuff for the other muse developers
  *   o check if dragging notes is done correctly
@@ -2633,5 +2691,8 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  * (the systems have enough space in between, so there won't be notes
  *  from sys1 in sys2. if there are, they're ignored for simplicity)
  * then we proceed as usual (adding, removing, changing notes)
+ * 
+ * 
+ * pos_add_list stays the same for each staff, so we only need one
  */
 

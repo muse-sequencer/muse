@@ -24,6 +24,7 @@
 #include "event.h"
 #include "view.h"
 #include "gconfig.h"
+#include "part.h"
 
 #include <set>
 #include <map>
@@ -48,7 +49,6 @@ class QToolBar;
 class QPushButton;
 class CtrlEdit;
 class Splitter;
-class PartList;
 class Toolbar1;
 class Xml;
 class QuantConfig;
@@ -415,6 +415,13 @@ struct timesig_t
 	int denom;
 };
 
+struct staff_t
+{
+	set<Part*> parts;
+	ScoreEventList eventlist;
+	ScoreItemList itemlist;
+};
+
 class ScoreCanvas : public View
 {
 	Q_OBJECT
@@ -423,10 +430,10 @@ class ScoreCanvas : public View
 		static void draw_pixmap(QPainter& p, int x, int y, const QPixmap& pm);
 		static void draw_tie (QPainter& p, int x1, int x4, int yo, bool up=true, QColor color=Qt::black);
 
-		static void draw_accidentials(QPainter& p, int x, const list<int>& acc_list, const QPixmap& pix);
+		static void draw_accidentials(QPainter& p, int x, int y_offset, const list<int>& acc_list, const QPixmap& pix);
 		static list<int> calc_accidentials(tonart_t key, clef_t clef, tonart_t next_key=C);
 
-		static void draw_timesig(QPainter& p, int x, int num, int denom);
+		static void draw_timesig(QPainter& p, int x, int y_offset, int num, int denom);
 		static int calc_timesig_width(int num, int denom);
 
 		static void draw_number(QPainter& p, int x, int y, int n);
@@ -434,7 +441,7 @@ class ScoreCanvas : public View
 
 
 
-		static ScoreEventList create_appropriate_eventlist(PartList* pl);
+		static ScoreEventList create_appropriate_eventlist(const set<Part*>& parts);
 		static ScoreItemList create_itemlist(ScoreEventList& eventlist);
 
 		static note_pos_t note_pos_(int note, tonart_t key);
@@ -454,11 +461,11 @@ class ScoreCanvas : public View
 
 
 		void process_itemlist(ScoreItemList& itemlist);
-		void draw_note_lines(QPainter& p);
-		void draw_preamble(QPainter& p);
-		void draw_items(QPainter& p, ScoreItemList& itemlist, ScoreItemList::iterator from_it, ScoreItemList::iterator to_it);
-		void draw_items(QPainter& p, ScoreItemList& itemlist, int x1, int x2);
-		void draw_items(QPainter& p, ScoreItemList& itemlist);
+		void draw_note_lines(QPainter& p, int y);
+		void draw_preamble(QPainter& p, int y);
+		void draw_items(QPainter& p, int y, ScoreItemList::iterator from_it, ScoreItemList::iterator to_it);
+		void draw_items(QPainter& p, int y, ScoreItemList& itemlist, int x1, int x2);
+		void draw_items(QPainter& p, int y, ScoreItemList& itemlist);
 		void calc_item_pos(ScoreItemList& itemlist);
 		
 
@@ -473,7 +480,8 @@ class ScoreCanvas : public View
 
 
 		bool need_redraw_for_hilighting(ScoreItemList::iterator from_it, ScoreItemList::iterator to_it);
-		bool need_redraw_for_hilighting(int x1, int x2);
+		bool need_redraw_for_hilighting(ScoreItemList& itemlist, int x1, int x2);
+		bool need_redraw_for_hilighting(ScoreItemList& itemlist);
 		bool need_redraw_for_hilighting();
 
 		int canvas_width();
@@ -491,8 +499,8 @@ class ScoreCanvas : public View
 		static bool pixmaps_loaded;
 		
 		std::map<int,int> pos_add_list;
-		ScoreEventList eventlist;
-		ScoreItemList itemlist;
+		
+		list<staff_t> staffs;
 		
 		// the drawing area is split into a "preamble" containing clef,
 		// key and time signature, and the "item's area" containing the
