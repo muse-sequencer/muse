@@ -2518,7 +2518,6 @@ int PluginI::oscUpdate()
       #ifdef DSSI_SUPPORT
       // Send project directory.
       _oscif.oscSendConfigure(DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());  // song->projectPath()
-      #endif
       
       /*
       // Send current string configuration parameters.
@@ -2537,19 +2536,20 @@ int PluginI::oscUpdate()
       unsigned long bank, prog;
       synti->currentProg(&prog, &bank, 0);
       _oscIF.oscSendProgram(prog, bank);
+      */
       
       // Send current control values.
-      unsigned long ports = synth->_controlInPorts;
-      for(unsigned long i = 0; i < ports; ++i) 
+      //unsigned long ports = controlPorts;
+      for(int i = 0; i < controlPorts; ++i) 
       {
-        unsigned long k = synth->pIdx(i);
-        _oscIF.oscSendControl(k, controls[i]);
+        //unsigned long k = synth->pIdx(i);
+        //_oscIF.oscSendControl(k, controls[i]);
+        _oscif.oscSendControl(controls[i].idx, controls[i].val);
         // Avoid overloading the GUI if there are lots and lots of ports. 
         if((i+1) % 50 == 0)
           usleep(300000);
       }
-      
-      */
+      #endif // DSSI_SUPPORT
       
       return 0;
 }
