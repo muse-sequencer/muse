@@ -96,7 +96,7 @@ using namespace std;
 
 
 #define STAFF_DISTANCE 100
-
+#define GRANDSTAFF_DISTANCE 30
 
 KeyList keymap;
 
@@ -221,6 +221,7 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 
 	//each track gets its own staff
 	staff_t staff;
+	staff.type=NORMAL;
 	set<Track*> tracks;
 	
 	for (ciPart it=editor->parts()->begin(); it!=editor->parts()->end(); it++)
@@ -236,7 +237,7 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 		staffs.push_back(staff);
 	}
 	
-	
+	recalc_staff_pos();
 	
 	
 	scroll_speed=0;
@@ -810,7 +811,6 @@ list<note_len_t> ScoreCanvas::parse_note_len(int len_ticks, int begin_tick, vect
 #define USED_CLEF VIOLIN
 
 #define YLEN 10
-#define YDIST (2*YLEN)
 #define NOTE_XLEN 10
 #define NOTE_SHIFT 3
 #define PIXELS_PER_WHOLE (320) //how many px are between two wholes?
@@ -908,7 +908,7 @@ void ScoreCanvas::draw_accidentials(QPainter& p, int x, int y_offset, const list
 	
 	for (list<int>::const_iterator acc_it=acc_list.begin(); acc_it!=acc_list.end(); acc_it++)
 	{
-		int y_coord=YDIST+4*YLEN  -  ( *acc_it -2)*YLEN/2; //Y_MARKER
+		int y_coord=2*YLEN  -  ( *acc_it -2)*YLEN/2;
 		draw_pixmap(p,x + n_acc_drawn*KEYCHANGE_ACC_DIST,y_offset + y_coord,pix);
 		n_acc_drawn++;
 	}
@@ -1534,7 +1534,7 @@ void ScoreCanvas::draw_note_lines(QPainter& p, int y)
 	p.setPen(Qt::black);
 	
 	for (int i=0;i<5;i++)
-		p.drawLine(0,y + YDIST+i*YLEN,xend,y + YDIST+i*YLEN);
+		p.drawLine(0,y + i*YLEN - 2*YLEN,xend,y + i*YLEN - 2*YLEN);
 }
 
 
@@ -1547,9 +1547,9 @@ void ScoreCanvas::calc_item_pos(ScoreItemList& itemlist)
 	{
 		for (set<FloItem, floComp>::iterator it=it2->second.begin(); it!=it2->second.end();it++)
 		{
-			//if this changes, also change the line(s) with Y_MARKER
 			it->x=it2->first * PIXELS_PER_WHOLE/TICKS_PER_WHOLE  +pos_add;
-			it->y=YDIST+4*YLEN  -  (it->pos.height-2)*YLEN/2;
+			//if this changes, also change the line(s) with YLEN (but not all). don't change it.
+			it->y=2*YLEN  -  (it->pos.height-2)*YLEN/2;
 			
 			if (it->type==FloItem::NOTE)
 			{
@@ -1771,16 +1771,16 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, ScoreItemList::iterator 
 
 		
 				if (it->pos.height <= 0) //we need auxiliary lines on the bottom?
-				{ //Y_MARKER
+				{
 					p.setPen(Qt::black);
 					for (int i=0; i>=it->pos.height; i-=2)
-						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos+x_left,y_offset + YDIST+4*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos+x_left,y_offset + YDIST+4*YLEN  -  (i-2)*YLEN/2);
+						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos+x_left,y_offset + 2*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos+x_left,y_offset + 2*YLEN  -  (i-2)*YLEN/2);
 				}
 				else if (it->pos.height >= 12) //we need auxiliary lines on the top?
-				{ //Y_MARKER
+				{
 					p.setPen(Qt::black);
 					for (int i=12; i<=it->pos.height; i+=2)
-						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos+x_left,y_offset + YDIST+4*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos+x_left,y_offset + YDIST+4*YLEN  -  (i-2)*YLEN/2);
+						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos+x_left,y_offset + 2*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos+x_left,y_offset + 2*YLEN  -  (i-2)*YLEN/2);
 				}
 								
 				it->is_active= ( (song->cpos() >= it->source_event->tick() + it->source_part->tick()) &&
@@ -1872,8 +1872,8 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, ScoreItemList::iterator 
 			{
 				cout << "\tBAR" << endl;
 				
-				p.setPen(Qt::black); //Y_MARKER
-				p.drawLine(it->x -x_pos+x_left,y_offset + YDIST,it->x -x_pos+x_left,y_offset + YDIST+4*YLEN);
+				p.setPen(Qt::black);
+				p.drawLine(it->x -x_pos+x_left,y_offset  -2*YLEN,it->x -x_pos+x_left,y_offset +2*YLEN);
 				
 				for (int i=0;i<7;i++)
 					curr_accidential[i]=default_accidential[i];
@@ -2010,7 +2010,7 @@ void ScoreCanvas::draw_preamble(QPainter& p, int y_offset)
 
 	// draw clef --------------------------------------------------------
 	QPixmap* pix_clef= (USED_CLEF==BASS) ? pix_clef_bass : pix_clef_violin;
-	int y_coord=YDIST+4*YLEN  -  ( clef_height(USED_CLEF) -2)*YLEN/2; //Y_MARKER
+	int y_coord=2*YLEN  -  ( clef_height(USED_CLEF) -2)*YLEN/2;
 	
 	draw_pixmap(p,CLEF_LEFTMARGIN + pix_clef->width()/2,y_offset + y_coord,*pix_clef);
 	
@@ -2035,8 +2035,8 @@ void ScoreCanvas::draw_preamble(QPainter& p, int y_offset)
 	x_left+=calc_timesig_width(timesig.num, timesig.denom)+TIMESIG_RIGHTMARGIN;
 	
 	// draw bar ---------------------------------------------------------
-	p.setPen(Qt::black); //Y_MARKER
-	p.drawLine(x_left,y_offset + YDIST,x_left,y_offset + YDIST+4*YLEN);
+	p.setPen(Qt::black);
+	p.drawLine(x_left,y_offset  -2*YLEN,x_left,y_offset +2*YLEN);
 
 
 	if (x_left_old!=x_left)
@@ -2051,10 +2051,9 @@ void ScoreCanvas::draw_timesig(QPainter& p, int x, int y_offset, int num, int de
 	int width=((num_width > denom_width) ? num_width : denom_width);
 	int num_indent=(width-num_width)/2 + TIMESIG_LEFTMARGIN;
 	int denom_indent=(width-denom_width)/2 + TIMESIG_LEFTMARGIN;
-	int y=YDIST+2*YLEN;
 	
-	draw_number(p, x+num_indent, y_offset + y-DIGIT_YDIST, num);
-	draw_number(p, x+denom_indent, y_offset + y+DIGIT_YDIST, denom);
+	draw_number(p, x+num_indent, y_offset -DIGIT_YDIST, num);
+	draw_number(p, x+denom_indent, y_offset +DIGIT_YDIST, denom);
 }
 
 int ScoreCanvas::calc_timesig_width(int num, int denom)
@@ -2092,16 +2091,13 @@ void ScoreCanvas::draw(QPainter& p, const QRect&)
 
 	p.setPen(Qt::black);
 	
-	int y=0;
 	for (list<staff_t>::iterator it=staffs.begin(); it!=staffs.end(); it++)
 	{
-		draw_note_lines(p,y);
-		draw_preamble(p,y);
+		draw_note_lines(p,it->y_draw);
+		draw_preamble(p,it->y_draw);
 		p.setClipRect(x_left+1,0,p.device()->width(),p.device()->height());
-		draw_items(p,y, it->itemlist);
+		draw_items(p,it->y_draw, it->itemlist);
 		p.setClipping(false);
-		
-		y+=STAFF_DISTANCE;
 	}
 }
 
@@ -2233,8 +2229,7 @@ int ScoreCanvas::height_to_pitch(int h, clef_t clef, tonart_t key)
 
 int ScoreCanvas::y_to_height(int y)
 {
-	//Y_MARKER
-	return int(nearbyint(float(YDIST+4*YLEN  - y)*2.0/YLEN))+2 ;
+	return int(nearbyint(float(2*YLEN  - y)*2.0/YLEN))+2 ;
 }
 
 int ScoreCanvas::y_to_pitch(int y, int t, clef_t clef)
@@ -2251,19 +2246,13 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 	// denn der "bereich" eines schlags geht von schlag_begin bis nächsterschlag_begin-1
 	// noten werden aber genau in die mitte dieses bereiches gezeichnet
 
-	int staff_no= event->y() / STAFF_DISTANCE;
-	
-	cout << "STAFF NO = " << staff_no << endl;
-	
-	int y=event->y() - staff_no*STAFF_DISTANCE;
+	list<staff_t>::iterator it=staff_at_y(event->y());
+
+	int y=event->y() - it->y_draw;
 	int x=event->x()+x_pos-x_left;
 	int tick=flo_quantize_floor(x_to_tick(x));
 						//TODO quantizing must (maybe?) be done with the proper functions
 
-	list<staff_t>::iterator it=staffs.begin();
-	for (int i=0; i<staff_no && it!=staffs.end(); i++)
-		it++;
-	
 	if (it!=staffs.end())
 	{
 		ScoreItemList& itemlist=it->itemlist;
@@ -2614,6 +2603,44 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
 	}
 }
 
+
+void ScoreCanvas::recalc_staff_pos()
+{
+	int y=0;
+	
+	for (list<staff_t>::iterator it=staffs.begin(); it!=staffs.end(); it++)
+	{
+		it->y_top=y;
+		switch (it->type)
+		{
+			case NORMAL:
+				it->y_draw = it->y_top + STAFF_DISTANCE/2;
+				it->y_bottom = it->y_draw + STAFF_DISTANCE/2;
+				break;
+			case GRAND_TOP:
+				it->y_draw = it->y_top + STAFF_DISTANCE/2;
+				it->y_bottom = it->y_draw + GRANDSTAFF_DISTANCE/2;
+				break;
+			case GRAND_BOTTOM:
+				it->y_draw = it->y_top + GRANDSTAFF_DISTANCE/2;
+				it->y_bottom = it->y_draw + STAFF_DISTANCE/2;
+				break;
+			default:
+				cout << "THIS SHOULD NEVER HAPPEN: invalid staff type!" << endl;
+		}
+		y=it->y_bottom;
+	}
+}
+
+list<staff_t>::iterator ScoreCanvas::staff_at_y(int y)
+{
+	for (list<staff_t>::iterator it=staffs.begin(); it!=staffs.end(); it++)
+		if ((y >= it->y_top) && (y < it->y_bottom))
+			return it;
+
+	return staffs.end();
+}
+
 //the following assertions are made:
 //  pix_quarter.width() == pix_half.width()
 
@@ -2641,13 +2668,13 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  * 
  * CURRENT TODO
  *   o menu entries etc for creating new staves etc.
- * 	 o proper mouse.y -> staff_no translation (plus rounding problems)
+ *   o drag-and-dropping staves to merge them
+ *   o right-click-menu for staves to select clef(s), remove it etc
+ *   o consider both small staves from a grand stave as ONE staff
  * 
  * IMPORTANT TODO
  *   o support adding staves to existing score window
  *   o support changing between "all into one" and "each gets one staff"
- *   o do the STAFF_DISTANCE thingy better
- *     (grand staffs have to be nearer, user-definable distance etc)
  *   o support grand staves
  *   o let the user select which clef to use
  *   o removing the part the score's working on isn't handled
@@ -2694,6 +2721,7 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  *   o set distances properly [looks okay, doesn't it?]
  *   o change iterators into const iterators
  *   o add tracks in correct order to score
+ *   o rename staffs to staves
  *
  * stuff for the other muse developers
  *   o OFFER A WAY TO EDIT THE KEYMAP (and integrate the keymap properly)
@@ -2746,3 +2774,50 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
  * pos_add_list stays the same for each staff, so we only need one
  */
 
+/* R O A D M A P
+ * =============
+ * 
+ *   1. finish the score editor, without transposing instruments and
+ *      with only a global keymap
+ * 
+ * 			REASON: a score editor with few functions is better than
+ *              no score editor at all
+ * 
+ * 
+ *   2. support transposing by octave-steps
+ * 
+ *      REASON: the main problem with transposing is, that the
+ *              editor needs different key signatures and needs
+ *              to align them against each other. this problem
+ *              doesn't exist when only transposing by octaves
+ * 
+ * 
+ *   3. support transposing instruments, but only one
+ *      transposing-setting per score window. that is, you won't be 
+ *      able to display your (C-)strings in the same window as your 
+ *      B-trumpet. this will be very easy to implement
+ * 
+ *      REASON: the above problem still exists, but is circumvented
+ *              by simply not having to align them against each other
+ *              (because they're in different windows)
+ * 
+ * 
+ *   4. support different transposing instruments in the same score
+ *      window. this will be some hassle, because we need to align
+ *      the scores properly. for example, when the C-violin has 
+ *      C-major (no accidentials), then the B-trumpet need some
+ *      accidentials. we now must align the staves so that the
+ *      "note-after-keychange"s of both staves are again at the
+ *      same x-position
+ * 
+ *      REASON: some solution for that problem must be written.
+ *              this is a large step, which atm isn't very important
+ * 
+ * 
+ *   5. support different keys per track. this wouldn't be that
+ *      hard, when 4) is already done; because we then already have
+ *      the "align it properly" functionality, and can use it
+ * 
+ * 			REASON: this is only a nice-to-have, which can however be
+ *              easily implemented when 4) is done
+ */

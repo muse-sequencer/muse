@@ -451,11 +451,24 @@ struct timesig_t
 	int denom;
 };
 
+enum staff_type_t
+{
+	NORMAL,
+	GRAND_TOP,
+	GRAND_BOTTOM
+};
+
 struct staff_t
 {
 	set<Part*> parts;
 	ScoreEventList eventlist;
 	ScoreItemList itemlist;
+	
+	int y_top;
+	int y_draw;
+	int y_bottom;
+	
+	staff_type_t type;
 };
 
 class ScoreCanvas : public View
@@ -504,7 +517,10 @@ class ScoreCanvas : public View
 		void draw_items(QPainter& p, int y, ScoreItemList& itemlist);
 		void calc_item_pos(ScoreItemList& itemlist);
 		void calc_pos_add_list();
-
+		
+		
+		void recalc_staff_pos();
+		list<staff_t>::iterator staff_at_y(int y);
 
 		
 		timesig_t timesig_at_tick(int t);
