@@ -83,6 +83,7 @@ class ScoreEdit : public MidiEditor
 		
 		QScrollBar* hscroll;
 		
+				
 	private slots:
 		
 
@@ -458,6 +459,13 @@ enum staff_type_t
 	GRAND_BOTTOM
 };
 
+enum staff_mode_t
+{
+	MODE_TREBLE,
+	MODE_BASS,
+	MODE_BOTH
+};
+
 struct staff_t
 {
 	set<Part*> parts;
@@ -469,7 +477,42 @@ struct staff_t
 	int y_bottom;
 	
 	staff_type_t type;
+	clef_t clef;
+	unsigned split_note;
+	
+	void create_appropriate_eventlist(const set<Part*>& parts);
+	void create_itemlist();
+	void process_itemlist();
+	void calc_item_pos();
+	
+	staff_t()
+	{
+		type=NORMAL;
+		clef=VIOLIN;
+	}
+	
+	staff_t (staff_type_t type_, clef_t clef_, set<Part*> parts_, unsigned split_note_=0)
+	{
+		type=type_;
+		clef=clef_;
+		split_note=split_note_;
+		parts=parts_;
+	}
 };
+
+list<int> calc_accidentials(tonart_t key, clef_t clef, tonart_t next_key=C);
+note_pos_t note_pos_(int note, tonart_t key);
+note_pos_t note_pos (unsigned note, tonart_t key, clef_t clef);
+
+int calc_len(int l, int d);
+list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, bool allow_dots=true, bool allow_normal=true);
+
+int clef_height(clef_t clef);
+
+
+int calc_timesig_width(int num, int denom);
+int calc_number_width(int n);
+
 
 class ScoreCanvas : public View
 {
@@ -480,26 +523,14 @@ class ScoreCanvas : public View
 		static void draw_tie (QPainter& p, int x1, int x4, int yo, bool up=true, QColor color=Qt::black);
 
 		static void draw_accidentials(QPainter& p, int x, int y_offset, const list<int>& acc_list, const QPixmap& pix);
-		static list<int> calc_accidentials(tonart_t key, clef_t clef, tonart_t next_key=C);
 
 		static void draw_timesig(QPainter& p, int x, int y_offset, int num, int denom);
-		static int calc_timesig_width(int num, int denom);
 
 		static void draw_number(QPainter& p, int x, int y, int n);
-		static int calc_number_width(int n);
 
 
 
-		static ScoreEventList create_appropriate_eventlist(const set<Part*>& parts);
-		static ScoreItemList create_itemlist(ScoreEventList& eventlist);
 
-		static note_pos_t note_pos_(int note, tonart_t key);
-		static note_pos_t note_pos (unsigned note, tonart_t key, clef_t clef);
-
-		static int calc_len(int l, int d);
-		static list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, bool allow_dots=true, bool allow_normal=true);
-
-		static int clef_height(clef_t clef);
 
 		static int height_to_pitch(int h, clef_t clef, tonart_t key);
 		static int height_to_pitch(int h, clef_t clef);
@@ -509,13 +540,11 @@ class ScoreCanvas : public View
 
 
 
-		void process_itemlist(ScoreItemList& itemlist);
 		void draw_note_lines(QPainter& p, int y);
-		void draw_preamble(QPainter& p, int y);
-		void draw_items(QPainter& p, int y, ScoreItemList::iterator from_it, ScoreItemList::iterator to_it);
-		void draw_items(QPainter& p, int y, ScoreItemList& itemlist, int x1, int x2);
-		void draw_items(QPainter& p, int y, ScoreItemList& itemlist);
-		void calc_item_pos(ScoreItemList& itemlist);
+		void draw_preamble(QPainter& p, int y, clef_t clef);
+		void draw_items(QPainter& p, int y, staff_t& staff, ScoreItemList::iterator from_it, ScoreItemList::iterator to_it);
+		void draw_items(QPainter& p, int y, staff_t& staff, int x1, int x2);
+		void draw_items(QPainter& p, int y, staff_t& staff);
 		void calc_pos_add_list();
 		
 		
@@ -540,15 +569,10 @@ class ScoreCanvas : public View
 		int viewport_width();
 
 
-// member variables ---------------------------------------------------
+		void set_staffmode(list<staff_t>::iterator it, staff_mode_t mode);
+		
 
-		static QPixmap *pix_whole, *pix_half, *pix_quarter; // arrays [NUM_PARTCOLORS+2]
-		static QPixmap *pix_dot, *pix_b, *pix_sharp, *pix_noacc; // arrays [NUM_PARTCOLORS+2]
-		static QPixmap *pix_r1, *pix_r2, *pix_r4, *pix_r8, *pix_r16; // pointers
-		static QPixmap *pix_flag_up, *pix_flag_down; // arrays [4]
-		static QPixmap *pix_num; // array [10]
-		static QPixmap *pix_clef_violin, *pix_clef_bass; //pointers
-		static bool pixmaps_loaded;
+// member variables ---------------------------------------------------
 		
 		std::map<int,int> pos_add_list;
 		
@@ -593,6 +617,23 @@ class ScoreCanvas : public View
 		Event dragged_event;
 		int dragged_event_original_pitch;
 
+
+
+
+
+		//menu stuff
+		QAction* staffmode_treble_action;
+		QAction* staffmode_bass_action;
+		QAction* staffmode_both_action;
+		
+		QMenu* staff_menu;
+		list<staff_t>::iterator staff_menu_staff;
+
+
+	private slots:
+		void staffmode_treble_slot();
+		void staffmode_bass_slot();
+		void staffmode_both_slot();
 
    public slots:
       void scroll_event(int);
