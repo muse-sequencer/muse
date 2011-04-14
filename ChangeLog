@@ -1,3 +1,10 @@
+14.04.2011:
+        - Fixed notes 'sliver' drawing in arranger midi parts. Invert if too dark. (Tim)
+        - Gave arranger part name text drawing a shadow to help contrast with drawn events. 
+          Also moved part name text out of the way, to top of part. 
+        - Removed DSSI gui QProcess kill timers. In Qt4 they can only be used that way with threads started with QThread. 
+          Kill is not nice anyway. On terminate, gui may prompt user to save work etc. App should check at close 
+           if all these guis closed and ask to abort closing, or kill the guis, or leave them alone.
 12.04.2011:
         - Another fix for FLAM GUI controls - 300ms delay before sending control values in PluginI::oscUpdate(). (Tim)
           Good enough? How to make sure (any) gui is really ready?
