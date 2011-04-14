@@ -2538,12 +2538,17 @@ int PluginI::oscUpdate()
       _oscIF.oscSendProgram(prog, bank);
       */
       
+      // FIXME: TESTING FLAM: I have to put a delay because flammer hasn't opened yet.
+      // How to make sure gui is ready?
+      usleep(300000);
+
       // Send current control values.
       //unsigned long ports = controlPorts;
       for(int i = 0; i < controlPorts; ++i) 
       {
         //unsigned long k = synth->pIdx(i);
         //_oscIF.oscSendControl(k, controls[i]);
+        //printf("PluginI::oscUpdate() sending control:%d val:%f\n", i, controls[i].val);
         _oscif.oscSendControl(controls[i].idx, controls[i].val);
         // Avoid overloading the GUI if there are lots and lots of ports. 
         if((i+1) % 50 == 0)
