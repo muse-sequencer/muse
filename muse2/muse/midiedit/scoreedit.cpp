@@ -233,7 +233,7 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 	last_len=384;
 	new_len=-1;
 
-
+	dragging_staff=false;
 
 	//each track gets its own staff
 	staff_t staff;
@@ -282,29 +282,33 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 	staffmode_both_action = staff_menu->addAction(tr("Grand Staff"));
 	connect(staffmode_both_action, SIGNAL(triggered()), SLOT(staffmode_both_slot()));
 
+	remove_staff_action = staff_menu->addAction(tr("Remove staff"));
+	connect(remove_staff_action, SIGNAL(triggered()), SLOT(remove_staff_slot()));
+
 }
 
 void ScoreCanvas::staffmode_treble_slot()
 {
-	cout << "DEBUG: treble" << endl;
-	set_staffmode(staff_menu_staff, MODE_TREBLE);
+	set_staffmode(current_staff, MODE_TREBLE);
 }
 
 void ScoreCanvas::staffmode_bass_slot()
 {
-	cout << "DEBUG: bass" << endl;
-	set_staffmode(staff_menu_staff, MODE_BASS);
+	set_staffmode(current_staff, MODE_BASS);
 }
 
 void ScoreCanvas::staffmode_both_slot()
 {
-	cout << "DEBUG: both" << endl;
-	set_staffmode(staff_menu_staff, MODE_BOTH);
+	set_staffmode(current_staff, MODE_BOTH);
+}
+
+void ScoreCanvas::remove_staff_slot()
+{
+	remove_staff(current_staff);
 }
 
 void ScoreCanvas::set_staffmode(list<staff_t>::iterator it, staff_mode_t mode)
 {
-	cout << "DEBUG: in set_staffmode" << endl;
 	if (it->type == GRAND_BOTTOM)
 	{
 		it--;
@@ -345,6 +349,67 @@ void ScoreCanvas::set_staffmode(list<staff_t>::iterator it, staff_mode_t mode)
 			cout << "ILLEGAL FUNCTION CALL: invalid mode in set_staffmode" << endl;
 	}
 	
+	recalc_staff_pos();
+	song_changed(0);
+}
+
+void ScoreCanvas::remove_staff(list<staff_t>::iterator it)
+{
+	if (it->type == GRAND_BOTTOM)
+	{
+		it--;
+		if (it->type!=GRAND_TOP)
+			cout << "THIS SHOULD NEVER HAPPEN: grand_bottom without top!"<<endl;
+	}
+	
+	if (it->type == NORMAL)
+	{
+		staffs.erase(it);
+	}
+	else if (it->type == GRAND_TOP)
+	{
+		staffs.erase(it++);
+		if (it->type!=GRAND_BOTTOM)
+			cout << "THIS SHOULD NEVER HAPPEN: grand_top without bottom!"<<endl;
+		staffs.erase(it);
+	}		
+	
+	recalc_staff_pos();
+	song_changed(0);
+}
+
+void ScoreCanvas::merge_staves(list<staff_t>::iterator dest, list<staff_t>::iterator src)
+{
+	if (dest->type == GRAND_BOTTOM)
+	{
+		dest--;
+		if (dest->type!=GRAND_TOP)
+			cout << "THIS SHOULD NEVER HAPPEN: grand_bottom without top!"<<endl;
+	}
+
+	if (src->type == GRAND_BOTTOM)
+	{
+		src--;
+		if (src->type!=GRAND_TOP)
+			cout << "THIS SHOULD NEVER HAPPEN: grand_bottom without top!"<<endl;
+	}
+	
+	if (dest==src) //dragged to itself?
+		return;
+
+
+	dest->parts.insert(src->parts.begin(), src->parts.end());
+	
+	if (dest->type == GRAND_TOP)
+	{
+		dest++;
+		if (dest->type != GRAND_BOTTOM)
+			cout << "THIS SHOULD NEVER HAPPEN: grand_top without bottom!"<<endl;
+		dest->parts.insert(src->parts.begin(), src->parts.end());
+	}
+	
+	remove_staff(src);
+
 	recalc_staff_pos();
 	song_changed(0);
 }
@@ -2362,8 +2427,17 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 		{
 			if (event->button() == Qt::RightButton) //right-click?
 			{
-				staff_menu_staff=it;
+				current_staff=it;
 				staff_menu->popup(event->globalPos());
+			}
+			else if (event->button() == Qt::MidButton) //middle click?
+			{
+				remove_staff(it);
+			}
+			else if (event->button() == Qt::LeftButton) //left click?
+			{
+				current_staff=it;
+				dragging_staff=true;
 			}
 		}
 		else
@@ -2488,9 +2562,9 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 
 void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 {
-	if (event->button()==Qt::LeftButton)
+	if (dragging)
 	{
-		if (dragging)
+		if (event->button()==Qt::LeftButton)
 		{
 			if (mouse_operation==LENGTH)
 			{
@@ -2511,6 +2585,12 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 			
 			scroll_speed=0; scroll_pos=0;
 		}
+	}
+	
+	if (dragging_staff)
+	{
+		merge_staves(staff_at_y(event->y()), current_staff);
+		dragging_staff=false;
 	}
 }
 
@@ -2781,15 +2861,13 @@ list<staff_t>::iterator ScoreCanvas::staff_at_y(int y)
  *   o when pressing "STOP", the active note isn't redrawn "normally"
  * 
  * CURRENT TODO
- *   o menu entries etc for creating new staves etc.
- *   o drag-and-dropping staves to merge them
- *   o right-click-menu or middle-click for removing staves etc
+ * > o menu entries etc for creating new staves etc.
  * 
  * IMPORTANT TODO
  *   o support adding staves to existing score window
  *   o support changing between "all into one" and "each gets one staff"
- *   o support grand staves
- *   o let the user select which clef to use
+ *
+ *   o y-scroll for staff window, with automatic margin-scrolling
  *   o removing the part the score's working on isn't handled
  *   o let the user select the currently edited part
  *   o let the user select between "colors after the parts",

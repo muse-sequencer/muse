@@ -570,7 +570,8 @@ class ScoreCanvas : public View
 
 
 		void set_staffmode(list<staff_t>::iterator it, staff_mode_t mode);
-		
+		void remove_staff(list<staff_t>::iterator it);
+		void merge_staves(list<staff_t>::iterator dest, list<staff_t>::iterator src);
 
 // member variables ---------------------------------------------------
 		
@@ -625,15 +626,18 @@ class ScoreCanvas : public View
 		QAction* staffmode_treble_action;
 		QAction* staffmode_bass_action;
 		QAction* staffmode_both_action;
+		QAction* remove_staff_action;
 		
 		QMenu* staff_menu;
-		list<staff_t>::iterator staff_menu_staff;
+		list<staff_t>::iterator current_staff;
+		bool dragging_staff;
 
 
 	private slots:
 		void staffmode_treble_slot();
 		void staffmode_bass_slot();
 		void staffmode_both_slot();
+		void remove_staff_slot();
 
    public slots:
       void scroll_event(int);
