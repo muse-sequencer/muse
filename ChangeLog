@@ -1,3 +1,6 @@
+12.04.2011:
+        - Another fix for FLAM GUI controls - 300ms delay before sending control values in PluginI::oscUpdate(). (Tim)
+          Good enough? How to make sure (any) gui is really ready?
 11.04.2011:
         - Possible fix for FLAM GUI controls - send current control values in PluginI::oscUpdate().(Tim)
 10.04.2011:
