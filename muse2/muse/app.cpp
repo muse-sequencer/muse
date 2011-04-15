@@ -2459,7 +2459,7 @@ void MusE::routingPopupMenuActivated(Track* track, int n)
         if(n == -1) 
           return;
         
-        if(n == 0)      // p4.0.17
+        if(!gIsOutRoutingPopupMenu && n == 0)      // p4.0.17
         {
           muse->configMidiPorts();
           return;
@@ -2857,43 +2857,51 @@ PopupMenu* MusE::prepareRoutingPopupMenu(Track* track, bool dst)
       if(port >= 0 && port < MIDI_PORTS)
       {
         MidiPort* mp = &midiPorts[port];
-        RouteList* mprl = mp->outRoutes();
-        int chbits = 1 << ((MidiTrack*)track)->outChannel();
-        //MidiDevice* md = mp->device();
-        //if(!md)
-        //  continue;
         
-        pup->addSeparator();
-        pup->addAction(new MenuTitleItem(tr("Soloing chain"), pup)); 
-        PopupMenu* subp = new PopupMenu(pup);
-        subp->setTitle(tr("Audio returns")); 
-        pup->addMenu(subp);
-        
-        InputList* al = song->inputs();
-        for (iAudioInput i = al->begin(); i != al->end(); ++i) 
+        // p4.0.17 Do not list synth devices! Requiring valid device is desirable, 
+        //  but could lead to 'hidden' routes unless we add more support
+        //  such as removing the existing routes when user changes flags.
+        // So for now, just list all valid ports whether read or write.
+        if(mp->device() && !mp->device()->isSynti())  
         {
-          Track* t = *i;
-          QString s(t->name());
+          RouteList* mprl = mp->outRoutes();
+          int chbits = 1 << ((MidiTrack*)track)->outChannel();
+          //MidiDevice* md = mp->device();
+          //if(!md)
+          //  continue;
           
-          act = subp->addAction(s);
-          act->setData(gid);
-          act->setCheckable(true);
+          pup->addSeparator();
+          pup->addAction(new MenuTitleItem(tr("Soloing chain"), pup)); 
+          PopupMenu* subp = new PopupMenu(pup);
+          subp->setTitle(tr("Audio returns")); 
+          pup->addMenu(subp);
           
-          Route r(t, chbits);
-          
-          gRoutingMenuMap.insert( pRouteMenuMap(gid, r) );
-          
-          for(iRoute ir = mprl->begin(); ir != mprl->end(); ++ir) 
+          InputList* al = song->inputs();
+          for (iAudioInput i = al->begin(); i != al->end(); ++i) 
           {
-            if(ir->type == Route::TRACK_ROUTE && ir->track == t && (ir->channel & chbits))
+            Track* t = *i;
+            QString s(t->name());
+            
+            act = subp->addAction(s);
+            act->setData(gid);
+            act->setCheckable(true);
+            
+            Route r(t, chbits);
+            
+            gRoutingMenuMap.insert( pRouteMenuMap(gid, r) );
+            
+            for(iRoute ir = mprl->begin(); ir != mprl->end(); ++ir) 
             {
-              act->setChecked(true);
-              break;
-            }  
+              if(ir->type == Route::TRACK_ROUTE && ir->track == t && (ir->channel & chbits))
+              {
+                act->setChecked(true);
+                break;
+              }  
+            }
+            ++gid;      
           }
-          ++gid;      
-        }
-      }     
+        }     
+      }  
     }
     else
     {

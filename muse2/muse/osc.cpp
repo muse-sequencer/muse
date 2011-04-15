@@ -504,7 +504,13 @@ OscIF::~OscIF()
       //  process needs to do all its cleanup: use a higher value if the process is likely to do a lot of 
       //  computation or I/O on cleanup."           
       _oscGuiQProc->terminate();
-      QTimer::singleShot( 5000, _oscGuiQProc, SLOT( kill() ) );          
+      // FIXME: In Qt4 this can only be used with threads started with QThread. 
+      // Kill is bad anyway, app should check at close if all these guis closed or not 
+      //  and ask user if they really want to close, possibly with kill.
+      // Terminate might not terminate the thread. It is given a chance to prompt for saving etc.
+      //  so kill is not desirable.
+      // We could wait until terminate finished but don't think that's good here.
+      ///QTimer::singleShot( 5000, _oscGuiQProc, SLOT( kill() ) );          
     }  
     //delete _oscGuiQProc;
   }
@@ -710,7 +716,13 @@ int OscIF::oscExiting(lo_arg**)
           //  process needs to do all its cleanup: use a higher value if the process is likely to do a lot of 
           //  computation or I/O on cleanup."           
           _oscGuiQProc->terminate();
-          QTimer::singleShot( 5000, _oscGuiQProc, SLOT( kill() ) );          
+          // FIXME: In Qt4 this can only be used with threads started with QThread. 
+          // Kill is bad anyway, app should check at close if all these guis closed or not 
+          //  and ask user if they really want to close, possibly with kill.
+          // Terminate might not terminate the thread. It is given a chance to prompt for saving etc.
+          //  so kill is not desirable.
+          // We could wait until terminate finished but don't think that's good here.
+          ///QTimer::singleShot( 5000, _oscGuiQProc, SLOT( kill() ) );          
         }  
         //delete _oscGuiQProc;
       }
@@ -928,7 +940,8 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
                         //{
                               // No QProcess created yet? Do it now. Only once per SynthIF instance. Exists until parent destroyed.
                               if(_oscGuiQProc == 0)
-                                _oscGuiQProc = new QProcess(muse);                        
+                                //_oscGuiQProc = new QProcess(muse);                        
+                                _oscGuiQProc = new QProcess();                        
                               
 			      //QString program(fi.filePath());
                               QString program(guiPath);

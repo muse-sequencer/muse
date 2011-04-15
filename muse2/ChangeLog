@@ -1,3 +1,16 @@
+14.04.2011:
+        - Fixed notes 'sliver' drawing in arranger midi parts. Invert if too dark. (Tim)
+        - Gave arranger part name text drawing a shadow to help contrast with drawn events. 
+          Also moved part name text out of the way, to top of part. 
+        - Removed DSSI gui QProcess kill timers. In Qt4 they can only be used that way with threads started with QThread. 
+          Kill is not nice anyway. On terminate, gui may prompt user to save work etc. App should check at close 
+           if all these guis closed and ask to abort closing, or kill the guis, or leave them alone.
+        - Improved dark part colour gradients. Added gGradientFromQColor() in widgets/utils.cpp and called from PartCanvas draw.
+12.04.2011:
+        - Another fix for FLAM GUI controls - 300ms delay before sending control values in PluginI::oscUpdate(). (Tim)
+          Good enough? How to make sure (any) gui is really ready?
+11.04.2011:
+        - Possible fix for FLAM GUI controls - send current control values in PluginI::oscUpdate().(Tim)
 10.04.2011:
         * Added: Expanded all routing choices: Synth to Wave track, Wave track to Wave track etc. (Tim)
         * Added: DSSI synths can now show generic LADSPA GUI as well as native. (Tim p4.0.20)

@@ -20,7 +20,7 @@
 #include <QPainter>
 #include <QUrl>
 #include <QPoint>
-#include <QLinearGradient>
+//#include <QLinearGradient>
 
 #include "fastlog.h"
 #include "widgets/tools.h"
@@ -40,6 +40,7 @@
 #include "mpevent.h"
 #include "midievent.h"
 #include "midi.h"
+#include "utils.h"
 
 // Moved into global config by Tim.
 /* 
@@ -1552,10 +1553,18 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             // Hm, put some kind of lower limit? If so do that globally to the adjustment.
             QColor c(Qt::black);
             c.setAlpha(config.globalAlphaBlend);
+            
             QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-            gradient.setColorAt(0, c);
-            gradient.setColorAt(1, c.darker());
+            //gradient.setColorAt(0, c);
+            //gradient.setColorAt(1, c.darker());
+            // Use a colour only about 20% lighter than black, rather than the 50% we use in gGradientFromQColor
+            //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
+            //c.setRgba(64, 64, 64, c.alpha());        
+            gradient.setColorAt(0, QColor(51, 51, 51, config.globalAlphaBlend));
+            gradient.setColorAt(1, c);
             QBrush cc(gradient);
+            //QBrush cc(gGradientFromQColor(c, r.topLeft(), r.bottomLeft()));
+            
             p.setBrush(cc);
             p.drawRect(r);
             }
@@ -1570,10 +1579,11 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             p.setPen(pen);
             QColor c(config.partColors[i]);
             c.setAlpha(config.globalAlphaBlend);
-            QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-            gradient.setColorAt(0, c);
-            gradient.setColorAt(1, c.darker());
-            QBrush cc(gradient);
+            //QLinearGradient gradient(r.topLeft(), r.bottomLeft());
+            //gradient.setColorAt(0, c);
+            //gradient.setColorAt(1, c.darker());
+            //QBrush cc(gradient);
+            QBrush cc(gGradientFromQColor(c, r.topLeft(), r.bottomLeft()));
             p.setBrush(cc);
 
             p.drawRect(r);
@@ -1593,7 +1603,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
           drawWavePart(p, rect, wp, r);
       else if (mp)
       {
-          drawMidiPart(p, rect, mp->events(),(MidiTrack*)part->track(), r, mp->tick(), from, to);
+          drawMidiPart(p, rect, mp->events(), (MidiTrack*)part->track(), mp, r, mp->tick(), from, to);  
       }
 
       if (config.canvasShowPartType & 1) {     // show names
@@ -1602,16 +1612,26 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             int part_r, part_g, part_b, brightness;
             config.partColors[i].getRgb(&part_r, &part_g, &part_b);
             brightness =  part_r*29 + part_g*59 + part_b*12;
-            if (brightness < 12000 || part->selected())
-              p.setPen(Qt::white);   /* too dark: use white for text color */
-            else
-              p.setPen(Qt::black);  /* otherwise use black */
+            //if (brightness < 12000 || part->selected())
+            //  p.setPen(Qt::white);   /* too dark: use white for text color */
+            //else
+            //  p.setPen(Qt::black);  /* otherwise use black */
+            bool rev = brightness < 12000 || part->selected();
             QRect rr = map(r);
             rr.setX(rr.x() + 3);
             p.save();
             p.setFont(config.fonts[1]);
             p.setWorldMatrixEnabled(false);
-            p.drawText(rr, Qt::AlignVCenter|Qt::AlignLeft, part->name());
+            if (rev)
+              p.setPen(Qt::black);   
+            else
+              p.setPen(Qt::white); 
+            p.drawText(rr.translated(1, 1), Qt::AlignTop|Qt::AlignLeft, part->name());
+            if (rev)
+              p.setPen(Qt::white);   
+            else
+              p.setPen(Qt::black);  
+            p.drawText(rr, Qt::AlignTop|Qt::AlignLeft, part->name());
             p.restore();
             }
       }
@@ -1649,14 +1669,30 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
 //    pr - part rectangle
 //---------------------------------------------------------
 
-void PartCanvas::drawMidiPart(QPainter& p, const QRect& bb, EventList* events, MidiTrack *mt, const QRect& r, int pTick, int from, int to)
+void PartCanvas::drawMidiPart(QPainter& p, const QRect& bb, EventList* events, MidiTrack *mt, MidiPart *pt, const QRect& r, int pTick, int from, int to)
 {
   //printf("x=%d y=%d h=%d w=%d\n",r.x(),r.y(),r.height(),r.width());
+
+  if(pt) 
+  {
+    int part_r, part_g, part_b, brightness;
+    config.partColors[pt->colorIndex()].getRgb(&part_r, &part_g, &part_b);
+    brightness =  part_r*29 + part_g*59 + part_b*12;
+    if (brightness < 12000 || pt->selected())
+      //p.setPen(Qt::white);   // too dark: use white for color 
+      p.setPen(QColor(192,192,192));   // too dark: use lighter color 
+    else
+      //p.setPen(Qt::black);  // otherwise use black 
+      p.setPen(QColor(64,64,64));  // otherwise use dark color 
+  }
+  else
+    p.setPen(QColor(80,80,80));
+    
   if (config.canvasShowPartType & 2) {      // show events
             // Do not allow this, causes segfault.
             if(from <= to)
             {
-              p.setPen(QColor(80,80,80));
+              //p.setPen(QColor(80,80,80));
               //EventList* events = mp->events();
               iEvent ito(events->lower_bound(to));
 
@@ -1678,7 +1714,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect& bb, EventList* events, M
             }
       }
   else {      // show Cakewalk Style
-      p.setPen(QColor(80,80,80));
+      //p.setPen(QColor(80,80,80));
       //EventList* events = mp->events();
       iEvent ito(events->lower_bound(to));
       //printf("PartCanvas::drawItem pTick:%d from:%d to:%d\n", pTick, from, to);
@@ -3047,7 +3083,7 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
                     }
                  }
                }
-               drawMidiPart(p, rect, &myEventList, mt, partRect,startPos,0,song->cpos()-startPos);
+               drawMidiPart(p, rect, &myEventList, mt, 0, partRect,startPos,0,song->cpos()-startPos);
            }
            yPos+=track->height();
       }

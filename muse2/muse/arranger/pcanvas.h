@@ -84,8 +84,6 @@ class PartCanvas : public Canvas {
       virtual int pitch2y(int p) const;
       
       virtual void moveCanvasItems(CItemList&, int, int, DragType, int*);
-      // Changed by T356. 
-      //virtual bool moveItem(CItem*, const QPoint&, DragType, int*);
       virtual bool moveItem(CItem*, const QPoint&, DragType);
       virtual CItem* newItem(const QPoint&, int);
       virtual void resizeItem(CItem*,bool);
@@ -112,7 +110,8 @@ class PartCanvas : public Canvas {
       void movePartsTotheRight(unsigned int startTick, int length);
       //Part* readClone(Xml&, Track*, bool toTrack = true);
       void drawWavePart(QPainter&, const QRect&, WavePart*, const QRect&);
-      void drawMidiPart(QPainter&, const QRect& rect, EventList* events, MidiTrack *mt, const QRect& r, int pTick, int from, int to);
+      //void drawMidiPart(QPainter&, const QRect& rect, EventList* events, MidiTrack*mt, const QRect& r, int pTick, int from, int to);
+      void drawMidiPart(QPainter&, const QRect& rect, EventList* events, MidiTrack*mt, MidiPart*pt, const QRect& r, int pTick, int from, int to);
       Track* y2Track(int) const;
       void drawAudioTrack(QPainter& p, const QRect& r, AudioTrack* track);
       void drawAutomation(QPainter& p, const QRect& r, AudioTrack* track);

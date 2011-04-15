@@ -11,6 +11,10 @@
 #include <sys/time.h>
 
 #include <QFrame>
+#include <QColor>
+#include <QGradient>
+#include <QLinearGradient>
+#include <QPointF>
 
 #include "utils.h"
 
@@ -353,4 +357,20 @@ bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool igno
   }
   
   return true;  
+}
+
+QGradient gGradientFromQColor(const QColor& c, const QPointF& start, const QPointF& finalStop)
+{
+  int h, s, v, a;
+  c.getHsv(&h, &s, &v, &a);
+  const int v0 = v + (255 - v)/2;
+  const int v1 = v - v/2;
+  const QColor c0 = QColor::fromHsv(h, s, v0, a); 
+  const QColor c1 = QColor::fromHsv(h, s, v1, a); 
+  
+  QLinearGradient gradient(start, finalStop);
+  gradient.setColorAt(0, c0);
+  gradient.setColorAt(1, c1);
+  
+  return gradient;
 }
