@@ -20,7 +20,7 @@
 #include <QPainter>
 #include <QUrl>
 #include <QPoint>
-#include <QLinearGradient>
+//#include <QLinearGradient>
 
 #include "fastlog.h"
 #include "widgets/tools.h"
@@ -40,6 +40,7 @@
 #include "mpevent.h"
 #include "midievent.h"
 #include "midi.h"
+#include "utils.h"
 
 // Moved into global config by Tim.
 /* 
@@ -1552,10 +1553,18 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             // Hm, put some kind of lower limit? If so do that globally to the adjustment.
             QColor c(Qt::black);
             c.setAlpha(config.globalAlphaBlend);
+            
             QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-            gradient.setColorAt(0, c);
-            gradient.setColorAt(1, c.darker());
+            //gradient.setColorAt(0, c);
+            //gradient.setColorAt(1, c.darker());
+            // Use a colour only about 20% lighter than black, rather than the 50% we use in gGradientFromQColor
+            //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
+            //c.setRgba(64, 64, 64, c.alpha());        
+            gradient.setColorAt(0, QColor(51, 51, 51, config.globalAlphaBlend));
+            gradient.setColorAt(1, c);
             QBrush cc(gradient);
+            //QBrush cc(gGradientFromQColor(c, r.topLeft(), r.bottomLeft()));
+            
             p.setBrush(cc);
             p.drawRect(r);
             }
@@ -1570,10 +1579,11 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             p.setPen(pen);
             QColor c(config.partColors[i]);
             c.setAlpha(config.globalAlphaBlend);
-            QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-            gradient.setColorAt(0, c);
-            gradient.setColorAt(1, c.darker());
-            QBrush cc(gradient);
+            //QLinearGradient gradient(r.topLeft(), r.bottomLeft());
+            //gradient.setColorAt(0, c);
+            //gradient.setColorAt(1, c.darker());
+            //QBrush cc(gradient);
+            QBrush cc(gGradientFromQColor(c, r.topLeft(), r.bottomLeft()));
             p.setBrush(cc);
 
             p.drawRect(r);
@@ -1616,8 +1626,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
               p.setPen(Qt::black);   
             else
               p.setPen(Qt::white); 
-            p.drawText(rr, Qt::AlignTop|Qt::AlignLeft, part->name());
-            rr.translate(1,1);
+            p.drawText(rr.translated(1, 1), Qt::AlignTop|Qt::AlignLeft, part->name());
             if (rev)
               p.setPen(Qt::white);   
             else

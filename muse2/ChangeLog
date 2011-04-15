@@ -5,6 +5,7 @@
         - Removed DSSI gui QProcess kill timers. In Qt4 they can only be used that way with threads started with QThread. 
           Kill is not nice anyway. On terminate, gui may prompt user to save work etc. App should check at close 
            if all these guis closed and ask to abort closing, or kill the guis, or leave them alone.
+        - Improved dark part colour gradients. Added gGradientFromQColor() in widgets/utils.cpp and called from PartCanvas draw.
 12.04.2011:
         - Another fix for FLAM GUI controls - 300ms delay before sending control values in PluginI::oscUpdate(). (Tim)
           Good enough? How to make sure (any) gui is really ready?

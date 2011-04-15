@@ -11,6 +11,10 @@
 class QFrame;
 class QString;
 class QWidget;
+class QGradient;
+class QCanvas;
+class QPointF;
+class QColor;
 
 
 extern QString bitmap2String(int bm);
@@ -18,6 +22,7 @@ extern int string2bitmap(const QString& str);
 extern QString u32bitmap2String(unsigned int bm);
 extern unsigned int string2u32bitmap(const QString& str);
 extern bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth = false, bool ignoreHeight = false, int max = 10, int min = 4);
+extern QGradient gGradientFromQColor(const QColor& c, const QPointF& start, const QPointF& finalStop);
 
 extern int num2cols(int min, int max);
 extern QFrame* hLine(QWidget* parent);
