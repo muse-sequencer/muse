@@ -38,7 +38,7 @@ class TopWin : public QMainWindow
 class Toplevel {
    public:
       enum ToplevelType { PIANO_ROLL, LISTE, DRUM, MASTER, WAVE, 
-         LMASTER, CLIPLIST, MARKER
+         LMASTER, CLIPLIST, MARKER, SCORE
 #ifdef PATCHBAY
          , M_PATCHBAY
 #endif /* PATCHBAY */

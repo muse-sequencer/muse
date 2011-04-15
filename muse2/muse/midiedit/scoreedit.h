@@ -15,6 +15,7 @@
 #include <QPainter>
 #include <QPixmap>
 #include <QTimer>
+#include <QScrollBar>
 
 #include <values.h>
 #include "noteinfo.h"
@@ -37,38 +38,12 @@ using std::map;
 using std::list;
 using std::vector;
 
-class MidiPart;
-class TimeLabel;
-class PitchLabel;
-class QLabel;
-class PianoCanvas;
-class MTScale;
-class Track;
-class QToolButton;
-class QToolBar;
-class QPushButton;
-class CtrlEdit;
-class Splitter;
-class Toolbar1;
-class Xml;
-class QuantConfig;
-class ScrollScale;
-class Part;
-class SNode;
-class QMenu;
-class QAction;
-class QWidget;
-class QScrollBar;
-class MidiTrackInfo;
-class QScrollArea;
 
 
 
 
 
-
-
-
+class ScoreCanvas;
 
 //---------------------------------------------------------
 //   ScoreEdit
@@ -82,6 +57,7 @@ class ScoreEdit : public MidiEditor
 		virtual void closeEvent(QCloseEvent*);
 		
 		QScrollBar* hscroll;
+		ScoreCanvas* score_canvas;
 		
 				
 	private slots:
@@ -99,6 +75,8 @@ class ScoreEdit : public MidiEditor
 		~ScoreEdit();
 		static void readConfiguration(Xml&){}; //TODO does nothing
 		static void writeConfiguration(int, Xml&){}; //TODO does nothing
+		
+		void add_parts(PartList* pl, bool all_in_one=false);
 	};
 
 
@@ -478,7 +456,7 @@ struct staff_t
 	
 	staff_type_t type;
 	clef_t clef;
-	unsigned split_note;
+	int split_note;
 	
 	void create_appropriate_eventlist(const set<Part*>& parts);
 	void create_itemlist();
@@ -491,7 +469,7 @@ struct staff_t
 		clef=VIOLIN;
 	}
 	
-	staff_t (staff_type_t type_, clef_t clef_, set<Part*> parts_, unsigned split_note_=0)
+	staff_t (staff_type_t type_, clef_t clef_, set<Part*> parts_, int split_note_=0)
 	{
 		type=type_;
 		clef=clef_;
@@ -664,6 +642,8 @@ class ScoreCanvas : public View
 		ScoreCanvas(MidiEditor*, QWidget*, int, int);
 		~ScoreCanvas(){};
 
+		void add_staves(PartList* pl, bool all_in_one);
+		
 };
 
 int calc_measure_len(const list<int>& nums, int denom);

@@ -159,23 +159,29 @@ bool pixmaps_loaded=false;
 ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned initPos)
    : MidiEditor(0, 0, pl, parent, name)
 {
-	ScoreCanvas* test=new ScoreCanvas(this, mainw, 1, 1);	
+	score_canvas=new ScoreCanvas(this, mainw, 1, 1);
 	hscroll = new QScrollBar(Qt::Horizontal, mainw);
 
+	connect(hscroll, SIGNAL(valueChanged(int)), score_canvas,   SLOT(scroll_event(int)));
+	connect(score_canvas, SIGNAL(xpos_changed(int)), hscroll,   SLOT(setValue(int)));
+	connect(score_canvas, SIGNAL(canvas_width_changed(int)), SLOT(canvas_width_changed(int)));
+	connect(score_canvas, SIGNAL(viewport_width_changed(int)), SLOT(viewport_width_changed(int)));
+	connect(song, SIGNAL(songChanged(int)), score_canvas, SLOT(song_changed(int)));
 
-connect(hscroll, SIGNAL(valueChanged(int)), test,   SLOT(scroll_event(int)));
-connect(test, SIGNAL(xpos_changed(int)), hscroll,   SLOT(setValue(int)));connect(song, SIGNAL(songChanged(int)), test, SLOT(song_changed(int)));
-connect(test, SIGNAL(canvas_width_changed(int)), SLOT(canvas_width_changed(int)));
-connect(test, SIGNAL(viewport_width_changed(int)), SLOT(viewport_width_changed(int)));
+	mainGrid->addWidget(score_canvas, 0, 0);
+	mainGrid->addWidget(hscroll,1,0);
 
-      mainGrid->addWidget(test, 0, 0);
-      mainGrid->addWidget(hscroll,1,0);
+	hscroll->setMinimum(0);
 
-hscroll->setMinimum(0);
-test->song_changed(0);
-test->goto_tick(initPos,true);
+	score_canvas->song_changed(0);
+	score_canvas->goto_tick(initPos,true);
 }
 
+
+void ScoreEdit::add_parts(PartList* pl, bool all_in_one)
+{
+	score_canvas->add_staves(pl, all_in_one);
+}
 
 //---------------------------------------------------------
 //   ~ScoreEdit
@@ -208,7 +214,55 @@ void ScoreEdit::closeEvent(QCloseEvent* e)
 
 
 
+void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
+{
+	staff_t staff;
 
+	if (all_in_one)
+	{
+		staff.parts.clear();
+		for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
+			staff.parts.insert(part_it->second);
+
+		staff.split_note=SPLIT_NOTE;
+
+		staff.type=GRAND_TOP; //FINDMICH
+		staff.clef=VIOLIN;
+		staffs.push_back(staff);
+
+		staff.type=GRAND_BOTTOM;
+		staff.clef=BASS;
+		staffs.push_back(staff);		
+	}
+	else
+	{
+		set<Track*> tracks;
+		
+		for (ciPart it=pl->begin(); it!=pl->end(); it++)
+			tracks.insert(it->second->track());
+		
+		for (set<Track*>::iterator it=tracks.begin(); it!=tracks.end(); it++)
+		{
+			staff.parts.clear();
+			for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
+				if (part_it->second->track() == *it)
+					staff.parts.insert(part_it->second);
+
+			staff.split_note=SPLIT_NOTE;
+
+			staff.type=GRAND_TOP; //FINDMICH
+			staff.clef=VIOLIN;
+			staffs.push_back(staff);
+
+			staff.type=GRAND_BOTTOM;
+			staff.clef=BASS;
+			staffs.push_back(staff);
+		}
+	}
+	
+	recalc_staff_pos();
+	song_changed(0);
+}
 
 
 ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
@@ -228,39 +282,12 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 	mouse_erases_notes=false;
 	mouse_inserts_notes=true;
 
-	curr_part=editor->parts()->begin()->second;
+	curr_part=editor->parts()->begin()->second; //TODO FINDMICH
 	
 	last_len=384;
 	new_len=-1;
 
 	dragging_staff=false;
-
-	//each track gets its own staff
-	staff_t staff;
-	set<Track*> tracks;
-	
-	for (ciPart it=editor->parts()->begin(); it!=editor->parts()->end(); it++)
-		tracks.insert(it->second->track());
-	
-	for (set<Track*>::iterator it=tracks.begin(); it!=tracks.end(); it++)
-	{
-		staff.parts.clear();
-		for (ciPart part_it=editor->parts()->begin(); part_it!=editor->parts()->end(); part_it++)
-			if (part_it->second->track() == *it)
-				staff.parts.insert(part_it->second);
-
-		staff.split_note=SPLIT_NOTE;
-
-		staff.type=GRAND_TOP;
-		staff.clef=VIOLIN;
-		staffs.push_back(staff);
-
-		staff.type=GRAND_BOTTOM;
-		staff.clef=BASS;
-		staffs.push_back(staff);
-	}
-	
-	recalc_staff_pos();
 	
 	
 	scroll_speed=0;
@@ -2861,7 +2888,8 @@ list<staff_t>::iterator ScoreCanvas::staff_at_y(int y)
  *   o when pressing "STOP", the active note isn't redrawn "normally"
  * 
  * CURRENT TODO
- * > o menu entries etc for creating new staves etc.
+ *   o use correct names in score-menus
+ *   o must add_parts() update the part-list?
  * 
  * IMPORTANT TODO
  *   o support adding staves to existing score window
@@ -2891,6 +2919,8 @@ list<staff_t>::iterator ScoreCanvas::staff_at_y(int y)
  *   o redraw is called too often
  *     for example, when scroll is continuous, and note-hilighting has
  *     changed, redraw() is called twice
+ *   o song_changed() should distinguish between relevant and
+ *     irrelevant changes. (for example controllers can be ignored)
  *   o ties aren't always drawn correctly when the destination note
  *     is out of view
  *   o tied notes don't work properly when there's a key-change in
