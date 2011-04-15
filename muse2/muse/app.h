@@ -265,12 +265,15 @@ class MusE : public QMainWindow
       void startDrumEditor();
       void startDrumEditor(PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
       void startEditor(Track*);
+
       void openInScoreEdit(ScoreEdit* destination, PartList* pl, bool allInOne=false);
       void openInScoreEdit(ScoreEdit* destination, bool allInOne=false);
       void openInScoreEdit_allInOne(QWidget* destination);
       void openInScoreEdit_oneStaffPerTrack(QWidget* destination);
-      void updateScoreMenus();
       void clearScoreMenuMappers();
+      void updateScoreMenus();
+      void scoreNamingChanged();
+      
       void startPianoroll();
       void startPianoroll(PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
       void startWaveEditor();

@@ -67,6 +67,9 @@ using namespace std;
 #include "sig.h"
 
 
+string IntToStr(int i);
+
+
 #define SPLIT_NOTE 60
 //TODO: let the user specify that somehow?
 
@@ -102,8 +105,19 @@ using namespace std;
 #define STAFF_DISTANCE (10*YLEN)
 #define GRANDSTAFF_DISTANCE (8*YLEN)
 
-KeyList keymap;
+string create_random_string(int len=8)
+{
+	string result;
+	
+	for (int i=0;i<len;i++)
+		result+=char((rand() % 26) + 'A');
+	
+	return result;
+}
 
+
+
+KeyList keymap;
 
 
 KeyList::KeyList()
@@ -150,7 +164,8 @@ bool pixmaps_loaded=false;
 
 
 
-
+int ScoreEdit::serial=1;
+set<string> ScoreEdit::names;
 
 //---------------------------------------------------------
 //   ScoreEdit
@@ -175,12 +190,43 @@ ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned i
 
 	score_canvas->song_changed(0);
 	score_canvas->goto_tick(initPos,true);
+	
+	if (name!=NULL)
+		set_name(name, false, true);
+	else
+		set_name("Score "+IntToStr(serial++), false, true);
 }
 
 
 void ScoreEdit::add_parts(PartList* pl, bool all_in_one)
 {
 	score_canvas->add_staves(pl, all_in_one);
+}
+
+bool ScoreEdit::set_name(string newname, bool emit_signal, bool emergency_name)
+{
+	if (names.find(newname)==names.end())
+	{
+		names.erase(name);
+		names.insert(newname);
+
+		name=newname;
+		
+		if (emit_signal)
+			emit name_changed();
+		
+		return true;
+	}
+	else
+	{
+		if (emergency_name)
+		{
+			while (set_name(create_random_string(), emit_signal, false) == false);
+			return true;
+		}
+		else
+			return false;
+	}
 }
 
 //---------------------------------------------------------
@@ -2888,14 +2934,10 @@ list<staff_t>::iterator ScoreCanvas::staff_at_y(int y)
  *   o when pressing "STOP", the active note isn't redrawn "normally"
  * 
  * CURRENT TODO
- *   o use correct names in score-menus
- *   o must add_parts() update the part-list?
+ *   o y-scroll for staff window, with automatic margin-scrolling
+ *   o let the user edit the score's name
  * 
  * IMPORTANT TODO
- *   o support adding staves to existing score window
- *   o support changing between "all into one" and "each gets one staff"
- *
- *   o y-scroll for staff window, with automatic margin-scrolling
  *   o removing the part the score's working on isn't handled
  *   o let the user select the currently edited part
  *   o let the user select between "colors after the parts",
@@ -2906,6 +2948,7 @@ list<staff_t>::iterator ScoreCanvas::staff_at_y(int y)
  *   o check if "moving away" works for whole notes [seems to NOT work properly]
  *
  * less important stuff
+ *   o must add_parts() update the part-list?
  *   o support different keys in different tracks at the same time
  *       calc_pos_add_list and calc_item_pos will be affected by this
  *       calc_pos_add_list must be called before calc_item_pos then,

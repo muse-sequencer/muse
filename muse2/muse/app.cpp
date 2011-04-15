@@ -3444,7 +3444,10 @@ PartList* MusE::getMidiPartsToEdit()
       return pl;
       }
 
-
+void MusE::scoreNamingChanged()
+{
+	updateScoreMenus();
+}
 
 void MusE::updateScoreMenus()
 {
@@ -3471,13 +3474,13 @@ void MusE::updateScoreMenus()
 		{
 			ScoreEdit* score = (ScoreEdit*) it->cobject();
 			
-			action=new QAction(tr("foo"), this); //TODO FLO: use proper name instead of "foo"
+			action=new QAction(QString(score->get_name().c_str()), this);
 			connect(action, SIGNAL(activated()), scoreOneStaffPerTrackMapper, SLOT(map()));
 			scoreOneStaffPerTrackMapper->setMapping(action, (QWidget*)score);
 			scoreOneStaffPerTrackSubsubmenu->addAction(action);
 
 
-			action=new QAction(tr("foo"), this); //the above action may NOT be reused! //TODO FLO: see above
+			action=new QAction(QString(score->get_name().c_str()), this); //the above action may NOT be reused!
 			connect(action, SIGNAL(activated()), scoreAllInOneMapper, SLOT(map()));
 			scoreAllInOneMapper->setMapping(action, (QWidget*)score);
 			scoreAllInOneSubsubmenu->addAction(action);

@@ -31,13 +31,14 @@
 #include <map>
 #include <list>
 #include <vector>
+#include <string>
 
 using std::set;
 using std::pair;
 using std::map;
 using std::list;
 using std::vector;
-
+using std::string;
 
 
 
@@ -59,12 +60,18 @@ class ScoreEdit : public MidiEditor
 		QScrollBar* hscroll;
 		ScoreCanvas* score_canvas;
 		
+		static int serial;
+		static set<string> names;
+		
+		string name;
 				
+		bool set_name(string newname, bool emit_signal=true, bool emergency_name=false);
 	private slots:
 		
 
 	signals:
 		void deleted(unsigned long);
+		void name_changed();
 
 	public slots:
 		void canvas_width_changed(int);
@@ -77,6 +84,7 @@ class ScoreEdit : public MidiEditor
 		static void writeConfiguration(int, Xml&){}; //TODO does nothing
 		
 		void add_parts(PartList* pl, bool all_in_one=false);
+		string get_name() { return name; }
 	};
 
 
