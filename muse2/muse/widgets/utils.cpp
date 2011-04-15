@@ -361,12 +361,12 @@ bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool igno
 
 QGradient gGradientFromQColor(const QColor& c, const QPointF& start, const QPointF& finalStop)
 {
-  int h = c.hsvHue(), s = c.hsvSaturation(), a = c.alpha();
-  int cv = c.value();
-  int v0 = cv + (255 - cv)/2;
-  int v1 = cv - cv/2;
-  QColor c0 = QColor::fromHsv(h, s, v0, a); 
-  QColor c1 = QColor::fromHsv(h, s, v1, a); 
+  int h, s, v, a;
+  c.getHsv(&h, &s, &v, &a);
+  const int v0 = v + (255 - v)/2;
+  const int v1 = v - v/2;
+  const QColor c0 = QColor::fromHsv(h, s, v0, a); 
+  const QColor c1 = QColor::fromHsv(h, s, v1, a); 
   
   QLinearGradient gradient(start, finalStop);
   gradient.setColorAt(0, c0);
