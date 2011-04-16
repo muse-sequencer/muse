@@ -1719,6 +1719,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect& bb, EventList* events, M
       iEvent ito(events->lower_bound(to));
       //printf("PartCanvas::drawItem pTick:%d from:%d to:%d\n", pTick, from, to);
 
+      bool isdrum = (mt->type() == Track::DRUM);
       for (iEvent i = events->begin(); i != ito; ++i) {
             int t  = i->first + pTick;
             int te = t + i->second.lenTick();
@@ -1741,7 +1742,8 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect& bb, EventList* events, M
                   int pitch = i->second.pitch();
                   int th = int(mt->height() * 0.75); // only draw on three quarters
                   int hoffset = (mt->height() - th ) / 2; // offset from bottom
-                  int y     =  hoffset + (r.y() + th - (pitch * (th) / 127));
+                  //int y     =  hoffset + (r.y() + th - (pitch * (th) / 127));
+                  int y     =  hoffset + r.y() + th - (isdrum?127-pitch:pitch) * th / 127;
                   p.drawLine(t, y, te, y);
             }
       }

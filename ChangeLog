@@ -1,3 +1,5 @@
+15.04.2011:
+        - And while we're at it... Invert drum track 'slivers' in arranger parts. (Tim)
 14.04.2011:
         - Fixed notes 'sliver' drawing in arranger midi parts. Invert if too dark. (Tim)
         - Gave arranger part name text drawing a shadow to help contrast with drawn events. 
