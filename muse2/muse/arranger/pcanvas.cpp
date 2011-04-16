@@ -1610,15 +1610,20 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             // draw name
             // FN: Set text color depending on part color (black / white)
             int part_r, part_g, part_b, brightness;
-            config.partColors[i].getRgb(&part_r, &part_g, &part_b);
+            //config.partColors[i].getRgb(&part_r, &part_g, &part_b);
+            // Since we'll draw the text on the bottom (to accommodate drum 'slivers'),
+            //  get the lowest colour in the gradient used to draw the part.
+            QRect rr = map(r);
+            rr.setX(rr.x() + 3);
+            gGradientFromQColor(config.partColors[i], rr.topLeft(), rr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
             brightness =  part_r*29 + part_g*59 + part_b*12;
             //if (brightness < 12000 || part->selected())
             //  p.setPen(Qt::white);   /* too dark: use white for text color */
             //else
             //  p.setPen(Qt::black);  /* otherwise use black */
             bool rev = brightness < 12000 || part->selected();
-            QRect rr = map(r);
-            rr.setX(rr.x() + 3);
+            //QRect rr = map(r);
+            //rr.setX(rr.x() + 3);
             p.save();
             p.setFont(config.fonts[1]);
             p.setWorldMatrixEnabled(false);
@@ -1626,12 +1631,12 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
               p.setPen(Qt::black);   
             else
               p.setPen(Qt::white); 
-            p.drawText(rr.translated(1, 1), Qt::AlignTop|Qt::AlignLeft, part->name());
+            p.drawText(rr.translated(1, 1), Qt::AlignBottom|Qt::AlignLeft, part->name());
             if (rev)
               p.setPen(Qt::white);   
             else
               p.setPen(Qt::black);  
-            p.drawText(rr, Qt::AlignTop|Qt::AlignLeft, part->name());
+            p.drawText(rr, Qt::AlignBottom|Qt::AlignLeft, part->name());
             p.restore();
             }
       }
