@@ -42,6 +42,7 @@
 #include "midi.h"
 ///#include "sig.h"
 #include "al/sig.h"
+#include "keyevent.h"
 #include <sys/wait.h>
 
 extern void clearMidiTransforms();
@@ -1289,6 +1290,17 @@ void Song::swapTracks(int i1, int i2)
       }
 
 //---------------------------------------------------------
+//   seekTo
+//   setPos slot, only active when not doing playback
+//---------------------------------------------------------
+void Song::seekTo(int tick)
+{
+  if (!audio->isPlaying()) {
+    Pos p(tick, true);
+    setPos(0, p);
+  }
+}
+//---------------------------------------------------------
 //   setPos
 //   song->setPos(Song::CPOS, pos, true, true, true);
 //---------------------------------------------------------
@@ -2098,6 +2110,7 @@ void Song::clear(bool signal, bool /*clear_all*/)
       
       tempomap.clear();
       AL::sigmap.clear();
+      keymap.clear();
       undoList->clearDelete();
       redoList->clear();
       _markerList->clear();
@@ -2183,6 +2196,7 @@ void Song::cleanupForQuit()
 
       tempomap.clear();
       AL::sigmap.clear();
+      keymap.clear();
       
       if(debugMsg)
         printf("deleting undoList, clearing redoList\n");

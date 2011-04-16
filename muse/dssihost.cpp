@@ -1104,11 +1104,13 @@ bool DssiSynthIF::init(DssiSynth* s)
           }
           else if (LADSPA_IS_PORT_OUTPUT(pd))
           {
-            controlsOut[cop].idx = k;    
-            controls[cop].val    = 0.0;
-            controls[cop].tmpVal = 0.0;
-            controls[cop].enCtrl  = false;
-            controls[cop].en2Ctrl = false;
+            controlsOut[cop].idx = k;
+            if (controls) {
+              controls[cop].val    = 0.0;
+              controls[cop].tmpVal = 0.0;
+              controls[cop].enCtrl  = false;
+              controls[cop].en2Ctrl = false;
+            }
 
             #ifdef DSSI_DEBUG 
             printf("DssiSynthIF::init control output port:%d port idx:%d name:%s\n", cop, k, ld->PortNames[k]);
