@@ -94,6 +94,7 @@ file (GLOB core_source_files
       helper.cpp
       importmidi.cpp 
       key.cpp
+      keyevent.cpp
       memory.cpp 
       midi.cpp
       midictrl.cpp

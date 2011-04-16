@@ -134,7 +134,7 @@ void initShortCuts()
       defShrt(SHRT_SEL_BELOW_ADD,         Qt::SHIFT + Qt::Key_Down, "Edit: Add nearest part on track below", ARRANG_SHRT, "sel_part_below_add");
 
       defShrt(SHRT_INSERT,                Qt::CTRL+Qt::SHIFT+ Qt::Key_I, "Edit: Insert parts, moving time", ARRANG_SHRT, "insert_parts");
-      defShrt(SHRT_INSERTMEAS,            Qt::CTRL+Qt::SHIFT+ Qt::Key_M, "Edit: Insert empty measure", ARRANG_SHRT, "insert_measure");
+      defShrt(SHRT_INSERTMEAS,            Qt::CTRL+Qt::SHIFT+ Qt::Key_O, "Edit: Insert empty measure", ARRANG_SHRT, "insert_measure");
 
       defShrt(SHRT_PASTE_CLONE,           Qt::CTRL+Qt::SHIFT+Qt::Key_V, "Edit: Paste clone", ARRANG_SHRT, "paste_clone");
       defShrt(SHRT_PASTE_TO_TRACK,        Qt::CTRL+Qt::Key_B, "Edit: Paste to track", ARRANG_SHRT, "paste_to_track");
@@ -299,7 +299,8 @@ void initShortCuts()
       defShrt(SHRT_LM_INS_SIG  ,  Qt::CTRL + Qt::Key_R,            "Insert Signature", LMEDIT_SHRT,  "lm_ins_sig");
       defShrt(SHRT_LM_EDIT_BEAT,  Qt::CTRL + Qt::SHIFT+ Qt::Key_E, "Change Event Position",  LMEDIT_SHRT,  "lm_edit_beat");
       defShrt(SHRT_LM_EDIT_VALUE, Qt::CTRL + Qt::Key_E,            "Edit Event Value",       LMEDIT_SHRT,  "lm_edit_val");
-      
+      defShrt(SHRT_LM_INS_KEY, Qt::CTRL + Qt::Key_K,            "Insert Key",       LMEDIT_SHRT,  "lm_ins_key");
+
       defShrt(SHRT_NEXT_MARKER, Qt::Key_F6,            "Goto Next Marker",       ARRANG_SHRT,  "me_sel_next");
       defShrt(SHRT_PREV_MARKER, Qt::Key_F5,            "Goto Prev Marker",       ARRANG_SHRT,  "me_sel_prev");
       

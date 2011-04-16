@@ -362,6 +362,7 @@ class Song : public QObject {
       void executeScript(const char* scriptfile, PartList* parts, int quant, bool onlyIfSelected);
 
    public slots:
+      void seekTo(int tick);
       void update(int flags = -1);
       void beat();
 

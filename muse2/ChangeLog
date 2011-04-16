@@ -1,3 +1,16 @@
+16.04.2011:
+        - Added KeyList for keeping key change events and ability to edit it in
+          master list editor (rj)
+        - fixed stuff in master list editor (rj)
+          * editing tempo signature is now atleast working
+          * editing time position is now atleast working
+          * double clicking a line moves the playpointer to this position if we are not playing
+          * changed adding tempo/sig/key so they pick the postion from the play pointer instead
+            of just incrementing the time position, I can't fathom when that would be preferrable
+            (if there is a time, I'm sure someone will let me know :) )
+          - song changed not implemented yet
+          - undo/redo is not implemented
+        - prevented initialization crash for dssi, Tim, please have a look (rj)
 15.04.2011:
         - And while we're at it... Invert drum track 'slivers' in arranger parts. (Tim)
         - Move part name text to bottom to accommodate drum 'slivers'. 

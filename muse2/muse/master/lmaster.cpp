@@ -13,8 +13,8 @@
 #include "song.h"
 #include "globals.h"
 #include "audio.h"
-///#include "posedit.h"
-///#include "sigedit.h"
+//#include "posedit.h"
+//#include "sigedit.h"
 #include "shortcuts.h"
 #include "debug.h"
 
@@ -30,6 +30,7 @@
 #include <QToolBar>
 #include <QToolButton>
 #include <QTreeWidget>
+#include <QComboBox>
 
 #define LMASTER_BEAT_COL 0
 #define LMASTER_TIME_COL 1
@@ -37,6 +38,13 @@
 #define LMASTER_VAL_COL  3
 
 #define LMASTER_MSGBOX_STRING          "MusE: List Editor"
+
+QStringList keyStrs = QStringList()
+                      << "C" << "C#" << "D" << "D#"<< "E" << "F"
+                      << "F#"<< "G"<< "G#"<< "A"<< "B"<< "B#";
+
+
+
 //---------------------------------------------------------
 //   closeEvent
 //---------------------------------------------------------
@@ -67,6 +75,7 @@ LMaster::LMaster()
       pos_editor = 0;
       editor = 0;
       sig_editor = 0;
+      key_editor = 0;
       editedItem = 0;
       editingNewItem = false;
       setWindowTitle(tr("MusE: Mastertrack"));
@@ -80,6 +89,7 @@ LMaster::LMaster()
       menuEdit->addSeparator();
       tempoAction = menuEdit->addAction(tr("Insert Tempo"));
       signAction = menuEdit->addAction(tr("Insert Signature"));
+      keyAction = menuEdit->addAction(tr("Insert Key"));
       posAction = menuEdit->addAction(tr("Edit Positon"));
       valAction = menuEdit->addAction(tr("Edit Value"));
       delAction = menuEdit->addAction(tr("Delete Event"));
@@ -87,12 +97,14 @@ LMaster::LMaster()
 
       connect(tempoAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(signAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(keyAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(posAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(valAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(delAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
 
       signalMapper->setMapping(tempoAction, CMD_INSERT_TEMPO);
       signalMapper->setMapping(signAction, CMD_INSERT_SIG);
+      signalMapper->setMapping(keyAction, CMD_INSERT_KEY);
       signalMapper->setMapping(posAction, CMD_EDIT_BEAT);
       signalMapper->setMapping(valAction, CMD_EDIT_VALUE);
       signalMapper->setMapping(delAction, CMD_DELETE);
@@ -103,18 +115,19 @@ LMaster::LMaster()
       tools = addToolBar(tr("Master tools"));
       tools->addActions(undoRedo->actions());
 
-      //QToolBar* edit = new QToolBar(this, "edit tools");
       QToolBar* edit = addToolBar(tr("Edit tools"));
-      //QToolButton* tempoButton = new QToolButton(edit);
       QToolButton* tempoButton = new QToolButton();
-      //QToolButton* timeSigButton = new QToolButton(edit);
       QToolButton* timeSigButton = new QToolButton();
+      QToolButton* keyButton = new QToolButton();
       tempoButton->setText(tr("Tempo"));
       timeSigButton->setText(tr("Timesig"));
+      keyButton->setText(tr("Key"));
       tempoButton->setToolTip(tr("new tempo"));
       timeSigButton->setToolTip(tr("new signature"));
+      keyButton->setToolTip(tr("new key"));
       edit->addWidget(tempoButton);
       edit->addWidget(timeSigButton);
+      edit->addWidget(keyButton);
       
       ///Q3Accel* qa = new Q3Accel(this);
       ///qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
@@ -153,8 +166,10 @@ LMaster::LMaster()
       connect(view, SIGNAL(itemPressed(QTreeWidgetItem*, int)), SLOT(itemPressed(QTreeWidgetItem*, int)));
       connect(view, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(itemDoubleClicked(QTreeWidgetItem*)));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(this, SIGNAL(seekTo(int)), song, SLOT(seekTo(int)));
       connect(tempoButton, SIGNAL(clicked()), SLOT(tempoButtonClicked()));
       connect(timeSigButton, SIGNAL(clicked()), SLOT(timeSigButtonClicked()));
+      connect(keyButton, SIGNAL(clicked()), SLOT(insertKey()));
 
       initShortcuts();
       }
@@ -186,6 +201,10 @@ void LMaster::insertTempo(const TEvent* ev)
       new LMasterTempoItem(view, ev);
       }
 
+void LMaster::insertKey(const KeyEvent* ev)
+      {
+      new LMasterKeyEventItem(view, ev);
+      }
 //---------------------------------------------------------
 //   updateList
 //---------------------------------------------------------
@@ -204,33 +223,65 @@ void LMaster::updateList()
       view->clear();
       const TempoList* t = &tempomap;
       const AL::SigList* s   = &AL::sigmap;
+      const KeyList* k   = &keymap;
 
       criTEvent it   = t->rbegin();
       AL::criSigEvent is = s->rbegin();
+      criKeyEvent ik = k->rbegin();
+
+        // three lists that should be added to the view.
+         // question if it would not be easier to merge the lists and use a sorting algorithm?
+         // how often is this function called? A: only on songChanged (SC_TEMPO && SC_SIG)
+
       for (;;) {
-            if (it == t->rend()) {
-                  while(is != s->rend()) {
-                        insertSig(is->second);
-                        ++is;
-                        }
-                  break;
-                  }
-            if (is == s->rend()) {
-                  while (it != t->rend()) {
-                        insertTempo(it->second);
-                        ++it;
-                        }
-                  break;
-                  }
-            if (is->second->tick > it->second->tick) {
-                  insertSig(is->second);
-                  ++is;
-                  }
-            else {
-                  insertTempo(it->second);
-                  ++it;
-                  }
-            }
+
+        // crazy long, must be possible to solve more elegantly...
+
+        if (ik != k->rend() && is == s->rend() && it == t->rend()) {// ik biggest
+          insertKey(ik->second);
+          ++ik;
+        }
+        else if (is != s->rend() && ik == k->rend() && it == t->rend()) {// is biggest
+          insertSig(is->second);
+          ++is;
+        }
+        else if (it != t->rend() && ik == k->rend() && is == s->rend()) {// it biggest
+          insertTempo(it->second);
+          ++it;
+        }
+
+        else if (ik != k->rend() && (is == s->rend() && (ik->second->tick >= it->second->tick)
+                || (it == t->rend() && ik->second->tick >= is->second->tick ))) {// ik biggest
+          insertKey(ik->second);
+          ++ik;
+        }
+        else if (is != s->rend() && (ik == k->rend() && (is->second->tick >= it->second->tick)
+                || (it == t->rend() && is->second->tick >= ik->second->tick ))) {// is biggest
+          insertSig(is->second);
+          ++is;
+        }
+
+        else if (it != t->rend() && (ik == k->rend() && (it->second->tick >= is->second->tick)
+                || (is == s->rend() && it->second->tick >= ik->second->tick ))) {// it biggest
+          insertTempo(it->second);
+          ++it;
+        }
+
+        else if (ik != k->rend() && ik->second->tick >= is->second->tick && ik->second->tick >= it->second->tick) {// ik biggest
+          insertKey(ik->second);
+          ++ik;
+        }
+        else if (is != s->rend() &&  is->second->tick >= it->second->tick && is->second->tick >= ik->second->tick) { // is biggest
+          insertSig(is->second);
+          ++is;
+        }
+        else if (it != t->rend() && it->second->tick >= is->second->tick && it->second->tick >= ik->second->tick) { // it biggest
+          insertTempo(it->second);
+          ++it;
+        }
+        if (ik == k->rend() && is == s->rend() && it == t->rend() )
+          break;
+      }
 
       // Try to reselect the previous selection:
       if(selected)
@@ -321,6 +372,13 @@ void LMaster::cmd(int cmd)
                                     audio->msgRemoveSig(s->tick(), s->z(), s->n());
                                     break;
                                     }
+                              case LMASTER_KEYEVENT:
+                                    {
+                                    //LMasterKeyEventItem* k = (LMasterKeyEventItem*) l;
+                                    keymap.delKey(l->tick());
+                                    //audio->msgRemoveSig(k->tick(), k->z(), k->n());
+                                    break;
+                                    }
                               default:
                                     M_ERROR("Default switch statement reached");
                                     break;
@@ -333,6 +391,9 @@ void LMaster::cmd(int cmd)
                   break;
             case CMD_INSERT_SIG:
                   timeSigButtonClicked();
+                  break;
+            case CMD_INSERT_KEY:
+                  insertKey();
                   break;
             case CMD_EDIT_BEAT:
             case CMD_EDIT_VALUE:
@@ -365,6 +426,7 @@ void LMaster::itemPressed(QTreeWidgetItem* i, int column)
 void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
       {
       //printf("itemDoubleClicked\n");
+      emit seekTo(((LMasterLViewItem*) i)->tick());
 
       if (!editedItem && editorColumn == LMASTER_VAL_COL) {
             editedItem = (LMasterLViewItem*) i;
@@ -394,7 +456,7 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
                   editor->selectAll();
                   connect(editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
                   }
-            else { // Edit signatur value:
+            else if (editedItem->getType() == LMASTER_SIGEVENT) { // Edit signatur value:
                   if (!sig_editor)
                         sig_editor = new SigEdit(view->viewport());
                   sig_editor->setValue(editedItem->text(LMASTER_VAL_COL));
@@ -403,6 +465,21 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
                   sig_editor->setFocus();
                   connect(sig_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
                   }
+            else if (editedItem->getType() == LMASTER_KEYEVENT) {
+                  if (!key_editor)
+                        key_editor = new QComboBox(view->viewport());
+                  key_editor->addItems(keyStrs);
+                  //key_editor->setText(editedItem->text(LMASTER_VAL_COL));
+                  key_editor->setCurrentIndex(keyStrs.indexOf(editedItem->text(LMASTER_VAL_COL)));
+                  key_editor->setGeometry(itemRect);
+                  key_editor->show();
+                  key_editor->setFocus();
+                  //key_editor->selectAll();
+                  connect(key_editor, SIGNAL(currentIndexChanged(int)), SLOT(returnPressed()));
+                  }
+            else {
+              printf("illegal Master list type\n");
+              }
             }
       // Edit tempo or signal position:
       else if (!editedItem && editorColumn == LMASTER_BEAT_COL) {
@@ -523,6 +600,25 @@ void LMaster::returnPressed()
                               view->setCurrentItem(newSelected);
                               }
                         }
+                  else if (editedItem->getType() == LMASTER_KEYEVENT) {
+                        LMasterKeyEventItem* k = (LMasterKeyEventItem*) editedItem;
+                        int key = k->key();
+//                        song->startUndo();
+//                        audio->msgDeleteTempo(oldtick, tempo, false);
+//                        audio->msgAddTempo(newtick, tempo, false);
+//                        song->endUndo(SC_TEMPO);
+                        keymap.delKey(oldtick);
+                        keymap.addKey(newtick, key);
+                        // Select the item:
+                        QTreeWidgetItem* newSelected = (QTreeWidgetItem*) getItemAtPos(newtick, LMASTER_KEYEVENT);
+                        if (newSelected) {
+                              view->clearSelection();
+                              view->setCurrentItem(newSelected);
+                              }
+                        }
+                  else {
+                    printf("unknown master list event type!\n");
+                  }
 
                   }
             pos_editor->hide();
@@ -533,7 +629,8 @@ void LMaster::returnPressed()
       //
       else if (editedItem->getType() == LMASTER_SIGEVENT && editorColumn == LMASTER_VAL_COL) 
       {
-            ///Sig newSig = sig_editor->sig();
+          printf("SIGEVENT return\n");
+          ///Sig newSig = sig_editor->sig();
             AL::TimeSignature newSig = sig_editor->sig();
             
             sig_editor->hide();
@@ -541,8 +638,8 @@ void LMaster::returnPressed()
             // Added p3.3.43 Prevents aborting with 0 z or n.
             if(newSig.isValid())
             {
-            
               LMasterSigEventItem* e = (LMasterSigEventItem*) editedItem;
+              printf("adding sig %d %d\n", e->z(),e->n());
               int tick = e->tick();
               if (!editingNewItem) {
                     song->startUndo();
@@ -553,9 +650,38 @@ void LMaster::returnPressed()
                     }
               else
                     audio->msgAddSig(tick, newSig.z, newSig.n, true);
-            }        
+            }
+            else {
+              printf("Signature is not valid!\n");
+            }
       }
 
+      else if (editedItem->getType() == LMASTER_KEYEVENT && editorColumn == LMASTER_VAL_COL) {
+          printf("KEYEVENT return\n");
+          QString input = key_editor->currentText();
+          key_editor->hide();
+          repaint();
+          LMasterKeyEventItem* e = (LMasterKeyEventItem*) editedItem;
+          const KeyEvent* t = e->getEvent();
+          unsigned tick = t->tick;
+          int key = keyStrs.indexOf(input);
+
+          if (!editingNewItem) {
+//                      song->startUndo();
+//                      audio->msgDeleteTempo(tick, e->tempo(), false);
+//                      audio->msgAddTempo(tick, tempo, false);
+//                      song->endUndo(SC_TEMPO);
+                      keymap.addKey(tick,key);
+                    }
+              //
+              // New item edited:
+              //
+              else {
+                    //audio->msgAddTempo(tick, tempo, true);
+                    keymap.addKey(tick,key);
+                    }
+          }
+      updateList();
       view->setFocus();
       // No item edited now:
       editedItem = 0;
@@ -593,6 +719,35 @@ QString LMasterLViewItem::text(int column) const
       }
 
 //---------------------------------------------------------
+//   LMasterKeyEventItem
+//!  Initializes a LMasterKeyEventItem with a KeyEvent
+//---------------------------------------------------------
+LMasterKeyEventItem::LMasterKeyEventItem(QTreeWidget* parent, const KeyEvent* ev)
+      : LMasterLViewItem(parent)
+      {
+      keyEvent = ev;
+      unsigned t = ev->tick;
+      int bar, beat;
+      unsigned tick;
+      AL::sigmap.tickValues(t, &bar, &beat, &tick);
+      c1.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
+
+      double time = double(tempomap.tick2frame(t)) / double(sampleRate);
+      int min = int(time) / 60;
+      int sec = int(time) % 60;
+      int msec = int((time - (min*60 + sec)) * 1000.0);
+      c2.sprintf("%03d:%02d:%03d", min, sec, msec);
+      c3 = "Key";
+      //int dt = ev->key;
+      c4 = keyStrs[ev->key];
+      setText(0, c1);
+      setText(1, c2);
+      setText(2, c3);
+      setText(3, c4);
+      }
+
+
+//---------------------------------------------------------
 //   LMasterTempoItem
 //!  Initializes a LMasterTempoItem with a TEvent
 //---------------------------------------------------------
@@ -607,7 +762,7 @@ LMasterTempoItem::LMasterTempoItem(QTreeWidget* parent, const TEvent* ev)
       AL::sigmap.tickValues(t, &bar, &beat, &tick);
       c1.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
 
-      double time = double(ev->frame) / double(sampleRate);
+      double time = double(tempomap.tick2frame(t) /*ev->frame*/) / double(sampleRate);
       int min = int(time) / 60;
       int sec = int(time) % 60;
       int msec = int((time - (min*60 + sec)) * 1000.0);
@@ -655,12 +810,13 @@ LMasterSigEventItem::LMasterSigEventItem(QTreeWidget* parent, const AL::SigEvent
 void LMaster::tempoButtonClicked()
       {
       LMasterTempoItem* lastTempo = (LMasterTempoItem*) getLastOfType(LMASTER_TEMPO);
-      QString beatString = ((LMasterLViewItem*)lastTempo)->text(LMASTER_BEAT_COL);
-      int m, b, t;
-      Pos p = Pos(beatString);
-      p.mbt(&m, &b, &t);
-      m++; //Next bar
-      int newTick = AL::sigmap.bar2tick(m, b, t);
+//      QString beatString = ((LMasterLViewItem*)lastTempo)->text(LMASTER_BEAT_COL);
+//      int m, b, t;
+//      Pos p = Pos(beatString);
+//      p.mbt(&m, &b, &t);
+//      m++; //Next bar
+//      int newTick = AL::sigmap.bar2tick(m, b, t);
+      int newTick = song->cpos();
       TEvent* ev = new TEvent(lastTempo->tempo(), newTick);
       new LMasterTempoItem(view, ev);
       QTreeWidgetItem* newTempoItem = view->topLevelItem(0);
@@ -675,18 +831,19 @@ void LMaster::tempoButtonClicked()
 
 
 //---------------------------------------------------------
-//   tempoButtonClicked()
+//   timeSigButtonClicked()
 //!  inserts a new sig-item in the list and starts the editor for it
 //---------------------------------------------------------
 void LMaster::timeSigButtonClicked()
       {
       LMasterSigEventItem* lastSig = (LMasterSigEventItem*) getLastOfType(LMASTER_SIGEVENT);
-      QString beatString = ((LMasterLViewItem*)lastSig)->text(LMASTER_BEAT_COL);
-      int m, b, t;
-      Pos p = Pos(beatString);
-      p.mbt(&m, &b, &t);
-      m++;
-      int newTick = AL::sigmap.bar2tick(m, b, t);
+//      QString beatString = ((LMasterLViewItem*)lastSig)->text(LMASTER_BEAT_COL);
+//      int m, b, t;
+//      Pos p = Pos(beatString);
+//      p.mbt(&m, &b, &t);
+//      m++;
+//      int newTick = AL::sigmap.bar2tick(m, b, t);
+      int newTick = song->cpos();
       AL::SigEvent* ev = new AL::SigEvent(AL::TimeSignature(lastSig->z(), lastSig->n()), newTick);
       new LMasterSigEventItem(view, ev);
       QTreeWidgetItem* newSigItem = view->topLevelItem(0);
@@ -697,6 +854,33 @@ void LMaster::timeSigButtonClicked()
       view->clearSelection();
       view->setCurrentItem(newSigItem);
       itemDoubleClicked(newSigItem);
+      }
+
+//---------------------------------------------------------
+//   insertKey()
+//!  inserts a new key in the list and starts the editor for it
+//---------------------------------------------------------
+void LMaster::insertKey()
+      {
+      LMasterKeyEventItem* lastKey = (LMasterKeyEventItem*) getLastOfType(LMASTER_KEYEVENT);
+
+      //QString beatString = ((LMasterLViewItem*)lastKey)->text(LMASTER_BEAT_COL);
+      //int m, b, t;
+      //Pos p = Pos(beatString);
+      //p.mbt(&m, &b, &t);
+      //m++; //Next bar
+
+      //int newTick = AL::sigmap.bar2tick(m, b, t);
+      int newTick = song->cpos();
+      KeyEvent* ev = new KeyEvent(lastKey->key(), newTick);
+      new LMasterKeyEventItem(view, ev);
+      QTreeWidgetItem* newKeyItem = view->topLevelItem(0);
+
+      editingNewItem = true; // State
+      editorColumn = LMASTER_VAL_COL; // Set that we edit editorColumn
+      view->clearSelection();
+      view->setCurrentItem(newKeyItem);
+      itemDoubleClicked(newKeyItem);
       }
 
 
@@ -745,6 +929,7 @@ void LMaster::initShortcuts()
       {
       tempoAction->setShortcut(shortcuts[SHRT_LM_INS_TEMPO].key);
       signAction->setShortcut(shortcuts[SHRT_LM_INS_SIG].key);
+      keyAction->setShortcut(shortcuts[SHRT_LM_INS_KEY].key);
       posAction->setShortcut(shortcuts[SHRT_LM_EDIT_BEAT].key);
       valAction->setShortcut(shortcuts[SHRT_LM_EDIT_VALUE].key);
       }

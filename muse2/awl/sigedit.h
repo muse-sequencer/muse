@@ -54,6 +54,7 @@ class SigEdit : public QAbstractSpinBox
 
    signals:
       void valueChanged(const AL::TimeSignature&);
+      void returnPressed();
 
    public slots:
       void setValue(const AL::TimeSignature&);

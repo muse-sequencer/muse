@@ -58,6 +58,16 @@ bool SigEdit::event(QEvent* event)
       if (event->type() == QEvent::KeyPress) {
             QKeyEvent* ke = static_cast<QKeyEvent*>(event);
             int segment = curSegment();
+            if (ke->key() == Qt::Key_Return)
+            {
+              int z, n;
+              sscanf(lineEdit()->text().toLatin1().data(), "%d/%d", &z, &n);
+              AL::TimeSignature sig(z, n);
+              _sig = sig;
+
+              emit returnPressed();
+              return true;
+            }
             if (ke->key() == Qt::Key_Backtab) {
                   if (segment == 2) {
                         lineEdit()->setSelection(5, 2);
@@ -117,6 +127,7 @@ void SigEdit::setValue(const QString& s)
 
 void SigEdit::updateValue()
       {
+      //printf("updateValue\n");
       char buffer[64];
       sprintf(buffer, "%d/%d", _sig.z, _sig.n);
       lineEdit()->setText(buffer);
@@ -160,7 +171,7 @@ void SigEdit::fixup(QString& input) const
 QValidator::State SigEdit::validate(QString&,int&) const
       {
       // TODO
-      // printf("validate\n");
+      //printf("validate\n");
       return QValidator::Acceptable;
       }
 
