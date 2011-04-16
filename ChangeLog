@@ -1,5 +1,7 @@
 15.04.2011:
         - And while we're at it... Invert drum track 'slivers' in arranger parts. (Tim)
+        - Move part name text to bottom to accommodate drum 'slivers'. 
+          Use lowest gradient colour from new gGradientFromQColor(), to determine whether to invert.
 14.04.2011:
         - Fixed notes 'sliver' drawing in arranger midi parts. Invert if too dark. (Tim)
         - Gave arranger part name text drawing a shadow to help contrast with drawn events. 
