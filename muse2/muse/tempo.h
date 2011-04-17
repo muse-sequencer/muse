@@ -61,6 +61,7 @@ class TempoList : public TEMPOLIST {
 
    public:
       TempoList();
+      ~TempoList();
       void clear();
 
       void read(Xml&);

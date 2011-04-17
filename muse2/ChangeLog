@@ -11,6 +11,7 @@
           - song changed not implemented yet
           - undo/redo is not implemented
         - Fixed crash in dssihost.cpp - my bad from recent p4.0.20 changes. (Tim)
+        - Added destructors to sigmap and tempomap. Test OK. (Tim)
 15.04.2011:
         - And while we're at it... Invert drum track 'slivers' in arranger parts. (Tim)
         - Move part name text to bottom to accommodate drum 'slivers'. 

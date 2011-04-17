@@ -64,6 +64,12 @@ SigList::SigList()
       insert(std::pair<const unsigned, SigEvent*> (MAX_TICK, new SigEvent(TimeSignature(4, 4), 0)));
       }
 
+SigList::~SigList()
+      {
+      for (iSigEvent i = begin(); i != end(); ++i)
+            delete i->second;
+      }
+
 //---------------------------------------------------------
 //   add
 //    signatures are only allowed at the beginning of
