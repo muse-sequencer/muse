@@ -58,7 +58,8 @@ class ScoreEdit : public MidiEditor
 	private:
 		virtual void closeEvent(QCloseEvent*);
 		
-		QScrollBar* hscroll;
+		QScrollBar* xscroll;
+		QScrollBar* yscroll;
 		ScoreCanvas* score_canvas;
 		
 		static int serial;
@@ -77,6 +78,8 @@ class ScoreEdit : public MidiEditor
 	public slots:
 		void canvas_width_changed(int);
 		void viewport_width_changed(int);
+		void canvas_height_changed(int);
+		void viewport_height_changed(int);
 		
 	public:
 		ScoreEdit(PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
@@ -506,9 +509,6 @@ class ScoreCanvas : public View
 		bool need_redraw_for_hilighting(ScoreItemList& itemlist);
 		bool need_redraw_for_hilighting();
 
-		int canvas_width();
-		int viewport_width();
-
 
 		void set_staffmode(list<staff_t>::iterator it, staff_mode_t mode);
 		void remove_staff(list<staff_t>::iterator it);
@@ -531,10 +531,14 @@ class ScoreCanvas : public View
 		// preamble's length is the same for each system
 		int x_pos;
 		int x_left;
+		
+		int y_pos;
 
 		//for mouse-scrolling
-		float scroll_speed;
-		float scroll_pos;
+		float x_scroll_speed;
+		float x_scroll_pos;
+		float y_scroll_speed;
+		float y_scroll_pos;
 
 		Part* curr_part;
 		int last_len;
@@ -581,16 +585,20 @@ class ScoreCanvas : public View
 		void remove_staff_slot();
 
    public slots:
-      void scroll_event(int);
+      void x_scroll_event(int);
+      void y_scroll_event(int);
       void song_changed(int);
 			void goto_tick(int,bool);
 			void pos_changed(int i, unsigned u, bool b);
 			void heartbeat_timer_event();
 	
 	signals:
-			void xpos_changed(int);
+			void xscroll_changed(int);
+			void yscroll_changed(int);
 			void viewport_width_changed(int);
 			void canvas_width_changed(int);
+			void viewport_height_changed(int);
+			void canvas_height_changed(int);
 			
 	protected:
 		virtual void draw(QPainter& p, const QRect& rect);
@@ -606,7 +614,11 @@ class ScoreCanvas : public View
 		~ScoreCanvas(){};
 
 		void add_staves(PartList* pl, bool all_in_one);
-		
+
+		int canvas_width();
+		int canvas_height();
+		int viewport_width();
+		int viewport_height();
 };
 
 int calc_measure_len(const list<int>& nums, int denom);

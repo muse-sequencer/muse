@@ -138,18 +138,28 @@ ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned i
    : MidiEditor(0, 0, pl, parent, name)
 {
 	score_canvas=new ScoreCanvas(this, mainw, 1, 1);
-	hscroll = new QScrollBar(Qt::Horizontal, mainw);
+	xscroll = new QScrollBar(Qt::Horizontal, mainw);
+	yscroll = new QScrollBar(Qt::Vertical, mainw);
 
-	connect(hscroll, SIGNAL(valueChanged(int)), score_canvas,   SLOT(scroll_event(int)));
-	connect(score_canvas, SIGNAL(xpos_changed(int)), hscroll,   SLOT(setValue(int)));
+	connect(xscroll, SIGNAL(valueChanged(int)), score_canvas,   SLOT(x_scroll_event(int)));
+	connect(score_canvas, SIGNAL(xscroll_changed(int)), xscroll,   SLOT(setValue(int)));
+
+	connect(yscroll, SIGNAL(valueChanged(int)), score_canvas,   SLOT(y_scroll_event(int)));
+	connect(score_canvas, SIGNAL(yscroll_changed(int)), yscroll,   SLOT(setValue(int)));
+
 	connect(score_canvas, SIGNAL(canvas_width_changed(int)), SLOT(canvas_width_changed(int)));
 	connect(score_canvas, SIGNAL(viewport_width_changed(int)), SLOT(viewport_width_changed(int)));
+	connect(score_canvas, SIGNAL(canvas_height_changed(int)), SLOT(canvas_height_changed(int)));
+	connect(score_canvas, SIGNAL(viewport_height_changed(int)), SLOT(viewport_height_changed(int)));
+
 	connect(song, SIGNAL(songChanged(int)), score_canvas, SLOT(song_changed(int)));
 
 	mainGrid->addWidget(score_canvas, 0, 0);
-	mainGrid->addWidget(hscroll,1,0);
+	mainGrid->addWidget(xscroll,1,0);
+	mainGrid->addWidget(yscroll,0,1);
 
-	hscroll->setMinimum(0);
+	xscroll->setMinimum(0);
+	yscroll->setMinimum(0);
 
 	score_canvas->song_changed(0);
 	score_canvas->goto_tick(initPos,true);
@@ -204,11 +214,36 @@ ScoreEdit::~ScoreEdit()
 
 void ScoreEdit::canvas_width_changed(int width)
 {
-	hscroll->setMaximum(width);
+	xscroll->setMaximum(width);
 }
 void ScoreEdit::viewport_width_changed(int width)
 {
-	hscroll->setPageStep(width * PAGESTEP);
+	xscroll->setPageStep(width * PAGESTEP);
+}
+
+void ScoreEdit::canvas_height_changed(int height)
+{
+	int val=height - score_canvas->viewport_height();
+	if (val<=0) val=0;
+	
+	yscroll->setMaximum(val);
+	
+	if (val==0)
+		yscroll->hide();
+	else
+		yscroll->show();
+}
+void ScoreEdit::viewport_height_changed(int height)
+{
+	int val=score_canvas->canvas_height() - height;
+	if (val<0) val=0;
+	yscroll->setPageStep(height * PAGESTEP);
+	yscroll->setMaximum(val);
+
+	if (val==0)
+		yscroll->hide();
+	else
+		yscroll->show();
 }
 
 void ScoreEdit::closeEvent(QCloseEvent* e)
@@ -287,6 +322,7 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 	
 	x_pos=0;
 	x_left=0;
+	y_pos=0;
 	dragging=false;
 	mouse_erases_notes=false;
 	mouse_inserts_notes=true;
@@ -299,8 +335,10 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 	dragging_staff=false;
 	
 	
-	scroll_speed=0;
-	scroll_pos=0;	
+	x_scroll_speed=0;
+	x_scroll_pos=0;	
+	y_scroll_speed=0;
+	y_scroll_pos=0;	
 	connect (heartBeatTimer, SIGNAL(timeout()), SLOT(heartbeat_timer_event()));
 	
 	connect(song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(pos_changed(int,unsigned,bool)));
@@ -477,9 +515,19 @@ int ScoreCanvas::canvas_width()
 	return tick_to_x(SONG_LENGTH);
 }
 
+int ScoreCanvas::canvas_height()
+{
+	return staffs.rbegin()->y_bottom;
+}
+
 int ScoreCanvas::viewport_width()
 {
 	return (width() - x_left);
+}
+
+int ScoreCanvas::viewport_height()
+{
+	return height();
 }
 
 string IntToStr(int i)
@@ -2299,10 +2347,11 @@ void ScoreCanvas::draw(QPainter& p, const QRect&)
 	
 	for (list<staff_t>::iterator it=staffs.begin(); it!=staffs.end(); it++)
 	{
-		draw_note_lines(p,it->y_draw);
-		draw_preamble(p,it->y_draw, it->clef);
+		//TODO: maybe only draw visible staves?
+		draw_note_lines(p,it->y_draw - y_pos);
+		draw_preamble(p,it->y_draw - y_pos, it->clef);
 		p.setClipRect(x_left+1,0,p.device()->width(),p.device()->height());
-		draw_items(p,it->y_draw, *it);
+		draw_items(p,it->y_draw - y_pos, *it);
 		p.setClipping(false);
 	}
 }
@@ -2452,9 +2501,9 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 	// denn der "bereich" eines schlags geht von schlag_begin bis nächsterschlag_begin-1
 	// noten werden aber genau in die mitte dieses bereiches gezeichnet
 
-	list<staff_t>::iterator it=staff_at_y(event->y());
+	list<staff_t>::iterator it=staff_at_y(event->y() + y_pos);
 
-	int y=event->y() - it->y_draw;
+	int y=event->y() + y_pos - it->y_draw;
 	int x=event->x()+x_pos-x_left;
 	int tick=flo_quantize_floor(x_to_tick(x));
 						//TODO quantizing must (maybe?) be done with the proper functions
@@ -2621,14 +2670,16 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 			setMouseTracking(false);
 			dragging=false;
 			
-			scroll_speed=0; scroll_pos=0;
+			x_scroll_speed=0; x_scroll_pos=0;
 		}
 	}
 	
 	if (dragging_staff)
 	{
-		merge_staves(staff_at_y(event->y()), current_staff);
+		merge_staves(staff_at_y(event->y()+y_pos), current_staff);
 		dragging_staff=false;
+		
+		y_scroll_speed=0; y_scroll_pos=0;
 	}
 }
 
@@ -2719,53 +2770,98 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 		}	
 	
 
-		if ((mouse_operation==LENGTH) || (mouse_operation==BEGIN)) //scrolling enabled?
+		if ((mouse_operation==LENGTH) || (mouse_operation==BEGIN)) //x-scrolling enabled?
 		{
 			int win_x=event->x();
 			
 			if (win_x < x_left + SCROLL_MARGIN)
 			{
-				scroll_speed=(win_x - (x_left + SCROLL_MARGIN)) * SCROLL_SPEED;
-				if (scroll_speed < -SCROLL_SPEED_MAX) scroll_speed=-SCROLL_SPEED_MAX;
+				x_scroll_speed=(win_x - (x_left + SCROLL_MARGIN)) * SCROLL_SPEED;
+				if (x_scroll_speed < -SCROLL_SPEED_MAX) x_scroll_speed=-SCROLL_SPEED_MAX;
 			}
 			else if (win_x > width() - SCROLL_MARGIN)
 			{
-				scroll_speed=(win_x - (width() - SCROLL_MARGIN)) * SCROLL_SPEED;
-				if (scroll_speed > SCROLL_SPEED_MAX) scroll_speed=SCROLL_SPEED_MAX;
+				x_scroll_speed=(win_x - (width() - SCROLL_MARGIN)) * SCROLL_SPEED;
+				if (x_scroll_speed > SCROLL_SPEED_MAX) x_scroll_speed=SCROLL_SPEED_MAX;
 			}
 			else
-				scroll_speed=0;
+				x_scroll_speed=0;
 		}
 		else
 		{
-			scroll_speed=0;
+			x_scroll_speed=0;
 		}
+	}
+	
+	if (dragging_staff) //y-scrolling enabled?
+	{
+		int win_y=event->y();
+		
+		if (win_y < SCROLL_MARGIN)
+		{
+			y_scroll_speed=(win_y - SCROLL_MARGIN) * SCROLL_SPEED;
+			if (y_scroll_speed < -SCROLL_SPEED_MAX) y_scroll_speed=-SCROLL_SPEED_MAX;
+		}
+		else if (win_y > height() - SCROLL_MARGIN)
+		{
+			y_scroll_speed=(win_y - (height() - SCROLL_MARGIN)) * SCROLL_SPEED;
+			if (y_scroll_speed > SCROLL_SPEED_MAX) y_scroll_speed=SCROLL_SPEED_MAX;
+		}
+		else
+			y_scroll_speed=0;
+	}
+	else
+	{
+		y_scroll_speed=0;
 	}
 }
 
 void ScoreCanvas::heartbeat_timer_event()
 {
-	if (scroll_speed)
+	if (x_scroll_speed)
 	{
 		int old_xpos=x_pos;
 		
-		scroll_pos+=scroll_speed*heartBeatTimer->interval()/1000.0;
-		int tmp=int(scroll_pos);
+		x_scroll_pos+=x_scroll_speed*heartBeatTimer->interval()/1000.0;
+		int tmp=int(x_scroll_pos);
 		if (tmp!=0)
 		x_pos+=tmp;
-		scroll_pos-=tmp;
+		x_scroll_pos-=tmp;
 		
 		if (x_pos<0) x_pos=0;
 		if (x_pos>canvas_width()) x_pos=canvas_width();
 
-		if (old_xpos!=x_pos) emit xpos_changed(x_pos);
+		if (old_xpos!=x_pos) emit xscroll_changed(x_pos);
+	}
+	
+	if (y_scroll_speed)
+	{
+		int old_ypos=y_pos;
+		
+		y_scroll_pos+=y_scroll_speed*heartBeatTimer->interval()/1000.0;
+		int tmp=int(y_scroll_pos);
+		if (tmp!=0)
+		y_pos+=tmp;
+		y_scroll_pos-=tmp;
+		
+		if (y_pos<0) y_pos=0;
+		if (y_pos>canvas_height()) y_pos=canvas_height();
+
+		if (old_ypos!=y_pos) emit yscroll_changed(y_pos);
 	}
 }
 
-void ScoreCanvas::scroll_event(int x)
+void ScoreCanvas::x_scroll_event(int x)
 {
 	cout << "SCROLL EVENT: x="<<x<<endl;
 	x_pos=x;
+	redraw();
+}
+
+void ScoreCanvas::y_scroll_event(int y)
+{
+	cout << "SCROLL EVENT: y="<<y<<endl;
+	y_pos=y;
 	redraw();
 }
 
@@ -2784,7 +2880,7 @@ void ScoreCanvas::goto_tick(int tick, bool force)
 			if (x_pos<0) x_pos=0;
 			if (x_pos>canvas_width()) x_pos=canvas_width();
 			
-			emit xpos_changed(x_pos);
+			emit xscroll_changed(x_pos);
 		}
 		else if (tick > x_to_tick(x_pos+viewport_width()*PAGESTEP))
 		{
@@ -2792,7 +2888,7 @@ void ScoreCanvas::goto_tick(int tick, bool force)
 			if (x_pos<0) x_pos=0;
 			if (x_pos>canvas_width()) x_pos=canvas_width();
 			
-			emit xpos_changed(x_pos);
+			emit xscroll_changed(x_pos);
 		}
 	}
 	else
@@ -2801,7 +2897,7 @@ void ScoreCanvas::goto_tick(int tick, bool force)
 		if (x_pos<0) x_pos=0;
 		if (x_pos>canvas_width()) x_pos=canvas_width();
 		
-		emit xpos_changed(x_pos);
+		emit xscroll_changed(x_pos);
 	}
 }
 
@@ -2814,6 +2910,7 @@ void ScoreCanvas::resizeEvent(QResizeEvent* ev)
 	QWidget::resizeEvent(ev); //TODO is this really neccessary?
 
 	emit viewport_width_changed( viewport_width()  );
+	emit viewport_height_changed( viewport_height()  );
 }
 
 void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
@@ -2862,6 +2959,8 @@ void ScoreCanvas::recalc_staff_pos()
 		}
 		y=it->y_bottom;
 	}
+	
+	emit canvas_height_changed( canvas_height() );
 }
 
 list<staff_t>::iterator ScoreCanvas::staff_at_y(int y)
@@ -2901,7 +3000,6 @@ list<staff_t>::iterator ScoreCanvas::staff_at_y(int y)
  *   o when pressing "STOP", the active note isn't redrawn "normally"
  * 
  * CURRENT TODO
- *   o y-scroll for staff window, with automatic margin-scrolling
  *   o let the user edit the score's name
  * 
  * IMPORTANT TODO
@@ -2968,7 +3066,6 @@ list<staff_t>::iterator ScoreCanvas::staff_at_y(int y)
  *   o offer a button for bool mouse_erases_notes and mouse_inserts_notes
  *   o offer dropdown-boxes for lengths of the inserted note
  *     (select between 16th, 8th, ... whole and "last used length")
- *   o offer a dropdown-box for the clef to use
  *   o offer some way to setup the colorizing method to be used
  */
  
