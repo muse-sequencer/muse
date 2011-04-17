@@ -39,11 +39,53 @@
 
 #define LMASTER_MSGBOX_STRING          "MusE: List Editor"
 
+//don't remove or insert new elements in keyStrs.
+//only renaming (keeping the semantic sense) is allowed! (flo(
 QStringList keyStrs = QStringList()
-                      << "C" << "C#" << "D" << "D#"<< "E" << "F"
-                      << "F#"<< "G"<< "G#"<< "A"<< "B"<< "B#";
+                      << "C (sharps)" << "G" << "D" << "A"<< "E" << "B" << "F#"
+                      << "C (flats)"<< "F"<< "Bb" << "Eb"<< "Ab"<< "Db"<< "Gb";
 
+//don't change this function (except when renaming stuff)
+key_enum stringToKey(QString input) //flo
+{
+	int index = keyStrs.indexOf(input);
+	key_enum map[]={KEY_C, KEY_G, KEY_D, KEY_A, KEY_E, KEY_B, KEY_FIS, KEY_C_B, KEY_F, KEY_BES, KEY_ES, KEY_AS, KEY_DES, KEY_GES};
+	return map[index];
+}
 
+//don't change this function (except when renaming stuff)
+QString keyToString(key_enum key) //flo
+{
+	int index;
+	switch(key)
+	{
+		case KEY_C:   index= 0; break;
+		case KEY_G:   index= 1; break;
+		case KEY_D:   index= 2; break;
+		case KEY_A:   index= 3; break;
+		case KEY_E:   index= 4; break;
+		case KEY_B:   index= 5; break;
+		case KEY_FIS: index= 6; break;
+		case KEY_C_B: index= 7; break;
+		case KEY_F:   index= 8; break;
+		case KEY_BES: index= 9; break;
+		case KEY_ES:  index=10; break;
+		case KEY_AS:  index=11; break;
+		case KEY_DES: index=12; break;
+		case KEY_GES: index=13; break;
+
+		case KEY_SHARP_BEGIN:
+		case KEY_SHARP_END:
+		case KEY_B_BEGIN:
+		case KEY_B_END:
+			printf("ILLEGAL FUNCTION CALL: keyToString called with key_sharp_begin etc.\n");
+			break;
+		
+		default:
+			printf("ILLEGAL FUNCTION CALL: keyToString called with illegal key value (not in enum)\n");
+	}
+	return keyStrs[index];
+}
 
 //---------------------------------------------------------
 //   closeEvent
@@ -201,7 +243,7 @@ void LMaster::insertTempo(const TEvent* ev)
       new LMasterTempoItem(view, ev);
       }
 
-void LMaster::insertKey(const KeyEvent* ev)
+void LMaster::insertKey(const KeyEvent& ev)
       {
       new LMasterKeyEventItem(view, ev);
       }
@@ -250,32 +292,32 @@ void LMaster::updateList()
           ++it;
         }
 
-        else if (ik != k->rend() && (is == s->rend() && (ik->second->tick >= it->second->tick)
-                || (it == t->rend() && ik->second->tick >= is->second->tick ))) {// ik biggest
+        else if (ik != k->rend() && (is == s->rend() && (ik->second.tick >= it->second->tick)
+                || (it == t->rend() && ik->second.tick >= is->second->tick ))) {// ik biggest
           insertKey(ik->second);
           ++ik;
         }
         else if (is != s->rend() && (ik == k->rend() && (is->second->tick >= it->second->tick)
-                || (it == t->rend() && is->second->tick >= ik->second->tick ))) {// is biggest
+                || (it == t->rend() && is->second->tick >= ik->second.tick ))) {// is biggest
           insertSig(is->second);
           ++is;
         }
 
         else if (it != t->rend() && (ik == k->rend() && (it->second->tick >= is->second->tick)
-                || (is == s->rend() && it->second->tick >= ik->second->tick ))) {// it biggest
+                || (is == s->rend() && it->second->tick >= ik->second.tick ))) {// it biggest
           insertTempo(it->second);
           ++it;
         }
 
-        else if (ik != k->rend() && ik->second->tick >= is->second->tick && ik->second->tick >= it->second->tick) {// ik biggest
+        else if (ik != k->rend() && ik->second.tick >= is->second->tick && ik->second.tick >= it->second->tick) {// ik biggest
           insertKey(ik->second);
           ++ik;
         }
-        else if (is != s->rend() &&  is->second->tick >= it->second->tick && is->second->tick >= ik->second->tick) { // is biggest
+        else if (is != s->rend() &&  is->second->tick >= it->second->tick && is->second->tick >= ik->second.tick) { // is biggest
           insertSig(is->second);
           ++is;
         }
-        else if (it != t->rend() && it->second->tick >= is->second->tick && it->second->tick >= ik->second->tick) { // it biggest
+        else if (it != t->rend() && it->second->tick >= is->second->tick && it->second->tick >= ik->second.tick) { // it biggest
           insertTempo(it->second);
           ++it;
         }
@@ -467,8 +509,10 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
                   }
             else if (editedItem->getType() == LMASTER_KEYEVENT) {
                   if (!key_editor)
+                  {
                         key_editor = new QComboBox(view->viewport());
-                  key_editor->addItems(keyStrs);
+                        key_editor->addItems(keyStrs);
+                  }
                   //key_editor->setText(editedItem->text(LMASTER_VAL_COL));
                   key_editor->setCurrentIndex(keyStrs.indexOf(editedItem->text(LMASTER_VAL_COL)));
                   key_editor->setGeometry(itemRect);
@@ -602,7 +646,7 @@ void LMaster::returnPressed()
                         }
                   else if (editedItem->getType() == LMASTER_KEYEVENT) {
                         LMasterKeyEventItem* k = (LMasterKeyEventItem*) editedItem;
-                        int key = k->key();
+                        key_enum key = k->key();
 //                        song->startUndo();
 //                        audio->msgDeleteTempo(oldtick, tempo, false);
 //                        audio->msgAddTempo(newtick, tempo, false);
@@ -662,9 +706,9 @@ void LMaster::returnPressed()
           key_editor->hide();
           repaint();
           LMasterKeyEventItem* e = (LMasterKeyEventItem*) editedItem;
-          const KeyEvent* t = e->getEvent();
-          unsigned tick = t->tick;
-          int key = keyStrs.indexOf(input);
+          const KeyEvent& t = e->getEvent();
+          unsigned tick = t.tick;
+          key_enum key = stringToKey(input);
 
           if (!editingNewItem) {
 //                      song->startUndo();
@@ -722,11 +766,11 @@ QString LMasterLViewItem::text(int column) const
 //   LMasterKeyEventItem
 //!  Initializes a LMasterKeyEventItem with a KeyEvent
 //---------------------------------------------------------
-LMasterKeyEventItem::LMasterKeyEventItem(QTreeWidget* parent, const KeyEvent* ev)
+LMasterKeyEventItem::LMasterKeyEventItem(QTreeWidget* parent, const KeyEvent& ev)
       : LMasterLViewItem(parent)
       {
       keyEvent = ev;
-      unsigned t = ev->tick;
+      unsigned t = ev.tick;
       int bar, beat;
       unsigned tick;
       AL::sigmap.tickValues(t, &bar, &beat, &tick);
@@ -738,8 +782,8 @@ LMasterKeyEventItem::LMasterKeyEventItem(QTreeWidget* parent, const KeyEvent* ev
       int msec = int((time - (min*60 + sec)) * 1000.0);
       c2.sprintf("%03d:%02d:%03d", min, sec, msec);
       c3 = "Key";
-      //int dt = ev->key;
-      c4 = keyStrs[ev->key];
+      //int dt = ev.key;
+      c4 = keyToString(ev.key);
       setText(0, c1);
       setText(1, c2);
       setText(2, c3);
@@ -872,8 +916,7 @@ void LMaster::insertKey()
 
       //int newTick = AL::sigmap.bar2tick(m, b, t);
       int newTick = song->cpos();
-      KeyEvent* ev = new KeyEvent(lastKey->key(), newTick);
-      new LMasterKeyEventItem(view, ev);
+      new LMasterKeyEventItem(view, KeyEvent(lastKey->key(), newTick));
       QTreeWidgetItem* newKeyItem = view->topLevelItem(0);
 
       editingNewItem = true; // State

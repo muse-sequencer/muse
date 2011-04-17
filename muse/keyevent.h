@@ -16,63 +16,77 @@
 
 class Xml;
 
+//don't change this enum! changing the numeric values will affect
+//all files using key_enum, and even worse:
+//PREVIOUSLY SAVED FILES WILL BE CORRUPT because the keys are
+//stored as integers. when the integer -> key mapping changes
+//(by inserting or removing elements, for example), this will
+//break stuff! (flo)
+enum key_enum
+{
+	KEY_SHARP_BEGIN,
+	KEY_C,   // C or am, uses # for "black keys"
+	KEY_G,
+	KEY_D,
+	KEY_A,
+	KEY_E,
+	KEY_B, // or H in german.
+	KEY_FIS, //replaces F with E#
+	KEY_SHARP_END,
+	KEY_B_BEGIN,
+	KEY_C_B,  // the same as C, but uses b for "black keys"
+	KEY_F,
+	KEY_BES, // or B in german
+	KEY_ES,
+	KEY_AS,
+	KEY_DES,
+	KEY_GES, //sounds like FIS, but uses b instead of #
+	KEY_B_END
+};
+
+
+
+
 //---------------------------------------------------------
-//   Tempo Event
+//   Key Event
 //---------------------------------------------------------
 
 struct KeyEvent {
-      int key;
-      unsigned tick;    // new tempo at tick
-      //unsigned frame;   // precomputed time for tick in sec
+      key_enum key;
+      unsigned tick;
 
       int read(Xml&);
       void write(int, Xml&, int) const;
 
       KeyEvent() { }
-      KeyEvent(unsigned k, unsigned tk) {
+      KeyEvent(key_enum k, unsigned tk) {
             key = k;
             tick  = tk;
-            //frame = 0;
             }
       };
 
 //---------------------------------------------------------
-//   TempoList
+//   KeyList
 //---------------------------------------------------------
 
-typedef std::map<unsigned, KeyEvent*, std::less<unsigned> > KEYLIST;
+typedef std::map<unsigned, KeyEvent, std::less<unsigned> > KEYLIST;
 typedef KEYLIST::iterator iKeyEvent;
 typedef KEYLIST::const_iterator ciKeyEvent;
 typedef KEYLIST::reverse_iterator riKeyEvent;
 typedef KEYLIST::const_reverse_iterator criKeyEvent;
 
-class KeyList : public KEYLIST {
-//      int _keySN;           // serial no to track key changes
-      bool useList;
-      int _key;             // key if not using key list
 
-      void add(unsigned tick, int tempo);
-      void change(unsigned tick, int newKey);
+
+class KeyList : public KEYLIST {
+      bool useList;
+      key_enum _key;             // key if not using key list
+
+      void add(unsigned tick, key_enum tempo);
+      void change(unsigned tick, key_enum newKey);
       void del(iKeyEvent);
       void del(unsigned tick);
 
    public:
-
-      enum keyList {
-        keyC,
-        keyCis,
-        keyD,
-        keyDis,
-        keyE,
-        keyF,
-        keyFis,
-        keyG,
-        keyGis,
-        keyA,
-        keyB,
-        keyBes,
-        };
-
 
       KeyList();
       void clear();
@@ -81,13 +95,11 @@ class KeyList : public KEYLIST {
       void write(int, Xml&) const;
       void dump() const;
 
-      int key(unsigned tick) const;
+      key_enum keyAtTick(unsigned tick) const;
 
-      //int keySN() const { return _keySN; }
-//      void setKey(unsigned tick, int newKey);
-      void addKey(unsigned t, int newKey);
+      void addKey(unsigned t, key_enum newKey);
       void delKey(unsigned tick);
-//      void changeKey(unsigned tick, int newKey);
+//      void changeKey(unsigned tick, key_enum newKey);
       bool setMasterFlag(unsigned tick, bool val);
       };
 
