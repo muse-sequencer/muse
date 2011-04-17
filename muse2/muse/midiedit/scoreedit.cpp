@@ -1,8 +1,3 @@
-//you need to download http://home.arcor.de/michael.jung11/glyphs.tar.bz2
-//and extract it somewhere. then change FONT_PATH to the correct directory
-//the trailing slash is necessary
-#define FONT_PATH "/home/flo/muse-glyphs/"
-
 //=========================================================
 //  MusE
 //  Linux Music Editor
@@ -510,10 +505,9 @@ void color_image(QImage& img, const QColor& color)
 	}
 }
 
-void load_colored_pixmaps(string file, QPixmap* array)
+void load_colored_pixmaps(QString file, QPixmap* array)
 {
-	QString fn(file.c_str());
-	QImage img(fn);
+	QImage img(file);
 		
 	color_image(img, Qt::black);
 	array[BLACK_PIXMAP]=QPixmap::fromImage(img);
@@ -561,33 +555,33 @@ void ScoreCanvas::load_pixmaps()
 		
 		
 		
-		load_colored_pixmaps(FONT_PATH "whole.png", pix_whole);
-		load_colored_pixmaps(FONT_PATH "half.png", pix_half);
-		load_colored_pixmaps(FONT_PATH "quarter.png", pix_quarter);
-		load_colored_pixmaps(FONT_PATH "dot.png", pix_dot);
-		load_colored_pixmaps(FONT_PATH "acc_none.png", pix_noacc);
-		load_colored_pixmaps(FONT_PATH "acc_sharp.png", pix_sharp);
-		load_colored_pixmaps(FONT_PATH "acc_b.png", pix_b);
+		load_colored_pixmaps(museGlobalShare + "/scoreglyphs/whole.png", pix_whole);
+		load_colored_pixmaps(museGlobalShare + "/scoreglyphs/half.png", pix_half);
+		load_colored_pixmaps(museGlobalShare + "/scoreglyphs/quarter.png", pix_quarter);
+		load_colored_pixmaps(museGlobalShare + "/scoreglyphs/dot.png", pix_dot);
+		load_colored_pixmaps(museGlobalShare + "/scoreglyphs/acc_none.png", pix_noacc);
+		load_colored_pixmaps(museGlobalShare + "/scoreglyphs/acc_sharp.png", pix_sharp);
+		load_colored_pixmaps(museGlobalShare + "/scoreglyphs/acc_b.png", pix_b);
 
-		pix_r1->load(FONT_PATH "rest1.png");
-		pix_r2->load(FONT_PATH "rest2.png");
-		pix_r4->load(FONT_PATH "rest4.png");
-		pix_r8->load(FONT_PATH "rest8.png");
-		pix_r16->load(FONT_PATH "rest16.png");
-		pix_flag_up[0].load(FONT_PATH "flags8u.png");
-		pix_flag_up[1].load(FONT_PATH "flags16u.png");
-		pix_flag_up[2].load(FONT_PATH "flags32u.png");
-		pix_flag_up[3].load(FONT_PATH "flags64u.png");
-		pix_flag_down[0].load(FONT_PATH "flags8d.png");
-		pix_flag_down[1].load(FONT_PATH "flags16d.png");
-		pix_flag_down[2].load(FONT_PATH "flags32d.png");
-		pix_flag_down[3].load(FONT_PATH "flags64d.png");
+		pix_r1->load(museGlobalShare + "/scoreglyphs/rest1.png");
+		pix_r2->load(museGlobalShare + "/scoreglyphs/rest2.png");
+		pix_r4->load(museGlobalShare + "/scoreglyphs/rest4.png");
+		pix_r8->load(museGlobalShare + "/scoreglyphs/rest8.png");
+		pix_r16->load(museGlobalShare + "/scoreglyphs/rest16.png");
+		pix_flag_up[0].load(museGlobalShare + "/scoreglyphs/flags8u.png");
+		pix_flag_up[1].load(museGlobalShare + "/scoreglyphs/flags16u.png");
+		pix_flag_up[2].load(museGlobalShare + "/scoreglyphs/flags32u.png");
+		pix_flag_up[3].load(museGlobalShare + "/scoreglyphs/flags64u.png");
+		pix_flag_down[0].load(museGlobalShare + "/scoreglyphs/flags8d.png");
+		pix_flag_down[1].load(museGlobalShare + "/scoreglyphs/flags16d.png");
+		pix_flag_down[2].load(museGlobalShare + "/scoreglyphs/flags32d.png");
+		pix_flag_down[3].load(museGlobalShare + "/scoreglyphs/flags64d.png");
 		
-		pix_clef_violin->load(FONT_PATH "clef_violin_big.png");
-		pix_clef_bass->load(FONT_PATH "clef_bass_big.png");
+		pix_clef_violin->load(museGlobalShare + "/scoreglyphs/clef_violin_big.png");
+		pix_clef_bass->load(museGlobalShare + "/scoreglyphs/clef_bass_big.png");
 		
 		for (int i=0;i<10;i++)
-			pix_num[i].load(QString((string(FONT_PATH "")+IntToStr(i)+string(".png")).c_str()));	
+			pix_num[i].load(museGlobalShare + "/scoreglyphs/"+QString(IntToStr(i).c_str())+".png");
 		
 		pixmaps_loaded=true;
 	}

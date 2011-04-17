@@ -1,0 +1,215 @@
+% -%-Fundamental-%- -*-Metafont-*-
+% parmesan-macros.mf -- macros for parmesan font
+% 
+% source file of LilyPond's pretty-but-neat music font
+% 
+% (c) 2001--2009 Juergen Reuter <reuter@ipd.uka.de>
+% 
+
+
+%
+% Find point on `curve' which gives the tangent between point `p'
+% and `curve'.  To guide the search, two auxiliary points must be
+% specified, `p_in' and `p_out'.  The line between `p' and `p_in'
+% must intersect `curve', while the line between `p' and `p_out'
+% must not.
+%
+def find_tangent (expr p, curve, p_in, p_out) =
+	begingroup;
+	save mid, t, t_good, in, out;
+	pair mid, in, out;
+
+	in := p_in;
+	out := p_out;
+
+	forever:
+		mid := 0.5 [in, out];
+		exitif abs (out - mid) <= eps;
+		t := xpart (curve intersectiontimes (p -- mid));
+		if t > 0:
+			in := mid;
+			t_good := t;
+		else:
+			out := mid;
+		fi;
+	endfor;
+
+	point t_good of curve
+	endgroup
+enddef;
+
+
+%
+% Shift `curve' along the line given by the auxiliary points `p_in'
+% and `p_out' until `line' is a tangent, and return the shift.
+% If `curve' is shifted to position `p_in', it must intersect
+% `line', while shifted to `p_out' it must not.
+%
+def find_tangent_shift (expr line, curve, p_in, p_out) =
+	begingroup;
+	save mid, t, in, out;
+	pair mid, in, out;
+
+	in := p_in;
+	out := p_out;
+
+	forever:
+		mid := 0.5 [in, out];
+		exitif abs (out - mid) <= eps;
+		t := xpart ((curve shifted mid) intersectiontimes line);
+		if t > 0:
+			in := mid;
+		else:
+			out := mid;
+		fi;
+	endfor;
+
+	mid
+	endgroup
+enddef;
+
+
+%
+% Get subpath specified by `dir_in' and `dir_out' of `curve'
+% which is then shifted by `offset'.  Assure that result has
+% the same orientation as `curve'.
+%
+def get_subpath (expr curve, dir_in, dir_out, offset) =
+	begingroup;
+	save t_in, t_out;
+
+	t_in := directiontime dir_in of curve;
+	t_out := directiontime dir_out of curve;
+
+	if t_in > t_out:
+		t_out := t_out + length curve;
+	fi;
+
+	(subpath (t_in, t_out) of curve) shifted offset
+	endgroup
+enddef;
+
+
+%
+% Get point specified by `dir_' of `curve' which is then
+% shifted by `offset'.
+%
+def get_subpoint (expr curve, dir_, offset) =
+	(directionpoint dir_ of curve) shifted offset
+enddef;
+
+
+%
+% This is the same as `get_subpath', except that the time values
+% used to construct the resulting subpath are rounded to integers.
+%
+def get_subpath_i (expr curve, dir_in, dir_out, offset) =
+	begingroup;
+	save t_in, t_out;
+
+	t_in := directiontime dir_in of curve;
+	t_out := directiontime dir_out of curve;
+
+	if t_in > t_out:
+		t_out := t_out + length curve;
+	fi;
+
+	(subpath (floor (t_in + 0.5), floor (t_out + 0.5)) of curve)
+	  shifted offset
+	endgroup
+enddef;
+
+
+%
+% Find envelope cusp created by `object' moved along `curve', using
+% step value `s' for initial intermediate points.  `s' must be small
+% enough so that this macro finds at least one point on the envelope
+% between the `entrance' and `exit' points of the cusp which has
+% a significantly different direction vector.
+%
+% This function returns a time value on `curve'; if there is no
+% cusp, it returns -1.
+%
+def find_envelope_cusp (expr object, curve, s) =
+	begingroup;
+	save mid, p, t, t_good, delta, start, stop, do_exit;
+	pair p[];
+	boolean do_exit;
+
+	p0 := (directionpoint (direction 0 of curve) of object)
+		shifted (point 0 of curve);
+	p1 := (directionpoint (direction s of curve) of object)
+		shifted (point s of curve);
+
+	t := s;
+
+	forever:
+		t := t + s;
+		exitif t >= length curve;
+
+		p2 := (directionpoint (direction t of curve) of object)
+			shifted (point t of curve);
+		if p2 <> p1:
+			delta := angle (p2 - p1) - angle (p1 - p0);
+			if delta > 180:
+				delta := delta - 360;
+			fi;
+
+			% we check for a direction change by more than
+			% than 45 degrees
+			if abs (delta) >= 45:
+				do_exit := true;
+			else:
+				do_exit := false;
+			fi;
+
+			p0 := p1;
+			p1 := p2;
+		fi;
+
+		% having `exitif' within an if-clause doesn't work
+		exitif do_exit;
+	endfor;
+
+	if t >= length curve:
+		t_good := -1;
+	else:
+		% the wanted point lies between `t - s' and `t'
+		start := t - s;
+		stop := t;
+		t_good := start;
+
+		forever:
+			mid := 0.5 [start, stop];
+			exitif abs (stop - mid) <= eps;
+
+			p0 := (directionpoint (direction start of curve)
+				of object) shifted (point start of curve);
+			p1 := (directionpoint (direction mid of curve)
+				of object) shifted (point mid of curve);
+			p2 := (directionpoint (direction stop of curve)
+				of object) shifted (point stop of curve);
+
+			exitif (length (p1 - p0) = 0)
+				or (length (p2 - p1) = 0);
+
+			delta := angle (p2 - p1) - angle (p1 - p0);
+			if delta > 180:
+				delta := delta - 360;
+			fi;
+
+			if abs (delta) >= 45:
+				stop := mid;
+				t_good := mid;
+			else:
+				start := mid;
+				t_good := stop;
+			fi;
+		endfor;
+	fi;
+
+	t_good
+	endgroup
+enddef;
+
+% EOF

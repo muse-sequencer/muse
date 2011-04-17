@@ -1,0 +1,348 @@
+% -*- Fundamental -*-  (emacs-20 mf mode mucks
+% feta-pendaal.mf -- piano pedal markings
+%
+% part of LilyPond's pretty-but-neat music font
+%
+% source file of the Feta (not the Font-En-Tja) music font
+%
+% (c) 2000--2009 Jan Nieuwenhuizen <janneke@gnu.org>
+%
+% Voor Cup
+
+% Kerning
+%
+% Pe = -0.034 pedalh == -0.07 staff-space
+% ed = -0.27 pedalh == -0.53 staff-space
+
+
+fet_begingroup ("pedal");
+
+pedalpha = 40;
+pedbeta = 25;
+
+penh# = 0.7 linethickness#;
+penw# = 2 penh# + 0.14 staff_space#;
+define_pixels (penh, penw);
+
+pedalh# = 2 staff_space#;
+pedalbh# = 4/7 pedalh#;
+define_pixels (pedalh, pedalbh);
+
+
+fet_beginchar ("Pedal asterisk", "*");
+	save bulb, p, radius, thin, inner_r;
+	path pat;
+
+	set_char_box (0, 7/9 pedalh#, 0, pedalh#);
+
+	z0 = (1/2 w, h - 1/2 w);
+
+	thin = 0.8 linethickness;
+
+	bulb + 2 radius = w;
+	0.9 thin + bulb = (radius * pi * 2) / 8;
+
+	pickup pencircle scaled penh;
+
+	penpos1 (bulb, 180);
+	penpos2 (bulb, 0);
+	penpos3 (thin, 0);
+
+	z1 = z0 + (0, radius);
+	z2 = z1;
+
+	inner_r = .45 radius;
+
+	z4l = z0 + inner_r * dir (90 + 360/16);
+	z4r = z0 + inner_r * dir (90 - 360/16);
+
+	z4 = .5 [z4l, z4r];
+	z3 = .75 [z1, z4];
+
+	penlabels (0, 1, 2, 3, 4);
+
+	pat := z3r{up}
+	       .. z1l{up}
+	       .. z2l{down}
+	       .. z3l{down}
+	       .. z4l{dir (180 + 360/16)};
+	for i = 1 upto 7:
+		pat := pat
+		       .. ((z3r{up}
+			   .. z1l{up}
+			   .. z2l{down}
+			   .. z3l{down}
+			   .. z4l{dir (180 + 360/16)})
+				rotatedaround (z0, 360/8 i));
+	endfor;
+
+	pat := pat
+	       .. cycle;
+	fill pat;
+
+	pickup pencircle scaled (7/8 inner_r);
+
+	undrawdot z0;
+fet_endchar;
+
+
+%% ugh. rounded corners!
+
+fet_beginchar ("Pedal dash", "M");
+	save dash_thickness;
+
+	dash_thickness# := penw#;
+	define_whole_vertical_blacker_pixels (dash_thickness);
+
+	set_char_box (0, 3 penw#, 0, pedalbh#);
+
+	penpos1 (dash_thickness, 60);
+	penpos2 (dash_thickness, 60);
+
+	z1l = (0, vround (2/3 h - 1/2 penw));
+	z2r = (w, vround (y1l + 1.2 penw));
+
+	penlabels (1, 2, 3);
+
+	penstroke z1e{dir 40}
+		  ..tension 1.2.. z2e{dir 40};
+fet_endchar;
+
+
+fet_beginchar ("Pedal dot", ".");
+	set_char_box (0, penw#, 0, penw#);
+
+	pickup pencircle scaled penw;
+
+	drawdot (hround (1/2 penw), vround (1/2 penw));
+fet_endchar;
+
+
+def draw_pedal_P (expr show_labels) =
+begingroup;
+	clearxy;
+
+	penpos1 (hround penh, 0);
+	penpos2 (penw, 55);
+	penpos3 (penw, pedalpha);
+	penpos4 (1.2 penh, -pedalpha);
+	penpos5 (penh, -pedalpha);
+	penpos6 (penh, 180 - pedalpha);
+	penpos7 (penh, 180 - pedalpha);
+	penpos8 (penh, 90);
+	penpos9 (4/3 penw, 50);
+	penpos10 (1.4 penw, 50);
+	penpos11 (penh, 90 + pedalpha);
+
+	z1r = (hround 0.6 w, h);
+	x2l = hround (x1l - penw) + xpart feta_offset;
+	y2 = vround (0.7 h) + ypart feta_offset;
+	x3r = hround (x2l + 2 penw);
+	y3r = 0.4 h;
+	z4l = z5r + 1/4 (z3r - z5r);
+	x5 = 1/4 w;
+	y5r = 0;
+	z6 = z5;
+	z7l = z6r + 1/3 (z8r - z6r);
+	z8r = z5r + 3/5 (z3r - z5r);
+	x9l = x10l - penh;
+	y9l = 1/4 penh;
+	x10l = w - tand (90 - pedalpha) * y11l;
+	y10l = 1/4 penh;
+	x11l = w;
+	y11 = 1/5 h;
+
+	% don't stick out at the top
+	z1' = round (0.9 [z2, z1]) + (xpart feta_offset, 0);
+	penpos1' (penh, 0);
+
+	% shift start point of pen stroke to avoid overlapping contours
+	z8'l = z8l;
+	y8'r = y8r;
+	z8'r = z8l + whatever * (z3r - z8l);
+
+	penpos12 (hround penh, 0);
+	penpos13 (penw, -90 - pedbeta);
+	penpos14 (vround penh, 90);
+	penpos15 (penw, -90 + pedbeta);
+	penpos16 (penh, 180 + pedbeta);
+
+	z12r = (hround (5/9 x1 + 1/2 hround penh), y2);
+	z13l = (1/2 x12r, y15r);
+	z14r = z1r;
+	z15l = (1/2 [x16, w], y2l + 0.5 penw);
+	x16 = 1/4 [x1, w];
+	y16r = y2r;
+
+	% We now do a correction to `center' the stem horizontally.  While
+	% this is not the most elegant solution, it is definitely the
+	% easiest...
+
+	save horz_corr;
+	horz_corr = 1/5 [x12, x16] - x2l;
+	x2 := x2 + horz_corr;
+	x2l := x2l + horz_corr;
+	x2r := x2r + horz_corr; 
+
+	penstroke z1'e
+		  ..tension 2.5.. z2e
+		  ..tension 1.5.. z3e
+		  ..tension 2.5.. {dir (225)}z4e;
+
+	soft_end_penstroke z8'e{right}
+			   ..tension 1.5.. z9e{dir (-pedalpha)}
+			   .. z10e
+			   ..tension 2.5.. z11e;
+
+	fill z4r{dir (225)}
+	     ..tension 1.5.. z5r{left}
+	     .. z6r
+	     ..tension 1.5.. z7r
+	     ..tension 1.5.. z8r{right}
+	     -- cycle;
+
+	soft_penstroke z12e{down}
+		       ..tension 1.1.. z13e{dir (180 - pedbeta)}
+		       ..tension 1.1.. z14e{right}
+		       ..tension 1.1.. z15e{dir (180 + pedbeta)}
+		       ..tension 1.1.. z16e{dir (90 + pedbeta)};
+
+	if show_labels = 1:
+		penlabels (range 1 thru 16);
+		penlabels (1', 8');
+	fi;
+endgroup;
+enddef;
+
+
+def draw_pedal_d (expr show_labels) =
+begingroup;
+	clearxy;
+
+	penpos1 (vround penh, -10 - 90);
+	penpos2 (hround penw, 190);
+	penpos3 (vround (2 penh), 90);
+	penpos4 (hround (3/4 penw), 0);
+	penpos5 (penh, -70);
+
+	x1r = 0;
+	y1l = h;
+	z2 = (w - 1/2 hround penw, 1/2 pedalbh + penh);
+	z4l = (hround (1/3 w), 1/2 pedalbh);
+	z5l = (2/3 w, pedalbh);
+	z3l = (hround x5l, 0);
+
+	if show_labels = 1:
+		penlabels (1, 2, 3, 4, 5);
+	fi;
+
+	soft_start_penstroke z1e{dir (-10)}
+			     ..tension 1.1.. z2e{dir (-90 + 10)}
+			     ..tension 1.1.. z3e{left}
+			     ..tension 1.1.. z4e{up}
+			     ..tension 1.1.. z5e{dir (-70 + 90)};
+endgroup;
+enddef;
+
+
+def draw_pedal_e (expr show_labels) =
+begingroup;
+	clearxy;
+
+	penpos1 (penh, pedalpha - 90);
+	penpos2 (penh, pedalpha - 90);
+	penpos3 (3/5 penw, pedalpha);
+	penpos4 (1.2 penh, 90 + pedalpha);
+	penpos5 (2/3 penw, 180);
+	penpos6 (penw, 180 + pedalpha);
+	penpos7 (2/3 penw, -90 - 20);
+	penpos8 (penh, pedalpha - 90);
+
+	z1l = (0, 1/5 pedalh);
+	% this helps to make the path go through z2 at low resolutions
+	z2 = round (z1 + dir pedalpha * penw) + feta_offset;
+	z3 = (3/5 w, 8/9 h);
+	z4 = (2/9 w,  y3);
+	x4r := hround x4r;
+	x5r = 0;
+	y5 = y2;
+	x6 = 3/8 w;
+	y6r = 1/2 penh;
+	z7l = (x6l + penh, y6l);
+	x8r = w;
+	y8 = 1/5 pedalh;
+
+	soft_penstroke z1e
+		       -- z2e{z2 - z1}
+		       ..tension 1.1.. z3e
+		       ..tension 1.05.. z4e
+		       ..tension 1.1.. z5e
+		       ..tension 1.5.. z6e{dir - pedalpha}
+		       ..tension 1.1.. z7e
+		       ..tension 2.5.. z8e;
+
+	if show_labels = 1:
+		penlabels (range 1 thru 8);
+	fi;
+endgroup;
+enddef;
+
+
+fet_beginchar ("Pedal P", "P");
+	set_char_box (0, 5/6 pedalh#, 0, pedalh#);
+
+	draw_pedal_P (1);
+fet_endchar;
+
+
+fet_beginchar ("Pedal d", "d");
+	set_char_box (0, 2/3 pedalh#, 0, 7/8 pedalh#);
+
+	draw_pedal_d (1);
+fet_endchar;
+
+
+fet_beginchar ("Pedal e", "e");
+	set_char_box (0, 2/5 pedalh#, 0, pedalbh#);
+
+	draw_pedal_e (1);
+fet_endchar;
+
+
+fet_beginchar ("Pedal Ped", "Ped");
+	P_width# = 5/6 pedalh#;
+	e_width# = 2/5 pedalh#;
+	d_width# = 2/3 pedalh#;
+	define_pixels (P_width, e_width, d_width);
+
+	e_height = pedalbh;
+	d_height = 7/8 pedalh;
+
+	% Pe = -0.034 pedalh == -0.07 staff-space
+	% ed = -0.27 pedalh == -0.53 staff-space
+	Pe_kern# = -0.034 pedalh#;
+	ed_kern# = -0.27 pedalh#;
+	define_pixels (Pe_kern, ed_kern);
+
+	w := hround d_width;
+	h := vround d_height;
+	draw_pedal_d (0);
+	currentpicture := currentpicture
+			    shifted (hround (e_width + ed_kern), 0);
+
+	w := hround e_width;
+	h := vround e_height;
+	draw_pedal_e (0);
+	currentpicture := currentpicture
+			    shifted (hround (P_width + Pe_kern), 0);
+
+	w := hround P_width;
+	h := vround pedalh;
+	draw_pedal_P (0);
+
+	set_char_box (0, P_width# + Pe_kern# + e_width# + ed_kern# + d_width#,
+		      0, pedalh#);
+fet_endchar;
+
+
+fet_endgroup ("pedal");

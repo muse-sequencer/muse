@@ -18,21 +18,12 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-# NOTE: locale/ directory needs to be at the end so that the translations
-#       are scanned before coming to share/locale
-subdirs(
-      drummaps
-      html
-      instruments
-      plugins
-      pybridge
-      scripts
-      templates
-      wallpapers
-      scoreglyphs
-      locale
+file (GLOB scoreglyph_files *.png LICENSE)
+
+subdirs( feta-original
+       )
+
+install( FILES ${scoreglyph_files}
+      DESTINATION ${MusE_SHARE_DIR}/scoreglyphs
       )
 
-# We don't have a splash image for MusE2 yet. When we do, the
-# following line can be uncommented:
-#install (FILES splash.png DESTINATION ${MusE_SHARE_DIR} )

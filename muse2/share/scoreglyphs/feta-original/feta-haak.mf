@@ -1,0 +1,92 @@
+% feta-haak.mf -- implement bracket tips -*-Fundamental-*-
+%
+% part of LilyPond's pretty-but-neat music font
+%
+% source file of the Feta (not the Font-En-Tja) music font
+%
+% (c) 2005--2009 Han-Wen Nienhuys <hanwen@xs4all.nl>
+
+fet_begingroup ("brackettips");
+
+def draw_bracket (expr thick_sharp, width_sharp, updown) =
+begingroup;
+	save p, thin, thick, flattening, width, hair, flare;
+ 	path p;
+	pair tipdir;
+
+	flattening = 0.72;
+	thick# = thick_sharp;
+	flare# = flattening * width#;
+	width# = width_sharp;
+
+	define_pixels (thick, width, flare);
+	if updown = 1:
+	        set_char_box (0, width#,
+			      .5 thick#, flare#);
+	else:
+	        set_char_box (0, width#,
+			      flare#, .5 thick#);
+	fi;
+
+	thin = 2 linethickness;
+	hair = 1.25 linethickness;
+
+	pickup pencircle scaled thin;
+	y7 = y1;
+	x7 = x2;
+	z2 = z4r + (thin, 0);
+
+	penpos3 (thin, 0);
+	penpos4 (thin, 90);
+
+	z3 = z4;
+
+	top y3 = 0.5 thick;
+	lft x3 = 0.0;
+	x1 = x3l;
+	y1 = -0.5 thick;
+
+	z8 = .5 [z2, z7];
+	top y5 = flare;
+	rt x5 = width;
+
+	p := z8{right}
+	     ..tension 1.2.. z5{curl 0};
+	tipdir := direction 1 of p;
+
+	penpos5 (hair, angle tipdir);
+	penpos6 (hair, 90 + angle tipdir);
+
+	z5 = z6;
+
+	pickup pencircle scaled 1;
+
+	fill (z1
+	      -- z3l{up}
+	      .. z4r{right}
+	      -- z2{right}
+	      .. z6r{tipdir}
+	      .. z5r
+	      .. z6l{-tipdir}
+	      ..tension 1.1.. z7{left}
+	      & z7
+	      -- z1
+	      & cycle) yscaled updown;
+
+	if updown = 1:
+		penlabels (1, 2, 3, 4, 5, 6, 7, 8);
+	fi;
+endgroup;
+enddef;
+
+
+fet_beginchar ("bracket tip up", "up");
+	draw_bracket (0.45 staff_space#, 1.9 staff_space#, 1);
+fet_endchar;
+
+
+fet_beginchar ("bracket tip down", "down");
+	draw_bracket (0.45 staff_space#, 1.9 staff_space#, -1);
+fet_endchar;
+
+fet_endgroup ("brackettips");
