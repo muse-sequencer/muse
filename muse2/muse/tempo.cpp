@@ -30,6 +30,12 @@ TempoList::TempoList()
       useList      = true;
       }
 
+TempoList::~TempoList()
+      {
+      for (iTEvent i = begin(); i != end(); ++i)
+            delete i->second;
+      }
+
 //---------------------------------------------------------
 //   add
 //---------------------------------------------------------

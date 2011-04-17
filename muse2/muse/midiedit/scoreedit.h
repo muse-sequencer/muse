@@ -26,6 +26,7 @@
 #include "view.h"
 #include "gconfig.h"
 #include "part.h"
+#include "keyevent.h"
 
 #include <set>
 #include <map>
@@ -91,26 +92,6 @@ class ScoreEdit : public MidiEditor
 
 
 
-enum tonart_t
-{
-	SHARP_BEGIN,
-	C,   // C or am, uses # for "black keys"
-	G,
-	D,
-	A,
-	E,
-	H,
-	FIS, //produces a #E (sounds like a F)
-	SHARP_END,
-	B_BEGIN,
-	C_B,  // the same as C, but uses b for "black keys"
-	F,
-	ES,
-	AS,
-	DES,
-	GES, //sounds like FIS, but uses b instead of #
-	B_END
-};
 
 enum stem_t
 {
@@ -140,33 +121,7 @@ bool operator< (const note_pos_t& a, const note_pos_t& b);
 
 
 
-// FINDMICH put that keymap-stuff to its appropriate place
-struct KeyEvent
-{
-	tonart_t key;
-	unsigned tick;
-	
-	KeyEvent(tonart_t k, unsigned t)
-	{
-		key=k;
-		tick=t;
-	}
-};
 
-typedef std::map<unsigned, KeyEvent, std::less<unsigned> > _KeyList;
-typedef _KeyList::iterator iKeyEvent;
-typedef _KeyList::const_iterator ciKeyEvent;
-typedef _KeyList::reverse_iterator riKeyEvent;
-typedef _KeyList::const_reverse_iterator criKeyEvent;
-
-class KeyList : public _KeyList
-{
-	public:
-		KeyList();
-		void clear();
-		tonart_t key_at_tick(unsigned tick);
-		//TODO FINDMICH: more functions, like add(), remove() have to be implemented
-};
 
 
 
@@ -186,7 +141,7 @@ class FloEvent
 		int num;
 		int denom;
 		
-		tonart_t tonart;
+		key_enum key;
 		
 		
 		FloEvent(unsigned ti, int p,int v,int l,typeEnum t, Part* part=NULL, Event* event=NULL)
@@ -208,10 +163,10 @@ class FloEvent
 			source_event=NULL;
 			source_part=NULL;
 		}
-		FloEvent(unsigned ti, typeEnum t, tonart_t k)
+		FloEvent(unsigned ti, typeEnum t, key_enum k)
 		{
 			type=t;
-			tonart=k;
+			key=k;
 			tick=ti;
 			source_event=NULL;
 			source_part=NULL;
@@ -235,7 +190,7 @@ class FloItem
 		int num;
 		int denom;
 		
-		tonart_t tonart;
+		key_enum key;
 		
 		mutable stem_t stem;
 		mutable int shift;
@@ -280,10 +235,10 @@ class FloItem
 			source_part=NULL;
 		}
 		
-		FloItem(typeEnum t, tonart_t k)
+		FloItem(typeEnum t, key_enum k)
 		{
 			type=t;
-			tonart=k;
+			key=k;
 			begin_tick=-1;
 			source_event=NULL;
 			source_part=NULL;
@@ -486,9 +441,9 @@ struct staff_t
 	}
 };
 
-list<int> calc_accidentials(tonart_t key, clef_t clef, tonart_t next_key=C);
-note_pos_t note_pos_(int note, tonart_t key);
-note_pos_t note_pos (unsigned note, tonart_t key, clef_t clef);
+list<int> calc_accidentials(key_enum key, clef_t clef, key_enum next_key=KEY_C);
+note_pos_t note_pos_(int note, key_enum key);
+note_pos_t note_pos (unsigned note, key_enum key, clef_t clef);
 
 int calc_len(int l, int d);
 list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, bool allow_dots=true, bool allow_normal=true);
@@ -518,7 +473,7 @@ class ScoreCanvas : public View
 
 
 
-		static int height_to_pitch(int h, clef_t clef, tonart_t key);
+		static int height_to_pitch(int h, clef_t clef, key_enum key);
 		static int height_to_pitch(int h, clef_t clef);
 		static int y_to_height(int y);
 		int y_to_pitch(int y, int t, clef_t clef);
@@ -539,7 +494,7 @@ class ScoreCanvas : public View
 
 		
 		timesig_t timesig_at_tick(int t);
-		tonart_t key_at_tick(int t);
+		key_enum key_at_tick(int t);
 		int tick_to_x(int t);
 		int x_to_tick(int x);
 		int calc_posadd(int t);

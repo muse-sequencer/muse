@@ -942,8 +942,8 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
                               if(_oscGuiQProc == 0)
                                 //_oscGuiQProc = new QProcess(muse);                        
                                 _oscGuiQProc = new QProcess();                        
-                              
-			      //QString program(fi.filePath());
+			      
+                              //QString program(fi.filePath());
                               QString program(guiPath);
 			      QStringList arguments;
 			      arguments << oscUrl

@@ -316,7 +316,8 @@ enum {
       SHRT_LM_INS_SIG,   // Ctrl+R
       SHRT_LM_EDIT_BEAT, // Ctrl+Shift+E
       SHRT_LM_EDIT_VALUE,// Ctrl+E
-      
+      SHRT_LM_INS_KEY,   // Ctrl+K
+
       // Marker view
       SHRT_NEXT_MARKER,
       SHRT_PREV_MARKER,

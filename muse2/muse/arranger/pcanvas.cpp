@@ -1610,15 +1610,20 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             // draw name
             // FN: Set text color depending on part color (black / white)
             int part_r, part_g, part_b, brightness;
-            config.partColors[i].getRgb(&part_r, &part_g, &part_b);
+            //config.partColors[i].getRgb(&part_r, &part_g, &part_b);
+            // Since we'll draw the text on the bottom (to accommodate drum 'slivers'),
+            //  get the lowest colour in the gradient used to draw the part.
+            QRect rr = map(r);
+            rr.setX(rr.x() + 3);
+            gGradientFromQColor(config.partColors[i], rr.topLeft(), rr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
             brightness =  part_r*29 + part_g*59 + part_b*12;
             //if (brightness < 12000 || part->selected())
             //  p.setPen(Qt::white);   /* too dark: use white for text color */
             //else
             //  p.setPen(Qt::black);  /* otherwise use black */
             bool rev = brightness < 12000 || part->selected();
-            QRect rr = map(r);
-            rr.setX(rr.x() + 3);
+            //QRect rr = map(r);
+            //rr.setX(rr.x() + 3);
             p.save();
             p.setFont(config.fonts[1]);
             p.setWorldMatrixEnabled(false);
@@ -1626,12 +1631,12 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
               p.setPen(Qt::black);   
             else
               p.setPen(Qt::white); 
-            p.drawText(rr.translated(1, 1), Qt::AlignTop|Qt::AlignLeft, part->name());
+            p.drawText(rr.translated(1, 1), Qt::AlignBottom|Qt::AlignLeft, part->name());
             if (rev)
               p.setPen(Qt::white);   
             else
               p.setPen(Qt::black);  
-            p.drawText(rr, Qt::AlignTop|Qt::AlignLeft, part->name());
+            p.drawText(rr, Qt::AlignBottom|Qt::AlignLeft, part->name());
             p.restore();
             }
       }
@@ -1719,6 +1724,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect& bb, EventList* events, M
       iEvent ito(events->lower_bound(to));
       //printf("PartCanvas::drawItem pTick:%d from:%d to:%d\n", pTick, from, to);
 
+      bool isdrum = (mt->type() == Track::DRUM);
       for (iEvent i = events->begin(); i != ito; ++i) {
             int t  = i->first + pTick;
             int te = t + i->second.lenTick();
@@ -1741,7 +1747,8 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect& bb, EventList* events, M
                   int pitch = i->second.pitch();
                   int th = int(mt->height() * 0.75); // only draw on three quarters
                   int hoffset = (mt->height() - th ) / 2; // offset from bottom
-                  int y     =  hoffset + (r.y() + th - (pitch * (th) / 127));
+                  //int y     =  hoffset + (r.y() + th - (pitch * (th) / 127));
+                  int y     =  hoffset + r.y() + th - (isdrum?127-pitch:pitch) * th / 127;
                   p.drawLine(t, y, te, y);
             }
       }

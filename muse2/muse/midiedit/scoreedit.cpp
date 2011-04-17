@@ -85,7 +85,6 @@ string IntToStr(int i);
 //FLO_QUANT = how many ticks has a single quantisation area?
 
 
-//FINDMICH MARKER
 //TODO: quant_max richtig setzen!
 
 
@@ -113,37 +112,6 @@ string create_random_string(int len=8)
 		result+=char((rand() % 26) + 'A');
 	
 	return result;
-}
-
-
-
-KeyList keymap;
-
-
-KeyList::KeyList()
-{
-	clear();
-}
-
-void KeyList::clear()
-{
-	_KeyList::clear(); //DEBUG -- remove these lines and use the commented out below
-	insert(std::pair<const unsigned, KeyEvent> (1536, KeyEvent(A, 0)));
-	insert(std::pair<const unsigned, KeyEvent> (MAX_TICK, KeyEvent(ES, 1536)));
-	
-	//insert(std::pair<const unsigned, KeyEvent> (MAX_TICK, KeyEvent(A, 0)));
-}
-
-tonart_t KeyList::key_at_tick(unsigned tick)
-{
-	ciKeyEvent it = upper_bound(tick);
-	if (it == end())
-	{
-		cout << "THIS SHOULD NEVER HAPPEN: key at "<<tick<<" not found!" << endl;
-		return C;
-	}
-
-	return it->second.key;
 }
 
 
@@ -328,7 +296,7 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 	mouse_erases_notes=false;
 	mouse_inserts_notes=true;
 
-	curr_part=editor->parts()->begin()->second; //TODO FINDMICH
+	curr_part=editor->parts()->begin()->second; //TODO FINDMICHJETZT
 	
 	last_len=384;
 	new_len=-1;
@@ -758,28 +726,28 @@ void staff_t::create_appropriate_eventlist(const set<Part*>& parts)
 }
 
 
-bool is_sharp_key(tonart_t t)
+bool is_sharp_key(key_enum t)
 {
-	return ((t>=SHARP_BEGIN) && (t<=SHARP_END));
+	return ((t>=KEY_SHARP_BEGIN) && (t<=KEY_SHARP_END));
 }
-bool is_b_key(tonart_t t)
+bool is_b_key(key_enum t)
 {
-	return ((t>=B_BEGIN) && (t<=B_END));
+	return ((t>=KEY_B_BEGIN) && (t<=KEY_B_END));
 }
 
-int n_accidentials(tonart_t t)
+int n_accidentials(key_enum t)
 {
 	if (is_sharp_key(t))
-		return t-SHARP_BEGIN-1;
+		return t-KEY_SHARP_BEGIN-1;
 	else
-		return t-B_BEGIN-1;
+		return t-KEY_B_BEGIN-1;
 }
 
 
 //note needs to be 0..11
 //always assumes violin clef
 //only for internal use
-note_pos_t note_pos_(int note, tonart_t key)
+note_pos_t note_pos_(int note, key_enum key)
 {
 	note_pos_t result;
 	           //C CIS D DIS E F FIS G GIS A AIS H
@@ -808,7 +776,7 @@ note_pos_t note_pos_(int note, tonart_t key)
 	}
 	
 	// Special cases for GES / FIS keys
-	if (key==GES)
+	if (key==KEY_GES)
 	{
 		// convert a H to a Ces
 		if (note==11)
@@ -817,7 +785,7 @@ note_pos_t note_pos_(int note, tonart_t key)
 			result.vorzeichen=B;
 		}
 	}
-	else if (key==FIS)
+	else if (key==KEY_FIS)
 	{
 		// convert a F to an Eis
 		if (note==5)
@@ -846,7 +814,7 @@ note_pos_t note_pos_(int note, tonart_t key)
 // in violin clef, line 2 is E4
 // in bass clef, line 2 is G2
 
-note_pos_t note_pos (unsigned note, tonart_t key, clef_t clef)
+note_pos_t note_pos (unsigned note, key_enum key, clef_t clef)
 {
 	int octave=(note/12)-1; //integer division. note is unsigned
 	note=note%12;
@@ -942,7 +910,7 @@ vector<int> create_emphasize_list(const list<int>& nums, int denom)
 	return result;
 }
 
-vector<int> create_emphasize_list(int num, int denom) //TODO FINDMICH
+vector<int> create_emphasize_list(int num, int denom)
 {
 	list<int> nums;
 	
@@ -1075,7 +1043,6 @@ list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo,
 // if total_width is greater than px_per_notepos, there will be collisions!
 
 #define NOTE_MOVE_X (PIXELS_PER_NOTEPOS/2)
-//TODO richtige werte finden!
 #define REST_AUSWEICH_X 10
 #define DOT_XDIST 6
 #define DOT_XBEGIN 10
@@ -1158,7 +1125,7 @@ void ScoreCanvas::draw_accidentials(QPainter& p, int x, int y_offset, const list
 
 void staff_t::create_itemlist()
 {
-	tonart_t tmp_key=C;
+	key_enum tmp_key=KEY_C;
 	int lastevent=0;
 	int next_measure=-1;
 	int last_measure=-1;
@@ -1178,7 +1145,7 @@ void staff_t::create_itemlist()
 		actual_tick=it->second.tick;
 		if (actual_tick==-1) actual_tick=t;
 		
-		note_pos_t notepos=note_pos(pitch,tmp_key,clef); //TODO einstellmöglichkeiten
+		note_pos_t notepos=note_pos(pitch,tmp_key,clef);
 		
 		printf("FLO: t=%i\ttype=%i\tpitch=%i\tvel=%i\tlen=%i\n",it->first, it->second.type, it->second.pitch, it->second.vel, it->second.len);
 		cout << "\tline="<<notepos.height<<"\tvorzeichen="<<notepos.vorzeichen << endl;
@@ -1306,9 +1273,9 @@ void staff_t::create_itemlist()
 		}
 		else if (type==FloEvent::KEY_CHANGE)
 		{
-			cout << "inserting KEY CHANGE ("<<it->second.tonart<<") at "<<t<<endl;
-			itemlist[t].insert( FloItem(FloItem::KEY_CHANGE, it->second.tonart) );
-			tmp_key=it->second.tonart; // TODO FINDMICH MARKER das muss schöner werden
+			cout << "inserting KEY CHANGE ("<<it->second.key<<") at "<<t<<endl;
+			itemlist[t].insert( FloItem(FloItem::KEY_CHANGE, it->second.key) );
+			tmp_key=it->second.key;
 		}
 	}	
 }
@@ -1328,7 +1295,7 @@ void staff_t::process_itemlist()
 		
 		// phase 0: keep track of active notes, rests -------------------
 		//          (and occupied lines) and the last measure
-		//          and the current time signature (TODO FINDMICH)
+		//          and the current time signature
 		for (set<FloItem, floComp>::iterator it=curr_items.begin(); it!=curr_items.end(); it++)
 		{
 			if ((it->type==FloItem::NOTE) || (it->type==FloItem::REST))
@@ -1781,7 +1748,9 @@ void ScoreCanvas::draw_note_lines(QPainter& p, int y)
 
 void staff_t::calc_item_pos()
 {
-	tonart_t curr_key=C;
+	key_enum curr_key=KEY_C; //this has to be KEY_C or KEY_C_B and nothing else,
+	                         //because only with these two keys the next (initial)
+	                         //key signature is properly drawn.
 	int pos_add=0;
 	
 	for (ScoreItemList::iterator it2=itemlist.begin(); it2!=itemlist.end(); it2++)
@@ -1854,7 +1823,7 @@ void staff_t::calc_item_pos()
 			}
 			else if (it->type==FloItem::KEY_CHANGE)
 			{
-				tonart_t new_key=it->tonart;
+				key_enum new_key=it->key;
 				
 				list<int> aufloes_list=calc_accidentials(curr_key, clef, new_key);
 				list<int> new_acc_list=calc_accidentials(new_key, clef);
@@ -1882,10 +1851,12 @@ void ScoreCanvas::calc_pos_add_list()
 	
 	
 	//process key changes
-	tonart_t curr_key=C;
+	key_enum curr_key=KEY_C; //this has to be KEY_C or KEY_C_B and nothing else,
+	                         //because only with these two keys the next (initial)
+	                         //key signature is properly calculated.
 	for (iKeyEvent it=keymap.begin(); it!=keymap.end(); it++)
 	{
-		tonart_t new_key=it->second.key;
+		key_enum new_key=it->second.key;
 		list<int> aufloes_list=calc_accidentials(curr_key, VIOLIN, new_key); //clef argument is unneccessary
 		list<int> new_acc_list=calc_accidentials(new_key, VIOLIN);           //in this case
 		int n_acc_drawn=aufloes_list.size() + new_acc_list.size();
@@ -1937,7 +1908,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 	// init accidentials properly
 	vorzeichen_t curr_accidential[7];
 	vorzeichen_t default_accidential[7];
-	tonart_t curr_key;
+	key_enum curr_key;
 
 	curr_key=key_at_tick(from_it->first);
 	list<int> new_acc_list=calc_accidentials(curr_key, staff.clef);
@@ -2127,7 +2098,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 			}
 			else if (it->type==FloItem::KEY_CHANGE)
 			{
-				tonart_t new_key=it->tonart;
+				key_enum new_key=it->key;
 				cout << "\tKEY CHANGE: from "<<curr_key<<" to "<<new_key<<endl;
 								
 				list<int> aufloes_list=calc_accidentials(curr_key, staff.clef, new_key);
@@ -2259,7 +2230,7 @@ void ScoreCanvas::draw_preamble(QPainter& p, int y_offset, clef_t clef)
 	
 
 	// draw accidentials ------------------------------------------------
-	tonart_t key=key_at_tick(tick);
+	key_enum key=key_at_tick(tick);
 	QPixmap* pix_acc=is_sharp_key(key) ? &pix_sharp[BLACK_PIXMAP] : &pix_b[BLACK_PIXMAP];
 	list<int> acclist=calc_accidentials(key,clef);
 	
@@ -2343,7 +2314,7 @@ void ScoreCanvas::draw(QPainter& p, const QRect&)
 }
 
 
-list<int> calc_accidentials(tonart_t key, clef_t clef, tonart_t next_key)
+list<int> calc_accidentials(key_enum key, clef_t clef, key_enum next_key)
 {
 	list<int> result;
 	
@@ -2419,11 +2390,11 @@ int ScoreCanvas::x_to_tick(int x)
 	return t > min_t ? t : min_t;
 }
 
-tonart_t ScoreCanvas::key_at_tick(int t_)
+key_enum ScoreCanvas::key_at_tick(int t_)
 {
 	unsigned int t= (t_>=0) ? t_ : 0;
 	
-	return keymap.key_at_tick(t);
+	return keymap.keyAtTick(t);
 }
 
 timesig_t ScoreCanvas::timesig_at_tick(int t_)
@@ -2450,7 +2421,7 @@ int ScoreCanvas::height_to_pitch(int h, clef_t clef)
 	}
 }
 
-int ScoreCanvas::height_to_pitch(int h, clef_t clef, tonart_t key)
+int ScoreCanvas::height_to_pitch(int h, clef_t clef, key_enum key)
 {
 	int add=0;
 	
@@ -2928,6 +2899,8 @@ list<staff_t>::iterator ScoreCanvas::staff_at_y(int y)
 
 
 /* BUGS and potential bugs
+ *   o updating the keymap doesn't emit a songChanged() signal!
+ *   o when the keymap is not used, this will probably lead to a bug
  *   o when adding a note, it's added to the first stave
  *     the problem is: there's always the first part selected
  *   o when changing color of a displayed part, note heads aren't redrawn
@@ -2988,8 +2961,6 @@ list<staff_t>::iterator ScoreCanvas::staff_at_y(int y)
  *   o rename staffs to staves
  *
  * stuff for the other muse developers
- *   o OFFER A WAY TO EDIT THE KEYMAP (and integrate the keymap properly)
- *
  *   o check if dragging notes is done correctly
  *   o after doing the undo stuff right, the "pianoroll isn't informed
  *     about score-editor's changes"-bug has vanished. did it vanish

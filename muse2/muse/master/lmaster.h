@@ -12,6 +12,7 @@
 #include "noteinfo.h"
 #include "cobject.h"
 #include "tempo.h"
+#include "keyevent.h"
 ///#include "sig.h"
 //#include "al/sig.h"
 
@@ -30,12 +31,15 @@ using Awl::PosEdit;
 using Awl::SigEdit;
 
 class QLineEdit;
+class QComboBox;
 
 enum LMASTER_LVTYPE
    {
       LMASTER_TEMPO = 0,
-      LMASTER_SIGEVENT
+      LMASTER_SIGEVENT,
+      LMASTER_KEYEVENT
    };
+
 
 //---------------------------------------------------------
 //   LMasterLViewItem
@@ -71,6 +75,22 @@ class LMasterTempoItem : public LMasterLViewItem {
       };
 
 //---------------------------------------------------------
+//   LMasterKeyItem
+//!  QListViewItem which holds data for a KetEvent
+//---------------------------------------------------------
+class LMasterKeyEventItem : public LMasterLViewItem {
+
+   private:
+      KeyEvent keyEvent;
+
+   public:
+      LMasterKeyEventItem(QTreeWidget* parent, const KeyEvent& t);
+      virtual LMASTER_LVTYPE getType() { return LMASTER_KEYEVENT; }
+      const KeyEvent& getEvent() { return keyEvent; }
+      virtual unsigned tick() { return keyEvent.tick; }
+      key_enum key() { return keyEvent.key; }
+      };
+//---------------------------------------------------------
 //   LMasterTempoItem
 //!  QListViewItem which holds data for a SigEvent
 //---------------------------------------------------------
@@ -98,24 +118,26 @@ class LMaster : public MidiEditor {
       QToolBar* tools;
       QMenu* menuEdit;
 
-      enum { CMD_DELETE, CMD_INSERT_SIG, CMD_INSERT_TEMPO, CMD_EDIT_BEAT, CMD_EDIT_VALUE };
+      enum { CMD_DELETE, CMD_INSERT_SIG, CMD_INSERT_TEMPO, CMD_EDIT_BEAT, CMD_EDIT_VALUE, CMD_INSERT_KEY };
 
       Q_OBJECT
       virtual void closeEvent(QCloseEvent*);
       void updateList();
       void insertTempo(const TEvent*);
       void insertSig(const SigEvent*);
+      void insertKey(const KeyEvent&);
       LMasterLViewItem* getItemAtPos(unsigned tick, LMASTER_LVTYPE t);
       void initShortcuts();
       QLineEdit* editor;
       PosEdit*   pos_editor;
+      QComboBox*  key_editor;
       // State-like members:
       LMasterLViewItem* editedItem;
       SigEdit* sig_editor;
       int editorColumn;
       bool editingNewItem;
 
-      QAction *tempoAction, *signAction, *posAction, *valAction, *delAction;
+      QAction *tempoAction, *signAction, *posAction, *valAction, *delAction, *keyAction;
 
    private slots:
       void select(QTreeWidgetItem*, QTreeWidgetItem*);
@@ -124,6 +146,7 @@ class LMaster : public MidiEditor {
       void itemPressed(QTreeWidgetItem* i, int column);
       void tempoButtonClicked();
       void timeSigButtonClicked();
+      void insertKey();
       void cmd(int cmd);
 
    public slots:
@@ -132,6 +155,7 @@ class LMaster : public MidiEditor {
 
    signals:
       void deleted(unsigned long);
+      void seekTo(int tick);
 
    public:
       LMaster();

@@ -85,6 +85,7 @@ class SigList : public SIGLIST {
 
    public:
       SigList();
+      ~SigList();
       void clear();
       void add(unsigned tick, const TimeSignature& s);
       //void add(unsigned tick, int z, int n);

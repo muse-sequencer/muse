@@ -1,3 +1,21 @@
+16.04.2011:
+        - Added KeyList for keeping key change events and ability to edit it in
+          master list editor (rj)
+        - fixed stuff in master list editor (rj)
+          * editing tempo signature is now atleast working
+          * editing time position is now atleast working
+          * double clicking a line moves the playpointer to this position if we are not playing
+          * changed adding tempo/sig/key so they pick the postion from the play pointer instead
+            of just incrementing the time position, I can't fathom when that would be preferrable
+            (if there is a time, I'm sure someone will let me know :) )
+          - song changed not implemented yet
+          - undo/redo is not implemented
+        - Fixed crash in dssihost.cpp - my bad from recent p4.0.20 changes. (Tim)
+        - Added destructors to sigmap and tempomap. Test OK. (Tim)
+15.04.2011:
+        - And while we're at it... Invert drum track 'slivers' in arranger parts. (Tim)
+        - Move part name text to bottom to accommodate drum 'slivers'. 
+          Use lowest gradient colour from new gGradientFromQColor(), to determine whether to invert.
 14.04.2011:
         - Fixed notes 'sliver' drawing in arranger midi parts. Invert if too dark. (Tim)
         - Gave arranger part name text drawing a shadow to help contrast with drawn events. 
