@@ -24,9 +24,8 @@ KeyList keymap;
 
 KeyList::KeyList()
       {
-      _key   = 0;
-      insert(std::pair<const unsigned, KeyEvent*> (MAX_TICK+1, new KeyEvent(_key, 0)));
-//      _keySN     = 1;
+      _key   = KEY_C;
+      insert(std::pair<const unsigned, KeyEvent> (MAX_TICK+1, KeyEvent(_key, 0)));
       useList      = true;
       }
 
@@ -34,20 +33,20 @@ KeyList::KeyList()
 //   add
 //---------------------------------------------------------
 
-void KeyList::add(unsigned tick, int key)
+void KeyList::add(unsigned tick, key_enum key)
       {
       if (tick > MAX_TICK)
             tick = MAX_TICK;
       iKeyEvent e = upper_bound(tick);
 
-      if (tick == e->second->tick)
-            e->second->key = key;
+      if (tick == e->second.tick)
+            e->second.key = key;
       else {
-            KeyEvent* ne = e->second;
-            KeyEvent* ev = new KeyEvent(ne->key, ne->tick);
-            ne->key  = key;
-            ne->tick   = tick;
-            insert(std::pair<const unsigned, KeyEvent*> (tick, ev));
+            KeyEvent& ne = e->second;
+            KeyEvent ev = KeyEvent(ne.key, ne.tick);
+            ne.key  = key;
+            ne.tick   = tick;
+            insert(std::pair<const unsigned, KeyEvent> (tick, ev));
             }
       }
 
@@ -60,7 +59,7 @@ void KeyList::dump() const
       printf("\nKeyList:\n");
       for (ciKeyEvent i = begin(); i != end(); ++i) {
             printf("%6d %06d key %6d\n",
-               i->first, i->second->tick, i->second->key);
+               i->first, i->second.tick, i->second.key);
             }
       }
 
@@ -71,26 +70,23 @@ void KeyList::dump() const
 
 void KeyList::clear()
       {
-      for (iKeyEvent i = begin(); i != end(); ++i)
-            delete i->second;
       KEYLIST::clear();
-      insert(std::pair<const unsigned, KeyEvent*> (MAX_TICK+1, new KeyEvent(0, 0)));
-//      ++_keySN;
+      insert(std::pair<const unsigned, KeyEvent> (MAX_TICK+1, KeyEvent(_key, 0)));
       }
 
 //---------------------------------------------------------
-//   key
+//   keyAtTick
 //---------------------------------------------------------
 
-int KeyList::key(unsigned tick) const
+key_enum KeyList::keyAtTick(unsigned tick) const
       {
       if (useList) {
             ciKeyEvent i = upper_bound(tick);
             if (i == end()) {
                   printf("no key at tick %d,0x%x\n", tick, tick);
-                  return 1000;
+                  return _key;
                   }
-            return i->second->key;
+            return i->second.key;
             }
       else
             return _key;
@@ -102,14 +98,12 @@ int KeyList::key(unsigned tick) const
 
 void KeyList::del(unsigned tick)
       {
-// printf("KeyList::del(%d)\n", tick);
       iKeyEvent e = find(tick);
       if (e == end()) {
             printf("KeyList::del(%d): not found\n", tick);
             return;
             }
       del(e);
-//      ++_keySN;
       }
 
 void KeyList::del(iKeyEvent e)
@@ -120,21 +114,19 @@ void KeyList::del(iKeyEvent e)
             printf("KeyList::del() HALLO\n");
             return;
             }
-      ne->second->key = e->second->key;
-      ne->second->tick  = e->second->tick;
+      ne->second.key = e->second.key;
+      ne->second.tick  = e->second.tick;
       erase(e);
-//      ++_keySN;
       }
 
 //---------------------------------------------------------
 //   change
 //---------------------------------------------------------
 
-void KeyList::change(unsigned tick, int newkey)
+void KeyList::change(unsigned tick, key_enum newkey)
       {
       iKeyEvent e = find(tick);
-      e->second->key = newkey;
-//      ++_keySN;
+      e->second.key = newkey;
       }
 
 //---------------------------------------------------------
@@ -156,10 +148,9 @@ void KeyList::change(unsigned tick, int newkey)
 //   addKey
 //---------------------------------------------------------
 
-void KeyList::addKey(unsigned t, int key)
+void KeyList::addKey(unsigned t, key_enum key)
       {
       add(t, key);
-//      ++_keySN;
       }
 
 //---------------------------------------------------------
@@ -169,7 +160,6 @@ void KeyList::addKey(unsigned t, int key)
 void KeyList::delKey(unsigned tick)
       {
       del(tick);
-//      ++_keySN;
       }
 
 //---------------------------------------------------------
@@ -190,7 +180,6 @@ bool KeyList::setMasterFlag(unsigned /*tick*/, bool val)
       {
       if (useList != val) {
             useList = val;
-//            ++_keySN;
             return true;
             }
       return false;
@@ -206,7 +195,7 @@ void KeyList::write(int level, Xml& xml) const
       {
       xml.put(level++, "<keylist fix=\"%d\">", _key);
       for (ciKeyEvent i = begin(); i != end(); ++i)
-            i->second->write(level, xml, i->first);
+            i->second.write(level, xml, i->first);
       xml.tag(level, "/keylist");
       }
 
@@ -225,23 +214,22 @@ void KeyList::read(Xml& xml)
                         return;
                   case Xml::TagStart:
                         if (tag == "key") {
-                              KeyEvent* t = new KeyEvent();
-                              unsigned tick = t->read(xml);
+                              KeyEvent t;
+                              unsigned tick = t.read(xml);
                               iKeyEvent pos = find(tick);
                               if (pos != end())
                                     erase(pos);
-                              insert(std::pair<const int, KeyEvent*> (tick, t));
+                              insert(std::pair<const int, KeyEvent> (tick, t));
                               }
                         else
                               xml.unknown("keyList");
                         break;
                   case Xml::Attribut:
                         if (tag == "fix")
-                              _key = xml.s2().toInt();
+                              _key = key_enum(xml.s2().toInt());
                         break;
                   case Xml::TagEnd:
                         if (tag == "keylist") {
-                              //++_keySN;
                               return;
                               }
                   default:
@@ -280,7 +268,7 @@ int KeyEvent::read(Xml& xml)
                         if (tag == "tick")
                               tick = xml.parseInt();
                         else if (tag == "val")
-                              key = xml.parseInt();
+                              key = key_enum(xml.parseInt());
                         else
                               xml.unknown("KeyEvent");
                         break;

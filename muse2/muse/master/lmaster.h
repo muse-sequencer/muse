@@ -81,14 +81,14 @@ class LMasterTempoItem : public LMasterLViewItem {
 class LMasterKeyEventItem : public LMasterLViewItem {
 
    private:
-      const KeyEvent* keyEvent;
+      KeyEvent keyEvent;
 
    public:
-      LMasterKeyEventItem(QTreeWidget* parent, const KeyEvent* t);
+      LMasterKeyEventItem(QTreeWidget* parent, const KeyEvent& t);
       virtual LMASTER_LVTYPE getType() { return LMASTER_KEYEVENT; }
-      const KeyEvent* getEvent() { return keyEvent; }
-      virtual unsigned tick() { return keyEvent->tick; }
-      int key() { return keyEvent->key; }
+      const KeyEvent& getEvent() { return keyEvent; }
+      virtual unsigned tick() { return keyEvent.tick; }
+      key_enum key() { return keyEvent.key; }
       };
 //---------------------------------------------------------
 //   LMasterTempoItem
@@ -125,7 +125,7 @@ class LMaster : public MidiEditor {
       void updateList();
       void insertTempo(const TEvent*);
       void insertSig(const SigEvent*);
-      void insertKey(const KeyEvent*);
+      void insertKey(const KeyEvent&);
       LMasterLViewItem* getItemAtPos(unsigned tick, LMASTER_LVTYPE t);
       void initShortcuts();
       QLineEdit* editor;
