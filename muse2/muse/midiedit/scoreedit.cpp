@@ -162,6 +162,39 @@ ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned i
 	xscroll->setMinimum(0);
 	yscroll->setMinimum(0);
 
+
+
+
+	// Toolbars ---------------------------------------------------------
+	QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
+	undo_tools->setObjectName("Undo/Redo tools");
+	undo_tools->addActions(undoRedo->actions());
+	addToolBar(undo_tools);
+
+	EditToolBar* edit_tools = new EditToolBar(this, PointerTool | PencilTool | RubberTool);
+	addToolBar(edit_tools);
+	edit_tools->set(PointerTool);
+	score_canvas->set_tool(PointerTool);
+	connect(edit_tools, SIGNAL(toolChanged(int)), score_canvas,   SLOT(set_tool(int)));
+
+	QToolBar* panic_toolbar = addToolBar(tr("panic"));         
+	panic_toolbar->setObjectName("panic");
+	panic_toolbar->addAction(panicAction);
+
+	QToolBar* transport_toolbar = addToolBar(tr("transport"));
+	transport_toolbar->setObjectName("transport");
+	transport_toolbar->addActions(transportAction->actions());
+
+
+/* TODO FINDMICHJETZT
+	addToolBarBreak();
+	info    = new NoteInfo(this);
+	addToolBar(info);
+*/
+
+
+
+
 	score_canvas->song_changed(SC_EVENT_INSERTED);
 	score_canvas->goto_tick(initPos,true);
 	
@@ -2989,7 +3022,17 @@ void ScoreCanvas::config_changed()
 	redraw();
 }
 
-
+void ScoreCanvas::set_tool(int tool)
+{
+	switch (tool)
+	{
+		case PointerTool: mouse_erases_notes=false; mouse_inserts_notes=false; break;
+		case RubberTool:  mouse_erases_notes=true;  mouse_inserts_notes=false; break;
+		case PencilTool:  mouse_erases_notes=false; mouse_inserts_notes=true;  break;
+		default:
+			cout << "THIS SHOULD NEVER HAPPEN: set_tool called with unknown tool ("<<tool<<")"<<endl;
+	}
+}
 
 //the following assertions are made:
 //  pix_quarter.width() == pix_half.width()
@@ -3060,19 +3103,16 @@ void ScoreCanvas::config_changed()
  *   o add tracks in correct order to score
  *
  * stuff for the other muse developers
- *   o check if dragging notes is done correctly
- *   o after doing the undo stuff right, the "pianoroll isn't informed
- *     about score-editor's changes"-bug has vanished. did it vanish
- *     "by accident", or is that the correct solution for this?
  *   o process accurate timesignatures from muse's list (has to be implemented first in muse)
  *      ( (2+2+3)/4 or (3+2+2)/4 instead of 7/4 )
  *   o maybe do expanding parts inside the msgChangeEvent or
  *     msgNewEvent functions (see my e-mail)
  *
  * GUI stuff
- *   o offer a button for bool mouse_erases_notes and mouse_inserts_notes
  *   o offer dropdown-boxes for lengths of the inserted note
  *     (select between 16th, 8th, ... whole and "last used length")
+ *   o select quantisation ("score resolution")
+ *       per staff? or per score-win?
  *   o offer some way to setup the colorizing method to be used
  */
  

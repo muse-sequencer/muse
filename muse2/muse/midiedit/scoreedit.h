@@ -594,6 +594,8 @@ class ScoreCanvas : public View
 			void goto_tick(int,bool);
 			void pos_changed(int i, unsigned u, bool b);
 			void heartbeat_timer_event();
+			
+			void set_tool(int);
 	
 	signals:
 			void xscroll_changed(int);
