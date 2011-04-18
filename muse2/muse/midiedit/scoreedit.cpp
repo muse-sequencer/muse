@@ -37,6 +37,7 @@
 #include <sstream>
 using namespace std;
 
+#include "app.h"
 #include "xml.h"
 #include "mtscale.h"
 #include "prcanvas.h"
@@ -161,7 +162,7 @@ ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned i
 	xscroll->setMinimum(0);
 	yscroll->setMinimum(0);
 
-	score_canvas->song_changed(0);
+	score_canvas->song_changed(SC_EVENT_INSERTED);
 	score_canvas->goto_tick(initPos,true);
 	
 	if (name!=NULL)
@@ -272,11 +273,11 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 
 		staff.type=GRAND_TOP; //FINDMICH
 		staff.clef=VIOLIN;
-		staffs.push_back(staff);
+		staves.push_back(staff);
 
 		staff.type=GRAND_BOTTOM;
 		staff.clef=BASS;
-		staffs.push_back(staff);		
+		staves.push_back(staff);		
 	}
 	else
 	{
@@ -296,16 +297,16 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 
 			staff.type=GRAND_TOP; //FINDMICH
 			staff.clef=VIOLIN;
-			staffs.push_back(staff);
+			staves.push_back(staff);
 
 			staff.type=GRAND_BOTTOM;
 			staff.clef=BASS;
-			staffs.push_back(staff);
+			staves.push_back(staff);
 		}
 	}
 	
 	recalc_staff_pos();
-	song_changed(0);
+	song_changed(SC_EVENT_INSERTED);
 }
 
 
@@ -342,7 +343,8 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 	connect (heartBeatTimer, SIGNAL(timeout()), SLOT(heartbeat_timer_event()));
 	
 	connect(song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(pos_changed(int,unsigned,bool)));
-	
+	connect(song, SIGNAL(playChanged(bool)), SLOT(play_changed(bool)));
+	connect(muse, SIGNAL(configChanged()), SLOT(config_changed()));
 	
 	
 	staff_menu=new QMenu(this);
@@ -396,7 +398,7 @@ void ScoreCanvas::set_staffmode(list<staff_t>::iterator it, staff_mode_t mode)
 		tmp++;
 		if (tmp->type!=GRAND_BOTTOM)
 			cout << "THIS SHOULD NEVER HAPPEN: grand_top without bottom!"<<endl;
-		staffs.erase(tmp);
+		staves.erase(tmp);
 	}
 	
 	switch (mode)
@@ -416,7 +418,7 @@ void ScoreCanvas::set_staffmode(list<staff_t>::iterator it, staff_mode_t mode)
 			it->clef=BASS;
 			it->split_note=SPLIT_NOTE;
 			
-			staffs.insert(it, staff_t(GRAND_TOP, VIOLIN, it->parts, it->split_note));
+			staves.insert(it, staff_t(GRAND_TOP, VIOLIN, it->parts, it->split_note));
 			break;
 		
 		default:
@@ -424,7 +426,7 @@ void ScoreCanvas::set_staffmode(list<staff_t>::iterator it, staff_mode_t mode)
 	}
 	
 	recalc_staff_pos();
-	song_changed(0);
+	song_changed(SC_EVENT_INSERTED);
 }
 
 void ScoreCanvas::remove_staff(list<staff_t>::iterator it)
@@ -438,18 +440,18 @@ void ScoreCanvas::remove_staff(list<staff_t>::iterator it)
 	
 	if (it->type == NORMAL)
 	{
-		staffs.erase(it);
+		staves.erase(it);
 	}
 	else if (it->type == GRAND_TOP)
 	{
-		staffs.erase(it++);
+		staves.erase(it++);
 		if (it->type!=GRAND_BOTTOM)
 			cout << "THIS SHOULD NEVER HAPPEN: grand_top without bottom!"<<endl;
-		staffs.erase(it);
+		staves.erase(it);
 	}		
 	
 	recalc_staff_pos();
-	song_changed(0);
+	song_changed(SC_EVENT_INSERTED);
 }
 
 void ScoreCanvas::merge_staves(list<staff_t>::iterator dest, list<staff_t>::iterator src)
@@ -485,39 +487,44 @@ void ScoreCanvas::merge_staves(list<staff_t>::iterator dest, list<staff_t>::iter
 	remove_staff(src);
 
 	recalc_staff_pos();
-	song_changed(0);
+	song_changed(SC_EVENT_INSERTED);
 }
 
 
-void ScoreCanvas::song_changed(int)
+void ScoreCanvas::song_changed(int flags)
 {
-	cout << "song changed!" << endl;
-	
-	calc_pos_add_list();
-	
-	for (list<staff_t>::iterator it=staffs.begin(); it!=staffs.end(); it++)
+	if (flags & (SC_PART_INSERTED | SC_PART_MODIFIED | SC_PART_REMOVED |
+	             SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED |
+	             SC_SIG) )
 	{
-		it->create_appropriate_eventlist(it->parts);
-		it->create_itemlist();
-		it->process_itemlist(); // do note- and rest-grouping and collision avoiding
-		it->calc_item_pos();
-	}
-	
-	redraw();
-	cout << "song had changed, recalculation complete" << endl;
+		cout << "song changed!" << endl;
+		
+		calc_pos_add_list();
+		
+		for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
+		{
+			it->create_appropriate_eventlist(it->parts);
+			it->create_itemlist();
+			it->process_itemlist(); // do note- and rest-grouping and collision avoiding
+			it->calc_item_pos();
+		}
+		
+		redraw();
+		cout << "song had changed, recalculation complete" << endl;
 
-	emit canvas_width_changed(canvas_width());
+		emit canvas_width_changed(canvas_width());
+	}
 }
 
 int ScoreCanvas::canvas_width()
 {
-	//return tick_to_x(staffs.begin()->itemlist.rbegin()->first); 
+	//return tick_to_x(staves.begin()->itemlist.rbegin()->first); 
 	return tick_to_x(SONG_LENGTH);
 }
 
 int ScoreCanvas::canvas_height()
 {
-	return staffs.rbegin()->y_bottom;
+	return staves.rbegin()->y_bottom;
 }
 
 int ScoreCanvas::viewport_width()
@@ -2188,7 +2195,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 
 bool ScoreCanvas::need_redraw_for_hilighting()
 {
-	for (list<staff_t>::iterator it=staffs.begin(); it!=staffs.end(); it++)
+	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 		if (need_redraw_for_hilighting(it->itemlist)) return true;
 	
 	return false;
@@ -2345,7 +2352,7 @@ void ScoreCanvas::draw(QPainter& p, const QRect&)
 
 	p.setPen(Qt::black);
 	
-	for (list<staff_t>::iterator it=staffs.begin(); it!=staffs.end(); it++)
+	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 	{
 		//TODO: maybe only draw visible staves?
 		draw_note_lines(p,it->y_draw - y_pos);
@@ -2508,7 +2515,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 	int tick=flo_quantize_floor(x_to_tick(x));
 						//TODO quantizing must (maybe?) be done with the proper functions
 
-	if (it!=staffs.end())
+	if (it!=staves.end())
 	{
 		if (event->x() <= x_left) //clicked in the preamble?
 		{
@@ -2635,7 +2642,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				mouse_operation=NO_OP;
 				mouse_x_drag_operation=LENGTH;
 
-				song_changed(0);
+				song_changed(SC_EVENT_INSERTED);
 
 				setMouseTracking(true);	
 				dragging=true;
@@ -2730,7 +2737,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
 					dragged_event=tmp;
 					
-					song_changed(0);	
+					song_changed(SC_EVENT_INSERTED);	
 				}
 				
 				break;
@@ -2746,7 +2753,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
 					dragged_event=tmp;
 					
-					song_changed(0);	
+					song_changed(SC_EVENT_INSERTED);	
 				}
 				
 				break;
@@ -2763,7 +2770,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
 					dragged_event=tmp;
 					
-					song_changed(0);	
+					song_changed(SC_EVENT_INSERTED);	
 				}
 				
 				break;
@@ -2937,7 +2944,7 @@ void ScoreCanvas::recalc_staff_pos()
 {
 	int y=0;
 	
-	for (list<staff_t>::iterator it=staffs.begin(); it!=staffs.end(); it++)
+	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 	{
 		it->y_top=y;
 		switch (it->type)
@@ -2965,12 +2972,24 @@ void ScoreCanvas::recalc_staff_pos()
 
 list<staff_t>::iterator ScoreCanvas::staff_at_y(int y)
 {
-	for (list<staff_t>::iterator it=staffs.begin(); it!=staffs.end(); it++)
+	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 		if ((y >= it->y_top) && (y < it->y_bottom))
 			return it;
 
-	return staffs.end();
+	return staves.end();
 }
+
+void ScoreCanvas::play_changed(bool)
+{
+	redraw();
+}
+
+void ScoreCanvas::config_changed()
+{
+	redraw();
+}
+
+
 
 //the following assertions are made:
 //  pix_quarter.width() == pix_half.width()
@@ -2996,8 +3015,6 @@ list<staff_t>::iterator ScoreCanvas::staff_at_y(int y)
  *   o when the keymap is not used, this will probably lead to a bug
  *   o when adding a note, it's added to the first stave
  *     the problem is: there's always the first part selected
- *   o when changing color of a displayed part, note heads aren't redrawn
- *   o when pressing "STOP", the active note isn't redrawn "normally"
  * 
  * CURRENT TODO
  *   o let the user edit the score's name
@@ -3011,6 +3028,9 @@ list<staff_t>::iterator ScoreCanvas::staff_at_y(int y)
  *   o emit a "song-changed" signal instead of calling our
  *     internal song_changed() function
  *   o check if "moving away" works for whole notes [seems to NOT work properly]
+ *   o more fine-grained redrawing in song_changed: sometimes,
+ *     only a redraw and not a recalc is needed
+ *   o do all the song_changed(SC_EVENT_INSERTED) properly
  *
  * less important stuff
  *   o must add_parts() update the part-list?
@@ -3021,19 +3041,12 @@ list<staff_t>::iterator ScoreCanvas::staff_at_y(int y)
  *       keeping its own pos_add variable (which is only an optimisation)
  *   o use nearest part instead of curr_part, maybe expand
  *   o draw measure numbers
- *   o use "unsigned" whereever "unsigned" is meant
  *   o when moving or resizing a note, so that its end is out-of-part,
  *     there's strange behaviour
- *   o redraw is called too often
- *     for example, when scroll is continuous, and note-hilighting has
- *     changed, redraw() is called twice
- *   o song_changed() should distinguish between relevant and
- *     irrelevant changes. (for example controllers can be ignored)
  *   o ties aren't always drawn correctly when the destination note
  *     is out of view
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
- *   o display only the part, not the whole song filled with rests?
  *   o let the user select whether the preamble should have
  *     a fixed length (?)
  *   o let the user select what the preamble has to contain
@@ -3043,14 +3056,8 @@ list<staff_t>::iterator ScoreCanvas::staff_at_y(int y)
  *   o use bars instead of flags over groups of 8ths / 16ths etc
  *   o (change ItemList into map< pos_t , mutable_stuff_t >) [no]
  *   o deal with expanding parts or clip (expanding is better)
- *   o check if making the program clef-aware hasn't broken anything
- *     e.g. accidentials, creating notes, rendering etc.
- *   o check if the new function for drawing accidential works
  *   o refuse to resize so that width gets smaller or equal than x_left
- *   o set distances properly [looks okay, doesn't it?]
- *   o change iterators into const iterators
  *   o add tracks in correct order to score
- *   o rename staffs to staves
  *
  * stuff for the other muse developers
  *   o check if dragging notes is done correctly

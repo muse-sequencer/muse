@@ -3525,7 +3525,9 @@ void MusE::openInScoreEdit(ScoreEdit* destination, PartList* pl, bool allInOne)
       destination->show();
       toplevels.push_back(Toplevel(Toplevel::SCORE, (unsigned long)(destination), destination));
       connect(destination, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
-      connect(muse, SIGNAL(configChanged()), destination, SLOT(configChanged()));
+      //connect(muse, SIGNAL(configChanged()), destination, SLOT(config_changed()));
+      //commented out by flo, because the ScoreEditor connects to all 
+      //relevant signals on his own
       
       updateScoreMenus();
   }

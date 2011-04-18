@@ -518,7 +518,7 @@ class ScoreCanvas : public View
 		
 		std::map<int,int> pos_add_list;
 		
-		list<staff_t> staffs;
+		list<staff_t> staves;
 		
 		// the drawing area is split into a "preamble" containing clef,
 		// key and time signature, and the "item's area" containing the
@@ -583,6 +583,9 @@ class ScoreCanvas : public View
 		void staffmode_bass_slot();
 		void staffmode_both_slot();
 		void remove_staff_slot();
+		
+		void play_changed(bool);
+		void config_changed();
 
    public slots:
       void x_scroll_event(int);

@@ -994,7 +994,8 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                     // If no items selected, use the one clicked on.
                     if(!selfound)
                       item->part()->setColorIndex(curColorIndex);
-                                
+                    
+                    song->update(SC_PART_MODIFIED);
                     redraw();
                     break;
                   }
