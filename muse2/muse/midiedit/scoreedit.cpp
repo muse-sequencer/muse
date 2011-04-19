@@ -1176,10 +1176,7 @@ list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo,
 }
 
 
-#define USED_CLEF VIOLIN
-
 #define YLEN 10
-#define NOTE_XLEN 10
 #define NOTE_SHIFT 3
 #define PIXELS_PER_WHOLE (320) //how many px are between two wholes?
 #define PIXELS_PER_NOTEPOS (PIXELS_PER_WHOLE/quant_max_fraction)  //how many px are between the smallest drawn beats?
@@ -1440,7 +1437,7 @@ void staff_t::create_itemlist()
 
 void staff_t::process_itemlist()
 {
-	stdmap<int,int> occupied;
+	map<int,int> occupied;
 	int last_measure=0;
 	vector<int> emphasize_list=create_emphasize_list(4,4); //unneccessary, only for safety
 
@@ -1467,7 +1464,7 @@ void staff_t::process_itemlist()
 		}
 		
 		cout << "occupied: ";
-		for (stdmap<int,int>::iterator i=occupied.begin(); i!=occupied.end(); i++)
+		for (map<int,int>::iterator i=occupied.begin(); i!=occupied.end(); i++)
 			if (i->second) cout << i->first << "("<<i->second<<")   ";
 		cout << endl;
 		
@@ -1649,7 +1646,7 @@ void staff_t::process_itemlist()
 		// phase 3: group notes by their length and ------------------------
 		//          find out appropriate stem directions
 group_them_again:
-		stdmap<int, cumulative_t> lengths;
+		map<int, cumulative_t> lengths;
 		bool has_whole=false;
 		
 		// find out which note lengths are present at that time
@@ -1658,7 +1655,7 @@ group_them_again:
 				lengths[it->len].add(it->pos.height);
 		
 		cout << "note lengths at that time are:";
-		for (stdmap<int, cumulative_t>::iterator it=lengths.begin(); it!=lengths.end(); it++)
+		for (map<int, cumulative_t>::iterator it=lengths.begin(); it!=lengths.end(); it++)
 			cout << it->first << "("<< it->second.mean() <<")  ";
 		cout << endl;
 		
@@ -1699,7 +1696,7 @@ group_them_again:
 		}
 		else if (lengths.size()==2)
 		{
-			stdmap<int, cumulative_t>::iterator it=lengths.begin();
+			map<int, cumulative_t>::iterator it=lengths.begin();
 			pair<const int, cumulative_t>& group1=*it;
 			it++;
 			pair<const int, cumulative_t>& group2=*it;
@@ -1754,7 +1751,7 @@ group_them_again:
 			int group1_len_ticks, group2_len_ticks;
 			
 
-			stdmap<int, cumulative_t>::iterator lit=lengths.begin();
+			map<int, cumulative_t>::iterator lit=lengths.begin();
 			for (int i=0;i<group1_n-1;i++) lit++; //go to the group1_n-th entry
 			group1_len=lit->first;
 			for (int i=0;i<group2_n;i++) lit++;  //go to the (group1_n+group2_n)-th entry (i.e., the last before end() )
@@ -2641,44 +2638,44 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 	// denn der "bereich" eines schlags geht von schlag_begin bis nächsterschlag_begin-1
 	// noten werden aber genau in die mitte dieses bereiches gezeichnet
 
-	list<staff_t>::iterator it=staff_at_y(event->y() + y_pos);
+	list<staff_t>::iterator staff_it=staff_at_y(event->y() + y_pos);
 
-	int y=event->y() + y_pos - it->y_draw;
+	int y=event->y() + y_pos - staff_it->y_draw;
 	int x=event->x()+x_pos-x_left;
 	int tick=flo_quantize_floor(x_to_tick(x));
 						//TODO quantizing must (maybe?) be done with the proper functions
 
-	if (it!=staves.end())
+	if (staff_it!=staves.end())
 	{
 		if (event->x() <= x_left) //clicked in the preamble?
 		{
 			if (event->button() == Qt::RightButton) //right-click?
 			{
-				current_staff=it;
+				current_staff=staff_it;
 				staff_menu->popup(event->globalPos());
 			}
 			else if (event->button() == Qt::MidButton) //middle click?
 			{
-				remove_staff(it);
+				remove_staff(staff_it);
 			}
 			else if (event->button() == Qt::LeftButton) //left click?
 			{
-				current_staff=it;
+				current_staff=staff_it;
 				dragging_staff=true;
 			}
 		}
 		else
 		{
-			ScoreItemList& itemlist=it->itemlist;
+			ScoreItemList& itemlist=staff_it->itemlist;
 
 			cout << "mousePressEvent at "<<x<<"/"<<y<<"; tick="<<tick<<endl;
-			set<FloItem, floComp>::iterator it;
-			for (it=itemlist[tick].begin(); it!=itemlist[tick].end(); it++)
-				if (it->type==FloItem::NOTE)
-					if (it->bbox().contains(x,y))
+			set<FloItem, floComp>::iterator set_it;
+			for (set_it=itemlist[tick].begin(); set_it!=itemlist[tick].end(); set_it++)
+				if (set_it->type==FloItem::NOTE)
+					if (set_it->bbox().contains(x,y))
 						break;
 			
-			if (it!=itemlist[tick].end()) //we found something?
+			if (set_it!=itemlist[tick].end()) //we found something?
 			{
 				mouse_down_pos=event->pos();
 				mouse_operation=NO_OP;
@@ -2688,7 +2685,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				
 				do
 				{
-					found=itemlist[t].find(FloItem(FloItem::NOTE, it->pos));
+					found=itemlist[t].find(FloItem(FloItem::NOTE, set_it->pos));
 					if (found == itemlist[t].end())
 					{
 						cout << "FATAL: THIS SHOULD NEVER HAPPEN: could not find the note's tie-destination" << endl;
@@ -2700,16 +2697,16 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 					}
 				} while (found->tied);
 				
-				int total_begin=it->begin_tick;
+				int total_begin=set_it->begin_tick;
 				int total_end=t;
 				
 				int this_begin=tick;
-				int this_end=this_begin+calc_len(it->len, it->dots);
+				int this_end=this_begin+calc_len(set_it->len, set_it->dots);
 				
 				//that's the only note corresponding to the event?
 				if (this_begin==total_begin && this_end==total_end)
 				{
-					if (x < it->x)
+					if (x < set_it->x)
 						mouse_x_drag_operation=BEGIN;
 					else
 						mouse_x_drag_operation=LENGTH;
@@ -2725,14 +2722,14 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 						mouse_x_drag_operation=NO_OP;
 				}
 				
-				cout << "you clicked at a note with begin at "<<it->begin_tick<<" and end at "<<t<<endl;
+				cout << "you clicked at a note with begin at "<<set_it->begin_tick<<" and end at "<<t<<endl;
 				cout << "x-drag-operation will be "<<mouse_x_drag_operation<<endl;
-				cout << "pointer to part is "<<it->source_part;
-				if (!it->source_part) cout << " (WARNING! THIS SHOULD NEVER HAPPEN!)";
+				cout << "pointer to part is "<<set_it->source_part;
+				if (!set_it->source_part) cout << " (WARNING! THIS SHOULD NEVER HAPPEN!)";
 				cout << endl;
 				
-				dragged_event=*it->source_event;
-				dragged_event_part=it->source_part;
+				dragged_event=*set_it->source_event;
+				dragged_event_part=set_it->source_part;
 				dragged_event_original_pitch=dragged_event.pitch();
 				
 				if ((mouse_erases_notes) || (event->button()==Qt::MidButton)) //erase?
@@ -2748,41 +2745,41 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 			}
 			else //we found nothing?
 			{
-		if ((event->button()==Qt::LeftButton) && (mouse_inserts_notes))
-		{
-			signed int relative_tick=(signed) tick - curr_part->tick();
-			if (relative_tick>=0) //TODO FINDMICH do that better
-			{
-				song->startUndo();
-				//stopping undo at the end of this function is unneccessary
-				//because we'll begin a drag right after it. finishing
-				//this drag will stop undo as well (in mouseReleaseEvent)
-				
-				Event newevent(Note);
-				newevent.setPitch(y_to_pitch(y,tick, USED_CLEF));
-				newevent.setVelo(64); //TODO
-				newevent.setVeloOff(64); //TODO
-				newevent.setTick(relative_tick);
-				newevent.setLenTick((new_len>0)?new_len:last_len);
-				
-				audio->msgAddEvent(newevent, curr_part, false, false, false);
-				
-				dragged_event_part=curr_part;
-				dragged_event=newevent;
-				dragged_event_original_pitch=newevent.pitch();
+				if ((event->button()==Qt::LeftButton) && (mouse_inserts_notes))
+				{
+					signed int relative_tick=(signed) tick - curr_part->tick();
+					if (relative_tick>=0) //TODO FINDMICH do that better
+					{
+						song->startUndo();
+						//stopping undo at the end of this function is unneccessary
+						//because we'll begin a drag right after it. finishing
+						//this drag will stop undo as well (in mouseReleaseEvent)
+						
+						Event newevent(Note);
+						newevent.setPitch(y_to_pitch(y,tick, staff_it->clef));
+						newevent.setVelo(64); //TODO
+						newevent.setVeloOff(64); //TODO
+						newevent.setTick(relative_tick);
+						newevent.setLenTick((new_len>0)?new_len:last_len);
+						
+						audio->msgAddEvent(newevent, curr_part, false, false, false);
+						
+						dragged_event_part=curr_part;
+						dragged_event=newevent;
+						dragged_event_original_pitch=newevent.pitch();
 
-				mouse_down_pos=event->pos();
-				mouse_operation=NO_OP;
-				mouse_x_drag_operation=LENGTH;
+						mouse_down_pos=event->pos();
+						mouse_operation=NO_OP;
+						mouse_x_drag_operation=LENGTH;
 
-				song_changed(SC_EVENT_INSERTED);
+						song_changed(SC_EVENT_INSERTED);
 
-				setMouseTracking(true);	
-				dragging=true;
-				//song->startUndo(); unneccessary because we have started it already above
+						setMouseTracking(true);	
+						dragging=true;
+						//song->startUndo(); unneccessary because we have started it already above
+					}
+				}
 			}
-		}
-	}
 		}
 	}
 }
