@@ -20,6 +20,7 @@
 #include <QClipboard>
 #include <QDir>
 #include <QAction>
+#include <QActionGroup>
 #include <QKeySequence>
 #include <QKeyEvent>
 #include <QGridLayout>
@@ -29,6 +30,8 @@
 #include <QScrollArea>
 #include <QSettings>
 #include <QImage>
+#include <QInputDialog>
+#include <QMessageBox>
 
 #include <stdio.h>
 #include <math.h>
@@ -64,6 +67,7 @@ using namespace std;
 
 
 string IntToStr(int i);
+QString IntToQStr(int i);
 
 
 #define SPLIT_NOTE 60
@@ -100,14 +104,14 @@ string IntToStr(int i);
 #define STAFF_DISTANCE (10*YLEN)
 #define GRANDSTAFF_DISTANCE (8*YLEN)
 
-string create_random_string(int len=8)
+QString create_random_string(int len=8)
 {
 	string result;
 	
 	for (int i=0;i<len;i++)
 		result+=char((rand() % 26) + 'A');
 	
-	return result;
+	return QString(result.c_str());
 }
 
 
@@ -129,7 +133,7 @@ bool pixmaps_loaded=false;
 
 
 int ScoreEdit::serial=1;
-set<string> ScoreEdit::names;
+set<QString> ScoreEdit::names;
 
 //---------------------------------------------------------
 //   ScoreEdit
@@ -162,6 +166,8 @@ ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned i
 	xscroll->setMinimum(0);
 	yscroll->setMinimum(0);
 
+	menu_mapper=new QSignalMapper(this);
+	connect(menu_mapper, SIGNAL(mapped(int)), SLOT(menu_command(int)));
 
 
 
@@ -186,6 +192,44 @@ ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned i
 	transport_toolbar->addActions(transportAction->actions());
 
 
+	QMenu* settings_menu = menuBar()->addMenu(tr("&Settings"));      
+
+		QMenu* color_menu = settings_menu->addMenu(tr("Note head &colors"));
+			QActionGroup* color_actions = new QActionGroup(this);
+			QAction* color_black_action = color_menu->addAction(tr("&Black"), menu_mapper, SLOT(map()));
+			QAction* color_velo_action =  color_menu->addAction(tr("&Velocity"), menu_mapper, SLOT(map()));
+			QAction* color_part_action =  color_menu->addAction(tr("&Part"), menu_mapper, SLOT(map()));
+			color_black_action->setCheckable(true);
+			color_velo_action->setCheckable(true);
+			color_part_action->setCheckable(true);
+			color_actions->addAction(color_black_action);
+			color_actions->addAction(color_velo_action);
+			color_actions->addAction(color_part_action);
+			menu_mapper->setMapping(color_black_action, CMD_COLOR_BLACK);
+			menu_mapper->setMapping(color_velo_action, CMD_COLOR_VELO);
+			menu_mapper->setMapping(color_part_action, CMD_COLOR_PART);
+			
+			color_black_action->setChecked(true);
+			menu_command(CMD_COLOR_BLACK);
+  
+		QMenu* preamble_menu = settings_menu->addMenu(tr("Set up &preamble"));
+			QAction* preamble_keysig_action = preamble_menu->addAction(tr("Display &key signature"));
+			QAction* preamble_timesig_action =  preamble_menu->addAction(tr("Display &time signature"));
+			connect(preamble_keysig_action, SIGNAL(toggled(bool)), score_canvas, SLOT(preamble_keysig_slot(bool)));
+			connect(preamble_timesig_action, SIGNAL(toggled(bool)), score_canvas, SLOT(preamble_timesig_slot(bool)));
+
+			preamble_keysig_action->setCheckable(true);
+			preamble_timesig_action->setCheckable(true);
+			
+			preamble_keysig_action->setChecked(true);
+			preamble_timesig_action->setChecked(true);
+  
+		QAction* set_name_action = settings_menu->addAction(tr("Set Score &name"), menu_mapper, SLOT(map()));
+		menu_mapper->setMapping(set_name_action, CMD_SET_NAME);
+  
+  
+
+
 /* TODO FINDMICHJETZT
 	addToolBarBreak();
 	info    = new NoteInfo(this);
@@ -201,7 +245,7 @@ ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned i
 	if (name!=NULL)
 		set_name(name, false, true);
 	else
-		set_name("Score "+IntToStr(serial++), false, true);
+		set_name("Score "+IntToQStr(serial++), false, true);
 }
 
 
@@ -210,7 +254,7 @@ void ScoreEdit::add_parts(PartList* pl, bool all_in_one)
 	score_canvas->add_staves(pl, all_in_one);
 }
 
-bool ScoreEdit::set_name(string newname, bool emit_signal, bool emergency_name)
+bool ScoreEdit::set_name(QString newname, bool emit_signal, bool emergency_name)
 {
 	if (names.find(newname)==names.end())
 	{
@@ -290,6 +334,28 @@ void ScoreEdit::closeEvent(QCloseEvent* e)
 	e->accept();
 }
 
+void ScoreEdit::menu_command(int cmd)
+{
+	switch (cmd)
+	{
+		case CMD_SET_NAME:
+		{
+			bool ok;
+			QString newname = QInputDialog::getText(this, tr("Enter the new score title"),
+                                          tr("Enter the new score title"), QLineEdit::Normal,
+                                          name, &ok);
+			if (ok)
+			{
+				if (!set_name(newname))
+					QMessageBox::warning(this, tr("Error"), tr("Changing score title failed:\nthe selected title is not unique"));
+			}
+		}
+		
+		default: 
+			score_canvas->menu_command(cmd);
+	}
+}
+
 
 
 void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
@@ -367,6 +433,11 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 	new_len=-1;
 
 	dragging_staff=false;
+	
+	
+	coloring_mode=COLOR_MODE_BLACK;
+	preamble_contains_keysig=true;
+	preamble_contains_timesig=true;
 	
 	
 	x_scroll_speed=0;
@@ -577,6 +648,11 @@ string IntToStr(int i)
 	return s.str();
 }
 
+QString IntToQStr(int i)
+{
+	return QString(IntToStr(i).c_str());
+}
+
 void color_image(QImage& img, const QColor& color)
 {
 	uchar* ptr=img.bits();
@@ -669,7 +745,7 @@ void ScoreCanvas::load_pixmaps()
 		pix_clef_bass->load(museGlobalShare + "/scoreglyphs/clef_bass_big.png");
 		
 		for (int i=0;i<10;i++)
-			pix_num[i].load(museGlobalShare + "/scoreglyphs/"+QString(IntToStr(i).c_str())+".png");
+			pix_num[i].load(museGlobalShare + "/scoreglyphs/"+IntToQStr(i)+".png");
 		
 		pixmaps_loaded=true;
 	}
@@ -2080,10 +2156,24 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 				it->is_active= ( (song->cpos() >= it->source_event->tick() + it->source_part->tick()) &&
 				     			       (song->cpos() < it->source_event->endTick() + it->source_part->tick()) );
 
-				int color_index=it->source_part->colorIndex();
 
+				int color_index;
+				switch (coloring_mode)
+				{
+					case COLOR_MODE_BLACK:
+						color_index=BLACK_PIXMAP;
+						break;
+						
+					case COLOR_MODE_PART:
+						color_index=it->source_part->colorIndex();
+						break;
+						
+					case COLOR_MODE_PITCH: //TODO
+						break;
+				}
 				if (audio->isPlaying() && it->is_active)
 					color_index=HIGHLIGHTED_PIXMAP;
+					
 					
 				draw_pixmap(p,it->x -x_pos+x_left,y_offset + it->y,it->pix[color_index]);
 				//TODO FINDMICH maybe draw a margin around bright colors?
@@ -2308,25 +2398,35 @@ void ScoreCanvas::draw_preamble(QPainter& p, int y_offset, clef_t clef)
 	
 	draw_pixmap(p,CLEF_LEFTMARGIN + pix_clef->width()/2,y_offset + y_coord,*pix_clef);
 	
-	x_left= CLEF_LEFTMARGIN + pix_clef->width() + CLEF_RIGHTMARGIN + KEYCHANGE_ACC_LEFTDIST;
+	x_left= CLEF_LEFTMARGIN + pix_clef->width() + CLEF_RIGHTMARGIN;
 	
 
 	// draw accidentials ------------------------------------------------
-	key_enum key=key_at_tick(tick);
-	QPixmap* pix_acc=is_sharp_key(key) ? &pix_sharp[BLACK_PIXMAP] : &pix_b[BLACK_PIXMAP];
-	list<int> acclist=calc_accidentials(key,clef);
-	
-	draw_accidentials(p,x_left, y_offset, acclist ,*pix_acc);
-	
-	x_left+=acclist.size()*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_RIGHTDIST + TIMESIG_LEFTMARGIN;
+	if (preamble_contains_keysig)
+	{
+		x_left+=KEYCHANGE_ACC_LEFTDIST;
+		
+		key_enum key=key_at_tick(tick);
+		QPixmap* pix_acc=is_sharp_key(key) ? &pix_sharp[BLACK_PIXMAP] : &pix_b[BLACK_PIXMAP];
+		list<int> acclist=calc_accidentials(key,clef);
+		
+		draw_accidentials(p,x_left, y_offset, acclist ,*pix_acc);
+		
+		x_left+=acclist.size()*KEYCHANGE_ACC_DIST + KEYCHANGE_ACC_RIGHTDIST;
+	}
 
 
 	// draw time signature ----------------------------------------------
-	timesig_t timesig=timesig_at_tick(tick);
+	if (preamble_contains_timesig)
+	{
+		x_left+=TIMESIG_LEFTMARGIN;
+		
+		timesig_t timesig=timesig_at_tick(tick);
 
-	draw_timesig(p, x_left, y_offset, timesig.num, timesig.denom);
+		draw_timesig(p, x_left, y_offset, timesig.num, timesig.denom);
 
-	x_left+=calc_timesig_width(timesig.num, timesig.denom)+TIMESIG_RIGHTMARGIN;
+		x_left+=calc_timesig_width(timesig.num, timesig.denom)+TIMESIG_RIGHTMARGIN;
+	}
 	
 	// draw bar ---------------------------------------------------------
 	p.setPen(Qt::black);
@@ -3034,6 +3134,27 @@ void ScoreCanvas::set_tool(int tool)
 	}
 }
 
+void ScoreCanvas::menu_command(int cmd)
+{
+	switch (cmd)
+	{
+		case CMD_COLOR_BLACK: coloring_mode=COLOR_MODE_BLACK; redraw(); break;
+		case CMD_COLOR_PART:  coloring_mode=COLOR_MODE_PART;  redraw(); break;
+		default: 
+			cout << "ILLEGAL FUNCTION CALL: ScoreCanvas::menu_command called with unknown command ("<<cmd<<")"<<endl;
+	}
+}
+
+void ScoreCanvas::preamble_keysig_slot(bool state)
+{
+	preamble_contains_keysig=state;
+	redraw();
+}
+void ScoreCanvas::preamble_timesig_slot(bool state)
+{
+	preamble_contains_timesig=state;
+	redraw();
+}
 //the following assertions are made:
 //  pix_quarter.width() == pix_half.width()
 
@@ -3060,13 +3181,11 @@ void ScoreCanvas::set_tool(int tool)
  *     the problem is: there's always the first part selected
  * 
  * CURRENT TODO
- *   o let the user edit the score's name
+ *   o automatically set x-raster (by quant. strength)
  * 
  * IMPORTANT TODO
  *   o removing the part the score's working on isn't handled
  *   o let the user select the currently edited part
- *   o let the user select between "colors after the parts",
- *     "colors after selected/unselected part" and "all black"
  *   o support selections
  *   o emit a "song-changed" signal instead of calling our
  *     internal song_changed() function
@@ -3111,11 +3230,13 @@ void ScoreCanvas::set_tool(int tool)
  * GUI stuff
  *   o offer dropdown-boxes for lengths of the inserted note
  *     (select between 16th, 8th, ... whole and "last used length")
- *   o select quantisation ("score resolution")
- *       per staff? or per score-win?
- *   o offer some way to setup the colorizing method to be used
- */
- 
+ *   o quantisation strength
+ *   o velocity/release-velo for newly inserted notes [->toolbar]
+ *   o velocity/release-velo for already existing notes
+ *     	  - do this by right-click -> some dialog shows up?
+ *     	  - or by selecting the note and changing the values in the same widget which also is used for new notes?
+ *   o initiate "select current part"
+*/
 
 
 /* how to use the score editor with multiple tracks
@@ -3194,3 +3315,4 @@ void ScoreCanvas::set_tool(int tool)
  * 			REASON: this is only a nice-to-have, which can however be
  *              easily implemented when 4) is done
  */
+

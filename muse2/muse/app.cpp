@@ -3482,13 +3482,13 @@ void MusE::updateScoreMenus()
 		{
 			ScoreEdit* score = (ScoreEdit*) it->cobject();
 			
-			action=new QAction(QString(score->get_name().c_str()), this);
+			action=new QAction(score->get_name(), this);
 			connect(action, SIGNAL(activated()), scoreOneStaffPerTrackMapper, SLOT(map()));
 			scoreOneStaffPerTrackMapper->setMapping(action, (QWidget*)score);
 			scoreOneStaffPerTrackSubsubmenu->addAction(action);
 
 
-			action=new QAction(QString(score->get_name().c_str()), this); //the above action may NOT be reused!
+			action=new QAction(score->get_name(), this); //the above action may NOT be reused!
 			connect(action, SIGNAL(activated()), scoreAllInOneMapper, SLOT(map()));
 			scoreAllInOneMapper->setMapping(action, (QWidget*)score);
 			scoreAllInOneSubsubmenu->addAction(action);
@@ -3525,6 +3525,7 @@ void MusE::openInScoreEdit(ScoreEdit* destination, PartList* pl, bool allInOne)
       destination->show();
       toplevels.push_back(Toplevel(Toplevel::SCORE, (unsigned long)(destination), destination));
       connect(destination, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+      connect(destination, SIGNAL(name_changed()), SLOT(scoreNamingChanged()));
       //connect(muse, SIGNAL(configChanged()), destination, SLOT(config_changed()));
       //commented out by flo, because the ScoreEditor connects to all 
       //relevant signals on his own

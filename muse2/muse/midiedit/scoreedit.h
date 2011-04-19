@@ -16,6 +16,7 @@
 #include <QPixmap>
 #include <QTimer>
 #include <QScrollBar>
+#include <QSignalMapper>
 
 #include <values.h>
 #include "noteinfo.h"
@@ -43,7 +44,8 @@ using std::string;
 
 
 
-
+enum {CMD_COLOR_BLACK, CMD_COLOR_VELO, CMD_COLOR_PART,
+      CMD_SET_NAME};
 
 class ScoreCanvas;
 
@@ -63,14 +65,17 @@ class ScoreEdit : public MidiEditor
 		ScoreCanvas* score_canvas;
 		
 		static int serial;
-		static set<string> names;
+		static set<QString> names;
 		
-		string name;
+		QString name;
+		
+		QSignalMapper* menu_mapper;
 				
-		bool set_name(string newname, bool emit_signal=true, bool emergency_name=false);
-	private slots:
+		bool set_name(QString newname, bool emit_signal=true, bool emergency_name=false);
 		
-
+	private slots:
+		void menu_command(int);
+		
 	signals:
 		void deleted(unsigned long);
 		void name_changed();
@@ -88,7 +93,7 @@ class ScoreEdit : public MidiEditor
 		static void writeConfiguration(int, Xml&){}; //TODO does nothing
 		
 		void add_parts(PartList* pl, bool all_in_one=false);
-		string get_name() { return name; }
+		QString get_name() { return name; }
 	};
 
 
@@ -565,6 +570,9 @@ class ScoreCanvas : public View
 
 
 
+		enum {COLOR_MODE_BLACK, COLOR_MODE_PART, COLOR_MODE_PITCH} coloring_mode;
+		bool preamble_contains_keysig;
+		bool preamble_contains_timesig;
 
 
 		//menu stuff
@@ -596,6 +604,9 @@ class ScoreCanvas : public View
 			void heartbeat_timer_event();
 			
 			void set_tool(int);
+			void menu_command(int);
+			void preamble_keysig_slot(bool);
+			void preamble_timesig_slot(bool);
 	
 	signals:
 			void xscroll_changed(int);
