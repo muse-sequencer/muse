@@ -8,6 +8,7 @@
 
 ///#include "sig.h"
 #include "al/sig.h"  // Tim.
+#include "keyevent.h"
 
 #include "undo.h"
 #include "song.h"
@@ -72,6 +73,8 @@ void UndoOp::dump()
             case DeleteSig:
             case ModifyClip:
             case ModifyMarker:
+            case AddKey:
+            case DeleteKey:
                   break;
             }
       }
@@ -432,6 +435,16 @@ void Song::doUndo2()
                         AL::sigmap.add(i->a, AL::TimeSignature(i->b, i->c));
                         updateFlags |= SC_SIG;
                         break;
+                  case UndoOp::AddKey:
+                        ///sigmap.del(i->a);
+                        keymap.delKey(i->a);
+                        updateFlags |= SC_KEY;
+                        break;
+                  case UndoOp::DeleteKey:
+                        ///sigmap.add(i->a, i->b, i->c);
+                        keymap.addKey(i->a, (key_enum)i->b);
+                        updateFlags |= SC_KEY;
+                        break;
                   case UndoOp::ModifyClip:
                   case UndoOp::ModifyMarker:
                         break;
@@ -659,6 +672,14 @@ void Song::doRedo2()
                         ///sigmap.del(i->a);
                         AL::sigmap.del(i->a);
                         updateFlags |= SC_SIG;
+                        break;
+                  case UndoOp::AddKey:
+                        keymap.addKey(i->a, (key_enum)i->b);
+                        updateFlags |= SC_KEY;
+                        break;
+                  case UndoOp::DeleteKey:
+                        keymap.delKey(i->a);
+                        updateFlags |= SC_KEY;
                         break;
                   case UndoOp::ModifyClip:
                   case UndoOp::ModifyMarker:

@@ -1067,6 +1067,33 @@ void Audio::msgRemoveSig(int tick, int z, int n, bool doUndoFlag)
       }
 
 //---------------------------------------------------------
+//   msgAddKey
+//---------------------------------------------------------
+
+void Audio::msgAddKey(int tick, int key, bool doUndoFlag)
+      {
+      AudioMsg msg;
+      msg.id = SEQM_ADD_KEY;
+      msg.a = tick;
+      msg.b = key;
+      sendMessage(&msg, doUndoFlag);
+      }
+
+//---------------------------------------------------------
+//   msgRemoveKey
+//! sends remove key message
+//---------------------------------------------------------
+
+void Audio::msgRemoveKey(int tick, int key, bool doUndoFlag)
+      {
+      AudioMsg msg;
+      msg.id = SEQM_REMOVE_KEY;
+      msg.a = tick;
+      msg.b = key;
+      sendMessage(&msg, doUndoFlag);
+      }
+
+//---------------------------------------------------------
 //   msgScanAlsaMidiPorts
 //---------------------------------------------------------
 

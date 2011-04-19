@@ -1954,6 +1954,18 @@ void Song::processMsg(AudioMsg* msg)
                   updateFlags = SC_SIG;
                   break;
 
+            case SEQM_ADD_KEY:
+                  undoOp(UndoOp::AddKey, msg->a, msg->b);
+                  keymap.addKey(msg->a, (key_enum) msg->b);
+                  updateFlags = SC_KEY;
+                  break;
+
+            case SEQM_REMOVE_KEY:
+                  undoOp(UndoOp::DeleteKey, msg->a, msg->b);
+                  keymap.delKey(msg->a);
+                  updateFlags = SC_KEY;
+                  break;
+
             default:
                   printf("unknown seq message %d\n", msg->id);
                   break;

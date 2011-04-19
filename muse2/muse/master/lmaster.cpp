@@ -56,7 +56,7 @@ key_enum stringToKey(QString input) //flo
 //don't change this function (except when renaming stuff)
 QString keyToString(key_enum key) //flo
 {
-	int index;
+  int index=0;
 	switch(key)
 	{
 		case KEY_C:   index= 0; break;
@@ -103,7 +103,7 @@ void LMaster::closeEvent(QCloseEvent* e)
 
 void LMaster::songChanged(int type)
       {
-      if (type & (SC_SIG | SC_TEMPO))
+      if (type & (SC_SIG | SC_TEMPO | SC_KEY ))
             updateList();
       }
 
@@ -292,19 +292,19 @@ void LMaster::updateList()
           ++it;
         }
 
-        else if (ik != k->rend() && (is == s->rend() && (ik->second.tick >= it->second->tick)
-                || (it == t->rend() && ik->second.tick >= is->second->tick ))) {// ik biggest
+        else if ((ik != k->rend()) && (is == s->rend()) && (ik->second.tick >= it->second->tick)
+                || (it == t->rend()) && (ik->second.tick >= is->second->tick )) {// ik biggest
           insertKey(ik->second);
           ++ik;
         }
-        else if (is != s->rend() && (ik == k->rend() && (is->second->tick >= it->second->tick)
-                || (it == t->rend() && is->second->tick >= ik->second.tick ))) {// is biggest
+        else if ((is != s->rend()) && (ik == k->rend()) && (is->second->tick >= it->second->tick)
+                || (it == t->rend()) && (is->second->tick >= ik->second.tick )) {// is biggest
           insertSig(is->second);
           ++is;
         }
 
-        else if (it != t->rend() && (ik == k->rend() && (it->second->tick >= is->second->tick)
-                || (is == s->rend() && it->second->tick >= ik->second.tick ))) {// it biggest
+        else if ((it != t->rend()) && (ik == k->rend()) && (it->second->tick >= is->second->tick)
+                || (is == s->rend()) && (it->second->tick >= ik->second.tick )) {// it biggest
           insertTempo(it->second);
           ++it;
         }
@@ -416,9 +416,9 @@ void LMaster::cmd(int cmd)
                                     }
                               case LMASTER_KEYEVENT:
                                     {
-                                    //LMasterKeyEventItem* k = (LMasterKeyEventItem*) l;
-                                    keymap.delKey(l->tick());
-                                    //audio->msgRemoveSig(k->tick(), k->z(), k->n());
+                                    LMasterKeyEventItem* k = (LMasterKeyEventItem*) l;
+                                    //keymap.delKey(l->tick());
+                                    audio->msgRemoveKey(k->tick(), k->key());
                                     break;
                                     }
                               default:
@@ -647,12 +647,11 @@ void LMaster::returnPressed()
                   else if (editedItem->getType() == LMASTER_KEYEVENT) {
                         LMasterKeyEventItem* k = (LMasterKeyEventItem*) editedItem;
                         key_enum key = k->key();
-//                        song->startUndo();
-//                        audio->msgDeleteTempo(oldtick, tempo, false);
-//                        audio->msgAddTempo(newtick, tempo, false);
-//                        song->endUndo(SC_TEMPO);
-                        keymap.delKey(oldtick);
-                        keymap.addKey(newtick, key);
+                        song->startUndo();
+                        audio->msgRemoveKey(oldtick, key, false);
+                        audio->msgAddKey(newtick, key, false);
+                        song->endUndo(SC_KEY);
+
                         // Select the item:
                         QTreeWidgetItem* newSelected = (QTreeWidgetItem*) getItemAtPos(newtick, LMASTER_KEYEVENT);
                         if (newSelected) {
@@ -673,7 +672,6 @@ void LMaster::returnPressed()
       //
       else if (editedItem->getType() == LMASTER_SIGEVENT && editorColumn == LMASTER_VAL_COL) 
       {
-          printf("SIGEVENT return\n");
           ///Sig newSig = sig_editor->sig();
             AL::TimeSignature newSig = sig_editor->sig();
             
@@ -683,12 +681,11 @@ void LMaster::returnPressed()
             if(newSig.isValid())
             {
               LMasterSigEventItem* e = (LMasterSigEventItem*) editedItem;
-              printf("adding sig %d %d\n", e->z(),e->n());
+              //printf("adding sig %d %d\n", e->z(),e->n());
               int tick = e->tick();
               if (!editingNewItem) {
                     song->startUndo();
-                    if (tick > 0)
-                          audio->msgRemoveSig(tick, e->z(), e->n(), false);
+                    audio->msgRemoveSig(tick, e->z(), e->n(), false);
                     audio->msgAddSig(tick, newSig.z, newSig.n, false);
                     song->endUndo(SC_SIG);
                     }
@@ -701,7 +698,6 @@ void LMaster::returnPressed()
       }
 
       else if (editedItem->getType() == LMASTER_KEYEVENT && editorColumn == LMASTER_VAL_COL) {
-          printf("KEYEVENT return\n");
           QString input = key_editor->currentText();
           key_editor->hide();
           repaint();
@@ -711,18 +707,16 @@ void LMaster::returnPressed()
           key_enum key = stringToKey(input);
 
           if (!editingNewItem) {
-//                      song->startUndo();
-//                      audio->msgDeleteTempo(tick, e->tempo(), false);
-//                      audio->msgAddTempo(tick, tempo, false);
-//                      song->endUndo(SC_TEMPO);
-                      keymap.addKey(tick,key);
+                      song->startUndo();
+                      audio->msgRemoveKey(tick, e->key(), false);
+                      audio->msgAddKey(tick, key, false);
+                      song->endUndo(SC_KEY);
                     }
               //
               // New item edited:
               //
               else {
-                    //audio->msgAddTempo(tick, tempo, true);
-                    keymap.addKey(tick,key);
+                    audio->msgAddKey(tick, key, true);
                     }
           }
       updateList();

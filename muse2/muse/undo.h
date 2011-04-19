@@ -33,6 +33,7 @@ struct UndoOp {
             AddEvent, DeleteEvent, ModifyEvent,
             AddTempo, DeleteTempo,
             AddSig,   DeleteSig,
+            AddKey,   DeleteKey,
             SwapTrack,
             ModifyClip,
             ModifyMarker
