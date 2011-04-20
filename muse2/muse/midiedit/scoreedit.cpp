@@ -75,17 +75,25 @@ QString IntToQStr(int i);
 
 
 
-//TODO: all das unten richtig machen!
-#define TICKS_PER_WHOLE (config.division*4) 
-#define SONG_LENGTH (song->len())
-
-#define quant_max 3  //whole, half, quarter = 0,1,2
-#define quant_max_fraction (1 << quant_max) //whole, half, quarter= 1,2,4
-#define FLO_QUANT (TICKS_PER_WHOLE/quant_max_fraction)
-//FLO_QUANT = how many ticks has a single quantisation area?
 
 
-//TODO: quant_max richtig setzen!
+//PIXELS_PER_NOTEPOS must be greater or equal to 3*NOTE_XLEN + 2*NOTE_SHIFT
+//because if tick 0 is at x=0: the notes can be shifted by NOTE_SHIFT.
+//additionally, they can be moved by NOTE_XLEN (collision avoiding)
+//then, they have their own width, which is NOTE_XLEN/2 into the x>0-area
+//the same thing applies to the x<0-area
+
+//  OOO
+//   |
+//   ^actual calculated x, without shifting or moving
+//  ^ and
+//    ^   : moved note (by XLEN)
+// additionally, a shift is possible
+// total_width = shift + move + note_xlen + move + shift, where move==note_xlen
+// total_width = 2*shift + 3*note_xlen
+// if total_width is greater than px_per_notepos, there will be collisions!
+
+
 
 
 
@@ -191,6 +199,54 @@ ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned i
 	transport_toolbar->setObjectName("transport");
 	transport_toolbar->addActions(transportAction->actions());
 
+	QToolBar* quant_len_toolbar = addToolBar(tr("Quant'n'length"));
+	quant_len_toolbar->setObjectName("Quant'n'length");
+	quant_len_toolbar->addWidget(new QLabel(tr("Note length:"), quant_len_toolbar));
+	QActionGroup* len_actions=new QActionGroup(this);
+	QAction* n1_action = quant_len_toolbar->addAction("1", menu_mapper, SLOT(map()));
+	QAction* n2_action = quant_len_toolbar->addAction("2", menu_mapper, SLOT(map()));
+	QAction* n4_action = quant_len_toolbar->addAction("4", menu_mapper, SLOT(map()));
+	QAction* n8_action = quant_len_toolbar->addAction("8", menu_mapper, SLOT(map()));
+	QAction* n16_action = quant_len_toolbar->addAction("16", menu_mapper, SLOT(map()));
+	QAction* n32_action = quant_len_toolbar->addAction("32", menu_mapper, SLOT(map()));
+	QAction* nlast_action = quant_len_toolbar->addAction(tr("last"), menu_mapper, SLOT(map()));
+	menu_mapper->setMapping(n1_action, CMD_NOTELEN_1);
+	menu_mapper->setMapping(n2_action, CMD_NOTELEN_2);
+	menu_mapper->setMapping(n4_action, CMD_NOTELEN_4);
+	menu_mapper->setMapping(n8_action, CMD_NOTELEN_8);
+	menu_mapper->setMapping(n16_action, CMD_NOTELEN_16);
+	menu_mapper->setMapping(n32_action, CMD_NOTELEN_32);
+	menu_mapper->setMapping(nlast_action, CMD_NOTELEN_LAST);
+	n1_action->setCheckable(true);
+	n2_action->setCheckable(true);
+	n4_action->setCheckable(true);
+	n8_action->setCheckable(true);
+	n16_action->setCheckable(true);
+	n32_action->setCheckable(true);
+	nlast_action->setCheckable(true);
+	len_actions->addAction(n1_action);
+	len_actions->addAction(n2_action);
+	len_actions->addAction(n4_action);
+	len_actions->addAction(n8_action);
+	len_actions->addAction(n16_action);
+	len_actions->addAction(n32_action);
+	len_actions->addAction(nlast_action);
+	
+	nlast_action->setChecked(true);
+	menu_command(CMD_NOTELEN_LAST);
+	
+	quant_len_toolbar->addSeparator();
+	quant_len_toolbar->addWidget(new QLabel(tr("Quantisation:"), quant_len_toolbar));
+	QComboBox* quant_combobox = new QComboBox(this);
+	quant_combobox->addItem("2"); // if you add or remove items from
+	quant_combobox->addItem("4"); // here, also change quant_mapper[]
+	quant_combobox->addItem("8"); // in ScoreCanvas::set_quant()!
+	quant_combobox->addItem("16");
+	quant_combobox->addItem("32");
+	connect(quant_combobox, SIGNAL(currentIndexChanged(int)), score_canvas, SLOT(set_quant(int)));
+	quant_len_toolbar->addWidget(quant_combobox);
+	quant_combobox->setCurrentIndex(2);
+	
 
 	QMenu* settings_menu = menuBar()->addMenu(tr("&Settings"));      
 
@@ -230,7 +286,7 @@ ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned i
   
 
 
-/* TODO FINDMICHJETZT
+/* FINDMICHJETZT
 	addToolBarBreak();
 	info    = new NoteInfo(this);
 	addToolBar(info);
@@ -360,7 +416,7 @@ void ScoreEdit::menu_command(int cmd)
 
 void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 {
-	staff_t staff;
+	staff_t staff(this);
 
 	if (all_in_one)
 	{
@@ -431,6 +487,10 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 	
 	last_len=384;
 	new_len=-1;
+	
+	set_quant(2); //this is actually unneccessary, as while
+	              //initalizing the quant_combobox, this gets
+	              //called again. but for safety...
 
 	dragging_staff=false;
 	
@@ -522,7 +582,7 @@ void ScoreCanvas::set_staffmode(list<staff_t>::iterator it, staff_mode_t mode)
 			it->clef=BASS;
 			it->split_note=SPLIT_NOTE;
 			
-			staves.insert(it, staff_t(GRAND_TOP, VIOLIN, it->parts, it->split_note));
+			staves.insert(it, staff_t(this, GRAND_TOP, VIOLIN, it->parts, it->split_note));
 			break;
 		
 		default:
@@ -775,16 +835,16 @@ bool operator< (const note_pos_t& a, const note_pos_t& b)
 
 
  
-int flo_quantize(int tick)
+int flo_quantize(int tick, int quant_ticks)
 {
 	//TODO quantizing must be done with the proper functions!
-	return int(nearbyint((float)tick / FLO_QUANT))*FLO_QUANT;
+	return int(nearbyint((float)tick / quant_ticks))*quant_ticks;
 }
  
-int flo_quantize_floor(int tick)
+int flo_quantize_floor(int tick, int quant_ticks)
 {
 	//TODO quantizing must be done with the proper functions, see above
-	return int(tick / FLO_QUANT) * FLO_QUANT;
+	return int(tick / quant_ticks) * quant_ticks;
 }
 
  
@@ -825,8 +885,8 @@ void staff_t::create_appropriate_eventlist(const set<Part*>& parts)
 			       (type==NORMAL) )                          )
 			{
 				unsigned begin, end;
-				begin=flo_quantize(event.tick()+part->tick());
-				end=flo_quantize(event.endTick()+part->tick());
+				begin=flo_quantize(event.tick()+part->tick(), parent->quant_ticks());
+				end=flo_quantize(event.endTick()+part->tick(), parent->quant_ticks());
 				cout <<"inserting note on at "<<begin<<" with pitch="<<event.pitch()<<" and len="<<end-begin<<endl;
 				eventlist.insert(pair<unsigned, FloEvent>(begin, FloEvent(begin,event.pitch(), event.velo(),end-begin,FloEvent::NOTE_ON,part,&it->second)));
 			}
@@ -1093,11 +1153,11 @@ vector<int> create_emphasize_list(int num, int denom)
 	return create_emphasize_list(nums, denom);
 }
 
-//quant_max must be in log(len), that is
+//quant_power2 must be in log(len), that is
 //whole, half, quarter, eighth = 0,1,2,3
 //NOT:  1,2,4,8! (think of 2^foo)
 //len is in ticks
-list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, bool allow_dots, bool allow_normal)
+list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, int quant_power2, bool allow_dots, bool allow_normal)
 {
 	list<note_len_t> retval;
 	
@@ -1108,9 +1168,9 @@ list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo,
 	
 	if (allow_normal)
 	{
-		int dot_max = allow_dots ? quant_max : 0;
+		int dot_max = allow_dots ? quant_power2 : 0;
 		
-		for (int i=0;i<=quant_max;i++)
+		for (int i=0;i<=quant_power2;i++)
 			for (int j=0;j<=dot_max-i;j++)
 				if (calc_len(i,j) == len_ticks)
 				{
@@ -1139,10 +1199,8 @@ list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo,
 		cout << "add " << len_now << " ticks" << endl;
 		if (allow_dots)
 		{
-			int dot_max = quant_max;
-			
-			for (int i=0;i<=quant_max;i++)
-				for (int j=0;j<=dot_max-i;j++)
+			for (int i=0;i<=quant_power2;i++)
+				for (int j=0;j<=quant_power2-i;j++)
 					if (calc_len(i,j) == len_now)
 					{
 						retval.push_back(note_len_t (i,j));
@@ -1152,7 +1210,7 @@ list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo,
 			
 		if (len_now) //the above failed or allow_dots=false
 		{
-			for (int i=0; i<=quant_max; i++)
+			for (int i=0; i<=quant_power2; i++)
 			{
 				int tmp=calc_len(i,0);
 				if (tmp <= len_now)
@@ -1178,26 +1236,7 @@ list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo,
 
 #define YLEN 10
 #define NOTE_SHIFT 3
-#define PIXELS_PER_WHOLE (320) //how many px are between two wholes?
-#define PIXELS_PER_NOTEPOS (PIXELS_PER_WHOLE/quant_max_fraction)  //how many px are between the smallest drawn beats?
 
-//PIXELS_PER_NOTEPOS must be greater or equal to 3*NOTE_XLEN + 2*NOTE_SHIFT
-//because if tick 0 is at x=0: the notes can be shifted by NOTE_SHIFT.
-//additionally, they can be moved by NOTE_XLEN (collision avoiding)
-//then, they have their own width, which is NOTE_XLEN/2 into the x>0-area
-//the same thing applies to the x<0-area
-
-//  OOO
-//   |
-//   ^actual calculated x, without shifting or moving
-//  ^ and
-//    ^   : moved note (by XLEN)
-// additionally, a shift is possible
-// total_width = shift + move + note_xlen + move + shift, where move==note_xlen
-// total_width = 2*shift + 3*note_xlen
-// if total_width is greater than px_per_notepos, there will be collisions!
-
-#define NOTE_MOVE_X (PIXELS_PER_NOTEPOS/2)
 #define REST_AUSWEICH_X 10
 #define DOT_XDIST 6
 #define DOT_XBEGIN 10
@@ -1225,8 +1264,6 @@ list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo,
 #define KEYCHANGE_ACC_LEFTDIST 9
 #define KEYCHANGE_ACC_RIGHTDIST 0
 
-
-#define stdmap std::map
 
 #define no_notepos note_pos_t()
 
@@ -1312,7 +1349,7 @@ void staff_t::create_itemlist()
 			{
 				if (lastevent==last_measure) //there was no note?
 				{
-					unsigned tmppos=(last_measure+t-FLO_QUANT)/2;
+					unsigned tmppos=(last_measure+t-parent->quant_ticks())/2;
 					cout << "\tend-of-measure: this was an empty measure. inserting rest in between at t="<<tmppos << endl;
 					itemlist[tmppos].insert( FloItem(FloItem::REST,notepos,0,0) );
 					itemlist[t].insert( FloItem(FloItem::REST_END,notepos,0,0) );
@@ -1325,7 +1362,7 @@ void staff_t::create_itemlist()
 					{
 						printf("\tend-of-measure: set rest at %i with len %i\n",lastevent,rest);
 						
-						list<note_len_t> lens=parse_note_len(rest,lastevent-last_measure,emphasize_list,DOTTED_RESTS,UNSPLIT_RESTS);
+						list<note_len_t> lens=parse_note_len(rest,lastevent-last_measure,emphasize_list,parent->quant_power2(),DOTTED_RESTS,UNSPLIT_RESTS);
 						unsigned tmppos=lastevent;
 						for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
 						{
@@ -1353,7 +1390,7 @@ void staff_t::create_itemlist()
 				// no need to check if the rest crosses measure boundaries;
 				// it can't.
 				
-				list<note_len_t> lens=parse_note_len(rest,lastevent-last_measure,emphasize_list,DOTTED_RESTS,UNSPLIT_RESTS);
+				list<note_len_t> lens=parse_note_len(rest,lastevent-last_measure,emphasize_list,parent->quant_power2(),DOTTED_RESTS,UNSPLIT_RESTS);
 				unsigned tmppos=lastevent;
 				for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
 				{
@@ -1394,7 +1431,7 @@ void staff_t::create_itemlist()
 				eventlist.insert(pair<unsigned, FloEvent>(t+len,   FloEvent(t+len,pitch, velo,0,FloEvent::NOTE_OFF,it->second.source_part, it->second.source_event)));
 			}
 							
-			list<note_len_t> lens=parse_note_len(tmplen,t-last_measure,emphasize_list,true,true);
+			list<note_len_t> lens=parse_note_len(tmplen,t-last_measure,emphasize_list,parent->quant_power2(),true,true);
 			unsigned tmppos=t;
 			int n_lens=lens.size();
 			int count=0;			
@@ -1789,7 +1826,7 @@ group_them_again:
 
 						itemlist[t].insert( FloItem(FloItem::NOTE_END,tmp.pos,0,0) );
 						
-						list<note_len_t> lens=parse_note_len(len_ticks_remaining,t-last_measure,emphasize_list,true,true);
+						list<note_len_t> lens=parse_note_len(len_ticks_remaining,t-last_measure,emphasize_list,parent->quant_power2(),true,true);
 						unsigned tmppos=t;
 						int n_lens=lens.size();
 						int count=0;			
@@ -1834,7 +1871,7 @@ group_them_again:
 
 						itemlist[t].insert( FloItem(FloItem::NOTE_END,tmp.pos,0,0) );
 						
-						list<note_len_t> lens=parse_note_len(len_ticks_remaining,t-last_measure,emphasize_list,true,true);
+						list<note_len_t> lens=parse_note_len(len_ticks_remaining,t-last_measure,emphasize_list,parent->quant_power2(),true,true);
 						unsigned tmppos=t;
 						int n_lens=lens.size();
 						int count=0;			
@@ -1912,13 +1949,13 @@ void staff_t::calc_item_pos()
 	{
 		for (set<FloItem, floComp>::iterator it=it2->second.begin(); it!=it2->second.end();it++)
 		{
-			it->x=it2->first * PIXELS_PER_WHOLE/TICKS_PER_WHOLE  +pos_add;
+			it->x=it2->first * parent->pixels_per_whole()/TICKS_PER_WHOLE  +pos_add;
 			//if this changes, also change the line(s) with YLEN (but not all). don't change it.
 			it->y=2*YLEN  -  (it->pos.height-2)*YLEN/2;
 			
 			if (it->type==FloItem::NOTE)
 			{
-				it->x+=NOTE_MOVE_X + it->shift*NOTE_SHIFT;
+				it->x+=parent->note_x_indent() + it->shift*NOTE_SHIFT;
 				
 				switch (it->len)
 				{
@@ -1965,7 +2002,7 @@ void staff_t::calc_item_pos()
 					case 4: it->pix=pix_r16; break;
 				}
 				
-				it->x+=NOTE_MOVE_X + (it->ausweich ? REST_AUSWEICH_X : 0); //AUSWEICH_X
+				it->x+=parent->note_x_indent() + (it->ausweich ? REST_AUSWEICH_X : 0); //AUSWEICH_X
 			}
 			else if (it->type==FloItem::BAR)
 			{
@@ -2532,7 +2569,7 @@ list<int> calc_accidentials(key_enum key, clef_t clef, key_enum next_key)
 
 int ScoreCanvas::tick_to_x(int t)
 {
-	int x=t*PIXELS_PER_WHOLE/TICKS_PER_WHOLE;
+	int x=t*pixels_per_whole()/TICKS_PER_WHOLE;
 	
 	for (std::map<int,int>::iterator it=pos_add_list.begin(); it!=pos_add_list.end() && it->first<=t; it++)
 		x+=it->second;
@@ -2554,7 +2591,7 @@ int ScoreCanvas::calc_posadd(int t)
 //will be a problem, because a tick is pretty small
 int ScoreCanvas::x_to_tick(int x)
 {
-	int t=TICKS_PER_WHOLE * x/PIXELS_PER_WHOLE;
+	int t=TICKS_PER_WHOLE * x/pixels_per_whole();
 	int min_t=0;
 	
 	cout << "t="<<t<<endl;
@@ -2564,7 +2601,7 @@ int ScoreCanvas::x_to_tick(int x)
 		cout << "at pos_add event at t="<<it->first<<", add="<<it->second<<endl;
 		min_t=it->first;
 		x-=it->second;
-		t=TICKS_PER_WHOLE * x/PIXELS_PER_WHOLE;
+		t=TICKS_PER_WHOLE * x/pixels_per_whole();
 	}
 	
 	return t > min_t ? t : min_t;
@@ -2642,7 +2679,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 
 	int y=event->y() + y_pos - staff_it->y_draw;
 	int x=event->x()+x_pos-x_left;
-	int tick=flo_quantize_floor(x_to_tick(x));
+	int tick=flo_quantize_floor(x_to_tick(x), quant_ticks());
 						//TODO quantizing must (maybe?) be done with the proper functions
 
 	if (staff_it!=staves.end())
@@ -2792,14 +2829,14 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 		{
 			if (mouse_operation==LENGTH)
 			{
-				if (flo_quantize(dragged_event.lenTick()) <= 0)
+				if (flo_quantize(dragged_event.lenTick(), quant_ticks()) <= 0)
 				{
 					cout << "new length <= 0, erasing item" << endl;
 					audio->msgDeleteEvent(dragged_event, dragged_event_part, false, false, false);
 				}
 				else
 				{
-					last_len=flo_quantize(dragged_event.lenTick());
+					last_len=flo_quantize(dragged_event.lenTick(), quant_ticks());
 				}
 			}
 			
@@ -2832,7 +2869,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 
 		int x=event->x()+x_pos-x_left;
 		
-		int tick=flo_quantize_floor(x_to_tick(x));
+		int tick=flo_quantize_floor(x_to_tick(x), quant_ticks());
 
 		if (mouse_operation==NO_OP)
 		{		
@@ -2889,7 +2926,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				break;
 
 			case LENGTH:
-				tick+=FLO_QUANT;
+				tick+=quant_ticks();
 				if (dragged_event.tick()+dragged_event.lenTick() + dragged_event_part->tick() != unsigned(tick))
 				{
 					Event tmp=dragged_event.clone();
@@ -3135,8 +3172,15 @@ void ScoreCanvas::menu_command(int cmd)
 {
 	switch (cmd)
 	{
-		case CMD_COLOR_BLACK: coloring_mode=COLOR_MODE_BLACK; redraw(); break;
-		case CMD_COLOR_PART:  coloring_mode=COLOR_MODE_PART;  redraw(); break;
+		case CMD_COLOR_BLACK:  coloring_mode=COLOR_MODE_BLACK; redraw(); break;
+		case CMD_COLOR_PART:   coloring_mode=COLOR_MODE_PART;  redraw(); break;
+		case CMD_NOTELEN_1:    new_len=TICKS_PER_WHOLE/ 1; break;
+		case CMD_NOTELEN_2:    new_len=TICKS_PER_WHOLE/ 2; break;
+		case CMD_NOTELEN_4:    new_len=TICKS_PER_WHOLE/ 4; break;
+		case CMD_NOTELEN_8:    new_len=TICKS_PER_WHOLE/ 8; break;
+		case CMD_NOTELEN_16:   new_len=TICKS_PER_WHOLE/16; break;
+		case CMD_NOTELEN_32:   new_len=TICKS_PER_WHOLE/32; break;
+		case CMD_NOTELEN_LAST: new_len=-1; break;
 		default: 
 			cout << "ILLEGAL FUNCTION CALL: ScoreCanvas::menu_command called with unknown command ("<<cmd<<")"<<endl;
 	}
@@ -3152,6 +3196,24 @@ void ScoreCanvas::preamble_timesig_slot(bool state)
 	preamble_contains_timesig=state;
 	redraw();
 }
+
+void ScoreCanvas::set_quant(int val)
+{
+	int quant_mapper[]={1,2,3,4,5};
+
+	if ((val>=0) && (val<signed(sizeof(quant_mapper)/sizeof(*quant_mapper))))
+	{
+		_quant_power2=quant_mapper[val];
+
+		song_changed(SC_EVENT_INSERTED);
+	}
+	else
+	{
+		cout << "ILLEGAL FUNCTION CALL: set_quant called with invalid value of "<<val<<endl;
+	}
+}
+
+
 //the following assertions are made:
 //  pix_quarter.width() == pix_half.width()
 
@@ -3172,6 +3234,8 @@ void ScoreCanvas::preamble_timesig_slot(bool state)
 
 
 /* BUGS and potential bugs
+ *   o when color=black, then the tie has a wrong color, because
+ *     partColors[BLACK_INDEX] is out of bounds
  *   o updating the keymap doesn't emit a songChanged() signal!
  *   o when the keymap is not used, this will probably lead to a bug
  *   o when adding a note, it's added to the first stave
@@ -3225,9 +3289,7 @@ void ScoreCanvas::preamble_timesig_slot(bool state)
  *     msgNewEvent functions (see my e-mail)
  *
  * GUI stuff
- *   o offer dropdown-boxes for lengths of the inserted note
- *     (select between 16th, 8th, ... whole and "last used length")
- *   o quantisation strength
+ *   o invalidate len-buttons for lens which are outside of the quantisation setting
  *   o velocity/release-velo for newly inserted notes [->toolbar]
  *   o velocity/release-velo for already existing notes
  *     	  - do this by right-click -> some dialog shows up?

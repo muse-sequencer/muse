@@ -44,8 +44,15 @@ using std::string;
 
 
 
+#define TICKS_PER_WHOLE (config.division*4) 
+#define SONG_LENGTH (song->len())
+
+
+
 enum {CMD_COLOR_BLACK, CMD_COLOR_VELO, CMD_COLOR_PART,
-      CMD_SET_NAME};
+      CMD_SET_NAME,
+      CMD_NOTELEN_1, CMD_NOTELEN_2, CMD_NOTELEN_4, CMD_NOTELEN_8,
+      CMD_NOTELEN_16, CMD_NOTELEN_32, CMD_NOTELEN_LAST };
 
 class ScoreCanvas;
 
@@ -429,23 +436,27 @@ struct staff_t
 	clef_t clef;
 	int split_note;
 	
+	ScoreCanvas* parent;
+	
 	void create_appropriate_eventlist(const set<Part*>& parts);
 	void create_itemlist();
 	void process_itemlist();
 	void calc_item_pos();
 	
-	staff_t()
+	staff_t(ScoreCanvas* parent_)
 	{
 		type=NORMAL;
 		clef=VIOLIN;
+		parent=parent_;
 	}
 	
-	staff_t (staff_type_t type_, clef_t clef_, set<Part*> parts_, int split_note_=0)
+	staff_t (ScoreCanvas* parent_, staff_type_t type_, clef_t clef_, set<Part*> parts_, int split_note_=0)
 	{
 		type=type_;
 		clef=clef_;
 		split_note=split_note_;
 		parts=parts_;
+		parent=parent_;
 	}
 };
 
@@ -454,7 +465,7 @@ note_pos_t note_pos_(int note, key_enum key);
 note_pos_t note_pos (unsigned note, key_enum key, clef_t clef);
 
 int calc_len(int l, int d);
-list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, bool allow_dots=true, bool allow_normal=true);
+list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, int quant_power2, bool allow_dots=true, bool allow_normal=true);
 
 int clef_height(clef_t clef);
 
@@ -518,8 +529,10 @@ class ScoreCanvas : public View
 		void set_staffmode(list<staff_t>::iterator it, staff_mode_t mode);
 		void remove_staff(list<staff_t>::iterator it);
 		void merge_staves(list<staff_t>::iterator dest, list<staff_t>::iterator src);
-
+		
+		
 // member variables ---------------------------------------------------
+		int _quant_power2;
 		
 		std::map<int,int> pos_add_list;
 		
@@ -604,6 +617,7 @@ class ScoreCanvas : public View
 			void heartbeat_timer_event();
 			
 			void set_tool(int);
+			void set_quant(int);
 			void menu_command(int);
 			void preamble_keysig_slot(bool);
 			void preamble_timesig_slot(bool);
@@ -635,6 +649,12 @@ class ScoreCanvas : public View
 		int canvas_height();
 		int viewport_width();
 		int viewport_height();
+		
+		int quant_power2() { return _quant_power2; }
+		int quant_len() { return (1<<_quant_power2); }
+		int quant_ticks() { return TICKS_PER_WHOLE / (1<<_quant_power2); }
+		int pixels_per_whole() { return 320; } //TODO FINDMICHJETZT
+		int note_x_indent() { return pixels_per_whole()/quant_len()/2; }
 };
 
 int calc_measure_len(const list<int>& nums, int denom);
