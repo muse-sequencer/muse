@@ -18,7 +18,7 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-file (GLOB fetaorig_files *)
+file (GLOB fetaorig_files COPYING-lilypond GNUmakefile README *.pe.in *.mf *.mp)
 
 
 install( FILES ${fetaorig_files}
