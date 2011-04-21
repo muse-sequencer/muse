@@ -42,6 +42,7 @@ enum {
       SEQM_ADD_PART, SEQM_REMOVE_PART, SEQM_CHANGE_PART,
       SEQM_ADD_EVENT, SEQM_REMOVE_EVENT, SEQM_CHANGE_EVENT,
       SEQM_ADD_TEMPO, SEQM_SET_TEMPO, SEQM_REMOVE_TEMPO, SEQM_ADD_SIG, SEQM_REMOVE_SIG,
+      SEQM_ADD_KEY, SEQM_REMOVE_KEY,
       SEQM_SET_GLOBAL_TEMPO,
       SEQM_UNDO, SEQM_REDO,
       SEQM_RESET_DEVICES, SEQM_INIT_DEVICES, SEQM_PANIC,
@@ -218,6 +219,8 @@ class Audio {
       void msgDeleteTempo(int tick, int tempo, bool doUndoFlag = true);
       void msgAddSig(int tick, int z, int n, bool doUndoFlag = true);
       void msgRemoveSig(int tick, int z, int n, bool doUndoFlag = true);
+      void msgAddKey(int tick, int key, bool doUndoFlag = true);
+      void msgRemoveKey(int tick, int key, bool doUndoFlag = true);
       void msgShowInstrumentGui(MidiInstrument*, bool);
       void msgShowInstrumentNativeGui(MidiInstrument*, bool);
       void msgPanic();

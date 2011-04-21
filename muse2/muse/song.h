@@ -45,36 +45,37 @@ class MidiDevice;
 class AudioPort;
 class AudioDevice;
 
-#define SC_TRACK_INSERTED     1
-#define SC_TRACK_REMOVED      2
-#define SC_TRACK_MODIFIED     4
-#define SC_PART_INSERTED      8
-#define SC_PART_REMOVED       0x10
-#define SC_PART_MODIFIED      0x20
-#define SC_EVENT_INSERTED     0x40
-#define SC_EVENT_REMOVED      0x80
-#define SC_EVENT_MODIFIED     0x100
-#define SC_SIG                0x200       // timing signature
-#define SC_TEMPO              0x400       // tempo map changed
-#define SC_MASTER             0x800       // master flag changed
-#define SC_SELECTION          0x1000
-#define SC_MIDI_CONTROLLER    0x2000      // must update midi mixer
-#define SC_MUTE               0x4000
-#define SC_SOLO               0x8000
-#define SC_RECFLAG            0x10000
-#define SC_ROUTE              0x20000
-#define SC_CHANNELS           0x40000
-#define SC_CONFIG             0x80000     // midiPort-midiDevice
-#define SC_DRUMMAP            0x100000    // must update drumeditor
-#define SC_MIXER_VOLUME       0x200000
-#define SC_MIXER_PAN          0x400000
-#define SC_AUTOMATION         0x800000
-#define SC_AUX                0x1000000   // mixer aux changed
-#define SC_RACK               0x2000000   // mixer rack changed
-#define SC_CLIP_MODIFIED      0x4000000
+#define SC_TRACK_INSERTED      1
+#define SC_TRACK_REMOVED       2
+#define SC_TRACK_MODIFIED      4
+#define SC_PART_INSERTED       8
+#define SC_PART_REMOVED        0x10
+#define SC_PART_MODIFIED       0x20
+#define SC_EVENT_INSERTED      0x40
+#define SC_EVENT_REMOVED       0x80
+#define SC_EVENT_MODIFIED      0x100
+#define SC_SIG                 0x200       // timing signature
+#define SC_TEMPO               0x400       // tempo map changed
+#define SC_MASTER              0x800       // master flag changed
+#define SC_SELECTION           0x1000
+#define SC_MIDI_CONTROLLER     0x2000      // must update midi mixer
+#define SC_MUTE                0x4000
+#define SC_SOLO                0x8000
+#define SC_RECFLAG             0x10000
+#define SC_ROUTE               0x20000
+#define SC_CHANNELS            0x40000
+#define SC_CONFIG              0x80000     // midiPort-midiDevice
+#define SC_DRUMMAP             0x100000    // must update drumeditor
+#define SC_MIXER_VOLUME        0x200000
+#define SC_MIXER_PAN           0x400000
+#define SC_AUTOMATION          0x800000
+#define SC_AUX                 0x1000000   // mixer aux changed
+#define SC_RACK                0x2000000   // mixer rack changed
+#define SC_CLIP_MODIFIED       0x4000000
 #define SC_MIDI_CONTROLLER_ADD 0x8000000   // a hardware midi controller was added or deleted
-#define SC_MIDI_TRACK_PROP    0x10000000   // a midi track's properties changed (channel, compression etc)
-#define SC_SONG_TYPE          0x20000000   // the midi song type (mtype) changed
+#define SC_MIDI_TRACK_PROP     0x10000000   // a midi track's properties changed (channel, compression etc)
+#define SC_SONG_TYPE           0x20000000   // the midi song type (mtype) changed
+#define SC_KEY                 0x40000000   // key map changed
 
 #define REC_NOTE_FIFO_SIZE    16
 

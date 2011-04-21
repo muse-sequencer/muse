@@ -659,10 +659,10 @@ void ScoreCanvas::song_changed(int flags)
 {
 	if (flags & (SC_PART_INSERTED | SC_PART_MODIFIED | SC_PART_REMOVED |
 	             SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED |
-	             SC_SIG) )
+	             SC_SIG  | SC_KEY) )
 	{
 		cout << "song changed!" << endl;
-		
+
 		calc_pos_add_list();
 		
 		for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
@@ -3236,7 +3236,6 @@ void ScoreCanvas::set_quant(int val)
 /* BUGS and potential bugs
  *   o when color=black, then the tie has a wrong color, because
  *     partColors[BLACK_INDEX] is out of bounds
- *   o updating the keymap doesn't emit a songChanged() signal!
  *   o when the keymap is not used, this will probably lead to a bug
  *   o when adding a note, it's added to the first stave
  *     the problem is: there's always the first part selected

@@ -1,3 +1,7 @@
+19.04.2011:
+        - Added undo/redo to master list editor for key editing, should implicitly
+          mean that SC_KEY is emitted to detect song change (not tested) (rj)
+        - fixed bug with undo not working for first signature event (rj)
 16.04.2011:
         - Added KeyList for keeping key change events and ability to edit it in
           master list editor (rj)
