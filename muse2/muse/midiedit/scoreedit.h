@@ -438,10 +438,18 @@ struct staff_t
 	
 	ScoreCanvas* parent;
 	
-	void create_appropriate_eventlist(const set<Part*>& parts);
+	void create_appropriate_eventlist();
 	void create_itemlist();
 	void process_itemlist();
 	void calc_item_pos();
+	
+	void recalculate()
+	{
+		create_appropriate_eventlist();
+		create_itemlist();
+		process_itemlist();
+		calc_item_pos();
+	}
 	
 	staff_t(ScoreCanvas* parent_)
 	{
@@ -458,6 +466,8 @@ struct staff_t
 		parts=parts_;
 		parent=parent_;
 	}
+	
+	bool cleanup_parts();
 };
 
 list<int> calc_accidentials(key_enum key, clef_t clef, key_enum next_key=KEY_C);
@@ -529,7 +539,8 @@ class ScoreCanvas : public View
 		void set_staffmode(list<staff_t>::iterator it, staff_mode_t mode);
 		void remove_staff(list<staff_t>::iterator it);
 		void merge_staves(list<staff_t>::iterator dest, list<staff_t>::iterator src);
-		
+		void cleanup_staves();
+		void maybe_close_if_empty();
 		
 // member variables ---------------------------------------------------
 		int _quant_power2;
@@ -632,7 +643,7 @@ class ScoreCanvas : public View
 			
 	protected:
 		virtual void draw(QPainter& p, const QRect& rect);
-		MidiEditor* editor;
+		MidiEditor* parent;
 		
 		virtual void mousePressEvent (QMouseEvent* event);
 		virtual void mouseMoveEvent (QMouseEvent* event);

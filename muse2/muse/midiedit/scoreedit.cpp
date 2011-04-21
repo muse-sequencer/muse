@@ -460,15 +460,16 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 		}
 	}
 	
+	cleanup_staves();
 	recalc_staff_pos();
 	song_changed(SC_EVENT_INSERTED);
 }
 
 
-ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
-   int sx, int sy) : View(parent, sx, sy)
+ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent_widget,
+   int sx, int sy) : View(parent_widget, sx, sy)
 {
-	editor      = pr;
+	parent      = pr;
 	setFocusPolicy(Qt::StrongFocus);
 	setBg(Qt::white);
 	
@@ -483,7 +484,7 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent,
 	mouse_erases_notes=false;
 	mouse_inserts_notes=true;
 
-	curr_part=editor->parts()->begin()->second; //TODO FINDMICHJETZT
+	curr_part=parent->parts()->begin()->second; //TODO FINDMICHJETZT
 	
 	last_len=384;
 	new_len=-1;
@@ -614,6 +615,7 @@ void ScoreCanvas::remove_staff(list<staff_t>::iterator it)
 		staves.erase(it);
 	}		
 	
+	maybe_close_if_empty();
 	recalc_staff_pos();
 	song_changed(SC_EVENT_INSERTED);
 }
@@ -657,26 +659,36 @@ void ScoreCanvas::merge_staves(list<staff_t>::iterator dest, list<staff_t>::iter
 
 void ScoreCanvas::song_changed(int flags)
 {
-	if (flags & (SC_PART_INSERTED | SC_PART_MODIFIED | SC_PART_REMOVED |
+	if (flags & (SC_PART_MODIFIED |
 	             SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED |
 	             SC_SIG  | SC_KEY) )
 	{
-		cout << "song changed!" << endl;
-
 		calc_pos_add_list();
 		
 		for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
-		{
-			it->create_appropriate_eventlist(it->parts);
-			it->create_itemlist();
-			it->process_itemlist(); // do note- and rest-grouping and collision avoiding
-			it->calc_item_pos();
-		}
+			it->recalculate();
 		
 		redraw();
-		cout << "song had changed, recalculation complete" << endl;
-
 		emit canvas_width_changed(canvas_width());
+	}
+	
+	if (flags & SC_PART_REMOVED)
+	{
+		bool something_changed=false;
+		
+		for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
+		{
+			if (it->cleanup_parts())
+				something_changed=true;
+		}
+		
+		cleanup_staves();
+		recalc_staff_pos();
+
+		for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
+			it->recalculate();
+
+		redraw();
 	}
 }
 
@@ -860,7 +872,7 @@ int flo_quantize_floor(int tick, int quant_ticks)
  * this abstracts the rest of the renderer from muse's internal
  * data structures, making this easy to port to another application
  */
-void staff_t::create_appropriate_eventlist(const set<Part*>& parts)
+void staff_t::create_appropriate_eventlist()
 {
 	using AL::sigmap;
 	using AL::iSigEvent;
@@ -3213,7 +3225,61 @@ void ScoreCanvas::set_quant(int val)
 	}
 }
 
+void ScoreCanvas::cleanup_staves()
+{
+	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end();)
+	{
+		if (it->parts.empty())
+			staves.erase(it++);
+		else
+			it++;
+	}
+	
+	maybe_close_if_empty();
+}
 
+void ScoreCanvas::maybe_close_if_empty()
+{
+	if (staves.empty())
+	{
+		if (!parent->close())
+			cout << "THIS SHOULD NEVER HAPPEN: tried to close, but event hasn't been accepted!" << endl;
+	}
+}
+
+bool staff_t::cleanup_parts()
+{
+	bool did_something=false;
+	
+	for (set<Part*>::iterator it=parts.begin(); it!=parts.end();)
+	{
+		bool valid=false;
+		
+		for (iTrack track=song->tracks()->begin(); track!=song->tracks()->end(); track++)
+			if ((*track)->type() == Track::MIDI)
+			{
+				PartList* pl=(*track)->parts();
+				for (iPart part=pl->begin(); part!=pl->end(); part++)
+					if (*it == part->second)
+					{
+						valid=true;
+						goto get_out_here2;
+					}
+			}
+		
+		get_out_here2:
+		if (!valid)
+		{
+			parts.erase(it++);
+			
+			did_something=true;
+		}
+		else
+			it++;
+	}
+	
+	return did_something;
+}
 //the following assertions are made:
 //  pix_quarter.width() == pix_half.width()
 
@@ -3244,17 +3310,16 @@ void ScoreCanvas::set_quant(int val)
  *   o automatically set x-raster (by quant. strength)
  * 
  * IMPORTANT TODO
- *   o removing the part the score's working on isn't handled
  *   o let the user select the currently edited part
  *   o support selections
- *   o emit a "song-changed" signal instead of calling our
- *     internal song_changed() function
  *   o check if "moving away" works for whole notes [seems to NOT work properly]
+ *
+ * less important stuff
  *   o more fine-grained redrawing in song_changed: sometimes,
  *     only a redraw and not a recalc is needed
  *   o do all the song_changed(SC_EVENT_INSERTED) properly
- *
- * less important stuff
+ *   o emit a "song-changed" signal instead of calling our
+ *     internal song_changed() function
  *   o must add_parts() update the part-list?
  *   o support different keys in different tracks at the same time
  *       calc_pos_add_list and calc_item_pos will be affected by this
@@ -3271,7 +3336,6 @@ void ScoreCanvas::set_quant(int val)
  *     between, for example, when a cis is tied to a des
  *   o let the user select whether the preamble should have
  *     a fixed length (?)
- *   o let the user select what the preamble has to contain
  * > o use timesig_t in all timesig-stuff
  *   o draw a margin around notes which are in a bright color
  *   o maybe override color 0 with "black"?
