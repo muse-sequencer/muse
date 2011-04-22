@@ -199,17 +199,17 @@ ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned i
 	transport_toolbar->setObjectName("transport");
 	transport_toolbar->addActions(transportAction->actions());
 
-	QToolBar* quant_len_toolbar = addToolBar(tr("Quant'n'length"));
-	quant_len_toolbar->setObjectName("Quant'n'length");
-	quant_len_toolbar->addWidget(new QLabel(tr("Note length:"), quant_len_toolbar));
+	QToolBar* newnote_toolbar = addToolBar(tr("New note settings"));
+	newnote_toolbar->setObjectName("New note settings");
+	newnote_toolbar->addWidget(new QLabel(tr("Note length:"), newnote_toolbar));
 	QActionGroup* len_actions=new QActionGroup(this);
-	QAction* n1_action = quant_len_toolbar->addAction("1", menu_mapper, SLOT(map()));
-	QAction* n2_action = quant_len_toolbar->addAction("2", menu_mapper, SLOT(map()));
-	QAction* n4_action = quant_len_toolbar->addAction("4", menu_mapper, SLOT(map()));
-	QAction* n8_action = quant_len_toolbar->addAction("8", menu_mapper, SLOT(map()));
-	QAction* n16_action = quant_len_toolbar->addAction("16", menu_mapper, SLOT(map()));
-	QAction* n32_action = quant_len_toolbar->addAction("32", menu_mapper, SLOT(map()));
-	QAction* nlast_action = quant_len_toolbar->addAction(tr("last"), menu_mapper, SLOT(map()));
+	QAction* n1_action = newnote_toolbar->addAction("1", menu_mapper, SLOT(map()));
+	QAction* n2_action = newnote_toolbar->addAction("2", menu_mapper, SLOT(map()));
+	QAction* n4_action = newnote_toolbar->addAction("4", menu_mapper, SLOT(map()));
+	QAction* n8_action = newnote_toolbar->addAction("8", menu_mapper, SLOT(map()));
+	QAction* n16_action = newnote_toolbar->addAction("16", menu_mapper, SLOT(map()));
+	QAction* n32_action = newnote_toolbar->addAction("32", menu_mapper, SLOT(map()));
+	QAction* nlast_action = newnote_toolbar->addAction(tr("last"), menu_mapper, SLOT(map()));
 	menu_mapper->setMapping(n1_action, CMD_NOTELEN_1);
 	menu_mapper->setMapping(n2_action, CMD_NOTELEN_2);
 	menu_mapper->setMapping(n4_action, CMD_NOTELEN_4);
@@ -235,8 +235,9 @@ ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned i
 	nlast_action->setChecked(true);
 	menu_command(CMD_NOTELEN_LAST);
 	
-	quant_len_toolbar->addSeparator();
-	quant_len_toolbar->addWidget(new QLabel(tr("Quantisation:"), quant_len_toolbar));
+	
+	QToolBar* quant_toolbar = addToolBar(tr("Quantisation settings"));
+	quant_toolbar->addWidget(new QLabel(tr("Quantisation:"), quant_toolbar));
 	QComboBox* quant_combobox = new QComboBox(this);
 	quant_combobox->addItem("2"); // if you add or remove items from
 	quant_combobox->addItem("4"); // here, also change quant_mapper[]
@@ -244,16 +245,18 @@ ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned i
 	quant_combobox->addItem("16");
 	quant_combobox->addItem("32");
 	connect(quant_combobox, SIGNAL(currentIndexChanged(int)), score_canvas, SLOT(set_quant(int)));
-	quant_len_toolbar->addWidget(quant_combobox);
+	quant_toolbar->addWidget(quant_combobox);
 	quant_combobox->setCurrentIndex(2);
 	
-	quant_len_toolbar->addWidget(new QLabel(tr("Pixels per whole:"), quant_len_toolbar));
+	quant_toolbar->addSeparator();
+
+	quant_toolbar->addWidget(new QLabel(tr("Pixels per whole:"), quant_toolbar));
 	QSpinBox* px_per_whole_spinbox = new QSpinBox(this);
 	px_per_whole_spinbox->setRange(10, 1000);
 	px_per_whole_spinbox->setSingleStep(50);
 	connect(px_per_whole_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_pixels_per_whole(int)));
 	connect(score_canvas, SIGNAL(pixels_per_whole_changed(int)), px_per_whole_spinbox, SLOT(setValue(int)));
-	quant_len_toolbar->addWidget(px_per_whole_spinbox);
+	quant_toolbar->addWidget(px_per_whole_spinbox);
 	px_per_whole_spinbox->setValue(300);
 
 	QMenu* settings_menu = menuBar()->addMenu(tr("&Settings"));      
@@ -494,7 +497,7 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent_widget,
 	mouse_erases_notes=false;
 	mouse_inserts_notes=true;
 
-	curr_part=parent->parts()->begin()->second; //TODO FINDMICHJETZT
+	selected_part=NULL;
 	
 	last_len=384;
 	new_len=-1;
@@ -2763,6 +2766,8 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				int this_begin=tick;
 				int this_end=this_begin+calc_len(set_it->len, set_it->dots);
 				
+				selected_part=set_it->source_part;
+				
 				//that's the only note corresponding to the event?
 				if (this_begin==total_begin && this_end==total_end)
 				{
@@ -2807,9 +2812,29 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 			{
 				if ((event->button()==Qt::LeftButton) && (mouse_inserts_notes))
 				{
-					signed int relative_tick=(signed) tick - curr_part->tick();
-					if (relative_tick>=0) //TODO FINDMICH do that better
+					Part* curr_part = NULL;
+					set<Part*> possible_dests=staff_it->parts_at_tick(tick);
+
+					if (!possible_dests.empty())
 					{
+						if (possible_dests.size()==1)
+							curr_part=*possible_dests.begin();
+						else
+						{
+							if (possible_dests.find(selected_part)!=possible_dests.end())
+								curr_part=selected_part;
+							else
+								QMessageBox::information(this, tr("Ambiguous part"), tr("There are two or more possible parts you could add the note to, but none matches the selected part. Please select the destination part by clicking on any note belonging to it and try again, or add a new stave containing only the destination part."));
+						}
+					}
+					else
+						QMessageBox::information(this, tr("No part"), tr("There are no parts you could add the note to."));
+					
+					if (curr_part!=NULL)
+					{
+						signed int relative_tick=(signed) tick - curr_part->tick();
+						if (relative_tick<0)
+							cout << "THIS SHOULD NEVER HAPPEN: relative_tick is negative!" << endl;
 						song->startUndo();
 						//stopping undo at the end of this function is unneccessary
 						//because we'll begin a drag right after it. finishing
@@ -3308,6 +3333,18 @@ bool staff_t::cleanup_parts()
 	
 	return did_something;
 }
+
+set<Part*> staff_t::parts_at_tick(unsigned tick)
+{
+	set<Part*> result;
+	
+	for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+		if ((tick >= (*it)->tick()) && (tick<=(*it)->endTick()))
+			result.insert(*it);
+	
+	return result;
+}
+
 //the following assertions are made:
 //  pix_quarter.width() == pix_half.width()
 
@@ -3329,16 +3366,17 @@ bool staff_t::cleanup_parts()
 
 /* BUGS and potential bugs
  *   o when the keymap is not used, this will probably lead to a bug
- *   o when adding a note, it's added to the first stave
- *     the problem is: there's always the first part selected
  * 
  * CURRENT TODO
- *   o let the user select the currently edited part
+ *   x nothing atm
  * 
  * IMPORTANT TODO
- *   o support selections
+ *   o when inserting or moving or resizing a note: clip to part's boundaries
+ *   o invalidate len-buttons for lens which are outside of the quantisation setting
+ *   o implement color=velocity
  *
  * less important stuff
+ *   o support selections
  *   o more fine-grained redrawing in song_changed: sometimes,
  *     only a redraw and not a recalc is needed
  *   o do all the song_changed(SC_EVENT_INSERTED) properly
@@ -3370,13 +3408,11 @@ bool staff_t::cleanup_parts()
  *     msgNewEvent functions (see my e-mail)
  *
  * GUI stuff
- *   o invalidate len-buttons for lens which are outside of the quantisation setting
  *   o velocity/release-velo for newly inserted notes [->toolbar]
  *   o velocity/release-velo for already existing notes
  *     	  - do this by right-click -> some dialog shows up?
  *     	  - or by selecting the note and changing the values in the same widget which also is used for new notes?
- *   o initiate "select current part"
-*/
+ */
 
 
 /* how to use the score editor with multiple tracks

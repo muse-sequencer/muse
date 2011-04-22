@@ -469,6 +469,8 @@ struct staff_t
 	}
 	
 	bool cleanup_parts();
+	
+	set<Part*> parts_at_tick(unsigned tick);
 };
 
 list<int> calc_accidentials(key_enum key, clef_t clef, key_enum next_key=KEY_C);
@@ -571,7 +573,7 @@ class ScoreCanvas : public View
 		float y_scroll_speed;
 		float y_scroll_pos;
 
-		Part* curr_part;
+		Part* selected_part;
 		int last_len;
 		int new_len; //when zero or negative, last_len is used
 
