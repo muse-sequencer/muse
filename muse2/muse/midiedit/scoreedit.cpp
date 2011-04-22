@@ -247,6 +247,14 @@ ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned i
 	quant_len_toolbar->addWidget(quant_combobox);
 	quant_combobox->setCurrentIndex(2);
 	
+	quant_len_toolbar->addWidget(new QLabel(tr("Pixels per whole:"), quant_len_toolbar));
+	QSpinBox* px_per_whole_spinbox = new QSpinBox(this);
+	px_per_whole_spinbox->setRange(10, 1000);
+	px_per_whole_spinbox->setSingleStep(50);
+	connect(px_per_whole_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_pixels_per_whole(int)));
+	connect(score_canvas, SIGNAL(pixels_per_whole_changed(int)), px_per_whole_spinbox, SLOT(setValue(int)));
+	quant_len_toolbar->addWidget(px_per_whole_spinbox);
+	px_per_whole_spinbox->setValue(300);
 
 	QMenu* settings_menu = menuBar()->addMenu(tr("&Settings"));      
 
@@ -492,6 +500,7 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent_widget,
 	set_quant(2); //this is actually unneccessary, as while
 	              //initalizing the quant_combobox, this gets
 	              //called again. but for safety...
+	set_pixels_per_whole(300); //same as above. but safety rocks
 
 	dragging_staff=false;
 	
@@ -3215,7 +3224,11 @@ void ScoreCanvas::set_quant(int val)
 
 	if ((val>=0) && (val<signed(sizeof(quant_mapper)/sizeof(*quant_mapper))))
 	{
+		int old_len=quant_len();
+
 		_quant_power2=quant_mapper[val];
+		
+		set_pixels_per_whole(pixels_per_whole() * quant_len() / old_len );
 
 		song_changed(SC_EVENT_INSERTED);
 	}
@@ -3223,6 +3236,19 @@ void ScoreCanvas::set_quant(int val)
 	{
 		cout << "ILLEGAL FUNCTION CALL: set_quant called with invalid value of "<<val<<endl;
 	}
+}
+
+void ScoreCanvas::set_pixels_per_whole(int val)
+{
+	cout << "DEBUG: setting px per whole to " << val << endl;
+	_pixels_per_whole=val;
+	
+	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
+		it->calc_item_pos();
+	
+	emit pixels_per_whole_changed(val);
+	
+	redraw();
 }
 
 void ScoreCanvas::cleanup_staves()
@@ -3307,10 +3333,9 @@ bool staff_t::cleanup_parts()
  *     the problem is: there's always the first part selected
  * 
  * CURRENT TODO
- *   o automatically set x-raster (by quant. strength)
+ *   o let the user select the currently edited part
  * 
  * IMPORTANT TODO
- *   o let the user select the currently edited part
  *   o support selections
  *   o check if "moving away" works for whole notes [seems to NOT work properly]
  *

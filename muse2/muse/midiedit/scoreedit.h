@@ -544,6 +544,7 @@ class ScoreCanvas : public View
 		
 // member variables ---------------------------------------------------
 		int _quant_power2;
+		int _pixels_per_whole;
 		
 		std::map<int,int> pos_add_list;
 		
@@ -632,6 +633,7 @@ class ScoreCanvas : public View
 			void menu_command(int);
 			void preamble_keysig_slot(bool);
 			void preamble_timesig_slot(bool);
+			void set_pixels_per_whole(int);
 	
 	signals:
 			void xscroll_changed(int);
@@ -640,6 +642,7 @@ class ScoreCanvas : public View
 			void canvas_width_changed(int);
 			void viewport_height_changed(int);
 			void canvas_height_changed(int);
+			void pixels_per_whole_changed(int);
 			
 	protected:
 		virtual void draw(QPainter& p, const QRect& rect);
@@ -664,7 +667,7 @@ class ScoreCanvas : public View
 		int quant_power2() { return _quant_power2; }
 		int quant_len() { return (1<<_quant_power2); }
 		int quant_ticks() { return TICKS_PER_WHOLE / (1<<_quant_power2); }
-		int pixels_per_whole() { return 320; } //TODO FINDMICHJETZT
+		int pixels_per_whole() { return _pixels_per_whole; }
 		int note_x_indent() { return pixels_per_whole()/quant_len()/2; }
 };
 
