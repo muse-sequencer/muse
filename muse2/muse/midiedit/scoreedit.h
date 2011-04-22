@@ -401,6 +401,7 @@ struct cumulative_t
 
 #define BLACK_PIXMAP (NUM_PARTCOLORS)
 #define HIGHLIGHTED_PIXMAP (NUM_PARTCOLORS+1)
+#define NUM_MYCOLORS (NUM_PARTCOLORS+2)
 
 struct timesig_t
 {
@@ -488,7 +489,7 @@ class ScoreCanvas : public View
 {
 	Q_OBJECT
 	private:
-		static void load_pixmaps();
+		static void init_pixmaps();
 		static void draw_pixmap(QPainter& p, int x, int y, const QPixmap& pm);
 		static void draw_tie (QPainter& p, int x1, int x4, int yo, bool up=true, QColor color=Qt::black);
 

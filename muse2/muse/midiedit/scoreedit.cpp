@@ -127,14 +127,14 @@ QString create_random_string(int len=8)
 
 
 
-QPixmap *pix_whole, *pix_half, *pix_quarter; // arrays [NUM_PARTCOLORS+2]
-QPixmap *pix_dot, *pix_b, *pix_sharp, *pix_noacc; // arrays [NUM_PARTCOLORS+2]
+QPixmap *pix_whole, *pix_half, *pix_quarter; // arrays [NUM_MYCOLORS]
+QPixmap *pix_dot, *pix_b, *pix_sharp, *pix_noacc; // arrays [NUM_MYCOLORS]
 QPixmap *pix_r1, *pix_r2, *pix_r4, *pix_r8, *pix_r16; // pointers
 QPixmap *pix_flag_up, *pix_flag_down; // arrays [4]
 QPixmap *pix_num; // array [10]
 QPixmap *pix_clef_violin, *pix_clef_bass; //pointers
-bool pixmaps_loaded=false;
-
+bool pixmaps_initalized=false;
+QColor* mycolors; // array [NUM_MYCOLORS]
 
 
 
@@ -431,6 +431,7 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 		staff.parts.clear();
 		for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
 			staff.parts.insert(part_it->second);
+		staff.cleanup_parts();
 
 		staff.split_note=SPLIT_NOTE;
 
@@ -455,7 +456,8 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 			for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
 				if (part_it->second->track() == *it)
 					staff.parts.insert(part_it->second);
-
+			staff.cleanup_parts();
+			
 			staff.split_note=SPLIT_NOTE;
 
 			staff.type=GRAND_TOP; //FINDMICH
@@ -483,7 +485,7 @@ ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent_widget,
 	
 	setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 	
-	load_pixmaps();
+	init_pixmaps();
 	
 	x_pos=0;
 	x_left=0;
@@ -754,35 +756,36 @@ void load_colored_pixmaps(QString file, QPixmap* array)
 {
 	QImage img(file);
 		
-	color_image(img, Qt::black);
-	array[BLACK_PIXMAP]=QPixmap::fromImage(img);
-	
-	color_image(img, Qt::red);
-	array[HIGHLIGHTED_PIXMAP]=QPixmap::fromImage(img);
-	
-	
-	for (int color_index=0;color_index<NUM_PARTCOLORS; color_index++)
+	for (int color_index=0;color_index<NUM_MYCOLORS; color_index++)
 	{
-		color_image(img, config.partColors[color_index]);
+		color_image(img, mycolors[color_index]);
 		array[color_index]=QPixmap::fromImage(img);
 	}
 }
 
 
 
-void ScoreCanvas::load_pixmaps()
+void ScoreCanvas::init_pixmaps()
 {
-	if (!pixmaps_loaded)
+	if (!pixmaps_initalized)
 	{
+		mycolors=new QColor[NUM_MYCOLORS];
+		
+		mycolors[0]=Qt::black;
+		for (int i=1;i<NUM_PARTCOLORS;i++)
+			mycolors[i]=config.partColors[i];
+		mycolors[BLACK_PIXMAP]=Qt::black;
+		mycolors[HIGHLIGHTED_PIXMAP]=Qt::red;
+		
 		cout << "loading pixmaps..." << endl;
 		
-		pix_whole=new QPixmap[NUM_PARTCOLORS+2];
-		pix_half=new QPixmap[NUM_PARTCOLORS+2];
-		pix_quarter=new QPixmap[NUM_PARTCOLORS+2];
-		pix_dot=new QPixmap[NUM_PARTCOLORS+2];
-		pix_b=new QPixmap[NUM_PARTCOLORS+2];
-		pix_sharp=new QPixmap[NUM_PARTCOLORS+2];
-		pix_noacc=new QPixmap[NUM_PARTCOLORS+2];
+		pix_whole=new QPixmap[NUM_MYCOLORS];
+		pix_half=new QPixmap[NUM_MYCOLORS];
+		pix_quarter=new QPixmap[NUM_MYCOLORS];
+		pix_dot=new QPixmap[NUM_MYCOLORS];
+		pix_b=new QPixmap[NUM_MYCOLORS];
+		pix_sharp=new QPixmap[NUM_MYCOLORS];
+		pix_noacc=new QPixmap[NUM_MYCOLORS];
 		pix_num=new QPixmap[10];
 		
 		pix_r1=new QPixmap;
@@ -828,7 +831,7 @@ void ScoreCanvas::load_pixmaps()
 		for (int i=0;i<10;i++)
 			pix_num[i].load(museGlobalShare + "/scoreglyphs/"+IntToQStr(i)+".png");
 		
-		pixmaps_loaded=true;
+		pixmaps_initalized=true;
 	}
 }
 
@@ -2228,8 +2231,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 				}
 				if (audio->isPlaying() && it->is_active)
 					color_index=HIGHLIGHTED_PIXMAP;
-					
-					
+				
 				draw_pixmap(p,it->x -x_pos+x_left,y_offset + it->y,it->pix[color_index]);
 				//TODO FINDMICH maybe draw a margin around bright colors?
 				//maybe draw the default color in black?
@@ -2275,7 +2277,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 				if (it->is_tie_dest)
 				{
 					cout << "drawing tie" << endl;
-					draw_tie(p,it->tie_from_x-x_pos+x_left,it->x -x_pos+x_left,y_offset + it->y, (it->len==0) ? true : (it->stem==DOWNWARDS) , config.partColors[color_index]);
+					draw_tie(p,it->tie_from_x-x_pos+x_left,it->x -x_pos+x_left,y_offset + it->y, (it->len==0) ? true : (it->stem==DOWNWARDS) , mycolors[color_index]);
 					// in english: "if it's a whole note, tie is upwards (true). if not, tie is upwards if
 					//              stem is downwards and vice versa"
 				}
@@ -3326,8 +3328,6 @@ bool staff_t::cleanup_parts()
 
 
 /* BUGS and potential bugs
- *   o when color=black, then the tie has a wrong color, because
- *     partColors[BLACK_INDEX] is out of bounds
  *   o when the keymap is not used, this will probably lead to a bug
  *   o when adding a note, it's added to the first stave
  *     the problem is: there's always the first part selected
@@ -3337,7 +3337,6 @@ bool staff_t::cleanup_parts()
  * 
  * IMPORTANT TODO
  *   o support selections
- *   o check if "moving away" works for whole notes [seems to NOT work properly]
  *
  * less important stuff
  *   o more fine-grained redrawing in song_changed: sometimes,
@@ -3355,17 +3354,11 @@ bool staff_t::cleanup_parts()
  *   o draw measure numbers
  *   o when moving or resizing a note, so that its end is out-of-part,
  *     there's strange behaviour
- *   o ties aren't always drawn correctly when the destination note
- *     is out of view
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
- *   o let the user select whether the preamble should have
- *     a fixed length (?)
- * > o use timesig_t in all timesig-stuff
+ *   o use timesig_t in all timesig-stuff
  *   o draw a margin around notes which are in a bright color
- *   o maybe override color 0 with "black"?
  *   o use bars instead of flags over groups of 8ths / 16ths etc
- *   o (change ItemList into map< pos_t , mutable_stuff_t >) [no]
  *   o deal with expanding parts or clip (expanding is better)
  *   o refuse to resize so that width gets smaller or equal than x_left
  *   o add tracks in correct order to score
