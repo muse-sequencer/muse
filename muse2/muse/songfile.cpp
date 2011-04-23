@@ -33,7 +33,7 @@
 #include "wave.h"
 #include "midictrl.h"
 #include "amixer.h"
-//#include "mixer/amixer.h"              // p4.0.2
+#include "audiodev.h"
 #include "conf.h"
 #include "driver/jackmidi.h"
 #include "keyevent.h"
@@ -1250,7 +1250,7 @@ void Song::read(Xml& xml)
                               _follow  = FollowMode(xml.parseInt());
                         else if (tag == "sampleRate") {
                               int sRate  = xml.parseInt();
-                              if (sRate != sampleRate)
+                              if (audioDevice->deviceType() != AudioDevice::DUMMY_AUDIO && sRate != sampleRate)
                                 QMessageBox::warning(muse,"Wrong sample rate", "The sample rate in this project and the current system setting differs, the project may not work as intended!");
                             }
                         else if (tag == "tempolist") {
