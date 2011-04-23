@@ -79,10 +79,12 @@ QString keyToString(key_enum key) //flo
 		case KEY_B_BEGIN:
 		case KEY_B_END:
 			printf("ILLEGAL FUNCTION CALL: keyToString called with key_sharp_begin etc.\n");
+      return "";
 			break;
 		
 		default:
 			printf("ILLEGAL FUNCTION CALL: keyToString called with illegal key value (not in enum)\n");
+      return "";
 	}
 	return keyStrs[index];
 }
@@ -457,8 +459,12 @@ void LMaster::itemPressed(QTreeWidgetItem* i, int column)
             if (editorColumn != column || editedItem != i)
             returnPressed();
             }
-      else
+      else {
+            if (key_editor)
+              key_editor->hide();
+            setFocus();
             editorColumn = column;
+          }
       }
 
 //---------------------------------------------------------
@@ -514,9 +520,11 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
                         key_editor->addItems(keyStrs);
                   }
                   //key_editor->setText(editedItem->text(LMASTER_VAL_COL));
-                  key_editor->setCurrentIndex(keyStrs.indexOf(editedItem->text(LMASTER_VAL_COL)));
+                  //key_editor->setCurrentIndex(keyStrs.indexOf(editedItem->text(LMASTER_VAL_COL)));
+                  //key_editor->setCurrentIndex(-1);
                   key_editor->setGeometry(itemRect);
                   key_editor->show();
+                  key_editor->showPopup();
                   key_editor->setFocus();
                   //key_editor->selectAll();
                   connect(key_editor, SIGNAL(currentIndexChanged(int)), SLOT(returnPressed()));
@@ -782,6 +790,7 @@ LMasterKeyEventItem::LMasterKeyEventItem(QTreeWidget* parent, const KeyEvent& ev
       setText(1, c2);
       setText(2, c3);
       setText(3, c4);
+
       }
 
 
