@@ -3521,7 +3521,7 @@ void MusE::openInScoreEdit(ScoreEdit* destination, PartList* pl, bool allInOne)
 {
 	if (destination==NULL) // if no destination given, create a new one
 	{
-      destination = new ScoreEdit(pl, this, 0, arranger->cursorValue());
+      destination = new ScoreEdit(this, 0, arranger->cursorValue());
       destination->show();
       toplevels.push_back(Toplevel(Toplevel::SCORE, (unsigned long)(destination), destination));
       connect(destination, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));

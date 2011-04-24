@@ -1,3 +1,8 @@
+24.04.2011:
+        - Improved master list editor editing of keys, dropdown should not 'stay behind' anymore (rj)
+21.04.2011:
+        - Fixed drag&drop plugin instantantiation (again), was using a string pointer to private data
+          now copies the data before use (rj)
 19.04.2011:
         - Added undo/redo to master list editor for key editing, should implicitly
           mean that SC_KEY is emitted to detect song change (not tested) (rj)

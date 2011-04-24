@@ -417,6 +417,7 @@ void EffectRack::startDrag(int idx)
       xml.dump(xmlconf);
       
       QByteArray data(xmlconf.toLatin1().constData());
+      //printf("sending %d [%s]\n", data.length(), xmlconf.toLatin1().constData());
       QMimeData* md = new QMimeData();
       
       md->setData("text/x-muse-plugin", data);
@@ -482,9 +483,11 @@ void EffectRack::dropEvent(QDropEvent *event)
             
             if(event->mimeData()->hasFormat("text/x-muse-plugin"))
             {
-              QString outxml;
-              Xml xml(event->mimeData()->data("text/x-muse-plugin").data());
+              char *tmpStr = new char[event->mimeData()->data("text/x-muse-plugin").size()];
+              strcpy(tmpStr, event->mimeData()->data("text/x-muse-plugin").data());
+              Xml xml(tmpStr);
               initPlugin(xml, idx);
+              delete tmpStr;
             }
             else
             if (event->mimeData()->hasUrls()) 
@@ -577,7 +580,9 @@ void EffectRack::initPlugin(Xml xml, int idx)
                         if (tag == "plugin") {
                               PluginI* plugi = new PluginI();
                               if (plugi->readConfiguration(xml, false)) {
-                                  printf("cannot instantiate plugin\n");
+                                  //QString d;
+                                  //xml.dump(d);
+                                  //printf("cannot instantiate plugin [%s]\n", d.toLatin1().data());
                                   delete plugi;
                                   }
                               else {

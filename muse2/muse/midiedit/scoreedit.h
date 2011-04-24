@@ -60,12 +60,15 @@ class ScoreCanvas;
 //   ScoreEdit
 //---------------------------------------------------------
 
-class ScoreEdit : public MidiEditor
+class ScoreEdit : public TopWin
 {
 	Q_OBJECT
 
 	private:
 		virtual void closeEvent(QCloseEvent*);
+
+		QGridLayout* mainGrid;
+		QWidget* mainw;
 		
 		QScrollBar* xscroll;
 		QScrollBar* yscroll;
@@ -94,7 +97,7 @@ class ScoreEdit : public MidiEditor
 		void viewport_height_changed(int);
 		
 	public:
-		ScoreEdit(PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
+		ScoreEdit(QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
 		~ScoreEdit();
 		static void readConfiguration(Xml&){}; //TODO does nothing
 		static void writeConfiguration(int, Xml&){}; //TODO does nothing
@@ -649,7 +652,7 @@ class ScoreCanvas : public View
 			
 	protected:
 		virtual void draw(QPainter& p, const QRect& rect);
-		MidiEditor* parent;
+		ScoreEdit* parent;
 		
 		virtual void mousePressEvent (QMouseEvent* event);
 		virtual void mouseMoveEvent (QMouseEvent* event);
@@ -657,7 +660,7 @@ class ScoreCanvas : public View
 		virtual void resizeEvent(QResizeEvent*);
 		
 	public:
-		ScoreCanvas(MidiEditor*, QWidget*, int, int);
+		ScoreCanvas(ScoreEdit*, QWidget*, int, int);
 		~ScoreCanvas(){};
 
 		void add_staves(PartList* pl, bool all_in_one);

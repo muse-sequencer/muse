@@ -147,9 +147,24 @@ set<QString> ScoreEdit::names;
 //   ScoreEdit
 //---------------------------------------------------------
 
-ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned initPos)
-   : MidiEditor(0, 0, pl, parent, name)
+ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
+   : TopWin(parent, name)
 {
+	setAttribute(Qt::WA_DeleteOnClose);
+
+	mainw    = new QWidget(this);
+
+	mainGrid = new QGridLayout();
+	mainw->setLayout(mainGrid);
+
+	mainGrid->setContentsMargins(0, 0, 0, 0);
+	mainGrid->setSpacing(0);  
+	setCentralWidget(mainw);
+
+
+
+
+	
 	score_canvas=new ScoreCanvas(this, mainw, 1, 1);
 	xscroll = new QScrollBar(Qt::Horizontal, mainw);
 	yscroll = new QScrollBar(Qt::Vertical, mainw);
@@ -237,6 +252,7 @@ ScoreEdit::ScoreEdit(PartList* pl, QWidget* parent, const char* name, unsigned i
 	
 	
 	QToolBar* quant_toolbar = addToolBar(tr("Quantisation settings"));
+	newnote_toolbar->setObjectName("Quantisation settings");
 	quant_toolbar->addWidget(new QLabel(tr("Quantisation:"), quant_toolbar));
 	QComboBox* quant_combobox = new QComboBox(this);
 	quant_combobox->addItem("2"); // if you add or remove items from
@@ -479,7 +495,7 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 }
 
 
-ScoreCanvas::ScoreCanvas(MidiEditor* pr, QWidget* parent_widget,
+ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget,
    int sx, int sy) : View(parent_widget, sx, sy)
 {
 	parent      = pr;
@@ -3382,16 +3398,12 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  *   o do all the song_changed(SC_EVENT_INSERTED) properly
  *   o emit a "song-changed" signal instead of calling our
  *     internal song_changed() function
- *   o must add_parts() update the part-list?
  *   o support different keys in different tracks at the same time
  *       calc_pos_add_list and calc_item_pos will be affected by this
  *       calc_pos_add_list must be called before calc_item_pos then,
  *       and calc_item_pos must respect the pos_add_list instead of
  *       keeping its own pos_add variable (which is only an optimisation)
- *   o use nearest part instead of curr_part, maybe expand
  *   o draw measure numbers
- *   o when moving or resizing a note, so that its end is out-of-part,
- *     there's strange behaviour
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
  *   o use timesig_t in all timesig-stuff
