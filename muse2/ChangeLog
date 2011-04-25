@@ -1,3 +1,6 @@
+25.04.2011:
+        - added a songChanged at the end of clear when loading a new song, intended effect was to 
+          clear GUI before loading new song to fix some nasty crashes, seems to work (rj)
 24.04.2011:
         - Improved master list editor editing of keys, dropdown should not 'stay behind' anymore (rj)
 21.04.2011:
