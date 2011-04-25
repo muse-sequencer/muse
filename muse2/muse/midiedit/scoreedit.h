@@ -551,6 +551,9 @@ class ScoreCanvas : public View
 // member variables ---------------------------------------------------
 		int _quant_power2;
 		int _pixels_per_whole;
+
+		int newnote_velo;
+		int newnote_velo_off;
 		
 		std::map<int,int> pos_add_list;
 		
@@ -640,6 +643,9 @@ class ScoreCanvas : public View
 			void preamble_keysig_slot(bool);
 			void preamble_timesig_slot(bool);
 			void set_pixels_per_whole(int);
+
+			void set_newnote_velo(int);
+			void set_newnote_velo_off(int);
 	
 	signals:
 			void xscroll_changed(int);

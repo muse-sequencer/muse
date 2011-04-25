@@ -250,6 +250,25 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	nlast_action->setChecked(true);
 	menu_command(CMD_NOTELEN_LAST);
 	
+	newnote_toolbar->addSeparator();
+	
+	newnote_toolbar->addWidget(new QLabel(tr("Velocity:"), newnote_toolbar));
+	QSpinBox* velo_spinbox = new QSpinBox(this);
+	velo_spinbox->setRange(0, 127);
+	velo_spinbox->setSingleStep(1);
+	connect(velo_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_newnote_velo(int)));
+	newnote_toolbar->addWidget(velo_spinbox);
+	velo_spinbox->setValue(64);
+
+	newnote_toolbar->addWidget(new QLabel(tr("Off-Velocity:"), newnote_toolbar));
+	QSpinBox* velo_off_spinbox = new QSpinBox(this);
+	velo_off_spinbox->setRange(0, 127);
+	velo_off_spinbox->setSingleStep(1);
+	connect(velo_off_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_newnote_velo_off(int)));
+	newnote_toolbar->addWidget(velo_off_spinbox);
+	velo_off_spinbox->setValue(64);
+
+
 	
 	QToolBar* quant_toolbar = addToolBar(tr("Quantisation settings"));
 	newnote_toolbar->setObjectName("Quantisation settings");
@@ -523,6 +542,9 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget,
 	              //called again. but for safety...
 	set_pixels_per_whole(300); //same as above. but safety rocks
 
+	set_newnote_velo(64);
+	set_newnote_velo_off(64);
+	
 	dragging_staff=false;
 	
 	
@@ -2858,10 +2880,17 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 						
 						Event newevent(Note);
 						newevent.setPitch(y_to_pitch(y,tick, staff_it->clef));
-						newevent.setVelo(64); //TODO
-						newevent.setVeloOff(64); //TODO
+						newevent.setVelo(newnote_velo);
+						newevent.setVeloOff(newnote_velo_off);
 						newevent.setTick(relative_tick);
 						newevent.setLenTick((new_len>0)?new_len:last_len);
+						
+						if (flo_quantize(newevent.lenTick(), quant_ticks()) <= 0)
+						{
+							newevent.setLenTick(quant_ticks());
+							cout << "DEBUG: inserted note's length would be invisible after quantisation (too short)." << endl <<
+							        "       setting it to " << newevent.lenTick() << endl;
+						}
 						
 						if (newevent.endTick() > curr_part->lenTick())
 						{
@@ -3356,6 +3385,16 @@ void ScoreCanvas::maybe_close_if_empty()
 	}
 }
 
+void ScoreCanvas::set_newnote_velo(int velo)
+{
+	newnote_velo=velo;
+}
+
+void ScoreCanvas::set_newnote_velo_off(int velo)
+{
+	newnote_velo_off=velo;
+}
+
 bool staff_t::cleanup_parts()
 {
 	bool did_something=false;
@@ -3422,13 +3461,12 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
 
 /* BUGS and potential bugs
  *   o when the keymap is not used, this will probably lead to a bug
+ *     same when mastertrack is disabled
  * 
  * CURRENT TODO
  *   x nothing atm
  * 
  * IMPORTANT TODO
- *   o invalidate len-buttons for lens which are outside of the quantisation setting
- *   o add toolbar for new note's velocities
  *   o implement color=velocity
  *
  * less important stuff
@@ -3460,7 +3498,6 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  *     msgNewEvent functions (see my e-mail)
  *
  * GUI stuff
- *   o velocity/release-velo for newly inserted notes [->toolbar]
  *   o velocity/release-velo for already existing notes
  *     	  - do this by right-click -> some dialog shows up?
  *     	  - or by selecting the note and changing the values in the same widget which also is used for new notes?
