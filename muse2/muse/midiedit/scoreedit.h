@@ -404,7 +404,8 @@ struct cumulative_t
 
 #define BLACK_PIXMAP (NUM_PARTCOLORS)
 #define HIGHLIGHTED_PIXMAP (NUM_PARTCOLORS+1)
-#define NUM_MYCOLORS (NUM_PARTCOLORS+2)
+#define NUM_MYCOLORS (NUM_PARTCOLORS+2 + 128)
+#define VELO_PIXMAP_BEGIN (NUM_PARTCOLORS+2)
 
 struct timesig_t
 {
@@ -604,7 +605,7 @@ class ScoreCanvas : public View
 
 
 
-		enum {COLOR_MODE_BLACK, COLOR_MODE_PART, COLOR_MODE_PITCH} coloring_mode;
+		enum {COLOR_MODE_BLACK, COLOR_MODE_PART, COLOR_MODE_VELO} coloring_mode;
 		bool preamble_contains_keysig;
 		bool preamble_contains_timesig;
 

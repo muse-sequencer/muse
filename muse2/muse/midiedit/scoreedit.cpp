@@ -818,6 +818,11 @@ void ScoreCanvas::init_pixmaps()
 		mycolors[BLACK_PIXMAP]=Qt::black;
 		mycolors[HIGHLIGHTED_PIXMAP]=Qt::red;
 		
+		for (int i=0; i<64; i++)
+			mycolors[i+VELO_PIXMAP_BEGIN]=QColor(i*4,0,0xff);
+		for (int i=64; i<128; i++)
+			mycolors[i+VELO_PIXMAP_BEGIN]=QColor(0xff,0,(127-i)*4);
+		
 		cout << "loading pixmaps..." << endl;
 		
 		pix_whole=new QPixmap[NUM_MYCOLORS];
@@ -2267,7 +2272,8 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 						color_index=it->source_part->colorIndex();
 						break;
 						
-					case COLOR_MODE_PITCH: //TODO
+					case COLOR_MODE_VELO:
+						color_index=VELO_PIXMAP_BEGIN + it->source_event->velo();
 						break;
 				}
 				if (audio->isPlaying() && it->is_active)
@@ -2781,25 +2787,8 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				mouse_down_pos=event->pos();
 				mouse_operation=NO_OP;
 				
-				int t=tick;
-				set<FloItem, floComp>::iterator found;
-				
-				do
-				{
-					found=itemlist[t].find(FloItem(FloItem::NOTE, set_it->pos));
-					if (found == itemlist[t].end())
-					{
-						cout << "FATAL: THIS SHOULD NEVER HAPPEN: could not find the note's tie-destination" << endl;
-						break;
-					}
-					else
-					{
-						t+=calc_len(found->len, found->dots);
-					}
-				} while (found->tied);
-				
 				int total_begin=set_it->begin_tick;
-				int total_end=t;
+				int total_end=tick;
 				
 				int this_begin=tick;
 				int this_end=this_begin+calc_len(set_it->len, set_it->dots);
@@ -2825,10 +2814,10 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 						mouse_x_drag_operation=NO_OP;
 				}
 				
-				cout << "you clicked at a note with begin at "<<set_it->begin_tick<<" and end at "<<t<<endl;
+				cout << "you clicked at a note with begin at "<<set_it->begin_tick<<" and end at "<<tick<<endl;
 				cout << "x-drag-operation will be "<<mouse_x_drag_operation<<endl;
 				cout << "pointer to part is "<<set_it->source_part;
-				if (!set_it->source_part) cout << " (WARNING! THIS SHOULD NEVER HAPPEN!)";
+				if (set_it->source_part == NULL) cout << " (WARNING! THIS SHOULD NEVER HAPPEN!)";
 				cout << endl;
 				
 				dragged_event=*set_it->source_event;
@@ -3307,6 +3296,7 @@ void ScoreCanvas::menu_command(int cmd)
 	{
 		case CMD_COLOR_BLACK:  coloring_mode=COLOR_MODE_BLACK; redraw(); break;
 		case CMD_COLOR_PART:   coloring_mode=COLOR_MODE_PART;  redraw(); break;
+		case CMD_COLOR_VELO:   coloring_mode=COLOR_MODE_VELO;  redraw(); break;
 		case CMD_NOTELEN_1:    new_len=TICKS_PER_WHOLE/ 1; break;
 		case CMD_NOTELEN_2:    new_len=TICKS_PER_WHOLE/ 2; break;
 		case CMD_NOTELEN_4:    new_len=TICKS_PER_WHOLE/ 4; break;
@@ -3462,28 +3452,26 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
 /* BUGS and potential bugs
  *   o when the keymap is not used, this will probably lead to a bug
  *     same when mastertrack is disabled
+ *   o tied notes don't work properly when there's a key-change in
+ *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
  *   x nothing atm
  * 
  * IMPORTANT TODO
- *   o implement color=velocity
+ *   x nothing atm
  *
  * less important stuff
  *   o support selections
  *   o more fine-grained redrawing in song_changed: sometimes,
  *     only a redraw and not a recalc is needed
  *   o do all the song_changed(SC_EVENT_INSERTED) properly
- *   o emit a "song-changed" signal instead of calling our
- *     internal song_changed() function
  *   o support different keys in different tracks at the same time
  *       calc_pos_add_list and calc_item_pos will be affected by this
  *       calc_pos_add_list must be called before calc_item_pos then,
  *       and calc_item_pos must respect the pos_add_list instead of
  *       keeping its own pos_add variable (which is only an optimisation)
  *   o draw measure numbers
- *   o tied notes don't work properly when there's a key-change in
- *     between, for example, when a cis is tied to a des
  *   o use timesig_t in all timesig-stuff
  *   o draw a margin around notes which are in a bright color
  *   o use bars instead of flags over groups of 8ths / 16ths etc
@@ -3501,6 +3489,7 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  *   o velocity/release-velo for already existing notes
  *     	  - do this by right-click -> some dialog shows up?
  *     	  - or by selecting the note and changing the values in the same widget which also is used for new notes?
+ *        - or by controller graphs, as used by the piano roll
  */
 
 
