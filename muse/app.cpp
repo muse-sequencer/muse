@@ -4849,7 +4849,7 @@ again:
                   }
             }
       microSleep(100000);
-      song->clear(false, clear_all);
+      song->clear(true, clear_all);
       microSleep(100000);
       return false;
       }

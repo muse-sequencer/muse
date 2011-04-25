@@ -2161,6 +2161,7 @@ void Song::clear(bool signal, bool /*clear_all*/)
       if (signal) {
             emit loopChanged(false);
             recordChanged(false);
+            emit songChanged(-1);
             }
       }
 
