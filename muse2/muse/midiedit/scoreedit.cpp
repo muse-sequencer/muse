@@ -2863,6 +2863,12 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 						newevent.setTick(relative_tick);
 						newevent.setLenTick((new_len>0)?new_len:last_len);
 						
+						if (newevent.endTick() > curr_part->lenTick())
+						{
+							cout << "DEBUG: clipping inserted note from len="<<newevent.endTick()<<" to len="<<(curr_part->lenTick() - newevent.tick())<<endl;
+							newevent.setLenTick(curr_part->lenTick() - newevent.tick());
+						}
+						
 						audio->msgAddEvent(newevent, curr_part, false, false, false);
 						
 						dragged_event_part=curr_part;
@@ -2891,11 +2897,11 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 	{
 		if (event->button()==Qt::LeftButton)
 		{
-			if (mouse_operation==LENGTH)
+			if ((mouse_operation==LENGTH) || (mouse_operation==BEGIN)) //also BEGIN can change the len by clipping
 			{
 				if (flo_quantize(dragged_event.lenTick(), quant_ticks()) <= 0)
 				{
-					cout << "new length <= 0, erasing item" << endl;
+					cout << "DEBUG: new length <= 0, erasing item" << endl;
 					audio->msgDeleteEvent(dragged_event, dragged_event_part, false, false, false);
 				}
 				else
@@ -2977,9 +2983,30 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				if (dragged_event.tick()+dragged_event_part->tick() != unsigned(tick)) //TODO FINDMICHJETZT tick kann unsigned werden
 				{
 					Event tmp=dragged_event.clone();
+					signed relative_tick=tick-signed(dragged_event_part->tick());
 					
-					if (tick-signed(dragged_event_part->tick()) >= 0) //TODO FINDMICH do that better
-						tmp.setTick(tick-dragged_event_part->tick());
+					if (relative_tick >= 0)
+						tmp.setTick(relative_tick);
+					else
+					{
+						tmp.setTick(0);
+						cout << "DEBUG: not moving note before begin of part; setting it directly to the begin" << endl;
+					}
+
+					if (tmp.endTick() > dragged_event_part->lenTick())
+					{
+						signed new_len=dragged_event_part->lenTick() - tmp.tick();
+						if (new_len>=0)
+						{
+							tmp.setLenTick(dragged_event_part->lenTick() - tmp.tick());
+							cout << "DEBUG: moved note would exceed its part; clipping length to " << tmp.lenTick() << endl;
+						}
+						else
+						{
+							tmp.setLenTick(0);
+							cout << "DEBUG: moved note would exceed its part; clipping length to 0 (actually negative)" << endl;
+						}
+					}
 					
 					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
 					dragged_event=tmp;
@@ -2994,9 +3021,22 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				if (dragged_event.tick()+dragged_event.lenTick() + dragged_event_part->tick() != unsigned(tick))
 				{
 					Event tmp=dragged_event.clone();
+					signed relative_tick=tick-signed(dragged_event_part->tick());
+					signed new_len=relative_tick-dragged_event.tick();
 					
-					if (tick-signed(dragged_event.tick() -dragged_event_part->tick()) >= 0) //TODO FINDMICH do that better
-						tmp.setLenTick(tick-dragged_event.tick() -dragged_event_part->tick());
+					if (new_len>=0)
+						tmp.setLenTick(new_len);
+					else
+					{
+						tmp.setLenTick(0);
+						cout << "DEBUG: not setting len to a negative value. using 0 instead" << endl;
+					}
+					
+					if (tmp.endTick() > dragged_event_part->lenTick())
+					{
+						tmp.setLenTick(dragged_event_part->lenTick() - tmp.tick());
+						cout << "DEBUG: resized note would exceed its part; limiting length to " << tmp.lenTick() << endl;
+					}
 					
 					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
 					dragged_event=tmp;
@@ -3387,8 +3427,8 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  *   x nothing atm
  * 
  * IMPORTANT TODO
- *   o when inserting or moving or resizing a note: clip to part's boundaries
  *   o invalidate len-buttons for lens which are outside of the quantisation setting
+ *   o add toolbar for new note's velocities
  *   o implement color=velocity
  *
  * less important stuff
