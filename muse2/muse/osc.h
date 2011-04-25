@@ -34,6 +34,7 @@ class QString;
 class PluginI;
 class OscIF;
 
+/*
 // Keep the OSC fifo small. There may be thousands of controls, and each control needs a fifo.
 // Oops, no, if the user keeps adjusting a slider without releasing the mouse button, then all of the 
 //  events are sent at once upon releasing the button, meaning there might be thousands of events at once.
@@ -73,6 +74,7 @@ class OscControlFifo
       void clear()         { size = 0, wIndex = 0, rIndex = 0; }
       int getSize() const  { return size; }
 };
+*/
 
 //---------------------------------------------------------
 //  OscIF
@@ -137,7 +139,7 @@ class OscIF
       char* _uiOscShowPath;
       bool _oscGuiVisible;
    
-      OscControlFifo* _oscControlFifos;
+      //OscControlFifo* _oscControlFifos;
       
       virtual bool oscInitGui(const QString& /*typ*/, const QString& /*baseName*/, const QString& /*name*/, 
                        const QString& /*label*/, const QString& /*filePath*/, const QString& /*guiPath*/);
@@ -146,7 +148,7 @@ class OscIF
       OscIF();
       virtual ~OscIF();
       
-      OscControlFifo* oscFifo(unsigned long) const;
+      //OscControlFifo* oscFifo(unsigned long) const;
       
       virtual int oscUpdate(lo_arg**);    
       virtual int oscProgram(lo_arg**)   { return 0; }   

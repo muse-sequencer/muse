@@ -149,8 +149,8 @@ class SynthIF {
       virtual const char* getPatchName(int, int, MType, bool) = 0;
       virtual void populatePatchPopup(QMenu*, int, MType, bool) = 0;
       virtual void write(int level, Xml& xml) const = 0;
-      virtual float getParameter(unsigned long idx) const = 0;
-      virtual void setParameter(unsigned long idx, float value) = 0;
+      virtual float getParameter(unsigned long idx) const = 0;        
+      virtual void setParameter(unsigned long idx, float value) = 0;  
       virtual int getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval) = 0;
       };
 
@@ -211,7 +211,7 @@ class SynthI : public AudioTrack, public MidiDevice,
       //SynthI* clone() const { return new SynthI(*this); }
       SynthI* clone(bool /*cloneParts*/) const { return new SynthI(*this); }
 
-      virtual inline int deviceType() { return SYNTH_MIDI; } 
+      virtual inline int deviceType() const { return SYNTH_MIDI; } 
       
       SynthIF* sif() const { return _sif; }
       bool initInstance(Synth* s, const QString& instanceName);

@@ -405,6 +405,7 @@ void stopOSC()
         
 
 
+/*
 //---------------------------------------------------------
 //   OscControlFifo
 //    put
@@ -456,7 +457,7 @@ void OscControlFifo::remove()
       // q_atomic_decrement(&size);
       --size;
       }
-
+*/
 
 
 //---------------------------------------------------------
@@ -483,7 +484,7 @@ OscIF::OscIF()
   _oscGuiQProc = 0;
   _oscGuiVisible = false;
   
-  _oscControlFifos = 0;
+  //_oscControlFifos = 0;
 }
 
 OscIF::~OscIF()
@@ -530,10 +531,11 @@ OscIF::~OscIF()
   if(_uiOscPath)
     free(_uiOscPath);
     
-  if(_oscControlFifos)
-    delete[] _oscControlFifos;
+  //if(_oscControlFifos)
+  //  delete[] _oscControlFifos;
 }
 
+/*
 //---------------------------------------------------------
 //   oscFifo
 //---------------------------------------------------------
@@ -544,6 +546,7 @@ OscControlFifo* OscIF::oscFifo(unsigned long i) const
     return 0;
   return &_oscControlFifos[i];
 }
+*/
 
 //---------------------------------------------------------
 //   oscUpdate
@@ -1135,15 +1138,15 @@ bool OscIF::oscGuiVisible() const
 void OscDssiIF::oscSetSynthIF(DssiSynthIF* s)
 { 
   _oscSynthIF = s;
-  if(_oscControlFifos)
-    delete[] _oscControlFifos;
-  _oscControlFifos = 0;
+  //if(_oscControlFifos)
+  //  delete[] _oscControlFifos;
+  //_oscControlFifos = 0;
     
-  if(_oscSynthIF && _oscSynthIF->dssiSynth())
-  {
-    unsigned long ports = _oscSynthIF->dssiSynth()->inControls();
-    _oscControlFifos = new OscControlFifo[ports];  
-  }  
+  //if(_oscSynthIF && _oscSynthIF->dssiSynth())
+  //{
+  //  unsigned long ports = _oscSynthIF->dssiSynth()->inControls();
+  //  _oscControlFifos = new OscControlFifo[ports];  
+  //}  
 }
 
 //---------------------------------------------------------
@@ -1327,15 +1330,15 @@ bool OscDssiIF::oscInitGui()
 void OscEffectIF::oscSetPluginI(PluginI* s)
 { 
   _oscPluginI = s; 
-  if(_oscControlFifos)
-    delete[] _oscControlFifos;
-  _oscControlFifos = 0;
+  //if(_oscControlFifos)
+  //  delete[] _oscControlFifos;
+  //_oscControlFifos = 0;
     
-  if(_oscPluginI && _oscPluginI->plugin())
-  {
-    unsigned long ports = _oscPluginI->plugin()->controlInPorts();
-    _oscControlFifos = new OscControlFifo[ports];  
-  }  
+  //if(_oscPluginI && _oscPluginI->plugin())
+  //{
+  //  unsigned long ports = _oscPluginI->plugin()->controlInPorts();
+  //  _oscControlFifos = new OscControlFifo[ports];  
+  //}  
 }
 
 //---------------------------------------------------------

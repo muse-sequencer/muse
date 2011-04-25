@@ -917,8 +917,9 @@ void SynthI::preProcessAlways()
     // Clear any accumulated play events.
     playEvents()->clear();
     // Eat up any fifo events.
-    while(!eventFifo.isEmpty()) 
-      eventFifo.get();  
+    //while(!eventFifo.isEmpty()) 
+    //  eventFifo.get();  
+    eventFifo.clear();  // p4.0.21 Duh, clear is the same but faster AND safer, right?
   }    
 }
 

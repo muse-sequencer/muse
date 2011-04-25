@@ -989,7 +989,8 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             //PluginI* p = 0;
             PluginIBase* p = 0;     
             bool ctlfound = false;
-            int m = l->id() & AC_PLUGIN_CTL_ID_MASK;
+            //int m = l->id() & AC_PLUGIN_CTL_ID_MASK;
+            unsigned m = l->id() & AC_PLUGIN_CTL_ID_MASK;       // p4.0.21
             int n = (l->id() >> AC_PLUGIN_CTL_BASE_POW) - 1;
             if(n >= 0 && n < PipelineDepth)
             {
@@ -1163,7 +1164,8 @@ void AudioTrack::mapRackPluginsToControllers()
       // Ignore volume, pan, mute etc.
       if(id < AC_PLUGIN_CTL_BASE)
         continue;
-      int param = id & AC_PLUGIN_CTL_ID_MASK;
+      //int param = id & AC_PLUGIN_CTL_ID_MASK;
+      unsigned param = id & AC_PLUGIN_CTL_ID_MASK;    // p4.0.21
       int idx = (id >> AC_PLUGIN_CTL_BASE_POW) - 1;
       //PluginI* p = (*_efxPipe)[idx];
       
