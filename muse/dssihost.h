@@ -75,6 +75,8 @@ class DssiSynth : public Synth {
       MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps DSSI port numbers to midi controller numbers.
       bool _hasGui;
       bool _inPlaceCapable;
+      // Hack: Special flag required.
+      bool _isDssiVst;
 
    public:
       //DssiSynth(const QFileInfo* fi, QString l) : Synth(fi, l) {
@@ -236,7 +238,8 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       //-------------------------
       bool on() const;       
       void setOn(bool /*val*/);   
-      int pluginID();
+      //int pluginID();
+      unsigned pluginID();        // p4.0.21
       int id();
       QString pluginLabel() const;  
       QString name() const;
@@ -244,17 +247,25 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       QString dirPath() const;
       QString fileName() const;
       AudioTrack* track();          
-      void enableController(int /*i*/, bool v = true); 
-      bool controllerEnabled(int /*i*/) const;          
-      bool controllerEnabled2(int /*i*/) const;          
+      //void enableController(int /*i*/, bool v = true); 
+      //bool controllerEnabled(int /*i*/) const;          
+      //bool controllerEnabled2(int /*i*/) const;          
+      void enableController(unsigned /*i*/, bool v = true);      // p4.0.21
+      bool controllerEnabled(unsigned /*i*/) const;          
+      bool controllerEnabled2(unsigned /*i*/) const;          
       void updateControllers();
       void writeConfiguration(int /*level*/, Xml& /*xml*/);
       bool readConfiguration(Xml& /*xml*/, bool readPreset=false);
-      int parameters() const;          
-      void setParam(int /*i*/, double /*val*/); 
-      double param(int /*i*/) const;        
-      const char* paramName(int /*i*/);     
-      LADSPA_PortRangeHint range(int /*i*/); 
+      //int parameters() const;          
+      //void setParam(int /*i*/, double /*val*/); 
+      //double param(int /*i*/) const;        
+      //const char* paramName(int /*i*/);     
+      //LADSPA_PortRangeHint range(int /*i*/); 
+      unsigned parameters() const;                            // p4.0.21
+      void setParam(unsigned /*i*/, float /*val*/); 
+      float param(unsigned /*i*/) const;        
+      const char* paramName(unsigned /*i*/);     
+      LADSPA_PortRangeHint range(unsigned /*i*/); 
 
       friend class DssiSynth;
       };

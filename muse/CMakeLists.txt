@@ -83,6 +83,7 @@ file (GLOB core_source_files
       cobject.cpp
       conf.cpp
       confmport.cpp
+      controlfifo.cpp
       ctrl.cpp
       dssihost.cpp 
       event.cpp

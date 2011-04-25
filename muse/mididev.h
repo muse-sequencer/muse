@@ -77,7 +77,7 @@ class MidiDevice {
       MidiDevice(const QString& name);
       virtual ~MidiDevice() {}
 
-      virtual int deviceType() = 0;
+      virtual int deviceType() const = 0;
       
       //virtual void* clientPort() { return 0; }
       // p3.3.55

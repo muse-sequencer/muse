@@ -66,7 +66,7 @@ class DummyAudioDevice : public AudioDevice {
         free(buffer); 
       }
 
-      virtual inline int deviceType() { return DUMMY_AUDIO; } // p3.3.52
+      virtual inline int deviceType() const { return DUMMY_AUDIO; } // p3.3.52
       
       //virtual void start();
       virtual void start(int);
