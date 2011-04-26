@@ -3469,10 +3469,6 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  *   x nothing atm
  *
  * less important stuff
- *   o use the proper quantisation functions instead of
- *     flo_quantize() and flo_quantize_floor()
- *   o let the user set up SPLIT_NOTE
- *   o let the user decide about the initial clef (search for FINDME_INITCLEF)
  *   o deal with expanding parts or clip (expanding is better)
  *   o offer functions like in the pianoroll: quantize etc.
  *   o support selections
@@ -3488,6 +3484,10 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  *       keeping its own pos_add variable (which is only an optimisation)
  *   o draw a margin around notes which are in a bright color
  *   o refuse to resize so that width gets smaller or equal than x_left
+ *   o use the proper quantisation functions instead of
+ *     flo_quantize() and flo_quantize_floor()
+ *   o let the user set up SPLIT_NOTE
+ *   o let the user decide about the initial clef (search for FINDME_INITCLEF)
  *
  * stuff for the other muse developers
  *   o process accurate timesignatures from muse's list (has to be implemented first in muse)

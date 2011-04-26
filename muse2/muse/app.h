@@ -69,6 +69,8 @@ class ScoreEdit;
 
 #define MENU_ADD_SYNTH_ID_BASE 0x1000
 
+
+
 //---------------------------------------------------------
 //   MusE
 //---------------------------------------------------------
@@ -110,12 +112,14 @@ class MusE : public QMainWindow
       QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;
       QAction *trackMidiAction, *trackDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
       QAction *trackAInputAction, *trackAAuxAction;
-      QAction *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
       QAction *masterGraphicAction, *masterListAction;
       QAction *midiTransposeAction;
       QAction *midiTransformerAction;
       QAction *editSongInfoAction;
-
+   public:
+      QAction *startScoreEditAction, *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
+      QMenu *scoreSubmenu, *scoreOneStaffPerTrackSubsubmenu, *scoreAllInOneSubsubmenu;
+   private:
       // View Menu actions
       QAction *viewTransportAction, *viewBigtimeAction, *viewMixerAAction, *viewMixerBAction, *viewCliplistAction, *viewMarkerAction;
 
@@ -159,7 +163,6 @@ class MusE : public QMainWindow
       QMenu* menu_audio, *menuAutomation;
       QMenu* menu_functions, *menuScriptPlugins;
       QMenu* select, *master, *midiEdit, *addTrack;
-      QMenu *scoreSubmenu, *scoreOneStaffPerTrackSubsubmenu, *scoreAllInOneSubsubmenu;
 
       // Special 'stay-open' menu for routes.
       PopupMenu* routingPopupMenu; 
@@ -273,7 +276,7 @@ class MusE : public QMainWindow
       void clearScoreMenuMappers();
       void updateScoreMenus();
       void scoreNamingChanged();
-      
+      void startScoreQuickly();
       void startPianoroll();
       void startPianoroll(PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
       void startWaveEditor();

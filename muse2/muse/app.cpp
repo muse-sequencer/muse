@@ -999,9 +999,13 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       
       scoreAllInOneSubsubmenu = new QMenu(tr("all parts in one staff"), this);
       scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("one staff per part"), this);
+
+			scoreSubmenu->addMenu(scoreAllInOneSubsubmenu);
+			scoreSubmenu->addMenu(scoreOneStaffPerTrackSubsubmenu);
       
 			updateScoreMenus();
       
+      startScoreEditAction = new QAction(*scoreIconSet, tr("New score window"), this);
       startPianoEditAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
       startDrumEditAction = new QAction(QIcon(*edit_drummsIcon), tr("Drums"), this);
       startListEditAction = new QAction(QIcon(*edit_listIcon), tr("List"), this);
@@ -1151,6 +1155,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(editSignalMapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
 
       connect(startPianoEditAction, SIGNAL(activated()), SLOT(startPianoroll()));
+      connect(startScoreEditAction, SIGNAL(activated()), SLOT(startScoreQuickly()));
       connect(startDrumEditAction, SIGNAL(activated()), SLOT(startDrumEditor()));
       connect(startListEditAction, SIGNAL(activated()), SLOT(startListEditor()));
       connect(startWaveEditAction, SIGNAL(activated()), SLOT(startWaveEditor()));
@@ -1373,8 +1378,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       menuEdit->addAction(startPianoEditAction);
       menuEdit->addMenu(scoreSubmenu);
-				scoreSubmenu->addMenu(scoreAllInOneSubsubmenu);
-				scoreSubmenu->addMenu(scoreOneStaffPerTrackSubsubmenu);
+      menuEdit->addAction(startScoreEditAction);
       menuEdit->addAction(startDrumEditAction);
       menuEdit->addAction(startListEditAction);
       menuEdit->addAction(startWaveEditAction);
@@ -3534,6 +3538,11 @@ void MusE::openInScoreEdit(ScoreEdit* destination, PartList* pl, bool allInOne)
   }
   
   destination->add_parts(pl, allInOne);
+}
+
+void MusE::startScoreQuickly()
+{
+	openInScoreEdit_oneStaffPerTrack(NULL);
 }
 
 //---------------------------------------------------------
