@@ -190,12 +190,14 @@ static void usage(const char* prog, const char* txt)
       fprintf(stderr, "   -v       print version\n");
       fprintf(stderr, "   -d       debug mode: no threads, no RT\n");
       fprintf(stderr, "   -D       debug mode: enable some debug messages\n");
+      fprintf(stderr, "                        specify twice for lots of debug messages\n");
+      fprintf(stderr, "                        this may slow down MusE massively!\n");
       fprintf(stderr, "   -m       debug mode: trace midi Input\n");
       fprintf(stderr, "   -M       debug mode: trace midi Output\n");
       fprintf(stderr, "   -s       debug mode: trace sync\n");
       fprintf(stderr, "   -a       no audio\n");
-      //fprintf(stderr, "   -P  n    set real time priority to n (default: 50)\n");
-      fprintf(stderr, "   -P  n    set audio driver real time priority to n (Dummy only, default 40. Else fixed by Jack.)\n");
+      fprintf(stderr, "   -P  n    set audio driver real time priority to n\n");
+      fprintf(stderr, "            (Dummy only, default 40. Else fixed by Jack.)\n");
       fprintf(stderr, "   -Y  n    force midi real time priority to n (default: audio driver prio +2)\n");
       fprintf(stderr, "   -p       don't load LADSPA plugins\n");
 #ifdef ENABLE_PYTHON
@@ -210,7 +212,8 @@ static void usage(const char* prog, const char* txt)
 #ifdef HAVE_LASH
       fprintf(stderr, "   -L       don't use LASH\n");
 #endif
-      fprintf(stderr, "   -l  xx   force locale to the given language/country code (xx = %s)\n", localeList().toLatin1().constData());
+      fprintf(stderr, "   -l  xx   force locale to the given language/country code\n");
+      fprintf(stderr, "            (xx = %s)\n", localeList().toLatin1().constData());
       }
 
 //---------------------------------------------------------
@@ -303,7 +306,11 @@ int main(int argc, char* argv[])
                   case 'a':
                         noAudio = true;
                         break;
-                  case 'D': debugMsg = true; break;
+                  case 'D': 
+                        if (!debugMsg)
+                              debugMsg=true;
+                        else
+                              heavyDebugMsg=true;
                   case 'm': midiInputTrace = true; break;
                   case 'M': midiOutputTrace = true; break;
                   case 's': debugSync = true; break;

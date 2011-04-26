@@ -59,6 +59,7 @@ extern bool debugMode;
 extern bool midiInputTrace;
 extern bool midiOutputTrace;
 extern bool debugMsg;
+extern bool heavyDebugMsg;
 extern bool debugSync;
 extern bool loadPlugins;
 extern bool loadVST;

@@ -377,7 +377,6 @@ struct note_len_t
 	}
 };
 
-bool operator< (const note_len_t& a,const note_len_t& b);
 
 struct cumulative_t
 {
