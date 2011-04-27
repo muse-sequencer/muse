@@ -23,7 +23,8 @@ const int AC_MUTE   = 2;
 #define AC_PLUGIN_CTL_BASE_POW     12
 #define AC_PLUGIN_CTL_ID_MASK      0xFFF
 
-inline int genACnum(int plugin, int ctrl) { return (plugin + 1) * AC_PLUGIN_CTL_BASE + ctrl; }
+//inline int genACnum(int plugin, int ctrl) { return (plugin + 1) * AC_PLUGIN_CTL_BASE + ctrl; }
+inline unsigned genACnum(unsigned plugin, unsigned ctrl) { return (plugin + 1) * AC_PLUGIN_CTL_BASE + ctrl; }
 
 class Xml;
 

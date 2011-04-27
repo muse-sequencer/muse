@@ -2,7 +2,7 @@
 //  MusE
 //  Linux Music Editor
 //  scoreedit.h
-//  (C) Copyright 2011 Florian Jung (florian.a.jung@web.de)
+//  (C) Copyright 2011 Florian Jung (flo93@users.sourceforge.net)
 //=========================================================
 
 #ifndef __SCOREEDIT_H__

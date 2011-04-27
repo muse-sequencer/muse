@@ -28,7 +28,7 @@ class AudioDevice {
       AudioDevice() {}
       virtual ~AudioDevice() {}
 
-      virtual int deviceType() = 0;  // p3.3.52
+      virtual int deviceType() const = 0;  // p3.3.52
       
       //virtual void start() = 0;
       virtual void start(int priority) = 0;

@@ -1,11 +1,12 @@
 ================================================
     MusE loadable Midi Instrument Definitions
-    (as of 10.09.2003) MusE 0.7.0
+    (valid from around MusE 0.8.1, Edited by Tim APR.25.2010, at MusE 2.0alpha)
 ================================================
 
   - File Extension  ".idf"
   - searched in Subdirectory  "instruments"
     (/usr/share/muse/instruments on my system)
+  - Can be viewed, created or edited with menu 'Midi -> Edit Instrument'
 
   All found instrument definitions are presented by MusE
   in Config->MidiPorts in Pulldown in column "Instrument".
@@ -30,12 +31,8 @@
       <Patch name="Fingered Bass" prog="33"/>
       </PatchGroup>
     ...
-    <Controller name="Brightness">
-      <n>0x4a</n>
-      <min>0</min>
-      <max>127</max>
-      <init>0</init>
-      </Controller>
+    <Controller name="Pan" l="10" min="-64" max="63" init="0" />
+    <Controller name="PitchBendSensitivity" type="RPN" h="0" l="0" max="24" init="2" />
     ...
     </MidiInstrument>
   </muse>
@@ -91,12 +88,24 @@
  (6)  Controller have the following porperties:
 
       name: arbitrary unique (short) string describing the controller
-      n:    controller number, defines also the controller type:
-            values from 0x0 - 0x7f are 7Bit controller
-            values from 0x1000 - 0x1ffff are 14 bit controller with
-               MSB/LSB value pairs
-            values from 0x20000 - 0x2ffff are RPN's
-            values from 0x30000 - 0x3ffff are NRPN's
+      
+      type:     Controller7       regular 7-bit controller
+                Controller14      14-bit controller
+                RPN               registered parameter 7-bit
+                NRPN              non registered parameter 7-bit
+                RPN14             registered parameter 14-bit
+                NRPN14            non registered parameter 14-bit
+                Pitch             pitch mod wheel
+                Program           program 
+
+            Default Controller7 if omitted.
+            Pitch and Program are convenience controllers which
+             wrap pitch or program functionality in one controller.
+
+      h:  controller number MSB. Default 0 if omitted.
+      l:  controller number LSB. Default 0 if omitted.
+            For drum controllers, this can also be "pitch" indicating
+             each drum 'note' has its own controller.
 
       min:  minimum value for controller
       max:  maximum value for controller
@@ -104,5 +113,8 @@
             undefined after instrument reset, use the ''undefined''
             value 0x10000
 
-      the min/max/init values can be ommited
+           The min/max/init values can be omitted
+           Auto-biasing feature: If min is less than zero, such as with 
+            pan = -64 -> 63, MusE automatically displays this range, 
+            yet uses the true range of 0-127 'behind the scenes'.
 

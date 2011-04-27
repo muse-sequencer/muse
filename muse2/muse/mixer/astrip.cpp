@@ -430,7 +430,10 @@ void AudioStrip::volumeChanged(double val)
       else
             vol = pow(10.0, val/20.0);
       volume = vol;
-      audio->msgSetVolume((AudioTrack*)track, vol);
+      //audio->msgSetVolume((AudioTrack*)track, vol);
+      // p4.0.21 audio->msgXXX waits. Do we really need to?
+      ((AudioTrack*)track)->setVolume(vol);
+      
       ((AudioTrack*)track)->recordAutomation(AC_VOLUME, vol);
 
       song->update(SC_TRACK_MODIFIED); // for graphical automation update
@@ -455,7 +458,10 @@ void AudioStrip::volumePressed()
       else
             vol = pow(10.0, val/20.0);
       volume = vol;
-      audio->msgSetVolume((AudioTrack*)track, volume);
+      //audio->msgSetVolume((AudioTrack*)track, volume);
+      // p4.0.21 audio->msgXXX waits. Do we really need to?
+      ((AudioTrack*)track)->setVolume(volume);
+      
       ((AudioTrack*)track)->startAutoRecord(AC_VOLUME, volume);
       }
 
@@ -498,7 +504,10 @@ void AudioStrip::volLabelChanged(double val)
             vol = pow(10.0, val/20.0);
       volume = vol;
       slider->setValue(val);
-      audio->msgSetVolume((AudioTrack*)track, vol);
+      //audio->msgSetVolume((AudioTrack*)track, vol);
+      // p4.0.21 audio->msgXXX waits. Do we really need to?
+      ((AudioTrack*)track)->setVolume(vol);
+      
       ((AudioTrack*)track)->startAutoRecord(AC_VOLUME, vol);
       }
 
@@ -513,7 +522,10 @@ void AudioStrip::panChanged(double val)
         track->enablePanController(false);
       
       panVal = val;  
-      audio->msgSetPan(((AudioTrack*)track), val);
+      //audio->msgSetPan(((AudioTrack*)track), val);
+      // p4.0.21 audio->msgXXX waits. Do we really need to?
+      ((AudioTrack*)track)->setPan(val);
+      
       ((AudioTrack*)track)->recordAutomation(AC_PAN, val);
       }
 
@@ -528,7 +540,9 @@ void AudioStrip::panPressed()
         track->enablePanController(false);
       
       panVal = pan->value();  
-      audio->msgSetPan(((AudioTrack*)track), panVal);
+      //audio->msgSetPan(((AudioTrack*)track), panVal);
+      // p4.0.21 audio->msgXXX waits. Do we really need to?
+      ((AudioTrack*)track)->setPan(panVal);
       ((AudioTrack*)track)->startAutoRecord(AC_PAN, panVal);
       }
 
@@ -563,7 +577,9 @@ void AudioStrip::panLabelChanged(double val)
       
       panVal = val;
       pan->setValue(val);
-      audio->msgSetPan((AudioTrack*)track, val);
+      //audio->msgSetPan((AudioTrack*)track, val);
+      // p4.0.21 audio->msgXXX waits. Do we really need to?
+      ((AudioTrack*)track)->setPan(val);
       ((AudioTrack*)track)->startAutoRecord(AC_PAN, val);
       }
 

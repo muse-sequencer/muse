@@ -44,7 +44,7 @@ class MidiAlsaDevice : public MidiDevice {
       virtual void* outClientPort() { return (void*)&adr; }    // That is, ALSA midi client ports can be both r/w.
       
       virtual void writeRouting(int, Xml&) const;
-      virtual inline int deviceType() { return ALSA_MIDI; } 
+      virtual inline int deviceType() const { return ALSA_MIDI; } 
       };
 
 extern bool initMidiAlsa();

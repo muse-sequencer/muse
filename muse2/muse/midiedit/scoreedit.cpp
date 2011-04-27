@@ -2,7 +2,7 @@
 //  MusE
 //  Linux Music Editor
 //  scoreedit.cpp
-//  (C) Copyright 2011 Florian Jung (florian.a.jung@web.de)
+//  (C) Copyright 2011 Florian Jung (flo93@users.sourceforge.net)
 //=========================================================
 
 
@@ -129,7 +129,7 @@ QString create_random_string(int len=8)
 
 QPixmap *pix_whole, *pix_half, *pix_quarter; // arrays [NUM_MYCOLORS]
 QPixmap *pix_dot, *pix_b, *pix_sharp, *pix_noacc; // arrays [NUM_MYCOLORS]
-QPixmap *pix_r1, *pix_r2, *pix_r4, *pix_r8, *pix_r16; // pointers
+QPixmap *pix_r1, *pix_r2, *pix_r4, *pix_r8, *pix_r16, *pix_r32; // pointers
 QPixmap *pix_flag_up, *pix_flag_down; // arrays [4]
 QPixmap *pix_num; // array [10]
 QPixmap *pix_clef_violin, *pix_clef_bass; //pointers
@@ -287,7 +287,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 	quant_toolbar->addWidget(new QLabel(tr("Pixels per whole:"), quant_toolbar));
 	QSpinBox* px_per_whole_spinbox = new QSpinBox(this);
-	px_per_whole_spinbox->setRange(10, 1000);
+	px_per_whole_spinbox->setRange(10, 1200);
 	px_per_whole_spinbox->setSingleStep(50);
 	connect(px_per_whole_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_pixels_per_whole(int)));
 	connect(score_canvas, SIGNAL(pixels_per_whole_changed(int)), px_per_whole_spinbox, SLOT(setValue(int)));
@@ -835,6 +835,7 @@ void ScoreCanvas::init_pixmaps()
 		pix_r4=new QPixmap;
 		pix_r8=new QPixmap;
 		pix_r16=new QPixmap;
+		pix_r32=new QPixmap;
 		
 		pix_clef_violin=new QPixmap;
 		pix_clef_bass=new QPixmap;
@@ -858,6 +859,7 @@ void ScoreCanvas::init_pixmaps()
 		pix_r4->load(museGlobalShare + "/scoreglyphs/rest4.png");
 		pix_r8->load(museGlobalShare + "/scoreglyphs/rest8.png");
 		pix_r16->load(museGlobalShare + "/scoreglyphs/rest16.png");
+		pix_r32->load(museGlobalShare + "/scoreglyphs/rest32.png");
 		pix_flag_up[0].load(museGlobalShare + "/scoreglyphs/flags8u.png");
 		pix_flag_up[1].load(museGlobalShare + "/scoreglyphs/flags16u.png");
 		pix_flag_up[2].load(museGlobalShare + "/scoreglyphs/flags32u.png");
@@ -905,13 +907,11 @@ bool operator< (const note_pos_t& a, const note_pos_t& b)
  
 int flo_quantize(int tick, int quant_ticks)
 {
-	//TODO quantizing must be done with the proper functions!
 	return int(nearbyint((float)tick / quant_ticks))*quant_ticks;
 }
  
 int flo_quantize_floor(int tick, int quant_ticks)
 {
-	//TODO quantizing must be done with the proper functions, see above
 	return int(tick / quant_ticks) * quant_ticks;
 }
 
@@ -2071,6 +2071,7 @@ void staff_t::calc_item_pos()
 					case 2: it->pix=pix_r4; break;
 					case 3: it->pix=pix_r8; break;
 					case 4: it->pix=pix_r16; break;
+					case 5: it->pix=pix_r32; break;
 				}
 				
 				it->x+=parent->note_x_indent() + (it->ausweich ? REST_AUSWEICH_X : 0); //AUSWEICH_X
@@ -2754,7 +2755,6 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 	int y=event->y() + y_pos - staff_it->y_draw;
 	int x=event->x()+x_pos-x_left;
 	int tick=flo_quantize_floor(x_to_tick(x), quant_ticks());
-						//TODO quantizing must (maybe?) be done with the proper functions
 
 	if (staff_it!=staves.end())
 	{
@@ -2790,9 +2790,26 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 			{
 				mouse_down_pos=event->pos();
 				mouse_operation=NO_OP;
+
+				int t=tick;
+
+				set<FloItem, floComp>::iterator found;
+				do
+				{
+					found=itemlist[t].find(FloItem(FloItem::NOTE, set_it->pos));
+					if (found == itemlist[t].end())
+					{
+						cerr << "ERROR: THIS SHOULD NEVER HAPPEN: could not find the note's tie-destination" << endl;
+						break;
+					}
+					else
+					{
+						t+=calc_len(found->len, found->dots);
+					}
+				} while (found->tied);
 				
 				int total_begin=set_it->begin_tick;
-				int total_end=tick;
+				int total_end=t;
 				
 				int this_begin=tick;
 				int this_end=this_begin+calc_len(set_it->len, set_it->dots);
@@ -2819,7 +2836,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				}
 				
 				if (debugMsg)
-					cout << "you clicked at a note with begin at "<<set_it->begin_tick<<" and end at "<<tick<<endl
+					cout << "you clicked at a note with begin at "<<set_it->begin_tick<<" and end at "<<t<<endl
 							 << "x-drag-operation will be "<<mouse_x_drag_operation<<endl
 							 << "pointer to part is "<<set_it->source_part << endl;
 				
@@ -3466,12 +3483,13 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  *   o clean up code (find TODOs)
  * 
  * IMPORTANT TODO
- *   x nothing atm
- *
- * less important stuff
- *   o deal with expanding parts or clip (expanding is better)
+ *   o save and restore window settings, automatically reopen windows
+ *     after loading file etc
  *   o offer functions like in the pianoroll: quantize etc.
  *   o support selections
+ *
+ * less important stuff
+ *   o deal with expanding parts
  *   o do all the song_changed(SC_EVENT_INSERTED) properly
  *   o add tracks in correct order to score
  *   o draw measure numbers

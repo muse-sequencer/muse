@@ -1,3 +1,12 @@
+25.04.2011:
+        - added a songChanged at the end of clear when loading a new song, intended effect was to 
+          clear GUI before loading new song to fix some nasty crashes, seems to work (rj)
+        - Overhaul plugin.cpp/h: Fix all float <-> double and int <-> unsigned usages. (p4.0.21 Tim)
+        - Improved ladspa and dssi controller responsiveness even with large audio buffer size. (Tim)
+          Implemented variable run-lengths for frame-accurate controller processing. 
+          Improved volume, pan, and plugin control responsiveness - used track->setPluginCtrlVal() 
+           instead of audio->msgSetPluginCtrlVal() which waits until next audio process.
+          Work in progress! Still not complete yet. Please bear with me. 
 24.04.2011:
         - Improved master list editor editing of keys, dropdown should not 'stay behind' anymore (rj)
 21.04.2011:
