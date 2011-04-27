@@ -1366,6 +1366,23 @@ float DssiSynthIF::getParameter(unsigned long n) const
   
   return controls[n].val;
 }
+//---------------------------------------------------------
+//   getParameter
+//---------------------------------------------------------
+
+float DssiSynthIF::getParameterOut(unsigned long n) const
+{
+  if(n >= synth->_controlOutPorts)
+  {
+    printf("DssiSynthIF::getParameter param number %ld out of range of ports:%ld\n", n, synth->_controlOutPorts);
+    return 0.0;
+  }
+
+  if(!controlsOut)
+    return 0.0;
+
+  return controlsOut[n].val;
+}
 
 //---------------------------------------------------------
 //   setParameter
@@ -3494,6 +3511,7 @@ bool DssiSynthIF::controllerEnabled2(unsigned i) const       { return controls[i
 void DssiSynthIF::updateControllers()                        { }
 void DssiSynthIF::writeConfiguration(int /*level*/, Xml& /*xml*/)        { }
 bool DssiSynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return false; }
+
 //int DssiSynthIF::parameters() const                          { return synth ? synth->_controlInPorts : 0; }
 //void DssiSynthIF::setParam(int i, double val)                { setParameter(i, val); }
 //double DssiSynthIF::param(int i) const                       { return getParameter(i); }
@@ -3501,11 +3519,15 @@ bool DssiSynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return 
 //LADSPA_PortRangeHint DssiSynthIF::range(int i)               { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortRangeHints[i] : 0; }
 //LADSPA_PortRangeHint DssiSynthIF::range(int i)               { return synth->dssi->LADSPA_Plugin->PortRangeHints[controls[i].idx]; }
 unsigned DssiSynthIF::parameters() const                     { return synth ? synth->_controlInPorts : 0; }
+unsigned DssiSynthIF::parametersOut() const                          { return synth ? synth->_controlOutPorts : 0; }
 void DssiSynthIF::setParam(unsigned i, float val)            { setParameter(i, val); }
 float DssiSynthIF::param(unsigned i) const                   { return getParameter(i); }
+float DssiSynthIF::paramOut(unsigned i) const                       { return getParameter(i); }
 const char* DssiSynthIF::paramName(unsigned i)               { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortNames[controls[i].idx] : 0; }
+const char* DssiSynthIF::paramOutName(unsigned i)                    { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortNames[controlsOut[i].idx] : 0; }
 //LADSPA_PortRangeHint DssiSynthIF::range(unsigned i)          { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortRangeHints[i] : 0; }
 LADSPA_PortRangeHint DssiSynthIF::range(unsigned i)          { return synth->dssi->LADSPA_Plugin->PortRangeHints[controls[i].idx]; }
+LADSPA_PortRangeHint DssiSynthIF::rangeOut(unsigned i)               { return synth->dssi->LADSPA_Plugin->PortRangeHints[controlsOut[i].idx]; }
 
 
 #else //DSSI_SUPPORT

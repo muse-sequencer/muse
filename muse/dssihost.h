@@ -205,6 +205,7 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       virtual void write(int level, Xml& xml) const;
       
       virtual float getParameter(unsigned long /*idx*/) const;
+      virtual float getParameterOut(unsigned long n) const;
       virtual void setParameter(unsigned long /*idx*/, float /*value*/);
       
       //virtual int getControllerInfo(int, const char**, int*, int*, int*) { return 0; }
@@ -256,16 +257,21 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       void updateControllers();
       void writeConfiguration(int /*level*/, Xml& /*xml*/);
       bool readConfiguration(Xml& /*xml*/, bool readPreset=false);
+
       //int parameters() const;          
       //void setParam(int /*i*/, double /*val*/); 
       //double param(int /*i*/) const;        
       //const char* paramName(int /*i*/);     
       //LADSPA_PortRangeHint range(int /*i*/); 
       unsigned parameters() const;                            // p4.0.21
+      unsigned parametersOut() const;
       void setParam(unsigned /*i*/, float /*val*/); 
       float param(unsigned /*i*/) const;        
+      float paramOut(unsigned /*i*/) const;        
       const char* paramName(unsigned /*i*/);     
-      LADSPA_PortRangeHint range(unsigned /*i*/); 
+      const char* paramOutName(unsigned /*i*/);
+      LADSPA_PortRangeHint range(unsigned /*i*/);
+      LADSPA_PortRangeHint rangeOut(unsigned /*i*/);
 
       friend class DssiSynth;
       };

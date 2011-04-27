@@ -51,6 +51,7 @@
 #include "doublelabel.h"
 #include "fastlog.h"
 #include "checkbox.h"
+#include "verticalmeter.h"
 
 #include "audio.h"
 #include "al/dsp.h"
@@ -3273,6 +3274,7 @@ PluginGui::PluginGui(PluginIBase* p)
       {
       gw     = 0;
       params = 0;
+      paramsOut = 0;
       plugin = p;
       setWindowTitle(plugin->name());
 
@@ -3303,7 +3305,6 @@ PluginGui::PluginGui(PluginIBase* p)
       fileSave->setWhatsThis(tr(presetSaveText));
 
       QString id;
-      //id.setNum(plugin->plugin()->id());
       id.setNum(plugin->pluginID());
       QString name(museGlobalShare + QString("/plugins/") + id + QString(".ui"));
       QFile uifile(name);
@@ -3425,13 +3426,10 @@ PluginGui::PluginGui(PluginIBase* p)
               updateValues(); // otherwise the GUI won't have valid data
             }
       else {
-            //mw = new QWidget(this);
-            //setCentralWidget(mw);
             // p3.4.43
             view = new QScrollArea;
             view->setWidgetResizable(true);
             setCentralWidget(view);
-            //view->setVScrollBarMode(QScrollView::AlwaysOff);
             
             mw = new QWidget;
             QGridLayout* grid = new QGridLayout;
@@ -3442,13 +3440,6 @@ PluginGui::PluginGui(PluginIBase* p)
             //int n  = plugin->parameters();
             unsigned n  = plugin->parameters();   // p4.0.21
             params = new GuiParam[n];
-
-            // Changed p3.3.43
-            //resize(280, n*20+30);
-            //int nh = n*20+40;
-            //if(nh > 760)
-            //  nh = 760;
-            //resize(280, nh);
 
             //int style       = Slider::BgTrough | Slider::BgSlot;
             QFontMetrics fm = fontMetrics();
@@ -3466,25 +3457,8 @@ PluginGui::PluginGui(PluginIBase* p)
                   double dval  = val;
                   params[i].hint = range.HintDescriptor;
 
-                  if (LADSPA_IS_HINT_BOUNDED_BELOW(range.HintDescriptor)) {
-                        dlower = lower = range.LowerBound;
-                        }
-                  if (LADSPA_IS_HINT_BOUNDED_ABOVE(range.HintDescriptor)) {
-                        dupper = upper = range.UpperBound;
-                        }
-                  if (LADSPA_IS_HINT_SAMPLE_RATE(range.HintDescriptor)) {
-                        lower *= sampleRate;
-                        upper *= sampleRate;
-                        dlower = lower;
-                        dupper = upper;
-                        }
-                  if (LADSPA_IS_HINT_LOGARITHMIC(range.HintDescriptor)) {
-                        if (lower == 0.0)
-                              lower = 0.001;
-                        dlower = fast_log10(lower)*20.0;
-                        dupper = fast_log10(upper)*20.0;
-                        dval  = fast_log10(val) * 20.0;
-                        }
+                  getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
+
                   if (LADSPA_IS_HINT_TOGGLED(range.HintDescriptor)) {
                         params[i].type = GuiParam::GUI_SWITCH;
                         CheckBox* cb = new CheckBox(mw, i, "param");
@@ -3501,9 +3475,6 @@ PluginGui::PluginGui(PluginIBase* p)
                         params[i].label->setFrame(true);
                         params[i].label->setPrecision(2);
                         params[i].label->setId(i);
-
-                        //params[i].label->setContentsMargins(2, 2, 2, 2);
-                        //params[i].label->setFixedHeight(h);
 
                         Slider* s = new Slider(0, "param", Qt::Horizontal,
                            Slider::None); //, style);
@@ -3547,6 +3518,52 @@ PluginGui::PluginGui(PluginIBase* p)
                         connect(params[i].actuator, SIGNAL(checkboxRightClicked(const QPoint &, int)), SLOT(ctrlRightClicked(const QPoint &, int)));
                         }
                   }
+
+
+            int n2  = plugin->parametersOut();
+            if (n2 > 0) {
+              paramsOut = new GuiParam[n2];
+
+              for (int i = 0; i < n2; ++i) {
+                      QLabel* label = 0;
+                      LADSPA_PortRangeHint range = plugin->rangeOut(i);
+                      double lower = 0.0;     // default values
+                      double upper = 1.0;
+                      double dlower = lower;
+                      double dupper = upper;
+                      double val   = plugin->paramOut(i);
+                      double dval  = val;
+                      paramsOut[i].hint = range.HintDescriptor;
+
+                      getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
+                      label           = new QLabel(QString(plugin->paramOutName(i)), 0);
+                      paramsOut[i].type  = GuiParam::GUI_METER;
+                      paramsOut[i].label = new DoubleLabel(val, lower, upper, 0);
+                      paramsOut[i].label->setFrame(true);
+                      paramsOut[i].label->setPrecision(2);
+                      paramsOut[i].label->setId(i);
+
+                      Meter::MeterType mType=Meter::LinMeter;
+                      if(LADSPA_IS_HINT_INTEGER(range.HintDescriptor))
+                        mType=Meter::DBMeter;
+                      VerticalMeter* m = new VerticalMeter(this, mType);
+                      printf("lower =%f upper=%f dlower=%f dupper=%f\n", lower, upper,dlower,dupper);
+
+                      m->setRange(dlower, dupper);
+                      m->setVal(dval);
+                      paramsOut[i].actuator = m;
+//                      paramsOut[i].label->setSlider((Slider*)params[i].actuator);
+                      //paramsOut[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+                      label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+                      paramsOut[i].label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+                      grid->addWidget(label, n+i, 0);
+                      grid->addWidget(paramsOut[i].label,    n+i, 1);
+                      grid->addWidget(paramsOut[i].actuator, n+i, 2);
+//                      connect(paramsOut[i].label,    SIGNAL(valueChanged(double,int)), SLOT(labelChanged(double,int)));
+              }
+            }
+
+
             // p3.3.43
             resize(280, height());
 
@@ -3567,7 +3584,34 @@ PluginGui::~PluginGui()
             delete[] gw;
       if (params)
             delete[] params;
+      if (paramsOut)
+            delete[] paramsOut;
       }
+
+void PluginGui::getPluginConvertedValues(LADSPA_PortRangeHint range,
+                          double &lower, double &upper, double &dlower, double &dupper, double &dval)
+{
+  if (LADSPA_IS_HINT_BOUNDED_BELOW(range.HintDescriptor)) {
+        dlower = lower = range.LowerBound;
+        }
+  if (LADSPA_IS_HINT_BOUNDED_ABOVE(range.HintDescriptor)) {
+        dupper = upper = range.UpperBound;
+        }
+  if (LADSPA_IS_HINT_SAMPLE_RATE(range.HintDescriptor)) {
+        lower *= sampleRate;
+        upper *= sampleRate;
+        dlower = lower;
+        dupper = upper;
+        }
+  if (LADSPA_IS_HINT_LOGARITHMIC(range.HintDescriptor)) {
+        if (lower == 0.0)
+              lower = 0.001;
+        dlower = fast_log10(lower)*20.0;
+        dupper = fast_log10(upper)*20.0;
+        dval  = fast_log10(dval) * 20.0;
+        }
+
+}
 
 //---------------------------------------------------------
 //   heartBeat
@@ -3959,7 +4003,33 @@ void PluginGui::updateValues()
 
 void PluginGui::updateControls()
       {
-      if(!automation || !plugin->track() || plugin->id() == -1)
+       if (!plugin->track() || plugin->id() == -1)
+         return;
+
+       // update outputs
+
+       if (paramsOut) {
+         for (int i = 0; i < plugin->parametersOut(); ++i) {
+               GuiParam* gp = &paramsOut[i];
+               if (gp->type == GuiParam::GUI_METER) {
+                 double lv = plugin->paramOut(i);
+                 double sv = lv;
+                 if (LADSPA_IS_HINT_LOGARITHMIC(params[i].hint))
+                       sv = fast_log10(lv) * 20.0;
+                 else if (LADSPA_IS_HINT_INTEGER(params[i].hint))
+                 {
+                       sv = rint(lv);
+                       lv = sv;
+                 }
+                 ((VerticalMeter*)(gp->actuator))->setVal(sv);
+                 gp->label->setValue(lv);
+
+               }
+             }
+       }
+
+
+      if(!automation)
         return;
       AutomationType at = plugin->track()->automationType();
       if(at == AUTO_OFF)

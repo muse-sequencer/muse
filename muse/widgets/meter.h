@@ -15,10 +15,11 @@ class QResizeEvent;
 class QMouseEvent;
 class QPainter;
 
+
 class Meter : public QFrame {
    public:
       enum MeterType {DBMeter, LinMeter};
-   private:  
+   private:
       MeterType mtype;
       bool overflow;
       double val;
@@ -30,8 +31,8 @@ class Meter : public QFrame {
 
       Q_OBJECT
       void paintEvent(QPaintEvent*);
-      virtual void resizeEvent(QResizeEvent*);
-      virtual void mousePressEvent(QMouseEvent*);
+      void resizeEvent(QResizeEvent*);
+      void mousePressEvent(QMouseEvent*);
 
    public slots:
       void resetPeaks();
