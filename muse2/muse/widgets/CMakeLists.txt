@@ -42,6 +42,7 @@ QT4_WRAP_CPP (widget_mocs
       intlabel.h  
       knob.h  
       lcombo.h  
+      meter.h
       metronome.h  
       midisyncimpl.h  
       mixdowndialog.h  
@@ -75,7 +76,8 @@ QT4_WRAP_CPP (widget_mocs
       # ttoolbar.h  
       ttoolbutton.h  
       velocity.h  
-      view.h  
+      verticalmeter.h
+      view.h
       vscale.h
       visibletracks.h
       )
@@ -137,6 +139,7 @@ file (GLOB widgets_source_files
       intlabel.cpp 
       knob.cpp 
       lcombo.cpp 
+      meter.cpp
       metronome.cpp 
       midisyncimpl.cpp 
       mixdowndialog.cpp 
@@ -174,7 +177,8 @@ file (GLOB widgets_source_files
       ttoolbutton.cpp 
       utils.cpp 
       velocity.cpp 
-      view.cpp    
+      verticalmeter.cpp
+      view.cpp
       vscale.cpp
       visibletracks.cpp
       )

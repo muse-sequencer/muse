@@ -25,7 +25,6 @@ QT4_WRAP_CPP ( mixer_mocs
       amixer.h
       astrip.h
       auxknob.h
-      meter.h
       mstrip.h
       panknob.h
       rack.h
@@ -48,7 +47,6 @@ file (GLOB mixer_source_files
       amixer.cpp  
       astrip.cpp
       auxknob.cpp 
-      meter.cpp 
       mstrip.cpp
       panknob.cpp 
       rack.cpp 

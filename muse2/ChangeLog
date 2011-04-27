@@ -1,3 +1,5 @@
+27.04.2011:
+        - added first version feedback parameters for plugins (rj)
 25.04.2011:
         - added a songChanged at the end of clear when loading a new song, intended effect was to 
           clear GUI before loading new song to fix some nasty crashes, seems to work (rj)

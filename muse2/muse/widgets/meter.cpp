@@ -51,7 +51,7 @@ void Meter::setVal(double v, double max, bool ovl)
       {
       overflow = ovl;
       bool ud = false;
-      
+
       if(mtype == DBMeter)
       {
         double minScaleLin = pow(10.0, minScale/20.0);
@@ -115,11 +115,11 @@ void Meter::paintEvent(QPaintEvent* /*ev*/)
       double range = maxScale - minScale;
 
       int fw = frameWidth();
-      int w = width() - 2*fw;
+      int w  = width() - 2*fw;
       int h  = height() - 2*fw;
       int yv;
       
-      if(mtype == DBMeter) 
+      if(mtype == DBMeter)
         yv = val == 0 ? h : int(((maxScale - (fast_log10(val) * 20.0)) * h)/range);
       else
         yv = val == 0 ? h : int(((maxScale - val) * h)/range);
@@ -131,7 +131,7 @@ void Meter::paintEvent(QPaintEvent* /*ev*/)
       
       // Draw the peak white line.
       int ymax;
-      if(mtype == DBMeter) 
+      if(mtype == DBMeter)
         ymax = maxVal == 0 ? 0 : int(((maxScale - (fast_log10(maxVal) * 20.0)) * h)/range);
       else
         ymax = maxVal == 0 ? 0 : int(((maxScale - maxVal) * h)/range);
@@ -145,7 +145,7 @@ void Meter::paintEvent(QPaintEvent* /*ev*/)
 
 void Meter::drawVU(QPainter& p, int w, int h, int yv)
 {
-      if(mtype == DBMeter) 
+      if(mtype == DBMeter)
       {
         double range = maxScale - minScale;
         int y1 = int((maxScale - redScale) * h / range);

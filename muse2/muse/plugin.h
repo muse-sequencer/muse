@@ -243,7 +243,7 @@ struct Port {
 
 struct GuiParam {
       enum {
-            GUI_SLIDER, GUI_SWITCH
+            GUI_SLIDER, GUI_SWITCH, GUI_METER
             };
       int type;
       int hint;
@@ -346,10 +346,14 @@ class PluginIBase
       //virtual const char* paramName(int /*i*/) = 0;     
       //virtual LADSPA_PortRangeHint range(int /*i*/) = 0; 
       virtual unsigned parameters() const = 0;                  // p4.0.21
-      virtual void setParam(unsigned /*i*/, float /*val*/) = 0;  
+      virtual unsigned parametersOut() const = 0;
+      virtual void setParam(unsigned /*i*/, float /*val*/) = 0;
       virtual float param(unsigned /*i*/) const = 0;            
-      virtual const char* paramName(unsigned /*i*/) = 0;        
-      virtual LADSPA_PortRangeHint range(unsigned /*i*/) = 0;   
+      virtual float paramOut(unsigned /*i*/) const = 0;
+      virtual const char* paramName(unsigned /*i*/) = 0;
+      virtual const char* paramOutName(unsigned /*i*/) = 0;
+      virtual LADSPA_PortRangeHint range(unsigned /*i*/) = 0;
+      virtual LADSPA_PortRangeHint rangeOut(unsigned /*i*/) = 0;
       QString dssi_ui_filename() const;
       
       //virtual void showGui(bool) = 0;         // p4.0.20
@@ -369,6 +373,7 @@ class PluginGui : public QMainWindow {
       PluginIBase* plugin;        // plugin instance
       
       GuiParam* params;
+      GuiParam* paramsOut;
       //int nobj;               
       unsigned nobj;             // number of widgets in gw      // p4.0.21
       GuiWidgets* gw;
@@ -378,7 +383,8 @@ class PluginGui : public QMainWindow {
       QScrollArea* view;
 
       void updateControls();
-
+      void getPluginConvertedValues(LADSPA_PortRangeHint range,
+                     double &lower, double &upper, double &dlower, double &dupper, double &dval);
    private slots:
       void load();
       void save();
@@ -526,6 +532,7 @@ class PluginI : public PluginIBase {
       bool isShowNativeGuiPending() { return _showNativeGuiPending; }
       bool guiVisible();
       bool nativeGuiVisible();
+
       //int parameters() const           { return controlPorts; }
       //void setParam(int i, double val) { controls[i].tmpVal = val; }
       //double param(int i) const        { return controls[i].val; }
@@ -538,16 +545,20 @@ class PluginI : public PluginIBase {
       //LADSPA_PortRangeHint range(int i) { return _plugin->range(controls[i].idx); }
       // p4.0.21
       unsigned parameters() const           { return controlPorts; }    
-      //void setParam(unsigned i, float val) { controls[i].tmpVal = val; }     
+      unsigned parametersOut() const           { return controlOutPorts; }
+      //void setParam(unsigned i, float val) { controls[i].tmpVal = val; }
       void setParam(unsigned i, float val);  
       float param(unsigned i) const        { return controls[i].val; }       
-      float defaultValue(unsigned param) const;                     
+      float paramOut(unsigned i) const        { return controlsOut[i].val; }
+      float defaultValue(unsigned param) const;
       const char* paramName(unsigned i)     { return _plugin->portName(controls[i].idx); }
+      const char* paramOutName(unsigned i)     { return _plugin->portName(controlsOut[i].idx); }
       LADSPA_PortDescriptor portd(unsigned i) const { return _plugin->portd(controls[i].idx); }
       void range(unsigned i, float* min, float* max) const { _plugin->range(controls[i].idx, min, max); }
       bool isAudioIn(unsigned k) { return (_plugin->portd(k) & AUDIO_IN) == AUDIO_IN; }
       bool isAudioOut(unsigned k) { return (_plugin->portd(k) & AUDIO_OUT) == AUDIO_OUT; }
       LADSPA_PortRangeHint range(unsigned i) { return _plugin->range(controls[i].idx); }
+      LADSPA_PortRangeHint rangeOut(unsigned i) { return _plugin->range(controlsOut[i].idx); }
       bool inPlaceCapable() const { return _plugin->inPlaceCapable(); }
       };
 
