@@ -1,0 +1,42 @@
+% -%-Fundamental-%- -*-Metafont-*-
+% parmesan-generic.mf -- implement generic stuff: include lots of files,
+% but don't set dimensions.
+%
+% source file of LilyPond's pretty-but-neat music font
+%
+% (c) 2002--2009 Juergen Reuter <reuter@ipd.uka.de>
+%
+
+
+if test = -1:
+	mode := smoke;
+fi;
+
+mode_setup;
+
+staffsize# := design_size * pt#;
+
+input feta-macros;
+input feta-params;
+
+input parmesan-macros;
+
+
+font_x_height staff_space#;
+
+
+fet_beginfont ("parmesan", design_size, "parmesanMusic");
+	if test = 0:
+		input parmesan-rests;
+		input parmesan-heads;
+		input parmesan-clefs;
+		input parmesan-custodes
+		input parmesan-accidentals;
+		input parmesan-flags;
+		input parmesan-timesig;
+		input parmesan-scripts;
+		input parmesan-dots;
+	else:
+
+	fi;
+fet_endfont;

@@ -87,6 +87,7 @@ QString lastMidiPath(".");
 
 bool debugMode = false;
 bool debugMsg = false;
+bool heavyDebugMsg = false;
 bool midiInputTrace = false;
 bool midiOutputTrace = false;
 bool realTimeScheduling = false;

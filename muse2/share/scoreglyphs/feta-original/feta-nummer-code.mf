@@ -1,0 +1,899 @@
+% feta-nummer-code.mf -- implement bold Orator numerals
+%
+% part of LilyPond's pretty-but-neat music font
+%
+% source file of the Feta (not the Font-En-Tja) music font
+%
+% (c) 1997--2009 Jan Nieuwenhuizen <janneke@gnu.org>
+
+
+height# := number_design_size;
+space# := number_design_size / 2;
+
+font_x_height height#;
+font_normal_space space#;
+
+
+%
+% DOCME!
+%
+% ugh. b and h are reused.
+%
+
+save b, h;
+4 h + b = 1.15;
+10 h + b = 1;
+fatten := number_design_size * h + b;
+
+save b, h;
+4 h + b = 1.05;
+10 h + b = 1;
+widen := number_design_size * h + b;
+
+tense = 0.85;
+thick# := 7/30 height# * fatten;
+thin# := thick# / 4 * fatten + max (.1 (height# / 10 - 1), 0);
+
+%% sqrt (.8 * blot_diameter# * thin#);
+hair# := thin# * .8;
+
+flare# := 9/8 thick# + .75 (height# / 10 - 1);
+
+save b, h;
+4h + b = 1/8;
+10h + b = 1/6;
+kuulleke# := thick# * number_design_size * h + b;
+foot_top# := thick#;
+foot_width# := 9/4 thick#;
+
+
+%
+% These numbers were taken from a part that that the EJE violas played
+% 1997 -- Probably Mendelssohn's ouverture `Heimkehr aus der Fremde'.
+%
+
+
+%
+% TODO all the invocation of flare_path are weird --
+% the horizontal tangents should be more at the center of the
+% glyph.
+%
+
+define_pixels (height, thick, thick, thin, hair, flare);
+define_pixels (foot_top, foot_width);
+define_pixels (kuulleke);
+
+
+%
+% Yet Another Bulb Routine with smooth inside curve.
+%
+% alpha = start direction.
+% beta = which side to turn to
+% flare = diameter of the bulb
+% line = diameter of line attachment
+% direction = is ink on left or right side (1 or -1)
+%
+%
+% move_away_to = amount left (for 2)
+% turn_to = amount down (for 2)
+%
+
+def number_flare_path (expr pos, alpha, beta, line, flare,
+		       move_away_to, turn_to, taille, taille_ratio,
+		       direction) =
+begingroup;
+	save res;
+	path res;
+
+	clearxy;
+
+%	z5 = z2 + 0.43 * flare * dir (alpha - 1.5 beta);
+
+	z4 = (0.75 - taille) [z2r, z2l] + whatever * dir (alpha - beta);
+	z4 = (taille_ratio * taille) [z3l, z3r] + whatever * dir (alpha);
+
+	z1r = pos;
+	z2r = z1r + move_away_to * dir (alpha)
+	      + (line + turn_to) * dir (alpha + beta);
+	z3r = 0.5 [z2l, z2r] + 0.5 * flare * dir (alpha + beta);
+
+	penpos1 (line, 180 + beta + alpha);
+	penpos2 (flare, alpha);
+	penpos3 (flare, alpha + beta);
+
+	penlabels (1, 2, 3, 4, 5);
+
+	res := z1r{dir (alpha)}
+	       .. z2r{dir (180 + alpha - beta)}
+	       .. z3r{dir (alpha + 180)}
+	       .. z2l{dir (alpha - beta)}
+
+%%% Two versions of the curve: one with z4, the other with z5.
+%	       .. z5{dir (alpha - beta / 2)}
+
+	       .. z4{dir (180 + alpha + beta)}
+	       .. z1l{dir (alpha + 180)};
+
+%	pickup pencircle;
+%	draw res;
+
+	if direction <> 1:
+		res := reverse res;
+	fi;
+
+res
+endgroup
+enddef;
+
+
+def calc_kuulleke (expr w, alpha) =
+begingroup;
+	save beta, gamma;
+
+	beta = (alpha - 90) / 2;
+	gamma = (90 + alpha) / 2;
+
+	penpos1 (w / cosd (alpha), alpha);
+	penpos2 (hair, 90 + beta);
+	penpos3 (hair, gamma - 90);
+
+	z2 = z1l + (1/2 hair / tand ((alpha + 90) / 2)) * dir (beta);
+	z3 = z1r - (1/2 hair / tand ((90 - alpha) / 2)) * dir (gamma);
+	z4 = z1 + kuulleke * dir (alpha - 90);
+endgroup;
+enddef;
+
+
+% should make generic macro?
+%
+def draw_foot (expr xpos) =
+begingroup;
+	clearxy;
+
+	penpos1 (thick, 0);
+	penpos2 (foot_width, 0);
+	penpos3 (hair, -90);
+	penpos4 (hair, 90);
+
+	z1= (xpos, foot_top);
+	z2= (x1, 0);
+	z3r = z2r;
+	z4l = z2l;
+	z5 = (x1, kuulleke);
+
+	penlabels (1, 2, 3, 4);
+
+	fill z1
+	     .. {right}z1r{down}
+	     .. {right}z3l
+	     .. z3r{left}
+	     .. z5
+	     .. {left}z4l
+	     .. z4r{right}
+	     .. {up}z1l{right}
+	     .. z1
+	     .. cycle;
+endgroup;
+enddef;
+
+
+def draw_six =
+	save outer_t, t;
+	save before, after, u, v;
+	path before, after;
+
+	set_char_box (0, .68 height# * widen, 0, height#);
+
+	message "w:" & decimal w;
+	message "h:" & decimal h;
+
+	penpos2 (hair, 90);
+	z2 = (w / 2, h / 2 + thin - hair / 2);
+
+	penpos3 (15/16 thick, 0);
+	x3r = w;
+	y3r = .5 [y4r, y2r];
+
+	penpos4 (hair, -90);
+	z4r = (x2, 0);
+
+	penpos6 (hair, 90);
+	x6r = .56 w;
+	y6r = h;
+
+	penpos7 (thick, 180);
+	x7r = 0;
+	y7r = .50 h;
+
+	penpos10 (thick, 180);
+	z10r = (0, y3);
+
+	penlabels (range 1 thru 10);
+
+	outer_t = 0.88;
+	t := tense;
+
+	before := z7{right}
+		  .. z2r{right};
+	after := z7r{up}
+		 .. number_flare_path (z6r, 0, -90, hair, flare,
+				       w - x6r - hair / 2, .16 h,
+				       0.05, 2.5, 1)
+		 .. z7l{down};
+	(u, v) = before intersectiontimes after;
+
+%	draw
+	fill subpath (u, infinity) of before
+	     ..tension outer_t.. z3r{down}
+	     ..tension outer_t.. z4r{left}
+	     .. subpath (0, v) of after
+	     .. cycle;
+
+	unfill z2l{right}
+	       ..tension t.. z3l{down}
+	       ..tension t.. z4l{left}
+	       ..tension t.. z10l{up}
+	       ..tension t.. cycle;
+enddef;
+
+
+save dot_diam;
+dot_diam# = 7/8 flare#;
+define_pixels (dot_diam);
+
+
+code := 42; 	% , 43
+
+fet_beginchar ("Plus", "plus");
+	set_char_box (0, .5 height#, -0.25 height#, 0.75 height#);
+
+	save hthick, vthick, size, outer_hsize, outer_vsize;
+
+	hthick# = vthick# = 2 linethickness#;
+	size# = 1.1 staff_space#;
+	define_whole_blacker_pixels (vthick);
+	define_whole_vertical_blacker_pixels (hthick);
+
+	outer_hsize = hround ((b + w - vthick) / 2);
+	outer_vsize = vround ((h + d - hthick) / 2);
+
+	centerx := hround (w / 2);
+	centery := vround ((h - d) / 2);
+
+	z1 = (centerx - hthick / 2, -d); 
+	z2 = (centerx + hthick / 2, h); 
+
+	labels (1, 2);
+
+	draw_rounded_block (z1, z2, hthick);
+	draw_rounded_block ((0, centery - vthick / 2),
+			    (w, (centery + vthick / 2)),
+			    vthick);
+fet_endchar;
+
+
+code := 43;	% , = 44
+
+fet_beginchar ("Numeral comma", "comma");
+	save pat, pos;
+	path pat;
+
+	set_char_box (0, dot_diam#, 3/2 dot_diam#, dot_diam#);
+
+	pat := (dot_diam / 2, 0)
+	       .. (dot_diam, dot_diam / 2)
+	       .. (dot_diam / 2, dot_diam)
+	       .. (0, dot_diam / 2)
+	       .. cycle;
+	
+	pos = ypart (((w / 3, 0) -- (w / 3, dot_diam / 2))
+		     intersectiontimes pat);
+	z0 = point pos of pat;
+
+	alpha = 65;
+	penpos1 (thin, alpha + 90);
+
+	z1l = (w / 2, -1.5 h + hair);
+	z2 = (w, h / 2);
+
+	pickup feta_fillpen;
+
+	% include z0 to assist removal of overlaps
+	fill subpath (0,3) of pat
+	     .. z0
+	     .. cycle;
+	filldraw z1l{dir (alpha)}
+		 .. {up}z2
+		 -- z0{direction pos of pat}
+		 ..tension 0.95.. {dir (180 + alpha)}z1r
+		 .. cycle;
+
+	labels (0, 2);
+	penlabels (1);
+fet_endchar;
+
+
+fet_beginchar ("Numeral dash", "hyphen");
+	set_char_box (0, height# / 3, 0, height#);
+
+	draw_rounded_block ((-b, h / 3 - thin / 2),
+			    (w, h / 3 + thin / 2), thin);
+fet_endchar;
+
+
+fet_beginchar ("Numeral dot", "period");
+	set_char_box (0, dot_diam#, 0, dot_diam#);
+
+	pickup pencircle scaled dot_diam;
+
+	drawdot (dot_diam / 2, dot_diam / 2);
+fet_endchar;
+
+
+% skip slash
+
+code := 47;	% 0 = 48
+
+fet_beginchar ("Numeral 0", "zero");
+	set_char_box (0, 11/15 height# * widen, 0, height#);
+
+	message "w:" & decimal w;
+	message "h:" & decimal h;
+
+	penpos1 (thin, 90);
+	penpos2 (thick, 180);
+	penpos3 (thin,- 90);
+	penpos4 (thick, 0);
+
+	z1r = (w / 2, h);
+	z2r = (0, h / 2);
+	z3r = (w / 2, 0);
+	z4r = (w, h / 2);
+
+	fill z1r
+	     .. z2r
+	     .. z3r
+	     .. z4r
+	     .. cycle;
+
+	save t;
+	t = 1 / tense;
+
+	penlabels (1, 2, 3, 4);
+
+	unfill z1l
+	       ..tension t.. z2l
+	       ..tension t.. z3l
+	       ..tension t.. z4l
+	       ..tension t.. cycle;
+fet_endchar;
+
+
+fet_beginchar ("Numeral 1", "one");
+	save alpha, beta, gamma;
+
+%	set_char_box (0, 19/30 height# * widen, 0, height#);
+	set_char_box (0, 1/2 foot_width# + 3/2 thick# + 1/2 hair#,
+		      0, height#);
+
+	message "w:" & decimal w;
+	message "h:" & decimal h;
+
+	alpha = 0;
+	calc_kuulleke (thick, alpha);
+	z1 = (3/2 thick, height);
+
+	penpos5 (thick, 0);
+	z5 = (x1, foot_top);
+
+	z6 = (0, h / 2);
+	beta = angle (z1l - z6);
+
+	penpos7 (thin, beta - 90);
+	z7l = z6;
+
+	penpos8 (thin / cosd (beta), -90);
+	z8l = z1l;
+
+	penpos9 (thin, beta - 90);
+	z9r = z8r + (thin / cosd (beta)) * down;
+
+	penlabels (range 1 thru 9);
+
+	gamma = angle (length (z1r - z1), 2 kuulleke);
+
+	fill z2r{dir (alpha - gamma)}
+	     .. z4
+	     .. {dir (alpha + gamma)}z3l
+	     .. z3r{down}
+	     -- z5r
+	     -- z5l
+	     -- z2l{up}
+	     .. cycle;
+
+	fill z7l
+	     -- z1l{dir (beta)}
+	     .. {dir (alpha - gamma)}z2r
+	     -- z9r{up}
+	     .. {dir (180 + beta)}z9l
+	     -- z7r{dir (180 + beta)}
+	     .. {dir (beta)}cycle;
+
+	draw_foot (x1);
+fet_endchar;
+
+
+fet_beginchar ("Numeral 2", "two");
+	save tolerance;
+	save alpha, beta, gamma, theta;
+	save flare_start_distance;
+	save t, pat, bow;
+	path pat, bow;
+
+	set_char_box (0, 22/30 height# * widen, 0, height#);
+
+	message "w:" & decimal w;
+	message "h:" & decimal h;
+
+	alpha = -45 * widen;
+	beta = 85;
+	gamma = beta - 10;
+	theta = 20 / widen;
+
+	flare_start = 0.25;
+
+	penpos1 (hair, 90 + beta);
+	z1 = (0, 0) + (1/2 sqrt (2) * hair) * dir (45);
+
+	penpos3 (hair,90 + gamma);
+	z3 = (w, thick) + (1/2 sqrt (2) * hair) * dir (-135);
+
+	penpos2 (thick, 90 + alpha - 15);
+	x2 - x1 = x3 - x2;
+	y2 = 10/16 thick / widen;
+
+	tolerance := epsilon;
+
+	% Find proper tension to exactly touch the x axis.
+	% Later on we directly use `bow'.
+	vardef f (expr t) =
+		bow := z3l{dir (180 + gamma)}
+		       ..tension t.. {dir (180 + alpha -5)}z2l;
+		ypart (directionpoint left of bow) < 0
+	enddef;
+
+	% the return value of `solve' is stored in a dummy variable
+	t = solve f (0.8, 1.2);
+
+	fill z1r{dir (beta)}
+	     ..tension 0.9.. {dir (alpha + 10)}z2r
+	     .. {dir (gamma)}z3r
+	     .. bow
+	     .. {dir (180 + beta)}z1l
+	     .. cycle;
+
+	penpos4 (thick, 0);
+	z4r = (w - thin / 2, .71 h);
+
+	penpos5 (hair, 90);
+	y5r = h;
+	x5r = 9/20 w;
+
+	penlabels (range 1 thru 6);
+
+	t := tense;
+
+	pat := z1l{dir (beta)}
+	       ..tension t.. z4r{up}
+	       .. number_flare_path (z5r, 180, 90, hair, 1.05 flare,
+				     x5r - 1/2 hair, .21 h, 0.006, 0.4, 1)
+	       .. z4l{down}
+	       ..tension t.. {dir (180 + beta)}z1r
+	       -- cycle;
+
+%	pickup pencircle scaled 1;
+%	draw pat;
+
+	fill pat;
+fet_endchar;
+
+
+%%
+% TODO: should widen a bit.  The right edge of the 3 bumps into next glyph in
+% combinations
+%
+fet_beginchar ("Numeral 3", "three");
+	set_char_box (0, 2/3 height# * widen, 0, height#);
+
+	message "w:" & decimal w;
+	message "h:" & decimal h;
+
+	penpos1 (hair, -90);
+
+%	flare_start = 0.25;
+
+	x1l = 36/80 w;
+	y1l = h;
+
+%	z1l = (17/16 thick, h);
+
+	penpos2 (7/8 thick, 180);
+	x2l = w - thick / 8;
+	y2l = 3/4 h + thick * 3/32;
+
+	penpos3 (thin, 90);
+	z3 = (w / 2, h / 2 + 1/8 thick);
+
+	penpos4 (thin, 90);
+	z4 = (5/8 thick + 1/2 thin, y3);
+
+	penpos5 (thick, 0);
+	x5r = w;
+	y5r = 17/64 h + thick / 16;
+
+	penpos6 (hair, -90);
+	x6r = 37/80 w;
+	y6r = 0;
+
+	penpos7 (3/2 thin, 90);
+	x7 = .83 w;
+	y7 = y3;
+
+	penlabels (range 1 thru 7);
+
+	save alpha, t, outer_t;
+	alpha = 25;
+	t = tense;
+	outer_t := 0.93;
+
+%	pickup pencircle scaled 1;
+%	draw
+	fill number_flare_path (z1l, 180, 90, hair, 7/8 flare, x1l - .5 hair,
+				.16 h, 0.06, 1.5, -1)
+	     ..tension outer_t.. z2l{down}
+	     ..tension outer_t.. z7r{dir (180 + alpha)}
+	     .. z7l{dir (-alpha)}
+	     ..tension outer_t.. z5r{down}
+	     ..tension outer_t.. number_flare_path (z6r, 180, -90, hair,
+						    flare, x6l, .18 h, 0.06,
+						    1.5, 1)
+	     .. z5l{up}
+	     ..tension t.. z3l{left}
+	     .. z4l{left}
+	     .. z4r{right}
+	     .. z3r{right}
+	     ..tension t.. z2r{up}
+	     ..tension t.. cycle;
+fet_endchar;
+
+
+fet_beginchar ("Numeral 4", "four");
+	save alpha, beta, gamma;
+
+	set_char_box (0, 4/5 height# * widen, 0, height#);
+
+	message "w:" & decimal w;
+	message "h:" & decimal h;
+
+	alpha = 0;
+	calc_kuulleke (3/2 thick, alpha);
+
+	z1r = (w - 3/4 thick, height);
+	z5 = (thin, 1/4 height + thin);
+
+	beta = angle (z3r - z5);
+
+	penpos6 (thin, -90);
+	z6l = z5;
+
+	penpos7 (thin, -90);
+	y7 = y6;
+	x7 = w - 1/2 thin;
+
+	penpos8 (thin, -alpha);
+	z8r = z5;
+
+	penlabels (range 1 thru 8);
+
+	gamma = angle (length (z1r - z1), 2 kuulleke);
+
+	fill z2r{dir (alpha - gamma)}
+	     .. z4
+	     .. {dir (alpha + gamma)}z3l
+	     .. {dir (180 + beta)}z3r
+	     -- z8r
+	     -- z7l{right}
+	     .. {left}z7r
+	     -- z6r{left}
+	     ..tension 0.8 and 2.. z8l{dir (beta)}
+	     .. {up}z2l
+	     .. cycle;
+
+	clearxy;
+
+	alpha := beta;
+	calc_kuulleke (thick, alpha);
+
+	z1r = (w - 3/4 thick, height - (3/2 thin) / cosd (alpha));
+
+	penpos5 (thick, 0);
+	z5 = (x1, foot_top);
+
+	gamma := angle (length (z1r - z1), 2 kuulleke);
+
+	fill z2r{dir (alpha - gamma)}
+	     .. z4
+	     .. {dir (alpha + gamma)}z3l
+	     .. {down}z3r
+	     -- z5r
+	     -- z5l
+	     -- z2l{up}
+	     .. cycle;
+
+	penlabels (1, 2, 3, 4, 5);
+
+	draw_foot (x5);
+fet_endchar;
+
+
+fet_beginchar ("Numeral 5", "five");
+	save alpha, beta, gamma, delta;
+	save inner_t, outer_t;
+	save pat;
+	path pat;
+
+	set_char_box (0, 27/40 height# * widen, 0, height#);
+
+	message "w:" & decimal w;
+	message "h:" & decimal h;
+
+	alpha = 0;
+	calc_kuulleke (w - thin, alpha);
+
+	z1 = (w / 2 + 1/8 thick, h);
+
+	penpos5 (thin, 0);
+	z5l = (x1l, h - 15/16 thick);
+
+	penpos6 (hair, 90 - 45);
+	z6 = z5r + 1/2 hair * dir (-45);
+
+	penpos7 (thin, 0);
+	z7l = (x1l, h / 2 + thin - hair);
+
+	penlabels (range 1 thru 7);
+
+	gamma = angle (length (z1r - z1), 2 kuulleke);
+
+	pat := z2r{dir (alpha - gamma)}
+	       .. z4
+	       .. {dir (alpha + gamma)}z3l
+	       .. z3r{dir (-135)}
+	       .. {left}z6r
+	       .. {down}z6l
+	       -- z7r{down}
+	       .. {up}z7l
+	       -- z2l{up}
+	       .. cycle;
+
+	beta = 45;
+	delta = 180 + beta + 10;
+	z8r = (x7r, y7r - 1/16 thick + thin);
+	z8l = directionpoint dir (delta) of
+		subpath (6, 7) of pat;
+
+	% include intersection point to improve overlap removal
+	fill subpath (0, 6) of pat
+	     .. z8l
+	     .. subpath (7, length (pat)) of pat
+	     .. cycle;
+
+	penpos9 (thin, 90);
+	y9 = 10/16 [y5, y7];
+	x9 = .36 [x8r, x10r];
+
+	penpos10 (thick, 0);
+	x10r = w + hair / 2;
+	y10r = 1/2 [y9r, y11r];
+
+	penpos11 (hair, -90);
+	y11r = 0;
+	x11r = .7 [0, x10l];
+
+	penlabels (range 8 thru 12);
+
+	inner_t = 1.0;
+	outer_t = .85;
+
+	fill z8r {dir (beta)}
+	     .. z9r{right}
+	     ..tension outer_t.. z10r{down}
+	     .. number_flare_path (z11r, 180, -90, hair, flare, x11l,
+				   .18 h, 0.06, 1.5, 1)
+	     .. z11l{right}
+	     ..tension inner_t.. z10l{up}
+	     ..tension inner_t.. z9l{left}
+	     .. z8l{dir (delta)}
+	     -- cycle;
+fet_endchar;
+
+
+fet_beginchar ("Numeral 6", "six");
+	draw_six;
+fet_endchar;
+
+
+fet_beginchar ("Numeral 7", "seven");
+	save tolerance;
+	save alpha, beta, gamma, delta;
+	save bow;
+	save x_overshoot;
+
+	path bow;
+
+	set_char_box (0, 11/15 height# * widen - thin#, 0, height#);
+	overshoot_x = .75 thin;
+
+	message "w:" & decimal w;
+	message "h:" & decimal h;
+
+	alpha = -180;
+
+	penpos1 (3/2 thick, 180 + alpha);
+	penpos2 (hair, 180 + alpha - 45);
+	penpos3 (hair, 180 + alpha + 45);
+
+	z2 = z1l + (1/4 sqrt (2) * hair) * dir (alpha - 135);
+	z3 = z1r + (1/4 sqrt (2) * hair) * dir (alpha - 45);
+	z4 = z1 + kuulleke * dir (alpha - 90);
+
+	z1l = (thin, 0);
+
+	beta = 55;
+	penpos5 (thin, 90 + beta);
+	z5 = (w, h) + (1/2 sqrt (2) * thin) * dir (-135) + (overshoot_x, 0);
+
+	gamma = angle (length (z1r - z1), 2 kuulleke);
+	delta = 12;
+
+	pickup pencircle;
+
+	fill z3l{dir (alpha - gamma)}
+	     .. z4
+	     .. {dir (alpha + gamma)}z2r
+	     .. z2l{dir (beta + delta)}
+	     .. {dir (beta)}z5r
+	     .. z5l{dir (180 + beta)}
+	     .. {dir (delta - 90)}z3r
+	     .. cycle;
+
+	penlabels (1, 2, 3, 4, 5);
+
+	alpha := -45 * widen;
+
+	penpos11 (1/2 thick, 90);
+	z11 = (3/2 thin, h - (thick + thin) / 2);
+
+	penpos13 (thin, 90 + beta);
+	z13 = z5;
+
+	penpos12 (thick, 90 + alpha);
+	x12 = 1/2 [x11, x13] - 1/4 thick;
+	y12 = h - 15/16 thick + thin * widen;
+
+	penpos14 (thin, 0);
+	z14l = (0, h - thin / 2);
+
+	penpos15 (thin, 0);
+	z15l = (0, h / 2 + thin / 2);
+
+	penpos16 (9/8 thick, 90);
+	z16r = (thin, y11r + 2/16 thick);
+
+	tolerance := epsilon;
+
+	% Find proper tension to exactly touch the x axis.
+	% Later on we directly use `bow'.
+	vardef f (expr t) =
+		bow := z11r{dir (beta)}
+		       ..tension t.. {dir (alpha)}z12r;
+		ypart (directionpoint right of bow) > h
+	enddef;
+
+	% the return value of `solve' is stored in a dummy variable
+	t = solve f (0.8, 1.2);
+
+	fill bow
+	     .. {dir (beta)}z13r
+	     -- z13l{dir (180 + beta)}
+	     .. {dir (180 + alpha)}z12l
+	     .. {dir (180 + beta)}z11l
+	     .. {down}z16l
+	     -- z15r{down}
+	     .. {up}z15l
+	     -- z14l{up}
+	     .. {down}z14r
+	     -- z16r{down}
+	     ..tension 1.5.. {dir (beta)}cycle;
+
+	penlabels (range 11 thru 16);
+fet_endchar;
+
+
+fet_beginchar ("Numeral 8", "eight");
+	save alpha, beta;
+
+	set_char_box (0, 11/15 height# * widen, 0, height#);
+
+	message "w:" & decimal w;
+	message "h:" & decimal h;
+
+	alpha = 60;
+	beta = alpha - 15;
+
+	z1 = (w / 2, h / 2 + thick / 8);
+
+	penpos2 (14/8 thin, 0);
+	z2 = (w / 3, h / 2 + thin);
+
+	penpos3 (3/2 thin, 0);
+	z3l = (0, h / 4 + thin / 2);
+
+	penpos4 (hair, 90);
+	z4l = (x1, 0);
+
+	penpos5 (thick, 90 + 90 + alpha);
+	z5 = z1 + w / 4 * dir (alpha - 90);
+
+	penpos6 (thick, 90 + 90 + alpha);
+	z6 = z1 + (w / 4 - thin / 2) * dir (90 + alpha);
+
+	penpos7 (hair, 90);
+	z7r = (x1 + .02 w, h);
+
+	penpos8 (3/2 thin, 0);
+	z8r = (w - thin / 2, 3/4 h + thin / 2);
+
+	penpos9 (13/8 thin, 0);
+	z9 = (2/3 w, h / 2);
+
+	penlabels (range 1 thru 9);
+
+	save t;
+	t = tense;
+
+	fill z2r{dir (180 + beta)}
+	     .. z3r{down}
+	     .. z4r{right}
+	     .. z5r{dir (90 + alpha)}
+	     -- z6r{dir (90 + alpha)}
+	     ..tension t.. z7r{right}
+	     .. z8r{down}
+	     .. {dir (180 + beta)}z9r
+	     -- z9l{dir (beta)}
+	     .. z8l{up}
+	     .. z7l{left}
+	     .. {dir (alpha - 90)}z6l
+	     -- z5l{dir (alpha - 90)}
+	     ..tension t.. z4l{left}
+	     .. z3l{up}
+	     .. {dir (beta)}z2l
+	     -- cycle;
+fet_endchar;
+
+
+fet_beginchar ("Numeral 9", "nine");
+	draw_six;
+%	xy_mirror_char;
+
+	currentpicture := currentpicture scaled -1;
+	currentpicture := currentpicture shifted (w, h);
+fet_endchar;
+
+
+ligtable "3":
+	"3" kern 0.1 space#,
+	"0" kern 0.1 space#;
+
+ligtable "2":
+	"7" kern 0.15 space#;

@@ -114,6 +114,20 @@ pthread_t splashThread;
 // // pyscript->runPythonScript(script);
 // }
 
+
+void MusE::clearScoreMenuMappers()
+{
+	delete scoreOneStaffPerTrackMapper;
+	delete scoreAllInOneMapper;
+	
+	scoreOneStaffPerTrackMapper = new QSignalMapper(this);
+	scoreAllInOneMapper = new QSignalMapper(this);
+	
+	connect(scoreOneStaffPerTrackMapper, SIGNAL(mapped(QWidget*)), this, SLOT(openInScoreEdit_oneStaffPerTrack(QWidget*)));
+	connect(scoreAllInOneMapper, SIGNAL(mapped(QWidget*)), this, SLOT(openInScoreEdit_allInOne(QWidget*)));
+}
+
+
 //---------------------------------------------------------
 //   sleep function
 //---------------------------------------------------------
@@ -803,6 +817,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       editSignalMapper = new QSignalMapper(this);
       midiPluginSignalMapper = new QSignalMapper(this);
       followSignalMapper = new QSignalMapper(this);
+      scoreOneStaffPerTrackMapper = new QSignalMapper(this);
+      scoreAllInOneMapper = new QSignalMapper(this);
 
       song           = new Song("song");
       song->blockSignals(true);
@@ -977,7 +993,19 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       editOutsideLoopAction = new QAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"), this);
       editAllPartsAction = new QAction( QIcon(*select_all_parts_on_trackIcon), tr("All &Parts on Track"), this);
 
-      startScoreEditAction = new QAction(*scoreIconSet, tr("Score"), this);
+            
+      scoreSubmenu = new QMenu(tr("Score"), this);
+      scoreSubmenu->setIcon(QIcon(*scoreIconSet));
+      
+      scoreAllInOneSubsubmenu = new QMenu(tr("all parts in one staff"), this);
+      scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("one staff per part"), this);
+
+			scoreSubmenu->addMenu(scoreAllInOneSubsubmenu);
+			scoreSubmenu->addMenu(scoreOneStaffPerTrackSubsubmenu);
+      
+			updateScoreMenus();
+      
+      startScoreEditAction = new QAction(*scoreIconSet, tr("New score window"), this);
       startPianoEditAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
       startDrumEditAction = new QAction(QIcon(*edit_drummsIcon), tr("Drums"), this);
       startListEditAction = new QAction(QIcon(*edit_listIcon), tr("List"), this);
@@ -1127,10 +1155,13 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(editSignalMapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
 
       connect(startPianoEditAction, SIGNAL(activated()), SLOT(startPianoroll()));
-      connect(startScoreEditAction, SIGNAL(activated()), SLOT(startScoreEdit()));
+      connect(startScoreEditAction, SIGNAL(activated()), SLOT(startScoreQuickly()));
       connect(startDrumEditAction, SIGNAL(activated()), SLOT(startDrumEditor()));
       connect(startListEditAction, SIGNAL(activated()), SLOT(startListEditor()));
       connect(startWaveEditAction, SIGNAL(activated()), SLOT(startWaveEditor()));
+			connect(scoreOneStaffPerTrackMapper, SIGNAL(mapped(QWidget*)), this, SLOT(openInScoreEdit_oneStaffPerTrack(QWidget*)));
+			connect(scoreAllInOneMapper, SIGNAL(mapped(QWidget*)), this, SLOT(openInScoreEdit_allInOne(QWidget*)));
+
 
       connect(masterGraphicAction, SIGNAL(activated()), SLOT(startMasterEditor()));
       connect(masterListAction, SIGNAL(activated()), SLOT(startLMasterEditor()));
@@ -1346,6 +1377,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       menuEdit->addSeparator();
 
       menuEdit->addAction(startPianoEditAction);
+      menuEdit->addMenu(scoreSubmenu);
       menuEdit->addAction(startScoreEditAction);
       menuEdit->addAction(startDrumEditAction);
       menuEdit->addAction(startListEditAction);
@@ -3424,29 +3456,94 @@ PartList* MusE::getMidiPartsToEdit()
       return pl;
       }
 
+void MusE::scoreNamingChanged()
+{
+	updateScoreMenus();
+}
+
+void MusE::updateScoreMenus()
+{
+	QAction* action;
+
+	
+	scoreOneStaffPerTrackSubsubmenu->clear();
+	scoreAllInOneSubsubmenu->clear();
+
+	
+	action=new QAction(tr("New"), this);
+	connect(action, SIGNAL(activated()), scoreOneStaffPerTrackMapper, SLOT(map()));
+	scoreOneStaffPerTrackMapper->setMapping(action, (QWidget*)NULL);
+	scoreOneStaffPerTrackSubsubmenu->addAction(action);
+	
+	
+	action=new QAction(tr("New"), this); //the above action may NOT be reused!
+	connect(action, SIGNAL(activated()), scoreAllInOneMapper, SLOT(map()));
+	scoreAllInOneMapper->setMapping(action, (QWidget*)NULL);
+	scoreAllInOneSubsubmenu->addAction(action);
+
+	for (ToplevelList::iterator it=toplevels.begin(); it!=toplevels.end(); it++)
+		if (it->type()==Toplevel::SCORE)
+		{
+			ScoreEdit* score = (ScoreEdit*) it->cobject();
+			
+			action=new QAction(score->get_name(), this);
+			connect(action, SIGNAL(activated()), scoreOneStaffPerTrackMapper, SLOT(map()));
+			scoreOneStaffPerTrackMapper->setMapping(action, (QWidget*)score);
+			scoreOneStaffPerTrackSubsubmenu->addAction(action);
+
+
+			action=new QAction(score->get_name(), this); //the above action may NOT be reused!
+			connect(action, SIGNAL(activated()), scoreAllInOneMapper, SLOT(map()));
+			scoreAllInOneMapper->setMapping(action, (QWidget*)score);
+			scoreAllInOneSubsubmenu->addAction(action);
+		}
+}
+
 //---------------------------------------------------------
 //   startScoreEdit
 //---------------------------------------------------------
 
-void MusE::startScoreEdit()
-      {
-      PartList* pl = getMidiPartsToEdit();
-      if (pl == 0)
-            return;
-      startScoreEdit(pl, true);
-      }
+void MusE::openInScoreEdit_oneStaffPerTrack(QWidget* dest)
+{
+	openInScoreEdit((ScoreEdit*)dest, false);
+}
 
-void MusE::startScoreEdit(PartList* pl, bool showDefaultCtrls)
-      {
+void MusE::openInScoreEdit_allInOne(QWidget* dest)
+{
+	openInScoreEdit((ScoreEdit*)dest, true);
+}
 
-      ScoreEdit* scoreedit = new ScoreEdit(pl, this, 0, arranger->cursorValue());
-      if(showDefaultCtrls)       // p4.0.12
-        scoreedit->addCtrl();
-      scoreedit->show();
-      toplevels.push_back(Toplevel(Toplevel::PIANO_ROLL, (unsigned long)(scoreedit), scoreedit));
-      connect(scoreedit, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
-      connect(muse, SIGNAL(configChanged()), scoreedit, SLOT(configChanged()));
-      }
+void MusE::openInScoreEdit(ScoreEdit* destination, bool allInOne)
+{
+	PartList* pl = getMidiPartsToEdit();
+	if (pl == 0)
+				return;
+	openInScoreEdit(destination, pl, allInOne);
+}
+
+void MusE::openInScoreEdit(ScoreEdit* destination, PartList* pl, bool allInOne)
+{
+	if (destination==NULL) // if no destination given, create a new one
+	{
+      destination = new ScoreEdit(this, 0, arranger->cursorValue());
+      destination->show();
+      toplevels.push_back(Toplevel(Toplevel::SCORE, (unsigned long)(destination), destination));
+      connect(destination, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+      connect(destination, SIGNAL(name_changed()), SLOT(scoreNamingChanged()));
+      //connect(muse, SIGNAL(configChanged()), destination, SLOT(config_changed()));
+      //commented out by flo, because the ScoreEditor connects to all 
+      //relevant signals on his own
+      
+      updateScoreMenus();
+  }
+  
+  destination->add_parts(pl, allInOne);
+}
+
+void MusE::startScoreQuickly()
+{
+	openInScoreEdit_oneStaffPerTrack(NULL);
+}
 
 //---------------------------------------------------------
 //   startPianoroll
@@ -3667,6 +3764,7 @@ void MusE::toplevelDeleted(unsigned long tl)
       {
       for (iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
             if (i->object() == tl) {
+                  bool mustUpdateScoreMenus=false;
                   switch(i->type()) {
                         case Toplevel::MARKER:
                               break;
@@ -3685,8 +3783,12 @@ void MusE::toplevelDeleted(unsigned long tl)
                         case Toplevel::WAVE:
                         case Toplevel::LMASTER:
                               break;
+                        case Toplevel::SCORE:
+                              mustUpdateScoreMenus=true;
                         }
                   toplevels.erase(i);
+                  if (mustUpdateScoreMenus)
+                        updateScoreMenus();
                   return;
                   }
             }
@@ -4839,6 +4941,7 @@ again:
                   case Toplevel::MARKER:
                         break;
                   case Toplevel::PIANO_ROLL:
+                  case Toplevel::SCORE:
                   case Toplevel::LISTE:
                   case Toplevel::DRUM:
                   case Toplevel::MASTER:

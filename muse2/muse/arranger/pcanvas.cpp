@@ -783,19 +783,17 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       partPopup->addSeparator();
       switch(trackType) {
             case Track::MIDI: {
-                  QAction *act_pianoroll = partPopup->addAction(QIcon(*pianoIconSet), tr("pianoroll"));
-                  act_pianoroll->setData(10);
-                  QAction *act_mlist = partPopup->addAction(QIcon(*edit_listIcon), tr("list"));
-       	          act_mlist->setData(12);
+                  partPopup->addAction(muse->startPianoEditAction);
+                  partPopup->addMenu(muse->scoreSubmenu);
+                  partPopup->addAction(muse->startScoreEditAction);
+                  partPopup->addAction(muse->startListEditAction);
                   QAction *act_mexport = partPopup->addAction(tr("save part to disk"));
                   act_mexport->setData(16);
                   }
                   break;
             case Track::DRUM: {
-                  QAction *act_dlist = partPopup->addAction(QIcon(*edit_listIcon), tr("list"));
-                  act_dlist->setData(12);
-                  QAction *act_drums = partPopup->addAction(QIcon(*edit_drummsIcon), tr("drums"));
-                  act_drums->setData(13);
+                  partPopup->addAction(muse->startDrumEditAction);
+                  partPopup->addAction(muse->startListEditAction);
                   QAction *act_dexport = partPopup->addAction(tr("save part to disk"));
                   act_dexport->setData(16);
                   }
@@ -866,15 +864,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
             case 5:
                   copy(pl);
                   break;
-            case 10:    // pianoroll edit
-                  emit startEditor(pl, 0);
-                  return;
-            case 12:    // list edit
-                  emit startEditor(pl, 1);
-                  return;
-            case 13:    // drum edit
-                  emit startEditor(pl, 3);
-                  return;
+
             case 14:    // wave edit
                   {
                     // Changed to allow multiple selected parts to be shown. By T356
@@ -994,7 +984,8 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                     // If no items selected, use the one clicked on.
                     if(!selfound)
                       item->part()->setColorIndex(curColorIndex);
-                                
+                    
+                    song->update(SC_PART_MODIFIED);
                     redraw();
                     break;
                   }

@@ -1,0 +1,497 @@
+%
+% feta-macros.mf -- auxiliary macros for both feta and parmesan fonts
+%
+% source file of the GNU LilyPond music typesetter
+%
+% (c) 1997--2009 Han-Wen Nienhuys <hanwen@xs4all.nl>
+
+
+%
+% debugging
+%
+
+def print_penpos (suffix $) =
+	message
+	  "z" & str$ & "l = (" & decimal x.$.l & ", " &decimal y.$.l & ");"
+	  & " z" & str$ & "r = (" & decimal x.$.r & ", " & decimal y.$.r & ");";
+enddef;
+
+
+def test_grid =
+	if test > 1:
+		proofrulethickness 1pt#;
+
+		makegrid
+		  (0pt, 0pt for i := -5pt step 1pt until 5pt: , i endfor)
+		  (0pt, 0pt for i := -5pt step 1pt until 5pt: , i endfor);
+
+		proofrulethickness .1pt#;
+
+		makegrid
+		  (0pt, 0pt for i := -4.8pt step .2pt until 4.8pt: , i endfor)
+		  (0pt, 0pt for i := -4.8pt step .2pt until 4.8pt: , i endfor);
+	fi;
+enddef;
+
+
+def treq =
+	tracingequations := tracingonline := 1;
+enddef;
+
+
+def draw_staff (expr first, last, offset) =
+	if test <> 0:
+		pickup pencircle scaled stafflinethickness;
+
+		for i := first step 1 until last:
+			draw (-staff_space,
+			      (i + offset) * staff_space_rounded)
+			     -- (4 staff_space,
+				 (i + offset) * staff_space_rounded);
+		endfor;
+	fi;
+enddef;
+
+
+%
+% Draw the outline of the stafflines.  For fine tuning.
+%
+
+def draw_staff_outline (expr first, last, offset) =
+	if test <> 0:
+		save p;
+		path p;
+
+		pickup pencircle scaled 2;
+
+		for i := first step 1 until last:
+			p := (-staff_space,
+			      (i + offset) * staff_space_rounded)
+			     -- (4 staff_space,
+				 (i + offset) * staff_space_rounded);
+
+			draw p shifted (0, .5 stafflinethickness);
+			draw p shifted (0, -.5 stafflinethickness);
+		endfor;
+	fi;
+enddef;
+
+
+%
+% Transformations
+%
+
+def scaledabout (expr point, scale) =
+	shifted -point scaled scale shifted point
+enddef;
+
+
+%
+% make a local (restored after endgroup) copy of t_var
+%
+
+def local_copy (text type, t_var) =
+	save copy_temp;
+	type copy_temp;
+	copy_temp := t_var;
+	save t_var;
+	type t_var;
+	t_var := copy_temp;
+enddef;
+
+
+%
+% Urgh! Want to do parametric types
+%
+
+def del_picture_stack =
+	save save_picture_stack, picture_stack_idx;
+enddef;
+
+
+%
+% better versions of Taupin/Egler savepic cmds
+%
+
+def make_picture_stack =
+	% override previous stack
+	del_picture_stack;
+	picture save_picture_stack[];
+	numeric picture_stack_idx;
+	picture_stack_idx := 0;
+
+	def push_picture (expr p) =
+		save_picture_stack[picture_stack_idx] := p;
+		picture_stack_idx := picture_stack_idx + 1;
+	enddef;
+
+	def pop_picture = save_picture_stack[decr picture_stack_idx] enddef;
+	def top_picture = save_picture_stack[picture_stack_idx] enddef;
+enddef;
+
+
+%
+% save/restore pens
+% why can't I delete individual pens?
+%
+
+def make_pen_stack =
+	del_pen_stack;
+	pen save_pen_stack[];
+	numeric pen_stack_idx;
+	pen_stack_idx := 0;
+	def push_pen (expr p) =
+		save_pen_stack[pen_stack_idx] := p;
+		pen_stack_idx := pen_stack_idx + 1;
+	enddef;
+	def pop_pen = save_pen_stack[decr pen_stack_idx] enddef;
+	def top_pen = save_pen_stack[pen_stack_idx] enddef;
+enddef;
+
+
+def del_pen_stack =
+	save save_pen_stack, pen_stack_idx;
+enddef;
+
+
+%
+% drawing
+%
+
+def soft_penstroke text t =
+	forsuffixes e = l, r:
+		path_.e := t;
+	endfor;
+
+	if cycle path_.l:
+		cyclestroke_;
+	else:
+		fill path_.l
+		..tension1.5.. reverse path_.r
+		..tension1.5.. cycle;
+	fi;
+enddef;
+
+
+def soft_start_penstroke text t =
+	forsuffixes e = l, r:
+		path_.e := t;
+	endfor;
+
+	if cycle path_.l:
+		cyclestroke_;
+	else:
+		fill path_.l
+		-- reverse path_.r
+		..tension1.5.. cycle;
+	fi;
+enddef;
+
+
+def soft_end_penstroke text t =
+	forsuffixes e = l, r:
+		path_.e := t;
+	endfor;
+
+	if cycle path_.l:
+		cyclestroke_;
+	else:
+		fill path_.l
+		..tension1.5.. reverse path_.r
+		-- cycle;
+	fi;
+enddef;
+
+
+%
+% Make a round path segment going from P to Q.  2*A is the angle that the
+% path should take.
+%
+
+def simple_serif (expr p, q, a) =
+	p{dir (angle (q - p) - a)}
+	.. q{-dir (angle (p - q) + a)}
+enddef;
+
+
+%
+% Draw an axis aligned block making sure that edges are on pixels.
+%
+
+def draw_rounded_block (expr bottom_left, top_right, roundness) =
+begingroup;
+	save size;
+	save x, y;
+
+	% Originally, there was `floor' instead of `round', but this is
+	% not correct because pens use `round' also.
+	size = round min (roundness,
+			  xpart (top_right - bottom_left),
+			  ypart (top_right - bottom_left));
+
+	z2 + (size / 2, size / 2) = top_right;
+	z4 - (size / 2, size / 2) = bottom_left;
+	y3 = y2;
+	y4 = y1;
+	x2 = x1;
+	x4 = x3;
+
+	pickup pencircle scaled size;
+
+	fill bot z1{right}
+	     .. rt z1{up}
+	     -- rt z2{up}
+	     .. top z2{left}
+	     -- top z3{left}
+	     .. lft z3{down}
+	     -- lft z4{down}
+	     .. bot z4{right}
+	     -- cycle;
+endgroup;
+enddef;
+
+
+def draw_block (expr bottom_left, top_right) =
+	draw_rounded_block (bottom_left, top_right, blot_diameter);
+enddef;
+
+
+def draw_square_block (expr bottom_left, top_right) =
+	save x, y;
+
+	x1 = xpart bottom_left;
+	y1 = ypart bottom_left;
+	x2 = xpart top_right;
+	y2 = ypart top_right;
+
+	fill (x1, y1)
+	     -- (x2, y1)
+	     -- (x2, y2)
+	     -- (x1, y2)
+	     -- cycle;
+enddef;
+
+
+def draw_gridline (expr bottom_left, top_right, thickness) =
+	draw_rounded_block (bottom_left - (thickness / 2, thickness / 2),
+			    top_right + (thickness / 2, thickness / 2),
+			    thickness);
+enddef;
+
+
+def draw_brush (expr a, w, b, v) =
+	save x, y;
+
+	z1 = a;
+	z2 = b;
+	z3 = z4 = z1;
+	z5 = z6 = z2;
+
+	penpos3 (w, angle (z2 - z1) + 90);
+	penpos4 (w, angle (z2 - z1));
+	penpos5 (v, angle (z1 - z2) + 90);
+	penpos6 (v, angle (z1 - z2));
+
+	fill z3r{z3r - z5l}
+	     .. z4l
+	     .. {z5r - z3l}z3l
+	     .. z5r{z5r - z3l}
+	     .. z6l
+	     .. {z3r - z5l}z5l
+	     .. cycle;
+enddef;
+
+
+%
+% Make a superellipsoid segment going from FROM to TO, with SUPERNESS.
+% Take superness = sqrt(2)/2 to get a circle segment.
+%
+% See Knuth, p. 267 and p.126.
+
+def super_curvelet (expr from, to, superness, dir) =
+	if dir = 1:
+		(superness [xpart to, xpart from],
+		 superness [ypart from, ypart to]){to - from}
+	else:
+		(superness [xpart from, xpart to],
+		 superness [ypart to, ypart from]){to - from}
+	fi
+enddef;
+
+
+%
+% Bulb with smooth inside curve.
+%
+% alpha = start direction
+% beta = which side to turn to
+% flare = diameter of the bulb
+% line = diameter of line attachment
+% direction = is ink on left or right side (1 or -1)
+%
+% Note that `currentpen' must be set correctly -- only circular pens
+% are supported properly.
+
+def flare_path (expr pos, alpha, beta, line, flare, direction) =
+begingroup;
+	save thick;
+
+	thick = pen_top + pen_bot;
+
+	clearxy;
+
+	penpos1' (line - thick, 180 + beta + alpha);
+	top z1'r = pos;
+
+	penpos2' (flare - thick, 180 + beta + alpha);
+	z2' = z3';
+
+	penpos3' (flare - thick, 0 + alpha);
+	rt x3'l = hround (x1'r
+			  + (1/2 + 0.43) * flare * xpart dir (alpha + beta));
+	bot y2'l = vround (y1'r
+			   + (1 + 0.43) * flare * ypart dir (alpha + beta));
+
+	rt x4' = x2'r - line * xpart dir (alpha);
+	y4' = y2'r - line * ypart dir (alpha);
+
+	penlabels (1', 2', 3', 4');
+
+	save t, p;
+	t = 0.833;
+	path p;
+
+	p := z1'r{dir (alpha)}
+	     .. z3'r{dir (180 + alpha - beta)}
+	     .. z2'l{dir (alpha + 180)}
+	     .. z3'l{dir (180 + alpha + beta)}
+	     ..tension t.. z4'{dir (180 + alpha + beta)}
+	     .. z1'l{dir (alpha + 180)};
+
+	if direction <> 1:
+		p := reverse p;
+	fi;
+
+p
+endgroup
+enddef;
+
+
+def brush (expr a, w, b, v) =
+begingroup;
+	draw_brush (a, w, b, v);
+	penlabels (3, 4, 5, 6);
+endgroup;
+enddef;
+
+
+%
+% Draw a (rest) crook, starting at thickness STEM in point A,
+% ending a ball W to the left, diameter BALLDIAM.
+% ypart of the center of the ball is BALLDIAM/4 lower than ypart A.
+%
+
+def balled_crook (expr a, w, balldiam, stem) =
+begingroup;
+	save x, y;
+
+	penpos1 (balldiam / 2, -90);
+	penpos2 (balldiam / 2, 0);
+	penpos3 (balldiam / 2, 90);
+	penpos4 (balldiam / 2, 180);
+
+	x4r = xpart a - w;
+	y3r = ypart a + balldiam / 4;
+	x1l = x2l = x3l = x4l;
+	y1l = y2l = y3l = y4l;
+
+	penpos5 (stem, 250);
+	x5 = x4r + 9/8 balldiam;
+	y5r = y1r;
+
+	penpos6 (stem, 260);
+	x6l = xpart a;
+	y6l = ypart a;
+
+	penstroke z1e
+		  .. z2e
+		  .. z3e
+		  .. z4e
+		  .. z1e
+		  .. z5e{right}
+		  .. z6e;
+
+	penlabels (1, 2, 3, 4, 5, 6);
+endgroup;
+enddef;
+
+
+def y_mirror_char =
+	currentpicture := currentpicture yscaled -1;
+
+	set_char_box (charbp, charwd, charht, chardp);
+enddef;
+
+
+def xy_mirror_char =
+	currentpicture := currentpicture scaled -1;
+
+	set_char_box (charwd, charbp, charht, chardp);
+enddef;
+
+
+%
+% center_factor: typically .5; the larger, the larger the radius of the bulb
+% radius factor: how much the bulb curves inward
+%
+
+def draw_bulb (expr turndir, zl, zr, bulb_rad, radius_factor)=
+begingroup;
+	save rad, ang, pat;
+	path pat;
+
+	clearxy;
+
+	ang = angle (zr - zl);
+
+	% don't get near infinity
+	% z0 = zr + bulb_rad * (zl - zr) / length (zr - zl);
+	z0' = zr + bulb_rad / length (zr - zl) * (zl - zr);
+
+	rad = bulb_rad;
+
+	z1' = z0' + radius_factor * rad * dir (ang + turndir * 100);
+	z2' = z0' + rad * dir (ang + turndir * 300);
+
+	labels (0', 1', 2');
+
+	pat = zr{dir (ang + turndir * 90)}
+	       .. z1'
+	       .. z2'
+	       .. cycle;
+
+	% avoid grazing outlines
+	fill subpath (0, 2.5) of pat
+	     -- cycle;
+endgroup
+enddef;
+
+
+pi := 3.14159;
+
+
+%
+% To get symmetry at low resolutions we need to shift some points and
+% paths, but not if mf2pt1 is used.
+%
+
+if known miterlimit:
+	vardef hfloor primary x = x enddef;
+	vardef vfloor primary y = y enddef;
+	vardef hceiling primary x = x enddef;
+	vardef vceiling primary y = y enddef;
+else:
+	vardef hfloor primary x = floor x enddef;
+	vardef vfloor primary y = (floor y.o_)_o_ enddef;
+	vardef hceiling primary x = ceiling x enddef;
+	vardef vceiling primary y = (ceiling y.o_)_o_ enddef;
+fi;

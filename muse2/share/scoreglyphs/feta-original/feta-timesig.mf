@@ -1,0 +1,108 @@
+%
+% feta-timesig.mf --  implement Time Signatures
+%
+% source file of the Feta (not an abbreviation of Font-En-Tja) music font
+%
+% (c) 1998--2009 Mats Bengtsson <matsb@s3.kth.se>,
+%		 Christian Mondrup <scancm@biobase.dk>
+
+fet_begingroup ("timesig");
+
+
+%
+% Originally by Mats B. nuked by Han-Wen, inspired by
+% Baerenreiter BA320 (Bach Cello Suites, Suite III).
+%
+% Notes:
+%
+%  * The inside curve of the C is rather straight.
+%  * The outside curve of the C is rather round.
+%  * Right tips of the C point slightly outward.
+%  * Lower tip protrudes to the right very slightly.
+%
+
+def draw_C =
+	save hair, bulb_rad, left_fatness;
+	save left_width, right_width;
+	save width, lower_offset;
+
+	width# := 1.8 staff_space# - stafflinethickness#;
+
+	left_width := 1.0 staff_space;
+	right_width := 0.8 staff_space;
+
+	hair := stafflinethickness;
+
+	bulb_rad := 0.40 staff_space - .6 stafflinethickness;
+	left_fatness := 0.55 * staff_space;
+	lower_offset := 0.3 stafflinethickness;
+
+	set_char_box (0, width#, staff_space#, staff_space#);
+
+	d := d - feta_shift;
+
+	x1r = w;
+	x3r = 0;
+	y1r = .45 h;
+	y2r = h + vround (.5 stafflinethickness_rounded);
+	y4r = -d - vround (.5 stafflinethickness_rounded);
+	x2 = x4;
+	x2 = x3r + h;
+	y3r = .5 (h - d);
+
+	x5r = x1r + lower_offset;
+	y5r = -0.37 h;
+
+	penpos1 (hair, 10);
+	penpos2 (stafflinethickness_rounded, 90);
+	penpos3 (left_fatness, 180);
+	penpos4 (stafflinethickness_rounded, -90);
+	penpos5 (hair, -13);
+
+	draw_bulb (-1, z1l, z1r, bulb_rad, .8);
+
+	save s;
+	s := 0.735;
+
+	fill z1l{dir (100)}
+	     .. z2l{left}
+	     ..tension 0.8.. z3l{down}
+	     ..tension 0.8.. z4l{right}
+	     .. simple_serif (z5l, z5r, -90)
+	     ..	z4r{left}
+	     .. super_curvelet (z4r, z3r, s, -1)
+	     .. z3r{up}
+	     .. super_curvelet (z3r, z2r, s, 1)
+	     .. z2r{right}
+	     .. {dir (-80)}z1r
+	     -- cycle;
+
+	penlabels (1, 2, 3, 4, 5);
+
+	draw_staff (-2, 2, 0);
+enddef;
+
+
+fet_beginchar ("4/4 meter", "C44");
+	draw_C;
+fet_endchar;
+
+
+fet_beginchar ("2/2 meter", "C22");
+	save eccentricity, top_stemlen, bottom_stemlen, thick, left_pos;
+
+	draw_C;
+
+	eccentricity = -1.75 stafflinethickness - 0.025 staff_space;
+	top_stemlen# = bottom_stemlen# = 1.4 staff_space#;
+	thick# = stafflinethickness# + 0.05 staff_space#;
+	define_whole_pixels (top_stemlen, bottom_stemlen);
+	define_whole_blacker_pixels (thick);
+
+	bottom_stemlen := bottom_stemlen - feta_shift;
+
+	draw_block ((x2 + eccentricity, -bottom_stemlen),
+		    (x2 + eccentricity + thick, top_stemlen));
+fet_endchar;
+
+fet_endgroup ("timesig");

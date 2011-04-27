@@ -29,6 +29,7 @@ subdirs(
       scripts
       templates
       wallpapers
+      scoreglyphs
       locale
       )
 

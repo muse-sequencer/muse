@@ -1,0 +1,147 @@
+%
+% feta-beugel.mf -- Staff braces
+%
+% source file of the Feta (not an acronym for Font-En-Tja)
+% pretty-but-neat music font
+%
+% (c) 1997--2009 Han-Wen Nienhuys <hanwen@xs4all.nl>
+%                Jan Nieuwenhuizen <janneke@gnu.org>
+
+
+% We have to reduce the pixel-per-point value to
+% support large brace glyphs in case we are using MetaPost
+% (which by default sets `hppp' to 49.80244, regardless of
+% the used `mag' value)
+
+if known miterlimit:
+	bpppix_ := 0.2;		% ten times larger than original
+
+	numeric mm, pt, dd, bp, cm, pc, cc, in;
+
+	mm * bpppix_ = 2.83464;
+	pt * bpppix_ = 0.99626;
+	dd * bpppix_ = 1.06601;
+	bp * bpppix_ = 1;
+	cm * bpppix_ = 28.34645;
+	pc * bpppix_ = 11.95517;
+	cc * bpppix_ = 12.79213;
+	in * bpppix_ = 72;
+
+	hppp := pt;
+	vppp := pt;
+fi;
+
+
+input feta-autometric;
+input feta-macros;
+
+staffsize# := 20 pt#;   %% arbitrary
+
+input feta-params;
+
+%
+% We must let the design increase for each font to make sure that mftrace
+% doesn't jack up the resolution too highly for the longer braces.
+%
+
+fet_beginfont ("feta-braces-" & char (97 + font_count),
+	       (font_count + 1) * 20, "fetaBraces");
+
+mode_setup;
+
+
+save code, braces_per_font;
+code := 64;
+braces_per_font := 64;
+
+def draw_brace (expr height_sharp, width_sharp, slt_sharp, brace_number) =
+	save pendir, height, width, thin, thick, slt, pat;
+	save penangle;
+	pair pendir;
+	path pat;
+
+	height# := height_sharp;
+	width# := width_sharp;
+	slt# := slt_sharp;
+
+	fet_beginchar ("brace number " & decimal (brace_number),
+		       "brace" & decimal (brace_number))
+		set_char_box (width#, 0, height# / 2, height# / 2);
+
+		define_pixels (height, width, slt);
+		thin = 2 slt;
+		thick = .5 width;
+	
+		z2 = .5 [z1, z3];
+		y3l = y1 + height / 2;
+		x3 = x1 + width;
+		y1 = 0;
+		x1 = -b;
+		y0 = y1;
+		x0 = x1 - 2/6 thin;
+
+		pendir = unitvector (x3 - x1, y3l / 6 - y1);
+		penangle = angle pendir - 90;
+		penpos3 (thin, penangle);
+		penpos2 (thick, angle (z3 - z1) - 90);
+		penpos1 (2/3 thin, penangle);
+	
+		penlabels (1, 2, 3);
+		labels (0);
+
+		pat := z2r
+		       .. simple_serif (z3r, z3l, 90)
+		       .. z2l
+		       .. z1l{dir (angle (z1r - z1l) - 90)}
+		       .. z0{down}
+		       .. z1r{-dir (angle (z1l - z1r) + 90)}
+		       .. cycle;
+		pat := subpath (0, 5) of pat
+		       -- subpath (6, 7) of pat
+		       .. cycle;
+
+		fill pat;
+		fill pat yscaled -1;
+	fet_endchar;
+enddef;
+
+
+save stafflinethickness;
+save increment;
+
+linethickness := 0.5 pt#;
+increment := 0.5 pt#;
+y := 10 pt#;
+
+for i := 0 step 1 until font_count:
+	save number;
+
+	number := braces_per_font * i;
+
+	for j := 0 step 1 until (braces_per_font - 1):
+		% message "l: "&decimal l;
+		% note: define_pixels (x) multiplies x by hppp,
+		% must never get bigger than infinity
+		y := y + increment;
+		if y > infinity / hppp:
+			message "Resolution and/or magnification is too high";
+			message "HPPP: "& decimal hppp &" Y: " & decimal y;
+			errmessage "please report to <bug-lilypond@gnu.org>";
+		fi;
+
+		% x should be about one staff space, taking brace to have
+		% default height of 3 staffs, this yields height / 3 / 4 = 12
+		% but 15 looks better
+		x := y / 15;
+
+		increment := x / 10;
+		linethickness :=  min (0.5 pt#, y / 150);
+		if i = font_count:
+			draw_brace (y, x, linethickness, number);
+		fi;
+
+		number := number + 1;
+	endfor;
+endfor;
+
+fet_endfont ("feta-braces");
