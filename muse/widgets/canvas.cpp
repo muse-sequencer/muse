@@ -557,7 +557,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         itemPopupMenu = genItemPopup(curItem);
                         if (itemPopupMenu) {
                               QAction *act = itemPopupMenu->exec(QCursor::pos());
-                              if (act)
+                              if (act && act->data().isValid())
                                     itemPopup(curItem, act->data().toInt(), start);
                               delete itemPopupMenu;
                               }

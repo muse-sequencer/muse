@@ -1,0 +1,169 @@
+%
+% feta-arrow.mf -- draw arrow heads
+%
+% source file of the GNU LilyPond music typesetter
+%
+% (c) 2005--2009 Han-Wen Nienhuys <hanwen@xs4all.nl>
+
+fet_begingroup ("arrowheads");
+
+%
+% To consider: we could put arrow heads at their real Unicode locations.
+%
+
+%
+% Set up paths for upper half of arrow head pointing right.
+% CLOSE_PATH is for a closed arrow, OPEN_PATH is for the open arrow.
+% OPEN_TENSION sets the tension for the part which forms the path in
+% OPEN_PATH.
+%
+
+def set_arrow_paths (expr width, height, open_tension, arrowlinethickness) =
+	save pat, finalpath;
+	save tip_angle_o, tip_angle_c, tip_dir_c, tip_dir_o;
+	save indent;
+	path pat, open_path, close_path;
+	pair tip_dir_o, tip_dir_c;
+
+	pickup pencircle scaled arrowlinethickness;
+
+	indent = linethickness / 2;
+
+	lft x1 = -width;
+	x2 = 0;
+	top y1 = height;
+	y2 = 0;
+
+	z4 = z3;
+	y5 = 0;
+	x5 = x4 + indent;
+
+	pat := z1
+	       ..tension open_tension.. z2{right};
+	penpos2 (arrowlinethickness, 90);
+	tip_dir_o := direction 0.0 of pat;
+	tip_angle_o := angle (tip_dir_o);
+	penpos1 (arrowlinethickness, 90 + tip_angle_o);
+	z3 = z1;
+	penpos3 (arrowlinethickness, tip_angle_o);
+
+	open_path := z1r{tip_dir_o}
+		     .. z2r{right}
+		     .. z2l{left}
+		     .. z1l{-tip_dir_o}
+		     .. z3l
+		     .. cycle;
+
+	pat := z4
+	       .. z5{down};
+	tip_dir_c := direction 0.0 of pat;
+	tip_angle_c := angle (tip_dir_c);
+	penpos4 (arrowlinethickness, 90+ tip_angle_c);
+	penpos5 (arrowlinethickness, 0);
+	z6 = z5;
+	penpos6 (arrowlinethickness, 90);
+
+	close_path := z4l{tip_dir_c}
+		      .. z5l{down}
+		      .. z6l{right}
+		      .. z2l{right}
+		      .. z2r{left}
+		      ..tension open_tension.. z1r{-tip_dir_o}
+		      .. z3l
+		      .. cycle;
+enddef;
+
+
+fet_beginchar ("open", "open.01");
+	set_char_box (staff_space#, 1.6 linethickness# / 2,
+		      0.5 staff_space#, 0.5 staff_space#);
+	set_arrow_paths (staff_space, 0.5 staff_space,
+			 1.0, 1.6 linethickness);
+	fill open_path;
+	open_path := open_path yscaled -1;
+	fill open_path;
+
+	penlabels (1, 2, 3);
+	penlabels (4, 5, 6);
+fet_endchar;
+
+
+fet_beginchar ("open", "open.0M1");
+	set_char_box (1.6 linethickness# / 2, staff_space#,
+		      0.5 staff_space#, 0.5 staff_space#);
+	set_arrow_paths (staff_space, 0.5 staff_space,
+			 1.0, 1.6 linethickness);
+	fill open_path;
+	open_path := open_path yscaled -1;
+	fill open_path;
+	currentpicture := currentpicture xscaled -1;
+fet_endchar;
+
+
+fet_beginchar ("open", "open.11");
+	set_char_box (.5 staff_space#, .5 staff_space#,
+		      1.0 staff_space#, 1.6 linethickness# / 2);
+	set_arrow_paths (staff_space, 0.5 staff_space,
+			 1.0, 1.6 linethickness);
+	fill open_path;
+	open_path := open_path yscaled -1;
+	fill open_path;
+	currentpicture := currentpicture rotated 90;
+fet_endchar;
+
+
+fet_beginchar ("open", "open.1M1");
+	set_char_box (.5 staff_space#, .5 staff_space#,
+		      1.6 linethickness# / 2, 1.0 staff_space#);
+	set_arrow_paths (staff_space, 0.5 staff_space,
+			 1.0, 1.6 linethickness);
+	fill open_path;
+	open_path := open_path yscaled -1;
+	fill open_path;
+	currentpicture := currentpicture rotated 90;
+	currentpicture := currentpicture yscaled -1;
+fet_endchar;
+
+
+fet_beginchar ("close", "close.01");
+	set_char_box (staff_space#, 0, 0.5 staff_space#, 0.5 staff_space#);
+	set_arrow_paths (staff_space, 0.5 staff_space, 1.5, blot_diameter);
+	fill close_path;
+	close_path := close_path yscaled -1;
+	fill close_path;
+fet_endchar;
+
+
+fet_beginchar ("close", "close.0M1");
+	set_char_box (0, staff_space#,  0.5 staff_space#, 0.5 staff_space#);
+	set_arrow_paths (staff_space, 0.5 staff_space, 1.5, blot_diameter);
+	fill close_path;
+	close_path := close_path yscaled -1;
+	fill close_path;
+	currentpicture := currentpicture xscaled -1;
+fet_endchar;
+
+
+fet_beginchar ("close", "close.11");
+	set_char_box (.5 staff_space#, .5 staff_space#,
+		      1.0 staff_space#, 0.0 staff_space#);
+	set_arrow_paths (staff_space, 0.5 staff_space, 1.5, blot_diameter);
+	fill close_path;
+	close_path := close_path yscaled -1;
+	fill close_path;
+	currentpicture := currentpicture rotated 90;
+fet_endchar;
+
+
+fet_beginchar ("close", "close.1M1");
+	set_char_box (.5 staff_space#, .5 staff_space#,
+		      0.0 staff_space#, 1.0 staff_space#);
+	set_arrow_paths (staff_space, 0.5 staff_space, 1.5, blot_diameter);
+	fill close_path;
+	close_path := close_path yscaled -1;
+	fill close_path;
+	currentpicture := currentpicture rotated -90;
+fet_endchar;
+
+
+fet_endgroup ("arrowheads");

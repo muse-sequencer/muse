@@ -1,0 +1,27 @@
+% -%-Fundamental-%- -*-Metafont-*-
+% parmesan-dots.mf -- dot vaticana
+% 
+% source file of LilyPond's pretty-but-neat music font
+% 
+% (c) 2006--2009 Juergen Reuter <reuter@ipd.uka.de>
+% 
+
+fet_begingroup ("dots");
+
+save dot_diam;
+
+3 dot_diam# = staff_space# - stafflinethickness#;
+define_whole_blacker_pixels (dot_diam);
+
+fet_beginchar ("duration dot", "dotvaticana");
+	pickup pencircle scaled dot_diam;
+
+	lft x0 = 0;
+	top y0 = vround (.5 dot_diam);
+
+	drawdot z0;
+
+	set_char_box (0, dot_diam#, .5 dot_diam#, .5 dot_diam#);
+fet_endchar;
+
+fet_endgroup ("dots");

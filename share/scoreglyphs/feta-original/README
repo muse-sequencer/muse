@@ -1,0 +1,125 @@
+
+This is a font of music symbols.  All MF sources are original.  Most of the
+documentation is in comments in the MF code.
+
+Non-square pixels are not supported; with other words, the horizontal and
+vertical resolution of the output device must be the same.
+
+Currently, outline fonts are created by using `autotrace', but we are
+already in the process of converting the MF code directly to PostScript code
+with a tool called `mf2pt1', which in turn calls `FontForge' to postprocess
+the output (mainly to remove outline overlaps and to add hints).
+
+The recommended calling sequence of mf2pt1 is
+
+  mf2pt1 --rounding=0.0001 <other options> <font>
+
+You need mf2pt1 version 2.1 or newer.
+
+
+Here some guidelines to assure a clean conversion.
+
+. Never use `---'.  Replace it with `--' together with explicit path
+  directions (if necessary).
+
+. Don't use self-intersecting outlines in general since they can confuse
+  mf2pt1's algorithm to get the orientation of a closed path.  Note that
+  MetaPost's implementation of the `turningnumber' primitive (which would
+  immediately give the orientation of a path) is severely broken before
+  version 1.0 of MetaPost, thus some hand-made code in mf2pt1.mp is used
+  to work around this bug.
+
+. If outlines intersect, avoid grazing intersections.  In case two outlines
+  intersect in an explicitly defined point, include this point in both
+  intersecting paths to avoid problems due to rounding errors.
+
+. Don't use `draw' with a polygonal pen but for straight lines (consisting
+  of exactly two points).  In most cases it is quite easy to emulate `draw'
+  with an explicit definition of the outline or with `penstroke'.
+
+. Don't apply transformations after calling `fill' -- for example, don't
+  mirror `currentpicture'.  Instead, transform the path and call `fill'
+  afterwards.  This ensures that mf2pt1 gets the correct outline directions
+  which is a necessary prerequisite for FontForge's algorithm to remove
+  overlaps.
+
+
+Some glyph name rules:
+
+. Most glyph names have the form <group>.<name>, where <group> is defined
+  with the `fet_begingroup' command, and <name> is given with
+  `fet_beginchar' (within a `fet_begingroup' block).  Example:
+  `clefs.vaticana.fa'.
+
+. Sometimes it would be sensible to use negative numbers in glyph names. 
+  However, the `-' character shouldn't be used in a glyph name.  Replace it
+  with `M'.  For example, write `rests.M3mensural' instead of
+  `rests.-3mensural'.
+
+. Glyphs which exist in both an `up' and `down' version should start the
+  <name> part with either `u' or `d', respectively.  Example: `flags.d3',
+  `flags.u3'.  Glyphs which are neutral w.r.t. the direction, and where
+  members of the glyph group exist which have `up' and `down' versions,
+  should start with an `s'.  Example: `noteheads.s0re'.
+
+
+Some design rules:
+
+. Always use smooth curve transitions.  Since this is difficult to see in
+  MetaFont proof sheets (which don't show the tangents) I recommend to call
+  mf2pt1 like this
+
+    FONTFORGE=foo mf2pt1 ...
+
+  (`foo' should be a non-existent program; this avoids the default
+  postprocessing).  Then call FontForge to inspect the outlines.
+
+. Use rounded corners.
+
+
+Hints for stem attachment:
+
+. Stem attachment of glyphs is controlled by two special variables called
+  `charwx' and `charwy'.  Stems can be regarded as (very oblonged)
+  rectangles with slightly rounded corners.  For stems pointing upwards the
+  lower right corner of this rectangle is attached to the glyph at position
+  (charwx, charwy).  For stems pointing downwards it works analogously but
+  with the upper left corner, where the position of the attachment point is
+  additionally reflected horizontally about the center of the glyph -- this
+  ensures that in most cases charwx and charwy can be set to the same values
+  for up and down stems even though these are attached at the right/left end
+  of the note, respectively.  To make this more precise, the upper left
+  corner of a down stem is attached at position (charwd/2 - charwx, charwy),
+  where `charwd' is an internal metafont variable representing the glyph
+  width as specified by the `set_char_box' command.
+
+. In case different stem attachments for upward and downward pointing stems
+  are needed, two separate glyphs must be defined in the Metafont file; of
+  course, this also applies if two entirely different shapes are needed. 
+  These have the same name but are prefixed by `u' and `d', respectively
+  (for `up' and `down', obviously).  In each of these glyphs the variables
+  charwx and charwy must be set accordingly.  If, on the other hand, the
+  attachment point is the `same' for both directions (with the
+  abovementioned horizontal reflection taken into account), then the prefix
+  `s' (for `symmetric') should be used.  See the existing files for
+  examples.  The numbers in the glyph names refer to the duration of the
+  note; e.g., `s0cross' in feta-bolletjes.mf defines the notehead for a
+  whole cross-shaped note (similarly, `s1cross' and `s2cross' are for half
+  and quarter notes, respectively).
+
+
+Finally, some rules to assure that rasterization at low resolutions gives
+good results.  Today, this is a minor issue, but in some cases it might show
+design flaws.
+
+. Use `define_whole_pixels' and friends where appropriate.
+
+. Use `hround' and `vround' consistently.  A lot of auxiliary macros are
+  defined in feta-macros.mf.
+
+. If a path element is duplicated or shifted, use an integer value for the
+  offset.
+
+. Add `eps' for mirrored paths to assure correct MetaFont rasterization.
+  See the comment and the variables at the end of `feta-params.mf' for
+  details how vertical symmetry should be achieved.

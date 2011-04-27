@@ -1,0 +1,418 @@
+% -%-Fundamental-%- -*-Metafont-*-
+% parmesan-rests.mf -- implement ancient rests
+% 
+% source file of LilyPond's pretty-but-neat music font
+% 
+% (c) 2001--2009 Juergen Reuter <reuter@ipd.uka.de>
+% 
+% Neo-mensural rests originally by
+% Christian Mondrup and Mats Bengtsson.
+% 
+
+fet_begingroup ("rests")
+
+
+%%%%%%%%
+%
+%
+%
+% NEO-MENSURAL NOTATION
+%
+%
+%
+
+% Neo-mensural longa and breve are identical with default longa and breve.
+
+neomens_block_rest_x# = 2/5 staff_space#;
+neomens_block_rest_y# = 1/1 staff_space#;
+neomens_half_block_rest_y# = 5/8 staff_space#;
+
+define_pixels (neomens_block_rest_x,
+	       neomens_block_rest_y,
+	       neomens_half_block_rest_y);
+
+
+def neomens_half_block_rest =
+	draw_block ((0, 0),
+		    (neomens_block_rest_x, neomens_half_block_rest_y));
+enddef;
+
+
+fet_beginchar ("Neo-mensural maxima rest", "M3neomensural");
+	set_char_box (0, 3 neomens_block_rest_x#,
+		      neomens_block_rest_y#, neomens_block_rest_y#);
+
+	draw_block ((0, -neomens_block_rest_y),
+		     (neomens_block_rest_x, neomens_block_rest_y));
+	addto currentpicture also currentpicture
+		shifted (2 neomens_block_rest_x, 0);
+fet_endchar;
+
+
+fet_beginchar ("Neo-mensural longa rest", "M2neomensural");
+	set_char_box (0, neomens_block_rest_x#,
+		      neomens_block_rest_y#, neomens_block_rest_y#);
+
+	draw_block ((0, -neomens_block_rest_y),
+		    (neomens_block_rest_x, neomens_block_rest_y));
+fet_endchar;
+
+
+fet_beginchar ("Neo-mensural breve rest", "M1neomensural");
+	set_char_box (0, neomens_block_rest_x#,
+		      0, neomens_block_rest_y#);
+
+	draw_block ((0, 0),
+		    (neomens_block_rest_x, neomens_block_rest_y));
+fet_endchar;
+
+
+fet_beginchar ("Neo-mensural whole rest", "0neomensural");
+	set_char_box (0, neomens_block_rest_x#,
+		      neomens_half_block_rest_y#,  0);
+
+	neomens_half_block_rest;
+	currentpicture :=
+		currentpicture shifted (0, -neomens_half_block_rest_y);
+fet_endchar;
+
+
+fet_beginchar ("Neo-mensural half rest", "1neomensural");
+	set_char_box (0, neomens_block_rest_x#,
+		      0, neomens_half_block_rest_y#);
+
+	neomens_half_block_rest;
+fet_endchar;
+
+
+neomensrestsize# = 0.8 staff_space#;
+
+
+fet_beginchar ("Neo-mensural 4th rest", "2neomensural");
+	set_char_box (0, neomensrestsize#,
+		      0, neomensrestsize#);
+
+        pickup pencircle scaled 2 stafflinethickness;
+
+	lft x1 = 0;
+	bot y1 = 0;
+	lft x2 = lft x3 = 0;
+	top y2 = top y3 = h;
+	rt x4 = w;
+	bot y4 = h / 2;
+
+	z11 = z1 - stafflinethickness * unitvector (z2 - z1);
+	z14 = z4 + stafflinethickness * unitvector (z4 - z3);
+
+	penpos1 (2 stafflinethickness, 0);
+	penpos2 (2 stafflinethickness, 0);
+	penpos3 (2 stafflinethickness, angle (z4 - z3) - 90);
+	penpos4 (2 stafflinethickness, angle (z4 - z3) - 90);
+
+	fill z1l
+	     -- z2l
+	     -- z2r
+	     -- z1r
+	     .. z11
+	     .. z1l
+	     .. cycle;
+	fill z3l
+	     -- z4l
+	     .. z14
+	     .. z4r
+	     -- z3r
+	     .. z2l{up}
+	     .. z3l
+	     .. cycle;
+
+	penlabels (1, 2, 3, 4);
+	labels (11, 14);
+fet_endchar;
+
+
+fet_beginchar ("Neo-mensural 8th rest", "3neomensural");
+	set_char_box (0, neomensrestsize#,
+		      0, neomensrestsize#);
+
+        pickup pencircle scaled 2 stafflinethickness;
+
+	rt x1 = w;
+	bot y1 = 0;
+	rt x2 = rt x3 = w;
+	top y2 = top y3 = h;
+	lft x4 = 0;
+	bot y4 = h / 2;
+
+	z11 = z1 - stafflinethickness * unitvector (z2 - z1);
+	z14 = z4 + stafflinethickness * unitvector (z4 - z3);
+
+	penpos1 (2 stafflinethickness, 0);
+	penpos2 (2 stafflinethickness, 0);
+	penpos3 (2 stafflinethickness, angle (z4 - z3) - 90);
+	penpos4 (2 stafflinethickness, angle (z4 - z3) - 90);
+
+	fill z1l
+	     -- z2l
+	     -- z2r
+	     -- z1r
+	     .. z11
+	     .. z1l
+	     .. cycle;
+	fill z3l
+	     -- z4l
+	     .. z14
+	     .. z4r
+	     -- z3r
+	     .. z2r{down}
+	     .. z3l
+	     .. cycle;
+
+	penlabels (1, 2, 3, 4);
+	labels (11, 14);
+fet_endchar;
+
+
+fet_beginchar ("Neo-mensural 16th rest", "4neomensural");
+	set_char_box (0, neomensrestsize#,
+		      0, staff_space#);
+
+        pickup pencircle scaled 2 stafflinethickness;
+
+	rt x1 = w;
+	bot y1 = 0;
+	rt x2 = w;
+	top y2 = h;
+
+	rt x3 = w;
+	top y3 = h;
+	lft x4 = 0;
+	bot y4 = h / 2;
+	rt x5 = w;
+	top y5 = 5/8 h;
+	lft x6 = 0;
+	bot y6 = h / 8;
+
+	z11 = z1 - stafflinethickness * unitvector (z2 - z1);
+	z14 = z4 + stafflinethickness * unitvector (z4 - z3);
+	z16 = z6 + stafflinethickness * unitvector (z6 - z5);
+
+	penpos1 (2 stafflinethickness, 0);
+	penpos2 (2 stafflinethickness, 0);
+	penpos3 (2 stafflinethickness, angle (z4 - z3) - 90);
+	penpos4 (2 stafflinethickness, angle (z4 - z3) - 90);
+	penpos5 (2 stafflinethickness, angle (z6 - z5) - 90);
+	penpos6 (2 stafflinethickness, angle (z6 - z5) - 90);
+
+	fill z1l
+	     -- z2l
+	     -- z2r
+	     -- z1r
+	     .. z11
+	     .. z1l
+	     .. cycle;
+	fill z3l
+	     -- z4l
+	     .. z14
+	     .. z4r
+	     -- z3r
+	     .. z2r{down}
+	     .. z3l
+	     .. cycle;
+	fill z5l
+	     -- z6l
+	     .. z16
+	     .. z6r
+	     -- z5r
+	     -- z5l
+	     -- cycle;
+
+	penlabels (1, 2, 3, 4, 5, 6);
+	labels (11, 14, 16);
+fet_endchar;
+
+
+%%%%%%%%
+%
+%
+%
+% MENSURAL NOTATION
+%
+%
+%
+
+pen_width# = 0.3 staff_space#;
+pen_height# = 0;
+pen_rotation = 30;
+slight_pen_rotation = 15;
+
+mens_block_rest_y# = 1/1 staff_space#;
+mens_half_block_rest_y# = 5/8 staff_space#;
+
+define_pixels (mens_block_rest_y, mens_half_block_rest_y,
+	       pen_width, pen_height);
+
+
+fet_beginchar ("Mensural maxima rest", "M3mensural");
+	set_char_box (0, pen_width#,
+		      mens_block_rest_y#, 2 mens_block_rest_y#);
+
+	pickup pencircle xscaled pen_width
+			 yscaled pen_height
+			 rotated slight_pen_rotation;
+
+	draw (w / 2, -mens_block_rest_y)
+	     -- (w / 2, 2 mens_block_rest_y);
+fet_endchar;
+
+
+fet_beginchar ("Mensural longa rest", "M2mensural");
+	set_char_box (0, pen_width#,
+		      mens_block_rest_y#, mens_block_rest_y#);
+
+	pickup pencircle xscaled pen_width
+			 yscaled pen_height
+			 rotated slight_pen_rotation;
+
+	draw (w / 2, -mens_block_rest_y)
+	     -- (w / 2, mens_block_rest_y);
+fet_endchar;
+
+
+fet_beginchar ("Mensural breve rest", "M1mensural");
+	set_char_box (0, pen_width#,
+		      0, mens_block_rest_y#);
+
+	pickup pencircle xscaled pen_width
+			 yscaled pen_height
+			 rotated slight_pen_rotation;
+
+	draw (w / 2, 0)
+	     -- (w / 2, mens_block_rest_y);
+fet_endchar;
+
+
+fet_beginchar ("Mensural whole rest", "0mensural");
+	set_char_box (0, pen_width#,
+		      mens_half_block_rest_y#, 0);
+
+	pickup pencircle xscaled pen_width
+			 yscaled pen_height
+			 rotated slight_pen_rotation;
+
+	draw (w / 2, 0)
+	      -- (w / 2, -mens_half_block_rest_y);
+fet_endchar;
+
+
+fet_beginchar ("Mensural half rest", "1mensural");
+	set_char_box (0, pen_width#,
+		      0, mens_half_block_rest_y#);
+
+	pickup pencircle xscaled pen_width
+			 yscaled pen_height
+			 rotated slight_pen_rotation;
+
+	draw (w / 2, 0)
+	      -- (w / 2, mens_half_block_rest_y);
+fet_endchar;
+
+
+mensrestsize# = .8 staff_space#;
+
+
+fet_beginchar ("Mensural 4th rest", "2mensural");
+	set_char_box (0, mensrestsize#,
+		      0, mensrestsize#);
+
+	pickup pencircle xscaled pen_width
+			 yscaled pen_height
+			 rotated pen_rotation;
+
+	lft x1 = 0;
+	y1 = 0;
+	lft x2 = 0;
+	top y2 = 5/8 h;
+	rt x3 = 1/5 w;
+	bot y3 = 6/8 h;
+	rt x4 = w;
+	bot y4 = 4/8 h;
+
+	draw z1
+	     -- z2
+	     -- z3
+	     -- z4;
+
+	labels (1, 2, 3, 4);
+fet_endchar;
+
+%
+% FIXME: The left sharp corner produces ugly results at lower resolutions.
+%
+fet_beginchar ("Mensural 8th rest", "3mensural");
+	set_char_box (0, mensrestsize#,
+		      0, mensrestsize#);
+
+	pickup pencircle xscaled pen_width
+			 yscaled pen_height
+			 rotated pen_rotation;
+
+	rt x1 = w;
+	y1 = 0;
+	rt x2 = w;
+	top y2 = 5/8 h;
+	lft x3 = 1/5 w;
+	bot y3 = 6/8 h;
+	lft x4 = 0;
+	bot y4 = 4/8 h;
+
+	draw z1
+	     -- z2
+	     -- z3
+	     -- z4;
+
+	labels (1, 2, 3, 4);
+fet_endchar;
+
+%
+% FIXME: So far, I have never seen a semifusa rest printed.  Hence,
+% the shape of this font character is currently pure invention.  --jr
+%
+%
+% FIXME: The left sharp corner produces ugly results at lower resolutions.
+%
+fet_beginchar ("Mensural 16th rest", "4mensural");
+	set_char_box (0, mensrestsize#,
+		      0, staff_space#);
+
+	pickup pencircle xscaled pen_width
+			 yscaled pen_height
+			 rotated pen_rotation;
+
+	rt x1 = w;
+	y1 = 0;
+	rt x2 = w;
+	top y2 = 5.5/8 h;
+	lft x3 = 1/5 w;
+	bot y3 = 6.5/8 h;
+	lft x4 = 0;
+	bot y4 = 4.5/8 h;
+	rt x5 =  w;
+	top y5 = 2.5/8 h;
+	lft x6 = 1/5 w;
+	bot y6 = 3.5/8 h;
+	lft x7 = 0;
+	bot y7 = 1.5/8 h;
+
+	draw z1
+	     -- z2
+	     -- z3
+	     -- z4;
+	draw z5
+	     -- z6
+	     -- z7;
+
+	labels (1, 2, 3, 4, 5, 6, 7);
+fet_endchar;
+
+
+fet_endgroup ("rests")

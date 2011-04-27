@@ -1,0 +1,19 @@
+test := 0;
+
+staffsize# := design_size * pt#;
+
+input feta-autometric;
+input feta-macros;
+input feta-params;
+
+fet_beginfont ("feta-alphabet", design_size, "fetaNumber");
+
+mode_setup;
+
+number_design_size := design_size / 2;
+dynamic_design_size := 14 design_size / 20;
+
+input feta-nummer-code;
+input feta-din-code;
+
+fet_endfont ("feta-nummer");

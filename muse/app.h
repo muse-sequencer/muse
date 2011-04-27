@@ -65,8 +65,11 @@ class Appearance;
 class WaveTrack;
 class AudioOutput;
 class EditInstrument;
+class ScoreEdit;
 
 #define MENU_ADD_SYNTH_ID_BASE 0x1000
+
+
 
 //---------------------------------------------------------
 //   MusE
@@ -109,12 +112,14 @@ class MusE : public QMainWindow
       QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;
       QAction *trackMidiAction, *trackDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
       QAction *trackAInputAction, *trackAAuxAction;
-      QAction *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction, *startScoreEditAction;
       QAction *masterGraphicAction, *masterListAction;
       QAction *midiTransposeAction;
       QAction *midiTransformerAction;
       QAction *editSongInfoAction;
-
+   public:
+      QAction *startScoreEditAction, *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
+      QMenu *scoreSubmenu, *scoreOneStaffPerTrackSubsubmenu, *scoreAllInOneSubsubmenu;
+   private:
       // View Menu actions
       QAction *viewTransportAction, *viewBigtimeAction, *viewMixerAAction, *viewMixerBAction, *viewCliplistAction, *viewMarkerAction;
 
@@ -220,6 +225,8 @@ class MusE : public QMainWindow
       QSignalMapper *editSignalMapper;
       QSignalMapper *midiPluginSignalMapper;
       QSignalMapper *followSignalMapper;
+      QSignalMapper *scoreOneStaffPerTrackMapper;
+      QSignalMapper *scoreAllInOneMapper;
 
    signals:
       void configChanged();
@@ -261,8 +268,15 @@ class MusE : public QMainWindow
       void startDrumEditor();
       void startDrumEditor(PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
       void startEditor(Track*);
-      void startScoreEdit();
-      void startScoreEdit(PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
+
+      void openInScoreEdit(ScoreEdit* destination, PartList* pl, bool allInOne=false);
+      void openInScoreEdit(ScoreEdit* destination, bool allInOne=false);
+      void openInScoreEdit_allInOne(QWidget* destination);
+      void openInScoreEdit_oneStaffPerTrack(QWidget* destination);
+      void clearScoreMenuMappers();
+      void updateScoreMenus();
+      void scoreNamingChanged();
+      void startScoreQuickly();
       void startPianoroll();
       void startPianoroll(PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
       void startWaveEditor();
@@ -320,7 +334,7 @@ class MusE : public QMainWindow
 
       void execDeliveredScript(int);
       void execUserScript(int);
-
+     
    public slots:
       bool saveAs();
       void bounceToFile(AudioOutput* ao = 0);

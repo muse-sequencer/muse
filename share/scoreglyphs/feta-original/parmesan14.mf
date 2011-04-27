@@ -1,0 +1,14 @@
+% parmesan14.mf
+% part of LilyPond's pretty-but-neat music font
+
+design_size := 14.14;
+
+input feta-autometric;
+
+test := 0;
+
+input parmesan-generic;
+
+
+end.
+
