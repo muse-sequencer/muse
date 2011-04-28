@@ -240,7 +240,7 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       bool on() const;       
       void setOn(bool /*val*/);   
       //int pluginID();
-      unsigned pluginID();        // p4.0.21
+      unsigned long pluginID();        // p4.0.21
       int id();
       QString pluginLabel() const;  
       QString name() const;
@@ -251,9 +251,9 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       //void enableController(int /*i*/, bool v = true); 
       //bool controllerEnabled(int /*i*/) const;          
       //bool controllerEnabled2(int /*i*/) const;          
-      void enableController(unsigned /*i*/, bool v = true);      // p4.0.21
-      bool controllerEnabled(unsigned /*i*/) const;          
-      bool controllerEnabled2(unsigned /*i*/) const;          
+      void enableController(unsigned long /*i*/, bool v = true);      // p4.0.21
+      bool controllerEnabled(unsigned long /*i*/) const;          
+      bool controllerEnabled2(unsigned long /*i*/) const;          
       void updateControllers();
       void writeConfiguration(int /*level*/, Xml& /*xml*/);
       bool readConfiguration(Xml& /*xml*/, bool readPreset=false);
@@ -263,15 +263,15 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       //double param(int /*i*/) const;        
       //const char* paramName(int /*i*/);     
       //LADSPA_PortRangeHint range(int /*i*/); 
-      unsigned parameters() const;                            // p4.0.21
-      unsigned parametersOut() const;
-      void setParam(unsigned /*i*/, float /*val*/); 
-      float param(unsigned /*i*/) const;        
-      float paramOut(unsigned /*i*/) const;        
-      const char* paramName(unsigned /*i*/);     
-      const char* paramOutName(unsigned /*i*/);
-      LADSPA_PortRangeHint range(unsigned /*i*/);
-      LADSPA_PortRangeHint rangeOut(unsigned /*i*/);
+      unsigned long parameters() const;                            // p4.0.21
+      unsigned long parametersOut() const;
+      void setParam(unsigned long /*i*/, float /*val*/); 
+      float param(unsigned long /*i*/) const;        
+      float paramOut(unsigned long /*i*/) const;        
+      const char* paramName(unsigned long /*i*/);     
+      const char* paramOutName(unsigned long /*i*/);
+      LADSPA_PortRangeHint range(unsigned long /*i*/);
+      LADSPA_PortRangeHint rangeOut(unsigned long /*i*/);
 
       friend class DssiSynth;
       };

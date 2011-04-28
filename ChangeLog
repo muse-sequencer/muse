@@ -1,3 +1,12 @@
+28.04.2011:
+        - More separation of Alsa and Jack midi processing. Possible fix for crash report by Geoff B. (p4.0.22 Tim)
+          Added MidiDevice::handleStop(), ::handleSeek(). Split processing among MidiSeq::processStop, ::processSeek
+           and Audio::stopRolling, ::seek. Also some sustain resetting code and midi sync code was moved into
+           these two new MidiDevice methods. 
+          TODO: There is more separation to be done. Hopefully it makes MusE more stable and timing-proper. 
+        - Small fix to scoredit in color_image(). Use bytesPerLine() * height() for older Qt. Test OK. (Tim)
+        - Fix to Robert's DssiSynthIF::paramOut(). Call getParameterOut(). (Tim)
+        - Changed all plugin and dssi module's 'unsigned' usage to 'unsigned long' for more consistency. (Tim)
 27.04.2011:
         - added first version feedback parameters for plugins (rj)
         - merged score edit branch into trunk (flo)

@@ -33,9 +33,9 @@ struct ControlEvent
   //  (possibly rounded) frame and index as the previous item. This is mainly for 
   //  dssi-vst guis, they require acknowledgment of every message.
   bool unique; 
-  unsigned idx;
+  unsigned long idx;
   float value;
-  unsigned frame;    
+  unsigned long frame;    
 };
 
 //---------------------------------------------------------

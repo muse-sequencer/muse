@@ -131,91 +131,114 @@ void MidiSeq::processMsg(const ThreadMsg* m)
 //---------------------------------------------------------
 
 void MidiSeq::processStop()
-      {
-      // p3.3.28
-      playStateExt = false; // not playing
-      
-      //
-      //    stop stuck notes
-      //
-      for (iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) {
-            MidiDevice* md = *id;
-            if (md->midiPort() == -1)
-                  continue;
-            MPEventList* pel = md->playEvents();
-            MPEventList* sel = md->stuckNotes();
-            pel->clear();
-            for (iMPEvent i = sel->begin(); i != sel->end(); ++i) {
-                  MidiPlayEvent ev = *i;
-                  ev.setTime(0);
-                  pel->add(ev);
-                  }
-            sel->clear();
-            //md->setNextPlayEvent(pel->begin());  // Removed p4.0.15
-            }
-      }
+{
+  // p3.3.28
+  // TODO Try to move this into Audio::stopRolling(). p4.0.22
+  playStateExt = false; // not playing
+  
+  //
+  //    clear Alsa midi device notes and stop stuck notes
+  //    Jack midi devices are handled in Audio::stopRolling()
+  //
+  for(iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) 
+  {
+    MidiDevice* md = *id;
+    if(md->deviceType() == MidiDevice::JACK_MIDI)      // p4.0.22
+      continue;                                        
+    md->handleStop();  // p4.0.22
+    /*
+    if (md->midiPort() == -1)
+          continue;
+    MPEventList* pel = md->playEvents();
+    MPEventList* sel = md->stuckNotes();
+    pel->clear();
+    for(iMPEvent i = sel->begin(); i != sel->end(); ++i) 
+    {
+      MidiPlayEvent ev = *i;
+      ev.setTime(0);
+      pel->add(ev);
+    }
+    sel->clear();
+    //md->setNextPlayEvent(pel->begin());  // Removed p4.0.15
+    */
+  }
+}
 
 //---------------------------------------------------------
 //   processSeek
 //---------------------------------------------------------
 
 void MidiSeq::processSeek()
+{
+  int pos = audio->tickPos();
+  
+  // TODO Try to move this into audio::seek().   p4.0.22
+  if (pos == 0 && !song->record())
+        audio->initDevices();
+
+  //---------------------------------------------------
+  //    set all controller
+  //---------------------------------------------------
+
+  for (iMidiDevice i = midiDevices.begin(); i != midiDevices.end(); ++i) 
+  {
+    MidiDevice* md = *i;
+    //
+    //    Jack midi devices are handled in Audio::seek()
+    //
+    if(md->deviceType() == MidiDevice::JACK_MIDI)      // p4.0.22
+      continue;
+    md->handleSeek();  // p4.0.22
+    /*
+    int port = md->midiPort();
+    if (port == -1)
+          continue;
+    MidiPort* mp = &midiPorts[port];
+    MidiCtrlValListList* cll = mp->controller();
+
+    MPEventList* el = md->playEvents();
+
+    if (audio->isPlaying()) 
+    {
+      // stop all notes
+      el->clear();
+      MPEventList* sel = dev->stuckNotes();
+      for (iMPEvent i = sel->begin(); i != sel->end(); ++i) 
       {
-      int pos = audio->tickPos();
-      if (pos == 0 && !song->record())
-            audio->initDevices();
-
-      //---------------------------------------------------
-      //    set all controller
-      //---------------------------------------------------
-
-      for (iMidiDevice i = midiDevices.begin(); i != midiDevices.end(); ++i) {
-            MidiDevice* dev = *i;
-            int port = dev->midiPort();
-            if (port == -1)
-                  continue;
-            MidiPort* mp = &midiPorts[port];
-            MidiCtrlValListList* cll = mp->controller();
-
-            MPEventList* el = dev->playEvents();
-
-            if (audio->isPlaying()) {
-                  // stop all notes
-                  el->clear();
-                  MPEventList* sel = dev->stuckNotes();
-                  for (iMPEvent i = sel->begin(); i != sel->end(); ++i) {
-                        MidiPlayEvent ev = *i;
-                        ev.setTime(0);
-                        el->add(ev);
-                        }
-                  sel->clear();
-                  }
-            //else
-                    // Removed p4.0.15 Device now leaves beginning pointing at next event,
-                    //  immediately after playing some notes.  
-                    // NOTE: This removal needs testing. I'm not sure about this.
-            //      el->erase(el->begin(), dev->nextPlayEvent());  
-            
-            for (iMidiCtrlValList ivl = cll->begin(); ivl != cll->end(); ++ivl) {
-                  MidiCtrlValList* vl = ivl->second;
-                  //int val = vl->value(pos);
-                  //if (val != CTRL_VAL_UNKNOWN) {
-                  //      int channel = ivl->first >> 24;
-                  //      el->add(MidiPlayEvent(0, port, channel, ME_CONTROLLER, vl->num(), val));
-                  //      }
-                  iMidiCtrlVal imcv = vl->iValue(pos);
-                  if(imcv != vl->end()) 
-                  {
-                    Part* p = imcv->second.part;
-                    unsigned t = (unsigned)imcv->first;
-                    // Do not add values that are outside of the part.
-                    if(p && t >= p->tick() && t < (p->tick() + p->lenTick()) )
-                      el->add(MidiPlayEvent(0, port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val));
-                  }
-                }
-            //dev->setNextPlayEvent(el->begin());    // Removed p4.0.15
-            }
+            MidiPlayEvent ev = *i;
+            ev.setTime(0);
+            el->add(ev);
       }
+      sel->clear();
+    }
+    //else
+      // Removed p4.0.15 Device now leaves beginning pointing at next event,
+      //  immediately after playing some notes.  
+      // NOTE: This removal needs testing. I'm not sure about this.
+      //el->erase(el->begin(), dev->nextPlayEvent());  
+    
+    for (iMidiCtrlValList ivl = cll->begin(); ivl != cll->end(); ++ivl) 
+    {
+      MidiCtrlValList* vl = ivl->second;
+      //int val = vl->value(pos);
+      //if (val != CTRL_VAL_UNKNOWN) {
+      //      int channel = ivl->first >> 24;
+      //      el->add(MidiPlayEvent(0, port, channel, ME_CONTROLLER, vl->num(), val));
+      //      }
+      iMidiCtrlVal imcv = vl->iValue(pos);
+      if(imcv != vl->end()) 
+      {
+        Part* p = imcv->second.part;
+        unsigned t = (unsigned)imcv->first;
+        // Do not add values that are outside of the part.
+        if(p && t >= p->tick() && t < (p->tick() + p->lenTick()) )
+          el->add(MidiPlayEvent(0, port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val));
+      }
+    }
+    //dev->setNextPlayEvent(el->begin());    // Removed p4.0.15
+    */
+  }
+}
 
 //---------------------------------------------------------
 //   MidiSeq
