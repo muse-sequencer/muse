@@ -800,9 +800,19 @@ void Audio::seek(const Pos& p)
       frameOffset = syncFrame - _pos.frame();
       curTickPos  = _pos.tick();
 
-      midiSeq->msgSeek();     // handle stuck notes and set
-                              // controller for new position
+      // p4.0.22
+      // Tell midi thread to tell ALSA devices to handle seek.
+      midiSeq->msgSeek();     
+      // We are in the audio thread. Directly seek Jack midi devices.
+      for(iMidiDevice i = midiDevices.begin(); i != midiDevices.end(); ++i) 
+      {
+        MidiDevice* md = *i;
+        if(md->deviceType() == MidiDevice::JACK_MIDI)      
+          md->handleSeek();  
+      }
       
+      // Moved into MidiDevice::handleSeek
+      #if 0
       // p3.3.31
       // Don't send if external sync is on. The master, and our sync routing system will take care of that.
       if(!extSyncFlag.value())
@@ -845,6 +855,7 @@ void Audio::seek(const Pos& p)
             mp->sendContinue();
         }
       }
+      #endif  
         
       /*
       if(genMCSync) 
@@ -1133,37 +1144,50 @@ void Audio::startRolling()
 //---------------------------------------------------------
 
 void Audio::stopRolling()
-      {
-      // Added by Tim. p3.3.20
+{
       //if(debugMsg)
       //  printf("Audio::stopRolling state %s\n", audioStates[state]);
       
       state = STOP;
-      midiSeq->msgStop();
+      
+      //playStateExt = false; // not playing   // Moved here from MidiSeq::processStop()   p4.0.22
 
-#if 1 //TODO
+      // p4.0.22
+      // Tell midi thread to clear ALSA device notes and stop stuck notes.
+      midiSeq->msgStop();       
+      // We are in the audio thread. Directly clear Jack midi device notes and stop stuck notes.
+      for(iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) 
+      {
+        MidiDevice* md = *id;
+        if(md->deviceType() == MidiDevice::JACK_MIDI)  
+          md->handleStop();
+      }
+
+      // Moved into MidiDevice::handleStop()  // p4.0.22
+      #if 0 //TODO
       //---------------------------------------------------
       //    reset sustain
       //---------------------------------------------------
 
 
-    // clear sustain
-    for (int i = 0; i < MIDI_PORTS; ++i) {
-        MidiPort* mp = &midiPorts[i];
-        for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
-            if (mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) {
-                if(mp->device()!=NULL) {
-                    //printf("send clear sustain!!!!!!!! port %d ch %d\n", i,ch);
-                    MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
-                    // may cause problems, called from audio thread
-                    mp->device()->putEvent(ev);
-                    }
-                }
-            }
-        }
-
-#endif
+      // clear sustain
+      for (int i = 0; i < MIDI_PORTS; ++i) {
+          MidiPort* mp = &midiPorts[i];
+          for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
+              if (mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) {
+                  if(mp->device()!=NULL) {
+                      //printf("send clear sustain!!!!!!!! port %d ch %d\n", i,ch);
+                      MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
+                      // may cause problems, called from audio thread
+                      mp->device()->putEvent(ev);
+                      }
+                  }
+              }
+          }
+      #endif
       
+      // Moved into MidiDevice::handleStop()  // p4.0.22
+      #if 0
       // p3.3.31
       // Don't send if external sync is on. The master, and our sync routing system will take care of that.
       if(!extSyncFlag.value())
@@ -1260,6 +1284,7 @@ void Audio::stopRolling()
           }
         }
       }
+      #endif
       
       /*
       for(iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd) 

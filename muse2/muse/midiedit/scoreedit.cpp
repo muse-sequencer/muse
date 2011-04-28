@@ -367,7 +367,7 @@ bool ScoreEdit::set_name(QString newname, bool emit_signal, bool emergency_name)
 	{
 		if (emergency_name)
 		{
-			while (set_name(create_random_string(), emit_signal, false) == false);
+			while (set_name(create_random_string(), emit_signal, false) == false) ;
 			return true;
 		}
 		else
@@ -773,7 +773,8 @@ QString IntToQStr(int i)
 void color_image(QImage& img, const QColor& color)
 {
 	uchar* ptr=img.bits();
-	int bytes=img.byteCount();
+	//int bytes=img.byteCount();
+        int bytes=img.bytesPerLine() * img.height();   // By Tim. For older Qt versions. Tested OK on Qt4.5.
 	int r,g,b;
 	color.getRgb(&r,&g,&b);
 	

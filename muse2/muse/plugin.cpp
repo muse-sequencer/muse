@@ -87,7 +87,7 @@ QStringList PluginDialog::sortItems = QStringList();
 //---------------------------------------------------------
 
 //bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, int port, int ctlnum, int* min, int* max, int* def)
-bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned port, int ctlnum, int* min, int* max, int* def)
+bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned long port, int ctlnum, int* min, int* max, int* def)
 {
   LADSPA_PortRangeHint range = plugin->PortRangeHints[port];
   LADSPA_PortRangeHintDescriptor desc = range.HintDescriptor;
@@ -104,7 +104,7 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned port, in
   MidiController::ControllerType t = midiControllerType(ctlnum);
   
   #ifdef PLUGIN_DEBUGIN 
-  printf("ladspa2MidiControlValues: ctlnum:%d ladspa port:%d has default?:%d default:%f\n", ctlnum, port, hasdef, fdef);
+  printf("ladspa2MidiControlValues: ctlnum:%d ladspa port:%lu has default?:%d default:%f\n", ctlnum, port, hasdef, fdef);
   #endif
   
   if(desc & LADSPA_HINT_TOGGLED) 
@@ -278,7 +278,7 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned port, in
 //---------------------------------------------------------
 
 //float midi2LadspaValue(const LADSPA_Descriptor* plugin, int port, int ctlnum, int val)
-float midi2LadspaValue(const LADSPA_Descriptor* plugin, unsigned port, int ctlnum, int val)
+float midi2LadspaValue(const LADSPA_Descriptor* plugin, unsigned long port, int ctlnum, int val)
 {
   LADSPA_PortRangeHint range = plugin->PortRangeHints[port];
   LADSPA_PortRangeHintDescriptor desc = range.HintDescriptor;
@@ -296,7 +296,7 @@ float midi2LadspaValue(const LADSPA_Descriptor* plugin, unsigned port, int ctlnu
   MidiController::ControllerType t = midiControllerType(ctlnum);
   
   #ifdef PLUGIN_DEBUGIN 
-  printf("midi2LadspaValue: ctlnum:%d ladspa port:%d val:%d\n", ctlnum, port, val);
+  printf("midi2LadspaValue: ctlnum:%d ladspa port:%lu val:%d\n", ctlnum, port, val);
   #endif
   
   float m = 1.0;
@@ -453,7 +453,7 @@ float midi2LadspaValue(const LADSPA_Descriptor* plugin, unsigned port, int ctlnu
 //---------------------------------------------------------
 
 //MidiController* ladspa2MidiController(const LADSPA_Descriptor* plugin, int port, int ctlnum)
-MidiController* ladspa2MidiController(const LADSPA_Descriptor* plugin, unsigned port, int ctlnum)
+MidiController* ladspa2MidiController(const LADSPA_Descriptor* plugin, unsigned long port, int ctlnum)
 {
   int min, max, def;
   
@@ -473,7 +473,7 @@ MidiController* ladspa2MidiController(const LADSPA_Descriptor* plugin, unsigned 
 
 //float ladspaDefaultValue(const LADSPA_Descriptor* plugin, int k)
 //bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, int port, float* val)
-bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned port, float* val)
+bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long port, float* val)
 {
       if(port < plugin->PortCount) 
       {
@@ -573,7 +573,7 @@ bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned port, float* v
 //---------------------------------------------------------
 
 //void ladspaControlRange(const LADSPA_Descriptor* plugin, int i, float* min, float* max) 
-void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned port, float* min, float* max) 
+void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, float* min, float* max) 
       {
       LADSPA_PortRangeHint range = plugin->PortRangeHints[port];
       LADSPA_PortRangeHintDescriptor desc = range.HintDescriptor;
@@ -777,7 +777,7 @@ int Plugin::incReferences(int val)
     {
       const DSSI_Descriptor* descr;
       //for(int i = 0;; ++i) 
-      for(unsigned i = 0;; ++i)     // p4.0.21
+      for(unsigned long i = 0;; ++i)     // p4.0.21
       {
         descr = dssi(i);
         if(descr == NULL)
@@ -809,7 +809,7 @@ int Plugin::incReferences(int val)
       {
         const LADSPA_Descriptor* descr;
         //for(int i = 0;; ++i) 
-        for(unsigned i = 0;; ++i)       // p4.0.21
+        for(unsigned long i = 0;; ++i)       // p4.0.21
         {
           descr = ladspadf(i);
           if(descr == NULL)
@@ -1021,7 +1021,7 @@ static void loadPluginLib(QFileInfo* fi)
   {
     const DSSI_Descriptor* descr;
     //for (int i = 0;; ++i) 
-    for (unsigned i = 0;; ++i)  // p4.0.21
+    for (unsigned long i = 0;; ++i)  // p4.0.21
     {
       descr = dssi(i);
       if (descr == 0)
@@ -1074,7 +1074,7 @@ static void loadPluginLib(QFileInfo* fi)
     
     const LADSPA_Descriptor* descr;
     //for (int i = 0;; ++i) 
-    for (unsigned i = 0;; ++i)       // p4.0.21
+    for (unsigned long i = 0;; ++i)       // p4.0.21
     {
       descr = ladspa(i);
       if (descr == NULL)
@@ -1486,7 +1486,7 @@ bool Pipeline::nativeGuiVisible(int idx)
 //---------------------------------------------------------
 
 //void Pipeline::apply(int ports, unsigned long nframes, float** buffer1)
-void Pipeline::apply(unsigned ports, unsigned nframes, float** buffer1)
+void Pipeline::apply(unsigned long ports, unsigned long nframes, float** buffer1)
 {
       // prepare a second set of buffers in case a plugin is not
       // capable of inPlace processing
@@ -1498,7 +1498,7 @@ void Pipeline::apply(unsigned ports, unsigned nframes, float** buffer1)
       //      buffer2[i] = data + i * nframes;
 
       // p3.3.41
-      //fprintf(stderr, "Pipeline::apply data: nframes:%ld %e %e %e %e\n", nframes, buffer1[0][0], buffer1[0][1], buffer1[0][2], buffer1[0][3]);
+      //fprintf(stderr, "Pipeline::apply data: nframes:%lu %e %e %e %e\n", nframes, buffer1[0][0], buffer1[0][1], buffer1[0][2], buffer1[0][3]);
       
       bool swap = false;
 
@@ -1533,14 +1533,14 @@ void Pipeline::apply(unsigned ports, unsigned nframes, float** buffer1)
       if (swap) 
       {
             //for (int i = 0; i < ports; ++i)
-            for (unsigned i = 0; i < ports; ++i)    // p4.0.21
+            for (unsigned long i = 0; i < ports; ++i)    // p4.0.21
                   //memcpy(buffer1[i], buffer2[i], sizeof(float) * nframes);
                   //memcpy(buffer1[i], buffer[i], sizeof(float) * nframes);
                   AL::dsp->cpy(buffer1[i], buffer[i], nframes);
       }
       
       // p3.3.41
-      //fprintf(stderr, "Pipeline::apply after data: nframes:%ld %e %e %e %e\n", nframes, buffer1[0][0], buffer1[0][1], buffer1[0][2], buffer1[0][3]);
+      //fprintf(stderr, "Pipeline::apply after data: nframes:%lu %e %e %e %e\n", nframes, buffer1[0][0], buffer1[0][1], buffer1[0][2], buffer1[0][3]);
       
 }
 
@@ -1696,7 +1696,7 @@ void PluginI::updateControllers()
     return;
     
   //for(int i = 0; i < controlPorts; ++i) 
-  for(unsigned i = 0; i < controlPorts; ++i) 
+  for(unsigned long i = 0; i < controlPorts; ++i) 
     //audio->msgSetPluginCtrlVal(this, genACnum(_id, i), controls[i].val);
     // p3.3.43
     //audio->msgSetPluginCtrlVal(_track, genACnum(_id, i), controls[i].val);
@@ -1807,7 +1807,7 @@ void PluginI::setChannels(int c)
 //   setParam
 //---------------------------------------------------------
 
-void PluginI::setParam(unsigned i, float val) 
+void PluginI::setParam(unsigned long i, float val) 
 { 
   //controls[i].tmpVal = val; 
   
@@ -1815,7 +1815,7 @@ void PluginI::setParam(unsigned i, float val)
   if(i >= _plugin->_controlInPorts)
   //if(i >= controlPorts)
   {
-    printf("PluginI::setParameter param number %u out of range of ports:%ld\n", i, _plugin->_controlInPorts);
+    printf("PluginI::setParameter param number %lu out of range of ports:%lu\n", i, _plugin->_controlInPorts);
     return;
   }
   ControlEvent ce;
@@ -1828,7 +1828,7 @@ void PluginI::setParam(unsigned i, float val)
   ce.frame = audio->timestamp();  
   if(_controlFifo.put(ce))
   {
-    fprintf(stderr, "PluginI::setParameter: fifo overflow: in control number:%u\n", i);
+    fprintf(stderr, "PluginI::setParameter: fifo overflow: in control number:%lu\n", i);
   }
   
   // Notify that changes are to be sent upon heartbeat.
@@ -1842,7 +1842,7 @@ void PluginI::setParam(unsigned i, float val)
 //---------------------------------------------------------
 
 //double PluginI::defaultValue(unsigned int param) const
-float PluginI::defaultValue(unsigned param) const
+float PluginI::defaultValue(unsigned long param) const
 {
   if(param >= controlPorts)
     return 0.0;
@@ -2025,10 +2025,10 @@ bool PluginI::initPluginInstance(Plugin* plug, int c)
 //---------------------------------------------------------
 
 //void PluginI::connect(int ports, float** src, float** dst)
-void PluginI::connect(unsigned ports, unsigned offset, float** src, float** dst)
+void PluginI::connect(unsigned long ports, unsigned long offset, float** src, float** dst)
       {
       //int port = 0;
-      unsigned port = 0;  // p4.0.21
+      unsigned long port = 0;  // p4.0.21
       for (int i = 0; i < instances; ++i) {
             for (unsigned long k = 0; k < _plugin->ports(); ++k) {
                   if (isAudioIn(k)) {
@@ -2076,7 +2076,7 @@ void PluginI::activate()
             _plugin->activate(handle[i]);
       if (initControlValues) {
             //for (int i = 0; i < controlPorts; ++i) {
-            for (unsigned i = 0; i < controlPorts; ++i) {
+            for (unsigned long i = 0; i < controlPorts; ++i) {
                   controls[i].val = controls[i].tmpVal;
                   }
             }
@@ -2085,7 +2085,7 @@ void PluginI::activate()
             // get initial control values from plugin
             //
             //for (int i = 0; i < controlPorts; ++i) {
-            for (unsigned i = 0; i < controlPorts; ++i) {
+            for (unsigned long i = 0; i < controlPorts; ++i) {
                   controls[i].tmpVal = controls[i].val;
                   }
             }
@@ -2100,7 +2100,7 @@ void PluginI::activate()
 bool PluginI::setControl(const QString& s, float val)
       {
       //for (int i = 0; i < controlPorts; ++i) {
-      for (unsigned i = 0; i < controlPorts; ++i) {
+      for (unsigned long i = 0; i < controlPorts; ++i) {
             if (_plugin->portName(controls[i].idx) == s) {
                   //controls[i].val = controls[i].tmpVal = val;
                   setParam(i, val);     // p4.0.21
@@ -2126,8 +2126,8 @@ void PluginI::writeConfiguration(int level, Xml& xml)
          
       //for (int i = 0; i < controlPorts; ++i) {
             //int idx = controls[i].idx;
-      for (unsigned i = 0; i < controlPorts; ++i) {          // p4.0.21
-            unsigned idx = controls[i].idx;                  //
+      for (unsigned long i = 0; i < controlPorts; ++i) {          // p4.0.21
+            unsigned long idx = controls[i].idx;                  //
             QString s("control name=\"%1\" val=\"%2\" /");
             //xml.tag(level, s.arg(_plugin->portName(idx)).arg(controls[i].tmpVal).toLatin1().constData());
             xml.tag(level, s.arg(Xml::xmlString(_plugin->portName(idx)).toLatin1().constData()).arg(controls[i].tmpVal).toLatin1().constData());
@@ -2413,7 +2413,7 @@ void PluginIBase::deleteGui()
 void PluginI::enableAllControllers(bool v)
 {
   //for(int i = 0; i < controlPorts; ++i) 
-  for(unsigned i = 0; i < controlPorts; ++i) 
+  for(unsigned long i = 0; i < controlPorts; ++i) 
     controls[i].enCtrl = v;
 }
 
@@ -2424,7 +2424,7 @@ void PluginI::enableAllControllers(bool v)
 void PluginI::enable2AllControllers(bool v)
 {
   //for(int i = 0; i < controlPorts; ++i) 
-  for(unsigned i = 0; i < controlPorts; ++i) 
+  for(unsigned long i = 0; i < controlPorts; ++i) 
     controls[i].en2Ctrl = v;
 }
 
@@ -2434,7 +2434,7 @@ void PluginI::enable2AllControllers(bool v)
 
 /*
 //void PluginI::apply(int n)
-void PluginI::apply(unsigned n)
+void PluginI::apply(unsigned long n)
 {
       // Process control value changes.
       //if(automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
@@ -2467,7 +2467,7 @@ void PluginI::apply(unsigned n)
           OscControlValue v = cfifo->get();  
           
           #ifdef PLUGIN_DEBUGIN
-          fprintf(stderr, "PluginI::apply OscControlFifo event input control number:%ld value:%f\n", k, v.value);
+          fprintf(stderr, "PluginI::apply OscControlFifo event input control number:%lu value:%f\n", k, v.value);
           #endif
           
           // Set the ladspa control port value.
@@ -2525,7 +2525,7 @@ void PluginI::apply(unsigned n)
       
 #if 1
 // p4.0.21
-void PluginI::apply(unsigned n, unsigned ports, float** bufIn, float** bufOut)
+void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float** bufOut)
 {
       // Process control value changes.
       //if(automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
@@ -2538,9 +2538,9 @@ void PluginI::apply(unsigned n, unsigned ports, float** bufIn, float** bufOut)
       //}      
       
       //unsigned endPos = pos + n;
-      int frameOffset = audio->getFrameOffset();
+      unsigned long frameOffset = audio->getFrameOffset();
       
-      unsigned sample = 0;
+      unsigned long sample = 0;
       int loopcount = 0;      // REMOVE Tim.
       
       // Must make this detectable for dssi vst effects.
@@ -2550,7 +2550,7 @@ void PluginI::apply(unsigned n, unsigned ports, float** bufIn, float** bufOut)
       // Note for dssi-vst this MUST equal audio period. It doesn't like broken-up runs (it stutters), 
       //  even with fixed sizes. Could be a Wine + Jack thing, wanting a full Jack buffer's length.
       //unsigned fixedsize = 2048;   
-      unsigned fixedsize = n;     
+      unsigned long fixedsize = n;     
       
       // For now, the fixed size is clamped to the audio buffer size.
       // TODO: We could later add slower processing over several cycles -
@@ -2571,19 +2571,19 @@ void PluginI::apply(unsigned n, unsigned ports, float** bufIn, float** bufOut)
         
       while(sample < n)
       {
-        //unsigned nsamp = n;
-        //unsigned nsamp = n - sample;
-        unsigned nsamp = usefixedrate ? fixedsize : n - sample;
+        //unsigned long nsamp = n;
+        //unsigned long nsamp = n - sample;
+        unsigned long nsamp = usefixedrate ? fixedsize : n - sample;
         bool found = false;
-        unsigned frame = 0; 
-        unsigned index = 0;
+        unsigned long frame = 0; 
+        unsigned long index = 0;
         // Get all control ring buffer items valid for this time period...
         //for(int m = 0; m < cbsz; ++m)
         while(!_controlFifo.isEmpty())
         {
           //ControlValue v = _controlFifo.get(); 
           ControlEvent v = _controlFifo.peek(); 
-          //printf("PluginI::apply control idx:%d frame:%d val:%f\n", v.idx, v.frame, v.value);   // REMOVE Tim.
+          //printf("PluginI::apply control idx:%lu frame:%lu val:%f\n", v.idx, v.frame, v.value);   // REMOVE Tim.
           // Process only items in this time period. Make sure to process all
           //  subsequent items which have the same frame. 
           //if(v.frame >= (endPos + frameOffset) || (found && v.frame != frame))  
@@ -2650,7 +2650,7 @@ void PluginI::apply(unsigned n, unsigned ports, float** bufIn, float** bufOut)
         if(sample + nsamp >= n)         // Safety check.
           nsamp = n - sample; 
         
-        //printf("PluginI::apply ports:%d n:%d frame:%d sample:%d nsamp:%d fOffset:%d loopcount:%d\n", 
+        //printf("PluginI::apply ports:%lu n:%lu frame:%lu sample:%lu nsamp:%lu fOffset:%lu loopcount:%d\n", 
         //      ports, n, frame, sample, nsamp, frameOffset, loopcount);   // REMOVE Tim.
         
         // TODO: TESTING: Don't allow zero-length runs. This could/should be checked in the control loop instead.
@@ -2804,11 +2804,11 @@ int PluginI::oscUpdate()
       // Send current control values.
       //unsigned long ports = controlPorts;
       //for(int i = 0; i < controlPorts; ++i) 
-      for(unsigned i = 0; i < controlPorts; ++i) 
+      for(unsigned long i = 0; i < controlPorts; ++i) 
       {
         //unsigned long k = synth->pIdx(i);
         //_oscIF.oscSendControl(k, controls[i]);
-        //printf("PluginI::oscUpdate() sending control:%d val:%f\n", i, controls[i].val);
+        //printf("PluginI::oscUpdate() sending control:%lu val:%f\n", i, controls[i].val);
         _oscif.oscSendControl(controls[i].idx, controls[i].val);
         // Avoid overloading the GUI if there are lots and lots of ports. 
         if((i+1) % 50 == 0)
@@ -2829,7 +2829,7 @@ int PluginI::oscControl(unsigned long port, float value)
   //LADSPA_Data value = argv[1]->f;
 
   #ifdef PLUGIN_DEBUGIN  
-  printf("PluginI::oscControl received oscControl port:%ld val:%f\n", port, value);
+  printf("PluginI::oscControl received oscControl port:%lu val:%f\n", port, value);
   #endif
   
   //int controlPorts = synth->_controller;
@@ -2838,7 +2838,7 @@ int PluginI::oscControl(unsigned long port, float value)
   //if(port < 0 || port >= _plugin->rpIdx.size())
   if(port >= _plugin->rpIdx.size())
   {
-    fprintf(stderr, "PluginI::oscControl: port number:%ld is out of range of index list size:%d\n", port, _plugin->rpIdx.size());
+    fprintf(stderr, "PluginI::oscControl: port number:%lu is out of range of index list size:%zd\n", port, _plugin->rpIdx.size());
     return 0;
   }
   
@@ -2848,7 +2848,7 @@ int PluginI::oscControl(unsigned long port, float value)
     
   if((int)cport == -1)
   {
-    fprintf(stderr, "PluginI::oscControl: port number:%ld is not a control input\n", port);
+    fprintf(stderr, "PluginI::oscControl: port number:%lu is not a control input\n", port);
     return 0;
   }
   
@@ -2880,7 +2880,7 @@ int PluginI::oscControl(unsigned long port, float value)
     cv.frame = audio->timestamp();  
     if(cfifo->put(cv))
     {
-      fprintf(stderr, "PluginI::oscControl: fifo overflow: in control number:%ld\n", cport);
+      fprintf(stderr, "PluginI::oscControl: fifo overflow: in control number:%lu\n", cport);
     }
   }
   */
@@ -2895,7 +2895,7 @@ int PluginI::oscControl(unsigned long port, float value)
   ce.frame = audio->timestamp();  
   if(_controlFifo.put(ce))
   {
-    fprintf(stderr, "PluginI::oscControl: fifo overflow: in control number:%ld\n", cport);
+    fprintf(stderr, "PluginI::oscControl: fifo overflow: in control number:%lu\n", cport);
   }
   
    
@@ -2908,7 +2908,7 @@ int PluginI::oscControl(unsigned long port, float value)
   if(_track && _id != -1)
   {
     //int id = genACnum(_id, cport);
-    unsigned id = genACnum(_id, cport);
+    unsigned long id = genACnum(_id, cport);
     AutomationType at = _track->automationType();
   
     // TODO: Taken from our native gui control handlers. 
@@ -3161,10 +3161,10 @@ void PluginDialog::fillPlugs(int nbr)
           //int ao = i->outports();
           //int ci = i->controlInPorts();
           //int co = i->controlOutPorts();
-          unsigned ai = i->inports();       // p4.0.21
-          unsigned ao = i->outports();
-          unsigned ci = i->controlInPorts();
-          unsigned co = i->controlOutPorts();
+          unsigned long ai = i->inports();       // p4.0.21
+          unsigned long ao = i->outports();
+          unsigned long ci = i->controlInPorts();
+          unsigned long co = i->controlOutPorts();
           bool addFlag = false;
           switch (nbr) {
                 case SEL_SM: // stereo & mono
@@ -3213,10 +3213,10 @@ void PluginDialog::fillPlugs(const QString &sortValue)
           //int ao = i->outports();
           //int ci = i->controlInPorts();
           //int co = i->controlOutPorts();
-          unsigned ai = i->inports();          // p4.0.21
-          unsigned ao = i->outports();
-          unsigned ci = i->controlInPorts();
-          unsigned co = i->controlOutPorts();
+          unsigned long ai = i->inports();          // p4.0.21
+          unsigned long ao = i->outports();
+          unsigned long ci = i->controlInPorts();
+          unsigned long co = i->controlOutPorts();
 
           bool addFlag = false;
 
@@ -3334,8 +3334,8 @@ PluginGui::PluginGui(PluginIBase* p)
                   //sscanf(name, "P%d", &parameter);
                   //if (parameter == -1)
                   //      continue;
-                  unsigned parameter;                        // p4.0.21
-                  int rv = sscanf(name, "P%u", &parameter);
+                  unsigned long parameter;                        // p4.0.21
+                  int rv = sscanf(name, "P%lu", &parameter);
                   if(rv != 1)
                     continue;
                   ++nobj;
@@ -3365,8 +3365,8 @@ PluginGui::PluginGui(PluginIBase* p)
                   //sscanf(name, "P%d", &parameter);
                   //if (parameter == -1)
                   //      continue;
-                  unsigned parameter;                         // p4.0.21
-                  int rv = sscanf(name, "P%u", &parameter);
+                  unsigned long parameter;                         // p4.0.21
+                  int rv = sscanf(name, "P%lu", &parameter);
                   if(rv != 1)
                     continue;
 
@@ -3383,7 +3383,7 @@ PluginGui::PluginGui(PluginIBase* p)
                         ((Slider*)obj)->setId(nobj);
                         ((Slider*)obj)->setCursorHoming(true);
                         //for(int i = 0; i < nobj; i++)
-                        for(unsigned i = 0; i < nobj; i++)             // p4.0.21
+                        for(unsigned long i = 0; i < nobj; i++)             // p4.0.21
                         {
                           if(gw[i].type == GuiWidgets::DOUBLE_LABEL && gw[i].param == parameter)
                             ((DoubleLabel*)gw[i].widget)->setSlider((Slider*)obj);
@@ -3397,7 +3397,7 @@ PluginGui::PluginGui(PluginIBase* p)
                         gw[nobj].type = GuiWidgets::DOUBLE_LABEL;
                         ((DoubleLabel*)obj)->setId(nobj);
                         //for(int i = 0; i < nobj; i++)
-                        for(unsigned i = 0; i < nobj; i++)
+                        for(unsigned long i = 0; i < nobj; i++)
                         {
                           if(gw[i].type == GuiWidgets::SLIDER && gw[i].param == parameter)
                           {
@@ -3438,7 +3438,7 @@ PluginGui::PluginGui(PluginIBase* p)
             mw->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
             //int n  = plugin->parameters();
-            unsigned n  = plugin->parameters();   // p4.0.21
+            unsigned long n  = plugin->parameters();   // p4.0.21
             params = new GuiParam[n];
 
             //int style       = Slider::BgTrough | Slider::BgSlot;
@@ -3446,7 +3446,7 @@ PluginGui::PluginGui(PluginIBase* p)
             int h           = fm.height() + 4;
 
             //for (int i = 0; i < n; ++i) {
-            for (unsigned i = 0; i < n; ++i) {       // p4.0.21
+            for (unsigned long i = 0; i < n; ++i) {       // p4.0.21
                   QLabel* label = 0;
                   LADSPA_PortRangeHint range = plugin->range(i);
                   double lower = 0.0;     // default values
@@ -3950,7 +3950,7 @@ void PluginGui::updateValues()
       {
       if (params) {
             //for (int i = 0; i < plugin->parameters(); ++i) {
-            for (unsigned i = 0; i < plugin->parameters(); ++i) {       // p4.0.21
+            for (unsigned long i = 0; i < plugin->parameters(); ++i) {       // p4.0.21
                   GuiParam* gp = &params[i];
                   if (gp->type == GuiParam::GUI_SLIDER) {
                         double lv = plugin->param(i);
@@ -3972,12 +3972,12 @@ void PluginGui::updateValues()
             }
       else if (gw) {
             //for (int i = 0; i < nobj; ++i) {
-            for (unsigned i = 0; i < nobj; ++i) {      // p4.0.21
+            for (unsigned long i = 0; i < nobj; ++i) {      // p4.0.21
                   QWidget* widget = gw[i].widget;
                   int type = gw[i].type;
                   //int param = gw[i].param;
                   //double val = plugin->param(param);
-                  unsigned param = gw[i].param;        // p4.0.21
+                  unsigned long param = gw[i].param;        // p4.0.21
                   float val = plugin->param(param);
                   switch(type) {
                         case GuiWidgets::SLIDER:
@@ -4009,7 +4009,7 @@ void PluginGui::updateControls()
        // update outputs
 
        if (paramsOut) {
-         for (int i = 0; i < plugin->parametersOut(); ++i) {
+         for (unsigned long i = 0; i < plugin->parametersOut(); ++i) {
                GuiParam* gp = &paramsOut[i];
                if (gp->type == GuiParam::GUI_METER) {
                  double lv = plugin->paramOut(i);
@@ -4036,7 +4036,7 @@ void PluginGui::updateControls()
         return;
       if (params) {
             //for (int i = 0; i < plugin->parameters(); ++i) {
-            for (unsigned i = 0; i < plugin->parameters(); ++i) {      // p4.0.21
+            for (unsigned long i = 0; i < plugin->parameters(); ++i) {      // p4.0.21
                   GuiParam* gp = &params[i];
                   if (gp->type == GuiParam::GUI_SLIDER) {
                         if( plugin->controllerEnabled(i) && plugin->controllerEnabled2(i) )
@@ -4083,11 +4083,11 @@ void PluginGui::updateControls()
             }
       else if (gw) {
             //for (int i = 0; i < nobj; ++i) {
-            for (unsigned i = 0; i < nobj; ++i) {    // p4.0.21
+            for (unsigned long i = 0; i < nobj; ++i) {    // p4.0.21
                   QWidget* widget = gw[i].widget;
                   int type = gw[i].type;
                   //int param = gw[i].param;
-                  unsigned param = gw[i].param;      // p4.0.21
+                  unsigned long param = gw[i].param;      // p4.0.21
                   switch(type) {
                         case GuiWidgets::SLIDER:
                               if( plugin->controllerEnabled(param) && plugin->controllerEnabled2(param) )
@@ -4158,7 +4158,7 @@ void PluginGui::guiParamChanged(int idx)
 {
       QWidget* w = gw[idx].widget;
       //int param  = gw[idx].param;
-      unsigned param  = gw[idx].param;    // p4.0.21
+      unsigned long param  = gw[idx].param;    // p4.0.21
       int type   = gw[idx].type;
 
       AutomationType at = AUTO_OFF;
@@ -4186,7 +4186,7 @@ void PluginGui::guiParamChanged(int idx)
             }
 
       //for (int i = 0; i < nobj; ++i) {
-      for (unsigned i = 0; i < nobj; ++i) {      // p4.0.21
+      for (unsigned long i = 0; i < nobj; ++i) {      // p4.0.21
             QWidget* widget = gw[i].widget;
             if (widget == w || param != gw[i].param)
                   continue;
@@ -4244,7 +4244,7 @@ void PluginGui::guiParamChanged(int idx)
 void PluginGui::guiParamPressed(int idx)
       {
       //int param  = gw[idx].param;
-      unsigned param  = gw[idx].param;     // p4.0.21
+      unsigned long param  = gw[idx].param;     // p4.0.21
 
       AutomationType at = AUTO_OFF;
       AudioTrack* track = plugin->track();
@@ -4285,7 +4285,7 @@ void PluginGui::guiParamPressed(int idx)
 void PluginGui::guiParamReleased(int idx)
       {
       //int param  = gw[idx].param;
-      unsigned param  = gw[idx].param;    // p4.0.21
+      unsigned long param  = gw[idx].param;    // p4.0.21
       int type   = gw[idx].type;
       
       AutomationType at = AUTO_OFF;
@@ -4331,7 +4331,7 @@ void PluginGui::guiParamReleased(int idx)
 void PluginGui::guiSliderPressed(int idx)
       {
       //int param  = gw[idx].param;
-      unsigned param  = gw[idx].param;    // p4.0.21
+      unsigned long param  = gw[idx].param;    // p4.0.21
       QWidget *w = gw[idx].widget;
       
       AutomationType at = AUTO_OFF;
@@ -4362,7 +4362,7 @@ void PluginGui::guiSliderPressed(int idx)
       
       // Needed so that paging a slider updates a label or other buddy control.
       //for (int i = 0; i < nobj; ++i) {
-      for (unsigned i = 0; i < nobj; ++i) {           // p4.0.21
+      for (unsigned long i = 0; i < nobj; ++i) {           // p4.0.21
             QWidget* widget = gw[i].widget;
             if (widget == w || param != gw[i].param)
                   continue;

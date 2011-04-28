@@ -120,6 +120,10 @@ class MidiDevice {
       // Since it waits, it should not be used in RT or other time-sensitive threads. p4.0.15
       bool putEventWithRetry(const MidiPlayEvent&, int /*tries*/ = 2, long /*delayUs*/ = 50000);  // 2 tries, 50 mS by default.
       
+      // p4.0.22
+      virtual void handleStop();
+      virtual void handleSeek();
+      
       // For Jack-based devices - called in Jack audio process callback
       virtual void collectMidiEvents() {}   
       virtual void processMidi() {}

@@ -641,7 +641,7 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
             LADSPA_PortDescriptor pd = descr->PortDescriptors[k];
             
             #ifdef DSSI_DEBUG 
-            printf("DssiSynth::createSIF ladspa plugin Port:%ld Name:%s descriptor:%x\n", k, descr->PortNames[k], pd);
+            printf("DssiSynth::createSIF ladspa plugin Port:%lu Name:%s descriptor:%x\n", k, descr->PortNames[k], pd);
             #endif
             
             if (LADSPA_IS_PORT_AUDIO(pd)) 
@@ -992,7 +992,7 @@ bool DssiSynthIF::init(DssiSynth* s)
         LADSPA_PortDescriptor pd = ld->PortDescriptors[k];
         
         #ifdef DSSI_DEBUG 
-        printf("DssiSynth::init ladspa plugin Port:%ld Name:%s descriptor:%x\n", k, ld->PortNames[k], pd);
+        printf("DssiSynth::init ladspa plugin Port:%lu Name:%s descriptor:%x\n", k, ld->PortNames[k], pd);
         #endif
         
         if (LADSPA_IS_PORT_CONTROL(pd)) 
@@ -1357,7 +1357,7 @@ float DssiSynthIF::getParameter(unsigned long n) const
 {
   if(n >= synth->_controlInPorts)
   {
-    printf("DssiSynthIF::getParameter param number %ld out of range of ports:%ld\n", n, synth->_controlInPorts);
+    printf("DssiSynthIF::getParameter param number %lu out of range of ports:%lu\n", n, synth->_controlInPorts);
     return 0.0;
   }
   
@@ -1374,7 +1374,7 @@ float DssiSynthIF::getParameterOut(unsigned long n) const
 {
   if(n >= synth->_controlOutPorts)
   {
-    printf("DssiSynthIF::getParameter param number %ld out of range of ports:%ld\n", n, synth->_controlOutPorts);
+    printf("DssiSynthIF::getParameterOut param number %lu out of range of ports:%lu\n", n, synth->_controlOutPorts);
     return 0.0;
   }
 
@@ -1392,7 +1392,7 @@ void DssiSynthIF::setParameter(unsigned long n, float v)
 {
   if(n >= synth->_controlInPorts)
   {
-    printf("DssiSynthIF::setParameter param number %ld out of range of ports:%ld\n", n, synth->_controlInPorts);
+    printf("DssiSynthIF::setParameter param number %lu out of range of ports:%lu\n", n, synth->_controlInPorts);
     return;
   }
   
@@ -1410,7 +1410,7 @@ void DssiSynthIF::setParameter(unsigned long n, float v)
   ce.frame = audio->timestamp();  
   if(_controlFifo.put(ce))
   {
-    fprintf(stderr, "DssiSynthIF::setParameter: fifo overflow: in control number:%ld\n", n);
+    fprintf(stderr, "DssiSynthIF::setParameter: fifo overflow: in control number:%lu\n", n);
   }
   
   // Notify that changes are to be sent upon heartbeat.
@@ -1858,7 +1858,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       else
       {
         #ifdef DSSI_DEBUG 
-        printf("DssiSynthIF::processEvent plugin requests DSSI-style ctlnum:%x(h) %d(d) be mapped to control port:%ld...\n", ctlnum, ctlnum, i);
+        printf("DssiSynthIF::processEvent plugin requests DSSI-style ctlnum:%x(h) %d(d) be mapped to control port:%lu...\n", ctlnum, ctlnum, i);
         #endif
         
         int c = ctlnum;
@@ -1893,7 +1893,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         
         #ifdef DSSI_DEBUG 
         //fprintf(stderr, "DssiSynthIF::processEvent No midi controller for control port:%d port:%d dataA:%d Converting val from:%d to ladspa:%f\n", i, k, a, b, val);
-        fprintf(stderr, "DssiSynthIF::processEvent control port:%ld port:%ld dataA:%d Converting val from:%d to ladspa:%f\n", i, k, a, b, val);
+        fprintf(stderr, "DssiSynthIF::processEvent control port:%lu port:%lu dataA:%d Converting val from:%d to ladspa:%f\n", i, k, a, b, val);
         #endif
         
         // Set the ladspa port value.
@@ -1970,7 +1970,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
               {
                 const unsigned long n = dlen / sizeof(float);
                 if(n != synth->_controlInPorts)
-                  printf("DssiSynthIF::processEvent Warning: PARAMSAVE number of floats:%ld != number of controls:%ld\n", n, synth->_controlInPorts);
+                  printf("DssiSynthIF::processEvent Warning: PARAMSAVE number of floats:%lu != number of controls:%lu\n", n, synth->_controlInPorts);
                 
                 // Point to location after "PARAMSAVE", version major and minor, bank and progam.
                 float* const fp = (float*)(e.data() + 9 + 2 + 2 * sizeof(unsigned long)); 
@@ -2160,7 +2160,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
       OscControlValue v = cfifo->get();  
       
       #ifdef DSSI_DEBUG 
-      fprintf(stderr, "DssiSynthIF::getData OscControlFifo event input control number:%ld value:%f\n", k, v.value);
+      fprintf(stderr, "DssiSynthIF::getData OscControlFifo event input control number:%lu value:%f\n", k, v.value);
       #endif
       
       // Set the ladspa control port value.
@@ -2315,7 +2315,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
   
   //nevents = 0;
 
-  unsigned endPos = pos + n;
+  unsigned long endPos = pos + n;
   int frameOffset = audio->getFrameOffset();
   
   // All ports must be connected to something!
@@ -2336,7 +2336,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
   
   const DSSI_Descriptor* dssi = synth->dssi;
   const LADSPA_Descriptor* descr = dssi->LADSPA_Plugin;
-  unsigned sample = 0;
+  unsigned long sample = 0;
   int loopcount = 0;      // REMOVE Tim.
   
   // NOTE Tested: Variable run-lengths worked superbly for LADSPA and DSSI synths. But DSSI-VST definitely 
@@ -2360,8 +2360,8 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
   // TODO Make this number a global setting.
   // Note for dssi-vst this MUST equal audio period. It doesn't like broken-up runs (it stutters), 
   //  even with fixed sizes. Could be a Wine + Jack thing, wanting a full Jack buffer's length.
-  //unsigned fixedsize = 2048;   
-  unsigned fixedsize = n;     
+  //unsigned long fixedsize = 2048;   
+  unsigned long fixedsize = n;     
   
   // For now, the fixed size is clamped to the audio buffer size.
   // TODO: We could later add slower processing over several cycles -
@@ -2371,12 +2371,12 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
   
   while(sample < n)
   {
-    //unsigned nsamp = n;
-    //unsigned nsamp = n - sample;
-    unsigned nsamp = usefixedrate ? fixedsize : n - sample;
+    //unsigned long nsamp = n;
+    //unsigned long nsamp = n - sample;
+    unsigned long nsamp = usefixedrate ? fixedsize : n - sample;
     bool found = false;
-    unsigned frame = 0; 
-    unsigned index = 0;
+    unsigned long frame = 0; 
+    unsigned long index = 0;
     // Get all control ring buffer items valid for this time period...
     //for(int m = 0; m < cbsz; ++m)
     while(!_controlFifo.isEmpty())
@@ -2479,7 +2479,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
         if (ft >= int(sample + nsamp)) 
         {
           //printf("DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d (seg=%d)\n", i->time(), pos, frameOffset, ft, segmentSize);
-          printf("DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d sample:%d nsamp:%d\n", i->time(), pos, frameOffset, ft, sample, nsamp);
+          printf("DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", i->time(), pos, frameOffset, ft, sample, nsamp);
           ///if (ft > (int)segmentSize)
             //ft = segmentSize - 1;
             ft = sample + nsamp - 1;
@@ -2518,7 +2518,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
         if (ft >= int(sample + nsamp)) 
         {
           //printf("DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d (seg=%d)\n", e.time(), pos, frameOffset, ft, segmentSize);
-          printf("DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d sample:%d nsamp:%d\n", e.time(), pos, frameOffset, ft, sample, nsamp);
+          printf("DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
           ///if (ft > (int)segmentSize)
             //ft = segmentSize - 1;
             ft = sample + nsamp - 1;
@@ -2982,7 +2982,7 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
   //LADSPA_Data value = argv[1]->f;
 
   #ifdef DSSI_DEBUG 
-  printf("DssiSynthIF::oscControl received oscControl port:%ld val:%f\n", port, value);  
+  printf("DssiSynthIF::oscControl received oscControl port:%lu val:%f\n", port, value);  
   #endif
   
   //int controlPorts = synth->_controlInPorts;
@@ -2992,7 +2992,7 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
   if(port >= synth->rpIdx.size())
   {
     //fprintf(stderr, "DssiSynthIF::oscControl: port number:%d is out of range of number of ports:%d\n", port, controlPorts);
-    fprintf(stderr, "DssiSynthIF::oscControl: port number:%ld is out of range of index list size:%zd\n", port, synth->rpIdx.size());
+    fprintf(stderr, "DssiSynthIF::oscControl: port number:%lu is out of range of index list size:%zd\n", port, synth->rpIdx.size());
     return 0;
   }
   
@@ -3001,7 +3001,7 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
   
   if((int)cport == -1)
   {
-    fprintf(stderr, "DssiSynthIF::oscControl: port number:%ld is not a control input\n", port);
+    fprintf(stderr, "DssiSynthIF::oscControl: port number:%lu is not a control input\n", port);
     return 0;
   }
   
@@ -3039,7 +3039,7 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
     cv.frame = audio->timestamp();  
     if(cfifo->put(cv))
     {
-      fprintf(stderr, "DssiSynthIF::oscControl: fifo overflow: in control number:%ld\n", cport);
+      fprintf(stderr, "DssiSynthIF::oscControl: fifo overflow: in control number:%lu\n", cport);
     }
   }
   */
@@ -3054,7 +3054,7 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
   ce.frame = audio->timestamp();  
   if(_controlFifo.put(ce))
   {
-    fprintf(stderr, "DssiSynthIF::oscControl: fifo overflow: in control number:%ld\n", cport);
+    fprintf(stderr, "DssiSynthIF::oscControl: fifo overflow: in control number:%lu\n", cport);
   }
   
    
@@ -3365,7 +3365,7 @@ int DssiSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* mi
   ///int i = synth->pIdx[id];
   //int i = synth->pIdx[k];
   //int i = controls[id].idx;
-  unsigned i = controls[id].idx;   // p4.0.21
+  unsigned long i = controls[id].idx;   // p4.0.21
   
   //ladspaDefaultValue(ld, i, &controls[id].val);
   
@@ -3493,7 +3493,7 @@ int DssiSynthIF::totalInChannels() const
 bool DssiSynthIF::on() const                                 { return true; }  // Synth is not part of a rack plugin chain. Always on.
 void DssiSynthIF::setOn(bool /*val*/)                        { }   
 //int DssiSynthIF::pluginID()                                  { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->UniqueID : 0; } 
-unsigned DssiSynthIF::pluginID()                             { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->UniqueID : 0; }   
+unsigned long DssiSynthIF::pluginID()                        { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->UniqueID : 0; }   
 //int DssiSynthIF::id()                                        { return 0; } // Synth is not part of a rack plugin chain. Always 0.
 int DssiSynthIF::id()                                        { return MAX_PLUGINS; } // Set for special block reserved for dssi synth. p4.0.20
 QString DssiSynthIF::pluginLabel() const                     { return (synth && synth->dssi) ? QString(synth->dssi->LADSPA_Plugin->Label) : QString(); } 
@@ -3505,9 +3505,9 @@ AudioTrack* DssiSynthIF::track()                             { return (AudioTrac
 //void DssiSynthIF::enableController(int i, bool v)            { controls[i].enCtrl = v; } 
 //bool DssiSynthIF::controllerEnabled(int i) const             { return controls[i].enCtrl; }  
 //bool DssiSynthIF::controllerEnabled2(int i) const            { return controls[i].en2Ctrl; }   
-void DssiSynthIF::enableController(unsigned i, bool v)       { controls[i].enCtrl = v; } 
-bool DssiSynthIF::controllerEnabled(unsigned i) const        { return controls[i].enCtrl; }  
-bool DssiSynthIF::controllerEnabled2(unsigned i) const       { return controls[i].en2Ctrl; }   
+void DssiSynthIF::enableController(unsigned long i, bool v)  { controls[i].enCtrl = v; } 
+bool DssiSynthIF::controllerEnabled(unsigned long i) const   { return controls[i].enCtrl; }  
+bool DssiSynthIF::controllerEnabled2(unsigned long i) const  { return controls[i].en2Ctrl; }   
 void DssiSynthIF::updateControllers()                        { }
 void DssiSynthIF::writeConfiguration(int /*level*/, Xml& /*xml*/)        { }
 bool DssiSynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return false; }
@@ -3518,16 +3518,16 @@ bool DssiSynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return 
 //const char* DssiSynthIF::paramName(int i)                    { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortNames[controls[i].idx] : 0; }
 //LADSPA_PortRangeHint DssiSynthIF::range(int i)               { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortRangeHints[i] : 0; }
 //LADSPA_PortRangeHint DssiSynthIF::range(int i)               { return synth->dssi->LADSPA_Plugin->PortRangeHints[controls[i].idx]; }
-unsigned DssiSynthIF::parameters() const                     { return synth ? synth->_controlInPorts : 0; }
-unsigned DssiSynthIF::parametersOut() const                          { return synth ? synth->_controlOutPorts : 0; }
-void DssiSynthIF::setParam(unsigned i, float val)            { setParameter(i, val); }
-float DssiSynthIF::param(unsigned i) const                   { return getParameter(i); }
-float DssiSynthIF::paramOut(unsigned i) const                       { return getParameter(i); }
-const char* DssiSynthIF::paramName(unsigned i)               { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortNames[controls[i].idx] : 0; }
-const char* DssiSynthIF::paramOutName(unsigned i)                    { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortNames[controlsOut[i].idx] : 0; }
-//LADSPA_PortRangeHint DssiSynthIF::range(unsigned i)          { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortRangeHints[i] : 0; }
-LADSPA_PortRangeHint DssiSynthIF::range(unsigned i)          { return synth->dssi->LADSPA_Plugin->PortRangeHints[controls[i].idx]; }
-LADSPA_PortRangeHint DssiSynthIF::rangeOut(unsigned i)               { return synth->dssi->LADSPA_Plugin->PortRangeHints[controlsOut[i].idx]; }
+unsigned long DssiSynthIF::parameters() const                { return synth ? synth->_controlInPorts : 0; }
+unsigned long DssiSynthIF::parametersOut() const             { return synth ? synth->_controlOutPorts : 0; }
+void DssiSynthIF::setParam(unsigned long i, float val)       { setParameter(i, val); }
+float DssiSynthIF::param(unsigned long i) const              { return getParameter(i); }
+float DssiSynthIF::paramOut(unsigned long i) const           { return getParameterOut(i); }
+const char* DssiSynthIF::paramName(unsigned long i)          { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortNames[controls[i].idx] : 0; }
+const char* DssiSynthIF::paramOutName(unsigned long i)       { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortNames[controlsOut[i].idx] : 0; }
+//LADSPA_PortRangeHint DssiSynthIF::range(unsigned long i)     { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortRangeHints[i] : 0; }
+LADSPA_PortRangeHint DssiSynthIF::range(unsigned long i)     { return synth->dssi->LADSPA_Plugin->PortRangeHints[controls[i].idx]; }
+LADSPA_PortRangeHint DssiSynthIF::rangeOut(unsigned long i)  { return synth->dssi->LADSPA_Plugin->PortRangeHints[controlsOut[i].idx]; }
 
 
 #else //DSSI_SUPPORT

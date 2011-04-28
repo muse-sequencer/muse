@@ -19,11 +19,14 @@
 #include "midiport.h"
 #include "mididev.h"
 #include "config.h"
+#include "gconfig.h"
 #include "globals.h"
 #include "audio.h"
 #include "midiseq.h"
-//#include "sync.h"
+#include "sync.h"
 #include "midiitransform.h"
+#include "part.h"
+//#include "mpevent.h"
 
 #ifdef MIDI_DRIVER_MIDI_SERIAL
 extern void initMidiSerial();
@@ -572,3 +575,178 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
             }
       return putMidiEvent(ev);
       }
+
+//---------------------------------------------------------
+//   handleStop
+//---------------------------------------------------------
+
+void MidiDevice::handleStop()
+{
+  // If the device is not in use by a port, don't bother it.
+  if(_port == -1)
+    return;
+    
+  //---------------------------------------------------
+  //    Clear all notes and handle stuck notes
+  //---------------------------------------------------
+  
+  _playEvents.clear();
+  for(iMPEvent i = _stuckNotes.begin(); i != _stuckNotes.end(); ++i) 
+  {
+    MidiPlayEvent ev = *i;
+    ev.setTime(0);
+    _playEvents.add(ev);
+  }
+  _stuckNotes.clear();
+  //setNextPlayEvent(_playEvents.begin());  
+  
+  
+  //---------------------------------------------------
+  //    reset sustain
+  //---------------------------------------------------
+  
+  MidiPort* mp = &midiPorts[_port];
+  for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+  {
+    if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
+    {
+      //printf("send clear sustain!!!!!!!! port %d ch %d\n", i,ch);
+      MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
+      putEvent(ev);
+    }
+  }
+  
+  //---------------------------------------------------
+  //    send midi stop
+  //---------------------------------------------------
+  
+  // Don't send if external sync is on. The master, and our sync routing system will take care of that.   p3.3.31
+  if(!extSyncFlag.value())
+  {
+    // Shall we check open flags?
+    //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
+    //if(!(dev->openFlags() & 1))
+    //  return;
+          
+    MidiSyncInfo& si = mp->syncInfo();
+    if(si.MMCOut())
+      mp->sendMMCStop();
+    
+    if(si.MRTOut()) 
+    {
+      // Send STOP 
+      mp->sendStop();
+      
+      // p3.3.31
+      // Added check of option send continue not start.
+      // Hmm, is this required? Seems to make other devices unhappy.
+      // (Could try now that this is in MidiDevice. p4.0.22 )
+      /*
+      if(!si.sendContNotStart())
+        mp->sendSongpos(audio->tickPos() * 4 / config.division);
+      */  
+    }
+  }  
+}
+      
+//---------------------------------------------------------
+//   handleSeek
+//---------------------------------------------------------
+
+void MidiDevice::handleSeek()
+{
+  // If the device is not in use by a port, don't bother it.
+  if(_port == -1)
+    return;
+  
+  //---------------------------------------------------
+  //    If playing, clear all notes and handle stuck notes
+  //---------------------------------------------------
+  
+  if(audio->isPlaying()) 
+  {
+    _playEvents.clear();
+    for(iMPEvent i = _stuckNotes.begin(); i != _stuckNotes.end(); ++i) 
+    {
+      MidiPlayEvent ev = *i;
+      ev.setTime(0);
+      _playEvents.add(ev);
+    }
+    _stuckNotes.clear();
+  }
+  //else
+    // Removed p4.0.15 Device now leaves beginning pointing at next event,
+    //  immediately after playing some notes.  
+    // NOTE: This removal needs testing. I'm not sure about this.
+    //_playEvents.erase(_playEvents.begin(), _nextPlayEvent);  
+  
+  MidiPort* mp = &midiPorts[_port];
+  MidiCtrlValListList* cll = mp->controller();
+  int pos = audio->tickPos();
+  
+  //---------------------------------------------------
+  //    Send new contoller values
+  //---------------------------------------------------
+    
+  for(iMidiCtrlValList ivl = cll->begin(); ivl != cll->end(); ++ivl) 
+  {
+    MidiCtrlValList* vl = ivl->second;
+    //int val = vl->value(pos);
+    //if (val != CTRL_VAL_UNKNOWN) {
+    //      int channel = ivl->first >> 24;
+    //      el->add(MidiPlayEvent(0, port, channel, ME_CONTROLLER, vl->num(), val));
+    //      }
+    iMidiCtrlVal imcv = vl->iValue(pos);
+    if(imcv != vl->end()) 
+    {
+      Part* p = imcv->second.part;
+      unsigned t = (unsigned)imcv->first;
+      // Do not add values that are outside of the part.
+      if(p && t >= p->tick() && t < (p->tick() + p->lenTick()) )
+        _playEvents.add(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val));
+    }
+  }
+  //_nextPlayEvent = (_playEvents.begin());    // Removed p4.0.15
+  
+  //---------------------------------------------------
+  //    Send STOP and "set song position pointer"
+  //---------------------------------------------------
+    
+  // Don't send if external sync is on. The master, and our sync routing system will take care of that.  p3.3.31
+  if(!extSyncFlag.value())
+  {
+    if(mp->syncInfo().MRTOut())
+    {
+      // Shall we check for device write open flag to see if it's ok to send?...
+      // This means obey what the user has chosen for read/write in the midi port config dialog,
+      //  which already takes into account whether the device is writable or not.
+      //if(!(rwFlags() & 0x1) || !(openFlags() & 1))
+      //if(!(openFlags() & 1))
+      //  continue;
+      
+      //int port = midiPort();
+      
+      // By checking for no port here (-1), (and out of bounds), it means
+      //  the device must be assigned to a port for these MMC commands to be sent.
+      // Without this check, interesting sync things can be done by the user without ever
+      //  assigning any devices to ports ! 
+      //if(port < 0 || port > MIDI_PORTS)
+      //if(port < -1 || port > MIDI_PORTS)
+      //  continue;
+      
+      int beat = (pos * 4) / config.division;
+        
+      //bool isPlaying = false;
+      //if(state == PLAY)
+      //  isPlaying = true;
+      bool isPlaying = audio->isPlaying();  // Check this it includes LOOP1 and LOOP2 besides PLAY.  p4.0.22
+        
+      mp->sendStop();
+      mp->sendSongpos(beat);
+      if(isPlaying)
+        mp->sendContinue();
+    }    
+  }
+}
+
+
