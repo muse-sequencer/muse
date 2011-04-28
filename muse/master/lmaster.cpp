@@ -117,7 +117,7 @@ LMaster::LMaster()
    : MidiEditor(0, 0, 0)
       {
       pos_editor = 0;
-      editor = 0;
+      tempo_editor = 0;
       sig_editor = 0;
       key_editor = 0;
       editedItem = 0;
@@ -205,6 +205,16 @@ LMaster::LMaster()
       mainGrid->addWidget(view,  0, 0);
 //      mainGrid->addWidget(corner,  1, 1, AlignBottom | AlignRight);
       updateList();
+
+      tempo_editor = new QLineEdit(view->viewport());
+      connect(tempo_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
+      sig_editor = new SigEdit(view->viewport());
+      connect(sig_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
+      pos_editor = new Awl::PosEdit(view->viewport());
+      connect(pos_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
+      key_editor = new QComboBox(view->viewport());
+      key_editor->addItems(keyStrs);
+      connect(key_editor, SIGNAL(currentIndexChanged(int)), SLOT(returnPressed()));
 
       connect(view, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), SLOT(select(QTreeWidgetItem*, QTreeWidgetItem*)));
       connect(view, SIGNAL(itemPressed(QTreeWidgetItem*, int)), SLOT(itemPressed(QTreeWidgetItem*, int)));
@@ -294,19 +304,19 @@ void LMaster::updateList()
           ++it;
         }
 
-        else if ((ik != k->rend()) && (is == s->rend()) && (ik->second.tick >= it->second->tick)
-                || (it == t->rend()) && (ik->second.tick >= is->second->tick )) {// ik biggest
+        else if ( ((ik != k->rend()) && (is == s->rend()) && (ik->second.tick >= it->second->tick))
+                || ((it == t->rend()) && (ik->second.tick >= is->second->tick ) )) {// ik biggest
           insertKey(ik->second);
           ++ik;
         }
-        else if ((is != s->rend()) && (ik == k->rend()) && (is->second->tick >= it->second->tick)
-                || (it == t->rend()) && (is->second->tick >= ik->second.tick )) {// is biggest
+        else if ( ((is != s->rend()) && (ik == k->rend()) && (is->second->tick >= it->second->tick))
+                || ((it == t->rend()) && (is->second->tick >= ik->second.tick ))) {// is biggest
           insertSig(is->second);
           ++is;
         }
 
-        else if ((it != t->rend()) && (ik == k->rend()) && (it->second->tick >= is->second->tick)
-                || (is == s->rend()) && (it->second->tick >= ik->second.tick )) {// it biggest
+        else if (((it != t->rend()) && (ik == k->rend()) && (it->second->tick >= is->second->tick))
+                || ((is == s->rend()) && (it->second->tick >= ik->second.tick ))) {// it biggest
           insertTempo(it->second);
           ++it;
         }
@@ -495,39 +505,24 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
 
             // Edit tempo value:
             if (editedItem->getType() == LMASTER_TEMPO) {
-                  if (!editor)
-                        editor = new QLineEdit(view->viewport());
-                  editor->setText(editedItem->text(LMASTER_VAL_COL));
-                  editor->setGeometry(itemRect);
-                  editor->show();
-                  editor->setFocus();
-                  editor->selectAll();
-                  connect(editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
+                  tempo_editor->setText(editedItem->text(LMASTER_VAL_COL));
+                  tempo_editor->setGeometry(itemRect);
+                  tempo_editor->show();
+                  tempo_editor->setFocus();
+                  tempo_editor->selectAll();
                   }
             else if (editedItem->getType() == LMASTER_SIGEVENT) { // Edit signatur value:
-                  if (!sig_editor)
-                        sig_editor = new SigEdit(view->viewport());
                   sig_editor->setValue(editedItem->text(LMASTER_VAL_COL));
                   sig_editor->setGeometry(itemRect);
                   sig_editor->show();
                   sig_editor->setFocus();
-                  connect(sig_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
                   }
             else if (editedItem->getType() == LMASTER_KEYEVENT) {
-                  if (!key_editor)
-                  {
-                        key_editor = new QComboBox(view->viewport());
-                        key_editor->addItems(keyStrs);
-                  }
-                  //key_editor->setText(editedItem->text(LMASTER_VAL_COL));
-                  //key_editor->setCurrentIndex(keyStrs.indexOf(editedItem->text(LMASTER_VAL_COL)));
                   //key_editor->setCurrentIndex(-1);
                   key_editor->setGeometry(itemRect);
                   key_editor->show();
                   key_editor->showPopup();
                   key_editor->setFocus();
-                  //key_editor->selectAll();
-                  connect(key_editor, SIGNAL(currentIndexChanged(int)), SLOT(returnPressed()));
                   }
             else {
               printf("illegal Master list type\n");
@@ -544,9 +539,6 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
                   }
             // Everything OK
             else {
-                  if (!pos_editor)
-                        ///pos_editor = new PosEdit(view->viewport());
-                        pos_editor = new Awl::PosEdit(view->viewport());
                   pos_editor->setValue(editedItem->tick());
                   QRect itemRect = view->visualItemRect(editedItem);
                   itemRect.setX(0);
@@ -554,7 +546,6 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
                   pos_editor->setGeometry(itemRect);
                   pos_editor->show();
                   pos_editor->setFocus();
-                  connect(pos_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
                   }
             }
       }
@@ -572,8 +563,8 @@ void LMaster::returnPressed()
       setFocus();
       // Tempo event:
       if (editedItem->getType() == LMASTER_TEMPO && editorColumn == LMASTER_VAL_COL) {
-            QString input = editor->text();
-            editor->hide();
+            QString input = tempo_editor->text();
+            tempo_editor->hide();
             repaint();
             LMasterTempoItem* e = (LMasterTempoItem*) editedItem;
             const TEvent* t = e->getEvent();

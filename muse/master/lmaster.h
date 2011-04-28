@@ -128,7 +128,7 @@ class LMaster : public MidiEditor {
       void insertKey(const KeyEvent&);
       LMasterLViewItem* getItemAtPos(unsigned tick, LMASTER_LVTYPE t);
       void initShortcuts();
-      QLineEdit* editor;
+      QLineEdit* tempo_editor;
       PosEdit*   pos_editor;
       QComboBox*  key_editor;
       // State-like members:
