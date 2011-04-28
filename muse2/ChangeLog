@@ -7,6 +7,7 @@
         - Small fix to scoredit in color_image(). Use bytesPerLine() * height() for older Qt. Test OK. (Tim)
         - Fix to Robert's DssiSynthIF::paramOut(). Call getParameterOut(). (Tim)
         - Changed all plugin and dssi module's 'unsigned' usage to 'unsigned long' for more consistency. (Tim)
+        - fixed multiple connects in master list editor and some cleanups suggested by WillyFooBar (rj)
 27.04.2011:
         - added first version feedback parameters for plugins (rj)
         - merged score edit branch into trunk (flo)
