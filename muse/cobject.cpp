@@ -28,6 +28,10 @@ void TopWin::readStatus(Xml& xml)
                               resize(r.size());
                               move(r.topLeft());
                               }
+                        else if (tag == "toolbars") {
+                              if (!restoreState(QByteArray::fromHex(xml.parse1().toAscii())))
+                                    fprintf(stderr,"ERROR: couldn't restore toolbars. however, this is not really a problem.\n");
+                              }
                         else
                               xml.unknown("TopWin");
                         break;
@@ -53,6 +57,9 @@ void TopWin::writeStatus(int level, Xml& xml) const
             geometry().width(),
             geometry().height());
       xml.tag(level--, "/geometry");
+      
+      xml.strTag(level, "toolbars", saveState().toHex().data());
+
       xml.tag(level, "/topwin");
       }
 
