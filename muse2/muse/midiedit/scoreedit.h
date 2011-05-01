@@ -16,7 +16,10 @@
 #include <QPixmap>
 #include <QTimer>
 #include <QScrollBar>
+#include <QComboBox>
 #include <QSignalMapper>
+#include <QAction>
+#include <QActionGroup>
 
 #include <values.h>
 #include "noteinfo.h"
@@ -66,15 +69,40 @@ class ScoreEdit : public TopWin
 
 	private:
 		virtual void closeEvent(QCloseEvent*);
+		
+		void init_name();
 
 		QGridLayout* mainGrid;
 		QWidget* mainw;
+		
+		EditToolBar* edit_tools;
+		QSpinBox* velo_spinbox;
+		QSpinBox* velo_off_spinbox;
+		
+		QComboBox* quant_combobox;
+		QSpinBox* px_per_whole_spinbox;
+		
+		QAction* preamble_keysig_action;
+		QAction* preamble_timesig_action;
+		
+		QActionGroup* len_actions;
+		QAction* n1_action;
+		QAction* n2_action;
+		QAction* n4_action;
+		QAction* n8_action;
+		QAction* n16_action;
+		QAction* n32_action;
+		QAction* nlast_action;
+		
+		QActionGroup* color_actions;
+		QAction* color_black_action;
+		QAction* color_velo_action;
+		QAction* color_part_action;
 		
 		QScrollBar* xscroll;
 		QScrollBar* yscroll;
 		ScoreCanvas* score_canvas;
 		
-		static int serial;
 		static set<QString> names;
 		
 		QString name;
@@ -99,8 +127,8 @@ class ScoreEdit : public TopWin
 	public:
 		ScoreEdit(QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
 		~ScoreEdit();
-		static void readConfiguration(Xml&){}; //TODO does nothing
-		static void writeConfiguration(int, Xml&){}; //TODO does nothing
+		void writeStatus(int level, Xml& xml) const;
+		void readStatus(Xml& xml);
 		
 		void add_parts(PartList* pl, bool all_in_one=false);
 		QString get_name() { return name; }
@@ -438,7 +466,6 @@ struct staff_t
 	
 	staff_type_t type;
 	clef_t clef;
-	int split_note;
 	
 	ScoreCanvas* parent;
 	
@@ -462,11 +489,10 @@ struct staff_t
 		parent=parent_;
 	}
 	
-	staff_t (ScoreCanvas* parent_, staff_type_t type_, clef_t clef_, set<Part*> parts_, int split_note_=0)
+	staff_t (ScoreCanvas* parent_, staff_type_t type_, clef_t clef_, set<Part*> parts_)
 	{
 		type=type_;
 		clef=clef_;
-		split_note=split_note_;
 		parts=parts_;
 		parent=parent_;
 	}
@@ -474,6 +500,9 @@ struct staff_t
 	bool cleanup_parts();
 	
 	set<Part*> parts_at_tick(unsigned tick);
+	
+	void read_status(Xml& xml);
+	void write_status(int level, Xml& xml) const;
 };
 
 list<int> calc_accidentials(key_enum key, clef_t clef, key_enum next_key=KEY_C);
@@ -670,6 +699,7 @@ class ScoreCanvas : public View
 		~ScoreCanvas(){};
 
 		void add_staves(PartList* pl, bool all_in_one);
+		void push_back_staff(staff_t& staff) { staves.push_back(staff); } //FINDMICH dirty. very dirty.
 
 		int canvas_width();
 		int canvas_height();
@@ -681,6 +711,14 @@ class ScoreCanvas : public View
 		int quant_ticks() { return TICKS_PER_WHOLE / (1<<_quant_power2); }
 		int pixels_per_whole() { return _pixels_per_whole; }
 		int note_x_indent() { return pixels_per_whole()/quant_len()/2; }
+		
+		int get_last_len() {return last_len;}
+		void set_last_len(int l) {last_len=l;}
+		
+		Part* get_selected_part() {return selected_part;}
+		void set_selected_part(Part* p) {selected_part=p;}
+		
+		void write_staves(int level, Xml& xml) const;
 };
 
 int calc_measure_len(const list<int>& nums, int denom);

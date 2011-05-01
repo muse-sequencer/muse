@@ -19,8 +19,6 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QDir>
-#include <QAction>
-#include <QActionGroup>
 #include <QKeySequence>
 #include <QKeyEvent>
 #include <QGridLayout>
@@ -140,7 +138,6 @@ QColor* mycolors; // array [NUM_MYCOLORS]
 
 
 
-int ScoreEdit::serial=1;
 set<QString> ScoreEdit::names;
 
 //---------------------------------------------------------
@@ -200,7 +197,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	undo_tools->addActions(undoRedo->actions());
 	addToolBar(undo_tools);
 
-	EditToolBar* edit_tools = new EditToolBar(this, PointerTool | PencilTool | RubberTool);
+	edit_tools = new EditToolBar(this, PointerTool | PencilTool | RubberTool);
 	addToolBar(edit_tools);
 	edit_tools->set(PointerTool);
 	score_canvas->set_tool(PointerTool);
@@ -217,14 +214,14 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	QToolBar* newnote_toolbar = addToolBar(tr("New note settings"));
 	newnote_toolbar->setObjectName("New note settings");
 	newnote_toolbar->addWidget(new QLabel(tr("Note length:"), newnote_toolbar));
-	QActionGroup* len_actions=new QActionGroup(this);
-	QAction* n1_action = newnote_toolbar->addAction("1", menu_mapper, SLOT(map()));
-	QAction* n2_action = newnote_toolbar->addAction("2", menu_mapper, SLOT(map()));
-	QAction* n4_action = newnote_toolbar->addAction("4", menu_mapper, SLOT(map()));
-	QAction* n8_action = newnote_toolbar->addAction("8", menu_mapper, SLOT(map()));
-	QAction* n16_action = newnote_toolbar->addAction("16", menu_mapper, SLOT(map()));
-	QAction* n32_action = newnote_toolbar->addAction("32", menu_mapper, SLOT(map()));
-	QAction* nlast_action = newnote_toolbar->addAction(tr("last"), menu_mapper, SLOT(map()));
+	len_actions=new QActionGroup(this);
+	n1_action = newnote_toolbar->addAction("1", menu_mapper, SLOT(map()));
+	n2_action = newnote_toolbar->addAction("2", menu_mapper, SLOT(map()));
+	n4_action = newnote_toolbar->addAction("4", menu_mapper, SLOT(map()));
+	n8_action = newnote_toolbar->addAction("8", menu_mapper, SLOT(map()));
+	n16_action = newnote_toolbar->addAction("16", menu_mapper, SLOT(map()));
+	n32_action = newnote_toolbar->addAction("32", menu_mapper, SLOT(map()));
+	nlast_action = newnote_toolbar->addAction(tr("last"), menu_mapper, SLOT(map()));
 	menu_mapper->setMapping(n1_action, CMD_NOTELEN_1);
 	menu_mapper->setMapping(n2_action, CMD_NOTELEN_2);
 	menu_mapper->setMapping(n4_action, CMD_NOTELEN_4);
@@ -253,7 +250,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	newnote_toolbar->addSeparator();
 	
 	newnote_toolbar->addWidget(new QLabel(tr("Velocity:"), newnote_toolbar));
-	QSpinBox* velo_spinbox = new QSpinBox(this);
+	velo_spinbox = new QSpinBox(this);
 	velo_spinbox->setRange(0, 127);
 	velo_spinbox->setSingleStep(1);
 	connect(velo_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_newnote_velo(int)));
@@ -261,7 +258,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	velo_spinbox->setValue(64);
 
 	newnote_toolbar->addWidget(new QLabel(tr("Off-Velocity:"), newnote_toolbar));
-	QSpinBox* velo_off_spinbox = new QSpinBox(this);
+	velo_off_spinbox = new QSpinBox(this);
 	velo_off_spinbox->setRange(0, 127);
 	velo_off_spinbox->setSingleStep(1);
 	connect(velo_off_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_newnote_velo_off(int)));
@@ -271,9 +268,9 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 	
 	QToolBar* quant_toolbar = addToolBar(tr("Quantisation settings"));
-	newnote_toolbar->setObjectName("Quantisation settings");
+	quant_toolbar->setObjectName("Quantisation settings");
 	quant_toolbar->addWidget(new QLabel(tr("Quantisation:"), quant_toolbar));
-	QComboBox* quant_combobox = new QComboBox(this);
+	quant_combobox = new QComboBox(this);
 	quant_combobox->addItem("2"); // if you add or remove items from
 	quant_combobox->addItem("4"); // here, also change quant_mapper[]
 	quant_combobox->addItem("8"); // in ScoreCanvas::set_quant()!
@@ -286,7 +283,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	quant_toolbar->addSeparator();
 
 	quant_toolbar->addWidget(new QLabel(tr("Pixels per whole:"), quant_toolbar));
-	QSpinBox* px_per_whole_spinbox = new QSpinBox(this);
+	px_per_whole_spinbox = new QSpinBox(this);
 	px_per_whole_spinbox->setRange(10, 1200);
 	px_per_whole_spinbox->setSingleStep(50);
 	connect(px_per_whole_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_pixels_per_whole(int)));
@@ -297,10 +294,10 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	QMenu* settings_menu = menuBar()->addMenu(tr("&Settings"));      
 
 		QMenu* color_menu = settings_menu->addMenu(tr("Note head &colors"));
-			QActionGroup* color_actions = new QActionGroup(this);
-			QAction* color_black_action = color_menu->addAction(tr("&Black"), menu_mapper, SLOT(map()));
-			QAction* color_velo_action =  color_menu->addAction(tr("&Velocity"), menu_mapper, SLOT(map()));
-			QAction* color_part_action =  color_menu->addAction(tr("&Part"), menu_mapper, SLOT(map()));
+			color_actions = new QActionGroup(this);
+			color_black_action = color_menu->addAction(tr("&Black"), menu_mapper, SLOT(map()));
+			color_velo_action =  color_menu->addAction(tr("&Velocity"), menu_mapper, SLOT(map()));
+			color_part_action =  color_menu->addAction(tr("&Part"), menu_mapper, SLOT(map()));
 			color_black_action->setCheckable(true);
 			color_velo_action->setCheckable(true);
 			color_part_action->setCheckable(true);
@@ -315,8 +312,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 			menu_command(CMD_COLOR_BLACK);
   
 		QMenu* preamble_menu = settings_menu->addMenu(tr("Set up &preamble"));
-			QAction* preamble_keysig_action = preamble_menu->addAction(tr("Display &key signature"));
-			QAction* preamble_timesig_action =  preamble_menu->addAction(tr("Display &time signature"));
+			preamble_keysig_action = preamble_menu->addAction(tr("Display &key signature"));
+			preamble_timesig_action =  preamble_menu->addAction(tr("Display &time signature"));
 			connect(preamble_keysig_action, SIGNAL(toggled(bool)), score_canvas, SLOT(preamble_keysig_slot(bool)));
 			connect(preamble_timesig_action, SIGNAL(toggled(bool)), score_canvas, SLOT(preamble_timesig_slot(bool)));
 
@@ -340,13 +337,28 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	if (name!=NULL)
 		set_name(name, false, true);
 	else
-		set_name("Score "+IntToQStr(serial++), false, true);
+		init_name();
 }
 
 
 void ScoreEdit::add_parts(PartList* pl, bool all_in_one)
 {
 	score_canvas->add_staves(pl, all_in_one);
+}
+
+void ScoreEdit::init_name()
+{
+	int no=1;
+	QString temp;
+	
+	while (true)
+	{
+		temp="Score "+IntToQStr(no);
+		if (set_name(temp, false, false))
+			break;
+		else
+			no++;
+	}
 }
 
 bool ScoreEdit::set_name(QString newname, bool emit_signal, bool emergency_name)
@@ -445,9 +457,292 @@ void ScoreEdit::menu_command(int cmd)
 					QMessageBox::warning(this, tr("Error"), tr("Changing score title failed:\nthe selected title is not unique"));
 			}
 		}
+		break;
 		
 		default: 
 			score_canvas->menu_command(cmd);
+	}
+}
+
+//---------------------------------------------------------
+//   readPart
+//---------------------------------------------------------
+
+Part* readPart(Xml& xml, QString tag_name="part") //TODO FINDMICH: duplicated from songfile.cpp; only difference: "none" is supported
+{
+	Part* part = 0;
+
+	for (;;) 
+	{
+		Xml::Token token = xml.parse();
+		const QString& tag = xml.s1();
+		
+		switch (token) 
+		{
+			case Xml::Error:
+			case Xml::End:
+				return part;
+				
+			case Xml::Text:
+				{
+					int trackIdx, partIdx;
+					if (tag=="none")
+						part=NULL;
+					else
+					{
+						sscanf(tag.toLatin1().constData(), "%d:%d", &trackIdx, &partIdx);
+						Track* track = song->tracks()->index(trackIdx);
+						if (track)
+							part = track->parts()->find(partIdx);
+					}
+				}
+				break;
+				
+			case Xml::TagStart:
+				xml.unknown("readPart");
+				break;
+				
+			case Xml::TagEnd:
+				if (tag == tag_name)
+					return part;
+					
+			default:
+				break;
+		}
+	}
+}
+
+
+
+void staff_t::read_status(Xml& xml)
+{
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "type") 
+					type = staff_type_t(xml.parseInt());
+				else if (tag == "clef") 
+					clef = clef_t(xml.parseInt());
+				else if (tag == "part") 
+				{
+					Part* part=readPart(xml);
+					if (part)
+						parts.insert(part);
+					else
+						cerr << "ERROR: THIS SHOULD NEVER HAPPEN: part is NULL while reading from xml" << endl;
+				}
+				else
+					xml.unknown("staff");
+				break;
+
+			case Xml::TagEnd:
+				if (tag == "staff")
+					return;
+
+			default:
+				break;
+		}
+	}
+}
+
+
+void staff_t::write_status(int level, Xml& xml) const
+{
+	xml.tag(level++, "staff");
+	xml.intTag(level, "type", type);
+	xml.intTag(level, "clef", clef);
+	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+	{
+		Track* track = (*part)->track();
+		int trkIdx   = song->tracks()->index(track);
+		int partIdx  = track->parts()->index(*part);
+
+		if((trkIdx == -1) || (partIdx == -1))
+			cerr << "ERROR: staff_t::write_status: trkIdx:"<<trkIdx<<", partIdx:"<<partIdx<<endl;
+
+		xml.put(level, "<part>%d:%d</part>", trkIdx, partIdx);
+	}
+	xml.tag(level, "/staff");
+}
+
+//---------------------------------------------------------
+//   writeStatus
+//---------------------------------------------------------
+
+void ScoreEdit::writeStatus(int level, Xml& xml) const
+{
+	xml.tag(level++, "scoreedit");
+	TopWin::writeStatus(level, xml);
+
+	xml.strTag(level, "name", name);
+	xml.intTag(level, "tool", edit_tools->curTool());
+	xml.intTag(level, "quantPower", score_canvas->quant_power2());
+	xml.intTag(level, "pxPerWhole", score_canvas->pixels_per_whole());
+	xml.intTag(level, "newNoteVelo", velo_spinbox->value());
+	xml.intTag(level, "newNoteVeloOff", velo_off_spinbox->value());
+	xml.intTag(level, "lastLen", score_canvas->get_last_len());
+	
+	int len=0;
+	if (n1_action->isChecked())
+		len=1;
+	else if (n2_action->isChecked())
+		len=2;
+	else if (n4_action->isChecked())
+		len=4;
+	else if (n8_action->isChecked())
+		len=8;
+	else if (n16_action->isChecked())
+		len=16;
+	else if (n32_action->isChecked())
+		len=32;
+	else if (nlast_action->isChecked())
+		len=0; // means "last"
+	
+	xml.intTag(level, "newLen", len);
+	
+	int color=0;
+	if (color_black_action->isChecked())
+		color=0;
+	else if (color_velo_action->isChecked())
+		color=1;
+	else if (color_part_action->isChecked())
+		color=2;
+	
+	xml.intTag(level, "noteColor", color);
+	
+	xml.intTag(level, "xscroll", xscroll->value());
+	xml.intTag(level, "yscroll", yscroll->value());
+	xml.intTag(level, "preambleContainsKeysig", preamble_keysig_action->isChecked());
+	xml.intTag(level, "preambleContainsTimesig", preamble_timesig_action->isChecked());
+
+	Part* selected_part=score_canvas->get_selected_part();
+	if (selected_part==NULL)
+	{
+		xml.put(level, "<selectedPart>none</selectedPart>");
+	}
+	else
+	{
+		Track* track = selected_part->track();
+		int trkIdx   = song->tracks()->index(track);
+		int partIdx  = track->parts()->index(selected_part);
+
+		if((trkIdx == -1) || (partIdx == -1))
+			cerr << "ERROR: ScoreEdit::write_status: trkIdx:"<<trkIdx<<", partIdx:"<<partIdx<<endl;
+
+		xml.put(level, "<selectedPart>%d:%d</selectedPart>", trkIdx, partIdx);
+	}
+
+
+	score_canvas->write_staves(level,xml);
+
+	xml.tag(level, "/scoreedit");
+}
+
+void ScoreCanvas::write_staves(int level, Xml& xml) const
+{
+	for (list<staff_t>::const_iterator staff=staves.begin(); staff!=staves.end(); staff++)
+		staff->write_status(level, xml);
+}
+
+
+//---------------------------------------------------------
+//   readStatus
+//---------------------------------------------------------
+
+void ScoreEdit::readStatus(Xml& xml)
+{
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+			
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "name") 
+					name = xml.parse1();
+				else if (tag == "tool") 
+					edit_tools->set(xml.parseInt());
+				else if (tag == "quantPower") 
+					quant_combobox->setCurrentIndex(xml.parseInt()-1);
+				else if (tag == "pxPerWhole") 
+					px_per_whole_spinbox->setValue(xml.parseInt());
+				else if (tag == "newNoteVelo") 
+					velo_spinbox->setValue(xml.parseInt());
+				else if (tag == "newNoteVeloOff") 
+					velo_off_spinbox->setValue(xml.parseInt());
+				else if (tag == "lastLen") 
+					score_canvas->set_last_len(xml.parseInt());
+				else if (tag == "newLen") 
+				{
+					int val=xml.parseInt();
+					switch (val)
+					{
+						case 0: nlast_action->setChecked(true); break;
+						case 1: n1_action->setChecked(true); break;
+						case 2: n2_action->setChecked(true); break;
+						case 4: n4_action->setChecked(true); break;
+						case 8: n8_action->setChecked(true); break;
+						case 16: n16_action->setChecked(true); break;
+						case 32: n32_action->setChecked(true); break;
+						default:
+							cerr << "ERROR: THIS SHOULD NEVER HAPPEN. newLen is invalid in ScoreEdit::readStatus.\n" <<
+							        "       (newLen="<<val<<"; the only valid values are 0,1,2,4,8,16 and 32)\n" <<
+							        "       however, don't worry, this is no major problem, using 0 instead" << endl;
+							nlast_action->setChecked(true);
+					}
+				}
+				else if (tag == "noteColor")
+				{
+					int val=xml.parseInt();
+					switch (val)
+					{
+						case 0: color_black_action->setChecked(true); break;
+						case 1: color_velo_action->setChecked(true); break;
+						case 2: color_part_action->setChecked(true); break;
+						default:
+							cerr << "ERROR: THIS SHOULD NEVER HAPPEN. noteColor is invalid in ScoreEdit::readStatus.\n" <<
+							        "       (noteColor="<<val<<"; the only valid values are 0,1 and 2)\n" <<
+							        "       however, don't worry, this is no major problem, using 0 instead" << endl;
+							color_black_action->setChecked(true);
+					}
+				}
+				else if (tag == "xscroll") 
+					xscroll->setValue(xml.parseInt());
+				else if (tag == "yscroll") 
+					yscroll->setValue(xml.parseInt());
+				else if (tag == "preambleContainsKeysig") 
+					preamble_keysig_action->setChecked(xml.parseInt());
+				else if (tag == "preambleContainsTimesig") 
+					preamble_timesig_action->setChecked(xml.parseInt());
+				else if (tag == "topwin")
+					TopWin::readStatus(xml);
+				else if (tag == "selectedPart")
+					score_canvas->set_selected_part(readPart(xml, "selectedPart"));
+				else if (tag == "staff")
+				{
+					staff_t staff(score_canvas);
+					staff.read_status(xml);
+					score_canvas->push_back_staff(staff);
+				}
+				else
+					xml.unknown("ScoreEdit");
+				break;
+
+			case Xml::TagEnd:
+				if (tag == "scoreedit")
+					return;
+				default:
+				break;
+		}
 	}
 }
 
@@ -463,8 +758,6 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 		for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
 			staff.parts.insert(part_it->second);
 		staff.cleanup_parts();
-
-		staff.split_note=SPLIT_NOTE;
 
 		staff.type=GRAND_TOP; //FINDME_INITCLEF
 		staff.clef=VIOLIN;
@@ -489,8 +782,6 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 					staff.parts.insert(part_it->second);
 			staff.cleanup_parts();
 			
-			staff.split_note=SPLIT_NOTE;
-
 			staff.type=GRAND_TOP; //FINDME_INITCLEF
 			staff.clef=VIOLIN;
 			staves.push_back(staff);
@@ -626,9 +917,8 @@ void ScoreCanvas::set_staffmode(list<staff_t>::iterator it, staff_mode_t mode)
 		case MODE_BOTH:
 			it->type=GRAND_BOTTOM;
 			it->clef=BASS;
-			it->split_note=SPLIT_NOTE;
 			
-			staves.insert(it, staff_t(this, GRAND_TOP, VIOLIN, it->parts, it->split_note));
+			staves.insert(it, staff_t(this, GRAND_TOP, VIOLIN, it->parts));
 			break;
 		
 		default:
@@ -949,8 +1239,8 @@ void staff_t::create_appropriate_eventlist()
 			Event& event=it->second;
 			
 			if ( (event.isNote() && !event.isNoteOff()) &&
-			     ( ((type==GRAND_TOP) && (event.pitch() >= split_note)) ||
-			       ((type==GRAND_BOTTOM) && (event.pitch() < split_note)) ||
+			     ( ((type==GRAND_TOP) && (event.pitch() >= SPLIT_NOTE)) ||
+			       ((type==GRAND_BOTTOM) && (event.pitch() < SPLIT_NOTE)) ||
 			       (type==NORMAL) )                          )
 			{
 				unsigned begin, end;
@@ -3481,33 +3771,39 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o clean up code (find TODOs)
- * 
- * IMPORTANT TODO
  *   o save and restore window settings, automatically reopen windows
  *     after loading file etc
+ *   o set window title properly
+ *   o set initial window size properly
+ *   o save and restore toolbar-position-settings
+ * 
+ * IMPORTANT TODO
  *   o offer functions like in the pianoroll: quantize etc.
  *   o support selections
+ *   o let the user select the distance between staves
+ *   o add a select-clef-toolbox for tracks
+ *   o respect the track's clef (has to be implemented first in muse)
  *
  * less important stuff
  *   o deal with expanding parts
  *   o do all the song_changed(SC_EVENT_INSERTED) properly
  *   o add tracks in correct order to score
- *   o draw measure numbers
- *   o use timesig_t in all timesig-stuff
  *   o use bars instead of flags over groups of 8ths / 16ths etc
  *   o support different keys in different tracks at the same time
  *       calc_pos_add_list and calc_item_pos will be affected by this
  *       calc_pos_add_list must be called before calc_item_pos then,
  *       and calc_item_pos must respect the pos_add_list instead of
  *       keeping its own pos_add variable (which is only an optimisation)
- *   o draw a margin around notes which are in a bright color
+ * 
+ * really unimportant nice-to-haves
+ *   o clean up code (find TODOs)
+ *   o support in-song clef-changes
+ *   o draw measure numbers
+ *   o use timesig_t in all timesig-stuff
  *   o refuse to resize so that width gets smaller or equal than x_left
- *   o use the proper quantisation functions instead of
- *     flo_quantize() and flo_quantize_floor()
- *   o let the user set up SPLIT_NOTE
- *   o let the user decide about the initial clef (search for FINDME_INITCLEF)
- *
+ *   o draw a margin around notes which are in a bright color
+ * 
+ * 
  * stuff for the other muse developers
  *   o process accurate timesignatures from muse's list (has to be implemented first in muse)
  *      ( (2+2+3)/4 or (3+2+2)/4 instead of 7/4 )

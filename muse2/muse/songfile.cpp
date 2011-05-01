@@ -19,6 +19,7 @@
 #include "drumedit.h"
 //#include "midiedit/drumedit.h"  // p4.0.2
 #include "pianoroll.h"
+#include "scoreedit.h"
 //#include "midiedit/pianoroll.h"  // p4.0.2
 #include "globals.h"
 #include "xml.h"
@@ -1009,11 +1010,18 @@ void MusE::readToplevels(Xml& xml)
                               // But for now be safe for all the top levels...
                               if(!pl->empty())
                               {
-                                
                                 startPianoroll(pl);
                                 toplevels.back().cobject()->readStatus(xml);
                                 pl = new PartList;
                               }  
+                              }
+                        else if (tag == "scoreedit") {
+                                ScoreEdit* score = new ScoreEdit(this, 0, arranger->cursorValue());
+                                score->show();
+                                toplevels.push_back(Toplevel(Toplevel::SCORE, (unsigned long)(score), score));
+                                connect(score, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+                                connect(score, SIGNAL(name_changed()), SLOT(scoreNamingChanged()));
+                                score->readStatus(xml);
                               }
                         else if (tag == "drumedit") {
                               if(!pl->empty())
