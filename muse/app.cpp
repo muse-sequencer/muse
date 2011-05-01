@@ -1892,6 +1892,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
       song->updatePos();
       clipboardChanged(); // enable/disable "Paste"
       selectionChanged(); // enable/disable "Copy" & "Paste"
+      scoreNamingChanged(); // inform the score menus about the new scores and their names
       progress->setValue(50);
 
       // p3.3.53 Try this AFTER the song update above which does a mixer update... Tested OK - mixers resize properly now.
