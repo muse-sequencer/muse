@@ -16,6 +16,7 @@
 #include "globals.h"
 #include "drumedit.h"
 #include "pianoroll.h"
+#include "scoreedit.h"
 #include "master/masteredit.h"
 ///#include "transport.h"
 #include "bigtime.h"
@@ -884,6 +885,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               DrumEdit::readConfiguration(xml);
                         else if (tag == "pianoroll")
                               PianoRoll::readConfiguration(xml);
+                        else if (tag == "scoreedit")
+                              ScoreEdit::read_configuration(xml);
                         else if (tag == "masteredit")
                               MasterEdit::readConfiguration(xml);
                         else if (tag == "waveedit")
@@ -1351,6 +1354,7 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
 
       DrumEdit::writeConfiguration(level, xml);
       PianoRoll::writeConfiguration(level, xml);
+      ScoreEdit::write_configuration(level, xml);
       MasterEdit::writeConfiguration(level, xml);
       WaveEdit::writeConfiguration(level, xml);
 
@@ -1465,6 +1469,7 @@ void MusE::writeConfiguration(int level, Xml& xml) const
 
       DrumEdit::writeConfiguration(level, xml);
       PianoRoll::writeConfiguration(level, xml);
+      ScoreEdit::write_configuration(level, xml);
       MasterEdit::writeConfiguration(level, xml);
       WaveEdit::writeConfiguration(level, xml);
 
