@@ -139,6 +139,9 @@ QColor* mycolors; // array [NUM_MYCOLORS]
 
 
 set<QString> ScoreEdit::names;
+int ScoreEdit::width_init = 600;
+int ScoreEdit::height_init = 400;
+
 
 //---------------------------------------------------------
 //   ScoreEdit
@@ -148,6 +151,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
    : TopWin(parent, name)
 {
 	setAttribute(Qt::WA_DeleteOnClose);
+
+	resize(width_init, height_init);
 
 	mainw    = new QWidget(this);
 
@@ -370,6 +375,8 @@ bool ScoreEdit::set_name(QString newname, bool emit_signal, bool emergency_name)
 
 		name=newname;
 		
+		setWindowTitle("MusE: Score \""+name+"\"");
+		
 		if (emit_signal)
 			emit name_changed();
 		
@@ -439,6 +446,14 @@ void ScoreEdit::closeEvent(QCloseEvent* e)
 
 	emit deleted((unsigned long)this);
 	e->accept();
+}
+
+void ScoreEdit::resizeEvent(QResizeEvent* ev)
+{
+	QWidget::resizeEvent(ev);
+	
+	width_init=ev->size().width();
+	height_init=ev->size().height();
 }
 
 void ScoreEdit::menu_command(int cmd)
@@ -668,7 +683,7 @@ void ScoreEdit::readStatus(Xml& xml)
 		{
 			case Xml::TagStart:
 				if (tag == "name") 
-					name = xml.parse1();
+					set_name(xml.parse1());
 				else if (tag == "tool") 
 					edit_tools->set(xml.parseInt());
 				else if (tag == "quantPower") 
@@ -740,11 +755,52 @@ void ScoreEdit::readStatus(Xml& xml)
 			case Xml::TagEnd:
 				if (tag == "scoreedit")
 					return;
-				default:
+					
+			default:
 				break;
 		}
 	}
 }
+
+void ScoreEdit::read_configuration(Xml& xml)
+{
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+			
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "width")
+					height_init = xml.parseInt();
+				else if (tag == "height")
+					width_init = xml.parseInt();
+				else
+					xml.unknown("ScoreEdit");
+				break;
+				
+			case Xml::TagEnd:
+				if (tag == "scoreedit")
+					return;
+				
+			default:
+				break;
+		}
+	}
+}
+
+
+void ScoreEdit::write_configuration(int level, Xml& xml)
+{
+	xml.tag(level++, "scoreedit");
+	xml.intTag(level, "width", width_init);
+	xml.intTag(level, "height", height_init);
+	xml.etag(level, "scoreedit");
+}
+
 
 
 
@@ -3519,7 +3575,7 @@ void ScoreCanvas::goto_tick(int tick, bool force)
 void ScoreCanvas::resizeEvent(QResizeEvent* ev)
 {
 	QWidget::resizeEvent(ev);
-
+	
 	emit viewport_width_changed( viewport_width()  );
 	emit viewport_height_changed( viewport_height()  );
 }
@@ -3771,11 +3827,7 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o save and restore window settings, automatically reopen windows
- *     after loading file etc
- *   o set window title properly
- *   o set initial window size properly
- *   o save and restore toolbar-position-settings
+ *   x nothing atm
  * 
  * IMPORTANT TODO
  *   o offer functions like in the pianoroll: quantize etc.
@@ -3794,6 +3846,7 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  *       calc_pos_add_list must be called before calc_item_pos then,
  *       and calc_item_pos must respect the pos_add_list instead of
  *       keeping its own pos_add variable (which is only an optimisation)
+ *   o save more configuration stuff (quant, color, to_init
  * 
  * really unimportant nice-to-haves
  *   o clean up code (find TODOs)

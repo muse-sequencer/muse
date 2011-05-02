@@ -69,6 +69,7 @@ class ScoreEdit : public TopWin
 
 	private:
 		virtual void closeEvent(QCloseEvent*);
+		virtual void resizeEvent(QResizeEvent*);
 		
 		void init_name();
 
@@ -104,6 +105,7 @@ class ScoreEdit : public TopWin
 		ScoreCanvas* score_canvas;
 		
 		static set<QString> names;
+		static int width_init, height_init;
 		
 		QString name;
 		
@@ -127,8 +129,11 @@ class ScoreEdit : public TopWin
 	public:
 		ScoreEdit(QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
 		~ScoreEdit();
+
 		void writeStatus(int level, Xml& xml) const;
 		void readStatus(Xml& xml);
+		static void read_configuration(Xml&);
+		static void write_configuration(int, Xml&);
 		
 		void add_parts(PartList* pl, bool all_in_one=false);
 		QString get_name() { return name; }
