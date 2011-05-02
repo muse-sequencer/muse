@@ -1825,7 +1825,10 @@ void PluginI::setParam(unsigned long i, float val)
   // Time-stamp the event. This does a possibly slightly slow call to gettimeofday via timestamp().
   //  timestamp() is more or less an estimate of the current frame. (This is exactly how ALSA events 
   //  are treated when they arrive in our ALSA driver.) 
-  ce.frame = audio->timestamp();  
+  //ce.frame = audio->timestamp();  
+  // p4.0.23 timestamp() is circular, which is making it impossible to deal with 'modulo' events which 
+  //  slip in 'under the wire' before processing the ring buffers. So try this linear timestamp instead:
+  ce.frame = audio->curFrame();  
   if(_controlFifo.put(ce))
   {
     fprintf(stderr, "PluginI::setParameter: fifo overflow: in control number:%lu\n", i);
@@ -2538,7 +2541,8 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
       //}      
       
       //unsigned endPos = pos + n;
-      unsigned long frameOffset = audio->getFrameOffset();
+      //unsigned long frameOffset = audio->getFrameOffset();
+      unsigned long syncFrame = audio->curSyncFrame();  
       
       unsigned long sample = 0;
       int loopcount = 0;      // REMOVE Tim.
@@ -2577,23 +2581,30 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
         bool found = false;
         unsigned long frame = 0; 
         unsigned long index = 0;
+        unsigned long evframe; 
         // Get all control ring buffer items valid for this time period...
         //for(int m = 0; m < cbsz; ++m)
         while(!_controlFifo.isEmpty())
         {
           //ControlValue v = _controlFifo.get(); 
           ControlEvent v = _controlFifo.peek(); 
-          //printf("PluginI::apply control idx:%lu frame:%lu val:%f\n", v.idx, v.frame, v.value);   // REMOVE Tim.
+          // The events happened in the last period or even before that. Shift into this period with + n. This will sync with audio. 
+          // If the events happened even before current frame - n, make sure they are counted immediately as zero-frame.
+          //evframe = (pos + frameOffset > v.frame + n) ? 0 : v.frame - pos - frameOffset + n; 
+          evframe = (syncFrame > v.frame + n) ? 0 : v.frame - syncFrame + n; 
           // Process only items in this time period. Make sure to process all
           //  subsequent items which have the same frame. 
+          //printf("PluginI::apply control idx:%lu frame:%lu val:%f  unique:%d evframe:%lu\n", 
+          //  v.idx, v.frame, v.value, v.unique, evframe);   // REMOVE Tim.
           //if(v.frame >= (endPos + frameOffset) || (found && v.frame != frame))  
           //if(v.frame < sample || v.frame >= (sample + nsamp) || (found && v.frame != frame))  
           //if(v.frame < sample || v.frame >= (endPos + frameOffset) || (found && v.frame != frame))  
           //if(v.frame < sample || v.frame >= (endPos + frameOffset)  
-          if(v.frame < sample || v.frame >= frameOffset  
+          //if(v.frame < sample || v.frame >= frameOffset  
+          if(evframe >= n
               //|| (found && v.frame != frame)  
               //|| (!usefixedrate && found && !v.unique && v.frame != frame)  
-              || (found && !v.unique && v.frame != frame)  
+              || (found && !v.unique && evframe != frame)  
               // dssi-vst needs them serialized and accounted for, no matter what. This works with fixed rate 
               //  because nsamp is constant. But with packets, we need to guarantee at least one-frame spacing. 
               // Although we likely won't be using packets with dssi-vst, so it's OK for now.
@@ -2606,12 +2617,14 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
           if(v.idx >= _plugin->_controlInPorts) 
             break;
           found = true;
-          frame = v.frame;
+          //frame = v.frame;
+          frame = evframe;
           index = v.idx;
           // Set the ladspa control port value.
           //controls[v.idx].val = v.value;
           controls[v.idx].tmpVal = v.value;
           
+          /*
           // Need to update the automation value, otherwise it overwrites later with the last automation value.
           if(_track && _id != -1)
           {
@@ -2637,6 +2650,7 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
             //  enableController(k, false);
             //_track->recordAutomation(id, v.value);
           }  
+          */
         }
 
         // Now update the actual values from the temporary values...
@@ -2650,8 +2664,8 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
         if(sample + nsamp >= n)         // Safety check.
           nsamp = n - sample; 
         
-        //printf("PluginI::apply ports:%lu n:%lu frame:%lu sample:%lu nsamp:%lu fOffset:%lu loopcount:%d\n", 
-        //      ports, n, frame, sample, nsamp, frameOffset, loopcount);   // REMOVE Tim.
+        //printf("PluginI::apply ports:%lu n:%lu frame:%lu sample:%lu nsamp:%lu syncFrame:%lu loopcount:%d\n", 
+        //      ports, n, frame, sample, nsamp, syncFrame, loopcount);   // REMOVE Tim.
         
         // TODO: TESTING: Don't allow zero-length runs. This could/should be checked in the control loop instead.
         // Note this means it is still possible to get stuck in the top loop (at least for a while).
@@ -2829,7 +2843,7 @@ int PluginI::oscControl(unsigned long port, float value)
   //LADSPA_Data value = argv[1]->f;
 
   #ifdef PLUGIN_DEBUGIN  
-  printf("PluginI::oscControl received oscControl port:%lu val:%f\n", port, value);
+  printf("PluginI::oscControl received oscControl port:%lu val:%f\n", port, value);   
   #endif
   
   //int controlPorts = synth->_controller;
@@ -2892,7 +2906,10 @@ int PluginI::oscControl(unsigned long port, float value)
   // Time-stamp the event. This does a possibly slightly slow call to gettimeofday via timestamp().
   //  timestamp() is more or less an estimate of the current frame. (This is exactly how ALSA events 
   //  are treated when they arrive in our ALSA driver.) 
-  ce.frame = audio->timestamp();  
+  //ce.frame = audio->timestamp();  
+  // p4.0.23 timestamp() is circular, which is making it impossible to deal with 'modulo' events which 
+  //  slip in 'under the wire' before processing the ring buffers. So try this linear timestamp instead:
+  ce.frame = audio->curFrame();  
   if(_controlFifo.put(ce))
   {
     fprintf(stderr, "PluginI::oscControl: fifo overflow: in control number:%lu\n", cport);

@@ -1,3 +1,11 @@
+01.05.2011:
+        - More fixes, improvements to ladspa and dssi processing, control responsiveness, of 25.04.2011. (Tim)
+          Timestamp control ring buffer items with linear Audio::curFrame() instead of circular Audio::timestamp().
+          Added Audio::curSyncFrame(), used it in process routines to subtract from timestamp. 
+          All effect/synth generic/native gui controls should be quick now. 
+        - Dssi synths respond to Audio track controller graphs now. 
+          Still TODO: Make Audio track controllers full-speed (like the controls), they are still once per period. 
+          Do same for midi->ladspa controller code.
 28.04.2011:
         - More separation of Alsa and Jack midi processing. Possible fix for crash report by Geoff B. (p4.0.22 Tim)
           Added MidiDevice::handleStop(), ::handleSeek(). Split processing among MidiSeq::processStop, ::processSeek

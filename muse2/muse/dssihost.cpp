@@ -353,11 +353,10 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
           // That way we cover all bases - effect plugins and synths. 
           // Non-synths will show up in the ladspa effect dialog, while synths will show up here...
           // There should be nothing left out...
-          if(descr->run_synth ||
+          if(descr->run_synth ||                  
             descr->run_synth_adding ||
             descr->run_multiple_synths ||
             descr->run_multiple_synths_adding) 
-          
           {
             const QString label(descr->LADSPA_Plugin->Label);
             
@@ -404,13 +403,13 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
             
             synthis.push_back(s);
           }
-          else
-          {
+          //else
+          //{
             // NOTE: Just a test
             //QFileInfo ffi(fi);
             //plugins.add(&ffi, LADSPA_Descriptor_Function(NULL), descr->LADSPA_Plugin, false);
             //plugins.add(&ffi, descr, false);
-          }
+          //}
         }
       }  
       dlclose(handle);
@@ -1407,7 +1406,10 @@ void DssiSynthIF::setParameter(unsigned long n, float v)
   // Time-stamp the event. This does a possibly slightly slow call to gettimeofday via timestamp().
   //  timestamp() is more or less an estimate of the current frame. (This is exactly how ALSA events 
   //  are treated when they arrive in our ALSA driver.) 
-  ce.frame = audio->timestamp();  
+  //ce.frame = audio->timestamp();  
+  // p4.0.23 timestamp() is circular, which is making it impossible to deal with 'modulo' events which 
+  //  slip in 'under the wire' before processing the ring buffers. So try this linear timestamp instead:
+  ce.frame = audio->curFrame();  
   if(_controlFifo.put(ce))
   {
     fprintf(stderr, "DssiSynthIF::setParameter: fifo overflow: in control number:%lu\n", n);
@@ -2315,8 +2317,9 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
   
   //nevents = 0;
 
-  unsigned long endPos = pos + n;
+  //unsigned long endPos = pos + n;
   int frameOffset = audio->getFrameOffset();
+  unsigned long syncFrame = audio->curSyncFrame();  
   
   // All ports must be connected to something!
   unsigned long nop, k;
@@ -2369,6 +2372,17 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
   if(fixedsize > n)
     fixedsize = n;
   
+  // Process automation control values now.
+  // TODO: This needs to be respect frame resolution. Put this inside the sample loop below.
+  for(unsigned long k = 0; k < synth->_controlInPorts; ++k)
+  {
+    if(automation && synti && synti->automationType() != AUTO_OFF && id() != -1)
+    {
+      if(controls[k].enCtrl && controls[k].en2Ctrl )
+        controls[k].val = synti->pluginCtrlVal(genACnum(id(), k));
+    }      
+  }
+        
   while(sample < n)
   {
     //unsigned long nsamp = n;
@@ -2377,22 +2391,32 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
     bool found = false;
     unsigned long frame = 0; 
     unsigned long index = 0;
+    unsigned long evframe; 
     // Get all control ring buffer items valid for this time period...
     //for(int m = 0; m < cbsz; ++m)
     while(!_controlFifo.isEmpty())
     {
       //ControlValue v = _controlFifo.get(); 
       ControlEvent v = _controlFifo.peek(); 
-      //printf("DssiSynthIF::getData control idx:%d frame:%d val:%f\n", v.idx, v.frame, v.value);   // REMOVE Tim.
+      // The events happened in the last period or even before that. Shift into this period with + n. This will sync with audio. 
+      // If the events happened even before current frame - n, make sure they are counted immediately as zero-frame.
+      //evframe = (pos + frameOffset > v.frame + n) ? 0 : v.frame - pos - frameOffset + n; 
+      evframe = (syncFrame > v.frame + n) ? 0 : v.frame - syncFrame + n; 
+      
+      //printf("DssiSynthIF::getData ctrl dssi:%d idx:%lu frame:%lu val:%f unique:%d evframe:%lu\n", 
+      //        synth->_isDssiVst, v.idx, v.frame, v.value, v.unique, evframe);   // REMOVE Tim.
       // Process only items in this time period. Make sure to process all
       //  subsequent items which have the same frame. 
       //if(v.frame >= (endPos + frameOffset) || (found && v.frame != frame))  
       //if(v.frame < sample || v.frame >= (sample + nsamp) || (found && v.frame != frame))  
       //if(v.frame < sample || v.frame >= (endPos + frameOffset) || (found && v.frame != frame))  
-      if(v.frame < sample || v.frame >= (endPos + frameOffset)  
+      //if(v.frame < startPos || v.frame >= (endPos + frameOffset)  
+      //if(evframe < sample || evframe >= n  
+      //if(evframe < sample || evframe >= (n + frameOffset)
+      if(evframe >= n
          //|| (found && v.frame != frame)  
          //|| (!usefixedrate && found && !v.unique && v.frame != frame)  
-         || (found && !v.unique && v.frame != frame)  
+         || (found && !v.unique && evframe != frame)  
          // dssi-vst needs them serialized and accounted for, no matter what. This works with fixed rate 
          //  because nsamp is constant. But with packets, we need to guarantee at least one-frame spacing. 
          // Although we likely won't be using packets with dssi-vst, so it's OK for now.
@@ -2404,7 +2428,8 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
       if(v.idx >= synth->_controlInPorts) // Sanity check.
         break;
       found = true;
-      frame = v.frame;
+      //frame = v.frame;
+      frame = evframe;
       index = v.idx;
       // Set the ladspa control port value.
       controls[v.idx].val = v.value;
@@ -2417,8 +2442,8 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
     if(sample + nsamp >= n)         // Safety check.
       nsamp = n - sample; 
     
-    //printf("DssiSynthIF::getData n:%d frame:%d sample:%d nsamp:%d pos:%d fOffset:%d loopcount:%d\n", 
-    //       n, frame, sample, nsamp, pos, frameOffset, loopcount);   // REMOVE Tim.
+    //printf("DssiSynthIF::getData n:%d frame:%lu sample:%lu nsamp:%lu pos:%d fOffset:%d syncFrame:%lu loopcount:%d\n", 
+    //       n, frame, sample, nsamp, pos, frameOffset, syncFrame, loopcount);   // REMOVE Tim.
     
     // TODO: TESTING: Don't allow zero-length runs. This could/should be checked in the control loop instead.
     // Note this means it is still possible to get stuck in the top loop (at least for a while).
@@ -2607,6 +2632,12 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
       snd_seq_event_t* ev = events;
       synth->dssi->run_multiple_synths(1, &handle, nsamp, &ev, &nevents);
     }
+    //else 
+    //if(synth->dssi->LADSPA_Plugin->run)         
+    //{
+    //  // Just a test, worked OK.
+    //  synth->dssi->LADSPA_Plugin->run(handle, nsamp);     
+    //}
     
     sample += nsamp;
     loopcount++;       // REMOVE Tim.
@@ -2982,7 +3013,7 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
   //LADSPA_Data value = argv[1]->f;
 
   #ifdef DSSI_DEBUG 
-  printf("DssiSynthIF::oscControl received oscControl port:%lu val:%f\n", port, value);  
+  printf("DssiSynthIF::oscControl received oscControl port:%lu val:%f\n", port, value);    
   #endif
   
   //int controlPorts = synth->_controlInPorts;
@@ -3051,7 +3082,10 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
   // Time-stamp the event. This does a possibly slightly slow call to gettimeofday via timestamp().
   //  timestamp() is more or less an estimate of the current frame. (This is exactly how ALSA events 
   //  are treated when they arrive in our ALSA driver.) 
-  ce.frame = audio->timestamp();  
+  //ce.frame = audio->timestamp();  
+  // p4.0.23 timestamp() is circular, which is making it impossible to deal with 'modulo' events which 
+  //  slip in 'under the wire' before processing the ring buffers. So try this linear timestamp instead:
+  ce.frame = audio->curFrame();  
   if(_controlFifo.put(ce))
   {
     fprintf(stderr, "DssiSynthIF::oscControl: fifo overflow: in control number:%lu\n", cport);

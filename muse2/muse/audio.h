@@ -283,6 +283,7 @@ class Audio {
       int timestamp() const;
       void processMidi();
       unsigned curFrame() const;
+      unsigned curSyncFrame() const { return syncFrame; }
       void recordStop();
       bool freewheel() const       { return _freewheel; }
       void setFreewheel(bool val);
