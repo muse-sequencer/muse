@@ -826,26 +826,30 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 	else
 	{
 		set<Track*> tracks;
-		
 		for (ciPart it=pl->begin(); it!=pl->end(); it++)
 			tracks.insert(it->second->track());
 		
-		for (set<Track*>::iterator it=tracks.begin(); it!=tracks.end(); it++)
-		{
-			staff.parts.clear();
-			for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
-				if (part_it->second->track() == *it)
-					staff.parts.insert(part_it->second);
-			staff.cleanup_parts();
-			
-			staff.type=GRAND_TOP; //FINDME_INITCLEF
-			staff.clef=VIOLIN;
-			staves.push_back(staff);
+		TrackList* tracklist = song->tracks();
+		// this loop is used for inserting track-staves in the
+		// correct order. simply iterating through tracks's contents
+		// would sort after the pointer values, i.e. randomly
+		for (ciTrack track_it=tracklist->begin(); track_it!=tracklist->end(); track_it++)
+			if (tracks.find(*track_it)!=tracks.end())
+			{
+				staff.parts.clear();
+				for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
+					if (part_it->second->track() == *track_it)
+						staff.parts.insert(part_it->second);
+				staff.cleanup_parts();
+				
+				staff.type=GRAND_TOP; //FINDME_INITCLEF
+				staff.clef=VIOLIN;
+				staves.push_back(staff);
 
-			staff.type=GRAND_BOTTOM;
-			staff.clef=BASS;
-			staves.push_back(staff);
-		}
+				staff.type=GRAND_BOTTOM;
+				staff.clef=BASS;
+				staves.push_back(staff);
+			}
 	}
 	
 	cleanup_staves();
@@ -1302,6 +1306,12 @@ void staff_t::create_appropriate_eventlist()
 				unsigned begin, end;
 				begin=flo_quantize(event.tick()+part->tick(), parent->quant_ticks());
 				end=flo_quantize(event.endTick()+part->tick(), parent->quant_ticks());
+				if (end==begin)
+				{
+					if (heavyDebugMsg) cout << "note len would be quantized to zero. using minimal possible length" << endl;
+					end=begin+parent->quant_ticks();
+				}
+				
 				if (heavyDebugMsg) cout << "inserting note on at "<<begin<<" with pitch="<<event.pitch()<<" and len="<<end-begin<<endl;
 				eventlist.insert(pair<unsigned, FloEvent>(begin, FloEvent(begin,event.pitch(), event.velo(),end-begin,FloEvent::NOTE_ON,part,&it->second)));
 			}
@@ -3711,15 +3721,33 @@ void ScoreCanvas::set_quant(int val)
 	}
 }
 
-void ScoreCanvas::set_pixels_per_whole(int val)
+void ScoreCanvas::set_pixels_per_whole(int val) //FINDMICH passt das?
 {
 	if (debugMsg) cout << "setting px per whole to " << val << endl;
+	
+	int tick;
+	int old_xpos=x_pos;
+	if (x_pos!=0) tick=x_to_tick(x_pos);
+	// the above saves us from a division by zero when initalizing
+	// ScoreCanvas; then x_pos will be 0 and x_to_tick (causing the
+	// divison by zero) won't be called. also, when x_pos=0, and the
+	// above would not be done, after that function, x_pos will be
+	// not zero, but at the position of the first note (which isn't
+	// zero!)
+	
 	_pixels_per_whole=val;
 	
 	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 		it->calc_item_pos();
 	
 	emit pixels_per_whole_changed(val);
+
+	if (old_xpos!=0)
+	{
+		x_pos=tick_to_x(tick);
+		if (debugMsg) cout << "x_pos was not zero, readjusting to " << x_pos << endl;
+		emit xscroll_changed(x_pos);
+	}
 	
 	redraw();
 }
@@ -3827,14 +3855,19 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   x nothing atm
+ *   o provide sane defaults for initial toolbar positions
  * 
  * IMPORTANT TODO
+ *   o let the user rearrange staves (move up/down)
  *   o offer functions like in the pianoroll: quantize etc.
  *   o support selections
- *   o let the user select the distance between staves
+ *   o let the user select the distance between staves, or do this
+ *     automatically?
  *   o add a select-clef-toolbox for tracks
  *   o respect the track's clef (has to be implemented first in muse)
+ *   o do partial recalculating; recalculating can take pretty long
+ *     (0,5 sec) when displaying a whole song in scores
+ *   o when changing pixels_per_whole, update scroll bar
  *
  * less important stuff
  *   o deal with expanding parts
@@ -3846,7 +3879,7 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  *       calc_pos_add_list must be called before calc_item_pos then,
  *       and calc_item_pos must respect the pos_add_list instead of
  *       keeping its own pos_add variable (which is only an optimisation)
- *   o save more configuration stuff (quant, color, to_init
+ *   o save more configuration stuff (quant, color, to_init)
  * 
  * really unimportant nice-to-haves
  *   o clean up code (find TODOs)
@@ -3855,6 +3888,7 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  *   o use timesig_t in all timesig-stuff
  *   o refuse to resize so that width gets smaller or equal than x_left
  *   o draw a margin around notes which are in a bright color
+ *   o support drum tracks (x-note-heads etc.)
  * 
  * 
  * stuff for the other muse developers
