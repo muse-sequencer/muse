@@ -1,3 +1,5 @@
+04.05.2011:
+        - Fixed meter drawing for zero values in feedback parameters to plugin guis (rj)
 02.05.2011:
         - MusE 2.0beta released (rj)
 01.05.2011:

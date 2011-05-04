@@ -122,11 +122,13 @@ void VerticalMeter::paintEvent(QPaintEvent* /*ev*/)
 
 
       if(mtype == DBMeter) 
-        xv = val == 0 ? w : int(((maxScale - (fast_log10(val) * 20.0)) * w)/range);
-      else
-        xv = val == 0 ? w : int(((maxScale - val) * w)/range);
+        xv = int(((maxScale - (fast_log10(val) * 20.0)) * w)/range);
+      else {
+        xv = int(((maxScale - val) * w)/range);
+      }
       
-      if(xv > w) xv = w;
+      if(xv > w)
+          xv = w;
       
       // Draw the red, green, and yellow sections.
       drawVU(p, w, h, xv);
