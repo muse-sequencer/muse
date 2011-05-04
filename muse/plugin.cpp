@@ -3564,7 +3564,7 @@ PluginGui::PluginGui(PluginIBase* p)
                       if(LADSPA_IS_HINT_INTEGER(range.HintDescriptor))
                         mType=Meter::DBMeter;
                       VerticalMeter* m = new VerticalMeter(this, mType);
-                      printf("lower =%f upper=%f dlower=%f dupper=%f\n", lower, upper,dlower,dupper);
+                      //printf("lower =%f upper=%f dlower=%f dupper=%f\n", lower, upper,dlower,dupper);
 
                       m->setRange(dlower, dupper);
                       m->setVal(dval);
