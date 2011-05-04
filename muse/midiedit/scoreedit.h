@@ -579,6 +579,8 @@ class ScoreCanvas : public View
 		void set_staffmode(list<staff_t>::iterator it, staff_mode_t mode);
 		void remove_staff(list<staff_t>::iterator it);
 		void merge_staves(list<staff_t>::iterator dest, list<staff_t>::iterator src);
+		void move_staff_above(list<staff_t>::iterator dest, list<staff_t>::iterator src);
+		void move_staff_below(list<staff_t>::iterator dest, list<staff_t>::iterator src);
 		void cleanup_staves();
 		void maybe_close_if_empty();
 		
