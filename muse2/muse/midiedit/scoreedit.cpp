@@ -922,6 +922,7 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget,
 	remove_staff_action = staff_menu->addAction(tr("Remove staff"));
 	connect(remove_staff_action, SIGNAL(triggered()), SLOT(remove_staff_slot()));
 
+	unsetCursor();
 }
 
 void ScoreCanvas::staffmode_treble_slot()
@@ -1049,6 +1050,51 @@ void ScoreCanvas::merge_staves(list<staff_t>::iterator dest, list<staff_t>::iter
 
 	recalc_staff_pos();
 	song_changed(SC_EVENT_INSERTED);
+}
+
+void ScoreCanvas::move_staff_above(list<staff_t>::iterator dest, list<staff_t>::iterator src)
+{
+	if (dest->type == GRAND_BOTTOM)
+	{
+		dest--;
+		if (dest->type!=GRAND_TOP)
+			cerr << "ERROR: THIS SHOULD NEVER HAPPEN: grand_bottom without top!"<<endl;
+	}
+
+	if (src->type == GRAND_BOTTOM)
+	{
+		src--;
+		if (src->type!=GRAND_TOP)
+			cerr << "ERROR: THIS SHOULD NEVER HAPPEN: grand_bottom without top!"<<endl;
+	}
+	
+	if (dest==src) //dragged to itself?
+		return;
+
+	
+	list<staff_t>::iterator src_end=src;
+	src_end++; //point _after_ src
+	if (src->type==GRAND_TOP) //if this is a grand staff, we need to splice two list-entries
+		src_end++;
+	
+	staves.splice(dest, staves, src, src_end);
+
+	recalc_staff_pos();
+	song_changed(SC_EVENT_INSERTED);
+}
+
+void ScoreCanvas::move_staff_below(list<staff_t>::iterator dest, list<staff_t>::iterator src)
+{
+	if (dest->type == GRAND_TOP)
+	{
+		dest++;
+		if (dest->type!=GRAND_BOTTOM)
+			cerr << "ERROR: THIS SHOULD NEVER HAPPEN: grand_top without bottom!"<<endl;
+	}
+	dest++; //now dest points past the destination staff.
+	        //if dest was a grand staff, it now points past the bottom staff
+	
+	move_staff_above(dest, src);
 }
 
 
@@ -3129,6 +3175,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 			else if (event->button() == Qt::LeftButton) //left click?
 			{
 				current_staff=staff_it;
+				setCursor(Qt::SizeAllCursor);
 				dragging_staff=true;
 			}
 		}
@@ -3213,6 +3260,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				{
 					setMouseTracking(true);		
 					dragging=true;
+					setCursor(Qt::SizeAllCursor);
 					song->startUndo();
 				}
 			}
@@ -3282,6 +3330,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 
 						setMouseTracking(true);	
 						dragging=true;
+						setCursor(Qt::SizeAllCursor);
 						//song->startUndo(); unneccessary because we have started it already above
 					}
 				}
@@ -3292,35 +3341,48 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 
 void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 {
-	if (dragging)
+	if (dragging && event->button()==Qt::LeftButton)
 	{
-		if (event->button()==Qt::LeftButton)
+		if ((mouse_operation==LENGTH) || (mouse_operation==BEGIN)) //also BEGIN can change the len by clipping
 		{
-			if ((mouse_operation==LENGTH) || (mouse_operation==BEGIN)) //also BEGIN can change the len by clipping
+			if (flo_quantize(dragged_event.lenTick(), quant_ticks()) <= 0)
 			{
-				if (flo_quantize(dragged_event.lenTick(), quant_ticks()) <= 0)
-				{
-					if (debugMsg) cout << "new length <= 0, erasing item" << endl;
-					audio->msgDeleteEvent(dragged_event, dragged_event_part, false, false, false);
-				}
-				else
-				{
-					last_len=flo_quantize(dragged_event.lenTick(), quant_ticks());
-				}
+				if (debugMsg) cout << "new length <= 0, erasing item" << endl;
+				audio->msgDeleteEvent(dragged_event, dragged_event_part, false, false, false);
 			}
-			
-			song->endUndo(SC_EVENT_MODIFIED);
-			setMouseTracking(false);
-			dragging=false;
-			
-			x_scroll_speed=0; x_scroll_pos=0;
+			else
+			{
+				last_len=flo_quantize(dragged_event.lenTick(), quant_ticks());
+			}
 		}
+		
+		song->endUndo(SC_EVENT_MODIFIED);
+		setMouseTracking(false);
+		unsetCursor();
+		dragging=false;
+		
+		x_scroll_speed=0; x_scroll_pos=0;
 	}
 	
-	if (dragging_staff)
+	if (dragging_staff && event->button()==Qt::LeftButton)
 	{
-		merge_staves(staff_at_y(event->y()+y_pos), current_staff);
+		int y=event->y()+y_pos;
+		list<staff_t>::iterator mouse_staff=staff_at_y(y);
+		
+		if (mouse_staff!=staves.end())
+		{
+			if ( ((mouse_staff->type==NORMAL) && (y >= mouse_staff->y_draw-2*YLEN) && (y <= mouse_staff->y_draw+2*YLEN)) ||
+			     ((mouse_staff->type==GRAND_TOP) && (y >= mouse_staff->y_draw-2*YLEN)) ||
+			     ((mouse_staff->type==GRAND_BOTTOM) && (y <= mouse_staff->y_draw+2*YLEN)) )
+				merge_staves(mouse_staff, current_staff);
+			else if (y >= mouse_staff->y_draw+2*YLEN) //will never happen when mouse_staff->type==GRAND_TOP
+				move_staff_below(mouse_staff, current_staff);
+			else if (y <= mouse_staff->y_draw-2*YLEN) //will never happen when mouse_staff->type==GRAND_BOTTOM
+				move_staff_above(mouse_staff, current_staff);
+		}
+
 		dragging_staff=false;
+		unsetCursor();
 		
 		y_scroll_speed=0; y_scroll_pos=0;
 	}
@@ -3346,11 +3408,13 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 			{
 				if (debugMsg) cout << "mouse-operation is now "<<mouse_x_drag_operation<<endl;
 				mouse_operation=mouse_x_drag_operation;
+				setCursor(Qt::SizeHorCursor);
 			}
 			else if (abs(dy)>DRAG_INIT_DISTANCE)
 			{
 				if (debugMsg) cout << "mouse-operation is now PITCH" << endl;
 				mouse_operation=PITCH;
+				setCursor(Qt::SizeVerCursor);
 			}
 		}
 
@@ -3855,24 +3919,22 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o provide sane defaults for initial toolbar positions
- * 
- * IMPORTANT TODO
- *   o let the user rearrange staves (move up/down)
  *   o offer functions like in the pianoroll: quantize etc.
  *   o support selections
  *   o let the user select the distance between staves, or do this
  *     automatically?
+ * 
+ * IMPORTANT TODO
  *   o add a select-clef-toolbox for tracks
  *   o respect the track's clef (has to be implemented first in muse)
  *   o do partial recalculating; recalculating can take pretty long
  *     (0,5 sec) when displaying a whole song in scores
- *   o when changing pixels_per_whole, update scroll bar
+ *   o save toolbar position also in the global window settings
+ *     and provide sane defaults
  *
  * less important stuff
  *   o deal with expanding parts
  *   o do all the song_changed(SC_EVENT_INSERTED) properly
- *   o add tracks in correct order to score
  *   o use bars instead of flags over groups of 8ths / 16ths etc
  *   o support different keys in different tracks at the same time
  *       calc_pos_add_list and calc_item_pos will be affected by this
