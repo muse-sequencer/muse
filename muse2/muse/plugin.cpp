@@ -1829,6 +1829,7 @@ void PluginI::setParam(unsigned long i, float val)
   // p4.0.23 timestamp() is circular, which is making it impossible to deal with 'modulo' events which 
   //  slip in 'under the wire' before processing the ring buffers. So try this linear timestamp instead:
   ce.frame = audio->curFrame();  
+  
   if(_controlFifo.put(ce))
   {
     fprintf(stderr, "PluginI::setParameter: fifo overflow: in control number:%lu\n", i);
@@ -2078,6 +2079,7 @@ void PluginI::activate()
       for (int i = 0; i < instances; ++i)
             _plugin->activate(handle[i]);
       if (initControlValues) {
+            //printf("PluginI::activate init:%d\n", initControlValues);  
             //for (int i = 0; i < controlPorts; ++i) {
             for (unsigned long i = 0; i < controlPorts; ++i) {
                   controls[i].val = controls[i].tmpVal;
@@ -2087,6 +2089,7 @@ void PluginI::activate()
             //
             // get initial control values from plugin
             //
+            //printf("PluginI::activate init:%d\n", initControlValues);  
             //for (int i = 0; i < controlPorts; ++i) {
             for (unsigned long i = 0; i < controlPorts; ++i) {
                   controls[i].tmpVal = controls[i].val;
@@ -2181,9 +2184,26 @@ bool PluginI::loadControl(Xml& xml)
                         break;
                   case Xml::TagEnd:
                         if (tag == "control") {
-                              if (setControl(name, val)) {
-                                    return false;
-                                    }
+                              //if (setControl(name, val)) 
+                              //  return false;
+                              // p4.0.23 Special for loader - bypass the ring buffer and store directly,
+                              //  so that upon the 'gui = 1' tag (show the gui), the gui has immediate 
+                              //  access to the values.      
+                              bool found = false;      
+                              for(unsigned long i = 0; i < controlPorts; ++i) 
+                              {
+                                if(_plugin->portName(controls[i].idx) == name) 
+                                {
+                                  controls[i].val = controls[i].tmpVal = val;
+                                  found = true;
+                                }
+                              }
+                              if(!found)
+                              {
+                                printf("PluginI:loadControl(%s, %f) controller not found\n",
+                                  name.toLatin1().constData(), val);
+                                return false;
+                              }      
                               initControlValues = true;
                               }
                         return true;
@@ -2596,6 +2616,14 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
           //  subsequent items which have the same frame. 
           //printf("PluginI::apply control idx:%lu frame:%lu val:%f  unique:%d evframe:%lu\n", 
           //  v.idx, v.frame, v.value, v.unique, evframe);   // REMOVE Tim.
+          // Protection. Observed this condition. Why? Supposed to be linear timestamps.
+          if(found && evframe < frame)
+          {
+            printf("PluginI::apply *** Error: evframe:%lu < frame:%lu idx:%lu val:%f unique:%d\n", 
+              evframe, v.frame, v.idx, v.value, v.unique); 
+            // Just make it equal to the current frame so it gets processed right away.
+            evframe = frame;  
+          }    
           //if(v.frame >= (endPos + frameOffset) || (found && v.frame != frame))  
           //if(v.frame < sample || v.frame >= (sample + nsamp) || (found && v.frame != frame))  
           //if(v.frame < sample || v.frame >= (endPos + frameOffset) || (found && v.frame != frame))  
@@ -2605,6 +2633,8 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
               //|| (found && v.frame != frame)  
               //|| (!usefixedrate && found && !v.unique && v.frame != frame)  
               || (found && !v.unique && evframe != frame)  
+              // Protection. Observed this condition (dummy audio so far). Why? Supposed to be linear timestamps.
+              //|| (found && evframe < frame)    
               // dssi-vst needs them serialized and accounted for, no matter what. This works with fixed rate 
               //  because nsamp is constant. But with packets, we need to guarantee at least one-frame spacing. 
               // Although we likely won't be using packets with dssi-vst, so it's OK for now.
@@ -2655,7 +2685,10 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
 
         // Now update the actual values from the temporary values...
         for(unsigned long k = 0; k < controlPorts; ++k)
+        {
+          // printf("PluginI::apply updating port:%lu val:%f\n", k, controls[k].tmpVal);   
           controls[k].val = controls[k].tmpVal;
+        }
         
         //if(found)
         if(found && !usefixedrate)

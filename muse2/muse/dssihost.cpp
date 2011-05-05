@@ -2402,6 +2402,14 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
       // If the events happened even before current frame - n, make sure they are counted immediately as zero-frame.
       //evframe = (pos + frameOffset > v.frame + n) ? 0 : v.frame - pos - frameOffset + n; 
       evframe = (syncFrame > v.frame + n) ? 0 : v.frame - syncFrame + n; 
+      // Protection. Observed this condition. Why? Supposed to be linear timestamps.
+      if(found && evframe < frame)
+      {
+        printf("DssiSynthIF::getData *** Error: evframe:%lu < frame:%lu idx:%lu val:%f unique:%d\n", 
+          evframe, v.frame, v.idx, v.value, v.unique); 
+        // Just make it equal to the current frame so it gets processed right away.
+        evframe = frame;  
+      }    
       
       //printf("DssiSynthIF::getData ctrl dssi:%d idx:%lu frame:%lu val:%f unique:%d evframe:%lu\n", 
       //        synth->_isDssiVst, v.idx, v.frame, v.value, v.unique, evframe);   // REMOVE Tim.
