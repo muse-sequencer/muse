@@ -3152,8 +3152,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
          ic++;
          int prevPosFrame=cvFirst.frame;
          prevVal = cvFirst.val;
-
-
+         ///bool discrete = cl->valueType() == VAL_BOOL || cl->mode() == CtrlList::DISCRETE;  // Tim
 
          // prepare prevVal
          if (cl->valueType() == VAL_LOG ) { // use db scale for volume
@@ -3195,7 +3194,12 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
             p.drawLine( leftX,
                        (rr.bottom()-2)-prevVal*height,
                         currentPixel,
-                       (rr.bottom()-2)-nextVal*height);
+                       (rr.bottom()-2)-nextVal*height); 
+                       ///(rr.bottom()-2)- (discrete?prevVal:nextVal)*height);   // Tim 
+                       
+            ///if(discrete)
+            ///  p.drawLine( currentPixel, (rr.bottom()-2)-prevVal*height, currentPixel, (rr.bottom()-2)-nextVal*height ); // Tim
+                       
             firstRun=false;
             //printf("draw line: %d %f %d %f\n",tempomap.frame2tick(lastPos),rr.bottom()-lastVal*height,tempomap.frame2tick(cv.frame),rr.bottom()-curVal*height);
             prevPosFrame=cv.frame;

@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <sys/time.h>
+//#include <time.h>
 
 #include <QFrame>
 #include <QColor>
@@ -26,7 +27,18 @@ double curTime()
       {
       struct timeval t;
       gettimeofday(&t, 0);
+      //printf("%ld %ld\n", t.tv_sec, t.tv_usec);  // Note I observed values coming out of order! Causing some problems.
       return (double)((double)t.tv_sec + (t.tv_usec / 1000000.0));
+      /*
+      // Changed by Tim. p4.0.23
+      struct timespec t;
+      //clock_gettime(CLOCK_MONOTONIC, &t);
+      //clock_gettime(CLOCK_MONOTONIC_RAW, &t);
+      //clock_gettime(CLOCK_REALTIME, &t);
+      clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &t);  // Only this one works for me. Could be my older kernel...
+      printf("%ld %ld\n", t.tv_sec, t.tv_nsec);  
+      return (double)((double)t.tv_sec + (t.tv_nsec / 1000000000.0));
+      */
       }
 
 //---------------------------------------------------------
