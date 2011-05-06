@@ -1,5 +1,7 @@
 06.05.2011:
         - MusE 2.0beta2 released (rj)
+        - Added Yamaha-CS1x.idf instrument from Ernie Rymer <ethylene77 A T yahoo D O T com> Thanks! (Tim)
+          Turned off executable permissions on some others.
 05.05.2011:
         - Fixed regression: Plugins would not restore saved control state when loading song. (Tim)
 04.05.2011:
