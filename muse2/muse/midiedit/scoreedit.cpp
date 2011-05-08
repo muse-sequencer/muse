@@ -1315,15 +1315,15 @@ bool operator< (const note_pos_t& a, const note_pos_t& b)
 }
 
 
- 
+
 int flo_quantize(int tick, int quant_ticks)
 {
-	return int(nearbyint((float)tick / quant_ticks))*quant_ticks;
+	return AL::sigmap.raster(tick, quant_ticks);
 }
  
 int flo_quantize_floor(int tick, int quant_ticks)
 {
-	return int(tick / quant_ticks) * quant_ticks;
+	return AL::sigmap.raster1(tick, quant_ticks);
 }
 
  
@@ -3927,7 +3927,6 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
 
 
 /* BUGS and potential bugs
- *   o the proper quantize functions must be used! yes, really!
  *   o when the keymap is not used, this will probably lead to a bug
  *     same when mastertrack is disabled
  *   o tied notes don't work properly when there's a key-change in
