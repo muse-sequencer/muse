@@ -35,7 +35,6 @@ class Splitter;
 class PartList;
 class Toolbar1;
 class Xml;
-class QuantConfig;
 class ScrollScale;
 class Part;
 class SNode;
@@ -81,11 +80,7 @@ class PianoRoll : public MidiEditor {
       QAction* evColorPitchAction;
       QAction* evColorVelAction;
       
-      QAction* funcOverQuantAction;
-      QAction* funcNoteOnQuantAction;
-      QAction* funcNoteOnOffQuantAction;
-      QAction* funcIterQuantAction;
-      QAction* funcConfigQuantAction;
+      QAction* funcQuantizeAction;
       QAction* funcGateTimeAction;
       QAction* funcModVelAction;
       QAction* funcCrescendoAction;
@@ -137,7 +132,6 @@ class PianoRoll : public MidiEditor {
       int _quantLimit;
       int _to;
       bool _quantLen;
-      QuantConfig* quantConfig;
       bool _playEvents;
 
       //QScrollBar* infoScroll;
@@ -160,7 +154,6 @@ class PianoRoll : public MidiEditor {
       //void trackInfoScroll(int);
       void setRaster(int);
       void setQuant(int);
-      void configQuant();
       void setQuantStrength(int val) { _quantStrength = val; }
       void setQuantLimit(int val)    { _quantLimit = val; }
       void setQuantLen(bool val)     { _quantLen = val; }

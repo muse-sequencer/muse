@@ -20,12 +20,13 @@
 #include <QSignalMapper>
 #include <QAction>
 #include <QActionGroup>
+#include <QGridLayout>
 
 #include <values.h>
 #include "noteinfo.h"
 #include "cobject.h"
-#include "midieditor.h"
-#include "tools.h"
+//#include "midieditor.h"
+//#include "tools.h"
 #include "event.h"
 #include "view.h"
 #include "gconfig.h"
@@ -55,9 +56,12 @@ using std::string;
 enum {CMD_COLOR_BLACK, CMD_COLOR_VELO, CMD_COLOR_PART,
       CMD_SET_NAME,
       CMD_NOTELEN_1, CMD_NOTELEN_2, CMD_NOTELEN_4, CMD_NOTELEN_8,
-      CMD_NOTELEN_16, CMD_NOTELEN_32, CMD_NOTELEN_LAST };
+      CMD_NOTELEN_16, CMD_NOTELEN_32, CMD_NOTELEN_LAST,
+      
+      CMD_QUANTIZE, CMD_VELOCITY, CMD_NOTELEN };
 
 class ScoreCanvas;
+class EditToolBar;
 
 //---------------------------------------------------------
 //   ScoreEdit
@@ -724,6 +728,8 @@ class ScoreCanvas : public View
 		
 		Part* get_selected_part() {return selected_part;}
 		void set_selected_part(Part* p) {selected_part=p;}
+		
+		set<Part*> get_all_parts();
 		
 		void write_staves(int level, Xml& xml) const;
 };

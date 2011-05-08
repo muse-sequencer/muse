@@ -43,6 +43,7 @@
 #include "drummap.h"
 #include "audio.h"
 #include "gconfig.h"
+#include "functions.h"
 
 /*
 static const char* map_file_pattern[] = {
@@ -904,6 +905,9 @@ void DrumEdit::cmd(int cmd)
                   break;
             case DrumCanvas::CMD_RESET:
                   reset();
+                  break;
+            case DrumCanvas::CMD_MODIFY_VELOCITY:
+                  modify_velocity(partlist_to_set(parts()));
                   break;
             default:
                   ((DrumCanvas*)(canvas))->cmd(cmd);

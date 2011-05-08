@@ -37,7 +37,6 @@ class QRect;
 //---------------------------------------------------------
 
 class PianoCanvas : public EventCanvas {
-      int cmdRange;
       int colorMode;
       int playedPitch;
 
@@ -63,7 +62,6 @@ class PianoCanvas : public EventCanvas {
       int y2pitch(int) const;
       int pitch2y(int) const;
       virtual void drawCanvas(QPainter&, const QRect&);
-      void quantize(int, int, bool);
       void copy();
       void paste();
       virtual void itemPressed(const CItem*);
@@ -88,8 +86,7 @@ class PianoCanvas : public EventCanvas {
    public:
       enum {
          CMD_CUT, CMD_COPY, CMD_PASTE, CMD_DEL,
-         CMD_OVER_QUANTIZE, CMD_ON_QUANTIZE, CMD_ONOFF_QUANTIZE,
-         CMD_ITERATIVE_QUANTIZE,
+         CMD_QUANTIZE,
          CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
          CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PREV_PART, CMD_SELECT_NEXT_PART, 
          CMD_MODIFY_GATE_TIME, CMD_MODIFY_VELOCITY,
@@ -100,7 +97,7 @@ class PianoCanvas : public EventCanvas {
          };
 
       PianoCanvas(MidiEditor*, QWidget*, int, int);
-      void cmd(int, int, int, bool, int);
+      void cmd(int cmd);
       void setColorMode(int mode) {
             colorMode = mode;
             redraw();

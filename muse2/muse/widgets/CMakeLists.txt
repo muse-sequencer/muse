@@ -76,6 +76,7 @@ QT4_WRAP_CPP (widget_mocs
       # ttoolbar.h  
       ttoolbutton.h  
       velocity.h  
+      quantize.h  
       verticalmeter.h
       view.h
       vscale.h
@@ -111,6 +112,7 @@ file (GLOB widgets_ui_files
       transformbase.ui  
       transposebase.ui  
       velocitybase.ui
+      quantbase.ui
       )
 QT4_WRAP_UI (widget_ui_headers ${widgets_ui_files})
 
@@ -177,6 +179,7 @@ file (GLOB widgets_source_files
       ttoolbutton.cpp 
       utils.cpp 
       velocity.cpp 
+      quantize.cpp 
       verticalmeter.cpp
       view.cpp
       vscale.cpp

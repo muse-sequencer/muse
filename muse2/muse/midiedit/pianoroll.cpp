@@ -44,9 +44,10 @@
 #include "gconfig.h"
 #include "icons.h"
 #include "audio.h"
+#include "functions.h"
+
 
 #include "cmd.h"
-#include "quantconfig.h"
 #include "shortcuts.h"
 
 #include "mtrackinfo.h"
@@ -77,7 +78,6 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       deltaMode = false;
       resize(_widthInit, _heightInit);
       selPart        = 0;
-      quantConfig    = 0;
       _playEvents    = false;
       _quantStrength = _quantStrengthInit;
       _quantLimit    = _quantLimitInit;
@@ -186,30 +186,11 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 
       menuFunctions->setTearOffEnabled(true);
       
-      funcOverQuantAction = menuFunctions->addAction(tr("Over Quantize"));
-      mapper->setMapping(funcOverQuantAction, PianoCanvas::CMD_OVER_QUANTIZE);
-      connect(funcOverQuantAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      funcQuantizeAction = menuFunctions->addAction(tr("Quantize"));
+      mapper->setMapping(funcQuantizeAction, PianoCanvas::CMD_QUANTIZE);
+      connect(funcQuantizeAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      funcNoteOnQuantAction = menuFunctions->addAction(tr("Note On Quantize"));
-      mapper->setMapping(funcNoteOnQuantAction, PianoCanvas::CMD_ON_QUANTIZE);
-      connect(funcNoteOnQuantAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcNoteOnOffQuantAction = menuFunctions->addAction(tr("Note On/Off Quantize"));
-      mapper->setMapping(funcNoteOnOffQuantAction, PianoCanvas::CMD_ONOFF_QUANTIZE);
-      connect(funcNoteOnOffQuantAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcIterQuantAction = menuFunctions->addAction(tr("Iterative Quantize"));
-      mapper->setMapping(funcIterQuantAction, PianoCanvas::CMD_ITERATIVE_QUANTIZE);
-      connect(funcIterQuantAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      menuFunctions->addSeparator();
-      
-      funcConfigQuantAction = menuFunctions->addAction(tr("Config Quant..."));
-      connect(funcConfigQuantAction, SIGNAL(triggered()), this, SLOT(configQuant()));
-      
-      menuFunctions->addSeparator();
-      
-      funcGateTimeAction = menuFunctions->addAction(tr("Modify Gate Time"));
+      funcGateTimeAction = menuFunctions->addAction(tr("Modify Note Length"));
       mapper->setMapping(funcGateTimeAction, PianoCanvas::CMD_MODIFY_GATE_TIME);
       connect(funcGateTimeAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
@@ -655,7 +636,14 @@ PianoRoll::~PianoRoll()
 
 void PianoRoll::cmd(int cmd)
       {
-      ((PianoCanvas*)canvas)->cmd(cmd, _quantStrength, _quantLimit, _quantLen, _to);
+			switch (cmd)
+						{
+						case PianoCanvas::CMD_MODIFY_GATE_TIME: modify_notelen(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_QUANTIZE: quantize_notes(partlist_to_set(parts())); break;
+						
+						default: ((PianoCanvas*)canvas)->cmd(cmd);
+					  }
       }
 
 //---------------------------------------------------------
@@ -1201,21 +1189,6 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
       }
 
 //---------------------------------------------------------
-//   configQuant
-//---------------------------------------------------------
-
-void PianoRoll::configQuant()
-      {
-      if (!quantConfig) {
-            quantConfig = new QuantConfig(_quantStrength, _quantLimit, _quantLen);
-            connect(quantConfig, SIGNAL(setQuantStrength(int)), SLOT(setQuantStrength(int)));
-            connect(quantConfig, SIGNAL(setQuantLimit(int)), SLOT(setQuantLimit(int)));
-            connect(quantConfig, SIGNAL(setQuantLen(bool)), SLOT(setQuantLen(bool)));
-            }
-      quantConfig->show();
-      }
-
-//---------------------------------------------------------
 //   setSteprec
 //---------------------------------------------------------
 
@@ -1336,12 +1309,7 @@ void PianoRoll::initShortcuts()
       //evColorPitchAction->setShortcut(shortcuts[  ].key);
       //evColorVelAction->setShortcut(shortcuts[  ].key);
       
-      funcOverQuantAction->setShortcut(shortcuts[SHRT_OVER_QUANTIZE].key);
-      funcNoteOnQuantAction->setShortcut(shortcuts[SHRT_ON_QUANTIZE].key);
-      funcNoteOnOffQuantAction->setShortcut(shortcuts[SHRT_ONOFF_QUANTIZE].key);
-      funcIterQuantAction->setShortcut(shortcuts[SHRT_ITERATIVE_QUANTIZE].key);
-      
-      funcConfigQuantAction->setShortcut(shortcuts[SHRT_CONFIG_QUANT].key);
+      funcQuantizeAction->setShortcut(shortcuts[SHRT_OVER_QUANTIZE].key); //FINDMICH TODO FLO
       
       funcGateTimeAction->setShortcut(shortcuts[SHRT_MODIFY_GATE_TIME].key);
       funcModVelAction->setShortcut(shortcuts[SHRT_MODIFY_VELOCITY].key);

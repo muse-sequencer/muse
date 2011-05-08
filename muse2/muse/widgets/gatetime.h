@@ -18,22 +18,24 @@ class QDialog;
 //---------------------------------------------------------
 
 class GateTime : public QDialog, public Ui::GateTimeBase {
+   private:
       Q_OBJECT
 
-      int _range;
-      int _rateVal;
-      int _offsetVal;
       QButtonGroup *rangeGroup;
 
    protected slots:
       void accept();
+      void pullValues();
 
    public:
       GateTime(QWidget* parent=0);
-      void setRange(int id);
-      int range() const { return _range; }
-      int rateVal() const { return _rateVal; }
-      int offsetVal() const { return _offsetVal; }
+
+      int range;
+      int rateVal;
+      int offsetVal;
+      
+   public slots:
+      int exec();
       };
 
 #endif

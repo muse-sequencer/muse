@@ -26,6 +26,8 @@ GateTime::GateTime(QWidget* parent)
       rangeGroup->addButton(loopButton, 2);
       rangeGroup->addButton(sloopButton, 3);
       rangeGroup->setExclusive(true);
+      
+      pullValues();
       }
 
 //---------------------------------------------------------
@@ -34,18 +36,30 @@ GateTime::GateTime(QWidget* parent)
 
 void GateTime::accept()
       {
-      _range     = rangeGroup->checkedId();
-      _rateVal   = rate->value();
-      _offsetVal = offset->value();
+      pullValues();
       QDialog::accept();
       }
 
 //---------------------------------------------------------
-//   setRange
+//   pullValues
 //---------------------------------------------------------
 
-void GateTime::setRange(int id)
+void GateTime::pullValues()
       {
-	rangeGroup->button(id)->setChecked(true);
+      range     = rangeGroup->checkedId();
+      rateVal   = rate->value();
+      offsetVal = offset->value();
       }
 
+//---------------------------------------------------------
+//   exec
+//---------------------------------------------------------
+
+int GateTime::exec()
+      {
+      rangeGroup->button(range)->setChecked(true);
+      rate->setValue(rateVal);
+      offset->setValue(offsetVal);
+      
+      return QDialog::exec();
+      }

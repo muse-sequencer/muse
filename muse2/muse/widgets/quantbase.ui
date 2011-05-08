@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>VelocityBase</class>
- <widget class="QDialog" name="VelocityBase">
+ <class>QuantBase</class>
+ <widget class="QDialog" name="QuantBase">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>275</width>
-    <height>316</height>
+    <width>279</width>
+    <height>486</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MusE: Modify Velocity</string>
+   <string>MusE: Quantize</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
@@ -33,14 +36,14 @@
        <number>11</number>
       </property>
       <item>
-       <widget class="QRadioButton" name="allEvents">
+       <widget class="QRadioButton" name="all_events_button">
         <property name="text">
          <string>All Events</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="selectedEvents">
+       <widget class="QRadioButton" name="selected_events_button">
         <property name="text">
          <string>Selected Events</string>
         </property>
@@ -50,14 +53,14 @@
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="loopedEvents">
+       <widget class="QRadioButton" name="looped_events_button">
         <property name="text">
          <string>Looped Events</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="selectedLooped">
+       <widget class="QRadioButton" name="selected_looped_button">
         <property name="text">
          <string>Selected Looped</string>
         </property>
@@ -78,33 +81,10 @@
       <property name="spacing">
        <number>6</number>
       </property>
-      <item row="0" column="0">
+      <item row="1" column="0">
        <widget class="QLabel" name="TextLabel3">
         <property name="text">
-         <string>Rate:</string>
-        </property>
-        <property name="wordWrap">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QSpinBox" name="rate">
-        <property name="suffix">
-         <string>%</string>
-        </property>
-        <property name="maximum">
-         <number>200</number>
-        </property>
-        <property name="value">
-         <number>100</number>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="TextLabel4">
-        <property name="text">
-         <string>Offset:</string>
+         <string>Strength:</string>
         </property>
         <property name="wordWrap">
          <bool>false</bool>
@@ -112,25 +92,132 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QSpinBox" name="offset">
-        <property name="minimum">
-         <number>-127</number>
+       <widget class="QSpinBox" name="strength_spinbox">
+        <property name="suffix">
+         <string>%</string>
         </property>
         <property name="maximum">
-         <number>127</number>
+         <number>100</number>
+        </property>
+        <property name="value">
+         <number>80</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="TextLabel4">
+        <property name="text">
+         <string>Threshold (ticks):</string>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="threshold_spinbox">
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>10000</number>
         </property>
         <property name="singleStep">
          <number>1</number>
         </property>
-        <property name="value">
-         <number>0</number>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Quantize Len</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0" colspan="2">
-       <widget class="QLabel" name="label">
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="len_checkbox">
         <property name="text">
-         <string>veloNew = (veloOld * rate) + offset</string>
+         <string/>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Raster</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="raster_combobox">
+        <property name="editable">
+         <bool>false</bool>
+        </property>
+        <property name="currentIndex">
+         <number>3</number>
+        </property>
+        <property name="frame">
+         <bool>true</bool>
+        </property>
+        <item>
+         <property name="text">
+          <string>Whole</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Half</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Quarter</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>8th</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>16th</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>32th</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Swing:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QSpinBox" name="swing_spinbox">
+        <property name="minimum">
+         <number>-99</number>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="2">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>If the proposed change in tick or length is smaller than threshold, nothing is done.
+If swing=0, this is normal
+If swing is 33, you get a 2:1-rhythm.
+If swing is -33, you get a 1:2-rhythm.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -159,7 +246,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="okButton">
+      <widget class="QPushButton" name="ok_button">
        <property name="text">
         <string>OK</string>
        </property>
@@ -172,7 +259,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="cancelButton">
+      <widget class="QPushButton" name="cancel_button">
        <property name="text">
         <string>Cancel</string>
        </property>
@@ -186,9 +273,9 @@
  <resources/>
  <connections>
   <connection>
-   <sender>okButton</sender>
+   <sender>ok_button</sender>
    <signal>clicked()</signal>
-   <receiver>VelocityBase</receiver>
+   <receiver>QuantBase</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -202,9 +289,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>cancelButton</sender>
+   <sender>cancel_button</sender>
    <signal>clicked()</signal>
-   <receiver>VelocityBase</receiver>
+   <receiver>QuantBase</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

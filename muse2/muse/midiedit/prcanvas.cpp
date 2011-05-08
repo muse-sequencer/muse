@@ -32,8 +32,6 @@
 #include "mpevent.h"
 #include "globals.h"
 #include "cmd.h"
-#include "gatetime.h"
-#include "velocity.h"
 #include "song.h"
 #include "audio.h"
 
@@ -82,7 +80,6 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
    : EventCanvas(pr, parent, sx, sy)
       {
       colorMode = 0;
-      cmdRange  = 0;     // all Events
       playedPitch = -1;
 
       songChanged(SC_TRACK_INSERTED);
@@ -907,10 +904,8 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect)
 //    pulldown menu commands
 //---------------------------------------------------------
 
-void PianoCanvas::cmd(int cmd, int quantStrength,
-   int quantLimit, bool quantLen, int range)
+void PianoCanvas::cmd(int cmd)
       {
-      cmdRange = range;
       switch (cmd) {
             case CMD_CUT:
                   copy();
@@ -946,18 +941,7 @@ void PianoCanvas::cmd(int cmd, int quantStrength,
                         song->endUndo(SC_EVENT_REMOVED);
                         }
                   return;
-            case CMD_OVER_QUANTIZE:     // over quantize
-                  quantize(100, 1, quantLen);
-                  break;
-            case CMD_ON_QUANTIZE:     // note on quantize
-                  quantize(50, 1, false);
-                  break;
-            case CMD_ONOFF_QUANTIZE:     // note on/off quantize
-                  quantize(50, 1, true);
-                  break;
-            case CMD_ITERATIVE_QUANTIZE:     // Iterative Quantize
-                  quantize(quantStrength, quantLimit, quantLen);
-                  break;
+
             case CMD_SELECT_ALL:     // select all
                   for (iCItem k = items.begin(); k != items.end(); ++k) {
                         if (!k->second->isSelected())
@@ -1030,96 +1014,6 @@ void PianoCanvas::cmd(int cmd, int quantStrength,
                       }
                     if(newpt != pt)
                       editor->setCurCanvasPart(newpt);
-                  }
-                  break;
-            case CMD_MODIFY_GATE_TIME:
-                  {
-                  GateTime w(this);
-                  w.setRange(range);
-                  if (!w.exec())
-                        break;
-                  int range  = w.range();        // all, selected, looped, sel+loop
-                  int rate   = w.rateVal();
-                  int offset = w.offsetVal();
-
-                  song->startUndo();
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        NEvent* nevent =(NEvent*)(k->second);
-                        Event event    = nevent->event();
-                        if (event.type() != Note)
-                              continue;
-                        unsigned tick = event.tick();
-                        bool selected = k->second->isSelected();
-                        bool inLoop   = (tick >= song->lpos()) && (tick < song->rpos());
-
-                        if ((range == 0)
-                           || (range == 1 && selected)
-                           || (range == 2 && inLoop)
-                           || (range == 3 && selected && inLoop)) {
-                              unsigned int len   = event.lenTick(); //prevent compiler warning: comparison singed/unsigned
-
-                              len = rate ? (len * 100) / rate : 1;
-                              len += offset;
-                              if (len < 1)
-                                    len = 1;
-
-                              if (event.lenTick() != len) {
-                                    Event newEvent = event.clone();
-                                    newEvent.setLenTick(len);
-                                    // Indicate no undo, and do not do port controller values and clone parts. 
-                                    //audio->msgChangeEvent(event, newEvent, nevent->part(), false);
-                                    audio->msgChangeEvent(event, newEvent, nevent->part(), false, false, false);
-                                    }
-                              }
-                        }
-                  song->endUndo(SC_EVENT_MODIFIED);
-                  }
-                  break;
-
-            case CMD_MODIFY_VELOCITY:
-                  {
-                  Velocity w;
-                  w.setRange(range);
-                  if (!w.exec())
-                        break;
-                  int range  = w.range();        // all, selected, looped, sel+loop
-                  int rate   = w.rateVal();
-                  int offset = w.offsetVal();
-
-                  song->startUndo();
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        NEvent* nevent = (NEvent*)(k->second);
-                        Event event    = nevent->event();
-                        if (event.type() != Note)
-                              continue;
-                        unsigned tick      = event.tick();
-                        bool selected = k->second->isSelected();
-                        bool inLoop   = (tick >= song->lpos()) && (tick < song->rpos());
-
-                        if ((range == 0)
-                           || (range == 1 && selected)
-                           || (range == 2 && inLoop)
-                           || (range == 3 && selected && inLoop)) {
-                              int velo = event.velo();
-
-                              //velo = rate ? (velo * 100) / rate : 64;
-                              velo = (velo * rate) / 100;
-                              velo += offset;
-
-                              if (velo <= 0)
-                                    velo = 1;
-                              if (velo > 127)
-                                    velo = 127;
-                              if (event.velo() != velo) {
-                                    Event newEvent = event.clone();
-                                    newEvent.setVelo(velo);
-                                    // Indicate no undo, and do not do port controller values and clone parts. 
-                                    //audio->msgChangeEvent(event, newEvent, nevent->part(), false);
-                                    audio->msgChangeEvent(event, newEvent, nevent->part(), false, false, false);
-                                    }
-                              }
-                        }
-                  song->endUndo(SC_EVENT_MODIFIED);
                   }
                   break;
 
@@ -1228,55 +1122,6 @@ void PianoCanvas::cmd(int cmd, int quantStrength,
             }
       updateSelection();
       redraw();
-      }
-
-//---------------------------------------------------------
-//   quantize
-//---------------------------------------------------------
-
-void PianoCanvas::quantize(int strength, int limit, bool quantLen)
-      {
-      song->startUndo();
-      for (iCItem k = items.begin(); k != items.end(); ++k) {
-            NEvent* nevent = (NEvent*)(k->second);
-            Event event    = nevent->event();
-            Part* part     = nevent->part();
-            if (event.type() != Note)
-                  continue;
-
-            if ((cmdRange & CMD_RANGE_SELECTED) && !k->second->isSelected())
-                  continue;
-
-            unsigned tick = event.tick() + part->tick();
-
-            if ((cmdRange & CMD_RANGE_LOOP)
-               && ((tick < song->lpos() || tick >= song->rpos())))
-                  continue;
-
-            unsigned int len   = event.lenTick(); //prevent compiler warning: comparison singed/unsigned
-            int tick2 = tick + len;
-
-            // quant start position
-            int diff  = AL::sigmap.raster(tick, editor->quant()) - tick;
-            if (abs(diff) > limit)
-                  tick += ((diff * strength) / 100);
-
-            // quant len
-            diff = AL::sigmap.raster(tick2, editor->quant()) - tick2;
-            if (quantLen && (abs(diff) > limit))
-                  len += ((diff * strength) / 100);
-
-            // something changed?
-            if (((event.tick() + part->tick()) != tick) || (event.lenTick() != len)) {
-                  Event newEvent = event.clone();
-                  newEvent.setTick(tick - part->tick());
-                  newEvent.setLenTick(len);
-                  // Indicate no undo, and do not do port controller values and clone parts. 
-                  //audio->msgChangeEvent(event, newEvent, part, false);
-                  audio->msgChangeEvent(event, newEvent, part, false, false, false);
-                  }
-            }
-      song->endUndo(SC_EVENT_MODIFIED);
       }
 
 //---------------------------------------------------------

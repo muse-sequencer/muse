@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MusE: Modify Gate Time</string>
+   <string>MusE: Modify Note Length</string>
   </property>
   <layout class="QVBoxLayout">
    <property name="spacing">
@@ -59,7 +59,7 @@
       <item>
        <widget class="QRadioButton" name="sloopButton">
         <property name="text">
-         <string>Selected &amp; Looped</string>
+         <string>Selected Looped</string>
         </property>
        </widget>
       </item>
@@ -104,7 +104,7 @@
          <string>%</string>
         </property>
         <property name="maximum">
-         <number>200</number>
+         <number>1000</number>
         </property>
         <property name="value">
          <number>100</number>
@@ -121,6 +121,13 @@
         </property>
         <property name="singleStep">
          <number>1</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>lenNew = (lenOld * rate) + offset</string>
         </property>
        </widget>
       </item>

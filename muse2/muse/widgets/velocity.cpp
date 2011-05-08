@@ -12,7 +12,7 @@
 //   Velocity
 //---------------------------------------------------------
 
-Velocity::Velocity(QDialog* parent)
+Velocity::Velocity(QWidget* parent)
    : QDialog(parent)
       {
       setupUi(this);
@@ -21,6 +21,8 @@ Velocity::Velocity(QDialog* parent)
       rangeGroup->addButton(selectedEvents,1);
       rangeGroup->addButton(loopedEvents,2);
       rangeGroup->addButton(selectedLooped,3);
+      
+      pullValues();
       }
 
 //---------------------------------------------------------
@@ -29,18 +31,30 @@ Velocity::Velocity(QDialog* parent)
 
 void Velocity::accept()
       {
-      _range     = rangeGroup->checkedId();
-      _rateVal   = rate->value();
-      _offsetVal = offset->value();
+      pullValues();
       QDialog::accept();
       }
 
 //---------------------------------------------------------
-//   setRange
+//   pullValues
 //---------------------------------------------------------
 
-void Velocity::setRange(int id)
+void Velocity::pullValues()
       {
-      rangeGroup->button(id)->setChecked(true);
+      range     = rangeGroup->checkedId();
+      rateVal   = rate->value();
+      offsetVal = offset->value();
       }
 
+//---------------------------------------------------------
+//   exec
+//---------------------------------------------------------
+
+int Velocity::exec()
+      {
+      rangeGroup->button(range)->setChecked(true);
+      rate->setValue(rateVal);
+      offset->setValue(offsetVal);
+      
+      return QDialog::exec();
+      }

@@ -43,25 +43,20 @@ using namespace std;
 #include "mtscale.h"
 #include "prcanvas.h"
 #include "scoreedit.h"
-#include "scrollscale.h"
-#include "piano.h"
-#include "../ctrl/ctrledit.h"
-#include "splitter.h"
 #include "ttoolbar.h"
 #include "tb1.h"
-#include "utils.h"
 #include "globals.h"
 #include "gconfig.h"
 #include "icons.h"
 #include "audio.h"
+#include "functions.h"
 
 #include "cmd.h"
-#include "quantconfig.h"
-#include "shortcuts.h"
-
-#include "mtrackinfo.h"
-
 #include "sig.h"
+#include "song.h"
+
+//#include "../ctrl/ctrledit.h"
+//#include "shortcuts.h"
 
 
 string IntToStr(int i);
@@ -331,9 +326,15 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 		QAction* set_name_action = settings_menu->addAction(tr("Set Score &name"), menu_mapper, SLOT(map()));
 		menu_mapper->setMapping(set_name_action, CMD_SET_NAME);
   
-  
 
-
+  QMenu* functions_menu = menuBar()->addMenu(tr("&Functions"));      
+	
+		QAction* func_quantize_action = functions_menu->addAction(tr("&Quantize"), menu_mapper, SLOT(map()));
+		QAction* func_notelen_action = functions_menu->addAction(tr("Change note &length"), menu_mapper, SLOT(map()));
+		QAction* func_velocity_action = functions_menu->addAction(tr("Change note &velocity"), menu_mapper, SLOT(map()));
+		menu_mapper->setMapping(func_quantize_action, CMD_QUANTIZE);
+		menu_mapper->setMapping(func_notelen_action, CMD_NOTELEN);
+		menu_mapper->setMapping(func_velocity_action, CMD_VELOCITY);
 
 
 	score_canvas->song_changed(SC_EVENT_INSERTED);
@@ -473,6 +474,10 @@ void ScoreEdit::menu_command(int cmd)
 			}
 		}
 		break;
+		
+		case CMD_QUANTIZE: quantize_notes(score_canvas->get_all_parts()); break;
+		case CMD_VELOCITY: modify_velocity(score_canvas->get_all_parts()); break;
+		case CMD_NOTELEN: modify_notelen(score_canvas->get_all_parts()); break;
 		
 		default: 
 			score_canvas->menu_command(cmd);
@@ -1097,6 +1102,15 @@ void ScoreCanvas::move_staff_below(list<staff_t>::iterator dest, list<staff_t>::
 	move_staff_above(dest, src);
 }
 
+set<Part*> ScoreCanvas::get_all_parts()
+{
+	set<Part*> result;
+	
+	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
+		result.insert(it->parts.begin(), it->parts.end());
+	
+	return result;
+}
 
 void ScoreCanvas::song_changed(int flags)
 {
@@ -3913,16 +3927,19 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
 
 
 /* BUGS and potential bugs
+ *   o the proper quantize functions must be used! yes, really!
  *   o when the keymap is not used, this will probably lead to a bug
  *     same when mastertrack is disabled
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o offer functions like in the pianoroll: quantize etc.
  *   o support selections
  *   o let the user select the distance between staves, or do this
  *     automatically?
+ *   o update translations
+ *   o remove ambiguous translation: "offset"="zeitversatz"
+ *     this is ambigous in mod. note len and WRONG in mod. velo dialogs
  * 
  * IMPORTANT TODO
  *   o add a select-clef-toolbox for tracks

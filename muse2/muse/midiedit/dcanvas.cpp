@@ -31,7 +31,6 @@
 #include "globals.h"
 #include "midiport.h"
 #include "audio.h"
-#include "velocity.h"
 #include "shortcuts.h"
 #include "icons.h"
 
@@ -608,7 +607,7 @@ void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect)
 //---------------------------------------------------------
 //   drawTopItem
 //---------------------------------------------------------
-void DrumCanvas::drawTopItem(QPainter &p, const QRect &r)
+void DrumCanvas::drawTopItem(QPainter& p, const QRect&)
 {
   // draw cursor
   if (_tool == CursorTool) {
@@ -817,52 +816,6 @@ void DrumCanvas::cmd(int cmd)
                   //if (p > part->tick())
                   //      p = part->tick();
                   song->setPos(0, p, true, true, true); //CDW
-                  }
-                  break;
-            case CMD_MODIFY_VELOCITY:
-                  {
-                  Velocity w;
-                  w.setRange(0); //TODO: Make this work! Probably put _to & _toInit in ecanvas instead
-                  if (!w.exec())
-                        break;
-                  int range  = w.range();        // all, selected, looped, sel+loop
-                  int rate   = w.rateVal();
-                  int offset = w.offsetVal();
-
-                  song->startUndo();
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        DEvent* devent = (DEvent*)(k->second);
-                        Event event    = devent->event();
-                        if (event.type() != Note)
-                              continue;
-                        unsigned tick      = event.tick();
-                        bool selected = k->second->isSelected();
-                        bool inLoop   = (tick >= song->lpos()) && (tick < song->rpos());
-
-                        if ((range == 0)
-                           || (range == 1 && selected)
-                           || (range == 2 && inLoop)
-                           || (range == 3 && selected && inLoop)) {
-                              int velo = event.velo();
-
-                              //velo = rate ? (velo * 100) / rate : 64;
-                              velo = (velo * rate) / 100;
-                              velo += offset;
-
-                              if (velo <= 0)
-                                    velo = 1;
-                              if (velo > 127)
-                                    velo = 127;
-                              if (event.velo() != velo) {
-                                    Event newEvent = event.clone();
-                                    newEvent.setVelo(velo);
-                                    // Indicate no undo, and do not do port controller values and clone parts. 
-                                    //audio->msgChangeEvent(event, newEvent, devent->part(), false);
-                                    audio->msgChangeEvent(event, newEvent, devent->part(), false, false, false);
-                                    }
-                              }
-                        }
-                  song->endUndo(SC_EVENT_MODIFIED);
                   }
                   break;
             }

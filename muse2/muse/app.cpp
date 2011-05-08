@@ -31,7 +31,6 @@
 #include "didyouknow.h"
 #include "drumedit.h"
 #include "filedialog.h"
-#include "gatetime.h"
 #include "gconfig.h"
 #include "gui.h"
 #include "icons.h"
@@ -4184,8 +4183,7 @@ void MusE::transpose()
 
 void MusE::modifyGateTime()
       {
-      GateTime* w = new GateTime(this);
-      w->show();
+      printf("not implemented\n");
       }
 
 //---------------------------------------------------------

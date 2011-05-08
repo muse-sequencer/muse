@@ -89,6 +89,7 @@ file (GLOB core_source_files
       event.cpp
       eventlist.cpp 
       exportmidi.cpp 
+      functions.cpp
       gconfig.cpp 
       globals.cpp
       help.cpp 
