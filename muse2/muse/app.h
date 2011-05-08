@@ -108,7 +108,7 @@ class MusE : public QMainWindow
 
       // Edit Menu actions
       QAction *editCutAction, *editCopyAction, *editPasteAction, *editInsertAction, *editPasteCloneAction, *editPaste2TrackAction;
-      QAction *editPasteC2TAction, *editInsertEMAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
+      QAction *editInsertEMAction, *editPasteC2TAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
       QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;
       QAction *trackMidiAction, *trackDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
       QAction *trackAInputAction, *trackAAuxAction;
@@ -334,6 +334,9 @@ class MusE : public QMainWindow
 
       void execDeliveredScript(int);
       void execUserScript(int);
+   private:
+      void adjustGlobalLists(int startPos, int diff);
+
      
    public slots:
       bool saveAs();

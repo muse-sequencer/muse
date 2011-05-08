@@ -24,7 +24,7 @@ class Marker : public Pos {
       bool _current;
 
    public:
-      Marker() : _current(false) {}
+      Marker() : _name(""),_current(false) {}
       Marker(const QString& s, bool cur = false)
          : _name(s), _current(cur) {}
       void read(Xml&);

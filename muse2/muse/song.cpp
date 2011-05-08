@@ -17,6 +17,8 @@
 #include <QPoint>
 #include <QSignalMapper>
 #include <QTextStream>
+#include <QProcess>
+#include <QByteArray>
 
 #include "app.h"
 #include "driver/jackmidi.h"
@@ -85,6 +87,7 @@ Song::Song(const char* name)
       redoList     = new UndoList;
       _markerList  = new MarkerList;
       _globalPitchShift = 0;
+      showSongInfo=true;
       clear(false);
       }
 
@@ -1766,6 +1769,24 @@ Marker* Song::setMarkerLock(Marker* m, bool f)
       emit markerChanged(MARKER_LOCK);
       return m;
       }
+
+// kommer inte att gå göra undo på, kanske skulle fixa det.
+
+//void Song::moveMarkers(int startOffset, int ticks)
+//{
+//  iMarker markerI;
+//  for (markerI=_markerList->rbegin(); markerI != _markerList->rend(); ++markerI) {
+//    if (markerI->second.tick() > startOffset) {
+//      if (markerI-> )
+//    }
+//
+//
+//
+//      if (unsigned(t) == markerI->second.tick())//prevent of copmiler warning: comparison signed/unsigned
+//        return &markerI->second;
+//      }
+//
+//}
 
 //---------------------------------------------------------
 //   setRecordFlag
@@ -3696,79 +3717,74 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
             }
             fclose(fp);
 
-            // Call external program, let it manipulate the file
-            int pid = fork();
-            if (pid == 0) {
-                  if (execlp(scriptfile, scriptfile, tmp, NULL) == -1) {
-                        perror("Failed to launch script!");
-                        // Get out of here
-                         
-                        // cannot report error through gui, we are in another fork!
-                        //@!TODO: Handle unsuccessful attempts
-                        exit(99);
-                        }
-                  exit(0);
-                  }
-            else if (pid == -1) {
-                  perror("fork failed");
-                  }
-            else {
-                  int status;
-                  waitpid(pid, &status, 0);
-                  if (WEXITSTATUS(status) != 0 ) {
-                        QMessageBox::warning(muse, tr("MusE - external script failed"),
-                               tr("MusE was unable to launch the script\n")
-                               );
-                        endUndo(SC_EVENT_REMOVED);
-                        return;
-                        }
-                  else { // d0 the fun55or5!
-                        // TODO: Create a new part, update the entire editor from it, hehh....
-                      
-                        QFile file(tmp);
-                        if ( file.open( QIODevice::ReadOnly ) ) {
-                            QTextStream stream( &file );
-                            QString line;
-                            while ( !stream.atEnd() ) {
-                                line = stream.readLine(); // line of text excluding '\n'
-                                if (line.startsWith("NOTE"))
-                                {
-                                    QStringList sl = line.split(" ");
+//            QString program(scriptfile);
+            QStringList arguments;
+            arguments << tmp;
 
-                                      Event e(Note);
-                                      int tick = sl[1].toInt();
-                                      int pitch = sl[2].toInt();
-                                      int len = sl[3].toInt();
-                                      int velo = sl[4].toInt();
-                                      printf ("tick=%d pitch=%d velo=%d len=%d\n", tick,pitch,velo,len);
-                                      e.setTick(tick);
-                                      e.setPitch(pitch);
-                                      e.setVelo(velo);
-                                      e.setLenTick(len);
-                                      // Indicate no undo, and do not do port controller values and clone parts.
-                                      audio->msgAddEvent(e, part, false, false, false);
-                                }
-                                if (line.startsWith("CONTROLLER"))
-                                {
-                                      QStringList sl = line.split(" ");
+            QProcess *myProcess = new QProcess(muse);
+            myProcess->start(scriptfile, arguments);
+            myProcess->waitForFinished();
+            QByteArray errStr = myProcess->readAllStandardError();
+            if (errStr.size()) {
+              QMessageBox::warning(muse, tr("MusE - external script failed"),
+                                   "Script returned the following error\n"+ QString(errStr));
+              endUndo(SC_EVENT_REMOVED);
+              return;
 
-                                      Event e(Controller);
-                                      int tick = sl[1].toInt();
-                                      int a = sl[2].toInt();
-                                      int b = sl[3].toInt();
-                                      int c = sl[4].toInt();
-                                      printf ("tick=%d a=%d b=%d c=%d\n", tick,a,b,c);
-                                      e.setA(a);
-                                      e.setB(b);
-                                      e.setB(c);
-                                      // Indicate no undo, and do not do port controller values and clone parts.
-                                      audio->msgAddEvent(e, part, false, false, false);
-                                    }
-                            }
-                            file.close();
-                        }
-                    }
+            } else if (myProcess->exitCode()) {
+              QMessageBox::warning(muse, tr("MusE - external script failed"),
+                     tr("MusE was unable to launch the script\n")
+                     );
+              endUndo(SC_EVENT_REMOVED);
+              return;
             }
+            else { // d0 the fun55or5!
+                  // TODO: Create a new part, update the entire editor from it, hehh....
+
+                  QFile file(tmp);
+                  if ( file.open( QIODevice::ReadOnly ) ) {
+                      QTextStream stream( &file );
+                      QString line;
+                      while ( !stream.atEnd() ) {
+                          line = stream.readLine(); // line of text excluding '\n'
+                          if (line.startsWith("NOTE"))
+                          {
+                              QStringList sl = line.split(" ");
+
+                                Event e(Note);
+                                int tick = sl[1].toInt();
+                                int pitch = sl[2].toInt();
+                                int len = sl[3].toInt();
+                                int velo = sl[4].toInt();
+                                //printf ("tick=%d pitch=%d velo=%d len=%d\n", tick,pitch,velo,len);
+                                e.setTick(tick);
+                                e.setPitch(pitch);
+                                e.setVelo(velo);
+                                e.setLenTick(len);
+                                // Indicate no undo, and do not do port controller values and clone parts.
+                                audio->msgAddEvent(e, part, false, false, false);
+                          }
+                          if (line.startsWith("CONTROLLER"))
+                          {
+                                QStringList sl = line.split(" ");
+
+                                Event e(Controller);
+                                int tick = sl[1].toInt();
+                                int a = sl[2].toInt();
+                                int b = sl[3].toInt();
+                                int c = sl[4].toInt();
+                                //printf ("tick=%d a=%d b=%d c=%d\n", tick,a,b,c);
+                                e.setA(a);
+                                e.setB(b);
+                                e.setB(c);
+                                // Indicate no undo, and do not do port controller values and clone parts.
+                                audio->msgAddEvent(e, part, false, false, false);
+                              }
+                      }
+                      file.close();
+                  }
+              }
+
       remove(tmp);
       }
 
