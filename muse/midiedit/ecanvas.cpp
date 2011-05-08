@@ -170,8 +170,9 @@ void EventCanvas::songChanged(int flags)
                   for (iEvent i = el->begin(); i != el->end(); ++i) {
                         Event e = i->second;
                         // Added by T356. Do not add events which are either past, or extend past the end of the part.
-                        //if(e.tick() > len)
-                        if(e.endTick() > len)
+                        // Reverted to just events which are past. p4.0.24 
+                        if(e.tick() > len)      
+                        //if(e.endTick() > len)
                           break;
                         
                         if (e.isNote()) {
