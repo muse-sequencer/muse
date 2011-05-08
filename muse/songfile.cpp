@@ -1232,6 +1232,8 @@ void Song::read(Xml& xml)
                               setMasterFlag(xml.parseInt());
                         else if (tag == "info")
                               songInfoStr = xml.parse1();
+                        else if (tag == "showinfo")
+                              showSongInfo = xml.parseInt();
                         else if (tag == "loop")
                               setLoop(xml.parseInt());
                         else if (tag == "punchin")
@@ -1437,6 +1439,7 @@ void Song::write(int level, Xml& xml) const
       {
       xml.tag(level++, "song");
       xml.strTag(level, "info", songInfoStr);
+      xml.intTag(level, "showinfo", showSongInfo);
       xml.intTag(level, "automation", automation);
       xml.intTag(level, "cpos", song->cpos());
       xml.intTag(level, "rpos", song->rpos());

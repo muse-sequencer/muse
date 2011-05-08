@@ -25,6 +25,13 @@
      <item>
       <layout class="QHBoxLayout">
        <item>
+        <widget class="QCheckBox" name="viewCheckBox">
+         <property name="text">
+          <string>Show on song load</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="spacer1">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>

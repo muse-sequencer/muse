@@ -139,6 +139,7 @@ class Song : public QObject {
       void readMarker(Xml&);
 
       QString songInfoStr;  // contains user supplied song information, stored in song file.
+      bool showSongInfo;
       QStringList deliveredScriptNames;
       QStringList userScriptNames;
 
@@ -167,7 +168,8 @@ class Song : public QObject {
          const QFont& font) const;
       QFont readFont(Xml& xml, const char* name);
       QString getSongInfo() { return songInfoStr; }
-      void setSongInfo(QString info) { songInfoStr = info; }
+      void setSongInfo(QString info, bool show) { songInfoStr = info; showSongInfo = show; }
+      bool showSongInfoOnStartup() { return showSongInfo; }
 
       // If clear_all is false, it will not touch things like midi ports.
       void clear(bool signal, bool clear_all = true);  

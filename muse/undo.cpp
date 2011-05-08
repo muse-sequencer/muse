@@ -897,10 +897,18 @@ void Song::doUndo3()
                         break;      
                   case UndoOp::ModifyMarker:
                         {
-                          //printf("performing undo for one marker at %d\n", i->realMarker->tick());
-                          Marker tmpMarker = *i->realMarker;
-                          *i->realMarker = *i->copyMarker; // swap them
-                          *i->copyMarker = tmpMarker;
+                          //printf("performing undo for one marker at copy %d real %d\n", i->copyMarker, i->realMarker);
+                          if (i->realMarker) {
+                            Marker tmpMarker = *i->realMarker;
+                            *i->realMarker = *i->copyMarker; // swap them
+                            *i->copyMarker = tmpMarker;
+                          }
+                          else {
+                            //printf("flipping marker\n");
+                            i->realMarker = _markerList->add(*i->copyMarker);
+                            delete i->copyMarker;
+                            i->copyMarker = 0;
+                          }
                         }
                         break;
                   default:
@@ -979,10 +987,16 @@ void Song::doRedo3()
                         break;      
                   case UndoOp::ModifyMarker:
                         {
-                          //printf("performing redo for one marker at %d\n", i->realMarker->tick());
-                          Marker tmpMarker = *i->realMarker;
-                          *i->realMarker = *i->copyMarker; // swap them
-                          *i->copyMarker = tmpMarker;
+                          //printf("performing redo for one marker at copy %d real %d\n", i->copyMarker, i->realMarker);
+                          if (i->copyMarker) {
+                            Marker tmpMarker = *i->realMarker;
+                            *i->realMarker = *i->copyMarker; // swap them
+                            *i->copyMarker = tmpMarker;
+                          } else {
+                            i->copyMarker = new Marker(*i->realMarker);
+                            _markerList->remove(i->realMarker);
+                            i->realMarker = 0;
+                          }
                         }
                         break;
                    default:

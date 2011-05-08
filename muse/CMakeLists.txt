@@ -120,6 +120,7 @@ file (GLOB core_source_files
       song.cpp
       songfile.cpp 
       stringparam.cpp
+      structure.cpp
       sync.cpp
       synth.cpp  
       tempo.cpp

@@ -433,6 +433,8 @@ QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
           
         int tb = AL::sigmap.ticksBeat(_pos.tick());
         unsigned tm = AL::sigmap.ticksMeasure(_pos.tick());
+        if (tm==0)
+          return QValidator::Invalid;
         int bm = tm / tb;
 
         validator->setRange(1, 9999);
