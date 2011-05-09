@@ -743,7 +743,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
       start = event->pos();
       Tool activeTool = tool;
       
-      bool shift = event->modifiers() & Qt::ShiftModifier;
+      bool ctrlKey = event->modifiers() & Qt::ControlModifier;
       int xpos = start.x();
       int ypos = start.y();
 
@@ -755,7 +755,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
                   
                   {
                     bool do_redraw = false;
-                    if (!shift)
+                    if (!ctrlKey)
                     {
                       deselectAll();
                       do_redraw = true;      
@@ -780,7 +780,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
                         break;
                       if (ev->intersects(_controller, r, tickstep, h)) 
                       {
-                        if (shift && ev->selected())
+                        if (ctrlKey && ev->selected())
                               deselectItem(ev);
                         else
                               selectItem(ev);
@@ -797,7 +797,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
                   break;
 
             case PencilTool:
-                  if (shift) {
+                  if (ctrlKey) {
                         if (type != MidiController::Velo) {
                               drag = DRAG_NEW;
                               song->startUndo();
@@ -824,7 +824,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
                   if (drawLineMode) {
                         line2x = xpos;
                         line2y = ypos;
-                        if (shift)
+                        if (ctrlKey)
                               newValRamp(line1x, line1y, line2x, line2y);
                         else
                               changeValRamp(line1x, line1y, line2x, line2y);
@@ -899,7 +899,7 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
 
 void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
       {
-      bool shift = event->modifiers() & Qt::ShiftModifier;
+      bool ctrlKey = event->modifiers() & Qt::ControlModifier;
 
       switch (drag) {
             ///case DRAG_RESIZE:
@@ -922,7 +922,7 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
 
             case DRAG_LASSO:
                   {
-                    ///if (!shift)
+                    ///if (!ctrlKey)
                     ///      deselectAll();
                     lasso = lasso.normalized();
                     int h = height();
@@ -932,9 +932,9 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
                           if((*i)->part() != curPart)
                             continue;
                           if ((*i)->intersects(_controller, lasso, tickstep, h)) {
-                                if (shift && (*i)->selected())
+                                if (ctrlKey && (*i)->selected())
                                 {
-                                    //if (!shift)         // Shift p4.0.18
+                                    //if (!ctrlKey)         // ctrlKey p4.0.18
                                     {
                                       ///deselectItem(*i);
                                       //do_redraw = true;
@@ -2211,8 +2211,8 @@ void CtrlCanvas::drawOverlay(QPainter& p)
       if (noEvents) {
            //p.setFont(config.fonts[3]);
            //p.setPen(Qt::black);
-           //p.drawText(width()/2-100,height()/2-10, "Use shift + pencil or line tool to draw new events");
-           p.drawText(2 , y * 2, "Use shift + pencil or line tool to draw new events");
+           //p.drawText(width()/2-100,height()/2-10, "Use ctrlKey + pencil or line tool to draw new events");
+           p.drawText(2 , y * 2, "Use ctrlKey + pencil or line tool to draw new events");
            }
       }
 
@@ -2232,7 +2232,7 @@ QRect CtrlCanvas::overlayRect() const
       r.translate(2, y);   
       if (noEvents) 
       {
-        QRect r2(fm.boundingRect(QString("Use shift + pencil or line tool to draw new events")));
+        QRect r2(fm.boundingRect(QString("Use ctrlKey + pencil or line tool to draw new events")));
         //r2.translate(width()/2-100, height()/2-10);   
         r2.translate(2, y * 2);   
         r |= r2;

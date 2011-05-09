@@ -220,8 +220,6 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
       int x      = ev->x();
       int y      = ev->y();
       int button = ev->button();
-      ///bool shift = ev->state() & Qt::ShiftButton;
-      //bool shift = ev->modifiers() & Qt::ShiftModifier;
       unsigned pitch = y / TH;
       DrumMap* dm = &drumMap[pitch];
 
@@ -259,7 +257,6 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   break;
             case COL_PORT:
                   if (button == Qt::RightButton) {
-                        ///bool changeAll = ev->state() & Qt::ControlButton;
                         bool changeAll = ev->modifiers() & Qt::ControlModifier;
                         devicesPopupMenu(dm, mapx(x), mapy(pitch * TH), changeAll);
                         }
@@ -328,7 +325,6 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   else if (val > 127)
                         val = 127;
                   
-                  ///if (ev->state() & Qt::ControlButton) {
                   if (ev->modifiers() & Qt::ControlModifier) {
                         audio->msgIdle(true);
                         // Delete all port controller events.
@@ -724,7 +720,6 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
             editor->setFocus();
       int x = ev->x();
       int y = ev->y();
-      ///bool shift = ev->state() & Qt::ShiftButton;
       bool shift = ev->modifiers() & Qt::ShiftModifier;
       unsigned pitch = y / TH;
 

@@ -348,7 +348,7 @@ void TList::paint(const QRect& r)
                                         if (cl->isVisible())
                                             countVisible++;
                                     }
-                                    int count = ((AudioTrack*)track)->controller()->size();
+                                    //int count = ((AudioTrack*)track)->controller()->size(); //commented out by flo: gives a "unused variable" warning
                                     s.sprintf(" %d(%d) visible",countVisible, countAll);
                                     }
 
@@ -914,7 +914,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
       int x       = ev->x();
       int y       = ev->y();
       int button  = ev->button();
-      bool shift  = ((QInputEvent*)ev)->modifiers() & Qt::ShiftModifier;
+      bool ctrl  = ((QInputEvent*)ev)->modifiers() & Qt::ControlModifier;
 
       Track* t    = y2Track(y + ypos);
 
@@ -1152,7 +1152,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   break;
             case COL_MUTE:
                   // p3.3.29
-                  if ((button == Qt::RightButton) || (((QInputEvent*)ev)->modifiers() & Qt::ControlModifier))
+                  if ((button == Qt::RightButton) || (((QInputEvent*)ev)->modifiers() & Qt::ShiftModifier))
                     t->setOff(!t->off());
                   else
                   {
@@ -1170,7 +1170,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
             case COL_NAME:
                   if (button == Qt::LeftButton) {
-                        if (!shift) {
+                        if (!ctrl) {
                               song->deselectTracks();
                               t->setSelected(true);
 
@@ -1463,7 +1463,7 @@ void TList::wheelEvent(QWheelEvent* ev)
                   break;
             case COL_MUTE:
                   // p3.3.29
-                  if (((QInputEvent*)ev)->modifiers() & Qt::ControlModifier)
+                  if (((QInputEvent*)ev)->modifiers() & Qt::ShiftModifier)
                     t->setOff(!t->off());
                   else
                   {

@@ -22,7 +22,7 @@
 #define DEDIT_SHRT       2  // Drumedit shortcut
 #define LEDIT_SHRT       4  // Listedit shortcut
 #define SCORE_SHRT       8  // Score shortcut
-#define ARRANG_SHRT     16  // Arrenger shortcut
+#define ARRANG_SHRT     16  // Arranger shortcut
 #define TRANSP_SHRT     32  // Transport shortcut
 #define WAVE_SHRT       64  // Waveedit shortcut
 #define GLOBAL_SHRT    128  // Global shortcuts

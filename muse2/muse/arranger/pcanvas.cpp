@@ -231,9 +231,9 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
             }
       QPoint cpos = event->pos();
       curItem     = items.find(cpos);
-      bool shift  = event->modifiers() & Qt::ShiftModifier;
+      bool ctrl  = event->modifiers() & Qt::ControlModifier;
       if (curItem) {
-            if (event->button() == Qt::LeftButton && shift) {
+            if (event->button() == Qt::LeftButton && ctrl) {
                   editPart = (NPart*)curItem;
                   QRect r = map(curItem->bbox());
                   if (lineEditor == 0) {
@@ -1002,7 +1002,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
 
 void PartCanvas::mousePress(QMouseEvent* event)
       {
-    if (event->modifiers() & Qt::ShiftModifier) {
+    if (event->modifiers() & Qt::ControlModifier) {
             return;
             }
       QPoint pt = event->pos();
@@ -1059,7 +1059,7 @@ void PartCanvas::mouseMove(QMouseEvent* event)
             x = 0;
 
       if (_tool == AutomationTool)
-          processAutomationMovements(event->pos(), event->modifiers() & Qt::ControlModifier);
+          processAutomationMovements(event->pos(), event->modifiers() & Qt::ShiftModifier);
 
       emit timeChanged(AL::sigmap.raster(x, *_raster));
       }
@@ -1665,7 +1665,7 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
 //    pr - part rectangle
 //---------------------------------------------------------
 
-void PartCanvas::drawMidiPart(QPainter& p, const QRect& bb, EventList* events, MidiTrack *mt, MidiPart *pt, const QRect& r, int pTick, int from, int to)
+void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, MidiTrack *mt, MidiPart *pt, const QRect& r, int pTick, int from, int to)
 {
   //printf("x=%d y=%d h=%d w=%d\n",r.x(),r.y(),r.height(),r.width());
 
