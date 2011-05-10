@@ -1,3 +1,8 @@
+10.05.2011: 
+        - Added general settings audio item: Minimum control process period 1-2048, default 64. Test OK. (Tim)
+          Adjusts minimum allowable number of samples in a LADSPA or DSSI run, ie control 'smoothness'.
+          Still TODO: AudioTrack controllers contribution.
+        - Added Yamaha Mo6 instrument file by Geoff King gsking1 A T gmail D O T com. (Tim) 
 08.05.2011: 
         - Draw event canvas notes if they extend past part end. (Tim)
         - Added checkbox to select if songinfo should be displayed on song start (rj)

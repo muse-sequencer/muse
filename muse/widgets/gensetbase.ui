@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>522</width>
-    <height>528</height>
+    <width>526</width>
+    <height>506</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -550,11 +550,20 @@
           <string>Mixer</string>
          </property>
          <layout class="QGridLayout">
-          <property name="margin">
+          <property name="leftMargin">
            <number>11</number>
           </property>
+          <property name="topMargin">
+           <number>2</number>
+          </property>
+          <property name="rightMargin">
+           <number>11</number>
+          </property>
+          <property name="bottomMargin">
+           <number>2</number>
+          </property>
           <property name="spacing">
-           <number>6</number>
+           <number>2</number>
           </property>
           <item row="0" column="1">
            <widget class="QSpinBox" name="minSliderSelect">
@@ -617,8 +626,7 @@
           <item row="2" column="0">
            <widget class="QLabel" name="freewheelLabel">
             <property name="text">
-             <string>Use Jack freewheel mode if possible.
-(Speeds up bounce operations).</string>
+             <string>Try to use Jack Freewheel</string>
             </property>
             <property name="wordWrap">
              <bool>false</bool>
@@ -634,6 +642,13 @@
           </item>
           <item row="2" column="1">
            <widget class="QCheckBox" name="freewheelCheckBox">
+            <property name="toolTip">
+             <string>Speeds bounce operations</string>
+            </property>
+            <property name="whatsThis">
+             <string>Use Jack Freewheel mode if possible.
+This dramatically speeds bounce operations.</string>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -669,8 +684,7 @@
           <item row="5" column="0">
            <widget class="QLabel" name="vstInPlaceTextLabel">
             <property name="text">
-             <string>Enable in-place processing for VST plugins.
-(Requires restart.)</string>
+             <string>VST in-place</string>
             </property>
             <property name="wordWrap">
              <bool>false</bool>
@@ -679,12 +693,103 @@
           </item>
           <item row="5" column="1">
            <widget class="QCheckBox" name="vstInPlaceCheckBox">
+            <property name="toolTip">
+             <string>Enable VST in-place processing (restart required)</string>
+            </property>
             <property name="whatsThis">
-             <string>Turn this off if VST Ladspa effect rack plugins do not work or feedback loudly, even if they are supposed to be in-place capable.</string>
+             <string>Enable VST in-place processing. Turn this off if 
+ VST Ladspa effect rack plugins do not work or 
+ feedback loudly, even if they are supposed to 
+ be in-place capable. Setting requires a restart.</string>
             </property>
             <property name="text">
              <string/>
             </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="minControlProcessPeriodLabel">
+            <property name="text">
+             <string>Minimum control period</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QComboBox" name="minControlProcessPeriodComboBox">
+            <property name="toolTip">
+             <string>Minimum audio controller process period (samples).
+</string>
+            </property>
+            <property name="whatsThis">
+             <string>Minimum audio controller process period (samples).
+Adjusts responsiveness of audio controls and 
+ controller graphs. Set a low value for fast, smooth 
+ control. If it causes performance problems, set a 
+ higher value. </string>
+            </property>
+            <property name="maxVisibleItems">
+             <number>15</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>1</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>4</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>8</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>16</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>32</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>64</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>128</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>256</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>512</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1024</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>2048</string>
+             </property>
+            </item>
            </widget>
           </item>
          </layout>
@@ -696,6 +801,15 @@
           <string>External Waveditor</string>
          </property>
          <layout class="QGridLayout">
+          <property name="topMargin">
+           <number>2</number>
+          </property>
+          <property name="bottomMargin">
+           <number>2</number>
+          </property>
+          <property name="spacing">
+           <number>2</number>
+          </property>
           <item row="0" column="0">
            <layout class="QGridLayout">
             <item row="0" column="0">
@@ -771,6 +885,21 @@
           <string>Dummy Audio Driver (settings require restart)</string>
          </property>
          <layout class="QGridLayout">
+          <property name="leftMargin">
+           <number>11</number>
+          </property>
+          <property name="topMargin">
+           <number>2</number>
+          </property>
+          <property name="rightMargin">
+           <number>11</number>
+          </property>
+          <property name="bottomMargin">
+           <number>2</number>
+          </property>
+          <property name="spacing">
+           <number>2</number>
+          </property>
           <item row="0" column="0">
            <widget class="QLabel" name="dummyAudioRateLabel">
             <property name="text">

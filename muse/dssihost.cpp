@@ -2342,6 +2342,9 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
   unsigned long sample = 0;
   int loopcount = 0;      // REMOVE Tim.
   
+  // To remember the last retrieved value of each AudioTrack controller. 
+  //float prev_ctrl_values[synth->_controlInPorts];
+  
   // NOTE Tested: Variable run-lengths worked superbly for LADSPA and DSSI synths. But DSSI-VST definitely 
   //  does NOT like changing sample run length. It crashes the plugin and Wine (but MusE keeps running!). 
   // Furthermore, it resizes the shared memory (mmap, remap) upon each run length DIFFERENT from the last. 
@@ -2372,11 +2375,15 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
   if(fixedsize > n)
     fixedsize = n;
   
+  unsigned long min_per = config.minControlProcessPeriod;  
+  if(min_per > n)
+    min_per = n;
+      
   // Process automation control values now.
   // TODO: This needs to be respect frame resolution. Put this inside the sample loop below.
-  for(unsigned long k = 0; k < synth->_controlInPorts; ++k)
+  if(automation && synti && synti->automationType() != AUTO_OFF && id() != -1)
   {
-    if(automation && synti && synti->automationType() != AUTO_OFF && id() != -1)
+    for(unsigned long k = 0; k < synth->_controlInPorts; ++k)
     {
       if(controls[k].enCtrl && controls[k].en2Ctrl )
         controls[k].val = synti->pluginCtrlVal(genACnum(id(), k));
@@ -2393,7 +2400,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
     unsigned long index = 0;
     unsigned long evframe; 
     // Get all control ring buffer items valid for this time period...
-    //for(int m = 0; m < cbsz; ++m)
+    //for(int m = 0; m < cbsz; ++m)   // Doesn't like this. Why?
     while(!_controlFifo.isEmpty())
     {
       //ControlValue v = _controlFifo.get(); 
@@ -2424,7 +2431,9 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
       if(evframe >= n
          //|| (found && v.frame != frame)  
          //|| (!usefixedrate && found && !v.unique && v.frame != frame)  
-         || (found && !v.unique && evframe != frame)  
+         //|| (found && !v.unique && evframe != frame)  
+         // Not enough requested samples to satisfy minimum setting? Keep going.
+         || (found && !v.unique && (evframe - sample >= min_per))  
          // dssi-vst needs them serialized and accounted for, no matter what. This works with fixed rate 
          //  because nsamp is constant. But with packets, we need to guarantee at least one-frame spacing. 
          // Although we likely won't be using packets with dssi-vst, so it's OK for now.
@@ -2442,6 +2451,16 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
       // Set the ladspa control port value.
       controls[v.idx].val = v.value;
     }
+    
+    // Process automation control values now.
+    //if(automation && synti && synti->automationType() != AUTO_OFF && id() != -1)
+    //{
+    //  for(unsigned long k = 0; k < synth->_controlInPorts; ++k)
+    //  {
+    //    if(controls[k].enCtrl && controls[k].en2Ctrl )
+    //      controls[k].val = synti->pluginCtrlVal(genACnum(id(), k));
+    //  }      
+    //}
     
     //if(found)
     if(found && !usefixedrate)

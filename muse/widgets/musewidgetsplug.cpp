@@ -193,6 +193,10 @@ GlobalConfigValues config = {
       false,                         // vstInPlace  Enable VST in-place processing
       44100,                        // Dummy audio preferred sample rate
       512                           // Dummy audio buffer size
+      QString("./"),                // projectBaseFolder
+      true,                         // projectStoreInFolder
+      true,                         // useProjectSaveDialog
+      64                            // minControlProcessPeriod
       };
 
 //---------------------------------------------------------

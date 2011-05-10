@@ -923,6 +923,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               config.dummyAudioSampleRate = xml.parseInt();
                         else if (tag == "dummyAudioBufSize")
                               config.dummyAudioBufSize = xml.parseInt();
+                        else if (tag == "minControlProcessPeriod")
+                              config.minControlProcessPeriod = xml.parseUInt();
                         else if (tag == "guiRefresh")
                               config.guiRefresh = xml.parseInt();
                         else if (tag == "userInstrumentsDir")
@@ -1182,6 +1184,7 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.intTag(level, "vstInPlace", config.vstInPlace);
       xml.intTag(level, "dummyAudioBufSize", config.dummyAudioBufSize);
       xml.intTag(level, "dummyAudioSampleRate", config.dummyAudioSampleRate);
+      xml.uintTag(level, "minControlProcessPeriod", config.minControlProcessPeriod);
 
       xml.intTag(level, "guiRefresh", config.guiRefresh);
       xml.strTag(level, "userInstrumentsDir", config.userInstrumentsDir);
