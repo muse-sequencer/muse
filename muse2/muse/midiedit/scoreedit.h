@@ -484,6 +484,8 @@ struct staff_t
 	void process_itemlist();
 	void calc_item_pos();
 	
+	void apply_lasso(QRect rect, set<Event*>& already_processed);
+	
 	void recalculate()
 	{
 		create_appropriate_eventlist();
@@ -644,6 +646,10 @@ class ScoreCanvas : public View
 		Part* dragged_event_part;
 		Event dragged_event;
 		int dragged_event_original_pitch;
+		
+		bool have_lasso;
+		QPoint lasso_start;
+		QRect lasso;
 
 
 

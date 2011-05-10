@@ -877,6 +877,7 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget,
 	x_pos=0;
 	x_left=0;
 	y_pos=0;
+	have_lasso=false;
 	dragging=false;
 	drag_cursor_changed=false;
 	mouse_erases_notes=false;
@@ -3033,7 +3034,14 @@ void ScoreCanvas::draw(QPainter& p, const QRect&)
 		draw_items(p,it->y_draw - y_pos, *it);
 		p.setClipping(false);
 	}
-
+	
+	if (have_lasso)
+	{
+		p.setPen(Qt::blue);
+		p.setBrush(Qt::NoBrush);
+		p.drawRect(lasso);
+	}
+	
 	if (debugMsg) cout << "drawing done." << endl;
 }
 
@@ -3302,78 +3310,87 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				}
 			}
 			else //we found nothing?
-			{
-				if ((event->button()==Qt::LeftButton) && (mouse_inserts_notes))
+				if (event->button()==Qt::LeftButton)
 				{
-					Part* curr_part = NULL;
-					set<Part*> possible_dests=staff_it->parts_at_tick(tick);
-
-					if (!possible_dests.empty())
+					if (mouse_inserts_notes)
 					{
-						if (possible_dests.size()==1)
-							curr_part=*possible_dests.begin();
-						else
+						Part* curr_part = NULL;
+						set<Part*> possible_dests=staff_it->parts_at_tick(tick);
+
+						if (!possible_dests.empty())
 						{
-							if (possible_dests.find(selected_part)!=possible_dests.end())
-								curr_part=selected_part;
+							if (possible_dests.size()==1)
+								curr_part=*possible_dests.begin();
 							else
-								QMessageBox::information(this, tr("Ambiguous part"), tr("There are two or more possible parts you could add the note to, but none matches the selected part. Please select the destination part by clicking on any note belonging to it and try again, or add a new stave containing only the destination part."));
+							{
+								if (possible_dests.find(selected_part)!=possible_dests.end())
+									curr_part=selected_part;
+								else
+									QMessageBox::information(this, tr("Ambiguous part"), tr("There are two or more possible parts you could add the note to, but none matches the selected part. Please select the destination part by clicking on any note belonging to it and try again, or add a new stave containing only the destination part."));
+							}
+						}
+						else
+							QMessageBox::information(this, tr("No part"), tr("There are no parts you could add the note to."));
+						
+						if (curr_part!=NULL)
+						{
+							signed int relative_tick=(signed) tick - curr_part->tick();
+							if (relative_tick<0)
+								cerr << "ERROR: THIS SHOULD NEVER HAPPEN: relative_tick is negative!" << endl;
+							song->startUndo();
+							//stopping undo at the end of this function is unneccessary
+							//because we'll begin a drag right after it. finishing
+							//this drag will stop undo as well (in mouseReleaseEvent)
+							
+							Event newevent(Note);
+							newevent.setPitch(y_to_pitch(y,tick, staff_it->clef));
+							newevent.setVelo(newnote_velo);
+							newevent.setVeloOff(newnote_velo_off);
+							newevent.setTick(relative_tick);
+							newevent.setLenTick((new_len>0)?new_len:last_len);
+							newevent.setSelected(true);
+							
+							if (flo_quantize(newevent.lenTick(), quant_ticks()) <= 0)
+							{
+								newevent.setLenTick(quant_ticks());
+								if (debugMsg) cout << "inserted note's length would be invisible after quantisation (too short)." << endl <<
+																			"       setting it to " << newevent.lenTick() << endl;
+							}
+							
+							if (newevent.endTick() > curr_part->lenTick())
+							{
+								if (debugMsg) cout << "clipping inserted note from len="<<newevent.endTick()<<" to len="<<(curr_part->lenTick() - newevent.tick())<<endl;
+								newevent.setLenTick(curr_part->lenTick() - newevent.tick());
+							}
+							
+							audio->msgAddEvent(newevent, curr_part, false, false, false);
+							
+							dragged_event_part=curr_part;
+							dragged_event=newevent;
+							dragged_event_original_pitch=newevent.pitch();
+
+							mouse_down_pos=event->pos();
+							mouse_operation=NO_OP;
+							mouse_x_drag_operation=LENGTH;
+
+							song_changed(SC_EVENT_INSERTED);
+
+							setMouseTracking(true);	
+							dragging=true;
+							drag_cursor_changed=true;
+							setCursor(Qt::SizeAllCursor);
+							//song->startUndo(); unneccessary because we have started it already above
 						}
 					}
-					else
-						QMessageBox::information(this, tr("No part"), tr("There are no parts you could add the note to."));
-					
-					if (curr_part!=NULL)
+					else // !mouse_inserts_notes. open a lasso
 					{
-						signed int relative_tick=(signed) tick - curr_part->tick();
-						if (relative_tick<0)
-							cerr << "ERROR: THIS SHOULD NEVER HAPPEN: relative_tick is negative!" << endl;
-						song->startUndo();
-						//stopping undo at the end of this function is unneccessary
-						//because we'll begin a drag right after it. finishing
-						//this drag will stop undo as well (in mouseReleaseEvent)
+						have_lasso=true;
+						lasso_start=event->pos();
+						lasso=QRect(lasso_start, lasso_start);
 						
-						Event newevent(Note);
-						newevent.setPitch(y_to_pitch(y,tick, staff_it->clef));
-						newevent.setVelo(newnote_velo);
-						newevent.setVeloOff(newnote_velo_off);
-						newevent.setTick(relative_tick);
-						newevent.setLenTick((new_len>0)?new_len:last_len);
-						newevent.setSelected(true);
-						
-						if (flo_quantize(newevent.lenTick(), quant_ticks()) <= 0)
-						{
-							newevent.setLenTick(quant_ticks());
-							if (debugMsg) cout << "inserted note's length would be invisible after quantisation (too short)." << endl <<
-							                      "       setting it to " << newevent.lenTick() << endl;
-						}
-						
-						if (newevent.endTick() > curr_part->lenTick())
-						{
-							if (debugMsg) cout << "clipping inserted note from len="<<newevent.endTick()<<" to len="<<(curr_part->lenTick() - newevent.tick())<<endl;
-							newevent.setLenTick(curr_part->lenTick() - newevent.tick());
-						}
-						
-						audio->msgAddEvent(newevent, curr_part, false, false, false);
-						
-						dragged_event_part=curr_part;
-						dragged_event=newevent;
-						dragged_event_original_pitch=newevent.pitch();
-
-						mouse_down_pos=event->pos();
-						mouse_operation=NO_OP;
-						mouse_x_drag_operation=LENGTH;
-
-						song_changed(SC_EVENT_INSERTED);
-
-						setMouseTracking(true);	
-						dragging=true;
-						drag_cursor_changed=true;
-						setCursor(Qt::SizeAllCursor);
-						//song->startUndo(); unneccessary because we have started it already above
+						setMouseTracking(true);
 					}
-				}
-			}
+				}			
 		}
 	}
 }
@@ -3425,6 +3442,17 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 		unsetCursor();
 		
 		y_scroll_speed=0; y_scroll_pos=0;
+	}
+
+	if (have_lasso && event->button()==Qt::LeftButton)
+	{
+		set<Event*> already_processed;
+		
+		for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
+			it->apply_lasso(lasso.translated(x_pos-x_left, y_pos - it->y_draw), already_processed);
+		
+		have_lasso=false;
+		redraw();
 	}
 }
 
@@ -3601,6 +3629,12 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 	else
 	{
 		y_scroll_speed=0;
+	}
+	
+	if (have_lasso)
+	{
+		lasso=QRect(lasso_start, event->pos()).normalized();
+		redraw();
 	}
 }
 
@@ -3832,7 +3866,7 @@ void ScoreCanvas::set_quant(int val)
 	}
 }
 
-void ScoreCanvas::set_pixels_per_whole(int val) //FINDMICH passt das?
+void ScoreCanvas::set_pixels_per_whole(int val)
 {
 	if (debugMsg) cout << "setting px per whole to " << val << endl;
 	
@@ -3951,6 +3985,21 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
 	return result;
 }
 
+void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
+{
+	for (ScoreItemList::iterator it=itemlist.begin(); it!=itemlist.end(); it++)
+		for (set<FloItem>::iterator it2=it->second.begin(); it2!=it->second.end(); it2++)
+			if (it2->type==FloItem::NOTE)
+			{
+				if (rect.contains(it2->x, it2->y))
+					if (already_processed.find(it2->source_event)==already_processed.end())
+					{
+						it2->source_event->setSelected(!it2->source_event->selected());
+						already_processed.insert(it2->source_event);
+					}
+			}
+}
+
 //the following assertions are made:
 //  pix_quarter.width() == pix_half.width()
 
@@ -3971,13 +4020,14 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
 
 
 /* BUGS and potential bugs
+ *   o notes must not be moved to pitches <0 or >127
  *   o when the keymap is not used, this will probably lead to a bug
  *     same when mastertrack is disabled
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o support selections
+ *   o use "DEL" for deleting all selected items
  *   o let the user select the distance between staves, or do this
  *     automatically?
  *   o update translations
@@ -3993,6 +4043,7 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  *     and provide sane defaults
  *
  * less important stuff
+ *   o support edge-scrolling when opening a lasso
  *   o deal with expanding parts
  *   o do all the song_changed(SC_EVENT_INSERTED) properly
  *   o use bars instead of flags over groups of 8ths / 16ths etc
