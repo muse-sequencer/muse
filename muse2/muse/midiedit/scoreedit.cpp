@@ -878,6 +878,7 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget,
 	x_left=0;
 	y_pos=0;
 	dragging=false;
+	drag_cursor_changed=false;
 	mouse_erases_notes=false;
 	mouse_inserts_notes=true;
 
@@ -3174,6 +3175,10 @@ int ScoreCanvas::y_to_pitch(int y, int t, clef_t clef)
 
 void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 {
+	keystate=((QInputEvent*)event)->modifiers();
+	
+	bool ctrl=keystate & Qt::ControlModifier;
+	
 	// den errechneten tick immer ABrunden!
 	// denn der "bereich" eines schlags geht von schlag_begin bis nächsterschlag_begin-1
 	// noten werden aber genau in die mitte dieses bereiches gezeichnet
@@ -3183,6 +3188,10 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 	int y=event->y() + y_pos - staff_it->y_draw;
 	int x=event->x()+x_pos-x_left;
 	int tick=flo_quantize_floor(x_to_tick(x), quant_ticks());
+	
+	if (event->button()==Qt::LeftButton)
+		if (!ctrl)
+			deselect_all();
 
 	if (staff_it!=staves.end())
 	{
@@ -3283,9 +3292,12 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				}
 				else if (event->button()==Qt::LeftButton) //edit?
 				{
+					set_it->source_event->setSelected(!set_it->source_event->selected());
+					song_changed(SC_SELECTION);
+					
 					setMouseTracking(true);		
 					dragging=true;
-					setCursor(Qt::SizeAllCursor);
+					drag_cursor_changed=false;
 					song->startUndo();
 				}
 			}
@@ -3327,6 +3339,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 						newevent.setVeloOff(newnote_velo_off);
 						newevent.setTick(relative_tick);
 						newevent.setLenTick((new_len>0)?new_len:last_len);
+						newevent.setSelected(true);
 						
 						if (flo_quantize(newevent.lenTick(), quant_ticks()) <= 0)
 						{
@@ -3355,6 +3368,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 
 						setMouseTracking(true);	
 						dragging=true;
+						drag_cursor_changed=true;
 						setCursor(Qt::SizeAllCursor);
 						//song->startUndo(); unneccessary because we have started it already above
 					}
@@ -3385,6 +3399,7 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 		setMouseTracking(false);
 		unsetCursor();
 		dragging=false;
+		drag_cursor_changed=false;
 		
 		x_scroll_speed=0; x_scroll_pos=0;
 	}
@@ -3426,6 +3441,13 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 		int x=event->x()+x_pos-x_left;
 		
 		int tick=flo_quantize_floor(x_to_tick(x), quant_ticks());
+
+
+		if ((drag_cursor_changed==false) && ((dx!=0) || (dy!=0)))
+		{
+			setCursor(Qt::SizeAllCursor);
+			drag_cursor_changed=true;
+		}		
 
 		if (mouse_operation==NO_OP)
 		{		
@@ -3871,6 +3893,17 @@ void ScoreCanvas::set_newnote_velo(int velo)
 void ScoreCanvas::set_newnote_velo_off(int velo)
 {
 	newnote_velo_off=velo;
+}
+
+void ScoreCanvas::deselect_all()
+{
+	set<Part*> all_parts=get_all_parts();
+
+	for (set<Part*>::iterator part=all_parts.begin(); part!=all_parts.end(); part++)
+		for (iEvent event=(*part)->events()->begin(); event!=(*part)->events()->end(); event++)
+			event->second.setSelected(false);
+	
+	song_changed(SC_SELECTION);
 }
 
 bool staff_t::cleanup_parts()

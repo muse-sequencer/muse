@@ -624,6 +624,7 @@ class ScoreCanvas : public View
 		int last_len;
 		int new_len; //when zero or negative, last_len is used
 
+		Qt::KeyboardModifiers keystate;
 		QPoint mouse_down_pos;
 		bool mouse_down;
 		enum operation_t
@@ -639,6 +640,7 @@ class ScoreCanvas : public View
 		bool mouse_inserts_notes;
 		
 		bool dragging;
+		bool drag_cursor_changed;
 		Part* dragged_event_part;
 		Event dragged_event;
 		int dragged_event_original_pitch;
@@ -669,6 +671,8 @@ class ScoreCanvas : public View
 		
 		void play_changed(bool);
 		void config_changed();
+		
+		void deselect_all();
 
    public slots:
       void x_scroll_event(int);
