@@ -1145,6 +1145,11 @@ void ScoreCanvas::song_changed(int flags)
 
 		redraw();
 	}
+
+	if (flags & SC_SELECTION)
+	{
+		redraw();
+	}
 }
 
 int ScoreCanvas::canvas_width()
@@ -1223,6 +1228,7 @@ void ScoreCanvas::init_pixmaps()
 			mycolors[i]=config.partColors[i];
 		mycolors[BLACK_PIXMAP]=Qt::black;
 		mycolors[HIGHLIGHTED_PIXMAP]=Qt::red;
+		mycolors[SELECTED_PIXMAP]=QColor(255,160,0);
 		
 		for (int i=0; i<64; i++)
 			mycolors[i+VELO_PIXMAP_BEGIN]=QColor(i*4,0,0xff);
@@ -2698,8 +2704,13 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 						color_index=VELO_PIXMAP_BEGIN + it->source_event->velo();
 						break;
 				}
+				
+				if (it->source_event->selected())
+					color_index=SELECTED_PIXMAP;
+				
 				if (audio->isPlaying() && it->is_active)
 					color_index=HIGHLIGHTED_PIXMAP;
+				
 				
 				draw_pixmap(p,it->x -x_pos+x_left,y_offset + it->y,it->pix[color_index]);
 				

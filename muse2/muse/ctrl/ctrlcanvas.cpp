@@ -2232,7 +2232,7 @@ QRect CtrlCanvas::overlayRect() const
       r.translate(2, y);   
       if (noEvents) 
       {
-        QRect r2(fm.boundingRect(QString("Use ctrlKey + pencil or line tool to draw new events")));
+        QRect r2(fm.boundingRect(QString("Use shift + pencil or line tool to draw new events")));
         //r2.translate(width()/2-100, height()/2-10);   
         r2.translate(2, y * 2);   
         r |= r2;
