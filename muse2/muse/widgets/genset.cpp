@@ -28,6 +28,9 @@ static int divisions[] = {
 static int dummyAudioBufSizes[] = {
       16, 32, 64, 128, 256, 512, 1024, 2048
       };
+static unsigned long minControlProcessPeriods[] = {
+      1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048
+      };
 
 //---------------------------------------------------------
 //   GlobalSettingsConfig
@@ -62,6 +65,13 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       for (unsigned i = 0; i < sizeof(dummyAudioBufSizes)/sizeof(*dummyAudioBufSizes); ++i) {
             if (dummyAudioBufSizes[i] == config.dummyAudioBufSize) {
                   dummyAudioSize->setCurrentIndex(i);
+                  break;
+                  }
+            }
+
+      for (unsigned i = 0; i < sizeof(minControlProcessPeriods)/sizeof(*minControlProcessPeriods); ++i) {
+            if (minControlProcessPeriods[i] == config.minControlProcessPeriod) {
+                  minControlProcessPeriodComboBox->setCurrentIndex(i);
                   break;
                   }
             }
@@ -185,6 +195,13 @@ void GlobalSettingsConfig::updateSettings()
                   }
             }
       
+      for (unsigned i = 0; i < sizeof(minControlProcessPeriods)/sizeof(*minControlProcessPeriods); ++i) {
+            if (minControlProcessPeriods[i] == config.minControlProcessPeriod) {
+                  minControlProcessPeriodComboBox->setCurrentIndex(i);
+                  break;
+                  }
+            }
+
       guiRefreshSelect->setValue(config.guiRefresh);
       minSliderSelect->setValue(int(config.minSlider));
       minMeterSelect->setValue(config.minMeter);
@@ -279,6 +296,8 @@ void GlobalSettingsConfig::apply()
       int das = dummyAudioSize->currentIndex();
       config.dummyAudioBufSize = dummyAudioBufSizes[das];
       config.dummyAudioSampleRate = dummyAudioRate->value();
+      int mcp = minControlProcessPeriodComboBox->currentIndex();
+      config.minControlProcessPeriod = minControlProcessPeriods[mcp];
 
       int div            = midiDivisionSelect->currentIndex();
       config.division    = divisions[div];

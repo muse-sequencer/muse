@@ -142,6 +142,7 @@ struct GlobalConfigValues {
       QString projectBaseFolder;
       bool projectStoreInFolder;
       bool useProjectSaveDialog;
+      unsigned long minControlProcessPeriod;
       };
 
 extern GlobalConfigValues config;
