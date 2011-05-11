@@ -474,6 +474,9 @@ struct staff_t
 	int y_draw;
 	int y_bottom;
 	
+	int min_y_coord;
+	int max_y_coord;
+	
 	staff_type_t type;
 	clef_t clef;
 	

@@ -104,6 +104,10 @@ QString IntToQStr(int i);
 
 #define STAFF_DISTANCE (10*YLEN)
 #define GRANDSTAFF_DISTANCE (8*YLEN)
+#define NOTE_YDIST 20
+//NOTE_YDIST is the number of pixels which are between two notes
+//which exceed their staves' y-boundaries, so that these boundaries
+//must be expanded.
 
 QString create_random_string(int len=8)
 {
@@ -858,8 +862,8 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 	}
 	
 	cleanup_staves();
-	recalc_staff_pos();
 	song_changed(SC_EVENT_INSERTED);
+	recalc_staff_pos();
 }
 
 
@@ -996,8 +1000,8 @@ void ScoreCanvas::set_staffmode(list<staff_t>::iterator it, staff_mode_t mode)
 			cerr << "ERROR: ILLEGAL FUNCTION CALL: invalid mode in set_staffmode" << endl;
 	}
 	
-	recalc_staff_pos();
 	song_changed(SC_EVENT_INSERTED);
+	recalc_staff_pos();
 }
 
 void ScoreCanvas::remove_staff(list<staff_t>::iterator it)
@@ -1022,8 +1026,8 @@ void ScoreCanvas::remove_staff(list<staff_t>::iterator it)
 	}		
 	
 	maybe_close_if_empty();
-	recalc_staff_pos();
 	song_changed(SC_EVENT_INSERTED);
+	recalc_staff_pos();
 }
 
 void ScoreCanvas::merge_staves(list<staff_t>::iterator dest, list<staff_t>::iterator src)
@@ -1058,8 +1062,8 @@ void ScoreCanvas::merge_staves(list<staff_t>::iterator dest, list<staff_t>::iter
 	
 	remove_staff(src);
 
-	recalc_staff_pos();
 	song_changed(SC_EVENT_INSERTED);
+	recalc_staff_pos();
 }
 
 void ScoreCanvas::move_staff_above(list<staff_t>::iterator dest, list<staff_t>::iterator src)
@@ -1089,8 +1093,8 @@ void ScoreCanvas::move_staff_above(list<staff_t>::iterator dest, list<staff_t>::
 	
 	staves.splice(dest, staves, src, src_end);
 
-	recalc_staff_pos();
 	song_changed(SC_EVENT_INSERTED);
+	recalc_staff_pos();
 }
 
 void ScoreCanvas::move_staff_below(list<staff_t>::iterator dest, list<staff_t>::iterator src)
@@ -1127,6 +1131,8 @@ void ScoreCanvas::song_changed(int flags)
 		
 		for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 			it->recalculate();
+			
+		recalc_staff_pos();
 		
 		redraw();
 		emit canvas_width_changed(canvas_width());
@@ -1143,10 +1149,11 @@ void ScoreCanvas::song_changed(int flags)
 		}
 		
 		cleanup_staves();
-		recalc_staff_pos();
 
 		for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 			it->recalculate();
+
+		recalc_staff_pos();
 
 		redraw();
 	}
@@ -2444,6 +2451,9 @@ void staff_t::calc_item_pos()
 	                         //key signature is properly drawn.
 	int pos_add=0;
 	
+	max_y_coord=0;
+	min_y_coord=0;
+	
 	for (ScoreItemList::iterator it2=itemlist.begin(); it2!=itemlist.end(); it2++)
 	{
 		for (set<FloItem, floComp>::iterator it=it2->second.begin(); it!=it2->second.end();it++)
@@ -2454,6 +2464,9 @@ void staff_t::calc_item_pos()
 			
 			if (it->type==FloItem::NOTE)
 			{
+				if (it->y > max_y_coord) max_y_coord=it->y;
+				if (it->y < min_y_coord) min_y_coord=it->y;
+				
 				it->x+=parent->note_x_indent() + it->shift*NOTE_SHIFT;
 				
 				switch (it->len)
@@ -2527,6 +2540,9 @@ void staff_t::calc_item_pos()
 			}
 		}
 	}		
+
+	max_y_coord+= (pix_quarter->height()/2 +NOTE_YDIST/2);
+	min_y_coord-= (pix_quarter->height()/2 +NOTE_YDIST/2);
 }
 
 void ScoreCanvas::calc_pos_add_list()
@@ -3797,16 +3813,33 @@ void ScoreCanvas::recalc_staff_pos()
 		{
 			case NORMAL:
 				it->y_draw = it->y_top + STAFF_DISTANCE/2;
+				if (it->min_y_coord < -STAFF_DISTANCE/2)
+					it->y_draw+= (-it->min_y_coord - STAFF_DISTANCE/2);
+					
 				it->y_bottom = it->y_draw + STAFF_DISTANCE/2;
+				if (it->max_y_coord > STAFF_DISTANCE/2)
+					it->y_bottom+= (it->max_y_coord - STAFF_DISTANCE/2);
+					
 				break;
+				
 			case GRAND_TOP:
 				it->y_draw = it->y_top + STAFF_DISTANCE/2;
+				if (it->min_y_coord < -STAFF_DISTANCE/2)
+					it->y_draw+= (-it->min_y_coord - STAFF_DISTANCE/2);
+
 				it->y_bottom = it->y_draw + GRANDSTAFF_DISTANCE/2;
+				
 				break;
+				
 			case GRAND_BOTTOM:
 				it->y_draw = it->y_top + GRANDSTAFF_DISTANCE/2;
+
 				it->y_bottom = it->y_draw + STAFF_DISTANCE/2;
+				if (it->max_y_coord > STAFF_DISTANCE/2)
+					it->y_bottom+= (it->max_y_coord - STAFF_DISTANCE/2);
+				
 				break;
+
 			default:
 				cerr << "ERROR: THIS SHOULD NEVER HAPPEN: invalid staff type!" << endl;
 		}
