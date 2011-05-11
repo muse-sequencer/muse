@@ -3513,7 +3513,10 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 			case PITCH:
 				if (debugMsg) cout << "changing pitch, delta="<<nearbyint((float)dy/PITCH_DELTA)<<endl;
 				new_pitch=dragged_event_original_pitch - nearbyint((float)dy/PITCH_DELTA);
-
+				
+				if (new_pitch < 0) new_pitch=0;
+				if (new_pitch > 127) new_pitch=127;
+				
 				if (dragged_event.pitch()!=new_pitch)
 				{
 					if (!undo_started)
@@ -4056,7 +4059,6 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
 
 
 /* BUGS and potential bugs
- *   o notes must not be moved to pitches <0 or >127
  *   o when the keymap is not used, this will probably lead to a bug
  *     same when mastertrack is disabled
  *   o tied notes don't work properly when there's a key-change in
