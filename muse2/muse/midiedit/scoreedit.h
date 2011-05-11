@@ -715,6 +715,7 @@ class ScoreCanvas : public View
 		virtual void mouseMoveEvent (QMouseEvent* event);
 		virtual void mouseReleaseEvent (QMouseEvent* event);
 		virtual void resizeEvent(QResizeEvent*);
+		virtual void keyPressEvent(QKeyEvent* event);
 		
 	public:
 		ScoreCanvas(ScoreEdit*, QWidget*, int, int);

@@ -54,6 +54,20 @@ bool is_relevant(const Event& event, const Part* part, int range)
 	}
 }
 
+
+map<Event*, Part*> get_events(const set<Part*>& parts, int range)
+{
+	map<Event*, Part*> events;
+	
+	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (iEvent event=(*part)->events()->begin(); event!=(*part)->events()->end(); event++)
+			if (is_relevant(event->second, *part, range))
+				events.insert(pair<Event*, Part*>(&event->second, *part));
+	
+	return events;
+}
+
+
 bool modify_notelen(const set<Part*>& parts)
 {
 	if (!gatetime_dialog->exec())
@@ -89,78 +103,72 @@ bool quantize_notes(const set<Part*>& parts)
 
 void modify_velocity(const set<Part*>& parts, int range, int rate, int offset)
 {
-	map<Event*, Part*> events;
+	map<Event*, Part*> events = get_events(parts, range);
 	
-	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-		for (iEvent event=(*part)->events()->begin(); event!=(*part)->events()->end(); event++)
-			if (is_relevant(event->second, *part, range))
-				events.insert(pair<Event*, Part*>(&event->second, *part));
-	
-	
-	song->startUndo();
-	
-	for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+	if (!events.empty())
 	{
-		Event& event=*(it->first);
-		Part* part=it->second;
+		song->startUndo();
 		
-		int velo = event.velo();
-
-		velo = (velo * rate) / 100;
-		velo += offset;
-
-		if (velo <= 0)
-			velo = 1;
-		else if (velo > 127)
-			velo = 127;
-			
-		if (event.velo() != velo)
+		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
-			Event newEvent = event.clone();
-			newEvent.setVelo(velo);
-			// Indicate no undo, and do not do port controller values and clone parts. 
-			audio->msgChangeEvent(event, newEvent, part, false, false, false);
+			Event& event=*(it->first);
+			Part* part=it->second;
+			
+			int velo = event.velo();
+
+			velo = (velo * rate) / 100;
+			velo += offset;
+
+			if (velo <= 0)
+				velo = 1;
+			else if (velo > 127)
+				velo = 127;
+				
+			if (event.velo() != velo)
+			{
+				Event newEvent = event.clone();
+				newEvent.setVelo(velo);
+				// Indicate no undo, and do not do port controller values and clone parts. 
+				audio->msgChangeEvent(event, newEvent, part, false, false, false);
+			}
 		}
+		
+		song->endUndo(SC_EVENT_MODIFIED);
 	}
-	
-	song->endUndo(SC_EVENT_MODIFIED);
 }
 
 void modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 {
-	map<Event*, Part*> events;
+	map<Event*, Part*> events = get_events(parts, range);
 	
-	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-		for (iEvent event=(*part)->events()->begin(); event!=(*part)->events()->end(); event++)
-			if (is_relevant(event->second, *part, range))
-				events.insert(pair<Event*, Part*>(&event->second, *part));
-	
-	
-	song->startUndo();
-	
-	for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+	if (!events.empty())
 	{
-		Event& event=*(it->first);
-		Part* part=it->second;
-
-		unsigned int len = event.lenTick(); //prevent compiler warning: comparison singed/unsigned
-
-		len = (len * rate) / 100;
-		len += offset;
-
-		if (len <= 0)
-			len = 1;
-			
-		if (event.lenTick() != len)
+		song->startUndo();
+		
+		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
-			Event newEvent = event.clone();
-			newEvent.setLenTick(len);
-			// Indicate no undo, and do not do port controller values and clone parts. 
-			audio->msgChangeEvent(event, newEvent, part, false, false, false);
+			Event& event=*(it->first);
+			Part* part=it->second;
+
+			unsigned int len = event.lenTick(); //prevent compiler warning: comparison singed/unsigned
+
+			len = (len * rate) / 100;
+			len += offset;
+
+			if (len <= 0)
+				len = 1;
+				
+			if (event.lenTick() != len)
+			{
+				Event newEvent = event.clone();
+				newEvent.setLenTick(len);
+				// Indicate no undo, and do not do port controller values and clone parts. 
+				audio->msgChangeEvent(event, newEvent, part, false, false, false);
+			}
 		}
+		
+		song->endUndo(SC_EVENT_MODIFIED);
 	}
-	
-	song->endUndo(SC_EVENT_MODIFIED);
 }
 
 unsigned quantize_tick(unsigned tick, unsigned raster, int swing)
@@ -187,51 +195,68 @@ unsigned quantize_tick(unsigned tick, unsigned raster, int swing)
 
 void quantize_notes(const set<Part*>& parts, int range, int raster, int strength, int swing, int threshold)
 {
-	map<Event*, Part*> events;
+	map<Event*, Part*> events = get_events(parts, range);
 	
-	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
-		for (iEvent event=(*part)->events()->begin(); event!=(*part)->events()->end(); event++)
-			if (is_relevant(event->second, *part, range))
-				events.insert(pair<Event*, Part*>(&event->second, *part));
-	
-	
-	song->startUndo();
-	
-	for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+	if (!events.empty())
 	{
-		Event& event=*(it->first);
-		Part* part=it->second;
-
-		unsigned begin_tick = event.tick() + part->tick();
-		int begin_diff = quantize_tick(begin_tick, raster, swing) - begin_tick;
-
-		if (abs(begin_diff) > threshold)
-			begin_tick = begin_tick + begin_diff*strength/100;
-
-
-		unsigned len=event.lenTick();
+		song->startUndo();
 		
-		unsigned end_tick = begin_tick + len;
-		int len_diff = quantize_tick(end_tick, raster, swing) - end_tick;
-			
-		if (abs(len_diff) > threshold)
-			len = len + len_diff*strength/100;
-
-		if (len <= 0)
-			len = 1;
-
-			
-		if ( (event.lenTick() != len) || (event.tick() + part->tick() != begin_tick) )
+		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
-			Event newEvent = event.clone();
-			newEvent.setTick(begin_tick - part->tick());
-			newEvent.setLenTick(len);
-			// Indicate no undo, and do not do port controller values and clone parts. 
-			audio->msgChangeEvent(event, newEvent, part, false, false, false);
+			Event& event=*(it->first);
+			Part* part=it->second;
+
+			unsigned begin_tick = event.tick() + part->tick();
+			int begin_diff = quantize_tick(begin_tick, raster, swing) - begin_tick;
+
+			if (abs(begin_diff) > threshold)
+				begin_tick = begin_tick + begin_diff*strength/100;
+
+
+			unsigned len=event.lenTick();
+			
+			unsigned end_tick = begin_tick + len;
+			int len_diff = quantize_tick(end_tick, raster, swing) - end_tick;
+				
+			if (abs(len_diff) > threshold)
+				len = len + len_diff*strength/100;
+
+			if (len <= 0)
+				len = 1;
+
+				
+			if ( (event.lenTick() != len) || (event.tick() + part->tick() != begin_tick) )
+			{
+				Event newEvent = event.clone();
+				newEvent.setTick(begin_tick - part->tick());
+				newEvent.setLenTick(len);
+				// Indicate no undo, and do not do port controller values and clone parts. 
+				audio->msgChangeEvent(event, newEvent, part, false, false, false);
+			}
 		}
+		
+		song->endUndo(SC_EVENT_MODIFIED);
 	}
+}
+
+void erase_notes(const set<Part*>& parts, int range)
+{
+	map<Event*, Part*> events = get_events(parts, range);
 	
-	song->endUndo(SC_EVENT_MODIFIED);
+	if (!events.empty())
+	{
+		song->startUndo();
+		
+		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+		{
+			Event& event=*(it->first);
+			Part* part=it->second;
+
+			audio->msgDeleteEvent(event, part, false, false, false);
+		}
+		
+		song->endUndo(SC_EVENT_REMOVED);
+	}
 }
 
 

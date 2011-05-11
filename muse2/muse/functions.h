@@ -29,6 +29,7 @@ std::set<Part*> partlist_to_set(PartList* pl);
 void modify_velocity(const std::set<Part*>& parts, int range, int rate, int offset=0);
 void modify_notelen(const std::set<Part*>& parts, int range, int rate, int offset=0);
 void quantize_notes(const std::set<Part*>& parts, int range, int raster, int strength=100, int swing=0, int threshold=0);
+void erase_notes(const std::set<Part*>& parts, int range);
 
 //the below functions automatically open the dialog
 //they return true if you click "ok" and false if "abort"

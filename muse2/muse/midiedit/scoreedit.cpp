@@ -3451,6 +3451,8 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 		for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 			it->apply_lasso(lasso.translated(x_pos-x_left, y_pos - it->y_draw), already_processed);
 		
+		song->update(SC_SELECTION);
+		
 		have_lasso=false;
 		redraw();
 	}
@@ -3937,7 +3939,15 @@ void ScoreCanvas::deselect_all()
 		for (iEvent event=(*part)->events()->begin(); event!=(*part)->events()->end(); event++)
 			event->second.setSelected(false);
 	
-	song_changed(SC_SELECTION);
+	song->update(SC_SELECTION);
+}
+
+void ScoreCanvas::keyPressEvent(QKeyEvent* event)
+{
+	if (event->key()==Qt::Key_Delete)
+	{
+		erase_notes(get_all_parts(), 1); // 1 means "all selected"
+	}
 }
 
 bool staff_t::cleanup_parts()
@@ -4027,12 +4037,9 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o use "DEL" for deleting all selected items
  *   o let the user select the distance between staves, or do this
  *     automatically?
- *   o update translations
- *   o remove ambiguous translation: "offset"="zeitversatz"
- *     this is ambigous in mod. note len and WRONG in mod. velo dialogs
+ *   o don't indicate undo when only clicking on an item
  * 
  * IMPORTANT TODO
  *   o add a select-clef-toolbox for tracks
@@ -4065,6 +4072,10 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  * 
  * 
  * stuff for the other muse developers
+ *   o update translations
+ *   o remove ambiguous translation: "offset"="zeitversatz"
+ *     this is ambigous in mod. note len and WRONG in mod. velo dialogs
+
  *   o process accurate timesignatures from muse's list (has to be implemented first in muse)
  *      ( (2+2+3)/4 or (3+2+2)/4 instead of 7/4 )
  *   o maybe do expanding parts inside the msgChangeEvent or
