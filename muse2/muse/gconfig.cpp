@@ -167,6 +167,7 @@ GlobalConfigValues config = {
       512,                          // Dummy audio buffer size
       QString("./"),                // projectBaseFolder
       true,                         // projectStoreInFolder
-      true                          // useProjectSaveDialog
+      true,                         // useProjectSaveDialog
+      64                            // minControlProcessPeriod
     };
 

@@ -2560,6 +2560,9 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
       //  }  
       //}      
       
+      // Grab the control ring buffer size now.
+      //const int cbsz = _controlFifo.getSize(); 
+      
       //unsigned endPos = pos + n;
       //unsigned long frameOffset = audio->getFrameOffset();
       unsigned long syncFrame = audio->curSyncFrame();  
@@ -2581,12 +2584,16 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
       //  so that users can select a small audio period but a larger control period. 
       if(fixedsize > n)
         fixedsize = n;
+        
+      unsigned long min_per = config.minControlProcessPeriod;  
+      if(min_per > n)
+        min_per = n;
       
       // Process automation control values now.
       // TODO: This needs to be respect frame resolution. Put this inside the sample loop below.
-      for(unsigned long k = 0; k < controlPorts; ++k)
+      if(automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
       {
-        if(automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
+        for(unsigned long k = 0; k < controlPorts; ++k)
         {
           if(controls[k].enCtrl && controls[k].en2Ctrl )
             controls[k].tmpVal = _track->pluginCtrlVal(genACnum(_id, k));
@@ -2603,7 +2610,7 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
         unsigned long index = 0;
         unsigned long evframe; 
         // Get all control ring buffer items valid for this time period...
-        //for(int m = 0; m < cbsz; ++m)
+        //for(int m = 0; m < cbsz; ++m)    // Doesn't like this. Why?
         while(!_controlFifo.isEmpty())
         {
           //ControlValue v = _controlFifo.get(); 
@@ -2632,7 +2639,9 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
           if(evframe >= n
               //|| (found && v.frame != frame)  
               //|| (!usefixedrate && found && !v.unique && v.frame != frame)  
-              || (found && !v.unique && evframe != frame)  
+              //|| (found && !v.unique && evframe != frame)  
+              // Not enough requested samples to satisfy minimum setting? Keep going.
+              || (found && !v.unique && (evframe - sample >= min_per))  
               // Protection. Observed this condition (dummy audio so far). Why? Supposed to be linear timestamps.
               //|| (found && evframe < frame)    
               // dssi-vst needs them serialized and accounted for, no matter what. This works with fixed rate 
@@ -2700,7 +2709,7 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
         //printf("PluginI::apply ports:%lu n:%lu frame:%lu sample:%lu nsamp:%lu syncFrame:%lu loopcount:%d\n", 
         //      ports, n, frame, sample, nsamp, syncFrame, loopcount);   // REMOVE Tim.
         
-        // TODO: TESTING: Don't allow zero-length runs. This could/should be checked in the control loop instead.
+        // Don't allow zero-length runs. This could/should be checked in the control loop instead.
         // Note this means it is still possible to get stuck in the top loop (at least for a while).
         if(nsamp == 0)
           continue;
@@ -2712,7 +2721,7 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
           //fprintf(stderr, "PluginI::apply handle %d\n", i);
           _plugin->apply(handle[i], nsamp);
         }      
-      
+        
         sample += nsamp;
         loopcount++;       // REMOVE Tim.
       }

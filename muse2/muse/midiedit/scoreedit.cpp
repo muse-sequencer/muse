@@ -341,7 +341,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 		menu_mapper->setMapping(func_velocity_action, CMD_VELOCITY);
 
 
-	score_canvas->song_changed(SC_EVENT_INSERTED);
+	score_canvas->fully_recalculate();
 	score_canvas->goto_tick(initPos,true);
 	
 	if (name!=NULL)
@@ -488,11 +488,10 @@ void ScoreEdit::menu_command(int cmd)
 	}
 }
 
-//---------------------------------------------------------
-//   readPart
-//---------------------------------------------------------
 
-Part* readPart(Xml& xml, QString tag_name="part") //TODO FINDMICH: duplicated from songfile.cpp; only difference: "none" is supported
+//duplicated from songfile.cpp's MusE::readPart(); the only differences: 
+//"none" is supported and tag_name is settable
+Part* read_part(Xml& xml, QString tag_name="part") 
 {
 	Part* part = 0;
 
@@ -523,7 +522,7 @@ Part* readPart(Xml& xml, QString tag_name="part") //TODO FINDMICH: duplicated fr
 				break;
 				
 			case Xml::TagStart:
-				xml.unknown("readPart");
+				xml.unknown("read_part");
 				break;
 				
 			case Xml::TagEnd:
@@ -555,7 +554,7 @@ void staff_t::read_status(Xml& xml)
 					clef = clef_t(xml.parseInt());
 				else if (tag == "part") 
 				{
-					Part* part=readPart(xml);
+					Part* part=read_part(xml);
 					if (part)
 						parts.insert(part);
 					else
@@ -750,7 +749,7 @@ void ScoreEdit::readStatus(Xml& xml)
 				else if (tag == "topwin")
 					TopWin::readStatus(xml);
 				else if (tag == "selectedPart")
-					score_canvas->set_selected_part(readPart(xml, "selectedPart"));
+					score_canvas->set_selected_part(read_part(xml, "selectedPart"));
 				else if (tag == "staff")
 				{
 					staff_t staff(score_canvas);
@@ -862,7 +861,7 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 	}
 	
 	cleanup_staves();
-	song_changed(SC_EVENT_INSERTED);
+	fully_recalculate();
 	recalc_staff_pos();
 }
 
@@ -1000,7 +999,7 @@ void ScoreCanvas::set_staffmode(list<staff_t>::iterator it, staff_mode_t mode)
 			cerr << "ERROR: ILLEGAL FUNCTION CALL: invalid mode in set_staffmode" << endl;
 	}
 	
-	song_changed(SC_EVENT_INSERTED);
+	fully_recalculate();
 	recalc_staff_pos();
 }
 
@@ -1026,7 +1025,7 @@ void ScoreCanvas::remove_staff(list<staff_t>::iterator it)
 	}		
 	
 	maybe_close_if_empty();
-	song_changed(SC_EVENT_INSERTED);
+	fully_recalculate();
 	recalc_staff_pos();
 }
 
@@ -1062,7 +1061,7 @@ void ScoreCanvas::merge_staves(list<staff_t>::iterator dest, list<staff_t>::iter
 	
 	remove_staff(src);
 
-	song_changed(SC_EVENT_INSERTED);
+	fully_recalculate();
 	recalc_staff_pos();
 }
 
@@ -1093,7 +1092,7 @@ void ScoreCanvas::move_staff_above(list<staff_t>::iterator dest, list<staff_t>::
 	
 	staves.splice(dest, staves, src, src_end);
 
-	song_changed(SC_EVENT_INSERTED);
+	fully_recalculate();
 	recalc_staff_pos();
 }
 
@@ -1119,6 +1118,11 @@ set<Part*> ScoreCanvas::get_all_parts()
 		result.insert(it->parts.begin(), it->parts.end());
 	
 	return result;
+}
+
+void ScoreCanvas::fully_recalculate()
+{
+	song_changed(SC_EVENT_MODIFIED);
 }
 
 void ScoreCanvas::song_changed(int flags)
@@ -3395,7 +3399,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 							mouse_operation=NO_OP;
 							mouse_x_drag_operation=LENGTH;
 
-							song_changed(SC_EVENT_INSERTED);
+							fully_recalculate();
 
 							setMouseTracking(true);	
 							dragging=true;
@@ -3547,7 +3551,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
 					dragged_event=tmp;
 					
-					song_changed(SC_EVENT_INSERTED);	
+					fully_recalculate();	
 				}
 				
 				break;
@@ -3590,7 +3594,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
 					dragged_event=tmp;
 					
-					song_changed(SC_EVENT_INSERTED);	
+					fully_recalculate();	
 				}
 				
 				break;
@@ -3626,7 +3630,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
 					dragged_event=tmp;
 					
-					song_changed(SC_EVENT_INSERTED);	
+					fully_recalculate();	
 				}
 				
 				break;
@@ -3922,7 +3926,7 @@ void ScoreCanvas::set_quant(int val)
 		
 		set_pixels_per_whole(pixels_per_whole() * quant_len() / old_len );
 
-		song_changed(SC_EVENT_INSERTED);
+		fully_recalculate();
 	}
 	else
 	{
@@ -4072,6 +4076,7 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
 			}
 }
 
+
 //the following assertions are made:
 //  pix_quarter.width() == pix_half.width()
 
@@ -4079,7 +4084,6 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
 // pix->width()-1 + 1/2*pix->width() + SHIFT + ADD_SPACE
 // 10-1+5+3+3=20 <- um so viel wird der taktstrich verschoben
 // um das doppelte (20*2=40) werden die kleinsten schläge gegeneinander versetzt
-
 
 
 
@@ -4098,8 +4102,7 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o let the user select the distance between staves, or do this
- *     automatically?
+ *   x nothing atm
  * 
  * IMPORTANT TODO
  *   o add a select-clef-toolbox for tracks
@@ -4108,11 +4111,10 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *     (0,5 sec) when displaying a whole song in scores
  *   o save toolbar position also in the global window settings
  *     and provide sane defaults
+ *   o support edge-scrolling when opening a lasso
  *
  * less important stuff
- *   o support edge-scrolling when opening a lasso
  *   o deal with expanding parts
- *   o do all the song_changed(SC_EVENT_INSERTED) properly
  *   o use bars instead of flags over groups of 8ths / 16ths etc
  *   o support different keys in different tracks at the same time
  *       calc_pos_add_list and calc_item_pos will be affected by this
@@ -4122,7 +4124,6 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *   o save more configuration stuff (quant, color, to_init)
  * 
  * really unimportant nice-to-haves
- *   o clean up code (find TODOs)
  *   o support in-song clef-changes
  *   o draw measure numbers
  *   o use timesig_t in all timesig-stuff
@@ -4135,7 +4136,7 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *   o update translations
  *   o remove ambiguous translation: "offset"="zeitversatz"
  *     this is ambigous in mod. note len and WRONG in mod. velo dialogs
-
+ *
  *   o process accurate timesignatures from muse's list (has to be implemented first in muse)
  *      ( (2+2+3)/4 or (3+2+2)/4 instead of 7/4 )
  *   o maybe do expanding parts inside the msgChangeEvent or
@@ -4148,35 +4149,6 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *        - or by controller graphs, as used by the piano roll
  */
 
-
-/* how to use the score editor with multiple tracks
- * ================================================
- * 
- * select parts, right-click, "display in new score window" or "display per-track in new score window"
- * or "display in existing window -> 1,2,3,4" or "display per-track in existing..."
- * 
- * ScoreCanvas has a list of note systems, consisting of the following:
- *   * all parts included in that view
- *   * eventlist, itemlist
- *   * used clef, transposing/octave settings
- *   * enum { NOT_GROUPED, I_AM_TOP, I_AM_BOTTOM } group_state
- *       NOT_GROUPED means "single note system"
- *       I_AM_TOP and I_AM_BOTTOM mean that the two systems belong
- *       together
- * 
- * when redrawing, we iterate through all systems.
- * we add a distance according to group_state
- * then we draw the system. if group_state is I_AM_BOTTOM, we
- * draw our beams longer/higher, and we draw a bracket
- * 
- * when clicking around, we first determine which system has been clicked in
- * (the systems have enough space in between, so there won't be notes
- *  from sys1 in sys2. if there are, they're ignored for simplicity)
- * then we proceed as usual (adding, removing, changing notes)
- * 
- * 
- * pos_add_list stays the same for each staff, so we only need one
- */
 
 /* R O A D M A P
  * =============

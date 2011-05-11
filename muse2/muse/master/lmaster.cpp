@@ -207,13 +207,17 @@ LMaster::LMaster()
       updateList();
 
       tempo_editor = new QLineEdit(view->viewport());
+      tempo_editor->hide();
       connect(tempo_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
       sig_editor = new SigEdit(view->viewport());
+      sig_editor->hide();
       connect(sig_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
       pos_editor = new Awl::PosEdit(view->viewport());
+      pos_editor->hide();
       connect(pos_editor, SIGNAL(returnPressed()), SLOT(returnPressed()));
       key_editor = new QComboBox(view->viewport());
       key_editor->addItems(keyStrs);
+      key_editor->hide();
       connect(key_editor, SIGNAL(currentIndexChanged(int)), SLOT(returnPressed()));
 
       connect(view, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), SLOT(select(QTreeWidgetItem*, QTreeWidgetItem*)));

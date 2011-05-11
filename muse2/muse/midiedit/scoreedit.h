@@ -690,6 +690,7 @@ class ScoreCanvas : public View
       void x_scroll_event(int);
       void y_scroll_event(int);
       void song_changed(int);
+      void fully_recalculate();
 			void goto_tick(int,bool);
 			void pos_changed(int i, unsigned u, bool b);
 			void heartbeat_timer_event();

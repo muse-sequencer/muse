@@ -143,6 +143,7 @@ class WavePart : public Part {
 //---------------------------------------------------------
 
 typedef std::multimap<int, Part*, std::less<unsigned> >::iterator iPart;
+typedef std::multimap<int, Part*, std::less<unsigned> >::reverse_iterator riPart;
 typedef std::multimap<int, Part*, std::less<unsigned> >::const_iterator ciPart;
 
 class PartList : public std::multimap<int, Part*, std::less<unsigned> > {

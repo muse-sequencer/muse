@@ -973,10 +973,10 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       editCopyAction = new QAction(QIcon(*editcopyIconSet), tr("&Copy"), this);
       editPasteAction = new QAction(QIcon(*editpasteIconSet), tr("&Paste"), this);
       editInsertAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert"), this);
+      editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert Empty Measure"), this);
       editPasteCloneAction = new QAction(QIcon(*editpasteCloneIconSet), tr("Paste c&lone"), this);
       editPaste2TrackAction = new QAction(QIcon(*editpaste2TrackIconSet), tr("Paste to &track"), this);
       editPasteC2TAction = new QAction(QIcon(*editpasteClone2TrackIconSet), tr("Paste clone to trac&k"), this);
-      editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert Empty Measure"), this);
       editDeleteSelectedAction = new QAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"), this);
 
 
@@ -1122,10 +1122,10 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(editCopyAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       connect(editPasteAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       connect(editInsertAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      connect(editInsertEMAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       connect(editPasteCloneAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       connect(editPaste2TrackAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       connect(editPasteC2TAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editInsertEMAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       connect(editDeleteSelectedAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
 
       connect(editSelectAllAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
@@ -1182,7 +1182,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(strGlobalCutAction, SIGNAL(activated()), SLOT(globalCut()));
       connect(strGlobalInsertAction, SIGNAL(activated()), SLOT(globalInsert()));
       connect(strGlobalSplitAction, SIGNAL(activated()), SLOT(globalSplit()));
-      connect(strCopyRangeAction, SIGNAL(activated()), SLOT(copyRange())); 
+      connect(strCopyRangeAction, SIGNAL(activated()), SLOT(copyRange()));
       connect(strCutEventsAction, SIGNAL(activated()), SLOT(cutEvents()));
 
       //-------- Midi connections
@@ -1356,10 +1356,10 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       menuEdit->addAction(editCopyAction);
       menuEdit->addAction(editPasteAction);
       menuEdit->addAction(editInsertAction);
+      menuEdit->addAction(editInsertEMAction);
       menuEdit->addAction(editPasteCloneAction);
       menuEdit->addAction(editPaste2TrackAction);
       menuEdit->addAction(editPasteC2TAction);
-      menuEdit->addAction(editInsertEMAction);
       menuEdit->addSeparator();
       menuEdit->addAction(editDeleteSelectedAction);
 
@@ -1737,14 +1737,16 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool loadAll)
       if (restartSequencer)
             seqStart();
 
-      if (song->getSongInfo().length()>0)
-          startSongInfo(false);
-
       visTracks->updateVisibleTracksButtons();
       progress->setValue(100);
       delete progress;
       progress=0;
+
       QApplication::restoreOverrideCursor();
+
+      if (song->getSongInfo().length()>0 && song->showSongInfoOnStartup()) {
+          startSongInfo(false);
+        }
       }
 
 //---------------------------------------------------------
@@ -3377,7 +3379,7 @@ bool MusE::saveAs()
               return false;
             }
 
-            song->setSongInfo(pci.getSongInfo());
+            song->setSongInfo(pci.getSongInfo(), true);
             name = pci.getProjectPath();
           } else {
             name = getSaveFileName(QString(""), med_file_save_pattern, this, tr("MusE: Save As"));
@@ -3669,12 +3671,16 @@ void MusE::startWaveEditor(PartList* pl)
 void MusE::startSongInfo(bool editable)
       {
         SongInfoWidget info;
+        info.viewCheckBox->setChecked(song->showSongInfoOnStartup());
+        info.viewCheckBox->setEnabled(editable);
         info.songInfoText->setPlainText(song->getSongInfo());
         info.songInfoText->setReadOnly(!editable);
+        info.setModal(true);
         info.show();
         if( info.exec() == QDialog::Accepted) {
-          if (editable)
-            song->setSongInfo(info.songInfoText->toPlainText());
+          if (editable) {
+            song->setSongInfo(info.songInfoText->toPlainText(), info.viewCheckBox->isChecked());
+          }
         }
 
       }
@@ -3690,7 +3696,7 @@ void MusE::showDidYouKnowDialog()
             dyk.show();
             if( dyk.exec()) {
                   if (dyk.dontShowCheckBox->isChecked()) {
-                        printf("disables dialog!\n");
+                        //printf("disables dialog!\n");
                         config.showDidYouKnow=false;
                         muse->changeConfig(true);    // save settings
                         }
@@ -4387,256 +4393,6 @@ void MusE::configShortCuts()
             changeConfig(true);
       }
 
-//---------------------------------------------------------
-//   globalCut
-//    - remove area between left and right locator
-//    - do not touch muted track
-//    - cut master track
-//---------------------------------------------------------
-
-void MusE::globalCut()
-      {
-      int lpos = song->lpos();
-      int rpos = song->rpos();
-      if ((lpos - rpos) >= 0)
-            return;
-
-      song->startUndo();
-      TrackList* tracks = song->tracks();
-      for (iTrack it = tracks->begin(); it != tracks->end(); ++it) {
-            MidiTrack* track = dynamic_cast<MidiTrack*>(*it);
-            if (track == 0 || track->mute())
-                  continue;
-            PartList* pl = track->parts();
-            for (iPart p = pl->begin(); p != pl->end(); ++p) {
-                  Part* part = p->second;
-                  int t = part->tick();
-                  int l = part->lenTick();
-                  if (t + l <= lpos)
-                        continue;
-                  if ((t >= lpos) && ((t+l) <= rpos)) {
-                        audio->msgRemovePart(part, false);
-                        }
-                  else if ((t < lpos) && ((t+l) > lpos) && ((t+l) <= rpos)) {
-                        // remove part tail
-                        int len = lpos - t;
-                        MidiPart* nPart = new MidiPart(*(MidiPart*)part);
-                        nPart->setLenTick(len);
-                        //
-                        // cut Events in nPart
-                        EventList* el = nPart->events();
-                        iEvent ie = el->lower_bound(t + len);
-                        for (; ie != el->end();) {
-                              iEvent i = ie;
-                              ++ie;
-                              // Indicate no undo, and do not do port controller values and clone parts. 
-                              //audio->msgDeleteEvent(i->second, nPart, false);
-                              audio->msgDeleteEvent(i->second, nPart, false, false, false);
-                              }
-                        // Indicate no undo, and do port controller values and clone parts. 
-                        //audio->msgChangePart(part, nPart, false);
-                        audio->msgChangePart(part, nPart, false, true, true);
-                        }
-                  else if ((t < lpos) && ((t+l) > lpos) && ((t+l) > rpos)) {
-                        //----------------------
-                        // remove part middle
-                        //----------------------
-
-                        MidiPart* nPart = new MidiPart(*(MidiPart*)part);
-                        EventList* el = nPart->events();
-                        iEvent is = el->lower_bound(lpos);
-                        iEvent ie = el->upper_bound(rpos);
-                        for (iEvent i = is; i != ie;) {
-                              iEvent ii = i;
-                              ++i;
-                              // Indicate no undo, and do not do port controller values and clone parts. 
-                              //audio->msgDeleteEvent(ii->second, nPart, false);
-                              audio->msgDeleteEvent(ii->second, nPart, false, false, false);
-                              }
-
-                        ie = el->lower_bound(rpos);
-                        for (; ie != el->end();) {
-                              iEvent i = ie;
-                              ++ie;
-                              Event event = i->second;
-                              Event nEvent = event.clone();
-                              nEvent.setTick(nEvent.tick() - (rpos-lpos));
-                              // Indicate no undo, and do not do port controller values and clone parts. 
-                              //audio->msgChangeEvent(event, nEvent, nPart, false);
-                              audio->msgChangeEvent(event, nEvent, nPart, false, false, false);
-                              }
-                        nPart->setLenTick(l - (rpos-lpos));
-                        // Indicate no undo, and do port controller values and clone parts. 
-                        //audio->msgChangePart(part, nPart, false);
-                        audio->msgChangePart(part, nPart, false, true, true);
-                        }
-                  else if ((t >= lpos) && (t < rpos) && (t+l) > rpos) {
-                        // TODO: remove part head
-                        }
-                  else if (t >= rpos) {
-                        MidiPart* nPart = new MidiPart(*(MidiPart*)part);
-                        int nt = part->tick();
-                        nPart->setTick(nt - (rpos -lpos));
-                        // Indicate no undo, and do port controller values but not clone parts. 
-                        //audio->msgChangePart(part, nPart, false);
-                        audio->msgChangePart(part, nPart, false, true, false);
-                        }
-                  }
-            }
-      // TODO: cut tempo track
-      // TODO: process marker
-      song->endUndo(SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_REMOVED);
-      }
-
-//---------------------------------------------------------
-//   globalInsert
-//    - insert empty space at left locator position upto
-//      right locator
-//    - do not touch muted track
-//    - insert in master track
-//---------------------------------------------------------
-
-void MusE::globalInsert()
-      {
-      unsigned lpos = song->lpos();
-      unsigned rpos = song->rpos();
-      if (lpos >= rpos)
-            return;
-
-      song->startUndo();
-      TrackList* tracks = song->tracks();
-      for (iTrack it = tracks->begin(); it != tracks->end(); ++it) {
-            MidiTrack* track = dynamic_cast<MidiTrack*>(*it);
-            //
-            // process only non muted midi tracks
-            //
-            if (track == 0 || track->mute())
-                  continue;
-            PartList* pl = track->parts();
-            for (iPart p = pl->begin(); p != pl->end(); ++p) {
-                  Part* part = p->second;
-                  unsigned t = part->tick();
-                  int l = part->lenTick();
-                  if (t + l <= lpos)
-                        continue;
-                  if (lpos >= t && lpos < (t+l)) {
-                        MidiPart* nPart = new MidiPart(*(MidiPart*)part);
-                        nPart->setLenTick(l + (rpos-lpos));
-                        EventList* el = nPart->events();
-
-                        iEvent i = el->end();
-                        while (i != el->begin()) {
-                              --i;
-                              if (i->first < lpos)
-                                    break;
-                              Event event  = i->second;
-                              Event nEvent = i->second.clone();
-                              nEvent.setTick(nEvent.tick() + (rpos-lpos));
-                              // Indicate no undo, and do not do port controller values and clone parts. 
-                              //audio->msgChangeEvent(event, nEvent, nPart, false);
-                              audio->msgChangeEvent(event, nEvent, nPart, false, false, false);
-                              }
-                        // Indicate no undo, and do port controller values and clone parts. 
-                        //audio->msgChangePart(part, nPart, false);
-                        audio->msgChangePart(part, nPart, false, true, true);
-                        }
-                  else if (t > lpos) {
-                        MidiPart* nPart = new MidiPart(*(MidiPart*)part);
-                        nPart->setTick(t + (rpos -lpos));
-                        // Indicate no undo, and do port controller values but not clone parts. 
-                        //audio->msgChangePart(part, nPart, false);
-                        audio->msgChangePart(part, nPart, false, true, false);
-                        }
-                  }
-            }
-      // TODO: process tempo track
-      // TODO: process marker
-      song->endUndo(SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_REMOVED);
-      }
-
-//---------------------------------------------------------
-//   globalSplit
-//    - split all parts at the song position pointer
-//    - do not touch muted track
-//---------------------------------------------------------
-
-void MusE::globalSplit()
-      {
-      int pos = song->cpos();
-      song->startUndo();
-      TrackList* tracks = song->tracks();
-      for (iTrack it = tracks->begin(); it != tracks->end(); ++it) {
-            Track* track = *it;
-            PartList* pl = track->parts();
-            for (iPart p = pl->begin(); p != pl->end(); ++p) {
-                  Part* part = p->second;
-                  int p1 = part->tick();
-                  int l0 = part->lenTick();
-                  if (pos > p1 && pos < (p1+l0)) {
-                        Part* p1;
-                        Part* p2;
-                        track->splitPart(part, pos, p1, p2);
-                        // Indicate no undo, and do port controller values but not clone parts. 
-                        //audio->msgChangePart(part, p1, false);
-                        audio->msgChangePart(part, p1, false, true, false);
-                        audio->msgAddPart(p2, false);
-                        break;
-                        }
-                  }
-            }
-      song->endUndo(SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_INSERTED);
-      }
-
-//---------------------------------------------------------
-//   copyRange
-//    - copy space between left and right locator position
-//      to song position pointer
-//    - dont process muted tracks
-//    - create a new part for every track containing the
-//      copied events
-//---------------------------------------------------------
-
-void MusE::copyRange()
-      {
-      QMessageBox::critical(this,
-         tr("MusE: Copy Range"),
-         tr("not implemented")
-         );
-      }
-
-//---------------------------------------------------------
-//   cutEvents
-//    - make sure that all events in a part end where the
-//      part ends
-//    - process only marked parts
-//---------------------------------------------------------
-
-void MusE::cutEvents()
-      {
-      QMessageBox::critical(this,
-         tr("MusE: Cut Events"),
-         tr("not implemented")
-         );
-      }
-
-//---------------------------------------------------------
-//   checkRegionNotNull
-//    return true if (rPos - lPos) <= 0
-//---------------------------------------------------------
-
-bool MusE::checkRegionNotNull()
-      {
-      int start = song->lPos().frame();
-      int end   = song->rPos().frame();
-      if (end - start <= 0) {
-            QMessageBox::critical(this,
-               tr("MusE: Bounce"),
-               tr("set left/right marker for bounce range")
-               );
-            return true;
-            }
-      return false;
-      }
 
 #if 0
 //---------------------------------------------------------
@@ -5048,10 +4804,10 @@ void MusE::updateConfiguration()
       editCopyAction->setShortcut(shortcuts[SHRT_COPY].key);
       editPasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
       editInsertAction->setShortcut(shortcuts[SHRT_INSERT].key);
+      editInsertEMAction->setShortcut(shortcuts[SHRT_INSERTMEAS].key);
       editPasteCloneAction->setShortcut(shortcuts[SHRT_PASTE_CLONE].key);
       editPaste2TrackAction->setShortcut(shortcuts[SHRT_PASTE_TO_TRACK].key);
       editPasteC2TAction->setShortcut(shortcuts[SHRT_PASTE_CLONE_TO_TRACK].key);
-      editInsertEMAction->setShortcut(shortcuts[SHRT_INSERTMEAS].key);
 
       //editDeleteSelectedAction has no acceleration
       

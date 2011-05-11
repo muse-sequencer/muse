@@ -1,5 +1,12 @@
+10.05.2011: 
+        - Added general settings audio item: Minimum control process period 1-2048, default 64. Test OK. (Tim)
+          Adjusts minimum allowable number of samples in a LADSPA or DSSI run, ie control 'smoothness'.
+          Still TODO: AudioTrack controllers contribution.
+        - Added Yamaha Mo6 instrument file by Geoff King gsking1 A T gmail D O T com. (Tim) 
 08.05.2011: 
         - Draw event canvas notes if they extend past part end. (Tim)
+        - Added checkbox to select if songinfo should be displayed on song start (rj)
+        - fixups to structure functions, now inserts/cuts markers, and master track events with undo (rj)
 06.05.2011:
         - MusE 2.0beta2 released (rj)
         - Added Yamaha-CS1x.idf instrument from Ernie Rymer <ethylene77 A T yahoo D O T com> Thanks! (Tim)
