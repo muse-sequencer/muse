@@ -882,6 +882,9 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget,
 	drag_cursor_changed=false;
 	mouse_erases_notes=false;
 	mouse_inserts_notes=true;
+	
+	undo_started=false;
+	undo_flags=0;
 
 	selected_part=NULL;
 	
@@ -3306,7 +3309,8 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 					setMouseTracking(true);		
 					dragging=true;
 					drag_cursor_changed=false;
-					song->startUndo();
+					undo_started=false;
+					undo_flags=SC_EVENT_MODIFIED;
 				}
 			}
 			else //we found nothing?
@@ -3338,6 +3342,8 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 							if (relative_tick<0)
 								cerr << "ERROR: THIS SHOULD NEVER HAPPEN: relative_tick is negative!" << endl;
 							song->startUndo();
+							undo_started=true;
+							undo_flags=SC_EVENT_INSERTED | SC_EVENT_MODIFIED;
 							//stopping undo at the end of this function is unneccessary
 							//because we'll begin a drag right after it. finishing
 							//this drag will stop undo as well (in mouseReleaseEvent)
@@ -3412,7 +3418,9 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 			}
 		}
 		
-		song->endUndo(SC_EVENT_MODIFIED);
+		if (undo_started)
+			song->endUndo(undo_flags);
+		
 		setMouseTracking(false);
 		unsetCursor();
 		dragging=false;
@@ -3508,6 +3516,12 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 
 				if (dragged_event.pitch()!=new_pitch)
 				{
+					if (!undo_started)
+					{
+						song->startUndo();
+						undo_started=true;
+					}
+					
 					Event tmp=dragged_event.clone();
 					tmp.setPitch(new_pitch);
 					
@@ -3522,6 +3536,12 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 			case BEGIN:
 				if (dragged_event.tick()+dragged_event_part->tick() != unsigned(tick))
 				{
+					if (!undo_started)
+					{
+						song->startUndo();
+						undo_started=true;
+					}
+
 					Event tmp=dragged_event.clone();
 					signed relative_tick=tick-signed(dragged_event_part->tick());
 					
@@ -3560,6 +3580,12 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				tick+=quant_ticks();
 				if (dragged_event.tick()+dragged_event.lenTick() + dragged_event_part->tick() != unsigned(tick))
 				{
+					if (!undo_started)
+					{
+						song->startUndo();
+						undo_started=true;
+					}
+
 					Event tmp=dragged_event.clone();
 					signed relative_tick=tick-signed(dragged_event_part->tick());
 					signed new_len=relative_tick-dragged_event.tick();
@@ -4039,7 +4065,6 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  * CURRENT TODO
  *   o let the user select the distance between staves, or do this
  *     automatically?
- *   o don't indicate undo when only clicking on an item
  * 
  * IMPORTANT TODO
  *   o add a select-clef-toolbox for tracks

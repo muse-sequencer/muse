@@ -651,7 +651,10 @@ class ScoreCanvas : public View
 		QPoint lasso_start;
 		QRect lasso;
 
-
+		bool undo_started;
+		int undo_flags;
+		
+		
 
 		enum {COLOR_MODE_BLACK, COLOR_MODE_PART, COLOR_MODE_VELO} coloring_mode;
 		bool preamble_contains_keysig;
