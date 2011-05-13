@@ -60,7 +60,7 @@ MidiFile::MidiFile(FILE* f)
       {
       fp        = f;
       curPos    = 0;
-      _mtype    = MT_UNKNOWN;
+      _mtype    = MT_GM; // MT_UNKNOWN;
       _error    = MF_NO_ERROR;
       _tracks   = new MidiFileTrackList;
       }
