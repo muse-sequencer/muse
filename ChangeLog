@@ -1,5 +1,6 @@
 13.05.2011:
         - New spanish translation from Cristian Ramos (rj)
+        - Added dialog to remove unused wave files (rj)
         - Changed default imported midi song type to GM. (Tim)
 12.05.2011: 
         - Changed template song "default.med" song type from NO to GM, to help new users. (Tim)

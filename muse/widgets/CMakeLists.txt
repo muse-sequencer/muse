@@ -75,7 +75,8 @@ QT4_WRAP_CPP (widget_mocs
       tools.h  
       # ttoolbar.h  
       ttoolbutton.h  
-      velocity.h  
+      unusedwavefiles.h
+      velocity.h
       verticalmeter.h
       view.h
       vscale.h
@@ -109,7 +110,8 @@ file (GLOB widgets_ui_files
       songinfo.ui  
       synthconfigbase.ui  
       transformbase.ui  
-      transposebase.ui  
+      transposebase.ui
+      unusedwavefiles.ui
       velocitybase.ui
       )
 QT4_WRAP_UI (widget_ui_headers ${widgets_ui_files})
@@ -175,7 +177,8 @@ file (GLOB widgets_source_files
       tools.cpp 
       ttoolbar.cpp 
       ttoolbutton.cpp 
-      utils.cpp 
+      unusedwavefiles.cpp
+      utils.cpp
       velocity.cpp 
       verticalmeter.cpp
       view.cpp
