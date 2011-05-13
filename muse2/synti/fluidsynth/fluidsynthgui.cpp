@@ -164,7 +164,8 @@ void FluidSynthGui::loadClicked()
 	QString filename = QFileDialog::getOpenFileName(this, 
                                                       tr("Choose soundfont"), 
                                                       lastdir, 
-                                                      QString("*.[Ss][Ff]2"));
+                                                      //QString("Soundfonts (*.[Ss][Ff]2);;All files (*)"));
+                                                      QString("Soundfonts (*.sf2);;All files (*)"));
 
       if (filename != QString::null) {
             int lastslash = filename.lastIndexOf('/');

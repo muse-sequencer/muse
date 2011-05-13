@@ -60,7 +60,7 @@ MidiFile::MidiFile(FILE* f)
       {
       fp        = f;
       curPos    = 0;
-      _mtype    = MT_UNKNOWN;
+      _mtype    = MT_GM;
       _error    = MF_NO_ERROR;
       _tracks   = new MidiFileTrackList;
       }
@@ -325,7 +325,7 @@ int MidiFile::readEvent(MidiPlayEvent* event, MidiFileTrack* t)
                         }
                   if (buffer[len-1] != 0xf7) {
                         printf("SYSEX endet nicht mit 0xf7!\n");
-                        // Forstsetzung folgt?
+                        // Fortsetzung folgt?
                         }
                   else
                         --len;      // don't count 0xf7

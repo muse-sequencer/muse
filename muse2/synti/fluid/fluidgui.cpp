@@ -73,7 +73,8 @@ void FLUIDGui::loadFont()
 
 void FLUIDGui::soundFontFileDialog()
       {
-      QString s = QFileDialog::getOpenFileName(this, QString(), QString(), QString("*.[Ss][Ff]2"));
+      //QString s = QFileDialog::getOpenFileName(this, QString(), QString(), QString("Soundfonts (*.[Ss][Ff]2);;All files (*)"));
+      QString s = QFileDialog::getOpenFileName(this, QString(), QString(), QString("Soundfonts (*.sf2);;All files (*)"));
       if (!s.isEmpty()) {
             pathEntry->setText(s);
             }
