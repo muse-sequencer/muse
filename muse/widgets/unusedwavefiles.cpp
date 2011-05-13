@@ -25,7 +25,7 @@ UnusedWaveFiles::UnusedWaveFiles(QWidget *parent) :
 void UnusedWaveFiles::findWaveFiles()
 {
     ui->filelistWidget->clear();
-    printf("museProject =%s\n", museProject.toLatin1().data());
+    //printf("museProject =%s\n", museProject.toLatin1().data());
 //    QFileInfo proj(museProject);
 //    QString projPath = proj.absolutePath();
     QDir dir(museProject);
@@ -40,7 +40,7 @@ void UnusedWaveFiles::findWaveFiles()
     if (ui->currentProjRadioButton->isChecked()) {
         medFiles.append(muse->projectName());
     } else {
-        printf("get ALLL *.med files!\n");
+        //printf("get ALLL *.med files!\n");
         QStringList medFilter("*.med");
         medFiles = dir.entryList(medFilter);
     }
@@ -63,6 +63,7 @@ void UnusedWaveFiles::findWaveFiles()
                 }
             }
         }
+        fclose(fp);
     }
 
     ui->filelistWidget->addItems(allWaveFiles);
