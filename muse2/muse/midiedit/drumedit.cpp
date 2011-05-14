@@ -60,13 +60,11 @@ static const char* map_file_save_pattern[] = {
       };
 */      
 
-int DrumEdit::_quantInit = 96;
 int DrumEdit::_rasterInit = 96;
 int DrumEdit::_widthInit = 600;
 int DrumEdit::_heightInit = 400;
 int DrumEdit::_dlistWidthInit = 50;
 int DrumEdit::_dcanvasWidthInit = 300;
-int DrumEdit::_toInit = 0;
 
 static const int xscale = -10;
 static const int yscale = 1;
@@ -156,12 +154,11 @@ void DrumEdit::closeEvent(QCloseEvent* e)
 //---------------------------------------------------------
 
 DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned initPos)
-   : MidiEditor(_quantInit, _rasterInit, pl, parent, name)
+   : MidiEditor(_rasterInit, pl, parent, name)
       {
       split1w1 = 0;
       resize(_widthInit, _heightInit);
       selPart  = 0;
-      _to = _toInit;
       QSignalMapper *signalMapper = new QSignalMapper(this);
       
       //---------Pulldown Menu----------------------------
@@ -236,12 +233,15 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       
       fixedAction = menuFunctions->addAction(tr("Set Fixed Length"));
       veloAction = menuFunctions->addAction(tr("Modify Velocity"));
+      quantizeAction = menuFunctions->addAction(tr("Quantize"));
 
       connect(fixedAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(veloAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(quantizeAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
 
       signalMapper->setMapping(fixedAction, DrumCanvas::CMD_FIXED_LEN);
       signalMapper->setMapping(veloAction, DrumCanvas::CMD_MODIFY_VELOCITY);
+      signalMapper->setMapping(quantizeAction, DrumCanvas::CMD_QUANTIZE);
 
       QMenu* menuScriptPlugins = menuBar()->addMenu(tr("&Plugins"));
       song->populateScriptMenu(menuScriptPlugins, this);
@@ -318,7 +318,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       
       addToolBarBreak();
       // don't show pitch value in toolbar
-      toolbar = new Toolbar1(this, _rasterInit, _quantInit, false);
+      toolbar = new Toolbar1(this, _rasterInit, false);
       addToolBar(toolbar);
       
       addToolBarBreak();
@@ -455,7 +455,6 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       // connect toolbar
       connect(canvas,  SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
       connect(time,    SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
-      connect(toolbar, SIGNAL(quantChanged(int)),          SLOT(setQuant(int)));
       connect(toolbar, SIGNAL(rasterChanged(int)),         SLOT(setRaster(int)));
       connect(toolbar, SIGNAL(soloChanged(bool)),          SLOT(soloChanged(bool)));
       connect(info, SIGNAL(valueChanged(NoteInfo::ValType, int)), SLOT(noteinfoChanged(NoteInfo::ValType, int)));
@@ -602,16 +601,6 @@ void DrumEdit::setRaster(int val)
       }
 
 //---------------------------------------------------------
-//   setQuant
-//---------------------------------------------------------
-
-void DrumEdit::setQuant(int val)
-      {
-      _quantInit = val;
-      MidiEditor::setQuant(val);
-      }
-
-//---------------------------------------------------------
 //    edit currently selected Event
 //---------------------------------------------------------
 
@@ -721,10 +710,8 @@ void DrumEdit::readStatus(Xml& xml)
                         break;
                   case Xml::TagEnd:
                         if (tag == "drumedit") {
-                              _quantInit  = _quant;
                               _rasterInit = _raster;
                               toolbar->setRaster(_raster);
-                              toolbar->setQuant(_quant);
                               canvas->redrawGrid();
                               return;
                               }
@@ -748,9 +735,7 @@ void DrumEdit::readConfiguration(Xml& xml)
                   case Xml::End:
                         return;
                   case Xml::TagStart:
-                        if (tag == "quant")
-                              _quantInit = xml.parseInt();
-                        else if (tag == "raster")
+                        if (tag == "raster")
                               _rasterInit = xml.parseInt();
                         else if (tag == "width")
                               _widthInit = xml.parseInt();
@@ -760,9 +745,6 @@ void DrumEdit::readConfiguration(Xml& xml)
                               _dcanvasWidthInit = xml.parseInt();
                         else if (tag == "dlistwidth")
                               _dlistWidthInit = xml.parseInt();
-                        else if (tag == "to") {
-                              _toInit = xml.parseInt();
-                              }
                         else
                               xml.unknown("DrumEdit");
                         break;
@@ -783,13 +765,11 @@ void DrumEdit::readConfiguration(Xml& xml)
 void DrumEdit::writeConfiguration(int level, Xml& xml)
       {
       xml.tag(level++, "drumedit");
-      xml.intTag(level, "quant", _quantInit);
       xml.intTag(level, "raster", _rasterInit);
       xml.intTag(level, "width", _widthInit);
       xml.intTag(level, "height", _heightInit);
       xml.intTag(level, "dlistwidth", _dlistWidthInit);
       xml.intTag(level, "dcanvaswidth", _dcanvasWidthInit);
-      xml.intTag(level, "to", _toInit);
       xml.tag(level, "/drumedit");
       }
 
@@ -1231,9 +1211,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             event->ignore();
             return;
             }
-      setQuant(val);
       setRaster(val);
-      toolbar->setQuant(_quant);
       toolbar->setRaster(_raster);
       }
 
@@ -1273,7 +1251,7 @@ void DrumEdit::execDeliveredScript(int id)
 {
       //QString scriptfile = QString(INSTPREFIX) + SCRIPTSSUFFIX + deliveredScriptNames[id];
       QString scriptfile = song->getScriptPath(id, true);
-      song->executeScript(scriptfile.toLatin1().constData(), parts(), quant(), true); 
+      song->executeScript(scriptfile.toLatin1().constData(), parts(), raster(), true);
 }
 
 //---------------------------------------------------------
@@ -1282,7 +1260,7 @@ void DrumEdit::execDeliveredScript(int id)
 void DrumEdit::execUserScript(int id)
 {
       QString scriptfile = song->getScriptPath(id, false);
-      song->executeScript(scriptfile.toLatin1().constData(), parts(), quant(), true);
+      song->executeScript(scriptfile.toLatin1().constData(), parts(), raster(), true);
 }
 
 void DrumEdit::setStep(QString v)

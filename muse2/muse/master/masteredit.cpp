@@ -77,7 +77,7 @@ void MasterEdit::songChanged(int type)
 //---------------------------------------------------------
 
 MasterEdit::MasterEdit()
-   : MidiEditor(0, _rasterInit, 0)
+   : MidiEditor(_rasterInit, 0)
       {
       setWindowTitle(tr("MusE: Mastertrack"));
       _raster = 0;      // measure

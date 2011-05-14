@@ -119,19 +119,11 @@ class PianoRoll : public MidiEditor {
 
       int colorMode;
 
-      static int _quantInit, _rasterInit;
+      static int _rasterInit;
       static int _widthInit, _heightInit;
 
-      static int _quantStrengthInit;
-      static int _quantLimitInit;
-      static bool _quantLenInit;
-      static int _toInit;
       static int colorModeInit;
 
-      int _quantStrength;
-      int _quantLimit;
-      int _to;
-      bool _quantLen;
       bool _playEvents;
 
       //QScrollBar* infoScroll;
@@ -153,13 +145,8 @@ class PianoRoll : public MidiEditor {
       void soloChanged(bool flag);
       //void trackInfoScroll(int);
       void setRaster(int);
-      void setQuant(int);
-      void setQuantStrength(int val) { _quantStrength = val; }
-      void setQuantLimit(int val)    { _quantLimit = val; }
-      void setQuantLen(bool val)     { _quantLen = val; }
       void cmd(int);
       void setSteprec(bool);
-      void setTo(int val)            { _to = val; }
       void eventColorModeChanged(int);
       void clipboardChanged(); // enable/disable "Paste"
       void selectionChanged(); // enable/disable "Copy" & "Paste"

@@ -246,11 +246,6 @@ enum {
       SHRT_SCROLL_RIGHT, // l
       SHRT_FIXED_LEN, //Alt+L, currently only drumeditor
       SHRT_QUANTIZE, //q
-      SHRT_OVER_QUANTIZE, //Default: undefined
-      SHRT_ON_QUANTIZE, //Default: undefined
-      SHRT_ONOFF_QUANTIZE, //Default: undefined
-      SHRT_ITERATIVE_QUANTIZE, //Default: undefined
-      SHRT_CONFIG_QUANT, //Default: Ctrl+Alt+Q
       SHRT_MODIFY_GATE_TIME, //Default: undefined
       SHRT_MODIFY_VELOCITY,
       SHRT_CRESCENDO,

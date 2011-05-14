@@ -52,14 +52,9 @@
 
 #include "mtrackinfo.h"
 
-int PianoRoll::_quantInit = 96;
 int PianoRoll::_rasterInit = 96;
 int PianoRoll::_widthInit = 600;
 int PianoRoll::_heightInit = 400;
-int PianoRoll::_quantStrengthInit = 80;      // 1 - 100%
-int PianoRoll::_quantLimitInit = 50;         // tick value
-bool PianoRoll::_quantLenInit = false;
-int PianoRoll::_toInit = 0;
 int PianoRoll::colorModeInit = 0;
 
 static const int xscale = -10;
@@ -73,16 +68,12 @@ static int pianorollTools = PointerTool | PencilTool | RubberTool | DrawTool;
 //---------------------------------------------------------
 
 PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned initPos)
-   : MidiEditor(_quantInit, _rasterInit, pl, parent, name)
+   : MidiEditor(_rasterInit, pl, parent, name)
       {
       deltaMode = false;
       resize(_widthInit, _heightInit);
       selPart        = 0;
       _playEvents    = false;
-      _quantStrength = _quantStrengthInit;
-      _quantLimit    = _quantLimitInit;
-      _quantLen      = _quantLenInit;
-      _to            = _toInit;
       colorMode      = colorModeInit;
       
       QSignalMapper* mapper = new QSignalMapper(this);
@@ -299,7 +290,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       transport->addActions(transportAction->actions());
 
       addToolBarBreak();
-      toolbar = new Toolbar1(this, _rasterInit, _quantInit);
+      toolbar = new Toolbar1(this, _rasterInit);
       addToolBar(toolbar);
 
       addToolBarBreak();
@@ -497,9 +488,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       connect(canvas,   SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
       connect(piano,    SIGNAL(pitchChanged(int)), toolbar, SLOT(setPitch(int)));
       connect(time,     SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
-      connect(toolbar,  SIGNAL(quantChanged(int)), SLOT(setQuant(int)));
       connect(toolbar,  SIGNAL(rasterChanged(int)),SLOT(setRaster(int)));
-      connect(toolbar,  SIGNAL(toChanged(int)),    SLOT(setTo(int)));
       connect(toolbar,  SIGNAL(soloChanged(bool)), SLOT(soloChanged(bool)));
 
       setFocusPolicy(Qt::StrongFocus);
@@ -821,18 +810,8 @@ void PianoRoll::readConfiguration(Xml& xml)
             const QString& tag = xml.s1();
             switch (token) {
                   case Xml::TagStart:
-                        if (tag == "quant")
-                              _quantInit = xml.parseInt();
-                        else if (tag == "raster")
+                        if (tag == "raster")
                               _rasterInit = xml.parseInt();
-                        else if (tag == "quantStrength")
-                              _quantStrengthInit = xml.parseInt();
-                        else if (tag == "quantLimit")
-                              _quantLimitInit = xml.parseInt();
-                        else if (tag == "quantLen")
-                              _quantLenInit = xml.parseInt();
-                        else if (tag == "to")
-                              _toInit = xml.parseInt();
                         else if (tag == "colormode")
                               colorModeInit = xml.parseInt();
                         else if (tag == "width")
@@ -858,12 +837,7 @@ void PianoRoll::readConfiguration(Xml& xml)
 void PianoRoll::writeConfiguration(int level, Xml& xml)
       {
       xml.tag(level++, "pianoroll");
-      xml.intTag(level, "quant", _quantInit);
       xml.intTag(level, "raster", _rasterInit);
-      xml.intTag(level, "quantStrength", _quantStrengthInit);
-      xml.intTag(level, "quantLimit", _quantLimitInit);
-      xml.intTag(level, "quantLen", _quantLenInit);
-      xml.intTag(level, "to", _toInit);
       xml.intTag(level, "width", _widthInit);
       xml.intTag(level, "height", _heightInit);
       xml.intTag(level, "colormode", colorModeInit);
@@ -894,17 +868,6 @@ void PianoRoll::setRaster(int val)
       }
 
 //---------------------------------------------------------
-//   setQuant
-//---------------------------------------------------------
-
-void PianoRoll::setQuant(int val)
-      {
-      _quantInit = val;
-      MidiEditor::setQuant(val);
-      canvas->setFocus();
-      }
-
-//---------------------------------------------------------
 //   writeStatus
 //---------------------------------------------------------
 
@@ -924,9 +887,6 @@ void PianoRoll::writeStatus(int level, Xml& xml) const
       xml.intTag(level, "steprec", canvas->steprec());
       xml.intTag(level, "midiin", canvas->midiin());
       xml.intTag(level, "tool", int(canvas->tool()));
-      xml.intTag(level, "quantStrength", _quantStrength);
-      xml.intTag(level, "quantLimit", _quantLimit);
-      xml.intTag(level, "quantLen", _quantLen);
       xml.intTag(level, "playEvents", _playEvents);
       xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "xmag", hscroll->mag());
@@ -973,12 +933,6 @@ void PianoRoll::readStatus(Xml& xml)
                               splitter->readStatus(xml);
                         else if (tag == hsplitter->objectName())
                               hsplitter->readStatus(xml);
-                        else if (tag == "quantStrength")
-                              _quantStrength = xml.parseInt();
-                        else if (tag == "quantLimit")
-                              _quantLimit = xml.parseInt();
-                        else if (tag == "quantLen")
-                              _quantLen = xml.parseInt();
                         else if (tag == "playEvents") {
                               _playEvents = xml.parseInt();
                               canvas->playEvents(_playEvents);
@@ -997,10 +951,8 @@ void PianoRoll::readStatus(Xml& xml)
                         break;
                   case Xml::TagEnd:
                         if (tag == "pianoroll") {
-                              _quantInit  = _quant;
                               _rasterInit = _raster;
                               toolbar->setRaster(_raster);
-                              toolbar->setQuant(_quant);
                               canvas->redrawGrid();
                               return;
                               }
@@ -1179,9 +1131,7 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             event->ignore();
             return;
             }
-      setQuant(val);
       setRaster(val);
-      toolbar->setQuant(_quant);
       toolbar->setRaster(_raster);
       }
 
@@ -1306,7 +1256,7 @@ void PianoRoll::initShortcuts()
       //evColorPitchAction->setShortcut(shortcuts[  ].key);
       //evColorVelAction->setShortcut(shortcuts[  ].key);
       
-      funcQuantizeAction->setShortcut(shortcuts[SHRT_OVER_QUANTIZE].key); //FINDMICH TODO FLO
+      funcQuantizeAction->setShortcut(shortcuts[SHRT_QUANTIZE].key);
       
       funcGateTimeAction->setShortcut(shortcuts[SHRT_MODIFY_GATE_TIME].key);
       funcModVelAction->setShortcut(shortcuts[SHRT_MODIFY_VELOCITY].key);
@@ -1332,7 +1282,7 @@ void PianoRoll::execDeliveredScript(int id)
 {
       //QString scriptfile = QString(INSTPREFIX) + SCRIPTSSUFFIX + deliveredScriptNames[id];
       QString scriptfile = song->getScriptPath(id, true);
-      song->executeScript(scriptfile.toAscii().data(), parts(), quant(), true); 
+      song->executeScript(scriptfile.toAscii().data(), parts(), raster(), true);
 }
 
 //---------------------------------------------------------
@@ -1341,7 +1291,7 @@ void PianoRoll::execDeliveredScript(int id)
 void PianoRoll::execUserScript(int id)
 {
       QString scriptfile = song->getScriptPath(id, false);
-      song->executeScript(scriptfile.toAscii().data(), parts(), quant(), true);
+      song->executeScript(scriptfile.toAscii().data(), parts(), raster(), true);
 }
 
 //---------------------------------------------------------

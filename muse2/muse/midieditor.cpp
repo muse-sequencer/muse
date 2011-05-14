@@ -23,7 +23,7 @@
 //   MidiEditor
 //---------------------------------------------------------
 
-MidiEditor::MidiEditor(int q, int r, PartList* pl,
+MidiEditor::MidiEditor(int r, PartList* pl,
    QWidget* parent, const char* name) : TopWin(parent, name)
       {
       setAttribute(Qt::WA_DeleteOnClose);
@@ -31,7 +31,6 @@ MidiEditor::MidiEditor(int q, int r, PartList* pl,
       if (_pl)
             for (iPart i = _pl->begin(); i != _pl->end(); ++i)
                   _parts.push_back(i->second->sn());
-      _quant   = q;
       _raster  = r;
       canvas   = 0;
       wview    = 0;
@@ -81,17 +80,6 @@ MidiEditor::~MidiEditor()
             delete _pl;
       }
 
-//---------------------------------------------------------
-//   quantVal
-//---------------------------------------------------------
-
-int MidiEditor::quantVal(int v) const
-      {
-      int val = ((v+_quant/2)/_quant)*_quant;
-      if (val == 0)
-            val = _quant;
-      return val;
-      }
 
 //---------------------------------------------------------
 //   readStatus
@@ -110,9 +98,7 @@ void MidiEditor::readStatus(Xml& xml)
                   case Xml::End:
                         return;
                   case Xml::TagStart:
-                        if (tag == "quant")
-                              _quant = xml.parseInt();
-                        else if (tag == "raster")
+                        if (tag == "raster")
                               _raster = xml.parseInt();
                         else if (tag == "topwin")
                               TopWin::readStatus(xml);
@@ -155,7 +141,6 @@ void MidiEditor::writeStatus(int level, Xml& xml) const
       {
       xml.tag(level++, "midieditor");
       TopWin::writeStatus(level, xml);
-      xml.intTag(level, "quant", _quant);
       xml.intTag(level, "raster", _raster);
       xml.tag(level, "/midieditor");
       }

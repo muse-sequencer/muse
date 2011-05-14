@@ -181,13 +181,9 @@ void initShortCuts()
       //Pianoroll:
       //-----------------------------------------------------------
 
-      defShrt(SHRT_OVER_QUANTIZE,    0, "Quantize: Over Quantize", PROLL_SHRT, "midi_over_quant");
-      defShrt(SHRT_ON_QUANTIZE,      0, "Quantize: Note On Quantize", PROLL_SHRT, "midi_quant_noteon");
-      defShrt(SHRT_ONOFF_QUANTIZE,   0, "Quantize: Note On/Off Quantize", PROLL_SHRT,"midi_quant_noteoff");
-      defShrt(SHRT_ITERATIVE_QUANTIZE,0,"Quantize: Iterative Quantize", PROLL_SHRT,"midi_quant_iterative");
-      defShrt(SHRT_CONFIG_QUANT,     Qt::CTRL + Qt::ALT + Qt::Key_Q, "Quantize: Configure quant", PROLL_SHRT, "config_quant");
-      defShrt(SHRT_MODIFY_GATE_TIME, 0, "Quantize: Modify Gate Time", PROLL_SHRT, "midi_mod_gate_time");
-      defShrt(SHRT_MODIFY_VELOCITY,  0, "Quantize: Modify Velocity", PROLL_SHRT,  "midi_mod_velo");
+      defShrt(SHRT_QUANTIZE,    0, "Quantize", PROLL_SHRT, "midi_quant");
+      defShrt(SHRT_MODIFY_GATE_TIME, 0, "Modify Note Length", PROLL_SHRT, "midi_mod_gate_time");
+      defShrt(SHRT_MODIFY_VELOCITY,  0, "Modify Velocity", PROLL_SHRT,  "midi_mod_velo");
       defShrt(SHRT_CRESCENDO,        0, "Edit: Crescendo", PROLL_SHRT, "midi_crescendo");
       defShrt(SHRT_THIN_OUT,         0, "Edit: Thin Out", PROLL_SHRT, "midi_thin_out");
       defShrt(SHRT_ERASE_EVENT,      0, "Edit: Erase Event", PROLL_SHRT, "midi_erase_event");

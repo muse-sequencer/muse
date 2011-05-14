@@ -66,15 +66,13 @@ class DrumEdit : public MidiEditor {
       QToolBar* tools;
       QComboBox *stepLenWidget;
 
-      static int _quantInit, _rasterInit;
+      static int _rasterInit;
       static int _widthInit, _heightInit;
       static int _dlistWidthInit, _dcanvasWidthInit;
 
-      static int _toInit; //Used in function dialog for applying modification to selection
-
       QAction *loadAction, *saveAction, *resetAction;
       QAction *cutAction, *copyAction, *pasteAction, *deleteAction;
-      QAction *fixedAction, *veloAction;
+      QAction *fixedAction, *veloAction, *quantizeAction;
       QAction *sallAction, *snoneAction, *invAction, *inAction , *outAction;
       QAction *prevAction, *nextAction;
 
@@ -85,13 +83,11 @@ class DrumEdit : public MidiEditor {
       QWidget* genToolbar(QWidget* parent);
       virtual void resizeEvent(QResizeEvent*);
       virtual void keyPressEvent(QKeyEvent*);
-      int _to;//TODO: Make this work
       void setHeaderToolTips();
       void setHeaderWhatsThis();
 
    private slots:
       void setRaster(int);
-      void setQuant(int);
       void noteinfoChanged(NoteInfo::ValType type, int val);
       //CtrlEdit* addCtrl();
       void removeCtrl(CtrlEdit* ctrl);

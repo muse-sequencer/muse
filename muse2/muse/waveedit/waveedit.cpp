@@ -61,7 +61,7 @@ void WaveEdit::closeEvent(QCloseEvent* e)
 //---------------------------------------------------------
 
 WaveEdit::WaveEdit(PartList* pl)
-   : MidiEditor(1, 1, pl)
+   : MidiEditor(1, pl)
       {
       resize(_widthInit, _heightInit);
 

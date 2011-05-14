@@ -445,7 +445,7 @@ QString EventListItem::text(int col) const
 //---------------------------------------------------------
 
 ListEdit::ListEdit(PartList* pl)
-   : MidiEditor(0, 0, pl)
+   : MidiEditor(0, pl)
       {
       insertItems = new QActionGroup(this);
       insertItems->setExclusive(false);

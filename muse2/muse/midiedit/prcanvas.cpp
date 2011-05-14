@@ -1134,7 +1134,11 @@ void PianoCanvas::midiNote(int pitch, int velo)
          && !audio->isPlaying() && velo && pos[0] >= start_tick
          && pos[0] < end_tick
          && !(globalKeyState & Qt::AltModifier)) {
-            unsigned int len   = editor->quant();//prevent compiler warning: comparison singed/unsigned
+					  //len has been changed by flo: set to raster() instead of quant()
+					  //reason: the quant-toolbar has been removed; the flexibility you
+					  //lose with this can be re-gained by applying a "modify note len"
+					  //on the notes you have entered.
+            unsigned int len   = editor->raster();//prevent compiler warning: comparison singed/unsigned
             unsigned tick      = pos[0]; //CDW
             unsigned starttick = tick;
             if (globalKeyState & Qt::ShiftModifier)
