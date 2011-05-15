@@ -122,6 +122,8 @@ class Arranger : public QWidget {
       void setTempo200();
       //void seek();
       void verticalScrollSetYpos(unsigned);
+      void horizontalZoomIn();
+      void horizontalZoomOut();
       
    signals:
       void redirectWheelEvent(QWheelEvent*);
