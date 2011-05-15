@@ -55,7 +55,9 @@ class MidiEditor : public TopWin  {
    public slots:
       void songChanged(int type);
       void setCurDrumInstrument(int instr);
-      
+      void horizontalZoomIn();
+      void horizontalZoomOut();
+
       virtual void updateHScrollRange() { };
    signals:
       void curDrumInstrumentChanged(int);

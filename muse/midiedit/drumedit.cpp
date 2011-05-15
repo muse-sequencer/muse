@@ -368,6 +368,8 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       canvas->setCanvasTools(drumeditTools);
       canvas->setFocus();
       connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
+      connect(canvas, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
+      connect(canvas, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
       time->setOrigin(offset, 0);
 
       QList<int> mops;

@@ -24,6 +24,7 @@
 #include "icons.h"
 #include "../marker/marker.h"
 #include "part.h"
+#include "fastlog.h"
 
 #define ABS(x)  ((x) < 0) ? -(x) : (x)
 
@@ -338,7 +339,13 @@ void Canvas::draw(QPainter& p, const QRect& rect)
 //   wheelEvent
 //---------------------------------------------------------
 void Canvas::wheelEvent(QWheelEvent* ev)
-      {
+{
+    int keyState = ev->modifiers();
+
+    bool shift      = keyState & Qt::ShiftModifier;
+    bool ctrl       = keyState & Qt::ControlModifier;
+
+    if (shift) { // scroll vertically
       int delta       = ev->delta() / WHEEL_DELTA;
       int ypixelscale = rmapyDev(1);
 
@@ -347,8 +354,8 @@ void Canvas::wheelEvent(QWheelEvent* ev)
 
       int scrollstep = WHEEL_STEPSIZE * (-delta);
       ///if (ev->state() == Qt::ShiftModifier)
-      if (((QInputEvent*)ev)->modifiers() == Qt::ShiftModifier)
-            scrollstep = scrollstep / 10;
+//      if (((QInputEvent*)ev)->modifiers() == Qt::ShiftModifier)
+      scrollstep = scrollstep / 2;
 
       int newYpos = ypos + ypixelscale * scrollstep;
 
@@ -358,7 +365,36 @@ void Canvas::wheelEvent(QWheelEvent* ev)
       //setYPos(newYpos);
       emit verticalScroll((unsigned)newYpos);
 
-      }
+    } else if (ctrl) {  // zoom horizontally
+      if (ev->delta()>0)
+        emit horizontalZoomIn();
+      else
+        emit horizontalZoomOut();
+
+    } else { // scroll horizontally
+      int delta       = ev->delta() / WHEEL_DELTA;
+      int xpixelscale = 5*fast_log10(rmapxDev(1));
+
+
+      if (xpixelscale <= 0)
+            xpixelscale = 1;
+
+      int scrollstep = WHEEL_STEPSIZE * (delta);
+      ///if (ev->state() == Qt::ShiftModifier)
+//      if (((QInputEvent*)ev)->modifiers() == Qt::ShiftModifier)
+      scrollstep = scrollstep / 10;
+
+      int newXpos = xpos + xpixelscale * scrollstep;
+
+      if (newXpos < 0)
+            newXpos = 0;
+
+      //setYPos(newYpos);
+      emit horizontalScroll((unsigned)newXpos);
+
+    }
+
+}
 
 void Canvas::redirectedWheelEvent(QWheelEvent* ev)
       {

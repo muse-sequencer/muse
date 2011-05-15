@@ -241,3 +241,30 @@ void MidiEditor::setCurCanvasPart(Part* part)
     canvas->setCurrentPart(part); 
 }
 
+void MidiEditor::horizontalZoomIn()
+{
+  printf("zoom in \n");
+  int mag = hscroll->mag();
+  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+  if (zoomlvl < 23)
+        zoomlvl++;
+
+  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+
+  hscroll->setMag(newmag);
+
+}
+
+void MidiEditor::horizontalZoomOut()
+{
+  printf("zoom out \n");
+  int mag = hscroll->mag();
+  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+  if (zoomlvl > 1)
+        zoomlvl--;
+
+  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+
+  hscroll->setMag(newmag);
+
+}

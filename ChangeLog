@@ -1,3 +1,11 @@
+15.05.2011:
+        - Changed mouse wheel behaviour in graphical editors except the score editor (rj)
+            * wheel scrolls left-right
+            * shift+wheel scrolls up-down
+            * control+wheel zooms horizontally
+            TODO:
+             - score editor
+             - zoom to where the mouse is located
 14.05.2011:
         - Fixed problem with project save dialog missing a forward slash '/'. (Tim)
           ~/.config was being polluted with wrong folders. Fixed ProjectCreateImpl::updateDirectoryPath().

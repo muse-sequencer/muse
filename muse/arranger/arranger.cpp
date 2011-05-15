@@ -384,6 +384,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       connect(list, SIGNAL(keyPressExt(QKeyEvent*)), canvas, SLOT(redirKeypress(QKeyEvent*)));
       connect(canvas, SIGNAL(selectTrackAbove()), list, SLOT(selectTrackAbove()));
       connect(canvas, SIGNAL(selectTrackBelow()), list, SLOT(selectTrackBelow()));
+      connect(canvas, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
+      connect(canvas, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
 
       connect(this, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
       connect(list, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
@@ -1078,27 +1080,39 @@ void Arranger::keyPressEvent(QKeyEvent* event)
         key+= Qt::CTRL;
 
   if (key == shortcuts[SHRT_ZOOM_IN].key) {
-        int mag = hscroll->mag();
-        int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
-        if (zoomlvl < 23)
-              zoomlvl++;
-
-        int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-
-        hscroll->setMag(newmag);
+        horizontalZoomIn();
         return;
         }
   else if (key == shortcuts[SHRT_ZOOM_OUT].key) {
-        int mag = hscroll->mag();
-        int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
-        if (zoomlvl > 1)
-              zoomlvl--;
-
-        int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
-
-        hscroll->setMag(newmag);
+        horizontalZoomOut();
         return;
         }
 
   QWidget::keyPressEvent(event);
+}
+
+void Arranger::horizontalZoomIn()
+{
+  int mag = hscroll->mag();
+  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+  if (zoomlvl < 23)
+        zoomlvl++;
+
+  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+
+  hscroll->setMag(newmag);
+
+}
+
+void Arranger::horizontalZoomOut()
+{
+  int mag = hscroll->mag();
+  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+  if (zoomlvl > 1)
+        zoomlvl--;
+
+  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+
+  hscroll->setMag(newmag);
+
 }

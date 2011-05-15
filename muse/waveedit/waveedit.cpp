@@ -222,6 +222,9 @@ WaveEdit::WaveEdit(PartList* pl)
       ymag->setFixedWidth(16);
       connect(view, SIGNAL(mouseWheelMoved(int)), this, SLOT(moveVerticalSlider(int)));
       connect(ymag, SIGNAL(valueChanged(int)), view, SLOT(setYScale(int)));
+      connect(view, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
+      connect(view, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
+
       time->setOrigin(0, 0);
 
       mainGrid->setRowStretch(0, 100);
@@ -245,6 +248,8 @@ WaveEdit::WaveEdit(PartList* pl)
       connect(hscroll, SIGNAL(scaleChanged(int)),  time,  SLOT(setXMag(int)));
 //      connect(time,    SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
       connect(view,    SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
+
+      connect(view,  SIGNAL(horizontalScroll(unsigned)),hscroll, SLOT(setPos(unsigned)));
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged1(int)));
@@ -498,3 +503,29 @@ void WaveEdit::moveVerticalSlider(int val)
       ymag->setValue(ymag->value() + val);
       }
 
+
+void WaveEdit::horizontalZoomIn()
+{
+  int mag = hscroll->mag();
+  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+  if (zoomlvl < 23)
+        zoomlvl++;
+
+  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+
+  hscroll->setMag(newmag);
+
+}
+
+void WaveEdit::horizontalZoomOut()
+{
+  int mag = hscroll->mag();
+  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+  if (zoomlvl > 1)
+        zoomlvl--;
+
+  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+
+  hscroll->setMag(newmag);
+
+}
