@@ -723,7 +723,7 @@ void PianoCanvas::pianoCmd(int cmd)
                   song->setPos(0, p, true, false, true);
                   }
                   return;
-            case CMD_DELETE:
+            case CMD_BACKSPACE:
                   if (pos[0] < start() || pos[0] >= end())
                         break;
                   {
@@ -927,21 +927,6 @@ void PianoCanvas::cmd(int cmd)
             case CMD_PASTE:
                   paste();
                   break;
-            case CMD_DEL:
-                  if (selectionSize()) {
-                        song->startUndo();
-                        for (iCItem i = items.begin(); i != items.end(); ++i) {
-                              if (!i->second->isSelected())
-                                    continue;
-                              Event ev = i->second->event();
-                              // Indicate no undo, and do not do port controller values and clone parts. 
-                              //audio->msgDeleteEvent(ev, i->second->part(), false);
-                              audio->msgDeleteEvent(ev, i->second->part(), false, false, false);
-                              }
-                        song->endUndo(SC_EVENT_REMOVED);
-                        }
-                  return;
-
             case CMD_SELECT_ALL:     // select all
                   for (iCItem k = items.begin(); k != items.end(); ++k) {
                         if (!k->second->isSelected())
@@ -1034,76 +1019,6 @@ void PianoCanvas::cmd(int cmd)
                         }
                   song->endUndo(SC_EVENT_MODIFIED);
                   break;
-
-            case CMD_DELETE_OVERLAPS:
-                  if (!selectionSize())
-                        break;
-
-                  song->startUndo();
-                  for (iCItem k = items.begin(); k != items.end(); k++) {
-                      if (k->second->isSelected() == false)
-                          continue;
-
-                      NEvent* e1 = (NEvent*) (k->second); // first note
-                      NEvent* e2 = NULL; // ptr to next selected note (which will be checked for overlap)
-                      Event ce1  = e1->event();
-                      Event ce2;
-
-                      if (ce1.type() != Note)
-                          continue;
-
-                      // Find next selected item on the same pitch
-                      iCItem l = k; l++;
-                      for (; l != items.end(); l++) {
-                          if (l->second->isSelected() == false)
-                              continue;
-
-                          e2 = (NEvent*) l->second;
-                          ce2  = e2->event();
-
-                          // Same pitch?
-                          if (ce1.dataA() == ce2.dataA())
-                              break;
-
-                          // If the note has the same len and place we treat it as a duplicate note and not a following note
-                          // The best thing to do would probably be to delete the duplicate note, we just want to avoid
-                          // matching against the same note
-                          if (   ce1.tick() + e1->part()->tick() == ce2.tick() + e2->part()->tick() 
-                              && ce1.lenTick() + e1->part()->tick() == ce2.lenTick() + e2->part()->tick())
-                          {
-                              e2 = NULL; // this wasn't what we were looking for
-                              continue;
-                          }
-
-                          }
-
-                      if (e2 == NULL) // None found
-                          break;
-
-                      Part* part1 = e1->part();
-                      Part* part2 = e2->part();
-                      if (ce2.type() != Note)
-                          continue;
-
-
-                      unsigned event1pos = ce1.tick() + part1->tick();
-                      unsigned event1end = event1pos + ce1.lenTick();
-                      unsigned event2pos = ce2.tick() + part2->tick();
-
-                      //printf("event1pos %u event1end %u event2pos %u\n", event1pos, event1end, event2pos);
-                      if (event1end > event2pos) {
-                          Event newEvent = ce1.clone();
-                          unsigned newlen = ce1.lenTick() - (event1end - event2pos);
-                          //printf("newlen: %u\n", newlen);
-                          newEvent.setLenTick(newlen);
-                          // Indicate no undo, and do not do port controller values and clone parts. 
-                          //audio->msgChangeEvent(ce1, newEvent, e1->part(), false);
-                          audio->msgChangeEvent(ce1, newEvent, e1->part(), false, false, false);
-                          }
-                      }
-                  song->endUndo(SC_EVENT_MODIFIED);
-                  break;
-
 
             case CMD_CRESCENDO:
             case CMD_TRANSPOSE:

@@ -189,56 +189,18 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       mapper->setMapping(funcModVelAction, PianoCanvas::CMD_MODIFY_VELOCITY);
       connect(funcModVelAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      funcCrescendoAction = menuFunctions->addAction(tr("Crescendo"));
-      mapper->setMapping(funcCrescendoAction, PianoCanvas::CMD_CRESCENDO);
-      funcCrescendoAction->setEnabled(false);
-      connect(funcCrescendoAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
       funcTransposeAction = menuFunctions->addAction(tr("Transpose"));
       mapper->setMapping(funcTransposeAction, PianoCanvas::CMD_TRANSPOSE);
-      funcTransposeAction->setEnabled(false);
       connect(funcTransposeAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcThinOutAction = menuFunctions->addAction(tr("Thin Out"));
-      mapper->setMapping(funcThinOutAction, PianoCanvas::CMD_THIN_OUT);
-      funcThinOutAction->setEnabled(false);
-      connect(funcThinOutAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
+            
       funcEraseEventAction = menuFunctions->addAction(tr("Erase Event"));
       mapper->setMapping(funcEraseEventAction, PianoCanvas::CMD_ERASE_EVENT);
-      funcEraseEventAction->setEnabled(false);
       connect(funcEraseEventAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
       funcNoteShiftAction = menuFunctions->addAction(tr("Note Shift"));
       mapper->setMapping(funcNoteShiftAction, PianoCanvas::CMD_NOTE_SHIFT);
-      funcNoteShiftAction->setEnabled(false);
       connect(funcNoteShiftAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcMoveClockAction = menuFunctions->addAction(tr("Move Clock"));
-      mapper->setMapping(funcMoveClockAction, PianoCanvas::CMD_MOVE_CLOCK);
-      funcMoveClockAction->setEnabled(false);
-      connect(funcMoveClockAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcCopyMeasureAction = menuFunctions->addAction(tr("Copy Measure"));
-      mapper->setMapping(funcCopyMeasureAction, PianoCanvas::CMD_COPY_MEASURE);
-      funcCopyMeasureAction->setEnabled(false);
-      connect(funcCopyMeasureAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcEraseMeasureAction = menuFunctions->addAction(tr("Erase Measure"));
-      mapper->setMapping(funcEraseMeasureAction, PianoCanvas::CMD_ERASE_MEASURE);
-      funcEraseMeasureAction->setEnabled(false);
-      connect(funcEraseMeasureAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcDelMeasureAction = menuFunctions->addAction(tr("Delete Measure"));
-      mapper->setMapping(funcDelMeasureAction, PianoCanvas::CMD_DELETE_MEASURE);
-      funcDelMeasureAction->setEnabled(false);
-      connect(funcDelMeasureAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcCreateMeasureAction = menuFunctions->addAction(tr("Create Measure"));
-      mapper->setMapping(funcCreateMeasureAction, PianoCanvas::CMD_CREATE_MEASURE);
-      funcCreateMeasureAction->setEnabled(false);
-      connect(funcCreateMeasureAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
+            
       funcSetFixedLenAction = menuFunctions->addAction(tr("Set Fixed Length"));
       mapper->setMapping(funcSetFixedLenAction, PianoCanvas::CMD_FIXED_LEN);
       connect(funcSetFixedLenAction, SIGNAL(triggered()), mapper, SLOT(map()));
@@ -630,6 +592,12 @@ void PianoRoll::cmd(int cmd)
 						case PianoCanvas::CMD_MODIFY_GATE_TIME: modify_notelen(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_QUANTIZE: quantize_notes(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_TRANSPOSE: transpose_notes(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break;
+						case PianoCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_FIXED_LEN: set_notelen(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
 						
 						default: ((PianoCanvas*)canvas)->cmd(cmd);
 					  }
@@ -1044,8 +1012,8 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             pc->pianoCmd(CMD_INSERT);
             return;
             }
-      else if (key == Qt::Key_Delete) {
-            pc->pianoCmd(CMD_DELETE);
+      else if (key == Qt::Key_Backspace) {
+            pc->pianoCmd(CMD_BACKSPACE);
             return;
             }
       else if (key == shortcuts[SHRT_ZOOM_IN].key) {
@@ -1260,16 +1228,9 @@ void PianoRoll::initShortcuts()
       
       funcGateTimeAction->setShortcut(shortcuts[SHRT_MODIFY_GATE_TIME].key);
       funcModVelAction->setShortcut(shortcuts[SHRT_MODIFY_VELOCITY].key);
-      funcCrescendoAction->setShortcut(shortcuts[SHRT_CRESCENDO].key);
       funcTransposeAction->setShortcut(shortcuts[SHRT_TRANSPOSE].key);
-      funcThinOutAction->setShortcut(shortcuts[SHRT_THIN_OUT].key);
       funcEraseEventAction->setShortcut(shortcuts[SHRT_ERASE_EVENT].key);
       funcNoteShiftAction->setShortcut(shortcuts[SHRT_NOTE_SHIFT].key);
-      funcMoveClockAction->setShortcut(shortcuts[SHRT_MOVE_CLOCK].key);
-      funcCopyMeasureAction->setShortcut(shortcuts[SHRT_COPY_MEASURE].key);
-      funcEraseMeasureAction->setShortcut(shortcuts[SHRT_ERASE_MEASURE].key);
-      funcDelMeasureAction->setShortcut(shortcuts[SHRT_DELETE_MEASURE].key);
-      funcCreateMeasureAction->setShortcut(shortcuts[SHRT_CREATE_MEASURE].key);
       funcSetFixedLenAction->setShortcut(shortcuts[SHRT_FIXED_LEN].key);
       funcDelOverlapsAction->setShortcut(shortcuts[SHRT_DELETE_OVERLAPS].key);
       

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>TransposeBase</class>
- <widget class="QDialog" name="TransposeBase">
+ <class>MoveBase</class>
+ <widget class="QDialog" name="MoveBase">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MusE: Transpose</string>
+   <string>MusE: Move Notes</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
@@ -87,7 +87,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="TextLabel3">
         <property name="text">
-         <string>Halftone-steps</string>
+         <string>Move by</string>
         </property>
         <property name="wordWrap">
          <bool>false</bool>
@@ -100,16 +100,16 @@
          <bool>true</bool>
         </property>
         <property name="suffix">
-         <string/>
+         <string> ticks</string>
         </property>
         <property name="minimum">
-         <number>-127</number>
+         <number>-9999999</number>
         </property>
         <property name="maximum">
-         <number>127</number>
+         <number>9999999</number>
         </property>
         <property name="singleStep">
-         <number>1</number>
+         <number>386</number>
         </property>
         <property name="value">
          <number>0</number>
@@ -170,7 +170,7 @@
   <connection>
    <sender>okButton</sender>
    <signal>clicked()</signal>
-   <receiver>TransposeBase</receiver>
+   <receiver>MoveBase</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -186,7 +186,7 @@
   <connection>
    <sender>cancelButton</sender>
    <signal>clicked()</signal>
-   <receiver>TransposeBase</receiver>
+   <receiver>MoveBase</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

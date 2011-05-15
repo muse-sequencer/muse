@@ -77,6 +77,11 @@ QT4_WRAP_CPP (widget_mocs
       ttoolbutton.h  
       velocity.h  
       quantize.h  
+      move.h  
+      remove.h  
+      deloverlaps.h  
+      setlen.h  
+      transpose.h  
       verticalmeter.h
       view.h
       vscale.h
@@ -113,6 +118,11 @@ file (GLOB widgets_ui_files
       transposebase.ui  
       velocitybase.ui
       quantbase.ui
+      movebase.ui
+      removebase.ui
+      deloverlapsbase.ui
+      transposebase.ui
+      setlenbase.ui
       )
 QT4_WRAP_UI (widget_ui_headers ${widgets_ui_files})
 
@@ -180,6 +190,11 @@ file (GLOB widgets_source_files
       utils.cpp 
       velocity.cpp 
       quantize.cpp 
+      move.cpp 
+      remove.cpp 
+      deloverlaps.cpp 
+      setlen.cpp 
+      transpose.cpp 
       verticalmeter.cpp
       view.cpp
       vscale.cpp

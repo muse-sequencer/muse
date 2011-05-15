@@ -62,7 +62,6 @@ QT4_WRAP_CPP ( muse_moc_headers
       plugin.h 
       song.h 
       transport.h 
-      transpose.h 
       value.h 
       )
 
@@ -129,7 +128,6 @@ file (GLOB core_source_files
       ticksynth.cpp 
       track.cpp
       transport.cpp
-      transpose.cpp
       undo.cpp
       value.cpp
       vst.cpp

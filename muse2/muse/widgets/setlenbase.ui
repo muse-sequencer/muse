@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>TransposeBase</class>
- <widget class="QDialog" name="TransposeBase">
+ <class>SetlenBase</class>
+ <widget class="QDialog" name="SetlenBase">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MusE: Transpose</string>
+   <string>MusE: Set Note Length</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
@@ -87,7 +87,7 @@
       <item row="0" column="0">
        <widget class="QLabel" name="TextLabel3">
         <property name="text">
-         <string>Halftone-steps</string>
+         <string>New length</string>
         </property>
         <property name="wordWrap">
          <bool>false</bool>
@@ -95,24 +95,18 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QSpinBox" name="amount_spinbox">
-        <property name="accelerated">
-         <bool>true</bool>
-        </property>
+       <widget class="QSpinBox" name="len_spinbox">
         <property name="suffix">
-         <string/>
+         <string> ticks</string>
         </property>
         <property name="minimum">
-         <number>-127</number>
-        </property>
-        <property name="maximum">
-         <number>127</number>
-        </property>
-        <property name="singleStep">
          <number>1</number>
         </property>
+        <property name="maximum">
+         <number>10000</number>
+        </property>
         <property name="value">
-         <number>0</number>
+         <number>1</number>
         </property>
        </widget>
       </item>
@@ -170,7 +164,7 @@
   <connection>
    <sender>okButton</sender>
    <signal>clicked()</signal>
-   <receiver>TransposeBase</receiver>
+   <receiver>SetlenBase</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -186,7 +180,7 @@
   <connection>
    <sender>cancelButton</sender>
    <signal>clicked()</signal>
-   <receiver>TransposeBase</receiver>
+   <receiver>SetlenBase</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

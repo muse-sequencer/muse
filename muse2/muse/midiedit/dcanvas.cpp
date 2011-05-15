@@ -742,20 +742,6 @@ void DrumCanvas::cmd(int cmd)
                         editor->setCurCanvasPart(newpt);
                   }
                   break;
-            case CMD_DEL:
-                  if (selectionSize()) {
-                        song->startUndo();
-                        for (iCItem i = items.begin(); i != items.end(); ++i) {
-                              if (!i->second->isSelected())
-                                    continue;
-                              Event ev = i->second->event();
-                              // Indicate no undo, and do not do port controller values and clone parts. 
-                              //audio->msgDeleteEvent(ev, i->second->part(), false);
-                              audio->msgDeleteEvent(ev, i->second->part(), false, false, false);
-                              }
-                        song->endUndo(SC_EVENT_REMOVED);
-                        }
-                  return;
 
             case CMD_SAVE:
             case CMD_LOAD:

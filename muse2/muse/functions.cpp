@@ -19,12 +19,22 @@ using namespace std;
 GateTime* gatetime_dialog=NULL;
 Velocity* velocity_dialog=NULL;
 Quantize* quantize_dialog=NULL;
+Remove* erase_dialog=NULL;
+DelOverlaps* del_overlaps_dialog=NULL;
+Setlen* set_notelen_dialog=NULL;
+Move* move_notes_dialog=NULL;
+Transpose* transpose_dialog=NULL;
 
 void init_function_dialogs(QWidget* parent)
 {
 	gatetime_dialog = new GateTime(parent);
 	velocity_dialog = new Velocity(parent);
 	quantize_dialog = new Quantize(parent);
+	erase_dialog = new Remove(parent);
+	del_overlaps_dialog = new DelOverlaps(parent);
+	set_notelen_dialog = new Setlen(parent);
+	move_notes_dialog = new Move(parent);
+	transpose_dialog = new Transpose(parent);
 }
 
 set<Part*> partlist_to_set(PartList* pl)
@@ -99,13 +109,63 @@ bool quantize_notes(const set<Part*>& parts)
 	return true;
 }
 
+bool erase_notes(const set<Part*>& parts)
+{
+	if (!erase_dialog->exec())
+		return false;
+		
+	erase_notes(parts,erase_dialog->range);
+	
+	return true;
+}
+
+bool delete_overlaps(const set<Part*>& parts)
+{
+	if (!del_overlaps_dialog->exec())
+		return false;
+		
+	delete_overlaps(parts,erase_dialog->range);
+	
+	return true;
+}
+
+bool set_notelen(const set<Part*>& parts)
+{
+	if (!set_notelen_dialog->exec())
+		return false;
+		
+	set_notelen(parts,set_notelen_dialog->range,set_notelen_dialog->len);
+	
+	return true;
+}
+
+bool move_notes(const set<Part*>& parts)
+{
+	if (!move_notes_dialog->exec())
+		return false;
+		
+	move_notes(parts,move_notes_dialog->range,move_notes_dialog->amount);
+	
+	return true;
+}
+
+bool transpose_notes(const set<Part*>& parts)
+{
+	if (!transpose_dialog->exec())
+		return false;
+		
+	transpose_notes(parts,transpose_dialog->range,transpose_dialog->amount);
+	
+	return true;
+}
+
 
 
 void modify_velocity(const set<Part*>& parts, int range, int rate, int offset)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	
-	if (!events.empty())
+	if ( (!events.empty()) && ((rate!=100) || (offset!=0)) )
 	{
 		song->startUndo();
 		
@@ -141,7 +201,7 @@ void modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	
-	if (!events.empty())
+	if ( (!events.empty()) && ((rate!=100) || (offset!=0)) )
 	{
 		song->startUndo();
 		
@@ -171,6 +231,11 @@ void modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 	}
 }
 
+void set_notelen(const set<Part*>& parts, int range, int len)
+{
+	modify_notelen(parts, range, 0, len);
+}
+
 unsigned quantize_tick(unsigned tick, unsigned raster, int swing)
 {
 	//find out the nearest tick and the distance to it:
@@ -196,11 +261,10 @@ unsigned quantize_tick(unsigned tick, unsigned raster, int swing)
 void quantize_notes(const set<Part*>& parts, int range, int raster, int strength, int swing, int threshold)
 {
 	map<Event*, Part*> events = get_events(parts, range);
+	bool undo_started=false;
 	
 	if (!events.empty())
 	{
-		song->startUndo();
-		
 		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
 			Event& event=*(it->first);
@@ -227,6 +291,12 @@ void quantize_notes(const set<Part*>& parts, int range, int raster, int strength
 				
 			if ( (event.lenTick() != len) || (event.tick() + part->tick() != begin_tick) )
 			{
+				if (!undo_started)
+				{
+					song->startUndo();
+					undo_started=true;
+				}
+				
 				Event newEvent = event.clone();
 				newEvent.setTick(begin_tick - part->tick());
 				newEvent.setLenTick(len);
@@ -235,7 +305,7 @@ void quantize_notes(const set<Part*>& parts, int range, int raster, int strength
 			}
 		}
 		
-		song->endUndo(SC_EVENT_MODIFIED);
+		if (undo_started) song->endUndo(SC_EVENT_MODIFIED);
 	}
 }
 
@@ -259,4 +329,110 @@ void erase_notes(const set<Part*>& parts, int range)
 	}
 }
 
+void transpose_notes(const set<Part*>& parts, int range, signed int halftonesteps)
+{
+	map<Event*, Part*> events = get_events(parts, range);
+	
+	if ( (!events.empty()) && (halftonesteps!=0) )
+	{
+		song->startUndo();
+		
+		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+		{
+			Event& event=*(it->first);
+			Part* part=it->second;
 
+			Event newEvent = event.clone();
+			int pitch = event.pitch()+halftonesteps;
+			if (pitch > 127) pitch=127;
+			if (pitch < 0) pitch=0;
+			newEvent.setPitch(pitch);
+			// Indicate no undo, and do not do port controller values and clone parts. 
+			audio->msgChangeEvent(event, newEvent, part, false, false, false);
+		}
+		
+		song->endUndo(SC_EVENT_MODIFIED);
+	}
+}
+
+void move_notes(const set<Part*>& parts, int range, signed int ticks) //TODO FINDMICH: safety checks
+{
+	map<Event*, Part*> events = get_events(parts, range);
+	
+	if ( (!events.empty()) && (ticks!=0) )
+	{
+		song->startUndo();
+		
+		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+		{
+			Event& event=*(it->first);
+			Part* part=it->second;
+
+			Event newEvent = event.clone();
+			newEvent.setTick(event.tick()+ticks);
+			// Indicate no undo, and do not do port controller values and clone parts. 
+			audio->msgChangeEvent(event, newEvent, part, false, false, false);
+		}
+		
+		song->endUndo(SC_EVENT_MODIFIED);
+	}
+}
+
+void delete_overlaps(const set<Part*>& parts, int range)
+{
+	map<Event*, Part*> events = get_events(parts, range);
+	bool undo_started=false;
+	
+	set<Event*> deleted_events;
+	
+	if (!events.empty())
+	{
+		for (map<Event*, Part*>::iterator it1=events.begin(); it1!=events.end(); it1++)
+		{
+			Event& event1=*(it1->first);
+			Part* part1=it1->second;
+			
+			// we may NOT optimize by letting it2 start at (it1 +1); this optimisation
+			// is only allowed when events was sorted by time. it is, however, sorted
+			// randomly by pointer.
+			for (map<Event*, Part*>::iterator it2=events.begin(); it2!=events.end(); it2++)
+			{
+				Event& event2=*(it2->first);
+				Part* part2=it2->second;
+				
+				if ( (part1->events()==part2->events()) && // part1 and part2 are the same or are duplicates
+				     (&event1 != &event2) &&               // and event1 and event2 aren't the same
+				     (deleted_events.find(&event2) == deleted_events.end()) ) //and event2 hasn't been deleted before
+				{
+					if ( (event1.pitch() == event2.pitch()) &&
+					     (event1.tick() <= event2.tick()) &&
+						   (event1.endTick() > event2.tick()) ) //they overlap
+					{
+						if (undo_started==false)
+						{
+							song->startUndo();
+							undo_started=true;
+						}
+						
+						int new_len = event2.tick() - event1.tick();
+
+						if (new_len==0)
+						{
+							audio->msgDeleteEvent(event1, part1, false, false, false);
+							deleted_events.insert(&event1);
+						}
+						else
+						{
+							Event new_event1 = event1.clone();
+							new_event1.setLenTick(new_len);
+							
+							audio->msgChangeEvent(event1, new_event1, part1, false, false, false);
+						}
+					}
+				}
+			}
+		}
+		
+		if (undo_started) song->endUndo(SC_EVENT_MODIFIED);
+	}
+}
