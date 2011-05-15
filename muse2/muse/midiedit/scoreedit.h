@@ -21,12 +21,11 @@
 #include <QAction>
 #include <QActionGroup>
 #include <QGridLayout>
+#include <QByteArray>
 
 #include <values.h>
 #include "noteinfo.h"
 #include "cobject.h"
-//#include "midieditor.h"
-//#include "tools.h"
 #include "event.h"
 #include "view.h"
 #include "gconfig.h"
@@ -74,6 +73,7 @@ class ScoreEdit : public TopWin
 	private:
 		virtual void closeEvent(QCloseEvent*);
 		virtual void resizeEvent(QResizeEvent*);
+		virtual void focusOutEvent(QFocusEvent*);
 		
 		void init_name();
 
@@ -110,6 +110,7 @@ class ScoreEdit : public TopWin
 		
 		static set<QString> names;
 		static int width_init, height_init;
+		static QByteArray default_toolbar_state;
 		
 		QString name;
 		

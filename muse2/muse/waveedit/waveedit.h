@@ -14,6 +14,8 @@
 #include <QResizeEvent>
 #include <QKeyEvent>
 #include <QCloseEvent>
+#include <QByteArray>
+
 #include "midieditor.h"
 
 class QToolButton;
@@ -45,11 +47,13 @@ class WaveEdit : public MidiEditor {
       QAction* pasteAction;
       
       static int _widthInit, _heightInit;
+      static QByteArray _toolbarInit;
 
       Q_OBJECT
       virtual void closeEvent(QCloseEvent*);
       virtual void resizeEvent(QResizeEvent* ev);
       virtual void keyPressEvent(QKeyEvent*);
+      virtual void focusOutEvent(QFocusEvent*);
 
       QMenu* menuFunctions, *select, *menuGain;
 

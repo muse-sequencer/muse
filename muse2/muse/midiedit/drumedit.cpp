@@ -65,6 +65,7 @@ int DrumEdit::_widthInit = 600;
 int DrumEdit::_heightInit = 400;
 int DrumEdit::_dlistWidthInit = 50;
 int DrumEdit::_dcanvasWidthInit = 300;
+QByteArray DrumEdit::_toolbarInit;
 
 static const int xscale = -10;
 static const int yscale = 1;
@@ -470,6 +471,9 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
 
       connect(ctrl, SIGNAL(clicked()), SLOT(addCtrl()));
 
+      if (!_toolbarInit.isEmpty())
+            restoreState(_toolbarInit);
+
       QClipboard* cb = QApplication::clipboard();
       connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
 
@@ -754,6 +758,8 @@ void DrumEdit::readConfiguration(Xml& xml)
                               _dcanvasWidthInit = xml.parseInt();
                         else if (tag == "dlistwidth")
                               _dlistWidthInit = xml.parseInt();
+                        else if (tag == "toolbars")
+                              _toolbarInit = QByteArray::fromHex(xml.parse1().toAscii());
                         else
                               xml.unknown("DrumEdit");
                         break;
@@ -779,6 +785,7 @@ void DrumEdit::writeConfiguration(int level, Xml& xml)
       xml.intTag(level, "height", _heightInit);
       xml.intTag(level, "dlistwidth", _dlistWidthInit);
       xml.intTag(level, "dcanvaswidth", _dcanvasWidthInit);
+      xml.strTag(level, "toolbars", _toolbarInit.toHex().data());
       xml.tag(level, "/drumedit");
       }
 
@@ -1022,6 +1029,15 @@ void DrumEdit::resizeEvent(QResizeEvent* ev)
       //TODO: Make the dlist not expand/shrink, but the canvas instead
       }
 
+//---------------------------------------------------------
+//   focusOutEvent
+//---------------------------------------------------------
+
+void DrumEdit::focusOutEvent(QFocusEvent* ev)
+      {
+      QWidget::focusOutEvent(ev);
+      _toolbarInit=saveState();
+      }
 
 //---------------------------------------------------------
 //   configChanged

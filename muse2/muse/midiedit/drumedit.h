@@ -8,6 +8,8 @@
 #ifndef __DRUM_EDIT_H__
 #define __DRUM_EDIT_H__
 
+#include <QByteArray>
+
 #include <values.h>
 #include "midieditor.h"
 #include "noteinfo.h"
@@ -69,6 +71,7 @@ class DrumEdit : public MidiEditor {
       static int _rasterInit;
       static int _widthInit, _heightInit;
       static int _dlistWidthInit, _dcanvasWidthInit;
+      static QByteArray _toolbarInit;
 
       QAction *loadAction, *saveAction, *resetAction;
       QAction *cutAction, *copyAction, *pasteAction, *deleteAction;
@@ -82,6 +85,7 @@ class DrumEdit : public MidiEditor {
       virtual void closeEvent(QCloseEvent*);
       QWidget* genToolbar(QWidget* parent);
       virtual void resizeEvent(QResizeEvent*);
+      virtual void focusOutEvent(QFocusEvent*);
       virtual void keyPressEvent(QKeyEvent*);
       void setHeaderToolTips();
       void setHeaderWhatsThis();

@@ -12,6 +12,7 @@
 #include <QResizeEvent>
 #include <QLabel>
 #include <QKeyEvent>
+#include <QByteArray>
 
 #include <values.h>
 #include "noteinfo.h"
@@ -114,6 +115,7 @@ class PianoRoll : public MidiEditor {
 
       static int _rasterInit;
       static int _widthInit, _heightInit;
+      static QByteArray _toolbarInit;
 
       static int colorModeInit;
 
@@ -129,6 +131,7 @@ class PianoRoll : public MidiEditor {
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
       virtual void resizeEvent(QResizeEvent*);
+      virtual void focusOutEvent(QFocusEvent*);
 
    private slots:
       void setSelection(int, Event&, Part*);

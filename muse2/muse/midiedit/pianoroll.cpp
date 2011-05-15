@@ -56,6 +56,7 @@ int PianoRoll::_rasterInit = 96;
 int PianoRoll::_widthInit = 600;
 int PianoRoll::_heightInit = 400;
 int PianoRoll::colorModeInit = 0;
+QByteArray PianoRoll::_toolbarInit;
 
 static const int xscale = -10;
 static const int yscale = 1;
@@ -456,6 +457,10 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       setFocusPolicy(Qt::StrongFocus);
       setEventColorMode(colorMode);
 
+      if (!_toolbarInit.isEmpty())
+            restoreState(_toolbarInit);
+
+
       QClipboard* cb = QApplication::clipboard();
       connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
 
@@ -786,6 +791,8 @@ void PianoRoll::readConfiguration(Xml& xml)
                               _widthInit = xml.parseInt();
                         else if (tag == "height")
                               _heightInit = xml.parseInt();
+                        else if (tag == "toolbars")
+                              _toolbarInit = QByteArray::fromHex(xml.parse1().toAscii());
                         else
                               xml.unknown("PianoRoll");
                         break;
@@ -809,6 +816,7 @@ void PianoRoll::writeConfiguration(int level, Xml& xml)
       xml.intTag(level, "width", _widthInit);
       xml.intTag(level, "height", _heightInit);
       xml.intTag(level, "colormode", colorModeInit);
+      xml.strTag(level, "toolbars", _toolbarInit.toHex().data());
       xml.etag(level, "pianoroll");
       }
 
@@ -1185,6 +1193,17 @@ void PianoRoll::resizeEvent(QResizeEvent* ev)
       QWidget::resizeEvent(ev);
       _widthInit = ev->size().width();
       _heightInit = ev->size().height();
+      }
+
+
+//---------------------------------------------------------
+//   focusOutEvent
+//---------------------------------------------------------
+
+void PianoRoll::focusOutEvent(QFocusEvent* ev)
+      {
+      QWidget::focusOutEvent(ev);
+      _toolbarInit=saveState();
       }
 
 

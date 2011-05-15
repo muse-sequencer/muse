@@ -141,6 +141,7 @@ QColor* mycolors; // array [NUM_MYCOLORS]
 set<QString> ScoreEdit::names;
 int ScoreEdit::width_init = 600;
 int ScoreEdit::height_init = 400;
+QByteArray ScoreEdit::default_toolbar_state;
 
 
 //---------------------------------------------------------
@@ -151,6 +152,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
    : TopWin(parent, name)
 {
 	setAttribute(Qt::WA_DeleteOnClose);
+	setFocusPolicy(Qt::StrongFocus);
 
 	resize(width_init, height_init);
 
@@ -215,6 +217,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	QToolBar* transport_toolbar = addToolBar(tr("transport"));
 	transport_toolbar->setObjectName("transport");
 	transport_toolbar->addActions(transportAction->actions());
+
+	addToolBarBreak();
 
 	QToolBar* newnote_toolbar = addToolBar(tr("New note settings"));
 	newnote_toolbar->setObjectName("New note settings");
@@ -341,6 +345,9 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 		menu_mapper->setMapping(func_notelen_action, CMD_NOTELEN);
 		menu_mapper->setMapping(func_velocity_action, CMD_VELOCITY);
 
+	if (!default_toolbar_state.isEmpty())
+		restoreState(default_toolbar_state);
+	
 
 	score_canvas->fully_recalculate();
 	score_canvas->goto_tick(initPos,true);
@@ -351,6 +358,11 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 		init_name();
 }
 
+void ScoreEdit::focusOutEvent(QFocusEvent* ev)
+{
+	default_toolbar_state=saveState();
+	QMainWindow::focusOutEvent(ev);
+}
 
 void ScoreEdit::add_parts(PartList* pl, bool all_in_one)
 {
@@ -783,10 +795,12 @@ void ScoreEdit::read_configuration(Xml& xml)
 		switch (token)
 		{
 			case Xml::TagStart:
-				if (tag == "width")
+				if (tag == "height")
 					height_init = xml.parseInt();
-				else if (tag == "height")
+				else if (tag == "width")
 					width_init = xml.parseInt();
+				else if (tag == "toolbars")
+					default_toolbar_state = QByteArray::fromHex(xml.parse1().toAscii());
 				else
 					xml.unknown("ScoreEdit");
 				break;
@@ -807,6 +821,7 @@ void ScoreEdit::write_configuration(int level, Xml& xml)
 	xml.tag(level++, "scoreedit");
 	xml.intTag(level, "width", width_init);
 	xml.intTag(level, "height", height_init);
+	xml.strTag(level, "toolbars", default_toolbar_state.toHex().data());
 	xml.etag(level, "scoreedit");
 }
 
@@ -4103,15 +4118,14 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   x nothing atm
+ *   o let the user change velocity of already existent notes
+ *   o save dialog-window's values
  * 
  * IMPORTANT TODO
  *   o add a select-clef-toolbox for tracks
  *   o respect the track's clef (has to be implemented first in muse)
  *   o do partial recalculating; recalculating can take pretty long
  *     (0,5 sec) when displaying a whole song in scores
- *   o save toolbar position also in the global window settings
- *     and provide sane defaults
  *   o support edge-scrolling when opening a lasso
  *
  * less important stuff
@@ -4122,7 +4136,7 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *       calc_pos_add_list must be called before calc_item_pos then,
  *       and calc_item_pos must respect the pos_add_list instead of
  *       keeping its own pos_add variable (which is only an optimisation)
- *   o save more configuration stuff (quant, color, to_init)
+ *   o save more configuration stuff (quant, color)
  * 
  * really unimportant nice-to-haves
  *   o support in-song clef-changes

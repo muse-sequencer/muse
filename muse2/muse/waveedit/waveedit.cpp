@@ -42,6 +42,7 @@ extern QColor readColor(Xml& xml);
 
 int WaveEdit::_widthInit = 600;
 int WaveEdit::_heightInit = 400;
+QByteArray WaveEdit::_toolbarInit;
 
 //---------------------------------------------------------
 //   closeEvent
@@ -170,8 +171,8 @@ WaveEdit::WaveEdit(PartList* pl)
       //    ToolBar:   Solo  Cursor1 Cursor2
 
       addToolBarBreak();
-      tb1 = addToolBar(tr("Pianoroll tools"));
-      tb1->setObjectName("Pianoroll tools");
+      tb1 = addToolBar(tr("WaveEdit tools"));
+      tb1->setObjectName("WaveEdit tools");
 
       //tb1->setLabel(tr("weTools"));
       solo = new QToolButton();
@@ -249,6 +250,8 @@ WaveEdit::WaveEdit(PartList* pl)
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged1(int)));
 
+      if (!_toolbarInit.isEmpty())
+            restoreState(_toolbarInit);
 
       initShortcuts();
       
@@ -354,6 +357,8 @@ void WaveEdit::readConfiguration(Xml& xml)
                               _widthInit = xml.parseInt();
                         else if (tag == "height")
                               _heightInit = xml.parseInt();
+                        else if (tag == "toolbars")
+                              _toolbarInit = QByteArray::fromHex(xml.parse1().toAscii());
                         else
                               xml.unknown("WaveEdit");
                         break;
@@ -379,6 +384,7 @@ void WaveEdit::writeConfiguration(int level, Xml& xml)
       xml.colorTag(level, "bgcolor", config.waveEditBackgroundColor);
       xml.intTag(level, "width", _widthInit);
       xml.intTag(level, "height", _heightInit);
+      xml.strTag(level, "toolbars", _toolbarInit.toHex().data());
       xml.tag(level, "/waveedit");
       }
 
@@ -440,6 +446,17 @@ void WaveEdit::resizeEvent(QResizeEvent* ev)
       _widthInit = ev->size().width();
       _heightInit = ev->size().height();
       }
+
+//---------------------------------------------------------
+//   focusOutEvent
+//---------------------------------------------------------
+
+void WaveEdit::focusOutEvent(QFocusEvent* ev)
+      {
+      QWidget::focusOutEvent(ev);
+      _toolbarInit=saveState();
+      }
+
 
 //---------------------------------------------------------
 //   songChanged1
