@@ -45,12 +45,13 @@ void ProjectCreateImpl::updateDirectoryPath()
   if (createFolderCheckbox->isChecked()) {
     if (!projectNameEdit->text().isEmpty())
       name = projectNameEdit->text() + "/" + projectNameEdit->text() + ".med";
-    storageDirEdit->setText(directoryPath + name );
+    //storageDirEdit->setText(directoryPath + name );
   }  else {
     if (!projectNameEdit->text().isEmpty())
       name = projectNameEdit->text() + ".med";
-    storageDirEdit->setText(directoryPath +"/" + name);
+    //storageDirEdit->setText(directoryPath +"/" + name);
   }
+  storageDirEdit->setText(directoryPath +"/" + name );    // Tim
 }
 
 QString ProjectCreateImpl::getProjectPath()

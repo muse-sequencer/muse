@@ -4126,7 +4126,6 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  * 
  * CURRENT TODO
  *   o let the user change velocity of already existent notes
- *   o save dialog-window's values
  * 
  * IMPORTANT TODO
  *   o add a select-clef-toolbox for tracks

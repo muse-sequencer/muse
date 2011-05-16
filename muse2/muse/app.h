@@ -104,7 +104,8 @@ class MusE : public QMainWindow
 
       // File menu actions
       QAction *fileSaveAction, *fileOpenAction, *fileNewAction, *testAction;
-      QAction *fileSaveAsAction, *fileImportMidiAction, *fileExportMidiAction, *fileImportPartAction, *fileImportWaveAction, *quitAction;
+      QAction *fileSaveAsAction, *fileImportMidiAction, *fileExportMidiAction;
+      QAction *fileImportPartAction, *fileImportWaveAction, *fileMoveWaveFiles, *quitAction;
 
       // Edit Menu actions
       QAction *editCutAction, *editCopyAction, *editPasteAction, *editInsertAction, *editPasteCloneAction, *editPaste2TrackAction;
@@ -159,7 +160,7 @@ class MusE : public QMainWindow
       
       QMenu *menu_file, *menuView, *menuSettings, *menu_help;
       QMenu *menuEdit, *menuStructure;
-      QMenu* menu_audio, *menuAutomation;
+      QMenu* menu_audio, *menuAutomation, *menuUtils;
       QMenu* menu_functions, *menuScriptPlugins;
       QMenu* select, *master, *midiEdit, *addTrack;
 
@@ -246,6 +247,7 @@ class MusE : public QMainWindow
       void importWave();
       void importPart();
       void exportMidi();
+      void findUnusedWaveFiles();
 
       void toggleTransport(bool);
       void toggleMarker(bool);
@@ -373,6 +375,7 @@ class MusE : public QMainWindow
       bool seqStart();
       void setHeartBeat();
       void importController(int, MidiPort*, int);
+      QString projectName() { return project.fileName(); }
       //QWidget* mixerWindow();
       QWidget* mixer1Window();
       QWidget* mixer2Window();

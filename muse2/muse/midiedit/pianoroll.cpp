@@ -358,6 +358,8 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       canvas->setCanvasTools(pianorollTools);
       canvas->setFocus();
       connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
+      connect(canvas, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
+      connect(canvas, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
       time->setOrigin(offset, 0);
 
       gridS1->setRowStretch(2, 100);

@@ -157,6 +157,7 @@ void DrumEdit::closeEvent(QCloseEvent* e)
 DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned initPos)
    : MidiEditor(_rasterInit, pl, parent, name)
       {
+      setFocusPolicy(Qt::StrongFocus);
       split1w1 = 0;
       resize(_widthInit, _heightInit);
       selPart  = 0;
@@ -379,6 +380,8 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       canvas->setCanvasTools(drumeditTools);
       canvas->setFocus();
       connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
+      connect(canvas, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
+      connect(canvas, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
       time->setOrigin(offset, 0);
 
       QList<int> mops;

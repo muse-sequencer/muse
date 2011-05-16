@@ -174,6 +174,8 @@ class Canvas : public View {
       void verticalScroll(unsigned);
       void horizontalScroll(unsigned);
       void horizontalScrollNoLimit(unsigned);
+      void horizontalZoomIn();
+      void horizontalZoomOut();
    public:
       Canvas(QWidget* parent, int sx, int sy, const char* name = 0);
       bool isSingleSelection();

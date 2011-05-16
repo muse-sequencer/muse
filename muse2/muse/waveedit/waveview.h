@@ -88,6 +88,9 @@ class WaveView : public View {
       void followEvent(int);
       void timeChanged(unsigned);
       void mouseWheelMoved(int);
+      void horizontalScroll(unsigned);
+      void horizontalZoomIn();
+      void horizontalZoomOut();
 
    public:
       WaveView(MidiEditor*, QWidget* parent, int xscale, int yscale);

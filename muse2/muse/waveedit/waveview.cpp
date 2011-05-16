@@ -25,6 +25,7 @@
 #include "waveedit.h"
 #include "audio.h"
 #include "gconfig.h"
+#include "fastlog.h"
 
 bool modifyWarnedYet = false;
 //---------------------------------------------------------
@@ -381,14 +382,52 @@ void WaveView::viewMousePressEvent(QMouseEvent* event)
       viewMouseMoveEvent(event);
       }
 
-
+#define WHEEL_STEPSIZE 40
+#define WHEEL_DELTA   120
 //---------------------------------------------------------
 //   wheelEvent
 //---------------------------------------------------------
-void WaveView::wheelEvent(QWheelEvent* event)
-      {
-      emit mouseWheelMoved(event->delta() / 10);
-      }
+void WaveView::wheelEvent(QWheelEvent* ev)
+{
+  int keyState = ev->modifiers();
+
+  bool shift      = keyState & Qt::ShiftModifier;
+  bool alt        = keyState & Qt::AltModifier;
+  bool ctrl       = keyState & Qt::ControlModifier;
+
+  if (shift) { // scroll vertically
+    emit mouseWheelMoved(ev->delta() / 10);
+
+  } else if (ctrl) {  // zoom horizontally
+    if (ev->delta()>0)
+      emit horizontalZoomIn();
+    else
+      emit horizontalZoomOut();
+
+  } else { // scroll horizontally
+    int delta       = ev->delta() / WHEEL_DELTA;
+    int xpixelscale = 5*fast_log10(rmapxDev(1));
+
+
+    if (xpixelscale <= 0)
+          xpixelscale = 1;
+
+    int scrollstep = WHEEL_STEPSIZE * (delta);
+    ///if (ev->state() == Qt::ShiftModifier)
+//      if (((QInputEvent*)ev)->modifiers() == Qt::ShiftModifier)
+    scrollstep = scrollstep / 10;
+
+    int newXpos = xpos + xpixelscale * scrollstep;
+
+    if (newXpos < 0)
+          newXpos = 0;
+
+    //setYPos(newYpos);
+    emit horizontalScroll((unsigned)newXpos);
+
+  }
+
+}
 
 //---------------------------------------------------------
 //   viewMouseReleaseEvent

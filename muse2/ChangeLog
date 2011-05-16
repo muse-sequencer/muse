@@ -1,5 +1,19 @@
+15.05.2011:
+        - Changed mouse wheel behaviour in graphical editors except the score editor (rj)
+            * wheel scrolls left-right
+            * shift+wheel scrolls up-down
+            * control+wheel zooms horizontally
+            TODO:
+             - score editor
+             - zoom to where the mouse is located
+14.05.2011:
+        - Fixed problem with project save dialog missing a forward slash '/'. (Tim)
+          ~/.config was being polluted with wrong folders. Fixed ProjectCreateImpl::updateDirectoryPath().
 13.05.2011:
         - New spanish translation from Cristian Ramos (rj)
+        - Added dialog to remove unused wave files (rj)
+        - Changed default imported midi song type to GM. (Tim)
+        - Added GM drums patch in MidiInstrument::populatePatchPopup() for GM songs on ch 10. (Tim)
 12.05.2011: 
         - Changed template song "default.med" song type from NO to GM, to help new users. (Tim)
 10.05.2011: 

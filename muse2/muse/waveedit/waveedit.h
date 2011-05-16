@@ -71,6 +71,9 @@ class WaveEdit : public MidiEditor {
       void configChanged();
    
       virtual void updateHScrollRange();
+      void horizontalZoomIn();
+      void horizontalZoomOut();
+
 
    signals:
       void deleted(unsigned long);

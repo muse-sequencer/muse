@@ -891,7 +891,13 @@ void MidiInstrument::populatePatchPopup(QMenu* menu, int chan, MType songType, b
             case MT_GS: mask = 2; break;
             case MT_GM: 
               if(drumchan)
+              {
+                int id = (0xff << 16) + (0xff << 8) + 0x00;  // First patch
+                QAction* act = menu->addAction(gmdrumname);
+                //act->setCheckable(true);
+                act->setData(id);
                 return;
+              }  
               mask = 1; 
               break;
             case MT_UNKNOWN:  mask = 7; break;

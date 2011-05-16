@@ -53,6 +53,7 @@
 #include "widgets/menutitleitem.h"
 #include "tools.h"
 #include "visibletracks.h"
+#include "widgets/unusedwavefiles.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -964,6 +965,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       fileImportPartAction = new QAction(tr("Import Part"), this);
 
       fileImportWaveAction = new QAction(tr("Import Wave File"), this);
+      fileMoveWaveFiles = new QAction(tr("Find unused wave files"), this);
 
       quitAction = new QAction(tr("&Quit"), this);
 
@@ -998,10 +1000,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       scoreAllInOneSubsubmenu = new QMenu(tr("all parts in one staff"), this);
       scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("one staff per part"), this);
 
-			scoreSubmenu->addMenu(scoreAllInOneSubsubmenu);
-			scoreSubmenu->addMenu(scoreOneStaffPerTrackSubsubmenu);
-      
-			updateScoreMenus();
+      scoreSubmenu->addMenu(scoreAllInOneSubsubmenu);
+      scoreSubmenu->addMenu(scoreOneStaffPerTrackSubsubmenu);
+      updateScoreMenus();
       
       startScoreEditAction = new QAction(*scoreIconSet, tr("New score window"), this);
       startPianoEditAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
@@ -1072,6 +1073,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       autoClearAction = new QAction(QIcon(*automation_clear_dataIcon), tr("Clear Automation Data"), this);
       autoClearAction->setEnabled(false);
 
+
       //-------- Settings Actions
       settingsGlobalAction = new QAction(QIcon(*settings_globalsettingsIcon), tr("Global Settings"), this);
       settingsShortcutsAction = new QAction(QIcon(*settings_configureshortcutsIcon), tr("Configure Shortcuts"), this);
@@ -1113,6 +1115,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(fileImportPartAction, SIGNAL(activated()), SLOT(importPart()));
 
       connect(fileImportWaveAction, SIGNAL(activated()), SLOT(importWave()));
+      connect(fileMoveWaveFiles, SIGNAL(activated()), SLOT(findUnusedWaveFiles()));
       connect(quitAction, SIGNAL(activated()), SLOT(quitDoc()));
 
       //-------- Edit connections
@@ -1337,6 +1340,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       menu_file->addAction(fileImportPartAction);
       menu_file->addSeparator();
       menu_file->addAction(fileImportWaveAction);
+      menu_file->addSeparator();
+      menu_file->addAction(fileMoveWaveFiles);
       menu_file->addSeparator();
       menu_file->addAction(quitAction);
       menu_file->addSeparator();
@@ -5081,10 +5086,20 @@ void MusE::execDeliveredScript(int id)
       //QString scriptfile = QString(INSTPREFIX) + SCRIPTSSUFFIX + deliveredScriptNames[id];
       song->executeScript(song->getScriptPath(id, true).toLatin1().constData(), song->getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
 }
+
 //---------------------------------------------------------
 //   execUserScript
 //---------------------------------------------------------
 void MusE::execUserScript(int id)
 {
       song->executeScript(song->getScriptPath(id, false).toLatin1().constData(), song->getSelectedMidiParts(), 0, false); // TODO: get quant from arranger
+}
+
+//---------------------------------------------------------
+//   findUnusedWaveFiles
+//---------------------------------------------------------
+void MusE::findUnusedWaveFiles()
+{
+    UnusedWaveFiles unused(muse);
+    unused.exec();
 }
