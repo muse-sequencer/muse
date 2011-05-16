@@ -12,6 +12,7 @@
 #include <values.h>
 #include <uuid/uuid.h>
 #include <math.h>
+#include <map>
 
 #include <QClipboard>
 #include <QLineEdit>
@@ -1660,7 +1661,7 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
 
 
 //---------------------------------------------------------
-//   drawWavePart
+//   drawMidiPart
 //    bb - bounding box of paint area
 //    pr - part rectangle
 //---------------------------------------------------------
@@ -1710,22 +1711,55 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
             }
       }
   else {      // show Cakewalk Style
-      //p.setPen(QColor(80,80,80));
-      //EventList* events = mp->events();
-      iEvent ito(events->lower_bound(to));
-      //printf("PartCanvas::drawItem pTick:%d from:%d to:%d\n", pTick, from, to);
-
+      using std::map;
+      using std::pair;
+      
+      iEvent ito(events->lower_bound(to)); //FINDMICH
       bool isdrum = (mt->type() == Track::DRUM);
+
+      int lowest_pitch=127;
+      int highest_pitch=0;
+      map<int,int> y_mapper;
+      
+      for (iEvent i = events->begin(); i != ito; ++i)
+      {
+        if (i->second.type()==Note)
+        {
+          int pitch=i->second.pitch();
+
+          if (!isdrum)
+          {
+            if (pitch > highest_pitch) highest_pitch=pitch;
+            if (pitch < lowest_pitch) lowest_pitch=pitch;
+          }
+          else
+          {
+            y_mapper.insert(pair<int,int>(pitch, 0));
+          }
+        }
+      }
+      
+      if (isdrum)
+      {
+        int cnt=0;
+        for (map<int,int>::iterator it=y_mapper.begin(); it!=y_mapper.end(); it++)
+        {
+          it->second=cnt;
+          cnt++;
+        }
+        lowest_pitch=0;
+        highest_pitch=cnt-1;
+      }
+      
+      if (lowest_pitch==highest_pitch)
+      {
+        lowest_pitch--;
+        highest_pitch++;
+      }
+
       for (iEvent i = events->begin(); i != ito; ++i) {
             int t  = i->first + pTick;
             int te = t + i->second.lenTick();
-
-            if (t > (to + pTick))
-            {
-              //printf("PartCanvas::drawItem t:%d > to:%d + pTick:%d i->first:%d\n", t, to, pTick, i->first);
-
-              break;
-            }
 
             if (te < (from + pTick))
                   continue;
@@ -1738,8 +1772,12 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
                   int pitch = i->second.pitch();
                   int th = int(mt->height() * 0.75); // only draw on three quarters
                   int hoffset = (mt->height() - th ) / 2; // offset from bottom
-                  //int y     =  hoffset + (r.y() + th - (pitch * (th) / 127));
-                  int y     =  hoffset + r.y() + th - (isdrum?127-pitch:pitch) * th / 127;
+                  int y;
+                  if (!isdrum)
+                    y = hoffset + r.y() + th - (pitch-lowest_pitch)*th/(highest_pitch-lowest_pitch);
+                  else
+                    y = hoffset + r.y() + y_mapper[pitch]*th/(highest_pitch-lowest_pitch);
+                  
                   p.drawLine(t, y, te, y);
             }
       }
