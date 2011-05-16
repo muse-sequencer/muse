@@ -11,6 +11,7 @@
 #include "ui_transposebase.h"
 
 class QButtonGroup;
+class Xml;
 
 class Transpose : public QDialog, public Ui::TransposeBase
 {
@@ -27,6 +28,10 @@ class Transpose : public QDialog, public Ui::TransposeBase
 
 		int range;
 		int amount;
+		
+		void read_configuration(Xml& xml);
+		void write_configuration(int level, Xml& xml);
+		
 		
 	public slots:
 		int exec();

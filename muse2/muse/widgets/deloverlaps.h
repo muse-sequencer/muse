@@ -11,6 +11,7 @@
 #include "ui_deloverlapsbase.h"
 
 class QButtonGroup;
+class Xml;
 
 class DelOverlaps : public QDialog, public Ui::DelOverlapsBase
 {
@@ -26,6 +27,9 @@ class DelOverlaps : public QDialog, public Ui::DelOverlapsBase
 		DelOverlaps(QWidget* parent = 0);
 
 		int range;
+		
+		void read_configuration(Xml& xml);
+		void write_configuration(int level, Xml& xml);
 		
 	public slots:
 		int exec();

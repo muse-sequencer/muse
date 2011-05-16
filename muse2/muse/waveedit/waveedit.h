@@ -51,9 +51,10 @@ class WaveEdit : public MidiEditor {
 
       Q_OBJECT
       virtual void closeEvent(QCloseEvent*);
-      virtual void resizeEvent(QResizeEvent* ev);
       virtual void keyPressEvent(QKeyEvent*);
+      virtual void resizeEvent(QResizeEvent* ev);
       virtual void focusOutEvent(QFocusEvent*);
+      void storeInitialState();
 
       QMenu* menuFunctions, *select, *menuGain;
 

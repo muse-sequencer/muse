@@ -7,7 +7,7 @@
 
 #include <QButtonGroup>
 #include "remove.h"
-
+#include "xml.h"
 
 Remove::Remove(QWidget* parent)
 	: QDialog(parent)
@@ -42,3 +42,37 @@ int Remove::exec()
 	return QDialog::exec();
 }
 
+void Remove::read_configuration(Xml& xml)
+{
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+			
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "range")
+					range=xml.parseInt();
+				else
+					xml.unknown("Erase");
+				break;
+				
+			case Xml::TagEnd:
+				if (tag == "erase")
+					return;
+				
+			default:
+				break;
+		}
+	}
+}
+
+void Remove::write_configuration(int level, Xml& xml)
+{
+	xml.tag(level++, "erase");
+	xml.intTag(level, "range", range);
+	xml.tag(level, "/erase");
+}

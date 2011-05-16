@@ -7,6 +7,7 @@
 
 #include <QButtonGroup>
 #include "velocity.h"
+#include "xml.h"
 
 //---------------------------------------------------------
 //   Velocity
@@ -58,3 +59,44 @@ int Velocity::exec()
       
       return QDialog::exec();
       }
+
+void Velocity::read_configuration(Xml& xml)
+{
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+			
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "range")
+					range=xml.parseInt();
+				else if (tag == "rate")
+					rateVal=xml.parseInt();
+				else if (tag == "offset")
+					offsetVal=xml.parseInt();
+				else
+					xml.unknown("ModVelo");
+				break;
+				
+			case Xml::TagEnd:
+				if (tag == "mod_velo")
+					return;
+				
+			default:
+				break;
+		}
+	}
+}
+
+void Velocity::write_configuration(int level, Xml& xml)
+{
+	xml.tag(level++, "mod_velo");
+	xml.intTag(level, "range", range);
+	xml.intTag(level, "offset", offsetVal);
+	xml.intTag(level, "rate", rateVal);
+	xml.tag(level, "/mod_velo");
+}

@@ -1023,9 +1023,7 @@ void DrumEdit::newCanvasWidth(int w)
 void DrumEdit::resizeEvent(QResizeEvent* ev)
       {
       QWidget::resizeEvent(ev);
-      _widthInit = ev->size().width();
-      _heightInit = ev->size().height();
-      
+      storeInitialState();
       //TODO: Make the dlist not expand/shrink, but the canvas instead
       }
 
@@ -1036,8 +1034,20 @@ void DrumEdit::resizeEvent(QResizeEvent* ev)
 void DrumEdit::focusOutEvent(QFocusEvent* ev)
       {
       QWidget::focusOutEvent(ev);
+      storeInitialState();
+      }
+
+//---------------------------------------------------------
+//   storeInitialState
+//---------------------------------------------------------
+
+void DrumEdit::storeInitialState()
+      {
+      _widthInit = width();
+      _heightInit = height();
       _toolbarInit=saveState();
       }
+
 
 //---------------------------------------------------------
 //   configChanged

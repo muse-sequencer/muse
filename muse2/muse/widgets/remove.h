@@ -11,6 +11,7 @@
 #include "ui_removebase.h"
 
 class QButtonGroup;
+class Xml;
 
 class Remove : public QDialog, public Ui::RemoveBase
 {
@@ -26,6 +27,10 @@ class Remove : public QDialog, public Ui::RemoveBase
 		Remove(QWidget* parent = 0);
 
 		int range;
+		
+		void read_configuration(Xml& xml);
+		void write_configuration(int level, Xml& xml);
+		
 		
 	public slots:
 		int exec();

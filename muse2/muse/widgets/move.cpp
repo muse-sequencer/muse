@@ -7,7 +7,7 @@
 
 #include <QButtonGroup>
 #include "move.h"
-
+#include "xml.h"
 
 Move::Move(QWidget* parent)
 	: QDialog(parent)
@@ -44,3 +44,41 @@ int Move::exec()
 	return QDialog::exec();
 }
 
+
+void Move::read_configuration(Xml& xml)
+{
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+			
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "range")
+					range=xml.parseInt();
+				else if (tag == "amount")
+					amount=xml.parseInt();
+				else
+					xml.unknown("Move");
+				break;
+				
+			case Xml::TagEnd:
+				if (tag == "move")
+					return;
+				
+			default:
+				break;
+		}
+	}
+}
+
+void Move::write_configuration(int level, Xml& xml)
+{
+	xml.tag(level++, "move");
+	xml.intTag(level, "range", range);
+	xml.intTag(level, "amount", amount);
+	xml.tag(level, "/move");
+}

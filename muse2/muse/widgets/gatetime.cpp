@@ -10,6 +10,7 @@
 
 #include "gatetime.h"
 
+#include "xml.h"
 #include "song.h"
 
 //---------------------------------------------------------
@@ -63,3 +64,45 @@ int GateTime::exec()
       
       return QDialog::exec();
       }
+
+
+void GateTime::read_configuration(Xml& xml)
+{
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+			
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "range")
+					range=xml.parseInt();
+				else if (tag == "rate")
+					rateVal=xml.parseInt();
+				else if (tag == "offset")
+					offsetVal=xml.parseInt();
+				else
+					xml.unknown("ModLen");
+				break;
+				
+			case Xml::TagEnd:
+				if (tag == "mod_len")
+					return;
+				
+			default:
+				break;
+		}
+	}
+}
+
+void GateTime::write_configuration(int level, Xml& xml)
+{
+	xml.tag(level++, "mod_len");
+	xml.intTag(level, "range", range);
+	xml.intTag(level, "offset", offsetVal);
+	xml.intTag(level, "rate", rateVal);
+	xml.tag(level, "/mod_len");
+}

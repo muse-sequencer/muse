@@ -9,27 +9,31 @@
     <midiFilterCtrl2>0</midiFilterCtrl2>
     <midiFilterCtrl3>0</midiFilterCtrl3>
     <midiFilterCtrl4>0</midiFilterCtrl4>
-    <txDeviceId>127</txDeviceId>
-    <rxDeviceId>127</rxDeviceId>
-    <txSyncPort>1</txSyncPort>
-    <rxSyncPort>-1</rxSyncPort>
+    <waveTracksVisible>1</waveTracksVisible>
+    <auxTracksVisible>1</auxTracksVisible>
+    <groupTracksVisible>1</groupTracksVisible>
+    <midiTracksVisible>1</midiTracksVisible>
+    <inputTracksVisible>1</inputTracksVisible>
+    <outputTracksVisible>1</outputTracksVisible>
+    <synthTracksVisible>1</synthTracksVisible>
     <mtctype>1</mtctype>
     <mtcoffset>00:00:00:00:00</mtcoffset>
+    <sendClockDelay>1</sendClockDelay>
+    <useJackTransport>1</useJackTransport>
+    <jackTransportMaster>1</jackTransportMaster>
     <extSync>0</extSync>
-    <genMTCSync>0</genMTCSync>
-    <genMCSync>0</genMCSync>
-    <genMMC>0</genMMC>
-    <acceptMTC>0</acceptMTC>
-    <acceptMMC>1</acceptMMC>
-    <acceptMC>1</acceptMC>
     <bigtimeVisible>0</bigtimeVisible>
     <transportVisible>0</transportVisible>
-    <mixerVisible>0</mixerVisible>
+    <markerVisible>0</markerVisible>
+    <geometryMain x="0" y="0" w="878" h="468"></geometryMain>
+    <geometryTransport x="0" y="0" w="100" h="30"></geometryTransport>
+    <mixer1Visible>0</mixer1Visible>
+    <mixer2Visible>0</mixer2Visible>
     <arranger>
       <info>1</info>
-      <split>298 764 </split>
+      <split>298 298 </split>
       <list>
-        <header> 7 6 5 4 3 2 1 0 </header>
+        <header> 7 6 5 4 3 2 1 0 8 </header>
         </list>
       <xpos>0</xpos>
       <xmag>266</xmag>
@@ -44,14 +48,15 @@
         <beatvelo>70</beatvelo>
         <channel>9</channel>
         <port>0</port>
-        <precountEnable>1</precountEnable>
-        <fromMastertrack>1</fromMastertrack>
+        <precountEnable>0</precountEnable>
+        <fromMastertrack>0</fromMastertrack>
         <signatureZ>4</signatureZ>
         <signatureN>4</signatureN>
         <prerecord>0</prerecord>
         <preroll>0</preroll>
         <midiClickEnable>1</midiClickEnable>
         <audioClickEnable>0</audioClickEnable>
+        <audioClickVolume>0.5</audioClickVolume>
         </metronom>
       <rcEnable>0</rcEnable>
       <rcStop>28</rcStop>
@@ -59,13 +64,19 @@
       <rcGotoLeft>33</rcGotoLeft>
       <rcPlay>29</rcPlay>
       <midiport idx="0">
-        <instrument>GM</instrument>
+        <defaultOutChans>1</defaultOutChans>
         <channel idx="0">
           <controller id="7">
             <val>0</val>
             </controller>
           <controller id="10">
             <val>0</val>
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
             </controller>
           <controller id="262145">
             <val>0</val>
@@ -78,6 +89,12 @@
           <controller id="10">
             <val>0</val>
             </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
           <controller id="262145">
             <val>0</val>
             </controller>
@@ -88,6 +105,12 @@
             </controller>
           <controller id="10">
             <val>0</val>
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
             </controller>
           <controller id="262145">
             <val>0</val>
@@ -100,6 +123,12 @@
           <controller id="10">
             <val>0</val>
             </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
           <controller id="262145">
             <val>0</val>
             </controller>
@@ -110,6 +139,12 @@
             </controller>
           <controller id="10">
             <val>0</val>
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
             </controller>
           <controller id="262145">
             <val>0</val>
@@ -122,6 +157,12 @@
           <controller id="10">
             <val>0</val>
             </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
           <controller id="262145">
             <val>0</val>
             </controller>
@@ -132,6 +173,12 @@
             </controller>
           <controller id="10">
             <val>0</val>
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
             </controller>
           <controller id="262145">
             <val>0</val>
@@ -144,6 +191,12 @@
           <controller id="10">
             <val>0</val>
             </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
           <controller id="262145">
             <val>0</val>
             </controller>
@@ -154,6 +207,12 @@
             </controller>
           <controller id="10">
             <val>0</val>
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
             </controller>
           <controller id="262145">
             <val>0</val>
@@ -166,6 +225,12 @@
           <controller id="10">
             <val>0</val>
             </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
           <controller id="262145">
             <val>0</val>
             </controller>
@@ -176,6 +241,12 @@
             </controller>
           <controller id="10">
             <val>0</val>
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
             </controller>
           <controller id="262145">
             <val>0</val>
@@ -188,6 +259,12 @@
           <controller id="10">
             <val>0</val>
             </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
           <controller id="262145">
             <val>0</val>
             </controller>
@@ -198,6 +275,12 @@
             </controller>
           <controller id="10">
             <val>0</val>
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
             </controller>
           <controller id="262145">
             <val>0</val>
@@ -210,6 +293,12 @@
           <controller id="10">
             <val>0</val>
             </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
           <controller id="262145">
             <val>0</val>
             </controller>
@@ -220,6 +309,12 @@
             </controller>
           <controller id="10">
             <val>0</val>
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
             </controller>
           <controller id="262145">
             <val>0</val>
@@ -232,6 +327,12 @@
           <controller id="10">
             <val>0</val>
             </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
           <controller id="262145">
             <val>0</val>
             </controller>
@@ -239,34 +340,79 @@
         </midiport>
       </sequencer>
     <drumedit>
-      <quant>96</quant>
       <raster>96</raster>
-      <width>600</width>
-      <height>400</height>
-      <dlistwidth>50</dlistwidth>
-      <dcanvaswidth>300</dcanvaswidth>
+      <width>883</width>
+      <height>465</height>
+      <dlistwidth>126</dlistwidth>
+      <dcanvaswidth>753</dcanvaswidth>
+      <toolbars>000000ff00000000fd00000000000003730000015c00000004000000040000000800000008fc00000004000000020000000400000014004400720075006d00200074006f006f006c00730100000000000000d1000000000000000000000014004500640069007400200054006f006f006c007301000000d1000000c8000000000000000000000012007400720061006e00730070006f0072007401000001990000018400000000000000000000000a00700061006e00690063010000031dffffffff00000000000000000000000200000000000000020000000100000012004e006f0074006500200049006e0066006f0100000000ffffffff000000000000000000000002000000020000000c0063007500720073006f00720100000000ffffffff0000000000000000000000260050006f0073002f0053006e00610070002f0053006f006c006f002d0074006f006f006c00730100000083ffffffff0000000000000000</toolbars>
       </drumedit>
     <pianoroll>
-      <quant>96</quant>
       <raster>96</raster>
-      <quantStrength>80</quantStrength>
-      <quantLimit>50</quantLimit>
-      <quantLen>0</quantLen>
-      <to>0</to>
-      <width>600</width>
-      <height>400</height>
+      <width>879</width>
+      <height>467</height>
       <colormode>0</colormode>
+      <toolbars>000000ff00000000fd000000000000036f0000017800000004000000040000000800000008fc00000006000000020000000000000002000000000000000200000000000000020000000000000002000000030000001e005000690061006e006f0072006f006c006c00200074006f006f006c00730100000000ffffffff000000000000000000000014004500640069007400200054006f006f006c00730100000091ffffffff000000000000000000000012004e006f0074006500200049006e0066006f0100000103ffffffff00000000000000000000000200000003000000260050006f0073002f0053006e00610070002f0053006f006c006f002d0074006f006f006c007301000000000000024c000000000000000000000012007400720061006e00730070006f00720074010000024c000000fc00000000000000000000000a00700061006e006900630100000348ffffffff0000000000000000</toolbars>
       </pianoroll>
+    <scoreedit>
+      <width>880</width>
+      <height>466</height>
+      <toolbars>000000ff00000000fd00000000000003700000018500000004000000040000000800000008fc0000000200000002000000030000001e0055006e0064006f002f005200650064006f00200074006f006f006c00730100000000ffffffff000000000000000000000014004500640069007400200054006f006f006c00730100000040ffffffff000000000000000000000022004e006500770020006e006f00740065002000730065007400740069006e006700730100000099ffffffff000000000000000000000002000000030000002a005100750061006e007400690073006100740069006f006e002000730065007400740069006e0067007301000000000000024a000000000000000000000012007400720061006e00730070006f00720074010000024a000000fc00000000000000000000000a00700061006e0069006301000003460000011f0000000000000000</toolbars>
+      </scoreedit>
     <masteredit>
       <raster>0</raster>
+      <width>875</width>
+      <height>464</height>
+      <toolbars>000000ff00000000fd000000000000036b000001a400000004000000040000000800000008fc000000010000000200000004ffffffff0100000000ffffffff000000000000000000000014004500640069007400200054006f006f006c00730100000040ffffffff0000000000000000ffffffff0100000099ffffffff0000000000000000ffffffff01000000faffffffff0000000000000000</toolbars>
       </masteredit>
     <waveedit>
-      <bgcolor r="0" g="0" b="0"></bgcolor>
-      <width>600</width>
-      <height>400</height>
+      <bgcolor r="200" g="200" b="200"></bgcolor>
+      <width>883</width>
+      <height>466</height>
+      <toolbars>000000ff00000000fd0000000000000373000001a100000004000000040000000800000008fc0000000200000002000000030000001e00570061007600650020006500640069007400200074006f006f006c00730100000000ffffffff00000000000000000000001c0057006100760065004500640069007400200074006f006f006c007301000000400000023b000000000000000000000012007400720061006e00730070006f00720074010000027b0000003900000000000000000000000200000000</toolbars>
       </waveedit>
+    <dialogs>
+      <mod_len>
+        <range>1</range>
+        <offset>0</offset>
+        <rate>100</rate>
+        </mod_len>
+      <mod_velo>
+        <range>1</range>
+        <offset>0</offset>
+        <rate>100</rate>
+        </mod_velo>
+      <quantize>
+        <range>1</range>
+        <strength>90</strength>
+        <threshold>0</threshold>
+        <raster>3</raster>
+        <swing>0</swing>
+        <quant_len>1</quant_len>
+        </quantize>
+      <erase>
+        <range>1</range>
+        </erase>
+      <del_overlaps>
+        <range>1</range>
+        </del_overlaps>
+      <setlen>
+        <range>1</range>
+        <len>384</len>
+        </setlen>
+      <move>
+        <range>1</range>
+        <amount>0</amount>
+        </move>
+      <transpose>
+        <range>1</range>
+        <amount>0</amount>
+        </transpose>
+      </dialogs>
     </configuration>
   <song>
+    <info></info>
+    <showinfo>1</showinfo>
     <automation>0</automation>
     <cpos>0</cpos>
     <rpos>0</rpos>
@@ -282,8 +428,9 @@
     <cycle>0</cycle>
     <click>0</click>
     <quantize>0</quantize>
-    <len>0</len>
+    <len>6144</len>
     <follow>1</follow>
+    <sampleRate>44100</sampleRate>
     <miditrack>
       <name>Track 1</name>
       <record>0</record>
@@ -296,9 +443,8 @@
       <selected>1</selected>
       <device>0</device>
       <channel>0</channel>
-      <inportMap>65535</inportMap>
-      <inchannelMap>65535</inchannelMap>
       <locked>0</locked>
+      <echo>1</echo>
       <transposition>0</transposition>
       <velocity>0</velocity>
       <delay>0</delay>
@@ -317,9 +463,8 @@
       <locked>0</locked>
       <device>0</device>
       <channel>0</channel>
-      <inportMap>65535</inportMap>
-      <inchannelMap>65535</inchannelMap>
       <locked>0</locked>
+      <echo>1</echo>
       <transposition>0</transposition>
       <velocity>0</velocity>
       <delay>0</delay>
@@ -338,9 +483,8 @@
       <locked>0</locked>
       <device>0</device>
       <channel>0</channel>
-      <inportMap>65535</inportMap>
-      <inchannelMap>65535</inchannelMap>
       <locked>0</locked>
+      <echo>1</echo>
       <transposition>0</transposition>
       <velocity>0</velocity>
       <delay>0</delay>
@@ -359,9 +503,8 @@
       <locked>0</locked>
       <device>0</device>
       <channel>0</channel>
-      <inportMap>65535</inportMap>
-      <inchannelMap>65535</inchannelMap>
       <locked>0</locked>
+      <echo>1</echo>
       <transposition>0</transposition>
       <velocity>0</velocity>
       <delay>0</delay>
@@ -380,9 +523,8 @@
       <locked>0</locked>
       <device>0</device>
       <channel>9</channel>
-      <inportMap>65535</inportMap>
-      <inchannelMap>65535</inchannelMap>
       <locked>0</locked>
+      <echo>1</echo>
       <transposition>0</transposition>
       <velocity>0</velocity>
       <delay>0</delay>
@@ -390,6 +532,46 @@
       <compression>100</compression>
       <automation>1</automation>
       </drumtrack>
+    <Route channelMask="65535">
+      <source mport="0"/>
+      <dest name="Track 1"/>
+      </Route>
+    <Route channelMask="65535">
+      <source mport="0"/>
+      <dest name="Track 1"/>
+      </Route>
+    <Route channelMask="65535">
+      <source mport="0"/>
+      <dest name="Track 2"/>
+      </Route>
+    <Route channelMask="65535">
+      <source mport="0"/>
+      <dest name="Track 2"/>
+      </Route>
+    <Route channelMask="65535">
+      <source mport="0"/>
+      <dest name="Track 3"/>
+      </Route>
+    <Route channelMask="65535">
+      <source mport="0"/>
+      <dest name="Track 3"/>
+      </Route>
+    <Route channelMask="65535">
+      <source mport="0"/>
+      <dest name="Track 4"/>
+      </Route>
+    <Route channelMask="65535">
+      <source mport="0"/>
+      <dest name="Track 4"/>
+      </Route>
+    <Route channelMask="65535">
+      <source mport="0"/>
+      <dest name="Track 5"/>
+      </Route>
+    <Route channelMask="65535">
+      <source mport="0"/>
+      <dest name="Track 5"/>
+      </Route>
     <tempolist fix="500000">
       <tempo at="21474837">
         <tick>0</tick>
@@ -403,7 +585,15 @@
         <denom>4</denom>
         </sig>
       </siglist>
+    <keylist fix="1">
+      <key at="21474837">
+        <tick>0</tick>
+        <val>1</val>
+        </key>
+      </keylist>
     <drummap>
       </drummap>
     </song>
+  <toplevels>
+    </toplevels>
   </muse>

@@ -7,6 +7,7 @@
 
 #include <QButtonGroup>
 #include "deloverlaps.h"
+#include "xml.h"
 
 
 DelOverlaps::DelOverlaps(QWidget* parent)
@@ -42,3 +43,37 @@ int DelOverlaps::exec()
 	return QDialog::exec();
 }
 
+void DelOverlaps::read_configuration(Xml& xml)
+{
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+			
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "range")
+					range=xml.parseInt();
+				else
+					xml.unknown("DelOverlaps");
+				break;
+				
+			case Xml::TagEnd:
+				if (tag == "del_overlaps")
+					return;
+				
+			default:
+				break;
+		}
+	}
+}
+
+void DelOverlaps::write_configuration(int level, Xml& xml)
+{
+	xml.tag(level++, "del_overlaps");
+	xml.intTag(level, "range", range);
+	xml.tag(level, "/del_overlaps");
+}

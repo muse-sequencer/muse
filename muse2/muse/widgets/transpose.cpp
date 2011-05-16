@@ -7,7 +7,7 @@
 
 #include <QButtonGroup>
 #include "transpose.h"
-
+#include "xml.h"
 
 Transpose::Transpose(QWidget* parent)
 	: QDialog(parent)
@@ -44,3 +44,40 @@ int Transpose::exec()
 	return QDialog::exec();
 }
 
+void Transpose::read_configuration(Xml& xml)
+{
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+			
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "range")
+					range=xml.parseInt();
+				else if (tag == "amount")
+					amount=xml.parseInt();
+				else
+					xml.unknown("Transpose");
+				break;
+				
+			case Xml::TagEnd:
+				if (tag == "transpose")
+					return;
+				
+			default:
+				break;
+		}
+	}
+}
+
+void Transpose::write_configuration(int level, Xml& xml)
+{
+	xml.tag(level++, "transpose");
+	xml.intTag(level, "range", range);
+	xml.intTag(level, "amount", amount);
+	xml.tag(level, "/transpose");
+}

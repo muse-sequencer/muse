@@ -358,12 +358,6 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 		init_name();
 }
 
-void ScoreEdit::focusOutEvent(QFocusEvent* ev)
-{
-	default_toolbar_state=saveState();
-	QMainWindow::focusOutEvent(ev);
-}
-
 void ScoreEdit::add_parts(PartList* pl, bool all_in_one)
 {
 	score_canvas->add_staves(pl, all_in_one);
@@ -470,8 +464,21 @@ void ScoreEdit::resizeEvent(QResizeEvent* ev)
 {
 	QWidget::resizeEvent(ev);
 	
-	width_init=ev->size().width();
-	height_init=ev->size().height();
+	store_initial_state();
+}
+
+void ScoreEdit::focusOutEvent(QFocusEvent* ev)
+{
+	QMainWindow::focusOutEvent(ev);
+	
+	store_initial_state();
+}
+
+void ScoreEdit::store_initial_state()
+{
+	width_init=width();
+	height_init=height();
+	default_toolbar_state=saveState();
 }
 
 void ScoreEdit::menu_command(int cmd)

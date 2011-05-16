@@ -11,6 +11,7 @@
 #include "ui_movebase.h"
 
 class QButtonGroup;
+class Xml;
 
 class Move : public QDialog, public Ui::MoveBase
 {
@@ -28,6 +29,10 @@ class Move : public QDialog, public Ui::MoveBase
 		int range;
 		int amount;
 		
+		void read_configuration(Xml& xml);
+		void write_configuration(int level, Xml& xml);
+		
+	
 	public slots:
 		int exec();
 };

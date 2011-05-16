@@ -11,6 +11,7 @@
 #include "ui_setlenbase.h"
 
 class QButtonGroup;
+class Xml;
 
 class Setlen : public QDialog, public Ui::SetlenBase
 {
@@ -27,6 +28,10 @@ class Setlen : public QDialog, public Ui::SetlenBase
 
 		int range;
 		int len;
+		
+		void read_configuration(Xml& xml);
+		void write_configuration(int level, Xml& xml);
+		
 		
 	public slots:
 		int exec();

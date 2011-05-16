@@ -427,10 +427,8 @@ void MasterEdit::setTempo(int val)
 void MasterEdit::resizeEvent(QResizeEvent* ev)
       {
       QWidget::resizeEvent(ev);
-      _widthInit = ev->size().width();
-      _heightInit = ev->size().height();
+      storeInitialState();
       }
-
 
 //---------------------------------------------------------
 //   focusOutEvent
@@ -439,5 +437,17 @@ void MasterEdit::resizeEvent(QResizeEvent* ev)
 void MasterEdit::focusOutEvent(QFocusEvent* ev)
       {
       QWidget::focusOutEvent(ev);
+      storeInitialState();
+      }
+
+
+//---------------------------------------------------------
+//   storeInitialState
+//---------------------------------------------------------
+
+void MasterEdit::storeInitialState()
+      {
+      _widthInit = width();
+      _heightInit = height();
       _toolbarInit=saveState();
       }

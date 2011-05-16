@@ -443,8 +443,7 @@ void WaveEdit::readStatus(Xml& xml)
 void WaveEdit::resizeEvent(QResizeEvent* ev)
       {
       QWidget::resizeEvent(ev);
-      _widthInit = ev->size().width();
-      _heightInit = ev->size().height();
+      storeInitialState();
       }
 
 //---------------------------------------------------------
@@ -454,6 +453,18 @@ void WaveEdit::resizeEvent(QResizeEvent* ev)
 void WaveEdit::focusOutEvent(QFocusEvent* ev)
       {
       QWidget::focusOutEvent(ev);
+      storeInitialState();
+      }
+
+
+//---------------------------------------------------------
+//   storeInitialState
+//---------------------------------------------------------
+
+void WaveEdit::storeInitialState()
+      {
+      _widthInit = width();
+      _heightInit = height();
       _toolbarInit=saveState();
       }
 

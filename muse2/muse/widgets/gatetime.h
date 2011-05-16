@@ -12,6 +12,7 @@
 
 class QButtonGroup;
 class QDialog;
+class Xml;
 
 //---------------------------------------------------------
 //   GateTime
@@ -33,6 +34,10 @@ class GateTime : public QDialog, public Ui::GateTimeBase {
       int range;
       int rateVal;
       int offsetVal;
+      
+      void read_configuration(Xml& xml);
+      void write_configuration(int level, Xml& xml);
+
       
    public slots:
       int exec();

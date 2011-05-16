@@ -11,6 +11,7 @@
 #include "ui_velocitybase.h"
 
 class QButtonGroup;
+class Xml;
 
 //---------------------------------------------------------
 //   Velocity
@@ -31,6 +32,10 @@ class Velocity : public QDialog, public Ui::VelocityBase {
       int range;
       int rateVal;
       int offsetVal;
+      
+      void read_configuration(Xml& xml);
+      void write_configuration(int level, Xml& xml);
+      
       
    public slots:
       int exec();

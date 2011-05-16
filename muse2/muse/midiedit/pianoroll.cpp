@@ -1191,8 +1191,7 @@ void PianoRoll::setSpeaker(bool val)
 void PianoRoll::resizeEvent(QResizeEvent* ev)
       {
       QWidget::resizeEvent(ev);
-      _widthInit = ev->size().width();
-      _heightInit = ev->size().height();
+      storeInitialState();
       }
 
 
@@ -1203,6 +1202,18 @@ void PianoRoll::resizeEvent(QResizeEvent* ev)
 void PianoRoll::focusOutEvent(QFocusEvent* ev)
       {
       QWidget::focusOutEvent(ev);
+      storeInitialState();
+      }
+
+
+//---------------------------------------------------------
+//   storeInitialState
+//---------------------------------------------------------
+
+void PianoRoll::storeInitialState()
+      {
+      _widthInit = width();
+      _heightInit = height();
       _toolbarInit=saveState();
       }
 

@@ -7,7 +7,7 @@
 
 #include <QButtonGroup>
 #include "quantize.h"
-
+#include "xml.h"
 
 Quantize::Quantize(QWidget* parent)
 	: QDialog(parent)
@@ -52,3 +52,52 @@ int Quantize::exec()
 	return QDialog::exec();
 }
 
+void Quantize::read_configuration(Xml& xml)
+{
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+			
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "range")
+					range=xml.parseInt();
+				else if (tag == "strength")
+					strength=xml.parseInt();
+				else if (tag == "threshold")
+					threshold=xml.parseInt();
+				else if (tag == "raster")
+					raster_power2=xml.parseInt();
+				else if (tag == "swing")
+					swing=xml.parseInt();
+				else if (tag == "quant_len")
+					quant_len=xml.parseInt();
+				else
+					xml.unknown("Quantize");
+				break;
+				
+			case Xml::TagEnd:
+				if (tag == "quantize")
+					return;
+				
+			default:
+				break;
+		}
+	}
+}
+
+void Quantize::write_configuration(int level, Xml& xml)
+{
+	xml.tag(level++, "quantize");
+	xml.intTag(level, "range", range);
+	xml.intTag(level, "strength", strength);
+	xml.intTag(level, "threshold", threshold);
+	xml.intTag(level, "raster", raster_power2);
+	xml.intTag(level, "swing", swing);
+	xml.intTag(level, "quant_len", quant_len);
+	xml.tag(level, "/quantize");
+}

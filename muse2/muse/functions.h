@@ -57,4 +57,11 @@ bool transpose_notes(const std::set<Part*>& parts);
 bool erase_notes(const std::set<Part*>& parts);
 bool delete_overlaps(const std::set<Part*>& parts);
 
+
+
+//functions for reading and writing default values
+class Xml;
+void read_function_dialog_config(Xml& xml);
+void write_function_dialog_config(int level, Xml& xml);
+
 #endif

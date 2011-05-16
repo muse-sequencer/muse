@@ -66,6 +66,7 @@ class MasterEdit : public MidiEditor {
       virtual void closeEvent(QCloseEvent*);
       virtual void resizeEvent(QResizeEvent*);
       virtual void focusOutEvent(QFocusEvent*);
+      void storeInitialState();
 
    private slots:
       void _setRaster(int);

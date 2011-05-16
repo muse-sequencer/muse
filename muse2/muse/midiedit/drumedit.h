@@ -84,9 +84,12 @@ class DrumEdit : public MidiEditor {
 
       virtual void closeEvent(QCloseEvent*);
       QWidget* genToolbar(QWidget* parent);
+      virtual void keyPressEvent(QKeyEvent*);
+
       virtual void resizeEvent(QResizeEvent*);
       virtual void focusOutEvent(QFocusEvent*);
-      virtual void keyPressEvent(QKeyEvent*);
+      void storeInitialState();
+
       void setHeaderToolTips();
       void setHeaderWhatsThis();
 

@@ -7,7 +7,7 @@
 
 #include <QButtonGroup>
 #include "setlen.h"
-
+#include "xml.h"
 
 Setlen::Setlen(QWidget* parent)
 	: QDialog(parent)
@@ -44,3 +44,40 @@ int Setlen::exec()
 	return QDialog::exec();
 }
 
+void Setlen::read_configuration(Xml& xml)
+{
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+			
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "range")
+					range=xml.parseInt();
+				else if (tag == "len")
+					len=xml.parseInt();
+				else
+					xml.unknown("SetLen");
+				break;
+				
+			case Xml::TagEnd:
+				if (tag == "setlen")
+					return;
+				
+			default:
+				break;
+		}
+	}
+}
+
+void Setlen::write_configuration(int level, Xml& xml)
+{
+	xml.tag(level++, "setlen");
+	xml.intTag(level, "range", range);
+	xml.intTag(level, "len", len);
+	xml.tag(level, "/setlen");
+}

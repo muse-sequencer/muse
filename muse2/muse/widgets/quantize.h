@@ -11,6 +11,7 @@
 #include "ui_quantbase.h"
 
 class QButtonGroup;
+class Xml;
 
 class Quantize : public QDialog, public Ui::QuantBase
 {
@@ -31,6 +32,10 @@ class Quantize : public QDialog, public Ui::QuantBase
 		int raster_power2;
 		int swing;
 		bool quant_len;
+		
+		void read_configuration(Xml& xml);
+		void write_configuration(int level, Xml& xml);
+		
 		
 	public slots:
 		int exec();

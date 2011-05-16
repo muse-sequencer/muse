@@ -75,6 +75,8 @@ class ScoreEdit : public TopWin
 		virtual void resizeEvent(QResizeEvent*);
 		virtual void focusOutEvent(QFocusEvent*);
 		
+		void store_initial_state();
+		
 		void init_name();
 
 		QGridLayout* mainGrid;
