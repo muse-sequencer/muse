@@ -4163,6 +4163,8 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *   o maybe do expanding parts inside the msgChangeEvent or
  *     msgNewEvent functions (see my e-mail)
  *
+ *   o make quantize and other stuff faster (by assymetric communication)
+ *
  * GUI stuff
  *   o velocity/release-velo for already existing notes
  *     	  - do this by right-click -> some dialog shows up?

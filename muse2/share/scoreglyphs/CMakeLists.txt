@@ -18,10 +18,7 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
-file (GLOB scoreglyph_files *.png LICENSE)
-
-subdirs( feta-original
-       )
+file (GLOB scoreglyph_files *.png)
 
 install( FILES ${scoreglyph_files}
       DESTINATION ${MusE_SHARE_DIR}/scoreglyphs
