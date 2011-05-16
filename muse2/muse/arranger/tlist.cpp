@@ -1660,6 +1660,7 @@ void TList::classesPopupMenu(Track* t, int x, int y)
                   }
             t->setType(Track::MIDI);
             audio->msgIdle(false);
+            song->update(SC_EVENT_MODIFIED);
             }
       else if (Track::TrackType(n) == Track::DRUM && t->type() == Track::MIDI) {
             //
@@ -1716,8 +1717,8 @@ void TList::classesPopupMenu(Track* t, int x, int y)
             // Add all port controller events.
             //audio->msgChangeAllPortDrumCtrlEvents(true);
             song->changeAllPortDrumCtrlEvents(true);
-            
             audio->msgIdle(false);
+            song->update(SC_EVENT_MODIFIED);
             }
       }
 

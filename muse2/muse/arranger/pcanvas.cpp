@@ -1721,42 +1721,54 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
       int highest_pitch=0;
       map<int,int> y_mapper;
       
-      for (iEvent i = events->begin(); i != ito; ++i)
+      if (config.canvasShowPartType & 4) //y-stretch?
       {
-        if (i->second.type()==Note)
+        for (iEvent i = events->begin(); i != ito; ++i)
         {
-          int pitch=i->second.pitch();
+          if (i->second.type()==Note)
+          {
+            int pitch=i->second.pitch();
 
-          if (!isdrum)
-          {
-            if (pitch > highest_pitch) highest_pitch=pitch;
-            if (pitch < lowest_pitch) lowest_pitch=pitch;
+            if (!isdrum)
+            {
+              if (pitch > highest_pitch) highest_pitch=pitch;
+              if (pitch < lowest_pitch) lowest_pitch=pitch;
+            }
+            else
+            {
+              y_mapper.insert(pair<int,int>(pitch, 0));
+            }
           }
-          else
+        }
+        
+        if (isdrum)
+        {
+          int cnt=0;
+          for (map<int,int>::iterator it=y_mapper.begin(); it!=y_mapper.end(); it++)
           {
-            y_mapper.insert(pair<int,int>(pitch, 0));
+            it->second=cnt;
+            cnt++;
           }
+          lowest_pitch=0;
+          highest_pitch=cnt-1;
+        }
+        
+        if (lowest_pitch==highest_pitch)
+        {
+          lowest_pitch--;
+          highest_pitch++;
         }
       }
-      
-      if (isdrum)
+      else
       {
-        int cnt=0;
-        for (map<int,int>::iterator it=y_mapper.begin(); it!=y_mapper.end(); it++)
-        {
-          it->second=cnt;
-          cnt++;
-        }
         lowest_pitch=0;
-        highest_pitch=cnt-1;
+        highest_pitch=127;
+
+        if (isdrum)
+          for (int cnt=0;cnt<127;cnt++)
+            y_mapper[cnt]=cnt;
       }
       
-      if (lowest_pitch==highest_pitch)
-      {
-        lowest_pitch--;
-        highest_pitch++;
-      }
-
       for (iEvent i = events->begin(); i != ito; ++i) {
             int t  = i->first + pTick;
             int te = t + i->second.lenTick();
