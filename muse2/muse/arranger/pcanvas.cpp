@@ -1714,7 +1714,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
       using std::map;
       using std::pair;
       
-      iEvent ito(events->lower_bound(to)); //FINDMICH
+      iEvent ito(events->lower_bound(to));
       bool isdrum = (mt->type() == Track::DRUM);
 
       int lowest_pitch=127;

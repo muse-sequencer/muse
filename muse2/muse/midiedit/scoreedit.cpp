@@ -68,7 +68,8 @@ QString IntToQStr(int i);
 
 
 
-
+#define APPLY_TO_SELECTED_STRING tr("Apply to selected notes:")
+#define APPLY_TO_NEW_STRING tr("Apply to new notes:")
 
 
 //PIXELS_PER_NOTEPOS must be greater or equal to 3*NOTE_XLEN + 2*NOTE_SHIFT
@@ -166,7 +167,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	setCentralWidget(mainw);
 
 
-
+	apply_velo=false;
 
 	
 	score_canvas=new ScoreCanvas(this, mainw, 1, 1);
@@ -220,17 +221,18 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 	addToolBarBreak();
 
-	QToolBar* newnote_toolbar = addToolBar(tr("New note settings"));
-	newnote_toolbar->setObjectName("New note settings");
-	newnote_toolbar->addWidget(new QLabel(tr("Note length:"), newnote_toolbar));
+	QToolBar* note_settings_toolbar = addToolBar(tr("Note settings"));
+	//don't change that name, or you will lose toolbar settings
+	note_settings_toolbar->setObjectName("New note settings");
+	note_settings_toolbar->addWidget(new QLabel(tr("Note length:"), note_settings_toolbar));
 	len_actions=new QActionGroup(this);
-	n1_action = newnote_toolbar->addAction("1", menu_mapper, SLOT(map()));
-	n2_action = newnote_toolbar->addAction("2", menu_mapper, SLOT(map()));
-	n4_action = newnote_toolbar->addAction("4", menu_mapper, SLOT(map()));
-	n8_action = newnote_toolbar->addAction("8", menu_mapper, SLOT(map()));
-	n16_action = newnote_toolbar->addAction("16", menu_mapper, SLOT(map()));
-	n32_action = newnote_toolbar->addAction("32", menu_mapper, SLOT(map()));
-	nlast_action = newnote_toolbar->addAction(tr("last"), menu_mapper, SLOT(map()));
+	n1_action = note_settings_toolbar->addAction("1", menu_mapper, SLOT(map()));
+	n2_action = note_settings_toolbar->addAction("2", menu_mapper, SLOT(map()));
+	n4_action = note_settings_toolbar->addAction("4", menu_mapper, SLOT(map()));
+	n8_action = note_settings_toolbar->addAction("8", menu_mapper, SLOT(map()));
+	n16_action = note_settings_toolbar->addAction("16", menu_mapper, SLOT(map()));
+	n32_action = note_settings_toolbar->addAction("32", menu_mapper, SLOT(map()));
+	nlast_action = note_settings_toolbar->addAction(tr("last"), menu_mapper, SLOT(map()));
 	menu_mapper->setMapping(n1_action, CMD_NOTELEN_1);
 	menu_mapper->setMapping(n2_action, CMD_NOTELEN_2);
 	menu_mapper->setMapping(n4_action, CMD_NOTELEN_4);
@@ -256,22 +258,37 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	nlast_action->setChecked(true);
 	menu_command(CMD_NOTELEN_LAST);
 	
-	newnote_toolbar->addSeparator();
+	note_settings_toolbar->addSeparator();
 	
-	newnote_toolbar->addWidget(new QLabel(tr("Velocity:"), newnote_toolbar));
+	apply_velo_to_label = new QLabel(APPLY_TO_NEW_STRING, note_settings_toolbar);
+		int w1 = apply_velo_to_label->fontMetrics().width(APPLY_TO_NEW_STRING);
+		int w2 = apply_velo_to_label->fontMetrics().width(APPLY_TO_SELECTED_STRING);
+		if (w1>w2) 
+			apply_velo_to_label->setFixedWidth(w1+5);
+		else 
+			apply_velo_to_label->setFixedWidth(w2+5);
+	
+	note_settings_toolbar->addWidget(apply_velo_to_label);
+	note_settings_toolbar->addWidget(new QLabel(tr("Velocity:"), note_settings_toolbar));
 	velo_spinbox = new QSpinBox(this);
 	velo_spinbox->setRange(0, 127);
 	velo_spinbox->setSingleStep(1);
-	connect(velo_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_newnote_velo(int)));
-	newnote_toolbar->addWidget(velo_spinbox);
+	//we do not use the valueChanged signal, because that would generate
+	//many many undos when using the spin buttons.
+	connect(velo_spinbox, SIGNAL(editingFinished()), SLOT(velo_box_changed()));
+	connect(this,SIGNAL(velo_changed(int)), score_canvas, SLOT(set_velo(int)));
+	note_settings_toolbar->addWidget(velo_spinbox);
 	velo_spinbox->setValue(64);
 
-	newnote_toolbar->addWidget(new QLabel(tr("Off-Velocity:"), newnote_toolbar));
+	note_settings_toolbar->addWidget(new QLabel(tr("Off-Velocity:"), note_settings_toolbar));
 	velo_off_spinbox = new QSpinBox(this);
 	velo_off_spinbox->setRange(0, 127);
 	velo_off_spinbox->setSingleStep(1);
-	connect(velo_off_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_newnote_velo_off(int)));
-	newnote_toolbar->addWidget(velo_off_spinbox);
+	//we do not use the valueChanged signal, because that would generate
+	//many many undos when using the spin buttons.
+	connect(velo_off_spinbox, SIGNAL(editingFinished()), SLOT(velo_off_box_changed()));
+	connect(this,SIGNAL(velo_off_changed(int)), score_canvas, SLOT(set_velo_off(int)));
+	note_settings_toolbar->addWidget(velo_off_spinbox);
 	velo_off_spinbox->setValue(64);
 
 
@@ -347,7 +364,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 	if (!default_toolbar_state.isEmpty())
 		restoreState(default_toolbar_state);
-	
+
+	connect(song, SIGNAL(songChanged(int)), SLOT(song_changed(int)));	
 
 	score_canvas->fully_recalculate();
 	score_canvas->goto_tick(initPos,true);
@@ -356,6 +374,9 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 		set_name(name, false, true);
 	else
 		init_name();
+
+
+	apply_velo=true;
 }
 
 void ScoreEdit::add_parts(PartList* pl, bool all_in_one)
@@ -415,6 +436,46 @@ ScoreEdit::~ScoreEdit()
 	
 }
 
+void ScoreEdit::velo_box_changed()
+{
+	emit velo_changed(velo_spinbox->value());
+}
+
+void ScoreEdit::velo_off_box_changed()
+{
+	emit velo_off_changed(velo_off_spinbox->value());
+}
+
+void ScoreEdit::song_changed(int flags)
+{
+	if (flags & (SC_SELECTION | SC_EVENT_MODIFIED | SC_EVENT_REMOVED))
+	{
+		map<Event*, Part*> selection=get_events(score_canvas->get_all_parts(),1);
+		if (selection.empty())
+		{
+			apply_velo_to_label->setText(APPLY_TO_NEW_STRING);
+		}
+		else
+		{
+			apply_velo_to_label->setText(APPLY_TO_SELECTED_STRING);
+			
+			int velo=-1;
+			int velo_off=-1;
+			for (map<Event*, Part*>::iterator it=selection.begin(); it!=selection.end(); it++)
+				if (it->first->type()==Note)
+				{
+					if (velo==-1) velo=it->first->velo();
+					else if ((velo>=0) && (velo!=it->first->velo())) velo=-2;
+
+					if (velo_off==-1) velo_off=it->first->veloOff();
+					else if ((velo_off>=0) && (velo_off!=it->first->veloOff())) velo_off=-2;
+				}
+			
+			if (velo>=0) velo_spinbox->setValue(velo);
+			if (velo_off>=0) velo_off_spinbox->setValue(velo_off);
+		}
+	}
+}
 
 void ScoreEdit::canvas_width_changed(int width)
 {
@@ -700,6 +761,9 @@ void ScoreCanvas::write_staves(int level, Xml& xml) const
 
 void ScoreEdit::readStatus(Xml& xml)
 {
+	bool apply_velo_temp=apply_velo;
+	apply_velo=false;
+	
 	for (;;)
 	{
 		Xml::Token token = xml.parse();
@@ -788,6 +852,7 @@ void ScoreEdit::readStatus(Xml& xml)
 				break;
 		}
 	}
+	apply_velo=apply_velo_temp;
 }
 
 void ScoreEdit::read_configuration(Xml& xml)
@@ -911,7 +976,7 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget,
 	
 	undo_started=false;
 	undo_flags=0;
-
+	
 	selected_part=NULL;
 	
 	last_len=384;
@@ -922,8 +987,8 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget,
 	              //called again. but for safety...
 	set_pixels_per_whole(300); //same as above. but safety rocks
 
-	set_newnote_velo(64);
-	set_newnote_velo_off(64);
+	set_velo(64);
+	set_velo_off(64);
 	
 	dragging_staff=false;
 	
@@ -3393,8 +3458,8 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 							
 							Event newevent(Note);
 							newevent.setPitch(y_to_pitch(y,tick, staff_it->clef));
-							newevent.setVelo(newnote_velo);
-							newevent.setVeloOff(newnote_velo_off);
+							newevent.setVelo(note_velo);
+							newevent.setVeloOff(note_velo_off);
 							newevent.setTick(relative_tick);
 							newevent.setLenTick((new_len>0)?new_len:last_len);
 							newevent.setSelected(true);
@@ -3442,6 +3507,9 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				}			
 		}
 	}
+
+	if (event->button()==Qt::LeftButton)
+		song->update(SC_SELECTION);
 }
 
 void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
@@ -4010,14 +4078,20 @@ void ScoreCanvas::maybe_close_if_empty()
 	}
 }
 
-void ScoreCanvas::set_newnote_velo(int velo)
+void ScoreCanvas::set_velo(int velo)
 {
-	newnote_velo=velo;
+	note_velo=velo;
+
+	if (parent->get_apply_velo())
+		modify_velocity(get_all_parts(),1, 0,velo);
 }
 
-void ScoreCanvas::set_newnote_velo_off(int velo)
+void ScoreCanvas::set_velo_off(int velo)
 {
-	newnote_velo_off=velo;
+	note_velo_off=velo;
+
+	if (parent->get_apply_velo())
+		modify_off_velocity(get_all_parts(),1, 0,velo);
 }
 
 void ScoreCanvas::deselect_all()
@@ -4125,7 +4199,7 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o let the user change velocity of already existent notes
+ *   x nothing atm
  * 
  * IMPORTANT TODO
  *   o add a select-clef-toolbox for tracks
@@ -4135,6 +4209,7 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *   o support edge-scrolling when opening a lasso
  *
  * less important stuff
+ *   o add functions like crescendo, set velo, mod/set velo-off
  *   o deal with expanding parts
  *   o use bars instead of flags over groups of 8ths / 16ths etc
  *   o support different keys in different tracks at the same time
@@ -4168,7 +4243,6 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  * GUI stuff
  *   o velocity/release-velo for already existing notes
  *     	  - do this by right-click -> some dialog shows up?
- *     	  - or by selecting the note and changing the values in the same widget which also is used for new notes?
  *        - or by controller graphs, as used by the piano roll
  */
 
@@ -4220,4 +4294,3 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  * 			REASON: this is only a nice-to-have, which can however be
  *              easily implemented when 4) is done
  */
-

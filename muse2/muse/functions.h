@@ -34,9 +34,11 @@ void init_function_dialogs(QWidget* parent);
 
 
 std::set<Part*> partlist_to_set(PartList* pl);
+std::map<Event*, Part*> get_events(const std::set<Part*>& parts, int range);
 
 //these functions simply do their job, non-interactively
 void modify_velocity(const std::set<Part*>& parts, int range, int rate, int offset=0);
+void modify_off_velocity(const std::set<Part*>& parts, int range, int rate, int offset=0);
 void modify_notelen(const std::set<Part*>& parts, int range, int rate, int offset=0);
 void quantize_notes(const std::set<Part*>& parts, int range, int raster, int strength=100, int swing=0, int threshold=0);
 void erase_notes(const std::set<Part*>& parts, int range);

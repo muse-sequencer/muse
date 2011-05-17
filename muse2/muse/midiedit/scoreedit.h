@@ -110,6 +110,9 @@ class ScoreEdit : public TopWin
 		QScrollBar* yscroll;
 		ScoreCanvas* score_canvas;
 		
+		QLabel* apply_velo_to_label;
+		bool apply_velo;
+		
 		static set<QString> names;
 		static int width_init, height_init;
 		static QByteArray default_toolbar_state;
@@ -122,16 +125,21 @@ class ScoreEdit : public TopWin
 		
 	private slots:
 		void menu_command(int);
+		void velo_box_changed();
+		void velo_off_box_changed();
 		
 	signals:
 		void deleted(unsigned long);
 		void name_changed();
+		void velo_changed(int);
+		void velo_off_changed(int);
 
 	public slots:
 		void canvas_width_changed(int);
 		void viewport_width_changed(int);
 		void canvas_height_changed(int);
 		void viewport_height_changed(int);
+		void song_changed(int);
 		
 	public:
 		ScoreEdit(QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
@@ -144,6 +152,7 @@ class ScoreEdit : public TopWin
 		
 		void add_parts(PartList* pl, bool all_in_one=false);
 		QString get_name() { return name; }
+		bool get_apply_velo() { return apply_velo; }
 	};
 
 
@@ -601,8 +610,8 @@ class ScoreCanvas : public View
 		int _quant_power2;
 		int _pixels_per_whole;
 
-		int newnote_velo;
-		int newnote_velo_off;
+		int note_velo;
+		int note_velo_off;
 		
 		std::map<int,int> pos_add_list;
 		
@@ -705,8 +714,8 @@ class ScoreCanvas : public View
 			void preamble_timesig_slot(bool);
 			void set_pixels_per_whole(int);
 
-			void set_newnote_velo(int);
-			void set_newnote_velo_off(int);
+			void set_velo(int);
+			void set_velo_off(int);
 	
 	signals:
 			void xscroll_changed(int);

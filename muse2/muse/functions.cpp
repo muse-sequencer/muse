@@ -197,6 +197,42 @@ void modify_velocity(const set<Part*>& parts, int range, int rate, int offset)
 	}
 }
 
+void modify_off_velocity(const set<Part*>& parts, int range, int rate, int offset)
+{
+	map<Event*, Part*> events = get_events(parts, range);
+	
+	if ( (!events.empty()) && ((rate!=100) || (offset!=0)) )
+	{
+		song->startUndo();
+		
+		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+		{
+			Event& event=*(it->first);
+			Part* part=it->second;
+			
+			int velo = event.veloOff();
+
+			velo = (velo * rate) / 100;
+			velo += offset;
+
+			if (velo <= 0)
+				velo = 1;
+			else if (velo > 127)
+				velo = 127;
+				
+			if (event.veloOff() != velo)
+			{
+				Event newEvent = event.clone();
+				newEvent.setVeloOff(velo);
+				// Indicate no undo, and do not do port controller values and clone parts. 
+				audio->msgChangeEvent(event, newEvent, part, false, false, false);
+			}
+		}
+		
+		song->endUndo(SC_EVENT_MODIFIED);
+	}
+}
+
 void modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 {
 	map<Event*, Part*> events = get_events(parts, range);

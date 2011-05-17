@@ -3769,7 +3769,6 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
                                 QStringList sl = line.split(" ");
 
                                 Event e(Controller);
-                                int tick = sl[1].toInt();
                                 int a = sl[2].toInt();
                                 int b = sl[3].toInt();
                                 int c = sl[4].toInt();

@@ -392,7 +392,6 @@ void WaveView::wheelEvent(QWheelEvent* ev)
   int keyState = ev->modifiers();
 
   bool shift      = keyState & Qt::ShiftModifier;
-  bool alt        = keyState & Qt::AltModifier;
   bool ctrl       = keyState & Qt::ControlModifier;
 
   if (shift) { // scroll vertically
