@@ -358,9 +358,11 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 		QAction* func_quantize_action = functions_menu->addAction(tr("&Quantize"), menu_mapper, SLOT(map()));
 		QAction* func_notelen_action = functions_menu->addAction(tr("Change note &length"), menu_mapper, SLOT(map()));
 		QAction* func_velocity_action = functions_menu->addAction(tr("Change note &velocity"), menu_mapper, SLOT(map()));
+		QAction* func_cresc_action = functions_menu->addAction(tr("Crescendo/Decrescendo"), menu_mapper, SLOT(map()));
 		menu_mapper->setMapping(func_quantize_action, CMD_QUANTIZE);
 		menu_mapper->setMapping(func_notelen_action, CMD_NOTELEN);
 		menu_mapper->setMapping(func_velocity_action, CMD_VELOCITY);
+		menu_mapper->setMapping(func_cresc_action, CMD_CRESCENDO);
 
 	if (!default_toolbar_state.isEmpty())
 		restoreState(default_toolbar_state);
@@ -562,6 +564,7 @@ void ScoreEdit::menu_command(int cmd)
 		
 		case CMD_QUANTIZE: quantize_notes(score_canvas->get_all_parts()); break;
 		case CMD_VELOCITY: modify_velocity(score_canvas->get_all_parts()); break;
+		case CMD_CRESCENDO: crescendo(score_canvas->get_all_parts()); break;
 		case CMD_NOTELEN: modify_notelen(score_canvas->get_all_parts()); break;
 		
 		default: 
@@ -4199,17 +4202,23 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   x nothing atm
+ *   o add functions like crescendo, set velo, mod/set velo-off
+ *   o import midi: speed up
+ *   o draw controllers in part "slivers"
  * 
  * IMPORTANT TODO
+ *   o display blue loop markers
+ *   o transpose: support in-key-transpose
+ *   o drum-loop-editor (like in sq korg ds xD)
+ *   o in step-rec: insert chords
+ *
  *   o add a select-clef-toolbox for tracks
  *   o respect the track's clef (has to be implemented first in muse)
  *   o do partial recalculating; recalculating can take pretty long
  *     (0,5 sec) when displaying a whole song in scores
- *   o support edge-scrolling when opening a lasso
+ *   o transpose etc. must also transpose key-pressure events
  *
  * less important stuff
- *   o add functions like crescendo, set velo, mod/set velo-off
  *   o deal with expanding parts
  *   o use bars instead of flags over groups of 8ths / 16ths etc
  *   o support different keys in different tracks at the same time
@@ -4217,6 +4226,7 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *       calc_pos_add_list must be called before calc_item_pos then,
  *       and calc_item_pos must respect the pos_add_list instead of
  *       keeping its own pos_add variable (which is only an optimisation)
+ *   o support edge-scrolling when opening a lasso
  *   o save more configuration stuff (quant, color)
  * 
  * really unimportant nice-to-haves

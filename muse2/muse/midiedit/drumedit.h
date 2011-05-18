@@ -75,7 +75,7 @@ class DrumEdit : public MidiEditor {
 
       QAction *loadAction, *saveAction, *resetAction;
       QAction *cutAction, *copyAction, *pasteAction, *deleteAction;
-      QAction *fixedAction, *veloAction, *quantizeAction;
+      QAction *fixedAction, *veloAction, *crescAction, *quantizeAction;
       QAction *sallAction, *snoneAction, *invAction, *inAction , *outAction;
       QAction *prevAction, *nextAction;
 

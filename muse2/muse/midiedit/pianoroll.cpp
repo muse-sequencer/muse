@@ -190,6 +190,10 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       mapper->setMapping(funcModVelAction, PianoCanvas::CMD_MODIFY_VELOCITY);
       connect(funcModVelAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
+      funcCrescAction = menuFunctions->addAction(tr("Crescendo/Decrescendo"));
+      mapper->setMapping(funcCrescAction, PianoCanvas::CMD_CRESCENDO);
+      connect(funcCrescAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      
       funcTransposeAction = menuFunctions->addAction(tr("Transpose"));
       mapper->setMapping(funcTransposeAction, PianoCanvas::CMD_TRANSPOSE);
       connect(funcTransposeAction, SIGNAL(triggered()), mapper, SLOT(map()));
@@ -598,6 +602,7 @@ void PianoRoll::cmd(int cmd)
 						{
 						case PianoCanvas::CMD_MODIFY_GATE_TIME: modify_notelen(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_QUANTIZE: quantize_notes(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_TRANSPOSE: transpose_notes(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;

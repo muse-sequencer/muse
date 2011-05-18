@@ -14,6 +14,8 @@
 
 #include <iostream>
 
+#include <QMessageBox>
+
 using namespace std;
 
 GateTime* gatetime_dialog=NULL;
@@ -24,6 +26,7 @@ DelOverlaps* del_overlaps_dialog=NULL;
 Setlen* set_notelen_dialog=NULL;
 Move* move_notes_dialog=NULL;
 Transpose* transpose_dialog=NULL;
+Crescendo* crescendo_dialog=NULL;
 
 void init_function_dialogs(QWidget* parent)
 {
@@ -35,6 +38,7 @@ void init_function_dialogs(QWidget* parent)
 	set_notelen_dialog = new Setlen(parent);
 	move_notes_dialog = new Move(parent);
 	transpose_dialog = new Transpose(parent);
+	crescendo_dialog = new Crescendo(parent);
 }
 
 set<Part*> partlist_to_set(PartList* pl)
@@ -155,6 +159,22 @@ bool transpose_notes(const set<Part*>& parts)
 		return false;
 		
 	transpose_notes(parts,transpose_dialog->range,transpose_dialog->amount);
+	
+	return true;
+}
+
+bool crescendo(const set<Part*>& parts)
+{
+	if (song->rpos() <= song->lpos())
+	{
+		QMessageBox::warning(NULL, QObject::tr("Error"), QObject::tr("Please first select the range for crescendo with the loop markers."));
+		return false;
+	}
+	
+	if (!crescendo_dialog->exec())
+		return false;
+		
+	crescendo(parts,crescendo_dialog->range,crescendo_dialog->start_val,crescendo_dialog->end_val,crescendo_dialog->absolute);
 	
 	return true;
 }
@@ -391,6 +411,44 @@ void transpose_notes(const set<Part*>& parts, int range, signed int halftonestep
 	}
 }
 
+void crescendo(const set<Part*>& parts, int range, int start_val, int end_val, bool absolute)
+{
+	map<Event*, Part*> events = get_events(parts, range);
+	
+	int from=song->lpos();
+	int to=song->rpos();
+	
+	if ( (!events.empty()) && (to>from) )
+	{
+		song->startUndo();
+		
+		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+		{
+			Event& event=*(it->first);
+			Part* part=it->second;
+			
+			unsigned tick = event.tick() + part->tick();
+			float curr_val= (float)start_val  +  (float)(end_val-start_val) * (tick-from) / (to-from);
+			
+			Event newEvent = event.clone();
+			int velo = event.velo();
+
+			if (absolute)
+				velo=curr_val;
+			else
+				velo=curr_val*velo/100;
+
+			if (velo > 127) velo=127;
+			if (velo <= 0) velo=1;
+			newEvent.setVelo(velo);
+			// Indicate no undo, and do not do port controller values and clone parts. 
+			audio->msgChangeEvent(event, newEvent, part, false, false, false);
+		}
+		
+		song->endUndo(SC_EVENT_MODIFIED);
+	}
+}
+
 void move_notes(const set<Part*>& parts, int range, signed int ticks) //TODO FINDMICH: safety checks
 {
 	map<Event*, Part*> events = get_events(parts, range);
@@ -510,6 +568,8 @@ void read_function_dialog_config(Xml& xml)
 					move_notes_dialog->read_configuration(xml);
 				else if (tag == "transpose")
 					transpose_dialog->read_configuration(xml);
+				else if (tag == "crescendo")
+					crescendo_dialog->read_configuration(xml);
 				else
 					xml.unknown("function_dialogs");
 				break;
@@ -536,6 +596,7 @@ void write_function_dialog_config(int level, Xml& xml)
 	set_notelen_dialog->write_configuration(level, xml);
 	move_notes_dialog->write_configuration(level, xml);
 	transpose_dialog->write_configuration(level, xml);
+	crescendo_dialog->write_configuration(level, xml);
 
 	xml.tag(level, "/dialogs");
 }

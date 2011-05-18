@@ -78,6 +78,7 @@ QT4_WRAP_CPP (widget_mocs
       unusedwavefiles.h
       velocity.h
       quantize.h  
+      crescendo.h  
       move.h  
       remove.h  
       deloverlaps.h  
@@ -120,6 +121,7 @@ file (GLOB widgets_ui_files
       unusedwavefiles.ui
       velocitybase.ui
       quantbase.ui
+      crescendobase.ui
       movebase.ui
       removebase.ui
       deloverlapsbase.ui
@@ -193,6 +195,7 @@ file (GLOB widgets_source_files
       utils.cpp
       velocity.cpp 
       quantize.cpp 
+      crescendo.cpp 
       move.cpp 
       remove.cpp 
       deloverlaps.cpp 

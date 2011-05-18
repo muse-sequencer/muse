@@ -10,6 +10,7 @@
 
 #include "velocity.h"
 #include "quantize.h"
+#include "crescendo.h"
 #include "gatetime.h"
 #include "remove.h"
 #include "transpose.h"
@@ -29,6 +30,7 @@ extern DelOverlaps* del_overlaps_dialog;
 extern Setlen* set_notelen_dialog;
 extern Move* move_notes_dialog;
 extern Transpose* transpose_dialog;
+extern Crescendo* crescendo_dialog;
 
 void init_function_dialogs(QWidget* parent);
 
@@ -46,6 +48,7 @@ void delete_overlaps(const std::set<Part*>& parts, int range);
 void set_notelen(const std::set<Part*>& parts, int range, int len);
 void move_notes(const std::set<Part*>& parts, int range, signed int ticks);
 void transpose_notes(const std::set<Part*>& parts, int range, signed int halftonesteps);
+void crescendo(const std::set<Part*>& parts, int range, int start_val, int end_val, bool absolute);
 
 
 //the below functions automatically open the dialog
@@ -56,6 +59,7 @@ bool quantize_notes(const std::set<Part*>& parts);
 bool set_notelen(const std::set<Part*>& parts);
 bool move_notes(const std::set<Part*>& parts);
 bool transpose_notes(const std::set<Part*>& parts);
+bool crescendo(const std::set<Part*>& parts);
 bool erase_notes(const std::set<Part*>& parts);
 bool delete_overlaps(const std::set<Part*>& parts);
 

@@ -84,6 +84,7 @@ class PianoRoll : public MidiEditor {
       QAction* funcQuantizeAction;
       QAction* funcGateTimeAction;
       QAction* funcModVelAction;
+      QAction* funcCrescAction;
       QAction* funcTransposeAction;
       QAction* funcEraseEventAction;
       QAction* funcNoteShiftAction;
