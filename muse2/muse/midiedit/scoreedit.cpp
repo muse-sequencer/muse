@@ -4202,12 +4202,10 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o add functions like crescendo, set velo, mod/set velo-off
- *   o import midi: speed up
  *   o draw controllers in part "slivers"
  * 
  * IMPORTANT TODO
- *   o display blue loop markers
+ *   o display blue loop markers in score editor
  *   o transpose: support in-key-transpose
  *   o drum-loop-editor (like in sq korg ds xD)
  *   o in step-rec: insert chords
@@ -4219,6 +4217,7 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *   o transpose etc. must also transpose key-pressure events
  *
  * less important stuff
+ *   o add functions like set velo, mod/set velo-off
  *   o deal with expanding parts
  *   o use bars instead of flags over groups of 8ths / 16ths etc
  *   o support different keys in different tracks at the same time
