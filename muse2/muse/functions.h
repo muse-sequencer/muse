@@ -9,9 +9,9 @@
 #define __FUNCTIONS_H__
 
 #include "velocity.h"
-#include "quantize.h"
+#include "widgets/function_dialogs/quantize.h"
 #include "crescendo.h"
-#include "gatetime.h"
+#include "widgets/function_dialogs/gatetime.h"
 #include "remove.h"
 #include "transpose.h"
 #include "setlen.h"

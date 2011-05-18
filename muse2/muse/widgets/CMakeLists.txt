@@ -18,6 +18,12 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
+set (SubDirs 
+      function_dialogs 
+      )
+
+subdirs (${SubDirs})
+
 ##
 ## Expand Qt macros in source files
 ##
@@ -35,7 +41,6 @@ QT4_WRAP_CPP (widget_mocs
       didyouknow.h
       doublelabel.h  
       filedialog.h  
-      gatetime.h  
       genset.h  
       header.h  
       hitscale.h  
@@ -77,7 +82,6 @@ QT4_WRAP_CPP (widget_mocs
       ttoolbutton.h  
       unusedwavefiles.h
       velocity.h
-      quantize.h  
       crescendo.h  
       move.h  
       remove.h  
@@ -103,7 +107,6 @@ file (GLOB widgets_ui_files
       editnotedialogbase.ui  
       editsysexdialogbase.ui  
       fdialogbuttons.ui  
-      gatetimebase.ui  
       gensetbase.ui  
       itransformbase.ui  
       metronomebase.ui  
@@ -120,7 +123,6 @@ file (GLOB widgets_ui_files
       transposebase.ui
       unusedwavefiles.ui
       velocitybase.ui
-      quantbase.ui
       crescendobase.ui
       movebase.ui
       removebase.ui
@@ -148,7 +150,6 @@ file (GLOB widgets_source_files
       doublelabel.cpp 
       drange.cpp
       filedialog.cpp 
-      gatetime.cpp 
       genset.cpp 
       header.cpp 
       hitscale.cpp 
@@ -194,7 +195,6 @@ file (GLOB widgets_source_files
       unusedwavefiles.cpp
       utils.cpp
       velocity.cpp 
-      quantize.cpp 
       crescendo.cpp 
       move.cpp 
       remove.cpp 

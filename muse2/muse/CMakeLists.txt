@@ -233,6 +233,7 @@ target_link_libraries(core
       synti       
       waveedit
       widgets 
+      widgets_functiondialogs
       
       ${QT_LIBRARIES}
       ${SNDFILE_LIBRARIES}
