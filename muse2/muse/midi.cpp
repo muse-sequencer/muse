@@ -480,17 +480,11 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
 //            }
 
       // Added by Tim. p3.3.8 
-      
-      // The loop is a safe way to delete while iterating.
-      bool loop;
-      do
-      {
-        loop = false;
-        
+      // Loop removed by flo      
         for (iEvent i = mel.begin(); i != mel.end(); ++i) {
               Event ev  = i->second;
               if (ev.isNote()) {
-                    if (ev.isNoteOff()) {
+                    if (ev.isNoteOff()) { 
                           iEvent k;
                           bool found = false;
                           for (k = i; k != mel.end(); ++k) {
@@ -511,25 +505,26 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                           if (!found) {
                                 printf("NOTE OFF without Note ON tick %d type %d  %d %d\n",
                                       ev.tick(), ev.type(), ev.pitch(), ev.velo());
+                                continue;
                                 }
                           else {
-                                mel.erase(k);
+																if (k==i)
+																	printf("ERROR: THIS SHOULD NEVER HAPPEN: k==i in midi.cpp:buildMidiEventList()\n");
+																else
+                                	mel.erase(k);
                                 
-                                // Changed by Tim. p3.3.8
-                                //continue;
-                                loop = true;
-                                break;
-                                
+                                // we may safely continue, because k!=i; only erasing
+                                // i itself would invalidate it and require additional stuff
+                                continue;
                                 }
                           }
+                    else { // !ev.isNoteOff()
                     // Added by Tim. p3.3.8
                     
                     // If the event length is not zero, it means the event and its 
                     //  note on/off have already been taken care of. So ignore it.
                     if(ev.lenTick() != 0)
-                    {
                       continue;
-                    }
                     
                     iEvent k;
                     for (k = mel.lower_bound(ev.tick()); k != mel.end(); ++k) {
@@ -563,16 +558,16 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                           ev.setLenTick(endTick-ev.tick());
                           }
                     else {
-                          mel.erase(k);
-                          // Added by Tim. p3.3.8
-                          loop = true;
-                          break;
+                          if (k==i)
+														printf("ERROR: THIS SHOULD NEVER HAPPEN: k==i in midi.cpp:buildMidiEventList()\n");
+                          else
+														mel.erase(k);
                           
+                          continue;
                           }
                     }
+									}
               }
-        }     
-        while (loop);
 
 // DEBUG: any note offs left?
 
