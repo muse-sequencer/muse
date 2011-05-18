@@ -10,6 +10,9 @@
 #include <errno.h>
 #include <values.h>
 
+#include <set>
+#include <utility>
+
 #include <QMessageBox>
 
 #include "app.h"
@@ -31,6 +34,9 @@
 #include "xml.h"
 #include "audio.h"
 #include "gconfig.h"
+
+using std::set;
+using std::pair;
 
 //---------------------------------------------------------
 //   importMidi
@@ -137,26 +143,27 @@ bool MusE::importMidi(const QString name, bool merge)
             // the first target track
 
             bool first = true;
-            // somewhat silly and slooow:
-            for (int port = 0; port < MIDI_PORTS; ++port) {
-                  for (int channel = 0; channel < MIDI_CHANNELS; ++channel) {
-                        //
-                        // check if there are any events for port/channel in track:
-                        //
-                        iMPEvent i;
-                        for (i = el->begin(); i != el->end(); ++i) {
-                              MidiPlayEvent ev = *i;
-                              if (ev.type() != ME_SYSEX && ev.type() != ME_META
-                                 && ev.channel() == channel && ev.port() == port)
-                                    break;
-                              }
-                        if (i == el->end())
-                              continue;
+            
+            // vastly changed by flo: replaced that silly loop
+            // with that already_processed-set-check.
+            // this makes stuff really fast :)
+            
+            iMPEvent ev;
+            set< pair<int,int> > already_processed;
+            for (ev = el->begin(); ev != el->end(); ++ev)
+            {
+              if (ev->type() != ME_SYSEX && ev->type() != ME_META)
+              {
+                int channel=ev->channel();
+                int port=ev->port();
+                
+                if (already_processed.find(pair<int,int>(channel, port)) == already_processed.end())
+                {
+                        already_processed.insert(pair<int,int>(channel, port));
+                        
                         MidiTrack* track = new MidiTrack();
                         if ((*t)->isDrumTrack)
-                        {
                               track->setType(Track::DRUM);
-                        }
                               
                         track->setOutChannel(channel);
                         track->setOutPort(port);
@@ -170,15 +177,6 @@ bool MusE::importMidi(const QString name, bool merge)
                         // Don't do loops.
                         buildMidiEventList(mel, el, track, division, first, false);
                         first = false;
-
-                        // Removed by T356. Handled by addPortCtrlEvents() below.
-                        //for (iEvent i = mel->begin(); i != mel->end(); ++i) {
-                        //      Event event = i->second;
-                        //      if (event.type() == Controller) {
-                        //            importController(channel, mport, event.dataA());
-                        //            midiPorts[track->outPort()].setCtrl(channel, event.tick(), event.dataA(), event.dataB());
-                        //            }
-                        //      }
 
                         // Comment Added by T356.
                         // Hmm. buildMidiEventList already takes care of this. 
@@ -208,13 +206,11 @@ bool MusE::importMidi(const QString name, bool merge)
                               
                         processTrack(track);
                         
-                        // Added by T356. Send all controller values to the port's controller value list.
-                        // No, done in song->insertTrack2() now.
-                        //track->addPortCtrlEvents();
-                        
                         song->insertTrack0(track, -1);
-                        }
-                  }
+                }
+              }
+						}
+						
             if (first) {
                   //
                   // track does only contain non-channel messages
