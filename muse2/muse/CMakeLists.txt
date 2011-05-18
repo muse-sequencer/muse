@@ -193,6 +193,7 @@ include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}/remote
       ${CMAKE_CURRENT_BINARY_DIR}/waveedit
       ${CMAKE_CURRENT_BINARY_DIR}/widgets 
+      ${CMAKE_CURRENT_BINARY_DIR}/widgets/function_dialogs
       )
 
 ##

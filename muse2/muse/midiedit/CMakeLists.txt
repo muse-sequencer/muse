@@ -94,6 +94,7 @@ target_link_libraries ( midiedit
       ctrl
       icons
       widgets
+      widgets_functiondialogs
       )
 
 ##
