@@ -8,15 +8,15 @@
 #ifndef __FUNCTIONS_H__
 #define __FUNCTIONS_H__
 
-#include "velocity.h"
+#include "widgets/function_dialogs/velocity.h"
 #include "widgets/function_dialogs/quantize.h"
-#include "crescendo.h"
+#include "widgets/function_dialogs/crescendo.h"
 #include "widgets/function_dialogs/gatetime.h"
-#include "remove.h"
-#include "transpose.h"
-#include "setlen.h"
-#include "move.h"
-#include "deloverlaps.h"
+#include "widgets/function_dialogs/remove.h"
+#include "widgets/function_dialogs/transpose.h"
+#include "widgets/function_dialogs/setlen.h"
+#include "widgets/function_dialogs/move.h"
+#include "widgets/function_dialogs/deloverlaps.h"
 
 #include <set>
 #include "part.h"

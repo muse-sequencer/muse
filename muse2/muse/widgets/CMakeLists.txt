@@ -81,13 +81,6 @@ QT4_WRAP_CPP (widget_mocs
       # ttoolbar.h  
       ttoolbutton.h  
       unusedwavefiles.h
-      velocity.h
-      crescendo.h  
-      move.h  
-      remove.h  
-      deloverlaps.h  
-      setlen.h  
-      transpose.h  
       verticalmeter.h
       view.h
       vscale.h
@@ -120,15 +113,7 @@ file (GLOB widgets_ui_files
       songinfo.ui  
       synthconfigbase.ui  
       transformbase.ui  
-      transposebase.ui
       unusedwavefiles.ui
-      velocitybase.ui
-      crescendobase.ui
-      movebase.ui
-      removebase.ui
-      deloverlapsbase.ui
-      transposebase.ui
-      setlenbase.ui
       )
 QT4_WRAP_UI (widget_ui_headers ${widgets_ui_files})
 
@@ -195,12 +180,6 @@ file (GLOB widgets_source_files
       unusedwavefiles.cpp
       utils.cpp
       velocity.cpp 
-      crescendo.cpp 
-      move.cpp 
-      remove.cpp 
-      deloverlaps.cpp 
-      setlen.cpp 
-      transpose.cpp 
       verticalmeter.cpp
       view.cpp
       vscale.cpp

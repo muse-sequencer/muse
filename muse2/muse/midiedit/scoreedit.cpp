@@ -4202,13 +4202,12 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o draw controllers in part "slivers"
+ *   o in step-rec: insert chords
  * 
  * IMPORTANT TODO
  *   o display blue loop markers in score editor
  *   o transpose: support in-key-transpose
  *   o drum-loop-editor (like in sq korg ds xD)
- *   o in step-rec: insert chords
  *
  *   o add a select-clef-toolbox for tracks
  *   o respect the track's clef (has to be implemented first in muse)
@@ -4217,6 +4216,10 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *   o transpose etc. must also transpose key-pressure events
  *
  * less important stuff
+ *   o quantize-templates (everything is forced into a specified
+ *                         rhythm)
+ *   o part-templates (you specify some notes and a control-chord;
+ *                     the notes are set according to the chord then)
  *   o add functions like set velo, mod/set velo-off
  *   o deal with expanding parts
  *   o use bars instead of flags over groups of 8ths / 16ths etc
