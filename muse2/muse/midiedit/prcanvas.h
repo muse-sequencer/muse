@@ -15,6 +15,7 @@
 #include <QMouseEvent>
 #include <QDragMoveEvent>
 #include <QDragLeaveEvent>
+#include <QTimer>
 
 #define KH        13
 
@@ -39,6 +40,9 @@ class QRect;
 class PianoCanvas : public EventCanvas {
       int colorMode;
       int playedPitch;
+      
+      QTimer* chordTimer;
+      int chordTimer_setToTick;
 
       Q_OBJECT
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
@@ -72,6 +76,7 @@ class PianoCanvas : public EventCanvas {
 
    private slots:
       void midiNote(int pitch, int velo);
+      void chordTimerTimedOut();
 
    signals:
       void quantChanged(int);

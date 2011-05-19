@@ -35,6 +35,8 @@
 #include "song.h"
 #include "audio.h"
 
+#define CHORD_TIMEOUT 75
+
 //---------------------------------------------------------
 //   NEvent
 //---------------------------------------------------------
@@ -81,6 +83,13 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
       {
       colorMode = 0;
       playedPitch = -1;
+      
+      chordTimer = new QTimer(this);
+      chordTimer->setSingleShot(true);
+      chordTimer->setInterval(CHORD_TIMEOUT);
+      chordTimer->stop();
+      
+      connect(chordTimer, SIGNAL(timeout()), SLOT(chordTimerTimedOut()));
 
       songChanged(SC_TRACK_INSERTED);
       connect(song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
@@ -768,8 +777,7 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
       audio->msgPlayMidiEvent(&e);
 
       if (_steprec && pos[0] >= start_tick && pos[0] < end_tick) {
-            if (curPart == 0)
-                  return;
+         if (curPart) {
             int len  = editor->raster();
             unsigned tick = pos[0] - curPart->tick(); //CDW
             if (shift)
@@ -788,6 +796,8 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
                   song->setPos(0, p, true, false, true);
                   }
             }
+         }
+            
       }
 
 //---------------------------------------------------------
@@ -1049,6 +1059,8 @@ void PianoCanvas::midiNote(int pitch, int velo)
          && !audio->isPlaying() && velo && pos[0] >= start_tick
          && pos[0] < end_tick
          && !(globalKeyState & Qt::AltModifier)) {
+					  chordTimer->stop();
+					  
 					  //len has been changed by flo: set to raster() instead of quant()
 					  //reason: the quant-toolbar has been removed; the flexibility you
 					  //lose with this can be re-gained by applying a "modify note len"
@@ -1056,8 +1068,6 @@ void PianoCanvas::midiNote(int pitch, int velo)
             unsigned int len   = editor->raster();//prevent compiler warning: comparison singed/unsigned
             unsigned tick      = pos[0]; //CDW
             unsigned starttick = tick;
-            if (globalKeyState & Qt::ShiftModifier)
-                  tick -= editor->rasterStep(tick);
 
             //
             // extend len of last note?
@@ -1074,10 +1084,10 @@ void PianoCanvas::midiNote(int pitch, int velo)
                               // Indicate do undo, and do not do port controller values and clone parts. 
                               //audio->msgChangeEvent(ev, e, curPart);
                               audio->msgChangeEvent(ev, e, curPart, true, false, false);
-                              tick += editor->rasterStep(tick);
-                              if (tick != song->cpos()) {
-                                    Pos p(tick, true);
-                                    song->setPos(0, p, true, false, true);
+                              
+                              if (! (globalKeyState & Qt::ShiftModifier)) {
+                                    chordTimer_setToTick = tick + editor->rasterStep(tick);
+                                    chordTimer->start();
                                     }
                               return;
                               }
@@ -1094,8 +1104,12 @@ void PianoCanvas::midiNote(int pitch, int velo)
                         // Indicate do undo, and do not do port controller values and clone parts. 
                         //audio->msgDeleteEvent(ev, curPart);
                         audio->msgDeleteEvent(ev, curPart, true, false, false);
-                        if (globalKeyState & Qt::ShiftModifier)
-                              tick += editor->rasterStep(tick);
+
+                        if (! (globalKeyState & Qt::ShiftModifier)) {
+                              chordTimer_setToTick = tick + editor->rasterStep(tick);
+                              chordTimer->start();
+                              }
+                        
                         return;
                         }
                   }
@@ -1107,13 +1121,22 @@ void PianoCanvas::midiNote(int pitch, int velo)
             // Indicate do undo, and do not do port controller values and clone parts. 
             //audio->msgAddEvent(e, curPart);
             audio->msgAddEvent(e, curPart, true, false, false);
-            tick += editor->rasterStep(tick);
-            if (tick != song->cpos()) {
-                  Pos p(tick, true);
-                  song->setPos(0, p, true, false, true);
+            
+            if (! (globalKeyState & Qt::ShiftModifier)) {
+                  chordTimer_setToTick = tick + editor->rasterStep(tick);
+                  chordTimer->start();
                   }
             }
       }
+
+void PianoCanvas::chordTimerTimedOut()
+{
+	if (chordTimer_setToTick != song->cpos())
+	{
+		Pos p(chordTimer_setToTick, true);
+		song->setPos(0, p, true, false, true);
+	}
+}
 
 /*
 //---------------------------------------------------------

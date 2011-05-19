@@ -4202,7 +4202,7 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o in step-rec: insert chords
+ *   x nothing atm
  * 
  * IMPORTANT TODO
  *   o display blue loop markers in score editor
