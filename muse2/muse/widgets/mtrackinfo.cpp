@@ -1041,7 +1041,7 @@ void MidiTrackInfo::iPanChanged(int val)
 
 void MidiTrackInfo::instrPopupActivated(QAction* act)
 {
-  printf("MidiTrackInfo::instrPopupActivated\n"); // REMOVE Tim
+  //printf("MidiTrackInfo::instrPopupActivated\n"); // REMOVE Tim
   
   if(act && selected) 
   {
