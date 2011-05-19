@@ -31,6 +31,7 @@
 #include "gconfig.h"
 #include "part.h"
 #include "keyevent.h"
+#include "mtscale_flo.h"
 
 #include <set>
 #include <map>
@@ -109,6 +110,7 @@ class ScoreEdit : public TopWin
 		QScrollBar* xscroll;
 		QScrollBar* yscroll;
 		ScoreCanvas* score_canvas;
+		MTScaleFlo* time_bar;
 		
 		QLabel* apply_velo_to_label;
 		bool apply_velo;
@@ -583,13 +585,6 @@ class ScoreCanvas : public View
 		void recalc_staff_pos();
 		list<staff_t>::iterator staff_at_y(int y);
 
-		
-		timesig_t timesig_at_tick(int t);
-		key_enum key_at_tick(int t);
-		int tick_to_x(int t);
-		int x_to_tick(int x);
-		int calc_posadd(int t);
-
 
 
 		bool need_redraw_for_hilighting(ScoreItemList::iterator from_it, ScoreItemList::iterator to_it);
@@ -722,9 +717,11 @@ class ScoreCanvas : public View
 			void yscroll_changed(int);
 			void viewport_width_changed(int);
 			void canvas_width_changed(int);
+			void preamble_width_changed(int);
 			void viewport_height_changed(int);
 			void canvas_height_changed(int);
 			void pixels_per_whole_changed(int);
+			void pos_add_changed();
 			
 	protected:
 		virtual void draw(QPainter& p, const QRect& rect);
@@ -737,7 +734,7 @@ class ScoreCanvas : public View
 		virtual void keyPressEvent(QKeyEvent* event);
 		
 	public:
-		ScoreCanvas(ScoreEdit*, QWidget*, int, int);
+		ScoreCanvas(ScoreEdit*, QWidget*);
 		~ScoreCanvas(){};
 
 		void add_staves(PartList* pl, bool all_in_one);
@@ -763,6 +760,13 @@ class ScoreCanvas : public View
 		set<Part*> get_all_parts();
 		
 		void write_staves(int level, Xml& xml) const;
+
+		timesig_t timesig_at_tick(int t);
+		key_enum key_at_tick(int t);
+		int tick_to_x(int t);
+		int delta_tick_to_delta_x(int t);
+		int x_to_tick(int x);
+		int calc_posadd(int t);
 };
 
 int calc_measure_len(const list<int>& nums, int denom);

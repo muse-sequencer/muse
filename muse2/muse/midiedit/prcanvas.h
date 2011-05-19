@@ -42,7 +42,7 @@ class PianoCanvas : public EventCanvas {
       int playedPitch;
       
       QTimer* chordTimer;
-      int chordTimer_setToTick;
+      unsigned chordTimer_setToTick;
 
       Q_OBJECT
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);

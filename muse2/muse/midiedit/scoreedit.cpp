@@ -170,9 +170,10 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	apply_velo=false;
 
 	
-	score_canvas=new ScoreCanvas(this, mainw, 1, 1);
+	score_canvas=new ScoreCanvas(this, mainw);
 	xscroll = new QScrollBar(Qt::Horizontal, mainw);
 	yscroll = new QScrollBar(Qt::Vertical, mainw);
+	time_bar = new MTScaleFlo(score_canvas, mainw);
 
 	connect(xscroll, SIGNAL(valueChanged(int)), score_canvas,   SLOT(x_scroll_event(int)));
 	connect(score_canvas, SIGNAL(xscroll_changed(int)), xscroll,   SLOT(setValue(int)));
@@ -187,9 +188,14 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 	connect(song, SIGNAL(songChanged(int)), score_canvas, SLOT(song_changed(int)));
 
-	mainGrid->addWidget(score_canvas, 0, 0);
-	mainGrid->addWidget(xscroll,1,0);
-	mainGrid->addWidget(yscroll,0,1);
+	connect(xscroll, SIGNAL(valueChanged(int)), time_bar, SLOT(set_xpos(int)));
+	connect(score_canvas, SIGNAL(pos_add_changed()), time_bar, SLOT(pos_add_changed()));
+	connect(score_canvas, SIGNAL(preamble_width_changed(int)), time_bar, SLOT(set_xoffset(int)));
+
+	mainGrid->addWidget(time_bar, 0,0);
+	mainGrid->addWidget(score_canvas, 1,0);
+	mainGrid->addWidget(xscroll,2,0);
+	mainGrid->addWidget(yscroll,1,1);
 
 	xscroll->setMinimum(0);
 	yscroll->setMinimum(0);
@@ -957,8 +963,7 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 }
 
 
-ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget,
-   int sx, int sy) : View(parent_widget, sx, sy)
+ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_widget, 1, 1)
 {
 	parent      = pr;
 	setFocusPolicy(Qt::StrongFocus);
@@ -2667,6 +2672,8 @@ void ScoreCanvas::calc_pos_add_list()
 		
 		curr_key=new_key;
 	}
+
+	emit pos_add_changed();
 }
 
 void ScoreCanvas::draw_items(QPainter& p, int y, staff_t& staff, int x1, int x2)
@@ -3088,7 +3095,10 @@ void ScoreCanvas::draw_preamble(QPainter& p, int y_offset, clef_t clef)
 
 
 	if (x_left_old!=x_left)
+	{
 		emit viewport_width_changed(viewport_width());
+		emit preamble_width_changed(x_left);
+	}
 }
 
 
@@ -3204,6 +3214,11 @@ int ScoreCanvas::tick_to_x(int t)
 		x+=it->second;
 	
 	return x;
+}
+
+int ScoreCanvas::delta_tick_to_delta_x(int t)
+{
+	return t*pixels_per_whole()/TICKS_PER_WHOLE;
 }
 
 int ScoreCanvas::calc_posadd(int t)
@@ -4205,17 +4220,15 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *   x nothing atm
  * 
  * IMPORTANT TODO
- *   o display blue loop markers in score editor
- *   o transpose: support in-key-transpose
- *   o drum-loop-editor (like in sq korg ds xD)
- *
  *   o add a select-clef-toolbox for tracks
  *   o respect the track's clef (has to be implemented first in muse)
  *   o do partial recalculating; recalculating can take pretty long
  *     (0,5 sec) when displaying a whole song in scores
  *   o transpose etc. must also transpose key-pressure events
+ *   o transpose: support in-key-transpose
  *
  * less important stuff
+ *   o controller view in score editor
  *   o quantize-templates (everything is forced into a specified
  *                         rhythm)
  *   o part-templates (you specify some notes and a control-chord;
@@ -4251,11 +4264,6 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *     msgNewEvent functions (see my e-mail)
  *
  *   o make quantize and other stuff faster (by assymetric communication)
- *
- * GUI stuff
- *   o velocity/release-velo for already existing notes
- *     	  - do this by right-click -> some dialog shows up?
- *        - or by controller graphs, as used by the piano roll
  */
 
 
