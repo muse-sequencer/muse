@@ -17,7 +17,7 @@
 #include <dlfcn.h>
 
 #include <QDir>
-#include <QMenu>
+//#include <QMenu>
 
 #include "app.h"
 #include "synth.h"
@@ -35,6 +35,7 @@
 #include "midiseq.h"
 #include "midictrl.h"
 //#include "stringparam.h"
+#include "popupmenu.h"
 
 std::vector<Synth*> synthis;  // array of available synthis
 
@@ -864,7 +865,7 @@ const char* MessSynthIF::getPatchName(int channel, int prog, MType type, bool dr
 //   populatePatchPopup
 //---------------------------------------------------------
 
-void MessSynthIF::populatePatchPopup(QMenu* menu, int ch, MType, bool)
+void MessSynthIF::populatePatchPopup(PopupMenu* menu, int ch, MType, bool)
       {
       menu->clear();
       const MidiPatch* mp = _mess->getPatchInfo(ch, 0);

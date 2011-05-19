@@ -11,7 +11,7 @@
 
 #include <QKeyEvent>
 #include <QLineEdit>
-#include <QMenu>
+//#include <QMenu>
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QPainter>
@@ -44,6 +44,7 @@
 #include "midiedit/drummap.h"
 #include "synth.h"
 #include "config.h"
+#include "popupmenu.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -348,7 +349,7 @@ void TList::paint(const QRect& r)
                                         if (cl->isVisible())
                                             countVisible++;
                                     }
-                                    int count = ((AudioTrack*)track)->controller()->size();
+                                    //int count = ((AudioTrack*)track)->controller()->size();
                                     s.sprintf(" %d(%d) visible",countVisible, countAll);
                                     }
 
@@ -883,9 +884,11 @@ void TList::changeAutomationColor(QAction* act)
 //---------------------------------------------------------
 //   colorMenu
 //---------------------------------------------------------
-QMenu* TList::colorMenu(QColor c, int id)
+//QMenu* TList::colorMenu(QColor c, int id)
+PopupMenu* TList::colorMenu(QColor c, int id)
 {
-  QMenu * m = new QMenu(this);
+  //QMenu * m = new QMenu(this);
+  PopupMenu * m = new PopupMenu(this);  //, true);  TODO
   for (int i = 0; i< 6; i++) {
     QPixmap pix(10,10);
     QPainter p(&pix);
@@ -1058,7 +1061,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 {
                 if (!t->isMidiTrack()) {
                     editAutomation = t;
-                    PopupMenu* p = new PopupMenu();
+                    PopupMenu* p = new PopupMenu(true);
                     p->disconnect();
                     p->clear();
                     p->setTitle(tr("Viewable automation"));
@@ -1075,12 +1078,11 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       int data = cl->id() * 256; // shift 8 bits
                       data += 150; // illegal color > 100
                       act->setData(data);
-                      QMenu *m = colorMenu(cl->color(), cl->id());
+                      //QMenu *m = colorMenu(cl->color(), cl->id());
+                      PopupMenu *m = colorMenu(cl->color(), cl->id());
                       act->setMenu(m);
                     }
                     connect(p, SIGNAL(triggered(QAction*)), SLOT(changeAutomation(QAction*)));
-                    //connect(p, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
-                    //p->popup(QCursor::pos());
                     p->exec(QCursor::pos());
 
                     delete p;

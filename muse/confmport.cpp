@@ -609,7 +609,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   return;
                   #else
                   {
-                    defpup = new PopupMenu(this);
+                    defpup = new PopupMenu(this, true);
                     defpup->addAction(new MenuTitleItem("Channel", defpup)); 
                     QAction* act = 0;
                     int chbits = midiPorts[no].defaultInChannels();
@@ -649,7 +649,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   return;
                   #else
                   {
-                    defpup = new PopupMenu(this);
+                    defpup = new PopupMenu(this, true);
                     defpup->addAction(new MenuTitleItem("Channel", defpup)); 
                     QAction* act = 0;
                     int chbits = midiPorts[no].defaultOutChannels();
