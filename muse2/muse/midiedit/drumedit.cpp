@@ -69,7 +69,7 @@ QByteArray DrumEdit::_toolbarInit;
 
 static const int xscale = -10;
 static const int yscale = 1;
-static const int drumeditTools = PointerTool | PencilTool | RubberTool | CursorTool;
+static const int drumeditTools = PointerTool | PencilTool | RubberTool | CursorTool | DrawTool;
 
 enum DrumColumn {
   COL_MUTE = 0,

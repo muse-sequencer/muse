@@ -797,13 +797,10 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
                   break;
 
             case PencilTool:
-                  if (ctrlKey) {
-                        if (type != MidiController::Velo) {
+                  if ((!ctrlKey) && (type != MidiController::Velo)) {
                               drag = DRAG_NEW;
                               song->startUndo();
-                              ///newVal(xpos, xpos, ypos);
                               newVal(xpos, ypos);
-                              }
                         }
                   else {
                         drag = DRAG_RESIZE;
@@ -824,7 +821,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
                   if (drawLineMode) {
                         line2x = xpos;
                         line2y = ypos;
-                        if (ctrlKey)
+                        if ((!ctrlKey) && (type != MidiController::Velo))
                               newValRamp(line1x, line1y, line2x, line2y);
                         else
                               changeValRamp(line1x, line1y, line2x, line2y);
