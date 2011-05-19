@@ -1185,7 +1185,7 @@ static int addSyntiPorts(AudioTrack* t, PopupMenu* lb, int id,
             
             if(chans > 0)
             {
-              PopupMenu* chpup = new PopupMenu(lb);
+              PopupMenu* chpup = new PopupMenu(lb, true);
               chpup->setTitle(track->name());
               for(int ch = 0; ch < chans; ++ch)
               {
@@ -1270,7 +1270,7 @@ static int addMultiChannelPorts(AudioTrack* t, PopupMenu* pup, int id, RouteMenu
   {
     // If more than one channel, create the sub-menu.
     if(chans > 1)
-      chpup = new PopupMenu(pup);
+      chpup = new PopupMenu(pup, true);
     
     if(isOutput)
     {
@@ -1356,7 +1356,7 @@ static int addMultiChannelPorts(AudioTrack* t, PopupMenu* pup, int id, RouteMenu
     {
       // If more than two channels, create the sub-menu.
       if(chans > 2)
-        chpup = new PopupMenu(pup);
+        chpup = new PopupMenu(pup, true);
       
       if(isOutput)
       {
@@ -1460,7 +1460,7 @@ static int nonSyntiTrackAddSyntis(AudioTrack* t, PopupMenu* lb, int id, RouteMen
             
             if(chans > 0)
             {
-              PopupMenu* chpup = new PopupMenu(lb);
+              PopupMenu* chpup = new PopupMenu(lb, true);
               chpup->setTitle(track->name());
               if(chans > 1)
                 chpup->addAction(new MenuTitleItem("<Mono>", chpup));
@@ -1597,7 +1597,7 @@ static int addMidiPorts(AudioTrack* t, PopupMenu* pup, int id, RouteMenuMap& mm,
           
    RouteList* rl = isOutput ? t->outRoutes() : t->inRoutes();
     
-    PopupMenu* subp = new PopupMenu(pup);
+    PopupMenu* subp = new PopupMenu(pup, true);
     subp->setTitle(md->name()); 
     
     int chanmask = 0;
@@ -1830,11 +1830,11 @@ void AudioStrip::iRoutePressed()
           //
           pup->addSeparator();
           pup->addAction(new MenuTitleItem(tr("Soloing chain"), pup)); 
-          PopupMenu* subp = new PopupMenu(pup);
+          PopupMenu* subp = new PopupMenu(pup, true);
           subp->setTitle(tr("Audio sends")); 
           pup->addMenu(subp);
           gid = addOutPorts(t, subp, gid, gRoutingMenuMap, -1, -1, false);  
-          subp = new PopupMenu(pup);
+          subp = new PopupMenu(pup, true);
           subp->setTitle(tr("Midi port sends")); 
           pup->addMenu(subp);
           addMidiPorts(t, subp, gid, gRoutingMenuMap, false);
@@ -1980,7 +1980,7 @@ void AudioStrip::oRoutePressed()
           //
           pup->addSeparator();
           pup->addAction(new MenuTitleItem(tr("Soloing chain"), pup)); 
-          PopupMenu* subp = new PopupMenu(pup);
+          PopupMenu* subp = new PopupMenu(pup, true);
           subp->setTitle(tr("Audio returns")); 
           pup->addMenu(subp);
           gid = addInPorts(t, subp, gid, gRoutingMenuMap, -1, -1, true);  

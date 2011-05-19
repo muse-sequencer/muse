@@ -287,7 +287,7 @@ class MusE : public QMainWindow
 
       void startMidiTransformer();
       void writeGlobalConfiguration() const;
-      void startEditInstrument();
+      //void startEditInstrument();
       void startClipList(bool);
       
       void openRecentMenu();
@@ -359,6 +359,7 @@ class MusE : public QMainWindow
       void importMidi(const QString &file);
       void setUsedTool(int);
       void showDidYouKnowDialog();
+      void startEditInstrument();
       
       void routingPopupMenuAboutToHide();
       void configMidiPorts();

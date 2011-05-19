@@ -243,7 +243,8 @@ extern MidiController::ControllerType midiControllerType(int num);
 
 extern const QString& int2ctrlType(int n);
 extern MidiController::ControllerType ctrlType2Int(const QString& s);
-extern QString midiCtrlName(int ctrl);
+extern QString midiCtrlName(int ctrl, bool fullyQualified = false);
+extern QString midiCtrlNumString(int ctrl, bool fullyQualified = false);
 extern MidiController veloCtrl;
 
 

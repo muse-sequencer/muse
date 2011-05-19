@@ -48,6 +48,7 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
       void outRoutesPressed();
       void routingPopupMenuActivated(QAction*);
       //void routingPopupViewActivated(const QModelIndex&);
+      void instrPopupActivated(QAction*);
       
    protected slots:
       virtual void heartBeat();

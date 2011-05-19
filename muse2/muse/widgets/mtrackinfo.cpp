@@ -1036,6 +1036,29 @@ void MidiTrackInfo::iPanChanged(int val)
     }
 
 //---------------------------------------------------------
+//   instrPopupActivated
+//---------------------------------------------------------
+
+void MidiTrackInfo::instrPopupActivated(QAction* act)
+{
+  printf("MidiTrackInfo::instrPopupActivated\n"); // REMOVE Tim
+  
+  if(act && selected) 
+  {
+    int rv = act->data().toInt();
+    if(rv != -1)
+    {
+      MidiTrack* track = (MidiTrack*)selected;
+      int channel = track->outChannel();
+      int port    = track->outPort();
+      MidiPlayEvent ev(0, port, channel, ME_CONTROLLER, CTRL_PROGRAM, rv);
+      audio->msgPlayMidiEvent(&ev);
+      updateTrackInfo(-1);
+    }  
+  }
+}
+
+//---------------------------------------------------------
 //   instrPopup
 //---------------------------------------------------------
 
@@ -1047,7 +1070,9 @@ void MidiTrackInfo::instrPopup()
       int channel = track->outChannel();
       int port    = track->outPort();
       MidiInstrument* instr = midiPorts[port].instrument();
-      QMenu* pup = new QMenu;
+      //QMenu* pup = new QMenu;
+      PopupMenu* pup = new PopupMenu(true);
+      
       ///instr->populatePatchPopup(pop, channel, song->mtype(), track->type() == Track::DRUM);
       instr->populatePatchPopup(pup, channel, song->mtype(), track->type() == Track::DRUM);
 
@@ -1059,14 +1084,21 @@ void MidiTrackInfo::instrPopup()
         return;
       }  
       
+      connect(pup, SIGNAL(triggered(QAction*)), SLOT(instrPopupActivated(QAction*)));
+      //connect(pup, SIGNAL(hovered(QAction*)), SLOT(instrPopupActivated(QAction*)));
+      
       ///QAction *act = pop->exec(iPatch->mapToGlobal(QPoint(10,5)));
       QAction *act = pup->exec(iPatch->mapToGlobal(QPoint(10,5)));
-      if (act) {
-            int rv = act->data().toInt();
-            MidiPlayEvent ev(0, port, channel, ME_CONTROLLER, CTRL_PROGRAM, rv);
-            audio->msgPlayMidiEvent(&ev);
-            updateTrackInfo(-1);
-            }
+      if(act) 
+      {
+        int rv = act->data().toInt();
+        if(rv != -1)
+        {
+          MidiPlayEvent ev(0, port, channel, ME_CONTROLLER, CTRL_PROGRAM, rv);
+          audio->msgPlayMidiEvent(&ev);
+          updateTrackInfo(-1);
+        }  
+      }
             
       delete pup;      
       }

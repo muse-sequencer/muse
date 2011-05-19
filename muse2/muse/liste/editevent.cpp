@@ -36,6 +36,7 @@
 #include "midiedit/drummap.h"
 #include "instruments/minstrument.h"
 #include "midi.h"
+#include "popupmenu.h"
 
 //---------------------------------------------------------
 //   string2qhex
@@ -715,7 +716,9 @@ void EditCtrlDialog::newController()
                           cll->add(channel, vl);
                           //song->update(SC_MIDI_CONTROLLER_ADD);
                         }
-                        for (int idx = 0; ;++idx) {
+                        //for (int idx = 0; ;++idx) {
+                        int idx = 0;
+                        for (; idx < ctrlList->count() ;++idx) {   // p4.0.25 Fix segfault 
 			  QString str = ctrlList->item(idx)->text();
                               if (s == str)
                               {
@@ -723,13 +726,20 @@ void EditCtrlDialog::newController()
                                     ctrlListClicked(ctrlList->item(idx));
                                     break;
                               }      
-                              if (str.isNull()) {
-                                    ctrlList->addItem(s);
-                                    ctrlList->item(idx)->setSelected(true);
-                                    ctrlListClicked(ctrlList->item(idx));
-                                    break;
-                                    }
+                              //if (str.isNull()) {
+                              //      ctrlList->addItem(s);
+                              //      ctrlList->item(idx)->setSelected(true);
+                              //      ctrlListClicked(ctrlList->item(idx));
+                              //      break;
+                              //      }
                               }
+                        if (idx >= ctrlList->count()) {                       // p4.0.25 Fix segfault 
+                              ctrlList->addItem(s);
+                              ctrlList->item(idx)->setSelected(true);
+                              ctrlListClicked(ctrlList->item(idx));
+                              break;
+                              }
+                              
                               
                         break;
                         }
@@ -844,7 +854,8 @@ void EditCtrlDialog::instrPopup()
       MidiInstrument* instr = midiPorts[port].instrument();
       
       ///instr->populatePatchPopup(pop, channel, song->mtype(), track->type() == Track::DRUM);
-      QMenu* pup = new QMenu(this);
+      //QMenu* pup = new QMenu(this);
+      PopupMenu* pup = new PopupMenu(this);
       instr->populatePatchPopup(pup, channel, song->mtype(), track->type() == Track::DRUM);
 
       ///if(pop->actions().count() == 0)

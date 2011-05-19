@@ -69,7 +69,8 @@ void CtrlEdit::writeStatus(int level, Xml& xml)
       {
       if (canvas->controller()) {
             xml.tag(level++, "ctrledit");
-            xml.strTag(level, "ctrl", canvas->controller()->name());
+            //xml.strTag(level, "ctrl", canvas->controller()->name());
+            xml.intTag(level, "ctrlnum", canvas->controller()->num());
             xml.tag(level, "/ctrledit");
             }
       }
@@ -89,6 +90,8 @@ void CtrlEdit::readStatus(Xml& xml)
                         return;
                   case Xml::TagStart:
                         if (tag == "ctrl") {
+                              xml.parse1();  // Obsolete. 
+                              /*
                               QString name = xml.parse1();
                               int portno = canvas->track()->outPort();
                               MidiPort* port = &midiPorts[portno];
@@ -101,6 +104,11 @@ void CtrlEdit::readStatus(Xml& xml)
                                           break;
                                           }
                                     }
+                              */      
+                              }
+                        else if (tag == "ctrlnum") {
+                              int num = xml.parseInt();
+                              canvas->setController(num);
                               }
                         else
                               xml.unknown("CtrlEdit");
