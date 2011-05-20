@@ -84,6 +84,7 @@ class DrumCanvas : public EventCanvas {
       void setTool2(int);
       void setCurDrumInstrument(int);
       virtual void setStep(int);
+      void moveAwayUnused();
 
    public:
       enum {
@@ -91,7 +92,7 @@ class DrumCanvas : public EventCanvas {
          CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
          CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PREV_PART, CMD_SELECT_NEXT_PART, 
          CMD_DEL, CMD_FIXED_LEN, CMD_RIGHT, CMD_LEFT, CMD_RIGHT_NOSNAP, CMD_LEFT_NOSNAP, CMD_MODIFY_VELOCITY, CMD_CRESCENDO,
-         CMD_QUANTIZE, CMD_ERASE_EVENT, CMD_NOTE_SHIFT, CMD_DELETE_OVERLAPS
+         CMD_QUANTIZE, CMD_ERASE_EVENT, CMD_NOTE_SHIFT, CMD_DELETE_OVERLAPS, CMD_REORDER_LIST
          };
       DrumCanvas(MidiEditor*, QWidget*, int, int,
          const char* name = 0);

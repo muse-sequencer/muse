@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <values.h>
 #include <errno.h>
+#include <set>
 //#include <sys/stat.h>
 //#include <sys/mman.h>
 
@@ -1473,4 +1474,32 @@ void DrumCanvas::selectCursorEvent(Event *ev)
 
   }
   updateSelection();
+}
+
+
+void DrumCanvas::moveAwayUnused()
+{
+	using std::set;
+	
+	set<int> used;
+	for (iCItem it=items.begin(); it!=items.end(); it++)
+	{
+		const Event& ev=it->second->event();
+		
+		if (ev.type()==Note)
+			used.insert(ev.pitch());
+	}
+	
+	int count=0;
+	for (set<int>::iterator it=used.begin(); it!=used.end();)
+	{
+		while ((*it != count) && (used.find(count)!=used.end())) count++;
+		
+		if (*it != count)
+			mapChanged(*it, count);
+
+		count++;
+		
+		used.erase(it++);
+	}
 }

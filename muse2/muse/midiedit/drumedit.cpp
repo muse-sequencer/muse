@@ -233,14 +233,17 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       
       menuFunctions->setTearOffEnabled(true);
       
+      QAction* reorderListAction = menuFunctions->addAction(tr("Re-order list"));
+      menuFunctions->addSeparator();
       fixedAction = menuFunctions->addAction(tr("Set Fixed Length"));
       veloAction = menuFunctions->addAction(tr("Modify Velocity"));
       crescAction = menuFunctions->addAction(tr("Crescendo/Decrescendo"));
       quantizeAction = menuFunctions->addAction(tr("Quantize"));
       QAction* eraseEventAction = menuFunctions->addAction(tr("Erase Event"));
-      QAction* noteShiftAction = menuFunctions->addAction(tr("Note Shift"));
+      QAction* noteShiftAction = menuFunctions->addAction(tr("Move Notes"));
       QAction* delOverlapsAction = menuFunctions->addAction(tr("Delete Overlaps"));
 
+      connect(reorderListAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(fixedAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(veloAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(crescAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
@@ -249,6 +252,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       connect(noteShiftAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(delOverlapsAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
 
+      signalMapper->setMapping(reorderListAction, DrumCanvas::CMD_REORDER_LIST);
       signalMapper->setMapping(fixedAction, DrumCanvas::CMD_FIXED_LEN);
       signalMapper->setMapping(veloAction, DrumCanvas::CMD_MODIFY_VELOCITY);
       signalMapper->setMapping(crescAction, DrumCanvas::CMD_CRESCENDO);
@@ -904,10 +908,12 @@ void DrumEdit::cmd(int cmd)
             case DrumCanvas::CMD_RESET: reset(); break;
             case DrumCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
             case DrumCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
+            case DrumCanvas::CMD_QUANTIZE: quantize_notes(partlist_to_set(parts())); break;
             case DrumCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
             case DrumCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break; //delete selected events
             case DrumCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
             case DrumCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
+            case DrumCanvas::CMD_REORDER_LIST: ((DrumCanvas*)(canvas))->moveAwayUnused(); break;
             //case DrumCanvas::CMD_FIXED_LEN: // this must be handled by the drum canvas, due to its
                                               // special nature (each drum has its own length)
 

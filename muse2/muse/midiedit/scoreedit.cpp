@@ -4211,13 +4211,14 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
 
 
 /* BUGS and potential bugs
+ *   o quantize always quantizes length. make this selectable!
  *   o when the keymap is not used, this will probably lead to a bug
  *     same when mastertrack is disabled
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   x nothing atm
+ *   o drum list: scroll while dragging
  * 
  * IMPORTANT TODO
  *   o add a select-clef-toolbox for tracks
@@ -4226,6 +4227,11 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *     (0,5 sec) when displaying a whole song in scores
  *   o transpose etc. must also transpose key-pressure events
  *   o transpose: support in-key-transpose
+ *   o legato: extend length to next note
+ *   o delete: add velo and len threshold
+ *   o thin out: remove unneeded ctrl messages
+ *   o in drum roll: changing the list causes undo to be triggered, WTF?
+ *   o changing list is dead slow
  *
  * less important stuff
  *   o controller view in score editor
