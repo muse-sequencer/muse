@@ -12,7 +12,7 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QListWidget>
-#include <QMenu>
+//#include <QMenu>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QRadioButton>
@@ -680,7 +680,8 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
 
 void EditCtrlDialog::newController()
       {
-      QMenu* pup = new QMenu(this);
+      //QMenu* pup = new QMenu(this);
+      PopupMenu* pup = new PopupMenu(this);
       //pup->setCheckable(this);//not necessary in Qt4
       //
       // populate popup with all controllers available for

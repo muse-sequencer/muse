@@ -6,6 +6,7 @@
 //  (C) Copyright 1999-2010 Werner Schweer (ws@seh.de)
 //
 //  PopupMenu sub-class of QMenu created by Tim.
+//  (C) Copyright 2010-2011 Tim E. Real (terminator356 A T sourceforge D O T net)
 //=========================================================
 
 #ifndef __POPUPMENU_H__
@@ -59,8 +60,8 @@ class PopupMenu : public QMenu
     PopupMenu(const QString& title, QWidget* parent = 0, bool stayOpen = false);
     ~PopupMenu();
     void clear();
-    QAction* findActionFromData(QVariant);
-    bool stayOpen() { return _stayOpen; }
+    QAction* findActionFromData(QVariant) const;
+    bool stayOpen() const { return _stayOpen; }
 };
 
 
