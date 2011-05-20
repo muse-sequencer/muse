@@ -1,3 +1,5 @@
+20.05.2011:
+        - Popup menus: If stay-open mode, space triggers item and double-click simulates return (closing). (Tim)
 19.05.2011:
         * Feature: Popup menus now auto-scroll if too large to fit on desktop. (p4.0.25 Tim)
           Added auto-scroll to my class PopupMenu. Added selectable stay-open. TODO: Use it more, where needed.

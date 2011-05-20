@@ -5,7 +5,8 @@
 //
 //  (C) Copyright 1999-2009 Werner Schweer (ws@seh.de)
 //
-//  Audio converter module created by Tim terminator356
+//  Audio converter module created by Tim 
+//  (C) Copyright 2009-2011 Tim E. Real (terminator356 A T sourceforge D O T net)
 //=========================================================
 
 #ifndef __AUDIOCONVERT_H__

@@ -6,6 +6,7 @@
 //  (C) Copyright 1999-2010 Werner Schweer (ws@seh.de)
 //
 //  PopupMenu sub-class of QMenu created by Tim.
+//  (C) Copyright 2010-2011 Tim E. Real (terminator356 A T sourceforge D O T net)
 //=========================================================
 
 //#include <stdio.h>
@@ -96,7 +97,7 @@ void PopupMenu::clear()
   #endif    // POPUP_MENU_DISABLE_AUTO_SCROLL
 }
 
-QAction* PopupMenu::findActionFromData(QVariant v)
+QAction* PopupMenu::findActionFromData(QVariant v) const
 {
   QList<QAction*> list = actions();
   for(int i = 0; i < list.size(); ++i)
@@ -118,86 +119,105 @@ bool PopupMenu::event(QEvent* event)
 {
   //printf("PopupMenu::event type:%d\n", event->type());   // REMOVE Tim.
   
-  #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
-  if(event->type() == QEvent::MouseMove) 
+  switch(event->type())
   {
-    QMouseEvent* e = static_cast<QMouseEvent*>(event);
-    QPoint globPos = e->globalPos();
-    //QPoint pos = e->pos();
-    int dw = QApplication::desktop()->width();  // We want the whole thing if multiple monitors.
-    
-    //printf("PopupMenu::event MouseMove: pos x:%d y:%d  globPos x:%d y:%d\n", 
-    //      pos.x(), pos.y(), globPos.x(), globPos.y());  // REMOVE Tim.
-    
-    /*
-    //QAction* action = actionAt(globPos);
-    QAction* action = actionAt(pos);
-    if(action)
-    { 
-      QRect r = actionGeometry(action);
-      //printf(" act x:%d y:%d w:%d h:%d  popup px:%d py:%d pw:%d ph:%d\n", 
-      //      r.x(), r.y(), r.width(), r.height(), x(), y(), width(), height());  // REMOVE Tim.
-            
-      //action->hover();      
-    }
-    */
-    
-    if(x() < 0 && globPos.x() <= 0)   // If on the very first pixel (or beyond)
-    {
-      moveDelta = 32;
-      if(!timer->isActive())
-        timer->start();
-      event->accept();
-      return true;        
+    #ifndef POPUP_MENU_DISABLE_STAY_OPEN  
+    case QEvent::MouseButtonDblClick:
+    {  
+      if(_stayOpen)
+      {
+        QMouseEvent* e = static_cast<QMouseEvent*>(event);
+        if(e->modifiers() == Qt::NoModifier)
+        {
+          event->accept();
+          // Convert into a return press, which selects the item and closes the menu.
+          // Note that with double click, it's a press followed by release followed by double click.
+          // That would toggle our item twice eg on->off->on, which is hopefully OK.
+          QKeyEvent ke(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier); 
+          //ke.ignore();   // Pass it on
+          return QMenu::event(&ke);
+        }  
+      }  
     }  
-    else
-    if(x() + width() >= dw && globPos.x() >= (dw -1))   // If on the very last pixel (or beyond)
+    break;
+    case QEvent::KeyPress:
     {
-      moveDelta = -32;
-      if(!timer->isActive())
-        timer->start();
-      event->accept();
-      return true;        
+      if(_stayOpen)
+      {
+        QKeyEvent* e = static_cast<QKeyEvent*>(event);
+        if(e->modifiers() == Qt::NoModifier && e->key() == Qt::Key_Space)
+        {
+          QAction* act = activeAction();
+          if(act)
+          {
+            act->trigger();
+            event->accept();
+            return true;    // We handled it.
+          }
+        }  
+      }
     }
+    break;
+    #endif   // POPUP_MENU_DISABLE_STAY_OPEN
+    
+    #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
+    case QEvent::MouseMove:
+    {
+      QMouseEvent* e = static_cast<QMouseEvent*>(event);
+      QPoint globPos = e->globalPos();
+      //QPoint pos = e->pos();
+      int dw = QApplication::desktop()->width();  // We want the whole thing if multiple monitors.
       
-    if(timer->isActive())
-        timer->stop();
+      //printf("PopupMenu::event MouseMove: pos x:%d y:%d  globPos x:%d y:%d\n", 
+      //      pos.x(), pos.y(), globPos.x(), globPos.y());  // REMOVE Tim.
+      
+      /*
+      //QAction* action = actionAt(globPos);
+      QAction* action = actionAt(pos);
+      if(action)
+      { 
+        QRect r = actionGeometry(action);
+        //printf(" act x:%d y:%d w:%d h:%d  popup px:%d py:%d pw:%d ph:%d\n", 
+        //      r.x(), r.y(), r.width(), r.height(), x(), y(), width(), height());  // REMOVE Tim.
+              
+        //action->hover();      
+      }
+      */
+      
+      if(x() < 0 && globPos.x() <= 0)   // If on the very first pixel (or beyond)
+      {
+        moveDelta = 32;
+        if(!timer->isActive())
+          timer->start();
+        event->accept();
+        return true;        
+      }  
+      else
+      if(x() + width() >= dw && globPos.x() >= (dw -1))   // If on the very last pixel (or beyond)
+      {
+        moveDelta = -32;
+        if(!timer->isActive())
+          timer->start();
+        event->accept();
+        return true;        
+      }
+        
+      if(timer->isActive())
+          timer->stop();
+      
+      //event->accept();
+      //return true;        
+      
+      event->ignore();               // Pass it on
+      //return QMenu::event(event);  
+    }  
+    break;
+    #endif  // POPUP_MENU_DISABLE_AUTO_SCROLL  
     
-    //event->accept();
-    //return true;        
-    
-    event->ignore();               // Pass it on
-    //return QMenu::event(event);  
+    default:
+    break;
   }
-  #endif      // POPUP_MENU_DISABLE_AUTO_SCROLL
-  /*
-  else
-  if(event->type() == QEvent::HoverEnter) 
-  {
-    // Nope! Hovering over menu items did not invoke this.
-    printf("PopupMenu::event hover\n");   // REMOVE Tim.
-    QHoverEvent* he = static_cast<QHoverEvent*>(event);
-    QPoint oldPos = he->oldPos();
-    QPoint pos = he->pos();
-    
-    QAction* action = actionAt(pos);
-     
-    if(action)
-    {
-      QRect r = actionGeometry(action);
-      printf("PopupMenu::event hover: act x:%d y:%d w:%d h:%d  popup px:%d py:%d pw:%d ph:%d\n", 
-           r.x(), r.y(), r.width(), r.height(), x(), y(), width(), height());  // REMOVE Tim.
-      printf(" pos x:%d y:%d  oldPos px:%d py:%d\n", 
-           pos.x(), pos.y(), oldPos.x(), oldPos.y());  // REMOVE Tim.
-           
-           
-    }
-    
-    
-    //return true;
-  }
-  */ 
-   
+  
   return QMenu::event(event);
 }
 
