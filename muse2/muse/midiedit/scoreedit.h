@@ -60,6 +60,7 @@ enum {CMD_COLOR_BLACK, CMD_COLOR_VELO, CMD_COLOR_PART,
       
       CMD_QUANTIZE, CMD_VELOCITY, CMD_CRESCENDO, CMD_NOTELEN };
 
+
 class ScoreCanvas;
 class EditToolBar;
 
@@ -70,6 +71,8 @@ class EditToolBar;
 class ScoreEdit : public TopWin
 {
 	Q_OBJECT
+  public:
+    enum clefTypes { trebleClef, bassClef, grandStaff };
 
 	private:
 		virtual void closeEvent(QCloseEvent*);

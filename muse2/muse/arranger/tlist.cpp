@@ -44,6 +44,7 @@
 #include "midiedit/drummap.h"
 #include "synth.h"
 #include "config.h"
+#include "scoreedit.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -354,6 +355,18 @@ void TList::paint(const QRect& r)
 
 
                               p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
+                              }
+                              break;
+                        case COL_CLEF:
+                              if (track->isMidiTrack()) {
+                                QString s = "no clef";
+                                if (((MidiTrack*)track)->getClef() == ScoreEdit::trebleClef)
+                                  s="Treble Clef";
+                                else if (((MidiTrack*)track)->getClef() == ScoreEdit::bassClef)
+                                  s="Bass Clef";
+                                else if (((MidiTrack*)track)->getClef() == ScoreEdit::grandStaff)
+                                  s="Grand Staff";
+                                p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
                               }
                               break;
                         default:
@@ -1054,6 +1067,32 @@ void TList::mousePressEvent(QMouseEvent* ev)
       mode = START_DRAG;
 
       switch (col) {
+              case COL_CLEF:
+                if (t->isMidiTrack()) {
+                  QMenu* p = new QMenu;
+                  p->addAction("Treble clef")->setData(0);
+                  p->addAction("Bass clef")->setData(1);
+                  p->addAction("Grand Staff")->setData(2);
+
+                  // Show the menu
+                  QAction* act = p->exec(ev->globalPos(), 0);
+                  switch (act->data().toInt()) {
+                    case 0:
+                      ((MidiTrack*)t)->setClef(ScoreEdit::trebleClef);
+                      break;
+                    case 1:
+                      ((MidiTrack*)t)->setClef(ScoreEdit::bassClef);
+                      break;
+                    case 2:
+                      ((MidiTrack*)t)->setClef(ScoreEdit::grandStaff);
+                      break;
+                    default:
+                      break;
+                  }
+                  delete p;
+                }
+
+                break;
               case COL_AUTOMATION:
                 {
                 if (!t->isMidiTrack()) {

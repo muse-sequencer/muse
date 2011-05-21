@@ -36,6 +36,7 @@ enum TrackColumn {
       COL_OCHANNEL,
       COL_TIMELOCK,
       COL_AUTOMATION,
+      COL_CLEF,
       COL_NONE = -1
       };
 
