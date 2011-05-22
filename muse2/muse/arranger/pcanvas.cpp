@@ -2775,7 +2775,7 @@ void PartCanvas::movePartsTotheRight(unsigned int startTicks, int length)
               Marker *oldMarker = new Marker();
               *oldMarker = *m;
               m->setTick(m->tick()+length);
-              song->undoOp(UndoOp::ModifyMarker,oldMarker, m);
+              song->addUndo(UndoOp(UndoOp::ModifyMarker,oldMarker, m));
             }
         }
 }

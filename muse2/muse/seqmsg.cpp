@@ -751,7 +751,7 @@ void Song::msgInsertTrack(Track* track, int idx, bool doUndoFlag)
       msg.ival  = idx;
       if (doUndoFlag) {
             song->startUndo();
-            undoOp(UndoOp::AddTrack, idx, track);
+            addUndo(UndoOp(UndoOp::AddTrack, idx, track));
             }
       audio->sendMsg(&msg);
       if (doUndoFlag)

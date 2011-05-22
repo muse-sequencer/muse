@@ -357,6 +357,7 @@ void quantize_notes(const set<Part*>& parts, int range, int raster, int strength
 				newEvent.setTick(begin_tick - part->tick());
 				newEvent.setLenTick(len);
 				// Indicate no undo, and do not do port controller values and clone parts. 
+				//audio->msgChangeEvent(event, newEvent, part, false, false, false);
 				audio->msgChangeEvent(event, newEvent, part, false, false, false);
 			}
 		}

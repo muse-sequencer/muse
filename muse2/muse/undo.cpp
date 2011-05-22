@@ -200,6 +200,16 @@ void Song::endUndo(int flags)
       undoMode = false;
       }
 
+
+void Song::applyOperationGroup(Undo& group)
+      {
+      //this is a HACK! but it works :)
+      redoList->push_back(group);
+      redo();
+      }
+
+
+
 //---------------------------------------------------------
 //   doUndo2
 //    real time part
@@ -688,134 +698,105 @@ void Song::doRedo2()
             }
       }
 
-void Song::undoOp(UndoOp::UndoType type, int a, int b, int c)
+UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_)
       {
-      UndoOp i;
-      i.type = type;
-      i.a  = a;
-      i.b  = b;
-      i.c  = c;
-      addUndo(i);
+      type = type_;
+      a  = a_;
+      b  = b_;
+      c  = c_;
       }
 
-//void Song::undoOp(UndoOp::UndoType type, Track* oldTrack, Track* newTrack)
-void Song::undoOp(UndoOp::UndoType type, int n, Track* oldTrack, Track* newTrack)
+UndoOp::UndoOp(UndoType type_, int n, Track* oldTrack, Track* newTrack)
       {
-      UndoOp i;
-      i.type    = type;
-      i.trackno = n;
-      i.oTrack  = oldTrack;
-      i.nTrack  = newTrack;
-      // Added by Tim. p3.3.6
-      //printf("Song::undoOp ModifyTrack oTrack %p %s nTrack %p %s\n", i.oTrack, i.oTrack->name().toLatin1().constData(), i.nTrack, i.nTrack->name().toLatin1().constData());
-                        
-      addUndo(i);
+      type    = type_;
+      trackno = n;
+      oTrack  = oldTrack;
+      nTrack  = newTrack;
       }
 
-void Song::undoOp(UndoOp::UndoType type, int n, Track* track)
+UndoOp::UndoOp(UndoType type_, int n, Track* track)
       {
-      UndoOp i;
-      i.type    = type;
-      i.trackno = n;
-      i.oTrack  = track;
-      if (type == UndoOp::AddTrack)
-            updateFlags |= SC_TRACK_INSERTED;
-      addUndo(i);
+      type    = type_;
+      trackno = n;
+      oTrack  = track;
       }
 
-void Song::undoOp(UndoOp::UndoType type, Part* part)
+UndoOp::UndoOp(UndoType type_, Part* part)
       {
-      UndoOp i;
-      i.type  = type;
-      i.oPart = part;
-      addUndo(i);
+      type  = type_;
+      oPart = part;
       }
 
-//void Song::undoOp(UndoOp::UndoType type, Event& oev, Event& nev, Part* part)
-void Song::undoOp(UndoOp::UndoType type, Event& oev, Event& nev, Part* part, bool doCtrls, bool doClones)
+UndoOp::UndoOp(UndoType type_, Event& oev, Event& nev, Part* part_, bool doCtrls_, bool doClones_)
       {
-      UndoOp i;
-      i.type   = type;
-      i.nEvent = nev;
-      i.oEvent = oev;
-      i.part   = part;
-      i.doCtrls = doCtrls;
-      i.doClones = doClones;
-      addUndo(i);
+      type   = type_;
+      nEvent = nev;
+      oEvent = oev;
+      part   = part_;
+      doCtrls = doCtrls_;
+      doClones = doClones_;
       }
 
-void Song::undoOp(UndoOp::UndoType type, Event& nev, Part* part, bool doCtrls, bool doClones)
+UndoOp::UndoOp(UndoType type_, Event& nev, Part* part_, bool doCtrls_, bool doClones_)
       {
-      UndoOp i;
-      i.type   = type;
-      i.nEvent = nev;
-      i.part   = part;
-      i.doCtrls = doCtrls;
-      i.doClones = doClones;
-      addUndo(i);
+      type   = type_;
+      nEvent = nev;
+      part   = part_;
+      doCtrls = doCtrls_;
+      doClones = doClones_;
       }
 
-//void Song::undoOp(UndoOp::UndoType type, Part* oPart, Part* nPart)
-void Song::undoOp(UndoOp::UndoType type, Part* oPart, Part* nPart, bool doCtrls, bool doClones)
+UndoOp::UndoOp(UndoType type_, Part* oPart_, Part* nPart_, bool doCtrls_, bool doClones_)
       {
-      UndoOp i;
-      i.type  = type;
-      i.oPart = nPart;
-      i.nPart = oPart;
-      i.doCtrls = doCtrls;
-      i.doClones = doClones;
-      addUndo(i);
+      type  = type_;
+      oPart = nPart_;
+      nPart = oPart_;
+      doCtrls = doCtrls_;
+      doClones = doClones_;
       }
 
-void Song::undoOp(UndoOp::UndoType type, int c, int ctrl, int ov, int nv)
+UndoOp::UndoOp(UndoType type_, int c, int ctrl_, int ov, int nv)
       {
-      UndoOp i;
-      i.type    = type;
-      i.channel = c;
-      i.ctrl    = ctrl;
-      i.oVal    = ov;
-      i.nVal    = nv;
-      addUndo(i);
+      type    = type_;
+      channel = c;
+      ctrl    = ctrl_;
+      oVal    = ov;
+      nVal    = nv;
       }
 
-void Song::undoOp(UndoOp::UndoType type, SigEvent* oevent, SigEvent* nevent)
+UndoOp::UndoOp(UndoType type_, SigEvent* oevent, SigEvent* nevent)
       {
-      UndoOp i;
-      i.type       = type;
-      i.oSignature = oevent;
-      i.nSignature = nevent;
-      addUndo(i);
+      type       = type_;
+      oSignature = oevent;
+      nSignature = nevent;
+      }
+UndoOp::UndoOp(UndoType type_, Marker* copyMarker_, Marker* realMarker_)
+      {
+      type    = type_;
+      realMarker  = realMarker_;
+      copyMarker  = copyMarker_;
+      }
+
+UndoOp::UndoOp(UndoType type_, const char* changedFile, const char* changeData, int startframe_, int endframe_)
+      {
+      type = type_;
+      filename   = changedFile;
+      tmpwavfile = changeData;
+      startframe = startframe_;
+      endframe   = endframe_;
       }
 
 void Song::undoOp(UndoOp::UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe)
       {
-      UndoOp i;
-      i.type = type;
-      i.filename   = changedFile;
-      i.tmpwavfile = changeData;
-      i.startframe = startframe;
-      i.endframe   = endframe;
-      addUndo(i);
+      addUndo(UndoOp(type,changedFile,changeData,startframe,endframe));
       temporaryWavFiles.push_back(QString(changeData));
-
-      //printf("Adding ModifyClip undo-operation: origfile=%s tmpfile=%s sf=%d ef=%d\n", changedFile, changeData, startframe, endframe);
-      }
-
-void Song::undoOp(UndoOp::UndoType type, Marker* copyMarker, Marker* realMarker)
-      {
-      UndoOp i;
-      i.type    = type;
-      i.realMarker  = realMarker;
-      i.copyMarker  = copyMarker;
-
-      addUndo(i);
       }
 
 //---------------------------------------------------------
 //   addUndo
 //---------------------------------------------------------
 
-void Song::addUndo(UndoOp& i)
+void Song::addUndo(UndoOp i)
       {
       if (!undoMode) {
             printf("internal error: undoOp without startUndo()\n");

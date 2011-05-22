@@ -1536,8 +1536,8 @@ void PianoCanvas::modifySelected(NoteInfo::ValType type, int delta)
                   }
             song->changeEvent(event, newEvent, part);
             // Indicate do not do port controller values and clone parts. 
-            //song->undoOp(UndoOp::ModifyEvent, newEvent, event, part);
-            song->undoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false);
+            //song->addUndo(UndoOp(UndoOp::ModifyEvent, newEvent, event, part));
+            song->addUndo(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
             }
       song->endUndo(SC_EVENT_MODIFIED);
       audio->msgIdle(false);
