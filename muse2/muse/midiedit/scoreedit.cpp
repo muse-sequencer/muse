@@ -4218,6 +4218,17 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
+ *   o rename stuff: UndoOp -> Operation, Undo -> OpList,
+ *                   UndoType -> OpType, iUndoOp, riUndoOp -> iOperation,
+ *                   undo.cpp/.h -> operations.cpp/.h
+ *   o resizing a part is slow, because events get erased
+ *   o drag'n'drop in canvases is slow
+ *   o drawing controller lines is slow
+ *   o cut,copy'n'paste is slow
+ *   o reordering drum list is dead slow
+ *   o reordering drum list creates unneccessary, actually wrong undo entry
+ * 
+ * 
  *   o drum list: scroll while dragging
  * 
  * IMPORTANT TODO

@@ -7,6 +7,7 @@
 
 #include "functions.h"
 #include "song.h"
+#include "undo.h"
 
 #include "event.h"
 #include "audio.h"
@@ -184,11 +185,10 @@ bool crescendo(const set<Part*>& parts)
 void modify_velocity(const set<Part*>& parts, int range, int rate, int offset)
 {
 	map<Event*, Part*> events = get_events(parts, range);
+	Undo operations;
 	
 	if ( (!events.empty()) && ((rate!=100) || (offset!=0)) )
 	{
-		song->startUndo();
-		
 		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
 			Event& event=*(it->first);
@@ -208,23 +208,22 @@ void modify_velocity(const set<Part*>& parts, int range, int rate, int offset)
 			{
 				Event newEvent = event.clone();
 				newEvent.setVelo(velo);
-				// Indicate no undo, and do not do port controller values and clone parts. 
-				audio->msgChangeEvent(event, newEvent, part, false, false, false);
+				operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
 			}
 		}
 		
-		song->endUndo(SC_EVENT_MODIFIED);
+		if (!operations.empty())
+			song->applyOperationGroup(operations);
 	}
 }
 
 void modify_off_velocity(const set<Part*>& parts, int range, int rate, int offset)
 {
 	map<Event*, Part*> events = get_events(parts, range);
+	Undo operations;
 	
 	if ( (!events.empty()) && ((rate!=100) || (offset!=0)) )
 	{
-		song->startUndo();
-		
 		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
 			Event& event=*(it->first);
@@ -244,23 +243,22 @@ void modify_off_velocity(const set<Part*>& parts, int range, int rate, int offse
 			{
 				Event newEvent = event.clone();
 				newEvent.setVeloOff(velo);
-				// Indicate no undo, and do not do port controller values and clone parts. 
-				audio->msgChangeEvent(event, newEvent, part, false, false, false);
+				operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
 			}
 		}
-		
-		song->endUndo(SC_EVENT_MODIFIED);
+
+		if (!operations.empty())
+			song->applyOperationGroup(operations);
 	}
 }
 
 void modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 {
 	map<Event*, Part*> events = get_events(parts, range);
+	Undo operations;
 	
 	if ( (!events.empty()) && ((rate!=100) || (offset!=0)) )
 	{
-		song->startUndo();
-		
 		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
 			Event& event=*(it->first);
@@ -278,12 +276,12 @@ void modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 			{
 				Event newEvent = event.clone();
 				newEvent.setLenTick(len);
-				// Indicate no undo, and do not do port controller values and clone parts. 
-				audio->msgChangeEvent(event, newEvent, part, false, false, false);
+				operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
 			}
 		}
 		
-		song->endUndo(SC_EVENT_MODIFIED);
+		if (!operations.empty())
+			song->applyOperationGroup(operations);
 	}
 }
 
@@ -317,7 +315,7 @@ unsigned quantize_tick(unsigned tick, unsigned raster, int swing)
 void quantize_notes(const set<Part*>& parts, int range, int raster, int strength, int swing, int threshold)
 {
 	map<Event*, Part*> events = get_events(parts, range);
-	bool undo_started=false;
+	Undo operations;
 	
 	if (!events.empty())
 	{
@@ -347,53 +345,45 @@ void quantize_notes(const set<Part*>& parts, int range, int raster, int strength
 				
 			if ( (event.lenTick() != len) || (event.tick() + part->tick() != begin_tick) )
 			{
-				if (!undo_started)
-				{
-					song->startUndo();
-					undo_started=true;
-				}
-				
 				Event newEvent = event.clone();
 				newEvent.setTick(begin_tick - part->tick());
 				newEvent.setLenTick(len);
-				// Indicate no undo, and do not do port controller values and clone parts. 
-				//audio->msgChangeEvent(event, newEvent, part, false, false, false);
-				audio->msgChangeEvent(event, newEvent, part, false, false, false);
+				operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
 			}
 		}
 		
-		if (undo_started) song->endUndo(SC_EVENT_MODIFIED);
+		if (!operations.empty())
+			song->applyOperationGroup(operations);
 	}
 }
 
 void erase_notes(const set<Part*>& parts, int range)
 {
 	map<Event*, Part*> events = get_events(parts, range);
+	Undo operations;
 	
 	if (!events.empty())
 	{
-		song->startUndo();
-		
 		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
 			Event& event=*(it->first);
 			Part* part=it->second;
 
-			audio->msgDeleteEvent(event, part, false, false, false);
+			operations.push_back(UndoOp(UndoOp::DeleteEvent, event, part, false, false));
 		}
 		
-		song->endUndo(SC_EVENT_REMOVED);
+		if (!operations.empty())
+			song->applyOperationGroup(operations);
 	}
 }
 
 void transpose_notes(const set<Part*>& parts, int range, signed int halftonesteps)
 {
 	map<Event*, Part*> events = get_events(parts, range);
+	Undo operations;
 	
 	if ( (!events.empty()) && (halftonesteps!=0) )
 	{
-		song->startUndo();
-		
 		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
 			Event& event=*(it->first);
@@ -404,25 +394,24 @@ void transpose_notes(const set<Part*>& parts, int range, signed int halftonestep
 			if (pitch > 127) pitch=127;
 			if (pitch < 0) pitch=0;
 			newEvent.setPitch(pitch);
-			// Indicate no undo, and do not do port controller values and clone parts. 
-			audio->msgChangeEvent(event, newEvent, part, false, false, false);
+			operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
 		}
 		
-		song->endUndo(SC_EVENT_MODIFIED);
+		if (!operations.empty())
+			song->applyOperationGroup(operations);
 	}
 }
 
 void crescendo(const set<Part*>& parts, int range, int start_val, int end_val, bool absolute)
 {
 	map<Event*, Part*> events = get_events(parts, range);
+	Undo operations;
 	
 	int from=song->lpos();
 	int to=song->rpos();
 	
 	if ( (!events.empty()) && (to>from) )
 	{
-		song->startUndo();
-		
 		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
 			Event& event=*(it->first);
@@ -442,22 +431,21 @@ void crescendo(const set<Part*>& parts, int range, int start_val, int end_val, b
 			if (velo > 127) velo=127;
 			if (velo <= 0) velo=1;
 			newEvent.setVelo(velo);
-			// Indicate no undo, and do not do port controller values and clone parts. 
-			audio->msgChangeEvent(event, newEvent, part, false, false, false);
+			operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
 		}
 		
-		song->endUndo(SC_EVENT_MODIFIED);
+		if (!operations.empty())
+			song->applyOperationGroup(operations);
 	}
 }
 
 void move_notes(const set<Part*>& parts, int range, signed int ticks) //TODO FINDMICH: safety checks
 {
 	map<Event*, Part*> events = get_events(parts, range);
+	Undo operations;
 	
 	if ( (!events.empty()) && (ticks!=0) )
 	{
-		song->startUndo();
-		
 		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
 			Event& event=*(it->first);
@@ -465,18 +453,18 @@ void move_notes(const set<Part*>& parts, int range, signed int ticks) //TODO FIN
 
 			Event newEvent = event.clone();
 			newEvent.setTick(event.tick()+ticks);
-			// Indicate no undo, and do not do port controller values and clone parts. 
-			audio->msgChangeEvent(event, newEvent, part, false, false, false);
+			operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
 		}
 		
-		song->endUndo(SC_EVENT_MODIFIED);
+		if (!operations.empty())
+			song->applyOperationGroup(operations);
 	}
 }
 
 void delete_overlaps(const set<Part*>& parts, int range)
 {
 	map<Event*, Part*> events = get_events(parts, range);
-	bool undo_started=false;
+	Undo operations;
 	
 	set<Event*> deleted_events;
 	
@@ -503,17 +491,11 @@ void delete_overlaps(const set<Part*>& parts, int range)
 					     (event1.tick() <= event2.tick()) &&
 						   (event1.endTick() > event2.tick()) ) //they overlap
 					{
-						if (undo_started==false)
-						{
-							song->startUndo();
-							undo_started=true;
-						}
-						
 						int new_len = event2.tick() - event1.tick();
 
 						if (new_len==0)
 						{
-							audio->msgDeleteEvent(event1, part1, false, false, false);
+							operations.push_back(UndoOp(UndoOp::DeleteEvent, event1, part1, false, false));
 							deleted_events.insert(&event1);
 						}
 						else
@@ -521,14 +503,15 @@ void delete_overlaps(const set<Part*>& parts, int range)
 							Event new_event1 = event1.clone();
 							new_event1.setLenTick(new_len);
 							
-							audio->msgChangeEvent(event1, new_event1, part1, false, false, false);
+							operations.push_back(UndoOp(UndoOp::ModifyEvent, new_event1, event1, part1, false, false));
 						}
 					}
 				}
 			}
 		}
 		
-		if (undo_started) song->endUndo(SC_EVENT_MODIFIED);
+		if (!operations.empty())
+			song->applyOperationGroup(operations);
 	}
 }
 
