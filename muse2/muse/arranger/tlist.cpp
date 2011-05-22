@@ -1076,18 +1076,20 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                   // Show the menu
                   QAction* act = p->exec(ev->globalPos(), 0);
-                  switch (act->data().toInt()) {
-                    case 0:
-                      ((MidiTrack*)t)->setClef(ScoreEdit::trebleClef);
-                      break;
-                    case 1:
-                      ((MidiTrack*)t)->setClef(ScoreEdit::bassClef);
-                      break;
-                    case 2:
-                      ((MidiTrack*)t)->setClef(ScoreEdit::grandStaff);
-                      break;
-                    default:
-                      break;
+                  if (act) {
+                    switch (act->data().toInt()) {
+                      case 0:
+                        ((MidiTrack*)t)->setClef(ScoreEdit::trebleClef);
+                        break;
+                      case 1:
+                        ((MidiTrack*)t)->setClef(ScoreEdit::bassClef);
+                        break;
+                      case 2:
+                        ((MidiTrack*)t)->setClef(ScoreEdit::grandStaff);
+                        break;
+                      default:
+                        break;
+                    }
                   }
                   delete p;
                 }
