@@ -108,7 +108,8 @@ bool quantize_notes(const set<Part*>& parts)
 		return false;
 		
 	quantize_notes(parts, quantize_dialog->range, (config.division*4)/(1<<quantize_dialog->raster_power2),
-	               quantize_dialog->strength, quantize_dialog->swing, quantize_dialog->threshold);
+	               quantize_dialog->quant_len, quantize_dialog->strength, quantize_dialog->swing,
+	               quantize_dialog->threshold);
 	
 	return true;
 }
@@ -314,7 +315,7 @@ unsigned quantize_tick(unsigned tick, unsigned raster, int swing)
 		return tick_dest3;
 }
 
-void quantize_notes(const set<Part*>& parts, int range, int raster, int strength, int swing, int threshold)
+void quantize_notes(const set<Part*>& parts, int range, int raster, bool quant_len, int strength, int swing, int threshold)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	bool undo_started=false;
@@ -338,7 +339,7 @@ void quantize_notes(const set<Part*>& parts, int range, int raster, int strength
 			unsigned end_tick = begin_tick + len;
 			int len_diff = quantize_tick(end_tick, raster, swing) - end_tick;
 				
-			if (abs(len_diff) > threshold)
+			if ((abs(len_diff) > threshold) && quant_len)
 				len = len + len_diff*strength/100;
 
 			if (len <= 0)
