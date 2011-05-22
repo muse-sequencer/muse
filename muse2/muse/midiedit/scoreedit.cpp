@@ -911,55 +911,99 @@ void ScoreEdit::write_configuration(int level, Xml& xml)
 
 void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 {
-	staff_t staff(this);
-
-	if (all_in_one)
+	if (!pl->empty())
 	{
-		staff.parts.clear();
-		for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
-			staff.parts.insert(part_it->second);
-		staff.cleanup_parts();
+		staff_t staff(this);
 
-		staff.type=GRAND_TOP; //FINDME_INITCLEF
-		staff.clef=VIOLIN;
-		staves.push_back(staff);
-
-		staff.type=GRAND_BOTTOM;
-		staff.clef=BASS;
-		staves.push_back(staff);		
-	}
-	else
-	{
-		set<Track*> tracks;
-		for (ciPart it=pl->begin(); it!=pl->end(); it++)
-			tracks.insert(it->second->track());
-		
-		TrackList* tracklist = song->tracks();
-		// this loop is used for inserting track-staves in the
-		// correct order. simply iterating through tracks's contents
-		// would sort after the pointer values, i.e. randomly
-		for (ciTrack track_it=tracklist->begin(); track_it!=tracklist->end(); track_it++)
-			if (tracks.find(*track_it)!=tracks.end())
+		if (all_in_one)
+		{
+			ScoreEdit::clefTypes clef=((MidiTrack*)pl->begin()->second->track())->getClef();
+			
+			staff.parts.clear();
+			for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
 			{
-				staff.parts.clear();
-				for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
-					if (part_it->second->track() == *track_it)
-						staff.parts.insert(part_it->second);
-				staff.cleanup_parts();
-				
-				staff.type=GRAND_TOP; //FINDME_INITCLEF
-				staff.clef=VIOLIN;
-				staves.push_back(staff);
-
-				staff.type=GRAND_BOTTOM;
-				staff.clef=BASS;
-				staves.push_back(staff);
+				if (((MidiTrack*)part_it->second->track())->getClef() != clef)
+					clef=ScoreEdit::grandStaff;
+					
+				staff.parts.insert(part_it->second);
 			}
+			staff.cleanup_parts();
+
+			switch (clef)
+			{
+				case ScoreEdit::trebleClef:
+					staff.type=NORMAL;
+					staff.clef=VIOLIN;
+					staves.push_back(staff);
+					break;
+
+				case ScoreEdit::bassClef:
+					staff.type=NORMAL;
+					staff.clef=BASS;
+					staves.push_back(staff);
+					break;
+
+				case ScoreEdit::grandStaff:
+					staff.type=GRAND_TOP;
+					staff.clef=VIOLIN;
+					staves.push_back(staff);
+
+					staff.type=GRAND_BOTTOM;
+					staff.clef=BASS;
+					staves.push_back(staff);		
+					break;
+			}
+		}
+		else
+		{
+			set<Track*> tracks;
+			for (ciPart it=pl->begin(); it!=pl->end(); it++)
+				tracks.insert(it->second->track());
+			
+			TrackList* tracklist = song->tracks();
+			// this loop is used for inserting track-staves in the
+			// correct order. simply iterating through tracks's contents
+			// would sort after the pointer values, i.e. randomly
+			for (ciTrack track_it=tracklist->begin(); track_it!=tracklist->end(); track_it++)
+				if (tracks.find(*track_it)!=tracks.end())
+				{
+					staff.parts.clear();
+					for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
+						if (part_it->second->track() == *track_it)
+							staff.parts.insert(part_it->second);
+					staff.cleanup_parts();
+					
+					switch (((MidiTrack*)(*track_it))->getClef())
+					{
+						case ScoreEdit::trebleClef:
+							staff.type=NORMAL;
+							staff.clef=VIOLIN;
+							staves.push_back(staff);
+							break;
+
+						case ScoreEdit::bassClef:
+							staff.type=NORMAL;
+							staff.clef=BASS;
+							staves.push_back(staff);
+							break;
+
+						case ScoreEdit::grandStaff:
+							staff.type=GRAND_TOP;
+							staff.clef=VIOLIN;
+							staves.push_back(staff);
+
+							staff.type=GRAND_BOTTOM;
+							staff.clef=BASS;
+							staves.push_back(staff);		
+							break;
+					}
+				}
+		}
+		
+		cleanup_staves();
+		fully_recalculate();
+		recalc_staff_pos();
 	}
-	
-	cleanup_staves();
-	fully_recalculate();
-	recalc_staff_pos();
 }
 
 
@@ -4221,8 +4265,6 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *   o drum list: scroll while dragging
  * 
  * IMPORTANT TODO
- *   o add a select-clef-toolbox for tracks
- *   o respect the track's clef (has to be implemented first in muse)
  *   o do partial recalculating; recalculating can take pretty long
  *     (0,5 sec) when displaying a whole song in scores
  *   o transpose etc. must also transpose key-pressure events
@@ -4268,8 +4310,6 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *      ( (2+2+3)/4 or (3+2+2)/4 instead of 7/4 )
  *   o maybe do expanding parts inside the msgChangeEvent or
  *     msgNewEvent functions (see my e-mail)
- *
- *   o make quantize and other stuff faster (by assymetric communication)
  */
 
 
