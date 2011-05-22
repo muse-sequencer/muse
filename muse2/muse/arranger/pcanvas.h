@@ -83,15 +83,14 @@ class PartCanvas : public Canvas {
       virtual int y2pitch(int y) const;
       virtual int pitch2y(int p) const;
       
-      virtual void moveCanvasItems(CItemList&, int, int, DragType, int*);
-      virtual bool moveItem(CItem*, const QPoint&, DragType);
       virtual CItem* newItem(const QPoint&, int);
       virtual void resizeItem(CItem*,bool);
       virtual void newItem(CItem*,bool);
       virtual bool deleteItem(CItem*);
-      virtual void startUndo(DragType);
-      
-      virtual void endUndo(DragType, int);
+      virtual void moveCanvasItems(CItemList&, int, int, DragType, int*);
+      virtual bool moveItem(CItem*, const QPoint&, DragType);
+
+      virtual void updateSong(DragType, int);
       virtual void startDrag(CItem*, DragType);
       virtual void dragEnterEvent(QDragEnterEvent*);
       virtual void dragMoveEvent(QDragMoveEvent*);
@@ -126,6 +125,7 @@ class PartCanvas : public Canvas {
 
    protected:
       virtual void drawCanvas(QPainter&, const QRect&);
+      virtual void endMoveItems(const QPoint&, DragType, int dir);
 
    signals:
       void timeChanged(unsigned);

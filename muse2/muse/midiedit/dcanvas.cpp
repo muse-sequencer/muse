@@ -95,12 +95,13 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
 //   moveCanvasItems
 //---------------------------------------------------------
 
-void DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype, int* pflags)
+Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype, int* pflags)
 {      
   if(editor->parts()->empty())
-    return;
+    return Undo(); //return empty list
     
   PartsToChangeMap parts2change;
+  Undo operations;
   
   int modified = 0;
   for(iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip)
@@ -173,8 +174,8 @@ void DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
     }
       
     editor->parts()->add(newPart);
-    // Indicate no undo, and do port controller values but not clone parts. 
-    audio->msgChangePart(opart, newPart, false, true, false);
+    // Do port controller values but not clone parts. 
+    operations.push_back(UndoOp(UndoOp::ModifyPart, opart, newPart, true, false));
     
     ip2c->second.npart = newPart;
     
@@ -214,20 +215,12 @@ void DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
         break;
       
     // Do not process if the event has already been processed (meaning it's an event in a clone part)...
-    if(idl != doneList.end())
-      // Just move the canvas item.
-      ci->move(newpos);
-    else
+    if (idl == doneList.end())
     {
-      // Currently moveItem always returns true.
-      if(moveItem(ci, newpos, dtype))
-      {
-        // Add the canvas item to the list of done items.
-        doneList.push_back(ci);
-        // Move the canvas item.
-        ci->move(newpos);
-      }  
+      operations.push_back(moveItem(ci, newpos, dtype));
+      doneList.push_back(ci);
     }
+    ci->move(newpos);
           
     if(moving.size() == 1) {
           itemReleased(curItem, newpos);
@@ -238,13 +231,15 @@ void DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
       
   if(pflags)
     *pflags = modified;
+  
+  return operations;
 }
       
 //---------------------------------------------------------
 //   moveItem
 //---------------------------------------------------------
 
-bool DrumCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
+UndoOp DrumCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
       {
       DEvent* nevent   = (DEvent*) item;
       
@@ -271,16 +266,10 @@ bool DrumCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
       if(((int)newEvent.endTick() - (int)part->lenTick()) > 0)  
         printf("DrumCanvas::moveItem Error! New event end:%d exceeds length:%d of part:%s\n", newEvent.endTick(), part->lenTick(), part->name().toLatin1().constData());
       
-      if (dtype == MOVE_COPY || dtype == MOVE_CLONE) {
-            // Indicate no undo, and do not do port controller values and clone parts. 
-            audio->msgAddEvent(newEvent, part, false, false, false);
-            }
-      else {
-            // Indicate no undo, and do not do port controller values and clone parts. 
-            audio->msgChangeEvent(event, newEvent, part, false, false, false);
-            }
-        
-      return true;
+      if (dtype == MOVE_COPY || dtype == MOVE_CLONE)
+            return UndoOp(UndoOp::AddEvent, newEvent, part, false, false);
+      else
+            return UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false);
       }
 
 //---------------------------------------------------------
@@ -387,7 +376,6 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
       // Indicate no undo, and do not do port controller values and clone parts. 
       audio->msgAddEvent(event, part, false, false, false); 
       song->endUndo(modified);
-      
       }
 
 //---------------------------------------------------------
@@ -836,7 +824,8 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
       // If start/stopundo is there, undo misbehaves since it doesn't undo but messes things up
       // Other solution: implement a specific undo-event for this (SC_DRUMMAP_MODIFIED or something) which undoes movement of
       // dlist-items (ml)
-
+      
+      Undo operations;
       std::vector< std::pair<Part*, Event*> > delete_events;
       std::vector< std::pair<Part*, Event> > add_events;
       
@@ -891,12 +880,10 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
                   }
             }
 
-      song->startUndo();
       for (idel_ev i = delete_events.begin(); i != delete_events.end(); i++) {
             Part*  thePart = (*i).first;
             Event* theEvent = (*i).second;
-            // Indicate no undo, and do port controller values but not clone parts. 
-            audio->msgDeleteEvent(*theEvent, thePart, false, true, false);
+            operations.push_back(UndoOp(UndoOp::DeleteEvent, *theEvent, thePart, true, false));
             }
 
       DrumMap dm = drumMap[spitch];
@@ -910,11 +897,10 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
       for (iadd_ev i = add_events.begin(); i != add_events.end(); i++) {
             Part*  thePart = (*i).first;
             Event& theEvent = (*i).second;
-            // Indicate no undo, and do port controller values but not clone parts. 
-            audio->msgAddEvent(theEvent, thePart, false, true, false);
+            operations.push_back(UndoOp(UndoOp::AddEvent, theEvent, thePart, true, false));
             }
       
-      song->endUndo(SC_EVENT_MODIFIED);
+      song->applyOperationGroup(operations);
       song->update(SC_DRUMMAP);
       }
 

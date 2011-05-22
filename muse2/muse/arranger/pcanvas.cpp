@@ -299,21 +299,12 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
       }
 
 //---------------------------------------------------------
-//   startUndo
+//   update
 //---------------------------------------------------------
 
-void PartCanvas::startUndo(DragType)
+void PartCanvas::updateSong(DragType t, int flags)
       {
-      song->startUndo();
-      }
-
-//---------------------------------------------------------
-//   endUndo
-//---------------------------------------------------------
-
-void PartCanvas::endUndo(DragType t, int flags)
-      {
-      song->endUndo(flags | ((t == MOVE_COPY || t == MOVE_CLONE)
+      song->update(flags | ((t == MOVE_COPY || t == MOVE_CLONE)
          ? SC_PART_INSERTED : SC_PART_MODIFIED));
       }
 
@@ -323,101 +314,6 @@ void PartCanvas::endUndo(DragType t, int flags)
 
 void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype, int*)
 {      
-  /*
-  if(editor->parts()->empty())
-    return;
-    
-  //struct p2c
-  //{
-  //  Part* newp;
-  //  int   xdiff;
-  //} 
-  
-  //std::set<Part*> parts2change;
-  //typedef std::set<Part*>::iterator iptc;
-  std::map<Part*, Part*> parts2change;
-  typedef std::map<Part*, Part*>::iterator iP2C;
-  
-  int modified = 0;
-  for(iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip)
-  {
-    Part* part = ip->second;
-    if(!part)
-      continue;
-    
-    int npartoffset = 0;
-    for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
-    {
-      CItem* ci = ici->second;
-      //Part* pt = ci->part();
-      //if(!pt)
-      if(ci->part() != part)
-        continue;
-      
-      int x = ci->pos().x() + dx;
-      int y = pitch2y(y2pitch(ci->pos().y()) + dp);
-      QPoint newpos = raster(QPoint(x, y));
-      
-      // Test moving the item...
-      
-      //int offset = testMoveItem(ci, newpos, dragtype);
-      NEvent* nevent = (NEvent*) ci;
-      Event event    = nevent->event();
-      //int npitch     = y2pitch(newpos.y());
-      x              = newpos.x();
-      if (x < 0)
-            x = 0;
-      
-      int ntick = editor->rasterVal(x) - part->tick();
-      if (ntick < 0)
-            ntick = 0;
-      int diff = ntick + event.lenTick() - part->lenTick();
-      
-      // If moving the item would require a new part size...
-      if(diff > npartoffset)
-        npartoffset = diff;
-    }
-        
-    if(npartoffset > 0)
-    {    
-      // Create new part...
-      // if there are several events that are moved outside the part, it will be recreated for each
-      // so the part _in_ the event will not be valid, ask the authority.
-      Part* newPart = part->clone();
-      //Part* newPart = Canvas::part()->clone();
-
-      newPart->setLenTick(newPart->lenTick() + npartoffset);
-      audio->msgChangePart(part, newPart,false);
-
-      modified = SC_PART_MODIFIED;
-
-      // BUG FIX: #1650953
-      // Added by T356.
-      // Fixes posted "select and drag past end of part - crashing" bug
-      for(iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip)
-      {
-        if(ip->second == part)
-        {
-          editor->parts()->erase(ip);
-          break;
-        }
-      }
-      
-      editor->parts()->add(newPart);
-      if(parts2change.find(part) == parts2change.end())
-        parts2change.insert(std::pair<Part*, Part*> (part, newPart));
-      
-//      part = newPart; // reassign
-//      item->setPart(part);
-//      item->setEvent(newEvent);
-//      curPart = part;
-//      curPartId = curPart->sn();
-
-    }
-  }
-*/    
-    
-//    int modified = 0;
   for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
   {
     CItem* ci = ici->second;
@@ -435,18 +331,15 @@ void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
     QPoint newpos = raster(QPoint(nx, ny));
     selectItem(ci, true);
     
-    if(moveItem(ci, newpos, dtype))
-          ci->move(newpos);
+    if (moveItem(ci, newpos, dtype))
+    	ci->move(newpos);
+    
     if(moving.size() == 1) {
           itemReleased(curItem, newpos);
           }
     if(dtype == MOVE_COPY || dtype == MOVE_CLONE)
           selectItem(ci, false);
   }  
-  
-  
-  //if(pflags)
-  //  *pflags = modified;
 }
       
 //---------------------------------------------------------
@@ -455,9 +348,9 @@ void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
 //---------------------------------------------------------
 
 // Changed by T356.
-//bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t, int*)
 bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
       {
+      UndoOp result;
       NPart* npart    = (NPart*) item;
       Part* spart     = npart->part();
       Track* track    = npart->track();
@@ -465,7 +358,7 @@ bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
       unsigned ntrack = y2pitch(item->mp().y());
       Track::TrackType type = track->type();
       if (tracks->index(track) == ntrack && (dtick == spart->tick())) {
-            return false;
+            return false; //FINDMICH
             }
       if (ntrack >= tracks->size()) {
             ntrack = tracks->size();
@@ -483,7 +376,7 @@ bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
       if (dtrack->type() != type) {
             QMessageBox::critical(this, QString("MusE"),
                tr("Cannot copy/move/clone to different Track-Type"));
-            return false;
+            return false; //FINDMICH
             }
 
       Part* dpart;
@@ -552,7 +445,8 @@ bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
       if (song->len() < (dpart->lenTick() + dpart->tick()))
             song->setLen(dpart->lenTick() + dpart->tick());
       //endUndo(t);
-      return true;
+      return true; //FINDMICH
+      //TODO FINDMICH returns nothing... should be fixed (flo93)
       }
 
 //---------------------------------------------------------
@@ -3608,3 +3502,40 @@ double PartCanvas::valToDb(double inV)
 {
     return exp10((inV*70.0-60.0)/20.0);
 }
+
+//---------------------------------------------------------
+//   endMoveItems
+//    dir = 0     move in all directions
+//          1     move only horizontal
+//          2     move only vertical
+//---------------------------------------------------------
+
+void PartCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir)
+      {
+      song->startUndo();
+
+      int dp = y2pitch(pos.y()) - y2pitch(start.y());
+      int dx = pos.x() - start.x();
+
+      if (dir == 1)
+            dp = 0;
+      else if (dir == 2)
+            dx = 0;
+      
+      
+      
+      int modified = 0;
+      
+      moveCanvasItems(moving, dp, dx, dragtype, &modified);
+      
+      if (dragtype == MOVE_COPY || dragtype == MOVE_CLONE)
+      	modified|=SC_PART_INSERTED;
+      else
+      	modified|=SC_PART_MODIFIED;
+      	
+      song->endUndo(modified);
+      moving.clear();
+      updateSelection();
+      redraw();
+      }
+

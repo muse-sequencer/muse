@@ -38,12 +38,7 @@ class EventCanvas : public Canvas {
       Q_OBJECT
       virtual void leaveEvent(QEvent*e);
       virtual void enterEvent(QEvent*e);
-      // Removed by T356.
-      //virtual QPoint raster(const QPoint&) const;
       
-      virtual void startUndo(DragType);
-      
-      virtual void endUndo(DragType, int flags = 0);
       virtual void mouseMove(QMouseEvent* event);
 
    protected:
@@ -58,6 +53,10 @@ class EventCanvas : public Canvas {
       virtual void addItem(Part*, Event&) = 0;
       // Added by T356.
       virtual QPoint raster(const QPoint&) const;
+      virtual Undo moveCanvasItems(CItemList&, int, int, DragType, int*) = 0;
+      virtual UndoOp moveItem(CItem*, const QPoint&, DragType) = 0;
+      virtual void endMoveItems(const QPoint&, DragType, int dir);
+      virtual void updateSong(DragType, int flags = 0);
 
    public slots:
       void redrawGrid()       { redraw(); }

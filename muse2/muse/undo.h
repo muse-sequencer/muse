@@ -87,6 +87,7 @@ struct UndoOp {
       const char* typeName();
       void dump();
       
+      UndoOp();
       UndoOp(UndoType type, int a, int b, int c=0);
       UndoOp(UndoType type, int n, Track* oldTrack, Track* newTrack);
       UndoOp(UndoType type, int n, Track* track);

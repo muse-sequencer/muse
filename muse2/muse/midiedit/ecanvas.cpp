@@ -101,21 +101,12 @@ QPoint EventCanvas::raster(const QPoint& p) const
       }
 
 //---------------------------------------------------------
-//   startUndo
+//   update
 //---------------------------------------------------------
 
-void EventCanvas::startUndo(DragType)
+void EventCanvas::updateSong(DragType dtype, int flags)
       {
-      song->startUndo();
-      }
-
-//---------------------------------------------------------
-//   endUndo
-//---------------------------------------------------------
-
-void EventCanvas::endUndo(DragType dtype, int flags)
-      {
-      song->endUndo(flags | ((dtype == MOVE_COPY || dtype == MOVE_CLONE)
+      song->update(flags | ((dtype == MOVE_COPY || dtype == MOVE_CLONE)
          ? SC_EVENT_INSERTED : SC_EVENT_MODIFIED));
       }
 
@@ -545,3 +536,33 @@ void EventCanvas::viewDropEvent(QDropEvent* event)
             }
       }
 
+
+//---------------------------------------------------------
+//   endMoveItems
+//    dir = 0     move in all directions
+//          1     move only horizontal
+//          2     move only vertical
+//---------------------------------------------------------
+
+void EventCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir)
+      {
+      int dp = y2pitch(pos.y()) - y2pitch(Canvas::start.y());
+      int dx = pos.x() - Canvas::start.x();
+
+      if (dir == 1)
+            dp = 0;
+      else if (dir == 2)
+            dx = 0;
+      
+      
+      
+      int modified = 0;
+      
+      Undo operations = moveCanvasItems(moving, dp, dx, dragtype, &modified);
+      song->applyOperationGroup(operations);
+      updateSong(dragtype, modified);
+      
+      moving.clear();
+      updateSelection();
+      redraw();
+      }

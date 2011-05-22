@@ -203,7 +203,7 @@ void Song::endUndo(int flags)
 
 void Song::applyOperationGroup(Undo& group)
       {
-      //this is a HACK! but it works :)
+      //this is a HACK! but it works :)    (added by flo93)
       redoList->push_back(group);
       redo();
       }
@@ -697,6 +697,10 @@ void Song::doRedo2()
                   }
             }
       }
+
+UndoOp::UndoOp()
+{
+}
 
 UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_)
       {

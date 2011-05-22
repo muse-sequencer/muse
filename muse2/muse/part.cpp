@@ -927,7 +927,7 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len)
                                 iEvent i = ie;
                                 ++ie;
                                 // Indicate no undo, and do port controller values and clone parts. 
-                                audio->msgDeleteEvent(i->second, nPart, false, true, true);
+                                audio->msgDeleteEvent(i->second, nPart, false, true, true); //FINDMICH
                                 }
                           }
                   }        
