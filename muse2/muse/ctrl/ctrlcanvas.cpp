@@ -545,14 +545,6 @@ void CtrlCanvas::partControllers(const MidiPart* part, int num, int* dnum, int* 
       }
       *mcvl = tmcvl;
       
-      // Removed by T356.
-      // MidiCtrlValList not found is now an acceptable state (for multiple part editing).
-      //if (i == cvll->end()) {
-      //      printf("CtrlCanvas::setController(0x%x): not found\n", num);
-      //      for (i = cvll->begin(); i != cvll->end(); ++i)
-      //            printf("  0x%x\n", i->second->num());
-      //      return;
-      //      }
     }    
   }
 }
@@ -566,98 +558,9 @@ void CtrlCanvas::updateItems()
       selection.clear();
       items.clearDelete();
       
-      /*
-      if(ctrl)
-      {
-        for(ciMidiCtrlVal imcv = ctrl->begin(); imcv != ctrl->end(); ++imcv)
-        {
-          MidiPart* part = (MidiPart*)imcv->part;
-          int val = imcv->val;
-          
-          bool edpart = false;
-          if(editor->parts()->index(part) != -1)
-            edpart = true;
-          
-          MidiController* mc;
-          MidiCtrlValList* mcvl;
-          partControllers(part, _cnum, 0, 0, &mc, &mcvl);
-
-          Event e(Controller);
-          
-          if(_cnum == CTRL_VELOCITY && e.type() == Note)
-          {
-            items.add(new CEvent(e, part, e.velo()));
-           
-          }
-          
-        }
-      }
-      */
-      
-      /*
-      MidiTrackList* mtl = song->midis();
-      for(ciMidiTrack imt = mtl->begin(); imt != mtl->end(); ++imt)
-      {
-        //MidiTrack* mt = *imt;
-        PartList* pl = (*imt)->parts();
-        for(ciPart p = pl->begin(); p != pl->end(); ++p) 
-        {
-          MidiPart* part = (MidiPart*)(p->second);
-          
-          bool edpart = false;
-          if(editor->parts()->index(part) != -1)
-            edpart = true;
-          
-          EventList* el = part->events();
-          MidiController* mc;
-          MidiCtrlValList* mcvl;
-          partControllers(part, _cnum, 0, 0, &mc, &mcvl);
-
-          for(iEvent i = el->begin(); i != el->end(); ++i) 
-          {
-            Event e = i->second;
-            if(_cnum == CTRL_VELOCITY && e.type() == Note) 
-            {
-              if(curDrumInstrument == -1) 
-              {
-                    items.add(new CEvent(e, part, e.velo()));
-              }
-              else if (e.dataA() == curDrumInstrument) //same note
-                    items.add(new CEvent(e, part, e.velo()));
-            }
-            else if (e.type() == Controller && e.dataA() == _didx) 
-            {
-              if(mcvl && last.empty()) 
-              {
-                    Event le(Controller);
-                    //le.setType(Controller);
-                    le.setA(_didx);
-                    //le.setB(e.dataB());
-                    le.setB(CTRL_VAL_UNKNOWN);
-                    //lastce = new CEvent(Event(), part, mcvl->value(part->tick(), part));
-                    //lastce = new CEvent(le, part, mcvl->value(part->tick(), part));
-                    lastce = new CEvent(le, part, mcvl->value(part->tick()));
-                    items.add(lastce);
-              }
-              if (lastce)
-                    lastce->setEX(e.tick());
-              lastce = new CEvent(e, part, e.dataB());
-              items.add(lastce);
-              last = e;
-            }    
-          }
-        }
-      }
-      */
-      
-      
-      
-      
       
       if(!editor->parts()->empty())
       {
-        //Event last;
-        //CEvent* lastce  = 0;
         CEvent *newev = 0;
   
         for (iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) 
@@ -790,7 +693,6 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
                     }
                     if(do_redraw)
                       redraw();                 // Let songChanged handle the redraw upon SC_SELECTION.
-                      //song->update(SC_SELECTION); //
                   }
                   
                   
@@ -947,11 +849,8 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
                               }  
                           }
                     drag = DRAG_OFF;
-                    //if(do_redraw)
-                    //  redraw();                 // Let songChanged handle the redraw upon SC_SELECTION.
+                      // Let songChanged handle the redraw upon SC_SELECTION.
                       song->update(SC_SELECTION); //
-                    //else
-                    //  redraw();  
                   }
                   break;
 
@@ -995,7 +894,7 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
         useRaster = true;
       }  
 
-      song->startUndo();
+      Undo operations;
 
       // delete existing events
 
@@ -1003,44 +902,29 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
       int lastpv = CTRL_VAL_UNKNOWN;
       for (ciCEvent i = items.begin(); i != items.end(); ++i) {
             CEvent* ev = *i;
-            if(ev->part() != curPart)
+            if (ev->part() != curPart)
               continue;
             Event event = ev->event();
             if (event.empty())
                   continue;
             int x = event.tick() + curPartTick;
-            //printf("CtrlCanvas::newValRamp x:%d xx1:%d xx2:%d len:%d\n", x, xx1, xx2, curPart->lenTick());
             
             if (x < xx1)
-            {
-            //      if(event.dataB() != CTRL_VAL_UNKNOWN)
-            //        lastpv = event.dataB();
                   continue;
-            }      
-            //if (x <= xx1)
-            //{
-            //      if(type == CTRL_PROGRAM && event.dataB() != CTRL_VAL_UNKNOWN && ((event.dataB() & 0xffffff) != 0xffffff))
-            //        lastpv = event.dataB();
-            //      if (x < xx1)
-            //        continue;
-            //}
+
             if (x >= xx2)
                   break;
             
-            // Indicate no undo, and do port controller values and clone parts. 
-            audio->msgDeleteEvent(event, curPart, false, true, true);
+            // Do port controller values and clone parts. 
+            operations.push_back(UndoOp(UndoOp::DeleteEvent, event, curPart, true, true));
             }
 
-      //if(type == CTRL_PROGRAM && lastpv == CTRL_VAL_UNKNOWN)
-      if(ctrl)  
+      if (ctrl)  
         lastpv = ctrl->hwVal();
         
       unsigned curPartLen = curPart->lenTick();
       
       // insert new events
-      //for (int x = xx1; x < xx2; x += raster) {
-      //      int y    = (x2==x1) ? y1 : (((y2-y1)*(x-x1))/(x2-x1))+y1;
-      //      int nval = computeVal(_controller, y, height());
       for (int x = xx1, step; x < xx2 ; x += step )    
       {
             step = useRaster ? raster : editor->rasterVal2(x + 1) - x;
@@ -1048,21 +932,18 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
             int y    = x + step >= xx2 || x2 == x1 ? y2 : (x == xx1 ? y1 : (((y2 - y1) * (x + step/2 - x1)) / (x2 - x1)) + y1);
             int nval = computeVal(_controller, y, height());
             
-            //int tick = x - curPartTick;
             unsigned tick = x - curPartTick;
-            //printf("CtrlCanvas::newValRamp x:%d xx1:%d xx2:%d step:%d newtick:%d\n", x, xx1, xx2, step, tick);  
             // Do not add events which are past the end of the part.
-            //if((unsigned)tick >= curPartLen)
-            if(tick >= curPartLen)
+            if (tick >= curPartLen)
               break;
             Event event(Controller);
             event.setTick(tick);
             event.setA(_didx);
-            if(type == CTRL_PROGRAM)
+            if (type == CTRL_PROGRAM)
             {
-              if(lastpv == CTRL_VAL_UNKNOWN)
+              if (lastpv == CTRL_VAL_UNKNOWN)
               {
-                if(song->mtype() == MT_GM)
+                if (song->mtype() == MT_GM)
                   event.setB(0xffff00 | (nval - 1));
                 else  
                   event.setB(nval - 1);
@@ -1073,13 +954,11 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
             else  
               event.setB(nval);
             
-            // Indicate no undo, and do port controller values and clone parts. 
-            audio->msgAddEvent(event, curPart, false, true, true);
+            // Do port controller values and clone parts. 
+            operations.push_back(UndoOp(UndoOp::AddEvent, event, curPart, true, true));
             }
               
-      ///song->update(0);
-      ///redraw();
-      song->endUndo(SC_EVENT_MODIFIED | SC_EVENT_INSERTED | SC_EVENT_REMOVED);
+      song->applyOperationGroup(operations);
       }
 
 //---------------------------------------------------------
@@ -1091,27 +970,24 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
       int h   = height();
       bool changed = false;
       int type = _controller->num();
-      //int xx1 = editor->rasterVal1(x1);
 
-      song->startUndo();
+      Undo operations;
       for (ciCEvent i = items.begin(); i != items.end(); ++i) {
             if ((*i)->contains(x1, x2)) {
-            //if ((*i)->contains(xx1, x2)) {
                   CEvent* ev       = *i;
-                  if(ev->part() != curPart)
+                  if (ev->part() != curPart)
                     continue;
+
                   Event event = ev->event();
                   if (event.empty())
                         continue;
 
-                  //MidiPart* part   = ev->part();
-                  //int x    = event.tick() + ev->part()->tick();
                   int x    = event.tick() + curPart->tick();
                   int y    = (x2==x1) ? y1 : (((y2-y1)*(x-x1))/(x2-x1))+y1;
                   int nval = computeVal(_controller, y, h);
-                  if(type == CTRL_PROGRAM)
+                  if (type == CTRL_PROGRAM)
                   {
-                    if(event.dataB() == CTRL_VAL_UNKNOWN)
+                    if (event.dataB() == CTRL_VAL_UNKNOWN)
                     {
                       --nval;
                       if(song->mtype() == MT_GM)
@@ -1123,16 +999,13 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
                     
                   ev->setVal(nval);
                   
-                  //MidiController::ControllerType type = midiControllerType(_controller->num());
-                  //if (type == MidiController::Velo) {
                   if (type == CTRL_VELOCITY) {
                         if ((event.velo() != nval)) {
                               Event newEvent = event.clone();
                               newEvent.setVelo(nval);
                               ev->setEvent(newEvent);
-                              // Indicate no undo, and do not do port controller values and clone parts. 
-                              audio->msgChangeEvent(event, newEvent, curPart, false, false, false);
-                              ///ev->setEvent(newEvent);
+                              // Do not do port controller values and clone parts. 
+                              operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, curPart, false, false));
                               changed = true;
                               }
                         }
@@ -1142,34 +1015,16 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
                                     Event newEvent = event.clone();
                                     newEvent.setB(nval);
                                     ev->setEvent(newEvent);
-                                    // Indicate no undo, and do port controller values and clone parts. 
-                                    audio->msgChangeEvent(event, newEvent, curPart, false, true, true);
-                                    ///ev->setEvent(newEvent);
+                                    // Do port controller values and clone parts. 
+                                    operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, curPart, true, true));
                                     changed = true;
                                     }
-                              }
-                        else {
-                              //if(!ctrl)
-                              //{
-                              //  ctrl = 
-                              //}
-                                
-                              // Removed by T356. Never gets here? A good thing, don't wan't auto-create values.
-                              //int oval = ctrl->value(0);
-                              //if (oval != nval) {
-                                    // Changed by T356.
-                                    //ctrl->add(0, nval);
-                              //      ctrl->add(0, nval, part);
-                              //      changed = true;
-                              //      }
-                              
                               }
                         }
                   }
             }
-      ///if (changed)
-      ///      redraw();
-      song->endUndo(SC_EVENT_MODIFIED);
+
+      song->applyOperationGroup(operations);
       }
 
 //---------------------------------------------------------
@@ -1181,7 +1036,6 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
       bool changed = false;
       int newval = computeVal(_controller, y, height());
       int type = _controller->num();
-      //int xx1 = editor->rasterVal1(x1);
 
       for (ciCEvent i = items.begin(); i != items.end(); ++i) {
             if (!(*i)->contains(x1, x2))
@@ -1191,26 +1045,7 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
             if(ev->part() != curPart)
               continue;
             Event event      = ev->event();
-            //if(event.tick() >= curPart->lenTick())
-            //  break;
-              
-            //MidiPart* part   = ev->part();
-            //int nval = newval;
-            //if(type == CTRL_PROGRAM)
-            //{
-            //  if(event.dataB() == CTRL_VAL_UNKNOWN)
-            //  {
-            //    --nval;
-            //    if(song->mtype() == MT_GM)
-            //      nval |= 0xffff00;
-            //  }
-            //  else  
-            //    nval = (event.dataB() & 0xffff00) | (nval - 1);
-            //}
-            //ev->setVal(nval);
-            
-            //MidiController::ControllerType type = midiControllerType(_controller->num());
-            //if (type == MidiController::Velo) {
+
             if (type == CTRL_VELOCITY) {
                   if ((event.velo() != newval)) {
                         ev->setVal(newval);
@@ -1249,159 +1084,11 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
                               changed = true;
                               }
                         }
-                  else {
-                        //if(!ctrl)
-                        //{
-                        //  ctrl = 
-                        //}
-                          
-                        // Removed by T356. Never gets here? A good thing, don't wan't auto-create values.
-                        //int oval = ctrl->value(0);
-                        //if (oval != nval) {
-                              // Changed by T356.
-                              //ctrl->add(0, nval);
-                        //      ctrl->add(0, nval, part);
-                        //      changed = true;
-                        //      }
-                        }
                   }
             }
       if (changed)
             redraw();
       }
-
-/*
-//---------------------------------------------------------
-//   newVal
-//---------------------------------------------------------
-
-void CtrlCanvas::newVal(int x1, int x2, int y)
-      {
-      int xx1  = editor->rasterVal1(x1);
-      int xx2  = editor->rasterVal2(x2);
-      int newval = computeVal(_controller, y, height());
-      int type = _controller->num();
-
-      bool found        = false;
-      bool song_changed = false;
-
-      int lastpv = CTRL_VAL_UNKNOWN;
-      if(ctrl)
-        lastpv = ctrl->hwVal();
-        
-      for (ciCEvent i = items.begin(); i != items.end(); ++i) {
-            CEvent* ev = *i;
-            if(ev->part() != curPart)
-              continue;
-            //int partTick = ev->part()->tick();
-            int partTick = curPart->tick();
-            Event event = ev->event();
-            if (event.empty())
-                  continue;
-            int ax = event.tick() + partTick;
-            //printf("CtrlCanvas::newVal ax:%d xx1:%d xx2:%d len:%d\n", ax, xx1, xx2, curPart->lenTick());  
-            
-            if (ax < xx1)
-                  continue;
-            //if(ax <= xx1)
-            //{
-            //  if(type == CTRL_PROGRAM && event.dataB() != CTRL_VAL_UNKNOWN && ((event.dataB() & 0xffffff) != 0xffffff))
-            //    lastpv = event.dataB();
-            //  if(ax < xx1)
-            //    continue;
-            //}
-            if (ax >= xx2)
-                  break;
-            
-            // Added by T356. Do not add events which are past the end of the part.
-            //if(event.tick() >= curPart->lenTick())
-            //  break;
-              
-            int nval = newval;
-            if(type == CTRL_PROGRAM)
-            {
-              if(event.dataB() == CTRL_VAL_UNKNOWN)
-              {
-                //if(lastpv == CTRL_VAL_UNKNOWN)
-                //  lastpv = ctrl->hwVal();
-                
-                if(lastpv == CTRL_VAL_UNKNOWN)
-                {
-                  --nval;
-                  if(song->mtype() == MT_GM)
-                    nval |= 0xffff00;
-                }
-                else  
-                  nval = (lastpv & 0xffff00) | (nval - 1);
-              }
-              else  
-                nval = (event.dataB() & 0xffff00) | (nval - 1);
-            }
-              
-            if (ax == xx1) {
-                  // change event
-                  found = true;
-                  ev->setVal(nval);
-                  if ((event.dataB() != nval)) {
-                        Event newEvent = event.clone();
-                        newEvent.setB(nval);
-                        // Indicate no undo, and do port controller values and clone parts. 
-                        audio->msgChangeEvent(event, newEvent, curPart, false, true, true);
-                        ev->setEvent(newEvent);
-                        song_changed = true;
-                        }
-                  }
-            else if (ax < xx2) {
-                  // delete event
-                  
-                  //printf("CtrlCanvas::newVal delete xx1:%d xx2:%d len:%d\n", xx1, xx2, curPart->lenTick()); 
-                 
-                  // Indicate no undo, and do port controller values and clone parts. 
-                  audio->msgDeleteEvent(event, curPart, false, true, true);
-                  
-                  song_changed = true;
-                  }
-            }
-      if (!found) {
-            // new event
-            int tick = xx1 - curPart->tick();
-            // Do not add events which are past the end of the part.
-            if((unsigned)tick < curPart->lenTick())
-            {
-              Event event(Controller);
-              event.setTick(tick);
-              event.setA(_didx);
-              if(type == CTRL_PROGRAM)
-              {
-                if(lastpv == CTRL_VAL_UNKNOWN)
-                {
-                  if(song->mtype() == MT_GM)
-                    event.setB(0xffff00 | (newval - 1));
-                  else  
-                    event.setB(newval - 1);
-                }
-                else    
-                  event.setB((lastpv & 0xffff00) | (newval - 1));
-              }
-              else  
-                event.setB(newval);
-              
-              //printf("CtrlCanvas::newVal add tick:%d A:%d B:%d\n", tick, event.dataA(), event.dataB()); 
-              
-              // Indicate no undo, and do port controller values and clone parts. 
-              audio->msgAddEvent(event, curPart, false, true, true);
-              
-              song_changed = true;
-            }  
-          }
-      if (song_changed) 
-      {
-            songChanged(0);
-            return;
-      }
-      redraw();
-      }
-*/
 
 //---------------------------------------------------------
 //   newVal
@@ -1607,10 +1294,7 @@ void CtrlCanvas::newVal(int x1, int y)
             }  
       }
       
-      //if(do_selchanged)
-      //  song->update(SC_SELECTION);      // Let songChanged handle the redraw upon SC_SELECTION.
-      //else 
-      if(do_redraw)                 //
+      if(do_redraw)                 // Let songChanged handle the redraw upon SC_SELECTION.
         redraw();
       }
 
@@ -1637,12 +1321,8 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
       // So I draw from the first x. (TODO The idea may work now since I wrote this - more work was done.) p4.0.18 Tim.
       
       int xx1 = editor->rasterVal1(x1);
-      // Grab the 'second' raster. Nudge by +1 and let rasterVal2 snap to the next raster.
-      //int xn1 = editor->rasterVal2(xx1 + 1);
       
       int xx2 = editor->rasterVal2(x2);
-      // Grab the 'second last' raster. Nudge by -1 and let rasterVal1 snap to the previous raster.
-      //int xn2 = editor->rasterVal1(xx2 - 1);
       
       // If x1 and x2 happen to lie directly on the same raster, xx1 will equal xx2, 
       //  which is not good - there should always be a spread. Nudge by +1 and recompute.
@@ -1661,7 +1341,6 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
       }  
 
       bool do_redraw = false;
-      //bool do_selchanged = false;
       
       // delete existing events
 
@@ -1671,7 +1350,6 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
       bool curPartFound = false;
       int lastpv = CTRL_VAL_UNKNOWN;
       int partTick = curPart->tick();
-      //for (ciCEvent i = items.begin(); i != items.end(); ++i) 
       for (iCEvent i = items.begin(); i != items.end() ; ) 
       {
             CEvent* ev = *i;
@@ -1701,10 +1379,7 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
             //printf("CtrlCanvas::newVal x:%d xx1:%d xx2:%d len:%d\n", x, xx1, xx2, curPart->lenTick());
             
             if (x < xx1)
-            //if (x < (xn1 >= xx2 ? xx1 : xn1))
             {
-            //  if(event.dataB() != CTRL_VAL_UNKNOWN)
-            //    lastpv = event.dataB();
               prev_ev = i;
               ++i;
               continue;
@@ -1739,24 +1414,14 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
             }
             
             do_redraw = true;    // Let songChanged handle the redraw upon SC_SELECTION.
-            //do_selchanged = true;  //
             
             prev_ev = i;
       }
 
-      //if(type == CTRL_PROGRAM && lastpv == CTRL_VAL_UNKNOWN)
       if(ctrl)  
         lastpv = ctrl->hwVal();
         
       // insert new events
-      //for (int x = xx1; x < xx2; x += raster) {
-      // Nudge x by +1 and let rasterVal2 snap to the next raster.
-      //for (int x = xx1; x < xx2;  x = useRaster ? x + raster : editor->rasterVal2(x + 1))    
-      //for (int x = xn1; x < xx2;  x = useRaster ? x + raster : editor->rasterVal2(x + 1))    
-      //for (int x = xn1, step; x < xx2 ; x += (step = useRaster ? raster : editor->rasterVal2(x + 1) - x) )    
-      // Start from the 'second' raster - the first raster is already set in mouseDown!
-      //for (int x = xn1, step; x < xx2 ; x += step )    
-      //for (int x = xn1 >= xx2 ? xx1 : xn1, step; x < xx2 ; x += step )    
       for (int x = xx1, step; x < xx2 ; x += step )    
       {
             step = useRaster ? raster : editor->rasterVal2(x + 1) - x;
@@ -1808,9 +1473,6 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
             do_redraw = true;
             }
               
-      //if(do_selchanged)
-      //  song->update(SC_SELECTION);      // Let songChanged handle the redraw upon SC_SELECTION.  
-      //else 
       if(do_redraw)                 //
         redraw();
       }
@@ -1841,10 +1503,8 @@ void CtrlCanvas::deleteVal(int x1, int x2, int)
 
       iCEvent prev_ev = items.end();
       bool curPartFound = false;
-      //bool song_changed = false;
       bool do_redraw = false;
       
-      //for (ciCEvent i = items.begin(); i != items.end(); ++i) 
       for (iCEvent i = items.begin(); i != items.end() ;) 
       {
             CEvent* ev = *i;
@@ -1895,13 +1555,8 @@ void CtrlCanvas::deleteVal(int x1, int x2, int)
             prev_ev = i;
       }
             
-      //if (song_changed) {
-      //      songChanged(0);
-      //      return;
-      //      }
       if(do_redraw)
         redraw();                 // Let songChanged handle the redraw upon SC_SELECTION.  
-        //song->update(SC_SELECTION); //  
       }
 
 //---------------------------------------------------------

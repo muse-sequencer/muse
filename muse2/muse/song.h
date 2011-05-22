@@ -147,7 +147,7 @@ class Song : public QObject {
       Song(const char* name = 0);
       ~Song();
 
-      void applyOperationGroup(Undo& group);
+      void applyOperationGroup(Undo& group, bool doUndo=true);
 
       void putEvent(int pv);
       void endMsgCmd();

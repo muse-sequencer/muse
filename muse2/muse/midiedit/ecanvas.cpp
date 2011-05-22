@@ -101,16 +101,6 @@ QPoint EventCanvas::raster(const QPoint& p) const
       }
 
 //---------------------------------------------------------
-//   update
-//---------------------------------------------------------
-
-void EventCanvas::updateSong(DragType dtype, int flags)
-      {
-      song->update(flags | ((dtype == MOVE_COPY || dtype == MOVE_CLONE)
-         ? SC_EVENT_INSERTED : SC_EVENT_MODIFIED));
-      }
-
-//---------------------------------------------------------
 //   mouseMove
 //---------------------------------------------------------
 
@@ -465,7 +455,7 @@ void EventCanvas::pasteAt(const QString& pt, int pos)
                         return;
                   case Xml::TagStart:
                         if (tag == "eventlist") {
-                              song->startUndo();
+                              Undo operations;
                               EventList* el = new EventList();
                               el->read(xml, "eventlist", true);
                               int modified = SC_EVENT_INSERTED;
@@ -474,7 +464,6 @@ void EventCanvas::pasteAt(const QString& pt, int pos)
                                     int tick = e.tick() + pos - curPart->tick();
                                     if (tick<0) {
                                             printf("ERROR: trying to add event before current part!\n");
-                                            song->endUndo(SC_EVENT_INSERTED);
                                             delete el;
                                             return;
                                             }
@@ -484,15 +473,15 @@ void EventCanvas::pasteAt(const QString& pt, int pos)
                                     if (diff > 0)  {// too short part? extend it
                                             Part* newPart = curPart->clone();
                                             newPart->setLenTick(newPart->lenTick()+diff);
-                                            // Indicate no undo, and do port controller values but not clone parts. 
-                                            audio->msgChangePart(curPart, newPart, false, true, false);
+                                            // Do port controller values but not clone parts. 
+                                            operations.push_back(UndoOp(UndoOp::ModifyPart, curPart, newPart, true, false));
                                             modified=modified|SC_PART_MODIFIED;
                                             curPart = newPart; // reassign
                                             }
-                                    // Indicate no undo, and do not do port controller values and clone parts. 
-                                    audio->msgAddEvent(e, curPart, false, false, false);
+                                    // Do not do port controller values and clone parts. 
+                                    operations.push_back(UndoOp(UndoOp::AddEvent, e, curPart, false, false));
                                     }
-                              song->endUndo(modified);
+                              song->applyOperationGroup(operations);
                               delete el;
                               return;
                               }
@@ -556,11 +545,8 @@ void EventCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir)
       
       
       
-      int modified = 0;
-      
-      Undo operations = moveCanvasItems(moving, dp, dx, dragtype, &modified);
+      Undo operations = moveCanvasItems(moving, dp, dx, dragtype);
       song->applyOperationGroup(operations);
-      updateSong(dragtype, modified);
       
       moving.clear();
       updateSelection();

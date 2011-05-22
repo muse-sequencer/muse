@@ -105,7 +105,6 @@ class Canvas : public View {
       virtual void resizeItem(CItem*, bool noSnap=false) = 0;
       virtual void newItem(CItem*, bool noSnap=false) = 0;
       virtual bool deleteItem(CItem*) = 0;
-      virtual void updateSong(DragType, int flags) = 0;
       int getCurrentDrag();
 
       /*!

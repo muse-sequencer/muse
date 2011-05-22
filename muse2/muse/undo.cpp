@@ -14,6 +14,8 @@
 #include "song.h"
 #include "globals.h"
 
+#include <QAction>
+
 // iundo points to last Undo() in Undo-list
 
 static bool undoMode = false;  // for debugging
@@ -201,12 +203,21 @@ void Song::endUndo(int flags)
       }
 
 
-void Song::applyOperationGroup(Undo& group)
+void Song::applyOperationGroup(Undo& group, bool doUndo)
+{
+      if (!group.empty())
       {
-      //this is a HACK! but it works :)    (added by flo93)
-      redoList->push_back(group);
-      redo();
+            //this is a HACK! but it works :)    (added by flo93)
+            redoList->push_back(group);
+            redo();
+            
+            if (!doUndo)
+            {
+                  undoList->pop_back();
+                  undoAction->setEnabled(!undoList->empty());
+            }
       }
+}
 
 
 

@@ -4221,12 +4221,6 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *   o rename stuff: UndoOp -> Operation, Undo -> OpList,
  *                   UndoType -> OpType, iUndoOp, riUndoOp -> iOperation,
  *                   undo.cpp/.h -> operations.cpp/.h
- *   o resizing a part is slow, because events get erased
- *   o drag'n'drop in canvases is slow
- *   o drawing controller lines is slow
- *   o cut,copy'n'paste is slow
- *   o reordering drum list is dead slow
- *   o reordering drum list creates unneccessary, actually wrong undo entry
  * 
  * 
  *   o drum list: scroll while dragging
@@ -4241,8 +4235,6 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *   o legato: extend length to next note
  *   o delete: add velo and len threshold
  *   o thin out: remove unneeded ctrl messages
- *   o in drum roll: changing the list causes undo to be triggered, WTF?
- *   o changing list is dead slow
  *
  * less important stuff
  *   o controller view in score editor

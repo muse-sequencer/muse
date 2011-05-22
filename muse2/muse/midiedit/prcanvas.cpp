@@ -258,7 +258,7 @@ void PianoCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
 //   moveCanvasItems
 //---------------------------------------------------------
 
-Undo PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype, int* pflags)
+Undo PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype)
 {      
   if(editor->parts()->empty())
     return Undo(); //return empty list
@@ -266,7 +266,6 @@ Undo PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dty
   Undo operations;  
   PartsToChangeMap parts2change;
   
-  int modified = 0;
   for(iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip)
   {
     Part* part = ip->second;
@@ -321,8 +320,6 @@ Undo PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dty
     Part* newPart = opart->clone();
     
     newPart->setLenTick(newPart->lenTick() + diff);
-    
-    modified = SC_PART_MODIFIED;
     
     // BUG FIX: #1650953
     // Added by T356.
@@ -392,9 +389,6 @@ Undo PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dty
           selectItem(ci, false);
   }  
       
-  if(pflags)
-    *pflags = modified;
-   
   return operations;
 }
       

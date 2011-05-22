@@ -833,7 +833,7 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len)
                   // -   0 or more events are beginning after the new final position. Those are removed from the part
                   // -   The last event begins before new final position and ends after it. If so, it will be resized to end at new part length
                   if (new_partlength < oPart->lenFrame()) {
-                        startUndo();
+                        Undo operations;
 
                         for (iEvent i = el->begin(); i != el->end(); i++) {
                               Event e = i->second;
@@ -843,31 +843,30 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len)
                               if (event_endframe < new_partlength)
                                     continue;
                               if (event_startframe > new_partlength) { // If event start was after the new length, remove it from part
-                                    // Indicate no undo, and do not do port controller values and clone parts. 
-                                    //audio->msgDeleteEvent(e, nPart, false);
-                                    audio->msgDeleteEvent(e, nPart, false, false, false);
+                                    // Do not do port controller values and clone parts. 
+                                    operations.push_back(UndoOp(UndoOp::DeleteEvent, e, nPart, false, false));
                                     continue;
                                     }
                               if (event_endframe > new_partlength) { // If this event starts before new length and ends after, shrink it
                                     Event newEvent = e.clone();
                                     newEvent.setLenFrame(new_partlength - event_startframe);
-                                    // Indicate no undo, and do not do port controller values and clone parts. 
-                                    //audio->msgChangeEvent(e, newEvent, nPart, false);
+                                    // Do not do port controller values and clone parts. 
                                     audio->msgChangeEvent(e, newEvent, nPart, false, false, false);
+                                    operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, nPart, false,false));
                                     }
                               }
                         nPart->setLenFrame(new_partlength);
-                        // Indicate no undo, and do not do port controller values and clone parts. 
-                        //audio->msgChangePart(oPart, nPart, false);
-                        audio->msgChangePart(oPart, nPart, false, false, false);
+                        // Do not do port controller values and clone parts. 
+                        operations.push_back(UndoOp(UndoOp::ModifyPart, oPart, nPart, false, false));
 
-                        endUndo(SC_PART_MODIFIED);
+                        song->applyOperationGroup(operations);
                         }
                   // If the part is expanded there can be no additional events beginning after the previous final position
                   // since those are removed if the part has been shrunk at some time (see above)
                   // The only thing we need to check is the final event: If it has data after the previous final position,
                   // we'll expand that event
                   else {
+                        Undo operations;
                         if(!el->empty())
                         {
                           iEvent i = el->end();
@@ -887,33 +886,27 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len)
                                 new_eventlength = clipframes;
   
                           newEvent.setLenFrame(new_eventlength);
-                          startUndo();
-                          // Indicate no undo, and do not do port controller values and clone parts. 
-                          //audio->msgChangeEvent(last, newEvent, nPart, false);
-                          audio->msgChangeEvent(last, newEvent, nPart, false, false, false);
-                        }  
-                        else
-                        {
-                          startUndo();
+                          // Do not do port controller values and clone parts. 
+                          operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, last, nPart, false, false));
                         }  
                         
                         nPart->setLenFrame(new_partlength);
-                        // Indicate no undo, and do not do port controller values and clone parts. 
-                        //audio->msgChangePart(oPart, nPart, false);
+                        // Do not do port controller values and clone parts. 
                         audio->msgChangePart(oPart, nPart, false, false, false);
-                        endUndo(SC_PART_MODIFIED);
+                        operations.push_back(UndoOp(UndoOp::ModifyPart, oPart, nPart, false, false));
+                        song->applyOperationGroup(operations);
                         }
                   }
                   break;
             case Track::MIDI:
             case Track::DRUM:
                   {
-                  startUndo();
+                  Undo operations;
 
                   MidiPart* nPart = new MidiPart(*(MidiPart*)oPart);
                   nPart->setLenTick(len);
-                  // Indicate no undo, and do port controller values but not clone parts. 
-                  audio->msgChangePart(oPart, nPart, false, true, false);
+                  // Do port controller values but not clone parts. 
+                  operations.push_back(UndoOp(UndoOp::ModifyPart, oPart, nPart, true, false));
 
                   // cut Events in nPart
                   // Changed by T356. Don't delete events if this is a clone part.
@@ -926,14 +919,13 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len)
                           for (; ie != el->end();) {
                                 iEvent i = ie;
                                 ++ie;
-                                // Indicate no undo, and do port controller values and clone parts. 
-                                audio->msgDeleteEvent(i->second, nPart, false, true, true); //FINDMICH
+                                // Do port controller values and clone parts. 
+                                operations.push_back(UndoOp(UndoOp::DeleteEvent, i->second, nPart, true, true));
                                 }
                           }
                   }        
                   
-                  
-                  endUndo(SC_PART_MODIFIED);
+                  song->applyOperationGroup(operations);
                   break;
                   }
             default:

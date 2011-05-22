@@ -95,7 +95,7 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
 //   moveCanvasItems
 //---------------------------------------------------------
 
-Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype, int* pflags)
+Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype)
 {      
   if(editor->parts()->empty())
     return Undo(); //return empty list
@@ -103,7 +103,6 @@ Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
   PartsToChangeMap parts2change;
   Undo operations;
   
-  int modified = 0;
   for(iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip)
   {
     Part* part = ip->second;
@@ -158,8 +157,6 @@ Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
     Part* newPart = opart->clone();
     
     newPart->setLenTick(newPart->lenTick() + diff);
-    
-    modified = SC_PART_MODIFIED;
     
     // BUG FIX: #1650953
     // Added by T356.
@@ -229,9 +226,6 @@ Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
           selectItem(ci, false);
   }  
       
-  if(pflags)
-    *pflags = modified;
-  
   return operations;
 }
       
@@ -818,13 +812,6 @@ void DrumCanvas::keyReleased(int index, bool)
 
 void DrumCanvas::mapChanged(int spitch, int dpitch)
       {
-      //TODO: Circumvent undo behaviour, since this isn't really a true change of the events,
-      // but merely a change in pitch because the pitch relates to the order of the dlist.
-      // Right now the sequencer spits out internalError: undoOp without startUndo() if start/stopundo is there, which is misleading
-      // If start/stopundo is there, undo misbehaves since it doesn't undo but messes things up
-      // Other solution: implement a specific undo-event for this (SC_DRUMMAP_MODIFIED or something) which undoes movement of
-      // dlist-items (ml)
-      
       Undo operations;
       std::vector< std::pair<Part*, Event*> > delete_events;
       std::vector< std::pair<Part*, Event> > add_events;
@@ -900,8 +887,8 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
             operations.push_back(UndoOp(UndoOp::AddEvent, theEvent, thePart, true, false));
             }
       
-      song->applyOperationGroup(operations);
-      song->update(SC_DRUMMAP);
+      song->applyOperationGroup(operations, false); // do not indicate undo
+      song->update(SC_DRUMMAP); //this update is neccessary, as it's not handled by applyOperationGroup()
       }
 
 //---------------------------------------------------------
