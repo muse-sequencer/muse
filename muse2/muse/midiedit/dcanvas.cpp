@@ -138,34 +138,6 @@ void DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
         
     if(npartoffset > 0)
     {    
-      // Create new part...
-      // if there are several events that are moved outside the part, it will be recreated for each
-      // so the part _in_ the event will not be valid, ask the authority.
-//      Part* newPart = part->clone();
-      //Part* newPart = Canvas::part()->clone();
-
-//      newPart->setLenTick(newPart->lenTick() + npartoffset);
-      //audio->msgChangePart(part, newPart,false);
-
-//      modified = SC_PART_MODIFIED;
-
-      // BUG FIX: #1650953
-      // Added by T356.
-      // Fixes posted "select and drag past end of part - crashing" bug
-//      for(iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip)
-//      {
-//        if(ip->second == part)
-//        {
-//          editor->parts()->erase(ip);
-//          break;
-//        }
-//      }
-      
-//      editor->parts()->add(newPart);
-//      audio->msgChangePart(part, newPart,false);
-      
-//      if(parts2change.find(part) == parts2change.end())
-//       parts2change.insert(std::pair<Part*, Part*> (part, newPart));
       iPartToChange ip2c = parts2change.find(part);
       if(ip2c == parts2change.end())
       {
@@ -174,14 +146,6 @@ void DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
       }
       else
         ip2c->second.xdiff = npartoffset;
-      
-      
-      //part = newPart; // reassign
-      //item->setPart(part);
-      //item->setEvent(newEvent);
-      //curPart = part;
-      //curPartId = curPart->sn();
-
     }
   }
     
@@ -210,7 +174,6 @@ void DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
       
     editor->parts()->add(newPart);
     // Indicate no undo, and do port controller values but not clone parts. 
-    //audio->msgChangePart(opart, newPart, false);
     audio->msgChangePart(opart, newPart, false, true, false);
     
     ip2c->second.npart = newPart;
@@ -251,7 +214,6 @@ void DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
         break;
       
     // Do not process if the event has already been processed (meaning it's an event in a clone part)...
-    //if(moveItem(ci, newpos, dtype))
     if(idl != doneList.end())
       // Just move the canvas item.
       ci->move(newpos);
@@ -282,14 +244,10 @@ void DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
 //   moveItem
 //---------------------------------------------------------
 
-// Changed by T356.
-//bool DrumCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype, int* pflags)
 bool DrumCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
       {
       DEvent* nevent   = (DEvent*) item;
       
-      // Changed by T356.
-      //MidiPart* part   = (MidiPart*)Canvas::part(); // part can be dynamically recreated, ask the authority
       MidiPart* part   = (MidiPart*)nevent->part();   
       
       Event event      = nevent->event();
@@ -305,40 +263,6 @@ bool DrumCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
       newEvent.setPitch(npitch);
       newEvent.setTick(ntick);
 
-      // Removed by T356.
-      /*
-      // Added by T356.
-      int modified = 0;
-      //song->startUndo();
-      int diff = newEvent.endTick()-part->lenTick();
-      if (diff > 0)  // too short part? extend it
-      {
-        // if there are several events that are moved outside the part, it will be recreated for each
-        // so the part _in_ the event will not be valid, ask the authority.
-        //Part* newPart = part->clone();
-        MidiPart* newPart = (MidiPart*)Canvas::part()->clone();
-        newPart->setLenTick(newPart->lenTick()+diff);
-        audio->msgChangePart(Canvas::part(), newPart,false);
-        
-        modified = SC_PART_MODIFIED;
-        part = newPart; // reassign
-        for(iPart i = editor->parts()->begin(); i != editor->parts()->end(); ++i)
-        {  
-          if(i->second == Canvas::part())
-          {
-            editor->parts()->erase(i); 
-            break;
-          }    
-        }
-        editor->parts()->add(part);
-        item->setPart(part);
-        item->setEvent(newEvent);
-        curPart = part;
-        curPartId = curPart->sn();
-      }
-      */
-      
-      // Added by T356. 
       // msgAddEvent and msgChangeEvent (below) will set these, but set them here first?
       //item->setPart(part);
       item->setEvent(newEvent);
@@ -349,19 +273,13 @@ bool DrumCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
       
       if (dtype == MOVE_COPY || dtype == MOVE_CLONE) {
             // Indicate no undo, and do not do port controller values and clone parts. 
-            //audio->msgAddEvent(newEvent, part, false);
             audio->msgAddEvent(newEvent, part, false, false, false);
             }
       else {
             // Indicate no undo, and do not do port controller values and clone parts. 
-            //audio->msgChangeEvent(event, newEvent, part, false);
             audio->msgChangeEvent(event, newEvent, part, false, false, false);
             }
         
-      // Removed by T356.
-      //if(pflags)
-      //  *pflags = modified;
-      
       return true;
       }
 
@@ -407,7 +325,6 @@ void DrumCanvas::resizeItem(CItem* item, bool)
       DEvent* nevent = (DEvent*) item;
       Event ev = nevent->event();
       // Indicate do undo, and do not do port controller values and clone parts. 
-      //audio->msgDeleteEvent(ev, nevent->part());
       audio->msgDeleteEvent(ev, nevent->part(), true, false, false);
       }
 
@@ -426,7 +343,6 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
       if (!noSnap)
             x = editor->rasterVal(x);
       event.setTick(x - nevent->part()->tick());
-      //int npitch = drumMap[y2pitch(item->y())].enote;
       int npitch = event.pitch();
       event.setPitch(npitch);
 
@@ -446,7 +362,6 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
               
             if (ev.pitch() == npitch) {
                   // Indicate do undo, and do not do port controller values and clone parts. 
-                  //audio->msgDeleteEvent(ev, nevent->part());
                   audio->msgDeleteEvent(ev, nevent->part(), true, false, false);
                   if (replace)
                     break;
@@ -465,13 +380,11 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
             Part* newPart = part->clone();
             newPart->setLenTick(newPart->lenTick()+diff);
             // Indicate no undo, and do port controller values but not clone parts. 
-            //audio->msgChangePart(part, newPart,false);
             audio->msgChangePart(part, newPart, false, true, false);
             modified=modified|SC_PART_MODIFIED;
             part = newPart; // reassign
             }
       // Indicate no undo, and do not do port controller values and clone parts. 
-      //audio->msgAddEvent(event, part,false); 
       audio->msgAddEvent(event, part, false, false, false); 
       song->endUndo(modified);
       
@@ -485,7 +398,6 @@ bool DrumCanvas::deleteItem(CItem* item)
       {
       Event ev = ((DEvent*)item)->event();
       // Indicate do undo, and do not do port controller values and clone parts. 
-      //audio->msgDeleteEvent(ev, ((DEvent*)item)->part());
       audio->msgDeleteEvent(ev, ((DEvent*)item)->part(), true, false, false);
       return false;
       }
@@ -554,10 +466,6 @@ void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
 
 void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
     {
-      //if(((DEvent*)item)->part() != curPart)
-      //  return;
-      //if(!item->isMoving()) 
-      //  return;
       QPolygon pa(4);
       QPoint pt = map(item->mp());
       int x = pt.x();
@@ -658,7 +566,6 @@ void DrumCanvas::cmd(int cmd)
                         DEvent* e = (DEvent*)(i->second);
                         Event event = e->event();
                         // Indicate no undo, and do not do port controller values and clone parts. 
-                        //audio->msgDeleteEvent(event, e->part(), false);
                         audio->msgDeleteEvent(event, e->part(), false, false, false);
                         }
                   song->endUndo(SC_EVENT_REMOVED);
@@ -760,7 +667,6 @@ void DrumCanvas::cmd(int cmd)
                               Event newEvent = event.clone();
                               newEvent.setLenTick(drumMap[event.pitch()].len);
                               // Indicate no undo, and do not do port controller values and clone parts. 
-                              //audio->msgChangeEvent(event, newEvent, devent->part() , false);
                               audio->msgChangeEvent(event, newEvent, devent->part(), false, false, false);
                               }
                         }
@@ -800,8 +706,6 @@ void DrumCanvas::cmd(int cmd)
             case CMD_RIGHT_NOSNAP:
                   {
                   Pos p(pos[0] + editor->rasterStep(pos[0]), true);
-                  //if (p > part->tick())
-                  //      p = part->tick();
                   song->setPos(0, p, true, true, true); //CDW
                   }
                   break;
@@ -810,68 +714,6 @@ void DrumCanvas::cmd(int cmd)
       redraw();
       }
 
-/*
-//---------------------------------------------------------
-//   getTextDrag
-//---------------------------------------------------------
-
-Q3TextDrag* DrumCanvas::getTextDrag(QWidget* parent)
-      {
-      //---------------------------------------------------
-      //   generate event list from selected events
-      //---------------------------------------------------
-
-      EventList el;
-      unsigned startTick = MAXINT;
-      for (iCItem i = items.begin(); i != items.end(); ++i) {
-            if (!i->second->isSelected())
-                  continue;
-            DEvent* ne = (DEvent*)(i->second);
-            Event    e = ne->event();
-            if (startTick == MAXINT)
-                  startTick = e.tick();
-            el.add(e);
-            }
-
-      //---------------------------------------------------
-      //    write events as XML into tmp file
-      //---------------------------------------------------
-
-      FILE* tmp = tmpfile();
-      if (tmp == 0) {
-            fprintf(stderr, "EventCanvas::copy() fopen failed: %s\n",
-               strerror(errno));
-            return 0;
-            }
-      Xml xml(tmp);
-
-      int level = 0;
-      for (ciEvent e = el.begin(); e != el.end(); ++e)
-            e->second.write(level, xml, -startTick);
-
-      //---------------------------------------------------
-      //    read tmp file into QTextDrag Object
-      //---------------------------------------------------
-
-      fflush(tmp);
-      struct stat f_stat;
-      if (fstat(fileno(tmp), &f_stat) == -1) {
-            fprintf(stderr, "EventCanvas::copy() fstat failes:<%s>\n",
-               strerror(errno));
-            fclose(tmp);
-            return 0;
-            }
-      int n = f_stat.st_size;
-      char* fbuf  = (char*)mmap(0, n+1, PROT_READ|PROT_WRITE,
-         MAP_PRIVATE, fileno(tmp), 0);
-      fbuf[n] = 0;
-      Q3TextDrag* drag = new Q3TextDrag(QString(fbuf), parent);
-      drag->setSubtype("eventlist");
-      munmap(fbuf, n);
-      fclose(tmp);
-      return drag;
-      }
-*/
 
 //---------------------------------------------------------
 //   copy
@@ -886,67 +728,6 @@ void DrumCanvas::copy()
             QApplication::clipboard()->setMimeData(md, QClipboard::Clipboard);
       }
 
-/*
-//---------------------------------------------------------
-//   paste
-//---------------------------------------------------------
-
-int DrumCanvas::pasteAt(const QString& pt, int pos)
-      {
-      QByteArray ba = pt.toLatin1();
-      const char* p = ba.constData();
-      Xml xml(p);
-
-      // Added by T356. 
-      int modified = SC_EVENT_INSERTED;
-      
-      song->startUndo();
-      for (;;) {
-            Xml::Token token = xml.parse();
-            QString tag = xml.s1();
-            switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
-                        song->endUndo(modified);
-                        return pos;
-                  case Xml::TagStart:
-                        if (tag == "event") {
-                              Event e(Note);
-                              e.read(xml);
-                              
-                              // Added by T356. 
-                              int tick = e.tick() + pos - curPart->tick();
-                              if (tick<0) { 
-                                      printf("DrumCanvas::pasteAt ERROR: trying to add event before current part!\n");
-                                      song->endUndo(SC_EVENT_INSERTED);
-                                      //delete el;
-                                      return pos;
-                                      }
-                              e.setTick(tick);
-                              int diff = e.endTick() - curPart->lenTick();
-                              if (diff > 0)  {// too short part? extend it
-                                      Part* newPart = curPart->clone();
-                                      newPart->setLenTick(newPart->lenTick()+diff);
-                                      // Indicate no undo, and do port controller values but not clone parts. 
-                                      audio->msgChangePart(curPart, newPart, false, true, false);
-                                      
-                                      modified=modified|SC_PART_MODIFIED;
-                                      curPart = newPart; // reassign
-                                      }
-                              
-                              // Indicate no undo, and do not do port controller values and clone parts. 
-                              audio->msgAddEvent(e, curPart, false, false, false);
-                              }
-                        else
-                              xml.unknown("DCanvas::pasteAt");
-                        break;
-                  case Xml::TagEnd:
-                  default:
-                        break;
-                  }
-            }
-      }
-*/
 
 //---------------------------------------------------------
 //   paste
@@ -972,10 +753,6 @@ void DrumCanvas::startDrag(CItem* /* item*/, bool copymode)
       QMimeData* md = getTextDrag();
       
       if (md) {
-//            QApplication::clipboard()->setData(drag, QClipboard::Clipboard);   // This line NOT enabled in muse-1 
-            //QApplication::clipboard()->setMimeData(md);                // TODO CHECK Tim.
-            //QApplication::clipboard()->setMimeData(drag->mimeData());  // 
-
             // "Note that setMimeData() assigns ownership of the QMimeData object to the QDrag object. 
             //  The QDrag must be constructed on the heap with a parent QWidget to ensure that Qt can 
             //  clean up after the drag and drop operation has been completed. "
@@ -1014,40 +791,6 @@ void DrumCanvas::dragLeaveEvent(QDragLeaveEvent*)
       {
       }
 
-/*
-//---------------------------------------------------------
-//   dropEvent
-//---------------------------------------------------------
-
-void DrumCanvas::viewDropEvent(QDropEvent* event)
-      {
-      QString text;
-      if (event->source() == this) {
-            printf("local DROP\n");      
-            //event->acceptProposedAction();     
-            //event->ignore();                     // TODO CHECK Tim.
-            return;
-            }
-      //if (event->mimeData()->hasText()) {
-      if (event->mimeData()->hasFormat("text/x-muse-eventlist")) {
-            
-            //text = event->mimeData()->text();
-            text = QString(event->mimeData()->data("text/x-muse-eventlist"));
-      
-//            printf("drop <%s>\n", text.ascii());
-            int x = editor->rasterVal(event->pos().x());
-            if (x < 0)
-                  x = 0;
-            pasteAt(text, x);
-            //event->accept();  // TODO
-            }
-      else {
-            printf("cannot decode drop\n");
-            //event->acceptProposedAction();     
-            //event->ignore();                     // TODO CHECK Tim.
-            }
-      }
-*/
 
 //---------------------------------------------------------
 //   keyPressed - called from DList
@@ -1099,26 +842,7 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
       
       typedef std::vector< std::pair<Part*, Event*> >::iterator idel_ev;
       typedef std::vector< std::pair<Part*, Event> >::iterator iadd_ev;
-      
-      /*
-      class delete_events : public std::vector< Part*, Event* > 
-      {
-        public:
-          idel_ev find(Part* p, Event* e)
-          {
-          
-          };
-      };
-      class add_events : public std::vector< Part*, Event > 
-      {
-        public:
-          iadd_ev find(Part* p, Event& e)
-          {
-          
-          };
-      };
-      */
-      
+            
       MidiTrackList* tracks = song->midis();
       for (ciMidiTrack t = tracks->begin(); t != tracks->end(); t++) {
             MidiTrack* curTrack = *t;
@@ -1169,13 +893,9 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
 
       song->startUndo();
       for (idel_ev i = delete_events.begin(); i != delete_events.end(); i++) {
-            //std::pair<Part*, Event*> pair = *i;
-            //Part*  thePart = pair.first;
-            //Event* theEvent = pair.second;
             Part*  thePart = (*i).first;
             Event* theEvent = (*i).second;
             // Indicate no undo, and do port controller values but not clone parts. 
-            //audio->msgDeleteEvent(*theEvent, thePart, false);
             audio->msgDeleteEvent(*theEvent, thePart, false, true, false);
             }
 
@@ -1188,13 +908,9 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
       drumOutmap[int(drumMap[int(dpitch)].anote)] = dpitch;
             
       for (iadd_ev i = add_events.begin(); i != add_events.end(); i++) {
-            //std::pair<Part*, Event> pair = *i;
-            //Part*  thePart = pair.first;
-            //Event& theEvent = pair.second;
             Part*  thePart = (*i).first;
             Event& theEvent = (*i).second;
             // Indicate no undo, and do port controller values but not clone parts. 
-            //audio->msgAddEvent(theEvent, thePart, false);
             audio->msgAddEvent(theEvent, thePart, false, true, false);
             }
       
@@ -1243,40 +959,12 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int delta)
                         }
                         break;
                   case NoteInfo::VAL_LEN:
-                        /*
-                        {
-                        int len = event.lenTick() + delta;
-                        if (len < 1)
-                              len = 1;
-                        newEvent.setLenTick(len);
-                        }
-                        */
                         printf("DrumCanvas::modifySelected - NoteInfo::VAL_LEN not implemented\n");
                         break;
                   case NoteInfo::VAL_VELON:
-                        /*
-                        {
-                        int velo = event->velo() + delta;
-                        if (velo > 127)
-                              velo = 127;
-                        else if (velo < 0)
-                              velo = 0;
-                        newEvent.setVelo(velo);
-                        }
-                        */
                         printf("DrumCanvas::modifySelected - NoteInfo::VAL_VELON not implemented\n");
                         break;
                   case NoteInfo::VAL_VELOFF:
-                        /*
-                        {
-                        int velo = event.veloOff() + delta;
-                        if (velo > 127)
-                              velo = 127;
-                        else if (velo < 0)
-                              velo = 0;
-                        newEvent.setVeloOff(velo);
-                        }
-                        */
                         printf("DrumCanvas::modifySelected - NoteInfo::VAL_VELOFF not implemented\n");
                         break;
                   case NoteInfo::VAL_PITCH:
@@ -1292,7 +980,6 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int delta)
                   }
             song->changeEvent(event, newEvent, part);
             // Indicate do not do port controller values and clone parts. 
-            //song->addUndo(UndoOp(UndoOp::ModifyEvent, newEvent, event, part));
             song->addUndo(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
             }
       song->endUndo(SC_EVENT_MODIFIED);
