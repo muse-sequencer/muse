@@ -1730,7 +1730,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
                   int hoffset = (mt->height() - th ) / 2; // offset from bottom
 
                   if (ctrl_type == CTRL_PITCH)
-                    p.drawLine(t, hoffset + r.y() + th/2, t, hoffset + r.y() + val*th/8192/2 + th/2);
+                    p.drawLine(t, hoffset + r.y() + th/2, t, hoffset + r.y() - val*th/8192/2 + th/2);
             }
       }
 
@@ -1747,7 +1747,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
                   int hoffset = (mt->height() - th ) / 2; // offset from bottom
 
                   if (ctrl_type == 10)
-                    p.drawLine(t, hoffset + r.y() + val*th/127, t, hoffset + r.y() + th);
+                    p.drawLine(t, hoffset + r.y() + th - val*th/127, t, hoffset + r.y() + th);
             }
       }
 
@@ -1764,7 +1764,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
                   int hoffset = (mt->height() - th ) / 2; // offset from bottom
 
                   if (ctrl_type == 7)
-                    p.drawLine(t, hoffset + r.y() + val*th/127, t, hoffset + r.y() + th);
+                    p.drawLine(t, hoffset + r.y() + th - val*th/127, t, hoffset + r.y() + th);
             }
       }
 
