@@ -198,11 +198,11 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       mapper->setMapping(funcTransposeAction, PianoCanvas::CMD_TRANSPOSE);
       connect(funcTransposeAction, SIGNAL(triggered()), mapper, SLOT(map()));
             
-      funcEraseEventAction = menuFunctions->addAction(tr("Erase Event"));
+      funcEraseEventAction = menuFunctions->addAction(tr("Erase Events"));
       mapper->setMapping(funcEraseEventAction, PianoCanvas::CMD_ERASE_EVENT);
       connect(funcEraseEventAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      funcNoteShiftAction = menuFunctions->addAction(tr("Note Shift"));
+      funcNoteShiftAction = menuFunctions->addAction(tr("Move Notes"));
       mapper->setMapping(funcNoteShiftAction, PianoCanvas::CMD_NOTE_SHIFT);
       connect(funcNoteShiftAction, SIGNAL(triggered()), mapper, SLOT(map()));
             
@@ -213,7 +213,12 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       funcDelOverlapsAction = menuFunctions->addAction(tr("Delete Overlaps"));
       mapper->setMapping(funcDelOverlapsAction, PianoCanvas::CMD_DELETE_OVERLAPS);
       connect(funcDelOverlapsAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
+
+      QAction* funcLegatoAction = menuFunctions->addAction(tr("Legato"));
+      mapper->setMapping(funcLegatoAction, PianoCanvas::CMD_LEGATO);
+      connect(funcLegatoAction, SIGNAL(triggered()), mapper, SLOT(map()));
+            
+                  
       menuPlugins = menuBar()->addMenu(tr("&Plugins"));
       song->populateScriptMenu(menuPlugins, this);
 
@@ -610,6 +615,7 @@ void PianoRoll::cmd(int cmd)
 						case PianoCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_FIXED_LEN: set_notelen(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_LEGATO: legato(partlist_to_set(parts())); break;
 						
 						default: ((PianoCanvas*)canvas)->cmd(cmd);
 					  }

@@ -365,10 +365,23 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 		QAction* func_notelen_action = functions_menu->addAction(tr("Change note &length"), menu_mapper, SLOT(map()));
 		QAction* func_velocity_action = functions_menu->addAction(tr("Change note &velocity"), menu_mapper, SLOT(map()));
 		QAction* func_cresc_action = functions_menu->addAction(tr("Crescendo/Decrescendo"), menu_mapper, SLOT(map()));
+		QAction* func_transpose_action = functions_menu->addAction(tr("Transpose"), menu_mapper, SLOT(map()));
+		QAction* func_erase_action = functions_menu->addAction(tr("Erase Events"), menu_mapper, SLOT(map()));
+		QAction* func_move_action = functions_menu->addAction(tr("Move Notes"), menu_mapper, SLOT(map()));
+		QAction* func_fixed_len_action = functions_menu->addAction(tr("Set Fixed Length"), menu_mapper, SLOT(map()));
+		QAction* func_del_overlaps_action = functions_menu->addAction(tr("Delete Overlaps"), menu_mapper, SLOT(map()));
+		QAction* func_legato_action = functions_menu->addAction(tr("Legato"), menu_mapper, SLOT(map()));
 		menu_mapper->setMapping(func_quantize_action, CMD_QUANTIZE);
 		menu_mapper->setMapping(func_notelen_action, CMD_NOTELEN);
 		menu_mapper->setMapping(func_velocity_action, CMD_VELOCITY);
 		menu_mapper->setMapping(func_cresc_action, CMD_CRESCENDO);
+		menu_mapper->setMapping(func_transpose_action, CMD_TRANSPOSE);
+		menu_mapper->setMapping(func_erase_action, CMD_ERASE);
+		menu_mapper->setMapping(func_move_action, CMD_MOVE);
+		menu_mapper->setMapping(func_fixed_len_action, CMD_FIXED_LEN);
+		menu_mapper->setMapping(func_del_overlaps_action, CMD_DELETE_OVERLAPS);
+		menu_mapper->setMapping(func_legato_action, CMD_LEGATO);
+
 
 	if (!default_toolbar_state.isEmpty())
 		restoreState(default_toolbar_state);
@@ -572,7 +585,13 @@ void ScoreEdit::menu_command(int cmd)
 		case CMD_VELOCITY: modify_velocity(score_canvas->get_all_parts()); break;
 		case CMD_CRESCENDO: crescendo(score_canvas->get_all_parts()); break;
 		case CMD_NOTELEN: modify_notelen(score_canvas->get_all_parts()); break;
-		
+		case CMD_TRANSPOSE: transpose_notes(score_canvas->get_all_parts()); break;
+		case CMD_ERASE: erase_notes(score_canvas->get_all_parts()); break;
+		case CMD_MOVE: move_notes(score_canvas->get_all_parts()); break;
+		case CMD_FIXED_LEN: set_notelen(score_canvas->get_all_parts()); break;
+		case CMD_DELETE_OVERLAPS: delete_overlaps(score_canvas->get_all_parts()); break;
+		case CMD_LEGATO: legato(score_canvas->get_all_parts()); break;
+	
 		default: 
 			score_canvas->menu_command(cmd);
 	}
@@ -4261,7 +4280,9 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o legato: extend length to next note
+ * > o legato: extend length to next note
+ *   o add music-keyboard-bindings for "insert rest" and "increase note length"
+ *   o maybe support step-recording in score editor as well?
  * 
  * IMPORTANT TODO
  *   o do partial recalculating; recalculating can take pretty long

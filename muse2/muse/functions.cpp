@@ -27,6 +27,7 @@ Setlen* set_notelen_dialog=NULL;
 Move* move_notes_dialog=NULL;
 Transpose* transpose_dialog=NULL;
 Crescendo* crescendo_dialog=NULL;
+Legato* legato_dialog=NULL;
 
 void init_function_dialogs(QWidget* parent)
 {
@@ -39,6 +40,7 @@ void init_function_dialogs(QWidget* parent)
 	move_notes_dialog = new Move(parent);
 	transpose_dialog = new Transpose(parent);
 	crescendo_dialog = new Crescendo(parent);
+	legato_dialog = new Legato(parent);
 }
 
 set<Part*> partlist_to_set(PartList* pl)
@@ -177,6 +179,16 @@ bool crescendo(const set<Part*>& parts)
 		return false;
 		
 	crescendo(parts,crescendo_dialog->range,crescendo_dialog->start_val,crescendo_dialog->end_val,crescendo_dialog->absolute);
+	
+	return true;
+}
+
+bool legato(const set<Part*>& parts)
+{
+	if (!legato_dialog->exec())
+		return false;
+		
+	legato(parts,legato_dialog->range, legato_dialog->min_len, !legato_dialog->allow_shortening);
 	
 	return true;
 }
@@ -535,6 +547,60 @@ void delete_overlaps(const set<Part*>& parts, int range)
 	}
 }
 
+void legato(const set<Part*>& parts, int range, int min_len, bool dont_shorten)
+{
+	map<Event*, Part*> events = get_events(parts, range);
+	bool undo_started=false;
+	
+	if (min_len<=0) min_len=1;
+	
+	if (!events.empty())
+	{
+		for (map<Event*, Part*>::iterator it1=events.begin(); it1!=events.end(); it1++)
+		{
+			Event& event1=*(it1->first);
+			Part* part1=it1->second;
+			
+			unsigned len=MAXINT;
+			// we may NOT optimize by letting it2 start at (it1 +1); this optimisation
+			// is only allowed when events was sorted by time. it is, however, sorted
+			// randomly by pointer.
+			for (map<Event*, Part*>::iterator it2=events.begin(); it2!=events.end(); it2++)
+			{
+				Event& event2=*(it2->first);
+				Part* part2=it2->second;
+				
+				bool relevant = (event2.tick() >= event1.tick() + min_len);
+				if (dont_shorten)
+					relevant = relevant && (event2.tick() >= event1.endTick());
+				
+				if ( (part1->events()==part2->events()) &&  // part1 and part2 are the same or are duplicates
+				      relevant &&                           // they're not too near (respect min_len and dont_shorten)
+				     (event2.tick()-event1.tick() < len ) ) // that's the nearest relevant following note
+					len=event2.tick()-event1.tick();
+			}
+			
+			if (len==MAXINT) len=event1.lenTick(); // if no following note was found, keep the length
+			
+			if (event1.lenTick() != len)
+			{
+				if (undo_started==false)
+				{
+					song->startUndo();
+					undo_started=true;
+				}
+				
+				Event new_event1 = event1.clone();
+				new_event1.setLenTick(len);
+				
+				audio->msgChangeEvent(event1, new_event1, part1, false, false, false);
+			}
+		}
+		
+		if (undo_started) song->endUndo(SC_EVENT_MODIFIED);
+	}
+}
+
 
 
 void read_function_dialog_config(Xml& xml)
@@ -574,6 +640,8 @@ void read_function_dialog_config(Xml& xml)
 					transpose_dialog->read_configuration(xml);
 				else if (tag == "crescendo")
 					crescendo_dialog->read_configuration(xml);
+				else if (tag == "legato")
+					legato_dialog->read_configuration(xml);
 				else
 					xml.unknown("function_dialogs");
 				break;
@@ -601,6 +669,7 @@ void write_function_dialog_config(int level, Xml& xml)
 	move_notes_dialog->write_configuration(level, xml);
 	transpose_dialog->write_configuration(level, xml);
 	crescendo_dialog->write_configuration(level, xml);
+	legato_dialog->write_configuration(level, xml);
 
 	xml.tag(level, "/dialogs");
 }

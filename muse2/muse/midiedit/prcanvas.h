@@ -98,7 +98,7 @@ class PianoCanvas : public EventCanvas {
          CMD_TRANSPOSE, CMD_THIN_OUT, CMD_ERASE_EVENT,
          CMD_NOTE_SHIFT, CMD_MOVE_CLOCK, CMD_COPY_MEASURE,
          CMD_ERASE_MEASURE, CMD_DELETE_MEASURE, CMD_CREATE_MEASURE,
-         CMD_FIXED_LEN, CMD_DELETE_OVERLAPS
+         CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO
          };
 
       PianoCanvas(MidiEditor*, QWidget*, int, int);

@@ -30,6 +30,7 @@ QT4_WRAP_CPP (widgets_functiondialogs_mocs
       remove.h
       setlen.h
       transpose.h
+      legato.h
       velocity.h
       )
 
@@ -45,6 +46,7 @@ file (GLOB widgets_functiondialogs_ui_files
       removebase.ui
       setlenbase.ui
       transposebase.ui
+      legatobase.ui
       velocitybase.ui
       )
 
@@ -62,6 +64,7 @@ file (GLOB widgets_functiondialogs_source_files
       remove.cpp
       setlen.cpp
       transpose.cpp
+      legato.cpp
       velocity.cpp
       )
 

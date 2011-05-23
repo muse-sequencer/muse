@@ -17,6 +17,7 @@
 #include "widgets/function_dialogs/setlen.h"
 #include "widgets/function_dialogs/move.h"
 #include "widgets/function_dialogs/deloverlaps.h"
+#include "widgets/function_dialogs/legato.h"
 
 #include <set>
 #include "part.h"
@@ -31,6 +32,7 @@ extern Setlen* set_notelen_dialog;
 extern Move* move_notes_dialog;
 extern Transpose* transpose_dialog;
 extern Crescendo* crescendo_dialog;
+extern Legato* legato_dialog;
 
 void init_function_dialogs(QWidget* parent);
 
@@ -49,6 +51,7 @@ void set_notelen(const std::set<Part*>& parts, int range, int len);
 void move_notes(const std::set<Part*>& parts, int range, signed int ticks);
 void transpose_notes(const std::set<Part*>& parts, int range, signed int halftonesteps);
 void crescendo(const std::set<Part*>& parts, int range, int start_val, int end_val, bool absolute);
+void legato(const std::set<Part*>& parts, int range, int min_len=1, bool dont_shorten=false);
 
 
 //the below functions automatically open the dialog
@@ -62,6 +65,7 @@ bool transpose_notes(const std::set<Part*>& parts);
 bool crescendo(const std::set<Part*>& parts);
 bool erase_notes(const std::set<Part*>& parts);
 bool delete_overlaps(const std::set<Part*>& parts);
+bool legato(const std::set<Part*>& parts);
 
 
 
