@@ -62,7 +62,6 @@ QT4_WRAP_CPP ( muse_moc_headers
       plugin.h 
       song.h 
       transport.h 
-      transpose.h 
       value.h 
       )
 
@@ -89,6 +88,7 @@ file (GLOB core_source_files
       event.cpp
       eventlist.cpp 
       exportmidi.cpp 
+      functions.cpp
       gconfig.cpp 
       globals.cpp
       help.cpp 
@@ -128,7 +128,6 @@ file (GLOB core_source_files
       ticksynth.cpp 
       track.cpp
       transport.cpp
-      transpose.cpp
       undo.cpp
       value.cpp
       vst.cpp
@@ -194,6 +193,7 @@ include_directories(
       ${CMAKE_CURRENT_BINARY_DIR}/remote
       ${CMAKE_CURRENT_BINARY_DIR}/waveedit
       ${CMAKE_CURRENT_BINARY_DIR}/widgets 
+      ${CMAKE_CURRENT_BINARY_DIR}/widgets/function_dialogs
       )
 
 ##
@@ -234,6 +234,7 @@ target_link_libraries(core
       synti       
       waveedit
       widgets 
+      widgets_functiondialogs
       
       ${QT_LIBRARIES}
       ${SNDFILE_LIBRARIES}

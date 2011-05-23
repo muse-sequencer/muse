@@ -59,7 +59,7 @@
       <item>
        <widget class="QRadioButton" name="selectedLooped">
         <property name="text">
-         <string>Selected &amp; Looped</string>
+         <string>Selected Looped</string>
         </property>
        </widget>
       </item>
@@ -114,13 +114,23 @@
       <item row="1" column="1">
        <widget class="QSpinBox" name="offset">
         <property name="minimum">
-         <number>1</number>
+         <number>-127</number>
         </property>
         <property name="maximum">
          <number>127</number>
         </property>
         <property name="singleStep">
          <number>1</number>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>veloNew = (veloOld * rate) + offset</string>
         </property>
        </widget>
       </item>

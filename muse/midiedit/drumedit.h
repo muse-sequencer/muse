@@ -8,6 +8,8 @@
 #ifndef __DRUM_EDIT_H__
 #define __DRUM_EDIT_H__
 
+#include <QByteArray>
+
 #include <values.h>
 #include "midieditor.h"
 #include "noteinfo.h"
@@ -66,15 +68,14 @@ class DrumEdit : public MidiEditor {
       QToolBar* tools;
       QComboBox *stepLenWidget;
 
-      static int _quantInit, _rasterInit;
+      static int _rasterInit;
       static int _widthInit, _heightInit;
       static int _dlistWidthInit, _dcanvasWidthInit;
-
-      static int _toInit; //Used in function dialog for applying modification to selection
+      static QByteArray _toolbarInit;
 
       QAction *loadAction, *saveAction, *resetAction;
       QAction *cutAction, *copyAction, *pasteAction, *deleteAction;
-      QAction *fixedAction, *veloAction;
+      QAction *fixedAction, *veloAction, *crescAction, *quantizeAction;
       QAction *sallAction, *snoneAction, *invAction, *inAction , *outAction;
       QAction *prevAction, *nextAction;
 
@@ -83,15 +84,17 @@ class DrumEdit : public MidiEditor {
 
       virtual void closeEvent(QCloseEvent*);
       QWidget* genToolbar(QWidget* parent);
-      virtual void resizeEvent(QResizeEvent*);
       virtual void keyPressEvent(QKeyEvent*);
-      int _to;//TODO: Make this work
+
+      virtual void resizeEvent(QResizeEvent*);
+      virtual void focusOutEvent(QFocusEvent*);
+      void storeInitialState();
+
       void setHeaderToolTips();
       void setHeaderWhatsThis();
 
    private slots:
       void setRaster(int);
-      void setQuant(int);
       void noteinfoChanged(NoteInfo::ValType type, int val);
       //CtrlEdit* addCtrl();
       void removeCtrl(CtrlEdit* ctrl);

@@ -44,7 +44,7 @@ class MidiEditor : public TopWin  {
       WaveView* wview;
 
       std::list<CtrlEdit*> ctrlEditList;
-      int _quant, _raster;
+      int _raster;
       QGridLayout* mainGrid;
       QWidget* mainw;
       virtual void readStatus(Xml&);
@@ -63,11 +63,10 @@ class MidiEditor : public TopWin  {
       void curDrumInstrumentChanged(int);
 
    public:
-      MidiEditor(int, int, PartList*,
+      MidiEditor(int, PartList*,
          QWidget* parent = 0, const char* name = 0);
       ~MidiEditor();
 
-      int quantVal(int v) const;
       ///int rasterStep(unsigned tick) const   { return sigmap.rasterStep(tick, _raster); }
       ///unsigned rasterVal(unsigned v)  const { return sigmap.raster(v, _raster);  }
       ///unsigned rasterVal1(unsigned v) const { return sigmap.raster1(v, _raster); }
@@ -76,8 +75,6 @@ class MidiEditor : public TopWin  {
       unsigned rasterVal(unsigned v)  const { return AL::sigmap.raster(v, _raster);  }
       unsigned rasterVal1(unsigned v) const { return AL::sigmap.raster1(v, _raster); }
       unsigned rasterVal2(unsigned v) const { return AL::sigmap.raster2(v, _raster); }
-      int quant() const            { return _quant; }
-      void setQuant(int val)       { _quant = val; }
       int raster() const           { return _raster; }
       void setRaster(int val)      { _raster = val; }
       PartList* parts()            { return _pl;  }

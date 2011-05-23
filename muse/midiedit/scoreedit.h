@@ -20,17 +20,18 @@
 #include <QSignalMapper>
 #include <QAction>
 #include <QActionGroup>
+#include <QGridLayout>
+#include <QByteArray>
 
 #include <values.h>
 #include "noteinfo.h"
 #include "cobject.h"
-#include "midieditor.h"
-#include "tools.h"
 #include "event.h"
 #include "view.h"
 #include "gconfig.h"
 #include "part.h"
 #include "keyevent.h"
+#include "mtscale_flo.h"
 
 #include <set>
 #include <map>
@@ -55,9 +56,14 @@ using std::string;
 enum {CMD_COLOR_BLACK, CMD_COLOR_VELO, CMD_COLOR_PART,
       CMD_SET_NAME,
       CMD_NOTELEN_1, CMD_NOTELEN_2, CMD_NOTELEN_4, CMD_NOTELEN_8,
-      CMD_NOTELEN_16, CMD_NOTELEN_32, CMD_NOTELEN_LAST };
+      CMD_NOTELEN_16, CMD_NOTELEN_32, CMD_NOTELEN_LAST,
+      
+      CMD_QUANTIZE, CMD_VELOCITY, CMD_CRESCENDO, CMD_NOTELEN, CMD_TRANSPOSE,
+      CMD_ERASE, CMD_MOVE, CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO };
+
 
 class ScoreCanvas;
+class EditToolBar;
 
 //---------------------------------------------------------
 //   ScoreEdit
@@ -66,10 +72,15 @@ class ScoreCanvas;
 class ScoreEdit : public TopWin
 {
 	Q_OBJECT
+  public:
+    enum clefTypes { trebleClef, bassClef, grandStaff };
 
 	private:
 		virtual void closeEvent(QCloseEvent*);
 		virtual void resizeEvent(QResizeEvent*);
+		virtual void focusOutEvent(QFocusEvent*);
+		
+		void store_initial_state();
 		
 		void init_name();
 
@@ -103,9 +114,14 @@ class ScoreEdit : public TopWin
 		QScrollBar* xscroll;
 		QScrollBar* yscroll;
 		ScoreCanvas* score_canvas;
+		MTScaleFlo* time_bar;
+		
+		QLabel* apply_velo_to_label;
+		bool apply_velo;
 		
 		static set<QString> names;
 		static int width_init, height_init;
+		static QByteArray default_toolbar_state;
 		
 		QString name;
 		
@@ -115,16 +131,21 @@ class ScoreEdit : public TopWin
 		
 	private slots:
 		void menu_command(int);
+		void velo_box_changed();
+		void velo_off_box_changed();
 		
 	signals:
 		void deleted(unsigned long);
 		void name_changed();
+		void velo_changed(int);
+		void velo_off_changed(int);
 
 	public slots:
 		void canvas_width_changed(int);
 		void viewport_width_changed(int);
 		void canvas_height_changed(int);
 		void viewport_height_changed(int);
+		void song_changed(int);
 		
 	public:
 		ScoreEdit(QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
@@ -137,6 +158,7 @@ class ScoreEdit : public TopWin
 		
 		void add_parts(PartList* pl, bool all_in_one=false);
 		QString get_name() { return name; }
+		bool get_apply_velo() { return apply_velo; }
 	};
 
 
@@ -436,8 +458,9 @@ struct cumulative_t
 
 #define BLACK_PIXMAP (NUM_PARTCOLORS)
 #define HIGHLIGHTED_PIXMAP (NUM_PARTCOLORS+1)
-#define NUM_MYCOLORS (NUM_PARTCOLORS+2 + 128)
-#define VELO_PIXMAP_BEGIN (NUM_PARTCOLORS+2)
+#define SELECTED_PIXMAP (NUM_PARTCOLORS+2)
+#define NUM_MYCOLORS (NUM_PARTCOLORS+3 + 128)
+#define VELO_PIXMAP_BEGIN (NUM_PARTCOLORS+3)
 
 struct timesig_t
 {
@@ -469,6 +492,9 @@ struct staff_t
 	int y_draw;
 	int y_bottom;
 	
+	int min_y_coord;
+	int max_y_coord;
+	
 	staff_type_t type;
 	clef_t clef;
 	
@@ -478,6 +504,8 @@ struct staff_t
 	void create_itemlist();
 	void process_itemlist();
 	void calc_item_pos();
+	
+	void apply_lasso(QRect rect, set<Event*>& already_processed);
 	
 	void recalculate()
 	{
@@ -561,13 +589,6 @@ class ScoreCanvas : public View
 		void recalc_staff_pos();
 		list<staff_t>::iterator staff_at_y(int y);
 
-		
-		timesig_t timesig_at_tick(int t);
-		key_enum key_at_tick(int t);
-		int tick_to_x(int t);
-		int x_to_tick(int x);
-		int calc_posadd(int t);
-
 
 
 		bool need_redraw_for_hilighting(ScoreItemList::iterator from_it, ScoreItemList::iterator to_it);
@@ -588,8 +609,8 @@ class ScoreCanvas : public View
 		int _quant_power2;
 		int _pixels_per_whole;
 
-		int newnote_velo;
-		int newnote_velo_off;
+		int note_velo;
+		int note_velo_off;
 		
 		std::map<int,int> pos_add_list;
 		
@@ -619,6 +640,7 @@ class ScoreCanvas : public View
 		int last_len;
 		int new_len; //when zero or negative, last_len is used
 
+		Qt::KeyboardModifiers keystate;
 		QPoint mouse_down_pos;
 		bool mouse_down;
 		enum operation_t
@@ -634,11 +656,19 @@ class ScoreCanvas : public View
 		bool mouse_inserts_notes;
 		
 		bool dragging;
+		bool drag_cursor_changed;
 		Part* dragged_event_part;
 		Event dragged_event;
 		int dragged_event_original_pitch;
+		
+		bool have_lasso;
+		QPoint lasso_start;
+		QRect lasso;
 
-
+		bool undo_started;
+		int undo_flags;
+		
+		
 
 		enum {COLOR_MODE_BLACK, COLOR_MODE_PART, COLOR_MODE_VELO} coloring_mode;
 		bool preamble_contains_keysig;
@@ -664,11 +694,14 @@ class ScoreCanvas : public View
 		
 		void play_changed(bool);
 		void config_changed();
+		
+		void deselect_all();
 
    public slots:
       void x_scroll_event(int);
       void y_scroll_event(int);
       void song_changed(int);
+      void fully_recalculate();
 			void goto_tick(int,bool);
 			void pos_changed(int i, unsigned u, bool b);
 			void heartbeat_timer_event();
@@ -680,17 +713,19 @@ class ScoreCanvas : public View
 			void preamble_timesig_slot(bool);
 			void set_pixels_per_whole(int);
 
-			void set_newnote_velo(int);
-			void set_newnote_velo_off(int);
+			void set_velo(int);
+			void set_velo_off(int);
 	
 	signals:
 			void xscroll_changed(int);
 			void yscroll_changed(int);
 			void viewport_width_changed(int);
 			void canvas_width_changed(int);
+			void preamble_width_changed(int);
 			void viewport_height_changed(int);
 			void canvas_height_changed(int);
 			void pixels_per_whole_changed(int);
+			void pos_add_changed();
 			
 	protected:
 		virtual void draw(QPainter& p, const QRect& rect);
@@ -700,9 +735,10 @@ class ScoreCanvas : public View
 		virtual void mouseMoveEvent (QMouseEvent* event);
 		virtual void mouseReleaseEvent (QMouseEvent* event);
 		virtual void resizeEvent(QResizeEvent*);
+		virtual void keyPressEvent(QKeyEvent* event);
 		
 	public:
-		ScoreCanvas(ScoreEdit*, QWidget*, int, int);
+		ScoreCanvas(ScoreEdit*, QWidget*);
 		~ScoreCanvas(){};
 
 		void add_staves(PartList* pl, bool all_in_one);
@@ -725,7 +761,16 @@ class ScoreCanvas : public View
 		Part* get_selected_part() {return selected_part;}
 		void set_selected_part(Part* p) {selected_part=p;}
 		
+		set<Part*> get_all_parts();
+		
 		void write_staves(int level, Xml& xml) const;
+
+		timesig_t timesig_at_tick(int t);
+		key_enum key_at_tick(int t);
+		int tick_to_x(int t);
+		int delta_tick_to_delta_x(int t);
+		int x_to_tick(int x);
+		int calc_posadd(int t);
 };
 
 int calc_measure_len(const list<int>& nums, int denom);

@@ -125,6 +125,7 @@ LMaster::LMaster()
       setWindowTitle(tr("MusE: Mastertrack"));
       setMinimumHeight(100);
       setFixedWidth(400);
+      setFocusPolicy(Qt::StrongFocus);
 
       //---------Pulldown Menu----------------------------
       menuEdit = menuBar()->addMenu(tr("&Edit"));

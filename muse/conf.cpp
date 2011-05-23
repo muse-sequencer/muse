@@ -14,6 +14,7 @@
 #include "transport.h"
 #include "icons.h"
 #include "globals.h"
+#include "functions.h"
 #include "drumedit.h"
 #include "pianoroll.h"
 #include "scoreedit.h"
@@ -891,6 +892,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               MasterEdit::readConfiguration(xml);
                         else if (tag == "waveedit")
                               WaveEdit::readConfiguration(xml);
+                        else if (tag == "dialogs")
+                              read_function_dialog_config(xml);
                         else if (tag == "shortcuts")
                               readShortCuts(xml);
                         else if (tag == "division")
@@ -1360,6 +1363,8 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       ScoreEdit::write_configuration(level, xml);
       MasterEdit::writeConfiguration(level, xml);
       WaveEdit::writeConfiguration(level, xml);
+      
+      write_function_dialog_config(level, xml);
 
       writeShortCuts(level, xml);
       xml.etag(level, "configuration");
@@ -1475,6 +1480,8 @@ void MusE::writeConfiguration(int level, Xml& xml) const
       ScoreEdit::write_configuration(level, xml);
       MasterEdit::writeConfiguration(level, xml);
       WaveEdit::writeConfiguration(level, xml);
+      
+      write_function_dialog_config(level, xml);
 
       writeMidiTransforms(level, xml);
       writeMidiInputTransforms(level, xml);

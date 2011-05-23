@@ -12,17 +12,18 @@
 #define CMD_RIGHT  1
 #define CMD_INSERT 2
 #define CMD_DELETE 3
-#define CMD_1      4
-#define CMD_2      5
-#define CMD_3      6
-#define CMD_4      7
-#define CMD_5      8
-#define CMD_6      9
-#define CMD_7      10
-#define CMD_T      11
-#define CMD_period 12
-#define CMD_LEFT_NOSNAP   13
-#define CMD_RIGHT_NOSNAP  14
+#define CMD_BACKSPACE 4
+#define CMD_1      5
+#define CMD_2      6
+#define CMD_3      7
+#define CMD_4      8
+#define CMD_5      9
+#define CMD_6      10
+#define CMD_7      11
+#define CMD_T      12
+#define CMD_period 13
+#define CMD_LEFT_NOSNAP   14
+#define CMD_RIGHT_NOSNAP  15
 
 #endif
 

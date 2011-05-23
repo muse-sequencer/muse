@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>GateTimeBase</class>
- <widget class="QDialog" name="GateTimeBase">
+ <class>DelOverlapsBase</class>
+ <widget class="QDialog" name="DelOverlapsBase">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>275</width>
-    <height>316</height>
+    <height>195</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MusE: Modify Gate Time</string>
+   <string>MusE: Delete Overlaps</string>
   </property>
-  <layout class="QVBoxLayout">
+  <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
     <number>6</number>
    </property>
@@ -25,7 +28,7 @@
      <property name="title">
       <string>Range</string>
      </property>
-     <layout class="QVBoxLayout">
+     <layout class="QVBoxLayout" name="verticalLayout">
       <property name="spacing">
        <number>6</number>
       </property>
@@ -33,14 +36,14 @@
        <number>11</number>
       </property>
       <item>
-       <widget class="QRadioButton" name="allButton">
+       <widget class="QRadioButton" name="all_events_button">
         <property name="text">
          <string>All Events</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="selButton">
+       <widget class="QRadioButton" name="selected_events_button">
         <property name="text">
          <string>Selected Events</string>
         </property>
@@ -50,16 +53,16 @@
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="loopButton">
+       <widget class="QRadioButton" name="looped_events_button">
         <property name="text">
          <string>Looped Events</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="sloopButton">
+       <widget class="QRadioButton" name="selected_looped_button">
         <property name="text">
-         <string>Selected &amp; Looped</string>
+         <string>Selected Looped</string>
         </property>
        </widget>
       </item>
@@ -67,76 +70,12 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="GroupBox3">
-     <property name="title">
-      <string>Values</string>
-     </property>
-     <layout class="QGridLayout">
-      <property name="margin">
-       <number>11</number>
-      </property>
-      <property name="spacing">
-       <number>6</number>
-      </property>
-      <item row="0" column="0">
-       <widget class="QLabel" name="TextLabel3">
-        <property name="text">
-         <string>Rate:</string>
-        </property>
-        <property name="wordWrap">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="TextLabel4">
-        <property name="text">
-         <string>Offset:</string>
-        </property>
-        <property name="wordWrap">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QSpinBox" name="rate">
-        <property name="suffix">
-         <string>%</string>
-        </property>
-        <property name="maximum">
-         <number>200</number>
-        </property>
-        <property name="value">
-         <number>100</number>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QSpinBox" name="offset">
-        <property name="minimum">
-         <number>-999</number>
-        </property>
-        <property name="maximum">
-         <number>999</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout">
      <property name="spacing">
       <number>6</number>
      </property>
-     <property name="margin">
-      <number>0</number>
-     </property>
      <item>
-      <spacer name="spacer">
+      <spacer name="Spacer1">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
@@ -145,8 +84,8 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>0</width>
-         <height>0</height>
+         <width>20</width>
+         <height>20</height>
         </size>
        </property>
       </spacer>
@@ -175,12 +114,13 @@
    </item>
   </layout>
  </widget>
+ <layoutdefault spacing="6" margin="11"/>
  <resources/>
  <connections>
   <connection>
    <sender>okButton</sender>
    <signal>clicked()</signal>
-   <receiver>GateTimeBase</receiver>
+   <receiver>DelOverlapsBase</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -196,7 +136,7 @@
   <connection>
    <sender>cancelButton</sender>
    <signal>clicked()</signal>
-   <receiver>GateTimeBase</receiver>
+   <receiver>DelOverlapsBase</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

@@ -18,6 +18,12 @@
 #  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #=============================================================================
 
+set (SubDirs 
+      function_dialogs 
+      )
+
+subdirs (${SubDirs})
+
 ##
 ## Expand Qt macros in source files
 ##
@@ -35,7 +41,6 @@ QT4_WRAP_CPP (widget_mocs
       didyouknow.h
       doublelabel.h  
       filedialog.h  
-      gatetime.h  
       genset.h  
       header.h  
       hitscale.h  
@@ -48,6 +53,7 @@ QT4_WRAP_CPP (widget_mocs
       mixdowndialog.h  
       mlabel.h  
       mtscale.h  
+      mtscale_flo.h  
       mtrackinfo.h
       nentry.h  
       noteinfo.h  
@@ -76,7 +82,6 @@ QT4_WRAP_CPP (widget_mocs
       # ttoolbar.h  
       ttoolbutton.h  
       unusedwavefiles.h
-      velocity.h
       verticalmeter.h
       view.h
       vscale.h
@@ -96,7 +101,6 @@ file (GLOB widgets_ui_files
       editnotedialogbase.ui  
       editsysexdialogbase.ui  
       fdialogbuttons.ui  
-      gatetimebase.ui  
       gensetbase.ui  
       itransformbase.ui  
       metronomebase.ui  
@@ -110,9 +114,7 @@ file (GLOB widgets_ui_files
       songinfo.ui  
       synthconfigbase.ui  
       transformbase.ui  
-      transposebase.ui
       unusedwavefiles.ui
-      velocitybase.ui
       )
 QT4_WRAP_UI (widget_ui_headers ${widgets_ui_files})
 
@@ -134,7 +136,6 @@ file (GLOB widgets_source_files
       doublelabel.cpp 
       drange.cpp
       filedialog.cpp 
-      gatetime.cpp 
       genset.cpp 
       header.cpp 
       hitscale.cpp 
@@ -149,6 +150,7 @@ file (GLOB widgets_source_files
       mmath.cpp
       mtrackinfo.cpp
       mtscale.cpp 
+      mtscale_flo.cpp 
       nentry.cpp 
       noteinfo.cpp 
       pitchedit.cpp 

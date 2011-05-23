@@ -174,10 +174,12 @@ const char* med_file_save_pattern[] = {
 */      
 const QStringList med_file_pattern =  
       QT_TRANSLATE_NOOP("@default", 
+      QString("all known files (*.med *.med.gz *.med.bz2 *.mid *.midi *.kar);;") +
       QString("med Files (*.med *.med.gz *.med.bz2);;") +
       QString("Uncompressed med Files (*.med);;") +
       QString("gzip compressed med Files (*.med.gz);;") +
       QString("bzip2 compressed med Files (*.med.bz2);;") +
+      QString("mid Files (*.mid *.midi *.kar);;") +
       QString("All Files (*)")).split(";;");
 const QStringList med_file_save_pattern =  
       QT_TRANSLATE_NOOP("@default", 

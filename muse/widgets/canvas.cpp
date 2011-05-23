@@ -574,11 +574,11 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                   updateSelection();
                   redraw();
                   }
-            startDrag(curItem, shift);
+            startDrag(curItem, ctrl);
             }
       else if (event->button() == Qt::RightButton) {
             if (curItem) {
-                  if (shift) {
+                  if (ctrl) {
                         drag = DRAG_RESIZE;
                         setCursor();
                         int dx = start.x() - curItem->x();
@@ -622,15 +622,14 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                               // Changed by T356. Alt is default reserved for moving the whole window in KDE. Changed to Shift-Alt.
                               // Hmm, nope, shift-alt is also reserved sometimes. Must find a way to bypass, 
                               //  why make user turn off setting? Left alone for now...
-                              if (shift && !ctrl)
+                              if (ctrl && !shift)
                                     drag = DRAG_COPY_START;
                               else if (alt) {
                                     drag = DRAG_CLONE_START;
                                     }
-                              else if (ctrl) { //Select all on the same pitch (e.g. same y-value)
-                                    if (!shift)
+                              else if (shift) { //Select all on the same pitch (e.g. same y-value)
+                                    if (!ctrl)
                                       deselectAll();
-                                    //printf("Yes, ctrl and press\n");
                                     for (iCItem i = items.begin(); i != items.end(); ++i) {
                                           if (i->second->y() == curItem->y() )
                                                 selectItem(i->second, true);
@@ -1082,32 +1081,26 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
 
 void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
       {
-// printf("release %x %x\n", event->state(), event->button());
-
       doScroll = false;
       canScrollLeft = true;
       canScrollRight = true;
       canScrollUp = true;
       canScrollDown = true;
-      ///if (event->state() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(event->button())) {
       if (event->buttons() & (Qt::LeftButton|Qt::RightButton|Qt::MidButton) & ~(event->button())) {
-            ///printf("ignore %x %x\n", keyState, event->button());
-            //printf("viewMouseReleaseEvent ignore buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
             return;
             }
 
       QPoint pos = event->pos();
-      ///bool shift = event->state() & Qt::ShiftModifier;
-      bool shift = ((QInputEvent*)event)->modifiers() & Qt::ShiftModifier;
+      bool ctrl = ((QInputEvent*)event)->modifiers() & Qt::ControlModifier;
       bool redrawFlag = false;
 
       switch (drag) {
             case DRAG_MOVE_START:
             case DRAG_COPY_START:
             case DRAG_CLONE_START:
-                  if (!shift)
+                  if (!ctrl)
                         deselectAll();
-                  selectItem(curItem, !(shift && curItem->isSelected()));
+                  selectItem(curItem, !(ctrl && curItem->isSelected()));
                   updateSelection();
                   redrawFlag = true;
                   itemReleased(curItem, curItem->pos());
@@ -1150,17 +1143,17 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                   break;
             case DRAG_LASSO_START:
                   lasso.setRect(-1, -1, -1, -1);
-                  if (!shift)
+                  if (!ctrl)
                         deselectAll();
                   updateSelection();
                   redrawFlag = true;
                   break;
 
             case DRAG_LASSO:
-                  if (!shift)
+                  if (!ctrl)
                         deselectAll();
                   lasso = lasso.normalized();
-                  selectLasso(shift);
+                  selectLasso(ctrl);
                   updateSelection();
                   redrawFlag = true;
                   break;

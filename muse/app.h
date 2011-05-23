@@ -114,7 +114,6 @@ class MusE : public QMainWindow
       QAction *trackMidiAction, *trackDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
       QAction *trackAInputAction, *trackAAuxAction;
       QAction *masterGraphicAction, *masterListAction;
-      QAction *midiTransposeAction;
       QAction *midiTransformerAction;
       QAction *editSongInfoAction;
    public:
@@ -295,7 +294,6 @@ class MusE : public QMainWindow
       void cmd(int);
       void clipboardChanged();
       void selectionChanged();
-      void transpose();
       void modifyGateTime();
       void modifyVelocity();
       void crescendo();

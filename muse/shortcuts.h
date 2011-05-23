@@ -22,7 +22,7 @@
 #define DEDIT_SHRT       2  // Drumedit shortcut
 #define LEDIT_SHRT       4  // Listedit shortcut
 #define SCORE_SHRT       8  // Score shortcut
-#define ARRANG_SHRT     16  // Arrenger shortcut
+#define ARRANG_SHRT     16  // Arranger shortcut
 #define TRANSP_SHRT     32  // Transport shortcut
 #define WAVE_SHRT       64  // Waveedit shortcut
 #define GLOBAL_SHRT    128  // Global shortcuts
@@ -246,11 +246,6 @@ enum {
       SHRT_SCROLL_RIGHT, // l
       SHRT_FIXED_LEN, //Alt+L, currently only drumeditor
       SHRT_QUANTIZE, //q
-      SHRT_OVER_QUANTIZE, //Default: undefined
-      SHRT_ON_QUANTIZE, //Default: undefined
-      SHRT_ONOFF_QUANTIZE, //Default: undefined
-      SHRT_ITERATIVE_QUANTIZE, //Default: undefined
-      SHRT_CONFIG_QUANT, //Default: Ctrl+Alt+Q
       SHRT_MODIFY_GATE_TIME, //Default: undefined
       SHRT_MODIFY_VELOCITY,
       SHRT_CRESCENDO,
