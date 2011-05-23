@@ -44,22 +44,19 @@
 #include "gconfig.h"
 #include "icons.h"
 #include "audio.h"
+#include "functions.h"
+
 
 #include "cmd.h"
-#include "quantconfig.h"
 #include "shortcuts.h"
 
 #include "mtrackinfo.h"
 
-int PianoRoll::_quantInit = 96;
 int PianoRoll::_rasterInit = 96;
 int PianoRoll::_widthInit = 600;
 int PianoRoll::_heightInit = 400;
-int PianoRoll::_quantStrengthInit = 80;      // 1 - 100%
-int PianoRoll::_quantLimitInit = 50;         // tick value
-bool PianoRoll::_quantLenInit = false;
-int PianoRoll::_toInit = 0;
 int PianoRoll::colorModeInit = 0;
+QByteArray PianoRoll::_toolbarInit;
 
 static const int xscale = -10;
 static const int yscale = 1;
@@ -72,17 +69,12 @@ static int pianorollTools = PointerTool | PencilTool | RubberTool | DrawTool;
 //---------------------------------------------------------
 
 PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned initPos)
-   : MidiEditor(_quantInit, _rasterInit, pl, parent, name)
+   : MidiEditor(_rasterInit, pl, parent, name)
       {
       deltaMode = false;
       resize(_widthInit, _heightInit);
       selPart        = 0;
-      quantConfig    = 0;
       _playEvents    = false;
-      _quantStrength = _quantStrengthInit;
-      _quantLimit    = _quantLimitInit;
-      _quantLen      = _quantLenInit;
-      _to            = _toInit;
       colorMode      = colorModeInit;
       
       QSignalMapper* mapper = new QSignalMapper(this);
@@ -186,30 +178,11 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 
       menuFunctions->setTearOffEnabled(true);
       
-      funcOverQuantAction = menuFunctions->addAction(tr("Over Quantize"));
-      mapper->setMapping(funcOverQuantAction, PianoCanvas::CMD_OVER_QUANTIZE);
-      connect(funcOverQuantAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      funcQuantizeAction = menuFunctions->addAction(tr("Quantize"));
+      mapper->setMapping(funcQuantizeAction, PianoCanvas::CMD_QUANTIZE);
+      connect(funcQuantizeAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      funcNoteOnQuantAction = menuFunctions->addAction(tr("Note On Quantize"));
-      mapper->setMapping(funcNoteOnQuantAction, PianoCanvas::CMD_ON_QUANTIZE);
-      connect(funcNoteOnQuantAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcNoteOnOffQuantAction = menuFunctions->addAction(tr("Note On/Off Quantize"));
-      mapper->setMapping(funcNoteOnOffQuantAction, PianoCanvas::CMD_ONOFF_QUANTIZE);
-      connect(funcNoteOnOffQuantAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcIterQuantAction = menuFunctions->addAction(tr("Iterative Quantize"));
-      mapper->setMapping(funcIterQuantAction, PianoCanvas::CMD_ITERATIVE_QUANTIZE);
-      connect(funcIterQuantAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      menuFunctions->addSeparator();
-      
-      funcConfigQuantAction = menuFunctions->addAction(tr("Config Quant..."));
-      connect(funcConfigQuantAction, SIGNAL(triggered()), this, SLOT(configQuant()));
-      
-      menuFunctions->addSeparator();
-      
-      funcGateTimeAction = menuFunctions->addAction(tr("Modify Gate Time"));
+      funcGateTimeAction = menuFunctions->addAction(tr("Modify Note Length"));
       mapper->setMapping(funcGateTimeAction, PianoCanvas::CMD_MODIFY_GATE_TIME);
       connect(funcGateTimeAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
@@ -217,56 +190,22 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       mapper->setMapping(funcModVelAction, PianoCanvas::CMD_MODIFY_VELOCITY);
       connect(funcModVelAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      funcCrescendoAction = menuFunctions->addAction(tr("Crescendo"));
-      mapper->setMapping(funcCrescendoAction, PianoCanvas::CMD_CRESCENDO);
-      funcCrescendoAction->setEnabled(false);
-      connect(funcCrescendoAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      funcCrescAction = menuFunctions->addAction(tr("Crescendo/Decrescendo"));
+      mapper->setMapping(funcCrescAction, PianoCanvas::CMD_CRESCENDO);
+      connect(funcCrescAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
       funcTransposeAction = menuFunctions->addAction(tr("Transpose"));
       mapper->setMapping(funcTransposeAction, PianoCanvas::CMD_TRANSPOSE);
-      funcTransposeAction->setEnabled(false);
       connect(funcTransposeAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcThinOutAction = menuFunctions->addAction(tr("Thin Out"));
-      mapper->setMapping(funcThinOutAction, PianoCanvas::CMD_THIN_OUT);
-      funcThinOutAction->setEnabled(false);
-      connect(funcThinOutAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcEraseEventAction = menuFunctions->addAction(tr("Erase Event"));
+            
+      funcEraseEventAction = menuFunctions->addAction(tr("Erase Events"));
       mapper->setMapping(funcEraseEventAction, PianoCanvas::CMD_ERASE_EVENT);
-      funcEraseEventAction->setEnabled(false);
       connect(funcEraseEventAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      funcNoteShiftAction = menuFunctions->addAction(tr("Note Shift"));
+      funcNoteShiftAction = menuFunctions->addAction(tr("Move Notes"));
       mapper->setMapping(funcNoteShiftAction, PianoCanvas::CMD_NOTE_SHIFT);
-      funcNoteShiftAction->setEnabled(false);
       connect(funcNoteShiftAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcMoveClockAction = menuFunctions->addAction(tr("Move Clock"));
-      mapper->setMapping(funcMoveClockAction, PianoCanvas::CMD_MOVE_CLOCK);
-      funcMoveClockAction->setEnabled(false);
-      connect(funcMoveClockAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcCopyMeasureAction = menuFunctions->addAction(tr("Copy Measure"));
-      mapper->setMapping(funcCopyMeasureAction, PianoCanvas::CMD_COPY_MEASURE);
-      funcCopyMeasureAction->setEnabled(false);
-      connect(funcCopyMeasureAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcEraseMeasureAction = menuFunctions->addAction(tr("Erase Measure"));
-      mapper->setMapping(funcEraseMeasureAction, PianoCanvas::CMD_ERASE_MEASURE);
-      funcEraseMeasureAction->setEnabled(false);
-      connect(funcEraseMeasureAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcDelMeasureAction = menuFunctions->addAction(tr("Delete Measure"));
-      mapper->setMapping(funcDelMeasureAction, PianoCanvas::CMD_DELETE_MEASURE);
-      funcDelMeasureAction->setEnabled(false);
-      connect(funcDelMeasureAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
-      funcCreateMeasureAction = menuFunctions->addAction(tr("Create Measure"));
-      mapper->setMapping(funcCreateMeasureAction, PianoCanvas::CMD_CREATE_MEASURE);
-      funcCreateMeasureAction->setEnabled(false);
-      connect(funcCreateMeasureAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
+            
       funcSetFixedLenAction = menuFunctions->addAction(tr("Set Fixed Length"));
       mapper->setMapping(funcSetFixedLenAction, PianoCanvas::CMD_FIXED_LEN);
       connect(funcSetFixedLenAction, SIGNAL(triggered()), mapper, SLOT(map()));
@@ -274,7 +213,12 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       funcDelOverlapsAction = menuFunctions->addAction(tr("Delete Overlaps"));
       mapper->setMapping(funcDelOverlapsAction, PianoCanvas::CMD_DELETE_OVERLAPS);
       connect(funcDelOverlapsAction, SIGNAL(triggered()), mapper, SLOT(map()));
-      
+
+      QAction* funcLegatoAction = menuFunctions->addAction(tr("Legato"));
+      mapper->setMapping(funcLegatoAction, PianoCanvas::CMD_LEGATO);
+      connect(funcLegatoAction, SIGNAL(triggered()), mapper, SLOT(map()));
+            
+                  
       menuPlugins = menuBar()->addMenu(tr("&Plugins"));
       song->populateScriptMenu(menuPlugins, this);
 
@@ -318,7 +262,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       transport->addActions(transportAction->actions());
 
       addToolBarBreak();
-      toolbar = new Toolbar1(this, _rasterInit, _quantInit);
+      toolbar = new Toolbar1(this, _rasterInit);
       addToolBar(toolbar);
 
       addToolBarBreak();
@@ -518,13 +462,15 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       connect(canvas,   SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
       connect(piano,    SIGNAL(pitchChanged(int)), toolbar, SLOT(setPitch(int)));
       connect(time,     SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
-      connect(toolbar,  SIGNAL(quantChanged(int)), SLOT(setQuant(int)));
       connect(toolbar,  SIGNAL(rasterChanged(int)),SLOT(setRaster(int)));
-      connect(toolbar,  SIGNAL(toChanged(int)),    SLOT(setTo(int)));
       connect(toolbar,  SIGNAL(soloChanged(bool)), SLOT(soloChanged(bool)));
 
       setFocusPolicy(Qt::StrongFocus);
       setEventColorMode(colorMode);
+
+      if (!_toolbarInit.isEmpty())
+            restoreState(_toolbarInit);
+
 
       QClipboard* cb = QApplication::clipboard();
       connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
@@ -657,7 +603,22 @@ PianoRoll::~PianoRoll()
 
 void PianoRoll::cmd(int cmd)
       {
-      ((PianoCanvas*)canvas)->cmd(cmd, _quantStrength, _quantLimit, _quantLen, _to);
+			switch (cmd)
+						{
+						case PianoCanvas::CMD_MODIFY_GATE_TIME: modify_notelen(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_QUANTIZE: quantize_notes(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_TRANSPOSE: transpose_notes(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break;
+						case PianoCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_FIXED_LEN: set_notelen(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
+						case PianoCanvas::CMD_LEGATO: legato(partlist_to_set(parts())); break;
+						
+						default: ((PianoCanvas*)canvas)->cmd(cmd);
+					  }
       }
 
 //---------------------------------------------------------
@@ -835,24 +796,16 @@ void PianoRoll::readConfiguration(Xml& xml)
             const QString& tag = xml.s1();
             switch (token) {
                   case Xml::TagStart:
-                        if (tag == "quant")
-                              _quantInit = xml.parseInt();
-                        else if (tag == "raster")
+                        if (tag == "raster")
                               _rasterInit = xml.parseInt();
-                        else if (tag == "quantStrength")
-                              _quantStrengthInit = xml.parseInt();
-                        else if (tag == "quantLimit")
-                              _quantLimitInit = xml.parseInt();
-                        else if (tag == "quantLen")
-                              _quantLenInit = xml.parseInt();
-                        else if (tag == "to")
-                              _toInit = xml.parseInt();
                         else if (tag == "colormode")
                               colorModeInit = xml.parseInt();
                         else if (tag == "width")
                               _widthInit = xml.parseInt();
                         else if (tag == "height")
                               _heightInit = xml.parseInt();
+                        else if (tag == "toolbars")
+                              _toolbarInit = QByteArray::fromHex(xml.parse1().toAscii());
                         else
                               xml.unknown("PianoRoll");
                         break;
@@ -872,15 +825,11 @@ void PianoRoll::readConfiguration(Xml& xml)
 void PianoRoll::writeConfiguration(int level, Xml& xml)
       {
       xml.tag(level++, "pianoroll");
-      xml.intTag(level, "quant", _quantInit);
       xml.intTag(level, "raster", _rasterInit);
-      xml.intTag(level, "quantStrength", _quantStrengthInit);
-      xml.intTag(level, "quantLimit", _quantLimitInit);
-      xml.intTag(level, "quantLen", _quantLenInit);
-      xml.intTag(level, "to", _toInit);
       xml.intTag(level, "width", _widthInit);
       xml.intTag(level, "height", _heightInit);
       xml.intTag(level, "colormode", colorModeInit);
+      xml.strTag(level, "toolbars", _toolbarInit.toHex().data());
       xml.etag(level, "pianoroll");
       }
 
@@ -908,17 +857,6 @@ void PianoRoll::setRaster(int val)
       }
 
 //---------------------------------------------------------
-//   setQuant
-//---------------------------------------------------------
-
-void PianoRoll::setQuant(int val)
-      {
-      _quantInit = val;
-      MidiEditor::setQuant(val);
-      canvas->setFocus();
-      }
-
-//---------------------------------------------------------
 //   writeStatus
 //---------------------------------------------------------
 
@@ -938,9 +876,6 @@ void PianoRoll::writeStatus(int level, Xml& xml) const
       xml.intTag(level, "steprec", canvas->steprec());
       xml.intTag(level, "midiin", canvas->midiin());
       xml.intTag(level, "tool", int(canvas->tool()));
-      xml.intTag(level, "quantStrength", _quantStrength);
-      xml.intTag(level, "quantLimit", _quantLimit);
-      xml.intTag(level, "quantLen", _quantLen);
       xml.intTag(level, "playEvents", _playEvents);
       xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "xmag", hscroll->mag());
@@ -987,12 +922,6 @@ void PianoRoll::readStatus(Xml& xml)
                               splitter->readStatus(xml);
                         else if (tag == hsplitter->objectName())
                               hsplitter->readStatus(xml);
-                        else if (tag == "quantStrength")
-                              _quantStrength = xml.parseInt();
-                        else if (tag == "quantLimit")
-                              _quantLimit = xml.parseInt();
-                        else if (tag == "quantLen")
-                              _quantLen = xml.parseInt();
                         else if (tag == "playEvents") {
                               _playEvents = xml.parseInt();
                               canvas->playEvents(_playEvents);
@@ -1011,10 +940,8 @@ void PianoRoll::readStatus(Xml& xml)
                         break;
                   case Xml::TagEnd:
                         if (tag == "pianoroll") {
-                              _quantInit  = _quant;
                               _rasterInit = _raster;
                               toolbar->setRaster(_raster);
-                              toolbar->setQuant(_quant);
                               canvas->redrawGrid();
                               return;
                               }
@@ -1059,13 +986,10 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
       PianoCanvas* pc = (PianoCanvas*)canvas;
       int key = event->key();
 
-      //if (event->state() & Qt::ShiftButton)
       if (((QInputEvent*)event)->modifiers() & Qt::ShiftModifier)
             key += Qt::SHIFT;
-      //if (event->state() & Qt::AltButton)
       if (((QInputEvent*)event)->modifiers() & Qt::AltModifier)
             key += Qt::ALT;
-      //if (event->state() & Qt::ControlButton)
       if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
             key+= Qt::CTRL;
 
@@ -1109,8 +1033,8 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             pc->pianoCmd(CMD_INSERT);
             return;
             }
-      else if (key == Qt::Key_Delete) {
-            pc->pianoCmd(CMD_DELETE);
+      else if (key == Qt::Key_Backspace) {
+            pc->pianoCmd(CMD_BACKSPACE);
             return;
             }
       else if (key == shortcuts[SHRT_ZOOM_IN].key) {
@@ -1196,25 +1120,8 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             event->ignore();
             return;
             }
-      setQuant(val);
       setRaster(val);
-      toolbar->setQuant(_quant);
       toolbar->setRaster(_raster);
-      }
-
-//---------------------------------------------------------
-//   configQuant
-//---------------------------------------------------------
-
-void PianoRoll::configQuant()
-      {
-      if (!quantConfig) {
-            quantConfig = new QuantConfig(_quantStrength, _quantLimit, _quantLen);
-            connect(quantConfig, SIGNAL(setQuantStrength(int)), SLOT(setQuantStrength(int)));
-            connect(quantConfig, SIGNAL(setQuantLimit(int)), SLOT(setQuantLimit(int)));
-            connect(quantConfig, SIGNAL(setQuantLen(bool)), SLOT(setQuantLen(bool)));
-            }
-      quantConfig->show();
       }
 
 //---------------------------------------------------------
@@ -1297,8 +1204,30 @@ void PianoRoll::setSpeaker(bool val)
 void PianoRoll::resizeEvent(QResizeEvent* ev)
       {
       QWidget::resizeEvent(ev);
-      _widthInit = ev->size().width();
-      _heightInit = ev->size().height();
+      storeInitialState();
+      }
+
+
+//---------------------------------------------------------
+//   focusOutEvent
+//---------------------------------------------------------
+
+void PianoRoll::focusOutEvent(QFocusEvent* ev)
+      {
+      QWidget::focusOutEvent(ev);
+      storeInitialState();
+      }
+
+
+//---------------------------------------------------------
+//   storeInitialState
+//---------------------------------------------------------
+
+void PianoRoll::storeInitialState()
+      {
+      _widthInit = width();
+      _heightInit = height();
+      _toolbarInit=saveState();
       }
 
 
@@ -1338,25 +1267,13 @@ void PianoRoll::initShortcuts()
       //evColorPitchAction->setShortcut(shortcuts[  ].key);
       //evColorVelAction->setShortcut(shortcuts[  ].key);
       
-      funcOverQuantAction->setShortcut(shortcuts[SHRT_OVER_QUANTIZE].key);
-      funcNoteOnQuantAction->setShortcut(shortcuts[SHRT_ON_QUANTIZE].key);
-      funcNoteOnOffQuantAction->setShortcut(shortcuts[SHRT_ONOFF_QUANTIZE].key);
-      funcIterQuantAction->setShortcut(shortcuts[SHRT_ITERATIVE_QUANTIZE].key);
-      
-      funcConfigQuantAction->setShortcut(shortcuts[SHRT_CONFIG_QUANT].key);
+      funcQuantizeAction->setShortcut(shortcuts[SHRT_QUANTIZE].key);
       
       funcGateTimeAction->setShortcut(shortcuts[SHRT_MODIFY_GATE_TIME].key);
       funcModVelAction->setShortcut(shortcuts[SHRT_MODIFY_VELOCITY].key);
-      funcCrescendoAction->setShortcut(shortcuts[SHRT_CRESCENDO].key);
       funcTransposeAction->setShortcut(shortcuts[SHRT_TRANSPOSE].key);
-      funcThinOutAction->setShortcut(shortcuts[SHRT_THIN_OUT].key);
       funcEraseEventAction->setShortcut(shortcuts[SHRT_ERASE_EVENT].key);
       funcNoteShiftAction->setShortcut(shortcuts[SHRT_NOTE_SHIFT].key);
-      funcMoveClockAction->setShortcut(shortcuts[SHRT_MOVE_CLOCK].key);
-      funcCopyMeasureAction->setShortcut(shortcuts[SHRT_COPY_MEASURE].key);
-      funcEraseMeasureAction->setShortcut(shortcuts[SHRT_ERASE_MEASURE].key);
-      funcDelMeasureAction->setShortcut(shortcuts[SHRT_DELETE_MEASURE].key);
-      funcCreateMeasureAction->setShortcut(shortcuts[SHRT_CREATE_MEASURE].key);
       funcSetFixedLenAction->setShortcut(shortcuts[SHRT_FIXED_LEN].key);
       funcDelOverlapsAction->setShortcut(shortcuts[SHRT_DELETE_OVERLAPS].key);
       
@@ -1369,7 +1286,7 @@ void PianoRoll::execDeliveredScript(int id)
 {
       //QString scriptfile = QString(INSTPREFIX) + SCRIPTSSUFFIX + deliveredScriptNames[id];
       QString scriptfile = song->getScriptPath(id, true);
-      song->executeScript(scriptfile.toAscii().data(), parts(), quant(), true); 
+      song->executeScript(scriptfile.toAscii().data(), parts(), raster(), true);
 }
 
 //---------------------------------------------------------
@@ -1378,7 +1295,7 @@ void PianoRoll::execDeliveredScript(int id)
 void PianoRoll::execUserScript(int id)
 {
       QString scriptfile = song->getScriptPath(id, false);
-      song->executeScript(scriptfile.toAscii().data(), parts(), quant(), true);
+      song->executeScript(scriptfile.toAscii().data(), parts(), raster(), true);
 }
 
 //---------------------------------------------------------

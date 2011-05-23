@@ -14,7 +14,6 @@
 #include "song.h"
 #include "midi.h"
 #include "drummap.h"
-//#include "midiedit/drummap.h"  // p4.0.2
 #include "event.h"
 #include "globals.h"
 #include "midictrl.h"
@@ -220,12 +219,8 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                 if(!(ev.isNoteOff() && loopn == 0))
                 {
                   if(cmode == Song::CYCLE_REPLACE && loopn < loopc)
-                  {
-                    // Added by Tim. p3.3.8
-                    //printf("buildMidiEventList: CYCLE_REPLACE t:%d type:%d A:%d B:%d ln:%d lc:%d\n", tick, ev.type(), ev.dataA(), ev.dataB(), loopn, loopc);
-                    
                     continue;
-                  }  
+
                   // If we want NORMAL, same as REPLACE except keep all events from the previous loop
                   //  from rec stop position to right marker (and beyond).
                   if(cmode == Song::CYCLE_NORMAL)
@@ -233,12 +228,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                     // Not sure of accuracy here. Adjust? Adjusted when used elsewhere?
                     unsigned endRec = audio->getEndRecordPos().tick();
                     if((tick < endRec && loopn < loopc) || (tick >= endRec && loopn < (loopc - 1)))
-                    {
-                      // Added by Tim. p3.3.8
-                      //printf("buildMidiEventList: CYCLE_NORMAL t:%d type:%d A:%d B:%d ln:%d lc:%d\n", tick, ev.type(), ev.dataA(), ev.dataB(), loopn, loopc);
-                    
                       continue;
-                    }  
                   } 
                 }  
               }
@@ -451,8 +441,6 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                                     }
                                     break;
                               case 0x59:  // Key Signature
-                                    // track->scale.set(data[0]);
-                                    // track->scale.setMajorMinor(data[1]);
                                     break;
                               default:
                                     printf("unknown Meta 0x%x %d\n", ev.dataA(), ev.dataA());
@@ -462,74 +450,27 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                   }   // switch(ev.type()
             if (!e.empty()) {
                   e.setTick(tick);
-                  // Added by Tim. p3.3.8
-                  //printf("buildMidiEventList: mel adding t:%d type:%d A:%d B:%d C:%d\n", tick, e.type(), e.dataA(), e.dataB(), e.dataC());
-                  
                   mel.add(e);
                   }
             }  // i != el->end()
 
-      //---------------------------------------------------
-      //    resolve NoteOff events
-      //---------------------------------------------------
 
-//      for (iEvent i = mel.begin(); i != mel.end(); ++i) {
-//            Event event = i->second;
-//            if (event.isNote())
-//                  event.setLenTick(0);
-//            }
+      //---------------------------------------------------
+      //    read NoteOn events and remove corresponding NoteOffs
+      //---------------------------------------------------
 
       // Added by Tim. p3.3.8 
-      
-      // The loop is a safe way to delete while iterating.
-      bool loop;
-      do
-      {
-        loop = false;
-        
+      // Loop removed by flo      
         for (iEvent i = mel.begin(); i != mel.end(); ++i) {
               Event ev  = i->second;
               if (ev.isNote()) {
-                    if (ev.isNoteOff()) {
-                          iEvent k;
-                          bool found = false;
-                          for (k = i; k != mel.end(); ++k) {
-                                Event event = k->second;
-                                if (event.tick() > ev.tick())
-                                      break;
-                                if (event.isNoteOff(ev)) {
-                                      ev.setLenTick(1);
-                                      ev.setVelo(event.velo());
-                                      ev.setVeloOff(0);
-                                      // Added by Tim. p3.3.8
-                                      //printf("buildMidiEventList: found note off: event t:%d len:%d type:%d A:%d B:%d C:%d  ev t:%d len:%d type:%d A:%d B:%d C:%d\n", event.tick(), event.lenTick(), event.type(), event.dataA(), event.dataB(), event.dataC(), ev.tick(), ev.lenTick(), ev.type(), ev.dataA(), ev.dataB(), ev.dataC());
-                                      
-                                      found = true;
-                                      break;
-                                      }
-                                }
-                          if (!found) {
-                                printf("NOTE OFF without Note ON tick %d type %d  %d %d\n",
-                                      ev.tick(), ev.type(), ev.pitch(), ev.velo());
-                                }
-                          else {
-                                mel.erase(k);
-                                
-                                // Changed by Tim. p3.3.8
-                                //continue;
-                                loop = true;
-                                break;
-                                
-                                }
-                          }
+                    if (!ev.isNoteOff()) {
                     // Added by Tim. p3.3.8
                     
                     // If the event length is not zero, it means the event and its 
                     //  note on/off have already been taken care of. So ignore it.
                     if(ev.lenTick() != 0)
-                    {
                       continue;
-                    }
                     
                     iEvent k;
                     for (k = mel.lower_bound(ev.tick()); k != mel.end(); ++k) {
@@ -547,9 +488,6 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                                       }
                                 ev.setLenTick(t);
                                 ev.setVeloOff(event.veloOff());
-                                // Added by Tim. p3.3.8
-                                //printf("buildMidiEventList: set len and velOff: event t:%d len:%d type:%d A:%d B:%d C:%d  ev t:%d len:%d type:%d A:%d B:%d C:%d\n", event.tick(), event.lenTick(), event.type(), event.dataA(), event.dataB(), event.dataC(), ev.tick(), ev.lenTick(), ev.type(), ev.dataA(), ev.dataB(), ev.dataC());
-                                      
                                 break;
                                 }
                           }
@@ -563,35 +501,25 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                           ev.setLenTick(endTick-ev.tick());
                           }
                     else {
-                          mel.erase(k);
-                          // Added by Tim. p3.3.8
-                          loop = true;
-                          break;
+                          if (k==i) 
+                            //this will never happen, because i->second has to be a NOTE ON,
+                            //while k has to be a NOTE OFF. but in case something changes:
+														printf("ERROR: THIS SHOULD NEVER HAPPEN: k==i in midi.cpp:buildMidiEventList()\n");
+                          else
+														mel.erase(k);
                           
+                          continue;
                           }
                     }
+									}
               }
-        }     
-        while (loop);
 
-// DEBUG: any note offs left?
-
-      // Removed by Tim. p3.3.8
-      //for (iEvent i = mel.begin(); i != mel.end(); ++i) {
-      //      Event ev  = i->second;
-      //      if (ev.isNoteOff()) {
-      //            printf("+extra note-off! %d pitch %d velo %d\n",
-      //                     i->first, ev.pitch(), ev.velo());
-//                  ev.dump();
-      //            }
-      //      }
       
       for (iEvent i = mel.begin(); i != mel.end(); ++i) {
             Event ev  = i->second;
             if (ev.isNoteOff()) {
                   printf("+extra note-off! %d pitch %d velo %d\n",
                            i->first, ev.pitch(), ev.velo());
-//                  ev.dump();
                   continue;
                   }
             int tick  = CALC_TICK(ev.tick()); //(ev.tick() * config.division + div/2) / div;
@@ -870,8 +798,6 @@ void Audio::collectEvents(MidiTrack* track, unsigned int cts, unsigned int nts)
                         // Added by T356.
                         case Controller:
                               {
-                                //int len   = ev.lenTick();
-                                //int pitch = ev.pitch();
                                 if (track->type() == Track::DRUM)  
                                 {
                                   int ctl   = ev.dataA();
@@ -894,8 +820,6 @@ void Audio::collectEvents(MidiTrack* track, unsigned int cts, unsigned int nts)
                                         mdAlt->playEvents()->add(MidiPlayEvent(tick, port, channel, 
                                                                              ME_CONTROLLER, ctl | pitch, ev.dataB()));
                                       else
-                                                                             
-                                        //playEvents->add(MidiPlayEvent(frame, port, channel, ev));
                                         mdAlt->playEvents()->add(MidiPlayEvent(frame, port, channel, 
                                                                              ME_CONTROLLER, ctl | pitch, ev.dataB()));
                                                                              

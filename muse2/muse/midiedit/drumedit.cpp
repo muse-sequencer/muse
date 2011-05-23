@@ -43,6 +43,7 @@
 #include "drummap.h"
 #include "audio.h"
 #include "gconfig.h"
+#include "functions.h"
 
 /*
 static const char* map_file_pattern[] = {
@@ -59,17 +60,16 @@ static const char* map_file_save_pattern[] = {
       };
 */      
 
-int DrumEdit::_quantInit = 96;
 int DrumEdit::_rasterInit = 96;
 int DrumEdit::_widthInit = 600;
 int DrumEdit::_heightInit = 400;
 int DrumEdit::_dlistWidthInit = 50;
 int DrumEdit::_dcanvasWidthInit = 300;
-int DrumEdit::_toInit = 0;
+QByteArray DrumEdit::_toolbarInit;
 
 static const int xscale = -10;
 static const int yscale = 1;
-static const int drumeditTools = PointerTool | PencilTool | RubberTool | CursorTool;
+static const int drumeditTools = PointerTool | PencilTool | RubberTool | CursorTool | DrawTool;
 
 enum DrumColumn {
   COL_MUTE = 0,
@@ -155,12 +155,12 @@ void DrumEdit::closeEvent(QCloseEvent* e)
 //---------------------------------------------------------
 
 DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned initPos)
-   : MidiEditor(_quantInit, _rasterInit, pl, parent, name)
+   : MidiEditor(_rasterInit, pl, parent, name)
       {
+      setFocusPolicy(Qt::StrongFocus);
       split1w1 = 0;
       resize(_widthInit, _heightInit);
       selPart  = 0;
-      _to = _toInit;
       QSignalMapper *signalMapper = new QSignalMapper(this);
       
       //---------Pulldown Menu----------------------------
@@ -233,14 +233,33 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       
       menuFunctions->setTearOffEnabled(true);
       
+      QAction* reorderListAction = menuFunctions->addAction(tr("Re-order list"));
+      menuFunctions->addSeparator();
       fixedAction = menuFunctions->addAction(tr("Set Fixed Length"));
       veloAction = menuFunctions->addAction(tr("Modify Velocity"));
+      crescAction = menuFunctions->addAction(tr("Crescendo/Decrescendo"));
+      quantizeAction = menuFunctions->addAction(tr("Quantize"));
+      QAction* eraseEventAction = menuFunctions->addAction(tr("Erase Event"));
+      QAction* noteShiftAction = menuFunctions->addAction(tr("Move Notes"));
+      QAction* delOverlapsAction = menuFunctions->addAction(tr("Delete Overlaps"));
 
+      connect(reorderListAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(fixedAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(veloAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(crescAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(quantizeAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(eraseEventAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(noteShiftAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(delOverlapsAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
 
+      signalMapper->setMapping(reorderListAction, DrumCanvas::CMD_REORDER_LIST);
       signalMapper->setMapping(fixedAction, DrumCanvas::CMD_FIXED_LEN);
       signalMapper->setMapping(veloAction, DrumCanvas::CMD_MODIFY_VELOCITY);
+      signalMapper->setMapping(crescAction, DrumCanvas::CMD_CRESCENDO);
+      signalMapper->setMapping(quantizeAction, DrumCanvas::CMD_QUANTIZE);
+      signalMapper->setMapping(eraseEventAction, DrumCanvas::CMD_ERASE_EVENT);
+      signalMapper->setMapping(noteShiftAction, DrumCanvas::CMD_NOTE_SHIFT);
+      signalMapper->setMapping(delOverlapsAction, DrumCanvas::CMD_DELETE_OVERLAPS);
 
       QMenu* menuScriptPlugins = menuBar()->addMenu(tr("&Plugins"));
       song->populateScriptMenu(menuScriptPlugins, this);
@@ -317,7 +336,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       
       addToolBarBreak();
       // don't show pitch value in toolbar
-      toolbar = new Toolbar1(this, _rasterInit, _quantInit, false);
+      toolbar = new Toolbar1(this, _rasterInit, false);
       addToolBar(toolbar);
       
       addToolBarBreak();
@@ -456,12 +475,14 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       // connect toolbar
       connect(canvas,  SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
       connect(time,    SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
-      connect(toolbar, SIGNAL(quantChanged(int)),          SLOT(setQuant(int)));
       connect(toolbar, SIGNAL(rasterChanged(int)),         SLOT(setRaster(int)));
       connect(toolbar, SIGNAL(soloChanged(bool)),          SLOT(soloChanged(bool)));
       connect(info, SIGNAL(valueChanged(NoteInfo::ValType, int)), SLOT(noteinfoChanged(NoteInfo::ValType, int)));
 
       connect(ctrl, SIGNAL(clicked()), SLOT(addCtrl()));
+
+      if (!_toolbarInit.isEmpty())
+            restoreState(_toolbarInit);
 
       QClipboard* cb = QApplication::clipboard();
       connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
@@ -603,16 +624,6 @@ void DrumEdit::setRaster(int val)
       }
 
 //---------------------------------------------------------
-//   setQuant
-//---------------------------------------------------------
-
-void DrumEdit::setQuant(int val)
-      {
-      _quantInit = val;
-      MidiEditor::setQuant(val);
-      }
-
-//---------------------------------------------------------
 //    edit currently selected Event
 //---------------------------------------------------------
 
@@ -722,10 +733,8 @@ void DrumEdit::readStatus(Xml& xml)
                         break;
                   case Xml::TagEnd:
                         if (tag == "drumedit") {
-                              _quantInit  = _quant;
                               _rasterInit = _raster;
                               toolbar->setRaster(_raster);
-                              toolbar->setQuant(_quant);
                               canvas->redrawGrid();
                               return;
                               }
@@ -749,9 +758,7 @@ void DrumEdit::readConfiguration(Xml& xml)
                   case Xml::End:
                         return;
                   case Xml::TagStart:
-                        if (tag == "quant")
-                              _quantInit = xml.parseInt();
-                        else if (tag == "raster")
+                        if (tag == "raster")
                               _rasterInit = xml.parseInt();
                         else if (tag == "width")
                               _widthInit = xml.parseInt();
@@ -761,9 +768,8 @@ void DrumEdit::readConfiguration(Xml& xml)
                               _dcanvasWidthInit = xml.parseInt();
                         else if (tag == "dlistwidth")
                               _dlistWidthInit = xml.parseInt();
-                        else if (tag == "to") {
-                              _toInit = xml.parseInt();
-                              }
+                        else if (tag == "toolbars")
+                              _toolbarInit = QByteArray::fromHex(xml.parse1().toAscii());
                         else
                               xml.unknown("DrumEdit");
                         break;
@@ -784,13 +790,12 @@ void DrumEdit::readConfiguration(Xml& xml)
 void DrumEdit::writeConfiguration(int level, Xml& xml)
       {
       xml.tag(level++, "drumedit");
-      xml.intTag(level, "quant", _quantInit);
       xml.intTag(level, "raster", _rasterInit);
       xml.intTag(level, "width", _widthInit);
       xml.intTag(level, "height", _heightInit);
       xml.intTag(level, "dlistwidth", _dlistWidthInit);
       xml.intTag(level, "dcanvaswidth", _dcanvasWidthInit);
-      xml.intTag(level, "to", _toInit);
+      xml.strTag(level, "toolbars", _toolbarInit.toHex().data());
       xml.tag(level, "/drumedit");
       }
 
@@ -898,18 +903,27 @@ void DrumEdit::reset()
 void DrumEdit::cmd(int cmd)
       {
       switch(cmd) {
-            case DrumCanvas::CMD_LOAD:
-                  load();
+            case DrumCanvas::CMD_LOAD: load(); break;
+            case DrumCanvas::CMD_SAVE: save(); break;
+            case DrumCanvas::CMD_RESET: reset(); break;
+            case DrumCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
+            case DrumCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
+            case DrumCanvas::CMD_QUANTIZE:
+                  if (quantize_dialog->exec())
+                        quantize_notes(partlist_to_set(parts()), quantize_dialog->range, 
+                                       (config.division*4)/(1<<quantize_dialog->raster_power2),
+                                       /* quant_len= */false, quantize_dialog->strength, 
+                                       quantize_dialog->swing, quantize_dialog->threshold);
                   break;
-            case DrumCanvas::CMD_SAVE:
-                  save();
-                  break;
-            case DrumCanvas::CMD_RESET:
-                  reset();
-                  break;
-            default:
-                  ((DrumCanvas*)(canvas))->cmd(cmd);
-                  break;
+            case DrumCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
+            case DrumCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break; //delete selected events
+            case DrumCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
+            case DrumCanvas::CMD_NOTE_SHIFT: move_notes(partlist_to_set(parts())); break;
+            case DrumCanvas::CMD_REORDER_LIST: ((DrumCanvas*)(canvas))->moveAwayUnused(); break;
+            //case DrumCanvas::CMD_FIXED_LEN: // this must be handled by the drum canvas, due to its
+                                              // special nature (each drum has its own length)
+
+            default: ((DrumCanvas*)(canvas))->cmd(cmd);
             }
       }
 
@@ -1028,10 +1042,29 @@ void DrumEdit::newCanvasWidth(int w)
 void DrumEdit::resizeEvent(QResizeEvent* ev)
       {
       QWidget::resizeEvent(ev);
-      _widthInit = ev->size().width();
-      _heightInit = ev->size().height();
-      
+      storeInitialState();
       //TODO: Make the dlist not expand/shrink, but the canvas instead
+      }
+
+//---------------------------------------------------------
+//   focusOutEvent
+//---------------------------------------------------------
+
+void DrumEdit::focusOutEvent(QFocusEvent* ev)
+      {
+      QWidget::focusOutEvent(ev);
+      storeInitialState();
+      }
+
+//---------------------------------------------------------
+//   storeInitialState
+//---------------------------------------------------------
+
+void DrumEdit::storeInitialState()
+      {
+      _widthInit = width();
+      _heightInit = height();
+      _toolbarInit=saveState();
       }
 
 
@@ -1229,9 +1262,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             event->ignore();
             return;
             }
-      setQuant(val);
       setRaster(val);
-      toolbar->setQuant(_quant);
       toolbar->setRaster(_raster);
       }
 
@@ -1271,7 +1302,7 @@ void DrumEdit::execDeliveredScript(int id)
 {
       //QString scriptfile = QString(INSTPREFIX) + SCRIPTSSUFFIX + deliveredScriptNames[id];
       QString scriptfile = song->getScriptPath(id, true);
-      song->executeScript(scriptfile.toLatin1().constData(), parts(), quant(), true); 
+      song->executeScript(scriptfile.toLatin1().constData(), parts(), raster(), true);
 }
 
 //---------------------------------------------------------
@@ -1280,7 +1311,7 @@ void DrumEdit::execDeliveredScript(int id)
 void DrumEdit::execUserScript(int id)
 {
       QString scriptfile = song->getScriptPath(id, false);
-      song->executeScript(scriptfile.toLatin1().constData(), parts(), quant(), true);
+      song->executeScript(scriptfile.toLatin1().constData(), parts(), raster(), true);
 }
 
 void DrumEdit::setStep(QString v)

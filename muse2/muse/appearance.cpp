@@ -474,6 +474,7 @@ void Appearance::resetValues()
       partShownames->setChecked(config->canvasShowPartType & 1);
       partShowevents->setChecked(config->canvasShowPartType & 2);
       partShowCakes->setChecked(!(config->canvasShowPartType & 2));
+      partCakeStretch->setChecked(config->canvasShowPartType & 4);
 
       eventNoteon->setChecked(config->canvasShowPartEvent & (1 << 0));
       eventPolypressure->setChecked(config->canvasShowPartEvent & (1 << 1));
@@ -598,8 +599,8 @@ void Appearance::apply()
                 showPartType  |= 1;
       if (partShowevents->isChecked())		
                 showPartType  |= 2;
-      //if (partShowCakes->isChecked())		
-      //          showPartType  |= 4;
+      if (partCakeStretch->isChecked())		
+                showPartType  |= 4;
 
       config->canvasShowPartType = showPartType;
 

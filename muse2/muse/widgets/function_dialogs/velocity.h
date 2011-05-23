@@ -11,28 +11,34 @@
 #include "ui_velocitybase.h"
 
 class QButtonGroup;
+class Xml;
 
 //---------------------------------------------------------
 //   Velocity
 //---------------------------------------------------------
 
 class Velocity : public QDialog, public Ui::VelocityBase {
-      int _range;
-      int _rateVal;
-      int _offsetVal;
-
+   private:
       Q_OBJECT
       QButtonGroup* rangeGroup;
 
    protected slots:
       void accept();
+      void pullValues();
 
    public:
-      Velocity(QDialog* parent = 0);
-      void setRange(int id);
-      int range() const     { return _range; }
-      int rateVal() const   { return _rateVal; }
-      int offsetVal() const { return _offsetVal; }
+      Velocity(QWidget* parent = 0);
+
+      int range;
+      int rateVal;
+      int offsetVal;
+      
+      void read_configuration(Xml& xml);
+      void write_configuration(int level, Xml& xml);
+      
+      
+   public slots:
+      int exec();
       };
 
 #endif

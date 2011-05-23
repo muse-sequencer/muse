@@ -31,7 +31,6 @@
 #include "didyouknow.h"
 #include "drumedit.h"
 #include "filedialog.h"
-#include "gatetime.h"
 #include "gconfig.h"
 #include "gui.h"
 #include "icons.h"
@@ -49,7 +48,6 @@
 #include "songinfo.h"
 #include "ticksynth.h"
 #include "transport.h"
-#include "transpose.h"
 #include "waveedit.h"
 #include "widgets/projectcreateimpl.h"
 #include "widgets/menutitleitem.h"
@@ -1020,7 +1018,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       midiEdit = new QMenu(tr("Midi"), this);
       midiEdit->setIcon(QIcon(*edit_midiIcon));
 
-      midiTransposeAction = new QAction(QIcon(*midi_transposeIcon), tr("Transpose"), this);
       midiTransformerAction = new QAction(QIcon(*midi_transformIcon), tr("Midi &Transform"), this);
 
       editSongInfoAction = new QAction(QIcon(*edit_listIcon), tr("Song Info"), this);
@@ -1169,7 +1166,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(masterGraphicAction, SIGNAL(activated()), SLOT(startMasterEditor()));
       connect(masterListAction, SIGNAL(activated()), SLOT(startLMasterEditor()));
 
-      connect(midiTransposeAction, SIGNAL(activated()), SLOT(transpose()));
       connect(midiTransformerAction, SIGNAL(activated()), SLOT(startMidiTransformer()));
 
       connect(editSongInfoAction, SIGNAL(activated()), SLOT(startSongInfo()));
@@ -1399,7 +1395,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       midiEdit->insertItem(tr("Modify Gate Time"), this, SLOT(modifyGateTime()));
       midiEdit->insertItem(tr("Modify Velocity"),  this, SLOT(modifyVelocity()));
       midiEdit->insertItem(tr("Crescendo"),        this, SLOT(crescendo()));
-      midiEdit->insertItem(tr("Transpose"),        this, SLOT(transpose()));
       midiEdit->insertItem(tr("Thin Out"),         this, SLOT(thinOut()));
       midiEdit->insertItem(tr("Erase Event"),      this, SLOT(eraseEvent()));
       midiEdit->insertItem(tr("Note Shift"),       this, SLOT(noteShift()));
@@ -1410,7 +1405,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       midiEdit->insertItem(tr("Create Measure"),   this, SLOT(createMeasure()));
       midiEdit->insertItem(tr("Mix Track"),        this, SLOT(mixTrack()));
 #endif
-      midiEdit->addAction(midiTransposeAction);
       midiEdit->addAction(midiTransformerAction);
 
       menuEdit->addAction(editSongInfoAction);
@@ -3888,15 +3882,6 @@ void MusE::selectionChanged()
       editCopyAction->setEnabled(flag);
       }
 
-//---------------------------------------------------------
-//   transpose
-//---------------------------------------------------------
-
-void MusE::transpose()
-      {
-      Transpose *w = new Transpose();
-      w->show();
-      }
 
 //---------------------------------------------------------
 //   modifyGateTime
@@ -3904,8 +3889,7 @@ void MusE::transpose()
 
 void MusE::modifyGateTime()
       {
-      GateTime* w = new GateTime(this);
-      w->show();
+      printf("not implemented\n");
       }
 
 //---------------------------------------------------------
@@ -4550,7 +4534,6 @@ void MusE::updateConfiguration()
       masterGraphicAction->setShortcut(shortcuts[SHRT_OPEN_GRAPHIC_MASTER].key);
       masterListAction->setShortcut(shortcuts[SHRT_OPEN_LIST_MASTER].key);
 
-      midiTransposeAction->setShortcut(shortcuts[SHRT_TRANSPOSE].key);
       midiTransformerAction->setShortcut(shortcuts[SHRT_OPEN_MIDI_TRANSFORM].key);
       //editSongInfoAction has no acceleration
 

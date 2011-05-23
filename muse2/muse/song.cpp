@@ -3776,6 +3776,7 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
                 file.close();
             }
 
+
       remove(tmp);
       }
 

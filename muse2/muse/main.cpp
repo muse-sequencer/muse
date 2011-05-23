@@ -27,6 +27,7 @@
 #include "globals.h"
 #include "icons.h"
 #include "sync.h"
+#include "functions.h"
 
 extern bool initDummyAudio();
 extern void initIcons();
@@ -253,6 +254,7 @@ int main(int argc, char* argv[])
       QApplication::setColorSpec(QApplication::ManyColor);
       MuseApplication app(argc, argv);
 
+      init_function_dialogs(muse);
       initShortCuts();
       readConfiguration();
 
@@ -470,6 +472,7 @@ int main(int argc, char* argv[])
       muse = new MusE(argc, &argv[optind]);
       app.setMuse(muse);
       muse->setWindowIcon(*museIcon);
+      
       
       // Added by Tim. p3.3.22
       if (!debugMode) {

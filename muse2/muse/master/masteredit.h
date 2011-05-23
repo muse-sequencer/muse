@@ -8,6 +8,9 @@
 #ifndef __MASTER_EDIT_H__
 #define __MASTER_EDIT_H__
 
+#include <QByteArray>
+#include <QResizeEvent>
+
 #include "midieditor.h"
 #include "noteinfo.h"
 #include "cobject.h"
@@ -56,9 +59,14 @@ class MasterEdit : public MidiEditor {
       QToolButton* enableButton;
       
       static int _rasterInit;
+      static int _widthInit, _heightInit;
+      static QByteArray _toolbarInit;
 
       Q_OBJECT
       virtual void closeEvent(QCloseEvent*);
+      virtual void resizeEvent(QResizeEvent*);
+      virtual void focusOutEvent(QFocusEvent*);
+      void storeInitialState();
 
    private slots:
       void _setRaster(int);

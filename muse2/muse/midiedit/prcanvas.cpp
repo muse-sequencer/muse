@@ -32,10 +32,10 @@
 #include "mpevent.h"
 #include "globals.h"
 #include "cmd.h"
-#include "gatetime.h"
-#include "velocity.h"
 #include "song.h"
 #include "audio.h"
+
+#define CHORD_TIMEOUT 75
 
 //---------------------------------------------------------
 //   NEvent
@@ -82,8 +82,14 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
    : EventCanvas(pr, parent, sx, sy)
       {
       colorMode = 0;
-      cmdRange  = 0;     // all Events
       playedPitch = -1;
+      
+      chordTimer = new QTimer(this);
+      chordTimer->setSingleShot(true);
+      chordTimer->setInterval(CHORD_TIMEOUT);
+      chordTimer->stop();
+      
+      connect(chordTimer, SIGNAL(timeout()), SLOT(chordTimerTimedOut()));
 
       songChanged(SC_TRACK_INSERTED);
       connect(song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
@@ -726,7 +732,7 @@ void PianoCanvas::pianoCmd(int cmd)
                   song->setPos(0, p, true, false, true);
                   }
                   return;
-            case CMD_DELETE:
+            case CMD_BACKSPACE:
                   if (pos[0] < start() || pos[0] >= end())
                         break;
                   {
@@ -771,8 +777,7 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
       audio->msgPlayMidiEvent(&e);
 
       if (_steprec && pos[0] >= start_tick && pos[0] < end_tick) {
-            if (curPart == 0)
-                  return;
+         if (curPart) {
             int len  = editor->raster();
             unsigned tick = pos[0] - curPart->tick(); //CDW
             if (shift)
@@ -791,6 +796,8 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
                   song->setPos(0, p, true, false, true);
                   }
             }
+         }
+            
       }
 
 //---------------------------------------------------------
@@ -907,10 +914,8 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect)
 //    pulldown menu commands
 //---------------------------------------------------------
 
-void PianoCanvas::cmd(int cmd, int quantStrength,
-   int quantLimit, bool quantLen, int range)
+void PianoCanvas::cmd(int cmd)
       {
-      cmdRange = range;
       switch (cmd) {
             case CMD_CUT:
                   copy();
@@ -931,32 +936,6 @@ void PianoCanvas::cmd(int cmd, int quantStrength,
                   break;
             case CMD_PASTE:
                   paste();
-                  break;
-            case CMD_DEL:
-                  if (selectionSize()) {
-                        song->startUndo();
-                        for (iCItem i = items.begin(); i != items.end(); ++i) {
-                              if (!i->second->isSelected())
-                                    continue;
-                              Event ev = i->second->event();
-                              // Indicate no undo, and do not do port controller values and clone parts. 
-                              //audio->msgDeleteEvent(ev, i->second->part(), false);
-                              audio->msgDeleteEvent(ev, i->second->part(), false, false, false);
-                              }
-                        song->endUndo(SC_EVENT_REMOVED);
-                        }
-                  return;
-            case CMD_OVER_QUANTIZE:     // over quantize
-                  quantize(100, 1, quantLen);
-                  break;
-            case CMD_ON_QUANTIZE:     // note on quantize
-                  quantize(50, 1, false);
-                  break;
-            case CMD_ONOFF_QUANTIZE:     // note on/off quantize
-                  quantize(50, 1, true);
-                  break;
-            case CMD_ITERATIVE_QUANTIZE:     // Iterative Quantize
-                  quantize(quantStrength, quantLimit, quantLen);
                   break;
             case CMD_SELECT_ALL:     // select all
                   for (iCItem k = items.begin(); k != items.end(); ++k) {
@@ -1032,96 +1011,6 @@ void PianoCanvas::cmd(int cmd, int quantStrength,
                       editor->setCurCanvasPart(newpt);
                   }
                   break;
-            case CMD_MODIFY_GATE_TIME:
-                  {
-                  GateTime w(this);
-                  w.setRange(range);
-                  if (!w.exec())
-                        break;
-                  int range  = w.range();        // all, selected, looped, sel+loop
-                  int rate   = w.rateVal();
-                  int offset = w.offsetVal();
-
-                  song->startUndo();
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        NEvent* nevent =(NEvent*)(k->second);
-                        Event event    = nevent->event();
-                        if (event.type() != Note)
-                              continue;
-                        unsigned tick = event.tick();
-                        bool selected = k->second->isSelected();
-                        bool inLoop   = (tick >= song->lpos()) && (tick < song->rpos());
-
-                        if ((range == 0)
-                           || (range == 1 && selected)
-                           || (range == 2 && inLoop)
-                           || (range == 3 && selected && inLoop)) {
-                              unsigned int len   = event.lenTick(); //prevent compiler warning: comparison singed/unsigned
-
-                              len = rate ? (len * 100) / rate : 1;
-                              len += offset;
-                              if (len < 1)
-                                    len = 1;
-
-                              if (event.lenTick() != len) {
-                                    Event newEvent = event.clone();
-                                    newEvent.setLenTick(len);
-                                    // Indicate no undo, and do not do port controller values and clone parts. 
-                                    //audio->msgChangeEvent(event, newEvent, nevent->part(), false);
-                                    audio->msgChangeEvent(event, newEvent, nevent->part(), false, false, false);
-                                    }
-                              }
-                        }
-                  song->endUndo(SC_EVENT_MODIFIED);
-                  }
-                  break;
-
-            case CMD_MODIFY_VELOCITY:
-                  {
-                  Velocity w;
-                  w.setRange(range);
-                  if (!w.exec())
-                        break;
-                  int range  = w.range();        // all, selected, looped, sel+loop
-                  int rate   = w.rateVal();
-                  int offset = w.offsetVal();
-
-                  song->startUndo();
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        NEvent* nevent = (NEvent*)(k->second);
-                        Event event    = nevent->event();
-                        if (event.type() != Note)
-                              continue;
-                        unsigned tick      = event.tick();
-                        bool selected = k->second->isSelected();
-                        bool inLoop   = (tick >= song->lpos()) && (tick < song->rpos());
-
-                        if ((range == 0)
-                           || (range == 1 && selected)
-                           || (range == 2 && inLoop)
-                           || (range == 3 && selected && inLoop)) {
-                              int velo = event.velo();
-
-                              //velo = rate ? (velo * 100) / rate : 64;
-                              velo = (velo * rate) / 100;
-                              velo += offset;
-
-                              if (velo <= 0)
-                                    velo = 1;
-                              if (velo > 127)
-                                    velo = 127;
-                              if (event.velo() != velo) {
-                                    Event newEvent = event.clone();
-                                    newEvent.setVelo(velo);
-                                    // Indicate no undo, and do not do port controller values and clone parts. 
-                                    //audio->msgChangeEvent(event, newEvent, nevent->part(), false);
-                                    audio->msgChangeEvent(event, newEvent, nevent->part(), false, false, false);
-                                    }
-                              }
-                        }
-                  song->endUndo(SC_EVENT_MODIFIED);
-                  }
-                  break;
 
             case CMD_FIXED_LEN: //Set notes to the length specified in the drummap
                   if (!selectionSize())
@@ -1140,76 +1029,6 @@ void PianoCanvas::cmd(int cmd, int quantStrength,
                         }
                   song->endUndo(SC_EVENT_MODIFIED);
                   break;
-
-            case CMD_DELETE_OVERLAPS:
-                  if (!selectionSize())
-                        break;
-
-                  song->startUndo();
-                  for (iCItem k = items.begin(); k != items.end(); k++) {
-                      if (k->second->isSelected() == false)
-                          continue;
-
-                      NEvent* e1 = (NEvent*) (k->second); // first note
-                      NEvent* e2 = NULL; // ptr to next selected note (which will be checked for overlap)
-                      Event ce1  = e1->event();
-                      Event ce2;
-
-                      if (ce1.type() != Note)
-                          continue;
-
-                      // Find next selected item on the same pitch
-                      iCItem l = k; l++;
-                      for (; l != items.end(); l++) {
-                          if (l->second->isSelected() == false)
-                              continue;
-
-                          e2 = (NEvent*) l->second;
-                          ce2  = e2->event();
-
-                          // Same pitch?
-                          if (ce1.dataA() == ce2.dataA())
-                              break;
-
-                          // If the note has the same len and place we treat it as a duplicate note and not a following note
-                          // The best thing to do would probably be to delete the duplicate note, we just want to avoid
-                          // matching against the same note
-                          if (   ce1.tick() + e1->part()->tick() == ce2.tick() + e2->part()->tick() 
-                              && ce1.lenTick() + e1->part()->tick() == ce2.lenTick() + e2->part()->tick())
-                          {
-                              e2 = NULL; // this wasn't what we were looking for
-                              continue;
-                          }
-
-                          }
-
-                      if (e2 == NULL) // None found
-                          break;
-
-                      Part* part1 = e1->part();
-                      Part* part2 = e2->part();
-                      if (ce2.type() != Note)
-                          continue;
-
-
-                      unsigned event1pos = ce1.tick() + part1->tick();
-                      unsigned event1end = event1pos + ce1.lenTick();
-                      unsigned event2pos = ce2.tick() + part2->tick();
-
-                      //printf("event1pos %u event1end %u event2pos %u\n", event1pos, event1end, event2pos);
-                      if (event1end > event2pos) {
-                          Event newEvent = ce1.clone();
-                          unsigned newlen = ce1.lenTick() - (event1end - event2pos);
-                          //printf("newlen: %u\n", newlen);
-                          newEvent.setLenTick(newlen);
-                          // Indicate no undo, and do not do port controller values and clone parts. 
-                          //audio->msgChangeEvent(ce1, newEvent, e1->part(), false);
-                          audio->msgChangeEvent(ce1, newEvent, e1->part(), false, false, false);
-                          }
-                      }
-                  song->endUndo(SC_EVENT_MODIFIED);
-                  break;
-
 
             case CMD_CRESCENDO:
             case CMD_TRANSPOSE:
@@ -1231,55 +1050,6 @@ void PianoCanvas::cmd(int cmd, int quantStrength,
       }
 
 //---------------------------------------------------------
-//   quantize
-//---------------------------------------------------------
-
-void PianoCanvas::quantize(int strength, int limit, bool quantLen)
-      {
-      song->startUndo();
-      for (iCItem k = items.begin(); k != items.end(); ++k) {
-            NEvent* nevent = (NEvent*)(k->second);
-            Event event    = nevent->event();
-            Part* part     = nevent->part();
-            if (event.type() != Note)
-                  continue;
-
-            if ((cmdRange & CMD_RANGE_SELECTED) && !k->second->isSelected())
-                  continue;
-
-            unsigned tick = event.tick() + part->tick();
-
-            if ((cmdRange & CMD_RANGE_LOOP)
-               && ((tick < song->lpos() || tick >= song->rpos())))
-                  continue;
-
-            unsigned int len   = event.lenTick(); //prevent compiler warning: comparison singed/unsigned
-            int tick2 = tick + len;
-
-            // quant start position
-            int diff  = AL::sigmap.raster(tick, editor->quant()) - tick;
-            if (abs(diff) > limit)
-                  tick += ((diff * strength) / 100);
-
-            // quant len
-            diff = AL::sigmap.raster(tick2, editor->quant()) - tick2;
-            if (quantLen && (abs(diff) > limit))
-                  len += ((diff * strength) / 100);
-
-            // something changed?
-            if (((event.tick() + part->tick()) != tick) || (event.lenTick() != len)) {
-                  Event newEvent = event.clone();
-                  newEvent.setTick(tick - part->tick());
-                  newEvent.setLenTick(len);
-                  // Indicate no undo, and do not do port controller values and clone parts. 
-                  //audio->msgChangeEvent(event, newEvent, part, false);
-                  audio->msgChangeEvent(event, newEvent, part, false, false, false);
-                  }
-            }
-      song->endUndo(SC_EVENT_MODIFIED);
-      }
-
-//---------------------------------------------------------
 //   midiNote
 //---------------------------------------------------------
 
@@ -1289,11 +1059,15 @@ void PianoCanvas::midiNote(int pitch, int velo)
          && !audio->isPlaying() && velo && pos[0] >= start_tick
          && pos[0] < end_tick
          && !(globalKeyState & Qt::AltModifier)) {
-            unsigned int len   = editor->quant();//prevent compiler warning: comparison singed/unsigned
+					  chordTimer->stop();
+					  
+					  //len has been changed by flo: set to raster() instead of quant()
+					  //reason: the quant-toolbar has been removed; the flexibility you
+					  //lose with this can be re-gained by applying a "modify note len"
+					  //on the notes you have entered.
+            unsigned int len   = editor->raster();//prevent compiler warning: comparison singed/unsigned
             unsigned tick      = pos[0]; //CDW
             unsigned starttick = tick;
-            if (globalKeyState & Qt::ShiftModifier)
-                  tick -= editor->rasterStep(tick);
 
             //
             // extend len of last note?
@@ -1310,10 +1084,10 @@ void PianoCanvas::midiNote(int pitch, int velo)
                               // Indicate do undo, and do not do port controller values and clone parts. 
                               //audio->msgChangeEvent(ev, e, curPart);
                               audio->msgChangeEvent(ev, e, curPart, true, false, false);
-                              tick += editor->rasterStep(tick);
-                              if (tick != song->cpos()) {
-                                    Pos p(tick, true);
-                                    song->setPos(0, p, true, false, true);
+                              
+                              if (! (globalKeyState & Qt::ShiftModifier)) {
+                                    chordTimer_setToTick = tick + editor->rasterStep(tick);
+                                    chordTimer->start();
                                     }
                               return;
                               }
@@ -1330,8 +1104,12 @@ void PianoCanvas::midiNote(int pitch, int velo)
                         // Indicate do undo, and do not do port controller values and clone parts. 
                         //audio->msgDeleteEvent(ev, curPart);
                         audio->msgDeleteEvent(ev, curPart, true, false, false);
-                        if (globalKeyState & Qt::ShiftModifier)
-                              tick += editor->rasterStep(tick);
+
+                        if (! (globalKeyState & Qt::ShiftModifier)) {
+                              chordTimer_setToTick = tick + editor->rasterStep(tick);
+                              chordTimer->start();
+                              }
+                        
                         return;
                         }
                   }
@@ -1343,13 +1121,22 @@ void PianoCanvas::midiNote(int pitch, int velo)
             // Indicate do undo, and do not do port controller values and clone parts. 
             //audio->msgAddEvent(e, curPart);
             audio->msgAddEvent(e, curPart, true, false, false);
-            tick += editor->rasterStep(tick);
-            if (tick != song->cpos()) {
-                  Pos p(tick, true);
-                  song->setPos(0, p, true, false, true);
+            
+            if (! (globalKeyState & Qt::ShiftModifier)) {
+                  chordTimer_setToTick = tick + editor->rasterStep(tick);
+                  chordTimer->start();
                   }
             }
       }
+
+void PianoCanvas::chordTimerTimedOut()
+{
+	if (chordTimer_setToTick != song->cpos())
+	{
+		Pos p(chordTimer_setToTick, true);
+		song->setPos(0, p, true, false, true);
+	}
+}
 
 /*
 //---------------------------------------------------------

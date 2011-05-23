@@ -12,6 +12,7 @@
 #include <QResizeEvent>
 #include <QLabel>
 #include <QKeyEvent>
+#include <QByteArray>
 
 #include <values.h>
 #include "noteinfo.h"
@@ -35,7 +36,6 @@ class Splitter;
 class PartList;
 class Toolbar1;
 class Xml;
-class QuantConfig;
 class ScrollScale;
 class Part;
 class SNode;
@@ -81,23 +81,13 @@ class PianoRoll : public MidiEditor {
       QAction* evColorPitchAction;
       QAction* evColorVelAction;
       
-      QAction* funcOverQuantAction;
-      QAction* funcNoteOnQuantAction;
-      QAction* funcNoteOnOffQuantAction;
-      QAction* funcIterQuantAction;
-      QAction* funcConfigQuantAction;
+      QAction* funcQuantizeAction;
       QAction* funcGateTimeAction;
       QAction* funcModVelAction;
-      QAction* funcCrescendoAction;
+      QAction* funcCrescAction;
       QAction* funcTransposeAction;
-      QAction* funcThinOutAction;
       QAction* funcEraseEventAction;
       QAction* funcNoteShiftAction;
-      QAction* funcMoveClockAction;
-      QAction* funcCopyMeasureAction;
-      QAction* funcEraseMeasureAction;
-      QAction* funcDelMeasureAction;
-      QAction* funcCreateMeasureAction;
       QAction* funcSetFixedLenAction;
       QAction* funcDelOverlapsAction;
       
@@ -124,20 +114,12 @@ class PianoRoll : public MidiEditor {
 
       int colorMode;
 
-      static int _quantInit, _rasterInit;
+      static int _rasterInit;
       static int _widthInit, _heightInit;
+      static QByteArray _toolbarInit;
 
-      static int _quantStrengthInit;
-      static int _quantLimitInit;
-      static bool _quantLenInit;
-      static int _toInit;
       static int colorModeInit;
 
-      int _quantStrength;
-      int _quantLimit;
-      int _to;
-      bool _quantLen;
-      QuantConfig* quantConfig;
       bool _playEvents;
 
       //QScrollBar* infoScroll;
@@ -150,6 +132,8 @@ class PianoRoll : public MidiEditor {
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
       virtual void resizeEvent(QResizeEvent*);
+      virtual void focusOutEvent(QFocusEvent*);
+      void storeInitialState();
 
    private slots:
       void setSelection(int, Event&, Part*);
@@ -159,14 +143,8 @@ class PianoRoll : public MidiEditor {
       void soloChanged(bool flag);
       //void trackInfoScroll(int);
       void setRaster(int);
-      void setQuant(int);
-      void configQuant();
-      void setQuantStrength(int val) { _quantStrength = val; }
-      void setQuantLimit(int val)    { _quantLimit = val; }
-      void setQuantLen(bool val)     { _quantLen = val; }
       void cmd(int);
       void setSteprec(bool);
-      void setTo(int val)            { _to = val; }
       void eventColorModeChanged(int);
       void clipboardChanged(); // enable/disable "Paste"
       void selectionChanged(); // enable/disable "Copy" & "Paste"

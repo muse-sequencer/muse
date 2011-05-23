@@ -33,27 +33,16 @@ static const char* rasterStrings[] = {
       QT_TRANSLATE_NOOP("@default", "Off"), "4pp", "7pp", "64.", "32.", "16.", "8.", "4.", "2.", "1."
       };
 
-static int quantTable[] = {
-      1, 16, 32,  64, 128, 256,  512, 1024,
-      1, 24, 48,  96, 192, 384,  768, 1536,
-      1, 36, 72, 144, 288, 576, 1152, 2304
-      };
-
-static const char* quantStrings[] = {
-      QT_TRANSLATE_NOOP("@default", "Off"), "64T", "32T", "16T", "8T", "4T", "2T", "1T",
-      QT_TRANSLATE_NOOP("@default", "Off"), "64",  "32",  "16",  "8",  "4",  "2",  "1",
-      QT_TRANSLATE_NOOP("@default", "Off"), "64.", "32.", "16.", "8.", "4.", "2.", "1."
-      };
 
 //---------------------------------------------------------
 //   genToolbar
-//    solo time pitch raster quant
+//    solo time pitch raster
 //---------------------------------------------------------
 
-Toolbar1::Toolbar1(QWidget* parent, int r, int q, bool sp)    
-   : QToolBar(QString("Quant'n'Snap-tools"), parent)
+Toolbar1::Toolbar1(QWidget* parent, int r, bool sp)    
+   : QToolBar(QString("Pos/Snap/Solo-tools"), parent)
       {
-      setObjectName("Quant'n'Snap-tools");
+      setObjectName("Pos/Snap/Solo-tools");
       pitch = 0;
       showPitch = sp;
       // ORCAN - FIXME: Check this:
@@ -85,66 +74,34 @@ Toolbar1::Toolbar1(QWidget* parent, int r, int q, bool sp)
             }
 
       //---------------------------------------------------
-      //  Raster, Quant.
+      //  Raster
       //---------------------------------------------------
 
       raster = new LabelCombo(tr("Snap"), 0);
-      quant  = new LabelCombo(tr("Quantize"), 0);
 
       rlist = new QTableWidget(10, 3);    
-      qlist = new QTableWidget(8, 3);     
       rlist->verticalHeader()->setDefaultSectionSize(22);                      
       rlist->horizontalHeader()->setDefaultSectionSize(32);                      
       rlist->setSelectionMode(QAbstractItemView::SingleSelection);                      
       rlist->verticalHeader()->hide();                        
       rlist->horizontalHeader()->hide();                      
-      qlist->verticalHeader()->setDefaultSectionSize(22);                      
-      qlist->horizontalHeader()->setDefaultSectionSize(32);                      
-      qlist->setSelectionMode(QAbstractItemView::SingleSelection);                      
-      qlist->verticalHeader()->hide();                        
-      qlist->horizontalHeader()->hide();                      
       
       rlist->setMinimumWidth(96);
-      qlist->setMinimumWidth(96);
       
       raster->setView(rlist);              
-      quant->setView(qlist);               
       
       for (int j = 0; j < 3; j++)                                                 
         for (int i = 0; i < 10; i++)
           rlist->setItem(i, j, new QTableWidgetItem(tr(rasterStrings[i + j * 10])));
-      for (int j = 0; j < 3; j++)                           
-        for (int i = 0; i < 8; i++)
-          qlist->setItem(i, j, new QTableWidgetItem(tr(quantStrings[i + j * 8])));
        
       setRaster(r);
-      setQuant(q);
 
       addWidget(raster);
-      addWidget(quant);
       
       // FIXME: Not working right.
       raster->setFixedHeight(38);
-      quant->setFixedHeight(38);
       
-      //---------------------------------------------------
-      //  To Menu
-      //---------------------------------------------------
-
-      addWidget(new QLabel(tr("To")));
-      QComboBox* toList = new QComboBox;
-      toList->setFixedHeight(22);
-      toList->insertItem(0, tr("All Events"));
-      toList->insertItem(CMD_RANGE_LOOP, tr("Looped Ev."));
-      toList->insertItem(CMD_RANGE_SELECTED, tr("Selected Ev."));
-      toList->insertItem(CMD_RANGE_LOOP | CMD_RANGE_SELECTED, tr("Looped+Sel."));
-      addWidget(toList);
-
       connect(raster, SIGNAL(activated(int)), SLOT(_rasterChanged(int)));
-      connect(quant,  SIGNAL(activated(int)), SLOT(_quantChanged(int)));
-      //connect(rlist, SIGNAL(cellClicked(int,int)), SLOT(_rasterChanged(int, int)));
-      //connect(qlist,  SIGNAL(cellClicked(int,int)), SLOT(_quantChanged(int,int)));
-      connect(toList,     SIGNAL(activated(int)), SIGNAL(toChanged(int)));
       connect(solo,   SIGNAL(toggled(bool)), SIGNAL(soloChanged(bool)));
       pos->setEnabled(false);
       }
@@ -160,16 +117,6 @@ void Toolbar1::_rasterChanged(int /*i*/)
       //emit rasterChanged(rasterTable[r + c * 10]);
       }
 
-//---------------------------------------------------------
-//   quantChanged
-//---------------------------------------------------------
-
-void Toolbar1::_quantChanged(int /*i*/)
-//void Toolbar1::_quantChanged(int r, int c)
-      {
-      emit quantChanged(quantTable[qlist->currentRow() + qlist->currentColumn() * 8]);
-      //emit quantChanged(quantTable[r + c * 8]);
-      }
 
 //---------------------------------------------------------
 //   setPitch
@@ -223,22 +170,6 @@ void Toolbar1::setRaster(int val)
             }
       printf("setRaster(%d) not defined\n", val);
       raster->setCurrentIndex(0);
-      }
-
-//---------------------------------------------------------
-//   setQuant
-//---------------------------------------------------------
-
-void Toolbar1::setQuant(int val)
-      {
-      for (unsigned i = 0; i < sizeof(quantTable)/sizeof(*quantTable); i++) {
-            if (val == quantTable[i]) {
-                  quant->setCurrentIndex(i);
-                  return;
-                  }
-            }
-      printf("setQuant(%d) not defined\n", val);
-      quant->setCurrentIndex(0);
       }
 
 //---------------------------------------------------------

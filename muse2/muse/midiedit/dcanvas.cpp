@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <values.h>
 #include <errno.h>
+#include <set>
 //#include <sys/stat.h>
 //#include <sys/mman.h>
 
@@ -31,7 +32,6 @@
 #include "globals.h"
 #include "midiport.h"
 #include "audio.h"
-#include "velocity.h"
 #include "shortcuts.h"
 #include "icons.h"
 
@@ -608,7 +608,7 @@ void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect)
 //---------------------------------------------------------
 //   drawTopItem
 //---------------------------------------------------------
-void DrumCanvas::drawTopItem(QPainter &p, const QRect &r)
+void DrumCanvas::drawTopItem(QPainter& p, const QRect&)
 {
   // draw cursor
   if (_tool == CursorTool) {
@@ -743,20 +743,6 @@ void DrumCanvas::cmd(int cmd)
                         editor->setCurCanvasPart(newpt);
                   }
                   break;
-            case CMD_DEL:
-                  if (selectionSize()) {
-                        song->startUndo();
-                        for (iCItem i = items.begin(); i != items.end(); ++i) {
-                              if (!i->second->isSelected())
-                                    continue;
-                              Event ev = i->second->event();
-                              // Indicate no undo, and do not do port controller values and clone parts. 
-                              //audio->msgDeleteEvent(ev, i->second->part(), false);
-                              audio->msgDeleteEvent(ev, i->second->part(), false, false, false);
-                              }
-                        song->endUndo(SC_EVENT_REMOVED);
-                        }
-                  return;
 
             case CMD_SAVE:
             case CMD_LOAD:
@@ -817,52 +803,6 @@ void DrumCanvas::cmd(int cmd)
                   //if (p > part->tick())
                   //      p = part->tick();
                   song->setPos(0, p, true, true, true); //CDW
-                  }
-                  break;
-            case CMD_MODIFY_VELOCITY:
-                  {
-                  Velocity w;
-                  w.setRange(0); //TODO: Make this work! Probably put _to & _toInit in ecanvas instead
-                  if (!w.exec())
-                        break;
-                  int range  = w.range();        // all, selected, looped, sel+loop
-                  int rate   = w.rateVal();
-                  int offset = w.offsetVal();
-
-                  song->startUndo();
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        DEvent* devent = (DEvent*)(k->second);
-                        Event event    = devent->event();
-                        if (event.type() != Note)
-                              continue;
-                        unsigned tick      = event.tick();
-                        bool selected = k->second->isSelected();
-                        bool inLoop   = (tick >= song->lpos()) && (tick < song->rpos());
-
-                        if ((range == 0)
-                           || (range == 1 && selected)
-                           || (range == 2 && inLoop)
-                           || (range == 3 && selected && inLoop)) {
-                              int velo = event.velo();
-
-                              //velo = rate ? (velo * 100) / rate : 64;
-                              velo = (velo * rate) / 100;
-                              velo += offset;
-
-                              if (velo <= 0)
-                                    velo = 1;
-                              if (velo > 127)
-                                    velo = 127;
-                              if (event.velo() != velo) {
-                                    Event newEvent = event.clone();
-                                    newEvent.setVelo(velo);
-                                    // Indicate no undo, and do not do port controller values and clone parts. 
-                                    //audio->msgChangeEvent(event, newEvent, devent->part(), false);
-                                    audio->msgChangeEvent(event, newEvent, devent->part(), false, false, false);
-                                    }
-                              }
-                        }
-                  song->endUndo(SC_EVENT_MODIFIED);
                   }
                   break;
             }
@@ -1399,13 +1339,10 @@ void DrumCanvas::keyPress(QKeyEvent* event)
   if (_tool == CursorTool) {
 
     int key = event->key();
-    ///if (event->state() & Qt::ShiftButton)
     if (((QInputEvent*)event)->modifiers() & Qt::ShiftModifier)
           key += Qt::SHIFT;
-    ///if (event->state() & Qt::AltButton)
     if (((QInputEvent*)event)->modifiers() & Qt::AltModifier)
           key += Qt::ALT;
-    ///if (event->state() & Qt::ControlButton)
     if (((QInputEvent*)event)->modifiers() & Qt::ControlModifier)
           key+= Qt::CTRL;
 
@@ -1537,4 +1474,32 @@ void DrumCanvas::selectCursorEvent(Event *ev)
 
   }
   updateSelection();
+}
+
+
+void DrumCanvas::moveAwayUnused()
+{
+	using std::set;
+	
+	set<int> used;
+	for (iCItem it=items.begin(); it!=items.end(); it++)
+	{
+		const Event& ev=it->second->event();
+		
+		if (ev.type()==Note)
+			used.insert(ev.pitch());
+	}
+	
+	int count=0;
+	for (set<int>::iterator it=used.begin(); it!=used.end();)
+	{
+		while ((*it != count) && (used.find(count)!=used.end())) count++;
+		
+		if (*it != count)
+			mapChanged(*it, count);
+
+		count++;
+		
+		used.erase(it++);
+	}
 }

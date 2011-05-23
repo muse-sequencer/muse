@@ -41,27 +41,23 @@ using namespace std;
 #include "app.h"
 #include "xml.h"
 #include "mtscale.h"
-#include "prcanvas.h"
+#include "al/sig.h"
 #include "scoreedit.h"
-#include "scrollscale.h"
-#include "piano.h"
-#include "../ctrl/ctrledit.h"
-#include "splitter.h"
+#include "tools.h"
 #include "ttoolbar.h"
 #include "tb1.h"
-#include "utils.h"
 #include "globals.h"
 #include "gconfig.h"
 #include "icons.h"
 #include "audio.h"
+#include "functions.h"
 
 #include "cmd.h"
-#include "quantconfig.h"
-#include "shortcuts.h"
-
-#include "mtrackinfo.h"
-
 #include "sig.h"
+#include "song.h"
+
+//#include "../ctrl/ctrledit.h"
+//#include "shortcuts.h"
 
 
 string IntToStr(int i);
@@ -72,7 +68,8 @@ QString IntToQStr(int i);
 
 
 
-
+#define APPLY_TO_SELECTED_STRING tr("Apply to selected notes:")
+#define APPLY_TO_NEW_STRING tr("Apply to new notes:")
 
 
 //PIXELS_PER_NOTEPOS must be greater or equal to 3*NOTE_XLEN + 2*NOTE_SHIFT
@@ -109,6 +106,10 @@ QString IntToQStr(int i);
 
 #define STAFF_DISTANCE (10*YLEN)
 #define GRANDSTAFF_DISTANCE (8*YLEN)
+#define NOTE_YDIST 20
+//NOTE_YDIST is the number of pixels which are between two notes
+//which exceed their staves' y-boundaries, so that these boundaries
+//must be expanded.
 
 QString create_random_string(int len=8)
 {
@@ -141,6 +142,7 @@ QColor* mycolors; // array [NUM_MYCOLORS]
 set<QString> ScoreEdit::names;
 int ScoreEdit::width_init = 600;
 int ScoreEdit::height_init = 400;
+QByteArray ScoreEdit::default_toolbar_state;
 
 
 //---------------------------------------------------------
@@ -151,6 +153,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
    : TopWin(parent, name)
 {
 	setAttribute(Qt::WA_DeleteOnClose);
+	setFocusPolicy(Qt::StrongFocus);
 
 	resize(width_init, height_init);
 
@@ -164,12 +167,13 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	setCentralWidget(mainw);
 
 
-
+	apply_velo=false;
 
 	
-	score_canvas=new ScoreCanvas(this, mainw, 1, 1);
+	score_canvas=new ScoreCanvas(this, mainw);
 	xscroll = new QScrollBar(Qt::Horizontal, mainw);
 	yscroll = new QScrollBar(Qt::Vertical, mainw);
+	time_bar = new MTScaleFlo(score_canvas, mainw);
 
 	connect(xscroll, SIGNAL(valueChanged(int)), score_canvas,   SLOT(x_scroll_event(int)));
 	connect(score_canvas, SIGNAL(xscroll_changed(int)), xscroll,   SLOT(setValue(int)));
@@ -184,9 +188,14 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 	connect(song, SIGNAL(songChanged(int)), score_canvas, SLOT(song_changed(int)));
 
-	mainGrid->addWidget(score_canvas, 0, 0);
-	mainGrid->addWidget(xscroll,1,0);
-	mainGrid->addWidget(yscroll,0,1);
+	connect(xscroll, SIGNAL(valueChanged(int)), time_bar, SLOT(set_xpos(int)));
+	connect(score_canvas, SIGNAL(pos_add_changed()), time_bar, SLOT(pos_add_changed()));
+	connect(score_canvas, SIGNAL(preamble_width_changed(int)), time_bar, SLOT(set_xoffset(int)));
+
+	mainGrid->addWidget(time_bar, 0,0);
+	mainGrid->addWidget(score_canvas, 1,0);
+	mainGrid->addWidget(xscroll,2,0);
+	mainGrid->addWidget(yscroll,1,1);
 
 	xscroll->setMinimum(0);
 	yscroll->setMinimum(0);
@@ -216,17 +225,20 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	transport_toolbar->setObjectName("transport");
 	transport_toolbar->addActions(transportAction->actions());
 
-	QToolBar* newnote_toolbar = addToolBar(tr("New note settings"));
-	newnote_toolbar->setObjectName("New note settings");
-	newnote_toolbar->addWidget(new QLabel(tr("Note length:"), newnote_toolbar));
+	addToolBarBreak();
+
+	QToolBar* note_settings_toolbar = addToolBar(tr("Note settings"));
+	//don't change that name, or you will lose toolbar settings
+	note_settings_toolbar->setObjectName("New note settings");
+	note_settings_toolbar->addWidget(new QLabel(tr("Note length:"), note_settings_toolbar));
 	len_actions=new QActionGroup(this);
-	n1_action = newnote_toolbar->addAction("1", menu_mapper, SLOT(map()));
-	n2_action = newnote_toolbar->addAction("2", menu_mapper, SLOT(map()));
-	n4_action = newnote_toolbar->addAction("4", menu_mapper, SLOT(map()));
-	n8_action = newnote_toolbar->addAction("8", menu_mapper, SLOT(map()));
-	n16_action = newnote_toolbar->addAction("16", menu_mapper, SLOT(map()));
-	n32_action = newnote_toolbar->addAction("32", menu_mapper, SLOT(map()));
-	nlast_action = newnote_toolbar->addAction(tr("last"), menu_mapper, SLOT(map()));
+	n1_action = note_settings_toolbar->addAction("1", menu_mapper, SLOT(map()));
+	n2_action = note_settings_toolbar->addAction("2", menu_mapper, SLOT(map()));
+	n4_action = note_settings_toolbar->addAction("4", menu_mapper, SLOT(map()));
+	n8_action = note_settings_toolbar->addAction("8", menu_mapper, SLOT(map()));
+	n16_action = note_settings_toolbar->addAction("16", menu_mapper, SLOT(map()));
+	n32_action = note_settings_toolbar->addAction("32", menu_mapper, SLOT(map()));
+	nlast_action = note_settings_toolbar->addAction(tr("last"), menu_mapper, SLOT(map()));
 	menu_mapper->setMapping(n1_action, CMD_NOTELEN_1);
 	menu_mapper->setMapping(n2_action, CMD_NOTELEN_2);
 	menu_mapper->setMapping(n4_action, CMD_NOTELEN_4);
@@ -252,22 +264,37 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	nlast_action->setChecked(true);
 	menu_command(CMD_NOTELEN_LAST);
 	
-	newnote_toolbar->addSeparator();
+	note_settings_toolbar->addSeparator();
 	
-	newnote_toolbar->addWidget(new QLabel(tr("Velocity:"), newnote_toolbar));
+	apply_velo_to_label = new QLabel(APPLY_TO_NEW_STRING, note_settings_toolbar);
+		int w1 = apply_velo_to_label->fontMetrics().width(APPLY_TO_NEW_STRING);
+		int w2 = apply_velo_to_label->fontMetrics().width(APPLY_TO_SELECTED_STRING);
+		if (w1>w2) 
+			apply_velo_to_label->setFixedWidth(w1+5);
+		else 
+			apply_velo_to_label->setFixedWidth(w2+5);
+	
+	note_settings_toolbar->addWidget(apply_velo_to_label);
+	note_settings_toolbar->addWidget(new QLabel(tr("Velocity:"), note_settings_toolbar));
 	velo_spinbox = new QSpinBox(this);
 	velo_spinbox->setRange(0, 127);
 	velo_spinbox->setSingleStep(1);
-	connect(velo_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_newnote_velo(int)));
-	newnote_toolbar->addWidget(velo_spinbox);
+	//we do not use the valueChanged signal, because that would generate
+	//many many undos when using the spin buttons.
+	connect(velo_spinbox, SIGNAL(editingFinished()), SLOT(velo_box_changed()));
+	connect(this,SIGNAL(velo_changed(int)), score_canvas, SLOT(set_velo(int)));
+	note_settings_toolbar->addWidget(velo_spinbox);
 	velo_spinbox->setValue(64);
 
-	newnote_toolbar->addWidget(new QLabel(tr("Off-Velocity:"), newnote_toolbar));
+	note_settings_toolbar->addWidget(new QLabel(tr("Off-Velocity:"), note_settings_toolbar));
 	velo_off_spinbox = new QSpinBox(this);
 	velo_off_spinbox->setRange(0, 127);
 	velo_off_spinbox->setSingleStep(1);
-	connect(velo_off_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_newnote_velo_off(int)));
-	newnote_toolbar->addWidget(velo_off_spinbox);
+	//we do not use the valueChanged signal, because that would generate
+	//many many undos when using the spin buttons.
+	connect(velo_off_spinbox, SIGNAL(editingFinished()), SLOT(velo_off_box_changed()));
+	connect(this,SIGNAL(velo_off_changed(int)), score_canvas, SLOT(set_velo_off(int)));
+	note_settings_toolbar->addWidget(velo_off_spinbox);
 	velo_off_spinbox->setValue(64);
 
 
@@ -331,20 +358,47 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 		QAction* set_name_action = settings_menu->addAction(tr("Set Score &name"), menu_mapper, SLOT(map()));
 		menu_mapper->setMapping(set_name_action, CMD_SET_NAME);
   
-  
+
+  QMenu* functions_menu = menuBar()->addMenu(tr("&Functions"));      
+	
+		QAction* func_quantize_action = functions_menu->addAction(tr("&Quantize"), menu_mapper, SLOT(map()));
+		QAction* func_notelen_action = functions_menu->addAction(tr("Change note &length"), menu_mapper, SLOT(map()));
+		QAction* func_velocity_action = functions_menu->addAction(tr("Change note &velocity"), menu_mapper, SLOT(map()));
+		QAction* func_cresc_action = functions_menu->addAction(tr("Crescendo/Decrescendo"), menu_mapper, SLOT(map()));
+		QAction* func_transpose_action = functions_menu->addAction(tr("Transpose"), menu_mapper, SLOT(map()));
+		QAction* func_erase_action = functions_menu->addAction(tr("Erase Events"), menu_mapper, SLOT(map()));
+		QAction* func_move_action = functions_menu->addAction(tr("Move Notes"), menu_mapper, SLOT(map()));
+		QAction* func_fixed_len_action = functions_menu->addAction(tr("Set Fixed Length"), menu_mapper, SLOT(map()));
+		QAction* func_del_overlaps_action = functions_menu->addAction(tr("Delete Overlaps"), menu_mapper, SLOT(map()));
+		QAction* func_legato_action = functions_menu->addAction(tr("Legato"), menu_mapper, SLOT(map()));
+		menu_mapper->setMapping(func_quantize_action, CMD_QUANTIZE);
+		menu_mapper->setMapping(func_notelen_action, CMD_NOTELEN);
+		menu_mapper->setMapping(func_velocity_action, CMD_VELOCITY);
+		menu_mapper->setMapping(func_cresc_action, CMD_CRESCENDO);
+		menu_mapper->setMapping(func_transpose_action, CMD_TRANSPOSE);
+		menu_mapper->setMapping(func_erase_action, CMD_ERASE);
+		menu_mapper->setMapping(func_move_action, CMD_MOVE);
+		menu_mapper->setMapping(func_fixed_len_action, CMD_FIXED_LEN);
+		menu_mapper->setMapping(func_del_overlaps_action, CMD_DELETE_OVERLAPS);
+		menu_mapper->setMapping(func_legato_action, CMD_LEGATO);
 
 
+	if (!default_toolbar_state.isEmpty())
+		restoreState(default_toolbar_state);
 
+	connect(song, SIGNAL(songChanged(int)), SLOT(song_changed(int)));	
 
-	score_canvas->song_changed(SC_EVENT_INSERTED);
+	score_canvas->fully_recalculate();
 	score_canvas->goto_tick(initPos,true);
 	
 	if (name!=NULL)
 		set_name(name, false, true);
 	else
 		init_name();
-}
 
+
+	apply_velo=true;
+}
 
 void ScoreEdit::add_parts(PartList* pl, bool all_in_one)
 {
@@ -403,6 +457,46 @@ ScoreEdit::~ScoreEdit()
 	
 }
 
+void ScoreEdit::velo_box_changed()
+{
+	emit velo_changed(velo_spinbox->value());
+}
+
+void ScoreEdit::velo_off_box_changed()
+{
+	emit velo_off_changed(velo_off_spinbox->value());
+}
+
+void ScoreEdit::song_changed(int flags)
+{
+	if (flags & (SC_SELECTION | SC_EVENT_MODIFIED | SC_EVENT_REMOVED))
+	{
+		map<Event*, Part*> selection=get_events(score_canvas->get_all_parts(),1);
+		if (selection.empty())
+		{
+			apply_velo_to_label->setText(APPLY_TO_NEW_STRING);
+		}
+		else
+		{
+			apply_velo_to_label->setText(APPLY_TO_SELECTED_STRING);
+			
+			int velo=-1;
+			int velo_off=-1;
+			for (map<Event*, Part*>::iterator it=selection.begin(); it!=selection.end(); it++)
+				if (it->first->type()==Note)
+				{
+					if (velo==-1) velo=it->first->velo();
+					else if ((velo>=0) && (velo!=it->first->velo())) velo=-2;
+
+					if (velo_off==-1) velo_off=it->first->veloOff();
+					else if ((velo_off>=0) && (velo_off!=it->first->veloOff())) velo_off=-2;
+				}
+			
+			if (velo>=0) velo_spinbox->setValue(velo);
+			if (velo_off>=0) velo_off_spinbox->setValue(velo_off);
+		}
+	}
+}
 
 void ScoreEdit::canvas_width_changed(int width)
 {
@@ -452,8 +546,21 @@ void ScoreEdit::resizeEvent(QResizeEvent* ev)
 {
 	QWidget::resizeEvent(ev);
 	
-	width_init=ev->size().width();
-	height_init=ev->size().height();
+	store_initial_state();
+}
+
+void ScoreEdit::focusOutEvent(QFocusEvent* ev)
+{
+	QMainWindow::focusOutEvent(ev);
+	
+	store_initial_state();
+}
+
+void ScoreEdit::store_initial_state()
+{
+	width_init=width();
+	height_init=height();
+	default_toolbar_state=saveState();
 }
 
 void ScoreEdit::menu_command(int cmd)
@@ -474,16 +581,26 @@ void ScoreEdit::menu_command(int cmd)
 		}
 		break;
 		
+		case CMD_QUANTIZE: quantize_notes(score_canvas->get_all_parts()); break;
+		case CMD_VELOCITY: modify_velocity(score_canvas->get_all_parts()); break;
+		case CMD_CRESCENDO: crescendo(score_canvas->get_all_parts()); break;
+		case CMD_NOTELEN: modify_notelen(score_canvas->get_all_parts()); break;
+		case CMD_TRANSPOSE: transpose_notes(score_canvas->get_all_parts()); break;
+		case CMD_ERASE: erase_notes(score_canvas->get_all_parts()); break;
+		case CMD_MOVE: move_notes(score_canvas->get_all_parts()); break;
+		case CMD_FIXED_LEN: set_notelen(score_canvas->get_all_parts()); break;
+		case CMD_DELETE_OVERLAPS: delete_overlaps(score_canvas->get_all_parts()); break;
+		case CMD_LEGATO: legato(score_canvas->get_all_parts()); break;
+	
 		default: 
 			score_canvas->menu_command(cmd);
 	}
 }
 
-//---------------------------------------------------------
-//   readPart
-//---------------------------------------------------------
 
-Part* readPart(Xml& xml, QString tag_name="part") //TODO FINDMICH: duplicated from songfile.cpp; only difference: "none" is supported
+//duplicated from songfile.cpp's MusE::readPart(); the only differences: 
+//"none" is supported and tag_name is settable
+Part* read_part(Xml& xml, QString tag_name="part") 
 {
 	Part* part = 0;
 
@@ -514,7 +631,7 @@ Part* readPart(Xml& xml, QString tag_name="part") //TODO FINDMICH: duplicated fr
 				break;
 				
 			case Xml::TagStart:
-				xml.unknown("readPart");
+				xml.unknown("read_part");
 				break;
 				
 			case Xml::TagEnd:
@@ -546,7 +663,7 @@ void staff_t::read_status(Xml& xml)
 					clef = clef_t(xml.parseInt());
 				else if (tag == "part") 
 				{
-					Part* part=readPart(xml);
+					Part* part=read_part(xml);
 					if (part)
 						parts.insert(part);
 					else
@@ -672,6 +789,9 @@ void ScoreCanvas::write_staves(int level, Xml& xml) const
 
 void ScoreEdit::readStatus(Xml& xml)
 {
+	bool apply_velo_temp=apply_velo;
+	apply_velo=false;
+	
 	for (;;)
 	{
 		Xml::Token token = xml.parse();
@@ -741,7 +861,7 @@ void ScoreEdit::readStatus(Xml& xml)
 				else if (tag == "topwin")
 					TopWin::readStatus(xml);
 				else if (tag == "selectedPart")
-					score_canvas->set_selected_part(readPart(xml, "selectedPart"));
+					score_canvas->set_selected_part(read_part(xml, "selectedPart"));
 				else if (tag == "staff")
 				{
 					staff_t staff(score_canvas);
@@ -760,6 +880,7 @@ void ScoreEdit::readStatus(Xml& xml)
 				break;
 		}
 	}
+	apply_velo=apply_velo_temp;
 }
 
 void ScoreEdit::read_configuration(Xml& xml)
@@ -774,10 +895,12 @@ void ScoreEdit::read_configuration(Xml& xml)
 		switch (token)
 		{
 			case Xml::TagStart:
-				if (tag == "width")
+				if (tag == "height")
 					height_init = xml.parseInt();
-				else if (tag == "height")
+				else if (tag == "width")
 					width_init = xml.parseInt();
+				else if (tag == "toolbars")
+					default_toolbar_state = QByteArray::fromHex(xml.parse1().toAscii());
 				else
 					xml.unknown("ScoreEdit");
 				break;
@@ -798,6 +921,7 @@ void ScoreEdit::write_configuration(int level, Xml& xml)
 	xml.tag(level++, "scoreedit");
 	xml.intTag(level, "width", width_init);
 	xml.intTag(level, "height", height_init);
+	xml.strTag(level, "toolbars", default_toolbar_state.toHex().data());
 	xml.etag(level, "scoreedit");
 }
 
@@ -806,60 +930,103 @@ void ScoreEdit::write_configuration(int level, Xml& xml)
 
 void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 {
-	staff_t staff(this);
-
-	if (all_in_one)
+	if (!pl->empty())
 	{
-		staff.parts.clear();
-		for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
-			staff.parts.insert(part_it->second);
-		staff.cleanup_parts();
+		staff_t staff(this);
 
-		staff.type=GRAND_TOP; //FINDME_INITCLEF
-		staff.clef=VIOLIN;
-		staves.push_back(staff);
-
-		staff.type=GRAND_BOTTOM;
-		staff.clef=BASS;
-		staves.push_back(staff);		
-	}
-	else
-	{
-		set<Track*> tracks;
-		for (ciPart it=pl->begin(); it!=pl->end(); it++)
-			tracks.insert(it->second->track());
-		
-		TrackList* tracklist = song->tracks();
-		// this loop is used for inserting track-staves in the
-		// correct order. simply iterating through tracks's contents
-		// would sort after the pointer values, i.e. randomly
-		for (ciTrack track_it=tracklist->begin(); track_it!=tracklist->end(); track_it++)
-			if (tracks.find(*track_it)!=tracks.end())
+		if (all_in_one)
+		{
+			ScoreEdit::clefTypes clef=((MidiTrack*)pl->begin()->second->track())->getClef();
+			
+			staff.parts.clear();
+			for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
 			{
-				staff.parts.clear();
-				for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
-					if (part_it->second->track() == *track_it)
-						staff.parts.insert(part_it->second);
-				staff.cleanup_parts();
-				
-				staff.type=GRAND_TOP; //FINDME_INITCLEF
-				staff.clef=VIOLIN;
-				staves.push_back(staff);
-
-				staff.type=GRAND_BOTTOM;
-				staff.clef=BASS;
-				staves.push_back(staff);
+				if (((MidiTrack*)part_it->second->track())->getClef() != clef)
+					clef=ScoreEdit::grandStaff;
+					
+				staff.parts.insert(part_it->second);
 			}
+			staff.cleanup_parts();
+
+			switch (clef)
+			{
+				case ScoreEdit::trebleClef:
+					staff.type=NORMAL;
+					staff.clef=VIOLIN;
+					staves.push_back(staff);
+					break;
+
+				case ScoreEdit::bassClef:
+					staff.type=NORMAL;
+					staff.clef=BASS;
+					staves.push_back(staff);
+					break;
+
+				case ScoreEdit::grandStaff:
+					staff.type=GRAND_TOP;
+					staff.clef=VIOLIN;
+					staves.push_back(staff);
+
+					staff.type=GRAND_BOTTOM;
+					staff.clef=BASS;
+					staves.push_back(staff);		
+					break;
+			}
+		}
+		else
+		{
+			set<Track*> tracks;
+			for (ciPart it=pl->begin(); it!=pl->end(); it++)
+				tracks.insert(it->second->track());
+			
+			TrackList* tracklist = song->tracks();
+			// this loop is used for inserting track-staves in the
+			// correct order. simply iterating through tracks's contents
+			// would sort after the pointer values, i.e. randomly
+			for (ciTrack track_it=tracklist->begin(); track_it!=tracklist->end(); track_it++)
+				if (tracks.find(*track_it)!=tracks.end())
+				{
+					staff.parts.clear();
+					for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
+						if (part_it->second->track() == *track_it)
+							staff.parts.insert(part_it->second);
+					staff.cleanup_parts();
+					
+					switch (((MidiTrack*)(*track_it))->getClef())
+					{
+						case ScoreEdit::trebleClef:
+							staff.type=NORMAL;
+							staff.clef=VIOLIN;
+							staves.push_back(staff);
+							break;
+
+						case ScoreEdit::bassClef:
+							staff.type=NORMAL;
+							staff.clef=BASS;
+							staves.push_back(staff);
+							break;
+
+						case ScoreEdit::grandStaff:
+							staff.type=GRAND_TOP;
+							staff.clef=VIOLIN;
+							staves.push_back(staff);
+
+							staff.type=GRAND_BOTTOM;
+							staff.clef=BASS;
+							staves.push_back(staff);		
+							break;
+					}
+				}
+		}
+		
+		cleanup_staves();
+		fully_recalculate();
+		recalc_staff_pos();
 	}
-	
-	cleanup_staves();
-	recalc_staff_pos();
-	song_changed(SC_EVENT_INSERTED);
 }
 
 
-ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget,
-   int sx, int sy) : View(parent_widget, sx, sy)
+ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_widget, 1, 1)
 {
 	parent      = pr;
 	setFocusPolicy(Qt::StrongFocus);
@@ -872,10 +1039,15 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget,
 	x_pos=0;
 	x_left=0;
 	y_pos=0;
+	have_lasso=false;
 	dragging=false;
+	drag_cursor_changed=false;
 	mouse_erases_notes=false;
 	mouse_inserts_notes=true;
-
+	
+	undo_started=false;
+	undo_flags=0;
+	
 	selected_part=NULL;
 	
 	last_len=384;
@@ -886,8 +1058,8 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget,
 	              //called again. but for safety...
 	set_pixels_per_whole(300); //same as above. but safety rocks
 
-	set_newnote_velo(64);
-	set_newnote_velo_off(64);
+	set_velo(64);
+	set_velo_off(64);
 	
 	dragging_staff=false;
 	
@@ -986,8 +1158,8 @@ void ScoreCanvas::set_staffmode(list<staff_t>::iterator it, staff_mode_t mode)
 			cerr << "ERROR: ILLEGAL FUNCTION CALL: invalid mode in set_staffmode" << endl;
 	}
 	
+	fully_recalculate();
 	recalc_staff_pos();
-	song_changed(SC_EVENT_INSERTED);
 }
 
 void ScoreCanvas::remove_staff(list<staff_t>::iterator it)
@@ -1012,8 +1184,8 @@ void ScoreCanvas::remove_staff(list<staff_t>::iterator it)
 	}		
 	
 	maybe_close_if_empty();
+	fully_recalculate();
 	recalc_staff_pos();
-	song_changed(SC_EVENT_INSERTED);
 }
 
 void ScoreCanvas::merge_staves(list<staff_t>::iterator dest, list<staff_t>::iterator src)
@@ -1048,8 +1220,8 @@ void ScoreCanvas::merge_staves(list<staff_t>::iterator dest, list<staff_t>::iter
 	
 	remove_staff(src);
 
+	fully_recalculate();
 	recalc_staff_pos();
-	song_changed(SC_EVENT_INSERTED);
 }
 
 void ScoreCanvas::move_staff_above(list<staff_t>::iterator dest, list<staff_t>::iterator src)
@@ -1079,8 +1251,8 @@ void ScoreCanvas::move_staff_above(list<staff_t>::iterator dest, list<staff_t>::
 	
 	staves.splice(dest, staves, src, src_end);
 
+	fully_recalculate();
 	recalc_staff_pos();
-	song_changed(SC_EVENT_INSERTED);
 }
 
 void ScoreCanvas::move_staff_below(list<staff_t>::iterator dest, list<staff_t>::iterator src)
@@ -1097,6 +1269,20 @@ void ScoreCanvas::move_staff_below(list<staff_t>::iterator dest, list<staff_t>::
 	move_staff_above(dest, src);
 }
 
+set<Part*> ScoreCanvas::get_all_parts()
+{
+	set<Part*> result;
+	
+	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
+		result.insert(it->parts.begin(), it->parts.end());
+	
+	return result;
+}
+
+void ScoreCanvas::fully_recalculate()
+{
+	song_changed(SC_EVENT_MODIFIED);
+}
 
 void ScoreCanvas::song_changed(int flags)
 {
@@ -1108,6 +1294,8 @@ void ScoreCanvas::song_changed(int flags)
 		
 		for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 			it->recalculate();
+			
+		recalc_staff_pos();
 		
 		redraw();
 		emit canvas_width_changed(canvas_width());
@@ -1124,11 +1312,17 @@ void ScoreCanvas::song_changed(int flags)
 		}
 		
 		cleanup_staves();
-		recalc_staff_pos();
 
 		for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 			it->recalculate();
 
+		recalc_staff_pos();
+
+		redraw();
+	}
+
+	if (flags & SC_SELECTION)
+	{
 		redraw();
 	}
 }
@@ -1209,6 +1403,7 @@ void ScoreCanvas::init_pixmaps()
 			mycolors[i]=config.partColors[i];
 		mycolors[BLACK_PIXMAP]=Qt::black;
 		mycolors[HIGHLIGHTED_PIXMAP]=Qt::red;
+		mycolors[SELECTED_PIXMAP]=QColor(255,160,0);
 		
 		for (int i=0; i<64; i++)
 			mycolors[i+VELO_PIXMAP_BEGIN]=QColor(i*4,0,0xff);
@@ -1301,15 +1496,15 @@ bool operator< (const note_pos_t& a, const note_pos_t& b)
 }
 
 
- 
+
 int flo_quantize(int tick, int quant_ticks)
 {
-	return int(nearbyint((float)tick / quant_ticks))*quant_ticks;
+	return AL::sigmap.raster(tick, quant_ticks);
 }
  
 int flo_quantize_floor(int tick, int quant_ticks)
 {
-	return int(tick / quant_ticks) * quant_ticks;
+	return AL::sigmap.raster1(tick, quant_ticks);
 }
 
  
@@ -2419,6 +2614,9 @@ void staff_t::calc_item_pos()
 	                         //key signature is properly drawn.
 	int pos_add=0;
 	
+	max_y_coord=0;
+	min_y_coord=0;
+	
 	for (ScoreItemList::iterator it2=itemlist.begin(); it2!=itemlist.end(); it2++)
 	{
 		for (set<FloItem, floComp>::iterator it=it2->second.begin(); it!=it2->second.end();it++)
@@ -2429,6 +2627,9 @@ void staff_t::calc_item_pos()
 			
 			if (it->type==FloItem::NOTE)
 			{
+				if (it->y > max_y_coord) max_y_coord=it->y;
+				if (it->y < min_y_coord) min_y_coord=it->y;
+				
 				it->x+=parent->note_x_indent() + it->shift*NOTE_SHIFT;
 				
 				switch (it->len)
@@ -2502,6 +2703,9 @@ void staff_t::calc_item_pos()
 			}
 		}
 	}		
+
+	max_y_coord+= (pix_quarter->height()/2 +NOTE_YDIST/2);
+	min_y_coord-= (pix_quarter->height()/2 +NOTE_YDIST/2);
 }
 
 void ScoreCanvas::calc_pos_add_list()
@@ -2531,6 +2735,8 @@ void ScoreCanvas::calc_pos_add_list()
 		
 		curr_key=new_key;
 	}
+
+	emit pos_add_changed();
 }
 
 void ScoreCanvas::draw_items(QPainter& p, int y, staff_t& staff, int x1, int x2)
@@ -2684,8 +2890,13 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 						color_index=VELO_PIXMAP_BEGIN + it->source_event->velo();
 						break;
 				}
+				
+				if (it->source_event->selected())
+					color_index=SELECTED_PIXMAP;
+				
 				if (audio->isPlaying() && it->is_active)
 					color_index=HIGHLIGHTED_PIXMAP;
+				
 				
 				draw_pixmap(p,it->x -x_pos+x_left,y_offset + it->y,it->pix[color_index]);
 				
@@ -2947,7 +3158,10 @@ void ScoreCanvas::draw_preamble(QPainter& p, int y_offset, clef_t clef)
 
 
 	if (x_left_old!=x_left)
+	{
 		emit viewport_width_changed(viewport_width());
+		emit preamble_width_changed(x_left);
+	}
 }
 
 
@@ -3007,7 +3221,14 @@ void ScoreCanvas::draw(QPainter& p, const QRect&)
 		draw_items(p,it->y_draw - y_pos, *it);
 		p.setClipping(false);
 	}
-
+	
+	if (have_lasso)
+	{
+		p.setPen(Qt::blue);
+		p.setBrush(Qt::NoBrush);
+		p.drawRect(lasso);
+	}
+	
 	if (debugMsg) cout << "drawing done." << endl;
 }
 
@@ -3056,6 +3277,11 @@ int ScoreCanvas::tick_to_x(int t)
 		x+=it->second;
 	
 	return x;
+}
+
+int ScoreCanvas::delta_tick_to_delta_x(int t)
+{
+	return t*pixels_per_whole()/TICKS_PER_WHOLE;
 }
 
 int ScoreCanvas::calc_posadd(int t)
@@ -3149,6 +3375,10 @@ int ScoreCanvas::y_to_pitch(int y, int t, clef_t clef)
 
 void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 {
+	keystate=((QInputEvent*)event)->modifiers();
+	
+	bool ctrl=keystate & Qt::ControlModifier;
+	
 	// den errechneten tick immer ABrunden!
 	// denn der "bereich" eines schlags geht von schlag_begin bis nächsterschlag_begin-1
 	// noten werden aber genau in die mitte dieses bereiches gezeichnet
@@ -3158,6 +3388,10 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 	int y=event->y() + y_pos - staff_it->y_draw;
 	int x=event->x()+x_pos-x_left;
 	int tick=flo_quantize_floor(x_to_tick(x), quant_ticks());
+	
+	if (event->button()==Qt::LeftButton)
+		if (!ctrl)
+			deselect_all();
 
 	if (staff_it!=staves.end())
 	{
@@ -3258,85 +3492,105 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				}
 				else if (event->button()==Qt::LeftButton) //edit?
 				{
+					set_it->source_event->setSelected(!set_it->source_event->selected());
+					song_changed(SC_SELECTION);
+					
 					setMouseTracking(true);		
 					dragging=true;
-					setCursor(Qt::SizeAllCursor);
-					song->startUndo();
+					drag_cursor_changed=false;
+					undo_started=false;
+					undo_flags=SC_EVENT_MODIFIED;
 				}
 			}
 			else //we found nothing?
-			{
-				if ((event->button()==Qt::LeftButton) && (mouse_inserts_notes))
+				if (event->button()==Qt::LeftButton)
 				{
-					Part* curr_part = NULL;
-					set<Part*> possible_dests=staff_it->parts_at_tick(tick);
-
-					if (!possible_dests.empty())
+					if (mouse_inserts_notes)
 					{
-						if (possible_dests.size()==1)
-							curr_part=*possible_dests.begin();
-						else
+						Part* curr_part = NULL;
+						set<Part*> possible_dests=staff_it->parts_at_tick(tick);
+
+						if (!possible_dests.empty())
 						{
-							if (possible_dests.find(selected_part)!=possible_dests.end())
-								curr_part=selected_part;
+							if (possible_dests.size()==1)
+								curr_part=*possible_dests.begin();
 							else
-								QMessageBox::information(this, tr("Ambiguous part"), tr("There are two or more possible parts you could add the note to, but none matches the selected part. Please select the destination part by clicking on any note belonging to it and try again, or add a new stave containing only the destination part."));
+							{
+								if (possible_dests.find(selected_part)!=possible_dests.end())
+									curr_part=selected_part;
+								else
+									QMessageBox::information(this, tr("Ambiguous part"), tr("There are two or more possible parts you could add the note to, but none matches the selected part. Please select the destination part by clicking on any note belonging to it and try again, or add a new stave containing only the destination part."));
+							}
+						}
+						else
+							QMessageBox::information(this, tr("No part"), tr("There are no parts you could add the note to."));
+						
+						if (curr_part!=NULL)
+						{
+							signed int relative_tick=(signed) tick - curr_part->tick();
+							if (relative_tick<0)
+								cerr << "ERROR: THIS SHOULD NEVER HAPPEN: relative_tick is negative!" << endl;
+							song->startUndo();
+							undo_started=true;
+							undo_flags=SC_EVENT_INSERTED | SC_EVENT_MODIFIED;
+							//stopping undo at the end of this function is unneccessary
+							//because we'll begin a drag right after it. finishing
+							//this drag will stop undo as well (in mouseReleaseEvent)
+							
+							Event newevent(Note);
+							newevent.setPitch(y_to_pitch(y,tick, staff_it->clef));
+							newevent.setVelo(note_velo);
+							newevent.setVeloOff(note_velo_off);
+							newevent.setTick(relative_tick);
+							newevent.setLenTick((new_len>0)?new_len:last_len);
+							newevent.setSelected(true);
+							
+							if (flo_quantize(newevent.lenTick(), quant_ticks()) <= 0)
+							{
+								newevent.setLenTick(quant_ticks());
+								if (debugMsg) cout << "inserted note's length would be invisible after quantisation (too short)." << endl <<
+																			"       setting it to " << newevent.lenTick() << endl;
+							}
+							
+							if (newevent.endTick() > curr_part->lenTick())
+							{
+								if (debugMsg) cout << "clipping inserted note from len="<<newevent.endTick()<<" to len="<<(curr_part->lenTick() - newevent.tick())<<endl;
+								newevent.setLenTick(curr_part->lenTick() - newevent.tick());
+							}
+							
+							audio->msgAddEvent(newevent, curr_part, false, false, false);
+							
+							dragged_event_part=curr_part;
+							dragged_event=newevent;
+							dragged_event_original_pitch=newevent.pitch();
+
+							mouse_down_pos=event->pos();
+							mouse_operation=NO_OP;
+							mouse_x_drag_operation=LENGTH;
+
+							fully_recalculate();
+
+							setMouseTracking(true);	
+							dragging=true;
+							drag_cursor_changed=true;
+							setCursor(Qt::SizeAllCursor);
+							//song->startUndo(); unneccessary because we have started it already above
 						}
 					}
-					else
-						QMessageBox::information(this, tr("No part"), tr("There are no parts you could add the note to."));
-					
-					if (curr_part!=NULL)
+					else // !mouse_inserts_notes. open a lasso
 					{
-						signed int relative_tick=(signed) tick - curr_part->tick();
-						if (relative_tick<0)
-							cerr << "ERROR: THIS SHOULD NEVER HAPPEN: relative_tick is negative!" << endl;
-						song->startUndo();
-						//stopping undo at the end of this function is unneccessary
-						//because we'll begin a drag right after it. finishing
-						//this drag will stop undo as well (in mouseReleaseEvent)
+						have_lasso=true;
+						lasso_start=event->pos();
+						lasso=QRect(lasso_start, lasso_start);
 						
-						Event newevent(Note);
-						newevent.setPitch(y_to_pitch(y,tick, staff_it->clef));
-						newevent.setVelo(newnote_velo);
-						newevent.setVeloOff(newnote_velo_off);
-						newevent.setTick(relative_tick);
-						newevent.setLenTick((new_len>0)?new_len:last_len);
-						
-						if (flo_quantize(newevent.lenTick(), quant_ticks()) <= 0)
-						{
-							newevent.setLenTick(quant_ticks());
-							if (debugMsg) cout << "inserted note's length would be invisible after quantisation (too short)." << endl <<
-							                      "       setting it to " << newevent.lenTick() << endl;
-						}
-						
-						if (newevent.endTick() > curr_part->lenTick())
-						{
-							if (debugMsg) cout << "clipping inserted note from len="<<newevent.endTick()<<" to len="<<(curr_part->lenTick() - newevent.tick())<<endl;
-							newevent.setLenTick(curr_part->lenTick() - newevent.tick());
-						}
-						
-						audio->msgAddEvent(newevent, curr_part, false, false, false);
-						
-						dragged_event_part=curr_part;
-						dragged_event=newevent;
-						dragged_event_original_pitch=newevent.pitch();
-
-						mouse_down_pos=event->pos();
-						mouse_operation=NO_OP;
-						mouse_x_drag_operation=LENGTH;
-
-						song_changed(SC_EVENT_INSERTED);
-
-						setMouseTracking(true);	
-						dragging=true;
-						setCursor(Qt::SizeAllCursor);
-						//song->startUndo(); unneccessary because we have started it already above
+						setMouseTracking(true);
 					}
-				}
-			}
+				}			
 		}
 	}
+
+	if (event->button()==Qt::LeftButton)
+		song->update(SC_SELECTION);
 }
 
 void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
@@ -3356,10 +3610,13 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 			}
 		}
 		
-		song->endUndo(SC_EVENT_MODIFIED);
+		if (undo_started)
+			song->endUndo(undo_flags);
+		
 		setMouseTracking(false);
 		unsetCursor();
 		dragging=false;
+		drag_cursor_changed=false;
 		
 		x_scroll_speed=0; x_scroll_pos=0;
 	}
@@ -3386,6 +3643,19 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 		
 		y_scroll_speed=0; y_scroll_pos=0;
 	}
+
+	if (have_lasso && event->button()==Qt::LeftButton)
+	{
+		set<Event*> already_processed;
+		
+		for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
+			it->apply_lasso(lasso.translated(x_pos-x_left, y_pos - it->y_draw), already_processed);
+		
+		song->update(SC_SELECTION);
+		
+		have_lasso=false;
+		redraw();
+	}
 }
 
 #define PITCH_DELTA 5
@@ -3401,6 +3671,13 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 		int x=event->x()+x_pos-x_left;
 		
 		int tick=flo_quantize_floor(x_to_tick(x), quant_ticks());
+
+
+		if ((drag_cursor_changed==false) && ((dx!=0) || (dy!=0)))
+		{
+			setCursor(Qt::SizeAllCursor);
+			drag_cursor_changed=true;
+		}		
 
 		if (mouse_operation==NO_OP)
 		{		
@@ -3428,16 +3705,25 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 			case PITCH:
 				if (debugMsg) cout << "changing pitch, delta="<<nearbyint((float)dy/PITCH_DELTA)<<endl;
 				new_pitch=dragged_event_original_pitch - nearbyint((float)dy/PITCH_DELTA);
-
+				
+				if (new_pitch < 0) new_pitch=0;
+				if (new_pitch > 127) new_pitch=127;
+				
 				if (dragged_event.pitch()!=new_pitch)
 				{
+					if (!undo_started)
+					{
+						song->startUndo();
+						undo_started=true;
+					}
+					
 					Event tmp=dragged_event.clone();
 					tmp.setPitch(new_pitch);
 					
 					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
 					dragged_event=tmp;
 					
-					song_changed(SC_EVENT_INSERTED);	
+					fully_recalculate();	
 				}
 				
 				break;
@@ -3445,6 +3731,12 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 			case BEGIN:
 				if (dragged_event.tick()+dragged_event_part->tick() != unsigned(tick))
 				{
+					if (!undo_started)
+					{
+						song->startUndo();
+						undo_started=true;
+					}
+
 					Event tmp=dragged_event.clone();
 					signed relative_tick=tick-signed(dragged_event_part->tick());
 					
@@ -3474,7 +3766,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
 					dragged_event=tmp;
 					
-					song_changed(SC_EVENT_INSERTED);	
+					fully_recalculate();	
 				}
 				
 				break;
@@ -3483,6 +3775,12 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				tick+=quant_ticks();
 				if (dragged_event.tick()+dragged_event.lenTick() + dragged_event_part->tick() != unsigned(tick))
 				{
+					if (!undo_started)
+					{
+						song->startUndo();
+						undo_started=true;
+					}
+
 					Event tmp=dragged_event.clone();
 					signed relative_tick=tick-signed(dragged_event_part->tick());
 					signed new_len=relative_tick-dragged_event.tick();
@@ -3504,7 +3802,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
 					dragged_event=tmp;
 					
-					song_changed(SC_EVENT_INSERTED);	
+					fully_recalculate();	
 				}
 				
 				break;
@@ -3554,6 +3852,12 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 	else
 	{
 		y_scroll_speed=0;
+	}
+	
+	if (have_lasso)
+	{
+		lasso=QRect(lasso_start, event->pos()).normalized();
+		redraw();
 	}
 }
 
@@ -3685,16 +3989,33 @@ void ScoreCanvas::recalc_staff_pos()
 		{
 			case NORMAL:
 				it->y_draw = it->y_top + STAFF_DISTANCE/2;
+				if (it->min_y_coord < -STAFF_DISTANCE/2)
+					it->y_draw+= (-it->min_y_coord - STAFF_DISTANCE/2);
+					
 				it->y_bottom = it->y_draw + STAFF_DISTANCE/2;
+				if (it->max_y_coord > STAFF_DISTANCE/2)
+					it->y_bottom+= (it->max_y_coord - STAFF_DISTANCE/2);
+					
 				break;
+				
 			case GRAND_TOP:
 				it->y_draw = it->y_top + STAFF_DISTANCE/2;
+				if (it->min_y_coord < -STAFF_DISTANCE/2)
+					it->y_draw+= (-it->min_y_coord - STAFF_DISTANCE/2);
+
 				it->y_bottom = it->y_draw + GRANDSTAFF_DISTANCE/2;
+				
 				break;
+				
 			case GRAND_BOTTOM:
 				it->y_draw = it->y_top + GRANDSTAFF_DISTANCE/2;
+
 				it->y_bottom = it->y_draw + STAFF_DISTANCE/2;
+				if (it->max_y_coord > STAFF_DISTANCE/2)
+					it->y_bottom+= (it->max_y_coord - STAFF_DISTANCE/2);
+				
 				break;
+
 			default:
 				cerr << "ERROR: THIS SHOULD NEVER HAPPEN: invalid staff type!" << endl;
 		}
@@ -3777,7 +4098,7 @@ void ScoreCanvas::set_quant(int val)
 		
 		set_pixels_per_whole(pixels_per_whole() * quant_len() / old_len );
 
-		song_changed(SC_EVENT_INSERTED);
+		fully_recalculate();
 	}
 	else
 	{
@@ -3785,7 +4106,7 @@ void ScoreCanvas::set_quant(int val)
 	}
 }
 
-void ScoreCanvas::set_pixels_per_whole(int val) //FINDMICH passt das?
+void ScoreCanvas::set_pixels_per_whole(int val)
 {
 	if (debugMsg) cout << "setting px per whole to " << val << endl;
 	
@@ -3838,14 +4159,39 @@ void ScoreCanvas::maybe_close_if_empty()
 	}
 }
 
-void ScoreCanvas::set_newnote_velo(int velo)
+void ScoreCanvas::set_velo(int velo)
 {
-	newnote_velo=velo;
+	note_velo=velo;
+
+	if (parent->get_apply_velo())
+		modify_velocity(get_all_parts(),1, 0,velo);
 }
 
-void ScoreCanvas::set_newnote_velo_off(int velo)
+void ScoreCanvas::set_velo_off(int velo)
 {
-	newnote_velo_off=velo;
+	note_velo_off=velo;
+
+	if (parent->get_apply_velo())
+		modify_off_velocity(get_all_parts(),1, 0,velo);
+}
+
+void ScoreCanvas::deselect_all()
+{
+	set<Part*> all_parts=get_all_parts();
+
+	for (set<Part*>::iterator part=all_parts.begin(); part!=all_parts.end(); part++)
+		for (iEvent event=(*part)->events()->begin(); event!=(*part)->events()->end(); event++)
+			event->second.setSelected(false);
+	
+	song->update(SC_SELECTION);
+}
+
+void ScoreCanvas::keyPressEvent(QKeyEvent* event)
+{
+	if (event->key()==Qt::Key_Delete)
+	{
+		erase_notes(get_all_parts(), 1); // 1 means "all selected"
+	}
 }
 
 bool staff_t::cleanup_parts()
@@ -3893,6 +4239,22 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
 	return result;
 }
 
+void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
+{
+	for (ScoreItemList::iterator it=itemlist.begin(); it!=itemlist.end(); it++)
+		for (set<FloItem>::iterator it2=it->second.begin(); it2!=it->second.end(); it2++)
+			if (it2->type==FloItem::NOTE)
+			{
+				if (rect.contains(it2->x, it2->y))
+					if (already_processed.find(it2->source_event)==already_processed.end())
+					{
+						it2->source_event->setSelected(!it2->source_event->selected());
+						already_processed.insert(it2->source_event);
+					}
+			}
+}
+
+
 //the following assertions are made:
 //  pix_quarter.width() == pix_half.width()
 
@@ -3900,7 +4262,6 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
 // pix->width()-1 + 1/2*pix->width() + SHIFT + ADD_SPACE
 // 10-1+5+3+3=20 <- um so viel wird der taktstrich verschoben
 // um das doppelte (20*2=40) werden die kleinsten schläge gegeneinander versetzt
-
 
 
 
@@ -3919,32 +4280,35 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o offer functions like in the pianoroll: quantize etc.
- *   o support selections
- *   o let the user select the distance between staves, or do this
- *     automatically?
+ *   o add music-keyboard-bindings for "insert rest" and "increase note length"
+ *   o maybe support step-recording in score editor as well?
  * 
  * IMPORTANT TODO
- *   o add a select-clef-toolbox for tracks
- *   o respect the track's clef (has to be implemented first in muse)
  *   o do partial recalculating; recalculating can take pretty long
  *     (0,5 sec) when displaying a whole song in scores
- *   o save toolbar position also in the global window settings
- *     and provide sane defaults
+ *   o transpose etc. must also transpose key-pressure events
+ *   o transpose: support in-key-transpose
+ *   o thin out: remove unneeded ctrl messages
  *
  * less important stuff
+ *   o drum list: scroll while dragging
+ *   o controller view in score editor
+ *   o quantize-templates (everything is forced into a specified
+ *                         rhythm)
+ *   o part-templates (you specify some notes and a control-chord;
+ *                     the notes are set according to the chord then)
+ *   o add functions like set velo, mod/set velo-off
  *   o deal with expanding parts
- *   o do all the song_changed(SC_EVENT_INSERTED) properly
  *   o use bars instead of flags over groups of 8ths / 16ths etc
  *   o support different keys in different tracks at the same time
  *       calc_pos_add_list and calc_item_pos will be affected by this
  *       calc_pos_add_list must be called before calc_item_pos then,
  *       and calc_item_pos must respect the pos_add_list instead of
  *       keeping its own pos_add variable (which is only an optimisation)
- *   o save more configuration stuff (quant, color, to_init)
+ *   o support edge-scrolling when opening a lasso
+ *   o save more configuration stuff (quant, color)
  * 
  * really unimportant nice-to-haves
- *   o clean up code (find TODOs)
  *   o support in-song clef-changes
  *   o draw measure numbers
  *   o use timesig_t in all timesig-stuff
@@ -3954,47 +4318,16 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  * 
  * 
  * stuff for the other muse developers
+ *   o update translations
+ *   o remove ambiguous translation: "offset"="zeitversatz"
+ *     this is ambigous in mod. note len and WRONG in mod. velo dialogs
+ *
  *   o process accurate timesignatures from muse's list (has to be implemented first in muse)
  *      ( (2+2+3)/4 or (3+2+2)/4 instead of 7/4 )
  *   o maybe do expanding parts inside the msgChangeEvent or
  *     msgNewEvent functions (see my e-mail)
- *
- * GUI stuff
- *   o velocity/release-velo for already existing notes
- *     	  - do this by right-click -> some dialog shows up?
- *     	  - or by selecting the note and changing the values in the same widget which also is used for new notes?
- *        - or by controller graphs, as used by the piano roll
  */
 
-
-/* how to use the score editor with multiple tracks
- * ================================================
- * 
- * select parts, right-click, "display in new score window" or "display per-track in new score window"
- * or "display in existing window -> 1,2,3,4" or "display per-track in existing..."
- * 
- * ScoreCanvas has a list of note systems, consisting of the following:
- *   * all parts included in that view
- *   * eventlist, itemlist
- *   * used clef, transposing/octave settings
- *   * enum { NOT_GROUPED, I_AM_TOP, I_AM_BOTTOM } group_state
- *       NOT_GROUPED means "single note system"
- *       I_AM_TOP and I_AM_BOTTOM mean that the two systems belong
- *       together
- * 
- * when redrawing, we iterate through all systems.
- * we add a distance according to group_state
- * then we draw the system. if group_state is I_AM_BOTTOM, we
- * draw our beams longer/higher, and we draw a bracket
- * 
- * when clicking around, we first determine which system has been clicked in
- * (the systems have enough space in between, so there won't be notes
- *  from sys1 in sys2. if there are, they're ignored for simplicity)
- * then we proceed as usual (adding, removing, changing notes)
- * 
- * 
- * pos_add_list stays the same for each staff, so we only need one
- */
 
 /* R O A D M A P
  * =============
@@ -4043,4 +4376,3 @@ set<Part*> staff_t::parts_at_tick(unsigned tick)
  * 			REASON: this is only a nice-to-have, which can however be
  *              easily implemented when 4) is done
  */
-

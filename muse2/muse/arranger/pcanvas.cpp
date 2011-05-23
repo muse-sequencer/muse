@@ -12,6 +12,7 @@
 #include <values.h>
 #include <uuid/uuid.h>
 #include <math.h>
+#include <map>
 
 #include <QClipboard>
 #include <QLineEdit>
@@ -40,6 +41,7 @@
 #include "mpevent.h"
 #include "midievent.h"
 #include "midi.h"
+#include "midictrl.h"
 #include "utils.h"
 
 // Moved into global config by Tim.
@@ -231,9 +233,9 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
             }
       QPoint cpos = event->pos();
       curItem     = items.find(cpos);
-      bool shift  = event->modifiers() & Qt::ShiftModifier;
+      bool ctrl  = event->modifiers() & Qt::ControlModifier;
       if (curItem) {
-            if (event->button() == Qt::LeftButton && shift) {
+            if (event->button() == Qt::LeftButton && ctrl) {
                   editPart = (NPart*)curItem;
                   QRect r = map(curItem->bbox());
                   if (lineEditor == 0) {
@@ -1002,7 +1004,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
 
 void PartCanvas::mousePress(QMouseEvent* event)
       {
-    if (event->modifiers() & Qt::ShiftModifier) {
+    if (event->modifiers() & Qt::ControlModifier) {
             return;
             }
       QPoint pt = event->pos();
@@ -1059,7 +1061,7 @@ void PartCanvas::mouseMove(QMouseEvent* event)
             x = 0;
 
       if (_tool == AutomationTool)
-          processAutomationMovements(event->pos(), event->modifiers() & Qt::ControlModifier);
+          processAutomationMovements(event->pos(), event->modifiers() & Qt::ShiftModifier);
 
       emit timeChanged(AL::sigmap.raster(x, *_raster));
       }
@@ -1660,36 +1662,34 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
 
 
 //---------------------------------------------------------
-//   drawWavePart
+//   drawMidiPart
 //    bb - bounding box of paint area
 //    pr - part rectangle
 //---------------------------------------------------------
 
-void PartCanvas::drawMidiPart(QPainter& p, const QRect& bb, EventList* events, MidiTrack *mt, MidiPart *pt, const QRect& r, int pTick, int from, int to)
+void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, MidiTrack *mt, MidiPart *pt, const QRect& r, int pTick, int from, int to)
 {
   //printf("x=%d y=%d h=%d w=%d\n",r.x(),r.y(),r.height(),r.width());
-
+  int color_brightness;
+  
   if(pt) 
   {
     int part_r, part_g, part_b, brightness;
     config.partColors[pt->colorIndex()].getRgb(&part_r, &part_g, &part_b);
     brightness =  part_r*29 + part_g*59 + part_b*12;
     if (brightness < 12000 || pt->selected())
-      //p.setPen(Qt::white);   // too dark: use white for color 
-      p.setPen(QColor(192,192,192));   // too dark: use lighter color 
+      color_brightness=192;   // too dark: use lighter color 
     else
-      //p.setPen(Qt::black);  // otherwise use black 
-      p.setPen(QColor(64,64,64));  // otherwise use dark color 
+      color_brightness=64;  // otherwise use dark color 
   }
   else
-    p.setPen(QColor(80,80,80));
+    color_brightness=80;
     
   if (config.canvasShowPartType & 2) {      // show events
+            p.setPen(QColor(color_brightness,color_brightness,color_brightness));
             // Do not allow this, causes segfault.
             if(from <= to)
             {
-              //p.setPen(QColor(80,80,80));
-              //EventList* events = mp->events();
               iEvent ito(events->lower_bound(to));
 
               for (iEvent i = events->lower_bound(from); i != ito; ++i) {
@@ -1710,22 +1710,142 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect& bb, EventList* events, M
             }
       }
   else {      // show Cakewalk Style
-      //p.setPen(QColor(80,80,80));
-      //EventList* events = mp->events();
+      using std::map;
+      using std::pair;
+      
       iEvent ito(events->lower_bound(to));
-      //printf("PartCanvas::drawItem pTick:%d from:%d to:%d\n", pTick, from, to);
-
       bool isdrum = (mt->type() == Track::DRUM);
+
+      // draw controllers ------------------------------------------
+      p.setPen(QColor(192,192,color_brightness/2));
+      for (iEvent i = events->begin(); i != ito; ++i) { // PITCH BEND
+            int t  = i->first + pTick;
+
+            EventType type = i->second.type();
+            if (type == Controller) {
+                  int ctrl_type=i->second.dataA();
+                  int val=i->second.dataB();
+                  
+                  int th = int(mt->height() * 0.75); // only draw on three quarters
+                  int hoffset = (mt->height() - th ) / 2; // offset from bottom
+
+                  if (ctrl_type == CTRL_PITCH)
+                    p.drawLine(t, hoffset + r.y() + th/2, t, hoffset + r.y() - val*th/8192/2 + th/2);
+            }
+      }
+
+      p.setPen(QColor(192,color_brightness/2,color_brightness/2));
+      for (iEvent i = events->begin(); i != ito; ++i) { // PAN
+            int t  = i->first + pTick;
+
+            EventType type = i->second.type();
+            if (type == Controller) {
+                  int ctrl_type=i->second.dataA();
+                  int val=i->second.dataB();
+                  
+                  int th = int(mt->height() * 0.75); // only draw on three quarters
+                  int hoffset = (mt->height() - th ) / 2; // offset from bottom
+
+                  if (ctrl_type == 10)
+                    p.drawLine(t, hoffset + r.y() + th - val*th/127, t, hoffset + r.y() + th);
+            }
+      }
+
+      p.setPen(QColor(color_brightness/2,192,color_brightness/2));
+      for (iEvent i = events->begin(); i != ito; ++i) { // VOLUME
+            int t  = i->first + pTick;
+
+            EventType type = i->second.type();
+            if (type == Controller) {
+                  int ctrl_type=i->second.dataA();
+                  int val=i->second.dataB();
+                  
+                  int th = int(mt->height() * 0.75); // only draw on three quarters
+                  int hoffset = (mt->height() - th ) / 2; // offset from bottom
+
+                  if (ctrl_type == 7)
+                    p.drawLine(t, hoffset + r.y() + th - val*th/127, t, hoffset + r.y() + th);
+            }
+      }
+
+      p.setPen(QColor(0,0,255));
+      for (iEvent i = events->begin(); i != ito; ++i) { // PROGRAM CHANGE
+            int t  = i->first + pTick;
+
+            EventType type = i->second.type();
+            if (type == Controller) {
+                  int ctrl_type=i->second.dataA();
+                  
+                  int th = int(mt->height() * 0.75); // only draw on three quarters
+                  int hoffset = (mt->height() - th ) / 2; // offset from bottom
+
+                  if (ctrl_type == CTRL_PROGRAM)
+                    p.drawLine(t, hoffset + r.y(), t, hoffset + r.y() + th);
+            }
+      }
+
+
+
+
+
+      // draw notes ------------------------------------------------
+
+      int lowest_pitch=127;
+      int highest_pitch=0;
+      map<int,int> y_mapper;
+      
+      if (config.canvasShowPartType & 4) //y-stretch?
+      {
+        for (iEvent i = events->begin(); i != ito; ++i)
+        {
+          if (i->second.type()==Note)
+          {
+            int pitch=i->second.pitch();
+
+            if (!isdrum)
+            {
+              if (pitch > highest_pitch) highest_pitch=pitch;
+              if (pitch < lowest_pitch) lowest_pitch=pitch;
+            }
+            else
+            {
+              y_mapper.insert(pair<int,int>(pitch, 0));
+            }
+          }
+        }
+        
+        if (isdrum)
+        {
+          int cnt=0;
+          for (map<int,int>::iterator it=y_mapper.begin(); it!=y_mapper.end(); it++)
+          {
+            it->second=cnt;
+            cnt++;
+          }
+          lowest_pitch=0;
+          highest_pitch=cnt-1;
+        }
+        
+        if (lowest_pitch==highest_pitch)
+        {
+          lowest_pitch--;
+          highest_pitch++;
+        }
+      }
+      else
+      {
+        lowest_pitch=0;
+        highest_pitch=127;
+
+        if (isdrum)
+          for (int cnt=0;cnt<127;cnt++)
+            y_mapper[cnt]=cnt;
+      }
+
+      p.setPen(QColor(color_brightness,color_brightness,color_brightness));      
       for (iEvent i = events->begin(); i != ito; ++i) {
             int t  = i->first + pTick;
             int te = t + i->second.lenTick();
-
-            if (t > (to + pTick))
-            {
-              //printf("PartCanvas::drawItem t:%d > to:%d + pTick:%d i->first:%d\n", t, to, pTick, i->first);
-
-              break;
-            }
 
             if (te < (from + pTick))
                   continue;
@@ -1738,8 +1858,12 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect& bb, EventList* events, M
                   int pitch = i->second.pitch();
                   int th = int(mt->height() * 0.75); // only draw on three quarters
                   int hoffset = (mt->height() - th ) / 2; // offset from bottom
-                  //int y     =  hoffset + (r.y() + th - (pitch * (th) / 127));
-                  int y     =  hoffset + r.y() + th - (isdrum?127-pitch:pitch) * th / 127;
+                  int y;
+                  if (!isdrum)
+                    y = hoffset + r.y() + th - (pitch-lowest_pitch)*th/(highest_pitch-lowest_pitch);
+                  else
+                    y = hoffset + r.y() + y_mapper[pitch]*th/(highest_pitch-lowest_pitch);
+                  
                   p.drawLine(t, y, te, y);
             }
       }

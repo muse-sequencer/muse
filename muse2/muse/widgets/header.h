@@ -9,6 +9,7 @@
 #define __HEADER_H__
 
 #include <QHeaderView>
+#include <QAction>
 
 class QStandardItemModel;
 
@@ -26,6 +27,9 @@ class Header : public QHeaderView {
       void setColumnLabel( const QString & s, int col, int width = -1 );
       void setToolTip(int col, const QString &text);
       void setWhatsThis(int col, const QString &text);
+      void mousePressEvent ( QMouseEvent * e );
+    private slots:
+      void changeColumns(QAction* a);
 };
 
 #endif

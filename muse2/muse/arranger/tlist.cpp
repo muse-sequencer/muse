@@ -44,6 +44,7 @@
 #include "midiedit/drummap.h"
 #include "synth.h"
 #include "config.h"
+#include "scoreedit.h"
 #include "popupmenu.h"
 
 #ifdef DSSI_SUPPORT
@@ -349,12 +350,24 @@ void TList::paint(const QRect& r)
                                         if (cl->isVisible())
                                             countVisible++;
                                     }
-                                    //int count = ((AudioTrack*)track)->controller()->size();
+                                    //int count = ((AudioTrack*)track)->controller()->size(); //commented out by flo: gives a "unused variable" warning
                                     s.sprintf(" %d(%d) visible",countVisible, countAll);
                                     }
 
 
                               p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
+                              }
+                              break;
+                        case COL_CLEF:
+                              if (track->isMidiTrack()) {
+                                QString s = "no clef";
+                                if (((MidiTrack*)track)->getClef() == ScoreEdit::trebleClef)
+                                  s="Treble Clef";
+                                else if (((MidiTrack*)track)->getClef() == ScoreEdit::bassClef)
+                                  s="Bass Clef";
+                                else if (((MidiTrack*)track)->getClef() == ScoreEdit::grandStaff)
+                                  s="Grand Staff";
+                                p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
                               }
                               break;
                         default:
@@ -917,7 +930,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
       int x       = ev->x();
       int y       = ev->y();
       int button  = ev->button();
-      bool shift  = ((QInputEvent*)ev)->modifiers() & Qt::ShiftModifier;
+      bool ctrl  = ((QInputEvent*)ev)->modifiers() & Qt::ControlModifier;
 
       Track* t    = y2Track(y + ypos);
 
@@ -1057,6 +1070,34 @@ void TList::mousePressEvent(QMouseEvent* ev)
       mode = START_DRAG;
 
       switch (col) {
+              case COL_CLEF:
+                if (t->isMidiTrack()) {
+                  QMenu* p = new QMenu;
+                  p->addAction("Treble clef")->setData(0);
+                  p->addAction("Bass clef")->setData(1);
+                  p->addAction("Grand Staff")->setData(2);
+
+                  // Show the menu
+                  QAction* act = p->exec(ev->globalPos(), 0);
+                  if (act) {
+                    switch (act->data().toInt()) {
+                      case 0:
+                        ((MidiTrack*)t)->setClef(ScoreEdit::trebleClef);
+                        break;
+                      case 1:
+                        ((MidiTrack*)t)->setClef(ScoreEdit::bassClef);
+                        break;
+                      case 2:
+                        ((MidiTrack*)t)->setClef(ScoreEdit::grandStaff);
+                        break;
+                      default:
+                        break;
+                    }
+                  }
+                  delete p;
+                }
+
+                break;
               case COL_AUTOMATION:
                 {
                 if (!t->isMidiTrack()) {
@@ -1154,7 +1195,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   break;
             case COL_MUTE:
                   // p3.3.29
-                  if ((button == Qt::RightButton) || (((QInputEvent*)ev)->modifiers() & Qt::ControlModifier))
+                  if ((button == Qt::RightButton) || (((QInputEvent*)ev)->modifiers() & Qt::ShiftModifier))
                     t->setOff(!t->off());
                   else
                   {
@@ -1172,7 +1213,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
             case COL_NAME:
                   if (button == Qt::LeftButton) {
-                        if (!shift) {
+                        if (!ctrl) {
                               song->deselectTracks();
                               t->setSelected(true);
 
@@ -1465,7 +1506,7 @@ void TList::wheelEvent(QWheelEvent* ev)
                   break;
             case COL_MUTE:
                   // p3.3.29
-                  if (((QInputEvent*)ev)->modifiers() & Qt::ControlModifier)
+                  if (((QInputEvent*)ev)->modifiers() & Qt::ShiftModifier)
                     t->setOff(!t->off());
                   else
                   {
@@ -1662,6 +1703,7 @@ void TList::classesPopupMenu(Track* t, int x, int y)
                   }
             t->setType(Track::MIDI);
             audio->msgIdle(false);
+            song->update(SC_EVENT_MODIFIED);
             }
       else if (Track::TrackType(n) == Track::DRUM && t->type() == Track::MIDI) {
             //
@@ -1718,8 +1760,8 @@ void TList::classesPopupMenu(Track* t, int x, int y)
             // Add all port controller events.
             //audio->msgChangeAllPortDrumCtrlEvents(true);
             song->changeAllPortDrumCtrlEvents(true);
-            
             audio->msgIdle(false);
+            song->update(SC_EVENT_MODIFIED);
             }
       }
 
