@@ -4280,7 +4280,6 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- * > o legato: extend length to next note
  *   o add music-keyboard-bindings for "insert rest" and "increase note length"
  *   o maybe support step-recording in score editor as well?
  * 

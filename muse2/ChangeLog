@@ -1,3 +1,35 @@
+23.05.2011:   (all changes made by flo93, except one)
+    Function-related changes:
+        - made all the stuff in the "functions" menu global
+        - added crescendo, legato functions, improved erase function
+        - removed unneccessary _to and _quant* - stuff from piano roll and drum edit
+          this also involved changing the Toolbar1 
+        - changed behaviour for step-recording: the note-length is now the "raster"-
+          value instead of the "quant"-value
+        - changed behaviour for scripts: the "quant"-parameter they get isn't the
+          quant-combo's setting, but the snap-combo's now
+        - removed unneccessary short cuts: SHRT_OVER_QUANTIZE etc. instead added
+          SHRT_QUANTIZE
+
+    Score-Editor-related changes:
+        - using the proper AL::raster functions in the score editor
+        - added support for selections to the score editor
+        - distance between staves is now automatically increased if neccessary
+        - fixed "change pitch freezes scoreeditor"-bug
+        - added clef-combobox to midi tracks (rj and flo)
+        - don't install the *.mf files any more
+        - added a modified MTScale to the score editor
+        
+    Other Stuff:
+        - speeded up importing midi massively
+        - when step-recording, chords can now be entered with only the musical keyboard
+        - swapped ctrl and shift behaviour to make muse accord to standards
+        - toolbar states are now saved
+        - improved "cakewalk" mode for arranger: added y-stretch and drawing some controllers 
+        - added line tool to drum editor
+        - added "reorder list" function to drum roll
+        - changed ctrl-edit's behaviour when control key is pressed
+        
 15.05.2011:
         - Changed mouse wheel behaviour in graphical editors except the score editor (rj)
             * wheel scrolls left-right
