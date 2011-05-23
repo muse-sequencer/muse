@@ -19,7 +19,8 @@ class QPaintEvent;
 class QResizeEvent;
 class QScrollBar;
 class QWheelEvent;
-class QMenu;
+//class QMenu;
+class PopupMenu;
 
 class ScrollScale;
 class Track;
@@ -86,7 +87,8 @@ class TList : public QWidget {
       void classesPopupMenu(Track*, int x, int y);
       TrackList getRecEnabledTracks();
       void setHeaderToolTips();
-      QMenu* colorMenu(QColor c, int id);
+      //QMenu* colorMenu(QColor c, int id);
+      PopupMenu* colorMenu(QColor c, int id);
 
    private slots:
       void returnPressed();

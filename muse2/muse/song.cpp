@@ -3685,8 +3685,8 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
             //const char* tmp = tmpnam(NULL);
             char tmp[16] = "muse-tmp-XXXXXX";
             int fd = mkstemp(tmp);
-            printf("script input filename=%s\n",tmp);
-            //FILE *fp = fopen(tmp, "w");
+            if (debugMsg)
+              printf("executeScript: script input filename=%s\n",tmp);
             FILE *fp = fdopen(fd , "w");
             MidiPart *part = (MidiPart*)(i->second);
             int partStart = part->endTick()-part->lenTick();
@@ -3717,7 +3717,6 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
             }
             fclose(fp);
 
-//            QString program(scriptfile);
             QStringList arguments;
             arguments << tmp;
 
@@ -3725,64 +3724,58 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
             myProcess->start(scriptfile, arguments);
             myProcess->waitForFinished();
             QByteArray errStr = myProcess->readAllStandardError();
-            if (errStr.size()) {
-              QMessageBox::warning(muse, tr("MusE - external script failed"),
-                                   "Script returned the following error\n"+ QString(errStr));
-              endUndo(SC_EVENT_REMOVED);
-              return;
 
-            } else if (myProcess->exitCode()) {
+            if (myProcess->exitCode()) {
               QMessageBox::warning(muse, tr("MusE - external script failed"),
-                     tr("MusE was unable to launch the script\n")
+                                   tr("MusE was unable to launch the script, error message:\n ")+ QString(errStr)
                      );
               endUndo(SC_EVENT_REMOVED);
               return;
             }
-            else { // d0 the fun55or5!
-                  // TODO: Create a new part, update the entire editor from it, hehh....
+            if (errStr.size()> 0) {
+              printf("script execution produced the following error:\n%s\n", QString(errStr).toLatin1().data());
+            }
+            QFile file(tmp);
+            if ( file.open( QIODevice::ReadOnly ) ) {
+                QTextStream stream( &file );
+                QString line;
+                while ( !stream.atEnd() ) {
+                    line = stream.readLine(); // line of text excluding '\n'
+                    if (line.startsWith("NOTE"))
+                    {
+                        QStringList sl = line.split(" ");
 
-                  QFile file(tmp);
-                  if ( file.open( QIODevice::ReadOnly ) ) {
-                      QTextStream stream( &file );
-                      QString line;
-                      while ( !stream.atEnd() ) {
-                          line = stream.readLine(); // line of text excluding '\n'
-                          if (line.startsWith("NOTE"))
-                          {
-                              QStringList sl = line.split(" ");
+                          Event e(Note);
+                          int tick = sl[1].toInt();
+                          int pitch = sl[2].toInt();
+                          int len = sl[3].toInt();
+                          int velo = sl[4].toInt();
+                          e.setTick(tick);
+                          e.setPitch(pitch);
+                          e.setVelo(velo);
+                          e.setLenTick(len);
+                          // Indicate no undo, and do not do port controller values and clone parts.
+                          audio->msgAddEvent(e, part, false, false, false);
+                    }
+                    if (line.startsWith("CONTROLLER"))
+                    {
+                          QStringList sl = line.split(" ");
 
-                                Event e(Note);
-                                int tick = sl[1].toInt();
-                                int pitch = sl[2].toInt();
-                                int len = sl[3].toInt();
-                                int velo = sl[4].toInt();
-                                //printf ("tick=%d pitch=%d velo=%d len=%d\n", tick,pitch,velo,len);
-                                e.setTick(tick);
-                                e.setPitch(pitch);
-                                e.setVelo(velo);
-                                e.setLenTick(len);
-                                // Indicate no undo, and do not do port controller values and clone parts.
-                                audio->msgAddEvent(e, part, false, false, false);
-                          }
-                          if (line.startsWith("CONTROLLER"))
-                          {
-                                QStringList sl = line.split(" ");
+                          Event e(Controller);
+                          //int tick = sl[1].toInt();
+                          int a = sl[2].toInt();
+                          int b = sl[3].toInt();
+                          int c = sl[4].toInt();
+                          e.setA(a);
+                          e.setB(b);
+                          e.setB(c);
+                          // Indicate no undo, and do not do port controller values and clone parts.
+                          audio->msgAddEvent(e, part, false, false, false);
+                        }
+                }
+                file.close();
+            }
 
-                                Event e(Controller);
-                                int a = sl[2].toInt();
-                                int b = sl[3].toInt();
-                                int c = sl[4].toInt();
-                                //printf ("tick=%d a=%d b=%d c=%d\n", tick,a,b,c);
-                                e.setA(a);
-                                e.setB(b);
-                                e.setB(c);
-                                // Indicate no undo, and do not do port controller values and clone parts.
-                                audio->msgAddEvent(e, part, false, false, false);
-                              }
-                      }
-                      file.close();
-                  }
-              }
 
       remove(tmp);
       }

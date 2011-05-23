@@ -30,6 +30,14 @@
         - added "reorder list" function to drum roll
         - changed ctrl-edit's behaviour when control key is pressed
         
+20.05.2011:
+        - Popup menus: If stay-open mode, space triggers item and double-click simulates return (closing). (Tim)
+19.05.2011:
+        * Feature: Popup menus now auto-scroll if too large to fit on desktop. (p4.0.25 Tim)
+          Added auto-scroll to my class PopupMenu. Added selectable stay-open. TODO: Use it more, where needed.
+        - Changed midi track info patch popup behaviour. Now stays open for auditioning patches. (Tim)
+        - Changed editor 'ctrl' controller popups. Split instrument/other (+ common controls!) + show ctrl numbers. (Tim)
+          TODO: Add custom (R)NRPN dialog to 'other' section.
 15.05.2011:
         - Changed mouse wheel behaviour in graphical editors except the score editor (rj)
             * wheel scrolls left-right
