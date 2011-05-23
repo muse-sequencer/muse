@@ -119,7 +119,8 @@ bool erase_notes(const set<Part*>& parts)
 	if (!erase_dialog->exec())
 		return false;
 		
-	erase_notes(parts,erase_dialog->range);
+	erase_notes(parts,erase_dialog->range, erase_dialog->velo_threshold, erase_dialog->velo_thres_used, 
+	                                       erase_dialog->len_threshold, erase_dialog->len_thres_used );
 	
 	return true;
 }
@@ -366,7 +367,7 @@ void quantize_notes(const set<Part*>& parts, int range, int raster, bool quant_l
 	}
 }
 
-void erase_notes(const set<Part*>& parts, int range)
+void erase_notes(const set<Part*>& parts, int range, int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	
@@ -378,8 +379,10 @@ void erase_notes(const set<Part*>& parts, int range)
 		{
 			Event& event=*(it->first);
 			Part* part=it->second;
-
-			audio->msgDeleteEvent(event, part, false, false, false);
+			if ( (!velo_thres_used && !len_thres_used) ||
+			     (velo_thres_used && event.velo() < velo_threshold) ||
+			     (len_thres_used && int(event.lenTick()) < len_threshold) )
+				audio->msgDeleteEvent(event, part, false, false, false);
 		}
 		
 		song->endUndo(SC_EVENT_REMOVED);

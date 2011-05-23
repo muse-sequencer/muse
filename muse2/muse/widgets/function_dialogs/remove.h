@@ -27,6 +27,10 @@ class Remove : public QDialog, public Ui::RemoveBase
 		Remove(QWidget* parent = 0);
 
 		int range;
+		int velo_threshold;
+		bool velo_thres_used;
+		int len_threshold;
+		bool len_thres_used;
 		
 		void read_configuration(Xml& xml);
 		void write_configuration(int level, Xml& xml);

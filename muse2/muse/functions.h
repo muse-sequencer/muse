@@ -43,7 +43,7 @@ void modify_velocity(const std::set<Part*>& parts, int range, int rate, int offs
 void modify_off_velocity(const std::set<Part*>& parts, int range, int rate, int offset=0);
 void modify_notelen(const std::set<Part*>& parts, int range, int rate, int offset=0);
 void quantize_notes(const std::set<Part*>& parts, int range, int raster, bool len=false, int strength=100, int swing=0, int threshold=0);
-void erase_notes(const std::set<Part*>& parts, int range);
+void erase_notes(const std::set<Part*>& parts, int range, int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
 void delete_overlaps(const std::set<Part*>& parts, int range);
 void set_notelen(const std::set<Part*>& parts, int range, int len);
 void move_notes(const std::set<Part*>& parts, int range, signed int ticks);
