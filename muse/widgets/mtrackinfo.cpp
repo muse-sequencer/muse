@@ -44,10 +44,13 @@ void MidiTrackInfo::setTrack(Track* t)
   selected = t;
   
   QPalette pal;
-  if(selected->type() == Track::DRUM)
+  if(selected->type() == Track::DRUM) {
     pal.setColor(trackNameLabel->backgroundRole(), config.drumTrackLabelBg); 
-  else  
-    pal.setColor(trackNameLabel->backgroundRole(), config.midiTrackLabelBg); 
+    iOutputChannel->setEnabled(false);
+  } else  {
+    pal.setColor(trackNameLabel->backgroundRole(), config.midiTrackLabelBg);
+    iOutputChannel->setEnabled(true);
+  }
   trackNameLabel->setPalette(pal);
   
   updateTrackInfo(-1);

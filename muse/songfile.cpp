@@ -1213,7 +1213,7 @@ void Song::readMarker(Xml& xml)
 //   read
 //---------------------------------------------------------
 
-void Song::read(Xml& xml)
+void Song::read(Xml& xml, bool isTemplate)
       {
       cloneList.clear();
       for (;;) {
@@ -1260,7 +1260,7 @@ void Song::read(Xml& xml)
                               _follow  = FollowMode(xml.parseInt());
                         else if (tag == "sampleRate") {
                               int sRate  = xml.parseInt();
-                              if (audioDevice->deviceType() != AudioDevice::DUMMY_AUDIO && sRate != sampleRate)
+                              if (!isTemplate && audioDevice->deviceType() != AudioDevice::DUMMY_AUDIO && sRate != sampleRate)
                                 QMessageBox::warning(muse,"Wrong sample rate", "The sample rate in this project and the current system setting differs, the project may not work as intended!");
                             }
                         else if (tag == "tempolist") {
@@ -1373,7 +1373,7 @@ void Song::read(Xml& xml)
 //    read song
 //---------------------------------------------------------
 
-void MusE::read(Xml& xml, bool skipConfig)
+void MusE::read(Xml& xml, bool skipConfig, bool isTemplate)
       {
       bool skipmode = true;
       for (;;) {
@@ -1398,7 +1398,7 @@ void MusE::read(Xml& xml, bool skipConfig)
                                     readConfiguration(xml, false);
                         else if (tag == "song")
                         {
-                              song->read(xml);
+                              song->read(xml, isTemplate);
                               audio->msgUpdateSoloStates();
                         }      
                         else if (tag == "midiport")

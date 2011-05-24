@@ -195,7 +195,7 @@ class MusE : public QMainWindow
       QMenu* openRecent;
       
       bool readMidi(FILE*);
-      void read(Xml& xml, bool skipConfig);
+      void read(Xml& xml, bool skipConfig, bool isTemplate);
       void processTrack(MidiTrack* track);
 
       void write(Xml& xml) const;

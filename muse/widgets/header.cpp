@@ -88,7 +88,7 @@ Header::Header(QWidget* parent, const char* name)
       itemModel = new QStandardItemModel;
       setModel(itemModel);
       setDefaultSectionSize(30);
-      setStretchLastSection(true);
+//      setStretchLastSection(true);
 
       }
 

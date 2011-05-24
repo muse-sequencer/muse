@@ -162,7 +162,7 @@ class Song : public QObject {
       AudioOutput* bounceOutput;
       void updatePos();
 
-      void read(Xml&);
+      void read(Xml&, bool isTemplate=false);
       void write(int, Xml&) const;
       void writeFont(int level, Xml& xml, const char* name,
          const QFont& font) const;
