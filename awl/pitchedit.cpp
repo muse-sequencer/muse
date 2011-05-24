@@ -25,6 +25,8 @@
 
 #include <QKeyEvent>
 
+extern QObject* song; // TODO FINDME this is a really dirty hack!
+
 namespace Awl {
 
 //---------------------------------------------------------
@@ -36,6 +38,7 @@ PitchEdit::PitchEdit(QWidget* parent)
       {
       setRange(0, 127);
       deltaMode = false;
+      connect(song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
       }
 
 //---------------------------------------------------------
@@ -89,5 +92,14 @@ void PitchEdit::setDeltaMode(bool val)
       else
             setRange(0, 127);
       }
+
+void PitchEdit::midiNote(int pitch, int velo)
+{
+	if (hasFocus() && velo)
+	  setValue(pitch);
 }
+
+
+}
+
 
