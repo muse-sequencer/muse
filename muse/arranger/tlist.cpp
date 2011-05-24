@@ -360,13 +360,13 @@ void TList::paint(const QRect& r)
                               break;
                         case COL_CLEF:
                               if (track->isMidiTrack()) {
-                                QString s = "no clef";
+                                QString s = tr("no clef");
                                 if (((MidiTrack*)track)->getClef() == ScoreEdit::trebleClef)
-                                  s="Treble Clef";
+                                  s=tr("Treble");
                                 else if (((MidiTrack*)track)->getClef() == ScoreEdit::bassClef)
-                                  s="Bass Clef";
+                                  s=tr("Bass");
                                 else if (((MidiTrack*)track)->getClef() == ScoreEdit::grandStaff)
-                                  s="Grand Staff";
+                                  s=tr("Grand");
                                 p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
                               }
                               break;
@@ -1073,9 +1073,9 @@ void TList::mousePressEvent(QMouseEvent* ev)
               case COL_CLEF:
                 if (t->isMidiTrack()) {
                   QMenu* p = new QMenu;
-                  p->addAction("Treble clef")->setData(0);
-                  p->addAction("Bass clef")->setData(1);
-                  p->addAction("Grand Staff")->setData(2);
+                  p->addAction(tr("Treble clef"))->setData(0);
+                  p->addAction(tr("Bass clef"))->setData(1);
+                  p->addAction(tr("Grand Staff"))->setData(2);
 
                   // Show the menu
                   QAction* act = p->exec(ev->globalPos(), 0);
