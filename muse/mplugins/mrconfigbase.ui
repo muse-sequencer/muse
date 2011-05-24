@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>298</width>
-    <height>249</height>
+    <height>267</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -95,35 +95,29 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="PitchEdit" name="sb1" native="true"/>
+       <widget class="Awl::PitchEdit" name="sb1"/>
       </item>
       <item row="1" column="1">
-       <widget class="PitchEdit" name="sb2" native="true"/>
+       <widget class="Awl::PitchEdit" name="sb2"/>
       </item>
       <item row="2" column="1">
-       <widget class="PitchEdit" name="sb3" native="true"/>
+       <widget class="Awl::PitchEdit" name="sb3"/>
       </item>
       <item row="3" column="1">
-       <widget class="PitchEdit" name="sb4" native="true"/>
+       <widget class="Awl::PitchEdit" name="sb4"/>
       </item>
-      <item row="0" column="2">
-       <spacer name="Spacer1">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Expanding</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
+      <item row="4" column="1">
+       <widget class="Awl::PitchEdit" name="steprec_box"/>
       </item>
-      <item row="1" column="2">
-       <spacer name="Spacer2">
+      <item row="4" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Insert rest (step rec) </string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2">
+       <spacer name="Spacer4">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -154,8 +148,24 @@
         </property>
        </spacer>
       </item>
-      <item row="3" column="2">
-       <spacer name="Spacer4">
+      <item row="1" column="2">
+       <spacer name="Spacer2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Expanding</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="2">
+       <spacer name="Spacer1">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -178,9 +188,9 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>PitchEdit</class>
-   <extends>QWidget</extends>
-   <header>pitchedit.h</header>
+   <class>Awl::PitchEdit</class>
+   <extends>QSpinBox</extends>
+   <header>awl/pitchedit.h</header>
   </customwidget>
  </customwidgets>
  <includes>

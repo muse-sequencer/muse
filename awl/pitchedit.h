@@ -37,8 +37,8 @@ class PitchEdit : public QSpinBox {
       bool deltaMode;
 
    protected:
-      virtual QString mapValueToText(int v);
-      virtual int mapTextToValue(bool* ok);
+      virtual QString textFromValue(int v) const;
+      virtual int valueFromText(bool* ok) const;
       virtual void keyPressEvent(QKeyEvent*);
 
    signals:

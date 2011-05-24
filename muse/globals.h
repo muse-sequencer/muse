@@ -167,6 +167,7 @@ extern unsigned char rcStopNote;
 extern unsigned char rcRecordNote;
 extern unsigned char rcGotoLeftMarkNote;
 extern unsigned char rcPlayNote;
+extern unsigned char rcSteprecNote;
 
 extern bool midiSeqRunning;
 extern bool automation;

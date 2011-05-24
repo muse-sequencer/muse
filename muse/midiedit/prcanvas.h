@@ -43,7 +43,7 @@ class PianoCanvas : public EventCanvas {
       
       QTimer* chordTimer;
       unsigned chordTimer_setToTick;
-
+      bool noteHeldDown[128];
       bool _steprec;
 
       Q_OBJECT
