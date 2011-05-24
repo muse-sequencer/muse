@@ -44,6 +44,8 @@ class PianoCanvas : public EventCanvas {
       QTimer* chordTimer;
       unsigned chordTimer_setToTick;
 
+      bool _steprec;
+
       Q_OBJECT
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void drawItem(QPainter&, const CItem*, const QRect&);
@@ -87,6 +89,7 @@ class PianoCanvas : public EventCanvas {
       void pianoCmd(int);
       void pianoPressed(int pitch, int velocity, bool shift);
       void pianoReleased(int pitch, bool);
+      void setSteprec(bool f) { _steprec = f; }
 
    public:
       enum {
@@ -108,6 +111,8 @@ class PianoCanvas : public EventCanvas {
             redraw();
             }
       virtual void modifySelected(NoteInfo::ValType type, int delta);
+
+      bool steprec() const    { return _steprec; }
       };
 #endif
 

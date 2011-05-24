@@ -35,8 +35,6 @@ EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
    : Canvas(parent, sx, sy, name)
       {
       editor      = pr;
-      _steprec    = false;
-      _midiin     = false;
       _playEvents = false;
       curVelo     = 70;
 

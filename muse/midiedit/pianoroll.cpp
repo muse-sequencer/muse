@@ -236,12 +236,6 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       srec->setCheckable(true);
       tools->addWidget(srec);
 
-      midiin  = new QToolButton();
-      midiin->setToolTip(tr("Midi Input"));
-      midiin->setIcon(*midiinIcon);
-      midiin->setCheckable(true);
-      tools->addWidget(midiin);
-
       speaker  = new QToolButton();
       speaker->setToolTip(tr("Play Events"));
       speaker->setIcon(*speakerIcon);
@@ -441,7 +435,6 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       connect(piano, SIGNAL(keyPressed(int, int, bool)), canvas, SLOT(pianoPressed(int, int, bool)));
       connect(piano, SIGNAL(keyReleased(int, bool)), canvas, SLOT(pianoReleased(int, bool)));
       connect(srec, SIGNAL(toggled(bool)), SLOT(setSteprec(bool)));
-      connect(midiin, SIGNAL(toggled(bool)), canvas, SLOT(setMidiin(bool)));
       connect(speaker, SIGNAL(toggled(bool)), SLOT(setSpeaker(bool)));
       connect(canvas, SIGNAL(followEvent(int)), SLOT(follow(int)));
 
@@ -873,8 +866,7 @@ void PianoRoll::writeStatus(int level, Xml& xml) const
             (*i)->writeStatus(level, xml);
             }
 
-      xml.intTag(level, "steprec", canvas->steprec());
-      xml.intTag(level, "midiin", canvas->midiin());
+      xml.intTag(level, "steprec", ((PianoCanvas*)canvas)->steprec());
       xml.intTag(level, "tool", int(canvas->tool()));
       xml.intTag(level, "playEvents", _playEvents);
       xml.intTag(level, "xpos", hscroll->pos());
@@ -899,13 +891,8 @@ void PianoRoll::readStatus(Xml& xml)
                   case Xml::TagStart:
                         if (tag == "steprec") {
                               int val = xml.parseInt();
-                              canvas->setSteprec(val);
+                              ((PianoCanvas*)canvas)->setSteprec(val);
                               srec->setChecked(val);
-                              }
-                        else if (tag == "midiin") {
-                              int val = xml.parseInt();
-                              canvas->setMidiin(val);
-                              midiin->setChecked(val);
                               }
                         else if (tag == "tool") {
                               int tool = xml.parseInt();
@@ -1130,9 +1117,7 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
 
 void PianoRoll::setSteprec(bool flag)
       {
-      canvas->setSteprec(flag);
-      if (flag == false)
-            midiin->setChecked(flag);
+      ((PianoCanvas*)canvas)->setSteprec(flag);
       }
 
 //---------------------------------------------------------
