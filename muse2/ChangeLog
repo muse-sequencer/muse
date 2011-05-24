@@ -1,4 +1,5 @@
 24.05.2011:
+        - Awl::PitchEdit now can be set with the musical keyboard (flo93)
         - fixed y-stretch (flo93)
         - cleaned up step-rec and midi-in buttons and stuff (flo93)
         - steprec now supports a "insert rest" key, which can be set (flo93)
