@@ -256,7 +256,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                         dm->mute = !dm->mute;
                   break;
             case COL_PORT:
-                  if (button == Qt::RightButton) {
+                  if ((button == Qt::RightButton) || (button == Qt::LeftButton)) {
                         bool changeAll = ev->modifiers() & Qt::ControlModifier;
                         devicesPopupMenu(dm, mapx(x), mapy(pitch * TH), changeAll);
                         }
@@ -425,7 +425,8 @@ void DList::viewMouseDoubleClickEvent(QMouseEvent* ev)
       int section = header->logicalIndexAt(x);
 
       if ((section == COL_NAME || section == COL_VOL || section == COL_LEN || section == COL_LV1 ||
-         section == COL_LV2 || section == COL_LV3 || section == COL_LV4) && (ev->button() == Qt::LeftButton))
+         section == COL_LV2 || section == COL_LV3 || section == COL_LV4 || section == COL_CHANNEL ||
+         section == COL_QNT) && (ev->button() == Qt::LeftButton))
          {
            lineEdit(pitch, section);
          }
@@ -482,6 +483,14 @@ void DList::lineEdit(int line, int section)
 
                   case COL_LV4:
                   editor->setText(QString::number(dm->lv4));
+                  break;
+
+                  case COL_QNT:
+                  editor->setText(QString::number(dm->quant));
+                  break;
+
+                  case COL_CHANNEL:
+                  editor->setText(QString::number(dm->channel+1));
                   break;
             }
 
@@ -551,22 +560,35 @@ void DList::returnPressed()
       {
             ///val = atoi(editor->text().ascii());
             val = atoi(editor->text().toAscii().constData());
-            if (selectedColumn != COL_LEN) 
+            
+            switch (selectedColumn)
             {
-              if(selectedColumn == COL_VOL)
-              {
+              case COL_VOL:
                   if (val > 200) //Check bounds for volume
                   val = 200;
                   if (val < 0)
                   val = 0;
-              }
-              else
-              {
+                  break;
+                  
+              case COL_LV1:
+              case COL_LV2:
+              case COL_LV3:
+              case COL_LV4:
                   if (val > 127) //Check bounds for lv1-lv4 values
                   val = 127;
                   if (val < 0)
                   val = 0;
-              }    
+                  break;
+                  
+              case COL_CHANNEL:
+                  val--;
+                  if (val >= 16)
+                  val = 15;
+                  if (val < 0)
+                  val = 0;
+                  break;
+                  
+              default: break;
             }  
       }     
 
@@ -598,6 +620,14 @@ void DList::returnPressed()
 
             case COL_LV4:
                   editEntry->lv4 = val;
+                  break;
+
+            case COL_QNT:
+                  editEntry->quant = val;
+                  break;
+
+            case COL_CHANNEL:
+                  editEntry->channel = val;
                   break;
 
             default:
