@@ -54,7 +54,7 @@ void PitchEdit::keyPressEvent(QKeyEvent* ev)
 //   mapValueToText
 //---------------------------------------------------------
 
-QString PitchEdit::mapValueToText(int v)
+QString PitchEdit::textFromValue(int v) const
       {
       if (deltaMode) {
             QString s;
@@ -69,7 +69,7 @@ QString PitchEdit::mapValueToText(int v)
 //   mapTextToValue
 //---------------------------------------------------------
 
-int PitchEdit::mapTextToValue(bool* ok)
+int PitchEdit::valueFromText(bool* ok) const
       {
 printf("AwlPitchEdit: mapTextToValue: not impl.\n");
       if (ok)

@@ -481,6 +481,8 @@ static void readSeqConfiguration(Xml& xml)
                               rcGotoLeftMarkNote = xml.parseInt();
                         else if (tag == "rcPlay")
                               rcPlayNote = xml.parseInt();
+                        else if (tag == "rcSteprec")
+                              rcSteprecNote = xml.parseInt();
                         else
                               xml.unknown("Seq");
                         break;
@@ -1061,6 +1063,7 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       xml.intTag(level, "rcRecord",   rcRecordNote);
       xml.intTag(level, "rcGotoLeft", rcGotoLeftMarkNote);
       xml.intTag(level, "rcPlay",     rcPlayNote);
+      xml.intTag(level, "rcSteprec",     rcSteprecNote);
 
       if (writePortInfo) {
             //

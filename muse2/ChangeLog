@@ -1,3 +1,10 @@
+24.05.2011:
+        - fixed y-stretch (flo93)
+        - cleaned up step-rec and midi-in buttons and stuff (flo93)
+        - steprec now supports a "insert rest" key, which can be set (flo93)
+          under Midi -> Input Plugins -> Remote Control
+        - song->midiNote now also delivers note off events (flo93)
+        - fixed pitch-spinbox (flo93)
 23.05.2011:   (all changes made by flo93, except one)
     Function-related changes:
         - made all the stuff in the "functions" menu global

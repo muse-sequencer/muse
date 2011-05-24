@@ -974,11 +974,15 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
             }
 
       //
-      // transfer noteOn events to gui for step recording and keyboard
-      // remote control
+      // transfer noteOn and Off events to gui for step recording and keyboard
+      // remote control (changed by flo93: added noteOff-events)
       //
       if (typ == ME_NOTEON) {
             int pv = ((event.dataA() & 0xff)<<8) + (event.dataB() & 0xff);
+            song->putEvent(pv);
+            }
+      else if (typ == ME_NOTEOFF) {
+            int pv = ((event.dataA() & 0xff)<<8) + (0x00); //send an event with velo=0
             song->putEvent(pv);
             }
       
