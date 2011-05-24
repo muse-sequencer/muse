@@ -6,6 +6,9 @@
           under Midi -> Input Plugins -> Remote Control
         - song->midiNote now also delivers note off events (flo93)
         - fixed pitch-spinbox (flo93)
+        - removed auto-resize from tracklist-header (rj)
+        - removed channel from track list for a drum track and grayed it out in track info (rj)
+        - fixed samplerate warning from templates (rj)
 23.05.2011:   (all changes made by flo93, except one)
     Function-related changes:
         - made all the stuff in the "functions" menu global

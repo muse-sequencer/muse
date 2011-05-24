@@ -299,7 +299,11 @@ void TList::paint(const QRect& r)
                               {
                               QString s;
                               int n;
-                              if (track->isMidiTrack()) {
+                              if (track->isMidiTrack() && track->type() == Track::DRUM) {
+                                    p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, "-");
+                                    break;
+                              }
+                              else if (track->isMidiTrack()) {
                                     n = ((MidiTrack*)track)->outChannel() + 1;
                                     }
                               else {
@@ -1279,8 +1283,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     {
                       MidiTrack* mt = dynamic_cast<MidiTrack*>(t);
                       if (mt == 0)
-                      break;
-                    
+                        break;
+                      if (mt->type() == Track::DRUM)
+                        break;
+
                       int channel = mt->outChannel();
                       channel += delta;
                       if(channel >= MIDI_CHANNELS)
@@ -1554,6 +1560,9 @@ void TList::wheelEvent(QWheelEvent* ev)
             case COL_OCHANNEL:
                   if (t->isMidiTrack()) {
                         MidiTrack* mt = (MidiTrack*)t;
+                        if (mt && mt->type() == Track::DRUM)
+                            break;
+
                         int channel = mt->outChannel() + delta;
 
                         if (channel >= MIDI_CHANNELS)

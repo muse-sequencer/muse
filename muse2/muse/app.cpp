@@ -1815,7 +1815,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
                   }
             else {
                   Xml xml(f);
-                  read(xml, !loadAll);
+                  read(xml, !loadAll, songTemplate);
                   bool fileError = ferror(f);
                   popenFlag ? pclose(f) : fclose(f);
                   if (fileError) {
