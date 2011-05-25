@@ -211,6 +211,23 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	undo_tools->addActions(undoRedo->actions());
 	addToolBar(undo_tools);
 
+	QToolBar* steprec_tools=addToolBar(tr("Step recording tools"));
+	steprec_tools->setObjectName("Step recording tools");
+	srec  = new QToolButton();
+	srec->setToolTip(tr("Step Record"));
+	srec->setIcon(*steprecIcon);
+	srec->setCheckable(true);
+	steprec_tools->addWidget(srec);
+	connect(srec, SIGNAL(toggled(bool)), SLOT(set_steprec(bool)));
+
+	midiin  = new QToolButton();
+	midiin->setToolTip(tr("Midi Input"));
+	midiin->setIcon(*midiinIcon);
+	midiin->setCheckable(true);
+	steprec_tools->addWidget(midiin);
+	connect(midiin, SIGNAL(toggled(bool)), score_canvas, SLOT(set_midiin(bool)));
+
+
 	edit_tools = new EditToolBar(this, PointerTool | PencilTool | RubberTool);
 	addToolBar(edit_tools);
 	edit_tools->set(PointerTool);
@@ -456,6 +473,15 @@ ScoreEdit::~ScoreEdit()
 {
 	
 }
+
+void ScoreEdit::set_steprec(bool flag)
+{
+	score_canvas->set_steprec(flag);
+	if (flag == false)
+		midiin->setChecked(false);
+}
+
+
 
 void ScoreEdit::velo_box_changed()
 {
@@ -714,6 +740,8 @@ void ScoreEdit::writeStatus(int level, Xml& xml) const
 
 	xml.strTag(level, "name", name);
 	xml.intTag(level, "tool", edit_tools->curTool());
+	xml.intTag(level, "steprec", srec->isChecked());
+	xml.intTag(level, "midiin", midiin->isChecked());
 	xml.intTag(level, "quantPower", score_canvas->quant_power2());
 	xml.intTag(level, "pxPerWhole", score_canvas->pixels_per_whole());
 	xml.intTag(level, "newNoteVelo", velo_spinbox->value());
@@ -806,6 +834,10 @@ void ScoreEdit::readStatus(Xml& xml)
 					set_name(xml.parse1());
 				else if (tag == "tool") 
 					edit_tools->set(xml.parseInt());
+				else if (tag == "midiin") 
+					midiin->setChecked(xml.parseInt());
+				else if (tag == "steprec") 
+					srec->setChecked(xml.parseInt());
 				else if (tag == "quantPower") 
 					quant_combobox->setCurrentIndex(xml.parseInt()-1);
 				else if (tag == "pxPerWhole") 
@@ -936,13 +968,13 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 
 		if (all_in_one)
 		{
-			ScoreEdit::clefTypes clef=((MidiTrack*)pl->begin()->second->track())->getClef();
+			clefTypes clef=((MidiTrack*)pl->begin()->second->track())->getClef();
 			
 			staff.parts.clear();
 			for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
 			{
 				if (((MidiTrack*)part_it->second->track())->getClef() != clef)
-					clef=ScoreEdit::grandStaff;
+					clef=grandStaff;
 					
 				staff.parts.insert(part_it->second);
 			}
@@ -950,19 +982,19 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 
 			switch (clef)
 			{
-				case ScoreEdit::trebleClef:
+				case trebleClef:
 					staff.type=NORMAL;
 					staff.clef=VIOLIN;
 					staves.push_back(staff);
 					break;
 
-				case ScoreEdit::bassClef:
+				case bassClef:
 					staff.type=NORMAL;
 					staff.clef=BASS;
 					staves.push_back(staff);
 					break;
 
-				case ScoreEdit::grandStaff:
+				case grandStaff:
 					staff.type=GRAND_TOP;
 					staff.clef=VIOLIN;
 					staves.push_back(staff);
@@ -994,19 +1026,19 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 					
 					switch (((MidiTrack*)(*track_it))->getClef())
 					{
-						case ScoreEdit::trebleClef:
+						case trebleClef:
 							staff.type=NORMAL;
 							staff.clef=VIOLIN;
 							staves.push_back(staff);
 							break;
 
-						case ScoreEdit::bassClef:
+						case bassClef:
 							staff.type=NORMAL;
 							staff.clef=BASS;
 							staves.push_back(staff);
 							break;
 
-						case ScoreEdit::grandStaff:
+						case grandStaff:
 							staff.type=GRAND_TOP;
 							staff.clef=VIOLIN;
 							staves.push_back(staff);
@@ -1035,6 +1067,12 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 	setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
 	
 	init_pixmaps();
+	
+	srec=false;
+	midiin=false;
+	for (int i=0;i<128;i++) held_notes[i]=false;
+	steprec=new StepRec(held_notes);
+	connect(song, SIGNAL(midiNote(int, int)), SLOT(midi_note(int,int)));
 	
 	x_pos=0;
 	x_left=0;
@@ -4254,6 +4292,27 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
 			}
 }
 
+void ScoreCanvas::set_steprec(bool flag)
+{
+	srec=flag;
+}
+
+void ScoreCanvas::set_midiin(bool flag)
+{
+	midiin=flag;
+}
+
+void ScoreCanvas::midi_note(int pitch, int velo)
+{
+	if (velo)
+		held_notes[pitch]=true;
+	else
+		held_notes[pitch]=false;
+
+	if ( midiin && srec && selected_part && !audio->isPlaying() && velo )
+		steprec->record(selected_part,pitch,quant_ticks(),quant_ticks(),velo,globalKeyState&Qt::ControlModifier,globalKeyState&Qt::ShiftModifier);
+}
+
 
 //the following assertions are made:
 //  pix_quarter.width() == pix_half.width()
@@ -4280,7 +4339,7 @@ void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o maybe support step-recording in score editor as well?
+ *   x nothing atm
  * 
  * IMPORTANT TODO
  *   o do partial recalculating; recalculating can take pretty long

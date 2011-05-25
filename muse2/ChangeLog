@@ -1,3 +1,8 @@
+25.05.2011:
+        - Added midiin and steprec buttons again (flo93)
+        - Added step-rec-support for drum edit and score edit (flo93)
+        - put step-rec-stuff into its own class (flo93)
+        - moved clefTypes out of scoreedit.h to prevent compile-horror (flo93)
 24.05.2011:
         - Awl::PitchEdit now can be set with the musical keyboard (flo93)
         - fixed y-stretch (flo93)

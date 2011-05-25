@@ -20,7 +20,7 @@
 #include "route.h"
 #include "ctrl.h"
 #include "globaldefs.h"
-#include "scoreedit.h"
+#include "cleftypes.h"
 
 class Pipeline;
 class Xml;
@@ -209,7 +209,7 @@ class MidiTrack : public Track {
       EventList* _events;     // tmp Events during midi import
       MPEventList* _mpevents; // tmp Events druring recording
       static bool _isVisible;
-      ScoreEdit::clefTypes clefType;
+      clefTypes clefType;
 
    public:
       MidiTrack();
@@ -276,8 +276,8 @@ class MidiTrack : public Track {
       static void setVisible(bool t) { _isVisible = t; }
       static bool visible() { return _isVisible; }
 
-      void setClef(ScoreEdit::clefTypes i) { clefType = i; }
-      ScoreEdit::clefTypes getClef() { return clefType; }
+      void setClef(clefTypes i) { clefType = i; }
+      clefTypes getClef() { return clefType; }
       };
 
 //---------------------------------------------------------

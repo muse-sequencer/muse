@@ -12,6 +12,7 @@
 #include "audio.h"
 #include "gconfig.h"
 
+#include <values.h>
 #include <iostream>
 
 #include <QMessageBox>
