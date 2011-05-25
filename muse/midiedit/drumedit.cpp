@@ -295,21 +295,14 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       srec->setToolTip(tr("Step Record"));
       srec->setIcon(*steprecIcon);
       srec->setCheckable(true);
-      srec->setEnabled(false); //disabled by flo93 (see below)
       tools->addWidget(srec);
 
       midiin  = new QToolButton();
       midiin->setToolTip(tr("Midi Input"));
       midiin->setIcon(*midiinIcon);
       midiin->setCheckable(true);
-      midiin->setEnabled(false); //disabled by flo93 (see below)
       tools->addWidget(midiin);
       
-      // I disabled these buttons because they're without function;
-      // muse should not lie to the user pretending some functionality
-      // it doesn't have; they should be enabled as soon step-recording
-      // has been implemented.
-
       
       tools2 = new EditToolBar(this, drumeditTools);
       addToolBar(tools2);

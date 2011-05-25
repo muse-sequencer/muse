@@ -88,7 +88,11 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
       setVirt(false);
       cursorPos= QPoint(0,0);
       _stepSize=1;
+      
+      steprec=new StepRec(NULL);
+      
       songChanged(SC_TRACK_INSERTED);
+      connect(song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
       }
 
 //---------------------------------------------------------
@@ -1063,6 +1067,10 @@ void DrumCanvas::keyPressed(int index, int velocity)
       // play note:
       MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
       audio->msgPlayMidiEvent(&e);
+
+      if (_steprec && pos[0] >= start_tick && pos[0] < end_tick && curPart)
+				steprec->record(curPart,index,drumMap[index].len,editor->raster(),velocity,globalKeyState&Qt::ControlModifier,globalKeyState&Qt::ShiftModifier);
+            
       }
 
 //---------------------------------------------------------
@@ -1503,3 +1511,19 @@ void DrumCanvas::moveAwayUnused()
 		used.erase(it++);
 	}
 }
+
+
+//---------------------------------------------------------
+//   midiNote
+//---------------------------------------------------------
+void DrumCanvas::midiNote(int pitch, int velo)
+      {
+      if (debugMsg) printf("DrumCanvas::midiNote: pitch=%i, velo=%i\n", pitch, velo);
+
+      if (_midiin && _steprec && curPart
+         && !audio->isPlaying() && velo && pos[0] >= start_tick
+         && pos[0] < end_tick
+         && !(globalKeyState & Qt::AltModifier)) {
+					 steprec->record(curPart,drumInmap[pitch],drumMap[(int)drumInmap[pitch]].len,editor->raster(),velo,globalKeyState&Qt::ControlModifier,globalKeyState&Qt::ShiftModifier);
+         }
+      }

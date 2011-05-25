@@ -10,6 +10,7 @@
 
 #include "ecanvas.h"
 #include "song.h"
+#include "steprec.h"
 
 #define TH 18
 
@@ -40,7 +41,9 @@ class PianoRoll;
 //---------------------------------------------------------
 
 class DrumCanvas : public EventCanvas {
-
+      
+      StepRec* steprec;
+      
       // Cursor tool position
       QPoint cursorPos;
       int _stepSize;
@@ -77,6 +80,9 @@ class DrumCanvas : public EventCanvas {
    signals:
       void newWidth(int);
 
+   private slots:
+      void midiNote(int pitch, int velo);
+      
    public slots:
       void mapChanged(int, int);
       void keyPressed(int, int);
