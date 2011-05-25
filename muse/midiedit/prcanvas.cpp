@@ -85,7 +85,6 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
       {
       colorMode = 0;
       playedPitch = -1;
-      _steprec    = false;
       for (int i=0;i<128;i++) noteHeldDown[i]=false;
       
       chordTimer = new QTimer(this);
@@ -1074,7 +1073,7 @@ void PianoCanvas::midiNote(int pitch, int velo)
         printf("\n");
       }
       
-      if (_steprec && curPart
+      if (_midiin && _steprec && curPart
          && !audio->isPlaying() && velo && pos[0] >= start_tick
          && pos[0] < end_tick
          && !(globalKeyState & Qt::AltModifier)) {

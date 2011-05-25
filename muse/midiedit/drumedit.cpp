@@ -289,6 +289,26 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
 
       tools->addSeparator();
       tools->addActions(undoRedo->actions());
+      tools->addSeparator();
+
+      srec  = new QToolButton();
+      srec->setToolTip(tr("Step Record"));
+      srec->setIcon(*steprecIcon);
+      srec->setCheckable(true);
+      srec->setEnabled(false); //disabled by flo93 (see below)
+      tools->addWidget(srec);
+
+      midiin  = new QToolButton();
+      midiin->setToolTip(tr("Midi Input"));
+      midiin->setIcon(*midiinIcon);
+      midiin->setCheckable(true);
+      midiin->setEnabled(false); //disabled by flo93 (see below)
+      tools->addWidget(midiin);
+      
+      // I disabled these buttons because they're without function;
+      // muse should not lie to the user pretending some functionality
+      // it doesn't have; they should be enabled as soon step-recording
+      // has been implemented.
 
       
       tools2 = new EditToolBar(this, drumeditTools);
@@ -440,6 +460,8 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       connect(vscroll, SIGNAL(scaleChanged(int)),  dlist, SLOT(setYMag(int)));
       connect(hscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setXPos(int)));
       connect(hscroll, SIGNAL(scaleChanged(int)),  canvas, SLOT(setXMag(int)));
+      connect(srec, SIGNAL(toggled(bool)),         canvas, SLOT(setSteprec(bool)));
+      connect(midiin, SIGNAL(toggled(bool)),       canvas, SLOT(setMidiin(bool)));
 
       connect(vscroll, SIGNAL(scrollChanged(int)),   dlist,   SLOT(setYPos(int)));
       connect(hscroll, SIGNAL(scrollChanged(int)),   time,   SLOT(setXPos(int)));
@@ -660,6 +682,8 @@ void DrumEdit::writeStatus(int level, Xml& xml) const
       split2->writeStatus(level, xml);
 
       header->writeStatus(level, xml);
+      xml.intTag(level, "steprec", canvas->steprec());
+      xml.intTag(level, "midiin",  canvas->midiin());
       xml.intTag(level, "xpos", hscroll->pos());
       xml.intTag(level, "xmag", hscroll->mag());
       xml.intTag(level, "ypos", vscroll->pos());
@@ -681,7 +705,17 @@ void DrumEdit::readStatus(Xml& xml)
                   case Xml::End:
                         return;
                   case Xml::TagStart:
-                        if (tag == "ctrledit") {
+                        if (tag == "steprec") {
+                              int val = xml.parseInt();
+                              canvas->setSteprec(val);
+                              srec->setChecked(val);
+                              }
+                        else if (tag == "midiin") {
+                              int val = xml.parseInt();
+                              canvas->setMidiin(val);
+                              midiin->setChecked(val);
+                              }
+                        else if (tag == "ctrledit") {
                               CtrlEdit* ctrl = addCtrl();
                               ctrl->readStatus(xml);
                               }
