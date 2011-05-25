@@ -11,6 +11,7 @@
 #include <QKeyEvent>
 #include <QLineEdit>
 
+#include "awl/pitchedit.h"
 #include "view.h"
 
 #define TH  18                // normal Track-hight
@@ -46,6 +47,25 @@ class DLineEdit: public QLineEdit
 };
 
 //---------------------------------------------------------
+//   DPitchEdit
+//---------------------------------------------------------
+class DPitchEdit: public Awl::PitchEdit
+{
+    public:
+      DPitchEdit(QWidget* parent) : PitchEdit(parent) {}
+      virtual ~DPitchEdit() {};
+      
+      virtual void keyPressEvent(QKeyEvent* keyItem) {
+            if ((keyItem->key() == Qt::Key_Escape) || (keyItem->key() == Qt::Key_Return)) {
+                parentWidget()->setFocus();
+                hide();
+                }
+            else
+               PitchEdit::keyPressEvent(keyItem);
+            }
+};
+
+//---------------------------------------------------------
 //   DList
 //---------------------------------------------------------
 
@@ -53,6 +73,7 @@ class DList : public View {
       QHeaderView* header;
       ScrollScale* scroll;
       QLineEdit* editor;
+      DPitchEdit* pitch_editor;
       DrumMap* editEntry;
       DrumMap* currentlySelected;
       int selectedColumn;
@@ -77,6 +98,7 @@ class DList : public View {
    private slots:
       void sizeChange(int, int, int);
       void returnPressed();
+      void pitchEdited();
       void moved(int, int, int);
 
    signals:
@@ -91,6 +113,7 @@ class DList : public View {
       void songChanged(int);
    public:
       void lineEdit(int line, int section);
+      void pitchEdit(int line, int section);
       void setCurDrumInstrument(int n);
       DList(QHeaderView*, QWidget* parent, int ymag);
       ~DList();
