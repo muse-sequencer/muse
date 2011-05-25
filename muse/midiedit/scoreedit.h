@@ -22,6 +22,7 @@
 #include <QActionGroup>
 #include <QGridLayout>
 #include <QByteArray>
+#include <QToolButton>
 
 #include <values.h>
 #include "noteinfo.h"
@@ -32,6 +33,8 @@
 #include "part.h"
 #include "keyevent.h"
 #include "mtscale_flo.h"
+#include "steprec.h"
+#include "cleftypes.h"
 
 #include <set>
 #include <map>
@@ -72,9 +75,6 @@ class EditToolBar;
 class ScoreEdit : public TopWin
 {
 	Q_OBJECT
-  public:
-    enum clefTypes { trebleClef, bassClef, grandStaff };
-
 	private:
 		virtual void closeEvent(QCloseEvent*);
 		virtual void resizeEvent(QResizeEvent*);
@@ -110,6 +110,9 @@ class ScoreEdit : public TopWin
 		QAction* color_black_action;
 		QAction* color_velo_action;
 		QAction* color_part_action;
+
+		QToolButton* srec;
+		QToolButton* midiin;
 		
 		QScrollBar* xscroll;
 		QScrollBar* yscroll;
@@ -133,6 +136,7 @@ class ScoreEdit : public TopWin
 		void menu_command(int);
 		void velo_box_changed();
 		void velo_off_box_changed();
+		void set_steprec(bool);
 		
 	signals:
 		void deleted(unsigned long);
@@ -616,6 +620,8 @@ class ScoreCanvas : public View
 		
 		list<staff_t> staves;
 		
+		StepRec* steprec;
+		
 		// the drawing area is split into a "preamble" containing clef,
 		// key and time signature, and the "item's area" containing the
 		// actual items (notes, bars, rests, etc.)
@@ -668,7 +674,10 @@ class ScoreCanvas : public View
 		bool undo_started;
 		int undo_flags;
 		
-		
+
+		bool srec;
+		bool midiin;
+		bool held_notes[128];
 
 		enum {COLOR_MODE_BLACK, COLOR_MODE_PART, COLOR_MODE_VELO} coloring_mode;
 		bool preamble_contains_keysig;
@@ -696,6 +705,7 @@ class ScoreCanvas : public View
 		void config_changed();
 		
 		void deselect_all();
+		void midi_note(int pitch, int velo);
 
    public slots:
       void x_scroll_event(int);
@@ -715,6 +725,9 @@ class ScoreCanvas : public View
 
 			void set_velo(int);
 			void set_velo_off(int);
+
+			void set_steprec(bool);
+			void set_midiin(bool);
 	
 	signals:
 			void xscroll_changed(int);

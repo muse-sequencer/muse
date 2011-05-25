@@ -44,7 +44,6 @@
 #include "midiedit/drummap.h"
 #include "synth.h"
 #include "config.h"
-#include "scoreedit.h"
 #include "popupmenu.h"
 
 #ifdef DSSI_SUPPORT
@@ -365,11 +364,11 @@ void TList::paint(const QRect& r)
                         case COL_CLEF:
                               if (track->isMidiTrack()) {
                                 QString s = tr("no clef");
-                                if (((MidiTrack*)track)->getClef() == ScoreEdit::trebleClef)
+                                if (((MidiTrack*)track)->getClef() == trebleClef)
                                   s=tr("Treble");
-                                else if (((MidiTrack*)track)->getClef() == ScoreEdit::bassClef)
+                                else if (((MidiTrack*)track)->getClef() == bassClef)
                                   s=tr("Bass");
-                                else if (((MidiTrack*)track)->getClef() == ScoreEdit::grandStaff)
+                                else if (((MidiTrack*)track)->getClef() == grandStaff)
                                   s=tr("Grand");
                                 p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
                               }
@@ -1086,13 +1085,13 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   if (act) {
                     switch (act->data().toInt()) {
                       case 0:
-                        ((MidiTrack*)t)->setClef(ScoreEdit::trebleClef);
+                        ((MidiTrack*)t)->setClef(trebleClef);
                         break;
                       case 1:
-                        ((MidiTrack*)t)->setClef(ScoreEdit::bassClef);
+                        ((MidiTrack*)t)->setClef(bassClef);
                         break;
                       case 2:
-                        ((MidiTrack*)t)->setClef(ScoreEdit::grandStaff);
+                        ((MidiTrack*)t)->setClef(grandStaff);
                         break;
                       default:
                         break;

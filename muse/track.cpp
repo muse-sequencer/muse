@@ -369,7 +369,7 @@ MidiTrack::MidiTrack()
       init();
       _events = new EventList;
       _mpevents = new MPEventList;
-      clefType=ScoreEdit::trebleClef;
+      clefType=trebleClef;
       }
 
 //MidiTrack::MidiTrack(const MidiTrack& mt)
@@ -389,7 +389,7 @@ MidiTrack::MidiTrack(const MidiTrack& mt, bool cloneParts)
       len            = mt.len;
       compression    = mt.compression;
       _recEcho       = mt.recEcho();
-      clefType=ScoreEdit::trebleClef;
+      clefType=trebleClef;
       }
 
 MidiTrack::~MidiTrack()
@@ -959,7 +959,7 @@ void MidiTrack::read(Xml& xml)
                         else if (tag == "automation")
                               setAutomationType(AutomationType(xml.parseInt()));
                         else if (tag == "clef")
-                              clefType = (ScoreEdit::clefTypes)xml.parseInt();
+                              clefType = (clefTypes)xml.parseInt();
                         else if (Track::readProperties(xml, tag)) {
                               // version 1.0 compatibility:
                               if (tag == "track" && xml.majorVersion() == 1 && xml.minorVersion() == 0)
