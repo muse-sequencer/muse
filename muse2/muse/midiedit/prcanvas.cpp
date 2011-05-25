@@ -37,8 +37,6 @@
 #include "song.h"
 #include "audio.h"
 
-#define CHORD_TIMEOUT 75
-
 //---------------------------------------------------------
 //   NEvent
 //---------------------------------------------------------
@@ -87,13 +85,8 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
       playedPitch = -1;
       for (int i=0;i<128;i++) noteHeldDown[i]=false;
       
-      chordTimer = new QTimer(this);
-      chordTimer->setSingleShot(true);
-      chordTimer->setInterval(CHORD_TIMEOUT);
-      chordTimer->stop();
+      steprec=new StepRec(noteHeldDown);
       
-      connect(chordTimer, SIGNAL(timeout()), SLOT(chordTimerTimedOut()));
-
       songChanged(SC_TRACK_INSERTED);
       connect(song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
       }
@@ -778,27 +771,9 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
       //MidiPlayEvent e(0, port, channel, 0x90, pitch, 127);
       MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
       audio->msgPlayMidiEvent(&e);
-
-      if (_steprec && pos[0] >= start_tick && pos[0] < end_tick) {
-         if (curPart) {
-            int len  = editor->raster();
-            unsigned tick = pos[0] - curPart->tick(); //CDW
-            if (shift)
-                  tick -= editor->rasterStep(tick);
-            Event e(Note);
-            e.setTick(tick);
-            e.setPitch(pitch);
-            e.setVelo(127);
-            e.setLenTick(len);
-            // Indicate do undo, and do not do port controller values and clone parts. 
-            //audio->msgAddEvent(e, curPart);
-            audio->msgAddEvent(e, curPart, true, false, false);
-            tick += editor->rasterStep(tick) + curPart->tick();
-            if (tick != song->cpos()) {
-                  Pos p(tick, true);
-                  song->setPos(0, p, true, false, true);
-                  }
-            }
+      
+      if (_steprec && pos[0] >= start_tick && pos[0] < end_tick && curPart) {
+				 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velocity,globalKeyState&Qt::ControlModifier,shift);
          }
             
       }
@@ -1077,136 +1052,10 @@ void PianoCanvas::midiNote(int pitch, int velo)
          && !audio->isPlaying() && velo && pos[0] >= start_tick
          && pos[0] < end_tick
          && !(globalKeyState & Qt::AltModifier)) {
-					 
-         if (pitch!=rcSteprecNote) {
-					  chordTimer->stop();
-					  
-					  //len has been changed by flo: set to raster() instead of quant()
-					  //reason: the quant-toolbar has been removed; the flexibility you
-					  //lose with this can be re-gained by applying a "modify note len"
-					  //on the notes you have entered.
-            unsigned int len   = editor->raster();//prevent compiler warning: comparison singed/unsigned
-            unsigned tick      = pos[0]; //CDW
-            unsigned starttick = tick;
-
-            //
-            // extend len of last note?
-            //
-            EventList* events = curPart->events();
-            if (globalKeyState & Qt::ControlModifier) {
-                  for (iEvent i = events->begin(); i != events->end(); ++i) {
-                        Event ev = i->second;
-                        if (!ev.isNote())
-                              continue;
-                        if (ev.pitch() == pitch && ((ev.tick() + ev.lenTick()) == /*(int)*/starttick)) {
-                              Event e = ev.clone();
-                              e.setLenTick(ev.lenTick() + editor->rasterStep(starttick));
-                              // Indicate do undo, and do not do port controller values and clone parts. 
-                              //audio->msgChangeEvent(ev, e, curPart);
-                              audio->msgChangeEvent(ev, e, curPart, true, false, false);
-                              
-                              if (! (globalKeyState & Qt::ShiftModifier)) {
-                                    chordTimer_setToTick = tick + editor->rasterStep(tick);
-                                    chordTimer->start();
-                                    }
-                              return;
-                              }
-                        }
-                  }
-
-            //
-            // if we already entered the note, delete it
-            //
-            EventRange range = events->equal_range(tick);
-            for (iEvent i = range.first; i != range.second; ++i) {
-                  Event ev = i->second;
-                  if (ev.isNote() && ev.pitch() == pitch) {
-                        // Indicate do undo, and do not do port controller values and clone parts. 
-                        //audio->msgDeleteEvent(ev, curPart);
-                        audio->msgDeleteEvent(ev, curPart, true, false, false);
-
-                        if (! (globalKeyState & Qt::ShiftModifier)) {
-                              chordTimer_setToTick = tick + editor->rasterStep(tick);
-                              chordTimer->start();
-                              }
-                        
-                        return;
-                        }
-                  }
-            Event e(Note);
-            e.setTick(tick - curPart->tick());
-            e.setPitch(pitch);
-            e.setVelo(velo);
-            e.setLenTick(len);
-            // Indicate do undo, and do not do port controller values and clone parts. 
-            //audio->msgAddEvent(e, curPart);
-            audio->msgAddEvent(e, curPart, true, false, false);
-            
-            if (! (globalKeyState & Qt::ShiftModifier)) {
-                  chordTimer_setToTick = tick + editor->rasterStep(tick);
-                  chordTimer->start();
-                  }
-            }
-         else { // equals if (pitch==rcSteprecNote)
-            bool held_notes=false;
-            for (int i=0;i<128;i++)
-               if (noteHeldDown[i]) { held_notes=true; break; }
-            
-            if (held_notes)
-            {
-                chordTimer->stop();
-                
-                unsigned tick      = pos[0];
-
-                // extend len of last note(s)
-                using std::set;
-                
-                set<Event*> extend_set;
-                EventList* events = curPart->events();
-                for (iEvent i = events->begin(); i != events->end(); ++i) {
-                      Event& ev = i->second;
-                      if (!ev.isNote())
-                            continue;
-
-                      if (noteHeldDown[ev.pitch()] && ((ev.tick() + ev.lenTick()) == tick))
-                            extend_set.insert(&ev);
-                      }
-                for (set<Event*>::iterator it=extend_set.begin(); it!=extend_set.end(); it++)
-                {
-                    Event& ev=**it;
-                    Event e = ev.clone();
-                    e.setLenTick(ev.lenTick() + editor->rasterStep(tick));
-                    // Indicate do undo, and do not do port controller values and clone parts. 
-                    audio->msgChangeEvent(ev, e, curPart, true, false, false);
-                }
-
-                if (! (globalKeyState & Qt::ShiftModifier)) {
-                      chordTimer_setToTick = tick + editor->rasterStep(tick);
-                      chordTimer->start();
-                      }
-                return;
-               
-            }
-            else // equals if (!held_notes)
-            {
-              chordTimer->stop();
-
-              //simply proceed, inserting a rest
-              Pos p(pos[0] + editor->rasterStep(pos[0]), true);
-              song->setPos(0, p, true, false, true);
-            }
-            }
+					 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velo,globalKeyState&Qt::ControlModifier,globalKeyState&Qt::ShiftModifier);
          }
       }
 
-void PianoCanvas::chordTimerTimedOut()
-{
-	if (chordTimer_setToTick != song->cpos())
-	{
-		Pos p(chordTimer_setToTick, true);
-		song->setPos(0, p, true, false, true);
-	}
-}
 
 /*
 //---------------------------------------------------------

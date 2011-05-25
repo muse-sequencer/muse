@@ -17,6 +17,8 @@
 #include <QDragLeaveEvent>
 #include <QTimer>
 
+#include "steprec.h"
+
 #define KH        13
 
 //---------------------------------------------------------
@@ -41,9 +43,9 @@ class PianoCanvas : public EventCanvas {
       int colorMode;
       int playedPitch;
       
-      QTimer* chordTimer;
-      unsigned chordTimer_setToTick;
       bool noteHeldDown[128];
+      
+      StepRec* steprec;
 
       Q_OBJECT
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
@@ -77,7 +79,6 @@ class PianoCanvas : public EventCanvas {
 
    private slots:
       void midiNote(int pitch, int velo);
-      void chordTimerTimedOut();
 
    signals:
       void quantChanged(int);
