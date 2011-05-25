@@ -51,6 +51,8 @@ class EventCanvas : public Canvas {
       MidiEditor* editor;
       unsigned start_tick, end_tick;
       int curVelo;
+      bool _steprec;
+      bool _midiin;
 
       void updateSelection();
       virtual void addItem(Part*, Event&) = 0;
@@ -59,6 +61,8 @@ class EventCanvas : public Canvas {
 
    public slots:
       void redrawGrid()       { redraw(); }
+      void setSteprec(bool f) { _steprec = f; }
+      void setMidiin(bool f)  { _midiin = f; }
 
    signals:
       void pitchChanged(int);       // current cursor position
@@ -71,6 +75,8 @@ class EventCanvas : public Canvas {
       MidiTrack* track() const;
       unsigned start() const       { return start_tick; }
       unsigned end() const         { return end_tick; }
+      bool midiin() const     { return _midiin; }
+      bool steprec() const    { return _steprec; }
       QString getCaption() const;
       void songChanged(int);
       void range(int* s, int* e) const { *s = start_tick; *e = end_tick; }
