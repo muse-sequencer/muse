@@ -396,7 +396,7 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
                 else if ((i >= n) && ai->jackPort(i)) 
                 {
                   RouteList* ir = node->inRoutes();
-                  for (iRoute ii = ir->begin(); ii != ir->end(); ++ii) 
+                  for (ciRoute ii = ir->begin(); ii != ir->end(); ++ii) 
                   {
                     Route r = *ii;
                     if ((r.type == Route::JACK_ROUTE) && (r.channel == i)) 
@@ -427,7 +427,7 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
                         else if (i >= n && jp) 
                         {
                               RouteList* ir = node->outRoutes();
-                              for (iRoute ii = ir->begin(); ii != ir->end(); ++ii) 
+                              for (ciRoute ii = ir->begin(); ii != ir->end(); ++ii) 
                               {
                                     Route r = *ii;
                                     if ((r.type == Route::JACK_ROUTE) && (r.channel == i)) 

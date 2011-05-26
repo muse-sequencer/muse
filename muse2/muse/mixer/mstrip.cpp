@@ -43,7 +43,8 @@
 #include "gconfig.h"
 #include "ttoolbutton.h"
 //#include "utils.h"
-#include "popupmenu.h"
+//#include "popupmenu.h"
+#include "routepopup.h"
 
 enum { KNOB_PAN, KNOB_VAR_SEND, KNOB_REV_SEND, KNOB_CHO_SEND };
 
@@ -503,26 +504,17 @@ void MidiStrip::songChanged(int val)
       if (val & SC_TRACK_MODIFIED)
       {
             setLabelText();
-            // Added by Tim. p3.3.9
             setLabelFont();
             
       }      
-      // Added by Tim. p3.3.9
       
-      // Catch when label font changes.
+      // Catch when label font changes. Tim. p3.3.9
       if (val & SC_CONFIG)
       {
         // Set the strip label's font.
         //label->setFont(config.fonts[1]);
         setLabelFont();
       }  
-      
-      // p3.3.47 Update the routing popup menu if anything relevant changes.
-      //if(gRoutingPopupMenuMaster == this && track && (val & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))) 
-      if(val & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))      // p3.3.50
-        // Use this handy shared routine.
-        //muse->updateRouteMenus(track);
-        muse->updateRouteMenus(track, this);              // p3.3.50
     }
 
 //---------------------------------------------------------
@@ -1007,35 +999,14 @@ void MidiStrip::setReverbSend(double val)
       }
       
 //---------------------------------------------------------
-//   routingPopupMenuActivated
-//---------------------------------------------------------
-
-void MidiStrip::routingPopupMenuActivated(QAction* act)
-{
-  if(gRoutingPopupMenuMaster != this || !track || !track->isMidiTrack())
-    return;
-  
-  muse->routingPopupMenuActivated(track, act->data().toInt());
-}
-
-//---------------------------------------------------------
 //   iRoutePressed
 //---------------------------------------------------------
 
 void MidiStrip::iRoutePressed()
 {
-  if(!track || !track->isMidiTrack())
-    return;
-  
-  PopupMenu* pup = muse->prepareRoutingPopupMenu(track, false);
-  if(!pup)
-    return;
-  
-  gRoutingPopupMenuMaster = this;
-  connect(pup, SIGNAL(triggered(QAction*)), SLOT(routingPopupMenuActivated(QAction*)));
-  connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
-  pup->popup(QCursor::pos());
+  RoutePopupMenu* pup = muse->getRoutingPopupMenu();
   iR->setDown(false);     
+  pup->exec(QCursor::pos(), track, false);
 }
 
 //---------------------------------------------------------
@@ -1044,18 +1015,9 @@ void MidiStrip::iRoutePressed()
 
 void MidiStrip::oRoutePressed()
 {
-  if(!track || !track->isMidiTrack())
-    return;
-  
-  PopupMenu* pup = muse->prepareRoutingPopupMenu(track, true);
-  if(!pup)
-    return;
-  
-  gRoutingPopupMenuMaster = this;
-  connect(pup, SIGNAL(triggered(QAction*)), SLOT(routingPopupMenuActivated(QAction*)));
-  connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
-  pup->popup(QCursor::pos());
+  RoutePopupMenu* pup = muse->getRoutingPopupMenu();
   oR->setDown(false);     
+  pup->exec(QCursor::pos(), track, true);
 }
 
 

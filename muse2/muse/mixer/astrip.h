@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "strip.h"
-#include "route.h"
+//#include "route.h"
 
 class Slider;
 class Knob;
@@ -20,7 +20,7 @@ class Knob;
 class QToolButton;
 //class QAction;
 //class QPopupMenu;
-class PopupMenu;
+//class PopupMenu;
 class QButton;
 class TransparentToolButton;
 class AudioTrack;
@@ -61,7 +61,6 @@ class AudioStrip : public Strip {
       void updateVolume();
       void updatePan();
       void updateChannels();
-      //void updateRouteMenus();
 
    private slots:
       void stereoToggled(bool);
@@ -69,7 +68,6 @@ class AudioStrip : public Strip {
       void offToggled(bool);
       void iRoutePressed();
       void oRoutePressed();
-      void routingPopupMenuActivated(QAction*);
       void auxChanged(double, int);
       void volumeChanged(double);
       void volumePressed();

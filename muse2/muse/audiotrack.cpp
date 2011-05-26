@@ -34,6 +34,7 @@ bool WaveTrack::_isVisible=true;
 // Jack often shuts down during file save, causing the routes to be lost in the file.
 // cacheJackRouteNames() is ONLY called from MusE::save() in app.cpp
 // Update: Not required any more because the real problem was Jack RT priority, which has been fixed.
+// Keep this around for now. It may come in handy if we want to preserve route names with dummy audio driver!
 /*
 typedef std::multimap <const int, QString> jackRouteNameMap;
 std::map <const AudioTrack*, jackRouteNameMap > jackRouteNameCache;

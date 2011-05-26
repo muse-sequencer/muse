@@ -507,7 +507,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         //Route dst(*ip, true, i);
                         //Route rt(*ip, (dev->rwFlags() & 1), -1, Route::JACK_ROUTE);
                         Route rt(*ip, (col == DEVCOL_OUTROUTES), -1, Route::JACK_ROUTE);   
-                        for(iRoute ir = rl->begin(); ir != rl->end(); ++ir) 
+                        for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir) 
                         {
                           if (*ir == rt) 
                           {
@@ -553,7 +553,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         Route srcRoute(dev, -1);
                         Route dstRoute(s, true, -1, Route::JACK_ROUTE);
             
-                        iRoute iir = rl->begin();
+                        ciRoute iir = rl->begin();
                         for(; iir != rl->end(); ++iir) 
                         {
                           if(*iir == dstRoute)
@@ -573,7 +573,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                         Route srcRoute(s, false, -1, Route::JACK_ROUTE);
                         Route dstRoute(dev, -1);
             
-                        iRoute iir = rl->begin();
+                        ciRoute iir = rl->begin();
                         for(; iir != rl->end(); ++iir) 
                         {
                           if(*iir == srcRoute)

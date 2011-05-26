@@ -187,7 +187,7 @@ void addRoute(Route src, Route dst)
               src.channel = dst.channel;
               //src.channels = dst.channels = 1;
               RouteList* inRoutes = dst.track->inRoutes();
-              for (iRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) 
+              for (ciRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) 
               {
                 if (*i == src)    // route already there
                 {
@@ -226,7 +226,7 @@ void addRoute(Route src, Route dst)
                 //dst.channel = -1;
                 
                 RouteList* routes = dst.device->inRoutes();
-                for (iRoute i = routes->begin(); i != routes->end(); ++i) 
+                for (ciRoute i = routes->begin(); i != routes->end(); ++i) 
                 {
                   if (*i == src)    // route already there
                   {
@@ -284,7 +284,7 @@ void addRoute(Route src, Route dst)
               dst.channel = src.channel;
               //dst.channels = src.channels = 1;
               
-              for (iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
+              for (ciRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
               {
                     if (*i == dst)    // route already there
                     {
@@ -312,7 +312,7 @@ void addRoute(Route src, Route dst)
                 //dst.channels = src.channels = 1;
                 
                 RouteList* routes = src.device->outRoutes();
-                for (iRoute i = routes->begin(); i != routes->end(); ++i) 
+                for (ciRoute i = routes->begin(); i != routes->end(); ++i) 
                 {
                   if (*i == dst)    // route already there
                   {
@@ -616,7 +616,7 @@ void addRoute(Route src, Route dst)
             //    dst.channels = src.track->channels();  
             //}
             
-            for (iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
+            for (ciRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
             {
                   if (*i == dst)    // route already there
                   // TODO:
@@ -1248,7 +1248,7 @@ bool checkRoute(const QString& s, const QString& d)
                     }
               src.channel = dst.channel;
               RouteList* inRoutes = dst.track->inRoutes();
-              for (iRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) 
+              for (ciRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) 
               {
                     if (*i == src) {   // route already there
                           return false;
@@ -1263,7 +1263,7 @@ bool checkRoute(const QString& s, const QString& d)
               src.channel = -1;
               //dst.channel = -1;
               RouteList* routes = dst.device->inRoutes();
-              for (iRoute i = routes->begin(); i != routes->end(); ++i) 
+              for (ciRoute i = routes->begin(); i != routes->end(); ++i) 
               {
                     if (*i == src) {   // route already there
                           return false;
@@ -1286,7 +1286,7 @@ bool checkRoute(const QString& s, const QString& d)
                     }
               RouteList* outRoutes = src.track->outRoutes();
               dst.channel = src.channel;
-              for (iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
+              for (ciRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
               {
                     if (*i == dst) {   // route already there
                           return false;
@@ -1301,7 +1301,7 @@ bool checkRoute(const QString& s, const QString& d)
               //dst.channel = src.channel;
               dst.channel = -1;
               //src.channel = -1;
-              for (iRoute i = routes->begin(); i != routes->end(); ++i) 
+              for (ciRoute i = routes->begin(); i != routes->end(); ++i) 
               {
                     if (*i == dst) {   // route already there
                           return false;
@@ -1314,7 +1314,7 @@ bool checkRoute(const QString& s, const QString& d)
       else if (src.type == Route::MIDI_PORT_ROUTE) // p3.3.49
       {
             RouteList* outRoutes = midiPorts[src.midiPort].outRoutes();
-            for (iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
+            for (ciRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
             {
                   if (*i == dst) {   // route already there
                         return false;
@@ -1330,7 +1330,7 @@ bool checkRoute(const QString& s, const QString& d)
             //                       src.device->outRoutes() : src.track->outRoutes();
             RouteList* outRoutes = (src.type == Route::MIDI_DEVICE_ROUTE) ? src.device->outRoutes() : src.track->outRoutes();
             
-            for (iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
+            for (ciRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
             {
                   if (*i == dst) {   // route already there
                         return false;
