@@ -143,6 +143,7 @@ struct GlobalConfigValues {
       bool projectStoreInFolder;
       bool useProjectSaveDialog;
       unsigned long minControlProcessPeriod;
+      bool popupsDefaultStayOpen;
       };
 
 extern GlobalConfigValues config;

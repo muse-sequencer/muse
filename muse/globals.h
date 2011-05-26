@@ -13,7 +13,6 @@
 
 #include "value.h"
 #include "mtc.h"
-#include "route.h"
 
 #include <unistd.h>
 
@@ -171,15 +170,6 @@ extern unsigned char rcSteprecNote;
 
 extern bool midiSeqRunning;
 extern bool automation;
-
-class QObject;
-// Which audio strip, midi strip, or midi track info strip
-//  was responsible for popping up the routing menu.
-extern QObject* gRoutingPopupMenuMaster;
-// Map of routing popup menu item IDs to Routes.
-extern RouteMenuMap gRoutingMenuMap;
-// Whether the routes popup was shown by clicking the output routes button, or input routes button.
-extern bool gIsOutRoutingPopupMenu;
 
 // p3.3.55
 #define JACK_MIDI_OUT_PORT_SUFFIX "_out"

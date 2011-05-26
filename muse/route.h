@@ -9,9 +9,10 @@
 #ifndef __ROUTE_H__
 #define __ROUTE_H__
 
+#include <QMetaType>
+
 #include <vector>
 #include <map>
-
 #include "globaldefs.h"
 
 class QString;
@@ -71,6 +72,8 @@ struct Route {
       void dump() const;
       };
 
+// Allow Routes to be a QVariant
+Q_DECLARE_METATYPE(Route) ;
 
 //---------------------------------------------------------
 //   RouteList
@@ -93,11 +96,11 @@ extern bool checkRoute(const QString&, const QString&);
 //   RouteMenuMap
 //---------------------------------------------------------
 
-typedef std::map<int, Route, std::less<int> >::iterator iRouteMenuMap;
-typedef std::map<int, Route, std::less<int> >::const_iterator ciRouteMenuMap;
-typedef std::map<int, Route, std::less<int> > RouteMenuMap;
-typedef std::pair<int, Route> pRouteMenuMap;
-typedef std::pair<iRouteMenuMap, bool > rpRouteMenuMap;
+//typedef std::map<int, Route, std::less<int> >::iterator iRouteMenuMap;
+//typedef std::map<int, Route, std::less<int> >::const_iterator ciRouteMenuMap;
+//typedef std::map<int, Route, std::less<int> > RouteMenuMap;
+//typedef std::pair<int, Route> pRouteMenuMap;
+//typedef std::pair<iRouteMenuMap, bool > rpRouteMenuMap;
 
 #endif
 

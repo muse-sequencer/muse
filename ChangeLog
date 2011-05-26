@@ -3,6 +3,13 @@
         - Added step-rec-support for drum edit and score edit (flo93)
         - put step-rec-stuff into its own class (flo93)
         - moved clefTypes out of scoreedit.h to prevent compile-horror (flo93)
+        - Declared struct Route as QMetaType to make it a QVariant type. (Tim)
+        - Moved: All routing popup menu stuff from app, astrip, mstrip, mtrackinfo into
+           new class RoutePopupMenu, *massively* cleaning up those 4 files. 
+          Used the new Route QVariant type as action data instead of integers. 
+        - Moved MenuTitleItem definitions from astrip.cpp into it's own menutitleitem.cpp (Tim)  
+        - Added to settings: "Make popup menus stay open. Otherwise hold Ctrl." (Tim)   
+          To avoid showing new users non-standard behaviour, the default is off!
 24.05.2011:
         - Awl::PitchEdit now can be set with the musical keyboard (flo93)
         - fixed y-stretch (flo93)

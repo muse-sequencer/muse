@@ -2926,7 +2926,7 @@ void Song::connectJackRoutes(AudioTrack* track, bool disconnect)
                     for(int ch = 0; ch < ao->channels(); ++ch)
                     {
                         RouteList* ir = ao->outRoutes();
-                        for (iRoute ii = ir->begin(); ii != ir->end(); ++ii)
+                        for (ciRoute ii = ir->begin(); ii != ir->end(); ++ii)
                         {
                             Route r = *ii;
                             if ((r.type == Route::JACK_ROUTE) && (r.channel == ch))
@@ -2959,7 +2959,7 @@ void Song::connectJackRoutes(AudioTrack* track, bool disconnect)
                         for(int ch = 0; ch < ai->channels(); ++ch)
                         {
                             RouteList* ir = ai->inRoutes();
-                            for (iRoute ii = ir->begin(); ii != ir->end(); ++ii)
+                            for (ciRoute ii = ir->begin(); ii != ir->end(); ++ii)
                             {
                                 Route r = *ii;
                                 if ((r.type == Route::JACK_ROUTE) && (r.channel == ch))

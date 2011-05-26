@@ -1264,7 +1264,7 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
       printf("AudioTrack::getData name:%s inRoutes:%d\n", name().toLatin1().constData(), rl->size());
       #endif
       
-      iRoute ir = rl->begin();
+      ciRoute ir = rl->begin();
       if (ir == rl->end())
             return false;
       

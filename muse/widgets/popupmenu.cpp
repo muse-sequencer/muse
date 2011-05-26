@@ -22,6 +22,8 @@
 //#include <QStandardItemModel>
 
 #include "popupmenu.h"
+#include "gconfig.h"
+#include "route.h"
  
  
 //======================
@@ -82,7 +84,7 @@ void PopupMenu::clear()
     QMenu* menu = act->menu();
     if(menu)
     {
-      menu->clear();
+      menu->clear();    // Recursive.
       act->setMenu(0);  // CHECK: Is this OK?
       delete menu;
     }
@@ -97,7 +99,25 @@ void PopupMenu::clear()
   #endif    // POPUP_MENU_DISABLE_AUTO_SCROLL
 }
 
-QAction* PopupMenu::findActionFromData(QVariant v) const
+void PopupMenu::clearAllChecks() const
+{
+  QList<QAction*> list = actions();
+  for(int i = 0; i < list.size(); ++i)
+  {
+    QAction* act = list[i];
+    PopupMenu* menu = static_cast <PopupMenu*>(act->menu());
+    if(menu)
+      menu->clearAllChecks();     // Recursive.
+    if(act->isCheckable())
+    {
+      act->blockSignals(true);
+      act->setChecked(false);
+      act->blockSignals(false);
+    }  
+  }
+}
+
+QAction* PopupMenu::findActionFromData(const QVariant& v) const
 {
   QList<QAction*> list = actions();
   for(int i = 0; i < list.size(); ++i)
@@ -106,9 +126,21 @@ QAction* PopupMenu::findActionFromData(QVariant v) const
     PopupMenu* menu = (PopupMenu*)act->menu();
     if(menu)
     {
-      if(QAction* actm = menu->findActionFromData(v))
+      if(QAction* actm = menu->findActionFromData(v))      // Recursive.
         return actm;
     }
+    
+    // "Operator == Compares this QVariant with v and returns true if they are equal, 
+    //   otherwise returns false. In the case of custom types, their equalness operators 
+    //   are not called. Instead the values' addresses are compared."
+    //
+    // Take care of struct Route first. Insert other future custom structures here too !
+    if(act->data().canConvert<Route>() && v.canConvert<Route>())
+    {
+      if(act->data().value<Route>() == v.value<Route>())
+        return act;    
+    }
+    else
     if(act->data() == v)
       return act;
   }
@@ -117,7 +149,7 @@ QAction* PopupMenu::findActionFromData(QVariant v) const
     
 bool PopupMenu::event(QEvent* event)
 {
-  //printf("PopupMenu::event type:%d\n", event->type());   // REMOVE Tim.
+  //printf("PopupMenu::event type:%d\n", event->type());   
   
   switch(event->type())
   {
@@ -125,6 +157,7 @@ bool PopupMenu::event(QEvent* event)
     case QEvent::MouseButtonDblClick:
     {  
       if(_stayOpen)
+      //if(_stayOpen && config.popupsDefaultStayOpen)
       {
         QMouseEvent* e = static_cast<QMouseEvent*>(event);
         if(e->modifiers() == Qt::NoModifier)
@@ -143,6 +176,7 @@ bool PopupMenu::event(QEvent* event)
     case QEvent::KeyPress:
     {
       if(_stayOpen)
+      //if(_stayOpen && config.popupsDefaultStayOpen)
       {
         QKeyEvent* e = static_cast<QKeyEvent*>(event);
         if(e->modifiers() == Qt::NoModifier && e->key() == Qt::Key_Space)
@@ -169,7 +203,7 @@ bool PopupMenu::event(QEvent* event)
       int dw = QApplication::desktop()->width();  // We want the whole thing if multiple monitors.
       
       //printf("PopupMenu::event MouseMove: pos x:%d y:%d  globPos x:%d y:%d\n", 
-      //      pos.x(), pos.y(), globPos.x(), globPos.y());  // REMOVE Tim.
+      //      pos.x(), pos.y(), globPos.x(), globPos.y());  
       
       /*
       //QAction* action = actionAt(globPos);
@@ -178,7 +212,7 @@ bool PopupMenu::event(QEvent* event)
       { 
         QRect r = actionGeometry(action);
         //printf(" act x:%d y:%d w:%d h:%d  popup px:%d py:%d pw:%d ph:%d\n", 
-        //      r.x(), r.y(), r.width(), r.height(), x(), y(), width(), height());  // REMOVE Tim.
+        //      r.x(), r.y(), r.width(), r.height(), x(), y(), width(), height());  
               
         //action->hover();      
       }
@@ -224,7 +258,7 @@ bool PopupMenu::event(QEvent* event)
 #ifndef POPUP_MENU_DISABLE_AUTO_SCROLL  
 void PopupMenu::timerHandler()
 {
-  // printf("PopupMenu::timerHandler\n");   // REMOVE Tim.
+  // printf("PopupMenu::timerHandler\n");   
   
   //if(!isVisible() || !hasFocus())
   if(!isVisible())
@@ -261,9 +295,9 @@ void PopupMenu::popHovered(QAction* action)
     
     QRect r = actionGeometry(action);
     //printf("PopupMenu::popHovered x:%d y:%d w:%d h:%d px:%d py:%d pw:%d ph:%d\n", 
-    //       r.x(), r.y(), r.width(), r.height(), x(), y(), width(), height());  // REMOVE Tim.
+    //       r.x(), r.y(), r.width(), r.height(), x(), y(), width(), height());  
     //printf("PopupMenu::popHovered x:%d y:%d w:%d h:%d px:%d py:%d pw:%d ph:%d dtw:%d\n", 
-    //      r.x(), r.y(), r.width(), r.height(), x(), y(), width(), height(), dw);  // REMOVE Tim.
+    //      r.x(), r.y(), r.width(), r.height(), x(), y(), width(), height(), dw);  
     //int x = r.x() + ctrlSubPop->x();
     if(x() + r.x() < 0)
       //setGeometry(0, y(), width(), height());      
@@ -295,49 +329,20 @@ void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
     return;
     
     #else
-    if(!_stayOpen)
+    // Check for Ctrl to stay open.
+    if(!_stayOpen || (!config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0))  
     {
       QMenu::mouseReleaseEvent(e);
       return;
     }  
     
-    //printf("PopupMenu::mouseReleaseEvent\n");  // REMOVE Tim.
-    
-    //Q_D(QMenu);
-    //if (d->mouseEventTaken(e))
-    //    return;
-
-    //d->mouseDown = false;
-    //QAction *action = d->actionAt(e->pos());
+    //printf("PopupMenu::mouseReleaseEvent\n");  
     QAction *action = actionAt(e->pos());
-    
-    //for(QWidget *caused = this; caused;) {
-    //    if (QMenu *m = qobject_cast<QMenu*>(caused)) {
-    //        QAction *currentAction = d->currentAction;
-    //        if(currentAction && (!currentAction->isEnabled() || currentAction->menu() || currentAction->isSeparator()))
-    //            currentAction = 0;
-    //        caused = m->d_func()->causedPopup.widget;
-    //        if (m->d_func()->eventLoop)
-    //            m->d_func()->syncAction = currentAction; // synchronous operation
-    //    } else {
-    //        break;
-    //    }
-    //}
-    
-    //if (action && action == d->currentAction) {
     if (action && action == activeAction() && !action->isSeparator() && action->isEnabled()) 
-    {
-        //if (action->menu())
-        //    action->menu()->d_func()->setFirstActionActive();
-        //else
-            //d->activateAction(action, QAction::Trigger);
-            action->activate(QAction::Trigger);
-    }
+      action->activate(QAction::Trigger);
     else 
-    //if (d->motions > 6) {
-    //    d->hideUpToMenuBar();
-    //  }
       QMenu::mouseReleaseEvent(e);
+      
     #endif   // POPUP_MENU_DISABLE_STAY_OPEN 
 }
 

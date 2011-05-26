@@ -26,6 +26,7 @@
 #include "app.h"
 #include "route.h"
 #include "popupmenu.h"
+#include "routepopup.h"
 
 //---------------------------------------------------------
 //   setTrack
@@ -577,33 +578,6 @@ void MidiTrackInfo::iOutputPortChanged(int index)
       }
 
 //---------------------------------------------------------
-//   routingPopupMenuActivated
-//---------------------------------------------------------
-
-//void MidiTrackInfo::routingPopupMenuActivated(int n)
-void MidiTrackInfo::routingPopupMenuActivated(QAction* act)
-{
-  ///if(!midiTrackInfo || gRoutingPopupMenuMaster != midiTrackInfo || !selected || !selected->isMidiTrack())
-  if((gRoutingPopupMenuMaster != this) || !selected || !selected->isMidiTrack())
-    return;
-  muse->routingPopupMenuActivated(selected, act->data().toInt());
-}
-
-#if 0
-//---------------------------------------------------------
-//   routingPopupViewActivated
-//---------------------------------------------------------
-
-void MidiTrackInfo::routingPopupViewActivated(const QModelIndex& mdi)
-{
-  ///if(!midiTrackInfo || gRoutingPopupMenuMaster != midiTrackInfo || !selected || !selected->isMidiTrack())
-  if(gRoutingPopupMenuMaster != this || !selected || !selected->isMidiTrack())
-    return;
-  muse->routingPopupMenuActivated(selected, mdi.data().toInt());
-}
-#endif
-
-//---------------------------------------------------------
 //   inRoutesPressed
 //---------------------------------------------------------
 
@@ -614,44 +588,9 @@ void MidiTrackInfo::inRoutesPressed()
   if(!selected->isMidiTrack())
     return;
   
-  PopupMenu* pup = muse->prepareRoutingPopupMenu(selected, false);
-  //PopupView* pup = muse->prepareRoutingPopupView(selected, false);
-
-  /*
-  QPoint ppt = QCursor::pos();
-  
-  int i = 0;
-  for( ; i < MIDI_PORTS; ++i)
-  {
-    if(midiPorts[i].device() && !midiPorts[pi].device()->isSynti())
-      break;
-  }
-  if(!pup || i == MIDI_PORTS)
-  {
-    int ret = QMessageBox::warning(this, tr("No devices"),
-                                   tr("There are no midi port devices defined.\n"
-                                      "Do you want to open the midi configuration dialog?"),
-                                   QMessageBox::Ok | QMessageBox::Cancel,
-                                   QMessageBox::Ok);
-    if (ret == QMessageBox::Ok) {
-        //printf("open config midi ports\n");
-        muse->configMidiPorts();
-    }
-    if(!pup)
-      return;
-  }
-  */
-  
-  ///gRoutingPopupMenuMaster = midiTrackInfo;
-  gRoutingPopupMenuMaster = this;
-  connect(pup, SIGNAL(triggered(QAction*)), SLOT(routingPopupMenuActivated(QAction*)));
-  //connect(pup, SIGNAL(activated(const QModelIndex&)), SLOT(routingPopupViewActivated(const QModelIndex&)));
-  connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
-  //connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupViewAboutToHide()));
-  pup->popup(QCursor::pos());
-  //pup->setVisible(true);
+  RoutePopupMenu* pup = muse->getRoutingPopupMenu();
   iRButton->setDown(false);     
-  return;
+  pup->exec(QCursor::pos(), selected, false);
 }
 
 //---------------------------------------------------------
@@ -665,17 +604,9 @@ void MidiTrackInfo::outRoutesPressed()
   if(!selected->isMidiTrack())
     return;
   
-  PopupMenu* pup = muse->prepareRoutingPopupMenu(selected, true);
-  if(!pup)
-    return;
-  
-  ///gRoutingPopupMenuMaster = midiTrackInfo;
-  gRoutingPopupMenuMaster = this;
-  connect(pup, SIGNAL(triggered(QAction*)), SLOT(routingPopupMenuActivated(QAction*)));
-  connect(pup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
-  pup->popup(QCursor::pos());
+  RoutePopupMenu* pup = muse->getRoutingPopupMenu();
   oRButton->setDown(false);     
-  return;
+  pup->exec(QCursor::pos(), selected, true);
 }
 
 //---------------------------------------------------------
@@ -1044,7 +975,7 @@ void MidiTrackInfo::iPanChanged(int val)
 
 void MidiTrackInfo::instrPopupActivated(QAction* act)
 {
-  //printf("MidiTrackInfo::instrPopupActivated\n"); // REMOVE Tim
+  //printf("MidiTrackInfo::instrPopupActivated\n"); 
   
   if(act && selected) 
   {
@@ -1076,11 +1007,11 @@ void MidiTrackInfo::instrPopup()
       //QMenu* pup = new QMenu;
       PopupMenu* pup = new PopupMenu(true);
       
-      ///instr->populatePatchPopup(pop, channel, song->mtype(), track->type() == Track::DRUM);
+      //instr->populatePatchPopup(pop, channel, song->mtype(), track->type() == Track::DRUM);
       instr->populatePatchPopup(pup, channel, song->mtype(), track->type() == Track::DRUM);
 
-      ///if(pop->actions().count() == 0)
-      ///  return;
+      //if(pop->actions().count() == 0)
+      //  return;
       if(pup->actions().count() == 0)
       {
         delete pup;
@@ -1090,7 +1021,7 @@ void MidiTrackInfo::instrPopup()
       connect(pup, SIGNAL(triggered(QAction*)), SLOT(instrPopupActivated(QAction*)));
       //connect(pup, SIGNAL(hovered(QAction*)), SLOT(instrPopupActivated(QAction*)));
       
-      ///QAction *act = pop->exec(iPatch->mapToGlobal(QPoint(10,5)));
+      //QAction *act = pop->exec(iPatch->mapToGlobal(QPoint(10,5)));
       QAction *act = pup->exec(iPatch->mapToGlobal(QPoint(10,5)));
       if(act) 
       {
@@ -1310,15 +1241,6 @@ void MidiTrackInfo::updateTrackInfo(int flags)
         return;
       MidiTrack* track = (MidiTrack*)selected;
       
-      // p3.3.47 Update the routing popup menu if anything relevant changes.
-      //if(gRoutingPopupMenuMaster == midiTrackInfo && selected && (flags & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))) 
-      if(flags & (SC_ROUTE | SC_CHANNELS | SC_CONFIG))     // p3.3.50
-        // Use this handy shared routine.
-        //muse->updateRouteMenus(selected);
-        ///muse->updateRouteMenus(selected, midiTrackInfo);   // p3.3.50
-        muse->updateRouteMenus(selected, this); 
-      
-      // Added by Tim. p3.3.9
       setLabelText();
       setLabelFont();
         
