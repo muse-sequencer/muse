@@ -35,6 +35,7 @@
 #include "mtscale_flo.h"
 #include "steprec.h"
 #include "cleftypes.h"
+#include "helper.h"
 
 #include <set>
 #include <map>
@@ -489,6 +490,7 @@ enum staff_mode_t
 struct staff_t
 {
 	set<Part*> parts;
+	set<int> part_indices;
 	ScoreEventList eventlist;
 	ScoreItemList itemlist;
 	
@@ -532,6 +534,7 @@ struct staff_t
 		clef=clef_;
 		parts=parts_;
 		parent=parent_;
+		update_part_indices();
 	}
 	
 	bool cleanup_parts();
@@ -540,6 +543,9 @@ struct staff_t
 	
 	void read_status(Xml& xml);
 	void write_status(int level, Xml& xml) const;
+	
+	void update_parts(); //re-populates the set<Part*> from the set<int>
+	void update_part_indices(); //re-populates the set<int> from the set<Part*>
 };
 
 list<int> calc_accidentials(key_enum key, clef_t clef, key_enum next_key=KEY_C);
@@ -643,6 +649,8 @@ class ScoreCanvas : public View
 		float y_scroll_pos;
 
 		Part* selected_part;
+		int selected_part_index;
+		
 		int last_len;
 		int new_len; //when zero or negative, last_len is used
 
@@ -728,7 +736,8 @@ class ScoreCanvas : public View
 
 			void set_steprec(bool);
 			void set_midiin(bool);
-	
+			
+			void update_parts(); //re-populates the set<Part*>s from the set<int>s
 	signals:
 			void xscroll_changed(int);
 			void yscroll_changed(int);
@@ -772,7 +781,7 @@ class ScoreCanvas : public View
 		void set_last_len(int l) {last_len=l;}
 		
 		Part* get_selected_part() {return selected_part;}
-		void set_selected_part(Part* p) {selected_part=p;}
+		void set_selected_part(Part* p) {selected_part=p; if (selected_part) selected_part_index=partToIndex(selected_part);}
 		
 		set<Part*> get_all_parts();
 		

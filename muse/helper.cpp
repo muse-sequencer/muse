@@ -6,6 +6,9 @@
 //=========================================================
 
 #include "helper.h"
+#include "part.h"
+#include "track.h"
+#include "song.h"
 
 extern bool hIsB;
 static const char* vall[] = {
@@ -38,3 +41,25 @@ QString pitch2string(int v)
       }
 
 
+
+
+int partToIndex(Part* p)
+{
+	return p->track()->parts()->index(p);
+}
+
+Part* partFromIndex(int index)
+{
+	TrackList* tl = song->tracks();
+	for (iTrack it = tl->begin(); it != tl->end(); ++it)
+	{
+		PartList* pl = (*it)->parts();
+		iPart ip;
+		for (ip = pl->begin(); ip != pl->end(); ++ip)
+			if (ip->second->sn() == index)
+				return ip->second;
+	}
+	
+	printf("ERROR: partFromIndex(%i) wasn't able to find an appropriate part!\n",index);
+	return NULL;
+}

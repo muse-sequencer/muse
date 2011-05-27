@@ -10,7 +10,12 @@
 
 #include <QString>
 
+class Part;
+
 extern QString pitch2string(int v);
+
+int partToIndex(Part* p);
+Part* partFromIndex(int index);
 
 #endif
 
