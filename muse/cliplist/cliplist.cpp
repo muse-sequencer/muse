@@ -235,7 +235,7 @@ void ClipListEdit::clipSelectionChanged()
             editor->start->setEnabled(false);
             editor->len->setEnabled(false);
             return;
-#if 0
+/*
             }
       editor->start->setEnabled(true);
       editor->len->setEnabled(true);
@@ -246,7 +246,7 @@ void ClipListEdit::clipSelectionChanged()
       len.setFrame(curClip.lenFrame());
       editor->start->setValue(pos);
       editor->len->setValue(len);
-#endif
+*/
       }
 
 //---------------------------------------------------------
