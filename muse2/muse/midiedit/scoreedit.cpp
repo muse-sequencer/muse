@@ -4377,6 +4377,10 @@ void staff_t::update_part_indices()
  * CURRENT TODO
  *   o controller view in score editor
  *   o deal with expanding parts
+ *   o in main win: make "Ch" column editable with a line edit
+ *   o paste to different tick
+ *   o fix sigedit boxes
+ *   o mid-click in pianoroll: change to "delete", or initiate drag and drop between windows?
  * 
  * IMPORTANT TODO
  *   o do partial recalculating; recalculating can take pretty long

@@ -686,3 +686,10 @@ QT += xml  qt3support
 #The following line was inserted by qt3to4
 CONFIG += uic3
 
+TRANSLATIONS = \
+share/locale/muse_de.ts \
+share/locale/muse_es.ts \
+share/locale/muse_fr.ts \
+share/locale/muse_pl.ts \
+share/locale/muse_ru.ts \
+share/locale/muse_sv_SE.ts
