@@ -51,7 +51,7 @@ using namespace std;
 #include "icons.h"
 #include "audio.h"
 #include "functions.h"
-
+#include "helper.h"
 #include "cmd.h"
 #include "sig.h"
 #include "song.h"
@@ -649,9 +649,11 @@ Part* read_part(Xml& xml, QString tag_name="part")
 					else
 					{
 						sscanf(tag.toLatin1().constData(), "%d:%d", &trackIdx, &partIdx);
+						if (debugMsg) cout << "read_part: trackIdx="<<trackIdx<<", partIdx="<<partIdx;
 						Track* track = song->tracks()->index(trackIdx);
 						if (track)
 							part = track->parts()->find(partIdx);
+						if (debugMsg) cout << ", track="<<track<<", part="<<part<<endl;
 					}
 				}
 				break;
@@ -701,12 +703,15 @@ void staff_t::read_status(Xml& xml)
 
 			case Xml::TagEnd:
 				if (tag == "staff")
-					return;
+					goto staff_readstatus_end;
 
 			default:
 				break;
 		}
 	}
+	
+	staff_readstatus_end:
+	update_part_indices();
 }
 
 
@@ -979,6 +984,7 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 				staff.parts.insert(part_it->second);
 			}
 			staff.cleanup_parts();
+			staff.update_part_indices();
 
 			switch (clef)
 			{
@@ -1023,6 +1029,7 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 						if (part_it->second->track() == *track_it)
 							staff.parts.insert(part_it->second);
 					staff.cleanup_parts();
+					staff.update_part_indices();
 					
 					switch (((MidiTrack*)(*track_it))->getClef())
 					{
@@ -1256,6 +1263,8 @@ void ScoreCanvas::merge_staves(list<staff_t>::iterator dest, list<staff_t>::iter
 		dest->parts.insert(src->parts.begin(), src->parts.end());
 	}
 	
+	dest->update_part_indices();
+	
 	remove_staff(src);
 
 	fully_recalculate();
@@ -1324,6 +1333,26 @@ void ScoreCanvas::fully_recalculate()
 
 void ScoreCanvas::song_changed(int flags)
 {
+	if (flags & (SC_PART_MODIFIED | SC_PART_REMOVED | SC_PART_INSERTED | SC_TRACK_REMOVED))
+	{
+		update_parts();
+		
+		if (flags & (SC_PART_REMOVED | SC_TRACK_REMOVED))
+		{
+			for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
+				it->cleanup_parts();
+			
+			cleanup_staves();
+
+			for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
+				it->recalculate();
+
+			recalc_staff_pos();
+
+			redraw();
+		}
+	}
+	
 	if (flags & (SC_PART_MODIFIED |
 	             SC_EVENT_INSERTED | SC_EVENT_MODIFIED | SC_EVENT_REMOVED |
 	             SC_SIG  | SC_KEY) )
@@ -1339,26 +1368,6 @@ void ScoreCanvas::song_changed(int flags)
 		emit canvas_width_changed(canvas_width());
 	}
 	
-	if (flags & SC_PART_REMOVED)
-	{
-		bool something_changed=false;
-		
-		for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
-		{
-			if (it->cleanup_parts())
-				something_changed=true;
-		}
-		
-		cleanup_staves();
-
-		for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
-			it->recalculate();
-
-		recalc_staff_pos();
-
-		redraw();
-	}
-
 	if (flags & SC_SELECTION)
 	{
 		redraw();
@@ -3490,7 +3499,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				int this_begin=tick;
 				int this_end=this_begin+calc_len(set_it->len, set_it->dots);
 				
-				selected_part=set_it->source_part;
+				set_selected_part(set_it->source_part);
 				
 				//that's the only note corresponding to the event?
 				if (this_begin==total_begin && this_end==total_end)
@@ -4263,6 +4272,7 @@ bool staff_t::cleanup_parts()
 			it++;
 	}
 	
+	if (did_something) update_part_indices();
 	return did_something;
 }
 
@@ -4314,6 +4324,32 @@ void ScoreCanvas::midi_note(int pitch, int velo)
 }
 
 
+
+void ScoreCanvas::update_parts()
+{
+	if (selected_part!=NULL) //if it's null, let it be null
+		selected_part=partFromIndex(selected_part_index);
+	
+	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
+		it->update_parts();
+}
+
+void staff_t::update_parts()
+{
+	parts.clear();
+	
+	for (set<int>::iterator it=part_indices.begin(); it!=part_indices.end(); it++)
+		parts.insert(partFromIndex(*it));
+}
+
+void staff_t::update_part_indices()
+{
+	part_indices.clear();
+	
+	for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+		part_indices.insert(partToIndex(*it));
+}
+
 //the following assertions are made:
 //  pix_quarter.width() == pix_half.width()
 
@@ -4339,7 +4375,8 @@ void ScoreCanvas::midi_note(int pitch, int velo)
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   x nothing atm
+ *   o controller view in score editor
+ *   o deal with expanding parts
  * 
  * IMPORTANT TODO
  *   o do partial recalculating; recalculating can take pretty long
@@ -4349,14 +4386,11 @@ void ScoreCanvas::midi_note(int pitch, int velo)
  *   o thin out: remove unneeded ctrl messages
  *
  * less important stuff
- *   o drum list: scroll while dragging
- *   o controller view in score editor
  *   o quantize-templates (everything is forced into a specified
  *                         rhythm)
  *   o part-templates (you specify some notes and a control-chord;
  *                     the notes are set according to the chord then)
  *   o add functions like set velo, mod/set velo-off
- *   o deal with expanding parts
  *   o use bars instead of flags over groups of 8ths / 16ths etc
  *   o support different keys in different tracks at the same time
  *       calc_pos_add_list and calc_item_pos will be affected by this
@@ -4373,6 +4407,7 @@ void ScoreCanvas::midi_note(int pitch, int velo)
  *   o refuse to resize so that width gets smaller or equal than x_left
  *   o draw a margin around notes which are in a bright color
  *   o support drum tracks (x-note-heads etc.)
+ *   o drum list: scroll while dragging: probably unneccessary with the "reorder list" function
  * 
  * 
  * stuff for the other muse developers
