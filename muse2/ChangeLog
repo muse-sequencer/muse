@@ -1,3 +1,6 @@
+27.05.2011:
+        - fixed bug in scoreeditor: invalid Part*s are now not used any more (flo93)
+        - applied some hunks of the patch sent in by WillyFoobar (flo93)
 25.05.2011:
         - Added midiin and steprec buttons again (flo93)
         - Added step-rec-support for drum edit and score edit (flo93)

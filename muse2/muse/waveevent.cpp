@@ -151,7 +151,7 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
 //off_t WaveEventBase::readAudio(SRC_STATE* src_state, off_t sfCurFrame, unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
 //off_t WaveEventBase::readAudio(AudioConverter* audConv, off_t sfCurFrame, unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
 // p3.3.33
-void WaveEventBase::readAudio(WavePart* part, unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
+void WaveEventBase::readAudio(WavePart* /*part*/, unsigned offset, float** buffer, int channel, int n, bool /*doSeek*/, bool overwrite)
 {
   // Added by Tim. p3.3.17
   #ifdef WAVEEVENT_DEBUG_PRC

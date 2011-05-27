@@ -159,7 +159,7 @@ QAbstractSpinBox::StepEnabled SigEdit::stepEnabled() const
 //   fixup
 //---------------------------------------------------------
 
-void SigEdit::fixup(QString& input) const
+void SigEdit::fixup(QString& /*input*/) const
       {
 //      printf("fixup <%s>\n", input.toLatin1().constData());
       }

@@ -11,7 +11,6 @@
 #include "ui_gatetimebase.h"
 
 class QButtonGroup;
-class QDialog;
 class Xml;
 
 //---------------------------------------------------------
@@ -21,7 +20,6 @@ class Xml;
 class GateTime : public QDialog, public Ui::GateTimeBase {
    private:
       Q_OBJECT
-
       QButtonGroup *rangeGroup;
 
    protected slots:

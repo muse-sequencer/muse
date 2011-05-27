@@ -1834,16 +1834,16 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
         
         if (heavyDebugMsg)
         {
-					if (!isdrum)
-						printf("DEBUG: arranger: cakewalk enabled, y-stretching from %i to %i. eventlist=%i\n",lowest_pitch, highest_pitch, events);
-					else
-					{
-						printf("DEBUG: arranger: cakewalk enabled, y-stretching drums: ");;
-						for (map<int,int>::iterator it=y_mapper.begin(); it!=y_mapper.end(); it++)
-							printf("%i ", it->first);
-						printf("; eventlist=%i\n",events); 
-					}
-				}
+            if (!isdrum)
+                printf("DEBUG: arranger: cakewalk enabled, y-stretching from %i to %i. eventlist=%p\n",lowest_pitch, highest_pitch, events);
+            else
+            {
+                printf("DEBUG: arranger: cakewalk enabled, y-stretching drums: ");;
+                for (map<int,int>::iterator it=y_mapper.begin(); it!=y_mapper.end(); it++)
+                    printf("%i ", it->first);
+                printf("; eventlist=%p\n",events); 
+            }
+        }
       }
       else
       {
