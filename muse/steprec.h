@@ -28,9 +28,8 @@ class StepRec : public QObject
 	
 	private:
 		QTimer* chord_timer;
-		int chord_timer_set_to_tick;
+		unsigned int chord_timer_set_to_tick; 
 		bool* note_held_down;
-		
 };
 
 #endif

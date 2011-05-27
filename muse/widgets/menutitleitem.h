@@ -15,6 +15,9 @@
 //---------------------------------------------------------
 
 class MenuTitleItem : public QWidgetAction { 
+   private:
+      Q_OBJECT
+        
       QString s;
 
    public:

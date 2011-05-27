@@ -15,8 +15,9 @@
 //---------------------------------------------------------
 
 class TScale : public View {
-      double curTempo;
       Q_OBJECT
+        
+      double curTempo;
 
       virtual void viewMouseMoveEvent(QMouseEvent* event);
       virtual void leaveEvent(QEvent*e);
