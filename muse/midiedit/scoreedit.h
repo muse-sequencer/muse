@@ -781,7 +781,7 @@ class ScoreCanvas : public View
 		void set_last_len(int l) {last_len=l;}
 		
 		Part* get_selected_part() {return selected_part;}
-		void set_selected_part(Part* p) {selected_part=p; if (selected_part) selected_part_index=partToIndex(selected_part);}
+		void set_selected_part(Part* p) {selected_part=p; if (selected_part) selected_part_index=selected_part->sn();}
 		
 		set<Part*> get_all_parts();
 		

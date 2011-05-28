@@ -14,8 +14,7 @@ class Part;
 
 extern QString pitch2string(int v);
 
-int partToIndex(Part* p);
-Part* partFromIndex(int index);
+Part* partFromSerialNumber(int serial);
 
 #endif
 

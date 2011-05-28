@@ -4328,7 +4328,7 @@ void ScoreCanvas::midi_note(int pitch, int velo)
 void ScoreCanvas::update_parts()
 {
 	if (selected_part!=NULL) //if it's null, let it be null
-		selected_part=partFromIndex(selected_part_index);
+		selected_part=partFromSerialNumber(selected_part_index);
 	
 	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 		it->update_parts();
@@ -4339,7 +4339,7 @@ void staff_t::update_parts()
 	parts.clear();
 	
 	for (set<int>::iterator it=part_indices.begin(); it!=part_indices.end(); it++)
-		parts.insert(partFromIndex(*it));
+		parts.insert(partFromSerialNumber(*it));
 }
 
 void staff_t::update_part_indices()
@@ -4347,7 +4347,7 @@ void staff_t::update_part_indices()
 	part_indices.clear();
 	
 	for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
-		part_indices.insert(partToIndex(*it));
+		part_indices.insert((*it)->sn());
 }
 
 //the following assertions are made:
@@ -4375,10 +4375,12 @@ void staff_t::update_part_indices()
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
+ *   o investigate with valgrind
+ * ! o paste to different tick !!
+ *   o allow batch-movements in score editor
  *   o controller view in score editor
  *   o deal with expanding parts
  *   o in main win: make "Ch" column editable with a line edit
- *   o paste to different tick
  *   o fix sigedit boxes
  *   o mid-click in pianoroll: change to "delete", or initiate drag and drop between windows?
  * 
