@@ -231,13 +231,15 @@ void TList::paint(const QRect& r)
 
                   switch (section) {
                         case COL_RECORD:
-                              if (track->canRecord()) {
+                              if (track->canRecord() && !header->isSectionHidden(COL_RECORD)) {
                                     drawCenteredPixmap(p,
                                        track->recordFlag() ? record_on_Icon : record_off_Icon, r);
                                     }
                               break;
                         case COL_CLASS:
                               {
+                              if (header->isSectionHidden(COL_CLASS))
+                                break;
                               const QPixmap* pm = 0;
                               switch(type) {
                                     case Track::MIDI:

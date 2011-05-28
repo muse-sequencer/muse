@@ -29,21 +29,34 @@ void Header::readStatus(Xml& xml)
                       return;
                 case Xml::Text:
                       {
-                      //QStringList l = QStringList::split(QString(" "), tag);
-                      QStringList l = tag.split(QString(" "), QString::SkipEmptyParts);
-                      int index = count() -1;
-                      for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
-                            int logialIdx=abs((*it).toInt());
-                            bool isHidden = (*it).toInt() < 0 ? true:false;
-                            int section = visualIndex(logialIdx);
-                            setMovable(true);
-                            moveSection(section, index);
-                            if (isHidden)
-                              hideSection(logialIdx);
-                            else
-                              showSection(logialIdx);
-                            --index;
-                            }
+                          QStringList l = tag.split(QString(" "), QString::SkipEmptyParts);
+                          int index = count() -1;
+                          for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
+                                int logialIdx=abs((*it).toInt());
+                                bool isHidden = (*it).toInt() < 0 ? true:false;
+                                int section = visualIndex(logialIdx);
+                                moveSection(section, index);
+                                if (isHidden)
+                                  hideSection(logialIdx-1);
+                                else
+                                  showSection(logialIdx);
+                                --index;
+                          }
+
+                          // loop again looking for missing indexes
+                          for (int i =0; i < count(); i++) {
+                              bool foundIt=false;
+                              for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
+                                int id=((*it).toInt());
+                                if ( id == i || i ==1-id )
+                                    foundIt=true;
+                              }
+                              if (foundIt == false) {
+                                int section = visualIndex(i);
+                                moveSection(section, i);
+                                //printf("Adding missing i %d index %d section %d!\n", i, index, section);
+                              }
+                          }
                       }
                       break;
                 case Xml::TagStart:
@@ -66,10 +79,10 @@ void Header::writeStatus(int level, Xml& xml) const
       {
       //xml.nput(level, "<%s> ", name());
       xml.nput(level, "<%s> ", Xml::xmlString(objectName()).toLatin1().constData());
-      int n = count() - 1;
+      int n = count();
       for (int i = n; i >= 0; --i) {
             if (isSectionHidden(logicalIndex(i)))
-              xml.nput("%d ", -logicalIndex(i)); // hidden is stored as negative value
+              xml.nput("%d ", -logicalIndex(i)-1); // hidden is stored as negative value starting from -1
             else
               xml.nput("%d ", logicalIndex(i));
           }
@@ -88,7 +101,7 @@ Header::Header(QWidget* parent, const char* name)
       itemModel = new QStandardItemModel;
       setModel(itemModel);
       setDefaultSectionSize(30);
-//      setStretchLastSection(true);
+      setStretchLastSection(true);
 
       }
 
@@ -134,7 +147,7 @@ void Header::mousePressEvent ( QMouseEvent * e )
     p->setTitle(tr("Track Info Columns"));
     QAction* act = 0;
 
-    for(int i=1; i < count(); i++) {
+    for(int i=0; i < count(); i++) {
       act = p->addAction(itemModel->horizontalHeaderItem(logicalIndex(i))->text() +
                          "\t - "+ itemModel->horizontalHeaderItem(logicalIndex(i))->toolTip());
 
@@ -147,8 +160,11 @@ void Header::mousePressEvent ( QMouseEvent * e )
     p->exec(QCursor::pos());
 
     delete p;
-
+    return;
   }
+
+  QHeaderView::mousePressEvent(e);
+
 }
 void Header::changeColumns(QAction *a)
 {
