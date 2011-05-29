@@ -903,6 +903,15 @@ void DrumEdit::reset()
 void DrumEdit::cmd(int cmd)
       {
       switch(cmd) {
+            case DrumCanvas::CMD_CUT:
+                  copy_notes(partlist_to_set(parts()), 1);
+                  erase_notes(partlist_to_set(parts()), 1);
+                  break;
+            case DrumCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
+            case DrumCanvas::CMD_PASTE: 
+                  ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+                  paste_notes(canvas->part());
+                  break;
             case DrumCanvas::CMD_LOAD: load(); break;
             case DrumCanvas::CMD_SAVE: save(); break;
             case DrumCanvas::CMD_RESET: reset(); break;

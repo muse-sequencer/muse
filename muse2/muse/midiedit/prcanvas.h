@@ -69,8 +69,6 @@ class PianoCanvas : public EventCanvas {
       int y2pitch(int) const;
       int pitch2y(int) const;
       virtual void drawCanvas(QPainter&, const QRect&);
-      void copy();
-      void paste();
       virtual void itemPressed(const CItem*);
       virtual void itemReleased(const CItem*, const QPoint&);
       virtual void itemMoved(const CItem*, const QPoint&);

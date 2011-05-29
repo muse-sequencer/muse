@@ -1,3 +1,6 @@
+29.05.2011:
+        - moved cut,copy'n'paste to functions.cpp, removed unneccessary duplication (flo93)
+        - changed behaviour of paste: now the pasted, not the original notes are selected (flo93)
 28.05.2011:
         - fixed dragging and resizing of track header, also changed default index of new 
           sections, they should appear last now (rj)

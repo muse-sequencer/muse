@@ -22,6 +22,8 @@
 #include <set>
 #include "part.h"
 
+class QString;
+class QMimeData;
 
 extern GateTime* gatetime_dialog;
 extern Velocity* velocity_dialog;
@@ -67,6 +69,12 @@ bool erase_notes(const std::set<Part*>& parts);
 bool delete_overlaps(const std::set<Part*>& parts);
 bool legato(const std::set<Part*>& parts);
 
+
+//functions for copy'n'paste
+void copy_notes(const std::set<Part*>& parts, int range);
+void paste_notes(Part* dest_part);
+QMimeData* selected_events_to_mime(const std::set<Part*>& parts, int range);
+void paste_at(Part* dest_part, const QString& pt, int pos);
 
 
 //functions for reading and writing default values
