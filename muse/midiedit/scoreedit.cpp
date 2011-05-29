@@ -4375,12 +4375,13 @@ void staff_t::update_part_indices()
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o investigate with valgrind
- * ! o paste to different tick !!
+ *   o when pasting, the pasted, not the previously selected should be selected
  *   o allow batch-movements in score editor
+ *   o in main win: make "Ch" column editable with a line edit
+ *   o either remove these "hidden notes", or deal with them in the score editor
+ *   o investigate with valgrind
  *   o controller view in score editor
  *   o deal with expanding parts
- *   o in main win: make "Ch" column editable with a line edit
  *   o fix sigedit boxes
  *   o mid-click in pianoroll: change to "delete", or initiate drag and drop between windows?
  * 

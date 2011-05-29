@@ -34,6 +34,7 @@
 #include "audio.h"
 #include "shortcuts.h"
 #include "icons.h"
+#include "functions.h"
 
 #define CARET   10
 #define CARET2   5
@@ -652,27 +653,7 @@ int DrumCanvas::pitch2y(int pitch) const
 
 void DrumCanvas::cmd(int cmd)
       {
-      switch(cmd) {
-            case CMD_CUT:
-                  copy();
-                  song->startUndo();
-                  for (iCItem i = items.begin(); i != items.end(); ++i) {
-                        if (!i->second->isSelected())
-                              continue;
-                        DEvent* e = (DEvent*)(i->second);
-                        Event event = e->event();
-                        // Indicate no undo, and do not do port controller values and clone parts. 
-                        //audio->msgDeleteEvent(event, e->part(), false);
-                        audio->msgDeleteEvent(event, e->part(), false, false, false);
-                        }
-                  song->endUndo(SC_EVENT_REMOVED);
-                  break;
-            case CMD_COPY:
-                  copy();
-                  break;
-            case CMD_PASTE:
-                  paste();
-                  break;
+      switch (cmd) {
             case CMD_SELECT_ALL:     // select all
                   for (iCItem k = items.begin(); k != items.end(); ++k) {
                         if (!k->second->isSelected())
@@ -814,158 +795,7 @@ void DrumCanvas::cmd(int cmd)
       redraw();
       }
 
-/*
-//---------------------------------------------------------
-//   getTextDrag
-//---------------------------------------------------------
 
-Q3TextDrag* DrumCanvas::getTextDrag(QWidget* parent)
-      {
-      //---------------------------------------------------
-      //   generate event list from selected events
-      //---------------------------------------------------
-
-      EventList el;
-      unsigned startTick = MAXINT;
-      for (iCItem i = items.begin(); i != items.end(); ++i) {
-            if (!i->second->isSelected())
-                  continue;
-            DEvent* ne = (DEvent*)(i->second);
-            Event    e = ne->event();
-            if (startTick == MAXINT)
-                  startTick = e.tick();
-            el.add(e);
-            }
-
-      //---------------------------------------------------
-      //    write events as XML into tmp file
-      //---------------------------------------------------
-
-      FILE* tmp = tmpfile();
-      if (tmp == 0) {
-            fprintf(stderr, "EventCanvas::copy() fopen failed: %s\n",
-               strerror(errno));
-            return 0;
-            }
-      Xml xml(tmp);
-
-      int level = 0;
-      for (ciEvent e = el.begin(); e != el.end(); ++e)
-            e->second.write(level, xml, -startTick);
-
-      //---------------------------------------------------
-      //    read tmp file into QTextDrag Object
-      //---------------------------------------------------
-
-      fflush(tmp);
-      struct stat f_stat;
-      if (fstat(fileno(tmp), &f_stat) == -1) {
-            fprintf(stderr, "EventCanvas::copy() fstat failes:<%s>\n",
-               strerror(errno));
-            fclose(tmp);
-            return 0;
-            }
-      int n = f_stat.st_size;
-      char* fbuf  = (char*)mmap(0, n+1, PROT_READ|PROT_WRITE,
-         MAP_PRIVATE, fileno(tmp), 0);
-      fbuf[n] = 0;
-      Q3TextDrag* drag = new Q3TextDrag(QString(fbuf), parent);
-      drag->setSubtype("eventlist");
-      munmap(fbuf, n);
-      fclose(tmp);
-      return drag;
-      }
-*/
-
-//---------------------------------------------------------
-//   copy
-//    cut copy paste
-//---------------------------------------------------------
-
-void DrumCanvas::copy()
-      {
-      QMimeData* md = getTextDrag();
-      
-      if (md)
-            QApplication::clipboard()->setMimeData(md, QClipboard::Clipboard);
-      }
-
-/*
-//---------------------------------------------------------
-//   paste
-//---------------------------------------------------------
-
-int DrumCanvas::pasteAt(const QString& pt, int pos)
-      {
-      QByteArray ba = pt.toLatin1();
-      const char* p = ba.constData();
-      Xml xml(p);
-
-      // Added by T356. 
-      int modified = SC_EVENT_INSERTED;
-      
-      song->startUndo();
-      for (;;) {
-            Xml::Token token = xml.parse();
-            QString tag = xml.s1();
-            switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
-                        song->endUndo(modified);
-                        return pos;
-                  case Xml::TagStart:
-                        if (tag == "event") {
-                              Event e(Note);
-                              e.read(xml);
-                              
-                              // Added by T356. 
-                              int tick = e.tick() + pos - curPart->tick();
-                              if (tick<0) { 
-                                      printf("DrumCanvas::pasteAt ERROR: trying to add event before current part!\n");
-                                      song->endUndo(SC_EVENT_INSERTED);
-                                      //delete el;
-                                      return pos;
-                                      }
-                              e.setTick(tick);
-                              int diff = e.endTick() - curPart->lenTick();
-                              if (diff > 0)  {// too short part? extend it
-                                      Part* newPart = curPart->clone();
-                                      newPart->setLenTick(newPart->lenTick()+diff);
-                                      // Indicate no undo, and do port controller values but not clone parts. 
-                                      audio->msgChangePart(curPart, newPart, false, true, false);
-                                      
-                                      modified=modified|SC_PART_MODIFIED;
-                                      curPart = newPart; // reassign
-                                      }
-                              
-                              // Indicate no undo, and do not do port controller values and clone parts. 
-                              audio->msgAddEvent(e, curPart, false, false, false);
-                              }
-                        else
-                              xml.unknown("DCanvas::pasteAt");
-                        break;
-                  case Xml::TagEnd:
-                  default:
-                        break;
-                  }
-            }
-      }
-*/
-
-//---------------------------------------------------------
-//   paste
-//    paste events
-//---------------------------------------------------------
-
-void DrumCanvas::paste()
-      {
-      QString stype("x-muse-eventlist");
-      
-      //QString s = QApplication::clipboard()->text(stype, QClipboard::Selection);  
-      QString s = QApplication::clipboard()->text(stype, QClipboard::Clipboard);  // TODO CHECK Tim.
-      
-      pasteAt(s, song->cpos());
-      }
 
 //---------------------------------------------------------
 //   startDrag
@@ -973,7 +803,7 @@ void DrumCanvas::paste()
 
 void DrumCanvas::startDrag(CItem* /* item*/, bool copymode)
       {
-      QMimeData* md = getTextDrag();
+      QMimeData* md = selected_events_to_mime(partlist_to_set(editor->parts()), 1);
       
       if (md) {
 //            QApplication::clipboard()->setData(drag, QClipboard::Clipboard);   // This line NOT enabled in muse-1 
@@ -1017,41 +847,6 @@ void DrumCanvas::dragMoveEvent(QDragMoveEvent*)
 void DrumCanvas::dragLeaveEvent(QDragLeaveEvent*)
       {
       }
-
-/*
-//---------------------------------------------------------
-//   dropEvent
-//---------------------------------------------------------
-
-void DrumCanvas::viewDropEvent(QDropEvent* event)
-      {
-      QString text;
-      if (event->source() == this) {
-            printf("local DROP\n");      
-            //event->acceptProposedAction();     
-            //event->ignore();                     // TODO CHECK Tim.
-            return;
-            }
-      //if (event->mimeData()->hasText()) {
-      if (event->mimeData()->hasFormat("text/x-muse-eventlist")) {
-            
-            //text = event->mimeData()->text();
-            text = QString(event->mimeData()->data("text/x-muse-eventlist"));
-      
-//            printf("drop <%s>\n", text.ascii());
-            int x = editor->rasterVal(event->pos().x());
-            if (x < 0)
-                  x = 0;
-            pasteAt(text, x);
-            //event->accept();  // TODO
-            }
-      else {
-            printf("cannot decode drop\n");
-            //event->acceptProposedAction();     
-            //event->ignore();                     // TODO CHECK Tim.
-            }
-      }
-*/
 
 //---------------------------------------------------------
 //   keyPressed - called from DList
@@ -1107,25 +902,6 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
       
       typedef std::vector< std::pair<Part*, Event*> >::iterator idel_ev;
       typedef std::vector< std::pair<Part*, Event> >::iterator iadd_ev;
-      
-      /*
-      class delete_events : public std::vector< Part*, Event* > 
-      {
-        public:
-          idel_ev find(Part* p, Event* e)
-          {
-          
-          };
-      };
-      class add_events : public std::vector< Part*, Event > 
-      {
-        public:
-          iadd_ev find(Part* p, Event& e)
-          {
-          
-          };
-      };
-      */
       
       MidiTrackList* tracks = song->midis();
       for (ciMidiTrack t = tracks->begin(); t != tracks->end(); t++) {

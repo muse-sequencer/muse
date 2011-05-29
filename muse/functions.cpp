@@ -14,8 +14,18 @@
 
 #include <values.h>
 #include <iostream>
+#include <errno.h>
+#include <values.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/mman.h>
 
+#include <QMimeData>
+#include <QByteArray>
+#include <QDrag>
 #include <QMessageBox>
+#include <QClipboard>
+
 
 using namespace std;
 
@@ -599,6 +609,153 @@ void legato(const set<Part*>& parts, int range, int min_len, bool dont_shorten)
 		}
 		
 		if (undo_started) song->endUndo(SC_EVENT_MODIFIED);
+	}
+}
+
+
+
+void copy_notes(const set<Part*>& parts, int range)
+{
+	QMimeData* drag = selected_events_to_mime(parts,range);
+
+	if (drag)
+		QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
+}
+
+void paste_notes(Part* dest_part)
+{
+	QString tmp="x-muse-eventlist"; // QClipboard::text() expects a QString&, not a QString :(
+	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);  // TODO CHECK Tim.
+	paste_at(dest_part, s, song->cpos());
+}
+
+QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
+{
+	map<Event*, Part*> events=get_events(parts,range);
+
+	//---------------------------------------------------
+	//   generate event list from selected events
+	//---------------------------------------------------
+
+	EventList el;
+	unsigned startTick = MAXINT; //will be the tick of the first event or MAXINT if no events are there
+
+	for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+	{
+		Event& e   = *it->first;
+		
+		if (e.tick() < startTick)
+			startTick = e.tick();
+			
+		el.add(e);
+	}
+
+	//---------------------------------------------------
+	//    write events as XML into tmp file
+	//---------------------------------------------------
+
+	FILE* tmp = tmpfile();
+	if (tmp == 0) 
+	{
+		fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
+		return 0;
+	}
+	
+	Xml xml(tmp);
+	int level = 0;
+	
+	xml.tag(level++, "eventlist");
+	for (ciEvent e = el.begin(); e != el.end(); ++e)
+		e->second.write(level, xml, -startTick);
+	xml.etag(--level, "eventlist");
+
+	//---------------------------------------------------
+	//    read tmp file into drag Object
+	//---------------------------------------------------
+
+	fflush(tmp);
+	struct stat f_stat;
+	if (fstat(fileno(tmp), &f_stat) == -1)
+	{
+		fprintf(stderr, "PianoCanvas::copy() fstat failed:<%s>\n",
+		strerror(errno));
+		fclose(tmp);
+		return 0;
+	}
+	int n = f_stat.st_size;
+	char* fbuf  = (char*)mmap(0, n+1, PROT_READ|PROT_WRITE,
+	MAP_PRIVATE, fileno(tmp), 0);
+	fbuf[n] = 0;
+
+	QByteArray data(fbuf);
+	QMimeData* md = new QMimeData();
+
+	md->setData("text/x-muse-eventlist", data);
+
+	munmap(fbuf, n);
+	fclose(tmp);
+
+	return md;
+}
+
+void paste_at(Part* dest_part, const QString& pt, int pos)
+{
+	Xml xml(pt.toLatin1().constData());
+	for (;;) 
+	{
+		Xml::Token token = xml.parse();
+		const QString& tag = xml.s1();
+		switch (token) 
+		{
+			case Xml::Error:
+			case Xml::End:
+				return;
+				
+			case Xml::TagStart:
+				if (tag == "eventlist")
+				{
+					song->startUndo();
+					EventList el;
+					el.read(xml, "eventlist", true);
+					int modified = SC_EVENT_INSERTED;
+					for (iEvent i = el.begin(); i != el.end(); ++i)
+					{
+						Event e = i->second;
+						int tick = e.tick() + pos - dest_part->tick();
+						if (tick<0)
+						{
+							printf("ERROR: trying to add event before current part!\n");
+							song->endUndo(SC_EVENT_INSERTED);
+							return;
+						}
+
+						e.setTick(tick);
+						e.setSelected(true);
+						int diff = e.endTick()-dest_part->lenTick();
+						if (diff > 0) // too short part? extend it
+						{
+							Part* newPart = dest_part->clone();
+							newPart->setLenTick(newPart->lenTick()+diff);
+							// Indicate no undo, and do port controller values but not clone parts. 
+							audio->msgChangePart(dest_part, newPart, false, true, false);
+							modified=modified|SC_PART_MODIFIED;
+							dest_part = newPart; // reassign TODO FINDME does this work, or has dest_part to be a nonconst reference?
+						}
+						// Indicate no undo, and do not do port controller values and clone parts. 
+						audio->msgAddEvent(e, dest_part, false, false, false);
+					}
+					song->endUndo(modified);
+					return;
+				}
+				else
+				xml.unknown("pasteAt");
+				break;
+				
+			case Xml::Attribut:
+			case Xml::TagEnd:
+			default:
+				break;
+		}
 	}
 }
 

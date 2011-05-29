@@ -605,6 +605,15 @@ void PianoRoll::cmd(int cmd)
       {
 			switch (cmd)
 						{
+            case PianoCanvas::CMD_CUT:
+                  copy_notes(partlist_to_set(parts()), 1);
+                  erase_notes(partlist_to_set(parts()), 1);
+                  break;
+            case PianoCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
+            case PianoCanvas::CMD_PASTE: 
+                              ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
+                              paste_notes(canvas->part());
+                              break;
 						case PianoCanvas::CMD_MODIFY_GATE_TIME: modify_notelen(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;

@@ -66,8 +66,6 @@ class DrumCanvas : public EventCanvas {
 
       int y2pitch(int y) const;
       int pitch2y(int pitch) const;
-      void copy();
-      void paste();
       void startDrag(CItem*, bool copymode);
       void dragEnterEvent(QDragEnterEvent* event);
       void dragMoveEvent(QDragMoveEvent*);
