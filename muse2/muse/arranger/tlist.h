@@ -14,6 +14,7 @@
 
 class QKeyEvent;
 class QLineEdit;
+class QSpinBox;
 class QMouseEvent;
 class QPaintEvent;
 class QResizeEvent;
@@ -57,6 +58,7 @@ class TList : public QWidget {
       Header* header;
       QScrollBar* _scroll;
       QLineEdit* editor;
+      QSpinBox* chan_edit;
       Track* editTrack;
       Track* editAutomation;
 
@@ -92,6 +94,8 @@ class TList : public QWidget {
 
    private slots:
       void returnPressed();
+      void chanValueChanged(int);
+      void chanValueFinished();
       void songChanged(int flags);
       void changeAutomation(QAction*);
       void changeAutomationColor(QAction*);
