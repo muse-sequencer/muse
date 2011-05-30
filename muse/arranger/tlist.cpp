@@ -21,6 +21,7 @@
 #include <QScrollBar>
 #include <QWheelEvent>
 #include <QIcon>
+#include <QSpinBox>
 
 #include "popupmenu.h"
 #include "globals.h"
@@ -438,6 +439,20 @@ void TList::returnPressed()
       setFocus();
       }
 
+void TList::chanValueChanged(int val)
+{
+  Track* track = editTrack->clone(false);
+  ((MidiTrack*)editTrack)->setOutChannel(val-1);
+  audio->msgChangeTrack(track, editTrack);
+}
+
+void TList::chanValueFinished()
+{
+  editTrack = 0;
+  chan_edit->hide();
+  setFocus();
+}
+
 //---------------------------------------------------------
 //   adjustScrollbar
 //---------------------------------------------------------
@@ -491,7 +506,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
             if (section == COL_NAME) {
                   editTrack = t;
                   if (editor == 0) {
-		    editor = new QLineEdit(this);
+                        editor = new QLineEdit(this);
                         /*connect(editor, SIGNAL(returnPressed()),
                            SLOT(returnPressed()));*/
                         editor->setFrame(true);
@@ -501,6 +516,25 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                   editor->setGeometry(colx, coly, colw, colh);
                   editMode = true;
                   editor->show();
+                  }
+            else if (section == COL_OCHANNEL) {
+                  if (t->isMidiTrack() && t->type() != Track::DRUM)
+                  {
+                      editTrack=t;
+                      if (chan_edit==0) {
+                            chan_edit=new QSpinBox(this);
+                            chan_edit->setMinimum(1);
+                            chan_edit->setMaximum(16);
+                            connect(chan_edit, SIGNAL(valueChanged(int)), SLOT(chanValueChanged(int)));
+                            connect(chan_edit, SIGNAL(editingFinished()), SLOT(chanValueFinished()));
+                            }
+                      chan_edit->setValue(((MidiTrack*)editTrack)->outChannel()+1);
+                      int w=colw;
+                      if (w < chan_edit->sizeHint().width()) w=chan_edit->sizeHint().width();
+                      chan_edit->setGeometry(colx, coly, w, colh);
+                      chan_edit->show();
+                      chan_edit->setFocus();
+                      }
                   }
             else
                   mousePressEvent(ev);
