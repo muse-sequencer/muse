@@ -76,6 +76,12 @@ void paste_notes(Part* dest_part);
 QMimeData* selected_events_to_mime(const std::set<Part*>& parts, int range);
 void paste_at(Part* dest_part, const QString& pt, int pos);
 
+//functions for selections
+void select_all(const std::set<Part*>& parts);
+void select_none(const std::set<Part*>& parts);
+void select_invert(const std::set<Part*>& parts);
+void select_in_loop(const std::set<Part*>& parts);
+void select_not_in_loop(const std::set<Part*>& parts);
 
 //functions for reading and writing default values
 class Xml;

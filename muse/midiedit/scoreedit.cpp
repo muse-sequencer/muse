@@ -55,9 +55,9 @@ using namespace std;
 #include "cmd.h"
 #include "sig.h"
 #include "song.h"
+#include "shortcuts.h"
 
 //#include "../ctrl/ctrledit.h"
-//#include "shortcuts.h"
 
 
 string IntToStr(int i);
@@ -340,9 +340,59 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	quant_toolbar->addWidget(px_per_whole_spinbox);
 	px_per_whole_spinbox->setValue(300);
 
+	QMenu* edit_menu = menuBar()->addMenu(tr("&Edit"));      
+
+		edit_menu->addActions(undoRedo->actions());
+		edit_menu->addSeparator();
+
+		cut_action = edit_menu->addAction(QIcon(*editcutIconSet), tr("C&ut"));
+		menu_mapper->setMapping(cut_action, CMD_CUT);
+		connect(cut_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+
+		copy_action = edit_menu->addAction(QIcon(*editcopyIconSet), tr("&Copy"));
+		menu_mapper->setMapping(copy_action, CMD_COPY);
+		connect(copy_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+
+		paste_action = edit_menu->addAction(QIcon(*editpasteIconSet), tr("&Paste"));
+		menu_mapper->setMapping(paste_action, CMD_PASTE);
+		connect(paste_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+
+		edit_menu->addSeparator();
+
+		del_action = edit_menu->addAction(tr("Delete &Events"));
+		menu_mapper->setMapping(del_action, CMD_ERASE);
+		connect(del_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+
+		edit_menu->addSeparator();
+
+		QMenu* select_menu = edit_menu->addMenu(QIcon(*selectIcon), tr("&Select"));
+
+			select_all_action = select_menu->addAction(QIcon(*select_allIcon), tr("Select &All"));
+			menu_mapper->setMapping(select_all_action, CMD_SELECT_ALL);
+			connect(select_all_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+
+			select_none_action = select_menu->addAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"));
+			menu_mapper->setMapping(select_none_action, CMD_SELECT_NONE);
+			connect(select_none_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+
+			select_invert_action = select_menu->addAction(QIcon(*select_invert_selectionIcon), tr("Invert &Selection"));
+			menu_mapper->setMapping(select_invert_action, CMD_SELECT_INVERT);
+			connect(select_invert_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+
+			select_menu->addSeparator();
+
+			select_iloop_action = select_menu->addAction(QIcon(*select_inside_loopIcon), tr("&Inside Loop"));
+			menu_mapper->setMapping(select_iloop_action, CMD_SELECT_ILOOP);
+			connect(select_iloop_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+
+			select_oloop_action = select_menu->addAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"));
+			menu_mapper->setMapping(select_oloop_action, CMD_SELECT_OLOOP);
+			connect(select_oloop_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+
+
 	QMenu* settings_menu = menuBar()->addMenu(tr("&Settings"));      
 
-		QMenu* color_menu = settings_menu->addMenu(tr("Note head &colors"));
+		color_menu = settings_menu->addMenu(tr("Note head &colors"));
 			color_actions = new QActionGroup(this);
 			color_black_action = color_menu->addAction(tr("&Black"), menu_mapper, SLOT(map()));
 			color_velo_action =  color_menu->addAction(tr("&Velocity"), menu_mapper, SLOT(map()));
@@ -378,16 +428,16 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
   QMenu* functions_menu = menuBar()->addMenu(tr("&Functions"));      
 	
-		QAction* func_quantize_action = functions_menu->addAction(tr("&Quantize"), menu_mapper, SLOT(map()));
-		QAction* func_notelen_action = functions_menu->addAction(tr("Change note &length"), menu_mapper, SLOT(map()));
-		QAction* func_velocity_action = functions_menu->addAction(tr("Change note &velocity"), menu_mapper, SLOT(map()));
-		QAction* func_cresc_action = functions_menu->addAction(tr("Crescendo/Decrescendo"), menu_mapper, SLOT(map()));
-		QAction* func_transpose_action = functions_menu->addAction(tr("Transpose"), menu_mapper, SLOT(map()));
-		QAction* func_erase_action = functions_menu->addAction(tr("Erase Events"), menu_mapper, SLOT(map()));
-		QAction* func_move_action = functions_menu->addAction(tr("Move Notes"), menu_mapper, SLOT(map()));
-		QAction* func_fixed_len_action = functions_menu->addAction(tr("Set Fixed Length"), menu_mapper, SLOT(map()));
-		QAction* func_del_overlaps_action = functions_menu->addAction(tr("Delete Overlaps"), menu_mapper, SLOT(map()));
-		QAction* func_legato_action = functions_menu->addAction(tr("Legato"), menu_mapper, SLOT(map()));
+		func_quantize_action = functions_menu->addAction(tr("&Quantize"), menu_mapper, SLOT(map()));
+		func_notelen_action = functions_menu->addAction(tr("Change note &length"), menu_mapper, SLOT(map()));
+		func_velocity_action = functions_menu->addAction(tr("Change note &velocity"), menu_mapper, SLOT(map()));
+		func_cresc_action = functions_menu->addAction(tr("Crescendo/Decrescendo"), menu_mapper, SLOT(map()));
+		func_transpose_action = functions_menu->addAction(tr("Transpose"), menu_mapper, SLOT(map()));
+		func_erase_action = functions_menu->addAction(tr("Erase Events"), menu_mapper, SLOT(map()));
+		func_move_action = functions_menu->addAction(tr("Move Notes"), menu_mapper, SLOT(map()));
+		func_fixed_len_action = functions_menu->addAction(tr("Set Fixed Length"), menu_mapper, SLOT(map()));
+		func_del_overlaps_action = functions_menu->addAction(tr("Delete Overlaps"), menu_mapper, SLOT(map()));
+		func_legato_action = functions_menu->addAction(tr("Legato"), menu_mapper, SLOT(map()));
 		menu_mapper->setMapping(func_quantize_action, CMD_QUANTIZE);
 		menu_mapper->setMapping(func_notelen_action, CMD_NOTELEN);
 		menu_mapper->setMapping(func_velocity_action, CMD_VELOCITY);
@@ -398,7 +448,16 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 		menu_mapper->setMapping(func_fixed_len_action, CMD_FIXED_LEN);
 		menu_mapper->setMapping(func_del_overlaps_action, CMD_DELETE_OVERLAPS);
 		menu_mapper->setMapping(func_legato_action, CMD_LEGATO);
+	
+	init_shortcuts();
+	
+	connect(muse, SIGNAL(configChanged()), SLOT(init_shortcuts()));
 
+	QClipboard* cb = QApplication::clipboard();
+	connect(cb, SIGNAL(dataChanged()), SLOT(clipboard_changed()));
+	
+	clipboard_changed();
+	selection_changed();
 
 	if (!default_toolbar_state.isEmpty())
 		restoreState(default_toolbar_state);
@@ -416,6 +475,32 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 	apply_velo=true;
 }
+
+void ScoreEdit::init_shortcuts()
+{
+	cut_action->setShortcut(shortcuts[SHRT_CUT].key);
+	copy_action->setShortcut(shortcuts[SHRT_COPY].key);
+	paste_action->setShortcut(shortcuts[SHRT_PASTE].key);
+	del_action->setShortcut(shortcuts[SHRT_DELETE].key);
+
+	select_all_action->setShortcut(shortcuts[SHRT_SELECT_ALL].key); 
+	select_none_action->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
+	select_invert_action->setShortcut(shortcuts[SHRT_SELECT_INVERT].key);
+	select_iloop_action->setShortcut(shortcuts[SHRT_SELECT_ILOOP].key);
+	select_oloop_action->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
+
+	color_menu->menuAction()->setShortcut(shortcuts[SHRT_EVENT_COLOR].key);
+
+	func_quantize_action->setShortcut(shortcuts[SHRT_QUANTIZE].key);
+	func_notelen_action->setShortcut(shortcuts[SHRT_MODIFY_GATE_TIME].key);
+	func_velocity_action->setShortcut(shortcuts[SHRT_MODIFY_VELOCITY].key);
+	func_transpose_action->setShortcut(shortcuts[SHRT_TRANSPOSE].key);
+	func_erase_action->setShortcut(shortcuts[SHRT_ERASE_EVENT].key);
+	func_move_action->setShortcut(shortcuts[SHRT_NOTE_SHIFT].key);
+	func_fixed_len_action->setShortcut(shortcuts[SHRT_FIXED_LEN].key);
+	func_del_overlaps_action->setShortcut(shortcuts[SHRT_DELETE_OVERLAPS].key);
+}
+
 
 void ScoreEdit::add_parts(PartList* pl, bool all_in_one)
 {
@@ -522,6 +607,9 @@ void ScoreEdit::song_changed(int flags)
 			if (velo_off>=0) velo_off_spinbox->setValue(velo_off);
 		}
 	}
+
+	if (flags & SC_SELECTION)
+		selection_changed();
 }
 
 void ScoreEdit::canvas_width_changed(int width)
@@ -607,6 +695,21 @@ void ScoreEdit::menu_command(int cmd)
 		}
 		break;
 		
+		case CMD_SELECT_ALL: select_all(score_canvas->get_all_parts()); break;
+		case CMD_SELECT_NONE: select_none(score_canvas->get_all_parts()); break;
+		case CMD_SELECT_INVERT: select_invert(score_canvas->get_all_parts()); break;
+		case CMD_SELECT_ILOOP: select_in_loop(score_canvas->get_all_parts()); break;
+		case CMD_SELECT_OLOOP: select_not_in_loop(score_canvas->get_all_parts()); break;
+
+		case CMD_CUT:
+			copy_notes(score_canvas->get_all_parts(), 1);
+			erase_notes(score_canvas->get_all_parts(), 1);
+			break;
+		case CMD_COPY: copy_notes(score_canvas->get_all_parts(), 1); break;
+		case CMD_PASTE: 
+			menu_command(CMD_SELECT_NONE); 
+			paste_notes(score_canvas->get_selected_part());
+			break;
 		case CMD_QUANTIZE: quantize_notes(score_canvas->get_all_parts()); break;
 		case CMD_VELOCITY: modify_velocity(score_canvas->get_all_parts()); break;
 		case CMD_CRESCENDO: crescendo(score_canvas->get_all_parts()); break;
@@ -621,6 +724,19 @@ void ScoreEdit::menu_command(int cmd)
 		default: 
 			score_canvas->menu_command(cmd);
 	}
+}
+
+void ScoreEdit::clipboard_changed()
+{
+	paste_action->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-eventlist")));
+}
+
+void ScoreEdit::selection_changed()
+{
+	bool flag = !get_events(score_canvas->get_all_parts(),1).empty();
+	cut_action->setEnabled(flag);
+	copy_action->setEnabled(flag);
+	del_action->setEnabled(flag);
 }
 
 
@@ -4117,6 +4233,7 @@ void ScoreCanvas::menu_command(int cmd)
 		case CMD_NOTELEN_16:   new_len=TICKS_PER_WHOLE/16; break;
 		case CMD_NOTELEN_32:   new_len=TICKS_PER_WHOLE/32; break;
 		case CMD_NOTELEN_LAST: new_len=-1; break;
+		
 		default: 
 			cerr << "ERROR: ILLEGAL FUNCTION CALL: ScoreCanvas::menu_command called with unknown command ("<<cmd<<")"<<endl;
 	}
@@ -4375,7 +4492,6 @@ void staff_t::update_part_indices()
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o when pasting, the pasted, not the previously selected should be selected
  *   o allow batch-movements in score editor
  *   o in main win: make "Ch" column editable with a line edit
  *   o either remove these "hidden notes", or deal with them in the score editor

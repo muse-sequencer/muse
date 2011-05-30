@@ -709,7 +709,7 @@ void paste_at(Part* dest_part, const QString& pt, int pos)
 		{
 			case Xml::Error:
 			case Xml::End:
-				return;
+				goto end_of_paste_at;
 				
 			case Xml::TagStart:
 				if (tag == "eventlist")
@@ -726,7 +726,7 @@ void paste_at(Part* dest_part, const QString& pt, int pos)
 						{
 							printf("ERROR: trying to add event before current part!\n");
 							song->endUndo(SC_EVENT_INSERTED);
-							return;
+							goto end_of_paste_at;
 						}
 
 						e.setTick(tick);
@@ -745,7 +745,7 @@ void paste_at(Part* dest_part, const QString& pt, int pos)
 						audio->msgAddEvent(e, dest_part, false, false, false);
 					}
 					song->endUndo(modified);
-					return;
+					goto end_of_paste_at;
 				}
 				else
 				xml.unknown("pasteAt");
@@ -757,8 +757,67 @@ void paste_at(Part* dest_part, const QString& pt, int pos)
 				break;
 		}
 	}
+	
+	end_of_paste_at:
+	song->update(SC_SELECTION);
 }
 
+void select_all(const std::set<Part*>& parts)
+{
+	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+		{
+			Event& event=ev_it->second;
+			event.setSelected(true);
+		}
+	song->update(SC_SELECTION);
+}
+
+void select_none(const std::set<Part*>& parts)
+{
+	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+		{
+			Event& event=ev_it->second;
+			event.setSelected(false);
+		}
+	song->update(SC_SELECTION);
+}
+
+void select_invert(const std::set<Part*>& parts)
+{
+	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+		{
+			Event& event=ev_it->second;
+			event.setSelected(!event.selected());
+		}
+	song->update(SC_SELECTION);
+}
+
+void select_in_loop(const std::set<Part*>& parts)
+{
+	select_none(parts);
+	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+		{
+			Event& event=ev_it->second;
+			event.setSelected((event.tick()>=song->lpos() && event.endTick()<=song->rpos()));
+		}
+	song->update(SC_SELECTION);
+}
+
+void select_not_in_loop(const std::set<Part*>& parts)
+{
+	select_none(parts);
+	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+		{
+			Event& event=ev_it->second;
+			event.setSelected(!(event.tick()>=song->lpos() && event.endTick()<=song->rpos()));
+		}
+	song->update(SC_SELECTION);
+}
 
 
 void read_function_dialog_config(Xml& xml)
