@@ -218,14 +218,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	srec->setIcon(*steprecIcon);
 	srec->setCheckable(true);
 	steprec_tools->addWidget(srec);
-	connect(srec, SIGNAL(toggled(bool)), SLOT(set_steprec(bool)));
-
-	midiin  = new QToolButton();
-	midiin->setToolTip(tr("Midi Input"));
-	midiin->setIcon(*midiinIcon);
-	midiin->setCheckable(true);
-	steprec_tools->addWidget(midiin);
-	connect(midiin, SIGNAL(toggled(bool)), score_canvas, SLOT(set_midiin(bool)));
+	connect(srec, SIGNAL(toggled(bool)), score_canvas, SLOT(set_steprec(bool)));
 
 
 	edit_tools = new EditToolBar(this, PointerTool | PencilTool | RubberTool);
@@ -559,13 +552,6 @@ ScoreEdit::~ScoreEdit()
 	
 }
 
-void ScoreEdit::set_steprec(bool flag)
-{
-	score_canvas->set_steprec(flag);
-	if (flag == false)
-		midiin->setChecked(false);
-}
-
 
 
 void ScoreEdit::velo_box_changed()
@@ -862,7 +848,6 @@ void ScoreEdit::writeStatus(int level, Xml& xml) const
 	xml.strTag(level, "name", name);
 	xml.intTag(level, "tool", edit_tools->curTool());
 	xml.intTag(level, "steprec", srec->isChecked());
-	xml.intTag(level, "midiin", midiin->isChecked());
 	xml.intTag(level, "quantPower", score_canvas->quant_power2());
 	xml.intTag(level, "pxPerWhole", score_canvas->pixels_per_whole());
 	xml.intTag(level, "newNoteVelo", velo_spinbox->value());
@@ -955,8 +940,6 @@ void ScoreEdit::readStatus(Xml& xml)
 					set_name(xml.parse1());
 				else if (tag == "tool") 
 					edit_tools->set(xml.parseInt());
-				else if (tag == "midiin") 
-					midiin->setChecked(xml.parseInt());
 				else if (tag == "steprec") 
 					srec->setChecked(xml.parseInt());
 				else if (tag == "quantPower") 
@@ -1192,7 +1175,6 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 	init_pixmaps();
 	
 	srec=false;
-	midiin=false;
 	for (int i=0;i<128;i++) held_notes[i]=false;
 	steprec=new StepRec(held_notes);
 	connect(song, SIGNAL(midiNote(int, int)), SLOT(midi_note(int,int)));
@@ -4424,11 +4406,6 @@ void ScoreCanvas::set_steprec(bool flag)
 	srec=flag;
 }
 
-void ScoreCanvas::set_midiin(bool flag)
-{
-	midiin=flag;
-}
-
 void ScoreCanvas::midi_note(int pitch, int velo)
 {
 	if (velo)
@@ -4436,7 +4413,7 @@ void ScoreCanvas::midi_note(int pitch, int velo)
 	else
 		held_notes[pitch]=false;
 
-	if ( midiin && srec && selected_part && !audio->isPlaying() && velo )
+	if ( srec && selected_part && !audio->isPlaying() && velo )
 		steprec->record(selected_part,pitch,quant_ticks(),quant_ticks(),velo,globalKeyState&Qt::ControlModifier,globalKeyState&Qt::ShiftModifier);
 }
 
