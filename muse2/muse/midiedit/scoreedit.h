@@ -63,7 +63,10 @@ enum {CMD_COLOR_BLACK, CMD_COLOR_VELO, CMD_COLOR_PART,
       CMD_NOTELEN_16, CMD_NOTELEN_32, CMD_NOTELEN_LAST,
       
       CMD_QUANTIZE, CMD_VELOCITY, CMD_CRESCENDO, CMD_NOTELEN, CMD_TRANSPOSE,
-      CMD_ERASE, CMD_MOVE, CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO };
+      CMD_ERASE, CMD_MOVE, CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO,
+      CMD_CUT, CMD_COPY, CMD_PASTE,
+      CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
+      CMD_SELECT_ILOOP, CMD_SELECT_OLOOP};
 
 
 class ScoreCanvas;
@@ -112,6 +115,30 @@ class ScoreEdit : public TopWin
 		QAction* color_velo_action;
 		QAction* color_part_action;
 
+		QMenu* color_menu;
+		
+		QAction* cut_action;
+		QAction* copy_action;
+		QAction* paste_action;
+		QAction* del_action;
+		
+		QAction* select_all_action;
+		QAction* select_none_action;
+		QAction* select_invert_action;
+		QAction* select_iloop_action;
+		QAction* select_oloop_action;
+
+		QAction* func_quantize_action;
+		QAction* func_notelen_action;
+		QAction* func_velocity_action;
+		QAction* func_cresc_action;
+		QAction* func_transpose_action;
+		QAction* func_erase_action;
+		QAction* func_move_action;
+		QAction* func_fixed_len_action;
+		QAction* func_del_overlaps_action;
+		QAction* func_legato_action;
+
 		QToolButton* srec;
 		QToolButton* midiin;
 		
@@ -138,6 +165,9 @@ class ScoreEdit : public TopWin
 		void velo_box_changed();
 		void velo_off_box_changed();
 		void set_steprec(bool);
+		void init_shortcuts();
+		void selection_changed();
+		void clipboard_changed();
 		
 	signals:
 		void deleted(unsigned long);
