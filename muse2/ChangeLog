@@ -1,6 +1,7 @@
 30.05.2011:
         - implemented cut,copy'n'paste and the "select foo" entries in the score editor (flo93)
         - added select_foo() functions to functions.cpp (flo93)
+        - removed "midi in" button from score editor (flo93)
 29.05.2011:
         - moved cut,copy'n'paste to functions.cpp, removed unneccessary duplication (flo93)
         - changed behaviour of paste: now the pasted, not the original notes are selected (flo93)

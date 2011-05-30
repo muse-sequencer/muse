@@ -140,7 +140,6 @@ class ScoreEdit : public TopWin
 		QAction* func_legato_action;
 
 		QToolButton* srec;
-		QToolButton* midiin;
 		
 		QScrollBar* xscroll;
 		QScrollBar* yscroll;
@@ -164,7 +163,6 @@ class ScoreEdit : public TopWin
 		void menu_command(int);
 		void velo_box_changed();
 		void velo_off_box_changed();
-		void set_steprec(bool);
 		void init_shortcuts();
 		void selection_changed();
 		void clipboard_changed();
@@ -714,7 +712,6 @@ class ScoreCanvas : public View
 		
 
 		bool srec;
-		bool midiin;
 		bool held_notes[128];
 
 		enum {COLOR_MODE_BLACK, COLOR_MODE_PART, COLOR_MODE_VELO} coloring_mode;
@@ -765,7 +762,6 @@ class ScoreCanvas : public View
 			void set_velo_off(int);
 
 			void set_steprec(bool);
-			void set_midiin(bool);
 			
 			void update_parts(); //re-populates the set<Part*>s from the set<int>s
 	signals:
