@@ -36,8 +36,10 @@ class Comment : public QWidget, public Ui::CommentBase {
 //---------------------------------------------------------
 
 class TrackComment : public Comment {
-      Track* track;
       Q_OBJECT
+    
+      Track* track;
+      
 
    private:
       virtual void setText(const QString& s);

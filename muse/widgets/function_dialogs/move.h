@@ -15,8 +15,9 @@ class Xml;
 
 class Move : public QDialog, public Ui::MoveBase
 {
+ 	Q_OBJECT
 	private:
-		Q_OBJECT
+		
 		QButtonGroup* range_group;
 		
 	protected slots:

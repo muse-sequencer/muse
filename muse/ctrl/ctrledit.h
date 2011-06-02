@@ -24,10 +24,11 @@ class Xml;
 //---------------------------------------------------------
 
 class CtrlEdit : public QWidget {
+      Q_OBJECT
       CtrlCanvas* canvas;
       CtrlPanel* panel;
 
-      Q_OBJECT
+      
 
    private slots:
       void destroy();

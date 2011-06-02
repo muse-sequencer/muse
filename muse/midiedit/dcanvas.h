@@ -41,6 +41,7 @@ class PianoRoll;
 //---------------------------------------------------------
 
 class DrumCanvas : public EventCanvas {
+      Q_OBJECT
       
       StepRec* steprec;
       
@@ -48,7 +49,7 @@ class DrumCanvas : public EventCanvas {
       QPoint cursorPos;
       int _stepSize;
 
-      Q_OBJECT
+      
       virtual void drawCanvas(QPainter&, const QRect&);
       virtual void drawItem(QPainter&, const CItem*, const QRect&);
       void drawTopItem(QPainter& p, const QRect& rect);

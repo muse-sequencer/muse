@@ -38,6 +38,8 @@ class QSignalMapper;
 //---------------------------------------------------------
 
 class VAMGui : public QWidget, public Ui::VAMGuiBase, public MessGui {
+      Q_OBJECT
+    
       QSignalMapper* map;
       int ctrlHi;
       int ctrlLo;
@@ -46,7 +48,7 @@ class VAMGui : public QWidget, public Ui::VAMGuiBase, public MessGui {
       SynthGuiCtrl dctrl[NUM_CONTROLLER];
       QString * presetFileName;
 
-      Q_OBJECT
+      
       void sendControllerChange(int ctrl, int val);
       void initParameter();
       void setParam(int, int);

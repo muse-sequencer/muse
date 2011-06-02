@@ -18,8 +18,9 @@ class Xml;
 //---------------------------------------------------------
 
 class GateTime : public QDialog, public Ui::GateTimeBase {
+ 	Q_OBJECT
    private:
-      Q_OBJECT
+      
       QButtonGroup *rangeGroup;
 
    protected slots:

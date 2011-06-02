@@ -70,6 +70,8 @@ class DPitchEdit: public Awl::PitchEdit
 //---------------------------------------------------------
 
 class DList : public View {
+      Q_OBJECT
+    
       QHeaderView* header;
       ScrollScale* scroll;
       QLineEdit* editor;
@@ -92,7 +94,7 @@ class DList : public View {
 
       int x2col(int x) const;
       void devicesPopupMenu(DrumMap* t, int x, int y, bool changeAll);
-      Q_OBJECT
+      
       //void setCurDrumInstrument(int n);
 
    private slots:

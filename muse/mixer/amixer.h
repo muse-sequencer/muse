@@ -62,6 +62,8 @@ class ScrollArea : public QScrollArea
 //---------------------------------------------------------
 
 class AudioMixerApp : public QMainWindow {
+      Q_OBJECT
+    
       //QString name;
       MixerConfig* cfg;
       StripList stripList;
@@ -84,7 +86,7 @@ class AudioMixerApp : public QMainWindow {
       QAction* showAuxTracksId;
       QAction* showSyntiTracksId;
 
-      Q_OBJECT
+      
 
       virtual void closeEvent(QCloseEvent*);
       void addStrip(Track*, int);

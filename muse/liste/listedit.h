@@ -32,6 +32,8 @@ class Xml;
 //---------------------------------------------------------
 
 class ListEdit : public MidiEditor {
+      Q_OBJECT
+    
       QTreeWidget* liste;
       QMenu* menuEdit;
       QActionGroup* insertItems;
@@ -43,7 +45,7 @@ class ListEdit : public MidiEditor {
 
       enum { CMD_DELETE };
 
-      Q_OBJECT
+      
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
       void initShortcuts();

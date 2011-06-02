@@ -57,6 +57,7 @@ class CtrlVal;
 //---------------------------------------------------------
 
 class PartCanvas : public Canvas {
+      Q_OBJECT
       int* _raster;
       TrackList* tracks;
 
@@ -69,7 +70,7 @@ class PartCanvas : public Canvas {
       AutomationObject automation;
 
       //std::vector<TrackAutomationView*> automationViews;
-      Q_OBJECT
+      
       virtual void keyPress(QKeyEvent*);
       virtual void mousePress(QMouseEvent*);
       virtual void mouseMove(QMouseEvent* event);

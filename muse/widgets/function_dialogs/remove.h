@@ -15,8 +15,9 @@ class Xml;
 
 class Remove : public QDialog, public Ui::RemoveBase
 {
+ 	Q_OBJECT
 	private:
-		Q_OBJECT
+		
 		QButtonGroup* range_group;
 		
 	protected slots:

@@ -21,6 +21,8 @@ class QToolButton;
 //---------------------------------------------------------
 
 class ScrollScale : public QWidget {
+      Q_OBJECT
+    
       QSlider* scale;
       QScrollBar* scroll;
       int minVal, maxVal;
@@ -38,8 +40,7 @@ class ScrollScale : public QWidget {
       double logbase;
 
       virtual void resizeEvent(QResizeEvent*);
-      Q_OBJECT
-
+      
    private slots:
       void pageUp();
       void pageDown();

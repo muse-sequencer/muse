@@ -40,6 +40,8 @@ class QRect;
 //---------------------------------------------------------
 
 class PianoCanvas : public EventCanvas {
+      Q_OBJECT
+    
       int colorMode;
       int playedPitch;
       
@@ -47,7 +49,7 @@ class PianoCanvas : public EventCanvas {
       
       StepRec* steprec;
 
-      Q_OBJECT
+      
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void drawItem(QPainter&, const CItem*, const QRect&);
       void drawTopItem(QPainter &p, const QRect &rect);

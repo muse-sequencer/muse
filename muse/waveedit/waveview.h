@@ -34,6 +34,8 @@ typedef std::list<WaveEventSelection>::iterator iWaveSelection;
 //---------------------------------------------------------
 
 class WaveView : public View {
+      Q_OBJECT
+    
       MidiEditor* editor;
       unsigned pos[3];
       int yScale;
@@ -50,7 +52,6 @@ class WaveView : public View {
 
       unsigned selectionStart, selectionStop, dragstartx;
 
-      Q_OBJECT
       virtual void pdraw(QPainter&, const QRect&);
       virtual void draw(QPainter&, const QRect&);
       virtual void viewMousePressEvent(QMouseEvent*);
