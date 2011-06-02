@@ -64,7 +64,7 @@ enum {CMD_COLOR_BLACK, CMD_COLOR_VELO, CMD_COLOR_PART,
       
       CMD_QUANTIZE, CMD_VELOCITY, CMD_CRESCENDO, CMD_NOTELEN, CMD_TRANSPOSE,
       CMD_ERASE, CMD_MOVE, CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO,
-      CMD_CUT, CMD_COPY, CMD_PASTE,
+      CMD_CUT, CMD_COPY, CMD_PASTE, CMD_DEL,
       CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
       CMD_SELECT_ILOOP, CMD_SELECT_OLOOP};
 
@@ -697,19 +697,24 @@ class ScoreCanvas : public View
 		bool mouse_erases_notes;
 		bool mouse_inserts_notes;
 		
+		bool inserting;
 		bool dragging;
 		bool drag_cursor_changed;
 		Part* dragged_event_part;
 		Event dragged_event;
-		int dragged_event_original_pitch;
+		Event original_dragged_event;
+		Event* clicked_event_ptr;
+		
+		int old_pitch;
+		unsigned old_dest_tick;
+
+		bool undo_started;
+		bool temp_undo;
 		
 		bool have_lasso;
 		QPoint lasso_start;
 		QRect lasso;
 
-		bool undo_started;
-		int undo_flags;
-		
 
 		bool srec;
 		bool held_notes[128];
@@ -783,7 +788,6 @@ class ScoreCanvas : public View
 		virtual void mouseMoveEvent (QMouseEvent* event);
 		virtual void mouseReleaseEvent (QMouseEvent* event);
 		virtual void resizeEvent(QResizeEvent*);
-		virtual void keyPressEvent(QKeyEvent* event);
 		
 	public:
 		ScoreCanvas(ScoreEdit*, QWidget*);

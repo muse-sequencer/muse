@@ -64,6 +64,13 @@ set<Part*> partlist_to_set(PartList* pl)
 	return result;
 }
 
+set<Part*> part_to_set(Part* p)
+{
+	set<Part*> result;
+	result.insert(p);
+	return result;
+}
+
 bool is_relevant(const Event& event, const Part* part, int range)
 {
 	unsigned tick;
@@ -206,7 +213,7 @@ bool legato(const set<Part*>& parts)
 
 
 
-void modify_velocity(const set<Part*>& parts, int range, int rate, int offset)
+bool modify_velocity(const set<Part*>& parts, int range, int rate, int offset)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	
@@ -239,10 +246,13 @@ void modify_velocity(const set<Part*>& parts, int range, int rate, int offset)
 		}
 		
 		song->endUndo(SC_EVENT_MODIFIED);
+		return true;
 	}
+	else
+		return false;
 }
 
-void modify_off_velocity(const set<Part*>& parts, int range, int rate, int offset)
+bool modify_off_velocity(const set<Part*>& parts, int range, int rate, int offset)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	
@@ -275,10 +285,13 @@ void modify_off_velocity(const set<Part*>& parts, int range, int rate, int offse
 		}
 		
 		song->endUndo(SC_EVENT_MODIFIED);
+		return true;
 	}
+	else
+		return false;
 }
 
-void modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
+bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	
@@ -309,12 +322,15 @@ void modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 		}
 		
 		song->endUndo(SC_EVENT_MODIFIED);
+		return true;
 	}
+	else
+		return false;
 }
 
-void set_notelen(const set<Part*>& parts, int range, int len)
+bool set_notelen(const set<Part*>& parts, int range, int len)
 {
-	modify_notelen(parts, range, 0, len);
+	return modify_notelen(parts, range, 0, len);
 }
 
 unsigned quantize_tick(unsigned tick, unsigned raster, int swing)
@@ -339,7 +355,7 @@ unsigned quantize_tick(unsigned tick, unsigned raster, int swing)
 		return tick_dest3;
 }
 
-void quantize_notes(const set<Part*>& parts, int range, int raster, bool quant_len, int strength, int swing, int threshold)
+bool quantize_notes(const set<Part*>& parts, int range, int raster, bool quant_len, int strength, int swing, int threshold)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	bool undo_started=false;
@@ -388,9 +404,11 @@ void quantize_notes(const set<Part*>& parts, int range, int raster, bool quant_l
 		
 		if (undo_started) song->endUndo(SC_EVENT_MODIFIED);
 	}
+	
+	return undo_started;
 }
 
-void erase_notes(const set<Part*>& parts, int range, int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
+bool erase_notes(const set<Part*>& parts, int range, int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	
@@ -409,16 +427,19 @@ void erase_notes(const set<Part*>& parts, int range, int velo_threshold, bool ve
 		}
 		
 		song->endUndo(SC_EVENT_REMOVED);
+		return true;
 	}
+	else
+		return false;
 }
 
-void transpose_notes(const set<Part*>& parts, int range, signed int halftonesteps)
+bool transpose_notes(const set<Part*>& parts, int range, signed int halftonesteps, bool do_undo)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	
 	if ( (!events.empty()) && (halftonesteps!=0) )
 	{
-		song->startUndo();
+		if (do_undo) song->startUndo();
 		
 		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
@@ -434,11 +455,14 @@ void transpose_notes(const set<Part*>& parts, int range, signed int halftonestep
 			audio->msgChangeEvent(event, newEvent, part, false, false, false);
 		}
 		
-		song->endUndo(SC_EVENT_MODIFIED);
+		if (do_undo) song->endUndo(SC_EVENT_MODIFIED);
+		return do_undo;
 	}
+	else
+		return false;
 }
 
-void crescendo(const set<Part*>& parts, int range, int start_val, int end_val, bool absolute)
+bool crescendo(const set<Part*>& parts, int range, int start_val, int end_val, bool absolute)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	
@@ -473,33 +497,56 @@ void crescendo(const set<Part*>& parts, int range, int start_val, int end_val, b
 		}
 		
 		song->endUndo(SC_EVENT_MODIFIED);
+		return true;
 	}
+	else
+		return false;
 }
 
-void move_notes(const set<Part*>& parts, int range, signed int ticks) //TODO FINDMICH: safety checks
+bool move_notes(const set<Part*>& parts, int range, signed int ticks, bool do_undo) //TODO: clipping
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	
 	if ( (!events.empty()) && (ticks!=0) )
 	{
-		song->startUndo();
+		if (do_undo) song->startUndo();
 		
 		for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
 		{
 			Event& event=*(it->first);
 			Part* part=it->second;
+			bool del=false;
 
 			Event newEvent = event.clone();
-			newEvent.setTick(event.tick()+ticks);
-			// Indicate no undo, and do not do port controller values and clone parts. 
-			audio->msgChangeEvent(event, newEvent, part, false, false, false);
+			if ((signed)event.tick()+ticks < 0) //don't allow moving before the part's begin
+				newEvent.setTick(0);
+			else
+				newEvent.setTick(event.tick()+ticks);
+			
+			if (newEvent.endTick() > part->lenTick()) //if exceeding the part's end, clip
+			{
+				if (part->lenTick() > newEvent.tick())
+					newEvent.setLenTick(part->lenTick() - newEvent.tick());
+				else
+					del=true; //if the new length would be <= 0, erase the note
+			}
+			
+			if (del==false)
+				// Indicate no undo, and do not do port controller values and clone parts. 
+				audio->msgChangeEvent(event, newEvent, part, false, false, false);
+			else
+				// Indicate no undo, and do not do port controller values and clone parts. 
+				audio->msgDeleteEvent(event, part, false, false, false);
 		}
 		
-		song->endUndo(SC_EVENT_MODIFIED);
+		if (do_undo) song->endUndo(SC_EVENT_MODIFIED);
+		return do_undo;
 	}
+	else
+		return false;
 }
 
-void delete_overlaps(const set<Part*>& parts, int range)
+bool delete_overlaps(const set<Part*>& parts, int range)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	bool undo_started=false;
@@ -556,9 +603,10 @@ void delete_overlaps(const set<Part*>& parts, int range)
 		
 		if (undo_started) song->endUndo(SC_EVENT_MODIFIED);
 	}
+	return undo_started;
 }
 
-void legato(const set<Part*>& parts, int range, int min_len, bool dont_shorten)
+bool legato(const set<Part*>& parts, int range, int min_len, bool dont_shorten)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	bool undo_started=false;
@@ -610,6 +658,7 @@ void legato(const set<Part*>& parts, int range, int min_len, bool dont_shorten)
 		
 		if (undo_started) song->endUndo(SC_EVENT_MODIFIED);
 	}
+	return undo_started;
 }
 
 
