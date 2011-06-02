@@ -17,8 +17,9 @@
 //---------------------------------------------------------
 
 class SWidget : public QWidget {
-      virtual void resizeEvent(QResizeEvent*);
       Q_OBJECT
+      virtual void resizeEvent(QResizeEvent*);
+      
 
    signals:
       void heightChanged(int);

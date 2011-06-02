@@ -120,6 +120,8 @@ class QTreePreset:public QTreeWidgetItem {
 //   DeicsOnzeGui
 //---------------------------------------------------------
 class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui {
+    Q_OBJECT
+    
     bool _enabledPreset;
 
     QFramePitchEnvelope* pitchEnvelopeGraph;
@@ -134,7 +136,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     std::vector<FloatEntry*> _reverbFloatEntryVector;
     std::vector<CheckBox*> _reverbCheckBoxVector;
 
-    Q_OBJECT
+    
     QString lastDir;
   private slots:
     void readMessage(int);

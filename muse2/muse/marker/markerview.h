@@ -49,6 +49,8 @@ class MarkerItem : public QTreeWidgetItem {
 //---------------------------------------------------------
 
 class MarkerView : public TopWin {
+      Q_OBJECT
+    
       QTreeWidget* table;
       QLineEdit* editName;
       ///PosEdit* editSMPTE;
@@ -58,7 +60,7 @@ class MarkerView : public TopWin {
       QToolButton* lock;
       QToolBar* tools;
       
-      Q_OBJECT
+      
       virtual void closeEvent(QCloseEvent*);
 
    private slots:

@@ -4455,18 +4455,10 @@ void staff_t::update_part_indices()
 
 /* BUGS and potential bugs
  *   o when the keymap is not used, this will probably lead to a bug
- *     same when mastertrack is disabled
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o batch-movements: they may be destructive: if you move a chord
- *                      upwards, so that some notes get clipped,
- *                      they'll appear "damaged" in undo/redo
- *                      maybe DO apply stuff with undo/redo, but count
- *                      n_steps, and undo all steps before really
- *                      applying the operation then.
- *   o allow batch-movements in score editor
  *   o either remove these "hidden notes", or deal with them in the score editor
  *   o investigate with valgrind
  *   o controller view in score editor

@@ -40,6 +40,8 @@ class TempoLabel;
 //---------------------------------------------------------
 
 class MasterEdit : public MidiEditor {
+      Q_OBJECT
+    
       Master* canvas;
       ScrollScale* hscroll;
       ScrollScale* vscroll;
@@ -62,7 +64,7 @@ class MasterEdit : public MidiEditor {
       static int _widthInit, _heightInit;
       static QByteArray _toolbarInit;
 
-      Q_OBJECT
+      
       virtual void closeEvent(QCloseEvent*);
       virtual void resizeEvent(QResizeEvent*);
       virtual void focusOutEvent(QFocusEvent*);

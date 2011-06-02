@@ -26,6 +26,7 @@ class ScrollScale;
 //---------------------------------------------------------
 
 class Master : public View {
+      Q_OBJECT
       enum DragMode { DRAG_OFF, DRAG_NEW, DRAG_MOVE_START, DRAG_MOVE,
             DRAG_DELETE, DRAG_COPY_START, DRAG_COPY,
             DRAG_RESIZE, DRAG_LASSO_START, DRAG_LASSO
@@ -37,7 +38,7 @@ class Master : public View {
       DragMode drag;
       MidiEditor* editor;
 
-      Q_OBJECT
+      
       virtual void pdraw(QPainter&, const QRect&);
       virtual void viewMouseMoveEvent(QMouseEvent* event);
       virtual void leaveEvent(QEvent*e);

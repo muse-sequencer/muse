@@ -18,8 +18,9 @@ class Xml;
 //---------------------------------------------------------
 
 class Velocity : public QDialog, public Ui::VelocityBase {
-   private:
       Q_OBJECT
+   private:
+      
       QButtonGroup* rangeGroup;
 
    protected slots:

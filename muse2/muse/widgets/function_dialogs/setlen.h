@@ -15,8 +15,9 @@ class Xml;
 
 class Setlen : public QDialog, public Ui::SetlenBase
 {
+ 	Q_OBJECT
 	private:
-		Q_OBJECT
+		
 		QButtonGroup* range_group;
 		
 	protected slots:

@@ -17,6 +17,8 @@ class QMouseEvent;
 class QPainter;
 
 class VerticalMeter : public Meter {
+      Q_OBJECT
+    
    private:
       MeterType mtype;
       bool overflow;
@@ -27,7 +29,7 @@ class VerticalMeter : public Meter {
 
       void drawVU(QPainter& p, int, int, int);
 
-      Q_OBJECT
+      
       void paintEvent(QPaintEvent*);
       void resizeEvent(QResizeEvent*);
 

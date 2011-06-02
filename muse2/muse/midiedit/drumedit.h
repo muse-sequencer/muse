@@ -49,6 +49,8 @@ class SNode;
 //---------------------------------------------------------
 
 class DrumEdit : public MidiEditor {
+      Q_OBJECT
+    
       Event selEvent;
       MidiPart* selPart;
       int selTick;
@@ -79,7 +81,7 @@ class DrumEdit : public MidiEditor {
       QAction *sallAction, *snoneAction, *invAction, *inAction , *outAction;
       QAction *prevAction, *nextAction;
 
-      Q_OBJECT
+      
       void initShortcuts();
 
       virtual void closeEvent(QCloseEvent*);

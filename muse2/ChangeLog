@@ -4,6 +4,8 @@
           only single notes (flo93)
         - the functions now return as boolean, if they have triggered
           undo (flo93)
+        - applied another patch from WillyFoobar: moved Q_OBJECT
+          to the top of each class definition, where it belongs (flo93)
 30.05.2011:
         - implemented cut,copy'n'paste and the "select foo" entries in the score editor (flo93)
         - added select_foo() functions to functions.cpp (flo93)

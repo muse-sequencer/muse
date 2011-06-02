@@ -25,6 +25,8 @@ class Pos;
 //---------------------------------------------------------
 
 class NoteInfo : public QToolBar {
+      Q_OBJECT
+    
       ///PosEdit* selTime;
       Awl::PosEdit* selTime;
       QSpinBox* selLen;
@@ -33,7 +35,7 @@ class NoteInfo : public QToolBar {
       QSpinBox* selVelOff;
       bool deltaMode;
 
-      Q_OBJECT
+      
 
    public:
       enum ValType {VAL_TIME, VAL_LEN, VAL_VELON, VAL_VELOFF, VAL_PITCH };

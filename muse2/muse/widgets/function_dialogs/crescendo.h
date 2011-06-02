@@ -15,8 +15,9 @@ class Xml;
 
 class Crescendo : public QDialog, public Ui::CrescendoBase
 {
+ 	Q_OBJECT
 	private:
-		Q_OBJECT
+		
 		QButtonGroup* range_group;
 		
 	protected slots:

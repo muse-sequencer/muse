@@ -46,6 +46,7 @@ extern ToolB toolList[];
 
 class EditToolBar : public QToolBar {
       Q_OBJECT
+    
       Action** actions;
       int nactions;
 

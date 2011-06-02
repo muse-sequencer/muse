@@ -24,8 +24,11 @@ class Xml;
 //---------------------------------------------------------
 
 class EffectRack : public QListWidget {
-      AudioTrack* track;
       Q_OBJECT
+    
+    
+      AudioTrack* track;
+      
 
       virtual QSize minimumSizeHint() const;
       virtual QSize sizeHint() const;

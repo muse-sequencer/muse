@@ -15,10 +15,12 @@
 //---------------------------------------------------------
 
 class PosLabel : public QLabel {
+      Q_OBJECT
+    
       bool _smpte;
       unsigned _tickValue;
       unsigned _sampleValue;
-      Q_OBJECT
+      
 
       void updateValue();
 

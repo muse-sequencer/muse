@@ -23,14 +23,15 @@ class LabelCombo;
 //---------------------------------------------------------
 
 class Toolbar1 : public QToolBar {       
+      Q_OBJECT
+    
       QToolButton* solo;
       PosLabel* pos;
       PitchLabel* pitch;
       LabelCombo* raster;
       QTableWidget* rlist;
       bool showPitch;
-      Q_OBJECT
-
+      
    private slots:
       void _rasterChanged(int);
 

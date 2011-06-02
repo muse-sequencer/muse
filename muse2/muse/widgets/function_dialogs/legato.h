@@ -15,8 +15,9 @@ class Xml;
 
 class Legato : public QDialog, public Ui::LegatoBase
 {
+ 	Q_OBJECT
 	private:
-		Q_OBJECT
+		
 		QButtonGroup* range_group;
 		
 	protected slots:

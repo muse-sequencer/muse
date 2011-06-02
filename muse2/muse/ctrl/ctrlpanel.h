@@ -25,6 +25,8 @@ class MidiTrack;
 //---------------------------------------------------------
 
 class CtrlPanel: public QWidget {
+      Q_OBJECT
+    
       //QMenu* pop;
       QPushButton* selCtrl;
       MidiEditor* editor;
@@ -37,7 +39,7 @@ class CtrlPanel: public QWidget {
       DoubleLabel* _dl;
       int _val;
       
-      Q_OBJECT
+      
 
    signals:
       void destroyPanel();

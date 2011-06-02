@@ -6,7 +6,7 @@
 
 class ProjectCreateImpl : public QDialog, Ui::ProjectCreate
 {
-Q_OBJECT
+    Q_OBJECT
 
     QString directoryPath;
 public:

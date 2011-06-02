@@ -34,10 +34,12 @@ class Pos;
 //---------------------------------------------------------
 
 class TempoSig : public QWidget {
+    Q_OBJECT
+    
       DoubleLabel* l1;
       SigLabel* l2;
       QLabel* l3;
-      Q_OBJECT
+      
 
    private slots:
       void configChanged();
@@ -76,6 +78,8 @@ class TimeLLabel;
 
 class Transport : public QWidget
       {
+      Q_OBJECT
+    
       PosEdit* tl1;           // left mark
       PosEdit* tl2;           // right mark
       PosEdit* time1;         // tick time
@@ -99,9 +103,7 @@ class Transport : public QWidget
 
       Handle *lefthandle, *righthandle;
 
-      Q_OBJECT
-
-   private slots:
+ private slots:
       void cposChanged(const Pos&);
       void cposChanged(int);
       void lposChanged(const Pos&);

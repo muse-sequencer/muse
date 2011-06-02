@@ -31,8 +31,9 @@ namespace Awl {
 
 class MidiMeterSlider : public Slider
       {
-      Q_PROPERTY(int meterWidth READ meterWidth WRITE setMeterWidth)
       Q_OBJECT
+      Q_PROPERTY(int meterWidth READ meterWidth WRITE setMeterWidth)
+      
 
       double meterval;
       int _meterWidth;

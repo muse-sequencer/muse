@@ -15,9 +15,11 @@
 //---------------------------------------------------------
 
 class PitchLabel : public QLabel {
+      Q_OBJECT
+    
       bool _pitchMode;
       int _value;
-      Q_OBJECT
+      
 
    protected:
       QSize sizeHint() const;

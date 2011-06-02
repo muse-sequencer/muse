@@ -10,6 +10,7 @@ namespace Ui {
 class UnusedWaveFiles : public QDialog
 {
     Q_OBJECT
+    
     QStringList allWaveFiles;
 public:
     explicit UnusedWaveFiles(QWidget *parent = 0);

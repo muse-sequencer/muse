@@ -30,9 +30,10 @@ namespace Awl {
 //---------------------------------------------------------
 
 class TempoLabel : public QLabel {
+      Q_OBJECT
       double _value;
 
-      Q_OBJECT
+      
 
    protected:
       QSize sizeHint() const;
