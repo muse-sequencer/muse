@@ -40,20 +40,21 @@ void init_function_dialogs(QWidget* parent);
 
 
 std::set<Part*> partlist_to_set(PartList* pl);
+std::set<Part*> part_to_set(Part* p);
 std::map<Event*, Part*> get_events(const std::set<Part*>& parts, int range);
 
 //these functions simply do their job, non-interactively
-void modify_velocity(const std::set<Part*>& parts, int range, int rate, int offset=0);
-void modify_off_velocity(const std::set<Part*>& parts, int range, int rate, int offset=0);
-void modify_notelen(const std::set<Part*>& parts, int range, int rate, int offset=0);
-void quantize_notes(const std::set<Part*>& parts, int range, int raster, bool len=false, int strength=100, int swing=0, int threshold=0);
-void erase_notes(const std::set<Part*>& parts, int range, int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
-void delete_overlaps(const std::set<Part*>& parts, int range);
-void set_notelen(const std::set<Part*>& parts, int range, int len);
-void move_notes(const std::set<Part*>& parts, int range, signed int ticks);
-void transpose_notes(const std::set<Part*>& parts, int range, signed int halftonesteps);
-void crescendo(const std::set<Part*>& parts, int range, int start_val, int end_val, bool absolute);
-void legato(const std::set<Part*>& parts, int range, int min_len=1, bool dont_shorten=false);
+bool modify_velocity(const std::set<Part*>& parts, int range, int rate, int offset=0);
+bool modify_off_velocity(const std::set<Part*>& parts, int range, int rate, int offset=0);
+bool modify_notelen(const std::set<Part*>& parts, int range, int rate, int offset=0);
+bool quantize_notes(const std::set<Part*>& parts, int range, int raster, bool len=false, int strength=100, int swing=0, int threshold=0);
+bool erase_notes(const std::set<Part*>& parts, int range, int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
+bool delete_overlaps(const std::set<Part*>& parts, int range);
+bool set_notelen(const std::set<Part*>& parts, int range, int len);
+bool move_notes(const std::set<Part*>& parts, int range, signed int ticks, bool do_undo=true);
+bool transpose_notes(const std::set<Part*>& parts, int range, signed int halftonesteps, bool do_undo=true);
+bool crescendo(const std::set<Part*>& parts, int range, int start_val, int end_val, bool absolute);
+bool legato(const std::set<Part*>& parts, int range, int min_len=1, bool dont_shorten=false);
 
 
 //the below functions automatically open the dialog

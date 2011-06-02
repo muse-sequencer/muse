@@ -353,7 +353,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 		edit_menu->addSeparator();
 
 		del_action = edit_menu->addAction(tr("Delete &Events"));
-		menu_mapper->setMapping(del_action, CMD_ERASE);
+		menu_mapper->setMapping(del_action, CMD_DEL);
 		connect(del_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
 
 		edit_menu->addSeparator();
@@ -702,6 +702,7 @@ void ScoreEdit::menu_command(int cmd)
 		case CMD_NOTELEN: modify_notelen(score_canvas->get_all_parts()); break;
 		case CMD_TRANSPOSE: transpose_notes(score_canvas->get_all_parts()); break;
 		case CMD_ERASE: erase_notes(score_canvas->get_all_parts()); break;
+		case CMD_DEL: erase_notes(score_canvas->get_all_parts(),1); break;
 		case CMD_MOVE: move_notes(score_canvas->get_all_parts()); break;
 		case CMD_FIXED_LEN: set_notelen(score_canvas->get_all_parts()); break;
 		case CMD_DELETE_OVERLAPS: delete_overlaps(score_canvas->get_all_parts()); break;
@@ -1183,13 +1184,12 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 	x_left=0;
 	y_pos=0;
 	have_lasso=false;
+	inserting=false;
 	dragging=false;
 	drag_cursor_changed=false;
 	mouse_erases_notes=false;
 	mouse_inserts_notes=true;
-	
 	undo_started=false;
-	undo_flags=0;
 	
 	selected_part=NULL;
 	
@@ -3520,10 +3520,9 @@ int ScoreCanvas::y_to_pitch(int y, int t, clef_t clef)
 
 void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 {
-	keystate=((QInputEvent*)event)->modifiers();
-	
+	keystate=event->modifiers();
 	bool ctrl=keystate & Qt::ControlModifier;
-	
+
 	// den errechneten tick immer ABrunden!
 	// denn der "bereich" eines schlags geht von schlag_begin bis nächsterschlag_begin-1
 	// noten werden aber genau in die mitte dieses bereiches gezeichnet
@@ -3534,10 +3533,6 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 	int x=event->x()+x_pos-x_left;
 	int tick=flo_quantize_floor(x_to_tick(x), quant_ticks());
 	
-	if (event->button()==Qt::LeftButton)
-		if (!ctrl)
-			deselect_all();
-
 	if (staff_it!=staves.end())
 	{
 		if (event->x() <= x_left) //clicked in the preamble?
@@ -3627,9 +3622,10 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				
 				
 				
+				clicked_event_ptr=set_it->source_event;
 				dragged_event=*set_it->source_event;
+				original_dragged_event=dragged_event.clone();
 				dragged_event_part=set_it->source_part;
-				dragged_event_original_pitch=dragged_event.pitch();
 				
 				if ((mouse_erases_notes) || (event->button()==Qt::MidButton)) //erase?
 				{
@@ -3637,14 +3633,9 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				}
 				else if (event->button()==Qt::LeftButton) //edit?
 				{
-					set_it->source_event->setSelected(!set_it->source_event->selected());
-					song_changed(SC_SELECTION);
-					
 					setMouseTracking(true);		
 					dragging=true;
 					drag_cursor_changed=false;
-					undo_started=false;
-					undo_flags=SC_EVENT_MODIFIED;
 				}
 			}
 			else //we found nothing?
@@ -3676,11 +3667,9 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 							if (relative_tick<0)
 								cerr << "ERROR: THIS SHOULD NEVER HAPPEN: relative_tick is negative!" << endl;
 							song->startUndo();
-							undo_started=true;
-							undo_flags=SC_EVENT_INSERTED | SC_EVENT_MODIFIED;
-							//stopping undo at the end of this function is unneccessary
-							//because we'll begin a drag right after it. finishing
-							//this drag will stop undo as well (in mouseReleaseEvent)
+
+							if (!ctrl)
+								deselect_all();
 							
 							Event newevent(Note);
 							newevent.setPitch(y_to_pitch(y,tick, staff_it->clef));
@@ -3689,7 +3678,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 							newevent.setTick(relative_tick);
 							newevent.setLenTick((new_len>0)?new_len:last_len);
 							newevent.setSelected(true);
-							
+
 							if (flo_quantize(newevent.lenTick(), quant_ticks()) <= 0)
 							{
 								newevent.setLenTick(quant_ticks());
@@ -3707,7 +3696,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 							
 							dragged_event_part=curr_part;
 							dragged_event=newevent;
-							dragged_event_original_pitch=newevent.pitch();
+							original_dragged_event=dragged_event.clone();
 
 							mouse_down_pos=event->pos();
 							mouse_operation=NO_OP;
@@ -3717,9 +3706,12 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 
 							setMouseTracking(true);	
 							dragging=true;
+							inserting=true;
 							drag_cursor_changed=true;
 							setCursor(Qt::SizeAllCursor);
-							//song->startUndo(); unneccessary because we have started it already above
+							
+							song->endUndo(SC_EVENT_INSERTED);
+							song->update(SC_SELECTION);
 						}
 					}
 					else // !mouse_inserts_notes. open a lasso
@@ -3733,16 +3725,16 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				}			
 		}
 	}
-
-	if (event->button()==Qt::LeftButton)
-		song->update(SC_SELECTION);
 }
 
 void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 {
+	keystate=event->modifiers();
+	bool ctrl=keystate & Qt::ControlModifier;
+	
 	if (dragging && event->button()==Qt::LeftButton)
 	{
-		if ((mouse_operation==LENGTH) || (mouse_operation==BEGIN)) //also BEGIN can change the len by clipping
+		if (mouse_operation==LENGTH)
 		{
 			if (flo_quantize(dragged_event.lenTick(), quant_ticks()) <= 0)
 			{
@@ -3753,15 +3745,29 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 			{
 				last_len=flo_quantize(dragged_event.lenTick(), quant_ticks());
 			}
+			
+			if (undo_started)
+				song->endUndo(SC_EVENT_MODIFIED | SC_EVENT_REMOVED);
 		}
+
 		
-		if (undo_started)
-			song->endUndo(undo_flags);
+		if (mouse_operation==NO_OP && !inserting)
+		{
+			if (event->button()==Qt::LeftButton)
+				if (!ctrl)
+					deselect_all();
+
+			clicked_event_ptr->setSelected(!clicked_event_ptr->selected());
+
+			song->update(SC_SELECTION);
+		}
 		
 		setMouseTracking(false);
 		unsetCursor();
+		inserting=false;
 		dragging=false;
 		drag_cursor_changed=false;
+		undo_started=false;
 		
 		x_scroll_speed=0; x_scroll_pos=0;
 	}
@@ -3791,6 +3797,9 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 
 	if (have_lasso && event->button()==Qt::LeftButton)
 	{
+		if (!ctrl)
+			deselect_all();
+		
 		set<Event*> already_processed;
 		
 		for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
@@ -3808,6 +3817,9 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 
 void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 {
+	keystate=event->modifiers();
+	bool ctrl=keystate & Qt::ControlModifier;
+
 	if (dragging)
 	{
 		int dx=event->x()-mouse_down_pos.x();
@@ -3838,6 +3850,22 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				mouse_operation=PITCH;
 				setCursor(Qt::SizeVerCursor);
 			}
+			
+			if (mouse_operation!=NO_OP)
+			{
+				if (!inserting && clicked_event_ptr->selected()==false)
+				{
+					if (!ctrl)
+						deselect_all();
+					
+					clicked_event_ptr->setSelected(true);
+					
+					song->update(SC_SELECTION);
+				}
+				
+				old_pitch=-1;
+				old_dest_tick=MAXINT;
+			}
 		}
 
 		int new_pitch;
@@ -3848,70 +3876,41 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				break;
 				
 			case PITCH:
-				if (debugMsg) cout << "changing pitch, delta="<<nearbyint((float)dy/PITCH_DELTA)<<endl;
-				new_pitch=dragged_event_original_pitch - nearbyint((float)dy/PITCH_DELTA);
+				if (heavyDebugMsg) cout << "trying to change pitch, delta="<<-nearbyint((float)dy/PITCH_DELTA)<<endl;
+				new_pitch=original_dragged_event.pitch() - nearbyint((float)dy/PITCH_DELTA);
 				
 				if (new_pitch < 0) new_pitch=0;
 				if (new_pitch > 127) new_pitch=127;
 				
-				if (dragged_event.pitch()!=new_pitch)
+				if (new_pitch != old_pitch)
 				{
-					if (!undo_started)
-					{
-						song->startUndo();
-						undo_started=true;
-					}
-					
-					Event tmp=dragged_event.clone();
-					tmp.setPitch(new_pitch);
-					
-					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
-					dragged_event=tmp;
-					
-					fully_recalculate();	
+					if (debugMsg) cout << "changing pitch, delta="<<new_pitch-original_dragged_event.pitch()<<endl;
+					if (undo_started) song->undo();
+					undo_started=transpose_notes(part_to_set(dragged_event_part),1, new_pitch-original_dragged_event.pitch());
+					old_pitch=new_pitch;
 				}
 				
 				break;
 			
 			case BEGIN:
-				if (dragged_event.tick()+dragged_event_part->tick() != unsigned(tick))
 				{
-					if (!undo_started)
-					{
-						song->startUndo();
-						undo_started=true;
-					}
-
-					Event tmp=dragged_event.clone();
 					signed relative_tick=tick-signed(dragged_event_part->tick());
+					unsigned dest_tick;
 					
 					if (relative_tick >= 0)
-						tmp.setTick(relative_tick);
+						dest_tick=relative_tick;
 					else
 					{
-						tmp.setTick(0);
+						dest_tick=0;
 						if (debugMsg) cout << "not moving note before begin of part; setting it directly to the begin" << endl;
 					}
 
-					if (tmp.endTick() > dragged_event_part->lenTick())
+					if (dest_tick != old_dest_tick)
 					{
-						signed new_len=dragged_event_part->lenTick() - tmp.tick();
-						if (new_len>=0)
-						{
-							tmp.setLenTick(dragged_event_part->lenTick() - tmp.tick());
-							if (debugMsg) cout << "moved note would exceed its part; clipping length to " << tmp.lenTick() << endl;
-						}
-						else
-						{
-							tmp.setLenTick(0);
-							if (debugMsg) cout << "moved note would exceed its part; clipping length to 0 (actually negative)" << endl;
-						}
+						if (undo_started) song->undo();
+						undo_started=move_notes(part_to_set(dragged_event_part),1, (signed)dest_tick-original_dragged_event.tick());
+						old_dest_tick=dest_tick;
 					}
-					
-					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
-					dragged_event=tmp;
-					
-					fully_recalculate();	
 				}
 				
 				break;
@@ -4332,14 +4331,6 @@ void ScoreCanvas::deselect_all()
 	song->update(SC_SELECTION);
 }
 
-void ScoreCanvas::keyPressEvent(QKeyEvent* event)
-{
-	if (event->key()==Qt::Key_Delete)
-	{
-		erase_notes(get_all_parts(), 1); // 1 means "all selected"
-	}
-}
-
 bool staff_t::cleanup_parts()
 {
 	bool did_something=false;
@@ -4469,8 +4460,13 @@ void staff_t::update_part_indices()
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
+ *   o batch-movements: they may be destructive: if you move a chord
+ *                      upwards, so that some notes get clipped,
+ *                      they'll appear "damaged" in undo/redo
+ *                      maybe DO apply stuff with undo/redo, but count
+ *                      n_steps, and undo all steps before really
+ *                      applying the operation then.
  *   o allow batch-movements in score editor
- *   o in main win: make "Ch" column editable with a line edit
  *   o either remove these "hidden notes", or deal with them in the score editor
  *   o investigate with valgrind
  *   o controller view in score editor
