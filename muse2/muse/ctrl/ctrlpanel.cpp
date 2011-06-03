@@ -11,7 +11,8 @@
 #include "ctrlpanel.h"
 #include "ctrlcanvas.h"
 
-#include <QMenu>
+//#include <QMenu>
+#include <QAction>
 #include <QPushButton>
 #include <QSizePolicy>
 #include <QHBoxLayout>
@@ -20,10 +21,12 @@
 
 #include <math.h>
 
+#include "app.h"
 #include "globals.h"
 #include "midictrl.h"
 #include "instruments/minstrument.h"
 #include "midiport.h"
+#include "mididev.h"
 #include "xml.h"
 #include "icons.h"
 #include "event.h"
@@ -37,6 +40,8 @@
 #include "doublelabel.h"
 #include "midi.h"
 #include "audio.h"
+#include "menutitleitem.h"
+#include "popupmenu.h"
 
 //---------------------------------------------------------
 //   CtrlPanel
@@ -47,6 +52,8 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       {
       setObjectName(name);
       inHeartBeat = true;
+      //ctrlMainPop = 0;
+      //ctrlSubPop = 0;
       editor = e;
       setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
       QVBoxLayout* vbox = new QVBoxLayout;
@@ -514,6 +521,7 @@ void CtrlPanel::setHeight(int h)
       setFixedHeight(h);
       }
 
+#if 0
 struct CI {
             QString s;
             bool used;
@@ -672,6 +680,261 @@ void CtrlPanel::ctrlPopup()
                   }
             }
       }
+
+#else               // p4.0.25 Tim
+struct CI {
+            int num;
+            QString s;
+            bool used;
+            bool instrument;
+            CI(int n, const QString& ss, bool u, bool i) : num(n), s(ss), used(u), instrument(i) {}
+            };
+
+void CtrlPanel::ctrlPopup()
+      {
+      //---------------------------------------------------
+      // build list of midi controllers for current
+      // MidiPort/channel
+      //---------------------------------------------------
+
+      PartList* parts  = editor->parts();
+      Part* part       = editor->curCanvasPart();
+      MidiTrack* track = (MidiTrack*)(part->track());
+      int channel      = track->outChannel();
+      MidiPort* port   = &midiPorts[track->outPort()];
+      int curDrumInstrument = editor->curDrumInstrument();
+      bool isDrum      = track->type() == Track::DRUM;
+      MidiInstrument* instr = port->instrument();
+      MidiControllerList* mcl = instr->controller();
+
+      MidiCtrlValListList* cll = port->controller();
+      int min = channel << 24;
+      int max = min + 0x1000000;
+
+      std::list<CI> sList;
+      typedef std::list<CI>::iterator isList;
+
+      for (iMidiCtrlValList i = cll->lower_bound(min); i != cll->lower_bound(max); ++i) {
+            MidiCtrlValList* cl = i->second;
+            MidiController* c   = port->midiController(cl->num());
+            // dont show drum specific controller if not a drum track
+            if ((c->num() & 0xff) == 0xff) {
+                  if (!isDrum)
+                        continue;
+                  // only show controller for curDrumInstrument:
+                  if ((cl->num() & 0xff) != drumMap[curDrumInstrument].anote) {
+                        continue;
+                        }
+                  }
+            isList i = sList.begin();
+            for (; i != sList.end(); ++i) {
+                  //if (i->s == c->name())
+                  if (i->num == c->num())
+                        break;
+                  }
+            if (i == sList.end()) {
+                  bool used = false;
+                  for (iPart ip = parts->begin(); ip != parts->end(); ++ip) {
+                        EventList* el = ip->second->events();
+                        for (iEvent ie = el->begin(); ie != el->end(); ++ie) {
+                              Event e = ie->second;
+                              if ((e.type() == Controller) && (e.dataA() == cl->num())) {
+                                    used = true;
+                                    break;
+                                    }
+                              }
+                        if (used)
+                              break;
+                        }
+                  //sList.push_back(CI(c->name(), used));
+                  bool isinstr = ( mcl->find(c->num()) != mcl->end() );
+                  int cnum = c->num();
+                  // Need to distinguish between global default controllers and 
+                  //  instrument defined controllers. Instrument takes priority over global
+                  //  ie they 'overtake' definition of a global controller such that the
+                  //  global def is no longer available.
+                  sList.push_back(CI(cnum, 
+                                  isinstr ? midiCtrlNumString(cnum, true) + c->name() : midiCtrlName(cnum, true), 
+                                  used, isinstr));
+                  }
+            }
+      
+      PopupMenu* ctrlMainPop = new PopupMenu;
+      
+      //ctrlMainPop->addSeparator();
+      ctrlMainPop->addAction(new MenuTitleItem(tr("Instrument-defined"), ctrlMainPop));
+      
+      //ctrlMainPop->addAction(QIcon(*configureIcon), tr("Add ..."))->setData(max + 1);
+      
+      // Add instrument-defined controllers.
+      for (isList i = sList.begin(); i != sList.end(); ++i) 
+      {
+        if(!i->instrument)
+          continue;
+        if (i->used)
+          ctrlMainPop->addAction(QIcon(*greendotIcon), i->s)->setData(i->num);
+        else
+          ctrlMainPop->addAction(i->s)->setData(i->num);
+      }
+
+      ctrlMainPop->addAction(QIcon(*configureIcon), tr("Add ..."))->setData(max + 1);
+      //ctrlMainPop->addAction(QIcon(*midi_edit_instrumentIcon), tr("Edit instruments"))->setData(max + 2);
+
+      ctrlMainPop->addSeparator();
+      ctrlMainPop->addAction(new MenuTitleItem(tr("Others"), ctrlMainPop));
+      
+      //ctrlMainPop->addAction(QIcon(*configureIcon), tr("Add ..."))->setData(max + 3);
+      
+      ctrlMainPop->addAction(tr("Velocity"))->setData(max);
+      
+      // Add global default controllers (all controllers not found in instrument).
+      for (isList i = sList.begin(); i != sList.end(); ++i) 
+      {
+        if(i->instrument)
+          continue;
+        if (i->used)
+          ctrlMainPop->addAction(QIcon(*greendotIcon), i->s)->setData(i->num);
+        else
+          ctrlMainPop->addAction(i->s)->setData(i->num);
+      }
+      
+      ctrlMainPop->addAction(QIcon(*configureIcon), tr("Add ..."))->setData(max + 3);
+
+      //connect(ctrlMainPop, SIGNAL(hovered(QAction*)), SLOT(ctrlMainPopHovered(QAction*)));
+      
+      QAction *act = ctrlMainPop->exec(selCtrl->mapToGlobal(QPoint(0,0)));
+      selCtrl->setDown(false);
+      
+      if (!act)
+      {
+        delete ctrlMainPop;
+        return;
+      }
+      
+      int rv = act->data().toInt();
+      delete ctrlMainPop;
+      
+      if (rv == max) {    // special case velocity
+            emit controllerChanged(CTRL_VELOCITY);
+            }
+      else if (rv == max + 1) {  // add new instrument controller
+            
+            PopupMenu * ctrlSubPop = new PopupMenu(this);
+            ctrlSubPop->addAction(new MenuTitleItem(tr("Instrument-defined"), ctrlSubPop));
+            
+            //
+            // populate popup with all controllers available for
+            // current instrument
+            //
+            
+            //ctrlSubPop->addAction(QIcon(*midi_edit_instrumentIcon), tr("Edit instruments"))->setData(max + 2);
+            
+            for (iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
+            {
+                int num = ci->second->num();
+                if((num & 0xff) == 0xff)
+                {
+                  // dont show drum specific controller if not a drum track
+                  if(!isDrum)
+                    continue;
+                  num = (num & ~0xff) + drumMap[curDrumInstrument].anote;
+                }    
+
+                if(cll->find(channel, num) == cll->end())
+                  ctrlSubPop->addAction(midiCtrlNumString(num, true) + ci->second->name())->setData(num);
+            }
+            
+            // Don't allow editing instrument if it's a synth
+            if(!port->device() || port->device()->deviceType() != MidiDevice::SYNTH_MIDI)
+              ctrlSubPop->addAction(QIcon(*midi_edit_instrumentIcon), tr("Edit instrument ..."))->setData(max + 2);
+            
+            //connect(ctrlSubPop, SIGNAL(hovered(QAction*)), SLOT(ctrlSubPopHovered(QAction*)));
+            
+            QAction *act2 = ctrlSubPop->exec(selCtrl->mapToGlobal(QPoint(0,0)));
+            if (act2) 
+            {
+              int rv2 = act2->data().toInt();
+              
+              if (rv2 == max + 2)            // edit instrument
+                muse->startEditInstrument();
+              else                           // select new instrument control
+              {
+                MidiController* c;
+                for (iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) 
+                {
+                      c = ci->second;
+                      int num = c->num();
+                      if (isDrum && ((num & 0xff) == 0xff))
+                        num = (num & ~0xff) + drumMap[curDrumInstrument].anote;
+                      
+                      if(num != rv2)
+                        continue;
+                        
+                      if(cll->find(channel, num) == cll->end())
+                      {
+                        MidiCtrlValList* vl = new MidiCtrlValList(num);
+                        
+                        cll->add(channel, vl);
+                        emit controllerChanged(c->num());
+                        //song->update(SC_MIDI_CONTROLLER_ADD);
+                      }
+                      else 
+                        emit controllerChanged(c->num());
+                      break;
+                }
+              }  
+            }
+            delete ctrlSubPop;   
+            }
+      
+      //else if (rv == max + 2)             // edit instrument
+      //      muse->startEditInstrument();
+      
+      else if (rv == max + 3) {             // add new other controller
+            PopupMenu* ctrlSubPop = new PopupMenu(this);
+            ctrlSubPop->addAction(new MenuTitleItem(tr("Common Controls"), ctrlSubPop));
+            
+            for(int num = 0; num < 127; ++num)
+              if(cll->find(channel, num) == cll->end())
+                ctrlSubPop->addAction(midiCtrlName(num, true))->setData(num);
+            QAction *act2 = ctrlSubPop->exec(selCtrl->mapToGlobal(QPoint(0,0)));
+            if (act2) {
+                  int rv2 = act2->data().toInt();
+                  int num = rv2;
+                  if (isDrum && ((num & 0xff) == 0xff))
+                    num = (num & ~0xff) + drumMap[curDrumInstrument].anote;
+                  if(cll->find(channel, num) == cll->end())
+                  {
+                    MidiCtrlValList* vl = new MidiCtrlValList(num);
+                    
+                    cll->add(channel, vl);
+                    emit controllerChanged(rv2);
+                    //song->update(SC_MIDI_CONTROLLER_ADD);
+                  }
+                  else 
+                    emit controllerChanged(rv2);
+                  }
+            delete ctrlSubPop;   
+            }
+      else {                           // Select a control
+            //QString s = act->text();
+            iMidiCtrlValList i = cll->begin();
+            for (; i != cll->end(); ++i) {
+                  MidiCtrlValList* cl = i->second;
+                  MidiController* c   = port->midiController(cl->num());
+                  //if (c->name() == s) {
+                  if (c->num() == rv) {
+                        emit controllerChanged(c->num());
+                        break;
+                        }
+                  }
+            if (i == cll->end()) {
+                  //printf("CtrlPanel: controller %s not found!", s.toLatin1().constData());
+                  printf("CtrlPanel: controller number %d not found!", rv);
+                  }
+            }
+      }
+#endif
 
 //---------------------------------------------------------
 //   ctrlRightClicked

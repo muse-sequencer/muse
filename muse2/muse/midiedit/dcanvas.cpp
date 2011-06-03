@@ -34,6 +34,7 @@
 #include "audio.h"
 #include "shortcuts.h"
 #include "icons.h"
+#include "functions.h"
 
 #define CARET   10
 #define CARET2   5
@@ -88,7 +89,11 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
       setVirt(false);
       cursorPos= QPoint(0,0);
       _stepSize=1;
+      
+      steprec=new StepRec(NULL);
+      
       songChanged(SC_TRACK_INSERTED);
+      connect(song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
       }
 
 //---------------------------------------------------------
@@ -538,26 +543,7 @@ int DrumCanvas::pitch2y(int pitch) const
 
 void DrumCanvas::cmd(int cmd)
       {
-      switch(cmd) {
-            case CMD_CUT:
-                  copy();
-                  song->startUndo();
-                  for (iCItem i = items.begin(); i != items.end(); ++i) {
-                        if (!i->second->isSelected())
-                              continue;
-                        DEvent* e = (DEvent*)(i->second);
-                        Event event = e->event();
-                        // Indicate no undo, and do not do port controller values and clone parts. 
-                        audio->msgDeleteEvent(event, e->part(), false, false, false);
-                        }
-                  song->endUndo(SC_EVENT_REMOVED);
-                  break;
-            case CMD_COPY:
-                  copy();
-                  break;
-            case CMD_PASTE:
-                  paste();
-                  break;
+      switch (cmd) {
             case CMD_SELECT_ALL:     // select all
                   for (iCItem k = items.begin(); k != items.end(); ++k) {
                         if (!k->second->isSelected())
@@ -698,41 +684,12 @@ void DrumCanvas::cmd(int cmd)
 
 
 //---------------------------------------------------------
-//   copy
-//    cut copy paste
-//---------------------------------------------------------
-
-void DrumCanvas::copy()
-      {
-      QMimeData* md = getTextDrag();
-      
-      if (md)
-            QApplication::clipboard()->setMimeData(md, QClipboard::Clipboard);
-      }
-
-
-//---------------------------------------------------------
-//   paste
-//    paste events
-//---------------------------------------------------------
-
-void DrumCanvas::paste()
-      {
-      QString stype("x-muse-eventlist");
-      
-      //QString s = QApplication::clipboard()->text(stype, QClipboard::Selection);  
-      QString s = QApplication::clipboard()->text(stype, QClipboard::Clipboard);  // TODO CHECK Tim.
-      
-      pasteAt(s, song->cpos());
-      }
-
-//---------------------------------------------------------
 //   startDrag
 //---------------------------------------------------------
 
 void DrumCanvas::startDrag(CItem* /* item*/, bool copymode)
       {
-      QMimeData* md = getTextDrag();
+      QMimeData* md = selected_events_to_mime(partlist_to_set(editor->parts()), 1);
       
       if (md) {
             // "Note that setMimeData() assigns ownership of the QMimeData object to the QDrag object. 
@@ -788,6 +745,10 @@ void DrumCanvas::keyPressed(int index, int velocity)
       // play note:
       MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
       audio->msgPlayMidiEvent(&e);
+
+      if (_steprec && pos[0] >= start_tick && pos[0] < end_tick && curPart)
+				steprec->record(curPart,index,drumMap[index].len,editor->raster(),velocity,globalKeyState&Qt::ControlModifier,globalKeyState&Qt::ShiftModifier);
+            
       }
 
 //---------------------------------------------------------
@@ -818,7 +779,7 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
       
       typedef std::vector< std::pair<Part*, Event*> >::iterator idel_ev;
       typedef std::vector< std::pair<Part*, Event> >::iterator iadd_ev;
-            
+      
       MidiTrackList* tracks = song->midis();
       for (ciMidiTrack t = tracks->begin(); t != tracks->end(); t++) {
             MidiTrack* curTrack = *t;
@@ -1163,3 +1124,19 @@ void DrumCanvas::moveAwayUnused()
 		used.erase(it++);
 	}
 }
+
+
+//---------------------------------------------------------
+//   midiNote
+//---------------------------------------------------------
+void DrumCanvas::midiNote(int pitch, int velo)
+      {
+      if (debugMsg) printf("DrumCanvas::midiNote: pitch=%i, velo=%i\n", pitch, velo);
+
+      if (_midiin && _steprec && curPart
+         && !audio->isPlaying() && velo && pos[0] >= start_tick
+         && pos[0] < end_tick
+         && !(globalKeyState & Qt::AltModifier)) {
+					 steprec->record(curPart,drumInmap[pitch],drumMap[(int)drumInmap[pitch]].len,editor->raster(),velo,globalKeyState&Qt::ControlModifier,globalKeyState&Qt::ShiftModifier);
+         }
+      }

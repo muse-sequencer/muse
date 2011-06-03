@@ -37,8 +37,8 @@ class PitchEdit : public QSpinBox {
       bool deltaMode;
 
    protected:
-      virtual QString mapValueToText(int v);
-      virtual int mapTextToValue(bool* ok);
+      virtual QString textFromValue(int v) const;
+      virtual int valueFromText(bool* ok) const;
       virtual void keyPressEvent(QKeyEvent*);
 
    signals:
@@ -48,6 +48,9 @@ class PitchEdit : public QSpinBox {
    public:
       PitchEdit(QWidget* parent);
       void setDeltaMode(bool);
+   
+   private slots:
+      void midiNote(int pitch, int velo);
       };
 }
 

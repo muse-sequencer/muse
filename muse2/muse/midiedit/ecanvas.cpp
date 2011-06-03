@@ -25,6 +25,7 @@
 #include "event.h"
 #include "shortcuts.h"
 #include "audio.h"
+#include "functions.h"
 
 //---------------------------------------------------------
 //   EventCanvas
@@ -364,137 +365,6 @@ void EventCanvas::keyPress(QKeyEvent* event)
             event->ignore();
       }
 
-//---------------------------------------------------------
-//   getTextDrag
-//---------------------------------------------------------
-
-//QDrag* EventCanvas::getTextDrag(QWidget* parent)
-QMimeData* EventCanvas::getTextDrag()
-      {
-      //---------------------------------------------------
-      //   generate event list from selected events
-      //---------------------------------------------------
-
-      EventList el;
-      unsigned startTick = MAXINT;
-      for (iCItem i = items.begin(); i != items.end(); ++i) {
-            if (!i->second->isSelected())
-                  continue;
-            ///NEvent* ne = (NEvent*)(i->second);
-            CItem* ne = i->second;
-            Event e   = ne->event();
-            if (startTick == MAXINT)
-                  startTick = e.tick();
-            el.add(e);
-            }
-
-      //---------------------------------------------------
-      //    write events as XML into tmp file
-      //---------------------------------------------------
-
-      FILE* tmp = tmpfile();
-      if (tmp == 0) {
-            fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n",
-               strerror(errno));
-            return 0;
-            }
-      Xml xml(tmp);
-
-      int level = 0;
-      xml.tag(level++, "eventlist");
-      for (ciEvent e = el.begin(); e != el.end(); ++e)
-            e->second.write(level, xml, -startTick);
-      xml.etag(--level, "eventlist");
-
-      //---------------------------------------------------
-      //    read tmp file into drag Object
-      //---------------------------------------------------
-
-      fflush(tmp);
-      struct stat f_stat;
-      if (fstat(fileno(tmp), &f_stat) == -1) {
-            fprintf(stderr, "PianoCanvas::copy() fstat failes:<%s>\n",
-               strerror(errno));
-            fclose(tmp);
-            return 0;
-            }
-      int n = f_stat.st_size;
-      char* fbuf  = (char*)mmap(0, n+1, PROT_READ|PROT_WRITE,
-         MAP_PRIVATE, fileno(tmp), 0);
-      fbuf[n] = 0;
-      
-      QByteArray data(fbuf);
-      QMimeData* md = new QMimeData();
-      //QDrag* drag = new QDrag(parent);
-      
-      md->setData("text/x-muse-eventlist", data);
-      //drag->setMimeData(md);
-      
-      munmap(fbuf, n);
-      fclose(tmp);
-      
-      //return drag;
-      return md;
-      }
-
-//---------------------------------------------------------
-//   pasteAt
-//---------------------------------------------------------
-
-void EventCanvas::pasteAt(const QString& pt, int pos)
-      {
-      QByteArray ba = pt.toLatin1();
-      const char* p = ba.constData();
-      Xml xml(p);
-      for (;;) {
-            Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
-                        return;
-                  case Xml::TagStart:
-                        if (tag == "eventlist") {
-                              Undo operations;
-                              EventList* el = new EventList();
-                              el->read(xml, "eventlist", true);
-                              int modified = SC_EVENT_INSERTED;
-                              for (iEvent i = el->begin(); i != el->end(); ++i) {
-                                    Event e = i->second;
-                                    int tick = e.tick() + pos - curPart->tick();
-                                    if (tick<0) {
-                                            printf("ERROR: trying to add event before current part!\n");
-                                            delete el;
-                                            return;
-                                            }
-
-                                    e.setTick(tick);
-                                    int diff = e.endTick()-curPart->lenTick();
-                                    if (diff > 0)  {// too short part? extend it
-                                            Part* newPart = curPart->clone();
-                                            newPart->setLenTick(newPart->lenTick()+diff);
-                                            // Do port controller values but not clone parts. 
-                                            operations.push_back(UndoOp(UndoOp::ModifyPart, curPart, newPart, true, false));
-                                            modified=modified|SC_PART_MODIFIED;
-                                            curPart = newPart; // reassign
-                                            }
-                                    // Do not do port controller values and clone parts. 
-                                    operations.push_back(UndoOp(UndoOp::AddEvent, e, curPart, false, false));
-                                    }
-                              song->applyOperationGroup(operations);
-                              delete el;
-                              return;
-                              }
-                        else
-                              xml.unknown("pasteAt");
-                        break;
-                  case Xml::Attribut:
-                  case Xml::TagEnd:
-                  default:
-                        break;
-                  }
-            }
-      }
 
 //---------------------------------------------------------
 //   dropEvent
@@ -515,7 +385,7 @@ void EventCanvas::viewDropEvent(QDropEvent* event)
             int x = editor->rasterVal(event->pos().x());
             if (x < 0)
                   x = 0;
-            pasteAt(text, x);
+            paste_at(curPart, text, x);
             //event->accept();  // TODO
             }
       else {

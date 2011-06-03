@@ -17,6 +17,8 @@
 #include <QDragLeaveEvent>
 #include <QTimer>
 
+#include "steprec.h"
+
 #define KH        13
 
 //---------------------------------------------------------
@@ -38,13 +40,16 @@ class QRect;
 //---------------------------------------------------------
 
 class PianoCanvas : public EventCanvas {
+      Q_OBJECT
+    
       int colorMode;
       int playedPitch;
       
-      QTimer* chordTimer;
-      unsigned chordTimer_setToTick;
+      bool noteHeldDown[128];
+      
+      StepRec* steprec;
 
-      Q_OBJECT
+      
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void drawItem(QPainter&, const CItem*, const QRect&);
       void drawTopItem(QPainter &p, const QRect &rect);
@@ -64,8 +69,6 @@ class PianoCanvas : public EventCanvas {
       int y2pitch(int) const;
       int pitch2y(int) const;
       virtual void drawCanvas(QPainter&, const QRect&);
-      void copy();
-      void paste();
       virtual void itemPressed(const CItem*);
       virtual void itemReleased(const CItem*, const QPoint&);
       virtual void itemMoved(const CItem*, const QPoint&);
@@ -74,7 +77,6 @@ class PianoCanvas : public EventCanvas {
 
    private slots:
       void midiNote(int pitch, int velo);
-      void chordTimerTimedOut();
 
    signals:
       void quantChanged(int);
@@ -96,7 +98,7 @@ class PianoCanvas : public EventCanvas {
          CMD_TRANSPOSE, CMD_THIN_OUT, CMD_ERASE_EVENT,
          CMD_NOTE_SHIFT, CMD_MOVE_CLOCK, CMD_COPY_MEASURE,
          CMD_ERASE_MEASURE, CMD_DELETE_MEASURE, CMD_CREATE_MEASURE,
-         CMD_FIXED_LEN, CMD_DELETE_OVERLAPS
+         CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO
          };
 
       PianoCanvas(MidiEditor*, QWidget*, int, int);

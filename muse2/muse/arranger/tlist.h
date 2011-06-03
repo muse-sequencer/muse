@@ -14,12 +14,14 @@
 
 class QKeyEvent;
 class QLineEdit;
+class QSpinBox;
 class QMouseEvent;
 class QPaintEvent;
 class QResizeEvent;
 class QScrollBar;
 class QWheelEvent;
-class QMenu;
+//class QMenu;
+class PopupMenu;
 
 class ScrollScale;
 class Track;
@@ -36,6 +38,7 @@ enum TrackColumn {
       COL_OCHANNEL,
       COL_TIMELOCK,
       COL_AUTOMATION,
+      COL_CLEF,
       COL_NONE = -1
       };
 
@@ -55,6 +58,7 @@ class TList : public QWidget {
       Header* header;
       QScrollBar* _scroll;
       QLineEdit* editor;
+      QSpinBox* chan_edit;
       Track* editTrack;
       Track* editAutomation;
 
@@ -85,10 +89,13 @@ class TList : public QWidget {
       void classesPopupMenu(Track*, int x, int y);
       TrackList getRecEnabledTracks();
       void setHeaderToolTips();
-      QMenu* colorMenu(QColor c, int id);
+      //QMenu* colorMenu(QColor c, int id);
+      PopupMenu* colorMenu(QColor c, int id);
 
    private slots:
       void returnPressed();
+      void chanValueChanged(int);
+      void chanValueFinished();
       void songChanged(int flags);
       void changeAutomation(QAction*);
       void changeAutomationColor(QAction*);

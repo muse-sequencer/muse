@@ -23,7 +23,6 @@
 #include "song.h"
 #include "scrollscale.h"
 
-
 //---------------------------------------------------------
 //   draw
 //---------------------------------------------------------
@@ -244,7 +243,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                         dm->mute = !dm->mute;
                   break;
             case COL_PORT:
-                  if (button == Qt::RightButton) {
+                  if ((button == Qt::RightButton) || (button == Qt::LeftButton)) {
                         bool changeAll = ev->modifiers() & Qt::ControlModifier;
                         devicesPopupMenu(dm, mapx(x), mapy(pitch * TH), changeAll);
                         }
@@ -296,7 +295,6 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                     if(val != dm->anote)
                     {
                       audio->msgIdle(true);
-                      //audio->msgRemapPortDrumCtlEvents(pitch, val, -1, -1);
                       song->remapPortDrumCtrlEvents(pitch, val, -1, -1);
                       audio->msgIdle(false);
                       dm->anote = val;
@@ -372,24 +370,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
             case COL_NAME:
                   emit keyPressed(pitch, 100); //Mapping done on other side, send index
                   break;
-#if 0
-            case COL_CHANNEL:
-                  {
-                  int channel = t->channel();
-                  if (button == Qt::RightButton) {
-                        if (channel < 15)
-                              ++channel;
-                        }
-                  else if (button == Qt::MidButton) {
-                        if (channel > 0)
-                              --channel;
-                        }
-                  if (channel != t->channel()) {
-                        t->setChannel(channel);
-                        emit channelChanged();
-                        }
-                  }
-#endif
+
             default:
                   break;
             }
@@ -409,10 +390,13 @@ void DList::viewMouseDoubleClickEvent(QMouseEvent* ev)
       int section = header->logicalIndexAt(x);
 
       if ((section == COL_NAME || section == COL_VOL || section == COL_LEN || section == COL_LV1 ||
-         section == COL_LV2 || section == COL_LV3 || section == COL_LV4) && (ev->button() == Qt::LeftButton))
+         section == COL_LV2 || section == COL_LV3 || section == COL_LV4 || section == COL_CHANNEL ||
+         section == COL_QNT) && (ev->button() == Qt::LeftButton))
          {
            lineEdit(pitch, section);
          }
+      else if ((section == COL_ANOTE || section == COL_ENOTE) && (ev->button() == Qt::LeftButton))
+        pitchEdit(pitch, section);
       else
             viewMousePressEvent(ev);
       }
@@ -467,6 +451,14 @@ void DList::lineEdit(int line, int section)
                   case COL_LV4:
                   editor->setText(QString::number(dm->lv4));
                   break;
+
+                  case COL_QNT:
+                  editor->setText(QString::number(dm->quant));
+                  break;
+
+                  case COL_CHANNEL:
+                  editor->setText(QString::number(dm->channel+1));
+                  break;
             }
 
             editor->end(false);
@@ -476,6 +468,40 @@ void DList::lineEdit(int line, int section)
                   editor->selectAll();
             editor->show();
             editor->setFocus();
+
+     }
+
+//---------------------------------------------------------
+//   pitchEdit
+//---------------------------------------------------------
+void DList::pitchEdit(int line, int section)
+      {
+            DrumMap* dm = &drumMap[line];
+            editEntry = dm;
+            if (pitch_editor == 0) {
+                  pitch_editor = new DPitchEdit(this);
+                  connect(pitch_editor, SIGNAL(editingFinished()),
+                     SLOT(pitchEdited()));
+                  pitch_editor->setFrame(true);
+                  }
+            int colx = mapx(header->sectionPosition(section));
+            int colw = rmapx(header->sectionSize(section));
+            int coly = mapy(line * TH);
+            int colh = rmapy(TH);
+            selectedColumn = section; //Store selected column to have an idea of which one was selected when return is pressed
+            switch (section) {
+                  case COL_ENOTE:
+                  pitch_editor->setValue(dm->enote);
+                  break;
+
+                  case COL_ANOTE:
+                  pitch_editor->setValue(dm->anote);
+                  break;
+            }
+
+            pitch_editor->setGeometry(colx, coly, colw, colh);
+            pitch_editor->show();
+            pitch_editor->setFocus();
 
      }
 
@@ -534,22 +560,35 @@ void DList::returnPressed()
       {
             ///val = atoi(editor->text().ascii());
             val = atoi(editor->text().toAscii().constData());
-            if (selectedColumn != COL_LEN) 
+            
+            switch (selectedColumn)
             {
-              if(selectedColumn == COL_VOL)
-              {
+              case COL_VOL:
                   if (val > 200) //Check bounds for volume
                   val = 200;
                   if (val < 0)
                   val = 0;
-              }
-              else
-              {
+                  break;
+                  
+              case COL_LV1:
+              case COL_LV2:
+              case COL_LV3:
+              case COL_LV4:
                   if (val > 127) //Check bounds for lv1-lv4 values
                   val = 127;
                   if (val < 0)
                   val = 0;
-              }    
+                  break;
+                  
+              case COL_CHANNEL:
+                  val--;
+                  if (val >= 16)
+                  val = 15;
+                  if (val < 0)
+                  val = 0;
+                  break;
+                  
+              default: break;
             }  
       }     
 
@@ -583,12 +622,66 @@ void DList::returnPressed()
                   editEntry->lv4 = val;
                   break;
 
+            case COL_QNT:
+                  editEntry->quant = val;
+                  break;
+
+            case COL_CHANNEL:
+                  editEntry->channel = val;
+                  break;
+
             default:
                   printf("Return pressed in unknown column\n");
                   break;
             }
       selectedColumn = -1;
       editor->hide();
+      editEntry = 0;
+      setFocus();
+      redraw();
+      }
+
+//---------------------------------------------------------
+//   pitchValueChanged
+//---------------------------------------------------------
+
+void DList::pitchEdited()
+{
+      int val=pitch_editor->value();
+      int pitch=(editEntry-drumMap);
+      
+      switch(selectedColumn) {
+            case COL_ANOTE:
+                    if(val != editEntry->anote)
+                    {
+                      audio->msgIdle(true);
+                      song->remapPortDrumCtrlEvents(pitch, val, -1, -1);
+                      audio->msgIdle(false);
+                      editEntry->anote = val;
+                      song->update(SC_DRUMMAP);
+                    }
+                  break;
+
+            case COL_ENOTE:
+                  //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
+                  //If so, switch the inmap between the instruments
+                  for (int i=0; i<DRUM_MAPSIZE; i++) {
+                        if (drumMap[i].enote == val && &drumMap[i] != editEntry) {
+                              drumInmap[int(editEntry->enote)] = i;
+                              drumMap[i].enote = editEntry->enote;
+                              break;
+                              }
+                        }
+                  //TODO: Set all the notes on the track with pitch=dm->enote to pitch=val
+                  editEntry->enote = val;
+                  drumInmap[val] = pitch;
+                  break;
+            default:
+                  printf("Value changed in unknown column\n");
+                  break;
+            }
+      selectedColumn = -1;
+      pitch_editor->hide();
       editEntry = 0;
       setFocus();
       redraw();
@@ -641,6 +734,7 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag)
       setFocusPolicy(Qt::StrongFocus);
       drag = NORMAL;
       editor = 0;
+      pitch_editor = 0;
       editEntry = 0;
       // always select a drum instrument
       currentlySelected = &drumMap[0];
@@ -696,9 +790,9 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
             emit mapChanged(sPitch, dPitch); //Track pitch change done in canvas
             }
       drag = NORMAL;
-//??      redraw();
-      if (editEntry)
-            editor->setFocus();
+//??      redraw();          //commented out NOT by flo93; was already commented out
+//      if (editEntry)            //removed by flo93; seems to work without it
+//            editor->setFocus(); //and causes segfaults after adding the pitchedits
       int x = ev->x();
       int y = ev->y();
       bool shift = ev->modifiers() & Qt::ShiftModifier;

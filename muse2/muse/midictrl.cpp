@@ -139,15 +139,85 @@ void initMidiController()
       }
 
 //---------------------------------------------------------
+//   midiCtrlNumString
+//---------------------------------------------------------
+
+QString midiCtrlNumString(int ctrl, bool fullyQualified)
+{
+      int h = (ctrl >> 8) & 0xff;
+      int l = ctrl & 0xff;
+      QString s1 = QString("%1").arg(h);
+      QString s2 = ( l == 0xff ? QString("* ") : QString("%1 ").arg(l) );
+      MidiController::ControllerType type = midiControllerType(ctrl);
+      switch (type)
+      {
+        case MidiController::Controller7:
+          if(fullyQualified)
+            return s2;
+          else  
+            return QString();
+        case MidiController::Controller14:
+          return s1 + QString("CF") + s2;
+        case MidiController::RPN:
+          return s1 + QString("R") + s2;
+        case MidiController::NRPN:
+          return s1 + QString("N") + s2;
+        case MidiController::Pitch:    // Don't show internal controller numbers. 
+          return QString();
+        case MidiController::Program:
+          return QString();
+        case MidiController::Velo:
+          return QString();
+        case MidiController::RPN14:
+          return s1 + QString("RF") + s2;
+        case MidiController::NRPN14:
+          return s1 + QString("NF") + s2;
+      }
+      return s1 + QString("?") + s2;
+}
+
+//---------------------------------------------------------
 //   midiCtrlName
 //---------------------------------------------------------
 
-QString midiCtrlName(int ctrl)
+QString midiCtrlName(int ctrl, bool fullyQualified)
+{
+      //if (ctrl < 0x10000)
+      //      return QString(ctrlName[ctrl]);
+      //return QString("?N?");
+      
+      // p4.0.25 Tim
+      int h = (ctrl >> 8) & 0xff;
+      int l = ctrl & 0xff;
+      QString s1 = QString("%1").arg(h);
+      QString s2 = ( l == 0xff ? QString("*") : QString("%1").arg(l) );
+      MidiController::ControllerType type = midiControllerType(ctrl);
+      switch (type)
       {
-      if (ctrl < 0x10000)
-            return QString(ctrlName[ctrl]);
-      return QString("?N?");
+        case MidiController::Controller7:
+          if(fullyQualified)
+            return s2 + QString(" ") + QString(ctrlName[l]);
+          else  
+            return QString(ctrlName[l]);
+        case MidiController::Controller14:
+          return s1 + QString("CF") + s2;
+        case MidiController::RPN:
+          return s1 + QString("R") + s2;
+        case MidiController::NRPN:
+          return s1 + QString("N") + s2;
+        case MidiController::Pitch:
+          return QString("Pitch");
+        case MidiController::Program:
+          return QString("Program");
+        case MidiController::Velo:
+          return QString("Velocity");
+        case MidiController::RPN14:
+          return s1 + QString("RF") + s2;
+        case MidiController::NRPN14:
+          return s1 + QString("NF") + s2;
       }
+      return s1 + QString("?") + s2;
+}
 
 //---------------------------------------------------------
 //   MidiController

@@ -406,7 +406,7 @@ void DeicsOnzeGui::setChorusCheckBox(double v, int i) {
   else printf("setChorusCheckBox Error : cannot send controller upper than 225\n");
 }
 
-void DeicsOnzeGui::setReverbFloatEntry(double v, int i) {
+void DeicsOnzeGui::setReverbFloatEntry(double /*v*/, int /*i*/) {
   if(_deicsOnze->_pluginIReverb) {
     
 // FIXME FIXME Tim
@@ -420,7 +420,7 @@ void DeicsOnzeGui::setReverbFloatEntry(double v, int i) {
   }
   else printf("Warning : no DeicsOnze reverb loaded\n");
 }
-void DeicsOnzeGui::setReverbSlider(double v, int i) {
+void DeicsOnzeGui::setReverbSlider(double /*v*/, int /*i*/) {
   if(_deicsOnze->_pluginIReverb) {
     
 // FIXME FIXME Tim
@@ -434,7 +434,7 @@ void DeicsOnzeGui::setReverbSlider(double v, int i) {
   }
   else printf("Warning : no DeicsOnze reverb loaded\n");
 }
-void DeicsOnzeGui::setChorusFloatEntry(double v, int i) {
+void DeicsOnzeGui::setChorusFloatEntry(double /*v*/, int /*i*/) {
   if(_deicsOnze->_pluginIReverb) {
     
 // FIXME FIXME Tim
@@ -448,7 +448,7 @@ void DeicsOnzeGui::setChorusFloatEntry(double v, int i) {
   }
   else printf("Warning : no DeicsOnze chorus loaded\n");
 }
-void DeicsOnzeGui::setChorusSlider(double v, int i) {
+void DeicsOnzeGui::setChorusSlider(double /*v*/, int /*i*/) {
   if(_deicsOnze->_pluginIReverb) {  
     
 // FIXME FIXME Tim

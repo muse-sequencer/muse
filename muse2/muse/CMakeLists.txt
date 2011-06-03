@@ -63,6 +63,7 @@ QT4_WRAP_CPP ( muse_moc_headers
       song.h 
       transport.h 
       value.h 
+      steprec.h 
       )
 
 ##
@@ -135,6 +136,7 @@ file (GLOB core_source_files
       waveevent.cpp 
       wavetrack.cpp 
       xml.cpp
+      steprec.cpp
       )
 file (GLOB main_source_files
       main.cpp

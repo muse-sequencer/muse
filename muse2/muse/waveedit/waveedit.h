@@ -33,6 +33,8 @@ class QAction;
 //---------------------------------------------------------
 
 class WaveEdit : public MidiEditor {
+      Q_OBJECT
+    
       WaveView* view;
       QSlider* ymag;
       QToolBar* tools;
@@ -49,7 +51,7 @@ class WaveEdit : public MidiEditor {
       static int _widthInit, _heightInit;
       static QByteArray _toolbarInit;
 
-      Q_OBJECT
+      
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
       virtual void resizeEvent(QResizeEvent* ev);

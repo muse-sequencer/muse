@@ -14,7 +14,8 @@
 #include <vector>
 
 class MidiPort;
-class QMenu;
+//class QMenu;
+class PopupMenu;
 class MidiPlayEvent;
 class Xml;
 class EventList;
@@ -118,7 +119,8 @@ class MidiInstrument {
 
       virtual void reset(int, MType);
       virtual QString getPatchName(int,int,MType,bool);
-      virtual void populatePatchPopup(QMenu*, int, MType, bool);
+      //virtual void populatePatchPopup(QMenu*, int, MType, bool);
+      virtual void populatePatchPopup(PopupMenu*, int, MType, bool);
       void read(Xml&);
       void write(int level, Xml&);
       

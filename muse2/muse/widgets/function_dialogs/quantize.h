@@ -15,8 +15,9 @@ class Xml;
 
 class Quantize : public QDialog, public Ui::QuantBase
 {
+ 	Q_OBJECT
 	private:
-		Q_OBJECT
+		
 		QButtonGroup* range_group;
 		
 	protected slots:

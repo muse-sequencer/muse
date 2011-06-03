@@ -17,6 +17,7 @@ class QPainter;
 
 
 class Meter : public QFrame {
+    Q_OBJECT
    public:
       enum MeterType {DBMeter, LinMeter};
    private:
@@ -29,7 +30,7 @@ class Meter : public QFrame {
 
       void drawVU(QPainter& p, int, int, int);
 
-      Q_OBJECT
+      
       void paintEvent(QPaintEvent*);
       void resizeEvent(QResizeEvent*);
       void mousePressEvent(QMouseEvent*);

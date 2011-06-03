@@ -32,9 +32,10 @@ namespace Awl {
 
 class MeterSlider : public VolSlider
       {
+      Q_OBJECT
       Q_PROPERTY(int meterWidth READ meterWidth WRITE setMeterWidth)
       Q_PROPERTY(int channel READ channel WRITE setChannel)
-      Q_OBJECT
+      
 
       int _channel;
       std::vector<double> meterval;

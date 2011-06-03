@@ -15,6 +15,10 @@ class GlobalConfigValues;
 //---------------------------------------------------------
 
 class Appearance : public QDialog, public Ui::AppearanceDialogBase {
+  
+    Q_OBJECT
+    
+ private:
       Arranger* arr;
       QColor* color;
       GlobalConfigValues* config;
@@ -24,7 +28,7 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       QTreeWidgetItem* lastSelectedBgItem;
       QTreeWidgetItem* lastSelectedColorItem;
 
-      Q_OBJECT
+      
       void updateFonts();
       void updateColor();
 

@@ -168,6 +168,7 @@ GlobalConfigValues config = {
       QString("./"),                // projectBaseFolder
       true,                         // projectStoreInFolder
       true,                         // useProjectSaveDialog
-      64                            // minControlProcessPeriod
+      64,                           // minControlProcessPeriod
+      false                         // popupsDefaultStayOpen
     };
 

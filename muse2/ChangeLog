@@ -1,3 +1,87 @@
+02.06.2011:
+        - the score editor now allows batch-movements, that is,
+          you can transpose or move the whole selection and not
+          only single notes (flo93)
+        - the functions now return as boolean, if they have triggered
+          undo (flo93)
+30.05.2011:
+        - implemented cut,copy'n'paste and the "select foo" entries in the score editor (flo93)
+        - added select_foo() functions to functions.cpp (flo93)
+        - removed "midi in" button from score editor (flo93)
+        - added a spinbox to the arranger's "Ch:" column (flo93)
+29.05.2011:
+        - moved cut,copy'n'paste to functions.cpp, removed unneccessary duplication (flo93)
+        - changed behaviour of paste: now the pasted, not the original notes are selected (flo93)
+28.05.2011:
+        - fixed dragging and resizing of track header, also changed default index of new 
+          sections, they should appear last now (rj)
+        - fixed the buggy bugfix of the "invalid Part*s" bug (flo93)
+27.05.2011:
+        - fixed bug in scoreeditor: invalid Part*s are now not used any more (flo93)
+        - applied some hunks of the patch sent in by WillyFoobar (flo93)
+25.05.2011:
+        - Added midiin and steprec buttons again (flo93)
+        - Added step-rec-support for drum edit and score edit (flo93)
+        - put step-rec-stuff into its own class (flo93)
+        - moved clefTypes out of scoreedit.h to prevent compile-horror (flo93)
+        - Declared struct Route as QMetaType to make it a QVariant type. (Tim)
+        - Moved: All routing popup menu stuff from app, astrip, mstrip, mtrackinfo into
+           new class RoutePopupMenu, *massively* cleaning up those 4 files. 
+          Used the new Route QVariant type as action data instead of integers. 
+        - Moved MenuTitleItem definitions from astrip.cpp into it's own menutitleitem.cpp (Tim)  
+        - Added to settings: "Make popup menus stay open. Otherwise hold Ctrl." (Tim)   
+          To avoid showing new users non-standard behaviour, the default is off!
+24.05.2011:
+        - Awl::PitchEdit now can be set with the musical keyboard (flo93)
+        - fixed y-stretch (flo93)
+        - cleaned up step-rec and midi-in buttons and stuff (flo93)
+        - steprec now supports a "insert rest" key, which can be set (flo93)
+          under Midi -> Input Plugins -> Remote Control
+        - song->midiNote now also delivers note off events (flo93)
+        - fixed pitch-spinbox (flo93)
+        - removed auto-resize from tracklist-header (rj)
+        - removed channel from track list for a drum track and grayed it out in track info (rj)
+        - fixed samplerate warning from templates (rj)
+23.05.2011:   (all changes made by flo93, except one)
+    Function-related changes:
+        - made all the stuff in the "functions" menu global
+        - added crescendo, legato functions, improved erase function
+        - removed unneccessary _to and _quant* - stuff from piano roll and drum edit
+          this also involved changing the Toolbar1 
+        - changed behaviour for step-recording: the note-length is now the "raster"-
+          value instead of the "quant"-value
+        - changed behaviour for scripts: the "quant"-parameter they get isn't the
+          quant-combo's setting, but the snap-combo's now
+        - removed unneccessary short cuts: SHRT_OVER_QUANTIZE etc. instead added
+          SHRT_QUANTIZE
+
+    Score-Editor-related changes:
+        - using the proper AL::raster functions in the score editor
+        - added support for selections to the score editor
+        - distance between staves is now automatically increased if neccessary
+        - fixed "change pitch freezes scoreeditor"-bug
+        - added clef-combobox to midi tracks (rj and flo)
+        - don't install the *.mf files any more
+        - added a modified MTScale to the score editor
+        
+    Other Stuff:
+        - speeded up importing midi massively
+        - when step-recording, chords can now be entered with only the musical keyboard
+        - swapped ctrl and shift behaviour to make muse accord to standards
+        - toolbar states are now saved
+        - improved "cakewalk" mode for arranger: added y-stretch and drawing some controllers 
+        - added line tool to drum editor
+        - added "reorder list" function to drum roll
+        - changed ctrl-edit's behaviour when control key is pressed
+        
+20.05.2011:
+        - Popup menus: If stay-open mode, space triggers item and double-click simulates return (closing). (Tim)
+19.05.2011:
+        * Feature: Popup menus now auto-scroll if too large to fit on desktop. (p4.0.25 Tim)
+          Added auto-scroll to my class PopupMenu. Added selectable stay-open. TODO: Use it more, where needed.
+        - Changed midi track info patch popup behaviour. Now stays open for auditioning patches. (Tim)
+        - Changed editor 'ctrl' controller popups. Split instrument/other (+ common controls!) + show ctrl numbers. (Tim)
+          TODO: Add custom (R)NRPN dialog to 'other' section.
 15.05.2011:
         - Changed mouse wheel behaviour in graphical editors except the score editor (rj)
             * wheel scrolls left-right

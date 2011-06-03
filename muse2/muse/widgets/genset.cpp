@@ -151,6 +151,7 @@ Shorter periods are desirable.</string>
       oldStyleStopCheckBox->setChecked(config.useOldStyleStopShortCut);
       moveArmedCheckBox->setChecked(config.moveArmedCheckBox);
       projectSaveCheckBox->setChecked(config.useProjectSaveDialog);
+      popsDefStayOpenCheckBox->setChecked(config.popupsDefaultStayOpen);
       
       //updateSettings();    // TESTING
       
@@ -263,6 +264,7 @@ void GlobalSettingsConfig::updateSettings()
       oldStyleStopCheckBox->setChecked(config.useOldStyleStopShortCut);
       moveArmedCheckBox->setChecked(config.moveArmedCheckBox);
       projectSaveCheckBox->setChecked(config.useProjectSaveDialog);
+      popsDefStayOpenCheckBox->setChecked(config.popupsDefaultStayOpen);
 }
 
 //---------------------------------------------------------
@@ -344,6 +346,7 @@ void GlobalSettingsConfig::apply()
       config.useOldStyleStopShortCut = oldStyleStopCheckBox->isChecked();
       config.moveArmedCheckBox = moveArmedCheckBox->isChecked();
       config.useProjectSaveDialog = projectSaveCheckBox->isChecked();
+      config.popupsDefaultStayOpen = popsDefStayOpenCheckBox->isChecked();
 
       //muse->showMixer(config.mixerVisible);
       muse->showMixer1(config.mixer1Visible);

@@ -51,6 +51,8 @@ class QScrollArea;
 //---------------------------------------------------------
 
 class PianoRoll : public MidiEditor {
+      Q_OBJECT
+    
       Event selEvent;
       MidiPart* selPart;
       int selTick;
@@ -125,7 +127,7 @@ class PianoRoll : public MidiEditor {
       //QScrollBar* infoScroll;
       QScrollArea* infoScroll;
 
-      Q_OBJECT
+      
       void initShortcuts();
       void setEventColorMode(int);
       QWidget* genToolbar(QWidget* parent);

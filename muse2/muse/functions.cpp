@@ -13,9 +13,19 @@
 #include "audio.h"
 #include "gconfig.h"
 
+#include <values.h>
 #include <iostream>
+#include <errno.h>
+#include <values.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/mman.h>
 
+#include <QMimeData>
+#include <QByteArray>
+#include <QDrag>
 #include <QMessageBox>
+#include <QClipboard>
 
 using namespace std;
 
@@ -28,6 +38,7 @@ Setlen* set_notelen_dialog=NULL;
 Move* move_notes_dialog=NULL;
 Transpose* transpose_dialog=NULL;
 Crescendo* crescendo_dialog=NULL;
+Legato* legato_dialog=NULL;
 
 void init_function_dialogs(QWidget* parent)
 {
@@ -40,6 +51,7 @@ void init_function_dialogs(QWidget* parent)
 	move_notes_dialog = new Move(parent);
 	transpose_dialog = new Transpose(parent);
 	crescendo_dialog = new Crescendo(parent);
+	legato_dialog = new Legato(parent);
 }
 
 set<Part*> partlist_to_set(PartList* pl)
@@ -49,6 +61,13 @@ set<Part*> partlist_to_set(PartList* pl)
 	for (PartList::iterator it=pl->begin(); it!=pl->end(); it++)
 		result.insert(it->second);
 	
+	return result;
+}
+
+set<Part*> part_to_set(Part* p)
+{
+	set<Part*> result;
+	result.insert(p);
 	return result;
 }
 
@@ -109,7 +128,8 @@ bool quantize_notes(const set<Part*>& parts)
 		return false;
 		
 	quantize_notes(parts, quantize_dialog->range, (config.division*4)/(1<<quantize_dialog->raster_power2),
-	               quantize_dialog->strength, quantize_dialog->swing, quantize_dialog->threshold);
+	               quantize_dialog->quant_len, quantize_dialog->strength, quantize_dialog->swing,
+	               quantize_dialog->threshold);
 	
 	return true;
 }
@@ -119,7 +139,8 @@ bool erase_notes(const set<Part*>& parts)
 	if (!erase_dialog->exec())
 		return false;
 		
-	erase_notes(parts,erase_dialog->range);
+	erase_notes(parts,erase_dialog->range, erase_dialog->velo_threshold, erase_dialog->velo_thres_used, 
+	                                       erase_dialog->len_threshold, erase_dialog->len_thres_used );
 	
 	return true;
 }
@@ -180,9 +201,19 @@ bool crescendo(const set<Part*>& parts)
 	return true;
 }
 
+bool legato(const set<Part*>& parts)
+{
+	if (!legato_dialog->exec())
+		return false;
+		
+	legato(parts,legato_dialog->range, legato_dialog->min_len, !legato_dialog->allow_shortening);
+	
+	return true;
+}
 
 
-void modify_velocity(const set<Part*>& parts, int range, int rate, int offset)
+
+bool modify_velocity(const set<Part*>& parts, int range, int rate, int offset)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	Undo operations;
@@ -212,12 +243,13 @@ void modify_velocity(const set<Part*>& parts, int range, int rate, int offset)
 			}
 		}
 		
-		if (!operations.empty())
-			song->applyOperationGroup(operations);
+		return song->applyOperationGroup(operations);
 	}
+	else
+		return false;
 }
 
-void modify_off_velocity(const set<Part*>& parts, int range, int rate, int offset)
+bool modify_off_velocity(const set<Part*>& parts, int range, int rate, int offset)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	Undo operations;
@@ -247,12 +279,13 @@ void modify_off_velocity(const set<Part*>& parts, int range, int rate, int offse
 			}
 		}
 
-		if (!operations.empty())
-			song->applyOperationGroup(operations);
+		return song->applyOperationGroup(operations);
 	}
+	else
+		return false;
 }
 
-void modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
+bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	Undo operations;
@@ -280,14 +313,15 @@ void modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 			}
 		}
 		
-		if (!operations.empty())
-			song->applyOperationGroup(operations);
+		return song->applyOperationGroup(operations);
 	}
+	else
+		return false;
 }
 
-void set_notelen(const set<Part*>& parts, int range, int len)
+bool set_notelen(const set<Part*>& parts, int range, int len)
 {
-	modify_notelen(parts, range, 0, len);
+	return modify_notelen(parts, range, 0, len);
 }
 
 unsigned quantize_tick(unsigned tick, unsigned raster, int swing)
@@ -312,7 +346,7 @@ unsigned quantize_tick(unsigned tick, unsigned raster, int swing)
 		return tick_dest3;
 }
 
-void quantize_notes(const set<Part*>& parts, int range, int raster, int strength, int swing, int threshold)
+bool quantize_notes(const set<Part*>& parts, int range, int raster, bool quant_len, int strength, int swing, int threshold)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	Undo operations;
@@ -336,7 +370,7 @@ void quantize_notes(const set<Part*>& parts, int range, int raster, int strength
 			unsigned end_tick = begin_tick + len;
 			int len_diff = quantize_tick(end_tick, raster, swing) - end_tick;
 				
-			if (abs(len_diff) > threshold)
+			if ((abs(len_diff) > threshold) && quant_len)
 				len = len + len_diff*strength/100;
 
 			if (len <= 0)
@@ -352,12 +386,13 @@ void quantize_notes(const set<Part*>& parts, int range, int raster, int strength
 			}
 		}
 		
-		if (!operations.empty())
-			song->applyOperationGroup(operations);
+		return song->applyOperationGroup(operations);
 	}
+	else
+		return false;
 }
 
-void erase_notes(const set<Part*>& parts, int range)
+bool erase_notes(const set<Part*>& parts, int range, int velo_threshold, bool velo_thres_used, int len_threshold, bool len_thres_used)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	Undo operations;
@@ -369,15 +404,19 @@ void erase_notes(const set<Part*>& parts, int range)
 			Event& event=*(it->first);
 			Part* part=it->second;
 
-			operations.push_back(UndoOp(UndoOp::DeleteEvent, event, part, false, false));
+			if ( (!velo_thres_used && !len_thres_used) ||
+			     (velo_thres_used && event.velo() < velo_threshold) ||
+			     (len_thres_used && int(event.lenTick()) < len_threshold) )
+				operations.push_back(UndoOp(UndoOp::DeleteEvent, event, part, false, false));
 		}
 		
-		if (!operations.empty())
-			song->applyOperationGroup(operations);
+		return song->applyOperationGroup(operations);
 	}
+	else
+		return false;
 }
 
-void transpose_notes(const set<Part*>& parts, int range, signed int halftonesteps)
+bool transpose_notes(const set<Part*>& parts, int range, signed int halftonesteps)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	Undo operations;
@@ -397,12 +436,13 @@ void transpose_notes(const set<Part*>& parts, int range, signed int halftonestep
 			operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
 		}
 		
-		if (!operations.empty())
-			song->applyOperationGroup(operations);
+		return song->applyOperationGroup(operations);
 	}
+	else
+		return false;
 }
 
-void crescendo(const set<Part*>& parts, int range, int start_val, int end_val, bool absolute)
+bool crescendo(const set<Part*>& parts, int range, int start_val, int end_val, bool absolute)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	Undo operations;
@@ -434,12 +474,13 @@ void crescendo(const set<Part*>& parts, int range, int start_val, int end_val, b
 			operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
 		}
 		
-		if (!operations.empty())
-			song->applyOperationGroup(operations);
+		return song->applyOperationGroup(operations);
 	}
+	else
+		return false;
 }
 
-void move_notes(const set<Part*>& parts, int range, signed int ticks) //TODO FINDMICH: safety checks
+bool move_notes(const set<Part*>& parts, int range, signed int ticks) //TODO: clipping
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	Undo operations;
@@ -450,18 +491,36 @@ void move_notes(const set<Part*>& parts, int range, signed int ticks) //TODO FIN
 		{
 			Event& event=*(it->first);
 			Part* part=it->second;
+			bool del=false;
 
 			Event newEvent = event.clone();
-			newEvent.setTick(event.tick()+ticks);
-			operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
+			if ((signed)event.tick()+ticks < 0) //don't allow moving before the part's begin
+				newEvent.setTick(0);
+			else
+				newEvent.setTick(event.tick()+ticks);
+			
+			if (newEvent.endTick() > part->lenTick()) //if exceeding the part's end, clip
+			{
+				if (part->lenTick() > newEvent.tick())
+					newEvent.setLenTick(part->lenTick() - newEvent.tick());
+				else
+					del=true; //if the new length would be <= 0, erase the note
+			}
+			
+			if (del==false)
+				operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
+			else
+				operations.push_back(UndoOp(UndoOp::DeleteEvent, event, part, false, false));
 		}
 		
-		if (!operations.empty())
-			song->applyOperationGroup(operations);
+		return song->applyOperationGroup(operations);
 	}
+	else
+		return false;
 }
 
-void delete_overlaps(const set<Part*>& parts, int range)
+
+bool delete_overlaps(const set<Part*>& parts, int range)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	Undo operations;
@@ -510,11 +569,266 @@ void delete_overlaps(const set<Part*>& parts, int range)
 			}
 		}
 		
-		if (!operations.empty())
-			song->applyOperationGroup(operations);
+		return song->applyOperationGroup(operations);
 	}
+	else
+		return false;
 }
 
+bool legato(const set<Part*>& parts, int range, int min_len, bool dont_shorten)
+{
+	map<Event*, Part*> events = get_events(parts, range);
+	Undo operations;
+	
+	if (min_len<=0) min_len=1;
+	
+	if (!events.empty())
+	{
+		for (map<Event*, Part*>::iterator it1=events.begin(); it1!=events.end(); it1++)
+		{
+			Event& event1=*(it1->first);
+			Part* part1=it1->second;
+			
+			unsigned len=MAXINT;
+			// we may NOT optimize by letting it2 start at (it1 +1); this optimisation
+			// is only allowed when events was sorted by time. it is, however, sorted
+			// randomly by pointer.
+			for (map<Event*, Part*>::iterator it2=events.begin(); it2!=events.end(); it2++)
+			{
+				Event& event2=*(it2->first);
+				Part* part2=it2->second;
+				
+				bool relevant = (event2.tick() >= event1.tick() + min_len);
+				if (dont_shorten)
+					relevant = relevant && (event2.tick() >= event1.endTick());
+				
+				if ( (part1->events()==part2->events()) &&  // part1 and part2 are the same or are duplicates
+				      relevant &&                           // they're not too near (respect min_len and dont_shorten)
+				     (event2.tick()-event1.tick() < len ) ) // that's the nearest relevant following note
+					len=event2.tick()-event1.tick();
+			}
+			
+			if (len==MAXINT) len=event1.lenTick(); // if no following note was found, keep the length
+			
+			if (event1.lenTick() != len)
+			{
+				Event new_event1 = event1.clone();
+				new_event1.setLenTick(len);
+				
+				operations.push_back(UndoOp(UndoOp::ModifyEvent, new_event1, event1, part1, false, false));
+			}
+		}
+		
+		return song->applyOperationGroup(operations);
+	}
+	else
+		return false;
+}
+
+
+
+void copy_notes(const set<Part*>& parts, int range)
+{
+	QMimeData* drag = selected_events_to_mime(parts,range);
+
+	if (drag)
+		QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
+}
+
+void paste_notes(Part* dest_part)
+{
+	QString tmp="x-muse-eventlist"; // QClipboard::text() expects a QString&, not a QString :(
+	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);  // TODO CHECK Tim.
+	paste_at(dest_part, s, song->cpos());
+}
+
+QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
+{
+	map<Event*, Part*> events=get_events(parts,range);
+
+	//---------------------------------------------------
+	//   generate event list from selected events
+	//---------------------------------------------------
+
+	EventList el;
+	unsigned startTick = MAXINT; //will be the tick of the first event or MAXINT if no events are there
+
+	for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
+	{
+		Event& e   = *it->first;
+		
+		if (e.tick() < startTick)
+			startTick = e.tick();
+			
+		el.add(e);
+	}
+
+	//---------------------------------------------------
+	//    write events as XML into tmp file
+	//---------------------------------------------------
+
+	FILE* tmp = tmpfile();
+	if (tmp == 0) 
+	{
+		fprintf(stderr, "EventCanvas::getTextDrag() fopen failed: %s\n", strerror(errno));
+		return 0;
+	}
+	
+	Xml xml(tmp);
+	int level = 0;
+	
+	xml.tag(level++, "eventlist");
+	for (ciEvent e = el.begin(); e != el.end(); ++e)
+		e->second.write(level, xml, -startTick);
+	xml.etag(--level, "eventlist");
+
+	//---------------------------------------------------
+	//    read tmp file into drag Object
+	//---------------------------------------------------
+
+	fflush(tmp);
+	struct stat f_stat;
+	if (fstat(fileno(tmp), &f_stat) == -1)
+	{
+		fprintf(stderr, "PianoCanvas::copy() fstat failed:<%s>\n",
+		strerror(errno));
+		fclose(tmp);
+		return 0;
+	}
+	int n = f_stat.st_size;
+	char* fbuf  = (char*)mmap(0, n+1, PROT_READ|PROT_WRITE,
+	MAP_PRIVATE, fileno(tmp), 0);
+	fbuf[n] = 0;
+
+	QByteArray data(fbuf);
+	QMimeData* md = new QMimeData();
+
+	md->setData("text/x-muse-eventlist", data);
+
+	munmap(fbuf, n);
+	fclose(tmp);
+
+	return md;
+}
+
+void paste_at(Part* dest_part, const QString& pt, int pos)
+{
+	Undo operations;
+	
+	Xml xml(pt.toLatin1().constData());
+	for (;;) 
+	{
+		Xml::Token token = xml.parse();
+		const QString& tag = xml.s1();
+		switch (token) 
+		{
+			case Xml::Error:
+			case Xml::End:
+				goto end_of_paste_at;
+				
+			case Xml::TagStart:
+				if (tag == "eventlist")
+				{
+					EventList el;
+					el.read(xml, "eventlist", true);
+					for (iEvent i = el.begin(); i != el.end(); ++i)
+					{
+						Event e = i->second;
+						int tick = e.tick() + pos - dest_part->tick();
+						if (tick<0)
+						{
+							printf("ERROR: trying to add event before current part!\n");
+							goto end_of_paste_at;
+						}
+
+						e.setTick(tick);
+						e.setSelected(true);
+						int diff = e.endTick()-dest_part->lenTick();
+						if (diff > 0) // too short part? extend it
+						{
+							Part* newPart = dest_part->clone();
+							newPart->setLenTick(newPart->lenTick()+diff);
+							// Indicate no undo, and do port controller values but not clone parts. 
+							operations.push_back(UndoOp(UndoOp::ModifyPart,dest_part, newPart, true, false)); //FINDMICHJETZT oder andersrum?
+							dest_part = newPart; // reassign TODO FINDME does this work, or has dest_part to be a nonconst reference?
+						}
+						// Indicate no undo, and do not do port controller values and clone parts. 
+						operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
+					}
+					song->applyOperationGroup(operations);
+					goto end_of_paste_at;
+				}
+				else
+				xml.unknown("pasteAt");
+				break;
+				
+			case Xml::Attribut:
+			case Xml::TagEnd:
+			default:
+				break;
+		}
+	}
+	
+	end_of_paste_at:
+	song->update(SC_SELECTION);
+}
+
+void select_all(const std::set<Part*>& parts)
+{
+	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+		{
+			Event& event=ev_it->second;
+			event.setSelected(true);
+		}
+	song->update(SC_SELECTION);
+}
+
+void select_none(const std::set<Part*>& parts)
+{
+	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+		{
+			Event& event=ev_it->second;
+			event.setSelected(false);
+		}
+	song->update(SC_SELECTION);
+}
+
+void select_invert(const std::set<Part*>& parts)
+{
+	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+		{
+			Event& event=ev_it->second;
+			event.setSelected(!event.selected());
+		}
+	song->update(SC_SELECTION);
+}
+
+void select_in_loop(const std::set<Part*>& parts)
+{
+	select_none(parts);
+	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+		{
+			Event& event=ev_it->second;
+			event.setSelected((event.tick()>=song->lpos() && event.endTick()<=song->rpos()));
+		}
+	song->update(SC_SELECTION);
+}
+
+void select_not_in_loop(const std::set<Part*>& parts)
+{
+	select_none(parts);
+	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
+		{
+			Event& event=ev_it->second;
+			event.setSelected(!(event.tick()>=song->lpos() && event.endTick()<=song->rpos()));
+		}
+	song->update(SC_SELECTION);
+}
 
 
 void read_function_dialog_config(Xml& xml)
@@ -554,6 +868,8 @@ void read_function_dialog_config(Xml& xml)
 					transpose_dialog->read_configuration(xml);
 				else if (tag == "crescendo")
 					crescendo_dialog->read_configuration(xml);
+				else if (tag == "legato")
+					legato_dialog->read_configuration(xml);
 				else
 					xml.unknown("function_dialogs");
 				break;
@@ -581,6 +897,7 @@ void write_function_dialog_config(int level, Xml& xml)
 	move_notes_dialog->write_configuration(level, xml);
 	transpose_dialog->write_configuration(level, xml);
 	crescendo_dialog->write_configuration(level, xml);
+	legato_dialog->write_configuration(level, xml);
 
 	xml.tag(level, "/dialogs");
 }

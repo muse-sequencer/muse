@@ -69,6 +69,7 @@ void Arranger::setHeaderToolTips()
       header->setToolTip(COL_OPORT,      tr("Midi output port or synth midi port"));
       header->setToolTip(COL_TIMELOCK,   tr("Time Lock"));
       header->setToolTip(COL_AUTOMATION, tr("Automation parameter selection"));
+      header->setToolTip(COL_CLEF,       tr("Notation clef"));
       }
 
 
@@ -87,6 +88,7 @@ void Arranger::setHeaderWhatsThis()
       header->setWhatsThis(COL_OCHANNEL, tr("Midi/drum track: Output channel number.\nAudio track: Channels.\nMid/right-click to change."));
       header->setWhatsThis(COL_OPORT,    tr("Midi/drum track: Output port.\nSynth track: Assigned midi port.\nLeft-click to change.\nRight-click to show GUI."));
       header->setWhatsThis(COL_TIMELOCK, tr("Time lock"));
+      header->setToolTip(COL_CLEF,       tr("Notation clef. Select this tracks notation clef."));
       }
 
 //---------------------------------------------------------
@@ -290,6 +292,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       header->setColumnLabel(tr("Ch"), COL_OCHANNEL, 30);
       header->setColumnLabel(tr("T"), COL_TIMELOCK, fm1.width('T')+fw);
       header->setColumnLabel(tr("Automation"), COL_AUTOMATION, 75);
+      header->setColumnLabel(tr("Clef"), COL_CLEF, 75);
       header->setResizeMode(COL_RECORD, QHeaderView::Fixed);
       header->setResizeMode(COL_MUTE, QHeaderView::Fixed);
       header->setResizeMode(COL_SOLO, QHeaderView::Fixed);
@@ -299,6 +302,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       header->setResizeMode(COL_OCHANNEL, QHeaderView::Fixed);
       header->setResizeMode(COL_TIMELOCK, QHeaderView::Fixed);
       header->setResizeMode(COL_AUTOMATION, QHeaderView::Interactive);
+      header->setResizeMode(COL_CLEF, QHeaderView::Interactive);
 
       setHeaderToolTips();
       setHeaderWhatsThis();

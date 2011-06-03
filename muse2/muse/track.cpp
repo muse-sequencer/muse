@@ -369,6 +369,7 @@ MidiTrack::MidiTrack()
       init();
       _events = new EventList;
       _mpevents = new MPEventList;
+      clefType=trebleClef;
       }
 
 //MidiTrack::MidiTrack(const MidiTrack& mt)
@@ -388,6 +389,7 @@ MidiTrack::MidiTrack(const MidiTrack& mt, bool cloneParts)
       len            = mt.len;
       compression    = mt.compression;
       _recEcho       = mt.recEcho();
+      clefType=trebleClef;
       }
 
 MidiTrack::~MidiTrack()
@@ -894,6 +896,7 @@ void MidiTrack::write(int level, Xml& xml) const
       xml.intTag(level, "len", len);
       xml.intTag(level, "compression", compression);
       xml.intTag(level, "automation", int(automationType()));
+      xml.intTag(level, "clef", int(clefType));
 
       const PartList* pl = cparts();
       for (ciPart p = pl->begin(); p != pl->end(); ++p)
@@ -955,6 +958,8 @@ void MidiTrack::read(Xml& xml)
                               _recEcho = xml.parseInt();
                         else if (tag == "automation")
                               setAutomationType(AutomationType(xml.parseInt()));
+                        else if (tag == "clef")
+                              clefType = (clefTypes)xml.parseInt();
                         else if (Track::readProperties(xml, tag)) {
                               // version 1.0 compatibility:
                               if (tag == "track" && xml.majorVersion() == 1 && xml.minorVersion() == 0)

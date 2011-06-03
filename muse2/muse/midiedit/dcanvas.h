@@ -10,6 +10,7 @@
 
 #include "ecanvas.h"
 #include "song.h"
+#include "steprec.h"
 
 #define TH 18
 
@@ -40,12 +41,15 @@ class PianoRoll;
 //---------------------------------------------------------
 
 class DrumCanvas : public EventCanvas {
-
+      Q_OBJECT
+      
+      StepRec* steprec;
+      
       // Cursor tool position
       QPoint cursorPos;
       int _stepSize;
 
-      Q_OBJECT
+      
       virtual void drawCanvas(QPainter&, const QRect&);
       virtual void drawItem(QPainter&, const CItem*, const QRect&);
       void drawTopItem(QPainter& p, const QRect& rect);
@@ -61,8 +65,6 @@ class DrumCanvas : public EventCanvas {
 
       int y2pitch(int y) const;
       int pitch2y(int pitch) const;
-      void copy();
-      void paste();
       void startDrag(CItem*, bool copymode);
       void dragEnterEvent(QDragEnterEvent* event);
       void dragMoveEvent(QDragMoveEvent*);
@@ -75,6 +77,9 @@ class DrumCanvas : public EventCanvas {
    signals:
       void newWidth(int);
 
+   private slots:
+      void midiNote(int pitch, int velo);
+      
    public slots:
       void mapChanged(int, int);
       void keyPressed(int, int);

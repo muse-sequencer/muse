@@ -42,7 +42,8 @@
 
 #include "plugin.h"
 
-#include <QMenu>
+//#include <QMenu>
+#include "popupmenu.h"
 
 #define DSSI_PARAMSAVE_VERSION_MAJOR  0
 #define DSSI_PARAMSAVE_VERSION_MINOR  1
@@ -199,7 +200,8 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       virtual const char* getPatchName(int, int, MType, bool);
       
       //virtual void populatePatchPopup(QMenu*, int);
-      virtual void populatePatchPopup(QMenu*, int, MType, bool);
+      //virtual void populatePatchPopup(QMenu*, int, MType, bool);
+      virtual void populatePatchPopup(PopupMenu*, int, MType, bool);
       
       //virtual void write(Xml& xml) const;
       virtual void write(int level, Xml& xml) const;

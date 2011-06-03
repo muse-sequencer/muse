@@ -22,6 +22,7 @@
 #include <QActionGroup>
 #include <QGridLayout>
 #include <QByteArray>
+#include <QToolButton>
 
 #include <values.h>
 #include "noteinfo.h"
@@ -32,6 +33,9 @@
 #include "part.h"
 #include "keyevent.h"
 #include "mtscale_flo.h"
+#include "steprec.h"
+#include "cleftypes.h"
+#include "helper.h"
 
 #include <set>
 #include <map>
@@ -58,7 +62,12 @@ enum {CMD_COLOR_BLACK, CMD_COLOR_VELO, CMD_COLOR_PART,
       CMD_NOTELEN_1, CMD_NOTELEN_2, CMD_NOTELEN_4, CMD_NOTELEN_8,
       CMD_NOTELEN_16, CMD_NOTELEN_32, CMD_NOTELEN_LAST,
       
-      CMD_QUANTIZE, CMD_VELOCITY, CMD_CRESCENDO, CMD_NOTELEN };
+      CMD_QUANTIZE, CMD_VELOCITY, CMD_CRESCENDO, CMD_NOTELEN, CMD_TRANSPOSE,
+      CMD_ERASE, CMD_MOVE, CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO,
+      CMD_CUT, CMD_COPY, CMD_PASTE, CMD_DEL,
+      CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
+      CMD_SELECT_ILOOP, CMD_SELECT_OLOOP};
+
 
 class ScoreCanvas;
 class EditToolBar;
@@ -70,7 +79,6 @@ class EditToolBar;
 class ScoreEdit : public TopWin
 {
 	Q_OBJECT
-
 	private:
 		virtual void closeEvent(QCloseEvent*);
 		virtual void resizeEvent(QResizeEvent*);
@@ -106,6 +114,32 @@ class ScoreEdit : public TopWin
 		QAction* color_black_action;
 		QAction* color_velo_action;
 		QAction* color_part_action;
+
+		QMenu* color_menu;
+		
+		QAction* cut_action;
+		QAction* copy_action;
+		QAction* paste_action;
+		QAction* del_action;
+		
+		QAction* select_all_action;
+		QAction* select_none_action;
+		QAction* select_invert_action;
+		QAction* select_iloop_action;
+		QAction* select_oloop_action;
+
+		QAction* func_quantize_action;
+		QAction* func_notelen_action;
+		QAction* func_velocity_action;
+		QAction* func_cresc_action;
+		QAction* func_transpose_action;
+		QAction* func_erase_action;
+		QAction* func_move_action;
+		QAction* func_fixed_len_action;
+		QAction* func_del_overlaps_action;
+		QAction* func_legato_action;
+
+		QToolButton* srec;
 		
 		QScrollBar* xscroll;
 		QScrollBar* yscroll;
@@ -129,6 +163,9 @@ class ScoreEdit : public TopWin
 		void menu_command(int);
 		void velo_box_changed();
 		void velo_off_box_changed();
+		void init_shortcuts();
+		void selection_changed();
+		void clipboard_changed();
 		
 	signals:
 		void deleted(unsigned long);
@@ -481,6 +518,7 @@ enum staff_mode_t
 struct staff_t
 {
 	set<Part*> parts;
+	set<int> part_indices;
 	ScoreEventList eventlist;
 	ScoreItemList itemlist;
 	
@@ -524,6 +562,7 @@ struct staff_t
 		clef=clef_;
 		parts=parts_;
 		parent=parent_;
+		update_part_indices();
 	}
 	
 	bool cleanup_parts();
@@ -532,6 +571,9 @@ struct staff_t
 	
 	void read_status(Xml& xml);
 	void write_status(int level, Xml& xml) const;
+	
+	void update_parts(); //re-populates the set<Part*> from the set<int>
+	void update_part_indices(); //re-populates the set<int> from the set<Part*>
 };
 
 list<int> calc_accidentials(key_enum key, clef_t clef, key_enum next_key=KEY_C);
@@ -612,6 +654,8 @@ class ScoreCanvas : public View
 		
 		list<staff_t> staves;
 		
+		StepRec* steprec;
+		
 		// the drawing area is split into a "preamble" containing clef,
 		// key and time signature, and the "item's area" containing the
 		// actual items (notes, bars, rests, etc.)
@@ -633,6 +677,8 @@ class ScoreCanvas : public View
 		float y_scroll_pos;
 
 		Part* selected_part;
+		int selected_part_index;
+		
 		int last_len;
 		int new_len; //when zero or negative, last_len is used
 
@@ -651,20 +697,26 @@ class ScoreCanvas : public View
 		bool mouse_erases_notes;
 		bool mouse_inserts_notes;
 		
+		bool inserting;
 		bool dragging;
 		bool drag_cursor_changed;
 		Part* dragged_event_part;
 		Event dragged_event;
-		int dragged_event_original_pitch;
+		Event original_dragged_event;
+		Event* clicked_event_ptr;
+		
+		int old_pitch;
+		unsigned old_dest_tick;
 		
 		bool have_lasso;
 		QPoint lasso_start;
 		QRect lasso;
 
 		bool undo_started;
-		int undo_flags;
+		bool temp_undo;
 		
-		
+		bool srec;
+		bool held_notes[128];
 
 		enum {COLOR_MODE_BLACK, COLOR_MODE_PART, COLOR_MODE_VELO} coloring_mode;
 		bool preamble_contains_keysig;
@@ -692,6 +744,7 @@ class ScoreCanvas : public View
 		void config_changed();
 		
 		void deselect_all();
+		void midi_note(int pitch, int velo);
 
    public slots:
       void x_scroll_event(int);
@@ -711,7 +764,10 @@ class ScoreCanvas : public View
 
 			void set_velo(int);
 			void set_velo_off(int);
-	
+
+			void set_steprec(bool);
+			
+			void update_parts(); //re-populates the set<Part*>s from the set<int>s
 	signals:
 			void xscroll_changed(int);
 			void yscroll_changed(int);
@@ -731,7 +787,6 @@ class ScoreCanvas : public View
 		virtual void mouseMoveEvent (QMouseEvent* event);
 		virtual void mouseReleaseEvent (QMouseEvent* event);
 		virtual void resizeEvent(QResizeEvent*);
-		virtual void keyPressEvent(QKeyEvent* event);
 		
 	public:
 		ScoreCanvas(ScoreEdit*, QWidget*);
@@ -755,7 +810,7 @@ class ScoreCanvas : public View
 		void set_last_len(int l) {last_len=l;}
 		
 		Part* get_selected_part() {return selected_part;}
-		void set_selected_part(Part* p) {selected_part=p;}
+		void set_selected_part(Part* p) {selected_part=p; if (selected_part) selected_part_index=selected_part->sn();}
 		
 		set<Part*> get_all_parts();
 		

@@ -147,7 +147,7 @@ class Song : public QObject {
       Song(const char* name = 0);
       ~Song();
 
-      void applyOperationGroup(Undo& group, bool doUndo=true);
+      bool applyOperationGroup(Undo& group, bool doUndo=true);
 
       void putEvent(int pv);
       void endMsgCmd();
@@ -164,7 +164,7 @@ class Song : public QObject {
       AudioOutput* bounceOutput;
       void updatePos();
 
-      void read(Xml&);
+      void read(Xml&, bool isTemplate=false);
       void write(int, Xml&) const;
       void writeFont(int level, Xml& xml, const char* name,
          const QFont& font) const;

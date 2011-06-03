@@ -711,7 +711,7 @@ void JackAudioDevice::connectJackMidiPorts()
       if(port)                          // 
       {
         RouteList* rl = md->outRoutes();
-        for (iRoute r = rl->begin(); r != rl->end(); ++r) 
+        for (ciRoute r = rl->begin(); r != rl->end(); ++r) 
           connect(port, r->jackPort);
       }    
     }
@@ -724,7 +724,7 @@ void JackAudioDevice::connectJackMidiPorts()
       if(port)                          //
       {
         RouteList* rl = md->inRoutes();
-        for (iRoute r = rl->begin(); r != rl->end(); ++r) 
+        for (ciRoute r = rl->begin(); r != rl->end(); ++r) 
           connect(r->jackPort, port);
       }    
     }    
@@ -915,7 +915,7 @@ void JackAudioDevice::graphChanged()
                   // the "right" amount
                   for (int i = 0;i < 20;i++) {
                         erased = false;
-                        for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+                        for (ciRoute irl = rl->begin(); irl != rl->end(); ++irl) {
                               if (irl->channel != channel)
                                     continue;
                               QString name = irl->name();
@@ -953,7 +953,7 @@ void JackAudioDevice::graphChanged()
                         const char** pn = ports;
                         while (*pn) {
                               bool found = false;
-                              for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+                              for (ciRoute irl = rl->begin(); irl != rl->end(); ++irl) {
                                     if (irl->channel != channel)
                                           continue;
                                     QString name = irl->name();
@@ -1002,7 +1002,7 @@ void JackAudioDevice::graphChanged()
                   // the "right" amount
                   for (int i = 0; i < 20 ; i++) {
                         erased = false;
-                        for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+                        for (ciRoute irl = rl->begin(); irl != rl->end(); ++irl) {
                               if (irl->channel != channel)
                                     continue;
                               QString name = irl->name();
@@ -1039,7 +1039,7 @@ void JackAudioDevice::graphChanged()
                         const char** pn = ports;
                         while (*pn) {
                               bool found = false;
-                              for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+                              for (ciRoute irl = rl->begin(); irl != rl->end(); ++irl) {
                                     if (irl->channel != channel)
                                           continue;
                                     QString name = irl->name();
@@ -1113,7 +1113,7 @@ void JackAudioDevice::graphChanged()
                       for (int i = 0; i < 20 ; i++) 
                       {
                             erased = false;
-                            for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+                            for (ciRoute irl = rl->begin(); irl != rl->end(); ++irl) {
                                   //if (irl->channel != channel)
                                   //      continue;
                                   QString name = irl->name();
@@ -1155,7 +1155,7 @@ void JackAudioDevice::graphChanged()
                             const char** pn = ports;
                             while (*pn) {
                                   bool found = false;
-                                  for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+                                  for (ciRoute irl = rl->begin(); irl != rl->end(); ++irl) {
                                         //if (irl->channel != channel)
                                         //      continue;
                                         QString name = irl->name();
@@ -1212,7 +1212,7 @@ void JackAudioDevice::graphChanged()
                       for (int i = 0; i < 20 ; i++) 
                       {
                             erased = false;
-                            for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+                            for (ciRoute irl = rl->begin(); irl != rl->end(); ++irl) {
                                   //if (irl->channel != channel)
                                   //      continue;
                                   QString name = irl->name();
@@ -1253,7 +1253,7 @@ void JackAudioDevice::graphChanged()
                             const char** pn = ports;
                             while (*pn) {
                                   bool found = false;
-                                  for (iRoute irl = rl->begin(); irl != rl->end(); ++irl) {
+                                  for (ciRoute irl = rl->begin(); irl != rl->end(); ++irl) {
                                         //if (irl->channel != channel)
                                         //      continue;
                                         QString name = irl->name();
@@ -1473,7 +1473,7 @@ void JackAudioDevice::start(int /*priority*/)
             for (int ch = 0; ch < channel; ++ch) {
                   RouteList* rl = ai->inRoutes();
                   void* port = ai->jackPort(ch);
-                  for (iRoute ir = rl->begin(); ir != rl->end(); ++ir) {
+                  for (ciRoute ir = rl->begin(); ir != rl->end(); ++ir) {
                         if (ir->channel == ch)
                               connect(ir->jackPort, port);
                         }
@@ -1486,7 +1486,7 @@ void JackAudioDevice::start(int /*priority*/)
             for (int ch = 0; ch < channel; ++ch) {
                   RouteList* rl = ai->outRoutes();
                   void* port = ai->jackPort(ch);
-                  for (iRoute r = rl->begin(); r != rl->end(); ++r) {
+                  for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
                         if (r->channel == ch) {
                               connect(port, r->jackPort);
                               }

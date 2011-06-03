@@ -186,6 +186,9 @@ void UndoList::clearDelete()
 
 void Song::startUndo()
       {
+      redoList->clear(); // added by flo93: redo must be invalidated when
+			redoAction->setEnabled(false);     // a new undo is started
+			
       undoList->push_back(Undo());
       updateFlags = 0;
       undoMode = true;
@@ -203,7 +206,7 @@ void Song::endUndo(int flags)
       }
 
 
-void Song::applyOperationGroup(Undo& group, bool doUndo)
+bool Song::applyOperationGroup(Undo& group, bool doUndo)
 {
       if (!group.empty())
       {
@@ -216,7 +219,16 @@ void Song::applyOperationGroup(Undo& group, bool doUndo)
                   undoList->pop_back();
                   undoAction->setEnabled(!undoList->empty());
             }
+            else
+            {
+                  redoList->clear(); // added by flo93: redo must be invalidated when
+                  redoAction->setEnabled(false);     // a new undo is started
+						}
+            
+            return doUndo;
       }
+      else
+            return false;
 }
 
 

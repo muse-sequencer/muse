@@ -47,6 +47,7 @@ QT4_WRAP_CPP (widget_mocs
       intlabel.h  
       knob.h  
       lcombo.h  
+      menutitleitem.h
       meter.h
       metronome.h  
       midisyncimpl.h  
@@ -63,6 +64,7 @@ QT4_WRAP_CPP (widget_mocs
       # posedit.h  
       poslabel.h  
       projectcreateimpl.h
+      routepopup.h  
       scrollscale.h  
       shortcutcapturedialog.h  
       shortcutconfig.h  
@@ -142,6 +144,7 @@ file (GLOB widgets_source_files
       intlabel.cpp 
       knob.cpp 
       lcombo.cpp 
+      menutitleitem.cpp
       meter.cpp
       metronome.cpp 
       midisyncimpl.cpp 
@@ -159,6 +162,7 @@ file (GLOB widgets_source_files
       # posedit.cpp 
       poslabel.cpp
       projectcreateimpl.cpp 
+      routepopup.cpp 
       scldiv.cpp
       scldraw.cpp
       sclif.cpp

@@ -20,8 +20,9 @@ class QString;
 //---------------------------------------------------------
 
 class LabelCombo : public QWidget {
-      QComboBox* box;
       Q_OBJECT
+      QComboBox* box;
+      
 
    signals:
       void activated(int);

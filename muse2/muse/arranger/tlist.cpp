@@ -11,7 +11,7 @@
 
 #include <QKeyEvent>
 #include <QLineEdit>
-#include <QMenu>
+//#include <QMenu>
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QPainter>
@@ -21,6 +21,7 @@
 #include <QScrollBar>
 #include <QWheelEvent>
 #include <QIcon>
+#include <QSpinBox>
 
 #include "popupmenu.h"
 #include "globals.h"
@@ -44,6 +45,7 @@
 #include "midiedit/drummap.h"
 #include "synth.h"
 #include "config.h"
+#include "popupmenu.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -230,13 +232,15 @@ void TList::paint(const QRect& r)
 
                   switch (section) {
                         case COL_RECORD:
-                              if (track->canRecord()) {
+                              if (track->canRecord() && !header->isSectionHidden(COL_RECORD)) {
                                     drawCenteredPixmap(p,
                                        track->recordFlag() ? record_on_Icon : record_off_Icon, r);
                                     }
                               break;
                         case COL_CLASS:
                               {
+                              if (header->isSectionHidden(COL_CLASS))
+                                break;
                               const QPixmap* pm = 0;
                               switch(type) {
                                     case Track::MIDI:
@@ -297,7 +301,11 @@ void TList::paint(const QRect& r)
                               {
                               QString s;
                               int n;
-                              if (track->isMidiTrack()) {
+                              if (track->isMidiTrack() && track->type() == Track::DRUM) {
+                                    p.drawText(r, Qt::AlignVCenter|Qt::AlignHCenter, "-");
+                                    break;
+                              }
+                              else if (track->isMidiTrack()) {
                                     n = ((MidiTrack*)track)->outChannel() + 1;
                                     }
                               else {
@@ -354,6 +362,18 @@ void TList::paint(const QRect& r)
 
 
                               p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
+                              }
+                              break;
+                        case COL_CLEF:
+                              if (track->isMidiTrack()) {
+                                QString s = tr("no clef");
+                                if (((MidiTrack*)track)->getClef() == trebleClef)
+                                  s=tr("Treble");
+                                else if (((MidiTrack*)track)->getClef() == bassClef)
+                                  s=tr("Bass");
+                                else if (((MidiTrack*)track)->getClef() == grandStaff)
+                                  s=tr("Grand");
+                                p.drawText(r, Qt::AlignVCenter|Qt::AlignLeft, s);
                               }
                               break;
                         default:
@@ -419,6 +439,20 @@ void TList::returnPressed()
       setFocus();
       }
 
+void TList::chanValueChanged(int val)
+{
+  Track* track = editTrack->clone(false);
+  ((MidiTrack*)editTrack)->setOutChannel(val-1);
+  audio->msgChangeTrack(track, editTrack);
+}
+
+void TList::chanValueFinished()
+{
+  editTrack = 0;
+  chan_edit->hide();
+  setFocus();
+}
+
 //---------------------------------------------------------
 //   adjustScrollbar
 //---------------------------------------------------------
@@ -472,7 +506,7 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
             if (section == COL_NAME) {
                   editTrack = t;
                   if (editor == 0) {
-		    editor = new QLineEdit(this);
+                        editor = new QLineEdit(this);
                         /*connect(editor, SIGNAL(returnPressed()),
                            SLOT(returnPressed()));*/
                         editor->setFrame(true);
@@ -482,6 +516,25 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
                   editor->setGeometry(colx, coly, colw, colh);
                   editMode = true;
                   editor->show();
+                  }
+            else if (section == COL_OCHANNEL) {
+                  if (t->isMidiTrack() && t->type() != Track::DRUM)
+                  {
+                      editTrack=t;
+                      if (chan_edit==0) {
+                            chan_edit=new QSpinBox(this);
+                            chan_edit->setMinimum(1);
+                            chan_edit->setMaximum(16);
+                            connect(chan_edit, SIGNAL(valueChanged(int)), SLOT(chanValueChanged(int)));
+                            connect(chan_edit, SIGNAL(editingFinished()), SLOT(chanValueFinished()));
+                            }
+                      chan_edit->setValue(((MidiTrack*)editTrack)->outChannel()+1);
+                      int w=colw;
+                      if (w < chan_edit->sizeHint().width()) w=chan_edit->sizeHint().width();
+                      chan_edit->setGeometry(colx, coly, w, colh);
+                      chan_edit->show();
+                      chan_edit->setFocus();
+                      }
                   }
             else
                   mousePressEvent(ev);
@@ -883,9 +936,11 @@ void TList::changeAutomationColor(QAction* act)
 //---------------------------------------------------------
 //   colorMenu
 //---------------------------------------------------------
-QMenu* TList::colorMenu(QColor c, int id)
+//QMenu* TList::colorMenu(QColor c, int id)
+PopupMenu* TList::colorMenu(QColor c, int id)
 {
-  QMenu * m = new QMenu(this);
+  //QMenu * m = new QMenu(this);
+  PopupMenu * m = new PopupMenu(this);  //, true);  TODO
   for (int i = 0; i< 6; i++) {
     QPixmap pix(10,10);
     QPainter p(&pix);
@@ -1054,11 +1109,39 @@ void TList::mousePressEvent(QMouseEvent* ev)
       mode = START_DRAG;
 
       switch (col) {
+              case COL_CLEF:
+                if (t->isMidiTrack()) {
+                  QMenu* p = new QMenu;
+                  p->addAction(tr("Treble clef"))->setData(0);
+                  p->addAction(tr("Bass clef"))->setData(1);
+                  p->addAction(tr("Grand Staff"))->setData(2);
+
+                  // Show the menu
+                  QAction* act = p->exec(ev->globalPos(), 0);
+                  if (act) {
+                    switch (act->data().toInt()) {
+                      case 0:
+                        ((MidiTrack*)t)->setClef(trebleClef);
+                        break;
+                      case 1:
+                        ((MidiTrack*)t)->setClef(bassClef);
+                        break;
+                      case 2:
+                        ((MidiTrack*)t)->setClef(grandStaff);
+                        break;
+                      default:
+                        break;
+                    }
+                  }
+                  delete p;
+                }
+
+                break;
               case COL_AUTOMATION:
                 {
                 if (!t->isMidiTrack()) {
                     editAutomation = t;
-                    PopupMenu* p = new PopupMenu();
+                    PopupMenu* p = new PopupMenu(true);
                     p->disconnect();
                     p->clear();
                     p->setTitle(tr("Viewable automation"));
@@ -1075,12 +1158,11 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       int data = cl->id() * 256; // shift 8 bits
                       data += 150; // illegal color > 100
                       act->setData(data);
-                      QMenu *m = colorMenu(cl->color(), cl->id());
+                      //QMenu *m = colorMenu(cl->color(), cl->id());
+                      PopupMenu *m = colorMenu(cl->color(), cl->id());
                       act->setMenu(m);
                     }
                     connect(p, SIGNAL(triggered(QAction*)), SLOT(changeAutomation(QAction*)));
-                    //connect(p, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
-                    //p->popup(QCursor::pos());
                     p->exec(QCursor::pos());
 
                     delete p;
@@ -1236,8 +1318,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     {
                       MidiTrack* mt = dynamic_cast<MidiTrack*>(t);
                       if (mt == 0)
-                      break;
-                    
+                        break;
+                      if (mt->type() == Track::DRUM)
+                        break;
+
                       int channel = mt->outChannel();
                       channel += delta;
                       if(channel >= MIDI_CHANNELS)
@@ -1511,6 +1595,9 @@ void TList::wheelEvent(QWheelEvent* ev)
             case COL_OCHANNEL:
                   if (t->isMidiTrack()) {
                         MidiTrack* mt = (MidiTrack*)t;
+                        if (mt && mt->type() == Track::DRUM)
+                            break;
+
                         int channel = mt->outChannel() + delta;
 
                         if (channel >= MIDI_CHANNELS)

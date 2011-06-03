@@ -36,8 +36,7 @@ class Transport;
 class BigTime;
 class Arranger;
 class Instrument;
-class PopupMenu;
-class PopupView;
+class RoutePopupMenu;
 class Track;
 class PrinterConfig;
 class MidiSyncConfig;
@@ -68,8 +67,6 @@ class EditInstrument;
 class ScoreEdit;
 
 #define MENU_ADD_SYNTH_ID_BASE 0x1000
-
-
 
 //---------------------------------------------------------
 //   MusE
@@ -164,10 +161,8 @@ class MusE : public QMainWindow
       QMenu* menu_functions, *menuScriptPlugins;
       QMenu* select, *master, *midiEdit, *addTrack;
 
-      // Special 'stay-open' menu for routes.
-      PopupMenu* routingPopupMenu; 
-      //PopupView* routingPopupView; 
-
+      // Special common menu for routes. Used (so far) by audio and midi strip, and midi trackinfo.
+      RoutePopupMenu* routingPopupMenu; 
 
       QMenu* follow;
       QMenu* midiInputPlugins;
@@ -195,7 +190,7 @@ class MusE : public QMainWindow
       QMenu* openRecent;
       
       bool readMidi(FILE*);
-      void read(Xml& xml, bool skipConfig);
+      void read(Xml& xml, bool skipConfig, bool isTemplate);
       void processTrack(MidiTrack* track);
 
       void write(Xml& xml) const;
@@ -286,7 +281,7 @@ class MusE : public QMainWindow
 
       void startMidiTransformer();
       void writeGlobalConfiguration() const;
-      void startEditInstrument();
+      //void startEditInstrument();
       void startClipList(bool);
       
       void openRecentMenu();
@@ -337,7 +332,6 @@ class MusE : public QMainWindow
    private:
       void adjustGlobalLists(int startPos, int diff);
 
-     
    public slots:
       bool saveAs();
       void bounceToFile(AudioOutput* ao = 0);
@@ -357,8 +351,7 @@ class MusE : public QMainWindow
       void importMidi(const QString &file);
       void setUsedTool(int);
       void showDidYouKnowDialog();
-      
-      void routingPopupMenuAboutToHide();
+      void startEditInstrument();
       void configMidiPorts();
 
    public:
@@ -370,7 +363,6 @@ class MusE : public QMainWindow
       bool importMidi(const QString name, bool merge);
       void kbAccel(int);
       void changeConfig(bool writeFlag);
-
       void seqStop();
       bool seqStart();
       void setHeartBeat();
@@ -383,18 +375,8 @@ class MusE : public QMainWindow
       QWidget* bigtimeWindow();
       bool importWaveToTrack(QString& name, unsigned tick=0, Track* track=NULL);
       void importPartToTrack(QString& filename, unsigned tick, Track* track);
-
       void showTransport(bool flag);
-
-      // Special 'stay-open' menu for routes.
-      PopupMenu* getRoutingPopupMenu();
-      PopupMenu* prepareRoutingPopupMenu(Track* /*track*/, bool /*dst*/);
-      void routingPopupMenuActivated(Track* /*track*/, int /*id*/);
-      void updateRouteMenus(Track* /*track*/, QObject* /*master*/);
-      // Testing...
-      //PopupView* getRoutingPopupView();
-      //PopupView* prepareRoutingPopupView(Track* /*track*/, bool /*dst*/);
-      //void routingPopupViewActivated(Track* /*track*/, int /*id*/);
+      RoutePopupMenu* getRoutingPopupMenu();
       
 #ifdef HAVE_LASH
       void lash_idle_cb ();

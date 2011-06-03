@@ -11,7 +11,7 @@
 #include <QAction>
 #include <QDir>
 #include <QFileInfo>
-#include <QMenu>
+//#include <QMenu>
 #include <QMessageBox>
 
 #include "minstrument.h"
@@ -25,6 +25,7 @@
 #include "mpevent.h"
 #include "midictrl.h"
 #include "gconfig.h"
+#include "popupmenu.h"
 
 MidiInstrumentList midiInstruments;
 MidiInstrument* genericMidiInstrument;
@@ -881,7 +882,7 @@ QString MidiInstrument::getPatchName(int channel, int prog, MType mode, bool dru
 //   populatePatchPopup
 //---------------------------------------------------------
 
-void MidiInstrument::populatePatchPopup(QMenu* menu, int chan, MType songType, bool drum)
+void MidiInstrument::populatePatchPopup(PopupMenu* menu, int chan, MType songType, bool drum)
       {
       menu->clear();
       int mask = 0;
@@ -905,7 +906,9 @@ void MidiInstrument::populatePatchPopup(QMenu* menu, int chan, MType songType, b
       if (pg.size() > 1) {
             for (ciPatchGroup i = pg.begin(); i != pg.end(); ++i) {
                   PatchGroup* pgp = *i;
-                  QMenu* pm = menu->addMenu(pgp->name);
+                  //QMenu* pm = menu->addMenu(pgp->name);
+                  PopupMenu* pm = new PopupMenu(pgp->name, menu, menu->stayOpen());  // Use the parent stayOpen here.
+                  menu->addMenu(pm);
                   pm->setFont(config.fonts[0]);
                   const PatchList& pl = pgp->patches;
                   for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {

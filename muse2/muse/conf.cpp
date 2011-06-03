@@ -481,6 +481,8 @@ static void readSeqConfiguration(Xml& xml)
                               rcGotoLeftMarkNote = xml.parseInt();
                         else if (tag == "rcPlay")
                               rcPlayNote = xml.parseInt();
+                        else if (tag == "rcSteprec")
+                              rcSteprecNote = xml.parseInt();
                         else
                               xml.unknown("Seq");
                         break;
@@ -946,6 +948,9 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               config.projectStoreInFolder = xml.parseInt();
                         else if (tag == "useProjectSaveDialog")
                               config.useProjectSaveDialog = xml.parseInt();
+                        else if (tag == "popupsDefaultStayOpen")
+                              config.popupsDefaultStayOpen = xml.parseInt();
+
                         else
                               xml.unknown("configuration");
                         break;
@@ -1061,6 +1066,7 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       xml.intTag(level, "rcRecord",   rcRecordNote);
       xml.intTag(level, "rcGotoLeft", rcGotoLeftMarkNote);
       xml.intTag(level, "rcPlay",     rcPlayNote);
+      xml.intTag(level, "rcSteprec",     rcSteprecNote);
 
       if (writePortInfo) {
             //
@@ -1214,7 +1220,6 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.intTag(level, "midiFilterCtrl2", midiFilterCtrl2);
       xml.intTag(level, "midiFilterCtrl3", midiFilterCtrl3);
       xml.intTag(level, "midiFilterCtrl4", midiFilterCtrl4);
-      // Removed by Tim. p3.3.6
       
       //xml.intTag(level, "txDeviceId", txDeviceId);
       //xml.intTag(level, "rxDeviceId", rxDeviceId);
@@ -1223,7 +1228,8 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.strTag(level, "externalWavEditor", config.externalWavEditor);
       xml.intTag(level, "useOldStyleStopShortCut", config.useOldStyleStopShortCut);
       xml.intTag(level, "moveArmedCheckBox", config.moveArmedCheckBox);
-
+      xml.intTag(level, "popupsDefaultStayOpen", config.popupsDefaultStayOpen);
+      
       //for (int i = 0; i < 6; ++i) {
       for (int i = 0; i < NUM_FONTS; ++i) {
             char buffer[32];
@@ -1276,39 +1282,8 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.colorTag(level, "auxTrackBg",    config.auxTrackBg);
       xml.colorTag(level, "synthTrackBg",  config.synthTrackBg);
 
-      // Changed by Tim. p3.3.6
-      
+      // Removed by Tim. p3.3.6
       //xml.intTag(level, "txSyncPort", txSyncPort);
-      /*
-      // To keep old muse versions happy...
-      bool mcsync = mmc = mtc = false;
-      for(int sp = 0; sp < MIDI_PORTS; ++sp)
-      {
-        MidiSyncTxPort* txPort = &midiSyncTxPorts[sp];
-        if(txPort->doMCSync() || txPort->doMMC() || txPort->doMTC())
-        {
-          if(txPort->doMCSync())
-            mcsync = true;
-          if(txPort->doMMC())
-            mmc = true;
-          if(txPort->doMTC())
-            mtc = true;
-          xml.intTag(level, "txSyncPort", sp);
-          break;
-        }  
-      }
-      */
-      
-      // Added by Tim. p3.3.6
-      
-      //xml.tag(level++, "midiSyncInfo");
-      //for(iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) 
-      //{
-      //  MidiDevice* md = *id;
-      //  (*id)->syncInfo().write(level, xml, md);
-      //}      
-      //xml.etag(level, "midiSyncInfo");
-
       //xml.intTag(level, "rxSyncPort", rxSyncPort);
       xml.intTag(level, "mtctype", mtcType);
       xml.nput(level, "<mtcoffset>%02d:%02d:%02d:%02d:%02d</mtcoffset>\n",

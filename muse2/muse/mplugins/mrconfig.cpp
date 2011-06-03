@@ -26,12 +26,14 @@ MRConfig::MRConfig(QWidget* parent, Qt::WFlags fl)
       sb2->setValue(rcRecordNote);
       sb3->setValue(rcGotoLeftMarkNote);
       sb4->setValue(rcPlayNote);
+      steprec_box->setValue(rcSteprecNote);
 
       connect(b1,  SIGNAL(toggled(bool)), SLOT(setRcEnable(bool)));
       connect(sb1, SIGNAL(valueChanged(int)), SLOT(setRcStopNote(int)));
       connect(sb2, SIGNAL(valueChanged(int)), SLOT(setRcRecordNote(int)));
       connect(sb3, SIGNAL(valueChanged(int)), SLOT(setRcGotoLeftMarkNote(int)));
       connect(sb4, SIGNAL(valueChanged(int)), SLOT(setRcPlayNote(int)));
+      connect(steprec_box, SIGNAL(valueChanged(int)), SLOT(setRcSteprecNote(int)));
       }
 
 //---------------------------------------------------------
@@ -67,5 +69,10 @@ void MRConfig::setRcGotoLeftMarkNote(int val)
 void MRConfig::setRcPlayNote(int val)
       {
       rcPlayNote = val;
+      }
+
+void MRConfig::setRcSteprecNote(int val)
+      {
+      rcSteprecNote = val;
       }
 

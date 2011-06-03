@@ -347,11 +347,8 @@ unsigned char rcStopNote = 28;
 unsigned char rcRecordNote = 31;
 unsigned char rcGotoLeftMarkNote = 33;
 unsigned char rcPlayNote = 29;
+unsigned char rcSteprecNote = 36;
 bool automation = true;
-
-QObject* gRoutingPopupMenuMaster = 0;
-RouteMenuMap gRoutingMenuMap;
-bool gIsOutRoutingPopupMenu = false;
 
 uid_t euid, ruid;  // effective user id, real user id
 

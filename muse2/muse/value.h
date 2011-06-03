@@ -18,9 +18,9 @@ class Xml;
 //---------------------------------------------------------
 
 class IValue : public QObject {
-      int val;
-
       Q_OBJECT
+    
+      int val;
 
    signals:
       void valueChanged(int);
@@ -39,9 +39,11 @@ class IValue : public QObject {
 //---------------------------------------------------------
 
 class BValue : public QObject {
+      Q_OBJECT
+    
       bool val;
 
-      Q_OBJECT
+      
 
    signals:
       void valueChanged(bool);

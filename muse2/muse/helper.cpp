@@ -6,6 +6,9 @@
 //=========================================================
 
 #include "helper.h"
+#include "part.h"
+#include "track.h"
+#include "song.h"
 
 extern bool hIsB;
 static const char* vall[] = {
@@ -38,3 +41,20 @@ QString pitch2string(int v)
       }
 
 
+
+
+Part* partFromSerialNumber(int serial)
+{
+	TrackList* tl = song->tracks();
+	for (iTrack it = tl->begin(); it != tl->end(); ++it)
+	{
+		PartList* pl = (*it)->parts();
+		iPart ip;
+		for (ip = pl->begin(); ip != pl->end(); ++ip)
+			if (ip->second->sn() == serial)
+				return ip->second;
+	}
+	
+	printf("ERROR: partFromSerialNumber(%i) wasn't able to find an appropriate part!\n",serial);
+	return NULL;
+}

@@ -1624,7 +1624,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
                   int hoffset = (mt->height() - th ) / 2; // offset from bottom
 
                   if (ctrl_type == CTRL_PITCH)
-                    p.drawLine(t, hoffset + r.y() + th/2, t, hoffset + r.y() + val*th/8192/2 + th/2);
+                    p.drawLine(t, hoffset + r.y() + th/2, t, hoffset + r.y() - val*th/8192/2 + th/2);
             }
       }
 
@@ -1641,7 +1641,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
                   int hoffset = (mt->height() - th ) / 2; // offset from bottom
 
                   if (ctrl_type == 10)
-                    p.drawLine(t, hoffset + r.y() + val*th/127, t, hoffset + r.y() + th);
+                    p.drawLine(t, hoffset + r.y() + th - val*th/127, t, hoffset + r.y() + th);
             }
       }
 
@@ -1658,7 +1658,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
                   int hoffset = (mt->height() - th ) / 2; // offset from bottom
 
                   if (ctrl_type == 7)
-                    p.drawLine(t, hoffset + r.y() + val*th/127, t, hoffset + r.y() + th);
+                    p.drawLine(t, hoffset + r.y() + th - val*th/127, t, hoffset + r.y() + th);
             }
       }
 
@@ -1690,7 +1690,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
       
       if (config.canvasShowPartType & 4) //y-stretch?
       {
-        for (iEvent i = events->begin(); i != ito; ++i)
+        for (iEvent i = events->begin(); i != events->end(); ++i)
         {
           if (i->second.type()==Note)
           {
@@ -1725,6 +1725,19 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
           lowest_pitch--;
           highest_pitch++;
         }
+        
+        if (heavyDebugMsg)
+        {
+            if (!isdrum)
+                printf("DEBUG: arranger: cakewalk enabled, y-stretching from %i to %i. eventlist=%p\n",lowest_pitch, highest_pitch, events);
+            else
+            {
+                printf("DEBUG: arranger: cakewalk enabled, y-stretching drums: ");;
+                for (map<int,int>::iterator it=y_mapper.begin(); it!=y_mapper.end(); it++)
+                    printf("%i ", it->first);
+                printf("; eventlist=%p\n",events); 
+            }
+        }
       }
       else
       {
@@ -1734,6 +1747,8 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
         if (isdrum)
           for (int cnt=0;cnt<127;cnt++)
             y_mapper[cnt]=cnt;
+        
+        if (heavyDebugMsg) printf("DEBUG: arranger: cakewalk enabled, y-stretch disabled\n");
       }
 
       p.setPen(QColor(color_brightness,color_brightness,color_brightness));      

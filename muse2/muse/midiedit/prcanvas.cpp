@@ -15,6 +15,8 @@
 #include <QDropEvent>
 #include <QMouseEvent>
 
+#include <set>
+
 #include <values.h>
 #include <stdio.h>
 #include <math.h>
@@ -84,14 +86,10 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
       {
       colorMode = 0;
       playedPitch = -1;
+      for (int i=0;i<128;i++) noteHeldDown[i]=false;
       
-      chordTimer = new QTimer(this);
-      chordTimer->setSingleShot(true);
-      chordTimer->setInterval(CHORD_TIMEOUT);
-      chordTimer->stop();
+      steprec=new StepRec(noteHeldDown);
       
-      connect(chordTimer, SIGNAL(timeout()), SLOT(chordTimerTimedOut()));
-
       songChanged(SC_TRACK_INSERTED);
       connect(song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
       }
@@ -669,28 +667,10 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
       // play note:
       MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
       audio->msgPlayMidiEvent(&e);
-
-      if (_steprec && pos[0] >= start_tick && pos[0] < end_tick) {
-         if (curPart) {
-            int len  = editor->raster();
-            unsigned tick = pos[0] - curPart->tick(); //CDW
-            if (shift)
-                  tick -= editor->rasterStep(tick);
-            Event e(Note);
-            e.setTick(tick);
-            e.setPitch(pitch);
-            e.setVelo(127);
-            e.setLenTick(len);
-            // Indicate do undo, and do not do port controller values and clone parts. 
-            audio->msgAddEvent(e, curPart, true, false, false);
-            tick += editor->rasterStep(tick) + curPart->tick();
-            if (tick != song->cpos()) {
-                  Pos p(tick, true);
-                  song->setPos(0, p, true, false, true);
-                  }
-            }
+      
+      if (_steprec && pos[0] >= start_tick && pos[0] < end_tick && curPart) {
+				 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velocity,globalKeyState&Qt::ControlModifier,shift);
          }
-            
       }
 
 //---------------------------------------------------------
@@ -796,16 +776,6 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect)
 void PianoCanvas::cmd(int cmd)
       {
       switch (cmd) {
-            case CMD_CUT:
-                  copy();
-                  erase_notes(partlist_to_set(editor->parts()),1); //FINDMICH is this correct? or must i do this on current_part?
-                  break;
-            case CMD_COPY:
-                  copy();
-                  break;
-            case CMD_PASTE:
-                  paste();
-                  break;
             case CMD_SELECT_ALL:     // select all
                   for (iCItem k = items.begin(); k != items.end(); ++k) {
                         if (!k->second->isSelected())
@@ -904,117 +874,32 @@ void PianoCanvas::cmd(int cmd)
 //---------------------------------------------------------
 //   midiNote
 //---------------------------------------------------------
-
 void PianoCanvas::midiNote(int pitch, int velo)
       {
+      if (debugMsg) printf("PianoCanvas::midiNote: pitch=%i, velo=%i\n", pitch, velo);
+
+      if (velo)
+        noteHeldDown[pitch]=true;
+      else
+        noteHeldDown[pitch]=false;
+
+      if (heavyDebugMsg)
+      {
+        printf("  held down notes are: ");
+        for (int i=0;i<128;i++)
+          if (noteHeldDown[i])
+            printf("%i ",i);
+        printf("\n");
+      }
+      
       if (_midiin && _steprec && curPart
          && !audio->isPlaying() && velo && pos[0] >= start_tick
          && pos[0] < end_tick
          && !(globalKeyState & Qt::AltModifier)) {
-					  chordTimer->stop();
-					  
-					  //len has been changed by flo: set to raster() instead of quant()
-					  //reason: the quant-toolbar has been removed; the flexibility you
-					  //lose with this can be re-gained by applying a "modify note len"
-					  //on the notes you have entered.
-            unsigned int len   = editor->raster();//prevent compiler warning: comparison singed/unsigned
-            unsigned tick      = pos[0]; //CDW
-            unsigned starttick = tick;
-
-            //
-            // extend len of last note?
-            //
-            EventList* events = curPart->events();
-            if (globalKeyState & Qt::ControlModifier) {
-                  for (iEvent i = events->begin(); i != events->end(); ++i) {
-                        Event ev = i->second;
-                        if (!ev.isNote())
-                              continue;
-                        if (ev.pitch() == pitch && ((ev.tick() + ev.lenTick()) == /*(int)*/starttick)) {
-                              Event e = ev.clone();
-                              e.setLenTick(ev.lenTick() + editor->rasterStep(starttick));
-                              // Indicate do undo, and do not do port controller values and clone parts. 
-                              audio->msgChangeEvent(ev, e, curPart, true, false, false);
-                              
-                              if (! (globalKeyState & Qt::ShiftModifier)) {
-                                    chordTimer_setToTick = tick + editor->rasterStep(tick);
-                                    chordTimer->start();
-                                    }
-                              return;
-                              }
-                        }
-                  }
-
-            //
-            // if we already entered the note, delete it
-            //
-            EventRange range = events->equal_range(tick);
-            for (iEvent i = range.first; i != range.second; ++i) {
-                  Event ev = i->second;
-                  if (ev.isNote() && ev.pitch() == pitch) {
-                        // Indicate do undo, and do not do port controller values and clone parts. 
-                        audio->msgDeleteEvent(ev, curPart, true, false, false);
-
-                        if (! (globalKeyState & Qt::ShiftModifier)) {
-                              chordTimer_setToTick = tick + editor->rasterStep(tick);
-                              chordTimer->start();
-                              }
-                        
-                        return;
-                        }
-                  }
-            Event e(Note);
-            e.setTick(tick - curPart->tick());
-            e.setPitch(pitch);
-            e.setVelo(velo);
-            e.setLenTick(len);
-            // Indicate do undo, and do not do port controller values and clone parts. 
-            audio->msgAddEvent(e, curPart, true, false, false);
-            
-            if (! (globalKeyState & Qt::ShiftModifier)) {
-                  chordTimer_setToTick = tick + editor->rasterStep(tick);
-                  chordTimer->start();
-                  }
-            }
+					 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velo,globalKeyState&Qt::ControlModifier,globalKeyState&Qt::ShiftModifier);
+         }
       }
 
-void PianoCanvas::chordTimerTimedOut()
-{
-	if (chordTimer_setToTick != song->cpos())
-	{
-		Pos p(chordTimer_setToTick, true);
-		song->setPos(0, p, true, false, true);
-	}
-}
-
-//---------------------------------------------------------
-//   copy
-//    cut copy paste
-//---------------------------------------------------------
-
-void PianoCanvas::copy()
-      {
-      //QDrag* drag = getTextDrag();
-      QMimeData* drag = getTextDrag();
-      
-      if (drag)
-            QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
-      }
-
-//---------------------------------------------------------
-//   paste
-//    paste events
-//---------------------------------------------------------
-
-void PianoCanvas::paste()
-      {
-      QString stype("x-muse-eventlist");
-      
-      //QString s = QApplication::clipboard()->text(stype, QClipboard::Selection);
-      QString s = QApplication::clipboard()->text(stype, QClipboard::Clipboard);  // TODO CHECK Tim.
-      
-      pasteAt(s, song->cpos());
-      }
 
 //---------------------------------------------------------
 //   startDrag
@@ -1022,7 +907,7 @@ void PianoCanvas::paste()
 
 void PianoCanvas::startDrag(CItem* /* item*/, bool copymode)
       {
-      QMimeData* md = getTextDrag();
+      QMimeData* md = selected_events_to_mime(partlist_to_set(editor->parts()), 1);
       
       if (md) {
             // "Note that setMimeData() assigns ownership of the QMimeData object to the QDrag object. 

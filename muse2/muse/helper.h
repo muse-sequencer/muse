@@ -10,7 +10,11 @@
 
 #include <QString>
 
+class Part;
+
 extern QString pitch2string(int v);
+
+Part* partFromSerialNumber(int serial);
 
 #endif
 

@@ -15,8 +15,9 @@ class Xml;
 
 class DelOverlaps : public QDialog, public Ui::DelOverlapsBase
 {
+ 	Q_OBJECT
 	private:
-		Q_OBJECT
+		
 		QButtonGroup* range_group;
 		
 	protected slots:

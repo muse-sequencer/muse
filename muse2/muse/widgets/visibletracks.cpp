@@ -87,7 +87,7 @@ void VisibleTracks::updateVisibleTracksButtons()
 
 void VisibleTracks::visibilityChanged(QAction* action)
 {
-      printf("update visibility\n");
+//      printf("update visibility\n");
       switch (((Action*)action)->id()) {
           case 0:
             WaveTrack::setVisible(action->isChecked());

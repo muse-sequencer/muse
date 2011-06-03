@@ -80,9 +80,6 @@ class EventCanvas : public Canvas {
       void range(int* s, int* e) const { *s = start_tick; *e = end_tick; }
       void playEvents(bool flag) { _playEvents = flag; }
       void selectAtTick(unsigned int tick);
-      //QDrag* getTextDrag(QWidget* parent);
-      QMimeData* getTextDrag();
-      void pasteAt(const QString& pt, int pos);
       void viewDropEvent(QDropEvent* event);
       virtual void modifySelected(NoteInfo::ValType, int) {}
       virtual void keyPress(QKeyEvent*);

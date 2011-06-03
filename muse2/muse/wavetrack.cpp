@@ -209,7 +209,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
       
       if ((song->bounceTrack != this) && !noInRoute()) {
             RouteList* irl = inRoutes();
-            iRoute i = irl->begin();
+            ciRoute i = irl->begin();
             if(i->track->isMidiTrack())
             {
               if(debugMsg)

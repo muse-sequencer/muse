@@ -28,6 +28,7 @@ class Xml;
 //---------------------------------------------------------
 
 class MPConfig : public QDialog, Ui::SynthConfigBase {
+      Q_OBJECT
       QMenu* instrPopup;
       //QMenu* popup;
       PopupMenu* defpup;
@@ -36,7 +37,7 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
       void setToolTip(QTableWidgetItem *item, int col);
       void addItem(int row, int col, QTableWidgetItem *item, QTableWidget *table);
 
-      Q_OBJECT
+      
 
    private slots:
       void rbClicked(QTableWidgetItem*);

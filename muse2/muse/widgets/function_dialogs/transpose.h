@@ -15,7 +15,6 @@ class Xml;
 
 class Transpose : public QDialog, public Ui::TransposeBase
 {
-	private:
 		Q_OBJECT
 		QButtonGroup* range_group;
 		

@@ -13,9 +13,11 @@ class MusE;
 //---------------------------------------------------------
 
 class BigTime : public QWidget {
+      Q_OBJECT
+    
       bool tickmode;
       MusE* seq;
-      Q_OBJECT
+      
 
       bool setString(unsigned);
 

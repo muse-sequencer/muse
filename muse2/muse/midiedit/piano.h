@@ -23,6 +23,8 @@ class QPixmap;
 
 class Piano : public View
       {
+      Q_OBJECT
+    
       int curPitch;
       QPixmap* octave;
       QPixmap* c_keys[10];
@@ -34,7 +36,7 @@ class Piano : public View
       bool shift;
       int button;
 
-      Q_OBJECT
+      
       int y2pitch(int) const;
       int pitch2y(int) const;
       void viewMouseMoveEvent(QMouseEvent* event);
