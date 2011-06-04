@@ -504,19 +504,19 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       // like moving or drawing lasso is performed.
       ///if (event->stateAfter() & Qt::RightButton) {
       if (event->buttons() & Qt::RightButton & ~(event->button())) {
-            //printf("viewMousePressEvent special buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
-    switch (drag) {
-          case DRAG_LASSO:
-          drag = DRAG_OFF;
-      redraw();
-      return;
-    case DRAG_MOVE:
-      drag = DRAG_OFF;
-      endMoveItems (start, MOVE_MOVE, 0);
-      return;
-    default:
-      break;
-      }
+          //printf("viewMousePressEvent special buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
+          switch (drag) {
+              case DRAG_LASSO:
+                drag = DRAG_OFF;
+                redraw();
+                return;
+              case DRAG_MOVE:
+                drag = DRAG_OFF;
+                endMoveItems (start, MOVE_MOVE, 0);
+                return;
+              default:
+                break;
+          }
       }
 
       // ignore event if (another) button is already active:
@@ -622,13 +622,12 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                               // Changed by T356. Alt is default reserved for moving the whole window in KDE. Changed to Shift-Alt.
                               // Hmm, nope, shift-alt is also reserved sometimes. Must find a way to bypass, 
                               //  why make user turn off setting? Left alone for now...
-                              if (ctrl && !shift)
+                              if (ctrl)
                                     drag = DRAG_COPY_START;
                               else if (alt) {
                                     drag = DRAG_CLONE_START;
                                     }
                               else if (shift) { //Select all on the same pitch (e.g. same y-value)
-                                    if (!ctrl)
                                       deselectAll();
                                     for (iCItem i = items.begin(); i != items.end(); ++i) {
                                           if (i->second->y() == curItem->y() )
@@ -987,7 +986,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
             case DRAG_CLONE_START:
                   if (!moving)
                         break;
-                  if (keyState & Qt::ControlModifier) {
+                  if (keyState & Qt::ShiftModifier) {
                         if (ax > ay) {
                               if (drag == DRAG_MOVE_START)
                                     drag = DRAGX_MOVE;
