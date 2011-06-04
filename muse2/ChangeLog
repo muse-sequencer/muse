@@ -1,3 +1,7 @@
+04.06.2011:
+        - fixed regression with switching ctrl/shift when manipulating
+          items in canvas. drag+shift limits movement, drag+ctrl copies (rj)
+          
 02.06.2011:
         - the score editor now allows batch-movements, that is,
           you can transpose or move the whole selection and not
