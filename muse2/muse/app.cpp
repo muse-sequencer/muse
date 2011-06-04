@@ -3743,7 +3743,7 @@ void MusE::updateConfiguration()
       trackAInputAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_INPUT].key);
       trackAAuxAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_AUX].key);
 
-      editSelectAllAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
+      editSelectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
       editDeselectAllAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
       editInvertSelectionAction->setShortcut(shortcuts[SHRT_SELECT_INVERT].key);
       editInsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
