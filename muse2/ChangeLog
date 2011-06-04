@@ -1,9 +1,13 @@
+04.06.2011:
+        - changed behaviour of middle click in all canvases to "delete" (flo93)
 02.06.2011:
         - the score editor now allows batch-movements, that is,
           you can transpose or move the whole selection and not
           only single notes (flo93)
         - the functions now return as boolean, if they have triggered
           undo (flo93)
+        - applied another patch from WillyFoobar: moved Q_OBJECT
+          to the top of each class definition, where it belongs (flo93)
 30.05.2011:
         - implemented cut,copy'n'paste and the "select foo" entries in the score editor (flo93)
         - added select_foo() functions to functions.cpp (flo93)

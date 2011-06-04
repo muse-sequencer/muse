@@ -214,9 +214,7 @@ void PartCanvas::returnPressed()
       
       newPart->setName(lineEditor->text());
       // Indicate do undo, and do port controller values but not clone parts. 
-      //audio->msgChangePart(oldPart, newPart);
       audio->msgChangePart(oldPart, newPart, true, true, false);
-      //printf("PartCanvas::returnPressed after msgChangePart oldPart refs:%d Arefs:%d newPart refs:%d Arefs:%d\n", oldPart->events()->refCount(), oldPart->events()->arefCount(), newPart->events()->refCount(), newPart->events()->arefCount());
       
       editMode = false;
       }
@@ -429,12 +427,10 @@ bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
 
             if (dtrack->type() == Track::WAVE) {
                   // Indicate no undo, and do not do port controller values and clone parts. 
-                  //audio->msgChangePart((WavePart*)spart, (WavePart*)dpart,false);
                   audio->msgChangePart((WavePart*)spart, (WavePart*)dpart, false, false, false);
               }
             else {
                   // Indicate no undo, and do port controller values but not clone parts. 
-                  //audio->msgChangePart(spart, dpart, false);
                   audio->msgChangePart(spart, dpart, false, true, false);
               }
             spart->setSelected(false);
@@ -794,10 +790,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                         }
                   song->startUndo();
                   // Indicate no undo, and do port controller values but not clone parts. 
-                  //audio->msgChangePart(spart, dpart, false);
                   audio->msgChangePart(spart, dpart, false, true, false);
-                  //printf("PartCanvas::itemPopup: #2 spart %s %p next:%s %p prev:%s %p\n", spart->name().toLatin1().constData(), spart, spart->nextClone()->name().toLatin1().constData(), spart->nextClone(), spart->prevClone()->name().toLatin1().constData(), spart->prevClone()); 
-                  //printf("PartCanvas::itemPopup: #2 dpart %s %p next:%s %p prev:%s %p\n", dpart->name().toLatin1().constData(), dpart, dpart->nextClone()->name().toLatin1().constData(), dpart->nextClone(), dpart->prevClone()->name().toLatin1().constData(), dpart->prevClone()); 
 
                   song->endUndo(SC_PART_MODIFIED);
                   break; // Has to be break here, right?

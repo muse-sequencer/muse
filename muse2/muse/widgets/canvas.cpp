@@ -569,12 +569,9 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
             }
 
       if (curItem && (event->button() == Qt::MidButton)) {
-            if (!curItem->isSelected()) {
-                  selectItem(curItem, true);
-                  updateSelection();
-                  redraw();
-                  }
-            startDrag(curItem, ctrl);
+            deleteItem(start); // changed from "start drag" to "delete" by flo93
+            drag = DRAG_DELETE;
+            setCursor();
             }
       else if (event->button() == Qt::RightButton) {
             if (curItem) {

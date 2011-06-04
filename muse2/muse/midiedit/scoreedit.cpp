@@ -4451,9 +4451,7 @@ void staff_t::update_part_indices()
 
 
 /* BUGS and potential bugs
- *   o quantize always quantizes length. make this selectable!
  *   o when the keymap is not used, this will probably lead to a bug
- *     same when mastertrack is disabled
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
  * 
@@ -4466,12 +4464,14 @@ void staff_t::update_part_indices()
  *   o controller view in score editor
  *   o deal with expanding parts
  *   o fix sigedit boxes
- *   o mid-click in pianoroll: change to "delete", or initiate drag and drop between windows?
- * 
- * 
  *   o drum list: scroll while dragging
+ *   o remove functions for disabling key/sigmap
+ *   o mastertrack editor: key-combobox is buggy
+ *   o drum editor: channel-stuff
  * 
  * IMPORTANT TODO
+ *   o solo button
+ *   o grand staff brace
  *   o do partial recalculating; recalculating can take pretty long
  *     (0,5 sec) when displaying a whole song in scores
  *   o transpose etc. must also transpose key-pressure events
