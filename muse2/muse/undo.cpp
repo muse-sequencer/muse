@@ -480,6 +480,7 @@ void Song::doUndo2()
                         break;
                   case UndoOp::ModifyClip:
                   case UndoOp::ModifyMarker:
+                  case UndoOp::DoNothing:
                         break;
                   }
             }
@@ -716,6 +717,7 @@ void Song::doRedo2()
                         break;
                   case UndoOp::ModifyClip:
                   case UndoOp::ModifyMarker:
+                  case UndoOp::DoNothing:
                         break;
                   }
             }
@@ -723,6 +725,11 @@ void Song::doRedo2()
 
 UndoOp::UndoOp()
 {
+}
+
+UndoOp::UndoOp(UndoType type_)
+{
+	type = type_;
 }
 
 UndoOp::UndoOp(UndoType type_, int a_, int b_, int c_)

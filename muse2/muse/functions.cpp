@@ -759,7 +759,7 @@ void paste_at(Part* dest_part, const QString& pt, int pos)
 					goto end_of_paste_at;
 				}
 				else
-				xml.unknown("pasteAt");
+				xml.unknown("paste_at");
 				break;
 				
 			case Xml::Attribut:

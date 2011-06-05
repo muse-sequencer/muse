@@ -36,7 +36,8 @@ struct UndoOp {
             AddKey,   DeleteKey,
             SwapTrack,
             ModifyClip,
-            ModifyMarker
+            ModifyMarker,
+            DoNothing
             };
       UndoType type;
 
@@ -99,6 +100,7 @@ struct UndoOp {
       UndoOp(UndoType type, SigEvent* oevent, SigEvent* nevent);
       UndoOp(UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe);
       UndoOp(UndoType type, Marker* copyMarker, Marker* realMarker);
+      UndoOp(UndoType type);
       };
 
 class Undo : public std::list<UndoOp> {

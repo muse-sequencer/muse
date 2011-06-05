@@ -259,8 +259,10 @@ void PartCanvas::updateSong(DragType t, int flags)
 //   moveCanvasItems
 //---------------------------------------------------------
 
-void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype, int*)
+void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype)
 {      
+  Undo operations;
+  
   for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
   {
     CItem* ci = ici->second;
@@ -278,15 +280,21 @@ void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
     QPoint newpos = raster(QPoint(nx, ny));
     selectItem(ci, true);
     
-    if (moveItem(ci, newpos, dtype))
+    UndoOp operation=moveItem(ci, newpos, dtype);
+    if (operation.type != UndoOp::DoNothing)
+    {
     	ci->move(newpos);
+      operations.push_back(operation);
+    }
     
     if(moving.size() == 1) {
           itemReleased(curItem, newpos);
           }
     if(dtype == MOVE_COPY || dtype == MOVE_CLONE)
           selectItem(ci, false);
-  }  
+  }
+  
+  song->applyOperationGroup(operations);
 }
       
 //---------------------------------------------------------
@@ -295,7 +303,7 @@ void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
 //---------------------------------------------------------
 
 // Changed by T356.
-bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
+UndoOp PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
       {
       UndoOp result;
       NPart* npart    = (NPart*) item;
@@ -305,7 +313,7 @@ bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
       unsigned ntrack = y2pitch(item->mp().y());
       Track::TrackType type = track->type();
       if (tracks->index(track) == ntrack && (dtick == spart->tick())) {
-            return false; //FINDMICH
+            return UndoOp(UndoOp::DoNothing);
             }
       if (ntrack >= tracks->size()) {
             ntrack = tracks->size();
@@ -323,7 +331,7 @@ bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
       if (dtrack->type() != type) {
             QMessageBox::critical(this, QString("MusE"),
                tr("Cannot copy/move/clone to different Track-Type"));
-            return false; //FINDMICH
+            return UndoOp(UndoOp::DoNothing);
             }
 
       Part* dpart;
@@ -341,6 +349,8 @@ bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
         // This increments aref count if cloned, and chains clones.
         // It also gives the new part a new serial number.
         dpart = dtrack->newPart(spart, clone);
+        dpart->events()->incARef(-1); // the later song->applyOperationGroup() will increment it
+                                      // so we must decrement it first :/
 
       dpart->setTick(dtick);
 
@@ -359,33 +369,24 @@ bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
                   }
             }
       if (t == MOVE_COPY || t == MOVE_CLONE) {
-            // These will not increment ref count, and will not chain clones...
-            if (dtrack->type() == Track::WAVE)
-                  audio->msgAddPart((WavePart*)dpart,false);
-            else
-                  audio->msgAddPart(dpart,false);
+            // These will not increment ref count, and will not chain clones... 
+            // TODO: is this still correct (by flo93)?
+            result=UndoOp(UndoOp::AddPart,dpart);
             }
       else if (t == MOVE_MOVE) {
             dpart->setSelected(spart->selected());
             // These will increment ref count if not a clone, and will chain clones...
-
-            if (dtrack->type() == Track::WAVE) {
-                  // Indicate no undo, and do not do port controller values and clone parts. 
-                  audio->msgChangePart((WavePart*)spart, (WavePart*)dpart, false, false, false);
-              }
-            else {
-                  // Indicate no undo, and do port controller values but not clone parts. 
-                  audio->msgChangePart(spart, dpart, false, true, false);
-              }
+            // TODO: is this still correct (by flo93)?
+            result=UndoOp(UndoOp::ModifyPart,spart, dpart, true, false);
+            
             spart->setSelected(false);
-
             }
+      // else // will never happen -> result will always be defined
       
       if (song->len() < (dpart->lenTick() + dpart->tick()))
             song->setLen(dpart->lenTick() + dpart->tick());
 
-      return true; //FINDMICH
-      //TODO FINDMICH returns nothing... should be fixed (flo93)
+      return result;
       }
 
 //---------------------------------------------------------
@@ -521,7 +522,7 @@ void PartCanvas::newItem(CItem* i, bool noSnap)
             len = AL::sigmap.rasterStep(p->tick(), *_raster);
       p->setLenTick(len);
       p->setSelected(true);
-      audio->msgAddPart(p);
+      audio->msgAddPart(p, true); //indicate undo
       }
 
 //---------------------------------------------------------
@@ -531,7 +532,7 @@ void PartCanvas::newItem(CItem* i, bool noSnap)
 bool PartCanvas::deleteItem(CItem* i)
       {
       Part*  p = ((NPart*)(i))->part();
-      audio->msgRemovePart(p); //Invokes songChanged which calls partsChanged which makes it difficult to delete them there
+      audio->msgRemovePart(p, true); //Invokes songChanged which calls partsChanged which makes it difficult to delete them there
       return true;
       }
 
@@ -712,11 +713,9 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                         Event ev = oldEvent.clone();
                         de->add(ev);
                         }
-                  song->startUndo();
-                  // Indicate no undo, and do port controller values but not clone parts. 
-                  audio->msgChangePart(spart, dpart, false, true, false);
-
-                  song->endUndo(SC_PART_MODIFIED);
+                  // Indicate undo, and do port controller values but not clone parts. 
+                  // changed by flo93: removed start and endUndo, instead changed first bool to true
+                  audio->msgChangePart(spart, dpart, true, true, false);
                   break; // Has to be break here, right?
                   }
             case 16: // Export to file
@@ -929,14 +928,10 @@ void PartCanvas::keyPress(QKeyEvent* event)
             key +=  Qt::CTRL;
 
       if (key == shortcuts[SHRT_DELETE].key) {
-            if (getCurrentDrag()) {
-                  //printf("dragging!!\n");
+            if (getCurrentDrag())
                   return;
-                  }
                 
-            song->startUndo();
             song->msgRemoveParts();
-            song->endUndo(SC_PART_REMOVED);
             return;
             }
       else if (key == shortcuts[SHRT_POS_DEC].key) {
@@ -1807,26 +1802,23 @@ void PartCanvas::cmd(int cmd)
             }
       switch (cmd) {
             case CMD_CUT_PART:
+            {
                   copy(&pl);
-                  song->startUndo();
                   
-                  bool loop;
-                  do
-                  {
-                    loop = false;
-                    for (iCItem i = items.begin(); i != items.end(); ++i) {
-                          if (!i->second->isSelected())
-                                continue;
-                          NPart* p = (NPart*)(i->second);
-                          Part* part = p->part();
-                          audio->msgRemovePart(part);
-                          
-                          loop = true;
-                          break;
-                        }
-                  } while (loop);
-                  song->endUndo(SC_PART_REMOVED);
+                  Undo operations;
+                  
+                  for (iCItem i = items.begin(); i != items.end(); ++i) {
+                        if (i->second->isSelected()) {
+                              NPart* p = (NPart*)(i->second);
+                              Part* part = p->part();
+                              operations.push_back(UndoOp(UndoOp::DeletePart, part));
+                              }
+                      }
+                  
+                  song->applyOperationGroup(operations);
+                  
                   break;
+            }
             case CMD_COPY_PART:
                   copy(&pl);
                   break;
@@ -1846,11 +1838,10 @@ void PartCanvas::cmd(int cmd)
                   paste(false, false, true);
                   break;
             case CMD_INSERT_EMPTYMEAS:
-                  song->startUndo();
                   int startPos=song->vcpos();
                   int oneMeas=AL::sigmap.ticksMeasure(startPos);
-                  movePartsTotheRight(startPos,oneMeas);
-                  song->endUndo(SC_PART_INSERTED);
+                  Undo temp=movePartsTotheRight(startPos,oneMeas);
+                  song->applyOperationGroup(temp);
                   break;
             }
       }
@@ -1947,8 +1938,10 @@ void PartCanvas::copy(PartList* pl)
 //   pasteAt
 //---------------------------------------------------------
 
-int PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool clone, bool toTrack)
+Undo PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool clone, bool toTrack, int* finalPosPtr)
       {
+      Undo operations;
+      
       QByteArray ba = pt.toLatin1();
       const char* ptxt = ba.constData();
       Xml xml(ptxt);
@@ -1959,7 +1952,6 @@ int PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool 
       int  done = 0;
       bool end = false;
 
-      //song->startUndo();
       for (;;) {
             Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
@@ -1973,6 +1965,7 @@ int PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool 
                               // Read the part.
                               Part* p = 0;
                               p = readXmlPart(xml, track, clone, toTrack);
+
                               // If it could not be created...
                               if(!p)
                               {
@@ -1980,6 +1973,9 @@ int PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool 
                                 ++notDone;
                                 break;
                               } 
+
+                              p->events()->incARef(-1); // the later song->applyOperationGroup() will increment it
+                                                        // so we must decrement it first :/
                               
                               // Increment the number of parts done.
                               ++done;
@@ -1992,8 +1988,7 @@ int PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool 
                               if (p->tick()+p->lenTick()>finalPos) {
                                 finalPos=p->tick()+p->lenTick();
                               }
-                              //pos += p->lenTick();
-                              audio->msgAddPart(p,false);
+                              operations.push_back(UndoOp(UndoOp::AddPart,p));
                               }
                         else
                               xml.unknown("PartCanvas::pasteAt");
@@ -2008,8 +2003,6 @@ int PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool 
                   break;
             }
       
-      //song->endUndo(SC_PART_INSERTED);
-      //return pos;
       
       if(notDone)
       {
@@ -2020,7 +2013,8 @@ int PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool 
            tr(" could not be pasted.\nLikely the selected track is the wrong type."));
       }
       
-      return finalPos;
+      if (finalPosPtr) *finalPosPtr=finalPos;
+      return operations;
       }
 
 
@@ -2110,30 +2104,30 @@ void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
         return;
       }
       
-      int endPos=0;
-      unsigned int startPos=song->vcpos();
       if (!txt.isEmpty())
       {
-        song->startUndo();
-        endPos=pasteAt(txt, track, startPos, clone, toTrack);
+        int endPos=0;
+        unsigned int startPos=song->vcpos();
+        Undo operations=pasteAt(txt, track, startPos, clone, toTrack, &endPos);
         Pos p(endPos, true);
         song->setPos(0, p);
-        if (!doInsert)
-          song->endUndo(SC_PART_INSERTED);
+        if (doInsert) {
+          int offset = endPos-startPos;
+          Undo temp=movePartsTotheRight(startPos, offset);
+          operations.insert(operations.end(), temp.begin(), temp.end());
+        }
+        song->applyOperationGroup(operations);
       }
 
-      if (doInsert) {
-        int offset = endPos-startPos;
-        movePartsTotheRight(startPos, offset);
-        song->endUndo(SC_PART_INSERTED);
-      }
     }
 
 //---------------------------------------------------------
 //   movePartsToTheRight
 //---------------------------------------------------------
-void PartCanvas::movePartsTotheRight(unsigned int startTicks, int length)
+Undo PartCanvas::movePartsTotheRight(unsigned int startTicks, int length)
 {
+        Undo operations;
+        
         // all parts that start after the pasted parts will be moved the entire length of the pasted parts
         for (iCItem i = items.begin(); i != items.end(); ++i) {
           if (!i->second->isSelected()) {
@@ -2141,12 +2135,8 @@ void PartCanvas::movePartsTotheRight(unsigned int startTicks, int length)
               if (part->tick() >= startTicks) {
                 Part *newPart = part->clone();
                 newPart->setTick(newPart->tick()+length);
-                if (part->track()->type() == Track::WAVE) {
-                  audio->msgChangePart((WavePart*)part,(WavePart*)newPart,false,false,false);
-                } else {
-                  audio->msgChangePart(part,newPart,false,false,false);
-                }
-
+                
+                operations.push_back(UndoOp(UndoOp::ModifyPart,part,newPart,false,false));
               }
           }
         }
@@ -2159,9 +2149,11 @@ void PartCanvas::movePartsTotheRight(unsigned int startTicks, int length)
               Marker *oldMarker = new Marker();
               *oldMarker = *m;
               m->setTick(m->tick()+length);
-              song->addUndo(UndoOp(UndoOp::ModifyMarker,oldMarker, m));
+              operations.push_back(UndoOp(UndoOp::ModifyMarker,oldMarker, m));
             }
         }
+        
+        return operations;
 }
 //---------------------------------------------------------
 //   startDrag
@@ -2284,11 +2276,11 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
             Track* track = 0;
             if (trackNo < tracks->size())
                   track = tracks->index(trackNo);
-            if (track) {
-                  song->startUndo();
-                  pasteAt(text, track, x);
-                  song->endUndo(SC_PART_INSERTED);
-                }
+            if (track)
+            {
+                  Undo temp=pasteAt(text, track, x);
+                  song->applyOperationGroup(temp);
+            }
       }
       else if (type == 2) 
       {
@@ -2967,8 +2959,6 @@ double PartCanvas::valToDb(double inV)
 
 void PartCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir)
       {
-      song->startUndo();
-
       int dp = y2pitch(pos.y()) - y2pitch(start.y());
       int dx = pos.x() - start.x();
 
@@ -2976,19 +2966,9 @@ void PartCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir)
             dp = 0;
       else if (dir == 2)
             dx = 0;
+
+      moveCanvasItems(moving, dp, dx, dragtype);
       
-      
-      
-      int modified = 0;
-      
-      moveCanvasItems(moving, dp, dx, dragtype, &modified);
-      
-      if (dragtype == MOVE_COPY || dragtype == MOVE_CLONE)
-      	modified|=SC_PART_INSERTED;
-      else
-      	modified|=SC_PART_MODIFIED;
-      	
-      song->endUndo(modified);
       moving.clear();
       updateSelection();
       redraw();

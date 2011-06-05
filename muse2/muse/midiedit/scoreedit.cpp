@@ -4457,7 +4457,8 @@ void staff_t::update_part_indices()
  * 
  * CURRENT TODO
  *   o speed up list editor
- *   o speed up arranger
+ *   o insert empty measure should also work inside parts
+ *   o canvas editor: create clone via "alt+drag" moves window instead
  * 
  *   o rename stuff: UndoOp -> Operation, Undo -> OpList,
  *                   UndoType -> OpType, iUndoOp, riUndoOp -> iOperation,
