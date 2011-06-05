@@ -4456,6 +4456,9 @@ void staff_t::update_part_indices()
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
+ *   o speed up list editor
+ *   o speed up arranger
+ * 
  *   o rename stuff: UndoOp -> Operation, Undo -> OpList,
  *                   UndoType -> OpType, iUndoOp, riUndoOp -> iOperation,
  *                   undo.cpp/.h -> operations.cpp/.h
@@ -4464,7 +4467,6 @@ void staff_t::update_part_indices()
  *   o controller view in score editor
  *   o deal with expanding parts
  *   o fix sigedit boxes
- *   o drum list: scroll while dragging
  *   o remove functions for disabling key/sigmap
  *   o mastertrack editor: key-combobox is buggy
  *   o drum editor: channel-stuff
@@ -4492,6 +4494,7 @@ void staff_t::update_part_indices()
  *       keeping its own pos_add variable (which is only an optimisation)
  *   o support edge-scrolling when opening a lasso
  *   o save more configuration stuff (quant, color)
+ *   o drum list: scroll while dragging (not important due to "reorder list")
  * 
  * really unimportant nice-to-haves
  *   o support in-song clef-changes

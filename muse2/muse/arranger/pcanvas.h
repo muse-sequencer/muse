@@ -12,9 +12,7 @@
 #include "canvas.h"
 #include "trackautomationview.h"
 
-class QDragMoveEvent;
 class QDropEvent;
-class QDragLeaveEvent;
 class QMouseEvent;
 class QKeyEvent;
 class QEvent;
@@ -94,8 +92,6 @@ class PartCanvas : public Canvas {
       virtual void updateSong(DragType, int);
       virtual void startDrag(CItem*, DragType);
       virtual void dragEnterEvent(QDragEnterEvent*);
-      virtual void dragMoveEvent(QDragMoveEvent*);
-      virtual void dragLeaveEvent(QDragLeaveEvent*);
       virtual void viewDropEvent(QDropEvent*);
 
       virtual QMenu* genItemPopup(CItem*);

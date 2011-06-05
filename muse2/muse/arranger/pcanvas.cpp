@@ -21,7 +21,6 @@
 #include <QPainter>
 #include <QUrl>
 #include <QPoint>
-//#include <QLinearGradient>
 
 #include "fastlog.h"
 #include "widgets/tools.h"
@@ -44,55 +43,6 @@
 #include "midictrl.h"
 #include "utils.h"
 
-// Moved into global config by Tim.
-/* 
-const char* partColorNames[] = {
-      "Default",
-      "Refrain",
-      "Bridge",
-      "Intro",
-      "Coda",
-      "Chorus",
-      "Solo",
-      "Brass",
-      "Percussion",
-      "Drums",
-      "Guitar",
-      "Bass",
-      "Flute",
-      "Strings",
-      "Keyboard",
-      "Piano",
-      "Saxophon",
-      };
-*/      
-      
-/*
-//---------------------------------------------------------
-//   ColorListItem
-//---------------------------------------------------------
-
-class ColorListItem { //: public QCustomMenuItem { ddskrjo
-      QColor color;
-      int h;
-      int fontheight;
-      QString label;
-      virtual QSize sizeHint() { return QSize(80, h); }
-      virtual void paint(QPainter* p, const QColorGroup&, bool act, bool enabled, int x, int y, int w, int h)
-            {
-            p->fillRect(x+5, y+2, h-4, h-4, QBrush(color));
-            p->drawText(x+5 + h - 4 + 3, y+(fontheight * 3) / 4, label);
-            }
-
-   public:
-      ColorListItem(const QColor& c, int _h,  int _fh, const char* txt)
-         : color(c), h(_h), fontheight(_fh), label(txt) {
-            }
-      QString text() const { return QString("PartColor"); }
-      };
-*/
-// ORCAN : colorRect does the same job as the above class.
-//         Shall we get rid of the class?
 
 //---------------------------------------------------------
 //   colorRect
@@ -119,7 +69,6 @@ NPart::NPart(Part* e) : CItem(Event(), e)
       {
       int th = track()->height();
       int y  = track()->y();
-      //printf("NPart::NPart track name:%s, y:%d h:%d\n", track()->name().toLatin1().constData(), y, th);  
       
       ///setPos(QPoint(e->tick(), y + 1));
       setPos(QPoint(e->tick(), y));
@@ -378,8 +327,6 @@ bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
             }
 
       Part* dpart;
-      //bool clone = (t == MOVE_CLONE) || (spart->events()->arefCount() > 1);
-      //bool clone = (t == MOVE_CLONE);
       bool clone = (t == MOVE_CLONE || (t == MOVE_COPY && spart->events()->arefCount() > 1));
       
       if(t == MOVE_MOVE)
@@ -397,11 +344,8 @@ bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
 
       dpart->setTick(dtick);
 
-      //printf("PartCanvas::moveItem before add/changePart clone:%d spart:%p events:%p refs:%d Arefs:%d sn:%d dpart:%p events:%p refs:%d Arefs:%d sn:%d\n", clone, spart, spart->events(), spart->events()->refCount(), spart->events()->arefCount(), spart->sn(), dpart, dpart->events(), dpart->events()->refCount(), dpart->events()->arefCount(), dpart->sn());
-      
       if(t == MOVE_MOVE) 
         item->setPart(dpart);
-      //if (!clone) {
       if (t == MOVE_COPY && !clone) {
             //
             // Copy Events
@@ -436,11 +380,10 @@ bool PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
             spart->setSelected(false);
 
             }
-      //printf("PartCanvas::moveItem after add/changePart spart:%p events:%p refs:%d Arefs:%d dpart:%p events:%p refs:%d Arefs:%d\n", spart, spart->events(), spart->events()->refCount(), spart->events()->arefCount(), dpart, dpart->events(), dpart->events()->refCount(), dpart->events()->arefCount());
       
       if (song->len() < (dpart->lenTick() + dpart->tick()))
             song->setLen(dpart->lenTick() + dpart->tick());
-      //endUndo(t);
+
       return true; //FINDMICH
       //TODO FINDMICH returns nothing... should be fixed (flo93)
       }
@@ -654,11 +597,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       QMenu* colorPopup = partPopup->addMenu(tr("color"));
 
       // part color selection
-      //const QFontMetrics& fm = colorPopup->fontMetrics();
-      //int h = fm.lineSpacing();
-
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
-            //ColorListItem* item = new ColorListItem(config.partColors[i], h, fontMetrics().height(), partColorNames[i]); //ddskrjo
             QAction *act_color = colorPopup->addAction(colorRect(config.partColors[i], 80, 80), config.partColorNames[i]);
             act_color->setData(20+i);
             }
@@ -758,28 +697,13 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                   break;
 
             case 14:    // wave edit
-                  {
-                    // Changed to allow multiple selected parts to be shown. By T356
-                    // Slightly inefficient to add (above), then clear here.
-                    // Should really only add npart->part() to pl only if NOT here.
-                    // Removed. Added wave editor menu item instead.
-                    //pl->clear();
-                    //PartList* ptl = npart->track()->parts();
-                    //for(ciPart pi = ptl->begin(); pi != ptl->end(); pi++)
-                    //{
-                    //  if(pi->second->selected())
-                    //    pl->add(pi->second);
-                    //}  
                     emit startEditor(pl, 4);
-                  }
                   return;
             case 15:    // declone
                   {
                   Part* spart  = npart->part();
                   Track* track = npart->track();
                   Part* dpart  = track->newPart(spart, false);
-                  //printf("PartCanvas::itemPopup: #1 spart %s %p next:%s %p prev:%s %p\n", spart->name().toLatin1().constData(), spart, spart->nextClone()->name().toLatin1().constData(), spart->nextClone(), spart->prevClone()->name().toLatin1().constData(), spart->prevClone()); 
-                  //printf("PartCanvas::itemPopup: #1 dpart %s %p next:%s %p prev:%s %p\n", dpart->name().toLatin1().constData(), dpart, dpart->nextClone()->name().toLatin1().constData(), dpart->nextClone(), dpart->prevClone()->name().toLatin1().constData(), dpart->prevClone()); 
 
                   EventList* se = spart->events();
                   EventList* de = dpart->events();
@@ -799,13 +723,11 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                   {
                   const Part* part = item->part();
                   bool popenFlag = false;
-                  //QString fn = getSaveFileName(QString(""), part_file_pattern, this, tr("MusE: save part"));
                   QString fn = getSaveFileName(QString(""), part_file_save_pattern, this, tr("MusE: save part"));
                   if (!fn.isEmpty()) {
                         FILE* fp = fileOpen(this, fn, ".mpt", "w", popenFlag, false, false);
                         if (fp) {
                               Xml tmpXml = Xml(fp);
-                              //part->write(0, tmpXml);
                               // Write the part. Indicate that it's a copy operation - to add special markers, 
                               //  and force full wave paths.
                               part->write(0, tmpXml, true, true);
@@ -826,7 +748,6 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                       SndFileR f  = event.sndFile();
                       if (f.isNull())
                         continue;
-                      //str.append("\n" + f.path());
                       str.append(QString("\n@") + QString().setNum(event.tick()) + QString(" len:") + 
                         QString().setNum(event.lenTick()) + QString(" ") + f.path());
                     }  
@@ -845,14 +766,11 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                     {
                       for(int i = 0; i < j; ++i)
                       {
-                        //printf("PartCanvas::itemPopup i:%d %s %p events %p refs:%d arefs:%d\n", i, p->name().toLatin1().constData(), p, part->cevents(), part->cevents()->refCount(), j); 
-                        
                         p->setSelected(true);
                         p = p->nextClone();
                         if(p == part)
                           break;
                       }
-                      //song->update();
                       song->update(SC_SELECTION);
                     }
                     
@@ -1380,13 +1298,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       
       QRect r    = item->bbox();
       
-      //printf("PartCanvas::drawItem %s evRefs:%d pTick:%d pLen:%d\nbb.x:%d bb.y:%d bb.w:%d bb.h:%d\n"
-      //       "rect.x:%d rect.y:%d rect.w:%d rect.h:%d\nr.x:%d r.y:%d r.w:%d r.h:%d\n",
-      //  part->name().toLatin1().constData(), part->events()->arefCount(), pTick, part->lenTick(), 
-      //  bb.x(), bb.y(), bb.width(), bb.height(), 
-      //  rect.x(), rect.y(), rect.width(), rect.height(), 
-      //  r.x(), r.y(), r.width(), r.height());
-  
       int i = part->colorIndex();
       p.setPen(Qt::black);
       if (part->mute()) {
@@ -1400,7 +1311,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
 
             // NOTE: For one-pixel border use first line For two-pixel border use second.
             p.drawRect(QRect(r.x(), r.y()-1, r.width(), r.height()));
-            //p.drawRect(r);
             
             return;
             }
@@ -1415,11 +1325,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
 
             // NOTE: For one-pixel border use first line. For two-pixel border use second.
             p.drawRect(QRect(r.x(), r.y()-1, r.width(), r.height()));
-            //p.drawRect(r);
-            
             }
-      //else if (part->mute())
-      //      return;
       else if (part->selected()) {
             bool clone = part->events()->arefCount() > 1;
             
@@ -1528,8 +1434,6 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
 
 void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
       {
-        //if(!item->isMoving()) 
-        //  return;
         p.setPen( Qt::black);
         
         //p.setBrush( Qt::NoBrush);
@@ -1556,7 +1460,6 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
 
 void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, MidiTrack *mt, MidiPart *pt, const QRect& r, int pTick, int from, int to)
 {
-  //printf("x=%d y=%d h=%d w=%d\n",r.x(),r.y(),r.height(),r.width());
   int color_brightness;
   
   if(pt) 
@@ -1781,9 +1684,6 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
 void PartCanvas::drawWavePart(QPainter& p,
    const QRect& bb, WavePart* wp, const QRect& _pr)
       {
-      //printf("PartCanvas::drawWavePart bb.x:%d bb.y:%d bb.w:%d bb.h:%d  pr.x:%d pr.y:%d pr.w:%d pr.h:%d\n", 
-      //  bb.x(), bb.y(), bb.width(), bb.height(), _pr.x(), _pr.y(), _pr.width(), _pr.height());              
-      
       QRect rr = p.worldMatrix().mapRect(bb);
       QRect pr = p.worldMatrix().mapRect(_pr);
 
@@ -1962,11 +1862,8 @@ void PartCanvas::cmd(int cmd)
 
 void PartCanvas::copy(PartList* pl)
       {
-      //printf("void PartCanvas::copy(PartList* pl)\n");
       if (pl->empty())
             return;
-      // Changed by T356. Support mixed .mpt files.
-      //bool isWave = pl->begin()->second->track()->type() == Track::WAVE;
       bool wave = false;
       bool midi = false;
       for(ciPart p = pl->begin(); p != pl->end(); ++p) 
@@ -1996,13 +1893,11 @@ void PartCanvas::copy(PartList* pl)
 
       // Clear the copy clone list.
       cloneList.clear();
-      //copyCloneList.clear();
       
       int level = 0;
       int tick = 0;
       for (ciPart p = pl->begin(); p != pl->end(); ++p) {
             // Indicate this is a copy operation. Also force full wave paths.
-            //p->second->write(level, xml);
             p->second->write(level, xml, true, true);
             
             int endTick = p->second->endTick();
@@ -2054,13 +1949,11 @@ void PartCanvas::copy(PartList* pl)
 
 int PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool clone, bool toTrack)
       {
-      //printf("int PartCanvas::pasteAt(const QString& pt, Track* track, int pos)\n");
       QByteArray ba = pt.toLatin1();
       const char* ptxt = ba.constData();
       Xml xml(ptxt);
       bool firstPart=true;
       int  posOffset=0;
-      //int  finalPos=0;
       unsigned int  finalPos = pos;
       int  notDone = 0;
       int  done = 0;
@@ -2076,26 +1969,7 @@ int PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool 
                         end = true;
                         break;
                   case Xml::TagStart:
-                        if (tag == "part") {
-                              /*
-                              Part* p = 0;
-                              if(clone)
-                              {
-                                if(!(p = readClone(xml, track, toTrack)))
-                                  break;
-                              }
-                              else
-                              {
-                                if (track->type() == Track::MIDI || track->type() == Track::DRUM)
-                                  p = new MidiPart((MidiTrack*)track);
-                                else if (track->type() == Track::WAVE)
-                                  p = new WavePart((WaveTrack*)track);
-                                else
-                                  break;
-                                p->read(xml, 0, toTrack);
-                              }
-                              */
-                              
+                        if (tag == "part") {                              
                               // Read the part.
                               Part* p = 0;
                               p = readXmlPart(xml, track, clone, toTrack);
@@ -2149,403 +2023,12 @@ int PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool 
       return finalPos;
       }
 
-/*
-//---------------------------------------------------------
-//   PartCanvas::readPart
-//---------------------------------------------------------
-
-Part* PartCanvas::readPart(Xml& xml, Track* track, bool doClone, bool toTrack)
-      {
-      int id = -1;
-      Part* npart = 0;
-      uuid_t uuid; 
-      uuid_clear(uuid);
-      bool uuidvalid = false;
-      bool clone = true;
-
-      for (;;) {
-            Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
-                        return npart;
-                  case Xml::TagStart:
-                        // If the part has not been created yet...
-                        if(!npart)
-                        {
-                          // Attribute section did not create a clone from any matching part. Create a non-clone part now.
-                          if(!track)
-                          {
-                            xml.skip("part");
-                            return 0;
-                          }  
-                          if (track->type() == Track::MIDI || track->type() == Track::DRUM)
-                            npart = new MidiPart((MidiTrack*)track);
-                          else if (track->type() == Track::WAVE)
-                            npart = new WavePart((WaveTrack*)track);
-                          else
-                          {
-                            xml.skip("part");
-                            return 0;
-                          }  
-                          
-                          // Signify a new non-clone part was created.
-                          // Even if the original part was itself a clone, clear this because the
-                          //  attribute section did not create a clone from any matching part.
-                          clone = false;
-                          
-                          // If an id or uuid was found, add the part to the clone list 
-                          //  so that subsequent parts can look it up and clone from it...
-                          if(id != -1)
-                          {
-                            ClonePart ncp(npart, id);
-                            cloneList.push_back(ncp);
-                          }
-                          else  
-                          if(uuidvalid)
-                          {
-                            ClonePart ncp(npart);
-                            // New ClonePart creates its own uuid, but we need to replace it.
-                            uuid_copy(ncp.uuid, uuid);
-                            cloneList.push_back(ncp);
-                          }
-                        }
-                        
-                        if (tag == "name")
-                              npart->setName(xml.parse1());
-                        else if (tag == "poslen") {
-                              ((PosLen*)npart)->read(xml, "poslen");
-                              }
-                        else if (tag == "pos") {
-                              Pos pos;
-                              pos.read(xml, "pos");  // obsolete
-                              npart->setTick(pos.tick());
-                              }
-                        else if (tag == "len") {
-                              Pos len;
-                              len.read(xml, "len");  // obsolete
-                              npart->setLenTick(len.tick());
-                              }
-                        else if (tag == "selected")
-                              npart->setSelected(xml.parseInt());
-                        else if (tag == "color")
-                              npart->setColorIndex(xml.parseInt());
-                        else if (tag == "mute")
-                              npart->setMute(xml.parseInt());
-                        else if (tag == "event") 
-                        {
-                              // If a new non-clone part was created, accept the events...
-                              if(!clone)
-                              {
-                                EventType type = Wave;
-                                if(track->isMidiTrack())
-                                  type = Note;
-                                Event e(type);
-                                e.read(xml);
-                                // stored tickpos for event has absolute value. However internally
-                                // tickpos is relative to start of part, we substract tick().
-                                // TODO: better handling for wave event
-                                e.move( -npart->tick() );
-                                int tick = e.tick();  
-                                
-                                // Do not discard events belonging to clone parts,
-                                //  at least not yet. A later clone might have a longer, 
-                                //  fully accommodating part length!
-                                //if ((tick < 0) || (tick >= (int) lenTick())) {
-                                //if ((tick < 0) || ( id == -1 && !clone && (tick >= (int)lenTick()) )) 
-                                // No way to tell at the moment whether there will be clones referencing this...
-                                // No choice but to accept all events past 0.
-                                if(tick < 0) 
-                                {
-                                  //printf("readClone: warning: event not in part: %d - %d -%d, discarded\n",
-                                  printf("readClone: warning: event at tick:%d not in part:%s, discarded\n",
-                                    tick, npart->name().toLatin1().constData());
-                                }
-                                else 
-                                {
-                                  npart->events()->add(e);
-                                }      
-                              }
-                              else
-                                // ...Otherwise a clone was created, so we don't need the events.
-                                xml.skip(tag);
-                        }
-                        else
-                              xml.unknown("PartCanvas::readClone");
-                        break;
-                  case Xml::Attribut:
-                        if (tag == "cloneId")
-                        {
-                          id = xml.s2().toInt();
-                          if(id != -1)
-                          {
-                            for(iClone i = cloneList.begin(); i != cloneList.end(); ++i) 
-                            {
-                              // Is a matching part found in the clone list?
-                              if(i->id == id) 
-                              {
-                                // If it's a regular paste (not paste clone), and the original part is
-                                //  not a clone, defer so that a new copy is created in TagStart above.
-                                if(!doClone && i->cp->cevents()->arefCount() <= 1)
-                                  break;
-                                  
-                                // This makes a clone, chains the part, and increases ref counts.
-                                npart = track->newPart((Part*)i->cp, true);
-                                break;
-                              }
-                            }
-                          }  
-                        }      
-                        else if (tag == "uuid")
-                        {
-                          uuid_parse(xml.s2().toLatin1().constData(), uuid);
-                          if(!uuid_is_null(uuid))
-                          {
-                            uuidvalid = true;
-                            for(iClone i = cloneList.begin(); i != cloneList.end(); ++i) 
-                            {
-                              // Is a matching part found in the clone list?
-                              if(uuid_compare(uuid, i->uuid) == 0) 
-                              {
-                                Track* cpt = i->cp->track();
-                                // If we want to paste to the given track...
-                                if(toTrack)
-                                {
-                                  // If the given track type is not the same as the part's 
-                                  //  original track type, we can't continue. Just return.
-                                  if(!track || cpt->type() != track->type())
-                                  {
-                                    xml.skip("part");
-                                    return 0;
-                                  }  
-                                }
-                                else
-                                // ...else we want to paste to the part's original track.
-                                {
-                                  // Make sure the track exists (has not been deleted).
-                                  if((cpt->isMidiTrack() && song->midis()->find(cpt) != song->midis()->end()) || 
-                                     (cpt->type() == Track::WAVE && song->waves()->find(cpt) != song->waves()->end()))
-                                    track = cpt;   
-                                  else
-                                  // Track was not found. Try pasting to the given track, as above...
-                                  {
-                                    if(!track || cpt->type() != track->type())
-                                    {
-                                      // No luck. Just return.
-                                      xml.skip("part");
-                                      return 0;
-                                    }  
-                                  }
-                                }
-                                
-                                // If it's a regular paste (not paste clone), and the original part is
-                                //  not a clone, defer so that a new copy is created in TagStart above.
-                                if(!doClone && i->cp->cevents()->arefCount() <= 1)
-                                  break;
-                                  
-                                // This makes a clone, chains the part, and increases ref counts.
-                                npart = track->newPart((Part*)i->cp, true);
-                                break;
-                              }
-                            }  
-                          }
-                        }      
-                        //else if(tag == "isclone")        // Ignore
-                        //  clone = xml.s2().toInt();
-                        break;
-                  case Xml::TagEnd:
-                        if (tag == "part") 
-                          return npart;
-                  default:
-                        break;
-                  }
-            }
-  return npart;            
-}
-*/
-
-/*
-//---------------------------------------------------------
-//   PartCanvas::readClone
-//---------------------------------------------------------
-
-Part* PartCanvas::readClone(Xml& xml, Track* track, bool toTrack)
-      {
-      int id = -1;
-      Part* npart = 0;
-      uuid_t uuid; 
-      uuid_clear(uuid);
-      bool uuidvalid = false;
-      bool clone = true;
-
-      for (;;) {
-            Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
-                        return npart;
-                  case Xml::TagStart:
-                        // If the part has not been created yet...
-                        if(!npart)
-                        {
-                          // Attribute section did not create a clone from any matching part. Create a non-clone part now.
-                          if (track->type() == Track::MIDI || track->type() == Track::DRUM)
-                            npart = new MidiPart((MidiTrack*)track);
-                          else if (track->type() == Track::WAVE)
-                            npart = new WavePart((WaveTrack*)track);
-                          else
-                            return 0;
-                            
-                          // Signify a new non-clone part was created.
-                          // Even if the original part was itself a clone, clear this because the
-                          //  attribute section did not create a clone from any matching part.
-                          clone = false;
-                          
-                          // If an id or uuid was found, add the part to the clone list 
-                          //  so that subsequent parts can look it up and clone from it...
-                          if(id != -1)
-                          {
-                            ClonePart ncp(npart, id);
-                            cloneList.push_back(ncp);
-                          }
-                          else  
-                          if(uuidvalid)
-                          {
-                            ClonePart ncp(npart);
-                            // New ClonePart creates its own uuid, but we need to replace it.
-                            uuid_copy(ncp.uuid, uuid);
-                            cloneList.push_back(ncp);
-                          }
-                        }
-                        
-                        if (tag == "name")
-                              npart->setName(xml.parse1());
-                        else if (tag == "poslen") {
-                              ((PosLen*)npart)->read(xml, "poslen");
-                              }
-                        else if (tag == "pos") {
-                              Pos pos;
-                              pos.read(xml, "pos");  // obsolete
-                              npart->setTick(pos.tick());
-                              }
-                        else if (tag == "len") {
-                              Pos len;
-                              len.read(xml, "len");  // obsolete
-                              npart->setLenTick(len.tick());
-                              }
-                        else if (tag == "selected")
-                              npart->setSelected(xml.parseInt());
-                        else if (tag == "color")
-                              npart->setColorIndex(xml.parseInt());
-                        else if (tag == "mute")
-                              npart->setMute(xml.parseInt());
-                        else if (tag == "event") 
-                        {
-                              // If a new non-clone part was created, accept the events...
-                              if(!clone)
-                              {
-                                EventType type = Wave;
-                                if(track->isMidiTrack())
-                                  type = Note;
-                                Event e(type);
-                                e.read(xml);
-                                // stored tickpos for event has absolute value. However internally
-                                // tickpos is relative to start of part, we substract tick().
-                                // TODO: better handling for wave event
-                                e.move( -npart->tick() );
-                                int tick = e.tick();  
-                                
-                                // Do not discard events belonging to clone parts,
-                                //  at least not yet. A later clone might have a longer, 
-                                //  fully accommodating part length!
-                                //if ((tick < 0) || (tick >= (int) lenTick())) {
-                                //if ((tick < 0) || ( id == -1 && !clone && (tick >= (int)lenTick()) )) 
-                                // No way to tell at the moment whether there will be clones referencing this...
-                                // No choice but to accept all events past 0.
-                                if(tick < 0) 
-                                {
-                                  //printf("readClone: warning: event not in part: %d - %d -%d, discarded\n",
-                                  printf("readClone: warning: event at tick:%d not in part:%s, discarded\n",
-                                    tick, npart->name().toLatin1().constData());
-                                }
-                                else 
-                                {
-                                  npart->events()->add(e);
-                                }      
-                              }
-                              else
-                                // ...Otherwise a clone was created, so we don't need the events.
-                                xml.skip(tag);
-                        }
-                        else
-                              xml.unknown("PartCanvas::readClone");
-                        break;
-                  case Xml::Attribut:
-                        if (tag == "cloneId")
-                        {
-                          id = xml.s2().toInt();
-                          if(id != -1)
-                          {
-                            for(iClone i = cloneList.begin(); i != cloneList.end(); ++i) 
-                            {
-                              // Is a matching part found in the clone list?
-                              if(i->id == id) 
-                              {
-                                // This makes a clone, chains the part, and increases ref counts.
-                                npart = track->newPart((Part*)i->cp, true);
-                                break;
-                              }
-                            }
-                          }  
-                        }      
-                        else if (tag == "uuid")
-                        {
-                          uuid_parse(xml.s2().toLatin1().constData(), uuid);
-                          if(!uuid_is_null(uuid))
-                          {
-                            uuidvalid = true;
-                            for(iClone i = cloneList.begin(); i != cloneList.end(); ++i) 
-                            {
-                              // Is a matching part found in the clone list?
-                              if(uuid_compare(uuid, i->uuid) == 0) 
-                              {
-                                // If we want to paste to the part's original track...
-                                if(!toTrack)
-                                {
-                                  // Make sure the track exists (has not been deleted).
-                                  if((i->cp->track()->isMidiTrack() && song->midis()->find(i->cp->track()) != song->midis()->end()) || 
-                                    (i->cp->track()->type() == Track::WAVE && song->waves()->find(i->cp->track()) != song->waves()->end()))
-                                    track = i->cp->track();
-                                }
-                                // This makes a clone, chains the part, and increases ref counts.
-                                npart = track->newPart((Part*)i->cp, true);
-                                break;
-                              }
-                            }  
-                          }
-                        }      
-                        //else if(tag == "isclone")        // Ignore
-                        //  clone = xml.s2().toInt();
-                        break;
-                  case Xml::TagEnd:
-                        if (tag == "part") 
-                          return npart;
-                  default:
-                        break;
-                  }
-            }
-  return npart;            
-}
-*/
 
 //---------------------------------------------------------
 //   paste
 //    paste part to current selected track at cpos
 //---------------------------------------------------------
 
-//void PartCanvas::paste()
 void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
 {
       Track* track = 0;
@@ -2656,7 +2139,6 @@ void PartCanvas::movePartsTotheRight(unsigned int startTicks, int length)
           if (!i->second->isSelected()) {
               Part* part = i->second->part();
               if (part->tick() >= startTicks) {
-                //void Audio::msgChangePart(Part* oldPart, Part* newPart, bool doUndoFlag, bool doCtrls, bool doClones)
                 Part *newPart = part->clone();
                 newPart->setTick(newPart->tick()+length);
                 if (part->track()->type() == Track::WAVE) {
@@ -2687,7 +2169,6 @@ void PartCanvas::movePartsTotheRight(unsigned int startTicks, int length)
 
 void PartCanvas::startDrag(CItem* item, DragType t)
       {
-      //printf("PartCanvas::startDrag(CItem* item, DragType t)\n");
       NPart* p = (NPart*)(item);
       Part* part = p->part();
 
@@ -2748,29 +2229,12 @@ void PartCanvas::startDrag(CItem* item, DragType t)
 
 void PartCanvas::dragEnterEvent(QDragEnterEvent* event)
       {
-      ///event->accept(Q3TextDrag::canDecode(event));
       event->acceptProposedAction();  // TODO CHECK Tim.
       }
 
 //---------------------------------------------------------
 //   dragvent
 //---------------------------------------------------------
-
-void PartCanvas::dragMoveEvent(QDragMoveEvent*)
-      {
-//      printf("drag move %x\n", this);
-      //event->acceptProposedAction();  
-      }
-
-//---------------------------------------------------------
-//   dragLeaveEvent
-//---------------------------------------------------------
-
-void PartCanvas::dragLeaveEvent(QDragLeaveEvent*)
-      {
-//      printf("drag leave\n");
-      //event->acceptProposedAction();  
-      }
 
 //---------------------------------------------------------
 //   dropEvent
@@ -2791,7 +2255,6 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
       if(event->mimeData()->hasFormat("text/partlist")) 
         type = 1;
       else 
-      //if(event->mimeData()->hasFormat("text/uri-list")) 
       if(event->mimeData()->hasUrls()) 
         type = 2;
       else 
@@ -2833,7 +2296,7 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
           Track* track = 0;
           if (trackNo < tracks->size())
                 track = tracks->index(trackNo);
-          //printf("trackNo=%d\n, trackNo track=%d\n", trackNo, track);
+
           int x = AL::sigmap.raster(event->pos().x(), *_raster);
           if (x < 0)
                 x = 0;
@@ -2911,7 +2374,6 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
       //--------------------------------
       // vertical lines
       //-------------------------------
-      //printf("raster=%d\n", *_raster);
       if (config.canvasShowGrid) {
           int bar, beat;
           unsigned tick;
@@ -2970,12 +2432,9 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
             th = track->height();
             if (!th)
               continue;
-            ///if (/*config.canvasShowGrid ||*/ !track->isMidiTrack()) {
             if (config.canvasShowGrid && (track->isMidiTrack() || track->type() == Track::WAVE))   // Tim.
             {
-              //printf("PartCanvas::drawCanvas track name:%s, y:%d h:%d\n", track->name().toLatin1().constData(), yy, th);  
               p.setPen(baseColor.dark(130));
-              ///p.drawLine(x, yy, x + w, yy);
               p.drawLine(x, yy + th, x + w, yy + th);  // Tim.
               p.setPen(baseColor);
             }
@@ -3082,7 +2541,6 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
                MPEventList *el = mt->mpevents();
                if (el->size()) {
 
-                 //printf("num events %d\n", mt->mpevents()->size());
                  for (iMPEvent i = el->begin(); i != el->end(); ++i) {
                     MidiPlayEvent pe = *i;
 
@@ -3100,7 +2558,6 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
                         if (e.pitch() == pe.dataA() && e.dataC() == 1) {
                           e.setLenTick(pe.time() - e.tick()- startPos);
                           e.setC(0); // reset the variable we borrowed for state handling
-                          //printf("editing event tick=%d startPos=%d\n",e.tick(), startPos);
                           continue;
                         }
                       }
@@ -3182,7 +2639,6 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
 
          // prepare prevVal
          if (cl->valueType() == VAL_LOG ) { // use db scale for volume
-           //printf("volume cvval=%f\n", cvFirst.val);
            prevVal = dbToVal(cvFirst.val); // represent volume between 0 and 1
            if (prevVal < 0) prevVal = 0.0;
          }
@@ -3221,13 +2677,11 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
                        (rr.bottom()-2)-prevVal*height,
                         currentPixel,
                        (rr.bottom()-2)-nextVal*height); 
-                       ///(rr.bottom()-2)- (discrete?prevVal:nextVal)*height);   // Tim 
                        
             ///if(discrete)
             ///  p.drawLine( currentPixel, (rr.bottom()-2)-prevVal*height, currentPixel, (rr.bottom()-2)-nextVal*height ); // Tim
                        
             firstRun=false;
-            //printf("draw line: %d %f %d %f\n",tempomap.frame2tick(lastPos),rr.bottom()-lastVal*height,tempomap.frame2tick(cv.frame),rr.bottom()-curVal*height);
             prevPosFrame=cv.frame;
             prevVal=nextVal;
             if (currentPixel > rr.x()+ rr.width())
@@ -3237,12 +2691,10 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
             p.drawRect(mapx(tempomap.frame2tick(prevPosFrame))-2, (rr.bottom()-2)-prevVal*height-2, 5, 5);
             p.drawRect(mapx(tempomap.frame2tick(prevPosFrame))-1, (rr.bottom()-1)-prevVal*height-2, 3, 3);
          }
-         //printf("outer draw %f\n", cvFirst.val );
          p.drawLine(mapx(tempomap.frame2tick(prevPosFrame)),
                    (rr.bottom()-2)-prevVal*height,
                     rr.x()+rr.width(),
                    (rr.bottom()-2)-prevVal*height);
-         //printf("draw last line: %d %f %d %f\n",tempomap.frame2tick(prevPosFrame),(rr.bottom()-2)-prevVal*height,tempomap.frame2tick(prevPosFrame)+rr.width(),(rr.bottom()-2)-prevVal*height);
        }
      }
 quitDrawing:
@@ -3335,7 +2787,6 @@ void PartCanvas::checkAutomation(Track * t, const QPoint &pointer, bool addNewCt
                     continue; // not the right region
                }
 
-               //printf("firstX=%f lastX=%f firstY=%f lastY=%f proportion=%f currX=%d\n", firstX,lastX,firstY,lastY,proportion, currX);
 
                // 10   X(15)   20
                // proportion = 0.5
@@ -3360,7 +2811,6 @@ void PartCanvas::checkAutomation(Track * t, const QPoint &pointer, bool addNewCt
                }
 
              }
-             //printf("point at x=%d xdiff=%d y=%d ydiff=%d\n", mapx(tempomap.frame2tick(cv.frame)), x1, mapx(ypixel), y1);
              oldX = xpixel;
              oldY = ypixel;
 
@@ -3414,7 +2864,6 @@ void PartCanvas::controllerChanged(Track* /* t */)
 void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
 {
 
-  //printf("processAutomationMovements %d %d %d %d %d %d\n", pos.x(), pos.y(),mapx(pos.x()), mapy(pos.y()), xpos, ypos);
   if (_tool == AutomationTool) {
 
       if (!automation.moveController) { // currently nothing going lets's check for some action.
@@ -3493,9 +2942,7 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
       if (cvval< min) cvval=min;
       if (cvval>max) cvval=max;
       automation.currentCtrl->val = cvval;
-      //printf("calc cvval=%f yfraction=%f ", cvval, yfraction);
     }
-    //printf("mouseY=%d\n", mouseY);
     controllerChanged(automation.currentTrack);
 
   }
