@@ -827,7 +827,6 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len)
                   WavePart* nPart = new WavePart(*(WavePart*)oPart);
                   EventList* el = nPart->events();
                   unsigned new_partlength = tempomap.deltaTick2frame(oPart->tick(), oPart->tick() + len);
-                  //printf("new partlength in frames: %d\n", new_partlength);
 
                   // If new nr of frames is less than previous what can happen is:
                   // -   0 or more events are beginning after the new final position. Those are removed from the part
@@ -839,7 +838,6 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len)
                               Event e = i->second;
                               unsigned event_startframe = e.frame();
                               unsigned event_endframe = event_startframe + e.lenFrame();
-                              //printf("Event frame=%d, length=%d\n", event_startframe, event_length);
                               if (event_endframe < new_partlength)
                                     continue;
                               if (event_startframe > new_partlength) { // If event start was after the new length, remove it from part
@@ -879,7 +877,6 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len)
   
                           unsigned clipframes = (file.samples() - last.spos());// / file.channels();
                           Event newEvent = last.clone();
-                          //printf("SndFileR samples=%d channels=%d event samplepos=%d clipframes=%d\n", file.samples(), file.channels(), last.spos(), clipframes);
   
                           unsigned new_eventlength = new_partlength - last_start;
                           if (new_eventlength > clipframes) // Shrink event length if new partlength exceeds last clip
@@ -967,7 +964,6 @@ void Track::splitPart(Part* part, int tickpos, Part*& p1, Part*& p2)
       p2 = newPart(part);     // new right part
 
       // Added by Tim. p3.3.6
-      //printf("Track::splitPart part ev %p sz:%d ref:%d p1 %p sz:%d ref:%d p2 %p sz:%d ref:%d\n", part->events(), part->events()->size(), part->events()->arefCount(), p1->events(), p1->events()->size(), p1->events()->arefCount(), p2->events(), p2->events()->size(), p2->events()->arefCount());
       
       switch (type()) {
             case WAVE:

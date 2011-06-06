@@ -10,7 +10,6 @@
 #define __EVENT_H__
 
 #include <map>
-//#include <samplerate.h>
 #include <sys/types.h>
 
 #include "wave.h"   // wg. SndFile
@@ -23,7 +22,6 @@ class QString;
 
 class Xml;
 class EventBase;
-//class AudioConverter;
 class WavePart;
 
 //---------------------------------------------------------
@@ -33,19 +31,11 @@ class WavePart;
 class Event {
       EventBase* ev;
 
-      //off_t _sfCurFrame;
-      //AudioConverter* _audConv;
-      
    public:
-      //Event() { ev = 0; }
       Event();
       Event(EventType t);
       Event(const Event& e);
       Event(EventBase* eb);
-      
-      //#ifdef USE_SAMPLERATE
-      //Event(EventBase* eb, AudioConverter* cv); 
-      //#endif  
       
       virtual ~Event();
 
@@ -62,7 +52,6 @@ class Event {
       void move(int offset);
 
       void read(Xml& xml);
-      //void write(int a, Xml& xml, const Pos& offset) const;
       void write(int a, Xml& xml, const Pos& offset, bool ForceWavePaths = false) const;
       void dump(int n = 0) const;
       Event clone();
@@ -93,12 +82,9 @@ class Event {
       void setName(const QString& s);
       int spos() const;
       void setSpos(int s);
-      //AudioConverter* audioConverter() { return _audConv;} 
       SndFileR sndFile() const;
       virtual void setSndFile(SndFileR& sf);
       
-      //virtual void read(unsigned offset, float** bpp, int channels, int nn, bool overwrite = true);
-      //virtual void readAudio(unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
       virtual void readAudio(WavePart* /*part*/, unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
       
       void setTick(unsigned val);

@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/mman.h>
+#include <math.h>
 
 #include <QMimeData>
 #include <QByteArray>
@@ -749,7 +750,7 @@ void paste_at(Part* dest_part, const QString& pt, int pos)
 							Part* newPart = dest_part->clone();
 							newPart->setLenTick(newPart->lenTick()+diff);
 							// Indicate no undo, and do port controller values but not clone parts. 
-							operations.push_back(UndoOp(UndoOp::ModifyPart,dest_part, newPart, true, false)); //FINDMICHJETZT oder andersrum?
+							operations.push_back(UndoOp(UndoOp::ModifyPart,dest_part, newPart, true, false));
 							dest_part = newPart; // reassign TODO FINDME does this work, or has dest_part to be a nonconst reference?
 						}
 						// Indicate no undo, and do not do port controller values and clone parts. 
@@ -828,6 +829,119 @@ void select_not_in_loop(const std::set<Part*>& parts)
 			event.setSelected(!(event.tick()>=song->lpos() && event.endTick()<=song->rpos()));
 		}
 	song->update(SC_SELECTION);
+}
+
+
+void shrink_parts(int raster)
+{
+	Undo operations;
+	
+	unsigned min_len;
+	if (raster<0) raster=config.division;
+	if (raster>=0) min_len=raster; else min_len=config.division;
+	
+	TrackList* tracks = song->tracks();
+	for (iTrack track = tracks->begin(); track != tracks->end(); track++)
+		for (iPart part = (*track)->parts()->begin(); part != (*track)->parts()->end(); part++)
+			if (part->second->selected())
+			{
+				EventList* events=part->second->events();
+				unsigned len=0;
+				
+				for (iEvent ev=events->begin(); ev!=events->end(); ev++)
+					if (ev->second.endTick() > len)
+						len=ev->second.endTick();
+				
+				if (raster) len=ceil((float)len/raster)*raster;
+				if (len<min_len) len=min_len;
+				
+				if (len < part->second->lenTick())
+				{
+					MidiPart* new_part = new MidiPart(*(MidiPart*)part->second);
+					new_part->setLenTick(len);
+					operations.push_back(UndoOp(UndoOp::ModifyPart, part->second, new_part, true, false));
+				}
+			}
+	
+	song->applyOperationGroup(operations);
+}
+
+void expand_parts(int raster)
+{
+	Undo operations;
+	
+	unsigned min_len;
+	if (raster<0) raster=config.division;
+	if (raster>=0) min_len=raster; else min_len=config.division;
+
+	TrackList* tracks = song->tracks();
+	for (iTrack track = tracks->begin(); track != tracks->end(); track++)
+		for (iPart part = (*track)->parts()->begin(); part != (*track)->parts()->end(); part++)
+			if (part->second->selected())
+			{
+				EventList* events=part->second->events();
+				unsigned len=part->second->lenTick();
+				
+				for (iEvent ev=events->begin(); ev!=events->end(); ev++)
+					if (ev->second.endTick() > len)
+						len=ev->second.endTick();
+
+				if (raster) len=ceil((float)len/raster)*raster;
+				if (len<min_len) len=min_len;
+								
+				if (len > part->second->lenTick())
+				{
+					MidiPart* new_part = new MidiPart(*(MidiPart*)part->second);
+					new_part->setLenTick(len);
+					operations.push_back(UndoOp(UndoOp::ModifyPart, part->second, new_part, true, false));
+				}
+			}
+			
+	song->applyOperationGroup(operations);
+}
+
+void clean_parts()
+{
+	Undo operations;
+	set<Part*> already_processed;
+	
+	TrackList* tracks = song->tracks();
+	for (iTrack track = tracks->begin(); track != tracks->end(); track++)
+		for (iPart part = (*track)->parts()->begin(); part != (*track)->parts()->end(); part++)
+			if ((part->second->selected()) && (already_processed.find(part->second)==already_processed.end()))
+			{ 
+				// find out the length of the longest clone of this part;
+				// avoid processing eventlist multiple times (because of
+				// multiple clones)
+				unsigned len=0;
+				
+				Part* part_it=part->second;
+				do
+				{
+					if (part_it->lenTick() > len)
+						len=part_it->lenTick();
+						
+					already_processed.insert(part_it);
+					part_it=part_it->nextClone();
+				} while ((part_it!=part->second) && (part_it!=NULL));
+
+				
+				// erase all events exceeding the longest clone of this part
+				// (i.e., erase all hidden events) or shorten them
+				EventList* el = part->second->events();
+				for (iEvent ev=el->begin(); ev!=el->end(); ev++)
+					if (ev->second.tick() >= len)
+						operations.push_back(UndoOp(UndoOp::DeleteEvent, ev->second, part->second, true, true));
+					else if (ev->second.endTick() > len)
+					{
+						Event new_event = ev->second.clone();
+						new_event.setLenTick(len - ev->second.tick());
+						
+						operations.push_back(UndoOp(UndoOp::ModifyEvent, new_event, ev->second, part->second, true, true));
+					}
+			}
+	
+	song->applyOperationGroup(operations);
 }
 
 

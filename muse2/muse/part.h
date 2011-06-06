@@ -24,17 +24,11 @@ class MidiTrack;
 class WaveTrack;
 class Xml;
 class Part;
-//class AudioConvertMap;
-
-// typedef std::multimap<unsigned, Event*, std::less<unsigned> >::iterator iEvent;
 
 struct ClonePart {
-      //const EventList* el;
       const Part* cp;
       int id;
       uuid_t uuid;
-      //ClonePart(const EventList* e, int i) : el(e), id(i) {}
-      //ClonePart(const Part* p, int i) : cp(p), id(i) {}
       ClonePart(const Part*, int i = -1);
       };
 
@@ -90,12 +84,8 @@ class Part : public PosLen {
       
       iEvent addEvent(Event& p);
 
-      //virtual void read(Xml&, int newPartOffset=0, bool toTrack = true);
-      //virtual void write(int, Xml&) const;
-      //virtual void write(int, Xml&, bool isCopy = false) const;
       virtual void write(int, Xml&, bool isCopy = false, bool forceWavePaths = false) const;
       
-//      virtual Event* newEvent() const = 0;
       virtual void dump(int n = 0) const;
       };
 
@@ -113,7 +103,6 @@ class MidiPart : public Part {
       virtual MidiPart* clone() const;
       MidiTrack* track() const   { return (MidiTrack*)Part::track(); }
 
-//      virtual Event* newEvent() const;
       virtual void dump(int n = 0) const;
       };
 
@@ -134,7 +123,6 @@ class WavePart : public Part {
       virtual WavePart* clone() const;
       WaveTrack* track() const   { return (WaveTrack*)Part::track(); }
 
-//      virtual Event* newEvent() const;
       virtual void dump(int n = 0) const;
       };
 
@@ -167,9 +155,6 @@ extern void addPortCtrlEvents(Event& event, Part* part, bool doClones);
 extern void removePortCtrlEvents(Part* part, bool doClones);
 extern void removePortCtrlEvents(Event& event, Part* part, bool doClones);
 extern CloneList cloneList;
-//extern CloneList copyCloneList;
-//extern void updateCloneList(Part* oPart, Part* nPart);
-//extern void clearClipboardAndCloneList();
 extern Part* readXmlPart(Xml&, Track*, bool doClone = false, bool toTrack = true);
 
 #endif

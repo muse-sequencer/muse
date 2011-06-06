@@ -349,14 +349,15 @@ UndoOp PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
         // This increments aref count if cloned, and chains clones.
         // It also gives the new part a new serial number.
         dpart = dtrack->newPart(spart, clone);
-        dpart->events()->incARef(-1); // the later song->applyOperationGroup() will increment it
-                                      // so we must decrement it first :/
 
       dpart->setTick(dtick);
 
       if(t == MOVE_MOVE) 
         item->setPart(dpart);
       if (t == MOVE_COPY && !clone) {
+            dpart->events()->incARef(-1); // the later song->applyOperationGroup() will increment it
+                                          // so we must decrement it first :/
+
             //
             // Copy Events
             //
@@ -368,6 +369,8 @@ UndoOp PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
                   de->add(ev);
                   }
             }
+
+
       if (t == MOVE_COPY || t == MOVE_CLONE) {
             // These will not increment ref count, and will not chain clones... 
             // TODO: is this still correct (by flo93)?

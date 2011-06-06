@@ -1681,7 +1681,8 @@ void staff_t::create_appropriate_eventlist()
 		{
 			Event& event=it->second;
 			
-			if ( (event.isNote() && !event.isNoteOff()) &&
+			if ( ( event.isNote() && !event.isNoteOff() &&
+			       (event.endTick() <= part->lenTick()) ) &&
 			     ( ((type==GRAND_TOP) && (event.pitch() >= SPLIT_NOTE)) ||
 			       ((type==GRAND_BOTTOM) && (event.pitch() < SPLIT_NOTE)) ||
 			       (type==NORMAL) )                          )
@@ -4456,7 +4457,7 @@ void staff_t::update_part_indices()
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o either remove these "hidden notes", or deal with them in the score editor
+ *   o clones should have same size
  *   o insert empty measure should also work inside parts, that is,
  *     move notes _within_ parts
  * 

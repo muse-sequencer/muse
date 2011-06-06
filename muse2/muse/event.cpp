@@ -7,16 +7,10 @@
 //=========================================================
 
 #include <stdio.h>
-// #include <memory.h>
-//#include "audioconvert.h"
 #include "event.h"
 #include "eventbase.h"
 #include "waveevent.h"
 #include "midievent.h"
-//#include "globals.h"
-
-// Added by Tim. p3.3.20
-//#define USE_SAMPLERATE
 
 //---------------------------------------------------------
 //   Event
@@ -65,11 +59,6 @@ void EventBase::dump(int n) const
 
 Event Event::clone()
       {
-      // p3.3.31
-      //printf("Event::clone() this:%p\n", this);
-      
-      // p3.3.31
-      //return Event(ev->clone());
       #ifdef USE_SAMPLERATE
       return Event(ev->clone(), _audConv);
       #else
@@ -80,14 +69,9 @@ Event Event::clone()
 Event::Event() 
 { 
   ev = 0; 
-  //_sfCurFrame = 0;
-  //_audConv = 0;
 }
 
 Event::Event(EventType t) {
-            //_sfCurFrame = 0;
-            //_audConv = 0;
-            
             if (t == Wave)
                   ev = new WaveEventBase(t);
             else
@@ -95,30 +79,21 @@ Event::Event(EventType t) {
             ++(ev->refCount);
             }
 Event::Event(const Event& e) {
-            //_sfCurFrame = 0;
-            //_audConv = 0;
-            
             ev = e.ev;
             if(ev)
               ++(ev->refCount);
             
             #ifdef USE_SAMPLERATE
-            //_audConv = AudioConverter::getAudioConverter(e._audConv);
             if(e._audConv)
               _audConv = e._audConv->reference();
             #endif
           }
 Event::Event(EventBase* eb) {
-            //_sfCurFrame = 0;
-            //_audConv = 0;
-            
             ev = eb;
             ++(ev->refCount);
             
             #ifdef USE_SAMPLERATE
             if(!ev->sndFile().isNull())
-              //_audConv = AudioConverter::getAudioConverter(eb, SRC_SINC_MEDIUM_QUALITY);
-              //_audConv = new AudioConverter(ev->sndFile().channels(), SRC_SINC_MEDIUM_QUALITY);
               _audConv = new SRCAudioConverter(ev->sndFile().channels(), SRC_SINC_MEDIUM_QUALITY);
             #endif  
             }
@@ -162,19 +137,6 @@ void Event::setType(EventType t) {
             }
 
 Event& Event::operator=(const Event& e) {
-            /*
-            if (ev == e.ev)
-                  return *this;
-            if (ev && --(ev->refCount) == 0) {
-                  delete ev;
-                  ev = 0;
-                  }
-            ev = e.ev;
-            if (ev)
-                  ++(ev->refCount);
-            return *this;
-            */
-            
             if (ev != e.ev)
             {
               if (ev && --(ev->refCount) == 0) {
@@ -191,7 +153,6 @@ Event& Event::operator=(const Event& e) {
             {
               if(_audConv)
                 AudioConverter::release(_audConv);
-              //_audConv = AudioConverter::getAudioConverter(e._audConv);
               _audConv = e._audConv->reference();
             }      
             #endif
@@ -207,7 +168,6 @@ bool Event::selected() const      { return ev->_selected; }
 void Event::setSelected(bool val) { ev->_selected = val; }
 void Event::move(int offset)      { ev->move(offset); }
 
-//void Event::read(Xml& xml)            { ev->read(xml); }
 void Event::read(Xml& xml)            
 { 
   ev->read(xml); 
@@ -216,27 +176,14 @@ void Event::read(Xml& xml)
   if(!ev->sndFile().isNull())
   {
     if(_audConv)
-    {
       _audConv->setChannels(ev->sndFile().channels());
-    }
     else
-    {
-      //int srcerr;
-      //if(debugMsg)
-      //  printf("Event::read Creating samplerate converter with %d channels\n", ev->sndFile().channels());
-      //_src_state = src_new(SRC_SINC_MEDIUM_QUALITY, ev->sndFile().channels(), &srcerr);
-//      _audConv = new AudioConverter(ev->sndFile().channels(), SRC_SINC_MEDIUM_QUALITY);
       _audConv = new SRCAudioConverter(ev->sndFile().channels(), SRC_SINC_MEDIUM_QUALITY);
-      //if(!_src_state)      
-      //if(!_audConv)      
-      //  printf("Event::read Creation of samplerate converter with %d channels failed:%s\n", ev->sndFile().channels(), src_strerror(srcerr));
-    }  
   }  
   #endif
 }
 
 
-//void Event::write(int a, Xml& xml, const Pos& o) const { ev->write(a, xml, o); }
 void Event::write(int a, Xml& xml, const Pos& o, bool forceWavePaths) const { ev->write(a, xml, o, forceWavePaths); }
 void Event::dump(int n) const     { ev->dump(n); }
 Event Event::mid(unsigned a, unsigned b) { return Event(ev->mid(a, b)); }
@@ -268,22 +215,11 @@ int Event::spos() const                      { return ev->spos();  }
 void Event::setSpos(int s)                   { ev->setSpos(s);     }
 SndFileR Event::sndFile() const              { return ev->sndFile(); }
 
-//void Event::setSndFile(SndFileR& sf) { ev->setSndFile(sf);   }
 void Event::setSndFile(SndFileR& sf) 
 { 
   ev->setSndFile(sf);   
   
   #ifdef USE_SAMPLERATE
-  //if(_audConv)
-//  if(_audConv && !sf.isNull())
-//  { 
-    //_audConv->setSndFile(sf);
-    //if(sf.isNull())
-    //  AudioConverter::release(_audConv);
-    //else
-//      _audConv->setChannels(sf.channels());
-//  }  
-  
   if(_audConv)
   { 
     // Do we release? Or keep the converter around, while gaining speed since no rapid creation/destruction. 
@@ -302,15 +238,8 @@ void Event::setSndFile(SndFileR& sf)
   #endif
 }
 
-//void Event::read(unsigned offset, float** bpp, int channels, int nn, bool overwrite)
-//void Event::readAudio(unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite)
-// p3.3.33
 void Event::readAudio(WavePart* part, unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite)
       {
-        //ev->read(offset, bpp, channels, nn, overwrite);
-        //ev->readAudio(offset, bpp, channels, nn, doSeek, overwrite);
-        //_sfCurFrame = ev->readAudio(_src_state, _sfCurFrame, offset, bpp, channels, nn, doSeek, overwrite);
-        // p3.3.33
         ev->readAudio(part, offset, bpp, channels, nn, doSeek, overwrite);
       }
 void Event::setTick(unsigned val)       { ev->setTick(val); }
