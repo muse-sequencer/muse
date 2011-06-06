@@ -54,6 +54,7 @@
 #include "tools.h"
 #include "visibletracks.h"
 #include "widgets/unusedwavefiles.h"
+#include "functions.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -977,6 +978,10 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       editPaste2TrackAction = new QAction(QIcon(*editpaste2TrackIconSet), tr("Paste to &track"), this);
       editPasteC2TAction = new QAction(QIcon(*editpasteClone2TrackIconSet), tr("Paste clone to trac&k"), this);
       editDeleteSelectedAction = new QAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"), this);
+      
+      editShrinkPartsAction = new QAction(tr("Shrink selected parts"), this); //FINDMICH TODO tooltips!
+      editExpandPartsAction = new QAction(tr("Expand selected parts"), this);
+      editCleanPartsAction = new QAction(tr("Clean selected parts"), this);
 
 
       addTrack = new QMenu(tr("Add Track"), this);
@@ -1127,6 +1132,10 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(editPasteC2TAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       connect(editDeleteSelectedAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
 
+      connect(editShrinkPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      connect(editExpandPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+      connect(editCleanPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+
       connect(editSelectAllAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       connect(editDeselectAllAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
       connect(editInvertSelectionAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
@@ -1143,6 +1152,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       editSignalMapper->setMapping(editPasteC2TAction, CMD_PASTE_CLONE_TO_TRACK);
       editSignalMapper->setMapping(editInsertEMAction, CMD_INSERTMEAS);
       editSignalMapper->setMapping(editDeleteSelectedAction, CMD_DELETE_TRACK);
+      editSignalMapper->setMapping(editShrinkPartsAction, CMD_SHRINK_PART);
+      editSignalMapper->setMapping(editExpandPartsAction, CMD_EXPAND_PART);
+      editSignalMapper->setMapping(editCleanPartsAction, CMD_CLEAN_PART);
       editSignalMapper->setMapping(editSelectAllAction, CMD_SELECT_ALL);
       editSignalMapper->setMapping(editDeselectAllAction, CMD_SELECT_NONE);
       editSignalMapper->setMapping(editInvertSelectionAction, CMD_SELECT_INVERT);
@@ -1361,6 +1373,10 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       menuEdit->addAction(editPaste2TrackAction);
       menuEdit->addAction(editPasteC2TAction);
       menuEdit->addSeparator();
+      menuEdit->addAction(editShrinkPartsAction);
+      menuEdit->addAction(editExpandPartsAction);
+      menuEdit->addAction(editCleanPartsAction);
+      menuEdit->addSeparator();
       menuEdit->addAction(editDeleteSelectedAction);
 
       // Moved below. Have to wait until synths are available...
@@ -1389,7 +1405,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
 
       menuEdit->addMenu(midiEdit);
-#if 0  // TODO
+#if 0  // TODO FINDMICH delete!
       midiEdit->insertItem(tr("Modify Gate Time"), this, SLOT(modifyGateTime()));
       midiEdit->insertItem(tr("Modify Velocity"),  this, SLOT(modifyVelocity()));
       midiEdit->insertItem(tr("Crescendo"),        this, SLOT(crescendo()));
@@ -3046,6 +3062,10 @@ void MusE::cmd(int cmd)
                   song->setFollow(Song::CONTINUOUS);
                   setFollow();
                   break;
+                  
+            case CMD_SHRINK_PART: shrink_parts(); break;
+            case CMD_EXPAND_PART: expand_parts(); break;
+            case CMD_CLEAN_PART: clean_parts(); break;      
             }
       }
 
@@ -3055,37 +3075,12 @@ void MusE::cmd(int cmd)
 
 void MusE::clipboardChanged()
       {
-/*      
-      //Q3CString subtype("partlist");
-      //QString subtype("partlist");
-      QMimeSource* ms = QApplication::clipboard()->data(QClipboard::Clipboard);
-      if (ms == 0)
-            return;
-      bool flag = false;
-      for (int i = 0; ms->format(i); ++i) {
-// printf("Format <%s\n", ms->format(i));
-            if ((strncmp(ms->format(i), "text/midipartlist", 17) == 0)
-               || (strncmp(ms->format(i), "text/wavepartlist", 17) == 0) 
-               // Added by T356. Support mixed .mpt files.
-               || (strncmp(ms->format(i), "text/mixedpartlist", 18) == 0)) {
-                  flag = true;
-                  break;
-                  }
-            }
-*/
-      
       bool flag = false;
       if(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-midipartlist")) ||
          QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-wavepartlist")) ||
          QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-mixedpartlist")))
         flag = true;
       
-      //bool flag = false;
-      //if(!QApplication::clipboard()->text(QString("x-muse-midipartlist"), QClipboard::Clipboard).isEmpty() ||
-      //   !QApplication::clipboard()->text(QString("x-muse-wavepartlist"), QClipboard::Clipboard).isEmpty() ||      
-      //   !QApplication::clipboard()->text(QString("x-muse-mixedpartlist"), QClipboard::Clipboard).isEmpty())       
-      //  flag = true;
-        
       editPasteAction->setEnabled(flag);
       editInsertAction->setEnabled(flag);
       editPasteCloneAction->setEnabled(flag);

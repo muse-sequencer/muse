@@ -80,7 +80,7 @@ class MusE : public QMainWindow
             CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
             CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PARTS,
             CMD_FOLLOW_NO, CMD_FOLLOW_JUMP, CMD_FOLLOW_CONTINUOUS ,
-            CMD_DELETE_TRACK
+            CMD_DELETE_TRACK, CMD_EXPAND_PART, CMD_SHRINK_PART, CMD_CLEAN_PART
             };
 
       //File menu items:
@@ -113,6 +113,7 @@ class MusE : public QMainWindow
       QAction *masterGraphicAction, *masterListAction;
       QAction *midiTransformerAction;
       QAction *editSongInfoAction;
+      QAction *editCleanPartsAction, *editShrinkPartsAction, *editExpandPartsAction;
    public:
       QAction *startScoreEditAction, *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
       QMenu *scoreSubmenu, *scoreOneStaffPerTrackSubsubmenu, *scoreAllInOneSubsubmenu;

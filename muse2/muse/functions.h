@@ -84,6 +84,11 @@ void select_invert(const std::set<Part*>& parts);
 void select_in_loop(const std::set<Part*>& parts);
 void select_not_in_loop(const std::set<Part*>& parts);
 
+//functions for parts
+void shrink_parts();
+void expand_parts();
+void clean_parts();
+
 //functions for reading and writing default values
 class Xml;
 void read_function_dialog_config(Xml& xml);
