@@ -85,8 +85,8 @@ void select_in_loop(const std::set<Part*>& parts);
 void select_not_in_loop(const std::set<Part*>& parts);
 
 //functions for parts
-void shrink_parts();
-void expand_parts();
+void shrink_parts(int raster=-1); //negative values mean "config.division"
+void expand_parts(int raster=-1);
 void clean_parts();
 
 //functions for reading and writing default values

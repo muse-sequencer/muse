@@ -4452,14 +4452,12 @@ void staff_t::update_part_indices()
 
 
 /* BUGS and potential bugs
- *   o clones aren't marked as clones any more :(
- * 
  *   o when the keymap is not used, this will probably lead to a bug
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o either remove these "hidden notes", or deal with them in the score editor
+ *   o clones should have same size
  *   o insert empty measure should also work inside parts, that is,
  *     move notes _within_ parts
  * 

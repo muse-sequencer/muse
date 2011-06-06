@@ -20,6 +20,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/mman.h>
+#include <math.h>
 
 #include <QMimeData>
 #include <QByteArray>
@@ -831,9 +832,13 @@ void select_not_in_loop(const std::set<Part*>& parts)
 }
 
 
-void shrink_parts()
+void shrink_parts(int raster)
 {
 	Undo operations;
+	
+	unsigned min_len;
+	if (raster<0) raster=config.division;
+	if (raster>=0) min_len=raster; else min_len=config.division;
 	
 	TrackList* tracks = song->tracks();
 	for (iTrack track = tracks->begin(); track != tracks->end(); track++)
@@ -847,10 +852,10 @@ void shrink_parts()
 					if (ev->second.endTick() > len)
 						len=ev->second.endTick();
 				
-				if (len > part->second->lenTick())
-					len = part->second->lenTick();
+				if (raster) len=ceil((float)len/raster)*raster;
+				if (len<min_len) len=min_len;
 				
-				if (len != part->second->lenTick())
+				if (len < part->second->lenTick())
 				{
 					MidiPart* new_part = new MidiPart(*(MidiPart*)part->second);
 					new_part->setLenTick(len);
@@ -861,10 +866,14 @@ void shrink_parts()
 	song->applyOperationGroup(operations);
 }
 
-void expand_parts()
+void expand_parts(int raster)
 {
 	Undo operations;
 	
+	unsigned min_len;
+	if (raster<0) raster=config.division;
+	if (raster>=0) min_len=raster; else min_len=config.division;
+
 	TrackList* tracks = song->tracks();
 	for (iTrack track = tracks->begin(); track != tracks->end(); track++)
 		for (iPart part = (*track)->parts()->begin(); part != (*track)->parts()->end(); part++)
@@ -876,8 +885,11 @@ void expand_parts()
 				for (iEvent ev=events->begin(); ev!=events->end(); ev++)
 					if (ev->second.endTick() > len)
 						len=ev->second.endTick();
-				
-				if (len != part->second->lenTick())
+
+				if (raster) len=ceil((float)len/raster)*raster;
+				if (len<min_len) len=min_len;
+								
+				if (len > part->second->lenTick())
 				{
 					MidiPart* new_part = new MidiPart(*(MidiPart*)part->second);
 					new_part->setLenTick(len);
