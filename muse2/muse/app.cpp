@@ -106,13 +106,6 @@ int watchAudio, watchAudioPrefetch, watchMidi;
 pthread_t splashThread;
 
 
-//PyScript *pyscript;
-// void MusE::runPythonScript()
-// {
-//  QString script("test.py");
-// // pyscript->runPythonScript(script);
-// }
-
 
 void MusE::clearScoreMenuMappers()
 {
@@ -138,127 +131,12 @@ void microSleep(long msleep)
         sleepOk=usleep(msleep);
 }
 
-// Removed p3.3.17
-/* 
-//---------------------------------------------------------
-//   watchdog thread
-//---------------------------------------------------------
-
-static void* watchdog(void*)
-      {
-      doSetuid();
-
-      struct sched_param rt_param;
-      memset(&rt_param, 0, sizeof(rt_param));
-      rt_param.sched_priority = sched_get_priority_max(SCHED_FIFO);
-      int rv = pthread_setschedparam(pthread_self(), SCHED_FIFO, &rt_param);
-      if (rv != 0)
-            perror("Set realtime scheduler");
-
-      int policy;
-      if (pthread_getschedparam(pthread_self(), &policy, &rt_param)!= 0) {
-            printf("Cannot get current client scheduler: %s\n", strerror(errno));
-            }
-      if (policy != SCHED_FIFO)
-            printf("watchdog process %d _NOT_ running SCHED_FIFO\n", getpid());
-      else if (debugMsg)
-            printf("watchdog set to SCHED_FIFO priority %d\n",
-               sched_get_priority_max(SCHED_FIFO));
-
-      undoSetuid();
-      int fatal = 0;
-      for (;;) {
-            watchAudio = 0;
-            watchMidi = 0;
-            static const int WD_TIMEOUT = 3;
-
-            // sleep can be interrpted by signals:
-            int to = WD_TIMEOUT;
-            while (to > 0)
-                  to = sleep(to);
-
-            bool timeout = false;
-            if (midiSeqRunning && watchMidi == 0)
-            {
-                  printf("midiSeqRunning = %i watchMidi %i\n", midiSeqRunning, watchMidi);
-                  timeout = true;
-            }
-            if (watchAudio == 0)
-                  timeout = true;
-            if (watchAudio > 500000)
-                  timeout = true;
-            if (timeout)
-                  ++fatal;
-            else
-                  fatal = 0;
-            if (fatal >= 3) {
-                  printf("WatchDog: fatal error, realtime task timeout\n");
-                  printf("   (%d,%d-%d) - stopping all services\n",
-                     watchMidi, watchAudio, fatal);
-                  break;
-                  }
-//            printf("wd %d %d %d\n", watchMidi, watchAudio, fatal);
-            }
-      audio->stop(true);
-      audioPrefetch->stop(true);
-      printf("watchdog exit\n");
-      exit(-1);
-      }
-*/
-
 //---------------------------------------------------------
 //   seqStart
 //---------------------------------------------------------
 
 bool MusE::seqStart()
       {
-      // Changed by Tim. p3.3.17
-      
-      /*
-      if (audio->isRunning()) {
-            printf("seqStart(): already running\n");
-            return true;
-            }
-      
-      if (realTimeScheduling) {
-            //
-            //  create watchdog thread with max priority
-            //
-            doSetuid();
-            struct sched_param rt_param;
-            memset(&rt_param, 0, sizeof(rt_param));
-            rt_param.sched_priority = realTimePriority +1;//sched_get_priority_max(SCHED_FIFO);
-
-            pthread_attr_t* attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
-            pthread_attr_init(attributes);
-
-//             if (pthread_attr_setschedpolicy(attributes, SCHED_FIFO)) {
-//                   printf("MusE: cannot set FIFO scheduling class for RT thread\n");
-//                   }
-//             if (pthread_attr_setschedparam (attributes, &rt_param)) {
-//                   // printf("Cannot set scheduling priority for RT thread (%s)\n", strerror(errno));
-//                   }
-//             if (pthread_attr_setscope (attributes, PTHREAD_SCOPE_SYSTEM)) {
-//                   printf("MusE: Cannot set scheduling scope for RT thread\n");
-//                   }
-            if (pthread_create(&watchdogThread, attributes, ::watchdog, 0))
-                  perror("MusE: creating watchdog thread failed:");
-            pthread_attr_destroy(attributes);
-            undoSetuid();
-            }
-      audioPrefetch->start();
-      audioPrefetch->msgSeek(0, true); // force
-      midiSeqRunning = !midiSeq->start();
-      
-      if (!audio->start()) {
-          QMessageBox::critical( muse, tr(QString("Failed to start audio!")),
-              tr(QString("Was not able to start audio, check if jack is running.\n")));
-          return false;
-          }
-
-      return true;
-      */
-      
       if (audio->isRunning()) {
             printf("seqStart(): already running\n");
             return true;
@@ -275,12 +153,10 @@ bool MusE::seqStart()
       //
       for(int i = 0; i < 60; ++i) 
       {
-        //if (audioState == AUDIO_START2)
         if(audio->isRunning())
           break;
         sleep(1);
       }
-      //if (audioState != AUDIO_START2) {
       if(!audio->isRunning()) 
       {
         QMessageBox::critical( muse, tr("Failed to start audio!"),
@@ -294,66 +170,6 @@ bool MusE::seqStart()
       if(debugMsg)
         printf("MusE::seqStart: getting audio driver realTimePriority:%d\n", realTimePriority);
       
-      // Disabled by Tim. p3.3.22
-      /*
-      if(realTimeScheduling) 
-      {
-            //
-            //  create watchdog thread with max priority
-            //
-            doSetuid();
-            struct sched_param rt_param;
-            memset(&rt_param, 0, sizeof(rt_param));
-            rt_param.sched_priority = realTimePriority + 1;//sched_get_priority_max(SCHED_FIFO);
-
-            pthread_attr_t* attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
-            pthread_attr_init(attributes);
-
-//             if (pthread_attr_setschedpolicy(attributes, SCHED_FIFO)) {
-//                   printf("MusE: cannot set FIFO scheduling class for RT thread\n");
-//                   }
-//             if (pthread_attr_setschedparam (attributes, &rt_param)) {
-//                   // printf("Cannot set scheduling priority for RT thread (%s)\n", strerror(errno));
-//                   }
-//             if (pthread_attr_setscope (attributes, PTHREAD_SCOPE_SYSTEM)) {
-//                   printf("MusE: Cannot set scheduling scope for RT thread\n");
-//                   }
-            if (pthread_create(&watchdogThread, attributes, ::watchdog, 0))
-                  perror("MusE: creating watchdog thread failed");
-            pthread_attr_destroy(attributes);
-            undoSetuid();
-      }
-      */
-      
-      //int policy;
-      //if ((policy = sched_getscheduler (0)) < 0) {
-      //      printf("Cannot get current client scheduler: %s\n", strerror(errno));
-      //      }
-      //if (policy != SCHED_FIFO)
-      //      printf("midi thread %d _NOT_ running SCHED_FIFO\n", getpid());
-      
-      
-      //audioState = AUDIO_RUNNING;
-      // Changed by Tim. p3.3.22
-      /*
-      //if(realTimePriority) 
-      if(realTimeScheduling) 
-      {
-        int pr = realTimePriority;
-        if(pr > 5)
-          pr -= 5;
-        else
-          pr = 0;  
-        audioPrefetch->start(pr);
-        //audioWriteback->start(realTimePriority - 5);
-      }
-      else 
-      {
-        audioPrefetch->start(0);
-        //audioWriteback->start(0);
-      }
-      */
-      
       int pfprio = 0;
       int midiprio = 0;
       
@@ -363,52 +179,6 @@ bool MusE::seqStart()
       //  in JackAudioDevice::realtimePriority() which is a bit flawed - it reports there's no RT...
       if(realTimeScheduling) 
       {
-        //if(realTimePriority < 5)
-        //  printf("MusE: WARNING: Recommend setting audio realtime priority to a higher value!\n");
-        /*
-        if(realTimePriority == 0)
-        {
-          pfprio = 1;
-          midiprio = 2;
-        }  
-        else
-        if(realTimePriority == 1)
-        {
-          pfprio = 2;
-          midiprio = 3;
-        }  
-        else
-        if(realTimePriority == 2)
-        {
-          pfprio = 1;
-          midiprio = 3;
-        }  
-        else
-        if(realTimePriority == 3)
-        {
-          pfprio = 1;
-          //midiprio = 2;
-          // p3.3.37
-          midiprio = 4;
-        }  
-        else
-        if(realTimePriority == 4)
-        {
-          pfprio = 1;
-          //midiprio = 3;
-          // p3.3.37
-          midiprio = 5;
-        }  
-        else
-        if(realTimePriority == 5)
-        {
-          pfprio = 1;
-          //midiprio = 3;
-          // p3.3.37
-          midiprio = 6;
-        }  
-        else
-        */
         {
           //pfprio = realTimePriority - 5;
           // p3.3.40
@@ -537,16 +307,6 @@ void addProject(const QString& name)
 //   populateAddSynth
 //---------------------------------------------------------
 
-/*
-struct addSynth_cmp_str 
-{
-   bool operator()(std::string a, std::string b) 
-   {
-      return (a < b);
-   }
-};
-*/
- 
 // ORCAN - CHECK
 QMenu* populateAddSynth(QWidget* parent)
 {
@@ -1326,12 +1086,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    Popups
       //---------------------------------------------------
 
-//       QPopupMenu *foo = new QPopupMenu(this);
-//       testAction = new QAction(foo,"testPython");
-//       testAction->addTo(foo);
-//       menuBar()->insertItem(tr("&testpython"), foo);
-//       connect(testAction, SIGNAL(activated()), this, SLOT(runPythonScript()));
-
 
       //-------------------------------------------------------------
       //    popup File
@@ -1405,20 +1159,14 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
 
       menuEdit->addMenu(midiEdit);
-#if 0  // TODO FINDMICH delete!
-      midiEdit->insertItem(tr("Modify Gate Time"), this, SLOT(modifyGateTime()));
-      midiEdit->insertItem(tr("Modify Velocity"),  this, SLOT(modifyVelocity()));
-      midiEdit->insertItem(tr("Crescendo"),        this, SLOT(crescendo()));
-      midiEdit->insertItem(tr("Thin Out"),         this, SLOT(thinOut()));
-      midiEdit->insertItem(tr("Erase Event"),      this, SLOT(eraseEvent()));
-      midiEdit->insertItem(tr("Note Shift"),       this, SLOT(noteShift()));
-      midiEdit->insertItem(tr("Move Clock"),       this, SLOT(moveClock()));
-      midiEdit->insertItem(tr("Copy Measure"),     this, SLOT(copyMeasure()));
+/* commented out by flo: these are not implemented,
+   but maybe will be in future (state: revision 988)
+      midiEdit->insertItem(tr("Copy Measure"),     this, SLOT(copyMeasure()));   
       midiEdit->insertItem(tr("Erase Measure"),    this, SLOT(eraseMeasure()));
       midiEdit->insertItem(tr("Delete Measure"),   this, SLOT(deleteMeasure()));
       midiEdit->insertItem(tr("Create Measure"),   this, SLOT(createMeasure()));
       midiEdit->insertItem(tr("Mix Track"),        this, SLOT(mixTrack()));
-#endif
+*/
       midiEdit->addAction(midiTransformerAction);
 
       menuEdit->addAction(editSongInfoAction);
@@ -1638,9 +1386,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
 MusE::~MusE()
 {
-  //printf("MusE::~MusE\n"); 
-  //if(transport)
-  //  delete transport;  
 }
 
 //---------------------------------------------------------
@@ -1964,37 +1709,6 @@ void MusE::setUntitledProject()
 void MusE::setConfigDefaults()
       {
       readConfiguration();    // used for reading midi files
-#if 0
-      if (readConfiguration()) {
-            //
-            // failed to load config file
-            // set buildin defaults
-            //
-            configTransportVisible = false;
-            configBigTimeVisible   = false;
-
-            for (int channel = 0; channel < 2; ++channel)
-                  song->addTrack(Track::AUDIO_GROUP);
-            AudioTrack* out = (AudioTrack*)song->addTrack(Track::AUDIO_OUTPUT);
-            AudioTrack* in  = (AudioTrack*)song->addTrack(Track::AUDIO_INPUT);
-
-            // set some default routes
-            std::list<QString> il = audioDevice->inputPorts();
-            int channel = 0;
-            for (std::list<QString>::iterator i = il.begin(); i != il.end(); ++i, ++channel) {
-                  if (channel == 2)
-                        break;
-                  audio->msgAddRoute(Route(out,channel), Route(*i,channel));
-                  }
-            channel = 0;
-            std::list<QString> ol = audioDevice->outputPorts();
-            for (std::list<QString>::iterator i = ol.begin(); i != ol.end(); ++i, ++channel) {
-                  if (channel == 2)
-                        break;
-                  audio->msgAddRoute(Route(*i, channel), Route(in,channel));
-                  }
-            }
-#endif
       song->dirty = false;
       }
 
@@ -3101,113 +2815,6 @@ void MusE::selectionChanged()
       }
 
 
-//---------------------------------------------------------
-//   modifyGateTime
-//---------------------------------------------------------
-
-void MusE::modifyGateTime()
-      {
-      printf("not implemented\n");
-      }
-
-//---------------------------------------------------------
-//   modifyVelocity
-//---------------------------------------------------------
-
-void MusE::modifyVelocity()
-      {
-      printf("not implemented\n");
-      }
-
-//---------------------------------------------------------
-//   crescendo
-//---------------------------------------------------------
-
-void MusE::crescendo()
-      {
-      printf("not implemented\n");
-      }
-
-//---------------------------------------------------------
-//   thinOut
-//---------------------------------------------------------
-
-void MusE::thinOut()
-      {
-      printf("not implemented\n");
-      }
-
-//---------------------------------------------------------
-//   eraseEvent
-//---------------------------------------------------------
-
-void MusE::eraseEvent()
-      {
-      printf("not implemented\n");
-      }
-
-//---------------------------------------------------------
-//   noteShift
-//---------------------------------------------------------
-
-void MusE::noteShift()
-      {
-      printf("not implemented\n");
-      }
-
-//---------------------------------------------------------
-//   moveClock
-//---------------------------------------------------------
-
-void MusE::moveClock()
-      {
-      printf("not implemented\n");
-      }
-
-//---------------------------------------------------------
-//   copyMeasure
-//---------------------------------------------------------
-
-void MusE::copyMeasure()
-      {
-      printf("not implemented\n");
-      }
-
-//---------------------------------------------------------
-//   eraseMeasure
-//---------------------------------------------------------
-
-void MusE::eraseMeasure()
-      {
-      printf("not implemented\n");
-      }
-
-//---------------------------------------------------------
-//   deleteMeasure
-//---------------------------------------------------------
-
-void MusE::deleteMeasure()
-      {
-      printf("not implemented\n");
-      }
-
-//---------------------------------------------------------
-//   createMeasure
-//---------------------------------------------------------
-
-void MusE::createMeasure()
-      {
-      printf("not implemented\n");
-      }
-
-//---------------------------------------------------------
-//   mixTrack
-//---------------------------------------------------------
-
-void MusE::mixTrack()
-      {
-      printf("not implemented\n");
-      }
 
 //---------------------------------------------------------
 //   configAppearance
@@ -3807,19 +3414,6 @@ void MusE::updateConfiguration()
       //menuSettings->setAccel(shortcuts[SHRT_CONFIG_AUDIO_PORTS].key, menu_ids[CMD_CONFIG_AUDIO_PORTS]);
       //menu_help->setAccel(menu_ids[CMD_START_WHATSTHIS], shortcuts[SHRT_START_WHATSTHIS].key);
       
-      // Just in case, but no, app kb handler takes care of these.
-      /*
-      loopAction->setShortcut(shortcuts[].key);
-      punchinAction->setShortcut(shortcuts[].key);
-      punchoutAction->setShortcut(shortcuts[].key);
-      startAction->setShortcut(shortcuts[].key);
-      rewindAction->setShortcut(shortcuts[].key);
-      forwardAction->setShortcut(shortcuts[].key);
-      stopAction->setShortcut(shortcuts[].key);
-      playAction->setShortcut(shortcuts[].key);
-      recordAction->setShortcut(shortcuts[].key);
-      panicAction->setShortcut(shortcuts[].key);
-      */
       }
 
 //---------------------------------------------------------
@@ -3860,24 +3454,6 @@ void MusE::bigtimeClosed()
       viewBigtimeAction->setChecked(false);
       }
 
-//---------------------------------------------------------
-//   showMixer
-//---------------------------------------------------------
-
-/*
-void MusE::showMixer(bool on)
-      {
-      if (on && audioMixer == 0) {
-            audioMixer = new AudioMixerApp(this);
-            connect(audioMixer, SIGNAL(closed()), SLOT(mixerClosed()));
-            audioMixer->resize(config.geometryMixer.size());
-            audioMixer->move(config.geometryMixer.topLeft());
-            }
-      if (audioMixer)
-            audioMixer->setVisible(on);
-      menuView->setItemChecked(aid1, on);
-      }
-*/
 
 //---------------------------------------------------------
 //   showMixer1
@@ -3914,17 +3490,6 @@ void MusE::showMixer2(bool on)
       }
 
 //---------------------------------------------------------
-//   toggleMixer
-//---------------------------------------------------------
-
-/*
-void MusE::toggleMixer()
-      {
-      showMixer(!menuView->isItemChecked(aid1));
-      }
-*/
-
-//---------------------------------------------------------
 //   toggleMixer1
 //---------------------------------------------------------
 
@@ -3941,17 +3506,6 @@ void MusE::toggleMixer2(bool checked)
       {
       showMixer2(checked);
       }
-
-//---------------------------------------------------------
-//   mixerClosed
-//---------------------------------------------------------
-
-/*
-void MusE::mixerClosed()
-      {
-      menuView->setItemChecked(aid1, false);
-      }
-*/
 
 //---------------------------------------------------------
 //   mixer1Closed
@@ -3972,7 +3526,6 @@ void MusE::mixer2Closed()
       }
 
 
-//QWidget* MusE::mixerWindow()     { return audioMixer; }
 QWidget* MusE::mixer1Window()     { return mixer1; }
 QWidget* MusE::mixer2Window()     { return mixer2; }
 
