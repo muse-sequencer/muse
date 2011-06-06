@@ -1,4 +1,8 @@
+06.06.2011:
+        - removed (unused) support for disabling the keymap (flo93)
 04.06.2011:
+        - fixed regression with switching ctrl/shift when manipulating
+          items in canvas. drag+shift limits movement, drag+ctrl copies (rj)
         - changed behaviour of middle click in all canvases to "delete" (flo93)
 02.06.2011:
         - the score editor now allows batch-movements, that is,

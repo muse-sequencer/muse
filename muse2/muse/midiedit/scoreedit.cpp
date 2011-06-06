@@ -4456,7 +4456,6 @@ void staff_t::update_part_indices()
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o remove functions for disabling key/sigmap
  *   o either remove these "hidden notes", or deal with them in the score editor
  *   o insert empty measure should also work inside parts, that is,
  *     move notes _within_ parts
