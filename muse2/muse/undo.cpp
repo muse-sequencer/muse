@@ -77,6 +77,7 @@ void UndoOp::dump()
             case ModifyMarker:
             case AddKey:
             case DeleteKey:
+            case DoNothing:
                   break;
             }
       }

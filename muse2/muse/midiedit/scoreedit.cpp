@@ -4443,7 +4443,7 @@ void staff_t::update_part_indices()
 
 
 
-//hint: recalculating event- and itemlists "from zero"
+//note: recalculating event- and itemlists "from zero"
 //      could happen in realtime, as it is pretty fast.
 //      however, this adds unneccessary cpu usage.
 //      it is NO problem to recalc the stuff "from zero"
@@ -4456,25 +4456,21 @@ void staff_t::update_part_indices()
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o speed up list editor
- *   o insert empty measure should also work inside parts
- *   o canvas editor: create clone via "alt+drag" moves window instead
- * 
- *   o rename stuff: UndoOp -> Operation, Undo -> OpList,
- *                   UndoType -> OpType, iUndoOp, riUndoOp -> iOperation,
- *                   undo.cpp/.h -> operations.cpp/.h
+ *   o remove functions for disabling key/sigmap
  *   o either remove these "hidden notes", or deal with them in the score editor
+ *   o insert empty measure should also work inside parts, that is,
+ *     move notes _within_ parts
+ * 
+ * IMPORTANT TODO
+ *   o canvas editor: create clone via "alt+drag" moves window instead
  *   o investigate with valgrind
  *   o controller view in score editor
  *   o deal with expanding parts
  *   o fix sigedit boxes
- *   o remove functions for disabling key/sigmap
- *   o mastertrack editor: key-combobox is buggy
- *   o drum editor: channel-stuff
- * 
- * IMPORTANT TODO
  *   o solo button
  *   o grand staff brace
+ *   o mastertrack editor: key-combobox is buggy
+ *   o drum editor: channel-stuff
  *   o do partial recalculating; recalculating can take pretty long
  *     (0,5 sec) when displaying a whole song in scores
  *   o transpose etc. must also transpose key-pressure events
