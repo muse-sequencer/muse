@@ -1684,7 +1684,8 @@ void staff_t::create_appropriate_eventlist()
 		{
 			Event& event=it->second;
 			
-			if ( (event.isNote() && !event.isNoteOff()) &&
+			if ( ( event.isNote() && !event.isNoteOff() &&
+			       (event.endTick() <= part->lenTick()) ) &&
 			     ( ((type==GRAND_TOP) && (event.pitch() >= SPLIT_NOTE)) ||
 			       ((type==GRAND_BOTTOM) && (event.pitch() < SPLIT_NOTE)) ||
 			       (type==NORMAL) )                          )
