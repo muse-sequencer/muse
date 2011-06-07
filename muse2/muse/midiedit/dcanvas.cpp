@@ -308,7 +308,7 @@ CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
 //   resizeItem
 //---------------------------------------------------------
 
-void DrumCanvas::resizeItem(CItem* item, bool)
+void DrumCanvas::resizeItem(CItem* item, bool, bool)
       {
       DEvent* nevent = (DEvent*) item;
       Event ev = nevent->event();

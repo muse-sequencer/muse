@@ -866,6 +866,45 @@ void shrink_parts(int raster)
 	song->applyOperationGroup(operations);
 }
 
+void internal_schedule_expand_part(Part* part, int raster, Undo& operations)
+{
+	EventList* events=part->events();
+	unsigned len=part->lenTick();
+	
+	for (iEvent ev=events->begin(); ev!=events->end(); ev++)
+		if (ev->second.endTick() > len)
+			len=ev->second.endTick();
+
+	if (raster) len=ceil((float)len/raster)*raster;
+					
+	if (len > part->lenTick())
+	{
+		MidiPart* new_part = new MidiPart(*(MidiPart*)part);
+		new_part->setLenTick(len);
+		operations.push_back(UndoOp(UndoOp::ModifyPart, part, new_part, true, false));
+	}
+}
+
+void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo& operations)
+{
+	unsigned old_len=part->lenTick();
+	if (old_len!=new_len)
+	{
+		Part* part_it=part;
+		do
+		{
+			if (part_it->lenTick()==old_len)
+			{
+				MidiPart* new_part = new MidiPart(*(MidiPart*)part_it);
+				new_part->setLenTick(new_len);
+				operations.push_back(UndoOp(UndoOp::ModifyPart, part_it, new_part, true, false));
+			}
+			
+			part_it=part_it->nextClone();
+		} while (part_it!=part);
+	}
+}
+
 void expand_parts(int raster)
 {
 	Undo operations;

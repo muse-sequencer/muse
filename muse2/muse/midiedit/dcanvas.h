@@ -57,7 +57,7 @@ class DrumCanvas : public EventCanvas {
       virtual Undo moveCanvasItems(CItemList&, int, int, DragType);
       virtual UndoOp moveItem(CItem*, const QPoint&, DragType);
       virtual CItem* newItem(const QPoint&, int);
-      virtual void resizeItem(CItem*, bool);
+      virtual void resizeItem(CItem*, bool, bool);
       virtual void newItem(CItem*, bool);
       virtual void newItem(CItem*, bool, bool replace );
       virtual bool deleteItem(CItem*);

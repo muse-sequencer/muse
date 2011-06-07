@@ -819,7 +819,7 @@ void Song::removePart(Part* part)
 //   cmdResizePart
 //---------------------------------------------------------
 
-void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len)
+void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClones)
       {
       switch(track->type()) {
             case Track::WAVE:
@@ -899,28 +899,21 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len)
             case Track::DRUM:
                   {
                   Undo operations;
-
-                  MidiPart* nPart = new MidiPart(*(MidiPart*)oPart);
-                  nPart->setLenTick(len);
-                  // Do port controller values but not clone parts. 
-                  operations.push_back(UndoOp(UndoOp::ModifyPart, oPart, nPart, true, false));
-
-                  // cut Events in nPart
-                  // Changed by T356. Don't delete events if this is a clone part.
-                  // The other clones might be longer than this one and need these events.
-                  if(nPart->cevents()->arefCount() <= 1)
-                  {
-                    if(oPart->lenTick() > len) { 
-                          EventList* el = nPart->events();
-                          iEvent ie = el->lower_bound(len);
-                          for (; ie != el->end();) {
-                                iEvent i = ie;
-                                ++ie;
-                                // Do port controller values and clone parts. 
-                                operations.push_back(UndoOp(UndoOp::DeleteEvent, i->second, nPart, true, true));
-                                }
-                          }
-                  }        
+									
+									unsigned orig_len=oPart->lenTick();
+									MidiPart* part_it=(MidiPart*)oPart;
+									do
+									{
+										if (part_it->lenTick()==orig_len)
+										{
+											MidiPart* newPart = new MidiPart(*part_it);
+											newPart->setLenTick(len);
+											// Do port controller values but not clone parts. 
+											operations.push_back(UndoOp(UndoOp::ModifyPart, part_it, newPart, true, false));
+										}
+										
+										part_it=(MidiPart*)part_it->nextClone();
+									} while (doClones && (part_it != (MidiPart*)oPart));
                   
                   song->applyOperationGroup(operations);
                   break;
@@ -1176,3 +1169,17 @@ WavePart* WavePart::clone() const
       return new WavePart(*this);
       }
 
+
+
+bool Part::hasHiddenNotes()
+{
+	unsigned lastNote=0;
+
+	for (iEvent ev=events()->begin(); ev!=events()->end(); ev++)
+		if (ev->second.endTick() > lastNote)
+			lastNote=ev->second.endTick();
+	
+	printf ("in hasHiddenNotes: lastNote=%i, lenTick=%i\n",lastNote, lenTick());
+	
+	return lastNote > lenTick();
+}

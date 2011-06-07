@@ -4457,11 +4457,14 @@ void staff_t::update_part_indices()
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o clones should have same size
- *   o insert empty measure should also work inside parts, that is,
- *     move notes _within_ parts
+ *   o do autoexpand correctly in prcanvas.cpp, then port that to 
+ *     dcanvas.cpp, steprec.cpp and scoreedit.cpp
  * 
  * IMPORTANT TODO
+ *   o shrink a part from its beginning as well! watch out for clones!
+ *   o insert empty measure should also work inside parts, that is,
+ *     move notes _within_ parts
+ *
  *   o canvas editor: create clone via "alt+drag" moves window instead
  *   o investigate with valgrind
  *   o controller view in score editor

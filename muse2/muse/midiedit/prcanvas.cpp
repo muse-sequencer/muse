@@ -479,28 +479,28 @@ void PianoCanvas::newItem(CItem* item, bool noSnap)
       event.setLenTick(w);
       event.setPitch(y2pitch(item->y()));
 
-      song->startUndo();
-      int modified=SC_EVENT_MODIFIED;
+      Undo operations;
       int diff = event.endTick()-part->lenTick();
-      if (diff > 0)  {// too short part? extend it
-            //printf("extend Part!\n");
-            Part* newPart = part->clone();
-            newPart->setLenTick(newPart->lenTick()+diff);
-            // Indicate no undo, and do port controller values but not clone parts. 
-            audio->msgChangePart(part, newPart, false, true, false);
-            modified=modified|SC_PART_MODIFIED;
-            part = newPart; // reassign
+      
+      if (! ((diff > 0) && part->hasHiddenNotes()) ) //operation is allowed
+      {
+        operations.push_back(UndoOp(UndoOp::AddEvent,event, part, false, false));
+        
+        if (diff > 0)// part must be extended?
+        {
+              schedule_resize_all_same_len_clone_parts(part, event.endTick(), operations);
+              printf("newItem: extending\n");
             }
-      // Indicate no undo, and do not do port controller values and clone parts. 
-      audio->msgAddEvent(event, part, false, false, false);
-      song->endUndo(modified);
+      }
+      //FINDMICH TODO: forbid action! this is currently wrong!
+      song->applyOperationGroup(operations);
       }
 
 //---------------------------------------------------------
 //   resizeItem
 //---------------------------------------------------------
 
-void PianoCanvas::resizeItem(CItem* item, bool noSnap)         // experimental changes to try dynamically extending parts
+void PianoCanvas::resizeItem(CItem* item, bool noSnap, bool)         // experimental changes to try dynamically extending parts
       {
       //printf("resizeItem!\n");
       NEvent* nevent = (NEvent*) item;
@@ -519,23 +519,23 @@ void PianoCanvas::resizeItem(CItem* item, bool noSnap)         // experimental c
             if (len <= 0)
                   len = editor->raster();
       }
-      song->startUndo();
-      int modified=SC_EVENT_MODIFIED;
-      int diff = event.tick()+len-part->lenTick();
-      if (diff > 0)  {// too short part? extend it
-            //printf("extend Part!\n");
-            Part* newPart = part->clone();
-            newPart->setLenTick(newPart->lenTick()+diff);
-            // Indicate no undo, and do port controller values but not clone parts. 
-            audio->msgChangePart(part, newPart, false, true, false);
-            modified=modified|SC_PART_MODIFIED;
-            part = newPart; // reassign
-            }
 
-      newEvent.setLenTick(len);
-      // Indicate no undo, and do not do port controller values and clone parts. 
-      audio->msgChangeEvent(event, newEvent, nevent->part(), false, false, false);
-      song->endUndo(modified);
+      Undo operations;
+      int diff = event.tick()+len-part->lenTick();
+      
+      if (! ((diff > 0) && part->hasHiddenNotes()) ) //operation is allowed
+      {
+        newEvent.setLenTick(len);
+        operations.push_back(UndoOp(UndoOp::ModifyEvent,newEvent, event, nevent->part(), false, false));
+        
+        if (diff > 0)// part must be extended?
+        {
+              schedule_resize_all_same_len_clone_parts(part, event.tick()+len, operations);
+              printf("resizeItem: extending\n");}
+      }
+      //FINDMICH TODO: forbid action! this is currently wrong!
+      song->applyOperationGroup(operations);
+
       }
 
 //---------------------------------------------------------

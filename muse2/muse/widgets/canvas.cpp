@@ -1131,7 +1131,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
             case DRAG_OFF:
                   break;
             case DRAG_RESIZE:
-                  resizeItem(curItem, false);
+                  resizeItem(curItem, false, ctrl);
                   break;
             case DRAG_NEW:
                   newItem(curItem, false);
