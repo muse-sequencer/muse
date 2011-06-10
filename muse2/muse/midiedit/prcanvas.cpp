@@ -492,8 +492,10 @@ void PianoCanvas::newItem(CItem* item, bool noSnap)
               printf("newItem: extending\n");
             }
       }
-      //FINDMICH TODO: forbid action! this is currently wrong!
+      //else forbid action by not applying it
       song->applyOperationGroup(operations);
+      songChanged(SC_EVENT_INSERTED); //this forces an update of the itemlist, which is neccessary
+                                      //to remove "forbidden" events from the list again
       }
 
 //---------------------------------------------------------
@@ -533,9 +535,10 @@ void PianoCanvas::resizeItem(CItem* item, bool noSnap, bool)         // experime
               schedule_resize_all_same_len_clone_parts(part, event.tick()+len, operations);
               printf("resizeItem: extending\n");}
       }
-      //FINDMICH TODO: forbid action! this is currently wrong!
+      //else forbid action by not performing it
       song->applyOperationGroup(operations);
-
+      songChanged(SC_EVENT_MODIFIED); //this forces an update of the itemlist, which is neccessary
+                                      //to remove "forbidden" events from the list again
       }
 
 //---------------------------------------------------------

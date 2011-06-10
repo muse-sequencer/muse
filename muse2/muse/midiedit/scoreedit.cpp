@@ -4452,7 +4452,6 @@ void staff_t::update_part_indices()
 
 
 /* BUGS and potential bugs
- *   o when the keymap is not used, this will probably lead to a bug
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
  * 
