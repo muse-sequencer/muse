@@ -27,6 +27,11 @@
 #include <map>
 #include <string>
 
+// Make sure this number is unique among all the MESS synths and DSSI host synth.
+#define DSSI_SYNTH_UNIQUE_ID 8
+// Midistate sysex initialization command.
+#define DSSI_INIT_DATA_CMD 1
+
 #ifdef OSC_SUPPORT
 #include <lo/lo.h>
 #include "osc.h"
@@ -150,10 +155,13 @@ class DssiSynthIF : public SynthIF, public PluginIBase
    protected:
       //int guiPid;
       //QProcess* guiQProc;
-
+      
    public:
       DssiSynthIF(SynthI* s);
       //DssiSynthIF();
+      
+      // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
+      virtual int oldMidiStateHeader(const unsigned char** data) const;
       
       virtual ~DssiSynthIF();
 

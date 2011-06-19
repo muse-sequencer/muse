@@ -37,6 +37,7 @@
 
 #include "muse/midi.h"
 #include "libsynti/mess.h"
+//#include "common_defs.h"
 #include "deicsonze.h"
 
 #include "plugin.h"
@@ -91,6 +92,9 @@ DeicsOnze::DeicsOnze() : Mess(2) {
       waveTable[W8][i] = (float)(i<RESOLUTION/2?sin(t)*sin(t):0.0);}
   }
   
+  initBuffer  = 0;
+  initLen     = 0;
+      
   //alloc temp buffers chorus and reverb
   tempInputChorus = (float**) malloc(sizeof(float*)*NBRFXINPUTS);
   for(int i = 0; i < NBRFXINPUTS; i++)
@@ -236,6 +240,9 @@ DeicsOnze::DeicsOnze() : Mess(2) {
 
 DeicsOnze::~DeicsOnze()
 {
+  if(_gui)        
+    delete _gui;  // p4.0.27
+    
   //if (--useCount == 0)
   //delete[] sine_table;
   //dealloc temp buffers chorus and reverb
@@ -251,8 +258,18 @@ DeicsOnze::~DeicsOnze()
   free(tempInputDelay);
   for(int i = 0; i < NBRFXOUTPUTS; i++) free(tempOutputDelay[i]);
   free(tempOutputDelay);
+  
+  if (initBuffer)
+        delete [] initBuffer;
 }
 
+int DeicsOnze::oldMidiStateHeader(const unsigned char** data) const 
+{
+  unsigned char const d[2] = {MUSE_SYNTH_SYSEX_MFG_ID, DEICSONZE_UNIQUE_ID};
+  *data = &d[0];
+  return 2; 
+}
+        
 //---------------------------------------------------------
 // getSinusWaveTable
 //---------------------------------------------------------
@@ -2266,9 +2283,23 @@ void DeicsOnze::writeConfiguration(AL::Xml* xml) {
 }
 
 //---------------------------------------------------------
+// getInitBuffer
+//---------------------------------------------------------
+void DeicsOnze::setupInitBuffer(int len)
+{
+  if (len > initLen) {
+        if (initBuffer)
+              delete [] initBuffer;
+        initBuffer = new unsigned char[len];
+        initLen = len;    
+        }
+}
+
+//---------------------------------------------------------
 // getInitData
 //---------------------------------------------------------
-void DeicsOnze::getInitData(int* length, const unsigned char** data) const {
+//void DeicsOnze::getInitData(int* length, const unsigned char** data) const {
+void DeicsOnze::getInitData(int* length, const unsigned char** data) {
   //write the set in a temporary file and in a QByteArray
   QTemporaryFile file;
   file.open();
@@ -2284,141 +2315,150 @@ void DeicsOnze::getInitData(int* length, const unsigned char** data) const {
 
   //save the set
   *length = NUM_CONFIGLENGTH                       
+  //*length = 2 + NUM_CONFIGLENGTH     // 2 for Header                  
     ///+ (_pluginIReverb?sizeof(float)*_pluginIReverb->plugin()->parameter():0) 
     + (_pluginIReverb?sizeof(float)*_pluginIReverb->plugin()->controlInPorts():0) 
     ///+ (_pluginIChorus?sizeof(float)*_pluginIChorus->plugin()->parameter():0)
     + (_pluginIChorus?sizeof(float)*_pluginIChorus->plugin()->controlInPorts():0)
     + baComp.size();
 
-  unsigned char* buffer = new unsigned char[*length];
+  ///unsigned char* buffer = new unsigned char[*length];
+  setupInitBuffer(*length);  
+  
   //save init data
-  buffer[0]=SYSEX_INIT_DATA;
-  buffer[1]=SYSEX_INIT_DATA_VERSION;
+  
+  ///buffer[0]=SYSEX_INIT_DATA;
+  initBuffer[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  initBuffer[1]=DEICSONZE_UNIQUE_ID;
+  initBuffer[2]=SYSEX_INIT_DATA;
+  initBuffer[3]=SYSEX_INIT_DATA_VERSION;
   //save global data
-  buffer[NUM_MASTERVOL] = (unsigned char) getMasterVol();
+  initBuffer[NUM_MASTERVOL] = (unsigned char) getMasterVol();
   for(int c = 0; c < NBRCHANNELS; c++) {
-    buffer[NUM_CHANNEL_ENABLE + c] = (unsigned char) getChannelEnable(c);
-    buffer[NUM_CHANNEL_VOL + c] = (unsigned char) getChannelVol(c);
-    buffer[NUM_CHANNEL_PAN + c] = (unsigned char) getChannelPan(c);
+    initBuffer[NUM_CHANNEL_ENABLE + c] = (unsigned char) getChannelEnable(c);
+    initBuffer[NUM_CHANNEL_VOL + c] = (unsigned char) getChannelVol(c);
+    initBuffer[NUM_CHANNEL_PAN + c] = (unsigned char) getChannelPan(c);
     int b = getChannelBrightness(c);
-    buffer[NUM_CHANNEL_BRIGHTNESS + 2*c] = (unsigned char) (b%256);
-    buffer[NUM_CHANNEL_BRIGHTNESS + 2*c + 1] = (unsigned char) (b/256);
-    buffer[NUM_CHANNEL_MODULATION + c] =
+    initBuffer[NUM_CHANNEL_BRIGHTNESS + 2*c] = (unsigned char) (b%256);
+    initBuffer[NUM_CHANNEL_BRIGHTNESS + 2*c + 1] = (unsigned char) (b/256);
+    initBuffer[NUM_CHANNEL_MODULATION + c] =
       (unsigned char) getChannelModulation(c);
-    buffer[NUM_CHANNEL_DETUNE + c] =
+    initBuffer[NUM_CHANNEL_DETUNE + c] =
       (unsigned char) getChannelDetune(c) + MAXCHANNELDETUNE;
-    buffer[NUM_CHANNEL_ATTACK + c] = (unsigned char) getChannelAttack(c);
-    buffer[NUM_CHANNEL_RELEASE + c] = (unsigned char) getChannelRelease(c);
-    buffer[NUM_CHANNEL_REVERB + c] = (unsigned char) getChannelReverb(c);
-    buffer[NUM_CHANNEL_CHORUS + c] = (unsigned char) getChannelChorus(c);    
-    buffer[NUM_CHANNEL_DELAY + c] = (unsigned char) getChannelDelay(c);    
-    buffer[NUM_CURRENTPROG + c] = (unsigned char) _preset[c]->prog;
-    buffer[NUM_CURRENTLBANK + c] =
+    initBuffer[NUM_CHANNEL_ATTACK + c] = (unsigned char) getChannelAttack(c);
+    initBuffer[NUM_CHANNEL_RELEASE + c] = (unsigned char) getChannelRelease(c);
+    initBuffer[NUM_CHANNEL_REVERB + c] = (unsigned char) getChannelReverb(c);
+    initBuffer[NUM_CHANNEL_CHORUS + c] = (unsigned char) getChannelChorus(c);    
+    initBuffer[NUM_CHANNEL_DELAY + c] = (unsigned char) getChannelDelay(c);    
+    initBuffer[NUM_CURRENTPROG + c] = (unsigned char) _preset[c]->prog;
+    initBuffer[NUM_CURRENTLBANK + c] =
       (unsigned char) _preset[c]->_subcategory->_lbank;
-    buffer[NUM_CURRENTHBANK + c] =
+    initBuffer[NUM_CURRENTHBANK + c] =
       (unsigned char) _preset[c]->_subcategory->_category->_hbank;
-    buffer[NUM_NBRVOICES + c] = (unsigned char) getNbrVoices(c);
+    initBuffer[NUM_NBRVOICES + c] = (unsigned char) getNbrVoices(c);
   }
-  buffer[NUM_SAVEONLYUSED]=(unsigned char) _saveOnlyUsed;
-  buffer[NUM_SAVECONFIG]=(unsigned char) _saveConfig;
+  initBuffer[NUM_SAVEONLYUSED]=(unsigned char) _saveOnlyUsed;
+  initBuffer[NUM_SAVECONFIG]=(unsigned char) _saveConfig;
   //save config data
   if(_saveConfig) {
-    buffer[NUM_QUALITY]=(unsigned char)_global.quality;
-    buffer[NUM_FILTER]=(unsigned char)getFilter();
-    buffer[NUM_FONTSIZE]=(unsigned char)_global.fontSize;
-    buffer[NUM_RED_TEXT]=(unsigned char)_gui->tColor->red();
-    buffer[NUM_GREEN_TEXT]=(unsigned char)_gui->tColor->green();
-    buffer[NUM_BLUE_TEXT]=(unsigned char)_gui->tColor->blue();
-    buffer[NUM_RED_BACKGROUND]=(unsigned char)_gui->bColor->red();
-    buffer[NUM_GREEN_BACKGROUND]=(unsigned char)_gui->bColor->green();
-    buffer[NUM_BLUE_BACKGROUND]=(unsigned char)_gui->bColor->blue();
-    buffer[NUM_RED_EDITTEXT]=(unsigned char)_gui->etColor->red();
-    buffer[NUM_GREEN_EDITTEXT]=(unsigned char)_gui->etColor->green();
-    buffer[NUM_BLUE_EDITTEXT]=(unsigned char)_gui->etColor->blue();
-    buffer[NUM_RED_EDITBACKGROUND]=(unsigned char)_gui->ebColor->red();
-    buffer[NUM_GREEN_EDITBACKGROUND]=(unsigned char)_gui->ebColor->green();
-    buffer[NUM_BLUE_EDITBACKGROUND]=(unsigned char)_gui->ebColor->blue();
-    buffer[NUM_ISINITSET]=(unsigned char)_isInitSet;
-    strncpy((char*)&buffer[NUM_INITSETPATH],
+    initBuffer[NUM_QUALITY]=(unsigned char)_global.quality;
+    initBuffer[NUM_FILTER]=(unsigned char)getFilter();
+    initBuffer[NUM_FONTSIZE]=(unsigned char)_global.fontSize;
+    initBuffer[NUM_RED_TEXT]=(unsigned char)_gui->tColor->red();
+    initBuffer[NUM_GREEN_TEXT]=(unsigned char)_gui->tColor->green();
+    initBuffer[NUM_BLUE_TEXT]=(unsigned char)_gui->tColor->blue();
+    initBuffer[NUM_RED_BACKGROUND]=(unsigned char)_gui->bColor->red();
+    initBuffer[NUM_GREEN_BACKGROUND]=(unsigned char)_gui->bColor->green();
+    initBuffer[NUM_BLUE_BACKGROUND]=(unsigned char)_gui->bColor->blue();
+    initBuffer[NUM_RED_EDITTEXT]=(unsigned char)_gui->etColor->red();
+    initBuffer[NUM_GREEN_EDITTEXT]=(unsigned char)_gui->etColor->green();
+    initBuffer[NUM_BLUE_EDITTEXT]=(unsigned char)_gui->etColor->blue();
+    initBuffer[NUM_RED_EDITBACKGROUND]=(unsigned char)_gui->ebColor->red();
+    initBuffer[NUM_GREEN_EDITBACKGROUND]=(unsigned char)_gui->ebColor->green();
+    initBuffer[NUM_BLUE_EDITBACKGROUND]=(unsigned char)_gui->ebColor->blue();
+    initBuffer[NUM_ISINITSET]=(unsigned char)_isInitSet;
+    strncpy((char*)&initBuffer[NUM_INITSETPATH],
 	    _initSetPath.toLatin1().constData(), MAXSTRLENGTHINITSETPATH);
-    buffer[NUM_ISBACKGROUNDPIX]=(unsigned char)_isBackgroundPix;
-    strncpy((char*)&buffer[NUM_BACKGROUNDPIXPATH],
+    initBuffer[NUM_ISBACKGROUNDPIX]=(unsigned char)_isBackgroundPix;
+    strncpy((char*)&initBuffer[NUM_BACKGROUNDPIXPATH],
 	    _backgroundPixPath.toLatin1().constData(),
 	    MAXSTRLENGTHBACKGROUNDPIXPATH);
   }
   //FX
   //reverb
-  buffer[NUM_IS_REVERB_ON]=(unsigned char)_global.isReverbActivated;
-  buffer[NUM_REVERB_RETURN]=(unsigned char)getReverbReturn();
-  buffer[NUM_REVERB_PARAM_NBR]=                                         
+  initBuffer[NUM_IS_REVERB_ON]=(unsigned char)_global.isReverbActivated;
+  initBuffer[NUM_REVERB_RETURN]=(unsigned char)getReverbReturn();
+  initBuffer[NUM_REVERB_PARAM_NBR]=                                         
     ///(_pluginIReverb?(unsigned char)_pluginIReverb->plugin()->parameter() : 0);
     (_pluginIReverb?(unsigned char)_pluginIReverb->plugin()->controlInPorts() : 0);
-  strncpy((char*)&buffer[NUM_REVERB_LIB],
+  strncpy((char*)&initBuffer[NUM_REVERB_LIB],
 	  (_pluginIReverb?
 	   _pluginIReverb->plugin()->lib().toLatin1().constData() : "\0"),
 	  MAXSTRLENGTHFXLIB);
-  strncpy((char*)&buffer[NUM_REVERB_LABEL],
+  strncpy((char*)&initBuffer[NUM_REVERB_LABEL],
 	  (_pluginIReverb?
 	   _pluginIReverb->plugin()->label().toLatin1().constData() : "\0"),
 	  MAXSTRLENGTHFXLABEL);
   //chorus
-  buffer[NUM_IS_CHORUS_ON]=(unsigned char)_global.isChorusActivated;
-  buffer[NUM_CHORUS_RETURN]=(unsigned char)getChorusReturn();
-  buffer[NUM_CHORUS_PARAM_NBR]=                                         
+  initBuffer[NUM_IS_CHORUS_ON]=(unsigned char)_global.isChorusActivated;
+  initBuffer[NUM_CHORUS_RETURN]=(unsigned char)getChorusReturn();
+  initBuffer[NUM_CHORUS_PARAM_NBR]=                                         
     ///(_pluginIChorus?(unsigned char)_pluginIChorus->plugin()->parameter() : 0);
     (_pluginIChorus?(unsigned char)_pluginIChorus->plugin()->controlInPorts() : 0);
-  strncpy((char*)&buffer[NUM_CHORUS_LIB],
+  strncpy((char*)&initBuffer[NUM_CHORUS_LIB],
 	  (_pluginIChorus?
 	   _pluginIChorus->plugin()->lib().toLatin1().constData() : "\0"),
 	  MAXSTRLENGTHFXLIB);
-  strncpy((char*)&buffer[NUM_CHORUS_LABEL],
+  strncpy((char*)&initBuffer[NUM_CHORUS_LABEL],
 	  (_pluginIChorus?
 	   _pluginIChorus->plugin()->label().toLatin1().constData() : "\0"),
 	  MAXSTRLENGTHFXLABEL);
   //delay
-  buffer[NUM_IS_DELAY_ON]=(unsigned char)_global.isDelayActivated;
-  buffer[NUM_DELAY_RETURN]=(unsigned char)getDelayReturn();
+  initBuffer[NUM_IS_DELAY_ON]=(unsigned char)_global.isDelayActivated;
+  initBuffer[NUM_DELAY_RETURN]=(unsigned char)getDelayReturn();
   //save FX parameters
   //reverb
-  for(int i = 0; i < (int)buffer[NUM_REVERB_PARAM_NBR]; i++) {
+  for(int i = 0; i < (int)initBuffer[NUM_REVERB_PARAM_NBR]; i++) {
     float val = (float)getReverbParam(i);
-    memcpy(&buffer[NUM_CONFIGLENGTH + sizeof(float)*i], &val, sizeof(float));
+    memcpy(&initBuffer[NUM_CONFIGLENGTH + sizeof(float)*i], &val, sizeof(float));
   }
   //chorus
-  for(int i = 0; i < (int)buffer[NUM_CHORUS_PARAM_NBR]; i++) {
+  for(int i = 0; i < (int)initBuffer[NUM_CHORUS_PARAM_NBR]; i++) {
     float val = (float)getChorusParam(i);
-    memcpy(&buffer[NUM_CONFIGLENGTH
-		   + sizeof(float)*(int)buffer[NUM_REVERB_PARAM_NBR]
+    memcpy(&initBuffer[NUM_CONFIGLENGTH
+		   + sizeof(float)*(int)initBuffer[NUM_REVERB_PARAM_NBR]
 		   + sizeof(float)*i], &val, sizeof(float));
   }
   //delay
   float delayfloat;
   delayfloat = getDelayBPM();
-  memcpy(&buffer[NUM_DELAY_BPM], &delayfloat, 4);
+  memcpy(&initBuffer[NUM_DELAY_BPM], &delayfloat, 4);
   delayfloat = getDelayBeatRatio();
-  memcpy(&buffer[NUM_DELAY_BEATRATIO], &delayfloat, sizeof(float));
+  memcpy(&initBuffer[NUM_DELAY_BEATRATIO], &delayfloat, sizeof(float));
   delayfloat = getDelayFeedback();
-  memcpy(&buffer[NUM_DELAY_FEEDBACK], &delayfloat, sizeof(float));
+  memcpy(&initBuffer[NUM_DELAY_FEEDBACK], &delayfloat, sizeof(float));
   delayfloat = getDelayLFOFreq();
-  memcpy(&buffer[NUM_DELAY_LFO_FREQ], &delayfloat, sizeof(float));
+  memcpy(&initBuffer[NUM_DELAY_LFO_FREQ], &delayfloat, sizeof(float));
   delayfloat = getDelayLFODepth();
-  memcpy(&buffer[NUM_DELAY_LFO_DEPTH], &delayfloat, sizeof(float));
+  memcpy(&initBuffer[NUM_DELAY_LFO_DEPTH], &delayfloat, sizeof(float));
 
   //save set data
   int offset =
     NUM_CONFIGLENGTH
-    + sizeof(float)*(int)buffer[NUM_REVERB_PARAM_NBR]
-    + sizeof(float)*(int)buffer[NUM_CHORUS_PARAM_NBR];
+    + sizeof(float)*(int)initBuffer[NUM_REVERB_PARAM_NBR]
+    + sizeof(float)*(int)initBuffer[NUM_CHORUS_PARAM_NBR];
   for(int i = offset; i < *length; i++)
-    buffer[i]=(unsigned char)baComp.at(i - offset);
+    initBuffer[i]=(unsigned char)baComp.at(i - offset);
 
-  *data=buffer;
+  ///*data=buffer;
+  *data=initBuffer;
 }
 //---------------------------------------------------------
 // parseInitData
 //---------------------------------------------------------
 void DeicsOnze::parseInitData(int length, const unsigned char* data) {
-  if(data[1]==SYSEX_INIT_DATA_VERSION) {
+  ///if(data[1]==SYSEX_INIT_DATA_VERSION) {
+  if(data[3]==SYSEX_INIT_DATA_VERSION) {
     //load global parameters
     //master volume
     setMasterVol(data[NUM_MASTERVOL]);
@@ -2600,7 +2640,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
 		     (const char*)&data[NUM_REVERB_LABEL]);
     if(p) { 
       initPluginReverb(p);
-      //for(int i = 0; i < _pluginIReverb->plugin()->parameter(); i++) {
+      ///for(int i = 0; i < _pluginIReverb->plugin()->parameter(); i++) {
       for(int i = 0; i < (int)_pluginIReverb->plugin()->controlInPorts(); i++) {
 	float val;
 	memcpy(&val, &data[NUM_CONFIGLENGTH + sizeof(float)*i], sizeof(float));
@@ -2630,7 +2670,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
 		     (const char*)&data[NUM_CHORUS_LABEL]);
     if(p) {
       initPluginChorus(p);
-      //for(int i = 0; i < _pluginIChorus->plugin()->parameter(); i++) {
+      ///for(int i = 0; i < _pluginIChorus->plugin()->parameter(); i++) {
       for(int i = 0; i < (int)_pluginIChorus->plugin()->controlInPorts(); i++) {
 	float val;
 	memcpy(&val, &data[NUM_CONFIGLENGTH
@@ -2788,87 +2828,123 @@ bool DeicsOnze::sysex(int length, const unsigned char* data) {
   return false;
 }
 bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
-  int cmd=data[0];
+  
+  if(length < 3 || data[0] != MUSE_SYNTH_SYSEX_MFG_ID 
+      || data[1] != DEICSONZE_UNIQUE_ID) 
+  {
+    #ifdef DEICSONZE_DEBUG
+    printf("MusE DeicsOnze: Unknown sysex header\n");
+    #endif
+    return false;
+  }
+  
+  int l = length - 2;
+  const unsigned char* d = data + 2;
+  ///int cmd=data[0];
+  int cmd=d[0];
   int index;
   float f;
   switch(cmd) {
   case SYSEX_INIT_DATA:
     parseInitData(length, data);
+    //parseInitData(l, d);
     break;
   case SYSEX_MASTERVOL:
-    setMasterVol((int)data[1]);
+    ///setMasterVol((int)data[1]);
+    setMasterVol((int)d[1]);
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
     //case SYSEX_CHANNELNUM:
-    //_global.channelNum = (char)data[1];
+    ///_global.channelNum = (char)data[1];
+    //_global.channelNum = (char)d[1];
     //if(!fromGui) {
-    //  MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+    ///  MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+    //  MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
     //  _gui->writeEvent(evSysex);
     //}
     //break;
   case SYSEX_QUALITY:
-    setQuality((Quality)data[1]);
+    ///setQuality((Quality)data[1]);
+    setQuality((Quality)d[1]);
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
   case SYSEX_FILTER:
-    setFilter((bool)data[1]);
+    ///setFilter((bool)data[1]);
+    setFilter((bool)d[1]);
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
   case SYSEX_FONTSIZE:
-    _global.fontSize = (int)data[1];
+    ///_global.fontSize = (int)data[1];
+    _global.fontSize = (int)d[1];
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
   case SYSEX_SAVECONFIG:
-    _saveConfig = (bool)data[1];
+    ///_saveConfig = (bool)data[1];
+    _saveConfig = (bool)d[1];
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
   case SYSEX_SAVEONLYUSED:
-    _saveOnlyUsed = (bool)data[1];
+    ///_saveOnlyUsed = (bool)data[1];
+    _saveOnlyUsed = (bool)d[1];
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
   case SYSEX_ISINITSET:
-    _isInitSet = (bool)data[1];
+    ///_isInitSet = (bool)data[1];
+    _isInitSet = (bool)d[1];
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
   case SYSEX_INITSETPATH:
-    _initSetPath = (char*)&data[1];
+    ///_initSetPath = (char*)&data[1];
+    _initSetPath = (char*)&d[1];
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
   case SYSEX_ISBACKGROUNDPIX:
-    _isBackgroundPix = (bool)data[1];
+    ///_isBackgroundPix = (bool)data[1];
+    _isBackgroundPix = (bool)d[1];
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
   case SYSEX_BACKGROUNDPIXPATH:
-    _backgroundPixPath = (char*)&data[1];
+    ///_backgroundPixPath = (char*)&data[1];
+    _backgroundPixPath = (char*)&d[1];
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
@@ -2876,112 +2952,142 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     resetVoices();
     break;
   case SYSEX_CHORUSACTIV:
-    _global.isChorusActivated = (bool)data[1];
+    ///_global.isChorusActivated = (bool)data[1];
+    _global.isChorusActivated = (bool)d[1];
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
   case SYSEX_CHORUSPARAM:
-    index = (int)data[1];
-    memcpy(&f, &data[2], sizeof(float));
+    ///index = (int)data[1];
+    ///memcpy(&f, &data[2], sizeof(float));
+    index = (int)d[1];
+    memcpy(&f, &d[2], sizeof(float));
     setChorusParam(index, (double)f);
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;       
   case SYSEX_REVERBACTIV:
-    _global.isReverbActivated = (bool)data[1];
+    ///_global.isReverbActivated = (bool)data[1];
+    _global.isReverbActivated = (bool)d[1];
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
   case SYSEX_REVERBPARAM:
-    index = (int)data[1];
-    memcpy(&f, &data[2], sizeof(float));
+    ///index = (int)data[1];
+    ///memcpy(&f, &data[2], sizeof(float));
+    index = (int)d[1];
+    memcpy(&f, &d[2], sizeof(float));
     setReverbParam(index, (double)f);
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;       
   case SYSEX_DELAYACTIV:
-    _global.isDelayActivated = (bool)data[1];
+    ///_global.isDelayActivated = (bool)data[1];
+    _global.isDelayActivated = (bool)d[1];
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
   case SYSEX_CHORUSRETURN:
-    setChorusReturn((int)data[1]);
+    ///setChorusReturn((int)data[1]);
+    setChorusReturn((int)d[1]);
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
   case SYSEX_REVERBRETURN:
-    setReverbReturn((int)data[1]);
+    ///setReverbReturn((int)data[1]);
+    setReverbReturn((int)d[1]);
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
   case SYSEX_DELAYRETURN:
-    setDelayReturn((int)data[1]);
+    ///setDelayReturn((int)data[1]);
+    setDelayReturn((int)d[1]);
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
   case SYSEX_SELECTREVERB:
     Plugin* pluginReverb;
-    memcpy(&pluginReverb, &data[1], sizeof(Plugin*));
+    ///memcpy(&pluginReverb, &data[1], sizeof(Plugin*));
+    memcpy(&pluginReverb, &d[1], sizeof(Plugin*));
     initPluginReverb(pluginReverb);
     break;
   case SYSEX_SELECTCHORUS:
     Plugin* pluginChorus;
-    memcpy(&pluginChorus, &data[1], sizeof(Plugin*));
+    ///memcpy(&pluginChorus, &data[1], sizeof(Plugin*));
+    memcpy(&pluginChorus, &d[1], sizeof(Plugin*));
     initPluginChorus(pluginChorus);
     break;
   case SYSEX_DELAYBPM:
-    memcpy(&f, &data[1], sizeof(float));
+    ///memcpy(&f, &data[1], sizeof(float));
+    memcpy(&f, &d[1], sizeof(float));
     setDelayBPM(f);
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;    
   case SYSEX_DELAYBEATRATIO:
-    memcpy(&f, &data[1], sizeof(float));
+    ///memcpy(&f, &data[1], sizeof(float));
+    memcpy(&f, &d[1], sizeof(float));
     setDelayBeatRatio(f);
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;    
   case SYSEX_DELAYFEEDBACK:
-    memcpy(&f, &data[1], sizeof(float));
+    ///memcpy(&f, &data[1], sizeof(float));
+    memcpy(&f, &d[1], sizeof(float));
     setDelayFeedback(f);
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;    
   case SYSEX_DELAYLFOFREQ:
-    memcpy(&f, &data[1], sizeof(float));
+    ///memcpy(&f, &data[1], sizeof(float));
+    memcpy(&f, &d[1], sizeof(float));
     setDelayLFOFreq(f);
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;    
   case SYSEX_DELAYLFODEPTH:
-    memcpy(&f, &data[1], sizeof(float));
+    ///memcpy(&f, &data[1], sizeof(float));
+    memcpy(&f, &d[1], sizeof(float));
     setDelayLFODepth(f);
     if(!fromGui) {
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
+      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;    
@@ -3728,7 +3834,7 @@ const MidiPatch* DeicsOnze::getPatchInfo(int /*ch*/, const MidiPatch* p) const {
 */
 //---------------------------------------------------------
 int DeicsOnze::getControllerInfo(int index, const char** name,
-				 int* controller, int* min, int* max)
+				 int* controller, int* min, int* max, int* initval) const
 {
     if (index >= nbrCtrl) {
 	return 0;
@@ -3738,6 +3844,7 @@ int DeicsOnze::getControllerInfo(int index, const char** name,
     *controller = _ctrl[index].num;
     *min = _ctrl[index].min;
     *max = _ctrl[index].max;
+    *initval = 0;                // p4.0.27 FIXME NOTE TODO    
     return (index +1);
 }
 
@@ -3975,10 +4082,12 @@ inline double plusMod(double x, double y) {
 
 
 //---------------------------------------------------------
-//   write
-//    synthesize n samples into buffer+offset
+//   processMessages
+//   Called from host always, even if output path is unconnected.
 //---------------------------------------------------------
-void DeicsOnze::process(float** buffer, int offset, int n) {
+
+void DeicsOnze::processMessages()
+{
   //Process messages from the gui
   while (_gui->fifoSize()) {
     MidiPlayEvent ev = _gui->readEvent();
@@ -3991,6 +4100,28 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
       sendEvent(ev);
     }
   }
+}
+
+//---------------------------------------------------------
+//   write
+//    synthesize n samples into buffer+offset
+//---------------------------------------------------------
+void DeicsOnze::process(float** buffer, int offset, int n) {
+  /*
+  //Process messages from the gui
+  while (_gui->fifoSize()) {
+    MidiPlayEvent ev = _gui->readEvent();
+    if (ev.type() == ME_SYSEX) {
+      sysex(ev.len(), ev.data(), true);
+      sendEvent(ev);
+    }
+    else if (ev.type() == ME_CONTROLLER) {
+      setController(ev.channel(), ev.dataA(), ev.dataB(), true);
+      sendEvent(ev);
+    }
+  }
+  */
+  
   float* leftOutput = buffer[0] + offset;
   float* rightOutput = buffer[1] + offset; 
 

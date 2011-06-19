@@ -36,6 +36,7 @@
 #include "midictrl.h"
 //#include "stringparam.h"
 #include "popupmenu.h"
+#include "globaldefs.h"
 
 std::vector<Synth*> synthis;  // array of available synthis
 
@@ -429,10 +430,34 @@ bool SynthI::initInstance(Synth* s, const QString& instanceName)
             cl->add(c);
           }
 
+      // Restore the midi state...
       EventList* iel = midiState();
       if (!iel->empty()) {
             for (iEvent i = iel->begin(); i != iel->end(); ++i) {
                   Event ev = i->second;
+                  
+                  // p4.0.27 A kludge to support old midistates by wrapping them in the proper header.
+                  if(ev.type() == Sysex && _tmpMidiStateVersion < SYNTH_MIDI_STATE_SAVE_VERSION)
+                  {
+                    int len = ev.dataLen();
+                    if(len > 0)
+                    {
+                      const unsigned char* data = ev.data();
+                      const unsigned char* hdr;
+                      // Get the unique header for the synth.
+                      int hdrsz = _sif->oldMidiStateHeader(&hdr);
+                      if(hdrsz > 0)
+                      {
+                        int newlen = hdrsz + len;
+                        unsigned char* d = new unsigned char[newlen];
+                        memcpy(d, hdr, hdrsz);
+                        memcpy(d + hdrsz, data, len);
+                        ev.setData(d, newlen);
+                        delete[] d;
+                      }  
+                    }
+                  }
+                  
                   MidiPlayEvent pev(0, 0, 0, ev);
                   if (_sif->putEvent(pev))
                         break;   // try later
@@ -702,7 +727,8 @@ void MessSynthIF::write(int level, Xml& xml) const
       const unsigned char* p;
       _mess->getInitData(&len, &p);
       if (len) {
-            xml.tag(level++, "midistate");
+            ///xml.tag(level++, "midistate");
+            xml.tag(level++, "midistate version=\"%d\"", SYNTH_MIDI_STATE_SAVE_VERSION);
             xml.nput(level++, "<event type=\"%d\"", Sysex);
             xml.nput(" datalen=\"%d\">\n", len);
             xml.nput(level, "");
@@ -816,6 +842,7 @@ void SynthI::read(Xml& xml)
                               if (initInstance(s, name()))
                                     return;
                               song->insertTrack0(this, -1);
+                              
                               if (port != -1 && port < MIDI_PORTS)
                                     midiPorts[port].setMidiDevice(this);
                               
@@ -1032,4 +1059,19 @@ bool MessSynthIF::putEvent(const MidiPlayEvent& ev)
             return _mess->processEvent(ev);
       return true;
       }
+
+//unsigned long MessSynthIF::uniqueID() const 
+//{ 
+//  return _mess ? _mess->uniqueID() : 0; 
+//}
+
+//MidiPlayEvent& MessSynthIF::wrapOldMidiStateVersion(MidiPlayEvent& e) const
+//{
+//  return _mess ? _mess->wrapOldMidiStateVersion(e) : e; 
+//}
+ 
+int MessSynthIF::oldMidiStateHeader(const unsigned char** data) const
+{
+  return _mess ? _mess->oldMidiStateHeader(data) : 0;
+}
 

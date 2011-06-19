@@ -62,6 +62,12 @@ extern const unsigned int mmcLocateMsgLen;
 QString nameSysex(unsigned int len, const unsigned char* buf);
 QString midiMetaName(int);
 
+// Use these in all the synths and their guis.
+// Did this here for ease, since they all include this file.
+//
+// A special MusE soft synth sysex manufacturer ID.
+#define MUSE_SYNTH_SYSEX_MFG_ID 0x7c
+
 class EventList;
 class MPEventList;
 class MidiTrack;

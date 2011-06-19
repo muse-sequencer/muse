@@ -20,8 +20,9 @@
 #include <list>
 #include <fluidsynth.h>
 #include "libsynti/mess.h"
+#include "common_defs.h"
 
-enum SfOp { SF_REPLACE = 1, SF_ADD, SF_REMOVE };
+//enum SfOp { SF_REPLACE = 1, SF_ADD, SF_REMOVE };
 class FLUIDGui;
 
 //---------------------------------------------------------
@@ -73,8 +74,12 @@ class ISynth : public Mess {
 
    public:
       ISynth();
-      ~ISynth();
+      virtual ~ISynth();
 
+      // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
+      // Note for Fluid, do nothing because unlike other synths, Fluid already had correct sysex headers.
+      //virtual int oldMidiStateHeader(const unsigned char** data) const;  
+      
       fluid_synth_t* synth() { return _fluidsynth; }
       const fluid_synth_t* synth() const { return _fluidsynth; }
       char* getFont() const  { return sfont; }

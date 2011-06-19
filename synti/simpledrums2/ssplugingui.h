@@ -5,6 +5,7 @@
 //
 //
 // Author: Mathias Lundgren <lunar_shuttle@users.sf.net>, (C) 2004
+//  Contributer: (C) Copyright 2011 Tim E. Real (terminator356 at users.sourceforge.net)
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -83,11 +84,21 @@ class SS_ParameterSlider : public QSlider, public SS_ParameterWidget
 
       virtual void setParamValue(int val) { SS_TRACE_IN setValue(val); SS_TRACE_OUT}
 
-   public slots:
-      virtual void setValue(int val) { SS_TRACE_IN QSlider::setValue(val); emit valueChanged(fxid, parameter, val); SS_TRACE_OUT }
+   ///public slots:
+   ///   virtual void setValue(int val) { SS_TRACE_IN QSlider::setValue(val); emit valueChanged(fxid, parameter, val); SS_TRACE_OUT }
 
    signals:
       void valueChanged(int id, int param, int val);
+   
+   protected:
+      virtual void sliderChange(SliderChange change)   // p4.0.27 Tim
+      { 
+        SS_TRACE_IN 
+        QSlider::sliderChange(change);
+        if(change == QAbstractSlider::SliderValueChange)
+          emit valueChanged(fxid, parameter, value());  
+        SS_TRACE_OUT
+      }    
    };
 
 typedef std::list<SS_ParameterWidget*>           SS_ParameterWidgetList;
@@ -110,7 +121,8 @@ class SS_PluginChooser : public QDialog, Ui::SS_PluginChooserBase
    private slots:
       void okPressed();
       void cancelPressed();
-      void selectionChanged(QTreeWidgetItem* item);
+      ///void selectionChanged(QTreeWidgetItem* item);
+      void selectionChanged();
       void doubleClicked(QTreeWidgetItem* item);
 
    private:
@@ -154,6 +166,7 @@ class SS_PluginFront : public QGroupBox
       void clearPluginDisplay();
       void setParameterValue(int param, int val);
       void setRetGain(int val);
+      void setOnOff(bool val);
 
    protected:
       virtual QSize sizeHint() const;

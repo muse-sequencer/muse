@@ -35,6 +35,7 @@
 #include "muse/midi.h"
 #include "muse/midictrl.h"
 
+#include "common_defs.h"
 #include "vam.h"
 #include "vamgui.h"
 #include "libsynti/mono.h"
@@ -165,7 +166,8 @@ class VAM : public MessMono {
       float velocity;
 
       //int idata[NUM_CONTROLLER];  // buffer for init data
-      int *idata;
+      //int *idata;
+      unsigned char* idata;
 
       EnvelopeGenerator dco1_env;
       EnvelopeGenerator dco2_env;
@@ -192,7 +194,10 @@ class VAM : public MessMono {
 
     public:
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const;
-      virtual void getInitData(int* n, const unsigned char**p) const;
+      //virtual void getInitData(int* n, const unsigned char**p) const;
+      virtual void getInitData(int* n, const unsigned char**p);
+      // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
+      virtual int oldMidiStateHeader(const unsigned char** data) const;
       //virtual bool guiVisible() const;
       //virtual void showGui(bool);
       //virtual bool hasGui() const { return true; }
@@ -207,7 +212,7 @@ class VAM : public MessMono {
       virtual bool setController(int channel, int ctrl, int val);
       virtual bool sysex(int, const unsigned char*);
       VAM(int sr);
-      ~VAM();
+      virtual ~VAM();
       bool init(const char* name);
 };
 
@@ -227,7 +232,7 @@ float VAM::lin2exp[VAM::LIN2EXP_SIZE];
 VAM::VAM(int sr)
   : MessMono()
       {
-      idata = new int[NUM_CONTROLLER];
+      idata = new unsigned char[3 + NUM_CONTROLLER * sizeof(int)];   
       setSampleRate(sr);
       gui = 0;
       }
@@ -238,6 +243,10 @@ VAM::VAM(int sr)
 
 VAM::~VAM()
       {
+      if (gui)
+            delete gui;
+      //delete idata;   
+      delete [] idata;   // p4.0.27
       --useCount;
       if (useCount == 0) {
           delete[] sin_tbl;
@@ -247,6 +256,13 @@ VAM::~VAM()
           }
       }
 
+int VAM::oldMidiStateHeader(const unsigned char** data) const 
+{
+  unsigned char const d[3] = {MUSE_SYNTH_SYSEX_MFG_ID, VAM_UNIQUE_ID, INIT_DATA_CMD};
+  *data = &d[0];
+  return 3; 
+}
+        
 //---------------------------------------------------------
 //   curTime
 //---------------------------------------------------------
@@ -438,11 +454,16 @@ void VAM::processMessages()
     if (ev.type() == ME_CONTROLLER) 
     {
       // process local?
-      setController(ev.dataA() & 0xfff, ev.dataB());
+      //setController(ev.dataA() & 0xfff, ev.dataB());
+      setController(ev.dataA(), ev.dataB());
       sendEvent(ev);
     }
     else
+    {
+      #ifdef VAM_DEBUG
       printf("VAM::process(): unknown event\n");
+      #endif
+    }  
   }
 }
   
@@ -604,7 +625,17 @@ int VAM::getControllerInfo(int id, const char** name, int* controller,
 
 bool VAM::setController(int /*channel*/, int ctrl, int data)
       {
-      setController(ctrl & 0xfff, data);
+      //setController(ctrl & 0xfff, data);
+      // p4.0.27
+      if(ctrl < VAM_FIRST_CTRL || ctrl > VAM_LAST_CTRL)
+      {
+        #ifdef VAM_DEBUG
+        printf("VAM::setController Invalid controller number 0x%x\n", ctrl);
+        #endif
+        return false;
+      }
+      setController(ctrl, data);
+      
       MidiPlayEvent ev(0, 0, channel, ME_CONTROLLER, ctrl, data);
       gui->writeEvent(ev);
       return false;
@@ -612,6 +643,15 @@ bool VAM::setController(int /*channel*/, int ctrl, int data)
 
 void VAM::setController(int ctrl, int data)
       {
+      // p4.0.27
+      if(ctrl < VAM_FIRST_CTRL || ctrl > VAM_LAST_CTRL)
+      {
+        #ifdef VAM_DEBUG
+        printf("VAM: Invalid controller number 0x%x\n", ctrl);
+        #endif
+        return;
+      }
+      
       //	fprintf(stderr, "ctrl: %d data: %d\n", ctrl, data);
       int maxval = 128*128-1;
       double normval = double(data) / double(maxval);
@@ -723,22 +763,34 @@ void VAM::setController(int ctrl, int data)
               if(dco2.pw == 1.0) dco2.pw = 0.99;
               break;
           default:
-              printf("VAM: set unknown Ctrl 0x%x to 0x%x\n", ctrl, data);
-              break;
+              //#ifdef VAM_DEBUG
+              //printf("VAM: set unknown Ctrl 0x%x to 0x%x\n", ctrl, data);
+              //#endif
+              //break;
+              return;   // p4.0.27
           }
-      controller[ctrl] = data;
+      //controller[ctrl] = data;
+      controller[ctrl - VAM_FIRST_CTRL] = data;        // p4.0.27
       }
 
 //---------------------------------------------------------
 //   getInitData
 //---------------------------------------------------------
 
-void VAM::getInitData(int* n, const unsigned char**p) const
-      {
+//void VAM::getInitData(int* n, const unsigned char**p) const
+void VAM::getInitData(int* n, const unsigned char**p) 
+{
+      // p4.0.27
+      *n = 3 + NUM_CONTROLLER * sizeof(int);
+      idata[0] = MUSE_SYNTH_SYSEX_MFG_ID;         // Global MusE Soft Synth Manufacturer ID
+      idata[1] = VAM_UNIQUE_ID;                   // VAM
+      idata[2] = INIT_DATA_CMD;                   // Initialization command
+      int* d = (int*)&idata[3];
+      
       //int i;//prevent of compiler warning: unused variable
-      int* d = idata;
+      //int* d = idata;
       //int maxval = 128*128-1;	//prevent of compiler warning: unused variable
-      *n = NUM_CONTROLLER * sizeof(int);
+      // *n = NUM_CONTROLLER * sizeof(int);
 
 // //       setController(0, DCO1_PITCHMOD, p++);
 //       *d++ = int(dco1.pitchmod+8191*341.333);
@@ -935,51 +987,68 @@ void VAM::getInitData(int* n, const unsigned char**p) const
       *d++ = gui->getController(DCO2_PW);
 
       *p = (unsigned char*)idata;
-      }
+}
 
 //---------------------------------------------------------
 //   sysex
 //---------------------------------------------------------
 
 bool VAM::sysex(int n, const unsigned char* data)
+{
+      // p4.0.27
+      if(unsigned(n) == (3 + NUM_CONTROLLER * sizeof(int))) 
       {
-      n=n;    // remove warning of unused variable
-      int *p= (int*)data;
-      setController(0, DCO1_PITCHMOD, *p++);
-      setController(0, DCO2_PITCHMOD, *p++);
-      setController(0, DCO1_WAVEFORM, *p++);
-      setController(0, DCO2_WAVEFORM, *p++);
-      setController(0, DCO1_FM, *p++);
-      setController(0, DCO2_FM, *p++);
-      setController(0, DCO1_PWM, *p++);
-      setController(0, DCO2_PWM, *p++);
-      setController(0, DCO1_ATTACK, *p++);
-      setController(0, DCO2_ATTACK, *p++);
-      setController(0, DCO1_DECAY, *p++);
-      setController(0, DCO2_DECAY, *p++);
-      setController(0, DCO1_SUSTAIN, *p++ );
-      setController(0, DCO2_SUSTAIN, *p++ );
-      setController(0, DCO1_RELEASE, *p++);
-      setController(0, DCO2_RELEASE, *p++);
-      setController(0, LFO_FREQ, *p++);
-      setController(0, LFO_WAVEFORM, *p++);
-      setController(0, FILT_ENV_MOD, *p++);
-      setController(0, FILT_KEYTRACK, *p++);
-      setController(0, FILT_RES, *p++);
-      setController(0, FILT_ATTACK, *p++);
-      setController(0, FILT_DECAY, *p++);
-      setController(0, FILT_SUSTAIN, *p++);
-      setController(0, FILT_RELEASE, *p++);
-      setController(0, DCO2ON, *p++);
-      setController(0, FILT_INVERT, *p++);
-      setController(0, FILT_CUTOFF, *p++);
-      setController(0, DCO1_DETUNE, *p++);
-      setController(0, DCO2_DETUNE, *p++);
-      setController(0, DCO1_PW, *p++);
-      setController(0, DCO2_PW, *p++);
-
-      return false;
+        if (data[0] == MUSE_SYNTH_SYSEX_MFG_ID)              //  Global MusE Soft Synth Manufacturer ID
+        {
+          if (data[1] == VAM_UNIQUE_ID)                      // VAM
+          {
+            if (data[2] == INIT_DATA_CMD)                  // Initialization command
+            {  
+              int *p= (int*)(data + 3);
+              setController(0, DCO1_PITCHMOD, *p++);
+              setController(0, DCO2_PITCHMOD, *p++);
+              setController(0, DCO1_WAVEFORM, *p++);
+              setController(0, DCO2_WAVEFORM, *p++);
+              setController(0, DCO1_FM, *p++);
+              setController(0, DCO2_FM, *p++);
+              setController(0, DCO1_PWM, *p++);
+              setController(0, DCO2_PWM, *p++);
+              setController(0, DCO1_ATTACK, *p++);
+              setController(0, DCO2_ATTACK, *p++);
+              setController(0, DCO1_DECAY, *p++);
+              setController(0, DCO2_DECAY, *p++);
+              setController(0, DCO1_SUSTAIN, *p++ );
+              setController(0, DCO2_SUSTAIN, *p++ );
+              setController(0, DCO1_RELEASE, *p++);
+              setController(0, DCO2_RELEASE, *p++);
+              setController(0, LFO_FREQ, *p++);
+              setController(0, LFO_WAVEFORM, *p++);
+              setController(0, FILT_ENV_MOD, *p++);
+              setController(0, FILT_KEYTRACK, *p++);
+              setController(0, FILT_RES, *p++);
+              setController(0, FILT_ATTACK, *p++);
+              setController(0, FILT_DECAY, *p++);
+              setController(0, FILT_SUSTAIN, *p++);
+              setController(0, FILT_RELEASE, *p++);
+              setController(0, DCO2ON, *p++);
+              setController(0, FILT_INVERT, *p++);
+              setController(0, FILT_CUTOFF, *p++);
+              setController(0, DCO1_DETUNE, *p++);
+              setController(0, DCO2_DETUNE, *p++);
+              setController(0, DCO1_PW, *p++);
+              setController(0, DCO2_PW, *p++);
+              return false;
+            }
+          }  
+        }
       }
+      
+      #ifdef VAM_DEBUG
+      printf("VAM: unknown sysex\n");
+      #endif
+      
+      return false;
+}
 
 //---------------------------------------------------------
 //   nativeGuiVisible

@@ -5,6 +5,7 @@
 //
 //
 // Author: Mathias Lundgren <lunar_shuttle@users.sf.net>, (C) 2004
+//  Contributer: (C) Copyright 2011 Tim E. Real (terminator356 at users.sourceforge.net)
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -56,18 +57,24 @@ SS_PluginChooser::SS_PluginChooser(QWidget* parent)
             }
       connect(okButton, SIGNAL(pressed()), SLOT(okPressed()));
       connect(cancelButton, SIGNAL(pressed()), SLOT(cancelPressed()));
-      connect(effectsListView, SIGNAL(selectionChanged(QTreeWidgetItem*)), SLOT(selectionChanged(QTreeWidgetItem*)));
-      connect(effectsListView, SIGNAL(doubleClicked(QTreeWidgetItem*)), SLOT(doubleClicked(QTreeWidgetItem*)));
+      
+      //connect(effectsListView, SIGNAL(selectionChanged(QTreeWidgetItem*)), SLOT(selectionChanged(QTreeWidgetItem*)));
+      //connect(effectsListView, SIGNAL(doubleClicked(QTreeWidgetItem*)), SLOT(doubleClicked(QTreeWidgetItem*)));
+      connect(effectsListView, SIGNAL(itemSelectionChanged()), SLOT(selectionChanged()));                            // p4.0.27
+      connect(effectsListView, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), SLOT(doubleClicked(QTreeWidgetItem*)));  //
+      
       SS_TRACE_OUT
       }
 
 /*!
     \fn SS_PluginChooser::selectionChanged(QListViewItem* item)
  */
-void SS_PluginChooser::selectionChanged(QTreeWidgetItem* item)
+//void SS_PluginChooser::selectionChanged(QTreeWidgetItem* item)
+void SS_PluginChooser::selectionChanged()
       {
       SS_TRACE_IN
-      selectedItem  = item;
+      //selectedItem  = item;
+      selectedItem = effectsListView->currentItem();  
       SS_TRACE_OUT
       }
 
@@ -95,9 +102,10 @@ void SS_PluginChooser::cancelPressed()
 /*!
     \fn SS_PluginChooser::doubleClicked(QListViewItem* item)
  */
-void SS_PluginChooser::doubleClicked(QTreeWidgetItem* /*item*/)
+void SS_PluginChooser::doubleClicked(QTreeWidgetItem* item)
       {
       SS_TRACE_IN
+      selectedItem = item;    // p4.0.27 Tim
       selectedPlugin = findSelectedPlugin();
       SS_TRACE_OUT
       done(QDialog::Accepted);
@@ -109,6 +117,8 @@ void SS_PluginChooser::doubleClicked(QTreeWidgetItem* /*item*/)
 LadspaPlugin* SS_PluginChooser::findSelectedPlugin()
       {
       SS_TRACE_IN
+      if(!selectedItem)        // p4.0.27 Tim
+        return 0;
       LadspaPlugin* selected = 0;
       for (iPlugin i=plugins.begin(); i != plugins.end(); i++) {
             if ((*i)->name() == selectedItem->text(SS_PLUGINCHOOSER_NAMECOL))
@@ -299,7 +309,7 @@ void SS_PluginFront::updatePluginValue(unsigned k)
             }
 
       iPlugin i;
-      for (i = plugins.begin(); j != k; i++, j++);
+      for (i = plugins.begin(); j != k; i++, j++) ;
       plugin = (LadspaPlugin*) *(i);
       setPluginName(plugin->label());
       outGainSlider->setEnabled(true);
@@ -307,7 +317,7 @@ void SS_PluginFront::updatePluginValue(unsigned k)
       expandButton->setEnabled(true);
       pluginName->setEnabled(true);
       onOff->setEnabled(true);
-      onOff->setChecked(true);
+      ///onOff->setChecked(true);
       SS_TRACE_OUT
       }
 
@@ -358,6 +368,15 @@ void SS_PluginFront::setRetGain(int val)
       outGainSlider->blockSignals(false);
       }
 
+/*!
+    \fn SS_PluginFront::setOnOff(bool val)
+ */
+void SS_PluginFront::setOnOff(bool val)
+      {
+      onOff->blockSignals(true);
+      onOff->setChecked(val);
+      onOff->blockSignals(false);
+      }
 /*!
     \fn SS_PluginFront::expandButtonPressed()
  */

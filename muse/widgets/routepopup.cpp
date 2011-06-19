@@ -848,7 +848,7 @@ void RoutePopupMenu::popupActivated(QAction* action)
             //if(!(md->rwFlags() & 2))
             //if(!(md->rwFlags() & (gIsOutRoutingPopupMenu ? 1 : 2)))
             if(md && !(md->rwFlags() & (_isOutMenu ? 1 : 2)))   
-              return;
+                return;
             
             int chmask = 0;                   
             ciRoute iir = rl->begin();
@@ -1058,7 +1058,9 @@ void RoutePopupMenu::prepare()
       for( ; pi < MIDI_PORTS; ++pi)
       {
         MidiDevice* md = midiPorts[pi].device();
-        if(md && !md->isSynti() && (md->rwFlags() & 2))
+        //if(md && !md->isSynti() && (md->rwFlags() & 2))
+        //if(md && (md->rwFlags() & 2))   // p4.0.27
+        if(md && (md->rwFlags() & 2 || md->isSynti()) )  // p4.0.27
           break;
       }
       if(pi == MIDI_PORTS)
@@ -1085,10 +1087,12 @@ void RoutePopupMenu::prepare()
         //  continue;
         
         // Do not list synth devices!
-        if(md && md->isSynti())
-          continue;
-          
-        if(md && !(md->rwFlags() & 2))
+        ///if(md && md->isSynti())
+        ///  continue;
+        ///if(md && !(md->rwFlags() & 2))
+        ///  continue;
+        // p4.0.27 Go ahead. Synths esp MESS send out stuff. 
+        if( md && !(md->rwFlags() & 2) && !md->isSynti() )
           continue;
           
         //printf("MusE::prepareRoutingPopupMenu adding submenu portnum:%d\n", i);
