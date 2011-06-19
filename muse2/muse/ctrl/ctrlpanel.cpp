@@ -946,7 +946,7 @@ void CtrlPanel::ctrlRightClicked(const QPoint& p, int /*id*/)
   //  _knob->selectFaceColor(true);
   //if(_dnum == -1)
   //  return;
-  if(!editor->curCanvasPart())
+  if(!editor->curCanvasPart() || !_ctrl)
     return;  
     
   int cdi = editor->curDrumInstrument();

@@ -32,6 +32,7 @@
 
 #include <list>
 
+#include "common_defs.h"
 #include "vamgui.h"
 #include "vam.h"
 
@@ -187,38 +188,39 @@ VAMGui::VAMGui()
       savePresetsToFile->setIcon(QIcon(*saveasIcon));
       deletePreset->setIcon(QIcon(*deleteIcon));
 
-	dctrl[DCO1_PITCHMOD] = SynthGuiCtrl(PitchModS, LCDNumber1,  SynthGuiCtrl::SLIDER);
-	dctrl[DCO1_WAVEFORM] = SynthGuiCtrl(Waveform, 0, SynthGuiCtrl::COMBOBOX);
-	dctrl[DCO1_FM] = SynthGuiCtrl(FMS, LCDNumber1_2, SynthGuiCtrl::SLIDER);
-	dctrl[DCO1_PWM] = SynthGuiCtrl(PWMS, LCDNumber1_3, SynthGuiCtrl::SLIDER);
-	dctrl[DCO1_ATTACK] = SynthGuiCtrl(AttackS, LCDNumber1_3_2, SynthGuiCtrl::SLIDER);
-	dctrl[DCO1_DECAY] = SynthGuiCtrl(DecayS, LCDNumber1_3_2_2, SynthGuiCtrl::SLIDER);
-	dctrl[DCO1_SUSTAIN] = SynthGuiCtrl(SustainS, LCDNumber1_3_2_3, SynthGuiCtrl::SLIDER);
-	dctrl[DCO1_RELEASE] = SynthGuiCtrl(ReleaseS, LCDNumber1_3_2_4, SynthGuiCtrl::SLIDER);
-	dctrl[DCO2_PITCHMOD] = SynthGuiCtrl(PitchModS2, LCDNumber1_4, SynthGuiCtrl::SLIDER);
-	dctrl[DCO2_WAVEFORM] = SynthGuiCtrl(Waveform2, 0, SynthGuiCtrl::COMBOBOX);
-	dctrl[DCO2_FM] = SynthGuiCtrl(FMS2, LCDNumber1_2_2, SynthGuiCtrl::SLIDER);
-	dctrl[DCO2_PWM] = SynthGuiCtrl(PWMS2, LCDNumber1_3_3, SynthGuiCtrl::SLIDER);
-	dctrl[DCO2_ATTACK] = SynthGuiCtrl(AttackS2, LCDNumber1_3_2_5, SynthGuiCtrl::SLIDER);
-	dctrl[DCO2_DECAY] = SynthGuiCtrl(DecayS2, LCDNumber1_3_2_2_2, SynthGuiCtrl::SLIDER);
-	dctrl[DCO2_SUSTAIN] = SynthGuiCtrl(SustainS2, LCDNumber1_3_2_3_2, SynthGuiCtrl::SLIDER);
-	dctrl[DCO2_RELEASE] = SynthGuiCtrl(ReleaseS2, LCDNumber1_3_2_4_2, SynthGuiCtrl::SLIDER);
-	dctrl[LFO_FREQ] = SynthGuiCtrl(FreqS, LCDNumber1_5, SynthGuiCtrl::SLIDER);
-	dctrl[LFO_WAVEFORM] = SynthGuiCtrl(Waveform2_2, 0, SynthGuiCtrl::COMBOBOX);
-	dctrl[FILT_ENV_MOD] = SynthGuiCtrl(EnvModS, LCDNumber1_5_3, SynthGuiCtrl::SLIDER);
-	dctrl[FILT_KEYTRACK] = SynthGuiCtrl(KeyTrack, 0, SynthGuiCtrl::SWITCH);
-	dctrl[FILT_RES] = SynthGuiCtrl(ResS, LCDNumber1_5_5,  SynthGuiCtrl::SLIDER);
-	dctrl[FILT_ATTACK] = SynthGuiCtrl(AttackS3, LCDNumber1_3_2_5_2, SynthGuiCtrl::SLIDER);
-	dctrl[FILT_DECAY] = SynthGuiCtrl(DecayS3, LCDNumber1_3_2_2_2_2, SynthGuiCtrl::SLIDER);
-	dctrl[FILT_SUSTAIN] = SynthGuiCtrl(SustainS3, LCDNumber1_3_2_3_2_2, SynthGuiCtrl::SLIDER);
-	dctrl[FILT_RELEASE] = SynthGuiCtrl(ReleaseS3, LCDNumber1_3_2_4_2_2, SynthGuiCtrl::SLIDER);
-	dctrl[DCO2ON] = SynthGuiCtrl(DCO2On, 0, SynthGuiCtrl::SWITCH);
-	dctrl[FILT_INVERT] = SynthGuiCtrl(FilterInvert, 0, SynthGuiCtrl::SWITCH);
-	dctrl[FILT_CUTOFF] = SynthGuiCtrl(CutoffS, LCDNumber1_5_5_2, SynthGuiCtrl::SLIDER);
-	dctrl[DCO1_DETUNE] = SynthGuiCtrl(DetuneS, LCDNumber1_6, SynthGuiCtrl::SLIDER);
-	dctrl[DCO2_DETUNE] = SynthGuiCtrl(DetuneS2, LCDNumber1_6_2, SynthGuiCtrl::SLIDER);
-	dctrl[DCO1_PW] = SynthGuiCtrl(PWS, LCDNumber1_2_3, SynthGuiCtrl::SLIDER);
-	dctrl[DCO2_PW] = SynthGuiCtrl(PWS2, LCDNumber1_2_4, SynthGuiCtrl::SLIDER);
+        // p4.0.27 First ctrl offset.
+	dctrl[DCO1_PITCHMOD - VAM_FIRST_CTRL] = SynthGuiCtrl(PitchModS, LCDNumber1,  SynthGuiCtrl::SLIDER);
+	dctrl[DCO1_WAVEFORM - VAM_FIRST_CTRL] = SynthGuiCtrl(Waveform, 0, SynthGuiCtrl::COMBOBOX);
+	dctrl[DCO1_FM - VAM_FIRST_CTRL] = SynthGuiCtrl(FMS, LCDNumber1_2, SynthGuiCtrl::SLIDER);
+	dctrl[DCO1_PWM - VAM_FIRST_CTRL] = SynthGuiCtrl(PWMS, LCDNumber1_3, SynthGuiCtrl::SLIDER);
+	dctrl[DCO1_ATTACK - VAM_FIRST_CTRL] = SynthGuiCtrl(AttackS, LCDNumber1_3_2, SynthGuiCtrl::SLIDER);
+	dctrl[DCO1_DECAY - VAM_FIRST_CTRL] = SynthGuiCtrl(DecayS, LCDNumber1_3_2_2, SynthGuiCtrl::SLIDER);
+	dctrl[DCO1_SUSTAIN - VAM_FIRST_CTRL] = SynthGuiCtrl(SustainS, LCDNumber1_3_2_3, SynthGuiCtrl::SLIDER);
+	dctrl[DCO1_RELEASE - VAM_FIRST_CTRL] = SynthGuiCtrl(ReleaseS, LCDNumber1_3_2_4, SynthGuiCtrl::SLIDER);
+	dctrl[DCO2_PITCHMOD - VAM_FIRST_CTRL] = SynthGuiCtrl(PitchModS2, LCDNumber1_4, SynthGuiCtrl::SLIDER);
+	dctrl[DCO2_WAVEFORM - VAM_FIRST_CTRL] = SynthGuiCtrl(Waveform2, 0, SynthGuiCtrl::COMBOBOX);
+	dctrl[DCO2_FM - VAM_FIRST_CTRL] = SynthGuiCtrl(FMS2, LCDNumber1_2_2, SynthGuiCtrl::SLIDER);
+	dctrl[DCO2_PWM - VAM_FIRST_CTRL] = SynthGuiCtrl(PWMS2, LCDNumber1_3_3, SynthGuiCtrl::SLIDER);
+	dctrl[DCO2_ATTACK - VAM_FIRST_CTRL] = SynthGuiCtrl(AttackS2, LCDNumber1_3_2_5, SynthGuiCtrl::SLIDER);
+	dctrl[DCO2_DECAY - VAM_FIRST_CTRL] = SynthGuiCtrl(DecayS2, LCDNumber1_3_2_2_2, SynthGuiCtrl::SLIDER);
+	dctrl[DCO2_SUSTAIN - VAM_FIRST_CTRL] = SynthGuiCtrl(SustainS2, LCDNumber1_3_2_3_2, SynthGuiCtrl::SLIDER);
+	dctrl[DCO2_RELEASE - VAM_FIRST_CTRL] = SynthGuiCtrl(ReleaseS2, LCDNumber1_3_2_4_2, SynthGuiCtrl::SLIDER);
+	dctrl[LFO_FREQ - VAM_FIRST_CTRL] = SynthGuiCtrl(FreqS, LCDNumber1_5, SynthGuiCtrl::SLIDER);
+	dctrl[LFO_WAVEFORM - VAM_FIRST_CTRL] = SynthGuiCtrl(Waveform2_2, 0, SynthGuiCtrl::COMBOBOX);
+	dctrl[FILT_ENV_MOD - VAM_FIRST_CTRL] = SynthGuiCtrl(EnvModS, LCDNumber1_5_3, SynthGuiCtrl::SLIDER);
+	dctrl[FILT_KEYTRACK - VAM_FIRST_CTRL] = SynthGuiCtrl(KeyTrack, 0, SynthGuiCtrl::SWITCH);
+	dctrl[FILT_RES - VAM_FIRST_CTRL] = SynthGuiCtrl(ResS, LCDNumber1_5_5,  SynthGuiCtrl::SLIDER);
+	dctrl[FILT_ATTACK - VAM_FIRST_CTRL] = SynthGuiCtrl(AttackS3, LCDNumber1_3_2_5_2, SynthGuiCtrl::SLIDER);
+	dctrl[FILT_DECAY - VAM_FIRST_CTRL] = SynthGuiCtrl(DecayS3, LCDNumber1_3_2_2_2_2, SynthGuiCtrl::SLIDER);
+	dctrl[FILT_SUSTAIN - VAM_FIRST_CTRL] = SynthGuiCtrl(SustainS3, LCDNumber1_3_2_3_2_2, SynthGuiCtrl::SLIDER);
+	dctrl[FILT_RELEASE - VAM_FIRST_CTRL] = SynthGuiCtrl(ReleaseS3, LCDNumber1_3_2_4_2_2, SynthGuiCtrl::SLIDER);
+	dctrl[DCO2ON - VAM_FIRST_CTRL] = SynthGuiCtrl(DCO2On, 0, SynthGuiCtrl::SWITCH);
+	dctrl[FILT_INVERT - VAM_FIRST_CTRL] = SynthGuiCtrl(FilterInvert, 0, SynthGuiCtrl::SWITCH);
+	dctrl[FILT_CUTOFF - VAM_FIRST_CTRL] = SynthGuiCtrl(CutoffS, LCDNumber1_5_5_2, SynthGuiCtrl::SLIDER);
+	dctrl[DCO1_DETUNE - VAM_FIRST_CTRL] = SynthGuiCtrl(DetuneS, LCDNumber1_6, SynthGuiCtrl::SLIDER);
+	dctrl[DCO2_DETUNE - VAM_FIRST_CTRL] = SynthGuiCtrl(DetuneS2, LCDNumber1_6_2, SynthGuiCtrl::SLIDER);
+	dctrl[DCO1_PW - VAM_FIRST_CTRL] = SynthGuiCtrl(PWS, LCDNumber1_2_3, SynthGuiCtrl::SLIDER);
+	dctrl[DCO2_PW - VAM_FIRST_CTRL] = SynthGuiCtrl(PWS2, LCDNumber1_2_4, SynthGuiCtrl::SLIDER);
 
 
 	map = new QSignalMapper(this);
@@ -275,11 +277,22 @@ void VAMGui::ctrlChanged(int idx)
 	else if (ctrl->type == SynthGuiCtrl::SWITCH) {
 		val = ((QCheckBox*)(ctrl->editor))->isChecked();
 	      }
-      sendController(0, idx + CTRL_RPN14_OFFSET, val);
+      //sendController(0, idx + CTRL_RPN14_OFFSET, val);
+      sendController(0, idx + VAM_FIRST_CTRL, val);          // p4.0.27
       }
 
 int VAMGui::getController(int idx)
       {
+      // p4.0.27
+      if(idx < VAM_FIRST_CTRL || idx > VAM_LAST_CTRL)
+      {
+        //#ifdef VAM_DEBUG
+        printf("VAMGui:: invalid controller number %d\n", idx);
+        //#endif
+        return 0;
+      }
+      idx -= VAM_FIRST_CTRL;  
+      
       SynthGuiCtrl* ctrl = &dctrl[idx];
       int val = 0;
       if (ctrl->type == SynthGuiCtrl::SLIDER) {
@@ -302,8 +315,9 @@ int VAMGui::getControllerInfo(int id, const char** name, int* controller,
       if (id >= NUM_CONTROLLER)
             return 0;
 
+      //*controller = id;
+      *controller = id + VAM_FIRST_CTRL;    // p4.0.27
 
-      *controller = id;
       *name = vam_ctrl_names[id];
       const SynthGuiCtrl* ctrl = (const SynthGuiCtrl*)&dctrl[id];
       //int val = 0;
@@ -357,8 +371,9 @@ void VAMGui::activatePreset(Preset* preset)
 		fprintf(stderr, "internal error 1\n");
 		exit(-1);
 	}
-	for (unsigned int i = 0; i < sizeof(dctrl)/sizeof(*dctrl); ++i) {
-		setParam(i, preset->ctrl[i]);
+	//for (unsigned int i = 0; i < sizeof(dctrl)/sizeof(*dctrl); ++i) {
+        for (unsigned int i = 0; i < NUM_CONTROLLER; ++i) {                 // p4.0.27
+ 		setParam(i, preset->ctrl[i]);
 		ctrlChanged(i);
 	}
 }
@@ -443,9 +458,9 @@ void VAMGui::setPreset(Preset* preset)
 	//
 #if 0
 	putchar(0xf0);
-	putchar(0x7c);    // mess
-	putchar(0x2);     // vam
-	putchar(0x3);     // setPreset
+	putchar(MUSE_SYNTH_SYSEX_MFG_ID);    // mess
+	putchar(VAM_UNIQUE_ID);              // vam
+	putchar(0x3);                        // setPreset
         QByteArray ba = preset->name.toLatin1();
 	const char* name = ba.constData();
 	while (*name)
@@ -467,8 +482,11 @@ void VAMGui::setPreset(Preset* preset)
 
 void VAMGui::setParam(int param, int val)
       {
-	if (param >= int(sizeof(dctrl)/sizeof(*dctrl))) {
+	//if (param >= int(sizeof(dctrl)/sizeof(*dctrl))) {
+        if (param >= NUM_CONTROLLER) {                       // p4.0.27
+                #ifdef VAM_DEBUG
 		fprintf(stderr, "vam: set unknown parameter 0x%x to 0x%x\n", param, val);
+                #endif
 		return;
 	      }
 	SynthGuiCtrl* ctrl = &dctrl[param];
@@ -496,15 +514,17 @@ void VAMGui::setParam(int param, int val)
 //   sysexReceived
 //---------------------------------------------------------
 
-void VAMGui::sysexReceived(const unsigned char* data, int len)
+void VAMGui::sysexReceived(const unsigned char* /*data*/, int /*len*/)
 {
-	if (len >= 4) {
+    // Removed, this is not used.   p4.0.27
+    /*	
+        if (len >= 4) {
 		//---------------------------------------------
 		//  MusE Soft Synth
 		//---------------------------------------------
 
-		if (data[0] == 0x7c) {
-			if (data[1] == 2) {     // vam
+		if (data[0] == MUSE_SYNTH_SYSEX_MFG_ID) {
+			if (data[1] == VAM_UNIQUE_ID) {     // vam
 				if (data[2] == 2) {        // parameter response
 					if (len != 6) {
 						fprintf(stderr, "vam gui: bad sysEx len\n");
@@ -531,10 +551,15 @@ void VAMGui::sysexReceived(const unsigned char* data, int len)
 			}
 		}
 	}
-	fprintf(stderr, "vam gui: unknown sysex received, len %d:\n", len);
+        
+        #ifdef VAM_DEBUG
+        fprintf(stderr, "vam gui: unknown sysex received, len %d:\n", len);
 	for (int i = 0; i < len; ++i)
 		fprintf(stderr, "%02x ", data[i]);
 	fprintf(stderr, "\n");
+        #endif
+  */    
+        
 }
 
 //---------------------------------------------------------
@@ -544,12 +569,28 @@ void VAMGui::sysexReceived(const unsigned char* data, int len)
 void VAMGui::processEvent(const MidiPlayEvent& ev)
       {
       if (ev.type() == ME_CONTROLLER)
-            setParam(ev.dataA() & 0xfff, ev.dataB());
+      {
+            //setParam(ev.dataA() & 0xfff, ev.dataB());
+            // p4.0.27
+            int ctl = ev.dataA();
+            if(ctl < VAM_FIRST_CTRL || ctl > VAM_LAST_CTRL)
+            {
+              //#ifdef VAM_DEBUG
+              printf("VAMGui:: invalid controller number %d\n", ctl);
+              //#endif
+              return;
+            }
+            setParam(ctl - VAM_FIRST_CTRL, ev.dataB());
+            
+      }      
       else if (ev.type() == ME_SYSEX)
-            sysexReceived(ev.data(), ev.len())
-            ;
+            sysexReceived(ev.data(), ev.len());
       else
+      {
+            #ifdef VAM_DEBUG
             printf("VAMGui::illegal event type received\n");
+            #endif
+      }      
       }
 
 //---------------------------------------------------------

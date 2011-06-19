@@ -24,8 +24,8 @@
 // Turn on debugging messages
 //#define DSSI_DEBUG 
 
-// Support vst state saving/loading with vst chunks. Requires patches to DSSI and DSSI-vst!
-//#define DSSI_VST_CHUNK_SUPPORT
+// Support vst state saving/loading with vst chunks. 
+//#define DSSI_VST_CHUNK_SUPPORT    
 
 #include <string.h>
 #include <signal.h>
@@ -1350,6 +1350,13 @@ DssiSynthIF::~DssiSynthIF()
         delete[] controlsOut;
 }
 
+int DssiSynthIF::oldMidiStateHeader(const unsigned char** data) const 
+{
+  unsigned char const d[2] = {MUSE_SYNTH_SYSEX_MFG_ID, DSSI_SYNTH_UNIQUE_ID};
+  *data = &d[0];
+  return 2; 
+}
+        
 //---------------------------------------------------------
 //   getParameter
 //---------------------------------------------------------
@@ -1433,38 +1440,45 @@ void DssiSynthIF::write(int level, Xml& xml) const
       //bool vstsaved = false;
 
 #ifdef DSSI_VST_CHUNK_SUPPORT
-      //---------------------------------------------
-      // dump current state of synth
-      //---------------------------------------------
-      printf("dumping DSSI custom data! %d\n", synth->dssi->getCustomData);
-
-      // this is only needed and supported if
-      // we are talking to a VST plugin at the other end.
-      std::string name = synth->dssi->LADSPA_Plugin->Name;
-      if ((name.length()> 4) && name.substr(name.length() - 4) == " VST")
+      if(synth->dssi->getCustomData)
       {
-        printf("is vst plugin, commencing data dump, apiversion=%d!\n", synth->dssi->DSSI_API_Version);
-        unsigned long len = 0;
-        void* p = 0;
-        synth->dssi->getCustomData(handle,&p, &len);
-        if (len) {
-              xml.tag(level++, "midistate");
-              xml.nput(level++, "<event type=\"%d\"", Sysex);
-              xml.nput(" datalen=\"%d\">\n", len+7 /*VSTSAVE*/);
-              xml.nput(level, "");
-              xml.nput("56 53 54 53 41 56 45 "); // embed a save marker "string 'VSTSAVE'
-              for (long unsigned int i = 0; i < len; ++i) {
-                    if (i && (((i+7) % 16) == 0)) {
-                          xml.nput("\n");
-                          xml.nput(level, "");
-                          }
-                    xml.nput("%02x ", ((char*)(p))[i] & 0xff);
-                    }
-              xml.nput("\n");
-              xml.tag(level--, "/event");
-              xml.etag(level--, "midistate");
-              //vstsaved = true;
-              }
+        //---------------------------------------------
+        // dump current state of synth
+        //---------------------------------------------
+        printf("dumping DSSI custom data! %p\n", synth->dssi->getCustomData);
+  
+        // this is only needed and supported if
+        // we are talking to a VST plugin at the other end.
+        std::string name = synth->dssi->LADSPA_Plugin->Name;
+        if ((name.length()> 4) && name.substr(name.length() - 4) == " VST")
+        {
+          printf("is vst plugin, commencing data dump, apiversion=%d!\n", synth->dssi->DSSI_API_Version);
+          unsigned long len = 0;
+          void* p = 0;
+          synth->dssi->getCustomData(handle,&p, &len);
+          if (len) {
+                //xml.tag(level++, "midistate");
+                xml.tag(level++, "midistate version=\"%d\"", SYNTH_MIDI_STATE_SAVE_VERSION);         // p4.0.27
+                xml.nput(level++, "<event type=\"%d\"", Sysex);
+                //xml.nput(" datalen=\"%d\">\n", len+7 /*VSTSAVE*/);
+                xml.nput(" datalen=\"%d\">\n", len+9 /* 2 bytes header + "VSTSAVE" */);
+                xml.nput(level, "");
+                xml.nput("%02x %02x ", (char)MUSE_SYNTH_SYSEX_MFG_ID, (char)DSSI_SYNTH_UNIQUE_ID);   // p4.0.27 Wrap in a proper header
+                xml.nput("56 53 54 53 41 56 45 "); // embed a save marker "string 'VSTSAVE'
+                for (long unsigned int i = 0; i < len; ++i) {
+                      //if (i && (((i+7) % 16) == 0)) {
+                      if (i && (((i+9) % 16) == 0)) {
+                            xml.nput("\n");
+                            xml.nput(level, "");
+                            }
+                      xml.nput("%02x ", ((char*)(p))[i] & 0xff);
+                      }
+                xml.nput("\n");
+                xml.tag(level--, "/event");
+                xml.etag(level--, "midistate");
+                //vstsaved = true;
+                }
+        }        
       }
 #else
       printf("support for vst chunks not compiled in!\n");
@@ -1922,88 +1936,110 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       event->queue = SND_SEQ_QUEUE_DIRECT;
       snd_seq_ev_set_chanpress(event, chn, a);
     break;
-    case ME_SYSEX:
-      #ifdef DSSI_DEBUG 
-      fprintf(stderr, "DssiSynthIF::processEvent midi event is ME_SYSEX\n");
-      #endif
-      
-      if (QString((const char*)e.data()).startsWith("VSTSAVE")) {
-#ifdef DSSI_VST_CHUNK_SUPPORT
-        printf("loading chunk from sysex %s!\n", e.data()+7);
-        dssi->setCustomData(handle, e.data()+7 /* len of str*/,e.len()-7);
-#else
-        printf("support for vst chunks not compiled in!\n");
-#endif
-        // Event not filled.
-        return false;
-      }
-      /*
-      // p3.3.39 Read the state of current bank and program and all input control values.
-      // TODO: Needs to be better. See write().
-      else 
-      if (QString((const char*)e.data()).startsWith("PARAMSAVE")) 
+    case ME_SYSEX: 
       {
         #ifdef DSSI_DEBUG 
-        fprintf(stderr, "DssiSynthIF::processEvent midi event is ME_SYSEX PARAMSAVE\n");
+        fprintf(stderr, "DssiSynthIF::processEvent midi event is ME_SYSEX\n");
         #endif
         
-        unsigned long dlen = e.len() - 9; // Minus "PARAMSAVE"
-        if(dlen > 0)
+        // Changed p4.0.27
+        const unsigned char* data = e.data();
+        if(e.len() >= 2)
         {
-          //if(dlen < 2 * sizeof(unsigned long))
-          if(dlen < (2 + 2 * sizeof(unsigned long))) // Version major and minor bytes, bank and program.
-            printf("DssiSynthIF::processEvent Error: PARAMSAVE data length does not include at least version major and minor, bank and program!\n");
-          else
+          if(data[0] == MUSE_SYNTH_SYSEX_MFG_ID)
           {
-            // Not required, yet.
-            //char vmaj = *((char*)(e.data() + 9));  // After "PARAMSAVE"
-            //char vmin = *((char*)(e.data() + 10));
-            
-            unsigned long* const ulp = (unsigned long*)(e.data() + 11);  // After "PARAMSAVE" + version major and minor.
-            // TODO: TODO: Set plugin bank and program.
-            _curBank = ulp[0];
-            _curProgram = ulp[1];
-            
-            dlen -= (2 + 2 * sizeof(unsigned long)); // After the version major and minor, bank and program.
-            
-            if(dlen > 0)
+            if(data[1] == DSSI_SYNTH_UNIQUE_ID)
             {
-              if((dlen % sizeof(float)) != 0)
-                printf("DssiSynthIF::processEvent Error: PARAMSAVE float data length not integral multiple of float size!\n");
-              else
+              if(e.len() >= 9)
               {
-                const unsigned long n = dlen / sizeof(float);
-                if(n != synth->_controlInPorts)
-                  printf("DssiSynthIF::processEvent Warning: PARAMSAVE number of floats:%lu != number of controls:%lu\n", n, synth->_controlInPorts);
-                
-                // Point to location after "PARAMSAVE", version major and minor, bank and progam.
-                float* const fp = (float*)(e.data() + 9 + 2 + 2 * sizeof(unsigned long)); 
-                
-                for(unsigned long i = 0; i < synth->_controlInPorts && i < n; ++i)
-                {
-                  const float v = fp[i];
-                  controls[i].val = v;
-                }
-              }
+                //if (QString((const char*)e.data()).startsWith("VSTSAVE")) {
+                if (QString((const char*)(data + 2)).startsWith("VSTSAVE")) {
+#ifdef DSSI_VST_CHUNK_SUPPORT
+                  if(dssi->setCustomData)
+                  {
+                    //printf("loading chunk from sysex %s!\n", e.data()+7);
+                    printf("loading chunk from sysex %s!\n", data+9);
+                    //dssi->setCustomData(handle, e.data()+7 /* len of str*/,e.len()-7);
+                    dssi->setCustomData(handle, (unsigned char*)(data+9) /* len of str*/,e.len()-9);
+                  } 
+#else
+                  printf("support for vst chunks not compiled in!\n");
+#endif
+                  // Event not filled.
+                  return false;
+                }  
+              }  
             }  
           }  
-        }  
-        // Event not filled.
-        return false;
-      }
-      */
-      else
-      {
-        // NOTE: There is a limit on the size of a sysex. Got this: 
-        // "DssiSynthIF::processEvent midi event is ME_SYSEX"
-        // "WARNING: MIDI event of type ? decoded to 367 bytes, discarding"
-        // That might be ALSA doing that.
-        snd_seq_ev_clear(event); 
-        event->queue = SND_SEQ_QUEUE_DIRECT;
-        snd_seq_ev_set_sysex(event, len,
-          //(unsigned char*)ba.data());
-          (unsigned char*)ca);
-      }
+        }
+        /*
+        // p3.3.39 Read the state of current bank and program and all input control values.
+        // TODO: Needs to be better. See write().
+        //else 
+        if (QString((const char*)e.data()).startsWith("PARAMSAVE")) 
+        {
+          #ifdef DSSI_DEBUG 
+          fprintf(stderr, "DssiSynthIF::processEvent midi event is ME_SYSEX PARAMSAVE\n");
+          #endif
+          
+          unsigned long dlen = e.len() - 9; // Minus "PARAMSAVE"
+          if(dlen > 0)
+          {
+            //if(dlen < 2 * sizeof(unsigned long))
+            if(dlen < (2 + 2 * sizeof(unsigned long))) // Version major and minor bytes, bank and program.
+              printf("DssiSynthIF::processEvent Error: PARAMSAVE data length does not include at least version major and minor, bank and program!\n");
+            else
+            {
+              // Not required, yet.
+              //char vmaj = *((char*)(e.data() + 9));  // After "PARAMSAVE"
+              //char vmin = *((char*)(e.data() + 10));
+              
+              unsigned long* const ulp = (unsigned long*)(e.data() + 11);  // After "PARAMSAVE" + version major and minor.
+              // TODO: TODO: Set plugin bank and program.
+              _curBank = ulp[0];
+              _curProgram = ulp[1];
+              
+              dlen -= (2 + 2 * sizeof(unsigned long)); // After the version major and minor, bank and program.
+              
+              if(dlen > 0)
+              {
+                if((dlen % sizeof(float)) != 0)
+                  printf("DssiSynthIF::processEvent Error: PARAMSAVE float data length not integral multiple of float size!\n");
+                else
+                {
+                  const unsigned long n = dlen / sizeof(float);
+                  if(n != synth->_controlInPorts)
+                    printf("DssiSynthIF::processEvent Warning: PARAMSAVE number of floats:%lu != number of controls:%lu\n", n, synth->_controlInPorts);
+                  
+                  // Point to location after "PARAMSAVE", version major and minor, bank and progam.
+                  float* const fp = (float*)(e.data() + 9 + 2 + 2 * sizeof(unsigned long)); 
+                  
+                  for(unsigned long i = 0; i < synth->_controlInPorts && i < n; ++i)
+                  {
+                    const float v = fp[i];
+                    controls[i].val = v;
+                  }
+                }
+              }  
+            }  
+          }  
+          // Event not filled.
+          return false;
+        }
+        */
+        //else
+        {
+          // NOTE: There is a limit on the size of a sysex. Got this: 
+          // "DssiSynthIF::processEvent midi event is ME_SYSEX"
+          // "WARNING: MIDI event of type ? decoded to 367 bytes, discarding"
+          // That might be ALSA doing that.
+          snd_seq_ev_clear(event); 
+          event->queue = SND_SEQ_QUEUE_DIRECT;
+          snd_seq_ev_set_sysex(event, len,
+            //(unsigned char*)ba.data());
+            (unsigned char*)ca);
+        }
+      }  
     break;
     default:
       if(debugMsg)
@@ -3251,7 +3287,7 @@ int DssiSynthIF::oscMidi(int a, int b, int c)
         MidiPlayEvent event(0, port, channel, a, b, c);
       
         #ifdef DSSI_DEBUG 
-        fprintf(stderr, "DssiSynthIF::oscMidi midi event chn:%d a:%d b:%d\n", event.channel(), event.dataA(), event.dataB());
+        printf(stderr, "DssiSynthIF::oscMidi midi event chn:%d a:%d b:%d\n", event.channel(), event.dataA(), event.dataB());  
         #endif
         
         midiPorts[port].sendEvent(event);

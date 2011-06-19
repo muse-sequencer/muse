@@ -333,6 +333,7 @@ void removeMidiInstrument(const MidiInstrument* instr)
 
 void MidiInstrument::init()
       {
+      _tmpMidiStateVersion = 1; // Assume old version. readMidiState will overwrite anyway.
       _nullvalue = -1;
       _initScript = 0;
       _midiInit  = new EventList();
@@ -675,9 +676,44 @@ void Patch::write(int level, Xml& xml)
 //---------------------------------------------------------
 
 void MidiInstrument::readMidiState(Xml& xml)
-      {
-      _midiState->read(xml, "midistate", true);
-      }
+{
+  ///_midiState->read(xml, "midistate", true);
+      
+  // p4.0.27 A kludge to support old midistates by wrapping them in the proper header.
+  _tmpMidiStateVersion = 1;    // Assume old (unmarked) first version 1.
+  for (;;) 
+  {
+    Xml::Token token = xml.parse();
+    const QString tag = xml.s1();
+    switch (token) 
+    {
+          case Xml::Error:
+          case Xml::End:
+                return;
+          case Xml::TagStart:
+                if (tag == "event") 
+                {
+                  Event e(Note);
+                  e.read(xml);
+                  _midiState->add(e);
+                }
+                else
+                xml.unknown("midistate");
+                break;
+          case Xml::Attribut:
+                if(tag == "version") 
+                  _tmpMidiStateVersion = xml.s2().toInt();
+                else
+                  xml.unknown("MidiInstrument");
+                break;
+          case Xml::TagEnd:
+                if(tag == "midistate") 
+                  return;
+          default:
+                break;
+    }
+  }
+}
 
 //---------------------------------------------------------
 //   read

@@ -28,6 +28,7 @@
 
 #include "muse/midictrl.h"
 
+//#include "common_defs.h"
 #include "muse/midi.h"
 #include "fluid.h"
 #include "fluidgui.h"
@@ -186,7 +187,6 @@ bool ISynth::sysex(int len, const unsigned char* data)
                               }
                         }
                   }
-
             //---------------------------------------------
             //  Universal Realtime
             //---------------------------------------------
@@ -194,55 +194,68 @@ bool ISynth::sysex(int len, const unsigned char* data)
             else if (data[0] == 0x7f) {
                   if (data[1] == 0x7f) {  // device Id
                         if ((data[2] == 0x4) && (data[3] == 0x1)) {
+                           if(len == 6)
+                           {
                               float v = (data[5]*128 + data[4])/32767.0;
                               fluid_synth_set_gain(_fluidsynth, v);
                               return false;
                               }
+                           }   
                         }
                   }
-
             //---------------------------------------------
             //  MusE Soft Synth
             //---------------------------------------------
 
-            else if (data[0] == 0x7c) {
+            else if (data[0] == MUSE_SYNTH_SYSEX_MFG_ID) {
                   int n = len - 3;
                   if (n < 1) {
+                        #ifdef FS_DEBUG
                         printf("fluid: bad sysEx:\n");
+                        #endif
                         return false;
                         }
                   char buffer[n+1];
                   memcpy(buffer, (char*)data+3, n);
                   buffer[n] = 0;
-                  if (data[1] == 0) {     // fluid
-                        if (data[2] == 1) {  // load sound font
+                  if (data[1] == FLUID_UNIQUE_ID) {     // fluid
+                        //if (data[2] == 1) {  // load sound font
+                        if (data[2] == SF_REPLACE) {  // load sound font
                               sysexSoundFont(SF_REPLACE, buffer);
                               return false;
                               }
-                        else if (data[2] == 2) {  // load sound font
+                        //else if (data[2] == 2) {  // load sound font
+                        else if (data[2] == SF_ADD) {  // load sound font
                               sysexSoundFont(SF_ADD, buffer);
                               return false;
                               }
-                        else if (data[2] == 3) {  // load sound font
+                        //else if (data[2] == 3) {  // load sound font
+                        else if (data[2] == SF_REMOVE) {  // load sound font
                               sysexSoundFont(SF_REMOVE, buffer);
                               return false;
                               }
                         }
                   }
+            
             else if (data[0] == 0x41) {   // roland
-                  if (data[1] == 0x10 && data[2] == 0x42 && data[3] == 0x12
-                     && data[4] == 0x40 && data[5] == 00 && data[6] == 0x7f
-                     && data[7] == 0x41) {
-                        // gs on
-                        gmOn(true);
-                        return false;
-                        }
-                  }
-            }
+                  if (data[1] == 0x10 && data[2] == 0x42 && data[3] == 0x12)
+                  {
+                     if (len == 8) {
+                       if(data[4] == 0x40 && data[5] == 00 && data[6] == 0x7f && data[7] == 0x41) {
+                          // gs on
+                          gmOn(true);
+                          return false;
+                       }    
+                     }
+                  }      
+                }
+            }      
+      #ifdef FS_DEBUG
       printf("fluid: unknown sysex received, len %d:\n", len);
       for (int i = 0; i < len; ++i)
             printf("%02x ", data[i]);
       printf("\n");
+      #endif
       return false;
       }
 
@@ -292,6 +305,8 @@ void ISynth::showNativeGui(bool flag)
 
 ISynth::~ISynth()
       {
+      if(gui)        
+        delete gui;  // p4.0.27
       // TODO delete settings
       if (_fluidsynth)
             delete_fluid_synth(_fluidsynth);
@@ -390,7 +405,9 @@ const char* ISynth::getPatchName(int /*ch*/, int val, int, bool /*drum*/) const
       const char* name = "<unknown>";
 
       if (_busy) {
+            //#ifdef FS_DEBUG
             printf("fluid: getPatchName(): busy!\n");
+            //#endif
             return name;
             }
       fluid_font = fluid_synth_get_sfont_by_id(_fluidsynth, hbank);
@@ -399,8 +416,12 @@ const char* ISynth::getPatchName(int /*ch*/, int val, int, bool /*drum*/) const
             if (preset)
                   name = (*preset->get_name)(preset);
             else
+            {
+                  //#ifdef FS_DEBUG
                   fprintf(stderr, "no fluid preset for bank %d prog %d\n",
                      lbank, prog);
+                  //#endif   
+            }         
             }
       else
             fprintf(stderr, "ISynth::getPatchName(): no fluid font id=%d found\n", hbank);
@@ -414,7 +435,9 @@ const char* ISynth::getPatchName(int /*ch*/, int val, int, bool /*drum*/) const
 const MidiPatch* ISynth::getPatchInfo(int ch, const MidiPatch* p) const
       {
       if (_busy) {
+            //#ifdef FS_DEBUG
             printf("fluid: getPatchInfo(): busy!\n");
+            //#endif
             return 0;
             }
       if (p == 0) {
@@ -459,13 +482,14 @@ void ISynth::getInitData(int* len, const unsigned char** data)
             if (initBuffer)
                   delete [] initBuffer;
             initBuffer = new unsigned char[n];
+            initLen = n;    // p4.0.27 Tim.
             }
-      initBuffer[0] = 0x7c;
-      initBuffer[1] = 0x00;
+      initBuffer[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      initBuffer[1] = FLUID_UNIQUE_ID;
       initBuffer[2] = SF_REPLACE;
       strcpy((char*)(initBuffer+3), sfont);
       *len = n;
-      *data = initBuffer;
+      *data = (unsigned char*)initBuffer;
       }
 
 //---------------------------------------------------------
@@ -482,11 +506,15 @@ void ISynth::sysexSoundFont(SfOp op, const char* data)
             case SF_REPLACE:
             case SF_ADD:
                   if (sfont && (strcmp(sfont, data) == 0)) {
+                        #ifdef FS_DEBUG
                         fprintf(stderr, "fluid: font already loaded\n");
+                        #endif
                         break;
                         }
                   if (_busy) {
+                        //#ifdef FS_DEBUG
                         fprintf(stderr, "fluid: busy!\n");
+                        //#endif
                         break;
                         }
                   _busy = true;
@@ -528,18 +556,35 @@ void ISynth::noRTHelper()
                   }
             int id = getFontId();
             if (id != -1) {
+                  #ifdef FS_DEBUG
                   fprintf(stderr, "ISynth: unload old font\n");
+                  #endif
                   fluid_synth_sfunload(synth(), (unsigned)id, true);
                   }
-            int rv = fluid_synth_sfload(synth(), getFont(), true);
+            const char* fontname = getFont();
+            int rv = fluid_synth_sfload(synth(), fontname, true);
             if (rv == -1) {
                   fprintf(stderr, "ISynth: sfload %s failed\n",
                      fluid_synth_error(synth()));
                   }
             else {
                   setFontId(rv);
+                  
+                  // Inform the gui.      p4.0.27 Tim
+                  int slen = strlen(fontname);
+                  int n = slen + 2;
+                  unsigned char d[n];
+                  d[0] = FS_SEND_SOUNDFONT_NAME;
+                  if(slen != 0)
+                    memcpy(d + 1, fontname, slen);
+                  d[1 + slen] = 0;
+                  MidiPlayEvent ev(0,0, ME_SYSEX, d, n);
+                  gui->writeEvent(ev);
+                  
+                  #ifdef FS_DEBUG
                   fprintf(stderr, "ISynth: sfont %s loaded as %d\n ",
                      getFont(), rv);
+                  #endif   
                   }
             fluid_synth_set_gain(synth(), 1.0);  //?
             _busy = false;

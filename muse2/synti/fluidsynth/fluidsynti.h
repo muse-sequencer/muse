@@ -20,6 +20,7 @@
 //#include "libsynti/mpevent.h"
 #include "muse/mpevent.h"   
 #include "muse/midictrl.h"
+#include "common_defs.h"
 
 #define FS_DEBUG_DATA 0 //Turn on/off debug print of midi data sent to fluidsynth
 
@@ -83,6 +84,9 @@ class FluidSynth : public Mess {
       void sfChannelChange(unsigned char font_id, unsigned char channel);
       void parseInitData(int n, const byte* d);
 
+      byte* initBuffer;
+      int initLen;
+
       byte getFontInternalIdByExtId (byte channel);
 
       void debug(const char* msg) { if (FS_DEBUG) printf("Debug: %s\n",msg); }
@@ -101,15 +105,17 @@ class FluidSynth : public Mess {
 
 public:
       FluidSynth(int sr, pthread_mutex_t *_Globalsfloader_mutex);
-      ~FluidSynth();
+      virtual ~FluidSynth();
       bool init(const char*);
+      // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
+      virtual int oldMidiStateHeader(const unsigned char** data) const;
       virtual void processMessages();
       virtual void process(float**, int, int);
       virtual bool playNote(int channel, int pitch, int velo);
       virtual bool sysex(int, const unsigned char*);
       virtual bool setController(int, int, int);
       void setController(int, int , int, bool);
-      virtual void getInitData(int*, const unsigned char**) const;
+      virtual void getInitData(int*, const unsigned char**);
       virtual const char* getPatchName(int, int, int, bool) const;
       virtual const MidiPatch* getPatchInfo(int i, const MidiPatch* patch) const;
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const;

@@ -334,6 +334,56 @@ const QString& MidiPort::portname() const
 
 void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
 {
+  // p4.0.27 
+  // Look for an initial value in the song for this midi controller, on this midi channel...
+  //for(iMidiCtrlValList i = _controller->begin(); i != _controller->end(); ++i) 
+  iMidiCtrlValList i = _controller->find(chan, ctl);
+  if(i != _controller->end()) 
+  {
+    //int channel = i->first >> 24;
+    //int cntrl   = i->first & 0xffffff;
+    //if(channel == chan && cntrl == ctl) 
+    int v = i->second->value(0);   // Value at tick 0.
+    if(v != CTRL_VAL_UNKNOWN)
+    {
+      if(_device)
+      {
+      ///#ifdef DSSI_SUPPORT
+      
+      // Not for dssi synths...
+      ///if(!_device->isSynti() || (dynamic_cast<DssiSynthIF*>(((SynthI*)_device)->sif()) == 0))
+      ///{  
+      
+      ///#endif
+      
+        //_device->putEvent(MidiPlayEvent(0, portno(), channel,
+        //  ME_CONTROLLER, cntrl, v));
+        // Retry added. Use default attempts and delay. p4.0.15
+        _device->putEventWithRetry(MidiPlayEvent(0, portno(), chan,
+          ME_CONTROLLER, ctl, v));                          
+        //if(_device->putEventWithRetry(MidiPlayEvent(0, portno(), chan,
+        //  ME_CONTROLLER, ctl, v)))
+        //  return;                          
+          
+      ///#ifdef DSSI_SUPPORT
+      
+      ///}
+      
+      ///#endif
+      
+      }
+        
+      // Set it once so the 'last HW value' is set, and control knobs are positioned at the value...
+      setHwCtrlState(chan, ctl, v);
+      // Set it again so that control labels show 'off'...
+      //setHwCtrlState(chan, ctl, CTRL_VAL_UNKNOWN);
+      //setHwCtrlStates(chan, ctl, CTRL_VAL_UNKNOWN, v);
+      
+      return;
+    }  
+  }
+  
+  // No initial value was found in the song for this midi controller on this midi channel. Try the instrument...
   if(_instrument)
   {
     MidiControllerList* cl = _instrument->controller();
@@ -370,6 +420,7 @@ void MidiPort::tryCtrlInitVal(int chan, int ctl, int val)
     }  
   }
   
+  // No initial value was found in the song or instrument for this midi controller. Just send the given value.
   if(_device)
   {
     //MidiPlayEvent ev(song->cpos(), portno(), chan, ME_CONTROLLER, ctl, val);
@@ -749,8 +800,8 @@ bool MidiPort::sendEvent(const MidiPlayEvent& ev, bool forceSend)
             //      }
 // printf("set HW Ctrl State ch:%d 0x%x 0x%x\n", ev.channel(), ev.dataA(), ev.dataB());
             if(!setHwCtrlState(ev.channel(), da, db)) {
-                if (debugMsg)
-                  printf("setHwCtrlState failed\n");
+                if (debugMsg && forceSend)
+                  printf("sendEvent: State already set. Forcing anyway...\n");
                 if (!forceSend)
                   return false;
               }

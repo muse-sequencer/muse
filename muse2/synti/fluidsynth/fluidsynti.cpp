@@ -12,6 +12,7 @@
 
 #include <QFileInfo>
 
+//#include "common_defs.h"
 #include "fluidsynti.h"
 #include "muse/midi.h"
 
@@ -65,6 +66,7 @@ QString *projPathPtr;
 //
 FluidSynth::FluidSynth(int sr, pthread_mutex_t *_Globalsfloader_mutex) : Mess(2)
       {
+      gui = 0;
       setSampleRate(sr);
       fluid_settings_t* s = new_fluid_settings();
       fluid_settings_setnum(s, (char*) "synth.sample-rate", float(sampleRate()));
@@ -85,19 +87,18 @@ FluidSynth::FluidSynth(int sr, pthread_mutex_t *_Globalsfloader_mutex) : Mess(2)
       //pthread_mutex_init(&_sfloader_mutex,NULL);
       _sfloader_mutex = _Globalsfloader_mutex;
 
-/*
-      buffer = 0;
-      bufferlen = 0;
-      */
+      initBuffer  = 0;
+      initLen     = 0;
       }
 
 FluidSynth::~FluidSynth()
       {
       int err = delete_fluid_synth (fluidsynth);
-      delete gui;
+      if(gui)
+        delete gui;
 
-/*      if (buffer)
-               delete [] buffer;*/
+      if (initBuffer)
+            delete [] initBuffer;
       if (err == -1) {
             std::cerr << DEBUG_ARGS << "error while destroying synth: " << fluid_synth_error(fluidsynth) << std::endl;
             return;
@@ -141,6 +142,13 @@ bool FluidSynth::init(const char* name)
       return false;
       }
 
+int FluidSynth::oldMidiStateHeader(const unsigned char** data) const 
+{
+  unsigned char const d[2] = {MUSE_SYNTH_SYSEX_MFG_ID, FLUIDSYNTH_UNIQUE_ID};
+  *data = &d[0];
+  return 2; 
+}
+        
 //---------------------------------------------------------
 //   processMessages
 //   Called from host always, even if output path is unconnected.
@@ -207,7 +215,7 @@ void FluidSynth::process(float** ports, int offset, int len)
 //   getInitData
 // Prepare data that will restore the synth's state on load
 //---------------------------------------------------------
-void FluidSynth::getInitData(int* n, const unsigned char** data) const
+void FluidSynth::getInitData(int* n, const unsigned char** data) 
       {
 
  //printf("projPathPtr ");
@@ -250,16 +258,29 @@ void FluidSynth::getInitData(int* n, const unsigned char** data) const
 
       if (FS_DEBUG)
             printf("Total length of init sysex: %d\n", len);
-      byte* d = new byte[len];
+      
+      //byte* d = new byte[len];
+      if (len > initLen) {
+            if (initBuffer)
+                  delete [] initBuffer;
+            initBuffer = new byte[len];
+            initLen = len;    
+            }
 
       // Header:
-      d[0] = FS_INIT_DATA;
-      d[1] = FS_VERSION_MAJOR;
-      d[2] = FS_VERSION_MINOR;
-      d[3] = stack.size();
+      //d[0] = FS_INIT_DATA;
+      //d[1] = FS_VERSION_MAJOR;
+      //d[2] = FS_VERSION_MINOR;
+      //d[3] = stack.size();
+      initBuffer[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      initBuffer[1] = FLUIDSYNTH_UNIQUE_ID;
+      initBuffer[2] = FS_INIT_DATA;
+      initBuffer[3] = FS_VERSION_MAJOR;
+      initBuffer[4] = FS_VERSION_MINOR;
+      initBuffer[5] = stack.size();
 
       //Lastdir:
-      byte* chptr = d + FS_INIT_DATA_HEADER_SIZE;
+      byte* chptr = initBuffer + FS_INIT_DATA_HEADER_SIZE;
       memcpy(chptr, lastdir.c_str(), strlen(lastdir.c_str())+1);
 
       //For each font...
@@ -298,14 +319,14 @@ void FluidSynth::getInitData(int* n, const unsigned char** data) const
       *chptr = cho_on; chptr++;
       if (FS_DEBUG) {
             for (int i=0; i<len; i++)
-                  printf("%c ", d[i]);
+                  printf("%c ", initBuffer[i]);
             printf("\n");
             for (int i=0; i<len; i++)
-                  printf("%x ", d[i]);
+                  printf("%x ", initBuffer[i]);
             printf("\n");
             }
       // Give values to host:
-      *data = d;
+      *data = (unsigned char*)initBuffer;
       *n = len;
       }
 
@@ -313,7 +334,7 @@ void FluidSynth::getInitData(int* n, const unsigned char** data) const
 // parseInitData
 //-----------------------------------
 void FluidSynth::parseInitData(int n, const byte* d)
-      {
+{
       printf("projPathPtr ");
       std::cout << *projPathPtr->toAscii().data() << std::endl;
 
@@ -329,6 +350,7 @@ void FluidSynth::parseInitData(int n, const byte* d)
 
       byte version_major, version_minor;
       version_major = d[1]; version_minor = d[2];
+      //version_major = d[3]; version_minor = d[4];
 
       // Check which version of the initdata we're using and if it's OK
       if (!(version_major == FS_VERSION_MAJOR && version_minor == FS_VERSION_MINOR)) {
@@ -337,9 +359,9 @@ void FluidSynth::parseInitData(int n, const byte* d)
                   }
 
             if (version_major == 0 && version_minor == 1) {
-               sendError("Initialization data created with different version of FluidSynth Mess, will be ignored.");
-               return;
-               }
+              sendError("Initialization data created with different version of FluidSynth Mess, will be ignored.");
+              return;
+              }
 
             if (version_major == 0 && version_minor <= 2) {
                   load_drumchannels = false;
@@ -351,8 +373,10 @@ void FluidSynth::parseInitData(int n, const byte* d)
             }
 
       byte nr_of_fonts = d[3];
+      //byte nr_of_fonts = d[5];
       nrOfSoundfonts = nr_of_fonts; //"Global" counter
       const byte* chptr = (d + 4);
+      //const byte* chptr = (d + FS_INIT_DATA_HEADER_SIZE);
 
       //Get lastdir:
       lastdir = std::string((char*)chptr);
@@ -365,7 +389,7 @@ void FluidSynth::parseInitData(int n, const byte* d)
       for (int i=0; i<nr_of_fonts; i++) {
             fonts[i].filename = (char*)(chptr);
             chptr+=(strlen(fonts[i].filename.c_str())+1);
-	    QByteArray ba = projPathPtr->toAscii();
+            QByteArray ba = projPathPtr->toAscii();
 
             if (QFileInfo(fonts[i].filename.c_str()).isRelative()) {
                 printf("path is relative, we append full path!\n");
@@ -413,7 +437,7 @@ void FluidSynth::parseInitData(int n, const byte* d)
       for (int i=0; i<nrOfSoundfonts; i++) {
             pushSoundfont(fonts[i].filename.c_str(), fonts[i].extid);
             }
-      }
+}
 
 
 //---------------------------------------------------------
@@ -464,19 +488,29 @@ bool FluidSynth::processEvent(const MidiPlayEvent& ev)
 
 bool FluidSynth::sysex(int n, const unsigned char* d)
       {
-      switch(*d) {
+      if(n < 3 || d[0] != MUSE_SYNTH_SYSEX_MFG_ID 
+          || d[1] != FLUIDSYNTH_UNIQUE_ID) 
+      {
+        if (FS_DEBUG)
+          printf("MusE FluidSynth: Unknown sysex header\n");
+        return false;
+      }
+      
+      //switch(*d) {
+      const unsigned char* chrptr = d + 2;
+      switch(*chrptr) {
             case FS_LASTDIR_CHANGE: {
-                  lastdir = std::string((char*)(d+1));
+                  lastdir = std::string((char*)(chrptr+1));
                   sendLastdir(lastdir.c_str());
                   break;
                   }
             case FS_PUSH_FONT: {
-                  int extid = d[1];
+                  int extid = chrptr[1];
 
                   if (FS_DEBUG)
-                        printf("Client: Got push font %s, id: %d\n",(d+1), extid);
+                        printf("Client: Got push font %s, id: %d\n",(chrptr+1), extid);
 
-                  const char* filename = (const char*)(d+2);
+                  const char* filename = (const char*)(chrptr+2);
                   if (!pushSoundfont(filename, extid))
                               sendError("Could not load soundfont ");
                   break;
@@ -486,19 +520,19 @@ bool FluidSynth::sysex(int n, const unsigned char* d)
                   break;
                   }
             case FS_SOUNDFONT_CHANNEL_SET: {
-                  sfChannelChange(*(d+1), *(d+2));
+                  sfChannelChange(*(chrptr+1), *(chrptr+2));
                   break;
                   }
             case FS_INIT_DATA: {
-                  parseInitData(n,d);
+                  parseInitData(n - 2, chrptr);
                   break;
                   }
             case FS_SOUNDFONT_POP:
-                  popSoundfont(*(d+1));
+                  popSoundfont(*(chrptr+1));
                   break;
             case FS_DRUMCHANNEL_SET: {
-                  byte onoff = (*(d+1));
-                  byte channel = (*(d+2));
+                  byte onoff = (*(chrptr+1));
+                  byte channel = (*(chrptr+2));
                   channels[channel].drumchannel = onoff;
                   if (FS_DEBUG)
                         printf("Client: Set drumchannel on chan %d to %d\n",channel, onoff);
@@ -506,7 +540,7 @@ bool FluidSynth::sysex(int n, const unsigned char* d)
                   }
             default:
                   if (FS_DEBUG)
-                        printf("FluidSynth::sysex() : unknown sysex received: %d\n",*d);
+                        printf("FluidSynth::sysex() : unknown sysex received: %d\n",*chrptr);
                   break;
             }
       return false;
@@ -647,6 +681,7 @@ bool FluidSynth::playNote(int channel, int pitch, int velo)
 void FluidSynth::sendSoundFontData()
       {
       int ndatalen = 2; //2 bytes for command and length
+      //int ndatalen = 4; // 4 bytes for header, command and length
 
       //Calculate length in chars of all strings in the soundfontstack in one string
       for (std::list<FluidSoundFont>::iterator it = stack.begin(); it != stack.end(); it++) {
@@ -654,11 +689,16 @@ void FluidSynth::sendSoundFontData()
             ndatalen += FS_SFDATALEN; //unsigned char for ID
             }
       byte ndata[ndatalen];
-      *ndata = FS_SEND_SOUNDFONTDATA; //The command
+      *(ndata) = FS_SEND_SOUNDFONTDATA; //The command
       *(ndata + 1) = (unsigned char)stack.size (); //Nr of Soundfonts
+      //*ndata = MUSE_SYNTH_SYSEX_MFG_ID; 
+      //*(ndata + 1) = FLUIDSYNTH_UNIQUE_ID; 
+      //*(ndata + 2) = FS_SEND_SOUNDFONTDATA; //The command
+      //*(ndata + 3) = (unsigned char)stack.size (); //Nr of Soundfonts
 
       // Copy the stuff to ndatalen:
       char* chunk_start = (char*)(ndata + 2);
+      //char* chunk_start = (char*)(ndata + 4);
       int chunk_len, name_len;
       for (std::list<FluidSoundFont>::iterator it = stack.begin(); it != stack.end();  ++it) {
             name_len = strlen(it->name.c_str()) + 1;
@@ -675,12 +715,18 @@ void FluidSynth::sendSoundFontData()
 //---------------------------------------------------------
 void FluidSynth::sendChannelData()
       {
-      int chunk_size = 2;
+      ///int chunk_size = 2;
+      int const chunk_size = 2;
       int chdata_length = (chunk_size * FS_MAX_NR_OF_CHANNELS) +1 ; //Command and the 2 channels * 16
+      //int chdata_length = (chunk_size * FS_MAX_NR_OF_CHANNELS) +3 ; // Header, command and the 2 channels * 16
       byte chdata[chdata_length];
       byte* chdptr;
       chdata[0] = FS_SEND_CHANNELINFO;
+      //chdata[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      //chdata[1] = FLUIDSYNTH_UNIQUE_ID;
+      //chdata[2] = FS_SEND_CHANNELINFO;
       chdptr = (chdata + 1);
+      //chdptr = (chdata + 3);
       for (int i=0; i<FS_MAX_NR_OF_CHANNELS; i++) {
             *(chdptr)    = channels[i].font_extid; //Font external id
             *(chdptr+1)  = i; //Channel nr
@@ -690,10 +736,16 @@ void FluidSynth::sendChannelData()
       // Send drum channel info afterwards (later addition, not very neat, but works...)
 
       int drumchdata_length = FS_MAX_NR_OF_CHANNELS + 1; //1 byte for the command, one byte for each channel
-      byte drumchdata[drumchdata_length ];
-      byte* drumchdataptr = drumchdata;
+      //int drumchdata_length = FS_MAX_NR_OF_CHANNELS + 3; // 2 bytes for header, 1 byte for the command, one byte for each channel
+      byte drumchdata[drumchdata_length];
       *drumchdata = FS_SEND_DRUMCHANNELINFO;
-
+      //drumchdata[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      //drumchdata[1] = FLUIDSYNTH_UNIQUE_ID;
+      //drumchdata[2] = FS_SEND_DRUMCHANNELINFO;
+      
+      byte* drumchdataptr = drumchdata;
+      //byte* drumchdataptr = drumchdata + 3;
+      
       for (int i=0; i<FS_MAX_NR_OF_CHANNELS; i++) {
             drumchdataptr++;
             *drumchdataptr = channels[i].drumchannel;
@@ -986,9 +1038,14 @@ int FluidSynth::getControllerInfo(int id, const char** name, int* controller, in
 void FluidSynth::sendError(const char *errorMessage)
       {
       int len = 2 + strlen(errorMessage);
+      //int len = 4 + strlen(errorMessage);
       unsigned char data[len];
       *data = FS_ERROR;
+      //data[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      //data[1] = FLUIDSYNTH_UNIQUE_ID;
+      //data[2] = FS_ERROR;
       memcpy(data + 1, errorMessage, len - 1);
+      //memcpy(data + 3, errorMessage, len - 3);
       sendSysex(len, data);
       }
 
@@ -1041,9 +1098,14 @@ byte FluidSynth::getFontInternalIdByExtId(byte ext_id)
 void FluidSynth::sendLastdir(const char* lastdir)
       {
       int n = strlen(lastdir) + 2;
+      //int n = strlen(lastdir) + 4;
       byte d[n];
       d[0] = FS_LASTDIR_CHANGE;
+      //d[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      //d[1] = FLUIDSYNTH_UNIQUE_ID;
+      //d[2] = FS_LASTDIR_CHANGE;
       memcpy(d+1,lastdir, strlen(lastdir)+1);
+      //memcpy(d+3,lastdir, strlen(lastdir)+1);
 
       MidiPlayEvent ev(0,0, ME_SYSEX, d, n);
       gui->writeEvent(ev);
@@ -1289,7 +1351,7 @@ static bool mutexEnabled = false;
 
 static Mess* instantiate(int sr, QWidget*, QString* projectPathPtr, const char* name)
       {
-printf("fluidsynth sampleRate %d\n", sr);
+      printf("fluidsynth sampleRate %d\n", sr);
       projPathPtr=projectPathPtr;
 
       if (!mutexEnabled) {

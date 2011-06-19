@@ -264,7 +264,6 @@ void CtrlList::read(Xml& xml)
                               }
                            */   
                           
-                          // Added by Tim. p3.3.6
                           //printf("CtrlList::read tag:%s\n", tag.toLatin1().constData());
                           
                           int len = tag.length();
@@ -320,7 +319,6 @@ void CtrlList::read(Xml& xml)
                                   break;
                                 }
                                   
-                                // Added by Tim. p3.3.6
                                 //printf("CtrlList::read i:%d len:%d fs:%s frame %d: vs:%s val %f \n", i, len, fs.toLatin1().constData(), frame, vs.toLatin1().constData(), val);
                                 
                                 add(frame, val);
@@ -333,7 +331,6 @@ void CtrlList::read(Xml& xml)
                   case Xml::TagEnd:
                         if (xml.s1() == "controller")
                         {
-                              // Added by Tim. p3.3.6
                               //printf("CtrlList::read _id:%d _curVal:%f\n", _id, _curVal);
                               
                               return;

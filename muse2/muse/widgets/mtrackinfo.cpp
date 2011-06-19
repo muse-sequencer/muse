@@ -65,6 +65,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
 { 
   setupUi(this); 
   _midiDetect = false; 
+  heartBeatCounter = 0;
   
   selected = sel_track;
   
@@ -327,54 +328,72 @@ void MidiTrackInfo::heartBeat()
         }         
       }
       else
-      if(program != nprogram) 
       {
-            program = nprogram;
-
-            //int hb, lb, pr;
-            //if (program == CTRL_VAL_UNKNOWN) {
-            //      hb = lb = pr = 0;
-            //      iPatch->setText("---");
-            //      }
-            //else 
-            //{
-                  MidiInstrument* instr = mp->instrument();
-                  QString name = instr->getPatchName(outChannel, program, song->mtype(), track->type() == Track::DRUM);
-                  if(iPatch->text() != name)
-                    iPatch->setText(name);
-
-                  int hb = ((program >> 16) & 0xff) + 1;
-                  if (hb == 0x100)
-                        hb = 0;
-                  int lb = ((program >> 8) & 0xff) + 1;
-                  if (lb == 0x100)
-                        lb = 0;
-                  int pr = (program & 0xff) + 1;
-                  if (pr == 0x100)
-                        pr = 0;
-            //}
+        // p4.0.27 The optimizing below, to avoid repeatedly calling getPatchName, generally worked OK. 
+        // But Fluidsynth revealed a flaw. When loading a song, updateTrackInfo is called which correctly 
+        //  sets program = nprogram. But a synth will not receive midistate sysexes until later. 
+        // With Fluidsynth, that messed up our optimizing because the soundfont has not loaded yet. 
+        // fluid_synth_get_channel_preset returns 0 in FluidSynth::getPatchName which returns <unknown> 
+        //  when asked by updateTrackInfo, which then sets the patch box text to <unknown>. Then nothing 
+        //  happens here because program = nprogram.
+        // I don't like the idea of calling getPatchName here at a high rate. 
+        // So force an update of program at a slower rate here. 
+        //
+        // The alternative is to have a system where the synth can signal the host when a change has happened.
+        // Or an 'isValidPatch' function, or make getPatchName (and several others) return 0, so that updateTrackInfo 
+        //  can ignore it. Oops. No! Even if we make updateTrackInfo ignore it, then the same thing happens here. 
+        // Thats is, program = nprogram but the text is still wrong.  Not much choice but to do this for now...
+        if(++heartBeatCounter >= 20)
+          heartBeatCounter = 0;
+        if(program != nprogram || heartBeatCounter == 0) 
+        {
+              program = nprogram;
+  
+              //int hb, lb, pr;
+              //if (program == CTRL_VAL_UNKNOWN) {
+              //      hb = lb = pr = 0;
+              //      iPatch->setText("---");
+              //      }
+              //else 
+              //{
+                    MidiInstrument* instr = mp->instrument();
+                    QString name = instr->getPatchName(outChannel, program, song->mtype(), track->type() == Track::DRUM);
+                    if(iPatch->text() != name)
+                      iPatch->setText(name);
+  
+                    int hb = ((program >> 16) & 0xff) + 1;
+                    if (hb == 0x100)
+                          hb = 0;
+                    int lb = ((program >> 8) & 0xff) + 1;
+                    if (lb == 0x100)
+                          lb = 0;
+                    int pr = (program & 0xff) + 1;
+                    if (pr == 0x100)
+                          pr = 0;
+              //}
+              
+              //printf("Arranger::midiTrackInfoHeartBeat setting program\n");
             
-            //printf("Arranger::midiTrackInfoHeartBeat setting program\n");
-          
-            if(iHBank->value() != hb)
-            {
-              iHBank->blockSignals(true);
-              iHBank->setValue(hb);
-              iHBank->blockSignals(false);
-            }
-            if(iLBank->value() != lb)
-            {
-              iLBank->blockSignals(true);
-              iLBank->setValue(lb);
-              iLBank->blockSignals(false);
-            }
-            if(iProgram->value() != pr)
-            {
-              iProgram->blockSignals(true);
-              iProgram->setValue(pr);
-              iProgram->blockSignals(false);
-            }
-            
+              if(iHBank->value() != hb)
+              {
+                iHBank->blockSignals(true);
+                iHBank->setValue(hb);
+                iHBank->blockSignals(false);
+              }
+              if(iLBank->value() != lb)
+              {
+                iLBank->blockSignals(true);
+                iLBank->setValue(lb);
+                iLBank->blockSignals(false);
+              }
+              if(iProgram->value() != pr)
+              {
+                iProgram->blockSignals(true);
+                iProgram->setValue(pr);
+                iProgram->blockSignals(false);
+              }
+              
+        }
       }
 
       MidiController* mc = mp->midiController(CTRL_VOLUME);

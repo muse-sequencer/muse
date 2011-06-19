@@ -5,6 +5,7 @@
 //
 //
 // Author: Mathias Lundgren <lunar_shuttle@users.sf.net>, (C) 2004
+//  Contributer: (C) Copyright 2011 Tim E. Real (terminator356 at users.sourceforge.net)
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -19,6 +20,7 @@
 #include <QLineEdit>
 #include <QMessageBox>
 
+#include "common_defs.h"
 #include "simpledrumsgui.h"
 //#include "libsynti/mpevent.h"
 #include "muse/mpevent.h"   
@@ -85,10 +87,16 @@ SimpleSynthGui* simplesynthgui_ptr;
  */
 QChannelSlider::QChannelSlider(Qt::Orientation orientation, int ch, QWidget* parent)
       : QSlider(orientation, parent)
-      {
-      channel = ch;
-      }
+{
+    channel = ch;
+}
 
+void QChannelSlider::sliderChange(SliderChange change)
+{
+  QSlider::sliderChange(change);
+  if(change == QAbstractSlider::SliderValueChange)
+    emit valueChanged(channel, value());  
+}
 
 /*!
     \fn QChannelSlider::getChannel()
@@ -110,6 +118,7 @@ void QChannelSlider::setChannel(int ch)
 /*!
     \fn QChannelSlider::setValue(int val)
  */
+/*
 void QChannelSlider::setValue(int val)
       {
       val = (val > 127 ? 127 : val);
@@ -117,10 +126,32 @@ void QChannelSlider::setValue(int val)
       QSlider::setValue(val);
       emit valueChanged(channel, val);
       }
+*/
+
+QInvertedSlider::QInvertedSlider(Qt::Orientation o, QWidget* parent)
+         : QSlider(o, parent) 
+{
+  setInvertedAppearance(true);    // p4.0.27 
+}
+
+void QInvertedSlider::sliderChange(SliderChange change)
+{
+  QSlider::sliderChange(change);
+  if(change == QAbstractSlider::SliderValueChange)
+    emit invertedValueChanged(value());  
+}
+
+QInvertedChannelSlider::QInvertedChannelSlider(Qt::Orientation o, int channel, QWidget* parent)
+         : QChannelSlider(o, channel, parent)
+{
+  setInvertedAppearance(true);    // p4.0.27 
+  //setInvertedControls(true);
+}
 
 /*!
     \fn QInvertedChannelSlider::setValue(int val)
  */
+/*
 void QInvertedChannelSlider::setValue(int val)
       {
       int inverted = this->maximum() - val;
@@ -129,10 +160,12 @@ void QInvertedChannelSlider::setValue(int val)
       QSlider::setValue(val);
       emit valueChanged(channel, inverted);
       }
+*/
 
 /*!
     \fn QInvertedSlider::setValue(int val)
  */
+/*
 void QInvertedSlider::setValue(int val)
       {
       int inverted = this->maximum() - val;
@@ -141,7 +174,7 @@ void QInvertedSlider::setValue(int val)
       emit invertedValueChanged(inverted);
       QSlider::setValue(val);
       }
-
+*/
 
 /*!
     \fn QChannelCheckbox::QChannelCheckbox(QWidget* parent, int ch)
@@ -194,11 +227,20 @@ QChannelDial::QChannelDial(QWidget* parent, int ch, int fxid)
 /*!
     \fn QChannelSlider::setValue(int val)
  */
+/*
 void QChannelDial::setValue(int val)
       {
       QDial::setValue(val);
       emit valueChanged(channel, sendfxid, val);
       }
+*/
+
+void QChannelDial::sliderChange(SliderChange change)
+{
+  QDial::sliderChange(change);
+  if(change == QAbstractSlider::SliderValueChange)
+    emit valueChanged(channel, sendfxid, value());  
+}
 
 /*!
     \fn SimpleSynthGui::SimpleSynthGui()
@@ -236,10 +278,16 @@ SimpleSynthGui::SimpleSynthGui()
             inchnlLayout->addWidget(onOff[i]);
             connect(onOff[i], SIGNAL(channelState(int, bool)), SLOT(channelOnOff(int, bool)));
 
-            volumeSliders[i] = new QInvertedChannelSlider(Qt::Vertical, i, channelButtonGroups[i]);
+            ///volumeSliders[i] = new QInvertedChannelSlider(Qt::Vertical, i, channelButtonGroups[i]);
+            // By Tim. p4.0.27 Inverted was not correct type. Maybe was work in progress, rest of code was not converted yet? 
+            volumeSliders[i] = new QChannelSlider(Qt::Vertical, i, channelButtonGroups[i]);
+            
             volumeSliders[i]->setMinimum(SS_VOLUME_MIN_VALUE);
             volumeSliders[i]->setMaximum(SS_VOLUME_MAX_VALUE);
-            volumeSliders[i]->setValue(SS_VOLUME_MAX_VALUE - SS_VOLUME_DEFAULT_VALUE);
+            
+            ///volumeSliders[i]->setValue(SS_VOLUME_MAX_VALUE - SS_VOLUME_DEFAULT_VALUE);
+            volumeSliders[i]->setValue(SS_VOLUME_DEFAULT_VALUE);  // p4.0.27
+            
 //            volumeSliders[i]->setMinimumSize(SS_VOLSLDR_WIDTH, SS_VOLSLDR_LENGTH);
             volumeSliders[i]->setToolTip("Volume, channel " + QString::number(i + 1));
 //            setMinimumSize(SS_VOLSLDR_WIDTH, SS_VOLSLDR_LENGTH);
@@ -310,13 +358,22 @@ SimpleSynthGui::SimpleSynthGui()
       QVBoxLayout* mbgLayout = new QVBoxLayout(masterButtonGroup);
       mbgLayout->setAlignment(Qt::AlignCenter);
 //      masterButtonGroup->setMinimumSize(SS_BTNGRP_WIDTH, SS_BTNGRP_HEIGHT);
-      masterSlider = new QInvertedSlider(Qt::Vertical, masterButtonGroup);
+      
+      ///masterSlider = new QInvertedSlider(Qt::Vertical, masterButtonGroup);
+      // By Tim. p4.0.27 Inverted was not correct type. Maybe was work in progress, rest of code was not converted yet? 
+      masterSlider = new QSlider(Qt::Vertical, masterButtonGroup);
+      
       masterSlider->setToolTip("Master volume");
       mbgLayout->addWidget(masterSlider);
       masterSlider->setRange(0, 127);
-      masterSlider->setValue(SS_VOLUME_MAX_VALUE - (int)(SS_MASTERVOL_DEFAULT_VALUE*SS_VOLUME_MAX_VALUE));
+      
+      ///masterSlider->setValue(SS_VOLUME_MAX_VALUE - (int)(SS_MASTERVOL_DEFAULT_VALUE*SS_VOLUME_MAX_VALUE));
+      masterSlider->setValue((int)(SS_MASTERVOL_DEFAULT_VALUE*SS_VOLUME_MAX_VALUE)); // p4.0.27
+      
 //      masterSlider->setMinimumSize(SS_MASTERSLDR_WIDTH, SS_MASTERSLDR_HEIGHT);
-      connect(masterSlider, SIGNAL(invertedValueChanged(int)), SLOT(masterVolChanged(int)));
+
+      ///connect(masterSlider, SIGNAL(invertedValueChanged(int)), SLOT(masterVolChanged(int)));
+      connect(masterSlider, SIGNAL(valueChanged(int)), SLOT(masterVolChanged(int)));  // p4.0.27
 
       //Main groupbox
       mainGroupBox = new QGroupBox(this);
@@ -435,7 +492,10 @@ void SimpleSynthGui::processEvent(const MidiPlayEvent& ev)
                   switch(id) {
                         case SS_CHANNEL_CTRL_VOLUME:
                               volumeSliders[ch]->blockSignals(true);
-                              volumeSliders[ch]->setValue(SS_VOLUME_MAX_VALUE - val);
+                              
+                              ///volumeSliders[ch]->setValue(SS_VOLUME_MAX_VALUE - val);
+                              volumeSliders[ch]->setValue(val);   // p4.0.27
+                              
                               volumeSliders[ch]->blockSignals(false);
                               break;
 
@@ -479,7 +539,10 @@ void SimpleSynthGui::processEvent(const MidiPlayEvent& ev)
             else if (id >= SS_FIRST_MASTER_CONTROLLER && id <= SS_LAST_MASTER_CONTROLLER) {
                   if (id == SS_MASTER_CTRL_VOLUME) {
                         masterSlider->blockSignals(true);
-                        masterSlider->setValue(SS_MASTERVOL_MAX_VALUE - val);
+                        
+                        ///masterSlider->setValue(SS_MASTERVOL_MAX_VALUE - val);
+                        masterSlider->setValue(val);   // p4.0.27
+                        
                         masterSlider->blockSignals(false);
                         }
                   }
@@ -495,6 +558,13 @@ void SimpleSynthGui::processEvent(const MidiPlayEvent& ev)
                         SS_PluginFront* pf = pluginGui->getPluginFront((unsigned)fxid);
                         pf->setRetGain(val);
                         }
+                  // Plugin on/off:
+                  else if (cmd == SS_PLUGIN_ONOFF) {      // p4.0.27
+                        if (SS_DEBUG_MIDI)
+                              printf("SimpleSynthGui::processEvent - fx onoff received: fxid: %d val: %d\n", fxid, val);
+                        SS_PluginFront* pf = pluginGui->getPluginFront((unsigned)fxid);
+                        pf->setOnOff(val);
+                        }
                   }
             }
             //
@@ -502,6 +572,7 @@ void SimpleSynthGui::processEvent(const MidiPlayEvent& ev)
             //
             else if (ev.type() == ME_SYSEX) {
                   byte* data = ev.data();
+                  //byte* data = d + 2;
                   int cmd = *data;
                   switch (cmd) {
                         case SS_SYSEX_LOAD_SAMPLE_OK: {
@@ -549,7 +620,8 @@ void SimpleSynthGui::processEvent(const MidiPlayEvent& ev)
                                     }
                               int fxid = *(data+1);
                               SS_PluginFront* pf = pluginGui->getPluginFront((unsigned)fxid);
-                              pf->updatePluginValue(*(data+2));
+                              ///pf->updatePluginValue(*(data+2));
+                              pf->updatePluginValue(  *((unsigned*)(data+2)) );     // p4.0.27
                               break;
                               }
 
@@ -711,13 +783,20 @@ void SimpleSynthGui::loadSampleDialogue(int channel)
             if (SS_DEBUG)
                   printf("lastDir = %s\n", lastDir.toLatin1().constData());
 
-            int l = filename.length() + 4;
+            //int l = filename.length() + 4;
+            int l = filename.length() + 6;
             byte d[l];
 
-            d[0] = SS_SYSEX_LOAD_SAMPLE;
-            d[1] = (byte) channel;
-            d[2] = (byte) filename.length();
-            memcpy(d+3, filename.toLatin1().constData(), filename.length()+1);
+            //d[0] = SS_SYSEX_LOAD_SAMPLE;
+            //d[1] = (byte) channel;
+            //d[2] = (byte) filename.length();
+            d[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+            d[1] = SIMPLEDRUMS_UNIQUE_ID;
+            d[2] = SS_SYSEX_LOAD_SAMPLE;
+            d[3] = (byte) channel;
+            d[4] = (byte) filename.length();
+            //memcpy(d+3, filename.toLatin1().constData(), filename.length()+1);
+            memcpy(d+5, filename.toLatin1().constData(), filename.length()+1);
             sendSysex(d, l);
             }
       }
@@ -730,10 +809,16 @@ void SimpleSynthGui::loadSampleDialogue(int channel)
 void SimpleSynthGui::clearSample(int ch)
       {
       if (sampleNameLineEdit[ch]->text().length() > 0) { //OK, we've got a live one here
-            byte d[2];
-            d[0] = SS_SYSEX_CLEAR_SAMPLE;
-            d[1] = (byte) ch;
-            sendSysex(d, 2);
+            //byte d[2];
+            byte d[4];
+            //d[0] = SS_SYSEX_CLEAR_SAMPLE;
+            //d[1] = (byte) ch;
+            d[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+            d[1] = SIMPLEDRUMS_UNIQUE_ID;
+            d[2] = SS_SYSEX_CLEAR_SAMPLE;
+            d[3] = (byte) ch;
+            //sendSysex(d, 2);
+            sendSysex(d, 4);
             sampleNameLineEdit[ch]->setText("");
             }
       }
@@ -751,12 +836,19 @@ void SimpleSynthGui::displayPluginGui()
  */
 void SimpleSynthGui::loadEffectInvoked(int fxid, QString lib, QString label)
       {
-      int l = 4 + lib.length() + label.length();
+      //int l = 4 + lib.length() + label.length();
+      int l = 6 + lib.length() + label.length();
       byte d[l];
-      d[0] = SS_SYSEX_LOAD_SENDEFFECT;
-      d[1] = (byte) fxid;
-      memcpy (d+2, lib.toLatin1().constData(), lib.length()+1);
-      memcpy (d+3+lib.length(), label.toLatin1().constData(), label.length()+1);
+      //d[0] = SS_SYSEX_LOAD_SENDEFFECT;
+      //d[1] = (byte) fxid;
+      d[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      d[1] = SIMPLEDRUMS_UNIQUE_ID;
+      d[2] = SS_SYSEX_LOAD_SENDEFFECT;
+      d[3] = (byte) fxid;
+      //memcpy (d+2, lib.toLatin1().constData(), lib.length()+1);
+      //memcpy (d+3+lib.length(), label.toLatin1().constData(), label.length()+1);
+      memcpy (d+4, lib.toLatin1().constData(), lib.length()+1);
+      memcpy (d+5+lib.length(), label.toLatin1().constData(), label.length()+1);
       sendSysex(d, l);
       }
 
@@ -784,10 +876,16 @@ void SimpleSynthGui::toggleEffectOnOff(int fxid, int state)
  */
 void SimpleSynthGui::clearPlugin(int fxid)
       {
-      byte d[2];
-      d[0] = SS_SYSEX_CLEAR_SENDEFFECT;
-      d[1] = fxid;
-      sendSysex(d, 2);
+      //byte d[2];
+      byte d[4];
+      //d[0] = SS_SYSEX_CLEAR_SENDEFFECT;
+      //d[1] = fxid;
+      d[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      d[1] = SIMPLEDRUMS_UNIQUE_ID;
+      d[2] = SS_SYSEX_CLEAR_SENDEFFECT;
+      d[3] = fxid;
+      //sendSysex(d, 2);
+      sendSysex(d, 4);
       }
 
 
@@ -796,13 +894,19 @@ void SimpleSynthGui::clearPlugin(int fxid)
  */
 void SimpleSynthGui::effectParameterChanged(int fxid, int parameter, int val)
       {
-      //printf("Gui: effectParameterChanged: %d %d %d\n", fxid, parameter, val);
-      int len = 4;
+      //int len = 4;
+      int len = 6;
       byte d[len];
-      d[0] = SS_SYSEX_SET_PLUGIN_PARAMETER;
-      d[1] = (byte) fxid;
-      d[2] = (byte) parameter;
-      d[3] = (byte) val;
+      //d[0] = SS_SYSEX_SET_PLUGIN_PARAMETER;
+      //d[1] = (byte) fxid;
+      //d[2] = (byte) parameter;
+      //d[3] = (byte) val;
+      d[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      d[1] = SIMPLEDRUMS_UNIQUE_ID;
+      d[2] = SS_SYSEX_SET_PLUGIN_PARAMETER;
+      d[3] = (byte) fxid;
+      d[4] = (byte) parameter;
+      d[5] = (byte) val;
       sendSysex(d, len);
       }
 
@@ -826,7 +930,9 @@ void SimpleSynthGui::aboutButtonClicked()
       {
       QString caption = "SimpleDrums ver";
       caption+= SS_VERSIONSTRING;
-      QString text = caption + "\n\n(C) Copyright 2000-2004 Mathias Lundgren (lunar_shuttle@users.sf.net), Werner Schweer\nPublished under the GNU Public License";
+      ///QString text = caption + "\n\n(C) Copyright 2000-2004 Mathias Lundgren (lunar_shuttle@users.sf.net), Werner Schweer\nPublished under the GNU Public License";
+      QString text = caption + "\n\n(C) Copyright 2000-2004 Mathias Lundgren (lunar_shuttle@users.sf.net), Werner Schweer\n"
+                               "Fixes/mods: (C) Copyright 2011 Tim E. Real (terminator356@users.sf.net)\nPublished under the GNU Public License";
       QMessageBox* msgBox = new QMessageBox(caption, text, QMessageBox::NoIcon,
             QMessageBox::Ok, Qt::NoButton, Qt::NoButton, this);
       msgBox->exec();
@@ -851,8 +957,12 @@ void SimpleSynthGui::loadSetup()
                   if (theFile.read((char*)&initdata_len, sizeof(initdata_len)) == -1)
                      success = false;
 
-                  byte* init_data = new byte[initdata_len];
-                  if (theFile.read((char*)(init_data), initdata_len) == -1)
+                  ///byte* init_data = new byte[initdata_len];
+                  byte* init_data = new byte[initdata_len + 2];   // 2 for MFG ID and synth ID. 
+                  init_data[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+                  init_data[1] = SIMPLEDRUMS_UNIQUE_ID;
+                  //if (theFile.read((char*)(init_data), initdata_len) == -1)
+                  if (theFile.read((char*)(init_data + 2), initdata_len) == -1)
                      success = false;
 
                   if (!success) {
@@ -862,7 +972,8 @@ void SimpleSynthGui::loadSetup()
                         delete msgBox;
                         }
                   else {
-                        sendSysex(init_data, initdata_len);
+                        ///sendSysex(init_data, initdata_len);
+                        sendSysex(init_data, initdata_len + 2);
                         }
 
                   delete[] init_data;
@@ -883,9 +994,14 @@ void SimpleSynthGui::saveSetup()
 
       if (filename != QString::null) {
             lastSavedProject = filename;
-            byte d[1];
-            d[0] = SS_SYSEX_GET_INIT_DATA;
-            sendSysex(d, 1); // Makes synth send gui initdata, where rest of the saving takes place
+            //byte d[1];
+            byte d[3];
+            //d[0] = SS_SYSEX_GET_INIT_DATA;
+            d[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+            d[1] = SIMPLEDRUMS_UNIQUE_ID;
+            d[2] = SS_SYSEX_GET_INIT_DATA;
+            //sendSysex(d, 1); // Makes synth send gui initdata, where rest of the saving takes place
+            sendSysex(d, 3); // Makes synth send gui initdata, where rest of the saving takes place
             }
       }
 
