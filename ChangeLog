@@ -1,3 +1,6 @@
+21.06.2011:
+        - Fixed wave editor position and marker drawing corruption. (Tim)
+        - Updated Yamaha m06 IDF file to version 4 by Geoff King. (Tim)
 18.06.2011:
           (By Tim. Marked as p4.0.27)
         - Major work, all synthesizers. Sysexes now wrapped in a header MFG ID (0x7c) + synth ID. Fixed leaks, crashes. 
