@@ -21,6 +21,9 @@
 #include "libsynti/mono.h"
 
 #define RESOLUTION   16384
+// Make sure this number is unique among all the MESS synths.
+#define S1_UNIQUE_ID      6
+
 
 //---------------------------------------------------------
 //   S1 - simple mono demo synthesizer
@@ -53,7 +56,7 @@ class S1 : public MessMono {
 
    public:
       S1();
-      ~S1();
+      virtual ~S1();
       };
 
 float* S1::wave_table;

@@ -15,9 +15,12 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QSocketNotifier>
 
+#include "common_defs.h"
 #include "fluidgui.h"
 #include "muse/midi.h"
+#include "muse/mpevent.h"
 #include "muse/icons.h"
 
 //---------------------------------------------------------
@@ -28,6 +31,10 @@ FLUIDGui::FLUIDGui()
    : QDialog(0, Qt::Window), MessGui()
       {
       setupUi(this);
+      //Connect socketnotifier to fifo
+      QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
+      connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
+      
       fdialogButton->setIcon(QIcon(*openIcon));
       connect(fdialogButton, SIGNAL(clicked()), SLOT(soundFontFileDialog()));
       connect(loadButton, SIGNAL(clicked()), SLOT(loadFont()));
@@ -60,9 +67,9 @@ void FLUIDGui::loadFont()
       int len     = strlen(path) + 1 + 3;
       unsigned char buffer[len];
       int k       = 0;
-      buffer[k++] = 0x7c;
-      buffer[k++] = 0x00;       // fluid
-      buffer[k++] = 0x01;       // load sound font
+      buffer[k++] = MUSE_SYNTH_SYSEX_MFG_ID;
+      buffer[k++] = FLUID_UNIQUE_ID;       // fluid
+      buffer[k++] = SF_REPLACE;       // load sound font
       strcpy((char*)(&buffer[k]), path);
       sendSysex(buffer, len);
       }
@@ -79,4 +86,41 @@ void FLUIDGui::soundFontFileDialog()
             pathEntry->setText(s);
             }
       }
+
+void FLUIDGui::processEvent(const MidiPlayEvent& ev) 
+{
+      // p4.0.27 
+      if (ev.type() == ME_SYSEX)   {
+            const unsigned char* data = ev.data();
+            switch (*data) {
+                  case FS_SEND_SOUNDFONT_NAME: {
+                        //const char* filename = data+1;
+                        //pathEntry->setText(QString(filename));
+                        pathEntry->setText((const char*)(data+1));
+                        break;
+                        }
+                  default:
+                          #ifdef FS_DEBUG
+                          printf("FLUIDGui::processEvent() : Unknown Sysex received: %d\n", ev.type());
+                          #endif
+                        break;
+            }
+      }
+      else
+      {
+          #ifdef FS_DEBUG
+          printf("FLUIDGui::processEvent - unknown event of type %dreceived from synth.\n", ev.type());
+          #endif
+      }    
+}
+
+//---------------------------------------------------------
+//   readMessage
+//---------------------------------------------------------
+
+void FLUIDGui::readMessage(int)
+      {
+      MessGui::readMessage();   // p4.0.27
+      }
+
 

@@ -1061,7 +1061,8 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                                 // For now, do not accept if the last byte is not EOX, meaning it's a chunk with more chunks to follow.
                                 if(*(((unsigned char*)ev->buffer) + ev->size - 1) != ME_SYSEX_END)
                                 {
-                                  printf("MidiJackDevice::eventReceived sysex chunks not supported!\n");
+                                  if(debugMsg)
+                                    printf("MidiJackDevice::eventReceived sysex chunks not supported!\n");
                                   return;
                                 }
                                 
@@ -1092,15 +1093,17 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                                 //break;
                           //      return;
                           default:
-                                printf("MidiJackDevice::eventReceived unsupported system event 0x%02x\n", type);
+                                if(debugMsg)
+                                  printf("MidiJackDevice::eventReceived unsupported system event 0x%02x\n", type);
                                 return;
                     }
                   }
                   //return;
                   break;
             default:
-              printf("MidiJackDevice::eventReceived unknown event 0x%02x\n", type);
-              //printf("MidiJackDevice::eventReceived unknown event 0x%02x size:%d buf:0x%02x 0x%02x 0x%02x ...0x%02x\n", type, ev->size, *(ev->buffer), *(ev->buffer + 1), *(ev->buffer + 2), *(ev->buffer + (ev->size - 1)));
+              if(debugMsg)
+                printf("MidiJackDevice::eventReceived unknown event 0x%02x\n", type);
+                //printf("MidiJackDevice::eventReceived unknown event 0x%02x size:%d buf:0x%02x 0x%02x 0x%02x ...0x%02x\n", type, ev->size, *(ev->buffer), *(ev->buffer + 1), *(ev->buffer + 2), *(ev->buffer + (ev->size - 1)));
               return;
             }
 

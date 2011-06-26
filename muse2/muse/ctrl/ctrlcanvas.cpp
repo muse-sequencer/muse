@@ -308,7 +308,9 @@ void CtrlCanvas::setPos(int idx, unsigned val, bool adjustScrollbar)
 void CtrlCanvas::setMidiController(int num)
       {
       _cnum = num;    
-      partControllers(curPart, _cnum, &_dnum, &_didx, &_controller, &ctrl);
+      //if(curPart)         
+        partControllers(curPart, _cnum, &_dnum, &_didx, &_controller, &ctrl);
+      
       if(_panel)
       {
         if(_cnum == CTRL_VELOCITY)              
@@ -474,6 +476,9 @@ void CtrlCanvas::songChanged(int type)
     //return;
   }
   
+  if(!curPart)         // p4.0.27
+    return;
+              
   if(type & (SC_CONFIG | SC_DRUMMAP | SC_PART_MODIFIED | SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED))   // p4.0.18
     updateItems();
   else
@@ -500,6 +505,19 @@ void CtrlCanvas::partControllers(const MidiPart* part, int num, int* dnum, int* 
   }
   else 
   {
+    if(!part)         // p4.0.27
+    {
+      if(mcvl)
+        *mcvl = 0;
+      if(mc)
+        *mc = 0;
+      if(dnum)
+        *dnum = 0;
+      if(didx)
+        *didx = 0;
+      return;
+    }
+    
     MidiTrack* mt = part->track();
     MidiPort* mp;
     int di;
@@ -570,9 +588,10 @@ void CtrlCanvas::updateItems()
               
               MidiPart* part = (MidiPart*)(p->second);
               EventList* el = part->events();
-              MidiController* mc;
+              //MidiController* mc;
               MidiCtrlValList* mcvl;
-              partControllers(part, _cnum, 0, 0, &mc, &mcvl);
+              //partControllers(part, _cnum, 0, 0, &mc, &mcvl);
+              partControllers(part, _cnum, 0, 0, 0, &mcvl);
               unsigned len = part->lenTick();
 
               for (iEvent i = el->begin(); i != el->end(); ++i) 
@@ -643,6 +662,9 @@ void CtrlCanvas::updateSelections()
 
 void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
       {
+      if(!_controller)  // p4.0.27
+        return;
+        
       start = event->pos();
       Tool activeTool = tool;
       
@@ -654,9 +676,9 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
 
       switch (activeTool) {
             case PointerTool:
-                  drag = DRAG_LASSO_START;
-                  
+                  if(curPart)      // p4.0.27
                   {
+                    drag = DRAG_LASSO_START;
                     bool do_redraw = false;
                     if (!ctrlKey)
                     {
@@ -748,6 +770,9 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
 
 void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
       {
+      if(!_controller)  // p4.0.27
+        return;
+        
       QPoint pos  = event->pos();
       QPoint dist = pos - start;
       bool moving = dist.y() >= 3 || dist.y() <= 3 || dist.x() >= 3 || dist.x() <= 3;
@@ -820,6 +845,7 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
                   lasso.setRect(-1, -1, -1, -1);
 
             case DRAG_LASSO:
+                  if(_controller)  // p4.0.27
                   {
                     ///if (!ctrlKey)
                     ///      deselectAll();
@@ -866,6 +892,9 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
 
 void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
       {
+      if(!curPart || !_controller)         // p4.0.27
+        return;
+      
       if(x2 - x1 < 0)
       {
         int a = x1;
@@ -967,6 +996,9 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
 
 void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
       {
+      if(!curPart || !_controller)         // p4.0.27
+        return;
+      
       int h   = height();
       bool changed = false;
       int type = _controller->num();
@@ -1033,6 +1065,9 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
 
 void CtrlCanvas::changeVal(int x1, int x2, int y)
       {
+      if(!curPart || !_controller)         // p4.0.27
+        return;
+      
       bool changed = false;
       int newval = computeVal(_controller, y, height());
       int type = _controller->num();
@@ -1096,6 +1131,9 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
 
 void CtrlCanvas::newVal(int x1, int y)
       {
+      if(!curPart || !_controller)         // p4.0.27
+        return;
+      
       int xx1  = editor->rasterVal1(x1);
       int xx2  = editor->rasterVal2(x1);
       // If x1 happens to lie directly on a raster, xx1 will equal xx2, 
@@ -1304,6 +1342,9 @@ void CtrlCanvas::newVal(int x1, int y)
 
 void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
       {
+      if(!curPart || !_controller)         // p4.0.27
+        return;
+      
       if(x2 - x1 < 0)
       {
         int a = x1;
@@ -1483,6 +1524,9 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
 
 void CtrlCanvas::deleteVal(int x1, int x2, int)
       {
+      if(!curPart)         // p4.0.27
+        return;
+      
       if(x2 - x1 < 0)
       {
         int a = x1;
@@ -1626,6 +1670,9 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MidiPart* part
   }
   else
   {
+    if(!part)         // p4.0.27
+      return;
+    
     MidiTrack* mt = part->track();
     MidiPort* mp;
     
@@ -1750,7 +1797,9 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MidiPart* part
 
 void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
       {
-      
+      if(!_controller)   // p4.0.27
+        return;
+       
       int x = rect.x() - 1;   // compensate for 3 pixel line width
       int y = rect.y();
       int w = rect.width() + 2;

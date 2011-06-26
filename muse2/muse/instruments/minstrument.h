@@ -77,6 +77,9 @@ class MidiInstrument {
       EventList* _midiInit;
       EventList* _midiReset;
       EventList* _midiState;
+      // Set when loading midi state in SynthI::read, to indicate version 
+      //  to SynthI::initInstance, which is called later. 
+      int        _tmpMidiStateVersion; 
       char* _initScript;
       QString _name;
       QString _filePath;

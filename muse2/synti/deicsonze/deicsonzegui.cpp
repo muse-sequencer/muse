@@ -40,6 +40,7 @@
 #include "muse/midictrl.h"
 #include "config.h"
 
+#include "common_defs.h"
 #include "deicsonzegui.h"
 
 #include "plugin.h"
@@ -483,9 +484,11 @@ void DeicsOnzeGui::setChangeChannel(int c) {
 // setPanic
 //-----------------------------------------------------------
 void DeicsOnzeGui::setPanic() {
-  unsigned char* message = new unsigned char[1];
-  message[0]=SYSEX_PANIC;
-  sendSysex(message, 1); 
+  unsigned char message[3];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_PANIC;
+  sendSysex(message, 3); 
 }
 
 //-----------------------------------------------------------
@@ -517,10 +520,12 @@ void DeicsOnzeGui::setNbrVoices(int nv) {
 // setMidiInCh
 //----------------------------------------------------------
 //void DeicsOnzeGui::setMidiInCh(int m) {
-//  unsigned char* message = new unsigned char[2];
-//  message[0]=SYSEX_CHANNELNUM;
-//  message[1]=(unsigned char)(m-1);
-//  sendSysex(message, 2);
+//  unsigned char message[4];
+//  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+//  message[1]=DEICSONZE_UNIQUE_ID;
+//  message[2]=SYSEX_CHANNELNUM;
+//  message[3]=(unsigned char)(m-1);
+//  sendSysex(message, 4);
 //}
 
 //-----------------------------------------------------------
@@ -625,57 +630,69 @@ void DeicsOnzeGui::loadConfiguration() {
 // setQuality
 //-----------------------------------------------------------
 void DeicsOnzeGui::setQuality(const QString& q) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_QUALITY;
-  message[1]=(unsigned char)(q=="High"?
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_QUALITY;
+  message[3]=(unsigned char)(q=="High"?
 			     high:(q=="Middle"?
 				   middle:(q=="Low"?low:ultralow)));
-  sendSysex(message, 2);
+  sendSysex(message, 4);
 }
 //-----------------------------------------------------------
 // setFilter
 //-----------------------------------------------------------
 void DeicsOnzeGui::setFilter(bool f) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_FILTER;
-  message[1]=(unsigned char)f;
-  sendSysex(message, 2);
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_FILTER;
+  message[3]=(unsigned char)f;
+  sendSysex(message, 4);
 }  
 //-----------------------------------------------------------
 // setFontSize
 //-----------------------------------------------------------
 void DeicsOnzeGui::setFontSize(int fs) {
   applyFontSize(fs);
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_FONTSIZE;
-  message[1]=(unsigned char)fs;
-  sendSysex(message, 2);
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_FONTSIZE;
+  message[3]=(unsigned char)fs;
+  sendSysex(message, 4);
 }
 //-----------------------------------------------------------
 // setSaveOnlyUsed
 //-----------------------------------------------------------
 void DeicsOnzeGui::setSaveOnlyUsed(bool sou) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_SAVEONLYUSED;
-  message[1]=(unsigned char)sou;
-  sendSysex(message, 2);
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_SAVEONLYUSED;
+  message[3]=(unsigned char)sou;
+  sendSysex(message, 4);
   updateSaveOnlyUsed(sou);  
 }
 void DeicsOnzeGui::setSaveOnlyUsedComp(bool souc) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_SAVEONLYUSED;
-  message[1]=(unsigned char)!souc;
-  sendSysex(message, 2);
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_SAVEONLYUSED;
+  message[3]=(unsigned char)!souc;
+  sendSysex(message, 4);
   updateSaveOnlyUsed(!souc);
 }
 //-----------------------------------------------------------
 // setSaveConfig
 //-----------------------------------------------------------
 void DeicsOnzeGui::setSaveConfig(bool ssc) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_SAVECONFIG;
-  message[1]=(unsigned char)ssc;
-  sendSysex(message, 2);
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_SAVECONFIG;
+  message[3]=(unsigned char)ssc;
+  sendSysex(message, 4);
 }
 //-----------------------------------------------------------
 // setColor
@@ -1524,6 +1541,7 @@ void DeicsOnzeGui::processEvent(const MidiPlayEvent& ev) {
   else if (ev.type() == ME_SYSEX) {
     //printf("ME_SYSEX\n");
     unsigned char* data = ev.data();
+    
     int cmd = *data;
     float f;
     switch (cmd) {
@@ -2489,16 +2507,20 @@ void DeicsOnzeGui::setProg(int pr) {//must be changed with SysEx
 void DeicsOnzeGui::setIsInitSet(bool b) {
   initSetPathLineEdit->setEnabled(b);
   initSetBrowsePushButton->setEnabled(b);
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_ISINITSET;
-  message[1]=(unsigned char)b;
-  sendSysex(message, 2);
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_ISINITSET;
+  message[3]=(unsigned char)b;
+  sendSysex(message, 4);
 }
 void DeicsOnzeGui::setInitSetPath(const QString& s) {
-  unsigned char* message = new unsigned char[1+MAXSTRLENGTHINITSETPATH];
-  message[0]=SYSEX_INITSETPATH;
-  strncpy((char*)&message[1], s.toAscii().data(), MAXSTRLENGTHINITSETPATH);
-  sendSysex(message, 1+MAXSTRLENGTHINITSETPATH);
+  unsigned char message[3+MAXSTRLENGTHINITSETPATH];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_INITSETPATH;
+  strncpy((char*)&message[3], s.toAscii().data(), MAXSTRLENGTHINITSETPATH);
+  sendSysex(message, 3+MAXSTRLENGTHINITSETPATH);
 }
 void DeicsOnzeGui::setBrowseInitSetPath() {
   QString fileName =
@@ -2522,18 +2544,22 @@ void DeicsOnzeGui::setIsBackgroundPix(bool b) {
   else setBackgroundColor(reinterpret_cast<const QColor &>(*bColor));
   imagePathLineEdit->setEnabled(b);
   imageBrowsePushButton->setEnabled(b);
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_ISBACKGROUNDPIX;
-  message[1]=(unsigned char)b;
-  sendSysex(message, 2);
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_ISBACKGROUNDPIX;
+  message[3]=(unsigned char)b;
+  sendSysex(message, 4);
 }
 void DeicsOnzeGui::setBackgroundPixPath(const QString& s) {
   applyBackgroundPix();
-  unsigned char* message = new unsigned char[1+MAXSTRLENGTHBACKGROUNDPIXPATH];
-  message[0]=SYSEX_BACKGROUNDPIXPATH;
-  strncpy((char*)&message[1], s.toAscii().data(),
+  unsigned char message[3+MAXSTRLENGTHBACKGROUNDPIXPATH];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_BACKGROUNDPIXPATH;
+  strncpy((char*)&message[3], s.toAscii().data(),
 	  MAXSTRLENGTHBACKGROUNDPIXPATH);
-  sendSysex(message, 1+MAXSTRLENGTHBACKGROUNDPIXPATH);
+  sendSysex(message, 3+MAXSTRLENGTHBACKGROUNDPIXPATH);
 }
 void DeicsOnzeGui::setBrowseBackgroundPixPath() {
   QString fileName =
@@ -2553,87 +2579,111 @@ void DeicsOnzeGui::setBrowseBackgroundPixPath() {
 // FX
 //-----------------------------------------------------------
 void DeicsOnzeGui::setChorusActiv(bool a) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_CHORUSACTIV;
-  message[1]=(unsigned char)a;
-  sendSysex(message, 2);  
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_CHORUSACTIV;
+  message[3]=(unsigned char)a;
+  sendSysex(message, 4);  
 }
 void DeicsOnzeGui::setChannelChorus(int c) {
   sendController(_currentChannel, CTRL_CHORUS_SEND, c);
 }
 void DeicsOnzeGui::setChorusReturn(int val) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_CHORUSRETURN;
-  message[1]=(unsigned char)val;
-  sendSysex(message, 2);
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_CHORUSRETURN;
+  message[3]=(unsigned char)val;
+  sendSysex(message, 4);
 }
 void DeicsOnzeGui::setSelectChorusPlugin() {
   Plugin* pluginChorus = PluginDialog::getPlugin(this);
   if(pluginChorus) {
-    unsigned char* message = new unsigned char[1+sizeof(Plugin*)];
-    message[0]=SYSEX_SELECTCHORUS;
-    memcpy(&message[1], &pluginChorus, sizeof(Plugin*));
-    sendSysex(message, 1+sizeof(Plugin*));
+    unsigned char message[3+sizeof(Plugin*)];
+    message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+    message[1]=DEICSONZE_UNIQUE_ID;
+    message[2]=SYSEX_SELECTCHORUS;
+    memcpy(&message[3], &pluginChorus, sizeof(Plugin*));
+    sendSysex(message, 3+sizeof(Plugin*));
   }
 }
 /*void DeicsOnzeGui::setPanChorus1(double i) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_CHORUS1PAN;
-  message[1]=(unsigned char)(i*(double)MAXCHORUSPARAM);
-  sendSysex(message, 2);  
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_CHORUS1PAN;
+  message[3]=(unsigned char)(i*(double)MAXCHORUSPARAM);
+  sendSysex(message, 4);  
 }
 void DeicsOnzeGui::setLFOFreqChorus1(double i) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_CHORUS1LFOFREQ;
-  message[1]=(unsigned char)(i*(double)MAXCHORUSPARAM);
-  sendSysex(message, 2);  
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_CHORUS1LFOFREQ;
+  message[3]=(unsigned char)(i*(double)MAXCHORUSPARAM);
+  sendSysex(message, 4);  
 }
 void DeicsOnzeGui::setDepthChorus1(double i) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_CHORUS1DEPTH;
-  message[1]=(unsigned char)(i*(double)MAXCHORUSPARAM);
-  sendSysex(message, 2);  
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_CHORUS1DEPTH;
+  message[3]=(unsigned char)(i*(double)MAXCHORUSPARAM);
+  sendSysex(message, 4);  
 }
 void DeicsOnzeGui::setPanChorus2(double i) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_CHORUS2PAN;
-  message[1]=(unsigned char)(i*(double)MAXCHORUSPARAM);
-  sendSysex(message, 2);  
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_CHORUS2PAN;
+  message[3]=(unsigned char)(i*(double)MAXCHORUSPARAM);
+  sendSysex(message, 4);  
 }
 void DeicsOnzeGui::setLFOFreqChorus2(double i) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_CHORUS2LFOFREQ;
-  message[1]=(unsigned char)(i*(double)MAXCHORUSPARAM);
-  sendSysex(message, 2);  
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_CHORUS2LFOFREQ;
+  message[3]=(unsigned char)(i*(double)MAXCHORUSPARAM);
+  sendSysex(message, 4);  
 }
 void DeicsOnzeGui::setDepthChorus2(double i) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_CHORUS2DEPTH;
-  message[1]=(unsigned char)(i*(double)MAXCHORUSPARAM);
-  sendSysex(message, 2);  
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_CHORUS2DEPTH;
+  message[3]=(unsigned char)(i*(double)MAXCHORUSPARAM);
+  sendSysex(message, 4);  
   }*/
 void DeicsOnzeGui::setReverbActiv(bool a) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_REVERBACTIV;
-  message[1]=(unsigned char)a;
-  sendSysex(message, 2);
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_REVERBACTIV;
+  message[3]=(unsigned char)a;
+  sendSysex(message, 4);
 }
 void DeicsOnzeGui::setChannelReverb(int r) {
   sendController(_currentChannel, CTRL_REVERB_SEND, r);
 }
 void DeicsOnzeGui::setReverbReturn(int val) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_REVERBRETURN;
-  message[1]=(unsigned char)val;
-  sendSysex(message, 2);
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_REVERBRETURN;
+  message[3]=(unsigned char)val;
+  sendSysex(message, 4);
 }
 void DeicsOnzeGui::setSelectReverbPlugin() {
   Plugin* pluginReverb = PluginDialog::getPlugin(this);
   if(pluginReverb) {
-    unsigned char* message = new unsigned char[1+sizeof(Plugin*)];
-    message[0]=SYSEX_SELECTREVERB;
-    memcpy(&message[1], &pluginReverb, sizeof(Plugin*));
-    sendSysex(message, 1+sizeof(Plugin*));
+    unsigned char message[3+sizeof(Plugin*)];
+    message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+    message[1]=DEICSONZE_UNIQUE_ID;
+    message[2]=SYSEX_SELECTREVERB;
+    memcpy(&message[3], &pluginReverb, sizeof(Plugin*));
+    sendSysex(message, 3+sizeof(Plugin*));
   }
 }
 
@@ -2674,10 +2724,12 @@ void DeicsOnzeGui::setMasterVolKnob(double mv) {
   setMasterVol((int)(mv*(double)MAXMASTERVOLUME));
 }
 void DeicsOnzeGui::setMasterVol(int mv) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_MASTERVOL;
-  message[1]=(unsigned char)mv;
-  sendSysex(message, 2);
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_MASTERVOL;
+  message[3]=(unsigned char)mv;
+  sendSysex(message, 4);
 }
 
 void DeicsOnzeGui::setFeedback(int f) {sendController(_currentChannel, CTRL_FEEDBACK, f);}
@@ -3051,91 +3103,117 @@ void DeicsOnzeGui::setWaveForm4(int w) {
 // set delay
 //--------------------------------------------------------------
 void DeicsOnzeGui::setActivDelay(bool a) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_DELAYACTIV;
-  message[1]=(unsigned char)a;
-  sendSysex(message, 2);
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_DELAYACTIV;
+  message[3]=(unsigned char)a;
+  sendSysex(message, 4);
 }
 void DeicsOnzeGui::setDelayReturn(int r) {
-  unsigned char* message = new unsigned char[2];
-  message[0]=SYSEX_DELAYRETURN;
-  message[1]=(unsigned char)r;
-  sendSysex(message, 2);
+  unsigned char message[4];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_DELAYRETURN;
+  message[3]=(unsigned char)r;
+  sendSysex(message, 4);
 }
 void DeicsOnzeGui::setChannelDelay(int d) {
   sendController(_currentChannel, CTRL_VARIATION_SEND, (unsigned char)d);
 }
 //void DeicsOnzeGui::setDelayTime(int t) {
-//  unsigned char* message = new unsigned char[2];
-//  message[0]=SYSEX_DELAYTIME;
-//  message[1]=(unsigned char)t;
-//  sendSysex(message, 2);
+//  unsigned char message[4];
+//  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+//  message[1]=DEICSONZE_UNIQUE_ID;
+//  message[2]=SYSEX_DELAYTIME;
+//  message[3]=(unsigned char)t;
+//  sendSysex(message, 4);
 //  updateDelayTime(t);
 //}
 void DeicsOnzeGui::setDelayBPM(double t) {
   //int it = (int)(((t - MINDELAYTIME) / (MAXDELAYTIME - MINDELAYTIME))*255.0);
-  unsigned char* message = new unsigned char[sizeof(float)+1];
-  message[0]=SYSEX_DELAYBPM;
+  unsigned char message[sizeof(float)+3];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_DELAYBPM;
   float f = (float)t;
-  memcpy(&message[1], &f, sizeof(float));
-  message[1]=(unsigned char)f;
-  sendSysex(message, sizeof(float)+1);
+  ///memcpy(&message[1], &f, sizeof(float));
+  memcpy(&message[3], &f, sizeof(float));
+  ///message[1]=(unsigned char)f;
+  message[3]=(unsigned char)f;
+  sendSysex(message, sizeof(float)+3);
   //updateDelayTime(it);
 } 
 void DeicsOnzeGui::setDelayBeatRatio(double t) {
-  unsigned char* message = new unsigned char[sizeof(float)+1];
-  message[0]=SYSEX_DELAYBEATRATIO;
+  unsigned char message[sizeof(float)+3];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_DELAYBEATRATIO;
   float f = (float)t;
-  memcpy(&message[1], &f, sizeof(float));
-  message[1]=(unsigned char)f;
-  sendSysex(message, sizeof(float)+1);
+  ///memcpy(&message[1], &f, sizeof(float));
+  memcpy(&message[3], &f, sizeof(float));
+  ///message[1]=(unsigned char)f;
+  message[3]=(unsigned char)f;
+  sendSysex(message, sizeof(float)+3);
 } 
 //void DeicsOnzeGui::setDelayFeedback(int f) {
-//  unsigned char* message = new unsigned char[2];
-//  message[0]=SYSEX_DELAYFEEDBACK;
-//  message[1]=(unsigned char)f;
-//  sendSysex(message, 2);
+//  unsigned char message[4];
+//  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+//  message[1]=DEICSONZE_UNIQUE_ID;
+//  message[2]=SYSEX_DELAYFEEDBACK;
+//  message[3]=(unsigned char)f;
+//  sendSysex(message, 4);
 //  updateDelayFeedback(f);
 //}
 void DeicsOnzeGui::setDelayFeedback(double t) {
   //int idf = (int)(f*128.0+128.0);
-  unsigned char* message = new unsigned char[sizeof(float)+1];
-  message[0]=SYSEX_DELAYFEEDBACK;
+  unsigned char message[sizeof(float)+3];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_DELAYFEEDBACK;
   float f = (float)t;
-  memcpy(&message[1], &f, sizeof(float));
-  sendSysex(message, sizeof(float)+1);
+  memcpy(&message[3], &f, sizeof(float));
+  sendSysex(message, sizeof(float)+3);
   //updateDelayFeedback(idf);
 }
 //void DeicsOnzeGui::setDelayPanLFOFreq(int pf) {
-//  unsigned char* message = new unsigned char[2];
-//  message[0]=SYSEX_DELAYLFOFREQ;
-//  message[1]=(unsigned char)pf;
-//  sendSysex(message, 2);
+//  unsigned char message[4];
+//  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+//  message[1]=DEICSONZE_UNIQUE_ID;
+//  message[2]=SYSEX_DELAYLFOFREQ;
+//  message[3]=(unsigned char)pf;
+//  sendSysex(message, 4);
 //  updateDelayPanLFOFreq(pf);
 //}
 void DeicsOnzeGui::setDelayPanLFOFreq(double pf) {
   //int ipf = (int)(((pf - MINFREQ) / (MAXFREQ - MINFREQ))*255.0);
-  unsigned char* message = new unsigned char[sizeof(float)+1];
-  message[0]=SYSEX_DELAYLFOFREQ;
+  unsigned char message[sizeof(float)+3];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_DELAYLFOFREQ;
   float f = (float)pf;
-  memcpy(&message[1], &f, sizeof(float));
-  sendSysex(message, sizeof(float)+1);
+  memcpy(&message[3], &f, sizeof(float));
+  sendSysex(message, sizeof(float)+3);
   //updateDelayPanLFOFreq(ipf);
 }
 //void DeicsOnzeGui::setDelayPanLFODepth(int pd) {
-//  unsigned char* message = new unsigned char[2];
-//  message[0]=SYSEX_DELAYLFODEPTH;
-//  message[1]=(unsigned char)pd;
-//  sendSysex(message, 2);
+//  unsigned char message[4];
+//  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+//  message[1]=DEICSONZE_UNIQUE_ID;
+//  message[2]=SYSEX_DELAYLFODEPTH;
+//  message[3]=(unsigned char)pd;
+//  sendSysex(message, 4);
 //  updateDelayPanLFODepth(pd);
 //}
 void DeicsOnzeGui::setDelayPanLFODepth(double pd) {
   //int ipd = (int)(pd*255.0);
-  unsigned char* message = new unsigned char[sizeof(float)+1];
-  message[0]=SYSEX_DELAYLFODEPTH;
+  unsigned char message[sizeof(float)+3];
+  message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
+  message[1]=DEICSONZE_UNIQUE_ID;
+  message[2]=SYSEX_DELAYLFODEPTH;
   float f = (float)pd;
-  memcpy(&message[1], &f, sizeof(float));
-  sendSysex(message, sizeof(float)+1);
+  memcpy(&message[3], &f, sizeof(float));
+  sendSysex(message, sizeof(float)+3);
   //updateDelayPanLFODepth(ipd);
 }
 
@@ -4339,7 +4417,9 @@ void DeicsOnzeGui::updateBackgroundPixPath(QString s) {
   imagePathLineEdit->blockSignals(false);
 }
 void DeicsOnzeGui::applyBackgroundPix() {
+  #ifdef DEICSONZE_DEBUG
   printf("applyBackgroundPix\n");
+  #endif
   QPalette p = this->palette();
   QPixmap pixmap = QPixmap(imagePathLineEdit->text());
   p.setBrush((this)->backgroundRole(), QBrush(pixmap));

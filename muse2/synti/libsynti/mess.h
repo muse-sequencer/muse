@@ -37,6 +37,10 @@ struct MidiPatch {
 //  Mess
 //    MusE experimental software synth
 //    Instance virtual interface class
+//   NOTICE: If implementing sysex support, be sure to make a unique ID and use   
+//    it to filter out unrecognized sysexes. Headers should be constructed as:
+//      MUSE_SYNTH_SYSEX_MFG_ID        The MusE SoftSynth Manufacturer ID byte (0x7C) found in midi.h 
+//      0xNN                           The synth's unique ID byte
 //---------------------------------------------------------
 
 class Mess {
@@ -49,6 +53,9 @@ class Mess {
       Mess(int channels);
       virtual ~Mess();
 
+      // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
+      virtual int oldMidiStateHeader(const unsigned char** /*data*/) const { return 0; } 
+      
       int channels() const       { return _channels;   }
       int sampleRate() const     { return _sampleRate; }
       void setSampleRate(int r)  { _sampleRate = r;    }
@@ -62,9 +69,9 @@ class Mess {
       virtual bool processEvent(const MidiPlayEvent&);
       virtual bool setController(int, int, int) { return false; }
       virtual bool playNote(int, int, int) { return false; }
-	virtual bool sysex(int, const unsigned char*) { return false; }
+      virtual bool sysex(int, const unsigned char*) { return false; }
 
-      virtual void getInitData(int*, const unsigned char**) const {}
+      virtual void getInitData(int* n, const unsigned char**) /*const*/ { *n = 0; } // No const: Synths may need to allocate member pointers. p4.0.27 Tim
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const {return 0;}
       virtual const char* getPatchName(int, int, int, bool) const { return "?"; }
       virtual const MidiPatch* getPatchInfo(int, const MidiPatch*) const { return 0; }

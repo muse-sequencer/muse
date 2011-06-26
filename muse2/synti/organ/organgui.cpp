@@ -19,6 +19,7 @@
 #include <QSocketNotifier>
 #include <QSpinBox>
 
+#include "common_defs.h"
 #include "organgui.h"
 #include "muse/midi.h"
 #include "muse/midictrl.h"
@@ -134,7 +135,9 @@ void OrganGui::setParam(int param, int val)
       
       param &= 0xfff;
       if (param >= int(sizeof(dctrl)/sizeof(*dctrl))) {
+            #ifdef ORGANGUI_DEBUG
             fprintf(stderr, "OrganGui: set unknown Ctrl 0x%x to 0x%x\n", param, val);
+            #endif
             return;
             }
       SynthGuiCtrl* ctrl = &dctrl[param];
@@ -172,7 +175,11 @@ void OrganGui::processEvent(const MidiPlayEvent& ev)
       if (ev.type() == ME_CONTROLLER)
             setParam(ev.dataA(), ev.dataB());
       else
+      {
+            #ifdef ORGANGUI_DEBUG
             printf("OrganGui::illegal event type received\n");
+            #endif
+      }      
       }
 
 //---------------------------------------------------------

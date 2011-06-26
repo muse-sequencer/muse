@@ -16,11 +16,11 @@
 
 #define SS_VERSIONSTRING "1.0"
 
-#define SS_DEBUG        0
+#define SS_DEBUG        0   
 #define SS_DEBUG_INIT   0
 #define SS_TRACE_FUNC   0
 #define SS_DEBUG_MIDI   0
-#define SS_DEBUG_LADSPA 0
+#define SS_DEBUG_LADSPA 0   
 #define SS_DEBUG_STATE  0
 
 #define SS_DBG(string) if (SS_DEBUG) fprintf(stderr, "%s:%d:%s: %s\n", __FILE__ , __LINE__ , __PRETTY_FUNCTION__, string);
@@ -34,6 +34,7 @@
 #define SS_DBG_LADSPA2(string1, string2) if (SS_DEBUG_LADSPA) fprintf(stderr, "%s:%d:%s: %s: %s\n", __FILE__ , __LINE__ , __PRETTY_FUNCTION__, string1, string2);
 
 #define SS_SYSEX_INIT_DATA_VERSION           1
+#define SS_SYSEX_EFFECT_INIT_DATA_VERSION    2   // Added Jun 15 2011. Original value was SS_SYSEX_INIT_DATA_VERSION (1). p4.0.27 Tim. 
 
 #define SS_NR_OF_CHANNELS                   16
 #define SS_AUDIO_CHANNELS                    2

@@ -22,6 +22,7 @@
 #include "muse/midi.h"
 #include "icons.h"
 
+#include "common_defs.h"
 
  /*
 #include "muse/debug.h"
@@ -183,10 +184,14 @@ void FluidSynthGui::loadClicked()
 
 void FluidSynthGui::sendLastdir(QString dir)
       {
-      int l = dir.length()+2;
+      //int l = dir.length()+2;
+      int l = dir.length()+4;
       byte data[l];
-      data[0] = FS_LASTDIR_CHANGE;
-      memcpy(data+1, dir.toLatin1(), dir.length()+1);
+      data[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      data[1] = FLUIDSYNTH_UNIQUE_ID;
+      data[2] = FS_LASTDIR_CHANGE;
+      //memcpy(data+1, dir.toLatin1(), dir.length()+1);
+      memcpy(data+3, dir.toLatin1(), dir.length()+1);
       sendSysex(data,l);
       }
 
@@ -197,11 +202,15 @@ void FluidSynthGui::sendLastdir(QString dir)
 
 void FluidSynthGui::sendLoadFont(QString filename)
       {
-      int l = filename.length()+3;
+      //int l = filename.length()+3;
+      int l = filename.length()+5;
       byte data[l];
-      data[0] = FS_PUSH_FONT;
-      data[1] = FS_UNSPECIFIED_ID;
-      memcpy(data+2, filename.toLatin1(), filename.length()+1);
+      data[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      data[1] = FLUIDSYNTH_UNIQUE_ID;
+      data[2] = FS_PUSH_FONT;
+      data[3] = FS_UNSPECIFIED_ID;
+      //memcpy(data+2, filename.toLatin1(), filename.length()+1);
+      memcpy(data+4, filename.toLatin1(), filename.length()+1);
       sendSysex(data,l);
       }
 
@@ -446,9 +455,13 @@ void FluidSynthGui::changeGain(int value)
 //---------------------------------------------------------
 void FluidSynthGui::dumpInfo()
       {
-      byte data[1];
-      data[0] = FS_DUMP_INFO;
-      sendSysex(data, 1);
+      //byte data[1];
+      byte data[3];
+      data[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      data[1] = FLUIDSYNTH_UNIQUE_ID;
+      data[2] = FS_DUMP_INFO;
+      //sendSysex(data, 1);
+      sendSysex(data, 3);
       }
 
 //---------------------------------------------------------
@@ -581,11 +594,15 @@ int FluidSynthGui::getSoundFontId(QString q)
 
 void FluidSynthGui::sendChannelChange(byte font_id, byte channel)
       {
-      byte data[3];
-      data[0] = FS_SOUNDFONT_CHANNEL_SET;
-      data[1] = font_id;
-      data[2] = channel;
-      sendSysex(data, 3);
+      //byte data[3];
+      byte data[5];
+      data[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      data[1] = FLUIDSYNTH_UNIQUE_ID;
+      data[2] = FS_SOUNDFONT_CHANNEL_SET;
+      data[3] = font_id;
+      data[4] = channel;
+      //sendSysex(data, 3);
+      sendSysex(data, 5);
       }
 
 //---------------------------------------------------------
@@ -594,21 +611,29 @@ void FluidSynthGui::sendChannelChange(byte font_id, byte channel)
 //---------------------------------------------------------
 void FluidSynthGui::sendDrumChannelChange(byte onoff, byte channel)
       {
-      byte data[3];
-      data[0] = FS_DRUMCHANNEL_SET;
-      data[1] = onoff;
-      data[2] = channel;
-      sendSysex(data, 3);
+      //byte data[3];
+      byte data[5];
+      data[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      data[1] = FLUIDSYNTH_UNIQUE_ID;
+      data[2] = FS_DRUMCHANNEL_SET;
+      data[3] = onoff;
+      data[4] = channel;
+      //sendSysex(data, 3);
+      sendSysex(data, 5);
       if (FS_DEBUG)
             printf("Sent FS_DRUMCHANNEL_SET for channel %d, status: %d\n", channel, onoff);
       }
 
 void FluidSynthGui::popClicked()
       {
-      byte data[2];
-      data[0] = FS_SOUNDFONT_POP;
-      data[1] = currentlySelectedFont;
-      sendSysex(data,2);
+      //byte data[2];
+      byte data[4];
+      data[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      data[1] = FLUIDSYNTH_UNIQUE_ID;
+      data[2] = FS_SOUNDFONT_POP;
+      data[3] = currentlySelectedFont;
+      //sendSysex(data,2);
+      sendSysex(data,4);
       }
 
 void FluidSynthGui::sfItemClicked(QTreeWidgetItem* item, int /*col*/)

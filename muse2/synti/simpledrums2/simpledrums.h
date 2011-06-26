@@ -5,6 +5,7 @@
 //
 //
 // Author: Mathias Lundgren <lunar_shuttle@users.sf.net>, (C) 2004
+//  Contributer: (C) Copyright 2011 Tim E. Real (terminator356 at users.sourceforge.net)
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -15,6 +16,7 @@
 #include <sndfile.h>
 #include "libsynti/mess.h"
 #include "common.h"
+#include "common_defs.h"
 //#include "libsynti/mpevent.h"
 #include "muse/mpevent.h"   
 #include "simpledrumsgui.h"
@@ -124,11 +126,15 @@ class SimpleSynth : public Mess
       virtual bool sysex(int arg1, const unsigned char* arg2);
       virtual const char* getPatchName(int arg1, int arg2, int arg3) const;
       virtual const MidiPatch* getPatchInfo(int arg1, const MidiPatch* arg2) const;
-      virtual int getControllerInfo(int arg1, const char** arg2, int* arg3, int* arg4, int* arg5);
+      virtual int getControllerInfo(int arg1, const char** arg2, int* arg3, int* arg4, int* arg5, int* arg6) const;
+      virtual void processMessages();
       virtual void process(float** data, int offset, int len);
       //virtual void showGui(bool arg1);
       virtual void showNativeGui(bool arg1);
+      ///virtual void getInitData(int*, const unsigned char**) const;
       virtual void getInitData(int*, const unsigned char**);
+      // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
+      virtual int oldMidiStateHeader(const unsigned char** data) const;
       bool init(const char* name);
       void guiSendSampleLoaded(bool success, int ch, const char* filename);
       void guiSendError(const char* errorstring);
@@ -139,6 +145,10 @@ class SimpleSynth : public Mess
 private:
       SimpleSynthGui* gui;
 
+      byte* initBuffer;
+      int initLen;
+      void setupInitBuffer(int len);
+      
       SS_Channel channels[SS_NR_OF_CHANNELS];
       SS_Controller controllers[SS_NR_OF_CONTROLLERS];
       bool setController(int channel, int id, int val, bool fromGui);

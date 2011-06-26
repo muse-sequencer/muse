@@ -150,7 +150,8 @@ QString nameSysex(unsigned int len, const unsigned char* buf)
             case 0x43:  s = "Yamaha: "; break;
             case 0x44:  s = "Casio"; break;
             case 0x45:  s = "Akai"; break;
-            case 0x7c:  s = "MusE Soft Synth"; break;
+            //case 0x7c:  s = "MusE Soft Synth"; break;
+            case MUSE_SYNTH_SYSEX_MFG_ID:  s = "MusE Soft Synth"; break;     // p4.0.27
             case 0x7d:  s = "Educational Use"; break;
             case 0x7e:  s = "Universal: Non Real Time"; break;
             case 0x7f:  s = "Universal: Real Time"; break;

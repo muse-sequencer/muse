@@ -1889,35 +1889,43 @@ void AudioTrack::setChannels(int n)
 
 void AudioTrack::setTotalOutChannels(int num)
 {
-      if(num == _totalOutChannels)
-        return;
-        
+      //if(num == _totalOutChannels)
+      //  return;
+      // p4.0.27 Fixes crash if file loaded with track channels less than synth channels. 
       int chans = _totalOutChannels;
-      // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less. 
-      if(chans < MAX_CHANNELS)
-        chans = MAX_CHANNELS;
-      for(int i = 0; i < chans; ++i) 
+      if(num != chans)  
       {
-        if(outBuffers[i])
-          free(outBuffers[i]);
-      }
-      delete[] outBuffers;
       
-      _totalOutChannels = num;
-      chans = num;
-      // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less. 
-      if(chans < MAX_CHANNELS)
-        chans = MAX_CHANNELS;
+        //int chans = _totalOutChannels;
+        // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less. 
+        if(chans < MAX_CHANNELS)
+          chans = MAX_CHANNELS;
+        for(int i = 0; i < chans; ++i) 
+        {
+          if(outBuffers[i])
+            free(outBuffers[i]);
+        }
+        delete[] outBuffers;
         
-      outBuffers = new float*[chans];
-      for (int i = 0; i < chans; ++i)
-            posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * segmentSize);
-      
+        _totalOutChannels = num;
+        chans = num;
+        // Number of allocated buffers is always MAX_CHANNELS or more, even if _totalOutChannels is less. 
+        if(chans < MAX_CHANNELS)
+          chans = MAX_CHANNELS;
+          
+        outBuffers = new float*[chans];
+        for (int i = 0; i < chans; ++i)
+              posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * segmentSize);
+        
+        //chans = num;
+        // Limit the actual track (meters, copying etc, all 'normal' operation) to two-channel stereo.
+        //if(chans > MAX_CHANNELS)
+        //  chans = MAX_CHANNELS;
+      }  
       chans = num;
       // Limit the actual track (meters, copying etc, all 'normal' operation) to two-channel stereo.
       if(chans > MAX_CHANNELS)
         chans = MAX_CHANNELS;
-      
       setChannels(chans);
 }
 
