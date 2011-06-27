@@ -12,9 +12,7 @@
 #include "canvas.h"
 #include "trackautomationview.h"
 
-class QDragMoveEvent;
 class QDropEvent;
-class QDragLeaveEvent;
 class QMouseEvent;
 class QKeyEvent;
 class QEvent;
@@ -84,19 +82,16 @@ class PartCanvas : public Canvas {
       virtual int y2pitch(int y) const;
       virtual int pitch2y(int p) const;
       
-      virtual void moveCanvasItems(CItemList&, int, int, DragType, int*);
-      virtual bool moveItem(CItem*, const QPoint&, DragType);
       virtual CItem* newItem(const QPoint&, int);
       virtual void resizeItem(CItem*,bool);
       virtual void newItem(CItem*,bool);
       virtual bool deleteItem(CItem*);
-      virtual void startUndo(DragType);
-      
-      virtual void endUndo(DragType, int);
+      virtual void moveCanvasItems(CItemList&, int, int, DragType);
+      virtual UndoOp moveItem(CItem*, const QPoint&, DragType);
+
+      virtual void updateSong(DragType, int);
       virtual void startDrag(CItem*, DragType);
       virtual void dragEnterEvent(QDragEnterEvent*);
-      virtual void dragMoveEvent(QDragMoveEvent*);
-      virtual void dragLeaveEvent(QDragLeaveEvent*);
       virtual void viewDropEvent(QDropEvent*);
 
       virtual QMenu* genItemPopup(CItem*);
@@ -107,8 +102,8 @@ class PartCanvas : public Canvas {
 
       void copy(PartList*);
       void paste(bool clone = false, bool toTrack = true, bool doInsert=false);
-      int pasteAt(const QString&, Track*, unsigned int, bool clone = false, bool toTrack = true);
-      void movePartsTotheRight(unsigned int startTick, int length);
+      Undo pasteAt(const QString&, Track*, unsigned int, bool clone = false, bool toTrack = true, int* finalPosPtr = NULL);
+      Undo movePartsTotheRight(unsigned int startTick, int length);
       //Part* readClone(Xml&, Track*, bool toTrack = true);
       void drawWavePart(QPainter&, const QRect&, WavePart*, const QRect&);
       //void drawMidiPart(QPainter&, const QRect& rect, EventList* events, MidiTrack*mt, const QRect& r, int pTick, int from, int to);
@@ -127,6 +122,7 @@ class PartCanvas : public Canvas {
 
    protected:
       virtual void drawCanvas(QPainter&, const QRect&);
+      virtual void endMoveItems(const QPoint&, DragType, int dir);
 
    signals:
       void timeChanged(unsigned);

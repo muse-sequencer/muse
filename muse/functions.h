@@ -51,8 +51,8 @@ bool quantize_notes(const std::set<Part*>& parts, int range, int raster, bool le
 bool erase_notes(const std::set<Part*>& parts, int range, int velo_threshold=0, bool velo_thres_used=false, int len_threshold=0, bool len_thres_used=false);
 bool delete_overlaps(const std::set<Part*>& parts, int range);
 bool set_notelen(const std::set<Part*>& parts, int range, int len);
-bool move_notes(const std::set<Part*>& parts, int range, signed int ticks, bool do_undo=true);
-bool transpose_notes(const std::set<Part*>& parts, int range, signed int halftonesteps, bool do_undo=true);
+bool move_notes(const std::set<Part*>& parts, int range, signed int ticks);
+bool transpose_notes(const std::set<Part*>& parts, int range, signed int halftonesteps);
 bool crescendo(const std::set<Part*>& parts, int range, int start_val, int end_val, bool absolute);
 bool legato(const std::set<Part*>& parts, int range, int min_len=1, bool dont_shorten=false);
 
@@ -83,6 +83,11 @@ void select_none(const std::set<Part*>& parts);
 void select_invert(const std::set<Part*>& parts);
 void select_in_loop(const std::set<Part*>& parts);
 void select_not_in_loop(const std::set<Part*>& parts);
+
+//functions for parts
+void shrink_parts(int raster=-1); //negative values mean "config.division"
+void expand_parts(int raster=-1);
+void clean_parts();
 
 //functions for reading and writing default values
 class Xml;

@@ -85,9 +85,6 @@ void chainCloneInternal(Part* p)
       const PartList* pl = mt->cparts();
       for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
       {
-        // Added by Tim. p3.3.6
-        //printf("chainCloneInternal track %p %s part %p %s evlist %p\n", (*imt), (*imt)->name().toLatin1().constData(), ip->second, ip->second->name().toLatin1().constData(), ip->second->cevents());
-    
         if(ip->second != p && ip->second->cevents() == p->cevents())
         {
           p1 = ip->second;
@@ -224,16 +221,9 @@ void replaceClone(Part* p1, Part* p2)
   else
     p2->setNextClone(p2);
   
-  // Link the replacement...
-  //p2->setPrevClone(p1->prevClone());
-  //p2->setNextClone(p1->nextClone());
-  
   // Isolate the replaced part.
   p1->setNextClone(p1);
   p1->setPrevClone(p1);
-  // Added by Tim. p3.3.6
-  //printf("replaceClone p1: %s %p arefs:%d p2: %s %p arefs:%d\n", p1->name().toLatin1().constData(), p1, ); 
-                        
 }
 
 //---------------------------------------------------------
@@ -278,9 +268,6 @@ void chainTrackParts(Track* t, bool incRefCount)
     if(incRefCount)
       p->events()->incARef(1);
       
-    // Added by Tim. p3.3.6
-    //printf("chainTrackParts track %p %s part %p %s evlist %p\n", t, t->name().toLatin1().constData(), p, p->name().toLatin1().constData(), p->cevents());
-    
     Part* p1 = 0;
     
     // Look for a part with the same event list, that we can chain to.
@@ -296,9 +283,6 @@ void chainTrackParts(Track* t, bool incRefCount)
         const PartList* pl = mt->cparts();
         for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
         {
-          // Added by Tim. p3.3.6
-          //printf("chainTrackParts track %p %s part %p %s evlist %p\n", mt, mt->name().toLatin1().constData(), ip->second, ip->second->name().toLatin1().constData(), ip->second->cevents());
-      
           if(ip->second != p && ip->second->cevents() == p->cevents())
           {
             p1 = ip->second;
@@ -381,21 +365,12 @@ void addPortCtrlEvents(Event& event, Part* part, bool doClones)
     //for(int i = 0; i < j; ++i)
     while(1)
     {
-      // Added by Tim. p3.3.6
-      //printf("addPortCtrlEvents i:%d %s %p events %p refs:%d arefs:%d\n", i, p->name().toLatin1().constData(), p, part->cevents(), part->cevents()->refCount(), j); 
-      
       Track* t = p->track();
       if(t && t->isMidiTrack())
       {
         MidiTrack* mt = (MidiTrack*)t;
         int port = mt->outPort();
-        //const EventList* el = p->cevents();
         unsigned len = p->lenTick();
-        //for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
-        //{
-          //const Event& ev = ie->second;
-          // Added by Tim. p3.3.6
-          //printf("addPortCtrlEvents %s len:%d end:%d etick:%d\n", p->name().toLatin1().constData(), p->lenTick(), p->endTick(), event.tick()); 
           
           // Do not add events which are past the end of the part.
           if(event.tick() >= len)
@@ -425,7 +400,6 @@ void addPortCtrlEvents(Event& event, Part* part, bool doClones)
             
             mp->setControllerVal(ch, tck, cntrl, val, p);
           }
-        //}
       }
       
       if(!doClones)
@@ -456,9 +430,6 @@ void addPortCtrlEvents(Part* part, bool doClones)
     //for(int i = 0; i < j; ++i)
     while(1)
     {
-      // Added by Tim. p3.3.6
-      //printf("addPortCtrlEvents i:%d %s %p events %p refs:%d arefs:%d\n", i, p->name().toLatin1().constData(), p, part->cevents(), part->cevents()->refCount(), j); 
-      
       Track* t = p->track();
       if(t && t->isMidiTrack())
       {
@@ -532,16 +503,6 @@ void removePortCtrlEvents(Event& event, Part* part, bool doClones)
       {
         MidiTrack* mt = (MidiTrack*)t;
         int port = mt->outPort();
-        //const EventList* el = p->cevents();
-        //unsigned len = p->lenTick();
-        //for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
-        //{
-          //const Event& ev = ie->second;
-          // Added by T356. Do not remove events which are past the end of the part.
-          // No, actually, do remove ALL of them belonging to the part.
-          // Just in case there are stray values left after the part end.
-          //if(ev.tick() >= len)
-          //  break;
                             
           if(event.type() == Controller)
           {
@@ -566,7 +527,6 @@ void removePortCtrlEvents(Event& event, Part* part, bool doClones)
             
             mp->deleteController(ch, tck, cntrl, p);
           }
-        //}
       }  
       
       if(!doClones)
@@ -734,14 +694,6 @@ MidiPart::MidiPart(const MidiPart& p) : Part(p)
 {
   _prevClone = this;
   _nextClone = this;
-  //setSn(newSn());
-  //_sn = p._sn;
-  //_name = p._name;
-  //_selected = p._selected;
-  //_mute = p._mute;
-  //_colorIndex = p._colorIndex;
-  //_track = p._track;
-  //_events = p._events;
 }
 
 //---------------------------------------------------------
@@ -769,14 +721,6 @@ WavePart::WavePart(const WavePart& p) : Part(p)
 {
   _prevClone = this;
   _nextClone = this;
-  //setSn(newSn());
-  //_sn = p._sn;
-  //_name = p._name;
-  //_selected = p._selected;
-  //_mute = p._mute;
-  //_colorIndex = p._colorIndex;
-  //_track = p._track;
-  //_events = p._events;
 }
 
 //---------------------------------------------------------
@@ -790,139 +734,6 @@ Part::~Part()
             delete _events;
       }
 
-/*
-//---------------------------------------------------------
-//   unchainClone
-//---------------------------------------------------------
-
-void Part::unchainClone()
-{
-  chainCheckErr();
-  
-  _prevClone->setNextClone(_nextClone);
-  _nextClone->setPrevClone(_prevClone);
-  
-  _prevClone = this;
-  _nextClone = this;
-}
-
-//---------------------------------------------------------
-//   chainClone
-//   The quick way - if part to chain to is known...
-//---------------------------------------------------------
-
-void Part::chainClone(const Part* p)
-{
-  chainCheckErr();
-  
-  // Make sure the part is unchained first.
-  p->prevClone()->setNextClone(p->nextClone());
-  p->nextClone()->setPrevClone(p->prevClone());
-  
-  p->setPrevClone(this);
-  p->setNextClone(_nextClone->prevClone());
-  
-  _nextClone->setPrevClone(p);
-  _nextClone = (Part*)p;
-}
-
-//---------------------------------------------------------
-//   chainClone
-//   The slow way - if part to chain to is not known...
-//---------------------------------------------------------
-
-void Part::chainClone()
-{
-  chainCheckErr();
-  
-  // Look for a part with the same event list, that we can chain to...
-  Part* p = 0;
-  if(!_track || (_track && _track->isMidiTrack()))
-  {
-    MidiTrackList* mtl = song->midis();
-    for(ciMidiTrack imt = mtl->begin(); imt != mtl->end(); ++imt)
-    {
-      const PartList* pl = (*imt)->cparts();
-      for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-      {
-        if(ip->second != this && ip->second->events() == _events)
-        {
-          p = ip->second;
-          break;
-        }
-      }
-    }
-  }  
-  
-  if((!p && !_track) || (_track && _track->type() == Track::WAVE))
-  {
-    WaveTrackList* wtl = song->waves();
-    for(ciWaveTrack iwt = wtl->begin(); iwt != wtl->end(); ++iwt)
-    {
-      const PartList* pl = (*iwt)->cparts();
-      for(ciPart ip = pl->begin(); ip != pl->end(); ++ip)
-      {
-        if(ip->second != this && ip->second->events() == _events)
-        {
-          p = ip->second;
-          break;
-        }
-      }
-    }
-  }
-  
-  // No part found with same event list? Done.
-  if(!p)
-    return;
-    
-  // Make sure this part is unchained first.
-  _prevClone->setNextClone(_nextClone);
-  _nextClone->setPrevClone(_prevClone);
-  
-  _prevClone = p;
-  _nextClone = p->nextClone();
-  
-  p->nextClone()->setPrevClone(this);
-  p->setNextClone(this);
-}
-
-//---------------------------------------------------------
-//   replaceClone
-//---------------------------------------------------------
-
-void Part::replaceClone(const Part* p)
-{
-  chainCheckErr();
-  
-  // Make sure the part is unchained first.
-  p->prevClone()->setNextClone(p->nextClone());
-  p->nextClone()->setPrevClone(p->prevClone());
-  
-  // If this part is a clone, not a single lone part...
-  if(_prevClone != this)
-    _prevClone->setNextClone(p);
-  if(_nextClone != this)
-    _nextClone->setPrevClone(p);
-  
-  p->setPrevClone(_prevClone);
-  p->setNextClone(_nextClone);
-  
-  _nextClone = this;
-  _prevClone = this;
-}
-
-//---------------------------------------------------------
-//   chainCheckErr
-//---------------------------------------------------------
-
-void Part::chainCheckErr()
-{
-  if(_nextClone->prevClone() != this)
-    printf("Part::chainCheckErr Error! Next clone:%s %x prev clone:%s %x != this:%s %x\n", _nextClone->name().toLatin1().constData(), _nextClone, _nextClone->prevClone()->name().toLatin1().constData(), _nextClone->prevClone(), name().toLatin1().constData(), this); 
-  if(_prevClone->nextClone() != this)
-    printf("Part::chainCheckErr Error! Prev clone:%s %x next clone:%s %x != this:%s %x\n", _prevClone->name().toLatin1().constData(), _prevClone, _prevClone->nextClone()->name().toLatin1().constData(), _prevClone->nextClone(), name().toLatin1().constData(), this); 
-}
-*/
 
 //---------------------------------------------------------
 //   findPart
@@ -988,7 +799,6 @@ void Song::addPart(Part* part)
             _len = epos;
       part->track()->addPart(part);
       
-      //part->addPortCtrlEvents();
       // Indicate do not do clones.
       addPortCtrlEvents(part, false);
       }
@@ -999,9 +809,7 @@ void Song::addPart(Part* part)
 
 void Song::removePart(Part* part)
       {
-      //part->removePortCtrlEvents();
       // Indicate do not do clones.
-      //removePortCtrlEvents(part);
       removePortCtrlEvents(part, false);
       Track* track = part->track();
       track->parts()->remove(part);
@@ -1019,47 +827,44 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len)
                   WavePart* nPart = new WavePart(*(WavePart*)oPart);
                   EventList* el = nPart->events();
                   unsigned new_partlength = tempomap.deltaTick2frame(oPart->tick(), oPart->tick() + len);
-                  //printf("new partlength in frames: %d\n", new_partlength);
 
                   // If new nr of frames is less than previous what can happen is:
                   // -   0 or more events are beginning after the new final position. Those are removed from the part
                   // -   The last event begins before new final position and ends after it. If so, it will be resized to end at new part length
                   if (new_partlength < oPart->lenFrame()) {
-                        startUndo();
+                        Undo operations;
 
                         for (iEvent i = el->begin(); i != el->end(); i++) {
                               Event e = i->second;
                               unsigned event_startframe = e.frame();
                               unsigned event_endframe = event_startframe + e.lenFrame();
-                              //printf("Event frame=%d, length=%d\n", event_startframe, event_length);
                               if (event_endframe < new_partlength)
                                     continue;
                               if (event_startframe > new_partlength) { // If event start was after the new length, remove it from part
-                                    // Indicate no undo, and do not do port controller values and clone parts. 
-                                    //audio->msgDeleteEvent(e, nPart, false);
-                                    audio->msgDeleteEvent(e, nPart, false, false, false);
+                                    // Do not do port controller values and clone parts. 
+                                    operations.push_back(UndoOp(UndoOp::DeleteEvent, e, nPart, false, false));
                                     continue;
                                     }
                               if (event_endframe > new_partlength) { // If this event starts before new length and ends after, shrink it
                                     Event newEvent = e.clone();
                                     newEvent.setLenFrame(new_partlength - event_startframe);
-                                    // Indicate no undo, and do not do port controller values and clone parts. 
-                                    //audio->msgChangeEvent(e, newEvent, nPart, false);
+                                    // Do not do port controller values and clone parts. 
                                     audio->msgChangeEvent(e, newEvent, nPart, false, false, false);
+                                    operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, nPart, false,false));
                                     }
                               }
                         nPart->setLenFrame(new_partlength);
-                        // Indicate no undo, and do not do port controller values and clone parts. 
-                        //audio->msgChangePart(oPart, nPart, false);
-                        audio->msgChangePart(oPart, nPart, false, false, false);
+                        // Do not do port controller values and clone parts. 
+                        operations.push_back(UndoOp(UndoOp::ModifyPart, oPart, nPart, false, false));
 
-                        endUndo(SC_PART_MODIFIED);
+                        song->applyOperationGroup(operations);
                         }
                   // If the part is expanded there can be no additional events beginning after the previous final position
                   // since those are removed if the part has been shrunk at some time (see above)
                   // The only thing we need to check is the final event: If it has data after the previous final position,
                   // we'll expand that event
                   else {
+                        Undo operations;
                         if(!el->empty())
                         {
                           iEvent i = el->end();
@@ -1072,40 +877,33 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len)
   
                           unsigned clipframes = (file.samples() - last.spos());// / file.channels();
                           Event newEvent = last.clone();
-                          //printf("SndFileR samples=%d channels=%d event samplepos=%d clipframes=%d\n", file.samples(), file.channels(), last.spos(), clipframes);
   
                           unsigned new_eventlength = new_partlength - last_start;
                           if (new_eventlength > clipframes) // Shrink event length if new partlength exceeds last clip
                                 new_eventlength = clipframes;
   
                           newEvent.setLenFrame(new_eventlength);
-                          startUndo();
-                          // Indicate no undo, and do not do port controller values and clone parts. 
-                          //audio->msgChangeEvent(last, newEvent, nPart, false);
-                          audio->msgChangeEvent(last, newEvent, nPart, false, false, false);
-                        }  
-                        else
-                        {
-                          startUndo();
+                          // Do not do port controller values and clone parts. 
+                          operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, last, nPart, false, false));
                         }  
                         
                         nPart->setLenFrame(new_partlength);
-                        // Indicate no undo, and do not do port controller values and clone parts. 
-                        //audio->msgChangePart(oPart, nPart, false);
+                        // Do not do port controller values and clone parts. 
                         audio->msgChangePart(oPart, nPart, false, false, false);
-                        endUndo(SC_PART_MODIFIED);
+                        operations.push_back(UndoOp(UndoOp::ModifyPart, oPart, nPart, false, false));
+                        song->applyOperationGroup(operations);
                         }
                   }
                   break;
             case Track::MIDI:
             case Track::DRUM:
                   {
-                  startUndo();
+                  Undo operations;
 
                   MidiPart* nPart = new MidiPart(*(MidiPart*)oPart);
                   nPart->setLenTick(len);
-                  // Indicate no undo, and do port controller values but not clone parts. 
-                  audio->msgChangePart(oPart, nPart, false, true, false);
+                  // Do port controller values but not clone parts. 
+                  operations.push_back(UndoOp(UndoOp::ModifyPart, oPart, nPart, true, false));
 
                   // cut Events in nPart
                   // Changed by T356. Don't delete events if this is a clone part.
@@ -1118,36 +916,13 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len)
                           for (; ie != el->end();) {
                                 iEvent i = ie;
                                 ++ie;
-                                // Indicate no undo, and do port controller values and clone parts. 
-                                audio->msgDeleteEvent(i->second, nPart, false, true, true);
+                                // Do port controller values and clone parts. 
+                                operations.push_back(UndoOp(UndoOp::DeleteEvent, i->second, nPart, true, true));
                                 }
                           }
                   }        
                   
-                  /*
-                  // cut Events in nPart
-                  // Changed by T356. Don't delete events if this is a clone part.
-                  // The other clones might be longer than this one and need these events.
-                  if(oPart->cevents()->arefCount() <= 1)
-                  {
-                    if (oPart->lenTick() > len) { 
-                          EventList* el = nPart->events();
-                          iEvent ie = el->lower_bound(len);
-                          for (; ie != el->end();) {
-                                iEvent i = ie;
-                                ++ie;
-                                // Indicate no undo, and do not do port controller values and clone parts. 
-                                //audio->msgDeleteEvent(i->second, nPart, false);
-                                audio->msgDeleteEvent(i->second, nPart, false, false, false);
-                                }
-                          }
-                  }        
-                  // Indicate no undo, and do port controller values but not clone parts. 
-                  //audio->msgChangePart(oPart, nPart, false);
-                  audio->msgChangePart(oPart, nPart, false, true, false);
-                  */
-                  
-                  endUndo(SC_PART_MODIFIED);
+                  song->applyOperationGroup(operations);
                   break;
                   }
             default:
@@ -1189,7 +964,6 @@ void Track::splitPart(Part* part, int tickpos, Part*& p1, Part*& p2)
       p2 = newPart(part);     // new right part
 
       // Added by Tim. p3.3.6
-      //printf("Track::splitPart part ev %p sz:%d ref:%d p1 %p sz:%d ref:%d p2 %p sz:%d ref:%d\n", part->events(), part->events()->size(), part->events()->arefCount(), p1->events(), p1->events()->size(), p1->events()->arefCount(), p2->events(), p2->events()->size(), p2->events()->arefCount());
       
       switch (type()) {
             case WAVE:
@@ -1281,36 +1055,15 @@ void Song::changePart(Part* oPart, Part* nPart)
       Track* oTrack = oPart->track();
       Track* nTrack = nPart->track();
 
-      // Added by Tim. p3.3.6
-      //printf("Song::changePart before oPart->removePortCtrlEvents oldPart refs:%d Arefs:%d newPart refs:%d Arefs:%d\n", oPart->events()->refCount(), oPart->events()->arefCount(), nPart->events()->refCount(), nPart->events()->arefCount());
-      
-      // Removed. Port controller events will have to be add/removed separately from this routine.
-      //oPart->removePortCtrlEvents();
-      //removePortCtrlEvents(oPart);
-      
-      // Added by Tim. p3.3.6
-      //printf("Song::changePart after oPart->removePortCtrlEvents oldPart refs:%d Arefs:%d newPart refs:%d Arefs:%d\n", oPart->events()->refCount(), oPart->events()->arefCount(), nPart->events()->refCount(), nPart->events()->arefCount());
-      
       oTrack->parts()->remove(oPart);
       nTrack->parts()->add(nPart);
       
-      // Added by Tim. p3.3.6
-      //printf("Song::changePart after add(nPart) oldPart refs:%d Arefs:%d newPart refs:%d Arefs:%d\n", oPart->events()->refCount(), oPart->events()->arefCount(), nPart->events()->refCount(), nPart->events()->arefCount());
-      
-      //nPart->addPortCtrlEvents();
-      //addPortCtrlEvents(nPart);
-      
-      // Added by Tim. p3.3.6
-      //printf("Song::changePart after nPart->addPortCtrlEvents() oldPart refs:%d Arefs:%d newPart refs:%d Arefs:%d\n", oPart->events()->refCount(), oPart->events()->arefCount(), nPart->events()->refCount(), nPart->events()->arefCount());
       
       // Added by T356. 
       // adjust song len:
       unsigned epos = nPart->tick() + nPart->lenTick();
       if (epos > len())
             _len = epos;
-      
-      // Added by Tim. p3.3.6
-      //printf("Song::changePart after len adjust oldPart refs:%d Arefs:%d newPart refs:%d Arefs:%d\n", oPart->events()->refCount(), oPart->events()->arefCount(), nPart->events()->refCount(), nPart->events()->arefCount());
       
       }
 
@@ -1350,13 +1103,6 @@ void Song::cmdGluePart(Track* track, Part* oPart)
 
       EventList* sl2 = nextPart->events();
       
-      //int frameOffset = nextPart->frame() - oPart->frame();
-      //for (iEvent ie = sl2->begin(); ie != sl2->end(); ++ie) {
-      //      Event event = ie->second.clone();
-      //      event.setFrame(event.frame() + frameOffset);
-      //      dl->add(event);
-      //      }
-      // p3.3.54 Changed. 
       if(track->type() == Track::WAVE)
       {
         int frameOffset = nextPart->frame() - oPart->frame();
@@ -1382,7 +1128,6 @@ void Song::cmdGluePart(Track* track, Part* oPart)
       startUndo();
       audio->msgRemovePart(nextPart, false);
       // Indicate no undo, and do port controller values but not clone parts. 
-      //audio->msgChangePart(oPart, nPart, false);
       audio->msgChangePart(oPart, nPart, false, true, false);
       endUndo(SC_PART_MODIFIED | SC_PART_REMOVED);
       }

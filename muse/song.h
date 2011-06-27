@@ -147,6 +147,8 @@ class Song : public QObject {
       Song(const char* name = 0);
       ~Song();
 
+      bool applyOperationGroup(Undo& group, bool doUndo=true);
+
       void putEvent(int pv);
       void endMsgCmd();
       void processMsg(AudioMsg* msg);
@@ -316,21 +318,9 @@ class Song : public QObject {
 
       void startUndo();
       void endUndo(int);
-      //void undoOp(UndoOp::UndoType, Track* oTrack, Track* nTrack);
-      void undoOp(UndoOp::UndoType, int n, Track* oTrack, Track* nTrack);
-      void undoOp(UndoOp::UndoType, int, Track*);
-      void undoOp(UndoOp::UndoType, int, int, int = 0);
-      void undoOp(UndoOp::UndoType, Part*);
-      //void undoOp(UndoOp::UndoType, Event& nevent, Part*);
-      void undoOp(UndoOp::UndoType, Event& nevent, Part*, bool doCtrls, bool doClones);
-      //void undoOp(UndoOp::UndoType, Event& oevent, Event& nevent, Part*);
-      void undoOp(UndoOp::UndoType, Event& oevent, Event& nevent, Part*, bool doCtrls, bool doClones);
-      void undoOp(UndoOp::UndoType, SigEvent* oevent, SigEvent* nevent);
-      void undoOp(UndoOp::UndoType, int channel, int ctrl, int oval, int nval);
-      //void undoOp(UndoOp::UndoType, Part* oPart, Part* nPart);
-      void undoOp(UndoOp::UndoType, Part* oPart, Part* nPart, bool doCtrls, bool doClones);
+
       void undoOp(UndoOp::UndoType type, const char* changedFile, const char* changeData, int startframe, int endframe);
-      void undoOp(UndoOp::UndoType type, Marker* copyMarker, Marker* realMarker);
+
       bool doUndo1();
       void doUndo2();
       void doUndo3();
@@ -338,7 +328,7 @@ class Song : public QObject {
       void doRedo2();
       void doRedo3();
 
-      void addUndo(UndoOp& i);
+      void addUndo(UndoOp i);
 
       //-----------------------------------------
       //   Configuration

@@ -78,9 +78,6 @@ typedef KEYLIST::const_reverse_iterator criKeyEvent;
 
 
 class KeyList : public KEYLIST {
-      bool useList;
-      key_enum _key;             // key if not using key list
-
       void add(unsigned tick, key_enum tempo);
       void change(unsigned tick, key_enum newKey);
       void del(iKeyEvent);
@@ -99,8 +96,6 @@ class KeyList : public KEYLIST {
 
       void addKey(unsigned t, key_enum newKey);
       void delKey(unsigned tick);
-//      void changeKey(unsigned tick, key_enum newKey);
-      bool setMasterFlag(unsigned tick, bool val);
       };
 
 extern KeyList keymap;

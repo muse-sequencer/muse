@@ -569,12 +569,9 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
             }
 
       if (curItem && (event->button() == Qt::MidButton)) {
-            if (!curItem->isSelected()) {
-                  selectItem(curItem, true);
-                  updateSelection();
-                  redraw();
-                  }
-            startDrag(curItem, ctrl);
+            deleteItem(start); // changed from "start drag" to "delete" by flo93
+            drag = DRAG_DELETE;
+            setCursor();
             }
       else if (event->button() == Qt::RightButton) {
             if (curItem) {
@@ -1209,56 +1206,6 @@ void Canvas::selectLasso(bool toggle)
             }
       }
 
-//---------------------------------------------------------
-//   endMoveItems
-//    dir = 0     move in all directions
-//          1     move only horizontal
-//          2     move only vertical
-//---------------------------------------------------------
-
-void Canvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir)
-      {
-      startUndo(dragtype);
-
-      int dp = y2pitch(pos.y()) - y2pitch(start.y());
-      int dx = pos.x() - start.x();
-
-      if (dir == 1)
-            dp = 0;
-      else if (dir == 2)
-            dx = 0;
-      
-      
-      
-      int modified = 0;
-      
-      // Removed by T356.
-      /*
-      for (iCItem i = moving.begin(); i != moving.end(); ++i) {
-            int x = i->second->pos().x();
-            int y = i->second->pos().y();
-            int nx = x + dx;
-            int ny = pitch2y(y2pitch(y) + dp);
-            QPoint newpos = raster(QPoint(nx, ny));
-            selectItem(i->second, true);
-            
-            if (moveItem(i->second, newpos, dragtype, &modified))
-                  i->second->move(newpos);
-            if (moving.size() == 1) {
-                  itemReleased(curItem, newpos);
-                  }
-            if (dragtype == MOVE_COPY || dragtype == MOVE_CLONE)
-                  selectItem(i->second, false);
-            }
-      */
-      
-      moveCanvasItems(moving, dp, dx, dragtype, &modified);
-      
-      endUndo(dragtype, modified);
-      moving.clear();
-      updateSelection();
-      redraw();
-      }
 
 //---------------------------------------------------------
 //   getCurrentDrag

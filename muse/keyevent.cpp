@@ -18,15 +18,15 @@
 
 KeyList keymap;
 
+#define DEFAULT_KEY KEY_C
+
 //---------------------------------------------------------
 //   KeyList
 //---------------------------------------------------------
 
 KeyList::KeyList()
       {
-      _key   = KEY_C;
-      insert(std::pair<const unsigned, KeyEvent> (MAX_TICK+1, KeyEvent(_key, 0)));
-      useList      = true;
+      insert(std::pair<const unsigned, KeyEvent> (MAX_TICK+1, KeyEvent(DEFAULT_KEY, 0)));
       }
 
 //---------------------------------------------------------
@@ -71,7 +71,7 @@ void KeyList::dump() const
 void KeyList::clear()
       {
       KEYLIST::clear();
-      insert(std::pair<const unsigned, KeyEvent> (MAX_TICK+1, KeyEvent(_key, 0)));
+      insert(std::pair<const unsigned, KeyEvent> (MAX_TICK+1, KeyEvent(DEFAULT_KEY, 0)));
       }
 
 //---------------------------------------------------------
@@ -80,16 +80,12 @@ void KeyList::clear()
 
 key_enum KeyList::keyAtTick(unsigned tick) const
       {
-      if (useList) {
             ciKeyEvent i = upper_bound(tick);
             if (i == end()) {
                   printf("no key at tick %d,0x%x\n", tick, tick);
-                  return _key;
+                  return DEFAULT_KEY;
                   }
             return i->second.key;
-            }
-      else
-            return _key;
       }
 
 //---------------------------------------------------------
@@ -129,20 +125,6 @@ void KeyList::change(unsigned tick, key_enum newkey)
       e->second.key = newkey;
       }
 
-//---------------------------------------------------------
-//   setKey
-//    called from transport window
-//    & slave mode key changes
-//---------------------------------------------------------
-
-//void KeyList::setKey(unsigned tick, int newkey)
-//      {
-//      if (useList)
-//            add(tick, newkey);
-//      else
-//            _key = newkey;
-//      ++_keySN;
-//      }
 
 //---------------------------------------------------------
 //   addKey
@@ -162,29 +144,6 @@ void KeyList::delKey(unsigned tick)
       del(tick);
       }
 
-//---------------------------------------------------------
-//   changeKey
-//---------------------------------------------------------
-
-//void KeyList::changeKey(unsigned tick, int newkey)
-//      {
-//      change(tick, newkey);
-//      ++_keySN;
-//      }
-
-//---------------------------------------------------------
-//   setMasterFlag
-//---------------------------------------------------------
-
-bool KeyList::setMasterFlag(unsigned /*tick*/, bool val)
-      {
-      if (useList != val) {
-            useList = val;
-            return true;
-            }
-      return false;
-      }
-
 
 
 //---------------------------------------------------------
@@ -193,7 +152,6 @@ bool KeyList::setMasterFlag(unsigned /*tick*/, bool val)
 
 void KeyList::write(int level, Xml& xml) const
       {
-      xml.put(level++, "<keylist fix=\"%d\">", _key);
       for (ciKeyEvent i = begin(); i != end(); ++i)
             i->second.write(level, xml, i->first);
       xml.tag(level, "/keylist");
@@ -225,8 +183,6 @@ void KeyList::read(Xml& xml)
                               xml.unknown("keyList");
                         break;
                   case Xml::Attribut:
-                        if (tag == "fix")
-                              _key = key_enum(xml.s2().toInt());
                         break;
                   case Xml::TagEnd:
                         if (tag == "keylist") {
