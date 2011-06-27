@@ -47,7 +47,6 @@ void DList::draw(QPainter& p, const QRect& rect)
             if (yy > y + h)
                   break;
             DrumMap* dm = &drumMap[i];
-//            if (dm->selected)
             if (dm == currentlySelected)
                   p.fillRect(x, yy, w, TH, Qt::yellow);
 //            else
@@ -56,13 +55,11 @@ void DList::draw(QPainter& p, const QRect& rect)
             for (int k = 0; k < h->count(); ++k) {
                   int x   = h->sectionPosition(k);
                   int w   = h->sectionSize(k);
-                  ///QRect r = p.xForm(QRect(x+2, yy, w-4, TH));
                   QRect r = p.combinedTransform().mapRect(QRect(x+2, yy, w-4, TH));
                   QString s;
                   int align = Qt::AlignVCenter | Qt::AlignHCenter;
 
                   p.save();
-                  ///p.setWorldXForm(false);    
                   p.setWorldMatrixEnabled(false);
                   switch (k) {
                         case COL_VOL:
@@ -145,16 +142,13 @@ void DList::draw(QPainter& p, const QRect& rect)
       //    vertical Lines
       //---------------------------------------------------
 
-      ///p.setWorldXForm(false);
       p.setWorldMatrixEnabled(false);
       int n = header->count();
       x = 0;
       for (int i = 0; i < n; i++) {
-            //x += header->sectionSize(i);
             x += header->sectionSize(header->visualIndex(i));
             p.drawLine(x, 0, x, height());
             }
-      ///p.setWorldXForm(true);
       p.setWorldMatrixEnabled(true);
       }
 
@@ -174,7 +168,6 @@ void DList::devicesPopupMenu(DrumMap* t, int x, int y, bool changeAll)
                 if(n != t->port)
                 {
                   audio->msgIdle(true);
-                  //audio->msgRemapPortDrumCtlEvents(getSelectedInstrument(), -1, -1, n);
                   song->remapPortDrumCtrlEvents(getSelectedInstrument(), -1, -1, n);
                   audio->msgIdle(false);
                   t->port = n;
@@ -184,13 +177,11 @@ void DList::devicesPopupMenu(DrumMap* t, int x, int y, bool changeAll)
             else {
                   audio->msgIdle(true);
                   // Delete all port controller events.
-                  //audio->msgChangeAllPortDrumCtrlEvents(false);
                   song->changeAllPortDrumCtrlEvents(false);
                   
                   for (int i = 0; i < DRUM_MAPSIZE; i++)
                         drumMap[i].port = n;
                   // Add all port controller events.
-                  //audio->msgChangeAllPortDrumCtrlEvents(true);
                   song->changeAllPortDrumCtrlEvents(true);
                   
                   audio->msgIdle(false);
@@ -323,13 +314,11 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   if (ev->modifiers() & Qt::ControlModifier) {
                         audio->msgIdle(true);
                         // Delete all port controller events.
-                        //audio->msgChangeAllPortDrumCtrlEvents(false);
                         song->changeAllPortDrumCtrlEvents(false, true);
                         
                         for (int i = 0; i < DRUM_MAPSIZE; i++)
                               drumMap[i].channel = val;
                         // Add all port controller events.
-                        //audio->msgChangeAllPortDrumCtrlEvents(true);
                         song->changeAllPortDrumCtrlEvents(true, true);
                         audio->msgIdle(false);
                         song->update(SC_DRUMMAP);
@@ -339,7 +328,6 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                       if(val != dm->channel)
                       {
                         audio->msgIdle(true);
-                        //audio->msgRemapPortDrumCtlEvents(pitch, -1, val, -1);
                         song->remapPortDrumCtrlEvents(pitch, -1, val, -1);
                         audio->msgIdle(false);
                         dm->channel = val;
@@ -397,7 +385,6 @@ void DList::viewMouseDoubleClickEvent(QMouseEvent* ev)
       {
       int x = ev->x();
       int y = ev->y();
-//      int button = ev->button();
       unsigned pitch = y / TH;
 
       int section = header->logicalIndexAt(x);
@@ -474,7 +461,6 @@ void DList::lineEdit(int line, int section)
                   break;
             }
 
-            // editor->setText(dm->name);
             editor->end(false);
             editor->setGeometry(colx, coly, colw, colh);
             // In all cases but the column name, select all text:
@@ -738,7 +724,7 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag)
       {
       setBg(Qt::white);
       if (!h){
-	h = new QHeaderView(Qt::Horizontal, parent);}
+      h = new QHeaderView(Qt::Horizontal, parent);}
       header = h;
       scroll = 0;
       //ORCAN- CHECK if really needed: header->setTracking(true);
@@ -761,8 +747,6 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag)
 
 DList::~DList()
       {
-//      if (currentlySelected != 0)
-//            currentlySelected->selected = false; //Reset the global thingie
       }
 
 //---------------------------------------------------------

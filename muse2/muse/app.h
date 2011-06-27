@@ -11,7 +11,6 @@
 
 #include "config.h"
 #include "cobject.h"
-//#include "tools.h"
 
 #include <QFileInfo>
 
@@ -80,7 +79,7 @@ class MusE : public QMainWindow
             CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
             CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PARTS,
             CMD_FOLLOW_NO, CMD_FOLLOW_JUMP, CMD_FOLLOW_CONTINUOUS ,
-            CMD_DELETE_TRACK
+            CMD_DELETE_TRACK, CMD_EXPAND_PART, CMD_SHRINK_PART, CMD_CLEAN_PART
             };
 
       //File menu items:
@@ -97,8 +96,6 @@ class MusE : public QMainWindow
             CMD_AUDIO_BOUNCE_TO_FILE, CMD_AUDIO_BOUNCE_TO_TRACK, CMD_AUDIO_RESTART,
             CMD_LAST };
 
-      //int menu_ids[CMD_LAST];
-
       // File menu actions
       QAction *fileSaveAction, *fileOpenAction, *fileNewAction, *testAction;
       QAction *fileSaveAsAction, *fileImportMidiAction, *fileExportMidiAction;
@@ -113,6 +110,7 @@ class MusE : public QMainWindow
       QAction *masterGraphicAction, *masterListAction;
       QAction *midiTransformerAction;
       QAction *editSongInfoAction;
+      QAction *editCleanPartsAction, *editShrinkPartsAction, *editExpandPartsAction;
    public:
       QAction *startScoreEditAction, *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
       QMenu *scoreSubmenu, *scoreOneStaffPerTrackSubsubmenu, *scoreAllInOneSubsubmenu;
@@ -227,7 +225,6 @@ class MusE : public QMainWindow
       void configChanged();
 
    private slots:
-      //void runPythonScript();
       void loadProject();
       bool save();
       void configGlobalSettings();
@@ -247,7 +244,6 @@ class MusE : public QMainWindow
       void toggleTransport(bool);
       void toggleMarker(bool);
       void toggleBigTime(bool);
-      //void toggleMixer();
       void toggleMixer1(bool);
       void toggleMixer2(bool);
 
@@ -289,18 +285,12 @@ class MusE : public QMainWindow
       void cmd(int);
       void clipboardChanged();
       void selectionChanged();
-      void modifyGateTime();
-      void modifyVelocity();
-      void crescendo();
-      void thinOut();
-      void eraseEvent();
-      void noteShift();
-      void moveClock();
-      void copyMeasure();
-      void eraseMeasure();
+/*    void copyMeasure();  // commented out by flo: these are not implemented,
+      void eraseMeasure(); // but maybe will be in future (state: revision 988)
       void deleteMeasure();
       void createMeasure();
       void mixTrack();
+*/
       void startMidiInputPlugin(int);
       void hideMitPluginTranspose();
       void hideMidiInputTransform();
@@ -322,7 +312,6 @@ class MusE : public QMainWindow
       void takeAutomationSnapshot();
       void clearAutomation();
       void bigtimeClosed();
-      //void mixerClosed();
       void mixer1Closed();
       void mixer2Closed();
       void markerClosed();
@@ -344,7 +333,6 @@ class MusE : public QMainWindow
       bool seqRestart();
       void loadTemplate();
       void showBigtime(bool);
-      //void showMixer(bool);
       void showMixer1(bool);
       void showMixer2(bool);
       void showMarker(bool);
@@ -368,7 +356,6 @@ class MusE : public QMainWindow
       void setHeartBeat();
       void importController(int, MidiPort*, int);
       QString projectName() { return project.fileName(); }
-      //QWidget* mixerWindow();
       QWidget* mixer1Window();
       QWidget* mixer2Window();
       QWidget* transportWindow();

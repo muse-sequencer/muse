@@ -852,7 +852,7 @@ void ListEdit::cmd(int cmd)
                   bool found = false;
                   for (int row = 0; row < liste->topLevelItemCount(); ++row) 
                   {
-		    QTreeWidgetItem* i = liste->topLevelItem(row);
+                    QTreeWidgetItem* i = liste->topLevelItem(row);
                     EventListItem *item = (EventListItem *) i;
                     if (i->isSelected() || item->event.selected()) 
                     {
@@ -862,7 +862,8 @@ void ListEdit::cmd(int cmd)
                   }
                   if(!found)
                     break;
-                  song->startUndo();
+                  
+                  Undo operations;
                   
                   EventListItem *deletedEvent=NULL;
                   for (int row = 0; row < liste->topLevelItemCount(); ++row) {
@@ -871,8 +872,8 @@ void ListEdit::cmd(int cmd)
 
                         if (i->isSelected() || item->event.selected()) {
                               deletedEvent=item;
-                              // Indicate no undo, and do port controller values and clone parts. 
-                              audio->msgDeleteEvent(item->event, item->part, false, true, true);
+                              // Port controller values and clone parts. 
+                              operations.push_back(UndoOp(UndoOp::DeleteEvent,item->event, item->part, true, true));
                               }
                         }
                   
@@ -895,9 +896,8 @@ void ListEdit::cmd(int cmd)
                         }
                   }
                   selectedTick=nextTick;
-                  song->endUndo(SC_EVENT_MODIFIED);
-                  //printf("selected tick = %d\n", selectedTick);
-                  //emit selectionChanged();
+
+                  song->applyOperationGroup(operations);
                   break;
             }
       }

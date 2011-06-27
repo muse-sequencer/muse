@@ -552,8 +552,6 @@ ScoreEdit::~ScoreEdit()
 	
 }
 
-
-
 void ScoreEdit::velo_box_changed()
 {
 	emit velo_changed(velo_spinbox->value());
@@ -592,10 +590,9 @@ void ScoreEdit::song_changed(int flags)
 			if (velo>=0) velo_spinbox->setValue(velo);
 			if (velo_off>=0) velo_off_spinbox->setValue(velo_off);
 		}
-	}
-
-	if (flags & SC_SELECTION)
+	
 		selection_changed();
+	}
 }
 
 void ScoreEdit::canvas_width_changed(int width)
@@ -3533,7 +3530,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 	int y=event->y() + y_pos - staff_it->y_draw;
 	int x=event->x()+x_pos-x_left;
 	int tick=flo_quantize_floor(x_to_tick(x), quant_ticks());
-	
+
 	if (staff_it!=staves.end())
 	{
 		if (event->x() <= x_left) //clicked in the preamble?
@@ -4447,7 +4444,7 @@ void staff_t::update_part_indices()
 
 
 
-//hint: recalculating event- and itemlists "from zero"
+//note: recalculating event- and itemlists "from zero"
 //      could happen in realtime, as it is pretty fast.
 //      however, this adds unneccessary cpu usage.
 //      it is NO problem to recalc the stuff "from zero"
@@ -4460,14 +4457,20 @@ void staff_t::update_part_indices()
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o either remove these "hidden notes", or deal with them in the score editor
+ *   o clones should have same size
+ *   o insert empty measure should also work inside parts, that is,
+ *     move notes _within_ parts
+ * 
+ * IMPORTANT TODO
+ *   o canvas editor: create clone via "alt+drag" moves window instead
  *   o investigate with valgrind
  *   o controller view in score editor
  *   o deal with expanding parts
  *   o fix sigedit boxes
- *   o mid-click in pianoroll: change to "delete", or initiate drag and drop between windows?
- * 
- * IMPORTANT TODO
+ *   o solo button
+ *   o grand staff brace
+ *   o mastertrack editor: key-combobox is buggy
+ *   o drum editor: channel-stuff
  *   o do partial recalculating; recalculating can take pretty long
  *     (0,5 sec) when displaying a whole song in scores
  *   o transpose etc. must also transpose key-pressure events
@@ -4488,6 +4491,7 @@ void staff_t::update_part_indices()
  *       keeping its own pos_add variable (which is only an optimisation)
  *   o support edge-scrolling when opening a lasso
  *   o save more configuration stuff (quant, color)
+ *   o drum list: scroll while dragging (not important due to "reorder list")
  * 
  * really unimportant nice-to-haves
  *   o support in-song clef-changes

@@ -124,7 +124,6 @@ class Audio {
       bool idle;              // do nothing in idle mode
       bool _freewheel;
       bool _bounce;
-      //bool loopPassed;
       unsigned _loopFrame;     // Startframe of loop if in LOOP mode. Not quite the same as left marker !
       int _loopCount;         // Number of times we have looped so far
 
@@ -202,13 +201,9 @@ class Audio {
       void msgMoveTrack(int idx1, int dx2, bool u = true);
       void msgAddPart(Part*, bool u = true);
       void msgRemovePart(Part*, bool u = true);
-      //void msgChangePart(Part* oldPart, Part* newPart, bool u = true);
       void msgChangePart(Part* oldPart, Part* newPart, bool u = true, bool doCtrls = true, bool doClones = false);
-      //void msgAddEvent(Event&, Part*, bool u = true);
       void msgAddEvent(Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false);
-      //void msgDeleteEvent(Event&, Part*, bool u = true);
       void msgDeleteEvent(Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false);
-      //void msgChangeEvent(Event&, Event&, Part*, bool u = true);
       void msgChangeEvent(Event&, Event&, Part*, bool u = true, bool doCtrls = true, bool doClones = false);
       void msgScanAlsaMidiPorts();
       void msgAddTempo(int tick, int tempo, bool doUndoFlag = true);
@@ -250,7 +245,6 @@ class Audio {
       void msgResetMidiDevices();
       void msgIdle(bool);
       void msgBounce();
-      //void msgSetPluginCtrlVal(PluginI* /*plugin*/, int /*param*/, double /*val*/);
       void msgSetPluginCtrlVal(AudioTrack*, int /*param*/, double /*val*/);
       void msgSwapControllerIDX(AudioTrack*, int, int);
       void msgClearControllerEvents(AudioTrack*, int);

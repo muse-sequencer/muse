@@ -662,14 +662,14 @@ void MidiTransformerDialog::transformEvent(Event& event, MidiPart* part,
                   // Indicate do clone parts. 
                   addPortCtrlEvents(newEvent, part, true);
                   // Indicate do port controller values and clone parts. 
-                  //song->undoOp(UndoOp::ModifyEvent, newEvent, event, part);
-                  song->undoOp(UndoOp::ModifyEvent, newEvent, event, part, true, true);
+                  //song->addUndo(UndoOp(UndoOp::ModifyEvent, newEvent, event, part));
+                  song->addUndo(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, true, true));
                   song->addUpdateFlags(SC_EVENT_MODIFIED);
                   break;
             case Insert:
                   // Indicate do port controller values and clone parts. 
-                  //song->undoOp(UndoOp::AddEvent, dummy, newEvent, part);
-                  song->undoOp(UndoOp::AddEvent, dummy, newEvent, part, true, true);
+                  //song->addUndo(UndoOp(UndoOp::AddEvent, dummy, newEvent, part));
+                  song->addUndo(UndoOp(UndoOp::AddEvent, dummy, newEvent, part, true, true));
                   song->addEvent(newEvent, part);
                   // Indicate do clone parts. 
                   addPortCtrlEvents(newEvent, part, true);
@@ -677,8 +677,8 @@ void MidiTransformerDialog::transformEvent(Event& event, MidiPart* part,
                   break;
             case Extract:
                   // Indicate do port controller values and clone parts. 
-                  //song->undoOp(UndoOp::DeleteEvent, dummy, event, part);
-                  song->undoOp(UndoOp::DeleteEvent, dummy, event, part, true, true);
+                  //song->addUndo(UndoOp(UndoOp::DeleteEvent, dummy, event, part));
+                  song->addUndo(UndoOp(UndoOp::DeleteEvent, dummy, event, part, true, true));
                   // Indicate do clone parts. 
                   removePortCtrlEvents(event, part, true);
                   song->deleteEvent(event, part);
@@ -713,8 +713,8 @@ void MidiTransformerDialog::processEvent(Event& event, MidiPart* part, MidiPart*
                         // Indicate do clone parts. 
                         addPortCtrlEvents(newEvent, part, true);
                         // Indicate do port controller values and clone parts. 
-                        //song->undoOp(UndoOp::ModifyEvent, newEvent, event, part);
-                        song->undoOp(UndoOp::ModifyEvent, newEvent, event, part, true, true);
+                        //song->addUndo(UndoOp(UndoOp::ModifyEvent, newEvent, event, part));
+                        song->addUndo(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, true, true));
                         song->addUpdateFlags(SC_EVENT_MODIFIED);
                         }
                   }
@@ -723,8 +723,8 @@ void MidiTransformerDialog::processEvent(Event& event, MidiPart* part, MidiPart*
                   {
                   Event ev;
                   // Indicate do port controller values and clone parts. 
-                  //song->undoOp(UndoOp::DeleteEvent, ev, event, part, true, true);
-                  song->undoOp(UndoOp::DeleteEvent, ev, event, part, true, true);
+                  //song->addUndo(UndoOp(UndoOp::DeleteEvent, ev, event, part, true, true));
+                  song->addUndo(UndoOp(UndoOp::DeleteEvent, ev, event, part, true, true));
                   // Indicate do clone parts. 
                   removePortCtrlEvents(event, part, true);
                   song->deleteEvent(event, part);

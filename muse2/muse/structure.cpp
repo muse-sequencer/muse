@@ -99,12 +99,12 @@ void MusE::adjustGlobalLists(int startPos, int diff)
           Marker *oldMarker = new Marker();
           *oldMarker = *m;
           markerlist->remove(m);
-          song->undoOp(UndoOp::ModifyMarker,oldMarker, 0);
+          song->addUndo(UndoOp(UndoOp::ModifyMarker,oldMarker, 0));
         } else {
           Marker *oldMarker = new Marker();
           *oldMarker = *m;
           m->setTick(tick + diff);
-          song->undoOp(UndoOp::ModifyMarker,oldMarker, m);
+          song->addUndo(UndoOp(UndoOp::ModifyMarker,oldMarker, m));
         }
       }
   }

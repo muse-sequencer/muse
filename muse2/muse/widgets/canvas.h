@@ -11,6 +11,7 @@
 #include "citem.h"
 #include "view.h"
 #include "tools.h"
+#include "undo.h"
 
 #include <QWheelEvent>
 #include <QMouseEvent>
@@ -100,17 +101,10 @@ class Canvas : public View {
       virtual int y2pitch(int) const = 0; //CDW
       virtual int pitch2y(int) const = 0; //CDW
 
-      virtual void moveCanvasItems(CItemList&, int, int, DragType, int*) = 0;
-      // Changed by T356. 
-      //virtual bool moveItem(CItem*, const QPoint&, DragType, int*) = 0;
-      virtual bool moveItem(CItem*, const QPoint&, DragType) = 0;
       virtual CItem* newItem(const QPoint&, int state) = 0;
       virtual void resizeItem(CItem*, bool noSnap=false) = 0;
       virtual void newItem(CItem*, bool noSnap=false) = 0;
       virtual bool deleteItem(CItem*) = 0;
-      virtual void startUndo(DragType) = 0;
-      
-      virtual void endUndo(DragType, int flags) = 0;
       int getCurrentDrag();
 
       /*!
@@ -153,7 +147,7 @@ class Canvas : public View {
       void startMoving(const QPoint&, DragType);
       
       void moveItems(const QPoint&, int dir, bool rasterize = true);
-      void endMoveItems(const QPoint&, DragType, int dir);
+      virtual void endMoveItems(const QPoint&, DragType, int dir) = 0;
 
       virtual void selectLasso(bool toggle);
 

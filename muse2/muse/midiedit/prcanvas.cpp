@@ -38,6 +38,8 @@
 #include "audio.h"
 #include "functions.h"
 
+#define CHORD_TIMEOUT 75
+
 //---------------------------------------------------------
 //   NEvent
 //---------------------------------------------------------
@@ -254,14 +256,14 @@ void PianoCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
 //   moveCanvasItems
 //---------------------------------------------------------
 
-void PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype, int* pflags)
+Undo PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype)
 {      
   if(editor->parts()->empty())
-    return;
-    
+    return Undo(); //return empty list
+  
+  Undo operations;  
   PartsToChangeMap parts2change;
   
-  int modified = 0;
   for(iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip)
   {
     Part* part = ip->second;
@@ -297,34 +299,6 @@ void PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dty
         
     if(npartoffset > 0)
     {    
-      // Create new part...
-      // if there are several events that are moved outside the part, it will be recreated for each
-      // so the part _in_ the event will not be valid, ask the authority.
-//      Part* newPart = part->clone();
-      //Part* newPart = Canvas::part()->clone();
-
-//      newPart->setLenTick(newPart->lenTick() + npartoffset);
-      //audio->msgChangePart(part, newPart,false);
-
-//      modified = SC_PART_MODIFIED;
-
-      // BUG FIX: #1650953
-      // Added by T356.
-      // Fixes posted "select and drag past end of part - crashing" bug
-//      for(iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip)
-//      {
-//        if(ip->second == part)
-//        {
-//          editor->parts()->erase(ip);
-//          break;
-//        }
-//      }
-      
-//      editor->parts()->add(newPart);
-//      audio->msgChangePart(part, newPart,false);
-      
-      //if(parts2change.find(part) == parts2change.end())
-      //  parts2change.insert(std::pair<Part*, Part*> (part, newPart));
       iPartToChange ip2c = parts2change.find(part);
       if(ip2c == parts2change.end())
       {
@@ -333,13 +307,6 @@ void PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dty
       }
       else
         ip2c->second.xdiff = npartoffset;
-      
-      //part = newPart; // reassign
-      //item->setPart(part);
-      //item->setEvent(newEvent);
-      //curPart = part;
-      //curPartId = curPart->sn();
-
     }
   }
   
@@ -351,8 +318,6 @@ void PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dty
     Part* newPart = opart->clone();
     
     newPart->setLenTick(newPart->lenTick() + diff);
-    
-    modified = SC_PART_MODIFIED;
     
     // BUG FIX: #1650953
     // Added by T356.
@@ -367,8 +332,8 @@ void PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dty
     }
       
     editor->parts()->add(newPart);
-    // Indicate no undo, and do port controller values but not clone parts. 
-    audio->msgChangePart(opart, newPart, false, true, false);
+    // Do port controller values but not clone parts. 
+    operations.push_back(UndoOp(UndoOp::ModifyPart, opart, newPart, true, false));
     
     ip2c->second.npart = newPart;
     
@@ -383,6 +348,7 @@ void PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dty
     
   std::vector< CItem* > doneList;
   typedef std::vector< CItem* >::iterator iDoneList;
+  
   
   for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
   {
@@ -408,21 +374,12 @@ void PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dty
         break;
       
     // Do not process if the event has already been processed (meaning it's an event in a clone part)...
-    //if(moveItem(ci, newpos, dtype))
-    if(idl != doneList.end())
-      // Just move the canvas item.
-      ci->move(newpos);
-    else
+    if (idl == doneList.end())
     {
-      // Currently moveItem always returns true.
-      if(moveItem(ci, newpos, dtype))
-      {
-        // Add the canvas item to the list of done items.
-        doneList.push_back(ci);
-        // Move the canvas item.
-        ci->move(newpos);
-      }  
+      operations.push_back(moveItem(ci, newpos, dtype));
+      doneList.push_back(ci);
     }
+    ci->move(newpos);
           
     if(moving.size() == 1) 
           itemReleased(curItem, newpos);
@@ -430,8 +387,7 @@ void PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dty
           selectItem(ci, false);
   }  
       
-  if(pflags)
-    *pflags = modified;
+  return operations;
 }
       
 //---------------------------------------------------------
@@ -439,9 +395,7 @@ void PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dty
 //    called after moving an object
 //---------------------------------------------------------
 
-// Changed by T356. 
-//bool PianoCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype, int* pflags)
-bool PianoCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
+UndoOp PianoCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
       {
       NEvent* nevent = (NEvent*) item;
       Event event    = nevent->event();
@@ -462,7 +416,7 @@ bool PianoCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
       
       // Changed by T356. 
       Part* part = nevent->part(); //
-      //Part * part = Canvas::part();  // part can be dynamically recreated, ask the authority
+      //Part* part = Canvas::part();  // part can be dynamically recreated, ask the authority
       
       newEvent.setPitch(npitch);
       int ntick = editor->rasterVal(x) - part->tick();
@@ -471,46 +425,6 @@ bool PianoCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
       newEvent.setTick(ntick);
       newEvent.setLenTick(event.lenTick());
 
-      // Removed by T356. 
-      /*
-      int modified=0;
-      //song->startUndo();
-      int diff = newEvent.endTick()-part->lenTick();
-      if (diff > 0){// too short part? extend it
-            // if there are several events that are moved outside the part, it will be recreated for each
-            // so the part _in_ the event will not be valid, ask the authority.
-            //Part* newPart = part->clone();
-            Part* newPart = Canvas::part()->clone();
-
-            newPart->setLenTick(newPart->lenTick()+diff);
-            audio->msgChangePart(Canvas::part(), newPart,false);
-      
-            modified = SC_PART_MODIFIED;
-            part = newPart; // reassign
-
-            // BUG FIX: #1650953
-            // Added by T356.
-            // Fixes posted "select and drag past end of part - crashing" bug
-            for(iPart i = editor->parts()->begin(); i != editor->parts()->end(); ++i)
-            {
-              if(i->second == Canvas::part())
-              {
-                editor->parts()->erase(i);
-                break;
-              }
-            }
-            editor->parts()->add(part);
-            item->setPart(part);
-            item->setEvent(newEvent);
-            curPart = part;
-            curPartId = curPart->sn();
-
-            }
-      */
-
-      // Added by T356. 
-      // msgAddEvent and msgChangeEvent (below) will set these, but set them here first?
-      //item->setPart(part);
       item->setEvent(newEvent);
       
       // Added by T356. 
@@ -518,20 +432,9 @@ bool PianoCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
         printf("PianoCanvas::moveItem Error! New event end:%d exceeds length:%d of part:%s\n", newEvent.endTick(), part->lenTick(), part->name().toLatin1().constData());
       
       if (dtype == MOVE_COPY || dtype == MOVE_CLONE)
-            // Indicate no undo, and do not do port controller values and clone parts. 
-            //audio->msgAddEvent(newEvent, part, false);
-            audio->msgAddEvent(newEvent, part, false, false, false);
+            return UndoOp(UndoOp::AddEvent, newEvent, part, false, false);
       else
-            // Indicate no undo, and do not do port controller values and clone parts. 
-            //audio->msgChangeEvent(event, newEvent, part, false);
-            audio->msgChangeEvent(event, newEvent, part, false, false, false);
-      //song->endUndo(modified);
-
-      // Removed by T356. 
-      //if(pflags)
-      //  *pflags = modified;
-      
-      return true;
+            return UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false);
       }
 
 //---------------------------------------------------------
@@ -584,13 +487,11 @@ void PianoCanvas::newItem(CItem* item, bool noSnap)
             Part* newPart = part->clone();
             newPart->setLenTick(newPart->lenTick()+diff);
             // Indicate no undo, and do port controller values but not clone parts. 
-            //audio->msgChangePart(part, newPart,false);
             audio->msgChangePart(part, newPart, false, true, false);
             modified=modified|SC_PART_MODIFIED;
             part = newPart; // reassign
             }
       // Indicate no undo, and do not do port controller values and clone parts. 
-      //audio->msgAddEvent(event, part,false);
       audio->msgAddEvent(event, part, false, false, false);
       song->endUndo(modified);
       }
@@ -620,14 +521,12 @@ void PianoCanvas::resizeItem(CItem* item, bool noSnap)         // experimental c
       }
       song->startUndo();
       int modified=SC_EVENT_MODIFIED;
-      //printf("event.tick()=%d len=%d part->lenTick()=%d\n",event.endTick(),len,part->lenTick());
       int diff = event.tick()+len-part->lenTick();
       if (diff > 0)  {// too short part? extend it
             //printf("extend Part!\n");
             Part* newPart = part->clone();
             newPart->setLenTick(newPart->lenTick()+diff);
             // Indicate no undo, and do port controller values but not clone parts. 
-            //audio->msgChangePart(part, newPart,false);
             audio->msgChangePart(part, newPart, false, true, false);
             modified=modified|SC_PART_MODIFIED;
             part = newPart; // reassign
@@ -635,7 +534,6 @@ void PianoCanvas::resizeItem(CItem* item, bool noSnap)         // experimental c
 
       newEvent.setLenTick(len);
       // Indicate no undo, and do not do port controller values and clone parts. 
-      //audio->msgChangeEvent(event, newEvent, nevent->part(),false);
       audio->msgChangeEvent(event, newEvent, nevent->part(), false, false, false);
       song->endUndo(modified);
       }
@@ -650,7 +548,6 @@ bool PianoCanvas::deleteItem(CItem* item)
       if (nevent->part() == curPart) {
             Event ev = nevent->event();
             // Indicate do undo, and do not do port controller values and clone parts. 
-            //audio->msgDeleteEvent(ev, curPart);
             audio->msgDeleteEvent(ev, curPart, true, false, false);
             return true;
             }
@@ -697,8 +594,6 @@ void PianoCanvas::pianoCmd(int cmd)
             case CMD_RIGHT_NOSNAP:
                   {
                   Pos p(pos[0] + editor->rasterStep(pos[0]), true);
-                  //if (p > part->tick())
-                  //      p = part->tick();
                   song->setPos(0, p, true, true, true); //CDW
                   }
                   break;
@@ -710,8 +605,9 @@ void PianoCanvas::pianoCmd(int cmd)
 
                   if (part == 0)
                         break;
-                  song->startUndo();
+
                   EventList* el = part->events();
+                  Undo operations;
 
                   std::list <Event> elist;
                   for (iEvent e = el->lower_bound(pos[0] - part->tick()); e != el->end(); ++e)
@@ -720,11 +616,11 @@ void PianoCanvas::pianoCmd(int cmd)
                         Event event = *i;
                         Event newEvent = event.clone();
                         newEvent.setTick(event.tick() + editor->raster());// - part->tick());
-                        // Indicate no undo, and do not do port controller values and clone parts. 
-                        //audio->msgChangeEvent(event, newEvent, part, false);
-                        audio->msgChangeEvent(event, newEvent, part, false, false, false);
+                        // Do not do port controller values and clone parts. 
+                        operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
                         }
-                  song->endUndo(SC_EVENT_MODIFIED);
+                  song->applyOperationGroup(operations);
+                  
                   Pos p(editor->rasterVal(pos[0] + editor->rasterStep(pos[0])), true);
                   song->setPos(0, p, true, false, true);
                   }
@@ -736,7 +632,8 @@ void PianoCanvas::pianoCmd(int cmd)
                   MidiPart* part = (MidiPart*)curPart;
                   if (part == 0)
                         break;
-                  song->startUndo();
+                  
+                  Undo operations;
                   EventList* el = part->events();
 
                   std::list<Event> elist;
@@ -746,11 +643,10 @@ void PianoCanvas::pianoCmd(int cmd)
                         Event event = *i;
                         Event newEvent = event.clone();
                         newEvent.setTick(event.tick() - editor->raster() - part->tick());
-                        // Indicate no undo, and do not do port controller values and clone parts. 
-                        //audio->msgChangeEvent(event, newEvent, part, false);
-                        audio->msgChangeEvent(event, newEvent, part, false, false, false);
+                        // Do not do port controller values and clone parts. 
+                        operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
                         }
-                  song->endUndo(SC_EVENT_MODIFIED);
+                  song->applyOperationGroup(operations);
                   Pos p(editor->rasterVal(pos[0] - editor->rasterStep(pos[0])), true);
                   song->setPos(0, p, true, false, true);
                   }
@@ -769,14 +665,12 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
       pitch        += track()->transposition;
 
       // play note:
-      //MidiPlayEvent e(0, port, channel, 0x90, pitch, 127);
       MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
       audio->msgPlayMidiEvent(&e);
       
       if (_steprec && pos[0] >= start_tick && pos[0] < end_tick && curPart) {
 				 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velocity,globalKeyState&Qt::ControlModifier,shift);
          }
-            
       }
 
 //---------------------------------------------------------
@@ -817,14 +711,6 @@ void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
             int qq = raster;
             if (q < 8)        // grid too dense
                   qq *= 2;
-            //switch (quant) {
-            //      case 32:
-            //      case 48:
-            //      case 64:
-            //      case 96:
-            //      case 192:         // 8tel
-            //      case 128:         // 8tel Triolen
-            //      case 288:
             p.setPen(Qt::lightGray);
             if (raster>=4) {
                         int xx = x + qq;
@@ -835,10 +721,6 @@ void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
                                }
                         xx = xxx;
                         }
-            //            break;
-            //      default:
-            //            break;
-            // }
             p.setPen(Qt::gray);
             for (int beat = 1; beat < z; beat++) {
                         int xx = AL::sigmap.bar2tick(bar, beat, 0);
@@ -873,9 +755,7 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect)
                         p.drawLine(x, yy, x + w, yy);
                         break;
                   default:
-                        //p.setPen(lightGray);
                         p.fillRect(x, yy-3, w, 6, QBrush(QColor(230,230,230)));
-                        //p.drawLine(x, yy, x + w, yy);
                         break;
                   }
             --key;
@@ -971,24 +851,7 @@ void PianoCanvas::cmd(int cmd)
                   }
                   break;
 
-            case CMD_FIXED_LEN: //Set notes to the length specified in the drummap
-                  if (!selectionSize())
-                        break;
-                  song->startUndo();
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        if (k->second->isSelected()) {
-                              NEvent* nevent = (NEvent*)(k->second);
-                              Event event = nevent->event();
-                              Event newEvent = event.clone();
-                              newEvent.setLenTick(editor->raster());
-                              // Indicate no undo, and do not do port controller values and clone parts. 
-                              //audio->msgChangeEvent(event, newEvent, nevent->part() , false);
-                              audio->msgChangeEvent(event, newEvent, nevent->part(), false, false, false);
-                              }
-                        }
-                  song->endUndo(SC_EVENT_MODIFIED);
-                  break;
-
+            case CMD_FIXED_LEN:
             case CMD_CRESCENDO:
             case CMD_TRANSPOSE:
             case CMD_THIN_OUT:
@@ -1047,10 +910,6 @@ void PianoCanvas::startDrag(CItem* /* item*/, bool copymode)
       QMimeData* md = selected_events_to_mime(partlist_to_set(editor->parts()), 1);
       
       if (md) {
-//            QApplication::clipboard()->setData(drag, QClipboard::Clipboard);   // This line NOT enabled in muse-1 
-            //QApplication::clipboard()->setMimeData(md);                // TODO CHECK Tim.
-            //QApplication::clipboard()->setMimeData(drag->mimeData());  // 
-
             // "Note that setMimeData() assigns ownership of the QMimeData object to the QDrag object. 
             //  The QDrag must be constructed on the heap with a parent QWidget to ensure that Qt can 
             //  clean up after the drag and drop operation has been completed. "
@@ -1233,8 +1092,8 @@ void PianoCanvas::modifySelected(NoteInfo::ValType type, int delta)
                   }
             song->changeEvent(event, newEvent, part);
             // Indicate do not do port controller values and clone parts. 
-            //song->undoOp(UndoOp::ModifyEvent, newEvent, event, part);
-            song->undoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false);
+            //song->addUndo(UndoOp(UndoOp::ModifyEvent, newEvent, event, part));
+            song->addUndo(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
             }
       song->endUndo(SC_EVENT_MODIFIED);
       audio->msgIdle(false);

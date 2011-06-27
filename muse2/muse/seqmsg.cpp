@@ -751,7 +751,7 @@ void Song::msgInsertTrack(Track* track, int idx, bool doUndoFlag)
       msg.ival  = idx;
       if (doUndoFlag) {
             song->startUndo();
-            undoOp(UndoOp::AddTrack, idx, track);
+            addUndo(UndoOp(UndoOp::AddTrack, idx, track));
             }
       audio->sendMsg(&msg);
       if (doUndoFlag)
@@ -893,31 +893,23 @@ void Audio::msgRemovePart(Part* part, bool doUndoFlag)
 
 bool Song::msgRemoveParts()
       {
-      bool loop;
+      Undo operations;
       bool partSelected = false;
-      do {
-            loop = false;
+
             TrackList* tl = song->tracks();
 
             for (iTrack it = tl->begin(); it != tl->end(); ++it) {
                   PartList* pl = (*it)->parts();
                   for (iPart ip = pl->begin(); ip != pl->end(); ++ip) {
                         if (ip->second->selected()) {
-                              if ((*it)->type() == Track::WAVE) {
-                                    audio->msgRemovePart((WavePart*)(ip->second));
-                                    }
-                              else {
-                                    audio->msgRemovePart(ip->second, false);
-                                    }
-                              loop = true;
+                              operations.push_back(UndoOp(UndoOp::DeletePart,ip->second));
                               partSelected = true;
-                              break;
                               }
                         }
-                  if (loop)
-                        break;
                   }
-            } while (loop);
+      
+      song->applyOperationGroup(operations);
+      
       return partSelected;
       }
 

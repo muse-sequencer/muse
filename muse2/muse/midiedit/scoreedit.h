@@ -707,15 +707,14 @@ class ScoreCanvas : public View
 		
 		int old_pitch;
 		unsigned old_dest_tick;
-
-		bool undo_started;
-		bool temp_undo;
 		
 		bool have_lasso;
 		QPoint lasso_start;
 		QRect lasso;
 
-
+		bool undo_started;
+		bool temp_undo;
+		
 		bool srec;
 		bool held_notes[128];
 
