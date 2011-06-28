@@ -15,9 +15,11 @@
 
 #include "muse/midictrl.h"
 #include "libsynti/mess.h"
+#include "common_defs.h"
 
 #define RESOLUTION   (16384*2)
 #define VOICES          128    // max polyphony
+#define INIT_DATA_CMD   1
 
 class OrganGui;
 
@@ -149,7 +151,8 @@ class Organ : public Mess {
       static unsigned freq256[128];
       static double cb2amp(int cb);
 
-      int* idata;  // buffer for init data
+      //int* idata;  // buffer for init data
+      unsigned char* idata;  // buffer for init data
 
       bool brass, flute, reed;
       int attack0, attack1;
@@ -180,7 +183,10 @@ class Organ : public Mess {
       virtual bool setController(int channel, int ctrl, int val);
 
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const;
-      virtual void getInitData(int*, const unsigned char**) const;
+      //virtual void getInitData(int*, const unsigned char**) const;
+      virtual void getInitData(int*, const unsigned char**);
+      // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
+      virtual int oldMidiStateHeader(const unsigned char** data) const;
 
       //virtual bool guiVisible() const;
       //virtual void showGui(bool);
@@ -193,7 +199,7 @@ class Organ : public Mess {
       virtual bool sysex(int, const unsigned char*);
       static SynthCtrl synthCtrl[];
       Organ(int sampleRate);
-      ~Organ();
+      virtual ~Organ();
       bool init(const char* name);
       };
 

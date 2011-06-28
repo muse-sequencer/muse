@@ -22,6 +22,9 @@
 
 #include <QFileInfo>
 
+// Current version of saved midistate data.
+#define SYNTH_MIDI_STATE_SAVE_VERSION 2
+
 //class QMenu;
 class PopupMenu;
 
@@ -105,16 +108,24 @@ class Mess;
 //---------------------------------------------------------
 //   SynthIF
 //    synth instance interface
+//   NOTICE: If implementing sysex support, be sure to make a unique ID and use   
+//    it to filter out unrecognized sysexes. Headers should be constructed as:
+//      MUSE_SYNTH_SYSEX_MFG_ID        The MusE SoftSynth Manufacturer ID byte (0x7C) found in midi.h 
+//      0xNN                           The synth's unique ID byte
 //---------------------------------------------------------
 
 class SynthIF {
+      
    protected:
       SynthI* synti;
-
+      
    public:
       //SynthIF() {}
       SynthIF(SynthI* s) { synti = s; }
       virtual ~SynthIF() {}
+
+      // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
+      virtual int oldMidiStateHeader(const unsigned char** /*data*/) const { return 0; } 
 
       virtual bool initGui() = 0;
       virtual void guiHeartBeat() = 0;
@@ -280,6 +291,10 @@ class SynthI : public AudioTrack, public MidiDevice,
 //---------------------------------------------------------
 //   MessSynthIF
 //    mess synthesizer instance
+//   NOTICE: If implementing sysex support, be sure to make a unique ID and use   
+//    it to filter out unrecognized sysexes. Headers should be constructed as:
+//      MUSE_SYNTH_SYSEX_MFG_ID        The MusE SoftSynth Manufacturer ID byte (0x7C) found in midi.h 
+//      0xNN                           The synth's unique ID byte
 //---------------------------------------------------------
 
 class MessSynthIF : public SynthIF {
@@ -289,6 +304,9 @@ class MessSynthIF : public SynthIF {
       //MessSynthIF() { _mess = 0; }
       MessSynthIF(SynthI* s) : SynthIF(s) { _mess = 0; }
       virtual ~MessSynthIF() { }
+
+      // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
+      virtual int oldMidiStateHeader(const unsigned char** data) const;  
 
       virtual bool initGui()          { return true; }
       virtual void guiHeartBeat()     { }

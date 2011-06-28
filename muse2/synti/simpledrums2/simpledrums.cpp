@@ -5,6 +5,7 @@
 //
 //
 // Author: Mathias Lundgren <lunar_shuttle@users.sf.net>, (C) 2004
+//  Contributer: (C) Copyright 2011 Tim E. Real (terminator356 at users.sourceforge.net)
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -14,6 +15,7 @@
 #include "muse/midi.h"
 //#include "libsynti/mpevent.h"
 #include "muse/mpevent.h"   
+//#include "common_defs.h"
 #include "simpledrums.h"
 
 #include <samplerate.h>
@@ -82,6 +84,9 @@ SimpleSynth::SimpleSynth(int sr)
       SS_samplerate = sr;
       SS_initPlugins();
 
+      initBuffer  = 0;
+      initLen     = 0;
+      
       simplesynth_ptr = this;
       master_vol = 100.0 / SS_MASTER_VOLUME_QUOT;
       master_vol_ctrlval = 100;
@@ -203,6 +208,9 @@ SimpleSynth::~SimpleSynth()
       {
       SS_TRACE_IN
 
+      if(gui)        
+        delete gui;  // p4.0.27
+        
       // Cleanup channels and samples:
       SS_DBG("Cleaning up sample data");
       for (int i=0; i<SS_NR_OF_CHANNELS; i++) {
@@ -233,9 +241,21 @@ SimpleSynth::~SimpleSynth()
       SS_DBG("Deleting process buffer");
       delete[] processBuffer[0];
       delete[] processBuffer[1];
+      if (initBuffer)
+      {
+            SS_DBG("Deleting init buffer");
+            delete [] initBuffer;
+      }      
       SS_TRACE_OUT
       }
 
+int SimpleSynth::oldMidiStateHeader(const unsigned char** data) const 
+{
+  unsigned char const d[2] = {MUSE_SYNTH_SYSEX_MFG_ID, SIMPLEDRUMS_UNIQUE_ID};
+  *data = &d[0];
+  return 2; 
+}
+        
 //---------------------------------------------------------
 //   nativeGuiVisible
 /*!
@@ -299,7 +319,8 @@ bool SimpleSynth::playNote(int /*channel*/, int pitch, int velo)
                   }
             else {
                   //Note off:
-                  if (channels[ch].noteoff_ignore) {
+                  ///if (channels[ch].noteoff_ignore) {
+                  if (!channels[ch].noteoff_ignore) {     // p4.0.27
                         if (SS_DEBUG_MIDI) {
                               printf("Note off on channel %d\n", ch);
                               }
@@ -497,8 +518,17 @@ bool SimpleSynth::setController(int channel, int id, int val, bool /*fromGui*/)
     \return false for ok, true for not ok
 */
 //---------------------------------------------------------
-bool SimpleSynth::sysex(int /*len*/, const unsigned char* data)
+bool SimpleSynth::sysex(int len, const unsigned char* d)
       {
+      if(len < 3 || d[0] != MUSE_SYNTH_SYSEX_MFG_ID 
+          || d[1] != SIMPLEDRUMS_UNIQUE_ID) 
+      {
+        if (SS_DEBUG_MIDI)
+          printf("MusE SimpleDrums: Unknown sysex header\n");
+        return false;
+      }
+      
+      const unsigned char* data = d + 2;
       SS_TRACE_IN
       int cmd = data[0];
       switch (cmd) {
@@ -565,20 +595,23 @@ bool SimpleSynth::sysex(int /*len*/, const unsigned char* data)
                   {
                   int initdata_len = 0;
                   const byte* tmp_initdata = NULL;
-                  byte* event_data = NULL;
+                  ///byte* event_data = NULL;
 
                   getInitData(&initdata_len, &tmp_initdata);
-                  int totlen = initdata_len + 1;
+                  ///int totlen = initdata_len + 1;
 
-                  event_data = new byte[initdata_len + 1];
-                  event_data[0] = SS_SYSEX_SEND_INIT_DATA;
-                  memcpy(event_data + 1, tmp_initdata, initdata_len);
-                  delete[] tmp_initdata;
-                  tmp_initdata = NULL;
+                  ///event_data = new byte[initdata_len + 1];
+                  ///event_data[0] = SS_SYSEX_SEND_INIT_DATA;
+                  *((byte*)(tmp_initdata) + 1) = SS_SYSEX_SEND_INIT_DATA;    // Re-use the synth ID byte as the command byte.
+                  
+                  ///memcpy(event_data + 1, tmp_initdata, initdata_len);
+                  ///delete[] tmp_initdata;
+                  ///tmp_initdata = NULL;
 
-                  MidiPlayEvent ev(0, 0, ME_SYSEX, event_data, totlen);
+                  ///MidiPlayEvent ev(0, 0, ME_SYSEX, event_data, totlen);
+                  MidiPlayEvent ev(0, 0, ME_SYSEX, tmp_initdata + 1, initdata_len - 1);  // Strip MFG ID.
                   gui->writeEvent(ev);
-                  delete[] event_data;
+                  ///delete[] event_data;
 
                   break;
                   }
@@ -639,7 +672,7 @@ const MidiPatch* SimpleSynth::getPatchInfo(int index, const MidiPatch* patch) co
     \return 0 when done, otherwise return next desired controller index
  */
 //---------------------------------------------------------
-int SimpleSynth::getControllerInfo(int index, const char** name, int* controller, int* min, int* max)
+int SimpleSynth::getControllerInfo(int index, const char** name, int* controller, int* min, int* max, int* initval) const
       {
       SS_TRACE_IN
       if (index >= SS_NR_OF_CONTROLLERS) {
@@ -652,7 +685,9 @@ int SimpleSynth::getControllerInfo(int index, const char** name, int* controller
       *min = controllers[index].min;
       *max = controllers[index].max;
 
-      if (SS_DEBUG_MIDI) {
+      *initval = 0;                // p4.0.27 FIXME NOTE TODO    
+      
+      if (SS_DEBUG_MIDI) {   
             printf("setting controller info: index %d name %s controller %d min %d max %d\n", index, *name, *controller, *min, *max);
             }
       SS_TRACE_OUT
@@ -660,17 +695,12 @@ int SimpleSynth::getControllerInfo(int index, const char** name, int* controller
       }
 
 //---------------------------------------------------------
-//   process
-/*!
-    \fn SimpleSynth::process
-    \brief Realtime function where the processing actually occurs
-    \param channels - audio data
-    \param offset - sample offset
-    \param len - nr of samples to process
- */
+//   processMessages
+//   Called from host always, even if output path is unconnected.
 //---------------------------------------------------------
-void SimpleSynth::process(float** out, int offset, int len)
-      {
+
+void SimpleSynth::processMessages()
+{
       //Process messages from the gui
       while (gui->fifoSize()) {
             MidiPlayEvent ev = gui->readEvent();
@@ -687,7 +717,39 @@ void SimpleSynth::process(float** out, int offset, int len)
                         printf("SimpleSynth::process(): unknown event, type: %d\n", ev.type());
                   }
             }
+}
 
+//---------------------------------------------------------
+//   process
+/*!
+    \fn SimpleSynth::process
+    \brief Realtime function where the processing actually occurs
+    \param channels - audio data
+    \param offset - sample offset
+    \param len - nr of samples to process
+ */
+//---------------------------------------------------------
+void SimpleSynth::process(float** out, int offset, int len)
+      {
+      /*
+      //Process messages from the gui
+      while (gui->fifoSize()) {
+            MidiPlayEvent ev = gui->readEvent();
+            if (ev.type() == ME_SYSEX) {
+                  sysex(ev.len(), ev.data());
+                  sendEvent(ev);
+                  }
+            else if (ev.type() == ME_CONTROLLER) {
+                  setController(ev.channel(), ev.dataA(), ev.dataB(), true);
+                  sendEvent(ev);
+                  }
+            else {
+                  if (SS_DEBUG)
+                        printf("SimpleSynth::process(): unknown event, type: %d\n", ev.type());
+                  }
+            }
+      */
+      
       if (synth_state == SS_RUNNING) {
 
       //Temporary mix-doubles
@@ -843,6 +905,19 @@ bool SimpleSynth::init(const char* name)
       }
 
 //---------------------------------------------------------
+// getInitBuffer
+//---------------------------------------------------------
+void SimpleSynth::setupInitBuffer(int len)
+{
+  if (len > initLen) {
+        if (initBuffer)
+              delete [] initBuffer;
+        initBuffer = new byte[len];
+        initLen = len;    
+        }
+}
+
+//---------------------------------------------------------
 /*!
     \fn SimpleSynth::getInitData
     \brief Data for reinitialization of SimpleSynth when loading project
@@ -850,7 +925,8 @@ bool SimpleSynth::init(const char* name)
     \param data - data that is sent as a sysex to the synth on reload of project
  */
 //---------------------------------------------------------
-void SimpleSynth::getInitData(int* n, const unsigned char** data)
+//void SimpleSynth::getInitData(int* n, const unsigned char** data) const
+void SimpleSynth::getInitData(int* n, const unsigned char** data) 
       {
       SS_TRACE_IN
       // Calculate length of data
@@ -877,7 +953,10 @@ void SimpleSynth::getInitData(int* n, const unsigned char** data)
                   int labelnamelen = plugin->label().size() + 2;
                   len+=(namelen + labelnamelen);
 
-                  len+=3; //1 byte for nr of parameters, 1 byte for return gain, 1 byte for effect on/off
+                  ///len+=3; //1 byte for nr of parameters, 1 byte for return gain, 1 byte for effect on/off
+                  // p4.0.27 Tim.
+                  len+=6; //4 bytes for nr of parameters, 1 byte for return gain, 1 byte for effect on/off
+                  
                   len+=sendEffects[i].nrofparameters; // 1 byte for each parameter value
                   }
             else {
@@ -885,17 +964,29 @@ void SimpleSynth::getInitData(int* n, const unsigned char** data)
                   }
             }
 
+      len += 2;  // For header.
+
       // First, SS_SYSEX_INIT_DATA
-      byte* buffer = new byte[len];
-      memset(buffer, 0, len);
-      buffer[0] = SS_SYSEX_INIT_DATA;
-      buffer[1] = SS_SYSEX_INIT_DATA_VERSION;
+      
+      ///byte* buffer = new byte[len];
+      setupInitBuffer(len);
+      
+      memset(initBuffer, 0, len);
+      //initBuffer[0] = SS_SYSEX_INIT_DATA;
+      //initBuffer[1] = SS_SYSEX_INIT_DATA_VERSION;
+      initBuffer[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      initBuffer[1] = SIMPLEDRUMS_UNIQUE_ID;
+      initBuffer[2] = SS_SYSEX_INIT_DATA;
+      initBuffer[3] = SS_SYSEX_INIT_DATA_VERSION;
       if (SS_DEBUG_INIT) {
             printf("Length of init data: %d\n", len);
-            printf("buffer[0] - SS_SYSEX_INIT_DATA: %d\n", SS_SYSEX_INIT_DATA);
-            printf("buffer[1] - SS_SYSEX_INIT_DATA_VERSION: %d\n", SS_SYSEX_INIT_DATA_VERSION);
+            //printf("initBuffer[0] - SS_SYSEX_INIT_DATA: %d\n", SS_SYSEX_INIT_DATA);
+            //printf("initBuffer[1] - SS_SYSEX_INIT_DATA_VERSION: %d\n", SS_SYSEX_INIT_DATA_VERSION);
+            printf("initBuffer[2] - SS_SYSEX_INIT_DATA: %d\n", SS_SYSEX_INIT_DATA);
+            printf("initBuffer[3] - SS_SYSEX_INIT_DATA_VERSION: %d\n", SS_SYSEX_INIT_DATA_VERSION);
             }
-      int i = 2;
+      //int i = 2;
+      int i = 4;
       // All channels:
       // 0       - volume ctrlval (0-127)
       // 1       - pan (0-127)
@@ -905,71 +996,75 @@ void SimpleSynth::getInitData(int* n, const unsigned char** data)
       // 8       - len of filename, n
       // 9 - 9+n - filename
       for (int ch=0; ch<SS_NR_OF_CHANNELS; ch++) {
-            buffer[i]   = (byte) channels[ch].volume_ctrlval;
-            buffer[i+1] = (byte) channels[ch].pan;
-            buffer[i+2] = (byte) channels[ch].noteoff_ignore;
-            buffer[i+3] = (byte) channels[ch].channel_on;
-            buffer[i+4] = (byte) round(channels[ch].sendfxlevel[0] * 127.0);
-            buffer[i+5] = (byte) round(channels[ch].sendfxlevel[1] * 127.0);
-            buffer[i+6] = (byte) round(channels[ch].sendfxlevel[2] * 127.0);
-            buffer[i+7] = (byte) round(channels[ch].sendfxlevel[3] * 127.0);
+            initBuffer[i]   = (byte) channels[ch].volume_ctrlval;
+            initBuffer[i+1] = (byte) channels[ch].pan;
+            initBuffer[i+2] = (byte) channels[ch].noteoff_ignore;
+            initBuffer[i+3] = (byte) channels[ch].channel_on;
+            initBuffer[i+4] = (byte) round(channels[ch].sendfxlevel[0] * 127.0);
+            initBuffer[i+5] = (byte) round(channels[ch].sendfxlevel[1] * 127.0);
+            initBuffer[i+6] = (byte) round(channels[ch].sendfxlevel[2] * 127.0);
+            initBuffer[i+7] = (byte) round(channels[ch].sendfxlevel[3] * 127.0);
 
             if (SS_DEBUG_INIT) {
                   printf("Channel %d:\n", ch);
-                  printf("buffer[%d] - channels[ch].volume_ctrlval = \t%d\n", i, channels[ch].volume_ctrlval);
-                  printf("buffer[%d] - channels[ch].pan = \t\t%d\n", i+1, channels[ch].pan);
-                  printf("buffer[%d] - channels[ch].noteoff_ignore = \t%d\n", i+2, channels[ch].noteoff_ignore );
-                  printf("buffer[%d] - channels[ch].channel_on = \t%d\n", i+3, channels[ch].channel_on);
+                  printf("initBuffer[%d] - channels[ch].volume_ctrlval = \t%d\n", i, channels[ch].volume_ctrlval);
+                  printf("initBuffer[%d] - channels[ch].pan = \t\t%d\n", i+1, channels[ch].pan);
+                  printf("initBuffer[%d] - channels[ch].noteoff_ignore = \t%d\n", i+2, channels[ch].noteoff_ignore );
+                  printf("initBuffer[%d] - channels[ch].channel_on = \t%d\n", i+3, channels[ch].channel_on);
                   for (int j= i+4; j < i+8; j++) {
-                        printf("buffer[%d] - channels[ch].sendfxlevel[%d]= \t%d\n", j, j-i-4, (int)round(channels[ch].sendfxlevel[j-i-4] * 127.0));
+                        printf("initBuffer[%d] - channels[ch].sendfxlevel[%d]= \t%d\n", j, j-i-4, (int)round(channels[ch].sendfxlevel[j-i-4] * 127.0));
                         }
                   }
             if (channels[ch].sample) {
                   int filenamelen = strlen(channels[ch].sample->filename.c_str()) + 1;
-                  buffer[i+8] = (byte) filenamelen;
-                  memcpy((buffer+(i+9)), channels[ch].sample->filename.c_str(), filenamelen);
+                  initBuffer[i+8] = (byte) filenamelen;
+                  memcpy((initBuffer+(i+9)), channels[ch].sample->filename.c_str(), filenamelen);
                   if (SS_DEBUG_INIT) {
-                        printf("buffer[%d] - filenamelen: %d\n", i+8, filenamelen);
-                        printf("buffer[%d] - buffer[%d] - filename: ", (i+9), (i+9) + filenamelen - 1);
+                        printf("initBuffer[%d] - filenamelen: %d\n", i+8, filenamelen);
+                        printf("initBuffer[%d] - initBuffer[%d] - filename: ", (i+9), (i+9) + filenamelen - 1);
                         for (int j = i+9; j< i+9+filenamelen; j++) {
-                              printf("%c",buffer[j]);
+                              printf("%c",initBuffer[j]);
                               }
                         printf("\n");
                         }
                   i+= (SS_NR_OF_CHANNEL_CONTROLLERS + 1 + filenamelen);
                   }
             else {
-                  buffer[i+8] = SS_NO_SAMPLE;
+                  initBuffer[i+8] = SS_NO_SAMPLE;
                   if (SS_DEBUG_INIT) {
-                        printf("buffer[%d]: SS_NO_SAMPLE: - %d\n", i+8, SS_NO_SAMPLE);
+                        printf("initBuffer[%d]: SS_NO_SAMPLE: - %d\n", i+8, SS_NO_SAMPLE);
                         }
                   i+= (SS_NR_OF_CHANNEL_CONTROLLERS + 1);
                   }
             }
       if (SS_DEBUG_INIT) {
-            printf("buffer[%d]: Master vol: - %d\n", i, master_vol_ctrlval);
+            printf("initBuffer[%d]: Master vol: - %d\n", i, master_vol_ctrlval);
             }
-      buffer[i] = master_vol_ctrlval;
-      *(data) = buffer; *n = len;
+      initBuffer[i] = master_vol_ctrlval;
+      *(data) = initBuffer; *n = len;
       i++;
 
       //Send effects:
-      buffer[i] = SS_SYSEX_INIT_DATA_VERSION; //Just for check
+      
+      ///initBuffer[i] = SS_SYSEX_INIT_DATA_VERSION; //Just for check
+      // Jun 10 2011. Bumped version up from 1 (with its own ID). p4.0.27 Tim
+      initBuffer[i] = SS_SYSEX_EFFECT_INIT_DATA_VERSION;   //Just for check     
+      
       if (SS_DEBUG_INIT) {
-            printf("buffer[%d]: Control value, SS_SYSEX_INIT_DATA_VERSION\n", i);
+            printf("initBuffer[%d]: Control value, SS_SYSEX_EFFECT_INIT_DATA_VERSION = %d\n", i, SS_SYSEX_EFFECT_INIT_DATA_VERSION);
             }
 
       i++;
       for (int j=0; j<SS_NR_OF_SENDEFFECTS; j++) {
             if (sendEffects[j].plugin) {
                   int labelnamelen = sendEffects[j].plugin->label().size() + 1;
-                  buffer[i] = labelnamelen;
-                  memcpy((buffer+i+1), sendEffects[j].plugin->label().toLatin1().constData(), labelnamelen);
+                  initBuffer[i] = labelnamelen;
+                  memcpy((initBuffer+i+1), sendEffects[j].plugin->label().toLatin1().constData(), labelnamelen);
                   if (SS_DEBUG_INIT) {
-                        printf("buffer[%d] - labelnamelen: %d\n", i, labelnamelen);
-                        printf("buffer[%d] - buffer[%d] - filename: ", (i+1), (i+1) + labelnamelen - 1);
+                        printf("initBuffer[%d] - labelnamelen: %d\n", i, labelnamelen);
+                        printf("initBuffer[%d] - initBuffer[%d] - filename: ", (i+1), (i+1) + labelnamelen - 1);
                         for (int k = i+1; k < i+1+labelnamelen; k++) {
-                              printf("%c",buffer[k]);
+                              printf("%c",initBuffer[k]);
                               }
                         printf("\n");
                         }
@@ -977,45 +1072,55 @@ void SimpleSynth::getInitData(int* n, const unsigned char** data)
                   i+=(labelnamelen + 1);
 
                   int namelen = sendEffects[j].plugin->lib().size() + 1;
-                  buffer[i] = namelen;
-                  memcpy((buffer+i+1), sendEffects[j].plugin->lib().toLatin1().constData(), namelen);
+                  initBuffer[i] = namelen;
+                  memcpy((initBuffer+i+1), sendEffects[j].plugin->lib().toLatin1().constData(), namelen);
                   if (SS_DEBUG_INIT) {
-                        printf("buffer[%d] - libnamelen : %d\n", i, namelen);
-                        printf("buffer[%d] - buffer[%d] - filename: ", (i+1), (i+1) + namelen - 1);
+                        printf("initBuffer[%d] - libnamelen : %d\n", i, namelen);
+                        printf("initBuffer[%d] - initBuffer[%d] - filename: ", (i+1), (i+1) + namelen - 1);
                         for (int k = i+1; k < i+1+namelen; k++) {
-                              printf("%c",buffer[k]);
+                              printf("%c",initBuffer[k]);
                               }
                         printf("\n");
                         }
 
                   i+=(namelen + 1);
 
-                  buffer[i]=sendEffects[j].nrofparameters;
+                  ///initBuffer[i]=sendEffects[j].nrofparameters;
+                  // Jun 10 2011. Changed to 32 bit. p4.0.27 Tim.
+                  *((unsigned*)&initBuffer[i]) = sendEffects[j].nrofparameters;
                   if (SS_DEBUG_INIT) {
-                        printf("buffer[%d]: sendEffects[%d].nrofparameters=%d\n", i, j, buffer[i]);
+                        printf("initBuffer[%d]: sendEffects[%d].nrofparameters=%d\n", i, j, *((unsigned*)&initBuffer[i]));
+                        }
+                  ///i++;
+                  i+=4;
+
+                  initBuffer[i]=sendEffects[j].retgain_ctrlval;
+                  if (SS_DEBUG_INIT) {
+                        printf("initBuffer[%d]: sendEffects[%d].retgain_ctrlval=%d\n", i, j, initBuffer[i]);
                         }
                   i++;
 
-                  buffer[i]=sendEffects[j].retgain_ctrlval;
+                  // Jun 10 2011. This one was missing. p4.0.27 Tim.
+                  initBuffer[i] = sendEffects[j].state;
                   if (SS_DEBUG_INIT) {
-                        printf("buffer[%d]: sendEffects[%d].retgain_ctrlval=%d\n", i, j, buffer[i]);
+                        printf("initBuffer[%d]: sendEffects[%d].state=%d\n", i, j, initBuffer[i]);
                         }
                   i++;
 
                   for (int k=0; k<sendEffects[j].nrofparameters; k++) {
                         //TODO: Convert to 127-scale
-                        buffer[i] = sendEffects[j].plugin->getGuiControlValue(k);
+                        initBuffer[i] = sendEffects[j].plugin->getGuiControlValue(k);
                         if (SS_DEBUG_INIT) {
-                              printf("buffer[%d]: sendEffects[%d].parameterval[%d]=%d\n", i, j, k, buffer[i]);
+                              printf("initBuffer[%d]: sendEffects[%d].parameterval[%d]=%d\n", i, j, k, initBuffer[i]);
                               }
                         i++;
                         }
                   }
             // No plugin loaded:
             else {
-                  buffer[i] = SS_NO_PLUGIN;
+                  initBuffer[i] = SS_NO_PLUGIN;
                   if (SS_DEBUG_INIT) {
-                        printf("buffer[%d]: SS_NO_PLUGIN\n", i);
+                        printf("initBuffer[%d]: SS_NO_PLUGIN\n", i);
                         }
                   i++;
                   }
@@ -1118,11 +1223,15 @@ void SimpleSynth::parseInitData(const unsigned char* data)
       ptr++;
 
       // Effects:
-      if (*(ptr) != SS_SYSEX_INIT_DATA_VERSION) {
-            fprintf(stderr, "Error loading init data - control byte not found. Skipping...\n");
+      ///if (*(ptr) != SS_SYSEX_INIT_DATA_VERSION) {
+      int effver = *(ptr);
+      if (effver < 1 || effver > SS_SYSEX_EFFECT_INIT_DATA_VERSION) {
+            //if (SS_DEBUG_INIT)
+              fprintf(stderr, "Error loading init data - effect init version is from future or too old. Skipping...\n");
             SS_TRACE_OUT
             return;
             }
+      
       ptr++;
 
       for (int i=0; i<SS_NR_OF_SENDEFFECTS; i++) {
@@ -1149,9 +1258,14 @@ void SimpleSynth::parseInitData(const unsigned char* data)
                   initSendEffect(i, libnametmp.c_str(), labelnametmp.c_str());
                   //initSendEffect(0, "cmt", "freeverb3");
 
-                  byte params = *(ptr);
-                  byte retgain = *(ptr+1);
-                  ptr+=2;
+                  ///byte params = *(ptr);
+                  unsigned params = (effver < 2) ? *(ptr) : *((unsigned*)ptr);   // p4.0.27
+                  ptr+= (effver < 2) ? 1 : 4;
+                  
+                  ///byte retgain = *(ptr+1);
+                  ///ptr+=2;
+                  byte retgain = *(ptr);                                     // p4.0.27
+                  ptr++;
 
                   sendEffects[i].nrofparameters = params;
 
@@ -1161,7 +1275,19 @@ void SimpleSynth::parseInitData(const unsigned char* data)
                   MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, SS_PLUGIN_RETURNLEVEL_CONTROLLER(i), retgain);
                   gui->writeEvent(ev);
 
-                  for (int j=0; j<params; j++) {
+                  // Jun 10 2011. This one was missing. p4.0.27 Tim.
+                  if(effver >= 2)
+                  {
+                    if (SS_DEBUG_INIT)
+                        printf("buffer[%ld] - sendeffect[%d] state=%d\n", long(ptr-data), i, *(ptr));
+                    sendEffects[i].state = (SS_SendFXState) *(ptr);
+                    MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, SS_PLUGIN_ONOFF_CONTROLLER(i), sendEffects[i].state);
+                    gui->writeEvent(ev);
+                    ptr++;
+                  }  
+                  
+                  ///for (int j=0; j<params; j++) {
+                  for (unsigned j=0; j<params; j++) {
                       if (SS_DEBUG_INIT){
                           //wilyfoobar-2011-02-13
                           // arg2 :pointer diifference might be 64 bit (long long)  on 64 bit machine,  this requires cast to long
@@ -1481,16 +1607,23 @@ void SimpleSynth::guiSendSampleLoaded(bool success, int ch, const char* filename
       {
       SS_TRACE_IN
       int len = strlen(filename) + 3; //2 + filenamelen + 1;
+      //int len = strlen(filename) + 3 + 2; //2 + filenamelen + 1, + 2 for header;
       byte out[len];
 
+      //out[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      //out[1] = SIMPLEDRUMS_UNIQUE_ID;
       if (success) {
             out[0] = SS_SYSEX_LOAD_SAMPLE_OK;
+            //out[2] = SS_SYSEX_LOAD_SAMPLE_OK;
             }
       else {
             out[0] = SS_SYSEX_LOAD_SAMPLE_ERROR;
+            //out[2] = SS_SYSEX_LOAD_SAMPLE_ERROR;
             }
       out[1] = ch;
+      //out[3] = ch;
       memcpy(out+2, filename, strlen(filename)+1);
+      //memcpy(out+4, filename, strlen(filename)+1);
       MidiPlayEvent ev(0, 0, ME_SYSEX, out, len);
       gui->writeEvent(ev);
       SS_TRACE_OUT
@@ -1504,8 +1637,13 @@ void SimpleSynth::guiSendError(const char* errorstring)
       {
       SS_TRACE_IN
       byte out[strlen(errorstring)+2];
+      //byte out[strlen(errorstring)+4];
+      //out[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      //out[1] = SIMPLEDRUMS_UNIQUE_ID;
       out[0] = SS_SYSEX_ERRORMSG;
+      //out[2] = SS_SYSEX_ERRORMSG;
       memcpy(out+1, errorstring, strlen(errorstring) +1);
+      //memcpy(out+3, errorstring, strlen(errorstring) +1);
       SS_TRACE_OUT
       }
 
@@ -1590,15 +1728,24 @@ bool SimpleSynth::initSendEffect(int id, QString lib, QString name)
                   //TODO: cleanup if failed
                   }
             }
+      
       //Notify gui
-      int len = 3;
+      ///int len = 3;
+      int len = 2 + 4;  // Char is not enough for many plugins. Was causing crash. Changed to 32 bits. p4.0.27 Tim.
+      //int len = 5;  
       byte out[len];
       out[0] = SS_SYSEX_LOAD_SENDEFFECT_OK;
       out[1] = id;
+      //out[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      //out[1] = SIMPLEDRUMS_UNIQUE_ID;
+      //out[2] = SS_SYSEX_LOAD_SENDEFFECT_OK;
+      //out[3] = id;
       int j=0;
       for (iPlugin i = plugins.begin(); i!=plugins.end(); i++, j++) {
             if ((*i)->lib() == plugin->lib() && (*i)->label() == plugin->label()) {
-                  out[2] = j;
+                  ///out[2] = j;
+                  //out[4] = j;
+                  *((unsigned*)(out + 2)) = j;
                   MidiPlayEvent ev(0, 0, ME_SYSEX, out, len);
                   gui->writeEvent(ev);
                   }
@@ -1638,9 +1785,15 @@ void SimpleSynth::cleanupPlugin(int id)
       sendEffects[id].plugin = 0;
 
       byte d[2];
+      //byte d[4];
       d[0] = SS_SYSEX_CLEAR_SENDEFFECT_OK;
       d[1] = id;
+      //d[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      //d[1] = SIMPLEDRUMS_UNIQUE_ID;
+      //d[2] = SS_SYSEX_CLEAR_SENDEFFECT_OK;
+      //d[3] = id;
       MidiPlayEvent ev(0, 0, ME_SYSEX, d, 2);
+      //MidiPlayEvent ev(0, 0, ME_SYSEX, d, 4);
       gui->writeEvent(ev);
       SS_TRACE_OUT
       }
@@ -1694,11 +1847,19 @@ void SimpleSynth::guiUpdateFxParameter(int fxid, int param, float val)
             }
 
       byte d[4];
+      //byte d[6];
       d[0] = SS_SYSEX_SET_PLUGIN_PARAMETER_OK;
       d[1] = fxid;
       d[2] = param;
       d[3] = intval;
+      //d[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      //d[1] = SIMPLEDRUMS_UNIQUE_ID;
+      //d[2] = SS_SYSEX_SET_PLUGIN_PARAMETER_OK;
+      //d[3] = fxid;
+      //d[4] = param;
+      //d[5] = intval;
       MidiPlayEvent ev(0, 0, ME_SYSEX, d, 4);
+      //MidiPlayEvent ev(0, 0, ME_SYSEX, d, 6);
       gui->writeEvent(ev);
       SS_TRACE_OUT
       }
@@ -1742,9 +1903,15 @@ void SimpleSynth::guiNotifySampleCleared(int ch)
       {
       SS_TRACE_IN
       byte d[2];
+      //byte d[4];
       d[0] = SS_SYSEX_CLEAR_SAMPLE_OK;
       d[1] = (byte) ch;
+      //d[0] = MUSE_SYNTH_SYSEX_MFG_ID;
+      //d[1] = SIMPLEDRUMS_UNIQUE_ID;
+      //d[2] = SS_SYSEX_CLEAR_SAMPLE_OK;
+      //d[3] = (byte) ch;
       MidiPlayEvent ev(0, 0, ME_SYSEX, d, 2);
+      //MidiPlayEvent ev(0, 0, ME_SYSEX, d, 4);
       gui->writeEvent(ev);
       SS_TRACE_OUT
       }

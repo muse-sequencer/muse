@@ -348,7 +348,8 @@ void WaveView::setPos(int idx, unsigned val, bool adjustScrollbar)
             x = opos;
             }
       pos[idx] = val;
-      redraw(QRect(x, 0, w, height()));
+      //redraw(QRect(x, 0, w, height()));
+      redraw(QRect(x-1, 0, w+2, height()));    // p4.0.28 From Canvas::draw (is otherwise identical). Fix for corruption.
       }
 
 //---------------------------------------------------------

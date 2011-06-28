@@ -21,8 +21,12 @@
 #ifndef __VAM_H
 #define __VAM_H
 
+#include "muse/midictrl.h"
+
 enum {
-	DCO1_PITCHMOD, DCO1_WAVEFORM, DCO1_FM, DCO1_PWM,
+        //DCO1_PITCHMOD, 
+	DCO1_PITCHMOD = CTRL_RPN14_OFFSET,             // p4.0.27
+        DCO1_WAVEFORM, DCO1_FM, DCO1_PWM,
 	DCO1_ATTACK, DCO1_DECAY, DCO1_SUSTAIN, DCO1_RELEASE,
 	DCO2_PITCHMOD, DCO2_WAVEFORM, DCO2_FM, DCO2_PWM,
 	DCO2_ATTACK, DCO2_DECAY, DCO2_SUSTAIN, DCO2_RELEASE,
@@ -32,7 +36,11 @@ enum {
 	DCO1_DETUNE, DCO2_DETUNE, DCO1_PW, DCO2_PW
 };
 
+#define VAM_FIRST_CTRL          DCO1_PITCHMOD
+#define VAM_LAST_CTRL           DCO2_PW
+#define NUM_CONTROLLER          32
+#define INIT_DATA_CMD           1
 
-#define NUM_CONTROLLER 32
+//#define VAM_DEBUG  
 
 #endif /* __VAM_H */

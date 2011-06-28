@@ -1,3 +1,18 @@
+21.06.2011:
+        - Fixed wave editor position and marker drawing corruption. (Tim)
+        - Updated Yamaha m06 IDF file to version 4 by Geoff King. (Tim)
+18.06.2011:
+          (By Tim. Marked as p4.0.27)
+        - Major work, all synthesizers. Sysexes now wrapped in a header MFG ID (0x7c) + synth ID. Fixed leaks, crashes. 
+          Each MESS synth (or just the single DSSI host) now has a unique ID, used in the sysex header.
+          TODOS: Finish DeicsOnze::getControllerInfo. Fix Fluid - must set to High Bank #2 to see any patch names!
+          *NOTE: Some data will now change upon saving a song! Compatibility with old songs is built-in and transparent.
+                 Ask Tim for details. 
+        *Feature: SimpleDrums now FULLY functional including effects. Support old songs + MusE-1 songs, tested OK. 
+        - Fluid soft synth now remembers and displays the font name.
+        - Fixed midi TrackInfo patch name not initializing at position 0 even when value stored, with FluidSynth (possibly others). 
+        - Fixed some leaks, lack of dtors cleanup call when repeatedly loading songs. Should be a weee bit more stable now. 
+        - EXPERIMENT: Midi track input routes can now come from any of the synthesizers! This is a WIP and might change or disappear.
 06.06.2011:
         - removed (unused) support for disabling the keymap (flo93)
 04.06.2011:

@@ -33,6 +33,7 @@
 
 #include <list>
 
+#include "common_defs.h"
 #include "deicsonzepreset.h"
 #include "deicsonzegui.h"
 #include "deicsonzeplugin.h"
@@ -99,7 +100,8 @@
 
 #define SYSEX_INIT_DATA 1
 #define SYSEX_INIT_DATA_VERSION 1
-#define SAVEINITLENGTH 2
+///#define SAVEINITLENGTH 2
+#define SAVEINITLENGTH 4    // MFG ID, synth ID, init data command, init data version
 
 #define DEICSONZECONFIGURATIONSTR "deicsOnzeConfiguation"
 #define SYSEX_MASTERVOL 4
@@ -432,6 +434,9 @@ struct Global {
 
 class DeicsOnze : public Mess {
   DeicsOnzeGui* _gui;
+      
+  unsigned char* initBuffer;
+  int initLen;
 
   static int useCount;
   static float waveTable[NBRWAVES][RESOLUTION];
@@ -439,6 +444,7 @@ class DeicsOnze : public Mess {
  private:
   void parseInitData(int length, const unsigned char* data);
   void loadConfiguration(QString fileName);
+  void setupInitBuffer(int len);
 
  public:
   float** tempInputChorus;
@@ -577,16 +583,20 @@ class DeicsOnze : public Mess {
   bool setController(int ch, int ctrl, int val, bool fromGui);
   virtual bool setController(int ch, int ctrl, int val);
   bool sysex(int length, const unsigned char* data, bool fromGui); 
-  virtual bool sysex(int length, const unsigned char* data);
+  virtual bool sysex(int l, const unsigned char* d);
   
   virtual const char* getPatchName(int ch, int number, int) const;
   virtual const MidiPatch* getPatchInfo(int, const MidiPatch *) const;
 
   virtual int getControllerInfo(int arg1, const char** arg2, 
-				int* arg3, int* arg4, int* arg5);
-  virtual void getInitData(int* length, const unsigned char** data) const;
+				int* arg3, int* arg4, int* arg5, int* arg6) const;
+  ///virtual void getInitData(int* length, const unsigned char** data) const;
+  virtual void getInitData(int* length, const unsigned char** data);
+  // This is only a kludge required to support old songs' midistates. Do not use in any new synth.
+  virtual int oldMidiStateHeader(const unsigned char** data) const;
 
   virtual bool playNote(int channel, int pitch, int velo);
+  virtual void processMessages();
   virtual void process(float** buffer, int offset, int n);
   
   // GUI interface routines
@@ -600,7 +610,7 @@ class DeicsOnze : public Mess {
   virtual void setNativeGeometry(int, int, int, int);
   
   DeicsOnze();
-  ~DeicsOnze();
+  virtual ~DeicsOnze();
 };
 
 

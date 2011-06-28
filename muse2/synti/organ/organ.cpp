@@ -17,6 +17,7 @@
 //#include "libsynti/mpevent.h"
 #include "muse/mpevent.h"   
 
+//#include "common_defs.h"
 #include "organ.h"
 #include "organgui.h"
 
@@ -76,7 +77,8 @@ double Organ::cb2amp(int cb)
 Organ::Organ(int sr)
    : Mess(1)
       {
-      idata = new int[NUM_CONTROLLER];
+      //idata = new int[NUM_CONTROLLER];
+      idata = new unsigned char[3 + NUM_CONTROLLER * sizeof(int)];
       setSampleRate(sr);
       gui = 0;
 
@@ -131,7 +133,8 @@ Organ::~Organ()
       {
       if (gui)
             delete gui;
-      delete idata;
+      //delete idata;
+      delete [] idata;   // p4.0.27
       --useCount;
       if (useCount == 0) {
             delete[] g_pulse_table;
@@ -170,6 +173,13 @@ bool Organ::init(const char* name)
       return false;
       }
 
+int Organ::oldMidiStateHeader(const unsigned char** data) const 
+{
+  unsigned char const d[3] = {MUSE_SYNTH_SYSEX_MFG_ID, ORGAN_UNIQUE_ID, INIT_DATA_CMD};
+  *data = &d[0];
+  return 3; 
+}
+        
 //---------------------------------------------------------
 //   processMessages
 //   Called from host always, even if output path is unconnected.
@@ -192,7 +202,11 @@ void Organ::processMessages()
       sendEvent(ev);
     }
     else
+    {
+      #ifdef ORGAN_DEBUG
       printf("Organ::process(): unknown event\n");
+      #endif
+    }  
   }
 }
   
@@ -404,7 +418,9 @@ bool Organ::playNote(int channel, int pitch, int velo)
             voices[i].harm5_accum = 0;
             return false;
             }
+      #ifdef ORGAN_DEBUG
       printf("organ: voices overflow!\n");
+      #endif
       return false;
       }
 
@@ -424,7 +440,11 @@ void Organ::noteoff(int channel, int pitch)
                   }
             }
       if (!found)
+      {
+            #ifdef ORGAN_DEBUG
             printf("Organ: noteoff %d:%d not found\n", channel, pitch);
+            #endif
+      }      
       }
 
 //---------------------------------------------------------
@@ -515,7 +535,9 @@ void Organ::setController(int ctrl, int data)
                         setController(0, synthCtrl[i].num, synthCtrl[i].val);
                   break;
             default:
+                  #ifdef ORGAN_DEBUG
                   fprintf(stderr, "Organ:set unknown Ctrl 0x%x to 0x%x\n", ctrl, data);
+                  #endif
                   return;
             }
       for (int i = 0; i < NUM_CONTROLLER; ++i) {
@@ -573,37 +595,59 @@ bool Organ::setController(int channel, int ctrl, int data)
 //---------------------------------------------------------
 
 bool Organ::sysex(int n, const unsigned char* data)
-      {
+{
       #ifdef ORGAN_DEBUG
       printf("Organ: sysex\n");
       #endif
-      if (unsigned(n) != (NUM_INIT_CONTROLLER * sizeof(int))) {
-            printf("Organ: unknown sysex\n");
-            return false;
+      
+      // p4.0.27
+      if(unsigned(n) == (3 + NUM_INIT_CONTROLLER * sizeof(int))) 
+      {
+        if (data[0] == MUSE_SYNTH_SYSEX_MFG_ID)        // MusE Soft Synth
+        {
+          if (data[1] == ORGAN_UNIQUE_ID)              // ORGAN
+          {
+            if (data[2] == INIT_DATA_CMD)              // Initialization
+            {  
+              int* s = (int*)(data + 3);
+              for (int i = 0; i < NUM_INIT_CONTROLLER; ++i) 
+              {
+                    int val = *s++;
+                    #ifdef ORGAN_DEBUG
+                    printf("Organ: sysex before setController num:%d val:%d\n", synthCtrl[i].num, val);
+                    #endif
+                    setController(0, synthCtrl[i].num, val);
+              }
+              return false;
             }
-      int* s = (int*) data;
-      for (int i = 0; i < NUM_INIT_CONTROLLER; ++i) {
-            int val = *s++;
-            #ifdef ORGAN_DEBUG
-            printf("Organ: sysex before setController num:%d val:%d\n", synthCtrl[i].num, val);
-            #endif
-            setController(0, synthCtrl[i].num, val);
-            }
-      return false;
+          }
+        }      
       }
-
+      #ifdef ORGAN_DEBUG
+      printf("Organ: unknown sysex\n");
+      #endif
+      return false;
+}
 //---------------------------------------------------------
 //   getInitData
 //---------------------------------------------------------
 
-void Organ::getInitData(int* n, const unsigned char**p) const
-      {
-      int* d = idata;
+//void Organ::getInitData(int* n, const unsigned char**p) const
+void Organ::getInitData(int* n, const unsigned char**p) 
+{
+      // p4.0.27
+      *n = 3 + NUM_INIT_CONTROLLER * sizeof(int);
+      idata[0] = MUSE_SYNTH_SYSEX_MFG_ID;           // MusE Soft Synth
+      idata[1] = ORGAN_UNIQUE_ID;                   // ORGAN
+      idata[2] = INIT_DATA_CMD;                     // Initialization
+      int* d = (int*)&idata[3];
+      
+      //int* d = idata;
       for (int i = 0; i < NUM_INIT_CONTROLLER; ++i)
             *d++ = synthCtrl[i].val;
-      *n = NUM_INIT_CONTROLLER * sizeof(int); // sizeof(idata);
+      //*n = NUM_INIT_CONTROLLER * sizeof(int); // sizeof(idata);
       *p = (unsigned char*)idata;
-      }
+}
 
 //---------------------------------------------------------
 //   MESS

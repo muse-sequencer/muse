@@ -5,6 +5,7 @@
 //
 //
 // Author: Mathias Lundgren <lunar_shuttle@users.sf.net>, (C) 2004
+//  Contributer: (C) Copyright 2011 Tim E. Real (terminator356 at users.sourceforge.net)
 //
 // Copyright: See COPYING file that comes with this distribution
 //
@@ -37,18 +38,19 @@ class QChannelSlider: public QSlider
    Q_OBJECT
 
    public:
-      QChannelSlider(Qt::Orientation, int ch, QWidget* paren = 0);
+      QChannelSlider(Qt::Orientation, int ch, QWidget* parent = 0);
       int getChannel();
       void setChannel(int ch);
 
-   public slots:
-      virtual void setValue(int val);
+   ///public slots:
+   ///   virtual void setValue(int val);
 
    signals:
       void valueChanged(int channel, int value);
-
+   
    protected:
       int channel;
+      virtual void sliderChange(SliderChange change);   
    };
 
 //--------------------------------------
@@ -58,14 +60,17 @@ class QInvertedSlider : public QSlider
    {
    Q_OBJECT
    public:
-      QInvertedSlider(Qt::Orientation o, QWidget* parent = 0)
-         : QSlider(o, parent) {}
+      QInvertedSlider(Qt::Orientation o, QWidget* parent = 0);
+         ///: QSlider(o, parent) {}
 
-   public slots:
-      virtual void setValue(int val);
+   ///public slots:
+   ///   virtual void setValue(int val);
 
    signals:
       void invertedValueChanged(int value);
+   
+   protected:
+      virtual void sliderChange(SliderChange change);    
    };
 
 //--------------------------------------
@@ -75,11 +80,10 @@ class QInvertedChannelSlider : public QChannelSlider
    {
    Q_OBJECT
    public:
-      QInvertedChannelSlider(Qt::Orientation o, int channel, QWidget* parent = 0)
-         : QChannelSlider(o, channel, parent) {};
+      QInvertedChannelSlider(Qt::Orientation o, int channel, QWidget* parent = 0);
 
-   public slots:
-      virtual void setValue(int val);
+   ///public slots:
+   ///   virtual void setValue(int val);
    };
 
 
@@ -138,12 +142,13 @@ class QChannelDial : public QDial
    signals:
       void valueChanged(int channel, int fxid, int val);
 
-   public slots:
-      virtual void setValue(int val);
+   ///public slots:
+   ///   virtual void setValue(int val);
 
    protected:
       int channel;
       int sendfxid;
+      virtual void sliderChange(SliderChange change);    
    };
 
 //--------------------------------------
@@ -160,7 +165,10 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
       QGroupBox* channelButtonGroups[SS_NR_OF_CHANNELS];
       QGroupBox*           masterButtonGroup;
       QGroupBox*              mainGroupBox;
-      QInvertedChannelSlider* volumeSliders[SS_NR_OF_CHANNELS];
+      
+      ///QInvertedChannelSlider* volumeSliders[SS_NR_OF_CHANNELS];
+      QChannelSlider*         volumeSliders[SS_NR_OF_CHANNELS];       // p4.0.27 Tim. Inverted not correct. Was WIP? 
+      
       QChannelSlider*         panSliders[SS_NR_OF_CHANNELS];
       QChannelCheckbox*       onOff[SS_NR_OF_CHANNELS];
       QChannelCheckbox*       nOffIgnore[SS_NR_OF_CHANNELS];
@@ -168,7 +176,10 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
       QChannelButton*         clearSampleButton[SS_NR_OF_CHANNELS];
       QLabel*                 nOffLabel[SS_NR_OF_CHANNELS];
       QLineEdit*              sampleNameLineEdit[SS_NR_OF_CHANNELS];
-      QInvertedSlider*        masterSlider;
+      
+      ///QInvertedSlider*        masterSlider;
+      QSlider*                masterSlider;                          // p4.0.27 Tim. Inverted not correct. Was WIP? 
+      
       QChannelDial*           sendFxDial[SS_NR_OF_CHANNELS][SS_NR_OF_SENDEFFECTS];
 
       QPushButton*            openPluginsButton;

@@ -12,7 +12,9 @@
 //#include <QMenu>
 #include "popupmenu.h"
 
-// Added by Tim. p3.3.18
+// If sysex support is ever added, make sure this number is unique among all the MESS synths.
+//#define METRONOME_UNIQUE_ID      7
+
 //#define METRONOME_DEBUG
 
 MetronomeSynthI* metronome = 0;

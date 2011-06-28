@@ -21,6 +21,7 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
       Track* selected;
       bool _midiDetect;
       int program, pan, volume;
+      int heartBeatCounter;
       
    private slots:
       void iOutputChannelChanged(int);

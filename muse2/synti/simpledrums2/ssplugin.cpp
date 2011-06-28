@@ -6,6 +6,7 @@
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
 // Additions/modifications: Mathias Lundgren <lunar_shuttle@users.sf.net>, (C) 2004
+//                          (C) Copyright 2011 Tim E. Real (terminator356 at users.sourceforge.net)
 // Copyright: See COPYING file that comes with this distribution
 //
 //

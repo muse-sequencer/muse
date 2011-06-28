@@ -75,7 +75,8 @@ inline bool checkJackClient(jack_client_t* _client)
 bool checkAudioDevice()
       {
       if (audioDevice == NULL) {
-            printf("Muse:checkAudioDevice: no audioDevice\n");
+            if(debugMsg)
+              printf("Muse:checkAudioDevice: no audioDevice\n");
             return false;
             }
       return true;
