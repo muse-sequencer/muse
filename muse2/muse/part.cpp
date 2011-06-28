@@ -1179,7 +1179,5 @@ bool Part::hasHiddenNotes()
 		if (ev->second.endTick() > lastNote)
 			lastNote=ev->second.endTick();
 	
-	printf ("in hasHiddenNotes: lastNote=%i, lenTick=%i\n",lastNote, lenTick());
-	
 	return lastNote > lenTick();
 }

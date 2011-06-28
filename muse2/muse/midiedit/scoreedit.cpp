@@ -4456,8 +4456,7 @@ void staff_t::update_part_indices()
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o do autoexpand correctly in prcanvas.cpp, then port that to 
- *     dcanvas.cpp, steprec.cpp and scoreedit.cpp
+ *   o do autoexpand in steprec.cpp and scoreedit.cpp
  * 
  * IMPORTANT TODO
  *   o shrink a part from its beginning as well! watch out for clones!

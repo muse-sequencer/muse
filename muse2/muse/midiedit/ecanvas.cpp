@@ -416,7 +416,12 @@ void EventCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir)
       
       
       Undo operations = moveCanvasItems(moving, dp, dx, dragtype);
-      song->applyOperationGroup(operations);
+      if (operations.empty())
+        songChanged(SC_EVENT_MODIFIED); //this is a hack to force the canvas to repopulate
+      	                                //itself. otherwise, if a moving operation was forbidden,
+      	                                //the canvas would still show the movement
+      else
+        song->applyOperationGroup(operations);
       
       moving.clear();
       updateSelection();
