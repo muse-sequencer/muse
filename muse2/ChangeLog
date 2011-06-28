@@ -1,3 +1,6 @@
+27.06.2011:
+        - Massively speeded up muse by using operation groups (flo93)
+        - Changed behaviour of middle click in all canvases to "delete" (flo93)
 21.06.2011:
         - Fixed wave editor position and marker drawing corruption. (Tim)
         - Updated Yamaha m06 IDF file to version 4 by Geoff King. (Tim)
