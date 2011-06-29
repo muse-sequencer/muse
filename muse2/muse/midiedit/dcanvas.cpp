@@ -731,7 +731,7 @@ void DrumCanvas::keyPressed(int index, int velocity)
       MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
       audio->msgPlayMidiEvent(&e);
 
-      if (_steprec && pos[0] >= start_tick && pos[0] < end_tick && curPart)
+      if (_steprec && pos[0] >= start_tick /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */ && curPart)
 				steprec->record(curPart,index,drumMap[index].len,editor->raster(),velocity,globalKeyState&Qt::ControlModifier,globalKeyState&Qt::ShiftModifier);
             
       }
@@ -1120,7 +1120,7 @@ void DrumCanvas::midiNote(int pitch, int velo)
 
       if (_midiin && _steprec && curPart
          && !audio->isPlaying() && velo && pos[0] >= start_tick
-         && pos[0] < end_tick
+         /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */
          && !(globalKeyState & Qt::AltModifier)) {
 					 steprec->record(curPart,drumInmap[pitch],drumMap[(int)drumInmap[pitch]].len,editor->raster(),velo,globalKeyState&Qt::ControlModifier,globalKeyState&Qt::ShiftModifier);
          }

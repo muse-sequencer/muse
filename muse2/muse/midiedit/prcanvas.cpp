@@ -66,7 +66,7 @@ void PianoCanvas::addItem(Part* part, Event& event)
       NEvent* ev = new NEvent(event, part, pitch2y(event.pitch()));
       items.add(ev);
 
-      int diff = event.endTick()-part->lenTick();
+      int diff = event.tick()-part->lenTick();
       if (diff > 0)  {// too short part? extend it
             //printf("addItem - this code should not be run!\n");
             //Part* newPart = part->clone();
@@ -655,9 +655,8 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
       MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
       audio->msgPlayMidiEvent(&e);
       
-      if (_steprec && pos[0] >= start_tick && pos[0] < end_tick && curPart) {
+      if (_steprec && pos[0] >= start_tick /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */ && curPart)
 				 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velocity,globalKeyState&Qt::ControlModifier,shift);
-         }
       }
 
 //---------------------------------------------------------
@@ -881,7 +880,7 @@ void PianoCanvas::midiNote(int pitch, int velo)
       
       if (_midiin && _steprec && curPart
          && !audio->isPlaying() && velo && pos[0] >= start_tick
-         && pos[0] < end_tick
+         /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */
          && !(globalKeyState & Qt::AltModifier)) {
 					 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velo,globalKeyState&Qt::ControlModifier,globalKeyState&Qt::ShiftModifier);
          }

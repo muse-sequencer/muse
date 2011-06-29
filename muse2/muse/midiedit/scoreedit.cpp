@@ -4456,7 +4456,8 @@ void staff_t::update_part_indices()
  *     between, for example, when a cis is tied to a des
  * 
  * CURRENT TODO
- *   o do autoexpand in steprec.cpp and scoreedit.cpp
+ *   o do autoexpand in scoreedit.cpp
+ *   o draw the edge of parts hiding notes "jagged" (hasHiddenNotes() is interesting for this)
  * 
  * IMPORTANT TODO
  *   o shrink a part from its beginning as well! watch out for clones!
@@ -4477,6 +4478,7 @@ void staff_t::update_part_indices()
  *   o transpose etc. must also transpose key-pressure events
  *   o transpose: support in-key-transpose
  *   o thin out: remove unneeded ctrl messages
+ *   o make muse usable without the middle mouse button
  *
  * less important stuff
  *   o quantize-templates (everything is forced into a specified
