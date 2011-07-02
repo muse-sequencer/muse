@@ -165,8 +165,6 @@ Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
 			forbidden=true;
 			break;
 		}
-    
-    schedule_resize_all_same_len_clone_parts(opart, opart->lenTick() + diff, operations);
   }    
 
 	
@@ -206,6 +204,14 @@ Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
 			if(dtype == MOVE_COPY || dtype == MOVE_CLONE)
 						selectItem(ci, false);
 		}  
+
+		for(iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
+		{
+			Part* opart = ip2c->first;
+			int diff = ip2c->second.xdiff;
+			
+			schedule_resize_all_same_len_clone_parts(opart, opart->lenTick() + diff, operations); 
+		}    
 					
   	return operations;
   }
@@ -354,7 +360,7 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
         {
               schedule_resize_all_same_len_clone_parts(part, event.endTick(), operations);
               printf("newItem: extending\n");
-            }
+        }
       }
       //else forbid action by not applying it
       song->applyOperationGroup(operations);

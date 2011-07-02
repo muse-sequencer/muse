@@ -1682,7 +1682,8 @@ void staff_t::create_appropriate_eventlist()
 			Event& event=it->second;
 			
 			if ( ( event.isNote() && !event.isNoteOff() &&
-			       (event.endTick() <= part->lenTick()) ) &&
+			       // (event.endTick() <= part->lenTick()) ) &&
+			       (event.tick() <= part->lenTick()) ) && // changed to accord to prcanvas.cpp and others (flo93)
 			     ( ((type==GRAND_TOP) && (event.pitch() >= SPLIT_NOTE)) ||
 			       ((type==GRAND_BOTTOM) && (event.pitch() < SPLIT_NOTE)) ||
 			       (type==NORMAL) )                          )
@@ -3684,7 +3685,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 																			"       setting it to " << newevent.lenTick() << endl;
 							}
 							
-							if (newevent.endTick() > curr_part->lenTick())
+							if (newevent.endTick() > curr_part->lenTick()) //FINDMICH EXTEND
 							{
 								if (debugMsg) cout << "clipping inserted note from len="<<newevent.endTick()<<" to len="<<(curr_part->lenTick() - newevent.tick())<<endl;
 								newevent.setLenTick(curr_part->lenTick() - newevent.tick());
@@ -3935,7 +3936,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 						if (debugMsg) cout << "not setting len to a negative value. using 0 instead" << endl;
 					}
 					
-					if (tmp.endTick() > dragged_event_part->lenTick())
+					if (tmp.endTick() > dragged_event_part->lenTick()) //FINDMICH EXTEND
 					{
 						tmp.setLenTick(dragged_event_part->lenTick() - tmp.tick());
 						if (debugMsg) cout << "resized note would exceed its part; limiting length to " << tmp.lenTick() << endl;

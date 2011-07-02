@@ -321,8 +321,6 @@ Undo PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dty
 			forbidden=true;
 			break;
 		}
-    
-    schedule_resize_all_same_len_clone_parts(opart, opart->lenTick() + diff, operations);
   }    
 
 	
@@ -362,6 +360,14 @@ Undo PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dty
 			if(dtype == MOVE_COPY || dtype == MOVE_CLONE)
 						selectItem(ci, false);
 		}  
+
+    for(iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
+    {
+      Part* opart = ip2c->first;
+      int diff = ip2c->second.xdiff;
+      
+      schedule_resize_all_same_len_clone_parts(opart, opart->lenTick() + diff, operations);
+    }    
 					
   	return operations;
   }
@@ -472,7 +478,7 @@ void PianoCanvas::newItem(CItem* item, bool noSnap)
         {
               schedule_resize_all_same_len_clone_parts(part, event.endTick(), operations);
               printf("newItem: extending\n");
-            }
+        }
         
         song->applyOperationGroup(operations);
       }
@@ -517,7 +523,8 @@ void PianoCanvas::resizeItem(CItem* item, bool noSnap, bool)         // experime
         if (diff > 0)// part must be extended?
         {
               schedule_resize_all_same_len_clone_parts(part, event.tick()+len, operations);
-              printf("resizeItem: extending\n");}
+              printf("resizeItem: extending\n");
+        }
       }
       //else forbid action by not performing it
       song->applyOperationGroup(operations);
