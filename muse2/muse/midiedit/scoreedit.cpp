@@ -4463,10 +4463,15 @@ void staff_t::update_part_indices()
 /* BUGS and potential bugs
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
+ *   o schedule_all_same_len_parts: if there are two clones A and B,
+ *     and both A and B get scheduled to be expanded (because we
+ *     have one event from A and one event from B), this causes a bug,
+ *     because after A (and B) got resized, the B-resize is invalid!
  * 
  * CURRENT TODO
- *   o do autoexpand in scoreedit.cpp and functions.cpp
  *   o draw the edge of parts hiding notes "jagged" (hasHiddenNotes() is interesting for this)
+ *   o in Song::applyOperationGroup(): check for double entries (for example,
+ *     resizing the same part twice)
  * 
  * IMPORTANT TODO
  *   o shrink a part from its beginning as well! watch out for clones!

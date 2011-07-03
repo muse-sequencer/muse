@@ -286,10 +286,11 @@ bool modify_off_velocity(const set<Part*>& parts, int range, int rate, int offse
 		return false;
 }
 
-bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset) //FINDMICH EXTEND
+bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	Undo operations;
+	map<Part*, int> partlen;
 	
 	if ( (!events.empty()) && ((rate!=100) || (offset!=0)) )
 	{
@@ -305,6 +306,9 @@ bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset) //
 
 			if (len <= 0)
 				len = 1;
+			
+			if ((event.tick()+len > part->lenTick()) && (!part->hasHiddenNotes()))
+				partlen[part]=event.tick()+len; // schedule auto-expanding
 				
 			if (event.lenTick() != len)
 			{
@@ -314,13 +318,16 @@ bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset) //
 			}
 		}
 		
+		for (map<Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
+			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
+
 		return song->applyOperationGroup(operations);
 	}
 	else
 		return false;
 }
 
-bool set_notelen(const set<Part*>& parts, int range, int len) //FINDMICH EXTEND
+bool set_notelen(const set<Part*>& parts, int range, int len)
 {
 	return modify_notelen(parts, range, 0, len);
 }
@@ -721,9 +728,10 @@ QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
 	return md;
 }
 
-void paste_at(Part* dest_part, const QString& pt, int pos) //FINDMICH EXTEND
+void paste_at(Part* dest_part, const QString& pt, int pos)
 {
 	Undo operations;
+	unsigned newpartlen=dest_part->lenTick();
 	
 	Xml xml(pt.toLatin1().constData());
 	for (;;) 
@@ -753,18 +761,29 @@ void paste_at(Part* dest_part, const QString& pt, int pos) //FINDMICH EXTEND
 
 						e.setTick(tick);
 						e.setSelected(true);
-						int diff = e.endTick()-dest_part->lenTick();
-						if (diff > 0) // too short part? extend it
+						
+						if (e.endTick() > dest_part->lenTick()) // event exceeds part?
 						{
-							Part* newPart = dest_part->clone();
-							newPart->setLenTick(newPart->lenTick()+diff);
-							// Indicate no undo, and do port controller values but not clone parts. 
-							operations.push_back(UndoOp(UndoOp::ModifyPart,dest_part, newPart, true, false));
-							dest_part = newPart; // reassign TODO FINDME does this work, or has dest_part to be a nonconst reference?
+							if (dest_part->hasHiddenNotes()) // auto-expanding is forbidden?
+							{
+								if (e.tick() < dest_part->lenTick())
+									e.setLenTick(dest_part->lenTick() - e.tick()); // clip
+								else
+									e.setLenTick(0); // don't insert that note at all
+							}
+							else
+							{
+								if (e.endTick() > newpartlen)
+									newpartlen=e.endTick();
+							}
 						}
-						// Indicate no undo, and do not do port controller values and clone parts. 
-						operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
+						
+						if (e.lenTick() != 0) operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
 					}
+					
+					if (newpartlen != dest_part->lenTick())
+						schedule_resize_all_same_len_clone_parts(dest_part, newpartlen, operations);
+
 					song->applyOperationGroup(operations);
 					goto end_of_paste_at;
 				}
