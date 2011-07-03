@@ -286,7 +286,7 @@ bool modify_off_velocity(const set<Part*>& parts, int range, int rate, int offse
 		return false;
 }
 
-bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
+bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset) //FINDMICH EXTEND
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	Undo operations;
@@ -320,7 +320,7 @@ bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 		return false;
 }
 
-bool set_notelen(const set<Part*>& parts, int range, int len)
+bool set_notelen(const set<Part*>& parts, int range, int len) //FINDMICH EXTEND
 {
 	return modify_notelen(parts, range, 0, len);
 }
@@ -481,10 +481,11 @@ bool crescendo(const set<Part*>& parts, int range, int start_val, int end_val, b
 		return false;
 }
 
-bool move_notes(const set<Part*>& parts, int range, signed int ticks) //TODO: clipping
+bool move_notes(const set<Part*>& parts, int range, signed int ticks)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	Undo operations;
+	map<Part*, int> partlen;
 	
 	if ( (!events.empty()) && (ticks!=0) )
 	{
@@ -500,12 +501,17 @@ bool move_notes(const set<Part*>& parts, int range, signed int ticks) //TODO: cl
 			else
 				newEvent.setTick(event.tick()+ticks);
 			
-			if (newEvent.endTick() > part->lenTick()) //if exceeding the part's end, clip
+			if (newEvent.endTick() > part->lenTick()) //if exceeding the part's end:
 			{
-				if (part->lenTick() > newEvent.tick())
-					newEvent.setLenTick(part->lenTick() - newEvent.tick());
+				if (part->hasHiddenNotes()) // auto-expanding is forbidden, clip
+				{
+					if (part->lenTick() > newEvent.tick())
+						newEvent.setLenTick(part->lenTick() - newEvent.tick());
+					else
+						del=true; //if the new length would be <= 0, erase the note
+				}
 				else
-					del=true; //if the new length would be <= 0, erase the note
+					partlen[part]=newEvent.endTick(); // schedule auto-expanding
 			}
 			
 			if (del==false)
@@ -513,6 +519,9 @@ bool move_notes(const set<Part*>& parts, int range, signed int ticks) //TODO: cl
 			else
 				operations.push_back(UndoOp(UndoOp::DeleteEvent, event, part, false, false));
 		}
+		
+		for (map<Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
+			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
 		
 		return song->applyOperationGroup(operations);
 	}
@@ -712,7 +721,7 @@ QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
 	return md;
 }
 
-void paste_at(Part* dest_part, const QString& pt, int pos)
+void paste_at(Part* dest_part, const QString& pt, int pos) //FINDMICH EXTEND
 {
 	Undo operations;
 	
