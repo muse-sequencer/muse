@@ -295,6 +295,7 @@ void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
   }
   
   song->applyOperationGroup(operations);
+  partsChanged();
 }
       
 //---------------------------------------------------------
