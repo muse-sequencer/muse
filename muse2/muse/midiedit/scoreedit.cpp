@@ -4470,8 +4470,6 @@ void staff_t::update_part_indices()
  * 
  * CURRENT TODO
  *   o draw the edge of parts hiding notes "jagged" (hasHiddenNotes() is interesting for this)
- *   o in Song::applyOperationGroup(): check for double entries (for example,
- *     resizing the same part twice)
  * 
  * IMPORTANT TODO
  *   o shrink a part from its beginning as well! watch out for clones!
@@ -4481,7 +4479,6 @@ void staff_t::update_part_indices()
  *   o canvas editor: create clone via "alt+drag" moves window instead
  *   o investigate with valgrind
  *   o controller view in score editor
- *   o deal with expanding parts
  *   o fix sigedit boxes
  *   o solo button
  *   o grand staff brace
