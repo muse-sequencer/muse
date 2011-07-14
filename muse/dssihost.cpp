@@ -1352,7 +1352,7 @@ DssiSynthIF::~DssiSynthIF()
 
 int DssiSynthIF::oldMidiStateHeader(const unsigned char** data) const 
 {
-  unsigned char const d[2] = {MUSE_SYNTH_SYSEX_MFG_ID, DSSI_SYNTH_UNIQUE_ID};
+  static unsigned char const d[2] = {MUSE_SYNTH_SYSEX_MFG_ID, DSSI_SYNTH_UNIQUE_ID};
   *data = &d[0];
   return 2; 
 }

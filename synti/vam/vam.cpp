@@ -258,7 +258,7 @@ VAM::~VAM()
 
 int VAM::oldMidiStateHeader(const unsigned char** data) const 
 {
-  unsigned char const d[3] = {MUSE_SYNTH_SYSEX_MFG_ID, VAM_UNIQUE_ID, INIT_DATA_CMD};
+  static unsigned char const d[3] = {MUSE_SYNTH_SYSEX_MFG_ID, VAM_UNIQUE_ID, INIT_DATA_CMD};
   *data = &d[0];
   return 3; 
 }

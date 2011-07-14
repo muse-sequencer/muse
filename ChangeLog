@@ -1,3 +1,6 @@
+14.07.2011:
+        - Fixed loading of old songs with synths. (Tim)
+          Added static keyword to array in each synth's oldMidiStateHeader() member. 
 27.06.2011:
         - Massively speeded up muse by using operation groups (flo93)
         - Changed behaviour of middle click in all canvases to "delete" (flo93)

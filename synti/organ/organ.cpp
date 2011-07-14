@@ -175,7 +175,7 @@ bool Organ::init(const char* name)
 
 int Organ::oldMidiStateHeader(const unsigned char** data) const 
 {
-  unsigned char const d[3] = {MUSE_SYNTH_SYSEX_MFG_ID, ORGAN_UNIQUE_ID, INIT_DATA_CMD};
+  static unsigned char const d[3] = {MUSE_SYNTH_SYSEX_MFG_ID, ORGAN_UNIQUE_ID, INIT_DATA_CMD};
   *data = &d[0];
   return 3; 
 }
