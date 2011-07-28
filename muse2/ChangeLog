@@ -1,3 +1,12 @@
+28.07.2011:
+        - speeded up structural operations (flo93)
+        - fixed several heavy bugs in structural operations: (flo93)
+           - global insert freezed muse
+           - global cut and global insert behaved wrong on parts not
+             starting at the zeroth tick
+           - fixed upper_bound vs. lower_bound issues
+        - clicking below the track list now deselects all tracks (flo93)
+        - moved checkRegionNotNull() where it belongs (flo93)
 14.07.2011:
         - Fixed loading of old songs with synths. (Tim)
           Added static keyword to array in each synth's oldMidiStateHeader() member. 
