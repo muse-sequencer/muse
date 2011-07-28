@@ -3114,6 +3114,27 @@ void MusE::bounceToFile(AudioOutput* ao)
       song->setPlay(true);
       }
 
+
+//---------------------------------------------------------
+//   checkRegionNotNull
+//    return true if (rPos - lPos) <= 0
+//---------------------------------------------------------
+
+bool MusE::checkRegionNotNull()
+      {
+      int start = song->lPos().frame();
+      int end   = song->rPos().frame();
+      if (end - start <= 0) {
+            QMessageBox::critical(this,
+               tr("MusE: Bounce"),
+               tr("set left/right marker for bounce range")
+               );
+            return true;
+            }
+      return false;
+      }
+
+
 #ifdef HAVE_LASH
 //---------------------------------------------------------
 //   lash_idle_cb

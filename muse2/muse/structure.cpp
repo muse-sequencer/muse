@@ -23,10 +23,9 @@
 //    helper that adjusts tempo, sig, key and marker
 //    lists everything from startPos is adjusted
 //    'diff' number of ticks.
-//    function requires undo to be handled outside
 //---------------------------------------------------------
 
-void MusE::adjustGlobalLists(int startPos, int diff)
+void MusE::adjustGlobalLists(Undo& operations, int startPos, int diff)
 {
   const TempoList* t = &tempomap;
   const AL::SigList* s   = &AL::sigmap;
@@ -45,11 +44,11 @@ void MusE::adjustGlobalLists(int startPos, int diff)
       break;
 
     if (tick > startPos && tick +diff < startPos ) { // remove
-      audio->msgRemoveKey(tick, key, false);
+      operations.push_back(UndoOp(UndoOp::DeleteKey, tick, key));
     }
     else {
-      audio->msgRemoveKey(tick, key, false);
-      audio->msgAddKey(tick+diff, key, false);
+      operations.push_back(UndoOp(UndoOp::DeleteKey,tick, key));
+      operations.push_back(UndoOp(UndoOp::AddKey,tick+diff, key));
       }
   }
 
@@ -62,11 +61,11 @@ void MusE::adjustGlobalLists(int startPos, int diff)
       break;
 
     if (tick > startPos && tick +diff < startPos ) { // remove
-      audio->msgDeleteTempo(tick, tempo, false);
+      operations.push_back(UndoOp(UndoOp::DeleteTempo,tick, tempo));
     }
     else {
-      audio->msgDeleteTempo(tick, tempo, false);
-      audio->msgAddTempo(tick+diff, tempo, false);
+      operations.push_back(UndoOp(UndoOp::DeleteTempo,tick, tempo));
+      operations.push_back(UndoOp(UndoOp::AddTempo,tick+diff, tempo));
       }
   }
 
@@ -80,11 +79,11 @@ void MusE::adjustGlobalLists(int startPos, int diff)
     int z = ev->sig.z;
     int n = ev->sig.n;
     if (tick > startPos && tick +diff < startPos ) { // remove
-      audio->msgRemoveSig(tick, z, n, false);
+      operations.push_back(UndoOp(UndoOp::DeleteSig,tick, z, n));
     }
     else {
-      audio->msgRemoveSig(tick, z, n, false);
-      audio->msgAddSig(tick+diff, z, n, false);
+      operations.push_back(UndoOp(UndoOp::DeleteSig,tick, z, n));
+      operations.push_back(UndoOp(UndoOp::AddSig,tick+diff, z, n));
     }
   }
 
@@ -99,12 +98,12 @@ void MusE::adjustGlobalLists(int startPos, int diff)
           Marker *oldMarker = new Marker();
           *oldMarker = *m;
           markerlist->remove(m);
-          song->addUndo(UndoOp(UndoOp::ModifyMarker,oldMarker, 0));
+          operations.push_back(UndoOp(UndoOp::ModifyMarker,oldMarker, 0));
         } else {
           Marker *oldMarker = new Marker();
           *oldMarker = *m;
           m->setTick(tick + diff);
-          song->addUndo(UndoOp(UndoOp::ModifyMarker,oldMarker, m));
+          operations.push_back(UndoOp(UndoOp::ModifyMarker,oldMarker, m));
         }
       }
   }
@@ -114,7 +113,6 @@ void MusE::adjustGlobalLists(int startPos, int diff)
 //---------------------------------------------------------
 //   globalCut
 //    - remove area between left and right locator
-//    - do not touch muted track
 //    - cut master track
 //---------------------------------------------------------
 
@@ -125,8 +123,9 @@ void MusE::globalCut()
       if ((lpos - rpos) >= 0)
             return;
 
-      song->startUndo();
+      Undo operations;
       TrackList* tracks = song->tracks();
+      
       for (iTrack it = tracks->begin(); it != tracks->end(); ++it) {
             MidiTrack* track = dynamic_cast<MidiTrack*>(*it);
             if (track == 0 || track->mute())
@@ -139,7 +138,7 @@ void MusE::globalCut()
                   if (t + l <= lpos)
                         continue;
                   if ((t >= lpos) && ((t+l) <= rpos)) {
-                        audio->msgRemovePart(part, false);
+                        operations.push_back(UndoOp(UndoOp::DeletePart,part));
                         }
                   else if ((t < lpos) && ((t+l) > lpos) && ((t+l) <= rpos)) {
                         // remove part tail
@@ -149,17 +148,10 @@ void MusE::globalCut()
                         //
                         // cut Events in nPart
                         EventList* el = nPart->events();
-                        iEvent ie = el->lower_bound(t + len);
-                        for (; ie != el->end();) {
-                              iEvent i = ie;
-                              ++ie;
-                              // Indicate no undo, and do not do port controller values and clone parts.
-                              //audio->msgDeleteEvent(i->second, nPart, false);
-                              audio->msgDeleteEvent(i->second, nPart, false, false, false);
-                              }
-                        // Indicate no undo, and do port controller values and clone parts.
-                        //audio->msgChangePart(part, nPart, false);
-                        audio->msgChangePart(part, nPart, false, true, true);
+                        for (iEvent ie = el->lower_bound(len); ie != el->end(); ++ie)
+                              operations.push_back(UndoOp(UndoOp::DeleteEvent,ie->second, nPart, false, false));
+
+                        operations.push_back(UndoOp(UndoOp::ModifyPart,part, nPart, true, true));
                         }
                   else if ((t < lpos) && ((t+l) > lpos) && ((t+l) > rpos)) {
                         //----------------------
@@ -168,56 +160,61 @@ void MusE::globalCut()
 
                         MidiPart* nPart = new MidiPart(*(MidiPart*)part);
                         EventList* el = nPart->events();
-                        iEvent is = el->lower_bound(lpos);
-                        iEvent ie = el->upper_bound(rpos);
-                        for (iEvent i = is; i != ie;) {
-                              iEvent ii = i;
-                              ++i;
-                              // Indicate no undo, and do not do port controller values and clone parts.
-                              //audio->msgDeleteEvent(ii->second, nPart, false);
-                              audio->msgDeleteEvent(ii->second, nPart, false, false, false);
-                              }
+                        iEvent is = el->lower_bound(lpos-t);
+                        iEvent ie = el->lower_bound(rpos-t); //lower bound, because we do NOT want to erase the events at rpos-t
+                        for (iEvent i = is; i != ie; ++i)
+                              operations.push_back(UndoOp(UndoOp::DeleteEvent,i->second, nPart, false, false));
 
-                        ie = el->lower_bound(rpos);
-                        for (; ie != el->end();) {
-                              iEvent i = ie;
-                              ++ie;
+                        for (iEvent i = el->lower_bound(rpos-t); i != el->end(); ++i) {
                               Event event = i->second;
                               Event nEvent = event.clone();
                               nEvent.setTick(nEvent.tick() - (rpos-lpos));
                               // Indicate no undo, and do not do port controller values and clone parts.
-                              //audio->msgChangeEvent(event, nEvent, nPart, false);
-                              audio->msgChangeEvent(event, nEvent, nPart, false, false, false);
+                              operations.push_back(UndoOp(UndoOp::ModifyEvent,nEvent, event, nPart, false, false));
                               }
                         nPart->setLenTick(l - (rpos-lpos));
                         // Indicate no undo, and do port controller values and clone parts.
-                        //audio->msgChangePart(part, nPart, false);
-                        audio->msgChangePart(part, nPart, false, true, true);
+                        operations.push_back(UndoOp(UndoOp::ModifyPart,part, nPart, true, true));
                         }
                   else if ((t >= lpos) && (t < rpos) && (t+l) > rpos) {
-                        // TODO: remove part head
+                        // remove part head
+                        
+                        MidiPart* nPart = new MidiPart(*(MidiPart*)part);
+                        EventList* el = nPart->events();
+                        iEvent i_end = el->lower_bound(rpos-t); //lower bound, because we do NOT want to erase the events at rpos-t
+                        for (iEvent it = el->begin(); it!=i_end; it++)
+                              operations.push_back(UndoOp(UndoOp::DeleteEvent,it->second, nPart, false, false));
+                        
+                        for (iEvent it = el->lower_bound(rpos-t); it!=el->end(); it++) {
+                              Event event = it->second;
+                              Event nEvent = event.clone();
+                              nEvent.setTick(nEvent.tick() - (rpos-t));
+                              // Indicate no undo, and do not do port controller values and clone parts.
+                              operations.push_back(UndoOp(UndoOp::ModifyEvent,nEvent, event, nPart, false, false));
+                              }
+                        
+                        nPart->setLenTick(l - (rpos-t));
+                        operations.push_back(UndoOp(UndoOp::ModifyPart,part, nPart, true, true));
                         }
                   else if (t >= rpos) {
                         MidiPart* nPart = new MidiPart(*(MidiPart*)part);
                         int nt = part->tick();
                         nPart->setTick(nt - (rpos -lpos));
                         // Indicate no undo, and do port controller values but not clone parts.
-                        //audio->msgChangePart(part, nPart, false);
-                        audio->msgChangePart(part, nPart, false, true, false);
+                        operations.push_back(UndoOp(UndoOp::ModifyPart,part, nPart, true, false));
                         }
                   }
             }
       int diff = lpos - rpos;
-      adjustGlobalLists(lpos, diff);
+      adjustGlobalLists(operations, lpos, diff);
 
-      song->endUndo(SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_REMOVED | SC_TEMPO | SC_KEY | SC_SIG);
+      song->applyOperationGroup(operations);
       }
 
 //---------------------------------------------------------
 //   globalInsert
 //    - insert empty space at left locator position upto
 //      right locator
-//    - do not touch muted track
 //    - insert in master track
 //---------------------------------------------------------
 
@@ -228,13 +225,11 @@ void MusE::globalInsert()
       if (lpos >= rpos)
             return;
 
-      song->startUndo();
+      Undo operations;
       TrackList* tracks = song->tracks();
+      
       for (iTrack it = tracks->begin(); it != tracks->end(); ++it) {
             MidiTrack* track = dynamic_cast<MidiTrack*>(*it);
-            //
-            // process only non muted midi tracks
-            //
             if (track == 0 || track->mute())
                   continue;
             PartList* pl = track->parts();
@@ -249,52 +244,48 @@ void MusE::globalInsert()
                         nPart->setLenTick(l + (rpos-lpos));
                         EventList* el = nPart->events();
 
-                        iEvent i = el->end();
-                        while (i != el->begin()) {
-                              --i;
-                              if (i->first < lpos)
+                        for (riEvent i = el->rbegin(); i!=el->rend(); ++i)
+                        {
+                              if (i->first < lpos-t)
                                     break;
                               Event event  = i->second;
                               Event nEvent = i->second.clone();
                               nEvent.setTick(nEvent.tick() + (rpos-lpos));
-                              // Indicate no undo, and do not do port controller values and clone parts.
-                              //audio->msgChangeEvent(event, nEvent, nPart, false);
-                              audio->msgChangeEvent(event, nEvent, nPart, false, false, false);
+                              operations.push_back(UndoOp(UndoOp::ModifyEvent, nEvent, event, nPart, false, false));
                               }
-                        // Indicate no undo, and do port controller values and clone parts.
-                        //audio->msgChangePart(part, nPart, false);
-                        audio->msgChangePart(part, nPart, false, true, true);
+                        operations.push_back(UndoOp(UndoOp::ModifyPart, part, nPart, true, true));
                         }
                   else if (t > lpos) {
                         MidiPart* nPart = new MidiPart(*(MidiPart*)part);
                         nPart->setTick(t + (rpos -lpos));
-                        // Indicate no undo, and do port controller values but not clone parts.
-                        //audio->msgChangePart(part, nPart, false);
-                        audio->msgChangePart(part, nPart, false, true, false);
+                        operations.push_back(UndoOp(UndoOp::ModifyPart, part, nPart, true, false));
                         }
                   }
             }
 
       int diff = rpos - lpos;
-      adjustGlobalLists(lpos, diff);
+      adjustGlobalLists(operations, lpos, diff);
 
-      song->endUndo(SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_REMOVED | SC_TEMPO | SC_KEY | SC_SIG );
+      song->applyOperationGroup(operations);
       }
 
 
 //---------------------------------------------------------
 //   globalSplit
 //    - split all parts at the song position pointer
-//    - do not touch muted track
 //---------------------------------------------------------
 
 void MusE::globalSplit()
       {
       int pos = song->cpos();
-      song->startUndo();
+      Undo operations;
       TrackList* tracks = song->tracks();
+
       for (iTrack it = tracks->begin(); it != tracks->end(); ++it) {
             Track* track = *it;
+            if (track == 0 || track->mute())
+                  continue;
+
             PartList* pl = track->parts();
             for (iPart p = pl->begin(); p != pl->end(); ++p) {
                   Part* part = p->second;
@@ -304,15 +295,17 @@ void MusE::globalSplit()
                         Part* p1;
                         Part* p2;
                         track->splitPart(part, pos, p1, p2);
-                        // Indicate no undo, and do port controller values but not clone parts.
-                        //audio->msgChangePart(part, p1, false);
-                        audio->msgChangePart(part, p1, false, true, false);
-                        audio->msgAddPart(p2, false);
+
+                        p1->events()->incARef(-1); // the later song->applyOperationGroup() will increment it
+                        p2->events()->incARef(-1); // so we must decrement it first :/
+
+                        operations.push_back(UndoOp(UndoOp::ModifyPart,part, p1, true, false));
+                        operations.push_back(UndoOp(UndoOp::AddPart,p2));
                         break;
                         }
                   }
             }
-      song->endUndo(SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_INSERTED);
+      song->applyOperationGroup(operations);
       }
 
 //---------------------------------------------------------
@@ -346,23 +339,3 @@ void MusE::cutEvents()
          tr("not implemented")
          );
       }
-
-//---------------------------------------------------------
-//   checkRegionNotNull
-//    return true if (rPos - lPos) <= 0
-//---------------------------------------------------------
-
-bool MusE::checkRegionNotNull()
-      {
-      int start = song->lPos().frame();
-      int end   = song->rPos().frame();
-      if (end - start <= 0) {
-            QMessageBox::critical(this,
-               tr("MusE: Bounce"),
-               tr("set left/right marker for bounce range")
-               );
-            return true;
-            }
-      return false;
-      }
-
