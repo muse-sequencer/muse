@@ -1069,6 +1069,9 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   //delete synp;
                   delete p;
                  }
+            else if (button == Qt::LeftButton) {
+              if (!ctrl) song->deselectTracks();
+              }
             return;
             }
 
