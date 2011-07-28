@@ -374,13 +374,13 @@ UndoOp PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
 
       if (t == MOVE_COPY || t == MOVE_CLONE) {
             // These will not increment ref count, and will not chain clones... 
-            // TODO: is this still correct (by flo93)?
+            // TODO FINDMICH: is this still correct (by flo93)? i doubt it!
             result=UndoOp(UndoOp::AddPart,dpart);
             }
       else if (t == MOVE_MOVE) {
             dpart->setSelected(spart->selected());
             // These will increment ref count if not a clone, and will chain clones...
-            // TODO: is this still correct (by flo93)?
+            // TODO FINDMICH: is this still correct (by flo93)? i doubt it!
             result=UndoOp(UndoOp::ModifyPart,spart, dpart, true, false);
             
             spart->setSelected(false);

@@ -64,6 +64,7 @@ class WaveTrack;
 class AudioOutput;
 class EditInstrument;
 class ScoreEdit;
+class Undo;
 
 #define MENU_ADD_SYNTH_ID_BASE 0x1000
 
@@ -319,7 +320,7 @@ class MusE : public QMainWindow
       void execDeliveredScript(int);
       void execUserScript(int);
    private:
-      void adjustGlobalLists(int startPos, int diff);
+      void adjustGlobalLists(Undo& operations, int startPos, int diff);
 
    public slots:
       bool saveAs();
