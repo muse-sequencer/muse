@@ -10,6 +10,7 @@
 #define __AMIXER_H__
 
 #include <QScrollArea>
+#include <QMainWindow>
 
 #include "cobject.h"
 #include "synth.h"

@@ -12,11 +12,12 @@
 #include "config.h"
 #include "cobject.h"
 
+#include <QMainWindow>
 #include <QFileInfo>
+#include <list>
 
 class QCloseEvent;
 class QFocusEvent;
-class QMainWindow;
 class QMenu;
 class QPoint;
 class QRect;
@@ -28,6 +29,8 @@ class QToolButton;
 class QProgressDialog;
 class VisibleTracks;
 class EditToolBar;
+class QMdiArea;
+class QSplitter;
 
 class Part;
 class PartList;
@@ -155,8 +158,8 @@ class MusE : public QMainWindow
       EditInstrument* editInstrument;
       
       QMenu *menu_file, *menuView, *menuSettings, *menu_help;
-      QMenu *menuEdit, *menuStructure;
-      QMenu* menu_audio, *menuAutomation, *menuUtils;
+      QMenu *menuEdit;
+      QMenu* menu_audio, *menuAutomation;
       QMenu* menu_functions, *menuScriptPlugins;
       QMenu* select, *master, *midiEdit, *addTrack;
 
@@ -221,7 +224,8 @@ class MusE : public QMainWindow
       QSignalMapper *followSignalMapper;
       QSignalMapper *scoreOneStaffPerTrackMapper;
       QSignalMapper *scoreAllInOneMapper;
-
+      
+      std::list<QToolBar*> activeChildToolbars;
    signals:
       void configChanged();
 
@@ -319,6 +323,8 @@ class MusE : public QMainWindow
 
       void execDeliveredScript(int);
       void execUserScript(int);
+      
+      void subWinChanged(QMdiSubWindow*);
    private:
       void adjustGlobalLists(Undo& operations, int startPos, int diff);
 
@@ -346,7 +352,11 @@ class MusE : public QMainWindow
    public:
       MusE(int argc, char** argv);
       ~MusE();
-      Arranger* arranger;
+      
+      QSplitter* splitter; //this is the central widget, containing
+      Arranger* arranger;  //the arranger and the mdi area
+      QMdiArea* mdiarea;
+      
       QRect configGeometryMain;
       QProgressDialog *progress;
       bool importMidi(const QString name, bool merge);

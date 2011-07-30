@@ -12,6 +12,7 @@
 #include <QMessageBox>
 
 #include "app.h"
+#include <QMdiArea>
 #include "song.h"
 #include "arranger.h"
 //#include "arranger/arranger.h"  // p4.0.2
@@ -1017,8 +1018,9 @@ void MusE::readToplevels(Xml& xml)
                               }
                         else if (tag == "scoreedit") {
                                 ScoreEdit* score = new ScoreEdit(this, 0, arranger->cursorValue());
-                                score->show();
                                 toplevels.push_back(Toplevel(Toplevel::SCORE, (unsigned long)(score), score));
+                                mdiarea->addSubWindow(score);
+                                score->show();
                                 connect(score, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
                                 connect(score, SIGNAL(name_changed()), SLOT(scoreNamingChanged()));
                                 score->readStatus(xml);

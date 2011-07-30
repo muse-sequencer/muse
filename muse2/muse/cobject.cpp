@@ -64,12 +64,64 @@ void TopWin::writeStatus(int level, Xml& xml) const
       }
 
 TopWin::TopWin(QWidget* parent, const char* name,
-   Qt::WindowFlags f) : QMainWindow(parent, f)
+   Qt::WindowFlags f) : QMdiSubWindow(parent, f)
       {
       setObjectName(QString(name));
       //setAttribute(Qt::WA_DeleteOnClose);
       // Allow multiple rows.  Tim.
       //setDockNestingEnabled(true);
-      setIconSize(ICON_SIZE);
+      //setIconSize(ICON_SIZE); FINDMICH
+      
+      menu_bar=0;
       }
 
+void TopWin::setCentralWidget(QWidget* w)
+{
+  setWidget(w);
+}
+
+QMenuBar* TopWin::menuBar()
+{
+  if (!menu_bar)
+  {
+    menu_bar=new QMenuBar(this);
+    menu_bar->hide();
+  }
+  return menu_bar;
+}
+
+QToolBar* TopWin::addToolBar(QString str)
+{
+  QToolBar* temp = new QToolBar();
+  temp->setWindowTitle(str);
+  
+  addToolBar(temp);
+  
+  return temp;
+}
+
+void TopWin::addToolBar(QToolBar* toolbar)
+{
+  printf("adding toolbar %p. ",toolbar);
+  toolbar->hide();
+  toolbars.push_back(toolbar);
+  printf("toolbars.size()=%i\n",toolbars.size());
+}
+
+void TopWin::addToolBarBreak()
+{
+
+}
+
+QMenuBar* TopWin::getMenuBar()
+{
+  return menu_bar;
+}
+
+std::list<QToolBar*> TopWin::getToolbars()
+{
+  return toolbars;
+}
+
+bool TopWin::restoreState(QByteArray) { return true; }
+QByteArray TopWin::saveState(int) const { return QByteArray(); }

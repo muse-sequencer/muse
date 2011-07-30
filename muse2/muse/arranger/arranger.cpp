@@ -119,8 +119,10 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       //    create toolbar in toplevel widget
       //---------------------------------------------------
 
-      parent->addToolBarBreak();
+      //parent->addToolBarBreak(); FINDMICH
       QToolBar* toolbar = parent->addToolBar(tr("Arranger"));
+      parent->removeToolBar(toolbar); //FINDMICH
+      toolbar->hide(); //FINDMICH
       toolbar->setObjectName("ArrangerToolbar");
       
       QLabel* label = new QLabel(tr("Cursor"));

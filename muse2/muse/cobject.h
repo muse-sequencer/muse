@@ -11,7 +11,10 @@
 
 #include "config.h"
 
-#include <QMainWindow>
+#include <QMdiSubWindow>
+#include <QMenuBar>
+#include <QToolBar>
+#include <QByteArray>
 #include <list>
 
 class Xml;
@@ -20,13 +23,28 @@ class Xml;
 //   TopWin
 //---------------------------------------------------------
 
-class TopWin : public QMainWindow
+class TopWin : public QMdiSubWindow
       {
       Q_OBJECT
+      
+      QMenuBar* menu_bar;
+      std::list<QToolBar*> toolbars;
 
    public:
       virtual void readStatus(Xml&);
       virtual void writeStatus(int, Xml&) const;
+      
+      virtual void setCentralWidget(QWidget* w);
+      virtual QMenuBar* menuBar();
+      virtual QToolBar* addToolBar(QString);
+      virtual void addToolBar(QToolBar*);
+      virtual void addToolBarBreak();
+      virtual bool restoreState(QByteArray);
+      virtual QByteArray saveState(int =0) const;
+      
+      QMenuBar* getMenuBar();
+      std::list<QToolBar*> getToolbars();
+      
       TopWin(QWidget* parent=0, const char* name=0,
          Qt::WindowFlags f = Qt::Window);
       };

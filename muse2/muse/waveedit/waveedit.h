@@ -19,6 +19,7 @@
 #include "midieditor.h"
 
 class QToolButton;
+class QToolBar;
 class PartList;
 class WaveView;
 class ScrollScale;

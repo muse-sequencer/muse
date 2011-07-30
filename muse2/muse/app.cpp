@@ -16,6 +16,8 @@
 #include <QProgressDialog>
 
 #include "app.h"
+#include <QSplitter>
+#include <QMdiArea>
 #include "master/lmaster.h"
 #include "al/dsp.h"
 #include "amixer.h"
@@ -1038,23 +1040,29 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //
       tools->addAction(QWhatsThis::createAction(this));
       
-      tools->addSeparator();
-      tools->addActions(undoRedo->actions());
+//      tools->addSeparator(); FINDMICH
+//      tools->addActions(undoRedo->actions()); FINDMICH
 
       tools1 = new EditToolBar(this, arrangerTools);
-      addToolBar(tools1);
+      //addToolBar(tools1); //FINDMICH
+      tools1->hide(); //FINDMICH
       tools1->setObjectName("arrangerTools");
 
       QToolBar* transportToolbar = addToolBar(tr("Transport"));
+      removeToolBar(transportToolbar); //FINDMICH
+      transportToolbar->hide(); //FINDMICH
       transportToolbar->setObjectName("Transport");
       transportToolbar->addActions(transportAction->actions());
 
       QToolBar* panicToolbar = addToolBar(tr("Panic"));
+      removeToolBar(panicToolbar); //FINDMICH
+      panicToolbar->hide(); //FINDMICH
       panicToolbar->setObjectName("Panic");
       panicToolbar->addAction(panicAction);
 
       visTracks = new VisibleTracks(this);
-      addToolBar(visTracks);
+      //addToolBar(visTracks); //FINDMICH
+      visTracks->hide(); //FINDMICH
 
       
       //rlimit lim;
@@ -1189,13 +1197,10 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    popup Structure
       //-------------------------------------------------------------
 
-      menuStructure = menuBar()->addMenu(tr("&Structure"));
-      menuStructure->addAction(strGlobalCutAction);
-      menuStructure->addAction(strGlobalInsertAction);
-      menuStructure->addAction(strGlobalSplitAction);
-      menuStructure->addAction(strCopyRangeAction);
-      menuStructure->addSeparator();
-      menuStructure->addAction(strCutEventsAction);
+      menuEdit->addSeparator();
+      menuEdit->addAction(strGlobalCutAction);
+      menuEdit->addAction(strGlobalInsertAction);
+      menuEdit->addAction(strGlobalSplitAction);
 
       //-------------------------------------------------------------
       //    popup Midi
@@ -1283,9 +1288,11 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //---------------------------------------------------
       //    Central Widget
       //---------------------------------------------------
-
+      
+      splitter = new QSplitter(Qt::Vertical, this);
+      setCentralWidget(splitter);
+      
       arranger = new Arranger(this, "arranger");
-      setCentralWidget(arranger);
       
       connect(tools1, SIGNAL(toolChanged(int)), arranger, SLOT(setTool(int)));
       connect(visTracks, SIGNAL(visibilityChanged()), song, SLOT(update()) );
@@ -1297,7 +1304,16 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(this, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
 
       connect(arranger, SIGNAL(setUsedTool(int)), SLOT(setUsedTool(int)));
+      
 
+
+      mdiarea = new QMdiArea(this);
+      connect(mdiarea, SIGNAL(subWindowActivated(QMdiSubWindow*)), SLOT(subWinChanged(QMdiSubWindow*)));
+
+      
+      splitter->addWidget(arranger);
+      splitter->addWidget(mdiarea);
+      
       //---------------------------------------------------
       //  read list of "Recent Projects"
       //---------------------------------------------------
@@ -1379,7 +1395,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       changeConfig(false);
       QSettings settings("MusE", "MusE-qt");
       //restoreGeometry(settings.value("MusE/geometry").toByteArray());
-      restoreState(settings.value("MusE/windowState").toByteArray());
+      //restoreState(settings.value("MusE/windowState").toByteArray()); //FINDMICH
 
       song->update();
       }
@@ -1981,6 +1997,7 @@ void MusE::showMarker(bool flag)
             
             connect(markerView, SIGNAL(closed()), SLOT(markerClosed()));
             toplevels.push_back(Toplevel(Toplevel::MARKER, (unsigned long)(markerView), markerView));
+            mdiarea->addSubWindow(markerView);
             markerView->show();
             }
       markerView->setVisible(flag);
@@ -2191,8 +2208,9 @@ void MusE::openInScoreEdit(ScoreEdit* destination, PartList* pl, bool allInOne)
 	if (destination==NULL) // if no destination given, create a new one
 	{
       destination = new ScoreEdit(this, 0, arranger->cursorValue());
-      destination->show();
       toplevels.push_back(Toplevel(Toplevel::SCORE, (unsigned long)(destination), destination));
+      mdiarea->addSubWindow(destination);
+      destination->show();
       connect(destination, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
       connect(destination, SIGNAL(name_changed()), SLOT(scoreNamingChanged()));
       //connect(muse, SIGNAL(configChanged()), destination, SLOT(config_changed()));
@@ -2228,8 +2246,9 @@ void MusE::startPianoroll(PartList* pl, bool showDefaultCtrls)
       PianoRoll* pianoroll = new PianoRoll(pl, this, 0, arranger->cursorValue());
       if(showDefaultCtrls)       // p4.0.12
         pianoroll->addCtrl();
-      pianoroll->show();
       toplevels.push_back(Toplevel(Toplevel::PIANO_ROLL, (unsigned long)(pianoroll), pianoroll));
+      mdiarea->addSubWindow(pianoroll);
+      pianoroll->show();
       connect(pianoroll, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
       connect(muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
       }
@@ -2249,8 +2268,9 @@ void MusE::startListEditor()
 void MusE::startListEditor(PartList* pl)
       {
       ListEdit* listEditor = new ListEdit(pl);
-      listEditor->show();
       toplevels.push_back(Toplevel(Toplevel::LISTE, (unsigned long)(listEditor), listEditor));
+      mdiarea->addSubWindow(listEditor);
+      listEditor->show();
       connect(listEditor, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
       connect(muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
       }
@@ -2262,8 +2282,9 @@ void MusE::startListEditor(PartList* pl)
 void MusE::startMasterEditor()
       {
       MasterEdit* masterEditor = new MasterEdit();
-      masterEditor->show();
       toplevels.push_back(Toplevel(Toplevel::MASTER, (unsigned long)(masterEditor), masterEditor));
+      mdiarea->addSubWindow(masterEditor);
+      masterEditor->show();
       connect(masterEditor, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
       }
 
@@ -2274,8 +2295,9 @@ void MusE::startMasterEditor()
 void MusE::startLMasterEditor()
       {
       LMaster* lmaster = new LMaster();
-      lmaster->show();
       toplevels.push_back(Toplevel(Toplevel::LMASTER, (unsigned long)(lmaster), lmaster));
+      mdiarea->addSubWindow(lmaster);
+      lmaster->show();
       connect(lmaster, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
       connect(muse, SIGNAL(configChanged()), lmaster, SLOT(configChanged()));
       }
@@ -2298,8 +2320,9 @@ void MusE::startDrumEditor(PartList* pl, bool showDefaultCtrls)
       DrumEdit* drumEditor = new DrumEdit(pl, this, 0, arranger->cursorValue());
       if(showDefaultCtrls)       // p4.0.12
         drumEditor->addCtrl();
-      drumEditor->show();
       toplevels.push_back(Toplevel(Toplevel::DRUM, (unsigned long)(drumEditor), drumEditor));
+      mdiarea->addSubWindow(drumEditor);
+      drumEditor->show();
       connect(drumEditor, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
       connect(muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
       }
@@ -2321,9 +2344,10 @@ void MusE::startWaveEditor()
 void MusE::startWaveEditor(PartList* pl)
       {
       WaveEdit* waveEditor = new WaveEdit(pl);
-      waveEditor->show();
       connect(muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
       toplevels.push_back(Toplevel(Toplevel::WAVE, (unsigned long)(waveEditor), waveEditor));
+      mdiarea->addSubWindow(waveEditor);
+      waveEditor->show();
       connect(waveEditor, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
       }
 
@@ -2381,6 +2405,7 @@ void MusE::startClipList(bool checked)
             //clipListEdit = new ClipListEdit();
             clipListEdit = new ClipListEdit(this);
             toplevels.push_back(Toplevel(Toplevel::CLIPLIST, (unsigned long)(clipListEdit), clipListEdit));
+            mdiarea->addSubWindow(clipListEdit);
             connect(clipListEdit, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
             }
       clipListEdit->show();
@@ -2455,6 +2480,8 @@ void MusE::toplevelDeleted(unsigned long tl)
                         case Toplevel::SCORE:
                               mustUpdateScoreMenus=true;
                         }
+                  
+                  //mdiarea->removeSubWindow(&*i); FINDMICH
                   toplevels.erase(i);
                   if (mustUpdateScoreMenus)
                         updateScoreMenus();
@@ -3603,4 +3630,50 @@ void MusE::findUnusedWaveFiles()
 {
     UnusedWaveFiles unused(muse);
     unused.exec();
+}
+
+void MusE::subWinChanged(QMdiSubWindow* win)
+{
+  using std::list;
+  using std::cout;
+  using std::endl;
+  
+  menuBar()->clear();
+  menuBar()->addMenu(menu_file);
+  
+  if (win)
+  {
+    QList<QAction*> actions = static_cast<TopWin*>(win)->getMenuBar()->actions();
+    for (QList<QAction*>::iterator it=actions.begin(); it!=actions.end(); it++)
+      menuBar()->addAction(*it);
+  }
+  
+  menuBar()->addMenu(menuView);
+  menuBar()->addMenu(menu_functions);
+  menuBar()->addMenu(menu_audio);
+  menuBar()->addMenu(menuAutomation);
+  menuBar()->addMenu(menuSettings);
+  menuBar()->addMenu(menu_help);
+  
+  
+  
+  for (list<QToolBar*>::iterator it=activeChildToolbars.begin(); it!=activeChildToolbars.end(); it++)
+  {
+    cout << "removing toolbar "<<*it<<endl;
+    (*it)->hide();
+    removeToolBar(*it);
+  }
+  activeChildToolbars.clear();
+  
+  if (win)
+  {
+    list<QToolBar*> newToolbars=static_cast<TopWin*>(win)->getToolbars();
+    for (list<QToolBar*>::iterator it=newToolbars.begin(); it!=newToolbars.end(); it++)
+    {
+      cout << "adding toolbar" <<*it<<endl;
+      addToolBar(*it);
+      (*it)->show();
+      activeChildToolbars.push_back(*it);
+    }
+  }
 }
