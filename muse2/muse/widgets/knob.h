@@ -23,7 +23,7 @@ class Knob : public SliderBase, public ScaleIf
       bool hasScale;
 
       int d_borderWidth;
-      int d_borderDist;
+      int d_shineWidth;
       int d_scaleDist;
       int d_maxScaleTicks;
       int d_newVal;
@@ -39,6 +39,8 @@ class Knob : public SliderBase, public ScaleIf
       QRect  kRect;
       bool _faceColSel;
       QColor d_faceColor;
+      QColor d_shinyColor;
+      QColor d_rimColor;
       QColor d_curFaceColor;
       QColor d_altFaceColor;
       QColor d_markerColor;

@@ -48,8 +48,8 @@ Knob::Knob(QWidget* parent, const char* name)
       {
       hasScale = false;
 
-      d_borderWidth   = 2;
-      d_borderDist    = 4;
+      d_borderWidth   = 4;
+      d_shineWidth    = 3;
       d_totalAngle    = 270.0;
       d_scaleDist     = 1;
       d_symbol        = Line;
@@ -57,9 +57,11 @@ Knob::Knob(QWidget* parent, const char* name)
       d_knobWidth     = 30;
       _faceColSel     = FALSE; 
       d_faceColor     = palette().color(QPalette::Window);
+      d_rimColor      = palette().mid().color();
+      d_shinyColor    = palette().mid().color();
       d_curFaceColor  = d_faceColor;
       d_altFaceColor  = d_faceColor;
-      d_markerColor   = palette().color(QPalette::WindowText);
+      d_markerColor   = palette().dark().color().darker(125);
       d_dotWidth      = 8;
 
       setMinimumSize(30,30);
@@ -98,38 +100,54 @@ void Knob::setTotalAngle (double angle)
 
 void Knob::drawKnob(QPainter* p, const QRect& r)
       {
-      QRect aRect;
-
       const QPalette& pal = palette();
+      
+      QRect aRect;
+      aRect.setRect(r.x() + d_borderWidth,
+            r.y() + d_borderWidth,
+            r.width()  - 2*d_borderWidth,
+            r.height() - 2*d_borderWidth);
+      
+      int width = r.width();
+      int height = r.height();
+      int size = qMin(width, height);
+
+      p->setRenderHint(QPainter::Antialiasing, true);
+
+      //
+      // draw the rim
+      //
+   
+      QLinearGradient linearg(QPoint(r.x(),r.y()), QPoint(size, size));
+      linearg.setColorAt(1 - M_PI_4, d_faceColor.lighter(125));
+      linearg.setColorAt(M_PI_4, d_faceColor.darker(175));
+      p->setBrush(linearg);
+      p->setPen(Qt::NoPen);
+      p->drawEllipse(r.x(),r.y(),size,size);
+
+
+      //
+      // draw shiny surrounding
+      //
+    
       QPen pn;
-      int bw2 = d_borderWidth / 2;
-
-      aRect.setRect(r.x() + bw2,
-            r.y() + bw2,
-            r.width()  - 2*bw2,
-            r.height() - 2*bw2);
-
-    //
-    // draw button face
-    //
-    p->setPen(Qt::NoPen);
-    p->setBrush(d_curFaceColor);
-    p->drawEllipse(aRect);
-
-    //
-    // draw button shades
-    //
-    pn.setWidth(d_borderWidth);
-
-
-    pn.setColor(pal.color(QPalette::Light));
-    p->setPen(pn);
-    p->drawArc(aRect, 45*16,180*16);
-
-    pn.setColor(pal.color(QPalette::Dark));
-    p->setPen(pn);
-    p->drawArc(aRect, 225*16,180*16);
-
+      pn.setCapStyle(Qt::FlatCap);
+      pn.setColor(d_shinyColor.lighter(100+ abs(d_angle*100)/300));
+      pn.setWidth(d_shineWidth * 2);
+      p->setPen(pn);
+      p->drawArc(aRect, 0, 360 * 16);
+    
+      //
+      // draw button face
+      //
+    
+      QRadialGradient gradient(size/2, size/2, size-d_borderWidth, size/2-d_borderWidth, size/2-d_borderWidth);
+      gradient.setColorAt(0, d_curFaceColor.lighter(150));
+      gradient.setColorAt(1, d_curFaceColor.darker(150));
+      p->setBrush(gradient);
+      p->setPen(Qt::NoPen);
+      p->drawEllipse(aRect);
+    
       //
       // draw marker
       //
@@ -358,10 +376,11 @@ void Knob::drawMarker(QPainter *p, double arc, const QColor &c)
     rarc = arc * M_PI / 180.0;
     double ca = cos(rarc);
     double sa = - sin(rarc);
-    radius = kRect.width() / 2 - d_borderWidth;
+        
+    radius = kRect.width() / 2 - d_borderWidth + d_shineWidth;
     if (radius < 3) radius = 3; 
-    int ym = kRect.y() + radius + d_borderWidth;
-    int xm = kRect.x() + radius + d_borderWidth;
+    int ym = kRect.y() + radius + d_borderWidth - d_shineWidth;
+    int xm = kRect.x() + radius + d_borderWidth - d_shineWidth;
 
     switch (d_symbol)
     {
@@ -382,14 +401,15 @@ void Knob::drawMarker(QPainter *p, double arc, const QColor &c)
   pn.setWidth(2);
   p->setPen(pn);
   
-  rb = qwtMax(double((radius - 4) / 3.0), 0.0);
-  re = qwtMax(double(radius - 4), 0.0);
-  
-  p->drawLine( xm - int(rint(sa * rb)),
-        ym - int(rint(ca * rb)),
-        xm - int(rint(sa * re)),
-        ym - int(rint(ca * re)));
-  
+  rb = qwtMax(double((radius - 1) / 3.0), 0.0);
+  re = qwtMax(double(radius - 1), 0.0);
+
+  p->setRenderHint(QPainter::Antialiasing, true);
+  p->drawLine( xm,
+	       ym,
+	       xm - int(rint(sa * re)),
+	       ym - int(rint(ca * re)));
+
   break;
     }
 
