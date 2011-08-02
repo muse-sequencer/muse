@@ -15,6 +15,7 @@
 #include "globals.h"
 
 #include <QAction>
+#include <set>
 
 // iundo points to last Undo() in Undo-list
 
@@ -207,10 +208,43 @@ void Song::endUndo(int flags)
       }
 
 
+void cleanOperationGroup(Undo& group)
+{
+	using std::set;
+	
+	set<Track*> processed_tracks;
+	set<Part*> processed_parts;
+
+	for (iUndoOp op=group.begin(); op!=group.end();)
+	{
+		iUndoOp op_=op;
+		op_++;
+		
+		if ((op->type==UndoOp::ModifyTrack) || (op->type==UndoOp::DeleteTrack))
+		{
+			if (processed_tracks.find(op->oTrack)!=processed_tracks.end())
+				group.erase(op);
+			else
+				processed_tracks.insert(op->oTrack);
+		}
+		else if ((op->type==UndoOp::ModifyPart) || (op->type==UndoOp::DeletePart))
+		{
+			if (processed_parts.find(op->oPart)!=processed_parts.end())
+				group.erase(op);
+			else
+				processed_parts.insert(op->oPart);
+		}
+		
+		op=op_;
+	}
+}
+
+
 bool Song::applyOperationGroup(Undo& group, bool doUndo)
 {
       if (!group.empty())
       {
+            cleanOperationGroup(group);
             //this is a HACK! but it works :)    (added by flo93)
             redoList->push_back(group);
             redo();

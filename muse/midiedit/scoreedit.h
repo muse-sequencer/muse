@@ -701,12 +701,14 @@ class ScoreCanvas : public View
 		bool dragging;
 		bool drag_cursor_changed;
 		Part* dragged_event_part;
+		int dragged_event_part_index;
 		Event dragged_event;
 		Event original_dragged_event;
 		Event* clicked_event_ptr;
 		
 		int old_pitch;
 		unsigned old_dest_tick;
+		int old_len;
 		
 		bool have_lasso;
 		QPoint lasso_start;
@@ -811,6 +813,8 @@ class ScoreCanvas : public View
 		
 		Part* get_selected_part() {return selected_part;}
 		void set_selected_part(Part* p) {selected_part=p; if (selected_part) selected_part_index=selected_part->sn();}
+		Part* get_dragged_event_part() {return dragged_event_part;}
+		void set_dragged_event_part(Part* p) {dragged_event_part=p; if (dragged_event_part) dragged_event_part_index=dragged_event_part->sn();}
 		
 		set<Part*> get_all_parts();
 		

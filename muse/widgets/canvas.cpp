@@ -525,7 +525,6 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
             //printf("viewMousePressEvent ignoring buttons:%x mods:%x button:%x\n", (int)event->buttons(), (int)keyState, event->button());
             return;
             }
-      bool shift      = keyState & Qt::ShiftModifier;
       bool alt        = keyState & Qt::AltModifier;
       bool ctrl       = keyState & Qt::ControlModifier;
       start           = event->pos();
@@ -623,15 +622,6 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                                     drag = DRAG_COPY_START;
                               else if (alt) {
                                     drag = DRAG_CLONE_START;
-                                    }
-                              else if (shift) { //Select all on the same pitch (e.g. same y-value)
-                                      deselectAll();
-                                    for (iCItem i = items.begin(); i != items.end(); ++i) {
-                                          if (i->second->y() == curItem->y() )
-                                                selectItem(i->second, true);
-                                         }
-                                    updateSelection();
-                                    redraw();
                                     }
                               else
                                     drag = DRAG_MOVE_START;
@@ -1088,6 +1078,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
 
       QPoint pos = event->pos();
       bool ctrl = ((QInputEvent*)event)->modifiers() & Qt::ControlModifier;
+      bool shift = ((QInputEvent*)event)->modifiers() & Qt::ShiftModifier;
       bool redrawFlag = false;
 
       switch (drag) {
@@ -1096,7 +1087,17 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
             case DRAG_CLONE_START:
                   if (!ctrl)
                         deselectAll();
-                  selectItem(curItem, !(ctrl && curItem->isSelected()));
+                        
+                  if (!shift) { //Select or deselect only the clicked item
+                      selectItem(curItem, !(ctrl && curItem->isSelected()));
+                      }
+                  else { //Select or deselect all on the same pitch (e.g. same y-value)
+                      bool selectionFlag = !(ctrl && curItem->isSelected());
+                      for (iCItem i = items.begin(); i != items.end(); ++i)
+                            if (i->second->y() == curItem->y() )
+                                  selectItem(i->second, selectionFlag);
+                      }
+
                   updateSelection();
                   redrawFlag = true;
                   itemReleased(curItem, curItem->pos());
@@ -1131,7 +1132,7 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
             case DRAG_OFF:
                   break;
             case DRAG_RESIZE:
-                  resizeItem(curItem, false);
+                  resizeItem(curItem, false, ctrl);
                   break;
             case DRAG_NEW:
                   newItem(curItem, false);

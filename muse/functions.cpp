@@ -290,6 +290,7 @@ bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	Undo operations;
+	map<Part*, int> partlen;
 	
 	if ( (!events.empty()) && ((rate!=100) || (offset!=0)) )
 	{
@@ -305,6 +306,9 @@ bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 
 			if (len <= 0)
 				len = 1;
+			
+			if ((event.tick()+len > part->lenTick()) && (!part->hasHiddenNotes()))
+				partlen[part]=event.tick()+len; // schedule auto-expanding
 				
 			if (event.lenTick() != len)
 			{
@@ -314,6 +318,9 @@ bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 			}
 		}
 		
+		for (map<Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
+			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
+
 		return song->applyOperationGroup(operations);
 	}
 	else
@@ -481,10 +488,11 @@ bool crescendo(const set<Part*>& parts, int range, int start_val, int end_val, b
 		return false;
 }
 
-bool move_notes(const set<Part*>& parts, int range, signed int ticks) //TODO: clipping
+bool move_notes(const set<Part*>& parts, int range, signed int ticks)
 {
 	map<Event*, Part*> events = get_events(parts, range);
 	Undo operations;
+	map<Part*, int> partlen;
 	
 	if ( (!events.empty()) && (ticks!=0) )
 	{
@@ -500,12 +508,17 @@ bool move_notes(const set<Part*>& parts, int range, signed int ticks) //TODO: cl
 			else
 				newEvent.setTick(event.tick()+ticks);
 			
-			if (newEvent.endTick() > part->lenTick()) //if exceeding the part's end, clip
+			if (newEvent.endTick() > part->lenTick()) //if exceeding the part's end:
 			{
-				if (part->lenTick() > newEvent.tick())
-					newEvent.setLenTick(part->lenTick() - newEvent.tick());
+				if (part->hasHiddenNotes()) // auto-expanding is forbidden, clip
+				{
+					if (part->lenTick() > newEvent.tick())
+						newEvent.setLenTick(part->lenTick() - newEvent.tick());
+					else
+						del=true; //if the new length would be <= 0, erase the note
+				}
 				else
-					del=true; //if the new length would be <= 0, erase the note
+					partlen[part]=newEvent.endTick(); // schedule auto-expanding
 			}
 			
 			if (del==false)
@@ -513,6 +526,9 @@ bool move_notes(const set<Part*>& parts, int range, signed int ticks) //TODO: cl
 			else
 				operations.push_back(UndoOp(UndoOp::DeleteEvent, event, part, false, false));
 		}
+		
+		for (map<Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
+			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
 		
 		return song->applyOperationGroup(operations);
 	}
@@ -715,6 +731,7 @@ QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
 void paste_at(Part* dest_part, const QString& pt, int pos)
 {
 	Undo operations;
+	unsigned newpartlen=dest_part->lenTick();
 	
 	Xml xml(pt.toLatin1().constData());
 	for (;;) 
@@ -744,18 +761,29 @@ void paste_at(Part* dest_part, const QString& pt, int pos)
 
 						e.setTick(tick);
 						e.setSelected(true);
-						int diff = e.endTick()-dest_part->lenTick();
-						if (diff > 0) // too short part? extend it
+						
+						if (e.endTick() > dest_part->lenTick()) // event exceeds part?
 						{
-							Part* newPart = dest_part->clone();
-							newPart->setLenTick(newPart->lenTick()+diff);
-							// Indicate no undo, and do port controller values but not clone parts. 
-							operations.push_back(UndoOp(UndoOp::ModifyPart,dest_part, newPart, true, false));
-							dest_part = newPart; // reassign TODO FINDME does this work, or has dest_part to be a nonconst reference?
+							if (dest_part->hasHiddenNotes()) // auto-expanding is forbidden?
+							{
+								if (e.tick() < dest_part->lenTick())
+									e.setLenTick(dest_part->lenTick() - e.tick()); // clip
+								else
+									e.setLenTick(0); // don't insert that note at all
+							}
+							else
+							{
+								if (e.endTick() > newpartlen)
+									newpartlen=e.endTick();
+							}
 						}
-						// Indicate no undo, and do not do port controller values and clone parts. 
-						operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
+						
+						if (e.lenTick() != 0) operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
 					}
+					
+					if (newpartlen != dest_part->lenTick())
+						schedule_resize_all_same_len_clone_parts(dest_part, newpartlen, operations);
+
 					song->applyOperationGroup(operations);
 					goto end_of_paste_at;
 				}
@@ -864,6 +892,45 @@ void shrink_parts(int raster)
 			}
 	
 	song->applyOperationGroup(operations);
+}
+
+void internal_schedule_expand_part(Part* part, int raster, Undo& operations)
+{
+	EventList* events=part->events();
+	unsigned len=part->lenTick();
+	
+	for (iEvent ev=events->begin(); ev!=events->end(); ev++)
+		if (ev->second.endTick() > len)
+			len=ev->second.endTick();
+
+	if (raster) len=ceil((float)len/raster)*raster;
+					
+	if (len > part->lenTick())
+	{
+		MidiPart* new_part = new MidiPart(*(MidiPart*)part);
+		new_part->setLenTick(len);
+		operations.push_back(UndoOp(UndoOp::ModifyPart, part, new_part, true, false));
+	}
+}
+
+void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo& operations)
+{
+	unsigned old_len=part->lenTick();
+	if (old_len!=new_len)
+	{
+		Part* part_it=part;
+		do
+		{
+			if (part_it->lenTick()==old_len)
+			{
+				MidiPart* new_part = new MidiPart(*(MidiPart*)part_it);
+				new_part->setLenTick(new_len);
+				operations.push_back(UndoOp(UndoOp::ModifyPart, part_it, new_part, true, false));
+			}
+			
+			part_it=part_it->nextClone();
+		} while (part_it!=part);
+	}
 }
 
 void expand_parts(int raster)

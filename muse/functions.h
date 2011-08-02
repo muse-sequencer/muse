@@ -24,6 +24,7 @@
 
 class QString;
 class QMimeData;
+class Undo;
 
 extern GateTime* gatetime_dialog;
 extern Velocity* velocity_dialog;
@@ -87,6 +88,7 @@ void select_not_in_loop(const std::set<Part*>& parts);
 //functions for parts
 void shrink_parts(int raster=-1); //negative values mean "config.division"
 void expand_parts(int raster=-1);
+void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo& operations);
 void clean_parts();
 
 //functions for reading and writing default values

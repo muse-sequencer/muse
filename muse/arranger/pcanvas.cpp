@@ -449,7 +449,7 @@ void PartCanvas::updateSelection()
 //   resizeItem
 //---------------------------------------------------------
 
-void PartCanvas::resizeItem(CItem* i, bool noSnap)
+void PartCanvas::resizeItem(CItem* i, bool noSnap, bool ctrl)
       {
       Track* t = ((NPart*)(i))->track();
       Part*  p = ((NPart*)(i))->part();
@@ -463,7 +463,7 @@ void PartCanvas::resizeItem(CItem* i, bool noSnap)
       if (newwidth == 0)
             newwidth = AL::sigmap.rasterStep(p->tick(), *_raster);
 
-      song->cmdResizePart(t, p, newwidth);
+      song->cmdResizePart(t, p, newwidth, !ctrl);
       }
 
 //---------------------------------------------------------

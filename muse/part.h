@@ -82,6 +82,8 @@ class Part : public PosLen {
       void setPrevClone(Part* p)       { _prevClone = p; }
       void setNextClone(Part* p)       { _nextClone = p; }
       
+      bool hasHiddenNotes();
+      
       iEvent addEvent(Event& p);
 
       virtual void write(int, Xml&, bool isCopy = false, bool forceWavePaths = false) const;
