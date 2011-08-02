@@ -102,7 +102,7 @@ class Canvas : public View {
       virtual int pitch2y(int) const = 0; //CDW
 
       virtual CItem* newItem(const QPoint&, int state) = 0;
-      virtual void resizeItem(CItem*, bool noSnap=false) = 0;
+      virtual void resizeItem(CItem*, bool noSnap=false, bool ctrl=false) = 0;
       virtual void newItem(CItem*, bool noSnap=false) = 0;
       virtual bool deleteItem(CItem*) = 0;
       int getCurrentDrag();

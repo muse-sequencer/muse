@@ -104,9 +104,9 @@ Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
 {      
   if(editor->parts()->empty())
     return Undo(); //return empty list
-    
+  
   PartsToChangeMap parts2change;
-  Undo operations;
+  Undo operations;  
   
   for(iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip)
   {
@@ -153,85 +153,72 @@ Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
         ip2c->second.xdiff = npartoffset;
     }
   }
-    
+  
+  bool forbidden=false;
   for(iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
   {
     Part* opart = ip2c->first;
     int diff = ip2c->second.xdiff;
     
-    Part* newPart = opart->clone();
-    
-    newPart->setLenTick(newPart->lenTick() + diff);
-    
-    // BUG FIX: #1650953
-    // Added by T356.
-    // Fixes posted "select and drag past end of part - crashing" bug
-    for(iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip)
+    if (opart->hasHiddenNotes())
     {
-      if(ip->second == opart)
-      {
-        editor->parts()->erase(ip);
-        break;
-      }
-    }
-      
-    editor->parts()->add(newPart);
-    // Do port controller values but not clone parts. 
-    operations.push_back(UndoOp(UndoOp::ModifyPart, opart, newPart, true, false));
-    
-    ip2c->second.npart = newPart;
-    
+			forbidden=true;
+			break;
+		}
+  }    
+
+	
+	if (!forbidden)
+	{
+		std::vector< CItem* > doneList;
+		typedef std::vector< CItem* >::iterator iDoneList;
+		
+		for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
+		{
+			CItem* ci = ici->second;
+			
+			int x = ci->pos().x();
+			int y = ci->pos().y();
+			int nx = x + dx;
+			int ny = pitch2y(y2pitch(y) + dp);
+			QPoint newpos = raster(QPoint(nx, ny));
+			selectItem(ci, true);
+			
+			iDoneList idl;
+			for(idl = doneList.begin(); idl != doneList.end(); ++idl)
+				// This compares EventBase pointers to see if they're the same...
+				if((*idl)->event() == ci->event())
+					break;
+				
+			// Do not process if the event has already been processed (meaning it's an event in a clone part)...
+			if (idl == doneList.end())
+			{
+				operations.push_back(moveItem(ci, newpos, dtype));
+				doneList.push_back(ci);
+			}
+			ci->move(newpos);
+						
+			if(moving.size() == 1) 
+						itemReleased(curItem, newpos);
+
+			if(dtype == MOVE_COPY || dtype == MOVE_CLONE)
+						selectItem(ci, false);
+		}  
+
+		for(iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
+		{
+			Part* opart = ip2c->first;
+			int diff = ip2c->second.xdiff;
+			
+			schedule_resize_all_same_len_clone_parts(opart, opart->lenTick() + diff, operations); 
+		}    
+					
+  	return operations;
   }
-    
-  iPartToChange icp = parts2change.find(curPart);
-  if(icp != parts2change.end())
+  else
   {
-    curPart = icp->second.npart;
-    curPartId = curPart->sn();
-  }  
-    
-  std::vector< CItem* > doneList;
-  typedef std::vector< CItem* >::iterator iDoneList;
-  
-  for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
-  {
-    CItem* ci = ici->second;
-    
-    // If this item's part is in the parts2change list, change the item's part to the new part.
-    Part* pt = ci->part();
-    iPartToChange ip2c = parts2change.find(pt);
-    if(ip2c != parts2change.end())
-      ci->setPart(ip2c->second.npart);
-    
-    int x = ci->pos().x();
-    int y = ci->pos().y();
-    int nx = x + dx;
-    int ny = pitch2y(y2pitch(y) + dp);
-    QPoint newpos = raster(QPoint(nx, ny));
-    selectItem(ci, true);
-    
-    iDoneList idl;
-    for(idl = doneList.begin(); idl != doneList.end(); ++idl)
-      // This compares EventBase pointers to see if they're the same...
-      if((*idl)->event() == ci->event())
-        break;
-      
-    // Do not process if the event has already been processed (meaning it's an event in a clone part)...
-    if (idl == doneList.end())
-    {
-      operations.push_back(moveItem(ci, newpos, dtype));
-      doneList.push_back(ci);
-    }
-    ci->move(newpos);
-          
-    if(moving.size() == 1) {
-          itemReleased(curItem, newpos);
-          }
-    if(dtype == MOVE_COPY || dtype == MOVE_CLONE)
-          selectItem(ci, false);
-  }  
-      
-  return operations;
+		return Undo(); //return empty list
+	}
 }
       
 //---------------------------------------------------------
@@ -261,9 +248,10 @@ UndoOp DrumCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
       //item->setPart(part);
       item->setEvent(newEvent);
       
-      // Added by T356. 
-      if(((int)newEvent.endTick() - (int)part->lenTick()) > 0)  
-        printf("DrumCanvas::moveItem Error! New event end:%d exceeds length:%d of part:%s\n", newEvent.endTick(), part->lenTick(), part->name().toLatin1().constData());
+      // Added by T356, removed by flo93: with operation groups, it happens that the
+      // part is too short right now, even if it's queued for being extended
+      //if(((int)newEvent.endTick() - (int)part->lenTick()) > 0)  
+      //  printf("DrumCanvas::moveItem Error! New event end:%d exceeds length:%d of part:%s\n", newEvent.endTick(), part->lenTick(), part->name().toLatin1().constData());
       
       if (dtype == MOVE_COPY || dtype == MOVE_CLONE)
             return UndoOp(UndoOp::AddEvent, newEvent, part, false, false);
@@ -308,7 +296,7 @@ CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
 //   resizeItem
 //---------------------------------------------------------
 
-void DrumCanvas::resizeItem(CItem* item, bool)
+void DrumCanvas::resizeItem(CItem* item, bool, bool)
       {
       DEvent* nevent = (DEvent*) item;
       Event ev = nevent->event();
@@ -361,20 +349,23 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
 
       // Added by T356.
       Part* part = nevent->part();
-      song->startUndo();
-      int modified=SC_EVENT_MODIFIED;
+      Undo operations;
       int diff = event.endTick()-part->lenTick();
-      if (diff > 0)  {// too short part? extend it
-            Part* newPart = part->clone();
-            newPart->setLenTick(newPart->lenTick()+diff);
-            // Indicate no undo, and do port controller values but not clone parts. 
-            audio->msgChangePart(part, newPart, false, true, false);
-            modified=modified|SC_PART_MODIFIED;
-            part = newPart; // reassign
-            }
-      // Indicate no undo, and do not do port controller values and clone parts. 
-      audio->msgAddEvent(event, part, false, false, false); 
-      song->endUndo(modified);
+      
+      if (! ((diff > 0) && part->hasHiddenNotes()) ) //operation is allowed
+      {
+        operations.push_back(UndoOp(UndoOp::AddEvent,event, part, false, false));
+        
+        if (diff > 0)// part must be extended?
+        {
+              schedule_resize_all_same_len_clone_parts(part, event.endTick(), operations);
+              printf("newItem: extending\n");
+        }
+      }
+      //else forbid action by not applying it
+      song->applyOperationGroup(operations);
+      songChanged(SC_EVENT_INSERTED); //this forces an update of the itemlist, which is neccessary
+                                      //to remove "forbidden" events from the list again
       }
 
 //---------------------------------------------------------
@@ -746,7 +737,7 @@ void DrumCanvas::keyPressed(int index, int velocity)
       MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
       audio->msgPlayMidiEvent(&e);
 
-      if (_steprec && pos[0] >= start_tick && pos[0] < end_tick && curPart)
+      if (_steprec && pos[0] >= start_tick /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */ && curPart)
 				steprec->record(curPart,index,drumMap[index].len,editor->raster(),velocity,globalKeyState&Qt::ControlModifier,globalKeyState&Qt::ShiftModifier);
             
       }
@@ -1135,7 +1126,7 @@ void DrumCanvas::midiNote(int pitch, int velo)
 
       if (_midiin && _steprec && curPart
          && !audio->isPlaying() && velo && pos[0] >= start_tick
-         && pos[0] < end_tick
+         /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */
          && !(globalKeyState & Qt::AltModifier)) {
 					 steprec->record(curPart,drumInmap[pitch],drumMap[(int)drumInmap[pitch]].len,editor->raster(),velo,globalKeyState&Qt::ControlModifier,globalKeyState&Qt::ShiftModifier);
          }

@@ -83,7 +83,7 @@ class PartCanvas : public Canvas {
       virtual int pitch2y(int p) const;
       
       virtual CItem* newItem(const QPoint&, int);
-      virtual void resizeItem(CItem*,bool);
+      virtual void resizeItem(CItem*,bool, bool ctrl);
       virtual void newItem(CItem*,bool);
       virtual bool deleteItem(CItem*);
       virtual void moveCanvasItems(CItemList&, int, int, DragType);

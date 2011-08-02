@@ -1189,6 +1189,7 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 	undo_started=false;
 	
 	selected_part=NULL;
+	dragged_event_part=NULL;
 	
 	last_len=384;
 	new_len=-1;
@@ -1682,7 +1683,8 @@ void staff_t::create_appropriate_eventlist()
 			Event& event=it->second;
 			
 			if ( ( event.isNote() && !event.isNoteOff() &&
-			       (event.endTick() <= part->lenTick()) ) &&
+			       // (event.endTick() <= part->lenTick()) ) &&
+			       (event.tick() <= part->lenTick()) ) && // changed to accord to prcanvas.cpp and others (flo93)
 			     ( ((type==GRAND_TOP) && (event.pitch() >= SPLIT_NOTE)) ||
 			       ((type==GRAND_BOTTOM) && (event.pitch() < SPLIT_NOTE)) ||
 			       (type==NORMAL) )                          )
@@ -3623,7 +3625,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				clicked_event_ptr=set_it->source_event;
 				dragged_event=*set_it->source_event;
 				original_dragged_event=dragged_event.clone();
-				dragged_event_part=set_it->source_part;
+				set_dragged_event_part(set_it->source_part);
 				
 				if ((mouse_erases_notes) || (event->button()==Qt::MidButton)) //erase?
 				{
@@ -3664,7 +3666,6 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 							signed int relative_tick=(signed) tick - curr_part->tick();
 							if (relative_tick<0)
 								cerr << "ERROR: THIS SHOULD NEVER HAPPEN: relative_tick is negative!" << endl;
-							song->startUndo();
 
 							if (!ctrl)
 								deselect_all();
@@ -3690,7 +3691,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 								newevent.setLenTick(curr_part->lenTick() - newevent.tick());
 							}
 							
-							audio->msgAddEvent(newevent, curr_part, false, false, false);
+							audio->msgAddEvent(newevent, curr_part, true, false, false);
 							
 							dragged_event_part=curr_part;
 							dragged_event=newevent;
@@ -3708,7 +3709,6 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 							drag_cursor_changed=true;
 							setCursor(Qt::SizeAllCursor);
 							
-							song->endUndo(SC_EVENT_INSERTED);
 							song->update(SC_SELECTION);
 						}
 					}
@@ -3737,15 +3737,13 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 			if (flo_quantize(dragged_event.lenTick(), quant_ticks()) <= 0)
 			{
 				if (debugMsg) cout << "new length <= 0, erasing item" << endl;
-				audio->msgDeleteEvent(dragged_event, dragged_event_part, false, false, false);
+				if (undo_started) song->undo();
+				audio->msgDeleteEvent(dragged_event, dragged_event_part, true, false, false);
 			}
 			else
 			{
 				last_len=flo_quantize(dragged_event.lenTick(), quant_ticks());
 			}
-			
-			if (undo_started)
-				song->endUndo(SC_EVENT_MODIFIED | SC_EVENT_REMOVED);
 		}
 
 		
@@ -3863,6 +3861,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				
 				old_pitch=-1;
 				old_dest_tick=MAXINT;
+				old_len=-1;
 			}
 		}
 
@@ -3905,7 +3904,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 
 					if (dest_tick != old_dest_tick)
 					{
-						if (undo_started) song->undo();
+						if (undo_started) song->undo(); //FINDMICH EXTEND
 						undo_started=move_notes(part_to_set(dragged_event_part),1, (signed)dest_tick-original_dragged_event.tick());
 						old_dest_tick=dest_tick;
 					}
@@ -3915,14 +3914,8 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 
 			case LENGTH:
 				tick+=quant_ticks();
-				if (dragged_event.tick()+dragged_event.lenTick() + dragged_event_part->tick() != unsigned(tick))
+				if (dragged_event.tick()+old_len + dragged_event_part->tick() != unsigned(tick))
 				{
-					if (!undo_started)
-					{
-						song->startUndo();
-						undo_started=true;
-					}
-
 					Event tmp=dragged_event.clone();
 					signed relative_tick=tick-signed(dragged_event_part->tick());
 					signed new_len=relative_tick-dragged_event.tick();
@@ -3935,16 +3928,29 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 						if (debugMsg) cout << "not setting len to a negative value. using 0 instead" << endl;
 					}
 					
+					unsigned newpartlen=dragged_event_part->lenTick();
 					if (tmp.endTick() > dragged_event_part->lenTick())
 					{
-						tmp.setLenTick(dragged_event_part->lenTick() - tmp.tick());
-						if (debugMsg) cout << "resized note would exceed its part; limiting length to " << tmp.lenTick() << endl;
+						if (dragged_event_part->hasHiddenNotes()) // do not allow autoexpand
+						{
+							tmp.setLenTick(dragged_event_part->lenTick() - tmp.tick());
+							if (debugMsg) cout << "resized note would exceed its part; limiting length to " << tmp.lenTick() << endl;
+						}
+						else
+						{
+							newpartlen=tmp.endTick();
+							if (debugMsg) cout << "resized note would exceeds its part; expanding the part..." << endl;
+						}
 					}
 					
-					audio->msgChangeEvent(dragged_event, tmp, dragged_event_part, false, false, false);
-					dragged_event=tmp;
+					if (undo_started) song->undo();
+					Undo operations;
+					operations.push_back(UndoOp(UndoOp::ModifyEvent, tmp, dragged_event, dragged_event_part, false, false));
+					if (newpartlen != dragged_event_part->lenTick())
+						schedule_resize_all_same_len_clone_parts(dragged_event_part, newpartlen, operations);
+					undo_started=song->applyOperationGroup(operations);
 					
-					fully_recalculate();	
+					old_len=new_len;
 				}
 				
 				break;
@@ -4413,6 +4419,9 @@ void ScoreCanvas::update_parts()
 	if (selected_part!=NULL) //if it's null, let it be null
 		selected_part=partFromSerialNumber(selected_part_index);
 	
+	if (dragged_event_part!=NULL) //same thing here
+		dragged_event_part=partFromSerialNumber(dragged_event_part_index);
+	
 	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 		it->update_parts();
 }
@@ -4452,20 +4461,34 @@ void staff_t::update_part_indices()
 
 
 /* BUGS and potential bugs
- *   o when the keymap is not used, this will probably lead to a bug
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
+ *   o schedule_all_same_len_parts: if there are two clones A and B,
+ *     and both A and B get scheduled to be expanded (because we
+ *     have one event from A and one event from B), this causes a bug,
+ *     because after A (and B) got resized, the B-resize is invalid!
  * 
  * CURRENT TODO
- *   o clones should have same size
- *   o insert empty measure should also work inside parts, that is,
- *     move notes _within_ parts
+ *   o redo transport menu: offer "one beat" and "one bar" steps
+ *                          maybe also offer scrollbar
+ *   o quick "set left/right marker", "select between markers"
+ *     or even "set marker and select between immediately"
+ *   o support partially selected parts. when moving, automatically split
+ * 
+ *   o speed up structural operations
+ *   o maybe remove "insert empty measure"?
+ *   o structural OPs: don't erase note which begins at "end of cut"
+ *   o add "move other notes" or "overwrite notes" or "mix with notes" to paste
  * 
  * IMPORTANT TODO
+ *   o draw the edge of parts hiding notes "jagged" (hasHiddenNotes() is interesting for this)
+ *   o shrink a part from its beginning as well! watch out for clones!
+ *   o insert empty measure should also work inside parts, that is,
+ *     move notes _within_ parts
+ *
  *   o canvas editor: create clone via "alt+drag" moves window instead
  *   o investigate with valgrind
  *   o controller view in score editor
- *   o deal with expanding parts
  *   o fix sigedit boxes
  *   o solo button
  *   o grand staff brace
@@ -4476,6 +4499,7 @@ void staff_t::update_part_indices()
  *   o transpose etc. must also transpose key-pressure events
  *   o transpose: support in-key-transpose
  *   o thin out: remove unneeded ctrl messages
+ *   o make muse usable without the middle mouse button
  *
  * less important stuff
  *   o quantize-templates (everything is forced into a specified

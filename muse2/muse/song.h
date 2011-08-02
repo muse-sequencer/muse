@@ -253,7 +253,7 @@ class Song : public QObject {
       //   part manipulations
       //-----------------------------------------
 
-      void cmdResizePart(Track* t, Part* p, unsigned int size);
+      void cmdResizePart(Track* t, Part* p, unsigned int size, bool doClones=false);
       void cmdSplitPart(Track* t, Part* p, int tick);
       void cmdGluePart(Track* t, Part* p);
 
