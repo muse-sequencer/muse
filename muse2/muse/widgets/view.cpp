@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: view.cpp,v 1.3.2.2 2009/04/06 01:24:55 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  Additions, modifications (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
 //=========================================================
 
 #include "view.h"
@@ -15,6 +16,8 @@
 #include <QMouseEvent>
 #include <QKeyEvent>
 #include <QPaintEvent>
+
+#include "math.h"
 
 // Don't use this, it was just for debugging. 
 // It's much slower than muse-1 no matter how hard I tried.
@@ -545,9 +548,26 @@ void View::setPainter(QPainter& p)
 //   map
 //---------------------------------------------------------
 
+QRect View::mapDev(const QRect& r) const
+      {
+      return QRect(mapxDev(r.x()), mapyDev(r.y()),
+         rmapxDev(r.width()), rmapyDev(r.height()));
+      }
+
+QPoint View::mapDev(const QPoint& r) const
+      {
+      return QPoint(mapxDev(r.x()), mapyDev(r.y()));
+      }
+
+#if 0
+  //
+  // Calculations using integer rounding methods...
+  //
+
 QRect View::map(const QRect& r) const
       {
       int x, y, w, h;
+      //printf("View::map xmag:%d xpos:%d xorg:%d\n", xmag, xpos, xorg);  
       if (xmag < 0) {
             x = r.x()/(-xmag) - (xpos + rmapx(xorg));  // round down
             w = (r.width()-xmag-1)  / (-xmag);  // round up
@@ -583,17 +603,6 @@ QPoint View::map(const QPoint& p) const
             y = p.y() * ymag - (ypos + rmapy(yorg));
             }
       return QPoint(x, y);
-      }
-
-QRect View::mapDev(const QRect& r) const
-      {
-      return QRect(mapxDev(r.x()), mapyDev(r.y()),
-         rmapxDev(r.width()), rmapyDev(r.height()));
-      }
-
-QPoint View::mapDev(const QPoint& r) const
-      {
-      return QPoint(mapxDev(r.x()), mapyDev(r.y()));
       }
 
 int View::mapx(int x) const
@@ -663,6 +672,153 @@ int View::rmapyDev(int y) const
       else
             return (y + ymag/2) / ymag;
       }
+
+
+#else
+  //
+  // Calculations using more accurate methods...  p4.0.29 Tim.
+  //
+
+QRect View::map(const QRect& r) const
+      {
+      int x, y, w, h;
+      //printf("View::map xmag:%d xpos:%d xorg:%d\n", xmag, xpos, xorg);  
+      if (xmag < 0) {
+            x = lrint(double(r.x())/double(-xmag) - rmapx_f(xorg)) - xpos;  
+            w = lrint(double(r.width()) / double(-xmag));  
+            }
+      else {
+            x = r.x()*xmag - xpos - lrint(rmapx_f(xorg));
+            w = r.width() * xmag;
+            }
+      if (ymag < 0) {
+            y = lrint(double(r.y())/double(-ymag) - rmapy_f(yorg)) - ypos;
+            h = lrint(double(r.height()) / double(-ymag));
+            }
+      else {
+            y = r.y()*ymag - ypos - lrint(rmapy_f(yorg));
+            h = r.height() * ymag;
+            }
+      return QRect(x, y, w, h);
+      }
+
+QPoint View::map(const QPoint& p) const
+      {
+      int x, y;
+      if (xmag < 0) {
+            x = lrint(double(p.x())/double(-xmag) - rmapx_f(xorg)) - xpos;  
+            }
+      else {
+            x = p.x()*xmag - xpos - lrint(rmapx_f(xorg));
+            }
+      if (ymag < 0) {
+            y = lrint(double(p.y())/double(-ymag) - rmapy_f(yorg)) - ypos;
+            }
+      else {
+            y = p.y()*ymag - ypos - lrint(rmapy_f(yorg));
+            }
+      return QPoint(x, y);
+      }
+
+int View::mapx(int x) const
+      {
+      if (xmag < 0) {
+            return lrint(double(x)/double(-xmag) - rmapx_f(xorg)) - xpos;  
+            }
+      else {
+            return x*xmag - xpos - lrint(rmapx_f(xorg));
+            }
+      }
+int View::mapy(int y) const
+      {
+      if (ymag < 0) {
+            return lrint(double(y)/double(-ymag) - rmapy_f(yorg)) - ypos;  
+            }
+      else {
+            return y*ymag - ypos - lrint(rmapy_f(yorg));
+            }
+      }
+int View::mapxDev(int x) const
+      {
+      int val;
+      if (xmag <= 0)
+            val = lrint((double(x + xpos) + rmapx_f(xorg)) * double(-xmag));                    
+      else
+            val = lrint((double(x + xpos) + rmapx_f(xorg)) / double(xmag));  
+      if (val < 0)            // DEBUG
+            val = 0;
+      return val;
+      }
+
+int View::mapyDev(int y) const
+      {
+      if (ymag <= 0)
+            return lrint((double(y + ypos) + rmapy_f(yorg)) * double(-ymag));                   
+      else
+            return lrint((double(y + ypos) + rmapy_f(yorg)) / double(ymag)); 
+      }
+
+// r == relative conversion
+int View::rmapx(int x) const
+      {
+      if (xmag < 0)
+            return lrint(double(x) / double(-xmag));
+      else
+            return x * xmag;
+      }
+int View::rmapy(int y) const
+      {
+      if (ymag < 0)
+            return lrint(double(y) / double(-ymag));
+      else
+            return y * ymag;
+      }
+int View::rmapxDev(int x) const
+      {
+      if (xmag <= 0)
+            return x * (-xmag);
+      else
+            return lrint(double(x) / double(xmag));
+      }
+int View::rmapyDev(int y) const
+      {
+      if (ymag <= 0)
+            return y * (-ymag);
+      else
+            return lrint(double(y) / double(ymag));
+      }
+#endif
+
+double View::rmapx_f(double x) const
+      {
+      if (xmag < 0)
+            return x / double(-xmag);
+      else
+            return x * double(xmag);
+      }
+double View::rmapy_f(double y) const
+      {
+      if (ymag < 0)
+            return y / double(-ymag);
+      else
+            return y * double(ymag);
+      }
+double View::rmapxDev_f(double x) const
+      {
+      if (xmag <= 0)
+            return x * double(-xmag);
+      else
+            return x / double(xmag);
+      }
+double View::rmapyDev_f(double y) const
+      {
+      if (ymag <= 0)
+            return y * double(-ymag);
+      else
+            return y / double(ymag);
+      }
+
+
 
 /*
 QRect View::devToVirt(const QRect& r)

@@ -316,7 +316,7 @@ Undo PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dty
     Part* opart = ip2c->first;
     int diff = ip2c->second.xdiff;
     
-    if (opart->hasHiddenNotes())
+    if (opart->hasHiddenEvents())
     {
 			forbidden=true;
 			break;
@@ -470,7 +470,7 @@ void PianoCanvas::newItem(CItem* item, bool noSnap)
       Undo operations;
       int diff = event.endTick()-part->lenTick();
       
-      if (! ((diff > 0) && part->hasHiddenNotes()) ) //operation is allowed
+      if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
       {
         operations.push_back(UndoOp(UndoOp::AddEvent,event, part, false, false));
         
@@ -515,7 +515,7 @@ void PianoCanvas::resizeItem(CItem* item, bool noSnap, bool)         // experime
       Undo operations;
       int diff = event.tick()+len-part->lenTick();
       
-      if (! ((diff > 0) && part->hasHiddenNotes()) ) //operation is allowed
+      if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
       {
         newEvent.setLenTick(len);
         operations.push_back(UndoOp(UndoOp::ModifyEvent,newEvent, event, nevent->part(), false, false));

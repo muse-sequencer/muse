@@ -1,3 +1,9 @@
+05.08.2011:
+        - Parts having hidden events now drawn using 'jagged' ends and special white edges. (Tim p4.0.29)
+        - Improved border drawing guaranteed to show L/R touching part borders. TODO: Top and bottom borders. (Tim)
+        - Muted parts now show names and events. Filled with a special brush pattern for easy recognition. (Tim)   
+        - Huge changes to PartCanvas::drawItem(). And to all View::XmapXXX methods for better accuracy. (Tim)
+        - Changed bool Part::hasHiddenNotes() to int Part::hasHiddenEvents(). Added int Part::cachedHasHiddenEvents(). (Tim)
 02.08.2011:
         - Changed behaviour of part clones (flo93)
 

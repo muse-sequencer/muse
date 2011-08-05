@@ -4,6 +4,7 @@
 //  $Id: part.cpp,v 1.12.2.17 2009/06/25 05:13:02 terminator356 Exp $
 //
 //  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
+//  Additions, modifications (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
 //=========================================================
 
 #include <stdio.h>
@@ -655,6 +656,7 @@ Part* PartList::find(int idx)
 
 Part::Part(Track* t)
       {
+      _hiddenEvents = NoEventsHidden;
       _prevClone = this;
       _nextClone = this;
       setSn(newSn());
@@ -673,6 +675,7 @@ Part::Part(Track* t)
 
 Part::Part(Track* t, EventList* ev)
       {
+      _hiddenEvents = NoEventsHidden;
       _prevClone = this;
       _nextClone = this;
       setSn(newSn());
@@ -1169,15 +1172,38 @@ WavePart* WavePart::clone() const
       return new WavePart(*this);
       }
 
-
-
+/*
 bool Part::hasHiddenNotes()
 {
-	unsigned lastNote=0;
+        unsigned lastNote=0;
 
-	for (iEvent ev=events()->begin(); ev!=events()->end(); ev++)
-		if (ev->second.endTick() > lastNote)
-			lastNote=ev->second.endTick();
-	
-	return lastNote > lenTick();
+        for (iEvent ev=events()->begin(); ev!=events()->end(); ev++)
+                if (ev->second.endTick() > lastNote)
+                        lastNote=ev->second.endTick();
+        
+        return lastNote > lenTick();
 }
+*/
+
+//---------------------------------------------------------
+//   hasHiddenEvents
+//   Returns combination of HiddenEventsType enum.
+//---------------------------------------------------------
+
+int Part::hasHiddenEvents() 
+{
+  unsigned len = lenTick();
+
+  // TODO: For now, we don't support events before the left border, only events past the right border.
+  for(iEvent ev=events()->begin(); ev!=events()->end(); ev++)
+  {
+    if(ev->second.endTick() > len)
+    {
+      _hiddenEvents = RightEventsHidden;  // Cache the result for later.
+      return _hiddenEvents;
+    }  
+  }
+  _hiddenEvents = NoEventsHidden;  // Cache the result for later.
+  return _hiddenEvents;
+}
+

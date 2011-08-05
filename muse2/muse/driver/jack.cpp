@@ -977,7 +977,8 @@ void JackAudioDevice::graphChanged()
 
                         // p3.3.37
                         //delete ports;
-                        free(ports);
+                        //free(ports);
+                        jack_free(ports);  // p4.0.29
                         
                         ports = NULL;
                         }
@@ -1063,7 +1064,8 @@ void JackAudioDevice::graphChanged()
 
                         // p3.3.37
                         //delete ports;
-                        free(ports);
+                        //free(ports);
+                        jack_free(ports);  // p4.0.29
                         
                         ports = NULL;
                         }
@@ -1182,7 +1184,8 @@ void JackAudioDevice::graphChanged()
     
                             // p3.3.55
                             // Done with ports. Free them.
-                            free(ports);
+                            //free(ports);
+                            jack_free(ports);  // p4.0.29
                       }
                     }  
                   }  
@@ -1279,7 +1282,8 @@ void JackAudioDevice::graphChanged()
                                   }
                             // p3.3.55
                             // Done with ports. Free them.
-                            free(ports);
+                            //free(ports);
+                            jack_free(ports);  // p4.0.29
                       }
                     }  
                   }  
@@ -1662,7 +1666,8 @@ std::list<QString> JackAudioDevice::outputPorts(bool midi, int aliases)
             
       // p3.3.37
       if(ports)
-        free(ports);      
+        //free(ports);      
+        jack_free(ports);  // p4.0.29
       
       return clientList;
       }
@@ -1734,7 +1739,8 @@ std::list<QString> JackAudioDevice::inputPorts(bool midi, int aliases)
             
       // p3.3.37
       if(ports)
-        free(ports);      
+        //free(ports);      
+        jack_free(ports);  // p4.0.29
       
       return clientList;
       }

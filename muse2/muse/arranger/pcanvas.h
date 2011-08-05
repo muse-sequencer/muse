@@ -3,10 +3,13 @@
 //  Linux Music Editor
 //    $Id: pcanvas.h,v 1.11.2.4 2009/05/24 21:43:44 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  Additions, modifications (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
 //=========================================================
 
 #ifndef __PCANVAS_H__
 #define __PCANVAS_H__
+
+#include <QVector>
 
 #include "song.h"
 #include "canvas.h"
@@ -33,6 +36,9 @@ class NPart : public CItem {
       const QString name() const     { return part()->name(); }
       void setName(const QString& s) { part()->setName(s); }
       Track* track() const           { return part()->track(); }
+      
+      bool leftBorderTouches;  // Whether the borders touch other part borders. 
+      bool rightBorderTouches;
       };
 
 enum ControllerVals { doNothing, movingController, addNewController };
