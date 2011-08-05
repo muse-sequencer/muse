@@ -160,7 +160,7 @@ Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
     Part* opart = ip2c->first;
     int diff = ip2c->second.xdiff;
     
-    if (opart->hasHiddenNotes())
+    if (opart->hasHiddenEvents())
     {
 			forbidden=true;
 			break;
@@ -352,7 +352,7 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
       Undo operations;
       int diff = event.endTick()-part->lenTick();
       
-      if (! ((diff > 0) && part->hasHiddenNotes()) ) //operation is allowed
+      if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
       {
         operations.push_back(UndoOp(UndoOp::AddEvent,event, part, false, false));
         
