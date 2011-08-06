@@ -852,7 +852,6 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
                                     Event newEvent = e.clone();
                                     newEvent.setLenFrame(new_partlength - event_startframe);
                                     // Do not do port controller values and clone parts. 
-                                    audio->msgChangeEvent(e, newEvent, nPart, false, false, false);
                                     operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, e, nPart, false,false));
                                     }
                               }
@@ -892,7 +891,6 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
                         
                         nPart->setLenFrame(new_partlength);
                         // Do not do port controller values and clone parts. 
-                        audio->msgChangePart(oPart, nPart, false, false, false);
                         operations.push_back(UndoOp(UndoOp::ModifyPart, oPart, nPart, false, false));
                         song->applyOperationGroup(operations);
                         }
