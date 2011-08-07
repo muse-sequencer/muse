@@ -24,6 +24,8 @@
 
 #include "fastlog.h"
 #include "widgets/tools.h"
+#include "arranger.h"
+#include "arrangerview.h"
 #include "pcanvas.h"
 #include "midieditor.h"
 #include "globals.h"
@@ -619,17 +621,17 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       partPopup->addSeparator();
       switch(trackType) {
             case Track::MIDI: {
-                  partPopup->addAction(muse->startPianoEditAction);
-                  partPopup->addMenu(muse->scoreSubmenu);
-                  partPopup->addAction(muse->startScoreEditAction);
-                  partPopup->addAction(muse->startListEditAction);
+                  partPopup->addAction(muse->arranger->parentWin->startPianoEditAction);
+                  partPopup->addMenu(muse->arranger->parentWin->scoreSubmenu);
+                  partPopup->addAction(muse->arranger->parentWin->startScoreEditAction);
+                  partPopup->addAction(muse->arranger->parentWin->startListEditAction);
                   QAction *act_mexport = partPopup->addAction(tr("save part to disk"));
                   act_mexport->setData(16);
                   }
                   break;
             case Track::DRUM: {
-                  partPopup->addAction(muse->startDrumEditAction);
-                  partPopup->addAction(muse->startListEditAction);
+                  partPopup->addAction(muse->arranger->parentWin->startDrumEditAction);
+                  partPopup->addAction(muse->arranger->parentWin->startListEditAction);
                   QAction *act_dexport = partPopup->addAction(tr("save part to disk"));
                   act_dexport->setData(16);
                   }

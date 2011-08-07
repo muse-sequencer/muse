@@ -23,6 +23,7 @@
 #include <QWheelEvent>
 #include <QPainter>
 //#include <QStackedWidget>
+#include "arrangerview.h"
 
 #include "arranger.h"
 #include "song.h"
@@ -96,7 +97,7 @@ void Arranger::setHeaderWhatsThis()
 //    is the central widget in app
 //---------------------------------------------------------
 
-Arranger::Arranger(QMainWindow* parent, const char* name)
+Arranger::Arranger(ArrangerView* parent, const char* name)
    : QWidget(parent)
       {
       setObjectName(name);
@@ -111,6 +112,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       showTrackinfoFlag = true;
       
       cursVal = MAXINT;
+      
+      parentWin=parent;
       
       //setFocusPolicy(Qt::StrongFocus);
       

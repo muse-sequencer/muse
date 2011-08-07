@@ -118,8 +118,6 @@ class PartCanvas : public Canvas {
       double dbToVal(double inDb);
       double valToDb(double inV);
 
-
-
    protected:
       virtual void drawCanvas(QPainter&, const QRect&);
       virtual void endMoveItems(const QPoint&, DragType, int dir);

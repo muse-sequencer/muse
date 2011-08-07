@@ -4469,18 +4469,19 @@ void staff_t::update_part_indices()
  *     because after A (and B) got resized, the B-resize is invalid!
  * 
  * CURRENT TODO
+ *   o IMPORTANT: check new windowed arranger!
+ *                 - do all signal connections work?
+ *                 - are there any segfaults?
+ * 
+ * IMPORTANT TODO
  *   o redo transport menu: offer "one beat" and "one bar" steps
  *                          maybe also offer scrollbar
  *   o quick "set left/right marker", "select between markers"
  *     or even "set marker and select between immediately"
  *   o support partially selected parts. when moving, automatically split
  * 
- *   o speed up structural operations
  *   o maybe remove "insert empty measure"?
- *   o structural OPs: don't erase note which begins at "end of cut"
  *   o add "move other notes" or "overwrite notes" or "mix with notes" to paste
- * 
- * IMPORTANT TODO
  *   o draw the edge of parts hiding notes "jagged" (hasHiddenNotes() is interesting for this)
  *   o shrink a part from its beginning as well! watch out for clones!
  *   o insert empty measure should also work inside parts, that is,

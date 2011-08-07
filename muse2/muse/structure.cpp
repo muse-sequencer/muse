@@ -1,7 +1,7 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//  $Id: app.cpp,v 1.113.2.68 2009/12/21 14:51:51 spamatica Exp $
+//  $Id: structure.cpp,v 1.113.2.68 2009/12/21 14:51:51 spamatica Exp $
 //
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
 //  (C) Copyright 2011  Robert Jonsson (rj@spamatica.se)
@@ -16,7 +16,7 @@
 #include "keyevent.h"
 #include "audio.h"
 #include "marker/marker.h"
-
+#include "arrangerview.h"
 
 //---------------------------------------------------------
 //   adjustGlobalLists
@@ -25,7 +25,7 @@
 //    'diff' number of ticks.
 //---------------------------------------------------------
 
-void MusE::adjustGlobalLists(Undo& operations, int startPos, int diff)
+void ArrangerView::adjustGlobalLists(Undo& operations, int startPos, int diff)
 {
   const TempoList* t = &tempomap;
   const AL::SigList* s   = &AL::sigmap;
@@ -116,7 +116,7 @@ void MusE::adjustGlobalLists(Undo& operations, int startPos, int diff)
 //    - cut master track
 //---------------------------------------------------------
 
-void MusE::globalCut()
+void ArrangerView::globalCut()
       {
       int lpos = song->lpos();
       int rpos = song->rpos();
@@ -218,7 +218,7 @@ void MusE::globalCut()
 //    - insert in master track
 //---------------------------------------------------------
 
-void MusE::globalInsert()
+void ArrangerView::globalInsert()
       {
       unsigned lpos = song->lpos();
       unsigned rpos = song->rpos();
@@ -275,7 +275,7 @@ void MusE::globalInsert()
 //    - split all parts at the song position pointer
 //---------------------------------------------------------
 
-void MusE::globalSplit()
+void ArrangerView::globalSplit()
       {
       int pos = song->cpos();
       Undo operations;
@@ -317,10 +317,10 @@ void MusE::globalSplit()
 //      copied events
 //---------------------------------------------------------
 
-void MusE::copyRange()
+void ArrangerView::copyRange()
       {
       QMessageBox::critical(this,
-         tr("MusE: Copy Range"),
+         tr("ArrangerView: Copy Range"),
          tr("not implemented")
          );
       }
@@ -332,10 +332,10 @@ void MusE::copyRange()
 //    - process only marked parts
 //---------------------------------------------------------
 
-void MusE::cutEvents()
+void ArrangerView::cutEvents()
       {
       QMessageBox::critical(this,
-         tr("MusE: Cut Events"),
+         tr("ArrangerView: Cut Events"),
          tr("not implemented")
          );
       }

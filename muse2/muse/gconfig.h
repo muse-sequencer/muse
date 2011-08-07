@@ -120,6 +120,7 @@ struct GlobalConfigValues {
       bool mixer1Visible;
       bool mixer2Visible;
       bool markerVisible;
+      bool arrangerVisible;
 
       bool showSplashScreen;
       int canvasShowPartType;       // 1 - names, 2 events
