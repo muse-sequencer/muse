@@ -158,8 +158,6 @@ Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
   for(iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
   {
     Part* opart = ip2c->first;
-    int diff = ip2c->second.xdiff;
-    
     if (opart->hasHiddenNotes())
     {
 			forbidden=true;

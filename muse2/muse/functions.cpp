@@ -28,6 +28,18 @@
 #include <QMessageBox>
 #include <QClipboard>
 
+#include "widgets/function_dialogs/velocity.h"
+#include "widgets/function_dialogs/quantize.h"
+#include "widgets/function_dialogs/crescendo.h"
+#include "widgets/function_dialogs/gatetime.h"
+#include "widgets/function_dialogs/remove.h"
+#include "widgets/function_dialogs/transpose.h"
+#include "widgets/function_dialogs/setlen.h"
+#include "widgets/function_dialogs/move.h"
+#include "widgets/function_dialogs/deloverlaps.h"
+#include "widgets/function_dialogs/legato.h"
+
+
 using namespace std;
 
 GateTime* gatetime_dialog=NULL;

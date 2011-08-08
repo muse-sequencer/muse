@@ -44,6 +44,7 @@
 #include "audio.h"
 #include "gconfig.h"
 #include "functions.h"
+#include "widgets/function_dialogs/quantize.h"
 
 /*
 static const char* map_file_pattern[] = {

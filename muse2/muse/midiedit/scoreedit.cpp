@@ -30,6 +30,7 @@
 #include <QImage>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QSpinBox>
 
 #include <stdio.h>
 #include <math.h>

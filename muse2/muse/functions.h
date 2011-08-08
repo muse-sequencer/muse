@@ -8,23 +8,24 @@
 #ifndef __FUNCTIONS_H__
 #define __FUNCTIONS_H__
 
-#include "widgets/function_dialogs/velocity.h"
-#include "widgets/function_dialogs/quantize.h"
-#include "widgets/function_dialogs/crescendo.h"
-#include "widgets/function_dialogs/gatetime.h"
-#include "widgets/function_dialogs/remove.h"
-#include "widgets/function_dialogs/transpose.h"
-#include "widgets/function_dialogs/setlen.h"
-#include "widgets/function_dialogs/move.h"
-#include "widgets/function_dialogs/deloverlaps.h"
-#include "widgets/function_dialogs/legato.h"
-
 #include <set>
 #include "part.h"
+#include <QWidget>
 
 class QString;
 class QMimeData;
 class Undo;
+
+class GateTime;
+class Velocity;
+class Quantize;
+class Remove;
+class DelOverlaps;
+class Setlen;
+class Move;
+class Transpose;
+class Crescendo;
+class Legato;
 
 extern GateTime* gatetime_dialog;
 extern Velocity* velocity_dialog;
