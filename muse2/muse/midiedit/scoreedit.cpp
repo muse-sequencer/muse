@@ -4473,6 +4473,7 @@ void staff_t::update_part_indices()
  *   o IMPORTANT: check new windowed arranger!
  *                 - do all signal connections work?
  *                 - are there any segfaults?
+ *   o store window state for arranger, probably also for other stuff
  * 
  * IMPORTANT TODO
  *   o redo transport menu: offer "one beat" and "one bar" steps

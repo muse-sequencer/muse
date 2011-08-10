@@ -14,6 +14,7 @@
 
 #include <QFileInfo>
 
+
 class QCloseEvent;
 class QFocusEvent;
 class QMainWindow;
@@ -27,6 +28,7 @@ class QToolBar;
 class QToolButton;
 class QProgressDialog;
 class EditToolBar;
+class QMdiArea;
 
 class Part;
 class PartList;
@@ -98,6 +100,8 @@ class MusE : public QMainWindow
       QAction *editSongInfoAction;
       
    private:
+      QMdiArea* mdiArea;
+   
       // View Menu actions
       QAction *viewTransportAction, *viewBigtimeAction, *viewMixerAAction, *viewMixerBAction, *viewCliplistAction, *viewMarkerAction, *viewArrangerAction;
 

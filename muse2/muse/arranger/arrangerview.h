@@ -122,6 +122,7 @@ class ArrangerView : public TopWin
       void clipboardChanged();
       void selectionChanged();
 			void updateShortcuts();
+			void updateVisibleTracksButtons();
 };
 
 

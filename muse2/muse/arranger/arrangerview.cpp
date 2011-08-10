@@ -626,7 +626,7 @@ void ArrangerView::readStatus(Xml& xml)
 }
 
 
-void ArrangerView::cmd(int cmd) //FINDMICHJETZT
+void ArrangerView::cmd(int cmd)
       {
       TrackList* tracks = song->tracks();
       int l = song->lpos();
@@ -866,10 +866,16 @@ void ArrangerView::clipboardChanged()
 //   selectionChanged
 //---------------------------------------------------------
 
-void ArrangerView::selectionChanged() //FINDMICHJETZT
+void ArrangerView::selectionChanged()
       {
       //bool flag = arranger->isSingleSelection();  // -- Hmm, why only single? 
       bool flag = arranger->selectionSize() > 0;    // -- Test OK cut and copy. For muse2. Tim.
       editCutAction->setEnabled(flag);
       editCopyAction->setEnabled(flag);
       }
+
+
+void ArrangerView::updateVisibleTracksButtons()
+{
+	visTracks->updateVisibleTracksButtons();
+}

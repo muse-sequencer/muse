@@ -10,6 +10,8 @@
 #include "xml.h"
 #include "gui.h"
 
+#include <QMdiSubWindow>
+
 //---------------------------------------------------------
 //   readStatus
 //---------------------------------------------------------
@@ -71,5 +73,63 @@ TopWin::TopWin(QWidget* parent, const char* name,
       // Allow multiple rows.  Tim.
       //setDockNestingEnabled(true);
       setIconSize(ICON_SIZE);
+      
+      mdisubwin=NULL;
       }
 
+void TopWin::hide()
+{
+  printf("HIDE SLOT: mdisubwin is %p\n",mdisubwin); //FINDMICH
+  if (mdisubwin)
+    mdisubwin->close();
+  
+  QMainWindow::hide();
+}
+
+void TopWin::show()
+{
+  printf("SHOW SLOT: mdisubwin is %p\n",mdisubwin); //FINDMICH
+  if (mdisubwin)
+    mdisubwin->show();
+  
+  QMainWindow::show();
+}
+
+void TopWin::setVisible(bool param)
+{
+  printf("SETVISIBLE SLOT (%i): mdisubwin is %p\n",(int)param, mdisubwin); //FINDMICH
+  if (mdisubwin)
+  {
+    if (param)
+      mdisubwin->show();
+    else
+      mdisubwin->close();
+  }
+  QMainWindow::setVisible(param);
+}
+
+QMdiSubWindow* TopWin::createMdiWrapper()
+{
+  if (mdisubwin==NULL)
+  {
+    mdisubwin = new QMdiSubWindow();
+    mdisubwin->setWidget(this);
+  }
+  
+  return mdisubwin;
+}
+
+void TopWin::setFree()
+{
+  if (mdisubwin)
+  {
+    setParent(0);
+    mdisubwin->hide();
+    delete mdisubwin;
+  }
+}
+
+bool TopWin::isMdiWin()
+{
+  return (mdisubwin!=NULL);
+}

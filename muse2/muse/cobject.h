@@ -14,6 +14,7 @@
 #include <QMainWindow>
 #include <list>
 
+class QMdiSubWindow;
 class Xml;
 
 //---------------------------------------------------------
@@ -27,8 +28,21 @@ class TopWin : public QMainWindow
    public:
       virtual void readStatus(Xml&);
       virtual void writeStatus(int, Xml&) const;
+      
+      virtual QMdiSubWindow* createMdiWrapper();
+      bool isMdiWin();
+      void setFree();
+
       TopWin(QWidget* parent=0, const char* name=0,
          Qt::WindowFlags f = Qt::Window);
+         
+  private:
+      QMdiSubWindow* mdisubwin;
+
+  public slots:
+      virtual void hide();
+      virtual void show();
+      virtual void setVisible(bool);
       };
 
 //---------------------------------------------------------
@@ -51,7 +65,7 @@ class Toplevel {
       ToplevelType type() const { return _type; }
       unsigned long object()        const { return _object; }
       TopWin* cobject()   const { return _cobject; }
-
+      
    private:
       ToplevelType _type;
       unsigned long _object;

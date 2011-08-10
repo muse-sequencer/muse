@@ -14,6 +14,8 @@
 #include <QWhatsThis>
 #include <QSettings>
 #include <QProgressDialog>
+#include <QMdiArea>
+#include <QMdiSubWindow>
 
 #include "app.h"
 #include "master/lmaster.h"
@@ -824,18 +826,26 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //menu_ids[CMD_START_WHATSTHIS] = menu_help->insertItem(tr("What's &This?"), this, SLOT(whatsThis()), 0);
 
 
+      //---------------------------------------------------
+      //    Central Widget
+      //---------------------------------------------------
+
+      
+      mdiArea=new QMdiArea(this);
+      setCentralWidget(mdiArea);
+
+
       arrangerView = new ArrangerView(this);
       connect(arrangerView, SIGNAL(closed()), SLOT(arrangerClosed()));
       toplevels.push_back(Toplevel(Toplevel::ARRANGER, (unsigned long)(arrangerView), arrangerView));
       arrangerView->hide();
       arranger=arrangerView->getArranger();
-
-
-      //---------------------------------------------------
-      //    Central Widget
-      //---------------------------------------------------
-
-      //TODO FINDMICHJETZT mdiarea erstellen und als central widget setzen!
+      
+      //QMdiSubWindow* subwin=new QMdiSubWindow(this); //FINDMICHJETZT
+      //subwin->setWidget(arrangerView);
+      //mdiArea->addSubWindow(subwin);
+      mdiArea->addSubWindow(arrangerView->createMdiWrapper());
+      
       //---------------------------------------------------
       //  read list of "Recent Projects"
       //---------------------------------------------------
@@ -1021,7 +1031,7 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool loadAll)
       if (restartSequencer)
             seqStart();
 
-      //visTracks->updateVisibleTracksButtons(); //TODO FINDMICHJETZT
+      arrangerView->updateVisibleTracksButtons();
       progress->setValue(100);
       delete progress;
       progress=0;
@@ -2128,7 +2138,7 @@ static void catchSignal(int sig)
 //    some cmd's from pulldown menu
 //---------------------------------------------------------
 
-void MusE::cmd(int cmd) //FINDMICHJETZT
+void MusE::cmd(int cmd)
       {
       switch(cmd) {
             case CMD_FOLLOW_NO:
@@ -2731,7 +2741,7 @@ void MusE::updateConfiguration()
       //menuSettings->setAccel(shortcuts[SHRT_CONFIG_AUDIO_PORTS].key, menu_ids[CMD_CONFIG_AUDIO_PORTS]);
       //menu_help->setAccel(menu_ids[CMD_START_WHATSTHIS], shortcuts[SHRT_START_WHATSTHIS].key);
       
-      //arrangerView->updateShortcuts(); //FINDMICHJETZT is done via signal
+      //arrangerView->updateShortcuts(); //commented out by flo: is done via signal
       
       }
 
