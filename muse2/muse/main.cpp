@@ -101,6 +101,8 @@ class MuseApplication : public QApplication {
 
       void setMuse(MusE* m) {
             muse = m;
+            
+            connect(this,SIGNAL(focusChanged(QWidget*,QWidget*)),muse,SLOT(focusChanged(QWidget*,QWidget*)));
 #ifdef HAVE_LASH
             if(useLASH)
               startTimer (300);

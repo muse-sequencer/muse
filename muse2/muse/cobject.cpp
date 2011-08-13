@@ -11,6 +11,25 @@
 #include "gui.h"
 
 #include <QMdiSubWindow>
+#include <QToolBar>
+#include <QMenuBar>
+
+using std::list;
+
+TopWin::TopWin(QWidget* parent, const char* name, Qt::WindowFlags f)
+                                               : QMainWindow(parent, f)
+      {
+      setObjectName(QString(name));
+      //setAttribute(Qt::WA_DeleteOnClose);
+      // Allow multiple rows.  Tim.
+      //setDockNestingEnabled(true);
+      setIconSize(ICON_SIZE);
+      
+      mdisubwin=NULL;
+      _sharesToolsAndMenu=false;
+      }
+
+
 
 //---------------------------------------------------------
 //   readStatus
@@ -65,21 +84,8 @@ void TopWin::writeStatus(int level, Xml& xml) const
       xml.tag(level, "/topwin");
       }
 
-TopWin::TopWin(QWidget* parent, const char* name,
-   Qt::WindowFlags f) : QMainWindow(parent, f)
-      {
-      setObjectName(QString(name));
-      //setAttribute(Qt::WA_DeleteOnClose);
-      // Allow multiple rows.  Tim.
-      //setDockNestingEnabled(true);
-      setIconSize(ICON_SIZE);
-      
-      mdisubwin=NULL;
-      }
-
 void TopWin::hide()
 {
-  printf("HIDE SLOT: mdisubwin is %p\n",mdisubwin); //FINDMICH
   if (mdisubwin)
     mdisubwin->close();
   
@@ -88,7 +94,6 @@ void TopWin::hide()
 
 void TopWin::show()
 {
-  printf("SHOW SLOT: mdisubwin is %p\n",mdisubwin); //FINDMICH
   if (mdisubwin)
     mdisubwin->show();
   
@@ -97,7 +102,6 @@ void TopWin::show()
 
 void TopWin::setVisible(bool param)
 {
-  printf("SETVISIBLE SLOT (%i): mdisubwin is %p\n",(int)param, mdisubwin); //FINDMICH
   if (mdisubwin)
   {
     if (param)
@@ -132,4 +136,52 @@ void TopWin::setFree()
 bool TopWin::isMdiWin()
 {
   return (mdisubwin!=NULL);
+}
+
+void TopWin::insertToolBar(QToolBar*, QToolBar*) { printf("ERROR: THIS SHOULD NEVER HAPPEN: TopWin::insertToolBar called, but it's not implemented! ignoring it\n"); }
+void TopWin::insertToolBarBreak(QToolBar*) { printf("ERROR: THIS SHOULD NEVER HAPPEN: TopWin::insertToolBarBreak called, but it's not implemented! ignoring it\n"); }
+void TopWin::removeToolBar(QToolBar*) { printf("ERROR: THIS SHOULD NEVER HAPPEN: TopWin::removeToolBar called, but it's not implemented! ignoring it\n"); }
+void TopWin::removeToolBarBreak(QToolBar*) { printf("ERROR: THIS SHOULD NEVER HAPPEN: TopWin::removeToolBarBreak called, but it's not implemented! ignoring it\n"); }
+void TopWin::addToolBar(Qt::ToolBarArea, QToolBar* tb) { printf("ERROR: THIS SHOULD NEVER HAPPEN: TopWin::addToolBar(Qt::ToolBarArea, QToolBar*) called, but it's not implemented!\nusing addToolBar(QToolBar*) instead\n"); addToolBar(tb);}
+
+void TopWin::addToolBar(QToolBar* toolbar)
+{
+  _toolbars.push_back(toolbar);
+  
+  if (!_sharesToolsAndMenu)
+    QMainWindow::addToolBar(toolbar);
+}
+
+QToolBar* TopWin::addToolBar(const QString& title)
+{
+  QToolBar* toolbar = new QToolBar(title, this);
+  addToolBar(toolbar);
+  return toolbar;
+}
+
+
+void TopWin::shareToolsAndMenu(bool val)
+{
+  _sharesToolsAndMenu = val;
+  
+  if (!val)
+  {
+    for (list<QToolBar*>::iterator it=_toolbars.begin(); it!=_toolbars.end(); it++)
+      if (*it != NULL)
+        QMainWindow::addToolBar(*it);
+      else
+        QMainWindow::addToolBarBreak();
+    
+    menuBar()->show();
+  }
+  else
+  {
+    for (list<QToolBar*>::iterator it=_toolbars.begin(); it!=_toolbars.end(); it++)
+      if (*it != NULL)
+        QMainWindow::removeToolBar(*it); // this does NOT delete the toolbar, which is good
+    
+    menuBar()->hide();
+  }
+  
+  emit toolsAndMenuSharingChanged(val);
 }

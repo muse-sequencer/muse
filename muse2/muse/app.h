@@ -13,8 +13,9 @@
 #include "cobject.h"
 
 #include <QFileInfo>
+#include <list>
 
-
+class TopWin;
 class QCloseEvent;
 class QFocusEvent;
 class QMainWindow;
@@ -101,6 +102,15 @@ class MusE : public QMainWindow
       
    private:
       QMdiArea* mdiArea;
+      
+      TopWin* activeTopWin;
+      TopWin* currentMenuSharingTopwin;
+      
+      std::list<QToolBar*> requiredToolbars; //always displayed
+      std::list<QToolBar*> optionalToolbars; //only displayed when no toolbar-sharing window is active
+      std::list<QToolBar*> foreignToolbars;  //holds a temporary list of the toolbars of a toolbar-sharer
+      std::list<QMenu*> leadingMenus;
+      std::list<QMenu*> trailingMenus;
    
       // View Menu actions
       QAction *viewTransportAction, *viewBigtimeAction, *viewMixerAAction, *viewMixerBAction, *viewCliplistAction, *viewMarkerAction, *viewArrangerAction;
@@ -130,11 +140,15 @@ class MusE : public QMainWindow
 
       QFileInfo project;
       QToolBar *tools;
+      // when adding a toolbar to the main window, remember adding it to
+      // either the requiredToolbars or optionalToolbars list!
 
       Transport* transport;
       BigTime* bigtime;
       EditInstrument* editInstrument;
       
+      // when adding a menu to the main window, remember adding it to
+      // either the leadingMenus or trailingMenus list!
       QMenu *menu_file, *menuView, *menuSettings, *menu_help;
       QMenu* menu_audio, *menuAutomation, *menuUtils;
       QMenu* menu_functions, *menuScriptPlugins;
@@ -200,6 +214,7 @@ class MusE : public QMainWindow
 
    signals:
       void configChanged();
+      void activeTopWinChanged(TopWin*);
 
    private slots:
       void loadProject();
@@ -269,6 +284,9 @@ class MusE : public QMainWindow
 
       void execDeliveredScript(int);
       void execUserScript(int);
+      
+      void activeTopWinChangedSlot(TopWin*);
+      void setCurrentMenuSharingTopwin(TopWin*);
 
    public slots:
       bool saveAs();
@@ -309,6 +327,8 @@ class MusE : public QMainWindow
       void startDrumEditor(PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
       void startEditor(Track*);
       void startMidiTransformer();
+      
+      void focusChanged(QWidget* old, QWidget* now);
 
    public:
       MusE(int argc, char** argv);

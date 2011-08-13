@@ -6,6 +6,8 @@
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
 //=========================================================
 
+#include <typeinfo>
+
 #include <QClipboard>
 #include <QMessageBox>
 #include <QShortcut>
@@ -325,6 +327,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       editInstrument        = 0;
       routingPopupMenu      = 0;
       progress              = 0;
+      activeTopWin          = NULL;
+      currentMenuSharingTopwin = NULL;
       
       appName               = QString("MusE");
       setWindowTitle(appName);
@@ -336,7 +340,10 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       heartBeatTimer = new QTimer(this);
       heartBeatTimer->setObjectName("timer");
       connect(heartBeatTimer, SIGNAL(timeout()), song, SLOT(beat()));
-
+      
+      
+      connect(this, SIGNAL(activeTopWinChanged(TopWin*)), SLOT(activeTopWinChangedSlot(TopWin*)));
+      
 #ifdef ENABLE_PYTHON
       //---------------------------------------------------
       //    Python bridge
@@ -645,29 +652,32 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    Toolbar
       //--------------------------------------------------
       
+      // when adding a toolbar to the main window, remember adding it to
+      // either the requiredToolbars or optionalToolbars list!
+
       tools = addToolBar(tr("File Buttons"));
       tools->setObjectName("File Buttons");
       tools->addAction(fileNewAction);
       tools->addAction(fileOpenAction);
       tools->addAction(fileSaveAction);
-
-      
-      //
-      //    Whats This
-      //
       tools->addAction(QWhatsThis::createAction(this));
       
-      tools->addSeparator();
-      tools->addActions(undoRedo->actions());
+      QToolBar* undoToolbar = addToolBar(tr("Undo/Redo"));
+      undoToolbar->setObjectName("Undo/Redo (global)");
+      undoToolbar->addActions(undoRedo->actions());
 
       QToolBar* transportToolbar = addToolBar(tr("Transport"));
-      transportToolbar->setObjectName("Transport");
+      transportToolbar->setObjectName("Transport (global)");
       transportToolbar->addActions(transportAction->actions());
 
       QToolBar* panicToolbar = addToolBar(tr("Panic"));
-      panicToolbar->setObjectName("Panic");
+      panicToolbar->setObjectName("Panic (global)");
       panicToolbar->addAction(panicAction);
 
+      requiredToolbars.push_back(tools);
+      optionalToolbars.push_back(undoToolbar);
+      optionalToolbars.push_back(transportToolbar);
+      optionalToolbars.push_back(panicToolbar);
 
       
       //rlimit lim;
@@ -700,11 +710,19 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //---------------------------------------------------
 
 
+      // when adding a menu to the main window, remember adding it to
+      // either the leadingMenus or trailingMenus list!
+      // also do NOT use menuBar()->addMenu(QString&), but ALWAYS
+      // create the menu with new QMenu and add it afterwards.
+      // the menu's owner must be this and not this->menuBar()!
+
       //-------------------------------------------------------------
       //    popup File
       //-------------------------------------------------------------
 
-      menu_file = menuBar()->addMenu(tr("&File"));
+      menu_file = new QMenu(tr("&File"), this);
+      menuBar()->addMenu(menu_file);
+      leadingMenus.push_back(menu_file);
       menu_file->addAction(fileNewAction);
       menu_file->addAction(fileOpenAction);
       menu_file->addMenu(openRecent);
@@ -731,7 +749,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    popup View
       //-------------------------------------------------------------
 
-      menuView = menuBar()->addMenu(tr("&View"));
+      menuView = new QMenu(tr("&View"), this);
+      menuBar()->addMenu(menuView);
+      trailingMenus.push_back(menuView);
 
       menuView->addAction(viewTransportAction);
       menuView->addAction(viewBigtimeAction);
@@ -746,7 +766,10 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    popup Midi
       //-------------------------------------------------------------
 
-      menu_functions = menuBar()->addMenu(tr("&Midi"));
+      menu_functions = new QMenu(tr("&Midi"), this);
+      menuBar()->addMenu(menu_functions);
+      trailingMenus.push_back(menu_functions);
+      
       song->populateScriptMenu(menuScriptPlugins, this);
       menu_functions->addMenu(menuScriptPlugins);
       menu_functions->addAction(midiEditInstAction);
@@ -772,7 +795,10 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    popup Audio
       //-------------------------------------------------------------
 
-      menu_audio = menuBar()->addMenu(tr("&Audio"));
+      menu_audio = new QMenu(tr("&Audio"), this);
+      menuBar()->addMenu(menu_audio);
+      trailingMenus.push_back(menu_audio);
+      
       menu_audio->addAction(audioBounce2TrackAction);
       menu_audio->addAction(audioBounce2FileAction);
       menu_audio->addSeparator();
@@ -783,7 +809,10 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    popup Automation
       //-------------------------------------------------------------
 
-      menuAutomation = menuBar()->addMenu(tr("A&utomation"));
+      menuAutomation = new QMenu(tr("A&utomation"), this);
+      menuBar()->addMenu(menuAutomation);
+      trailingMenus.push_back(menuAutomation);
+      
       menuAutomation->addAction(autoMixerAction);
       menuAutomation->addSeparator();
       menuAutomation->addAction(autoSnapshotAction);
@@ -793,7 +822,10 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    popup Settings
       //-------------------------------------------------------------
 
-      menuSettings = menuBar()->addMenu(tr("Se&ttings"));
+      menuSettings = new QMenu(tr("Se&ttings"), this);
+      menuBar()->addMenu(menuSettings);
+      trailingMenus.push_back(menuSettings);
+      
       menuSettings->addAction(settingsGlobalAction);
       menuSettings->addAction(settingsShortcutsAction);
       menuSettings->addMenu(follow);
@@ -813,7 +845,10 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    popup Help
       //---------------------------------------------------
 
-      menu_help = menuBar()->addMenu(tr("&Help"));
+      menu_help = new QMenu(tr("&Help"), this);
+      menuBar()->addMenu(menu_help);
+      trailingMenus.push_back(menu_help);
+      
       menu_help->addAction(helpManualAction);
       menu_help->addAction(helpHomepageAction);
       menu_help->addSeparator();
@@ -836,6 +871,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
 
       arrangerView = new ArrangerView(this);
+      arrangerView->shareToolsAndMenu(true);
       connect(arrangerView, SIGNAL(closed()), SLOT(arrangerClosed()));
       toplevels.push_back(Toplevel(Toplevel::ARRANGER, (unsigned long)(arrangerView), arrangerView));
       arrangerView->hide();
@@ -1745,6 +1781,7 @@ void MusE::startPianoroll(PartList* pl, bool showDefaultCtrls)
       {
       
       PianoRoll* pianoroll = new PianoRoll(pl, this, 0, arranger->cursorValue());
+      pianoroll->shareToolsAndMenu(true); //FINDMICHJETZT
       if(showDefaultCtrls)       // p4.0.12
         pianoroll->addCtrl();
       pianoroll->show();
@@ -1952,6 +1989,11 @@ void MusE::toplevelDeleted(unsigned long tl)
       {
       for (iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
             if (i->object() == tl) {
+                  
+                  if (i->cobject() == currentMenuSharingTopwin)
+                    setCurrentMenuSharingTopwin(NULL);
+              
+              
                   bool mustUpdateScoreMenus=false;
                   switch(i->type()) {
                         case Toplevel::MARKER:
@@ -1963,7 +2005,8 @@ void MusE::toplevelDeleted(unsigned long tl)
                               viewCliplistAction->setChecked(false);  
                               return;
                               //break;
-                        // the followin editors can exist in more than
+
+                        // the following editors can exist in more than
                         // one instantiation:
                         case Toplevel::PIANO_ROLL:
                         case Toplevel::LISTE:
@@ -2903,4 +2946,149 @@ void MusE::findUnusedWaveFiles()
 {
     UnusedWaveFiles unused(muse);
     unused.exec();
+}
+
+void MusE::focusChanged(QWidget*, QWidget* now)
+{
+  QWidget* ptr=now;
+  
+  while (ptr)
+  {
+    if ( (dynamic_cast<TopWin*>(ptr)!=0) || // *ptr is a TopWin or a derived class
+         (ptr==this) )                      // the main window is selected
+      break;
+    ptr=dynamic_cast<QWidget*>(ptr->parent()); //in the unlikely case that ptr is a QObject, this returns NULL, which stops the loop
+  }
+  
+  // ptr is either NULL, this or the pointer to a TopWin
+  if (ptr==this)
+  {
+    QMdiSubWindow* subwin=mdiArea->currentSubWindow();
+    if (subwin)
+    {
+      ptr=subwin->widget();
+      if (dynamic_cast<TopWin*>(ptr)==NULL)
+      {
+        printf("ERROR: THIS SHOULD NEVER HAPPEN: The currently active MdiSubWindow (%s) does not wrap a TopWin but a %s\n",subwin->windowTitle().toAscii().data(),typeid(*ptr).name());
+        ptr=NULL;
+      }
+    }
+    else
+      ptr=NULL;
+  }
+  
+  TopWin* win=dynamic_cast<TopWin*>(ptr);
+  
+  // now 'win' is either NULL or the pointer to the active TopWin
+  if (win!=activeTopWin)
+  {
+    activeTopWin=win;
+    emit activeTopWinChanged(activeTopWin);
+  }
+}
+
+/* FINDMICHJETZT
+void MusE::focusChanged(QWidget* old, QWidget* now)
+{
+  if (now)
+  {
+    QWidget* ptr=now;
+    while (ptr)
+    {
+      if (dynamic_cast<QMainWindow*>(ptr)!=0) break;
+      ptr=dynamic_cast<QWidget*>(ptr->parent()); //in the unlikely case that ptr is a QObject, this returns NULL, which stops the loop
+    }
+    
+    if (ptr)
+      printf("focus changed to MainWin %p (%s)\n",ptr,ptr->windowTitle().toAscii().data());
+    else
+      printf("focus changed to something which has no MainWin: %p (%s)\n",now, typeid(*now).name());
+  }
+  else
+    printf("focus lost\n");
+}
+*/
+
+
+void MusE::activeTopWinChangedSlot(TopWin* win)
+{
+  if (debugMsg) printf("ACTIVE TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toAscii().data() : "<None>", win);
+  
+  if (win && (win->sharesToolsAndMenu()))
+    setCurrentMenuSharingTopwin(win);
+}
+
+
+
+void MusE::setCurrentMenuSharingTopwin(TopWin* win)
+{
+  if (win && (win->sharesToolsAndMenu()==false))
+  {
+    printf("WARNING: THIS SHOULD NEVER HAPPEN: MusE::setCurrentMenuSharingTopwin() called with a win which does not share (%s)! ignoring...\n", win->windowTitle().toAscii().data());
+    return;
+  }
+  
+  if (win!=currentMenuSharingTopwin)
+  {
+    if (debugMsg) printf("MENU SHARING TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toAscii().data() : "<None>", win);
+    
+    // empty our toolbars
+    if (currentMenuSharingTopwin)
+    {
+      for (list<QToolBar*>::iterator it = foreignToolbars.begin(); it!=foreignToolbars.end(); it++)
+        if (*it) removeToolBar(*it); // this does not delete *it, which is good
+
+      foreignToolbars.clear();
+    }
+    else
+    {
+      for (list<QToolBar*>::iterator it = optionalToolbars.begin(); it!=optionalToolbars.end(); it++)
+        if (*it) removeToolBar(*it); // this does not delete *it, which is good
+    }
+    
+    //empty our menu
+    menuBar()->clear();
+    
+    currentMenuSharingTopwin=win;
+    
+    
+    
+    
+    if (win)
+    {
+      for (list<QMenu*>::iterator it = leadingMenus.begin(); it!=leadingMenus.end(); it++)
+        menuBar()->addMenu(*it);
+      
+      const QList<QAction*>& actions=win->menuBar()->actions();
+      for (QList<QAction*>::const_iterator it=actions.begin(); it!=actions.end(); it++)
+      {
+        if (debugMsg) printf("  menu entry '%s'\n", (*it)->text().toAscii().data());
+        
+        menuBar()->addAction(*it);
+      }
+
+      for (list<QMenu*>::iterator it = trailingMenus.begin(); it!=trailingMenus.end(); it++)
+        menuBar()->addMenu(*it);
+
+
+      
+      const list<QToolBar*>& toolbars=win->toolbars();
+      for (list<QToolBar*>::const_iterator it=toolbars.begin(); it!=toolbars.end(); it++)
+        if (*it)
+        {
+          if (debugMsg) printf("  toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
+          
+          addToolBar(*it);
+          foreignToolbars.push_back(*it);
+        }
+        else
+        {
+          if (debugMsg) printf("  toolbar break\n");
+          
+          addToolBarBreak();
+          foreignToolbars.push_back(NULL);
+        }
+    }
+  //TODO FINDMICHJETZT
+  }
 }

@@ -15,6 +15,8 @@
 #include <list>
 
 class QMdiSubWindow;
+class QFocusEvent;
+class QToolBar;
 class Xml;
 
 //---------------------------------------------------------
@@ -36,13 +38,31 @@ class TopWin : public QMainWindow
       TopWin(QWidget* parent=0, const char* name=0,
          Qt::WindowFlags f = Qt::Window);
          
+      bool sharesToolsAndMenu() { return _sharesToolsAndMenu; }
+      void shareToolsAndMenu(bool);
+      const std::list<QToolBar*>& toolbars() { return _toolbars; }
+      
+      void addToolBar(QToolBar* toolbar);
+      QToolBar* addToolBar(const QString& title);
+         
   private:
       QMdiSubWindow* mdisubwin;
+      bool _sharesToolsAndMenu;
+      std::list<QToolBar*> _toolbars;
+      
+      void insertToolBar(QToolBar*, QToolBar*);
+      void insertToolBarBreak(QToolBar*);
+      void removeToolBar(QToolBar*);
+      void removeToolBarBreak(QToolBar*);
+      void addToolBar(Qt::ToolBarArea, QToolBar*);
 
   public slots:
       virtual void hide();
       virtual void show();
       virtual void setVisible(bool);
+  
+  signals:
+      void toolsAndMenuSharingChanged(bool);
       };
 
 //---------------------------------------------------------
