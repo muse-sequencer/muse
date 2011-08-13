@@ -64,6 +64,9 @@ Knob::Knob(QWidget* parent, const char* name)
       d_markerColor   = palette().dark().color().darker(125);
       d_dotWidth      = 8;
 
+      l_slope = 0;
+      l_const = 100;
+
       setMinimumSize(30,30);
       setUpdateTime(50);
       }
@@ -91,6 +94,31 @@ void Knob::setTotalAngle (double angle)
       else
             d_totalAngle = angle;
       d_scale.setAngleRange( -0.5 * d_totalAngle, 0.5 * d_totalAngle);
+      }
+
+//------------------------------------------------------------
+// Knob::setRange
+// Set the range and step size of the knob
+//
+// Sets the paramaters that define the shininess of the ring
+// surrounding the knob and then proceeds by passing the
+// parameters to the parent class' setRange() function.
+//------------------------------------------------------------
+
+void Knob::setRange(double vmin, double vmax, double vstep, int pagesize)
+      {
+      // divide by zero protection. probably too cautious
+      if (! (vmin == vmax || qMax(-vmin, vmax) == 0))
+            {
+            if (vmin * vmax < 0)
+                  l_slope = 80.0 / qMax(-vmin, vmax);
+            else
+                  {
+                  l_slope = 80.0 / (vmax - vmin);
+                  l_const = 100 - l_slope * vmin;
+                  }
+            }
+      SliderBase::setRange(vmin, vmax, vstep, pagesize);
       }
 
 //------------------------------------------------------------
@@ -132,7 +160,8 @@ void Knob::drawKnob(QPainter* p, const QRect& r)
     
       QPen pn;
       pn.setCapStyle(Qt::FlatCap);
-      pn.setColor(d_shinyColor.lighter(100+ abs(d_angle*100)/300));
+
+      pn.setColor(d_shinyColor.lighter(l_const + abs(value() * l_slope)));
       pn.setWidth(d_shineWidth * 2);
       p->setPen(pn);
       p->drawArc(aRect, 0, 360 * 16);

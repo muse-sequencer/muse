@@ -1,3 +1,5 @@
+13.08.2011:
+        - Make the shininess of the Knob ring a little smarter (Orcan)
 05.08.2011:
         - Parts having hidden events now drawn using 'jagged' ends and special white edges. (Tim p4.0.29)
         - Improved border drawing guaranteed to show L/R touching part borders. TODO: Top and bottom borders. (Tim)
