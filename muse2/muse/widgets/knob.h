@@ -36,6 +36,9 @@ class Knob : public SliderBase, public ScaleIf
       double d_totalAngle;
       double d_nTurns;
 
+      double l_const;
+      double l_slope;
+
       QRect  kRect;
       bool _faceColSel;
       QColor d_faceColor;
@@ -62,6 +65,8 @@ class Knob : public SliderBase, public ScaleIf
       Knob(QWidget* parent = 0, const char *name = 0);
       ~Knob() {}
 
+      void setRange(double vmin, double vmax, double vstep = 0.0,
+		    int pagesize = 1);
       void setKnobWidth(int w);
       void setTotalAngle (double angle);
       void setBorderWidth(int bw);
