@@ -874,7 +874,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       arrangerView = new ArrangerView(this);
       arrangerView->shareToolsAndMenu(true);
       connect(arrangerView, SIGNAL(closed()), SLOT(arrangerClosed()));
-      toplevels.push_back(Toplevel(Toplevel::ARRANGER, (unsigned long)(arrangerView), arrangerView));
+      toplevels.push_back(Toplevel(Toplevel::ARRANGER, arrangerView));
       arrangerView->hide();
       arranger=arrangerView->getArranger();
       
@@ -1550,7 +1550,7 @@ void MusE::showMarker(bool flag)
             markerView = new MarkerView(this);
 
             connect(markerView, SIGNAL(closed()), SLOT(markerClosed()));
-            toplevels.push_back(Toplevel(Toplevel::MARKER, (unsigned long)(markerView), markerView));
+            toplevels.push_back(Toplevel(Toplevel::MARKER, markerView));
             markerView->show();
             }
       markerView->setVisible(flag);
@@ -1748,8 +1748,8 @@ void MusE::openInScoreEdit(ScoreEdit* destination, PartList* pl, bool allInOne)
 	{
       destination = new ScoreEdit(this, 0, arranger->cursorValue());
       destination->show();
-      toplevels.push_back(Toplevel(Toplevel::SCORE, (unsigned long)(destination), destination));
-      connect(destination, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+      toplevels.push_back(Toplevel(Toplevel::SCORE, destination));
+      connect(destination, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(destination, SIGNAL(name_changed()), arrangerView, SLOT(scoreNamingChanged()));
       //connect(muse, SIGNAL(configChanged()), destination, SLOT(config_changed()));
       //commented out by flo, because the ScoreEditor connects to all 
@@ -1786,8 +1786,8 @@ void MusE::startPianoroll(PartList* pl, bool showDefaultCtrls)
       if(showDefaultCtrls)       // p4.0.12
         pianoroll->addCtrl();
       pianoroll->show();
-      toplevels.push_back(Toplevel(Toplevel::PIANO_ROLL, (unsigned long)(pianoroll), pianoroll));
-      connect(pianoroll, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+      toplevels.push_back(Toplevel(Toplevel::PIANO_ROLL, pianoroll));
+      connect(pianoroll, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
       }
 
@@ -1807,8 +1807,8 @@ void MusE::startListEditor(PartList* pl)
       {
       ListEdit* listEditor = new ListEdit(pl);
       listEditor->show();
-      toplevels.push_back(Toplevel(Toplevel::LISTE, (unsigned long)(listEditor), listEditor));
-      connect(listEditor, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+      toplevels.push_back(Toplevel(Toplevel::LISTE, listEditor));
+      connect(listEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
       }
 
@@ -1820,8 +1820,8 @@ void MusE::startMasterEditor()
       {
       MasterEdit* masterEditor = new MasterEdit();
       masterEditor->show();
-      toplevels.push_back(Toplevel(Toplevel::MASTER, (unsigned long)(masterEditor), masterEditor));
-      connect(masterEditor, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+      toplevels.push_back(Toplevel(Toplevel::MASTER, masterEditor));
+      connect(masterEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       }
 
 //---------------------------------------------------------
@@ -1832,8 +1832,8 @@ void MusE::startLMasterEditor()
       {
       LMaster* lmaster = new LMaster();
       lmaster->show();
-      toplevels.push_back(Toplevel(Toplevel::LMASTER, (unsigned long)(lmaster), lmaster));
-      connect(lmaster, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+      toplevels.push_back(Toplevel(Toplevel::LMASTER, lmaster));
+      connect(lmaster, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(muse, SIGNAL(configChanged()), lmaster, SLOT(configChanged()));
       }
 
@@ -1856,8 +1856,8 @@ void MusE::startDrumEditor(PartList* pl, bool showDefaultCtrls)
       if(showDefaultCtrls)       // p4.0.12
         drumEditor->addCtrl();
       drumEditor->show();
-      toplevels.push_back(Toplevel(Toplevel::DRUM, (unsigned long)(drumEditor), drumEditor));
-      connect(drumEditor, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+      toplevels.push_back(Toplevel(Toplevel::DRUM, drumEditor));
+      connect(drumEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
       }
 
@@ -1880,8 +1880,8 @@ void MusE::startWaveEditor(PartList* pl)
       WaveEdit* waveEditor = new WaveEdit(pl);
       waveEditor->show();
       connect(muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
-      toplevels.push_back(Toplevel(Toplevel::WAVE, (unsigned long)(waveEditor), waveEditor));
-      connect(waveEditor, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+      toplevels.push_back(Toplevel(Toplevel::WAVE, waveEditor));
+      connect(waveEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       }
 
 
@@ -1937,8 +1937,8 @@ void MusE::startClipList(bool checked)
       if (clipListEdit == 0) {
             //clipListEdit = new ClipListEdit();
             clipListEdit = new ClipListEdit(this);
-            toplevels.push_back(Toplevel(Toplevel::CLIPLIST, (unsigned long)(clipListEdit), clipListEdit));
-            connect(clipListEdit, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+            toplevels.push_back(Toplevel(Toplevel::CLIPLIST, clipListEdit));
+            connect(clipListEdit, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
             }
       clipListEdit->show();
       viewCliplistAction->setChecked(checked);
@@ -1986,12 +1986,12 @@ void MusE::selectProject(QAction* act)
 //   toplevelDeleted
 //---------------------------------------------------------
 
-void MusE::toplevelDeleted(unsigned long tl)
+void MusE::toplevelDeleted(TopWin* tl)
       {
       for (iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
             if (i->object() == tl) {
                   
-                  if (i->cobject() == currentMenuSharingTopwin)
+                  if (tl == currentMenuSharingTopwin)
                     setCurrentMenuSharingTopwin(NULL);
               
               
@@ -2025,7 +2025,7 @@ void MusE::toplevelDeleted(unsigned long tl)
                   return;
                   }
             }
-      printf("topLevelDeleted: top level %lx not found\n", tl);
+      printf("topLevelDeleted: top level %p not found\n", tl);
       //assert(false);
       }
 
@@ -2624,7 +2624,6 @@ bool MusE::clearSong(bool clear_all)
 again:
       for (iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
             Toplevel tl = *i;
-            unsigned long obj = tl.object();
             switch (tl.type()) {
                   case Toplevel::CLIPLIST:
                   case Toplevel::MARKER:
@@ -2637,7 +2636,7 @@ again:
                   case Toplevel::MASTER:
                   case Toplevel::WAVE:
                   case Toplevel::LMASTER:
-                        ((QWidget*)(obj))->close();
+                        tl.object()->close();
                         goto again;
                   }
             }

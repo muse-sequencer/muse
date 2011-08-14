@@ -77,19 +77,16 @@ class Toplevel {
          , M_PATCHBAY
 #endif /* PATCHBAY */
          };
-      Toplevel(ToplevelType t, unsigned long obj, TopWin* cobj) {
+      Toplevel(ToplevelType t, TopWin* obj) {
             _type = t;
             _object = obj;
-            _cobject = cobj;
             }
       ToplevelType type() const { return _type; }
-      unsigned long object()        const { return _object; }
-      TopWin* cobject()   const { return _cobject; }
+      TopWin* object()   const { return _object; }
       
    private:
       ToplevelType _type;
-      unsigned long _object;
-      TopWin* _cobject;
+      TopWin* _object;
       };
 
 typedef std::list <Toplevel> ToplevelList;

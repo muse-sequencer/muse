@@ -81,7 +81,7 @@ class MasterEdit : public MidiEditor {
 //      void tempoChanged(double);
 
    signals:
-      void deleted(unsigned long);
+      void deleted(TopWin*);
 
    public:
       MasterEdit();

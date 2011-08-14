@@ -122,7 +122,7 @@ class DrumEdit : public MidiEditor {
       
       virtual void updateHScrollRange();
    signals:
-      void deleted(unsigned long);
+      void deleted(TopWin*);
 
    public:
       DrumEdit(PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);

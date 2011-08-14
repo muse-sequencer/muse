@@ -165,7 +165,7 @@ static QString midiMetaComment(const Event& ev)
 
 void ListEdit::closeEvent(QCloseEvent* e)
       {
-      emit deleted((unsigned long)this);
+      emit deleted(static_cast<TopWin*>(this));
       e->accept();
       }
 

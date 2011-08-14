@@ -147,7 +147,7 @@ void DrumEdit::closeEvent(QCloseEvent* e)
       _dlistWidthInit = *it; //There are only 2 values stored in the sizelist, size of dlist widget and dcanvas widget
       it++;
       _dcanvasWidthInit = *it;
-      emit deleted((unsigned long)this);
+      emit deleted(static_cast<TopWin*>(this));
       e->accept();
       }
 

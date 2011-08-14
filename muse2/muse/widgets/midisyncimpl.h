@@ -104,9 +104,6 @@ class MidiSyncConfig : public QDialog, public Ui::MidiSyncConfigBase {
       //void renameOk(QListViewItem*, int, const QString&);
       void songChanged(int);
 
-   //signals:
-   //   void deleted(unsigned long);
-
    public:
       MidiSyncConfig(QWidget* parent=0);
       //MidiSyncConfig();

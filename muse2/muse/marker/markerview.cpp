@@ -141,7 +141,7 @@ void MarkerItem::setTick(unsigned v)
 
 void MarkerView::closeEvent(QCloseEvent* e)
       {
-      emit deleted((unsigned long)this);
+      emit deleted(static_cast<TopWin*>(this));
       emit closed();
       e->accept();
       }

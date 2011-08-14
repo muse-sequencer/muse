@@ -156,7 +156,7 @@ class LMaster : public MidiEditor {
       void configChanged();
 
    signals:
-      void deleted(unsigned long);
+      void deleted(TopWin*);
       void seekTo(int tick);
 
    public:

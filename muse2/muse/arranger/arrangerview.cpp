@@ -581,7 +581,7 @@ ArrangerView::~ArrangerView()
 
 void ArrangerView::closeEvent(QCloseEvent* e)
 {
-	emit deleted((unsigned long)this);
+	emit deleted(static_cast<TopWin*>(this));
 	emit closed();
 	e->accept();
 }
@@ -759,7 +759,7 @@ void ArrangerView::updateScoreMenus()
 	for (ToplevelList::const_iterator it=toplevels->begin(); it!=toplevels->end(); it++)
 		if (it->type()==Toplevel::SCORE)
 		{
-			ScoreEdit* score = (ScoreEdit*) it->cobject();
+			ScoreEdit* score = (ScoreEdit*) it->object();
 			
 			action=new QAction(score->get_name(), this);
 			connect(action, SIGNAL(activated()), scoreOneStaffPerTrackMapper, SLOT(map()));

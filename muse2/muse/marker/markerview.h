@@ -77,7 +77,7 @@ class MarkerView : public TopWin {
       void songChanged(int);
       
    signals:
-      void deleted(unsigned long);
+      void deleted(TopWin*);
       void closed();
 
    public:

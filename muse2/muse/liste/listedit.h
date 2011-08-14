@@ -68,7 +68,7 @@ class ListEdit : public MidiEditor {
       void songChanged(int);
 
    signals:
-      void deleted(unsigned long);
+      void deleted(TopWin*);
 
    public:
       ListEdit(PartList*);

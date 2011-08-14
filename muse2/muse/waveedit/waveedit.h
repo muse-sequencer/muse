@@ -78,7 +78,7 @@ class WaveEdit : public MidiEditor {
 
 
    signals:
-      void deleted(unsigned long);
+      void deleted(TopWin*);
 
    public:
       WaveEdit(PartList*);

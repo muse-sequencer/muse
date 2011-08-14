@@ -168,7 +168,7 @@ class ScoreEdit : public TopWin
 		void clipboard_changed();
 		
 	signals:
-		void deleted(unsigned long);
+		void deleted(TopWin*);
 		void name_changed();
 		void velo_changed(int);
 		void velo_off_changed(int);

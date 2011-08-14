@@ -636,7 +636,7 @@ void ScoreEdit::closeEvent(QCloseEvent* e)
 	//settings.setValue("ScoreEdit/geometry", saveGeometry());
 	settings.setValue("ScoreEdit/windowState", saveState());
 
-	emit deleted((unsigned long)this);
+	emit deleted(static_cast<TopWin*>(this));
 	e->accept();
 }
 

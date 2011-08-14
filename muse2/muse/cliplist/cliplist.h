@@ -54,7 +54,7 @@ class ClipListEdit : public TopWin {
       void clicked(QTreeWidgetItem*, int);
 
    signals:
-      void deleted(unsigned long);
+      void deleted(TopWin*);
 
    public:
       ClipListEdit(QWidget* parent);

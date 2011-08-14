@@ -95,7 +95,7 @@ QString keyToString(key_enum key) //flo
 
 void LMaster::closeEvent(QCloseEvent* e)
       {
-      emit deleted((unsigned long)this);
+      emit deleted(static_cast<TopWin*>(this));
       e->accept();
       }
 

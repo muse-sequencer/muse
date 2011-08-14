@@ -788,7 +788,7 @@ void PianoRoll::closeEvent(QCloseEvent* e)
       //settings.setValue("Pianoroll/geometry", saveGeometry());
       settings.setValue("Pianoroll/windowState", saveState());
 
-      emit deleted((unsigned long)this);
+      emit deleted(static_cast<TopWin*>(this));
       e->accept();
       }
 

@@ -160,7 +160,7 @@ class PianoRoll : public MidiEditor {
       void updateTrackInfo();
 
    signals:
-      void deleted(unsigned long);
+      void deleted(TopWin*);
    
    public slots:
       virtual void updateHScrollRange();

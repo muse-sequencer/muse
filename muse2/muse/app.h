@@ -294,7 +294,7 @@ class MusE : public QMainWindow
       void closeEvent(QCloseEvent*e);
       void loadProjectFile(const QString&);
       void loadProjectFile(const QString&, bool songTemplate, bool loadAll);
-      void toplevelDeleted(unsigned long tl);
+      void toplevelDeleted(TopWin* tl);
       void loadTheme(const QString&);
       void loadStyleSheetFile(const QString&);
       bool seqRestart();

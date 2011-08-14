@@ -1011,15 +1011,15 @@ void MusE::readToplevels(Xml& xml)
                               if(!pl->empty())
                               {
                                 startPianoroll(pl);
-                                toplevels.back().cobject()->readStatus(xml);
+                                toplevels.back().object()->readStatus(xml);
                                 pl = new PartList;
                               }  
                               }
                         else if (tag == "scoreedit") {
                                 ScoreEdit* score = new ScoreEdit(this, 0, arranger->cursorValue());
                                 score->show();
-                                toplevels.push_back(Toplevel(Toplevel::SCORE, (unsigned long)(score), score));
-                                connect(score, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+                                toplevels.push_back(Toplevel(Toplevel::SCORE, score));
+                                connect(score, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
                                 connect(score, SIGNAL(name_changed()), SLOT(scoreNamingChanged()));
                                 score->readStatus(xml);
                               }
@@ -1027,7 +1027,7 @@ void MusE::readToplevels(Xml& xml)
                               if(!pl->empty())
                               {
                                 startDrumEditor(pl);
-                                toplevels.back().cobject()->readStatus(xml);
+                                toplevels.back().object()->readStatus(xml);
                                 pl = new PartList;
                               }  
                               }
@@ -1035,33 +1035,33 @@ void MusE::readToplevels(Xml& xml)
                               if(!pl->empty())
                               {
                                 startListEditor(pl);
-                                toplevels.back().cobject()->readStatus(xml);
+                                toplevels.back().object()->readStatus(xml);
                                 pl = new PartList;
                               }  
                               }
                         else if (tag == "master") {
                               startMasterEditor();
-                              toplevels.back().cobject()->readStatus(xml);
+                              toplevels.back().object()->readStatus(xml);
                               }
                         else if (tag == "lmaster") {
                               startLMasterEditor();
-                              toplevels.back().cobject()->readStatus(xml);
+                              toplevels.back().object()->readStatus(xml);
                               }
                         else if (tag == "marker") {
                               showMarker(true);
-                              toplevels.back().cobject()->readStatus(xml);
+                              toplevels.back().object()->readStatus(xml);
                               }
                         else if (tag == "waveedit") {
                               if(!pl->empty())
                               {
                                 startWaveEditor(pl);
-                                toplevels.back().cobject()->readStatus(xml);
+                                toplevels.back().object()->readStatus(xml);
                                 pl = new PartList;
                               }  
                               }
                         else if (tag == "cliplist") {
                               startClipList(true);
-                              toplevels.back().cobject()->readStatus(xml);
+                              toplevels.back().object()->readStatus(xml);
                               }
                         else
                               xml.unknown("MusE");
@@ -1531,8 +1531,8 @@ void MusE::write(Xml& xml) const
       if (!toplevels.empty()) {
             xml.tag(level++, "toplevels");
             for (ciToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
-                  if (i->cobject()->isVisible())
-                        i->cobject()->writeStatus(level, xml);
+                  if (i->object()->isVisible())
+                        i->object()->writeStatus(level, xml);
                   }
             xml.tag(level--, "/toplevels");
             }

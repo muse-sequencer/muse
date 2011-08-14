@@ -53,7 +53,7 @@ void WaveEdit::closeEvent(QCloseEvent* e)
       QSettings settings("MusE", "MusE-qt");
       //settings.setValue("Waveedit/geometry", saveGeometry());
       settings.setValue("Waveedit/windowState", saveState());
-      emit deleted((unsigned long)this);
+      emit deleted(static_cast<TopWin*>(this));
       e->accept();
       }
 

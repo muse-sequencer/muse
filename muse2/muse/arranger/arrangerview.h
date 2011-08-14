@@ -102,7 +102,7 @@ class ArrangerView : public TopWin
       void cmd(int);
 		
    signals:
-      void deleted(unsigned long);
+      void deleted(TopWin*);
       void closed();
 		
 	public:
