@@ -716,6 +716,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       // create the menu with new QMenu and add it afterwards.
       // the menu's owner must be this and not this->menuBar()!
 
+
       //-------------------------------------------------------------
       //    popup File
       //-------------------------------------------------------------
@@ -2961,7 +2962,7 @@ void MusE::focusChanged(QWidget*, QWidget* now)
   }
   
   // ptr is either NULL, this or the pointer to a TopWin
-  if (ptr==this)
+  /*if (ptr==this) FINDMICHJETZT
   {
     QMdiSubWindow* subwin=mdiArea->currentSubWindow();
     if (subwin)
@@ -2975,15 +2976,17 @@ void MusE::focusChanged(QWidget*, QWidget* now)
     }
     else
       ptr=NULL;
-  }
-  
-  TopWin* win=dynamic_cast<TopWin*>(ptr);
-  
-  // now 'win' is either NULL or the pointer to the active TopWin
-  if (win!=activeTopWin)
+  }*/
+  if (ptr!=this) // if the main win is selected, don't treat that as "none", but also don't handle it
   {
-    activeTopWin=win;
-    emit activeTopWinChanged(activeTopWin);
+    TopWin* win=dynamic_cast<TopWin*>(ptr);
+    
+    // now 'win' is either NULL or the pointer to the active TopWin
+    if (win!=activeTopWin)
+    {
+      activeTopWin=win;
+      emit activeTopWinChanged(activeTopWin);
+    }
   }
 }
 
@@ -3013,6 +3016,25 @@ void MusE::focusChanged(QWidget* old, QWidget* now)
 void MusE::activeTopWinChangedSlot(TopWin* win)
 {
   if (debugMsg) printf("ACTIVE TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toAscii().data() : "<None>", win);
+  
+  if ((win==NULL) || (win->isMdiWin()==false))
+  {
+    if (debugMsg) printf("  that's out of the MDI area\n");
+    menuBar()->setFocus(Qt::MenuBarFocusReason);
+  }
+  if (win && false) //FINDMICHJETZT
+  {
+    if (win->isMdiWin())
+    {
+      if (debugMsg) printf("  that's a mdiSubWin\n");
+    }
+    else
+    {
+      if (debugMsg) printf("  that's a free floating window\n");
+      mdiArea->setActiveSubWindow(NULL);
+      mdiArea->clearFocus();
+    }
+  }
   
   if (win && (win->sharesToolsAndMenu()))
     setCurrentMenuSharingTopwin(win);
@@ -3080,6 +3102,7 @@ void MusE::setCurrentMenuSharingTopwin(TopWin* win)
           
           addToolBar(*it);
           foreignToolbars.push_back(*it);
+          (*it)->show(); //FINDMICHJETZT
         }
         else
         {
