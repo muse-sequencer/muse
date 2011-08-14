@@ -264,6 +264,9 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
 
       QMenu* menuScriptPlugins = menuBar()->addMenu(tr("&Plugins"));
       song->populateScriptMenu(menuScriptPlugins, this);
+      
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
+      settingsMenu->addAction(subwinAction);
 
       connect(signalMapper, SIGNAL(mapped(int)), SLOT(cmd(int)));
 

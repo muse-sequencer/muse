@@ -878,10 +878,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       arrangerView->hide();
       arranger=arrangerView->getArranger();
       
-      //QMdiSubWindow* subwin=new QMdiSubWindow(this); //FINDMICHJETZT
-      //subwin->setWidget(arrangerView);
-      //mdiArea->addSubWindow(subwin);
-      mdiArea->addSubWindow(arrangerView->createMdiWrapper());
+      //mdiArea->addSubWindow(arrangerView->createMdiWrapper());
+      arrangerView->setIsMdiWin(true);
+      
       
       //---------------------------------------------------
       //  read list of "Recent Projects"
@@ -3075,11 +3074,11 @@ void MusE::setCurrentMenuSharingTopwin(TopWin* win)
     
     
     
+    for (list<QMenu*>::iterator it = leadingMenus.begin(); it!=leadingMenus.end(); it++)
+      menuBar()->addMenu(*it);
+
     if (win)
     {
-      for (list<QMenu*>::iterator it = leadingMenus.begin(); it!=leadingMenus.end(); it++)
-        menuBar()->addMenu(*it);
-      
       const QList<QAction*>& actions=win->menuBar()->actions();
       for (QList<QAction*>::const_iterator it=actions.begin(); it!=actions.end(); it++)
       {
@@ -3087,9 +3086,6 @@ void MusE::setCurrentMenuSharingTopwin(TopWin* win)
         
         menuBar()->addAction(*it);
       }
-
-      for (list<QMenu*>::iterator it = trailingMenus.begin(); it!=trailingMenus.end(); it++)
-        menuBar()->addMenu(*it);
 
 
       
@@ -3111,6 +3107,13 @@ void MusE::setCurrentMenuSharingTopwin(TopWin* win)
           foreignToolbars.push_back(NULL);
         }
     }
-  //TODO FINDMICHJETZT
+
+    for (list<QMenu*>::iterator it = trailingMenus.begin(); it!=trailingMenus.end(); it++)
+      menuBar()->addMenu(*it);
   }
+}
+
+void MusE::addMdiSubWindow(QMdiSubWindow* win)
+{
+  mdiArea->addSubWindow(win);
 }

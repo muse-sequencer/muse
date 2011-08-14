@@ -496,6 +496,10 @@ ListEdit::ListEdit(PartList* pl)
 
       connect(editSignalMapper, SIGNAL(mapped(int)), SLOT(cmd(int)));
 
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
+      settingsMenu->addAction(subwinAction);
+
+
       //---------ToolBar----------------------------------
       
       listTools = addToolBar(tr("List tools"));

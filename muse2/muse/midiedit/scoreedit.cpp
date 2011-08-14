@@ -403,7 +403,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 			
 			color_black_action->setChecked(true);
 			menu_command(CMD_COLOR_BLACK);
-  
+		
 		QMenu* preamble_menu = settings_menu->addMenu(tr("Set up &preamble"));
 			preamble_keysig_action = preamble_menu->addAction(tr("Display &key signature"));
 			preamble_timesig_action =  preamble_menu->addAction(tr("Display &time signature"));
@@ -418,6 +418,10 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
   
 		QAction* set_name_action = settings_menu->addAction(tr("Set Score &name"), menu_mapper, SLOT(map()));
 		menu_mapper->setMapping(set_name_action, CMD_SET_NAME);
+
+	settings_menu->addSeparator();
+	settings_menu->addAction(subwinAction);
+
   
 
   QMenu* functions_menu = menuBar()->addMenu(tr("&Functions"));      

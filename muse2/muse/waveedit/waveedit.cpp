@@ -154,6 +154,10 @@ WaveEdit::WaveEdit(PartList* pl)
       mapper->setMapping(selectNoneAction, CMD_SELECT_NONE);
       connect(selectNoneAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
+      
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
+      settingsMenu->addAction(subwinAction);
+
       //---------ToolBar----------------------------------
       tools = addToolBar(tr("Wave edit tools"));
       tools->setObjectName("Wave edit tools");

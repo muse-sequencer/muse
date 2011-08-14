@@ -9,10 +9,13 @@
 #include "cobject.h"
 #include "xml.h"
 #include "gui.h"
+#include "globals.h"
+#include "app.h"
 
 #include <QMdiSubWindow>
 #include <QToolBar>
 #include <QMenuBar>
+#include <QAction>
 
 using std::list;
 
@@ -27,6 +30,11 @@ TopWin::TopWin(QWidget* parent, const char* name, Qt::WindowFlags f)
       
       mdisubwin=NULL;
       _sharesToolsAndMenu=false;
+      
+      subwinAction=new QAction(tr("As subwindow"), this);
+      subwinAction->setCheckable(true);
+      subwinAction->setChecked(isMdiWin());
+      connect(subwinAction, SIGNAL(toggled(bool)), SLOT(setIsMdiWin(bool)));
       }
 
 
@@ -123,13 +131,45 @@ QMdiSubWindow* TopWin::createMdiWrapper()
   return mdisubwin;
 }
 
-void TopWin::setFree()
+void TopWin::setIsMdiWin(bool val)
 {
-  if (mdisubwin)
+  if (val)
   {
-    setParent(0);
-    mdisubwin->hide();
-    delete mdisubwin;
+    if (!isMdiWin())
+    {
+      bool vis=isVisible();
+      QMdiSubWindow* subwin = createMdiWrapper();
+      muse->addMdiSubWindow(subwin);
+      subwin->setVisible(vis);
+      
+      subwinAction->setChecked(true);
+    }
+    else
+    {
+      if (debugMsg) printf("TopWin::setIsMdiWin(true) called, but window is already a MDI win\n");
+    }
+  }
+  else
+  {
+    if (isMdiWin())
+    {
+      bool vis=isVisible();
+      QMdiSubWindow* mdisubwin_temp=mdisubwin;
+      mdisubwin=NULL;
+      setParent(NULL);
+      mdisubwin_temp->hide();
+      //TODO FINDMICH evtl noch ein signal emitten oder sowas?
+      delete mdisubwin_temp;
+      
+      printf("unMDIfied, visible is %i\n",vis);
+      setVisible(vis);
+      
+      subwinAction->setChecked(false);
+    }
+    else
+    {
+      if (debugMsg) printf("TopWin::setIsMdiWin(false) called, but window is not a MDI win\n");
+    }
   }
 }
 
@@ -185,3 +225,4 @@ void TopWin::shareToolsAndMenu(bool val)
   
   emit toolsAndMenuSharingChanged(val);
 }
+

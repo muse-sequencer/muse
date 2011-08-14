@@ -31,6 +31,8 @@
 #include <QLabel>
 #include <QToolBar>
 #include <QToolButton>
+#include <QMenuBar>
+#include <QMenu>
 
 int MasterEdit::_rasterInit = 0;
 int MasterEdit::_widthInit = 600;
@@ -90,6 +92,9 @@ MasterEdit::MasterEdit()
       //---------Pulldown Menu----------------------------
 //      QPopupMenu* file = new QPopupMenu(this);
 //      menuBar()->insertItem("&File", file);
+
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
+      settingsMenu->addAction(subwinAction);
 
       //---------ToolBar----------------------------------
       

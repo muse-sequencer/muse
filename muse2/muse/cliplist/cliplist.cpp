@@ -7,6 +7,8 @@
 //=========================================================
 
 #include <QCloseEvent>
+#include <QMenuBar>
+#include <QMenu>
 
 #include "cliplist.h"
 #include "song.h"
@@ -106,6 +108,9 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       setCentralWidget(editor);
 
       //editor->view->setColumnAlignment(COL_REFS, Qt::AlignRight);
+      
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
+      settingsMenu->addAction(subwinAction);      
       
       QFontMetrics fm(editor->view->font());
       int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth,0, this); // ddskrjo 0

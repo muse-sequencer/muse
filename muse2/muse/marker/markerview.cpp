@@ -172,7 +172,12 @@ MarkerView::MarkerView(QWidget* parent)
       
       editMenu->addAction(markerAdd);
       editMenu->addAction(markerDelete);
-
+      
+      
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
+      settingsMenu->addAction(subwinAction);
+      
+      
       //---------ToolBar----------------------------------
       tools = addToolBar(tr("marker-tools"));
       tools->addActions(undoRedo->actions());

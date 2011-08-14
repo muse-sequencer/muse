@@ -140,6 +140,10 @@ LMaster::LMaster()
       delAction = menuEdit->addAction(tr("Delete Event"));
       delAction->setShortcut(Qt::Key_Delete);
 
+      QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
+      settingsMenu->addAction(subwinAction);
+
+      
       connect(tempoAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(signAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(keyAction, SIGNAL(triggered()), signalMapper, SLOT(map()));

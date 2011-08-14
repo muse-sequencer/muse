@@ -329,6 +329,8 @@ class MusE : public QMainWindow
       void startMidiTransformer();
       
       void focusChanged(QWidget* old, QWidget* now);
+      
+      void addMdiSubWindow(QMdiSubWindow*);
 
    public:
       MusE(int argc, char** argv);

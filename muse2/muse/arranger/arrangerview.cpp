@@ -488,6 +488,8 @@ ArrangerView::ArrangerView(QWidget* parent)
 		menuStructure->addSeparator();
 		menuStructure->addAction(strCutEventsAction);
 
+      QMenu* menuSettings = menuBar()->addMenu(tr("&Settings"));
+      menuSettings->addAction(subwinAction);
 
 
       //-------- Edit connections
