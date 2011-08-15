@@ -23,8 +23,8 @@
 //   MidiEditor
 //---------------------------------------------------------
 
-MidiEditor::MidiEditor(int r, PartList* pl,
-   QWidget* parent, const char* name) : TopWin(parent, name)
+MidiEditor::MidiEditor(ToplevelType t, int r, PartList* pl,
+   QWidget* parent, const char* name) : TopWin(t, parent, name)
       {
       setAttribute(Qt::WA_DeleteOnClose);
       _pl = pl;

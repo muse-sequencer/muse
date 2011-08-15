@@ -69,7 +69,7 @@ static int pianorollTools = PointerTool | PencilTool | RubberTool | DrawTool;
 //---------------------------------------------------------
 
 PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned initPos)
-   : MidiEditor(_rasterInit, pl, parent, name)
+   : MidiEditor(TopWin::PIANO_ROLL, _rasterInit, pl, parent, name)
       {
       deltaMode = false;
       resize(_widthInit, _heightInit);

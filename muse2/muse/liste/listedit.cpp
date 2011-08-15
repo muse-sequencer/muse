@@ -445,7 +445,7 @@ QString EventListItem::text(int col) const
 //---------------------------------------------------------
 
 ListEdit::ListEdit(PartList* pl)
-   : MidiEditor(0, pl)
+   : MidiEditor(TopWin::LISTE, 0, pl)
       {
       insertItems = new QActionGroup(this);
       insertItems->setExclusive(false);
@@ -500,14 +500,23 @@ ListEdit::ListEdit(PartList* pl)
       settingsMenu->addAction(subwinAction);
 
 
-      //---------ToolBar----------------------------------
-      
-      listTools = addToolBar(tr("List tools"));
-      listTools->addActions(undoRedo->actions());
-      
+      // Toolbars ---------------------------------------------------------
+      QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
+      undo_tools->setObjectName("Undo/Redo tools");
+      undo_tools->addActions(undoRedo->actions());
+
       QToolBar* insertTools = addToolBar(tr("Insert tools"));
+      insertTools->setObjectName("list insert tools");
       insertTools->addActions(insertItems->actions());
 
+      QToolBar* panic_toolbar = addToolBar(tr("panic"));         
+      panic_toolbar->setObjectName("panic");
+      panic_toolbar->addAction(panicAction);
+
+      QToolBar* transport_toolbar = addToolBar(tr("transport"));
+      transport_toolbar->setObjectName("transport");
+      transport_toolbar->addActions(transportAction->actions());
+      
       //
       //---------------------------------------------------
       //    liste

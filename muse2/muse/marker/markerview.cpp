@@ -151,7 +151,7 @@ void MarkerView::closeEvent(QCloseEvent* e)
 //---------------------------------------------------------
 
 MarkerView::MarkerView(QWidget* parent)
-   : TopWin(parent, "markerview", Qt::Window /*| WDestructiveClose*/)
+   : TopWin(TopWin::MARKER, parent, "markerview", Qt::Window /*| WDestructiveClose*/)
       {
       //setAttribute(Qt::WA_DeleteOnClose);
       
@@ -178,13 +178,23 @@ MarkerView::MarkerView(QWidget* parent)
       settingsMenu->addAction(subwinAction);
       
       
-      //---------ToolBar----------------------------------
-      tools = addToolBar(tr("marker-tools"));
-      tools->addActions(undoRedo->actions());
+      // Toolbars ---------------------------------------------------------
+      QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
+      undo_tools->setObjectName("Undo/Redo tools");
+      undo_tools->addActions(undoRedo->actions());
 
       QToolBar* edit = addToolBar(tr("edit tools"));
+      edit->setObjectName("marker edit tools");
       edit->addAction(markerAdd);
       edit->addAction(markerDelete);
+
+      QToolBar* panic_toolbar = addToolBar(tr("panic"));         
+      panic_toolbar->setObjectName("panic");
+      panic_toolbar->addAction(panicAction);
+
+      QToolBar* transport_toolbar = addToolBar(tr("transport"));
+      transport_toolbar->setObjectName("transport");
+      transport_toolbar->addActions(transportAction->actions());
 
       //---------------------------------------------------
       //    master

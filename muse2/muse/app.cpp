@@ -874,7 +874,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       arrangerView = new ArrangerView(this);
       arrangerView->shareToolsAndMenu(true);
       connect(arrangerView, SIGNAL(closed()), SLOT(arrangerClosed()));
-      toplevels.push_back(Toplevel(Toplevel::ARRANGER, arrangerView));
+      toplevels.push_back(arrangerView);
       arrangerView->hide();
       arranger=arrangerView->getArranger();
       
@@ -1549,7 +1549,7 @@ void MusE::showMarker(bool flag)
             markerView = new MarkerView(this);
 
             connect(markerView, SIGNAL(closed()), SLOT(markerClosed()));
-            toplevels.push_back(Toplevel(Toplevel::MARKER, markerView));
+            toplevels.push_back(markerView);
             markerView->show();
             }
       markerView->setVisible(flag);
@@ -1747,7 +1747,7 @@ void MusE::openInScoreEdit(ScoreEdit* destination, PartList* pl, bool allInOne)
 	{
       destination = new ScoreEdit(this, 0, arranger->cursorValue());
       destination->show();
-      toplevels.push_back(Toplevel(Toplevel::SCORE, destination));
+      toplevels.push_back(destination);
       connect(destination, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(destination, SIGNAL(name_changed()), arrangerView, SLOT(scoreNamingChanged()));
       //connect(muse, SIGNAL(configChanged()), destination, SLOT(config_changed()));
@@ -1785,7 +1785,7 @@ void MusE::startPianoroll(PartList* pl, bool showDefaultCtrls)
       if(showDefaultCtrls)       // p4.0.12
         pianoroll->addCtrl();
       pianoroll->show();
-      toplevels.push_back(Toplevel(Toplevel::PIANO_ROLL, pianoroll));
+      toplevels.push_back(pianoroll);
       connect(pianoroll, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
       }
@@ -1806,7 +1806,7 @@ void MusE::startListEditor(PartList* pl)
       {
       ListEdit* listEditor = new ListEdit(pl);
       listEditor->show();
-      toplevels.push_back(Toplevel(Toplevel::LISTE, listEditor));
+      toplevels.push_back(listEditor);
       connect(listEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
       }
@@ -1819,7 +1819,7 @@ void MusE::startMasterEditor()
       {
       MasterEdit* masterEditor = new MasterEdit();
       masterEditor->show();
-      toplevels.push_back(Toplevel(Toplevel::MASTER, masterEditor));
+      toplevels.push_back(masterEditor);
       connect(masterEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       }
 
@@ -1831,7 +1831,7 @@ void MusE::startLMasterEditor()
       {
       LMaster* lmaster = new LMaster();
       lmaster->show();
-      toplevels.push_back(Toplevel(Toplevel::LMASTER, lmaster));
+      toplevels.push_back(lmaster);
       connect(lmaster, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(muse, SIGNAL(configChanged()), lmaster, SLOT(configChanged()));
       }
@@ -1855,7 +1855,7 @@ void MusE::startDrumEditor(PartList* pl, bool showDefaultCtrls)
       if(showDefaultCtrls)       // p4.0.12
         drumEditor->addCtrl();
       drumEditor->show();
-      toplevels.push_back(Toplevel(Toplevel::DRUM, drumEditor));
+      toplevels.push_back(drumEditor);
       connect(drumEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
       }
@@ -1879,7 +1879,7 @@ void MusE::startWaveEditor(PartList* pl)
       WaveEdit* waveEditor = new WaveEdit(pl);
       waveEditor->show();
       connect(muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
-      toplevels.push_back(Toplevel(Toplevel::WAVE, waveEditor));
+      toplevels.push_back(waveEditor);
       connect(waveEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       }
 
@@ -1936,7 +1936,7 @@ void MusE::startClipList(bool checked)
       if (clipListEdit == 0) {
             //clipListEdit = new ClipListEdit();
             clipListEdit = new ClipListEdit(this);
-            toplevels.push_back(Toplevel(Toplevel::CLIPLIST, clipListEdit));
+            toplevels.push_back(clipListEdit);
             connect(clipListEdit, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
             }
       clipListEdit->show();
@@ -1988,18 +1988,18 @@ void MusE::selectProject(QAction* act)
 void MusE::toplevelDeleted(TopWin* tl)
       {
       for (iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
-            if (i->object() == tl) {
+            if (*i == tl) {
                   
                   if (tl == currentMenuSharingTopwin)
                     setCurrentMenuSharingTopwin(NULL);
               
               
                   bool mustUpdateScoreMenus=false;
-                  switch(i->type()) {
-                        case Toplevel::MARKER:
-                        case Toplevel::ARRANGER:
+                  switch(tl->type()) {
+                        case TopWin::MARKER:
+                        case TopWin::ARRANGER:
                               break;
-                        case Toplevel::CLIPLIST:
+                        case TopWin::CLIPLIST:
                               // ORCAN: This needs to be verified. aid2 used to correspond to Cliplist:
                               //menu_audio->setItemChecked(aid2, false);
                               viewCliplistAction->setChecked(false);  
@@ -2008,15 +2008,18 @@ void MusE::toplevelDeleted(TopWin* tl)
 
                         // the following editors can exist in more than
                         // one instantiation:
-                        case Toplevel::PIANO_ROLL:
-                        case Toplevel::LISTE:
-                        case Toplevel::DRUM:
-                        case Toplevel::MASTER:
-                        case Toplevel::WAVE:
-                        case Toplevel::LMASTER:
+                        case TopWin::PIANO_ROLL:
+                        case TopWin::LISTE:
+                        case TopWin::DRUM:
+                        case TopWin::MASTER:
+                        case TopWin::WAVE:
+                        case TopWin::LMASTER:
                               break;
-                        case Toplevel::SCORE:
+                        case TopWin::SCORE:
                               mustUpdateScoreMenus=true;
+                        
+                        case TopWin::LAST_ENTRY: //to avoid a warning
+                          break;
                         }
                   toplevels.erase(i);
                   if (mustUpdateScoreMenus)
@@ -2622,21 +2625,24 @@ bool MusE::clearSong(bool clear_all)
 
 again:
       for (iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
-            Toplevel tl = *i;
-            switch (tl.type()) {
-                  case Toplevel::CLIPLIST:
-                  case Toplevel::MARKER:
-                  case Toplevel::ARRANGER:
+            TopWin* tl = *i;
+            switch (tl->type()) {
+                  case TopWin::CLIPLIST:
+                  case TopWin::MARKER:
+                  case TopWin::ARRANGER:
                         break;
-                  case Toplevel::PIANO_ROLL:
-                  case Toplevel::SCORE:
-                  case Toplevel::LISTE:
-                  case Toplevel::DRUM:
-                  case Toplevel::MASTER:
-                  case Toplevel::WAVE:
-                  case Toplevel::LMASTER:
-                        tl.object()->close();
+                  case TopWin::PIANO_ROLL:
+                  case TopWin::SCORE:
+                  case TopWin::LISTE:
+                  case TopWin::DRUM:
+                  case TopWin::MASTER:
+                  case TopWin::WAVE:
+                  case TopWin::LMASTER:
+                        tl->close();
                         goto again;
+                  
+                  case TopWin::LAST_ENTRY: //to avoid a warning
+                    break;
                   }
             }
       microSleep(100000);

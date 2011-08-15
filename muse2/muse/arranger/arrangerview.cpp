@@ -310,7 +310,7 @@ QActionGroup* populateAddTrack(QMenu* addTrack)
 //---------------------------------------------------------
 
 ArrangerView::ArrangerView(QWidget* parent)
-   : TopWin(parent, "arrangerview", Qt::Window)
+   : TopWin(TopWin::ARRANGER, parent, "arrangerview", Qt::Window)
 {
 	//setAttribute(Qt::WA_DeleteOnClose);
 	setWindowTitle(tr("MusE: Arranger"));
@@ -333,7 +333,6 @@ ArrangerView::ArrangerView(QWidget* parent)
 	QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
 	undo_tools->setObjectName("Undo/Redo tools");
 	undo_tools->addActions(undoRedo->actions());
-	addToolBar(undo_tools);
 
 
 	QToolBar* panic_toolbar = addToolBar(tr("panic"));         
@@ -759,9 +758,9 @@ void ArrangerView::updateScoreMenus()
 	const ToplevelList* toplevels=muse->getToplevels();
 
 	for (ToplevelList::const_iterator it=toplevels->begin(); it!=toplevels->end(); it++)
-		if (it->type()==Toplevel::SCORE)
+		if ((*it)->type()==TopWin::SCORE)
 		{
-			ScoreEdit* score = (ScoreEdit*) it->object();
+			ScoreEdit* score = dynamic_cast<ScoreEdit*>(*it);
 			
 			action=new QAction(score->get_name(), this);
 			connect(action, SIGNAL(activated()), scoreOneStaffPerTrackMapper, SLOT(map()));

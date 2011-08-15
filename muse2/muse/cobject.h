@@ -29,13 +29,23 @@ class TopWin : public QMainWindow
       Q_OBJECT
 
    public:
+      enum ToplevelType { PIANO_ROLL, LISTE, DRUM, MASTER, WAVE, 
+         LMASTER, CLIPLIST, MARKER, SCORE, ARRANGER,
+#ifdef PATCHBAY
+         M_PATCHBAY,
+#endif /* PATCHBAY */
+         LAST_ENTRY
+         };
+
+      ToplevelType type() const { return _type; }
+
+
       virtual void readStatus(Xml&);
       virtual void writeStatus(int, Xml&) const;
       
       bool isMdiWin();
 
-      TopWin(QWidget* parent=0, const char* name=0,
-         Qt::WindowFlags f = Qt::Window);
+      TopWin(ToplevelType t, QWidget* parent=0, const char* name=0, Qt::WindowFlags f = Qt::Window);
          
       bool sharesToolsAndMenu() { return _sharesToolsAndMenu; }
       void shareToolsAndMenu(bool);
@@ -45,6 +55,8 @@ class TopWin : public QMainWindow
       QToolBar* addToolBar(const QString& title);
          
   private:
+      ToplevelType _type;
+
       QMdiSubWindow* mdisubwin;
       bool _sharesToolsAndMenu;
       std::list<QToolBar*> _toolbars;
@@ -70,31 +82,8 @@ class TopWin : public QMainWindow
       void toolsAndMenuSharingChanged(bool);
       };
 
-//---------------------------------------------------------
-//   Toplevel
-//---------------------------------------------------------
 
-class Toplevel {
-   public:
-      enum ToplevelType { PIANO_ROLL, LISTE, DRUM, MASTER, WAVE, 
-         LMASTER, CLIPLIST, MARKER, SCORE, ARRANGER
-#ifdef PATCHBAY
-         , M_PATCHBAY
-#endif /* PATCHBAY */
-         };
-      Toplevel(ToplevelType t, TopWin* obj) {
-            _type = t;
-            _object = obj;
-            }
-      ToplevelType type() const { return _type; }
-      TopWin* object()   const { return _object; }
-      
-   private:
-      ToplevelType _type;
-      TopWin* _object;
-      };
-
-typedef std::list <Toplevel> ToplevelList;
+typedef std::list <TopWin*> ToplevelList;
 typedef ToplevelList::iterator iToplevel;
 typedef ToplevelList::const_iterator ciToplevel;
 

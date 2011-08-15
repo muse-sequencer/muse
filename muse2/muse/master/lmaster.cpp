@@ -114,7 +114,7 @@ void LMaster::songChanged(int type)
 //---------------------------------------------------------
 
 LMaster::LMaster()
-   : MidiEditor(0, 0, 0)
+   : MidiEditor(TopWin::LMASTER, 0, 0, 0)
       {
       pos_editor = 0;
       tempo_editor = 0;
@@ -160,11 +160,13 @@ LMaster::LMaster()
 
       connect(signalMapper, SIGNAL(mapped(int)), SLOT(cmd(int)));
 
-      //---------ToolBar----------------------------------
-      tools = addToolBar(tr("Master tools"));
-      tools->addActions(undoRedo->actions());
+      // Toolbars ---------------------------------------------------------
+      QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
+      undo_tools->setObjectName("Undo/Redo tools");
+      undo_tools->addActions(undoRedo->actions());
 
       QToolBar* edit = addToolBar(tr("Edit tools"));
+      edit->setObjectName("Master List Edit Tools");
       QToolButton* tempoButton = new QToolButton();
       QToolButton* timeSigButton = new QToolButton();
       QToolButton* keyButton = new QToolButton();
@@ -178,6 +180,14 @@ LMaster::LMaster()
       edit->addWidget(timeSigButton);
       edit->addWidget(keyButton);
       
+      QToolBar* panic_toolbar = addToolBar(tr("panic"));         
+      panic_toolbar->setObjectName("panic");
+      panic_toolbar->addAction(panicAction);
+
+      QToolBar* transport_toolbar = addToolBar(tr("transport"));
+      transport_toolbar->setObjectName("transport");
+      transport_toolbar->addActions(transportAction->actions());
+
       ///Q3Accel* qa = new Q3Accel(this);
       ///qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
       ///qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Y), song, SLOT(redo()));

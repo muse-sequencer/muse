@@ -151,7 +151,7 @@ QByteArray ScoreEdit::default_toolbar_state;
 //---------------------------------------------------------
 
 ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
-   : TopWin(parent, name)
+   : TopWin(TopWin::SCORE, parent, name)
 {
 	setAttribute(Qt::WA_DeleteOnClose);
 	setFocusPolicy(Qt::StrongFocus);

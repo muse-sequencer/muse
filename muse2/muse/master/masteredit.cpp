@@ -82,7 +82,7 @@ void MasterEdit::songChanged(int type)
 //---------------------------------------------------------
 
 MasterEdit::MasterEdit()
-   : MidiEditor(_rasterInit, 0)
+   : MidiEditor(TopWin::MASTER, _rasterInit, 0)
       {
       setWindowTitle(tr("MusE: Mastertrack"));
       _raster = 0;      // measure
@@ -96,10 +96,19 @@ MasterEdit::MasterEdit()
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
       settingsMenu->addAction(subwinAction);
 
-      //---------ToolBar----------------------------------
-      
-      tools = addToolBar(tr("Master tools"));
-      tools->addActions(undoRedo->actions());
+      // Toolbars ---------------------------------------------------------
+      QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
+      undo_tools->setObjectName("Undo/Redo tools");
+      undo_tools->addActions(undoRedo->actions());
+
+
+      QToolBar* panic_toolbar = addToolBar(tr("panic"));         
+      panic_toolbar->setObjectName("panic");
+      panic_toolbar->addAction(panicAction);
+
+      QToolBar* transport_toolbar = addToolBar(tr("transport"));
+      transport_toolbar->setObjectName("transport");
+      transport_toolbar->addActions(transportAction->actions());
 
       EditToolBar* tools2 = new EditToolBar(this, PointerTool | PencilTool | RubberTool);
       addToolBar(tools2);

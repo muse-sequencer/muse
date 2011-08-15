@@ -19,9 +19,11 @@
 
 using std::list;
 
-TopWin::TopWin(QWidget* parent, const char* name, Qt::WindowFlags f)
+TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlags f)
                                                : QMainWindow(parent, f)
       {
+      _type=t;
+      
       setObjectName(QString(name));
       //setAttribute(Qt::WA_DeleteOnClose);
       // Allow multiple rows.  Tim.

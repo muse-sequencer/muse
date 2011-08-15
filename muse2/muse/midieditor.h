@@ -63,7 +63,7 @@ class MidiEditor : public TopWin  {
       void curDrumInstrumentChanged(int);
 
    public:
-      MidiEditor(int, PartList*,
+      MidiEditor(ToplevelType t, int, PartList*,
          QWidget* parent = 0, const char* name = 0);
       ~MidiEditor();
 
