@@ -357,6 +357,8 @@ class MusE : public QMainWindow
       
       const ToplevelList* getToplevels() { return &toplevels; }
       
+      TopWin* getCurrentMenuSharingTopwin() { return currentMenuSharingTopwin; }
+      
 #ifdef HAVE_LASH
       void lash_idle_cb ();
 #endif

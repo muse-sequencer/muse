@@ -13,6 +13,7 @@
 
 #include <QMainWindow>
 #include <list>
+#include <QByteArray>
 
 class QMdiSubWindow;
 class QFocusEvent;
@@ -29,12 +30,12 @@ class TopWin : public QMainWindow
       Q_OBJECT
 
    public:
-      enum ToplevelType { PIANO_ROLL, LISTE, DRUM, MASTER, WAVE, 
-         LMASTER, CLIPLIST, MARKER, SCORE, ARRANGER,
+      enum ToplevelType { PIANO_ROLL=0, LISTE, DRUM, MASTER, WAVE, //there shall be no
+         LMASTER, CLIPLIST, MARKER, SCORE, ARRANGER,               //gaps in the enum!
 #ifdef PATCHBAY
          M_PATCHBAY,
 #endif /* PATCHBAY */
-         LAST_ENTRY
+         TOPLEVELTYPE_LAST_ENTRY //this has to be always the last entry
          };
 
       ToplevelType type() const { return _type; }
@@ -42,6 +43,10 @@ class TopWin : public QMainWindow
 
       virtual void readStatus(Xml&);
       virtual void writeStatus(int, Xml&) const;
+
+      static void readConfiguration(ToplevelType, Xml&);
+      static void writeConfiguration(ToplevelType, int, Xml&);
+      
       
       bool isMdiWin();
 
@@ -55,8 +60,6 @@ class TopWin : public QMainWindow
       QToolBar* addToolBar(const QString& title);
          
   private:
-      ToplevelType _type;
-
       QMdiSubWindow* mdisubwin;
       bool _sharesToolsAndMenu;
       std::list<QToolBar*> _toolbars;
@@ -68,15 +71,30 @@ class TopWin : public QMainWindow
       void addToolBar(Qt::ToolBarArea, QToolBar*);
 
       virtual QMdiSubWindow* createMdiWrapper();
+      
 
   protected:
       QAction* subwinAction;
+
+      ToplevelType _type;
+
+      static int _widthInit[TOPLEVELTYPE_LAST_ENTRY];
+      static int _heightInit[TOPLEVELTYPE_LAST_ENTRY];
+      static QByteArray _toolbarNonsharedInit[TOPLEVELTYPE_LAST_ENTRY];
+      static QByteArray _toolbarSharedInit[TOPLEVELTYPE_LAST_ENTRY];
+      static bool initInited;
+      
+      void initTopwinState();
+
+      bool initalizing; //if true, no state is saved
   
   public slots:
       virtual void hide();
       virtual void show();
       virtual void setVisible(bool);
       void setIsMdiWin(bool);
+      void restoreMainwinState();
+      void storeInitialState();
   
   signals:
       void toolsAndMenuSharingChanged(bool);

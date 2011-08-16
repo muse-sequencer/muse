@@ -62,11 +62,8 @@ static const char* map_file_save_pattern[] = {
 */      
 
 int DrumEdit::_rasterInit = 96;
-int DrumEdit::_widthInit = 600;
-int DrumEdit::_heightInit = 400;
 int DrumEdit::_dlistWidthInit = 50;
 int DrumEdit::_dcanvasWidthInit = 300;
-QByteArray DrumEdit::_toolbarInit;
 
 static const int xscale = -10;
 static const int yscale = 1;
@@ -159,8 +156,9 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
    : MidiEditor(TopWin::DRUM, _rasterInit, pl, parent, name)
       {
       setFocusPolicy(Qt::StrongFocus);
+      resize(_widthInit[_type], _heightInit[_type]);
+
       split1w1 = 0;
-      resize(_widthInit, _heightInit);
       selPart  = 0;
       QSignalMapper *signalMapper = new QSignalMapper(this);
       
@@ -485,9 +483,6 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
 
       connect(ctrl, SIGNAL(clicked()), SLOT(addCtrl()));
 
-      if (!_toolbarInit.isEmpty())
-            restoreState(_toolbarInit);
-
       QClipboard* cb = QApplication::clipboard();
       connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
 
@@ -510,10 +505,10 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
 
       if(canvas->track())
         toolbar->setSolo(canvas->track()->solo());
-
-      QSettings settings("MusE", "MusE-qt");
-      //restoreGeometry(settings.value("Drumedit/geometry").toByteArray());
-      restoreState(settings.value("Drumedit/windowState").toByteArray());
+      
+      
+      initTopwinState();
+      initalizing=false;
       }
 
 //---------------------------------------------------------
@@ -764,16 +759,12 @@ void DrumEdit::readConfiguration(Xml& xml)
                   case Xml::TagStart:
                         if (tag == "raster")
                               _rasterInit = xml.parseInt();
-                        else if (tag == "width")
-                              _widthInit = xml.parseInt();
-                        else if (tag == "height")
-                              _heightInit = xml.parseInt();
                         else if (tag == "dcanvaswidth")
                               _dcanvasWidthInit = xml.parseInt();
                         else if (tag == "dlistwidth")
                               _dlistWidthInit = xml.parseInt();
-                        else if (tag == "toolbars")
-                              _toolbarInit = QByteArray::fromHex(xml.parse1().toAscii());
+                        else if (tag == "topwin")
+                              TopWin::readConfiguration(DRUM, xml);
                         else
                               xml.unknown("DrumEdit");
                         break;
@@ -795,11 +786,9 @@ void DrumEdit::writeConfiguration(int level, Xml& xml)
       {
       xml.tag(level++, "drumedit");
       xml.intTag(level, "raster", _rasterInit);
-      xml.intTag(level, "width", _widthInit);
-      xml.intTag(level, "height", _heightInit);
       xml.intTag(level, "dlistwidth", _dlistWidthInit);
       xml.intTag(level, "dcanvaswidth", _dcanvasWidthInit);
-      xml.strTag(level, "toolbars", _toolbarInit.toHex().data());
+      TopWin::writeConfiguration(DRUM, level,xml);
       xml.tag(level, "/drumedit");
       }
 
@@ -1048,37 +1037,7 @@ void DrumEdit::newCanvasWidth(int w)
       updateHScrollRange();
       }
 
-//---------------------------------------------------------
-//   resizeEvent
-//---------------------------------------------------------
-
-void DrumEdit::resizeEvent(QResizeEvent* ev)
-      {
-      QWidget::resizeEvent(ev);
-      storeInitialState();
       //TODO: Make the dlist not expand/shrink, but the canvas instead
-      }
-
-//---------------------------------------------------------
-//   focusOutEvent
-//---------------------------------------------------------
-
-void DrumEdit::focusOutEvent(QFocusEvent* ev)
-      {
-      QWidget::focusOutEvent(ev);
-      storeInitialState();
-      }
-
-//---------------------------------------------------------
-//   storeInitialState
-//---------------------------------------------------------
-
-void DrumEdit::storeInitialState()
-      {
-      _widthInit = width();
-      _heightInit = height();
-      _toolbarInit=saveState();
-      }
 
 
 //---------------------------------------------------------

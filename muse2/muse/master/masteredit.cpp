@@ -35,9 +35,6 @@
 #include <QMenu>
 
 int MasterEdit::_rasterInit = 0;
-int MasterEdit::_widthInit = 600;
-int MasterEdit::_heightInit = 400;
-QByteArray MasterEdit::_toolbarInit;
 
 //---------------------------------------------------------
 //   closeEvent
@@ -86,8 +83,8 @@ MasterEdit::MasterEdit()
       {
       setWindowTitle(tr("MusE: Mastertrack"));
       _raster = 0;      // measure
+      resize(_widthInit[_type], _heightInit[_type]);
       setMinimumSize(400, 300);
-      resize(_widthInit, _heightInit);
 
       //---------Pulldown Menu----------------------------
 //      QPopupMenu* file = new QPopupMenu(this);
@@ -247,8 +244,8 @@ MasterEdit::MasterEdit()
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
       connect(canvas, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
 
-      if (!_toolbarInit.isEmpty())
-            restoreState(_toolbarInit);      
+      initTopwinState();
+      initalizing=false;
       }
 
 //---------------------------------------------------------
@@ -337,12 +334,8 @@ void MasterEdit::readConfiguration(Xml& xml)
                   case Xml::TagStart:
                         if (tag == "raster")
                               _rasterInit = xml.parseInt();
-                        else if (tag == "width")
-                              _widthInit = xml.parseInt();
-                        else if (tag == "height")
-                              _heightInit = xml.parseInt();
-                        else if (tag == "toolbars")
-                              _toolbarInit = QByteArray::fromHex(xml.parse1().toAscii());
+                        else if (tag == "topwin")
+                              TopWin::readConfiguration(MASTER, xml);
                         else
                               xml.unknown("MasterEdit");
                         break;
@@ -363,9 +356,7 @@ void MasterEdit::writeConfiguration(int level, Xml& xml)
       {
       xml.tag(level++, "masteredit");
       xml.intTag(level, "raster", _rasterInit);
-      xml.intTag(level, "width", _widthInit);
-      xml.intTag(level, "height", _heightInit);
-      xml.strTag(level, "toolbars", _toolbarInit.toHex().data());
+      TopWin::writeConfiguration(MASTER, level, xml);
       xml.tag(level, "/masteredit");
       }
 
@@ -434,34 +425,3 @@ void MasterEdit::setTempo(int val)
       }
 
 
-//---------------------------------------------------------
-//   resizeEvent
-//---------------------------------------------------------
-
-void MasterEdit::resizeEvent(QResizeEvent* ev)
-      {
-      QWidget::resizeEvent(ev);
-      storeInitialState();
-      }
-
-//---------------------------------------------------------
-//   focusOutEvent
-//---------------------------------------------------------
-
-void MasterEdit::focusOutEvent(QFocusEvent* ev)
-      {
-      QWidget::focusOutEvent(ev);
-      storeInitialState();
-      }
-
-
-//---------------------------------------------------------
-//   storeInitialState
-//---------------------------------------------------------
-
-void MasterEdit::storeInitialState()
-      {
-      _widthInit = width();
-      _heightInit = height();
-      _toolbarInit=saveState();
-      }

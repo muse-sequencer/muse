@@ -81,10 +81,6 @@ class ScoreEdit : public TopWin
 	Q_OBJECT
 	private:
 		virtual void closeEvent(QCloseEvent*);
-		virtual void resizeEvent(QResizeEvent*);
-		virtual void focusOutEvent(QFocusEvent*);
-		
-		void store_initial_state();
 		
 		void init_name();
 
@@ -150,8 +146,6 @@ class ScoreEdit : public TopWin
 		bool apply_velo;
 		
 		static set<QString> names;
-		static int width_init, height_init;
-		static QByteArray default_toolbar_state;
 		
 		QString name;
 		

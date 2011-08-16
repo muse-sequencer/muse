@@ -53,10 +53,7 @@
 #include "mtrackinfo.h"
 
 int PianoRoll::_rasterInit = 96;
-int PianoRoll::_widthInit = 600;
-int PianoRoll::_heightInit = 400;
 int PianoRoll::colorModeInit = 0;
-QByteArray PianoRoll::_toolbarInit;
 
 static const int xscale = -10;
 static const int yscale = 1;
@@ -72,11 +69,12 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
    : MidiEditor(TopWin::PIANO_ROLL, _rasterInit, pl, parent, name)
       {
       deltaMode = false;
-      resize(_widthInit, _heightInit);
       selPart        = 0;
       _playEvents    = false;
       colorMode      = colorModeInit;
       
+      resize(_widthInit[_type], _heightInit[_type]);
+
       QSignalMapper* mapper = new QSignalMapper(this);
       QSignalMapper* colorMapper = new QSignalMapper(this);
       
@@ -473,9 +471,6 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       setFocusPolicy(Qt::StrongFocus);
       setEventColorMode(colorMode);
 
-      if (!_toolbarInit.isEmpty())
-            restoreState(_toolbarInit);
-
 
       QClipboard* cb = QApplication::clipboard();
       connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
@@ -503,10 +498,8 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
         toolbar->setSolo(canvas->track()->solo());
       }
 
-      QSettings settings("MusE", "MusE-qt");
-      //restoreGeometry(settings.value("Pianoroll/geometry").toByteArray());
-      restoreState(settings.value("Pianoroll/windowState").toByteArray());
-
+      initTopwinState();
+      initalizing=false;
       }
 
 //---------------------------------------------------------
@@ -814,12 +807,8 @@ void PianoRoll::readConfiguration(Xml& xml)
                               _rasterInit = xml.parseInt();
                         else if (tag == "colormode")
                               colorModeInit = xml.parseInt();
-                        else if (tag == "width")
-                              _widthInit = xml.parseInt();
-                        else if (tag == "height")
-                              _heightInit = xml.parseInt();
-                        else if (tag == "toolbars")
-                              _toolbarInit = QByteArray::fromHex(xml.parse1().toAscii());
+                        else if (tag == "topwin")
+                              TopWin::readConfiguration(PIANO_ROLL,xml);
                         else
                               xml.unknown("PianoRoll");
                         break;
@@ -840,10 +829,8 @@ void PianoRoll::writeConfiguration(int level, Xml& xml)
       {
       xml.tag(level++, "pianoroll");
       xml.intTag(level, "raster", _rasterInit);
-      xml.intTag(level, "width", _widthInit);
-      xml.intTag(level, "height", _heightInit);
       xml.intTag(level, "colormode", colorModeInit);
-      xml.strTag(level, "toolbars", _toolbarInit.toHex().data());
+      TopWin::writeConfiguration(PIANO_ROLL, level, xml);
       xml.etag(level, "pianoroll");
       }
 
@@ -1211,38 +1198,6 @@ void PianoRoll::setSpeaker(bool val)
       canvas->playEvents(_playEvents);
       }
 
-//---------------------------------------------------------
-//   resizeEvent
-//---------------------------------------------------------
-
-void PianoRoll::resizeEvent(QResizeEvent* ev)
-      {
-      QWidget::resizeEvent(ev);
-      storeInitialState();
-      }
-
-
-//---------------------------------------------------------
-//   focusOutEvent
-//---------------------------------------------------------
-
-void PianoRoll::focusOutEvent(QFocusEvent* ev)
-      {
-      QWidget::focusOutEvent(ev);
-      storeInitialState();
-      }
-
-
-//---------------------------------------------------------
-//   storeInitialState
-//---------------------------------------------------------
-
-void PianoRoll::storeInitialState()
-      {
-      _widthInit = width();
-      _heightInit = height();
-      _toolbarInit=saveState();
-      }
 
 
 /*

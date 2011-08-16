@@ -143,6 +143,8 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       connect(editor->len, SIGNAL(valueChanged(const Pos&)), SLOT(lenChanged(const Pos&)));
 
       updateList();
+      
+      initalizing=false;
       }
 
 ClipListEdit::~ClipListEdit()

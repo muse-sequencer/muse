@@ -587,6 +587,7 @@ ListEdit::ListEdit(PartList* pl)
       }
       
       initShortcuts();
+      initalizing=false;
       }
 
 //---------------------------------------------------------

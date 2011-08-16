@@ -1746,6 +1746,7 @@ void MusE::openInScoreEdit(ScoreEdit* destination, PartList* pl, bool allInOne)
 	if (destination==NULL) // if no destination given, create a new one
 	{
       destination = new ScoreEdit(this, 0, arranger->cursorValue());
+      destination->shareToolsAndMenu(true); //FINDMICHJETZT
       destination->show();
       toplevels.push_back(destination);
       connect(destination, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
@@ -2018,7 +2019,7 @@ void MusE::toplevelDeleted(TopWin* tl)
                         case TopWin::SCORE:
                               mustUpdateScoreMenus=true;
                         
-                        case TopWin::LAST_ENTRY: //to avoid a warning
+                        case TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
                           break;
                         }
                   toplevels.erase(i);
@@ -2641,7 +2642,7 @@ again:
                         tl->close();
                         goto again;
                   
-                  case TopWin::LAST_ENTRY: //to avoid a warning
+                  case TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
                     break;
                   }
             }
@@ -2956,7 +2957,15 @@ void MusE::findUnusedWaveFiles()
 void MusE::focusChanged(QWidget*, QWidget* now)
 {
   QWidget* ptr=now;
+
+  if (activeTopWin)
+    activeTopWin->storeInitialState();
   
+  if (currentMenuSharingTopwin && (currentMenuSharingTopwin!=activeTopWin))
+    currentMenuSharingTopwin->storeInitialState();
+
+
+
   while (ptr)
   {
     if ( (dynamic_cast<TopWin*>(ptr)!=0) || // *ptr is a TopWin or a derived class
@@ -2966,21 +2975,6 @@ void MusE::focusChanged(QWidget*, QWidget* now)
   }
   
   // ptr is either NULL, this or the pointer to a TopWin
-  /*if (ptr==this) FINDMICHJETZT
-  {
-    QMdiSubWindow* subwin=mdiArea->currentSubWindow();
-    if (subwin)
-    {
-      ptr=subwin->widget();
-      if (dynamic_cast<TopWin*>(ptr)==NULL)
-      {
-        printf("ERROR: THIS SHOULD NEVER HAPPEN: The currently active MdiSubWindow (%s) does not wrap a TopWin but a %s\n",subwin->windowTitle().toAscii().data(),typeid(*ptr).name());
-        ptr=NULL;
-      }
-    }
-    else
-      ptr=NULL;
-  }*/
   if (ptr!=this) // if the main win is selected, don't treat that as "none", but also don't handle it
   {
     TopWin* win=dynamic_cast<TopWin*>(ptr);
@@ -2994,28 +2988,6 @@ void MusE::focusChanged(QWidget*, QWidget* now)
   }
 }
 
-/* FINDMICHJETZT
-void MusE::focusChanged(QWidget* old, QWidget* now)
-{
-  if (now)
-  {
-    QWidget* ptr=now;
-    while (ptr)
-    {
-      if (dynamic_cast<QMainWindow*>(ptr)!=0) break;
-      ptr=dynamic_cast<QWidget*>(ptr->parent()); //in the unlikely case that ptr is a QObject, this returns NULL, which stops the loop
-    }
-    
-    if (ptr)
-      printf("focus changed to MainWin %p (%s)\n",ptr,ptr->windowTitle().toAscii().data());
-    else
-      printf("focus changed to something which has no MainWin: %p (%s)\n",now, typeid(*now).name());
-  }
-  else
-    printf("focus lost\n");
-}
-*/
-
 
 void MusE::activeTopWinChangedSlot(TopWin* win)
 {
@@ -3025,19 +2997,6 @@ void MusE::activeTopWinChangedSlot(TopWin* win)
   {
     if (debugMsg) printf("  that's out of the MDI area\n");
     menuBar()->setFocus(Qt::MenuBarFocusReason);
-  }
-  if (win && false) //FINDMICHJETZT
-  {
-    if (win->isMdiWin())
-    {
-      if (debugMsg) printf("  that's a mdiSubWin\n");
-    }
-    else
-    {
-      if (debugMsg) printf("  that's a free floating window\n");
-      mdiArea->setActiveSubWindow(NULL);
-      mdiArea->clearFocus();
-    }
   }
   
   if (win && (win->sharesToolsAndMenu()))
@@ -3056,27 +3015,38 @@ void MusE::setCurrentMenuSharingTopwin(TopWin* win)
   
   if (win!=currentMenuSharingTopwin)
   {
+    TopWin* previousMenuSharingTopwin = currentMenuSharingTopwin;
+    currentMenuSharingTopwin = NULL;
+    
     if (debugMsg) printf("MENU SHARING TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toAscii().data() : "<None>", win);
     
     // empty our toolbars
-    if (currentMenuSharingTopwin)
+    if (previousMenuSharingTopwin)
     {
       for (list<QToolBar*>::iterator it = foreignToolbars.begin(); it!=foreignToolbars.end(); it++)
-        if (*it) removeToolBar(*it); // this does not delete *it, which is good
+        if (*it) 
+        {
+          if (debugMsg) printf("  removing sharer's toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
+          removeToolBar(*it); // this does not delete *it, which is good
+          (*it)->setParent(NULL);
+        }
 
       foreignToolbars.clear();
     }
     else
     {
       for (list<QToolBar*>::iterator it = optionalToolbars.begin(); it!=optionalToolbars.end(); it++)
-        if (*it) removeToolBar(*it); // this does not delete *it, which is good
+        if (*it) 
+        {
+          if (debugMsg) printf("  removing optional toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
+          removeToolBar(*it); // this does not delete *it, which is good
+          (*it)->setParent(NULL);
+        }
     }
     
     //empty our menu
     menuBar()->clear();
-    
-    currentMenuSharingTopwin=win;
-    
+        
     
     
     
@@ -3116,6 +3086,14 @@ void MusE::setCurrentMenuSharingTopwin(TopWin* win)
 
     for (list<QMenu*>::iterator it = trailingMenus.begin(); it!=trailingMenus.end(); it++)
       menuBar()->addMenu(*it);
+      
+
+    currentMenuSharingTopwin=win;
+    
+    printf ("FINDMICH: changing sharing win DONE.\n");
+    
+    if (win)
+      win->restoreMainwinState(); //restore toolbar positions in main window
   }
 }
 

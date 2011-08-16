@@ -188,7 +188,7 @@ MarkerView::MarkerView(QWidget* parent)
       edit->addAction(markerAdd);
       edit->addAction(markerDelete);
 
-      QToolBar* panic_toolbar = addToolBar(tr("panic"));         
+      QToolBar* panic_toolbar = addToolBar(tr("panic"));
       panic_toolbar->setObjectName("panic");
       panic_toolbar->addAction(panicAction);
 
@@ -284,7 +284,8 @@ MarkerView::MarkerView(QWidget* parent)
       // bug: 2811156  	 Softsynth GUI unclosable with XFCE4 (and a few others)
       show();
       hide();
-
+      
+      initalizing=false;
       }
 
 //---------------------------------------------------------
