@@ -25,9 +25,6 @@
 #include "ctrlpanel.h"
 #include "midiedit/drummap.h"
 
-extern void drawTickRaster(QPainter& p, int x, int y,
-   int w, int h, int quant);
-
 static MidiCtrlValList veloList(CTRL_VELOCITY);    // dummy
 
 //---------------------------------------------------------

@@ -229,7 +229,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       signalMapper->setMapping(nextAction, DrumCanvas::CMD_SELECT_NEXT_PART);
 
       // Functions
-      menuFunctions = menuBar()->addMenu(tr("&Functions"));
+      menuFunctions = menuBar()->addMenu(tr("Fu&nctions"));
       
       menuFunctions->setTearOffEnabled(true);
       

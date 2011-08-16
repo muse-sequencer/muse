@@ -37,6 +37,7 @@
 #include "song.h"
 #include "audio.h"
 #include "functions.h"
+#include "gconfig.h"
 
 #define CHORD_TIMEOUT 75
 
@@ -101,7 +102,7 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
 int PianoCanvas::pitch2y(int pitch) const
       {
       int tt[] = {
-            5, 12, 19, 26, 33, 44, 51, 58, 64, 71, 78, 85
+            5, 13, 19, 26, 34, 44, 52, 58, 65, 71, 78, 85
             };
       int y = (75 * KH) - (tt[pitch%12] + (7 * KH) * (pitch/12));
       if (y < 0)
@@ -146,9 +147,23 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
       QRect r = item->bbox();
       if(!virt())
         r.moveCenter(map(item->pos()));
-      r = r.intersected(rect);
-      if(!r.isValid())
+      
+      //QRect rr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
+      QRect rr = map(rect);                      // Use our own map instead.        
+      QRect mer = map(r);                              
+      
+      ///r = r.intersected(rect);
+      //QRect rr = r & rect;
+      ///if(!r.isValid())
+      //if(!rr.isValid())
+      //  return;
+      QRect mr = rr & mer;
+      //if(!mr.isValid())
+      if(mr.isNull())
         return;
+      
+      //p.save();
+      
       p.setPen(Qt::black);
       struct Triple {
             int r, g, b;
@@ -169,25 +184,25 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
             { 0xff, 0xbf, 0x7a }
             };
 
+      QColor color;
       NEvent* nevent   = (NEvent*) item;
       Event event = nevent->event();
       if (nevent->part() != curPart){
             if(item->isMoving()) 
-              p.setBrush(Qt::gray);
+              color = Qt::gray;
             else if(item->isSelected()) 
-              p.setBrush(Qt::black);
+              color = Qt::black;
             else  
-              p.setBrush(Qt::lightGray);
+              color = Qt::lightGray;
       }      
       else {
             if (item->isMoving()) {
-                    p.setBrush(Qt::gray);
+                    color = Qt::gray;
                 }
             else if (item->isSelected()) {
-                  p.setBrush(Qt::black);
+                  color = Qt::black;
                   }
             else {
-                  QColor color;
                   color.setRgb(0, 0, 255);
                   switch(colorMode) {
                         case 0:
@@ -208,10 +223,50 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
                               }
                               break;
                         }
-                  p.setBrush(color);
                   }
             }
-      p.drawRect(r);
+      
+      bool wmtxen = p.worldMatrixEnabled();
+      p.setWorldMatrixEnabled(false);
+      int mx = mr.x();
+      int my = mr.y();
+      int mw = mr.width();
+      int mh = mr.height();
+      int mex = mer.x();
+      int mey = mer.y();
+      int mew = mer.width();
+      int meh = mer.height();
+      //int mfx = mx;
+      //if(mfx == mex) mfx += 1;
+      //int mfy = my;
+      //if(mfy == mey) mfy += 1;
+      //int mfw = mw;
+      //if(mfw == mew) mfw -= 1;
+      //if(mfx == mex) mfw -= 1;
+      //int mfh = mh;
+      //if(mfh == meh) mfh -= 1;
+      //if(mfy == mey) mfh -= 1;
+      color.setAlpha(config.globalAlphaBlend);
+      //QLinearGradient gradient(mex + 1, mey + 1, mex + 1, mey + meh - 2);    // Inside the border
+      //gradient.setColorAt(0, color);
+      //gradient.setColorAt(1, color.darker());
+      //QBrush brush(gradient);
+      QBrush brush(color);
+      p.fillRect(mr, brush);       
+      //p.fillRect(mfx, mfy, mfw, mfh, brush);       
+      
+      if(mex >= mx && mex <= mx + mw)
+        p.drawLine(mex, my, mex, my + mh - 1);                       // The left edge
+      if(mex + mew >= mx && mex + mew <= mx + mw)
+        p.drawLine(mex + mew, my, mex + mew, my + mh - 1);           // The right edge
+      if(mey >= my && mey <= my + mh)
+        p.drawLine(mx, mey, mx + mw - 1, mey);                       // The top edge
+      if(mey + meh >= my && mey + meh <= my + mh)
+        p.drawLine(mx, mey + meh - 1, mx + mw - 1, mey + meh - 1);   // The bottom edge
+      
+      //p.setWorldMatrixEnabled(true);
+      p.setWorldMatrixEnabled(wmtxen);
+      //p.restore();
       }
 
 //---------------------------------------------------------
@@ -314,7 +369,7 @@ Undo PianoCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dty
   for(iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
   {
     Part* opart = ip2c->first;
-    int diff = ip2c->second.xdiff;
+    //int diff = ip2c->second.xdiff;
     
     if (opart->hasHiddenEvents())
     {
@@ -682,48 +737,6 @@ void PianoCanvas::pianoReleased(int pitch, bool)
       }
 
 //---------------------------------------------------------
-//   drawTickRaster
-//---------------------------------------------------------
-
-void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
-      {
-      int bar1, bar2, beat;
-      unsigned tick;
-      AL::sigmap.tickValues(x, &bar1, &beat, &tick);
-      AL::sigmap.tickValues(x+w, &bar2, &beat, &tick);
-      ++bar2;
-      int y2 = y + h;
-      for (int bar = bar1; bar < bar2; ++bar) {
-            unsigned x = AL::sigmap.bar2tick(bar, 0, 0);
-            p.setPen(Qt::black);
-            p.drawLine(x, y, x, y2);
-            int z, n;
-            AL::sigmap.timesig(x, z, n);
-            ///int q = p.xForm(QPoint(raster, 0)).x() - p.xForm(QPoint(0, 0)).x();
-            int q = p.combinedTransform().map(QPoint(raster, 0)).x() - p.combinedTransform().map(QPoint(0, 0)).x();
-            int qq = raster;
-            if (q < 8)        // grid too dense
-                  qq *= 2;
-            p.setPen(Qt::lightGray);
-            if (raster>=4) {
-                        int xx = x + qq;
-                        int xxx = AL::sigmap.bar2tick(bar, z, 0);
-                        while (xx <= xxx) {
-                               p.drawLine(xx, y, xx, y2);
-                               xx += qq;
-                               }
-                        xx = xxx;
-                        }
-            p.setPen(Qt::gray);
-            for (int beat = 1; beat < z; beat++) {
-                        int xx = AL::sigmap.bar2tick(bar, beat, 0);
-                        p.drawLine(xx, y, xx, y2);
-                        }
-
-            }
-      }
-
-//---------------------------------------------------------
 //   draw
 //---------------------------------------------------------
 
@@ -734,31 +747,63 @@ void PianoCanvas::drawCanvas(QPainter& p, const QRect& rect)
       int w = rect.width();
       int h = rect.height();
 
+      // Changed to draw in device coordinate space instead of virtual, transformed space.     Tim. p4.0.30  
+      
+      //int mx = mapx(x);
+      //int my = mapy(y);
+      //int mw = mapx(x + w) - mx;
+      //int mw = mapx(x + w) - mx - 1;
+      //int mh = mapy(y + h) - my;
+      //int mh = mapy(y + h) - my - 1;
+      
+      // p.save();
+      // FIXME Can't get horizontal lines quite right yet. Draw in virtual space for now...
+      ///p.setWorldMatrixEnabled(false);
+      
       //---------------------------------------------------
       //  horizontal lines
       //---------------------------------------------------
 
       int yy  = ((y-1) / KH) * KH + KH;
+      //int yy  = my + KH;
+      //int yy  = ((my-1) / KH) * KH + KH;
+      //int yoff = -rmapy(yorg) - ypos;
       int key = 75 - (yy / KH);
+      
+      //printf("PianoCanvas::drawCanvas x:%d y:%d w:%d h:%d mx:%d my:%d mw:%d mh:%d yy:%d key:%d\n", x, y, w, h, mx, my, mw, mh, yy, key);  
+      
       for (; yy < y + h; yy += KH) {
+      //for (; yy + yoff < my + mh; yy += KH) {
+      //for (; yy < my + mh; yy += KH) {
             switch (key % 7) {
                   case 0:
                   case 3:
                         p.setPen(Qt::black);
                         p.drawLine(x, yy, x + w, yy);
+                        //p.drawLine(mx, yy + yoff, mx + mw, yy + yoff);
+                        //p.drawLine(mx, yy, mx + mw, yy);
                         break;
                   default:
                         p.fillRect(x, yy-3, w, 6, QBrush(QColor(230,230,230)));
+                        //p.fillRect(mx, yy-3 + yoff, mw, 6, QBrush(QColor(230,230,230)));
+                        //p.fillRect(mx, yy-3, mw, 6, QBrush(QColor(230,230,230)));
                         break;
                   }
             --key;
             }
-
+      //p.restore();
+      ///p.setWorldMatrixEnabled(true);
+      
+      //p.setWorldMatrixEnabled(false);
+      
       //---------------------------------------------------
       // vertical lines
       //---------------------------------------------------
 
       drawTickRaster(p, x, y, w, h, editor->raster());
+      
+      //p.restore();
+      //p.setWorldMatrixEnabled(true);
       }
 
 //---------------------------------------------------------

@@ -174,7 +174,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       
       connect(colorMapper, SIGNAL(mapped(int)), this, SLOT(eventColorModeChanged(int)));
       
-      menuFunctions = menuBar()->addMenu(tr("&Functions"));
+      menuFunctions = menuBar()->addMenu(tr("Fu&nctions"));
 
       menuFunctions->setTearOffEnabled(true);
       

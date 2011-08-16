@@ -1849,7 +1849,7 @@ void MusE::closeEvent(QCloseEvent* event)
             n = QMessageBox::warning(this, appName,
                tr("The current Project contains unsaved data\n"
                "Save Current Project?"),
-               tr("&Save"), tr("&Skip"), tr("&Cancel"), 0, 2);
+               tr("&Save"), tr("S&kip"), tr("&Cancel"), 0, 2);
             if (n == 0) {
                   if (!save())      // dont quit if save failed
                   {
@@ -3212,7 +3212,7 @@ bool MusE::clearSong(bool clear_all)
                tr("The current Project contains unsaved data\n"
                "Load overwrites current Project:\n"
                "Save Current Project?"),
-               tr("&Save"), tr("&Skip"), tr("&Abort"), 0, 2);
+               tr("&Save"), tr("S&kip"), tr("&Abort"), 0, 2);
             switch (n) {
                   case 0:
                         if (!save())      // abort if save failed
