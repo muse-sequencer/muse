@@ -419,7 +419,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 		menu_mapper->setMapping(set_name_action, CMD_SET_NAME);
   
 
-  QMenu* functions_menu = menuBar()->addMenu(tr("&Functions"));      
+  QMenu* functions_menu = menuBar()->addMenu(tr("Fu&nctions"));      
 	
 		func_quantize_action = functions_menu->addAction(tr("&Quantize"), menu_mapper, SLOT(map()));
 		func_notelen_action = functions_menu->addAction(tr("Change note &length"), menu_mapper, SLOT(map()));

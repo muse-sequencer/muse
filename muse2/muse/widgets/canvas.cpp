@@ -380,13 +380,20 @@ void Canvas::draw(QPainter& p, const QRect& rect)
       //    draw marker
       //---------------------------------------------------
 
-      int y2 = y + h;
+      //p.save();
+      bool wmtxen = p.worldMatrixEnabled();
+      p.setWorldMatrixEnabled(false);
+      
+      int my = mapy(y);
+      //int y2 = y + h;
+      int my2 = mapy(y + h);
       MarkerList* marker = song->marker();
       for (iMarker m = marker->begin(); m != marker->end(); ++m) {
             int xp = m->second.tick();
             if (xp >= x && xp < x+w) {
                   p.setPen(Qt::green);
-                  p.drawLine(xp, y, xp, y2);
+                  //p.drawLine(xp, y, xp, y2);
+                  p.drawLine(mapx(xp), my, mapx(xp), my2);
                   }
             }
 
@@ -395,15 +402,27 @@ void Canvas::draw(QPainter& p, const QRect& rect)
       //---------------------------------------------------
 
       p.setPen(Qt::blue);
+      int mx;
       if (pos[1] >= unsigned(x) && pos[1] < unsigned(x2)) {
-            p.drawLine(pos[1], y, pos[1], y2);
+            //p.drawLine(pos[1], y, pos[1], y2);
+            mx = mapx(pos[1]);
+            p.drawLine(mx, my, mx, my2);
             }
-      if (pos[2] >= unsigned(x) && pos[2] < unsigned(x2))
-            p.drawLine(pos[2], y, pos[2], y2);
+      if (pos[2] >= unsigned(x) && pos[2] < unsigned(x2)) {
+            //p.drawLine(pos[2], y, pos[2], y2);
+            mx = mapx(pos[2]);
+            p.drawLine(mx, my, mx, my2);
+            }
       p.setPen(Qt::red);
       if (pos[0] >= unsigned(x) && pos[0] < unsigned(x2)) {
-            p.drawLine(pos[0], y, pos[0], y2);
+            //p.drawLine(pos[0], y, pos[0], y2);
+            mx = mapx(pos[0]);
+            p.drawLine(mx, my, mx, my2);
             }
+      
+      //p.restore();
+      //p.setWorldMatrixEnabled(true);
+      p.setWorldMatrixEnabled(wmtxen);
       
       //---------------------------------------------------
       //    draw lasso

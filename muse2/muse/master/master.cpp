@@ -22,9 +22,6 @@
 #include "icons.h"
 #include "audio.h"
 
-extern void drawTickRaster(QPainter& p, int x, int y,
-   int w, int h, int quant);
-
 //---------------------------------------------------------
 //   Master
 //---------------------------------------------------------

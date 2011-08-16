@@ -115,7 +115,7 @@ class PartCanvas : public Canvas {
       //void drawMidiPart(QPainter&, const QRect& rect, EventList* events, MidiTrack*mt, const QRect& r, int pTick, int from, int to);
       void drawMidiPart(QPainter&, const QRect& rect, EventList* events, MidiTrack*mt, MidiPart*pt, const QRect& r, int pTick, int from, int to);
       Track* y2Track(int) const;
-      void drawAudioTrack(QPainter& p, const QRect& r, AudioTrack* track);
+      void drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, AudioTrack* track);
       void drawAutomation(QPainter& p, const QRect& r, AudioTrack* track);
       void drawTopItem(QPainter& p, const QRect& rect);
 

@@ -50,6 +50,7 @@ class View : public QWidget {
       virtual void draw(QPainter&, const QRect&) {}
       virtual void drawOverlay(QPainter&) {}
       virtual QRect overlayRect() const { return QRect(0, 0, 0, 0); }
+      virtual void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
 
       virtual void pdraw(QPainter&, const QRect&);
 
