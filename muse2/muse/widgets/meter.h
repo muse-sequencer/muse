@@ -2,6 +2,7 @@
 //  MusE
 //  Linux Music Editor
 //  $Id: meter.h,v 1.1.1.1.2.2 2009/05/03 04:14:00 terminator356 Exp $
+//  redesigned by oget on 2011/08/15
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
 //=========================================================
@@ -20,6 +21,41 @@ class Meter : public QFrame {
     Q_OBJECT
    public:
       enum MeterType {DBMeter, LinMeter};
+
+   protected:
+      QLinearGradient darkGradRed;
+      QColor dark_red_end;
+      QColor dark_red_begin;
+
+      QLinearGradient darkGradYellow;
+      QColor dark_yellow_end;
+      QColor dark_yellow_center;
+      QColor dark_yellow_begin;
+
+      QLinearGradient darkGradGreen;
+      QColor dark_green_end;
+      QColor dark_green_begin;
+
+      QLinearGradient lightGradRed;
+      QColor light_red_end;
+      QColor light_red_begin;
+
+      QLinearGradient lightGradYellow;
+      QColor light_yellow_end;
+      QColor light_yellow_center;
+      QColor light_yellow_begin;
+
+      QLinearGradient lightGradGreen;
+      QColor light_green_end;
+      QColor light_green_begin;
+
+      QLinearGradient maskGrad;
+      QColor mask_center;
+      QColor mask_edge;
+
+      QColor separator_color;;
+      QColor peak_color;
+
    private:
       MeterType mtype;
       bool overflow;
@@ -30,7 +66,6 @@ class Meter : public QFrame {
 
       void drawVU(QPainter& p, int, int, int);
 
-      
       void paintEvent(QPaintEvent*);
       void resizeEvent(QResizeEvent*);
       void mousePressEvent(QMouseEvent*);

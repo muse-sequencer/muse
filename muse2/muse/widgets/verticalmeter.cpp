@@ -2,11 +2,11 @@
 //  MusE
 //  Linux Music Editor
 //  $Id: meter.cpp,v 1.4.2.2 2009/05/03 04:14:00 terminator356 Exp $
+//  redesigned by oget on 2011/08/15
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include <stdio.h>
 #include <cmath>
 
 #include <QMouseEvent>
@@ -107,7 +107,7 @@ void VerticalMeter::setRange(double min, double max)
 //   paintEvent
 //---------------------------------------------------------
 
-void VerticalMeter::paintEvent(QPaintEvent* /*ev*/)
+void VerticalMeter::paintEvent(QPaintEvent* ev)
       {
       // TODO: Could make better use of event rectangle, for speed.
       
@@ -115,9 +115,15 @@ void VerticalMeter::paintEvent(QPaintEvent* /*ev*/)
       
       double range = maxScale - minScale;
 
+      /*
       int fw = frameWidth();
       int w  = width() - 2*fw;
       int h  = height() - 2*fw;
+      */
+
+      QRect rect = ev->rect();
+      int w = rect.width();
+      int h = rect.height();
       int xv;
 
 
@@ -139,8 +145,13 @@ void VerticalMeter::paintEvent(QPaintEvent* /*ev*/)
         xcenter = maxVal == 0 ? 0 : int(((maxScale - (fast_log10(0) * 20.0)) * w)/range);
       else
         xcenter = maxVal == 0 ? 0 : int(((0) * w)/range);
-      p.setPen(Qt::white);
+      p.setPen(peak_color);
       p.drawLine(xcenter, 0, xcenter, h);
+
+      // Draw the transparent layer on top of everything to give a 3d look
+      maskGrad.setStart(QPointF(0, 0));
+      maskGrad.setFinalStop(QPointF(0, h));
+      p.fillRect(0, 0, w, h, QBrush(maskGrad));
       }
 
 //---------------------------------------------------------
@@ -154,58 +165,92 @@ void VerticalMeter::drawVU(QPainter& p, int w, int h, int xv)
         double range = maxScale - minScale;
         int x1 = int((maxScale - redScale) * w / range);
         int x2 = int((maxScale - yellowScale) * w / range);
+
+        darkGradGreen.setStart(QPointF(x2, 0));
+        darkGradGreen.setFinalStop(QPointF(w, 0));
+        darkGradYellow.setStart(QPointF(x1, 0));
+        darkGradYellow.setFinalStop(QPointF(x2, 0));
+        darkGradRed.setStart(QPointF(0, 0));
+        darkGradRed.setFinalStop(QPointF(x1, 0));
+
+        lightGradGreen.setStart(QPointF(x2, 0));
+        lightGradGreen.setFinalStop(QPointF(w, 0));
+        lightGradYellow.setStart(QPointF(x1, 0));
+        lightGradYellow.setFinalStop(QPointF(x2, 0));
+        lightGradRed.setStart(QPointF(0, 0));
+        lightGradRed.setFinalStop(QPointF(x1, 0));
+
         
         if(xv < x1)
         {
           // Red section:
-          p.fillRect(0, 0,  xv, h,        QBrush(0x8e0000));     // dark red
-          p.fillRect(xv, 0, x1-xv, h,     QBrush(0xff0000));     // light red
+          p.fillRect(0, 0,  xv, h,        QBrush(darkGradRed));     // dark red
+          p.fillRect(xv, 0, x1-xv, h,     QBrush(lightGradRed));     // light red
           
           // Yellow section:
-          p.fillRect(x1, 0, x2-x1, h,     QBrush(0xffff00));     // light yellow
+          p.fillRect(x1, 0, x2-x1, h,     QBrush(lightGradYellow));     // light yellow
           
           // Green section:
-          p.fillRect(x2, 0, w-x2, h,      QBrush(0x00ff00));     // light green
+          p.fillRect(x2, 0, w-x2, h,      QBrush(lightGradGreen));     // light green
         }
         else
         if(xv < x2)
         {
           // Red section:
-          p.fillRect(0, 0,  x1, h,        QBrush(0x8e0000));     // dark red
+          p.fillRect(0, 0,  x1, h,        QBrush(darkGradRed));     // dark red
           
           // Yellow section:
-          p.fillRect(x1, 0, xv-x1, h,     QBrush(0x8e8e00));     // dark yellow
-          p.fillRect(xv, 0, x2-xv, h,     QBrush(0xffff00));     // light yellow
+          p.fillRect(x1, 0, xv-x1, h,     QBrush(darkGradYellow));     // dark yellow
+          p.fillRect(xv, 0, x2-xv, h,     QBrush(lightGradYellow));     // light yellow
           
           // Green section:
-          p.fillRect(x2, 0, w-x2, h,      QBrush(0x00ff00));     // light green
+          p.fillRect(x2, 0, w-x2, h,      QBrush(lightGradGreen));     // light green
         }
         else
         //if(yv <= y3)   
         {
           // Red section:
-          p.fillRect(0, 0,  x1, h,        QBrush(0x8e0000));     // dark red
+          p.fillRect(0, 0,  x1, h,        QBrush(darkGradRed));     // dark red
           
           // Yellow section:
-          p.fillRect(x1, 0, x2-x1, h,     QBrush(0x8e8e00));     // dark yellow
+          p.fillRect(x1, 0, x2-x1, h,     QBrush(darkGradYellow));     // dark yellow
           
           // Green section:
-          p.fillRect(x2, 0, xv-x2, h,     QBrush(0x007000));     // dark green
-          p.fillRect(xv, 0, w-xv, h,      QBrush(0x00ff00));     // light green
+          p.fillRect(x2, 0, xv-x2, h,     QBrush(darkGradGreen));     // dark green
+          p.fillRect(xv, 0, w-xv, h,      QBrush(lightGradGreen));     // light green
         }
+
+      p.fillRect(x1,0, 1, h, separator_color);
+      p.fillRect(x2,0, 1, h, separator_color);
+
       }  
       else
       {
-        p.fillRect(0, 0,  xv, h,   QBrush(0x00ff00));   // dark green
-        p.fillRect(xv, 0, w-xv, h, QBrush(0x007000));   // light green
+        darkGradGreen.setStart(QPointF(0, 0));
+        darkGradGreen.setFinalStop(QPointF(w, 0));
+
+        lightGradGreen.setStart(QPointF(0, 0));
+        lightGradGreen.setFinalStop(QPointF(w, 0));
+
+        p.fillRect(0, 0,  xv, h,   QBrush(lightGradGreen));   // light green
+        p.fillRect(xv, 0, w-xv, h, QBrush(darkGradGreen));   // dark green
       }
+
 }
 
 //---------------------------------------------------------
 //   resizeEvent
 //---------------------------------------------------------
 
-void VerticalMeter::resizeEvent(QResizeEvent* /*ev*/)
+void VerticalMeter::resizeEvent(QResizeEvent* ev)
     {
+    // Round corners of the widget.
 
+    QSize size = ev->size();
+    int w = size.width();
+    int h = size.height();
+    QPainterPath rounded_rect;
+    rounded_rect.addRoundedRect(0,0,w,h, h/3, h/2.5);
+    QRegion maskregion(rounded_rect.toFillPolygon().toPolygon());
+    setMask(maskregion);
     }

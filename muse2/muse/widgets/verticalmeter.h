@@ -9,9 +9,9 @@
 #ifndef __VERTICALMETER_H__
 #define __VERTICALMETER_H__
 
-#include <QFrame>
 #include "meter.h"
 
+class QPaintEvent;
 class QResizeEvent;
 class QMouseEvent;
 class QPainter;
