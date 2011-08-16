@@ -44,87 +44,83 @@ class VisibleTracks;
 class ArrangerView : public TopWin
 {
 	Q_OBJECT
-	
-	enum cmd_enum
-	     {CMD_CUT, CMD_COPY, CMD_PASTE, CMD_INSERT, CMD_INSERTMEAS, CMD_PASTE_CLONE,
-	      CMD_PASTE_TO_TRACK, CMD_PASTE_CLONE_TO_TRACK, CMD_DELETE,
-	      CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
-	      CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PARTS,
-	      CMD_DELETE_TRACK, CMD_EXPAND_PART, CMD_SHRINK_PART, CMD_CLEAN_PART };
 
 	private:
+
+		enum cmd_enum
+			{CMD_CUT, CMD_COPY, CMD_PASTE, CMD_INSERT, CMD_INSERTMEAS, CMD_PASTE_CLONE,
+			CMD_PASTE_TO_TRACK, CMD_PASTE_CLONE_TO_TRACK, CMD_DELETE,
+			CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
+			CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PARTS,
+			CMD_DELETE_TRACK, CMD_EXPAND_PART, CMD_SHRINK_PART, CMD_CLEAN_PART };
+
 		virtual void closeEvent(QCloseEvent*);
 
-      void adjustGlobalLists(Undo& operations, int startPos, int diff);
-		
+		void adjustGlobalLists(Undo& operations, int startPos, int diff);
+
 		QGridLayout* mainGrid;
 		QWidget* mainw;
 
 		EditToolBar *editTools;
 		VisibleTracks *visTracks;
-		
+
 		Arranger* arranger;
-		
-      // Edit Menu actions
-      QMenu* select;
-      QMenu* addTrack;
-      QMenu* master;
 
-      // Structure Menu actions
-      QAction *strGlobalCutAction, *strGlobalInsertAction, *strGlobalSplitAction, *strCopyRangeAction, *strCutEventsAction;
+		// Edit Menu actions
+		QMenu* select;
+		QMenu* addTrack;
+		QMenu* master;
 
-      
-      QAction *trackMidiAction, *trackDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
-      QAction *trackAInputAction, *trackAAuxAction;
-      QAction *editCutAction, *editCopyAction, *editPasteAction, *editInsertAction, *editPasteCloneAction, *editPaste2TrackAction;
-      QAction *editInsertEMAction, *editPasteC2TAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
-      QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;
-      QAction *masterGraphicAction, *masterListAction;
-      QAction *midiTransformerAction;
-      QAction *editCleanPartsAction, *editShrinkPartsAction, *editExpandPartsAction;
+		QAction *strGlobalCutAction, *strGlobalInsertAction, *strGlobalSplitAction, *strCopyRangeAction, *strCutEventsAction;
+		QAction *trackMidiAction, *trackDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
+		QAction *trackAInputAction, *trackAAuxAction;
+		QAction *editCutAction, *editCopyAction, *editPasteAction, *editInsertAction, *editPasteCloneAction, *editPaste2TrackAction;
+		QAction *editInsertEMAction, *editPasteC2TAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
+		QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;
+		QAction *masterGraphicAction, *masterListAction;
+		QAction *midiTransformerAction;
+		QAction *editCleanPartsAction, *editShrinkPartsAction, *editExpandPartsAction;
 
-			QSignalMapper *editSignalMapper;
-      QSignalMapper *scoreOneStaffPerTrackMapper;
-      QSignalMapper *scoreAllInOneMapper;
-
-   public:
-      QAction *startScoreEditAction, *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
-      QMenu *scoreSubmenu, *scoreOneStaffPerTrackSubsubmenu, *scoreAllInOneSubsubmenu;
+		QSignalMapper *editSignalMapper;
+		QSignalMapper *scoreOneStaffPerTrackMapper;
+		QSignalMapper *scoreAllInOneMapper;
 
 	private slots:
-      void clearScoreMenuMappers();
-      void globalCut();
-      void globalInsert();
-      void globalSplit();
-      void copyRange();
-      void cutEvents();
+		void clearScoreMenuMappers();
+		void globalCut();
+		void globalInsert();
+		void globalSplit();
+		void copyRange();
+		void cutEvents();
+		void cmd(int);
 
-      void cmd(int);
-		
-   signals:
-      void deleted(TopWin*);
-      void closed();
-		
+	signals:
+		void deleted(TopWin*);
+		void closed();
+
+	public slots:
+		void scoreNamingChanged();
+		void updateScoreMenus();
+		void clipboardChanged();
+		void selectionChanged();
+		void updateShortcuts();
+		void updateVisibleTracksButtons();
+
 	public:
 		ArrangerView(QWidget* parent = 0);
 		~ArrangerView();
+
+		QAction *startScoreEditAction, *startPianoEditAction, *startDrumEditAction, *startListEditAction, *startWaveEditAction;
+		QMenu *scoreSubmenu, *scoreOneStaffPerTrackSubsubmenu, *scoreAllInOneSubsubmenu;
+
+		void populateAddTrack();
+
+		Arranger* getArranger() {return arranger;}
 
 		void writeStatus(int level, Xml& xml) const;
 		void readStatus(Xml& xml);
 		static void readConfiguration(Xml&);
 		static void writeConfiguration(int, Xml&);
-		
-		void populateAddTrack();
-		
-		Arranger* getArranger() {return arranger;}
-
-	public slots:
-      void scoreNamingChanged();
-      void updateScoreMenus();
-      void clipboardChanged();
-      void selectionChanged();
-			void updateShortcuts();
-			void updateVisibleTracksButtons();
 };
 
 

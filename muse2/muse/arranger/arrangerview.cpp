@@ -260,31 +260,31 @@ QActionGroup* populateAddTrack(QMenu* addTrack)
       QActionGroup* grp = new QActionGroup(addTrack);
 
       QAction* midi = addTrack->addAction(QIcon(*addtrack_addmiditrackIcon),
-					  QT_TRANSLATE_NOOP("@default", "Add Midi Track"));
+                                          QT_TRANSLATE_NOOP("@default", "Add Midi Track"));
       midi->setData(Track::MIDI);
       grp->addAction(midi);
       QAction* drum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
-					  QT_TRANSLATE_NOOP("@default", "Add Drum Track"));
+                                          QT_TRANSLATE_NOOP("@default", "Add Drum Track"));
       drum->setData(Track::DRUM);
       grp->addAction(drum);
       QAction* wave = addTrack->addAction(QIcon(*addtrack_wavetrackIcon),
-					  QT_TRANSLATE_NOOP("@default", "Add Wave Track"));
+                                          QT_TRANSLATE_NOOP("@default", "Add Wave Track"));
       wave->setData(Track::WAVE);
       grp->addAction(wave);
       QAction* aoutput = addTrack->addAction(QIcon(*addtrack_audiooutputIcon),
-					     QT_TRANSLATE_NOOP("@default", "Add Audio Output"));
+                                             QT_TRANSLATE_NOOP("@default", "Add Audio Output"));
       aoutput->setData(Track::AUDIO_OUTPUT);
       grp->addAction(aoutput);
       QAction* agroup = addTrack->addAction(QIcon(*addtrack_audiogroupIcon),
-					    QT_TRANSLATE_NOOP("@default", "Add Audio Group"));
+                                            QT_TRANSLATE_NOOP("@default", "Add Audio Group"));
       agroup->setData(Track::AUDIO_GROUP);
       grp->addAction(agroup);
       QAction* ainput = addTrack->addAction(QIcon(*addtrack_audioinputIcon),
-					    QT_TRANSLATE_NOOP("@default", "Add Audio Input"));
+                                            QT_TRANSLATE_NOOP("@default", "Add Audio Input"));
       ainput->setData(Track::AUDIO_INPUT);
       grp->addAction(ainput);
       QAction* aaux = addTrack->addAction(QIcon(*addtrack_auxsendIcon),
-					  QT_TRANSLATE_NOOP("@default", "Add Aux Send"));
+                                          QT_TRANSLATE_NOOP("@default", "Add Aux Send"));
       aaux->setData(Track::AUDIO_AUX);
       grp->addAction(aaux);
 
@@ -312,321 +312,321 @@ QActionGroup* populateAddTrack(QMenu* addTrack)
 ArrangerView::ArrangerView(QWidget* parent)
    : TopWin(TopWin::ARRANGER, parent, "arrangerview", Qt::Window)
 {
-	//setAttribute(Qt::WA_DeleteOnClose);
-	setWindowTitle(tr("MusE: Arranger"));
-	setFocusPolicy(Qt::StrongFocus);
+  //setAttribute(Qt::WA_DeleteOnClose);
+  setWindowTitle(tr("MusE: Arranger"));
+  setFocusPolicy(Qt::StrongFocus);
 
 
-	arranger = new Arranger(this, "arranger");
-	setCentralWidget(arranger);
+  arranger = new Arranger(this, "arranger");
+  setCentralWidget(arranger);
 
-	scoreOneStaffPerTrackMapper = new QSignalMapper(this);
-	scoreAllInOneMapper = new QSignalMapper(this);
+  scoreOneStaffPerTrackMapper = new QSignalMapper(this);
+  scoreAllInOneMapper = new QSignalMapper(this);
 
-	editSignalMapper = new QSignalMapper(this);
-	QShortcut* sc = new QShortcut(shortcuts[SHRT_DELETE].key, this);
-	sc->setContext(Qt::WindowShortcut);
-	connect(sc, SIGNAL(activated()), editSignalMapper, SLOT(map()));
-	editSignalMapper->setMapping(sc, CMD_DELETE);
+  editSignalMapper = new QSignalMapper(this);
+  QShortcut* sc = new QShortcut(shortcuts[SHRT_DELETE].key, this);
+  sc->setContext(Qt::WindowShortcut);
+  connect(sc, SIGNAL(activated()), editSignalMapper, SLOT(map()));
+  editSignalMapper->setMapping(sc, CMD_DELETE);
 
-	// Toolbars ---------------------------------------------------------
-	QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
-	undo_tools->setObjectName("Undo/Redo tools");
-	undo_tools->addActions(undoRedo->actions());
-
-
-	QToolBar* panic_toolbar = addToolBar(tr("panic"));
-	panic_toolbar->setObjectName("panic");
-	panic_toolbar->addAction(panicAction);
-
-	QToolBar* transport_toolbar = addToolBar(tr("transport"));
-	transport_toolbar->setObjectName("transport");
-	transport_toolbar->addActions(transportAction->actions());
-
-	editTools = new EditToolBar(this, arrangerTools);
-	addToolBar(editTools);
-	editTools->setObjectName("arrangerTools");
-
-	visTracks = new VisibleTracks(this);
-	addToolBar(visTracks);
+  // Toolbars ---------------------------------------------------------
+  QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
+  undo_tools->setObjectName("Undo/Redo tools");
+  undo_tools->addActions(undoRedo->actions());
 
 
+  QToolBar* panic_toolbar = addToolBar(tr("panic"));
+  panic_toolbar->setObjectName("panic");
+  panic_toolbar->addAction(panicAction);
 
-	connect(editTools, SIGNAL(toolChanged(int)), arranger, SLOT(setTool(int)));
-	connect(visTracks, SIGNAL(visibilityChanged()), song, SLOT(update()) );
-	connect(arranger, SIGNAL(editPart(Track*)), muse, SLOT(startEditor(Track*)));
-	connect(arranger, SIGNAL(dropSongFile(const QString&)), muse, SLOT(loadProjectFile(const QString&)));
-	connect(arranger, SIGNAL(dropMidiFile(const QString&)), muse, SLOT(importMidi(const QString&)));
-	connect(arranger, SIGNAL(startEditor(PartList*,int)),  muse, SLOT(startEditor(PartList*,int)));
-	connect(arranger, SIGNAL(toolChanged(int)), editTools, SLOT(set(int)));
-	connect(muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
-	connect(arranger, SIGNAL(setUsedTool(int)), editTools, SLOT(set(int)));
-	connect(arranger, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
+  QToolBar* transport_toolbar = addToolBar(tr("transport"));
+  transport_toolbar->setObjectName("transport");
+  transport_toolbar->addActions(transportAction->actions());
+
+  editTools = new EditToolBar(this, arrangerTools);
+  addToolBar(editTools);
+  editTools->setObjectName("arrangerTools");
+
+  visTracks = new VisibleTracks(this);
+  addToolBar(visTracks);
 
 
 
+  connect(editTools, SIGNAL(toolChanged(int)), arranger, SLOT(setTool(int)));
+  connect(visTracks, SIGNAL(visibilityChanged()), song, SLOT(update()) );
+  connect(arranger, SIGNAL(editPart(Track*)), muse, SLOT(startEditor(Track*)));
+  connect(arranger, SIGNAL(dropSongFile(const QString&)), muse, SLOT(loadProjectFile(const QString&)));
+  connect(arranger, SIGNAL(dropMidiFile(const QString&)), muse, SLOT(importMidi(const QString&)));
+  connect(arranger, SIGNAL(startEditor(PartList*,int)),  muse, SLOT(startEditor(PartList*,int)));
+  connect(arranger, SIGNAL(toolChanged(int)), editTools, SLOT(set(int)));
+  connect(muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
+  connect(arranger, SIGNAL(setUsedTool(int)), editTools, SLOT(set(int)));
+  connect(arranger, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
 
 
 
-      //-------- Edit Actions
-      editCutAction = new QAction(QIcon(*editcutIconSet), tr("C&ut"), this);
-      editCopyAction = new QAction(QIcon(*editcopyIconSet), tr("&Copy"), this);
-      editPasteAction = new QAction(QIcon(*editpasteIconSet), tr("&Paste"), this);
-      editInsertAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert"), this);
-      editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert Empty Measure"), this);
-      editPasteCloneAction = new QAction(QIcon(*editpasteCloneIconSet), tr("Paste c&lone"), this);
-      editPaste2TrackAction = new QAction(QIcon(*editpaste2TrackIconSet), tr("Paste to &track"), this);
-      editPasteC2TAction = new QAction(QIcon(*editpasteClone2TrackIconSet), tr("Paste clone to trac&k"), this);
-      editDeleteSelectedAction = new QAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"), this);
-      
-      editShrinkPartsAction = new QAction(tr("Shrink selected parts"), this); //FINDMICH TODO tooltips!
-      editExpandPartsAction = new QAction(tr("Expand selected parts"), this);
-      editCleanPartsAction = new QAction(tr("Clean selected parts"), this);
-
-
-      addTrack = new QMenu(tr("Add Track"), this);
-      addTrack->setIcon(QIcon(*edit_track_addIcon));
-      select = new QMenu(tr("Select"), this);
-      select->setIcon(QIcon(*selectIcon));
-
-      editSelectAllAction = new QAction(QIcon(*select_allIcon), tr("Select &All"), this);
-      editDeselectAllAction = new QAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"), this);
-      editInvertSelectionAction = new QAction(QIcon(*select_invert_selectionIcon), tr("Invert &Selection"), this);
-      editInsideLoopAction = new QAction(QIcon(*select_inside_loopIcon), tr("&Inside Loop"), this);
-      editOutsideLoopAction = new QAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"), this);
-      editAllPartsAction = new QAction( QIcon(*select_all_parts_on_trackIcon), tr("All &Parts on Track"), this);
-
-            
-      scoreSubmenu = new QMenu(tr("Score"), this);
-      scoreSubmenu->setIcon(QIcon(*scoreIconSet));
-      
-      scoreAllInOneSubsubmenu = new QMenu(tr("all parts in one staff"), this);
-      scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("one staff per part"), this);
-
-      scoreSubmenu->addMenu(scoreAllInOneSubsubmenu);
-      scoreSubmenu->addMenu(scoreOneStaffPerTrackSubsubmenu);
-      updateScoreMenus();
-      
-      startScoreEditAction = new QAction(*scoreIconSet, tr("New score window"), this);
-      startPianoEditAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
-      startDrumEditAction = new QAction(QIcon(*edit_drummsIcon), tr("Drums"), this);
-      startListEditAction = new QAction(QIcon(*edit_listIcon), tr("List"), this);
-      startWaveEditAction = new QAction(QIcon(*edit_waveIcon), tr("Wave"), this);
-
-      master = new QMenu(tr("Mastertrack"), this);
-      master->setIcon(QIcon(*edit_mastertrackIcon));
-      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Graphic"), this);
-      masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List"), this);
-
-      midiTransformerAction = new QAction(QIcon(*midi_transformIcon), tr("Midi &Transform"), this);
-
-
-      //-------- Structure Actions
-      strGlobalCutAction = new QAction(tr("Global Cut"), this);
-      strGlobalInsertAction = new QAction(tr("Global Insert"), this);
-      strGlobalSplitAction = new QAction(tr("Global Split"), this);
-      strCopyRangeAction = new QAction(tr("Copy Range"), this);
-      strCopyRangeAction->setEnabled(false);
-      strCutEventsAction = new QAction(tr("Cut Events"), this);
-      strCutEventsAction->setEnabled(false);
 
 
 
-	//-------------------------------------------------------------
-	//    popup Edit
-	//-------------------------------------------------------------
+  //-------- Edit Actions
+  editCutAction = new QAction(QIcon(*editcutIconSet), tr("C&ut"), this);
+  editCopyAction = new QAction(QIcon(*editcopyIconSet), tr("&Copy"), this);
+  editPasteAction = new QAction(QIcon(*editpasteIconSet), tr("&Paste"), this);
+  editInsertAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert"), this);
+  editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert Empty Measure"), this);
+  editPasteCloneAction = new QAction(QIcon(*editpasteCloneIconSet), tr("Paste c&lone"), this);
+  editPaste2TrackAction = new QAction(QIcon(*editpaste2TrackIconSet), tr("Paste to &track"), this);
+  editPasteC2TAction = new QAction(QIcon(*editpasteClone2TrackIconSet), tr("Paste clone to trac&k"), this);
+  editDeleteSelectedAction = new QAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"), this);
 
-	QMenu* menuEdit = menuBar()->addMenu(tr("&Edit"));
-	menuEdit->addActions(undoRedo->actions());
-	menuEdit->addSeparator();
-
-	menuEdit->addAction(editCutAction);
-	menuEdit->addAction(editCopyAction);
-	menuEdit->addAction(editPasteAction);
-	menuEdit->addAction(editInsertAction);
-	menuEdit->addAction(editInsertEMAction);
-	menuEdit->addAction(editPasteCloneAction);
-	menuEdit->addAction(editPaste2TrackAction);
-	menuEdit->addAction(editPasteC2TAction);
-	menuEdit->addSeparator();
-	menuEdit->addAction(editShrinkPartsAction);
-	menuEdit->addAction(editExpandPartsAction);
-	menuEdit->addAction(editCleanPartsAction);
-	menuEdit->addSeparator();
-	menuEdit->addAction(editDeleteSelectedAction);
-
-	menuEdit->addMenu(addTrack);
-	menuEdit->addMenu(select);
-		select->addAction(editSelectAllAction);
-		select->addAction(editDeselectAllAction);
-		select->addAction(editInvertSelectionAction);
-		select->addAction(editInsideLoopAction);
-		select->addAction(editOutsideLoopAction);
-		select->addAction(editAllPartsAction);
-	menuEdit->addSeparator();
-
-	menuEdit->addAction(startPianoEditAction);
-	menuEdit->addMenu(scoreSubmenu);
-	menuEdit->addAction(startScoreEditAction);
-	menuEdit->addAction(startDrumEditAction);
-	menuEdit->addAction(startListEditAction);
-	menuEdit->addAction(startWaveEditAction);
-
-	menuEdit->addMenu(master);
-		master->addAction(masterGraphicAction);
-		master->addAction(masterListAction);
-	menuEdit->addSeparator();
-
-	menuEdit->addAction(midiTransformerAction);
-
-	QMenu* menuStructure = menuEdit->addMenu(tr("&Structure"));
-		menuStructure->addAction(strGlobalCutAction);
-		menuStructure->addAction(strGlobalInsertAction);
-		menuStructure->addAction(strGlobalSplitAction);
-		menuStructure->addAction(strCopyRangeAction);
-		menuStructure->addSeparator();
-		menuStructure->addAction(strCutEventsAction);
-
-      QMenu* menuSettings = menuBar()->addMenu(tr("&Settings"));
-      menuSettings->addAction(subwinAction);
+  editShrinkPartsAction = new QAction(tr("Shrink selected parts"), this); //FINDMICH TODO tooltips!
+  editExpandPartsAction = new QAction(tr("Expand selected parts"), this);
+  editCleanPartsAction = new QAction(tr("Clean selected parts"), this);
 
 
-      //-------- Edit connections
-      connect(editCutAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editCopyAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editPasteAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editInsertAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editInsertEMAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editPasteCloneAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editPaste2TrackAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editPasteC2TAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editDeleteSelectedAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  addTrack = new QMenu(tr("Add Track"), this);
+  addTrack->setIcon(QIcon(*edit_track_addIcon));
+  select = new QMenu(tr("Select"), this);
+  select->setIcon(QIcon(*selectIcon));
 
-      connect(editShrinkPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editExpandPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editCleanPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  editSelectAllAction = new QAction(QIcon(*select_allIcon), tr("Select &All"), this);
+  editDeselectAllAction = new QAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"), this);
+  editInvertSelectionAction = new QAction(QIcon(*select_invert_selectionIcon), tr("Invert &Selection"), this);
+  editInsideLoopAction = new QAction(QIcon(*select_inside_loopIcon), tr("&Inside Loop"), this);
+  editOutsideLoopAction = new QAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"), this);
+  editAllPartsAction = new QAction( QIcon(*select_all_parts_on_trackIcon), tr("All &Parts on Track"), this);
 
-      connect(editSelectAllAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editDeselectAllAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editInvertSelectionAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editInsideLoopAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editOutsideLoopAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editAllPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+	
+  scoreSubmenu = new QMenu(tr("Score"), this);
+  scoreSubmenu->setIcon(QIcon(*scoreIconSet));
 
-      editSignalMapper->setMapping(editCutAction, CMD_CUT);
-      editSignalMapper->setMapping(editCopyAction, CMD_COPY);
-      editSignalMapper->setMapping(editPasteAction, CMD_PASTE);
-      editSignalMapper->setMapping(editInsertAction, CMD_INSERT);
-      editSignalMapper->setMapping(editPasteCloneAction, CMD_PASTE_CLONE);
-      editSignalMapper->setMapping(editPaste2TrackAction, CMD_PASTE_TO_TRACK);
-      editSignalMapper->setMapping(editPasteC2TAction, CMD_PASTE_CLONE_TO_TRACK);
-      editSignalMapper->setMapping(editInsertEMAction, CMD_INSERTMEAS);
-      editSignalMapper->setMapping(editDeleteSelectedAction, CMD_DELETE_TRACK);
-      editSignalMapper->setMapping(editShrinkPartsAction, CMD_SHRINK_PART);
-      editSignalMapper->setMapping(editExpandPartsAction, CMD_EXPAND_PART);
-      editSignalMapper->setMapping(editCleanPartsAction, CMD_CLEAN_PART);
-      editSignalMapper->setMapping(editSelectAllAction, CMD_SELECT_ALL);
-      editSignalMapper->setMapping(editDeselectAllAction, CMD_SELECT_NONE);
-      editSignalMapper->setMapping(editInvertSelectionAction, CMD_SELECT_INVERT);
-      editSignalMapper->setMapping(editInsideLoopAction, CMD_SELECT_ILOOP);
-      editSignalMapper->setMapping(editOutsideLoopAction, CMD_SELECT_OLOOP);
-      editSignalMapper->setMapping(editAllPartsAction, CMD_SELECT_PARTS);
+  scoreAllInOneSubsubmenu = new QMenu(tr("all parts in one staff"), this);
+  scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("one staff per part"), this);
 
-      connect(editSignalMapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
+  scoreSubmenu->addMenu(scoreAllInOneSubsubmenu);
+  scoreSubmenu->addMenu(scoreOneStaffPerTrackSubsubmenu);
+  updateScoreMenus();
 
-      connect(startPianoEditAction, SIGNAL(activated()), muse, SLOT(startPianoroll()));
-      connect(startScoreEditAction, SIGNAL(activated()), muse, SLOT(startScoreQuickly()));
-      connect(startDrumEditAction, SIGNAL(activated()), muse, SLOT(startDrumEditor()));
-      connect(startListEditAction, SIGNAL(activated()), muse, SLOT(startListEditor()));
-      connect(startWaveEditAction, SIGNAL(activated()), muse, SLOT(startWaveEditor()));
-			connect(scoreOneStaffPerTrackMapper, SIGNAL(mapped(QWidget*)), muse, SLOT(openInScoreEdit_oneStaffPerTrack(QWidget*)));
-			connect(scoreAllInOneMapper, SIGNAL(mapped(QWidget*)), muse, SLOT(openInScoreEdit_allInOne(QWidget*)));
+  startScoreEditAction = new QAction(*scoreIconSet, tr("New score window"), this);
+  startPianoEditAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
+  startDrumEditAction = new QAction(QIcon(*edit_drummsIcon), tr("Drums"), this);
+  startListEditAction = new QAction(QIcon(*edit_listIcon), tr("List"), this);
+  startWaveEditAction = new QAction(QIcon(*edit_waveIcon), tr("Wave"), this);
+
+  master = new QMenu(tr("Mastertrack"), this);
+  master->setIcon(QIcon(*edit_mastertrackIcon));
+  masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Graphic"), this);
+  masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List"), this);
+
+  midiTransformerAction = new QAction(QIcon(*midi_transformIcon), tr("Midi &Transform"), this);
 
 
-      connect(masterGraphicAction, SIGNAL(activated()), muse, SLOT(startMasterEditor()));
-      connect(masterListAction, SIGNAL(activated()), muse, SLOT(startLMasterEditor()));
-
-      connect(midiTransformerAction, SIGNAL(activated()), muse, SLOT(startMidiTransformer()));
-
-
-      //-------- Structure connections
-      connect(strGlobalCutAction, SIGNAL(activated()), SLOT(globalCut()));
-      connect(strGlobalInsertAction, SIGNAL(activated()), SLOT(globalInsert()));
-      connect(strGlobalSplitAction, SIGNAL(activated()), SLOT(globalSplit()));
-      connect(strCopyRangeAction, SIGNAL(activated()), SLOT(copyRange()));
-      connect(strCutEventsAction, SIGNAL(activated()), SLOT(cutEvents()));
+  //-------- Structure Actions
+  strGlobalCutAction = new QAction(tr("Global Cut"), this);
+  strGlobalInsertAction = new QAction(tr("Global Insert"), this);
+  strGlobalSplitAction = new QAction(tr("Global Split"), this);
+  strCopyRangeAction = new QAction(tr("Copy Range"), this);
+  strCopyRangeAction->setEnabled(false);
+  strCutEventsAction = new QAction(tr("Cut Events"), this);
+  strCutEventsAction->setEnabled(false);
 
 
 
-	connect(muse, SIGNAL(configChanged()), SLOT(updateShortcuts()));
+  //-------------------------------------------------------------
+  //    popup Edit
+  //-------------------------------------------------------------
+
+  QMenu* menuEdit = menuBar()->addMenu(tr("&Edit"));
+  menuEdit->addActions(undoRedo->actions());
+  menuEdit->addSeparator();
+
+  menuEdit->addAction(editCutAction);
+  menuEdit->addAction(editCopyAction);
+  menuEdit->addAction(editPasteAction);
+  menuEdit->addAction(editInsertAction);
+  menuEdit->addAction(editInsertEMAction);
+  menuEdit->addAction(editPasteCloneAction);
+  menuEdit->addAction(editPaste2TrackAction);
+  menuEdit->addAction(editPasteC2TAction);
+  menuEdit->addSeparator();
+  menuEdit->addAction(editShrinkPartsAction);
+  menuEdit->addAction(editExpandPartsAction);
+  menuEdit->addAction(editCleanPartsAction);
+  menuEdit->addSeparator();
+  menuEdit->addAction(editDeleteSelectedAction);
+
+  menuEdit->addMenu(addTrack);
+  menuEdit->addMenu(select);
+    select->addAction(editSelectAllAction);
+    select->addAction(editDeselectAllAction);
+    select->addAction(editInvertSelectionAction);
+    select->addAction(editInsideLoopAction);
+    select->addAction(editOutsideLoopAction);
+    select->addAction(editAllPartsAction);
+  menuEdit->addSeparator();
+
+  menuEdit->addAction(startPianoEditAction);
+  menuEdit->addMenu(scoreSubmenu);
+  menuEdit->addAction(startScoreEditAction);
+  menuEdit->addAction(startDrumEditAction);
+  menuEdit->addAction(startListEditAction);
+  menuEdit->addAction(startWaveEditAction);
+
+  menuEdit->addMenu(master);
+    master->addAction(masterGraphicAction);
+    master->addAction(masterListAction);
+  menuEdit->addSeparator();
+
+  menuEdit->addAction(midiTransformerAction);
+
+  QMenu* menuStructure = menuEdit->addMenu(tr("&Structure"));
+    menuStructure->addAction(strGlobalCutAction);
+    menuStructure->addAction(strGlobalInsertAction);
+    menuStructure->addAction(strGlobalSplitAction);
+    menuStructure->addAction(strCopyRangeAction);
+    menuStructure->addSeparator();
+    menuStructure->addAction(strCutEventsAction);
+
+  QMenu* menuSettings = menuBar()->addMenu(tr("&Settings"));
+  menuSettings->addAction(subwinAction);
 
 
-      QClipboard* cb = QApplication::clipboard();
-      connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
-      connect(cb, SIGNAL(selectionChanged()), SLOT(clipboardChanged()));
+  //-------- Edit connections
+  connect(editCutAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editCopyAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editPasteAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editInsertAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editInsertEMAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editPasteCloneAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editPaste2TrackAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editPasteC2TAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editDeleteSelectedAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+
+  connect(editShrinkPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editExpandPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editCleanPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+
+  connect(editSelectAllAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editDeselectAllAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editInvertSelectionAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editInsideLoopAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editOutsideLoopAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editAllPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+
+  editSignalMapper->setMapping(editCutAction, CMD_CUT);
+  editSignalMapper->setMapping(editCopyAction, CMD_COPY);
+  editSignalMapper->setMapping(editPasteAction, CMD_PASTE);
+  editSignalMapper->setMapping(editInsertAction, CMD_INSERT);
+  editSignalMapper->setMapping(editPasteCloneAction, CMD_PASTE_CLONE);
+  editSignalMapper->setMapping(editPaste2TrackAction, CMD_PASTE_TO_TRACK);
+  editSignalMapper->setMapping(editPasteC2TAction, CMD_PASTE_CLONE_TO_TRACK);
+  editSignalMapper->setMapping(editInsertEMAction, CMD_INSERTMEAS);
+  editSignalMapper->setMapping(editDeleteSelectedAction, CMD_DELETE_TRACK);
+  editSignalMapper->setMapping(editShrinkPartsAction, CMD_SHRINK_PART);
+  editSignalMapper->setMapping(editExpandPartsAction, CMD_EXPAND_PART);
+  editSignalMapper->setMapping(editCleanPartsAction, CMD_CLEAN_PART);
+  editSignalMapper->setMapping(editSelectAllAction, CMD_SELECT_ALL);
+  editSignalMapper->setMapping(editDeselectAllAction, CMD_SELECT_NONE);
+  editSignalMapper->setMapping(editInvertSelectionAction, CMD_SELECT_INVERT);
+  editSignalMapper->setMapping(editInsideLoopAction, CMD_SELECT_ILOOP);
+  editSignalMapper->setMapping(editOutsideLoopAction, CMD_SELECT_OLOOP);
+  editSignalMapper->setMapping(editAllPartsAction, CMD_SELECT_PARTS);
+
+  connect(editSignalMapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
+
+  connect(startPianoEditAction, SIGNAL(activated()), muse, SLOT(startPianoroll()));
+  connect(startScoreEditAction, SIGNAL(activated()), muse, SLOT(startScoreQuickly()));
+  connect(startDrumEditAction, SIGNAL(activated()), muse, SLOT(startDrumEditor()));
+  connect(startListEditAction, SIGNAL(activated()), muse, SLOT(startListEditor()));
+  connect(startWaveEditAction, SIGNAL(activated()), muse, SLOT(startWaveEditor()));
+  connect(scoreOneStaffPerTrackMapper, SIGNAL(mapped(QWidget*)), muse, SLOT(openInScoreEdit_oneStaffPerTrack(QWidget*)));
+  connect(scoreAllInOneMapper, SIGNAL(mapped(QWidget*)), muse, SLOT(openInScoreEdit_allInOne(QWidget*)));
+
+
+  connect(masterGraphicAction, SIGNAL(activated()), muse, SLOT(startMasterEditor()));
+  connect(masterListAction, SIGNAL(activated()), muse, SLOT(startLMasterEditor()));
+
+  connect(midiTransformerAction, SIGNAL(activated()), muse, SLOT(startMidiTransformer()));
+
+
+  //-------- Structure connections
+  connect(strGlobalCutAction, SIGNAL(activated()), SLOT(globalCut()));
+  connect(strGlobalInsertAction, SIGNAL(activated()), SLOT(globalInsert()));
+  connect(strGlobalSplitAction, SIGNAL(activated()), SLOT(globalSplit()));
+  connect(strCopyRangeAction, SIGNAL(activated()), SLOT(copyRange()));
+  connect(strCutEventsAction, SIGNAL(activated()), SLOT(cutEvents()));
 
 
 
-	// work around for probable QT/WM interaction bug.
-	// for certain window managers, e.g xfce, this window is
-	// is displayed although not specifically set to show();
-	// bug: 2811156  	 Softsynth GUI unclosable with XFCE4 (and a few others)
-	show();
-	hide();
+  connect(muse, SIGNAL(configChanged()), SLOT(updateShortcuts()));
+
+
+  QClipboard* cb = QApplication::clipboard();
+  connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
+  connect(cb, SIGNAL(selectionChanged()), SLOT(clipboardChanged()));
+
+
+
+  // work around for probable QT/WM interaction bug.
+  // for certain window managers, e.g xfce, this window is
+  // is displayed although not specifically set to show();
+  // bug: 2811156     Softsynth GUI unclosable with XFCE4 (and a few others)
+  show();
+  hide();
         
-	initalizing=false;
+  initalizing=false;
 }
 
 ArrangerView::~ArrangerView()
 {
-	
+  
 }
 
 void ArrangerView::closeEvent(QCloseEvent* e)
 {
-	emit deleted(static_cast<TopWin*>(this));
-	emit closed();
-	e->accept();
+  emit deleted(static_cast<TopWin*>(this));
+  emit closed();
+  e->accept();
 }
 
 
 
 void ArrangerView::writeStatus(int level, Xml& xml) const
 {
-	xml.tag(level++, "arrangerview");
-	TopWin::writeStatus(level, xml);
-	xml.intTag(level, "tool", editTools->curTool());
-	xml.tag(level, "/arrangerview");
+  xml.tag(level++, "arrangerview");
+  TopWin::writeStatus(level, xml);
+  xml.intTag(level, "tool", editTools->curTool());
+  xml.tag(level, "/arrangerview");
 }
 
 void ArrangerView::readStatus(Xml& xml)
 {
-	for (;;)
-	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
-			break;
-			
-		const QString& tag = xml.s1();
-		switch (token)
-		{
-			case Xml::TagStart:
-				if (tag == "tool") 
-					editTools->set(xml.parseInt());
-				else if (tag == "topwin") 
-					TopWin::readStatus(xml);
-				else
-					xml.unknown("ArrangerView");
-				break;
+  for (;;)
+  {
+    Xml::Token token = xml.parse();
+    if (token == Xml::Error || token == Xml::End)
+      break;
+      
+    const QString& tag = xml.s1();
+    switch (token)
+    {
+      case Xml::TagStart:
+        if (tag == "tool") 
+          editTools->set(xml.parseInt());
+        else if (tag == "topwin") 
+          TopWin::readStatus(xml);
+        else
+          xml.unknown("ArrangerView");
+        break;
 
-			case Xml::TagEnd:
-				if (tag == "arrangerview")
-					return;
-					
-			default:
-				break;
-		}
-	}
+      case Xml::TagEnd:
+        if (tag == "arrangerview")
+          return;
+          
+      default:
+        break;
+    }
+  }
 }
 
 //---------------------------------------------------------
@@ -774,59 +774,59 @@ void ArrangerView::cmd(int cmd)
 
 void ArrangerView::scoreNamingChanged()
 {
-	updateScoreMenus();
+  updateScoreMenus();
 }
 
 void ArrangerView::updateScoreMenus()
 {
-	QAction* action;
+  QAction* action;
 
-	
-	scoreOneStaffPerTrackSubsubmenu->clear();
-	scoreAllInOneSubsubmenu->clear();
+  
+  scoreOneStaffPerTrackSubsubmenu->clear();
+  scoreAllInOneSubsubmenu->clear();
 
-	
-	action=new QAction(tr("New"), this);
-	connect(action, SIGNAL(activated()), scoreOneStaffPerTrackMapper, SLOT(map()));
-	scoreOneStaffPerTrackMapper->setMapping(action, (QWidget*)NULL);
-	scoreOneStaffPerTrackSubsubmenu->addAction(action);
-	
-	
-	action=new QAction(tr("New"), this); //the above action may NOT be reused!
-	connect(action, SIGNAL(activated()), scoreAllInOneMapper, SLOT(map()));
-	scoreAllInOneMapper->setMapping(action, (QWidget*)NULL);
-	scoreAllInOneSubsubmenu->addAction(action);
+  
+  action=new QAction(tr("New"), this);
+  connect(action, SIGNAL(activated()), scoreOneStaffPerTrackMapper, SLOT(map()));
+  scoreOneStaffPerTrackMapper->setMapping(action, (QWidget*)NULL);
+  scoreOneStaffPerTrackSubsubmenu->addAction(action);
+  
+  
+  action=new QAction(tr("New"), this); //the above action may NOT be reused!
+  connect(action, SIGNAL(activated()), scoreAllInOneMapper, SLOT(map()));
+  scoreAllInOneMapper->setMapping(action, (QWidget*)NULL);
+  scoreAllInOneSubsubmenu->addAction(action);
 
-	const ToplevelList* toplevels=muse->getToplevels();
+  const ToplevelList* toplevels=muse->getToplevels();
 
-	for (ToplevelList::const_iterator it=toplevels->begin(); it!=toplevels->end(); it++)
-		if ((*it)->type()==TopWin::SCORE)
-		{
-			ScoreEdit* score = dynamic_cast<ScoreEdit*>(*it);
-			
-			action=new QAction(score->get_name(), this);
-			connect(action, SIGNAL(activated()), scoreOneStaffPerTrackMapper, SLOT(map()));
-			scoreOneStaffPerTrackMapper->setMapping(action, (QWidget*)score);
-			scoreOneStaffPerTrackSubsubmenu->addAction(action);
+  for (ToplevelList::const_iterator it=toplevels->begin(); it!=toplevels->end(); it++)
+    if ((*it)->type()==TopWin::SCORE)
+    {
+      ScoreEdit* score = dynamic_cast<ScoreEdit*>(*it);
+      
+      action=new QAction(score->get_name(), this);
+      connect(action, SIGNAL(activated()), scoreOneStaffPerTrackMapper, SLOT(map()));
+      scoreOneStaffPerTrackMapper->setMapping(action, (QWidget*)score);
+      scoreOneStaffPerTrackSubsubmenu->addAction(action);
 
 
-			action=new QAction(score->get_name(), this); //the above action may NOT be reused!
-			connect(action, SIGNAL(activated()), scoreAllInOneMapper, SLOT(map()));
-			scoreAllInOneMapper->setMapping(action, (QWidget*)score);
-			scoreAllInOneSubsubmenu->addAction(action);
-		}
+      action=new QAction(score->get_name(), this); //the above action may NOT be reused!
+      connect(action, SIGNAL(activated()), scoreAllInOneMapper, SLOT(map()));
+      scoreAllInOneMapper->setMapping(action, (QWidget*)score);
+      scoreAllInOneSubsubmenu->addAction(action);
+    }
 }
 
 void ArrangerView::clearScoreMenuMappers()
 {
-	delete scoreOneStaffPerTrackMapper;
-	delete scoreAllInOneMapper;
-	
-	scoreOneStaffPerTrackMapper = new QSignalMapper(this);
-	scoreAllInOneMapper = new QSignalMapper(this);
-	
-	connect(scoreOneStaffPerTrackMapper, SIGNAL(mapped(QWidget*)), this, SLOT(openInScoreEdit_oneStaffPerTrack(QWidget*)));
-	connect(scoreAllInOneMapper, SIGNAL(mapped(QWidget*)), this, SLOT(openInScoreEdit_allInOne(QWidget*)));
+  delete scoreOneStaffPerTrackMapper;
+  delete scoreAllInOneMapper;
+  
+  scoreOneStaffPerTrackMapper = new QSignalMapper(this);
+  scoreAllInOneMapper = new QSignalMapper(this);
+  
+  connect(scoreOneStaffPerTrackMapper, SIGNAL(mapped(QWidget*)), this, SLOT(openInScoreEdit_oneStaffPerTrack(QWidget*)));
+  connect(scoreAllInOneMapper, SIGNAL(mapped(QWidget*)), this, SLOT(openInScoreEdit_allInOne(QWidget*)));
 }
 
 void ArrangerView::populateAddTrack()
@@ -877,7 +877,7 @@ void ArrangerView::updateShortcuts()
 
       masterGraphicAction->setShortcut(shortcuts[SHRT_OPEN_GRAPHIC_MASTER].key);
       masterListAction->setShortcut(shortcuts[SHRT_OPEN_LIST_MASTER].key);
-	
+  
       midiTransformerAction->setShortcut(shortcuts[SHRT_OPEN_MIDI_TRANSFORM].key);
       strGlobalCutAction->setShortcut(shortcuts[SHRT_GLOBAL_CUT].key);
       strGlobalInsertAction->setShortcut(shortcuts[SHRT_GLOBAL_INSERT].key);
@@ -920,5 +920,5 @@ void ArrangerView::selectionChanged()
 
 void ArrangerView::updateVisibleTracksButtons()
 {
-	visTracks->updateVisibleTracksButtons();
+  visTracks->updateVisibleTracksButtons();
 }
