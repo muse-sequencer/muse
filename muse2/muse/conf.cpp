@@ -19,6 +19,11 @@
 #include "pianoroll.h"
 #include "scoreedit.h"
 #include "master/masteredit.h"
+#include "listedit.h"
+#include "cliplist/cliplist.h"
+#include "arrangerview.h"
+#include "marker/markerview.h"
+#include "master/lmaster.h"
 ///#include "transport.h"
 #include "bigtime.h"
 #include "arranger.h"
@@ -894,6 +899,16 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               MasterEdit::readConfiguration(xml);
                         else if (tag == "waveedit")
                               WaveEdit::readConfiguration(xml);
+                        else if (tag == "listedit")
+                              ListEdit::readConfiguration(xml);
+                        else if (tag == "cliplistedit")
+                              ClipListEdit::readConfiguration(xml);
+                        else if (tag == "lmaster")
+                              LMaster::readConfiguration(xml);
+                        else if (tag == "marker")
+                              MarkerView::readConfiguration(xml);
+                        else if (tag == "arranger")
+                              ArrangerView::readConfiguration(xml);
                         else if (tag == "dialogs")
                               read_function_dialog_config(xml);
                         else if (tag == "shortcuts")
@@ -1338,6 +1353,11 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       ScoreEdit::write_configuration(level, xml);
       MasterEdit::writeConfiguration(level, xml);
       WaveEdit::writeConfiguration(level, xml);
+      ListEdit::writeConfiguration(level, xml);
+      ClipListEdit::writeConfiguration(level, xml);
+      LMaster::writeConfiguration(level, xml);
+      MarkerView::writeConfiguration(level, xml);
+      ArrangerView::writeConfiguration(level, xml);
       
       write_function_dialog_config(level, xml);
 

@@ -111,6 +111,8 @@ class ArrangerView : public TopWin
 
 		void writeStatus(int level, Xml& xml) const;
 		void readStatus(Xml& xml);
+		static void readConfiguration(Xml&);
+		static void writeConfiguration(int, Xml&);
 		
 		void populateAddTrack();
 		

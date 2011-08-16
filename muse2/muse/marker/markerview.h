@@ -85,6 +85,8 @@ class MarkerView : public TopWin {
       ~MarkerView();
       virtual void readStatus(Xml&);
       virtual void writeStatus(int, Xml&) const;
+      static void readConfiguration(Xml&);
+      static void writeConfiguration(int, Xml&);
       void nextMarker();
       void prevMarker();
       };

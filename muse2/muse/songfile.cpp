@@ -1049,7 +1049,13 @@ void MusE::readToplevels(Xml& xml)
                               }
                         else if (tag == "marker") {
                               showMarker(true);
-                              toplevels.back()->readStatus(xml);
+                              if (toplevels.back()->type()==TopWin::MARKER)
+                                toplevels.back()->readStatus(xml);
+                              }
+                        else if (tag == "arrangerview") {
+                              showArranger(true);
+                              if (toplevels.back()->type()==TopWin::ARRANGER)
+                                toplevels.back()->readStatus(xml);
                               }
                         else if (tag == "waveedit") {
                               if(!pl->empty())
@@ -1061,7 +1067,8 @@ void MusE::readToplevels(Xml& xml)
                               }
                         else if (tag == "cliplist") {
                               startClipList(true);
-                              toplevels.back()->readStatus(xml);
+                              if (toplevels.back()->type()==TopWin::CLIPLIST)
+                                toplevels.back()->readStatus(xml);
                               }
                         else
                               xml.unknown("MusE");

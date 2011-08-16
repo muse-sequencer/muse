@@ -595,7 +595,6 @@ void ArrangerView::writeStatus(int level, Xml& xml) const
 {
 	xml.tag(level++, "arrangerview");
 	TopWin::writeStatus(level, xml);
-
 	xml.intTag(level, "tool", editTools->curTool());
 	xml.tag(level, "/arrangerview");
 }
@@ -614,6 +613,8 @@ void ArrangerView::readStatus(Xml& xml)
 			case Xml::TagStart:
 				if (tag == "tool") 
 					editTools->set(xml.parseInt());
+				else if (tag == "topwin") 
+					TopWin::readStatus(xml);
 				else
 					xml.unknown("ArrangerView");
 				break;
@@ -627,6 +628,45 @@ void ArrangerView::readStatus(Xml& xml)
 		}
 	}
 }
+
+//---------------------------------------------------------
+//   readConfiguration
+//---------------------------------------------------------
+
+void ArrangerView::readConfiguration(Xml& xml)
+      {
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case Xml::TagStart:
+                        if (tag == "topwin")
+                              TopWin::readConfiguration(ARRANGER, xml);
+                        else
+                              xml.unknown("ArrangerView");
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "arranger")
+                              return;
+                  default:
+                        break;
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   writeConfiguration
+//---------------------------------------------------------
+
+void ArrangerView::writeConfiguration(int level, Xml& xml)
+      {
+      xml.tag(level++, "arranger");
+      TopWin::writeConfiguration(ARRANGER, level, xml);
+      xml.tag(level, "/arranger");
+      }
 
 
 void ArrangerView::cmd(int cmd)

@@ -39,6 +39,7 @@
 
 #define LMASTER_MSGBOX_STRING          "MusE: List Editor"
 
+
 //don't remove or insert new elements in keyStrs.
 //only renaming (keeping the semantic sense) is allowed! (flo(
 QStringList keyStrs = QStringList()
@@ -88,6 +89,8 @@ QString keyToString(key_enum key) //flo
 	}
 	return keyStrs[index];
 }
+
+
 
 //---------------------------------------------------------
 //   closeEvent
@@ -403,6 +406,45 @@ void LMaster::writeStatus(int level, Xml& xml) const
       {
       xml.tag(level++, "lmaster");
       MidiEditor::writeStatus(level, xml);
+      xml.tag(level, "/lmaster");
+      }
+
+//---------------------------------------------------------
+//   readConfiguration
+//---------------------------------------------------------
+
+void LMaster::readConfiguration(Xml& xml)
+      {
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case Xml::TagStart:
+                        if (tag == "topwin")
+                              TopWin::readConfiguration(LMASTER, xml);
+                        else
+                              xml.unknown("LMaster");
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "lmaster")
+                              return;
+                  default:
+                        break;
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   writeConfiguration
+//---------------------------------------------------------
+
+void LMaster::writeConfiguration(int level, Xml& xml)
+      {
+      xml.tag(level++, "lmaster");
+      TopWin::writeConfiguration(LMASTER, level, xml);
       xml.tag(level, "/lmaster");
       }
 

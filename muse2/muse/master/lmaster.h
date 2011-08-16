@@ -14,14 +14,9 @@
 #include "tempo.h"
 #include "keyevent.h"
 ///#include "sig.h"
-//#include "al/sig.h"
+#include "al/sig.h"
 
 #include <QTreeWidgetItem>
-
-namespace AL {
-      class SigEvent;
-      };
-using AL::SigEvent;
 
 namespace Awl {
       class PosEdit;
@@ -97,12 +92,12 @@ class LMasterKeyEventItem : public LMasterLViewItem {
 class LMasterSigEventItem : public LMasterLViewItem {
 
    private:
-      const SigEvent* sigEvent;
+      const AL::SigEvent* sigEvent;
 
    public:
-      LMasterSigEventItem(QTreeWidget* parent, const SigEvent* s);
+      LMasterSigEventItem(QTreeWidget* parent, const AL::SigEvent* s);
       virtual LMASTER_LVTYPE getType() { return LMASTER_SIGEVENT; }
-      const SigEvent* getEvent() { return sigEvent; }
+      const AL::SigEvent* getEvent() { return sigEvent; }
       virtual unsigned tick() { return sigEvent->tick; }
       int z() { return sigEvent->sig.z; }
       int n() { return sigEvent->sig.n; }
@@ -126,7 +121,7 @@ class LMaster : public MidiEditor {
       virtual void closeEvent(QCloseEvent*);
       void updateList();
       void insertTempo(const TEvent*);
-      void insertSig(const SigEvent*);
+      void insertSig(const AL::SigEvent*);
       void insertKey(const KeyEvent&);
       LMasterLViewItem* getItemAtPos(unsigned tick, LMASTER_LVTYPE t);
       void initShortcuts();
@@ -164,6 +159,8 @@ class LMaster : public MidiEditor {
       ~LMaster();
       virtual void readStatus(Xml&);
       virtual void writeStatus(int, Xml&) const;
+      static void readConfiguration(Xml&);
+      static void writeConfiguration(int, Xml&);
       LMasterLViewItem* getLastOfType(LMASTER_LVTYPE t);
       };
 

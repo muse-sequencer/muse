@@ -312,7 +312,10 @@ void MarkerView::readStatus(Xml& xml)
                   break;
             switch (token) {
                   case Xml::TagStart:
-                        xml.unknown("Marker");
+                        if (tag=="topwin")
+                            TopWin::readStatus(xml);
+                        else
+                            xml.unknown("Marker");
                         break;
                   case Xml::TagEnd:
                         if (tag == "marker")
@@ -330,6 +333,46 @@ void MarkerView::readStatus(Xml& xml)
 void MarkerView::writeStatus(int level, Xml& xml) const
       {
       xml.tag(level++, "marker");
+      TopWin::writeStatus(level, xml);
+      xml.tag(level, "/marker");
+      }
+
+//---------------------------------------------------------
+//   readConfiguration
+//---------------------------------------------------------
+
+void MarkerView::readConfiguration(Xml& xml)
+      {
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case Xml::TagStart:
+                        if (tag == "topwin")
+                              TopWin::readConfiguration(MARKER, xml);
+                        else
+                              xml.unknown("MarkerView");
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "marker")
+                              return;
+                  default:
+                        break;
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   writeConfiguration
+//---------------------------------------------------------
+
+void MarkerView::writeConfiguration(int level, Xml& xml)
+      {
+      xml.tag(level++, "marker");
+      TopWin::writeConfiguration(MARKER, level, xml);
       xml.tag(level, "/marker");
       }
 

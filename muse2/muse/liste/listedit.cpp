@@ -827,6 +827,45 @@ void ListEdit::writeStatus(int level, Xml& xml) const
       }
 
 //---------------------------------------------------------
+//   readConfiguration
+//---------------------------------------------------------
+
+void ListEdit::readConfiguration(Xml& xml)
+      {
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case Xml::TagStart:
+                        if (tag == "topwin")
+                              TopWin::readConfiguration(LISTE, xml);
+                        else
+                              xml.unknown("ListEdit");
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "listedit")
+                              return;
+                  default:
+                        break;
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   writeConfiguration
+//---------------------------------------------------------
+
+void ListEdit::writeConfiguration(int level, Xml& xml)
+      {
+      xml.tag(level++, "listedit");
+      TopWin::writeConfiguration(LISTE, level, xml);
+      xml.tag(level, "/listedit");
+      }
+
+//---------------------------------------------------------
 //   selectionChanged
 //---------------------------------------------------------
 

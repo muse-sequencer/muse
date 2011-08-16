@@ -227,6 +227,45 @@ void ClipListEdit::writeStatus(int level, Xml& xml) const
       }
 
 //---------------------------------------------------------
+//   readConfiguration
+//---------------------------------------------------------
+
+void ClipListEdit::readConfiguration(Xml& xml)
+      {
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case Xml::TagStart:
+                        if (tag == "topwin")
+                              TopWin::readConfiguration(CLIPLIST, xml);
+                        else
+                              xml.unknown("ClipListEdit");
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "cliplistedit")
+                              return;
+                  default:
+                        break;
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   writeConfiguration
+//---------------------------------------------------------
+
+void ClipListEdit::writeConfiguration(int level, Xml& xml)
+      {
+      xml.tag(level++, "cliplistedit");
+      TopWin::writeConfiguration(CLIPLIST, level, xml);
+      xml.tag(level, "/cliplistedit");
+      }
+
+//---------------------------------------------------------
 //   startChanged
 //---------------------------------------------------------
 
