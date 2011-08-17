@@ -2,6 +2,7 @@
         - More drawing fixes, improved accuracy (grids, timescales, edges, markers guaranteed to align now). (Tim p4.0.30)
           Much drawing changed to device (pixel) space instead of virtual space, for accuracy.
         - Fixed display of audio automation graphs. (But not editing). (Tim) 
+        - Fixed unreadable Master Edit tempo scale (on left side), and added toolbar saving and restoring. (Tim p4.0.31)
 15.08.2011:
         - Remodel the Meter and the VerticalMeter (Orcan)
 13.08.2011:
