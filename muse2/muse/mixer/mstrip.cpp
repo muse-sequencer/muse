@@ -405,28 +405,21 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       //    automation mode
       //---------------------------------------------------
 
-      autoType = new ComboBox(this);
+      autoType = new ComboBox();
       autoType->setFont(config.fonts[1]);
       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      autoType->setAlignment(Qt::AlignCenter);
       autoType->setEnabled(false);
       
       // Removed by T356. 
       // Disabled for now. There is no midi automation mechanism yet...
-      //autoType->insertItem(tr("Off"), AUTO_OFF);
-      //autoType->insertItem(tr("Read"), AUTO_READ);
-      //autoType->insertItem(tr("Touch"), AUTO_TOUCH);
-      //autoType->insertItem(tr("Write"), AUTO_WRITE);
+      //autoType->addAction(tr("Off"), AUTO_OFF);
+      //autoType->addAction(tr("Read"), AUTO_READ);
+      //autoType->addAction(tr("Touch"), AUTO_TOUCH);
+      //autoType->addAction(tr("Write"), AUTO_WRITE);
       //autoType->setCurrentItem(t->automationType());
-      // TODO: Convert ComboBox to QT4
-      //autoType->insertItem(AUTO_OFF, tr("Off"));
-      //autoType->insertItem(AUTO_READ, tr("Read"));
-      //autoType->insertItem(AUTO_TOUCH, tr("Touch"));
-      //autoType->insertItem(AUTO_WRITE, tr("Write"));
-      //autoType->setCurrentIndex(t->automationType());
-      //autoType->setToolTip(tr("automation type"));
-      
-      //connect(autoType, SIGNAL(activated(int,int)), SLOT(setAutomationType(int,int)));
+      //autoType->setToolTip(tr("automation type"));      
+      //connect(autoType, SIGNAL(activated(int)), SLOT(setAutomationType(int)));
+
       grid->addWidget(autoType, _curGridRow++, 0, 1, 2);
       connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       inHeartBeat = false;
