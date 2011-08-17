@@ -211,16 +211,14 @@ void AudioStrip::songChanged(int val)
             autoType->setCurrentItem(track->automationType());
             if(track->automationType() == AUTO_TOUCH || track->automationType() == AUTO_WRITE)
                   {
-                  //autoType->setPaletteBackgroundColor(Qt::red);
                   QPalette palette;
-                  palette.setColor(autoType->backgroundRole(), QColor(Qt::red));
+                  palette.setColor(QPalette::Button, QColor(Qt::red));
                   autoType->setPalette(palette);
                   }
             else  
                   {
-                  //autoType->setPaletteBackgroundColor(qApp->palette().active().background());
                   QPalette palette;
-                  palette.setColor(autoType->backgroundRole(), qApp->palette().color(QPalette::Active, QPalette::Background));
+                  palette.setColor(QPalette::Button, qApp->palette().color(QPalette::Active, QPalette::Background));
                   autoType->setPalette(palette);
                   }
       
@@ -927,41 +925,31 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       //    automation type
       //---------------------------------------------------
 
-      autoType = new ComboBox(this);
+      autoType = new ComboBox();
       autoType->setFont(config.fonts[1]);
       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      autoType->setAlignment(Qt::AlignCenter);
       
-      autoType->insertItem(tr("Off"), AUTO_OFF);
-      autoType->insertItem(tr("Read"), AUTO_READ);
-      autoType->insertItem(tr("Touch"), AUTO_TOUCH);
-      autoType->insertItem(tr("Write"), AUTO_WRITE);
+      autoType->addAction(tr("Off"), AUTO_OFF);
+      autoType->addAction(tr("Read"), AUTO_READ);
+      autoType->addAction(tr("Touch"), AUTO_TOUCH);
+      autoType->addAction(tr("Write"), AUTO_WRITE);
       autoType->setCurrentItem(t->automationType());
-      // FIXME: TODO: Convert ComboBox to QT4
-      //autoType->insertItem(AUTO_OFF, tr("Off"));
-      //autoType->insertItem(AUTO_READ, tr("Read"));
-      //autoType->insertItem(AUTO_TOUCH, tr("Touch"));
-      //autoType->insertItem(AUTO_WRITE, tr("Write"));
-      //autoType->setCurrentIndex(t->automationType());
-      
+
       if(t->automationType() == AUTO_TOUCH || t->automationType() == AUTO_WRITE)
             {
-            // FIXME:
-            //autoType->setPaletteBackgroundColor(Qt::red);
-	    QPalette palette;
-	    palette.setColor(autoType->backgroundRole(), QColor(Qt::red));
-	    autoType->setPalette(palette);
+            QPalette palette;
+            palette.setColor(QPalette::Button, QColor(Qt::red));
+            autoType->setPalette(palette);
             }
       else  
             {
-            // FIXME:
-            //autoType->setPaletteBackgroundColor(qApp->palette().active().background());
             QPalette palette;
-            palette.setColor(autoType->backgroundRole(), qApp->palette().color(QPalette::Active, QPalette::Background));
+            palette.setColor(QPalette::Button, qApp->palette().color(QPalette::Active, QPalette::Background));
             autoType->setPalette(palette);
             }
+
       autoType->setToolTip(tr("automation type"));
-      connect(autoType, SIGNAL(activated(int,int)), SLOT(setAutomationType(int,int)));
+      connect(autoType, SIGNAL(activated(int)), SLOT(setAutomationType(int)));
       grid->addWidget(autoType, _curGridRow++, 0, 1, 2);
 
       if (off) {

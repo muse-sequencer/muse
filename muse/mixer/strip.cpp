@@ -257,7 +257,7 @@ Strip::~Strip()
 //   setAutomationType
 //---------------------------------------------------------
 
-void Strip::setAutomationType(int t,int)
+void Strip::setAutomationType(int t)
       {
       track->setAutomationType(AutomationType(t));
       song->update(SC_AUTOMATION);

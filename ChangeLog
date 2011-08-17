@@ -1,3 +1,7 @@
+17.08.2011:
+        - Convert some Qt3 style coding in ComboBox to Qt4 in terms of menu entry handling. (Orcan)
+        - Add mouse wheel support to ComboBox. (Orcan)
+        - Fix AutoType indicator coloring. (Orcan)
 16.08.2011:
         - More drawing fixes, improved accuracy (grids, timescales, edges, markers guaranteed to align now). (Tim p4.0.30)
           Much drawing changed to device (pixel) space instead of virtual space, for accuracy.

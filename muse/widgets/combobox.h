@@ -8,36 +8,38 @@
 #ifndef __COMBOBOX_H__
 #define __COMBOBOX_H__
 
-#include <QLabel>
+#include <QToolButton>
 
 class QMenu;
+class QSignalMapper;
 
 //---------------------------------------------------------
 //   ComboBox
 //---------------------------------------------------------
 
-class ComboBox : public QLabel {
+class ComboBox : public QToolButton {
       Q_OBJECT
-      Q_PROPERTY( int id READ id WRITE setId )
 
-      int _id;
       int _currentItem;
-      QMenu* list;
+      QList<int> itemlist;
+
+      QMenu* menu;
       virtual void mousePressEvent(QMouseEvent*);
+      virtual void wheelEvent(QWheelEvent*);
+
+      QSignalMapper* autoTypeSignalMapper;
 
    private slots:
-      void activatedIntern(QAction*);
+      void activatedIntern(int id);
 
    signals:
-      void activated(int val, int id);
+      void activated(int id);
 
    public:
-      ComboBox(QWidget* parent, const char* name = 0);
+      ComboBox(QWidget* parent = 0, const char* name = 0);
       ~ComboBox();
       void setCurrentItem(int);
-      void insertItem(const QString& s, int id = -1);
-      int id() const       { return _id; }
-      void setId(int i)    { _id = i; }
+      void addAction(const QString& s, int id = -1);
       };
 
 #endif
