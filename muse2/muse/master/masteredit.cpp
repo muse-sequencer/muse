@@ -31,6 +31,7 @@
 #include <QLabel>
 #include <QToolBar>
 #include <QToolButton>
+#include <QSettings>
 
 int MasterEdit::_rasterInit = 0;
 int MasterEdit::_widthInit = 600;
@@ -43,6 +44,10 @@ QByteArray MasterEdit::_toolbarInit;
 
 void MasterEdit::closeEvent(QCloseEvent* e)
       {
+      QSettings settings("MusE", "MusE-qt");
+      //settings.setValue("MasterEdit/geometry", saveGeometry());
+      settings.setValue("MasterEdit/windowState", saveState());
+      
       emit deleted((unsigned long)this);
       e->accept();
       }
@@ -94,12 +99,14 @@ MasterEdit::MasterEdit()
       //---------ToolBar----------------------------------
       
       tools = addToolBar(tr("Master tools"));
+      tools->setObjectName("Master tools");
       tools->addActions(undoRedo->actions());
 
       EditToolBar* tools2 = new EditToolBar(this, PointerTool | PencilTool | RubberTool);
       addToolBar(tools2);
 
       QToolBar* enableMaster = addToolBar(tr("Enable master"));
+      enableMaster->setObjectName("Enable master");
       enableButton = new QToolButton();
       enableButton->setCheckable(true);
       enableButton->setText(tr("Enable"));
@@ -109,6 +116,7 @@ MasterEdit::MasterEdit()
       connect(enableButton, SIGNAL(toggled(bool)), song, SLOT(setMasterFlag(bool)));
 
       QToolBar* info = addToolBar(tr("Info"));
+      info->setObjectName("Info");
       QLabel* label  = new QLabel(tr("Cursor"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
@@ -235,6 +243,10 @@ MasterEdit::MasterEdit()
 
       if (!_toolbarInit.isEmpty())
             restoreState(_toolbarInit);      
+      
+      QSettings settings("MusE", "MusE-qt");
+      //restoreGeometry(settings.value("MasterEdit/geometry").toByteArray());
+      restoreState(settings.value("MasterEdit/windowState").toByteArray());
       }
 
 //---------------------------------------------------------
