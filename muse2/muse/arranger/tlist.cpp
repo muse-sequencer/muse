@@ -227,8 +227,7 @@ void TList::paint(const QRect& r)
             for (int index = 0; index < header->count(); ++index) {
                   int section = header->logicalIndex(index);
                   int w   = header->sectionSize(section);
-                  //QRect r = p.xForm(QRect(x+2, yy, w-4, trackHeight));
-                  QRect r = p.combinedTransform().mapRect(QRect(x+2, yy, w-4, trackHeight));
+                  QRect r = p.combinedTransform().mapRect(QRect(x+2, yy, w-4, trackHeight)); 
 
                   switch (section) {
                         case COL_RECORD:

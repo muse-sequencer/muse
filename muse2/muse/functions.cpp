@@ -319,7 +319,7 @@ bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 			if (len <= 0)
 				len = 1;
 			
-			if ((event.tick()+len > part->lenTick()) && (!part->hasHiddenNotes()))
+			if ((event.tick()+len > part->lenTick()) && (!part->hasHiddenEvents()))
 				partlen[part]=event.tick()+len; // schedule auto-expanding
 				
 			if (event.lenTick() != len)
@@ -522,7 +522,7 @@ bool move_notes(const set<Part*>& parts, int range, signed int ticks)
 			
 			if (newEvent.endTick() > part->lenTick()) //if exceeding the part's end:
 			{
-				if (part->hasHiddenNotes()) // auto-expanding is forbidden, clip
+				if (part->hasHiddenEvents()) // auto-expanding is forbidden, clip
 				{
 					if (part->lenTick() > newEvent.tick())
 						newEvent.setLenTick(part->lenTick() - newEvent.tick());
@@ -776,7 +776,7 @@ void paste_at(Part* dest_part, const QString& pt, int pos)
 						
 						if (e.endTick() > dest_part->lenTick()) // event exceeds part?
 						{
-							if (dest_part->hasHiddenNotes()) // auto-expanding is forbidden?
+							if (dest_part->hasHiddenEvents()) // auto-expanding is forbidden?
 							{
 								if (e.tick() < dest_part->lenTick())
 									e.setLenTick(dest_part->lenTick() - e.tick()); // clip

@@ -6,6 +6,8 @@
 //=========================================================
 
 #include <QMenu>
+#include <QSignalMapper>
+#include <QWheelEvent>
 
 #include "combobox.h"
 
@@ -14,67 +16,75 @@
 //---------------------------------------------------------
 
 ComboBox::ComboBox(QWidget* parent, const char* name)
-   : QLabel(parent)
+   : QToolButton(parent)
       {
       setObjectName(name);
       _currentItem = 0;
-      _id = -1;
-      list = new QMenu(0);
-      connect(list, SIGNAL(triggered(QAction*)), SLOT(activatedIntern(QAction*)));
-      setFrameStyle(QFrame::Panel | QFrame::Raised);
-      setLineWidth(2);
+
+      menu = new QMenu(this);
+
+      autoTypeSignalMapper = new QSignalMapper(this);
+      connect(autoTypeSignalMapper, SIGNAL(mapped(int)), this, SLOT(activatedIntern(int)));
       }
 
 ComboBox::~ComboBox()
       {
-      delete list;
+      delete menu;
       }
 
 //---------------------------------------------------------
 //   mousePressEvent
 //---------------------------------------------------------
 
-void ComboBox::mousePressEvent(QMouseEvent*)
+void ComboBox::mousePressEvent(QMouseEvent* /*ev*/)
       {
-      list->exec(QCursor::pos());
+      menu->exec(QCursor::pos());
+      }
+
+//---------------------------------------------------------
+//   wheelEvent
+//---------------------------------------------------------
+
+void ComboBox::wheelEvent(QWheelEvent* ev)
+      {
+      int i = itemlist.indexOf(_currentItem);
+      int len = itemlist.count();
+      if (ev->delta() > 0 && i > 0)
+            activatedIntern(_currentItem-1);
+      else if (ev->delta() < 0 && -1 < i && i < len - 1)
+            activatedIntern(_currentItem+1);
       }
 
 //---------------------------------------------------------
 //   activated
 //---------------------------------------------------------
 
-void ComboBox::activatedIntern(QAction* act)
+void ComboBox::activatedIntern(int id)
       {
-      _currentItem = act->data().toInt();
-      emit activated(_currentItem, _id);
-      setText(act->text());
+      setCurrentItem(id);
+      emit activated(id);
       }
 
 //---------------------------------------------------------
 //   setCurrentItem
 //---------------------------------------------------------
 
-void ComboBox::setCurrentItem(int i)
+void ComboBox::setCurrentItem(int id)
       {
-      _currentItem = i;
-      // ORCAN - CHECK
-      QList<QAction *> actions = list->actions();
-      for (QList<QAction *>::iterator it = actions.begin(); it != actions.end(); ++it) {
-            QAction* act = *it;
-            if (act->data().toInt() == i) {
-                  setText(act->text());
-                  break;
-                  }
-            }
+      QAction* act = (QAction*) autoTypeSignalMapper->mapping(id);
+      _currentItem = id;
+      setText(act->text());
       }
 
 //---------------------------------------------------------
 //   insertItem
 //---------------------------------------------------------
 
-void ComboBox::insertItem(const QString& s, int id)
+void ComboBox::addAction(const QString& s, int id)
       {
-	QAction *act = list->addAction(s);
-	act->setData(id);
+      QAction *act = menu->addAction(s);
+      connect(act, SIGNAL(triggered()), autoTypeSignalMapper, SLOT(map()));
+      autoTypeSignalMapper->setMapping(act, id);
+      itemlist << id;
       }
 

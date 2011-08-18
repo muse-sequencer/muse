@@ -1,3 +1,22 @@
+17.08.2011:
+        - Convert some Qt3 style coding in ComboBox to Qt4 in terms of menu entry handling. (Orcan)
+        - Add mouse wheel support to ComboBox. (Orcan)
+        - Fix AutoType indicator coloring. (Orcan)
+16.08.2011:
+        - More drawing fixes, improved accuracy (grids, timescales, edges, markers guaranteed to align now). (Tim p4.0.30)
+          Much drawing changed to device (pixel) space instead of virtual space, for accuracy.
+        - Fixed display of audio automation graphs. (But not editing). (Tim) 
+        - Fixed unreadable Master Edit tempo scale (on left side), and added toolbar saving and restoring. (Tim p4.0.31)
+15.08.2011:
+        - Remodel the Meter and the VerticalMeter (Orcan)
+13.08.2011:
+        - Make the shininess of the Knob ring a little smarter (Orcan)
+05.08.2011:
+        - Parts having hidden events now drawn using 'jagged' ends and special white edges. (Tim p4.0.29)
+        - Improved border drawing guaranteed to show L/R touching part borders. TODO: Top and bottom borders. (Tim)
+        - Muted parts now show names and events. Filled with a special brush pattern for easy recognition. (Tim)   
+        - Huge changes to PartCanvas::drawItem(). And to all View::XmapXXX methods for better accuracy. (Tim)
+        - Changed bool Part::hasHiddenNotes() to int Part::hasHiddenEvents(). Added int Part::cachedHasHiddenEvents(). (Tim)
 02.08.2011:
         - Changed behaviour of part clones (flo93)
 

@@ -422,7 +422,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
   
 
-  QMenu* functions_menu = menuBar()->addMenu(tr("&Functions"));      
+  QMenu* functions_menu = menuBar()->addMenu(tr("Fu&nctions"));      
 	
 		func_quantize_action = functions_menu->addAction(tr("&Quantize"), menu_mapper, SLOT(map()));
 		func_notelen_action = functions_menu->addAction(tr("Change note &length"), menu_mapper, SLOT(map()));
@@ -3908,7 +3908,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 					unsigned newpartlen=dragged_event_part->lenTick();
 					if (tmp.endTick() > dragged_event_part->lenTick())
 					{
-						if (dragged_event_part->hasHiddenNotes()) // do not allow autoexpand
+						if (dragged_event_part->hasHiddenEvents()) // do not allow autoexpand
 						{
 							tmp.setLenTick(dragged_event_part->lenTick() - tmp.tick());
 							if (debugMsg) cout << "resized note would exceed its part; limiting length to " << tmp.lenTick() << endl;
@@ -4461,7 +4461,7 @@ void staff_t::update_part_indices()
  * 
  *   o maybe remove "insert empty measure"?
  *   o add "move other notes" or "overwrite notes" or "mix with notes" to paste
- *   o draw the edge of parts hiding notes "jagged" (hasHiddenNotes() is interesting for this)
+ *   o draw the edge of parts hiding notes "jagged" (hasHiddenEvents() is interesting for this)  - Done. Tim.
  *   o shrink a part from its beginning as well! watch out for clones!
  *   o insert empty measure should also work inside parts, that is,
  *     move notes _within_ parts

@@ -4,6 +4,7 @@
 //  $Id: part.h,v 1.5.2.4 2009/05/24 21:43:44 terminator356 Exp $
 //
 //  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
+//  Additions, modifications (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
 //=========================================================
 
 #ifndef __PART_H__
@@ -40,6 +41,10 @@ typedef CloneList::iterator iClone;
 //---------------------------------------------------------
 
 class Part : public PosLen {
+   public:
+      enum HiddenEventsType { NoEventsHidden = 0, LeftEventsHidden, RightEventsHidden };
+   
+   private:
       static int snGen;
       int _sn;
 
@@ -47,6 +52,8 @@ class Part : public PosLen {
       bool _selected;
       bool _mute;
       int _colorIndex;
+                   
+      int _hiddenEvents;   // Combination of HiddenEventsType.
                    
    protected:
       Track* _track;
@@ -82,7 +89,11 @@ class Part : public PosLen {
       void setPrevClone(Part* p)       { _prevClone = p; }
       void setNextClone(Part* p)       { _nextClone = p; }
       
-      bool hasHiddenNotes();
+      // Returns combination of HiddenEventsType enum.
+      int hasHiddenEvents();
+      // If repeated calls to hasHiddenEvents() are desired, then to avoid re-iteration of the event list, 
+      //  call this after hasHiddenEvents().
+      int cachedHasHiddenEvents() const { return _hiddenEvents; }
       
       iEvent addEvent(Event& p);
 

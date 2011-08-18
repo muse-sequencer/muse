@@ -178,7 +178,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 
       
       
-      menuFunctions = menuBar()->addMenu(tr("&Functions"));
+      menuFunctions = menuBar()->addMenu(tr("Fu&nctions"));
 
       menuFunctions->setTearOffEnabled(true);
       

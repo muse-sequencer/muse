@@ -52,15 +52,18 @@ void DList::draw(QPainter& p, const QRect& rect)
 //            else
 //                  p.eraseRect(x, yy, w, TH);
             QHeaderView *h = header;
+            p.save();
+            p.setWorldMatrixEnabled(false);
             for (int k = 0; k < h->count(); ++k) {
                   int x   = h->sectionPosition(k);
                   int w   = h->sectionSize(k);
-                  QRect r = p.combinedTransform().mapRect(QRect(x+2, yy, w-4, TH));
+                  //QRect r = p.combinedTransform().mapRect(QRect(x+2, yy, w-4, TH));  // Gives inconsistent positions. Source shows wrong operation for our needs.
+                  QRect r = map(QRect(x+2, yy, w-4, TH));                              // Use our own map instead.
                   QString s;
                   int align = Qt::AlignVCenter | Qt::AlignHCenter;
 
-                  p.save();
-                  p.setWorldMatrixEnabled(false);
+                  //p.save();
+                  //p.setWorldMatrixEnabled(false);
                   switch (k) {
                         case COL_VOL:
                               s.setNum(dm->vol);
@@ -114,8 +117,9 @@ void DList::draw(QPainter& p, const QRect& rect)
                         }
                   if (!s.isEmpty())
                         p.drawText(r, align, s);
-                  p.restore();
+                  //p.restore();
                   }
+            p.restore();
             }
 
       //---------------------------------------------------

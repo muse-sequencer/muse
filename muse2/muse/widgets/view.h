@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: view.h,v 1.2.2.1 2008/01/26 07:23:21 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  Additions, modifications (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
 //=========================================================
 
 #ifndef __VIEW_H__
@@ -49,6 +50,7 @@ class View : public QWidget {
       virtual void draw(QPainter&, const QRect&) {}
       virtual void drawOverlay(QPainter&) {}
       virtual QRect overlayRect() const { return QRect(0, 0, 0, 0); }
+      virtual void drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster);
 
       virtual void pdraw(QPainter&, const QRect&);
 
@@ -77,6 +79,10 @@ class View : public QWidget {
       int rmapy(int y) const;
       int rmapyDev(int y) const;
       //QRect devToVirt(const QRect&);
+      double rmapx_f(double x) const;
+      double rmapy_f(double y) const;
+      double rmapxDev_f(double x) const;
+      double rmapyDev_f(double y) const;
 
       void setPainter(QPainter& p);
 

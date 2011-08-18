@@ -20,8 +20,9 @@
 TScale::TScale(QWidget* parent, int ymag)
    : View(parent, 1, ymag)
       {
-      setFont(config.fonts[3]);
-      int w = 4 * QFontMetrics(config.fonts[4]).width('0');
+      setFont(config.fonts[4]);
+      //int w = 4 * QFontMetrics(config.fonts[4]).width('0');
+      int w = 4 * fontMetrics().width('0');
       setFixedWidth(w);
       setMouseTracking(true);
       }
@@ -34,7 +35,7 @@ void TScale::pdraw(QPainter& p, const QRect& r)
       {
       int y = r.y();
       int h = r.height();
-      p.setFont(config.fonts[4]);
+      //p.setFont(config.fonts[4]);
       QString s;
       for (int i = 30000; i <= 250000; i += 10000) {
             int yy =  mapy(280000 - i);
@@ -44,8 +45,9 @@ void TScale::pdraw(QPainter& p, const QRect& r)
                   continue;
             p.drawLine(0, yy, width(), yy);
             s.setNum(i/1000);
-            QFontMetrics fm(config.fonts[4]);
-            p.drawText(width() - fm.width(s) - 1, yy-2, s);
+            //QFontMetrics fm(config.fonts[4]);
+            //p.drawText(width() - fm.width(s) - 1, yy-2, s);
+            p.drawText(width() - fontMetrics().width(s) - 1, yy-2, s);  // Use the window font. Tim p4.0.31
             }
       }
 

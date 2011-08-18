@@ -77,7 +77,7 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 		{
 			// if we already entered the note, delete it
 			// if we would find a note after part->lenTick(), the above "if"
-			// avoids this. this has to be avoided because then part->hasHiddenNotes() is true
+			// avoids this. this has to be avoided because then part->hasHiddenEvents() is true
 			// which results in forbidding any action beyond its end
 			EventRange range = events->equal_range(tick - part->tick());
 			for (iEvent i = range.first; i != range.second; ++i)
@@ -173,7 +173,7 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 	}
 	
 	steprec_record_foot:
-	if (!((lasttick > part->lenTick()) && part->hasHiddenNotes())) // allowed?
+	if (!((lasttick > part->lenTick()) && part->hasHiddenEvents())) // allowed?
 	{
 		if (lasttick > part->lenTick()) // we have to expand the part?
 			schedule_resize_all_same_len_clone_parts(part, lasttick, operations);

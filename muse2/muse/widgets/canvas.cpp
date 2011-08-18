@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: canvas.cpp,v 1.10.2.17 2009/05/03 04:14:01 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  Additions, modifications (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
 //=========================================================
 
 #include <stdio.h>
@@ -17,6 +18,8 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QWheelEvent>
+
+#include <vector>
 
 #include "song.h"
 #include "event.h"
@@ -148,6 +151,11 @@ void Canvas::draw(QPainter& p, const QRect& rect)
       int h = rect.height();
       int x2 = x + w;
 
+      std::vector<CItem*> list1;
+      std::vector<CItem*> list2;
+      //std::vector<CItem*> list3;
+      std::vector<CItem*> list4;
+
       if (virt()) {
             drawCanvas(p, rect);
 
@@ -157,22 +165,24 @@ void Canvas::draw(QPainter& p, const QRect& rect)
 
             iCItem to(items.lower_bound(x2));
             
+            /*
             // Draw items from other parts behind all others.
             // Only for items with events (not arranger parts).
             for(iCItem i = items.begin(); i != to; ++i)
             { 
               CItem* ci = i->second;
+              // NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
+              ci->part()->hasHiddenEvents();
               if(!ci->event().empty() && ci->part() != curPart)
-              {
                 drawItem(p, ci, rect);
-              }
             }
-            
+                
+            // Draw unselected parts behind selected.
             for (iCItem i = items.begin(); i != to; ++i) 
             {
                   CItem* ci = i->second;
-                  // Draw unselected parts behind selected.
-                  if(!ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
+                  if((!ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
+                     && !(ci->event().empty() && (ci->part()->events()->arefCount() > 1 || ci->part()->cachedHasHiddenEvents())))  // p4.0.29 
                   {
                         drawItem(p, ci, rect);
                   }      
@@ -181,12 +191,57 @@ void Canvas::draw(QPainter& p, const QRect& rect)
             // Draw selected parts in front of unselected.
             for (iCItem i = items.begin(); i != to; ++i) 
             {
-                  CItem* ci = i->second;
-                  if(ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
-                  {
-                        drawItem(p, ci, rect);
-                  }      
+                CItem* ci = i->second;
+                if(ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
+                //if((ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart)) 
+                //   || (ci->event().empty() && (ci->part()->events()->arefCount() > 1 || ci->part()->cachedHasHiddenEvents())))
+                {
+                      drawItem(p, ci, rect);
+                }      
+            }  
+            */
+            
+            // p4.0.29
+            for(iCItem i = items.begin(); i != to; ++i)
+            { 
+              CItem* ci = i->second;
+              // NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
+              // Not required for now.
+              //ci->part()->hasHiddenEvents();
+              
+              // Draw items from other parts behind all others.
+              // Only for items with events (not arranger parts).
+              if(!ci->event().empty() && ci->part() != curPart)
+                list1.push_back(ci);    
+              else if(!ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
+              {
+                // Draw selected parts in front of all others.
+                if(ci->isSelected()) 
+                  list4.push_back(ci);
+                // Draw clone parts, and parts with hidden events, in front of others all except selected.
+                //else if(ci->event().empty() && (ci->part()->events()->arefCount() > 1 || ci->part()->cachedHasHiddenEvents()))
+                // Draw clone parts in front of others all except selected.
+                //else if(ci->event().empty() && (ci->part()->events()->arefCount() > 1))
+                //  list3.push_back(ci);
+                else  
+                  // Draw unselected parts.
+                  list2.push_back(ci);
+              }  
             }
+            int i;
+            int sz = list1.size();
+            for(i = 0; i != sz; ++i) 
+              drawItem(p, list1[i], rect);
+            sz = list2.size();
+            for(i = 0; i != sz; ++i) 
+              drawItem(p, list2[i], rect);
+            //sz = list3.size();
+            //for(i = 0; i != sz; ++i) 
+            //  drawItem(p, list3[i], rect);
+            sz = list4.size();
+            for(i = 0; i != sz; ++i) 
+              drawItem(p, list4[i], rect);
+            
             to = moving.lower_bound(x2);
             for (iCItem i = moving.begin(); i != to; ++i) 
             {
@@ -237,21 +292,22 @@ void Canvas::draw(QPainter& p, const QRect& rect)
             //---------------------------------------------------
             // draw Canvas Items
             //---------------------------------------------------
-           
+            
+            /*
             // Draw items from other parts behind all others.
             // Only for items with events (not arranger parts).
             for(iCItem i = items.begin(); i != items.end(); ++i)
             { 
               CItem* ci = i->second;
+              // NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
+              ci->part()->hasHiddenEvents();
               if(!ci->event().empty() && ci->part() != curPart)
-              {
                 drawItem(p, ci, rect);
-              }
-            }  
-              
+            }
+                
+            // Draw unselected parts behind selected.
             for (iCItem i = items.begin(); i != items.end(); ++i) {
                   CItem* ci = i->second;
-                  // Draw unselected parts behind selected.
                   if(!ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
                     {
                         drawItem(p, ci, rect);
@@ -262,10 +318,55 @@ void Canvas::draw(QPainter& p, const QRect& rect)
             for (iCItem i = items.begin(); i != items.end(); ++i) {
                   CItem* ci = i->second;
                   if(ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
-                    {    
-                        drawItem(p, ci, rect);
-                    }    
-                  } 
+                  //if((ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart)) 
+                  //   || (ci->event().empty() && (ci->part()->events()->arefCount() > 1 || ci->part()->cachedHasHiddenEvents())))
+                  {    
+                      drawItem(p, ci, rect);
+                  }    
+                } 
+            */
+            
+            // p4.0.29
+            for(iCItem i = items.begin(); i != items.end(); ++i)
+            { 
+              CItem* ci = i->second;
+              // NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
+              // Not required for now.
+              //ci->part()->hasHiddenEvents();
+              
+              // Draw items from other parts behind all others.
+              // Only for items with events (not arranger parts).
+              if(!ci->event().empty() && ci->part() != curPart)
+                list1.push_back(ci);    
+              else if(!ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
+              {
+                // Draw selected parts in front of all others.
+                if(ci->isSelected()) 
+                  list4.push_back(ci);
+                // Draw clone parts, and parts with hidden events, in front of others all except selected.
+                //else if(ci->event().empty() && (ci->part()->events()->arefCount() > 1 || ci->part()->cachedHasHiddenEvents()))
+                // Draw clone parts in front of others all except selected.
+                //else if(ci->event().empty() && (ci->part()->events()->arefCount() > 1))
+                //  list3.push_back(ci);
+                else  
+                  // Draw unselected parts.
+                  list2.push_back(ci);
+              }  
+            }  
+            int i;
+            int sz = list1.size();
+            for(i = 0; i != sz; ++i) 
+              drawItem(p, list1[i], rect);
+            sz = list2.size();
+            for(i = 0; i != sz; ++i) 
+              drawItem(p, list2[i], rect);
+            //sz = list3.size();
+            //for(i = 0; i != sz; ++i) 
+            //  drawItem(p, list3[i], rect);
+            sz = list4.size();
+            for(i = 0; i != sz; ++i) 
+              drawItem(p, list4[i], rect);
+            
             for (iCItem i = moving.begin(); i != moving.end(); ++i) 
                   {
                         drawItem(p, i->second, rect);
@@ -273,19 +374,26 @@ void Canvas::draw(QPainter& p, const QRect& rect)
             drawTopItem(p, QRect(x,y,w,h));
             p.save();
             setPainter(p);
-            }
+      }
 
       //---------------------------------------------------
       //    draw marker
       //---------------------------------------------------
 
-      int y2 = y + h;
+      //p.save();
+      bool wmtxen = p.worldMatrixEnabled();
+      p.setWorldMatrixEnabled(false);
+      
+      int my = mapy(y);
+      //int y2 = y + h;
+      int my2 = mapy(y + h);
       MarkerList* marker = song->marker();
       for (iMarker m = marker->begin(); m != marker->end(); ++m) {
             int xp = m->second.tick();
             if (xp >= x && xp < x+w) {
                   p.setPen(Qt::green);
-                  p.drawLine(xp, y, xp, y2);
+                  //p.drawLine(xp, y, xp, y2);
+                  p.drawLine(mapx(xp), my, mapx(xp), my2);
                   }
             }
 
@@ -294,15 +402,27 @@ void Canvas::draw(QPainter& p, const QRect& rect)
       //---------------------------------------------------
 
       p.setPen(Qt::blue);
+      int mx;
       if (pos[1] >= unsigned(x) && pos[1] < unsigned(x2)) {
-            p.drawLine(pos[1], y, pos[1], y2);
+            //p.drawLine(pos[1], y, pos[1], y2);
+            mx = mapx(pos[1]);
+            p.drawLine(mx, my, mx, my2);
             }
-      if (pos[2] >= unsigned(x) && pos[2] < unsigned(x2))
-            p.drawLine(pos[2], y, pos[2], y2);
+      if (pos[2] >= unsigned(x) && pos[2] < unsigned(x2)) {
+            //p.drawLine(pos[2], y, pos[2], y2);
+            mx = mapx(pos[2]);
+            p.drawLine(mx, my, mx, my2);
+            }
       p.setPen(Qt::red);
       if (pos[0] >= unsigned(x) && pos[0] < unsigned(x2)) {
-            p.drawLine(pos[0], y, pos[0], y2);
+            //p.drawLine(pos[0], y, pos[0], y2);
+            mx = mapx(pos[0]);
+            p.drawLine(mx, my, mx, my2);
             }
+      
+      //p.restore();
+      //p.setWorldMatrixEnabled(true);
+      p.setWorldMatrixEnabled(wmtxen);
       
       //---------------------------------------------------
       //    draw lasso

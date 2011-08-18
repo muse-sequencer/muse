@@ -112,6 +112,7 @@ MasterEdit::MasterEdit()
       addToolBar(tools2);
 
       QToolBar* enableMaster = addToolBar(tr("Enable master"));
+      enableMaster->setObjectName("Enable master");
       enableButton = new QToolButton();
       enableButton->setCheckable(true);
       enableButton->setText(tr("Enable"));
@@ -121,6 +122,7 @@ MasterEdit::MasterEdit()
       connect(enableButton, SIGNAL(toggled(bool)), song, SLOT(setMasterFlag(bool)));
 
       QToolBar* info = addToolBar(tr("Info"));
+      info->setObjectName("Info");
       QLabel* label  = new QLabel(tr("Cursor"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);

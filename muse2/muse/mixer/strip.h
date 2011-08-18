@@ -60,7 +60,7 @@ class Strip : public QFrame {
 
    protected slots:
       virtual void heartBeat();
-      void setAutomationType(int t,int);
+      void setAutomationType(int t);
 
    public slots:
       void resetPeaks();

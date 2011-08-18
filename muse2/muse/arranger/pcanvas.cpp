@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: pcanvas.cpp,v 1.48.2.26 2009/11/22 11:08:33 spamatica Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  Additions, modifications (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
 //=========================================================
 
 #include <stdio.h>
@@ -45,7 +46,6 @@
 #include "midictrl.h"
 #include "utils.h"
 
-
 //---------------------------------------------------------
 //   colorRect
 //   paints a rectangular icon with a given color
@@ -69,17 +69,12 @@ QIcon colorRect(const QColor& color, int width, int height) {
 
 NPart::NPart(Part* e) : CItem(Event(), e)
       {
-      int th = track()->height();
+      leftBorderTouches = false;
+      rightBorderTouches = false;
+      
       int y  = track()->y();
-      
-      ///setPos(QPoint(e->tick(), y + 1));
       setPos(QPoint(e->tick(), y));
-      
-      ///setBBox(QRect(e->tick(), y + 1, e->lenTick(), th));
-      // NOTE: For adjustable border size: If using a two-pixel border width while drawing, use second line. 
-      //       If one-pixel width, use first line. Tim.
-      //setBBox(QRect(e->tick(), y, e->lenTick(), th));
-      setBBox(QRect(e->tick(), y + 1, e->lenTick(), th));
+      setBBox(QRect(e->tick(), y, e->lenTick(), track()->height()));
       }
 
 //---------------------------------------------------------
@@ -418,17 +413,31 @@ QPoint PartCanvas::raster(const QPoint& p) const
 void PartCanvas::partsChanged()
       {
       items.clear();
-      int idx = 0;
       for (iTrack t = tracks->begin(); t != tracks->end(); ++t) {
             PartList* pl = (*t)->parts();
             for (iPart i = pl->begin(); i != pl->end(); ++i) {
-                  NPart* np = new NPart(i->second);
+                  Part* part = i->second;
+                  NPart* np = new NPart(part);
                   items.add(np);
                   if (i->second->selected()) {
                         selectItem(np, true);
                         }
-                  }
-            ++idx;
+                  
+                  // Check for touching borders. p4.0.29
+                  Part* pp;
+                  for(ciPart ii = pl->begin(); ii != pl->end(); ++ii) 
+                  {
+                    pp = ii->second;
+                    if(pp == part)  // Ignore this part
+                      continue;
+                    if(pp->tick() > part->endTick())
+                      break;
+                    if(pp->endTick() == part->tick())
+                      np->leftBorderTouches = true;
+                    if(pp->tick() == part->endTick())
+                      np->rightBorderTouches = true;
+                  }      
+                }
             }
       redraw();
       }
@@ -1275,6 +1284,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
 //    draws a part
 //---------------------------------------------------------
 
+#if 0
 void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       {
       int from   = rect.x();
@@ -1298,83 +1308,677 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       }
       
       QRect r    = item->bbox();
+      bool clone = part->events()->arefCount() > 1;
+      QBrush brush;
       
-      int i = part->colorIndex();
-      p.setPen(Qt::black);
-      if (part->mute()) {
-            QColor c(Qt::white);
-            c.setAlpha(config.globalAlphaBlend);
-            QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-            gradient.setColorAt(0, c);
-            gradient.setColorAt(1, c.darker());
-            QBrush cc(gradient);
-            p.setBrush(cc);
-
-            // NOTE: For one-pixel border use first line For two-pixel border use second.
-            p.drawRect(QRect(r.x(), r.y()-1, r.width(), r.height()));
-            
-            return;
-            }
-      if (item->isMoving()) {
+      //QRect rr = map(r);
+      //QRect rr = p.transform().mapRect(r);
+      //printf("PartCanvas::drawItem called map rx:%d rw:%d  rrx:%d rrw:%d\n", r.x(), r.width(), rr.x(), rr.width());  
+      //printf("PartCanvas::drawItem called map rx:%d rw:%d\n", r.x(), r.width());  
+      //p.save();
+      //p.setWorldMatrixEnabled(false);
+      
+      // NOTE: Optimization: For each item, hasHiddenEvents() is called once in Canvas::draw(), and we use cachedHasHiddenEvents().
+      // Not used for now.
+      //int het = part->cachedHasHiddenEvents();
+      int het = part->hasHiddenEvents();
+        
+      int y_1 = rmapyDev(1);  // Hack, try to replace.
+      double xs_0 =  r.x();
+      double xe_0 =  xs_0 + r.width();
+      double xs_m0 = rmapx_f(xs_0);
+      double xe_m0 = rmapx_f(xe_0);
+      double xs_1 = rmapxDev_f(xs_m0 + 1.0);
+      if(xs_1 > xe_0)
+        xs_1 = xe_0;
+      double xs_2 = rmapxDev_f(xs_m0 + 2.0);
+      if(xs_2 > xe_0)
+        xs_2 = xe_0;
+      double xs_6 = rmapxDev_f(xs_m0 + 6.0);
+      if(xs_6 > xe_0)
+        xs_6 = xe_0;
+      
+      double xe_1 = rmapxDev_f(xe_m0 - 1.0);
+      if(xe_1 < xs_0)
+        xe_1 = xs_0;
+      double xe_2 = rmapxDev_f(xe_m0 - 2.0);
+      if(xe_2 < xs_0)
+        xe_2 = xs_0;
+      double xe_6 = rmapxDev_f(xe_m0 - 6.0);
+      if(xe_6 < xs_0)
+        xe_6 = xs_0;
+      
+      double ys_0 =  r.y();
+      double ye_0 =  ys_0 + r.height();
+      double ys_m0 = rmapy_f(ys_0);
+      double ye_m0 = rmapy_f(ye_0);
+      double ys_1 = rmapyDev_f(ys_m0 + 1.0);
+      if(ys_1 > ye_0)
+        ys_1 = ye_0;
+      double ys_2 = rmapyDev_f(ys_m0 + 2.0);
+      if(ys_2 > ye_0)
+        ys_2 = ye_0;
+      
+      double ye_1 = rmapyDev_f(ye_m0 - 1.0);
+      if(ye_1 < ys_0)
+        ye_1 = ys_0;
+      double ye_2 = rmapyDev_f(ye_m0 - 2.0);
+      if(ye_2 < ys_0)
+        ye_2 = ys_0;
+      
+      int cidx = part->colorIndex();
+      if (item->isMoving()) 
+      {
             QColor c(Qt::gray);
             c.setAlpha(config.globalAlphaBlend);
             QLinearGradient gradient(r.topLeft(), r.bottomLeft());
             gradient.setColorAt(0, c);
             gradient.setColorAt(1, c.darker());
-            QBrush cc(gradient);
-            p.setBrush(cc);
-
-            // NOTE: For one-pixel border use first line. For two-pixel border use second.
-            p.drawRect(QRect(r.x(), r.y()-1, r.width(), r.height()));
-            }
-      else if (part->selected()) {
-            bool clone = part->events()->arefCount() > 1;
-            
-            // NOTE: For one-pixel border use first line and don't bother with setCosmetic.
-            //       For a two-pixel border use second line and MUST use setCosmetic! Tim.
-            //p.setPen(QPen(config.partColors[i], 0, clone ? Qt::DashLine : Qt::SolidLine));
-            QPen pen(config.partColors[i], 2, clone ? Qt::DashLine : Qt::SolidLine);
-            pen.setCosmetic(true);
-            
-            p.setPen(pen);
-            // Hm, put some kind of lower limit? If so do that globally to the adjustment.
-            QColor c(Qt::black);
+            brush = QBrush(gradient);
+      }
+      else 
+      if (part->selected()) 
+      {
+          QColor c(Qt::black);
+          c.setAlpha(config.globalAlphaBlend);
+          QLinearGradient gradient(r.topLeft(), r.bottomLeft());
+          // Use a colour only about 20% lighter than black, rather than the 50% we use in gGradientFromQColor
+          //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
+          //c.setRgba(64, 64, 64, c.alpha());        
+          gradient.setColorAt(0, QColor(51, 51, 51, config.globalAlphaBlend));
+          gradient.setColorAt(1, c);
+          brush = QBrush(gradient);
+      }
+      else
+      if (part->mute()) 
+      {
+            QColor c(Qt::white);
             c.setAlpha(config.globalAlphaBlend);
-            
             QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-            //gradient.setColorAt(0, c);
-            //gradient.setColorAt(1, c.darker());
-            // Use a colour only about 20% lighter than black, rather than the 50% we use in gGradientFromQColor
-            //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
-            //c.setRgba(64, 64, 64, c.alpha());        
-            gradient.setColorAt(0, QColor(51, 51, 51, config.globalAlphaBlend));
-            gradient.setColorAt(1, c);
-            QBrush cc(gradient);
-            //QBrush cc(gGradientFromQColor(c, r.topLeft(), r.bottomLeft()));
+            gradient.setColorAt(0, c);
+            gradient.setColorAt(1, c.darker());
+            brush = QBrush(gradient);
             
-            p.setBrush(cc);
-            p.drawRect(r);
+            // Not good. Aliasing missing lines happening at different mags. 
+            // And it's too much. If notes + automation is displayed (by removing 'return' below), cross hatch interferes.
+            // TODO: Maybe try to draw a nice gradient SINGLE cross (or STAR) from corner to corner instead. 
+            // Then remove the 'return' below and let it draw the name and notes. 
+            //brush.setStyle(Qt::DiagCrossPattern);
+            //p.fillRect(rf, brush);
+      }
+      else
+      {
+            QColor c(config.partColors[cidx]);
+            c.setAlpha(config.globalAlphaBlend);
+            brush = QBrush(gGradientFromQColor(c, r.topLeft(), r.bottomLeft()));
+      }  
+      
+      double h = r.height();
+      double s = h / 4.0;
+      double y0 = r.y();
+      double y1 = y0 + s;
+      double y2 = y0 + s * 2.0;
+      double y3 = y0 + s * 3.0;
+      double y4 = y0 + h;
+      
+      QPointF points[16];   
+      int pts;
+      
+      //
+      // Fill the part rectangles, accounting for hidden events by using 'jagged' edges...
+      //
+      
+      p.setBrush(brush);
+      p.setPen(Qt::NoPen);
+      if(het)
+      {
+        pts = 0;
+        if(het == (Part::LeftEventsHidden | Part::RightEventsHidden))
+        {
+          points[pts++] = QPointF(xs_0, y0);
+          points[pts++] = QPointF(xe_0, y0);
+          points[pts++] = QPointF(xe_6, y1);
+          points[pts++] = QPointF(xe_0, y2);
+          points[pts++] = QPointF(xe_6, y3);
+          points[pts++] = QPointF(xe_0, y4);
+          points[pts++] = QPointF(xs_0, y4);
+          points[pts++] = QPointF(xs_6, y3);
+          points[pts++] = QPointF(xs_0, y2);
+          points[pts++] = QPointF(xs_6, y1);
+          p.drawConvexPolygon(points, pts);   // Help says may be faster on some platforms (X11).
+        }
+        else
+        if(het == Part::LeftEventsHidden)
+        {
+          points[pts++] = QPointF(xs_0, y0);
+          points[pts++] = QPointF(xe_0, y0);
+          points[pts++] = QPointF(xe_0, y4);
+          points[pts++] = QPointF(xs_0, y4);
+          points[pts++] = QPointF(xs_6, y3);
+          points[pts++] = QPointF(xs_0, y2);
+          points[pts++] = QPointF(xs_6, y1);
+          p.drawConvexPolygon(points, pts);   
+        }
+        else
+        if(het == Part::RightEventsHidden)
+        {
+          points[pts++] = QPointF(xs_0, y0);
+          points[pts++] = QPointF(xe_0, y0);
+          
+          points[pts++] = QPointF(xe_6, y1);
+          points[pts++] = QPointF(xe_0, y2);
+          points[pts++] = QPointF(xe_6, y3);
+          points[pts++] = QPointF(xe_0, y4);
+          points[pts++] = QPointF(xs_0, y4);
+          p.drawConvexPolygon(points, pts);   
+        }
+        
+        //
+        // Draw remaining 'hidden events' decorations with 'jagged' edges...
+        //
+                      
+        int part_r, part_g, part_b, brightness, color_brightness;
+        config.partColors[cidx].getRgb(&part_r, &part_g, &part_b);
+        brightness =  part_r*29 + part_g*59 + part_b*12;
+        //if ((brightness < 12000 || part->selected()) && !part->mute() && !item->isMoving())
+        //  color_brightness=223;   // too dark: use lighter color 
+        //else
+        //  color_brightness=32;  // otherwise use dark color 
+        if ((brightness >= 12000 && !part->selected()))
+          color_brightness=32;    // too light: use dark color 
+        else
+          color_brightness=223;   // too dark: use lighter color 
+        QColor c(color_brightness,color_brightness,color_brightness, config.globalAlphaBlend);
+        p.setBrush(QBrush(gGradientFromQColor(c, r.topLeft(), r.bottomLeft())));
+        //p.setBrush(QBrush(c));
+        if(het & Part::RightEventsHidden)
+        {
+          pts = 0;
+          points[pts++] = QPointF(xe_0, y0);
+          points[pts++] = QPointF(xe_0, y4);
+          points[pts++] = QPointF(xe_6, y3);
+          points[pts++] = QPointF(xe_0, y2);
+          points[pts++] = QPointF(xe_6, y1);
+          p.drawConvexPolygon(points, pts);   
+        }
+        if(het & Part::LeftEventsHidden)
+        {
+          pts = 0;
+          points[pts++] = QPointF(xs_0, y0);
+          points[pts++] = QPointF(xs_6, y1);
+          points[pts++] = QPointF(xs_0, y2);
+          points[pts++] = QPointF(xs_6, y3);
+          points[pts++] = QPointF(xs_0, y4);
+          p.drawConvexPolygon(points, pts);   
+        }
+      }  
+      else
+      {
+        p.fillRect(r, brush);
+      }
+          
+      MidiPart* mp = 0;
+      WavePart* wp = 0;
+      Track::TrackType type = part->track()->type();
+      if (type == Track::WAVE) {
+            wp =(WavePart*)part;
             }
       else {
-            bool clone = part->events()->arefCount() > 1;
-            
-            // NOTE: Pixel width: See above note.
-            //p.setPen(QPen(Qt::black, 0, clone ? Qt::DashLine : Qt::SolidLine));
-            QPen pen(Qt::black, 2, clone ? Qt::DashLine : Qt::SolidLine);
-            pen.setCosmetic(true);
-            
-            p.setPen(pen);
-            QColor c(config.partColors[i]);
-            c.setAlpha(config.globalAlphaBlend);
-            //QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-            //gradient.setColorAt(0, c);
-            //gradient.setColorAt(1, c.darker());
-            //QBrush cc(gradient);
-            QBrush cc(gGradientFromQColor(c, r.topLeft(), r.bottomLeft()));
-            p.setBrush(cc);
-
-            p.drawRect(r);
+            mp = (MidiPart*)part;
             }
+
+      if (wp)
+          drawWavePart(p, rect, wp, r);
+      else if (mp)
+      {
+          drawMidiPart(p, rect, mp->events(), (MidiTrack*)part->track(), mp, r, mp->tick(), from, to);  
+      }
+
+  #if 0
+        //
+        // Now draw the borders...
+        // Works great but requires clones be drawn with the highest priority on top of all other parts, in Canvas::draw.
+        //
+        
+        QPen pen(part->selected() ? config.partColors[i] : Qt::black, 2.0, clone ? Qt::DotLine : Qt::SolidLine);
+        pen.setCosmetic(true);
+        p.setPen(pen); 
+        p.setBrush(Qt::NoBrush);
+        p.drawRect(r);
+        
+  #else 
+        //
+        // Now draw the borders, using custom segments...
+        //
+        
+        // FIXME NOTE: For 1-pixel wide lines, setting pen style to anything other than solid didn't work out well. 
+        // Much too screwy - the single-width lines kept getting shifted one pixel over intermittently. 
+        // I tried EVERYTHING to make sure x is proper but the painter keeps shifting them over.
+        // Meanwhile the fills are correct. Seems painter doesn't like line patterns, whether stock or custom.
+        // Therefore I was forced to manually draw the left and right segments. 
+        // It works. Which seems to be more proof that painter is handling line patterns and pen widths badly... 
+        // DO NOT ERASE COMMENTED CODE BELOW for now, in case it can be fixed. Tim. p4.0.29
+        
+        p.setBrush(Qt::NoBrush);
+        
+        QColor pc((part->mute() || item->isMoving())? Qt::white : config.partColors[cidx]);
+        QPen penSelect1H(pc);
+        QPen penSelect2H(pc, 2.0);
+        QPen penSelect1V(pc);
+        QPen penSelect2V(pc, 2.0);
+        penSelect1H.setCosmetic(true);
+        penSelect2H.setCosmetic(true);
+        penSelect1V.setCosmetic(true);
+        penSelect2V.setCosmetic(true);
+        
+        pc = Qt::black;
+        QPen penNormal1H(pc);
+        QPen penNormal2H(pc, 2.0);
+        QPen penNormal1V(pc);
+        QPen penNormal2V(pc, 2.0);
+        penNormal1H.setCosmetic(true);
+        penNormal2H.setCosmetic(true);
+        penNormal1V.setCosmetic(true);
+        penNormal2V.setCosmetic(true);
+        
+        QVector<qreal> customDashPattern;
+        if(clone)
+        {
+          customDashPattern << 4.0 << 8.0;
+          penSelect1H.setDashPattern(customDashPattern);
+          penNormal1H.setDashPattern(customDashPattern);
+          //penSelect1V.setDashPattern(customDashPattern);
+          //penNormal1V.setDashPattern(customDashPattern);
+          customDashPattern.clear();
+          customDashPattern << 2.0 << 4.0;
+          penSelect2H.setDashPattern(customDashPattern);
+          penNormal2H.setDashPattern(customDashPattern);
+          //penSelect2V.setDashPattern(customDashPattern);
+          //penNormal2V.setDashPattern(customDashPattern);
+        }  
+        
+        pc = Qt::white;
+        QPen penHidden1(pc);
+        QPen penHidden2(pc, 2.0);
+        penHidden2.setCosmetic(true);
+        //customDashPattern.clear();
+        //customDashPattern << 2.0 << 10.0;
+        //penHidden1.setDashPattern(customDashPattern);
+        //customDashPattern.clear();
+        //customDashPattern << 1.0 << 5.0;
+        //penHidden2.setDashPattern(customDashPattern);
+        
+        bool lbt = ((NPart*)item)->leftBorderTouches;
+        bool rbt = ((NPart*)item)->rightBorderTouches;
+        
+        QLineF l1( lbt?xs_1:xs_0, ys_0,   rbt?xe_1:xe_0, ys_0);                     // Top 
+        //QLineF l2(rbt?xe_1:xe_0,  r.y() + (rbt?y_1:y_2) - 1,       rbt?xe_1:xe_0, r.y() + r.height() - 1);        // Right 
+        QLineF l3( lbt?xs_1:xs_0, ye_0,   rbt?xe_1:xe_0, ye_0);  // Bottom
+        //QLineF l4(r.x(), r.y() + (lbt?y_1:y_2),            r.x(), r.y() + r.height() - (lbt?y_1:y_2));       // Left
+        
+        if(het & Part::RightEventsHidden)
+          p.setPen(((NPart*)item)->rightBorderTouches ? penHidden1 : penHidden2); 
+        else  
+        {
+          if(((NPart*)item)->rightBorderTouches)              
+            p.setPen(part->selected() ? penSelect1V : penNormal1V); 
+          else  
+            p.setPen(part->selected() ? penSelect2V : penNormal2V); 
+        }  
+        //p.drawLine(l2);        // Right line
+        
+        double xx = rbt?xe_1:xe_0; 
+        if(clone)
+        {
+          double yinc = 7.0 * y_1;
+          for(double yy = (rbt?ys_1:ys_2); yy < ye_2; yy += yinc)
+          {
+            double yi = (rbt?3.0:2.0) * y_1;
+            if(yy + yi > ye_2)
+              yi = ye_2 - yy;
+            p.drawLine(QPointF(xx, yy), QPointF(xx, yy + yi));      // Right dashed line
+          }   
+        }
+        else  
+          p.drawLine(QPointF(xx, rbt?ys_1:ys_2), QPointF(xx, rbt?ye_1:ye_2));      // Right line
+        
+        if(het & Part::LeftEventsHidden)
+          p.setPen(((NPart*)item)->leftBorderTouches ? penHidden1 : penHidden2); 
+        else  
+        {
+          if(((NPart*)item)->leftBorderTouches)              
+            p.setPen(part->selected() ? penSelect1V : penNormal1V); 
+          else  
+            p.setPen(part->selected() ? penSelect2V : penNormal2V); 
+        }  
+        //p.drawLine(l4);        //  Left line
+        
+        xx = xs_0;
+        if(clone)
+        {
+          double yinc = 7.0 * y_1;
+          for(double yy = (lbt?ys_1:ys_2); yy < ye_2; yy += yinc)
+          {
+            double yi = (lbt?3.0:2.0) * y_1;
+            if(yy + yi > ye_2)
+              yi = ye_2 - yy;
+            p.drawLine(QPointF(xx, yy), QPointF(xx, yy + yi));      // Left dashed line
+          }   
+        }
+        else  
+          p.drawLine(QPointF(xx, lbt?ys_1:ys_2), QPointF(xx, lbt?ye_1:ye_2));      // Left line
+        
+        p.setPen(part->selected() ? penSelect2H : penNormal2H); 
+        p.drawLine(l1);  // Top line
+        p.drawLine(l3);  // Bottom line
+        
+  #endif
+ 
+      //p.restore();
+      
+      if (config.canvasShowPartType & 1) {     // show names
+            // draw name
+            // FN: Set text color depending on part color (black / white)
+            int part_r, part_g, part_b, brightness;
+            // Since we'll draw the text on the bottom (to accommodate drum 'slivers'),
+            //  get the lowest colour in the gradient used to draw the part.
+            QRect rr = map(r);
+            rr.setX(rr.x() + 3);
+            gGradientFromQColor(config.partColors[cidx], rr.topLeft(), rr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
+            brightness =  part_r*29 + part_g*59 + part_b*12;
+            //bool rev = (brightness < 12000 || part->selected()) && !part->mute() && !item->isMoving();
+            bool rev = brightness >= 12000 && !part->selected();
+            p.save();
+            p.setFont(config.fonts[1]);
+            p.setWorldMatrixEnabled(false);
+            if (rev)
+              p.setPen(Qt::white); 
+            else
+              p.setPen(Qt::black);   
+            p.drawText(rr.translated(1, 1), Qt::AlignBottom|Qt::AlignLeft, part->name());
+            if (rev)
+              p.setPen(Qt::black);  
+            else
+              p.setPen(Qt::white);   
+            p.drawText(rr, Qt::AlignBottom|Qt::AlignLeft, part->name());
+            p.restore();
+            }
+      }
+#endif
+
+void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
+      {
+      int from   = rect.x();
+      int to     = from + rect.width();
+
+      //printf("from %d to %d\n", from,to);
+      Part* part = ((NPart*)item)->part();
+      int pTick  = part->tick();
+      from      -= pTick;
+      to        -= pTick;
+      if(from < 0)
+        from = 0;
+      if((unsigned int)to > part->lenTick())
+        to = part->lenTick();  
+
+      bool clone = part->events()->arefCount() > 1;
+      QBrush brush;
+      
+      QRect r    = item->bbox();
+      // Compensation required for two pixel wide border. FIXME Prefer to do this after the map, but r is needed below.
+      r.moveTop(r.y() + rmapyDev(1));  
+      //QRect rr = p.transform().mapRect(r);    // Gives inconsistent positions. Source shows wrong operation for our needs.
+      QRect rr = map(r);                        // Use our own map instead.                                
+      
+      // Item bounding box x is in tick coordinates, same as rectangle.
+      //if(item->bbox().intersect(rect).isNull())
+      //if((item->bbox() & rect).isNull())
+      if((rr & map(rect)).isNull())
+      {
+        //printf("PartCanvas::drawItem rectangle is null\n");
+        return;
+      }
+      
+      //printf("PartCanvas::drawItem called map rx:%d rw:%d  rrx:%d rrw:%d\n", r.x(), r.width(), rr.x(), rr.width());  
+      //printf("PartCanvas::drawItem called map rx:%d rw:%d\n", r.x(), r.width());  
+      
+      p.save();
+      p.setWorldMatrixEnabled(false);
+      
+      // NOTE: Optimization: For each item, hasHiddenEvents() is called once in Canvas::draw(), and we use cachedHasHiddenEvents().
+      // Not used for now.
+      //int het = part->cachedHasHiddenEvents();
+      int het = part->hasHiddenEvents();
+        
+      int xs_0 = rr.x();
+      int xe_0 = xs_0 + rr.width();
+      int xs_1 = xs_0 + 1;
+      if(xs_1 > xe_0)
+        xs_1 = xe_0;
+      int xs_2 = xs_0 + 2;
+      if(xs_2 > xe_0)
+        xs_2 = xe_0;
+      int xs_j = xs_0 + 8;
+      if(xs_j > xe_0)
+        xs_j = xe_0;
+      
+      int xe_1 = xe_0 - 1;
+      if(xe_1 < xs_0)
+        xe_1 = xs_0;
+      int xe_2 = xe_0 - 2;
+      if(xe_2 < xs_0)
+        xe_2 = xs_0;
+      int xe_j = xe_0 - 8;
+      if(xe_j < xs_0)
+        xe_j = xs_0;
+      
+      int ys_0 = rr.y();          
+      int ye_0 = ys_0 + rr.height();
+      int ys_1 = ys_0 + 1;
+      if(ys_1 > ye_0)
+        ys_1 = ye_0;
+      int ys_2 = ys_0 + 2;
+      if(ys_2 > ye_0)
+        ys_2 = ye_0;
+      int ys_3 = ys_0 + 3;
+      if(ys_3 > ye_0)
+        ys_3 = ye_0;
+      
+      int ye_1 = ye_0 - 1;
+      if(ye_1 < ys_0)
+        ye_1 = ys_0;
+      int ye_2 = ye_0 - 2;
+      if(ye_2 < ys_0)
+        ye_2 = ys_0;
+      
+      int cidx = part->colorIndex();
+      if (item->isMoving()) 
+      {
+            QColor c(Qt::gray);
+            c.setAlpha(config.globalAlphaBlend);
+            QLinearGradient gradient(rr.topLeft(), rr.bottomLeft());
+            gradient.setColorAt(0, c);
+            gradient.setColorAt(1, c.darker());
+            brush = QBrush(gradient);
+      }
+      else 
+      if (part->selected()) 
+      {
+          QColor c(Qt::black);
+          c.setAlpha(config.globalAlphaBlend);
+          QLinearGradient gradient(rr.topLeft(), rr.bottomLeft());
+          // Use a colour only about 20% lighter than black, rather than the 50% we use in gGradientFromQColor
+          //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
+          //c.setRgba(64, 64, 64, c.alpha());        
+          gradient.setColorAt(0, QColor(51, 51, 51, config.globalAlphaBlend));
+          gradient.setColorAt(1, c);
+          brush = QBrush(gradient);
+      }
+      else
+      if (part->mute()) 
+      {
+            QColor c(Qt::white);
+            c.setAlpha(config.globalAlphaBlend);
+            QLinearGradient gradient(rr.topLeft(), rr.bottomLeft());
+            gradient.setColorAt(0, c);
+            gradient.setColorAt(1, c.darker());
+            brush = QBrush(gradient);
+      }
+      else
+      {
+            QColor c(config.partColors[cidx]);
+            c.setAlpha(config.globalAlphaBlend);
+            brush = QBrush(gGradientFromQColor(c, rr.topLeft(), rr.bottomLeft()));
+      }  
+      
+      int h = rr.height();
+      double s = double(h) / 4.0;
+      int y0 = ys_0;
+      //int y1 = y0 + lrint(s);
+      int y2 = y0 + lrint(s * 2.0);
+      //int y3 = y0 + lrint(s * 3.0);
+      int y4 = y0 + h;
+      
+      //QPoint points[12];   
+      QPoint points[8];   
+      int pts;
+      
+      //
+      // Fill the part rectangles, accounting for hidden events by using 'jagged' edges...
+      //
+      
+      p.setBrush(brush);
+      p.setPen(Qt::NoPen);
+      if(het)
+      {
+        pts = 0;
+        if(het == (Part::LeftEventsHidden | Part::RightEventsHidden))
+        {
+          //points[pts++] = QPoint(xs_0, y0);
+          //points[pts++] = QPoint(xe_0, y0);
+          //points[pts++] = QPoint(xe_j, y1);
+          //points[pts++] = QPoint(xe_0, y2);
+          //points[pts++] = QPoint(xe_j, y3);
+          //points[pts++] = QPoint(xe_0, y4);
+          //points[pts++] = QPoint(xs_0, y4);
+          //points[pts++] = QPoint(xs_j, y3);
+          //points[pts++] = QPoint(xs_0, y2);
+          //points[pts++] = QPoint(xs_j, y1);
+          
+          points[pts++] = QPoint(xs_0, y0);
+          points[pts++] = QPoint(xe_0, y0);
+          points[pts++] = QPoint(xe_j, y2);
+          points[pts++] = QPoint(xe_0, y4);
+          points[pts++] = QPoint(xs_0, y4);
+          points[pts++] = QPoint(xs_j, y2);
+          
+          p.drawConvexPolygon(points, pts);   // Help says may be faster on some platforms (X11).
+        }
+        else
+        if(het == Part::LeftEventsHidden)
+        {
+          //points[pts++] = QPoint(xs_0, y0);
+          //points[pts++] = QPoint(xe_0, y0);
+          //points[pts++] = QPoint(xe_0, y4);
+          //points[pts++] = QPoint(xs_0, y4);
+          //points[pts++] = QPoint(xs_j, y3);
+          //points[pts++] = QPoint(xs_0, y2);
+          //points[pts++] = QPoint(xs_j, y1);
+          
+          points[pts++] = QPoint(xs_0, y0);
+          points[pts++] = QPoint(xe_0, y0);
+          points[pts++] = QPoint(xe_0, y4);
+          points[pts++] = QPoint(xs_0, y4);
+          points[pts++] = QPoint(xs_j, y2);
+          
+          p.drawConvexPolygon(points, pts);   
+        }
+        else
+        if(het == Part::RightEventsHidden)
+        {
+          //points[pts++] = QPoint(xs_0, y0);
+          //points[pts++] = QPoint(xe_0, y0);
+          //points[pts++] = QPoint(xe_j, y1);
+          //points[pts++] = QPoint(xe_0, y2);
+          //points[pts++] = QPoint(xe_j, y3);
+          //points[pts++] = QPoint(xe_0, y4);
+          //points[pts++] = QPoint(xs_0, y4);
+          
+          points[pts++] = QPoint(xs_0, y0);
+          points[pts++] = QPoint(xe_0, y0);
+          points[pts++] = QPoint(xe_j, y2);
+          points[pts++] = QPoint(xe_0, y4);
+          points[pts++] = QPoint(xs_0, y4);
+          
+          p.drawConvexPolygon(points, pts);   
+        }
+        
+        //
+        // Draw remaining 'hidden events' decorations with 'jagged' edges...
+        //
+                      
+        int part_r, part_g, part_b, brightness, color_brightness;
+        config.partColors[cidx].getRgb(&part_r, &part_g, &part_b);
+        brightness =  part_r*29 + part_g*59 + part_b*12;
+        //if ((brightness < 12000 || part->selected()) && !part->mute() && !item->isMoving())
+        //  color_brightness=223;   // too dark: use lighter color 
+        //else
+        //  color_brightness=32;  // otherwise use dark color 
+        if ((brightness >= 12000 && !part->selected()))
+          color_brightness=96; //0;    // too light: use dark color 
+        else
+          color_brightness=180; //255;   // too dark: use lighter color 
+        QColor c(color_brightness,color_brightness,color_brightness, config.globalAlphaBlend);
+        p.setBrush(QBrush(gGradientFromQColor(c, rr.topLeft(), rr.bottomLeft())));
+        //p.setBrush(QBrush(c));
+        if(het & Part::RightEventsHidden)
+        {
+          pts = 0;
+          //points[pts++] = QPoint(xe_0, y0);
+          //points[pts++] = QPoint(xe_0, y4);
+          //points[pts++] = QPoint(xe_j, y3);
+          //points[pts++] = QPoint(xe_0, y2);
+          //points[pts++] = QPoint(xe_j, y1);
+          
+          points[pts++] = QPoint(xe_0, y0);
+          points[pts++] = QPoint(xe_0, y4);
+          points[pts++] = QPoint(xe_j, y2);
+          
+          p.drawConvexPolygon(points, pts);   
+        }
+        if(het & Part::LeftEventsHidden)
+        {
+          pts = 0;
+          //points[pts++] = QPoint(xs_0, y0);
+          //points[pts++] = QPoint(xs_j, y1);
+          //points[pts++] = QPoint(xs_0, y2);
+          //points[pts++] = QPoint(xs_j, y3);
+          //points[pts++] = QPoint(xs_0, y4);
+          
+          points[pts++] = QPoint(xs_0, y0);
+          points[pts++] = QPoint(xs_j, y2);
+          points[pts++] = QPoint(xs_0, y4);
+          
+          p.drawConvexPolygon(points, pts);   
+        }
+      }  
+      else
+      {
+        p.fillRect(rr, brush);
+      }
+          
+      // Draw a pattern brush on muted parts...
+      if(part->mute())
+      {
+        p.setPen(Qt::NoPen);
+        //brush.setStyle(Qt::DiagCrossPattern);
+        brush.setStyle(Qt::Dense7Pattern);
+        
+        p.fillRect(rr, brush);                                                         // FIXME: Some shifting going on
+        //p.fillRect(QRect(rr.x(), rr.y(), rr.width() + 1, rr.height() + 1), brush);   // Same here
+      }  
+      
+      p.setWorldMatrixEnabled(true);
       
       MidiPart* mp = 0;
       WavePart* wp = 0;
@@ -1393,39 +1997,176 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
           drawMidiPart(p, rect, mp->events(), (MidiTrack*)part->track(), mp, r, mp->tick(), from, to);  
       }
 
+      p.setWorldMatrixEnabled(false);
+      
+  #if 0
+        //
+        // Now draw the borders...
+        // Works great but requires clones be drawn with the highest priority on top of all other parts, in Canvas::draw.
+        //
+        
+        QPen pen(part->selected() ? config.partColors[i] : Qt::black, 2.0, clone ? Qt::DotLine : Qt::SolidLine);
+        pen.setCosmetic(true);
+        p.setPen(pen); 
+        p.setBrush(Qt::NoBrush);
+        p.drawRect(r);
+        
+  #else 
+        //
+        // Now draw the borders, using custom segments...
+        //
+        
+        p.setBrush(Qt::NoBrush);
+        
+        QColor pc((part->mute() || item->isMoving())? Qt::white : config.partColors[cidx]);
+        QPen penSelect1H(pc);
+        QPen penSelect2H(pc, 2.0);
+        QPen penSelect1V(pc);
+        QPen penSelect2V(pc, 2.0);
+        penSelect1H.setCosmetic(true);
+        penSelect2H.setCosmetic(true);
+        penSelect1V.setCosmetic(true);
+        penSelect2V.setCosmetic(true);
+        
+        pc = Qt::black;
+        QPen penNormal1H(pc);
+        QPen penNormal2H(pc, 2.0);
+        QPen penNormal1V(pc);
+        QPen penNormal2V(pc, 2.0);
+        penNormal1H.setCosmetic(true);
+        penNormal2H.setCosmetic(true);
+        penNormal1V.setCosmetic(true);
+        penNormal2V.setCosmetic(true);
+        
+        //pc = Qt::white;
+        //pc = Qt::darkGray;
+        //QPen penHidden1(pc);
+        //QPen penHidden2(pc, 2.0);
+        //penHidden2.setCosmetic(true);
+        
+        QVector<qreal> customDashPattern;
+        
+        if(clone)
+        {
+          customDashPattern << 4.0 << 6.0;
+          penSelect1H.setDashPattern(customDashPattern);
+          penNormal1H.setDashPattern(customDashPattern);
+          penSelect1V.setDashPattern(customDashPattern);  
+          penNormal1V.setDashPattern(customDashPattern);  
+          penSelect1V.setDashOffset(2.0);  
+          penNormal1V.setDashOffset(2.0);
+          //penHidden1.setDashPattern(customDashPattern);  
+          customDashPattern.clear();
+          customDashPattern << 2.0 << 3.0;
+          penSelect2H.setDashPattern(customDashPattern);
+          penNormal2H.setDashPattern(customDashPattern);
+          penSelect2V.setDashPattern(customDashPattern);  
+          penNormal2V.setDashPattern(customDashPattern);  
+          penSelect2V.setDashOffset(1.0);  
+          penNormal2V.setDashOffset(1.0);  
+          //penHidden2.setDashPattern(customDashPattern);  
+        }  
+        
+        bool lbt = ((NPart*)item)->leftBorderTouches;
+        bool rbt = ((NPart*)item)->rightBorderTouches;
+        
+        QLine l1(lbt?xs_1:xs_0, ys_0,             rbt?xe_1:xe_0, ys_0);            // Top 
+        //QLine l2(rbt?xe_1:xe_0, rbt?ys_1:ys_2,    rbt?xe_1:xe_0, rbt?ye_1:ye_2); // Right 
+        QLine l2(rbt?xe_1:xe_0, ys_0,             rbt?xe_1:xe_0, ye_0);            // Right 
+        QLine l3(lbt?xs_1:xs_0, ye_0,             rbt?xe_1:xe_0, ye_0);            // Bottom
+        //QLine l4(xs_0,          lbt?ys_1:ys_2,    xs_0,          lbt?ye_1:ye_2); // Left
+        QLine l4(xs_0,          ys_0,             xs_0,          ye_0);            // Left
+        
+        //if(het & Part::RightEventsHidden)
+        //  p.setPen(((NPart*)item)->rightBorderTouches ? penHidden1 : penHidden2); 
+        //else  
+        {
+          if(((NPart*)item)->rightBorderTouches)              
+            p.setPen(part->selected() ? penSelect1V : penNormal1V); 
+          else  
+            p.setPen(part->selected() ? penSelect2V : penNormal2V); 
+        }  
+        p.drawLine(l2);        // Right line
+        
+        /*
+        int xx = rbt?xe_1:xe_0; 
+        if(clone)
+        {
+          int yinc = 7;
+          for(int yy = (rbt?ys_1:ys_2); yy < ye_2; yy += yinc)
+          {
+            int yi = rbt?3:2;
+            if(yy + yi > ye_2)
+              yi = ye_2 - yy;
+            p.drawLine(QPoint(xx, yy), QPoint(xx, yy + yi));      // Right dashed line
+          }   
+        }
+        else  
+          p.drawLine(QPoint(xx, rbt?ys_1:ys_2), QPoint(xx, rbt?ye_1:ye_2));      // Right line
+        */
+        
+        //if(het & Part::LeftEventsHidden)
+        //  p.setPen(((NPart*)item)->leftBorderTouches ? penHidden1 : penHidden2); 
+        //else  
+        {
+          if(((NPart*)item)->leftBorderTouches)              
+            p.setPen(part->selected() ? penSelect1V : penNormal1V); 
+          else  
+            p.setPen(part->selected() ? penSelect2V : penNormal2V); 
+        }  
+        p.drawLine(l4);        //  Left line
+        
+        /*
+        xx = xs_0;
+        if(clone)
+        {
+          int yinc = 7;
+          for(int yy = (lbt?ys_1:ys_2); yy < ye_2; yy += yinc)
+          {
+            int yi = lbt?3:2;
+            if(yy + yi > ye_2)
+              yi = ye_2 - yy;
+            p.drawLine(QPoint(xx, yy), QPoint(xx, yy + yi));      // Left dashed line
+          }   
+        }
+        else  
+          p.drawLine(QPoint(xx, lbt?ys_1:ys_2), QPoint(xx, lbt?ye_1:ye_2));      // Left line
+        */
+        
+        p.setPen(part->selected() ? penSelect2H : penNormal2H); 
+        p.drawLine(l1);  // Top line
+        p.drawLine(l3);  // Bottom line
+        
+  #endif
+      
       if (config.canvasShowPartType & 1) {     // show names
             // draw name
             // FN: Set text color depending on part color (black / white)
             int part_r, part_g, part_b, brightness;
-            //config.partColors[i].getRgb(&part_r, &part_g, &part_b);
             // Since we'll draw the text on the bottom (to accommodate drum 'slivers'),
             //  get the lowest colour in the gradient used to draw the part.
-            QRect rr = map(r);
-            rr.setX(rr.x() + 3);
-            gGradientFromQColor(config.partColors[i], rr.topLeft(), rr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
-            brightness =  part_r*29 + part_g*59 + part_b*12;
-            //if (brightness < 12000 || part->selected())
-            //  p.setPen(Qt::white);   /* too dark: use white for text color */
-            //else
-            //  p.setPen(Qt::black);  /* otherwise use black */
-            bool rev = brightness < 12000 || part->selected();
             //QRect rr = map(r);
-            //rr.setX(rr.x() + 3);
-            p.save();
+            QRect tr = rr;
+            tr.setX(tr.x() + 3);
+            gGradientFromQColor(config.partColors[cidx], tr.topLeft(), tr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
+            brightness =  part_r*29 + part_g*59 + part_b*12;
+            //bool rev = (brightness < 12000 || part->selected()) && !part->mute() && !item->isMoving();
+            bool rev = brightness >= 12000 && !part->selected();
             p.setFont(config.fonts[1]);
-            p.setWorldMatrixEnabled(false);
             if (rev)
-              p.setPen(Qt::black);   
-            else
               p.setPen(Qt::white); 
-            p.drawText(rr.translated(1, 1), Qt::AlignBottom|Qt::AlignLeft, part->name());
-            if (rev)
-              p.setPen(Qt::white);   
             else
+              p.setPen(Qt::black);   
+            p.drawText(tr.translated(1, 1), Qt::AlignBottom|Qt::AlignLeft, part->name());
+            if (rev)
               p.setPen(Qt::black);  
-            p.drawText(rr, Qt::AlignBottom|Qt::AlignLeft, part->name());
-            p.restore();
+            else
+              p.setPen(Qt::white);   
+            p.drawText(tr, Qt::AlignBottom|Qt::AlignLeft, part->name());
             }
+            
+      p.restore();
+      //p.setWorldMatrixEnabled(true);
       }
 
 //---------------------------------------------------------
@@ -1436,19 +2177,11 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
 void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
       {
         p.setPen( Qt::black);
-        
-        //p.setBrush( Qt::NoBrush);
-        //QColor c(Qt::gray);
         Part* part = ((NPart*)item)->part();
-        QColor c(config.partColors[part->colorIndex()]);        
-        
-        ///c.setAlpha(config.globalAlphaBlend);
+        QColor c(part->mute() ? Qt::white : config.partColors[part->colorIndex()]);        
+        //c.setAlpha(config.globalAlphaBlend);
         c.setAlpha(128);  // Fix this regardless of global setting. Should be OK.
-        
         p.setBrush(c);
-        
-        // NOTE: For one-pixel border use second line. For two-pixel border use first.
-        //p.drawRect(item->mp().x(), item->mp().y()+1, item->width(), item->height());
         p.drawRect(item->mp().x(), item->mp().y(), item->width(), item->height());
       }
 
@@ -1468,10 +2201,14 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
     int part_r, part_g, part_b, brightness;
     config.partColors[pt->colorIndex()].getRgb(&part_r, &part_g, &part_b);
     brightness =  part_r*29 + part_g*59 + part_b*12;
-    if (brightness < 12000 || pt->selected())
-      color_brightness=192;   // too dark: use lighter color 
+    //if ((brightness < 12000 || pt->selected()) && !pt->mute())
+    //  color_brightness=192;   // too dark: use lighter color 
+    //else
+    //  color_brightness=64;  // otherwise use dark color 
+    if (brightness >= 12000 && !pt->selected())
+      color_brightness=64; // 96;    // too bright: use dark color 
     else
-      color_brightness=64;  // otherwise use dark color 
+      color_brightness=190; //160;   // too dark: use lighter color 
   }
   else
     color_brightness=80;
@@ -1656,9 +2393,11 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
             if (te < (from + pTick))
                   continue;
 
-            if (te > (to + pTick))
-                  te = to + pTick;
-
+            //if (te > (to + pTick))
+            //      te = to + pTick;
+            if (te >= (to + pTick))
+                  te = lrint(rmapxDev_f(rmapx_f(to + pTick) - 1.0));
+            
             EventType type = i->second.type();
             if (type == Note) {
                   int pitch = i->second.pitch();
@@ -1685,8 +2424,10 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
 void PartCanvas::drawWavePart(QPainter& p,
    const QRect& bb, WavePart* wp, const QRect& _pr)
       {
-      QRect rr = p.worldMatrix().mapRect(bb);
-      QRect pr = p.worldMatrix().mapRect(_pr);
+      //QRect rr = p.worldMatrix().mapRect(bb);    // Gives inconsistent positions. Source shows wrong operation for our needs.
+      QRect rr = map(bb);                          // Use our own map instead.
+      //QRect pr = p.worldMatrix().mapRect(_pr);
+      QRect pr = map(_pr);
 
       p.save();
       p.resetTransform();
@@ -2359,9 +3100,22 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
 void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
 {
       int x = rect.x();
-      int y = rect.y();
+      //int y = rect.y();
       int w = rect.width();
-      int h = rect.height();
+      //int h = rect.height();
+      
+      // Changed to draw in device coordinate space instead of virtual, transformed space.     Tim. p4.0.30  
+      
+      //QRect mr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
+      QRect mr = map(rect);                      // Use our own map instead.
+      
+      p.save();
+      p.setWorldMatrixEnabled(false);
+      
+      int mx = mr.x();
+      int my = mr.y();
+      int mw = mr.width();
+      int mh = mr.height();
 
       //////////
       // GRID //
@@ -2379,13 +3133,17 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
           AL::sigmap.tickValues(x, &bar, &beat, &tick);
           for (;;) {
             int xt = AL::sigmap.bar2tick(bar++, 0, 0);
+            //int xt = mapx(AL::sigmap.bar2tick(bar++, 0, 0));
             if (xt >= x + w)
+            //if (xt >= mx + mw)
                   break;
             if (!((bar-1) % 4))
                 p.setPen(baseColor.dark(115));
             else
                 p.setPen(baseColor);
-            p.drawLine(xt, y, xt, y+h);
+            //p.drawLine(xt, y, xt, y+h);
+            int xtm = mapx(xt);
+            p.drawLine(xtm, my, xtm, my+mh);
 
             // append
             int noDivisors=0;
@@ -2411,20 +3169,28 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
                 noDivisors=noDivisors/2;
               }
               p.setPen(baseColor);
+              int xx;
               for (int t=1;t< noDivisors;t++)
-                p.drawLine(xt+r*t, y, xt+r*t, y+h);
+              {
+                //p.drawLine(xt+r*t, y, xt+r*t, y+h);
+                xx = mapx(xt + r * t);
+                p.drawLine(xx, my, xx, my+mh);
+              }  
             }
           }
       }
+      
       //--------------------------------
       // horizontal lines
       //--------------------------------
 
       TrackList* tl = song->tracks();
-      int yy = 0;
+      //int yy = 0;
+      int yy = -rmapy(yorg) - ypos;
       int th;
       for (iTrack it = tl->begin(); it != tl->end(); ++it) {
-            if (yy > y + h)
+            //if (yy > y + h)
+            if (yy > my + mh)
                   break;
             Track* track = *it;
             th = track->height();
@@ -2433,22 +3199,46 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
             if (config.canvasShowGrid && (track->isMidiTrack() || track->type() == Track::WAVE))   // Tim.
             {
               p.setPen(baseColor.dark(130));
-              p.drawLine(x, yy + th, x + w, yy + th);  // Tim.
-              p.setPen(baseColor);
+              //p.drawLine(x, yy + th, x + w, yy + th);  
+              p.drawLine(mx, yy + th, mx + mw, yy + th);  
+              //p.setPen(baseColor);
             }
-            if (!track->isMidiTrack() && (track->type() != Track::WAVE)) {
-                  QRect r = rect & QRect(x, yy, w, track->height());
-                  drawAudioTrack(p, r, (AudioTrack*)track);
-                  p.setPen(baseColor);
+            
+            // The update rectangle (rect and mr etc) is clipped at x<0 and y<0 in View::pdraw(). 
+            // The 'corrupt drawing' bug of drawAudioTrack was actually because the recently added gradient 
+            //  used the update rectangle, so the gradient was also being clipped at 0,0.
+            // One could remove that limiter, but no, that is the correct way. So instead let's construct a 
+            //  'pseudo bounding box' (half update rectangle, half bounding box), un-clipped. The gradient needs this!       
+            //
+            // Here is a different situation than PartCanvas::drawItem which uses un-clipped part bounding boxes and 
+            //  does NOT depend on the update rectangle (except to check intersection). That's why this issue 
+            //  does not show up there. Should probably try to make that routine more efficient, just like here.   Tim. p4.0.30
+            QRect r(mx, yy, mw, th);
+            //if(r.intersects(mr)) 
+            {
+              if (!track->isMidiTrack() && (track->type() != Track::WAVE)) {
+                    //QRect r = rect & QRect(x, yy, w, track->height());
+                    drawAudioTrack(p, mr, r, (AudioTrack*)track);
+                    //p.setPen(baseColor);
+              }
+              
+              // This was redundant drawing. Not required, done via drawTopItem in Canvas::draw
+              /*
+              //p.setWorldMatrixEnabled(true);
+              //if (!track->isMidiTrack()) { // draw automation
+              if (!track->isMidiTrack() && (track->type() != Track::WAVE)) {
+                    //QRect r = rect & QRect(x, yy, w, track->height());
+                    drawAutomation(p, r, (AudioTrack*)track);
+                    //p.setPen(baseColor);
+              }
+              //p.setWorldMatrixEnabled(false);
+              */
             }
-            if (!track->isMidiTrack()) { // draw automation
-                  QRect r = rect & QRect(x, yy, w, track->height());
-                  drawAutomation(p, r, (AudioTrack*)track);
-                  p.setPen(baseColor);
-
-            }
-            yy += track->height();
-            }
+            yy += th;
+      }
+      
+      p.restore();
+      //p.setWorldMatrixEnabled(true);
 }
 
 //---------------------------------------------------------
@@ -2456,35 +3246,54 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
 //---------------------------------------------------------
 void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
 {
-    int x = rect.x();
-    int y = rect.y();
-    int w = rect.width();
-    int h = rect.height();
+    //int x = rect.x();
+    //int y = rect.y();
+    //int w = rect.width();
+    //int h = rect.height();
 
+    // Changed to draw in device coordinate space instead of virtual, transformed space.     Tim. p4.0.30  
+    
+    //QRect mr = p.transform().mapRect(rect);  // Gives inconsistent positions. Source shows wrong operation for our needs.
+    QRect mr = map(rect);                      // Use our own map instead.
+    
+    //printf("PartCanvas::drawTopItem x:%d y:%d w:%d h:%d\n", rect.x(), rect.y(), rect.width(), rect.height()); 
+    
+    int mx = mr.x();
+    int my = mr.y();
+    int mw = mr.width();
+    int mh = mr.height();
+    
     QColor baseColor(config.partCanvasBg.light(104));
-    p.setPen(baseColor);
+    //p.setPen(baseColor);
 
+    p.save();
+    p.setWorldMatrixEnabled(false);
+    
     TrackList* tl = song->tracks();
-    int yy = 0;
+    int yoff = -rmapy(yorg) - ypos;
+    //int yy = 0;
+    int yy = yoff;
     int th;
     for (iTrack it = tl->begin(); it != tl->end(); ++it) {
-          if (yy > y + h)
+          //if (yy > y + h)
+          if (yy > my + mh)
                 break;
           Track* track = *it;
           th = track->height();
           if (!th)
             continue;
           if (!track->isMidiTrack()) { // draw automation
-                QRect r = rect & QRect(x, yy, w, track->height());
-                drawAutomation(p, r, (AudioTrack*)track);
-                p.setPen(baseColor);
-
+                //QRect r = rect & QRect(x, yy, w, track->height());
+                QRect r(mx, yy, mw, th);
+                if(r.intersects(mr)) 
+                {
+                  drawAutomation(p, r, (AudioTrack*)track);
+                  //p.setPen(baseColor);
+                }  
           }
-          yy += track->height();
+          //yy += track->height();
+          yy += th;
           }
-
-    QRect rr = p.worldMatrix().mapRect(rect);
-
 
     unsigned int startPos = audio->getStartRecordPos().tick();
     if (song->punchin())
@@ -2493,38 +3302,47 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
     int width = mapx(song->cpos()) - mapx(startPos);
 
     if (song->cpos() < startPos) {
+        //p.setWorldMatrixEnabled(true);
+        p.restore();
         return; // no drawing if we are before punch out
     }
     if (song->punchout() && song->cpos() > song->rpos()) {
+       //p.setWorldMatrixEnabled(true);
+       p.restore();
        return; // no drawing if we are beyond punch out.
     }
 
-    p.save();
-    p.resetTransform();
+    ///p.save();
+    ///p.resetTransform();
 
     // write recording while it happens to get feedback
     // should be enhanced with solution that draws waveform also
-    int yPos=0;
+    //int yPos=0;
+    int yPos = yoff;
     if (song->record() && audio->isPlaying()) {
       for (iTrack it = tl->begin(); it != tl->end(); ++it) {
         Track* track = *it;
+        th = track->height();
+        if (!th)
+          continue;
         if (track->recordFlag()) {
             QPen pen(Qt::black, 0, Qt::SolidLine);
             p.setPen(pen);
             QColor c(config.partColors[0]);
             c.setAlpha(config.globalAlphaBlend);
-            QLinearGradient gradient(QPoint(startx,yPos), QPoint(startx,yPos+track->height()));
+            QLinearGradient gradient(QPoint(startx,yPos), QPoint(startx,yPos+th));
             gradient.setColorAt(0, c);
             gradient.setColorAt(1, c.darker());
             QBrush cc(gradient);
             p.setBrush(cc);
 
-            p.drawRect(startx,yPos, width, track->height());
+            p.drawRect(startx,yPos, width, th);
         }
-        yPos+=track->height();
+        yPos+=th;
       }
     }
     p.restore();
+    //p.setWorldMatrixEnabled(true);
 
     // draw midi events on
     yPos=0;
@@ -2568,53 +3386,71 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
       }
     }
 
-
 }
 
 //---------------------------------------------------------
 //   drawAudioTrack
 //---------------------------------------------------------
-void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, AudioTrack* /* t */)
+void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, AudioTrack* /*t*/)
 {
-      // NOTE: For one-pixel border use first line and don't bother with setCosmetic.
-      //       For a two-pixel border use second line and MUST use setCosmetic! Tim.
-      QPen pen(Qt::black, 0, Qt::SolidLine);
-      //p.setPen(QPen(Qt::black, 2, Qt::SolidLine));
-      //pen.setCosmetic(true);
-      p.setPen(pen);
-      //p.setBrush(Qt::gray);
-
+      QRect mr = r & bbox; 
+      if(mr.isNull())
+        return;
+      int mx = mr.x();
+      int my = mr.y();
+      int mw = mr.width();
+      int mh = mr.height();
+      int mex = bbox.x();
+      int mey = bbox.y();
+      //int mew = bbox.width();
+      int meh = bbox.height();
+      
+      p.setPen(Qt::black);
       QColor c(Qt::gray);
       c.setAlpha(config.globalAlphaBlend);
-      QLinearGradient gradient(r.topLeft(), r.bottomLeft());
+      //QLinearGradient gradient(r.topLeft(), r.bottomLeft());
+      QLinearGradient gradient(mex + 1, mey + 1, mex + 1, mey + meh - 1);    // Inside the border
       gradient.setColorAt(0, c);
       gradient.setColorAt(1, c.darker());
-      QBrush cc(gradient);
-      p.setBrush(cc);
-      p.drawRect(r);
-
-      // Factor in pen stroking size:
-      //QRect rr(r);
-      //rr.setHeight(rr.height() -1);
+      QBrush brush(gradient);
+      p.fillRect(mr, brush);       // p4.0.30  ...
       
-//      p.fillRect(r, cc);
+      //int xx = -rmapx(xorg) - xpos;           
+      //printf("PartCanvas::drawAudioTrack x:%d y:%d w:%d h:%d th:%d xx:%d\n", r.x(), r.y(), r.width(), r.height(), t->height(), xx);  
+      //if(r.x() <= xx)
+      //  p.drawLine(r.x(), r.y(), r.x(), r.y() + r.height());                          // The left edge
+      //p.drawLine(r.x(), r.y(), r.x() + r.width(), r.y());                             // The top edge
+      //p.drawLine(r.x(), r.y() + r.height(), r.x() + r.width(), r.y() + r.height());   // The bottom edge
+      
+      if(mex >= mx && mex <= mx + mw)
+        p.drawLine(mex, my, mex, my + mh - 1);                // The left edge
+      //if(mex + mew >= mx && mex + mew <= mx + mw)
+      //  p.drawLine(mex + mew, my, mex + mew, my + mh - 1);  // The right edge. Not used - infinite to the right
+      if(mey >= my && mey <= my + mh)
+        p.drawLine(mx, mey, mx + mw - 1, mey);                // The top edge
+      if(mey + meh >= my && mey + meh <= my + mh)
+        p.drawLine(mx, mey + meh, mx + mw - 1, mey + meh);    // The bottom edge. Special for Audio track - draw one past bottom.
 }
 
 //---------------------------------------------------------
 //   drawAutomation
 //---------------------------------------------------------
 
-void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
+void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, AudioTrack *t)
 {
-     QRect rr = p.worldMatrix().mapRect(r);
+     ///QRect rr = p.worldMatrix().mapRect(r);
 
-     p.save();
-     p.resetTransform();
+     ///p.save();
+     ///p.resetTransform();
 
      int height=rr.bottom()-rr.top()-4; // limit height
 
+     //printf("PartCanvas::drawAutomation x:%d y:%d w:%d h:%d height:%d\n", rr.x(), rr.y(), rr.width(), rr.height(), height); 
+     
+     p.setBrush(Qt::NoBrush);
+     
      CtrlListList* cll = t->controller();
-     bool firstRun=true;
+     ///bool firstRun=true;
      for(CtrlListList::iterator icll =cll->begin();icll!=cll->end();++icll)
      {
        //iCtrlList *icl = icll->second;
@@ -2625,7 +3461,8 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
        iCtrl ic=cl->begin();
        if (!cl->isVisible())
           continue; // skip this iteration if this controller isn't in the visible list
-       p.setPen(QPen(cl->color(),1,Qt::SolidLine));
+       ///p.setPen(QPen(cl->color(),1,Qt::SolidLine));
+       p.setPen(QPen(cl->color(), 0, Qt::SolidLine));
 
        // First check that there ARE automation, ic == cl->end means no automation
        if (ic != cl->end()) {
@@ -2651,6 +3488,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
          p.drawRect(mapx(tempomap.frame2tick(prevPosFrame))-1, (rr.bottom()-2)-prevVal*height-1, 3, 3);
          p.drawRect(mapx(tempomap.frame2tick(prevPosFrame))-2, (rr.bottom()-2)-prevVal*height-2, 5, 5);
 
+         bool firstRun=true;
          for (; ic !=cl->end(); ++ic)
          {
             CtrlVal cv = ic->second;
@@ -2671,6 +3509,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
             }
             int currentPixel = mapx(tempomap.frame2tick(cv.frame));
 
+            //printf(" line x1:%d x2:%d prevVal:%f nextVal:%f\n", leftX, currentPixel, prevVal, nextVal); 
             p.drawLine( leftX,
                        (rr.bottom()-2)-prevVal*height,
                         currentPixel,
@@ -2683,20 +3522,23 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& r, AudioTrack *t)
             prevPosFrame=cv.frame;
             prevVal=nextVal;
             if (currentPixel > rr.x()+ rr.width())
-                goto quitDrawing;
+                ///goto quitDrawing;
+                break;
 
             // draw a square around the point
             p.drawRect(mapx(tempomap.frame2tick(prevPosFrame))-2, (rr.bottom()-2)-prevVal*height-2, 5, 5);
             p.drawRect(mapx(tempomap.frame2tick(prevPosFrame))-1, (rr.bottom()-1)-prevVal*height-2, 3, 3);
          }
+         //printf(" endline prevVal:%f\n", prevVal); 
          p.drawLine(mapx(tempomap.frame2tick(prevPosFrame)),
                    (rr.bottom()-2)-prevVal*height,
                     rr.x()+rr.width(),
                    (rr.bottom()-2)-prevVal*height);
        }
      }
-quitDrawing:
-       p.restore();
+///quitDrawing:
+       ///p.restore();
+       return;
 }
 
 

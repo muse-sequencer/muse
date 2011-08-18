@@ -158,7 +158,7 @@ Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
   for(iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
   {
     Part* opart = ip2c->first;
-    if (opart->hasHiddenNotes())
+    if (opart->hasHiddenEvents())
     {
 			forbidden=true;
 			break;
@@ -350,7 +350,7 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
       Undo operations;
       int diff = event.endTick()-part->lenTick();
       
-      if (! ((diff > 0) && part->hasHiddenNotes()) ) //operation is allowed
+      if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
       {
         operations.push_back(UndoOp(UndoOp::AddEvent,event, part, false, false));
         
@@ -462,8 +462,6 @@ void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
 //---------------------------------------------------------
 //   drawCanvas
 //---------------------------------------------------------
-
-extern void drawTickRaster(QPainter& p, int, int, int, int, int);
 
 void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect)
       {

@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: view.cpp,v 1.3.2.2 2009/04/06 01:24:55 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  Additions, modifications (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
 //=========================================================
 
 #include "view.h"
@@ -15,6 +16,10 @@
 #include <QMouseEvent>
 #include <QKeyEvent>
 #include <QPaintEvent>
+
+#include "math.h"
+
+#include "al/sig.h"  
 
 // Don't use this, it was just for debugging. 
 // It's much slower than muse-1 no matter how hard I tried.
@@ -491,26 +496,33 @@ void View::pdraw(QPainter& p, const QRect& r)
             int w = r.width();
             int h = r.height();
             if (xmag <= 0) {
-                  x -= 1;
+                  // TODO These adjustments are required, otherwise gaps. Tried, unable to remove them for now.  p4.0.30
+                  x -= 1;   
                   w += 2;
-                  x = (x + xpos + rmapx(xorg)) * (-xmag);
+                  //x = (x + xpos + rmapx(xorg)) * (-xmag);
+                  x = lrint((double(x + xpos) + rmapx_f(xorg)) * double(-xmag));
                   w = w * (-xmag);
                   }
             else {
-                  x = (x + xpos + rmapx(xorg)) / xmag;
-                  w = (w + xmag - 1) / xmag;
+                  //x = (x + xpos + rmapx(xorg)) / xmag;
+                  x = lrint((double(x + xpos) + rmapx_f(xorg)) / double(xmag));
+                  //w = (w + xmag - 1) / xmag;
+                  w = lrint(double(w) / double(xmag));
                   x -= 1;
                   w += 2;
                   }
             if (ymag <= 0) {
                   y -= 1;
                   h += 2;
-                  y = (y + ypos + rmapy(yorg)) * (-ymag);
+                  //y = (y + ypos + rmapy(yorg)) * (-ymag);
+                  y = lrint((double(y + ypos) + rmapy_f(yorg)) * double(-ymag));
                   h = h * (-ymag);
                   }
             else {
-                  y = (y + ypos + rmapy(yorg)) / ymag;
-                  h = (h + ymag - 1) / ymag;
+                  //y = (y + ypos + rmapy(yorg)) / ymag;
+                  y = lrint((double(y + ypos) + rmapy_f(yorg)) / double(ymag));
+                  //h = (h + ymag - 1) / ymag;
+                  h = lrint(double(h) / double(ymag));
                   y -= 1;
                   h += 2;
                   }
@@ -535,19 +547,116 @@ void View::setPainter(QPainter& p)
       p.resetMatrix();      // Q3 support says use resetMatrix instead, but resetMatrix advises resetTransform instead...
       //p.resetTransform();
       
-      p.translate(double(-(xpos+rmapx(xorg))), double(-(ypos+rmapy(yorg))));
-      double xMag = (xmag < 0) ? 1.0/(-xmag) : double(xmag);
-      double yMag = (ymag < 0) ? 1.0/(-ymag) : double(ymag);
+      //p.translate(double(-(xpos+rmapx(xorg))), double(-(ypos+rmapy(yorg))));
+      p.translate( -(double(xpos) + rmapx_f(xorg)) , -(double(ypos) + rmapy(yorg)));
+      //double xMag = (xmag < 0) ? 1.0/(-xmag) : double(xmag);
+      //double yMag = (ymag < 0) ? 1.0/(-ymag) : double(ymag);
+      double xMag = (xmag < 0) ? 1.0/double(-xmag) : double(xmag);
+      double yMag = (ymag < 0) ? 1.0/double(-ymag) : double(ymag);
       p.scale(xMag, yMag);
+      }
+
+//---------------------------------------------------------
+//   drawTickRaster
+//---------------------------------------------------------
+
+void View::drawTickRaster(QPainter& p, int x, int y, int w, int h, int raster)
+      {
+      // Changed to draw in device coordinate space instead of virtual, transformed space.     Tim. p4.0.30  
+      
+      //int mx = mapx(x);
+      int my = mapy(y);
+      //int mw = mapx(x + w) - mx;
+      //int mw = mapx(x + w) - mx - 1;
+      //int mh = mapy(y + h) - my;
+      //int mh = mapy(y + h) - my - 1;
+      
+      //p.save();
+      bool wmtxen = p.worldMatrixEnabled();
+      p.setWorldMatrixEnabled(false);
+      
+      int xx,bar1, bar2, beat;
+      unsigned tick;
+      AL::sigmap.tickValues(x, &bar1, &beat, &tick);
+      AL::sigmap.tickValues(x+w, &bar2, &beat, &tick);
+      ++bar2;
+      ///int y2 = y + h;
+      //int y2 = my + mh;
+      int y2 = mapy(y + h) - 1;
+      //printf("View::drawTickRaster x:%d y:%d w:%d h:%d mx:%d my:%d mw:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, mx, my, mw, mh, y2, bar1, bar2);  
+      //printf("View::drawTickRaster x:%d y:%d w:%d h:%d my:%d mh:%d y2:%d bar1:%d bar2:%d\n", x, y, w, h, my, mh, y2, bar1, bar2);  
+      for (int bar = bar1; bar < bar2; ++bar) {
+            ///unsigned x = AL::sigmap.bar2tick(bar, 0, 0);
+            unsigned xb = AL::sigmap.bar2tick(bar, 0, 0);
+            int xt = mapx(xb);
+            p.setPen(Qt::black);
+            ///p.drawLine(x, y, x, y2);
+            p.drawLine(xt, my, xt, y2);
+            int z, n;
+            ///AL::sigmap.timesig(x, z, n);
+            AL::sigmap.timesig(xb, z, n);
+            ///int q = p.xForm(QPoint(raster, 0)).x() - p.xForm(QPoint(0, 0)).x();
+            ///int q = p.combinedTransform().map(QPoint(raster, 0)).x() - p.combinedTransform().map(QPoint(0, 0)).x();
+            //int q = rmapx(raster);
+            int qq = raster;
+            //if (q < 8)        // grid too dense
+            if (rmapx(raster) < 8)        // grid too dense
+                  qq *= 2;
+            p.setPen(Qt::lightGray);
+            if (raster>=4) {
+                        ///int xx = x + qq;
+                        //int xx = mapx(xb + qq);
+                        xx = xb + qq;
+                        int xxx = AL::sigmap.bar2tick(bar, z, 0);
+                        //int xxx = mapx(AL::sigmap.bar2tick(bar, z, 0));
+                        while (xx <= xxx) {
+                               ///p.drawLine(xx, y, xx, y2);
+                               int x = mapx(xx);
+                               p.drawLine(x, my, x, y2);
+                               xx += qq;
+                               //xx += rmapx(qq);
+                               }
+                        //xx = xxx;
+                        }
+            p.setPen(Qt::gray);
+            for (int beat = 1; beat < z; beat++) {
+                        ///int xx = AL::sigmap.bar2tick(bar, beat, 0);
+                        xx = mapx(AL::sigmap.bar2tick(bar, beat, 0));
+                        //printf(" bar:%d z:%d beat:%d xx:%d\n", bar, z, beat, xx);  
+                        ///p.drawLine(xx, y, xx, y2);
+                        p.drawLine(xx, my, xx, y2);
+                        }
+
+            }
+      //p.setWorldMatrixEnabled(true);
+      p.setWorldMatrixEnabled(wmtxen);
+      //p.restore();      
       }
 
 //---------------------------------------------------------
 //   map
 //---------------------------------------------------------
 
+QRect View::mapDev(const QRect& r) const
+      {
+      return QRect(mapxDev(r.x()), mapyDev(r.y()),
+         rmapxDev(r.width()), rmapyDev(r.height()));
+      }
+
+QPoint View::mapDev(const QPoint& r) const
+      {
+      return QPoint(mapxDev(r.x()), mapyDev(r.y()));
+      }
+
+#if 0
+  //
+  // Calculations using integer rounding methods...
+  //
+
 QRect View::map(const QRect& r) const
       {
       int x, y, w, h;
+      //printf("View::map xmag:%d xpos:%d xorg:%d\n", xmag, xpos, xorg);  
       if (xmag < 0) {
             x = r.x()/(-xmag) - (xpos + rmapx(xorg));  // round down
             w = (r.width()-xmag-1)  / (-xmag);  // round up
@@ -583,17 +692,6 @@ QPoint View::map(const QPoint& p) const
             y = p.y() * ymag - (ypos + rmapy(yorg));
             }
       return QPoint(x, y);
-      }
-
-QRect View::mapDev(const QRect& r) const
-      {
-      return QRect(mapxDev(r.x()), mapyDev(r.y()),
-         rmapxDev(r.width()), rmapyDev(r.height()));
-      }
-
-QPoint View::mapDev(const QPoint& r) const
-      {
-      return QPoint(mapxDev(r.x()), mapyDev(r.y()));
       }
 
 int View::mapx(int x) const
@@ -663,6 +761,166 @@ int View::rmapyDev(int y) const
       else
             return (y + ymag/2) / ymag;
       }
+
+
+#else
+  //
+  // Calculations using more accurate methods...  p4.0.29 Tim.
+  //
+
+QRect View::map(const QRect& r) const
+      {
+      //int x, y, w, h;
+      double x, y, w, h;
+      int xx, yy, ww, hh;
+      //printf("View::map xmag:%d xpos:%d xorg:%d\n", xmag, xpos, xorg);  
+      if (xmag < 0) {
+            //x = lrint(double(r.x())/double(-xmag) - rmapx_f(xorg)) - xpos;  
+            x = double(r.x())/double(-xmag) - rmapx_f(xorg) - xpos;  
+            //w = lrint(double(r.width()) / double(-xmag));  
+            w = double(r.width()) / double(-xmag);  
+            xx = lrint(x);
+            ww = lrint(x + w) - xx;
+            }
+      else {
+            xx = r.x()*xmag - xpos - lrint(rmapx_f(xorg));
+            ww = r.width() * xmag;
+            }
+      if (ymag < 0) {
+            //y = lrint(double(r.y())/double(-ymag) - rmapy_f(yorg)) - ypos;
+            y = double(r.y())/double(-ymag) - rmapy_f(yorg) - ypos;
+            //h = lrint(double(r.height()) / double(-ymag));
+            h = double(r.height()) / double(-ymag);
+            yy = lrint(y);
+            hh = lrint(y + h) - yy;
+            }
+      else {
+            yy = r.y()*ymag - ypos - lrint(rmapy_f(yorg));
+            hh = r.height() * ymag;
+            }
+      return QRect(xx, yy, ww, hh);
+      }
+
+QPoint View::map(const QPoint& p) const
+      {
+      /*
+      int x, y;
+      if (xmag < 0) {
+            x = lrint(double(p.x())/double(-xmag) - rmapx_f(xorg)) - xpos;  
+            }
+      else {
+            x = p.x()*xmag - xpos - lrint(rmapx_f(xorg));
+            }
+      if (ymag < 0) {
+            y = lrint(double(p.y())/double(-ymag) - rmapy_f(yorg)) - ypos;
+            }
+      else {
+            y = p.y()*ymag - ypos - lrint(rmapy_f(yorg));
+            }
+      return QPoint(x, y);
+      */
+      return QPoint(mapx(p.x()), mapy(p.y()));
+      }
+
+int View::mapx(int x) const
+      {
+      if (xmag < 0) {
+            return lrint(double(x)/double(-xmag) - rmapx_f(xorg)) - xpos;  
+            }
+      else {
+            return x*xmag - xpos - lrint(rmapx_f(xorg));
+            }
+      }
+int View::mapy(int y) const
+      {
+      if (ymag < 0) {
+            return lrint(double(y)/double(-ymag) - rmapy_f(yorg)) - ypos;  
+            }
+      else {
+            return y*ymag - ypos - lrint(rmapy_f(yorg));
+            }
+      }
+int View::mapxDev(int x) const
+      {
+      int val;
+      if (xmag <= 0)
+            val = lrint((double(x + xpos) + rmapx_f(xorg)) * double(-xmag));                    
+      else
+            val = lrint((double(x + xpos) + rmapx_f(xorg)) / double(xmag));  
+      if (val < 0)            // DEBUG
+            val = 0;
+      return val;
+      }
+
+int View::mapyDev(int y) const
+      {
+      if (ymag <= 0)
+            return lrint((double(y + ypos) + rmapy_f(yorg)) * double(-ymag));                   
+      else
+            return lrint((double(y + ypos) + rmapy_f(yorg)) / double(ymag)); 
+      }
+
+// r == relative conversion
+int View::rmapx(int x) const
+      {
+      if (xmag < 0)
+            return lrint(double(x) / double(-xmag));
+      else
+            return x * xmag;
+      }
+int View::rmapy(int y) const
+      {
+      if (ymag < 0)
+            return lrint(double(y) / double(-ymag));
+      else
+            return y * ymag;
+      }
+int View::rmapxDev(int x) const
+      {
+      if (xmag <= 0)
+            return x * (-xmag);
+      else
+            return lrint(double(x) / double(xmag));
+      }
+int View::rmapyDev(int y) const
+      {
+      if (ymag <= 0)
+            return y * (-ymag);
+      else
+            return lrint(double(y) / double(ymag));
+      }
+#endif
+
+double View::rmapx_f(double x) const
+      {
+      if (xmag < 0)
+            return x / double(-xmag);
+      else
+            return x * double(xmag);
+      }
+double View::rmapy_f(double y) const
+      {
+      if (ymag < 0)
+            return y / double(-ymag);
+      else
+            return y * double(ymag);
+      }
+double View::rmapxDev_f(double x) const
+      {
+      if (xmag <= 0)
+            return x * double(-xmag);
+      else
+            return x / double(xmag);
+      }
+double View::rmapyDev_f(double y) const
+      {
+      if (ymag <= 0)
+            return y * double(-ymag);
+      else
+            return y / double(ymag);
+      }
+
+
 
 /*
 QRect View::devToVirt(const QRect& r)
