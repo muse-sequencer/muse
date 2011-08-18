@@ -883,12 +883,6 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               }
                         //else if (tag == "midiSyncInfo")
                         //      readConfigMidiSyncInfo(xml);
-                        else if (tag == "arranger") {
-                              if (muse && muse->arranger)
-                                    muse->arranger->readStatus(xml);
-                              else
-                                    xml.skip(tag);
-                              }
                         else if (tag == "drumedit")
                               DrumEdit::readConfiguration(xml);
                         else if (tag == "pianoroll")

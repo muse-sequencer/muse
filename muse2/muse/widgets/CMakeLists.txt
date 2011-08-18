@@ -42,6 +42,7 @@ QT4_WRAP_CPP (widget_mocs
       doublelabel.h  
       filedialog.h  
       genset.h  
+      mdisettings.h  
       header.h  
       hitscale.h  
       intlabel.h  
@@ -104,6 +105,7 @@ file (GLOB widgets_ui_files
       editsysexdialogbase.ui  
       fdialogbuttons.ui  
       gensetbase.ui  
+      mdisettings_base.ui  
       itransformbase.ui  
       metronomebase.ui  
       midisync.ui  
@@ -139,6 +141,7 @@ file (GLOB widgets_source_files
       drange.cpp
       filedialog.cpp 
       genset.cpp 
+      mdisettings.cpp 
       header.cpp 
       hitscale.cpp 
       intlabel.cpp 

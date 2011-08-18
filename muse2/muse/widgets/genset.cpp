@@ -163,7 +163,30 @@ Shorter periods are desirable.</string>
       connect(setBigtimeCurrent, SIGNAL(clicked()), SLOT(bigtimeCurrent()));
       connect(setArrangerCurrent, SIGNAL(clicked()), SLOT(arrangerCurrent()));
       connect(setTransportCurrent, SIGNAL(clicked()), SLOT(transportCurrent()));
+      
+      connect(buttonTraditionalPreset, SIGNAL(clicked()), SLOT(traditionalPreset()));
+      connect(buttonMDIPreset, SIGNAL(clicked()), SLOT(mdiPreset()));
+      connect(buttonBorlandPreset, SIGNAL(clicked()), SLOT(borlandPreset()));
+      
+      addMdiSettings(TopWin::ARRANGER);
+      addMdiSettings(TopWin::SCORE);
+      addMdiSettings(TopWin::PIANO_ROLL);
+      addMdiSettings(TopWin::DRUM);
+      addMdiSettings(TopWin::LISTE);
+      addMdiSettings(TopWin::WAVE);
+      addMdiSettings(TopWin::MASTER);
+      addMdiSettings(TopWin::LMASTER);
+      addMdiSettings(TopWin::CLIPLIST);
+      addMdiSettings(TopWin::MARKER);
+      
       }
+
+void GlobalSettingsConfig::addMdiSettings(TopWin::ToplevelType t)
+{
+  MdiSettings* temp = new MdiSettings(t, this);
+  layoutMdiSettings->addWidget(temp);
+  mdisettings.push_back(temp);
+}
 
 //---------------------------------------------------------
 //   updateSettings
@@ -265,6 +288,20 @@ void GlobalSettingsConfig::updateSettings()
       moveArmedCheckBox->setChecked(config.moveArmedCheckBox);
       projectSaveCheckBox->setChecked(config.useProjectSaveDialog);
       popsDefStayOpenCheckBox->setChecked(config.popupsDefaultStayOpen);
+      
+      updateMdiSettings();
+}
+
+void GlobalSettingsConfig::updateMdiSettings()
+{
+  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
+    (*it)->update_settings();
+}
+
+void GlobalSettingsConfig::applyMdiSettings()
+{
+  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
+    (*it)->apply_settings();
 }
 
 //---------------------------------------------------------
@@ -386,6 +423,9 @@ void GlobalSettingsConfig::apply()
 
       muse->setHeartBeat();        // set guiRefresh
       midiSeq->msgSetRtc();        // set midi tick rate
+      
+      applyMdiSettings();
+      
       muse->changeConfig(true);    // save settings
       }
 
@@ -496,3 +536,42 @@ void GlobalSettingsConfig::defaultInstrumentsPath()
       QString dir = configPath + "/instruments";
       userInstrumentsPath->setText(dir);
       }
+
+
+void GlobalSettingsConfig::traditionalPreset()
+{
+  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
+  {
+    TopWin::ToplevelType type = (*it)->type();
+    TopWin::_sharesWhenFree[type]=false;
+    TopWin::_defaultSubwin[type]=false;
+  }
+  TopWin::_defaultSubwin[TopWin::ARRANGER]=true;
+  
+  updateMdiSettings();
+}
+
+void GlobalSettingsConfig::mdiPreset()
+{
+  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
+  {
+    TopWin::ToplevelType type = (*it)->type();
+    TopWin::_sharesWhenSubwin[type]=true;
+    TopWin::_defaultSubwin[type]=true;
+  }
+  
+  updateMdiSettings();
+}
+
+void GlobalSettingsConfig::borlandPreset()
+{
+  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
+  {
+    TopWin::ToplevelType type = (*it)->type();
+    TopWin::_sharesWhenFree[type]=true;
+    TopWin::_defaultSubwin[type]=false;
+  }
+  
+  updateMdiSettings();
+}
+

@@ -32,23 +32,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
                                                : QMainWindow(parent, f)
       {
       if (initInited==false)
-      {
-        for (int i=0;i<TOPLEVELTYPE_LAST_ENTRY;i++)
-        {
-          _widthInit[i]=800;
-          _heightInit[i]=600;
-          _sharesWhenFree[i]=false;
-          _sharesWhenSubwin[i]=true;
-          _defaultSubwin[i]=false;
-        }
-        
-        _defaultSubwin[ARRANGER]=true;
-        
-        _defaultSubwin[SCORE]=true; //FINDMICH
-        _sharesWhenFree[SCORE]=true;
-        
-        initInited=true;
-      }  
+        initConfiguration();
       
       initalizing=true;
       
@@ -78,7 +62,6 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
       subwinAction->setChecked(isMdiWin());
       shareAction->setChecked(_sharesToolsAndMenu);
       }
-
 
 
 //---------------------------------------------------------
@@ -303,12 +286,37 @@ void TopWin::storeInitialState()
           _toolbarNonsharedInit[_type] = saveState();
       }
 
+
+
+//initConfiguration() restores default "traditional muse" configuration
+void TopWin::initConfiguration()
+{
+  if (initInited==false)
+  {
+    for (int i=0;i<TOPLEVELTYPE_LAST_ENTRY;i++)
+    {
+      _widthInit[i]=800;
+      _heightInit[i]=600;
+      _sharesWhenFree[i]=false;
+      _sharesWhenSubwin[i]=true;
+      _defaultSubwin[i]=false;
+    }
+    
+    _defaultSubwin[ARRANGER]=true;
+    
+    initInited=true;
+  }    
+}
+
 //---------------------------------------------------------
 //   readConfiguration
 //---------------------------------------------------------
 
 void TopWin::readConfiguration(ToplevelType t, Xml& xml)
       {
+      if (initInited==false)
+        initConfiguration();
+      
       for (;;) {
             Xml::Token token = xml.parse();
             if (token == Xml::Error || token == Xml::End)
@@ -324,6 +332,12 @@ void TopWin::readConfiguration(ToplevelType t, Xml& xml)
                               _toolbarNonsharedInit[t] = QByteArray::fromHex(xml.parse1().toAscii());
                         else if (tag == "shared_toolbars")
                               _toolbarSharedInit[t] = QByteArray::fromHex(xml.parse1().toAscii());
+                        else if (tag == "shares_when_free")
+                              _sharesWhenFree[t] = xml.parseInt();
+                        else if (tag == "shares_when_subwin")
+                              _sharesWhenSubwin[t] = xml.parseInt();
+                        else if (tag == "default_subwin")
+                              _defaultSubwin[t] = xml.parseInt();
                         else
                               xml.unknown("TopWin");
                         break;
@@ -336,17 +350,27 @@ void TopWin::readConfiguration(ToplevelType t, Xml& xml)
             }
       }
 
+
 //---------------------------------------------------------
 //   writeConfiguration
 //---------------------------------------------------------
 
 void TopWin::writeConfiguration(ToplevelType t, int level, Xml& xml)
       {
+      if (!initInited)
+      {
+        printf ("WARNING: TopWin::writeConfiguration() called although the config hasn't been\n"
+                "         initalized! writing default configuration\n");
+        initConfiguration();
+      }
       xml.tag(level++, "topwin");
       xml.intTag(level, "width", _widthInit[t]);
       xml.intTag(level, "height", _heightInit[t]);
       xml.strTag(level, "nonshared_toolbars", _toolbarNonsharedInit[t].toHex().data());
       xml.strTag(level, "shared_toolbars", _toolbarSharedInit[t].toHex().data());
+      xml.intTag(level, "shares_when_free", _sharesWhenFree[t]);
+      xml.intTag(level, "shares_when_subwin", _sharesWhenSubwin[t]);
+      xml.intTag(level, "default_subwin", _defaultSubwin[t]);
       xml.etag(level, "topwin");
       }
 
@@ -370,4 +394,22 @@ void TopWin::restoreMainwinState()
 {
   if (sharesToolsAndMenu())
     initTopwinState();
+}
+
+QString TopWin::typeName(ToplevelType t)
+{
+  switch (t)
+  {
+    case PIANO_ROLL: return tr("Piano roll");
+    case LISTE: return tr("List editor");
+    case DRUM: return tr("Drum editor");
+    case MASTER: return tr("Master track editor");
+    case LMASTER: return tr("Master track list editor");
+    case WAVE: return tr("Wave editor");
+    case CLIPLIST: return tr("Clip list");
+    case MARKER: return tr("Marker view");
+    case SCORE: return tr("Score editor");
+    case ARRANGER: return tr("Arranger");
+    default: return tr("<unknown toplevel type>");
+  }
 }

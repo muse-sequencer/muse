@@ -10,8 +10,11 @@
 #define __GENSET_H__
 
 #include "ui_gensetbase.h"
+#include "cobject.h"
+#include "mdisettings.h"
 
 #include <QShowEvent>
+#include <list>
 
 //---------------------------------------------------------
 //   GlobalSettingsConfig
@@ -22,6 +25,9 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
 
    private slots:
       void updateSettings();
+      void updateMdiSettings();
+      void addMdiSettings(TopWin::ToplevelType t);
+      void applyMdiSettings();
       void apply();
       void ok();
       void cancel();
@@ -32,10 +38,14 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       void transportCurrent();
       void selectInstrumentsPath();
       void defaultInstrumentsPath();
+      void traditionalPreset();
+      void mdiPreset();
+      void borlandPreset();
 
     protected:
       void showEvent(QShowEvent*);
       QButtonGroup *startSongGroup;
+      std::list<MdiSettings*> mdisettings;
       
    public:
       GlobalSettingsConfig(QWidget* parent=0);

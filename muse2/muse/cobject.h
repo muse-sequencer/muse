@@ -14,6 +14,7 @@
 #include <QMainWindow>
 #include <list>
 #include <QByteArray>
+#include <QString>
 
 class QMdiSubWindow;
 class QFocusEvent;
@@ -39,6 +40,7 @@ class TopWin : public QMainWindow
          };
 
       ToplevelType type() const { return _type; }
+      static QString typeName(ToplevelType t);
 
 
       virtual void readStatus(Xml&);
@@ -58,6 +60,11 @@ class TopWin : public QMainWindow
       void addToolBar(QToolBar* toolbar);
       QToolBar* addToolBar(const QString& title);
          
+ 
+      static bool _sharesWhenFree[TOPLEVELTYPE_LAST_ENTRY];
+      static bool _sharesWhenSubwin[TOPLEVELTYPE_LAST_ENTRY];
+      static bool _defaultSubwin[TOPLEVELTYPE_LAST_ENTRY];
+ 
   private:
       QMdiSubWindow* mdisubwin;
       bool _sharesToolsAndMenu;
@@ -71,6 +78,7 @@ class TopWin : public QMainWindow
 
       virtual QMdiSubWindow* createMdiWrapper();
       
+      static void initConfiguration();
 
   protected:
       QAction* subwinAction;
@@ -82,9 +90,6 @@ class TopWin : public QMainWindow
       static int _heightInit[TOPLEVELTYPE_LAST_ENTRY];
       static QByteArray _toolbarNonsharedInit[TOPLEVELTYPE_LAST_ENTRY];
       static QByteArray _toolbarSharedInit[TOPLEVELTYPE_LAST_ENTRY];
-      static bool _sharesWhenFree[TOPLEVELTYPE_LAST_ENTRY];
-      static bool _sharesWhenSubwin[TOPLEVELTYPE_LAST_ENTRY];
-      static bool _defaultSubwin[TOPLEVELTYPE_LAST_ENTRY];
       static bool initInited;
       
       void initTopwinState();
