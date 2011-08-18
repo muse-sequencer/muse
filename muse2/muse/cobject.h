@@ -53,7 +53,6 @@ class TopWin : public QMainWindow
       TopWin(ToplevelType t, QWidget* parent=0, const char* name=0, Qt::WindowFlags f = Qt::Window);
          
       bool sharesToolsAndMenu() { return _sharesToolsAndMenu; }
-      void shareToolsAndMenu(bool);
       const std::list<QToolBar*>& toolbars() { return _toolbars; }
       
       void addToolBar(QToolBar* toolbar);
@@ -75,6 +74,7 @@ class TopWin : public QMainWindow
 
   protected:
       QAction* subwinAction;
+      QAction* shareAction;
 
       ToplevelType _type;
 
@@ -82,6 +82,9 @@ class TopWin : public QMainWindow
       static int _heightInit[TOPLEVELTYPE_LAST_ENTRY];
       static QByteArray _toolbarNonsharedInit[TOPLEVELTYPE_LAST_ENTRY];
       static QByteArray _toolbarSharedInit[TOPLEVELTYPE_LAST_ENTRY];
+      static bool _sharesWhenFree[TOPLEVELTYPE_LAST_ENTRY];
+      static bool _sharesWhenSubwin[TOPLEVELTYPE_LAST_ENTRY];
+      static bool _defaultSubwin[TOPLEVELTYPE_LAST_ENTRY];
       static bool initInited;
       
       void initTopwinState();
@@ -93,11 +96,10 @@ class TopWin : public QMainWindow
       virtual void show();
       virtual void setVisible(bool);
       void setIsMdiWin(bool);
+      void shareToolsAndMenu(bool);
       void restoreMainwinState();
       void storeInitialState();
   
-  signals:
-      void toolsAndMenuSharingChanged(bool);
       };
 
 

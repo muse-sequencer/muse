@@ -1746,7 +1746,6 @@ void MusE::openInScoreEdit(ScoreEdit* destination, PartList* pl, bool allInOne)
 	if (destination==NULL) // if no destination given, create a new one
 	{
       destination = new ScoreEdit(this, 0, arranger->cursorValue());
-      destination->shareToolsAndMenu(true); //FINDMICHJETZT
       destination->show();
       toplevels.push_back(destination);
       connect(destination, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
@@ -1782,7 +1781,6 @@ void MusE::startPianoroll(PartList* pl, bool showDefaultCtrls)
       {
       
       PianoRoll* pianoroll = new PianoRoll(pl, this, 0, arranger->cursorValue());
-      pianoroll->shareToolsAndMenu(true); //FINDMICHJETZT
       if(showDefaultCtrls)       // p4.0.12
         pianoroll->addCtrl();
       pianoroll->show();
@@ -3100,4 +3098,23 @@ void MusE::setCurrentMenuSharingTopwin(TopWin* win)
 void MusE::addMdiSubWindow(QMdiSubWindow* win)
 {
   mdiArea->addSubWindow(win);
+}
+
+void MusE::shareMenuAndToolbarChanged(TopWin* win, bool val)
+{
+  if (val)
+  {
+    if ((win == activeTopWin) && (win != currentMenuSharingTopwin))
+      setCurrentMenuSharingTopwin(win);
+  }
+  else
+  {
+    if (win == currentMenuSharingTopwin)
+    {
+      if (win != activeTopWin)
+        setCurrentMenuSharingTopwin(activeTopWin);
+      else
+        setCurrentMenuSharingTopwin(NULL);
+    }
+  }
 }

@@ -153,6 +153,7 @@ WaveEdit::WaveEdit(PartList* pl)
       
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
       settingsMenu->addAction(subwinAction);
+      settingsMenu->addAction(shareAction);
 
       //---------ToolBar----------------------------------
       tools = addToolBar(tr("Wave edit tools"));

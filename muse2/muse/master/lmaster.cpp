@@ -145,6 +145,7 @@ LMaster::LMaster()
 
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
       settingsMenu->addAction(subwinAction);
+      settingsMenu->addAction(shareAction);
 
       
       connect(tempoAction, SIGNAL(triggered()), signalMapper, SLOT(map()));

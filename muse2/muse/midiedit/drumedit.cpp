@@ -265,6 +265,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
       settingsMenu->addAction(subwinAction);
+      settingsMenu->addAction(shareAction);
 
       connect(signalMapper, SIGNAL(mapped(int)), SLOT(cmd(int)));
 

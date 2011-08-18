@@ -331,6 +331,7 @@ class MusE : public QMainWindow
       void focusChanged(QWidget* old, QWidget* now);
       
       void addMdiSubWindow(QMdiSubWindow*);
+      void shareMenuAndToolbarChanged(TopWin*, bool);
 
    public:
       MusE(int argc, char** argv);

@@ -176,6 +176,7 @@ MarkerView::MarkerView(QWidget* parent)
       
       QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
       settingsMenu->addAction(subwinAction);
+      settingsMenu->addAction(shareAction);
       
       
       // Toolbars ---------------------------------------------------------

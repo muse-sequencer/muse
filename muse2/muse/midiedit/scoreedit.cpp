@@ -418,6 +418,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 	settings_menu->addSeparator();
 	settings_menu->addAction(subwinAction);
+	settings_menu->addAction(shareAction);
 
   
 
@@ -4445,13 +4446,11 @@ void staff_t::update_part_indices()
  *     because after A (and B) got resized, the B-resize is invalid!
  * 
  * CURRENT TODO
- *   o IMPORTANT: check new windowed arranger!
- *                 - do all signal connections work?
- *                 - are there any segfaults?
  *   o remove that ugly "bool initalizing" stuff. it's probably unneeded (watch out for the FINDMICH message)
  *   o store window state: does this really work? arranger seems to be buggy. maybe also marker etc?
  *   o always store marker, arranger etc state, not only when window shown!
  *   o setup for "share","don't share" etc.
+ *   o arranger: shortcuts for "pencil" etc don't work
  * 
  * IMPORTANT TODO
  *   o redo transport menu: offer "one beat" and "one bar" steps

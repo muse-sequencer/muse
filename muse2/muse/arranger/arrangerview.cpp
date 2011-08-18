@@ -489,6 +489,7 @@ ArrangerView::ArrangerView(QWidget* parent)
 
   QMenu* menuSettings = menuBar()->addMenu(tr("&Settings"));
   menuSettings->addAction(subwinAction);
+  menuSettings->addAction(shareAction);
 
 
   //-------- Edit connections

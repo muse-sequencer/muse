@@ -23,6 +23,9 @@ int TopWin::_widthInit[TOPLEVELTYPE_LAST_ENTRY];
 int TopWin::_heightInit[TOPLEVELTYPE_LAST_ENTRY];
 QByteArray TopWin::_toolbarSharedInit[TOPLEVELTYPE_LAST_ENTRY];
 QByteArray TopWin::_toolbarNonsharedInit[TOPLEVELTYPE_LAST_ENTRY];
+bool TopWin::_sharesWhenFree[TOPLEVELTYPE_LAST_ENTRY];
+bool TopWin::_sharesWhenSubwin[TOPLEVELTYPE_LAST_ENTRY];
+bool TopWin::_defaultSubwin[TOPLEVELTYPE_LAST_ENTRY];
 bool TopWin::initInited=false;
 
 TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlags f)
@@ -34,7 +37,15 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
         {
           _widthInit[i]=800;
           _heightInit[i]=600;
+          _sharesWhenFree[i]=false;
+          _sharesWhenSubwin[i]=true;
+          _defaultSubwin[i]=false;
         }
+        
+        _defaultSubwin[ARRANGER]=true;
+        
+        _defaultSubwin[SCORE]=true; //FINDMICH
+        _sharesWhenFree[SCORE]=true;
         
         initInited=true;
       }  
@@ -43,19 +54,29 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
       
       _type=t;
       
+      
+      
       setObjectName(QString(name));
-      //setAttribute(Qt::WA_DeleteOnClose);
       // Allow multiple rows.  Tim.
       //setDockNestingEnabled(true);
       setIconSize(ICON_SIZE);
       
-      mdisubwin=NULL;
-      _sharesToolsAndMenu=false;
-      
       subwinAction=new QAction(tr("As subwindow"), this);
       subwinAction->setCheckable(true);
-      subwinAction->setChecked(isMdiWin());
       connect(subwinAction, SIGNAL(toggled(bool)), SLOT(setIsMdiWin(bool)));
+
+      shareAction=new QAction(tr("Shares tools and menu"), this);
+      shareAction->setCheckable(true);
+      connect(shareAction, SIGNAL(toggled(bool)), SLOT(shareToolsAndMenu(bool)));
+
+      mdisubwin=NULL;
+      _sharesToolsAndMenu=_defaultSubwin[_type] ? _sharesWhenSubwin[_type] : _sharesWhenFree[_type];
+      if (_defaultSubwin[_type])
+        setIsMdiWin(true);
+      
+      
+      subwinAction->setChecked(isMdiWin());
+      shareAction->setChecked(_sharesToolsAndMenu);
       }
 
 
@@ -163,6 +184,9 @@ void TopWin::setIsMdiWin(bool val)
       muse->addMdiSubWindow(subwin);
       subwin->setVisible(vis);
       
+      if (_sharesToolsAndMenu == _sharesWhenFree[_type])
+        shareToolsAndMenu(_sharesWhenSubwin[_type]);
+      
       subwinAction->setChecked(true);
     }
     else
@@ -182,9 +206,12 @@ void TopWin::setIsMdiWin(bool val)
       //TODO FINDMICH evtl noch ein signal emitten oder sowas?
       delete mdisubwin_temp;
       
-      printf("unMDIfied, visible is %i\n",vis);
+      printf("FINDMICH unMDIfied, visible is %i\n",vis);
       setVisible(vis);
-      
+
+      if (_sharesToolsAndMenu == _sharesWhenSubwin[_type])
+        shareToolsAndMenu(_sharesWhenFree[_type]);
+            
       subwinAction->setChecked(false);
     }
     else
@@ -227,6 +254,8 @@ void TopWin::shareToolsAndMenu(bool val)
   
   if (!val)
   {
+    muse->shareMenuAndToolbarChanged(this, false);
+    
     for (list<QToolBar*>::iterator it=_toolbars.begin(); it!=_toolbars.end(); it++)
       if (*it != NULL)
         QMainWindow::addToolBar(*it);
@@ -239,12 +268,17 @@ void TopWin::shareToolsAndMenu(bool val)
   {
     for (list<QToolBar*>::iterator it=_toolbars.begin(); it!=_toolbars.end(); it++)
       if (*it != NULL)
+      {
         QMainWindow::removeToolBar(*it); // this does NOT delete the toolbar, which is good
+        (*it)->setParent(NULL);
+      }
     
     menuBar()->hide();
+    
+    muse->shareMenuAndToolbarChanged(this, true);
   }
   
-  emit toolsAndMenuSharingChanged(val);
+  shareAction->setChecked(val);
 }
 
 
