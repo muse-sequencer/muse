@@ -50,11 +50,11 @@ class TopWin : public QMainWindow
       static void writeConfiguration(ToplevelType, int, Xml&);
       
       
-      bool isMdiWin();
+      bool isMdiWin() const;
 
       TopWin(ToplevelType t, QWidget* parent=0, const char* name=0, Qt::WindowFlags f = Qt::Window);
          
-      bool sharesToolsAndMenu() { return _sharesToolsAndMenu; }
+      bool sharesToolsAndMenu() const { return _sharesToolsAndMenu; }
       const std::list<QToolBar*>& toolbars() { return _toolbars; }
       
       void addToolBar(QToolBar* toolbar);
@@ -103,7 +103,7 @@ class TopWin : public QMainWindow
       void setIsMdiWin(bool);
       void shareToolsAndMenu(bool);
       void restoreMainwinState();
-      void storeInitialState();
+      void storeInitialState() const;
   
       };
 

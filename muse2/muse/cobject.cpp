@@ -77,14 +77,19 @@ void TopWin::readStatus(Xml& xml)
             QString tag = xml.s1();
             switch (token) {
                   case Xml::TagStart:
-                        if (tag == "geometry") {
-                              QRect r(readGeometry(xml, tag));
-                              resize(r.size());
-                              move(r.topLeft());
+                        if (tag == "geometry_state") {
+                              if (!restoreGeometry(QByteArray::fromHex(xml.parse1().toAscii())))
+                                    fprintf(stderr,"ERROR: couldn't restore geometry. however, this is probably not really a problem.\n");
                               }
                         else if (tag == "toolbars") {
                               if (!restoreState(QByteArray::fromHex(xml.parse1().toAscii())))
                                     fprintf(stderr,"ERROR: couldn't restore toolbars. however, this is not really a problem.\n");
+                              }
+                        else if (tag == "shares_menu") {
+                              shareToolsAndMenu(xml.parseInt());
+                              }
+                        else if (tag == "is_subwin") {
+                              setIsMdiWin(xml.parseInt());
                               }
                         else
                               xml.unknown("TopWin");
@@ -105,13 +110,13 @@ void TopWin::readStatus(Xml& xml)
 void TopWin::writeStatus(int level, Xml& xml) const
       {
       xml.tag(level++, "topwin");
-      xml.tag(level++, "geometry x=\"%d\" y=\"%d\" w=\"%d\" h=\"%d\"",
-            geometry().x(),
-            geometry().y(),
-            geometry().width(),
-            geometry().height());
-      xml.tag(level--, "/geometry");
       
+      // the order of these tags has a certain sense
+      // changing it won't break muse, but it may break proper
+      // restoring of the positions
+      xml.intTag(level, "is_subwin", isMdiWin());
+      xml.strTag(level, "geometry_state", saveGeometry().toHex().data());
+      xml.intTag(level, "shares_menu", sharesToolsAndMenu());
       xml.strTag(level, "toolbars", saveState().toHex().data());
 
       xml.tag(level, "/topwin");
@@ -204,7 +209,7 @@ void TopWin::setIsMdiWin(bool val)
   }
 }
 
-bool TopWin::isMdiWin()
+bool TopWin::isMdiWin() const
 {
   return (mdisubwin!=NULL);
 }
@@ -270,7 +275,7 @@ void TopWin::shareToolsAndMenu(bool val)
 //   storeInitialState
 //---------------------------------------------------------
 
-void TopWin::storeInitialState()
+void TopWin::storeInitialState() const
       {
         if (initalizing)
           printf("THIS SHOULD NEVER HAPPEN: STORE INIT STATE CALLED WHILE INITING! please IMMEDIATELY report that to flo!\n");
