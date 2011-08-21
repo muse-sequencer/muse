@@ -298,7 +298,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       {
       // By T356. For LADSPA plugins in plugin.cpp
       // QWidgetFactory::addWidgetFactory( new PluginWidgetFactory ); ddskrjo
-      
       setIconSize(ICON_SIZE);
       setFocusPolicy(Qt::WheelFocus);
       //setFocusPolicy(Qt::NoFocus);
@@ -334,6 +333,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       setWindowTitle(appName);
       midiPluginSignalMapper = new QSignalMapper(this);
       followSignalMapper = new QSignalMapper(this);
+      windowsMapper = new QSignalMapper(this);
+      connect(windowsMapper, SIGNAL(mapped(QWidget*)), SLOT(bringToFront(QWidget*)));
 
       song           = new Song("song");
       song->blockSignals(true);
@@ -533,8 +534,13 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       autoSnapshotAction = new QAction(QIcon(*automation_take_snapshotIcon), tr("Take Snapshot"), this);
       autoClearAction = new QAction(QIcon(*automation_clear_dataIcon), tr("Clear Automation Data"), this);
       autoClearAction->setEnabled(false);
+      
 
-
+      //-------- Windows Actions
+      windowsCascadeAction = new QAction(tr("Cascade"), this);
+      windowsTileAction = new QAction(tr("Tile"), this);
+      
+      
       //-------- Settings Actions
       settingsGlobalAction = new QAction(QIcon(*settings_globalsettingsIcon), tr("Global Settings"), this);
       settingsShortcutsAction = new QAction(QIcon(*settings_configureshortcutsIcon), tr("Configure Shortcuts"), this);
@@ -820,6 +826,17 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       menuAutomation->addAction(autoClearAction);
 
       //-------------------------------------------------------------
+      //    popup Windows
+      //-------------------------------------------------------------
+
+      menuWindows = new QMenu(tr("&Windows"), this);
+      menuBar()->addMenu(menuWindows);
+      trailingMenus.push_back(menuWindows);
+      
+      menuWindows->addAction(windowsCascadeAction); 
+      menuWindows->addAction(windowsTileAction); 
+
+      //-------------------------------------------------------------
       //    popup Settings
       //-------------------------------------------------------------
 
@@ -869,6 +886,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       
       mdiArea=new QMdiArea(this);
       setCentralWidget(mdiArea);
+      connect(windowsTileAction, SIGNAL(activated()), mdiArea, SLOT(tileSubWindows()));
+      connect(windowsCascadeAction, SIGNAL(activated()), mdiArea, SLOT(cascadeSubWindows()));
 
 
       arrangerView = new ArrangerView(this);
@@ -878,7 +897,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       arrangerView->hide();
       arranger=arrangerView->getArranger();
       
-      //mdiArea->addSubWindow(arrangerView->createMdiWrapper());
       arrangerView->setIsMdiWin(true);
       
       
@@ -954,6 +972,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       restoreState(settings.value("MusE/windowState").toByteArray());
 
       song->update();
+      
+      updateWindowMenu();
       }
 
 MusE::~MusE()
@@ -1554,6 +1574,7 @@ void MusE::showMarker(bool flag)
             }
       markerView->setVisible(flag);
       viewMarkerAction->setChecked(flag);
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -1563,6 +1584,7 @@ void MusE::showMarker(bool flag)
 void MusE::markerClosed()
       {
       viewMarkerAction->setChecked(false);
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -1582,6 +1604,7 @@ void MusE::showArranger(bool flag)
       {
       arrangerView->setVisible(flag);
       viewArrangerAction->setChecked(flag);
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -1591,6 +1614,7 @@ void MusE::showArranger(bool flag)
 void MusE::arrangerClosed()
       {
       viewArrangerAction->setChecked(false);
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -1755,6 +1779,7 @@ void MusE::openInScoreEdit(ScoreEdit* destination, PartList* pl, bool allInOne)
       //relevant signals on his own
       
       arrangerView->updateScoreMenus();
+      updateWindowMenu();
   }
   
   destination->add_parts(pl, allInOne);
@@ -1787,6 +1812,7 @@ void MusE::startPianoroll(PartList* pl, bool showDefaultCtrls)
       toplevels.push_back(pianoroll);
       connect(pianoroll, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -1808,6 +1834,7 @@ void MusE::startListEditor(PartList* pl)
       toplevels.push_back(listEditor);
       connect(listEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -1820,6 +1847,7 @@ void MusE::startMasterEditor()
       masterEditor->show();
       toplevels.push_back(masterEditor);
       connect(masterEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -1833,6 +1861,7 @@ void MusE::startLMasterEditor()
       toplevels.push_back(lmaster);
       connect(lmaster, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(muse, SIGNAL(configChanged()), lmaster, SLOT(configChanged()));
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -1857,6 +1886,7 @@ void MusE::startDrumEditor(PartList* pl, bool showDefaultCtrls)
       toplevels.push_back(drumEditor);
       connect(drumEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -1880,6 +1910,7 @@ void MusE::startWaveEditor(PartList* pl)
       connect(muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
       toplevels.push_back(waveEditor);
       connect(waveEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
+      updateWindowMenu();
       }
 
 
@@ -1940,6 +1971,7 @@ void MusE::startClipList(bool checked)
             }
       clipListEdit->show();
       viewCliplistAction->setChecked(checked);
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -2001,7 +2033,8 @@ void MusE::toplevelDeleted(TopWin* tl)
                         case TopWin::CLIPLIST:
                               // ORCAN: This needs to be verified. aid2 used to correspond to Cliplist:
                               //menu_audio->setItemChecked(aid2, false);
-                              viewCliplistAction->setChecked(false);  
+                              viewCliplistAction->setChecked(false); 
+                              updateWindowMenu(); 
                               return;
                               //break;
 
@@ -2023,6 +2056,7 @@ void MusE::toplevelDeleted(TopWin* tl)
                   toplevels.erase(i);
                   if (mustUpdateScoreMenus)
                         arrangerView->updateScoreMenus();
+                  updateWindowMenu();
                   return;
                   }
             }
@@ -3071,7 +3105,7 @@ void MusE::setCurrentMenuSharingTopwin(TopWin* win)
           
           addToolBar(*it);
           foreignToolbars.push_back(*it);
-          (*it)->show(); //FINDMICHJETZT
+          (*it)->show();
         }
         else
         {
@@ -3087,8 +3121,6 @@ void MusE::setCurrentMenuSharingTopwin(TopWin* win)
       
 
     currentMenuSharingTopwin=win;
-    
-    printf ("FINDMICH: changing sharing win DONE.\n");
     
     if (win)
       win->restoreMainwinState(); //restore toolbar positions in main window
@@ -3116,5 +3148,66 @@ void MusE::shareMenuAndToolbarChanged(TopWin* win, bool val)
       else
         setCurrentMenuSharingTopwin(NULL);
     }
+  }
+}
+
+void MusE::updateWindowMenu()
+{
+  bool sep;
+  bool there_are_subwins=false;
+  
+  menuWindows->clear(); // frees memory automatically
+  
+  menuWindows->addAction(windowsCascadeAction);
+  menuWindows->addAction(windowsTileAction);
+  
+  sep=false;
+  for (iToplevel it=toplevels.begin(); it!=toplevels.end(); it++)
+    if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && (*it)->isMdiWin())
+    // the isVisibleTo check is neccessary because isVisible returns false if a
+    // MdiSubWin is actually visible, but the muse main window is hidden for some reason
+    {
+      if (!sep)
+      {
+        menuWindows->addSeparator();
+        sep=true;
+      }
+      QAction* temp=menuWindows->addAction((*it)->windowTitle());
+      connect(temp, SIGNAL(activated()), windowsMapper, SLOT(map()));
+      windowsMapper->setMapping(temp, static_cast<QWidget*>(*it));
+      
+      there_are_subwins=true;
+    }
+
+  sep=false;
+  for (iToplevel it=toplevels.begin(); it!=toplevels.end(); it++)
+    if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && !(*it)->isMdiWin())
+    {
+      if (!sep)
+      {
+        menuWindows->addSeparator();
+        sep=true;
+      }
+      QAction* temp=menuWindows->addAction((*it)->windowTitle());
+      connect(temp, SIGNAL(activated()), windowsMapper, SLOT(map()));
+      windowsMapper->setMapping(temp, static_cast<QWidget*>(*it));
+    }
+  
+  windowsCascadeAction->setEnabled(there_are_subwins);
+  windowsTileAction->setEnabled(there_are_subwins);
+}
+
+void MusE::bringToFront(QWidget* widget)
+{
+  TopWin* win=dynamic_cast<TopWin*>(widget);
+  if (win->isMdiWin())
+  {
+    win->show();
+    mdiArea->setActiveSubWindow(win->getMdiWin());
+  }
+  else
+  {
+    win->activateWindow();
+    win->raise();
   }
 }

@@ -128,6 +128,10 @@ class MusE : public QMainWindow
       // Automation Menu Actions
       QAction *autoMixerAction, *autoSnapshotAction, *autoClearAction;
 
+      // Window Menu Actions
+      QAction* windowsCascadeAction;
+      QAction* windowsTileAction;
+      
       // Settings Menu Actions
       QAction *settingsGlobalAction, *settingsShortcutsAction, *settingsMetronomeAction, *settingsMidiSyncAction;
       QAction *settingsMidiIOAction, *settingsAppearanceAction, *settingsMidiPortAction;
@@ -149,7 +153,7 @@ class MusE : public QMainWindow
       
       // when adding a menu to the main window, remember adding it to
       // either the leadingMenus or trailingMenus list!
-      QMenu *menu_file, *menuView, *menuSettings, *menu_help;
+      QMenu *menu_file, *menuView, *menuSettings, *menuWindows, *menu_help;
       QMenu* menu_audio, *menuAutomation, *menuUtils;
       QMenu* menu_functions, *menuScriptPlugins;
 
@@ -211,6 +215,7 @@ class MusE : public QMainWindow
 
       QSignalMapper *midiPluginSignalMapper;
       QSignalMapper *followSignalMapper;
+      QSignalMapper *windowsMapper;
 
    signals:
       void configChanged();
@@ -287,6 +292,8 @@ class MusE : public QMainWindow
       
       void activeTopWinChangedSlot(TopWin*);
       void setCurrentMenuSharingTopwin(TopWin*);
+      
+      void bringToFront(QWidget* win);
 
    public slots:
       bool saveAs();
@@ -332,6 +339,8 @@ class MusE : public QMainWindow
       
       void addMdiSubWindow(QMdiSubWindow*);
       void shareMenuAndToolbarChanged(TopWin*, bool);
+
+      void updateWindowMenu();
 
    public:
       MusE(int argc, char** argv);

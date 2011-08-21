@@ -51,6 +51,7 @@ class TopWin : public QMainWindow
       
       
       bool isMdiWin() const;
+      QMdiSubWindow* getMdiWin() const { return mdisubwin; }
 
       TopWin(ToplevelType t, QWidget* parent=0, const char* name=0, Qt::WindowFlags f = Qt::Window);
          

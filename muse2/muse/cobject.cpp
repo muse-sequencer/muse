@@ -176,6 +176,7 @@ void TopWin::setIsMdiWin(bool val)
         shareToolsAndMenu(_sharesWhenSubwin[_type]);
       
       subwinAction->setChecked(true);
+      muse->updateWindowMenu();
     }
     else
     {
@@ -191,16 +192,15 @@ void TopWin::setIsMdiWin(bool val)
       mdisubwin=NULL;
       setParent(NULL);
       mdisubwin_temp->hide();
-      //TODO FINDMICH evtl noch ein signal emitten oder sowas?
       delete mdisubwin_temp;
       
-      printf("FINDMICH unMDIfied, visible is %i\n",vis);
       setVisible(vis);
 
       if (_sharesToolsAndMenu == _sharesWhenSubwin[_type])
         shareToolsAndMenu(_sharesWhenFree[_type]);
             
       subwinAction->setChecked(false);
+      muse->updateWindowMenu();
     }
     else
     {
@@ -381,15 +381,10 @@ void TopWin::writeConfiguration(ToplevelType t, int level, Xml& xml)
 
 void TopWin::initTopwinState()
 {
-  printf("FINDMICH: in initTopwinState()\n");
-  
   if (sharesToolsAndMenu())
   {
     if (this == muse->getCurrentMenuSharingTopwin())
-    {
-      printf("FINDMICH RESTORING for %s...\n",windowTitle().toAscii().data());
       muse->restoreState(_toolbarSharedInit[_type]);
-    }
   }
   else
     restoreState(_toolbarNonsharedInit[_type]);
