@@ -93,6 +93,8 @@ class TopWin : public QMainWindow
       static QByteArray _toolbarSharedInit[TOPLEVELTYPE_LAST_ENTRY];
       static bool initInited;
       
+      QByteArray _savedToolbarState;
+      
       void initTopwinState();
 
       bool initalizing; //if true, no state is saved

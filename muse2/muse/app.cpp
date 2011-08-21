@@ -3143,7 +3143,7 @@ void MusE::shareMenuAndToolbarChanged(TopWin* win, bool val)
   {
     if (win == currentMenuSharingTopwin)
     {
-      if (win != activeTopWin)
+      if (activeTopWin && (win != activeTopWin) && (activeTopWin->sharesToolsAndMenu()))
         setCurrentMenuSharingTopwin(activeTopWin);
       else
         setCurrentMenuSharingTopwin(NULL);

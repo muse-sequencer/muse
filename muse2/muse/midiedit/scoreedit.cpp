@@ -4439,6 +4439,7 @@ void staff_t::update_part_indices()
 
 /* BUGS and potential bugs
  *   o THIS SHOULD NEVER HAPPEN: could not split note (found by tim)
+ *   o when un-mdi-fying, toolbar state gets broken
  * 
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
@@ -4446,8 +4447,11 @@ void staff_t::update_part_indices()
  *     and both A and B get scheduled to be expanded (because we
  *     have one event from A and one event from B), this causes a bug,
  *     because after A (and B) got resized, the B-resize is invalid!
+ *   o when changing toolbarstate when sharing and immediately after that
+ *     changing "share" status, the changed state isn't stored
  * 
  * CURRENT TODO
+ *   o save toolstate also when changing share/don't share
  *   o remove that ugly "bool initalizing" stuff. it's probably unneeded (watch out for the FINDMICH message)
  *   o shortcuts for "pencil" etc don't work when only mdiwin has focus and not the mainwin inside
  *   o implement borland-style maximize: free windows do not cover the main menu, even when maximized

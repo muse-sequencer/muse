@@ -58,6 +58,8 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
       if (_defaultSubwin[_type])
         setIsMdiWin(true);
       
+      if (_sharesToolsAndMenu)
+        menuBar()->hide();
       
       subwinAction->setChecked(isMdiWin());
       shareAction->setChecked(_sharesToolsAndMenu);
@@ -82,8 +84,15 @@ void TopWin::readStatus(Xml& xml)
                                     fprintf(stderr,"ERROR: couldn't restore geometry. however, this is probably not really a problem.\n");
                               }
                         else if (tag == "toolbars") {
-                              if (!restoreState(QByteArray::fromHex(xml.parse1().toAscii())))
-                                    fprintf(stderr,"ERROR: couldn't restore toolbars. however, this is not really a problem.\n");
+                              if (!sharesToolsAndMenu()) {
+                                  if (!restoreState(QByteArray::fromHex(xml.parse1().toAscii())))
+                                        fprintf(stderr,"ERROR: couldn't restore toolbars. however, this is not really a problem.\n");
+                                  }
+                              else {
+                                  _savedToolbarState=QByteArray::fromHex(xml.parse1().toAscii());
+                                  if (_savedToolbarState.isEmpty())
+                                    _savedToolbarState=_toolbarNonsharedInit[_type];
+                                  }
                               }
                         else if (tag == "shares_menu") {
                               shareToolsAndMenu(xml.parseInt());
@@ -117,7 +126,11 @@ void TopWin::writeStatus(int level, Xml& xml) const
       xml.intTag(level, "is_subwin", isMdiWin());
       xml.strTag(level, "geometry_state", saveGeometry().toHex().data());
       xml.intTag(level, "shares_menu", sharesToolsAndMenu());
-      xml.strTag(level, "toolbars", saveState().toHex().data());
+      
+      if (!sharesToolsAndMenu())
+        xml.strTag(level, "toolbars", saveState().toHex().data());
+      else
+        xml.strTag(level, "toolbars", _savedToolbarState.toHex().data());
 
       xml.tag(level, "/topwin");
       }
@@ -167,6 +180,8 @@ void TopWin::setIsMdiWin(bool val)
   {
     if (!isMdiWin())
     {
+      _savedToolbarState = saveState();
+      
       bool vis=isVisible();
       QMdiSubWindow* subwin = createMdiWrapper();
       muse->addMdiSubWindow(subwin);
@@ -238,6 +253,13 @@ QToolBar* TopWin::addToolBar(const QString& title)
 
 void TopWin::shareToolsAndMenu(bool val)
 {
+  if (_sharesToolsAndMenu == val)
+  {
+    if (debugMsg) printf("TopWin::shareToolsAndMenu() called but has no effect\n");
+    return;
+  }
+  
+  
   _sharesToolsAndMenu = val;
   
   if (!val)
@@ -246,14 +268,23 @@ void TopWin::shareToolsAndMenu(bool val)
     
     for (list<QToolBar*>::iterator it=_toolbars.begin(); it!=_toolbars.end(); it++)
       if (*it != NULL)
+      {
         QMainWindow::addToolBar(*it);
+        (*it)->show();
+      }
       else
         QMainWindow::addToolBarBreak();
+        
+    restoreState(_savedToolbarState);
+    _savedToolbarState.clear();
     
     menuBar()->show();
   }
   else
   {
+    if (_savedToolbarState.isEmpty())   // this check avoids overwriting a previously saved state 
+      _savedToolbarState = saveState(); // (by setIsMdiWin) with a now incorrect (empty) state
+    
     for (list<QToolBar*>::iterator it=_toolbars.begin(); it!=_toolbars.end(); it++)
       if (*it != NULL)
       {
