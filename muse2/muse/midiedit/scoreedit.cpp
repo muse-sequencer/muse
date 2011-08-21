@@ -4450,6 +4450,10 @@ void staff_t::update_part_indices()
  *     changing "share" status, the changed state isn't stored
  * 
  * CURRENT TODO
+ *   o fullscreen mode for muse
+ *   o clear menu/toolbars when hiding a window
+ *   o strange sizes of toolbars oO?
+ *   o restore arranger's maximized state when loading
  *   o remove that ugly "bool initalizing" stuff. it's probably unneeded (watch out for the FINDMICH message)
  *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer
  *     journey to the menu bar. try to find a way which does not involve duplicate code!

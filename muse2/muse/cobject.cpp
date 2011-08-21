@@ -186,6 +186,7 @@ void TopWin::setIsMdiWin(bool val)
       QMdiSubWindow* subwin = createMdiWrapper();
       muse->addMdiSubWindow(subwin);
       subwin->setVisible(vis);
+      this->QMainWindow::show(); //bypass the delegation to the subwin
       
       if (_sharesToolsAndMenu == _sharesWhenFree[_type])
         shareToolsAndMenu(_sharesWhenSubwin[_type]);
@@ -241,6 +242,8 @@ void TopWin::addToolBar(QToolBar* toolbar)
   
   if (!_sharesToolsAndMenu)
     QMainWindow::addToolBar(toolbar);
+  else
+    toolbar->hide();
 }
 
 QToolBar* TopWin::addToolBar(const QString& title)

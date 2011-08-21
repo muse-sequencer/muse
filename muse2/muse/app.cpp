@@ -885,6 +885,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       
       mdiArea=new QMdiArea(this);
+      mdiArea->setOption(QMdiArea::DontMaximizeSubWindowOnActivation);
       setCentralWidget(mdiArea);
       connect(windowsTileAction, SIGNAL(activated()), mdiArea, SLOT(tileSubWindows()));
       connect(windowsCascadeAction, SIGNAL(activated()), mdiArea, SLOT(cascadeSubWindows()));
@@ -1278,6 +1279,24 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
         // Moved here from above due to crash with a song loaded and then File->New.
         // Marker view list was not updated, had non-existent items from marker list (cleared in ::clear()).
         showMarker(config.markerVisible); 
+      }
+      
+      if (songTemplate)
+      {
+        // maximize the arranger in traditional SDI mode
+        if (TopWin::_defaultSubwin[TopWin::ARRANGER])
+        {
+          bool maximizeArranger=true;
+          for (int i=0; i<TopWin::TOPLEVELTYPE_LAST_ENTRY; i++)
+            if ((i!=TopWin::ARRANGER) && TopWin::_defaultSubwin[i])
+            {
+              maximizeArranger=false;
+              break;
+            }
+          
+          if (maximizeArranger)
+            arrangerView->showMaximized();
+        }
       }
       
       }
