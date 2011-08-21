@@ -968,8 +968,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       changeConfig(false);
       QSettings settings("MusE", "MusE-qt");
-      //restoreGeometry(settings.value("MusE/geometry").toByteArray());
-      restoreState(settings.value("MusE/windowState").toByteArray());
+      restoreGeometry(settings.value("MusE/geometry").toByteArray());
+      //restoreState(settings.value("MusE/windowState").toByteArray());
 
       song->update();
       
@@ -1469,8 +1469,10 @@ void MusE::closeEvent(QCloseEvent* event)
             }
 
       QSettings settings("MusE", "MusE-qt");
-      //settings.setValue("MusE/geometry", saveGeometry());
-      settings.setValue("MusE/windowState", saveState());
+      settings.setValue("MusE/geometry", saveGeometry());
+      //settings.setValue("MusE/windowState", saveState());
+      
+      writeGlobalConfiguration();
 
       // save "Open Recent" list
       QString prjPath(configPath);
