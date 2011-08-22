@@ -499,6 +499,7 @@ ListEdit::ListEdit(PartList* pl)
       QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
+      settingsMenu->addAction(fullscreenAction);
 
 
       // Toolbars ---------------------------------------------------------

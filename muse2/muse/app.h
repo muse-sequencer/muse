@@ -114,6 +114,7 @@ class MusE : public QMainWindow
    
       // View Menu actions
       QAction *viewTransportAction, *viewBigtimeAction, *viewMixerAAction, *viewMixerBAction, *viewCliplistAction, *viewMarkerAction, *viewArrangerAction;
+      QAction* fullscreenAction;
 
       // Midi Menu Actions
       QAction *midiEditInstAction, *midiResetInstAction, *midiInitInstActions, *midiLocalOffAction;
@@ -294,6 +295,7 @@ class MusE : public QMainWindow
       void setCurrentMenuSharingTopwin(TopWin*);
       
       void bringToFront(QWidget* win);
+      void setFullscreen(bool);
 
    public slots:
       bool saveAs();

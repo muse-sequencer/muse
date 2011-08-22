@@ -506,6 +506,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       viewMarkerAction->setCheckable(true);
       viewArrangerAction = new QAction(tr("Arranger View"),  this);
       viewArrangerAction->setCheckable(true);
+      fullscreenAction=new QAction(tr("Fullscreen"), this);
+      fullscreenAction->setCheckable(true);
+      fullscreenAction->setChecked(false);
 
       //-------- Midi Actions
       menuScriptPlugins = new QMenu(tr("&Plugins"), this);
@@ -595,6 +598,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(viewCliplistAction, SIGNAL(toggled(bool)), SLOT(startClipList(bool)));
       connect(viewMarkerAction, SIGNAL(toggled(bool)), SLOT(toggleMarker(bool)));
       connect(viewArrangerAction, SIGNAL(toggled(bool)), SLOT(toggleArranger(bool)));
+      connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
 
       //-------- Midi connections
       connect(midiEditInstAction, SIGNAL(activated()), SLOT(startEditInstrument()));
@@ -767,6 +771,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       menuView->addAction(viewCliplistAction);
       menuView->addAction(viewMarkerAction);
       menuView->addAction(viewArrangerAction);
+      menuView->addSeparator();
+      menuView->addAction(fullscreenAction);
 
       
       //-------------------------------------------------------------
@@ -3245,4 +3251,12 @@ void MusE::bringToFront(QWidget* widget)
     win->activateWindow();
     win->raise();
   }
+}
+
+void MusE::setFullscreen(bool val)
+{
+  if (val)
+    showFullScreen();
+  else
+    showNormal();
 }

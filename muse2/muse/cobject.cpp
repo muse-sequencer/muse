@@ -53,6 +53,11 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
       shareAction->setCheckable(true);
       connect(shareAction, SIGNAL(toggled(bool)), SLOT(shareToolsAndMenu(bool)));
 
+      fullscreenAction=new QAction(tr("Fullscreen"), this);
+      fullscreenAction->setCheckable(true);
+      fullscreenAction->setChecked(false);
+      connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
+
       mdisubwin=NULL;
       _sharesToolsAndMenu=_defaultSubwin[_type] ? _sharesWhenSubwin[_type] : _sharesWhenFree[_type];
       if (_defaultSubwin[_type])
@@ -63,6 +68,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
       
       subwinAction->setChecked(isMdiWin());
       shareAction->setChecked(_sharesToolsAndMenu);
+      fullscreenAction->setEnabled(!isMdiWin());
       }
 
 
@@ -191,6 +197,8 @@ void TopWin::setIsMdiWin(bool val)
       if (_sharesToolsAndMenu == _sharesWhenFree[_type])
         shareToolsAndMenu(_sharesWhenSubwin[_type]);
       
+      fullscreenAction->setEnabled(false);
+      fullscreenAction->setChecked(false);
       subwinAction->setChecked(true);
       muse->updateWindowMenu();
     }
@@ -215,6 +223,7 @@ void TopWin::setIsMdiWin(bool val)
       if (_sharesToolsAndMenu == _sharesWhenSubwin[_type])
         shareToolsAndMenu(_sharesWhenFree[_type]);
             
+      fullscreenAction->setEnabled(true);
       subwinAction->setChecked(false);
       muse->updateWindowMenu();
     }
@@ -446,4 +455,12 @@ QString TopWin::typeName(ToplevelType t)
     case ARRANGER: return tr("Arranger");
     default: return tr("<unknown toplevel type>");
   }
+}
+
+void TopWin::setFullscreen(bool val)
+{
+  if (val)
+    showFullScreen();
+  else
+    showNormal();
 }

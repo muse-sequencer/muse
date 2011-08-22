@@ -154,6 +154,7 @@ WaveEdit::WaveEdit(PartList* pl)
       QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
+      settingsMenu->addAction(fullscreenAction);
 
       //---------ToolBar----------------------------------
       tools = addToolBar(tr("Wave edit tools"));

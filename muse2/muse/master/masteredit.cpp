@@ -93,6 +93,7 @@ MasterEdit::MasterEdit()
       QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
+      settingsMenu->addAction(fullscreenAction);
 
       // Toolbars ---------------------------------------------------------
       QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));

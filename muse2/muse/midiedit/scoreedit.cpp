@@ -443,6 +443,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	settings_menu->addSeparator();
 	settings_menu->addAction(subwinAction);
 	settings_menu->addAction(shareAction);
+	settings_menu->addAction(fullscreenAction);
   
 
 	init_shortcuts();
@@ -4450,7 +4451,7 @@ void staff_t::update_part_indices()
  *     changing "share" status, the changed state isn't stored
  * 
  * CURRENT TODO
- * M o fullscreen mode for muse
+ *   o shortcuts, especially for fullscreen
  * m o arranger's size hint sucks oO
  *     maybe related: windows -> tile doesn't work, overrides scrollbarpolicy
  * m o rename "borland" to "mac" style???

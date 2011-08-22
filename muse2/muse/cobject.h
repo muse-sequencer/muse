@@ -84,6 +84,7 @@ class TopWin : public QMainWindow
   protected:
       QAction* subwinAction;
       QAction* shareAction;
+      QAction* fullscreenAction;
 
       ToplevelType _type;
 
@@ -98,6 +99,9 @@ class TopWin : public QMainWindow
       void initTopwinState();
 
       bool initalizing; //if true, no state is saved
+  
+  private slots:
+      void setFullscreen(bool);
   
   public slots:
       virtual void hide();

@@ -233,6 +233,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       menuConfig->addSeparator();
       menuConfig->addAction(subwinAction);
       menuConfig->addAction(shareAction);
+      menuConfig->addAction(fullscreenAction);
 
       
       //---------ToolBar----------------------------------

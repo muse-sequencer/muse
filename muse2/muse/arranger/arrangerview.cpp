@@ -490,6 +490,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   QMenu* menuSettings = menuBar()->addMenu(tr("Window &Config"));
   menuSettings->addAction(subwinAction);
   menuSettings->addAction(shareAction);
+  menuSettings->addAction(fullscreenAction);
 
 
   //-------- Edit connections

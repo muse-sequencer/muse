@@ -127,6 +127,7 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
       settingsMenu->addAction(subwinAction);      
       settingsMenu->addAction(shareAction);      
+      settingsMenu->addAction(fullscreenAction);      
       
       QFontMetrics fm(editor->view->font());
       int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth,0, this); // ddskrjo 0
