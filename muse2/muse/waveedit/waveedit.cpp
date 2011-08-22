@@ -151,7 +151,7 @@ WaveEdit::WaveEdit(PartList* pl)
       connect(selectNoneAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
       
-      QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
 

@@ -174,7 +174,7 @@ MarkerView::MarkerView(QWidget* parent)
       editMenu->addAction(markerDelete);
       
       
-      QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       

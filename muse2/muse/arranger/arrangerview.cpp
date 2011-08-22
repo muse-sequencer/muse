@@ -487,7 +487,7 @@ ArrangerView::ArrangerView(QWidget* parent)
     menuStructure->addSeparator();
     menuStructure->addAction(strCutEventsAction);
 
-  QMenu* menuSettings = menuBar()->addMenu(tr("&Settings"));
+  QMenu* menuSettings = menuBar()->addMenu(tr("Window &Config"));
   menuSettings->addAction(subwinAction);
   menuSettings->addAction(shareAction);
 

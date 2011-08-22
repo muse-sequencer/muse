@@ -124,7 +124,7 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       transport_toolbar->setObjectName("transport");
       transport_toolbar->addActions(transportAction->actions());
 
-      QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
       settingsMenu->addAction(subwinAction);      
       settingsMenu->addAction(shareAction);      
       

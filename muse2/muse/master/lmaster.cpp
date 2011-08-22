@@ -143,7 +143,7 @@ LMaster::LMaster()
       delAction = menuEdit->addAction(tr("Delete Event"));
       delAction->setShortcut(Qt::Key_Delete);
 
-      QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
 

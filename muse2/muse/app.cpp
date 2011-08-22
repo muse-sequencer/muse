@@ -840,7 +840,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    popup Settings
       //-------------------------------------------------------------
 
-      menuSettings = new QMenu(tr("Se&ttings"), this);
+      menuSettings = new QMenu(tr("MusE Se&ttings"), this);
       menuBar()->addMenu(menuSettings);
       trailingMenus.push_back(menuSettings);
       
@@ -886,6 +886,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       
       mdiArea=new QMdiArea(this);
       mdiArea->setOption(QMdiArea::DontMaximizeSubWindowOnActivation);
+      mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+      mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setCentralWidget(mdiArea);
       connect(windowsTileAction, SIGNAL(activated()), mdiArea, SLOT(tileSubWindows()));
       connect(windowsCascadeAction, SIGNAL(activated()), mdiArea, SLOT(cascadeSubWindows()));
@@ -1595,6 +1597,10 @@ void MusE::showMarker(bool flag)
             }
       markerView->setVisible(flag);
       viewMarkerAction->setChecked(flag);
+      if (!flag)
+        if (currentMenuSharingTopwin == markerView)
+          setCurrentMenuSharingTopwin(NULL);
+      
       updateWindowMenu();
       }
 
@@ -1605,6 +1611,9 @@ void MusE::showMarker(bool flag)
 void MusE::markerClosed()
       {
       viewMarkerAction->setChecked(false);
+      if (currentMenuSharingTopwin == markerView)
+        setCurrentMenuSharingTopwin(NULL);
+
       updateWindowMenu();
       }
 
@@ -1625,6 +1634,9 @@ void MusE::showArranger(bool flag)
       {
       arrangerView->setVisible(flag);
       viewArrangerAction->setChecked(flag);
+      if (!flag)
+        if (currentMenuSharingTopwin == arrangerView)
+          setCurrentMenuSharingTopwin(NULL);
       updateWindowMenu();
       }
 
@@ -2055,6 +2067,8 @@ void MusE::toplevelDeleted(TopWin* tl)
                               // ORCAN: This needs to be verified. aid2 used to correspond to Cliplist:
                               //menu_audio->setItemChecked(aid2, false);
                               viewCliplistAction->setChecked(false); 
+                              if (currentMenuSharingTopwin == clipListEdit)
+                                setCurrentMenuSharingTopwin(NULL);
                               updateWindowMenu(); 
                               return;
                               //break;

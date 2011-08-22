@@ -263,7 +263,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       QMenu* menuScriptPlugins = menuBar()->addMenu(tr("&Plugins"));
       song->populateScriptMenu(menuScriptPlugins, this);
       
-      QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
 

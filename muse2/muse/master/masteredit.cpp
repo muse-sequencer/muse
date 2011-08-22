@@ -90,7 +90,7 @@ MasterEdit::MasterEdit()
 //      QPopupMenu* file = new QPopupMenu(this);
 //      menuBar()->insertItem("&File", file);
 
-      QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
 

@@ -496,7 +496,7 @@ ListEdit::ListEdit(PartList* pl)
 
       connect(editSignalMapper, SIGNAL(mapped(int)), SLOT(cmd(int)));
 
-      QMenu* settingsMenu = menuBar()->addMenu(tr("&Settings"));
+      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
 
@@ -588,6 +588,9 @@ ListEdit::ListEdit(PartList* pl)
       }
       
       initShortcuts();
+      
+      setWindowTitle("MusE: List Editor");
+      
       initalizing=false;
       }
 

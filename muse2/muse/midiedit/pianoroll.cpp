@@ -142,42 +142,10 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       mapper->setMapping(selectNextPartAction, PianoCanvas::CMD_SELECT_NEXT_PART);
       connect(selectNextPartAction, SIGNAL(triggered()), mapper, SLOT(map()));
 
-      menuConfig = menuBar()->addMenu(tr("&Config"));      
-      
-      eventColor = menuConfig->addMenu(tr("&Event Color"));      
-      
-      QActionGroup* actgrp = new QActionGroup(this);
-      actgrp->setExclusive(true);
-      
-      //evColorBlueAction = eventColor->addAction(tr("&Blue"));
-      evColorBlueAction = actgrp->addAction(tr("&Blue"));
-      evColorBlueAction->setCheckable(true);
-      colorMapper->setMapping(evColorBlueAction, 0);
-      
-      //evColorPitchAction = eventColor->addAction(tr("&Pitch colors"));
-      evColorPitchAction = actgrp->addAction(tr("&Pitch colors"));
-      evColorPitchAction->setCheckable(true);
-      colorMapper->setMapping(evColorPitchAction, 1);
-      
-      //evColorVelAction = eventColor->addAction(tr("&Velocity colors"));
-      evColorVelAction = actgrp->addAction(tr("&Velocity colors"));
-      evColorVelAction->setCheckable(true);
-      colorMapper->setMapping(evColorVelAction, 2);
-      
-      connect(evColorBlueAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
-      connect(evColorPitchAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
-      connect(evColorVelAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
-      
-      eventColor->addActions(actgrp->actions());
-      
-      connect(colorMapper, SIGNAL(mapped(int)), this, SLOT(eventColorModeChanged(int)));
-      
-      menuConfig->addSeparator();
-      menuConfig->addAction(subwinAction);
-      menuConfig->addAction(shareAction);
 
-      
-      
+
+
+
       menuFunctions = menuBar()->addMenu(tr("Fu&nctions"));
 
       menuFunctions->setTearOffEnabled(true);
@@ -227,6 +195,45 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       song->populateScriptMenu(menuPlugins, this);
 
       connect(mapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
+      
+
+      
+      
+      
+      menuConfig = menuBar()->addMenu(tr("Window &Config"));      
+      
+      eventColor = menuConfig->addMenu(tr("&Event Color"));      
+      
+      QActionGroup* actgrp = new QActionGroup(this);
+      actgrp->setExclusive(true);
+      
+      //evColorBlueAction = eventColor->addAction(tr("&Blue"));
+      evColorBlueAction = actgrp->addAction(tr("&Blue"));
+      evColorBlueAction->setCheckable(true);
+      colorMapper->setMapping(evColorBlueAction, 0);
+      
+      //evColorPitchAction = eventColor->addAction(tr("&Pitch colors"));
+      evColorPitchAction = actgrp->addAction(tr("&Pitch colors"));
+      evColorPitchAction->setCheckable(true);
+      colorMapper->setMapping(evColorPitchAction, 1);
+      
+      //evColorVelAction = eventColor->addAction(tr("&Velocity colors"));
+      evColorVelAction = actgrp->addAction(tr("&Velocity colors"));
+      evColorVelAction->setCheckable(true);
+      colorMapper->setMapping(evColorVelAction, 2);
+      
+      connect(evColorBlueAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
+      connect(evColorPitchAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
+      connect(evColorVelAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
+      
+      eventColor->addActions(actgrp->actions());
+      
+      connect(colorMapper, SIGNAL(mapped(int)), this, SLOT(eventColorModeChanged(int)));
+      
+      menuConfig->addSeparator();
+      menuConfig->addAction(subwinAction);
+      menuConfig->addAction(shareAction);
+
       
       //---------ToolBar----------------------------------
       tools = addToolBar(tr("Pianoroll tools"));

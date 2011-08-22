@@ -381,7 +381,31 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 			connect(select_oloop_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
 
 
-	QMenu* settings_menu = menuBar()->addMenu(tr("&Settings"));      
+  QMenu* functions_menu = menuBar()->addMenu(tr("Fu&nctions"));      
+	
+		func_quantize_action = functions_menu->addAction(tr("&Quantize"), menu_mapper, SLOT(map()));
+		func_notelen_action = functions_menu->addAction(tr("Change note &length"), menu_mapper, SLOT(map()));
+		func_velocity_action = functions_menu->addAction(tr("Change note &velocity"), menu_mapper, SLOT(map()));
+		func_cresc_action = functions_menu->addAction(tr("Crescendo/Decrescendo"), menu_mapper, SLOT(map()));
+		func_transpose_action = functions_menu->addAction(tr("Transpose"), menu_mapper, SLOT(map()));
+		func_erase_action = functions_menu->addAction(tr("Erase Events"), menu_mapper, SLOT(map()));
+		func_move_action = functions_menu->addAction(tr("Move Notes"), menu_mapper, SLOT(map()));
+		func_fixed_len_action = functions_menu->addAction(tr("Set Fixed Length"), menu_mapper, SLOT(map()));
+		func_del_overlaps_action = functions_menu->addAction(tr("Delete Overlaps"), menu_mapper, SLOT(map()));
+		func_legato_action = functions_menu->addAction(tr("Legato"), menu_mapper, SLOT(map()));
+		menu_mapper->setMapping(func_quantize_action, CMD_QUANTIZE);
+		menu_mapper->setMapping(func_notelen_action, CMD_NOTELEN);
+		menu_mapper->setMapping(func_velocity_action, CMD_VELOCITY);
+		menu_mapper->setMapping(func_cresc_action, CMD_CRESCENDO);
+		menu_mapper->setMapping(func_transpose_action, CMD_TRANSPOSE);
+		menu_mapper->setMapping(func_erase_action, CMD_ERASE);
+		menu_mapper->setMapping(func_move_action, CMD_MOVE);
+		menu_mapper->setMapping(func_fixed_len_action, CMD_FIXED_LEN);
+		menu_mapper->setMapping(func_del_overlaps_action, CMD_DELETE_OVERLAPS);
+		menu_mapper->setMapping(func_legato_action, CMD_LEGATO);
+	
+
+	QMenu* settings_menu = menuBar()->addMenu(tr("Window &Config"));      
 
 		color_menu = settings_menu->addMenu(tr("Note head &colors"));
 			color_actions = new QActionGroup(this);
@@ -419,32 +443,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	settings_menu->addSeparator();
 	settings_menu->addAction(subwinAction);
 	settings_menu->addAction(shareAction);
-
   
 
-  QMenu* functions_menu = menuBar()->addMenu(tr("Fu&nctions"));      
-	
-		func_quantize_action = functions_menu->addAction(tr("&Quantize"), menu_mapper, SLOT(map()));
-		func_notelen_action = functions_menu->addAction(tr("Change note &length"), menu_mapper, SLOT(map()));
-		func_velocity_action = functions_menu->addAction(tr("Change note &velocity"), menu_mapper, SLOT(map()));
-		func_cresc_action = functions_menu->addAction(tr("Crescendo/Decrescendo"), menu_mapper, SLOT(map()));
-		func_transpose_action = functions_menu->addAction(tr("Transpose"), menu_mapper, SLOT(map()));
-		func_erase_action = functions_menu->addAction(tr("Erase Events"), menu_mapper, SLOT(map()));
-		func_move_action = functions_menu->addAction(tr("Move Notes"), menu_mapper, SLOT(map()));
-		func_fixed_len_action = functions_menu->addAction(tr("Set Fixed Length"), menu_mapper, SLOT(map()));
-		func_del_overlaps_action = functions_menu->addAction(tr("Delete Overlaps"), menu_mapper, SLOT(map()));
-		func_legato_action = functions_menu->addAction(tr("Legato"), menu_mapper, SLOT(map()));
-		menu_mapper->setMapping(func_quantize_action, CMD_QUANTIZE);
-		menu_mapper->setMapping(func_notelen_action, CMD_NOTELEN);
-		menu_mapper->setMapping(func_velocity_action, CMD_VELOCITY);
-		menu_mapper->setMapping(func_cresc_action, CMD_CRESCENDO);
-		menu_mapper->setMapping(func_transpose_action, CMD_TRANSPOSE);
-		menu_mapper->setMapping(func_erase_action, CMD_ERASE);
-		menu_mapper->setMapping(func_move_action, CMD_MOVE);
-		menu_mapper->setMapping(func_fixed_len_action, CMD_FIXED_LEN);
-		menu_mapper->setMapping(func_del_overlaps_action, CMD_DELETE_OVERLAPS);
-		menu_mapper->setMapping(func_legato_action, CMD_LEGATO);
-	
 	init_shortcuts();
 	
 	connect(muse, SIGNAL(configChanged()), SLOT(init_shortcuts()));
@@ -4450,10 +4450,12 @@ void staff_t::update_part_indices()
  *     changing "share" status, the changed state isn't stored
  * 
  * CURRENT TODO
- *   o fullscreen mode for muse
- *   o clear menu/toolbars when hiding a window
+ * M o fullscreen mode for muse
+ * m o arranger's size hint sucks oO
+ *     maybe related: windows -> tile doesn't work, overrides scrollbarpolicy
+ * m o rename "borland" to "mac" style???
+ *   o fix saving muse main win settings in global config dialog
  *   o strange sizes of toolbars oO?
- *   o restore arranger's maximized state when loading
  *   o remove that ugly "bool initalizing" stuff. it's probably unneeded (watch out for the FINDMICH message)
  *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer
  *     journey to the menu bar. try to find a way which does not involve duplicate code!
