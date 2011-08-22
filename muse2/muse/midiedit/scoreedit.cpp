@@ -4451,10 +4451,9 @@ void staff_t::update_part_indices()
  *     changing "share" status, the changed state isn't stored
  * 
  * CURRENT TODO
- *   o shortcuts, especially for fullscreen
+ * m o shortcuts, especially for fullscreen
  * m o arranger's size hint sucks oO
  *     maybe related: windows -> tile doesn't work, overrides scrollbarpolicy
- * m o rename "borland" to "mac" style???
  *   o fix saving muse main win settings in global config dialog
  *   o strange sizes of toolbars oO?
  *   o remove that ugly "bool initalizing" stuff. it's probably unneeded (watch out for the FINDMICH message)

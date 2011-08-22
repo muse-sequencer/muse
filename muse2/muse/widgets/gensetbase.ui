@@ -1392,7 +1392,7 @@ Otherwise, hold Ctrl to keep them open.</string>
             <item>
              <widget class="QPushButton" name="buttonBorlandPreset">
               <property name="text">
-               <string>Borland-like MDI</string>
+               <string>Borland-/Mac-like MDI</string>
               </property>
              </widget>
             </item>
