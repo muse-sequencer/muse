@@ -108,7 +108,6 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       ///program  = CTRL_VAL_UNKNOWN;
       ///pan      = -65;
       ///volume   = -1;
-      setMinimumSize(600, 50);
       showTrackinfoFlag = true;
       
       cursVal = MAXINT;

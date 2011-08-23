@@ -69,6 +69,8 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
       subwinAction->setChecked(isMdiWin());
       shareAction->setChecked(_sharesToolsAndMenu);
       fullscreenAction->setEnabled(!isMdiWin());
+
+      resize(_widthInit[_type], _heightInit[_type]);
       }
 
 
@@ -187,10 +189,13 @@ void TopWin::setIsMdiWin(bool val)
     if (!isMdiWin())
     {
       _savedToolbarState = saveState();
-      
+      int width_temp=width();
+      int height_temp=height();
       bool vis=isVisible();
+      
       QMdiSubWindow* subwin = createMdiWrapper();
       muse->addMdiSubWindow(subwin);
+      subwin->resize(width_temp, height_temp);
       subwin->setVisible(vis);
       this->QMainWindow::show(); //bypass the delegation to the subwin
       
@@ -211,13 +216,17 @@ void TopWin::setIsMdiWin(bool val)
   {
     if (isMdiWin())
     {
+      int width_temp=width();
+      int height_temp=height();
       bool vis=isVisible();
+
       QMdiSubWindow* mdisubwin_temp=mdisubwin;
       mdisubwin=NULL;
       setParent(NULL);
       mdisubwin_temp->hide();
       delete mdisubwin_temp;
       
+      resize(width_temp, height_temp);
       setVisible(vis);
 
       if (_sharesToolsAndMenu == _sharesWhenSubwin[_type])
@@ -463,4 +472,17 @@ void TopWin::setFullscreen(bool val)
     showFullScreen();
   else
     showNormal();
+}
+
+void TopWin::resize(int w, int h)
+{
+  QMainWindow::resize(w,h);
+  
+  if (isMdiWin())
+    mdisubwin->resize(w,h);
+}
+
+void TopWin::resize(const QSize& s)
+{
+  resize(s.width(), s.height());
 }

@@ -73,8 +73,6 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       _playEvents    = false;
       colorMode      = colorModeInit;
       
-      resize(_widthInit[_type], _heightInit[_type]);
-
       QSignalMapper* mapper = new QSignalMapper(this);
       QSignalMapper* colorMapper = new QSignalMapper(this);
       

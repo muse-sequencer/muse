@@ -156,7 +156,6 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
    : MidiEditor(TopWin::DRUM, _rasterInit, pl, parent, name)
       {
       setFocusPolicy(Qt::StrongFocus);
-      resize(_widthInit[_type], _heightInit[_type]);
 
       split1w1 = 0;
       selPart  = 0;

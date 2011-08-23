@@ -60,7 +60,9 @@ class TopWin : public QMainWindow
       
       void addToolBar(QToolBar* toolbar);
       QToolBar* addToolBar(const QString& title);
-         
+      
+      void resize(int w, int h);
+      void resize(const QSize&);
  
       static bool _sharesWhenFree[TOPLEVELTYPE_LAST_ENTRY];
       static bool _sharesWhenSubwin[TOPLEVELTYPE_LAST_ENTRY];

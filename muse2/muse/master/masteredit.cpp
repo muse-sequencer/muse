@@ -83,8 +83,6 @@ MasterEdit::MasterEdit()
       {
       setWindowTitle(tr("MusE: Mastertrack"));
       _raster = 0;      // measure
-      resize(_widthInit[_type], _heightInit[_type]);
-      setMinimumSize(400, 300);
 
       //---------Pulldown Menu----------------------------
 //      QPopupMenu* file = new QPopupMenu(this);

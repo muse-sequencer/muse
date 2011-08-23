@@ -153,8 +153,6 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	setAttribute(Qt::WA_DeleteOnClose);
 	setFocusPolicy(Qt::StrongFocus);
 
-	resize(_widthInit[_type], _heightInit[_type]);
-
 	mainw    = new QWidget(this);
 
 	mainGrid = new QGridLayout();

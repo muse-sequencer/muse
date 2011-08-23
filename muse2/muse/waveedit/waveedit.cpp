@@ -61,7 +61,6 @@ WaveEdit::WaveEdit(PartList* pl)
    : MidiEditor(TopWin::WAVE, 1, pl)
       {
       setFocusPolicy(Qt::StrongFocus);
-      resize(_widthInit[_type], _heightInit[_type]);
 
       QSignalMapper* mapper = new QSignalMapper(this);
       QAction* act;
