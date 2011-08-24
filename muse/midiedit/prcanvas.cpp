@@ -467,8 +467,6 @@ UndoOp PianoCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
       newEvent.setTick(ntick);
       newEvent.setLenTick(event.lenTick());
 
-      item->setEvent(newEvent);
-      
       // Added by T356, removed by flo93: with operation groups, it happens that the
       // part is too short right now, even if it's queued for being extended
       //if(((int)newEvent.endTick() - (int)part->lenTick()) > 0)  
