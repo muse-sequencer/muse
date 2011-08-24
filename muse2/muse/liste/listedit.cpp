@@ -242,13 +242,13 @@ void ListEdit::songChanged(int type)
             else {
                   curPart = 0;
                   curTrack = 0;
+                  liste->blockSignals(true);
                   liste->clear();
                   for (iPart p = parts()->begin(); p != parts()->end(); ++p) {
                         MidiPart* part = (MidiPart*) (p->second);
                         if (part->sn() == curPartId)
                               curPart  = part;
                         EventList* el = part->events();
-                        liste->blockSignals(true);   // p4.0.18
                         for (iEvent i = el->begin(); i != el->end(); ++i) {
                               EventListItem* item = new EventListItem(liste, i->second, part);
                               for (int col = 0; col < liste->columnCount(); ++col)
@@ -260,8 +260,8 @@ void ListEdit::songChanged(int type)
                                     liste->scrollToItem(item, QAbstractItemView::EnsureVisible);
                                     }
                               }
-                        liste->blockSignals(false);   
                         }
+                  liste->blockSignals(false);   
                   }
             
             if(!curPart)

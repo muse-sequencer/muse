@@ -4438,8 +4438,6 @@ void staff_t::update_part_indices()
 
 /* BUGS and potential bugs
  *   o THIS SHOULD NEVER HAPPEN: could not split note (found by tim)
- *   o when moving or resizing notes in score edit while list edit is open
- *     only one movement is possible
  * 
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
@@ -4449,6 +4447,7 @@ void staff_t::update_part_indices()
  *     because after A (and B) got resized, the B-resize is invalid!
  *   o when changing toolbarstate when sharing and immediately after that
  *     changing "share" status, the changed state isn't stored
+ *   o arranger window's state is incorrect when starting muse (too far left)
  * 
  * CURRENT TODO
  * M o remove that ugly "bool initalizing" stuff. it's probably unneeded (watch out for the FINDMICH message)
