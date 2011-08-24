@@ -4438,6 +4438,8 @@ void staff_t::update_part_indices()
 
 /* BUGS and potential bugs
  *   o THIS SHOULD NEVER HAPPEN: could not split note (found by tim)
+ *   o when moving or resizing notes in score edit while list edit is open
+ *     only one movement is possible
  * 
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
@@ -4449,12 +4451,10 @@ void staff_t::update_part_indices()
  *     changing "share" status, the changed state isn't stored
  * 
  * CURRENT TODO
+ * M o remove that ugly "bool initalizing" stuff. it's probably unneeded (watch out for the FINDMICH message)
  * m o shortcuts, especially for fullscreen
- * m o arranger's size hint sucks oO
- *     maybe related: windows -> tile doesn't work, overrides scrollbarpolicy
  *   o fix saving muse main win settings in global config dialog
  *   o strange sizes of toolbars oO?
- *   o remove that ugly "bool initalizing" stuff. it's probably unneeded (watch out for the FINDMICH message)
  *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer
  *     journey to the menu bar. try to find a way which does not involve duplicate code!
  *   o shortcuts for "pencil" etc don't work when only mdiwin has focus and not the mainwin inside
