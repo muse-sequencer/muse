@@ -4456,10 +4456,12 @@ void staff_t::update_part_indices()
  *   o strange sizes of toolbars oO?
  *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer
  *     journey to the menu bar. try to find a way which does not involve duplicate code!
- *   o shortcuts for "pencil" etc don't work when only mdiwin has focus and not the mainwin inside
  *   o implement borland-style maximize: free windows do not cover the main menu, even when maximized
  * 
  * IMPORTANT TODO
+ *   o fix sigedit boxes
+ *   o mastertrack editor: key-combobox is buggy
+
  *   o redo transport menu: offer "one beat" and "one bar" steps
  *                          maybe also offer scrollbar
  *   o quick "set left/right marker", "select between markers"
@@ -4468,7 +4470,6 @@ void staff_t::update_part_indices()
  * 
  *   o maybe remove "insert empty measure"?
  *   o add "move other notes" or "overwrite notes" or "mix with notes" to paste
- *   o draw the edge of parts hiding notes "jagged" (hasHiddenEvents() is interesting for this)  - Done. Tim.
  *   o shrink a part from its beginning as well! watch out for clones!
  *   o insert empty measure should also work inside parts, that is,
  *     move notes _within_ parts
@@ -4476,10 +4477,8 @@ void staff_t::update_part_indices()
  *   o canvas editor: create clone via "alt+drag" moves window instead
  *   o investigate with valgrind
  *   o controller view in score editor
- *   o fix sigedit boxes
  *   o solo button
  *   o grand staff brace
- *   o mastertrack editor: key-combobox is buggy
  *   o drum editor: channel-stuff
  *   o do partial recalculating; recalculating can take pretty long
  *     (0,5 sec) when displaying a whole song in scores
@@ -4502,7 +4501,6 @@ void staff_t::update_part_indices()
  *       keeping its own pos_add variable (which is only an optimisation)
  *   o support edge-scrolling when opening a lasso
  *   o save more configuration stuff (quant, color)
- *   o drum list: scroll while dragging (not important due to "reorder list")
  * 
  * really unimportant nice-to-haves
  *   o support in-song clef-changes
@@ -4510,7 +4508,7 @@ void staff_t::update_part_indices()
  *   o use timesig_t in all timesig-stuff
  *   o refuse to resize so that width gets smaller or equal than x_left
  *   o draw a margin around notes which are in a bright color
- *   o support drum tracks (x-note-heads etc.)
+ *   o support drum tracks in the score editor (x-note-heads etc.)
  *   o drum list: scroll while dragging: probably unneccessary with the "reorder list" function
  * 
  * 
@@ -4521,8 +4519,6 @@ void staff_t::update_part_indices()
  *
  *   o process accurate timesignatures from muse's list (has to be implemented first in muse)
  *      ( (2+2+3)/4 or (3+2+2)/4 instead of 7/4 )
- *   o maybe do expanding parts inside the msgChangeEvent or
- *     msgNewEvent functions (see my e-mail)
  */
 
 

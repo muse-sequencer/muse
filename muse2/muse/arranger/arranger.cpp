@@ -383,7 +383,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       canvas->setCanvasTools(arrangerTools);
       canvas->setOrigin(-offset, 0);
       canvas->setFocus();
-      //parent->setFocusProxy(canvas);   // Tim.
+      setFocusProxy(canvas);   // once removed by Tim (r735), added by flo again
 
       connect(canvas, SIGNAL(setUsedTool(int)), this, SIGNAL(setUsedTool(int)));
       connect(canvas, SIGNAL(trackChanged(Track*)), list, SLOT(selectTrack(Track*)));
