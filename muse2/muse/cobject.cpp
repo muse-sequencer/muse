@@ -196,6 +196,7 @@ void TopWin::setIsMdiWin(bool val)
       QMdiSubWindow* subwin = createMdiWrapper();
       muse->addMdiSubWindow(subwin);
       subwin->resize(width_temp, height_temp);
+      subwin->move(0,0);
       subwin->setVisible(vis);
       this->QMainWindow::show(); //bypass the delegation to the subwin
       
