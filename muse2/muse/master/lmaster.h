@@ -119,6 +119,7 @@ class LMaster : public MidiEditor {
       QTreeWidget* view;
       QToolBar* tools;
       QMenu* menuEdit;
+      QTimer* comboboxTimer;
 
       enum { CMD_DELETE, CMD_INSERT_SIG, CMD_INSERT_TEMPO, CMD_EDIT_BEAT, CMD_EDIT_VALUE, CMD_INSERT_KEY };
 
@@ -150,6 +151,7 @@ class LMaster : public MidiEditor {
       void timeSigButtonClicked();
       void insertKey();
       void cmd(int cmd);
+      void comboboxTimerSlot();
 
    public slots:
       void songChanged(int);
