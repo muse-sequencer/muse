@@ -4458,9 +4458,8 @@ void staff_t::update_part_indices()
  *   o implement borland-style maximize: free windows do not cover the main menu, even when maximized
  * 
  * IMPORTANT TODO
- *   o fix sigedit boxes
- *   o mastertrack editor: key-combobox is buggy
-
+ * ! o fix sigedit boxes
+ * 
  *   o redo transport menu: offer "one beat" and "one bar" steps
  *                          maybe also offer scrollbar
  *   o quick "set left/right marker", "select between markers"
