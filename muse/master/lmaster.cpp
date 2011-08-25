@@ -31,6 +31,7 @@
 #include <QToolButton>
 #include <QTreeWidget>
 #include <QComboBox>
+#include <QTimer>
 
 #define LMASTER_BEAT_COL 0
 #define LMASTER_TIME_COL 1
@@ -40,7 +41,7 @@
 #define LMASTER_MSGBOX_STRING          "MusE: List Editor"
 
 //don't remove or insert new elements in keyStrs.
-//only renaming (keeping the semantic sense) is allowed! (flo(
+//only renaming (keeping the semantic sense) is allowed! (flo)
 QStringList keyStrs = QStringList()
                       << "C (sharps)" << "G" << "D" << "A"<< "E" << "B" << "F#"
                       << "C (flats)"<< "F"<< "Bb" << "Eb"<< "Ab"<< "Db"<< "Gb";
@@ -53,8 +54,8 @@ key_enum stringToKey(QString input) //flo
 	return map[index];
 }
 
-//don't change this function (except when renaming stuff)
-QString keyToString(key_enum key) //flo
+//don't change the below two functions (except when renaming stuff)
+int keyToIndex(key_enum key)
 {
   int index=0;
 	switch(key)
@@ -78,15 +79,20 @@ QString keyToString(key_enum key) //flo
 		case KEY_SHARP_END:
 		case KEY_B_BEGIN:
 		case KEY_B_END:
-			printf("ILLEGAL FUNCTION CALL: keyToString called with key_sharp_begin etc.\n");
-      return "";
+			printf("ILLEGAL FUNCTION CALL: keyToIndex called with key_sharp_begin etc.\n");
+      return 0;
 			break;
 		
 		default:
-			printf("ILLEGAL FUNCTION CALL: keyToString called with illegal key value (not in enum)\n");
-      return "";
+			printf("ILLEGAL FUNCTION CALL: keyToIndex called with illegal key value (not in enum)\n");
+      return 0;
 	}
-	return keyStrs[index];
+	return index;
+}
+
+QString keyToString(key_enum key)
+{
+	return keyStrs[keyToIndex(key)];
 }
 
 //---------------------------------------------------------
@@ -126,6 +132,13 @@ LMaster::LMaster()
       setMinimumHeight(100);
       setFixedWidth(400);
       setFocusPolicy(Qt::StrongFocus);
+
+
+      comboboxTimer=new QTimer(this);
+      comboboxTimer->setInterval(150);
+      comboboxTimer->setSingleShot(true);
+      connect(comboboxTimer, SIGNAL(timeout()), this, SLOT(comboboxTimerSlot()));
+
 
       //---------Pulldown Menu----------------------------
       menuEdit = menuBar()->addMenu(tr("&Edit"));
@@ -219,7 +232,7 @@ LMaster::LMaster()
       key_editor = new QComboBox(view->viewport());
       key_editor->addItems(keyStrs);
       key_editor->hide();
-      connect(key_editor, SIGNAL(currentIndexChanged(int)), SLOT(returnPressed()));
+      connect(key_editor, SIGNAL(activated(int)), SLOT(returnPressed()));
 
       connect(view, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), SLOT(select(QTreeWidgetItem*, QTreeWidgetItem*)));
       connect(view, SIGNAL(itemPressed(QTreeWidgetItem*, int)), SLOT(itemPressed(QTreeWidgetItem*, int)));
@@ -523,11 +536,11 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
                   sig_editor->setFocus();
                   }
             else if (editedItem->getType() == LMASTER_KEYEVENT) {
-                  //key_editor->setCurrentIndex(-1);
                   key_editor->setGeometry(itemRect);
+                  key_editor->setCurrentIndex(keyToIndex(dynamic_cast<LMasterKeyEventItem*>(editedItem)->key()));
                   key_editor->show();
-                  key_editor->showPopup();
                   key_editor->setFocus();
+                  comboboxTimer->start();
                   }
             else {
               printf("illegal Master list type\n");
@@ -975,3 +988,8 @@ void LMaster::initShortcuts()
       posAction->setShortcut(shortcuts[SHRT_LM_EDIT_BEAT].key);
       valAction->setShortcut(shortcuts[SHRT_LM_EDIT_VALUE].key);
       }
+
+void LMaster::comboboxTimerSlot()
+{
+  key_editor->showPopup();
+}
