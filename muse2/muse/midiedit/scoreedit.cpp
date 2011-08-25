@@ -4447,7 +4447,6 @@ void staff_t::update_part_indices()
  *     because after A (and B) got resized, the B-resize is invalid!
  *   o when changing toolbarstate when sharing and immediately after that
  *     changing "share" status, the changed state isn't stored
- *   o arranger window's state is incorrect when starting muse (too far left)
  * 
  * CURRENT TODO
  * M o remove that ugly "bool initalizing" stuff. it's probably unneeded (watch out for the FINDMICH message)
