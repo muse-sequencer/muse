@@ -465,25 +465,25 @@ void Canvas::wheelEvent(QWheelEvent* ev)
     bool shift      = keyState & Qt::ShiftModifier;
     bool ctrl       = keyState & Qt::ControlModifier;
 
-    if (shift) { // scroll vertically
-      int delta       = ev->delta() / WHEEL_DELTA;
-      int ypixelscale = rmapyDev(1);
+    if (shift) { // scroll horizontally
+        int delta       = -ev->delta() / WHEEL_DELTA;
+        int xpixelscale = 5*fast_log10(rmapxDev(1));
 
-      if (ypixelscale <= 0)
-            ypixelscale = 1;
+        if (xpixelscale <= 0)
+              xpixelscale = 1;
 
-      int scrollstep = WHEEL_STEPSIZE * (-delta);
-      ///if (ev->state() == Qt::ShiftModifier)
-//      if (((QInputEvent*)ev)->modifiers() == Qt::ShiftModifier)
-      scrollstep = scrollstep / 2;
+        int scrollstep = WHEEL_STEPSIZE * (delta);
+        ///if (ev->state() == Qt::ShiftModifier)
+  //      if (((QInputEvent*)ev)->modifiers() == Qt::ShiftModifier)
+        scrollstep = scrollstep / 10;
 
-      int newYpos = ypos + ypixelscale * scrollstep;
+        int newXpos = xpos + xpixelscale * scrollstep;
 
-      if (newYpos < 0)
-            newYpos = 0;
+        if (newXpos < 0)
+              newXpos = 0;
 
-      //setYPos(newYpos);
-      emit verticalScroll((unsigned)newYpos);
+        //setYPos(newYpos);
+        emit horizontalScroll((unsigned)newXpos);
 
     } else if (ctrl) {  // zoom horizontally
       if (ev->delta()>0)
@@ -491,26 +491,25 @@ void Canvas::wheelEvent(QWheelEvent* ev)
       else
         emit horizontalZoomOut();
 
-    } else { // scroll horizontally
-      int delta       = ev->delta() / WHEEL_DELTA;
-      int xpixelscale = 5*fast_log10(rmapxDev(1));
+    } else { // scroll vertically
+        int delta       = ev->delta() / WHEEL_DELTA;
+        int ypixelscale = rmapyDev(1);
 
+        if (ypixelscale <= 0)
+              ypixelscale = 1;
 
-      if (xpixelscale <= 0)
-            xpixelscale = 1;
+        int scrollstep = WHEEL_STEPSIZE * (-delta);
+        ///if (ev->state() == Qt::ShiftModifier)
+  //      if (((QInputEvent*)ev)->modifiers() == Qt::ShiftModifier)
+        scrollstep = scrollstep / 2;
 
-      int scrollstep = WHEEL_STEPSIZE * (delta);
-      ///if (ev->state() == Qt::ShiftModifier)
-//      if (((QInputEvent*)ev)->modifiers() == Qt::ShiftModifier)
-      scrollstep = scrollstep / 10;
+        int newYpos = ypos + ypixelscale * scrollstep;
 
-      int newXpos = xpos + xpixelscale * scrollstep;
+        if (newYpos < 0)
+              newYpos = 0;
 
-      if (newXpos < 0)
-            newXpos = 0;
-
-      //setYPos(newYpos);
-      emit horizontalScroll((unsigned)newXpos);
+        //setYPos(newYpos);
+        emit verticalScroll((unsigned)newYpos);
 
     }
 

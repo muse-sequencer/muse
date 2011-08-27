@@ -1,3 +1,5 @@
+28.08.2011:
+        - Changed mousewheel behaviour, vertical scrolling is default and horizontal scrolling (shift) is reversed (rj)
 17.08.2011:
         - Convert some Qt3 style coding in ComboBox to Qt4 in terms of menu entry handling. (Orcan)
         - Add mouse wheel support to ComboBox. (Orcan)
