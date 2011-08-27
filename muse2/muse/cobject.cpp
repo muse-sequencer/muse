@@ -263,6 +263,8 @@ void TopWin::addToolBar(QToolBar* toolbar)
     QMainWindow::addToolBar(toolbar);
   else
     toolbar->hide();
+  
+  toolbar->setIconSize(ICON_SIZE);
 }
 
 QToolBar* TopWin::addToolBar(const QString& title)

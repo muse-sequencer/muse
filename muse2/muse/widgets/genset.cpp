@@ -112,10 +112,10 @@ Shorter periods are desirable.</string>
       showMixer->setChecked(config.mixer1Visible);
       showMixer2->setChecked(config.mixer2Visible);
 
-      arrangerX->setValue(config.geometryMain.x());
-      arrangerY->setValue(config.geometryMain.y());
-      arrangerW->setValue(config.geometryMain.width());
-      arrangerH->setValue(config.geometryMain.height());
+      mainX->setValue(config.geometryMain.x());
+      mainY->setValue(config.geometryMain.y());
+      mainW->setValue(config.geometryMain.width());
+      mainH->setValue(config.geometryMain.height());
 
       transportX->setValue(config.geometryTransport.x());
       transportY->setValue(config.geometryTransport.y());
@@ -161,7 +161,7 @@ Shorter periods are desirable.</string>
       connect(setMixerCurrent, SIGNAL(clicked()), SLOT(mixerCurrent()));
       connect(setMixer2Current, SIGNAL(clicked()), SLOT(mixer2Current()));
       connect(setBigtimeCurrent, SIGNAL(clicked()), SLOT(bigtimeCurrent()));
-      connect(setArrangerCurrent, SIGNAL(clicked()), SLOT(arrangerCurrent()));
+      connect(setMainCurrent, SIGNAL(clicked()), SLOT(mainCurrent()));
       connect(setTransportCurrent, SIGNAL(clicked()), SLOT(transportCurrent()));
       
       connect(buttonTraditionalPreset, SIGNAL(clicked()), SLOT(traditionalPreset()));
@@ -248,10 +248,10 @@ void GlobalSettingsConfig::updateSettings()
       showMixer->setChecked(config.mixer1Visible);
       showMixer2->setChecked(config.mixer2Visible);
 
-      arrangerX->setValue(config.geometryMain.x());
-      arrangerY->setValue(config.geometryMain.y());
-      arrangerW->setValue(config.geometryMain.width());
-      arrangerH->setValue(config.geometryMain.height());
+      mainX->setValue(config.geometryMain.x());
+      mainY->setValue(config.geometryMain.y());
+      mainW->setValue(config.geometryMain.width());
+      mainH->setValue(config.geometryMain.height());
 
       transportX->setValue(config.geometryTransport.x());
       transportY->setValue(config.geometryTransport.y());
@@ -349,10 +349,10 @@ void GlobalSettingsConfig::apply()
       config.mixer1Visible     = showMixer->isChecked();
       config.mixer2Visible     = showMixer2->isChecked();
 
-      config.geometryMain.setX(arrangerX->value());
-      config.geometryMain.setY(arrangerY->value());
-      config.geometryMain.setWidth(arrangerW->value());
-      config.geometryMain.setHeight(arrangerH->value());
+      config.geometryMain.setX(mainX->value());
+      config.geometryMain.setY(mainY->value());
+      config.geometryMain.setWidth(mainW->value());
+      config.geometryMain.setHeight(mainH->value());
 
       config.geometryTransport.setX(transportX->value());
       config.geometryTransport.setY(transportY->value());
@@ -460,8 +460,8 @@ void GlobalSettingsConfig::mixerCurrent()
       QRect r(w->frameGeometry());
       mixerX->setValue(r.x());
       mixerY->setValue(r.y());
-      mixerW->setValue(r.width());
-      mixerH->setValue(r.height());
+      mixerW->setValue(w->width());
+      mixerH->setValue(w->height());
       }
 
 //---------------------------------------------------------
@@ -476,8 +476,8 @@ void GlobalSettingsConfig::mixer2Current()
       QRect r(w->frameGeometry());
       mixer2X->setValue(r.x());
       mixer2Y->setValue(r.y());
-      mixer2W->setValue(r.width());
-      mixer2H->setValue(r.height());
+      mixer2W->setValue(w->width());
+      mixer2H->setValue(w->height());
       }
 
 //---------------------------------------------------------
@@ -492,21 +492,21 @@ void GlobalSettingsConfig::bigtimeCurrent()
       QRect r(w->frameGeometry());
       bigtimeX->setValue(r.x());
       bigtimeY->setValue(r.y());
-      bigtimeW->setValue(r.width());
-      bigtimeH->setValue(r.height());
+      bigtimeW->setValue(w->width());
+      bigtimeH->setValue(w->height());
       }
 
 //---------------------------------------------------------
-//   arrangerCurrent
+//   mainCurrent
 //---------------------------------------------------------
 
-void GlobalSettingsConfig::arrangerCurrent()
+void GlobalSettingsConfig::mainCurrent()
       {
       QRect r(muse->frameGeometry());
-      arrangerX->setValue(r.x());
-      arrangerY->setValue(r.y());
-      arrangerW->setValue(r.width());
-      arrangerH->setValue(r.height());
+      mainX->setValue(r.x());
+      mainY->setValue(r.y());
+      mainW->setValue(muse->width());  //this is intendedly not the frameGeometry, but
+      mainH->setValue(muse->height()); //the "non-frame-geom." to avoid a sizing bug
       }
 
 //---------------------------------------------------------

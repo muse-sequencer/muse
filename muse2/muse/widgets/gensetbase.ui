@@ -23,7 +23,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>3</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="TabPage">
       <attribute name="title">
@@ -70,7 +70,7 @@
            </widget>
           </item>
           <item row="0" column="5">
-           <widget class="QSpinBox" name="arrangerH">
+           <widget class="QSpinBox" name="mainH">
             <property name="toolTip">
              <string>height</string>
             </property>
@@ -80,7 +80,7 @@
            </widget>
           </item>
           <item row="0" column="4">
-           <widget class="QSpinBox" name="arrangerW">
+           <widget class="QSpinBox" name="mainW">
             <property name="toolTip">
              <string>width</string>
             </property>
@@ -90,7 +90,7 @@
            </widget>
           </item>
           <item row="0" column="3">
-           <widget class="QSpinBox" name="arrangerY">
+           <widget class="QSpinBox" name="mainY">
             <property name="toolTip">
              <string>y-pos</string>
             </property>
@@ -100,7 +100,7 @@
            </widget>
           </item>
           <item row="0" column="2">
-           <widget class="QSpinBox" name="arrangerX">
+           <widget class="QSpinBox" name="mainX">
             <property name="toolTip">
              <string>x-pos</string>
             </property>
@@ -227,7 +227,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Arranger</string>
+             <string>Main Window</string>
             </property>
             <property name="wordWrap">
              <bool>false</bool>
@@ -379,7 +379,7 @@
            </widget>
           </item>
           <item row="0" column="6">
-           <widget class="QPushButton" name="setArrangerCurrent">
+           <widget class="QPushButton" name="setMainCurrent">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
