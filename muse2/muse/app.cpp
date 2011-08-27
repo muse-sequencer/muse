@@ -2858,6 +2858,7 @@ void MusE::updateConfiguration()
       followCtsAction->setShortcut(shortcuts[SHRT_FOLLOW_CONTINUOUS].key);
       
       helpManualAction->setShortcut(shortcuts[SHRT_OPEN_HELP].key);
+      fullscreenAction->setShortcut(shortcuts[SHRT_FULLSCREEN].key);
       
       // Orcan: Old stuff, needs to be converted. These aren't used anywhere so I commented them out
       //menuSettings->setAccel(shortcuts[SHRT_CONFIG_AUDIO_PORTS].key, menu_ids[CMD_CONFIG_AUDIO_PORTS]);

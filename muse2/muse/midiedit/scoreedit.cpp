@@ -442,7 +442,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	settings_menu->addAction(subwinAction);
 	settings_menu->addAction(shareAction);
 	settings_menu->addAction(fullscreenAction);
-  
+  fullscreenAction->setShortcut(shortcuts[SHRT_FULLSCREEN].key);
+
 
 	init_shortcuts();
 	

@@ -14,6 +14,7 @@
 #include "sync.h"
 #include "icons.h"
 #include "song.h"
+#include "shortcuts.h"
 ///#include "posedit.h"
 #include "awl/posedit.h"
 
@@ -178,7 +179,8 @@ MarkerView::MarkerView(QWidget* parent)
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
-      
+      fullscreenAction->setShortcut(shortcuts[SHRT_FULLSCREEN].key);
+
       
       // Toolbars ---------------------------------------------------------
       QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));

@@ -50,7 +50,7 @@ struct AutomationObject {
   ControllerVals controllerState;
 };
 
-class QLineEdit;
+class LineEdit;
 class MidiEditor;
 class QMenu;
 class Xml;
@@ -66,7 +66,7 @@ class PartCanvas : public Canvas {
       TrackList* tracks;
 
       Part* resizePart;
-      QLineEdit* lineEditor;
+      LineEdit* lineEditor;
       NPart* editPart;
       int curColorIndex;
       bool editMode;

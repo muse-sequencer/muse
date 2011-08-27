@@ -158,6 +158,7 @@ LMaster::LMaster()
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
+      fullscreenAction->setShortcut(shortcuts[SHRT_FULLSCREEN].key);
 
       
       connect(tempoAction, SIGNAL(triggered()), signalMapper, SLOT(map()));

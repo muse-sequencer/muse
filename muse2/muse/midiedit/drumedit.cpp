@@ -266,6 +266,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
+      fullscreenAction->setShortcut(shortcuts[SHRT_FULLSCREEN].key);
 
       connect(signalMapper, SIGNAL(mapped(int)), SLOT(cmd(int)));
 

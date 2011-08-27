@@ -232,6 +232,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       menuConfig->addAction(subwinAction);
       menuConfig->addAction(shareAction);
       menuConfig->addAction(fullscreenAction);
+      fullscreenAction->setShortcut(shortcuts[SHRT_FULLSCREEN].key);
 
       
       //---------ToolBar----------------------------------

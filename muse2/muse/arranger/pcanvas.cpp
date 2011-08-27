@@ -16,13 +16,13 @@
 #include <map>
 
 #include <QClipboard>
-#include <QLineEdit>
 #include <QMenu>
 #include <QMessageBox>
 #include <QPainter>
 #include <QUrl>
 #include <QPoint>
 
+#include <awl/lineedit.h>
 #include "fastlog.h"
 #include "widgets/tools.h"
 #include "arranger.h"
@@ -183,7 +183,8 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
                   editPart = (NPart*)curItem;
                   QRect r = map(curItem->bbox());
                   if (lineEditor == 0) {
-                        lineEditor = new QLineEdit(this);
+                        lineEditor = new LineEdit(this);
+                        connect(lineEditor, SIGNAL(returnPressed()),SLOT(returnPressed()));
                         lineEditor->setFrame(true);
                         }
                   editMode = true;
@@ -685,7 +686,8 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                   editPart = npart;
                   QRect r = map(curItem->bbox());
                   if (lineEditor == 0) {
-                        lineEditor = new QLineEdit(this);
+                        lineEditor = new LineEdit(this);
+                        connect(lineEditor, SIGNAL(returnPressed()),SLOT(returnPressed()));
                         lineEditor->setFrame(true);
                         }
                   lineEditor->setText(editPart->name());

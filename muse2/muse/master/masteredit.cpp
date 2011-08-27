@@ -20,6 +20,7 @@
 #include "xml.h"
 #include "lcombo.h"
 #include "doublelabel.h"
+#include "shortcuts.h"
 ///#include "sigedit.h"
 #include "globals.h"
 
@@ -92,6 +93,7 @@ MasterEdit::MasterEdit()
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
+      fullscreenAction->setShortcut(shortcuts[SHRT_FULLSCREEN].key);
 
       // Toolbars ---------------------------------------------------------
       QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));

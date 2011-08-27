@@ -1,3 +1,6 @@
+27.08.2011:
+        - Added fullscreen shortcut to all editors which have full screen action (rj)
+        - Part text editor now closes when focus is lost (rj)
 17.08.2011:
         - Convert some Qt3 style coding in ComboBox to Qt4 in terms of menu entry handling. (Orcan)
         - Add mouse wheel support to ComboBox. (Orcan)

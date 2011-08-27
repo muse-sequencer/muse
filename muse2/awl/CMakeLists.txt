@@ -29,6 +29,7 @@ QT4_WRAP_CPP (awl_mocs
       drawbar.h
       floatentry.h
       knob.h
+      lineedit.h
       midimeter.h
       midimslider.h
       midipanentry.h
@@ -64,6 +65,7 @@ file (GLOB awl_source_files
       floatentry.cpp
       knob.cpp
       # ltest.cpp
+      lineedit.cpp
       midimeter.cpp
       midimslider.cpp
       midipanentry.cpp
