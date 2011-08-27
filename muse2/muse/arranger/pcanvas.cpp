@@ -828,25 +828,29 @@ void PartCanvas::mousePress(QMouseEvent* event)
             }
       QPoint pt = event->pos();
       CItem* item = items.find(pt);
-      if (item == 0 && _tool!=AutomationTool)
-            return;
+
       switch (_tool) {
             default:
-                  emit trackChanged(item->part()->track());
+                  if (item)
+                      emit trackChanged(item->part()->track());
+                  else
+                      emit trackChanged(NULL);
                   break;
             case CutTool:
-                  splitItem(item, pt);
+                  if (item) splitItem(item, pt);
                   break;
             case GlueTool:
-                  glueItem(item);
+                  if (item) glueItem(item);
                   break;
             case MuteTool:
                   {
-                  NPart* np = (NPart*) item;
-                  Part*  p = np->part();
-                  p->setMute(!p->mute());
-                  redraw();
-                  break;
+                  if (item) {
+                      NPart* np = (NPart*) item;
+                      Part*  p = np->part();
+                      p->setMute(!p->mute());
+                      redraw();
+                      break;
+                      }
                   }
             case AutomationTool:
                     if (automation.controllerState != doNothing)

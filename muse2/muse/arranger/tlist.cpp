@@ -1384,24 +1384,24 @@ void TList::mousePressEvent(QMouseEvent* ev)
 //   selectTrack
 //---------------------------------------------------------
 void TList::selectTrack(Track* tr)
-      {
-      song->deselectTracks();
-      tr->setSelected(true);
-      
+{
+    song->deselectTracks();
 
-      // rec enable track if expected
-      TrackList recd = getRecEnabledTracks();
-      if (recd.size() == 1 && config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
-        song->setRecordFlag((Track*)recd.front(),false);
-        song->setRecordFlag(tr,true);
-      }
+    if (tr) {
+        tr->setSelected(true);
 
-      // By T356. Force a redraw for wave tracks, since it does not seem to happen.
-      //if(!tr->isMidiTrack())
-        redraw();
-      ///emit selectionChanged();
-      emit selectionChanged(tr);
-      }
+
+        // rec enable track if expected
+        TrackList recd = getRecEnabledTracks();
+        if (recd.size() == 1 && config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+            song->setRecordFlag((Track*)recd.front(),false);
+            song->setRecordFlag(tr,true);
+        }
+    }
+
+    redraw();
+    emit selectionChanged(tr);
+}
 
 //---------------------------------------------------------
 //   selectTrackAbove

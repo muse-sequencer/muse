@@ -4455,6 +4455,17 @@ void staff_t::update_part_indices()
  *     journey to the menu bar. try to find a way which does not involve duplicate code!
  *   o implement borland-style maximize: free windows do not cover the main menu, even when maximized
  * 
+ *   o window menu -> "arrange" -> "all in rows" / "all in columns"
+ *   o add everything of the function-menus of the midieditors to
+ *     the arranger; except "move notes": call it "move parts" and 
+ *     actually move parts not notes
+ *   o replace "insert empty measure" by a "global insert"-like operation
+ *   o replace "insert" and "paste" by a paste-dialog ("move other notes" or "overwrite notes" or "mix with notes")
+ *     skip dialog when there is nothing to erase, move or merge with (i.e., at the end of the song)
+ *   o remove movePartsTotheRight function
+ *   o ctrl+v uses default settings, ctrl+shift+v shows a dialog (with a "this is default" button)
+ *   o ctrl+b and ctrl+shift+b do the same, only that they paste as clones
+ * 
  * IMPORTANT TODO
  * ! o fix sigedit boxes
  * 
@@ -4464,11 +4475,7 @@ void staff_t::update_part_indices()
  *     or even "set marker and select between immediately"
  *   o support partially selected parts. when moving, automatically split
  * 
- *   o maybe remove "insert empty measure"?
- *   o add "move other notes" or "overwrite notes" or "mix with notes" to paste
  *   o shrink a part from its beginning as well! watch out for clones!
- *   o insert empty measure should also work inside parts, that is,
- *     move notes _within_ parts
  *
  *   o canvas editor: create clone via "alt+drag" moves window instead
  *   o investigate with valgrind
