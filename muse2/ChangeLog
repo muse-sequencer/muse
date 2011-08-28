@@ -1,4 +1,7 @@
 28.08.2011:
+        - Fixed wierd column expansion for [rec] column by removing autoexpand of the last column. Still
+          something fishy with moving columns (rj)
+27.08.2011:
         - Changed mousewheel behaviour, vertical scrolling is default and horizontal scrolling (shift) is reversed (rj)
 17.08.2011:
         - Convert some Qt3 style coding in ComboBox to Qt4 in terms of menu entry handling. (Orcan)

@@ -101,7 +101,6 @@ Header::Header(QWidget* parent, const char* name)
       itemModel = new QStandardItemModel;
       setModel(itemModel);
       setDefaultSectionSize(30);
-      setStretchLastSection(true);
 
       }
 
@@ -111,6 +110,7 @@ Header::Header(QWidget* parent, const char* name)
 
 void Header::setColumnLabel(const QString & text, int col, int width )
       {
+      //printf("column set to %s %d %d \n", text.toLatin1().data(), col, width);
       QStandardItem *sitem = new QStandardItem(text );
       itemModel->setHorizontalHeaderItem(col, sitem);
       if (width > -1)
