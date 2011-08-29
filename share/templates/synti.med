@@ -826,10 +826,8 @@
       <sendMetronome>0</sendMetronome>
       <automation>0</automation>
       <controller id="0" cur="1.02164" color="#ff0000" visible="0">
-        0 1.02164,         
         </controller>
       <controller id="1" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
@@ -847,10 +845,8 @@
       <sendMetronome>0</sendMetronome>
       <automation>0</automation>
       <controller id="0" cur="1.41091" color="#ff0000" visible="0">
-        0 1.41091,         
         </controller>
       <controller id="1" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
@@ -873,10 +869,8 @@
       <sendMetronome>0</sendMetronome>
       <automation>0</automation>
       <controller id="0" cur="1.02164" color="#ff0000" visible="0">
-        0 1.02164,         
         </controller>
       <controller id="1" cur="-0.04" color="#ff0000" visible="0">
-        0 -0.04,         
         </controller>
       <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
@@ -909,10 +903,8 @@
       <sendMetronome>0</sendMetronome>
       <automation>0</automation>
       <controller id="0" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="1" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
