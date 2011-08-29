@@ -84,6 +84,37 @@ set<Part*> part_to_set(Part* p)
 	return result;
 }
 
+set<Part*> get_all_parts()
+{
+	set<Part*> result;
+	
+	TrackList* tracks=song->tracks();
+	for (TrackList::const_iterator t_it=tracks->begin(); t_it!=tracks->end(); t_it++)
+	{
+		const PartList* parts=(*t_it)->cparts();
+		for (ciPart p_it=parts->begin(); p_it!=parts->end(); p_it++)
+			result.insert(p_it->second);
+	}
+	
+	return result;
+}
+
+set<Part*> get_all_selected_parts()
+{
+	set<Part*> result;
+	
+	TrackList* tracks=song->tracks();
+	for (TrackList::const_iterator t_it=tracks->begin(); t_it!=tracks->end(); t_it++)
+	{
+		const PartList* parts=(*t_it)->cparts();
+		for (ciPart p_it=parts->begin(); p_it!=parts->end(); p_it++)
+			if (p_it->second->selected())
+				result.insert(p_it->second);
+	}
+	
+	return result;
+}
+
 bool is_relevant(const Event& event, const Part* part, int range)
 {
 	unsigned tick;
@@ -113,6 +144,8 @@ map<Event*, Part*> get_events(const set<Part*>& parts, int range)
 	
 	return events;
 }
+
+
 
 
 bool modify_notelen(const set<Part*>& parts)
@@ -223,6 +256,180 @@ bool legato(const set<Part*>& parts)
 	
 	return true;
 }
+
+
+
+bool modify_notelen()
+{
+	if (!gatetime_dialog->exec())
+		return false;
+		
+	set<Part*> parts;
+	if (gatetime_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+		parts=get_all_selected_parts();
+	else
+		parts=get_all_parts();
+		
+	modify_notelen(parts,gatetime_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, gatetime_dialog->rateVal,gatetime_dialog->offsetVal);
+	
+	return true;
+}
+
+bool modify_velocity()
+{
+	if (!velocity_dialog->exec())
+		return false;
+		
+	set<Part*> parts;
+	if (velocity_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+		parts=get_all_selected_parts();
+	else
+		parts=get_all_parts();
+		
+	modify_velocity(parts,velocity_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS,velocity_dialog->rateVal,velocity_dialog->offsetVal);
+	
+	return true;
+}
+
+bool quantize_notes()
+{
+	if (!quantize_dialog->exec())
+		return false;
+		
+	set<Part*> parts;
+	if (quantize_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+		parts=get_all_selected_parts();
+	else
+		parts=get_all_parts();
+		
+	quantize_notes(parts, quantize_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, (config.division*4)/(1<<quantize_dialog->raster_power2),
+	               quantize_dialog->quant_len, quantize_dialog->strength, quantize_dialog->swing,
+	               quantize_dialog->threshold);
+	
+	return true;
+}
+
+bool erase_notes()
+{
+	if (!erase_dialog->exec())
+		return false;
+		
+	set<Part*> parts;
+	if (erase_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+		parts=get_all_selected_parts();
+	else
+		parts=get_all_parts();
+		
+	erase_notes(parts,erase_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, erase_dialog->velo_threshold, erase_dialog->velo_thres_used, 
+	            erase_dialog->len_threshold, erase_dialog->len_thres_used );
+	
+	return true;
+}
+
+bool delete_overlaps()
+{
+	if (!del_overlaps_dialog->exec())
+		return false;
+		
+	set<Part*> parts;
+	if (del_overlaps_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+		parts=get_all_selected_parts();
+	else
+		parts=get_all_parts();
+		
+	delete_overlaps(parts,erase_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS);
+	
+	return true;
+}
+
+bool set_notelen()
+{
+	if (!set_notelen_dialog->exec())
+		return false;
+		
+	set<Part*> parts;
+	if (set_notelen_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+		parts=get_all_selected_parts();
+	else
+		parts=get_all_parts();
+		
+	set_notelen(parts,set_notelen_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, set_notelen_dialog->len);
+	
+	return true;
+}
+
+bool move_notes()
+{
+	if (!move_notes_dialog->exec())
+		return false;
+		
+	set<Part*> parts;
+	if (move_notes_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+		parts=get_all_selected_parts();
+	else
+		parts=get_all_parts();
+		
+	move_notes(parts,move_notes_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, move_notes_dialog->amount);
+	
+	return true;
+}
+
+bool transpose_notes()
+{
+	if (!transpose_dialog->exec())
+		return false;
+		
+	set<Part*> parts;
+	if (transpose_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+		parts=get_all_selected_parts();
+	else
+		parts=get_all_parts();
+		
+	transpose_notes(parts,transpose_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, transpose_dialog->amount);
+	
+	return true;
+}
+
+bool crescendo()
+{
+	if (song->rpos() <= song->lpos())
+	{
+		QMessageBox::warning(NULL, QObject::tr("Error"), QObject::tr("Please first select the range for crescendo with the loop markers."));
+		return false;
+	}
+	
+	if (!crescendo_dialog->exec())
+		return false;
+		
+	set<Part*> parts;
+	if (crescendo_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+		parts=get_all_selected_parts();
+	else
+		parts=get_all_parts();
+		
+	crescendo(parts,crescendo_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, crescendo_dialog->start_val,crescendo_dialog->end_val,crescendo_dialog->absolute);
+	
+	return true;
+}
+
+bool legato()
+{
+	if (!legato_dialog->exec())
+		return false;
+		
+	set<Part*> parts;
+	if (legato_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+		parts=get_all_selected_parts();
+	else
+		parts=get_all_parts();
+		
+	legato(parts,legato_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, legato_dialog->min_len, !legato_dialog->allow_shortening);
+	
+	return true;
+}
+
+
+
 
 
 

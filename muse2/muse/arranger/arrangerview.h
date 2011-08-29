@@ -52,7 +52,9 @@ class ArrangerView : public TopWin
 			CMD_PASTE_TO_TRACK, CMD_PASTE_CLONE_TO_TRACK, CMD_DELETE,
 			CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
 			CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PARTS,
-			CMD_DELETE_TRACK, CMD_EXPAND_PART, CMD_SHRINK_PART, CMD_CLEAN_PART };
+			CMD_DELETE_TRACK, CMD_EXPAND_PART, CMD_SHRINK_PART, CMD_CLEAN_PART,
+			CMD_QUANTIZE, CMD_VELOCITY, CMD_CRESCENDO, CMD_NOTELEN, CMD_TRANSPOSE,
+			CMD_ERASE, CMD_MOVE, CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO     };
 
 		virtual void closeEvent(QCloseEvent*);
 
@@ -80,6 +82,17 @@ class ArrangerView : public TopWin
 		QAction *masterGraphicAction, *masterListAction;
 		QAction *midiTransformerAction;
 		QAction *editCleanPartsAction, *editShrinkPartsAction, *editExpandPartsAction;
+
+		QAction* func_quantize_action;
+		QAction* func_notelen_action;
+		QAction* func_velocity_action;
+		QAction* func_cresc_action;
+		QAction* func_transpose_action;
+		QAction* func_erase_action;
+		QAction* func_move_action;
+		QAction* func_fixed_len_action;
+		QAction* func_del_overlaps_action;
+		QAction* func_legato_action;
 
 		QSignalMapper *editSignalMapper;
 		QSignalMapper *scoreOneStaffPerTrackMapper;

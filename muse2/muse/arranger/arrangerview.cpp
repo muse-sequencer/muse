@@ -486,7 +486,33 @@ ArrangerView::ArrangerView(QWidget* parent)
     menuStructure->addAction(strCopyRangeAction);
     menuStructure->addSeparator();
     menuStructure->addAction(strCutEventsAction);
+  
+  
+  
+  QMenu* functions_menu = menuBar()->addMenu(tr("Functions"));
+		QAction* func_quantize_action = functions_menu->addAction(tr("&Quantize Notes"), editSignalMapper, SLOT(map()));
+		QAction* func_notelen_action = functions_menu->addAction(tr("Change note &length"), editSignalMapper, SLOT(map()));
+		QAction* func_velocity_action = functions_menu->addAction(tr("Change note &velocity"), editSignalMapper, SLOT(map()));
+		QAction* func_cresc_action = functions_menu->addAction(tr("Crescendo/Decrescendo"), editSignalMapper, SLOT(map()));
+		QAction* func_transpose_action = functions_menu->addAction(tr("Transpose"), editSignalMapper, SLOT(map()));
+		QAction* func_erase_action = functions_menu->addAction(tr("Erase Events (Not Parts)"), editSignalMapper, SLOT(map()));
+		QAction* func_move_action = functions_menu->addAction(tr("Move Events (Not Parts)"), editSignalMapper, SLOT(map()));
+		QAction* func_fixed_len_action = functions_menu->addAction(tr("Set Fixed Note Length"), editSignalMapper, SLOT(map()));
+		QAction* func_del_overlaps_action = functions_menu->addAction(tr("Delete Overlapping Notes"), editSignalMapper, SLOT(map()));
+		QAction* func_legato_action = functions_menu->addAction(tr("Legato"), editSignalMapper, SLOT(map()));
+		editSignalMapper->setMapping(func_quantize_action, CMD_QUANTIZE);
+		editSignalMapper->setMapping(func_notelen_action, CMD_NOTELEN);
+		editSignalMapper->setMapping(func_velocity_action, CMD_VELOCITY);
+		editSignalMapper->setMapping(func_cresc_action, CMD_CRESCENDO);
+		editSignalMapper->setMapping(func_transpose_action, CMD_TRANSPOSE);
+		editSignalMapper->setMapping(func_erase_action, CMD_ERASE);
+		editSignalMapper->setMapping(func_move_action, CMD_MOVE);
+		editSignalMapper->setMapping(func_fixed_len_action, CMD_FIXED_LEN);
+		editSignalMapper->setMapping(func_del_overlaps_action, CMD_DELETE_OVERLAPS);
+		editSignalMapper->setMapping(func_legato_action, CMD_LEGATO);
 
+  
+  
   QMenu* menuSettings = menuBar()->addMenu(tr("Window &Config"));
   menuSettings->addAction(subwinAction);
   menuSettings->addAction(shareAction);
@@ -770,6 +796,17 @@ void ArrangerView::cmd(int cmd)
             case CMD_SHRINK_PART: shrink_parts(); break;
             case CMD_EXPAND_PART: expand_parts(); break;
             case CMD_CLEAN_PART: clean_parts(); break;      
+
+            case CMD_QUANTIZE: quantize_notes(); break;
+            case CMD_VELOCITY: modify_velocity(); break;
+            case CMD_CRESCENDO: crescendo(); break;
+            case CMD_NOTELEN: modify_notelen(); break;
+            case CMD_TRANSPOSE: transpose_notes(); break;
+            case CMD_ERASE: erase_notes(); break;
+            case CMD_MOVE: move_notes(); break;
+            case CMD_FIXED_LEN: set_notelen(); break;
+            case CMD_DELETE_OVERLAPS: delete_overlaps(); break;
+            case CMD_LEGATO: legato(); break;
 
             }
       }

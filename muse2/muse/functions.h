@@ -41,6 +41,11 @@ extern Legato* legato_dialog;
 void init_function_dialogs(QWidget* parent);
 
 
+#define FUNCTION_RANGE_ONLY_SELECTED 1
+#define FUNCTION_RANGE_ONLY_BETWEEN_MARKERS 2
+
+
+
 std::set<Part*> partlist_to_set(PartList* pl);
 std::set<Part*> part_to_set(Part* p);
 std::map<Event*, Part*> get_events(const std::set<Part*>& parts, int range);
@@ -71,6 +76,18 @@ bool crescendo(const std::set<Part*>& parts);
 bool erase_notes(const std::set<Part*>& parts);
 bool delete_overlaps(const std::set<Part*>& parts);
 bool legato(const std::set<Part*>& parts);
+
+//the below functions operate on selected parts
+bool modify_velocity();
+bool modify_notelen();
+bool quantize_notes();
+bool set_notelen();
+bool move_notes();
+bool transpose_notes();
+bool crescendo();
+bool erase_notes();
+bool delete_overlaps();
+bool legato();
 
 
 //functions for copy'n'paste
