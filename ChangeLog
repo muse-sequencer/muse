@@ -1,3 +1,8 @@
+29.08.2011:
+        - Fixed audio automation graph editing. And now 'snaps' to discrete integer or bool types. (Tim p4.0.32)
+          All control movements should update display now. Also slightly changed behaviour of Ctrl class. 
+          TODO: Fix some painting corruption, improve discrete display, add transparency etc. etc.
+        - Applied compilation patch to rhythmbase.ui by Jean-Damien Durand. (Tim)
 28.08.2011:
         - Fixed wierd column expansion for [rec] column by removing autoexpand of the last column. Still
           something fishy with moving columns (rj)

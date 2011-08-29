@@ -428,6 +428,7 @@ class AudioTrack : public Track {
       void eraseACEvent(int, int);
       void eraseRangeACEvents(int, int, int);
       void addACEvent(int, int, double);
+      void changeACEvent(int id, int frame, int newframe, double newval);
       };
 
 //---------------------------------------------------------

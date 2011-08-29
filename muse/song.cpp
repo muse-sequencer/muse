@@ -714,6 +714,23 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
   }
 }
 
+void Song::addACEvent(AudioTrack* t, int acid, int frame, double val)
+{
+  audio->msgAddACEvent(t, acid, frame, val);
+  emit controllerChanged(t); 
+}
+
+void Song::changeACEvent(AudioTrack* t, int acid, int frame, int newFrame, double val)
+{
+  audio->msgChangeACEvent(t, acid, frame, newFrame, val);
+  emit controllerChanged(t); 
+}
+
+void Song::controllerChange(Track* t)
+{
+  emit controllerChanged(t); 
+}
+
 //---------------------------------------------------------
 //   cmdAddRecordedEvents
 //    add recorded Events into part

@@ -427,6 +427,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       connect(canvas, SIGNAL(dropMidiFile(const QString&)), SIGNAL(dropMidiFile(const QString&)));
 
       connect(canvas, SIGNAL(toolChanged(int)), SIGNAL(toolChanged(int)));
+      connect(song,   SIGNAL(controllerChanged(Track*)), SLOT(controllerChanged(Track*)));
 //      connect(song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(seek()));
 
       // Removed p3.3.43 

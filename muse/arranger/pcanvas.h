@@ -43,7 +43,9 @@ class NPart : public CItem {
 
 enum ControllerVals { doNothing, movingController, addNewController };
 struct AutomationObject {
-  CtrlVal *currentCtrl;
+  //CtrlVal *currentCtrl;
+  int currentCtrlFrame;
+  bool currentCtrlValid;
   CtrlList *currentCtrlList;
   Track *currentTrack;
   bool moveController;
@@ -154,8 +156,10 @@ class PartCanvas : public Canvas {
       PartCanvas(int* raster, QWidget* parent, int, int);
       void partsChanged();
       void cmd(int);
-      void controllerChanged(Track *t);
    public slots:
    void redirKeypress(QKeyEvent* e) { keyPress(e); }
-      };
+   void controllerChanged(Track *t);
+};
+
 #endif
+

@@ -139,7 +139,9 @@ int Track::y() const
                   return yy;
             yy += (*it)->height();
             }
-      printf("Track::y(%s): track not in tracklist\n", name().toLatin1().constData());
+      // FIXME Get this when loading a song with automation graphs showing. Benign. Likely song not fully loaded yet. p4.0.32
+      if(debugMsg)
+        printf("Track::y(%s): track not in tracklist\n", name().toLatin1().constData());
       return -1;
       }
 

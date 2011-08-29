@@ -445,7 +445,44 @@ float midi2LadspaValue(const LADSPA_Descriptor* plugin, unsigned long port, int 
   return ret;
 }      
 
+//---------------------------------------------------------
+//   ladspaCtrlValueType
+//---------------------------------------------------------
 
+CtrlValueType ladspaCtrlValueType(const LADSPA_Descriptor* plugin, int port)
+{
+  LADSPA_PortRangeHint range = plugin->PortRangeHints[port];
+  LADSPA_PortRangeHintDescriptor desc = range.HintDescriptor;
+  
+  if(desc & LADSPA_HINT_INTEGER)
+    return VAL_INT;
+  else if(desc & LADSPA_HINT_LOGARITHMIC)
+    return VAL_LOG;
+  else if(desc & LADSPA_HINT_TOGGLED)
+    return VAL_BOOL;
+  else
+    return VAL_LINEAR;
+}  
+  
+//---------------------------------------------------------
+//   ladspaCtrlMode
+//---------------------------------------------------------
+
+CtrlList::Mode ladspaCtrlMode(const LADSPA_Descriptor* plugin, int port)
+{
+  LADSPA_PortRangeHint range = plugin->PortRangeHints[port];
+  LADSPA_PortRangeHintDescriptor desc = range.HintDescriptor;
+  
+  if(desc & LADSPA_HINT_INTEGER)
+    return CtrlList::DISCRETE;
+  else if(desc & LADSPA_HINT_LOGARITHMIC)
+    return CtrlList::INTERPOLATE;
+  else if(desc & LADSPA_HINT_TOGGLED)
+    return CtrlList::DISCRETE;
+  else
+    return CtrlList::INTERPOLATE;
+}  
+  
 // Works but not needed.
 /*
 //---------------------------------------------------------
@@ -1001,6 +1038,24 @@ float Plugin::defaultValue(unsigned long port) const
     return val;      
     */
 }
+
+//---------------------------------------------------------
+//   ctrlValueType
+//---------------------------------------------------------
+
+CtrlValueType Plugin::ctrlValueType(unsigned long i) const
+      {
+      return ladspaCtrlValueType(plugin, i);
+      }
+
+//---------------------------------------------------------
+//   ctrlMode
+//---------------------------------------------------------
+
+CtrlList::Mode Plugin::ctrlMode(unsigned long i) const
+      {
+      return ladspaCtrlMode(plugin, i);
+      }
 
 //---------------------------------------------------------
 //   loadPluginLib
@@ -1699,20 +1754,11 @@ void PluginI::updateControllers()
   for(unsigned long i = 0; i < controlPorts; ++i) 
     //audio->msgSetPluginCtrlVal(this, genACnum(_id, i), controls[i].val);
     // p3.3.43
-    //audio->msgSetPluginCtrlVal(_track, genACnum(_id, i), controls[i].val);
+    audio->msgSetPluginCtrlVal(_track, genACnum(_id, i), controls[i].val);
     // p4.0.21 audio->msgXXX waits. Do we really need to?
-    _track->setPluginCtrlVal(genACnum(_id, i), controls[i].val);
+    //_track->setPluginCtrlVal(genACnum(_id, i), controls[i].val);  // TODO A faster bulk message
 }
   
-//---------------------------------------------------------
-//   valueType
-//---------------------------------------------------------
-
-CtrlValueType PluginI::valueType() const
-      {
-      return VAL_LINEAR;
-      }
-
 //---------------------------------------------------------
 //   setChannel
 //---------------------------------------------------------
@@ -3718,9 +3764,9 @@ void PluginGui::ctrlPressed(int param)
         if(track)
         {
           // p3.3.43
-          //audio->msgSetPluginCtrlVal(track, id, val);
+          audio->msgSetPluginCtrlVal(track, id, val);
           // p4.0.21 audio->msgXXX waits. Do we really need to?
-          track->setPluginCtrlVal(id, val);
+          //track->setPluginCtrlVal(id, val);
           
           track->startAutoRecord(id, val);
         }  
@@ -3737,9 +3783,9 @@ void PluginGui::ctrlPressed(int param)
         if(track)
         {
           // p3.3.43
-          //audio->msgSetPluginCtrlVal(track, id, val);
+          audio->msgSetPluginCtrlVal(track, id, val);
           // p4.0.21 audio->msgXXX waits. Do we really need to?
-          track->setPluginCtrlVal(id, val);
+          //track->setPluginCtrlVal(id, val);
           
           track->startAutoRecord(id, val);
         }  
@@ -3831,9 +3877,9 @@ void PluginGui::sliderChanged(double val, int param)
       if(track)
       {
         // p3.3.43
-        //audio->msgSetPluginCtrlVal(track, id, val);
+        audio->msgSetPluginCtrlVal(track, id, val);
         // p4.0.21 audio->msgXXX waits. Do we really need to?
-        track->setPluginCtrlVal(id, val);
+        //track->setPluginCtrlVal(id, val);
         
         track->recordAutomation(id, val);
       }  
@@ -3875,9 +3921,9 @@ void PluginGui::labelChanged(double val, int param)
       if(track)
       {
         // p3.3.43
-        //audio->msgSetPluginCtrlVal(track, id, val);
+        audio->msgSetPluginCtrlVal(track, id, val);
         // p4.0.21 audio->msgXXX waits. Do we really need to?
-        track->setPluginCtrlVal(id, val);
+        //track->setPluginCtrlVal(id, val);
         
         track->startAutoRecord(id, val);
       }  
@@ -4277,9 +4323,9 @@ void PluginGui::guiParamChanged(int idx)
           //if(track)
           //{
             // p3.3.43
-            //audio->msgSetPluginCtrlVal(track, id, val);
+            audio->msgSetPluginCtrlVal(track, id, val);
             // p4.0.21 audio->msgXXX waits. Do we really need to?
-            track->setPluginCtrlVal(id, val);
+            //track->setPluginCtrlVal(id, val);
             
             switch(type) 
             {
@@ -4413,9 +4459,9 @@ void PluginGui::guiSliderPressed(int idx)
       
       //audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
       // p3.3.43
-      //audio->msgSetPluginCtrlVal(track, id, val);
+      audio->msgSetPluginCtrlVal(track, id, val);
       // p4.0.21 audio->msgXXX waits. Do we really need to?
-      track->setPluginCtrlVal(id, val);
+      //track->setPluginCtrlVal(id, val);
       
       track->startAutoRecord(id, val);
       
