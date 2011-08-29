@@ -177,6 +177,8 @@ class Plugin {
       //double defaultValue(unsigned long port) const;
       float defaultValue(unsigned long port) const; // p4.0.21     
       void range(unsigned long i, float*, float*) const;
+      CtrlValueType ctrlValueType(unsigned long /*i*/) const;
+      CtrlList::Mode ctrlMode(unsigned long /*i*/) const;
       
       const char* portName(unsigned long i) {
             return plugin ? plugin->PortNames[i] : 0;
@@ -354,6 +356,9 @@ class PluginIBase
       virtual const char* paramOutName(unsigned long /*i*/) = 0;
       virtual LADSPA_PortRangeHint range(unsigned long /*i*/) = 0;
       virtual LADSPA_PortRangeHint rangeOut(unsigned long /*i*/) = 0;
+      
+      virtual CtrlValueType ctrlValueType(unsigned long /*i*/) const = 0;
+      virtual CtrlList::Mode ctrlMode(unsigned long /*i*/) const = 0;
       QString dssi_ui_filename() const;
       
       //virtual void showGui(bool) = 0;         // p4.0.20
@@ -499,7 +504,6 @@ class PluginI : public PluginIBase {
       QString pluginLabel() const    { return _plugin->label(); }
       QString label() const          { return _label; }
       QString name() const           { return _name; }
-      CtrlValueType valueType() const;
       QString lib() const            { return _plugin->lib(); }
       QString dirPath() const        { return _plugin->dirPath(); }
       QString fileName() const       { return _plugin->fileName(); }
@@ -560,6 +564,8 @@ class PluginI : public PluginIBase {
       LADSPA_PortRangeHint range(unsigned long i) { return _plugin->range(controls[i].idx); }
       LADSPA_PortRangeHint rangeOut(unsigned long i) { return _plugin->range(controlsOut[i].idx); }
       bool inPlaceCapable() const { return _plugin->inPlaceCapable(); }
+      CtrlValueType ctrlValueType(unsigned long i) const { return _plugin->ctrlValueType(controls[i].idx); }
+      CtrlList::Mode ctrlMode(unsigned long i) const { return _plugin->ctrlMode(controls[i].idx); };
       };
 
 //---------------------------------------------------------
@@ -650,6 +656,8 @@ extern bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long po
 extern void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, float* min, float* max);
 extern bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned long port, int ctlnum, int* min, int* max, int* def);
 extern float midi2LadspaValue(const LADSPA_Descriptor* plugin, unsigned long port, int ctlnum, int val);
+extern CtrlValueType ladspaCtrlValueType(const LADSPA_Descriptor* plugin, int port);
+extern CtrlList::Mode ladspaCtrlMode(const LADSPA_Descriptor* plugin, int port);
 //extern MidiController* ladspa2MidiController(const LADSPA_Descriptor* plugin, unsigned long port, int ctlnum);
 
 #endif

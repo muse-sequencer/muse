@@ -74,6 +74,7 @@ enum {
       AUDIO_ERASE_AC_EVENT,
       AUDIO_ERASE_RANGE_AC_EVENTS,
       AUDIO_ADD_AC_EVENT,
+      AUDIO_CHANGE_AC_EVENT,
       AUDIO_SET_SOLO, AUDIO_SET_SEND_METRONOME, 
       MS_PROCESS, MS_STOP, MS_SET_RTC, MS_UPDATE_POLL_FD,
       SEQM_IDLE, SEQM_SEEK,
@@ -253,6 +254,7 @@ class Audio {
       void msgEraseACEvent(AudioTrack*, int, int);
       void msgEraseRangeACEvents(AudioTrack*, int, int, int);
       void msgAddACEvent(AudioTrack*, int, int, double);
+      void msgChangeACEvent(AudioTrack* node, int acid, int frame, int newFrame, double val);
       void msgSetSolo(Track*, bool);
       void msgSetHwCtrlState(MidiPort*, int, int, int);
       void msgSetHwCtrlStates(MidiPort*, int, int, int, int);

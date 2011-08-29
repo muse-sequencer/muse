@@ -282,6 +282,8 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       const char* paramOutName(unsigned long /*i*/);
       LADSPA_PortRangeHint range(unsigned long /*i*/);
       LADSPA_PortRangeHint rangeOut(unsigned long /*i*/);
+      CtrlValueType ctrlValueType(unsigned long /*i*/) const; 
+      CtrlList::Mode ctrlMode(unsigned long /*i*/) const; 
 
       friend class DssiSynth;
       };

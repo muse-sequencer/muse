@@ -70,7 +70,8 @@ PosEdit::~PosEdit()
 
 QSize PosEdit::sizeHint() const
 	{
-      QFontMetrics fm(font());
+      //QFontMetrics fm(font());
+      QFontMetrics fm = fontMetrics();
       int fw = style()->pixelMetric(QStyle::PM_SpinBoxFrameWidth);
       int h  = fm.height() + fw * 2;
       int w = fw * 4 + 10;	// HACK: 10 = spinbox up/down arrows
