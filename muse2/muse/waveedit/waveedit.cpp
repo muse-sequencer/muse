@@ -154,7 +154,6 @@ WaveEdit::WaveEdit(PartList* pl)
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
-      fullscreenAction->setShortcut(shortcuts[SHRT_FULLSCREEN].key);
 
       //---------ToolBar----------------------------------
       tools = addToolBar(tr("Wave edit tools"));

@@ -16,7 +16,6 @@
 #include "globals.h"
 #include "wave.h"
 #include "xml.h"
-#include "shortcuts.h"
 #include "ui_cliplisteditorbase.h"
 
 
@@ -129,8 +128,7 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       settingsMenu->addAction(subwinAction);      
       settingsMenu->addAction(shareAction);      
       settingsMenu->addAction(fullscreenAction);      
-      fullscreenAction->setShortcut(shortcuts[SHRT_FULLSCREEN].key);
-
+      
       QFontMetrics fm(editor->view->font());
       int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth,0, this); // ddskrjo 0
       int w  = 2 + fm.width('9') * 9 + fm.width(':') * 3 + fw * 4;

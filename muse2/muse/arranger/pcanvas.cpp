@@ -16,13 +16,13 @@
 #include <map>
 
 #include <QClipboard>
+#include <QLineEdit>
 #include <QMenu>
 #include <QMessageBox>
 #include <QPainter>
 #include <QUrl>
 #include <QPoint>
 
-#include <awl/lineedit.h>
 #include "fastlog.h"
 #include "widgets/tools.h"
 #include "arranger.h"
@@ -154,15 +154,19 @@ void PartCanvas::leaveEvent(QEvent*)
 void PartCanvas::returnPressed()
       {
       lineEditor->hide();
-      Part* oldPart = editPart->part();
-      Part* newPart = oldPart->clone();
-      //printf("PartCanvas::returnPressed before msgChangePart oldPart refs:%d Arefs:%d newPart refs:%d Arefs:%d\n", oldPart->events()->refCount(), oldPart->events()->arefCount(), newPart->events()->refCount(), newPart->events()->arefCount());
-      
-      newPart->setName(lineEditor->text());
-      // Indicate do undo, and do port controller values but not clone parts. 
-      audio->msgChangePart(oldPart, newPart, true, true, false);
-      
-      editMode = false;
+      if (editMode) {
+          //this check is neccessary, because it returnPressed may be called
+          //twice. the second call would cause a crash, however!
+          Part* oldPart = editPart->part();
+          Part* newPart = oldPart->clone();
+          //printf("PartCanvas::returnPressed before msgChangePart oldPart refs:%d Arefs:%d newPart refs:%d Arefs:%d\n", oldPart->events()->refCount(), oldPart->events()->arefCount(), newPart->events()->refCount(), newPart->events()->arefCount());
+          
+          newPart->setName(lineEditor->text());
+          // Indicate do undo, and do port controller values but not clone parts. 
+          audio->msgChangePart(oldPart, newPart, true, true, false);
+          
+          editMode = false;
+          }
       }
 
 //---------------------------------------------------------
@@ -183,9 +187,9 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
                   editPart = (NPart*)curItem;
                   QRect r = map(curItem->bbox());
                   if (lineEditor == 0) {
-                        lineEditor = new LineEdit(this);
-                        connect(lineEditor, SIGNAL(returnPressed()),SLOT(returnPressed()));
+                        lineEditor = new QLineEdit(this);
                         lineEditor->setFrame(true);
+                        connect(lineEditor, SIGNAL(editingFinished()),SLOT(returnPressed()));
                         }
                   editMode = true;
                   lineEditor->setGeometry(r);
@@ -686,9 +690,9 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                   editPart = npart;
                   QRect r = map(curItem->bbox());
                   if (lineEditor == 0) {
-                        lineEditor = new LineEdit(this);
-                        connect(lineEditor, SIGNAL(returnPressed()),SLOT(returnPressed()));
+                        lineEditor = new QLineEdit(this);
                         lineEditor->setFrame(true);
+                        connect(lineEditor, SIGNAL(editingFinished()),SLOT(returnPressed()));
                         }
                   lineEditor->setText(editPart->name());
                   lineEditor->setFocus();
@@ -930,7 +934,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
             {
             if ( key == Qt::Key_Return || key == Qt::Key_Enter ) 
                   {
-                  returnPressed();
+                  //returnPressed(); commented out by flo
                   return;
                   }
             else if ( key == Qt::Key_Escape )

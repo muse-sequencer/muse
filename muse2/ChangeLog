@@ -1,3 +1,5 @@
+29.08.2011:
+        - Fixed Robert's fixes (flo93)
 27.08.2011:
         - Added fullscreen shortcut to all editors which have full screen action (rj)
         - Part text editor now closes when focus is lost (rj)

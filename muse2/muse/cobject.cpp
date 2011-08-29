@@ -11,6 +11,7 @@
 #include "gui.h"
 #include "globals.h"
 #include "app.h"
+#include "shortcuts.h"
 
 #include <QMdiSubWindow>
 #include <QToolBar>
@@ -56,6 +57,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
       fullscreenAction=new QAction(tr("Fullscreen"), this);
       fullscreenAction->setCheckable(true);
       fullscreenAction->setChecked(false);
+      fullscreenAction->setShortcut(shortcuts[SHRT_FULLSCREEN].key);
       connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
 
       mdisubwin=NULL;

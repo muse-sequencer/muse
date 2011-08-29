@@ -442,8 +442,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	settings_menu->addAction(subwinAction);
 	settings_menu->addAction(shareAction);
 	settings_menu->addAction(fullscreenAction);
-  fullscreenAction->setShortcut(shortcuts[SHRT_FULLSCREEN].key);
-
+  
 
 	init_shortcuts();
 	
@@ -4460,10 +4459,19 @@ void staff_t::update_part_indices()
  *   o add everything of the function-menus of the midieditors to
  *     the arranger; except "move notes": call it "move parts" and 
  *     actually move parts not notes
+ *        how it works:
+ *          there will be extra dialogs for the arranger
+ *          when such a dialog has been executed, the "selected" option
+ *          only controls the set<Part*>, but not the "selected" option
+ *          which is given to the actual function call. the range option
+ *          is kept.
  *   o replace "insert empty measure" by a "global insert"-like operation
  *   o replace "insert" and "paste" by a paste-dialog ("move other notes" or "overwrite notes" or "mix with notes")
  *     skip dialog when there is nothing to erase, move or merge with (i.e., at the end of the song)
  *   o remove movePartsTotheRight function
+ *   o ctrl+c copies selected parts, ctrl+shift+c only the selected range
+ *     if no parts are selected, ctrl+shift+c copies all in range, otherwise
+ *     "selected parts" intersected with "parts in range"
  *   o ctrl+v uses default settings, ctrl+shift+v shows a dialog (with a "this is default" button)
  *   o ctrl+b and ctrl+shift+b do the same, only that they paste as clones
  * 
