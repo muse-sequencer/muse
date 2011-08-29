@@ -397,13 +397,10 @@
       <sendMetronome>0</sendMetronome>
       <automation>0</automation>
       <controller id="0" cur="1" color="#ff0000" visible="0">
-        0 1,         
         </controller>
       <controller id="1" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="2" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       </AudioOutput>
     <tempolist fix="500000">

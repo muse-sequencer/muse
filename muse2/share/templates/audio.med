@@ -399,10 +399,8 @@
       <auxSend idx="0">0</auxSend>
       <auxSend idx="1">0</auxSend>
       <controller id="0" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="1" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
@@ -422,10 +420,8 @@
       <auxSend idx="0">0</auxSend>
       <auxSend idx="1">0</auxSend>
       <controller id="0" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="1" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
@@ -445,10 +441,8 @@
       <auxSend idx="0">0</auxSend>
       <auxSend idx="1">0</auxSend>
       <controller id="0" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="1" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
@@ -468,10 +462,8 @@
       <auxSend idx="0">0</auxSend>
       <auxSend idx="1">0</auxSend>
       <controller id="0" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="1" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
@@ -491,10 +483,8 @@
       <auxSend idx="0">0</auxSend>
       <auxSend idx="1">0</auxSend>
       <controller id="0" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="1" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
@@ -514,10 +504,8 @@
       <auxSend idx="0">0</auxSend>
       <auxSend idx="1">0</auxSend>
       <controller id="0" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="1" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
@@ -535,10 +523,8 @@
       <sendMetronome>0</sendMetronome>
       <automation>1</automation>
       <controller id="0" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="1" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
@@ -556,10 +542,8 @@
       <sendMetronome>0</sendMetronome>
       <automation>1</automation>
       <controller id="0" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="1" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
@@ -579,10 +563,8 @@
       <auxSend idx="0">0</auxSend>
       <auxSend idx="1">0</auxSend>
       <controller id="0" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="1" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
@@ -600,10 +582,8 @@
       <sendMetronome>0</sendMetronome>
       <automation>1</automation>
       <controller id="0" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="1" cur="0" color="#ff0000" visible="0">
-        0 0,         
         </controller>
       <controller id="2" cur="0" color="#0000ff" visible="0">
         </controller>
