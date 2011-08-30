@@ -2517,13 +2517,13 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
     if(icl != track->controller()->end())
     {
       CtrlList *cl = icl->second;
-        canAdd = true;
-        ctlval = cl->curVal();
+      canAdd = true;
+      int frame = pos[0].frame();
+      ctlval = cl->curVal();
+      //ctlval = cl->value(frame);   // p4.0.32
       count = cl->size();
       if(count)
       {
-        int frame = pos[0].frame();
-
         iCtrl s = cl->lower_bound(frame);
         iCtrl e = cl->upper_bound(frame);
 
