@@ -60,6 +60,7 @@ QT4_WRAP_CPP ( muse_moc_headers
       midieditor.h 
       miditransform.h 
       plugin.h 
+      structure.h 
       song.h 
       transport.h 
       value.h 

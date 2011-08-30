@@ -37,6 +37,7 @@
 
 #include "arrangerview.h"
 #include "visibletracks.h"
+#include "structure.h"
 
 
 #include <iostream>
@@ -961,3 +962,9 @@ void ArrangerView::updateVisibleTracksButtons()
 {
   visTracks->updateVisibleTracksButtons();
 }
+
+void ArrangerView::globalCut() { globalCut(); }
+void ArrangerView::globalInsert() { globalInsert(); }
+void ArrangerView::globalSplit() { globalSplit(); }
+void ArrangerView::copyRange() { copyRange(); }
+void ArrangerView::cutEvents() { cutEvents(); }

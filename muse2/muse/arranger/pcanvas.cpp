@@ -27,6 +27,7 @@
 #include "widgets/tools.h"
 #include "arranger.h"
 #include "arrangerview.h"
+#include "structure.h"
 #include "pcanvas.h"
 #include "midieditor.h"
 #include "globals.h"
@@ -2878,40 +2879,6 @@ void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
 
     }
 
-//---------------------------------------------------------
-//   movePartsToTheRight
-//---------------------------------------------------------
-Undo PartCanvas::movePartsTotheRight(unsigned int startTicks, int length)
-{
-        Undo operations;
-        
-        // all parts that start after the pasted parts will be moved the entire length of the pasted parts
-        for (iCItem i = items.begin(); i != items.end(); ++i) {
-          if (!i->second->isSelected()) {
-              Part* part = i->second->part();
-              if (part->tick() >= startTicks) {
-                Part *newPart = part->clone();
-                newPart->setTick(newPart->tick()+length);
-                
-                operations.push_back(UndoOp(UndoOp::ModifyPart,part,newPart,false,false));
-              }
-          }
-        }
-        // perhaps ask if markers should be moved?
-        MarkerList *markerlist = song->marker();
-        for(iMarker i = markerlist->begin(); i != markerlist->end(); ++i)
-        {
-            Marker* m = &i->second;
-            if (m->tick() >= startTicks) {
-              Marker *oldMarker = new Marker();
-              *oldMarker = *m;
-              m->setTick(m->tick()+length);
-              operations.push_back(UndoOp(UndoOp::ModifyMarker,oldMarker, m));
-            }
-        }
-        
-        return operations;
-}
 //---------------------------------------------------------
 //   startDrag
 //---------------------------------------------------------

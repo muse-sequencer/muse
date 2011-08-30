@@ -58,8 +58,6 @@ class ArrangerView : public TopWin
 
 		virtual void closeEvent(QCloseEvent*);
 
-		void adjustGlobalLists(Undo& operations, int startPos, int diff);
-
 		QGridLayout* mainGrid;
 		QWidget* mainw;
 

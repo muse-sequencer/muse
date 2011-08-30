@@ -16,7 +16,8 @@
 #include "keyevent.h"
 #include "audio.h"
 #include "marker/marker.h"
-#include "arrangerview.h"
+#include "structure.h"
+#include "globals.h"
 
 //---------------------------------------------------------
 //   adjustGlobalLists
@@ -25,7 +26,7 @@
 //    'diff' number of ticks.
 //---------------------------------------------------------
 
-void ArrangerView::adjustGlobalLists(Undo& operations, int startPos, int diff)
+void adjustGlobalLists(Undo& operations, int startPos, int diff)
 {
   const TempoList* t = &tempomap;
   const AL::SigList* s   = &AL::sigmap;
@@ -116,7 +117,7 @@ void ArrangerView::adjustGlobalLists(Undo& operations, int startPos, int diff)
 //    - cut master track
 //---------------------------------------------------------
 
-void ArrangerView::globalCut()
+void globalCut()
       {
       int lpos = song->lpos();
       int rpos = song->rpos();
@@ -218,12 +219,17 @@ void ArrangerView::globalCut()
 //    - insert in master track
 //---------------------------------------------------------
 
-void ArrangerView::globalInsert()
+void globalInsert()
       {
-      unsigned lpos = song->lpos();
-      unsigned rpos = song->rpos();
-      if (lpos >= rpos)
-            return;
+      Undo operations=movePartsTotheRight(song->lpos(), song->rpos()-song->lpos());
+      song->applyOperationGroup(operations);
+      }
+
+
+Undo movePartsTotheRight(unsigned int startTicks, int moveTicks)
+      {
+      if (moveTicks<=0)
+            return Undo();
 
       Undo operations;
       TrackList* tracks = song->tracks();
@@ -237,36 +243,35 @@ void ArrangerView::globalInsert()
                   Part* part = p->second;
                   unsigned t = part->tick();
                   int l = part->lenTick();
-                  if (t + l <= lpos)
+                  if (t + l <= startTicks)
                         continue;
-                  if (lpos >= t && lpos < (t+l)) {
+                  if (startTicks >= t && startTicks < (t+l)) {
                         MidiPart* nPart = new MidiPart(*(MidiPart*)part);
-                        nPart->setLenTick(l + (rpos-lpos));
+                        nPart->setLenTick(l + moveTicks);
                         EventList* el = nPart->events();
 
                         for (riEvent i = el->rbegin(); i!=el->rend(); ++i)
                         {
-                              if (i->first < lpos-t)
+                              if (i->first < startTicks-t)
                                     break;
                               Event event  = i->second;
                               Event nEvent = i->second.clone();
-                              nEvent.setTick(nEvent.tick() + (rpos-lpos));
+                              nEvent.setTick(nEvent.tick() + moveTicks);
                               operations.push_back(UndoOp(UndoOp::ModifyEvent, nEvent, event, nPart, false, false));
                               }
                         operations.push_back(UndoOp(UndoOp::ModifyPart, part, nPart, true, true));
                         }
-                  else if (t > lpos) {
+                  else if (t > startTicks) {
                         MidiPart* nPart = new MidiPart(*(MidiPart*)part);
-                        nPart->setTick(t + (rpos -lpos));
+                        nPart->setTick(t + moveTicks);
                         operations.push_back(UndoOp(UndoOp::ModifyPart, part, nPart, true, false));
                         }
                   }
             }
 
-      int diff = rpos - lpos;
-      adjustGlobalLists(operations, lpos, diff);
+      adjustGlobalLists(operations, startTicks, moveTicks);
 
-      song->applyOperationGroup(operations);
+      return operations;
       }
 
 
@@ -275,7 +280,7 @@ void ArrangerView::globalInsert()
 //    - split all parts at the song position pointer
 //---------------------------------------------------------
 
-void ArrangerView::globalSplit()
+void globalSplit()
       {
       int pos = song->cpos();
       Undo operations;
@@ -317,12 +322,9 @@ void ArrangerView::globalSplit()
 //      copied events
 //---------------------------------------------------------
 
-void ArrangerView::copyRange()
+void copyRange()
       {
-      QMessageBox::critical(this,
-         tr("ArrangerView: Copy Range"),
-         tr("not implemented")
-         );
+      QMessageBox::critical(muse, "Copy Range", "not implemented");
       }
 
 //---------------------------------------------------------
@@ -332,10 +334,7 @@ void ArrangerView::copyRange()
 //    - process only marked parts
 //---------------------------------------------------------
 
-void ArrangerView::cutEvents()
+void cutEvents()
       {
-      QMessageBox::critical(this,
-         tr("ArrangerView: Cut Events"),
-         tr("not implemented")
-         );
+      QMessageBox::critical(muse, "Cut Events", "not implemented");
       }

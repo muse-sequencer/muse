@@ -109,7 +109,6 @@ class PartCanvas : public Canvas {
       void copy(PartList*);
       void paste(bool clone = false, bool toTrack = true, bool doInsert=false);
       Undo pasteAt(const QString&, Track*, unsigned int, bool clone = false, bool toTrack = true, int* finalPosPtr = NULL);
-      Undo movePartsTotheRight(unsigned int startTick, int length);
       //Part* readClone(Xml&, Track*, bool toTrack = true);
       void drawWavePart(QPainter&, const QRect&, WavePart*, const QRect&);
       //void drawMidiPart(QPainter&, const QRect& rect, EventList* events, MidiTrack*mt, const QRect& r, int pTick, int from, int to);
