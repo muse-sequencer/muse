@@ -3587,6 +3587,7 @@ void PartCanvas::checkAutomation(Track * t, const QPoint &pointer, bool addNewCt
         double min, max;
         cl->range(&min,&max);
         //bool discrete = cl->valueType() == VAL_BOOL || cl->mode() == CtrlList::DISCRETE;  // Tim
+        bool discrete = cl->mode() == CtrlList::DISCRETE;  
 
         // First check that there IS automation, ic == cl->end means no automation
         if (ic == cl->end()) 
@@ -3611,7 +3612,7 @@ void PartCanvas::checkAutomation(Track * t, const QPoint &pointer, bool addNewCt
              }
              else 
                y = (y-min)/(max-min);  // we need to set curVal between 0 and 1
-
+             
              ypixel = mapy(trackY + trackH - 2 - y * trackH);
              xpixel = mapx(tempomap.frame2tick(ic->second.frame));
 
@@ -3625,7 +3626,7 @@ void PartCanvas::checkAutomation(Track * t, const QPoint &pointer, bool addNewCt
                double firstX=oldX;
                double lastX=xpixel;
                double firstY=oldY;
-               double lastY=ypixel;
+               double lastY = discrete ? oldY : ypixel;
 
                double proportion = (currX-firstX)/(lastX-firstX);
 
@@ -3807,7 +3808,8 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
       // we need to set val between 0 and 1 (unless integer)
       cvval = yfraction * (max-min) + min;
       // 'Snap' to integer or boolean
-      if (automation.currentCtrlList->valueType() == VAL_INT || automation.currentCtrlList->valueType() == VAL_BOOL)
+      //if (automation.currentCtrlList->valueType() == VAL_INT || automation.currentCtrlList->valueType() == VAL_BOOL)
+      if (automation.currentCtrlList->mode() == CtrlList::DISCRETE)
         cvval = rint(cvval + 0.1); // LADSPA docs say add a slight bias to avoid rounding errors. Try this.
       if (cvval< min) cvval=min;
       if (cvval>max) cvval=max;
