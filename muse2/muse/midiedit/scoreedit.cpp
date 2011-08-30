@@ -4450,21 +4450,11 @@ void staff_t::update_part_indices()
  * 
  * CURRENT TODO
  * M o remove that ugly "bool initalizing" stuff. it's probably unneeded (watch out for the FINDMICH message)
- * m o shortcuts, especially for fullscreen
+ * M o shortcuts for "pencil" in score editor etc.
  *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer
  *     journey to the menu bar. try to find a way which does not involve duplicate code!
  *   o implement borland-style maximize: free windows do not cover the main menu, even when maximized
  * 
- *   o window menu -> "arrange" -> "all in rows" / "all in columns"
- *   o add everything of the function-menus of the midieditors to
- *     the arranger; except "move notes": call it "move parts" and 
- *     actually move parts not notes
- *        how it works:
- *          there will be extra dialogs for the arranger
- *          when such a dialog has been executed, the "selected" option
- *          only controls the set<Part*>, but not the "selected" option
- *          which is given to the actual function call. the range option
- *          is kept.
  *   o replace "insert empty measure" by a "global insert"-like operation
  *   o replace "insert" and "paste" by a paste-dialog ("move other notes" or "overwrite notes" or "mix with notes")
  *     skip dialog when there is nothing to erase, move or merge with (i.e., at the end of the song)

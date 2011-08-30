@@ -542,6 +542,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //-------- Windows Actions
       windowsCascadeAction = new QAction(tr("Cascade"), this);
       windowsTileAction = new QAction(tr("Tile"), this);
+      windowsRowsAction = new QAction(tr("In rows"), this);
+      windowsColumnsAction = new QAction(tr("In columns"), this);
       
       
       //-------- Settings Actions
@@ -841,6 +843,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       
       menuWindows->addAction(windowsCascadeAction); 
       menuWindows->addAction(windowsTileAction); 
+      menuWindows->addAction(windowsRowsAction); 
+      menuWindows->addAction(windowsColumnsAction); 
 
       //-------------------------------------------------------------
       //    popup Settings
@@ -896,6 +900,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setCentralWidget(mdiArea);
       connect(windowsTileAction, SIGNAL(activated()), mdiArea, SLOT(tileSubWindows()));
+      connect(windowsRowsAction, SIGNAL(activated()), this, SLOT(arrangeSubWindowsRows()));
+      connect(windowsColumnsAction, SIGNAL(activated()), this, SLOT(arrangeSubWindowsColumns()));
       connect(windowsCascadeAction, SIGNAL(activated()), mdiArea, SLOT(cascadeSubWindows()));
 
 
@@ -3202,6 +3208,8 @@ void MusE::updateWindowMenu()
   
   menuWindows->addAction(windowsCascadeAction);
   menuWindows->addAction(windowsTileAction);
+  menuWindows->addAction(windowsRowsAction);
+  menuWindows->addAction(windowsColumnsAction);
   
   sep=false;
   for (iToplevel it=toplevels.begin(); it!=toplevels.end(); it++)
@@ -3237,6 +3245,8 @@ void MusE::updateWindowMenu()
   
   windowsCascadeAction->setEnabled(there_are_subwins);
   windowsTileAction->setEnabled(there_are_subwins);
+  windowsRowsAction->setEnabled(there_are_subwins);
+  windowsColumnsAction->setEnabled(there_are_subwins);
 }
 
 void MusE::bringToFront(QWidget* widget)
@@ -3260,4 +3270,88 @@ void MusE::setFullscreen(bool val)
     showFullScreen();
   else
     showNormal();
+}
+
+
+
+list<QMdiSubWindow*> get_all_visible_subwins(QMdiArea* mdiarea)
+{
+  QList<QMdiSubWindow*> wins = mdiarea->subWindowList();
+  list<QMdiSubWindow*> result;
+  
+  for (QList<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++)
+    if ((*it)->isVisible() && ((*it)->isMinimized()==false))
+      result.push_back(*it);
+  
+  return result;
+}
+
+void MusE::arrangeSubWindowsColumns()
+{
+  list<QMdiSubWindow*> wins=get_all_visible_subwins(mdiArea);
+  int n=wins.size();
+  
+  if (n==0)
+    return;
+  else if (n==1)
+    (*wins.begin())->showMaximized();
+  else
+  {
+    int width = mdiArea->width();
+    int height = mdiArea->height();
+    int x_add = (*wins.begin())->frameGeometry().width() - (*wins.begin())->geometry().width();
+    int y_add = (*wins.begin())->frameGeometry().height() - (*wins.begin())->geometry().height();
+    int width_per_win = width/n;
+    
+    if (x_add >= width_per_win)
+    {
+      printf("ERROR: tried to arrange subwins in columns, but there's too few space.\n");
+      return;
+    }
+    
+    int i=0;
+    for (list<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++, i++)
+    {
+      int left = (float) width*i/n;
+      int right = (float) width*(i+1.0)/n;
+      
+      (*it)->move(left,0);
+      (*it)->resize(right-left-x_add, height-y_add);
+    }
+  }
+}
+
+void MusE::arrangeSubWindowsRows()
+{
+  list<QMdiSubWindow*> wins=get_all_visible_subwins(mdiArea);
+  int n=wins.size();
+  
+  if (n==0)
+    return;
+  else if (n==1)
+    (*wins.begin())->showMaximized();
+  else
+  {
+    int width = mdiArea->width();
+    int height = mdiArea->height();
+    int x_add = (*wins.begin())->frameGeometry().width() - (*wins.begin())->geometry().width();
+    int y_add = (*wins.begin())->frameGeometry().height() - (*wins.begin())->geometry().height();
+    int height_per_win = height/n;
+    
+    if (y_add >= height_per_win)
+    {
+      printf("ERROR: tried to arrange subwins in rows, but there's too few space.\n");
+      return;
+    }
+    
+    int i=0;
+    for (list<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++, i++)
+    {
+      int top = (float) height*i/n;
+      int bottom = (float) height*(i+1.0)/n;
+      
+      (*it)->move(0,top);
+      (*it)->resize(width-x_add, bottom-top-y_add);
+    }
+  }  
 }

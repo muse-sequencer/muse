@@ -132,6 +132,8 @@ class MusE : public QMainWindow
       // Window Menu Actions
       QAction* windowsCascadeAction;
       QAction* windowsTileAction;
+      QAction* windowsRowsAction;
+      QAction* windowsColumnsAction;
       
       // Settings Menu Actions
       QAction *settingsGlobalAction, *settingsShortcutsAction, *settingsMetronomeAction, *settingsMidiSyncAction;
@@ -296,6 +298,9 @@ class MusE : public QMainWindow
       
       void bringToFront(QWidget* win);
       void setFullscreen(bool);
+      
+      void arrangeSubWindowsRows();
+      void arrangeSubWindowsColumns();
 
    public slots:
       bool saveAs();
