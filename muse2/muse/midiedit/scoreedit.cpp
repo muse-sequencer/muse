@@ -4459,15 +4459,13 @@ void staff_t::update_part_indices()
  *   o replace "insert" and "paste" by a paste-dialog ("move other notes" or "overwrite notes" or "mix with notes")
  *     skip dialog when there is nothing to erase, move or merge with (i.e., at the end of the song)
  *   o remove movePartsTotheRight function
- *   o ctrl+c copies selected parts, ctrl+shift+c only the selected range
- *     if no parts are selected, ctrl+shift+c copies all in range, otherwise
- *     "selected parts" intersected with "parts in range"
  *   o ctrl+v uses default settings, ctrl+shift+v shows a dialog (with a "this is default" button)
  *   o ctrl+b and ctrl+shift+b do the same, only that they paste as clones
  * 
  * IMPORTANT TODO
  * ! o fix sigedit boxes
  * 
+ *   o rename stuff with F2 key
  *   o redo transport menu: offer "one beat" and "one bar" steps
  *                          maybe also offer scrollbar
  *   o quick "set left/right marker", "select between markers"

@@ -2650,6 +2650,8 @@ void PartCanvas::copy_in_range(PartList* pl_)
           Part* p2;
           
           track->splitPart(part, lpos, p1, p2);
+          p1->events()->incARef(-1);
+          p2->events()->incARef(-1);
           
           part=p2;
         }
@@ -2660,7 +2662,9 @@ void PartCanvas::copy_in_range(PartList* pl_)
           Part* p2;
           
           track->splitPart(part, rpos, p1, p2);
-          
+          p1->events()->incARef(-1);
+          p2->events()->incARef(-1);
+
           part=p1;
         }
         
