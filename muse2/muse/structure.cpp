@@ -126,10 +126,17 @@ void globalCut()
 
       Undo operations;
       TrackList* tracks = song->tracks();
+      bool at_least_one_selected=false;
+      
+      for (iTrack it = tracks->begin(); it != tracks->end(); ++it)
+            if ( (*it)->selected() ) {
+                  at_least_one_selected=true;
+                  break;
+                  }
       
       for (iTrack it = tracks->begin(); it != tracks->end(); ++it) {
             MidiTrack* track = dynamic_cast<MidiTrack*>(*it);
-            if (track == 0 || track->mute())
+            if (track == 0 || (at_least_one_selected && !track->selected()))
                   continue;
             PartList* pl = track->parts();
             for (iPart p = pl->begin(); p != pl->end(); ++p) {
@@ -221,22 +228,30 @@ void globalCut()
 
 void globalInsert()
       {
-      Undo operations=movePartsTotheRight(song->lpos(), song->rpos()-song->lpos());
+      Undo operations=movePartsTotheRight(song->lpos(), song->rpos()-song->lpos(), true);
       song->applyOperationGroup(operations);
       }
 
 
-Undo movePartsTotheRight(unsigned int startTicks, int moveTicks)
+Undo movePartsTotheRight(unsigned int startTicks, int moveTicks, bool only_selected)
       {
       if (moveTicks<=0)
             return Undo();
 
       Undo operations;
       TrackList* tracks = song->tracks();
+      bool at_least_one_selected=false;
+      
+      for (iTrack it = tracks->begin(); it != tracks->end(); ++it)
+            if ( (*it)->selected() ) {
+                  at_least_one_selected=true;
+                  break;
+                  }
+      
       
       for (iTrack it = tracks->begin(); it != tracks->end(); ++it) {
             MidiTrack* track = dynamic_cast<MidiTrack*>(*it);
-            if (track == 0 || track->mute())
+            if (track == 0 || (only_selected && at_least_one_selected && !track->selected()))
                   continue;
             PartList* pl = track->parts();
             for (riPart p = pl->rbegin(); p != pl->rend(); ++p) {
@@ -285,10 +300,18 @@ void globalSplit()
       int pos = song->cpos();
       Undo operations;
       TrackList* tracks = song->tracks();
+      bool at_least_one_selected=false;
+      
+      for (iTrack it = tracks->begin(); it != tracks->end(); ++it)
+            if ( (*it)->selected() ) {
+                  at_least_one_selected=true;
+                  break;
+                  }
+      
 
       for (iTrack it = tracks->begin(); it != tracks->end(); ++it) {
             Track* track = *it;
-            if (track == 0 || track->mute())
+            if (track == 0 || (at_least_one_selected && !track->selected()))
                   continue;
 
             PartList* pl = track->parts();

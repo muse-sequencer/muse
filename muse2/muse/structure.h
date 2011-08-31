@@ -10,7 +10,7 @@
 
 #include "undo.h"
 
-Undo movePartsTotheRight(unsigned int startTick, int moveTick);
+Undo movePartsTotheRight(unsigned int startTick, int moveTick, bool only_selected=false);
 void adjustGlobalLists(Undo& operations, int startPos, int diff);
 void globalCut();
 void globalInsert();

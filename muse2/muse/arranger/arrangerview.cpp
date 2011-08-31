@@ -960,6 +960,6 @@ void ArrangerView::updateVisibleTracksButtons()
   visTracks->updateVisibleTracksButtons();
 }
 
-void ArrangerView::globalCut() { globalCut(); }
-void ArrangerView::globalInsert() { globalInsert(); }
-void ArrangerView::globalSplit() { globalSplit(); }
+void ArrangerView::globalCut() { ::globalCut(); }
+void ArrangerView::globalInsert() { ::globalInsert(); }
+void ArrangerView::globalSplit() { ::globalSplit(); }

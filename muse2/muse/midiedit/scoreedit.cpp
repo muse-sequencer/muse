@@ -4451,7 +4451,6 @@ void staff_t::update_part_indices()
  * CURRENT TODO
  * M o remove that ugly "bool initalizing" stuff. it's probably unneeded (watch out for the FINDMICH message)
  * M o shortcuts for "pencil" in score editor etc.
- *   o structure ops only operate on muted tracks. really!
  *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer
  *     journey to the menu bar. try to find a way which does not involve duplicate code!
  *   o implement borland-style maximize: free windows do not cover the main menu, even when maximized
