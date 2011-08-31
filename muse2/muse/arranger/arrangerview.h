@@ -48,7 +48,7 @@ class ArrangerView : public TopWin
 	private:
 
 		enum cmd_enum
-			{CMD_CUT, CMD_COPY, CMD_PASTE, CMD_INSERT, CMD_INSERTMEAS, CMD_PASTE_CLONE,
+			{CMD_CUT, CMD_COPY, CMD_COPY_RANGE, CMD_PASTE, CMD_INSERT, CMD_INSERTMEAS, CMD_PASTE_CLONE,
 			CMD_PASTE_TO_TRACK, CMD_PASTE_CLONE_TO_TRACK, CMD_DELETE,
 			CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
 			CMD_SELECT_ILOOP, CMD_SELECT_OLOOP, CMD_SELECT_PARTS,
@@ -71,10 +71,10 @@ class ArrangerView : public TopWin
 		QMenu* addTrack;
 		QMenu* master;
 
-		QAction *strGlobalCutAction, *strGlobalInsertAction, *strGlobalSplitAction, *strCopyRangeAction, *strCutEventsAction;
+		QAction *strGlobalCutAction, *strGlobalInsertAction, *strGlobalSplitAction;
 		QAction *trackMidiAction, *trackDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
 		QAction *trackAInputAction, *trackAAuxAction;
-		QAction *editCutAction, *editCopyAction, *editPasteAction, *editInsertAction, *editPasteCloneAction, *editPaste2TrackAction;
+		QAction *editCutAction, *editCopyAction, *editCopyRangeAction, *editPasteAction, *editInsertAction, *editPasteCloneAction, *editPaste2TrackAction;
 		QAction *editInsertEMAction, *editPasteC2TAction, *editDeleteSelectedAction, *editSelectAllAction, *editDeselectAllAction;
 		QAction *editInvertSelectionAction, *editInsideLoopAction, *editOutsideLoopAction, *editAllPartsAction;
 		QAction *masterGraphicAction, *masterListAction;
@@ -101,8 +101,6 @@ class ArrangerView : public TopWin
 		void globalCut();
 		void globalInsert();
 		void globalSplit();
-		void copyRange();
-		void cutEvents();
 		void cmd(int);
 
 	signals:

@@ -15,7 +15,4 @@ void adjustGlobalLists(Undo& operations, int startPos, int diff);
 void globalCut();
 void globalInsert();
 void globalSplit();
-void copyRange();
-void cutEvents();
-
 #endif

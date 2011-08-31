@@ -747,6 +747,9 @@ void Arranger::cmd(int cmd)
             case CMD_COPY_PART:
                   ncmd = PartCanvas::CMD_COPY_PART;
                   break;
+            case CMD_COPY_PART_IN_RANGE:
+                  ncmd = PartCanvas::CMD_COPY_PART_IN_RANGE;
+                  break;
             case CMD_PASTE_PART:
                   ncmd = PartCanvas::CMD_PASTE_PART;
                   break;

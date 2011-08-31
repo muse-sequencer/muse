@@ -372,6 +372,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   //-------- Edit Actions
   editCutAction = new QAction(QIcon(*editcutIconSet), tr("C&ut"), this);
   editCopyAction = new QAction(QIcon(*editcopyIconSet), tr("&Copy"), this);
+  editCopyRangeAction = new QAction(QIcon(*editcopyIconSet), tr("&Copy in range"), this);
   editPasteAction = new QAction(QIcon(*editpasteIconSet), tr("&Paste"), this);
   editInsertAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert"), this);
   editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert Empty Measure"), this);
@@ -426,10 +427,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   strGlobalCutAction = new QAction(tr("Global Cut"), this);
   strGlobalInsertAction = new QAction(tr("Global Insert"), this);
   strGlobalSplitAction = new QAction(tr("Global Split"), this);
-  strCopyRangeAction = new QAction(tr("Copy Range"), this);
-  strCopyRangeAction->setEnabled(false);
-  strCutEventsAction = new QAction(tr("Cut Events"), this);
-  strCutEventsAction->setEnabled(false);
 
 
 
@@ -443,6 +440,7 @@ ArrangerView::ArrangerView(QWidget* parent)
 
   menuEdit->addAction(editCutAction);
   menuEdit->addAction(editCopyAction);
+  menuEdit->addAction(editCopyRangeAction);
   menuEdit->addAction(editPasteAction);
   menuEdit->addAction(editInsertAction);
   menuEdit->addAction(editInsertEMAction);
@@ -484,9 +482,6 @@ ArrangerView::ArrangerView(QWidget* parent)
     menuStructure->addAction(strGlobalCutAction);
     menuStructure->addAction(strGlobalInsertAction);
     menuStructure->addAction(strGlobalSplitAction);
-    menuStructure->addAction(strCopyRangeAction);
-    menuStructure->addSeparator();
-    menuStructure->addAction(strCutEventsAction);
   
   
   
@@ -523,6 +518,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   //-------- Edit connections
   connect(editCutAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editCopyAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
+  connect(editCopyRangeAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editPasteAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editInsertAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
   connect(editInsertEMAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
@@ -544,6 +540,7 @@ ArrangerView::ArrangerView(QWidget* parent)
 
   editSignalMapper->setMapping(editCutAction, CMD_CUT);
   editSignalMapper->setMapping(editCopyAction, CMD_COPY);
+  editSignalMapper->setMapping(editCopyRangeAction, CMD_COPY_RANGE);
   editSignalMapper->setMapping(editPasteAction, CMD_PASTE);
   editSignalMapper->setMapping(editInsertAction, CMD_INSERT);
   editSignalMapper->setMapping(editPasteCloneAction, CMD_PASTE_CLONE);
@@ -582,8 +579,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(strGlobalCutAction, SIGNAL(activated()), SLOT(globalCut()));
   connect(strGlobalInsertAction, SIGNAL(activated()), SLOT(globalInsert()));
   connect(strGlobalSplitAction, SIGNAL(activated()), SLOT(globalSplit()));
-  connect(strCopyRangeAction, SIGNAL(activated()), SLOT(copyRange()));
-  connect(strCutEventsAction, SIGNAL(activated()), SLOT(cutEvents()));
 
 
 
@@ -710,6 +705,9 @@ void ArrangerView::cmd(int cmd)
                   break;
             case CMD_COPY:
                   arranger->cmd(Arranger::CMD_COPY_PART);
+                  break;
+            case CMD_COPY_RANGE:
+                  arranger->cmd(Arranger::CMD_COPY_PART_IN_RANGE);
                   break;
             case CMD_PASTE:
                   arranger->cmd(Arranger::CMD_PASTE_PART);
@@ -886,6 +884,7 @@ void ArrangerView::updateShortcuts()
 {
       editCutAction->setShortcut(shortcuts[SHRT_CUT].key);
       editCopyAction->setShortcut(shortcuts[SHRT_COPY].key);
+      editCopyRangeAction->setShortcut(shortcuts[SHRT_COPY_RANGE].key);
       editPasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
       editInsertAction->setShortcut(shortcuts[SHRT_INSERT].key);
       editInsertEMAction->setShortcut(shortcuts[SHRT_INSERTMEAS].key);
@@ -922,8 +921,6 @@ void ArrangerView::updateShortcuts()
       strGlobalCutAction->setShortcut(shortcuts[SHRT_GLOBAL_CUT].key);
       strGlobalInsertAction->setShortcut(shortcuts[SHRT_GLOBAL_INSERT].key);
       strGlobalSplitAction->setShortcut(shortcuts[SHRT_GLOBAL_SPLIT].key);
-      strCopyRangeAction->setShortcut(shortcuts[SHRT_COPY_RANGE].key);
-      strCutEventsAction->setShortcut(shortcuts[SHRT_CUT_EVENTS].key);
 }
 
 //---------------------------------------------------------
@@ -966,5 +963,3 @@ void ArrangerView::updateVisibleTracksButtons()
 void ArrangerView::globalCut() { globalCut(); }
 void ArrangerView::globalInsert() { globalInsert(); }
 void ArrangerView::globalSplit() { globalSplit(); }
-void ArrangerView::copyRange() { copyRange(); }
-void ArrangerView::cutEvents() { cutEvents(); }

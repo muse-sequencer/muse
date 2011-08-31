@@ -4456,7 +4456,6 @@ void staff_t::update_part_indices()
  *     journey to the menu bar. try to find a way which does not involve duplicate code!
  *   o implement borland-style maximize: free windows do not cover the main menu, even when maximized
  * 
- *   o replace "insert empty measure" by a "global insert"-like operation
  *   o replace "insert" and "paste" by a paste-dialog ("move other notes" or "overwrite notes" or "mix with notes")
  *     skip dialog when there is nothing to erase, move or merge with (i.e., at the end of the song)
  *   o remove movePartsTotheRight function

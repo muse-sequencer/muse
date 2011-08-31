@@ -2580,6 +2580,9 @@ void PartCanvas::cmd(int cmd)
             case CMD_COPY_PART:
                   copy(&pl);
                   break;
+            case CMD_COPY_PART_IN_RANGE:
+                  copy_in_range(&pl);
+                  break;
             case CMD_PASTE_PART:
                   paste(false, false);
                   break;
@@ -2608,6 +2611,66 @@ void PartCanvas::cmd(int cmd)
 //   copy
 //    cut copy paste
 //---------------------------------------------------------
+
+void PartCanvas::copy_in_range(PartList* pl_)
+{
+  PartList pl;
+  PartList result_pl;
+  unsigned int lpos = song->lpos();
+  unsigned int rpos = song->rpos();
+  
+  if (pl_->empty())
+  {
+    for (iCItem i = items.begin(); i != items.end(); ++i)
+    {
+      Part* part=static_cast<NPart*>(i->second)->part();
+      if ( (part->track()->isMidiTrack()) || (part->track()->type() == Track::WAVE) )
+        pl.add(part);
+    }
+  }
+  else
+  {
+    for(ciPart p = pl_->begin(); p != pl_->end(); ++p) 
+      if ( (p->second->track()->isMidiTrack()) || (p->second->track()->type() == Track::WAVE) )
+        pl.add(p->second);
+  }
+  
+  if (!pl.empty() && (rpos>lpos))
+  {
+    for(ciPart p = pl.begin(); p != pl.end(); ++p) 
+    {
+      Part* part=p->second;
+      Track* track=part->track();
+      
+      if ((part->tick() < rpos) && (part->endTick() > lpos)) //is the part in the range?
+      {
+        if ((lpos > part->tick()) && (lpos < part->endTick()))
+        {
+          Part* p1;
+          Part* p2;
+          
+          track->splitPart(part, lpos, p1, p2);
+          
+          part=p2;
+        }
+        
+        if ((rpos > part->tick()) && (rpos < part->endTick()))
+        {
+          Part* p1;
+          Part* p2;
+          
+          track->splitPart(part, rpos, p1, p2);
+          
+          part=p1;
+        }
+        
+        result_pl.add(part);
+      }
+    }
+    
+    copy(&result_pl);
+  }
+}
 
 void PartCanvas::copy(PartList* pl)
       {
@@ -2746,6 +2809,7 @@ Undo PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool
                               if (p->tick()+p->lenTick()>finalPos) {
                                 finalPos=p->tick()+p->lenTick();
                               }
+                              p->setSelected(true);
                               operations.push_back(UndoOp(UndoOp::AddPart,p));
                               }
                         else
@@ -2866,6 +2930,7 @@ void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
       {
         int endPos=0;
         unsigned int startPos=song->vcpos();
+        deselectAll();
         Undo operations=pasteAt(txt, track, startPos, clone, toTrack, &endPos);
         Pos p(endPos, true);
         song->setPos(0, p);
@@ -3002,6 +3067,7 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
                   track = tracks->index(trackNo);
             if (track)
             {
+                  deselectAll();
                   Undo temp=pasteAt(text, track, x);
                   song->applyOperationGroup(temp);
             }

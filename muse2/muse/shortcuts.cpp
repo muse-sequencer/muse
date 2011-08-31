@@ -81,7 +81,7 @@ void initShortCuts()
       defShrt(SHRT_GLOBAL_CUT,            0, "Structure: Global cut", ARRANG_SHRT, "global_cut");
       defShrt(SHRT_GLOBAL_INSERT,         0, "Structure: Global insert", ARRANG_SHRT, "global_insert");
       defShrt(SHRT_GLOBAL_SPLIT,          0, "Structure: Global split", ARRANG_SHRT,  "global_split");
-      defShrt(SHRT_COPY_RANGE,            0, "Structure: Copy range", ARRANG_SHRT,    "copy_range");
+      defShrt(SHRT_COPY_RANGE,            0, "Edit: Copy in range", ARRANG_SHRT,    "copy_range");
       defShrt(SHRT_CUT_EVENTS,            0, "Structure: Cut events", ARRANG_SHRT,    "cut_events");
       //defShrt(SHRT_OPEN_MIXER,            Qt::Key_F10, "View: Open mixer window", ARRANG_SHRT, "toggle_mixer");
       defShrt(SHRT_OPEN_MIXER,            Qt::Key_F10, "View: Open mixer #1 window", ARRANG_SHRT, "toggle_mixer");

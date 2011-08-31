@@ -104,7 +104,7 @@ enum {
       SHRT_GLOBAL_CUT, //Default: undefined
       SHRT_GLOBAL_INSERT, //Default: undefined
       SHRT_GLOBAL_SPLIT, //Default: undefined
-      SHRT_COPY_RANGE, //Default: undefined
+      SHRT_COPY_RANGE, //Default: Ctrl+Shift+C
       SHRT_CUT_EVENTS, //Default: undefined
 
       SHRT_OPEN_TRANSPORT, //F11

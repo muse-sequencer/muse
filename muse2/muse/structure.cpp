@@ -313,28 +313,3 @@ void globalSplit()
       song->applyOperationGroup(operations);
       }
 
-//---------------------------------------------------------
-//   copyRange
-//    - copy space between left and right locator position
-//      to song position pointer
-//    - dont process muted tracks
-//    - create a new part for every track containing the
-//      copied events
-//---------------------------------------------------------
-
-void copyRange()
-      {
-      QMessageBox::critical(muse, "Copy Range", "not implemented");
-      }
-
-//---------------------------------------------------------
-//   cutEvents
-//    - make sure that all events in a part end where the
-//      part ends
-//    - process only marked parts
-//---------------------------------------------------------
-
-void cutEvents()
-      {
-      QMessageBox::critical(muse, "Cut Events", "not implemented");
-      }
