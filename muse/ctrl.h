@@ -104,7 +104,7 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       void setMode(Mode m)       { _mode = m; }
       double getDefault() const   { return _default; }
       void setDefault(double val) { _default = val; }
-      double curVal() const       { return _curVal; }
+      double curVal() const;  /*  { return _curVal; }  */
       void setCurVal(double val); //  { _curVal = val; }
       int id() const             { return _id; }
       QString name() const       { return _name; }
@@ -120,7 +120,7 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       CtrlValueType valueType() const { return _valueType; }
       void setValueType(CtrlValueType t) { _valueType = t; }
 
-      double value(int frame);
+      double value(int frame) const;
       void add(int frame, double value);
       void del(int frame);
       void read(Xml& xml);

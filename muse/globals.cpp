@@ -323,7 +323,7 @@ QAction* recordAction;
 QAction* panicAction;
 
 //AudioMixerApp* audioMixer;
-MusE* muse;
+MusE* muse = 0;
 
 int preMeasures = 2;
 unsigned char measureClickNote = 63;

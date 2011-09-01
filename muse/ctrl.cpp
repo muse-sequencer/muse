@@ -20,7 +20,7 @@
 #include "globals.h"
 #include "ctrl.h"
 #include "xml.h"
-// #include "audio.h"
+#include "audio.h"
 
 void CtrlList::initColor(int i)
 {
@@ -82,7 +82,7 @@ CtrlList::CtrlList()
 //   value
 //---------------------------------------------------------
 
-double CtrlList::value(int frame)
+double CtrlList::value(int frame) const
 {
       // Changed by Tim. p4.0.32...
       
@@ -166,6 +166,17 @@ double CtrlList::value(int frame)
       return rv;
 }
 
+//---------------------------------------------------------
+//   curVal
+//   returns the value at the current audio position 
+//---------------------------------------------------------
+double CtrlList::curVal() const
+{ 
+  //double v = value(Pos(audio->tickPos()).frame());      // p4.0.33
+  //double v = value(audio->pos().frame());                 // Try this.
+  //return v;
+  return _curVal;
+}
 
 //---------------------------------------------------------
 //   setCurVal

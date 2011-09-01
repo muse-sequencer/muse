@@ -62,11 +62,11 @@ enum {
       MIDI_SHOW_INSTR_NATIVE_GUI,
       AUDIO_RECORD,
       AUDIO_ROUTEADD, AUDIO_ROUTEREMOVE, AUDIO_REMOVEROUTES,
-      AUDIO_VOL, AUDIO_PAN,
+      //AUDIO_VOL, AUDIO_PAN,
       AUDIO_ADDPLUGIN,
       AUDIO_SET_SEG_SIZE,
       AUDIO_SET_PREFADER, AUDIO_SET_CHANNELS,
-      AUDIO_SET_PLUGIN_CTRL_VAL,
+      //AUDIO_SET_PLUGIN_CTRL_VAL,
       AUDIO_SWAP_CONTROLLER_IDX,
       AUDIO_CLEAR_CONTROLLER_EVENTS,
       AUDIO_SEEK_PREV_AC_EVENT,
@@ -230,8 +230,8 @@ class Audio {
       void msgAddRoute1(Route, Route);
       void msgAddPlugin(AudioTrack*, int idx, PluginI* plugin);
       void msgSetMute(AudioTrack*, bool val);
-      void msgSetVolume(AudioTrack*, double val);
-      void msgSetPan(AudioTrack*, double val);
+      //void msgSetVolume(AudioTrack*, double val);
+      //void msgSetPan(AudioTrack*, double val);
       void msgAddSynthI(SynthI* synth);
       void msgRemoveSynthI(SynthI* synth);
       void msgSetSegSize(int, int);
@@ -246,7 +246,7 @@ class Audio {
       void msgResetMidiDevices();
       void msgIdle(bool);
       void msgBounce();
-      void msgSetPluginCtrlVal(AudioTrack*, int /*param*/, double /*val*/);
+      //void msgSetPluginCtrlVal(AudioTrack*, int /*param*/, double /*val*/);
       void msgSwapControllerIDX(AudioTrack*, int, int);
       void msgClearControllerEvents(AudioTrack*, int);
       void msgSeekPrevACEvent(AudioTrack*, int);

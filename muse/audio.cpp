@@ -68,11 +68,11 @@ const char* seqMsgList[] = {
       "MIDI_SHOW_INSTR_NATIVE_GUI",
       "AUDIO_RECORD",
       "AUDIO_ROUTEADD", "AUDIO_ROUTEREMOVE", "AUDIO_REMOVEROUTES",
-      "AUDIO_VOL", "AUDIO_PAN",
+      //"AUDIO_VOL", "AUDIO_PAN",
       "AUDIO_ADDPLUGIN",
       "AUDIO_SET_SEG_SIZE",
       "AUDIO_SET_PREFADER", "AUDIO_SET_CHANNELS",
-      "AUDIO_SET_PLUGIN_CTRL_VAL",
+      //"AUDIO_SET_PLUGIN_CTRL_VAL",
       "AUDIO_SWAP_CONTROLLER_IDX",
       "AUDIO_CLEAR_CONTROLLER_EVENTS",
       "AUDIO_SEEK_PREV_AC_EVENT",
@@ -632,12 +632,12 @@ void Audio::processMsg(AudioMsg* msg)
             case AUDIO_REMOVEROUTES:      // p3.3.55
                   removeAllRoutes(msg->sroute, msg->droute);
                   break;
-            case AUDIO_VOL:
-                  msg->snode->setVolume(msg->dval);
-                  break;
-            case AUDIO_PAN:
-                  msg->snode->setPan(msg->dval);
-                  break;
+            //case AUDIO_VOL:
+            //      msg->snode->setVolume(msg->dval);
+            //      break;
+            //case AUDIO_PAN:
+            //      msg->snode->setPan(msg->dval);
+            //      break;
             case SEQM_SET_AUX:
                   msg->snode->setAuxSend(msg->ival, msg->dval);
                   break;
@@ -650,11 +650,11 @@ void Audio::processMsg(AudioMsg* msg)
             case AUDIO_ADDPLUGIN:
                   msg->snode->addPlugin(msg->plugin, msg->ival);
                   break;
-            case AUDIO_SET_PLUGIN_CTRL_VAL:
+            //case AUDIO_SET_PLUGIN_CTRL_VAL:
                   //msg->plugin->track()->setPluginCtrlVal(msg->ival, msg->dval);
                   // p3.3.43
-                  msg->snode->setPluginCtrlVal(msg->ival, msg->dval);
-                  break;
+            //      msg->snode->setPluginCtrlVal(msg->ival, msg->dval);
+            //      break;
             case AUDIO_SWAP_CONTROLLER_IDX:
                   msg->snode->swapControllerIDX(msg->a, msg->b);
                   break;
