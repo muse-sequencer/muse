@@ -49,7 +49,7 @@
 
 extern void clearMidiTransforms();
 extern void clearMidiInputTransforms();
-Song* song;
+Song* song = 0;
 
 /*
 //---------------------------------------------------------
@@ -1332,20 +1332,29 @@ void Song::setPos(int idx, const Pos& val, bool sig,
 //         idx, sig, isSeek, adjustScrollbar);
 //      val.dump(0);
 //      printf("\n");
-
-            // p3.3.23
-            //printf("Song::setPos before audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
-      if (pos[idx] == val)
-            return;
+      //printf("Song::setPos before audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
+      
+      // If seeking audio, ensure frame resolution CAN be kept throughout. This compares apples and oranges. Moved below. p4.0.33   
+      //if (pos[idx] == val)    
+      //     return;
       if (idx == CPOS) {
             _vcpos = val;
-            if (isSeek && !extSyncFlag.value()) {
+            if (isSeek && !extSyncFlag.value()) {  
+                  if (val == audio->pos())  
+                  {
+                      //printf("Song::setPos seek audio->pos already == val tick:%d frame:%d\n", val.tick(), val.frame());   
+                      return;
+                  }     
                   audio->msgSeek(val);
-            // p3.3.23
-            //printf("Song::setPos after audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
+                  //printf("Song::setPos after audio->msgSeek idx:%d isSeek:%d frame:%d\n", idx, isSeek, val.frame());
                   return;
                   }
             }
+      if (val == pos[idx])
+      {
+           //printf("Song::setPos song->pos already == val tick:%d frame:%d\n", val.tick(), val.frame());   
+           return;
+      }     
       pos[idx] = val;
       bool swap = pos[LPOS] > pos[RPOS];
       if (swap) {        // swap lpos/rpos if lpos > rpos
@@ -1683,10 +1692,13 @@ void Song::beat()
       }  
       
       
-      int tick = audio->tickPos();
+      //int tick = audio->tickPos();
       if (audio->isPlaying())
-            setPos(0, tick, true, false, true);
-      
+      {
+        //Pos tick(audio->tickPos());
+        //setPos(0, tick, true, false, true);
+        setPos(0, audio->tickPos(), true, false, true);
+      }
       // p3.3.40 Update synth native guis at the heartbeat rate.
       for(ciSynthI is = _synthIs.begin(); is != _synthIs.end(); ++is)
         (*is)->guiHeartBeat();
@@ -2518,9 +2530,18 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
     {
       CtrlList *cl = icl->second;
       canAdd = true;
-      int frame = pos[0].frame();
-      ctlval = cl->curVal();
-      //ctlval = cl->value(frame);   // p4.0.32
+      
+      //int frame = pos[0].frame();
+      int frame = audio->pos().frame();       // Try this. p4.0.33
+      
+      //printf("pos[0]:%d f:%d tickPos:%d f:%d\n", pos[0].tick(), pos[0].frame(), audio->tickPos(), Pos(audio->tickPos(), true).frame()); 
+      
+      //ctlval = cl->curVal();
+      //AutomationType at = track->automationType();
+      //if(!automation || track->automationType() == AUTO_OFF)
+        ctlval = cl->curVal();
+      //else
+      //  ctlval = cl->value(frame);
       count = cl->size();
       if(count)
       {

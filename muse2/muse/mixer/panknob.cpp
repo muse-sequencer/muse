@@ -6,7 +6,8 @@
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
 //=========================================================
 
-#include "../audio.h"
+//#include "../audio.h"
+#include "song.h"
 #include "panknob.h"
 #include "track.h"
 
@@ -27,9 +28,10 @@ PanKnob::PanKnob(QWidget* parent, AudioTrack* s)
 
 void PanKnob::valueChanged(double val)
       {
-      audio->msgSetPan(src, val);
+      //audio->msgSetPan(src, val);
       // p4.0.21 audio->msgXXX waits. Do we really need to?
-      //src->setPan(val);
+      src->setPan(val);
+      song->controllerChange(src);
       }
 
 

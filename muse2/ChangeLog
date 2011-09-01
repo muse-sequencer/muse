@@ -1,3 +1,11 @@
+01.09.2011:
+        - Fixed tough old skeleton: Selecting 'previous/next event' in Song::execAutomationCtlPopup now moves cursor
+           with exact frame resolution, all the way through via proper song->setPos > audio->msgSeek rather than
+           song->setPos > set pos[0] etc. There was a bug that it got stuck on too-close points on the graphs. (Tim) 
+        - Reverted controls to full speed (again): Removed too-cautious msgSetVolume, msgSetPan, msgSetPluginCtrlVal. (Tim)
+          Reviewing some other possibly unneeded too-cautious msgXXX audio messages :) 
+          TODO: Fix current automation values (the 'off' value).
+        - Removed unused PanKnob from mixer CMakeLists. (Tim)
 29.08.2011:
         - Fixed audio automation graph editing. And now 'snaps' to discrete integer or bool types. (Tim p4.0.32)
           All control movements should update display now. Also slightly changed behaviour of Ctrl class. 

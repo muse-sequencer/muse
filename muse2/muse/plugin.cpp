@@ -1754,9 +1754,9 @@ void PluginI::updateControllers()
   for(unsigned long i = 0; i < controlPorts; ++i) 
     //audio->msgSetPluginCtrlVal(this, genACnum(_id, i), controls[i].val);
     // p3.3.43
-    audio->msgSetPluginCtrlVal(_track, genACnum(_id, i), controls[i].val);
+    //audio->msgSetPluginCtrlVal(_track, genACnum(_id, i), controls[i].val);
     // p4.0.21 audio->msgXXX waits. Do we really need to?
-    //_track->setPluginCtrlVal(genACnum(_id, i), controls[i].val);  // TODO A faster bulk message
+    _track->setPluginCtrlVal(genACnum(_id, i), controls[i].val);  // TODO A faster bulk message
 }
   
 //---------------------------------------------------------
@@ -3764,9 +3764,9 @@ void PluginGui::ctrlPressed(int param)
         if(track)
         {
           // p3.3.43
-          audio->msgSetPluginCtrlVal(track, id, val);
+          //audio->msgSetPluginCtrlVal(track, id, val);
           // p4.0.21 audio->msgXXX waits. Do we really need to?
-          //track->setPluginCtrlVal(id, val);
+          track->setPluginCtrlVal(id, val);
           
           track->startAutoRecord(id, val);
         }  
@@ -3783,9 +3783,9 @@ void PluginGui::ctrlPressed(int param)
         if(track)
         {
           // p3.3.43
-          audio->msgSetPluginCtrlVal(track, id, val);
+          //audio->msgSetPluginCtrlVal(track, id, val);
           // p4.0.21 audio->msgXXX waits. Do we really need to?
-          //track->setPluginCtrlVal(id, val);
+          track->setPluginCtrlVal(id, val);
           
           track->startAutoRecord(id, val);
         }  
@@ -3877,9 +3877,9 @@ void PluginGui::sliderChanged(double val, int param)
       if(track)
       {
         // p3.3.43
-        audio->msgSetPluginCtrlVal(track, id, val);
+        //audio->msgSetPluginCtrlVal(track, id, val);
         // p4.0.21 audio->msgXXX waits. Do we really need to?
-        //track->setPluginCtrlVal(id, val);
+        track->setPluginCtrlVal(id, val);
         
         track->recordAutomation(id, val);
       }  
@@ -3921,9 +3921,9 @@ void PluginGui::labelChanged(double val, int param)
       if(track)
       {
         // p3.3.43
-        audio->msgSetPluginCtrlVal(track, id, val);
+        //audio->msgSetPluginCtrlVal(track, id, val);
         // p4.0.21 audio->msgXXX waits. Do we really need to?
-        //track->setPluginCtrlVal(id, val);
+        track->setPluginCtrlVal(id, val);
         
         track->startAutoRecord(id, val);
       }  
@@ -4323,9 +4323,9 @@ void PluginGui::guiParamChanged(int idx)
           //if(track)
           //{
             // p3.3.43
-            audio->msgSetPluginCtrlVal(track, id, val);
+            //audio->msgSetPluginCtrlVal(track, id, val);
             // p4.0.21 audio->msgXXX waits. Do we really need to?
-            //track->setPluginCtrlVal(id, val);
+            track->setPluginCtrlVal(id, val);
             
             switch(type) 
             {
@@ -4459,9 +4459,9 @@ void PluginGui::guiSliderPressed(int idx)
       
       //audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
       // p3.3.43
-      audio->msgSetPluginCtrlVal(track, id, val);
+      //audio->msgSetPluginCtrlVal(track, id, val);
       // p4.0.21 audio->msgXXX waits. Do we really need to?
-      //track->setPluginCtrlVal(id, val);
+      track->setPluginCtrlVal(id, val);
       
       track->startAutoRecord(id, val);
       

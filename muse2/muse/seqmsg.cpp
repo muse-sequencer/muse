@@ -326,6 +326,7 @@ void Audio::msgSetRecord(AudioTrack* node, bool val)
       sendMsg(&msg);
       }
 
+/*
 //---------------------------------------------------------
 //   msgSetVolume
 //---------------------------------------------------------
@@ -355,6 +356,7 @@ void Audio::msgSetPan(AudioTrack* node, double val)
       //muse->arranger->controllerChanged(node);
       song->controllerChange(node);
       }
+*/
 
 //---------------------------------------------------------
 //   msgSetPrefader
@@ -498,6 +500,7 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
       sendMsg(&msg);
       }
 
+/*
 //---------------------------------------------------------
 //   msgSetPluginCtrlVal
 //---------------------------------------------------------
@@ -517,6 +520,7 @@ void Audio::msgSetPluginCtrlVal(AudioTrack* track, int param, double val)
       //muse->arranger->controllerChanged(track);
       song->controllerChange(track);
 }
+*/
 
 //---------------------------------------------------------
 //   msgSwapControllerIDX

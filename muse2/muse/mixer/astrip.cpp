@@ -26,11 +26,12 @@
 #include <QVariant>
 #include <QAction>
 #include <QGridLayout>
+//#include <QLinearGradient>
 
 #include "app.h"
 #include "globals.h"
 #include "audio.h"
-#include "driver/audiodev.h"
+//#include "driver/audiodev.h"
 #include "song.h"
 #include "slider.h"
 #include "knob.h"
@@ -210,19 +211,32 @@ void AudioStrip::songChanged(int val)
             autoType->blockSignals(true);
             autoType->setCurrentItem(track->automationType());
             QPalette palette;
+            //QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
             if(track->automationType() == AUTO_TOUCH || track->automationType() == AUTO_WRITE)
                   {
                   palette.setColor(QPalette::Button, QColor(Qt::red));
+                  //QColor c(Qt::red);
+                  //gradient.setColorAt(0, c);
+                  //gradient.setColorAt(1, c.darker());
+                  //palette.setBrush(QPalette::Button, gradient);
                   autoType->setPalette(palette);
                   }
             else if(track->automationType() == AUTO_READ)
                   {
                   palette.setColor(QPalette::Button, QColor(Qt::green));
+                  //QColor c(Qt::green);
+                  //gradient.setColorAt(0, c);
+                  //gradient.setColorAt(1, c.darker());
+                  //palette.setBrush(QPalette::Button, gradient);
                   autoType->setPalette(palette);
                   }
             else  
                   {
                   palette.setColor(QPalette::Button, qApp->palette().color(QPalette::Active, QPalette::Background));
+                  //QColor c(qApp->palette().color(QPalette::Active, QPalette::Background));
+                  //gradient.setColorAt(0, c);
+                  //gradient.setColorAt(1, c.darker());
+                  //palette.setBrush(QPalette::Button, gradient);
                   autoType->setPalette(palette);
                   }
       
@@ -398,9 +412,10 @@ void AudioStrip::volumeChanged(double val)
       else
             vol = pow(10.0, val/20.0);
       volume = vol;
-      audio->msgSetVolume((AudioTrack*)track, vol);
+      //audio->msgSetVolume((AudioTrack*)track, vol);
       // p4.0.21 audio->msgXXX waits. Do we really need to?
-      //((AudioTrack*)track)->setVolume(vol);
+      ((AudioTrack*)track)->setVolume(vol);
+      song->controllerChange(track);
       
       ((AudioTrack*)track)->recordAutomation(AC_VOLUME, vol);
 
@@ -427,9 +442,10 @@ void AudioStrip::volumePressed()
       else
             vol = pow(10.0, val/20.0);
       volume = vol;
-      audio->msgSetVolume((AudioTrack*)track, volume);
+      //audio->msgSetVolume((AudioTrack*)track, volume);
       // p4.0.21 audio->msgXXX waits. Do we really need to?
-      //((AudioTrack*)track)->setVolume(volume);
+      ((AudioTrack*)track)->setVolume(volume);
+      song->controllerChange(track);
       
       ((AudioTrack*)track)->startAutoRecord(AC_VOLUME, volume);
       }
@@ -473,9 +489,10 @@ void AudioStrip::volLabelChanged(double val)
             vol = pow(10.0, val/20.0);
       volume = vol;
       slider->setValue(val);
-      audio->msgSetVolume((AudioTrack*)track, vol);
+      //audio->msgSetVolume((AudioTrack*)track, vol);
       // p4.0.21 audio->msgXXX waits. Do we really need to?
-      //((AudioTrack*)track)->setVolume(vol);
+      ((AudioTrack*)track)->setVolume(vol);
+      song->controllerChange(track);
       
       ((AudioTrack*)track)->startAutoRecord(AC_VOLUME, vol);
       }
@@ -491,9 +508,10 @@ void AudioStrip::panChanged(double val)
         track->enablePanController(false);
       
       panVal = val;  
-      audio->msgSetPan(((AudioTrack*)track), val);
+      //audio->msgSetPan(((AudioTrack*)track), val);
       // p4.0.21 audio->msgXXX waits. Do we really need to?
-      //((AudioTrack*)track)->setPan(val);
+      ((AudioTrack*)track)->setPan(val);
+      song->controllerChange(track);
       
       ((AudioTrack*)track)->recordAutomation(AC_PAN, val);
       }
@@ -509,9 +527,11 @@ void AudioStrip::panPressed()
         track->enablePanController(false);
       
       panVal = pan->value();  
-      audio->msgSetPan(((AudioTrack*)track), panVal);
+      //audio->msgSetPan(((AudioTrack*)track), panVal);
       // p4.0.21 audio->msgXXX waits. Do we really need to?
-      //((AudioTrack*)track)->setPan(panVal);
+      ((AudioTrack*)track)->setPan(panVal);
+      song->controllerChange(track);
+      
       ((AudioTrack*)track)->startAutoRecord(AC_PAN, panVal);
       }
 
@@ -546,9 +566,11 @@ void AudioStrip::panLabelChanged(double val)
       
       panVal = val;
       pan->setValue(val);
-      audio->msgSetPan((AudioTrack*)track, val);
+      //audio->msgSetPan((AudioTrack*)track, val);
       // p4.0.21 audio->msgXXX waits. Do we really need to?
-      //((AudioTrack*)track)->setPan(val);
+      ((AudioTrack*)track)->setPan(val);
+      song->controllerChange(track);
+      
       ((AudioTrack*)track)->startAutoRecord(AC_PAN, val);
       }
 
@@ -941,19 +963,32 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       autoType->setCurrentItem(t->automationType());
 
       QPalette palette;
+      //QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
       if(t->automationType() == AUTO_TOUCH || t->automationType() == AUTO_WRITE)
             {
             palette.setColor(QPalette::Button, QColor(Qt::red));
+            //QColor c(Qt::red);
+            //gradient.setColorAt(0, c);
+            //gradient.setColorAt(1, c.darker());
+            //palette.setBrush(QPalette::Button, gradient);
             autoType->setPalette(palette);
             }
       else if(t->automationType() == AUTO_READ)
             {
             palette.setColor(QPalette::Button, QColor(Qt::green));
+            //QColor c(Qt::green);
+            //gradient.setColorAt(0, c);
+            //gradient.setColorAt(1, c.darker());
+            //palette.setBrush(QPalette::Button, gradient);
             autoType->setPalette(palette);
             }
       else  
             {
             palette.setColor(QPalette::Button, qApp->palette().color(QPalette::Active, QPalette::Background));
+            //QColor c(qApp->palette().color(QPalette::Active, QPalette::Background));
+            //gradient.setColorAt(0, c);
+            //gradient.setColorAt(1, c.darker());
+            //palette.setBrush(QPalette::Button, gradient);
             autoType->setPalette(palette);
             }
 

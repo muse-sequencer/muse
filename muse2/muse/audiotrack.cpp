@@ -23,6 +23,7 @@
 #include "audiodev.h"
 #include "synth.h"
 #include "dssihost.h"
+#include "app.h"
 
 bool AudioAux::_isVisible=true;
 bool AudioInput::_isVisible=true;
@@ -606,10 +607,13 @@ void AudioTrack::seekPrevACEvent(int id)
     if(cl->empty())
       return;
     
-    iCtrl s = cl->lower_bound(song->cPos().frame());
+    //iCtrl s = cl->lower_bound(song->cPos().frame());
+    iCtrl s = cl->lower_bound(audio->pos().frame());    // p4.0.33
     if(s != cl->begin())
       --s;
-    song->setPos(Song::CPOS, Pos(s->second.frame, false), true, false, true);
+    
+    //song->setPos(Song::CPOS, Pos(s->second.frame, false), true, false, true);
+    song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);  // p4.0.33
     return;
 }
 
@@ -627,13 +631,16 @@ void AudioTrack::seekNextACEvent(int id)
     if(cl->empty())
       return;
     
-    iCtrl s = cl->upper_bound(song->cPos().frame());
+    //iCtrl s = cl->upper_bound(song->cPos().frame());
+    iCtrl s = cl->upper_bound(audio->pos().frame());         // p4.0.33
+    
     if(s == cl->end())
     {
       --s;
     }
     
-    song->setPos(Song::CPOS, Pos(s->second.frame, false), true, false, true);
+    //song->setPos(Song::CPOS, Pos(s->second.frame, false), true, false, true);
+    song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);  // p4.0.33
     return;  
 }
 

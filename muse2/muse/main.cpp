@@ -230,7 +230,7 @@ int main(int argc, char* argv[])
       undoSetuid();
       getCapabilities();
       int noAudio = false;
-
+      
       museUser = QString(getenv("HOME"));
       museGlobalLib   = QString(LIBDIR);
       museGlobalShare = QString(SHAREDIR);
