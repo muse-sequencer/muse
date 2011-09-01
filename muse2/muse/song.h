@@ -248,6 +248,10 @@ class Song : public QObject {
       void cmdChangeWave(QString original, QString tmpfile, unsigned sx, unsigned ex);
       void remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int newport);
       void changeAllPortDrumCtrlEvents(bool add, bool drumonly = false);
+      
+      void addACEvent(AudioTrack* t, int acid, int frame, double val);
+      void changeACEvent(AudioTrack* t, int acid, int frame, int newFrame, double val);
+      void controllerChange(Track* t);
 
       //-----------------------------------------
       //   part manipulations
@@ -400,7 +404,8 @@ class Song : public QObject {
       void quantizeChanged(bool);
       void markerChanged(int);
       void midiPortsChanged();
-      void midiNote(int pitch, int velo);
+      void midiNote(int pitch, int velo);  
+      void controllerChanged(Track* t); 
       };
 
 extern Song* song;

@@ -542,9 +542,11 @@ Random Rhythm Generator is not enabled yet!</string>
      <height>38</height>
     </rect>
    </property>
-   <property name="label">
-    <string>Tools</string>
-   </property>
+   <widget class="QLabel">
+     <property name="text">
+       <string>Tools</string>
+     </property>
+   </widget>
    <addaction name="fileNewAction"/>
    <addaction name="fileOpenAction"/>
    <addaction name="fileSaveAction"/>

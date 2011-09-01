@@ -228,7 +228,6 @@ void MidiEditor::setCurCanvasPart(Part* part)
 
 void MidiEditor::horizontalZoomIn()
 {
-  printf("zoom in \n");
   int mag = hscroll->mag();
   int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
   if (zoomlvl < 23)
@@ -242,7 +241,6 @@ void MidiEditor::horizontalZoomIn()
 
 void MidiEditor::horizontalZoomOut()
 {
-  printf("zoom out \n");
   int mag = hscroll->mag();
   int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
   if (zoomlvl > 1)

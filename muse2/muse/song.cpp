@@ -714,6 +714,23 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
   }
 }
 
+void Song::addACEvent(AudioTrack* t, int acid, int frame, double val)
+{
+  audio->msgAddACEvent(t, acid, frame, val);
+  emit controllerChanged(t); 
+}
+
+void Song::changeACEvent(AudioTrack* t, int acid, int frame, int newFrame, double val)
+{
+  audio->msgChangeACEvent(t, acid, frame, newFrame, val);
+  emit controllerChanged(t); 
+}
+
+void Song::controllerChange(Track* t)
+{
+  emit controllerChanged(t); 
+}
+
 //---------------------------------------------------------
 //   cmdAddRecordedEvents
 //    add recorded Events into part
@@ -2500,13 +2517,13 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
     if(icl != track->controller()->end())
     {
       CtrlList *cl = icl->second;
-        canAdd = true;
-        ctlval = cl->curVal();
+      canAdd = true;
+      int frame = pos[0].frame();
+      ctlval = cl->curVal();
+      //ctlval = cl->value(frame);   // p4.0.32
       count = cl->size();
       if(count)
       {
-        int frame = pos[0].frame();
-
         iCtrl s = cl->lower_bound(frame);
         iCtrl e = cl->upper_bound(frame);
 

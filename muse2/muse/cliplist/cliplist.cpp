@@ -29,7 +29,7 @@ enum { COL_NAME=0, COL_REFS, COL_POS, COL_LEN };
 class ClipItem : public QTreeWidgetItem {
       SndFileR _wf;
 
-      virtual QString text(int) const;
+      //virtual QString text(int) const;
 
    public:
       ClipItem(QTreeWidget*, const SndFileR&);
@@ -39,6 +39,10 @@ class ClipItem : public QTreeWidgetItem {
 ClipItem::ClipItem(QTreeWidget* parent, const SndFileR& w)
    : QTreeWidgetItem(parent), _wf(w)
       {
+        setText(COL_NAME, _wf.name());
+        setText(COL_REFS, QString().setNum(_wf.getRefCount()));
+        setText(COL_POS, QString().setNum(_wf.samplerate()));
+        setText(COL_LEN, QString().setNum(_wf.samples()));
       }
 
 //---------------------------------------------------------
@@ -74,6 +78,7 @@ static QString samples2smpte(int samples)
       }
 #endif
 
+/*
 //---------------------------------------------------------
 //   text
 //---------------------------------------------------------
@@ -94,6 +99,7 @@ QString ClipItem::text(int col) const
             }
       return s;
       }
+*/
 
 //---------------------------------------------------------
 //   ClipListEdit

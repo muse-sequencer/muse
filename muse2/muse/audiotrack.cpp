@@ -253,16 +253,11 @@ void AudioTrack::addPlugin(PluginI* plugin, int idx)
       const char* name = plugin->paramName(i);
       float min, max;
       plugin->range(i, &min, &max);
-      CtrlValueType t = plugin->valueType();
       CtrlList* cl = new CtrlList(id);
       cl->setRange(min, max);
       cl->setName(QString(name));
-      cl->setValueType(t);
-      LADSPA_PortRangeHint range = plugin->range(i);
-      if(LADSPA_IS_HINT_TOGGLED(range.HintDescriptor))
-        cl->setMode(CtrlList::DISCRETE);
-      else  
-        cl->setMode(CtrlList::INTERPOLATE);
+      cl->setValueType(plugin->ctrlValueType(i));
+      cl->setMode(plugin->ctrlMode(i));
       cl->setCurVal(plugin->param(i));
       addController(cl);
     }
@@ -700,6 +695,22 @@ void AudioTrack::addACEvent(int id, int frame, double val)
 }
 
 //---------------------------------------------------------
+//   changeACEvent
+//---------------------------------------------------------
+
+void AudioTrack::changeACEvent(int id, int frame, int newframe, double newval)
+{
+  ciCtrlList icl = _controller.find(id);
+  if(icl == _controller.end())
+    return;
+  CtrlList* cl = icl->second;
+  iCtrl ic = cl->find(frame); 
+  if(ic != cl->end())
+    cl->erase(ic);
+  cl->insert(std::pair<const int, CtrlVal> (newframe, CtrlVal(newframe, newval)));      
+}
+
+//---------------------------------------------------------
 //   volume
 //---------------------------------------------------------
 
@@ -1039,11 +1050,8 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
               if(ctlfound)
                 {
                   l->setCurVal(p->param(m));
-                  LADSPA_PortRangeHint range = p->range(m);
-                  if(LADSPA_IS_HINT_TOGGLED(range.HintDescriptor))
-                    l->setMode(CtrlList::DISCRETE);
-                  else  
-                    l->setMode(CtrlList::INTERPOLATE);
+                  l->setValueType(p->ctrlValueType(m));  
+                  l->setMode(p->ctrlMode(m));  
                 } 
             }
       else
@@ -1139,15 +1147,10 @@ void AudioTrack::mapRackPluginsToControllers()
       //  0.9pre1 med file with broken controller sections they may not be set correct.
       float min, max;
       p->range(i, &min, &max);
-      CtrlValueType t = p->valueType();
       l->setRange(min, max);
       l->setName(QString(p->paramName(i)));
-      l->setValueType(t);
-      LADSPA_PortRangeHint rh = p->range(i);
-      if(LADSPA_IS_HINT_TOGGLED(rh.HintDescriptor))
-        l->setMode(CtrlList::DISCRETE);
-      else  
-        l->setMode(CtrlList::INTERPOLATE);
+      l->setValueType(p->ctrlValueType(i));
+      l->setMode(p->ctrlMode(i));  
       l->setCurVal(p->param(i));
       //l->setDefault(p->defaultValue(i));
     }  

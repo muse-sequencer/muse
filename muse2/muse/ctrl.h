@@ -6,6 +6,7 @@
 //    controller for mixer automation
 //
 //  (C) Copyright 2003-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Time E. Real (terminator356 on users dot sourceforge dot net)
 //=========================================================
 
 #ifndef __CTRL_H__
@@ -120,8 +121,8 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       void setValueType(CtrlValueType t) { _valueType = t; }
 
       double value(int frame);
-      void add(int tick, double value);
-      void del(int tick);
+      void add(int frame, double value);
+      void del(int frame);
       void read(Xml& xml);
 
       void setColor( QColor c ) { _displayColor = c;}

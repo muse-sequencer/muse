@@ -1092,17 +1092,8 @@ bool DssiSynthIF::init(DssiSynth* s)
             }
             cl->setRange(min, max);
             cl->setName(QString(name));
-            LADSPA_PortRangeHint range = ld->PortRangeHints[k];
-            if(LADSPA_IS_HINT_TOGGLED(range.HintDescriptor))
-            {    
-              cl->setMode(CtrlList::DISCRETE);
-              cl->setValueType(VAL_BOOL);
-            }  
-            else  
-            {
-              cl->setMode(CtrlList::INTERPOLATE);
-              cl->setValueType(VAL_LINEAR);
-            }  
+            cl->setValueType(ladspaCtrlValueType(ld, k));
+            cl->setMode(ladspaCtrlMode(ld, k));
             
             ld->connect_port(handle, k, &controls[cip].val);
             
@@ -3627,6 +3618,8 @@ const char* DssiSynthIF::paramOutName(unsigned long i)       { return (synth && 
 //LADSPA_PortRangeHint DssiSynthIF::range(unsigned long i)     { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortRangeHints[i] : 0; }
 LADSPA_PortRangeHint DssiSynthIF::range(unsigned long i)     { return synth->dssi->LADSPA_Plugin->PortRangeHints[controls[i].idx]; }
 LADSPA_PortRangeHint DssiSynthIF::rangeOut(unsigned long i)  { return synth->dssi->LADSPA_Plugin->PortRangeHints[controlsOut[i].idx]; }
+CtrlValueType DssiSynthIF::ctrlValueType(unsigned long i) const { return ladspaCtrlValueType(synth->dssi->LADSPA_Plugin, controls[i].idx); }
+CtrlList::Mode DssiSynthIF::ctrlMode(unsigned long i) const     { return ladspaCtrlMode(synth->dssi->LADSPA_Plugin, controls[i].idx); };
 
 
 #else //DSSI_SUPPORT

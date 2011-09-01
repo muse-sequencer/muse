@@ -338,6 +338,7 @@ void Audio::msgSetVolume(AudioTrack* src, double val)
       msg.dval  = val;
       sendMsg(&msg);
       //muse->arranger->controllerChanged(src);
+      song->controllerChange(src);
       }
 
 //---------------------------------------------------------
@@ -352,6 +353,7 @@ void Audio::msgSetPan(AudioTrack* node, double val)
       msg.dval  = val;
       sendMsg(&msg);
       //muse->arranger->controllerChanged(node);
+      song->controllerChange(node);
       }
 
 //---------------------------------------------------------
@@ -513,6 +515,7 @@ void Audio::msgSetPluginCtrlVal(AudioTrack* track, int param, double val)
       msg.snode  = track;
       sendMsg(&msg);
       //muse->arranger->controllerChanged(track);
+      song->controllerChange(track);
 }
 
 //---------------------------------------------------------
@@ -529,6 +532,7 @@ void Audio::msgSwapControllerIDX(AudioTrack* node, int idx1, int idx2)
       msg.b      = idx2;
       sendMsg(&msg);
       //muse->arranger->controllerChanged(node);
+      song->controllerChange(node);
 }
 
 //---------------------------------------------------------
@@ -544,6 +548,7 @@ void Audio::msgClearControllerEvents(AudioTrack* node, int acid)
       msg.ival   = acid;
       sendMsg(&msg);
       //muse->arranger->controllerChanged(node);
+      song->controllerChange(node);
 }
 
 //---------------------------------------------------------
@@ -588,6 +593,7 @@ void Audio::msgEraseACEvent(AudioTrack* node, int acid, int frame)
       msg.a      = frame; 
       sendMsg(&msg);
       //muse->arranger->controllerChanged(node);
+      song->controllerChange(node);
 }
 
 //---------------------------------------------------------
@@ -605,6 +611,7 @@ void Audio::msgEraseRangeACEvents(AudioTrack* node, int acid, int frame1, int fr
       msg.b      = frame2; 
       sendMsg(&msg);
       //muse->arranger->controllerChanged(node);
+      song->controllerChange(node);
 }
 
 //---------------------------------------------------------
@@ -622,6 +629,26 @@ void Audio::msgAddACEvent(AudioTrack* node, int acid, int frame, double val)
       msg.dval   = val;
       sendMsg(&msg);
       //muse->arranger->controllerChanged(node);
+      song->controllerChange(node);
+}
+
+//---------------------------------------------------------
+//   msgChangeACEvent
+//---------------------------------------------------------
+
+void Audio::msgChangeACEvent(AudioTrack* node, int acid, int frame, int newFrame, double val)
+{
+      AudioMsg msg;
+      
+      msg.id     = AUDIO_CHANGE_AC_EVENT;
+      msg.snode  = node;
+      msg.ival   = acid;
+      msg.a      = frame; 
+      msg.b      = newFrame; 
+      msg.dval   = val;
+      sendMsg(&msg);
+      //muse->arranger->controllerChanged(node);
+      song->controllerChange(node);
 }
 
 //---------------------------------------------------------

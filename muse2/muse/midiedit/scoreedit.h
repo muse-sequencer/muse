@@ -575,7 +575,7 @@ note_pos_t note_pos_(int note, key_enum key);
 note_pos_t note_pos (unsigned note, key_enum key, clef_t clef);
 
 int calc_len(int l, int d);
-list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, int quant_power2, bool allow_dots=true, bool allow_normal=true);
+list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, bool allow_dots=true, bool allow_normal=true);
 
 int clef_height(clef_t clef);
 

@@ -6,6 +6,7 @@
 //    controller handling for mixer automation
 //
 //  (C) Copyright 2003 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Time E. Real (terminator356 on users dot sourceforge dot net)
 //=========================================================
 
 
@@ -83,66 +84,86 @@ CtrlList::CtrlList()
 
 double CtrlList::value(int frame)
 {
-      if (!automation || empty()) {
-            return _curVal;
-            }
+      // Changed by Tim. p4.0.32...
+      
+      ///if (!automation || empty()) 
+      ///      return _curVal;
+      if(empty()) 
+        return _curVal;
 
+      double rv;
       ciCtrl i = upper_bound(frame); // get the index after current frame
 
       if (i == end()) { // if we are past all items just return the last value
-            ciCtrl i = end();
+            ///ciCtrl i = end();
             --i;
-            const CtrlVal& val = i->second;
-            _curVal = val.val;
+            ///const CtrlVal& val = i->second;
+            ///_curVal = val.val;
+            rv = i->second.val;
             }
       else if(_mode == DISCRETE)
       {
         if(i == begin())
-          _curVal = _default;
+        {
+          ///_curVal = _default;
+          //if(i->second.frame == frame)
+            rv = i->second.val;
+          //else  
+          //  rv = _default;
+        }  
         else
         {  
           --i;
-          const CtrlVal& val = i->second;
-          _curVal = val.val;
+          ///const CtrlVal& val = i->second;
+          ///_curVal = val.val;
+          rv = i->second.val;
         }  
       }
       else {
-        int frame2 = i->second.frame;
-        double val2 = i->second.val;
-        int frame1;
-        double val1;
+        ///int frame2 = i->second.frame;
+        ///double val2 = i->second.val;
+        ///int frame1;
+        ///double val1;
         if (i == begin()) {
-            frame1 = 0;
-            val1   = _default;
+            ///frame1 = 0;
+            ///val1   = _default;
+            rv = i->second.val;
         }
         else {
+            int frame2 = i->second.frame;
+            double val2 = i->second.val;
             --i;
-            frame1 = i->second.frame;
-            val1   = i->second.val;
-        }
-        //printf("before val1=%f val2=%f\n", val1,val2);
-        if (_valueType == VAL_LOG) {
-          val1 = 20.0*fast_log10(val1);
-          if (val1 < config.minSlider)
-            val1=config.minSlider;
-          val2 = 20.0*fast_log10(val2);
-          if (val2 < config.minSlider)
-            val2=config.minSlider;
-        }
-        //printf("after val1=%f val2=%f\n", val1,val2);
-        frame -= frame1;
-        val2  -= val1;
-        frame2 -= frame1;
-        val1 += (double(frame) * val2)/double(frame2);
-
-        if (_valueType == VAL_LOG) {
-          val1 = exp10(val1/20.0);
-        }
-        //printf("after val1=%f\n", val1);
-        _curVal = val1;
+            ///frame1 = i->second.frame;
+            ///val1   = i->second.val;
+            int frame1 = i->second.frame;
+            double val1   = i->second.val;
+        ///}
+            //printf("before val1=%f val2=%f\n", val1,val2);
+            if (_valueType == VAL_LOG) {
+              val1 = 20.0*fast_log10(val1);
+              if (val1 < config.minSlider)
+                val1=config.minSlider;
+              val2 = 20.0*fast_log10(val2);
+              if (val2 < config.minSlider)
+                val2=config.minSlider;
+            }
+            //printf("after val1=%f val2=%f\n", val1,val2);
+            frame -= frame1;
+            val2  -= val1;
+            frame2 -= frame1;
+            val1 += (double(frame) * val2)/double(frame2);
+    
+            if (_valueType == VAL_LOG) {
+              val1 = exp10(val1/20.0);
+            }
+            //printf("after val1=%f\n", val1);
+            ///_curVal = val1;
+            rv = val1;
+          }
       }
 // printf("autoVal %d %f\n", frame, _curVal);
-      return _curVal;
+      ///return _curVal;
+      return rv;
 }
 
 
@@ -152,9 +173,8 @@ double CtrlList::value(int frame)
 void CtrlList::setCurVal(double val)
 {
   _curVal = val;
-  if (size() < 2) {
-    add(0,val);
-  }
+  //if (size() < 2)   // Removed p4.0.32
+  //  add(0,val);
 }
 
 //---------------------------------------------------------
@@ -175,16 +195,14 @@ void CtrlList::add(int frame, double val)
 //   del
 //---------------------------------------------------------
 
-void CtrlList::del(int /* frame*/)
+void CtrlList::del(int frame)
       {
-      /*
       iCtrl e = find(frame);
       if (e == end()) {
-            printf("CtrlList::del(%d): not found\n", frame);
+            //printf("CtrlList::del(%d): not found\n", frame);
             return;
             }
       erase(e);
-      */
       }
 
 //---------------------------------------------------------

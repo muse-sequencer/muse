@@ -27,9 +27,9 @@ PanKnob::PanKnob(QWidget* parent, AudioTrack* s)
 
 void PanKnob::valueChanged(double val)
       {
-      //audio->msgSetPan(src, val);
+      audio->msgSetPan(src, val);
       // p4.0.21 audio->msgXXX waits. Do we really need to?
-      src->setPan(val);
+      //src->setPan(val);
       }
 
 

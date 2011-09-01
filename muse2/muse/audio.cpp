@@ -80,6 +80,7 @@ const char* seqMsgList[] = {
       "AUDIO_ERASE_AC_EVENT",
       "AUDIO_ERASE_RANGE_AC_EVENTS",
       "AUDIO_ADD_AC_EVENT",
+      "AUDIO_CHANGE_AC_EVENT",
       "AUDIO_SET_SOLO", "AUDIO_SET_SEND_METRONOME", 
       "MS_PROCESS", "MS_STOP", "MS_SET_RTC", "MS_UPDATE_POLL_FD",
       "SEQM_IDLE", "SEQM_SEEK"
@@ -674,6 +675,9 @@ void Audio::processMsg(AudioMsg* msg)
                   break;
             case AUDIO_ADD_AC_EVENT:
                   msg->snode->addACEvent(msg->ival, msg->a, msg->dval);
+                  break;
+            case AUDIO_CHANGE_AC_EVENT:
+                  msg->snode->changeACEvent(msg->ival, msg->a, msg->b, msg->dval);
                   break;
             case AUDIO_SET_SOLO:
                   msg->track->setSolo((bool)msg->ival);

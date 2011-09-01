@@ -396,7 +396,26 @@ void WaveView::wheelEvent(QWheelEvent* ev)
   bool ctrl       = keyState & Qt::ControlModifier;
 
   if (shift) { // scroll vertically
-    emit mouseWheelMoved(ev->delta() / 10);
+      int delta       = -ev->delta() / WHEEL_DELTA;
+      int xpixelscale = 5*fast_log10(rmapxDev(1));
+
+
+      if (xpixelscale <= 0)
+            xpixelscale = 1;
+
+      int scrollstep = WHEEL_STEPSIZE * (delta);
+      ///if (ev->state() == Qt::ShiftModifier)
+  //      if (((QInputEvent*)ev)->modifiers() == Qt::ShiftModifier)
+      scrollstep = scrollstep / 10;
+
+      int newXpos = xpos + xpixelscale * scrollstep;
+
+      if (newXpos < 0)
+            newXpos = 0;
+
+      //setYPos(newYpos);
+      emit horizontalScroll((unsigned)newXpos);
+
 
   } else if (ctrl) {  // zoom horizontally
     if (ev->delta()>0)
@@ -405,26 +424,7 @@ void WaveView::wheelEvent(QWheelEvent* ev)
       emit horizontalZoomOut();
 
   } else { // scroll horizontally
-    int delta       = ev->delta() / WHEEL_DELTA;
-    int xpixelscale = 5*fast_log10(rmapxDev(1));
-
-
-    if (xpixelscale <= 0)
-          xpixelscale = 1;
-
-    int scrollstep = WHEEL_STEPSIZE * (delta);
-    ///if (ev->state() == Qt::ShiftModifier)
-//      if (((QInputEvent*)ev)->modifiers() == Qt::ShiftModifier)
-    scrollstep = scrollstep / 10;
-
-    int newXpos = xpos + xpixelscale * scrollstep;
-
-    if (newXpos < 0)
-          newXpos = 0;
-
-    //setYPos(newYpos);
-    emit horizontalScroll((unsigned)newXpos);
-
+      emit mouseWheelMoved(ev->delta() / 10);
   }
 
 }

@@ -1,6 +1,14 @@
 29.08.2011:
         - Fixed Robert's fixes (flo93)
+        - Fixed audio automation graph editing. And now 'snaps' to discrete integer or bool types. (Tim p4.0.32)
+          All control movements should update display now. Also slightly changed behaviour of Ctrl class. 
+          TODO: Fix some painting corruption, improve discrete display, add transparency etc. etc.
+        - Applied compilation patch to rhythmbase.ui by Jean-Damien Durand. (Tim)
+28.08.2011:
+        - Fixed wierd column expansion for [rec] column by removing autoexpand of the last column. Still
+          something fishy with moving columns (rj)
 27.08.2011:
+        - Changed mousewheel behaviour, vertical scrolling is default and horizontal scrolling (shift) is reversed (rj)
         - Added fullscreen shortcut to all editors which have full screen action (rj)
         - Part text editor now closes when focus is lost (rj)
 17.08.2011:
