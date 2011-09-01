@@ -111,6 +111,12 @@ QString IntToQStr(int i);
 //which exceed their staves' y-boundaries, so that these boundaries
 //must be expanded.
 
+
+
+#define MAX_QUANT_POWER 5
+
+
+
 QString create_random_string(int len=8)
 {
 	string result;
@@ -313,10 +319,10 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	quant_toolbar->setObjectName("Quantisation settings");
 	quant_toolbar->addWidget(new QLabel(tr("Quantisation:"), quant_toolbar));
 	quant_combobox = new QComboBox(this);
-	quant_combobox->addItem("2"); // if you add or remove items from
-	quant_combobox->addItem("4"); // here, also change quant_mapper[]
-	quant_combobox->addItem("8"); // in ScoreCanvas::set_quant()!
-	quant_combobox->addItem("16");
+	quant_combobox->addItem("2");  // if you add or remove items from
+	quant_combobox->addItem("4");  // here, also change quant_mapper[]
+	quant_combobox->addItem("8");  // in ScoreCanvas::set_quant()!
+	quant_combobox->addItem("16"); // and MAX_QUANT_POWER (must be log2(largest_value))
 	quant_combobox->addItem("32");
 	connect(quant_combobox, SIGNAL(currentIndexChanged(int)), score_canvas, SLOT(set_quant(int)));
 	quant_toolbar->addWidget(quant_combobox);
@@ -1963,7 +1969,7 @@ vector<int> create_emphasize_list(int num, int denom)
 //whole, half, quarter, eighth = 0,1,2,3
 //NOT:  1,2,4,8! (think of 2^foo)
 //len is in ticks
-list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, int quant_power2, bool allow_dots, bool allow_normal)
+list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, bool allow_dots, bool allow_normal)
 {
 	list<note_len_t> retval;
 	
@@ -1974,9 +1980,9 @@ list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo,
 	
 	if (allow_normal)
 	{
-		int dot_max = allow_dots ? quant_power2 : 0;
+		int dot_max = allow_dots ? MAX_QUANT_POWER : 0;
 		
-		for (int i=0;i<=quant_power2;i++)
+		for (int i=0;i<=MAX_QUANT_POWER;i++)
 			for (int j=0;j<=dot_max-i;j++)
 				if (calc_len(i,j) == len_ticks)
 				{
@@ -2005,8 +2011,8 @@ list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo,
 		if (heavyDebugMsg) cout << "add " << len_now << " ticks" << endl;
 		if (allow_dots)
 		{
-			for (int i=0;i<=quant_power2;i++)
-				for (int j=0;j<=quant_power2-i;j++)
+			for (int i=0;i<=MAX_QUANT_POWER;i++)
+				for (int j=0;j<=MAX_QUANT_POWER-i;j++)
 					if (calc_len(i,j) == len_now)
 					{
 						retval.push_back(note_len_t (i,j));
@@ -2016,7 +2022,7 @@ list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo,
 			
 		if (len_now) //the above failed or allow_dots=false
 		{
-			for (int i=0; i<=quant_power2; i++)
+			for (int i=0; i<=MAX_QUANT_POWER; i++)
 			{
 				int tmp=calc_len(i,0);
 				if (tmp <= len_now)
@@ -2170,7 +2176,7 @@ void staff_t::create_itemlist()
 					{
 						if (heavyDebugMsg) printf("\tend-of-measure: set rest at %i with len %i\n",lastevent,rest);
 						
-						list<note_len_t> lens=parse_note_len(rest,lastevent-last_measure,emphasize_list,parent->quant_power2(),DOTTED_RESTS,UNSPLIT_RESTS);
+						list<note_len_t> lens=parse_note_len(rest,lastevent-last_measure,emphasize_list,DOTTED_RESTS,UNSPLIT_RESTS);
 						unsigned tmppos=lastevent;
 						for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
 						{
@@ -2198,7 +2204,7 @@ void staff_t::create_itemlist()
 				// no need to check if the rest crosses measure boundaries;
 				// it can't.
 				
-				list<note_len_t> lens=parse_note_len(rest,lastevent-last_measure,emphasize_list,parent->quant_power2(),DOTTED_RESTS,UNSPLIT_RESTS);
+				list<note_len_t> lens=parse_note_len(rest,lastevent-last_measure,emphasize_list,DOTTED_RESTS,UNSPLIT_RESTS);
 				unsigned tmppos=lastevent;
 				for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
 				{
@@ -2239,7 +2245,7 @@ void staff_t::create_itemlist()
 				eventlist.insert(pair<unsigned, FloEvent>(t+len,   FloEvent(t+len,pitch, velo,0,FloEvent::NOTE_OFF,it->second.source_part, it->second.source_event)));
 			}
 							
-			list<note_len_t> lens=parse_note_len(tmplen,t-last_measure,emphasize_list,parent->quant_power2(),true,true);
+			list<note_len_t> lens=parse_note_len(tmplen,t-last_measure,emphasize_list,true,true);
 			unsigned tmppos=t;
 			int n_lens=lens.size();
 			int count=0;			
@@ -2640,7 +2646,7 @@ group_them_again:
 
 						itemlist[t].insert( FloItem(FloItem::NOTE_END,tmp.pos,0,0) );
 						
-						list<note_len_t> lens=parse_note_len(len_ticks_remaining,t-last_measure,emphasize_list,parent->quant_power2(),true,true);
+						list<note_len_t> lens=parse_note_len(len_ticks_remaining,t-last_measure,emphasize_list,true,true);
 						unsigned tmppos=t;
 						int n_lens=lens.size();
 						int count=0;			
@@ -2685,7 +2691,7 @@ group_them_again:
 
 						itemlist[t].insert( FloItem(FloItem::NOTE_END,tmp.pos,0,0) );
 						
-						list<note_len_t> lens=parse_note_len(len_ticks_remaining,t-last_measure,emphasize_list,parent->quant_power2(),true,true);
+						list<note_len_t> lens=parse_note_len(len_ticks_remaining,t-last_measure,emphasize_list,true,true);
 						unsigned tmppos=t;
 						int n_lens=lens.size();
 						int count=0;			
@@ -4481,6 +4487,7 @@ void staff_t::update_part_indices()
  *   o add "move other notes" or "overwrite notes" or "mix with notes" to paste
  * 
  * IMPORTANT TODO
+ *   o add "dotted quarter" quantize option (for 6/8 beat)
  *   o draw the edge of parts hiding notes "jagged" (hasHiddenEvents() is interesting for this)  - Done. Tim.
  *   o shrink a part from its beginning as well! watch out for clones!
  *   o insert empty measure should also work inside parts, that is,
