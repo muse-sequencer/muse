@@ -152,6 +152,8 @@ class ScoreEdit : public TopWin
 		QSignalMapper* menu_mapper;
 				
 		bool set_name(QString newname, bool emit_signal=true, bool emergency_name=false);
+
+		virtual void keyPressEvent(QKeyEvent*);
 		
 	private slots:
 		void menu_command(int);

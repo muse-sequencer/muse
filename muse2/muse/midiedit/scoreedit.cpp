@@ -4424,6 +4424,39 @@ void staff_t::update_part_indices()
 		part_indices.insert((*it)->sn());
 }
 
+
+void ScoreEdit::keyPressEvent(QKeyEvent* event)
+{
+	int key = event->key();
+
+	if (key == Qt::Key_Escape)
+	{
+		close();
+		return;
+	}
+	else if (key == shortcuts[SHRT_TOOL_POINTER].key)
+	{
+		edit_tools->set(PointerTool);
+		return;
+	}
+	else if (key == shortcuts[SHRT_TOOL_PENCIL].key)
+	{
+		edit_tools->set(PencilTool);
+		return;
+	}
+	else if (key == shortcuts[SHRT_TOOL_RUBBER].key)
+	{
+		edit_tools->set(RubberTool);
+		return;
+	}
+	else //Default:
+	{
+		event->ignore();
+		return;
+	}
+}
+
+
 //the following assertions are made:
 //  pix_quarter.width() == pix_half.width()
 
@@ -4455,17 +4488,12 @@ void staff_t::update_part_indices()
  * CURRENT TODO
  * ! o fix sigedit boxes
  * M o remove that ugly "bool initalizing" stuff. it's probably unneeded (watch out for the FINDMICH message)
- * M o shortcuts for "pencil" in score editor etc.
  *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer
  *     journey to the menu bar. try to find a way which does not involve duplicate code!
  *   o implement borland-style maximize: free windows do not cover the main menu, even when maximized
- * 
- *   o replace "insert" and "paste" by a paste-dialog ("move other notes" or "overwrite notes" or "mix with notes")
- *     skip dialog when there is nothing to erase, move or merge with (i.e., at the end of the song)
- *   o remove movePartsTotheRight function
- *   o ctrl+v uses default settings, ctrl+shift+v shows a dialog (with a "this is default" button)
- *   o ctrl+b and ctrl+shift+b do the same, only that they paste as clones
- * 
+ *   o smart range selection: if range markers have been used recently (that is, a dialog with
+ *     "range" setting, or they've been modified), default to "in range" or "selected in range"
+ *
  * IMPORTANT TODO
  *   o add "dotted quarter" quantize option (for 6/8 beat)
  * 
