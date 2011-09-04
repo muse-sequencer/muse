@@ -4453,10 +4453,7 @@ void staff_t::update_part_indices()
  *     changing "share" status, the changed state isn't stored
  * 
  * CURRENT TODO
- * ! o paste-slot must set up the dialog properly: set raster to correct default !!
- * ! o paste function: "move only some parts" !!
- * 
- * 
+ * ! o fix sigedit boxes
  * M o remove that ugly "bool initalizing" stuff. it's probably unneeded (watch out for the FINDMICH message)
  * M o shortcuts for "pencil" in score editor etc.
  *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer
@@ -4471,8 +4468,6 @@ void staff_t::update_part_indices()
  * 
  * IMPORTANT TODO
  *   o add "dotted quarter" quantize option (for 6/8 beat)
- *   o insert spacer between settings and "Ok" buttons in function dialogs
- * ! o fix sigedit boxes
  * 
  *   o rename stuff with F2 key
  *   o redo transport menu: offer "one beat" and "one bar" steps
