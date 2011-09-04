@@ -4443,8 +4443,6 @@ void staff_t::update_part_indices()
 
 
 /* BUGS and potential bugs
- *   o THIS SHOULD NEVER HAPPEN: could not split note (found by tim)
- * 
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
  *   o schedule_all_same_len_parts: if there are two clones A and B,
@@ -4455,6 +4453,10 @@ void staff_t::update_part_indices()
  *     changing "share" status, the changed state isn't stored
  * 
  * CURRENT TODO
+ * ! o paste-slot must set up the dialog properly: set raster to correct default !!
+ * ! o paste function: "move only some parts" !!
+ * 
+ * 
  * M o remove that ugly "bool initalizing" stuff. it's probably unneeded (watch out for the FINDMICH message)
  * M o shortcuts for "pencil" in score editor etc.
  *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer

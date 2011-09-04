@@ -46,10 +46,16 @@
 #include "midi.h"
 #include "midictrl.h"
 #include "utils.h"
+#include "dialogs.h"
+#include "widgets/pastedialog.h"
 
 //#define ABS(x)  ((x) < 0) ? -(x) : (x))
 //#define ABS(x) (x>=0?x:-x)
 #define ABS(x) (abs(x))
+
+using std::set;
+
+int get_paste_len();
 
 //---------------------------------------------------------
 //   colorRect
@@ -2590,20 +2596,35 @@ void PartCanvas::cmd(int cmd)
                   copy_in_range(&pl);
                   break;
             case CMD_PASTE_PART:
-                  paste(false, false);
-                  break;
-            case CMD_PASTE_CLONE_PART:
-                  paste(true, false);
-                  break;
-            case CMD_PASTE_PART_TO_TRACK:
                   paste();
                   break;
-            case CMD_PASTE_CLONE_PART_TO_TRACK:
+            case CMD_PASTE_CLONE_PART:
                   paste(true);
                   break;
-            case CMD_INSERT_PART:
-                  paste(false, false, true);
+            case CMD_PASTE_DIALOG:
+            case CMD_PASTE_CLONE_DIALOG:
+            {
+                  unsigned temp_begin = AL::sigmap.raster1(song->vcpos(),0);
+                  unsigned temp_end = AL::sigmap.raster2(temp_begin + get_paste_len(), 0);
+                  paste_dialog->raster = temp_end - temp_begin;
+                  paste_dialog->clone = (cmd == CMD_PASTE_CLONE_DIALOG);
+                  
+                  if (paste_dialog->exec())
+                  {
+                    paste_mode_t paste_mode;
+                    switch (paste_dialog->insert_method)
+                    {
+                      case 0: paste_mode=PASTEMODE_MIX; break;
+                      case 1: paste_mode=PASTEMODE_MOVEALL; break;
+                      case 2: paste_mode=PASTEMODE_MOVESOME; break;
+                    }
+
+                    paste(paste_dialog->clone, paste_mode, paste_dialog->all_in_one_track,
+                          paste_dialog->number, paste_dialog->raster);
+                  }
+                  
                   break;
+            }
             case CMD_INSERT_EMPTYMEAS:
                   int startPos=song->vcpos();
                   int oneMeas=AL::sigmap.ticksMeasure(startPos);
@@ -2765,11 +2786,88 @@ void PartCanvas::copy(PartList* pl)
       fclose(tmp);
       }
 
-//---------------------------------------------------------
-//   pasteAt
-//---------------------------------------------------------
 
-Undo PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool clone, bool toTrack, int* finalPosPtr)
+
+int get_paste_len()
+{
+  QClipboard* cb  = QApplication::clipboard();
+  const QMimeData* md = cb->mimeData(QClipboard::Clipboard);
+
+  QString pfx("text/");
+  QString mdpl("x-muse-midipartlist");
+  QString wvpl("x-muse-wavepartlist");  
+  QString mxpl("x-muse-mixedpartlist");
+  QString txt;
+    
+  if(md->hasFormat(pfx + mdpl))
+    txt = cb->text(mdpl, QClipboard::Clipboard);  
+  else if(md->hasFormat(pfx + wvpl))
+    txt = cb->text(wvpl, QClipboard::Clipboard);  
+  else if(md->hasFormat(pfx + mxpl))
+    txt = cb->text(mxpl, QClipboard::Clipboard);  
+  else
+    return 0;
+
+
+  QByteArray ba = txt.toLatin1();
+  const char* ptxt = ba.constData();
+  Xml xml(ptxt);
+  bool end = false;
+
+  unsigned begin_tick=-1; //this uses the greatest possible begin_tick
+  unsigned end_tick=0;
+
+  for (;;)
+  {
+    Xml::Token token = xml.parse();
+    const QString& tag = xml.s1();
+    switch (token)
+    {
+      case Xml::Error:
+      case Xml::End:
+        end = true;
+        break;
+        
+      case Xml::TagStart:
+        if (tag == "part")
+        {                              
+          Part* p = 0;
+          p = readXmlPart(xml, NULL, false, false);
+
+          if (p)
+          {
+            if (p->tick() < begin_tick)
+            begin_tick=p->tick();
+
+            if (p->endTick() > end_tick)
+            end_tick=p->endTick();
+
+            delete p;
+          } 
+        }
+        else
+        xml.unknown("PartCanvas::get_paste_len");
+        break;
+        
+      case Xml::TagEnd:
+        break;
+        
+      default:
+        end = true;
+        break;
+    }
+    if(end)
+      break;
+  }
+  
+  if (begin_tick > end_tick)
+    return 0;
+  else
+    return end_tick - begin_tick;
+}
+
+
+Undo PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool clone, bool toTrack, int* finalPosPtr, set<Track*>* affected_tracks)
       {
       Undo operations;
       
@@ -2821,6 +2919,8 @@ Undo PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool
                               }
                               p->setSelected(true);
                               operations.push_back(UndoOp(UndoOp::AddPart,p));
+                              if (affected_tracks)
+                                affected_tracks->insert(p->track());
                               }
                         else
                               xml.unknown("PartCanvas::pasteAt");
@@ -2855,16 +2955,12 @@ Undo PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool
 //    paste part to current selected track at cpos
 //---------------------------------------------------------
 
-void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
+void PartCanvas::paste(bool clone, paste_mode_t paste_mode, bool to_single_track, int amount, int raster)
 {
       Track* track = 0;
-
-      if (doInsert) // logic depends on keeping track of newly selected tracks
-          deselectAll();
-
-
+      
       // If we want to paste to a selected track...
-      if(toTrack)
+      if (to_single_track)
       {  
         TrackList* tl = song->tracks();
         for (iTrack i = tl->begin(); i != tl->end(); ++i) {
@@ -2897,7 +2993,7 @@ void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
       if(md->hasFormat(pfx + mdpl))
       {
         // If we want to paste to a selected track...
-        if(toTrack && !track->isMidiTrack()) 
+        if(to_single_track && !track->isMidiTrack()) 
         {
           QMessageBox::critical(this, QString("MusE"),
             tr("Can only paste to midi/drum track"));
@@ -2905,11 +3001,10 @@ void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
         }
         txt = cb->text(mdpl, QClipboard::Clipboard);  
       }
-      else
-      if(md->hasFormat(pfx + wvpl))
+      else if(md->hasFormat(pfx + wvpl))
       {
         // If we want to paste to a selected track...
-        if(toTrack && track->type() != Track::WAVE) 
+        if(to_single_track && track->type() != Track::WAVE) 
         {
           QMessageBox::critical(this, QString("MusE"),
             tr("Can only paste to wave track"));
@@ -2917,11 +3012,10 @@ void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
         }
         txt = cb->text(wvpl, QClipboard::Clipboard);  
       }  
-      else
-      if(md->hasFormat(pfx + mxpl))
+      else if(md->hasFormat(pfx + mxpl))
       {
         // If we want to paste to a selected track...
-        if(toTrack && !track->isMidiTrack() && track->type() != Track::WAVE) 
+        if(to_single_track && !track->isMidiTrack() && track->type() != Track::WAVE) 
         {
           QMessageBox::critical(this, QString("MusE"),
             tr("Can only paste to midi or wave track"));
@@ -2940,15 +3034,35 @@ void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
       {
         int endPos=0;
         unsigned int startPos=song->vcpos();
+        set<Track*> affected_tracks;
+
         deselectAll();
-        Undo operations=pasteAt(txt, track, startPos, clone, toTrack, &endPos);
-        Pos p(endPos, true);
-        song->setPos(0, p);
-        if (doInsert) {
-          int offset = endPos-startPos;
-          Undo temp=movePartsTotheRight(startPos, offset);
+        
+        Undo operations;
+        for (int i=0;i<amount;i++)
+        {
+          Undo temp = pasteAt(txt, track, startPos + i*raster, clone, to_single_track, &endPos, &affected_tracks);
           operations.insert(operations.end(), temp.begin(), temp.end());
         }
+        
+        Pos p(endPos, true);
+        song->setPos(0, p);
+        
+        if (paste_mode != PASTEMODE_MIX)
+        {
+          int offset;
+          if (amount==1) offset = endPos-startPos;
+          else           offset = amount*raster;
+            
+          Undo temp;
+          if (paste_mode==PASTEMODE_MOVESOME)
+            temp=movePartsTotheRight(startPos, offset, false, &affected_tracks);
+          else
+            temp=movePartsTotheRight(startPos, offset);
+            
+          operations.insert(operations.end(), temp.begin(), temp.end());
+        }
+        
         song->applyOperationGroup(operations);
       }
 

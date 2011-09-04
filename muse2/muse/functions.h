@@ -10,35 +10,12 @@
 
 #include <set>
 #include "part.h"
+#include "dialogs.h"
 #include <QWidget>
 
 class QString;
 class QMimeData;
 class Undo;
-
-class GateTime;
-class Velocity;
-class Quantize;
-class Remove;
-class DelOverlaps;
-class Setlen;
-class Move;
-class Transpose;
-class Crescendo;
-class Legato;
-
-extern GateTime* gatetime_dialog;
-extern Velocity* velocity_dialog;
-extern Quantize* quantize_dialog;
-extern Remove* erase_dialog;
-extern DelOverlaps* del_overlaps_dialog;
-extern Setlen* set_notelen_dialog;
-extern Move* move_notes_dialog;
-extern Transpose* transpose_dialog;
-extern Crescendo* crescendo_dialog;
-extern Legato* legato_dialog;
-
-void init_function_dialogs(QWidget* parent);
 
 
 #define FUNCTION_RANGE_ONLY_SELECTED 1
@@ -108,10 +85,5 @@ void shrink_parts(int raster=-1); //negative values mean "config.division"
 void expand_parts(int raster=-1);
 void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo& operations);
 void clean_parts();
-
-//functions for reading and writing default values
-class Xml;
-void read_function_dialog_config(Xml& xml);
-void write_function_dialog_config(int level, Xml& xml);
 
 #endif

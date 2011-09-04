@@ -134,12 +134,11 @@ void initShortCuts()
       defShrt(SHRT_SEL_BELOW,             Qt::Key_Down, "Edit: Select nearest part on track below", ARRANG_SHRT, "sel_part_below");
       defShrt(SHRT_SEL_BELOW_ADD,         Qt::SHIFT + Qt::Key_Down, "Edit: Add nearest part on track below", ARRANG_SHRT, "sel_part_below_add");
 
-      defShrt(SHRT_INSERT,                Qt::CTRL+Qt::SHIFT+ Qt::Key_I, "Edit: Insert parts, moving time", ARRANG_SHRT, "insert_parts");
       defShrt(SHRT_INSERTMEAS,            Qt::CTRL+Qt::SHIFT+ Qt::Key_O, "Edit: Insert empty measure", ARRANG_SHRT, "insert_measure");
 
-      defShrt(SHRT_PASTE_CLONE,           Qt::CTRL+Qt::SHIFT+Qt::Key_V, "Edit: Paste clone", ARRANG_SHRT, "paste_clone");
-      defShrt(SHRT_PASTE_TO_TRACK,        Qt::CTRL+Qt::Key_B, "Edit: Paste to track", ARRANG_SHRT, "paste_to_track");
-      defShrt(SHRT_PASTE_CLONE_TO_TRACK,  Qt::CTRL+Qt::SHIFT+Qt::Key_B, "Edit: Paste clone to track", ARRANG_SHRT, "paste_clone_to_track");
+      defShrt(SHRT_PASTE_DIALOG,           Qt::CTRL+Qt::SHIFT+Qt::Key_V, "Edit: Paste (with dialog)", ARRANG_SHRT, "paste_dialog");
+      defShrt(SHRT_PASTE_CLONE,        Qt::CTRL+Qt::Key_B, "Edit: Paste as clones", ARRANG_SHRT, "paste_as_clone"); // i changed "paste_clone" to "paste_as_clone" intendedly. otherwise muse would keep its old, conflicting definition (ctrl+shift+v instead of ctrl+b) (flo)
+      defShrt(SHRT_PASTE_CLONE_DIALOG,  Qt::CTRL+Qt::SHIFT+Qt::Key_B, "Edit: Paste as clones (with dialog)", ARRANG_SHRT, "paste_as_clone_dialog");
       
       defShrt(SHRT_SEL_TRACK_ABOVE,       Qt::CTRL + Qt::Key_Up, "Select track above", ARRANG_SHRT, "sel_track_above");
       defShrt(SHRT_SEL_TRACK_BELOW,       Qt::CTRL + Qt::Key_Down, "Select track below", ARRANG_SHRT, "sel_track_below");

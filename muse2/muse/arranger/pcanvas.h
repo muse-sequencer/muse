@@ -10,6 +10,7 @@
 #define __PCANVAS_H__
 
 #include <QVector>
+#include <set>
 
 #include "song.h"
 #include "canvas.h"
@@ -110,8 +111,9 @@ class PartCanvas : public Canvas {
 
       void copy(PartList*);
       void copy_in_range(PartList*);
-      void paste(bool clone = false, bool toTrack = true, bool doInsert=false);
-      Undo pasteAt(const QString&, Track*, unsigned int, bool clone = false, bool toTrack = true, int* finalPosPtr = NULL);
+      enum paste_mode_t { PASTEMODE_MIX, PASTEMODE_MOVEALL, PASTEMODE_MOVESOME };
+      void paste(bool clone = false, paste_mode_t paste_mode = PASTEMODE_MIX, bool to_single_track=false, int amount=1, int raster=1536);
+      Undo pasteAt(const QString&, Track*, unsigned int, bool clone = false, bool toTrack = true, int* finalPosPtr = NULL, std::set<Track*>* affected_tracks = NULL);
       //Part* readClone(Xml&, Track*, bool toTrack = true);
       void drawWavePart(QPainter&, const QRect&, WavePart*, const QRect&);
       //void drawMidiPart(QPainter&, const QRect& rect, EventList* events, MidiTrack*mt, const QRect& r, int pTick, int from, int to);
@@ -148,8 +150,8 @@ class PartCanvas : public Canvas {
       void returnPressed();
 
    public:
-      enum { CMD_CUT_PART, CMD_COPY_PART, CMD_COPY_PART_IN_RANGE, CMD_PASTE_PART, CMD_PASTE_CLONE_PART, CMD_PASTE_PART_TO_TRACK, CMD_PASTE_CLONE_PART_TO_TRACK,
-             CMD_INSERT_PART, CMD_INSERT_EMPTYMEAS };
+      enum { CMD_CUT_PART, CMD_COPY_PART, CMD_COPY_PART_IN_RANGE, CMD_PASTE_PART, CMD_PASTE_CLONE_PART,
+             CMD_PASTE_DIALOG, CMD_PASTE_CLONE_DIALOG, CMD_INSERT_EMPTYMEAS };
 
       PartCanvas(int* raster, QWidget* parent, int, int);
       void partsChanged();

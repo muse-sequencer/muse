@@ -1,3 +1,11 @@
+04.09.2011:
+        - moved and changed muse.pro file (flo93)
+        - added update_pro.sh and update_translations.sh (flo93)
+        - added paste dialog (flo93)
+        - updated translations (flo93)
+        - moved stuff from functions.cpp out to dialogs.cpp (flo93)
+        - fixed behaviour of movePartsTotheRight(): parts which
+          begin at "start of move" aren't expanded, but moved now (flo93)
 29.08.2011:
         - Fixed Robert's fixes (flo93)
         - Fixed audio automation graph editing. And now 'snaps' to discrete integer or bool types. (Tim p4.0.32)

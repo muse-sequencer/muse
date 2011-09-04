@@ -19,6 +19,8 @@
 #include "structure.h"
 #include "globals.h"
 
+#include <set>
+using std::set;
 //---------------------------------------------------------
 //   adjustGlobalLists
 //    helper that adjusts tempo, sig, key and marker
@@ -233,7 +235,7 @@ void globalInsert()
       }
 
 
-Undo movePartsTotheRight(unsigned int startTicks, int moveTicks, bool only_selected)
+Undo movePartsTotheRight(unsigned int startTicks, int moveTicks, bool only_selected, set<Track*>* tracklist)
       {
       if (moveTicks<=0)
             return Undo();
@@ -251,7 +253,9 @@ Undo movePartsTotheRight(unsigned int startTicks, int moveTicks, bool only_selec
       
       for (iTrack it = tracks->begin(); it != tracks->end(); ++it) {
             MidiTrack* track = dynamic_cast<MidiTrack*>(*it);
-            if (track == 0 || (only_selected && at_least_one_selected && !track->selected()))
+            if ( (track == 0) ||
+                 (only_selected && at_least_one_selected && !track->selected()) ||
+                 (tracklist && tracklist->find(track)==tracklist->end()) )
                   continue;
             PartList* pl = track->parts();
             for (riPart p = pl->rbegin(); p != pl->rend(); ++p) {
@@ -260,7 +264,7 @@ Undo movePartsTotheRight(unsigned int startTicks, int moveTicks, bool only_selec
                   int l = part->lenTick();
                   if (t + l <= startTicks)
                         continue;
-                  if (startTicks >= t && startTicks < (t+l)) {
+                  if (startTicks > t && startTicks < (t+l)) {
                         MidiPart* nPart = new MidiPart(*(MidiPart*)part);
                         nPart->setLenTick(l + moveTicks);
                         EventList* el = nPart->events();
@@ -276,7 +280,7 @@ Undo movePartsTotheRight(unsigned int startTicks, int moveTicks, bool only_selec
                               }
                         operations.push_back(UndoOp(UndoOp::ModifyPart, part, nPart, true, true));
                         }
-                  else if (t > startTicks) {
+                  else if (t >= startTicks) {
                         MidiPart* nPart = new MidiPart(*(MidiPart*)part);
                         nPart->setTick(t + moveTicks);
                         operations.push_back(UndoOp(UndoOp::ModifyPart, part, nPart, true, false));
