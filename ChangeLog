@@ -1,3 +1,5 @@
+04.09.2011:
+        - Remodel the Slider (Orcan)
 01.09.2011:
         - Fixed tough old skeleton: Selecting 'previous/next event' in Song::execAutomationCtlPopup now moves cursor
            with exact frame resolution, all the way through via proper song->setPos > audio->msgSeek rather than

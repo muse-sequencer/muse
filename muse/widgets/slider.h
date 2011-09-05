@@ -28,7 +28,7 @@ class Slider : public SliderBase, public ScaleIf
 
  public:
   enum ScalePos { None, Left, Right, Top, Bottom };
-  enum { BgTrough = 0x1, BgSlot = 0x2 };
+  enum RoundCorner { UpperLeft = 0x1, UpperRight = 0x2, LowerLeft = 0x4, LowerRight = 0x8 };
 
    private:
       Q_PROPERTY( double lineStep READ lineStep WRITE setLineStep )
@@ -40,11 +40,12 @@ class Slider : public SliderBase, public ScaleIf
   int d_thumbLength;
   int d_thumbHalf;
   int d_thumbWidth;
-  int d_borderWidth;
-  int d_bwTrough;
   int d_scaleDist;
   int d_xMargin;
   int d_yMargin;
+  int d_mMargin;
+
+  QColor d_fillColor;
   
   int d_resized;
   bool d_autoResize;
@@ -55,6 +56,8 @@ class Slider : public SliderBase, public ScaleIf
   int d_bgStyle;
   int markerPos;
 
+  QPainterPath roundedPath(int x, int y, int w, int h, int xrad, int yrad, RoundCorner roundCorner);
+  QPainterPath roundedPath(QRect r, int xrad, int yrad, RoundCorner roundCorner);
   void drawHsBgSlot(QPainter *, const QRect&, const QRect&,const QBrush&);
   void drawVsBgSlot(QPainter *, const QRect&, const QRect&,const QBrush&);
 
@@ -71,9 +74,9 @@ class Slider : public SliderBase, public ScaleIf
 
   public:
   Slider(QWidget *parent, const char *name = 0,
-      Qt::Orientation orient = Qt::Vertical,
-      ScalePos scalePos = None,
-      int bgStyle = BgTrough);
+         Qt::Orientation orient = Qt::Vertical,
+         ScalePos scalePos = None,
+         QColor fillColor = QColor(100, 100, 255));
   
   ~Slider();
   void setThumbLength(int l);
@@ -88,7 +91,6 @@ class Slider : public SliderBase, public ScaleIf
   void setLineStep(double);
   void setPageStep(double);
 
-  void setBorderWidth(int bw);
       void setMargins(int x, int y);
   QSize sizeHint(); // const;
       };
