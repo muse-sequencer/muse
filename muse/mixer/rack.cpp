@@ -16,6 +16,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPalette>
+#include <QStyledItemDelegate>
 #include <QUrl>
 
 #include <errno.h>
@@ -31,6 +32,77 @@
 #include "filedialog.h"
 
 //---------------------------------------------------------
+//   class EffectRackDelegate
+//---------------------------------------------------------
+
+class EffectRackDelegate : public QStyledItemDelegate {
+  
+      EffectRack* er;
+      AudioTrack* tr;
+
+   public:
+      void paint ( QPainter * painter, 
+                   const QStyleOptionViewItem & option, 
+                   const QModelIndex & index ) const;
+      EffectRackDelegate(QObject * parent, AudioTrack* at );
+};
+
+EffectRackDelegate::EffectRackDelegate(QObject * parent, AudioTrack* at ) : QStyledItemDelegate(parent) { 
+      er = (EffectRack*) parent; 
+      tr = at;
+}
+
+void EffectRackDelegate::paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const {
+      painter->save();
+      painter->setRenderHint(QPainter::Antialiasing);
+
+      QRect rr = er->visualItemRect(er->item(index.row()));
+      QRect cr = QRect(rr.x()+1, rr.y()+1, 
+                       rr.width()-2, rr.height() -2);
+      painter->fillRect(rr, option.palette.dark().color().darker(130));
+
+      QColor mask_edge = QColor(110, 110, 110, 55);
+      QColor mask_center = QColor(220, 220, 220, 55);
+      QLinearGradient mask;
+      mask.setColorAt(0, mask_edge);
+      mask.setColorAt(0.5, mask_center);
+      mask.setColorAt(1, mask_edge);
+      mask.setStart(QPointF(0, cr.y()));
+      mask.setFinalStop(QPointF(0, cr.y() + cr.height()));
+  
+      painter->setBrush(tr->efxPipe()->isOn(index.row()) ?
+                        option.palette.mid() :
+                        option.palette.dark());
+      painter->setPen(Qt::NoPen);
+      painter->drawRoundedRect(cr, 2, 2);
+      painter->setBrush(mask);
+      painter->drawRoundedRect(cr, 2, 2);
+
+      QString name = tr->efxPipe()->name(index.row());
+      if (name.length() > 11)
+            name = name.left(9) + "...";
+  
+      if (option.state & QStyle::State_Selected)
+            {
+            if (option.state & QStyle::State_MouseOver)
+                  painter->setPen(QPen(QColor(239,239,239)));
+            else
+                  painter->setPen(QPen(Qt::white));
+            }
+      else if (option.state & QStyle::State_MouseOver)
+            painter->setPen(QPen(QColor(48,48,48)));
+      else
+            painter->setPen(QPen(Qt::black));
+  
+      painter->drawText(cr.x()+2, cr.y()+1, 
+                        cr.width()-2, cr.height()-1, 
+                        Qt::AlignLeft, name);
+
+      painter->restore();
+}
+
+
+//---------------------------------------------------------
 //   class RackSlot
 //---------------------------------------------------------
 
@@ -39,7 +111,7 @@ class RackSlot : public QListWidgetItem {
       AudioTrack* node;
 
    public:
-      RackSlot(QListWidget* lb, AudioTrack* t, int i);
+      RackSlot(QListWidget* lb, AudioTrack* t, int i, int h);
       ~RackSlot();
       void setBackgroundColor(const QBrush& brush) {setBackground(brush);};
       };
@@ -53,12 +125,12 @@ RackSlot::~RackSlot()
 //   RackSlot
 //---------------------------------------------------------
 
-RackSlot::RackSlot(QListWidget* b, AudioTrack* t, int i)
+RackSlot::RackSlot(QListWidget* b, AudioTrack* t, int i, int h)
    : QListWidgetItem(b)
       {
       node = t;
       idx  = i;
-      setSizeHint(QSize(10,17));
+      setSizeHint(QSize(10,h));
       }
 
 //---------------------------------------------------------
@@ -71,36 +143,37 @@ EffectRack::EffectRack(QWidget* parent, AudioTrack* t)
       setObjectName("Rack");
       setAttribute(Qt::WA_DeleteOnClose);
       track = t;
+      itemheight = 19;
       setFont(config.fonts[1]);
 
       setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setSelectionMode(QAbstractItemView::SingleSelection);
-      setMaximumHeight(19 * PipelineDepth);
+
       for (int i = 0; i < PipelineDepth; ++i)
-            new RackSlot(this, track, i);
+            new RackSlot(this, track, i, itemheight);
       updateContents();
 
       connect(this, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
          this, SLOT(doubleClicked(QListWidgetItem*)));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
 
+      EffectRackDelegate* er_delegate = new EffectRackDelegate(this, track);
+      setItemDelegate(er_delegate);
+
       setSpacing(0);
-      QPalette qpal;
-      qpal.setColor(QPalette::Base, QColor(palette().midlight().color()));
-      setPalette(qpal);
 
       setAcceptDrops(true);
       }
 
 void EffectRack::updateContents()
       {
-	for (int i = 0; i < PipelineDepth; ++i) {
-              QString name = track->efxPipe()->name(i);
-              item(i)->setText(name);
-              item(i)->setBackground(track->efxPipe()->isOn(i) ? palette().mid() : palette().dark());
-              item(i)->setToolTip(name == QString("empty") ? tr("effect rack") : name );
-	}
+      for (int i = 0; i < PipelineDepth; ++i) {
+            QString name = track->efxPipe()->name(i);
+            item(i)->setText(name);
+            item(i)->setBackground(track->efxPipe()->isOn(i) ? palette().mid() : palette().dark());
+            item(i)->setToolTip(name == QString("empty") ? tr("effect rack") : name );
+            }	
       }
 
 //---------------------------------------------------------
@@ -128,7 +201,8 @@ void EffectRack::songChanged(int typ)
 
 QSize EffectRack::minimumSizeHint() const
       {
-      return QSize(10, 19 * PipelineDepth);
+      // FIXME(Orcan): Why do we have to manually add 6 pixels?
+      return QSize(10, itemheight * PipelineDepth + 6);
       }
 
 //---------------------------------------------------------
@@ -171,11 +245,11 @@ void EffectRack::menuRequested(QListWidgetItem* it)
       RackSlot* curitem = (RackSlot*)it;
       int idx = row(curitem);
       QString name;
-      bool mute;
+      //bool mute;
       Pipeline* pipe = track->efxPipe();
       if (pipe) {
             name  = pipe->name(idx);
-            mute  = pipe->isOn(idx);
+            //mute  = pipe->isOn(idx);
             }
 
       //enum { NEW, CHANGE, UP, DOWN, REMOVE, BYPASS, SHOW, SAVE };
@@ -525,15 +599,17 @@ void EffectRack::dragEnterEvent(QDragEnterEvent *event)
 
 void EffectRack::mousePressEvent(QMouseEvent *event)
       {
+      RackSlot* item = (RackSlot*) itemAt(event->pos());
       if(event->button() & Qt::LeftButton) {
           dragPos = event->pos();
       }
       else if(event->button() & Qt::RightButton) {
-          menuRequested(itemAt(event->pos()));
+          setCurrentItem(item);
+          menuRequested(item);
           return;
       }
       else if(event->button() & Qt::MidButton) {
-          int idx = row(itemAt(event->pos()));
+          int idx = row(item);
           bool flag = !track->efxPipe()->isOn(idx);
           track->efxPipe()->setOn(idx, flag);
           updateContents();

@@ -1,3 +1,8 @@
+05.09.2011:
+        - Remodel the EffectRack. There is still an ongoing issue with the minimumSizeHint, which I worked
+          around by adding a fixed offset. (Orcan)
+        - Fall back to using Meter's own size functions rather than the event rectangle's size functions
+	  in paintEvent(). The latter caused corruption when toggling mono/stereo. (Orcan)
 04.09.2011:
         - Remodel the Slider (Orcan)
 01.09.2011:
