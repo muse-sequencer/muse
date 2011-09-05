@@ -158,7 +158,7 @@ void Meter::setRange(double min, double max)
 //   paintEvent
 //---------------------------------------------------------
 
-void Meter::paintEvent(QPaintEvent* ev)
+void Meter::paintEvent(QPaintEvent* /*ev*/)
       {
       // TODO: Could make better use of event rectangle, for speed.
       
@@ -166,15 +166,17 @@ void Meter::paintEvent(QPaintEvent* ev)
       //p.setRenderHint(QPainter::Antialiasing);
       
       double range = maxScale - minScale;
-      /*
+      
       int fw = frameWidth();
       int w  = width() - 2*fw;
       int h  = height() - 2*fw;
-      */
-
+      
+      // FIXME (Orcan): With the event rectangle we get corruption when we toggle the mono/stereo switch. Why?
+      /*
       QRect rect = ev->rect();
       int w = rect.width();
       int h = rect.height();
+      */
       int yv;
       
       if(mtype == DBMeter)

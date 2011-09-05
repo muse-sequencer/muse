@@ -28,8 +28,8 @@ class EffectRack : public QListWidget {
     
     
       AudioTrack* track;
+      int itemheight;
       
-
       virtual QSize minimumSizeHint() const;
       virtual QSize sizeHint() const;
       
