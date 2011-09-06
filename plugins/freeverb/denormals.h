@@ -1,9 +1,16 @@
-// Macro for killing denormalled numbers
+//=========================================================
+//  MusE
+//  Linux Music Editor
+//  $Id: ./plugins/freeverb/denormals.h $
 //
 // Written by Jezar at Dreampoint, June 2000
 // http://www.dreampoint.co.uk
 // Based on IS_DENORMAL macro by Jon Watte
 // This code is public domain
+//
+//=========================================================
+// Macro for killing denormalled numbers
+//
 
 #ifndef _denormals_
 #define _denormals_
