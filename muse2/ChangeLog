@@ -1,3 +1,6 @@
+06.09.2011:
+        - Add licensing information (GPLv2 or later) to source code files. Update FSF mailing address
+          to the most recent one in the existing copyright notices. (Orcan)
 05.09.2011:
         - Remodel the EffectRack. There is still an ongoing issue with the minimumSizeHint, which I worked
           around by adding a fixed offset. (Orcan)

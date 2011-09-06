@@ -1,8 +1,15 @@
+//=========================================================
+//  MusE
+//  Linux Music Editor
+//  $Id: ./plugins/freeverb/tuning.h $
+//
 // Reverb model tuning values
 //
 // Written by Jezar at Dreampoint, June 2000
 // http://www.dreampoint.co.uk
 // This code is public domain
+//
+//=========================================================
 
 #ifndef _tuning_
 #define _tuning_
