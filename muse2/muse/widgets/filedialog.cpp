@@ -34,6 +34,7 @@
 #include "../globals.h"
 #include "gconfig.h"
 
+
 MFileDialog::ViewType MFileDialog::lastViewUsed = GLOBAL_VIEW;
 //QString MFileDialog::lastUserDir = "";
 //QString MFileDialog::lastGlobalDir = "";
@@ -102,7 +103,7 @@ void MFileDialog::globalToggled(bool flag)
             buttons.userButton->setChecked(!flag);
             buttons.projectButton->setChecked(!flag);
             if (lastGlobalDir.isEmpty())
-                  lastGlobalDir = museGlobalShare + QString("/") + baseDir; // Initialize if first time
+                  lastGlobalDir = MusEGlobal::museGlobalShare + QString("/") + baseDir; // Initialize if first time
             QString dir = lastGlobalDir;
             setDirectory(dir);
             lastViewUsed = GLOBAL_VIEW;
@@ -121,11 +122,11 @@ void MFileDialog::userToggled(bool flag)
 
 
             if (lastUserDir.isEmpty()) {
-                  lastUserDir = museUser + QString("/") + baseDir; // Initialize if first time
+                  lastUserDir = MusEGlobal::museUser + QString("/") + baseDir; // Initialize if first time
                   }
 
             if (testDirCreate(this, lastUserDir))
-                  setDirectory(museUser);
+                  setDirectory(MusEGlobal::museUser);
             else
                   setDirectory(lastUserDir);
 
@@ -144,17 +145,17 @@ void MFileDialog::projectToggled(bool flag)
             buttons.userButton->setChecked(!flag);
 
             QString s;
-            if (museProject == museProjectInitPath ) {
+            if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath ) {
                   // if project path is uninitialized, meaning it is still set to museProjectInitPath.
                   // then project path is set to current pwd instead.
                   //s = QString(getcwd(0,0)) + QString("/");
-                  s = config.projectBaseFolder;
+                  s = MusEConfig::config.projectBaseFolder;
                   }
             else
-                  s = museProject + QString("/"); // + baseDir;
+                  s = MusEGlobal::museProject + QString("/"); // + baseDir;
 
             if (testDirCreate(this, s))
-                  setDirectory(museProject);
+                  setDirectory(MusEGlobal::museProject);
             else
                   setDirectory(s);
             lastViewUsed = PROJECT_VIEW;

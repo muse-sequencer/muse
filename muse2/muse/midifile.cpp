@@ -535,7 +535,7 @@ bool MidiFile::writeTrack(const MidiFileTrack* t)
                   printf("MidiFile::writeTrack: ntick %d < tick %d\n", ntick, tick);
                   ntick = tick;
                   }
-            putvl(((ntick - tick) * config.midiDivision + config.division/2)/config.division);
+            putvl(((ntick - tick) * MusEConfig::config.midiDivision + MusEConfig::config.division/2)/MusEConfig::config.division);
             tick = ntick;
             writeEvent(&(*i));
             }
@@ -567,7 +567,7 @@ void MidiFile::writeEvent(const MidiPlayEvent* event)
 
       // we dont save meta data into smf type 0 files:
 
-      if (config.smfFormat == 0 && nstat == ME_META)
+      if (MusEConfig::config.smfFormat == 0 && nstat == ME_META)
             return;
 
       nstat |= c;
@@ -617,8 +617,8 @@ bool MidiFile::write()
       {
       write("MThd", 4);
       writeLong(6);                 // header len
-      writeShort(config.smfFormat);
-      if (config.smfFormat == 0) {
+      writeShort(MusEConfig::config.smfFormat);
+      if (MusEConfig::config.smfFormat == 0) {
             writeShort(1);
             MidiFileTrack dst;
             for (iMidiFileTrack i = _tracks->begin(); i != _tracks->end(); ++i) {

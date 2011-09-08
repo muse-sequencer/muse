@@ -35,6 +35,13 @@ class QString;
 class QAction;
 class QActionGroup;
 class QStringList;
+class QTimer;
+
+namespace MusEApp {
+class MusE;
+}
+
+namespace MusEGlobal {
 
 extern const float denormalBias;
 
@@ -48,7 +55,6 @@ extern int segmentCount;
 extern bool overrideAudioOutput;
 extern bool overrideAudioInput;
 
-class QTimer;
 extern QTimer* heartBeatTimer;
 
 extern bool hIsB;
@@ -155,9 +161,8 @@ extern QAction* recordAction;
 extern QAction* panicAction;
 
 //class AudioMixerApp;
-class MusE;
 //extern AudioMixerApp* audioMixer;
-extern MusE* muse;
+extern MusEApp::MusE* muse;
 
 extern int preMeasures;
 extern unsigned char measureClickNote;
@@ -195,6 +200,8 @@ extern void doSetuid();
 extern void undoSetuid();
 extern bool checkAudioDevice();
 extern bool getUniqueTmpfileName(QString subDir, QString ext, QString& newFilename);
+
+} // namespace MusEGlobal
 
 #endif
 

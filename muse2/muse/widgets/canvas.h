@@ -35,6 +35,8 @@
 
 class QMenu;
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   Canvas
 //---------------------------------------------------------
@@ -195,5 +197,8 @@ class Canvas : public View {
       void setCurrentPart(Part*); 
       void setCanvasTools(int n) { canvasTools = n; }
       };
+
+} // namespace MusEWidget
+
 #endif
 

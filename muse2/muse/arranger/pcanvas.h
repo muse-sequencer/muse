@@ -77,7 +77,7 @@ class CtrlVal;
 //   PartCanvas
 //---------------------------------------------------------
 
-class PartCanvas : public Canvas {
+class PartCanvas : public MusEWidget::Canvas {
       Q_OBJECT
       int* _raster;
       TrackList* tracks;

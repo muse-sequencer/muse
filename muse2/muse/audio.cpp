@@ -179,10 +179,10 @@ extern bool initJackAudio();
 
 bool Audio::start()
       {
-      //process(segmentSize);   // warm up caches
+      //process(MusEGlobal::segmentSize);   // warm up caches
       state = STOP;
       _loopCount = 0;
-      muse->setHeartBeat();
+      MusEGlobal::muse->setHeartBeat();
       if (audioDevice) {
           // Added by Tim. p3.3.6
           //_running = true;
@@ -218,7 +218,7 @@ bool Audio::start()
                }
           }
 
-      audioDevice->start(realTimePriority);
+      audioDevice->start(MusEGlobal::realTimePriority);
       
       _running = true;
 
@@ -336,7 +336,7 @@ void Audio::process(unsigned frames)
 //      extern int watchAudio;
 //      ++watchAudio;           // make a simple watchdog happy
       
-      if (!checkAudioDevice()) return;
+      if (!MusEGlobal::checkAudioDevice()) return;
       if (msg) {
             processMsg(msg);
             int sn = msg->serialNo;
@@ -358,7 +358,7 @@ void Audio::process(unsigned frames)
 
       int jackState = audioDevice->getState();
 
-      //if(debugMsg)
+      //if(MusEGlobal::debugMsg)
       //  printf("Audio::process Current state:%s jackState:%s\n", audioStates[state], audioStates[jackState]);
       
       if (state == START_PLAY && jackState == PLAY) {
@@ -417,7 +417,7 @@ void Audio::process(unsigned frames)
             AudioAux* a = (AudioAux*)((*al)[i]);
             float** dst = a->sendBuffer();
             for (int ch = 0; ch < a->channels(); ++ch)
-                  memset(dst[ch], 0, sizeof(float) * segmentSize);
+                  memset(dst[ch], 0, sizeof(float) * MusEGlobal::segmentSize);
             }
 
       for (iAudioOutput i = ol->begin(); i != ol->end(); ++i)
@@ -442,7 +442,7 @@ void Audio::process(unsigned frames)
                && !(song->record()
                 || _bounce
                 || song->loop())) {
-                  //if(debugMsg)
+                  //if(MusEGlobal::debugMsg)
                   //  printf("Audio::process curTickPos >= song->len\n");
                   
                   audioDevice->stopTransport();
@@ -528,7 +528,7 @@ void Audio::process(unsigned frames)
 
 void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       {
-      if (midiSeqRunning) {
+      if (MusEGlobal::midiSeqRunning) {
             processMidi();
             }
             //midiSeq->msgProcess();
@@ -703,14 +703,14 @@ void Audio::processMsg(AudioMsg* msg)
                   break;
             
             case AUDIO_SET_SEG_SIZE:
-                  segmentSize = msg->ival;
-                  sampleRate  = msg->iival;
+                  MusEGlobal::segmentSize = msg->ival;
+                  MusEGlobal::sampleRate  = msg->iival;
 #if 0 //TODO
-                  audioOutput.segmentSizeChanged();
+                  audioOutput.MusEGlobal::segmentSizeChanged();
                   for (int i = 0; i < mixerGroups; ++i)
-                        audioGroups[i].segmentSizeChanged();
+                        audioGroups[i].MusEGlobal::segmentSizeChanged();
                   for (iSynthI ii = synthiInstances.begin(); ii != synthiInstances.end();++ii)
-                        (*ii)->segmentSizeChanged();
+                        (*ii)->MusEGlobal::segmentSizeChanged();
 #endif
                   break;
 
@@ -765,7 +765,7 @@ void Audio::processMsg(AudioMsg* msg)
             case SEQM_SET_TEMPO:
                   song->processMsg(msg);
                   if (isPlaying()) {
-                        if (!checkAudioDevice()) return;
+                        if (!MusEGlobal::checkAudioDevice()) return;
                         _pos.setTick(curTickPos);
                         int samplePos = _pos.frame();
                         syncFrame     = audioDevice->framePos();
@@ -806,7 +806,7 @@ void Audio::processMsg(AudioMsg* msg)
 void Audio::seek(const Pos& p)
       {
       if (_pos == p) {
-            if(debugMsg)
+            if(MusEGlobal::debugMsg)
               printf("Audio::seek already there\n");
             return;        
             }
@@ -814,7 +814,7 @@ void Audio::seek(const Pos& p)
             // p3.3.23
             //printf("Audio::seek frame:%d\n", p.frame());
       _pos        = p;
-      if (!checkAudioDevice()) return;
+      if (!MusEGlobal::checkAudioDevice()) return;
       syncFrame   = audioDevice->framePos();
       frameOffset = syncFrame - _pos.frame();
       curTickPos  = _pos.tick();
@@ -862,7 +862,7 @@ void Audio::seek(const Pos& p)
           //if(port < -1 || port > MIDI_PORTS)
           //  continue;
           
-          int beat = (curTickPos * 4) / config.division;
+          int beat = (curTickPos * 4) / MusEConfig::config.division;
             
           bool isPlaying=false;
           if(state == PLAY)
@@ -902,7 +902,7 @@ void Audio::seek(const Pos& p)
           if(port < -1 || port > MIDI_PORTS)
             continue;
           
-          int beat = (curTickPos * 4) / config.division;
+          int beat = (curTickPos * 4) / MusEConfig::config.division;
             
           bool isPlaying=false;
           if(state == PLAY)
@@ -983,7 +983,7 @@ void Audio::startRolling()
       {
       // Changed by Tim. p3.3.8
       //startRecordPos = _pos;
-      if (debugMsg)
+      if (MusEGlobal::debugMsg)
         printf("startRolling - loopCount=%d, _pos=%d\n", _loopCount, _pos.tick());
 
       if(_loopCount == 0) {
@@ -1109,7 +1109,7 @@ void Audio::startRolling()
       }
       */
       
-      if (precountEnableFlag
+      if (MusEGlobal::precountEnableFlag
          && song->click()
          && !extSyncFlag.value()
          && song->record()) {
@@ -1164,7 +1164,7 @@ void Audio::startRolling()
 
 void Audio::stopRolling()
 {
-      //if(debugMsg)
+      //if(MusEGlobal::debugMsg)
       //  printf("Audio::stopRolling state %s\n", audioStates[state]);
       
       state = STOP;
@@ -1220,7 +1220,7 @@ void Audio::stopRolling()
         //            0, 0, 0, 0, 0
         //            };
         //      int frame = tempomap.tick2frame(curTickPos);
-        //      MTC mtc(double(frame) / double(sampleRate));
+        //      MTC mtc(double(frame) / double(MusEGlobal::sampleRate));
         //      mmcPos[6] = mtc.h() | (mtcType << 5);
         //      mmcPos[7] = mtc.m();
         //      mmcPos[8] = mtc.s();
@@ -1233,7 +1233,7 @@ void Audio::stopRolling()
               // send STOP and
               // "set song position pointer"
         //      syncPort->sendStop();
-        //      syncPort->sendSongpos(curTickPos * 4 / config.division);
+        //      syncPort->sendSongpos(curTickPos * 4 / MusEConfig::config.division);
         //      }
         for(int port = 0; port < MIDI_PORTS; ++port) 
         {
@@ -1260,7 +1260,7 @@ void Audio::stopRolling()
             // p3.3.31
             /*
             int frame = tempomap.tick2frame(curTickPos);
-            MTC mtc(double(frame) / double(sampleRate));
+            MTC mtc(double(frame) / double(MusEGlobal::sampleRate));
             */          
             
             //mmcPos[6] = mtc.h() | (mtcType << 5);
@@ -1297,7 +1297,7 @@ void Audio::stopRolling()
             // Hmm, is this required? Seems to make other devices unhappy.
             /*
             if(!si.sendContNotStart())
-              mp->sendSongpos(curTickPos * 4 / config.division);
+              mp->sendSongpos(curTickPos * 4 / MusEConfig::config.division);
             */  
             
           }
@@ -1336,7 +1336,7 @@ void Audio::stopRolling()
                 0, 0, 0, 0, 0
                 };
           int frame = tempomap.tick2frame(curTickPos);
-          MTC mtc(double(frame) / double(sampleRate));
+          MTC mtc(double(frame) / double(MusEGlobal::sampleRate));
           mmcPos[6] = mtc.h() | (mtcType << 5);
           mmcPos[7] = mtc.m();
           mmcPos[8] = mtc.s();
@@ -1368,7 +1368,7 @@ void Audio::stopRolling()
           // Go through the port...
           {
             mp->sendStop();
-            mp->sendSongpos(curTickPos * 4 / config.division);
+            mp->sendSongpos(curTickPos * 4 / MusEConfig::config.division);
           }
           else
           // Send straight to the device... Copied from MidiPort.
@@ -1376,7 +1376,7 @@ void Audio::stopRolling()
             MidiPlayEvent event(0, 0, 0, ME_STOP, 0, 0);
             dev->putEvent(event);
             event.setType(ME_SONGPOS);
-            event.setA(curTickPos * 4 / config.division);
+            event.setA(curTickPos * 4 / MusEConfig::config.division);
             dev->putEvent(event);
           } 
         }
@@ -1400,7 +1400,7 @@ void Audio::stopRolling()
 
 void Audio::recordStop()
       {
-      if (debugMsg)
+      if (MusEGlobal::debugMsg)
         printf("recordStop - startRecordPos=%d\n", startRecordPos.tick());
 
       audio->msgIdle(true); // gain access to all data structures
@@ -1434,9 +1434,9 @@ void Audio::recordStop()
             //    resolve NoteOff events, Controller etc.
             //---------------------------------------------------
 
-            //buildMidiEventList(el, mpel, mt, config.division, true);
+            //buildMidiEventList(el, mpel, mt, MusEConfig::config.division, true);
             // Do SysexMeta. Do loops.
-            buildMidiEventList(el, mpel, mt, config.division, true, true);
+            buildMidiEventList(el, mpel, mt, MusEConfig::config.division, true, true);
             song->cmdAddRecordedEvents(mt, el, startRecordPos.tick());
             el->clear();
             mpel->clear();
@@ -1473,7 +1473,7 @@ void Audio::recordStop()
 
 unsigned int Audio::curFrame() const
       {
-      return lrint((curTime() - syncTime) * sampleRate) + syncFrame;
+      return lrint((curTime() - syncTime) * MusEGlobal::sampleRate) + syncFrame;
       }
 
 //---------------------------------------------------------

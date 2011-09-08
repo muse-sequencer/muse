@@ -79,13 +79,13 @@
 PluginList plugins;
 
 /*
-static const char* preset_file_pattern[] = {
+static const char* MusEGlobal::preset_file_pattern[] = {
       QT_TRANSLATE_NOOP("@default", "Presets (*.pre *.pre.gz *.pre.bz2)"),
       QT_TRANSLATE_NOOP("@default", "All Files (*)"),
       0
       };
 
-static const char* preset_file_save_pattern[] = {
+static const char* MusEGlobal::preset_file_save_pattern[] = {
       QT_TRANSLATE_NOOP("@default", "Presets (*.pre)"),
       QT_TRANSLATE_NOOP("@default", "gzip compressed presets (*.pre.gz)"),
       QT_TRANSLATE_NOOP("@default", "bzip2 compressed presets (*.pre.bz2)"),
@@ -141,7 +141,7 @@ bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned long por
     printf("ladspa2MidiControlValues: has LADSPA_HINT_SAMPLE_RATE\n");
     #endif
     
-    m = float(sampleRate);
+    m = float(MusEGlobal::sampleRate);
   }  
   
   if(desc & LADSPA_HINT_BOUNDED_BELOW)
@@ -321,7 +321,7 @@ float midi2LadspaValue(const LADSPA_Descriptor* plugin, unsigned long port, int 
     printf("midi2LadspaValue: has LADSPA_HINT_SAMPLE_RATE\n");
     #endif
     
-    m = float(sampleRate);
+    m = float(MusEGlobal::sampleRate);
   }  
   
   if(desc & LADSPA_HINT_BOUNDED_BELOW)
@@ -533,7 +533,7 @@ bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long port, flo
         LADSPA_PortRangeHintDescriptor rh = range.HintDescriptor;
   //      bool isLog = LADSPA_IS_HINT_LOGARITHMIC(rh);
         //double val = 1.0;
-        float m = (rh & LADSPA_HINT_SAMPLE_RATE) ? float(sampleRate) : 1.0f;
+        float m = (rh & LADSPA_HINT_SAMPLE_RATE) ? float(MusEGlobal::sampleRate) : 1.0f;
         if (LADSPA_IS_HINT_DEFAULT_MINIMUM(rh)) 
         {
           *val = range.LowerBound * m;
@@ -636,7 +636,7 @@ void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, flo
             }
       float m = 1.0;
       if (desc & LADSPA_HINT_SAMPLE_RATE)
-            m = float(sampleRate);
+            m = float(MusEGlobal::sampleRate);
 
       if (desc & LADSPA_HINT_BOUNDED_BELOW)
             *min =  range.LowerBound * m;
@@ -668,7 +668,7 @@ void PluginBase::range(unsigned long i, float* min, float* max) const
             }
       float m = 1.0;
       if (desc & LADSPA_HINT_SAMPLE_RATE)
-            m = float(sampleRate);
+            m = float(MusEGlobal::sampleRate);
 
       if (desc & LADSPA_HINT_BOUNDED_BELOW)
             *min =  range.LowerBound * m;
@@ -762,7 +762,7 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi)
   // Hack: Special Flag required for example for control processing.
   _isDssiVst = fi.completeBaseName() == QString("dssi-vst");
   // Hack: Blacklist vst plugins in-place, configurable for now. 
-  if ((_inports != _outports) || (_isDssiVst && !config.vstInPlace))
+  if ((_inports != _outports) || (_isDssiVst && !MusEConfig::config.vstInPlace))
         _inPlaceCapable = false;
 }
 
@@ -940,7 +940,7 @@ int Plugin::incReferences(int val)
       // Hack: Special flag required for example for control processing.
       _isDssiVst = fi.completeBaseName() == QString("dssi-vst");
       // Hack: Blacklist vst plugins in-place, configurable for now. 
-      if ((_inports != _outports) || (_isDssiVst && !config.vstInPlace))
+      if ((_inports != _outports) || (_isDssiVst && !MusEConfig::config.vstInPlace))
             _inPlaceCapable = false;
     }
   }      
@@ -979,7 +979,7 @@ void Plugin::range(unsigned long i, float* min, float* max) const
             }
       float m = 1.0;
       if (desc & LADSPA_HINT_SAMPLE_RATE)
-            m = float(sampleRate);
+            m = float(MusEGlobal::sampleRate);
 
       if (desc & LADSPA_HINT_BOUNDED_BELOW)
             *min =  range.LowerBound * m;
@@ -1115,7 +1115,7 @@ static void loadPluginLib(QFileInfo* fi)
         //LADSPA_Properties properties = descr->LADSPA_Plugin->Properties;
         //bool inPlaceBroken = LADSPA_IS_INPLACE_BROKEN(properties);
         //plugins.add(fi, descr, !inPlaceBroken);
-        if(debugMsg)
+        if(MusEGlobal::debugMsg)
           fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s\n", fi->filePath().toLatin1().constData(), descr->LADSPA_Plugin->Name, descr->LADSPA_Plugin->Label);
       
         plugins.add(fi, descr->LADSPA_Plugin, true);
@@ -1161,7 +1161,7 @@ static void loadPluginLib(QFileInfo* fi)
       //LADSPA_Properties properties = descr->Properties;
       //bool inPlaceBroken = LADSPA_IS_INPLACE_BROKEN(properties);
       //plugins.add(fi, ladspa, descr, !inPlaceBroken);
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         fprintf(stderr, "loadPluginLib: adding ladspa plugin:%s name:%s label:%s\n", fi->filePath().toLatin1().constData(), descr->Name, descr->Label);
       plugins.add(fi, descr);
     }
@@ -1176,7 +1176,7 @@ static void loadPluginLib(QFileInfo* fi)
 
 static void loadPluginDir(const QString& s)
       {
-      if (debugMsg)
+      if (MusEGlobal::debugMsg)
             printf("scan ladspa plugin dir <%s>\n", s.toLatin1().constData());
       QDir pluginDir(s, QString("*.so")); // ddskrjo
       if (pluginDir.exists()) {
@@ -1195,7 +1195,7 @@ static void loadPluginDir(const QString& s)
 
 void initPlugins()
       {
-      loadPluginDir(museGlobalLib + QString("/plugins"));
+      loadPluginDir(MusEGlobal::museGlobalLib + QString("/plugins"));
 
       const char* p = 0;
       
@@ -1230,7 +1230,7 @@ void initPlugins()
             ladspaPath = "/usr/local/lib64/ladspa:/usr/lib64/ladspa:/usr/local/lib/ladspa:/usr/lib/ladspa";
       p = ladspaPath;
       
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         fprintf(stderr, "loadPluginDir: ladspa path:%s\n", ladspaPath);
       
       while (*p != '\0') {
@@ -1243,7 +1243,7 @@ void initPlugins()
                   char* buffer = new char[n + 1];
                   strncpy(buffer, p, n);
                   buffer[n] = '\0';
-                  if(debugMsg)
+                  if(MusEGlobal::debugMsg)
                     fprintf(stderr, "loadPluginDir: loading ladspa dir:%s\n", buffer);
                   
                   loadPluginDir(QString(buffer));
@@ -1278,7 +1278,7 @@ Pipeline::Pipeline()
       {
       // Added by Tim. p3.3.15
       for (int i = 0; i < MAX_CHANNELS; ++i)
-            posix_memalign((void**)(buffer + i), 16, sizeof(float) * segmentSize);
+            posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
       
       for (int i = 0; i < PipelineDepth; ++i)
             push_back(0);
@@ -1917,7 +1917,7 @@ float PluginI::defaultValue(unsigned long param) const
 
 LADSPA_Handle Plugin::instantiate() 
 {
-  LADSPA_Handle h = plugin->instantiate(plugin, sampleRate);
+  LADSPA_Handle h = plugin->instantiate(plugin, MusEGlobal::sampleRate);
   if(h == NULL)
   {
     fprintf(stderr, "Plugin::instantiate() Error: plugin:%s instantiate failed!\n", plugin->Label); 
@@ -2521,7 +2521,7 @@ void PluginI::enable2AllControllers(bool v)
 void PluginI::apply(unsigned long n)
 {
       // Process control value changes.
-      //if(automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
+      //if(MusEGlobal::automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
       //{
       //  for(int i = 0; i < controlPorts; ++i)
       //  {
@@ -2557,7 +2557,7 @@ void PluginI::apply(unsigned long n)
           // Set the ladspa control port value.
           controls[k].tmpVal = v.value;
           
-          // Need to update the automation value, otherwise it overwrites later with the last automation value.
+          // Need to update the MusEGlobal::automation value, otherwise it overwrites later with the last MusEGlobal::automation value.
           if(_track && _id != -1)
           {
             // Since we are now in the audio thread context, there's no need to send a message,
@@ -2567,7 +2567,7 @@ void PluginI::apply(unsigned long n)
             //audio->msgSetPluginCtrlVal(_track, genACnum(_id, k), controls[k].val);
             _track->setPluginCtrlVal(genACnum(_id, k), v.value);
             
-            // Record automation.
+            // Record MusEGlobal::automation.
             // NO! Take care of this immediately in the OSC control handler, because we don't want 
             //  the silly delay associated with processing the fifo one-at-a-time here.
             
@@ -2583,8 +2583,8 @@ void PluginI::apply(unsigned long n)
         else
         #endif // OSC_SUPPORT
         {
-          // Process automation control value.
-          if(automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
+          // Process MusEGlobal::automation control value.
+          if(MusEGlobal::automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
           {
             if(controls[k].enCtrl && controls[k].en2Ctrl )
               controls[k].tmpVal = _track->pluginCtrlVal(genACnum(_id, k));
@@ -2612,7 +2612,7 @@ void PluginI::apply(unsigned long n)
 void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float** bufOut)
 {
       // Process control value changes.
-      //if(automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
+      //if(MusEGlobal::automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
       //{
       //  for(int i = 0; i < controlPorts; ++i)
       //  {
@@ -2646,13 +2646,13 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
       if(fixedsize > n)
         fixedsize = n;
         
-      unsigned long min_per = config.minControlProcessPeriod;  
+      unsigned long min_per = MusEConfig::config.minControlProcessPeriod;  
       if(min_per > n)
         min_per = n;
       
-      // Process automation control values now.
+      // Process MusEGlobal::automation control values now.
       // TODO: This needs to be respect frame resolution. Put this inside the sample loop below.
-      if(automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
+      if(MusEGlobal::automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
       {
         for(unsigned long k = 0; k < controlPorts; ++k)
         {
@@ -2725,7 +2725,7 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
           controls[v.idx].tmpVal = v.value;
           
           /*
-          // Need to update the automation value, otherwise it overwrites later with the last automation value.
+          // Need to update the MusEGlobal::automation value, otherwise it overwrites later with the last MusEGlobal::automation value.
           if(_track && _id != -1)
           {
             // Since we are now in the audio thread context, there's no need to send a message,
@@ -2735,11 +2735,11 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
             //audio->msgSetPluginCtrlVal(_track, genACnum(_id, k), controls[k].val);
             _track->setPluginCtrlVal(genACnum(_id, v.idx), v.value);
             
-            // Record automation.
+            // Record MusEGlobal::automation.
             // NO! Take care of this immediately in the OSC control handler, because we don't want 
             //  any delay.
             // OTOH Since this is the actual place and time where the control ports values
-            //  are set, best to reflect what happens here to automation.
+            //  are set, best to reflect what happens here to MusEGlobal::automation.
             // However for dssi-vst it might be best to handle it that way.
             
             //AutomationType at = _track->automationType();
@@ -2893,7 +2893,7 @@ int PluginI::oscUpdate()
 {
       #ifdef DSSI_SUPPORT
       // Send project directory.
-      _oscif.oscSendConfigure(DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());  // song->projectPath()
+      _oscif.oscSendConfigure(DSSI_PROJECT_DIRECTORY_KEY, MusEGlobal::museProject.toLatin1().constData());  // song->projectPath()
       
       /*
       // Send current string configuration parameters.
@@ -3019,7 +3019,7 @@ int PluginI::oscControl(unsigned long port, float value)
   }
   
    
-  // Record automation:
+  // Record MusEGlobal::automation:
   // Take care of this immediately, because we don't want the silly delay associated with 
   //  processing the fifo one-at-a-time in the apply().
   // NOTE: With some vsts we don't receive control events until the user RELEASES a control. 
@@ -3426,7 +3426,7 @@ PluginGui::PluginGui(PluginIBase* p)
 
       QString id;
       id.setNum(plugin->pluginID());
-      QString name(museGlobalShare + QString("/plugins/") + id + QString(".ui"));
+      QString name(MusEGlobal::museGlobalShare + QString("/plugins/") + id + QString(".ui"));
       QFile uifile(name);
       if (uifile.exists()) {
             //
@@ -3691,7 +3691,7 @@ PluginGui::PluginGui(PluginIBase* p)
             mw->setLayout(grid);
             view->setWidget(mw);
             }
-      connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
+      connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       }
 
 //---------------------------------------------------------
@@ -3718,8 +3718,8 @@ void PluginGui::getPluginConvertedValues(LADSPA_PortRangeHint range,
         dupper = upper = range.UpperBound;
         }
   if (LADSPA_IS_HINT_SAMPLE_RATE(range.HintDescriptor)) {
-        lower *= sampleRate;
-        upper *= sampleRate;
+        lower *= MusEGlobal::sampleRate;
+        upper *= MusEGlobal::sampleRate;
         dlower = lower;
         dupper = upper;
         }
@@ -3955,7 +3955,7 @@ void PluginGui::load()
       s += plugin->pluginLabel();
       s += "/";
 
-      QString fn = getOpenFileName(s, preset_file_pattern,
+      QString fn = getOpenFileName(s, MusEGlobal::preset_file_pattern,
          this, tr("MusE: load preset"), 0);
       if (fn.isEmpty())
             return;
@@ -4020,8 +4020,8 @@ void PluginGui::save()
       s += plugin->pluginLabel();
       s += "/";
 
-      //QString fn = getSaveFileName(s, preset_file_pattern, this,
-      QString fn = getSaveFileName(s, preset_file_save_pattern, this,
+      //QString fn = getSaveFileName(s, MusEGlobal::preset_file_pattern, this,
+      QString fn = getSaveFileName(s, MusEGlobal::preset_file_save_pattern, this,
         tr("MusE: save preset"));
       if (fn.isEmpty())
             return;
@@ -4149,7 +4149,7 @@ void PluginGui::updateControls()
        }
 
 
-      if(!automation)
+      if(!MusEGlobal::automation)
         return;
       AutomationType at = plugin->track()->automationType();
       if(at == AUTO_OFF)

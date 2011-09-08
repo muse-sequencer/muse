@@ -150,10 +150,10 @@ void WaveEventBase::write(int level, Xml& xml, const Pos& offset, bool forcePath
       //
       QString path = f.dirPath();
 
-      //if (path.contains(museProject)) {
-      if (!forcePath && path.contains(museProject)) {
-            // extract museProject.
-            QString newName = f.path().remove(museProject+"/");
+      //if (path.contains(MusEGlobal::museProject)) {
+      if (!forcePath && path.contains(MusEGlobal::museProject)) {
+            // extract MusEGlobal::museProject.
+            QString newName = f.path().remove(MusEGlobal::museProject+"/");
             xml.strTag(level, "file", newName);
             }
       else

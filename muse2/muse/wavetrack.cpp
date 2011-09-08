@@ -116,19 +116,19 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
               }
       }
               
-      if(config.useDenormalBias) {
+      if(MusEConfig::config.useDenormalBias) {
             // add denormal bias to outdata
             for (int i = 0; i < channels(); ++i)
                   for (unsigned int j = 0; j < samples; ++j)
                   {
-                      bp[i][j] +=denormalBias;
+                      bp[i][j] +=MusEGlobal::denormalBias;
                       
                       /*
                       // p3.3.41
                       if(j & 1)
-                        bp[i][j] -=denormalBias;
+                        bp[i][j] -=MusEGlobal::denormalBias;
                       else  
-                        bp[i][j] +=denormalBias;
+                        bp[i][j] +=MusEGlobal::denormalBias;
                       */  
                   }      
             }
@@ -219,7 +219,7 @@ Part* WaveTrack::newPart(Part*p, bool clone)
 
 bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float** bp)
       {
-      //if(debugMsg)
+      //if(MusEGlobal::debugMsg)
       //  printf("WaveTrack::getData framePos:%u channels:%d nframe:%u processed?:%d\n", framePos, channels, nframe, processed());
       
       if ((song->bounceTrack != this) && !noInRoute()) {
@@ -227,7 +227,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
             ciRoute i = irl->begin();
             if(i->track->isMidiTrack())
             {
-              if(debugMsg)
+              if(MusEGlobal::debugMsg)
                 printf("WaveTrack::getData: Error: First route is a midi track route!\n");
               return false;
             }
@@ -244,7 +244,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
             {
               if(i->track->isMidiTrack())
               {
-                if(debugMsg)
+                if(MusEGlobal::debugMsg)
                   printf("WaveTrack::getData: Error: Route is a midi track route!\n");
                 //return false;
                 continue;
@@ -296,7 +296,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
                         if (pos != framePos) {
                               printf("fifo get error expected %d, got %d\n",
                                  framePos, pos);
-                              if (debugMsg)
+                              if (MusEGlobal::debugMsg)
                                     printf("fifo get error expected %d, got %d\n",
                                        framePos, pos);
                               while (pos < framePos) {
@@ -335,7 +335,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
                         return false;
                         }
                   if (pos != framePos) {
-                        if (debugMsg)
+                        if (MusEGlobal::debugMsg)
                               printf("fifo get error expected %d, got %d\n",
                                  framePos, pos);
                         while (pos < framePos) {

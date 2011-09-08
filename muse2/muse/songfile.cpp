@@ -959,6 +959,8 @@ QFont Song::readFont(Xml& xml, const char* name)
       return f;
       }
 
+namespace MusEApp {
+
 //---------------------------------------------------------
 //   readPart
 //---------------------------------------------------------
@@ -1214,6 +1216,102 @@ void MusE::readMidiport(Xml& xml)
       }
 
 //---------------------------------------------------------
+//   read
+//    read song
+//---------------------------------------------------------
+
+void MusE::read(Xml& xml, bool skipConfig, bool isTemplate)
+      {
+      bool skipmode = true;
+      for (;;) {
+            if (progress)
+                progress->setValue(progress->value()+1);
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case Xml::TagStart:
+                        if (skipmode && tag == "muse")
+                              skipmode = false;
+                        else if (skipmode)
+                              break;
+                        else if (tag == "configuration")
+                              if (skipConfig)
+                                    //xml.skip(tag);
+                                    readConfiguration(xml,true /* only read sequencer settings */);
+                              else
+                                    readConfiguration(xml, false);
+                        else if (tag == "song")
+                        {
+                              song->read(xml, isTemplate);
+                              audio->msgUpdateSoloStates();
+                        }      
+                        else if (tag == "midiport")
+                              readMidiport(xml);
+                        else if (tag == "Controller") {  // obsolete
+                              MidiController* ctrl = new MidiController;
+                              ctrl->read(xml);
+                              delete ctrl;
+                              }
+                        else if (tag == "mplugin")
+                              readStatusMidiInputTransformPlugin(xml);
+                        else if (tag == "toplevels")
+                              readToplevels(xml);
+                        else
+                              xml.unknown("muse");
+                        break;
+                  case Xml::Attribut:
+                        if (tag == "version") {
+                              int major = xml.s2().section('.', 0, 0).toInt();
+                              int minor = xml.s2().section('.', 1, 1).toInt();
+                              xml.setVersion(major, minor);
+                              }
+                        break;
+                  case Xml::TagEnd:
+                        if (!skipmode && tag == "muse")
+                              return;
+                  default:
+                        break;
+                  }
+            }
+      }
+
+
+//---------------------------------------------------------
+//   write
+//    write song
+//---------------------------------------------------------
+
+void MusE::write(Xml& xml) const
+      {
+      xml.header();
+
+      int level = 0;
+      xml.tag(level++, "muse version=\"2.0\"");
+      writeConfiguration(level, xml);
+
+      writeStatusMidiInputTransformPlugins(level, xml);
+
+      song->write(level, xml);
+
+      if (!toplevels.empty()) {
+            xml.tag(level++, "toplevels");
+            for (ciToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
+                  if (i->cobject()->isVisible())
+                        i->cobject()->writeStatus(level, xml);
+                  }
+            xml.tag(level--, "/toplevels");
+            }
+
+      xml.tag(level, "/muse");
+      }
+
+} // namespace MusEApp
+
+
+//---------------------------------------------------------
 //   readMarker
 //---------------------------------------------------------
 
@@ -1232,8 +1330,8 @@ void Song::read(Xml& xml, bool isTemplate)
       {
       cloneList.clear();
       for (;;) {
-            if (muse->progress)
-              muse->progress->setValue(muse->progress->value()+1);
+         if (MusEGlobal::muse->progress)
+            MusEGlobal::muse->progress->setValue(MusEGlobal::muse->progress->value()+1);
 
             Xml::Token token;
             token = xml.parse();
@@ -1275,8 +1373,8 @@ void Song::read(Xml& xml, bool isTemplate)
                               _follow  = FollowMode(xml.parseInt());
                         else if (tag == "sampleRate") {
                               int sRate  = xml.parseInt();
-                              if (!isTemplate && audioDevice->deviceType() != AudioDevice::DUMMY_AUDIO && sRate != sampleRate)
-                                QMessageBox::warning(muse,"Wrong sample rate", "The sample rate in this project and the current system setting differs, the project may not work as intended!");
+                              if (!isTemplate && audioDevice->deviceType() != AudioDevice::DUMMY_AUDIO && sRate != MusEGlobal::sampleRate)
+                                QMessageBox::warning(MusEGlobal::muse,"Wrong sample rate", "The sample rate in this project and the current system setting differs, the project may not work as intended!");
                             }
                         else if (tag == "tempolist") {
                               tempomap.read(xml);
@@ -1344,8 +1442,8 @@ void Song::read(Xml& xml, bool isTemplate)
                               readMarker(xml);
                         else if (tag == "globalPitchShift")
                               _globalPitchShift = xml.parseInt();
-                        else if (tag == "automation")
-                              automation = xml.parseInt();
+                        else if (tag == "MusEGlobal::automation")
+                              MusEGlobal::automation = xml.parseInt();
                         else if (tag == "cpos") {
                               int pos = xml.parseInt();
                               Pos p(pos, true);
@@ -1384,69 +1482,6 @@ void Song::read(Xml& xml, bool isTemplate)
       }
 
 //---------------------------------------------------------
-//   read
-//    read song
-//---------------------------------------------------------
-
-void MusE::read(Xml& xml, bool skipConfig, bool isTemplate)
-      {
-      bool skipmode = true;
-      for (;;) {
-            if (progress)
-                progress->setValue(progress->value()+1);
-            Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
-                        return;
-                  case Xml::TagStart:
-                        if (skipmode && tag == "muse")
-                              skipmode = false;
-                        else if (skipmode)
-                              break;
-                        else if (tag == "configuration")
-                              if (skipConfig)
-                                    //xml.skip(tag);
-                                    readConfiguration(xml,true /* only read sequencer settings */);
-                              else
-                                    readConfiguration(xml, false);
-                        else if (tag == "song")
-                        {
-                              song->read(xml, isTemplate);
-                              audio->msgUpdateSoloStates();
-                        }      
-                        else if (tag == "midiport")
-                              readMidiport(xml);
-                        else if (tag == "Controller") {  // obsolete
-                              MidiController* ctrl = new MidiController;
-                              ctrl->read(xml);
-                              delete ctrl;
-                              }
-                        else if (tag == "mplugin")
-                              readStatusMidiInputTransformPlugin(xml);
-                        else if (tag == "toplevels")
-                              readToplevels(xml);
-                        else
-                              xml.unknown("muse");
-                        break;
-                  case Xml::Attribut:
-                        if (tag == "version") {
-                              int major = xml.s2().section('.', 0, 0).toInt();
-                              int minor = xml.s2().section('.', 1, 1).toInt();
-                              xml.setVersion(major, minor);
-                              }
-                        break;
-                  case Xml::TagEnd:
-                        if (!skipmode && tag == "muse")
-                              return;
-                  default:
-                        break;
-                  }
-            }
-      }
-
-//---------------------------------------------------------
 //   write
 //---------------------------------------------------------
 
@@ -1455,7 +1490,7 @@ void Song::write(int level, Xml& xml) const
       xml.tag(level++, "song");
       xml.strTag(level, "info", songInfoStr);
       xml.intTag(level, "showinfo", showSongInfo);
-      xml.intTag(level, "automation", automation);
+      xml.intTag(level, "MusEGlobal::automation", MusEGlobal::automation);
       xml.intTag(level, "cpos", song->cpos());
       xml.intTag(level, "rpos", song->rpos());
       xml.intTag(level, "lpos", song->lpos());
@@ -1472,7 +1507,7 @@ void Song::write(int level, Xml& xml) const
       xml.intTag(level, "quantize", _quantize);
       xml.intTag(level, "len", _len);
       xml.intTag(level, "follow", _follow);
-      xml.intTag(level, "sampleRate", sampleRate);
+      xml.intTag(level, "sampleRate", MusEGlobal::sampleRate);
       if (_globalPitchShift)
             xml.intTag(level, "globalPitchShift", _globalPitchShift);
 
@@ -1524,34 +1559,5 @@ void Song::write(int level, Xml& xml) const
       //  so that pasting works properly after.
       cloneList.clear();
       cloneList = copyCloneList;
-      }
-
-//---------------------------------------------------------
-//   write
-//    write song
-//---------------------------------------------------------
-
-void MusE::write(Xml& xml) const
-      {
-      xml.header();
-
-      int level = 0;
-      xml.tag(level++, "muse version=\"2.0\"");
-      writeConfiguration(level, xml);
-
-      writeStatusMidiInputTransformPlugins(level, xml);
-
-      song->write(level, xml);
-
-      if (!toplevels.empty()) {
-            xml.tag(level++, "toplevels");
-            for (ciToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
-                  if (i->cobject()->isVisible())
-                        i->cobject()->writeStatus(level, xml);
-                  }
-            xml.tag(level--, "/toplevels");
-            }
-
-      xml.tag(level, "/muse");
       }
 

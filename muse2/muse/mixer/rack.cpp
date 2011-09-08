@@ -159,7 +159,7 @@ EffectRack::EffectRack(QWidget* parent, AudioTrack* t)
       setAttribute(Qt::WA_DeleteOnClose);
       track = t;
       itemheight = 19;
-      setFont(config.fonts[1]);
+      setFont(MusEConfig::config.fonts[1]);
 
       setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -415,7 +415,7 @@ void EffectRack::doubleClicked(QListWidgetItem* it)
 void EffectRack::savePreset(int idx)
       {
       //QString name = getSaveFileName(QString(""), plug_file_pattern, this,
-      QString name = getSaveFileName(QString(""), preset_file_save_pattern, this,
+      QString name = getSaveFileName(QString(""), MusEGlobal::preset_file_save_pattern, this,
          tr("MusE: Save Preset"));
       
       if(name.isEmpty())
@@ -471,9 +471,9 @@ void EffectRack::startDrag(int idx)
             return;
         }
       FILE *tmp;
-      if (debugMsg) {
+      if (MusEGlobal::debugMsg) {
           QString fileName;
-          getUniqueTmpfileName("tmp","preset", fileName);
+          MusEGlobal::getUniqueTmpfileName("tmp","preset", fileName);
           tmp = fopen(fileName.toLatin1().data(), "w+");
       }
       else

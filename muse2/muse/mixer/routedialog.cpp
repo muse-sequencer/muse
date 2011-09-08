@@ -101,7 +101,7 @@ void RouteDialog::routingChanged()
                   new QTreeWidgetItem(routeList, QStringList() << src << r->name());
                   }
             }
-      if (!checkAudioDevice()) return;
+      if (!MusEGlobal::checkAudioDevice()) return;
       std::list<QString> sl = audioDevice->outputPorts();
       for (std::list<QString>::iterator i = sl.begin(); i != sl.end(); ++i)
             newSrcList->addItem(*i);

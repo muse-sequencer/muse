@@ -30,7 +30,9 @@ class QDialog;
 
 class MusE;
 class Arranger;
+namespace MusEConfig {
 class GlobalConfigValues;
+}
 
 //---------------------------------------------------------
 //   Appearance Dialog
@@ -43,7 +45,7 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
  private:
       Arranger* arr;
       QColor* color;
-      GlobalConfigValues* config;
+      MusEConfig::GlobalConfigValues* config;
       QButtonGroup* aPalette;
       QTreeWidgetItem* user_bg;
       QTreeWidgetItem* global_bg;

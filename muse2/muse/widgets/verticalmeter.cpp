@@ -50,7 +50,7 @@ VerticalMeter::VerticalMeter(QWidget* parent, MeterType type)
       overflow    = false;
       val         = 0.0;
       maxVal      = 0.0;
-      minScale    = mtype == DBMeter ? config.minMeter : 0.0;      // min value in dB or int
+      minScale    = mtype == DBMeter ? MusEConfig::config.minMeter : 0.0;      // min value in dB or int
       maxScale    = mtype == DBMeter ? 10.0 : 127.0;
       yellowScale = -10;
       redScale    = 0;

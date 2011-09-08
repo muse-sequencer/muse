@@ -38,21 +38,21 @@ class MidiFilterConfig : public QDialog, public Ui::MidiFilterConfigBase {
 
       void rChanged(bool f, int val) {
             if (f)
-                  midiRecordType |= val;
+                  MusEGlobal::midiRecordType |= val;
             else
-                  midiRecordType &= ~val;
+                  MusEGlobal::midiRecordType &= ~val;
             }
       void tChanged(bool f, int val) {
             if (f)
-                  midiThruType |= val;
+                  MusEGlobal::midiThruType |= val;
             else
-                  midiThruType &= ~val;
+                  MusEGlobal::midiThruType &= ~val;
             }
       void chChanged(bool f, int val) {
             if (f)
-                  midiInputChannel |= val;
+                  MusEGlobal::midiInputChannel |= val;
             else
-                  midiInputChannel &= ~val;
+                  MusEGlobal::midiInputChannel &= ~val;
             }
       virtual void closeEvent(QCloseEvent*);
 

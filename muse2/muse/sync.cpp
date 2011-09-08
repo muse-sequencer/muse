@@ -614,12 +614,12 @@ void MidiSeq::mmcInput(int port, const unsigned char* p, int n)
                         break;
                         }
                   else if (p[5] == 1) {
-                        if (!checkAudioDevice()) return;
+                        if (!MusEGlobal::checkAudioDevice()) return;
                         MTC mtc(p[6] & 0x1f, p[7], p[8], p[9], p[10]);
                         int type = (p[6] >> 5) & 3;
-                        //int mmcPos = tempomap.frame2tick(lrint(mtc.time()*sampleRate));
-                        //int mmcPos = lrint(mtc.time()*sampleRate);
-                        int mmcPos = lrint(mtc.time(type) * sampleRate);
+                        //int mmcPos = tempomap.frame2tick(lrint(mtc.time()*MusEGlobal::sampleRate));
+                        //int mmcPos = lrint(mtc.time()*MusEGlobal::sampleRate);
+                        int mmcPos = lrint(mtc.time(type) * MusEGlobal::sampleRate);
 
                         //Pos tp(mmcPos, true);
                         Pos tp(mmcPos, false);
@@ -776,8 +776,8 @@ void MidiSeq::mtcInputFull(int port, const unsigned char* p, int n)
         //if(extSyncFlag.value() && msync.MTCIn())
         if(msync.MTCIn())
         {
-          //Pos tp(lrint(mtcCurTime.time() * sampleRate), false);
-          Pos tp(lrint(mtcCurTime.time(type) * sampleRate), false);
+          //Pos tp(lrint(mtcCurTime.time() * MusEGlobal::sampleRate), false);
+          Pos tp(lrint(mtcCurTime.time(type) * MusEGlobal::sampleRate), false);
           audioDevice->seekTransport(tp);
           alignAllTicks();
         }
@@ -813,7 +813,7 @@ void MidiSeq::nonRealtimeSystemSysex(int /*port*/, const unsigned char* p, int n
 
 void MidiSeq::setSongPosition(int port, int midiBeat)
       {
-      if (midiInputTrace)
+      if (MusEGlobal::midiInputTrace)
             printf("set song position port:%d %d\n", port, midiBeat);
       
       //midiPorts[port].syncInfo().trigMCSyncDetect();
@@ -831,13 +831,13 @@ void MidiSeq::setSongPosition(int port, int midiBeat)
         if(p != port && midiPorts[p].syncInfo().MRTOut())
           midiPorts[p].sendSongpos(midiBeat);
                   
-      curExtMidiSyncTick = (config.division * midiBeat) / 4;
+      curExtMidiSyncTick = (MusEConfig::config.division * midiBeat) / 4;
       lastExtMidiSyncTick = curExtMidiSyncTick;
       
-      //Pos pos((config.division * midiBeat) / 4, true);
+      //Pos pos((MusEConfig::config.division * midiBeat) / 4, true);
       Pos pos(curExtMidiSyncTick, true);
       
-      if (!checkAudioDevice()) return;
+      if (!MusEGlobal::checkAudioDevice()) return;
 
       //audioDevice->seekTransport(pos.frame());
       audioDevice->seekTransport(pos);
@@ -870,8 +870,8 @@ void MidiSeq::alignAllTicks(int frameOverride)
 
       mclock2=mclock1=0.0; // set all clock values to "in sync"
 
-      recTick = (int) ((double(curFrame)/double(sampleRate)) *
-                        double(config.division * 1000000.0) / double(tempo) //prevent compiler warning:  casting double to int
+      recTick = (int) ((double(curFrame)/double(MusEGlobal::sampleRate)) *
+                        double(MusEConfig::config.division * 1000000.0) / double(tempo) //prevent compiler warning:  casting double to int
                 );
       songtick1 = recTick - songTickSpan;
       if (songtick1 < 0)
@@ -897,10 +897,10 @@ void MidiSeq::alignAllTicks(int frameOverride)
 void MidiSeq::realtimeSystemInput(int port, int c)
       {
 
-      if (midiInputTrace)
+      if (MusEGlobal::midiInputTrace)
             printf("realtimeSystemInput port:%d 0x%x\n", port+1, c);
 
-      //if (midiInputTrace && (rxSyncPort != port) && rxSyncPort != -1) {
+      //if (MusEGlobal::midiInputTrace && (rxSyncPort != port) && rxSyncPort != -1) {
       //      if (debugSync)
       //            printf("rxSyncPort configured as %d; received sync from port %d\n",
       //               rxSyncPort, port);
@@ -967,7 +967,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   {
                     lastExtMidiSyncTime = curExtMidiSyncTime;
                     curExtMidiSyncTime = curTime();
-                    int div = config.division/24;
+                    int div = MusEConfig::config.division/24;
                     midiExtSyncTicks += div;
                     lastExtMidiSyncTick = curExtMidiSyncTick;
                     curExtMidiSyncTick += div;
@@ -1002,11 +1002,11 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   // Compare w audio if playing:
                   if (playStateExt == true ) {  //audio->isPlaying()  state == PLAY
                         //BEGIN standard setup:
-                        recTick  += config.division / 24; // The one we're syncing to
+                        recTick  += MusEConfig::config.division / 24; // The one we're syncing to
                         int tempo = tempomap.tempo(0);
                         unsigned curFrame = audio->pos().frame();
-                        double songtick = (double(curFrame)/double(sampleRate)) *
-                                           double(config.division * 1000000.0) / double(tempo);
+                        double songtick = (double(curFrame)/double(MusEGlobal::sampleRate)) *
+                                           double(MusEConfig::config.division * 1000000.0) / double(tempo);
 
                         double scale = double(tdiff0/averagetimediff);
                         double tickdiff = songtick - ((double) recTick - 24 + scale*24.0);
@@ -1017,7 +1017,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                               audio->pos().mbt(&m, &b, &t);
 
                               int song_beat = b + m*4; // if the time-signature is different than 4/4, this will be wrong.
-                              int sync_beat = recTick/config.division;
+                              int sync_beat = recTick/MusEConfig::config.division;
                               printf("pT=%.3f rT=%d diff=%.3f songB=%d syncB=%d scale=%.3f, curFrame=%d", 
                                       songtick, recTick, tickdiff, song_beat, sync_beat, scale, curFrame);
                               }
@@ -1117,11 +1117,11 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   //if (playStateExt == true ) {  //audio->isPlaying()  state == PLAY
                   if (0) {
                         //BEGIN standard setup:
-                        recTick  += config.division / 24; // The one we're syncing to
+                        recTick  += MusEConfig::config.division / 24; // The one we're syncing to
                         int tempo = tempomap.tempo(0);
                         //unsigned curFrame = audio->pos().frame();
-                        //double songtick = (double(curFrame)/double(sampleRate)) *
-                        //                   double(config.division * 1000000.0) / double(tempo);
+                        //double songtick = (double(curFrame)/double(MusEGlobal::sampleRate)) *
+                        //                   double(MusEConfig::config.division * 1000000.0) / double(tempo);
                         double songtick = tempomap.curTickExt(mclock0);
                         
                         double scale = double(tdiff0/averagetimediff);
@@ -1133,7 +1133,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                               audio->pos().mbt(&m, &b, &t);
 
                               int song_beat = b + m*4; // if the time-signature is different than 4/4, this will be wrong.
-                              int sync_beat = recTick/config.division;
+                              int sync_beat = recTick/MusEConfig::config.division;
                               printf("pT=%.3f rT=%d diff=%.3f songB=%d syncB=%d scale=%.3f, curFrame=%d averagetimediff:%.3lf", 
                                       songtick, recTick, tickdiff, song_beat, sync_beat, scale, audio->pos().frame(), averagetimediff);
                               }
@@ -1251,7 +1251,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   //printf("midi start:%f\n", curTime());
                   
                   if (1 /* !audio->isPlaying()*/ /*state == IDLE*/) {
-                        if (!checkAudioDevice()) return;
+                        if (!MusEGlobal::checkAudioDevice()) return;
                         
                         // p3.3.31
                         // Rew on start option.
@@ -1329,8 +1329,8 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                     
                     //playPendingFirstClock = false;
                     
-                    //lastStoppedBeat = (audio->tickPos() * 4) / config.division;
-                    //curExtMidiSyncTick = (config.division * lastStoppedBeat) / 4;
+                    //lastStoppedBeat = (audio->tickPos() * 4) / MusEConfig::config.division;
+                    //curExtMidiSyncTick = (MusEConfig::config.division * lastStoppedBeat) / 4;
                     
                     //printf("stop:%f\n", curTime());
                     
@@ -1346,7 +1346,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                     //  audio tick position to increment, reset the incrementer and force 
                     //  the transport position to what the hardware thinks is the current position.
                     //midiExtSyncTicks = 0;
-                    //Pos pos((config.division * lastStoppedBeat) / 4, true);
+                    //Pos pos((MusEConfig::config.division * lastStoppedBeat) / 4, true);
                     //Pos pos(curExtMidiSyncTick, true);
                     //audioDevice->seekTransport(pos);
                   }
@@ -1379,7 +1379,7 @@ void MidiSeq::mtcSyncMsg(const MTC& mtc, int type, bool seekFlag)
 //            int tick = tempomap.time2tick(time);
             //state = PLAY;
             //write(sigFd, "1", 1);  // say PLAY to gui
-            if (!checkAudioDevice()) return;
+            if (!MusEGlobal::checkAudioDevice()) return;
             if (debugSync)
               printf("MidiSeq::mtcSyncMsg starting transport.\n");
             audioDevice->startTransport();
@@ -1388,7 +1388,7 @@ void MidiSeq::mtcSyncMsg(const MTC& mtc, int type, bool seekFlag)
 
       /*if (tempoSN != tempomap.tempoSN()) {
             double cpos    = tempomap.tick2time(_midiTick, 0);
-            samplePosStart = samplePos - lrint(cpos * sampleRate);
+            samplePosStart = samplePos - lrint(cpos * MusEGlobal::sampleRate);
             rtcTickStart   = rtcTick - lrint(cpos * realRtcTicks);
             tempoSN        = tempomap.tempoSN();
             }*/
@@ -1396,7 +1396,7 @@ void MidiSeq::mtcSyncMsg(const MTC& mtc, int type, bool seekFlag)
       //
       // diff is the time in sec MusE is out of sync
       //
-      /*double diff = time - (double(samplePosStart)/double(sampleRate));
+      /*double diff = time - (double(samplePosStart)/double(MusEGlobal::sampleRate));
       if (debugSync)
             printf("   state %d diff %f\n", mtcState, diff);
       */

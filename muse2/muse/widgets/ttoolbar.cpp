@@ -29,11 +29,11 @@
 
 void syncChanged(bool flag)
       {
-      startAction->setEnabled(!flag);
-      forwardAction->setEnabled(!flag);
-      rewindAction->setEnabled(!flag);
-      stopAction->setEnabled(!flag);
-      playAction->setEnabled(!flag);
+      MusEGlobal::startAction->setEnabled(!flag);
+      MusEGlobal::forwardAction->setEnabled(!flag);
+      MusEGlobal::rewindAction->setEnabled(!flag);
+      MusEGlobal::stopAction->setEnabled(!flag);
+      MusEGlobal::playAction->setEnabled(!flag);
       }
 
 

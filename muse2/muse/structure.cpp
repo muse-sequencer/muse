@@ -32,6 +32,7 @@
 #include "audio.h"
 #include "marker/marker.h"
 
+namespace MusEApp {
 
 //---------------------------------------------------------
 //   adjustGlobalLists
@@ -354,3 +355,4 @@ void MusE::cutEvents()
          tr("not implemented")
          );
       }
+} // namespace MusEApp

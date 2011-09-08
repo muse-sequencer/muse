@@ -46,6 +46,8 @@
 
 #define ABS(x)  ((x) < 0) ? -(x) : (x)
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   Canvas
 //---------------------------------------------------------
@@ -1540,3 +1542,5 @@ void Canvas::setCurrentPart(Part* part)
   curPartId = curPart->sn();
   curPartChanged();
 }
+
+} // namespace MusEWidget

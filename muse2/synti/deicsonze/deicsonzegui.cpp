@@ -418,7 +418,7 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
   connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
 
-  QString sharePath(museGlobalShare);
+  QString sharePath(MusEGlobal::museGlobalShare);
   // Tim.
   updateInitSetPath(sharePath + QString("/presets/deicsonze/SutulaBank.dei"));    // Tim.
   updateBackgroundPixPath(sharePath + QString("/wallpapers/paper2.jpg"));    // Tim.
@@ -555,7 +555,7 @@ void DeicsOnzeGui::saveConfiguration() {
 // saveDefaultConfiguration
 //-----------------------------------------------------------
 void DeicsOnzeGui::saveDefaultConfiguration() {
-  QString filename = configPath + QString("/" DEICSONZESTR ".dco");
+  QString filename = MusEGlobal::configPath + QString("/" DEICSONZESTR ".dco");
   if(!filename.isEmpty()) {
     QFile f(filename);
     f.open(QIODevice::WriteOnly);

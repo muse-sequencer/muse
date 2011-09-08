@@ -187,7 +187,7 @@ int SigList::ticksBeat(unsigned tick) const
 
 int SigList::ticks_beat(int n) const
       {
-      int m = config.division;
+      int m = MusEConfig::config.division;
       switch (n) {
             case  1:  m <<= 2; break;           // 1536
             case  2:  m <<= 1; break;           // 768

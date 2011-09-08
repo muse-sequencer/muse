@@ -148,10 +148,10 @@ bool filterEvent(const MEvent& event, int type, bool thru)
             case ME_CONTROLLER:
                   if (type & MIDI_FILTER_CTRL)
                         return true;
-                  if (!thru && (midiFilterCtrl1 == event.dataA()
-                     || midiFilterCtrl2 == event.dataA()
-                     || midiFilterCtrl3 == event.dataA()
-                     || midiFilterCtrl4 == event.dataA())) {
+                  if (!thru && (MusEGlobal::midiFilterCtrl1 == event.dataA()
+                     || MusEGlobal::midiFilterCtrl2 == event.dataA()
+                     || MusEGlobal::midiFilterCtrl3 == event.dataA()
+                     || MusEGlobal::midiFilterCtrl4 == event.dataA())) {
                         return true;
                         }
                   break;
@@ -269,7 +269,7 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
       if(audio->isPlaying())
         event.setLoopNum(audio->loopCount());
       
-      if (midiInputTrace) {
+      if (MusEGlobal::midiInputTrace) {
             printf("MidiInput: ");
             event.dump();
             }
@@ -328,11 +328,11 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
 
       processMidiInputTransformPlugins(event);
 
-      if (filterEvent(event, midiRecordType, false))
+      if (filterEvent(event, MusEGlobal::midiRecordType, false))
             return;
 
       if (!applyMidiInputTransformation(event)) {
-            if (midiInputTrace)
+            if (MusEGlobal::midiInputTrace)
                   printf("   midi input transformation: event filtered\n");
             return;
             }
@@ -662,7 +662,7 @@ void MidiDevice::handleStop()
       // (Could try now that this is in MidiDevice. p4.0.22 )
       /*
       if(!si.sendContNotStart())
-        mp->sendSongpos(audio->tickPos() * 4 / config.division);
+        mp->sendSongpos(audio->tickPos() * 4 / MusEConfig::config.division);
       */  
     }
   }  
@@ -753,7 +753,7 @@ void MidiDevice::handleSeek()
       //if(port < -1 || port > MIDI_PORTS)
       //  continue;
       
-      int beat = (pos * 4) / config.division;
+      int beat = (pos * 4) / MusEConfig::config.division;
         
       //bool isPlaying = false;
       //if(state == PLAY)

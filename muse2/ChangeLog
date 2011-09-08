@@ -1,3 +1,6 @@
+07.09.2011:
+        - Introducing namespaces. So far, we have MusEApp, MusEGlobal, MusEConfig, and I just started
+          MusEWidget. zynaddsubfx does not crash anymore. (Orcan)
 06.09.2011:
         - Add licensing information (GPLv2 or later) to source code files. Update FSF mailing address
           to the most recent one in the existing copyright notices. (Orcan)

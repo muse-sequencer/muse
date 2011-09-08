@@ -212,7 +212,7 @@ void* MessSynth::instantiate(const QString& instanceName)
       //n.setNum(_instances);
       //QString instanceName = baseName() + "-" + n;
       
-      doSetuid();
+      MusEGlobal::doSetuid();
       QByteArray ba = info.filePath().toLatin1();
       const char* path = ba.constData();
 
@@ -221,7 +221,7 @@ void* MessSynth::instantiate(const QString& instanceName)
       if (handle == 0) {
             fprintf(stderr, "Synth::instantiate: dlopen(%s) failed: %s\n",
                path, dlerror());
-            undoSetuid();
+            MusEGlobal::undoSetuid();
             return 0;
             }
       typedef const MESS* (*MESS_Function)();
@@ -235,18 +235,18 @@ void* MessSynth::instantiate(const QString& instanceName)
                      "library file \"%s\": %s.\n"
                      "Are you sure this is a MESS plugin file?\n",
                      info.filePath().toAscii().constData(), txt);
-                  undoSetuid();
+                  MusEGlobal::undoSetuid();
                   return 0;
                   }
             }
       _descr = msynth();
       if (_descr == 0) {
             fprintf(stderr, "Synth::instantiate: no MESS descr found\n");
-            undoSetuid();
+            MusEGlobal::undoSetuid();
             return 0;
             }
-      Mess* mess = _descr->instantiate(sampleRate, muse, &museProject, instanceName.toLatin1().constData());
-      undoSetuid();
+      Mess* mess = _descr->instantiate(MusEGlobal::sampleRate, MusEGlobal::muse, &MusEGlobal::museProject, instanceName.toLatin1().constData());
+      MusEGlobal::undoSetuid();
       return mess;
       }
 
@@ -523,13 +523,13 @@ void SynthI::deactivate3()
       // Moved below by Tim. p3.3.14
       //synthesizer->incInstances(-1);
       
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         printf("SynthI::deactivate3 deleting _sif...\n");
       
       delete _sif;
       _sif = 0;
       
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         printf("SynthI::deactivate3 decrementing synth instances...\n");
       
       synthesizer->incInstances(-1);
@@ -553,6 +553,8 @@ SynthI::~SynthI()
       deactivate3();
       }
 
+namespace MusEApp {
+
 //---------------------------------------------------------
 //   initMidiSynth
 //    search for software synthis and advertise
@@ -560,10 +562,10 @@ SynthI::~SynthI()
 
 void initMidiSynth()
       {
-      QString s = museGlobalLib + "/synthi";
+      QString s = MusEGlobal::museGlobalLib + "/synthi";
 
       QDir pluginDir(s, QString("*.so")); // ddskrjo
-      if (debugMsg)
+      if (MusEGlobal::debugMsg)
             printf("searching for software synthesizer in <%s>\n", s.toLatin1().constData());
       if (pluginDir.exists()) {
             QFileInfoList list = pluginDir.entryInfoList();
@@ -572,7 +574,7 @@ void initMidiSynth()
             while(it!=list.end()) {
                   fi = &*it;
             
-                  //doSetuid();
+                  //MusEGlobal::doSetuid();
                   QByteArray ba = fi->filePath().toLatin1();
                   const char* path = ba.constData();
             
@@ -581,7 +583,7 @@ void initMidiSynth()
                   void* handle = dlopen(path, RTLD_NOW);
                   if (handle == 0) {
                         fprintf(stderr, "initMidiSynth: MESS dlopen(%s) failed: %s\n", path, dlerror());
-                        //undoSetuid();
+                        //MusEGlobal::undoSetuid();
                         //return 0;
                         ++it;
                         continue;
@@ -598,7 +600,7 @@ void initMidiSynth()
                                 "library file \"%s\": %s.\n"
                                 "Are you sure this is a MESS plugin file?\n",
                                 path, txt);
-                              //undoSetuid();
+                              //MusEGlobal::undoSetuid();
                               //return 0;
                               }
                         #endif      
@@ -609,14 +611,14 @@ void initMidiSynth()
                   const MESS* descr = msynth();
                   if (descr == 0) {
                         fprintf(stderr, "initMidiSynth: no MESS descr found in %s\n", path);
-                        //undoSetuid();
+                        //MusEGlobal::undoSetuid();
                         //return 0;
                         dlclose(handle);
                         ++it;
                         continue;
                         }
-                  //Mess* mess = descr->instantiate(sampleRate, muse, &museProject, instanceName.toLatin1().constData());
-                  //undoSetuid();
+                  //Mess* mess = descr->instantiate(MusEGlobal::sampleRate, muse, &museProject, instanceName.toLatin1().constData());
+                  //MusEGlobal::undoSetuid();
                   
             
             
@@ -627,10 +629,12 @@ void initMidiSynth()
                   dlclose(handle);
                   ++it;
                   }
-            if (debugMsg)
+            if (MusEGlobal::debugMsg)
                   printf("%zd soft synth found\n", synthis.size());
             }
       }
+} // namespace MusEApp
+
 
 //---------------------------------------------------------
 //   createSynthI
@@ -1068,7 +1072,7 @@ iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigne
 
 bool MessSynthIF::putEvent(const MidiPlayEvent& ev)
       {
-      if (midiOutputTrace)
+      if (MusEGlobal::midiOutputTrace)
             ev.dump();
       if (_mess)
             return _mess->processEvent(ev);

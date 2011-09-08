@@ -23,6 +23,8 @@
 
 #include "gconfig.h"
 
+namespace MusEConfig {
+
 GlobalConfigValues config = {
       190,                        // globalAlphaBlend    
       {
@@ -187,3 +189,4 @@ GlobalConfigValues config = {
       false                         // popupsDefaultStayOpen
     };
 
+} // namespace MusEConfig

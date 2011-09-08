@@ -41,13 +41,16 @@ class QString;
 class QToolBar;
 class QToolButton;
 class QProgressDialog;
-class VisibleTracks;
+
+namespace MusEWidget {
+class BigTime;
 class EditToolBar;
+class VisibleTracks;
+}
 
 class Part;
 class PartList;
 class Transport;
-class BigTime;
 class Arranger;
 class Instrument;
 class RoutePopupMenu;
@@ -82,6 +85,9 @@ class ScoreEdit;
 class Undo;
 
 #define MENU_ADD_SYNTH_ID_BASE 0x1000
+
+namespace MusEApp {
+
 
 //---------------------------------------------------------
 //   MusE
@@ -162,11 +168,11 @@ class MusE : public QMainWindow
 
       QFileInfo project;
       QToolBar *tools;
-      EditToolBar *tools1;
-      VisibleTracks *visTracks;
+      MusEWidget::EditToolBar *tools1;
+      MusEWidget::VisibleTracks *visTracks;
 
       Transport* transport;
-      BigTime* bigtime;
+      MusEWidget::BigTime* bigtime;
       EditInstrument* editInstrument;
       
       QMenu *menu_file, *menuView, *menuSettings, *menu_help;
@@ -389,3 +395,4 @@ class MusE : public QMainWindow
 extern void addProject(const QString& name);
 #endif
 
+} // namespace MusEA

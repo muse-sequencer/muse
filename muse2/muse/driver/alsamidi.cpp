@@ -294,7 +294,7 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
 
 bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
       {
-      if (midiOutputTrace) {
+      if (MusEGlobal::midiOutputTrace) {
             printf("MidiOut: midiAlsa: ");
             e.dump();
             }
@@ -472,7 +472,7 @@ bool MidiAlsaDevice::putEvent(snd_seq_event_t* event)
 
 bool initMidiAlsa()
       {
-      if (debugMsg)
+      if (MusEGlobal::debugMsg)
             printf("initMidiAlsa\n");
       int error = snd_seq_open(&alsaSeq, "hw", SND_SEQ_OPEN_DUPLEX, SND_SEQ_NONBLOCK);
       if (error < 0) {
@@ -510,7 +510,7 @@ bool initMidiAlsa()
                   if (capability & inCap)
                         flags |= 2;
                   dev->setrwFlags(flags);
-                  if (debugMsg)
+                  if (MusEGlobal::debugMsg)
                         printf("ALSA port add: <%s>, %d:%d flags %d 0x%0x\n",
                            snd_seq_port_info_get_name(pinfo),
                            adr.client, adr.port,
@@ -765,7 +765,7 @@ void alsaProcessMidiInput()
                   }
             
             if (mdev == 0 || curPort == -1) {
-                  if (debugMsg) {
+                  if (MusEGlobal::debugMsg) {
                         fprintf(stderr, "no port %d:%d found for received alsa event\n",
                            ev->source.client, ev->source.port);
                         }
@@ -778,7 +778,7 @@ void alsaProcessMidiInput()
             {
                 if(mdev == 0)
                 {  
-                  if (debugMsg) 
+                  if (MusEGlobal::debugMsg) 
                   {
                     fprintf(stderr, "no port %d:%d found for received alsa event\n",
                       ev->source.client, ev->source.port);

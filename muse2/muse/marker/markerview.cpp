@@ -124,7 +124,7 @@ void MarkerItem::setTick(unsigned v)
       s.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
       setText(COL_TICK, s);
 
-      double time = double(tempomap.tick2frame(v))/double(sampleRate);
+      double time = double(tempomap.tick2frame(v))/double(MusEGlobal::sampleRate);
       int hour = int(time) / 3600;
       int min  = (int(time) % 3600)/60;
       int sec  = int(time) % 60;
@@ -190,7 +190,7 @@ MarkerView::MarkerView(QWidget* parent)
 
       //---------ToolBar----------------------------------
       tools = addToolBar(tr("marker-tools"));
-      tools->addActions(undoRedo->actions());
+      tools->addActions(MusEGlobal::undoRedo->actions());
 
       QToolBar* edit = addToolBar(tr("edit tools"));
       edit->addAction(markerAdd);

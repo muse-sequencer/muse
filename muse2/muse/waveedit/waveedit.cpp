@@ -173,15 +173,15 @@ WaveEdit::WaveEdit(PartList* pl)
       tools = addToolBar(tr("Wave edit tools"));
       tools->setObjectName("Wave edit tools");
 
-      tools->addActions(undoRedo->actions());
+      tools->addActions(MusEGlobal::undoRedo->actions());
 
-      connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
+      connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
       //--------------------------------------------------
       //    Transport Bar
       QToolBar* transport = addToolBar(tr("transport"));
       transport->setObjectName("transport");
-      transport->addActions(transportAction->actions());
+      transport->addActions(MusEGlobal::transportAction->actions());
 
       //--------------------------------------------------
       //    ToolBar:   Solo  Cursor1 Cursor2
@@ -305,7 +305,7 @@ void WaveEdit::initShortcuts()
 
 void WaveEdit::configChanged()
       {
-      view->setBg(config.waveEditBackgroundColor);
+      view->setBg(MusEConfig::config.waveEditBackgroundColor);
       selectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
       selectNoneAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
       }
@@ -349,7 +349,7 @@ void WaveEdit::setTime(unsigned samplepos)
 
 WaveEdit::~WaveEdit()
       {
-      // undoRedo->removeFrom(tools); // p4.0.6 Removed
+      // MusEGlobal::undoRedo->removeFrom(tools); // p4.0.6 Removed
       }
 
 //---------------------------------------------------------
@@ -373,7 +373,7 @@ void WaveEdit::readConfiguration(Xml& xml)
             switch (token) {
                   case Xml::TagStart:
                         if (tag == "bgcolor")
-                              config.waveEditBackgroundColor = readColor(xml);
+                              MusEConfig::config.waveEditBackgroundColor = readColor(xml);
                         else if (tag == "width")
                               _widthInit = xml.parseInt();
                         else if (tag == "height")
@@ -402,7 +402,7 @@ void WaveEdit::readConfiguration(Xml& xml)
 void WaveEdit::writeConfiguration(int level, Xml& xml)
       {
       xml.tag(level++, "waveedit");
-      xml.colorTag(level, "bgcolor", config.waveEditBackgroundColor);
+      xml.colorTag(level, "bgcolor", MusEConfig::config.waveEditBackgroundColor);
       xml.intTag(level, "width", _widthInit);
       xml.intTag(level, "height", _heightInit);
       xml.strTag(level, "toolbars", _toolbarInit.toHex().data());

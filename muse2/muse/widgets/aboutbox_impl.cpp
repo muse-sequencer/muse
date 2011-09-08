@@ -24,6 +24,8 @@
 #include "config.h"
 #include "icons.h"
 
+namespace MusEWidget {
+
 AboutBoxImpl::AboutBoxImpl()
 {
   setupUi(this);
@@ -31,4 +33,6 @@ AboutBoxImpl::AboutBoxImpl()
   QString version(VERSION);
   QString svnrevision(SVNVERSION);
   versionLabel->setText("Version: " + version + " (svn  revision: "+ svnrevision +")");
+}
+
 }

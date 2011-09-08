@@ -83,8 +83,8 @@ void TempoList::normalize()
       for (iTEvent e = begin(); e != end(); ++e) {
             e->second->frame = frame;
             unsigned dtick = e->first - e->second->tick;
-            double dtime = double(dtick) / (config.division * _globalTempo * 10000.0/e->second->tempo);
-            frame += lrint(dtime * sampleRate);
+            double dtime = double(dtick) / (MusEConfig::config.division * _globalTempo * 10000.0/e->second->tempo);
+            frame += lrint(dtime * MusEGlobal::sampleRate);
             }
       }
 
@@ -270,13 +270,13 @@ unsigned TempoList::tick2frame(unsigned tick, int* sn) const
                   return 0;
                   }
             unsigned dtick = tick - i->second->tick;
-            double dtime   = double(dtick) / (config.division * _globalTempo * 10000.0/ i->second->tempo);
-            unsigned dframe   = lrint(dtime * sampleRate);
+            double dtime   = double(dtick) / (MusEConfig::config.division * _globalTempo * 10000.0/ i->second->tempo);
+            unsigned dframe   = lrint(dtime * MusEGlobal::sampleRate);
             f = i->second->frame + dframe;
             }
       else {
-            double t = (double(tick) * double(_tempo)) / (double(config.division) * _globalTempo * 10000.0);
-            f = lrint(t * sampleRate);
+            double t = (double(tick) * double(_tempo)) / (double(MusEConfig::config.division) * _globalTempo * 10000.0);
+            f = lrint(t * MusEGlobal::sampleRate);
             }
       if (sn)
             *sn = _tempoSN;
@@ -313,11 +313,11 @@ unsigned TempoList::frame2tick(unsigned frame, int* sn) const
                   }
             unsigned te  = e->second->tempo;
             int dframe   = frame - e->second->frame;
-            double dtime = double(dframe) / double(sampleRate);
-            tick         = e->second->tick + lrint(dtime * _globalTempo * config.division * 10000.0 / te);
+            double dtime = double(dframe) / double(MusEGlobal::sampleRate);
+            tick         = e->second->tick + lrint(dtime * _globalTempo * MusEConfig::config.division * 10000.0 / te);
             }
       else
-            tick = lrint((double(frame)/double(sampleRate)) * _globalTempo * config.division * 10000.0 / double(_tempo));
+            tick = lrint((double(frame)/double(MusEGlobal::sampleRate)) * _globalTempo * MusEConfig::config.division * 10000.0 / double(_tempo));
       if (sn)
             *sn = _tempoSN;
       return tick;
@@ -338,8 +338,8 @@ unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn) con
                   return 0;
                   }
             unsigned dtick = tick1 - i->second->tick;
-            double dtime   = double(dtick) / (config.division * _globalTempo * 10000.0/ i->second->tempo);
-            unsigned dframe   = lrint(dtime * sampleRate);
+            double dtime   = double(dtick) / (MusEConfig::config.division * _globalTempo * 10000.0/ i->second->tempo);
+            unsigned dframe   = lrint(dtime * MusEGlobal::sampleRate);
             f1 = i->second->frame + dframe;
             
             i = upper_bound(tick2);
@@ -347,16 +347,16 @@ unsigned TempoList::deltaTick2frame(unsigned tick1, unsigned tick2, int* sn) con
                   return 0;
                   }
             dtick = tick2 - i->second->tick;
-            dtime   = double(dtick) / (config.division * _globalTempo * 10000.0/ i->second->tempo);
-            dframe   = lrint(dtime * sampleRate);
+            dtime   = double(dtick) / (MusEConfig::config.division * _globalTempo * 10000.0/ i->second->tempo);
+            dframe   = lrint(dtime * MusEGlobal::sampleRate);
             f2 = i->second->frame + dframe;
             }
       else {
-            double t = (double(tick1) * double(_tempo)) / (double(config.division) * _globalTempo * 10000.0);
-            f1 = lrint(t * sampleRate);
+            double t = (double(tick1) * double(_tempo)) / (double(MusEConfig::config.division) * _globalTempo * 10000.0);
+            f1 = lrint(t * MusEGlobal::sampleRate);
             
-            t = (double(tick2) * double(_tempo)) / (double(config.division) * _globalTempo * 10000.0);
-            f2 = lrint(t * sampleRate);
+            t = (double(tick2) * double(_tempo)) / (double(MusEConfig::config.division) * _globalTempo * 10000.0);
+            f2 = lrint(t * MusEGlobal::sampleRate);
             }
       if (sn)
             *sn = _tempoSN;
@@ -386,8 +386,8 @@ unsigned TempoList::deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn) c
                   }
             unsigned te  = e->second->tempo;
             int dframe   = frame1 - e->second->frame;
-            double dtime = double(dframe) / double(sampleRate);
-            tick1         = e->second->tick + lrint(dtime * _globalTempo * config.division * 10000.0 / te);
+            double dtime = double(dframe) / double(MusEGlobal::sampleRate);
+            tick1         = e->second->tick + lrint(dtime * _globalTempo * MusEConfig::config.division * 10000.0 / te);
             
             for (e = begin(); e != end();) {
                   ciTEvent ee = e;
@@ -400,13 +400,13 @@ unsigned TempoList::deltaFrame2tick(unsigned frame1, unsigned frame2, int* sn) c
                   }
             te  = e->second->tempo;
             dframe   = frame2 - e->second->frame;
-            dtime = double(dframe) / double(sampleRate);
-            tick2         = e->second->tick + lrint(dtime * _globalTempo * config.division * 10000.0 / te);
+            dtime = double(dframe) / double(MusEGlobal::sampleRate);
+            tick2         = e->second->tick + lrint(dtime * _globalTempo * MusEConfig::config.division * 10000.0 / te);
             }
       else
       {
-            tick1 = lrint((double(frame1)/double(sampleRate)) * _globalTempo * config.division * 10000.0 / double(_tempo));
-            tick2 = lrint((double(frame2)/double(sampleRate)) * _globalTempo * config.division * 10000.0 / double(_tempo));
+            tick1 = lrint((double(frame1)/double(MusEGlobal::sampleRate)) * _globalTempo * MusEConfig::config.division * 10000.0 / double(_tempo));
+            tick2 = lrint((double(frame2)/double(MusEGlobal::sampleRate)) * _globalTempo * MusEConfig::config.division * 10000.0 / double(_tempo));
       }
       if (sn)
             *sn = _tempoSN;

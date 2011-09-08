@@ -25,11 +25,13 @@
 
 #include <QToolBar>
 
-class Action;
-
 class QAction;
 class QPixmap;
 class QWidget;
+
+namespace MusEWidget {
+
+class Action;
 
 struct VisibleToolB {
       QPixmap** icon;
@@ -60,6 +62,6 @@ class VisibleTracks : public QToolBar {
       ~VisibleTracks();
       };
 
-
+} // namespace MusEWidget
 
 #endif // VISIBLETRACKS_H

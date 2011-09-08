@@ -99,7 +99,7 @@ NPart::NPart(Part* e) : CItem(Event(), e)
 //---------------------------------------------------------
 
 PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
-   : Canvas(parent, sx, sy)
+   : MusEWidget::Canvas(parent, sx, sy)
       {
       setAcceptDrops(true);
       _raster = r;
@@ -189,7 +189,7 @@ void PartCanvas::returnPressed()
 
 void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
       {
-      if (_tool != PointerTool) {
+      if (_tool != MusEWidget::PointerTool) {
             viewMousePressEvent(event);
             return;
             }
@@ -333,7 +333,7 @@ UndoOp PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
             }
       if (ntrack >= tracks->size()) {
             ntrack = tracks->size();
-            if (debugMsg)
+            if (MusEGlobal::debugMsg)
                 printf("PartCanvas::moveItem - add new track\n");
             Track* newTrack = song->addTrack(int(type));
             if (type == Track::WAVE) {
@@ -632,7 +632,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
 
       // part color selection
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
-            QAction *act_color = colorPopup->addAction(colorRect(config.partColors[i], 80, 80), config.partColorNames[i]);
+            QAction *act_color = colorPopup->addAction(colorRect(MusEConfig::config.partColors[i], 80, 80), MusEConfig::config.partColorNames[i]);
             act_color->setData(20+i);
             }
 
@@ -648,17 +648,17 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       partPopup->addSeparator();
       switch(trackType) {
             case Track::MIDI: {
-                  partPopup->addAction(muse->startPianoEditAction);
-                  partPopup->addMenu(muse->scoreSubmenu);
-                  partPopup->addAction(muse->startScoreEditAction);
-                  partPopup->addAction(muse->startListEditAction);
+                  partPopup->addAction(MusEGlobal::muse->startPianoEditAction);
+                  partPopup->addMenu(MusEGlobal::muse->scoreSubmenu);
+                  partPopup->addAction(MusEGlobal::muse->startScoreEditAction);
+                  partPopup->addAction(MusEGlobal::muse->startListEditAction);
                   QAction *act_mexport = partPopup->addAction(tr("save part to disk"));
                   act_mexport->setData(16);
                   }
                   break;
             case Track::DRUM: {
-                  partPopup->addAction(muse->startDrumEditAction);
-                  partPopup->addAction(muse->startListEditAction);
+                  partPopup->addAction(MusEGlobal::muse->startDrumEditAction);
+                  partPopup->addAction(MusEGlobal::muse->startListEditAction);
                   QAction *act_dexport = partPopup->addAction(tr("save part to disk"));
                   act_dexport->setData(16);
                   }
@@ -755,7 +755,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                   {
                   const Part* part = item->part();
                   bool popenFlag = false;
-                  QString fn = getSaveFileName(QString(""), part_file_save_pattern, this, tr("MusE: save part"));
+                  QString fn = getSaveFileName(QString(""), MusEGlobal::part_file_save_pattern, this, tr("MusE: save part"));
                   if (!fn.isEmpty()) {
                         FILE* fp = fileOpen(this, fn, ".mpt", "w", popenFlag, false, false);
                         if (fp) {
@@ -846,19 +846,19 @@ void PartCanvas::mousePress(QMouseEvent* event)
             }
       QPoint pt = event->pos();
       CItem* item = items.find(pt);
-      if (item == 0 && _tool!=AutomationTool)
+      if (item == 0 && _tool!=MusEWidget::AutomationTool)
             return;
       switch (_tool) {
             default:
                   emit trackChanged(item->part()->track());
                   break;
-            case CutTool:
+            case MusEWidget::CutTool:
                   splitItem(item, pt);
                   break;
-            case GlueTool:
+            case MusEWidget::GlueTool:
                   glueItem(item);
                   break;
-            case MuteTool:
+            case MusEWidget::MuteTool:
                   {
                   NPart* np = (NPart*) item;
                   Part*  p = np->part();
@@ -866,7 +866,7 @@ void PartCanvas::mousePress(QMouseEvent* event)
                   redraw();
                   break;
                   }
-            case AutomationTool:
+            case MusEWidget::AutomationTool:
                     if (automation.controllerState != doNothing)
                         automation.moveController=true;
                     break;
@@ -898,7 +898,7 @@ void PartCanvas::mouseMove(QMouseEvent* event)
       if (x < 0)
             x = 0;
 
-      if (_tool == AutomationTool)
+      if (_tool == MusEWidget::AutomationTool)
           processAutomationMovements(event->pos(), event->modifiers() & Qt::ShiftModifier);
 
       emit timeChanged(AL::sigmap.raster(x, *_raster));
@@ -929,7 +929,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
       {
       int key = event->key();
 
-//      if (_tool == AutomationTool) { // can't get the cursor pos to work right, skipping for now
+//      if (_tool == MusEWidget::AutomationTool) { // can't get the cursor pos to work right, skipping for now
 //        // clear all the automation parameters
 //        automation.moveController=false;
 //        automation.controllerState = doNothing;
@@ -1001,30 +1001,30 @@ void PartCanvas::keyPress(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_POINTER].key) {
-            emit setUsedTool(PointerTool);
+            emit setUsedTool(MusEWidget::PointerTool);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_PENCIL].key) {
-            emit setUsedTool(PencilTool);
+            emit setUsedTool(MusEWidget::PencilTool);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_RUBBER].key) {
-            emit setUsedTool(RubberTool);
+            emit setUsedTool(MusEWidget::RubberTool);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_SCISSORS].key) {
-            emit setUsedTool(CutTool);
+            emit setUsedTool(MusEWidget::CutTool);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_LINEDRAW].key) {
-            emit setUsedTool(AutomationTool);
+            emit setUsedTool(MusEWidget::AutomationTool);
             return;
             }      else if (key == shortcuts[SHRT_TOOL_GLUE].key) {
-            emit setUsedTool(GlueTool);
+            emit setUsedTool(MusEWidget::GlueTool);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_MUTE].key) {
-            emit setUsedTool(MuteTool);
+            emit setUsedTool(MusEWidget::MuteTool);
             return;
             }
       else if (key == shortcuts[SHRT_SEL_TRACK_ABOVE].key) {
@@ -1389,7 +1389,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       if (item->isMoving()) 
       {
             QColor c(Qt::gray);
-            c.setAlpha(config.globalAlphaBlend);
+            c.setAlpha(MusEConfig::config.globalAlphaBlend);
             QLinearGradient gradient(r.topLeft(), r.bottomLeft());
             gradient.setColorAt(0, c);
             gradient.setColorAt(1, c.darker());
@@ -1399,12 +1399,12 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       if (part->selected()) 
       {
           QColor c(Qt::black);
-          c.setAlpha(config.globalAlphaBlend);
+          c.setAlpha(MusEConfig::config.globalAlphaBlend);
           QLinearGradient gradient(r.topLeft(), r.bottomLeft());
           // Use a colour only about 20% lighter than black, rather than the 50% we use in gGradientFromQColor
           //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
           //c.setRgba(64, 64, 64, c.alpha());        
-          gradient.setColorAt(0, QColor(51, 51, 51, config.globalAlphaBlend));
+          gradient.setColorAt(0, QColor(51, 51, 51, MusEConfig::config.globalAlphaBlend));
           gradient.setColorAt(1, c);
           brush = QBrush(gradient);
       }
@@ -1412,7 +1412,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       if (part->mute()) 
       {
             QColor c(Qt::white);
-            c.setAlpha(config.globalAlphaBlend);
+            c.setAlpha(MusEConfig::config.globalAlphaBlend);
             QLinearGradient gradient(r.topLeft(), r.bottomLeft());
             gradient.setColorAt(0, c);
             gradient.setColorAt(1, c.darker());
@@ -1427,8 +1427,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       }
       else
       {
-            QColor c(config.partColors[cidx]);
-            c.setAlpha(config.globalAlphaBlend);
+            QColor c(MusEConfig::config.partColors[cidx]);
+            c.setAlpha(MusEConfig::config.globalAlphaBlend);
             brush = QBrush(gGradientFromQColor(c, r.topLeft(), r.bottomLeft()));
       }  
       
@@ -1497,7 +1497,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         //
                       
         int part_r, part_g, part_b, brightness, color_brightness;
-        config.partColors[cidx].getRgb(&part_r, &part_g, &part_b);
+        MusEConfig::config.partColors[cidx].getRgb(&part_r, &part_g, &part_b);
         brightness =  part_r*29 + part_g*59 + part_b*12;
         //if ((brightness < 12000 || part->selected()) && !part->mute() && !item->isMoving())
         //  color_brightness=223;   // too dark: use lighter color 
@@ -1507,7 +1507,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
           color_brightness=32;    // too light: use dark color 
         else
           color_brightness=223;   // too dark: use lighter color 
-        QColor c(color_brightness,color_brightness,color_brightness, config.globalAlphaBlend);
+        QColor c(color_brightness,color_brightness,color_brightness, MusEConfig::config.globalAlphaBlend);
         p.setBrush(QBrush(gGradientFromQColor(c, r.topLeft(), r.bottomLeft())));
         //p.setBrush(QBrush(c));
         if(het & Part::RightEventsHidden)
@@ -1559,7 +1559,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         // Works great but requires clones be drawn with the highest priority on top of all other parts, in Canvas::draw.
         //
         
-        QPen pen(part->selected() ? config.partColors[i] : Qt::black, 2.0, clone ? Qt::DotLine : Qt::SolidLine);
+        QPen pen(part->selected() ? MusEConfig::config.partColors[i] : Qt::black, 2.0, clone ? Qt::DotLine : Qt::SolidLine);
         pen.setCosmetic(true);
         p.setPen(pen); 
         p.setBrush(Qt::NoBrush);
@@ -1580,7 +1580,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         
         p.setBrush(Qt::NoBrush);
         
-        QColor pc((part->mute() || item->isMoving())? Qt::white : config.partColors[cidx]);
+        QColor pc((part->mute() || item->isMoving())? Qt::white : MusEConfig::config.partColors[cidx]);
         QPen penSelect1H(pc);
         QPen penSelect2H(pc, 2.0);
         QPen penSelect1V(pc);
@@ -1695,7 +1695,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
  
       //p.restore();
       
-      if (config.canvasShowPartType & 1) {     // show names
+      if (MusEConfig::config.canvasShowPartType & 1) {     // show names
             // draw name
             // FN: Set text color depending on part color (black / white)
             int part_r, part_g, part_b, brightness;
@@ -1703,12 +1703,12 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             //  get the lowest colour in the gradient used to draw the part.
             QRect rr = map(r);
             rr.setX(rr.x() + 3);
-            gGradientFromQColor(config.partColors[cidx], rr.topLeft(), rr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
+            gGradientFromQColor(MusEConfig::config.partColors[cidx], rr.topLeft(), rr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
             brightness =  part_r*29 + part_g*59 + part_b*12;
             //bool rev = (brightness < 12000 || part->selected()) && !part->mute() && !item->isMoving();
             bool rev = brightness >= 12000 && !part->selected();
             p.save();
-            p.setFont(config.fonts[1]);
+            p.setFont(MusEConfig::config.fonts[1]);
             p.setWorldMatrixEnabled(false);
             if (rev)
               p.setPen(Qt::white); 
@@ -1814,7 +1814,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       if (item->isMoving()) 
       {
             QColor c(Qt::gray);
-            c.setAlpha(config.globalAlphaBlend);
+            c.setAlpha(MusEConfig::config.globalAlphaBlend);
             QLinearGradient gradient(rr.topLeft(), rr.bottomLeft());
             gradient.setColorAt(0, c);
             gradient.setColorAt(1, c.darker());
@@ -1824,12 +1824,12 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       if (part->selected()) 
       {
           QColor c(Qt::black);
-          c.setAlpha(config.globalAlphaBlend);
+          c.setAlpha(MusEConfig::config.globalAlphaBlend);
           QLinearGradient gradient(rr.topLeft(), rr.bottomLeft());
           // Use a colour only about 20% lighter than black, rather than the 50% we use in gGradientFromQColor
           //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
           //c.setRgba(64, 64, 64, c.alpha());        
-          gradient.setColorAt(0, QColor(51, 51, 51, config.globalAlphaBlend));
+          gradient.setColorAt(0, QColor(51, 51, 51, MusEConfig::config.globalAlphaBlend));
           gradient.setColorAt(1, c);
           brush = QBrush(gradient);
       }
@@ -1837,7 +1837,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       if (part->mute()) 
       {
             QColor c(Qt::white);
-            c.setAlpha(config.globalAlphaBlend);
+            c.setAlpha(MusEConfig::config.globalAlphaBlend);
             QLinearGradient gradient(rr.topLeft(), rr.bottomLeft());
             gradient.setColorAt(0, c);
             gradient.setColorAt(1, c.darker());
@@ -1845,8 +1845,8 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       }
       else
       {
-            QColor c(config.partColors[cidx]);
-            c.setAlpha(config.globalAlphaBlend);
+            QColor c(MusEConfig::config.partColors[cidx]);
+            c.setAlpha(MusEConfig::config.globalAlphaBlend);
             brush = QBrush(gGradientFromQColor(c, rr.topLeft(), rr.bottomLeft()));
       }  
       
@@ -1937,7 +1937,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         //
                       
         int part_r, part_g, part_b, brightness, color_brightness;
-        config.partColors[cidx].getRgb(&part_r, &part_g, &part_b);
+        MusEConfig::config.partColors[cidx].getRgb(&part_r, &part_g, &part_b);
         brightness =  part_r*29 + part_g*59 + part_b*12;
         //if ((brightness < 12000 || part->selected()) && !part->mute() && !item->isMoving())
         //  color_brightness=223;   // too dark: use lighter color 
@@ -1947,7 +1947,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
           color_brightness=96; //0;    // too light: use dark color 
         else
           color_brightness=180; //255;   // too dark: use lighter color 
-        QColor c(color_brightness,color_brightness,color_brightness, config.globalAlphaBlend);
+        QColor c(color_brightness,color_brightness,color_brightness, MusEConfig::config.globalAlphaBlend);
         p.setBrush(QBrush(gGradientFromQColor(c, rr.topLeft(), rr.bottomLeft())));
         //p.setBrush(QBrush(c));
         if(het & Part::RightEventsHidden)
@@ -2024,7 +2024,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         // Works great but requires clones be drawn with the highest priority on top of all other parts, in Canvas::draw.
         //
         
-        QPen pen(part->selected() ? config.partColors[i] : Qt::black, 2.0, clone ? Qt::DotLine : Qt::SolidLine);
+        QPen pen(part->selected() ? MusEConfig::config.partColors[i] : Qt::black, 2.0, clone ? Qt::DotLine : Qt::SolidLine);
         pen.setCosmetic(true);
         p.setPen(pen); 
         p.setBrush(Qt::NoBrush);
@@ -2037,7 +2037,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         
         p.setBrush(Qt::NoBrush);
         
-        QColor pc((part->mute() || item->isMoving())? Qt::white : config.partColors[cidx]);
+        QColor pc((part->mute() || item->isMoving())? Qt::white : MusEConfig::config.partColors[cidx]);
         QPen penSelect1H(pc);
         QPen penSelect2H(pc, 2.0);
         QPen penSelect1V(pc);
@@ -2158,7 +2158,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         
   #endif
       
-      if (config.canvasShowPartType & 1) {     // show names
+      if (MusEConfig::config.canvasShowPartType & 1) {     // show names
             // draw name
             // FN: Set text color depending on part color (black / white)
             int part_r, part_g, part_b, brightness;
@@ -2167,11 +2167,11 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             //QRect rr = map(r);
             QRect tr = rr;
             tr.setX(tr.x() + 3);
-            gGradientFromQColor(config.partColors[cidx], tr.topLeft(), tr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
+            gGradientFromQColor(MusEConfig::config.partColors[cidx], tr.topLeft(), tr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
             brightness =  part_r*29 + part_g*59 + part_b*12;
             //bool rev = (brightness < 12000 || part->selected()) && !part->mute() && !item->isMoving();
             bool rev = brightness >= 12000 && !part->selected();
-            p.setFont(config.fonts[1]);
+            p.setFont(MusEConfig::config.fonts[1]);
             if (rev)
               p.setPen(Qt::white); 
             else
@@ -2197,8 +2197,8 @@ void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
       {
         p.setPen( Qt::black);
         Part* part = ((NPart*)item)->part();
-        QColor c(part->mute() ? Qt::white : config.partColors[part->colorIndex()]);        
-        //c.setAlpha(config.globalAlphaBlend);
+        QColor c(part->mute() ? Qt::white : MusEConfig::config.partColors[part->colorIndex()]);        
+        //c.setAlpha(MusEConfig::config.globalAlphaBlend);
         c.setAlpha(128);  // Fix this regardless of global setting. Should be OK.
         p.setBrush(c);
         p.drawRect(item->mp().x(), item->mp().y(), item->width(), item->height());
@@ -2218,7 +2218,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
   if(pt) 
   {
     int part_r, part_g, part_b, brightness;
-    config.partColors[pt->colorIndex()].getRgb(&part_r, &part_g, &part_b);
+    MusEConfig::config.partColors[pt->colorIndex()].getRgb(&part_r, &part_g, &part_b);
     brightness =  part_r*29 + part_g*59 + part_b*12;
     //if ((brightness < 12000 || pt->selected()) && !pt->mute())
     //  color_brightness=192;   // too dark: use lighter color 
@@ -2232,7 +2232,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
   else
     color_brightness=80;
     
-  if (config.canvasShowPartType & 2) {      // show events
+  if (MusEConfig::config.canvasShowPartType & 2) {      // show events
             p.setPen(QColor(color_brightness,color_brightness,color_brightness));
             // Do not allow this, causes segfault.
             if(from <= to)
@@ -2242,11 +2242,11 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
               for (iEvent i = events->lower_bound(from); i != ito; ++i) {
                     EventType type = i->second.type();
                     if (
-                      ((config.canvasShowPartEvent & 1) && (type == Note))
-                      || ((config.canvasShowPartEvent & 2) && (type == PAfter))
-                      || ((config.canvasShowPartEvent & 4) && (type == Controller))
-                      || ((config.canvasShowPartEvent &16) && (type == CAfter))
-                      || ((config.canvasShowPartEvent &64) && (type == Sysex || type == Meta))
+                      ((MusEConfig::config.canvasShowPartEvent & 1) && (type == Note))
+                      || ((MusEConfig::config.canvasShowPartEvent & 2) && (type == PAfter))
+                      || ((MusEConfig::config.canvasShowPartEvent & 4) && (type == Controller))
+                      || ((MusEConfig::config.canvasShowPartEvent &16) && (type == CAfter))
+                      || ((MusEConfig::config.canvasShowPartEvent &64) && (type == Sysex || type == Meta))
                       ) {
                           int t = i->first + pTick;
                           int th = mt->height();
@@ -2341,7 +2341,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
       int highest_pitch=0;
       map<int,int> y_mapper;
       
-      if (config.canvasShowPartType & 4) //y-stretch?
+      if (MusEConfig::config.canvasShowPartType & 4) //y-stretch?
       {
         for (iEvent i = events->begin(); i != events->end(); ++i)
         {
@@ -2379,7 +2379,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
           highest_pitch++;
         }
         
-        if (heavyDebugMsg)
+        if (MusEGlobal::heavyDebugMsg)
         {
             if (!isdrum)
                 printf("DEBUG: arranger: cakewalk enabled, y-stretching from %i to %i. eventlist=%p\n",lowest_pitch, highest_pitch, events);
@@ -2401,7 +2401,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
           for (int cnt=0;cnt<127;cnt++)
             y_mapper[cnt]=cnt;
         
-        if (heavyDebugMsg) printf("DEBUG: arranger: cakewalk enabled, y-stretch disabled\n");
+        if (MusEGlobal::heavyDebugMsg) printf("DEBUG: arranger: cakewalk enabled, y-stretch disabled\n");
       }
 
       p.setPen(QColor(color_brightness,color_brightness,color_brightness));      
@@ -3000,7 +3000,7 @@ void PartCanvas::dragEnterEvent(QDragEnterEvent* event)
 
 void PartCanvas::viewDropEvent(QDropEvent* event)
       {
-      if (debugMsg)
+      if (MusEGlobal::debugMsg)
             printf("void PartCanvas::viewDropEvent(QDropEvent* event)\n");
       if (event->source() == this) {
             printf("local DROP\n");    
@@ -3017,7 +3017,7 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
         type = 2;
       else 
       {
-        if(debugMsg && event->mimeData()->formats().size() != 0)
+        if(MusEGlobal::debugMsg && event->mimeData()->formats().size() != 0)
           printf("Drop with unknown format. First format:<%s>\n", event->mimeData()->formats()[0].toLatin1().constData());
         //event->ignore();                     // TODO CHECK Tim.
         return;  
@@ -3080,13 +3080,13 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
                           (text.endsWith(".ogg", Qt::CaseInsensitive))))
                         {
                         unsigned tick = x;
-                        muse->importWaveToTrack(text, tick, track);
+                        MusEGlobal::muse->importWaveToTrack(text, tick, track);
                         }
                       // Changed by T356. Support mixed .mpt files.
                       else if ((track->isMidiTrack() || track->type() == Track::WAVE) && text.endsWith(".mpt", Qt::CaseInsensitive))
                         {
                         unsigned tick = x;
-                        muse->importPartToTrack(text, tick, track);
+                        MusEGlobal::muse->importPartToTrack(text, tick, track);
                         }
             }
             else if(text.endsWith(".med",Qt::CaseInsensitive))
@@ -3139,13 +3139,13 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
       //////////
       // GRID //
       //////////
-      QColor baseColor(config.partCanvasBg.light(104));
+      QColor baseColor(MusEConfig::config.partCanvasBg.light(104));
       p.setPen(baseColor);
 
       //--------------------------------
       // vertical lines
       //-------------------------------
-      if (config.canvasShowGrid) {
+      if (MusEConfig::config.canvasShowGrid) {
           int bar, beat;
           unsigned tick;
 
@@ -3166,17 +3166,17 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
 
             // append
             int noDivisors=0;
-            if (*_raster == config.division *2)         // 1/2
+            if (*_raster == MusEConfig::config.division *2)         // 1/2
                 noDivisors=2;
-            else if (*_raster== config.division)        // 1/4
+            else if (*_raster== MusEConfig::config.division)        // 1/4
                 noDivisors=4;
-            else if (*_raster==config.division/2)         // 1/8
+            else if (*_raster==MusEConfig::config.division/2)         // 1/8
                 noDivisors=8;
-            else if (*_raster==config.division/4)          // 1/16
+            else if (*_raster==MusEConfig::config.division/4)          // 1/16
                 noDivisors=16;
-            else if (*_raster==config.division/8)          // 1/16
+            else if (*_raster==MusEConfig::config.division/8)          // 1/16
                 noDivisors=32;
-            else if (*_raster==config.division/16)          // 1/16
+            else if (*_raster==MusEConfig::config.division/16)          // 1/16
                 noDivisors=64;
 
             int r = *_raster;
@@ -3215,7 +3215,7 @@ void PartCanvas::drawCanvas(QPainter& p, const QRect& rect)
             th = track->height();
             if (!th)
               continue;
-            if (config.canvasShowGrid && (track->isMidiTrack() || track->type() == Track::WAVE))   // Tim.
+            if (MusEConfig::config.canvasShowGrid && (track->isMidiTrack() || track->type() == Track::WAVE))   // Tim.
             {
               p.setPen(baseColor.dark(130));
               //p.drawLine(x, yy + th, x + w, yy + th);  
@@ -3282,7 +3282,7 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
     int mw = mr.width();
     int mh = mr.height();
     
-    QColor baseColor(config.partCanvasBg.light(104));
+    QColor baseColor(MusEConfig::config.partCanvasBg.light(104));
     //p.setPen(baseColor);
 
     p.save();
@@ -3347,8 +3347,8 @@ void PartCanvas::drawTopItem(QPainter& p, const QRect& rect)
         if (track->recordFlag()) {
             QPen pen(Qt::black, 0, Qt::SolidLine);
             p.setPen(pen);
-            QColor c(config.partColors[0]);
-            c.setAlpha(config.globalAlphaBlend);
+            QColor c(MusEConfig::config.partColors[0]);
+            c.setAlpha(MusEConfig::config.globalAlphaBlend);
             QLinearGradient gradient(QPoint(startx,yPos), QPoint(startx,yPos+th));
             gradient.setColorAt(0, c);
             gradient.setColorAt(1, c.darker());
@@ -3426,7 +3426,7 @@ void PartCanvas::drawAudioTrack(QPainter& p, const QRect& r, const QRect& bbox, 
       
       p.setPen(Qt::black);
       QColor c(Qt::gray);
-      c.setAlpha(config.globalAlphaBlend);
+      c.setAlpha(MusEConfig::config.globalAlphaBlend);
       //QLinearGradient gradient(r.topLeft(), r.bottomLeft());
       QLinearGradient gradient(mex + 1, mey + 1, mex + 1, mey + meh - 1);    // Inside the border
       gradient.setColorAt(0, c);
@@ -3730,7 +3730,7 @@ void PartCanvas::controllerChanged(Track* t)
 void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
 {
 
-  if (_tool == AutomationTool) {
+  if (_tool == MusEWidget::AutomationTool) {
 
       if (!automation.moveController) { // currently nothing going lets's check for some action.
           Track * t = y2Track(pos.y());

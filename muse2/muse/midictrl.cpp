@@ -803,7 +803,7 @@ void MidiCtrlValList::delMCtlVal(int tick, Part* part)
 {
       iMidiCtrlVal e = findMCtlVal(tick, part);
       if (e == end()) {
-            if(debugMsg)
+	if(MusEGlobal::debugMsg)
               printf("MidiCtrlValList::delMCtlVal(%d): not found (size %zd)\n", tick, size());
             return;
             }

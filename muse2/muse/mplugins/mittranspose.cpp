@@ -51,7 +51,7 @@ MITPluginTranspose::MITPluginTranspose(QWidget* parent, Qt::WFlags fl)
       connect(onCheckBox, SIGNAL(toggled(bool)), SLOT(onToggled(bool)));
       connect(triggerKeySpinBox, SIGNAL(valueChanged(int)),
          SLOT(triggerKeyChanged(int)));
-      connect(heartBeatTimer, SIGNAL(timeout()), SLOT(noteReceived()));
+      connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(noteReceived()));
       }
 
 //---------------------------------------------------------

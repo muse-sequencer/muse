@@ -122,7 +122,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       setupUi(this);
       arr    = a;
       color  = 0;
-      config = new GlobalConfigValues;
+      config = new MusEConfig::GlobalConfigValues;
 
       lastSelectedColorItem = 0;
       lastSelectedBgItem = 0;
@@ -208,7 +208,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x410, id, "Saxophon");
            */
            for(int i = 0; i < NUM_PARTCOLORS; ++i)
-             new IdListViewItem(0x400 + i, id, ::config.partColorNames[i]);
+             new IdListViewItem(0x400 + i, id, MusEConfig::config.partColorNames[i]);
            
            new IdListViewItem(0x41c, aid, "part canvas background");
       id = new IdListViewItem(0, aid, "Track List");
@@ -272,7 +272,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
 
       /*
       themeComboBox->clear();
-      QString cs = muse->style().name();
+      QString cs = MusEGlobal::muse->style().name();
       cs = cs.lower();
 
       themeComboBox->insertStringList(QStyleFactory::keys());
@@ -323,7 +323,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
 
 void Appearance::resetValues()
       {
-      *config = ::config;  // init with global config values
+      *config = MusEConfig::config;  // init with global config values
       styleSheetPath->setText(config->styleSheetFile);
       updateFonts();
 
@@ -454,7 +454,7 @@ void Appearance::resetValues()
       global_bg->takeChildren();
       user_bg->takeChildren();
 
-      QDir bgdir = museGlobalShare + "/wallpapers/";
+      QDir bgdir = MusEGlobal::museGlobalShare + "/wallpapers/";
       QStringList filters;
       filters << "*.jpg" << "*.jpeg" << "*.png" << "*.gif";
       bgdir.setNameFilters(filters);
@@ -465,10 +465,10 @@ void Appearance::resetValues()
       foreach (const QString &bgfile, bglist)
             {
             QTreeWidgetItem* item = new QTreeWidgetItem(global_bg, 0);
-            item->setData(0, Qt::UserRole, QVariant(museGlobalShare + "/wallpapers/" + bgfile));
-            BgPreviewWidget* bgw = new BgPreviewWidget(museGlobalShare + "/wallpapers/" + bgfile, backgroundTree);
+            item->setData(0, Qt::UserRole, QVariant(MusEGlobal::museGlobalShare + "/wallpapers/" + bgfile));
+            BgPreviewWidget* bgw = new BgPreviewWidget(MusEGlobal::museGlobalShare + "/wallpapers/" + bgfile, backgroundTree);
             backgroundTree->setItemWidget(item, 0, bgw);
-            if (config->canvasBgPixmap == museGlobalShare + "/wallpapers/" + bgfile)
+            if (config->canvasBgPixmap == MusEGlobal::museGlobalShare + "/wallpapers/" + bgfile)
                   backgroundTree->setCurrentItem(item);
             }
 
@@ -506,7 +506,7 @@ void Appearance::resetValues()
       arrGrid->setChecked(config->canvasShowGrid);
 
       themeComboBox->clear();
-      QString cs = muse->style()->objectName();
+      QString cs = MusEGlobal::muse->style()->objectName();
       //printf("Appearance::resetValues style:%s\n", cs.toAscii().data());  
       //printf("Appearance::resetValues App styleSheet:%s\n", qApp->styleSheet().toAscii().data());  
       cs = cs.toLower();
@@ -550,7 +550,7 @@ void Appearance::bgSelectionChanged(QTreeWidgetItem* item)
 	          removeBgButton->setEnabled(true);
   
       lastSelectedBgItem = item;
-      muse->arranger->getCanvas()->setBg(QPixmap(item->data(0, Qt::UserRole).toString()));
+      MusEGlobal::muse->arranger->getCanvas()->setBg(QPixmap(item->data(0, Qt::UserRole).toString()));
       }
 
 //---------------------------------------------------------
@@ -698,8 +698,8 @@ void Appearance::apply()
       config->globalAlphaBlend = globalAlphaVal->value();
       
       // set colors...
-      ::config = *config;
-      muse->changeConfig(true);
+      MusEConfig::config = *config;
+      MusEGlobal::muse->changeConfig(true);
       }
 
 //---------------------------------------------------------
@@ -741,7 +741,7 @@ void Appearance::ok()
 
 void Appearance::cancel()
       {
-      muse->arranger->getCanvas()->setBg(QPixmap(config->canvasBgPixmap));
+      MusEGlobal::muse->arranger->getCanvas()->setBg(QPixmap(config->canvasBgPixmap));
       close();
       }
 
@@ -752,7 +752,7 @@ void Appearance::cancel()
 void Appearance::removeBackground()
       {
       QTreeWidgetItem* item = backgroundTree->currentItem();
-      muse->arranger->getCanvas()->setBg(QPixmap());
+      MusEGlobal::muse->arranger->getCanvas()->setBg(QPixmap());
       user_bg->takeChild(user_bg->indexOfChild(item));
       backgroundTree->setCurrentItem (0);
       removeBgButton->setEnabled(false);
@@ -765,7 +765,7 @@ void Appearance::removeBackground()
 void Appearance::addBackground()
       {
       QString cur = getenv("HOME");
-      QString user_bgfile = getImageFileName(cur, image_file_pattern, this,
+      QString user_bgfile = getImageFileName(cur, MusEGlobal::image_file_pattern, this,
                                              tr("MusE: load image"));
 
       bool image_exists = false;
@@ -791,7 +791,7 @@ void Appearance::addBackground()
 
 void Appearance::clearBackground()
       {
-      muse->arranger->getCanvas()->setBg(QPixmap());
+      MusEGlobal::muse->arranger->getCanvas()->setBg(QPixmap());
       backgroundTree->setCurrentItem (0);
       removeBgButton->setEnabled(false);
       }

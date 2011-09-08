@@ -30,6 +30,8 @@
 #include "track.h"
 #include "synth.h"
 
+namespace MusEWidget {
+
 const char* waveTrack = QT_TRANSLATE_NOOP("@default", "Show wave tracks");
 const char* groupTrack = QT_TRANSLATE_NOOP("@default", "Show group tracks");
 const char* auxTrack = QT_TRANSLATE_NOOP("@default", "Show aux tracks");
@@ -140,3 +142,4 @@ VisibleTracks::~VisibleTracks()
       delete actions;
       }
 
+} // namespace MusEWidget

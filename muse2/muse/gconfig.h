@@ -34,6 +34,8 @@
 
 class Xml;
 
+namespace MusEConfig {
+
 //---------------------------------------------------------
 //   MixerConfig
 //---------------------------------------------------------
@@ -162,6 +164,8 @@ struct GlobalConfigValues {
       };
 
 extern GlobalConfigValues config;
+
+} // namespace MusEConfig
 
 #endif
 

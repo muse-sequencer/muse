@@ -25,6 +25,8 @@
 
 #include "ui_aboutbox.h"
 
+namespace MusEWidget {
+
 class AboutBoxImpl : public QDialog, public Ui::AboutBox
 {
     Q_OBJECT
@@ -34,5 +36,7 @@ public:
 
 
 };
+
+}
 
 #endif // ABOUTBOXIMPL_H

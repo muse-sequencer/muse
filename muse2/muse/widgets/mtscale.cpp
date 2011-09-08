@@ -230,7 +230,7 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
 
       int y = 12;
       p.setPen(Qt::black);
-      p.setFont(config.fonts[4]);
+      p.setFont(MusEConfig::config.fonts[4]);
       p.drawLine(r.x(), y+1, r.x() + r.width(), y+1);
       QRect tr(r);
       tr.setHeight(12);
@@ -391,7 +391,7 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
                         n = 32;
                   if (bar % n)
                         continue;
-                  p.setFont(config.fonts[3]);
+                  p.setFont(MusEConfig::config.fonts[3]);
                   int x = mapx(waveMode ? b : stick);
                   QString s;
                   s.setNum(bar + 1);
@@ -415,12 +415,12 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
                         if (beat == 0) {
                               num = bar + 1;
                               y1  = y + 1;
-                              p.setFont(config.fonts[3]);
+                              p.setFont(MusEConfig::config.fonts[3]);
                               }
                         else {
                               num = beat + 1;
                               y1  = y + 7;
-                              p.setFont(config.fonts[1]);
+                              p.setFont(MusEConfig::config.fonts[1]);
                               r.setY(y+3);
                               }
                         s.setNum(num);

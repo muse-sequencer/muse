@@ -889,7 +889,7 @@ void RoutePopupMenu::popupActivated(QAction* action)
         {
           int n = action->data().value<int>();
           if(!_isOutMenu && n == 0)
-            muse->configMidiPorts();
+            MusEGlobal::muse->configMidiPorts();
           return;  
         }
       }
@@ -1219,7 +1219,7 @@ void RoutePopupMenu::prepare()
             MenuTitleItem* titel = new MenuTitleItem(QString(buffer), _pup);
             _pup->addAction(titel); 
   
-            if(!checkAudioDevice())
+            if(!MusEGlobal::checkAudioDevice())
             { 
               _pup->clear();
               return;
@@ -1304,7 +1304,7 @@ void RoutePopupMenu::prepare()
             MenuTitleItem* titel = new MenuTitleItem(QString(buffer), _pup);
             _pup->addAction(titel); 
   
-            if(!checkAudioDevice())
+            if(!MusEGlobal::checkAudioDevice())
             { 
               _pup->clear();
               return;

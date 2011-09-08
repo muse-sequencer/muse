@@ -84,7 +84,7 @@ QByteArray DrumEdit::_toolbarInit;
 
 static const int xscale = -10;
 static const int yscale = 1;
-static const int drumeditTools = PointerTool | PencilTool | RubberTool | CursorTool | DrawTool;
+static const int drumeditTools = MusEWidget::PointerTool | MusEWidget::PencilTool | MusEWidget::RubberTool | MusEWidget::CursorTool | MusEWidget::DrawTool;
 
 enum DrumColumn {
   COL_MUTE = 0,
@@ -194,7 +194,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       signalMapper->setMapping(resetAction, DrumCanvas::CMD_RESET);
 
       menuEdit = menuBar()->addMenu(tr("&Edit"));
-      menuEdit->addActions(undoRedo->actions());
+      menuEdit->addActions(MusEGlobal::undoRedo->actions());
       
       menuEdit->addSeparator();
       cutAction = menuEdit->addAction(QIcon(*editcutIconSet), tr("Cut"));
@@ -303,7 +303,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       tools->addAction(QWhatsThis::createAction());
 
       tools->addSeparator();
-      tools->addActions(undoRedo->actions());
+      tools->addActions(MusEGlobal::undoRedo->actions());
       tools->addSeparator();
 
       srec  = new QToolButton();
@@ -319,7 +319,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       tools->addWidget(midiin);
       
       
-      tools2 = new EditToolBar(this, drumeditTools);
+      tools2 = new MusEWidget::EditToolBar(this, drumeditTools);
       addToolBar(tools2);
 
       QToolBar* cursorToolbar = addToolBar(tr("cursor tools"));
@@ -343,11 +343,11 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
 
       QToolBar* panicToolbar = addToolBar(tr("panic"));
       panicToolbar->setObjectName("panic");
-      panicToolbar->addAction(panicAction);
+      panicToolbar->addAction(MusEGlobal::panicAction);
       
       QToolBar* transport = addToolBar(tr("transport"));
       transport->setObjectName("transport");
-      transport->addActions(transportAction->actions());
+      transport->addActions(MusEGlobal::transportAction->actions());
       
       addToolBarBreak();
       // don't show pitch value in toolbar
@@ -365,7 +365,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       split1            = new Splitter(Qt::Vertical, mainw, "split1");
       QPushButton* ctrl = new QPushButton(tr("ctrl"), mainw);
       ctrl->setObjectName("Ctrl");
-      ctrl->setFont(config.fonts[3]);
+      ctrl->setFont(MusEConfig::config.fonts[3]);
       //hscroll           = new ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. p4.0.18 Tim.
       hscroll           = new ScrollScale(-25, -1, xscale, 20000, Qt::Horizontal, mainw);
@@ -397,7 +397,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       time                = new MTScale(&_raster, split1w2, xscale);
       canvas              = new DrumCanvas(this, split1w2, xscale, yscale);
       vscroll             = new ScrollScale(-4, 1, yscale, DRUM_MAPSIZE*TH, Qt::Vertical, split1w2);
-      int offset = -(config.division/4);
+      int offset = -(MusEConfig::config.division/4);
       canvas->setOrigin(offset, 0);
       canvas->setCanvasTools(drumeditTools);
       canvas->setFocus();
@@ -593,7 +593,7 @@ void DrumEdit::setTime(unsigned tick)
 
 DrumEdit::~DrumEdit()
       {
-      //undoRedo->removeFrom(tools);   // p4.0.6 Removed
+      //MusEGlobal::undoRedo->removeFrom(tools);   // p4.0.6 Removed
       }
 
 //---------------------------------------------------------
@@ -821,7 +821,7 @@ void DrumEdit::writeConfiguration(int level, Xml& xml)
 void DrumEdit::load()
       {
       //QString fn = getOpenFileName("drummaps", map_file_pattern,
-      QString fn = getOpenFileName("drummaps", drum_map_file_pattern,
+      QString fn = getOpenFileName("drummaps", MusEGlobal::drum_map_file_pattern,
          this, tr("Muse: Load Drum Map"), 0);
       if (fn.isEmpty())
             return;
@@ -874,7 +874,7 @@ ende:
 void DrumEdit::save()
       {
       //QString fn = getSaveFileName(QString("drummaps"), map_file_pattern,
-      QString fn = getSaveFileName(QString("drummaps"), drum_map_file_save_pattern,
+      QString fn = getSaveFileName(QString("drummaps"), MusEGlobal::drum_map_file_save_pattern,
         this, tr("MusE: Store Drum Map"));
       if (fn.isEmpty())
             return;
@@ -935,7 +935,7 @@ void DrumEdit::cmd(int cmd)
             case DrumCanvas::CMD_QUANTIZE:
                   if (quantize_dialog->exec())
                         quantize_notes(partlist_to_set(parts()), quantize_dialog->range, 
-                                       (config.division*4)/(1<<quantize_dialog->raster_power2),
+                                       (MusEConfig::config.division*4)/(1<<quantize_dialog->raster_power2),
                                        /* quant_len= */false, quantize_dialog->strength, 
                                        quantize_dialog->swing, quantize_dialog->threshold);
                   break;
@@ -1185,19 +1185,19 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             }
 
       else if (key == shortcuts[SHRT_TOOL_POINTER].key) {
-            tools2->set(PointerTool);
+            tools2->set(MusEWidget::PointerTool);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_PENCIL].key) {
-            tools2->set(PencilTool);
+            tools2->set(MusEWidget::PencilTool);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_RUBBER].key) {
-            tools2->set(RubberTool);
+            tools2->set(MusEWidget::RubberTool);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_CURSOR].key) {
-            tools2->set(CursorTool);
+            tools2->set(MusEWidget::CursorTool);
             return;
             }
       else if (key == shortcuts[SHRT_ZOOM_IN].key) {
@@ -1224,14 +1224,14 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_SCROLL_LEFT].key) {
-            int pos = hscroll->pos() - config.division;
+            int pos = hscroll->pos() - MusEConfig::config.division;
             if (pos < 0)
                   pos = 0;
             hscroll->setPos(pos);
             return;
             }
       else if (key == shortcuts[SHRT_SCROLL_RIGHT].key) {
-            int pos = hscroll->pos() + config.division;
+            int pos = hscroll->pos() + MusEConfig::config.division;
             hscroll->setPos(pos);
             return;
             }

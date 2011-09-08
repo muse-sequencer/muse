@@ -34,6 +34,8 @@
 #include "icons.h"
 #include "aboutbox_impl.h"
 
+namespace MusEApp {
+
 //---------------------------------------------------------
 //   startHelpBrowser
 //---------------------------------------------------------
@@ -82,7 +84,7 @@ void MusE::startBugBrowser()
 
 void MusE::about()
       {
-      AboutBoxImpl ab;
+      MusEWidget::AboutBoxImpl ab;
       ab.show();
       ab.exec();
       }
@@ -107,3 +109,5 @@ void MusE::launchBrowser(QString &whereTo)
             printf("Unable to launch help\n");
             }
       }
+
+} // namespace MusEApp

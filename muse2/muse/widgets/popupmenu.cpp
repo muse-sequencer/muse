@@ -172,7 +172,7 @@ bool PopupMenu::event(QEvent* event)
     case QEvent::MouseButtonDblClick:
     {  
       if(_stayOpen)
-      //if(_stayOpen && config.popupsDefaultStayOpen)
+      //if(_stayOpen && MusEConfig::config.popupsDefaultStayOpen)
       {
         QMouseEvent* e = static_cast<QMouseEvent*>(event);
         if(e->modifiers() == Qt::NoModifier)
@@ -191,7 +191,7 @@ bool PopupMenu::event(QEvent* event)
     case QEvent::KeyPress:
     {
       if(_stayOpen)
-      //if(_stayOpen && config.popupsDefaultStayOpen)
+      //if(_stayOpen && MusEConfig::config.popupsDefaultStayOpen)
       {
         QKeyEvent* e = static_cast<QKeyEvent*>(event);
         if(e->modifiers() == Qt::NoModifier && e->key() == Qt::Key_Space)
@@ -345,7 +345,7 @@ void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
     
     #else
     // Check for Ctrl to stay open.
-    if(!_stayOpen || (!config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0))  
+    if(!_stayOpen || (!MusEConfig::config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0))  
     {
       QMenu::mouseReleaseEvent(e);
       return;

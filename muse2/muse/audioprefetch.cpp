@@ -183,7 +183,7 @@ void AudioPrefetch::prefetch(bool doSeek)
       if (song->loop() && !audio->bounce() && !extSyncFlag.value()) {
             const Pos& loop = song->rPos();
             unsigned n = loop.frame() - writePos;
-            if (n < segmentSize) {
+            if (n < MusEGlobal::segmentSize) {
                   unsigned lpos = song->lPos().frame();
                   // adjust loop start so we get exact loop len
                   if (n > lpos)
@@ -203,18 +203,18 @@ void AudioPrefetch::prefetch(bool doSeek)
             int ch           = track->channels();
             float* bp[ch];
 // printf("prefetch %d\n", writePos);
-            if (track->prefetchFifo()->getWriteBuffer(ch, segmentSize, bp, writePos)) {
+            if (track->prefetchFifo()->getWriteBuffer(ch, MusEGlobal::segmentSize, bp, writePos)) {
                   // printf("AudioPrefetch::prefetch No write buffer!\n"); // p3.3.46 Was getting this...
                   continue;
                   }
-            //track->fetchData(writePos, segmentSize, bp);
-            track->fetchData(writePos, segmentSize, bp, doSeek);
+            //track->fetchData(writePos, MusEGlobal::segmentSize, bp);
+            track->fetchData(writePos, MusEGlobal::segmentSize, bp, doSeek);
             
             // p3.3.41
-            //fprintf(stderr, "AudioPrefetch::prefetch data: segmentSize:%ld %e %e %e %e\n", segmentSize, bp[0][0], bp[0][1], bp[0][2], bp[0][3]);
+            //fprintf(stderr, "AudioPrefetch::prefetch data: MusEGlobal::segmentSize:%ld %e %e %e %e\n", MusEGlobal::segmentSize, bp[0][0], bp[0][1], bp[0][2], bp[0][3]);
       
             }
-      writePos += segmentSize;
+      writePos += MusEGlobal::segmentSize;
       }
 
 //---------------------------------------------------------
@@ -252,7 +252,7 @@ void AudioPrefetch::seek(unsigned seekTo)
             }
       
       bool isFirstPrefetch = true;
-      for (unsigned int i = 0; i < (fifoLength)-1; ++i)//prevent compiler warning: comparison of signed/unsigned
+      for (unsigned int i = 0; i < (MusEGlobal::fifoLength)-1; ++i)//prevent compiler warning: comparison of signed/unsigned
       {      
             // Indicate do a seek command before read, but only on the first pass. 
             // Changed by Tim. p3.3.17 

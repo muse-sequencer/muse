@@ -156,11 +156,11 @@ double CtrlList::value(int frame) const
             //printf("before val1=%f val2=%f\n", val1,val2);
             if (_valueType == VAL_LOG) {
               val1 = 20.0*fast_log10(val1);
-              if (val1 < config.minSlider)
-                val1=config.minSlider;
+              if (val1 < MusEConfig::config.minSlider)
+                val1=MusEConfig::config.minSlider;
               val2 = 20.0*fast_log10(val2);
-              if (val2 < config.minSlider)
-                val2=config.minSlider;
+              if (val2 < MusEConfig::config.minSlider)
+                val2=MusEConfig::config.minSlider;
             }
             //printf("after val1=%f val2=%f\n", val1,val2);
             frame -= frame1;

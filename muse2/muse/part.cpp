@@ -646,7 +646,7 @@ int PartList::index(Part* part)
             if (i->second == part) {
                   return index;
                   }
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         printf("PartList::index(): not found!\n");
       //return 0;
       return -1;

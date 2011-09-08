@@ -81,9 +81,9 @@ void MidiSeq::processMsg(const ThreadMsg* m)
                   processStop();
                   break;
             case MS_SET_RTC:
-                  doSetuid();
+                  MusEGlobal::doSetuid();
                   setRtcTicks();
-                  undoSetuid();
+                  MusEGlobal::undoSetuid();
                   break;
             case MS_UPDATE_POLL_FD:
                   updatePollFd();
@@ -276,9 +276,9 @@ MidiSeq::MidiSeq(const char* name)
       lastTempo = 0;
       storedtimediffs = 0;
       playStateExt = false; // not playing
-      doSetuid();
+      MusEGlobal::doSetuid();
       timerFd=selectTimer();
-      undoSetuid();
+      MusEGlobal::undoSetuid();
 
       }
 
@@ -414,7 +414,7 @@ void MidiSeq::updatePollFd()
 
       if (timerFd == -1) {
             fprintf(stderr, "updatePollFd: no timer fd\n");
-            if (!debugMode)
+            if (!MusEGlobal::debugMode)
                   exit(-1);
             }
 
@@ -472,11 +472,11 @@ void MidiSeq::threadStop()
 bool MidiSeq::setRtcTicks()
       {
 
-      //timer.setTimerFreq(config.rtcTicks);
+      //timer.setTimerFreq(MusEConfig::config.rtcTicks);
       //timer.startTimer();
-      timer->setTimerFreq(config.rtcTicks);
+      timer->setTimerFreq(MusEConfig::config.rtcTicks);
       timer->startTimer();
-      realRtcTicks = config.rtcTicks;
+      realRtcTicks = MusEConfig::config.rtcTicks;
       return true;
       }
 
@@ -494,12 +494,12 @@ void MidiSeq::start(int priority)
       
       //timerFd = -1;
 
-      doSetuid();
+      MusEGlobal::doSetuid();
       //timerFd = selectTimer(); 
       //timerFd = timer.initTimer();
       //printf("timerFd=%d\n",timerFd);
       setRtcTicks();
-      undoSetuid();
+      MusEGlobal::undoSetuid();
       //Thread::start();
       Thread::start(priority);
       //return false;
@@ -526,7 +526,7 @@ void MidiSeq::processMidiClock()
             midiClick      = sigmap.bar2tick(bar, beat+1, 0);
 
             double cpos    = tempomap.tick2time(playTickPos);
-            samplePosStart = samplePos - lrint(cpos * sampleRate);
+            samplePosStart = samplePos - lrint(cpos * MusEGlobal::sampleRate);
             rtcTickStart   = rtcTick - lrint(cpos * realRtcTicks);
 
             endSlice       = playTickPos;
@@ -538,7 +538,7 @@ void MidiSeq::processMidiClock()
             startRecordPos.setPosTick(playTickPos);
             }
 */
-//      midiClock += config.division/24;
+//      midiClock += MusEConfig::config.division/24;
       }
 
 //---------------------------------------------------------
@@ -608,10 +608,10 @@ void MidiSeq::processTimerTick()
       if (!extSyncFlag.value()) {
             //int curTick = tempomap.frame2tick(curFrame);
             // Copied from Tempomap.
-            //int curTick = lrint((double(curFrame)/double(sampleRate)) * tempomap.globalTempo() * config.division * 10000.0 / double(tempomap.tempo(song->cpos())));
-            //int curTick = lrint((double(curFrame)/double(sampleRate)) * tempomap.globalTempo() * 240000.0 / double(tempomap.tempo(song->cpos())));
-            int curTick = lrint((double(curFrame)/double(sampleRate)) * double(tempomap.globalTempo()) * double(config.division) * 10000.0 / double(tempomap.tempo(song->cpos())));
-            //int curTick = int((double(curFrame)/double(sampleRate)) * double(tempomap.globalTempo()) * double(config.division * 10000.0) / double(tempomap.tempo(song->cpos())));
+            //int curTick = lrint((double(curFrame)/double(MusEGlobal::sampleRate)) * tempomap.globalTempo() * MusEConfig::config.division * 10000.0 / double(tempomap.tempo(song->cpos())));
+            //int curTick = lrint((double(curFrame)/double(MusEGlobal::sampleRate)) * tempomap.globalTempo() * 240000.0 / double(tempomap.tempo(song->cpos())));
+            int curTick = lrint((double(curFrame)/double(MusEGlobal::sampleRate)) * double(tempomap.globalTempo()) * double(MusEConfig::config.division) * 10000.0 / double(tempomap.tempo(song->cpos())));
+            //int curTick = int((double(curFrame)/double(MusEGlobal::sampleRate)) * double(tempomap.globalTempo()) * double(MusEConfig::config.division * 10000.0) / double(tempomap.tempo(song->cpos())));
             
 /*            if ( midiClock > curTick + 100) // reinitialize
                 {
@@ -625,7 +625,7 @@ void MidiSeq::processTimerTick()
             if(midiClock > curTick)
               midiClock = curTick;
             
-            int div = config.division/24;
+            int div = MusEConfig::config.division/24;
             if(curTick >= midiClock + div)  {
             //if(curTick >= midiClock)  {
                   //processMidiClock();
@@ -689,7 +689,7 @@ void MidiSeq::processTimerTick()
                     }
                     */
                     
-                    if(debugMsg && used && perr > 1)
+                    if(MusEGlobal::debugMsg && used && perr > 1)
                       printf("Dropped %d midi out clock(s). curTick:%d midiClock:%d div:%d\n", perr, curTick, midiClock, div);
                   //}
                     

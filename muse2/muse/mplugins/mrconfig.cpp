@@ -36,12 +36,12 @@ MRConfig::MRConfig(QWidget* parent, Qt::WFlags fl)
    : QWidget(parent, fl)
       {
       setupUi(this);
-      b1->setChecked(rcEnable);
-      sb1->setValue(rcStopNote);
-      sb2->setValue(rcRecordNote);
-      sb3->setValue(rcGotoLeftMarkNote);
-      sb4->setValue(rcPlayNote);
-      steprec_box->setValue(rcSteprecNote);
+      b1->setChecked(MusEGlobal::rcEnable);
+      sb1->setValue(MusEGlobal::rcStopNote);
+      sb2->setValue(MusEGlobal::rcRecordNote);
+      sb3->setValue(MusEGlobal::rcGotoLeftMarkNote);
+      sb4->setValue(MusEGlobal::rcPlayNote);
+      steprec_box->setValue(MusEGlobal::rcSteprecNote);
 
       connect(b1,  SIGNAL(toggled(bool)), SLOT(setRcEnable(bool)));
       connect(sb1, SIGNAL(valueChanged(int)), SLOT(setRcStopNote(int)));
@@ -63,31 +63,31 @@ void MRConfig::closeEvent(QCloseEvent* ev)
 
 void MRConfig::setRcEnable(bool f)
       {
-      rcEnable = f;
+      MusEGlobal::rcEnable = f;
       }
 
 void MRConfig::setRcStopNote(int val)
       {
-      rcStopNote = val;
+      MusEGlobal::rcStopNote = val;
       }
 
 void MRConfig::setRcRecordNote(int val)
       {
-      rcRecordNote = val;
+      MusEGlobal::rcRecordNote = val;
       }
 
 void MRConfig::setRcGotoLeftMarkNote(int val)
       {
-      rcGotoLeftMarkNote = val;
+      MusEGlobal::rcGotoLeftMarkNote = val;
       }
 
 void MRConfig::setRcPlayNote(int val)
       {
-      rcPlayNote = val;
+      MusEGlobal::rcPlayNote = val;
       }
 
 void MRConfig::setRcSteprecNote(int val)
       {
-      rcSteprecNote = val;
+      MusEGlobal::rcSteprecNote = val;
       }
 

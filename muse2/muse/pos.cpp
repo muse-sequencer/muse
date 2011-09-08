@@ -101,7 +101,7 @@ Pos::Pos(int min, int sec, int frame, int subframe)
                   break;
             }
       _type  = FRAMES;
-      _frame = lrint(time * sampleRate);
+      _frame = lrint(time * MusEGlobal::sampleRate);
       sn     = -1;
       }
 
@@ -541,7 +541,7 @@ void Pos::mbt(int* bar, int* beat, int* tk) const
 
 void Pos::msf(int* min, int* sec, int* fr, int* subFrame) const
       {
-      double time = double(frame()) / double(sampleRate);
+      double time = double(frame()) / double(MusEGlobal::sampleRate);
       *min  = int(time) / 60;
       *sec  = int(time) % 60;
       double rest = time - (*min * 60 + *sec);

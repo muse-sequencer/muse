@@ -60,7 +60,7 @@ CtrlEdit::CtrlEdit(QWidget* parent, MidiEditor* e, int xmag,
       hbox->setContentsMargins(0, 0, 0, 0);
       hbox->setSpacing (0);
 
-      canvas->setOrigin(-(config.division/4), 0);
+      canvas->setOrigin(-(MusEConfig::config.division/4), 0);
 
       canvas->setMinimumHeight(50);
       

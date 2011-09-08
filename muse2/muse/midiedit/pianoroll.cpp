@@ -76,7 +76,7 @@ QByteArray PianoRoll::_toolbarInit;
 static const int xscale = -10;
 static const int yscale = 1;
 static const int pianoWidth = 40;
-static int pianorollTools = PointerTool | PencilTool | RubberTool | DrawTool;
+static int pianorollTools = MusEWidget::PointerTool | MusEWidget::PencilTool | MusEWidget::RubberTool | MusEWidget::DrawTool;
 
 
 //---------------------------------------------------------
@@ -99,7 +99,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       
       menuEdit = menuBar()->addMenu(tr("&Edit"));      
       
-      menuEdit->addActions(undoRedo->actions());
+      menuEdit->addActions(MusEGlobal::undoRedo->actions());
       
       menuEdit->addSeparator();
       
@@ -242,7 +242,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       //---------ToolBar----------------------------------
       tools = addToolBar(tr("Pianoroll tools"));
       tools->setObjectName("Pianoroll tools");
-      tools->addActions(undoRedo->actions());
+      tools->addActions(MusEGlobal::undoRedo->actions());
       tools->addSeparator();
 
       srec  = new QToolButton();
@@ -263,18 +263,18 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       speaker->setCheckable(true);
       tools->addWidget(speaker);
 
-      tools2 = new EditToolBar(this, pianorollTools);
+      tools2 = new MusEWidget::EditToolBar(this, pianorollTools);
       addToolBar(tools2);
 
       QToolBar* panicToolbar = addToolBar(tr("panic"));         
       panicToolbar->setObjectName("panic");
-      panicToolbar->addAction(panicAction);
+      panicToolbar->addAction(MusEGlobal::panicAction);
 
       //-------------------------------------------------------------
       //    Transport Bar
       QToolBar* transport = addToolBar(tr("transport"));
       transport->setObjectName("transport");
-      transport->addActions(transportAction->actions());
+      transport->addActions(MusEGlobal::transportAction->actions());
 
       addToolBarBreak();
       toolbar = new Toolbar1(this, _rasterInit);
@@ -298,7 +298,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       QPushButton* ctrl = new QPushButton(tr("ctrl"), mainw);
       //QPushButton* ctrl = new QPushButton(tr("C"), mainw);  // Tim.
       ctrl->setObjectName("Ctrl");
-      ctrl->setFont(config.fonts[3]);
+      ctrl->setFont(MusEConfig::config.fonts[3]);
       ctrl->setToolTip(tr("Add Controller View"));
       //hscroll = new ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. p4.0.18 Tim.
@@ -310,7 +310,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       /*
       QPushButton* trackInfoButton = new QPushButton(tr("T"), mainw);
       trackInfoButton->setObjectName("TrackInfo");
-      trackInfoButton->setFont(config.fonts[3]);
+      trackInfoButton->setFont(MusEConfig::config.fonts[3]);
       trackInfoButton->setToolTip(tr("Show track info"));
       trackInfoButton->setFixedSize(pianoWidth / 2, hscroll->sizeHint().height());
       */
@@ -377,7 +377,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       
       //setFocusProxy(canvas);   // Tim.
       
-      int offset = -(config.division/4);
+      int offset = -(MusEConfig::config.division/4);
       canvas->setOrigin(offset, 0);
       canvas->setCanvasTools(pianorollTools);
       canvas->setFocus();
@@ -608,7 +608,7 @@ void PianoRoll::setTime(unsigned tick)
 
 PianoRoll::~PianoRoll()
       {
-      // undoRedo->removeFrom(tools);  // p4.0.6 Removed
+      // MusEGlobal::undoRedo->removeFrom(tools);  // p4.0.6 Removed
       }
 
 //---------------------------------------------------------
@@ -1022,19 +1022,19 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_POINTER].key) {
-            tools2->set(PointerTool);
+            tools2->set(MusEWidget::PointerTool);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_PENCIL].key) {
-            tools2->set(PencilTool);
+            tools2->set(MusEWidget::PencilTool);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_RUBBER].key) {
-            tools2->set(RubberTool);
+            tools2->set(MusEWidget::RubberTool);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_LINEDRAW].key) {
-            tools2->set(DrawTool);
+            tools2->set(MusEWidget::DrawTool);
             return;
             }
       else if (key == shortcuts[SHRT_POS_INC].key) {
@@ -1090,14 +1090,14 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_SCROLL_LEFT].key) {
-            int pos = hscroll->pos() - config.division;
+            int pos = hscroll->pos() - MusEConfig::config.division;
             if (pos < 0)
                   pos = 0;
             hscroll->setPos(pos);
             return;
             }
       else if (key == shortcuts[SHRT_SCROLL_RIGHT].key) {
-            int pos = hscroll->pos() + config.division;
+            int pos = hscroll->pos() + MusEConfig::config.division;
             hscroll->setPos(pos);
             return;
             }

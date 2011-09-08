@@ -261,7 +261,7 @@ void PianoCanvas::drawItem(QPainter& p, const CItem* item,
       //int mfh = mh;
       //if(mfh == meh) mfh -= 1;
       //if(mfy == mey) mfh -= 1;
-      color.setAlpha(config.globalAlphaBlend);
+      color.setAlpha(MusEConfig::config.globalAlphaBlend);
       //QLinearGradient gradient(mex + 1, mey + 1, mex + 1, mey + meh - 2);    // Inside the border
       //gradient.setColorAt(0, color);
       //gradient.setColorAt(1, color.darker());
@@ -316,7 +316,7 @@ void PianoCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
 
 void PianoCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
       {
-      if ((_tool != PointerTool) && (event->button() != Qt::LeftButton)) {
+      if ((_tool != MusEWidget::PointerTool) && (event->button() != Qt::LeftButton)) {
             mousePress(event);
             return;
             }
@@ -731,7 +731,7 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
       audio->msgPlayMidiEvent(&e);
       
       if (_steprec && pos[0] >= start_tick /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */ && curPart)
-				 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velocity,globalKeyState&Qt::ControlModifier,shift);
+				 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,shift);
       }
 
 //---------------------------------------------------------
@@ -927,14 +927,14 @@ void PianoCanvas::cmd(int cmd)
 //---------------------------------------------------------
 void PianoCanvas::midiNote(int pitch, int velo)
       {
-      if (debugMsg) printf("PianoCanvas::midiNote: pitch=%i, velo=%i\n", pitch, velo);
+      if (MusEGlobal::debugMsg) printf("PianoCanvas::midiNote: pitch=%i, velo=%i\n", pitch, velo);
 
       if (velo)
         noteHeldDown[pitch]=true;
       else
         noteHeldDown[pitch]=false;
 
-      if (heavyDebugMsg)
+      if (MusEGlobal::heavyDebugMsg)
       {
         printf("  held down notes are: ");
         for (int i=0;i<128;i++)
@@ -946,8 +946,8 @@ void PianoCanvas::midiNote(int pitch, int velo)
       if (_midiin && _steprec && curPart
          && !audio->isPlaying() && velo && pos[0] >= start_tick
          /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */
-         && !(globalKeyState & Qt::AltModifier)) {
-					 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velo,globalKeyState&Qt::ControlModifier,globalKeyState&Qt::ShiftModifier);
+         && !(MusEGlobal::globalKeyState & Qt::AltModifier)) {
+					 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velo,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier);
          }
       }
 

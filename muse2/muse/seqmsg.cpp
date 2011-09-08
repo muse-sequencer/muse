@@ -92,10 +92,10 @@ bool Audio::sendMessage(AudioMsg* m, bool doUndo)
 void Audio::msgRemoveRoute(Route src, Route dst)
 {
       msgRemoveRoute1(src, dst);
-      //if (!checkAudioDevice()) return;
+      //if (!MusEGlobal::checkAudioDevice()) return;
       if (src.type == Route::JACK_ROUTE)
       {
-          if (!checkAudioDevice()) return;
+          if (!MusEGlobal::checkAudioDevice()) return;
           
           //if(dst.type == Route::JACK_MIDI_ROUTE)  
           if(dst.type == Route::MIDI_DEVICE_ROUTE)  
@@ -120,7 +120,7 @@ void Audio::msgRemoveRoute(Route src, Route dst)
       }
       else if (dst.type == Route::JACK_ROUTE)
       {
-          if (!checkAudioDevice()) return;
+          if (!MusEGlobal::checkAudioDevice()) return;
           
           //if(src.type == Route::JACK_MIDI_ROUTE)  
           if(src.type == Route::MIDI_DEVICE_ROUTE)  
@@ -169,10 +169,10 @@ void Audio::msgRemoveRoutes(Route src, Route dst)
       
       // TODO
       /*
-      //if (!checkAudioDevice()) return;
+      //if (!MusEGlobal::checkAudioDevice()) return;
       if (src.type == Route::JACK_ROUTE)
       {
-          if (!checkAudioDevice()) return;
+          if (!MusEGlobal::checkAudioDevice()) return;
           
           //if(dst.type == Route::JACK_MIDI_ROUTE)  
           if(dst.type == Route::MIDI_DEVICE_ROUTE)  
@@ -197,7 +197,7 @@ void Audio::msgRemoveRoutes(Route src, Route dst)
       }
       else if (dst.type == Route::JACK_ROUTE)
       {
-          if (!checkAudioDevice()) return;
+          if (!MusEGlobal::checkAudioDevice()) return;
           
           //if(src.type == Route::JACK_MIDI_ROUTE)  
           if(src.type == Route::MIDI_DEVICE_ROUTE)  
@@ -246,7 +246,7 @@ void Audio::msgAddRoute(Route src, Route dst)
       {
       if (src.type == Route::JACK_ROUTE) 
       {
-            if (!checkAudioDevice()) return;
+            if (!MusEGlobal::checkAudioDevice()) return;
             if (isRunning())
             {
                 //if(dst.type == Route::JACK_MIDI_ROUTE)  
@@ -273,7 +273,7 @@ void Audio::msgAddRoute(Route src, Route dst)
       }
       else if (dst.type == Route::JACK_ROUTE) 
       {
-            if (!checkAudioDevice()) return;
+            if (!MusEGlobal::checkAudioDevice()) return;
             if (audio->isRunning())
             {
                 //if(src.type == Route::JACK_MIDI_ROUTE)  
@@ -401,7 +401,7 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
       {
             if (node->type() == Track::AUDIO_INPUT) 
             {
-              if (!checkAudioDevice()) return;
+              if (!MusEGlobal::checkAudioDevice()) return;
               AudioInput* ai = (AudioInput*)node;
               for (int i = 0; i < mc; ++i) 
               {
@@ -431,7 +431,7 @@ void Audio::msgSetChannels(AudioTrack* node, int n)
             }
             else if (node->type() == Track::AUDIO_OUTPUT) 
             {
-                  if (!checkAudioDevice()) return;
+                  if (!MusEGlobal::checkAudioDevice()) return;
                   AudioOutput* ao = (AudioOutput*)node;
                   for (int i = 0; i < mc; ++i) 
                   {
@@ -702,7 +702,7 @@ void Audio::msgSetSegSize(int bs, int sr)
 
 void Audio::msgSeek(const Pos& pos)
       {
-      if (!checkAudioDevice()) return;
+      if (!MusEGlobal::checkAudioDevice()) return;
       //audioDevice->seekTransport(pos.frame());
             // p3.3.23
             //printf("Audio::msgSeek before audioDevice->seekTransport frame:%d\n", pos.frame());
@@ -1329,7 +1329,7 @@ void Audio::msgSetSendMetronome(AudioTrack* track, bool b)
 void Audio::msgBounce()
       {
       _bounce = true;
-      if (!checkAudioDevice()) return;
+      if (!MusEGlobal::checkAudioDevice()) return;
       //audioDevice->seekTransport(song->lPos().frame());
       audioDevice->seekTransport(song->lPos());
       }

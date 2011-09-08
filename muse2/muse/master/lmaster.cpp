@@ -158,7 +158,7 @@ LMaster::LMaster()
       //---------Pulldown Menu----------------------------
       menuEdit = menuBar()->addMenu(tr("&Edit"));
       QSignalMapper *signalMapper = new QSignalMapper(this);
-      menuEdit->addActions(undoRedo->actions());
+      menuEdit->addActions(MusEGlobal::undoRedo->actions());
       menuEdit->addSeparator();
       tempoAction = menuEdit->addAction(tr("Insert Tempo"));
       signAction = menuEdit->addAction(tr("Insert Signature"));
@@ -186,7 +186,7 @@ LMaster::LMaster()
 
       //---------ToolBar----------------------------------
       tools = addToolBar(tr("Master tools"));
-      tools->addActions(undoRedo->actions());
+      tools->addActions(MusEGlobal::undoRedo->actions());
 
       QToolBar* edit = addToolBar(tr("Edit tools"));
       QToolButton* tempoButton = new QToolButton();
@@ -802,7 +802,7 @@ LMasterKeyEventItem::LMasterKeyEventItem(QTreeWidget* parent, const KeyEvent& ev
       AL::sigmap.tickValues(t, &bar, &beat, &tick);
       c1.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
 
-      double time = double(tempomap.tick2frame(t)) / double(sampleRate);
+      double time = double(tempomap.tick2frame(t)) / double(MusEGlobal::sampleRate);
       int min = int(time) / 60;
       int sec = int(time) % 60;
       int msec = int((time - (min*60 + sec)) * 1000.0);
@@ -833,7 +833,7 @@ LMasterTempoItem::LMasterTempoItem(QTreeWidget* parent, const TEvent* ev)
       AL::sigmap.tickValues(t, &bar, &beat, &tick);
       c1.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
 
-      double time = double(tempomap.tick2frame(t) /*ev->frame*/) / double(sampleRate);
+      double time = double(tempomap.tick2frame(t) /*ev->frame*/) / double(MusEGlobal::sampleRate);
       int min = int(time) / 60;
       int sec = int(time) % 60;
       int msec = int((time - (min*60 + sec)) * 1000.0);
@@ -861,7 +861,7 @@ LMasterSigEventItem::LMasterSigEventItem(QTreeWidget* parent, const AL::SigEvent
       AL::sigmap.tickValues(t, &bar, &beat, &tick);
       c1.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
 
-      double time = double(tempomap.tick2frame(t)) / double (sampleRate);
+      double time = double(tempomap.tick2frame(t)) / double (MusEGlobal::sampleRate);
       int min = int(time) / 60;
       int sec = int(time) % 60;
       int msec = int((time - (min*60 + sec)) * 1000.0);

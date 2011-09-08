@@ -637,12 +637,12 @@ SndFile* getWave(const QString& inName, bool readOnlyFlag)
       QString name = inName;
 
       if (QFileInfo(name).isRelative()) {
-            name = museProject + QString("/") + name;
+            name = MusEGlobal::museProject + QString("/") + name;
             }
       else {
             if (!QFile::exists(name)) {
-                  if (QFile::exists(museProject + QString("/") + name)) {
-                        name = museProject + QString("/") + name;
+                  if (QFile::exists(MusEGlobal::museProject + QString("/") + name)) {
+                        name = MusEGlobal::museProject + QString("/") + name;
                         }
                   }
             }
@@ -807,6 +807,8 @@ void SndFile::applyUndoFile(const QString& original, const QString& tmpfile, uns
       audio->msgIdle(false);
       }
 
+namespace MusEApp {
+
 //---------------------------------------------------------
 //   importAudio
 //---------------------------------------------------------
@@ -820,11 +822,11 @@ void MusE::importWave()
               "a wave track"));
             return;
             }
-      //QString fn = getOpenFileName(lastWavePath, audioFilePattern, this,
-      QString fn = getOpenFileName(lastWavePath, audio_file_pattern, this,
+      //QString fn = getOpenFileName(MusEGlobal::lastWavePath, audioFilePattern, this,
+      QString fn = getOpenFileName(MusEGlobal::lastWavePath, MusEGlobal::audio_file_pattern, this,
          tr("Import Wave File"), 0);                                    
       if (!fn.isEmpty()) {
-            lastWavePath = fn;
+            MusEGlobal::lastWavePath = fn;
             importWaveToTrack(fn);
             }
       }
@@ -845,11 +847,11 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, Track* track)
             return true;
             }
       int samples = f->samples();
-      if ((unsigned)sampleRate !=f->samplerate()) {
+      if ((unsigned)MusEGlobal::sampleRate !=f->samplerate()) {
             if(QMessageBox::question(this, tr("Import Wavefile"),
                   tr("This wave file has a samplerate of %1,\n"
                   "as opposed to current setting %2.\n"
-                  "Do you still want to import it?").arg(f->samplerate()).arg(sampleRate),
+                  "Do you still want to import it?").arg(f->samplerate()).arg(MusEGlobal::sampleRate),
                   tr("&Yes"), tr("&No"),
                   QString::null, 0, 1 ))
                   {
@@ -882,6 +884,9 @@ bool MusE::importWaveToTrack(QString& name, unsigned tick, Track* track)
             song->setLen(endTick);
       return false;
       }
+
+} // namespace MusEApp
+
 #if 0
 //---------------------------------------------------------
 //   Clip
@@ -953,7 +958,7 @@ void ClipBase::write(int level, Xml& xml) const
       // waves in the project dirctory are stored
       // with relative path name, others with absolute path
       //
-      if (path == museProject)
+      if (path == MusEGlobal::museProject)
             xml.strTag(level, "file", f.name());
       else
             xml.strTag(level, "file", f.path());
@@ -1059,7 +1064,7 @@ int ClipList::idx(const Clip& clip) const
 //void Song::cmdAddRecordedWave(WaveTrack* track, const Pos& s, const Pos& e)
 void Song::cmdAddRecordedWave(WaveTrack* track, Pos s, Pos e)
       {
-      if (debugMsg)
+      if (MusEGlobal::debugMsg)
           printf("cmdAddRecordedWave - loopCount = %d, punchin = %d", audio->loopCount(), punchin());
 
       SndFile* f = track->recFile();
@@ -1091,7 +1096,7 @@ void Song::cmdAddRecordedWave(WaveTrack* track, Pos s, Pos e)
         // The function which calls this function already does this immediately after. But do it here anyway.
         track->setRecFile(0);
         remove(st.toLatin1().constData());
-        if(debugMsg)
+        if(MusEGlobal::debugMsg)
           printf("Song::cmdAddRecordedWave: remove file %s - start=%d end=%d\n", st.toLatin1().constData(), s.tick(), e.tick());
         return;
       }
