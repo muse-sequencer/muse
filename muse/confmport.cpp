@@ -457,7 +457,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
             case DEVCOL_INROUTES:  
             case DEVCOL_OUTROUTES:
                   {
-                    if(!checkAudioDevice())
+                    if(!MusEGlobal::checkAudioDevice())
                       return;
                       
                     if(audioDevice->deviceType() != AudioDevice::JACK_AUDIO)  // Only if Jack is running.
@@ -647,7 +647,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     act->setEnabled(!song->midis()->empty());  // && midiPorts[no].device());
                     
                     connect(defpup, SIGNAL(triggered(QAction*)), SLOT(changeDefInputRoutes(QAction*)));
-                    //connect(defpup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
+                    //connect(defpup, SIGNAL(aboutToHide()), MusEGlobal::muse, SLOT(routingPopupMenuAboutToHide()));
                     //defpup->popup(QCursor::pos());
                     defpup->exec(QCursor::pos());
                     delete defpup;
@@ -690,7 +690,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     act->setEnabled(!song->midis()->empty());  // && midiPorts[no].device());
                     
                     connect(defpup, SIGNAL(triggered(QAction*)), SLOT(changeDefOutputRoutes(QAction*)));
-                    //connect(defpup, SIGNAL(aboutToHide()), muse, SLOT(routingPopupMenuAboutToHide()));
+                    //connect(defpup, SIGNAL(aboutToHide()), MusEGlobal::muse, SLOT(routingPopupMenuAboutToHide()));
                     //defpup->popup(QCursor::pos());
                     defpup->exec(QCursor::pos());
                     delete defpup;
@@ -899,7 +899,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       }    
 
                       midiSeq->msgSetMidiDevice(port, sdev);
-                      muse->changeConfig(true);     // save configuration file
+		      MusEGlobal::muse->changeConfig(true);     // save configuration file
                       song->update();
                     }  
                   }
@@ -1352,7 +1352,7 @@ void MPConfig::addInstanceClicked()
             MidiDevice* dev = port->device();
             if (dev==0) {
                   midiSeq->msgSetMidiDevice(port, si);
-                  muse->changeConfig(true);     // save configuration file
+		  MusEGlobal::muse->changeConfig(true);     // save configuration file
                   song->update();
                   break;
                   }
@@ -1381,6 +1381,8 @@ void MPConfig::removeInstanceClicked()
       audio->msgRemoveTrack(*ii);
       }
 
+namespace MusEApp {
+
 //---------------------------------------------------------
 //   configMidiPorts
 //---------------------------------------------------------
@@ -1395,3 +1397,4 @@ void MusE::configMidiPorts()
          midiPortConfig->activateWindow();
       }
 
+} // namespace MusEApp

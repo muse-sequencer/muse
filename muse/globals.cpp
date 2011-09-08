@@ -33,6 +33,8 @@
 #include "globals.h"
 #include "config.h"
 
+namespace MusEGlobal {
+
 int recFileNumber = 1;
 
 int sampleRate   = 44100;
@@ -338,7 +340,7 @@ QAction* recordAction;
 QAction* panicAction;
 
 //AudioMixerApp* audioMixer;
-MusE* muse = 0;
+MusEApp::MusE* muse = 0;
 
 int preMeasures = 2;
 unsigned char measureClickNote = 63;
@@ -459,3 +461,5 @@ bool getUniqueTmpfileName(QString subDir, QString ext,QString& newFilename)
       printf("Could not find a suitable tmpfilename (more than 10000 tmpfiles in tmpdir - clean up!\n");
       return false;
       }
+
+} // namespace MusEGlobal

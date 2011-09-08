@@ -147,13 +147,13 @@ int DssiSynthIF::oscUpdate(lo_arg **argv)
       
 
       #ifdef DSSI_DEBUG 
-      printf("DssiSynthIF::oscUpdate synth name:%s url:%s uiTarget:%p uiOscPath:%s uiOscConfigurePath:%s museProject:%s\n", synti->name().ascii(), url, uiTarget, uiOscPath, uiOscConfigurePath, museProject.ascii());
+      printf("DssiSynthIF::oscUpdate synth name:%s url:%s uiTarget:%p uiOscPath:%s uiOscConfigurePath:%s MusEGlobal::museProject:%s\n", synti->name().ascii(), url, uiTarget, uiOscPath, uiOscConfigurePath, MusEGlobal::museProject.ascii());
       #endif
       
       //lo_send(uiTarget, uiOscConfigurePath, "ss",
          //DSSI_PROJECT_DIRECTORY_KEY, song->projectPath().toAscii().data());
       lo_send(uiTarget, uiOscConfigurePath, "ss",
-         DSSI_PROJECT_DIRECTORY_KEY, museProject.ascii());
+         DSSI_PROJECT_DIRECTORY_KEY, MusEGlobal::museProject.ascii());
 
 #if 0
       // Send current bank/program  (-FIX- another race...) 
@@ -382,7 +382,7 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
             
             DssiSynth* s = new DssiSynth(fi, descr);
             
-            if(debugMsg)
+            if(MusEGlobal::debugMsg)
             {
               fprintf(stderr, "scanDSSILib: name:%s listname:%s lib:%s listlib:%s\n", 
                       label.toLatin1().constData(), s->name().toLatin1().constData(), fi.completeBaseName().toLatin1().constData(), s->baseName().toLatin1().constData());
@@ -425,7 +425,7 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
 
 static void scanDSSIDir(QString& s) // ddskrjo removed const for argument
 {
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         //printf("scan DSSI plugin dir <%s>\n", s.toAscii().data());
         printf("scanDSSIDir: scan DSSI plugin dir <%s>\n", s.toLatin1().constData());
 
@@ -446,7 +446,7 @@ static void scanDSSIDir(QString& s) // ddskrjo removed const for argument
       QStringList list = pluginDir.entryList();
       for(int i = 0; i < list.count(); ++i) 
       {
-        if(debugMsg)
+        if(MusEGlobal::debugMsg)
           printf("scanDSSIDir: found %s\n", (s + QString("/") + list[i]).toLatin1().constData());
 
         QFileInfo fi(s + QString("/") + list[i]);
@@ -557,7 +557,7 @@ DssiSynth::DssiSynth(QFileInfo& fi, const DSSI_Descriptor* d) : // ddskrjo remov
   // Hack: Special flag required for example for control processing.
   _isDssiVst = fi.completeBaseName() == QString("dssi-vst");
   // Hack: Blacklist vst plugins in-place, configurable for now. 
-  if ((_inports != _outports) || (_isDssiVst && !config.vstInPlace))
+  if ((_inports != _outports) || (_isDssiVst && !MusEConfig::config.vstInPlace))
         _inPlaceCapable = false;
 }
 
@@ -686,7 +686,7 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
           // Hack: Special flag required for example for control processing.
           _isDssiVst = info.completeBaseName() == QString("dssi-vst");
           // Hack: Blacklist vst plugins in-place, configurable for now. 
-          if((_inports != _outports) || (_isDssiVst && !config.vstInPlace))
+          if((_inports != _outports) || (_isDssiVst && !MusEConfig::config.vstInPlace))
             _inPlaceCapable = false;
         }  
       }  
@@ -849,7 +849,7 @@ bool DssiSynthIF::init(DssiSynth* s)
       synth = s;
       const DSSI_Descriptor* dssi = synth->dssi;
       const LADSPA_Descriptor* ld = dssi->LADSPA_Plugin;
-      handle = ld->instantiate(ld, sampleRate);
+      handle = ld->instantiate(ld, MusEGlobal::sampleRate);
 
       #ifdef OSC_SUPPORT
       _oscif.oscSetSynthIF(this);
@@ -863,10 +863,10 @@ bool DssiSynthIF::init(DssiSynth* s)
         audioInBuffers = new float*[inports];
         for(int k = 0; k < inports; ++k)
         {
-          //audioInBuffers[k] = new LADSPA_Data[segmentSize];
-          //posix_memalign((void**)(audioInBuffers + k), 16, sizeof(float) * segmentSize);
-          posix_memalign((void**)&audioInBuffers[k], 16, sizeof(float) * segmentSize);
-          memset(audioInBuffers[k], 0, sizeof(float) * segmentSize);
+          //audioInBuffers[k] = new LADSPA_Data[MusEGlobal::segmentSize];
+          //posix_memalign((void**)(audioInBuffers + k), 16, sizeof(float) * MusEGlobal::segmentSize);
+          posix_memalign((void**)&audioInBuffers[k], 16, sizeof(float) * MusEGlobal::segmentSize);
+          memset(audioInBuffers[k], 0, sizeof(float) * MusEGlobal::segmentSize);
           ld->connect_port(handle, synth->iIdx[k], audioInBuffers[k]);
         }  
       }
@@ -877,10 +877,10 @@ bool DssiSynthIF::init(DssiSynth* s)
         audioOutBuffers = new float*[outports];
         for(int k = 0; k < outports; ++k)
         {
-          //audioOutBuffers[k] = new LADSPA_Data[segmentSize];
-          //posix_memalign((void**)(audioOutBuffers + k), 16, sizeof(float) * segmentSize);
-          posix_memalign((void**)&audioOutBuffers[k], 16, sizeof(float) * segmentSize);
-          memset(audioOutBuffers[k], 0, sizeof(float) * segmentSize);
+          //audioOutBuffers[k] = new LADSPA_Data[MusEGlobal::segmentSize];
+          //posix_memalign((void**)(audioOutBuffers + k), 16, sizeof(float) * MusEGlobal::segmentSize);
+          posix_memalign((void**)&audioOutBuffers[k], 16, sizeof(float) * MusEGlobal::segmentSize);
+          memset(audioOutBuffers[k], 0, sizeof(float) * MusEGlobal::segmentSize);
           ld->connect_port(handle, synth->oIdx[k], audioOutBuffers[k]);
           //printf("DssiSynthIF::init output port name: %s\n", ld->PortNames[synth->oIdx[k]]); // out1, out2, out3 etc
         }  
@@ -1157,7 +1157,7 @@ bool DssiSynthIF::init(DssiSynth* s)
       if(dssi->configure) 
       {
         char *rv = dssi->configure(handle, DSSI_PROJECT_DIRECTORY_KEY,
-            museProject.toLatin1().constData()); //song->projectPath()
+            MusEGlobal::museProject.toLatin1().constData()); //song->projectPath()
         
         if(rv)
         {
@@ -2035,7 +2035,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       }  
     break;
     default:
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         fprintf(stderr, "DssiSynthIF::processEvent midi event unknown type:%d\n", e.type());
       // Event not filled.
       return false;
@@ -2127,11 +2127,11 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
       int ft = i->time() - frameOffset - pos;
       if(ft < 0)
         ft = 0;
-      if (ft >= (int)segmentSize) 
+      if (ft >= (int)MusEGlobal::segmentSize) 
       {
-        printf("DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d (seg=%d)\n", i->time(), pos, frameOffset, ft, segmentSize);
-        ///if (ft > (int)segmentSize)
-          ft = segmentSize - 1;
+        printf("DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d (seg=%d)\n", i->time(), pos, frameOffset, ft, MusEGlobal::segmentSize);
+        ///if (ft > (int)MusEGlobal::segmentSize)
+          ft = MusEGlobal::segmentSize - 1;
       }
       // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count. 
       //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
@@ -2160,11 +2160,11 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
       int ft = e.time() - frameOffset - pos;
       if(ft < 0)
         ft = 0;
-      if (ft >= (int)segmentSize) 
+      if (ft >= (int)MusEGlobal::segmentSize) 
       {
-        printf("DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d (seg=%d)\n", e.time(), pos, frameOffset, ft, segmentSize);
-        ///if (ft > (int)segmentSize)
-          ft = segmentSize - 1;
+        printf("DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d (seg=%d)\n", e.time(), pos, frameOffset, ft, MusEGlobal::segmentSize);
+        ///if (ft > (int)MusEGlobal::segmentSize)
+          ft = MusEGlobal::segmentSize - 1;
       }
       // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count. 
       //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
@@ -2200,7 +2200,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
       controls[k].val = v.value;
       
       // TODO: (From plugin module, adapt for synth if/when our own plugin gui is added to synths).
-      // Need to update the automation value, otherwise the block above overwrites with the last automation value.
+      // Need to update the MusEGlobal::automation value, otherwise the block above overwrites with the last MusEGlobal::automation value.
       ///if(_track)
       ///{
         // Since we are now in the audio thread context, there's no need to send a message,
@@ -2253,7 +2253,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
     iRoute i = irl->begin();
     if(!i->track->isMidiTrack())
     {
-      //if(debugMsg)
+      //if(MusEGlobal::debugMsg)
         printf("DssiSynthIF::getData: Error: First route is a midi track route!\n");
     }
     else
@@ -2283,7 +2283,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
     {
       if(i->track->isMidiTrack())
       {
-        //if(debugMsg)
+        //if(MusEGlobal::debugMsg)
           printf("DssiSynthIF::getData: Error: Route is a midi track route!\n");
         continue;
       }
@@ -2406,13 +2406,13 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
   if(fixedsize > n)
     fixedsize = n;
   
-  unsigned long min_per = config.minControlProcessPeriod;  
+  unsigned long min_per = MusEConfig::config.minControlProcessPeriod;  
   if(min_per > n)
     min_per = n;
       
-  // Process automation control values now.
+  // Process MusEGlobal::automation control values now.
   // TODO: This needs to be respect frame resolution. Put this inside the sample loop below.
-  if(automation && synti && synti->automationType() != AUTO_OFF && id() != -1)
+  if(MusEGlobal::automation && synti && synti->automationType() != AUTO_OFF && id() != -1)
   {
     for(unsigned long k = 0; k < synth->_controlInPorts; ++k)
     {
@@ -2483,8 +2483,8 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
       controls[v.idx].val = v.value;
     }
     
-    // Process automation control values now.
-    //if(automation && synti && synti->automationType() != AUTO_OFF && id() != -1)
+    // Process MusEGlobal::automation control values now.
+    //if(MusEGlobal::automation && synti && synti->automationType() != AUTO_OFF && id() != -1)
     //{
     //  for(unsigned long k = 0; k < synth->_controlInPorts; ++k)
     //  {
@@ -2558,13 +2558,13 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
         int ft = i->time() - frameOffset - pos;
         if(ft < 0)
           ft = 0;
-        //if (ft >= (int)segmentSize) 
+        //if (ft >= (int)MusEGlobal::segmentSize) 
         if (ft >= int(sample + nsamp)) 
         {
-          //printf("DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d (seg=%d)\n", i->time(), pos, frameOffset, ft, segmentSize);
+          //printf("DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d (seg=%d)\n", i->time(), pos, frameOffset, ft, MusEGlobal::segmentSize);
           printf("DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", i->time(), pos, frameOffset, ft, sample, nsamp);
-          ///if (ft > (int)segmentSize)
-            //ft = segmentSize - 1;
+          ///if (ft > (int)MusEGlobal::segmentSize)
+            //ft = MusEGlobal::segmentSize - 1;
             ft = sample + nsamp - 1;
         }
         // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count. 
@@ -2597,13 +2597,13 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
         int ft = e.time() - frameOffset - pos;
         if(ft < 0)
           ft = 0;
-        //if (ft >= (int)segmentSize) 
+        //if (ft >= (int)MusEGlobal::segmentSize) 
         if (ft >= int(sample + nsamp)) 
         {
-          //printf("DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d (seg=%d)\n", e.time(), pos, frameOffset, ft, segmentSize);
+          //printf("DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d (seg=%d)\n", e.time(), pos, frameOffset, ft, MusEGlobal::segmentSize);
           printf("DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", e.time(), pos, frameOffset, ft, sample, nsamp);
-          ///if (ft > (int)segmentSize)
-            //ft = segmentSize - 1;
+          ///if (ft > (int)MusEGlobal::segmentSize)
+            //ft = MusEGlobal::segmentSize - 1;
             ft = sample + nsamp - 1;
         }
         // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count. 
@@ -2625,7 +2625,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
       iRoute i = irl->begin();
       if(!i->track->isMidiTrack())
       {
-        //if(debugMsg)
+        //if(MusEGlobal::debugMsg)
           printf("DssiSynthIF::getData: Error: First route is a midi track route!\n");
       }
       else
@@ -2655,7 +2655,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
       {
         if(i->track->isMidiTrack())
         {
-          //if(debugMsg)
+          //if(MusEGlobal::debugMsg)
             printf("DssiSynthIF::getData: Error: Route is a midi track route!\n");
           continue;
         }
@@ -2716,7 +2716,7 @@ bool DssiSynthIF::putEvent(const MidiPlayEvent& ev)
       fprintf(stderr, "DssiSynthIF::putEvent midi event time:%d chn:%d a:%d b:%d\n", ev.time(), ev.channel(), ev.dataA(), ev.dataB());
       #endif
       
-      if (midiOutputTrace)
+      if (MusEGlobal::midiOutputTrace)
             ev.dump();
       
       return synti->eventFifo.put(ev);
@@ -2953,7 +2953,7 @@ void DssiSynthIF::guiHeartBeat()
 int DssiSynthIF::oscUpdate()
 {
       // Send project directory.
-      _oscif.oscSendConfigure(DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());  // song->projectPath()
+      _oscif.oscSendConfigure(DSSI_PROJECT_DIRECTORY_KEY, MusEGlobal::museProject.toLatin1().constData());  // song->projectPath()
       
       // Send current string configuration parameters.
       //StringParamMap& map = synti->_stringParamMap;

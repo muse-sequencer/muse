@@ -130,7 +130,7 @@ void SigScale::pdraw(QPainter& p, const QRect& r)
 
       if (x < 0)
             x = 0;
-      p.setFont(config.fonts[3]);
+      p.setFont(MusEConfig::config.fonts[3]);
       ///for (ciSigEvent si = sigmap.begin(); si != sigmap.end(); ++si) {
       for (AL::ciSigEvent si = AL::sigmap.begin(); si != AL::sigmap.end(); ++si) {
             ///SigEvent* e = si->second;

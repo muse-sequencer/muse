@@ -74,7 +74,7 @@ class DrumEdit : public MidiEditor {
       NoteInfo* info;
       QToolButton* srec;
       QToolButton* midiin;
-      EditToolBar* tools2;
+      MusEWidget::EditToolBar* tools2;
 
       Toolbar1* toolbar;
       Splitter* split1;

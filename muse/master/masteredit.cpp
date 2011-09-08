@@ -115,9 +115,9 @@ MasterEdit::MasterEdit()
       
       tools = addToolBar(tr("Master tools"));
       tools->setObjectName("Master tools");
-      tools->addActions(undoRedo->actions());
+      tools->addActions(MusEGlobal::undoRedo->actions());
 
-      EditToolBar* tools2 = new EditToolBar(this, PointerTool | PencilTool | RubberTool);
+      MusEWidget::EditToolBar* tools2 = new MusEWidget::EditToolBar(this, MusEWidget::PointerTool | MusEWidget::PencilTool | MusEWidget::RubberTool);
       addToolBar(tools2);
 
       QToolBar* enableMaster = addToolBar(tr("Enable master"));

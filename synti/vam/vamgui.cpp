@@ -601,7 +601,7 @@ void VAMGui::loadPresetsPressed()
 {
 #if 1   // TODO
 	QString iname;
-	QString s(configPath);
+	QString s(MusEGlobal::configPath);
 	
 /*      QString filename = QFileDialog::getOpenFileName(lastdir, QString("*.[Ss][Ff]2"),
                                                       this,
@@ -716,7 +716,7 @@ void VAMGui::doSavePresets(const QString& fn, bool showWarning)
 void VAMGui::savePresetsPressed()
 {
 #if 1 // TODO
-	QString s(configPath);
+        QString s(MusEGlobal::configPath);
 	QString fn = QFileDialog::getSaveFileName(this, tr("MusE: Save VAM Presets"), 
                                                   s, "Presets (*.vam)");
 	if (fn.isEmpty())
@@ -734,7 +734,7 @@ void VAMGui::savePresetsToFilePressed()
 {
 	if (!presetFileName ) {
  
-      QString s(configPath);
+      QString s(MusEGlobal::configPath);
       QString fn = QFileDialog::getSaveFileName(this, tr("MusE: Save VAM Presets"), 
                                                 s, "Presets (*.vam)");
       presetFileName = new QString(fn);

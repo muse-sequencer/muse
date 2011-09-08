@@ -112,16 +112,16 @@ AudioTrack::AudioTrack(TrackType t)
       // Changed by Tim. p3.3.15
       //outBuffers = new float*[MAX_CHANNELS];
       //for (int i = 0; i < MAX_CHANNELS; ++i)
-      //      outBuffers[i] = new float[segmentSize];
+      //      outBuffers[i] = new float[MusEGlobal::segmentSize];
       //for (int i = 0; i < MAX_CHANNELS; ++i)
-      //      posix_memalign((void**)(outBuffers + i), 16, sizeof(float) * segmentSize);
+      //      posix_memalign((void**)(outBuffers + i), 16, sizeof(float) * MusEGlobal::segmentSize);
       
       // Let's allocate it all in one block, and just point the remaining buffer pointers into the block
       //  which allows faster one-shot buffer copying.
       // Nope. Nice but interferes with possibility we don't know if other buffers are contiguous (jack buffers, local stack buffers etc.).
-      //posix_memalign((void**)(outBuffers), 16, sizeof(float) * segmentSize * MAX_CHANNELS);
+      //posix_memalign((void**)(outBuffers), 16, sizeof(float) * MusEGlobal::segmentSize * MAX_CHANNELS);
       //for (int i = 0; i < MAX_CHANNELS; ++i)
-      //  *(outBuffers + i) = sizeof(float) * segmentSize * i;
+      //  *(outBuffers + i) = sizeof(float) * MusEGlobal::segmentSize * i;
             
       // p3.3.38
       // Easy way, less desirable... Start out with enough for MAX_CHANNELS. Then multi-channel syntis can re-allocate, 
@@ -130,7 +130,7 @@ AudioTrack::AudioTrack(TrackType t)
       _totalOutChannels = MAX_CHANNELS;
       outBuffers = new float*[_totalOutChannels];
       for (int i = 0; i < _totalOutChannels; ++i)
-            posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * segmentSize);
+            posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * MusEGlobal::segmentSize);
       
       // This is only set by multi-channel syntis...
       _totalInChannels = 0;
@@ -159,9 +159,9 @@ AudioTrack::AudioTrack(const AudioTrack& t, bool cloneParts)
       // Changed by Tim. p3.3.15
       //outBuffers = new float*[MAX_CHANNELS];
       //for (int i = 0; i < MAX_CHANNELS; ++i)
-      //      outBuffers[i] = new float[segmentSize];
+      //      outBuffers[i] = new float[MusEGlobal::segmentSize];
       //for (int i = 0; i < MAX_CHANNELS; ++i)
-      //      posix_memalign((void**)(outBuffers + i), 16, sizeof(float) * segmentSize);
+      //      posix_memalign((void**)(outBuffers + i), 16, sizeof(float) * MusEGlobal::segmentSize);
       
       // p3.3.38
       int chans = _totalOutChannels;
@@ -170,7 +170,7 @@ AudioTrack::AudioTrack(const AudioTrack& t, bool cloneParts)
         chans = MAX_CHANNELS;
       outBuffers = new float*[chans];
       for (int i = 0; i < chans; ++i)
-            posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * segmentSize);
+            posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * MusEGlobal::segmentSize);
       
       bufferPos = MAXINT;
       _recFile  = t._recFile;
@@ -565,10 +565,10 @@ void AudioTrack::processAutomationEvents()
     }
   }
   
-  // Done with the recorded automation event list. Clear it.
+  // Done with the recorded MusEGlobal::automation event list. Clear it.
   _recEvents.clear();
         
-  // Try muse without this, so that the user can remain in automation write mode
+  // Try muse without this, so that the user can remain in MusEGlobal::automation write mode
   //  after a stop. 
   /*
   if (automationType() == AUTO_WRITE)
@@ -742,7 +742,7 @@ double AudioTrack::volume() const
       if (cl == _controller.end())
             return 0.0;
       
-      if (automation && 
+      if (MusEGlobal::automation && 
           automationType() != AUTO_OFF && _volumeEnCtrl && _volumeEn2Ctrl )
             return cl->second->value(song->cPos().frame());
       else
@@ -774,7 +774,7 @@ double AudioTrack::pan() const
       if (cl == _controller.end())
             return 0.0;
       
-      if (automation && 
+      if (MusEGlobal::automation && 
           automationType() != AUTO_OFF && _panEnCtrl && _panEn2Ctrl )
         return cl->second->value(song->cPos().frame());
       else
@@ -805,7 +805,7 @@ double AudioTrack::pluginCtrlVal(int ctlID) const
       if (cl == _controller.end())
             return 0.0;
       
-      if (automation && (automationType() != AUTO_OFF))
+      if (MusEGlobal::automation && (automationType() != AUTO_OFF))
         return cl->second->value(song->cPos().frame());
       else
         return cl->second->curVal();
@@ -826,7 +826,7 @@ void AudioTrack::setPluginCtrlVal(int param, double val)
       
 void AudioTrack::recordAutomation(int n, double v)
       {
-        if(!automation)
+        if(!MusEGlobal::automation)
           return;
         if(audio->isPlaying())
           _recEvents.push_back(CtrlRecVal(song->cPos().frame(), n, v));
@@ -849,7 +849,7 @@ void AudioTrack::recordAutomation(int n, double v)
 
 void AudioTrack::startAutoRecord(int n, double v)
       {
-        if(!automation)
+        if(!MusEGlobal::automation)
           return;
         if(audio->isPlaying())
         {
@@ -878,7 +878,7 @@ void AudioTrack::startAutoRecord(int n, double v)
 
 void AudioTrack::stopAutoRecord(int n, double v)
       {
-        if(!automation)
+        if(!MusEGlobal::automation)
           return;
         if(audio->isPlaying())
         {
@@ -899,7 +899,7 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
       Track::writeProperties(level, xml);
       xml.intTag(level, "prefader", prefader());
       xml.intTag(level, "sendMetronome", sendMetronome());
-      xml.intTag(level, "automation", int(automationType()));
+      xml.intTag(level, "MusEGlobal::automation", int(automationType()));
       if (hasAuxSend()) {
             int naux = song->auxs()->size();
             for (int idx = 0; idx < naux; ++idx) {
@@ -1003,7 +1003,7 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             _prefader = xml.parseInt();
       else if (tag == "sendMetronome")
             _sendMetronome = xml.parseInt();
-      else if (tag == "automation")
+      else if (tag == "MusEGlobal::automation")
             setAutomationType(AutomationType(xml.parseInt()));
       // Removed by T356
       // "recfile" tag not saved anymore
@@ -1014,7 +1014,7 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             l->read(xml);
 
             // Since (until now) muse wrote a 'zero' for plugin controller current value 
-            //  in the XML file, we can't use that value, now that plugin automation is added.
+            //  in the XML file, we can't use that value, now that plugin MusEGlobal::automation is added.
             // We must take the value from the plugin control value.
             // Otherwise we break all existing .med files with plugins, because the gui 
             //  controls would all be set to zero.
@@ -1138,7 +1138,7 @@ void AudioTrack::mapRackPluginsToControllers()
   // No matter of the outcome of the above - rack position is not too critical -
   //  making sure that each control has a controller is important. Otherwise they 
   //  are stuck at zero can't be adjusted.
-  // Muse med files created before the automation patches (before 0.9pre1) may have broken
+  // Muse med files created before the MusEGlobal::automation patches (before 0.9pre1) may have broken
   //  controller sections, so this will allow more tolerance of them.
   for(int idx = 0; idx < PipelineDepth; idx++)
   {
@@ -1356,7 +1356,7 @@ AudioInput::AudioInput(const AudioInput& t, bool cloneParts)
 
 AudioInput::~AudioInput()
       {
-      if (!checkAudioDevice()) return;
+      if (!MusEGlobal::checkAudioDevice()) return;
       for (int i = 0; i < _channels; ++i) 
           if(jackPorts[i])
             audioDevice->unregisterPort(jackPorts[i]);
@@ -1433,7 +1433,7 @@ AudioOutput::AudioOutput(const AudioOutput& t, bool cloneParts)
 
 AudioOutput::~AudioOutput()
       {
-      if (!checkAudioDevice()) return;
+      if (!MusEGlobal::checkAudioDevice()) return;
       for (int i = 0; i < _channels; ++i)
           if(jackPorts[i])
             audioDevice->unregisterPort(jackPorts[i]);
@@ -1545,11 +1545,11 @@ AudioAux::AudioAux()
       //setChannels(2);
       // Changed by Tim. p3.3.15
       //for (int i = 0; i < MAX_CHANNELS; ++i)
-      //      buffer[i] = (i < channels()) ? new float[segmentSize] : 0;
+      //      buffer[i] = (i < channels()) ? new float[MusEGlobal::segmentSize] : 0;
       for(int i = 0; i < MAX_CHANNELS; ++i)
       {
         if(i < channels())
-          posix_memalign((void**)(buffer + i), 16, sizeof(float) * segmentSize);
+          posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
         else
           buffer[i] = 0;
       }  
@@ -1622,9 +1622,9 @@ void AudioAux::setChannels(int n)
   {
     // Changed by Tim. p3.3.15
     //for (int i = channels(); i < n; ++i)
-    //      buffer[i] = new float[segmentSize];
+    //      buffer[i] = new float[MusEGlobal::segmentSize];
     for(int i = channels(); i < n; ++i)
-      posix_memalign((void**)(buffer + i), 16, sizeof(float) * segmentSize);
+      posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
   }
   else if(n < channels()) 
   {
@@ -1672,7 +1672,7 @@ bool AudioTrack::setRecordFlag1(bool f)
               setRecFile(0);
               
               remove(s.toLatin1().constData());
-              if(debugMsg)
+              if(MusEGlobal::debugMsg)
                 printf("AudioNode::setRecordFlag1: remove file %s if it exists\n", s.toLatin1().constData());
               //_recFile = 0;
             }
@@ -1690,7 +1690,7 @@ bool AudioTrack::setRecordFlag1(bool f)
 //---------------------------------------------------------
 bool AudioTrack::prepareRecording()
 {
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         printf("prepareRecording for track %s\n", _name.toLatin1().constData());
 
       if (_recFile == 0) {
@@ -1699,10 +1699,10 @@ bool AudioTrack::prepareRecording()
             //
             char buffer[128];
             QFile fil;
-            for (;;++recFileNumber) {
+            for (;;++MusEGlobal::recFileNumber) {
                sprintf(buffer, "%s/rec%d.wav",
-                  museProject.toLatin1().constData(),
-                  recFileNumber);
+                  MusEGlobal::museProject.toLatin1().constData(),
+                  MusEGlobal::recFileNumber);
                fil.setFileName(QString(buffer));
                if (!fil.exists())
                   break;
@@ -1710,10 +1710,10 @@ bool AudioTrack::prepareRecording()
             _recFile = new SndFile(QString(buffer));
             _recFile->setFormat(
                SF_FORMAT_WAV | SF_FORMAT_FLOAT,
-               _channels, sampleRate);
+               _channels, MusEGlobal::sampleRate);
       }
 
-      if (debugMsg)
+      if (MusEGlobal::debugMsg)
             printf("AudioNode::setRecordFlag1: init internal file %s\n", _recFile->path().toLatin1().constData());
 
       if(_recFile->openWrite())

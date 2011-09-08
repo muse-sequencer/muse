@@ -137,7 +137,7 @@ void initDsp()
             }
       // fall through to not hardware optimized routines
 #endif
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         printf("Muse: using unoptimized non-SSE dsp routines\n");
       dsp = new Dsp();
       }

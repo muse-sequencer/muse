@@ -127,7 +127,7 @@ class PianoRoll : public MidiEditor {
 
       QToolButton* speaker;
       QToolBar* tools;
-      EditToolBar* tools2;
+      MusEWidget::EditToolBar* tools2;
 
       int colorMode;
 

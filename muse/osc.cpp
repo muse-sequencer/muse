@@ -365,6 +365,8 @@ void initOSC()
   lo_server_thread_start(serverThread);
 }
 
+namespace MusEApp {
+
 //---------------------------------------------------------
 //   exitOSC
 //---------------------------------------------------------
@@ -405,7 +407,7 @@ void stopOSC()
   oscServerRunning = false;  
 }
         
-
+} // namespace MusEApp
 
 /*
 //---------------------------------------------------------
@@ -624,7 +626,7 @@ int OscIF::oscUpdate(lo_arg **argv)
       #endif
       
       // Send sample rate.
-      lo_send(_uiOscTarget, _uiOscSampleRatePath, "i", sampleRate);
+      lo_send(_uiOscTarget, _uiOscSampleRatePath, "i", MusEGlobal::sampleRate);
       
       // Send project directory.
       //lo_send(_uiOscTarget, _uiOscConfigurePath, "ss",

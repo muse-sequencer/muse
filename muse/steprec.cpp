@@ -59,7 +59,7 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 	unsigned lasttick=0;
 	Undo operations;
 	
-	if (pitch!=rcSteprecNote) 
+	if (pitch!=MusEGlobal::rcSteprecNote) 
 	{
 		chord_timer->stop();
 
@@ -122,7 +122,7 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 		operations.push_back(UndoOp(UndoOp::AddEvent, e, part, false, false));
 		lasttick=e.endTick();
 
-		if (! (globalKeyState & Qt::ShiftModifier))
+		if (! (MusEGlobal::globalKeyState & Qt::ShiftModifier))
 		{
 			chord_timer_set_to_tick = tick + step;
 			chord_timer->start();
@@ -130,7 +130,7 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 		
 		goto steprec_record_foot; // this is actually unneccessary, but for clarity
 	}
-	else  // equals if (pitch==rcSteprecNote)
+	else  // equals if (pitch==MusEGlobal::rcSteprecNote)
 	{
 		bool held_notes=false;
 		if (note_held_down!=NULL)

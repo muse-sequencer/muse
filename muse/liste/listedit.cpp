@@ -483,7 +483,7 @@ ListEdit::ListEdit(PartList* pl)
       QSignalMapper *editSignalMapper = new QSignalMapper(this);
     
       menuEdit = menuBar()->addMenu(tr("&Edit"));
-      menuEdit->addActions(undoRedo->actions());
+      menuEdit->addActions(MusEGlobal::undoRedo->actions());
 
       menuEdit->addSeparator();
 #if 0
@@ -514,7 +514,7 @@ ListEdit::ListEdit(PartList* pl)
       //---------ToolBar----------------------------------
       
       listTools = addToolBar(tr("List tools"));
-      listTools->addActions(undoRedo->actions());
+      listTools->addActions(MusEGlobal::undoRedo->actions());
       
       QToolBar* insertTools = addToolBar(tr("Insert tools"));
       insertTools->addActions(insertItems->actions());
@@ -597,7 +597,7 @@ ListEdit::ListEdit(PartList* pl)
 
 ListEdit::~ListEdit()
       {
-      // undoRedo->removeFrom(listTools);  // p4.0.6 Removed
+      // MusEGlobal::undoRedo->removeFrom(listTools);  // p4.0.6 Removed
       }
 
 //---------------------------------------------------------

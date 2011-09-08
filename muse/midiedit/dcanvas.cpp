@@ -506,7 +506,7 @@ void DrumCanvas::drawCanvas(QPainter& p, const QRect& rect)
 void DrumCanvas::drawTopItem(QPainter& p, const QRect&)
 {
   // draw cursor
-  if (_tool == CursorTool) {
+  if (_tool == MusEWidget::CursorTool) {
     p.setPen(Qt::black);
 
     int y = mapy(TH * cursorPos.y());
@@ -747,7 +747,7 @@ void DrumCanvas::keyPressed(int index, int velocity)
       audio->msgPlayMidiEvent(&e);
 
       if (_steprec && pos[0] >= start_tick /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */ && curPart)
-				steprec->record(curPart,index,drumMap[index].len,editor->raster(),velocity,globalKeyState&Qt::ControlModifier,globalKeyState&Qt::ShiftModifier);
+            steprec->record(curPart,index,drumMap[index].len,editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier);
             
       }
 
@@ -957,7 +957,7 @@ int DrumCanvas::getNextStep(unsigned int pos, int basicStep, int stepSize)
 //---------------------------------------------------------
 void DrumCanvas::keyPress(QKeyEvent* event)
 {
-  if (_tool == CursorTool) {
+  if (_tool == MusEWidget::CursorTool) {
 
     int key = event->key();
     if (((QInputEvent*)event)->modifiers() & Qt::ShiftModifier)
@@ -1036,7 +1036,7 @@ void DrumCanvas::keyPress(QKeyEvent* event)
 //---------------------------------------------------------
 void DrumCanvas::setTool2(int)
 {
-  if (_tool == CursorTool)
+  if (_tool == MusEWidget::CursorTool)
     deselectAll();
   if (unsigned(cursorPos.x()) < curPart->tick())
     cursorPos.setX(curPart->tick());
@@ -1064,7 +1064,7 @@ void DrumCanvas::setStep(int v)
 //---------------------------------------------------------
 Event *DrumCanvas::getEventAtCursorPos()
 {
-    if (_tool != CursorTool)
+    if (_tool != MusEWidget::CursorTool)
       return 0;
     EventList* el = curPart->events();
     iEvent lower  = el->lower_bound(cursorPos.x()-curPart->tick());
@@ -1131,12 +1131,12 @@ void DrumCanvas::moveAwayUnused()
 //---------------------------------------------------------
 void DrumCanvas::midiNote(int pitch, int velo)
       {
-      if (debugMsg) printf("DrumCanvas::midiNote: pitch=%i, velo=%i\n", pitch, velo);
+      if (MusEGlobal::debugMsg) printf("DrumCanvas::midiNote: pitch=%i, velo=%i\n", pitch, velo);
 
       if (_midiin && _steprec && curPart
          && !audio->isPlaying() && velo && pos[0] >= start_tick
          /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */
-         && !(globalKeyState & Qt::AltModifier)) {
-					 steprec->record(curPart,drumInmap[pitch],drumMap[(int)drumInmap[pitch]].len,editor->raster(),velo,globalKeyState&Qt::ControlModifier,globalKeyState&Qt::ShiftModifier);
+         && !(MusEGlobal::globalKeyState & Qt::AltModifier)) {
+                                               steprec->record(curPart,drumInmap[pitch],drumMap[(int)drumInmap[pitch]].len,editor->raster(),velo,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier);
          }
       }

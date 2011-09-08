@@ -153,7 +153,7 @@ class CtrlCanvas : public View {
       DragMode drag;
       QRect lasso;
       QPoint start;
-      Tool tool;
+      MusEWidget::Tool tool;
       unsigned pos[3];
       int curDrumInstrument;    //Used by the drum-editor to view velocity of only one key (one drum)
       

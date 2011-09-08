@@ -87,7 +87,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       dbox->setContentsMargins(0, 0, 0, 0);
 
       selCtrl = new QPushButton(tr("S"));
-      selCtrl->setFont(config.fonts[3]);
+      selCtrl->setFont(MusEConfig::config.fonts[3]);
       selCtrl->setFixedHeight(20);
       selCtrl->setSizePolicy(
          QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
@@ -97,7 +97,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
 
       // destroy button
       QPushButton* destroy = new QPushButton(tr("X"));
-      destroy->setFont(config.fonts[3]);
+      destroy->setFont(MusEConfig::config.fonts[3]);
       destroy->setFixedHeight(20);
       destroy->setSizePolicy(
          QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
@@ -125,7 +125,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       _dl->setPrecision(0);
       _dl->setToolTip(tr("double click on/off"));
       _dl->setSpecialText(tr("off"));
-      _dl->setFont(config.fonts[1]);
+      _dl->setFont(MusEConfig::config.fonts[1]);
       _dl->setBackgroundRole(QPalette::Mid);
       _dl->setFrame(true);
       _dl->setFixedWidth(36);
@@ -149,7 +149,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       dbox->addStretch();
       dbox->addWidget(_dl);
       dbox->addStretch();
-      connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
+      connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       inHeartBeat = false;
       setLayout(vbox);
       }
@@ -871,7 +871,7 @@ void CtrlPanel::ctrlPopup()
               int rv2 = act2->data().toInt();
               
               if (rv2 == max + 2)            // edit instrument
-                muse->startEditInstrument();
+                MusEGlobal::muse->startEditInstrument();
               else                           // select new instrument control
               {
                 MidiController* c;
@@ -903,7 +903,7 @@ void CtrlPanel::ctrlPopup()
             }
       
       //else if (rv == max + 2)             // edit instrument
-      //      muse->startEditInstrument();
+      //      MusEGlobal::muse->startEditInstrument();
       
       else if (rv == max + 3) {             // add new other controller
             PopupMenu* ctrlSubPop = new PopupMenu(this);

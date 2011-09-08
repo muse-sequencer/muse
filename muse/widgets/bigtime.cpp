@@ -35,6 +35,8 @@
 
 extern int mtcType;
 
+namespace MusEWidget {
+
 //
 // the bigtime widget
 // display is split into several parts to avoid flickering.
@@ -187,8 +189,8 @@ void BigTime::fmtButtonToggled(bool v)
 
 void BigTime::configChanged()
       {
-      setBgColor(config.bigTimeBackgroundColor);
-      setFgColor(config.bigTimeForegroundColor);
+      setBgColor(MusEConfig::config.bigTimeBackgroundColor);
+      setFgColor(MusEConfig::config.bigTimeForegroundColor);
       }
 
 //---------------------------------------------------------
@@ -230,7 +232,7 @@ bool BigTime::setString(unsigned v)
       int bar, beat;
       unsigned tick;
       AL::sigmap.tickValues(v, &bar, &beat, &tick);
-      double time = double(absFrame)/double(sampleRate);
+      double time = double(absFrame)/double(MusEGlobal::sampleRate);
       //int hour    = int(time) / 3600;
       //int min     = (int(time) / 60) % 60;
       int min     = int(time) / 60;
@@ -357,8 +359,8 @@ void BigTime::resizeEvent(QResizeEvent *ev)
   //dwin->setFont(f);
   QString fstr = QString("font-size:%1px; font-family:'Courier'; ").arg(fs);  // Tim p4.0.8
   dwin->setStyleSheet(fstr);
-  setBgColor(config.bigTimeBackgroundColor);
-  setFgColor(config.bigTimeForegroundColor);
+  setBgColor(MusEConfig::config.bigTimeBackgroundColor);
+  setFgColor(MusEConfig::config.bigTimeForegroundColor);
   
   int digitWidth = dwin->fontMetrics().width(QString("0"));
 	int vspace = (ev->size().height() - (fs*2)) / 3;
@@ -468,3 +470,4 @@ void BigTime::setBgColor(QColor c)
         setPalette(newpalette);
       }
 
+} // namespace MusEWidget

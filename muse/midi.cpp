@@ -67,7 +67,7 @@ const unsigned int  mmcDeferredPlayMsgLen = sizeof(mmcDeferredPlayMsg);
 const unsigned int  mmcStopMsgLen = sizeof(mmcStopMsg);
 const unsigned int  mmcLocateMsgLen = sizeof(mmcLocateMsg);
 
-#define CALC_TICK(the_tick) lrintf((float(the_tick) * float(config.division) + float(div/2)) / float(div));
+#define CALC_TICK(the_tick) lrintf((float(the_tick) * float(MusEConfig::config.division) + float(div/2)) / float(div));
 /*---------------------------------------------------------
  *    midi_meta_name
  *---------------------------------------------------------*/
@@ -423,7 +423,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                                     break;
                               case 0x6:   // Marker
                                     {
-                                    unsigned ltick  = CALC_TICK(tick);//(tick * config.division + div/2) / div;
+                                    unsigned ltick  = CALC_TICK(tick);//(tick * MusEConfig::config.division + div/2) / div;
                                     song->addMarker(QString((const char*)(data)), ltick, false);
                                     }
                                     break;
@@ -439,7 +439,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                               case 0x51:        // Tempo
                                     {
                                     unsigned tempo = data[2] + (data[1] << 8) + (data[0] <<16);
-                                    unsigned ltick  = CALC_TICK(tick);// (unsigned(tick) * unsigned(config.division) + unsigned(div/2)) / unsigned(div); 
+                                    unsigned ltick  = CALC_TICK(tick);// (unsigned(tick) * unsigned(MusEConfig::config.division) + unsigned(div/2)) / unsigned(div); 
                                     // After ca 10 mins 32 bits will not be enough... This expression has to be changed/factorized or so in some "sane" way...
                                     tempomap.addTempo(ltick, tempo);
                                     }
@@ -451,7 +451,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                                     int timesig_n = 1;
                                     for (int i = 0; i < n; i++)
                                           timesig_n *= 2;
-                                    int ltick  = CALC_TICK(tick);//(tick * config.division + div/2) / div;
+                                    int ltick  = CALC_TICK(tick);//(tick * MusEConfig::config.division + div/2) / div;
                                     ///sigmap.add(ltick, timesig_z, timesig_n);
                                     AL::sigmap.add(ltick, AL::TimeSignature(timesig_z, timesig_n));
                                     }
@@ -494,7 +494,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                           if (ev.isNoteOff(event)) {
                                 int t = k->first - i->first;
                                 if (t <= 0) {
-                                      if (debugMsg) {
+                                      if (MusEGlobal::debugMsg) {
                                             printf("Note len is (%d-%d)=%d, set to 1\n",
                                               k->first, i->first, k->first - i->first);
                                             ev.dump();
@@ -538,9 +538,9 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                            i->first, ev.pitch(), ev.velo());
                   continue;
                   }
-            int tick  = CALC_TICK(ev.tick()); //(ev.tick() * config.division + div/2) / div;
+            int tick  = CALC_TICK(ev.tick()); //(ev.tick() * MusEConfig::config.division + div/2) / div;
             if (ev.isNote()) {
-                  int lenTick = CALC_TICK(ev.lenTick()); //(ev.lenTick() * config.division + div/2) / div;
+                  int lenTick = CALC_TICK(ev.lenTick()); //(ev.lenTick() * MusEConfig::config.division + div/2) / div;
                   ev.setLenTick(lenTick);
                   }
             ev.setTick(tick);
@@ -580,7 +580,7 @@ void Audio::panic()
             if (port == 0)   // ??
                   continue;
             for (int chan = 0; chan < MIDI_CHANNELS; ++chan) {
-                  if (debugMsg)
+                  if (MusEGlobal::debugMsg)
                     printf("send all sound of to midi port %d channel %d\n", i, chan);
                   port->sendEvent(MidiPlayEvent(0, i, chan, ME_CONTROLLER, CTRL_ALL_SOUNDS_OFF, 0), true);
                   port->sendEvent(MidiPlayEvent(0, i, chan, ME_CONTROLLER, CTRL_RESET_ALL_CTRL, 0), true);
@@ -609,7 +609,7 @@ void Audio::initDevices()
             activePorts[track->outPort()] = true;
             }
       if (song->click())
-            activePorts[clickPort] = true;
+            activePorts[MusEGlobal::clickPort] = true;
 
       //
       // test for explicit instrument initialization
@@ -1043,7 +1043,7 @@ void Audio::processMidi()
                               MidiPlayEvent event(rf.peek(i));
                               
                               //unsigned time = event.time() + segmentSize*(segmentCount-1);
-                              //unsigned time = event.time() + (extsync ? config.division/24 : segmentSize*(segmentCount-1));
+                              //unsigned time = event.time() + (extsync ? MusEConfig::config.division/24 : segmentSize*(segmentCount-1));
                               //unsigned time = extsync ? curTickPos : (event.time() + segmentSize*(segmentCount-1));
                               //event.setTime(time);
                               //if(!extsync)
@@ -1202,7 +1202,7 @@ void Audio::processMidi()
                                   // 384/24=16 for a division of 16 sub-frames (16 MusE 'ticks').
                                   // That is what we'll use if syncing externally.
                                   //unsigned time = event.time() + segmentSize*(segmentCount-1);
-                                  //unsigned time = event.time() + (extsync ? config.division/24 : segmentSize*(segmentCount-1));
+                                  //unsigned time = event.time() + (extsync ? MusEConfig::config.division/24 : segmentSize*(segmentCount-1));
                                   // p3.3.34
                                   // Oops, use the current tick. 
                                   //unsigned time = extsync ? curTickPos : (event.time() + segmentSize*(segmentCount-1));
@@ -1363,8 +1363,8 @@ void Audio::processMidi()
       //---------------------------------------------------
 
       MidiDevice* md = 0;
-      if (midiClickFlag)
-            md = midiPorts[clickPort].device();
+      if (MusEGlobal::midiClickFlag)
+            md = midiPorts[MusEGlobal::clickPort].device();
       if (song->click() && (isPlaying() || state == PRECOUNT)) {
             MPEventList* playEvents = 0;
             MPEventList* stuckNotes = 0;
@@ -1389,23 +1389,23 @@ void Audio::processMidi()
                   int evtime = extsync ? midiClick : tempomap.tick2frame(midiClick) + frameOffset;
                   
                   // p3.3.25
-                  //MidiPlayEvent ev(frame, clickPort, clickChan, ME_NOTEON,
-                  MidiPlayEvent ev(evtime, clickPort, clickChan, ME_NOTEON,
-                     beatClickNote, beatClickVelo);
+                  //MidiPlayEvent ev(frame, MusEGlobal::clickPort, MusEGlobal::clickChan, ME_NOTEON,
+                  MidiPlayEvent ev(evtime, MusEGlobal::clickPort, MusEGlobal::clickChan, ME_NOTEON,
+                     MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
                      
                   if (md) {
                         // p3.3.25
-                        //MidiPlayEvent ev(frame, clickPort, clickChan, ME_NOTEON,
-                        MidiPlayEvent ev(evtime, clickPort, clickChan, ME_NOTEON,
-                           beatClickNote, beatClickVelo);
+                        //MidiPlayEvent ev(frame, MusEGlobal::clickPort, MusEGlobal::clickChan, ME_NOTEON,
+                        MidiPlayEvent ev(evtime, MusEGlobal::clickPort, MusEGlobal::clickChan, ME_NOTEON,
+                           MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
                         
                         if (isMeasure) {
-                              ev.setA(measureClickNote);
-                              ev.setB(measureClickVelo);
+                              ev.setA(MusEGlobal::measureClickNote);
+                              ev.setB(MusEGlobal::measureClickVelo);
                               }
                         playEvents->add(ev);
                         }
-                  if (audioClickFlag) {
+                  if (MusEGlobal::audioClickFlag) {
                         // p3.3.25
                         //MidiPlayEvent ev1(frame, 0, 0, ME_NOTEON, 0, 0);
                         MidiPlayEvent ev1(evtime, 0, 0, ME_NOTEON, 0, 0);
@@ -1448,9 +1448,9 @@ void Audio::processMidi()
             //}    
             
             // Removed p4.0.15 Tim.
-            ///if (audioClickFlag)
+            ///if (MusEGlobal::audioClickFlag)
             ///      metronome->setNextPlayEvent(metronome->playEvents()->begin());
-            //if(audioClickFlag)  
+            //if(MusEGlobal::audioClickFlag)  
             //{
             //  if(metronome->nextPlayEvent() != metronome->playEvents()->begin())   
             //    printf("Audio::processMidi metronome: metronome->nextPlayEvent() != metronome->playEvents->begin()\n");  

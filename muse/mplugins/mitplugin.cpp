@@ -37,6 +37,8 @@
 
 MITPluginList mitPlugins;
 
+namespace MusEApp {
+
 //---------------------------------------------------------
 //   startMidiInputPlugin
 //---------------------------------------------------------
@@ -128,16 +130,6 @@ void MusE::hideMidiRhythmGenerator()
 #endif
 
 //---------------------------------------------------------
-//   processMidiInputTransformPlugins
-//---------------------------------------------------------
-
-void processMidiInputTransformPlugins(MEvent& event)
-      {
-      for (iMITPlugin i = mitPlugins.begin(); i != mitPlugins.end(); ++i)
-            (*i)->process(event);
-      }
-
-//---------------------------------------------------------
 //   startMidiTransformer
 //---------------------------------------------------------
 
@@ -146,6 +138,18 @@ void MusE::startMidiTransformer()
       if (midiTransformerDialog == 0)
             midiTransformerDialog = new MidiTransformerDialog;
       midiTransformerDialog->show();
+      }
+
+} // namespace MusEApp
+
+//---------------------------------------------------------
+//   processMidiInputTransformPlugins
+//---------------------------------------------------------
+
+void processMidiInputTransformPlugins(MEvent& event)
+      {
+      for (iMITPlugin i = mitPlugins.begin(); i != mitPlugins.end(); ++i)
+            (*i)->process(event);
       }
 
 //---------------------------------------------------------

@@ -25,11 +25,14 @@
 
 #include <QToolBar>
 
-class Action;
 
 class QAction;
 class QPixmap;
 class QWidget;
+
+namespace MusEWidget {
+
+class Action;
 
 enum Tool {
    PointerTool=1,
@@ -80,6 +83,8 @@ class EditToolBar : public QToolBar {
       ~EditToolBar();
       int curTool();
       };
+
+} // namespace MusEWidget
 
 #endif
 

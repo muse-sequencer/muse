@@ -125,7 +125,7 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   _saveConfig = true;
   _isInitSet = true; //false if an initial bank must be download
   
-  QString sharePath(museGlobalShare);
+  QString sharePath(MusEGlobal::museGlobalShare);
   _initSetPath = sharePath + QString("/presets/deicsonze/SutulaBank.dei");
   
   
@@ -170,7 +170,7 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   
   //Load configuration
   QString defaultConf = 
-    (configPath + QString("/" DEICSONZESTR ".dco"));
+    (MusEGlobal::configPath + QString("/" DEICSONZESTR ".dco"));
   FILE* f;
   f = fopen(defaultConf.toAscii().data(), "r");
   if(f) {

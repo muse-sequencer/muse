@@ -42,6 +42,7 @@
 #include "gconfig.h"
 #include "popupmenu.h"
 
+
 MidiInstrumentList midiInstruments;
 MidiInstrument* genericMidiInstrument;
 
@@ -155,7 +156,7 @@ static void loadIDF(QFileInfo* fi)
             printf("cannot open file %s\n", fi->fileName().toLatin1());
             return;
             }
-      if (debugMsg)
+      if (MusEGlobal::debugMsg)
             printf("   load instrument definition <%s>\n", fi->filePath().local8Bit().data());
       QDomDocument doc;
       int line, column;
@@ -187,7 +188,7 @@ static void loadIDF(QFileInfo* fi)
                                     if (midiInstruments[idx]->iname() == i->iname()) {
                                           midiInstruments.replace(idx, i);
                                           replaced = true;
-                                          if (debugMsg)
+                                          if (MusEGlobal::debugMsg)
                                                 printf("Midi Instrument Definition <%s> overwritten\n", 
                                                    i->iname().toLocal8Bit().data());
                                           break;
@@ -208,7 +209,7 @@ static void loadIDF(QFileInfo* fi)
       FILE* f = fopen(fi->filePath().toAscii().constData(), "r");
       if (f == 0)
             return;
-      if (debugMsg)
+      if (MusEGlobal::debugMsg)
             printf("READ IDF %s\n", fi->filePath().toLatin1().constData());
       Xml xml(f);
       
@@ -267,9 +268,9 @@ void initMidiInstruments()
       {
       genericMidiInstrument = new MidiInstrument(QWidget::tr("generic midi"));
       midiInstruments.push_back(genericMidiInstrument);
-      if (debugMsg)
-        printf("load user instrument definitions from <%s>\n", museUserInstruments.toLatin1().constData());
-      QDir usrInstrumentsDir(museUserInstruments, QString("*.idf"));
+      if (MusEGlobal::debugMsg)
+        printf("load user instrument definitions from <%s>\n", MusEGlobal::museUserInstruments.toLatin1().constData());
+      QDir usrInstrumentsDir(MusEGlobal::museUserInstruments, QString("*.idf"));
       if (usrInstrumentsDir.exists()) {
             QFileInfoList list = usrInstrumentsDir.entryInfoList();
             QFileInfoList::iterator it=list.begin(); // ddskrjo
@@ -280,15 +281,15 @@ void initMidiInstruments()
             }
       //else
       //{
-      //  if(usrInstrumentsDir.mkdir(museUserInstruments))
-      //    printf("Created user instrument directory: %s\n", museUserInstruments.toLatin1());
+      //  if(usrInstrumentsDir.mkdir(MusEGlobal::museUserInstruments))
+      //    printf("Created user instrument directory: %s\n", MusEGlobal::museUserInstruments.toLatin1());
       //  else
-      //    printf("Unable to create user instrument directory: %s\n", museUserInstruments.toLatin1());
+      //    printf("Unable to create user instrument directory: %s\n", MusEGlobal::museUserInstruments.toLatin1());
       //}
       
-      if (debugMsg)
-        printf("load instrument definitions from <%s>\n", museInstruments.toLatin1().constData());
-      QDir instrumentsDir(museInstruments, QString("*.idf"));
+      if (MusEGlobal::debugMsg)
+        printf("load instrument definitions from <%s>\n", MusEGlobal::museInstruments.toLatin1().constData());
+      QDir instrumentsDir(MusEGlobal::museInstruments, QString("*.idf"));
       if (instrumentsDir.exists()) {
             QFileInfoList list = instrumentsDir.entryInfoList();
             QFileInfoList::iterator it=list.begin(); // ddskrjo
@@ -298,7 +299,7 @@ void initMidiInstruments()
                   }
             }
       else
-        printf("Instrument directory not found: %s\n", museInstruments.toLatin1().constData());
+        printf("Instrument directory not found: %s\n", MusEGlobal::museInstruments.toLatin1().constData());
         
       }
 
@@ -960,7 +961,7 @@ void MidiInstrument::populatePatchPopup(PopupMenu* menu, int chan, MType songTyp
                   //QMenu* pm = menu->addMenu(pgp->name);
                   PopupMenu* pm = new PopupMenu(pgp->name, menu, menu->stayOpen());  // Use the parent stayOpen here.
                   menu->addMenu(pm);
-                  pm->setFont(config.fonts[0]);
+                  pm->setFont(MusEConfig::config.fonts[0]);
                   const PatchList& pl = pgp->patches;
                   for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
                         const Patch* mp = *ipl;

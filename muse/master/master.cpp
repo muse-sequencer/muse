@@ -206,21 +206,21 @@ void Master::draw(QPainter& p, const QRect& rect)
 void Master::viewMousePressEvent(QMouseEvent* event)
       {
       start = event->pos();
-      Tool activeTool = tool;
+      MusEWidget::Tool activeTool = tool;
 //      bool shift = event->state() & ShiftButton;
 
       switch (activeTool) {
-            case PointerTool:
+            case MusEWidget::PointerTool:
                   drag = DRAG_LASSO_START;
                   break;
 
-            case PencilTool:
+            case MusEWidget::PencilTool:
                   drag = DRAG_NEW;
                   song->startUndo();
                   newVal(start.x(), start.x(), start.y());
                   break;
 
-            case RubberTool:
+            case MusEWidget::RubberTool:
                   drag = DRAG_DELETE;
                   song->startUndo();
                   deleteVal(start.x(), start.x());
@@ -317,11 +317,11 @@ void Master::deleteVal(int x1, int x2)
 
 void Master::setTool(int t)
       {
-      if (tool == Tool(t))
+      if (tool == MusEWidget::Tool(t))
             return;
-      tool = Tool(t);
+      tool = MusEWidget::Tool(t);
       switch(tool) {
-            case PencilTool:
+            case MusEWidget::PencilTool:
                   setCursor(QCursor(*pencilIcon, 4, 15));
                   break;
             default:

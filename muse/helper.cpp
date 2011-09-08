@@ -25,7 +25,10 @@
 #include "track.h"
 #include "song.h"
 
+namespace MusEGlobal {
 extern bool hIsB;
+}
+
 static const char* vall[] = {
       "c","c#","d","d#","e","f","f#","g","g#","a","a#","h"
       };
@@ -46,7 +49,7 @@ QString pitch2string(int v)
       o.sprintf("%d", octave);
       int i = v % 12;
       QString s(octave < 0 ? valu[i] : vall[i]);
-      if (hIsB) {
+      if (MusEGlobal::hIsB) {
             if (s == "h")
                   s = "b";
             else if (s == "H")

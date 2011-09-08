@@ -61,16 +61,16 @@ signed int RtcTimer::initTimer()
           fprintf(stderr,"RtcTimer::initTimer(): called on initialised timer!\n");
           return -1;
     }
-    doSetuid();
+    MusEGlobal::doSetuid();
 
     timerFd = ::open("/dev/rtc", O_RDONLY);
     if (timerFd == -1) {
           fprintf(stderr, "fatal error: open /dev/rtc failed: %s\n", strerror(errno));
           fprintf(stderr, "hint: check if 'rtc' kernel module is loaded, or used by something else\n");
-          undoSetuid();
+          MusEGlobal::undoSetuid();
           return timerFd;
           }
-    if (!setTimerFreq(config.rtcTicks)) {
+    if (!setTimerFreq(MusEConfig::config.rtcTicks)) {
           // unable to set timer frequency
           return -1;
           }
@@ -133,7 +133,7 @@ bool RtcTimer::startTimer()
           }
     if (ioctl(timerFd, RTC_PIE_ON, 0) == -1) {
         perror("MidiThread: start: RTC_PIE_ON failed");
-        undoSetuid();
+        MusEGlobal::undoSetuid();
         return false;
         }
     return true;

@@ -28,10 +28,13 @@
 
 class MidiPlayEvent;
 
+namespace MusEGlobal {
+bool checkAudioDevice();
+}
+
 //---------------------------------------------------------
 //   JackAudioDevice
 //---------------------------------------------------------
-bool checkAudioDevice();
 
 class JackAudioDevice : public AudioDevice {
 

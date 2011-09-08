@@ -204,7 +204,7 @@ void UndoList::clearDelete()
 void Song::startUndo()
       {
       redoList->clear(); // added by flo93: redo must be invalidated when
-			redoAction->setEnabled(false);     // a new undo is started
+			MusEGlobal::redoAction->setEnabled(false);     // a new undo is started
 			
       undoList->push_back(Undo());
       updateFlags = 0;
@@ -267,12 +267,12 @@ bool Song::applyOperationGroup(Undo& group, bool doUndo)
             if (!doUndo)
             {
                   undoList->pop_back();
-                  undoAction->setEnabled(!undoList->empty());
+                  MusEGlobal::undoAction->setEnabled(!undoList->empty());
             }
             else
             {
                   redoList->clear(); // added by flo93: redo must be invalidated when
-                  redoAction->setEnabled(false);     // a new undo is started
+                  MusEGlobal::redoAction->setEnabled(false);     // a new undo is started
 						}
             
             return doUndo;

@@ -927,7 +927,7 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
       if(audio->isPlaying())
         event.setLoopNum(audio->loopCount());
       
-      if (midiInputTrace) {
+      if (MusEGlobal::midiInputTrace) {
             printf("Jack MidiInput: ");
             event.dump();
             }
@@ -979,11 +979,11 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
 
       processMidiInputTransformPlugins(event);
 
-      if (filterEvent(event, midiRecordType, false))
+      if (filterEvent(event, MusEGlobal::midiRecordType, false))
             return;
       
       if (!applyMidiInputTransformation(event)) {
-            if (midiInputTrace)
+            if (MusEGlobal::midiInputTrace)
                   printf("   midi input transformation: event filtered\n");
             return;
             }
@@ -1026,7 +1026,7 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
       event.setB(0);
 
       // NOTE: From MusE-2. Not done here in Muse-1 (yet).
-      // move all events 2*segmentSize into the future to get
+      // move all events 2*MusEGlobal::segmentSize into the future to get
       // jitterfree playback
       //
       //  cycle   n-1         n          n+1
@@ -1036,7 +1036,7 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
       //
 //      const SeqTime* st = audio->seqTime();
 
-      //unsigned curFrame = st->startFrame() + segmentSize;
+      //unsigned curFrame = st->startFrame() + MusEGlobal::segmentSize;
 //      unsigned curFrame = st->lastFrameTime;
       //int frameOffset = audio->getFrameOffset();
       unsigned pos = audio->pos().frame();
@@ -1076,7 +1076,7 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                                 // For now, do not accept if the last byte is not EOX, meaning it's a chunk with more chunks to follow.
                                 if(*(((unsigned char*)ev->buffer) + ev->size - 1) != ME_SYSEX_END)
                                 {
-                                  if(debugMsg)
+                                  if(MusEGlobal::debugMsg)
                                     printf("MidiJackDevice::eventReceived sysex chunks not supported!\n");
                                   return;
                                 }
@@ -1108,7 +1108,7 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                                 //break;
                           //      return;
                           default:
-                                if(debugMsg)
+                                if(MusEGlobal::debugMsg)
                                   printf("MidiJackDevice::eventReceived unsupported system event 0x%02x\n", type);
                                 return;
                     }
@@ -1116,13 +1116,13 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                   //return;
                   break;
             default:
-              if(debugMsg)
+              if(MusEGlobal::debugMsg)
                 printf("MidiJackDevice::eventReceived unknown event 0x%02x\n", type);
                 //printf("MidiJackDevice::eventReceived unknown event 0x%02x size:%d buf:0x%02x 0x%02x 0x%02x ...0x%02x\n", type, ev->size, *(ev->buffer), *(ev->buffer + 1), *(ev->buffer + 2), *(ev->buffer + (ev->size - 1)));
               return;
             }
 
-      if (midiInputTrace) {
+      if (MusEGlobal::midiInputTrace) {
             printf("MidiInput<%s>: ", name().toLatin1().constData());
             event.dump();
             }
@@ -1148,8 +1148,8 @@ void MidiJackDevice::collectMidiEvents()
   if(!_in_client_jackport)  // p3.3.55
     return;
   
-  //void* port_buf = jack_port_get_buffer(_client_jackport, segmentSize);
-  void* port_buf = jack_port_get_buffer(_in_client_jackport, segmentSize);   // p3.3.55
+  //void* port_buf = jack_port_get_buffer(_client_jackport, MusEGlobal::segmentSize);
+  void* port_buf = jack_port_get_buffer(_in_client_jackport, MusEGlobal::segmentSize);   // p3.3.55
   
   jack_midi_event_t event;
   jack_nframes_t eventCount = jack_midi_get_event_count(port_buf);
@@ -1209,14 +1209,14 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
       //      e.dump();
       //      }
       
-      //if(debugMsg)
+      //if(MusEGlobal::debugMsg)
       //  printf("MidiJackDevice::queueEvent\n");
     
       //if(!_client_jackport)  
       if(!_out_client_jackport)   // p3.3.55
         return false;
-      //void* pb = jack_port_get_buffer(_client_jackport, segmentSize);
-      void* pb = jack_port_get_buffer(_out_client_jackport, segmentSize);  // p3.3.55
+      //void* pb = jack_port_get_buffer(_client_jackport, MusEGlobal::segmentSize);
+      void* pb = jack_port_get_buffer(_out_client_jackport, MusEGlobal::segmentSize);  // p3.3.55
     
       //unsigned frameCounter = ->frameTime();
       int frameOffset = audio->getFrameOffset();
@@ -1225,10 +1225,10 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
       
       if (ft < 0)
             ft = 0;
-      if (ft >= (int)segmentSize) {
-            printf("MidiJackDevice::queueEvent: Event time:%d out of range. offset:%d ft:%d (seg=%d)\n", e.time(), frameOffset, ft, segmentSize);
-            if (ft > (int)segmentSize)
-                  ft = segmentSize - 1;
+      if (ft >= (int)MusEGlobal::segmentSize) {
+            printf("MidiJackDevice::queueEvent: Event time:%d out of range. offset:%d ft:%d (seg=%d)\n", e.time(), frameOffset, ft, MusEGlobal::segmentSize);
+            if (ft > (int)MusEGlobal::segmentSize)
+                  ft = MusEGlobal::segmentSize - 1;
             }
       
       #ifdef JACK_MIDI_DEBUG
@@ -1308,7 +1308,7 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
             case ME_START:
             case ME_CONTINUE:
             case ME_STOP:
-                  if(debugMsg)
+                  if(MusEGlobal::debugMsg)
                     printf("MidiJackDevice::queueEvent: event type %x not supported\n", e.type());
                   //return false;
                   return true;   // Absorb the event. Don't want it hanging around in the list. FIXME: Support these?   p4.0.15 Tim.
@@ -1580,7 +1580,7 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
     }
     else 
     {
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         printf("MidiJackDevice::processEvent: unknown controller type 0x%x\n", a);
       //return false;  // Just ignore it.
     }
@@ -1605,12 +1605,12 @@ void MidiJackDevice::processMidi()
   //if(!_out_client_jackport)  // p3.3.55
   //  return;
   
-  //void* port_buf = jack_port_get_buffer(_client_jackport, segmentSize);
-  //void* port_buf = jack_port_get_buffer(_out_client_jackport, segmentSize);   // p3.3.55
+  //void* port_buf = jack_port_get_buffer(_client_jackport, MusEGlobal::segmentSize);
+  //void* port_buf = jack_port_get_buffer(_out_client_jackport, MusEGlobal::segmentSize);   // p3.3.55
   void* port_buf = 0;
   if(_out_client_jackport && _writeEnable)  // p4.0.15
   {
-    port_buf = jack_port_get_buffer(_out_client_jackport, segmentSize);
+    port_buf = jack_port_get_buffer(_out_client_jackport, MusEGlobal::segmentSize);
     jack_midi_clear_buffer(port_buf);
   }  
   

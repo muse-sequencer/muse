@@ -392,8 +392,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       time = new MTScale(&_raster, editor, xscale);
       time->setOrigin(-offset, 0);
       canvas = new PartCanvas(&_raster, editor, xscale, yscale);
-      canvas->setBg(config.partCanvasBg);
-      canvas->setCanvasTools(arrangerTools);
+      canvas->setBg(MusEConfig::config.partCanvasBg);
+      canvas->setCanvasTools(MusEWidget::arrangerTools);
       canvas->setOrigin(-offset, 0);
       canvas->setFocus();
       //parent->setFocusProxy(canvas);   // Tim.
@@ -533,17 +533,17 @@ void Arranger::configChanged()
       {
       //printf("Arranger::configChanged\n");
       
-      if (config.canvasBgPixmap.isEmpty()) {
-            canvas->setBg(config.partCanvasBg);
+      if (MusEConfig::config.canvasBgPixmap.isEmpty()) {
+            canvas->setBg(MusEConfig::config.partCanvasBg);
             canvas->setBg(QPixmap());
             //printf("Arranger::configChanged - no bitmap!\n");
       }
       else {
         
-            //printf("Arranger::configChanged - bitmap %s!\n", config.canvasBgPixmap.ascii());
-            canvas->setBg(QPixmap(config.canvasBgPixmap));
+            //printf("Arranger::configChanged - bitmap %s!\n", MusEConfig::config.canvasBgPixmap.ascii());
+            canvas->setBg(QPixmap(MusEConfig::config.canvasBgPixmap));
       }
-      ///midiTrackInfo->setFont(config.fonts[2]);
+      ///midiTrackInfo->setFont(MusEConfig::config.fonts[2]);
       //updateTrackInfo(type);
       }
 
@@ -1059,7 +1059,7 @@ void Arranger::switchInfo(int n)
                   w = new AudioStrip(trackInfo, (AudioTrack*)selected);
                   //w->setFocusPolicy(Qt::TabFocus);  // p4.0.9
                   connect(song, SIGNAL(songChanged(int)), w, SLOT(songChanged(int)));
-                  connect(muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
+                  connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
                   w->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
                   trackInfo->addWidget(w, 2);
                   w->show();

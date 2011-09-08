@@ -277,7 +277,7 @@ void EditInstrument::fileSave()
       
       // Do not allow a direct overwrite of a 'built-in' muse instrument.
       QFileInfo qfi(workingInstrument.filePath());
-      if(qfi.absolutePath() == museInstruments)
+      if(qfi.absolutePath() == MusEGlobal::museInstruments)
       {
         //fileSaveAs();
         saveAs();
@@ -399,34 +399,34 @@ void EditInstrument::saveAs()
       //MidiInstrument* instrument = (MidiInstrument*)item->data(Qt::UserRole).value<void*>();
 //      MidiInstrument* instrument = (MidiInstrument*)item->data();
       
-      //QString path = QDir::homePath() + "/" + config.instrumentPath;
-      //QString path = QDir::homeDirPath() + "/" + museGlobalShare;
-      //QString path = museInstruments;
-      QString path = museUserInstruments;
+      //QString path = QDir::homePath() + "/" + MusEConfig::config.instrumentPath;
+      //QString path = QDir::homeDirPath() + "/" + MusEGlobal::museGlobalShare;
+      //QString path = MusEGlobal::museInstruments;
+      QString path = MusEGlobal::museUserInstruments;
       
-      if(!QDir(museUserInstruments).exists())
+      if(!QDir(MusEGlobal::museUserInstruments).exists())
       {
         if(QMessageBox::question(this,
             tr("MusE:"),
-            tr("The user instrument directory\n") + museUserInstruments + tr("\ndoes not exist yet. Create it now?\n") +
+            tr("The user instrument directory\n") + MusEGlobal::museUserInstruments + tr("\ndoes not exist yet. Create it now?\n") +
               tr("(You can change the user instruments directory at Settings->Global Settings->Midi)"),
             QMessageBox::Ok | QMessageBox::Default,
             QMessageBox::Cancel | QMessageBox::Escape,
             Qt::NoButton) == QMessageBox::Ok)
         {
-          if(QDir().mkdir(museUserInstruments))
-            printf("Created user instrument directory: %s\n", museUserInstruments.toLatin1().constData());
+          if(QDir().mkdir(MusEGlobal::museUserInstruments))
+            printf("Created user instrument directory: %s\n", MusEGlobal::museUserInstruments.toLatin1().constData());
           else
           {
-            printf("Unable to create user instrument directory: %s\n", museUserInstruments.toLatin1().constData());
-            QMessageBox::critical(this, tr("MusE:"), tr("Unable to create user instrument directory\n") + museUserInstruments);
+            printf("Unable to create user instrument directory: %s\n", MusEGlobal::museUserInstruments.toLatin1().constData());
+            QMessageBox::critical(this, tr("MusE:"), tr("Unable to create user instrument directory\n") + MusEGlobal::museUserInstruments);
             //return;
-            path = museUser;
+            path = MusEGlobal::museUser;
           }
         } 
         else 
         //  return;  
-          path = museUser;
+          path = MusEGlobal::museUser;
       }
         
       //if (instrument->filePath().isEmpty())
@@ -446,7 +446,7 @@ void EditInstrument::saveAs()
                 {
                   // Prompt only if it's a user instrument, to avoid duplicates in the user instrument dir.
                   // This will still allow a user instrument to override a built-in instrument with the same name.
-                  if(fi.absolutePath() != museInstruments)
+                  if(fi.absolutePath() != MusEGlobal::museInstruments)
                   {
                     //QMessageBox::critical(this,
                     //    tr("MusE: Bad instrument name"),
@@ -570,7 +570,7 @@ void EditInstrument::fileSaveAs()
           {
             // Allow override of built-in instrument names.
             QFileInfo fi((*imi)->filePath());
-            if(fi.absolutePath() == museInstruments)
+            if(fi.absolutePath() == MusEGlobal::museInstruments)
               break;
             found = true;
             break;
@@ -604,7 +604,7 @@ void EditInstrument::fileSaveAs()
               QFileInfo fi((*imi)->filePath());
               // Allow override of built-in and user instruments:
               // If it's a user instrument, not a built-in instrument...
-              if(fi.absolutePath() == museUserInstruments)
+              if(fi.absolutePath() == MusEGlobal::museUserInstruments)
               {
                 // No choice really but to overwrite the destination instrument file!
                 // Can not have two user files containing the same instrument name.
@@ -691,34 +691,34 @@ void EditInstrument::fileSaveAs()
         break;
       }
       
-      //QString path = QDir::homePath() + "/" + config.instrumentPath;
-      //QString path = QDir::homeDirPath() + "/" + museGlobalShare;
-      //QString path = museInstruments;
-      QString path = museUserInstruments;
+      //QString path = QDir::homePath() + "/" + MusEConfig::config.instrumentPath;
+      //QString path = QDir::homeDirPath() + "/" + MusEGlobal::museGlobalShare;
+      //QString path = MusEGlobal::museInstruments;
+      QString path = MusEGlobal::museUserInstruments;
       
-      if(!QDir(museUserInstruments).exists())
+      if(!QDir(MusEGlobal::museUserInstruments).exists())
       {
         if(QMessageBox::question(this,
             tr("MusE:"),
-            tr("The user instrument directory\n") + museUserInstruments + tr("\ndoes not exist yet. Create it now?\n") +
+            tr("The user instrument directory\n") + MusEGlobal::museUserInstruments + tr("\ndoes not exist yet. Create it now?\n") +
               tr("(You can change the user instruments directory at Settings->Global Settings->Midi)"),
             QMessageBox::Ok | QMessageBox::Default,
             QMessageBox::Cancel | QMessageBox::Escape,
             Qt::NoButton) == QMessageBox::Ok)
         {
-          if(QDir().mkdir(museUserInstruments))
-            printf("Created user instrument directory: %s\n", museUserInstruments.toLatin1().constData());
+          if(QDir().mkdir(MusEGlobal::museUserInstruments))
+            printf("Created user instrument directory: %s\n", MusEGlobal::museUserInstruments.toLatin1().constData());
           else
           {
-            printf("Unable to create user instrument directory: %s\n", museUserInstruments.toLatin1().constData());
-            QMessageBox::critical(this, tr("MusE:"), tr("Unable to create user instrument directory\n") + museUserInstruments);
+            printf("Unable to create user instrument directory: %s\n", MusEGlobal::museUserInstruments.toLatin1().constData());
+            QMessageBox::critical(this, tr("MusE:"), tr("Unable to create user instrument directory\n") + MusEGlobal::museUserInstruments);
             //return;
-            path = museUser;
+            path = MusEGlobal::museUser;
           }
         } 
         else 
         //  return;  
-          path = museUser;
+          path = MusEGlobal::museUser;
       }
       path += QString("/%1.idf").arg(so);
       
@@ -1463,7 +1463,7 @@ void EditInstrument::patchButtonClicked()
                   PatchGroup* pgp = *i;
                   QMenu* pm = patchpopup->addMenu(pgp->name);
                   //pm->setCheckable(false);//Qt4 doc says this is unnecessary
-                  pm->setFont(config.fonts[0]);
+                  pm->setFont(MusEConfig::config.fonts[0]);
                   const PatchList& pl = pgp->patches;
                   for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
                         const Patch* mp = *ipl;

@@ -130,7 +130,7 @@ class MidiInputTransformation {
             procVal2a    = 0;
             procVal2b    = 0;
             funcOp       = Transform;
-            quantVal     = config.division;
+            quantVal     = MusEConfig::config.division;
             selPort      = Ignore;
             selChannel   = Ignore;
             selChannela  = 0;
@@ -177,7 +177,7 @@ bool applyMidiInputTransformation(MidiRecordEvent& event)
                   int rv = modules[i].transform->apply(event);
                   if (rv == 1)
                   {
-                        if(debugMsg)
+                      if(MusEGlobal::debugMsg)
                           printf("drop input event\n");
                   }      
                   if (rv)
@@ -1630,7 +1630,7 @@ void MidiInputTransformDialog::presetChanged(QListWidgetItem* item)
       iMidiInputTransformation i;
       for (i = mtlist.begin(); i != mtlist.end(); ++i) {
             if (item->text() == (*i)->name) {
-                  if(debugMsg)
+                  if(MusEGlobal::debugMsg)
                     printf("found %s\n", (*i)->name.toLatin1().constData());
                   cmt = *i;
                   if (cmodul != -1) {

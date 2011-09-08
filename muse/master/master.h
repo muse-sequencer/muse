@@ -49,7 +49,7 @@ class Master : public View {
       ScrollScale* vscroll;
       unsigned pos[3];
       QPoint start;
-      Tool tool;
+      MusEWidget::Tool tool;
       DragMode drag;
       MidiEditor* editor;
 

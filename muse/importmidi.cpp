@@ -53,6 +53,9 @@
 using std::set;
 using std::pair;
 
+
+namespace MusEApp {
+
 //---------------------------------------------------------
 //   importMidi
 //---------------------------------------------------------
@@ -67,11 +70,11 @@ void MusE::importMidi(const QString &file)
       {
       QString fn;
       if (file.isEmpty()) {
-            fn = getOpenFileName(lastMidiPath, midi_file_pattern, this,
+               fn = getOpenFileName(MusEGlobal::lastMidiPath, MusEGlobal::midi_file_pattern, this,
                tr("MusE: Import Midi"), 0);
             if (fn.isEmpty())
                   return;
-            lastMidiPath = fn;
+            MusEGlobal::lastMidiPath = fn;
             }
       else
             fn = file;
@@ -308,7 +311,7 @@ void MusE::processTrack(MidiTrack* track)
       int len = song->roundUpBar(lastTick+1);
 
       // p3.3.27
-      if(config.importMidiSplitParts)
+      if(MusEConfig::config.importMidiSplitParts)
       {
         
         int bar2, beat;
@@ -476,7 +479,7 @@ void MusE::importPart()
 
       if (track) {
             bool loadAll;
-            QString filename = getOpenFileName(QString(""), part_file_pattern, this, tr("MusE: load part"), &loadAll);
+            QString filename = getOpenFileName(QString(""), MusEGlobal::part_file_pattern, this, tr("MusE: load part"), &loadAll);
             if (!filename.isEmpty()){
                   // Make a backup of the current clone list, to retain any 'copy' items,
                   //  so that pasting works properly after.
@@ -623,3 +626,5 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, Track* track)
         return;
       }
 }
+
+} // namespace MuseApp

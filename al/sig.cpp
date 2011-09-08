@@ -262,7 +262,7 @@ int SigList::ticks_beat(int n) const
       {
       
       ///int m = AL::division;
-      int m = config.division;
+      int m = MusEConfig::config.division;
       
       switch (n) {
             case  1:  m <<= 2; break;           // 1536

@@ -81,7 +81,7 @@ void PosLabel::updateValue()
       {
       QString s;
       if (_smpte) {
-            double time = double(_sampleValue) / double(sampleRate);
+            double time = double(_sampleValue) / double(MusEGlobal::sampleRate);
             int min  = int(time) / 60;
             int sec  = int(time) % 60;
             double rest = time - (min * 60 + sec);

@@ -67,7 +67,7 @@ using std::string;
 
 
 
-#define TICKS_PER_WHOLE (config.division*4) 
+#define TICKS_PER_WHOLE (MusEConfig::config.division*4) 
 #define SONG_LENGTH (song->len())
 
 
@@ -85,7 +85,10 @@ enum {CMD_COLOR_BLACK, CMD_COLOR_VELO, CMD_COLOR_PART,
 
 
 class ScoreCanvas;
+
+namespace MusEWidget {
 class EditToolBar;
+}
 
 //---------------------------------------------------------
 //   ScoreEdit
@@ -106,7 +109,7 @@ class ScoreEdit : public TopWin
 		QGridLayout* mainGrid;
 		QWidget* mainw;
 		
-		EditToolBar* edit_tools;
+                MusEWidget::EditToolBar* edit_tools;
 		QSpinBox* velo_spinbox;
 		QSpinBox* velo_off_spinbox;
 		

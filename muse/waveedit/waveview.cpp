@@ -728,7 +728,7 @@ void WaveView::modifySelection(int operation, unsigned startpos, unsigned stoppo
                unsigned file_channels = file.channels();
 
                QString tmpWavFile = QString::null;
-               if (!getUniqueTmpfileName("tmp_musewav",".wav", tmpWavFile)) {
+               if (!MusEGlobal::getUniqueTmpfileName("tmp_musewav",".wav", tmpWavFile)) {
                      break;
                      }
 
@@ -834,7 +834,7 @@ void WaveView::copySelection(unsigned file_channels, float** tmpdata, unsigned l
       if (copiedPart!="") {
         QFile::remove(copiedPart);
       }
-      if (!getUniqueTmpfileName("tmp_musewav",".wav", copiedPart)) {
+      if (!MusEGlobal::getUniqueTmpfileName("tmp_musewav",".wav", copiedPart)) {
             return;
             }
 
@@ -951,7 +951,7 @@ void WaveView::editExternal(unsigned file_format, unsigned file_samplerate, unsi
       {
       // Create yet another tmp-file
       QString exttmpFileName;
-      if (!getUniqueTmpfileName("tmp_musewav",".wav", exttmpFileName)) {
+      if (!MusEGlobal::getUniqueTmpfileName("tmp_musewav",".wav", exttmpFileName)) {
             printf("Could not create temp file - aborting...\n");
             return;
             }
@@ -969,7 +969,7 @@ void WaveView::editExternal(unsigned file_format, unsigned file_samplerate, unsi
       // Forkaborkabork
       int pid = fork();
       if (pid == 0) {
-            if (execlp(config.externalWavEditor.toLatin1().constData(), config.externalWavEditor.toLatin1().constData(), exttmpFileName.toLatin1().constData(), NULL) == -1) {
+            if (execlp(MusEConfig::config.externalWavEditor.toLatin1().constData(), MusEConfig::config.externalWavEditor.toLatin1().constData(), exttmpFileName.toLatin1().constData(), NULL) == -1) {
                   perror("Failed to launch external editor");
                   // Get out of here
                   

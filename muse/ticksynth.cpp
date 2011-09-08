@@ -202,7 +202,7 @@ void MetronomeSynthIF::process(float** buffer, int offset, int n)
       int l          = std::min(n, len);
 
       for (int i = 0; i < l; ++i)
-            *d++ += *s++ * audioClickVolume;
+            *d++ += *s++ * MusEGlobal::audioClickVolume;
       pos += l;
       len -= l;
       if (len <= 0)

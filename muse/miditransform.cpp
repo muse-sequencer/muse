@@ -128,7 +128,7 @@ class MidiTransformation {
             procPos    = Keep;
             procPosA   = 0;
             funcOp     = Select;
-            quantVal   = config.division;
+            quantVal   = MusEConfig::config.division;
             selectedTracks = false;
             insideLoop = false;
             }

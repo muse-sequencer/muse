@@ -143,7 +143,7 @@ bool quantize_notes(const set<Part*>& parts)
 	if (!quantize_dialog->exec())
 		return false;
 		
-	quantize_notes(parts, quantize_dialog->range, (config.division*4)/(1<<quantize_dialog->raster_power2),
+	quantize_notes(parts, quantize_dialog->range, (MusEConfig::config.division*4)/(1<<quantize_dialog->raster_power2),
 	               quantize_dialog->quant_len, quantize_dialog->strength, quantize_dialog->swing,
 	               quantize_dialog->threshold);
 	
@@ -880,8 +880,8 @@ void shrink_parts(int raster)
 	Undo operations;
 	
 	unsigned min_len;
-	if (raster<0) raster=config.division;
-	if (raster>=0) min_len=raster; else min_len=config.division;
+	if (raster<0) raster=MusEConfig::config.division;
+	if (raster>=0) min_len=raster; else min_len=MusEConfig::config.division;
 	
 	TrackList* tracks = song->tracks();
 	for (iTrack track = tracks->begin(); track != tracks->end(); track++)
@@ -953,8 +953,8 @@ void expand_parts(int raster)
 	Undo operations;
 	
 	unsigned min_len;
-	if (raster<0) raster=config.division;
-	if (raster>=0) min_len=raster; else min_len=config.division;
+	if (raster<0) raster=MusEConfig::config.division;
+	if (raster>=0) min_len=raster; else min_len=MusEConfig::config.division;
 
 	TrackList* tracks = song->tracks();
 	for (iTrack track = tracks->begin(); track != tracks->end(); track++)

@@ -25,6 +25,8 @@
 
 #include <QAction>
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   Action
 //---------------------------------------------------------
@@ -43,6 +45,7 @@ class Action : public QAction {
       int id() const    { return _id; }
       };
 
+}
 
 #endif
 

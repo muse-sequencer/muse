@@ -48,7 +48,9 @@ class ComboBox;
 class RouteDialog;
 class Strip;
 
+namespace MusEConfig {
 struct MixerConfig;
+}
 
 #define EFX_HEIGHT     16
 
@@ -80,7 +82,7 @@ class AudioMixerApp : public QMainWindow {
       Q_OBJECT
     
       //QString name;
-      MixerConfig* cfg;
+      MusEConfig::MixerConfig* cfg;
       StripList stripList;
       QScrollArea* view;
       QWidget* central;
@@ -138,7 +140,7 @@ class AudioMixerApp : public QMainWindow {
    
    public:
       //AudioMixerApp(QWidget* parent);
-      AudioMixerApp(QWidget* parent, MixerConfig* c);
+      AudioMixerApp(QWidget* parent, MusEConfig::MixerConfig* c);
       //void write(Xml&, const char* name);
       //void write(int level, Xml& xml, const char* name);
       void write(int level, Xml& xml);

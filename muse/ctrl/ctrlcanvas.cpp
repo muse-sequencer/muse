@@ -199,10 +199,10 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
    const char* name, CtrlPanel* pnl) : View(parent, xmag, 1, name)
       {
       setBg(Qt::white);
-      setFont(config.fonts[3]);  
+      setFont(MusEConfig::config.fonts[3]);  
       editor = e;
       drag   = DRAG_OFF;
-      tool   = PointerTool;
+      tool   = MusEWidget::PointerTool;
       pos[0] = 0;
       pos[1] = 0;
       pos[2] = 0;
@@ -227,7 +227,7 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
             setCurTrackAndPart();
             }
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
+      connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
       
       curDrumInstrument = editor->curDrumInstrument();
       //printf("CtrlCanvas::CtrlCanvas curDrumInstrument:%d\n", curDrumInstrument);
@@ -472,7 +472,7 @@ void CtrlCanvas::songChanged(int type)
     return;
             
   if(type & SC_CONFIG)
-    setFont(config.fonts[3]);  
+    setFont(MusEConfig::config.fonts[3]);  
   
   bool changed = false;
   if(type & (SC_CONFIG | SC_PART_MODIFIED | SC_SELECTION))
@@ -678,7 +678,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
         return;
         
       start = event->pos();
-      Tool activeTool = tool;
+      MusEWidget::Tool activeTool = tool;
       
       bool ctrlKey = event->modifiers() & Qt::ControlModifier;
       int xpos = start.x();
@@ -687,7 +687,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
       MidiController::ControllerType type = midiControllerType(_controller->num());
 
       switch (activeTool) {
-            case PointerTool:
+            case MusEWidget::PointerTool:
                   if(curPart)      // p4.0.27
                   {
                     drag = DRAG_LASSO_START;
@@ -732,7 +732,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
                   
                   break;
 
-            case PencilTool:
+           case MusEWidget::PencilTool:
                   if ((!ctrlKey) && (type != MidiController::Velo)) {
                               drag = DRAG_NEW;
                               song->startUndo();
@@ -745,7 +745,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
                         }
                   break;
 
-            case RubberTool:
+            case MusEWidget::RubberTool:
                   if (type != MidiController::Velo) {
                         drag = DRAG_DELETE;
                         song->startUndo();
@@ -753,7 +753,7 @@ void CtrlCanvas::viewMousePressEvent(QMouseEvent* event)
                         }
                   break;
 
-            case DrawTool:
+            case MusEWidget::DrawTool:
                   if (drawLineMode) {
                         line2x = xpos;
                         line2y = ypos;
@@ -817,7 +817,7 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
             default:
                   break;
             }
-      if (tool == DrawTool && drawLineMode) {
+      if (tool == MusEWidget::DrawTool && drawLineMode) {
             line2x = pos.x();
             line2y = pos.y();
             redraw();
@@ -930,8 +930,8 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
       int raster = editor->raster();
       if (raster == 1)          // set reasonable raster
       {
-        //raster = config.division/4;
-        raster = config.division/16;  // Let's use 64th notes, for a bit finer resolution. p4.0.18 Tim.
+        //raster = MusEConfig::config.division/4;
+        raster = MusEConfig::config.division/16;  // Let's use 64th notes, for a bit finer resolution. p4.0.18 Tim.
         useRaster = true;
       }  
 
@@ -1388,8 +1388,8 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
       int raster = editor->raster();
       if (raster == 1)          // set reasonable raster
       {
-        //raster = config.division/4;
-        raster = config.division/16;  // Let's use 64th notes, for a bit finer resolution. p4.0.18 Tim.
+        //raster = MusEConfig::config.division/4;
+        raster = MusEConfig::config.division/16;  // Let's use 64th notes, for a bit finer resolution. p4.0.18 Tim.
         useRaster = true;
       }  
 
@@ -1621,14 +1621,14 @@ void CtrlCanvas::deleteVal(int x1, int x2, int)
 
 void CtrlCanvas::setTool(int t)
       {
-      if (tool == Tool(t))
+      if (tool == MusEWidget::Tool(t))
             return;
-      tool = Tool(t);
+      tool = MusEWidget::Tool(t);
       switch(tool) {
-            case PencilTool:
+            case MusEWidget::PencilTool:
                   setCursor(QCursor(*pencilIcon, 4, 15));
                   break;
-            case DrawTool:
+            case MusEWidget::DrawTool:
                   drawLineMode = false;
                   break;
             default:
@@ -1673,7 +1673,7 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MidiPart* part
         //if(!event.empty() && event.selected())
           p.setPen(QPen(Qt::blue, 3));
         else
-          p.setPen(QPen(config.ctrlGraphFg, 3));
+          p.setPen(QPen(MusEConfig::config.ctrlGraphFg, 3));
       }  
       else  
         p.setPen(QPen(Qt::darkGray, 3));
@@ -1765,7 +1765,7 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MidiPart* part
           p.drawLine(x1, lval, tick, lval);
         }  
         else
-          p.fillRect(x1, lval, tick - x1, wh - lval, selected ? Qt::blue : config.ctrlGraphFg);
+          p.fillRect(x1, lval, tick - x1, wh - lval, selected ? Qt::blue : MusEConfig::config.ctrlGraphFg);
       }
       
       
@@ -1797,8 +1797,8 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MidiPart* part
         p.drawLine(x1, lval, x + w, lval);
       }  
       else
-        //p.fillRect(x1, lval, (x+w) - x1, wh - lval, config.ctrlGraphFg);
-        p.fillRect(x1, lval, (x+w) - x1, wh - lval, selected ? Qt::blue : config.ctrlGraphFg);
+        //p.fillRect(x1, lval, (x+w) - x1, wh - lval, MusEConfig::config.ctrlGraphFg);
+        p.fillRect(x1, lval, (x+w) - x1, wh - lval, selected ? Qt::blue : MusEConfig::config.ctrlGraphFg);
     }
   }       
 }
@@ -1911,18 +1911,18 @@ void CtrlCanvas::drawOverlay(QPainter& p)
       {
       QString s(_controller ? _controller->name() : QString(""));
       
-      //p.setFont(config.fonts[3]);  // Use widget font instead. 
+      //p.setFont(MusEConfig::config.fonts[3]);  // Use widget font instead. 
       p.setFont(font());
       
       p.setPen(Qt::black);
       
-      //QFontMetrics fm(config.fonts[3]);  // Use widget font metrics instead. 
+      //QFontMetrics fm(MusEConfig::config.fonts[3]);  // Use widget font metrics instead. 
       //int y = fm.lineSpacing() + 2;
       int y = fontMetrics().lineSpacing() + 2;
       
       p.drawText(2, y, s);
       if (noEvents) {
-           //p.setFont(config.fonts[3]);
+           //p.setFont(MusEConfig::config.fonts[3]);
            //p.setPen(Qt::black);
            //p.drawText(width()/2-100,height()/2-10, "Use shift + pencil or line tool to draw new events");
            p.drawText(2 , y * 2, "Use shift + pencil or line tool to draw new events");
@@ -1936,7 +1936,7 @@ void CtrlCanvas::drawOverlay(QPainter& p)
 
 QRect CtrlCanvas::overlayRect() const
 {
-      //QFontMetrics fm(config.fonts[3]);   // Use widget font metrics instead (and set a widget font) !!! 
+      //QFontMetrics fm(MusEConfig::config.fonts[3]);   // Use widget font metrics instead (and set a widget font) !!! 
       QFontMetrics fm(fontMetrics());
       QRect r(fm.boundingRect(_controller ? _controller->name() : QString("")));
       
@@ -1969,7 +1969,7 @@ void CtrlCanvas::draw(QPainter& p, const QRect& rect)
       //    draw line tool
       //---------------------------------------------------
 
-      if (drawLineMode && (tool == DrawTool)) {
+      if (drawLineMode && (tool == MusEWidget::DrawTool)) {
             p.setPen(Qt::black);
             p.drawLine(line1x, line1y, line2x, line2y);
             }

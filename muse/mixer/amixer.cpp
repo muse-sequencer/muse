@@ -45,7 +45,9 @@
 #include "gconfig.h"
 #include "xml.h"
 
+namespace MusEApp {
 extern QActionGroup* populateAddTrack(QMenu* addTrack);
+}
 
 #define __WIDTH_COMPENSATION 4
 
@@ -158,7 +160,7 @@ bool ScrollArea::viewportEvent(QEvent* event)
 //    inputs | synthis | tracks | groups | master
 //---------------------------------------------------------
 
-AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
+AudioMixerApp::AudioMixerApp(QWidget* parent, MusEConfig::MixerConfig* c)
    : QMainWindow(parent)
       {
       cfg = c;
@@ -169,7 +171,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
       setWindowIcon(*museIcon);
 
       QMenu* menuConfig = menuBar()->addMenu(tr("&Create"));
-      populateAddTrack(menuConfig);
+      MusEApp::populateAddTrack(menuConfig);
       
       QMenu* menuView = menuBar()->addMenu(tr("&View"));
       routingId = menuView->addAction(tr("Routing"), this, SLOT(toggleRouteDialog()));
@@ -234,7 +236,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
       ///connect(this, SIGNAL(layoutRequest()), SLOT(setSizing()));  
       
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
+      connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
       song->update();  // calls update mixer
       }
 

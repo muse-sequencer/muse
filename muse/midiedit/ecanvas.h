@@ -49,7 +49,7 @@ typedef std::map<Part*, PartToChange>::iterator iPartToChange;
 //   EventCanvas
 //---------------------------------------------------------
 
-class EventCanvas : public Canvas {
+class EventCanvas : public MusEWidget::Canvas {
       Q_OBJECT
       virtual void leaveEvent(QEvent*e);
       virtual void enterEvent(QEvent*e);
