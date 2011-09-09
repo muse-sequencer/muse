@@ -92,7 +92,6 @@ void MidiDevice::init()
       _rwFlags       = 3;
       _openFlags     = 3;
       _port          = -1;
-      // _nextPlayEvent = _playEvents.begin(); // Removed p4.0.15 Tim.
       }
 
 //---------------------------------------------------------
@@ -101,8 +100,6 @@ void MidiDevice::init()
 
 MidiDevice::MidiDevice()
       {
-      ///_recBufFlipped = false;
-      //_tmpRecordCount = 0;
       for(unsigned int i = 0; i < MIDI_CHANNELS + 1; ++i)
         _tmpRecordCount[i] = 0;
       
@@ -116,8 +113,6 @@ MidiDevice::MidiDevice()
 MidiDevice::MidiDevice(const QString& n)
    : _name(n)
       {
-      ///_recBufFlipped = false;
-      //_tmpRecordCount = 0;
       for(unsigned int i = 0; i < MIDI_CHANNELS + 1; ++i)
         _tmpRecordCount[i] = 0;
       
@@ -133,7 +128,6 @@ MidiDevice::MidiDevice(const QString& n)
 //    return true if event filtered
 //---------------------------------------------------------
 
-//static bool filterEvent(const MEvent& event, int type, bool thru)
 bool filterEvent(const MEvent& event, int type, bool thru)
       {
       switch(event.type()) {
@@ -185,9 +179,6 @@ bool filterEvent(const MEvent& event, int type, bool thru)
 
 void MidiDevice::afterProcess()
 {
-  //while (_tmpRecordCount--)
-  //  _recordFifo.remove();
-  
   for(unsigned int i = 0; i < MIDI_CHANNELS + 1; ++i)
   {
     while (_tmpRecordCount[i]--)
@@ -202,10 +193,6 @@ void MidiDevice::afterProcess()
 
 void MidiDevice::beforeProcess()
 {
-  //if (!jackPort(0).isZero())
-  //      audioDriver->collectMidiEvents(this, jackPort(0));
-  
-  //_tmpRecordCount = _recordFifo.getSize();
   for(unsigned int i = 0; i < MIDI_CHANNELS + 1; ++i)
     _tmpRecordCount[i] = _recordFifo[i].getSize();
   
@@ -235,21 +222,6 @@ void MidiDevice::getEvents(unsigned , unsigned , int ch, MPEventList* dst)  //fr
 }
 */
 
-/*
-//---------------------------------------------------------
-//   recordEvent
-//---------------------------------------------------------
-
-MREventList* MidiDevice::recordEvents()        
-{ 
-  // Return which list is NOT currently being filled with incoming midi events. By T356.
-  if(_recBufFlipped) 
-    return &_recordEvents; 
-  else  
-    return &_recordEvents2; 
-}
-*/
-
 //---------------------------------------------------------
 //   recordEvent
 //---------------------------------------------------------
@@ -262,8 +234,6 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
       event.setTime(extSyncFlag.value() ? lastExtMidiSyncTick : audio->timestamp());
       
       //printf("MidiDevice::recordEvent event time:%d\n", event.time());
-      
-      // Added by Tim. p3.3.8
       
       // By T356. Set the loop number which the event came in at.
       //if(audio->isRecording())
@@ -314,7 +284,6 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
                     }
               }
           else    
-            // p3.3.26 1/23/10 Moved here from alsaProcessMidiInput(). Anticipating Jack midi support, so don't make it ALSA specific. Tim. 
             // Trigger general activity indicator detector. Sysex has no channel, don't trigger.
             midiPorts[_port].syncInfo().trigActDetect(event.channel());
               
@@ -351,15 +320,6 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
             song->putEvent(pv);
             }
       
-      ///if(_recBufFlipped)
-      ///  _recordEvents2.add(event);     // add event to secondary list of recorded events
-      ///else
-      ///  _recordEvents.add(event);     // add event to primary list of recorded events
-      
-      //if(_recordFifo.put(MidiPlayEvent(event)))
-      //  printf("MidiDevice::recordEvent: fifo overflow\n");
-      
-      // p3.3.38
       // Do not bother recording if it is NOT actually being used by a port.
       // Because from this point on, process handles things, by selected port.
       if(_port == -1)
@@ -409,8 +369,7 @@ void MidiDeviceList::add(MidiDevice* dev)
                         {
                         char incstr[4];
                         sprintf(incstr,"_%d",++increment);
-                        //dev->setName(origname + incstr);
-                        dev->setName(origname + QString(incstr));    // p4.0.0
+                        dev->setName(origname + QString(incstr));    
                         gotUniqueName = false;
                         }
                   }
@@ -469,7 +428,7 @@ bool MidiDevice::sendNullRPNParams(int chn, bool nrpn)
 //   putEventWithRetry
 //    return true if event cannot be delivered
 //    This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
-//    NOTE: Since it waits, it should not be used in RT or other time-sensitive threads. p4.0.15 Tim.
+//    NOTE: Since it waits, it should not be used in RT or other time-sensitive threads. 
 //---------------------------------------------------------
 
 bool MidiDevice::putEventWithRetry(const MidiPlayEvent& ev, int tries, long delayUs)
@@ -493,7 +452,7 @@ bool MidiDevice::putEventWithRetry(const MidiPlayEvent& ev, int tries, long dela
 //    return true if event cannot be delivered
 //    TODO: retry on controller putMidiEvent
 //    (Note: Since putEvent is virtual and there are different versions, 
-//     a retry facility is now found in putEventWithRetry. p4.0.15 Tim)
+//     a retry facility is now found in putEventWithRetry. )
 //---------------------------------------------------------
 
 bool MidiDevice::putEvent(const MidiPlayEvent& ev)
@@ -524,13 +483,9 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
                   }
 #if 1 // if ALSA cannot handle RPN NRPN etc.
             
-            // p3.3.37
-            //if (a < 0x1000) {          // 7 Bit Controller
             if (a < CTRL_14_OFFSET) {          // 7 Bit Controller
-                  //putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, a, b));
                   putMidiEvent(ev);
                   }
-            //else if (a < 0x20000) {     // 14 bit high resolution controller
             else if (a < CTRL_RPN_OFFSET) {     // 14 bit high resolution controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
@@ -539,7 +494,6 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
                   putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, ctrlH, dataH));
                   putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, ctrlL, dataL));
                   }
-            //else if (a < 0x30000) {     // RPN 7-Bit Controller
             else if (a < CTRL_NRPN_OFFSET) {     // RPN 7-Bit Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
@@ -547,11 +501,10 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
                   putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_LRPN, ctrlL));
                   putMidiEvent(MidiPlayEvent(0, 0, chn, ME_CONTROLLER, CTRL_HDATA, b));
                   
-                  // Added by T356. Select null parameters so that subsequent data controller
-                  //  events do not upset the last *RPN controller.
+                  // Select null parameters so that subsequent data controller
+                  //  events do not upset the last *RPN controller.  Tim.
                   sendNullRPNParams(chn, false);
                 }
-            //else if (a < 0x40000) {     // NRPN 7-Bit Controller
             else if (a < CTRL_INTERNAL_OFFSET) {     // NRPN 7-Bit Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
@@ -561,7 +514,6 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
                   
                   sendNullRPNParams(chn, true);
                   }
-            //else if (a < 0x60000) {     // RPN14 Controller
             else if (a < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
@@ -574,7 +526,6 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
                   
                   sendNullRPNParams(chn, false);
                   }
-            //else if (a < 0x70000) {     // NRPN14 Controller
             else if (a < CTRL_NONE_OFFSET) {     // NRPN14 Controller
                   int ctrlH = (a >> 8) & 0x7f;
                   int ctrlL = a & 0x7f;
@@ -646,7 +597,6 @@ void MidiDevice::handleStop()
     _playEvents.add(ev);
   }
   _stuckNotes.clear();
-  //setNextPlayEvent(_playEvents.begin());  
   
   
   //---------------------------------------------------
@@ -668,7 +618,7 @@ void MidiDevice::handleStop()
   //    send midi stop
   //---------------------------------------------------
   
-  // Don't send if external sync is on. The master, and our sync routing system will take care of that.   p3.3.31
+  // Don't send if external sync is on. The master, and our sync routing system will take care of that.   
   if(!extSyncFlag.value())
   {
     // Shall we check open flags?
@@ -722,11 +672,6 @@ void MidiDevice::handleSeek()
     }
     _stuckNotes.clear();
   }
-  //else
-    // Removed p4.0.15 Device now leaves beginning pointing at next event,
-    //  immediately after playing some notes.  
-    // NOTE: This removal needs testing. I'm not sure about this.
-    //_playEvents.erase(_playEvents.begin(), _nextPlayEvent);  
   
   MidiPort* mp = &midiPorts[_port];
   MidiCtrlValListList* cll = mp->controller();
@@ -739,11 +684,6 @@ void MidiDevice::handleSeek()
   for(iMidiCtrlValList ivl = cll->begin(); ivl != cll->end(); ++ivl) 
   {
     MidiCtrlValList* vl = ivl->second;
-    //int val = vl->value(pos);
-    //if (val != CTRL_VAL_UNKNOWN) {
-    //      int channel = ivl->first >> 24;
-    //      el->add(MidiPlayEvent(0, port, channel, ME_CONTROLLER, vl->num(), val));
-    //      }
     iMidiCtrlVal imcv = vl->iValue(pos);
     if(imcv != vl->end()) 
     {
@@ -754,13 +694,12 @@ void MidiDevice::handleSeek()
         _playEvents.add(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val));
     }
   }
-  //_nextPlayEvent = (_playEvents.begin());    // Removed p4.0.15
   
   //---------------------------------------------------
   //    Send STOP and "set song position pointer"
   //---------------------------------------------------
     
-  // Don't send if external sync is on. The master, and our sync routing system will take care of that.  p3.3.31
+  // Don't send if external sync is on. The master, and our sync routing system will take care of that.  
   if(!extSyncFlag.value())
   {
     if(mp->syncInfo().MRTOut())
@@ -770,16 +709,6 @@ void MidiDevice::handleSeek()
       //  which already takes into account whether the device is writable or not.
       //if(!(rwFlags() & 0x1) || !(openFlags() & 1))
       //if(!(openFlags() & 1))
-      //  continue;
-      
-      //int port = midiPort();
-      
-      // By checking for no port here (-1), (and out of bounds), it means
-      //  the device must be assigned to a port for these MMC commands to be sent.
-      // Without this check, interesting sync things can be done by the user without ever
-      //  assigning any devices to ports ! 
-      //if(port < 0 || port > MIDI_PORTS)
-      //if(port < -1 || port > MIDI_PORTS)
       //  continue;
       
       int beat = (pos * 4) / MusEConfig::config.division;

@@ -42,23 +42,9 @@ class Xml;
 //---------------------------------------------------------
 
 class MidiDevice {
-      //MPEventList _stuckNotes;
-      //MPEventList _playEvents;
-      
-      // Removed p4.0.15 Tim.
-      //iMPEvent _nextPlayEvent;
-      
-      ///MREventList _recordEvents;
-      ///MREventList _recordEvents2;
-      
       // Used for multiple reads of fifos during process.
-      //int _tmpRecordCount;
       int _tmpRecordCount[MIDI_CHANNELS + 1];
       bool _sysexFIFOProcessed;
-      
-      ///bool _recBufFlipped;
-      // Holds sync settings and detection monitors.
-      //MidiSyncInfo _syncInfo;
 
    protected:
       QString _name;
@@ -76,13 +62,9 @@ class MidiDevice {
       MPEventList _playEvents;
       
       // Fifo for midi events sent from gui direct to midi port:
-      MidiFifo eventFifo;  // p4.0.15
-      
-      // Recording fifo. 
-      //MidiFifo _recordFifo;
+      MidiFifo eventFifo;  
       // Recording fifos. To speed up processing, one per channel plus one special system 'channel' for channel-less events like sysex.
-      //MidiFifo _recordFifo[MIDI_CHANNELS + 1];
-      MidiRecFifo _recordFifo[MIDI_CHANNELS + 1];   // p4.0.15
+      MidiRecFifo _recordFifo[MIDI_CHANNELS + 1];   
       
       RouteList _inRoutes, _outRoutes;
       
@@ -99,8 +81,6 @@ class MidiDevice {
 
       virtual int deviceType() const = 0;
       
-      //virtual void* clientPort() { return 0; }
-      // p3.3.55
       virtual void* inClientPort() { return 0; }
       virtual void* outClientPort() { return 0; }
       
@@ -123,7 +103,6 @@ class MidiDevice {
       int openFlags() const            { return _openFlags; }
       void setOpenFlags(int val)       { _openFlags = val; }
       void setrwFlags(int val)         { _rwFlags = val; }
-      //MidiSyncInfo& syncInfo()         { return _syncInfo; }
 
       virtual bool isSynti() const     { return false; }
       virtual int selectRfd()          { return -1; }
@@ -145,23 +124,15 @@ class MidiDevice {
       // Since it waits, it should not be used in RT or other time-sensitive threads. p4.0.15
       bool putEventWithRetry(const MidiPlayEvent&, int /*tries*/ = 2, long /*delayUs*/ = 50000);  // 2 tries, 50 mS by default.
       
-      virtual void handleStop();  // p4.0.22
+      virtual void handleStop();  
       virtual void handleSeek();
       
       virtual void collectMidiEvents() {}   
       virtual void processMidi() {}
 
-      //MPEventList* stuckNotes()          { return &_stuckNotes; }
-      //MPEventList* playEvents()          { return &_playEvents; }
-      
-      ///MREventList* recordEvents();
-      ///void flipRecBuffer()               { _recBufFlipped = _recBufFlipped ? false : true; }
-      ///bool recBufFlipped()               { return _recBufFlipped; }
       void beforeProcess();
       void afterProcess();
-      //int tmpRecordCount() { return _tmpRecordCount; }
       int tmpRecordCount(const unsigned int ch)     { return _tmpRecordCount[ch]; }
-      //MidiFifo& recordEvents() { return _recordFifo; }
       MidiRecFifo& recordEvents(const unsigned int ch) { return _recordFifo[ch]; }
       bool sysexFIFOProcessed()                     { return _sysexFIFOProcessed; }
       void setSysexFIFOProcessed(bool v)            { _sysexFIFOProcessed = v; }
@@ -170,11 +141,6 @@ class MidiDevice {
       bool sysexReadingChunks() { return _sysexReadingChunks; }
       void setSysexReadingChunks(bool v) { _sysexReadingChunks = v; }
       //virtual void getEvents(unsigned /*from*/, unsigned /*to*/, int /*channel*/, MPEventList* /*dst*/);
-      
-      // Removed p4.0.15 Tim.
-      //iMPEvent nextPlayEvent()           { return _nextPlayEvent; }
-      //void setNextPlayEvent(iMPEvent i)  { _nextPlayEvent = i; }
-      
       bool sendNullRPNParams(int, bool);
       };
 

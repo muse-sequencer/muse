@@ -4,6 +4,7 @@
 //  $Id: dssihost.cpp,v 1.15.2.16 2009/12/15 03:39:58 terminator356 Exp $
 //
 //  Copyright (C) 1999-2011 by Werner Schweer and others
+//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License
@@ -34,264 +35,27 @@
 #include <dlfcn.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-//#include <dssi.h>
-//#include <alsa/asoundlib.h>
 
 #include <QDir>
 #include <QFileInfo>
-//#include <QMenu>
 
 #include "dssihost.h"
 #include "synth.h"
 #include "audio.h"
 #include "jackaudio.h"
-//#include "../driver/jackaudio.h"  // p4.0.2
 #include "midi.h"
 #include "midiport.h"
 #include "stringparam.h"
 #include "plugin.h"
 #include "controlfifo.h"
-//#include "al/al.h"
-//#include "al/xml.h"
 #include "xml.h"
 #include "song.h"
-//#include "midictrl.h"
-//#include "ladspaplugin.h"
 
 #include "app.h"
 #include "globals.h"
 #include "globaldefs.h"
-//#include "al/dsp.h"
 #include "gconfig.h"
 #include "popupmenu.h"
-
-
-/*
-static lo_server_thread serverThread;
-static char osc_path_tmp[1024];
-static char* url;
-
-//---------------------------------------------------------
-//   oscError
-//---------------------------------------------------------
-
-static void oscError(int num, const char *msg, const char *path)
-      {
-      fprintf(stderr, "MusE: liblo server error %d in path %s: %s\n",
-          num, path, msg);
-      }
-
-//---------------------------------------------------------
-//   oscDebugHandler
-//---------------------------------------------------------
-
-static int oscDebugHandler(const char* path, const char* types, lo_arg** argv,
-   int argc, void*, void*)
-      {
-      printf("MusE: got unhandled OSC message:\n   path: <%s>\n", path);
-      for (int i = 0; i < argc; i++) {
-            printf("   arg %d '%c' ", i, types[i]);
-            lo_arg_pp(lo_type(types[i]), argv[i]);
-            printf("\n");
-            }
-      return 1;
-      }
-
-//---------------------------------------------------------
-//   oscUpdate
-//---------------------------------------------------------
-
-int DssiSynthIF::oscUpdate(lo_arg **argv)
-      {
-      const char *url = (char *)&argv[0]->s;
-
-      if (uiTarget)
-            lo_address_free(uiTarget);
-      char* host = lo_url_get_hostname(url);
-      char* port = lo_url_get_port(url);
-      uiTarget   = lo_address_new(host, port);
-      free(host);
-      free(port);
-
-      if (uiOscPath)
-            free(uiOscPath);
-      uiOscPath = lo_url_get_path(url);
-      int pl = strlen(uiOscPath);
-
-      if (uiOscControlPath)
-            free(uiOscControlPath);
-      uiOscControlPath = (char *)malloc(pl + 10);
-      sprintf(uiOscControlPath, "%s/control", uiOscPath);
-
-      if (uiOscConfigurePath)
-            free(uiOscConfigurePath);
-      uiOscConfigurePath = (char *)malloc(pl + 12);
-      sprintf(uiOscConfigurePath, "%s/configure", uiOscPath);
-
-      if (uiOscProgramPath)
-            free(uiOscProgramPath);
-      uiOscProgramPath = (char *)malloc(pl + 10);
-      sprintf(uiOscProgramPath, "%s/program", uiOscPath);
-
-      if (uiOscShowPath)
-            free(uiOscShowPath);
-      uiOscShowPath = (char *)malloc(pl + 10);
-      sprintf(uiOscShowPath, "%s/show", uiOscPath);
-
-      // At this point a more substantial host might also call
-      // configure() on the UI to set any state that it had remembered
-      // for the plugin instance.  But we don't remember state for
-      // plugin instances (see our own configure() implementation in
-      // osc_configure_handler), and so we have nothing to send except
-      // the optional project directory.
-      
-
-      #ifdef DSSI_DEBUG 
-      printf("DssiSynthIF::oscUpdate synth name:%s url:%s uiTarget:%p uiOscPath:%s uiOscConfigurePath:%s MusEGlobal::museProject:%s\n", synti->name().ascii(), url, uiTarget, uiOscPath, uiOscConfigurePath, MusEGlobal::museProject.ascii());
-      #endif
-      
-      //lo_send(uiTarget, uiOscConfigurePath, "ss",
-         //DSSI_PROJECT_DIRECTORY_KEY, song->projectPath().toAscii().data());
-      lo_send(uiTarget, uiOscConfigurePath, "ss",
-         DSSI_PROJECT_DIRECTORY_KEY, MusEGlobal::museProject.ascii());
-
-#if 0
-      // Send current bank/program  (-FIX- another race...) 
-      if (instance->pendingProgramChange < 0) {
-            unsigned long bank = instance->currentBank;
-            unsigned long program = instance->currentProgram;
-            instance->uiNeedsProgramUpdate = 0;
-            if (instance->uiTarget) {
-                  lo_send(instance->uiTarget, instance->ui_osc_program_path, "ii", bank, program);
-                  }
-            }
-
-      // Send control ports 
-      for (i = 0; i < instance->plugin->controlIns; i++) {
-            int in = i + instance->firstControlIn;
-            int port = pluginControlInPortNumbers[in];
-            lo_send(instance->uiTarget, instance->ui_osc_control_path, "if", port,
-               pluginControlIns[in]);
-            // Avoid overloading the GUI if there are lots and lots of ports 
-            if ((i+1) % 50 == 0)
-                  usleep(300000);
-            }
-#endif
-      return 0;
-      }
-
-//---------------------------------------------------------
-//   oscMessageHandler
-//---------------------------------------------------------
-
-int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
-   int argc, void* data, void* user_data)
-      {
-      const char* p = path;
-      
-      #ifdef DSSI_DEBUG 
-      if(argc) 
-      {
-          printf("oscMessageHandler: path:%s argc:%d\n", path, argc);
-          for(int i = 0; i < argc; ++i) 
-          {
-            printf(" ");
-            lo_arg_pp((lo_type)types[i], argv[i]);
-          }
-          printf("\n");
-      } 
-      else 
-      {
-          printf("%s\n", path);
-          printf("oscMessageHandler: no args, path:%s\n", path);
-      }
-      #endif  
-        
-      if (strncmp(p, "/dssi/", 6))
-            return oscDebugHandler(path, types, argv, argc, data, user_data);
-      
-      p += 6;
-      //p = strrchr(p, "/");
-
-      SynthIList* sl = song->syntis();
-      DssiSynthIF* instance = 0;
-      SynthI* synti = 0;
-
-      #ifdef DSSI_DEBUG 
-      fprintf(stderr, "oscMessageHandler: song->syntis() size:%d\n", sl->size());
-      #endif
-        
-      for(int retry = 0; retry < 5; ++retry) 
-      {
-        #ifdef DSSI_DEBUG 
-        fprintf(stderr, "oscMessageHandler: search retry number:%d ...\n", retry);
-        #endif
-        
-        //if(uiOscPath)
-        //  break;
-      
-        for(iSynthI si = sl->begin(); si != sl->end(); ++si) 
-        {
-          #ifdef DSSI_DEBUG 
-          fprintf(stderr, "oscMessageHandler: searching for synth p:%s: checking instances:%s\n", p, (*si)->name().ascii());
-          #endif
-          
-          //int l = strlen((*si)->name().toAscii().data());
-          //if (!strncmp(p, (*si)->name().toAscii().data(), l)) {
-          //int l = strlen((*si)->name().ascii());
-          const char* sub = strstr(p, (*si)->name().ascii());
-          
-          //if(!strncmp(p, (*si)->name().ascii(), l)) 
-          if(sub != NULL) 
-          {
-            synti = *si;
-            instance = (DssiSynthIF*)(synti->sif());
-            
-            //p += l;
-            p = sub + strlen((*si)->name().ascii());
-            
-            break;
-          }
-        }
-        if(instance)
-          break;
-          
-        sleep(1);
-      }
-      
-      if(!instance)
-      {
-        fprintf(stderr, "oscMessageHandler: error: no instance\n");
-        return oscDebugHandler(path, types, argv, argc, data, user_data);
-      }
-      
-      if (*p != '/' || *(p + 1) == 0)
-      {
-        fprintf(stderr, "oscMessageHandler: error: end or no /\n");
-        return oscDebugHandler(path, types, argv, argc, data, user_data);
-      }
-            
-      ++p;
-
-      #ifdef DSSI_DEBUG 
-      fprintf(stderr, "oscMessageHandler: method:%s\n", p);
-      #endif
-      
-      if (!strcmp(p, "configure") && argc == 2 && !strcmp(types, "ss"))
-            return instance->oscConfigure(argv);
-      else if (!strcmp(p, "control") && argc == 2 && !strcmp(types, "if"))
-            return instance->oscControl(argv);
-      else if (!strcmp(p, "midi") && argc == 1 && !strcmp(types, "m"))
-            return instance->oscMidi(argv);
-      else if (!strcmp(p, "program") && argc == 2 && !strcmp(types, "ii"))
-            return instance->oscProgram(argv);
-      else if (!strcmp(p, "update") && argc == 1 && !strcmp(types, "s"))
-            return instance->oscUpdate(argv);
-      else if (!strcmp(p, "exiting") && argc == 0)
-            return instance->oscExiting(argv);
-      return oscDebugHandler(path, types, argv, argc, data, user_data);
-      }
-*/
 
 //---------------------------------------------------------
 //   scanDSSILib
@@ -299,15 +63,11 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
 
 static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
       {
-      //void* handle = dlopen(fi.filePath().toAscii().data(), RTLD_NOW);
       void* handle = dlopen(fi.filePath().toLatin1().constData(), RTLD_NOW);
-      //void* handle = dlopen(fi.absFilePath().toLatin1().constData(), RTLD_NOW);
       
       if (handle == 0) {
             fprintf(stderr, "scanDSSILib: dlopen(%s) failed: %s\n",
-              //fi.filePath().toAscii().data(), dlerror());
               fi.filePath().toLatin1().constData(), dlerror());
-              //fi.absFilePath().toLatin1().constData(), dlerror());
               
             return;
             }
@@ -315,29 +75,11 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
 
       if (!dssi) 
       {
-          /*
-          const char *txt = dlerror();
-          if (txt) 
-          {
-            fprintf(stderr,
-                "Unable to find dssi_descriptor() function in plugin "
-                "library file \"%s\": %s.\n"
-                "Are you sure this is a DSSI plugin file?\n",
-                //fi.filePath().toAscii().data(),
-                fi.filePath().ascii(),
-                //fi.absFilePath().toLatin1().constData(),
-                
-                txt);
-            dlclose(handle);
-            exit(1);
-          }
-          */
         dlclose(handle);
         return;
       }
       else
       {
-        //const DSSI_Descriptor* descr;
         for (int i = 0;; ++i) 
         {
           const DSSI_Descriptor* descr;
@@ -407,13 +149,6 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
             
             synthis.push_back(s);
           }
-          //else
-          //{
-            // NOTE: Just a test
-            //QFileInfo ffi(fi);
-            //plugins.add(&ffi, LADSPA_Descriptor_Function(NULL), descr->LADSPA_Plugin, false);
-            //plugins.add(&ffi, descr, false);
-          //}
         }
       }  
       dlclose(handle);
@@ -426,7 +161,6 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
 static void scanDSSIDir(QString& s) // ddskrjo removed const for argument
 {
       if(MusEGlobal::debugMsg)
-        //printf("scan DSSI plugin dir <%s>\n", s.toAscii().data());
         printf("scanDSSIDir: scan DSSI plugin dir <%s>\n", s.toLatin1().constData());
 
 #ifdef __APPLE__
@@ -437,12 +171,6 @@ static void scanDSSIDir(QString& s) // ddskrjo removed const for argument
       if(!pluginDir.exists())
         return;
 
-      //const QFileInfoList list = pluginDir.entryInfoList();
-      //for (int i = 0; i < list.size(); ++i) {
-      	//QFileInfo fi = list.at(i);
-            //scanDSSILib(fi);
-            //}
-      
       QStringList list = pluginDir.entryList();
       for(int i = 0; i < list.count(); ++i) 
       {
@@ -464,13 +192,7 @@ void initDSSI()
       if (dssiPath == 0)
             dssiPath = "/usr/local/lib64/dssi:/usr/lib64/dssi:/usr/local/lib/dssi:/usr/lib/dssi";
 
-      //const char* ladspaPath = getenv("LADSPA_PATH");
-      //if (ladspaPath == 0)
-      //      ladspaPath = "/usr/local/lib64/ladspa:/usr/lib64/ladspa:/usr/local/lib/ladspa:/usr/lib/ladspa";
-      
       const char* p = dssiPath;
-      //QString pth = QString(dssiPath) + QString(":") + QString(ladspaPath);
-      //const char* p = pth.toLatin1().constData();
       while (*p != '\0') {
             const char* pe = p;
             while (*pe != ':' && *pe != '\0')
@@ -489,16 +211,6 @@ void initDSSI()
             if (*p == ':')
                   p++;
             }
-      
-      // Create OSC thread
-      //serverThread = lo_server_thread_new(0, oscError);
-      //snprintf(osc_path_tmp, 31, "/dssi");
-      //char* tmp = lo_server_thread_get_url(serverThread);
-      //url = (char *)malloc(strlen(tmp) + strlen(osc_path_tmp));
-      //sprintf(url, "%s%s", tmp, osc_path_tmp + 1);
-      //free(tmp);
-      //lo_server_thread_add_method(serverThread, 0, 0, oscMessageHandler, 0);
-      //lo_server_thread_start(serverThread);
       }
 
 //---------------------------------------------------------
@@ -510,7 +222,6 @@ void initDSSI()
 //---------------------------------------------------------
 
 DssiSynth::DssiSynth(QFileInfo& fi, const DSSI_Descriptor* d) : // ddskrjo removed const from QFileInfo
-  //Synth(fi, label, descr, maker, ver) 
   Synth(fi, QString(d->LADSPA_Plugin->Label), QString(d->LADSPA_Plugin->Name), QString(d->LADSPA_Plugin->Maker), QString()) 
 {
   df = 0;
@@ -521,9 +232,6 @@ DssiSynth::DssiSynth(QFileInfo& fi, const DSSI_Descriptor* d) : // ddskrjo remov
   const LADSPA_Descriptor* descr = d->LADSPA_Plugin;
   
   _portCount = descr->PortCount;
-  //_portDescriptors = 0;
-  //if(_portCount)
-  //  _portDescriptors = new LADSPA_PortDescriptor[_portCount];
   
   _inports = 0;
   _outports = 0;
@@ -532,7 +240,6 @@ DssiSynth::DssiSynth(QFileInfo& fi, const DSSI_Descriptor* d) : // ddskrjo remov
   for(unsigned long k = 0; k < _portCount; ++k) 
   {
     LADSPA_PortDescriptor pd = descr->PortDescriptors[k];
-    //_portDescriptors[k] = pd;
     if(pd & LADSPA_PORT_AUDIO)
     {
       if(pd & LADSPA_PORT_INPUT)
@@ -574,17 +281,11 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
 {
       if (_instances == 0) 
       {
-        //handle = dlopen(info.filePath().toAscii().data(), RTLD_NOW);
         handle = dlopen(info.filePath().toLatin1().constData(), RTLD_NOW);
-        //handle = dlopen(info.absFilePath().toLatin1().constData(), RTLD_NOW);
-        
         if (handle == 0) 
         {
               fprintf(stderr, "DssiSynth::createSIF dlopen(%s) failed: %s\n",
-                //info.filePath().toAscii().data(), dlerror());
                 info.filePath().toLatin1().constData(), dlerror());
-                //info.absFilePath().toLatin1().constData(), dlerror());
-                
               return 0;
         }
         df = (DSSI_Descriptor_Function)dlsym(handle, "dssi_descriptor");
@@ -595,10 +296,7 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
                   "Unable to find dssi_descriptor() function in plugin "
                   "library file \"%s\": %s.\n"
                   "Are you sure this is a DSSI plugin file?\n",
-                  //info.filePath().toAscii().data(),
                   info.filePath().toLatin1().constData(),
-                  //info.absFilePath().toLatin1().constData(),
-                  
                   txt ? txt : "?");
               dlclose(handle);
               handle = 0;
@@ -620,10 +318,6 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
           _outports   = 0;
           _controlInPorts = 0;
           _controlOutPorts = 0;
-
-          ///pIdx.clear(); 
-          ///opIdx.clear();
-          
           iIdx.clear(); 
           oIdx.clear(); 
           rpIdx.clear();
@@ -669,7 +363,6 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
               {
                 rpIdx.push_back(_controlInPorts);
                 ++_controlInPorts;
-                ///pIdx.push_back(k);
                 // Set to false at first.
                 //synti->_guiUpdateControls.push_back(false);
               }
@@ -677,7 +370,6 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
               {
                 rpIdx.push_back((unsigned long)-1);
                 ++_controlOutPorts;
-                ///opIdx.push_back(k);
               }
             }
           }
@@ -693,7 +385,6 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
       
       if (dssi == 0) 
       {
-        //fprintf(stderr, "cannot found DSSI synti %s\n", _name.toAscii().data());
         fprintf(stderr, "cannot find DSSI synti %s\n", _name.toLatin1().constData());
         dlclose(handle);
         handle = 0;
@@ -707,13 +398,6 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
 
       //_plugin->incInstances(1);
 
-
-
-//      static char oscUrl[1024];
-      //snprintf(oscUrl, 1024, "%s/%s", url, synti->name().toAscii().data());
-      //snprintf(oscUrl, 1024, "%s/%s", url, synti->name().toLatin1().constData());
-//      snprintf(oscUrl, 1024, "%s/%s/%s", url, info.baseName().toLatin1().constData(), synti->name().toLatin1().constData());
-      //QString guiPath(info.path() + "/" + info.baseName());
       QString guiPath(info.path() + "/" + info.baseName());
       QDir guiDir(guiPath, "*", QDir::Unsorted, QDir::Files);
       _hasGui = guiDir.exists();
@@ -730,7 +414,6 @@ SynthIF* DssiSynth::createSIF(SynthI* synti)
 //bool DssiSynthIF::guiVisible() const
 bool DssiSynthIF::nativeGuiVisible() const
       {
-      //return _guiVisible;
       #ifdef OSC_SUPPORT
       return _oscif.oscGuiVisible();
       #endif
@@ -739,8 +422,6 @@ bool DssiSynthIF::nativeGuiVisible() const
 
 bool DssiSynthIF::guiVisible() const
       {
-      //return _guiVisible;
-      //return false;
       return _gui && _gui->isVisible();
       }
 
@@ -748,7 +429,6 @@ bool DssiSynthIF::guiVisible() const
 //   showGui
 //---------------------------------------------------------
 
-//void DssiSynthIF::showGui(bool v)    
 void DssiSynthIF::showNativeGui(bool v)
       {
       #ifdef OSC_SUPPORT
@@ -760,47 +440,6 @@ void DssiSynthIF::showNativeGui(bool v)
       _oscif.oscShowGui(v);
       
       #endif // OSC_SUPPORT
-      
-      /*
-      if (v == guiVisible())
-            return;
-      
-      //if(guiPid == -1)
-      if((guiQProc == 0) || (!guiQProc->isRunning()))
-      {
-        // We need an indicator that update was called - update must have been called to get new path etc...
-        // If the process is not running this path is invalid, right?
-        if(uiOscPath)
-          free(uiOscPath);
-        uiOscPath = 0;  
-          
-        #ifdef DSSI_DEBUG 
-        printf("DssiSynthIF::showGui(): No QProcess or process not running. Starting gui...\n");
-        #endif
-        
-        initGui();
-      }  
-      
-      //for (int i = 0; i < 5; ++i) {
-      for (int i = 0; i < 10; ++i) {    // Give it a wee bit more time?
-            if (uiOscPath)
-                  break;
-            sleep(1);
-            }
-      if (uiOscPath == 0) {
-            printf("DssiSynthIF::showGui(): no uiOscPath. Error: Timeout - synth gui did not start within 10 seconds.\n");
-            return;
-            }
-      
-      char uiOscGuiPath[strlen(uiOscPath)+6];
-      sprintf(uiOscGuiPath, "%s/%s", uiOscPath, v ? "show" : "hide");
-      #ifdef DSSI_DEBUG 
-      printf("DssiSynthIF::showGui(): Sending show/hide uiOscGuiPath:%s\n", uiOscGuiPath);
-      #endif
-      
-      lo_send(uiTarget, uiOscGuiPath, "");
-      _guiVisible = v;
-      */
       }
 
 //---------------------------------------------------------
@@ -809,28 +448,21 @@ void DssiSynthIF::showNativeGui(bool v)
 
 void DssiSynthIF::showGui(bool v)
 {
-  //if (_plugin) 
-  {
-        if (v) {
-                if (_gui == 0)
-                    makeGui();
-                _gui->show();
-                }
-        else {
-                if (_gui)
-                    _gui->hide();
-                }
-  }
+    if (v) {
+            if (_gui == 0)
+                makeGui();
+            _gui->show();
+            }
+    else {
+            if (_gui)
+                _gui->hide();
+            }
 }
 
 //---------------------------------------------------------
 //   receiveEvent
 //---------------------------------------------------------
 
-//MidiEvent DssiSynthIF::receiveEvent()
-//      {
-//      return MidiEvent();
-//      }
 MidiPlayEvent DssiSynthIF::receiveEvent()
       {
       return MidiPlayEvent();
@@ -863,8 +495,6 @@ bool DssiSynthIF::init(DssiSynth* s)
         audioInBuffers = new float*[inports];
         for(int k = 0; k < inports; ++k)
         {
-          //audioInBuffers[k] = new LADSPA_Data[MusEGlobal::segmentSize];
-          //posix_memalign((void**)(audioInBuffers + k), 16, sizeof(float) * MusEGlobal::segmentSize);
           posix_memalign((void**)&audioInBuffers[k], 16, sizeof(float) * MusEGlobal::segmentSize);
           memset(audioInBuffers[k], 0, sizeof(float) * MusEGlobal::segmentSize);
           ld->connect_port(handle, synth->iIdx[k], audioInBuffers[k]);
@@ -877,12 +507,9 @@ bool DssiSynthIF::init(DssiSynth* s)
         audioOutBuffers = new float*[outports];
         for(int k = 0; k < outports; ++k)
         {
-          //audioOutBuffers[k] = new LADSPA_Data[MusEGlobal::segmentSize];
-          //posix_memalign((void**)(audioOutBuffers + k), 16, sizeof(float) * MusEGlobal::segmentSize);
           posix_memalign((void**)&audioOutBuffers[k], 16, sizeof(float) * MusEGlobal::segmentSize);
           memset(audioOutBuffers[k], 0, sizeof(float) * MusEGlobal::segmentSize);
           ld->connect_port(handle, synth->oIdx[k], audioOutBuffers[k]);
-          //printf("DssiSynthIF::init output port name: %s\n", ld->PortNames[synth->oIdx[k]]); // out1, out2, out3 etc
         }  
       }
       
@@ -904,90 +531,6 @@ bool DssiSynthIF::init(DssiSynth* s)
       synti->_guiUpdateControls.clear();
       synti->_guiUpdateProgram = false;
                 
-/*      
-      for (int k = 0; k < controlPorts; ++k) {
-                int i = synth->pIdx[k];
-                controls[k].idx = i;    // p4.0.20
-                //controls[k].val = ladspaDefaultValue(ld, i);
-                ladspaDefaultValue(ld, i, &controls[k].val);
-		
-                // Set to false at first.
-                synti->_guiUpdateControls.push_back(false);
-              
-                #ifdef DSSI_DEBUG 
-                printf("DssiSynthIF::init control port:%d port idx:%d name:%s\n", k, i, ld->PortNames[i]);
-                #endif
-                
-                // This code is duplicated in ::getControllerInfo()
-                //
-                
-                int ctlnum = DSSI_NONE;
-                if(dssi->get_midi_controller_for_port)
-                  ctlnum = dssi->get_midi_controller_for_port(handle, i);
-                
-                // No controller number? Try to give it a unique one...
-                if(ctlnum == DSSI_NONE)
-                {
-                  // FIXME: Be more careful. Must make sure to pick numbers not already chosen or which WILL BE chosen.
-                  // Simple but flawed solution: Start them at 0x60000 + 0x2000 = 0x62000. Max NRPN number is 0x3fff.
-                  // TODO: Update: Actually we want to try to use CC Controller7 controllers if possible (or a choice) because what if
-                  //  the user's controller hardware doesn't support RPN?
-                  // If CC Controller7 is chosen we must make sure to use only non-common numbers. An already limited range
-                  //  of 127 now becomes narrower. See the cool document midi-controllers.txt in the DSSI source for a 
-                  //  nice roundup of numbers and how to choose them and how they relate to synths and DSSI synths etc. !
-                  ctlnum = CTRL_NRPN14_OFFSET + 0x2000 + k; 
-                }
-                else
-                {
-                  int c = ctlnum;
-                  // Can be both CC and NRPN! Prefer CC over NRPN.
-                  if(DSSI_IS_CC(ctlnum))
-                  {
-                    #ifdef DSSI_DEBUG 
-                    printf("DssiSynthIF::init is CC control\n");
-                    #endif
-                    
-                    ctlnum = DSSI_CC_NUMBER(c);
-                    #ifdef DSSI_DEBUG 
-                    if(DSSI_IS_NRPN(ctlnum))
-                      printf("DssiSynthIF::init is also NRPN control. Using CC.\n");
-                    #endif  
-                  }
-                  else
-                  if(DSSI_IS_NRPN(ctlnum))
-                  {
-                    #ifdef DSSI_DEBUG 
-                    printf("DssiSynthIF::init  is NRPN control\n");
-                    #endif
-                    
-                    ctlnum = DSSI_NRPN_NUMBER(c) + CTRL_NRPN14_OFFSET;
-                  }  
-                    
-                }
-                
-                #ifdef DSSI_DEBUG 
-                printf("DssiSynthIF::init inserting to midiCtl2PortMap: ctlnum:%d k:%d\n", ctlnum, k);
-                #endif
-                
-                // We have a controller number! Insert it and the DSSI port number into both maps.
-                synth->midiCtl2PortMap.insert(std::pair<int, int>(ctlnum, k));
-                synth->port2MidiCtlMap.insert(std::pair<int, int>(k, ctlnum));
-                ld->connect_port(handle, i, &controls[k].val);
-            }
-
-      for (int k = 0; k < controlOutPorts; ++k) {
-                int i = synth->opIdx[k];
-                controlsOut[k].idx = i;    // p4.0.20
-    
-                #ifdef DSSI_DEBUG 
-                printf("DssiSynthIF::init control output port:%d port idx:%d name:%s\n", k, i, ld->PortNames[i]);
-                #endif
-                    
-                //  - Control outs are not handled but still must be connected to something.
-                ld->connect_port(handle, i, &controlsOut[k].val);
-            }
-*/
-      // p4.0.20
       int cip = 0;
       int cop = 0;
       for (unsigned long k = 0; k < synth->_portCount; ++k) 
@@ -1072,7 +615,7 @@ bool DssiSynthIF::init(DssiSynth* s)
             synth->midiCtl2PortMap.insert(std::pair<int, int>(ctlnum, cip));
             synth->port2MidiCtlMap.insert(std::pair<int, int>(cip, ctlnum));
             
-            // Support a special block for dssi synth ladspa controllers. p4.0.20
+            // Support a special block for dssi synth ladspa controllers. 
             // Put the ID at a special block after plugins (far after).
             int id = genACnum(MAX_PLUGINS, cip);
             const char* name = ld->PortNames[k];
@@ -1121,35 +664,6 @@ bool DssiSynthIF::init(DssiSynth* s)
         }
       }
           
-      
-      /*
-      // Add the LADSPA controllers to the audio track controller list. p4.0.20
-      //int controller = plugin->parameters();
-      int controller = controlPorts;
-      for (int i = 0; i < controller; ++i) 
-      {
-        //int id = genACnum(idx, i);
-        // Put the ID at a special block after plugins (far after).
-        int id = genACnum(MAX_PLUGINS, i);
-        const char* name = plugin->paramName(i);
-        synth->dssi->LADSPA_Plugin->PortNames[controls[i].idx]
-        float min, max;
-        plugin->range(i, &min, &max);
-        CtrlValueType t = plugin->valueType();
-        CtrlList* cl = new CtrlList(id);
-        cl->setRange(min, max);
-        cl->setName(QString(name));
-        cl->setValueType(t);
-        LADSPA_PortRangeHint range = plugin->range(i);
-        if(LADSPA_IS_HINT_TOGGLED(range.HintDescriptor))
-          cl->setMode(CtrlList::DISCRETE);
-        else  
-          cl->setMode(CtrlList::INTERPOLATE);
-        cl->setCurVal(plugin->param(i));
-        addController(cl);
-      }
-      */
-      
       if (ld->activate)
             ld->activate(handle);
 
@@ -1198,29 +712,10 @@ DssiSynthIF::DssiSynthIF(SynthI* s)
       #ifdef DSSI_DEBUG 
       printf("DssiSynthIF::DssiSynthIF\n");
       #endif
-      
       synth = 0;
       handle = NULL;
       controls = 0;
       controlsOut = 0;
-      
-      //_curBank = 0;
-      //_curProgram = 0;
-      
-      //#ifdef OSC_SUPPORT
-      //_oscif.setSynthIF(this);
-      //#endif
-      
-      //_guiVisible = false;
-      //uiTarget = 0;
-      //uiOscShowPath = 0;
-      //uiOscControlPath = 0;
-      //uiOscConfigurePath = 0;
-      //uiOscProgramPath = 0;
-      //uiOscPath = 0;
-      //guiPid = -1;
-      //guiQProc = 0;
-      
       audioInBuffers = 0;
       audioOutBuffers = 0;
       }
@@ -1274,45 +769,8 @@ DssiSynthIF::~DssiSynthIF()
           descr->cleanup(handle);
         }    
       }
-      
-      /*
-      //if (guiPid != -1)
-      //      kill(guiPid, SIGHUP);
-      if(guiQProc)
-      {
-        if(guiQProc->isRunning())
-        {
-          #ifdef DSSI_DEBUG 
-          printf("DssiSynthIF::~DssiSynthIF killing guiQProc\n");
-          #endif
-          
-          guiQProc->kill();
-        }  
-        
-        //delete guiQProc;
-      }
-      
-      if(uiOscShowPath)
-        free(uiOscShowPath);
-      if(uiOscControlPath)
-        free(uiOscControlPath);
-      if(uiOscConfigurePath)
-        free(uiOscConfigurePath);
-      if(uiOscProgramPath)
-        free(uiOscProgramPath);
-      if(uiOscPath)
-        free(uiOscPath);
-      if(uiTarget)
-        lo_address_free(uiTarget);
-      */
-      
       if(audioInBuffers)
       {
-        //for(int i = 0; i < synth->_inports; ++i)
-        //{
-        //  if(audioInBuffers[i])
-        //    delete[] audioInBuffers[i];
-        //}  
         for(unsigned long i = 0; i < synth->_inports; ++i) 
         {
           if(audioInBuffers[i])
@@ -1323,11 +781,6 @@ DssiSynthIF::~DssiSynthIF()
       
       if(audioOutBuffers)
       {
-        //for(int i = 0; i < synth->_outports; ++i)
-        //{
-        //  if(audioOutBuffers[i])
-        //    delete[] audioOutBuffers[i];
-        //}  
         for(unsigned long i = 0; i < synth->_outports; ++i) 
         {
           if(audioOutBuffers[i])
@@ -1397,10 +850,6 @@ void DssiSynthIF::setParameter(unsigned long n, float v)
     return;
   }
   
-  //if(!controls)
-  //  return;
-  //controls[n].val = v;
-  // p4.0.21
   ControlEvent ce;
   ce.unique = false;
   ce.idx = n;
@@ -1451,12 +900,12 @@ void DssiSynthIF::write(int level, Xml& xml) const
           synth->dssi->getCustomData(handle,&p, &len);
           if (len) {
                 //xml.tag(level++, "midistate");
-                xml.tag(level++, "midistate version=\"%d\"", SYNTH_MIDI_STATE_SAVE_VERSION);         // p4.0.27
+                xml.tag(level++, "midistate version=\"%d\"", SYNTH_MIDI_STATE_SAVE_VERSION);         
                 xml.nput(level++, "<event type=\"%d\"", Sysex);
                 //xml.nput(" datalen=\"%d\">\n", len+7 /*VSTSAVE*/);
                 xml.nput(" datalen=\"%d\">\n", len+9 /* 2 bytes header + "VSTSAVE" */);
                 xml.nput(level, "");
-                xml.nput("%02x %02x ", (char)MUSE_SYNTH_SYSEX_MFG_ID, (char)DSSI_SYNTH_UNIQUE_ID);   // p4.0.27 Wrap in a proper header
+                xml.nput("%02x %02x ", (char)MUSE_SYNTH_SYSEX_MFG_ID, (char)DSSI_SYNTH_UNIQUE_ID);   // Wrap in a proper header
                 xml.nput("56 53 54 53 41 56 45 "); // embed a save marker "string 'VSTSAVE'
                 for (long unsigned int i = 0; i < len; ++i) {
                       //if (i && (((i+7) % 16) == 0)) {
@@ -1623,9 +1072,6 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
 
   len += 2;
 
-  //snd_seq_event_t* event = &events[nevents];
-  //event->queue = SND_SEQ_QUEUE_DIRECT;
-
   #ifdef DSSI_DEBUG 
   fprintf(stderr, "DssiSynthIF::processEvent midi event type:%d chn:%d a:%d b:%d\n", e.type(), chn, a, b);
   #endif
@@ -1691,8 +1137,6 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         int bank = (b >> 8) & 0xff;
         int prog = b & 0xff;
         
-        //_curBank = bank;
-        //_curProgram = prog;
         synti->_curBankH = 0;
         synti->_curBankL = bank;
         synti->_curProgram = prog;
@@ -1733,7 +1177,7 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         //  among different dssi synths and regular synths etc. For example high RPN offset numbers (set by another 
         //  device selected into the midi port before selecting this synth) were passing through here when in fact 
         //  the particular synth had no such midi controllers. 
-        // ========================== No, that leaves out regular controllers like footpedal
+        // No, that leaves out regular controllers like footpedal
         //#ifdef DSSI_DEBUG 
         //fprintf(stderr, "DssiSynthIF::processEvent dataA:%d not found in map (not a ladspa controller). Ignoring.\n", a);
         //#endif
@@ -1746,88 +1190,17 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         //return true;
         
         int ctlnum = a;
-        //switch(midiControllerType(a))
         if(midiControllerType(a) != MidiController::Controller7)
           return false;   // Event pointer not filled. Return false.
         else  
         {
-          /*
-          case MidiController::NRPN14:
-          case MidiController::Controller14:
-          case MidiController::Pitch:
-          case MidiController::Program:
-          case MidiController::RPN:
-          case MidiController::RPN14:
-          case MidiController::NRPN:
-                #ifdef DSSI_DEBUG 
-                fprintf(stderr, "DssiSynthIF::processEvent non-ladspa midi event controller unsupported. DataA:%d\n", a);
-                #endif
-                return false;
-          */
-          
-          //case MidiController::Controller7:
                 #ifdef DSSI_DEBUG 
                 //fprintf(stderr, "DssiSynthIF::processEvent midi event is Controller7. Changing to DSSI_CC type. Current dataA:%d\n", a);
                 fprintf(stderr, "DssiSynthIF::processEvent non-ladspa midi event is Controller7. Current dataA:%d\n", a);
                 #endif  
-                //a = DSSI_CC(a);
                 a &= 0x7f;
                 ctlnum = DSSI_CC_NUMBER(ctlnum);
-          //      break;
-          
-          /*
-          case MidiController::NRPN14:
-                #ifdef DSSI_DEBUG 
-                //  fprintf(stderr, "DssiSynthIF::processEvent midi event is NRPN. Changing to DSSI_NRPN type. Current dataA:%d\n", a);
-                fprintf(stderr, "DssiSynthIF::processEvent non-ladspa midi event is NRPN. Current dataA:%d\n", a);
-                #endif  
-                //a = DSSI_NRPN(a - CTRL_NRPN14_OFFSET);
-                a &= 0x3fff;
-                ctlnum = DSSI_NRPN_NUMBER(ctlnum);
-                break;
-          case MidiController::Controller14:
-                a &= 0x7f;
-                break;
-          case MidiController::Pitch:
-                // Should be caught above!
-                #ifdef DSSI_DEBUG 
-                //fprintf(stderr, "DssiSynthIF::processEvent non-ladspa midi event is Pitch. DataA:%d\n", a);
-                fprintf(stderr, "DssiSynthIF::processEvent Error! non-ladspa midi event is Pitch. Should have been caught already! DataA:%d\n", a);
-                #endif
-                //a &= 0x3fff;
-                //snd_seq_ev_set_pitchbend(event, chn, b);
-                // Event pointer filled. Return true.
-                //return true;
-                // Event pointer not filled. Return false.
-                return false;
-          case MidiController::Program:
-                // Should be caught above!
-                #ifdef DSSI_DEBUG 
-                fprintf(stderr, "DssiSynthIF::processEvent Error! non-ladspa midi event is Program. Should have been caught already! DataA:%d\n", a);
-                #endif
-                return false;
-          case MidiController::RPN:
-          case MidiController::RPN14:
-          case MidiController::NRPN:
-          default: 
-                #ifdef DSSI_DEBUG 
-                fprintf(stderr, "DssiSynthIF::processEvent non-ladspa midi event is RPN, RPN14, or NRPN type. DataA:%d\n", a);
-                #endif
-                break;      
-          */      
         }
-        
-        // Verify it's the same number.
-        //if(ctlnum != a)
-        //{
-        //  #ifdef DSSI_DEBUG 
-        //  printf("DssiSynthIF::processEvent Error! non-ladspa midi ctlnum:%d != event dataA:%d\n", ctlnum, a);
-        //  #endif
-          // Event not filled. Return false.
-          
-          // TEMP: TODO: Turn on later
-          //return false;
-        //}  
         
         // Fill the event.
         #ifdef DSSI_DEBUG 
@@ -1839,12 +1212,8 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         return true;
       }
       
-      //int num = ip->first;
       unsigned long k = ip->second;
-      
-      ///unsigned long i = synth->pIdx[k];
       unsigned long i = controls[k].idx;
-      
       int ctlnum = DSSI_NONE;
       if(dssi->get_midi_controller_for_port)
         ctlnum = dssi->get_midi_controller_for_port(handle, i);
@@ -1865,7 +1234,6 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         // Simple but flawed solution: Start them at 0x60000 + 0x2000 = 0x62000. Max NRPN number is 0x3fff.
         ctlnum = k + (CTRL_NRPN14_OFFSET + 0x2000);
       }  
-      // p3.3.39
       else
       {
         #ifdef DSSI_DEBUG 
@@ -1899,24 +1267,22 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
       
       }
       
-      //{  
-        float val = midi2LadspaValue(ld, i, ctlnum, b); 
-        
-        #ifdef DSSI_DEBUG 
-        //fprintf(stderr, "DssiSynthIF::processEvent No midi controller for control port:%d port:%d dataA:%d Converting val from:%d to ladspa:%f\n", i, k, a, b, val);
-        fprintf(stderr, "DssiSynthIF::processEvent control port:%lu port:%lu dataA:%d Converting val from:%d to ladspa:%f\n", i, k, a, b, val);
-        #endif
-        
-        // Set the ladspa port value.
-        controls[k].val = val;
-        // FIXME: Testing - Works but is this safe in a RT process callback? Try hooking into gui heartbeat timer instead...
-        //lo_send(uiTarget, uiOscControlPath, "if", i, val);
-        // Notify that changes are to be sent upon heartbeat.
-        synti->_guiUpdateControls[k] = true;
-        
-        // Since we absorbed the message as a ladspa control change, return false - the event is not filled.
-        return false;
-      //}
+      float val = midi2LadspaValue(ld, i, ctlnum, b); 
+      
+      #ifdef DSSI_DEBUG 
+      //fprintf(stderr, "DssiSynthIF::processEvent No midi controller for control port:%d port:%d dataA:%d Converting val from:%d to ladspa:%f\n", i, k, a, b, val);
+      fprintf(stderr, "DssiSynthIF::processEvent control port:%lu port:%lu dataA:%d Converting val from:%d to ladspa:%f\n", i, k, a, b, val);
+      #endif
+      
+      // Set the ladspa port value.
+      controls[k].val = val;
+      // FIXME: Testing - Works but is this safe in a RT process callback? Try hooking into gui heartbeat timer instead...
+      //lo_send(uiTarget, uiOscControlPath, "if", i, val);
+      // Notify that changes are to be sent upon heartbeat.
+      synti->_guiUpdateControls[k] = true;
+      
+      // Since we absorbed the message as a ladspa control change, return false - the event is not filled.
+      return false;
     }
     break;
     case ME_PITCHBEND:
@@ -1935,7 +1301,6 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
         fprintf(stderr, "DssiSynthIF::processEvent midi event is ME_SYSEX\n");
         #endif
         
-        // Changed p4.0.27
         const unsigned char* data = e.data();
         if(e.len() >= 2)
         {
@@ -2045,292 +1410,10 @@ bool DssiSynthIF::processEvent(const MidiPlayEvent& e, snd_seq_event_t* event)
   return true;
 }
 
-#if 0
-
 //---------------------------------------------------------
 //   getData
 //---------------------------------------------------------
 
-//void DssiSynthIF::getData(MidiEventList* el, unsigned pos, int ch, unsigned samples, float** data)
-iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, unsigned pos, int ports, unsigned n, float** buffer)
-{
-  //#ifdef DSSI_DEBUG 
-  //  fprintf(stderr, "DssiSynthIF::getData elsize:%d pos:%d ports:%d samples:%d processed already?:%d\n", el->size(), pos, ports, n, synti->processed());
-  //#endif
-  
-  //BEGIN: Process midi events
-  
-  // FIXME: Add 10(?) for good luck in case volatile size changes (increments) while we're processing.
-  //unsigned long nevents = el->size();
-  unsigned long nevents = el->size() + synti->eventFifo.getSize() + 10; 
-
-  /*
-  while (!synti->eventFifo.isEmpty()) {
-        MidiEvent event = synti->eventFifo.get();
-        printf("Dssi: FIFO\n");
-        }
-  */
-  
-  snd_seq_event_t events[nevents];
-  memset(events, 0, sizeof(events));
-  nevents = 0;
-
-  unsigned endPos = pos + n;
-  int frameOffset = audio->getFrameOffset();
-  
-  //iMPEvent i = el->begin();     // Removed p4.0.15
-  
-  // Process event list events...
-  for(; i != el->end(); ++i) 
-  {
-    if(i->time() >= (endPos + frameOffset))  // NOTE: frameOffset? Tested, examined printouts of times: Seems OK for playback.
-      break;
-      
-    #ifdef DSSI_DEBUG 
-    fprintf(stderr, "DssiSynthIF::getData eventlist event time:%d\n", i->time());
-    #endif
-    
-    // p3.3.39 Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
-    // Same code as in MidiPort::sendEvent()
-    if(synti->midiPort() != -1)
-    {
-      MidiPort* mp = &midiPorts[synti->midiPort()];
-      if(i->type() == ME_CONTROLLER) 
-      {
-        int da = i->dataA();
-        int db = i->dataB();
-        db = mp->limitValToInstrCtlRange(da, db);
-        if(!mp->setHwCtrlState(i->channel(), da, db))
-          continue;
-        //mp->setHwCtrlState(i->channel(), da, db);
-      }
-      else
-      if(i->type() == ME_PITCHBEND) 
-      {
-        int da = mp->limitValToInstrCtlRange(CTRL_PITCH, i->dataA());
-        if(!mp->setHwCtrlState(i->channel(), CTRL_PITCH, da))
-          continue;
-        //mp->setHwCtrlState(i->channel(), CTRL_PITCH, da);
-      }
-      else
-      if(i->type() == ME_PROGRAM) 
-      {
-        if(!mp->setHwCtrlState(i->channel(), CTRL_PROGRAM, i->dataA()))
-          continue;
-        //mp->setHwCtrlState(i->channel(), CTRL_PROGRAM, i->dataA());
-      }
-    }
-        
-    if(processEvent(*i, &events[nevents]))
-    {
-      // Time-stamp the event.   p4.0.15 Tim.
-      int ft = i->time() - frameOffset - pos;
-      if(ft < 0)
-        ft = 0;
-      if (ft >= (int)MusEGlobal::segmentSize) 
-      {
-        printf("DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d (seg=%d)\n", i->time(), pos, frameOffset, ft, MusEGlobal::segmentSize);
-        ///if (ft > (int)MusEGlobal::segmentSize)
-          ft = MusEGlobal::segmentSize - 1;
-      }
-      // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count. 
-      //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
-      events[nevents].time.tick = ft;
-      
-      ++nevents;
-    }  
-  }
-  
-  // Now process putEvent events...
-  while(!synti->eventFifo.isEmpty()) 
-  {
-    MidiPlayEvent e = synti->eventFifo.get();  
-    
-    #ifdef DSSI_DEBUG 
-    fprintf(stderr, "DssiSynthIF::getData eventFifo event time:%d\n", e.time());
-    #endif
-    
-    // Maybe TODO: 
-    //if(e.time() >= (endPos + frameOffset))  
-    //  break;
-    
-    if(processEvent(e, &events[nevents]))
-    {
-      // Time-stamp the event.   p4.0.15 Tim.
-      int ft = e.time() - frameOffset - pos;
-      if(ft < 0)
-        ft = 0;
-      if (ft >= (int)MusEGlobal::segmentSize) 
-      {
-        printf("DssiSynthIF::getData: eventFifo event time:%d out of range. pos:%d offset:%d ft:%d (seg=%d)\n", e.time(), pos, frameOffset, ft, MusEGlobal::segmentSize);
-        ///if (ft > (int)MusEGlobal::segmentSize)
-          ft = MusEGlobal::segmentSize - 1;
-      }
-      // "Each event is timestamped relative to the start of the block, (mis)using the ALSA "tick time" field as a frame count. 
-      //  The host is responsible for ensuring that events with differing timestamps are already ordered by time."  -  From dssi.h
-      events[nevents].time.tick = ft;
-      
-      ++nevents;
-    }  
-  }
-  
-  // Now process OSC gui input control fifo events.
-  // It is probably more important that these are processed last so that they take precedence over all other
-  //  events because OSC + DSSI/DSSI-VST are fussy about receiving feedback via these control ports, from GUI changes.
-  #ifdef OSC_SUPPORT
-  unsigned long ctls = synth->_controlInPorts;
-  for(unsigned long k = 0; k < ctls; ++k)
-  {
-    OscControlFifo* cfifo = _oscif.oscFifo(k);
-    if(!cfifo)
-      continue;
-      
-    // If there are 'events' in the fifo, get exactly one 'event' per control per process cycle...
-    // TODO: The OSC events are now time-stamped. Split up the processing below between parameter changes
-    //        and get rid of this slooow control processing!   p4.0.15
-    if(!cfifo->isEmpty()) 
-    {
-      OscControlValue v = cfifo->get();  
-      
-      #ifdef DSSI_DEBUG 
-      fprintf(stderr, "DssiSynthIF::getData OscControlFifo event input control number:%lu value:%f\n", k, v.value);
-      #endif
-      
-      // Set the ladspa control port value.
-      controls[k].val = v.value;
-      
-      // TODO: (From plugin module, adapt for synth if/when our own plugin gui is added to synths).
-      // Need to update the MusEGlobal::automation value, otherwise the block above overwrites with the last MusEGlobal::automation value.
-      ///if(_track)
-      ///{
-        // Since we are now in the audio thread context, there's no need to send a message,
-        //  just modify directly.
-        //audio->msgSetPluginCtrlVal(this, genACnum(_id, i), controls[i].val);
-      ///  _track->setPluginCtrlVal(k, v.value)
-      ///}  
-    }
-  }  
-  #endif
-
-  ///el->erase(el->begin(), i);      // Removed p4.0.15 Let SynthI::getData() do this.
-  
-  //END: Process midi events
-  
-  //BEGIN: Run the synth
-  // All ports must be connected to something!
-  
-  // First, copy the given input buffers to our local input buffers.
-  unsigned long np, k;
-  //np = portsin > synth->_inports ? synth->_inports : portsin;
-  //for(k = 0; k < np; ++k)
-  //  memcpy(audioInBuffers[k], inbuffer[k], sizeof(float) * n);
-  //for(; k < portsin; ++k)
-  //  memset(audioInBuffers[k], 0, sizeof(float) * n);
-  
-  // Watch our limits.
-  //willyfoobar-2011-02-13
-  //old code//np = ports > synth->_outports ? synth->_outports : ports;
-  np = ((unsigned long) ports) > synth->_outports ? synth->_outports : ((unsigned long) ports);
-  
-  const DSSI_Descriptor* dssi = synth->dssi;
-  const LADSPA_Descriptor* descr = dssi->LADSPA_Plugin;
-  k = 0;
-  // Connect the given buffers directly to the ports, up to a max of synth ports.
-  for(; k < np; ++k)
-    descr->connect_port(handle, synth->oIdx[k], buffer[k]);
-  // Connect the remaining ports to some local buffers (not used yet).
-  for(; k < synth->_outports; ++k)
-    descr->connect_port(handle, synth->oIdx[k], audioOutBuffers[k]);
-  
-  /*
-  //
-  // p3.3.39 Handle inputs...
-  //
-  //if((song->bounceTrack != this) && !noInRoute()) 
-  if(!((AudioTrack*)synti)->noInRoute()) 
-  {
-    RouteList* irl = ((AudioTrack*)synti)->inRoutes();
-    iRoute i = irl->begin();
-    if(!i->track->isMidiTrack())
-    {
-      //if(MusEGlobal::debugMsg)
-        printf("DssiSynthIF::getData: Error: First route is a midi track route!\n");
-    }
-    else
-    {
-      int ch     = i->channel       == -1 ? 0 : i->channel;
-      int remch  = i->remoteChannel == -1 ? 0 : i->remoteChannel;
-      int chs    = i->channels      == -1 ? 0 : i->channels;
-      
-      // TODO:
-      //if(ch >= synth->_inports)
-      //iUsedIdx[ch] = true;
-      //if(chs == 2)
-      //  iUsedIdx[ch + 1] = true;
-      
-      //((AudioTrack*)i->track)->copyData(framePos, channels, nframe, bp);
-      ((AudioTrack*)i->track)->copyData(pos, ports, 
-                                      //(i->track->type() == Track::AUDIO_SOFTSYNTH && i->channel != -1) ? i->channel : 0, 
-                                      i->channel, 
-                                      i->channels,
-                                      n, bp);
-    }
-    
-    //unsigned pos, int ports, unsigned n, float** buffer    
-    
-    ++i;
-    for(; i != irl->end(); ++i)
-    {
-      if(i->track->isMidiTrack())
-      {
-        //if(MusEGlobal::debugMsg)
-          printf("DssiSynthIF::getData: Error: Route is a midi track route!\n");
-        continue;
-      }
-      //((AudioTrack*)i->track)->addData(framePos, channels, nframe, bp);
-      ((AudioTrack*)i->track)->addData(framePos, channels, 
-                                        //(i->track->type() == Track::AUDIO_SOFTSYNTH && i->channel != -1) ? i->channel : 0, 
-                                        i->channel, 
-                                        i->channels,
-                                        nframe, bp);
-    }
-  }  
-  */  
-    
-  //#ifdef DSSI_DEBUG 
-  //if(nevents)
-  //  fprintf(stderr, "DssiSynthIF::getData run nevents:%d\n", nevents);
-  //#endif
-  
-  // Run the synth for one segment. This processes events and gets/fills our local buffers...
-  if(synth->dssi->run_synth)
-  {
-    synth->dssi->run_synth(handle, n, events, nevents);
-    
-    // NOTE: Just a test
-    //for(int m = 0; m < n; ++m)
-    //{
-    //  synth->dssi->run_synth(handle, 1, events, nevents);
-    //}  
-
-  }  
-  else if (synth->dssi->run_multiple_synths) 
-  {
-    snd_seq_event_t* ev = events;
-    synth->dssi->run_multiple_synths(1, &handle, n, &ev, &nevents);
-  }
-  //END: Run the synth
-  
-  return i;
-}
-
-#else
-
-//---------------------------------------------------------
-//   getData
-//---------------------------------------------------------
-
-//void DssiSynthIF::getData(MidiEventList* el, unsigned pos, int ch, unsigned samples, float** data)
 iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, unsigned pos, int ports, unsigned n, float** buffer)
 {
   //#ifdef DSSI_DEBUG 
@@ -2346,9 +1429,6 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
   // No, do this in processEvent.
   //memset(events, 0, sizeof(events)); 
   
-  //nevents = 0;
-
-  //unsigned long endPos = pos + n;
   int frameOffset = audio->getFrameOffset();
   unsigned long syncFrame = audio->curSyncFrame();  
   
@@ -2410,7 +1490,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
   if(min_per > n)
     min_per = n;
       
-  // Process MusEGlobal::automation control values now.
+  // Process automation control values now.
   // TODO: This needs to be respect frame resolution. Put this inside the sample loop below.
   if(MusEGlobal::automation && synti && synti->automationType() != AUTO_OFF && id() != -1)
   {
@@ -2483,7 +1563,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
       controls[v.idx].val = v.value;
     }
     
-    // Process MusEGlobal::automation control values now.
+    // Process automation control values now.
     //if(MusEGlobal::automation && synti && synti->automationType() != AUTO_OFF && id() != -1)
     //{
     //  for(unsigned long k = 0; k < synth->_controlInPorts; ++k)
@@ -2520,7 +1600,7 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
       fprintf(stderr, "DssiSynthIF::getData eventlist event time:%d\n", i->time());
       #endif
       
-      // p3.3.39 Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
+      // Update hardware state so knobs and boxes are updated. Optimize to avoid re-setting existing values.
       // Same code as in MidiPort::sendEvent()
       if(synti->midiPort() != -1)
       {
@@ -2532,7 +1612,6 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
           db = mp->limitValToInstrCtlRange(da, db);
           if(!mp->setHwCtrlState(i->channel(), da, db))
             continue;
-          //mp->setHwCtrlState(i->channel(), da, db);
         }
         else
         if(i->type() == ME_PITCHBEND) 
@@ -2540,14 +1619,12 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
           int da = mp->limitValToInstrCtlRange(CTRL_PITCH, i->dataA());
           if(!mp->setHwCtrlState(i->channel(), CTRL_PITCH, da))
             continue;
-          //mp->setHwCtrlState(i->channel(), CTRL_PITCH, da);
         }
         else
         if(i->type() == ME_PROGRAM) 
         {
           if(!mp->setHwCtrlState(i->channel(), CTRL_PROGRAM, i->dataA()))
             continue;
-          //mp->setHwCtrlState(i->channel(), CTRL_PROGRAM, i->dataA());
         }
       }
           
@@ -2561,7 +1638,6 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
         //if (ft >= (int)MusEGlobal::segmentSize) 
         if (ft >= int(sample + nsamp)) 
         {
-          //printf("DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d (seg=%d)\n", i->time(), pos, frameOffset, ft, MusEGlobal::segmentSize);
           printf("DssiSynthIF::getData: eventlist event time:%d out of range. pos:%d offset:%d ft:%d sample:%lu nsamp:%lu\n", i->time(), pos, frameOffset, ft, sample, nsamp);
           ///if (ft > (int)MusEGlobal::segmentSize)
             //ft = MusEGlobal::segmentSize - 1;
@@ -2703,7 +1779,6 @@ iMPEvent DssiSynthIF::getData(MidiPort* /*mp*/, MPEventList* el, iMPEvent i, uns
   
   return i;
 }
-#endif
 
 //---------------------------------------------------------
 //   putEvent
@@ -2715,15 +1790,11 @@ bool DssiSynthIF::putEvent(const MidiPlayEvent& ev)
       #ifdef DSSI_DEBUG 
       fprintf(stderr, "DssiSynthIF::putEvent midi event time:%d chn:%d a:%d b:%d\n", ev.time(), ev.channel(), ev.dataA(), ev.dataB());
       #endif
-      
       if (MusEGlobal::midiOutputTrace)
             ev.dump();
-      
       return synti->eventFifo.put(ev);
-      
       //return false;
       }
-
 
 //---------------------------------------------------------
 //   incInstances
@@ -2745,8 +1816,6 @@ void DssiSynth::incInstances(int val)
             handle = 0;
             dssi = NULL;
             df   = NULL;
-            ///pIdx.clear(); 
-            ///opIdx.clear();
             iIdx.clear(); 
             oIdx.clear(); 
             rpIdx.clear();
@@ -2765,151 +1834,7 @@ bool DssiSynthIF::initGui()
       #ifdef OSC_SUPPORT
       return _oscif.oscInitGui();
       #endif
-      
       return true;
-      
-      /*
-      // Are we already running? We don't want to allow another process do we...
-      if((guiQProc != 0) && (guiQProc->isRunning()))
-        return true;
-        
-      //
-      //  start gui
-      //
-      static char oscUrl[1024];
-      //snprintf(oscUrl, 1024, "%s/%s", url, synti->name().toAscii().data());
-      //snprintf(oscUrl, 1024, "%s/%s", url, synti->name().toLatin1().constData());
-      snprintf(oscUrl, 1024, "%s/%s/%s", url, synth->info.baseName().toLatin1().constData(), synti->name().toLatin1().constData());
-
-      //QString guiPath(info.path() + "/" + info.baseName());
-      QString guiPath(synth->info.dirPath() + "/" + synth->info.baseName());
-
-      QDir guiDir(guiPath, "*", QDir::Unsorted, QDir::Files);
-      if (guiDir.exists()) 
-      {
-            //const QFileInfoList list = guiDir.entryInfoList();
-            QStringList list = guiDir.entryList();
-            
-            //for (int i = 0; i < list.size(); ++i) {
-            for (unsigned int i = 0; i < list.count(); ++i) 
-            {
-                
-                //QFileInfo fi = list.at(i);
-                QFileInfo fi(guiPath + QString("/") + list[i]);
-                  
-                  QString gui(fi.filePath());
-                  if (gui.contains('_') == 0)
-                        continue;
-                  struct stat buf;
-                  
-                  //if (stat(gui.toAscii().data(), &buf)) {
-                  if (stat(gui.toLatin1().constData(), &buf)) {
-                  
-                        perror("stat failed");
-                        continue;
-                        }
-
-                  #ifdef DSSI_DEBUG 
-                  fprintf(stderr, "DssiSynthIF::initGui  %s %s %s %s\n",
-                      //fi.filePath().toAscii().data(),
-                      //fi.fileName().toAscii().data(),
-                      fi.filePath().toLatin1().constData(),
-                      //fi.fileName().toLatin1().constData(),
-                      
-                      oscUrl,
-                      
-                      synth->info.filePath().toLatin1().constData(),
-                      
-                      //name().toAscii().data(),
-                      synth->name().toLatin1().constData());
-                  #endif
-                      
-                  if ((S_ISREG(buf.st_mode) || S_ISLNK(buf.st_mode)) &&
-                     (buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH))) 
-                  {
-                        // Changed by T356.
-                        // fork + execlp were causing the processes to remain after closing gui, requiring manual kill.
-                        // Changed to QProcess, works OK now. 
-                        //if((guiPid = fork()) == 0) 
-                        {
-                              // No QProcess created yet? Do it now. Only once per SynthIF instance. Exists until parent destroyed.
-                              if(guiQProc == 0)
-                                guiQProc = new QProcess(muse);                        
-                              
-                              // Don't forget this, he he...
-                              guiQProc->clearArguments();
-                              
-                              guiQProc->addArgument(fi.filePath());
-                              //guiQProc->addArgument(fi.fileName()); // No conventional 'Arg0' here.
-                              guiQProc->addArgument(QString(oscUrl));
-                              guiQProc->addArgument(synth->info.filePath());
-                              guiQProc->addArgument(synth->name());
-                              guiQProc->addArgument(QString("channel 1"));
-                              
-                              #ifdef DSSI_DEBUG 
-                              fprintf(stderr, "DssiSynthIF::initGui starting QProcess\n");
-                              #endif
-                                
-                              if(guiQProc->start() == TRUE)
-                              {
-                                #ifdef DSSI_DEBUG 
-                                fprintf(stderr, "DssiSynthIF::initGui started QProcess\n");
-                                #endif
-                                
-                                //guiPid = guiQProc->processIdentifier();
-                              }
-                              else
-                              {
-                              
-                                // execlp(
-                                        // fi.filePath().toAscii().data(),
-                                        // fi.fileName().toAscii().data(),
-                                //        fi.filePath().toLatin1().constData(),
-                                //        fi.fileName().toLatin1().constData(),
-                                        
-                                //        oscUrl,
-                                        
-                                        // info.filePath().toAscii().data(),
-                                        // name().toAscii().data(),
-                                //        synth->info.filePath().toLatin1().constData(),
-                                //        synth->name().toLatin1().constData(),
-                                        
-                                //        "channel 1", (void*)0);
-                                        
-                                fprintf(stderr, "exec %s %s %s %s failed: %s\n",
-                                        // fi.filePath().toAscii().data(),
-                                        // fi.fileName().toAscii().data(),
-                                        fi.filePath().toLatin1().constData(),
-                                        fi.fileName().toLatin1().constData(),
-                                        oscUrl,
-                                        //  name().toAscii().data(),
-                                        synth->name().toLatin1().constData(),
-                                        strerror(errno));
-                                        
-                                // It's Ok, Keep going. So nothing happens. So what. The timeout in showGui will just leave.
-                                // Maybe it's a 'busy' issue somewhere - allow to try again later + save work now.
-                                // exit(1);
-                                
-                              }
-                              
-                              #ifdef DSSI_DEBUG 
-                              fprintf(stderr, "DssiSynthIF::initGui after QProcess\n");
-                              #endif
-                        }
-                  }
-            }
-            //synth->_hasGui = true;
-      }
-      else {
-            printf("%s: no dir for dssi gui found: %s\n",
-               //name().toAscii().data(), guiPath.toAscii().data());
-               synth->name().toLatin1().constData(), guiPath.toLatin1().constData());
-            
-            //synth->_hasGui = false;
-            }
-            
-  return true;          
-  */
 }
 
 //---------------------------------------------------------
@@ -2934,10 +1859,7 @@ void DssiSynthIF::guiHeartBeat()
   {
     if(synti->_guiUpdateControls[i])
     {
-      ///unsigned long k = synth->pIdx[i];
-      ///_oscif.oscSendControl(k, controls[i].val);
       _oscif.oscSendControl(controls[i].idx, controls[i].val);
-    
       // Reset.
       synti->_guiUpdateControls[i] = false;
     }
@@ -2956,7 +1878,6 @@ int DssiSynthIF::oscUpdate()
       _oscif.oscSendConfigure(DSSI_PROJECT_DIRECTORY_KEY, MusEGlobal::museProject.toLatin1().constData());  // song->projectPath()
       
       // Send current string configuration parameters.
-      //StringParamMap& map = synti->_stringParamMap;
       int i = 0;
       for(ciStringParamMap r = synti->_stringParamMap.begin(); r != synti->_stringParamMap.end(); ++r) 
       {
@@ -2968,47 +1889,18 @@ int DssiSynthIF::oscUpdate()
       }  
       
       // Send current bank and program.
-      //unsigned long bank, prog;
-      //synti->currentProg(&prog, &bank, 0);
-      //_oscif.oscSendProgram(prog, bank);
       _oscif.oscSendProgram(synti->_curProgram, synti->_curBankL);
       
       // Send current control values.
       unsigned long ports = synth->_controlInPorts;
       for(unsigned long i = 0; i < ports; ++i) 
       {
-        ///unsigned long k = synth->pIdx[i];
-        ///_oscif.oscSendControl(k, controls[i].val);
         _oscif.oscSendControl(controls[i].idx, controls[i].val);
-        
         // Avoid overloading the GUI if there are lots and lots of ports. 
         if((i+1) % 50 == 0)
           usleep(300000);
       }
       
-      
-#if 0
-      /* Send current bank/program  (-FIX- another race...) */
-      if (instance->pendingProgramChange < 0) {
-            unsigned long bank = instance->currentBank;
-            unsigned long program = instance->currentProgram;
-            instance->uiNeedsProgramUpdate = 0;
-            if (instance->uiTarget) {
-                  lo_send(instance->uiTarget, instance->ui_osc_program_path, "ii", bank, program);
-                  }
-            }
-
-      /* Send control ports */
-      for (i = 0; i < instance->plugin->controlIns; i++) {
-            int in = i + instance->firstControlIn;
-            int port = pluginControlInPortNumbers[in];
-            lo_send(instance->uiTarget, instance->ui_osc_control_path, "if", port,
-               pluginControlIns[in]);
-            /* Avoid overloading the GUI if there are lots and lots of ports */
-            if ((i+1) % 50 == 0)
-                  usleep(300000);
-            }
-#endif
       return 0;
 }
 
@@ -3018,11 +1910,7 @@ int DssiSynthIF::oscUpdate()
 
 int DssiSynthIF::oscProgram(unsigned long program, unsigned long bank)
       {
-      //int bank    = argv[0]->i;
-      //int program = argv[1]->i;
-      
       int ch      = 0;        // TODO: ??
-      
       int port    = synti->midiPort();        
       
       //_curBank = bank;
@@ -3048,8 +1936,6 @@ int DssiSynthIF::oscProgram(unsigned long program, unsigned long bank)
         midiPorts[port].sendEvent(event);
       }
       
-      
-      
       //synti->playMidiEvent(&event); // TODO
       //
       //MidiDevice* md = dynamic_cast<MidiDevice*>(synti);
@@ -3066,21 +1952,13 @@ int DssiSynthIF::oscProgram(unsigned long program, unsigned long bank)
 //---------------------------------------------------------
 
 int DssiSynthIF::oscControl(unsigned long port, float value)
-      {
-  //int port = argv[0]->i;
-  //LADSPA_Data value = argv[1]->f;
-
+{
   #ifdef DSSI_DEBUG 
   printf("DssiSynthIF::oscControl received oscControl port:%lu val:%f\n", port, value);    
   #endif
   
-  //int controlPorts = synth->_controlInPorts;
-  
-  //if(port >= controlPorts)
-  //if(port < 0 || port >= synth->rpIdx.size())
   if(port >= synth->rpIdx.size())
   {
-    //fprintf(stderr, "DssiSynthIF::oscControl: port number:%d is out of range of number of ports:%d\n", port, controlPorts);
     fprintf(stderr, "DssiSynthIF::oscControl: port number:%lu is out of range of index list size:%zd\n", port, synth->rpIdx.size());
     return 0;
   }
@@ -3149,10 +2027,6 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
     fprintf(stderr, "DssiSynthIF::oscControl: fifo overflow: in control number:%lu\n", cport);
   }
   
-   
-  //const DSSI_Descriptor* dssi = synth->dssi;
-  //const LADSPA_Descriptor* ld = dssi->LADSPA_Plugin;
-  
   ciMidiCtl2LadspaPort ip = synth->port2MidiCtlMap.find(cport);
   if(ip != synth->port2MidiCtlMap.end())
   {
@@ -3164,96 +2038,8 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
   
   }
 
-#if 0
-      int port = argv[0]->i;
-      LADSPA_Data value = argv[1]->f;
-
-      if (port < 0 || port > instance->plugin->descriptor->LADSPA_Plugin->PortCount) {
-            fprintf(stderr, "MusE: OSC: %s port number (%d) is out of range\n",
-               instance->friendly_name, port);
-            return 0;
-            }
-      if (instance->pluginPortControlInNumbers[port] == -1) {
-            fprintf(stderr, "MusE: OSC: %s port %d is not a control in\n",
-               instance->friendly_name, port);
-            return 0;
-            }
-      pluginControlIns[instance->pluginPortControlInNumbers[port]] = value;
-      if (verbose) {
-            printf("MusE: OSC: %s port %d = %f\n",
-               instance->friendly_name, port, value);
-            }
-#endif
-      return 0;
-      }
-
-/*
-//---------------------------------------------------------
-//   oscExiting
-//---------------------------------------------------------
-
-int DssiSynthIF::oscExiting(lo_arg**)
-      {
-      //printf("not impl.: oscExiting\n");
-      
-      // The gui is gone now, right?
-      _guiVisible = false;
-      
-      //const DSSI_Descriptor* dssi = synth->dssi;
-      //const LADSPA_Descriptor* ld = dssi->LADSPA_Plugin;
-      //if(ld->deactivate) 
-      //  ld->deactivate(handle);
-      
-      if (uiOscPath == 0) {
-            printf("DssiSynthIF::oscExiting(): no uiOscPath\n");
-            return 1;
-            }
-      char uiOscGuiPath[strlen(uiOscPath)+6];
-        
-      sprintf(uiOscGuiPath, "%s/%s", uiOscPath, "quit");
-      #ifdef DSSI_DEBUG 
-      printf("DssiSynthIF::oscExiting(): sending quit to uiOscGuiPath:%s\n", uiOscGuiPath);
-      #endif
-      
-      lo_send(uiTarget, uiOscGuiPath, "");
-      
-#if 0
-      int i;
-
-      if (verbose) {
-            printf("MusE: OSC: got exiting notification for instance %d\n",
-               instance->number);
-            }
-
-      if (instance->plugin) {
-
-            // !!! No, this isn't safe -- plugins deactivated in this way
-            //  would still be included in a run_multiple_synths call unless
-            //  we re-jigged the instance array at the same time -- leave it
-            //  for now
-            //if (instance->plugin->descriptor->LADSPA_Plugin->deactivate) {
-            //      instance->plugin->descriptor->LADSPA_Plugin->deactivate
-            //         (instanceHandles[instance->number]);
-            //      }
-            // Leave this flag though, as we need it to determine when to exit 
-            instance->inactive = 1;
-            }
-
-      // Do we have any plugins left running? 
-
-      for (i = 0; i < instance_count; ++i) {
-            if (!instances[i].inactive)
-                  return 0;
-            }
-
-      if (verbose) {
-            printf("MusE: That was the last remaining plugin, exiting...\n");
-            }
-      exiting = 1;
-#endif
-      return 0;
-      }
-*/
+  return 0;
+}
 
 //---------------------------------------------------------
 //   oscMidi
@@ -3261,19 +2047,12 @@ int DssiSynthIF::oscExiting(lo_arg**)
 
 int DssiSynthIF::oscMidi(int a, int b, int c)
       {
-      //int a = argv[0]->m[1];
-      //int b = argv[0]->m[2];
-      //int c = argv[0]->m[3];
-      
       if (a == ME_NOTEOFF) {
             a = ME_NOTEON;
             c = 0;
             }
       int channel = 0;        // TODO: ??
-      
       int port    = synti->midiPort();        
-      
-      //MidiEvent event(0, channel, a, b, c);
       
       if(port != -1)
       {
@@ -3304,12 +2083,8 @@ int DssiSynthIF::oscMidi(int a, int b, int c)
 
 int DssiSynthIF::oscConfigure(const char *key, const char *value)
       {
-      //const char *key = (const char *)&argv[0]->s;
-      //const char *value = (const char *)&argv[1]->s;
-
-      // This is pretty much the simplest legal implementation of
+      //"This is pretty much the simplest legal implementation of
       // configure in a DSSI host. 
-
       // The host has the option to remember the set of (key,value)
       // pairs associated with a particular instance, so that if it
       // wants to restore the "same" instance on another occasion it can
@@ -3317,7 +2092,7 @@ int DssiSynthIF::oscConfigure(const char *key, const char *value)
       // restore state without any input from a GUI.  Any real-world GUI
       // host will probably want to do that.  This host doesn't have any
       // concept of restoring an instance from one run to the next, so
-      // we don't bother remembering these at all. 
+      // we don't bother remembering these at all." 
 
       #ifdef DSSI_DEBUG 
       printf("DssiSynthIF::oscConfigure synth name:%s key:%s value:%s\n", synti->name().toLatin1().constData(), key, value);
@@ -3329,9 +2104,7 @@ int DssiSynthIF::oscConfigure(const char *key, const char *value)
       if (!strncmp(key, DSSI_RESERVED_CONFIGURE_PREFIX,
          strlen(DSSI_RESERVED_CONFIGURE_PREFIX))) {
             fprintf(stderr, "MusE: OSC: UI for plugin '%s' attempted to use reserved configure key \"%s\", ignoring\n",
-               //synti->name().toAscii().data(), key);
                synti->name().toLatin1().constData(), key);
-               
             return 0;
             }
 
@@ -3341,14 +2114,12 @@ int DssiSynthIF::oscConfigure(const char *key, const char *value)
       char* message = synth->dssi->configure(handle, key, value);
       if (message) {
             printf("MusE: on configure '%s' '%s', plugin '%s' returned error '%s'\n",
-               //key, value, synti->name().toAscii().data(), message);
                key, value, synti->name().toLatin1().constData(), message);
-            
             free(message);
             }
 
-      // also call back on UIs for plugins other than the one
-      // that requested this:
+      // "also call back on UIs for plugins other than the one
+      //  that requested this:"
       // if (n != instance->number && instances[n].uiTarget) {
       //      lo_send(instances[n].uiTarget,
       //      instances[n].ui_osc_configure_path, "ss", key, value);
@@ -3373,7 +2144,6 @@ void DssiSynthIF::queryPrograms()
             }
       programs.clear();
 
-      //if (!(synth->dssi->get_program && synth->dssi->select_program))
       if (!synth->dssi->get_program)
             return;
 
@@ -3418,7 +2188,6 @@ const char* DssiSynthIF::getPatchName(int /*chan*/, int prog, MType /*type*/, bo
 //   populatePatchPopup
 //---------------------------------------------------------
 
-//void DssiSynthIF::populatePatchPopup(QMenu* menu, int)
 void DssiSynthIF::populatePatchPopup(MusEWidget::PopupMenu* menu, int /*ch*/, MType /*type*/, bool /*drum*/)
       {
       // The plugin can change the programs, patches etc.
@@ -3442,7 +2211,6 @@ int DssiSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* mi
 {
   int controlPorts = synth->_controlInPorts;
   if(id >= controlPorts)
-  //if(id >= midiCtl2PortMap.size())
     return 0;
 
   const DSSI_Descriptor* dssi = synth->dssi;
@@ -3454,12 +2222,7 @@ int DssiSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* mi
   //int ctlnum = ip->first;
   //int k = ip->second;
   
-  ///int i = synth->pIdx[id];
-  //int i = synth->pIdx[k];
-  //int i = controls[id].idx;
-  unsigned long i = controls[id].idx;   // p4.0.21
-  
-  //ladspaDefaultValue(ld, i, &controls[id].val);
+  unsigned long i = controls[id].idx;   
   
   #ifdef DSSI_DEBUG 
   printf("DssiSynthIF::getControllerInfo control port:%d port idx:%d name:%s\n", id, i, ld->PortNames[i]);
@@ -3527,37 +2290,6 @@ int DssiSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* mi
   *ctrl = ctlnum;
   *name =  ld->PortNames[i];
   return ++id;
-
-  /*
-  // ...now create midi controllers for ports which did not define them ...
-  for(int k = 0; k < controlPorts; ++k) 
-  {
-    int i = synth->pIdx[k];
-    //controls[k].val = ladspaDefaultValue(ld, i);
-    ladspaDefaultValue(ld, i, &controls[k].val);
-    
-    printf("DssiSynthIF::getControllerInfo #2 control port:%d port idx:%d name:%s\n", k, i, ld->PortNames[i]);
-    
-    if(!dssi->get_midi_controller_for_port || (dssi->get_midi_controller_for_port(handle, i) == DSSI_NONE))
-    {
-      int ctlnum;
-      //printf("DssiSynthIF::getControllerInfo #2 midi controller number:%d\n", ctlnum);
-      printf("DssiSynthIF::getControllerInfo #2 creating MidiController number:%d\n", ctlnum);
-      MidiController* mc = ladspa2MidiController(ld, i, ctlnum); 
-      // Add to MidiInstrument controller list.
-      if(mc)
-      {
-        printf("DssiSynthIF::getControllerInfo #2 adding MidiController to instrument\n");
-        ((MidiInstrument*)synti)->controller()->add(mc);
-      }  
-    }
-    else
-    {
-    
-    }
-  }
-  */
-
 }
 
 int DssiSynthIF::channels() const 
@@ -3584,9 +2316,7 @@ int DssiSynthIF::totalInChannels() const
 
 bool DssiSynthIF::on() const                                 { return true; }  // Synth is not part of a rack plugin chain. Always on.
 void DssiSynthIF::setOn(bool /*val*/)                        { }   
-//int DssiSynthIF::pluginID()                                  { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->UniqueID : 0; } 
 unsigned long DssiSynthIF::pluginID()                        { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->UniqueID : 0; }   
-//int DssiSynthIF::id()                                        { return 0; } // Synth is not part of a rack plugin chain. Always 0.
 int DssiSynthIF::id()                                        { return MAX_PLUGINS; } // Set for special block reserved for dssi synth. p4.0.20
 QString DssiSynthIF::pluginLabel() const                     { return (synth && synth->dssi) ? QString(synth->dssi->LADSPA_Plugin->Label) : QString(); } 
 QString DssiSynthIF::name() const                            { return synti->name(); }
@@ -3594,9 +2324,6 @@ QString DssiSynthIF::lib() const                             { return synth ? sy
 QString DssiSynthIF::dirPath() const                         { return synth ? synth->absolutePath() : QString(); }
 QString DssiSynthIF::fileName() const                        { return synth ? synth->fileName() : QString(); }
 AudioTrack* DssiSynthIF::track()                             { return (AudioTrack*)synti; }
-//void DssiSynthIF::enableController(int i, bool v)            { controls[i].enCtrl = v; } 
-//bool DssiSynthIF::controllerEnabled(int i) const             { return controls[i].enCtrl; }  
-//bool DssiSynthIF::controllerEnabled2(int i) const            { return controls[i].en2Ctrl; }   
 void DssiSynthIF::enableController(unsigned long i, bool v)  { controls[i].enCtrl = v; } 
 bool DssiSynthIF::controllerEnabled(unsigned long i) const   { return controls[i].enCtrl; }  
 bool DssiSynthIF::controllerEnabled2(unsigned long i) const  { return controls[i].en2Ctrl; }   
@@ -3604,12 +2331,6 @@ void DssiSynthIF::updateControllers()                        { }
 void DssiSynthIF::writeConfiguration(int /*level*/, Xml& /*xml*/)        { }
 bool DssiSynthIF::readConfiguration(Xml& /*xml*/, bool /*readPreset*/) { return false; }
 
-//int DssiSynthIF::parameters() const                          { return synth ? synth->_controlInPorts : 0; }
-//void DssiSynthIF::setParam(int i, double val)                { setParameter(i, val); }
-//double DssiSynthIF::param(int i) const                       { return getParameter(i); }
-//const char* DssiSynthIF::paramName(int i)                    { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortNames[controls[i].idx] : 0; }
-//LADSPA_PortRangeHint DssiSynthIF::range(int i)               { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortRangeHints[i] : 0; }
-//LADSPA_PortRangeHint DssiSynthIF::range(int i)               { return synth->dssi->LADSPA_Plugin->PortRangeHints[controls[i].idx]; }
 unsigned long DssiSynthIF::parameters() const                { return synth ? synth->_controlInPorts : 0; }
 unsigned long DssiSynthIF::parametersOut() const             { return synth ? synth->_controlOutPorts : 0; }
 void DssiSynthIF::setParam(unsigned long i, float val)       { setParameter(i, val); }
@@ -3617,7 +2338,6 @@ float DssiSynthIF::param(unsigned long i) const              { return getParamet
 float DssiSynthIF::paramOut(unsigned long i) const           { return getParameterOut(i); }
 const char* DssiSynthIF::paramName(unsigned long i)          { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortNames[controls[i].idx] : 0; }
 const char* DssiSynthIF::paramOutName(unsigned long i)       { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortNames[controlsOut[i].idx] : 0; }
-//LADSPA_PortRangeHint DssiSynthIF::range(unsigned long i)     { return (synth && synth->dssi) ? synth->dssi->LADSPA_Plugin->PortRangeHints[i] : 0; }
 LADSPA_PortRangeHint DssiSynthIF::range(unsigned long i)     { return synth->dssi->LADSPA_Plugin->PortRangeHints[controls[i].idx]; }
 LADSPA_PortRangeHint DssiSynthIF::rangeOut(unsigned long i)  { return synth->dssi->LADSPA_Plugin->PortRangeHints[controlsOut[i].idx]; }
 CtrlValueType DssiSynthIF::ctrlValueType(unsigned long i) const { return ladspaCtrlValueType(synth->dssi->LADSPA_Plugin, controls[i].idx); }
