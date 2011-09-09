@@ -80,8 +80,8 @@ const char* seqMsgList[] = {
       "SEQM_SCAN_ALSA_MIDI_PORTS",
       "SEQM_SET_AUX",
       "SEQM_UPDATE_SOLO_STATES",
-      "MIDI_SHOW_INSTR_GUI",
-      "MIDI_SHOW_INSTR_NATIVE_GUI",
+      //"MIDI_SHOW_INSTR_GUI",
+      //"MIDI_SHOW_INSTR_NATIVE_GUI",
       "AUDIO_RECORD",
       "AUDIO_ROUTEADD", "AUDIO_ROUTEREMOVE", "AUDIO_REMOVEROUTES",
       //"AUDIO_VOL", "AUDIO_PAN",
@@ -686,12 +686,12 @@ void Audio::processMsg(AudioMsg* msg)
             case SEQM_SCAN_ALSA_MIDI_PORTS:
                   alsaScanMidiPorts();
                   break;
-            case MIDI_SHOW_INSTR_GUI:
-                  midiSeq->msgUpdatePollFd();
-                  break;
-            case MIDI_SHOW_INSTR_NATIVE_GUI:   
-                  midiSeq->msgUpdatePollFd();
-                  break;
+            //case MIDI_SHOW_INSTR_GUI:
+            //      midiSeq->msgUpdatePollFd();
+            //      break;
+            //case MIDI_SHOW_INSTR_NATIVE_GUI:   
+            //      midiSeq->msgUpdatePollFd();
+            //      break;
             case SEQM_ADD_TEMPO:
             case SEQM_REMOVE_TEMPO:
             case SEQM_SET_GLOBAL_TEMPO:

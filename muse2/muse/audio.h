@@ -74,8 +74,8 @@ enum {
       SEQM_SCAN_ALSA_MIDI_PORTS,
       SEQM_SET_AUX,
       SEQM_UPDATE_SOLO_STATES,
-      MIDI_SHOW_INSTR_GUI,
-      MIDI_SHOW_INSTR_NATIVE_GUI,
+      //MIDI_SHOW_INSTR_GUI,
+      //MIDI_SHOW_INSTR_NATIVE_GUI,
       AUDIO_RECORD,
       AUDIO_ROUTEADD, AUDIO_ROUTEREMOVE, AUDIO_REMOVEROUTES,
       //AUDIO_VOL, AUDIO_PAN,
@@ -233,8 +233,8 @@ class Audio {
       void msgRemoveSig(int tick, int z, int n, bool doUndoFlag = true);
       void msgAddKey(int tick, int key, bool doUndoFlag = true);
       void msgRemoveKey(int tick, int key, bool doUndoFlag = true);
-      void msgShowInstrumentGui(MidiInstrument*, bool);
-      void msgShowInstrumentNativeGui(MidiInstrument*, bool);
+      //void msgShowInstrumentGui(MidiInstrument*, bool);
+      //void msgShowInstrumentNativeGui(MidiInstrument*, bool);
       void msgPanic();
       void sendMsg(AudioMsg*);
       bool sendMessage(AudioMsg* m, bool doUndo);
