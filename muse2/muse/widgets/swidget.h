@@ -25,6 +25,8 @@
 
 #include <QWidget>
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   SWidget
 //    a simple widget which emits a heighChanged signal
@@ -42,6 +44,8 @@ class SWidget : public QWidget {
    public:
       SWidget(QWidget* parent) : QWidget(parent) {}
       };
+
+} // namespace MusEWidget
 
 #endif
 

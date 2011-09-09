@@ -33,12 +33,15 @@ class QWidget;
 class PartList;
 class Xml;
 class EventCanvas;
-class ScrollScale;
 class CtrlEdit;
-class MTScale;
 class WaveView;
 class Part;
 class WavePart;
+
+namespace MusEWidget {
+class MTScale;
+class ScrollScale;
+}
 
 //---------------------------------------------------------
 //   MidiEditor
@@ -52,9 +55,9 @@ class MidiEditor : public TopWin  {
       int _curDrumInstrument;  // currently selected instrument if drum
                                // editor
    protected:
-      ScrollScale* hscroll;
-      ScrollScale* vscroll;
-      MTScale* time;
+      MusEWidget::ScrollScale* hscroll;
+      MusEWidget::ScrollScale* vscroll;
+      MusEWidget::MTScale* time;
       EventCanvas* canvas;
       WaveView* wview;
 

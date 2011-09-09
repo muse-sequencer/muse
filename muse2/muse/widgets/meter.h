@@ -32,6 +32,7 @@ class QResizeEvent;
 class QMouseEvent;
 class QPainter;
 
+namespace MusEWidget {
 
 class Meter : public QFrame {
     Q_OBJECT
@@ -97,5 +98,8 @@ class Meter : public QFrame {
       Meter(QWidget* parent, MeterType type = DBMeter);
       void setRange(double min, double max);
       };
+
+} // namespace MusEWidget
+
 #endif
 

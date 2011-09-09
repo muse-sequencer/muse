@@ -28,6 +28,8 @@
 class QButtonGroup;
 class Xml;
 
+namespace MusEDialog {
+
 class DelOverlaps : public QDialog, public Ui::DelOverlapsBase
 {
  	Q_OBJECT
@@ -50,6 +52,8 @@ class DelOverlaps : public QDialog, public Ui::DelOverlapsBase
 	public slots:
 		int exec();
 };
+
+} // namespace MusEDialog
 
 #endif
 

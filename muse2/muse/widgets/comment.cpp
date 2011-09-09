@@ -26,6 +26,8 @@
 
 #include <QWidget>
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   Comment
 //---------------------------------------------------------
@@ -102,3 +104,4 @@ void TrackComment::setText(const QString& s)
       song->update(SC_TRACK_MODIFIED);
       }
 
+} // namespace MusEWidget

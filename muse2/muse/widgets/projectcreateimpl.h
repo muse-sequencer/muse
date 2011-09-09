@@ -26,6 +26,8 @@
 #include <QDialog>
 #include "ui_projectcreate.h"
 
+namespace MusEWidget {
+
 class ProjectCreateImpl : public QDialog, Ui::ProjectCreate
 {
     Q_OBJECT
@@ -44,5 +46,7 @@ public slots:
     void ok();
 
 };
+
+} // namespace MusEWidget
 
 #endif // PROJECTCREATEIMPL_H

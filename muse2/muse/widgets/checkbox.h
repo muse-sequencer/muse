@@ -25,6 +25,7 @@
 
 #include <QCheckBox>
 
+namespace MusEWidget {
 
 //---------------------------------------------------------
 //   CheckBox
@@ -54,6 +55,8 @@ class CheckBox : public QCheckBox {
       int id() const       { return _id; }
       void setId(int i)    { _id = i; }
       };
+
+} // namespace MusEWidget
 
 #endif
 

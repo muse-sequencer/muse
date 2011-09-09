@@ -24,6 +24,8 @@
 
 #include <QMouseEvent>
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   CheckBox
 //---------------------------------------------------------
@@ -71,4 +73,4 @@ void CheckBox::mouseReleaseEvent(QMouseEvent *e)
   emit checkboxReleased(_id);
 }
 
-
+} // namespace MusEWidget

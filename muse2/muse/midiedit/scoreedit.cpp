@@ -194,7 +194,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	score_canvas=new ScoreCanvas(this, mainw);
 	xscroll = new QScrollBar(Qt::Horizontal, mainw);
 	yscroll = new QScrollBar(Qt::Vertical, mainw);
-	time_bar = new MTScaleFlo(score_canvas, mainw);
+	time_bar = new MusEWidget::MTScaleFlo(score_canvas, mainw);
 
 	connect(xscroll, SIGNAL(valueChanged(int)), score_canvas,   SLOT(x_scroll_event(int)));
 	connect(score_canvas, SIGNAL(xscroll_changed(int)), xscroll,   SLOT(setValue(int)));

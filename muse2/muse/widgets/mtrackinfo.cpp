@@ -43,6 +43,8 @@
 #include "popupmenu.h"
 #include "routepopup.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   setTrack
 //---------------------------------------------------------
@@ -557,7 +559,7 @@ void MidiTrackInfo::setLabelFont()
       // Set the label's font.
       trackNameLabel->setFont(MusEConfig::config.fonts[6]);
       // Dealing with a horizontally constrained label. Ignore vertical. Use a minimum readable point size.
-      autoAdjustFontSize(trackNameLabel, trackNameLabel->text(), false, true, MusEConfig::config.fonts[6].pointSize(), 5); 
+      MusEUtil::autoAdjustFontSize(trackNameLabel, trackNameLabel->text(), false, true, MusEConfig::config.fonts[6].pointSize(), 5); 
 }
   
 //---------------------------------------------------------
@@ -1564,3 +1566,4 @@ void MidiTrackInfo::recordClicked()
       }
     }
 
+} // namespace MusEWidget

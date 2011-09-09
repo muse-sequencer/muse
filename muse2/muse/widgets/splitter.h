@@ -27,6 +27,8 @@
 
 class Xml;
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   Splitter
 //---------------------------------------------------------
@@ -39,6 +41,8 @@ class Splitter : public QSplitter {
       void writeStatus(int level, Xml&);
       void readStatus(Xml&);
       };
+
+}
 
 #endif
 

@@ -27,6 +27,8 @@
 
 #include <QtGlobal>
 
+namespace MusEWidget {
+
 class DiMap
       {
       double d_x1, d_x2;  // double interval boundaries
@@ -62,5 +64,7 @@ class DiMap
       int i2() const           { return d_y2;}
       bool logarithmic() const { return d_log;}
       };
+
+} // namespace MusEWidget
 
 #endif

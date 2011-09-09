@@ -28,6 +28,8 @@
 class QButtonGroup;
 class Xml;
 
+namespace MusEDialog {
+
 class Legato : public QDialog, public Ui::LegatoBase
 {
  	Q_OBJECT
@@ -53,6 +55,8 @@ class Legato : public QDialog, public Ui::LegatoBase
 	public slots:
 		int exec();
 };
+
+} // namespace MusEDialog
 
 #endif
 

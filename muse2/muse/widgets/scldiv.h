@@ -27,6 +27,8 @@
 
 #include <QVector>
 
+namespace MusEWidget {
+
 class ScaleDiv
       {
       double d_lBound;
@@ -63,5 +65,7 @@ class ScaleDiv
       bool rebuild(double lBound, double hBound, int maxMaj, int maxMin,
          bool log, double step = 0.0, bool ascend = TRUE);
       };
+
+} // namespace MusEWidget
 
 #endif

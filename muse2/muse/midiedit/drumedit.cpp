@@ -351,24 +351,24 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       
       addToolBarBreak();
       // don't show pitch value in toolbar
-      toolbar = new Toolbar1(this, _rasterInit, false);
+      toolbar = new MusEWidget::Toolbar1(this, _rasterInit, false);
       addToolBar(toolbar);
       
       addToolBarBreak();
-      info    = new NoteInfo(this);
+      info    = new MusEWidget::NoteInfo(this);
       addToolBar(info);
 
       //---------------------------------------------------
       //    split
       //---------------------------------------------------
 
-      split1            = new Splitter(Qt::Vertical, mainw, "split1");
+      split1            = new MusEWidget::Splitter(Qt::Vertical, mainw, "split1");
       QPushButton* ctrl = new QPushButton(tr("ctrl"), mainw);
       ctrl->setObjectName("Ctrl");
       ctrl->setFont(MusEConfig::config.fonts[3]);
-      //hscroll           = new ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
+      //hscroll           = new MusEWidget::ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. p4.0.18 Tim.
-      hscroll           = new ScrollScale(-25, -1, xscale, 20000, Qt::Horizontal, mainw);
+      hscroll           = new MusEWidget::ScrollScale(-25, -1, xscale, 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(40, hscroll->sizeHint().height());
       ctrl->setToolTip(tr("Add Controller View"));
 
@@ -385,7 +385,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
 //      mainGrid->addRowSpacing(1, hscroll->sizeHint().height());
 //      mainGrid->addItem(new QSpacerItem(0, hscroll->sizeHint().height()), 1, 0); 
 
-      split2              = new Splitter(Qt::Horizontal, split1, "split2");
+      split2              = new MusEWidget::Splitter(Qt::Horizontal, split1, "split2");
       split1w1            = new QWidget(split2);
       QWidget* split1w2   = new QWidget(split2);
       QGridLayout* gridS1 = new QGridLayout(split1w1);
@@ -394,9 +394,9 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       gridS1->setSpacing(0);  
       gridS2->setContentsMargins(0, 0, 0, 0);
       gridS2->setSpacing(0);  
-      time                = new MTScale(&_raster, split1w2, xscale);
+      time                = new MusEWidget::MTScale(&_raster, split1w2, xscale);
       canvas              = new DrumCanvas(this, split1w2, xscale, yscale);
-      vscroll             = new ScrollScale(-4, 1, yscale, DRUM_MAPSIZE*TH, Qt::Vertical, split1w2);
+      vscroll             = new MusEWidget::ScrollScale(-4, 1, yscale, DRUM_MAPSIZE*TH, Qt::Vertical, split1w2);
       int offset = -(MusEConfig::config.division/4);
       canvas->setOrigin(offset, 0);
       canvas->setCanvasTools(drumeditTools);
@@ -412,20 +412,20 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       split2->setSizes(mops);
       // By T356. Not much choice but to disable this for now, to stop runaway resize bug.
       // Can't seem to get the splitter to readjust when manually setting sizes.
-      //split2->setResizeMode(split1w1, QSplitter::KeepSize);
+      //split2->setResizeMode(split1w1, QMusEWidget::Splitter::KeepSize);
 
       gridS2->setRowStretch(1, 100);
       gridS2->setColumnStretch(0, 100);
       
       gridS2->addWidget(time,  0, 0, 1, 2);
-      gridS2->addWidget(hLine(split1w2), 1, 0, 1, 2);
+      gridS2->addWidget(MusEUtil::hLine(split1w2), 1, 0, 1, 2);
       gridS2->addWidget(canvas,  2, 0);
       
       gridS2->addWidget(vscroll, 2, 1);
       //
       //  Reihenfolge in dlist.c festgeschrieben ("Dcols")
       //
-      header = new Header(split1w1, "header");
+      header = new MusEWidget::Header(split1w1, "header");
       header->setFixedHeight(31);
       header->setColumnLabel(tr("M"), COL_MUTE, 20);
       header->setColumnLabel(tr("Sound"), COL_NAME, 120);
@@ -492,7 +492,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       connect(time,    SIGNAL(timeChanged(unsigned)),  SLOT(setTime(unsigned)));
       connect(toolbar, SIGNAL(rasterChanged(int)),         SLOT(setRaster(int)));
       connect(toolbar, SIGNAL(soloChanged(bool)),          SLOT(soloChanged(bool)));
-      connect(info, SIGNAL(valueChanged(NoteInfo::ValType, int)), SLOT(noteinfoChanged(NoteInfo::ValType, int)));
+      connect(info, SIGNAL(valueChanged(MusEWidget::NoteInfo::ValType, int)), SLOT(noteinfoChanged(MusEWidget::NoteInfo::ValType, int)));
 
       connect(ctrl, SIGNAL(clicked()), SLOT(addCtrl()));
 
@@ -642,7 +642,7 @@ void DrumEdit::setRaster(int val)
 //    edit currently selected Event
 //---------------------------------------------------------
 
-void DrumEdit::noteinfoChanged(NoteInfo::ValType type, int val)
+void DrumEdit::noteinfoChanged(MusEWidget::NoteInfo::ValType type, int val)
       {
       if (selEvent.empty()) {
             printf("noteinfoChanged while note is zero %d\n", type);
@@ -650,19 +650,19 @@ void DrumEdit::noteinfoChanged(NoteInfo::ValType type, int val)
             }
       Event event = selEvent.clone();
       switch (type) {
-            case NoteInfo::VAL_TIME:
+            case MusEWidget::NoteInfo::VAL_TIME:
                   event.setTick(val - selPart->tick());
                   break;
-            case NoteInfo::VAL_LEN:
+            case MusEWidget::NoteInfo::VAL_LEN:
                   event.setLenTick(val);
                   break;
-            case NoteInfo::VAL_VELON:
+            case MusEWidget::NoteInfo::VAL_VELON:
                   event.setVelo(val);
                   break;
-            case NoteInfo::VAL_VELOFF:
+            case MusEWidget::NoteInfo::VAL_VELOFF:
                   event.setVeloOff(val);
                   break;
-            case NoteInfo::VAL_PITCH:
+            case MusEWidget::NoteInfo::VAL_PITCH:
                   event.setPitch(val);
                   break;
             }
@@ -820,13 +820,13 @@ void DrumEdit::writeConfiguration(int level, Xml& xml)
 
 void DrumEdit::load()
       {
-      //QString fn = getOpenFileName("drummaps", map_file_pattern,
-      QString fn = getOpenFileName("drummaps", MusEGlobal::drum_map_file_pattern,
+      //QString fn = MusEWidget::getOpenFileName("drummaps", map_file_pattern,
+      QString fn = MusEWidget::getOpenFileName("drummaps", MusEGlobal::drum_map_file_pattern,
          this, tr("Muse: Load Drum Map"), 0);
       if (fn.isEmpty())
             return;
       bool popenFlag;
-      FILE* f = fileOpen(this, fn, QString(".map"), "r", popenFlag, true);
+      FILE* f = MusEWidget::fileOpen(this, fn, QString(".map"), "r", popenFlag, true);
       if (f == 0)
             return;
 
@@ -873,13 +873,13 @@ ende:
 
 void DrumEdit::save()
       {
-      //QString fn = getSaveFileName(QString("drummaps"), map_file_pattern,
-      QString fn = getSaveFileName(QString("drummaps"), MusEGlobal::drum_map_file_save_pattern,
+      //QString fn = MusEWidget::getSaveFileName(QString("drummaps"), map_file_pattern,
+      QString fn = MusEWidget::getSaveFileName(QString("drummaps"), MusEGlobal::drum_map_file_save_pattern,
         this, tr("MusE: Store Drum Map"));
       if (fn.isEmpty())
             return;
       bool popenFlag;
-      FILE* f = fileOpen(this, fn, QString(".map"), "w", popenFlag, false, true);
+      FILE* f = MusEWidget::fileOpen(this, fn, QString(".map"), "w", popenFlag, false, true);
       if (f == 0)
             return;
       Xml xml(f);
@@ -1202,11 +1202,11 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             }
       else if (key == shortcuts[SHRT_ZOOM_IN].key) {
             int mag = hscroll->mag();
-            int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+            int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
             if (zoomlvl < 23)
                   zoomlvl++;
 
-            int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+            int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
 
             hscroll->setMag(newmag);
             //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
@@ -1214,11 +1214,11 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             }
       else if (key == shortcuts[SHRT_ZOOM_OUT].key) {
             int mag = hscroll->mag();
-            int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+            int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
             if (zoomlvl > 1)
                   zoomlvl--;
 
-            int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+            int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
             hscroll->setMag(newmag);
             //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
             return;

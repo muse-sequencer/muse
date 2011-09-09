@@ -25,6 +25,8 @@
 
 #include "dentry.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   DoubleLabel
 //---------------------------------------------------------
@@ -72,5 +74,7 @@ class DoubleLabel : public Dentry {
       QString suffix() const                { return _suffix; }
       void setSuffix(const QString& s)      { _suffix = s; }
       };
+
+} // namespace MusEWidget
 
 #endif

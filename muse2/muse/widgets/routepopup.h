@@ -27,11 +27,14 @@
 
 class Track;
 class AudioTrack;
-class PopupMenu;
 class QWidget;
 class QString;
 class QAction;
 class QPoint;
+
+namespace MusEWidget {
+
+class PopupMenu;
 
 class RoutePopupMenu : public QObject
 {
@@ -71,5 +74,7 @@ class RoutePopupMenu : public QObject
     void exec(const QPoint& p, Track* track = 0, bool isOutput = false);
     void popup(const QPoint& p, Track* track = 0, bool isOutput = false);
 };
+
+}
 
 #endif

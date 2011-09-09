@@ -27,11 +27,11 @@
 #include "track.h"
 
 //---------------------------------------------------------
-//   PanKnob
+//   PanMusEWidget::Knob
 //---------------------------------------------------------
 
-PanKnob::PanKnob(QWidget* parent, AudioTrack* s)
-   : Knob(parent, "pan")
+PanMusEWidget::Knob::PanMusEWidget::Knob(QWidget* parent, AudioTrack* s)
+   : MusEWidget::Knob(parent, "pan")
       {
       src = s;
       connect(this, SIGNAL(valueChanged(double,int)), SLOT(valueChanged(double)));
@@ -41,7 +41,7 @@ PanKnob::PanKnob(QWidget* parent, AudioTrack* s)
 //   panChanged
 //---------------------------------------------------------
 
-void PanKnob::valueChanged(double val)
+void PanMusEWidget::Knob::valueChanged(double val)
       {
       //audio->msgSetPan(src, val);
       // p4.0.21 audio->msgXXX waits. Do we really need to?

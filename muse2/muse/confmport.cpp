@@ -130,7 +130,7 @@ void MPConfig::changeDefInputRoutes(QAction* act)
     else
       chbits = defch ^ (1 << actid);
     midiPorts[no].setDefaultInChannels(chbits);
-    mdevView->item(item->row(), DEVCOL_DEF_IN_CHANS)->setText(bitmap2String(chbits));
+    mdevView->item(item->row(), DEVCOL_DEF_IN_CHANS)->setText(MusEUtil::bitmap2String(chbits));
   }  
 }
 
@@ -217,7 +217,7 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
     else
       chbits = defch ^ (1 << actid);
     midiPorts[no].setDefaultOutChannels(chbits);
-    mdevView->item(item->row(), DEVCOL_DEF_OUT_CHANS)->setText(bitmap2String(chbits));
+    mdevView->item(item->row(), DEVCOL_DEF_OUT_CHANS)->setText(MusEUtil::bitmap2String(chbits));
     #else
     if(actid < MIDI_CHANNELS)
     {
@@ -226,7 +226,7 @@ void MPConfig::changeDefOutputRoutes(QAction* act)
       setPortExclusiveDefOutChan(no, chbits);
       int j = mdevView->rowCount();
       for(int i = 0; i < j; ++i)
-        mdevView->item(i, DEVCOL_DEF_OUT_CHANS)->setText(bitmap2String(i == no ? chbits : 0));
+        mdevView->item(i, DEVCOL_DEF_OUT_CHANS)->setText(MusEUtil::bitmap2String(i == no ? chbits : 0));
       if(defpup)
       {
         QAction* a;
@@ -624,8 +624,8 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   return;
                   #else
                   {
-                    defpup = new PopupMenu(this, true);
-                    defpup->addAction(new MenuTitleItem("Channel", defpup)); 
+                    defpup = new MusEWidget::PopupMenu(this, true);
+                    defpup->addAction(new MusEWidget::MenuTitleItem("Channel", defpup)); 
                     QAction* act = 0;
                     int chbits = midiPorts[no].defaultInChannels();
                     for(int i = 0; i < MIDI_CHANNELS; ++i) 
@@ -647,7 +647,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     act->setEnabled(!song->midis()->empty());  // && midiPorts[no].device());
                     
                     connect(defpup, SIGNAL(triggered(QAction*)), SLOT(changeDefInputRoutes(QAction*)));
-                    //connect(defpup, SIGNAL(aboutToHide()), MusEGlobal::muse, SLOT(routingPopupMenuAboutToHide()));
+                    //connect(defpup, SIGNAL(aboutToHide()), MusEGlobal::muse, SLOT(routingMusEWidget::PopupMenuAboutToHide()));
                     //defpup->popup(QCursor::pos());
                     defpup->exec(QCursor::pos());
                     delete defpup;
@@ -664,8 +664,8 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                   return;
                   #else
                   {
-                    defpup = new PopupMenu(this, true);
-                    defpup->addAction(new MenuTitleItem("Channel", defpup)); 
+                    defpup = new MusEWidget::PopupMenu(this, true);
+                    defpup->addAction(new MusEWidget::MenuTitleItem("Channel", defpup)); 
                     QAction* act = 0;
                     int chbits = midiPorts[no].defaultOutChannels();
                     for(int i = 0; i < MIDI_CHANNELS; ++i) 
@@ -690,7 +690,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     act->setEnabled(!song->midis()->empty());  // && midiPorts[no].device());
                     
                     connect(defpup, SIGNAL(triggered(QAction*)), SLOT(changeDefOutputRoutes(QAction*)));
-                    //connect(defpup, SIGNAL(aboutToHide()), MusEGlobal::muse, SLOT(routingPopupMenuAboutToHide()));
+                    //connect(defpup, SIGNAL(aboutToHide()), MusEGlobal::muse, SLOT(routingMusEWidget::PopupMenuAboutToHide()));
                     //defpup->popup(QCursor::pos());
                     defpup->exec(QCursor::pos());
                     delete defpup;
@@ -772,7 +772,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       //if(!mapALSA.empty())
                       {
                         pup->addSeparator();
-                        pup->addAction(new MenuTitleItem(QT_TRANSLATE_NOOP("@default", "ALSA:"), pup));
+                        pup->addAction(new MusEWidget::MenuTitleItem(QT_TRANSLATE_NOOP("@default", "ALSA:"), pup));
                         
                         for(imap i = mapALSA.begin(); i != mapALSA.end(); ++i) 
                         {
@@ -798,7 +798,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       if(!mapSYNTH.empty())
                       {
                         pup->addSeparator();
-                        pup->addAction(new MenuTitleItem(QT_TRANSLATE_NOOP("@default", "SYNTH:"), pup));
+                        pup->addAction(new MusEWidget::MenuTitleItem(QT_TRANSLATE_NOOP("@default", "SYNTH:"), pup));
                         
                         for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i) 
                         {
@@ -824,7 +824,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       //if(!mapJACK.empty())
                       {
                         pup->addSeparator();
-                        pup->addAction(new MenuTitleItem(QT_TRANSLATE_NOOP("@default", "JACK:"), pup));
+                        pup->addAction(new MusEWidget::MenuTitleItem(QT_TRANSLATE_NOOP("@default", "JACK:"), pup));
                         
                         for(imap i = mapJACK.begin(); i != mapJACK.end(); ++i) 
                         {
@@ -1179,10 +1179,10 @@ void MPConfig::songChanged(int flags)
 	    QTableWidgetItem* itemin = new QTableWidgetItem;
 	    addItem(i, DEVCOL_INROUTES, itemin, mdevView);
 	    itemin->setFlags(Qt::ItemIsEnabled);
-            //QTableWidgetItem* itemdefin = new QTableWidgetItem(bitmap2String(port->defaultInChannels()));
+            //QTableWidgetItem* itemdefin = new QTableWidgetItem(MusEUtil::bitmap2String(port->defaultInChannels()));
             // Ignore synth devices. Default input routes make no sense for them (right now).
             QTableWidgetItem* itemdefin = new QTableWidgetItem((dev && dev->isSynti()) ? 
-                                               QString() : bitmap2String(port->defaultInChannels()));
+                                               QString() : MusEUtil::bitmap2String(port->defaultInChannels()));
             addItem(i, DEVCOL_DEF_IN_CHANS, itemdefin, mdevView);
             // Enabled: Use editor (not good). Disabled: Use pop-up menu.
             #if 0
@@ -1199,12 +1199,12 @@ void MPConfig::songChanged(int flags)
             
             // Turn on if and when multiple output routes are supported.
             #if 0
-            QTableWidgetItem* itemdefout = new QTableWidgetItem(bitmap2String(port->defaultOutChannels()));
+            QTableWidgetItem* itemdefout = new QTableWidgetItem(MusEUtil::bitmap2String(port->defaultOutChannels()));
             addItem(i, DEVCOL_DEF_OUT_CHANS, itemdefout, mdevView);
             itemdefout->setFlags(Qt::ItemIsEditable | Qt::ItemIsEnabled);
             #else
             //QTableWidgetItem* itemdefout = new QTableWidgetItem(QString("--"));
-            QTableWidgetItem* itemdefout = new QTableWidgetItem(bitmap2String(0));
+            QTableWidgetItem* itemdefout = new QTableWidgetItem(MusEUtil::bitmap2String(0));
             defochs = port->defaultOutChannels();
             if(defochs)
             {

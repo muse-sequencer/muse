@@ -35,6 +35,8 @@
 #include "scrollscale.h"
 #include "icons.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   setScale
 //    "val" - slider value in range 0-1024
@@ -524,3 +526,4 @@ int ScrollScale::convertQuickZoomLevelToMag(int zoomlevel)
       return vals[zoomlevel];
 }
 
+} // namespace MusEWidget

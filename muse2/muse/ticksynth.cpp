@@ -109,7 +109,7 @@ class MetronomeSynthIF : public SynthIF
       virtual const char* getPatchName(int, int, int, bool) const { return ""; }
       virtual const char* getPatchName(int, int, MType, bool) { return ""; }
       //virtual void populatePatchPopup(QMenu*, int, MType, bool) {};
-      virtual void populatePatchPopup(PopupMenu*, int, MType, bool) {};
+      virtual void populatePatchPopup(MusEWidget::PopupMenu*, int, MType, bool) {};
       virtual void write(int, Xml&) const {}
       virtual float getParameter(unsigned long) const  { return 0.0; }
       virtual void setParameter(unsigned long, float) {}

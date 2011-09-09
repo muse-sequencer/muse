@@ -139,12 +139,12 @@ TempoSig::TempoSig(QWidget* parent)
       f->setLineWidth(1);
 
       // ORCAN get rid of l1 l2 last arguments (parent)?
-      l1 = new DoubleLabel(120.0, 20.0, 400.0, 0);
+      l1 = new MusEWidget::DoubleLabel(120.0, 20.0, 400.0, 0);
       l1->setFocusPolicy(Qt::NoFocus);
       l1->setSpecialText(QString("extern"));
       vb2->addWidget(l1);
       
-      l2 = new SigLabel(4, 4, 0);
+      l2 = new MusEWidget::SigLabel(4, 4, 0);
       l2->setFocusPolicy(Qt::NoFocus);
       vb2->addWidget(l2);
 

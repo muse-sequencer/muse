@@ -25,6 +25,8 @@
 
 #include "tempolabel.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   TempoLabel
 //---------------------------------------------------------
@@ -135,4 +137,4 @@ void TempoEdit::setValue(double val)
 //        return lrint(60000000.0/value());
 //      }
 
-
+} // namespace MusEWidget

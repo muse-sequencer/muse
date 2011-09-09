@@ -41,7 +41,7 @@
 //    ''visual'' Note Event
 //---------------------------------------------------------
 
-class NEvent : public CItem {
+class NEvent : public MusEWidget::CItem {
    public:
       NEvent(Event& e, Part* p, int y);
       };
@@ -66,16 +66,16 @@ class PianoCanvas : public EventCanvas {
 
       
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
-      virtual void drawItem(QPainter&, const CItem*, const QRect&);
+      virtual void drawItem(QPainter&, const MusEWidget::CItem*, const QRect&);
       void drawTopItem(QPainter &p, const QRect &rect);
-      virtual void drawMoving(QPainter&, const CItem*, const QRect&);
-      virtual Undo moveCanvasItems(CItemList&, int, int, DragType);
-      virtual UndoOp moveItem(CItem*, const QPoint&, DragType);
-      virtual CItem* newItem(const QPoint&, int);
-      virtual void resizeItem(CItem*, bool noSnap, bool);
-      virtual void newItem(CItem*, bool noSnap);
-      virtual bool deleteItem(CItem*);
-      virtual void startDrag(CItem* item, bool copymode);
+      virtual void drawMoving(QPainter&, const MusEWidget::CItem*, const QRect&);
+      virtual Undo moveCanvasItems(MusEWidget::CItemList&, int, int, DragType);
+      virtual UndoOp moveItem(MusEWidget::CItem*, const QPoint&, DragType);
+      virtual MusEWidget::CItem* newItem(const QPoint&, int);
+      virtual void resizeItem(MusEWidget::CItem*, bool noSnap, bool);
+      virtual void newItem(MusEWidget::CItem*, bool noSnap);
+      virtual bool deleteItem(MusEWidget::CItem*);
+      virtual void startDrag(MusEWidget::CItem* item, bool copymode);
       virtual void dragEnterEvent(QDragEnterEvent* event);
       virtual void dragMoveEvent(QDragMoveEvent*);
       virtual void dragLeaveEvent(QDragLeaveEvent*);
@@ -84,9 +84,9 @@ class PianoCanvas : public EventCanvas {
       int y2pitch(int) const;
       int pitch2y(int) const;
       virtual void drawCanvas(QPainter&, const QRect&);
-      virtual void itemPressed(const CItem*);
-      virtual void itemReleased(const CItem*, const QPoint&);
-      virtual void itemMoved(const CItem*, const QPoint&);
+      virtual void itemPressed(const MusEWidget::CItem*);
+      virtual void itemReleased(const MusEWidget::CItem*, const QPoint&);
+      virtual void itemMoved(const MusEWidget::CItem*, const QPoint&);
       virtual void curPartChanged();
       virtual void resizeEvent(QResizeEvent*);
 
@@ -122,7 +122,7 @@ class PianoCanvas : public EventCanvas {
             colorMode = mode;
             redraw();
             }
-      virtual void modifySelected(NoteInfo::ValType type, int delta);
+      virtual void modifySelected(MusEWidget::NoteInfo::ValType type, int delta);
       };
 #endif
 

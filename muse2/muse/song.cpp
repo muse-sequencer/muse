@@ -2580,7 +2580,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   //menu->setItemEnabled(HEADER, false);
   //MenuTitleItem* title = new MenuTitleItem(tr("Automation:")); ddskrjo
   //menu->insertItem(title, HEADER, HEADER); ddskrjo
-  menu->addAction(new MenuTitleItem(tr("Automation:"), menu));
+  menu->addAction(new MusEWidget::MenuTitleItem(tr("Automation:"), menu));
   
   //menu->insertSeparator(SEP1);
   

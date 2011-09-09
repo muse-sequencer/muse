@@ -36,7 +36,7 @@ class QPixmap;
 //   Piano
 //---------------------------------------------------------
 
-class Piano : public View
+class Piano : public MusEWidget::View
       {
       Q_OBJECT
     

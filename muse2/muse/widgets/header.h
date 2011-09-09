@@ -30,6 +30,8 @@ class QStandardItemModel;
 
 class Xml;
 
+namespace MusEWidget {
+
 class Header : public QHeaderView {
       Q_OBJECT
 
@@ -46,6 +48,8 @@ class Header : public QHeaderView {
     private slots:
       void changeColumns(QAction* a);
 };
+
+} // namespace MusEWidget
 
 #endif
 

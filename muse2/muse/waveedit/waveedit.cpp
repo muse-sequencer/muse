@@ -201,10 +201,10 @@ WaveEdit::WaveEdit(PartList* pl)
       tb1->addWidget(label);
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
-      pos1 = new PosLabel(0);
+      pos1 = new MusEWidget::PosLabel(0);
       pos1->setFixedHeight(22);
       tb1->addWidget(pos1);
-      pos2 = new PosLabel(0);
+      pos2 = new MusEWidget::PosLabel(0);
       pos2->setFixedHeight(22);
       pos2->setSmpte(true);
       tb1->addWidget(pos2);
@@ -224,7 +224,7 @@ WaveEdit::WaveEdit(PartList* pl)
             xscale = -8000;
             }
 
-      hscroll = new ScrollScale(1, -32768, xscale, 10000, Qt::Horizontal, mainw, 0, true, 10000.0);
+      hscroll = new MusEWidget::ScrollScale(1, -32768, xscale, 10000, Qt::Horizontal, mainw, 0, true, 10000.0);
       view    = new WaveView(this, mainw, xscale, yscale);
       wview   = view;   // HACK!
 
@@ -235,7 +235,7 @@ WaveEdit::WaveEdit(PartList* pl)
       ymag->setPageStep(256);
       ymag->setValue(yscale);
        
-      time                 = new MTScale(&_raster, mainw, xscale, true);
+      time                 = new MusEWidget::MTScale(&_raster, mainw, xscale, true);
       ymag->setFixedWidth(16);
       connect(view, SIGNAL(mouseWheelMoved(int)), this, SLOT(moveVerticalSlider(int)));
       connect(ymag, SIGNAL(valueChanged(int)), view, SLOT(setYScale(int)));
@@ -248,7 +248,7 @@ WaveEdit::WaveEdit(PartList* pl)
       mainGrid->setColumnStretch(0, 100);
 
       mainGrid->addWidget(time,   0, 0, 1, 2);
-      mainGrid->addWidget(hLine(mainw),    1, 0, 1, 2);
+      mainGrid->addWidget(MusEUtil::hLine(mainw),    1, 0, 1, 2);
       mainGrid->addWidget(view,    2, 0);
       mainGrid->addWidget(ymag,    2, 1);
       mainGrid->addWidget(hscroll, 3, 0);
@@ -551,11 +551,11 @@ void WaveEdit::moveVerticalSlider(int val)
 void WaveEdit::horizontalZoomIn()
 {
   int mag = hscroll->mag();
-  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+  int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
   if (zoomlvl < 23)
         zoomlvl++;
 
-  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+  int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
 
   hscroll->setMag(newmag);
 
@@ -564,11 +564,11 @@ void WaveEdit::horizontalZoomIn()
 void WaveEdit::horizontalZoomOut()
 {
   int mag = hscroll->mag();
-  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+  int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
   if (zoomlvl > 1)
         zoomlvl--;
 
-  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+  int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
 
   hscroll->setMag(newmag);
 

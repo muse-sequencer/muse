@@ -312,7 +312,7 @@ EditMetaDialog::EditMetaDialog(int tick, const Event& ev,
       epos = new Awl::PosEdit;
 
       QLabel* l2 = new QLabel(tr("Meta Type"));
-      il2 = new IntLabel(-1, 0, 127, this, -1);
+      il2 = new MusEWidget::IntLabel(-1, 0, 127, this, -1);
       il2->setFixedWidth(100);
       il2->setFrame(true);
       il2->setDark();
@@ -447,7 +447,7 @@ EditCAfterDialog::EditCAfterDialog(int tick, const Event& event,
       epos = new Awl::PosEdit;
 
       QLabel* l2 = new QLabel(tr("Pressure"));
-      il2  = new IntLabel(-1, 0, 127, this, -1);
+      il2  = new MusEWidget::IntLabel(-1, 0, 127, this, -1);
       il2->setFrame(true);
       il2->setDark();
 
@@ -506,9 +506,9 @@ EditPAfterDialog::EditPAfterDialog(int tick, const Event& event,
       epos = new Awl::PosEdit;
 
       QLabel* l2 = new QLabel(tr("Pitch"));
-      pl = new PitchEdit;
+      pl = new MusEWidget::PitchEdit;
       QLabel* l3 = new QLabel(tr("Pressure"));
-      il2  = new IntLabel(-1, 0, 127, this, -1);
+      il2  = new MusEWidget::IntLabel(-1, 0, 127, this, -1);
       il2->setFrame(true);
       il2->setDark();
 
@@ -696,7 +696,7 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
 void EditCtrlDialog::newController()
       {
       //QMenu* pup = new QMenu(this);
-      PopupMenu* pup = new PopupMenu(this);
+      MusEWidget::PopupMenu* pup = new MusEWidget::PopupMenu(this);
       //pup->setCheckable(this);//not necessary in Qt4
       //
       // populate popup with all controllers available for
@@ -871,7 +871,7 @@ void EditCtrlDialog::instrPopup()
       
       ///instr->populatePatchPopup(pop, channel, song->mtype(), track->type() == Track::DRUM);
       //QMenu* pup = new QMenu(this);
-      PopupMenu* pup = new PopupMenu(this);
+      MusEWidget::PopupMenu* pup = new MusEWidget::PopupMenu(this);
       instr->populatePatchPopup(pup, channel, song->mtype(), track->type() == Track::DRUM);
 
       ///if(pop->actions().count() == 0)

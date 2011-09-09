@@ -42,6 +42,8 @@
 
 extern int mtcType;
 
+namespace MusEWidget {
+
 bool Sig::isValid() const
 {
   if((z < 1) || (z > 63))
@@ -752,3 +754,5 @@ void SigEdit::enterPressed()
       {
       emit returnPressed();
       }
+
+} // namespace MusEWidget

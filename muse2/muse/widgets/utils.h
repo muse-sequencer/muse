@@ -31,6 +31,7 @@ class QCanvas;
 class QPointF;
 class QColor;
 
+namespace MusEUtil {
 
 extern QString bitmap2String(int bm);
 extern int string2bitmap(const QString& str);
@@ -44,6 +45,8 @@ extern QFrame* hLine(QWidget* parent);
 extern QFrame* vLine(QWidget* parent);
 extern void dump(const unsigned char* p, int n);
 extern double curTime();
+
+} // namespace MusEUtils
 
 #endif
 

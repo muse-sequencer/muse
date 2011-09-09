@@ -27,6 +27,8 @@
 #include "pitchlabel.h"
 #include "helper.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   PitchLabel
 //---------------------------------------------------------
@@ -110,3 +112,4 @@ void PitchLabel::setPitch(int val)
       setValue(val);
       }
 
+} // namespace MusEWidget

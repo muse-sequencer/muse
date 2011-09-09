@@ -31,7 +31,7 @@
 class QPainter;
 class QRect;
 
-class AutoScale;
+namespace MusEWidget {
 
 class ScaleDraw : public DiMap {
    public:
@@ -86,6 +86,8 @@ class ScaleDraw : public DiMap {
       int maxLabelWidth(QPainter *p, int worst = TRUE) const;
       void draw(QPainter *p) const;
       };
+
+} // namespace MusEWidget
 
 #endif
 

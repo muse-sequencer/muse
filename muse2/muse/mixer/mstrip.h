@@ -27,15 +27,20 @@
 #include "strip.h"
 #include <QLabel>
 
-class Slider;
-class DoubleLabel;
-class QDialog;
-class Knob;
-class QString;
-class MidiTrack;
-class QLabel;
 class QAction;
+class QDialog;
+class QLabel;
+class QString;
+
+namespace MusEWidget {
+class DoubleLabel;
+class Knob;
+class Slider;
 class TransparentToolButton;
+}
+
+class MidiTrack;
+
 
 //---------------------------------------------------------
 //   MidiStrip
@@ -44,13 +49,13 @@ class TransparentToolButton;
 class MidiStrip : public Strip {
       Q_OBJECT
 
-      Slider* slider;
-      DoubleLabel* sl;
-      TransparentToolButton* off;
+      MusEWidget::Slider* slider;
+      MusEWidget::DoubleLabel* sl;
+      MusEWidget::TransparentToolButton* off;
 
       struct KNOB {
-            Knob* knob;
-            DoubleLabel* dl;
+            MusEWidget::Knob* knob;
+            MusEWidget::DoubleLabel* dl;
             QLabel* lb;
             } controller[4];    // pan variation reverb chorus
 

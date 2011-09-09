@@ -22,6 +22,8 @@
 
 #include "menutitleitem.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   MenuTitleItem
 //---------------------------------------------------------
@@ -48,3 +50,4 @@ QWidget* MenuTitleItem::createWidget(QWidget *parent)
   return l;
 }
 
+} // namespace MusEWidget

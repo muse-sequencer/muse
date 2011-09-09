@@ -28,6 +28,8 @@
 
 class QString;
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   IntLabel
 //---------------------------------------------------------
@@ -57,5 +59,7 @@ class IntLabel : public Nentry {
       void setSpecialValueText(const QString& s);
       void setRange(int, int);
       };
+
+} // namespace MusEWidget
 
 #endif

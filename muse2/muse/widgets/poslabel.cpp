@@ -35,6 +35,8 @@
 
 extern int mtcType;
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   PosLabel
 //---------------------------------------------------------
@@ -169,3 +171,4 @@ void PosLabel::setSmpte(bool val)
       updateValue();
       }
 
+} // namespace MusEWidget

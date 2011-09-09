@@ -184,7 +184,7 @@ file (GLOB widgets_source_files
       tb1.cpp   
       tempolabel.cpp 
       tools.cpp 
-      ttoolbar.cpp 
+      # ttoolbar.cpp 
       ttoolbutton.cpp 
       unusedwavefiles.cpp
       utils.cpp

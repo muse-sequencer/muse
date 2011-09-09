@@ -45,6 +45,11 @@ class QProgressDialog;
 namespace MusEWidget {
 class BigTime;
 class EditToolBar;
+class GlobalSettingsConfig;
+class MetronomeConfig;
+class MidiSyncConfig;
+class RoutePopupMenu;
+class ShortcutConfig;
 class VisibleTracks;
 }
 
@@ -53,12 +58,9 @@ class PartList;
 class Transport;
 class Arranger;
 class Instrument;
-class RoutePopupMenu;
 class Track;
 class PrinterConfig;
-class MidiSyncConfig;
 class MRConfig;
-class MetronomeConfig;
 class AudioConf;
 class Xml;
 class AudioMixerApp;
@@ -67,7 +69,6 @@ class AudioRecord;
 class MidiFileConfig;
 class MidiFilterConfig;
 class MarkerView;
-class GlobalSettingsConfig;
 class MidiControllerEditDialog;
 class MidiInputTransformDialog;
 class MidiTransformerDialog;
@@ -76,7 +77,6 @@ class RhythmGen;
 class MidiTrack;
 class MidiInstrument;
 class MidiPort;
-class ShortcutConfig;
 class Appearance;
 class WaveTrack;
 class AudioOutput;
@@ -182,23 +182,23 @@ class MusE : public QMainWindow
       QMenu* select, *master, *midiEdit, *addTrack;
 
       // Special common menu for routes. Used (so far) by audio and midi strip, and midi trackinfo.
-      RoutePopupMenu* routingPopupMenu; 
+      MusEWidget::RoutePopupMenu* routingPopupMenu; 
 
       QMenu* follow;
       QMenu* midiInputPlugins;
 
       QWidget* midiPortConfig;
       QWidget* softSynthesizerConfig;
-      MidiSyncConfig* midiSyncConfig;
+      MusEWidget::MidiSyncConfig* midiSyncConfig;
       MRConfig* midiRemoteConfig;
       RhythmGen* midiRhythmGenerator;
-      MetronomeConfig* metronomeConfig;
+      MusEWidget::MetronomeConfig* metronomeConfig;
       AudioConf* audioConfig;
       MidiFileConfig* midiFileConfig;
-      GlobalSettingsConfig* globalSettingsConfig;
+      MusEWidget::GlobalSettingsConfig* globalSettingsConfig;
       MidiFilterConfig* midiFilterConfig;
       MidiInputTransformDialog* midiInputTransform;
-      ShortcutConfig* shortcutConfig;
+      MusEWidget::ShortcutConfig* shortcutConfig;
       Appearance* appearance;
       AudioMixerApp* mixer1;
       AudioMixerApp* mixer2;
@@ -385,7 +385,7 @@ class MusE : public QMainWindow
       bool importWaveToTrack(QString& name, unsigned tick=0, Track* track=NULL);
       void importPartToTrack(QString& filename, unsigned tick, Track* track);
       void showTransport(bool flag);
-      RoutePopupMenu* getRoutingPopupMenu();
+      MusEWidget::RoutePopupMenu* getRoutingPopupMenu();
       
 #ifdef HAVE_LASH
       void lash_idle_cb ();

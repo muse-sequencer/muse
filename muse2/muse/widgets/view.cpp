@@ -42,6 +42,8 @@
 //  just ate up all the time no matter what I tried.
 //#defines VIEW_USE_DOUBLE_BUFFERING 1
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   View::View
 //    double xMag = (xmag < 0) ? 1.0/-xmag : double(xmag)
@@ -977,3 +979,5 @@ QRect View::devToVirt(const QRect& r)
     return QRect(x, y, w, h);
 }
 */
+
+} // namespace MusEWidget

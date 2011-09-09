@@ -34,6 +34,7 @@
 #include "../globals.h"
 #include "gconfig.h"
 
+namespace MusEWidget {
 
 MFileDialog::ViewType MFileDialog::lastViewUsed = GLOBAL_VIEW;
 //QString MFileDialog::lastUserDir = "";
@@ -564,3 +565,4 @@ FILE* MFile::open(const char* mode, const QStringList& pattern,
       return f;
       }
 
+} // namespace MusEWidget

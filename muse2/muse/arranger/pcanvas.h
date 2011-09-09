@@ -45,7 +45,7 @@ class QDragEnterEvent;
 //    for displaying
 //---------------------------------------------------------
 
-class NPart : public CItem {
+class NPart : public MusEWidget::CItem {
    public:
       NPart(Part* e);
       const QString name() const     { return part()->name(); }
@@ -98,30 +98,30 @@ class PartCanvas : public MusEWidget::Canvas {
       virtual void mouseRelease(const QPoint&);
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void leaveEvent(QEvent*e);
-      virtual void drawItem(QPainter&, const CItem*, const QRect&);
-      virtual void drawMoving(QPainter&, const CItem*, const QRect&);
+      virtual void drawItem(QPainter&, const MusEWidget::CItem*, const QRect&);
+      virtual void drawMoving(QPainter&, const MusEWidget::CItem*, const QRect&);
       virtual void updateSelection();
       virtual QPoint raster(const QPoint&) const;
       virtual int y2pitch(int y) const;
       virtual int pitch2y(int p) const;
       
-      virtual CItem* newItem(const QPoint&, int);
-      virtual void resizeItem(CItem*,bool, bool ctrl);
-      virtual void newItem(CItem*,bool);
-      virtual bool deleteItem(CItem*);
-      virtual void moveCanvasItems(CItemList&, int, int, DragType);
-      virtual UndoOp moveItem(CItem*, const QPoint&, DragType);
+      virtual MusEWidget::CItem* newItem(const QPoint&, int);
+      virtual void resizeItem(MusEWidget::CItem*,bool, bool ctrl);
+      virtual void newItem(MusEWidget::CItem*,bool);
+      virtual bool deleteItem(MusEWidget::CItem*);
+      virtual void moveCanvasItems(MusEWidget::CItemList&, int, int, DragType);
+      virtual UndoOp moveItem(MusEWidget::CItem*, const QPoint&, DragType);
 
       virtual void updateSong(DragType, int);
-      virtual void startDrag(CItem*, DragType);
+      virtual void startDrag(MusEWidget::CItem*, DragType);
       virtual void dragEnterEvent(QDragEnterEvent*);
       virtual void viewDropEvent(QDropEvent*);
 
-      virtual QMenu* genItemPopup(CItem*);
-      virtual void itemPopup(CItem*, int, const QPoint&);
+      virtual QMenu* genItemPopup(MusEWidget::CItem*);
+      virtual void itemPopup(MusEWidget::CItem*, int, const QPoint&);
 
-      void glueItem(CItem* item);
-      void splitItem(CItem* item, const QPoint&);
+      void glueItem(MusEWidget::CItem* item);
+      void splitItem(MusEWidget::CItem* item, const QPoint&);
 
       void copy(PartList*);
       void paste(bool clone = false, bool toTrack = true, bool doInsert=false);

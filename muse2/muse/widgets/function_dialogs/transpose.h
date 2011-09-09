@@ -28,6 +28,8 @@
 class QButtonGroup;
 class Xml;
 
+namespace MusEDialog {
+
 class Transpose : public QDialog, public Ui::TransposeBase
 {
 		Q_OBJECT
@@ -50,6 +52,8 @@ class Transpose : public QDialog, public Ui::TransposeBase
 	public slots:
 		int exec();
 };
+
+} // namespace MusEDialog
 
 #endif
 

@@ -30,6 +30,8 @@
 #include <QSpinBox>
 #include <QEvent>
 
+namespace MusEWidget { 
+
 //---------------------------------------------------------
 //   SpinBox
 //---------------------------------------------------------
@@ -53,6 +55,8 @@ class SpinBox : public QSpinBox {
       SpinBox(QWidget* parent=0);
       SpinBox(int minValue, int maxValue, int step = 1, QWidget* parent=0);
 };
+
+} // namespace MusEWidget
 
 #endif
 

@@ -26,6 +26,8 @@
 #include "view.h"
 
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   MTScale
 //    scale for midi track
@@ -60,5 +62,8 @@ class MTScale : public View {
       MTScale(int* raster, QWidget* parent, int xscale, bool f = false);
       void setBarLocator(bool f) { barLocator = f; }
       };
+
+} 
+
 #endif
 

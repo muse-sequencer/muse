@@ -40,6 +40,9 @@ class QCloseEvent;
 #include "ui_shortcutconfigbase.h"
 
 #define SHRT_CATEGORY_COL 0
+
+namespace MusEWidget {
+
 enum
       {
       SHRT_SHRTCUT_COL = 0,
@@ -79,5 +82,7 @@ class ShortcutConfig : public QDialog, public Ui::ShortcutConfigBase {
       bool _config_changed;
 
 };
+
+} // namespace MusEWidget
 
 #endif

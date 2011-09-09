@@ -28,6 +28,8 @@
 class QButtonGroup;
 class Xml;
 
+namespace MusEDialog {
+
 class Quantize : public QDialog, public Ui::QuantBase
 {
  	Q_OBJECT
@@ -56,6 +58,8 @@ class Quantize : public QDialog, public Ui::QuantBase
 	public slots:
 		int exec();
 };
+
+} // namespace MusEDialog
 
 #endif
 

@@ -26,6 +26,8 @@
 
 class Track;
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   MidiTrackInfo
 //---------------------------------------------------------
@@ -80,7 +82,7 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
       void updateTrackInfo(int);
 };
 
-
+} // namespace MusEWidget
 
 #endif
 

@@ -28,6 +28,8 @@
 
 #include <QShowEvent>
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   GlobalSettingsConfig
 //---------------------------------------------------------
@@ -55,5 +57,7 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
    public:
       GlobalSettingsConfig(QWidget* parent=0);
       };
+
+} // namespace MusEWidget
 
 #endif

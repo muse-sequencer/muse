@@ -33,8 +33,11 @@ namespace Awl {
       };
 
 ///class PosEdit;
+namespace MusEWidget {
 class IntLabel;
 class PitchEdit;
+}
+
 class QDialog;
 class QLabel;
 class QGridLayout;
@@ -143,7 +146,7 @@ class EditMetaDialog : public EditEventDialog {
       ///PosEdit* epos;
       Awl::PosEdit* epos;
       QTextEdit* edit;
-      IntLabel* il2;
+      MusEWidget::IntLabel* il2;
       QRadioButton* hexButton;
       QLabel* typeLabel;
 
@@ -173,7 +176,7 @@ class EditCAfterDialog : public EditEventDialog {
 
       ///PosEdit* epos;
       Awl::PosEdit* epos;
-      IntLabel* il2;
+      MusEWidget::IntLabel* il2;
 
    protected:
       QGridLayout* layout;
@@ -195,8 +198,8 @@ class EditPAfterDialog : public EditEventDialog {
 
       ///PosEdit* epos;
       Awl::PosEdit* epos;
-      PitchEdit* pl;
-      IntLabel* il2;
+      MusEWidget::PitchEdit* pl;
+      MusEWidget::IntLabel* il2;
 
    protected:
       QGridLayout* layout;

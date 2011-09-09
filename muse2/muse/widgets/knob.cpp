@@ -34,6 +34,8 @@
 #include <QPaintEvent>
 #include <QResizeEvent>
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //  The QwtKnob widget imitates look and behaviour of a volume knob on a radio.
 //  It contains
@@ -333,8 +335,8 @@ void Knob::resizeEvent(QResizeEvent *)
 
 // printf("resize %d %d %d\n", r.height(), r.width(), d_knobWidth);
 
-//      width = qwtMin(qwtMin(r.height(), r.width()), d_knobWidth);
-      width = qwtMin(r.height(), r.width());
+//      width = MusEUtil::qwtMin(MusEUtil::qwtMin(r.height(), r.width()), d_knobWidth);
+      width = MusEUtil::qwtMin(r.height(), r.width());
       width_2 = width / 2;
 
       int x = r.x() + r.width()  / 2 - width_2;
@@ -423,7 +425,7 @@ void Knob::drawMarker(QPainter *p, double arc, const QColor &c)
   
   p->setBrush(c);
   p->setPen(Qt::NoPen);
-  rb = double(qwtMax(radius - 4 - d_dotWidth / 2, 0));
+  rb = double(MusEUtil::qwtMax(radius - 4 - d_dotWidth / 2, 0));
   p->drawEllipse(xm - int(rint(sa * rb)) - d_dotWidth / 2,
            ym - int(rint(ca * rb)) - d_dotWidth / 2,
            d_dotWidth, d_dotWidth);
@@ -436,8 +438,8 @@ void Knob::drawMarker(QPainter *p, double arc, const QColor &c)
   pn.setWidth(2);
   p->setPen(pn);
   
-  rb = qwtMax(double((radius - 1) / 3.0), 0.0);
-  re = qwtMax(double(radius - 1), 0.0);
+  rb = MusEUtil::qwtMax(double((radius - 1) / 3.0), 0.0);
+  re = MusEUtil::qwtMax(double(radius - 1), 0.0);
 
   p->setRenderHint(QPainter::Antialiasing, true);
   p->drawLine( xm,
@@ -468,7 +470,7 @@ void Knob::drawMarker(QPainter *p, double arc, const QColor &c)
 //------------------------------------------------------------
 void Knob::setKnobWidth(int w)
 {
-    d_knobWidth = qwtMax(w,5);
+    d_knobWidth = MusEUtil::qwtMax(w,5);
     resize(size());
     repaint();
 }
@@ -487,7 +489,7 @@ void Knob::setKnobWidth(int w)
 //------------------------------------------------------------
 void Knob::setBorderWidth(int bw)
 {
-    d_borderWidth = qwtMax(bw, 0);
+    d_borderWidth = MusEUtil::qwtMax(bw, 0);
     resize(size());
     repaint();
 }
@@ -571,3 +573,4 @@ void Knob::setMarkerColor(const QColor c)
   repaint();
 }
 
+} // namespace MusEWidget

@@ -29,6 +29,7 @@
 
 #include "slider.h"
 
+namespace MusEWidget {
 
 //-------------------------------------------------------------
 //  Slider - The Slider Widget
@@ -108,7 +109,7 @@ Slider::~Slider()
 //-----------------------------------------------------
 void Slider::setThumbLength(int l)
 {
-    d_thumbLength = qwtMax(l,8);
+    d_thumbLength = MusEUtil::qwtMax(l,8);
     d_thumbHalf = d_thumbLength / 2;
     resize(size());
 }
@@ -127,7 +128,7 @@ void Slider::setThumbLength(int l)
 //------------------------------------------------------------
 void Slider::setThumbWidth(int w)
 {
-    d_thumbWidth = qwtMax(w,4);
+    d_thumbWidth = MusEUtil::qwtMax(w,4);
     resize(size());
 }
 
@@ -761,8 +762,8 @@ void Slider::rangeChange()
 //------------------------------------------------------------
 void Slider::setMargins(int hor, int vert)
 {
-    d_xMargin = qwtMax(0, hor);
-    d_yMargin = qwtMin(0, vert);
+    d_xMargin = MusEUtil::qwtMax(0, hor);
+    d_yMargin = MusEUtil::qwtMin(0, vert);
     resize(this->size());
 }
 
@@ -871,3 +872,4 @@ void Slider::setPageStep(double)
       {
       }
 
+} // namespace MusEWidget

@@ -30,6 +30,8 @@
 #include "scldraw.h"
 
 
+namespace MusEWidget {
+
 int const ScaleDraw::minLen = 10;
 
 const double step_eps = 1.0e-6;
@@ -222,7 +224,7 @@ void ScaleDraw::draw(QPainter *p) const
 		   hval = majTick - 0.5 * d_scldiv.majStep();
 		
 	       }
-	       if (qwtAbs(val-hval) < step_eps * d_scldiv.majStep())
+	       if (MusEUtil::qwtAbs(val-hval) < step_eps * d_scldiv.majStep())
 		  drawTick(p, val, d_medLen);
 	       else
 		  drawTick(p, val, d_minLen);
@@ -275,10 +277,10 @@ void ScaleDraw::drawTick(QPainter *p, double val, int len) const
       if ((tval <= d_minAngle + 359 * 16) || (tval >= d_minAngle - 359 * 16))
       {
 	  arc = double(tval) / 16.0 * M_PI / 180.0;
-	  x1 = qwtInt(d_xCenter + sin(arc) * d_radius);
-	  x2 = qwtInt(d_xCenter + sin(arc) * (d_radius + double(len)));
-	  y1 = qwtInt(d_yCenter - cos(arc) * d_radius);
-	  y2 = qwtInt(d_yCenter - cos(arc) * (d_radius + double(len)));
+	  x1 = MusEUtil::qwtInt(d_xCenter + sin(arc) * d_radius);
+	  x2 = MusEUtil::qwtInt(d_xCenter + sin(arc) * (d_radius + double(len)));
+	  y1 = MusEUtil::qwtInt(d_yCenter - cos(arc) * d_radius);
+	  y2 = MusEUtil::qwtInt(d_yCenter - cos(arc) * (d_radius + double(len)));
 	  p->drawLine(x1, y1, x2, y2);
       }
       break;
@@ -322,7 +324,7 @@ void ScaleDraw::drawLabel(QPainter *p, double val) const
     tval = transform(val);
 
     // correct rounding errors if val = 0
-    if ((!d_scldiv.logScale()) && (qwtAbs(val) < qwtAbs(step_eps * d_scldiv.majStep())))
+    if ((!d_scldiv.logScale()) && (MusEUtil::qwtAbs(val) < MusEUtil::qwtAbs(step_eps * d_scldiv.majStep())))
        val = 0.0;
 
     label.setNum(val, d_fmt, d_prec);
@@ -353,12 +355,12 @@ void ScaleDraw::drawLabel(QPainter *p, double val) const
 	if ((arc < -M_PI) || (arc > M_PI))
 	   arc -= floor((arc + M_PI) / M_PI * 0.5) * 2.0 * M_PI;
 	
-	xpos = 1 + qwtInt(d_xCenter + (d_radius + double(d_majLen + d_vpad)) * sin(arc));
-	ypos = qwtInt(d_yCenter - (d_radius + double(d_majLen + d_vpad)) * cos(arc));
+	xpos = 1 + MusEUtil::qwtInt(d_xCenter + (d_radius + double(d_majLen + d_vpad)) * sin(arc));
+	ypos = MusEUtil::qwtInt(d_yCenter - (d_radius + double(d_majLen + d_vpad)) * cos(arc));
 	
 	if (arc < -pi_75)
 	{
-	    p->drawText(xpos - qwtInt(double(fm.width(label))
+	    p->drawText(xpos - MusEUtil::qwtInt(double(fm.width(label))
 				      * (1.0 + (arc + pi_75) * M_2_PI) ),
 			ypos + fm.ascent() - 1,
 			label);
@@ -368,13 +370,13 @@ void ScaleDraw::drawLabel(QPainter *p, double val) const
 	    p->drawText(xpos - fm.width(label),
 			
 			
-			ypos - qwtInt(double(fm.ascent() - 1)
+			ypos - MusEUtil::qwtInt(double(fm.ascent() - 1)
 				      * (arc + M_PI_4) * M_2_PI),
 			label);
 	}
 	else if (arc < pi_4)
 	{
-	    p->drawText(xpos + qwtInt(double(fm.width(label))
+	    p->drawText(xpos + MusEUtil::qwtInt(double(fm.width(label))
 				      * ( arc - M_PI_4 ) * M_2_PI ),
 			ypos,
 			label);
@@ -382,13 +384,13 @@ void ScaleDraw::drawLabel(QPainter *p, double val) const
 	else if (arc < pi_75)
 	{
 	    p->drawText(xpos,
-			ypos + qwtInt(double(fm.ascent() - 1)
+			ypos + MusEUtil::qwtInt(double(fm.ascent() - 1)
 				      * (arc - M_PI_4) * M_2_PI),
 			label);
 	}
 	else
 	{
-	    p->drawText(xpos - qwtInt(double(fm.width(label))
+	    p->drawText(xpos - MusEUtil::qwtInt(double(fm.width(label))
 				      * ( arc - pi_75) * M_2_PI ),
 			ypos + fm.ascent() - 1,
 			label);
@@ -431,8 +433,8 @@ void ScaleDraw::drawBackbone(QPainter *p) const
 	break;
     case Round:
 	
-	a1 = qwtMin(i1(), i2()) - 90 * 16;
-	a2 = qwtMax(i1(), i2()) - 90 * 16;
+	a1 = MusEUtil::qwtMin(i1(), i2()) - 90 * 16;
+	a2 = MusEUtil::qwtMax(i1(), i2()) - 90 * 16;
 	
 	p->drawArc(d_xorg, d_yorg, d_len,
 		   d_len,
@@ -692,7 +694,7 @@ QRect ScaleDraw::maxBoundingRect(QPainter *p) const
 	    while (a > 2880) a -= 5760;
 	    while (a < - 2880) a += 5760;
 
-	    ar = qwtAbs(a);
+	    ar = MusEUtil::qwtAbs(a);
 
 	    if (ar < amin) amin = ar;
 	    if (ar > amax) amax = ar;
@@ -706,18 +708,18 @@ QRect ScaleDraw::maxBoundingRect(QPainter *p) const
 	    while (a > 2880) a -= 5760;
 	    while (a < - 2880) a += 5760;
 
-	    ar = qwtAbs(a);
+	    ar = MusEUtil::qwtAbs(a);
 
 	    if (ar < amin) amin = ar;
 	    if (ar > amax) amax = ar;
 	}
 
 	arc = double(amin) / 16.0 * M_PI / 180.0;
-	r.setTop(qwtInt(d_yCenter - (d_radius + double(d_majLen + d_vpad)) * cos(arc))
+	r.setTop(MusEUtil::qwtInt(d_yCenter - (d_radius + double(d_majLen + d_vpad)) * cos(arc))
 		 + fm.ascent() );
 
 	arc = double(amax) / 16.0 * M_PI / 180.0;
-	r.setBottom(qwtInt(d_yCenter - (d_radius + double(d_majLen + d_vpad)) * cos(arc))
+	r.setBottom(MusEUtil::qwtInt(d_yCenter - (d_radius + double(d_majLen + d_vpad)) * cos(arc))
 		    + fm.height() );
 
 	wmax = d_len + d_majLen + d_hpad + wl;
@@ -763,10 +765,10 @@ void ScaleDraw::setAngleRange(double angle1, double angle2)
 {
     int amin, amax;
 
-    angle1 = qwtLim(angle1, -360.0, 360.0);
-    angle2 = qwtLim(angle2, -360.0, 360.0);
-    amin = int(rint(qwtMin(angle1, angle2) * 16.0));
-    amax = int(rint(qwtMax(angle1, angle2) * 16.0));
+    angle1 = MusEUtil::qwtLim(angle1, -360.0, 360.0);
+    angle2 = MusEUtil::qwtLim(angle2, -360.0, 360.0);
+    amin = int(rint(MusEUtil::qwtMin(angle1, angle2) * 16.0));
+    amax = int(rint(MusEUtil::qwtMax(angle1, angle2) * 16.0));
 
     if (amin == amax)
     {
@@ -842,10 +844,10 @@ int ScaleDraw::maxLabelWidth(QPainter *p, int worst) const
 	{
       val = d_scldiv.majMark(i);
 	    // correct rounding errors if val = 0
-	    if ((!d_scldiv.logScale()) && (qwtAbs(val) < step_eps * qwtAbs(d_scldiv.majStep())))
+	    if ((!d_scldiv.logScale()) && (MusEUtil::qwtAbs(val) < step_eps * MusEUtil::qwtAbs(d_scldiv.majStep())))
 	       val = 0.0;
 	    s.setNum(val, d_fmt, d_prec);
-	    rv = qwtMax(rv,fm.width(s));
+	    rv = MusEUtil::qwtMax(rv,fm.width(s));
 	}
     }
 
@@ -880,7 +882,7 @@ int ScaleDraw::maxLabelWidth(QPainter *p, int worst) const
 //
 //------------------------------------------------------------
 
-
+} // namespace MusEWidget
 
 
 

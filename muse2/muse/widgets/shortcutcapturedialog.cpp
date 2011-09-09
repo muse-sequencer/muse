@@ -40,6 +40,8 @@
 #include <QInputEvent>
 #include <QChar>
 
+namespace MusEWidget {
+
 ShortcutCaptureDialog::ShortcutCaptureDialog(QWidget* parent, int index)
    : QDialog(parent)
       {
@@ -123,3 +125,4 @@ void ShortcutCaptureDialog::apply()
       done(key);
       }
 
+} // namespace MusEWidget

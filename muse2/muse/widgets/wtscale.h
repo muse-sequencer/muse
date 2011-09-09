@@ -25,6 +25,8 @@
 
 #include "view.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   WTScale
 //    scale for wave track
@@ -57,5 +59,8 @@ class WTScale : public View {
       WTScale(int* raster, QWidget* parent, int xscale);
       void setBarLocator(bool f) { barLocator = f; }
       };
+
+} // namespace MusEWidget
+
 #endif
 

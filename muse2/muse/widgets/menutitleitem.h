@@ -25,6 +25,8 @@
 
 #include <QWidgetAction>
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   MenuTitleItem
 //---------------------------------------------------------
@@ -41,4 +43,5 @@ class MenuTitleItem : public QWidgetAction {
       QWidget* createWidget(QWidget* /*parent*/);
       };
 
+} // namespace MusEWidget
 #endif

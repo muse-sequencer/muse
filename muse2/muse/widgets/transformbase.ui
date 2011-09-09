@@ -417,7 +417,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="SpinBoxFP" name="procVal1a">
+       <widget class="MusEWidget::SpinBoxFP" name="procVal1a">
         <property name="maximum" stdset="0">
          <number>99999999</number>
         </property>
@@ -453,21 +453,21 @@
        </widget>
       </item>
       <item row="2" column="2">
-        <widget class="SpinBoxFP" name="procVal2a">
+        <widget class="MusEWidget::SpinBoxFP" name="procVal2a">
          <property name="maximum" stdset="0">
          <number>99999999</number>
         </property>
        </widget>
       </item>
       <item row="2" column="3">
-        <widget class="SpinBoxFP" name="procLenA">
+        <widget class="MusEWidget::SpinBoxFP" name="procLenA">
           <property name="maximum" stdset="0">
          <number>99999999</number>
         </property>
        </widget>
       </item>
       <item row="2" column="4">
-        <widget class="SpinBoxFP" name="procPosA">
+        <widget class="MusEWidget::SpinBoxFP" name="procPosA">
           <property name="maximum" stdset="0">
          <number>99999999</number>
         </property>
@@ -798,14 +798,14 @@
        </widget>
       </item>
       <item row="3" column="4">
-        <widget class="SpinBoxFP" name="selBarB">
+        <widget class="MusEWidget::SpinBoxFP" name="selBarB">
         <property name="decimals" stdset="0">
          <number>3</number>
         </property>
        </widget>
       </item>
       <item row="2" column="4">
-        <widget class="SpinBoxFP" name="selBarA">
+        <widget class="MusEWidget::SpinBoxFP" name="selBarA">
         <property name="minimum" stdset="0">
          <number>1000</number>
         </property>
@@ -974,7 +974,7 @@
          </widget>
         </item>
         <item>
-         <widget class="ComboQuant" name="funcQuantVal" native="true"/>
+         <widget class="MusEWidget::ComboQuant" name="funcQuantVal" native="true"/>
         </item>
        </layout>
       </widget>
@@ -986,12 +986,12 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
    <customwidget>
-     <class>SpinBoxFP</class>
+     <class>MusEWidget::SpinBoxFP</class>
      <extends>QDoubleSpinBox</extends>
      <header>spinboxFP.h</header>
    </customwidget>
   <customwidget>
-   <class>ComboQuant</class>
+   <class>MusEWidget::ComboQuant</class>
    <extends>QComboBox</extends>
    <header>comboQuant.h</header>
   </customwidget>

@@ -31,6 +31,8 @@
 #include "globals.h"
 #include "app.h"
 
+namespace MusEWidget {
+
 UnusedWaveFiles::UnusedWaveFiles(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::UnusedWaveFiles)
@@ -117,3 +119,5 @@ void UnusedWaveFiles::accept()
     }
     QDialog::accept();
 }
+
+} // namespace MusEWidget

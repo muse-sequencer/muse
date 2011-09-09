@@ -24,6 +24,8 @@
 #include "move.h"
 #include "xml.h"
 
+namespace MusEDialog {
+
 Move::Move(QWidget* parent)
 	: QDialog(parent)
 {
@@ -97,3 +99,5 @@ void Move::write_configuration(int level, Xml& xml)
 	xml.intTag(level, "amount", amount);
 	xml.tag(level, "/move");
 }
+
+} // namespace MusEDialog

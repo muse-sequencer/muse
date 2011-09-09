@@ -36,12 +36,15 @@ class QResizeEvent;
 class QScrollBar;
 class QWheelEvent;
 //class QMenu;
-class PopupMenu;
 
 class ScrollScale;
 class Track;
 class Xml;
+
+namespace MusEWidget {
 class Header;
+class PopupMenu;
+}
 
 enum TrackColumn {
       COL_RECORD = 0,
@@ -70,7 +73,7 @@ class TList : public QWidget {
       QPixmap bgPixmap;       // background Pixmap
       bool resizeFlag;        // true if resize cursor is shown
 
-      Header* header;
+      MusEWidget::Header* header;
       QScrollBar* _scroll;
       QLineEdit* editor;
       QSpinBox* chan_edit;
@@ -105,7 +108,7 @@ class TList : public QWidget {
       TrackList getRecEnabledTracks();
       void setHeaderToolTips();
       //QMenu* colorMenu(QColor c, int id);
-      PopupMenu* colorMenu(QColor c, int id);
+      MusEWidget::PopupMenu* colorMenu(QColor c, int id);
 
    private slots:
       void returnPressed();
@@ -130,7 +133,7 @@ class TList : public QWidget {
       void selectTrackBelow();
 
    public:
-      TList(Header*, QWidget* parent, const char* name);
+      TList(MusEWidget::Header*, QWidget* parent, const char* name);
       void setScroll(QScrollBar* s) { _scroll = s; }
       Track* track() const { return editTrack; }
       void writeStatus(int level, Xml&, const char* name) const;

@@ -31,6 +31,8 @@ class QCloseEvent;
 class QDialog;
 class QTreeWidgetItem;
 
+namespace MusEWidget {
+
 //----------------------------------------------------------
 //   MidiSyncLViewItem
 //----------------------------------------------------------
@@ -129,6 +131,8 @@ class MidiSyncConfig : public QDialog, public Ui::MidiSyncConfigBase {
       void show();
       void setDirty();
       };
+
+} // namespace MusEWidget
 
 #endif
 

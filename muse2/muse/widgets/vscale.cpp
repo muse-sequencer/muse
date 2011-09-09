@@ -25,6 +25,8 @@
 #include <QPainter>
 #include <QPaintEvent>
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   paintEvent
 //---------------------------------------------------------
@@ -41,3 +43,4 @@ void VScale::paintEvent(QPaintEvent*)
       p.end();
       }
 
+} // namespace MusEWidget

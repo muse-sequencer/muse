@@ -414,8 +414,8 @@ void EffectRack::doubleClicked(QListWidgetItem* it)
 
 void EffectRack::savePreset(int idx)
       {
-      //QString name = getSaveFileName(QString(""), plug_file_pattern, this,
-      QString name = getSaveFileName(QString(""), MusEGlobal::preset_file_save_pattern, this,
+      //QString name = MusEWidget::getSaveFileName(QString(""), plug_file_pattern, this,
+      QString name = MusEWidget::getSaveFileName(QString(""), MusEGlobal::preset_file_save_pattern, this,
          tr("MusE: Save Preset"));
       
       if(name.isEmpty())
@@ -423,7 +423,7 @@ void EffectRack::savePreset(int idx)
         
       //FILE* presetFp = fopen(name.ascii(),"w+");
       bool popenFlag;
-      FILE* presetFp = fileOpen(this, name, QString(".pre"), "w", popenFlag, false, true);
+      FILE* presetFp = MusEWidget::fileOpen(this, name, QString(".pre"), "w", popenFlag, false, true);
       if (presetFp == 0) {
             //fprintf(stderr, "EffectRack::savePreset() fopen failed: %s\n",
             //   strerror(errno));
@@ -590,7 +590,7 @@ void EffectRack::dropEvent(QDropEvent *event)
               {
                   //bool popenFlag = false;
                   bool popenFlag;
-                  FILE* fp = fileOpen(this, text, ".pre", "r", popenFlag, false, false);
+                  FILE* fp = MusEWidget::fileOpen(this, text, ".pre", "r", popenFlag, false, false);
                   if (fp) 
                   {
                       Xml xml(fp);

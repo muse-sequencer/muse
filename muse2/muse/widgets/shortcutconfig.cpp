@@ -41,6 +41,8 @@
 #include "shortcutcapturedialog.h"
 #include "shortcuts.h"
 
+namespace MusEWidget {
+
 ShortcutConfig::ShortcutConfig(QWidget* parent)
    : QDialog(parent)
    {
@@ -155,3 +157,5 @@ void ShortcutConfig::assignAll()
       applyButton->setDown(false);
       done(_config_changed);
       }
+
+} // namespace MusEWidget

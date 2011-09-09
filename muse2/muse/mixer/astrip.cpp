@@ -601,7 +601,7 @@ void AudioStrip::updateChannels()
       
       if (c > channel) {
             for (int cc = channel; cc < c; ++cc) {
-                  meter[cc] = new Meter(this);
+                  meter[cc] = new MusEWidget::Meter(this);
                   //meter[cc]->setRange(MusEConfig::config.minSlider, 10.0);
                   meter[cc]->setRange(MusEConfig::config.minMeter, 10.0);
                   meter[cc]->setFixedWidth(15);
@@ -624,14 +624,14 @@ void AudioStrip::updateChannels()
       }
 
 //---------------------------------------------------------
-//   addKnob
+//   addMusEWidget::Knob
 //    type = 0 - panorama
 //           1 - aux send
 //---------------------------------------------------------
 
-Knob* AudioStrip::addKnob(int type, int id, DoubleLabel** dlabel)
+MusEWidget::Knob* AudioStrip::addKnob(int type, int id, MusEWidget::DoubleLabel** dlabel)
       {
-      Knob* knob = new Knob(this);
+      MusEWidget::Knob* knob = new MusEWidget::Knob(this);
       knob->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       if (type == 0)
             knob->setRange(-1.0, +1.0);
@@ -644,11 +644,11 @@ Knob* AudioStrip::addKnob(int type, int id, DoubleLabel** dlabel)
       else
             knob->setToolTip(tr("aux send level"));
 
-      DoubleLabel* pl;
+      MusEWidget::DoubleLabel* pl;
       if (type == 0)
-            pl = new DoubleLabel(0, -1.0, +1.0, this);
+            pl = new MusEWidget::DoubleLabel(0, -1.0, +1.0, this);
       else
-            pl = new DoubleLabel(0.0, MusEConfig::config.minSlider, 10.1, this);
+            pl = new MusEWidget::DoubleLabel(0.0, MusEConfig::config.minSlider, 10.1, this);
             
       if (dlabel)
             *dlabel = pl;
@@ -733,7 +733,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       
       int ch = 0;
       for (; ch < channel; ++ch)
-            meter[ch] = new Meter(this);
+            meter[ch] = new MusEWidget::Meter(this);
       for (; ch < MAX_CHANNELS; ++ch)
             meter[ch] = 0;
 
@@ -786,8 +786,8 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       int auxsSize = song->auxs()->size();
       if (t->hasAuxSend()) {
             for (int idx = 0; idx < auxsSize; ++idx) {
-                  DoubleLabel* al;
-                  Knob* ak = addKnob(1, idx, &al);
+                  MusEWidget::DoubleLabel* al;
+                  MusEWidget::Knob* ak = addKnob(1, idx, &al);
                   auxKnob.push_back(ak);
                   auxLabel.push_back(al);
                   double val = fast_log10(t->auxSend(idx))*20.0;
@@ -810,7 +810,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       sliderGrid->setContentsMargins(0, 0, 0, 0);
       sliderGrid->setSpacing(0);
       
-      slider = new Slider(this, "vol", Qt::Vertical, Slider::None);
+      slider = new MusEWidget::Slider(this, "vol", Qt::Vertical, MusEWidget::Slider::None);
 
       slider->setCursorHoming(true);
       slider->setRange(MusEConfig::config.minSlider-0.1, 10.0);
@@ -831,7 +831,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       sliderGrid->addItem(new QSpacerItem(2,0),0,3);
       grid->addLayout(sliderGrid, _curGridRow++, 0, 1, 2); 
 
-      sl = new DoubleLabel(0.0, MusEConfig::config.minSlider, 10.0, this);
+      sl = new MusEWidget::DoubleLabel(0.0, MusEConfig::config.minSlider, 10.0, this);
       sl->setSlider(slider);
       sl->setFont(MusEConfig::config.fonts[1]);
       sl->setBackgroundRole(QPalette::Mid);
@@ -862,7 +862,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       //---------------------------------------------------
 
       if (track->canRecord()) {
-            record  = new TransparentToolButton(this);
+            record  = new MusEWidget::TransparentToolButton(this);
             record->setCheckable(true);
             record->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
             record->setBackgroundRole(QPalette::Mid);
@@ -919,7 +919,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
             solo->setToolTip(tr("solo mode"));
             }
 
-      off  = new TransparentToolButton(this);
+      off  = new MusEWidget::TransparentToolButton(this);
       QIcon iconSet;
       iconSet.addPixmap(*exit1Icon, QIcon::Normal, QIcon::On);
       iconSet.addPixmap(*exitIcon, QIcon::Normal, QIcon::Off);
@@ -967,7 +967,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       //    automation type
       //---------------------------------------------------
 
-      autoType = new ComboBox();
+      autoType = new MusEWidget::ComboBox();
       autoType->setFont(MusEConfig::config.fonts[1]);
       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       
@@ -1025,7 +1025,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
 
 void AudioStrip::iRoutePressed()
       {
-      RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
+      MusEWidget::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
       iR->setDown(false);     
       pup->exec(QCursor::pos(), track, false);
       }
@@ -1036,7 +1036,7 @@ void AudioStrip::iRoutePressed()
 
 void AudioStrip::oRoutePressed()
 {
-      RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
+      MusEWidget::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
       oR->setDown(false);     
       pup->exec(QCursor::pos(), track, true);
 }

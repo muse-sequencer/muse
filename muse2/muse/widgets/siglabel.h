@@ -30,6 +30,8 @@
 class QWheelEvent;
 class QMouseEvent;
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   SigLabel
 //    show/edit time signature
@@ -58,5 +60,8 @@ class SigLabel : public QLabel {
       AL::TimeSignature value() const { return AL::TimeSignature(z, n); }
       void setFrame(bool);
       };
+
+} // namespace MusEWidget
+
 #endif
 

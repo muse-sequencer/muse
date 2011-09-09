@@ -61,8 +61,11 @@ class QToolButton;
 class QTreeWidget;
 
 class Xml;
-class Slider;
+
+namespace MusEWidget {
 class DoubleLabel;
+}
+
 class AudioTrack;
 class MidiController;
 
@@ -265,7 +268,7 @@ struct GuiParam {
       int type;
       int hint;
       
-      DoubleLabel* label;
+      MusEWidget::DoubleLabel* label;
       QWidget* actuator;  // Slider or Toggle Button (SWITCH)
       };
 

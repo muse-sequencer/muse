@@ -36,10 +36,13 @@
 class Track;
 class QLabel;
 //class QVBoxLayout;
-class Meter;
 class QToolButton;
 class QGridLayout;
+
+namespace MusEWidget {
 class ComboBox;
+class Meter;
+}
 
 static const int STRIP_WIDTH = 65;
 
@@ -56,7 +59,7 @@ class Strip : public QFrame {
       //QVBoxLayout* layout;
       QGridLayout* grid;
       int _curGridRow;
-      Meter* meter[MAX_CHANNELS];
+      MusEWidget::Meter* meter[MAX_CHANNELS];
       bool useSoloIconSet2;
       
       QToolButton* record;
@@ -65,7 +68,7 @@ class Strip : public QFrame {
       QToolButton* iR; // Input routing button
       QToolButton* oR; // Output routing button
       QGridLayout* sliderGrid;
-      ComboBox* autoType;
+      MusEWidget::ComboBox* autoType;
       void setLabelText();
 
    private slots:

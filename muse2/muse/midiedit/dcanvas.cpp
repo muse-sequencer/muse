@@ -115,7 +115,7 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
 //   moveCanvasItems
 //---------------------------------------------------------
 
-Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype)
+Undo DrumCanvas::moveCanvasItems(MusEWidget::CItemList& items, int dp, int dx, DragType dtype)
 {      
   if(editor->parts()->empty())
     return Undo(); //return empty list
@@ -130,9 +130,9 @@ Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
       continue;
     
     int npartoffset = 0;
-    for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
+    for(MusEWidget::iCItem ici = items.begin(); ici != items.end(); ++ici) 
     {
-      CItem* ci = ici->second;
+      MusEWidget::CItem* ci = ici->second;
       if(ci->part() != part)
         continue;
       
@@ -185,12 +185,12 @@ Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
 	
 	if (!forbidden)
 	{
-		std::vector< CItem* > doneList;
-		typedef std::vector< CItem* >::iterator iDoneList;
+	        std::vector< MusEWidget::CItem* > doneList;
+		typedef std::vector< MusEWidget::CItem* >::iterator iDoneList;
 		
-		for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
+		for(MusEWidget::iCItem ici = items.begin(); ici != items.end(); ++ici) 
 		{
-			CItem* ci = ici->second;
+		        MusEWidget::CItem* ci = ici->second;
 			
 			int x = ci->pos().x();
 			int y = ci->pos().y();
@@ -240,7 +240,7 @@ Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
 //   moveItem
 //---------------------------------------------------------
 
-UndoOp DrumCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
+UndoOp DrumCanvas::moveItem(MusEWidget::CItem* item, const QPoint& pos, DragType dtype)
       {
       DEvent* nevent   = (DEvent*) item;
       
@@ -274,7 +274,7 @@ UndoOp DrumCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
 //   newItem
 //---------------------------------------------------------
 
-CItem* DrumCanvas::newItem(const QPoint& p, int state)
+MusEWidget::CItem* DrumCanvas::newItem(const QPoint& p, int state)
       {
       int instr = y2pitch(p.y());         //drumInmap[y2pitch(p.y())];
       int velo  = drumMap[instr].lv4;
@@ -292,7 +292,7 @@ CItem* DrumCanvas::newItem(const QPoint& p, int state)
 //   newItem
 //---------------------------------------------------------
 
-CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
+MusEWidget::CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
 {
   tick    -= curPart->tick();
   Event e(Note);
@@ -307,7 +307,7 @@ CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
 //   resizeItem
 //---------------------------------------------------------
 
-void DrumCanvas::resizeItem(CItem* item, bool, bool)
+void DrumCanvas::resizeItem(MusEWidget::CItem* item, bool, bool)
       {
       DEvent* nevent = (DEvent*) item;
       Event ev = nevent->event();
@@ -318,11 +318,11 @@ void DrumCanvas::resizeItem(CItem* item, bool, bool)
 //---------------------------------------------------------
 //   newItem
 //---------------------------------------------------------
-void DrumCanvas::newItem(CItem* item, bool noSnap) {
+void DrumCanvas::newItem(MusEWidget::CItem* item, bool noSnap) {
      newItem(item, noSnap,false);
 }
 
-void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
+void DrumCanvas::newItem(MusEWidget::CItem* item, bool noSnap, bool replace)
       {
       DEvent* nevent = (DEvent*) item;
       Event event    = nevent->event();
@@ -383,7 +383,7 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
 //   deleteItem
 //---------------------------------------------------------
 
-bool DrumCanvas::deleteItem(CItem* item)
+bool DrumCanvas::deleteItem(MusEWidget::CItem* item)
       {
       Event ev = ((DEvent*)item)->event();
       // Indicate do undo, and do not do port controller values and clone parts. 
@@ -395,7 +395,7 @@ bool DrumCanvas::deleteItem(CItem* item)
 //   drawItem
 //---------------------------------------------------------
 
-void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
+void DrumCanvas::drawItem(QPainter&p, const MusEWidget::CItem*item, const QRect& rect)
       {
       DEvent* e   = (DEvent*) item;
       int x = 0, y = 0;
@@ -453,7 +453,7 @@ void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
 //    draws moving items
 //---------------------------------------------------------
 
-void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
+void DrumCanvas::drawMoving(QPainter& p, const MusEWidget::CItem* item, const QRect& rect)
     {
       QPolygon pa(4);
       QPoint pt = map(item->mp());
@@ -545,7 +545,7 @@ void DrumCanvas::cmd(int cmd)
       {
       switch (cmd) {
             case CMD_SELECT_ALL:     // select all
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (MusEWidget::iCItem k = items.begin(); k != items.end(); ++k) {
                         if (!k->second->isSelected())
                               selectItem(k->second, true);
                         }
@@ -554,12 +554,12 @@ void DrumCanvas::cmd(int cmd)
                   deselectAll();
                   break;
             case CMD_SELECT_INVERT:     // invert selection
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (MusEWidget::iCItem k = items.begin(); k != items.end(); ++k) {
                         selectItem(k->second, !k->second->isSelected());
                         }
                   break;
             case CMD_SELECT_ILOOP:     // select inside loop
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (MusEWidget::iCItem k = items.begin(); k != items.end(); ++k) {
                         DEvent* nevent =(DEvent*)(k->second);
                         Part* part = nevent->part();
                         Event event = nevent->event();
@@ -571,7 +571,7 @@ void DrumCanvas::cmd(int cmd)
                         }
                   break;
             case CMD_SELECT_OLOOP:     // select outside loop
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (MusEWidget::iCItem k = items.begin(); k != items.end(); ++k) {
                         DEvent* nevent = (DEvent*)(k->second);
                         Part* part     = nevent->part();
                         Event event    = nevent->event();
@@ -628,7 +628,7 @@ void DrumCanvas::cmd(int cmd)
                   if (!selectionSize())
                         break;
                   song->startUndo();
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (MusEWidget::iCItem k = items.begin(); k != items.end(); ++k) {
                         if (k->second->isSelected()) {
                               DEvent* devent = (DEvent*)(k->second);
                               Event event    = devent->event();
@@ -687,7 +687,7 @@ void DrumCanvas::cmd(int cmd)
 //   startDrag
 //---------------------------------------------------------
 
-void DrumCanvas::startDrag(CItem* /* item*/, bool copymode)
+void DrumCanvas::startDrag(MusEWidget::CItem* /* item*/, bool copymode)
       {
       QMimeData* md = selected_events_to_mime(partlist_to_set(editor->parts()), 1);
       
@@ -868,11 +868,11 @@ void DrumCanvas::resizeEvent(QResizeEvent* ev)
 //   modifySelected
 //---------------------------------------------------------
 
-void DrumCanvas::modifySelected(NoteInfo::ValType type, int delta)
+void DrumCanvas::modifySelected(MusEWidget::NoteInfo::ValType type, int delta)
       {
       audio->msgIdle(true);
       song->startUndo();
-      for (iCItem i = items.begin(); i != items.end(); ++i) {
+      for (MusEWidget::iCItem i = items.begin(); i != items.end(); ++i) {
             if (!(i->second->isSelected()))
                   continue;
             DEvent* e   = (DEvent*)(i->second);
@@ -884,7 +884,7 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int delta)
             Event newEvent = event.clone();
 
             switch (type) {
-                  case NoteInfo::VAL_TIME:
+                  case MusEWidget::NoteInfo::VAL_TIME:
                         {
                         int newTime = event.tick() + delta;
                         if (newTime < 0)
@@ -892,16 +892,16 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int delta)
                         newEvent.setTick(newTime);
                         }
                         break;
-                  case NoteInfo::VAL_LEN:
-                        printf("DrumCanvas::modifySelected - NoteInfo::VAL_LEN not implemented\n");
+                  case MusEWidget::NoteInfo::VAL_LEN:
+                        printf("DrumCanvas::modifySelected - MusEWidget::NoteInfo::VAL_LEN not implemented\n");
                         break;
-                  case NoteInfo::VAL_VELON:
-                        printf("DrumCanvas::modifySelected - NoteInfo::VAL_VELON not implemented\n");
+                  case MusEWidget::NoteInfo::VAL_VELON:
+                        printf("DrumCanvas::modifySelected - MusEWidget::NoteInfo::VAL_VELON not implemented\n");
                         break;
-                  case NoteInfo::VAL_VELOFF:
-                        printf("DrumCanvas::modifySelected - NoteInfo::VAL_VELOFF not implemented\n");
+                  case MusEWidget::NoteInfo::VAL_VELOFF:
+                        printf("DrumCanvas::modifySelected - MusEWidget::NoteInfo::VAL_VELOFF not implemented\n");
                         break;
-                  case NoteInfo::VAL_PITCH:
+                  case MusEWidget::NoteInfo::VAL_PITCH:
                         {
                         int pitch = event.pitch() - delta; // Reversing order since the drumlist is displayed in increasing order
                         if (pitch > 127)
@@ -1084,7 +1084,7 @@ Event *DrumCanvas::getEventAtCursorPos()
 //---------------------------------------------------------
 void DrumCanvas::selectCursorEvent(Event *ev)
 {
-  for (iCItem i = items.begin(); i != items.end(); ++i)
+  for (MusEWidget::iCItem i = items.begin(); i != items.end(); ++i)
   {
         Event e = i->second->event();
 
@@ -1103,7 +1103,7 @@ void DrumCanvas::moveAwayUnused()
 	using std::set;
 	
 	set<int> used;
-	for (iCItem it=items.begin(); it!=items.end(); it++)
+	for (MusEWidget::iCItem it=items.begin(); it!=items.end(); it++)
 	{
 		const Event& ev=it->second->event();
 		

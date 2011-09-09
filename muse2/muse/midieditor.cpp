@@ -244,11 +244,11 @@ void MidiEditor::setCurCanvasPart(Part* part)
 void MidiEditor::horizontalZoomIn()
 {
   int mag = hscroll->mag();
-  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+  int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
   if (zoomlvl < 23)
         zoomlvl++;
 
-  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+  int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
 
   hscroll->setMag(newmag);
 
@@ -257,11 +257,11 @@ void MidiEditor::horizontalZoomIn()
 void MidiEditor::horizontalZoomOut()
 {
   int mag = hscroll->mag();
-  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+  int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
   if (zoomlvl > 1)
         zoomlvl--;
 
-  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+  int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
 
   hscroll->setMag(newmag);
 

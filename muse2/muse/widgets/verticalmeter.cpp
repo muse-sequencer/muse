@@ -32,6 +32,8 @@
 #include "gconfig.h"
 #include "fastlog.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   VerticalMeter
 //---------------------------------------------------------
@@ -269,3 +271,5 @@ void VerticalMeter::resizeEvent(QResizeEvent* ev)
     QRegion maskregion(rounded_rect.toFillPolygon().toPolygon());
     setMask(maskregion);
     }
+
+} // namespace MusEWidget

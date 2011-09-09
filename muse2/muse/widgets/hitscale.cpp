@@ -28,6 +28,8 @@
 
 #include "song.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   HitScale
 //---------------------------------------------------------
@@ -145,4 +147,5 @@ void HitScale::pdraw(QPainter& p, const QRect& r)
             p.drawLine(xp, 0, xp, height());
       }
 
+}
 

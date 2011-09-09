@@ -24,6 +24,8 @@
 #include "velocity.h"
 #include "xml.h"
 
+namespace MusEDialog {
+
 //---------------------------------------------------------
 //   Velocity
 //---------------------------------------------------------
@@ -115,3 +117,5 @@ void Velocity::write_configuration(int level, Xml& xml)
 	xml.intTag(level, "rate", rateVal);
 	xml.tag(level, "/mod_velo");
 }
+
+} // namespace MusEDialog

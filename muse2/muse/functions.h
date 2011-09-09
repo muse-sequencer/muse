@@ -41,16 +41,17 @@ class QString;
 class QMimeData;
 class Undo;
 
-extern GateTime* gatetime_dialog;
-extern Velocity* velocity_dialog;
-extern Quantize* quantize_dialog;
-extern Remove* erase_dialog;
-extern DelOverlaps* del_overlaps_dialog;
-extern Setlen* set_notelen_dialog;
-extern Move* move_notes_dialog;
-extern Transpose* transpose_dialog;
-extern Crescendo* crescendo_dialog;
-extern Legato* legato_dialog;
+extern MusEDialog::GateTime* gatetime_dialog;
+extern MusEDialog::Velocity* velocity_dialog;
+extern MusEDialog::Quantize* quantize_dialog;
+extern MusEDialog::Remove* erase_dialog;
+extern MusEDialog::DelOverlaps* del_overlaps_dialog;
+extern MusEDialog::Setlen* set_notelen_dialog;
+extern MusEDialog::Move* move_notes_dialog;
+extern MusEDialog::Transpose* transpose_dialog;
+extern MusEDialog::Crescendo* crescendo_dialog;
+extern MusEDialog::Legato* legato_dialog;
+
 
 void init_function_dialogs(QWidget* parent);
 

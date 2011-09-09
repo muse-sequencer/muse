@@ -40,8 +40,11 @@ class QLabel;
 class QSlider;
 class QToolButton;
 
+namespace MusEWidget {
 class DoubleLabel;
 class SigLabel;
+}
+
 class Pos;
 
 //---------------------------------------------------------
@@ -51,8 +54,8 @@ class Pos;
 class TempoSig : public QWidget {
     Q_OBJECT
     
-      DoubleLabel* l1;
-      SigLabel* l2;
+      MusEWidget::DoubleLabel* l1;
+      MusEWidget::SigLabel* l2;
       QLabel* l3;
       
 

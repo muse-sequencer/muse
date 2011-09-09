@@ -84,7 +84,7 @@ class DPitchEdit: public Awl::PitchEdit
 //   DList
 //---------------------------------------------------------
 
-class DList : public View {
+class DList : public MusEWidget::View {
       Q_OBJECT
     
       QHeaderView* header;

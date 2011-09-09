@@ -24,6 +24,8 @@
 #include "remove.h"
 #include "xml.h"
 
+namespace MusEDialog {
+
 Remove::Remove(QWidget* parent)
 	: QDialog(parent)
 {
@@ -111,3 +113,6 @@ void Remove::write_configuration(int level, Xml& xml)
 	xml.intTag(level, "len_thres_used", len_thres_used);
 	xml.tag(level, "/erase");
 }
+
+} // namespace MusEDialog
+

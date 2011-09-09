@@ -47,17 +47,19 @@ class MidiPart;
 class DrumCanvas;
 class ScrollScale;
 class ScoreConfig;
-class MTScale;
-class Splitter;
 class PartList;
-class Toolbar1;
 class CtrlCanvas;
 class Xml;
 class DList;
-class Header;
 class CtrlEdit;
 class Part;
 class SNode;
+
+namespace MusEWidget {
+class Header;
+class Splitter;
+class Toolbar1;
+}
 
 //---------------------------------------------------------
 //   DrumEdit
@@ -71,17 +73,17 @@ class DrumEdit : public MidiEditor {
       int selTick;
       QMenu* menuEdit, *menuFunctions, *menuFile, *menuSelect;
 
-      NoteInfo* info;
+      MusEWidget::NoteInfo* info;
       QToolButton* srec;
       QToolButton* midiin;
       MusEWidget::EditToolBar* tools2;
 
-      Toolbar1* toolbar;
-      Splitter* split1;
-      Splitter* split2;
+      MusEWidget::Toolbar1* toolbar;
+      MusEWidget::Splitter* split1;
+      MusEWidget::Splitter* split2;
       QWidget* split1w1;
       DList* dlist;
-      Header* header;
+      MusEWidget::Header* header;
       QToolBar* tools;
       QComboBox *stepLenWidget;
 
@@ -112,7 +114,7 @@ class DrumEdit : public MidiEditor {
 
    private slots:
       void setRaster(int);
-      void noteinfoChanged(NoteInfo::ValType type, int val);
+      void noteinfoChanged(MusEWidget::NoteInfo::ValType type, int val);
       //CtrlEdit* addCtrl();
       void removeCtrl(CtrlEdit* ctrl);
       void cmd(int);

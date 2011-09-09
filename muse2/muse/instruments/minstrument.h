@@ -28,14 +28,17 @@
 #include <list>
 #include <vector>
 
+class QString;
+
 class MidiPort;
-//class QMenu;
-class PopupMenu;
 class MidiPlayEvent;
 class Xml;
 class EventList;
 class MidiControllerList;
-class QString;
+
+namespace MusEWidget {
+class PopupMenu;
+}
 
 //---------------------------------------------------------
 //   Patch
@@ -138,7 +141,7 @@ class MidiInstrument {
       virtual void reset(int, MType);
       virtual QString getPatchName(int,int,MType,bool);
       //virtual void populatePatchPopup(QMenu*, int, MType, bool);
-      virtual void populatePatchPopup(PopupMenu*, int, MType, bool);
+      virtual void populatePatchPopup(MusEWidget::PopupMenu*, int, MType, bool);
       void read(Xml&);
       void write(int level, Xml&);
       

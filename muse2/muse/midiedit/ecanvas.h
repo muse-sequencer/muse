@@ -68,8 +68,8 @@ class EventCanvas : public MusEWidget::Canvas {
       virtual void addItem(Part*, Event&) = 0;
       // Added by T356.
       virtual QPoint raster(const QPoint&) const;
-      virtual Undo moveCanvasItems(CItemList&, int, int, DragType) = 0;
-      virtual UndoOp moveItem(CItem*, const QPoint&, DragType) = 0;
+      virtual Undo moveCanvasItems(MusEWidget::CItemList&, int, int, DragType) = 0;
+      virtual UndoOp moveItem(MusEWidget::CItem*, const QPoint&, DragType) = 0;
       virtual void endMoveItems(const QPoint&, DragType, int dir);
 
    public slots:
@@ -96,7 +96,7 @@ class EventCanvas : public MusEWidget::Canvas {
       void playEvents(bool flag) { _playEvents = flag; }
       void selectAtTick(unsigned int tick);
       void viewDropEvent(QDropEvent* event);
-      virtual void modifySelected(NoteInfo::ValType, int) {}
+      virtual void modifySelected(MusEWidget::NoteInfo::ValType, int) {}
       virtual void keyPress(QKeyEvent*);
       };
 

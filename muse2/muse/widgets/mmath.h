@@ -27,6 +27,8 @@
 #define LOG_MIN 1.0e-100
 #define LOG_MAX 1.0e100
 
+namespace MusEUtil {
+
 double qwtCeil125(double x);
 double qwtFloor125(double x);
 void qwtTwistArray(double *array, int size);
@@ -86,6 +88,8 @@ T qwtLim(const T& x, const T& x1, const T& x2)
        rv = x;
 
     return rv;
+}
+
 }
 
 #endif

@@ -26,6 +26,8 @@
 
 #include "knob.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   AuxKnob
 //---------------------------------------------------------
@@ -43,6 +45,8 @@ class AuxKnob : public Knob {
    public:
       AuxKnob(QWidget* parent, int idx);
       };
+
+} // namespace MusEWidget
 
 #endif
 

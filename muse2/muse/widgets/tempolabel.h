@@ -26,6 +26,8 @@
 #include <QLabel>
 #include <QDoubleSpinBox>
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   TempoLabel
 //---------------------------------------------------------
@@ -73,6 +75,8 @@ class TempoEdit : public QDoubleSpinBox {
       TempoEdit(QWidget*);
       //int tempo() const;
       };
+
+} // namespace MusEWidget
 
 #endif
 

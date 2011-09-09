@@ -29,6 +29,8 @@
 #include <QMouseEvent>
 #include <QTimerEvent>
 
+namespace MusEWidget {
+
 //   DESCRIPTION
 // SliderBase is a base class for
 // slider widgets. QwtSliderBase handles the mouse events
@@ -182,7 +184,7 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
                   d_mouseOffset = 0;
                   DoubleRange::incPages(d_direction);
                   emit sliderMoved(value(), _id);
-                  d_tmrID = startTimer(qwtMax(250, 2 * d_updTime));
+                  d_tmrID = startTimer(MusEUtil::qwtMax(250, 2 * d_updTime));
                   break;
   
             case ScrMouse:
@@ -727,6 +729,7 @@ void SliderBase::stepPages(int pages)
 //
 //------------------------------------------------------------
 
+} // namespace MusEWidget
 
 
 

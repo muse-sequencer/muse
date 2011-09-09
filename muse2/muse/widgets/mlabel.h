@@ -25,6 +25,8 @@
 
 #include <QLabel>
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   MLabel
 //    label widged which sends signal mousePressed
@@ -48,5 +50,8 @@ class MLabel : public QLabel {
       MLabel(QWidget* parent, const char* name = 0)
          : QLabel(parent) {setObjectName(name);};
       };
+
+} // namespace MusEWidget
+
 #endif
 

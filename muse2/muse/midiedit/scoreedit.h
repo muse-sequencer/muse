@@ -109,7 +109,7 @@ class ScoreEdit : public TopWin
 		QGridLayout* mainGrid;
 		QWidget* mainw;
 		
-                MusEWidget::EditToolBar* edit_tools;
+		MusEWidget::EditToolBar* edit_tools;
 		QSpinBox* velo_spinbox;
 		QSpinBox* velo_off_spinbox;
 		
@@ -162,7 +162,7 @@ class ScoreEdit : public TopWin
 		QScrollBar* xscroll;
 		QScrollBar* yscroll;
 		ScoreCanvas* score_canvas;
-		MTScaleFlo* time_bar;
+		MusEWidget::MTScaleFlo* time_bar;
 		
 		QLabel* apply_velo_to_label;
 		bool apply_velo;
@@ -608,7 +608,7 @@ int calc_timesig_width(int num, int denom);
 int calc_number_width(int n);
 
 
-class ScoreCanvas : public View
+class ScoreCanvas : public MusEWidget::View
 {
 	Q_OBJECT
 	private:

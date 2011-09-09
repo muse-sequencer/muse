@@ -28,6 +28,8 @@
 
 class ScoreCanvas;
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   MTScaleFlo
 //    scale for midi track
@@ -62,5 +64,8 @@ class MTScaleFlo : public View {
    public:
       MTScaleFlo(ScoreCanvas* parent_editor, QWidget* parent_widget);
       };
+
+} // namespace MusEWidget
+
 #endif
 

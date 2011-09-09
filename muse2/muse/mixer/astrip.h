@@ -29,17 +29,20 @@
 #include "strip.h"
 //#include "route.h"
 
+namespace MusEWidget {
+class DoubleLabel;
 class Slider;
 class Knob;
+class TransparentToolButton;
+}
+
 //class QDialog;
 class QToolButton;
 //class QAction;
 //class QPopupMenu;
 //class PopupMenu;
 class QButton;
-class TransparentToolButton;
 class AudioTrack;
-class DoubleLabel;
 class EffectRack;
 
 //---------------------------------------------------------
@@ -50,19 +53,19 @@ class AudioStrip : public Strip {
       Q_OBJECT
 
       int channel;
-      Slider* slider;
-      DoubleLabel* sl;
+      MusEWidget::Slider* slider;
+      MusEWidget::DoubleLabel* sl;
       EffectRack* rack;
 
-      Knob* pan;
-      DoubleLabel* panl;
+      MusEWidget::Knob* pan;
+      MusEWidget::DoubleLabel* panl;
 
-      std::vector<Knob*> auxKnob;
-      std::vector<DoubleLabel*> auxLabel;
+      std::vector<MusEWidget::Knob*> auxKnob;
+      std::vector<MusEWidget::DoubleLabel*> auxLabel;
 
       QToolButton* stereo;
       QToolButton* pre;
-      TransparentToolButton* off;
+      MusEWidget::TransparentToolButton* off;
 
       double volume;
       double panVal;
@@ -70,7 +73,7 @@ class AudioStrip : public Strip {
       //QToolButton* iR;
       //QToolButton* oR;
       
-      Knob* addKnob(int, int, DoubleLabel**);
+      MusEWidget::Knob* addKnob(int, int, MusEWidget::DoubleLabel**);
       
       void updateOffState();
       void updateVolume();

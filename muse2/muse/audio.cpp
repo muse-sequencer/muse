@@ -48,7 +48,10 @@
 #include "pos.h"
 #include "ticksynth.h"
 
+namespace MusEUtil {
 extern double curTime();
+}
+
 Audio* audio;
 AudioDevice* audioDevice;   // current audio device in use
 
@@ -508,7 +511,7 @@ void Audio::process(unsigned frames)
       // resync with audio interface
       //
       syncFrame   = audioDevice->framePos();
-      syncTime    = curTime();
+      syncTime    = MusEUtil::curTime();
       frameOffset = syncFrame - samplePos;
 
       //printf("Audio::process calling process1:\n");
@@ -769,7 +772,7 @@ void Audio::processMsg(AudioMsg* msg)
                         _pos.setTick(curTickPos);
                         int samplePos = _pos.frame();
                         syncFrame     = audioDevice->framePos();
-                        syncTime      = curTime();
+                        syncTime      = MusEUtil::curTime();
                         frameOffset   = syncFrame - samplePos;
                         }
                   break;
@@ -1473,7 +1476,7 @@ void Audio::recordStop()
 
 unsigned int Audio::curFrame() const
       {
-      return lrint((curTime() - syncTime) * MusEGlobal::sampleRate) + syncFrame;
+      return lrint((MusEUtil::curTime() - syncTime) * MusEGlobal::sampleRate) + syncFrame;
       }
 
 //---------------------------------------------------------

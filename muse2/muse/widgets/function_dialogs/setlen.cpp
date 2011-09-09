@@ -24,6 +24,8 @@
 #include "setlen.h"
 #include "xml.h"
 
+namespace MusEDialog {
+
 Setlen::Setlen(QWidget* parent)
 	: QDialog(parent)
 {
@@ -96,3 +98,5 @@ void Setlen::write_configuration(int level, Xml& xml)
 	xml.intTag(level, "len", len);
 	xml.tag(level, "/setlen");
 }
+
+} // namespace MusEDialog
