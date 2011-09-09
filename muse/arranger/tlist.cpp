@@ -707,11 +707,13 @@ void TList::oportPropertyPopupMenu(Track* t, int x, int y)
         //if (ract == act) {
         if (ract == gact) {
               bool show = !synth->guiVisible();
-              audio->msgShowInstrumentGui(synth, show);
+              //audio->msgShowInstrumentGui(synth, show);
+              synth->showGui(show);
               }
         else if (ract == nact) {
               bool show = !synth->nativeGuiVisible();
-              audio->msgShowInstrumentNativeGui(synth, show);
+              //audio->msgShowInstrumentNativeGui(synth, show);
+              synth->showNativeGui(show);
               }
         delete p;
         return;
@@ -758,11 +760,13 @@ void TList::oportPropertyPopupMenu(Track* t, int x, int y)
       //if (ract == act) {
       if (ract == gact) {
             bool show = !port->guiVisible();
-            audio->msgShowInstrumentGui(port->instrument(), show);
+            //audio->msgShowInstrumentGui(port->instrument(), show);
+            port->instrument()->showGui(show);
             }
       else if (ract == nact) {
             bool show = !port->nativeGuiVisible();
-            audio->msgShowInstrumentNativeGui(port->instrument(), show);
+            //audio->msgShowInstrumentNativeGui(port->instrument(), show);
+            port->instrument()->showNativeGui(show);
             }
       delete p;
       

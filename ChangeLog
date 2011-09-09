@@ -9,6 +9,7 @@
           TODO: processMidi could do stuck notes better by bypassing their insertion in the play event list,
                  also applies to seek/stop handler block, but I'm not sure about the time comparisons.   
         - Removed MidiSeq::msgSeek and ::msgStop, and removed calls from Audio::seek and ::stopRolling. (Tim) 
+          Removed Audio::msgShowInstrumentGui and ::msgShowInstrumentNativeGui.
         - Some more separation of ALSA and Jack Midi, one step closer to configurable choice of either/or. (Tim)
         - Massive cleanup of audio, midi, mididev, alsamidi, jackmidi, dssi modules. Moved some stuff from 
            Audio::processMidi into MidiDevice. (Tim)
