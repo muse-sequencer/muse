@@ -28,6 +28,8 @@
 class QButtonGroup;
 class Xml;
 
+namespace MusEDialog {
+
 class Move : public QDialog, public Ui::MoveBase
 {
  	Q_OBJECT
@@ -52,6 +54,8 @@ class Move : public QDialog, public Ui::MoveBase
 	public slots:
 		int exec();
 };
+
+} // namespace MusEDialog
 
 #endif
 

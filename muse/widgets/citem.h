@@ -32,6 +32,8 @@
 class Event;
 class Part;
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   CItem
 //    virtuelle Basisklasse fr alle Canvas Item's
@@ -100,6 +102,8 @@ class CItemList: public std::multimap<int, CItem*, std::less<int> > {
       void add(CItem*);
       CItem* find(const QPoint& pos) const;
       };
+
+} // namespace MusEWidget
 
 #endif
 

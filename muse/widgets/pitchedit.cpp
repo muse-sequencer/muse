@@ -24,6 +24,8 @@
 #include "pitchedit.h"
 #include "helper.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   PitchEdit
 //---------------------------------------------------------
@@ -77,3 +79,4 @@ void PitchEdit::setDeltaMode(bool val)
             setRange(0, 127);
       }
 
+} // namespace MusEWidget

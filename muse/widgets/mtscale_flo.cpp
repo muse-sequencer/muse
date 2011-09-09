@@ -31,6 +31,8 @@
 #include "gconfig.h"
 #include "scoreedit.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   MTScale
 //    Midi Time Scale
@@ -338,3 +340,5 @@ void MTScaleFlo::pos_add_changed()
 {
 	redraw();
 }
+
+} // namespace MusEWidget

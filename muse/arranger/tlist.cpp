@@ -78,7 +78,7 @@ QColor collist[] = { Qt::red, Qt::yellow, Qt::blue , Qt::black, Qt::white, Qt::g
 //   TList
 //---------------------------------------------------------
 
-TList::TList(Header* hdr, QWidget* parent, const char* name)
+TList::TList(MusEWidget::Header* hdr, QWidget* parent, const char* name)
    : QWidget(parent) // Qt::WNoAutoErase | Qt::WResizeNoErase are no longer needed according to Qt4 doc
       {
       setBackgroundRole(QPalette::NoRole);
@@ -570,7 +570,7 @@ void TList::portsPopupMenu(Track* t, int x, int y)
                   {
                   MidiTrack* track = (MidiTrack*)t;
                   
-                  //QPopupMenu* p = midiPortsPopup(0);
+                  //QMusEWidget::PopupMenu* p = midiPortsPopup(0);
                   MidiDevice* md = 0;
                   int port = -1; 
                   if(t->type() == Track::AUDIO_SOFTSYNTH) 
@@ -953,10 +953,10 @@ void TList::changeAutomationColor(QAction* act)
 //   colorMenu
 //---------------------------------------------------------
 //QMenu* TList::colorMenu(QColor c, int id)
-PopupMenu* TList::colorMenu(QColor c, int id)
+MusEWidget::PopupMenu* TList::colorMenu(QColor c, int id)
 {
   //QMenu * m = new QMenu(this);
-  PopupMenu * m = new PopupMenu(this);  //, true);  TODO
+  MusEWidget::PopupMenu * m = new MusEWidget::PopupMenu(this);  //, true);  TODO
   for (int i = 0; i< 6; i++) {
     QPixmap pix(10,10);
     QPainter p(&pix);
@@ -1160,7 +1160,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 {
                 if (!t->isMidiTrack()) {
                     editAutomation = t;
-                    PopupMenu* p = new PopupMenu(true);
+                    MusEWidget::PopupMenu* p = new MusEWidget::PopupMenu(true);
                     p->disconnect();
                     p->clear();
                     p->setTitle(tr("Viewable automation"));
@@ -1178,7 +1178,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       data += 150; // illegal color > 100
                       act->setData(data);
                       //QMenu *m = colorMenu(cl->color(), cl->id());
-                      PopupMenu *m = colorMenu(cl->color(), cl->id());
+                      MusEWidget::PopupMenu *m = colorMenu(cl->color(), cl->id());
                       act->setMenu(m);
                     }
                     connect(p, SIGNAL(triggered(QAction*)), SLOT(changeAutomation(QAction*)));
@@ -1306,7 +1306,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                                     case 1:     // show track comment
                                           {
-                                          TrackComment* tc = new TrackComment(t, 0);
+                                          MusEWidget::TrackComment* tc = new MusEWidget::TrackComment(t, 0);
                                           tc->show();
                                           //QToolTip::add( this, "FOOOOOOOOOOOOO" );
                                           }

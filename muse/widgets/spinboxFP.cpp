@@ -29,6 +29,8 @@
 
 #include "spinboxFP.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   SpinBoxFP
 //---------------------------------------------------------
@@ -185,3 +187,5 @@ int SpinBoxFP::valueFromText(const QString& text) const
       }
 
 */
+
+} // namespace MusEWidget

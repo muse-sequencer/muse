@@ -40,15 +40,18 @@ class QToolBar;
 class QToolButton;
 
 class Master;
-class ScrollScale;
-class MTScale;
-class SigScale;
-class HitScale;
 class TScale;
-class TempoEdit;
+
+namespace MusEWidget {
+class HitScale;
 class LabelCombo;
+class MTScale;
 class PosLabel;
+class ScrollScale;
+class SigScale;
+class TempoEdit;
 class TempoLabel;
+}
 
 //---------------------------------------------------------
 //   MasterEdit
@@ -58,21 +61,21 @@ class MasterEdit : public MidiEditor {
       Q_OBJECT
     
       Master* canvas;
-      ScrollScale* hscroll;
-      ScrollScale* vscroll;
-      MTScale* time1;
-      MTScale* time2;
-      SigScale* sign;
-      HitScale* thits;
-      HitScale* zhits;
+      MusEWidget::ScrollScale* hscroll;
+      MusEWidget::ScrollScale* vscroll;
+      MusEWidget::MTScale* time1;
+      MusEWidget::MTScale* time2;
+      MusEWidget::SigScale* sign;
+      MusEWidget::HitScale* thits;
+      MusEWidget::HitScale* zhits;
       TScale* tscale;
 
-      TempoEdit* curTempo;
+      MusEWidget::TempoEdit* curTempo;
       SigEdit* curSig;
-      LabelCombo* rasterLabel;
+      MusEWidget::LabelCombo* rasterLabel;
       QToolBar* tools;
-      PosLabel* cursorPos;
-      TempoLabel* tempo;
+      MusEWidget::PosLabel* cursorPos;
+      MusEWidget::TempoLabel* tempo;
       QToolButton* enableButton;
       
       static int _rasterInit;

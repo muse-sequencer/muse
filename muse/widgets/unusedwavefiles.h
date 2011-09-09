@@ -29,6 +29,8 @@ namespace Ui {
     class UnusedWaveFiles;
 }
 
+namespace MusEWidget {
+
 class UnusedWaveFiles : public QDialog
 {
     Q_OBJECT
@@ -44,5 +46,7 @@ public slots:
 private:
     Ui::UnusedWaveFiles *ui;
 };
+
+} // namespace MusEWidget
 
 #endif // UNUSEDWAVEFILES_H

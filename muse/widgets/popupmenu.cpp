@@ -41,6 +41,8 @@
 #include "route.h"
  
  
+namespace MusEWidget {
+
 //======================
 // PopupMenu
 //======================
@@ -388,3 +390,4 @@ void PopupView::clear()
 }
 */ 
  
+} // namespace MusEWidget

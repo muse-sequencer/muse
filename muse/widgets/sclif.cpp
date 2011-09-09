@@ -24,6 +24,8 @@
 
 #include "sclif.h"
 
+namespace MusEWidget {
+
 //  ScaleIf - An interface class for widgets containing a scale
 //
 //	This interface class is used to provide classes
@@ -214,3 +216,4 @@ void ScaleIf::setScaleMaxMinor(int ticks)
             }
       }
 
+} // namespace MusEWidget

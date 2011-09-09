@@ -33,12 +33,14 @@
 
 SndFile* getSndFile(const SndFile* sf, QWidget* parent)
       {
-      MixdownFileDialog* dialog = new MixdownFileDialog(sf, parent);
+      MusEWidget::MixdownFileDialog* dialog = new MusEWidget::MixdownFileDialog(sf, parent);
       dialog->exec();
       SndFile* sndFile = dialog->sndFile();
       delete dialog;
       return sndFile;
       }
+
+namespace MusEWidget {
 
 //---------------------------------------------------------
 //   MixdownFileDialog
@@ -118,3 +120,4 @@ void MixdownFileDialog::fdialog()
             editPath->setText(path);
       }
 
+} // namespace MusEWidget

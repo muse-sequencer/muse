@@ -41,6 +41,8 @@
 #include "driver/audiodev.h"
 #include "audio.h"
 
+namespace MusEWidget {
+
 enum { DEVCOL_NO = 0, DEVCOL_NAME, DEVCOL_IN, DEVCOL_TICKIN, DEVCOL_MRTIN, DEVCOL_MMCIN, DEVCOL_MTCIN, DEVCOL_MTCTYPE, 
        DEVCOL_RID, DEVCOL_RCLK, DEVCOL_RMRT, DEVCOL_RMMC, DEVCOL_RMTC, DEVCOL_RREWSTART, 
        DEVCOL_TID, DEVCOL_TCLK, DEVCOL_TMRT, DEVCOL_TMMC, DEVCOL_TMTC, /* DEVCOL_TREWSTART, */  };
@@ -1266,3 +1268,4 @@ void MidiSyncConfig::setDirty()
     applyButton->setEnabled(true);
 }
 
+} // namespace MusEWidget

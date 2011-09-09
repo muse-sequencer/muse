@@ -70,7 +70,7 @@ void MusE::importMidi(const QString &file)
       {
       QString fn;
       if (file.isEmpty()) {
-               fn = getOpenFileName(MusEGlobal::lastMidiPath, MusEGlobal::midi_file_pattern, this,
+               fn = MusEWidget::getOpenFileName(MusEGlobal::lastMidiPath, MusEGlobal::midi_file_pattern, this,
                tr("MusE: Import Midi"), 0);
             if (fn.isEmpty())
                   return;
@@ -106,7 +106,7 @@ void MusE::importMidi(const QString &file)
 bool MusE::importMidi(const QString name, bool merge)
       {
       bool popenFlag;
-      FILE* fp = fileOpen(this, name, QString(".mid"), "r", popenFlag);
+      FILE* fp = MusEWidget::fileOpen(this, name, QString(".mid"), "r", popenFlag);
       if (fp == 0)
             return true;
       MidiFile mf(fp);
@@ -479,7 +479,7 @@ void MusE::importPart()
 
       if (track) {
             bool loadAll;
-            QString filename = getOpenFileName(QString(""), MusEGlobal::part_file_pattern, this, tr("MusE: load part"), &loadAll);
+            QString filename = MusEWidget::getOpenFileName(QString(""), MusEGlobal::part_file_pattern, this, tr("MusE: load part"), &loadAll);
             if (!filename.isEmpty()){
                   // Make a backup of the current clone list, to retain any 'copy' items,
                   //  so that pasting works properly after.
@@ -509,7 +509,7 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, Track* track)
       // Changed by T356
       /*
       bool popenFlag = false;
-      FILE* fp = fileOpen(this, filename, ".mpt", "r", popenFlag, false, false);
+      FILE* fp = MusEWidget::fileOpen(this, filename, ".mpt", "r", popenFlag, false, false);
 
       if(fp) 
       {
@@ -548,7 +548,7 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, Track* track)
         
       
       bool popenFlag = false;
-      FILE* fp = fileOpen(this, filename, ".mpt", "r", popenFlag, false, false);
+      FILE* fp = MusEWidget::fileOpen(this, filename, ".mpt", "r", popenFlag, false, false);
 
       if(fp) 
       {

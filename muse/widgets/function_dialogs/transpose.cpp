@@ -24,6 +24,8 @@
 #include "transpose.h"
 #include "xml.h"
 
+namespace MusEDialog {
+
 Transpose::Transpose(QWidget* parent)
 	: QDialog(parent)
 {
@@ -96,3 +98,5 @@ void Transpose::write_configuration(int level, Xml& xml)
 	xml.intTag(level, "amount", amount);
 	xml.tag(level, "/transpose");
 }
+
+} // namespace MusEDialog

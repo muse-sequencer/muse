@@ -34,6 +34,8 @@ class QPainter;
 class QPixmap;
 class QResizeEvent;
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   View
 //    horizontal View with double buffering
@@ -125,6 +127,8 @@ class View : public QWidget {
       int rmapxDev(int x) const;
       int rmapx(int x) const;
       };
+
+} // namespace MusEWidget
 
 #endif
 

@@ -40,7 +40,7 @@ class ScrollScale;
 //   Master
 //---------------------------------------------------------
 
-class Master : public View {
+class Master : public MusEWidget::View {
       Q_OBJECT
       enum DragMode { DRAG_OFF, DRAG_NEW, DRAG_MOVE_START, DRAG_MOVE,
             DRAG_DELETE, DRAG_COPY_START, DRAG_COPY,

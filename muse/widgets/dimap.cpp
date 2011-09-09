@@ -26,6 +26,8 @@
 #include "dimap.h"
 #include "mmath.h"
 
+namespace MusEWidget {
+
 const double DiMap::LogMin = 1.0e-150;
 const double DiMap::LogMax = 1.0e150;
 
@@ -111,7 +113,7 @@ DiMap::~DiMap()
 
 bool DiMap::contains(double x) const
       {
-      return ( (x >= qwtMin(d_x1, d_x1)) && (x <= qwtMax(d_x1, d_x2)));
+      return ( (x >= MusEUtil::qwtMin(d_x1, d_x1)) && (x <= MusEUtil::qwtMax(d_x1, d_x2)));
       }
 
 //------------------------------------------------------------
@@ -128,7 +130,7 @@ bool DiMap::contains(double x) const
 
 bool DiMap::contains(int x) const
       {
-      return ( (x >= qwtMin(d_y1, d_y1)) && (x <= qwtMax(d_y1, d_y2)));
+      return ( (x >= MusEUtil::qwtMin(d_y1, d_y1)) && (x <= MusEUtil::qwtMax(d_y1, d_y2)));
       }
 
 //------------------------------------------------------------
@@ -267,10 +269,10 @@ double DiMap::invTransform(int y) const
 
 int DiMap::limTransform(double x) const
       {
-      if ( x > qwtMax(d_x1, d_x2) )
-            x = qwtMax(d_x1, d_x2);
-      else if ( x < qwtMin(d_x1, d_x2))
-            x = qwtMin(d_x1, d_x2);
+      if ( x > MusEUtil::qwtMax(d_x1, d_x2) )
+            x = MusEUtil::qwtMax(d_x1, d_x2);
+      else if ( x < MusEUtil::qwtMin(d_x1, d_x2))
+            x = MusEUtil::qwtMin(d_x1, d_x2);
       return transform(x);
       }
 
@@ -317,3 +319,5 @@ void DiMap::newFactor()
       else
             d_cnv = 0.0;
       }
+
+} // namespace MusEWidget

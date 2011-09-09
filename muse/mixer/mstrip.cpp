@@ -92,7 +92,7 @@ void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
       mn = mc->minVal();
       mx = mc->maxVal();
       
-      Knob* knob = new Knob(this);
+      MusEWidget::Knob* knob = new MusEWidget::Knob(this);
       knob->setRange(double(mn), double(mx), 1.0);
       knob->setId(ctl);
       
@@ -102,7 +102,7 @@ void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
       knob->setToolTip(tt);
       knob->setEnabled(enabled);
 
-      DoubleLabel* dl = new DoubleLabel(0.0, double(mn), double(mx), this);
+      MusEWidget::DoubleLabel* dl = new MusEWidget::DoubleLabel(0.0, double(mn), double(mx), this);
       dl->setId(idx);
       dl->setSpecialText(tr("off"));
       dl->setToolTip(tr("double click on/off"));
@@ -203,7 +203,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       int mn = mc->minVal();
       int mx = mc->maxVal();
       
-      slider = new Slider(this, "vol", Qt::Vertical, Slider::None,
+      slider = new MusEWidget::Slider(this, "vol", Qt::Vertical, MusEWidget::Slider::None,
                           QColor(100, 255, 100));
       slider->setCursorHoming(true);
       slider->setRange(double(mn), double(mx), 1.0);
@@ -211,7 +211,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       slider->setFont(MusEConfig::config.fonts[1]);
       slider->setId(CTRL_VOLUME);
 
-      meter[0] = new Meter(this, Meter::LinMeter);
+      meter[0] = new MusEWidget::Meter(this, MusEWidget::Meter::LinMeter);
       meter[0]->setRange(0, 127.0);
       meter[0]->setFixedWidth(15);
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
@@ -222,7 +222,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       sliderGrid->addWidget(meter[0], 0, 1, Qt::AlignLeft);
       grid->addLayout(sliderGrid, _curGridRow++, 0, 1, 2); 
 
-      sl = new DoubleLabel(0.0, -98.0, 0.0, this);
+      sl = new MusEWidget::DoubleLabel(0.0, -98.0, 0.0, this);
       sl->setFont(MusEConfig::config.fonts[1]);
       sl->setBackgroundRole(QPalette::Mid);
       sl->setSpecialText(tr("off"));
@@ -290,7 +290,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       //    record, mixdownfile
       //---------------------------------------------------
 
-      record  = new TransparentToolButton(this);
+      record  = new MusEWidget::TransparentToolButton(this);
       record->setBackgroundRole(QPalette::Mid);
       record->setCheckable(true);
       record->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
@@ -348,7 +348,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       
       // Special here: Must make label same size as the 'exit' button would be IF this were an audio strip...
       // (The 'exit1' icon is BIGGER than the 'record on' icon.)
-      TransparentToolButton* off  = new TransparentToolButton(this);
+      MusEWidget::TransparentToolButton* off  = new MusEWidget::TransparentToolButton(this);
       QIcon iconOff;
       iconOff.addPixmap(*exit1Icon, QIcon::Normal, QIcon::On);
       iconOff.addPixmap(*exitIcon, QIcon::Normal, QIcon::Off);
@@ -374,7 +374,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       QToolTip::add(dev_ch_label, tr("output port and channel"));
       */
       
-      off  = new TransparentToolButton(this);
+      off  = new MusEWidget::TransparentToolButton(this);
       QIcon iconOff;
       iconOff.addPixmap(*exit1Icon, QIcon::Normal, QIcon::On);
       iconOff.addPixmap(*exitIcon, QIcon::Normal, QIcon::Off);
@@ -420,7 +420,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       //    automation mode
       //---------------------------------------------------
 
-      autoType = new ComboBox();
+      autoType = new MusEWidget::ComboBox();
       autoType->setFont(MusEConfig::config.fonts[1]);
       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       autoType->setEnabled(false);
@@ -674,7 +674,7 @@ void MidiStrip::updateControls()
           {
             //if(nvolume != volume) 
             //{
-              // DoubleLabel ignores the value if already set...
+              // MusEWidget::DoubleLabel ignores the value if already set...
               sl->setValue(sl->off() - 1.0);
               //volume = nvolume;
             //}  
@@ -736,7 +736,7 @@ void MidiStrip::updateControls()
           int npan = mp->hwCtrlState(channel, CTRL_PANPOT);
           if(npan == CTRL_VAL_UNKNOWN)
           {
-            // DoubleLabel ignores the value if already set...
+            // MusEWidget::DoubleLabel ignores the value if already set...
             //if(npan != pan) 
             //{
               gcon->dl->setValue(gcon->dl->off() - 1.0);
@@ -788,7 +788,7 @@ void MidiStrip::updateControls()
           int nvariSend = icl->second->hwVal();
           if(nvariSend == CTRL_VAL_UNKNOWN)
           {
-            // DoubleLabel ignores the value if already set...
+            // MusEWidget::DoubleLabel ignores the value if already set...
             //if(nvariSend != variSend) 
             //{
               gcon->dl->setValue(gcon->dl->off() - 1.0);
@@ -836,7 +836,7 @@ void MidiStrip::updateControls()
           int nreverbSend = icl->second->hwVal();
           if(nreverbSend == CTRL_VAL_UNKNOWN)
           {
-            // DoubleLabel ignores the value if already set...
+            // MusEWidget::DoubleLabel ignores the value if already set...
             //if(nreverbSend != reverbSend) 
             //{
               gcon->dl->setValue(gcon->dl->off() - 1.0);
@@ -884,7 +884,7 @@ void MidiStrip::updateControls()
           int nchorusSend = icl->second->hwVal();
           if(nchorusSend == CTRL_VAL_UNKNOWN)
           {
-            // DoubleLabel ignores the value if already set...
+            // MusEWidget::DoubleLabel ignores the value if already set...
             //if(nchorusSend != chorusSend) 
             //{
               gcon->dl->setValue(gcon->dl->off() - 1.0);
@@ -1012,7 +1012,7 @@ void MidiStrip::setReverbSend(double val)
 
 void MidiStrip::iRoutePressed()
 {
-  RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
+  MusEWidget::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
   iR->setDown(false);     
   pup->exec(QCursor::pos(), track, false);
 }
@@ -1023,7 +1023,7 @@ void MidiStrip::iRoutePressed()
 
 void MidiStrip::oRoutePressed()
 {
-  RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
+  MusEWidget::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
   oR->setDown(false);     
   pup->exec(QCursor::pos(), track, true);
 }

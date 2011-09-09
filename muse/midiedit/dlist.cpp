@@ -90,10 +90,10 @@ void DList::draw(QPainter& p, const QRect& rect)
                               s.setNum(dm->len);
                               break;
                         case COL_ANOTE:
-                              s = pitch2string(dm->anote);
+                              s =  pitch2string(dm->anote);
                               break;
                         case COL_ENOTE:
-                              s = pitch2string(dm->enote);
+                              s =  pitch2string(dm->enote);
                               break;
                         case COL_LV1:
                               s.setNum(dm->lv1);
@@ -739,7 +739,7 @@ void DList::songChanged(int flags)
 //---------------------------------------------------------
 
 DList::DList(QHeaderView* h, QWidget* parent, int ymag)
-   : View(parent, 1, ymag)
+   : MusEWidget::View(parent, 1, ymag)
       {
       setBg(Qt::white);
       if (!h){

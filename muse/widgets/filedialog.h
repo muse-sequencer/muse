@@ -26,6 +26,8 @@
 
 class QStringList;
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   FileDialogButtonsWidget
 //   Wrapper around Ui::FileDialogButtons
@@ -123,3 +125,4 @@ class MFile {
          bool warnIfOverwrite, const QString& caption);
       };
 
+} // namespace MusEWidget

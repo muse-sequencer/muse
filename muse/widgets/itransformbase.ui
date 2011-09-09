@@ -533,7 +533,7 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="SpinBoxFP" name="procVal1a">
+       <widget class="MusEWidget::SpinBoxFP" name="procVal1a">
          <property name="maximum" stdset="0">
          <number>99999999</number>
         </property>
@@ -736,21 +736,21 @@
        </widget>
       </item>
       <item row="2" column="2">
-        <widget class="SpinBoxFP" name="procVal2a">
+        <widget class="MusEWidget::SpinBoxFP" name="procVal2a">
           <property name="maximum" stdset="0">
          <number>99999999</number>
         </property>
        </widget>
       </item>
       <item row="2" column="3">
-        <widget class="SpinBoxFP" name="procPortVala">
+        <widget class="MusEWidget::SpinBoxFP" name="procPortVala">
           <property name="maximum" stdset="0">
          <number>99999999</number>
         </property>
        </widget>
       </item>
       <item row="2" column="4">
-        <widget class="SpinBoxFP" name="procChannelVala">
+        <widget class="MusEWidget::SpinBoxFP" name="procChannelVala">
           <property name="maximum" stdset="0">
          <number>99999999</number>
         </property>
@@ -1106,7 +1106,7 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
    <customwidget>
-     <class>SpinBoxFP</class>
+     <class>MusEWidget::SpinBoxFP</class>
      <extends>QDoubleSpinBox</extends>
      <header>spinboxFP.h</header>
    </customwidget>

@@ -48,7 +48,7 @@ bool modifyWarnedYet = false;
 //---------------------------------------------------------
 
 WaveView::WaveView(MidiEditor* pr, QWidget* parent, int xscale, int yscale)
-   : View(parent, xscale, 1)
+   : MusEWidget::View(parent, xscale, 1)
       {
       editor = pr;
       setVirt(true);

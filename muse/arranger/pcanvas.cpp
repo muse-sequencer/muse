@@ -84,7 +84,7 @@ QIcon colorRect(const QColor& color, int width, int height) {
 //   NPart
 //---------------------------------------------------------
 
-NPart::NPart(Part* e) : CItem(Event(), e)
+NPart::NPart(Part* e) : MusEWidget::CItem(Event(), e)
       {
       leftBorderTouches = false;
       rightBorderTouches = false;
@@ -274,13 +274,13 @@ void PartCanvas::updateSong(DragType t, int flags)
 //   moveCanvasItems
 //---------------------------------------------------------
 
-void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtype)
+void PartCanvas::moveCanvasItems(MusEWidget::CItemList& items, int dp, int dx, DragType dtype)
 {      
   Undo operations;
   
-  for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
+  for(MusEWidget::iCItem ici = items.begin(); ici != items.end(); ++ici) 
   {
-    CItem* ci = ici->second;
+    MusEWidget::CItem* ci = ici->second;
     
     // If this item's part is in the parts2change list, change the item's part to the new part.
     //Part* pt = ci->part();
@@ -319,7 +319,7 @@ void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
 //---------------------------------------------------------
 
 // Changed by T356.
-UndoOp PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
+UndoOp PartCanvas::moveItem(MusEWidget::CItem* item, const QPoint& newpos, DragType t)
       {
       UndoOp result;
       NPart* npart    = (NPart*) item;
@@ -466,7 +466,7 @@ void PartCanvas::partsChanged()
 
 void PartCanvas::updateSelection()
       {
-      for (iCItem i = items.begin(); i != items.end(); ++i) {
+      for (MusEWidget::iCItem i = items.begin(); i != items.end(); ++i) {
             NPart* part = (NPart*)(i->second);
             part->part()->setSelected(i->second->isSelected());
       }
@@ -478,7 +478,7 @@ void PartCanvas::updateSelection()
 //   resizeItem
 //---------------------------------------------------------
 
-void PartCanvas::resizeItem(CItem* i, bool noSnap, bool ctrl)
+void PartCanvas::resizeItem(MusEWidget::CItem* i, bool noSnap, bool ctrl)
       {
       Track* t = ((NPart*)(i))->track();
       Part*  p = ((NPart*)(i))->part();
@@ -500,7 +500,7 @@ void PartCanvas::resizeItem(CItem* i, bool noSnap, bool ctrl)
 //    first create local Item
 //---------------------------------------------------------
 
-CItem* PartCanvas::newItem(const QPoint& pos, int)
+MusEWidget::CItem* PartCanvas::newItem(const QPoint& pos, int)
       {
       int x = pos.x();
       if (x < 0)
@@ -544,7 +544,7 @@ CItem* PartCanvas::newItem(const QPoint& pos, int)
 //   newItem
 //---------------------------------------------------------
 
-void PartCanvas::newItem(CItem* i, bool noSnap)
+void PartCanvas::newItem(MusEWidget::CItem* i, bool noSnap)
       {
       Part*  p = ((NPart*)(i))->part();
 
@@ -562,7 +562,7 @@ void PartCanvas::newItem(CItem* i, bool noSnap)
 //   deleteItem
 //---------------------------------------------------------
 
-bool PartCanvas::deleteItem(CItem* i)
+bool PartCanvas::deleteItem(MusEWidget::CItem* i)
       {
       Part*  p = ((NPart*)(i))->part();
       audio->msgRemovePart(p, true); //Invokes songChanged which calls partsChanged which makes it difficult to delete them there
@@ -573,7 +573,7 @@ bool PartCanvas::deleteItem(CItem* i)
 //   splitItem
 //---------------------------------------------------------
 
-void PartCanvas::splitItem(CItem* item, const QPoint& pt)
+void PartCanvas::splitItem(MusEWidget::CItem* item, const QPoint& pt)
       {
       NPart* np = (NPart*) item;
       Track* t = np->track();
@@ -588,7 +588,7 @@ void PartCanvas::splitItem(CItem* item, const QPoint& pt)
 //   glueItem
 //---------------------------------------------------------
 
-void PartCanvas::glueItem(CItem* item)
+void PartCanvas::glueItem(MusEWidget::CItem* item)
       {
       NPart* np = (NPart*) item;
       Track* t = np->track();
@@ -600,7 +600,7 @@ void PartCanvas::glueItem(CItem* item)
 //   genItemPopup
 //---------------------------------------------------------
 
-QMenu* PartCanvas::genItemPopup(CItem* item)
+QMenu* PartCanvas::genItemPopup(MusEWidget::CItem* item)
       {
       NPart* npart = (NPart*) item;
       Track::TrackType trackType = npart->track()->type();
@@ -692,7 +692,7 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
 //   itemPopup
 //---------------------------------------------------------
 
-void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
+void PartCanvas::itemPopup(MusEWidget::CItem* item, int n, const QPoint& pt)
       {
       PartList* pl = new PartList;
       NPart* npart = (NPart*)(item);
@@ -813,7 +813,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                     curColorIndex = n - 20;
                     bool selfound = false;
                     //Loop through all parts and set color on selected:
-                    for (iCItem i = items.begin(); i != items.end(); i++) {
+                    for (MusEWidget::iCItem i = items.begin(); i != items.end(); i++) {
                           if (i->second->isSelected()) {
                                 selfound = true;
                                 i->second->part()->setColorIndex(curColorIndex);
@@ -845,7 +845,7 @@ void PartCanvas::mousePress(QMouseEvent* event)
             return;
             }
       QPoint pt = event->pos();
-      CItem* item = items.find(pt);
+      MusEWidget::CItem* item = items.find(pt);
       if (item == 0 && _tool!=MusEWidget::AutomationTool)
             return;
       switch (_tool) {
@@ -1043,7 +1043,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
               event->ignore();  // give global accelerators a chance
               return;
           }
-          for (iCItem i = items.begin(); i != items.end(); ++i) {
+          for (MusEWidget::iCItem i = items.begin(); i != items.end(); ++i) {
               NPart* part = (NPart*)(i->second);
               if (part->isSelected()) {
                 curItem=part;
@@ -1054,13 +1054,13 @@ void PartCanvas::keyPress(QKeyEvent* event)
             curItem = (NPart*)items.begin()->second; // just grab the first part
       }
 
-      CItem* newItem = 0;
+      MusEWidget::CItem* newItem = 0;
       bool singleSelection = isSingleSelection();
       bool add = false;
       //Locators to selection
       if (key == shortcuts[SHRT_LOCATORS_TO_SELECTION].key) {
-            CItem *leftmost = 0, *rightmost = 0;
-            for (iCItem i = items.begin(); i != items.end(); i++) {
+            MusEWidget::CItem *leftmost = 0, *rightmost = 0;
+            for (MusEWidget::iCItem i = items.begin(); i != items.end(); i++) {
             if (i->second->isSelected()) {
                   // Check leftmost:
                   if (!leftmost)
@@ -1096,7 +1096,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
             Track* track = part->track();
             unsigned int tick = part->tick();
             bool afterthis = false;
-            for (iCItem i = items.begin(); i != items.end(); ++i) {
+            for (MusEWidget::iCItem i = items.begin(); i != items.end(); ++i) {
                   NPart* npart = (NPart*)(i->second);
                   Part* ipart = npart->part();
                   if (ipart->track() != track)
@@ -1124,7 +1124,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
             Track* track = part->track();
             unsigned int tick = part->tick();
 
-            for (iCItem i = items.begin(); i != items.end(); ++i) {
+            for (MusEWidget::iCItem i = items.begin(); i != items.end(); ++i) {
                   NPart* npart = (NPart*)(i->second);
                   Part* ipart = npart->part();
 
@@ -1153,7 +1153,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
                   return;
                 }
             int middle = curItem->x() + curItem->part()->lenTick()/2;
-            CItem *aboveL = 0, *aboveR = 0;
+            MusEWidget::CItem *aboveL = 0, *aboveR = 0;
             //Upper limit: song end, lower limit: song start
             int ulimit  = song->len();
             int llimit = 0;
@@ -1174,7 +1174,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
                         }
 
                   if ((aboveL || aboveR) != 0) { //We've hit something
-                        CItem* above  = 0;
+                        MusEWidget::CItem* above  = 0;
                         above = (aboveL !=0) ? aboveL : aboveR;
                         newItem = above;
                         }
@@ -1200,7 +1200,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
             if (!track)
                   return;
 
-            CItem *belowL = 0, *belowR = 0;
+            MusEWidget::CItem *belowL = 0, *belowR = 0;
             //Upper limit: song end , lower limit: song start
             int ulimit = song->len();
             int llimit = 0;
@@ -1220,7 +1220,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
                         }
 
                   if ((belowL || belowR) != 0) { //We've hit something
-                        CItem* below = 0;
+                        MusEWidget::CItem* below = 0;
                         below = (belowL !=0) ? belowL : belowR;
                         newItem = below;
                         }
@@ -1304,7 +1304,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
 //---------------------------------------------------------
 
 #if 0
-void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
+void PartCanvas::drawItem(QPainter& p, const MusEWidget::CItem* item, const QRect& rect)
       {
       int from   = rect.x();
       int to     = from + rect.width();
@@ -1401,7 +1401,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
           QColor c(Qt::black);
           c.setAlpha(MusEConfig::config.globalAlphaBlend);
           QLinearGradient gradient(r.topLeft(), r.bottomLeft());
-          // Use a colour only about 20% lighter than black, rather than the 50% we use in gGradientFromQColor
+          // Use a colour only about 20% lighter than black, rather than the 50% we use in MusEUtil::gGradientFromQColor
           //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
           //c.setRgba(64, 64, 64, c.alpha());        
           gradient.setColorAt(0, QColor(51, 51, 51, MusEConfig::config.globalAlphaBlend));
@@ -1429,7 +1429,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       {
             QColor c(MusEConfig::config.partColors[cidx]);
             c.setAlpha(MusEConfig::config.globalAlphaBlend);
-            brush = QBrush(gGradientFromQColor(c, r.topLeft(), r.bottomLeft()));
+            brush = QBrush(MusEUtil::gGradientFromQColor(c, r.topLeft(), r.bottomLeft()));
       }  
       
       double h = r.height();
@@ -1508,7 +1508,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         else
           color_brightness=223;   // too dark: use lighter color 
         QColor c(color_brightness,color_brightness,color_brightness, MusEConfig::config.globalAlphaBlend);
-        p.setBrush(QBrush(gGradientFromQColor(c, r.topLeft(), r.bottomLeft())));
+        p.setBrush(QBrush(MusEUtil::gGradientFromQColor(c, r.topLeft(), r.bottomLeft())));
         //p.setBrush(QBrush(c));
         if(het & Part::RightEventsHidden)
         {
@@ -1703,7 +1703,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             //  get the lowest colour in the gradient used to draw the part.
             QRect rr = map(r);
             rr.setX(rr.x() + 3);
-            gGradientFromQColor(MusEConfig::config.partColors[cidx], rr.topLeft(), rr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
+            MusEUtil::gGradientFromQColor(MusEConfig::config.partColors[cidx], rr.topLeft(), rr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
             brightness =  part_r*29 + part_g*59 + part_b*12;
             //bool rev = (brightness < 12000 || part->selected()) && !part->mute() && !item->isMoving();
             bool rev = brightness >= 12000 && !part->selected();
@@ -1725,7 +1725,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       }
 #endif
 
-void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
+void PartCanvas::drawItem(QPainter& p, const MusEWidget::CItem* item, const QRect& rect)
       {
       int from   = rect.x();
       int to     = from + rect.width();
@@ -1826,7 +1826,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
           QColor c(Qt::black);
           c.setAlpha(MusEConfig::config.globalAlphaBlend);
           QLinearGradient gradient(rr.topLeft(), rr.bottomLeft());
-          // Use a colour only about 20% lighter than black, rather than the 50% we use in gGradientFromQColor
+          // Use a colour only about 20% lighter than black, rather than the 50% we use in MusEUtil::gGradientFromQColor
           //  and is used in darker()/lighter(), so that it is distinguished a bit better from grey non-part tracks.
           //c.setRgba(64, 64, 64, c.alpha());        
           gradient.setColorAt(0, QColor(51, 51, 51, MusEConfig::config.globalAlphaBlend));
@@ -1847,7 +1847,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
       {
             QColor c(MusEConfig::config.partColors[cidx]);
             c.setAlpha(MusEConfig::config.globalAlphaBlend);
-            brush = QBrush(gGradientFromQColor(c, rr.topLeft(), rr.bottomLeft()));
+            brush = QBrush(MusEUtil::gGradientFromQColor(c, rr.topLeft(), rr.bottomLeft()));
       }  
       
       int h = rr.height();
@@ -1948,7 +1948,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
         else
           color_brightness=180; //255;   // too dark: use lighter color 
         QColor c(color_brightness,color_brightness,color_brightness, MusEConfig::config.globalAlphaBlend);
-        p.setBrush(QBrush(gGradientFromQColor(c, rr.topLeft(), rr.bottomLeft())));
+        p.setBrush(QBrush(MusEUtil::gGradientFromQColor(c, rr.topLeft(), rr.bottomLeft())));
         //p.setBrush(QBrush(c));
         if(het & Part::RightEventsHidden)
         {
@@ -2167,7 +2167,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             //QRect rr = map(r);
             QRect tr = rr;
             tr.setX(tr.x() + 3);
-            gGradientFromQColor(MusEConfig::config.partColors[cidx], tr.topLeft(), tr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
+            MusEUtil::gGradientFromQColor(MusEConfig::config.partColors[cidx], tr.topLeft(), tr.bottomLeft()).stops().last().second.getRgb(&part_r, &part_g, &part_b);
             brightness =  part_r*29 + part_g*59 + part_b*12;
             //bool rev = (brightness < 12000 || part->selected()) && !part->mute() && !item->isMoving();
             bool rev = brightness >= 12000 && !part->selected();
@@ -2193,7 +2193,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
 //    draws moving items
 //---------------------------------------------------------
 
-void PartCanvas::drawMoving(QPainter& p, const CItem* item, const QRect&)
+void PartCanvas::drawMoving(QPainter& p, const MusEWidget::CItem* item, const QRect&)
       {
         p.setPen( Qt::black);
         Part* part = ((NPart*)item)->part();
@@ -2560,7 +2560,7 @@ void PartCanvas::drawWavePart(QPainter& p,
 void PartCanvas::cmd(int cmd)
       {
       PartList pl;
-      for (iCItem i = items.begin(); i != items.end(); ++i) {
+      for (MusEWidget::iCItem i = items.begin(); i != items.end(); ++i) {
             if (!i->second->isSelected())
                   continue;
             NPart* npart = (NPart*)(i->second);
@@ -2573,7 +2573,7 @@ void PartCanvas::cmd(int cmd)
                   
                   Undo operations;
                   
-                  for (iCItem i = items.begin(); i != items.end(); ++i) {
+                  for (MusEWidget::iCItem i = items.begin(); i != items.end(); ++i) {
                         if (i->second->isSelected()) {
                               NPart* p = (NPart*)(i->second);
                               Part* part = p->part();
@@ -2895,7 +2895,7 @@ Undo PartCanvas::movePartsTotheRight(unsigned int startTicks, int length)
         Undo operations;
         
         // all parts that start after the pasted parts will be moved the entire length of the pasted parts
-        for (iCItem i = items.begin(); i != items.end(); ++i) {
+        for (MusEWidget::iCItem i = items.begin(); i != items.end(); ++i) {
           if (!i->second->isSelected()) {
               Part* part = i->second->part();
               if (part->tick() >= startTicks) {
@@ -2925,7 +2925,7 @@ Undo PartCanvas::movePartsTotheRight(unsigned int startTicks, int length)
 //   startDrag
 //---------------------------------------------------------
 
-void PartCanvas::startDrag(CItem* item, DragType t)
+void PartCanvas::startDrag(MusEWidget::CItem* item, DragType t)
       {
       NPart* p = (NPart*)(item);
       Part* part = p->part();

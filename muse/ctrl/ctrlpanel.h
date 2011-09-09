@@ -29,9 +29,12 @@ class MidiController;
 
 class QPushButton;
 
-class MidiEditor;
+namespace MusEWidget {
 class Knob;
 class DoubleLabel;
+}
+
+class MidiEditor;
 class MidiPort;
 class MidiTrack;
 
@@ -50,8 +53,8 @@ class CtrlPanel: public QWidget {
       MidiController* _ctrl;
       int _dnum;
       bool inHeartBeat;
-      Knob* _knob;
-      DoubleLabel* _dl;
+      MusEWidget::Knob* _knob;
+      MusEWidget::DoubleLabel* _dl;
       int _val;
       
       

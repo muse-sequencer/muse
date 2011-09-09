@@ -28,6 +28,8 @@
 #include "xml.h"
 #include "song.h"
 
+namespace MusEDialog {
+
 //---------------------------------------------------------
 //   GateTime
 //---------------------------------------------------------
@@ -121,3 +123,5 @@ void GateTime::write_configuration(int level, Xml& xml)
 	xml.intTag(level, "rate", rateVal);
 	xml.tag(level, "/mod_len");
 }
+
+} // namespace MusEDialog

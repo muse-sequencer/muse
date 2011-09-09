@@ -3419,7 +3419,7 @@ const char* DssiSynthIF::getPatchName(int /*chan*/, int prog, MType /*type*/, bo
 //---------------------------------------------------------
 
 //void DssiSynthIF::populatePatchPopup(QMenu* menu, int)
-void DssiSynthIF::populatePatchPopup(PopupMenu* menu, int /*ch*/, MType /*type*/, bool /*drum*/)
+void DssiSynthIF::populatePatchPopup(MusEWidget::PopupMenu* menu, int /*ch*/, MType /*type*/, bool /*drum*/)
       {
       // The plugin can change the programs, patches etc.
       // So make sure we're up to date by calling queryPrograms.

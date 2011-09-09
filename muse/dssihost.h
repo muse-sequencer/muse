@@ -211,7 +211,7 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       
       //virtual void populatePatchPopup(QMenu*, int);
       //virtual void populatePatchPopup(QMenu*, int, MType, bool);
-      virtual void populatePatchPopup(PopupMenu*, int, MType, bool);
+	virtual void populatePatchPopup(MusEWidget::PopupMenu*, int, MType, bool);
       
       //virtual void write(Xml& xml) const;
       virtual void write(int level, Xml& xml) const;

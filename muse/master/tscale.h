@@ -29,7 +29,7 @@
 //   Tscale
 //---------------------------------------------------------
 
-class TScale : public View {
+class TScale : public MusEWidget::View {
       Q_OBJECT
         
       double curTempo;

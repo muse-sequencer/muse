@@ -1486,8 +1486,8 @@ void MusE::writeConfiguration(int level, Xml& xml) const
 void MusE::configMidiSync()
       {
       if (!midiSyncConfig)
-        //midiSyncConfig = new MidiSyncConfig(this);
-        midiSyncConfig = new MidiSyncConfig;
+        //midiSyncConfig = new MusEWidget::MidiSyncConfig(this);
+        midiSyncConfig = new MusEWidget::MidiSyncConfig;
         
       if (midiSyncConfig->isVisible()) {
           midiSyncConfig->raise();
@@ -1522,7 +1522,7 @@ void MusE::configMidiFile()
 void MusE::configGlobalSettings()
       {
       if (!globalSettingsConfig)
-            globalSettingsConfig = new GlobalSettingsConfig();
+          globalSettingsConfig = new MusEWidget::GlobalSettingsConfig();
 
       if (globalSettingsConfig->isVisible()) {
           globalSettingsConfig->raise();

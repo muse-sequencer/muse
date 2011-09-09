@@ -28,6 +28,8 @@
 class QMenu;
 class QSignalMapper;
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   ComboBox
 //---------------------------------------------------------
@@ -56,6 +58,8 @@ class ComboBox : public QToolButton {
       void setCurrentItem(int);
       void addAction(const QString& s, int id = -1);
       };
+
+} // namespace MusEWidget
 
 #endif
 

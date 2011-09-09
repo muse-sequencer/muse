@@ -38,6 +38,8 @@
 
 extern int mtcType;
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   QNumberSection
 //---------------------------------------------------------
@@ -867,3 +869,5 @@ void PosEdit::setEnabled(bool v)
   QWidget::setEnabled(v);
   updateButtons();
 }
+
+} // namespace MusEWidget

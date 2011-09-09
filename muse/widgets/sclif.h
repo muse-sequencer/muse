@@ -27,6 +27,8 @@
 
 #include "scldraw.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   ScaleIf
 //---------------------------------------------------------
@@ -56,6 +58,8 @@ class ScaleIf
 	int scaleMaxMinor() const {return d_maxMinor;}
 	int scaleMaxMajor() const {return d_maxMinor;}
       };
+
+} // namespace MusEWidget
 
 #endif
 

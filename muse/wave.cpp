@@ -822,8 +822,8 @@ void MusE::importWave()
               "a wave track"));
             return;
             }
-      //QString fn = getOpenFileName(MusEGlobal::lastWavePath, audioFilePattern, this,
-      QString fn = getOpenFileName(MusEGlobal::lastWavePath, MusEGlobal::audio_file_pattern, this,
+      //QString fn = MusEWidget::getOpenFileName(MusEGlobal::lastWavePath, audioFilePattern, this,
+      QString fn = MusEWidget::getOpenFileName(MusEGlobal::lastWavePath, MusEGlobal::audio_file_pattern, this,
          tr("Import Wave File"), 0);                                    
       if (!fn.isEmpty()) {
             MusEGlobal::lastWavePath = fn;

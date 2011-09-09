@@ -47,6 +47,8 @@ class QEvent;
 //class QTimer;
 //class QStandardItemModel;
 
+namespace MusEWidget {
+
 class PopupMenu : public QMenu
 {
   Q_OBJECT
@@ -99,6 +101,7 @@ class PopupView : public QColumnView
 };
 */
 
+} // namespace MusEWidget
 
 #endif
 

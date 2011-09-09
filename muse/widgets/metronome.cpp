@@ -30,6 +30,8 @@
 #include "track.h"
 #include "audio.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   MetronomeConfig
 //---------------------------------------------------------
@@ -196,3 +198,6 @@ void MetronomeConfig::beepVolumeChanged(int volume)
       // this value is directly applied, not using th Apply button, it just seems more usable this way.
       MusEGlobal::audioClickVolume=volume/100.0;
       }
+
+} // namespace MusEWidget
+

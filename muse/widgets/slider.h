@@ -30,6 +30,8 @@
 #include "sliderbase.h"
 #include "scldraw.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   Slider
 //---------------------------------------------------------
@@ -106,4 +108,7 @@ class Slider : public SliderBase, public ScaleIf
       void setMargins(int x, int y);
   QSize sizeHint(); // const;
       };
+
+} // namespace MusEWidget
+
 #endif

@@ -25,6 +25,8 @@
 #ifndef __DOUBLE_RANGE_H__
 #define __DOUBLE_RANGE_H__
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   DoubleRange
 //---------------------------------------------------------
@@ -76,5 +78,7 @@ class DoubleRange
       int pageSize() const    { return d_pageSize; }
       double step() const;
       };
+
+} // namespace MusEWidget
 
 #endif

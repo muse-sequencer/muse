@@ -34,6 +34,8 @@
 #include "menutitleitem.h"
 #include "popupmenu.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   addMenuItem
 //---------------------------------------------------------
@@ -1420,3 +1422,4 @@ void RoutePopupMenu::popup(const QPoint& p, Track* track, bool isOutput)
   _pup->popup(p);
 }
 
+} // namespace MusEWidget

@@ -95,7 +95,7 @@ class CEventList: public std::list<CEvent*> {
 //   CtrlCanvas
 //---------------------------------------------------------
 
-class CtrlCanvas : public View {
+class CtrlCanvas : public MusEWidget::View {
       Q_OBJECT
     
       MidiEditor* editor;

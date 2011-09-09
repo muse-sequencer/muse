@@ -28,6 +28,8 @@
 #include <QStandardItemModel>
 #include <QMouseEvent>
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   readStatus
 //---------------------------------------------------------
@@ -189,3 +191,5 @@ void Header::changeColumns(QAction *a)
   else
     hideSection(section);
 }
+
+} // namespace MusEWidget

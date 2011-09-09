@@ -25,12 +25,14 @@
 #include "auxknob.h"
 #include "gconfig.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   Aux
 //---------------------------------------------------------
 
 AuxKnob::AuxKnob(QWidget* parent, int i)
-   : Knob(parent, "aux")
+   : MusEWidget::Knob(parent, "aux")
       {
       idx = i;
       setRange(MusEConfig::config.minSlider-0.1, 10.0);
@@ -53,3 +55,4 @@ void AuxKnob::valueChanged(double val)
       emit auxChanged(idx, vol);
       }
 
+} // namespace MusEWidget

@@ -31,6 +31,8 @@ class SndFile;
 
 extern SndFile* getSndFile(const SndFile* sf, QWidget* parent);
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   MixdownFileDialog
 //---------------------------------------------------------
@@ -48,6 +50,8 @@ class MixdownFileDialog : public QDialog, public Ui::MixdownFileDialogBase {
          Qt::WFlags fl = 0);
       SndFile* sndFile() { return sf; }
       };
+
+}
 
 #endif
 

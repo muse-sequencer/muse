@@ -30,6 +30,8 @@ class QLabel;
 class QLineEdit;
 class QTimer;
 
+namespace MusEWidget {
+
 class NentryFilter : public QObject {
       Q_OBJECT
 
@@ -96,4 +98,7 @@ class Nentry : public QFrame {
       void setFocusPolicy(Qt::FocusPolicy);
       bool contextMenu(QContextMenuEvent*);
       };
+
+} // namespace MusEWidget
+
 #endif

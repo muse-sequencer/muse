@@ -1868,11 +1868,11 @@ bool JackAudioDevice::dummySync(int state)
   //timespec ts = { 0, (1000000000 * MusEGlobal::segmentSize) / MusEGlobal::sampleRate };     // In nanoseconds.
   unsigned int sl = (1000000 * MusEGlobal::segmentSize) / MusEGlobal::sampleRate;            // In microseconds.
   
-  double ct = curTime();
+  double ct = MusEUtil::curTime();
   // Wait for a default maximum of 5 seconds. 
   // Similar to how Jack is supposed to wait a default of 2 seconds for slow clients.
   // TODO: Make this timeout a 'settings' option so it can be applied both to Jack and here.
-  while((curTime() - ct) < 5.0)  
+  while((MusEUtil::curTime() - ct) < 5.0)  
   {
     // Is MusE audio ready to roll?
     if(audio->sync(state, dummyPos))

@@ -27,6 +27,8 @@
 
 class MidiEditor;
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   HitScale
 //    scale for midi track
@@ -57,5 +59,8 @@ class HitScale : public View {
    public:
       HitScale(int* raster, QWidget* parent, int xscale);
       };
+
+} // namespace MusEWidget
+
 #endif
 

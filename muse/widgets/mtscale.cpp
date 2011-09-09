@@ -30,6 +30,8 @@
 #include "icons.h"
 #include "gconfig.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   MTScale
 //    Midi Time Scale
@@ -431,3 +433,4 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
             }
       }
 
+} // namespace MusEWidget

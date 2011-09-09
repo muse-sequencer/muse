@@ -34,6 +34,8 @@
 
 #include "utils.h"
 
+namespace MusEUtil {
+
 //---------------------------------------------------------
 //   curTime
 //---------------------------------------------------------
@@ -401,3 +403,5 @@ QGradient gGradientFromQColor(const QColor& c, const QPointF& start, const QPoin
   
   return gradient;
 }
+
+} // namespace MusEUtils

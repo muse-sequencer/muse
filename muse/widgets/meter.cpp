@@ -33,6 +33,8 @@
 #include "gconfig.h"
 #include "fastlog.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   Meter
 //---------------------------------------------------------
@@ -357,3 +359,4 @@ void Meter::mousePressEvent(QMouseEvent*)
       emit mousePress();
       }
 
+} // namespace MusEWidget

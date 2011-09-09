@@ -28,6 +28,8 @@
 #include "globals.h"
 #include "app.h"
 
+namespace MusEWidget {
+
 ProjectCreateImpl::ProjectCreateImpl(QWidget *parent) :
     QDialog(parent)
 {
@@ -91,3 +93,5 @@ void ProjectCreateImpl::ok()
   MusEGlobal::muse->changeConfig(true);
   emit accept();
 }
+
+} //namespace MusEWidget

@@ -24,6 +24,8 @@
 #include "crescendo.h"
 #include "xml.h"
 
+namespace MusEDialog {
+
 Crescendo::Crescendo(QWidget* parent)
 	: QDialog(parent)
 {
@@ -125,3 +127,5 @@ void Crescendo::absolute_changed(bool val)
 		end_spinbox->setSuffix(" %");
 	}
 }
+
+} // namespace MusEDialog

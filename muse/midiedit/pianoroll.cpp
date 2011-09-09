@@ -277,21 +277,21 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       transport->addActions(MusEGlobal::transportAction->actions());
 
       addToolBarBreak();
-      toolbar = new Toolbar1(this, _rasterInit);
+      toolbar = new MusEWidget::Toolbar1(this, _rasterInit);
       addToolBar(toolbar);
 
       addToolBarBreak();
-      info    = new NoteInfo(this);
+      info    = new MusEWidget::NoteInfo(this);
       addToolBar(info);
 
       //---------------------------------------------------
       //    split
       //---------------------------------------------------
 
-      splitter = new Splitter(Qt::Vertical, mainw, "splitter");
+      splitter = new MusEWidget::Splitter(Qt::Vertical, mainw, "splitter");
       splitter->setHandleWidth(2);  
       
-      hsplitter = new Splitter(Qt::Horizontal, mainw, "hsplitter");
+      hsplitter = new MusEWidget::Splitter(Qt::Horizontal, mainw, "hsplitter");
       hsplitter->setChildrenCollapsible(true);
       hsplitter->setHandleWidth(2);
       
@@ -300,9 +300,9 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       ctrl->setObjectName("Ctrl");
       ctrl->setFont(MusEConfig::config.fonts[3]);
       ctrl->setToolTip(tr("Add Controller View"));
-      //hscroll = new ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
+      //hscroll = new MusEWidget::ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. p4.0.18 Tim.
-      hscroll = new ScrollScale(-25, -1, xscale, 20000, Qt::Horizontal, mainw);
+      hscroll = new MusEWidget::ScrollScale(-25, -1, xscale, 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(pianoWidth, hscroll->sizeHint().height());
       //ctrl->setFixedSize(pianoWidth / 2, hscroll->sizeHint().height());  // Tim.
       
@@ -317,7 +317,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       
       QSizeGrip* corner = new QSizeGrip(mainw);
 
-      midiTrackInfo       = new MidiTrackInfo(mainw);        
+      midiTrackInfo       = new MusEWidget::MidiTrackInfo(mainw);        
       int mtiw = midiTrackInfo->width(); // Save this.
       midiTrackInfo->setMinimumWidth(100);   
       //midiTrackInfo->setMaximumWidth(150);   
@@ -370,10 +370,10 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       gridS1->setSpacing(0);  
     //Defined and configure your program change bar here.
     //This may well be a copy of MTScale extended for our needs
-      time                = new MTScale(&_raster, split1, xscale);
+      time                = new MusEWidget::MTScale(&_raster, split1, xscale);
       Piano* piano        = new Piano(split1, yscale);
       canvas              = new PianoCanvas(this, split1, xscale, yscale);
-      vscroll             = new ScrollScale(-3, 7, yscale, KH * 75, Qt::Vertical, split1);
+      vscroll             = new MusEWidget::ScrollScale(-3, 7, yscale, KH * 75, Qt::Vertical, split1);
       
       //setFocusProxy(canvas);   // Tim.
       
@@ -391,7 +391,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       //gridS1->setColumnStretch(2, 100);  // Tim.
 
       gridS1->addWidget(time,                   0, 1, 1, 2);
-      gridS1->addWidget(hLine(split1),          1, 0, 1, 3);
+      gridS1->addWidget(MusEUtil::hLine(split1),          1, 0, 1, 3);
       gridS1->addWidget(piano,                  2,    0);
       gridS1->addWidget(canvas,                 2,    1);
       gridS1->addWidget(vscroll,                2,    2);
@@ -399,7 +399,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       // Tim.
       /*      
       gridS1->addWidget(time,                   0, 2, 1, 3);
-      gridS1->addWidget(hLine(split1),          1, 1, 1, 4);
+      gridS1->addWidget(MusEUtil::hLine(split1),          1, 1, 1, 4);
       //gridS1->addWidget(infoScroll,             2,    0);
       gridS1->addWidget(infoScroll,             0, 0, 3, 1);
       gridS1->addWidget(piano,                  2,    1);
@@ -407,7 +407,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       gridS1->addWidget(vscroll,                2,    3);
       */
 
-      ctrlLane = new Splitter(Qt::Vertical, splitter, "ctrllane");
+      ctrlLane = new MusEWidget::Splitter(Qt::Vertical, splitter, "ctrllane");
       QWidget* split2     = new QWidget(splitter);
           split2->setMaximumHeight(hscroll->sizeHint().height());
           split2->setMinimumHeight(hscroll->sizeHint().height());
@@ -433,7 +433,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 
       connect(ctrl, SIGNAL(clicked()), SLOT(addCtrl()));
       //connect(trackInfoButton, SIGNAL(clicked()), SLOT(toggleTrackInfo()));  Tim.
-      connect(info, SIGNAL(valueChanged(NoteInfo::ValType, int)), SLOT(noteinfoChanged(NoteInfo::ValType, int)));
+      connect(info, SIGNAL(valueChanged(MusEWidget::NoteInfo::ValType, int)), SLOT(noteinfoChanged(MusEWidget::NoteInfo::ValType, int)));
       connect(vscroll, SIGNAL(scrollChanged(int)), piano,  SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scaleChanged(int)),  canvas, SLOT(setYMag(int)));
@@ -692,7 +692,7 @@ void PianoRoll::setSelection(int tick, Event& e, Part* p)
 //    edit currently selected Event
 //---------------------------------------------------------
 
-void PianoRoll::noteinfoChanged(NoteInfo::ValType type, int val)
+void PianoRoll::noteinfoChanged(MusEWidget::NoteInfo::ValType type, int val)
       {
       int selections = canvas->selectionSize();
 
@@ -702,19 +702,19 @@ void PianoRoll::noteinfoChanged(NoteInfo::ValType type, int val)
       else if (selections == 1) {
             Event event = selEvent.clone();
             switch(type) {
-                  case NoteInfo::VAL_TIME:
+                  case MusEWidget::NoteInfo::VAL_TIME:
                         event.setTick(val - selPart->tick());
                         break;
-                  case NoteInfo::VAL_LEN:
+                  case MusEWidget::NoteInfo::VAL_LEN:
                         event.setLenTick(val);
                         break;
-                  case NoteInfo::VAL_VELON:
+                  case MusEWidget::NoteInfo::VAL_VELON:
                         event.setVelo(val);
                         break;
-                  case NoteInfo::VAL_VELOFF:
+                  case MusEWidget::NoteInfo::VAL_VELOFF:
                         event.setVeloOff(val);
                         break;
-                  case NoteInfo::VAL_PITCH:
+                  case MusEWidget::NoteInfo::VAL_PITCH:
                         event.setPitch(val);
                         break;
                   }
@@ -728,23 +728,23 @@ void PianoRoll::noteinfoChanged(NoteInfo::ValType type, int val)
 
             int delta = 0;
             switch (type) {
-                  case NoteInfo::VAL_TIME:
+                  case MusEWidget::NoteInfo::VAL_TIME:
                         delta = val - tickOffset;
                         tickOffset = val;
                         break;
-                  case NoteInfo::VAL_LEN:
+                  case MusEWidget::NoteInfo::VAL_LEN:
                         delta = val - lenOffset;
                         lenOffset = val;
                         break;
-                  case NoteInfo::VAL_VELON:
+                  case MusEWidget::NoteInfo::VAL_VELON:
                         delta = val - veloOnOffset;
                         veloOnOffset = val;
                         break;
-                  case NoteInfo::VAL_VELOFF:
+                  case MusEWidget::NoteInfo::VAL_VELOFF:
                         delta = val - veloOffOffset;
                         veloOffOffset = val;
                         break;
-                  case NoteInfo::VAL_PITCH:
+                  case MusEWidget::NoteInfo::VAL_PITCH:
                         delta = val - pitchOffset;
                         pitchOffset = val;
                         break;
@@ -1063,22 +1063,22 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             }
       else if (key == shortcuts[SHRT_ZOOM_IN].key) {
             int mag = hscroll->mag();
-            int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+            int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
             if (zoomlvl < 23)
                   zoomlvl++;
 
-            int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+            int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
             hscroll->setMag(newmag);
             //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
             return;
             }
       else if (key == shortcuts[SHRT_ZOOM_OUT].key) {
             int mag = hscroll->mag();
-            int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+            int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
             if (zoomlvl > 1)
                   zoomlvl--;
 
-            int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+            int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
             hscroll->setMag(newmag);
             //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
             return;

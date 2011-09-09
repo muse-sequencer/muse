@@ -140,7 +140,7 @@ class DummyAudioDevice : public AudioDevice {
       
       return _framePos; }
       virtual unsigned frameTime() const {
-            return lrint(curTime() * MusEGlobal::sampleRate);
+            return lrint(MusEUtil::curTime() * MusEGlobal::sampleRate);
             }
       virtual bool isRealtime() { return realtimeFlag; }
       //virtual int realtimePriority() const { return 40; }
@@ -221,7 +221,7 @@ DummyAudioDevice::DummyAudioDevice()
       realtimeFlag = false;
       seekflag = false;
       state = Audio::STOP;
-      //startTime = curTime();
+      //startTime = MusEUtil::curTime();
       _framePos = 0;
       playPos = 0;
       cmdQueue.clear();

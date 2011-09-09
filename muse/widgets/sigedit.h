@@ -30,6 +30,8 @@
 class QResizeEvent;
 class QTimerEvent;
 
+namespace MusEWidget {
+
 class SigEditor;
 class SpinBox;
 
@@ -99,5 +101,7 @@ class SigEdit : public QWidget
       bool autoAdvance() const                  { return adv; }
       void enterPressed();
       };
+
+} // namespace MusEWidget
 
 #endif

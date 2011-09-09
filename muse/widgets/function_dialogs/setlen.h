@@ -28,6 +28,8 @@
 class QButtonGroup;
 class Xml;
 
+namespace MusEDialog {
+
 class Setlen : public QDialog, public Ui::SetlenBase
 {
  	Q_OBJECT
@@ -52,6 +54,8 @@ class Setlen : public QDialog, public Ui::SetlenBase
 	public slots:
 		int exec();
 };
+
+} // namespace MusEDialog
 
 #endif
 

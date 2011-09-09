@@ -22,9 +22,11 @@
 
 #include "mlabel.h"
 
+namespace MusEWidget {
 
 void MLabel::mousePressEvent(QMouseEvent*)
       {
       emit mousePressed();
       }
 
+} // namespace MusEWidget

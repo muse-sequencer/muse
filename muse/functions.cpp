@@ -45,29 +45,29 @@
 
 using namespace std;
 
-GateTime* gatetime_dialog=NULL;
-Velocity* velocity_dialog=NULL;
-Quantize* quantize_dialog=NULL;
-Remove* erase_dialog=NULL;
-DelOverlaps* del_overlaps_dialog=NULL;
-Setlen* set_notelen_dialog=NULL;
-Move* move_notes_dialog=NULL;
-Transpose* transpose_dialog=NULL;
-Crescendo* crescendo_dialog=NULL;
-Legato* legato_dialog=NULL;
+MusEDialog::GateTime* gatetime_dialog=NULL;
+MusEDialog::Velocity* velocity_dialog=NULL;
+MusEDialog::Quantize* quantize_dialog=NULL;
+MusEDialog::Remove* erase_dialog=NULL;
+MusEDialog::DelOverlaps* del_overlaps_dialog=NULL;
+MusEDialog::Setlen* set_notelen_dialog=NULL;
+MusEDialog::Move* move_notes_dialog=NULL;
+MusEDialog::Transpose* transpose_dialog=NULL;
+MusEDialog::Crescendo* crescendo_dialog=NULL;
+MusEDialog::Legato* legato_dialog=NULL;
 
 void init_function_dialogs(QWidget* parent)
 {
-	gatetime_dialog = new GateTime(parent);
-	velocity_dialog = new Velocity(parent);
-	quantize_dialog = new Quantize(parent);
-	erase_dialog = new Remove(parent);
-	del_overlaps_dialog = new DelOverlaps(parent);
-	set_notelen_dialog = new Setlen(parent);
-	move_notes_dialog = new Move(parent);
-	transpose_dialog = new Transpose(parent);
-	crescendo_dialog = new Crescendo(parent);
-	legato_dialog = new Legato(parent);
+	gatetime_dialog = new MusEDialog::GateTime(parent);
+	velocity_dialog = new MusEDialog::Velocity(parent);
+	quantize_dialog = new MusEDialog::Quantize(parent);
+	erase_dialog = new MusEDialog::Remove(parent);
+	del_overlaps_dialog = new MusEDialog::DelOverlaps(parent);
+	set_notelen_dialog = new MusEDialog::Setlen(parent);
+	move_notes_dialog = new MusEDialog::Move(parent);
+	transpose_dialog = new MusEDialog::Transpose(parent);
+	crescendo_dialog = new MusEDialog::Crescendo(parent);
+	legato_dialog = new MusEDialog::Legato(parent);
 }
 
 set<Part*> partlist_to_set(PartList* pl)

@@ -182,10 +182,10 @@ void EventCanvas::songChanged(int flags)
       Event event;
       MidiPart* part   = 0;
       int x            = 0;
-      CItem*   nevent  = 0;
+      MusEWidget::CItem*   nevent  = 0;
 
       int n  = 0;       // count selections
-      for (iCItem k = items.begin(); k != items.end(); ++k) {
+      for (MusEWidget::iCItem k = items.begin(); k != items.end(); ++k) {
             Event ev = k->second->event();
             bool selected = ev.selected();
             if (selected) {
@@ -224,11 +224,11 @@ void EventCanvas::selectAtTick(unsigned int tick)
       {
       //Select note nearest tick, if none selected and there are any
       if (!items.empty() && selectionSize() == 0) {
-            iCItem i = items.begin();
-            CItem* nearest = i->second;
+            MusEWidget::iCItem i = items.begin();
+	    MusEWidget::CItem* nearest = i->second;
 
             while (i != items.end()) {
-                CItem* cur=i->second;                
+                MusEWidget::CItem* cur=i->second;                
                 unsigned int curtk=abs(cur->x() + cur->part()->tick() - tick);
                 unsigned int neartk=abs(nearest->x() + nearest->part()->tick() - tick);
 
@@ -282,7 +282,7 @@ void EventCanvas::keyPress(QKeyEvent* event)
             int tick_min = INT_MAX;
             bool found = false;
 
-            for (iCItem i= items.begin(); i != items.end(); i++) {
+            for (MusEWidget::iCItem i= items.begin(); i != items.end(); i++) {
                   if (!i->second->isSelected())
                         continue;
 
@@ -303,8 +303,8 @@ void EventCanvas::keyPress(QKeyEvent* event)
             }
       // Select items by key (PianoRoll & DrumEditor)
       else if (key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key) {
-            iCItem i, iRightmost;
-            CItem* rightmost = NULL;
+            MusEWidget::iCItem i, iRightmost;
+	    MusEWidget::CItem* rightmost = NULL;
             //Get the rightmost selected note (if any)
             for (i = items.begin(); i != items.end(); ++i) {
                   if (i->second->isSelected()) {
@@ -312,7 +312,7 @@ void EventCanvas::keyPress(QKeyEvent* event)
                         }
                   }
                if (rightmost) {
-                     iCItem temp = iRightmost; temp++;
+                     MusEWidget::iCItem temp = iRightmost; temp++;
                      //If so, deselect current note and select the one to the right
                      if (temp != items.end()) {
                            if (key != shortcuts[SHRT_SEL_RIGHT_ADD].key)
@@ -329,8 +329,8 @@ void EventCanvas::keyPress(QKeyEvent* event)
             }
       //Select items by key: (PianoRoll & DrumEditor)
       else if (key == shortcuts[SHRT_SEL_LEFT].key || key == shortcuts[SHRT_SEL_LEFT_ADD].key) {
-            iCItem i, iLeftmost;
-            CItem* leftmost = NULL;
+            MusEWidget::iCItem i, iLeftmost;
+            MusEWidget::CItem* leftmost = NULL;
             if (items.size() > 0 ) {
                   for (i = items.end(), i--; i != items.begin(); i--) {
                         if (i->second->isSelected()) {
@@ -353,27 +353,27 @@ void EventCanvas::keyPress(QKeyEvent* event)
                   }
             }
       else if (key == shortcuts[SHRT_INC_PITCH].key) {
-            modifySelected(NoteInfo::VAL_PITCH, 1);
+            modifySelected(MusEWidget::NoteInfo::VAL_PITCH, 1);
             }
       else if (key == shortcuts[SHRT_DEC_PITCH].key) {
-            modifySelected(NoteInfo::VAL_PITCH, -1);
+            modifySelected(MusEWidget::NoteInfo::VAL_PITCH, -1);
             }
       else if (key == shortcuts[SHRT_INC_POS].key) {
             // TODO: Check boundaries
-            modifySelected(NoteInfo::VAL_TIME, editor->raster());
+            modifySelected(MusEWidget::NoteInfo::VAL_TIME, editor->raster());
             }
       else if (key == shortcuts[SHRT_DEC_POS].key) {
             // TODO: Check boundaries
-            modifySelected(NoteInfo::VAL_TIME, 0 - editor->raster());
+            modifySelected(MusEWidget::NoteInfo::VAL_TIME, 0 - editor->raster());
             }
 
       else if (key == shortcuts[SHRT_INCREASE_LEN].key) {
             // TODO: Check boundaries
-            modifySelected(NoteInfo::VAL_LEN, editor->raster());
+            modifySelected(MusEWidget::NoteInfo::VAL_LEN, editor->raster());
             }
       else if (key == shortcuts[SHRT_DECREASE_LEN].key) {
             // TODO: Check boundaries
-            modifySelected(NoteInfo::VAL_LEN, 0 - editor->raster());
+            modifySelected(MusEWidget::NoteInfo::VAL_LEN, 0 - editor->raster());
             }
 
       else

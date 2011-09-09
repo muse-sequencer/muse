@@ -23,12 +23,16 @@
 #ifndef __SECTION_H__
 #define __SECTION_H__
 
+namespace MusEWidget {
+
 struct Section {
       int offset;
       unsigned len;
       int voff;
       int val;
       };
+
+} // namespace MusEWidget
 
 #endif
 

@@ -27,6 +27,8 @@
 
 class MidiEditor;
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   SigScale
 //    Time Signature Scale
@@ -57,5 +59,8 @@ class SigScale : public View {
    public:
       SigScale(int* raster, QWidget* parent, int xscale);
       };
+
+} // namespace MusEWidget
+
 #endif
 

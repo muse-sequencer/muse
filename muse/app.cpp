@@ -1581,7 +1581,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             //  read *.med file
             //
             bool popenFlag;
-            FILE* f = fileOpen(this, fi.filePath(), QString(".med"), "r", popenFlag, true);
+            FILE* f = MusEWidget::fileOpen(this, fi.filePath(), QString(".med"), "r", popenFlag, true);
             if (f == 0) {
                   if (errno != ENOENT) {
                         QMessageBox::critical(this, QString("MusE"),
@@ -1752,7 +1752,7 @@ void MusE::setFollow()
 void MusE::loadProject()
       {
       bool loadAll;
-      QString fn = getOpenFileName(QString(""), MusEGlobal::med_file_pattern, this,
+      QString fn = MusEWidget::getOpenFileName(QString(""), MusEGlobal::med_file_pattern, this,
          tr("MusE: load project"), &loadAll);
       if (!fn.isEmpty()) {
             MusEGlobal::museProject = QFileInfo(fn).absolutePath();
@@ -1766,8 +1766,8 @@ void MusE::loadProject()
 
 void MusE::loadTemplate()
       {
-      QString fn = getOpenFileName(QString("templates"), MusEGlobal::med_file_pattern, this,
-                                   tr("MusE: load template"), 0, MFileDialog::GLOBAL_VIEW);
+      QString fn = MusEWidget::getOpenFileName(QString("templates"), MusEGlobal::med_file_pattern, this,
+                                               tr("MusE: load template"), 0, MusEWidget::MFileDialog::GLOBAL_VIEW);
       if (!fn.isEmpty()) {
             // MusEGlobal::museProject = QFileInfo(fn).absolutePath();
             
@@ -1819,7 +1819,7 @@ bool MusE::save(const QString& name, bool overwriteWarn)
             system(backupCommand.toLatin1().constData());
 
       bool popenFlag;
-      FILE* f = fileOpen(this, name, QString(".med"), "w", popenFlag, false, overwriteWarn);
+      FILE* f = MusEWidget::fileOpen(this, name, QString(".med"), "w", popenFlag, false, overwriteWarn);
       if (f == 0)
             return false;
       Xml xml(f);
@@ -2041,10 +2041,10 @@ void MusE::showTransport(bool flag)
 //    by audio strip, midi strip, and midi trackinfo.
 //---------------------------------------------------------
 
-RoutePopupMenu* MusE::getRoutingPopupMenu()
+MusEWidget::RoutePopupMenu* MusE::getRoutingPopupMenu()
 {
   if(!routingPopupMenu)
-    routingPopupMenu = new RoutePopupMenu(this);
+    routingPopupMenu = new MusEWidget::RoutePopupMenu(this);
   return routingPopupMenu;
 }
 
@@ -2057,7 +2057,7 @@ bool MusE::saveAs()
       QString name;
       if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath ) {
         if (MusEConfig::config.useProjectSaveDialog) {
-            ProjectCreateImpl pci(MusEGlobal::muse);
+            MusEWidget::ProjectCreateImpl pci(MusEGlobal::muse);
             if (pci.exec() == QDialog::Rejected) {
               return false;
             }
@@ -2065,7 +2065,7 @@ bool MusE::saveAs()
             song->setSongInfo(pci.getSongInfo(), true);
             name = pci.getProjectPath();
           } else {
-            name = getSaveFileName(QString(""), MusEGlobal::med_file_save_pattern, this, tr("MusE: Save As"));
+            name = MusEWidget::getSaveFileName(QString(""), MusEGlobal::med_file_save_pattern, this, tr("MusE: Save As"));
             if (name.isEmpty())
               return false;
           }
@@ -2078,7 +2078,7 @@ bool MusE::saveAs()
         }
       }
       else {
-        name = getSaveFileName(QString(""), MusEGlobal::med_file_save_pattern, this, tr("MusE: Save As"));
+        name = MusEWidget::getSaveFileName(QString(""), MusEGlobal::med_file_save_pattern, this, tr("MusE: Save As"));
       }
       bool ok = false;
       if (!name.isEmpty()) {
@@ -2353,7 +2353,7 @@ void MusE::startWaveEditor(PartList* pl)
 //---------------------------------------------------------
 void MusE::startSongInfo(bool editable)
       {
-        SongInfoWidget info;
+        MusEWidget::SongInfoWidget info;
         info.viewCheckBox->setChecked(song->showSongInfoOnStartup());
         info.viewCheckBox->setEnabled(editable);
         info.songInfoText->setPlainText(song->getSongInfo());
@@ -2374,7 +2374,7 @@ void MusE::startSongInfo(bool editable)
 void MusE::showDidYouKnowDialog()
       {
       if ((bool)MusEConfig::config.showDidYouKnow == true) {
-            DidYouKnowWidget dyk;
+            MusEWidget::DidYouKnowWidget dyk;
             dyk.tipText->setText("To get started with MusE why don't you try some demo songs available at http://demos.muse-sequencer.org/");
             dyk.show();
             if( dyk.exec()) {
@@ -2914,7 +2914,7 @@ void MusE::changeConfig(bool writeFlag)
 void MusE::configMetronome()
       {
       if (!metronomeConfig)
-          metronomeConfig = new MetronomeConfig;
+          metronomeConfig = new MusEWidget::MetronomeConfig;
 
       if(metronomeConfig->isVisible()) {
           metronomeConfig->raise();
@@ -2932,7 +2932,7 @@ void MusE::configMetronome()
 void MusE::configShortCuts()
       {
       if (!shortcutConfig)
-            shortcutConfig = new ShortcutConfig(this);
+            shortcutConfig = new MusEWidget::ShortcutConfig(this);
       shortcutConfig->_config_changed = false;
       if (shortcutConfig->exec())
             changeConfig(true);
@@ -3621,7 +3621,7 @@ void MusE::execUserScript(int id)
 //---------------------------------------------------------
 void MusE::findUnusedWaveFiles()
 {
-    UnusedWaveFiles unused(MusEGlobal::muse);
+    MusEWidget::UnusedWaveFiles unused(MusEGlobal::muse);
     unused.exec();
 }
 

@@ -33,6 +33,8 @@
 #include "../marker/marker.h"
 #include "icons.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   WTScale
 //    Wave Time Scale
@@ -298,4 +300,6 @@ void WTScale::pdraw(QPainter& p, const QRect& r)
                   }
             }
       }
+
+} // namespace MusEWidget
 

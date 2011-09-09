@@ -36,6 +36,8 @@
 #define TIMEC2    20
 #define TIMER4    50
 
+namespace MusEWidget {
+
 NentryFilter::NentryFilter(QObject* parent)
    : QObject(parent)
       {
@@ -414,3 +416,4 @@ bool Nentry::keyPress(QKeyEvent* event)
       return true;
       }
 
+} // namespace MusEWidget

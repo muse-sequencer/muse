@@ -47,9 +47,7 @@ class QToolButton;
 class QToolBar;
 class QPushButton;
 class CtrlEdit;
-class Splitter;
 class PartList;
-class Toolbar1;
 class Xml;
 class ScrollScale;
 class Part;
@@ -58,8 +56,13 @@ class QMenu;
 class QAction;
 class QWidget;
 class QScrollBar;
-class MidiTrackInfo;
 class QScrollArea;
+
+namespace MusEWidget {
+class MidiTrackInfo;
+class Splitter;
+class Toolbar1;
+}
 
 //---------------------------------------------------------
 //   PianoRoll
@@ -78,7 +81,7 @@ class PianoRoll : public MidiEditor {
 
       
       QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
-      MidiTrackInfo *midiTrackInfo;
+      MusEWidget::MidiTrackInfo *midiTrackInfo;
       Track* selected;
       
       QAction* editCutAction; 
@@ -116,14 +119,14 @@ class PianoRoll : public MidiEditor {
       int veloOffOffset;
       bool deltaMode;
 
-      NoteInfo* info;
+      MusEWidget::NoteInfo* info;
       QToolButton* srec;
       QToolButton* midiin;
 
-      Toolbar1* toolbar;
-      Splitter* splitter;
-      Splitter* hsplitter;
-      Splitter* ctrlLane;
+      MusEWidget::Toolbar1* toolbar;
+      MusEWidget::Splitter* splitter;
+      MusEWidget::Splitter* hsplitter;
+      MusEWidget::Splitter* ctrlLane;
 
       QToolButton* speaker;
       QToolBar* tools;
@@ -154,7 +157,7 @@ class PianoRoll : public MidiEditor {
 
    private slots:
       void setSelection(int, Event&, Part*);
-      void noteinfoChanged(NoteInfo::ValType, int);
+      void noteinfoChanged(MusEWidget::NoteInfo::ValType, int);
       //CtrlEdit* addCtrl();
       void removeCtrl(CtrlEdit* ctrl);
       void soloChanged(bool flag);

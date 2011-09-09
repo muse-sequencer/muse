@@ -24,6 +24,7 @@
 #include "deloverlaps.h"
 #include "xml.h"
 
+namespace MusEDialog {
 
 DelOverlaps::DelOverlaps(QWidget* parent)
 	: QDialog(parent)
@@ -92,3 +93,5 @@ void DelOverlaps::write_configuration(int level, Xml& xml)
 	xml.intTag(level, "range", range);
 	xml.tag(level, "/del_overlaps");
 }
+
+} // namespace MusEDialog

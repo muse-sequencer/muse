@@ -28,6 +28,8 @@
 class QButtonGroup;
 class Xml;
 
+namespace MusEDialog {
+
 class Remove : public QDialog, public Ui::RemoveBase
 {
  	Q_OBJECT
@@ -55,6 +57,8 @@ class Remove : public QDialog, public Ui::RemoveBase
 	public slots:
 		int exec();
 };
+
+} // namespace MusEDialog
 
 #endif
 

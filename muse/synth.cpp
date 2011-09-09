@@ -911,7 +911,7 @@ const char* MessSynthIF::getPatchName(int channel, int prog, MType type, bool dr
 //   populatePatchPopup
 //---------------------------------------------------------
 
-void MessSynthIF::populatePatchPopup(PopupMenu* menu, int ch, MType, bool)
+void MessSynthIF::populatePatchPopup(MusEWidget::PopupMenu* menu, int ch, MType, bool)
       {
       menu->clear();
       const MidiPatch* mp = _mess->getPatchInfo(ch, 0);

@@ -142,7 +142,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
       toolbar->addWidget(label);
-      cursorPos = new PosLabel(0);
+      cursorPos = new MusEWidget::PosLabel(0);
       cursorPos->setEnabled(false);
       cursorPos->setFixedHeight(22);
       toolbar->addWidget(cursorPos);
@@ -174,14 +174,14 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       // song length is limited to 10000 bars; the real song len is limited
       // by overflows in tick computations
       //
-      lenEntry = new SpinBox(1, 10000, 1);
+      lenEntry = new MusEWidget::SpinBox(1, 10000, 1);
       lenEntry->setValue(song->len());
       lenEntry->setToolTip(tr("song length - bars"));
       lenEntry->setWhatsThis(tr("song length - bars"));
       toolbar->addWidget(lenEntry);
       connect(lenEntry, SIGNAL(valueChanged(int)), SLOT(songlenChanged(int)));
 
-      typeBox = new LabelCombo(tr("Type"), 0);
+      typeBox = new MusEWidget::LabelCombo(tr("Type"), 0);
       typeBox->insertItem(0, tr("NO"));
       typeBox->insertItem(1, tr("GM"));
       typeBox->insertItem(2, tr("GS"));
@@ -199,7 +199,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       label->setIndent(3);
       toolbar->addWidget(label);
       
-      globalPitchSpinBox = new SpinBox(-127, 127, 1);
+      globalPitchSpinBox = new MusEWidget::SpinBox(-127, 127, 1);
       globalPitchSpinBox->setValue(song->globalPitchShift());
       globalPitchSpinBox->setToolTip(tr("midi pitch"));
       globalPitchSpinBox->setWhatsThis(tr("global midi pitch shift"));
@@ -211,7 +211,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       label->setIndent(3);
       toolbar->addWidget(label);
       
-      globalTempoSpinBox = new SpinBox(50, 200, 1, toolbar);
+      globalTempoSpinBox = new MusEWidget::SpinBox(50, 200, 1, toolbar);
       globalTempoSpinBox->setSuffix(QString("%"));
       globalTempoSpinBox->setValue(tempomap.globalTempo());
       globalTempoSpinBox->setToolTip(tr("midi tempo"));
@@ -237,8 +237,8 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       QVBoxLayout* box  = new QVBoxLayout(this);
       box->setContentsMargins(0, 0, 0, 0);
       box->setSpacing(0);
-      box->addWidget(hLine(this), Qt::AlignTop);
-      //QFrame* hline = hLine(this);
+      box->addWidget(MusEUtil::hLine(this), Qt::AlignTop);
+      //QFrame* hline = MusEUtil::hLine(this);
       //hline->setLineWidth(0);
       //box->addWidget(hline, Qt::AlignTop);
 
@@ -249,7 +249,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       int xscale = -100;
       int yscale = 1;
 
-      split  = new Splitter(Qt::Horizontal, this, "split");
+      split  = new MusEWidget::Splitter(Qt::Horizontal, this, "split");
       split->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
       box->addWidget(split, 1000);
       //split->setHandleWidth(10);
@@ -291,7 +291,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       ib->setFocusPolicy(Qt::NoFocus);
       connect(ib, SIGNAL(toggled(bool)), SLOT(showTrackInfo(bool)));
 
-      header = new Header(tracklist, "header");
+      header = new MusEWidget::Header(tracklist, "header");
       
       header->setFixedHeight(30);
 
@@ -353,7 +353,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       tgrid->wadd(1, infoScroll);
       tgrid->wadd(2, header);
       tgrid->wadd(3, list);
-      tgrid->wadd(4, hLine(tracklist));
+      tgrid->wadd(4, MusEUtil::hLine(tracklist));
       tgrid->wadd(5, ib);
 
       //---------------------------------------------------
@@ -361,7 +361,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       //---------------------------------------------------
 
       int offset = AL::sigmap.ticksMeasure(0);
-      hscroll = new ScrollScale(-1000, -10, xscale, song->len(), Qt::Horizontal, editor, -offset);
+      hscroll = new MusEWidget::ScrollScale(-1000, -10, xscale, song->len(), Qt::Horizontal, editor, -offset);
       hscroll->setFocusPolicy(Qt::NoFocus);
       ib->setFixedHeight(hscroll->sizeHint().height());
 
@@ -389,7 +389,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       egrid->setContentsMargins(0, 0, 0, 0);  
       egrid->setSpacing(0);  
 
-      time = new MTScale(&_raster, editor, xscale);
+      time = new MusEWidget::MTScale(&_raster, editor, xscale);
       time->setOrigin(-offset, 0);
       canvas = new PartCanvas(&_raster, editor, xscale, yscale);
       canvas->setBg(MusEConfig::config.partCanvasBg);
@@ -410,9 +410,9 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       connect(list, SIGNAL(redirectWheelEvent(QWheelEvent*)), canvas, SLOT(redirectedWheelEvent(QWheelEvent*)));
       
       //egrid->addMultiCellWidget(time,           0, 0, 0, 1);
-      //egrid->addMultiCellWidget(hLine(editor),  1, 1, 0, 1);
+      //egrid->addMultiCellWidget(MusEUtil::hLine(editor),  1, 1, 0, 1);
       egrid->addWidget(time, 0, 0, 1, 2);
-      egrid->addWidget(hLine(editor), 1, 0, 1, 2);
+      egrid->addWidget(MusEUtil::hLine(editor), 1, 0, 1, 2);
 
       egrid->addWidget(canvas,  2, 0);
       egrid->addWidget(vscroll, 2, 1);
@@ -1006,14 +1006,14 @@ void Arranger::genTrackInfo(QWidget* parent)
       noTrackInfo->setGeometry(0, 0, 65, 200);
       noTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding));
 
-      midiTrackInfo = new MidiTrackInfo(trackInfo);
+      midiTrackInfo = new MusEWidget::MidiTrackInfo(trackInfo);
       //midiTrackInfo->setFocusPolicy(Qt::TabFocus);    // p4.0.9
       //midiTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
       trackInfo->addWidget(noTrackInfo,   0);
       trackInfo->addWidget(midiTrackInfo, 1);
       trackInfo->addWidget(0, 2);
 
-///      genMidiTrackInfo();
+///      genMusEWidget::MidiTrackInfo();
       }
 
 //---------------------------------------------------------
@@ -1114,11 +1114,11 @@ void Arranger::keyPressEvent(QKeyEvent* event)
 void Arranger::horizontalZoomIn()
 {
   int mag = hscroll->mag();
-  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+  int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
   if (zoomlvl < 23)
         zoomlvl++;
 
-  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+  int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
 
   hscroll->setMag(newmag);
 
@@ -1127,11 +1127,11 @@ void Arranger::horizontalZoomIn()
 void Arranger::horizontalZoomOut()
 {
   int mag = hscroll->mag();
-  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+  int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
   if (zoomlvl > 1)
         zoomlvl--;
 
-  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+  int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
 
   hscroll->setMag(newmag);
 

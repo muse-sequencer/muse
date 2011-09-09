@@ -24,6 +24,8 @@
 #include "citem.h"
 #include <stdio.h>
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   CItem
 //---------------------------------------------------------
@@ -106,3 +108,4 @@ void CItemList::add(CItem* item)
       std::multimap<int, CItem*, std::less<int> >::insert(std::pair<const int, CItem*> (item->bbox().x(), item));
       }
 
+} // namespace MusEWidget

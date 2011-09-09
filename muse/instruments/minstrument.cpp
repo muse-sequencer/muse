@@ -934,7 +934,7 @@ QString MidiInstrument::getPatchName(int channel, int prog, MType mode, bool dru
 //   populatePatchPopup
 //---------------------------------------------------------
 
-void MidiInstrument::populatePatchPopup(PopupMenu* menu, int chan, MType songType, bool drum)
+void MidiInstrument::populatePatchPopup(MusEWidget::PopupMenu* menu, int chan, MType songType, bool drum)
       {
       menu->clear();
       int mask = 0;
@@ -959,7 +959,7 @@ void MidiInstrument::populatePatchPopup(PopupMenu* menu, int chan, MType songTyp
             for (ciPatchGroup i = pg.begin(); i != pg.end(); ++i) {
                   PatchGroup* pgp = *i;
                   //QMenu* pm = menu->addMenu(pgp->name);
-                  PopupMenu* pm = new PopupMenu(pgp->name, menu, menu->stayOpen());  // Use the parent stayOpen here.
+                  MusEWidget::PopupMenu* pm = new MusEWidget::PopupMenu(pgp->name, menu, menu->stayOpen());  // Use the parent stayOpen here.
                   menu->addMenu(pm);
                   pm->setFont(MusEConfig::config.fonts[0]);
                   const PatchList& pl = pgp->patches;

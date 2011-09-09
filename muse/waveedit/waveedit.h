@@ -38,10 +38,13 @@ class PartList;
 class WaveView;
 class ScrollScale;
 class QSlider;
-class PosLabel;
 class QResizeEvent;
 class SNode;
 class QAction;
+
+namespace MusEWidget {
+class PosLabel;
+}
 
 //---------------------------------------------------------
 //   WaveEdit
@@ -55,8 +58,8 @@ class WaveEdit : public MidiEditor {
       QToolBar* tools;
       QToolBar* tb1;
       QToolButton* solo;
-      PosLabel* pos1;
-      PosLabel* pos2;
+      MusEWidget::PosLabel* pos1;
+      MusEWidget::PosLabel* pos2;
       QAction* selectAllAction;
       QAction* selectNoneAction;
       QAction* cutAction;

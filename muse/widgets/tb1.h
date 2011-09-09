@@ -28,10 +28,13 @@
 class QToolButton;
 class QTableWidget;
 
-class PosLabel;
-class PitchLabel;
 class Track;
 class LabelCombo;
+
+namespace MusEWidget {
+
+class PitchLabel;
+class PosLabel;
 
 //---------------------------------------------------------
 //   Toolbar1
@@ -67,5 +70,7 @@ class Toolbar1 : public QToolBar {
       void setSolo(bool val);
       void setPitchMode(bool flag);
       };
+
+} // namespace MusEWidget
 
 #endif

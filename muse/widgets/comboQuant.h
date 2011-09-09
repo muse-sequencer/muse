@@ -30,6 +30,8 @@
 class QWidget;
 class QTableWidget;
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   ComboQuant
 //---------------------------------------------------------
@@ -49,6 +51,8 @@ class ComboQuant : public QComboBox {
       ComboQuant(QWidget* parent = 0);
       void setValue(int val);
       };
+
+}
 
 #endif
 

@@ -24,6 +24,8 @@
 #include "quantize.h"
 #include "xml.h"
 
+namespace MusEDialog {
+
 Quantize::Quantize(QWidget* parent)
 	: QDialog(parent)
 {
@@ -116,3 +118,6 @@ void Quantize::write_configuration(int level, Xml& xml)
 	xml.intTag(level, "quant_len", quant_len);
 	xml.tag(level, "/quantize");
 }
+
+} // namespace MusEDialog
+

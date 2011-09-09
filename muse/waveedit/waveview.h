@@ -48,7 +48,7 @@ typedef std::list<WaveEventSelection>::iterator iWaveSelection;
 //   WaveView
 //---------------------------------------------------------
 
-class WaveView : public View {
+class WaveView : public MusEWidget::View {
       Q_OBJECT
     
       MidiEditor* editor;

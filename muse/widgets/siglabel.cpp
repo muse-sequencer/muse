@@ -35,6 +35,8 @@
 #include <QWheelEvent>
 #include <QLabel>
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   SigLabel
 //    edit Signature Values  (4/4)
@@ -177,3 +179,5 @@ void SigLabel::setFrame(bool flag)
       setFrameStyle(flag ? Panel | Sunken : NoFrame);
       setLineWidth(2);
       }
+
+} // namespace MusEWidget

@@ -55,7 +55,7 @@ CtrlEdit::CtrlEdit(QWidget* parent, MidiEditor* e, int xmag,
       QHBoxLayout* hbox = new QHBoxLayout;
       panel             = new CtrlPanel(0, e, "panel");
       canvas            = new CtrlCanvas(e, 0, xmag, "ctrlcanvas", panel);
-      QWidget* vscale   = new VScale;
+      QWidget* vscale   = new MusEWidget::VScale;
 
       hbox->setContentsMargins(0, 0, 0, 0);
       hbox->setSpacing (0);

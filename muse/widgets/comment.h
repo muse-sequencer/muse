@@ -29,6 +29,8 @@ class Xml;
 class Track;
 class QWidget;
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   Comment
 //---------------------------------------------------------
@@ -65,6 +67,8 @@ class TrackComment : public Comment {
    public:
       TrackComment(Track*, QWidget*);
       };
+
+} // namespace MusEWidget
 
 #endif
 

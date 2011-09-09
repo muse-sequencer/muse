@@ -28,6 +28,8 @@
 class QButtonGroup;
 class Xml;
 
+namespace MusEDialog {
+
 //---------------------------------------------------------
 //   Velocity
 //---------------------------------------------------------
@@ -56,6 +58,8 @@ class Velocity : public QDialog, public Ui::VelocityBase {
    public slots:
       int exec();
       };
+
+} // namespace MusEDialog
 
 #endif
 

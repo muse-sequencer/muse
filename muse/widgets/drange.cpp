@@ -29,6 +29,8 @@
 #include "mmath.h"
 #include "drange.h"
 
+namespace MusEWidget {
+
 const double DoubleRange::MinRelStep = 1.0e-10;
 const double DoubleRange::DefaultRelStep = 1.0e-2;
 const double DoubleRange::MinEps = 1.0e-10;
@@ -71,8 +73,8 @@ void DoubleRange::setNewValue(double x, bool align)
       {
       d_prevValue = d_value;
 
-      double vmin = qwtMin(d_minValue, d_maxValue);
-      double vmax = qwtMax(d_minValue, d_maxValue);
+      double vmin = MusEUtil::qwtMin(d_minValue, d_maxValue);
+      double vmax = MusEUtil::qwtMax(d_minValue, d_maxValue);
 
       // Range check
 
@@ -104,11 +106,11 @@ void DoubleRange::setNewValue(double x, bool align)
                   d_value = d_minValue;
 	
             // correct rounding error at the border
-            if (fabs(d_value - d_maxValue) < MinEps * qwtAbs(d_step))
+            if (fabs(d_value - d_maxValue) < MinEps * MusEUtil::qwtAbs(d_step))
                   d_value = d_maxValue;
 
             // correct rounding error if value = 0
-            if (fabs(d_value) < MinEps * qwtAbs(d_step))
+            if (fabs(d_value) < MinEps * MusEUtil::qwtAbs(d_step))
                   d_value = 0.0;
             }
       if (d_prevValue != d_value)
@@ -177,7 +179,7 @@ void DoubleRange::setRange(double vmin, double vmax, double vstep, int pageSize)
       //
       // limit page size
       //
-      d_pageSize = qwtLim(pageSize,0, int(qwtAbs((d_maxValue - d_minValue) / d_step)));
+      d_pageSize = MusEUtil::qwtLim(pageSize,0, int(MusEUtil::qwtAbs((d_maxValue - d_minValue) / d_step)));
 
       //
       // If the value lies out of the range, it
@@ -271,6 +273,7 @@ void DoubleRange::incPages(int nPages)
 
 double DoubleRange::step() const
       {
-      return qwtAbs(d_step);
+      return MusEUtil::qwtAbs(d_step);
       }
 
+} // namespace MusEWidget

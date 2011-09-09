@@ -27,6 +27,8 @@
 
 #include "sliderbase.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   Dentry
 //---------------------------------------------------------
@@ -85,4 +87,7 @@ class Dentry : public QLineEdit {
       SliderBase* slider() const            { return _slider; }
       void setSlider(SliderBase* s)         { _slider = s; }
       };
+
+} // namespace MusEWidget
+
 #endif

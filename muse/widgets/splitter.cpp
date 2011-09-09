@@ -26,6 +26,8 @@
 #include <QList>
 #include <QStringList>
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   Splitter
 //---------------------------------------------------------
@@ -92,3 +94,5 @@ void Splitter::readStatus(Xml& xml)
                   }
             }
       }
+
+} // namespace MusEWidget

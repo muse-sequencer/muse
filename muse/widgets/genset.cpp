@@ -34,6 +34,8 @@
 #include "globals.h"
 #include "icons.h"
 
+namespace MusEWidget {
+
 static int rtcResolutions[] = {
       1024, 2048, 4096, 8192, 16384, 32768
       };
@@ -511,3 +513,5 @@ void GlobalSettingsConfig::defaultInstrumentsPath()
       QString dir = MusEGlobal::configPath + "/instruments";
       userInstrumentsPath->setText(dir);
       }
+
+} // namespace MusEWidget

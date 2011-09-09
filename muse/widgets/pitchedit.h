@@ -25,6 +25,10 @@
 
 #include <QSpinBox>
 
+extern QString pitch2string(int v);
+
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   PitchEdit
 //---------------------------------------------------------
@@ -43,6 +47,6 @@ class PitchEdit : public QSpinBox {
       void setDeltaMode(bool);
       };
 
-extern QString pitch2string(int v);
+} // namespace MusEWidget
 
 #endif

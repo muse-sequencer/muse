@@ -195,7 +195,7 @@ void MidiSyncInfo::setTime()
   // Note: CurTime() makes a system call to gettimeofday(), 
   //  which apparently can be slow in some cases. So I avoid calling this function
   //  too frequently by calling it (at the heartbeat rate) in Song::beat().  T356
-  double t = curTime();
+  double t = MusEUtil::curTime();
   
   if(_clockTrig)
   {
@@ -743,7 +743,7 @@ void MidiSeq::mtcInputFull(int port, const unsigned char* p, int n)
       if (p[3] != 1) {
             if (p[3] != 2) {   // silently ignore user bits
                   printf("unknown mtc msg subtype 0x%02x\n", p[3]);
-                  dump(p, n);
+                  MusEUtil::dump(p, n);
                   }
             return;
             }
@@ -798,7 +798,7 @@ void MidiSeq::nonRealtimeSystemSysex(int /*port*/, const unsigned char* p, int n
                   break;
             default:
                   printf("unknown NRT Msg 0x%02x\n", p[3]);
-                  dump(p, n);
+                  MusEUtil::dump(p, n);
                   break;
            }
       }
@@ -938,7 +938,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   if(port != curMidiSyncInPort)
                     break;
                   
-                  //printf("midi clock:%f\n", curTime());
+                  //printf("midi clock:%f\n", MusEUtil::curTime());
                   
                   // Re-transmit clock to other devices if clock out turned on.
                   // Must be careful not to allow more than one clock input at a time.
@@ -966,7 +966,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   if(playStateExt)
                   {
                     lastExtMidiSyncTime = curExtMidiSyncTime;
-                    curExtMidiSyncTime = curTime();
+                    curExtMidiSyncTime = MusEUtil::curTime();
                     int div = MusEConfig::config.division/24;
                     midiExtSyncTicks += div;
                     lastExtMidiSyncTick = curExtMidiSyncTick;
@@ -975,7 +975,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   
 //BEGIN : Original code:
                   /*
-                  double mclock0 = curTime();
+                  double mclock0 = MusEUtil::curTime();
                   // Difference in time last 2 rounds:
                   double tdiff0   = mclock0 - mclock1;
                   double tdiff1   = mclock1 - mclock2;
@@ -1089,7 +1089,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   
 //BEGIN : Using external tempo map:
                   /*
-                  double mclock0 = curTime();
+                  double mclock0 = MusEUtil::curTime();
                   // Difference in time last 2 rounds:
                   double tdiff0   = mclock0 - mclock1;
                   double tdiff1   = mclock1 - mclock2;
@@ -1248,7 +1248,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   if (debugSync)
                         printf("   start\n");
                   
-                  //printf("midi start:%f\n", curTime());
+                  //printf("midi start:%f\n", MusEUtil::curTime());
                   
                   if (1 /* !audio->isPlaying()*/ /*state == IDLE*/) {
                         if (!MusEGlobal::checkAudioDevice()) return;
@@ -1297,7 +1297,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                   if (debugSync)
                         printf("realtimeSystemInput continue\n");
                   
-                  //printf("continue:%f\n", curTime());
+                  //printf("continue:%f\n", MusEUtil::curTime());
                   
                   if (1 /* !audio->isPlaying() */ /*state == IDLE */) {
                         //unsigned curFrame = audio->curFrame();
@@ -1332,7 +1332,7 @@ void MidiSeq::realtimeSystemInput(int port, int c)
                     //lastStoppedBeat = (audio->tickPos() * 4) / MusEConfig::config.division;
                     //curExtMidiSyncTick = (MusEConfig::config.division * lastStoppedBeat) / 4;
                     
-                    //printf("stop:%f\n", curTime());
+                    //printf("stop:%f\n", MusEUtil::curTime());
                     
                     if (audio->isPlaying() /*state == PLAY*/) {
                           audio->msgPlay(false);

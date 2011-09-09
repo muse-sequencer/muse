@@ -765,7 +765,7 @@ void Appearance::removeBackground()
 void Appearance::addBackground()
       {
       QString cur = getenv("HOME");
-      QString user_bgfile = getImageFileName(cur, MusEGlobal::image_file_pattern, this,
+      QString user_bgfile = MusEWidget::getImageFileName(cur, MusEGlobal::image_file_pattern, this,
                                              tr("MusE: load image"));
 
       bool image_exists = false;

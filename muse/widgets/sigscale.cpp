@@ -32,6 +32,8 @@
 #include "song.h"
 #include "gconfig.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   SigScale
 //---------------------------------------------------------
@@ -164,4 +166,4 @@ void SigScale::pdraw(QPainter& p, const QRect& r)
             p.drawLine(xp, 0, xp, h);
       }
 
-
+} // namespace MusEWidget

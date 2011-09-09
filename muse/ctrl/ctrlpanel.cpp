@@ -111,7 +111,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       _val = CTRL_VAL_UNKNOWN;
       _dnum = -1;
       
-      _knob = new Knob;
+      _knob = new MusEWidget::Knob;
       _knob->setFixedWidth(25);
       _knob->setFixedHeight(25);
       _knob->setToolTip(tr("manual adjust"));
@@ -121,7 +121,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       _knob->hide();
       _knob->setAltFaceColor(Qt::red);
       
-      _dl = new DoubleLabel(-1.0, 0.0, +127.0);
+      _dl = new MusEWidget::DoubleLabel(-1.0, 0.0, +127.0);
       _dl->setPrecision(0);
       _dl->setToolTip(tr("double click on/off"));
       _dl->setSpecialText(tr("off"));
@@ -184,7 +184,7 @@ void CtrlPanel::heartBeat()
       int v = mp->hwCtrlState(chan, _dnum);
       if(v == CTRL_VAL_UNKNOWN)
       {
-        // DoubleLabel ignores the value if already set...
+        // MusEWidget::DoubleLabel ignores the value if already set...
         _dl->setValue(_dl->off() - 1.0);
         _val = CTRL_VAL_UNKNOWN;
         v = mp->lastValidHWCtrlState(chan, _dnum);
@@ -210,7 +210,7 @@ void CtrlPanel::heartBeat()
         _val = v;
         if(v == CTRL_VAL_UNKNOWN || ((_dnum == CTRL_PROGRAM) && ((v & 0xff) == 0xff) ))
         {
-          // DoubleLabel ignores the value if already set...
+          // MusEWidget::DoubleLabel ignores the value if already set...
           //_dl->setValue(double(_ctrl->minVal() - 1));
           _dl->setValue(_dl->off() - 1.0);
         }
@@ -774,10 +774,10 @@ void CtrlPanel::ctrlPopup()
                   }
             }
       
-      PopupMenu* ctrlMainPop = new PopupMenu;
+      MusEWidget::PopupMenu* ctrlMainPop = new MusEWidget::PopupMenu;
       
       //ctrlMainPop->addSeparator();
-      ctrlMainPop->addAction(new MenuTitleItem(tr("Instrument-defined"), ctrlMainPop));
+      ctrlMainPop->addAction(new MusEWidget::MenuTitleItem(tr("Instrument-defined"), ctrlMainPop));
       
       //ctrlMainPop->addAction(QIcon(*configureIcon), tr("Add ..."))->setData(max + 1);
       
@@ -796,7 +796,7 @@ void CtrlPanel::ctrlPopup()
       //ctrlMainPop->addAction(QIcon(*midi_edit_instrumentIcon), tr("Edit instruments"))->setData(max + 2);
 
       ctrlMainPop->addSeparator();
-      ctrlMainPop->addAction(new MenuTitleItem(tr("Others"), ctrlMainPop));
+      ctrlMainPop->addAction(new MusEWidget::MenuTitleItem(tr("Others"), ctrlMainPop));
       
       //ctrlMainPop->addAction(QIcon(*configureIcon), tr("Add ..."))->setData(max + 3);
       
@@ -834,8 +834,8 @@ void CtrlPanel::ctrlPopup()
             }
       else if (rv == max + 1) {  // add new instrument controller
             
-            PopupMenu * ctrlSubPop = new PopupMenu(this);
-            ctrlSubPop->addAction(new MenuTitleItem(tr("Instrument-defined"), ctrlSubPop));
+            MusEWidget::PopupMenu * ctrlSubPop = new MusEWidget::PopupMenu(this);
+            ctrlSubPop->addAction(new MusEWidget::MenuTitleItem(tr("Instrument-defined"), ctrlSubPop));
             
             //
             // populate popup with all controllers available for
@@ -906,8 +906,8 @@ void CtrlPanel::ctrlPopup()
       //      MusEGlobal::muse->startEditInstrument();
       
       else if (rv == max + 3) {             // add new other controller
-            PopupMenu* ctrlSubPop = new PopupMenu(this);
-            ctrlSubPop->addAction(new MenuTitleItem(tr("Common Controls"), ctrlSubPop));
+            MusEWidget::PopupMenu* ctrlSubPop = new MusEWidget::PopupMenu(this);
+            ctrlSubPop->addAction(new MusEWidget::MenuTitleItem(tr("Common Controls"), ctrlSubPop));
             
             for(int num = 0; num < 127; ++num)
               if(cll->find(channel, num) == cll->end())

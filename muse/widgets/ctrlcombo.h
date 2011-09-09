@@ -26,12 +26,15 @@
 
 #include <QComboBox>
 
+namespace MusEWidget {
+
 class CtrlComboBox : public QComboBox {
       Q_OBJECT
    public:
       CtrlComboBox(QWidget* parent);
       };
 
+} // namespace MusEWidget
 
 #endif
 

@@ -24,6 +24,8 @@
 #include "legato.h"
 #include "xml.h"
 
+namespace MusEDialog {
+
 Legato::Legato(QWidget* parent)
 	: QDialog(parent)
 {
@@ -101,3 +103,5 @@ void Legato::write_configuration(int level, Xml& xml)
 	xml.intTag(level, "allow_shortening", allow_shortening);
 	xml.tag(level, "/legato");
 }
+
+} // namespace MusEDialog

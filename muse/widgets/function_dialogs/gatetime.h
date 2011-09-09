@@ -28,6 +28,8 @@
 class QButtonGroup;
 class Xml;
 
+namespace MusEDialog {
+
 //---------------------------------------------------------
 //   GateTime
 //---------------------------------------------------------
@@ -56,6 +58,8 @@ class GateTime : public QDialog, public Ui::GateTimeBase {
    public slots:
       int exec();
       };
+
+} // namespace MusEDialog
 
 #endif
 

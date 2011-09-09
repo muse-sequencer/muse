@@ -35,6 +35,8 @@
 #define TIMEC2    20
 #define TIMER4    50
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   Dentry
 //    lineedit double values
@@ -255,3 +257,4 @@ void Dentry::setValue(double v)
       val = v;
       }
 
+} // namespace MusEWidget

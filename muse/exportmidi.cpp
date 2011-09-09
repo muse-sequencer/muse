@@ -136,7 +136,7 @@ namespace MusEApp {
 
 void MusE::exportMidi()
       {
-      MFile file(QString("midis"), QString(".mid"));
+      MusEWidget::MFile file(QString("midis"), QString(".mid"));
 
       //FILE* fp = file.open("w", midi_file_pattern, this, false, true,
       FILE* fp = file.open("w", MusEGlobal::midi_file_save_pattern, this, false, true,

@@ -31,6 +31,8 @@
 ///#include "posedit.h"
 #include "pitchedit.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------
 //    NoteInfo
 //    ToolBar
@@ -224,3 +226,4 @@ void NoteInfo::timeChanged(const Pos& pos)
             emit valueChanged(VAL_TIME, pos.tick());
       }
 
+} // namespace MusEWidget

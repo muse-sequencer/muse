@@ -28,6 +28,8 @@
 class QButtonGroup;
 class Xml;
 
+namespace MusEDialog {
+
 class Crescendo : public QDialog, public Ui::CrescendoBase
 {
  	Q_OBJECT
@@ -57,6 +59,8 @@ class Crescendo : public QDialog, public Ui::CrescendoBase
 	private slots:
 		void absolute_changed(bool);
 };
+
+} // namespace MusEDialog
 
 #endif
 
