@@ -8,6 +8,7 @@
 #include "functions.h"
 #include "song.h"
 #include "undo.h"
+#include "helper.h"
 
 #include "event.h"
 #include "audio.h"
@@ -848,34 +849,28 @@ void copy_notes(const set<Part*>& parts, int range)
 		QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
 }
 
-void paste_notes(Part* dest_part)
+void paste_notes(int max_distance, bool always_new_part, bool never_new_part, Part* paste_into_part)
 {
-	QString tmp="x-muse-eventlist"; // QClipboard::text() expects a QString&, not a QString :(
+	QString tmp="x-muse-groupedeventlists"; // QClipboard::text() expects a QString&, not a QString :(
 	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);  // TODO CHECK Tim.
-	paste_at(dest_part, s, song->cpos());
+	paste_at(s, song->cpos(), max_distance, always_new_part, never_new_part, paste_into_part);
 }
 
+
+// if nothing is selected/relevant, this function returns NULL
 QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
 {
-	map<Event*, Part*> events=get_events(parts,range);
-
-	//---------------------------------------------------
-	//   generate event list from selected events
-	//---------------------------------------------------
-
-	EventList el;
-	unsigned startTick = MAXINT; //will be the tick of the first event or MAXINT if no events are there
-
-	for (map<Event*, Part*>::iterator it=events.begin(); it!=events.end(); it++)
-	{
-		Event& e   = *it->first;
-		
-		if (e.tick() < startTick)
-			startTick = e.tick();
-			
-		el.add(e);
-	}
-
+	unsigned start_tick = MAXINT; //will be the tick of the first event or MAXINT if no events are there
+	
+	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+		for (iEvent ev=(*part)->events()->begin(); ev!=(*part)->events()->end(); ev++)
+			if (is_relevant(ev->second, *part, range))
+				if (ev->second.tick() < start_tick)
+					start_tick=ev->second.tick();
+	
+	if (start_tick == MAXINT)
+		return NULL;
+	
 	//---------------------------------------------------
 	//    write events as XML into tmp file
 	//---------------------------------------------------
@@ -890,10 +885,14 @@ QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
 	Xml xml(tmp);
 	int level = 0;
 	
-	xml.tag(level++, "eventlist");
-	for (ciEvent e = el.begin(); e != el.end(); ++e)
-		e->second.write(level, xml, -startTick);
-	xml.etag(--level, "eventlist");
+	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+	{
+		xml.tag(level++, "eventlist part_id=\"%d\"", (*part)->sn());
+		for (iEvent ev=(*part)->events()->begin(); ev!=(*part)->events()->end(); ev++)
+			if (is_relevant(ev->second, *part, range))
+				ev->second.write(level, xml, -start_tick);
+		xml.etag(--level, "eventlist");
+	}
 
 	//---------------------------------------------------
 	//    read tmp file into drag Object
@@ -903,7 +902,7 @@ QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
 	struct stat f_stat;
 	if (fstat(fileno(tmp), &f_stat) == -1)
 	{
-		fprintf(stderr, "PianoCanvas::copy() fstat failed:<%s>\n",
+		fprintf(stderr, "copy_notes() fstat failed:<%s>\n",
 		strerror(errno));
 		fclose(tmp);
 		return 0;
@@ -916,7 +915,7 @@ QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
 	QByteArray data(fbuf);
 	QMimeData* md = new QMimeData();
 
-	md->setData("text/x-muse-eventlist", data);
+	md->setData("text/x-muse-groupedeventlists", data);
 
 	munmap(fbuf, n);
 	fclose(tmp);
@@ -924,10 +923,52 @@ QMimeData* selected_events_to_mime(const set<Part*>& parts, int range)
 	return md;
 }
 
-void paste_at(Part* dest_part, const QString& pt, int pos)
+bool read_eventlist_and_part(Xml& xml, EventList* el, int* part_id) // true on success, false on failure
+{
+	*part_id = -1;
+	
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::Error:
+			case Xml::End:
+				return false;
+				
+			case Xml::Attribut:
+				if (tag == "part_id")
+					*part_id = xml.s2().toInt();
+				else
+					printf("unknown attribute '%s' in read_eventlist_and_part(), ignoring it...\n", tag.toAscii().data());
+				break;
+				
+			case Xml::TagStart:
+				if (tag == "event")
+				{
+					Event e(Note);
+					e.read(xml);
+					el->add(e);
+				}
+				else
+					xml.unknown("read_eventlist_and_part");
+				break;
+				
+			case Xml::TagEnd:
+				if (tag == "eventlist")
+					return true;
+				
+			default:
+				break;
+		}
+	}
+}
+
+void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part, bool never_new_part, Part* paste_into_part)
 {
 	Undo operations;
-	unsigned newpartlen=dest_part->lenTick();
+	map<Part*, unsigned> expand_map;
 	
 	Xml xml(pt.toLatin1().constData());
 	for (;;) 
@@ -938,53 +979,82 @@ void paste_at(Part* dest_part, const QString& pt, int pos)
 		{
 			case Xml::Error:
 			case Xml::End:
-				goto end_of_paste_at;
+				goto out_of_paste_at_for;
 				
 			case Xml::TagStart:
 				if (tag == "eventlist")
 				{
 					EventList el;
-					el.read(xml, "eventlist", true);
-					for (iEvent i = el.begin(); i != el.end(); ++i)
+					int part_id;
+		
+					if (read_eventlist_and_part(xml, &el, &part_id))
 					{
-						Event e = i->second;
-						int tick = e.tick() + pos - dest_part->tick();
-						if (tick<0)
+						Part* dest_part;
+						Track* dest_track;
+						
+						if (paste_into_part == NULL)
+							dest_part = partFromSerialNumber(part_id);
+						else
+							dest_part=paste_into_part;
+						
+						if (dest_part == NULL)
 						{
-							printf("ERROR: trying to add event before current part!\n");
-							goto end_of_paste_at;
+							printf("ERROR: destination part wasn't found. ignoring these events\n");
 						}
+						else
+						{
+							dest_track=dest_part->track();
+							
+							unsigned first_paste_tick = el.begin()->first + pos;
+							if ( (dest_part->tick() > first_paste_tick) ||   // dest_part begins too late
+									 ( ( (dest_part->endTick() + max_distance < first_paste_tick) || // dest_part is too far away
+										 always_new_part ) && !never_new_part ) )
+							{
+								dest_part = dest_track->newPart();
+								dest_part->setTick(AL::sigmap.raster1(first_paste_tick, config.division));
+								operations.push_back(UndoOp(UndoOp::AddPart, dest_part));
+							}
+							
+							for (iEvent i = el.begin(); i != el.end(); ++i)
+							{
+								Event e = i->second;
+								int tick = e.tick() + pos - dest_part->tick();
+								if (tick<0)
+								{
+									printf("ERROR: trying to add event before current part! ignoring this event\n");
+									continue;
+								}
 
-						e.setTick(tick);
-						e.setSelected(true);
-						
-						if (e.endTick() > dest_part->lenTick()) // event exceeds part?
-						{
-							if (dest_part->hasHiddenEvents()) // auto-expanding is forbidden?
-							{
-								if (e.tick() < dest_part->lenTick())
-									e.setLenTick(dest_part->lenTick() - e.tick()); // clip
-								else
-									e.setLenTick(0); // don't insert that note at all
-							}
-							else
-							{
-								if (e.endTick() > newpartlen)
-									newpartlen=e.endTick();
+								e.setTick(tick);
+								e.setSelected(true);
+								
+								if (e.endTick() > dest_part->lenTick()) // event exceeds part?
+								{
+									if (dest_part->hasHiddenEvents()) // auto-expanding is forbidden?
+									{
+										if (e.tick() < dest_part->lenTick())
+											e.setLenTick(dest_part->lenTick() - e.tick()); // clip
+										else
+											e.setLenTick(0); // don't insert that note at all
+									}
+									else
+									{
+										if (e.endTick() > expand_map[dest_part])
+											expand_map[dest_part]=e.endTick();
+									}
+								}
+								
+								if (e.lenTick() != 0) operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
 							}
 						}
-						
-						if (e.lenTick() != 0) operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
 					}
-					
-					if (newpartlen != dest_part->lenTick())
-						schedule_resize_all_same_len_clone_parts(dest_part, newpartlen, operations);
-
-					song->applyOperationGroup(operations);
-					goto end_of_paste_at;
+					else
+					{
+						printf("ERROR: reading eventlist from clipboard failed. ignoring this one...\n");
+					}
 				}
 				else
-				xml.unknown("paste_at");
+					xml.unknown("paste_at");
 				break;
 				
 			case Xml::Attribut:
@@ -994,7 +1064,13 @@ void paste_at(Part* dest_part, const QString& pt, int pos)
 		}
 	}
 	
-	end_of_paste_at:
+	out_of_paste_at_for:
+	
+	for (map<Part*, unsigned>::iterator it = expand_map.begin(); it!=expand_map.end(); it++)
+		if (it->second != it->first->lenTick())
+			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
+
+	song->applyOperationGroup(operations);
 	song->update(SC_SELECTION);
 }
 

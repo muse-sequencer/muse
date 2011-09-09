@@ -904,7 +904,7 @@ void DrumEdit::cmd(int cmd)
             case DrumCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
             case DrumCanvas::CMD_PASTE: 
                   ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-                  paste_notes(canvas->part());
+                  paste_notes(); // (canvas->part());  TODO FINDMICHJETZT
                   break;
             case DrumCanvas::CMD_LOAD: load(); break;
             case DrumCanvas::CMD_SAVE: save(); break;
@@ -936,7 +936,7 @@ void DrumEdit::cmd(int cmd)
 
 void DrumEdit::clipboardChanged()
       {
-      pasteAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-eventlist")));
+      pasteAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
       }
 
 //---------------------------------------------------------

@@ -617,7 +617,7 @@ void PianoRoll::cmd(int cmd)
             case PianoCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
             case PianoCanvas::CMD_PASTE: 
                               ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-                              paste_notes(canvas->part());
+                              paste_notes(); //(canvas->part()); TODO FINDMICHJETZT
                               break;
 						case PianoCanvas::CMD_MODIFY_GATE_TIME: modify_notelen(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
@@ -1180,7 +1180,7 @@ void PianoRoll::setEventColorMode(int mode)
 
 void PianoRoll::clipboardChanged()
       {
-      editPasteAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-eventlist")));
+      editPasteAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
       }
 
 //---------------------------------------------------------

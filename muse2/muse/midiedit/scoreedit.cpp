@@ -679,7 +679,7 @@ void ScoreEdit::menu_command(int cmd)
 		case CMD_COPY: copy_notes(score_canvas->get_all_parts(), 1); break;
 		case CMD_PASTE: 
 			menu_command(CMD_SELECT_NONE); 
-			paste_notes(score_canvas->get_selected_part());
+			paste_notes(); //(score_canvas->get_selected_part()); TODO FINDMICHJETZT
 			break;
 		case CMD_QUANTIZE: quantize_notes(score_canvas->get_all_parts()); break;
 		case CMD_VELOCITY: modify_velocity(score_canvas->get_all_parts()); break;
@@ -700,7 +700,7 @@ void ScoreEdit::menu_command(int cmd)
 
 void ScoreEdit::clipboard_changed()
 {
-	paste_action->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-eventlist")));
+	paste_action->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
 }
 
 void ScoreEdit::selection_changed()
@@ -4486,10 +4486,16 @@ void ScoreEdit::keyPressEvent(QKeyEvent* event)
  *     changing "share" status, the changed state isn't stored
  * 
  * CURRENT TODO
+ *   o when pasting and creating new parts, inform the editors about that!
+ *   o TEST pasting in editors!
+ *   o pasting in editors: add dialogs
+ * 
  * ! o fix sigedit boxes
  * M o remove that ugly "bool initalizing" stuff. it's probably unneeded (watch out for the FINDMICH message)
  *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer
  *     journey to the menu bar. try to find a way which does not involve duplicate code!
+ *   o sane defaults for toolbars
+ *   o paste in midi editors
  *   o implement borland-style maximize: free windows do not cover the main menu, even when maximized
  *   o smart range selection: if range markers have been used recently (that is, a dialog with
  *     "range" setting, or they've been modified), default to "in range" or "selected in range"
