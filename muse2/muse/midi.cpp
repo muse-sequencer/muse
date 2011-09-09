@@ -4,6 +4,7 @@
 //  $Id: midi.cpp,v 1.43.2.22 2009/11/09 20:28:28 terminator356 Exp $
 //
 //  (C) Copyright 1999/2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -216,9 +217,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                || ((ev.channel() == track->outChannel()) && (ev.port() == track->outPort()))))
                   continue;
             unsigned tick = ev.time();
-            // Added by Tim. p3.3.8
             
-            // Added by T356.
             if(doLoops)
             {
               if(tick >= song->lPos().tick() && tick < song->rPos().tick())
@@ -475,13 +474,10 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
       //    read NoteOn events and remove corresponding NoteOffs
       //---------------------------------------------------
 
-      // Added by Tim. p3.3.8 
-      // Loop removed by flo      
         for (iEvent i = mel.begin(); i != mel.end(); ++i) {
               Event ev  = i->second;
               if (ev.isNote()) {
                     if (!ev.isNoteOff()) {
-                    // Added by Tim. p3.3.8
                     
                     // If the event length is not zero, it means the event and its 
                     //  note on/off have already been taken care of. So ignore it.
@@ -520,10 +516,10 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                           if (k==i) 
                             //this will never happen, because i->second has to be a NOTE ON,
                             //while k has to be a NOTE OFF. but in case something changes:
-														printf("ERROR: THIS SHOULD NEVER HAPPEN: k==i in midi.cpp:buildMidiEventList()\n");
+                            printf("ERROR: THIS SHOULD NEVER HAPPEN: k==i in midi.cpp:buildMidiEventList()\n");
                           else
-														mel.erase(k);
-                          
+                            mel.erase(k);
+                            i = mel.begin();   // p4.0.34
                           continue;
                           }
                     }
@@ -690,8 +686,6 @@ void Audio::collectEvents(MidiTrack* track, unsigned int cts, unsigned int nts)
       int defaultPort = port;
 
       MidiDevice* md          = midiPorts[port].device();
-      MPEventList* playEvents = md->playEvents();
-      MPEventList* stuckNotes = md->stuckNotes();
 
       PartList* pl = track->parts();
       for (iPart p = pl->begin(); p != pl->end(); ++p) {
@@ -714,7 +708,7 @@ void Audio::collectEvents(MidiTrack* track, unsigned int cts, unsigned int nts)
                   continue;
             unsigned stick = (offset > cts) ? 0 : cts - offset;
             unsigned etick = nts - offset;
-            // By T356. Do not play events which are past the end of this part. 
+            // Do not play events which are past the end of this part. 
             if(etick > partLen)
               continue;
               
@@ -776,33 +770,26 @@ void Audio::collectEvents(MidiTrack* track, unsigned int cts, unsigned int nts)
                               int veloOff = ev.veloOff();
 
                               if (port == defaultPort) {
-                                    //printf("Adding event normally: frame=%d port=%d channel=%d pitch=%d velo=%d\n",frame, port, channel, pitch, velo);
-                                    
-                                    // p3.3.25
                                     // If syncing to external midi sync, we cannot use the tempo map.
-                                    // Therefore we cannot get sub-tick resolution. Just use ticks instead of frames.
+                                    // Therefore we cannot get sub-tick resolution. Just use ticks instead of frames. p3.3.25
                                     if(extSyncFlag.value())
-                                      playEvents->add(MidiPlayEvent(tick, port, channel, 0x90, pitch, velo));
+                                      md->addScheduledEvent(MidiPlayEvent(tick, port, channel, ME_NOTEON, pitch, velo));
                                     else
-                                    
-                                      playEvents->add(MidiPlayEvent(frame, port, channel, 0x90, pitch, velo));
+                                      md->addScheduledEvent(MidiPlayEvent(frame, port, channel, ME_NOTEON, pitch, velo));
                                       
-                                    stuckNotes->add(MidiPlayEvent(tick + len, port, channel,
-                                       veloOff ? 0x80 : 0x90, pitch, veloOff));
+                                    md->addStuckNote(MidiPlayEvent(tick + len, port, channel,
+                                       veloOff ? ME_NOTEOFF : ME_NOTEON, pitch, veloOff));   
                                     }
                               else { //Handle events to different port than standard.
                                     MidiDevice* mdAlt = midiPorts[port].device();
                                     if (mdAlt) {
-                                        
-                                        // p3.3.25
-                                        if(extSyncFlag.value())
-                                          mdAlt->playEvents()->add(MidiPlayEvent(tick, port, channel, 0x90, pitch, velo));
+                                        if(extSyncFlag.value())  // p3.3.25
+                                          mdAlt->addScheduledEvent(MidiPlayEvent(tick, port, channel, ME_NOTEON, pitch, velo));                                          
                                         else  
+                                          mdAlt->addScheduledEvent(MidiPlayEvent(frame, port, channel, ME_NOTEON, pitch, velo));                                          
                                           
-                                          mdAlt->playEvents()->add(MidiPlayEvent(frame, port, channel, 0x90, pitch, velo));
-                                          
-                                        mdAlt->stuckNotes()->add(MidiPlayEvent(tick + len, port, channel,
-                                          veloOff ? 0x80 : 0x90, pitch, veloOff));
+                                        mdAlt->addStuckNote(MidiPlayEvent(tick + len, port, channel,
+                                          veloOff ? ME_NOTEOFF : ME_NOTEON, pitch, veloOff));
                                       }
                                     }
                               
@@ -811,7 +798,6 @@ void Audio::collectEvents(MidiTrack* track, unsigned int cts, unsigned int nts)
                               }
                               break;
 
-                        // Added by T356.
                         case Controller:
                               {
                                 if (track->type() == Track::DRUM)  
@@ -829,37 +815,30 @@ void Audio::collectEvents(MidiTrack* track, unsigned int cts, unsigned int nts)
                                     MidiDevice* mdAlt = midiPorts[port].device();
                                     if(mdAlt) 
                                     {
-                                      // p3.3.25
                                       // If syncing to external midi sync, we cannot use the tempo map.
-                                      // Therefore we cannot get sub-tick resolution. Just use ticks instead of frames.
+                                      // Therefore we cannot get sub-tick resolution. Just use ticks instead of frames. p3.3.25
                                       if(extSyncFlag.value())
-                                        mdAlt->playEvents()->add(MidiPlayEvent(tick, port, channel, 
+                                        mdAlt->addScheduledEvent(MidiPlayEvent(tick, port, channel, 
                                                                              ME_CONTROLLER, ctl | pitch, ev.dataB()));
                                       else
-                                        mdAlt->playEvents()->add(MidiPlayEvent(frame, port, channel, 
+                                        mdAlt->addScheduledEvent(MidiPlayEvent(frame, port, channel, 
                                                                              ME_CONTROLLER, ctl | pitch, ev.dataB()));
-                                                                             
                                     }  
                                     break;
                                   }  
                                 }
-                                // p3.3.25
-                                if(extSyncFlag.value())
-                                  playEvents->add(MidiPlayEvent(tick, port, channel, ev));
+                                if(extSyncFlag.value())  // p3.3.25
+                                  md->addScheduledEvent(MidiPlayEvent(tick, port, channel, ev));
                                 else  
-                                
-                                  playEvents->add(MidiPlayEvent(frame, port, channel, ev));
+                                  md->addScheduledEvent(MidiPlayEvent(frame, port, channel, ev));
                               }     
                               break;
-                                   
-                                   
+                        
                         default:
-                              // p3.3.25
-                              if(extSyncFlag.value())
-                                playEvents->add(MidiPlayEvent(tick, port, channel, ev));
+                              if(extSyncFlag.value())  // p3.3.25
+                                md->addScheduledEvent(MidiPlayEvent(tick, port, channel, ev));
                               else
-                                
-                                playEvents->add(MidiPlayEvent(frame, port, channel, ev));
+                                md->addScheduledEvent(MidiPlayEvent(frame, port, channel, ev));
                                 
                               break;
                         }
@@ -885,30 +864,6 @@ void Audio::processMidi()
       for (iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) {
             MidiDevice* md = *id;
 
-            //
-            // erase already played events:
-            //
-            ///MPEventList* playEvents = md->playEvents();     
-            ///iMPEvent nextPlayEvent  = md->nextPlayEvent();  
-            
-            //if(md->playEvents()->size())       
-            //{
-              //printf("Audio::processMidi before erase md play events size:%d nextPlayEvent isEnd:%d\n", md->playEvents()->size(), md->nextPlayEvent() == md->playEvents()->end());  
-            //  printf("Audio::processMidi md play events size:%d first item:\n", md->playEvents()->size());  
-            //  md->playEvents()->begin()->dump();  
-            //}  
-            
-            // p4.0.15 Tim. Moved into MidiJackDevice::processMidi (for Jack), and MidiSeq::processTimerTick (for ALSA).
-            // Why do this here? Instead, let each device erase their just-played events.
-            ///playEvents->erase(playEvents->begin(), nextPlayEvent);
-            
-            //if(playEvents->size())  
-            //{
-            //  printf("Audio::processMidi after erase md play events size:%d nextPlayEvent isEnd:%d events:\n", playEvents->size(), nextPlayEvent == playEvents->end());  
-              //for(iMPEvent ie = playEvents->begin(); ie != playEvents->end(); ++ie)
-              //  ie->dump();
-            //}  
-
             // klumsy hack for synti devices:
             if(md->isSynti())
             {
@@ -920,10 +875,6 @@ void Audio::processMidi()
               }
             }
             
-            // Is it a Jack midi device? 
-            //MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(md);
-            //if(mjd)
-            //  mjd->collectMidiEvents();
             md->collectMidiEvents();
             
             // Take snapshots of the current sizes of the recording fifos, 
@@ -931,33 +882,14 @@ void Audio::processMidi()
             md->beforeProcess();
             }
 
-      // p4.0.15 Tim. Moved into SynthI::getData.
-      // Why do this here? Instead, let each device erase their just-played events.
-      ///MPEventList* playEvents = metronome->playEvents();
-      ///iMPEvent nextPlayEvent  = metronome->nextPlayEvent();
-      ///playEvents->erase(playEvents->begin(), nextPlayEvent);
-
-      // p3.3.25
       bool extsync = extSyncFlag.value();
-      
       for (iMidiTrack t = song->midis()->begin(); t != song->midis()->end(); ++t) 
       {
             MidiTrack* track = *t;
             int port = track->outPort();
             MidiDevice* md = midiPorts[port].device();
-            
-            // Changed by Tim. p3.3.8
-            //if(md == 0)
-            //  continue;
-            //MPEventList* playEvents = md->playEvents();
-            //if (playEvents == 0)
-            //    continue;
-            //if (!track->isMute()) 
-            MPEventList* playEvents = 0;
             if(md)
             {
-              playEvents = md->playEvents();
-              
               // only add track events if the track is unmuted
               if(!track->isMute()) 
               {
@@ -971,66 +903,26 @@ void Audio::processMidi()
             //
             if (track->recordFlag()) 
             {
-                  //int portMask    = track->inPortMask();
-                  // p3.3.38 Removed
-                  //unsigned int portMask = track->inPortMask();
-                  //int channelMask = track->inChannelMask();
-                  
                   MPEventList* rl = track->mpevents();
                   MidiPort* tport = &midiPorts[port];
-
-                  // p3.3.38
-                  //for (iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) 
-                  //{
                   RouteList* irl = track->inRoutes();
                   for(ciRoute r = irl->begin(); r != irl->end(); ++r)
                   {
-                        //if(!r->isValid() || (r->type != Route::ALSA_MIDI_ROUTE && r->type != Route::JACK_MIDI_ROUTE))
-                        //if(!r->isValid() || (r->type != Route::MIDI_DEVICE_ROUTE))
                         if(!r->isValid() || (r->type != Route::MIDI_PORT_ROUTE))   // p3.3.49
                           continue;
-                           
-                        int devport = r->midiPort;     // p3.3.49
+                        int devport = r->midiPort;                                 // 
                         if (devport == -1)
-                              continue;
-                        
-                        //MidiDevice* dev = *id;
-                        //MidiDevice* dev = r->device;
-                        MidiDevice* dev = midiPorts[devport].device();   // p3.3.49
+                          continue;
+                        MidiDevice* dev = midiPorts[devport].device();             // 
                         if(!dev)
                           continue;
-                        
-                        
-                        // p3.3.50 Removed
-                        //int channel = r->channel;    
-                        // NOTE: TODO: Special for input device sysex 'channel' marked as -1, ** IF we end up going with that method **.
-                        // This would mean having a separate 'System' channel listed in the routing popups.
-                        // The other alternative is to accept sysex from a device as long as ANY regular channel is routed from it, 
-                        //  this does not require a 'System' channel listed in the routing popups.
-                        // But that requires more code below... Done.
-                        //if(channel == -1)
-                          //channel = MIDI_CHANNELS; // Special channel '17'
-                        //  continue;
-                          
-                        //int devport = dev->midiPort();
-                  
-                        // record only from ports marked in portMask:
-                        //if (devport == -1 || !(portMask & (1 << devport)))
-                        //if (devport == -1)
-                        //      continue;
-                              
-                        //MREventList* el = dev->recordEvents();
-                        //MidiFifo& rf = dev->recordEvents();
-                        
-                        
-                        int channelMask = r->channel;   // p3.3.50
+                        int channelMask = r->channel;   
                         if(channelMask == -1 || channelMask == 0)
                           continue;
-                        for(int channel = 0; channel < MIDI_CHANNELS; ++channel)     // p3.3.50
+                        for(int channel = 0; channel < MIDI_CHANNELS; ++channel)     
                         {
                           if(!(channelMask & (1 << channel)))
                             continue;
-                        
                           if(!dev->sysexFIFOProcessed())
                           {
                             // Set to the sysex fifo at first.
@@ -1041,322 +933,191 @@ void Audio::processMidi()
                             for(int i = 0; i < count; ++i) 
                             {
                               MidiPlayEvent event(rf.peek(i));
-                              
-                              //unsigned time = event.time() + segmentSize*(segmentCount-1);
-                              //unsigned time = event.time() + (extsync ? MusEConfig::config.division/24 : segmentSize*(segmentCount-1));
-                              //unsigned time = extsync ? curTickPos : (event.time() + segmentSize*(segmentCount-1));
-                              //event.setTime(time);
-                              //if(!extsync)
-                              //  event.setTime(event.time() + segmentSize*(segmentCount-1));
-  
                               event.setPort(port);
-                              
                               // dont't echo controller changes back to software
                               // synthesizer:
                               if(!dev->isSynti() && md && track->recEcho())
-                                playEvents->add(event);
-                              
-                              // If syncing externally the event time is already in units of ticks, set above.
+                                md->addScheduledEvent(event);
+                              // If syncing externally the event time is already in units of ticks, set above.  p3.3.25
                               if(!extsync)
-                              {
-                                //time = tempomap.frame2tick(event.time());
-                                //event.setTime(time);  // set tick time
                                 event.setTime(tempomap.frame2tick(event.time()));  // set tick time
-                              }  
-  
                               if(recording) 
                                 rl->add(event);
                             }      
-                            
                             dev->setSysexFIFOProcessed(true);
                           }
                           
-                          // Set to the sysex fifo at first.
-                          ///MidiFifo& rf = dev->recordEvents(MIDI_CHANNELS);
-                          // Get the frozen snapshot of the size.
-                          ///int count = dev->tmpRecordCount(MIDI_CHANNELS);
-                          
-                          // Iterate once for sysex fifo (if needed), once for channel fifos.
-                          ///for(int sei = 0; sei < 2; ++sei)
+                          MidiRecFifo& rf = dev->recordEvents(channel);
+                          int count = dev->tmpRecordCount(channel);
+                          for(int i = 0; i < count; ++i) 
                           {
-                            // If on first pass, do sysex fifo.  
-                            /*
-                            if(sei == 0)
-                            {  
-                              // Ignore any further channel routes on this device if already done here.
-                              if(dev->sysexFIFOProcessed())
-                                continue;
-                              // Go ahead and set this now.
-                              dev->setSysexFIFOProcessed(true);
-                              // Allow it to fall through with the sysex fifo and count...
-                            }
-                            else
-                            {
-                              // We're on the second pass, do channel fifos.
-                              rf = dev->recordEvents(channel);
-                              // Get the frozen snapshot of the size.
-                              count = dev->tmpRecordCount(channel);
-                            }
-                            */
-                            
-                            MidiRecFifo& rf = dev->recordEvents(channel);
-                            int count = dev->tmpRecordCount(channel);
-                            
-                            //for (iMREvent ie = el->begin(); ie != el->end(); ++ie) 
-                            for(int i = 0; i < count; ++i) 
-                            {
-                                  MidiPlayEvent event(rf.peek(i));
-                                  
-                                  //int channel = ie->channel();
-                                  ///int channel = event.channel();
-                                  
-                                  int defaultPort = devport;
-                                  ///if (!(channelMask & (1 << channel)))
-                                  ///{
-                                  ///      continue;
-                                  ///}      
-    
-                                  //MidiPlayEvent event(*ie);
-                                  int drumRecPitch=0; //prevent compiler warning: variable used without initialization
-                                  MidiController *mc = 0;
-                                  int ctl = 0;
-                                  
-                                  //Hmmm, hehhh... 
-                                  // TODO: Clean up a bit around here when it comes to separate events for rec & for playback. 
-                                  // But not before 0.7 (ml)
-    
-                                  int prePitch = 0, preVelo = 0;
-    
-                                  event.setChannel(track->outChannel());
-                                  
-                                  if (event.isNote() || event.isNoteOff()) 
-                                  {
-                                        //
-                                        // apply track values
-                                        //
-    
-                                        //Apply drum inkey:
-                                        if (track->type() == Track::DRUM) 
-                                        {
-                                              int pitch = event.dataA();
-                                              //Map note that is played according to drumInmap
-                                              drumRecPitch = drumMap[(unsigned int)drumInmap[pitch]].enote;
-                                              devport = drumMap[(unsigned int)drumInmap[pitch]].port;
-                                              event.setPort(devport);
-                                              channel = drumMap[(unsigned int)drumInmap[pitch]].channel;
-                                              event.setA(drumMap[(unsigned int)drumInmap[pitch]].anote);
-                                              event.setChannel(channel);
-                                        }
-                                        else 
-                                        { //Track transpose if non-drum
-                                              prePitch = event.dataA();
-                                              int pitch = prePitch + track->transposition;
-                                              if (pitch > 127)
-                                                    pitch = 127;
-                                              if (pitch < 0)
-                                                    pitch = 0;
-                                              event.setA(pitch);
-                                        }
-    
-                                        if (!event.isNoteOff()) 
-                                        {
-                                              preVelo = event.dataB();
-                                              int velo = preVelo + track->velocity;
-                                              velo = (velo * track->compression) / 100;
-                                              if (velo > 127)
-                                                    velo = 127;
-                                              if (velo < 1)
-                                                    velo = 1;
-                                              event.setB(velo);
-                                        }
-                                  }
-                                  // Added by T356.
-                                  else
-                                  if(event.type() == ME_CONTROLLER)
-                                  {
-                                    if(track->type() == Track::DRUM) 
-                                    {
-                                      ctl = event.dataA();
-                                      // Regardless of what port the event came from, is it a drum controller event 
-                                      //  according to the track port's instrument?
-                                      mc = tport->drumController(ctl);
-                                      if(mc)
+                                MidiPlayEvent event(rf.peek(i));
+                                int defaultPort = devport;
+                                int drumRecPitch=0; //prevent compiler warning: variable used without initialization
+                                MidiController *mc = 0;
+                                int ctl = 0;
+                                
+                                //Hmmm, hehhh... 
+                                // TODO: Clean up a bit around here when it comes to separate events for rec & for playback. 
+                                // But not before 0.7 (ml)
+  
+                                int prePitch = 0, preVelo = 0;
+  
+                                event.setChannel(track->outChannel());
+                                
+                                if (event.isNote() || event.isNoteOff()) 
+                                {
+                                      //
+                                      // apply track values
+                                      //
+  
+                                      //Apply drum inkey:
+                                      if (track->type() == Track::DRUM) 
                                       {
-                                        int pitch = ctl & 0x7f;
-                                        ctl &= ~0xff;
-                                        int dmindex = drumInmap[pitch] & 0x7f;
-                                        //Map note that is played according to drumInmap
-                                        drumRecPitch = drumMap[dmindex].enote;
-                                        devport = drumMap[dmindex].port;
-                                        event.setPort(devport);
-                                        channel = drumMap[dmindex].channel;
-                                        event.setA(ctl | drumMap[dmindex].anote);
-                                        event.setChannel(channel);
-                                      }  
-                                    }
+                                            int pitch = event.dataA();
+                                            //Map note that is played according to drumInmap
+                                            drumRecPitch = drumMap[(unsigned int)drumInmap[pitch]].enote;
+                                            devport = drumMap[(unsigned int)drumInmap[pitch]].port;
+                                            event.setPort(devport);
+                                            channel = drumMap[(unsigned int)drumInmap[pitch]].channel;
+                                            event.setA(drumMap[(unsigned int)drumInmap[pitch]].anote);
+                                            event.setChannel(channel);
+                                      }
+                                      else 
+                                      { //Track transpose if non-drum
+                                            prePitch = event.dataA();
+                                            int pitch = prePitch + track->transposition;
+                                            if (pitch > 127)
+                                                  pitch = 127;
+                                            if (pitch < 0)
+                                                  pitch = 0;
+                                            event.setA(pitch);
+                                      }
+  
+                                      if (!event.isNoteOff()) 
+                                      {
+                                            preVelo = event.dataB();
+                                            int velo = preVelo + track->velocity;
+                                            velo = (velo * track->compression) / 100;
+                                            if (velo > 127)
+                                                  velo = 127;
+                                            if (velo < 1)
+                                                  velo = 1;
+                                            event.setB(velo);
+                                      }
+                                }
+                                else
+                                if(event.type() == ME_CONTROLLER)
+                                {
+                                  if(track->type() == Track::DRUM) 
+                                  {
+                                    ctl = event.dataA();
+                                    // Regardless of what port the event came from, is it a drum controller event 
+                                    //  according to the track port's instrument?
+                                    mc = tport->drumController(ctl);
+                                    if(mc)
+                                    {
+                                      int pitch = ctl & 0x7f;
+                                      ctl &= ~0xff;
+                                      int dmindex = drumInmap[pitch] & 0x7f;
+                                      //Map note that is played according to drumInmap
+                                      drumRecPitch = drumMap[dmindex].enote;
+                                      devport = drumMap[dmindex].port;
+                                      event.setPort(devport);
+                                      channel = drumMap[dmindex].channel;
+                                      event.setA(ctl | drumMap[dmindex].anote);
+                                      event.setChannel(channel);
+                                    }  
                                   }
-                                  
-                                  // p3.3.25 
-                                  // MusE uses a fixed clocks per quarternote of 24. 
-                                  // At standard 384 ticks per quarternote for example, 
-                                  // 384/24=16 for a division of 16 sub-frames (16 MusE 'ticks').
-                                  // That is what we'll use if syncing externally.
-                                  //unsigned time = event.time() + segmentSize*(segmentCount-1);
-                                  //unsigned time = event.time() + (extsync ? MusEConfig::config.division/24 : segmentSize*(segmentCount-1));
-                                  // p3.3.34
-                                  // Oops, use the current tick. 
-                                  //unsigned time = extsync ? curTickPos : (event.time() + segmentSize*(segmentCount-1));
-                                  //event.setTime(time);
-                                  // p3.3.35
-                                  // If ext sync, events are now time-stamped with last tick in MidiDevice::recordEvent().
-                                  // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice.
-                                  // p3.3.36
-                                  //if(!extsync)
-                                  //  event.setTime(event.time() + segmentSize*(segmentCount-1));
-    
-                                  // dont't echo controller changes back to software
-                                  // synthesizer:
-    
-                                  if (!dev->isSynti()) 
-                                  {
-                                    //Check if we're outputting to another port than default:
-                                    if (devport == defaultPort) {
-                                          event.setPort(port);
-                                          if(md && track->recEcho())
-                                            playEvents->add(event);
-                                          }
-                                    else {
-                                          // Hmm, this appears to work, but... Will this induce trouble with md->setNextPlayEvent??
-                                          MidiDevice* mdAlt = midiPorts[devport].device();
-                                          if(mdAlt && track->recEcho())
-                                            mdAlt->playEvents()->add(event);
-                                          }
-                                    // Shall we activate meters even while rec echo is off? Sure, why not...
-                                    if(event.isNote() && event.dataB() > track->activity())
-                                      track->setActivity(event.dataB());
-                                  }
-                                  
-                                  // p3.3.25
-                                  // If syncing externally the event time is already in units of ticks, set above.
-                                  if(!extsync)
-                                  {
-                                    // p3.3.35
-                                    //time = tempomap.frame2tick(event.time());
-                                    //event.setTime(time);  // set tick time
-                                    event.setTime(tempomap.frame2tick(event.time()));  // set tick time
-                                  }  
-    
-                                  // Special handling of events stored in rec-lists. a bit hACKish. TODO: Clean up (after 0.7)! :-/ (ml)
-                                  if (recording) 
-                                  {
-                                        // In these next steps, it is essential to set the recorded event's port 
-                                        //  to the track port so buildMidiEventList will accept it. Even though 
-                                        //  the port may have no device "<none>".
-                                        //
-                                        if (track->type() == Track::DRUM) 
-                                        {
-                                          // Is it a drum controller event?
-                                          if(mc)
-                                          {    
-                                              MidiPlayEvent drumRecEvent = event;
-                                              drumRecEvent.setA(ctl | drumRecPitch);
-                                              // In this case, preVelo is simply the controller value.
-                                              drumRecEvent.setB(preVelo);
-                                              drumRecEvent.setPort(port); //rec-event to current port
-                                              drumRecEvent.setChannel(track->outChannel()); //rec-event to current channel
-                                              rl->add(drumRecEvent);
-                                          }
-                                          else
-                                          {
-                                          
-                                              MidiPlayEvent drumRecEvent = event;
-                                              drumRecEvent.setA(drumRecPitch);
-                                              drumRecEvent.setB(preVelo);
-                                              // Changed by T356. 
-                                              // Tested: Events were not being recorded for a drum map entry pointing to a 
-                                              //  different port. This must have been wrong - buildMidiEventList would ignore this.
-                                              //drumRecEvent.setPort(devport);
-                                              drumRecEvent.setPort(port);  //rec-event to current port
-                                              
-                                              drumRecEvent.setChannel(track->outChannel()); //rec-event to current channel
-                                              rl->add(drumRecEvent);
-                                          }    
+                                }
+                                
+                                // MusE uses a fixed clocks per quarternote of 24. 
+                                // At standard 384 ticks per quarternote for example, 
+                                // 384/24=16 for a division of 16 sub-frames (16 MusE 'ticks').
+                                // If ext sync, events are now time-stamped with last tick in MidiDevice::recordEvent(). p3.3.35
+                                // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice.
+  
+                                // dont't echo controller changes back to software
+                                // synthesizer:
+  
+                                if (!dev->isSynti()) 
+                                {
+                                  //Check if we're outputting to another port than default:
+                                  if (devport == defaultPort) {
+                                        event.setPort(port);
+                                        if(md && track->recEcho())
+                                          //playEvents->add(event);
+                                          md->addScheduledEvent(event);
                                         }
-                                        else 
-                                        {
-                                              // Restore record-pitch to non-transposed value since we don't want the note transposed twice next
-                                              MidiPlayEvent recEvent = event;
-                                              if (prePitch)
-                                                    recEvent.setA(prePitch);
-                                              if (preVelo)
-                                                    recEvent.setB(preVelo);
-                                              recEvent.setPort(port);
-                                              recEvent.setChannel(track->outChannel());
-                                                    
-                                              rl->add(recEvent);
+                                  else {
+                                        // Hmm, this appears to work, but... Will this induce trouble with md->setNextPlayEvent??
+                                        MidiDevice* mdAlt = midiPorts[devport].device();
+                                        if(mdAlt && track->recEcho())
+                                          //mdAlt->playEvents()->add(event);
+                                          mdAlt->addScheduledEvent(event);
                                         }
-                                  }
+                                  // Shall we activate meters even while rec echo is off? Sure, why not...
+                                  if(event.isNote() && event.dataB() > track->activity())
+                                    track->setActivity(event.dataB());
+                                }
+                                
+                                // If syncing externally the event time is already in units of ticks, set above.  p3.3.25
+                                if(!extsync)
+                                  event.setTime(tempomap.frame2tick(event.time()));  // set tick time
+  
+                                // Special handling of events stored in rec-lists. a bit hACKish. TODO: Clean up (after 0.7)! :-/ (ml)
+                                if (recording) 
+                                {
+                                      // In these next steps, it is essential to set the recorded event's port 
+                                      //  to the track port so buildMidiEventList will accept it. Even though 
+                                      //  the port may have no device "<none>".
+                                      //
+                                      if (track->type() == Track::DRUM) 
+                                      {
+                                        // Is it a drum controller event?
+                                        if(mc)
+                                        {    
+                                            MidiPlayEvent drumRecEvent = event;
+                                            drumRecEvent.setA(ctl | drumRecPitch);
+                                            // In this case, preVelo is simply the controller value.
+                                            drumRecEvent.setB(preVelo);
+                                            drumRecEvent.setPort(port); //rec-event to current port
+                                            drumRecEvent.setChannel(track->outChannel()); //rec-event to current channel
+                                            rl->add(drumRecEvent);
+                                        }
+                                        else
+                                        {
+                                            MidiPlayEvent drumRecEvent = event;
+                                            drumRecEvent.setA(drumRecPitch);
+                                            drumRecEvent.setB(preVelo);
+                                            // Tested: Events were not being recorded for a drum map entry pointing to a 
+                                            //  different port. This must have been wrong - buildMidiEventList would ignore this. Tim.
+                                            //drumRecEvent.setPort(devport);
+                                            drumRecEvent.setPort(port);  //rec-event to current port
+                                            
+                                            drumRecEvent.setChannel(track->outChannel()); //rec-event to current channel
+                                            rl->add(drumRecEvent);
+                                        }    
+                                      }
+                                      else 
+                                      {
+                                            // Restore record-pitch to non-transposed value since we don't want the note transposed twice next
+                                            MidiPlayEvent recEvent = event;
+                                            if (prePitch)
+                                                  recEvent.setA(prePitch);
+                                            if (preVelo)
+                                                  recEvent.setB(preVelo);
+                                            recEvent.setPort(port);
+                                            recEvent.setChannel(track->outChannel());
+                                                  
+                                            rl->add(recEvent);
+                                      }
+                                }
                             }
-                          }  
                         }
                   }
             }
-            // Added by Tim. p3.3.8
-            // Removed p4.0.15
-            ///if(md)
-            ///  md->setNextPlayEvent(playEvents->begin());
-            //if(md)  
-            //{
-            //  if(md->nextPlayEvent() != playEvents->begin())
-            //    printf("Audio::processMidi md->nextPlayEvent() != playEvents->begin()\n");  
-            //}  
       }
-
-      //
-      // clear all recorded events in midiDevices
-      // process stuck notes
-      //
-      for (iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) {
-            MidiDevice* md = *id;
-            
-            ///md->recordEvents()->clear();
-            // By T356. Done processing this rec buffer, now flip to the other one.
-            ///md->flipRecBuffer();
-            // We are done with the 'frozen' recording fifos, remove the events. 
-            md->afterProcess();
-            
-            MPEventList* stuckNotes = md->stuckNotes();
-            MPEventList* playEvents = md->playEvents();
-
-            iMPEvent k;
-            for (k = stuckNotes->begin(); k != stuckNotes->end(); ++k) {
-                  if (k->time() >= nextTickPos)
-                        break;
-                  MidiPlayEvent ev(*k);
-                  
-                  // p3.3.25
-                  //int frame = tempomap.tick2frame(k->time()) + frameOffset;
-                  if(extsync)
-                  {
-                    ev.setTime(k->time());
-                  }
-                  else
-                  {
-                    int frame = tempomap.tick2frame(k->time()) + frameOffset;
-                    ev.setTime(frame);
-                  }  
-                  
-                  // p3.3.25
-                  //ev.setTime(frame);
-                  
-                  playEvents->add(ev);
-                  }
-            stuckNotes->erase(stuckNotes->begin(), k);
-            // Removed p4.0.15 Tim.
-            ///md->setNextPlayEvent(playEvents->begin());
-            //if(md->nextPlayEvent() != playEvents->begin())   
-            //  printf("Audio::processMidi clear notes: md->nextPlayEvent() != playEvents->begin()\n");  
-            }
 
       //---------------------------------------------------
       //    insert metronome clicks
@@ -1366,35 +1127,21 @@ void Audio::processMidi()
       if (MusEGlobal::midiClickFlag)
             md = midiPorts[MusEGlobal::clickPort].device();
       if (song->click() && (isPlaying() || state == PRECOUNT)) {
-            MPEventList* playEvents = 0;
-            MPEventList* stuckNotes = 0;
-            if (md) {
-                  playEvents = md->playEvents();
-                  stuckNotes = md->stuckNotes();
-                  }
             int bar, beat;
             unsigned tick;
             bool isMeasure = false;
             while (midiClick < nextTickPos) {
                   if (isPlaying()) {
-                        ///sigmap.tickValues(midiClick, &bar, &beat, &tick);
                         AL::sigmap.tickValues(midiClick, &bar, &beat, &tick);
                         isMeasure = beat == 0;
                         }
                   else if (state == PRECOUNT) {
                         isMeasure = (clickno % clicksMeasure) == 0;
                         }
-                  // p3.3.25
                   //int frame = tempomap.tick2frame(midiClick) + frameOffset;
-                  int evtime = extsync ? midiClick : tempomap.tick2frame(midiClick) + frameOffset;
+                  int evtime = extsync ? midiClick : tempomap.tick2frame(midiClick) + frameOffset;  // p3.3.25
                   
-                  // p3.3.25
-                  //MidiPlayEvent ev(frame, MusEGlobal::clickPort, MusEGlobal::clickChan, ME_NOTEON,
-                  MidiPlayEvent ev(evtime, MusEGlobal::clickPort, MusEGlobal::clickChan, ME_NOTEON,
-                     MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
-                     
                   if (md) {
-                        // p3.3.25
                         //MidiPlayEvent ev(frame, MusEGlobal::clickPort, MusEGlobal::clickChan, ME_NOTEON,
                         MidiPlayEvent ev(evtime, MusEGlobal::clickPort, MusEGlobal::clickChan, ME_NOTEON,
                            MusEGlobal::beatClickNote, MusEGlobal::beatClickVelo);
@@ -1403,32 +1150,20 @@ void Audio::processMidi()
                               ev.setA(MusEGlobal::measureClickNote);
                               ev.setB(MusEGlobal::measureClickVelo);
                               }
-                        playEvents->add(ev);
+                        md->addScheduledEvent(ev);
+                        
+                        ev.setB(0);
+                        ev.setTime(midiClick+10);
+                        md->addStuckNote(ev);
                         }
                   if (MusEGlobal::audioClickFlag) {
-                        // p3.3.25
                         //MidiPlayEvent ev1(frame, 0, 0, ME_NOTEON, 0, 0);
-                        MidiPlayEvent ev1(evtime, 0, 0, ME_NOTEON, 0, 0);
-                        
-                        ev1.setA(isMeasure ? 0 : 1);
-                        metronome->playEvents()->add(ev1);
+                        MidiPlayEvent ev(evtime, 0, 0, ME_NOTEON, 0, 0);
+                        ev.setA(isMeasure ? 0 : 1);
+                        metronome->addScheduledEvent(ev);
+                        // Built-in metronome synth does not use stuck notes...
                         }
-                  if (md) {
-                        ev.setB(0);
-                        // p3.3.25
-                        // Removed. Why was this here?
-                        //frame = tempomap.tick2frame(midiClick+20) + frameOffset;
-                        //
-                        // Does it mean this should be changed too? 
-                        // No, stuck notes are in units of ticks, not frames like (normal, non-external) play events...
-                        ev.setTime(midiClick+10);
-                        
-                        if (md)
-                              stuckNotes->add(ev);
-                        }
-
                   if (isPlaying())
-                        ///midiClick = sigmap.bar2tick(bar, beat+1, 0);
                         midiClick = AL::sigmap.bar2tick(bar, beat+1, 0);
                   else if (state == PRECOUNT) {
                         midiClick += ticksBeat;
@@ -1438,94 +1173,21 @@ void Audio::processMidi()
                               state = START_PLAY;
                         }
                   }
-            // Removed p4.0.15 Tim.
-            ///if (md)
-            ///      md->setNextPlayEvent(playEvents->begin());
-            //if(md)  
-            //{
-            //  if(md->nextPlayEvent() != playEvents->begin())   
-            //    printf("Audio::processMidi metronome: md->nextPlayEvent() != playEvents->begin()\n");  
-            //}    
-            
-            // Removed p4.0.15 Tim.
-            ///if (MusEGlobal::audioClickFlag)
-            ///      metronome->setNextPlayEvent(metronome->playEvents()->begin());
-            //if(MusEGlobal::audioClickFlag)  
-            //{
-            //  if(metronome->nextPlayEvent() != metronome->playEvents()->begin())   
-            //    printf("Audio::processMidi metronome: metronome->nextPlayEvent() != metronome->playEvents->begin()\n");  
-            //}    
-            
             }
-
-      if (state == STOP) {
-            //---------------------------------------------------
-            //    end all notes
-            //---------------------------------------------------
-
-            for (iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd) {
-                  MidiDevice* md = *imd;
-                  MPEventList* playEvents = md->playEvents();
-                  MPEventList* stuckNotes = md->stuckNotes();
-                  for (iMPEvent k = stuckNotes->begin(); k != stuckNotes->end(); ++k) {
-                        MidiPlayEvent ev(*k);
-                        ev.setTime(0);    // play now
-                        playEvents->add(ev);
-                        }
-                  stuckNotes->clear();
-                  }
-            }
-            
-            
-      // p3.3.36
-      //int tickpos = audio->tickPos();
-      //bool extsync = extSyncFlag.value();
+      
       //
-      // Special for Jack midi devices: Play all Jack midi events up to curFrame.
+      // Play all midi events up to curFrame.
       //
       for(iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) 
       {
-        //MidiDevice* md = *id;
-        // Is it a Jack midi device?
-        //MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(md);
-        //if(!mjd)
-        //  continue;
-        //mjd->processMidi();
-        (*id)->processMidi();
+        // We are done with the 'frozen' recording fifos, remove the events. 
+        (*id)->afterProcess();   // p4.0.34
         
-        /*
-        int port = md->midiPort();
-        MidiPort* mp = port != -1 ? &midiPorts[port] : 0;
-        MPEventList* el = md->playEvents();
-        if (el->empty())
-              continue;
-        iMPEvent i = md->nextPlayEvent();
-        for(; i != el->end(); ++i) 
-        {
-          // If syncing to external midi sync, we cannot use the tempo map.
-          // Therefore we cannot get sub-tick resolution. Just use ticks instead of frames.
-          //if(i->time() > curFrame) 
-          if(i->time() > (extsync ? tickpos : curFrame)) 
-          {
-            //printf("  curT %d  frame %d\n", i->time(), curFrame);
-            break; // skip this event
-          }
-
-          if(mp) 
-          {
-            if(mp->sendEvent(*i))
-              break;
-          }
-          else 
-          {
-            if(md->putEvent(*i))
-              break;
-          }
-        }
-        md->setNextPlayEvent(i);
-        */
+        // ALSA devices handled by another thread.
+        if((*id)->deviceType() != MidiDevice::ALSA_MIDI)
+        //if((*id)->deviceType() == MidiDevice::JACK_MIDI)
+          (*id)->processMidi();
       }
-            
       midiBusy=false;
       }
 

@@ -74,12 +74,15 @@ void MidiSeq::processMsg(const ThreadMsg* m)
             //case MS_PROCESS:
             //      audio->processMidi();
             //      break;
-            case SEQM_SEEK:
-                  processSeek();
-                  break;
-            case MS_STOP:
-                  processStop();
-                  break;
+            
+            // Removed p4.0.34
+            //case SEQM_SEEK:
+            //      processSeek();
+            //      break;
+            //case MS_STOP:
+            //      processStop();
+            //      break;
+            
             case MS_SET_RTC:
                   MusEGlobal::doSetuid();
                   setRtcTicks();
@@ -88,6 +91,8 @@ void MidiSeq::processMsg(const ThreadMsg* m)
             case MS_UPDATE_POLL_FD:
                   updatePollFd();
                   break;
+            // Moved into Song::processMsg p4.0.34
+            /*
             case SEQM_ADD_TRACK:
                   song->insertTrack2(msg->track, msg->ival);
                   updatePollFd();
@@ -110,6 +115,7 @@ void MidiSeq::processMsg(const ThreadMsg* m)
                   //song->cmdChangePart((Part*)msg->p1, (Part*)msg->p2);
                   song->cmdChangePart((Part*)msg->p1, (Part*)msg->p2, msg->a, msg->b);
                   break;
+            */
             case SEQM_SET_TRACK_OUT_CHAN:
                   {
                   MidiTrack* track = (MidiTrack*)(msg->p1);
@@ -141,6 +147,8 @@ void MidiSeq::processMsg(const ThreadMsg* m)
             }
       }
 
+#if 0   
+// Removed p4.0.34
 //---------------------------------------------------------
 //   processStop
 //---------------------------------------------------------
@@ -148,8 +156,8 @@ void MidiSeq::processMsg(const ThreadMsg* m)
 void MidiSeq::processStop()
 {
   // p3.3.28
-  // TODO Try to move this into Audio::stopRolling(). p4.0.22
-  playStateExt = false; // not playing
+  // TODO Try to move this into Audio::stopRolling(). p4.0.22   // Done p4.0.34
+  //playStateExt = false; // not playing
   
   //
   //    clear Alsa midi device notes and stop stuck notes
@@ -157,10 +165,10 @@ void MidiSeq::processStop()
   //
   for(iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) 
   {
-    MidiDevice* md = *id;
-    if(md->deviceType() == MidiDevice::JACK_MIDI)      // p4.0.22
-      continue;                                        
-    md->handleStop();  // p4.0.22
+    //MidiDevice* md = *id;
+    // Only ALSA devices are handled by this thread.
+    if((*id)->deviceType() == MidiDevice::ALSA_MIDI)      // p4.0.22
+      (*id)->handleStop();  // p4.0.22
     /*
     if (md->midiPort() == -1)
           continue;
@@ -178,18 +186,20 @@ void MidiSeq::processStop()
     */
   }
 }
+#endif
 
+#if 0   
+// Removed p4.0.34
 //---------------------------------------------------------
 //   processSeek
 //---------------------------------------------------------
 
 void MidiSeq::processSeek()
 {
-  int pos = audio->tickPos();
-  
-  // TODO Try to move this into audio::seek().   p4.0.22
-  if (pos == 0 && !song->record())
-        audio->initDevices();
+  //int pos = audio->tickPos();
+  // TODO Try to move this into audio::seek().   p4.0.22  Done p4.0.34
+  //if (pos == 0 && !song->record())
+  //      audio->initDevices();
 
   //---------------------------------------------------
   //    set all controller
@@ -197,13 +207,10 @@ void MidiSeq::processSeek()
 
   for (iMidiDevice i = midiDevices.begin(); i != midiDevices.end(); ++i) 
   {
-    MidiDevice* md = *i;
-    //
-    //    Jack midi devices are handled in Audio::seek()
-    //
-    if(md->deviceType() == MidiDevice::JACK_MIDI)      // p4.0.22
-      continue;
-    md->handleSeek();  // p4.0.22
+    //MidiDevice* md = *i;
+    // Only ALSA devices are handled by this thread.
+    if((*i)->deviceType() == MidiDevice::ALSA_MIDI)      // p4.0.22
+      (*i)->handleSeek();  // p4.0.22
     /*
     int port = md->midiPort();
     if (port == -1)
@@ -254,6 +261,7 @@ void MidiSeq::processSeek()
     */
   }
 }
+#endif
 
 //---------------------------------------------------------
 //   MidiSeq
@@ -427,7 +435,7 @@ void MidiSeq::updatePollFd()
       for (iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd) {
             MidiDevice* dev = *imd;
             int port = dev->midiPort();
-            const QString name = dev->name();
+            //const QString name = dev->name();
             if (port == -1)
                   continue;
             if ((dev->rwFlags() & 0x2) || (extSyncFlag.value()
@@ -725,20 +733,26 @@ void MidiSeq::processTimerTick()
 //            }
 
       // p3.3.25
-      int tickpos = audio->tickPos();
-      bool extsync = extSyncFlag.value();
+      //int tickpos = audio->tickPos();
+      //bool extsync = extSyncFlag.value();
       //
       // play all events upto curFrame
       //
       for (iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) {
-            MidiDevice* md = *id;
+            //MidiDevice* md = *id;
             // Is it a Jack midi device? They are iterated in Audio::processMidi. p3.3.36 
             //MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(md);
             //if(mjd)
-            if(md->deviceType() == MidiDevice::JACK_MIDI)
-              continue;
-            if(md->isSynti())      // syntis are handled by audio thread
-                  continue;
+            //if(md->deviceType() == MidiDevice::JACK_MIDI)
+            //  continue;
+            //if(md->isSynti())      // syntis are handled by audio thread
+            //      continue;
+            // Only ALSA midi devices are handled by this thread.
+            if((*id)->deviceType() == MidiDevice::ALSA_MIDI)
+              (*id)->processMidi();
+            
+            // Moved into MidiAlsaDevice.      p4.0.34
+            /*
             int port = md->midiPort();
             MidiPort* mp = port != -1 ? &midiPorts[port] : 0;
             MPEventList* el = md->playEvents();
@@ -776,6 +790,8 @@ void MidiSeq::processTimerTick()
             // The erasure in Audio::processMidi was missing some events because of that.
             el->erase(el->begin(), i);
             //md->setNextPlayEvent(el->begin());  // Removed p4.0.15
+            */
+            
             }
       }
 
@@ -813,8 +829,8 @@ void MidiSeq::msgSetMidiDevice(MidiPort* port, MidiDevice* device)
 
 // This does not appear to be used anymore. Was called in Audio::process1, now Audio::processMidi is called directly. p4.0.15 Tim.
 //void MidiSeq::msgProcess()      { msgMsg(MS_PROCESS); }
-void MidiSeq::msgSeek()         { msgMsg(SEQM_SEEK); }
-void MidiSeq::msgStop()         { msgMsg(MS_STOP); }
+//void MidiSeq::msgSeek()         { msgMsg(SEQM_SEEK); }   // Removed p4.0.34
+//void MidiSeq::msgStop()         { msgMsg(MS_STOP); }     //
 void MidiSeq::msgSetRtc()       { msgMsg(MS_SET_RTC); }
 void MidiSeq::msgUpdatePollFd() { msgMsg(MS_UPDATE_POLL_FD); }
 

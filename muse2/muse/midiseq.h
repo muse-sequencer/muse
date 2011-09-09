@@ -91,6 +91,8 @@ class MidiSeq : public Thread {
       virtual void threadStop();
       virtual void threadStart(void*);
 
+      bool externalPlayState() const { return playStateExt; }
+      void setExternalPlayState(bool v) { playStateExt = v; }
       void realtimeSystemInput(int, int);
       void mtcInputQuarter(int, unsigned char);
       void setSongPosition(int, int);
@@ -101,9 +103,9 @@ class MidiSeq : public Thread {
       void nonRealtimeSystemSysex(int, const unsigned char*, int);
 
       void msgMsg(int id);
-      void msgProcess();
-      void msgSeek();
-      void msgStop();
+      //void msgProcess();
+      //void msgSeek();
+      //void msgStop();
       void msgSetRtc();
       void msgUpdatePollFd();
       void msgAddSynthI(SynthI* synth);

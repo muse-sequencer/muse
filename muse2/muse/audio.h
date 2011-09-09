@@ -4,6 +4,7 @@
 //  $Id: audio.h,v 1.25.2.13 2009/12/20 05:00:35 terminator356 Exp $
 //
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -239,8 +240,8 @@ class Audio {
       bool sendMessage(AudioMsg* m, bool doUndo);
       void msgRemoveRoute(Route, Route);
       void msgRemoveRoute1(Route, Route);
-      void msgRemoveRoutes(Route, Route);  // p3.3.55
-      void msgRemoveRoutes1(Route, Route);  // p3.3.55
+      void msgRemoveRoutes(Route, Route);  
+      void msgRemoveRoutes1(Route, Route);  
       void msgAddRoute(Route, Route);
       void msgAddRoute1(Route, Route);
       void msgAddPlugin(AudioTrack*, int idx, PluginI* plugin);
@@ -290,7 +291,8 @@ class Audio {
       int loopCount() { return _loopCount; }         // Number of times we have looped so far
       unsigned loopFrame() { return _loopFrame; }          
 
-      int tickPos() const         { return curTickPos; }
+      unsigned tickPos() const    { return curTickPos; }
+      unsigned nextTick() const   { return nextTickPos; }
       int timestamp() const;
       void processMidi();
       unsigned curFrame() const;

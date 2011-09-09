@@ -154,8 +154,8 @@ class MidiPlayEvent : public MEvent {
 typedef std::multiset<MidiPlayEvent, std::less<MidiPlayEvent>, audioRTalloc<MidiPlayEvent> > MPEL;
 
 struct MPEventList : public MPEL {
-      //void add(const MidiPlayEvent& ev) { MPEL::insert(ev); }
-      iterator add(const MidiPlayEvent& ev) { return MPEL::insert(ev); }  // p4.0.15 We need the iterator.
+      void add(const MidiPlayEvent& ev) { MPEL::insert(ev); }
+      //iterator add(const MidiPlayEvent& ev) { return MPEL::insert(ev); }  // p4.0.15 We need the iterator.
 };
 
 typedef MPEventList::iterator iMPEvent;

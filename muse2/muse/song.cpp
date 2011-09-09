@@ -1982,6 +1982,28 @@ void Song::processMsg(AudioMsg* msg)
                   updateFlags = SC_EVENT_MODIFIED;
                   break;
             
+            // Moved here from MidiSeq::processMsg   p4.0.34
+            case SEQM_ADD_TRACK:
+                  insertTrack2(msg->track, msg->ival);
+                  break;
+            case SEQM_REMOVE_TRACK:
+                  //removeTrack2(msg->track);
+                  cmdRemoveTrack(msg->track);
+                  break;
+            case SEQM_CHANGE_TRACK:
+                  changeTrack((Track*)(msg->p1), (Track*)(msg->p2));
+                  break;
+            case SEQM_ADD_PART:
+                  cmdAddPart((Part*)msg->p1);
+                  break;
+            case SEQM_REMOVE_PART:
+                  cmdRemovePart((Part*)msg->p1);
+                  break;
+            case SEQM_CHANGE_PART:
+                  //cmdChangePart((Part*)msg->p1, (Part*)msg->p2);
+                  cmdChangePart((Part*)msg->p1, (Part*)msg->p2, msg->a, msg->b);
+                  break;
+            
             case SEQM_ADD_TEMPO:
                   //printf("processMsg (SEQM_ADD_TEMPO) UndoOp::AddTempo. adding tempo at: %d with tempo=%d\n", msg->a, msg->b);
                   addUndo(UndoOp(UndoOp::AddTempo, msg->a, msg->b));

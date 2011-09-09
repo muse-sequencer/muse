@@ -292,6 +292,7 @@ class SynthI : public AudioTrack, public MidiDevice,
             }
 
       bool putEvent(const MidiPlayEvent& ev);
+      virtual void processMidi();
       
       MidiPlayEvent receiveEvent() { return _sif->receiveEvent(); }
       int eventsPending() const    { return _sif->eventsPending(); }
