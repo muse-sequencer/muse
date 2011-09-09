@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //  $Id: alsamidi.cpp,v 1.8.2.7 2009/11/19 04:20:33 terminator356 Exp $
 //  (C) Copyright 2000-2001 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -25,16 +26,18 @@
 #include "alsamidi.h"
 #include "globals.h"
 #include "midi.h"
-#include "mididev.h"
+//#include "mididev.h"
 #include "../midiport.h"
 #include "../midiseq.h"
 #include "../midictrl.h"
 #include "../audio.h"
-#include "mpevent.h"
+//#include "mpevent.h"
 //#include "sync.h"
 #include "utils.h"
 #include "audiodev.h"
 #include "xml.h"
+#include "part.h"
+#include "gconfig.h"
 
 static int alsaSeqFdi = -1;
 static int alsaSeqFdo = -1;
@@ -50,6 +53,8 @@ MidiAlsaDevice::MidiAlsaDevice(const snd_seq_addr_t& a, const QString& n)
    : MidiDevice(n)
       {
       adr = a;
+      stopPending = false;         
+      seekPending = false;
       init();
       }
 
@@ -132,7 +137,7 @@ void MidiAlsaDevice::close()
       // Allocated on stack, no need to call snd_seq_port_subscribe_free() later.
       snd_seq_port_subscribe_alloca(&subs);
       
-      // Changed by T356. This function appears to be called only by MidiPort::setMidiDevice(), 
+      // This function appears to be called only by MidiPort::setMidiDevice(), 
       //  which closes then opens the device.
       // Because the open flags are set BEFORE setMidiDevice() is called, we must ignore the flags.
       //
@@ -146,7 +151,7 @@ void MidiAlsaDevice::close()
       //                 dst 16:0
       //                only sometimes (not when playing notes), but with jack midi turned on, 
       //                we don't get the messages. With jack stopped we get the messages
-      //                no matter if jack midi is turned on or not.
+      //                no matter if jack midi is turned on or not.   Tim.
 
       //if (_openFlags & 1) {
       //if (!(_openFlags & 1)) 
@@ -191,95 +196,27 @@ void MidiAlsaDevice::close()
 
 void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
 {
-      // p3.3.45
       // If this device is not actually in use by the song, do not write any routes.
-      // This prevents bogus routes from being saved and propagated in the med file.
+      // This prevents bogus routes from being saved and propagated in the med file.  Tim.
       if(midiPort() == -1)
         return;
      
       QString s;
-      /*
-      //if(rwFlags() & 2)  // Readable
-      {
-        //RouteList* rl = _inRoutes;
-        //for (ciRoute r = rl->begin(); r != rl->end(); ++r) 
-        for (ciRoute r = _inRoutes.begin(); r != _inRoutes.end(); ++r) 
-        {
-          // Since an ALSA midi device supports read + write, this is the only way we can tell if this route is using the device as input.  
-          if(r->type == Route::TRACK_ROUTE)
-            continue;
-            
-          if(!r->name().isEmpty())
-          {
-            xml.tag(level++, "Route");
-            
-            //xml.strTag(level, "srcNode", r->name());
-            xml.tag(level, "source type=\"%d\" name=\"%s\"/", r->type, r->name().toLatin1().constData());
-            
-            //xml.strTag(level, "dstNode", name());
-            xml.tag(level, "dest type=\"%d\" name=\"%s\"/", Route::ALSA_MIDI_ROUTE, name().toLatin1().constData());
-            
-            xml.etag(level--, "Route");
-          }
-        }  
-      } 
-      */
-      
       for (ciRoute r = _outRoutes.begin(); r != _outRoutes.end(); ++r) 
       {
-        //if(r->type != Route::TRACK_ROUTE)
-        //{  
-        //  printf("MidiAlsaDevice::writeRouting Warning out route is not TRACK_ROUTE type\n");
-        //  continue;
-        //}
-          
         if(!r->name().isEmpty())
         {
-          //xml.tag(level++, "Route");
-          
           s = QT_TRANSLATE_NOOP("@default", "Route");
           if(r->channel != -1)
             s += QString(QT_TRANSLATE_NOOP("@default", " channel=\"%1\"")).arg(r->channel);
           xml.tag(level++, s.toLatin1().constData());
-          
-          /*
-          //xml.strTag(level, "srcNode", name());
-          if(r->channel != -1)  
-            //xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::ALSA_MIDI_ROUTE, r->channel, name().toLatin1().constData());
-            //xml.tag(level, "source type=\"%d\" channel=\"%d\" name=\"%s\"/", Route::MIDI_DEVICE_ROUTE, r->channel, name().toLatin1().constData());
-            xml.tag(level, "source devtype=\"%d\" channel=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, r->channel, name().toLatin1().constData());
-          else  
-            //xml.tag(level, "source type=\"%d\" name=\"%s\"/", Route::ALSA_MIDI_ROUTE, name().toLatin1().constData());
-            //xml.tag(level, "source type=\"%d\" name=\"%s\"/", Route::MIDI_DEVICE_ROUTE, name().toLatin1().constData());
-          */  
-            //xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, name().toLatin1().constData());
-            xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, Xml::xmlString(name()).toLatin1().constData());
-          
-          /*
-          //xml.strTag(level, "dstNode", r->name());
-          if(r->channel != -1)  
-          {
-            if(r->type == Route::MIDI_DEVICE_ROUTE)  
-              xml.tag(level, "dest devtype=\"%d\" channel=\"%d\" name=\"%s\"/", r->device->deviceType(), r->channel, r->name().toLatin1().constData());
-            else  
-              xml.tag(level, "dest type=\"%d\" channel=\"%d\" name=\"%s\"/", r->type, r->channel, r->name().toLatin1().constData());
-          }
-          else  
-          {
-            if(r->type == Route::MIDI_DEVICE_ROUTE)  
-              xml.tag(level, "dest devtype=\"%d\" name=\"%s\"/", r->device->deviceType(), r->name().toLatin1().constData());
-            else  
-              xml.tag(level, "dest type=\"%d\" name=\"%s\"/", r->type, r->name().toLatin1().constData());
-          }
-          */
-          
+          xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, Xml::xmlString(name()).toLatin1().constData());
           s = QT_TRANSLATE_NOOP("@default", "dest");
           if(r->type == Route::MIDI_DEVICE_ROUTE)
             s += QString(QT_TRANSLATE_NOOP("@default", " devtype=\"%1\"")).arg(r->device->deviceType());
           else
           if(r->type != Route::TRACK_ROUTE)
             s += QString(QT_TRANSLATE_NOOP("@default", " type=\"%1\"")).arg(r->type);
-          //s += QString(QT_TRANSLATE_NOOP("@default", " name=\"%1\"/")).arg(r->name());
           s += QString(QT_TRANSLATE_NOOP("@default", " name=\"%1\"/")).arg(Xml::xmlString(r->name()));
           xml.tag(level, s.toLatin1().constData());
           
@@ -326,12 +263,9 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
                   int a   = e.dataA();
                   int b   = e.dataB();
                   int chn = e.channel();
-                  // p3.3.37
-                  //if (a < 0x1000) {          // 7 Bit Controller
                   if (a < CTRL_14_OFFSET) {          // 7 Bit Controller
                         snd_seq_ev_set_controller(&event, chn, a, b);
                         }
-                  //else if (a < 0x20000) {     // 14 bit high resolution controller
                   else if (a < CTRL_RPN_OFFSET) {     // 14 bit high resolution controller
                         int ctrlH = (a >> 8) & 0x7f;
                         int ctrlL = a & 0x7f;
@@ -339,7 +273,6 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
                         snd_seq_ev_set_controller(&event, chn, a, b);
                         event.type = SND_SEQ_EVENT_CONTROL14;
                         }
-                  //else if (a < 0x30000) {     // RPN 7-Bit Controller
                   else if (a < CTRL_NRPN_OFFSET) {     // RPN 7-Bit Controller
                         int ctrlH = (a >> 8) & 0x7f;
                         int ctrlL = a & 0x7f;
@@ -348,7 +281,6 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
                         snd_seq_ev_set_controller(&event, chn, a, b);
                         event.type = SND_SEQ_EVENT_REGPARAM;
                         }
-                  //else if (a < 0x40000) {     // NRPN 7-Bit Controller
                   else if (a < CTRL_INTERNAL_OFFSET) {     // NRPN 7-Bit Controller
                         int ctrlH = (a >> 8) & 0x7f;
                         int ctrlL = a & 0x7f;
@@ -357,7 +289,6 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
                         snd_seq_ev_set_controller(&event, chn, a, b);
                         event.type = SND_SEQ_EVENT_NONREGPARAM;
                         }
-                  //else if (a < 0x60000) {     // RPN14 Controller
                   else if (a < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
                         int ctrlH = (a >> 8) & 0x7f;
                         int ctrlL = a & 0x7f;
@@ -365,7 +296,6 @@ bool MidiAlsaDevice::putMidiEvent(const MidiPlayEvent& e)
                         snd_seq_ev_set_controller(&event, chn, a, b);
                         event.type = SND_SEQ_EVENT_REGPARAM;
                         }
-                  //else if (a < 0x70000) {     // NRPN14 Controller
                   else if (a < CTRL_NONE_OFFSET) {     // NRPN14 Controller
                         int ctrlH = (a >> 8) & 0x7f;
                         int ctrlL = a & 0x7f;
@@ -466,6 +396,250 @@ bool MidiAlsaDevice::putEvent(snd_seq_event_t* event)
       }
 
 //---------------------------------------------------------
+//   processMidi
+//   Called from ALSA midi sequencer thread only.
+//---------------------------------------------------------
+
+void MidiAlsaDevice::processMidi()
+{
+  bool stop = stopPending;  // Snapshots
+  bool seek = seekPending;  //
+  seekPending = stopPending = false;
+  // Transfer the stuck notes FIFO to the play events list.
+  // FIXME It would be faster to have MidiAlsaDevice automatically add the stuck note so that only
+  //  one FIFO would be needed. But that requires passing an extra 'tick' and 'off velocity' in
+  //  addScheduledEvent, which felt too weird.
+  while(!stuckNotesFifo.isEmpty())
+    _stuckNotes.add(stuckNotesFifo.get());
+    
+  bool extsync = extSyncFlag.value();
+  //int frameOffset = getFrameOffset();
+  //int nextTick = audio->nextTick();
+  
+  // We're in the ALSA midi thread. audio->isPlaying() might not be true during seek right now.
+  //if(stop || (seek && audio->isPlaying()))
+  if(stop || seek)
+  {
+    //---------------------------------------------------
+    //    Clear all notes and handle stuck notes
+    //---------------------------------------------------
+    playEventFifo.clear();
+    _playEvents.clear();
+    //printf("transferring stuck notes\n");  
+    for(iMPEvent i = _stuckNotes.begin(); i != _stuckNotes.end(); ++i) 
+    {
+      //printf(" stuck note\n");  
+      MidiPlayEvent ev = *i;
+      ev.setTime(0);
+      _playEvents.add(ev);
+    }
+    _stuckNotes.clear();
+  }
+  else
+  {
+    // Transfer the play events FIFO to the play events list.
+    while(!playEventFifo.isEmpty())
+      _playEvents.add(playEventFifo.get());
+      
+    /*  TODO Handle these more directly than putting them into play events list.
+    //if(audio->isPlaying())  
+    {
+      iMPEvent k;
+      for (k = _stuckNotes.begin(); k != _stuckNotes.end(); ++k) {
+            if (k->time() >= nextTick)  
+                  break;
+            MidiPlayEvent ev(*k);
+            if(extsync)              // p3.3.25
+              ev.setTime(k->time());
+            else 
+              ev.setTime(tempomap.tick2frame(k->time()) + frameOffset);
+            _playEvents.add(ev);
+            }
+      _stuckNotes.erase(_stuckNotes.begin(), k);
+    }
+    */
+    processStuckNotes();  
+  }
+  
+  /* Instead, done immediately in handleStop and handleSeek using putEvent.
+  if(stop)
+  {
+    // reset sustain...
+    MidiPort* mp = &midiPorts[_port];
+    for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+    {
+      if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
+      {
+        //printf("send clear sustain!!!!!!!! port %d ch %d\n", i,ch);
+        MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
+        _playEvents.add(ev);
+      }
+    }
+  }
+  if(seek)
+  {
+    // Send new contoller values...
+    for(iMidiCtrlValList ivl = cll->begin(); ivl != cll->end(); ++ivl) 
+    {
+      MidiCtrlValList* vl = ivl->second;
+      iMidiCtrlVal imcv = vl->iValue(pos);
+      if(imcv != vl->end()) {
+        Part* p = imcv->second.part;
+        unsigned t = (unsigned)imcv->first;
+        // Do not add values that are outside of the part.
+        if(p && t >= p->tick() && t < (p->tick() + p->lenTick()) )
+          _playEvents.add(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val));
+      }
+    }
+  }    */
+  
+  if (_playEvents.empty())
+        return;
+  
+  int port = midiPort();
+  MidiPort* mp = port != -1 ? &midiPorts[port] : 0;
+  unsigned curFrame = audio->curFrame();
+  int tickpos = audio->tickPos();
+  
+  // Play all events up to current frame.
+  iMPEvent i = _playEvents.begin();            
+  for (; i != _playEvents.end(); ++i) {
+        if (i->time() > (extsync ? tickpos : curFrame))  // p3.3.25  Check: Should be nextTickPos? p4.0.34
+          break; 
+        if(mp){
+          if (mp->sendEvent(*i))
+            break;
+              }
+        else 
+          if(putMidiEvent(*i))
+            break;
+        }
+  _playEvents.erase(_playEvents.begin(), i);
+}
+
+//---------------------------------------------------------
+//   handleStop
+//---------------------------------------------------------
+
+void MidiAlsaDevice::handleStop()
+{
+  // If the device is not in use by a port, don't bother it.
+  if(_port == -1)
+    return;
+    
+  stopPending = true;  // Trigger stop handling in processMidi.
+  
+  //---------------------------------------------------
+  //    reset sustain
+  //---------------------------------------------------
+  
+  MidiPort* mp = &midiPorts[_port];
+  for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
+  {
+    if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
+    {
+      //printf("send clear sustain!!!!!!!! port %d ch %d\n", i,ch);
+      MidiPlayEvent ev(0, _port, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
+      putMidiEvent(ev);
+    }
+  }
+  
+  //---------------------------------------------------
+  //    send midi stop
+  //---------------------------------------------------
+  
+  // Don't send if external sync is on. The master, and our sync routing system will take care of that.   
+  if(!extSyncFlag.value())
+  {
+    // Shall we check open flags?
+    //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
+    //if(!(dev->openFlags() & 1))
+    //  return;
+          
+    MidiSyncInfo& si = mp->syncInfo();
+    if(si.MMCOut())
+      mp->sendMMCStop();
+    
+    if(si.MRTOut()) 
+    {
+      // Send STOP 
+      mp->sendStop();
+      
+      // Added check of option send continue not start.    p3.3.31
+      // Hmm, is this required? Seems to make other devices unhappy.
+      // (Could try now that this is in MidiDevice. p4.0.22 )
+      //if(!si.sendContNotStart())
+      //  mp->sendSongpos(audio->tickPos() * 4 / config.division);
+    }
+  }  
+}
+
+//---------------------------------------------------------
+//   handleSeek
+//---------------------------------------------------------
+
+void MidiAlsaDevice::handleSeek()
+{
+  // If the device is not in use by a port, don't bother it.
+  if(_port == -1)
+    return;
+  
+  seekPending = true;  // Trigger seek handling in processMidi.
+  
+  MidiPort* mp = &midiPorts[_port];
+  MidiCtrlValListList* cll = mp->controller();
+  int pos = audio->tickPos();
+  
+  //---------------------------------------------------
+  //    Send new contoller values
+  //---------------------------------------------------
+    
+  for(iMidiCtrlValList ivl = cll->begin(); ivl != cll->end(); ++ivl) 
+  {
+    MidiCtrlValList* vl = ivl->second;
+    iMidiCtrlVal imcv = vl->iValue(pos);
+    if(imcv != vl->end()) 
+    {
+      Part* p = imcv->second.part;
+      unsigned t = (unsigned)imcv->first;
+      // Do not add values that are outside of the part.
+      if(p && t >= p->tick() && t < (p->tick() + p->lenTick()) )
+        //_playEvents.add(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val));
+        // Hmm, play event list for immediate playback? Try putEvent instead.  p4.0.34 
+        putMidiEvent(MidiPlayEvent(0, _port, ivl->first >> 24, ME_CONTROLLER, vl->num(), imcv->second.val));
+    }
+  }
+  
+  //---------------------------------------------------
+  //    Send STOP and "set song position pointer"
+  //---------------------------------------------------
+    
+  // Don't send if external sync is on. The master, and our sync routing system will take care of that.  p3.3.31
+  if(!extSyncFlag.value())
+  {
+    if(mp->syncInfo().MRTOut())
+    {
+      // Shall we check for device write open flag to see if it's ok to send?...
+      // This means obey what the user has chosen for read/write in the midi port config dialog,
+      //  which already takes into account whether the device is writable or not.
+      //if(!(rwFlags() & 0x1) || !(openFlags() & 1))
+      //if(!(openFlags() & 1))
+      //  continue;
+      
+      int beat = (pos * 4) / MusEConfig::config.division;
+        
+      //bool isPlaying = (state == PLAY);
+      bool isPlaying = audio->isPlaying();  // TODO Check this it includes LOOP1 and LOOP2 besides PLAY.  p4.0.22
+        
+      mp->sendStop();
+      mp->sendSongpos(beat);
+      if(isPlaying)
+        mp->sendContinue();
+    }    
+  }
+}
+
+//---------------------------------------------------------
 //   initMidiAlsa
 //    return true on error
 //---------------------------------------------------------
@@ -539,7 +713,6 @@ bool initMidiAlsa()
                   }
             }
       
-      // p3.3.38
       //snd_seq_set_client_name(alsaSeq, "MusE Sequencer");
       snd_seq_set_client_name(alsaSeq, audioDevice->clientName());
       
@@ -773,31 +946,6 @@ void alsaProcessMidiInput()
                   return;
                   }
             
-            /*
-            if(curPort == -1) 
-            {
-                if(mdev == 0)
-                {  
-                  if (MusEGlobal::debugMsg) 
-                  {
-                    fprintf(stderr, "no port %d:%d found for received alsa event\n",
-                      ev->source.client, ev->source.port);
-                  }
-                }
-                else
-                {
-                  // Allow the sync detect mechanisms to work, even if device is not assigned to a port.
-                  if(ev->type == SND_SEQ_EVENT_CLOCK)
-                    mdev->syncInfo().trigMCSyncDetect();
-                  else  
-                  if(ev->type == SND_SEQ_EVENT_TICK)
-                    mdev->syncInfo().trigTickDetect();
-                }
-                snd_seq_free_event(ev);
-                return;
-            }
-            */      
-                  
             event.setType(0);      // mark as unused
             event.setPort(curPort);
             event.setB(0);
@@ -867,7 +1015,6 @@ void alsaProcessMidiInput()
                         break;
 
                   case SND_SEQ_EVENT_SYSEX:
-                        
                         // TODO: Deal with large sysex, which are broken up into chunks!
                         // For now, do not accept if the first byte is not SYSEX or the last byte is not EOX, 
                         //  meaning it's a chunk, possibly with more chunks to follow.
@@ -916,13 +1063,7 @@ void alsaProcessMidiInput()
                         break;
             }
             if(event.type())
-            {
               mdev->recordEvent(event);
-              // p3.3.26 1/23/10 Moved to MidiDevice now. Anticipating Jack midi support, so don't make it ALSA specific. Tim.
-              //if(ev->type != SND_SEQ_EVENT_SYSEX)
-                // Trigger general activity indicator detector. Sysex has no channel, don't trigger.
-              //  midiPorts[curPort].syncInfo().trigActDetect(event.channel());
-            }
                   
             snd_seq_free_event(ev);
             if (rv == 0)

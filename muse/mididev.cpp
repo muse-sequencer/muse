@@ -4,6 +4,7 @@
 //  $Id: mididev.cpp,v 1.10.2.6 2009/11/05 03:14:35 terminator356 Exp $
 //
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -594,6 +595,34 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
             }
       return putMidiEvent(ev);
       }
+
+//---------------------------------------------------------
+//   processStuckNotes
+//---------------------------------------------------------
+
+void MidiDevice::processStuckNotes() 
+{
+  // Must be playing for valid nextTickPos, right? But wasn't checked in Audio::processMidi().
+  // audio->isPlaying() might not be true during seek right now.
+  //if(audio->isPlaying())  
+  {
+    bool extsync = extSyncFlag.value();
+    int frameOffset = audio->getFrameOffset();
+    unsigned nextTick = audio->nextTick();
+    iMPEvent k;
+    for (k = _stuckNotes.begin(); k != _stuckNotes.end(); ++k) {
+          if (k->time() >= nextTick)  
+                break;
+          MidiPlayEvent ev(*k);
+          if(extsync)              // p3.3.25
+            ev.setTime(k->time());
+          else 
+            ev.setTime(tempomap.tick2frame(k->time()) + frameOffset);
+          _playEvents.add(ev);
+          }
+    _stuckNotes.erase(_stuckNotes.begin(), k);
+  }  
+}
 
 //---------------------------------------------------------
 //   handleStop

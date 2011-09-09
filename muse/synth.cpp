@@ -323,6 +323,15 @@ bool SynthI::putEvent(const MidiPlayEvent& ev)
 }
 
 //---------------------------------------------------------
+//   processMidi
+//---------------------------------------------------------
+
+void SynthI::processMidi() 
+{
+    processStuckNotes(); 
+}
+
+//---------------------------------------------------------
 //   setName
 //---------------------------------------------------------
 
@@ -962,12 +971,13 @@ void SynthI::preProcessAlways()
   if(off())
   {
     // Clear any accumulated play events.
-    playEvents()->clear();
+    //playEvents()->clear();
+    _playEvents.clear();
     // Eat up any fifo events.
     //while(!eventFifo.isEmpty()) 
     //  eventFifo.get();  
-    eventFifo.clear();  // p4.0.21 Duh, clear is the same but faster AND safer, right?
-  }    
+    eventFifo.clear();  // Clear is the same but faster AND safer, right?
+  }
 }
 
 void MessSynthIF::preProcessAlways()
@@ -987,12 +997,15 @@ bool SynthI::getData(unsigned pos, int ports, unsigned n, float** buffer)
 
       int p = midiPort();
       MidiPort* mp = (p != -1) ? &midiPorts[p] : 0;
-      MPEventList* el = playEvents();
+      //MPEventList* el = playEvents();
                
       ///iMPEvent ie = nextPlayEvent();
-      iMPEvent ie = el->begin();      // p4.0.15 Tim.
+      //iMPEvent ie = el->begin();      // p4.0.15 Tim.
+      iMPEvent ie = _playEvents.begin();      
       
-      ie = _sif->getData(mp, el, ie, pos, ports, n, buffer);
+      
+      //ie = _sif->getData(mp, el, ie, pos, ports, n, buffer);
+      ie = _sif->getData(mp, &_playEvents, ie, pos, ports, n, buffer);
       
       ///setNextPlayEvent(ie);
       // p4.0.15 We are done with these events. Let us erase them here instead of Audio::processMidi.
@@ -1001,7 +1014,8 @@ bool SynthI::getData(unsigned pos, int ports, unsigned n, float** buffer)
       //  being at the 'end' iterator and not being *easily* set to some new place beginning of the newer insertions. 
       // The way that MPEventList sorts made it difficult to predict where the iterator of the first newly inserted items was.
       // The erasure in Audio::processMidi was missing some events because of that.
-      el->erase(el->begin(), ie);
+      //el->erase(el->begin(), ie);
+      _playEvents.erase(_playEvents.begin(), ie);
       // setNextPlayEvent(el->begin());   // Removed p4.0.15
       
       return true;

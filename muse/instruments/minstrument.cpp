@@ -559,6 +559,7 @@ void MidiInstrument::reset(int portNo, MType)
                   // These loops send 2048 events, which is more than our FIFO (or Jack buffer) can handle!   p4.0.15 Tim.
                   // Nope, instead, increased FIFO sizes to accommodate.
                   //port->device()->playEvents()->add(ev);
+                  //port->device()->addScheduledEvent(ev);
             }
       }
 }

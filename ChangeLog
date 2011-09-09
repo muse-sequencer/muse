@@ -1,3 +1,19 @@
+09.09.2011:
+        - Removed sending of SEQM_ADD_TRACK, SEQM_REMOVE_TRACK, SEQM_CHANGE_TRACK, SEQM_REMOVE_PART, and 
+           SEQM_CHANGE_PART to ALSA midi thread (which waits) from inside Audio::processMsg.
+          Replaced with hand-offs to Song::processMsg. TODO: SEQM_SET_TRACK_OUT_CHAN etc. (Tim)
+        - MidiDevice play and stuck event lists no longer directly accessible from outside -
+           replaced with ::addScheduledEvent and ::addStuckNote. (Tim)
+        - Installed a ring buffer for ALSA MidiDevice play/stuck notes event lists, filled by ::addScheduledEvent 
+           and ::addStuckNote, because ALSA midi is processed in a thread other than audio. (Tim)
+          TODO: processMidi could do stuck notes better by bypassing their insertion in the play event list,
+                 also applies to seek/stop handler block, but I'm not sure about the time comparisons.   
+        - Some more separation of ALSA and Jack Midi, one step closer to configurable choice of either/or. (Tim)
+        - Massive cleanup of audio, midi, mididev, alsamidi, jackmidi modules. Moved some stuff from Audio::processMidi 
+           into MidiDevice. (Tim)
+        - Test OK here so far, with stress files and complete pre-existing songs, ALSA, Jack, and Synth midi. (Tim)
+          TODO: Restoration of sustain upon play seems broken for a while - try putEvent instead of addScheduledEvent
+           in Audio::startRolling().
 08.09.2011:
         - Finished namespace MusEWidget. Added namespaces MusEUtil, MusEDialog. (Orcan)
 07.09.2011:
