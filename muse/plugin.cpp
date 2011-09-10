@@ -3596,8 +3596,12 @@ PluginGui::PluginGui(PluginIBase* p)
                         params[i].label->setPrecision(2);
                         params[i].label->setId(i);
 
+                        // Let sliders all have different but unique colors
+                        uint hast = qHash(plugin->paramName(i));
+                        QColor color((uint) (hast * hast) % 16777216);
+
                         MusEWidget::Slider* s = new MusEWidget::Slider(0, "param", Qt::Horizontal,
-                           MusEWidget::Slider::None); //, style);
+                           MusEWidget::Slider::None, color);
                            
                         s->setCursorHoming(true);
                         s->setId(i);
