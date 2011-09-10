@@ -1371,13 +1371,13 @@ void MusE::writeConfiguration(int level, Xml& xml) const
       xml.tag(level++, "configuration");
 
       xml.intTag(level, "midiInputDevice",  MusEGlobal::midiInputPorts);
-      xml.intTag(level, "MusEGlobal::midiInputChannel", MusEGlobal::midiInputChannel);
-      xml.intTag(level, "MusEGlobal::midiRecordType",   MusEGlobal::midiRecordType);
-      xml.intTag(level, "MusEGlobal::midiThruType",     MusEGlobal::midiThruType);
-      xml.intTag(level, "MusEGlobal::midiFilterCtrl1",  MusEGlobal::midiFilterCtrl1);
-      xml.intTag(level, "MusEGlobal::midiFilterCtrl2",  MusEGlobal::midiFilterCtrl2);
-      xml.intTag(level, "MusEGlobal::midiFilterCtrl3",  MusEGlobal::midiFilterCtrl3);
-      xml.intTag(level, "MusEGlobal::midiFilterCtrl4",  MusEGlobal::midiFilterCtrl4);
+      xml.intTag(level, "midiInputChannel", MusEGlobal::midiInputChannel);
+      xml.intTag(level, "midiRecordType",   MusEGlobal::midiRecordType);
+      xml.intTag(level, "midiThruType",     MusEGlobal::midiThruType);
+      xml.intTag(level, "midiFilterCtrl1",  MusEGlobal::midiFilterCtrl1);
+      xml.intTag(level, "midiFilterCtrl2",  MusEGlobal::midiFilterCtrl2);
+      xml.intTag(level, "midiFilterCtrl3",  MusEGlobal::midiFilterCtrl3);
+      xml.intTag(level, "midiFilterCtrl4",  MusEGlobal::midiFilterCtrl4);
 
       xml.intTag(level, "waveTracksVisible",  WaveTrack::visible());
       xml.intTag(level, "auxTracksVisible",  AudioAux::visible());

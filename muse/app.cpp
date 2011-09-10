@@ -1063,7 +1063,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       tools1 = new MusEWidget::EditToolBar(this, MusEWidget::arrangerTools);
       addToolBar(tools1);
-      tools1->setObjectName("MusEWidget::arrangerTools");
+      tools1->setObjectName("arrangerTools");
 
       QToolBar* transportToolbar = addToolBar(tr("Transport"));
       transportToolbar->setObjectName("Transport");
