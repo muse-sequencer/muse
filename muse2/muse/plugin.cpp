@@ -3672,7 +3672,7 @@ PluginGui::PluginGui(PluginIBase* p)
                       m->setRange(dlower, dupper);
                       m->setVal(dval);
                       paramsOut[i].actuator = m;
-//                      paramsOut[i].label->setMusEWidget::Slider((MusEWidget::Slider*)params[i].actuator);
+//                      paramsOut[i].label->setSlider((MusEWidget::Slider*)params[i].actuator);
                       //paramsOut[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
                       label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
                       paramsOut[i].label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));

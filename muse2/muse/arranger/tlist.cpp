@@ -570,7 +570,7 @@ void TList::portsPopupMenu(Track* t, int x, int y)
                   {
                   MidiTrack* track = (MidiTrack*)t;
                   
-                  //QMusEWidget::PopupMenu* p = midiPortsPopup(0);
+                  //QPopupMenu* p = midiPortsPopup(0);
                   MidiDevice* md = 0;
                   int port = -1; 
                   if(t->type() == Track::AUDIO_SOFTSYNTH) 

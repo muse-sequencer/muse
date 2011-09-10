@@ -647,7 +647,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     act->setEnabled(!song->midis()->empty());  // && midiPorts[no].device());
                     
                     connect(defpup, SIGNAL(triggered(QAction*)), SLOT(changeDefInputRoutes(QAction*)));
-                    //connect(defpup, SIGNAL(aboutToHide()), MusEGlobal::muse, SLOT(routingMusEWidget::PopupMenuAboutToHide()));
+                    //connect(defpup, SIGNAL(aboutToHide()), MusEGlobal::muse, SLOT(routingPopupMenuAboutToHide()));
                     //defpup->popup(QCursor::pos());
                     defpup->exec(QCursor::pos());
                     delete defpup;
@@ -690,7 +690,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                     act->setEnabled(!song->midis()->empty());  // && midiPorts[no].device());
                     
                     connect(defpup, SIGNAL(triggered(QAction*)), SLOT(changeDefOutputRoutes(QAction*)));
-                    //connect(defpup, SIGNAL(aboutToHide()), MusEGlobal::muse, SLOT(routingMusEWidget::PopupMenuAboutToHide()));
+                    //connect(defpup, SIGNAL(aboutToHide()), MusEGlobal::muse, SLOT(routingPopupMenuAboutToHide()));
                     //defpup->popup(QCursor::pos());
                     defpup->exec(QCursor::pos());
                     delete defpup;

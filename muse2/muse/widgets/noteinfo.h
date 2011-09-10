@@ -73,7 +73,7 @@ class NoteInfo : public QToolBar {
       void setValue(ValType, int);
 
    signals:
-      void valueChanged(NoteInfo::ValType, int);
+      void valueChanged(MusEWidget::NoteInfo::ValType, int);
       };
 
 } // namespace MusEWidget
