@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: ecanvas.h,v 1.5.2.4 2009/02/02 21:38:00 terminator356 Exp $
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __ECANVAS_H__
@@ -34,7 +49,7 @@ typedef std::map<Part*, PartToChange>::iterator iPartToChange;
 //   EventCanvas
 //---------------------------------------------------------
 
-class EventCanvas : public Canvas {
+class EventCanvas : public MusEWidget::Canvas {
       Q_OBJECT
       virtual void leaveEvent(QEvent*e);
       virtual void enterEvent(QEvent*e);
@@ -53,8 +68,8 @@ class EventCanvas : public Canvas {
       virtual void addItem(Part*, Event&) = 0;
       // Added by T356.
       virtual QPoint raster(const QPoint&) const;
-      virtual Undo moveCanvasItems(CItemList&, int, int, DragType) = 0;
-      virtual UndoOp moveItem(CItem*, const QPoint&, DragType) = 0;
+      virtual Undo moveCanvasItems(MusEWidget::CItemList&, int, int, DragType) = 0;
+      virtual UndoOp moveItem(MusEWidget::CItem*, const QPoint&, DragType) = 0;
       virtual void endMoveItems(const QPoint&, DragType, int dir);
 
    public slots:
@@ -81,7 +96,7 @@ class EventCanvas : public Canvas {
       void playEvents(bool flag) { _playEvents = flag; }
       void selectAtTick(unsigned int tick);
       void viewDropEvent(QDropEvent* event);
-      virtual void modifySelected(NoteInfo::ValType, int) {}
+      virtual void modifySelected(MusEWidget::NoteInfo::ValType, int) {}
       virtual void keyPress(QKeyEvent*);
       };
 

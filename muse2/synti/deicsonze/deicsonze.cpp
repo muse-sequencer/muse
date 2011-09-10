@@ -23,8 +23,8 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-// 02111-1307, USA or point your web browser to http://www.gnu.org.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+// 02111-1301, USA or point your web browser to http://www.gnu.org.
 //===========================================================================
 
 // #include <cmath>
@@ -125,7 +125,7 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   _saveConfig = true;
   _isInitSet = true; //false if an initial bank must be download
   
-  QString sharePath(museGlobalShare);
+  QString sharePath(MusEGlobal::museGlobalShare);
   _initSetPath = sharePath + QString("/presets/deicsonze/SutulaBank.dei");
   
   
@@ -170,7 +170,7 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   
   //Load configuration
   QString defaultConf = 
-    (configPath + QString("/" DEICSONZESTR ".dco"));
+    (MusEGlobal::configPath + QString("/" DEICSONZESTR ".dco"));
   FILE* f;
   f = fopen(defaultConf.toAscii().data(), "r");
   if(f) {

@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: waveview.cpp,v 1.10.2.16 2009/11/14 03:37:48 terminator356 Exp $
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <stdio.h>
@@ -33,7 +48,7 @@ bool modifyWarnedYet = false;
 //---------------------------------------------------------
 
 WaveView::WaveView(MidiEditor* pr, QWidget* parent, int xscale, int yscale)
-   : View(parent, xscale, 1)
+   : MusEWidget::View(parent, xscale, 1)
       {
       editor = pr;
       setVirt(true);
@@ -713,7 +728,7 @@ void WaveView::modifySelection(int operation, unsigned startpos, unsigned stoppo
                unsigned file_channels = file.channels();
 
                QString tmpWavFile = QString::null;
-               if (!getUniqueTmpfileName("tmp_musewav",".wav", tmpWavFile)) {
+               if (!MusEGlobal::getUniqueTmpfileName("tmp_musewav",".wav", tmpWavFile)) {
                      break;
                      }
 
@@ -819,7 +834,7 @@ void WaveView::copySelection(unsigned file_channels, float** tmpdata, unsigned l
       if (copiedPart!="") {
         QFile::remove(copiedPart);
       }
-      if (!getUniqueTmpfileName("tmp_musewav",".wav", copiedPart)) {
+      if (!MusEGlobal::getUniqueTmpfileName("tmp_musewav",".wav", copiedPart)) {
             return;
             }
 
@@ -936,7 +951,7 @@ void WaveView::editExternal(unsigned file_format, unsigned file_samplerate, unsi
       {
       // Create yet another tmp-file
       QString exttmpFileName;
-      if (!getUniqueTmpfileName("tmp_musewav",".wav", exttmpFileName)) {
+      if (!MusEGlobal::getUniqueTmpfileName("tmp_musewav",".wav", exttmpFileName)) {
             printf("Could not create temp file - aborting...\n");
             return;
             }
@@ -954,7 +969,7 @@ void WaveView::editExternal(unsigned file_format, unsigned file_samplerate, unsi
       // Forkaborkabork
       int pid = fork();
       if (pid == 0) {
-            if (execlp(config.externalWavEditor.toLatin1().constData(), config.externalWavEditor.toLatin1().constData(), exttmpFileName.toLatin1().constData(), NULL) == -1) {
+            if (execlp(MusEConfig::config.externalWavEditor.toLatin1().constData(), MusEConfig::config.externalWavEditor.toLatin1().constData(), exttmpFileName.toLatin1().constData(), NULL) == -1) {
                   perror("Failed to launch external editor");
                   // Get out of here
                   

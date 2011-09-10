@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: dcanvas.h,v 1.8.2.2 2009/02/02 21:38:00 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __DCANVAS_H__
@@ -28,7 +43,7 @@ class MidiEditor;
 //    ''visual'' Drum Event
 //---------------------------------------------------------
 
-class DEvent : public CItem {
+class DEvent : public MusEWidget::CItem {
    public:
       DEvent(Event e, Part* p);
       };
@@ -51,21 +66,21 @@ class DrumCanvas : public EventCanvas {
 
       
       virtual void drawCanvas(QPainter&, const QRect&);
-      virtual void drawItem(QPainter&, const CItem*, const QRect&);
+      virtual void drawItem(QPainter&, const MusEWidget::CItem*, const QRect&);
       void drawTopItem(QPainter& p, const QRect& rect);
-      virtual void drawMoving(QPainter&, const CItem*, const QRect&);
-      virtual Undo moveCanvasItems(CItemList&, int, int, DragType);
-      virtual UndoOp moveItem(CItem*, const QPoint&, DragType);
-      virtual CItem* newItem(const QPoint&, int);
-      virtual void resizeItem(CItem*, bool, bool);
-      virtual void newItem(CItem*, bool);
-      virtual void newItem(CItem*, bool, bool replace );
-      virtual bool deleteItem(CItem*);
-      CItem* newItem(int tick, int instrument, int velocity);
+      virtual void drawMoving(QPainter&, const MusEWidget::CItem*, const QRect&);
+      virtual Undo moveCanvasItems(MusEWidget::CItemList&, int, int, DragType);
+      virtual UndoOp moveItem(MusEWidget::CItem*, const QPoint&, DragType);
+      virtual MusEWidget::CItem* newItem(const QPoint&, int);
+      virtual void resizeItem(MusEWidget::CItem*, bool, bool);
+      virtual void newItem(MusEWidget::CItem*, bool);
+      virtual void newItem(MusEWidget::CItem*, bool, bool replace );
+      virtual bool deleteItem(MusEWidget::CItem*);
+      MusEWidget::CItem* newItem(int tick, int instrument, int velocity);
 
       int y2pitch(int y) const;
       int pitch2y(int pitch) const;
-      void startDrag(CItem*, bool copymode);
+      void startDrag(MusEWidget::CItem*, bool copymode);
       void dragEnterEvent(QDragEnterEvent* event);
       void dragMoveEvent(QDragMoveEvent*);
       void dragLeaveEvent(QDragLeaveEvent*);
@@ -100,7 +115,7 @@ class DrumCanvas : public EventCanvas {
       DrumCanvas(MidiEditor*, QWidget*, int, int,
          const char* name = 0);
       void cmd(int);
-      virtual void modifySelected(NoteInfo::ValType type, int delta);
+      virtual void modifySelected(MusEWidget::NoteInfo::ValType type, int delta);
       virtual void keyPress(QKeyEvent* event);
       Event *getEventAtCursorPos();
       void selectCursorEvent(Event *ev);

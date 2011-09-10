@@ -4,6 +4,21 @@
 //  $Id: midiitransform.cpp,v 1.2.2.2 2009/05/24 21:43:44 terminator356 Exp $
 //
 //  (C) Copyright 2001-2003 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <stdio.h>
@@ -115,7 +130,7 @@ class MidiInputTransformation {
             procVal2a    = 0;
             procVal2b    = 0;
             funcOp       = Transform;
-            quantVal     = config.division;
+            quantVal     = MusEConfig::config.division;
             selPort      = Ignore;
             selChannel   = Ignore;
             selChannela  = 0;
@@ -162,7 +177,7 @@ bool applyMidiInputTransformation(MidiRecordEvent& event)
                   int rv = modules[i].transform->apply(event);
                   if (rv == 1)
                   {
-                        if(debugMsg)
+                      if(MusEGlobal::debugMsg)
                           printf("drop input event\n");
                   }      
                   if (rv)
@@ -1615,7 +1630,7 @@ void MidiInputTransformDialog::presetChanged(QListWidgetItem* item)
       iMidiInputTransformation i;
       for (i = mtlist.begin(); i != mtlist.end(); ++i) {
             if (item->text() == (*i)->name) {
-                  if(debugMsg)
+                  if(MusEGlobal::debugMsg)
                     printf("found %s\n", (*i)->name.toLatin1().constData());
                   cmt = *i;
                   if (cmodul != -1) {

@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: lmaster.cpp,v 1.2.2.8 2009/03/09 02:05:18 terminator356 Exp $
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include "awl/posedit.h"
@@ -144,7 +159,7 @@ LMaster::LMaster()
       //---------Pulldown Menu----------------------------
       menuEdit = menuBar()->addMenu(tr("&Edit"));
       QSignalMapper *signalMapper = new QSignalMapper(this);
-      menuEdit->addActions(undoRedo->actions());
+      menuEdit->addActions(MusEGlobal::undoRedo->actions());
       menuEdit->addSeparator();
       tempoAction = menuEdit->addAction(tr("Insert Tempo"));
       signAction = menuEdit->addAction(tr("Insert Signature"));
@@ -179,7 +194,7 @@ LMaster::LMaster()
       // Toolbars ---------------------------------------------------------
       QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
       undo_tools->setObjectName("Undo/Redo tools");
-      undo_tools->addActions(undoRedo->actions());
+      undo_tools->addActions(MusEGlobal::undoRedo->actions());
 
       QToolBar* edit = addToolBar(tr("Edit tools"));
       edit->setObjectName("Master List Edit Tools");
@@ -198,11 +213,11 @@ LMaster::LMaster()
       
       QToolBar* panic_toolbar = addToolBar(tr("panic"));         
       panic_toolbar->setObjectName("panic");
-      panic_toolbar->addAction(panicAction);
+      panic_toolbar->addAction(MusEGlobal::panicAction);
 
       QToolBar* transport_toolbar = addToolBar(tr("transport"));
       transport_toolbar->setObjectName("transport");
-      transport_toolbar->addActions(transportAction->actions());
+      transport_toolbar->addActions(MusEGlobal::transportAction->actions());
 
       ///Q3Accel* qa = new Q3Accel(this);
       ///qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
@@ -844,7 +859,7 @@ LMasterKeyEventItem::LMasterKeyEventItem(QTreeWidget* parent, const KeyEvent& ev
       AL::sigmap.tickValues(t, &bar, &beat, &tick);
       c1.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
 
-      double time = double(tempomap.tick2frame(t)) / double(sampleRate);
+      double time = double(tempomap.tick2frame(t)) / double(MusEGlobal::sampleRate);
       int min = int(time) / 60;
       int sec = int(time) % 60;
       int msec = int((time - (min*60 + sec)) * 1000.0);
@@ -875,7 +890,7 @@ LMasterTempoItem::LMasterTempoItem(QTreeWidget* parent, const TEvent* ev)
       AL::sigmap.tickValues(t, &bar, &beat, &tick);
       c1.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
 
-      double time = double(tempomap.tick2frame(t) /*ev->frame*/) / double(sampleRate);
+      double time = double(tempomap.tick2frame(t) /*ev->frame*/) / double(MusEGlobal::sampleRate);
       int min = int(time) / 60;
       int sec = int(time) % 60;
       int msec = int((time - (min*60 + sec)) * 1000.0);
@@ -903,7 +918,7 @@ LMasterSigEventItem::LMasterSigEventItem(QTreeWidget* parent, const AL::SigEvent
       AL::sigmap.tickValues(t, &bar, &beat, &tick);
       c1.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
 
-      double time = double(tempomap.tick2frame(t)) / double (sampleRate);
+      double time = double(tempomap.tick2frame(t)) / double (MusEGlobal::sampleRate);
       int min = int(time) / 60;
       int sec = int(time) % 60;
       int msec = int((time - (min*60 + sec)) * 1000.0);

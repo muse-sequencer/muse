@@ -4,6 +4,21 @@
 //    $Id: view.cpp,v 1.3.2.2 2009/04/06 01:24:55 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //  Additions, modifications (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include "view.h"
@@ -26,6 +41,8 @@
 // The left/right pixmap shifters in seXPos setYPos 
 //  just ate up all the time no matter what I tried.
 //#defines VIEW_USE_DOUBLE_BUFFERING 1
+
+namespace MusEWidget {
 
 //---------------------------------------------------------
 //   View::View
@@ -962,3 +979,5 @@ QRect View::devToVirt(const QRect& r)
     return QRect(x, y, w, h);
 }
 */
+
+} // namespace MusEWidget

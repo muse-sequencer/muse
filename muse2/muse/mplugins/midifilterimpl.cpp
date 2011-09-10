@@ -4,6 +4,21 @@
 //  $Id: midifilterimpl.cpp,v 1.1.1.1 2003/10/27 18:52:49 wschweer Exp $
 //
 //  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include "midifilterimpl.h"
@@ -18,19 +33,19 @@
 
 void MidiFilterConfig::setCtrl1(int n)
       {
-      midiFilterCtrl1 = n-1;
+      MusEGlobal::midiFilterCtrl1 = n-1;
       }
 void MidiFilterConfig::setCtrl2(int n)
       {
-      midiFilterCtrl2 = n-1;
+      MusEGlobal::midiFilterCtrl2 = n-1;
       }
 void MidiFilterConfig::setCtrl3(int n)
       {
-      midiFilterCtrl3 = n-1;
+      MusEGlobal::midiFilterCtrl3 = n-1;
       }
 void MidiFilterConfig::setCtrl4(int n)
       {
-      midiFilterCtrl4 = n-1;
+      MusEGlobal::midiFilterCtrl4 = n-1;
       }
 
 
@@ -42,18 +57,18 @@ MidiFilterConfig::MidiFilterConfig(QDialog* parent)
   : QDialog(parent)
       {
       setupUi(this);
-      cb1->setCurrentIndex(midiFilterCtrl1);
-      cb2->setCurrentIndex(midiFilterCtrl2);
-      cb3->setCurrentIndex(midiFilterCtrl3);
-      cb4->setCurrentIndex(midiFilterCtrl4);
+      cb1->setCurrentIndex(MusEGlobal::midiFilterCtrl1);
+      cb2->setCurrentIndex(MusEGlobal::midiFilterCtrl2);
+      cb3->setCurrentIndex(MusEGlobal::midiFilterCtrl3);
+      cb4->setCurrentIndex(MusEGlobal::midiFilterCtrl4);
 
-      rf1->setChecked(midiRecordType & 1);
-      rf2->setChecked(midiRecordType & 2);
-      rf3->setChecked(midiRecordType & 4);
-      rf4->setChecked(midiRecordType & 8);
-      rf5->setChecked(midiRecordType & 16);
-      rf6->setChecked(midiRecordType & 32);
-      rf7->setChecked(midiRecordType & 64);
+      rf1->setChecked(MusEGlobal::midiRecordType & 1);
+      rf2->setChecked(MusEGlobal::midiRecordType & 2);
+      rf3->setChecked(MusEGlobal::midiRecordType & 4);
+      rf4->setChecked(MusEGlobal::midiRecordType & 8);
+      rf5->setChecked(MusEGlobal::midiRecordType & 16);
+      rf6->setChecked(MusEGlobal::midiRecordType & 32);
+      rf7->setChecked(MusEGlobal::midiRecordType & 64);
       connect(rf1, SIGNAL(toggled(bool)), SLOT(recordChanged1(bool)));
       connect(rf2, SIGNAL(toggled(bool)), SLOT(recordChanged2(bool)));
       connect(rf3, SIGNAL(toggled(bool)), SLOT(recordChanged3(bool)));
@@ -62,13 +77,13 @@ MidiFilterConfig::MidiFilterConfig(QDialog* parent)
       connect(rf6, SIGNAL(toggled(bool)), SLOT(recordChanged6(bool)));
       connect(rf7, SIGNAL(toggled(bool)), SLOT(recordChanged7(bool)));
 
-      tf1->setChecked(midiThruType & 1);
-      tf2->setChecked(midiThruType & 2);
-      tf3->setChecked(midiThruType & 4);
-      tf4->setChecked(midiThruType & 8);
-      tf5->setChecked(midiThruType & 16);
-      tf6->setChecked(midiThruType & 32);
-      tf7->setChecked(midiThruType & 64);
+      tf1->setChecked(MusEGlobal::midiThruType & 1);
+      tf2->setChecked(MusEGlobal::midiThruType & 2);
+      tf3->setChecked(MusEGlobal::midiThruType & 4);
+      tf4->setChecked(MusEGlobal::midiThruType & 8);
+      tf5->setChecked(MusEGlobal::midiThruType & 16);
+      tf6->setChecked(MusEGlobal::midiThruType & 32);
+      tf7->setChecked(MusEGlobal::midiThruType & 64);
       connect(tf1, SIGNAL(toggled(bool)), SLOT(thruChanged1(bool)));
       connect(tf2, SIGNAL(toggled(bool)), SLOT(thruChanged2(bool)));
       connect(tf3, SIGNAL(toggled(bool)), SLOT(thruChanged3(bool)));
@@ -77,22 +92,22 @@ MidiFilterConfig::MidiFilterConfig(QDialog* parent)
       connect(tf6, SIGNAL(toggled(bool)), SLOT(thruChanged6(bool)));
       connect(tf7, SIGNAL(toggled(bool)), SLOT(thruChanged7(bool)));
 
-      cf1->setChecked(midiInputChannel  & 1);
-      cf2->setChecked(midiInputChannel  & 2);
-      cf3->setChecked(midiInputChannel  & 4);
-      cf4->setChecked(midiInputChannel  & 8);
-      cf5->setChecked(midiInputChannel  & 0x10);
-      cf6->setChecked(midiInputChannel  & 0x20);
-      cf7->setChecked(midiInputChannel  & 0x40);
-      cf8->setChecked(midiInputChannel  & 0x80);
-      cf9->setChecked(midiInputChannel  & 0x100);
-      cf10->setChecked(midiInputChannel & 0x200);
-      cf11->setChecked(midiInputChannel & 0x400);
-      cf12->setChecked(midiInputChannel & 0x800);
-      cf13->setChecked(midiInputChannel & 0x1000);
-      cf14->setChecked(midiInputChannel & 0x2000);
-      cf15->setChecked(midiInputChannel & 0x4000);
-      cf16->setChecked(midiInputChannel & 0x8000);
+      cf1->setChecked(MusEGlobal::midiInputChannel  & 1);
+      cf2->setChecked(MusEGlobal::midiInputChannel  & 2);
+      cf3->setChecked(MusEGlobal::midiInputChannel  & 4);
+      cf4->setChecked(MusEGlobal::midiInputChannel  & 8);
+      cf5->setChecked(MusEGlobal::midiInputChannel  & 0x10);
+      cf6->setChecked(MusEGlobal::midiInputChannel  & 0x20);
+      cf7->setChecked(MusEGlobal::midiInputChannel  & 0x40);
+      cf8->setChecked(MusEGlobal::midiInputChannel  & 0x80);
+      cf9->setChecked(MusEGlobal::midiInputChannel  & 0x100);
+      cf10->setChecked(MusEGlobal::midiInputChannel & 0x200);
+      cf11->setChecked(MusEGlobal::midiInputChannel & 0x400);
+      cf12->setChecked(MusEGlobal::midiInputChannel & 0x800);
+      cf13->setChecked(MusEGlobal::midiInputChannel & 0x1000);
+      cf14->setChecked(MusEGlobal::midiInputChannel & 0x2000);
+      cf15->setChecked(MusEGlobal::midiInputChannel & 0x4000);
+      cf16->setChecked(MusEGlobal::midiInputChannel & 0x8000);
 
       connect(cb1, SIGNAL(activated(int)), SLOT(setCtrl1(int)));
       connect(cb2, SIGNAL(activated(int)), SLOT(setCtrl2(int)));

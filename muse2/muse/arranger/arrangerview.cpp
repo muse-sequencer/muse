@@ -313,6 +313,8 @@ QActionGroup* populateAddTrack(QMenu* addTrack)
 ArrangerView::ArrangerView(QWidget* parent)
    : TopWin(TopWin::ARRANGER, parent, "arrangerview", Qt::Window)
 {
+  using MusEGlobal::muse;
+  
   //setAttribute(Qt::WA_DeleteOnClose);
   setWindowTitle(tr("MusE: Arranger"));
   setFocusPolicy(Qt::StrongFocus);
@@ -333,22 +335,22 @@ ArrangerView::ArrangerView(QWidget* parent)
   // Toolbars ---------------------------------------------------------
   QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
   undo_tools->setObjectName("Undo/Redo tools");
-  undo_tools->addActions(undoRedo->actions());
+  undo_tools->addActions(MusEGlobal::undoRedo->actions());
 
 
   QToolBar* panic_toolbar = addToolBar(tr("panic"));
   panic_toolbar->setObjectName("panic");
-  panic_toolbar->addAction(panicAction);
+  panic_toolbar->addAction(MusEGlobal::panicAction);
 
   QToolBar* transport_toolbar = addToolBar(tr("transport"));
   transport_toolbar->setObjectName("transport");
-  transport_toolbar->addActions(transportAction->actions());
+  transport_toolbar->addActions(MusEGlobal::transportAction->actions());
 
-  editTools = new EditToolBar(this, arrangerTools);
+  editTools = new MusEWidget::EditToolBar(this, MusEWidget::arrangerTools);
   addToolBar(editTools);
   editTools->setObjectName("arrangerTools");
 
-  visTracks = new VisibleTracks(this);
+  visTracks = new MusEWidget::VisibleTracks(this);
   addToolBar(visTracks);
 
 
@@ -434,7 +436,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   //-------------------------------------------------------------
 
   QMenu* menuEdit = menuBar()->addMenu(tr("&Edit"));
-  menuEdit->addActions(undoRedo->actions());
+  menuEdit->addActions(MusEGlobal::undoRedo->actions());
   menuEdit->addSeparator();
 
   menuEdit->addAction(editCutAction);
@@ -828,7 +830,7 @@ void ArrangerView::updateScoreMenus()
   scoreAllInOneMapper->setMapping(action, (QWidget*)NULL);
   scoreAllInOneSubsubmenu->addAction(action);
 
-  const ToplevelList* toplevels=muse->getToplevels();
+  const ToplevelList* toplevels=MusEGlobal::muse->getToplevels();
 
   for (ToplevelList::const_iterator it=toplevels->begin(); it!=toplevels->end(); it++)
     if ((*it)->type()==TopWin::SCORE)

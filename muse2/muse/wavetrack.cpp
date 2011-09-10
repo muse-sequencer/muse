@@ -4,6 +4,21 @@
 //  $Id: wavetrack.cpp,v 1.15.2.12 2009/12/20 05:00:35 terminator356 Exp $
 //
 //  (C) Copyright 2003 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include "track.h"
@@ -101,19 +116,19 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
               }
       }
               
-      if(config.useDenormalBias) {
+      if(MusEConfig::config.useDenormalBias) {
             // add denormal bias to outdata
             for (int i = 0; i < channels(); ++i)
                   for (unsigned int j = 0; j < samples; ++j)
                   {
-                      bp[i][j] +=denormalBias;
+                      bp[i][j] +=MusEGlobal::denormalBias;
                       
                       /*
                       // p3.3.41
                       if(j & 1)
-                        bp[i][j] -=denormalBias;
+                        bp[i][j] -=MusEGlobal::denormalBias;
                       else  
-                        bp[i][j] +=denormalBias;
+                        bp[i][j] +=MusEGlobal::denormalBias;
                       */  
                   }      
             }
@@ -204,7 +219,7 @@ Part* WaveTrack::newPart(Part*p, bool clone)
 
 bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float** bp)
       {
-      //if(debugMsg)
+      //if(MusEGlobal::debugMsg)
       //  printf("WaveTrack::getData framePos:%u channels:%d nframe:%u processed?:%d\n", framePos, channels, nframe, processed());
       
       if ((song->bounceTrack != this) && !noInRoute()) {
@@ -212,7 +227,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
             ciRoute i = irl->begin();
             if(i->track->isMidiTrack())
             {
-              if(debugMsg)
+              if(MusEGlobal::debugMsg)
                 printf("WaveTrack::getData: Error: First route is a midi track route!\n");
               return false;
             }
@@ -229,7 +244,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
             {
               if(i->track->isMidiTrack())
               {
-                if(debugMsg)
+                if(MusEGlobal::debugMsg)
                   printf("WaveTrack::getData: Error: Route is a midi track route!\n");
                 //return false;
                 continue;
@@ -281,7 +296,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
                         if (pos != framePos) {
                               printf("fifo get error expected %d, got %d\n",
                                  framePos, pos);
-                              if (debugMsg)
+                              if (MusEGlobal::debugMsg)
                                     printf("fifo get error expected %d, got %d\n",
                                        framePos, pos);
                               while (pos < framePos) {
@@ -320,7 +335,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
                         return false;
                         }
                   if (pos != framePos) {
-                        if (debugMsg)
+                        if (MusEGlobal::debugMsg)
                               printf("fifo get error expected %d, got %d\n",
                                  framePos, pos);
                         while (pos < framePos) {

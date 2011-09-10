@@ -4,6 +4,21 @@
 //  $Id: mrconfig.cpp,v 1.1.1.1 2003/10/27 18:52:43 wschweer Exp $
 //
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include "pitchedit.h"
@@ -21,12 +36,12 @@ MRConfig::MRConfig(QWidget* parent, Qt::WFlags fl)
    : QWidget(parent, fl)
       {
       setupUi(this);
-      b1->setChecked(rcEnable);
-      sb1->setValue(rcStopNote);
-      sb2->setValue(rcRecordNote);
-      sb3->setValue(rcGotoLeftMarkNote);
-      sb4->setValue(rcPlayNote);
-      steprec_box->setValue(rcSteprecNote);
+      b1->setChecked(MusEGlobal::rcEnable);
+      sb1->setValue(MusEGlobal::rcStopNote);
+      sb2->setValue(MusEGlobal::rcRecordNote);
+      sb3->setValue(MusEGlobal::rcGotoLeftMarkNote);
+      sb4->setValue(MusEGlobal::rcPlayNote);
+      steprec_box->setValue(MusEGlobal::rcSteprecNote);
 
       connect(b1,  SIGNAL(toggled(bool)), SLOT(setRcEnable(bool)));
       connect(sb1, SIGNAL(valueChanged(int)), SLOT(setRcStopNote(int)));
@@ -48,31 +63,31 @@ void MRConfig::closeEvent(QCloseEvent* ev)
 
 void MRConfig::setRcEnable(bool f)
       {
-      rcEnable = f;
+      MusEGlobal::rcEnable = f;
       }
 
 void MRConfig::setRcStopNote(int val)
       {
-      rcStopNote = val;
+      MusEGlobal::rcStopNote = val;
       }
 
 void MRConfig::setRcRecordNote(int val)
       {
-      rcRecordNote = val;
+      MusEGlobal::rcRecordNote = val;
       }
 
 void MRConfig::setRcGotoLeftMarkNote(int val)
       {
-      rcGotoLeftMarkNote = val;
+      MusEGlobal::rcGotoLeftMarkNote = val;
       }
 
 void MRConfig::setRcPlayNote(int val)
       {
-      rcPlayNote = val;
+      MusEGlobal::rcPlayNote = val;
       }
 
 void MRConfig::setRcSteprecNote(int val)
       {
-      rcSteprecNote = val;
+      MusEGlobal::rcSteprecNote = val;
       }
 

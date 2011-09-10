@@ -1,8 +1,15 @@
-// Comb filter class declaration
+//=========================================================
+//  MusE
+//  Linux Music Editor
+//  $Id: ./plugins/freeverb/comb.h $
 //
 // Written by Jezar at Dreampoint, June 2000
 // http://www.dreampoint.co.uk
 // This code is public domain
+//
+//=========================================================
+// Comb filter class declaration
+//
 
 #ifndef _comb_
 #define _comb_

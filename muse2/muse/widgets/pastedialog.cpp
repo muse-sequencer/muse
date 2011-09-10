@@ -10,6 +10,8 @@
 #include "xml.h"
 #include "gconfig.h"
 
+using MusEConfig::config;
+
 PasteDialog::PasteDialog(QWidget* parent)
 	: QDialog(parent)
 {

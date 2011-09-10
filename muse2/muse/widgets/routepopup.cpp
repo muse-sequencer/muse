@@ -5,8 +5,10 @@
 //  RoutePopupMenu.cpp 
 //  (C) Copyright 2011 Tim E. Real (terminator356 A T sourceforge D O T net)
 //
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License version 2.
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
 //
 //  This program is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -15,7 +17,7 @@
 //
 //  You should have received a copy of the GNU General Public License
 //  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //=============================================================================
 
 #include "app.h"
@@ -31,6 +33,8 @@
 #include "icons.h"
 #include "menutitleitem.h"
 #include "popupmenu.h"
+
+namespace MusEWidget {
 
 //---------------------------------------------------------
 //   addMenuItem
@@ -887,7 +891,7 @@ void RoutePopupMenu::popupActivated(QAction* action)
         {
           int n = action->data().value<int>();
           if(!_isOutMenu && n == 0)
-            muse->configMidiPorts();
+            MusEGlobal::muse->configMidiPorts();
           return;  
         }
       }
@@ -1217,7 +1221,7 @@ void RoutePopupMenu::prepare()
             MenuTitleItem* titel = new MenuTitleItem(QString(buffer), _pup);
             _pup->addAction(titel); 
   
-            if(!checkAudioDevice())
+            if(!MusEGlobal::checkAudioDevice())
             { 
               _pup->clear();
               return;
@@ -1302,7 +1306,7 @@ void RoutePopupMenu::prepare()
             MenuTitleItem* titel = new MenuTitleItem(QString(buffer), _pup);
             _pup->addAction(titel); 
   
-            if(!checkAudioDevice())
+            if(!MusEGlobal::checkAudioDevice())
             { 
               _pup->clear();
               return;
@@ -1418,3 +1422,4 @@ void RoutePopupMenu::popup(const QPoint& p, Track* track, bool isOutput)
   _pup->popup(p);
 }
 
+} // namespace MusEWidget

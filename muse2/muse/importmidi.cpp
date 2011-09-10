@@ -4,6 +4,21 @@
 //  $Id: importmidi.cpp,v 1.26.2.10 2009/11/05 03:14:35 terminator356 Exp $
 //
 //  (C) Copyright 1999-2003 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <assert.h>
@@ -38,6 +53,9 @@
 using std::set;
 using std::pair;
 
+
+namespace MusEApp {
+
 //---------------------------------------------------------
 //   importMidi
 //---------------------------------------------------------
@@ -52,11 +70,11 @@ void MusE::importMidi(const QString &file)
       {
       QString fn;
       if (file.isEmpty()) {
-            fn = getOpenFileName(lastMidiPath, midi_file_pattern, this,
+               fn = MusEWidget::getOpenFileName(MusEGlobal::lastMidiPath, MusEGlobal::midi_file_pattern, this,
                tr("MusE: Import Midi"), 0);
             if (fn.isEmpty())
                   return;
-            lastMidiPath = fn;
+            MusEGlobal::lastMidiPath = fn;
             }
       else
             fn = file;
@@ -88,7 +106,7 @@ void MusE::importMidi(const QString &file)
 bool MusE::importMidi(const QString name, bool merge)
       {
       bool popenFlag;
-      FILE* fp = fileOpen(this, name, QString(".mid"), "r", popenFlag);
+      FILE* fp = MusEWidget::fileOpen(this, name, QString(".mid"), "r", popenFlag);
       if (fp == 0)
             return true;
       MidiFile mf(fp);
@@ -293,7 +311,7 @@ void MusE::processTrack(MidiTrack* track)
       int len = song->roundUpBar(lastTick+1);
 
       // p3.3.27
-      if(config.importMidiSplitParts)
+      if(MusEConfig::config.importMidiSplitParts)
       {
         
         int bar2, beat;
@@ -461,7 +479,7 @@ void MusE::importPart()
 
       if (track) {
             bool loadAll;
-            QString filename = getOpenFileName(QString(""), part_file_pattern, this, tr("MusE: load part"), &loadAll);
+            QString filename = MusEWidget::getOpenFileName(QString(""), MusEGlobal::part_file_pattern, this, tr("MusE: load part"), &loadAll);
             if (!filename.isEmpty()){
                   // Make a backup of the current clone list, to retain any 'copy' items,
                   //  so that pasting works properly after.
@@ -491,7 +509,7 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, Track* track)
       // Changed by T356
       /*
       bool popenFlag = false;
-      FILE* fp = fileOpen(this, filename, ".mpt", "r", popenFlag, false, false);
+      FILE* fp = MusEWidget::fileOpen(this, filename, ".mpt", "r", popenFlag, false, false);
 
       if(fp) 
       {
@@ -530,7 +548,7 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, Track* track)
         
       
       bool popenFlag = false;
-      FILE* fp = fileOpen(this, filename, ".mpt", "r", popenFlag, false, false);
+      FILE* fp = MusEWidget::fileOpen(this, filename, ".mpt", "r", popenFlag, false, false);
 
       if(fp) 
       {
@@ -608,3 +626,5 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, Track* track)
         return;
       }
 }
+
+} // namespace MuseApp

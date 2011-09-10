@@ -4,6 +4,21 @@
 //  $Id: metronome.cpp,v 1.2.2.1 2009/12/20 05:00:35 terminator356 Exp $
 //
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <stdio.h>
@@ -14,6 +29,8 @@
 #include "song.h"
 #include "track.h"
 #include "audio.h"
+
+namespace MusEWidget {
 
 //---------------------------------------------------------
 //   MetronomeConfig
@@ -31,15 +48,15 @@ MetronomeConfig::MetronomeConfig(QDialog* parent)
       connect(audioBeepRoutesButton, SIGNAL(clicked()), SLOT(audioBeepRoutesClicked()));
       connect(volumeSlider, SIGNAL(valueChanged(int)), SLOT(beepVolumeChanged(int)));
 
-      measureNote->setValue(measureClickNote);
-      measureVelocity->setValue(measureClickVelo);
-      beatNote->setValue(beatClickNote);
-      beatVelocity->setValue(beatClickVelo);
-      midiChannel->setValue(clickChan+1);
-      midiPort->setValue(clickPort+1);
+      measureNote->setValue(MusEGlobal::measureClickNote);
+      measureVelocity->setValue(MusEGlobal::measureClickVelo);
+      beatNote->setValue(MusEGlobal::beatClickNote);
+      beatVelocity->setValue(MusEGlobal::beatClickVelo);
+      midiChannel->setValue(MusEGlobal::clickChan+1);
+      midiPort->setValue(MusEGlobal::clickPort+1);
 
       /*
-      precountBars->setValue(preMeasures);
+      precountBars->setValue(MusEGlobal::preMeasures);
       precountEnable->setChecked(precountEnableFlag);
       precountFromMastertrack->setChecked(precountFromMastertrackFlag);
       precountSigZ->setValue(::precountSigZ);
@@ -48,8 +65,8 @@ MetronomeConfig::MetronomeConfig(QDialog* parent)
       precountPreroll->setChecked(::precountPreroll);
       */
 
-      midiClick->setChecked(midiClickFlag);
-      audioBeep->setChecked(audioClickFlag);
+      midiClick->setChecked(MusEGlobal::midiClickFlag);
+      audioBeep->setChecked(MusEGlobal::audioClickFlag);
       }
 
 //---------------------------------------------------------
@@ -115,13 +132,13 @@ void MetronomeConfig::accept()
 
 void MetronomeConfig::apply()
       {
-      measureClickNote   = measureNote->value();
-      measureClickVelo   = measureVelocity->value();
-      beatClickNote      = beatNote->value();
-      beatClickVelo      = beatVelocity->value();
-      clickChan          = midiChannel->value() - 1;
-      clickPort          = midiPort->value() - 1;
-      preMeasures        = precountBars->value();
+      MusEGlobal::measureClickNote   = measureNote->value();
+      MusEGlobal::measureClickVelo   = measureVelocity->value();
+      MusEGlobal::beatClickNote      = beatNote->value();
+      MusEGlobal::beatClickVelo      = beatVelocity->value();
+      MusEGlobal::clickChan          = midiChannel->value() - 1;
+      MusEGlobal::clickPort          = midiPort->value() - 1;
+      MusEGlobal::preMeasures        = precountBars->value();
       /*
       precountEnableFlag = precountEnable->isChecked();
       precountFromMastertrackFlag = precountFromMastertrack->isChecked();
@@ -130,8 +147,8 @@ void MetronomeConfig::apply()
       ::precountPrerecord = precountPrerecord->isChecked();
       ::precountPreroll  = precountPreroll->isChecked();
       */
-      midiClickFlag      = midiClick->isChecked();
-      audioClickFlag     = audioBeep->isChecked();
+      MusEGlobal::midiClickFlag      = midiClick->isChecked();
+      MusEGlobal::audioClickFlag     = audioBeep->isChecked();
       //audioVolumeChanged = volumeSlider->value();
       }
 
@@ -179,5 +196,8 @@ void MetronomeConfig::precountFromMastertrackChanged(bool /*flag*/)
 void MetronomeConfig::beepVolumeChanged(int volume)
       {
       // this value is directly applied, not using th Apply button, it just seems more usable this way.
-      audioClickVolume=volume/100.0;
+      MusEGlobal::audioClickVolume=volume/100.0;
       }
+
+} // namespace MusEWidget
+

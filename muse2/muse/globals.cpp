@@ -4,6 +4,21 @@
 //  $Id: globals.cpp,v 1.15.2.11 2009/11/25 09:09:43 terminator356 Exp $
 //
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <stdio.h>
@@ -17,6 +32,8 @@
 
 #include "globals.h"
 #include "config.h"
+
+namespace MusEGlobal {
 
 int recFileNumber = 1;
 
@@ -323,7 +340,7 @@ QAction* recordAction;
 QAction* panicAction;
 
 //AudioMixerApp* audioMixer;
-MusE* muse;
+MusEApp::MusE* muse = 0;
 
 int preMeasures = 2;
 unsigned char measureClickNote = 63;
@@ -444,3 +461,5 @@ bool getUniqueTmpfileName(QString subDir, QString ext,QString& newFilename)
       printf("Could not find a suitable tmpfilename (more than 10000 tmpfiles in tmpdir - clean up!\n");
       return false;
       }
+
+} // namespace MusEGlobal

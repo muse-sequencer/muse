@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: ticksynth.cpp,v 1.8.2.7 2009/12/20 05:00:35 terminator356 Exp $
 //  (C) Copyright 2004 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include "audio.h"
@@ -94,7 +109,7 @@ class MetronomeSynthIF : public SynthIF
       virtual const char* getPatchName(int, int, int, bool) const { return ""; }
       virtual const char* getPatchName(int, int, MType, bool) { return ""; }
       //virtual void populatePatchPopup(QMenu*, int, MType, bool) {};
-      virtual void populatePatchPopup(PopupMenu*, int, MType, bool) {};
+      virtual void populatePatchPopup(MusEWidget::PopupMenu*, int, MType, bool) {};
       virtual void write(int, Xml&) const {}
       virtual float getParameter(unsigned long) const  { return 0.0; }
       virtual void setParameter(unsigned long, float) {}
@@ -187,7 +202,7 @@ void MetronomeSynthIF::process(float** buffer, int offset, int n)
       int l          = std::min(n, len);
 
       for (int i = 0; i < l; ++i)
-            *d++ += *s++ * audioClickVolume;
+            *d++ += *s++ * MusEGlobal::audioClickVolume;
       pos += l;
       len -= l;
       if (len <= 0)

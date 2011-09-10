@@ -156,7 +156,7 @@
     </widget>
    </item>
    <item row="2" column="1">
-    <widget class="PitchEdit" name="pl" native="true"/>
+    <widget class="MusEWidget::PitchEdit" name="pl" native="true"/>
    </item>
   </layout>
  </widget>
@@ -169,7 +169,7 @@
    <container>0</container>
   </customwidget>
   <customwidget>
-   <class>PitchEdit</class>
+   <class>MusEWidget::PitchEdit</class>
    <extends>QWidget</extends>
    <header>pitchedit.h</header>
   </customwidget>

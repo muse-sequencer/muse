@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: ctrlpanel.cpp,v 1.10.2.9 2009/06/14 05:24:45 terminator356 Exp $
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <stdio.h>
@@ -72,7 +87,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       dbox->setContentsMargins(0, 0, 0, 0);
 
       selCtrl = new QPushButton(tr("S"));
-      selCtrl->setFont(config.fonts[3]);
+      selCtrl->setFont(MusEConfig::config.fonts[3]);
       selCtrl->setFixedHeight(20);
       selCtrl->setSizePolicy(
          QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
@@ -82,7 +97,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
 
       // destroy button
       QPushButton* destroy = new QPushButton(tr("X"));
-      destroy->setFont(config.fonts[3]);
+      destroy->setFont(MusEConfig::config.fonts[3]);
       destroy->setFixedHeight(20);
       destroy->setSizePolicy(
          QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
@@ -96,7 +111,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       _val = CTRL_VAL_UNKNOWN;
       _dnum = -1;
       
-      _knob = new Knob;
+      _knob = new MusEWidget::Knob;
       _knob->setFixedWidth(25);
       _knob->setFixedHeight(25);
       _knob->setToolTip(tr("manual adjust"));
@@ -106,11 +121,11 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       _knob->hide();
       _knob->setAltFaceColor(Qt::red);
       
-      _dl = new DoubleLabel(-1.0, 0.0, +127.0);
+      _dl = new MusEWidget::DoubleLabel(-1.0, 0.0, +127.0);
       _dl->setPrecision(0);
       _dl->setToolTip(tr("double click on/off"));
       _dl->setSpecialText(tr("off"));
-      _dl->setFont(config.fonts[1]);
+      _dl->setFont(MusEConfig::config.fonts[1]);
       _dl->setBackgroundRole(QPalette::Mid);
       _dl->setFrame(true);
       _dl->setFixedWidth(36);
@@ -134,7 +149,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       dbox->addStretch();
       dbox->addWidget(_dl);
       dbox->addStretch();
-      connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
+      connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       inHeartBeat = false;
       setLayout(vbox);
       }
@@ -169,7 +184,7 @@ void CtrlPanel::heartBeat()
       int v = mp->hwCtrlState(chan, _dnum);
       if(v == CTRL_VAL_UNKNOWN)
       {
-        // DoubleLabel ignores the value if already set...
+        // MusEWidget::DoubleLabel ignores the value if already set...
         _dl->setValue(_dl->off() - 1.0);
         _val = CTRL_VAL_UNKNOWN;
         v = mp->lastValidHWCtrlState(chan, _dnum);
@@ -195,7 +210,7 @@ void CtrlPanel::heartBeat()
         _val = v;
         if(v == CTRL_VAL_UNKNOWN || ((_dnum == CTRL_PROGRAM) && ((v & 0xff) == 0xff) ))
         {
-          // DoubleLabel ignores the value if already set...
+          // MusEWidget::DoubleLabel ignores the value if already set...
           //_dl->setValue(double(_ctrl->minVal() - 1));
           _dl->setValue(_dl->off() - 1.0);
         }
@@ -759,10 +774,10 @@ void CtrlPanel::ctrlPopup()
                   }
             }
       
-      PopupMenu* ctrlMainPop = new PopupMenu;
+      MusEWidget::PopupMenu* ctrlMainPop = new MusEWidget::PopupMenu;
       
       //ctrlMainPop->addSeparator();
-      ctrlMainPop->addAction(new MenuTitleItem(tr("Instrument-defined"), ctrlMainPop));
+      ctrlMainPop->addAction(new MusEWidget::MenuTitleItem(tr("Instrument-defined"), ctrlMainPop));
       
       //ctrlMainPop->addAction(QIcon(*configureIcon), tr("Add ..."))->setData(max + 1);
       
@@ -781,7 +796,7 @@ void CtrlPanel::ctrlPopup()
       //ctrlMainPop->addAction(QIcon(*midi_edit_instrumentIcon), tr("Edit instruments"))->setData(max + 2);
 
       ctrlMainPop->addSeparator();
-      ctrlMainPop->addAction(new MenuTitleItem(tr("Others"), ctrlMainPop));
+      ctrlMainPop->addAction(new MusEWidget::MenuTitleItem(tr("Others"), ctrlMainPop));
       
       //ctrlMainPop->addAction(QIcon(*configureIcon), tr("Add ..."))->setData(max + 3);
       
@@ -819,8 +834,8 @@ void CtrlPanel::ctrlPopup()
             }
       else if (rv == max + 1) {  // add new instrument controller
             
-            PopupMenu * ctrlSubPop = new PopupMenu(this);
-            ctrlSubPop->addAction(new MenuTitleItem(tr("Instrument-defined"), ctrlSubPop));
+            MusEWidget::PopupMenu * ctrlSubPop = new MusEWidget::PopupMenu(this);
+            ctrlSubPop->addAction(new MusEWidget::MenuTitleItem(tr("Instrument-defined"), ctrlSubPop));
             
             //
             // populate popup with all controllers available for
@@ -856,7 +871,7 @@ void CtrlPanel::ctrlPopup()
               int rv2 = act2->data().toInt();
               
               if (rv2 == max + 2)            // edit instrument
-                muse->startEditInstrument();
+                MusEGlobal::muse->startEditInstrument();
               else                           // select new instrument control
               {
                 MidiController* c;
@@ -888,11 +903,11 @@ void CtrlPanel::ctrlPopup()
             }
       
       //else if (rv == max + 2)             // edit instrument
-      //      muse->startEditInstrument();
+      //      MusEGlobal::muse->startEditInstrument();
       
       else if (rv == max + 3) {             // add new other controller
-            PopupMenu* ctrlSubPop = new PopupMenu(this);
-            ctrlSubPop->addAction(new MenuTitleItem(tr("Common Controls"), ctrlSubPop));
+            MusEWidget::PopupMenu* ctrlSubPop = new MusEWidget::PopupMenu(this);
+            ctrlSubPop->addAction(new MusEWidget::MenuTitleItem(tr("Common Controls"), ctrlSubPop));
             
             for(int num = 0; num < 127; ++num)
               if(cll->find(channel, num) == cll->end())

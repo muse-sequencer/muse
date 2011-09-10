@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: synth.h,v 1.22.2.12 2009/12/06 10:05:00 terminator356 Exp $
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __SYNTH_H__
@@ -26,7 +41,9 @@
 #define SYNTH_MIDI_STATE_SAVE_VERSION 2
 
 //class QMenu;
+namespace MusEWidget {
 class PopupMenu;
+}
 
 //class MidiEvent;
 class MidiPlayEvent;
@@ -160,7 +177,7 @@ class SynthIF {
       virtual const char* getPatchName(int, int, int, bool) const = 0;
       virtual const char* getPatchName(int, int, MType, bool) = 0;
       //virtual void populatePatchPopup(QMenu*, int, MType, bool) = 0;
-      virtual void populatePatchPopup(PopupMenu*, int, MType, bool) = 0;
+      virtual void populatePatchPopup(MusEWidget::PopupMenu*, int, MType, bool) = 0;
       virtual void write(int level, Xml& xml) const = 0;
       virtual float getParameter(unsigned long idx) const = 0;        
       virtual void setParameter(unsigned long idx, float value) = 0;  
@@ -245,7 +262,7 @@ class SynthI : public AudioTrack, public MidiDevice,
             }
             
       //virtual void populatePatchPopup(QMenu* m, int i, MType t, bool d) {
-      virtual void populatePatchPopup(PopupMenu* m, int i, MType t, bool d) {
+      virtual void populatePatchPopup(MusEWidget::PopupMenu* m, int i, MType t, bool d) {
             _sif->populatePatchPopup(m, i, t, d);
             }
       
@@ -275,6 +292,7 @@ class SynthI : public AudioTrack, public MidiDevice,
             }
 
       bool putEvent(const MidiPlayEvent& ev);
+      virtual void processMidi();
       
       MidiPlayEvent receiveEvent() { return _sif->receiveEvent(); }
       int eventsPending() const    { return _sif->eventsPending(); }
@@ -335,7 +353,7 @@ class MessSynthIF : public SynthIF {
       virtual const char* getPatchName(int, int, int, bool) const { return ""; }
       virtual const char* getPatchName(int, int, MType, bool);
       //virtual void populatePatchPopup(QMenu*, int, MType, bool);
-      virtual void populatePatchPopup(PopupMenu*, int, MType, bool);
+      virtual void populatePatchPopup(MusEWidget::PopupMenu*, int, MType, bool);
       virtual void write(int level, Xml& xml) const;
       virtual float getParameter(unsigned long) const { return 0.0; }
       virtual void setParameter(unsigned long, float) {}

@@ -4,6 +4,22 @@
 //  $Id: mididev.cpp,v 1.10.2.6 2009/11/05 03:14:35 terminator356 Exp $
 //
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <config.h>
@@ -133,10 +149,10 @@ bool filterEvent(const MEvent& event, int type, bool thru)
             case ME_CONTROLLER:
                   if (type & MIDI_FILTER_CTRL)
                         return true;
-                  if (!thru && (midiFilterCtrl1 == event.dataA()
-                     || midiFilterCtrl2 == event.dataA()
-                     || midiFilterCtrl3 == event.dataA()
-                     || midiFilterCtrl4 == event.dataA())) {
+                  if (!thru && (MusEGlobal::midiFilterCtrl1 == event.dataA()
+                     || MusEGlobal::midiFilterCtrl2 == event.dataA()
+                     || MusEGlobal::midiFilterCtrl3 == event.dataA()
+                     || MusEGlobal::midiFilterCtrl4 == event.dataA())) {
                         return true;
                         }
                   break;
@@ -254,7 +270,7 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
       if(audio->isPlaying())
         event.setLoopNum(audio->loopCount());
       
-      if (midiInputTrace) {
+      if (MusEGlobal::midiInputTrace) {
             printf("MidiInput: ");
             event.dump();
             }
@@ -313,11 +329,11 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
 
       processMidiInputTransformPlugins(event);
 
-      if (filterEvent(event, midiRecordType, false))
+      if (filterEvent(event, MusEGlobal::midiRecordType, false))
             return;
 
       if (!applyMidiInputTransformation(event)) {
-            if (midiInputTrace)
+            if (MusEGlobal::midiInputTrace)
                   printf("   midi input transformation: event filtered\n");
             return;
             }
@@ -581,6 +597,34 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
       }
 
 //---------------------------------------------------------
+//   processStuckNotes
+//---------------------------------------------------------
+
+void MidiDevice::processStuckNotes() 
+{
+  // Must be playing for valid nextTickPos, right? But wasn't checked in Audio::processMidi().
+  // audio->isPlaying() might not be true during seek right now.
+  //if(audio->isPlaying())  
+  {
+    bool extsync = extSyncFlag.value();
+    int frameOffset = audio->getFrameOffset();
+    unsigned nextTick = audio->nextTick();
+    iMPEvent k;
+    for (k = _stuckNotes.begin(); k != _stuckNotes.end(); ++k) {
+          if (k->time() >= nextTick)  
+                break;
+          MidiPlayEvent ev(*k);
+          if(extsync)              // p3.3.25
+            ev.setTime(k->time());
+          else 
+            ev.setTime(tempomap.tick2frame(k->time()) + frameOffset);
+          _playEvents.add(ev);
+          }
+    _stuckNotes.erase(_stuckNotes.begin(), k);
+  }  
+}
+
+//---------------------------------------------------------
 //   handleStop
 //---------------------------------------------------------
 
@@ -647,7 +691,7 @@ void MidiDevice::handleStop()
       // (Could try now that this is in MidiDevice. p4.0.22 )
       /*
       if(!si.sendContNotStart())
-        mp->sendSongpos(audio->tickPos() * 4 / config.division);
+        mp->sendSongpos(audio->tickPos() * 4 / MusEConfig::config.division);
       */  
     }
   }  
@@ -738,7 +782,7 @@ void MidiDevice::handleSeek()
       //if(port < -1 || port > MIDI_PORTS)
       //  continue;
       
-      int beat = (pos * 4) / config.division;
+      int beat = (pos * 4) / MusEConfig::config.division;
         
       //bool isPlaying = false;
       //if(state == PLAY)

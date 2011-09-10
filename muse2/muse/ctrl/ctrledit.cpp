@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: ctrledit.cpp,v 1.4.2.2 2009/02/02 21:38:00 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <stdio.h>
@@ -40,12 +55,12 @@ CtrlEdit::CtrlEdit(QWidget* parent, MidiEditor* e, int xmag,
       QHBoxLayout* hbox = new QHBoxLayout;
       panel             = new CtrlPanel(0, e, "panel");
       canvas            = new CtrlCanvas(e, 0, xmag, "ctrlcanvas", panel);
-      QWidget* vscale   = new VScale;
+      QWidget* vscale   = new MusEWidget::VScale;
 
       hbox->setContentsMargins(0, 0, 0, 0);
       hbox->setSpacing (0);
 
-      canvas->setOrigin(-(config.division/4), 0);
+      canvas->setOrigin(-(MusEConfig::config.division/4), 0);
 
       canvas->setMinimumHeight(50);
       

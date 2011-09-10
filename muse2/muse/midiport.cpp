@@ -4,6 +4,21 @@
 //  $Id: midiport.cpp,v 1.21.2.15 2009/12/07 20:11:51 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 //#include "config.h"
@@ -800,7 +815,7 @@ bool MidiPort::sendEvent(const MidiPlayEvent& ev, bool forceSend)
             //      }
 // printf("set HW Ctrl State ch:%d 0x%x 0x%x\n", ev.channel(), ev.dataA(), ev.dataB());
             if(!setHwCtrlState(ev.channel(), da, db)) {
-                if (debugMsg && forceSend)
+                if (MusEGlobal::debugMsg && forceSend)
                   printf("sendEvent: State already set. Forcing anyway...\n");
                 if (!forceSend)
                   return false;
@@ -830,7 +845,7 @@ bool MidiPort::sendEvent(const MidiPlayEvent& ev, bool forceSend)
       
       
       if (!_device) {
-          if (debugMsg)
+          if (MusEGlobal::debugMsg)
             printf("no device for this midi port\n");
           return true;
           }
@@ -861,7 +876,7 @@ int MidiPort::hwCtrlState(int ch, int ctrl) const
       ch &= 0xff;
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end()) {
-            //if (debugMsg)
+            //if (MusEGlobal::debugMsg)
             //      printf("hwCtrlState: chan %d ctrl 0x%x not found\n", ch, ctrl);
             return CTRL_VAL_UNKNOWN;
             }
@@ -884,7 +899,7 @@ bool MidiPort::setHwCtrlState(int ch, int ctrl, int val)
 //            muse->importController(ch, this, ctrl);
       //      cl = _controller->find(ch, ctrl);
       //      if (cl == _controller->end()) {
-      //            if (debugMsg)
+      //            if (MusEGlobal::debugMsg)
       //                  printf("setHwCtrlState(%d,0x%x,0x%x): not found\n", ch, ctrl, val);
       //            return;
       //            }
@@ -922,11 +937,11 @@ bool MidiPort::setHwCtrlStates(int ch, int ctrl, int val, int lastval)
 
 //bool MidiPort::setCtrl(int ch, int tick, int ctrl, int val)
 //      {
-//      if (debugMsg)
+//      if (MusEGlobal::debugMsg)
 //            printf("setCtrl(tick=%d val=%d)\n",tick,val);
 //      iMidiCtrlValList cl = _controller->find(ch, ctrl);
 //      if (cl == _controller->end()) {
-//            if (debugMsg)
+//            if (MusEGlobal::debugMsg)
 //                  printf("setCtrl: controller 0x%x for channel %d not found\n", ctrl, ch);
 //            return false;
 //            }
@@ -963,7 +978,7 @@ int MidiPort::getCtrl(int ch, int tick, int ctrl) const
       {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end()) {
-            //if (debugMsg)
+            //if (MusEGlobal::debugMsg)
             //      printf("getCtrl: controller %d(0x%x) for channel %d not found size %zd\n",
             //         ctrl, ctrl, ch, _controller->size());
             return CTRL_VAL_UNKNOWN;
@@ -975,7 +990,7 @@ int MidiPort::getCtrl(int ch, int tick, int ctrl, Part* part) const
       {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end()) {
-            //if (debugMsg)
+            //if (MusEGlobal::debugMsg)
             //      printf("getCtrl: controller %d(0x%x) for channel %d not found size %zd\n",
             //         ctrl, ctrl, ch, _controller->size());
             return CTRL_VAL_UNKNOWN;
@@ -990,7 +1005,7 @@ void MidiPort::deleteController(int ch, int tick, int ctrl, Part* part)
     {
       iMidiCtrlValList cl = _controller->find(ch, ctrl);
       if (cl == _controller->end()) {
-            if (debugMsg)
+            if (MusEGlobal::debugMsg)
                   printf("deleteController: controller %d(0x%x) for channel %d not found size %zd\n",
                      ctrl, ctrl, ch, _controller->size());
             return;

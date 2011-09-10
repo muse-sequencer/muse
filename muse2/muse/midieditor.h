@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: midieditor.h,v 1.3.2.2 2009/02/02 21:38:00 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __MIDIEDITOR_H__
@@ -18,12 +33,15 @@ class QWidget;
 class PartList;
 class Xml;
 class EventCanvas;
-class ScrollScale;
 class CtrlEdit;
-class MTScale;
 class WaveView;
 class Part;
 class WavePart;
+
+namespace MusEWidget {
+class MTScale;
+class ScrollScale;
+}
 
 //---------------------------------------------------------
 //   MidiEditor
@@ -37,9 +55,9 @@ class MidiEditor : public TopWin  {
       int _curDrumInstrument;  // currently selected instrument if drum
                                // editor
    protected:
-      ScrollScale* hscroll;
-      ScrollScale* vscroll;
-      MTScale* time;
+      MusEWidget::ScrollScale* hscroll;
+      MusEWidget::ScrollScale* vscroll;
+      MusEWidget::MTScale* time;
       EventCanvas* canvas;
       WaveView* wview;
 

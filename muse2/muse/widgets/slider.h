@@ -4,11 +4,23 @@
 //    $Id: slider.h,v 1.3.2.2 2008/01/19 13:33:47 wschweer Exp $
 //
 //    Copyright (C) 1997  Josef Wilgen
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License, version 2,
-//  as published by the Free Software Foundation.
-//
 //    (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Orcan Ogetbil (ogetbilo at sf.net)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __SLIDER_H__
@@ -17,6 +29,8 @@
 #include "sclif.h"
 #include "sliderbase.h"
 #include "scldraw.h"
+
+namespace MusEWidget {
 
 //---------------------------------------------------------
 //   Slider
@@ -28,7 +42,7 @@ class Slider : public SliderBase, public ScaleIf
 
  public:
   enum ScalePos { None, Left, Right, Top, Bottom };
-  enum { BgTrough = 0x1, BgSlot = 0x2 };
+  enum RoundCorner { UpperLeft = 0x1, UpperRight = 0x2, LowerLeft = 0x4, LowerRight = 0x8 };
 
    private:
       Q_PROPERTY( double lineStep READ lineStep WRITE setLineStep )
@@ -40,11 +54,12 @@ class Slider : public SliderBase, public ScaleIf
   int d_thumbLength;
   int d_thumbHalf;
   int d_thumbWidth;
-  int d_borderWidth;
-  int d_bwTrough;
   int d_scaleDist;
   int d_xMargin;
   int d_yMargin;
+  int d_mMargin;
+
+  QColor d_fillColor;
   
   int d_resized;
   bool d_autoResize;
@@ -55,6 +70,8 @@ class Slider : public SliderBase, public ScaleIf
   int d_bgStyle;
   int markerPos;
 
+  QPainterPath roundedPath(int x, int y, int w, int h, int xrad, int yrad, RoundCorner roundCorner);
+  QPainterPath roundedPath(QRect r, int xrad, int yrad, RoundCorner roundCorner);
   void drawHsBgSlot(QPainter *, const QRect&, const QRect&,const QBrush&);
   void drawVsBgSlot(QPainter *, const QRect&, const QRect&,const QBrush&);
 
@@ -71,9 +88,9 @@ class Slider : public SliderBase, public ScaleIf
 
   public:
   Slider(QWidget *parent, const char *name = 0,
-      Qt::Orientation orient = Qt::Vertical,
-      ScalePos scalePos = None,
-      int bgStyle = BgTrough);
+         Qt::Orientation orient = Qt::Vertical,
+         ScalePos scalePos = None,
+         QColor fillColor = QColor(100, 100, 255));
   
   ~Slider();
   void setThumbLength(int l);
@@ -88,8 +105,10 @@ class Slider : public SliderBase, public ScaleIf
   void setLineStep(double);
   void setPageStep(double);
 
-  void setBorderWidth(int bw);
       void setMargins(int x, int y);
   QSize sizeHint(); // const;
       };
+
+} // namespace MusEWidget
+
 #endif

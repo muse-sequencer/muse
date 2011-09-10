@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: markerview.cpp,v 1.7.2.6 2009/08/25 20:28:45 spamatica Exp $
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include "al/sig.h"  // Tim.
@@ -109,7 +124,7 @@ void MarkerItem::setTick(unsigned v)
       s.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
       setText(COL_TICK, s);
 
-      double time = double(tempomap.tick2frame(v))/double(sampleRate);
+      double time = double(tempomap.tick2frame(v))/double(MusEGlobal::sampleRate);
       int hour = int(time) / 3600;
       int min  = (int(time) % 3600)/60;
       int sec  = int(time) % 60;
@@ -183,7 +198,7 @@ MarkerView::MarkerView(QWidget* parent)
       // Toolbars ---------------------------------------------------------
       QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
       undo_tools->setObjectName("Undo/Redo tools");
-      undo_tools->addActions(undoRedo->actions());
+      undo_tools->addActions(MusEGlobal::undoRedo->actions());
 
       QToolBar* edit = addToolBar(tr("edit tools"));
       edit->setObjectName("marker edit tools");
@@ -192,11 +207,11 @@ MarkerView::MarkerView(QWidget* parent)
 
       QToolBar* panic_toolbar = addToolBar(tr("panic"));
       panic_toolbar->setObjectName("panic");
-      panic_toolbar->addAction(panicAction);
+      panic_toolbar->addAction(MusEGlobal::panicAction);
 
       QToolBar* transport_toolbar = addToolBar(tr("transport"));
       transport_toolbar->setObjectName("transport");
-      transport_toolbar->addActions(transportAction->actions());
+      transport_toolbar->addActions(MusEGlobal::transportAction->actions());
 
       //---------------------------------------------------
       //    master

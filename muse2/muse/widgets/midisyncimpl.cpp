@@ -4,6 +4,21 @@
 //  $Id: midisyncimpl.cpp,v 1.1.1.1.2.4 2009/05/03 04:14:01 terminator356 Exp $
 //
 //  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <QCloseEvent>
@@ -25,6 +40,8 @@
 #include "midisyncimpl.h"
 #include "driver/audiodev.h"
 #include "audio.h"
+
+namespace MusEWidget {
 
 enum { DEVCOL_NO = 0, DEVCOL_NAME, DEVCOL_IN, DEVCOL_TICKIN, DEVCOL_MRTIN, DEVCOL_MMCIN, DEVCOL_MTCIN, DEVCOL_MTCTYPE, 
        DEVCOL_RID, DEVCOL_RCLK, DEVCOL_RMRT, DEVCOL_RMMC, DEVCOL_RMTC, DEVCOL_RREWSTART, 
@@ -296,7 +313,7 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
   
       // Done in show().
       //connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      //connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
+      //connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       
       //inHeartBeat = false;
 }
@@ -646,7 +663,7 @@ void MidiSyncConfig::show()
 {
   songChanged(-1);
   connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-  connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
+  connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
   QDialog::show();
 }
 
@@ -673,7 +690,7 @@ void MidiSyncConfig::closeEvent(QCloseEvent* e)
           apply();
       }
       
-      disconnect(heartBeatTimer, SIGNAL(timeout()), this, SLOT(heartBeat()));
+      disconnect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), this, SLOT(heartBeat()));
       disconnect(song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
       
       e->accept();
@@ -1249,3 +1266,4 @@ void MidiSyncConfig::setDirty()
     applyButton->setEnabled(true);
 }
 
+} // namespace MusEWidget

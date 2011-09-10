@@ -4,6 +4,21 @@
 //  $Id: thread.cpp,v 1.4.2.5 2009/12/20 05:00:35 terminator356 Exp $
 //
 //  (C) Copyright 2001-2004 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include "thread.h"
@@ -64,7 +79,7 @@ void Thread::start(int prio, void* ptr)
 
 
       //if (_realTimePriority) {
-      if (realTimeScheduling && _realTimePriority > 0) {                        // p4.0.16
+      if (MusEGlobal::realTimeScheduling && _realTimePriority > 0) {                        // p4.0.16
             attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
             pthread_attr_init(attributes);
 
@@ -102,11 +117,11 @@ void Thread::start(int prio, void* ptr)
       int rv = pthread_create(&thread, attributes, ::loop, this); 
       if(rv)
       {
-        // p4.0.16: realTimeScheduling is unreliable. It is true even in some clearly non-RT cases.
+        // p4.0.16: MusEGlobal::realTimeScheduling is unreliable. It is true even in some clearly non-RT cases.
         // I cannot seem to find a reliable answer to the question of "are we RT or not".
         // MusE was failing with a stock kernel because of PTHREAD_EXPLICIT_SCHED.
         // So we'll just have to try again without attributes.
-        if (realTimeScheduling && _realTimePriority > 0) 
+        if (MusEGlobal::realTimeScheduling && _realTimePriority > 0) 
           rv = pthread_create(&thread, NULL, ::loop, this); 
       }
 
@@ -166,7 +181,7 @@ Thread::Thread(const char* s)
       _pollWait        = -1;
       thread           = 0;
 
-      //if (debugMsg)
+      //if (MusEGlobal::debugMsg)
       //      printf("Start thread %s with priority %d\n", s, prio);
 
       // create message channels
@@ -249,7 +264,7 @@ void Thread::loop()
       {
       // Changed by Tim. p3.3.17
 
-      if (!debugMode) {
+      if (!MusEGlobal::debugMode) {
             if (mlockall(MCL_CURRENT | MCL_FUTURE))
                   perror("WARNING: Cannot lock memory:");
             }
@@ -259,7 +274,7 @@ void Thread::loop()
       attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
       pthread_attr_init(attributes);
 
-      if (realTimeScheduling && realTimePriority > 0) {
+      if (MusEGlobal::realTimeScheduling && realTimePriority > 0) {
 
             doSetuid();
 //             if (pthread_attr_setschedpolicy(attributes, SCHED_FIFO)) {
@@ -283,7 +298,7 @@ void Thread::loop()
             if (error != 0)
               perror( "error set_schedparam 2:");
 
-//          if (!debugMode) {
+//          if (!MusEGlobal::debugMode) {
 //                if (mlockall(MCL_CURRENT|MCL_FUTURE))
 //                      perror("WARNING: Cannot lock memory:");
 //                }
@@ -321,12 +336,12 @@ void Thread::loop()
             }
 
       /*
-      if (debugMsg)
+      if (MusEGlobal::debugMsg)
             printf("Thread <%s> set to %s priority %d\n",
                _name, policy == SCHED_FIFO ? "SCHED_FIFO" : "SCHED_OTHER",
                 realTimePriority);
       */          
-      if (debugMsg)
+      if (MusEGlobal::debugMsg)
             printf("Thread <%s, id %p> has %s priority %d\n",
                _name, (void *)pthread_self(), policy == SCHED_FIFO ? "SCHED_FIFO" : "SCHED_OTHER",
                 policy == SCHED_FIFO ? _realTimePriority : 0);
@@ -340,7 +355,7 @@ void Thread::loop()
       threadStart(userPtr);
 
       while (_running) {
-            if (debugMode)          // DEBUG
+            if (MusEGlobal::debugMode)          // DEBUG
                   _pollWait = 10;   // ms
             else
                   _pollWait = -1;

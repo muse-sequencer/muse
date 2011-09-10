@@ -22,8 +22,8 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-// 02111-1307, USA or point your web browser to http://www.gnu.org.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+// 02111-1301, USA or point your web browser to http://www.gnu.org.
 //=========================================================
 
 #include <unistd.h>
@@ -601,7 +601,7 @@ void VAMGui::loadPresetsPressed()
 {
 #if 1   // TODO
 	QString iname;
-	QString s(configPath);
+	QString s(MusEGlobal::configPath);
 	
 /*      QString filename = QFileDialog::getOpenFileName(lastdir, QString("*.[Ss][Ff]2"),
                                                       this,
@@ -716,7 +716,7 @@ void VAMGui::doSavePresets(const QString& fn, bool showWarning)
 void VAMGui::savePresetsPressed()
 {
 #if 1 // TODO
-	QString s(configPath);
+        QString s(MusEGlobal::configPath);
 	QString fn = QFileDialog::getSaveFileName(this, tr("MusE: Save VAM Presets"), 
                                                   s, "Presets (*.vam)");
 	if (fn.isEmpty())
@@ -734,7 +734,7 @@ void VAMGui::savePresetsToFilePressed()
 {
 	if (!presetFileName ) {
  
-      QString s(configPath);
+      QString s(MusEGlobal::configPath);
       QString fn = QFileDialog::getSaveFileName(this, tr("MusE: Save VAM Presets"), 
                                                 s, "Presets (*.vam)");
       presetFileName = new QString(fn);

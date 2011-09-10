@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: editevent.h,v 1.6.2.1 2008/05/21 00:28:53 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __EDIT_EVENT_H__
@@ -18,8 +33,11 @@ namespace Awl {
       };
 
 ///class PosEdit;
+namespace MusEWidget {
 class IntLabel;
 class PitchEdit;
+}
+
 class QDialog;
 class QLabel;
 class QGridLayout;
@@ -128,7 +146,7 @@ class EditMetaDialog : public EditEventDialog {
       ///PosEdit* epos;
       Awl::PosEdit* epos;
       QTextEdit* edit;
-      IntLabel* il2;
+      MusEWidget::IntLabel* il2;
       QRadioButton* hexButton;
       QLabel* typeLabel;
 
@@ -158,7 +176,7 @@ class EditCAfterDialog : public EditEventDialog {
 
       ///PosEdit* epos;
       Awl::PosEdit* epos;
-      IntLabel* il2;
+      MusEWidget::IntLabel* il2;
 
    protected:
       QGridLayout* layout;
@@ -180,8 +198,8 @@ class EditPAfterDialog : public EditEventDialog {
 
       ///PosEdit* epos;
       Awl::PosEdit* epos;
-      PitchEdit* pl;
-      IntLabel* il2;
+      MusEWidget::PitchEdit* pl;
+      MusEWidget::IntLabel* il2;
 
    protected:
       QGridLayout* layout;

@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: filedialog.cpp,v 1.3.2.3 2005/06/19 06:32:07 lunar_shuttle Exp $
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <errno.h>
@@ -18,6 +33,8 @@
 #include "filedialog.h"
 #include "../globals.h"
 #include "gconfig.h"
+
+namespace MusEWidget {
 
 MFileDialog::ViewType MFileDialog::lastViewUsed = GLOBAL_VIEW;
 //QString MFileDialog::lastUserDir = "";
@@ -87,7 +104,7 @@ void MFileDialog::globalToggled(bool flag)
             buttons.userButton->setChecked(!flag);
             buttons.projectButton->setChecked(!flag);
             if (lastGlobalDir.isEmpty())
-                  lastGlobalDir = museGlobalShare + QString("/") + baseDir; // Initialize if first time
+                  lastGlobalDir = MusEGlobal::museGlobalShare + QString("/") + baseDir; // Initialize if first time
             QString dir = lastGlobalDir;
             setDirectory(dir);
             lastViewUsed = GLOBAL_VIEW;
@@ -106,11 +123,11 @@ void MFileDialog::userToggled(bool flag)
 
 
             if (lastUserDir.isEmpty()) {
-                  lastUserDir = museUser + QString("/") + baseDir; // Initialize if first time
+                  lastUserDir = MusEGlobal::museUser + QString("/") + baseDir; // Initialize if first time
                   }
 
             if (testDirCreate(this, lastUserDir))
-                  setDirectory(museUser);
+                  setDirectory(MusEGlobal::museUser);
             else
                   setDirectory(lastUserDir);
 
@@ -129,17 +146,17 @@ void MFileDialog::projectToggled(bool flag)
             buttons.userButton->setChecked(!flag);
 
             QString s;
-            if (museProject == museProjectInitPath ) {
+            if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath ) {
                   // if project path is uninitialized, meaning it is still set to museProjectInitPath.
                   // then project path is set to current pwd instead.
                   //s = QString(getcwd(0,0)) + QString("/");
-                  s = config.projectBaseFolder;
+                  s = MusEConfig::config.projectBaseFolder;
                   }
             else
-                  s = museProject + QString("/"); // + baseDir;
+                  s = MusEGlobal::museProject + QString("/"); // + baseDir;
 
             if (testDirCreate(this, s))
-                  setDirectory(museProject);
+                  setDirectory(MusEGlobal::museProject);
             else
                   setDirectory(s);
             lastViewUsed = PROJECT_VIEW;
@@ -548,3 +565,4 @@ FILE* MFile::open(const char* mode, const QStringList& pattern,
       return f;
       }
 
+} // namespace MusEWidget

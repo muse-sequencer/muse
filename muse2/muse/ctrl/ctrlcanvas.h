@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: ctrlcanvas.h,v 1.7.2.4 2009/06/01 20:15:53 spamatica Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __CTRLCANVAS_H__
@@ -80,7 +95,7 @@ class CEventList: public std::list<CEvent*> {
 //   CtrlCanvas
 //---------------------------------------------------------
 
-class CtrlCanvas : public View {
+class CtrlCanvas : public MusEWidget::View {
       Q_OBJECT
     
       MidiEditor* editor;
@@ -138,7 +153,7 @@ class CtrlCanvas : public View {
       DragMode drag;
       QRect lasso;
       QPoint start;
-      Tool tool;
+      MusEWidget::Tool tool;
       unsigned pos[3];
       int curDrumInstrument;    //Used by the drum-editor to view velocity of only one key (one drum)
       

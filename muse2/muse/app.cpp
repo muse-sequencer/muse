@@ -3,7 +3,22 @@
 //  Linux Music Editor
 //  $Id: app.cpp,v 1.113.2.68 2009/12/21 14:51:51 spamatica Exp $
 //
-//  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 1999-2011 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <typeinfo>
@@ -18,6 +33,8 @@
 #include <QProgressDialog>
 #include <QMdiArea>
 #include <QMdiSubWindow>
+
+#include <iostream>
 
 #include "app.h"
 #include "master/lmaster.h"
@@ -60,6 +77,9 @@
 #include "widgets/unusedwavefiles.h"
 #include "functions.h"
 
+
+
+namespace MusEApp {
 
 //extern void cacheJackRouteNames();
 
@@ -129,7 +149,7 @@ bool MusE::seqStart()
             }
       
       if (!audio->start()) {
-          QMessageBox::critical( muse, tr("Failed to start audio!"),
+          QMessageBox::critical( MusEGlobal::muse, tr("Failed to start audio!"),
               tr("Was not able to start audio, check if jack is running.\n"));
           return false;
           }
@@ -145,46 +165,46 @@ bool MusE::seqStart()
       }
       if(!audio->isRunning()) 
       {
-        QMessageBox::critical( muse, tr("Failed to start audio!"),
+        QMessageBox::critical( MusEGlobal::muse, tr("Failed to start audio!"),
             tr("Timeout waiting for audio to run. Check if jack is running.\n"));
       }
       //
       // now its safe to ask the driver for realtime
       // priority
       
-      realTimePriority = audioDevice->realtimePriority();
-      if(debugMsg)
-        printf("MusE::seqStart: getting audio driver realTimePriority:%d\n", realTimePriority);
+      MusEGlobal::realTimePriority = audioDevice->realtimePriority();
+      if(MusEGlobal::debugMsg)
+        printf("MusE::seqStart: getting audio driver MusEGlobal::realTimePriority:%d\n", MusEGlobal::realTimePriority);
       
       int pfprio = 0;
       int midiprio = 0;
       
-      // NOTE: realTimeScheduling can be true (gotten using jack_is_realtime()),
-      //  while the determined realTimePriority can be 0.
-      // realTimePriority is gotten using pthread_getschedparam() on the client thread 
+      // NOTE: MusEGlobal::realTimeScheduling can be true (gotten using jack_is_realtime()),
+      //  while the determined MusEGlobal::realTimePriority can be 0.
+      // MusEGlobal::realTimePriority is gotten using pthread_getschedparam() on the client thread 
       //  in JackAudioDevice::realtimePriority() which is a bit flawed - it reports there's no RT...
-      if(realTimeScheduling) 
+      if(MusEGlobal::realTimeScheduling) 
       {
         {
-          //pfprio = realTimePriority - 5;
+          //pfprio = MusEGlobal::realTimePriority - 5;
           // p3.3.40
-          pfprio = realTimePriority + 1;
+          pfprio = MusEGlobal::realTimePriority + 1;
           
-          //midiprio = realTimePriority - 2;
+          //midiprio = MusEGlobal::realTimePriority - 2;
           // p3.3.37
-          //midiprio = realTimePriority + 1;
+          //midiprio = MusEGlobal::realTimePriority + 1;
           // p3.3.40
-          midiprio = realTimePriority + 2;
+          midiprio = MusEGlobal::realTimePriority + 2;
         }  
       }
       
-      if(midiRTPrioOverride > 0)
-        midiprio = midiRTPrioOverride;
+      if(MusEGlobal::midiRTPrioOverride > 0)
+        midiprio = MusEGlobal::midiRTPrioOverride;
       
-      // FIXME FIXME: The realTimePriority of the Jack thread seems to always be 5 less than the value passed to jackd command.
-      //if(midiprio == realTimePriority)
+      // FIXME FIXME: The MusEGlobal::realTimePriority of the Jack thread seems to always be 5 less than the value passed to jackd command.
+      //if(midiprio == MusEGlobal::realTimePriority)
       //  printf("MusE: WARNING: Midi realtime priority %d is the same as audio realtime priority %d. Try a different setting.\n", 
-      //         midiprio, realTimePriority);
+      //         midiprio, MusEGlobal::realTimePriority);
       //if(midiprio == pfprio)
       //  printf("MusE: WARNING: Midi realtime priority %d is the same as audio prefetch realtime priority %d. Try a different setting.\n", 
       //         midiprio, pfprio);
@@ -193,9 +213,9 @@ bool MusE::seqStart()
       
       audioPrefetch->msgSeek(0, true); // force
       
-      //midiSeqRunning = !midiSeq->start(realTimeScheduling ? realTimePriority : 0);
+      //MusEGlobal::midiSeqRunning = !midiSeq->start(MusEGlobal::realTimeScheduling ? MusEGlobal::realTimePriority : 0);
       // Changed by Tim. p3.3.22
-      //midiSeq->start(realTimeScheduling ? realTimePriority : 0);
+      //midiSeq->start(MusEGlobal::realTimeScheduling ? MusEGlobal::realTimePriority : 0);
       midiSeq->start(midiprio);
       
       int counter=0;
@@ -205,14 +225,14 @@ bool MusE::seqStart()
             fprintf(stderr,"midi sequencer thread does not start!? Exiting...\n");
             exit(33);
         }
-        midiSeqRunning = midiSeq->isRunning();
-        if (midiSeqRunning)
+        MusEGlobal::midiSeqRunning = midiSeq->isRunning();
+        if (MusEGlobal::midiSeqRunning)
           break;
         usleep(1000);
-        if(debugMsg)
+        if(MusEGlobal::debugMsg)
           printf("looping waiting for sequencer thread to start\n");
       }
-      if(!midiSeqRunning)
+      if(!MusEGlobal::midiSeqRunning)
       {
         fprintf(stderr, "midiSeq is not running! Exiting...\n");
         exit(33);
@@ -227,14 +247,14 @@ bool MusE::seqStart()
 void MusE::seqStop()
       {
       // label sequencer as disabled before it actually happened to minimize race condition
-      midiSeqRunning = false;
+      MusEGlobal::midiSeqRunning = false;
 
       song->setStop(true);
       song->setStopPlay(false);
       midiSeq->stop(true);
       audio->stop(true);
       audioPrefetch->stop(true);
-      if (realTimeScheduling && watchdogThread)
+      if (MusEGlobal::realTimeScheduling && watchdogThread)
             pthread_cancel(watchdogThread);
       }
 
@@ -301,7 +321,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       setIconSize(ICON_SIZE);
       setFocusPolicy(Qt::WheelFocus);
       //setFocusPolicy(Qt::NoFocus);
-      muse                  = this;    // hack
+      MusEGlobal::muse      = this;    // hack
       clipListEdit          = 0;
       midiSyncConfig        = 0;
       midiRemoteConfig      = 0;
@@ -338,9 +358,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       song           = new Song("song");
       song->blockSignals(true);
-      heartBeatTimer = new QTimer(this);
-      heartBeatTimer->setObjectName("timer");
-      connect(heartBeatTimer, SIGNAL(timeout()), song, SLOT(beat()));
+      MusEGlobal::heartBeatTimer = new QTimer(this);
+      MusEGlobal::heartBeatTimer->setObjectName("timer");
+      connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), song, SLOT(beat()));
       
       
       connect(this, SIGNAL(activeTopWinChanged(TopWin*)), SLOT(activeTopWinChangedSlot(TopWin*)));
@@ -363,97 +383,97 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    undo/redo
       //---------------------------------------------------
       
-      undoRedo = new QActionGroup(this);
-      undoRedo->setExclusive(false);
-      undoAction = new QAction(QIcon(*undoIconS), tr("Und&o"), 
-        undoRedo);
-      redoAction = new QAction(QIcon(*redoIconS), tr("Re&do"), 
-        undoRedo);
+      MusEGlobal::undoRedo = new QActionGroup(this);
+      MusEGlobal::undoRedo->setExclusive(false);
+      MusEGlobal::undoAction = new QAction(QIcon(*undoIconS), tr("Und&o"), 
+        MusEGlobal::undoRedo);
+      MusEGlobal::redoAction = new QAction(QIcon(*redoIconS), tr("Re&do"), 
+        MusEGlobal::undoRedo);
 
-      undoAction->setWhatsThis(tr("undo last change to song"));
-      redoAction->setWhatsThis(tr("redo last undo"));
-      undoAction->setEnabled(false);
-      redoAction->setEnabled(false);
-      connect(redoAction, SIGNAL(activated()), song, SLOT(redo()));
-      connect(undoAction, SIGNAL(activated()), song, SLOT(undo()));
+      MusEGlobal::undoAction->setWhatsThis(tr("undo last change to song"));
+      MusEGlobal::redoAction->setWhatsThis(tr("redo last undo"));
+      MusEGlobal::undoAction->setEnabled(false);
+      MusEGlobal::redoAction->setEnabled(false);
+      connect(MusEGlobal::redoAction, SIGNAL(activated()), song, SLOT(redo()));
+      connect(MusEGlobal::undoAction, SIGNAL(activated()), song, SLOT(undo()));
 
       //---------------------------------------------------
       //    Transport
       //---------------------------------------------------
       
-      transportAction = new QActionGroup(this);
-      transportAction->setExclusive(false);
+      MusEGlobal::transportAction = new QActionGroup(this);
+      MusEGlobal::transportAction->setExclusive(false);
       
-      loopAction = new QAction(QIcon(*loop1Icon),
-         tr("Loop"), transportAction);
-      loopAction->setCheckable(true);
+      MusEGlobal::loopAction = new QAction(QIcon(*loop1Icon),
+         tr("Loop"), MusEGlobal::transportAction);
+      MusEGlobal::loopAction->setCheckable(true);
 
-      loopAction->setWhatsThis(tr(infoLoopButton));
-      connect(loopAction, SIGNAL(toggled(bool)), song, SLOT(setLoop(bool)));
+      MusEGlobal::loopAction->setWhatsThis(tr(infoLoopButton));
+      connect(MusEGlobal::loopAction, SIGNAL(toggled(bool)), song, SLOT(setLoop(bool)));
       
-      punchinAction = new QAction(QIcon(*punchin1Icon),
-         tr("Punchin"), transportAction);
-      punchinAction->setCheckable(true);
+      MusEGlobal::punchinAction = new QAction(QIcon(*punchin1Icon),
+         tr("Punchin"), MusEGlobal::transportAction);
+      MusEGlobal::punchinAction->setCheckable(true);
 
-      punchinAction->setWhatsThis(tr(infoPunchinButton));
-      connect(punchinAction, SIGNAL(toggled(bool)), song, SLOT(setPunchin(bool)));
+      MusEGlobal::punchinAction->setWhatsThis(tr(infoPunchinButton));
+      connect(MusEGlobal::punchinAction, SIGNAL(toggled(bool)), song, SLOT(setPunchin(bool)));
 
-      punchoutAction = new QAction(QIcon(*punchout1Icon),
-         tr("Punchout"), transportAction);
-      punchoutAction->setCheckable(true);
+      MusEGlobal::punchoutAction = new QAction(QIcon(*punchout1Icon),
+         tr("Punchout"), MusEGlobal::transportAction);
+      MusEGlobal::punchoutAction->setCheckable(true);
 
-      punchoutAction->setWhatsThis(tr(infoPunchoutButton));
-      connect(punchoutAction, SIGNAL(toggled(bool)), song, SLOT(setPunchout(bool)));
+      MusEGlobal::punchoutAction->setWhatsThis(tr(infoPunchoutButton));
+      connect(MusEGlobal::punchoutAction, SIGNAL(toggled(bool)), song, SLOT(setPunchout(bool)));
 
       QAction *tseparator = new QAction(this);
       tseparator->setSeparator(true);
-      transportAction->addAction(tseparator);
+      MusEGlobal::transportAction->addAction(tseparator);
 
-      startAction = new QAction(QIcon(*startIcon),
-         tr("Start"), transportAction);
+      MusEGlobal::startAction = new QAction(QIcon(*startIcon),
+         tr("Start"), MusEGlobal::transportAction);
 
-      startAction->setWhatsThis(tr(infoStartButton));
-      connect(startAction, SIGNAL(activated()), song, SLOT(rewindStart()));
+      MusEGlobal::startAction->setWhatsThis(tr(infoStartButton));
+      connect(MusEGlobal::startAction, SIGNAL(activated()), song, SLOT(rewindStart()));
 
-      rewindAction = new QAction(QIcon(*frewindIcon),
-         tr("Rewind"), transportAction);
+      MusEGlobal::rewindAction = new QAction(QIcon(*frewindIcon),
+         tr("Rewind"), MusEGlobal::transportAction);
 
-      rewindAction->setWhatsThis(tr(infoRewindButton));
-      connect(rewindAction, SIGNAL(activated()), song, SLOT(rewind()));
+      MusEGlobal::rewindAction->setWhatsThis(tr(infoRewindButton));
+      connect(MusEGlobal::rewindAction, SIGNAL(activated()), song, SLOT(rewind()));
 
-      forwardAction = new QAction(QIcon(*fforwardIcon),
-	 tr("Forward"), transportAction);
+      MusEGlobal::forwardAction = new QAction(QIcon(*fforwardIcon),
+	 tr("Forward"), MusEGlobal::transportAction);
 
-      forwardAction->setWhatsThis(tr(infoForwardButton));
-      connect(forwardAction, SIGNAL(activated()), song, SLOT(forward()));
+      MusEGlobal::forwardAction->setWhatsThis(tr(infoForwardButton));
+      connect(MusEGlobal::forwardAction, SIGNAL(activated()), song, SLOT(forward()));
 
-      stopAction = new QAction(QIcon(*stopIcon),
-         tr("Stop"), transportAction);
-      stopAction->setCheckable(true);
+      MusEGlobal::stopAction = new QAction(QIcon(*stopIcon),
+         tr("Stop"), MusEGlobal::transportAction);
+      MusEGlobal::stopAction->setCheckable(true);
 
-      stopAction->setWhatsThis(tr(infoStopButton));
-      stopAction->setChecked(true);
-      connect(stopAction, SIGNAL(toggled(bool)), song, SLOT(setStop(bool)));
+      MusEGlobal::stopAction->setWhatsThis(tr(infoStopButton));
+      MusEGlobal::stopAction->setChecked(true);
+      connect(MusEGlobal::stopAction, SIGNAL(toggled(bool)), song, SLOT(setStop(bool)));
 
-      playAction = new QAction(QIcon(*playIcon),
-         tr("Play"), transportAction);
-      playAction->setCheckable(true);
+      MusEGlobal::playAction = new QAction(QIcon(*playIcon),
+         tr("Play"), MusEGlobal::transportAction);
+      MusEGlobal::playAction->setCheckable(true);
 
-      playAction->setWhatsThis(tr(infoPlayButton));
-      playAction->setChecked(false);
-      connect(playAction, SIGNAL(toggled(bool)), song, SLOT(setPlay(bool)));
+      MusEGlobal::playAction->setWhatsThis(tr(infoPlayButton));
+      MusEGlobal::playAction->setChecked(false);
+      connect(MusEGlobal::playAction, SIGNAL(toggled(bool)), song, SLOT(setPlay(bool)));
 
-      recordAction = new QAction(QIcon(*recordIcon),
-         tr("Record"), transportAction);
-      recordAction->setCheckable(true);
-      recordAction->setWhatsThis(tr(infoRecordButton));
-      connect(recordAction, SIGNAL(toggled(bool)), song, SLOT(setRecord(bool)));
+      MusEGlobal::recordAction = new QAction(QIcon(*recordIcon),
+         tr("Record"), MusEGlobal::transportAction);
+      MusEGlobal::recordAction->setCheckable(true);
+      MusEGlobal::recordAction->setWhatsThis(tr(infoRecordButton));
+      connect(MusEGlobal::recordAction, SIGNAL(toggled(bool)), song, SLOT(setRecord(bool)));
 
-      panicAction = new QAction(QIcon(*panicIcon),
+      MusEGlobal::panicAction = new QAction(QIcon(*panicIcon),
          tr("Panic"), this);
 
-      panicAction->setWhatsThis(tr(infoPanicButton));
-      connect(panicAction, SIGNAL(activated()), song, SLOT(panic()));
+      MusEGlobal::panicAction->setWhatsThis(tr(infoPanicButton));
+      connect(MusEGlobal::panicAction, SIGNAL(activated()), song, SLOT(panic()));
 
       initMidiInstruments();
       initMidiPorts();
@@ -594,7 +614,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       //-------- View connections
       connect(viewTransportAction, SIGNAL(toggled(bool)), SLOT(toggleTransport(bool)));
-      connect(viewBigtimeAction, SIGNAL(toggled(bool)), SLOT(toggleBigTime(bool)));
+      connect(viewBigtimeAction, SIGNAL(toggled(bool)), SLOT(toggleMusEWidget::BigTime(bool)));
       connect(viewMixerAAction, SIGNAL(toggled(bool)),SLOT(toggleMixer1(bool)));
       connect(viewMixerBAction, SIGNAL(toggled(bool)), SLOT(toggleMixer2(bool)));
       connect(viewCliplistAction, SIGNAL(toggled(bool)), SLOT(startClipList(bool)));
@@ -676,15 +696,15 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       
       QToolBar* undoToolbar = addToolBar(tr("Undo/Redo"));
       undoToolbar->setObjectName("Undo/Redo (global)");
-      undoToolbar->addActions(undoRedo->actions());
+      undoToolbar->addActions(MusEGlobal::undoRedo->actions());
 
       QToolBar* transportToolbar = addToolBar(tr("Transport"));
       transportToolbar->setObjectName("Transport (global)");
-      transportToolbar->addActions(transportAction->actions());
+      transportToolbar->addActions(MusEGlobal::transportAction->actions());
 
       QToolBar* panicToolbar = addToolBar(tr("Panic"));
       panicToolbar->setObjectName("Panic (global)");
-      panicToolbar->addAction(panicAction);
+      panicToolbar->addAction(MusEGlobal::panicAction);
 
       requiredToolbars.push_back(tools);
       optionalToolbars.push_back(undoToolbar);
@@ -696,22 +716,22 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //getrlimit(RLIMIT_RTPRIO, &lim);
       //printf("RLIMIT_RTPRIO soft:%d hard:%d\n", lim.rlim_cur, lim.rlim_max);    // Reported 80, 80 even with non-RT kernel.
       
-      if (realTimePriority < sched_get_priority_min(SCHED_FIFO))
-            realTimePriority = sched_get_priority_min(SCHED_FIFO);
-      else if (realTimePriority > sched_get_priority_max(SCHED_FIFO))
-            realTimePriority = sched_get_priority_max(SCHED_FIFO);
+      if (MusEGlobal::realTimePriority < sched_get_priority_min(SCHED_FIFO))
+            MusEGlobal::realTimePriority = sched_get_priority_min(SCHED_FIFO);
+      else if (MusEGlobal::realTimePriority > sched_get_priority_max(SCHED_FIFO))
+            MusEGlobal::realTimePriority = sched_get_priority_max(SCHED_FIFO);
 
       // If we requested to force the midi thread priority...
-      if(midiRTPrioOverride > 0)
+      if(MusEGlobal::midiRTPrioOverride > 0)
       {
-        if (midiRTPrioOverride < sched_get_priority_min(SCHED_FIFO))
-            midiRTPrioOverride = sched_get_priority_min(SCHED_FIFO);
-        else if (midiRTPrioOverride > sched_get_priority_max(SCHED_FIFO))
-            midiRTPrioOverride = sched_get_priority_max(SCHED_FIFO);
+        if (MusEGlobal::midiRTPrioOverride < sched_get_priority_min(SCHED_FIFO))
+            MusEGlobal::midiRTPrioOverride = sched_get_priority_min(SCHED_FIFO);
+        else if (MusEGlobal::midiRTPrioOverride > sched_get_priority_max(SCHED_FIFO))
+            MusEGlobal::midiRTPrioOverride = sched_get_priority_max(SCHED_FIFO);
       }
             
       // Changed by Tim. p3.3.17
-      //midiSeq       = new MidiSeq(realTimeScheduling ? realTimePriority : 0, "Midi");
+      //midiSeq       = new MidiSeq(MusEGlobal::realTimeScheduling ? MusEGlobal::realTimePriority : 0, "Midi");
       midiSeq       = new MidiSeq("Midi");
       audio         = new Audio();
       //audioPrefetch = new AudioPrefetch(0, "Disc");
@@ -919,7 +939,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //  read list of "Recent Projects"
       //---------------------------------------------------
 
-      QString prjPath(configPath);
+      QString prjPath(MusEGlobal::configPath);
       prjPath += QString("/projects");
       FILE* f = fopen(prjPath.toLatin1().constData(), "r");
       if (f == 0) {
@@ -962,21 +982,21 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       bool useTemplate = false;
       if (argc >= 2)
             name = argv[0];
-      else if (config.startMode == 0) {
+      else if (MusEConfig::config.startMode == 0) {
             if (argc < 2)
                   name = projectList[0] ? *projectList[0] : QString("untitled");
             else
                   name = argv[0];
-            printf("starting with selected song %s\n", config.startSong.toLatin1().constData());
+            printf("starting with selected song %s\n", MusEConfig::config.startSong.toLatin1().constData());
             }
-      else if (config.startMode == 1) {
+      else if (MusEConfig::config.startMode == 1) {
             printf("starting with default template\n");
-            name = museGlobalShare + QString("/templates/default.med");
+            name = MusEGlobal::museGlobalShare + QString("/templates/default.med");
             useTemplate = true;
             }
-      else if (config.startMode == 2) {
-            printf("starting with pre configured song %s\n", config.startSong.toLatin1().constData());
-            name = config.startSong;
+      else if (MusEConfig::config.startMode == 2) {
+            printf("starting with pre configured song %s\n", MusEConfig::config.startSong.toLatin1().constData());
+            name = MusEConfig::config.startSong;
       }
       song->blockSignals(false);
       loadProjectFile(name, useTemplate, true);
@@ -1001,7 +1021,7 @@ MusE::~MusE()
 
 void MusE::setHeartBeat()
       {
-      heartBeatTimer->start(1000/config.guiRefresh);
+      MusEGlobal::heartBeatTimer->start(1000/MusEConfig::config.guiRefresh);
       }
 
 //---------------------------------------------------------
@@ -1146,11 +1166,11 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
                   return;
                   }
             project.setFile("untitled");
-            museProject = museProjectInitPath;
+            MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
             }
       else {
             printf("Setting project path to %s\n", fi.absolutePath().toLatin1().constData());
-            museProject = fi.absolutePath();
+            MusEGlobal::museProject = fi.absolutePath();
             project.setFile(name);
             }
       // Changed by T356. 01/19/2010. We want the complete extension here. 
@@ -1168,7 +1188,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             //  read *.med file
             //
             bool popenFlag;
-            FILE* f = fileOpen(this, fi.filePath(), QString(".med"), "r", popenFlag, true);
+            FILE* f = MusEWidget::fileOpen(this, fi.filePath(), QString(".med"), "r", popenFlag, true);
             if (f == 0) {
                   if (errno != ENOENT) {
                         QMessageBox::critical(this, QString("MusE"),
@@ -1208,53 +1228,53 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
       song->dirty = false;
       progress->setValue(30);
 
-      viewTransportAction->setChecked(config.transportVisible);
-      viewBigtimeAction->setChecked(config.bigTimeVisible);
-      viewMarkerAction->setChecked(config.markerVisible);
-      viewArrangerAction->setChecked(config.arrangerVisible);
+      viewTransportAction->setChecked(MusEConfig::config.transportVisible);
+      viewBigtimeAction->setChecked(MusEConfig::config.bigTimeVisible);
+      viewMarkerAction->setChecked(MusEConfig::config.markerVisible);
+      viewArrangerAction->setChecked(MusEConfig::config.arrangerVisible);
 
-      autoMixerAction->setChecked(automation);
+      autoMixerAction->setChecked(MusEGlobal::automation);
 
       if (loadAll) {
-            showBigtime(config.bigTimeVisible);
-            //showMixer(config.mixerVisible);
-            showMixer1(config.mixer1Visible);
-            showMixer2(config.mixer2Visible);
+            showBigtime(MusEConfig::config.bigTimeVisible);
+            //showMixer(MusEConfig::config.mixerVisible);
+            showMixer1(MusEConfig::config.mixer1Visible);
+            showMixer2(MusEConfig::config.mixer2Visible);
             
             // Added p3.3.43 Make sure the geometry is correct because showMixerX() will NOT 
             //  set the geometry if the mixer has already been created.
             if(mixer1)
             {
-              //if(mixer1->geometry().size() != config.mixer1.geometry.size())   // p3.3.53 Moved below
-              //  mixer1->resize(config.mixer1.geometry.size());
+              //if(mixer1->geometry().size() != MusEConfig::config.mixer1.geometry.size())   // p3.3.53 Moved below
+              //  mixer1->resize(MusEConfig::config.mixer1.geometry.size());
               
-              if(mixer1->geometry().topLeft() != config.mixer1.geometry.topLeft())
-                mixer1->move(config.mixer1.geometry.topLeft());
+              if(mixer1->geometry().topLeft() != MusEConfig::config.mixer1.geometry.topLeft())
+                mixer1->move(MusEConfig::config.mixer1.geometry.topLeft());
             }
             if(mixer2)
             {
-              //if(mixer2->geometry().size() != config.mixer2.geometry.size())   // p3.3.53 Moved below
-              //  mixer2->resize(config.mixer2.geometry.size());
+              //if(mixer2->geometry().size() != MusEConfig::config.mixer2.geometry.size())   // p3.3.53 Moved below
+              //  mixer2->resize(MusEConfig::config.mixer2.geometry.size());
               
-              if(mixer2->geometry().topLeft() != config.mixer2.geometry.topLeft())
-                mixer2->move(config.mixer2.geometry.topLeft());
+              if(mixer2->geometry().topLeft() != MusEConfig::config.mixer2.geometry.topLeft())
+                mixer2->move(MusEConfig::config.mixer2.geometry.topLeft());
             }
             
-            //showMarker(config.markerVisible);  // Moved below. Tim.
-            resize(config.geometryMain.size());
-            move(config.geometryMain.topLeft());
+            //showMarker(MusEConfig::config.markerVisible);  // Moved below. Tim.
+            resize(MusEConfig::config.geometryMain.size());
+            move(MusEConfig::config.geometryMain.topLeft());
 
-            if (config.transportVisible)
+            if (MusEConfig::config.transportVisible)
                   transport->show();
-            transport->move(config.geometryTransport.topLeft());
-            showTransport(config.transportVisible);
+            transport->move(MusEConfig::config.geometryTransport.topLeft());
+            showTransport(MusEConfig::config.transportVisible);
             }
       progress->setValue(40);
 
       transport->setMasterFlag(song->masterFlag());
-      punchinAction->setChecked(song->punchin());
-      punchoutAction->setChecked(song->punchout());
-      loopAction->setChecked(song->loop());
+      MusEGlobal::punchinAction->setChecked(song->punchin());
+      MusEGlobal::punchoutAction->setChecked(song->punchout());
+      MusEGlobal::loopAction->setChecked(song->loop());
       song->update();
       song->updatePos();
       arrangerView->clipboardChanged(); // enable/disable "Paste"
@@ -1267,32 +1287,32 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
       {
         if(mixer1)
         {
-          if(mixer1->geometry().size() != config.mixer1.geometry.size())
+          if(mixer1->geometry().size() != MusEConfig::config.mixer1.geometry.size())
           {
-            //printf("MusE::loadProjectFile1 resizing mixer1 x:%d y:%d w:%d h:%d\n", config.mixer1.geometry.x(), 
-            //                                                                       config.mixer1.geometry.y(), 
-            //                                                                       config.mixer1.geometry.width(), 
-            //                                                                       config.mixer1.geometry.height()
+            //printf("MusE::loadProjectFile1 resizing mixer1 x:%d y:%d w:%d h:%d\n", MusEConfig::config.mixer1.geometry.x(), 
+            //                                                                       MusEConfig::config.mixer1.geometry.y(), 
+            //                                                                       MusEConfig::config.mixer1.geometry.width(), 
+            //                                                                       MusEConfig::config.mixer1.geometry.height()
             //                                                                       );  
-            mixer1->resize(config.mixer1.geometry.size());
+            mixer1->resize(MusEConfig::config.mixer1.geometry.size());
           }
         }  
         if(mixer2)
         {
-          if(mixer2->geometry().size() != config.mixer2.geometry.size())
+          if(mixer2->geometry().size() != MusEConfig::config.mixer2.geometry.size())
           {
-            //printf("MusE::loadProjectFile1 resizing mixer2 x:%d y:%d w:%d h:%d\n", config.mixer2.geometry.x(), 
-            //                                                                       config.mixer2.geometry.y(), 
-            //                                                                       config.mixer2.geometry.width(), 
-            //                                                                       config.mixer2.geometry.height()
+            //printf("MusE::loadProjectFile1 resizing mixer2 x:%d y:%d w:%d h:%d\n", MusEConfig::config.mixer2.geometry.x(), 
+            //                                                                       MusEConfig::config.mixer2.geometry.y(), 
+            //                                                                       MusEConfig::config.mixer2.geometry.width(), 
+            //                                                                       MusEConfig::config.mixer2.geometry.height()
             //                                                                       );  
-            mixer2->resize(config.mixer2.geometry.size());
+            mixer2->resize(MusEConfig::config.mixer2.geometry.size());
           }
         }  
         
         // Moved here from above due to crash with a song loaded and then File->New.
         // Marker view list was not updated, had non-existent items from marker list (cleared in ::clear()).
-        showMarker(config.markerVisible); 
+        showMarker(MusEConfig::config.markerVisible); 
       }
       
       if (songTemplate)
@@ -1323,7 +1343,7 @@ void MusE::setUntitledProject()
       {
       setConfigDefaults();
       QString name("untitled");
-      museProject = "./"; //QFileInfo(name).absolutePath();
+      MusEGlobal::museProject = "./"; //QFileInfo(name).absolutePath();
       project.setFile(name);
       setWindowTitle(tr("MusE: Song: ") + project.completeBaseName());
       }
@@ -1358,10 +1378,10 @@ void MusE::setFollow()
 void MusE::loadProject()
       {
       bool loadAll;
-      QString fn = getOpenFileName(QString(""), med_file_pattern, this,
+      QString fn = MusEWidget::getOpenFileName(QString(""), MusEGlobal::med_file_pattern, this,
          tr("MusE: load project"), &loadAll);
       if (!fn.isEmpty()) {
-            museProject = QFileInfo(fn).absolutePath();
+            MusEGlobal::museProject = QFileInfo(fn).absolutePath();
             loadProjectFile(fn, false, loadAll);
             }
       }
@@ -1372,10 +1392,10 @@ void MusE::loadProject()
 
 void MusE::loadTemplate()
       {
-      QString fn = getOpenFileName(QString("templates"), med_file_pattern, this,
-                                   tr("MusE: load template"), 0, MFileDialog::GLOBAL_VIEW);
+      QString fn = MusEWidget::getOpenFileName(QString("templates"), MusEGlobal::med_file_pattern, this,
+                                               tr("MusE: load template"), 0, MusEWidget::MFileDialog::GLOBAL_VIEW);
       if (!fn.isEmpty()) {
-            // museProject = QFileInfo(fn).absolutePath();
+            // MusEGlobal::museProject = QFileInfo(fn).absolutePath();
             
             loadProjectFile(fn, true, true);
             // With templates, don't clear midi ports. 
@@ -1425,7 +1445,7 @@ bool MusE::save(const QString& name, bool overwriteWarn)
             system(backupCommand.toLatin1().constData());
 
       bool popenFlag;
-      FILE* f = fileOpen(this, name, QString(".med"), "w", popenFlag, false, overwriteWarn);
+      FILE* f = MusEWidget::fileOpen(this, name, QString(".med"), "w", popenFlag, false, overwriteWarn);
       if (f == 0)
             return false;
       Xml xml(f);
@@ -1508,7 +1528,7 @@ void MusE::closeEvent(QCloseEvent* event)
       writeGlobalConfiguration();
 
       // save "Open Recent" list
-      QString prjPath(configPath);
+      QString prjPath(MusEGlobal::configPath);
       prjPath += "/projects";
       FILE* f = fopen(prjPath.toLatin1().constData(), "w");
       if (f) {
@@ -1517,13 +1537,13 @@ void MusE::closeEvent(QCloseEvent* event)
                   }
             fclose(f);
             }
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         printf("MusE: Exiting JackAudio\n");
       exitJackAudio();
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         printf("MusE: Exiting DummyAudio\n");
       exitDummyAudio();
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         printf("MusE: Exiting Metronome\n");
       exitMetronome();
       
@@ -1545,7 +1565,7 @@ void MusE::closeEvent(QCloseEvent* event)
       //      delete *i;
       song->cleanupForQuit();
 
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         printf("Muse: Cleaning up temporary wavefiles + peakfiles\n");
       // Cleanup temporary wavefiles + peakfiles used for undo
       for (std::list<QString>::iterator i = temporaryWavFiles.begin(); i != temporaryWavFiles.end(); i++) {
@@ -1560,18 +1580,18 @@ void MusE::closeEvent(QCloseEvent* event)
       // Disconnect gracefully from LASH. Tim. p3.3.14
       if(lash_client)
       {
-        if(debugMsg)
+        if(MusEGlobal::debugMsg)
           printf("MusE: Disconnecting from LASH\n");
         lash_event_t* lashev = lash_event_new_with_type (LASH_Quit);
         lash_send_event(lash_client, lashev);
       }
 #endif      
       
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         printf("MusE: Exiting Dsp\n");
       AL::exitDsp();
       
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         printf("MusE: Exiting OSC\n");
       exitOSC();
       
@@ -1687,10 +1707,10 @@ void MusE::showTransport(bool flag)
 //    by audio strip, midi strip, and midi trackinfo.
 //---------------------------------------------------------
 
-RoutePopupMenu* MusE::getRoutingPopupMenu()
+MusEWidget::RoutePopupMenu* MusE::getRoutingPopupMenu()
 {
   if(!routingPopupMenu)
-    routingPopupMenu = new RoutePopupMenu(this);
+    routingPopupMenu = new MusEWidget::RoutePopupMenu(this);
   return routingPopupMenu;
 }
 
@@ -1701,9 +1721,9 @@ RoutePopupMenu* MusE::getRoutingPopupMenu()
 bool MusE::saveAs()
       {
       QString name;
-      if (museProject == museProjectInitPath ) {
-        if (config.useProjectSaveDialog) {
-            ProjectCreateImpl pci(muse);
+      if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath ) {
+        if (MusEConfig::config.useProjectSaveDialog) {
+            MusEWidget::ProjectCreateImpl pci(MusEGlobal::muse);
             if (pci.exec() == QDialog::Rejected) {
               return false;
             }
@@ -1711,25 +1731,25 @@ bool MusE::saveAs()
             song->setSongInfo(pci.getSongInfo(), true);
             name = pci.getProjectPath();
           } else {
-            name = getSaveFileName(QString(""), med_file_save_pattern, this, tr("MusE: Save As"));
+            name = MusEWidget::getSaveFileName(QString(""), MusEGlobal::med_file_save_pattern, this, tr("MusE: Save As"));
             if (name.isEmpty())
               return false;
           }
 
-        museProject = QFileInfo(name).absolutePath();
+        MusEGlobal::museProject = QFileInfo(name).absolutePath();
         QDir dirmanipulator;
-        if (!dirmanipulator.mkpath(museProject)) {
+        if (!dirmanipulator.mkpath(MusEGlobal::museProject)) {
           QMessageBox::warning(this,"Path error","Can't create project path", QMessageBox::Ok);
           return false;
         }
       }
       else {
-        name = getSaveFileName(QString(""), med_file_save_pattern, this, tr("MusE: Save As"));
+        name = MusEWidget::getSaveFileName(QString(""), MusEGlobal::med_file_save_pattern, this, tr("MusE: Save As"));
       }
       bool ok = false;
       if (!name.isEmpty()) {
-            QString tempOldProj = museProject;
-            museProject = QFileInfo(name).absolutePath();
+            QString tempOldProj = MusEGlobal::museProject;
+            MusEGlobal::museProject = QFileInfo(name).absolutePath();
             ok = save(name, true);
             if (ok) {
                   project.setFile(name);
@@ -1737,7 +1757,7 @@ bool MusE::saveAs()
                   addProject(name);
                   }
             else
-                  museProject = tempOldProj;
+                  MusEGlobal::museProject = tempOldProj;
             }
 
       return ok;
@@ -1856,7 +1876,7 @@ void MusE::startPianoroll(PartList* pl, bool showDefaultCtrls)
       pianoroll->show();
       toplevels.push_back(pianoroll);
       connect(pianoroll, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
-      connect(muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
+      connect(MusEGlobal::muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
       updateWindowMenu();
       }
 
@@ -1878,7 +1898,7 @@ void MusE::startListEditor(PartList* pl)
       listEditor->show();
       toplevels.push_back(listEditor);
       connect(listEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
-      connect(muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
+      connect(MusEGlobal::muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
       updateWindowMenu();
       }
 
@@ -1905,7 +1925,7 @@ void MusE::startLMasterEditor()
       lmaster->show();
       toplevels.push_back(lmaster);
       connect(lmaster, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
-      connect(muse, SIGNAL(configChanged()), lmaster, SLOT(configChanged()));
+      connect(MusEGlobal::muse, SIGNAL(configChanged()), lmaster, SLOT(configChanged()));
       updateWindowMenu();
       }
 
@@ -1930,7 +1950,7 @@ void MusE::startDrumEditor(PartList* pl, bool showDefaultCtrls)
       drumEditor->show();
       toplevels.push_back(drumEditor);
       connect(drumEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
-      connect(muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
+      connect(MusEGlobal::muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
       updateWindowMenu();
       }
 
@@ -1952,7 +1972,7 @@ void MusE::startWaveEditor(PartList* pl)
       {
       WaveEdit* waveEditor = new WaveEdit(pl);
       waveEditor->show();
-      connect(muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
+      connect(MusEGlobal::muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
       toplevels.push_back(waveEditor);
       connect(waveEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       updateWindowMenu();
@@ -1964,7 +1984,7 @@ void MusE::startWaveEditor(PartList* pl)
 //---------------------------------------------------------
 void MusE::startSongInfo(bool editable)
       {
-        SongInfoWidget info;
+        MusEWidget::SongInfoWidget info;
         info.viewCheckBox->setChecked(song->showSongInfoOnStartup());
         info.viewCheckBox->setEnabled(editable);
         info.songInfoText->setPlainText(song->getSongInfo());
@@ -1984,15 +2004,15 @@ void MusE::startSongInfo(bool editable)
 //---------------------------------------------------------
 void MusE::showDidYouKnowDialog()
       {
-      if ((bool)config.showDidYouKnow == true) {
-            DidYouKnowWidget dyk;
+      if ((bool)MusEConfig::config.showDidYouKnow == true) {
+            MusEWidget::DidYouKnowWidget dyk;
             dyk.tipText->setText("To get started with MusE why don't you try some demo songs available at http://demos.muse-sequencer.org/");
             dyk.show();
             if( dyk.exec()) {
                   if (dyk.dontShowCheckBox->isChecked()) {
                         //printf("disables dialog!\n");
-                        config.showDidYouKnow=false;
-                        muse->changeConfig(true);    // save settings
+                        MusEConfig::config.showDidYouKnow=false;
+			MusEGlobal::muse->changeConfig(true);    // save settings
                         }
                   }
             }
@@ -2126,7 +2146,7 @@ void MusE::kbAccel(int key)
             if (audio->isPlaying())
                   //song->setStopPlay(false);
                   song->setStop(true);
-            else if (!config.useOldStyleStopShortCut)
+            else if (!MusEConfig::config.useOldStyleStopShortCut)
                   song->setPlay(true);
             else if (song->cpos() != song->lpos())
                   song->setPos(0, song->lPos());
@@ -2229,7 +2249,7 @@ void MusE::kbAccel(int key)
               markerView->prevMarker();
             }
       else {
-            if (debugMsg)
+            if (MusEGlobal::debugMsg)
                   printf("unknown kbAccel 0x%x\n", key);
             }
       }
@@ -2242,7 +2262,7 @@ void MusE::kbAccel(int key)
 #if 0
 static void catchSignal(int sig)
       {
-      if (debugMsg)
+      if (MusEGlobal::debugMsg)
             fprintf(stderr, "MusE: signal %d catched\n", sig);
       if (sig == SIGSEGV) {
             fprintf(stderr, "MusE: segmentation fault\n");
@@ -2348,10 +2368,10 @@ void MusE::changeConfig(bool writeFlag)
       if (writeFlag)
             writeGlobalConfiguration();
       
-      //loadStyleSheetFile(config.styleSheetFile);
-      loadTheme(config.style);
-      QApplication::setFont(config.fonts[0]);
-      loadStyleSheetFile(config.styleSheetFile);
+      //loadStyleSheetFile(MusEConfig::config.styleSheetFile);
+      loadTheme(MusEConfig::config.style);
+      QApplication::setFont(MusEConfig::config.fonts[0]);
+      loadStyleSheetFile(MusEConfig::config.styleSheetFile);
       
       emit configChanged();
       updateConfiguration();
@@ -2364,7 +2384,7 @@ void MusE::changeConfig(bool writeFlag)
 void MusE::configMetronome()
       {
       if (!metronomeConfig)
-          metronomeConfig = new MetronomeConfig;
+          metronomeConfig = new MusEWidget::MetronomeConfig;
 
       if(metronomeConfig->isVisible()) {
           metronomeConfig->raise();
@@ -2382,7 +2402,7 @@ void MusE::configMetronome()
 void MusE::configShortCuts()
       {
       if (!shortcutConfig)
-            shortcutConfig = new ShortcutConfig(this);
+            shortcutConfig = new MusEWidget::ShortcutConfig(this);
       shortcutConfig->_config_changed = false;
       if (shortcutConfig->exec())
             changeConfig(true);
@@ -2609,7 +2629,7 @@ bool MusE::checkRegionNotNull()
 //---------------------------------------------------------
 //   lash_idle_cb
 //---------------------------------------------------------
-#include <iostream>
+
 void
 MusE::lash_idle_cb ()
 {
@@ -2630,7 +2650,7 @@ MusE::lash_idle_cb ()
             project.setFile(ss.toAscii());
             setWindowTitle(tr("MusE: Song: ") + project.completeBaseName());
             addProject(ss.toAscii());
-            museProject = QFileInfo(ss.toAscii()).absolutePath();
+            MusEGlobal::museProject = QFileInfo(ss.toAscii()).absolutePath();
           }
           lash_send_event (lash_client, event);
     }
@@ -2758,12 +2778,12 @@ void MusE::startEditInstrument()
 
 void MusE::switchMixerAutomation()
       {
-      automation = !automation;
+      MusEGlobal::automation = ! MusEGlobal::automation;
       // Clear all pressed and touched and rec event lists.
       song->clearRecAutomation(true);
 
 // printf("automation = %d\n", automation);
-      autoMixerAction->setChecked(automation);
+      autoMixerAction->setChecked(MusEGlobal::automation);
       }
 
 //---------------------------------------------------------
@@ -2816,8 +2836,8 @@ void MusE::updateConfiguration()
       
       //menu_file->setShortcut(shortcuts[SHRT_LOAD_TEMPLATE].key, menu_ids[CMD_LOAD_TEMPLATE]);  // Not used.
 
-      undoAction->setShortcut(shortcuts[SHRT_UNDO].key);  
-      redoAction->setShortcut(shortcuts[SHRT_REDO].key);
+      MusEGlobal::undoAction->setShortcut(shortcuts[SHRT_UNDO].key);  
+      MusEGlobal::redoAction->setShortcut(shortcuts[SHRT_REDO].key);
 
 
       //editSongInfoAction has no acceleration
@@ -2881,13 +2901,13 @@ void MusE::updateConfiguration()
 void MusE::showBigtime(bool on)
       {
       if (on && bigtime == 0) {
-            bigtime = new BigTime(0);
+            bigtime = new MusEWidget::BigTime(0);
             bigtime->setPos(0, song->cpos(), false);
             connect(song, SIGNAL(posChanged(int, unsigned, bool)), bigtime, SLOT(setPos(int, unsigned, bool)));
-            connect(muse, SIGNAL(configChanged()), bigtime, SLOT(configChanged()));
+            connect(MusEGlobal::muse, SIGNAL(configChanged()), bigtime, SLOT(configChanged()));
             connect(bigtime, SIGNAL(closed()), SLOT(bigtimeClosed()));
-            bigtime->resize(config.geometryBigTime.size());
-            bigtime->move(config.geometryBigTime.topLeft());
+            bigtime->resize(MusEConfig::config.geometryBigTime.size());
+            bigtime->move(MusEConfig::config.geometryBigTime.topLeft());
             }
       if (bigtime)
             bigtime->setVisible(on);
@@ -2895,7 +2915,7 @@ void MusE::showBigtime(bool on)
       }
 
 //---------------------------------------------------------
-//   toggleBigTime
+//   toggleMusEWidget::BigTime
 //---------------------------------------------------------
 
 void MusE::toggleBigTime(bool checked)
@@ -2920,10 +2940,10 @@ void MusE::bigtimeClosed()
 void MusE::showMixer1(bool on)
       {
       if (on && mixer1 == 0) {
-            mixer1 = new AudioMixerApp(this, &(config.mixer1));
+            mixer1 = new AudioMixerApp(this, &(MusEConfig::config.mixer1));
             connect(mixer1, SIGNAL(closed()), SLOT(mixer1Closed()));
-            mixer1->resize(config.mixer1.geometry.size());
-            mixer1->move(config.mixer1.geometry.topLeft());
+            mixer1->resize(MusEConfig::config.mixer1.geometry.size());
+            mixer1->move(MusEConfig::config.mixer1.geometry.topLeft());
             }
       if (mixer1)
             mixer1->setVisible(on);
@@ -2937,10 +2957,10 @@ void MusE::showMixer1(bool on)
 void MusE::showMixer2(bool on)
       {
       if (on && mixer2 == 0) {
-            mixer2 = new AudioMixerApp(this, &(config.mixer2));
+            mixer2 = new AudioMixerApp(this, &(MusEConfig::config.mixer2));
             connect(mixer2, SIGNAL(closed()), SLOT(mixer2Closed()));
-            mixer2->resize(config.mixer2.geometry.size());
-            mixer2->move(config.mixer2.geometry.topLeft());
+            mixer2->resize(MusEConfig::config.mixer2.geometry.size());
+            mixer2->move(MusEConfig::config.mixer2.geometry.topLeft());
             }
       if (mixer2)
             mixer2->setVisible(on);
@@ -3030,7 +3050,7 @@ void MusE::execUserScript(int id)
 //---------------------------------------------------------
 void MusE::findUnusedWaveFiles()
 {
-    UnusedWaveFiles unused(muse);
+    MusEWidget::UnusedWaveFiles unused(MusEGlobal::muse);
     unused.exec();
 }
 
@@ -3071,11 +3091,11 @@ void MusE::focusChanged(QWidget*, QWidget* now)
 
 void MusE::activeTopWinChangedSlot(TopWin* win)
 {
-  if (debugMsg) printf("ACTIVE TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toAscii().data() : "<None>", win);
+  if (MusEGlobal::debugMsg) printf("ACTIVE TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toAscii().data() : "<None>", win);
   
   if ((win==NULL) || (win->isMdiWin()==false))
   {
-    if (debugMsg) printf("  that's out of the MDI area\n");
+    if (MusEGlobal::debugMsg) printf("  that's out of the MDI area\n");
     menuBar()->setFocus(Qt::MenuBarFocusReason);
   }
   
@@ -3098,7 +3118,7 @@ void MusE::setCurrentMenuSharingTopwin(TopWin* win)
     TopWin* previousMenuSharingTopwin = currentMenuSharingTopwin;
     currentMenuSharingTopwin = NULL;
     
-    if (debugMsg) printf("MENU SHARING TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toAscii().data() : "<None>", win);
+    if (MusEGlobal::debugMsg) printf("MENU SHARING TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toAscii().data() : "<None>", win);
     
     // empty our toolbars
     if (previousMenuSharingTopwin)
@@ -3106,7 +3126,7 @@ void MusE::setCurrentMenuSharingTopwin(TopWin* win)
       for (list<QToolBar*>::iterator it = foreignToolbars.begin(); it!=foreignToolbars.end(); it++)
         if (*it) 
         {
-          if (debugMsg) printf("  removing sharer's toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
+          if (MusEGlobal::debugMsg) printf("  removing sharer's toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
           removeToolBar(*it); // this does not delete *it, which is good
           (*it)->setParent(NULL);
         }
@@ -3118,7 +3138,7 @@ void MusE::setCurrentMenuSharingTopwin(TopWin* win)
       for (list<QToolBar*>::iterator it = optionalToolbars.begin(); it!=optionalToolbars.end(); it++)
         if (*it) 
         {
-          if (debugMsg) printf("  removing optional toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
+          if (MusEGlobal::debugMsg) printf("  removing optional toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
           removeToolBar(*it); // this does not delete *it, which is good
           (*it)->setParent(NULL);
         }
@@ -3138,7 +3158,7 @@ void MusE::setCurrentMenuSharingTopwin(TopWin* win)
       const QList<QAction*>& actions=win->menuBar()->actions();
       for (QList<QAction*>::const_iterator it=actions.begin(); it!=actions.end(); it++)
       {
-        if (debugMsg) printf("  menu entry '%s'\n", (*it)->text().toAscii().data());
+        if (MusEGlobal::debugMsg) printf("  menu entry '%s'\n", (*it)->text().toAscii().data());
         
         menuBar()->addAction(*it);
       }
@@ -3149,7 +3169,7 @@ void MusE::setCurrentMenuSharingTopwin(TopWin* win)
       for (list<QToolBar*>::const_iterator it=toolbars.begin(); it!=toolbars.end(); it++)
         if (*it)
         {
-          if (debugMsg) printf("  toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
+          if (MusEGlobal::debugMsg) printf("  toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
           
           addToolBar(*it);
           foreignToolbars.push_back(*it);
@@ -3157,7 +3177,7 @@ void MusE::setCurrentMenuSharingTopwin(TopWin* win)
         }
         else
         {
-          if (debugMsg) printf("  toolbar break\n");
+          if (MusEGlobal::debugMsg) printf("  toolbar break\n");
           
           addToolBarBreak();
           foreignToolbars.push_back(NULL);
@@ -3355,3 +3375,5 @@ void MusE::arrangeSubWindowsRows()
     }
   }  
 }
+
+} //namespace MusEApp

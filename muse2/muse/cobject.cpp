@@ -4,6 +4,21 @@
 //  $Id: cobject.cpp,v 1.4 2004/02/02 12:10:09 wschweer Exp $
 //
 //  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include "cobject.h"
@@ -19,6 +34,7 @@
 #include <QAction>
 
 using std::list;
+using MusEGlobal::muse;
 
 int TopWin::_widthInit[TOPLEVELTYPE_LAST_ENTRY];
 int TopWin::_heightInit[TOPLEVELTYPE_LAST_ENTRY];
@@ -212,7 +228,7 @@ void TopWin::setIsMdiWin(bool val)
     }
     else
     {
-      if (debugMsg) printf("TopWin::setIsMdiWin(true) called, but window is already a MDI win\n");
+      if (MusEGlobal::debugMsg) printf("TopWin::setIsMdiWin(true) called, but window is already a MDI win\n");
     }
   }
   else
@@ -241,7 +257,7 @@ void TopWin::setIsMdiWin(bool val)
     }
     else
     {
-      if (debugMsg) printf("TopWin::setIsMdiWin(false) called, but window is not a MDI win\n");
+      if (MusEGlobal::debugMsg) printf("TopWin::setIsMdiWin(false) called, but window is not a MDI win\n");
     }
   }
 }
@@ -281,7 +297,7 @@ void TopWin::shareToolsAndMenu(bool val)
 {
   if (_sharesToolsAndMenu == val)
   {
-    if (debugMsg) printf("TopWin::shareToolsAndMenu() called but has no effect\n");
+    if (MusEGlobal::debugMsg) printf("TopWin::shareToolsAndMenu() called but has no effect\n");
     return;
   }
   

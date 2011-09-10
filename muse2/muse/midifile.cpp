@@ -4,6 +4,21 @@
 //  $Id: midifile.cpp,v 1.17 2004/06/18 08:36:43 wschweer Exp $
 //
 //  (C) Copyright 1999-2003 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <errno.h>
@@ -520,7 +535,7 @@ bool MidiFile::writeTrack(const MidiFileTrack* t)
                   printf("MidiFile::writeTrack: ntick %d < tick %d\n", ntick, tick);
                   ntick = tick;
                   }
-            putvl(((ntick - tick) * config.midiDivision + config.division/2)/config.division);
+            putvl(((ntick - tick) * MusEConfig::config.midiDivision + MusEConfig::config.division/2)/MusEConfig::config.division);
             tick = ntick;
             writeEvent(&(*i));
             }
@@ -552,7 +567,7 @@ void MidiFile::writeEvent(const MidiPlayEvent* event)
 
       // we dont save meta data into smf type 0 files:
 
-      if (config.smfFormat == 0 && nstat == ME_META)
+      if (MusEConfig::config.smfFormat == 0 && nstat == ME_META)
             return;
 
       nstat |= c;
@@ -602,8 +617,8 @@ bool MidiFile::write()
       {
       write("MThd", 4);
       writeLong(6);                 // header len
-      writeShort(config.smfFormat);
-      if (config.smfFormat == 0) {
+      writeShort(MusEConfig::config.smfFormat);
+      if (MusEConfig::config.smfFormat == 0) {
             writeShort(1);
             MidiFileTrack dst;
             for (iMidiFileTrack i = _tracks->begin(); i != _tracks->end(); ++i) {

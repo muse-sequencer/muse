@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: waveedit.cpp,v 1.5.2.12 2009/04/06 01:24:54 terminator356 Exp $
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <QMenu>
@@ -159,15 +174,15 @@ WaveEdit::WaveEdit(PartList* pl)
       tools = addToolBar(tr("Wave edit tools"));
       tools->setObjectName("Wave edit tools");
 
-      tools->addActions(undoRedo->actions());
+      tools->addActions(MusEGlobal::undoRedo->actions());
 
-      connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
+      connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
       //--------------------------------------------------
       //    Transport Bar
       QToolBar* transport = addToolBar(tr("transport"));
       transport->setObjectName("transport");
-      transport->addActions(transportAction->actions());
+      transport->addActions(MusEGlobal::transportAction->actions());
 
       //--------------------------------------------------
       //    ToolBar:   Solo  Cursor1 Cursor2
@@ -187,10 +202,10 @@ WaveEdit::WaveEdit(PartList* pl)
       tb1->addWidget(label);
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
-      pos1 = new PosLabel(0);
+      pos1 = new MusEWidget::PosLabel(0);
       pos1->setFixedHeight(22);
       tb1->addWidget(pos1);
-      pos2 = new PosLabel(0);
+      pos2 = new MusEWidget::PosLabel(0);
       pos2->setFixedHeight(22);
       pos2->setSmpte(true);
       tb1->addWidget(pos2);
@@ -210,7 +225,7 @@ WaveEdit::WaveEdit(PartList* pl)
             xscale = -8000;
             }
 
-      hscroll = new ScrollScale(1, -32768, xscale, 10000, Qt::Horizontal, mainw, 0, true, 10000.0);
+      hscroll = new MusEWidget::ScrollScale(1, -32768, xscale, 10000, Qt::Horizontal, mainw, 0, true, 10000.0);
       view    = new WaveView(this, mainw, xscale, yscale);
       wview   = view;   // HACK!
 
@@ -221,7 +236,7 @@ WaveEdit::WaveEdit(PartList* pl)
       ymag->setPageStep(256);
       ymag->setValue(yscale);
        
-      time                 = new MTScale(&_raster, mainw, xscale, true);
+      time                 = new MusEWidget::MTScale(&_raster, mainw, xscale, true);
       ymag->setFixedWidth(16);
       connect(view, SIGNAL(mouseWheelMoved(int)), this, SLOT(moveVerticalSlider(int)));
       connect(ymag, SIGNAL(valueChanged(int)), view, SLOT(setYScale(int)));
@@ -234,7 +249,7 @@ WaveEdit::WaveEdit(PartList* pl)
       mainGrid->setColumnStretch(0, 100);
 
       mainGrid->addWidget(time,   0, 0, 1, 2);
-      mainGrid->addWidget(hLine(mainw),    1, 0, 1, 2);
+      mainGrid->addWidget(MusEUtil::hLine(mainw),    1, 0, 1, 2);
       mainGrid->addWidget(view,    2, 0);
       mainGrid->addWidget(ymag,    2, 1);
       mainGrid->addWidget(hscroll, 3, 0);
@@ -287,7 +302,7 @@ void WaveEdit::initShortcuts()
 
 void WaveEdit::configChanged()
       {
-      view->setBg(config.waveEditBackgroundColor);
+      view->setBg(MusEConfig::config.waveEditBackgroundColor);
       selectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
       selectNoneAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
       }
@@ -331,7 +346,7 @@ void WaveEdit::setTime(unsigned samplepos)
 
 WaveEdit::~WaveEdit()
       {
-      // undoRedo->removeFrom(tools); // p4.0.6 Removed
+      // MusEGlobal::undoRedo->removeFrom(tools); // p4.0.6 Removed
       }
 
 //---------------------------------------------------------
@@ -355,7 +370,7 @@ void WaveEdit::readConfiguration(Xml& xml)
             switch (token) {
                   case Xml::TagStart:
                         if (tag == "bgcolor")
-                              config.waveEditBackgroundColor = readColor(xml);
+                              MusEConfig::config.waveEditBackgroundColor = readColor(xml);
                         else if (tag == "topwin")
                               TopWin::readConfiguration(WAVE, xml);
                         else
@@ -380,7 +395,7 @@ void WaveEdit::readConfiguration(Xml& xml)
 void WaveEdit::writeConfiguration(int level, Xml& xml)
       {
       xml.tag(level++, "waveedit");
-      xml.colorTag(level, "bgcolor", config.waveEditBackgroundColor);
+      xml.colorTag(level, "bgcolor", MusEConfig::config.waveEditBackgroundColor);
       TopWin::writeConfiguration(WAVE, level,xml);
       xml.tag(level, "/waveedit");
       }
@@ -495,11 +510,11 @@ void WaveEdit::moveVerticalSlider(int val)
 void WaveEdit::horizontalZoomIn()
 {
   int mag = hscroll->mag();
-  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+  int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
   if (zoomlvl < 23)
         zoomlvl++;
 
-  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+  int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
 
   hscroll->setMag(newmag);
 
@@ -508,11 +523,11 @@ void WaveEdit::horizontalZoomIn()
 void WaveEdit::horizontalZoomOut()
 {
   int mag = hscroll->mag();
-  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
+  int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
   if (zoomlvl > 1)
         zoomlvl--;
 
-  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+  int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
 
   hscroll->setMag(newmag);
 

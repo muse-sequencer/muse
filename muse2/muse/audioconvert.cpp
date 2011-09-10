@@ -7,6 +7,22 @@
 //
 //  Audio converter module created by Tim
 //  (C) Copyright 2009-2011 Tim E. Real (terminator356 A T sourceforge D O T net)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
+//
 //=========================================================
 
 #include <math.h>
@@ -126,7 +142,7 @@ off_t AudioConverter::readAudio(SndFileR& f, unsigned offset, float** buffer, in
   
   off_t frame     = offset;  // _spos is added before the call.
   unsigned fsrate = f.samplerate();
-  bool resample   = isValid() && ((unsigned)sampleRate != fsrate);  
+  bool resample   = isValid() && ((unsigned)MusEGlobal::sampleRate != fsrate);  
   
   // No resampling needed?
   if(!resample)
@@ -143,7 +159,7 @@ off_t AudioConverter::readAudio(SndFileR& f, unsigned offset, float** buffer, in
   {
     // Sample rates are different. Seek to a calculated 'sample rate ratio factored' position.
     
-    double srcratio = (double)fsrate / (double)sampleRate;
+    double srcratio = (double)fsrate / (double)MusEGlobal::sampleRate;
     //long inSize = long((double)frames * _src_ratio) + 1     // From MusE-2 file converter.
     off_t newfr = (off_t)floor(((double)frame * srcratio));    // From simplesynth.
   
@@ -327,13 +343,13 @@ off_t SRCAudioConverter::process(SndFileR& f, float** buffer, int channel, int n
   
 //  off_t frame     = offset;  // _spos is added before the call.
   unsigned fsrate = f.samplerate();
-  //bool resample   = src_state && ((unsigned)sampleRate != fsrate);  
-//  bool resample   = isValid() && ((unsigned)sampleRate != fsrate);  
+  //bool resample   = src_state && ((unsigned)MusEGlobal::sampleRate != fsrate);  
+//  bool resample   = isValid() && ((unsigned)MusEGlobal::sampleRate != fsrate);  
   
-  if((sampleRate == 0) || (fsrate == 0))
+  if((MusEGlobal::sampleRate == 0) || (fsrate == 0))
   {  
     #ifdef AUDIOCONVERT_DEBUG
-    printf("SRCAudioConverter::process Error: sampleRate or file samplerate is zero!\n");
+    printf("SRCAudioConverter::process Error: MusEGlobal::sampleRate or file samplerate is zero!\n");
     #endif
     return _sfCurFrame;
   }  
@@ -341,7 +357,7 @@ off_t SRCAudioConverter::process(SndFileR& f, float** buffer, int channel, int n
   SRC_DATA srcdata;
   int fchan       = f.channels();
   // Ratio is defined as output sample rate over input samplerate.
-  double srcratio = (double)sampleRate / (double)fsrate;
+  double srcratio = (double)MusEGlobal::sampleRate / (double)fsrate;
   // Extra input compensation.
   long inComp = 1;
   
@@ -353,7 +369,7 @@ off_t SRCAudioConverter::process(SndFileR& f, float** buffer, int channel, int n
   //long inSize = (long)floor(((double)outSize / srcratio));        // From simplesynth.
   //long inFrames = (long)floor(((double)outFrames / srcratio));    // From simplesynth.
   long inFrames = (long)ceil(((double)outFrames / srcratio)) + inComp;    // From simplesynth.
-  //long inFrames = (long)floor(double(outFrames * sfinfo.samplerate) / double(sampleRate));    // From simplesynth.
+  //long inFrames = (long)floor(double(outFrames * sfinfo.samplerate) / double(MusEGlobal::sampleRate));    // From simplesynth.
   
   long inSize = inFrames * fchan;
   //long inSize = inFrames * channel;
@@ -567,7 +583,7 @@ RubberBandAudioConverter::RubberBandAudioConverter(int channels, int options) : 
   _rbs = 0;
   _channels = channels;
   
-  _rbs = new RubberBandStretcher(sampleRate, _channels, _options);  // , initialTimeRatio = 1.0, initialPitchScale = 1.0
+  _rbs = new RubberBandStretcher(MusEGlobal::sampleRate, _channels, _options);  // , initialTimeRatio = 1.0, initialPitchScale = 1.0
 }
 
 RubberBandAudioConverter::~RubberBandAudioConverter()
@@ -589,7 +605,7 @@ void RubberBandAudioConverter::setChannels(int ch)
   _rbs = 0;
   
   _channels = ch;
-  _rbs = new RubberBandStretcher(sampleRate, _channels, _options);  // , initialTimeRatio = 1.0, initialPitchScale = 1.0
+  _rbs = new RubberBandStretcher(MusEGlobal::sampleRate, _channels, _options);  // , initialTimeRatio = 1.0, initialPitchScale = 1.0
 }
 
 void RubberBandAudioConverter::reset()
@@ -623,13 +639,13 @@ off_t RubberBandAudioConverter::process(SndFileR& f, float** buffer, int channel
   
 //  off_t frame     = offset;  // _spos is added before the call.
   unsigned fsrate = f.samplerate();
-  //bool resample   = src_state && ((unsigned)sampleRate != fsrate);  
-//  bool resample   = isValid() && ((unsigned)sampleRate != fsrate);  
+  //bool resample   = src_state && ((unsigned)MusEGlobal::sampleRate != fsrate);  
+//  bool resample   = isValid() && ((unsigned)MusEGlobal::sampleRate != fsrate);  
   
-  if((sampleRate == 0) || (fsrate == 0))
+  if((MusEGlobal::sampleRate == 0) || (fsrate == 0))
   {  
     #ifdef AUDIOCONVERT_DEBUG
-    printf("RubberBandAudioConverter::process Error: sampleRate or file samplerate is zero!\n");
+    printf("RubberBandAudioConverter::process Error: MusEGlobal::sampleRate or file samplerate is zero!\n");
     #endif
     return _sfCurFrame;
   }  
@@ -637,7 +653,7 @@ off_t RubberBandAudioConverter::process(SndFileR& f, float** buffer, int channel
 //  SRC_DATA srcdata;
   int fchan       = f.channels();
   // Ratio is defined as output sample rate over input samplerate.
-  double srcratio = (double)sampleRate / (double)fsrate;
+  double srcratio = (double)MusEGlobal::sampleRate / (double)fsrate;
   // Extra input compensation.
   long inComp = 1;
   
@@ -649,7 +665,7 @@ off_t RubberBandAudioConverter::process(SndFileR& f, float** buffer, int channel
   //long inSize = (long)floor(((double)outSize / srcratio));        // From simplesynth.
   //long inFrames = (long)floor(((double)outFrames / srcratio));    // From simplesynth.
   long inFrames = (long)ceil(((double)outFrames / srcratio)) + inComp;    // From simplesynth.
-  //long inFrames = (long)floor(double(outFrames * sfinfo.samplerate) / double(sampleRate));    // From simplesynth.
+  //long inFrames = (long)floor(double(outFrames * sfinfo.samplerate) / double(MusEGlobal::sampleRate));    // From simplesynth.
   
   long inSize = inFrames * fchan;
   //long inSize = inFrames * channel;

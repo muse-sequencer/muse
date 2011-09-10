@@ -4,6 +4,21 @@
 //  $Id: help.cpp,v 1.7.2.4 2009/07/05 23:06:21 terminator356 Exp $
 //
 //  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <unistd.h>
@@ -18,6 +33,8 @@
 #include "gconfig.h"
 #include "icons.h"
 #include "aboutbox_impl.h"
+
+namespace MusEApp {
 
 //---------------------------------------------------------
 //   startHelpBrowser
@@ -67,7 +84,7 @@ void MusE::startBugBrowser()
 
 void MusE::about()
       {
-      AboutBoxImpl ab;
+      MusEWidget::AboutBoxImpl ab;
       ab.show();
       ab.exec();
       }
@@ -92,3 +109,5 @@ void MusE::launchBrowser(QString &whereTo)
             printf("Unable to launch help\n");
             }
       }
+
+} // namespace MusEApp

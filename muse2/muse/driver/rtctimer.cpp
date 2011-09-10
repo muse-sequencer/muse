@@ -5,8 +5,23 @@
   //
   //  Most code moved from midiseq.cpp by Werner Schweer.
   //
-  //  (C) Copyright 2004 Robert Jonsson (rj@spamatica.se)
   //  (C) Copyright -2004 Werner Schweer (werner@seh.de)
+  //  (C) Copyright 2004 Robert Jonsson (rj@spamatica.se)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
   //=========================================================
 
 #include <linux/version.h>
@@ -46,16 +61,16 @@ signed int RtcTimer::initTimer()
           fprintf(stderr,"RtcTimer::initTimer(): called on initialised timer!\n");
           return -1;
     }
-    doSetuid();
+    MusEGlobal::doSetuid();
 
     timerFd = ::open("/dev/rtc", O_RDONLY);
     if (timerFd == -1) {
           fprintf(stderr, "fatal error: open /dev/rtc failed: %s\n", strerror(errno));
           fprintf(stderr, "hint: check if 'rtc' kernel module is loaded, or used by something else\n");
-          undoSetuid();
+          MusEGlobal::undoSetuid();
           return timerFd;
           }
-    if (!setTimerFreq(config.rtcTicks)) {
+    if (!setTimerFreq(MusEConfig::config.rtcTicks)) {
           // unable to set timer frequency
           return -1;
           }
@@ -118,7 +133,7 @@ bool RtcTimer::startTimer()
           }
     if (ioctl(timerFd, RTC_PIE_ON, 0) == -1) {
         perror("MidiThread: start: RTC_PIE_ON failed");
-        undoSetuid();
+        MusEGlobal::undoSetuid();
         return false;
         }
     return true;

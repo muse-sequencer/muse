@@ -4,6 +4,21 @@
 //  $Id: app.h,v 1.34.2.14 2009/11/16 11:29:33 lunar_shuttle Exp $
 //
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __APP_H__
@@ -28,21 +43,27 @@ class QString;
 class QToolBar;
 class QToolButton;
 class QProgressDialog;
-class EditToolBar;
 class QMdiArea;
+
+namespace MusEWidget {
+class BigTime;
+class EditToolBar;
+class GlobalSettingsConfig;
+class MetronomeConfig;
+class MidiSyncConfig;
+class RoutePopupMenu;
+class ShortcutConfig;
+class VisibleTracks;
+}
 
 class Part;
 class PartList;
 class Transport;
-class BigTime;
 class Arranger;
 class Instrument;
-class RoutePopupMenu;
 class Track;
 class PrinterConfig;
-class MidiSyncConfig;
 class MRConfig;
-class MetronomeConfig;
 class AudioConf;
 class Xml;
 class AudioMixerApp;
@@ -61,7 +82,6 @@ class RhythmGen;
 class MidiTrack;
 class MidiInstrument;
 class MidiPort;
-class ShortcutConfig;
 class Appearance;
 class WaveTrack;
 class AudioOutput;
@@ -70,6 +90,9 @@ class ScoreEdit;
 class Undo;
 
 #define MENU_ADD_SYNTH_ID_BASE 0x1000
+
+namespace MusEApp {
+
 
 //---------------------------------------------------------
 //   MusE
@@ -151,7 +174,7 @@ class MusE : public QMainWindow
       // either the requiredToolbars or optionalToolbars list!
 
       Transport* transport;
-      BigTime* bigtime;
+      MusEWidget::BigTime* bigtime;
       EditInstrument* editInstrument;
       
       // when adding a menu to the main window, remember adding it to
@@ -161,23 +184,23 @@ class MusE : public QMainWindow
       QMenu* menu_functions, *menuScriptPlugins;
 
       // Special common menu for routes. Used (so far) by audio and midi strip, and midi trackinfo.
-      RoutePopupMenu* routingPopupMenu; 
+      MusEWidget::RoutePopupMenu* routingPopupMenu; 
 
       QMenu* follow;
       QMenu* midiInputPlugins;
 
       QWidget* midiPortConfig;
       QWidget* softSynthesizerConfig;
-      MidiSyncConfig* midiSyncConfig;
+      MusEWidget::MidiSyncConfig* midiSyncConfig;
       MRConfig* midiRemoteConfig;
       RhythmGen* midiRhythmGenerator;
-      MetronomeConfig* metronomeConfig;
+      MusEWidget::MetronomeConfig* metronomeConfig;
       AudioConf* audioConfig;
       MidiFileConfig* midiFileConfig;
-      GlobalSettingsConfig* globalSettingsConfig;
+      MusEWidget::GlobalSettingsConfig* globalSettingsConfig;
       MidiFilterConfig* midiFilterConfig;
       MidiInputTransformDialog* midiInputTransform;
-      ShortcutConfig* shortcutConfig;
+      MusEWidget::ShortcutConfig* shortcutConfig;
       Appearance* appearance;
       AudioMixerApp* mixer1;
       AudioMixerApp* mixer2;
@@ -370,7 +393,7 @@ class MusE : public QMainWindow
       bool importWaveToTrack(QString& name, unsigned tick=0, Track* track=NULL);
       void importPartToTrack(QString& filename, unsigned tick, Track* track);
       void showTransport(bool flag);
-      RoutePopupMenu* getRoutingPopupMenu();
+      MusEWidget::RoutePopupMenu* getRoutingPopupMenu();
       
       const ToplevelList* getToplevels() { return &toplevels; }
       
@@ -384,3 +407,4 @@ class MusE : public QMainWindow
 extern void addProject(const QString& name);
 #endif
 
+} // namespace MusEA

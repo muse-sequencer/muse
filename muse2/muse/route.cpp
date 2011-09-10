@@ -4,6 +4,21 @@
 //  $Id: route.cpp,v 1.18.2.3 2008/05/21 00:28:52 terminator356 Exp $
 //
 //  (C) Copyright 2003-2004 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <QWidget>
@@ -1065,7 +1080,7 @@ QString Route::name() const
       else
       if(type == JACK_ROUTE) 
       {
-        if (!checkAudioDevice()) return "";
+        if (!MusEGlobal::checkAudioDevice()) return "";
         //return s + audioDevice->portName(jackPort);
         return audioDevice->portName(jackPort);
       }
@@ -1101,7 +1116,7 @@ Route name2route(const QString& rn, bool /*dst*/, int rtype)
   {  
     //if(dst) 
     //{
-      if(checkAudioDevice())
+      if(MusEGlobal::checkAudioDevice())
       {
         void* p = audioDevice->findPort(s.toLatin1().constData());
         if(p)
@@ -1198,7 +1213,7 @@ Route name2route(const QString& rn, bool /*dst*/, int rtype)
       else
       if(rtype == Route::JACK_ROUTE)
       {  
-        if(checkAudioDevice())
+        if(MusEGlobal::checkAudioDevice())
         {
           void* p = audioDevice->findPort(s.toLatin1().constData());
           if(p)
@@ -1637,7 +1652,7 @@ void Route::dump() const
       else 
       if (type == JACK_ROUTE)
       {
-        if(checkAudioDevice())
+        if(MusEGlobal::checkAudioDevice())
           printf("Route dump: jack audio port <%s> channel %d\n", audioDevice->portName(jackPort).toLatin1().constData(), channel);
       }
       else 
@@ -1653,7 +1668,7 @@ void Route::dump() const
         {
           if(device->deviceType() == MidiDevice::JACK_MIDI)
           {
-            if(checkAudioDevice())
+            if(MusEGlobal::checkAudioDevice())
               //printf("jack midi port device <%s> ", audioDevice->portName(device->clientPort()).toLatin1().constData());
             // p3.3.55
             {  
@@ -1710,7 +1725,7 @@ bool Route::operator==(const Route& a) const
             {
               if (type == JACK_ROUTE)
               {
-                    //if (!checkAudioDevice()) return false;
+                    //if (!MusEGlobal::checkAudioDevice()) return false;
                     //return audioDevice->portName(jackPort) == audioDevice->portName(a.jackPort);
                     // p3.3.55 Simplified.
                     return jackPort == a.jackPort;
@@ -1730,7 +1745,7 @@ bool Route::operator==(const Route& a) const
                 {
                   if(device->deviceType() == MidiDevice::JACK_MIDI)
                   {
-                    if (!checkAudioDevice()) return false;
+                    if (!MusEGlobal::checkAudioDevice()) return false;
                     return audioDevice->portName(device->clientPort()) == audioDevice->portName(a.device->clientPort());
                   }
                   else

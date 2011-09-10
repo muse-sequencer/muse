@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: drumedit.h,v 1.9.2.7 2009/11/16 11:29:33 lunar_shuttle Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __DRUM_EDIT_H__
@@ -32,17 +47,19 @@ class MidiPart;
 class DrumCanvas;
 class ScrollScale;
 class ScoreConfig;
-class MTScale;
-class Splitter;
 class PartList;
-class Toolbar1;
 class CtrlCanvas;
 class Xml;
 class DList;
-class Header;
 class CtrlEdit;
 class Part;
 class SNode;
+
+namespace MusEWidget {
+class Header;
+class Splitter;
+class Toolbar1;
+}
 
 //---------------------------------------------------------
 //   DrumEdit
@@ -56,17 +73,17 @@ class DrumEdit : public MidiEditor {
       int selTick;
       QMenu* menuEdit, *menuFunctions, *menuFile, *menuSelect;
 
-      NoteInfo* info;
+      MusEWidget::NoteInfo* info;
       QToolButton* srec;
       QToolButton* midiin;
-      EditToolBar* tools2;
+      MusEWidget::EditToolBar* tools2;
 
-      Toolbar1* toolbar;
-      Splitter* split1;
-      Splitter* split2;
+      MusEWidget::Toolbar1* toolbar;
+      MusEWidget::Splitter* split1;
+      MusEWidget::Splitter* split2;
       QWidget* split1w1;
       DList* dlist;
-      Header* header;
+      MusEWidget::Header* header;
       QToolBar* tools;
       QComboBox *stepLenWidget;
 
@@ -91,7 +108,7 @@ class DrumEdit : public MidiEditor {
 
    private slots:
       void setRaster(int);
-      void noteinfoChanged(NoteInfo::ValType type, int val);
+      void noteinfoChanged(MusEWidget::NoteInfo::ValType type, int val);
       //CtrlEdit* addCtrl();
       void removeCtrl(CtrlEdit* ctrl);
       void cmd(int);

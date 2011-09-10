@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: dummyaudio.cpp,v 1.3.2.16 2009/12/20 05:00:35 terminator356 Exp $
 //  (C) Copyright 2002-2003 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <stdio.h>
@@ -83,7 +98,7 @@ class DummyAudioDevice : public AudioDevice {
             // p3.3.30
             //if (nframes > dummyFrames) {
                   //printf("error: segment size > 1024\n");
-            if (nframes > segmentSize) {
+            if (nframes > MusEGlobal::segmentSize) {
                   printf("DummyAudioDevice::getBuffer nframes > segment size\n");
                   
                   exit(-1);
@@ -125,7 +140,7 @@ class DummyAudioDevice : public AudioDevice {
       
       return _framePos; }
       virtual unsigned frameTime() const {
-            return lrint(curTime() * sampleRate);
+            return lrint(MusEUtil::curTime() * MusEGlobal::sampleRate);
             }
       virtual bool isRealtime() { return realtimeFlag; }
       //virtual int realtimePriority() const { return 40; }
@@ -200,17 +215,19 @@ DummyAudioDevice::DummyAudioDevice()
       // Added by Tim. p3.3.15
       // p3.3.30
       //posix_memalign((void**)&buffer, 16, sizeof(float) * dummyFrames);
-      posix_memalign((void**)&buffer, 16, sizeof(float) * config.dummyAudioBufSize);
+      posix_memalign((void**)&buffer, 16, sizeof(float) * MusEConfig::config.dummyAudioBufSize);
       
       dummyThread = 0;
       realtimeFlag = false;
       seekflag = false;
       state = Audio::STOP;
-      //startTime = curTime();
+      //startTime = MusEUtil::curTime();
       _framePos = 0;
       playPos = 0;
       cmdQueue.clear();
       }
+
+namespace MusEApp {
 
 //---------------------------------------------------------
 //   exitDummyAudio
@@ -223,6 +240,8 @@ void exitDummyAudio()
       dummyAudio = NULL;      
       audioDevice = NULL;      
 }
+
+} // namespace MusEApp
 
 //---------------------------------------------------------
 //   initDummyAudio
@@ -274,13 +293,13 @@ static void* dummyLoop(void* ptr)
       //unsigned int tickRate = 25;
       
       // p3.3.30
-      //sampleRate = 25600;
-      sampleRate = config.dummyAudioSampleRate;
-      //segmentSize = dummyFrames;
-      segmentSize = config.dummyAudioBufSize;
+      //MusEGlobal::sampleRate = 25600;
+      MusEGlobal::sampleRate = MusEConfig::config.dummyAudioSampleRate;
+      //MusEGlobal::segmentSize = dummyFrames;
+      MusEGlobal::segmentSize = MusEConfig::config.dummyAudioBufSize;
 #if 0      
-      //unsigned int tickRate = sampleRate / dummyFrames;
-      unsigned int tickRate = sampleRate / segmentSize;
+      //unsigned int tickRate = MusEGlobal::sampleRate / dummyFrames;
+      unsigned int tickRate = MusEGlobal::sampleRate / MusEGlobal::segmentSize;
       
       AlsaTimer timer;
       fprintf(stderr, "Get alsa timer for dummy driver:\n");
@@ -297,7 +316,7 @@ static void* dummyLoop(void* ptr)
 
       /* Depending on nature of the timer, the requested tickRate might not
        * be available.  The return value is the nearest available frequency,
-       * so use this to reset our dummpy sampleRate to keep everything 
+       * so use this to reset our dummpy MusEGlobal::sampleRate to keep everything 
        * consistent.
        */
       tickRate = timer.setTimerFreq( /*250*/ tickRate );
@@ -307,7 +326,7 @@ static void* dummyLoop(void* ptr)
       if(tickRate == 0)
         tickRate = timer.getTimerFreq();
         
-      sampleRate = tickRate * segmentSize;
+      MusEGlobal::sampleRate = tickRate * MusEGlobal::segmentSize;
       timer.startTimer();
 #endif        
 
@@ -320,7 +339,7 @@ static void* dummyLoop(void* ptr)
 
 
       /*
-      doSetuid();
+      MusEGlobal::doSetuid();
       struct sched_param rt_param;
       int rv;
       memset(&rt_param, 0, sizeof(sched_param));
@@ -349,13 +368,13 @@ static void* dummyLoop(void* ptr)
                   fprintf(stderr, "Unable to set thread to SCHED_FIFO\n");
                   }
             }
-      undoSetuid();
+      MusEGlobal::undoSetuid();
       */
       
 #ifndef __APPLE__
-      doSetuid();
+      MusEGlobal::doSetuid();
       //if (realTimePriority) {
-      if (realTimeScheduling) {
+      if (MusEGlobal::realTimeScheduling) {
             //
             // check if we really got realtime priviledges
             //
@@ -367,7 +386,7 @@ static void* dummyLoop(void* ptr)
                 {
                 if (policy != SCHED_FIFO)
                           printf("audio dummy thread _NOT_ running SCHED_FIFO\n");
-                else if (debugMsg) {
+                else if (MusEGlobal::debugMsg) {
                         struct sched_param rt_param;
                     memset(&rt_param, 0, sizeof(sched_param));
                         int type;
@@ -379,7 +398,7 @@ static void* dummyLoop(void* ptr)
                     }
                 }
             }
-      undoSetuid();
+      MusEGlobal::undoSetuid();
 #endif
       
 #if 0      
@@ -423,8 +442,8 @@ static void* dummyLoop(void* ptr)
                         }
                     }
                 }
-            audio->process(segmentSize);
-            int increment = segmentSize; // 1 //tickRate / sampleRate * segmentSize;
+            audio->process(MusEGlobal::segmentSize);
+            int increment = MusEGlobal::segmentSize; // 1 //tickRate / MusEGlobal::sampleRate * MusEGlobal::segmentSize;
             drvPtr->_framePos+=increment;
             if (drvPtr->state == Audio::PLAY) 
                   {
@@ -437,12 +456,12 @@ static void* dummyLoop(void* ptr)
       {
             //if(audioState == AUDIO_RUNNING)
             if(audio->isRunning())
-              //audio->process(segmentSize, drvPtr->state);
-              audio->process(segmentSize);
+              //audio->process(MusEGlobal::segmentSize, drvPtr->state);
+              audio->process(MusEGlobal::segmentSize);
             //else if (audioState == AUDIO_START1)
             //  audioState = AUDIO_START2;
-            //usleep(dummyFrames*1000000/AL::sampleRate);
-            usleep(segmentSize*1000000/sampleRate);
+            //usleep(dummyFrames*1000000/AL::MusEGlobal::sampleRate);
+            usleep(MusEGlobal::segmentSize*1000000/MusEGlobal::sampleRate);
             //if(dummyAudio->seekflag) 
             if(drvPtr->seekflag) 
             {
@@ -456,9 +475,9 @@ static void* dummyLoop(void* ptr)
             
             //if(dummyAudio->state == Audio::PLAY) 
             //  dummyAudio->pos += dummyFrames;
-            drvPtr->_framePos += segmentSize;
+            drvPtr->_framePos += MusEGlobal::segmentSize;
             if(drvPtr->state == Audio::PLAY) 
-              drvPtr->playPos += segmentSize;
+              drvPtr->playPos += MusEGlobal::segmentSize;
       }
 #endif
             
@@ -472,7 +491,7 @@ void DummyAudioDevice::start(int priority)
       _realTimePriority = priority;
       pthread_attr_t* attributes = 0;
 
-      if (realTimeScheduling && _realTimePriority > 0) {
+      if (MusEGlobal::realTimeScheduling && _realTimePriority > 0) {
             attributes = (pthread_attr_t*) malloc(sizeof(pthread_attr_t));
             pthread_attr_init(attributes);
 
@@ -499,11 +518,11 @@ void DummyAudioDevice::start(int priority)
       int rv = pthread_create(&dummyThread, attributes, ::dummyLoop, this); 
       if(rv)
       {  
-        // p4.0.16: realTimeScheduling is unreliable. It is true even in some clearly non-RT cases.
+        // p4.0.16: MusEGlobal::realTimeScheduling is unreliable. It is true even in some clearly non-RT cases.
         // I cannot seem to find a reliable answer to the question of "are we RT or not".
         // MusE was failing with a stock kernel because of PTHREAD_EXPLICIT_SCHED.
         // So we'll just have to try again without attributes.
-        if (realTimeScheduling && _realTimePriority > 0) 
+        if (MusEGlobal::realTimeScheduling && _realTimePriority > 0) 
           rv = pthread_create(&dummyThread, NULL, ::dummyLoop, this); 
       }
       

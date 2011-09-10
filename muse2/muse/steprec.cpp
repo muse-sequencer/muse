@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //  steprec.cpp
 //  (C) Copyright 2011 Florian Jung (flo93@users.sourceforge.net)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include "steprec.h"
@@ -44,7 +59,7 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 	unsigned lasttick=0;
 	Undo operations;
 	
-	if (pitch!=rcSteprecNote) 
+	if (pitch!=MusEGlobal::rcSteprecNote) 
 	{
 		chord_timer->stop();
 
@@ -107,7 +122,7 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 		operations.push_back(UndoOp(UndoOp::AddEvent, e, part, false, false));
 		lasttick=e.endTick();
 
-		if (! (globalKeyState & Qt::ShiftModifier))
+		if (! (MusEGlobal::globalKeyState & Qt::ShiftModifier))
 		{
 			chord_timer_set_to_tick = tick + step;
 			chord_timer->start();
@@ -115,7 +130,7 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 		
 		goto steprec_record_foot; // this is actually unneccessary, but for clarity
 	}
-	else  // equals if (pitch==rcSteprecNote)
+	else  // equals if (pitch==MusEGlobal::rcSteprecNote)
 	{
 		bool held_notes=false;
 		if (note_held_down!=NULL)

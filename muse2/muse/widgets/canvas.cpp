@@ -4,6 +4,21 @@
 //    $Id: canvas.cpp,v 1.10.2.17 2009/05/03 04:14:01 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //  Additions, modifications (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <stdio.h>
@@ -30,6 +45,8 @@
 #include "fastlog.h"
 
 #define ABS(x)  ((x) < 0) ? -(x) : (x)
+
+namespace MusEWidget {
 
 //---------------------------------------------------------
 //   Canvas
@@ -1525,3 +1542,5 @@ void Canvas::setCurrentPart(Part* part)
   curPartId = curPart->sn();
   curPartChanged();
 }
+
+} // namespace MusEWidget

@@ -1,8 +1,15 @@
-// Allpass filter declaration
+//=========================================================
+//  MusE
+//  Linux Music Editor
+//  $Id: ./plugins/freeverb/allpass.h $
 //
 // Written by Jezar at Dreampoint, June 2000
 // http://www.dreampoint.co.uk
 // This code is public domain
+//
+//=========================================================
+// Allpass filter declaration
+//
 
 #ifndef _allpass_
 #define _allpass_

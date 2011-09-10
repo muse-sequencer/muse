@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: masteredit.cpp,v 1.4.2.5 2009/07/01 22:14:56 spamatica Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include "awl/sigedit.h"
@@ -96,18 +111,18 @@ MasterEdit::MasterEdit()
       // Toolbars ---------------------------------------------------------
       QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
       undo_tools->setObjectName("Undo/Redo tools");
-      undo_tools->addActions(undoRedo->actions());
+      undo_tools->addActions(MusEGlobal::undoRedo->actions());
 
 
       QToolBar* panic_toolbar = addToolBar(tr("panic"));         
       panic_toolbar->setObjectName("panic");
-      panic_toolbar->addAction(panicAction);
+      panic_toolbar->addAction(MusEGlobal::panicAction);
 
       QToolBar* transport_toolbar = addToolBar(tr("transport"));
       transport_toolbar->setObjectName("transport");
-      transport_toolbar->addActions(transportAction->actions());
+      transport_toolbar->addActions(MusEGlobal::transportAction->actions());
 
-      EditToolBar* tools2 = new EditToolBar(this, PointerTool | PencilTool | RubberTool);
+      MusEWidget::EditToolBar* tools2 = new MusEWidget::EditToolBar(this, MusEWidget::PointerTool | MusEWidget::PencilTool | MusEWidget::RubberTool);
       addToolBar(tools2);
 
       QToolBar* enableMaster = addToolBar(tr("Enable master"));
@@ -127,11 +142,11 @@ MasterEdit::MasterEdit()
       label->setIndent(3);
       info->addWidget(label);
 
-      cursorPos = new PosLabel(0);
+      cursorPos = new MusEWidget::PosLabel(0);
       cursorPos->setFixedHeight(22);
       cursorPos->setToolTip(tr("time at cursor position"));
       info->addWidget(cursorPos);
-      tempo = new TempoLabel(0);
+      tempo = new MusEWidget::TempoLabel(0);
       tempo->setFixedHeight(22);
       tempo->setToolTip(tr("tempo at cursor position"));
       info->addWidget(tempo);
@@ -139,7 +154,7 @@ MasterEdit::MasterEdit()
       const char* rastval[] = {
             QT_TRANSLATE_NOOP("@default", "Off"), "Bar", "1/2", "1/4", "1/8", "1/16"
             };
-      rasterLabel = new LabelCombo(tr("Snap"), 0);
+      rasterLabel = new MusEWidget::LabelCombo(tr("Snap"), 0);
       rasterLabel->setFocusPolicy(Qt::NoFocus);
       for (int i = 0; i < 6; i++)
             rasterLabel->insertItem(i, tr(rastval[i]));
@@ -149,7 +164,7 @@ MasterEdit::MasterEdit()
 
       //---------values for current position---------------
       info->addWidget(new QLabel(tr("CurPos ")));
-      curTempo = new TempoEdit(0);
+      curTempo = new MusEWidget::TempoEdit(0);
       curSig   = new SigEdit(0);
       curSig->setValue(AL::TimeSignature(4, 4));
       curTempo->setToolTip(tr("tempo at current position"));
@@ -168,17 +183,17 @@ MasterEdit::MasterEdit()
 
       int xscale = -20;
       int yscale = -500;
-      hscroll   = new ScrollScale(-100, -2, xscale, song->len(), Qt::Horizontal, mainw);
-      vscroll   = new ScrollScale(-1000, -100, yscale, 120000, Qt::Vertical, mainw);
+      hscroll   = new MusEWidget::ScrollScale(-100, -2, xscale, song->len(), Qt::Horizontal, mainw);
+      vscroll   = new MusEWidget::ScrollScale(-1000, -100, yscale, 120000, Qt::Vertical, mainw);
       vscroll->setRange(30000, 250000);
-      time1     = new MTScale(&_raster, mainw, xscale);
-      sign      = new SigScale(&_raster, mainw, xscale);
-//      thits     = new HitScale(&_raster, mainw, xscale);
+      time1     = new MusEWidget::MTScale(&_raster, mainw, xscale);
+      sign      = new MusEWidget::SigScale(&_raster, mainw, xscale);
+//      thits     = new MusEWidget::HitScale(&_raster, mainw, xscale);
 
       canvas    = new Master(this, mainw, xscale, yscale);
 
-//      zhits     = new HitScale(&_raster, mainw, xscale);
-      time2     = new MTScale(&_raster, mainw, xscale);
+//      zhits     = new MusEWidget::HitScale(&_raster, mainw, xscale);
+      time2     = new MusEWidget::MTScale(&_raster, mainw, xscale);
       tscale    = new TScale(mainw, yscale);
       time2->setBarLocator(true);
 
@@ -191,18 +206,18 @@ MasterEdit::MasterEdit()
       mainGrid->setRowStretch(5, 100);
       mainGrid->setColumnStretch(1, 100);
 
-      mainGrid->addWidget(hLine(mainw),  0, 1);
+      mainGrid->addWidget(MusEUtil::hLine(mainw),  0, 1);
       mainGrid->addWidget(time1,         1, 1);
-      mainGrid->addWidget(hLine(mainw),  2, 1);
+      mainGrid->addWidget(MusEUtil::hLine(mainw),  2, 1);
       mainGrid->addWidget(sign,          3, 1);
-      mainGrid->addWidget(hLine(mainw),  4, 1);
+      mainGrid->addWidget(MusEUtil::hLine(mainw),  4, 1);
 //    mainGrid->addWidget(thits,         5, 1);
-//    mainGrid->addWidget(hLine(mainw),  6, 1);
+//    mainGrid->addWidget(MusEUtil::hLine(mainw),  6, 1);
       mainGrid->addWidget(canvas,        5, 1);
       mainGrid->addWidget(tscale,        5, 0);
-      mainGrid->addWidget(hLine(mainw),  6, 1);
+      mainGrid->addWidget(MusEUtil::hLine(mainw),  6, 1);
 //    mainGrid->addWidget(zhits,         9, 1);
-//    mainGrid->addWidget(hLine(mainw),  7, 1);
+//    mainGrid->addWidget(MusEUtil::hLine(mainw),  7, 1);
       mainGrid->addWidget(time2,         7, 1);
       mainGrid->addWidget(hscroll,       8, 1);
       mainGrid->addWidget(vscroll, 0, 2, 10, 1);

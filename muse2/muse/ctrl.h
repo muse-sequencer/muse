@@ -7,6 +7,21 @@
 //
 //  (C) Copyright 2003-2004 Werner Schweer (ws@seh.de)
 //  (C) Copyright 2011 Time E. Real (terminator356 on users dot sourceforge dot net)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __CTRL_H__
@@ -104,7 +119,7 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       void setMode(Mode m)       { _mode = m; }
       double getDefault() const   { return _default; }
       void setDefault(double val) { _default = val; }
-      double curVal() const       { return _curVal; }
+      double curVal() const;  /*  { return _curVal; }  */
       void setCurVal(double val); //  { _curVal = val; }
       int id() const             { return _id; }
       QString name() const       { return _name; }
@@ -120,7 +135,7 @@ class CtrlList : public std::map<int, CtrlVal, std::less<int> > {
       CtrlValueType valueType() const { return _valueType; }
       void setValueType(CtrlValueType t) { _valueType = t; }
 
-      double value(int frame);
+      double value(int frame) const;
       void add(int frame, double value);
       void del(int frame);
       void read(Xml& xml);

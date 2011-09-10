@@ -4,6 +4,21 @@
 //  $Id: transport.cpp,v 1.8.2.3 2009/07/01 10:39:42 spamatica Exp $
 //
 //  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <QAction>
@@ -77,7 +92,7 @@ Handle::Handle(QWidget* r, QWidget* parent)
       setFixedWidth(20);
       setCursor(Qt::PointingHandCursor);
       QPalette palette;
-      palette.setColor(this->backgroundRole(), config.transportHandleColor);
+      palette.setColor(this->backgroundRole(), MusEConfig::config.transportHandleColor);
       this->setPalette(palette);
       setAutoFillBackground(true);
       }
@@ -124,12 +139,12 @@ TempoSig::TempoSig(QWidget* parent)
       f->setLineWidth(1);
 
       // ORCAN get rid of l1 l2 last arguments (parent)?
-      l1 = new DoubleLabel(120.0, 20.0, 400.0, 0);
+      l1 = new MusEWidget::DoubleLabel(120.0, 20.0, 400.0, 0);
       l1->setFocusPolicy(Qt::NoFocus);
       l1->setSpecialText(QString("extern"));
       vb2->addWidget(l1);
       
-      l2 = new SigLabel(4, 4, 0);
+      l2 = new MusEWidget::SigLabel(4, 4, 0);
       l2->setFocusPolicy(Qt::NoFocus);
       vb2->addWidget(l2);
 
@@ -137,7 +152,7 @@ TempoSig::TempoSig(QWidget* parent)
       vb1->addWidget(f);
 
       l3 = new QLabel(tr("Tempo/Sig"));
-      l3->setFont(config.fonts[2]);
+      l3->setFont(MusEConfig::config.fonts[2]);
       vb1->addWidget(l3);
 
       l1->setBackgroundRole(QPalette::Light);
@@ -152,7 +167,7 @@ TempoSig::TempoSig(QWidget* parent)
       connect(l1, SIGNAL(valueChanged(double,int)), SLOT(setTempo(double)));
       ///connect(l2, SIGNAL(valueChanged(int,int)), SIGNAL(sigChanged(int,int)));
       connect(l2, SIGNAL(valueChanged(const AL::TimeSignature&)), SIGNAL(sigChanged(const AL::TimeSignature&)));
-      connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
+      connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
       this->setLayout(vb1);
       }
@@ -163,7 +178,7 @@ TempoSig::TempoSig(QWidget* parent)
 
 void TempoSig::configChanged()
       {
-      l3->setFont(config.fonts[2]);
+      l3->setFont(MusEConfig::config.fonts[2]);
       }
 
 //---------------------------------------------------------
@@ -248,7 +263,7 @@ Transport::Transport(QWidget* parent, const char* name)
       box1->addWidget(recMode);
 
       l2 = new QLabel(tr("Rec Mode"));
-      l2->setFont(config.fonts[2]);
+      l2->setFont(MusEConfig::config.fonts[2]);
       l2->setAlignment(Qt::AlignCenter);
       connect(recMode, SIGNAL(activated(int)), SLOT(setRecMode(int)));
       box1->addWidget(l2);
@@ -263,7 +278,7 @@ Transport::Transport(QWidget* parent, const char* name)
       box1->addWidget(cycleMode);
 
       l3 = new QLabel(tr("Cycle Rec"));
-      l3->setFont(config.fonts[2]);
+      l3->setFont(MusEConfig::config.fonts[2]);
       l3->setAlignment(Qt::AlignCenter);
       connect(cycleMode, SIGNAL(activated(int)), SLOT(setCycleMode(int)));
       box1->addWidget(l3);
@@ -325,7 +340,7 @@ Transport::Transport(QWidget* parent, const char* name)
       marken->addWidget(tl1);
 
       l5 = new QLabel(tr("Left Mark"));
-      l5->setFont(config.fonts[2]);
+      l5->setFont(MusEConfig::config.fonts[2]);
       l5->setAlignment(Qt::AlignCenter);
       marken->addWidget(l5);
 
@@ -337,7 +352,7 @@ Transport::Transport(QWidget* parent, const char* name)
       tl2->setFocusPolicy(Qt::NoFocus);
 
       l6 = new QLabel(tr("Right Mark"));
-      l6->setFont(config.fonts[2]);
+      l6->setFont(MusEConfig::config.fonts[2]);
       l6->setAlignment(Qt::AlignCenter);
       marken->addWidget(l6);
 
@@ -502,7 +517,7 @@ Transport::Transport(QWidget* parent, const char* name)
       connect(tempo, SIGNAL(sigChanged(const AL::TimeSignature&)), song, SLOT(setSig(const AL::TimeSignature&)));
       connect(song, SIGNAL(playChanged(bool)), SLOT(setPlay(bool)));
       connect(song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
-      connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
+      connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
 
       this->setLayout(hbox);
@@ -521,13 +536,13 @@ Transport::~Transport()
 
 void Transport::configChanged()
       {
-      l2->setFont(config.fonts[2]);
-      l3->setFont(config.fonts[2]);
-      l5->setFont(config.fonts[2]);
-      l6->setFont(config.fonts[2]);
+      l2->setFont(MusEConfig::config.fonts[2]);
+      l3->setFont(MusEConfig::config.fonts[2]);
+      l5->setFont(MusEConfig::config.fonts[2]);
+      l6->setFont(MusEConfig::config.fonts[2]);
 
       QPalette pal;
-      pal.setColor(lefthandle->backgroundRole(), config.transportHandleColor);
+      pal.setColor(lefthandle->backgroundRole(), MusEConfig::config.transportHandleColor);
       lefthandle->setPalette(pal);
       righthandle->setPalette(pal);
       }
@@ -756,11 +771,11 @@ void Transport::syncChanged(bool flag)
             }
       else
             tempo->setTempo(tempomap.tempo(song->cpos()));
-      playAction->setEnabled(!flag);
-      startAction->setEnabled(!flag);
-      stopAction->setEnabled(!flag);
-      rewindAction->setEnabled(!flag);
-      forwardAction->setEnabled(!flag);
+      MusEGlobal::playAction->setEnabled(!flag);
+      MusEGlobal::startAction->setEnabled(!flag);
+      MusEGlobal::stopAction->setEnabled(!flag);
+      MusEGlobal::rewindAction->setEnabled(!flag);
+      MusEGlobal::forwardAction->setEnabled(!flag);
       }
 
 void Transport::jackSyncChanged(bool flag)

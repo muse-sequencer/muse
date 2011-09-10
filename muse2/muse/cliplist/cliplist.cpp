@@ -4,6 +4,21 @@
 //  $Id: cliplist.cpp,v 1.6.2.3 2008/08/18 00:15:24 terminator356 Exp $
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <QCloseEvent>
@@ -119,16 +134,16 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       // Toolbars ---------------------------------------------------------
       QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
       undo_tools->setObjectName("Undo/Redo tools");
-      undo_tools->addActions(undoRedo->actions());
+      undo_tools->addActions(MusEGlobal::undoRedo->actions());
 
 
       QToolBar* panic_toolbar = addToolBar(tr("panic"));         
       panic_toolbar->setObjectName("panic");
-      panic_toolbar->addAction(panicAction);
+      panic_toolbar->addAction(MusEGlobal::panicAction);
 
       QToolBar* transport_toolbar = addToolBar(tr("transport"));
       transport_toolbar->setObjectName("transport");
-      transport_toolbar->addActions(transportAction->actions());
+      transport_toolbar->addActions(MusEGlobal::transportAction->actions());
 
       QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
       settingsMenu->addAction(subwinAction);      

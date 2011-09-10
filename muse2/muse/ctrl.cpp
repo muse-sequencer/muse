@@ -7,6 +7,21 @@
 //
 //  (C) Copyright 2003 Werner Schweer (ws@seh.de)
 //  (C) Copyright 2011 Time E. Real (terminator356 on users dot sourceforge dot net)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 
@@ -20,7 +35,7 @@
 #include "globals.h"
 #include "ctrl.h"
 #include "xml.h"
-// #include "audio.h"
+#include "audio.h"
 
 void CtrlList::initColor(int i)
 {
@@ -82,7 +97,7 @@ CtrlList::CtrlList()
 //   value
 //---------------------------------------------------------
 
-double CtrlList::value(int frame)
+double CtrlList::value(int frame) const
 {
       // Changed by Tim. p4.0.32...
       
@@ -141,11 +156,11 @@ double CtrlList::value(int frame)
             //printf("before val1=%f val2=%f\n", val1,val2);
             if (_valueType == VAL_LOG) {
               val1 = 20.0*fast_log10(val1);
-              if (val1 < config.minSlider)
-                val1=config.minSlider;
+              if (val1 < MusEConfig::config.minSlider)
+                val1=MusEConfig::config.minSlider;
               val2 = 20.0*fast_log10(val2);
-              if (val2 < config.minSlider)
-                val2=config.minSlider;
+              if (val2 < MusEConfig::config.minSlider)
+                val2=MusEConfig::config.minSlider;
             }
             //printf("after val1=%f val2=%f\n", val1,val2);
             frame -= frame1;
@@ -166,6 +181,17 @@ double CtrlList::value(int frame)
       return rv;
 }
 
+//---------------------------------------------------------
+//   curVal
+//   returns the value at the current audio position 
+//---------------------------------------------------------
+double CtrlList::curVal() const
+{ 
+  //double v = value(Pos(audio->tickPos()).frame());      // p4.0.33
+  //double v = value(audio->pos().frame());                 // Try this.
+  //return v;
+  return _curVal;
+}
 
 //---------------------------------------------------------
 //   setCurVal

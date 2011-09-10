@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: editevent.cpp,v 1.12.2.6 2009/02/02 21:38:00 terminator356 Exp $
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <stdio.h>
@@ -297,7 +312,7 @@ EditMetaDialog::EditMetaDialog(int tick, const Event& ev,
       epos = new Awl::PosEdit;
 
       QLabel* l2 = new QLabel(tr("Meta Type"));
-      il2 = new IntLabel(-1, 0, 127, this, -1);
+      il2 = new MusEWidget::IntLabel(-1, 0, 127, this, -1);
       il2->setFixedWidth(100);
       il2->setFrame(true);
       il2->setDark();
@@ -313,7 +328,7 @@ EditMetaDialog::EditMetaDialog(int tick, const Event& ev,
       connect(hexButton, SIGNAL(toggled(bool)), SLOT(toggled(bool)));
 
       edit = new QTextEdit;
-      edit->setFont(config.fonts[5]);
+      edit->setFont(MusEConfig::config.fonts[5]);
 
       if (!ev.empty()) {
             epos->setValue(tick);
@@ -432,7 +447,7 @@ EditCAfterDialog::EditCAfterDialog(int tick, const Event& event,
       epos = new Awl::PosEdit;
 
       QLabel* l2 = new QLabel(tr("Pressure"));
-      il2  = new IntLabel(-1, 0, 127, this, -1);
+      il2  = new MusEWidget::IntLabel(-1, 0, 127, this, -1);
       il2->setFrame(true);
       il2->setDark();
 
@@ -491,9 +506,9 @@ EditPAfterDialog::EditPAfterDialog(int tick, const Event& event,
       epos = new Awl::PosEdit;
 
       QLabel* l2 = new QLabel(tr("Pitch"));
-      pl = new PitchEdit;
+      pl = new MusEWidget::PitchEdit;
       QLabel* l3 = new QLabel(tr("Pressure"));
-      il2  = new IntLabel(-1, 0, 127, this, -1);
+      il2  = new MusEWidget::IntLabel(-1, 0, 127, this, -1);
       il2->setFrame(true);
       il2->setDark();
 
@@ -681,7 +696,7 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
 void EditCtrlDialog::newController()
       {
       //QMenu* pup = new QMenu(this);
-      PopupMenu* pup = new PopupMenu(this);
+      MusEWidget::PopupMenu* pup = new MusEWidget::PopupMenu(this);
       //pup->setCheckable(this);//not necessary in Qt4
       //
       // populate popup with all controllers available for
@@ -856,7 +871,7 @@ void EditCtrlDialog::instrPopup()
       
       ///instr->populatePatchPopup(pop, channel, song->mtype(), track->type() == Track::DRUM);
       //QMenu* pup = new QMenu(this);
-      PopupMenu* pup = new PopupMenu(this);
+      MusEWidget::PopupMenu* pup = new MusEWidget::PopupMenu(this);
       instr->populatePatchPopup(pup, channel, song->mtype(), track->type() == Track::DRUM);
 
       ///if(pop->actions().count() == 0)

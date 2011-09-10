@@ -4,6 +4,21 @@
 //  $Id: exportmidi.cpp,v 1.9.2.1 2009/04/01 01:37:10 terminator356 Exp $
 //
 //  (C) Copyright 1999-2003 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <stdio.h>
@@ -113,16 +128,18 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             }
       }
 
+namespace MusEApp {
+
 //---------------------------------------------------------
 //   exportMidi
 //---------------------------------------------------------
 
 void MusE::exportMidi()
       {
-      MFile file(QString("midis"), QString(".mid"));
+      MusEWidget::MFile file(QString("midis"), QString(".mid"));
 
       //FILE* fp = file.open("w", midi_file_pattern, this, false, true,
-      FILE* fp = file.open("w", midi_file_save_pattern, this, false, true,
+      FILE* fp = file.open("w", MusEGlobal::midi_file_save_pattern, this, false, true,
          tr("MusE: Export Midi"));
       if (fp == 0)
             return;
@@ -167,7 +184,7 @@ void MusE::exportMidi()
                   //---------------------------------------------------
                   //    Write Copyright
                   //
-                  QByteArray ba = config.copyright.toLatin1();
+                  QByteArray ba = MusEConfig::config.copyright.toLatin1();
                   const char* copyright = ba.constData();
                   if (copyright && *copyright) {
                         int len = strlen(copyright);
@@ -232,7 +249,7 @@ void MusE::exportMidi()
                   for (AL::ciSigEvent e = sl->begin(); e != sl->end(); ++e) {
                         ///SigEvent* event = e->second;
                         AL::SigEvent* event = e->second;
-                        int sz = (config.exp2ByteTimeSigs ? 2 : 4); // export 2 byte timesigs instead of 4 ?
+                        int sz = (MusEConfig::config.exp2ByteTimeSigs ? 2 : 4); // export 2 byte timesigs instead of 4 ?
                         unsigned char data[sz];
                         data[0] = event->sig.z;
                         switch(event->sig.n) {
@@ -249,7 +266,7 @@ void MusE::exportMidi()
                               }
                         // By T356. In muse the metronome pulse is fixed at 24 (once per quarter-note).
                         // The number of 32nd notes per 24 MIDI clock signals (per quarter-note) is 8.
-                        if(!config.exp2ByteTimeSigs)
+                        if(!MusEConfig::config.exp2ByteTimeSigs)
                         {
                           data[2] = 24;
                           data[3] = 8;
@@ -344,7 +361,7 @@ void MusE::exportMidi()
                                           len = 1;
                                     l->add(MidiPlayEvent(tick, port, channel, ME_NOTEON, pitch, velo));
                                     
-                                    if(config.expOptimNoteOffs)  // Save space by replacing note offs with note on velocity 0
+                                    if(MusEConfig::config.expOptimNoteOffs)  // Save space by replacing note offs with note on velocity 0
                                       l->add(MidiPlayEvent(tick+len, port, channel, ME_NOTEON, pitch, 0));
                                     else  
                                       l->add(MidiPlayEvent(tick+len, port, channel, ME_NOTEOFF, pitch, velo));
@@ -380,9 +397,10 @@ void MusE::exportMidi()
                         }
                   }
             }
-      mf.setDivision(config.midiDivision);
+      mf.setDivision(MusEConfig::config.midiDivision);
       mf.setMType(song->mtype());
       mf.setTrackList(mtl, ntracks);
       mf.write();
       }
 
+} // namespace MusEApp

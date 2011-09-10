@@ -1,3 +1,25 @@
+//=========================================================
+//  MusE
+//  Linux Music Editor
+//  $Id: ./muse/widgets/projectcreateimpl.cpp $
+//
+//  Copyright (C) 1999-2011 by Werner Schweer and others
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
+//=========================================================
 #include <stdio.h>
 #include <qfiledialog.h>
 #include <qdir.h>
@@ -6,12 +28,14 @@
 #include "globals.h"
 #include "app.h"
 
+namespace MusEWidget {
+
 ProjectCreateImpl::ProjectCreateImpl(QWidget *parent) :
     QDialog(parent)
 {
   setupUi(this);
 
-  createFolderCheckbox->setChecked(config.projectStoreInFolder);
+  createFolderCheckbox->setChecked(MusEConfig::config.projectStoreInFolder);
   connect(browseDirButton,SIGNAL(clicked()), this, SLOT(selectDirectory()));
   connect(projectNameEdit,SIGNAL(textChanged(QString)), this, SLOT(updateDirectoryPath()));
   connect(createFolderCheckbox,SIGNAL(clicked()), this, SLOT(updateDirectoryPath()));
@@ -22,7 +46,7 @@ ProjectCreateImpl::ProjectCreateImpl(QWidget *parent) :
   //        as of Qt-4.7.1
   //commentEdit->setPlaceholderText("<Add information about project here>");
 #endif
-  directoryPath = config.projectBaseFolder;
+  directoryPath = MusEConfig::config.projectBaseFolder;
   updateDirectoryPath();
   show();
 }
@@ -64,8 +88,10 @@ QString ProjectCreateImpl::getSongInfo()
 }
 void ProjectCreateImpl::ok()
 {
-  config.projectStoreInFolder = createFolderCheckbox->isChecked();
-  config.projectBaseFolder = directoryPath;
-  muse->changeConfig(true);
+  MusEConfig::config.projectStoreInFolder = createFolderCheckbox->isChecked();
+  MusEConfig::config.projectBaseFolder = directoryPath;
+  MusEGlobal::muse->changeConfig(true);
   emit accept();
 }
+
+} //namespace MusEWidget

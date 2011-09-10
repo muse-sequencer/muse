@@ -4,6 +4,21 @@
 //  $Id: audioprefetch.cpp,v 1.14.2.7 2009/12/20 05:00:35 terminator356 Exp $
 //
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <poll.h>
@@ -168,7 +183,7 @@ void AudioPrefetch::prefetch(bool doSeek)
       if (song->loop() && !audio->bounce() && !extSyncFlag.value()) {
             const Pos& loop = song->rPos();
             unsigned n = loop.frame() - writePos;
-            if (n < segmentSize) {
+            if (n < MusEGlobal::segmentSize) {
                   unsigned lpos = song->lPos().frame();
                   // adjust loop start so we get exact loop len
                   if (n > lpos)
@@ -188,18 +203,18 @@ void AudioPrefetch::prefetch(bool doSeek)
             int ch           = track->channels();
             float* bp[ch];
 // printf("prefetch %d\n", writePos);
-            if (track->prefetchFifo()->getWriteBuffer(ch, segmentSize, bp, writePos)) {
+            if (track->prefetchFifo()->getWriteBuffer(ch, MusEGlobal::segmentSize, bp, writePos)) {
                   // printf("AudioPrefetch::prefetch No write buffer!\n"); // p3.3.46 Was getting this...
                   continue;
                   }
-            //track->fetchData(writePos, segmentSize, bp);
-            track->fetchData(writePos, segmentSize, bp, doSeek);
+            //track->fetchData(writePos, MusEGlobal::segmentSize, bp);
+            track->fetchData(writePos, MusEGlobal::segmentSize, bp, doSeek);
             
             // p3.3.41
-            //fprintf(stderr, "AudioPrefetch::prefetch data: segmentSize:%ld %e %e %e %e\n", segmentSize, bp[0][0], bp[0][1], bp[0][2], bp[0][3]);
+            //fprintf(stderr, "AudioPrefetch::prefetch data: MusEGlobal::segmentSize:%ld %e %e %e %e\n", MusEGlobal::segmentSize, bp[0][0], bp[0][1], bp[0][2], bp[0][3]);
       
             }
-      writePos += segmentSize;
+      writePos += MusEGlobal::segmentSize;
       }
 
 //---------------------------------------------------------
@@ -237,7 +252,7 @@ void AudioPrefetch::seek(unsigned seekTo)
             }
       
       bool isFirstPrefetch = true;
-      for (unsigned int i = 0; i < (fifoLength)-1; ++i)//prevent compiler warning: comparison of signed/unsigned
+      for (unsigned int i = 0; i < (MusEGlobal::fifoLength)-1; ++i)//prevent compiler warning: comparison of signed/unsigned
       {      
             // Indicate do a seek command before read, but only on the first pass. 
             // Changed by Tim. p3.3.17 

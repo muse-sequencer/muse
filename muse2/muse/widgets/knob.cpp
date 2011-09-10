@@ -2,20 +2,26 @@
 //  MusE
 //  Linux Music Editor
 //    $Id: knob.cpp,v 1.3.2.3 2009/03/09 02:05:18 terminator356 Exp $
-//  (C) Copyright 1999 Werner Schweer (ws@seh.de)
 //
 //  Adapted from Qwt Lib:
 //  Copyright (C) 1997  Josef Wilgen
-//  This program is free software; you can redistribute it and/or modify
-//  it under the terms of the GNU General Public License, version 2,
-//  as published by the Free Software Foundation.
+//  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Orcan Ogetbil (ogetbilo at sf.net) completely redesigned.
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
 //  This program is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
 //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //  GNU General Public License for more details.
+//
 //  You should have received a copy of the GNU General Public License
 //  along with this program; if not, write to the Free Software
-//  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <stdio.h>
@@ -27,6 +33,8 @@
 #include <QPalette>
 #include <QPaintEvent>
 #include <QResizeEvent>
+
+namespace MusEWidget {
 
 //---------------------------------------------------------
 //  The QwtKnob widget imitates look and behaviour of a volume knob on a radio.
@@ -327,8 +335,8 @@ void Knob::resizeEvent(QResizeEvent *)
 
 // printf("resize %d %d %d\n", r.height(), r.width(), d_knobWidth);
 
-//      width = qwtMin(qwtMin(r.height(), r.width()), d_knobWidth);
-      width = qwtMin(r.height(), r.width());
+//      width = MusEUtil::qwtMin(MusEUtil::qwtMin(r.height(), r.width()), d_knobWidth);
+      width = MusEUtil::qwtMin(r.height(), r.width());
       width_2 = width / 2;
 
       int x = r.x() + r.width()  / 2 - width_2;
@@ -417,7 +425,7 @@ void Knob::drawMarker(QPainter *p, double arc, const QColor &c)
   
   p->setBrush(c);
   p->setPen(Qt::NoPen);
-  rb = double(qwtMax(radius - 4 - d_dotWidth / 2, 0));
+  rb = double(MusEUtil::qwtMax(radius - 4 - d_dotWidth / 2, 0));
   p->drawEllipse(xm - int(rint(sa * rb)) - d_dotWidth / 2,
            ym - int(rint(ca * rb)) - d_dotWidth / 2,
            d_dotWidth, d_dotWidth);
@@ -430,8 +438,8 @@ void Knob::drawMarker(QPainter *p, double arc, const QColor &c)
   pn.setWidth(2);
   p->setPen(pn);
   
-  rb = qwtMax(double((radius - 1) / 3.0), 0.0);
-  re = qwtMax(double(radius - 1), 0.0);
+  rb = MusEUtil::qwtMax(double((radius - 1) / 3.0), 0.0);
+  re = MusEUtil::qwtMax(double(radius - 1), 0.0);
 
   p->setRenderHint(QPainter::Antialiasing, true);
   p->drawLine( xm,
@@ -462,7 +470,7 @@ void Knob::drawMarker(QPainter *p, double arc, const QColor &c)
 //------------------------------------------------------------
 void Knob::setKnobWidth(int w)
 {
-    d_knobWidth = qwtMax(w,5);
+    d_knobWidth = MusEUtil::qwtMax(w,5);
     resize(size());
     repaint();
 }
@@ -481,7 +489,7 @@ void Knob::setKnobWidth(int w)
 //------------------------------------------------------------
 void Knob::setBorderWidth(int bw)
 {
-    d_borderWidth = qwtMax(bw, 0);
+    d_borderWidth = MusEUtil::qwtMax(bw, 0);
     resize(size());
     repaint();
 }
@@ -565,3 +573,4 @@ void Knob::setMarkerColor(const QColor c)
   repaint();
 }
 
+} // namespace MusEWidget

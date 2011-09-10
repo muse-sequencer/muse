@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: master.cpp,v 1.3 2004/04/11 13:03:32 wschweer Exp $
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <stdio.h>
@@ -191,21 +206,21 @@ void Master::draw(QPainter& p, const QRect& rect)
 void Master::viewMousePressEvent(QMouseEvent* event)
       {
       start = event->pos();
-      Tool activeTool = tool;
+      MusEWidget::Tool activeTool = tool;
 //      bool shift = event->state() & ShiftButton;
 
       switch (activeTool) {
-            case PointerTool:
+            case MusEWidget::PointerTool:
                   drag = DRAG_LASSO_START;
                   break;
 
-            case PencilTool:
+            case MusEWidget::PencilTool:
                   drag = DRAG_NEW;
                   song->startUndo();
                   newVal(start.x(), start.x(), start.y());
                   break;
 
-            case RubberTool:
+            case MusEWidget::RubberTool:
                   drag = DRAG_DELETE;
                   song->startUndo();
                   deleteVal(start.x(), start.x());
@@ -302,11 +317,11 @@ void Master::deleteVal(int x1, int x2)
 
 void Master::setTool(int t)
       {
-      if (tool == Tool(t))
+      if (tool == MusEWidget::Tool(t))
             return;
-      tool = Tool(t);
+      tool = MusEWidget::Tool(t);
       switch(tool) {
-            case PencilTool:
+            case MusEWidget::PencilTool:
                   setCursor(QCursor(*pencilIcon, 4, 15));
                   break;
             default:

@@ -4,6 +4,22 @@
 //  $Id: audio.cpp,v 1.59.2.30 2009/12/20 05:00:35 terminator356 Exp $
 //
 //  (C) Copyright 2001-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <cmath>
@@ -15,10 +31,8 @@
 #include "song.h"
 #include "node.h"
 #include "audiodev.h"
-//#include "driver/audiodev.h"   // p4.0.2
 #include "mididev.h"
 #include "alsamidi.h"
-//#include "driver/alsamidi.h"   // p4.0.2
 #include "synth.h"
 #include "audioprefetch.h"
 #include "plugin.h"
@@ -33,12 +47,14 @@
 #include "pos.h"
 #include "ticksynth.h"
 
+namespace MusEUtil {
 extern double curTime();
+}
+
 Audio* audio;
 AudioDevice* audioDevice;   // current audio device in use
 
-// p3.3.25
-extern unsigned int volatile midiExtSyncTicks;
+extern unsigned int volatile midiExtSyncTicks;   // p3.3.25
 
 
 //static const unsigned char mmcDeferredPlayMsg[] = { 0x7f, 0x7f, 0x06, 0x03 };
@@ -68,11 +84,11 @@ const char* seqMsgList[] = {
       "MIDI_SHOW_INSTR_NATIVE_GUI",
       "AUDIO_RECORD",
       "AUDIO_ROUTEADD", "AUDIO_ROUTEREMOVE", "AUDIO_REMOVEROUTES",
-      "AUDIO_VOL", "AUDIO_PAN",
+      //"AUDIO_VOL", "AUDIO_PAN",
       "AUDIO_ADDPLUGIN",
       "AUDIO_SET_SEG_SIZE",
       "AUDIO_SET_PREFADER", "AUDIO_SET_CHANNELS",
-      "AUDIO_SET_PLUGIN_CTRL_VAL",
+      //"AUDIO_SET_PLUGIN_CTRL_VAL",
       "AUDIO_SWAP_CONTROLLER_IDX",
       "AUDIO_CLEAR_CONTROLLER_EVENTS",
       "AUDIO_SEEK_PREV_AC_EVENT",
@@ -108,7 +124,7 @@ Audio::Audio()
 
       _pos.setType(Pos::FRAMES);
       _pos.setFrame(0);
-      curTickPos    = 0;
+      nextTickPos = curTickPos = 0;
 
       midiClick     = 0;
       clickno       = 0;
@@ -122,10 +138,9 @@ Audio::Audio()
       state         = STOP;
       msg           = 0;
 
-      // Changed by Tim. p3.3.8
       //startRecordPos.setType(Pos::TICKS);
       //endRecordPos.setType(Pos::TICKS);
-      startRecordPos.setType(Pos::FRAMES);
+      startRecordPos.setType(Pos::FRAMES);  // Tim
       endRecordPos.setType(Pos::FRAMES);
       
       _audioMonitor = 0;
@@ -164,21 +179,17 @@ extern bool initJackAudio();
 
 bool Audio::start()
       {
-      //process(segmentSize);   // warm up caches
+      //process(MusEGlobal::segmentSize);   // warm up caches
       state = STOP;
       _loopCount = 0;
-      muse->setHeartBeat();
+      MusEGlobal::muse->setHeartBeat();
       if (audioDevice) {
-          // Added by Tim. p3.3.6
           //_running = true;
-          
           //audioDevice->start();
           }
       else {
           if(false == initJackAudio()) {
-                // Added by Tim. p3.3.6
                 //_running = true;
-                
                 InputList* itl = song->inputs();
                 for (iAudioInput i = itl->begin(); i != itl->end(); ++i) {
                       //printf("reconnecting input %s\n", (*i)->name().ascii());
@@ -203,7 +214,7 @@ bool Audio::start()
                }
           }
 
-      audioDevice->start(realTimePriority);
+      audioDevice->start(MusEGlobal::realTimePriority);
       
       _running = true;
 
@@ -235,25 +246,6 @@ void Audio::stop(bool)
 
 bool Audio::sync(int jackState, unsigned frame)
       {
-      
-// Changed by Tim. p3.3.24
-/*      
-      bool done = true;
-      if (state == LOOP1) 
-            state = LOOP2;
-      else {
-            if (_pos.frame() != frame) {
-                  Pos p(frame, false);
-                  seek(p);
-                  }
-            state = State(jackState);
-            if (!_freewheel)
-                  //done = audioPrefetch->seekDone;
-                  done = audioPrefetch->seekDone();
-            }
-      
-      return done;
-*/      
       bool done = true;
       if (state == LOOP1)
             state = LOOP2;
@@ -265,8 +257,6 @@ bool Audio::sync(int jackState, unsigned frame)
             //  PLAY -> START_PLAY  seek in play state
 
             if (state != START_PLAY) {
-                //Pos p(frame, AL::FRAMES);
-                //    seek(p);
                 Pos p(frame, false);
                 seek(p);
               if (!_freewheel)
@@ -275,10 +265,8 @@ bool Audio::sync(int jackState, unsigned frame)
                         state = START_PLAY;
                 }
             else {
-                //if (frame != _seqTime.pos.frame()) {
                 if (frame != _pos.frame()) {
                         // seek during seek
-                            //seek(Pos(frame, AL::FRAMES));
                             seek(Pos(frame, false));
                         }
                 done = audioPrefetch->seekDone();
@@ -317,11 +305,10 @@ void Audio::shutdown()
 
 void Audio::process(unsigned frames)
       {
-      // Disabled by Tim. p3.3.22
 //      extern int watchAudio;
-//      ++watchAudio;           // make a simple watchdog happy
+//      ++watchAudio;           // make a simple watchdog happy. Disabled. 
       
-      if (!checkAudioDevice()) return;
+      if (!MusEGlobal::checkAudioDevice()) return;
       if (msg) {
             processMsg(msg);
             int sn = msg->serialNo;
@@ -343,7 +330,7 @@ void Audio::process(unsigned frames)
 
       int jackState = audioDevice->getState();
 
-      //if(debugMsg)
+      //if(MusEGlobal::debugMsg)
       //  printf("Audio::process Current state:%s jackState:%s\n", audioStates[state], audioStates[jackState]);
       
       if (state == START_PLAY && jackState == PLAY) {
@@ -359,8 +346,8 @@ void Audio::process(unsigned frames)
             startRolling();
             }
       else if (isPlaying() && jackState == STOP) {
-            // p3.3.43 Make sure to stop bounce and freewheel mode, for example if user presses stop 
-            //  in QJackCtl before right-hand marker is reached (which is handled below).
+            // Make sure to stop bounce and freewheel mode, for example if user presses stop 
+            //  in QJackCtl before right-hand marker is reached (which is handled below). p3.3.43 
             //printf("Audio::process isPlaying() && jackState == STOP\n");
             //if (_bounce) 
             //{
@@ -402,7 +389,7 @@ void Audio::process(unsigned frames)
             AudioAux* a = (AudioAux*)((*al)[i]);
             float** dst = a->sendBuffer();
             for (int ch = 0; ch < a->channels(); ++ch)
-                  memset(dst[ch], 0, sizeof(float) * segmentSize);
+                  memset(dst[ch], 0, sizeof(float) * MusEGlobal::segmentSize);
             }
 
       for (iAudioOutput i = ol->begin(); i != ol->end(); ++i)
@@ -427,7 +414,7 @@ void Audio::process(unsigned frames)
                && !(song->record()
                 || _bounce
                 || song->loop())) {
-                  //if(debugMsg)
+                  //if(MusEGlobal::debugMsg)
                   //  printf("Audio::process curTickPos >= song->len\n");
                   
                   audioDevice->stopTransport();
@@ -467,15 +454,11 @@ void Audio::process(unsigned frames)
                         //audioDevice->seekTransport(_loopFrame);
                         Pos lp(_loopFrame, false);
                         audioDevice->seekTransport(lp);
-
-
 // printf("  process: seek to %d, end %d\n", _loopFrame, loop.frame());
                         }
                   }
             
-            
-            // p3.3.25
-            if(extSyncFlag.value())
+            if(extSyncFlag.value())        // p3.3.25
             {
               nextTickPos = curTickPos + midiExtSyncTicks;
               // Probably not good - interfere with midi thread.
@@ -493,7 +476,7 @@ void Audio::process(unsigned frames)
       // resync with audio interface
       //
       syncFrame   = audioDevice->framePos();
-      syncTime    = curTime();
+      syncTime    = MusEUtil::curTime();
       frameOffset = syncFrame - samplePos;
 
       //printf("Audio::process calling process1:\n");
@@ -513,7 +496,7 @@ void Audio::process(unsigned frames)
 
 void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       {
-      if (midiSeqRunning) {
+      if (MusEGlobal::midiSeqRunning) {
             processMidi();
             }
             //midiSeq->msgProcess();
@@ -531,7 +514,6 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           continue;
         track = (AudioTrack*)(*it);
         
-        // Added by T356.
         // For audio track types, synths etc. which need some kind of non-audio 
         //  (but possibly audio-affecting) processing always, even if their output path
         //  is ultimately unconnected.
@@ -542,23 +524,10 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         // It should be used for things like midi events, gui events etc. - things which need to
         //  be done BEFORE all the AudioOutput::process() are called below. That does NOT include 
         //  audio processing, because THAT is done at the very end of this routine.
-        // This will also reset the track's processed flag.
+        // This will also reset the track's processed flag.         Tim.
         track->preProcessAlways();
-        
-        // Removed by T356
-        /*
-        if (track->noOutRoute() && !track->noInRoute() && 
-            track->type() != Track::AUDIO_AUX && track->type() != Track::AUDIO_OUTPUT) {
-              channels = track->channels();
-              float* buffer[channels];
-              float data[frames * channels];
-              for (int i = 0; i < channels; ++i)
-                    buffer[i] = data + i * frames;
-              track->copyData(samplePos, channels, frames, buffer);
-              }
-        */
-                  
       }
+      
       // Pre-process the metronome.
       ((AudioTrack*)metronome)->preProcessAlways();
       
@@ -566,29 +535,12 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       for (ciAudioOutput i = ol->begin(); i != ol->end(); ++i) 
         (*i)->process(samplePos, offset, frames);
             
-      // Removed by T356
-      /*
-      AuxList* auxl = song->auxs();
-      for (ciAudioAux ia = auxl->begin(); ia != auxl->end(); ++ia) {
-            track = (AudioTrack*)(*ia);
-            if (track->noOutRoute()) {
-                  channels = track->channels();
-                  float* buffer[channels];
-                  float data[frames * channels];
-                  for (int i = 0; i < channels; ++i)
-                        buffer[i] = data + i * frames;
-                  track->copyData(samplePos, channels, frames, buffer);
-                  }
-            }
-      */      
-            
-      // Added by T356.
       // Were ANY tracks unprocessed as a result of processing all the AudioOutputs, above? 
       // Not just unconnected ones, as previously done, but ones whose output path ultimately leads nowhere.
       // Those tracks were missed, until this fix.
       // Do them now. This will animate meters, and 'quietly' process some audio which needs to be done -
-      //  for example synths really need to be processed, 'quietly' or not, otherwise the next time
-      //  processing is 'turned on', if there was a backlog of events while it was off, then they all happen at once. 
+      //  for example synths really need to be processed, 'quietly' or not, otherwise the next time processing 
+      //  is 'turned on', if there was a backlog of events while it was off, then they all happen at once.  Tim.
       for(ciTrack it = tl->begin(); it != tl->end(); ++it) 
       {
         if((*it)->isMidiTrack())
@@ -605,9 +557,6 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
           for (int i = 0; i < channels; ++i)
                 buffer[i] = data + i * frames;
           //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1());
-      
-          // p3.3.38
-          //track->copyData(samplePos, channels, frames, buffer);
           track->copyData(samplePos, channels, -1, -1, frames, buffer);
         }
       }      
@@ -629,15 +578,15 @@ void Audio::processMsg(AudioMsg* msg)
             case AUDIO_ROUTEREMOVE:
                   removeRoute(msg->sroute, msg->droute);
                   break;
-            case AUDIO_REMOVEROUTES:      // p3.3.55
+            case AUDIO_REMOVEROUTES:      
                   removeAllRoutes(msg->sroute, msg->droute);
                   break;
-            case AUDIO_VOL:
-                  msg->snode->setVolume(msg->dval);
-                  break;
-            case AUDIO_PAN:
-                  msg->snode->setPan(msg->dval);
-                  break;
+            //case AUDIO_VOL:
+            //      msg->snode->setVolume(msg->dval);
+            //      break;
+            //case AUDIO_PAN:
+            //      msg->snode->setPan(msg->dval);
+            //      break;
             case SEQM_SET_AUX:
                   msg->snode->setAuxSend(msg->ival, msg->dval);
                   break;
@@ -650,11 +599,10 @@ void Audio::processMsg(AudioMsg* msg)
             case AUDIO_ADDPLUGIN:
                   msg->snode->addPlugin(msg->plugin, msg->ival);
                   break;
-            case AUDIO_SET_PLUGIN_CTRL_VAL:
+            //case AUDIO_SET_PLUGIN_CTRL_VAL:
                   //msg->plugin->track()->setPluginCtrlVal(msg->ival, msg->dval);
-                  // p3.3.43
-                  msg->snode->setPluginCtrlVal(msg->ival, msg->dval);
-                  break;
+            //      msg->snode->setPluginCtrlVal(msg->ival, msg->dval);
+            //      break;
             case AUDIO_SWAP_CONTROLLER_IDX:
                   msg->snode->swapControllerIDX(msg->a, msg->b);
                   break;
@@ -688,14 +636,14 @@ void Audio::processMsg(AudioMsg* msg)
                   break;
             
             case AUDIO_SET_SEG_SIZE:
-                  segmentSize = msg->ival;
-                  sampleRate  = msg->iival;
+                  MusEGlobal::segmentSize = msg->ival;
+                  MusEGlobal::sampleRate  = msg->iival;
 #if 0 //TODO
-                  audioOutput.segmentSizeChanged();
+                  audioOutput.MusEGlobal::segmentSizeChanged();
                   for (int i = 0; i < mixerGroups; ++i)
-                        audioGroups[i].segmentSizeChanged();
+                        audioGroups[i].MusEGlobal::segmentSizeChanged();
                   for (iSynthI ii = synthiInstances.begin(); ii != synthiInstances.end();++ii)
-                        (*ii)->segmentSizeChanged();
+                        (*ii)->MusEGlobal::segmentSizeChanged();
 #endif
                   break;
 
@@ -703,8 +651,8 @@ void Audio::processMsg(AudioMsg* msg)
                   //printf("Audio::processMsg SEQM_RESET_DEVICES\n");  
                   for (int i = 0; i < MIDI_PORTS; ++i)                         
                   {      
-                    if(!midiPorts[i].device()) continue;                        // p4.0.15
-                    midiPorts[i].instrument()->reset(i, song->mtype());
+                    if(midiPorts[i].device())                       
+                      midiPorts[i].instrument()->reset(i, song->mtype());
                   }      
                   break;
             case SEQM_INIT_DEVICES:
@@ -741,7 +689,7 @@ void Audio::processMsg(AudioMsg* msg)
             case MIDI_SHOW_INSTR_GUI:
                   midiSeq->msgUpdatePollFd();
                   break;
-            case MIDI_SHOW_INSTR_NATIVE_GUI:   // p4.0.20
+            case MIDI_SHOW_INSTR_NATIVE_GUI:   
                   midiSeq->msgUpdatePollFd();
                   break;
             case SEQM_ADD_TEMPO:
@@ -750,20 +698,20 @@ void Audio::processMsg(AudioMsg* msg)
             case SEQM_SET_TEMPO:
                   song->processMsg(msg);
                   if (isPlaying()) {
-                        if (!checkAudioDevice()) return;
+                        if (!MusEGlobal::checkAudioDevice()) return;
                         _pos.setTick(curTickPos);
                         int samplePos = _pos.frame();
                         syncFrame     = audioDevice->framePos();
-                        syncTime      = curTime();
+                        syncTime      = MusEUtil::curTime();
                         frameOffset   = syncFrame - samplePos;
                         }
                   break;
-            case SEQM_ADD_TRACK:
-            case SEQM_REMOVE_TRACK:
-            case SEQM_CHANGE_TRACK:
-            case SEQM_ADD_PART:
-            case SEQM_REMOVE_PART:
-            case SEQM_CHANGE_PART:
+            //case SEQM_ADD_TRACK:
+            //case SEQM_REMOVE_TRACK:
+            //case SEQM_CHANGE_TRACK:
+            //case SEQM_ADD_PART:
+            //case SEQM_REMOVE_PART:
+            //case SEQM_CHANGE_PART:
             case SEQM_SET_TRACK_OUT_CHAN:
             case SEQM_SET_TRACK_OUT_PORT:
             case SEQM_REMAP_PORT_DRUM_CTL_EVS:
@@ -791,147 +739,30 @@ void Audio::processMsg(AudioMsg* msg)
 void Audio::seek(const Pos& p)
       {
       if (_pos == p) {
-            if(debugMsg)
+            if(MusEGlobal::debugMsg)
               printf("Audio::seek already there\n");
             return;        
             }
-      
-            // p3.3.23
-            //printf("Audio::seek frame:%d\n", p.frame());
+      //printf("Audio::seek frame:%d\n", p.frame());
       _pos        = p;
-      if (!checkAudioDevice()) return;
+      if (!MusEGlobal::checkAudioDevice()) return;
       syncFrame   = audioDevice->framePos();
       frameOffset = syncFrame - _pos.frame();
       curTickPos  = _pos.tick();
 
-      // p4.0.22
-      // Tell midi thread to tell ALSA devices to handle seek.
-      midiSeq->msgSeek();     
-      // We are in the audio thread. Directly seek Jack midi devices.
+      if (curTickPos == 0 && !song->record())     
+            audio->initDevices();
+
       for(iMidiDevice i = midiDevices.begin(); i != midiDevices.end(); ++i) 
-      {
-        MidiDevice* md = *i;
-        if(md->deviceType() == MidiDevice::JACK_MIDI)      
-          md->handleSeek();  
-      }
-      
-      // Moved into MidiDevice::handleSeek
-      #if 0
-      // p3.3.31
-      // Don't send if external sync is on. The master, and our sync routing system will take care of that.
-      if(!extSyncFlag.value())
-      {
-        
-        for(int port = 0; port < MIDI_PORTS; ++port) 
-        {
-          MidiPort* mp = &midiPorts[port];
-          MidiDevice* dev = mp->device();
-          //if(!dev || !mp->syncInfo().MCOut())
-          if(!dev || !mp->syncInfo().MRTOut())
-            continue;
-            
-          // Added by T356: Shall we check for device write open flag to see if it's ok to send?...
-          // This means obey what the user has chosen for read/write in the midi port config dialog,
-          //  which already takes into account whether the device is writable or not.
-          //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
-          //if(!(dev->openFlags() & 1))
-          //  continue;
-          
-          //int port = dev->midiPort();
-          
-          // By checking for no port here (-1), (and out of bounds), it means
-          //  the device must be assigned to a port for these MMC commands to be sent.
-          // Without this check, interesting sync things can be done by the user without ever
-          //  assigning any devices to ports ! 
-          //if(port < 0 || port > MIDI_PORTS)
-          //if(port < -1 || port > MIDI_PORTS)
-          //  continue;
-          
-          int beat = (curTickPos * 4) / config.division;
-            
-          bool isPlaying=false;
-          if(state == PLAY)
-            isPlaying = true;
-            
-          mp->sendStop();
-          mp->sendSongpos(beat);
-          if(isPlaying)
-            mp->sendContinue();
-        }
-      }
-      #endif  
-        
-      /*
-      if(genMCSync) 
-      {
-        for(iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd) 
-        {
-          MidiDevice* dev = (*imd);
-          if(!dev->syncInfo().MCOut())
-            continue;
-            
-          // Added by T356: Shall we check for device write open flag to see if it's ok to send?...
-          // This means obey what the user has chosen for read/write in the midi port config dialog,
-          //  which already takes into account whether the device is writable or not.
-          //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
-          //if(!(dev->openFlags() & 1))
-          //  continue;
-          
-          int port = dev->midiPort();
-          
-          // By checking for no port here (-1), (and out of bounds), it means
-          //  the device must be assigned to a port for these MMC commands to be sent.
-          // Without this check, interesting sync things can be done by the user without ever
-          //  assigning any devices to ports ! 
-          //if(port < 0 || port > MIDI_PORTS)
-          if(port < -1 || port > MIDI_PORTS)
-            continue;
-          
-          int beat = (curTickPos * 4) / config.division;
-            
-          bool isPlaying=false;
-          if(state == PLAY)
-            isPlaying = true;
-            
-          if(port == -1)
-          // Send straight to the device... Copied from MidiPort.
-          {
-            MidiPlayEvent event(0, 0, 0, ME_STOP, 0, 0);
-            dev->putEvent(event);
-            
-            event.setType(ME_SONGPOS);
-            event.setA(beat);
-            dev->putEvent(event);
-            
-            if(isPlaying)
-            {
-              event.setType(ME_CONTINUE);
-              event.setA(0);
-              dev->putEvent(event);
-            }  
-          }
-          else
-          // Go through the port...
-          {
-            MidiPort* mp = &midiPorts[port];
-            
-            mp->sendStop();
-            mp->sendSongpos(beat);
-            if(isPlaying)
-              mp->sendContinue();
-          }
-        }
-      }
-      */
+          (*i)->handleSeek();  
       
       //loopPassed = true;   // for record loop mode
       if (state != LOOP2 && !freewheel())
       {
-            // Changed by T356 08/17/08. We need to force prefetch to update,
-            //  to ensure the most recent data. Things can happen to a part
-            //  before play is pressed - such as part muting, part moving etc.
-            // Without a force, the wrong data was being played.
             //audioPrefetch->msgSeek(_pos.frame());
+            // We need to force prefetch to update, to ensure the most recent data. 
+            // Things can happen to a part before play is pressed - such as part muting, 
+            //  part moving etc. Without a force, the wrong data was being played.  Tim 08/17/08
             audioPrefetch->msgSeek(_pos.frame(), true);
       }
             
@@ -966,9 +797,7 @@ void Audio::writeTick()
 
 void Audio::startRolling()
       {
-      // Changed by Tim. p3.3.8
-      //startRecordPos = _pos;
-      if (debugMsg)
+      if (MusEGlobal::debugMsg)
         printf("startRolling - loopCount=%d, _pos=%d\n", _loopCount, _pos.tick());
 
       if(_loopCount == 0) {
@@ -987,20 +816,9 @@ void Audio::startRolling()
       state = PLAY;
       write(sigFd, "1", 1);   // Play
 
-      // p3.3.31
       // Don't send if external sync is on. The master, and our sync routing system will take care of that.
       if(!extSyncFlag.value())
       {
-        
-        // Changed by Tim. p3.3.6
-        //if (genMMC)
-        //    midiPorts[txSyncPort].sendSysex(mmcDeferredPlayMsg, sizeof(mmcDeferredPlayMsg));
-        //if (genMCSync) {
-        //      if (curTickPos)
-        //            midiPorts[txSyncPort].sendContinue();
-        //      else
-        //            midiPorts[txSyncPort].sendStart();
-        //      }
         for(int port = 0; port < MIDI_PORTS; ++port) 
         {
           MidiPort* mp = &midiPorts[port];
@@ -1015,13 +833,9 @@ void Audio::startRolling()
           
           MidiSyncInfo& si = mp->syncInfo();
             
-          //if(genMMC && si.MMCOut())
           if(si.MMCOut())
-            //mp->sendSysex(mmcDeferredPlayMsg, sizeof(mmcDeferredPlayMsg));
             mp->sendMMCDeferredPlay();
           
-          //if(genMCSync && si.MCOut())
-          //if(si.MCOut())
           if(si.MRTOut())
           {
             if(curTickPos)
@@ -1032,69 +846,7 @@ void Audio::startRolling()
         }
       }  
       
-      /*
-      for(iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd) 
-      {
-        MidiDevice* dev = (*imd);
-          
-        // Shall we check open flags?
-        //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
-        //if(!(dev->openFlags() & 1))
-        //  continue;
-        
-        int port = dev->midiPort();
-        
-        // Without this -1 check, interesting sync things can be done by the user without ever
-        //  assigning any devices to ports ! 
-        //if(port < 0 || port > MIDI_PORTS)
-        if(port < -1 || port > MIDI_PORTS)
-          continue;
-        
-        MidiSyncInfo& si = dev->syncInfo();
-          
-        if(port == -1)
-        // Send straight to the device... Copied from MidiPort.
-        {
-          if(genMMC && si.MMCOut())
-          {
-            MidiPlayEvent event(0, 0, ME_SYSEX, mmcDeferredPlayMsg, sizeof(mmcDeferredPlayMsg));
-            dev->putEvent(event);
-          }
-          
-          if(genMCSync && si.MCOut())
-          {
-            if(curTickPos)
-            {
-              MidiPlayEvent event(0, 0, 0, ME_CONTINUE, 0, 0);
-              dev->putEvent(event);
-            }  
-            else
-            {
-              MidiPlayEvent event(0, 0, 0, ME_START, 0, 0);
-              dev->putEvent(event);
-            }  
-          }
-        }
-        else
-        // Go through the port...
-        {
-          MidiPort* mp = &midiPorts[port];
-            
-          if(genMMC && si.MMCOut())
-            mp->sendSysex(mmcDeferredPlayMsg, sizeof(mmcDeferredPlayMsg));
-          
-          if(genMCSync && si.MCOut())
-          {
-            if(curTickPos)
-              mp->sendContinue();
-            else
-              mp->sendStart();
-          }
-        }  
-      }
-      */
-      
-      if (precountEnableFlag
+      if (MusEGlobal::precountEnableFlag
          && song->click()
          && !extSyncFlag.value()
          && song->record()) {
@@ -1132,9 +884,7 @@ void Audio::startRolling()
                   if(mp->device() != NULL) {
                         //printf("send enable sustain!!!!!!!! port %d ch %d\n", i,ch);
                         MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 127);
-                        
-                        // may cause problems, called from audio thread
-                        mp->device()->playEvents()->add(ev);
+                        mp->device()->addScheduledEvent(ev);    // TODO: Not working? Try putEvent
                         }
                   }
               }
@@ -1149,225 +899,19 @@ void Audio::startRolling()
 
 void Audio::stopRolling()
 {
-      //if(debugMsg)
+      //if(MusEGlobal::debugMsg)
       //  printf("Audio::stopRolling state %s\n", audioStates[state]);
       
       state = STOP;
       
-      //playStateExt = false; // not playing   // Moved here from MidiSeq::processStop()   p4.0.22
-
-      // p4.0.22
-      // Tell midi thread to clear ALSA device notes and stop stuck notes.
-      midiSeq->msgStop();       
-      // We are in the audio thread. Directly clear Jack midi device notes and stop stuck notes.
+      midiSeq->setExternalPlayState(false); // not playing   Moved here from MidiSeq::processStop()   p4.0.34
+      
       for(iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) 
       {
         MidiDevice* md = *id;
-        if(md->deviceType() == MidiDevice::JACK_MIDI)  
-          md->handleStop();
+        md->handleStop();
       }
 
-      // Moved into MidiDevice::handleStop()  // p4.0.22
-      #if 0 //TODO
-      //---------------------------------------------------
-      //    reset sustain
-      //---------------------------------------------------
-
-
-      // clear sustain
-      for (int i = 0; i < MIDI_PORTS; ++i) {
-          MidiPort* mp = &midiPorts[i];
-          for (int ch = 0; ch < MIDI_CHANNELS; ++ch) {
-              if (mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) {
-                  if(mp->device()!=NULL) {
-                      //printf("send clear sustain!!!!!!!! port %d ch %d\n", i,ch);
-                      MidiPlayEvent ev(0, i, ch, ME_CONTROLLER, CTRL_SUSTAIN, 0);
-                      // may cause problems, called from audio thread
-                      mp->device()->putEvent(ev);
-                      }
-                  }
-              }
-          }
-      #endif
-      
-      // Moved into MidiDevice::handleStop()  // p4.0.22
-      #if 0
-      // p3.3.31
-      // Don't send if external sync is on. The master, and our sync routing system will take care of that.
-      if(!extSyncFlag.value())
-      {
-        
-        // Changed by Tim. p3.3.6
-        //MidiPort* syncPort = &midiPorts[txSyncPort];
-        //if (genMMC) {
-        //      unsigned char mmcPos[] = {
-        //            0x7f, 0x7f, 0x06, 0x44, 0x06, 0x01,
-        //            0, 0, 0, 0, 0
-        //            };
-        //      int frame = tempomap.tick2frame(curTickPos);
-        //      MTC mtc(double(frame) / double(sampleRate));
-        //      mmcPos[6] = mtc.h() | (mtcType << 5);
-        //      mmcPos[7] = mtc.m();
-        //      mmcPos[8] = mtc.s();
-        //      mmcPos[9] = mtc.f();
-        //      mmcPos[10] = mtc.sf();
-        //      syncPort->sendSysex(mmcStopMsg, sizeof(mmcStopMsg));
-        //      syncPort->sendSysex(mmcPos, sizeof(mmcPos));
-        //      }
-        //if (genMCSync) {         // Midi Clock
-              // send STOP and
-              // "set song position pointer"
-        //      syncPort->sendStop();
-        //      syncPort->sendSongpos(curTickPos * 4 / config.division);
-        //      }
-        for(int port = 0; port < MIDI_PORTS; ++port) 
-        {
-          MidiPort* mp = &midiPorts[port];
-          MidiDevice* dev = mp->device();
-          if(!dev)
-            continue;
-              
-          // Shall we check open flags?
-          //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
-          //if(!(dev->openFlags() & 1))
-          //  continue;
-          
-          MidiSyncInfo& si = mp->syncInfo();
-            
-          //if(genMMC && si.MMCOut())
-          if(si.MMCOut())
-          {
-            //unsigned char mmcPos[] = {
-            //      0x7f, 0x7f, 0x06, 0x44, 0x06, 0x01,
-            //      0, 0, 0, 0, 0
-            //      };
-  
-            // p3.3.31
-            /*
-            int frame = tempomap.tick2frame(curTickPos);
-            MTC mtc(double(frame) / double(sampleRate));
-            */          
-            
-            //mmcPos[6] = mtc.h() | (mtcType << 5);
-            //mmcPos[7] = mtc.m();
-            //mmcPos[8] = mtc.s();
-            //mmcPos[9] = mtc.f();
-            //mmcPos[10] = mtc.sf();
-            
-            //mp->sendSysex(mmcStopMsg, sizeof(mmcStopMsg));
-            mp->sendMMCStop();
-            //mp->sendSysex(mmcPos, sizeof(mmcPos));
-            
-            // p3.3.31
-            // Added check of option send continue not start.
-            // Hmm, is this required? Seems to make other devices unhappy.
-            /*
-            if(!si.sendContNotStart())
-              mp->sendMMCLocate(mtc.h() | (mtcType << 5), 
-                              mtc.m(), mtc.s(), mtc.f(), mtc.sf());
-            */                  
-            
-          }
-        
-          //if(genMCSync && si.MCOut()) // Midi Clock
-          //if(si.MCOut()) // Midi Clock
-          if(si.MRTOut()) // 
-          {
-            // send STOP and
-            // "set song position pointer"
-            mp->sendStop();
-            
-            // p3.3.31
-            // Added check of option send continue not start.
-            // Hmm, is this required? Seems to make other devices unhappy.
-            /*
-            if(!si.sendContNotStart())
-              mp->sendSongpos(curTickPos * 4 / config.division);
-            */  
-            
-          }
-        }
-      }
-      #endif
-      
-      /*
-      for(iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd) 
-      {
-        MidiDevice* dev = (*imd);
-          
-        // Shall we check open flags?
-        //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
-        //if(!(dev->openFlags() & 1))
-        //  continue;
-        
-        int port = dev->midiPort();
-        
-        // Without this -1 check, interesting sync things can be done by the user without ever
-        //  assigning any devices to ports ! 
-        //if(port < 0 || port > MIDI_PORTS)
-        if(port < -1 || port > MIDI_PORTS)
-          continue;
-        
-        MidiSyncInfo& si = dev->syncInfo();
-          
-        MidiPort* mp = 0;
-        if(port != -1)
-          mp = &midiPorts[port];
-        
-        if(genMMC && si.MMCOut())
-        {
-          unsigned char mmcPos[] = {
-                0x7f, 0x7f, 0x06, 0x44, 0x06, 0x01,
-                0, 0, 0, 0, 0
-                };
-          int frame = tempomap.tick2frame(curTickPos);
-          MTC mtc(double(frame) / double(sampleRate));
-          mmcPos[6] = mtc.h() | (mtcType << 5);
-          mmcPos[7] = mtc.m();
-          mmcPos[8] = mtc.s();
-          mmcPos[9] = mtc.f();
-          mmcPos[10] = mtc.sf();
-          
-          if(mp)
-          // Go through the port...
-          {
-            mp->sendSysex(mmcStopMsg, sizeof(mmcStopMsg));
-            mp->sendSysex(mmcPos, sizeof(mmcPos));
-          }
-          else
-          // Send straight to the device... Copied from MidiPort.
-          {
-            MidiPlayEvent event(0, 0, ME_SYSEX, mmcStopMsg, sizeof(mmcStopMsg));
-            dev->putEvent(event);
-            
-            event.setData(mmcPos, sizeof(mmcPos));
-            dev->putEvent(event);
-          }  
-        }
-      
-        if(genMCSync && si.MCOut()) // Midi Clock
-        {
-          // send STOP and
-          // "set song position pointer"
-          if(mp)
-          // Go through the port...
-          {
-            mp->sendStop();
-            mp->sendSongpos(curTickPos * 4 / config.division);
-          }
-          else
-          // Send straight to the device... Copied from MidiPort.
-          {
-            MidiPlayEvent event(0, 0, 0, ME_STOP, 0, 0);
-            dev->putEvent(event);
-            event.setType(ME_SONGPOS);
-            event.setA(curTickPos * 4 / config.division);
-            dev->putEvent(event);
-          } 
-        }
-      }
-      */      
-            
       WaveTrackList* tracks = song->waves();
       for (iWaveTrack i = tracks->begin(); i != tracks->end(); ++i) {
             WaveTrack* track = *i;
@@ -1385,7 +929,7 @@ void Audio::stopRolling()
 
 void Audio::recordStop()
       {
-      if (debugMsg)
+      if (MusEGlobal::debugMsg)
         printf("recordStop - startRecordPos=%d\n", startRecordPos.tick());
 
       audio->msgIdle(true); // gain access to all data structures
@@ -1419,9 +963,9 @@ void Audio::recordStop()
             //    resolve NoteOff events, Controller etc.
             //---------------------------------------------------
 
-            //buildMidiEventList(el, mpel, mt, config.division, true);
+            //buildMidiEventList(el, mpel, mt, MusEConfig::config.division, true);
             // Do SysexMeta. Do loops.
-            buildMidiEventList(el, mpel, mt, config.division, true, true);
+            buildMidiEventList(el, mpel, mt, MusEConfig::config.division, true, true);
             song->cmdAddRecordedEvents(mt, el, startRecordPos.tick());
             el->clear();
             mpel->clear();
@@ -1458,7 +1002,7 @@ void Audio::recordStop()
 
 unsigned int Audio::curFrame() const
       {
-      return lrint((curTime() - syncTime) * sampleRate) + syncFrame;
+      return lrint((MusEUtil::curTime() - syncTime) * MusEGlobal::sampleRate) + syncFrame;
       }
 
 //---------------------------------------------------------

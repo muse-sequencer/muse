@@ -4,6 +4,21 @@
 //  $Id: amixer.h,v 1.27.2.2 2009/10/18 06:13:00 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __AMIXER_H__
@@ -33,7 +48,9 @@ class ComboBox;
 class RouteDialog;
 class Strip;
 
+namespace MusEConfig {
 struct MixerConfig;
+}
 
 #define EFX_HEIGHT     16
 
@@ -65,7 +82,7 @@ class AudioMixerApp : public QMainWindow {
       Q_OBJECT
     
       //QString name;
-      MixerConfig* cfg;
+      MusEConfig::MixerConfig* cfg;
       StripList stripList;
       QScrollArea* view;
       QWidget* central;
@@ -123,7 +140,7 @@ class AudioMixerApp : public QMainWindow {
    
    public:
       //AudioMixerApp(QWidget* parent);
-      AudioMixerApp(QWidget* parent, MixerConfig* c);
+      AudioMixerApp(QWidget* parent, MusEConfig::MixerConfig* c);
       //void write(Xml&, const char* name);
       //void write(int level, Xml& xml, const char* name);
       void write(int level, Xml& xml);

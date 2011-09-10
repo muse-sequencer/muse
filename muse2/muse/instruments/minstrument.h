@@ -4,6 +4,21 @@
 //  $Id: minstrument.h,v 1.3.2.3 2009/03/09 02:05:18 terminator356 Exp $
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __MINSTRUMENT_H__
@@ -13,14 +28,17 @@
 #include <list>
 #include <vector>
 
+class QString;
+
 class MidiPort;
-//class QMenu;
-class PopupMenu;
 class MidiPlayEvent;
 class Xml;
 class EventList;
 class MidiControllerList;
-class QString;
+
+namespace MusEWidget {
+class PopupMenu;
+}
 
 //---------------------------------------------------------
 //   Patch
@@ -123,7 +141,7 @@ class MidiInstrument {
       virtual void reset(int, MType);
       virtual QString getPatchName(int,int,MType,bool);
       //virtual void populatePatchPopup(QMenu*, int, MType, bool);
-      virtual void populatePatchPopup(PopupMenu*, int, MType, bool);
+      virtual void populatePatchPopup(MusEWidget::PopupMenu*, int, MType, bool);
       void read(Xml&);
       void write(int level, Xml&);
       

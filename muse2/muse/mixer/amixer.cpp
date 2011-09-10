@@ -4,6 +4,21 @@
 //  $Id: amixer.cpp,v 1.49.2.5 2009/11/16 01:55:55 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <list>
@@ -30,7 +45,10 @@
 #include "gconfig.h"
 #include "xml.h"
 
+//namespace MusEApp { FINDMICHJETZT dirty, dirty. this is implemented in arrangerview.cpp,
+//                    currently in global namespace. where to put it? in an own code file? helper.cpp?
 extern QActionGroup* populateAddTrack(QMenu* addTrack);
+//}
 
 #define __WIDTH_COMPENSATION 4
 
@@ -143,7 +161,7 @@ bool ScrollArea::viewportEvent(QEvent* event)
 //    inputs | synthis | tracks | groups | master
 //---------------------------------------------------------
 
-AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
+AudioMixerApp::AudioMixerApp(QWidget* parent, MusEConfig::MixerConfig* c)
    : QMainWindow(parent)
       {
       cfg = c;
@@ -219,7 +237,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
       ///connect(this, SIGNAL(layoutRequest()), SLOT(setSizing()));  
       
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
+      connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
       song->update();  // calls update mixer
       }
 

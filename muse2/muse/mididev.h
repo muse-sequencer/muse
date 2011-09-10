@@ -4,6 +4,22 @@
 //  $Id: mididev.h,v 1.3.2.4 2009/04/04 01:49:50 terminator356 Exp $
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __MIDIDEV_H__
@@ -26,8 +42,8 @@ class Xml;
 //---------------------------------------------------------
 
 class MidiDevice {
-      MPEventList _stuckNotes;
-      MPEventList _playEvents;
+      //MPEventList _stuckNotes;
+      //MPEventList _playEvents;
       
       // Removed p4.0.15 Tim.
       //iMPEvent _nextPlayEvent;
@@ -56,6 +72,9 @@ class MidiDevice {
       //bool _sysexWritingChunks;
       bool _sysexReadingChunks;
       
+      MPEventList _stuckNotes;
+      MPEventList _playEvents;
+      
       // Fifo for midi events sent from gui direct to midi port:
       MidiFifo eventFifo;  // p4.0.15
       
@@ -69,6 +88,7 @@ class MidiDevice {
       
       void init();
       virtual bool putMidiEvent(const MidiPlayEvent&) = 0;
+      virtual void processStuckNotes();
 
    public:
       enum { ALSA_MIDI=0, JACK_MIDI=1, SYNTH_MIDI=2 };
@@ -115,21 +135,24 @@ class MidiDevice {
 
       virtual void recordEvent(MidiRecordEvent&);
 
+      // Schedule an event for playback. Returns false if event cannot be delivered.
+      virtual bool addScheduledEvent(const MidiPlayEvent& ev) { _playEvents.add(ev); return true; }
+      // Add a stuck note. Returns false if event cannot be delivered.
+      virtual bool addStuckNote(const MidiPlayEvent& ev) { _stuckNotes.add(ev); return true; }
+      // Put an event for immediate playback.
       virtual bool putEvent(const MidiPlayEvent&);
       // This method will try to putEvent 'tries' times, waiting 'delayUs' microseconds between tries.
       // Since it waits, it should not be used in RT or other time-sensitive threads. p4.0.15
       bool putEventWithRetry(const MidiPlayEvent&, int /*tries*/ = 2, long /*delayUs*/ = 50000);  // 2 tries, 50 mS by default.
       
-      // p4.0.22
-      virtual void handleStop();
+      virtual void handleStop();  // p4.0.22
       virtual void handleSeek();
       
-      // For Jack-based devices - called in Jack audio process callback
       virtual void collectMidiEvents() {}   
       virtual void processMidi() {}
 
-      MPEventList* stuckNotes()          { return &_stuckNotes; }
-      MPEventList* playEvents()          { return &_playEvents; }
+      //MPEventList* stuckNotes()          { return &_stuckNotes; }
+      //MPEventList* playEvents()          { return &_playEvents; }
       
       ///MREventList* recordEvents();
       ///void flipRecBuffer()               { _recBufFlipped = _recBufFlipped ? false : true; }

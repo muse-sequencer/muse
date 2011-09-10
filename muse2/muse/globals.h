@@ -4,6 +4,21 @@
 //  $Id: globals.h,v 1.10.2.11 2009/11/25 09:09:43 terminator356 Exp $
 //
 //  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef GLOBALS_H
@@ -20,6 +35,13 @@ class QString;
 class QAction;
 class QActionGroup;
 class QStringList;
+class QTimer;
+
+namespace MusEApp {
+class MusE;
+}
+
+namespace MusEGlobal {
 
 extern const float denormalBias;
 
@@ -33,7 +55,6 @@ extern int segmentCount;
 extern bool overrideAudioOutput;
 extern bool overrideAudioInput;
 
-class QTimer;
 extern QTimer* heartBeatTimer;
 
 extern bool hIsB;
@@ -140,9 +161,8 @@ extern QAction* recordAction;
 extern QAction* panicAction;
 
 //class AudioMixerApp;
-class MusE;
 //extern AudioMixerApp* audioMixer;
-extern MusE* muse;
+extern MusEApp::MusE* muse;
 
 extern int preMeasures;
 extern unsigned char measureClickNote;
@@ -180,6 +200,8 @@ extern void doSetuid();
 extern void undoSetuid();
 extern bool checkAudioDevice();
 extern bool getUniqueTmpfileName(QString subDir, QString ext, QString& newFilename);
+
+} // namespace MusEGlobal
 
 #endif
 

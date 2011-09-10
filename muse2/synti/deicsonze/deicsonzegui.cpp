@@ -23,8 +23,8 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-// 02111-1307, USA or point your web browser to http://www.gnu.org.
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+// 02111-1301, USA or point your web browser to http://www.gnu.org.
 //===========================================================================
 
 #include <QDir>
@@ -418,7 +418,7 @@ DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
   QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
   connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
 
-  QString sharePath(museGlobalShare);
+  QString sharePath(MusEGlobal::museGlobalShare);
   // Tim.
   updateInitSetPath(sharePath + QString("/presets/deicsonze/SutulaBank.dei"));    // Tim.
   updateBackgroundPixPath(sharePath + QString("/wallpapers/paper2.jpg"));    // Tim.
@@ -555,7 +555,7 @@ void DeicsOnzeGui::saveConfiguration() {
 // saveDefaultConfiguration
 //-----------------------------------------------------------
 void DeicsOnzeGui::saveDefaultConfiguration() {
-  QString filename = configPath + QString("/" DEICSONZESTR ".dco");
+  QString filename = MusEGlobal::configPath + QString("/" DEICSONZESTR ".dco");
   if(!filename.isEmpty()) {
     QFile f(filename);
     f.open(QIODevice::WriteOnly);

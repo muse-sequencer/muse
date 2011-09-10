@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: listedit.cpp,v 1.11.2.11 2009/05/24 21:43:44 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <QAction>
@@ -366,7 +381,7 @@ QString EventListItem::text(int col) const
                   break;
             case 4:
                   if (event.isNote() || event.type() == PAfter)
-                        s = pitch2string(event.dataA());
+                        s =  pitch2string(event.dataA());
                   else if (event.type() == Controller)
                         s.setNum(event.dataA() & 0xffff);  // mask off type bits
                   else
@@ -468,7 +483,7 @@ ListEdit::ListEdit(PartList* pl)
       QSignalMapper *editSignalMapper = new QSignalMapper(this);
     
       menuEdit = menuBar()->addMenu(tr("&Edit"));
-      menuEdit->addActions(undoRedo->actions());
+      menuEdit->addActions(MusEGlobal::undoRedo->actions());
 
       menuEdit->addSeparator();
 #if 0
@@ -505,7 +520,7 @@ ListEdit::ListEdit(PartList* pl)
       // Toolbars ---------------------------------------------------------
       QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
       undo_tools->setObjectName("Undo/Redo tools");
-      undo_tools->addActions(undoRedo->actions());
+      undo_tools->addActions(MusEGlobal::undoRedo->actions());
 
       QToolBar* insertTools = addToolBar(tr("Insert tools"));
       insertTools->setObjectName("list insert tools");
@@ -513,11 +528,11 @@ ListEdit::ListEdit(PartList* pl)
 
       QToolBar* panic_toolbar = addToolBar(tr("panic"));         
       panic_toolbar->setObjectName("panic");
-      panic_toolbar->addAction(panicAction);
+      panic_toolbar->addAction(MusEGlobal::panicAction);
 
       QToolBar* transport_toolbar = addToolBar(tr("transport"));
       transport_toolbar->setObjectName("transport");
-      transport_toolbar->addActions(transportAction->actions());
+      transport_toolbar->addActions(MusEGlobal::transportAction->actions());
       
       //
       //---------------------------------------------------
@@ -601,7 +616,7 @@ ListEdit::ListEdit(PartList* pl)
 
 ListEdit::~ListEdit()
       {
-      // undoRedo->removeFrom(listTools);  // p4.0.6 Removed
+      // MusEGlobal::undoRedo->removeFrom(listTools);  // p4.0.6 Removed
       }
 
 //---------------------------------------------------------

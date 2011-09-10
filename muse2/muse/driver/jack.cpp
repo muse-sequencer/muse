@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: jack.cpp,v 1.30.2.17 2009/12/20 05:00:35 terminator356 Exp $
 //  (C) Copyright 2002 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include "config.h"
@@ -39,8 +54,8 @@
 //#include "errorhandler.h"
 
 #ifndef RTCAP
-extern void doSetuid();
-extern void undoSetuid();
+extern void MusEGlobal::doSetuid();
+extern void MusEGlobal::undoSetuid();
 #endif
 
 #ifdef VST_SUPPORT
@@ -69,19 +84,6 @@ inline bool checkJackClient(jack_client_t* _client)
             }
       return true;
       }
-//---------------------------------------------------------
-//   checkAudioDevice - make sure audioDevice exists
-//---------------------------------------------------------
-bool checkAudioDevice()
-      {
-      if (audioDevice == NULL) {
-            if(debugMsg)
-              printf("Muse:checkAudioDevice: no audioDevice\n");
-            return false;
-            }
-      return true;
-      }
-
 
 //---------------------------------------------------------
 //   jack_thread_init
@@ -89,7 +91,7 @@ bool checkAudioDevice()
 
 static void jack_thread_init (void* )  // data
       {
-      doSetuid();
+      MusEGlobal::doSetuid();
       /*
       if (jackAudio->isRealtime()) {
             struct sched_param rt_param;
@@ -123,7 +125,7 @@ static void jack_thread_init (void* )  // data
       if (loadVST)
             fst_adopt_thread();
 #endif
-      undoSetuid();
+      MusEGlobal::undoSetuid();
       }
 
 /*
@@ -272,11 +274,11 @@ int JackAudioDevice::processAudio(jack_nframes_t frames, void*)
   
 //      if (JACK_DEBUG)
 //            printf("processAudio - >>>>\n");
-      segmentSize = frames;
+      MusEGlobal::segmentSize = frames;
       if (audio->isRunning())
             audio->process((unsigned long)frames);
       else {
-            if (debugMsg)
+            if (MusEGlobal::debugMsg)
                  puts("jack calling when audio is disconnected!\n");
             }
 //      if (JACK_DEBUG)
@@ -396,7 +398,7 @@ static void processShutdown(void*)
       audio->shutdown();
 
       int c=0;
-      while(midiSeqRunning == true) {
+      while(MusEGlobal::midiSeqRunning == true) {
           if(c++ >10) {
               fprintf(stderr, "sequencer still running, something is very wrong.\n");
               break;
@@ -540,13 +542,13 @@ bool initJackAudio()
       
       if (JACK_DEBUG)
             printf("initJackAudio()\n");
-      if (debugMsg) {
+      if (MusEGlobal::debugMsg) {
             fprintf(stderr,"initJackAudio()\n");
             jack_set_error_function(jackError);
             }
       else
             jack_set_error_function(noJackError);
-      doSetuid();
+      MusEGlobal::doSetuid();
 
       //jack_client_t* client = 0;
       //int i = 0;
@@ -574,25 +576,25 @@ bool initJackAudio()
             if (status & JackVersionError)
                   printf("jack server has wrong version\n");
             printf("cannot create jack client\n");
-            undoSetuid();   // p3.3.51
+	    MusEGlobal::undoSetuid();   // p3.3.51
             return true;
             }
 
-      if (debugMsg)
+      if (MusEGlobal::debugMsg)
             fprintf(stderr, "initJackAudio(): client %s opened.\n", jack_get_client_name(client));
       if (client) {
             jack_set_error_function(jackError);
             //jackAudio = new JackAudioDevice(client, jackIdString);
             jackAudio = new JackAudioDevice(client, jack_get_client_name(client));
-            if (debugMsg)
+            if (MusEGlobal::debugMsg)
                   fprintf(stderr, "initJackAudio(): registering client...\n");
             jackAudio->registerClient();
-            sampleRate  = jack_get_sample_rate(client);
-            segmentSize = jack_get_buffer_size(client);
+            MusEGlobal::sampleRate  = jack_get_sample_rate(client);
+            MusEGlobal::segmentSize = jack_get_buffer_size(client);
             jack_set_thread_init_callback(client, (JackThreadInitCallback) jack_thread_init, 0);
             //jack_set_timebase_callback(client, 0, (JackTimebaseCallback) timebase_callback, 0);
             }
-      undoSetuid();
+      MusEGlobal::undoSetuid();
       
       /*
       // setup midi input/output 
@@ -647,14 +649,14 @@ static int bufsize_callback(jack_nframes_t n, void*)
 
 static void freewheel_callback(int starting, void*)
       {
-      if (debugMsg || JACK_DEBUG)
+      if (MusEGlobal::debugMsg || JACK_DEBUG)
             printf("JACK: freewheel_callback: starting%d\n", starting);
       audio->setFreewheel(starting);
       }
 
 static int srate_callback(jack_nframes_t n, void*)
       {
-      if (debugMsg || JACK_DEBUG)
+      if (MusEGlobal::debugMsg || JACK_DEBUG)
             printf("JACK: sample rate changed: %d\n", n);
       return 0;
       }
@@ -665,7 +667,7 @@ static int srate_callback(jack_nframes_t n, void*)
 
 static void registration_callback(jack_port_id_t, int, void*)
 {
-  if(debugMsg || JACK_DEBUG)
+  if(MusEGlobal::debugMsg || JACK_DEBUG)
     printf("JACK: registration changed\n");
         
   audio->sendMsgToGui('R');
@@ -743,7 +745,7 @@ void JackAudioDevice::connectJackMidiPorts()
     // Ignore our own client ports.
     if(jack_port_is_mine(_client, port))
     {
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         printf(" ignoring own port: %s\n", *p);
       continue;         
     }
@@ -754,7 +756,7 @@ void JackAudioDevice::connectJackMidiPorts()
     //if(strncmp(buffer, "MusE", 4) == 0)
     //  continue;
     
-    if(debugMsg)
+    if(MusEGlobal::debugMsg)
       printf(" found port: %s  ", buffer);
     
     // If there are aliases for this port, use the first one - much better for identifying. 
@@ -770,7 +772,7 @@ void JackAudioDevice::connectJackMidiPorts()
     //char* namep = (na >= 1) ? aliases[0] : buffer;
     char* namep = aliases[0];
   
-    if(debugMsg)
+    if(MusEGlobal::debugMsg)
       printf("alias: %s\n", aliases[0]);
     
     //int flags = 0;
@@ -847,7 +849,7 @@ void JackAudioDevice::connectJackMidiPorts()
 
 static void client_registration_callback(const char *name, int isRegister, void*)
       {
-      if (debugMsg || JACK_DEBUG)
+      if (MusEGlobal::debugMsg || JACK_DEBUG)
             printf("JACK: client registration changed:%s register:%d\n", name, isRegister);
       }
 
@@ -857,7 +859,7 @@ static void client_registration_callback(const char *name, int isRegister, void*
 
 static void port_connect_callback(jack_port_id_t a, jack_port_id_t b, int isConnect, void*)
       {
-        if (debugMsg || JACK_DEBUG)
+        if (MusEGlobal::debugMsg || JACK_DEBUG)
         {
             //jack_port_t* ap = jack_port_by_id(_client, a);
             //jack_port_t* bp = jack_port_by_id(_client, b);
@@ -880,7 +882,7 @@ static int graph_callback(void*)
       // context, so we send a message to the gui thread which in turn
       // calls graphChanged()
       audio->sendMsgToGui('C');
-      if (debugMsg)
+      if (MusEGlobal::debugMsg)
             printf("JACK: graph changed\n");
       return 0;
       }
@@ -1368,6 +1370,26 @@ void* JackAudioDevice::registerOutPort(const char* name, bool midi)
       return p;
       }
 
+namespace MusEGlobal {
+
+//---------------------------------------------------------
+//   checkAudioDevice - make sure audioDevice exists
+//---------------------------------------------------------
+
+bool checkAudioDevice()
+      {
+      if (audioDevice == NULL) {
+            if(MusEGlobal::debugMsg)
+              printf("Muse:checkAudioDevice: no audioDevice\n");
+            return false;
+            }
+      return true;
+      }
+
+} // namespace MusEGlobal
+
+namespace MusEApp {
+
 //---------------------------------------------------------
 //   exitJackAudio
 //---------------------------------------------------------
@@ -1386,6 +1408,7 @@ void exitJackAudio()
       audioDevice = NULL;      
       
       }
+} // namespace MusEApp
 
 //---------------------------------------------------------
 //   connect
@@ -1458,10 +1481,10 @@ void JackAudioDevice::start(int /*priority*/)
             printf("JackAudioDevice::start()\n");
       if(!checkJackClient(_client)) return;
 
-      doSetuid();
+      MusEGlobal::doSetuid();
 
       if (jack_activate(_client)) {
-            undoSetuid();   // p3.3.51
+            MusEGlobal::undoSetuid();   // p3.3.51
             fprintf (stderr, "JACK: cannot activate client\n");
             exit(-1);
             }
@@ -1503,7 +1526,7 @@ void JackAudioDevice::start(int /*priority*/)
       // Connect the Jack midi client ports to device ports.
       connectJackMidiPorts();
       
-      undoSetuid();
+      MusEGlobal::undoSetuid();
       
       //MUSE_DEBUG("JackAudioDevice::start()\n");
       fflush(stdin);
@@ -1594,7 +1617,7 @@ int JackAudioDevice::framesSinceCycleStart() const
 
 int JackAudioDevice::frameDelay() const
       {
-      jack_nframes_t n = (segmentSize * (segmentCount-1)) - jack_frames_since_cycle_start(client);
+      jack_nframes_t n = (MusEGlobal::segmentSize * (segmentCount-1)) - jack_frames_since_cycle_start(client);
       return (int)n;
       }
 #endif
@@ -1625,7 +1648,7 @@ std::list<QString> JackAudioDevice::outputPorts(bool midi, int aliases)
             strncpy(buffer, *p, nsz);
             //if (strncmp(buffer, "MusE", 4) == 0)
             //{
-            //  if(debugMsg)
+            //  if(MusEGlobal::debugMsg)
             //    printf("JackAudioDevice::outputPorts ignoring own MusE port: %s\n", *p);
             //  continue;         
             //}
@@ -1633,7 +1656,7 @@ std::list<QString> JackAudioDevice::outputPorts(bool midi, int aliases)
             // Ignore our own client ports.
             if(jack_port_is_mine(_client, port))
             {
-              if(debugMsg)
+              if(MusEGlobal::debugMsg)
                 printf("JackAudioDevice::outputPorts ignoring own port: %s\n", *p);
               continue;         
             }
@@ -1698,7 +1721,7 @@ std::list<QString> JackAudioDevice::inputPorts(bool midi, int aliases)
             strncpy(buffer, *p, nsz);
             //if (strncmp(buffer, "MusE", 4) == 0)
             //{
-            //  if(debugMsg)
+            //  if(MusEGlobal::debugMsg)
             //    printf("JackAudioDevice::inputPorts ignoring own MusE port: %s\n", *p);
             //  continue;         
             //}
@@ -1706,7 +1729,7 @@ std::list<QString> JackAudioDevice::inputPorts(bool midi, int aliases)
             // Ignore our own client ports.
             if(jack_port_is_mine(_client, port))
             {
-              if(debugMsg)
+              if(MusEGlobal::debugMsg)
                 printf("JackAudioDevice::inputPorts ignoring own port: %s\n", *p);
               continue;         
             }
@@ -1842,14 +1865,14 @@ void JackAudioDevice::setFreewheel(bool f)
 bool JackAudioDevice::dummySync(int state)
 {
   // Roughly segment time length.
-  //timespec ts = { 0, (1000000000 * segmentSize) / sampleRate };     // In nanoseconds.
-  unsigned int sl = (1000000 * segmentSize) / sampleRate;            // In microseconds.
+  //timespec ts = { 0, (1000000000 * MusEGlobal::segmentSize) / MusEGlobal::sampleRate };     // In nanoseconds.
+  unsigned int sl = (1000000 * MusEGlobal::segmentSize) / MusEGlobal::sampleRate;            // In microseconds.
   
-  double ct = curTime();
+  double ct = MusEUtil::curTime();
   // Wait for a default maximum of 5 seconds. 
   // Similar to how Jack is supposed to wait a default of 2 seconds for slow clients.
   // TODO: Make this timeout a 'settings' option so it can be applied both to Jack and here.
-  while((curTime() - ct) < 5.0)  
+  while((MusEUtil::curTime() - ct) < 5.0)  
   {
     // Is MusE audio ready to roll?
     if(audio->sync(state, dummyPos))
@@ -2057,7 +2080,7 @@ int JackAudioDevice::setMaster(bool f)
     {
       // Make Muse the Jack timebase master. Do it unconditionally (second param = 0).
       r = jack_set_timebase_callback(_client, 0, (JackTimebaseCallback) timebase_callback, 0);
-      if(debugMsg || JACK_DEBUG)
+      if(MusEGlobal::debugMsg || JACK_DEBUG)
       {
         if(r)
           printf("JackAudioDevice::setMaster jack_set_timebase_callback failed: result:%d\n", r);
@@ -2072,7 +2095,7 @@ int JackAudioDevice::setMaster(bool f)
   else
   {
     r = jack_release_timebase(_client);
-    if(debugMsg || JACK_DEBUG)
+    if(MusEGlobal::debugMsg || JACK_DEBUG)
     {
       if(r)
         printf("JackAudioDevice::setMaster jack_release_timebase failed: result:%d\n", r);
@@ -2087,7 +2110,7 @@ int JackAudioDevice::setMaster(bool f)
 
 void JackAudioDevice::scanMidiPorts()
 {
-  if(debugMsg)
+  if(MusEGlobal::debugMsg)
     printf("JackAudioDevice::scanMidiPorts:\n");
   
 /*  
@@ -2103,7 +2126,7 @@ void JackAudioDevice::scanMidiPorts()
     // Ignore our own client ports.
     if(jack_port_is_mine(_client, port))
     {
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         printf(" ignoring own port: %s\n", *p);
       continue;         
     }
@@ -2115,7 +2138,7 @@ void JackAudioDevice::scanMidiPorts()
     //if(strncmp(buffer, "MusE", 4) == 0)
     //  continue;
     
-    if(debugMsg)
+    if(MusEGlobal::debugMsg)
       printf(" found port: %s  ", buffer);
     
     // If there are aliases for this port, use the first one - much better for identifying. 
@@ -2131,7 +2154,7 @@ void JackAudioDevice::scanMidiPorts()
     //char* namep = (na >= 1) ? aliases[0] : buffer;
     //char* namep = aliases[0];
     //names.insert(std::string(*p));
-    if(debugMsg)
+    if(MusEGlobal::debugMsg)
       printf("alias: %s\n", aliases[0]);
     
     names.insert(std::string(aliases[0]));
@@ -2151,7 +2174,7 @@ void JackAudioDevice::scanMidiPorts()
   
   for(std::list<MidiDevice*>::iterator imd = to_del.begin(); imd != to_del.end(); ++imd)
   {
-    if(debugMsg)
+    if(MusEGlobal::debugMsg)
       printf(" removing port device:%s\n", (*imd)->name().toLatin1());
     midiDevices.remove(*imd);
     // This will close (and unregister) the client port.
@@ -2212,7 +2235,7 @@ void JackAudioDevice::scanMidiPorts()
     //JackPort jp(0, QString(buffer), flags);
     //portList.append(jp);
     
-    if(debugMsg)
+    if(MusEGlobal::debugMsg)
       printf(" adding port device:%s\n", qname.toLatin1());
     
     MidiJackDevice* dev = new MidiJackDevice(0, qname);

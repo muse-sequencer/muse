@@ -4,6 +4,21 @@
 //  $Id: node.cpp,v 1.36.2.25 2009/12/20 05:00:35 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <cmath>
@@ -375,10 +390,10 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
       // No data was available from a previous call during this process cycle. Zero the supplied buffers and just return.
       for(i = 0; i < dstChannels; ++i) 
       {
-        if(config.useDenormalBias) 
+        if(MusEConfig::config.useDenormalBias) 
         {
           for(unsigned int q = 0; q < nframes; ++q)
-            dstBuffer[i][q] = denormalBias;
+            dstBuffer[i][q] = MusEGlobal::denormalBias;
         } 
         else
           memset(dstBuffer[i], 0, sizeof(float) * nframes);
@@ -416,10 +431,10 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
       unsigned int q;
       for(i = 0; i < dstChannels; ++i) 
       {
-        if(config.useDenormalBias) 
+        if(MusEConfig::config.useDenormalBias) 
         {
           for(q = 0; q < nframes; ++q)
-            dstBuffer[i][q] = denormalBias;
+            dstBuffer[i][q] = MusEGlobal::denormalBias;
         } 
         else
           memset(dstBuffer[i], 0, sizeof(float) * nframes);
@@ -433,10 +448,10 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
         /*
         if(!usedirectbuf)
         {
-          if(config.useDenormalBias) 
+          if(MusEConfig::config.useDenormalBias) 
           {
             for(q = 0; q < nframes; ++q)
-              outBuffers[i][q] = denormalBias;
+              outBuffers[i][q] = MusEGlobal::denormalBias;
           }
           else    
             memset(outBuffers[i], 0, sizeof(float) * nframes);
@@ -525,10 +540,10 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
       unsigned int q;
       for(i = 0; i < dstChannels; ++i)
       {
-        if(config.useDenormalBias) 
+        if(MusEConfig::config.useDenormalBias) 
         {
           for(q = 0; q < nframes; q++)
-            dstBuffer[i][q] = denormalBias;
+            dstBuffer[i][q] = MusEGlobal::denormalBias;
         } 
         else 
           memset(dstBuffer[i], 0, sizeof(float) * nframes);
@@ -539,10 +554,10 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
       {
         for(i = 0; i < srcChannels; ++i) 
         {
-          if(config.useDenormalBias) 
+          if(MusEConfig::config.useDenormalBias) 
           {
             for(q = 0; q < nframes; ++q)
-              outBuffers[i][q] = denormalBias;
+              outBuffers[i][q] = MusEGlobal::denormalBias;
           }
           else    
             memset(outBuffers[i], 0, sizeof(float) * nframes);
@@ -575,10 +590,10 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
     unsigned int q;
     for(i = 0; i < dstChannels; ++i)
     {
-      if(config.useDenormalBias) 
+      if(MusEConfig::config.useDenormalBias) 
       {
         for(q = 0; q < nframes; q++)
-          dstBuffer[i][q] = denormalBias;
+          dstBuffer[i][q] = MusEGlobal::denormalBias;
       } 
       else 
         memset(dstBuffer[i], 0, sizeof(float) * nframes);
@@ -823,10 +838,10 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
         /*
         if(!usedirectbuf)
         {
-          if(config.useDenormalBias) 
+          if(MusEConfig::config.useDenormalBias) 
           {
             for(unsigned int q = 0; q < nframes; ++q)
-              outBuffers[i][q] = denormalBias;
+              outBuffers[i][q] = MusEGlobal::denormalBias;
           }  
           else
             memset(outBuffers[i], 0, sizeof(float) * nframes);
@@ -847,14 +862,14 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
     unsigned int q;
     for(i = 0; i < srcChans; ++i) 
     {
-      if(config.useDenormalBias) 
+      if(MusEConfig::config.useDenormalBias) 
       {
         for(q = 0; q < nframes; ++q)
         {
           if(q & 1)
-            buffer[i][q] -= denormalBias;
+            buffer[i][q] -= MusEGlobal::denormalBias;
           else
-            buffer[i][q] += denormalBias;
+            buffer[i][q] += MusEGlobal::denormalBias;
         }  
       } 
     }  
@@ -943,10 +958,10 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
       {
         for(i = 0; i < srcChannels; ++i)
         {
-          if(config.useDenormalBias) 
+          if(MusEConfig::config.useDenormalBias) 
           {
             for(unsigned int q = 0; q < nframes; ++q)
-              outBuffers[i][q] = denormalBias;
+              outBuffers[i][q] = MusEGlobal::denormalBias;
           }  
           else
             memset(outBuffers[i], 0, sizeof(float) * nframes);
@@ -979,10 +994,10 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
     unsigned int q;
     for(i = 0; i < dstChannels; ++i)
     {
-      if(config.useDenormalBias) 
+      if(MusEConfig::config.useDenormalBias) 
       {
         for(q = 0; q < nframes; q++)
-          dstBuffer[i][q] = denormalBias;
+          dstBuffer[i][q] = MusEGlobal::denormalBias;
       } 
       else 
         memset(dstBuffer[i], 0, sizeof(float) * nframes);
@@ -1313,7 +1328,7 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
 
 bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffer)
       {
-      if (!checkAudioDevice()) return false;
+      if (!MusEGlobal::checkAudioDevice()) return false;
       for (int ch = 0; ch < channels; ++ch) 
       {
             void* jackPort = jackPorts[ch];
@@ -1337,10 +1352,10 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
                   //memcpy(buffer[ch], jackbuf, nframes* sizeof(float));
                   AL::dsp->cpy(buffer[ch], jackbuf, nframes);
                   
-                  if (config.useDenormalBias) 
+                  if (MusEConfig::config.useDenormalBias) 
                   {
                       for (unsigned int i=0; i < nframes; i++)
-                              buffer[ch][i] += denormalBias;
+                              buffer[ch][i] += MusEGlobal::denormalBias;
                       
                       // p3.3.41
                       //fprintf(stderr, "AudioInput::getData %s Jack port %p efx apply channels:%d nframes:%ld %e %e %e %e\n", 
@@ -1349,10 +1364,10 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
             } 
             else 
             {
-                  if (config.useDenormalBias) 
+                  if (MusEConfig::config.useDenormalBias) 
                   {
                       for (unsigned int i=0; i < nframes; i++)
-                              buffer[ch][i] = denormalBias;
+                              buffer[ch][i] = MusEGlobal::denormalBias;
                   } 
                   else 
                   {
@@ -1374,7 +1389,7 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
 void AudioInput::setName(const QString& s)
       {
       _name = s;
-      if (!checkAudioDevice()) return;
+      if (!MusEGlobal::checkAudioDevice()) return;
       for (int i = 0; i < channels(); ++i) {
             char buffer[128];
             snprintf(buffer, 128, "%s-%d", _name.toLatin1().constData(), i);
@@ -1490,7 +1505,7 @@ void AudioTrack::record()
 
       while(fifo.getCount()) {
 
-            if (fifo.get(_channels, segmentSize, buffer, &pos)) {
+            if (fifo.get(_channels, MusEGlobal::segmentSize, buffer, &pos)) {
                   printf("AudioTrack::record(): empty fifo\n");
                   return;
                   }
@@ -1546,7 +1561,7 @@ void AudioTrack::record()
                     //printf("AudioTrack::record loopcnt:%d lframe:%d newpos:%d curpos:%d start:%d end:%d\n", audio->loopCount(), audio->loopFrame(), pos, position, audio->getStartRecordPos().frame(), audio->getEndRecordPos().frame());
                     
                     _recFile->seek(pos, 0);
-                    _recFile->write(_channels, buffer, segmentSize);
+                    _recFile->write(_channels, buffer, MusEGlobal::segmentSize);
                   }
                     
                   }
@@ -1563,13 +1578,13 @@ void AudioTrack::record()
 void AudioOutput::processInit(unsigned nframes)
       {
       _nframes = nframes;
-      if (!checkAudioDevice()) return;
+      if (!MusEGlobal::checkAudioDevice()) return;
       for (int i = 0; i < channels(); ++i) {
             if (jackPorts[i]) {
                   buffer[i] = audioDevice->getBuffer(jackPorts[i], nframes);
-                  if (config.useDenormalBias) {
+                  if (MusEConfig::config.useDenormalBias) {
                       for (unsigned int j=0; j < nframes; j++)
-                              buffer[i][j] += denormalBias;
+                              buffer[i][j] += MusEGlobal::denormalBias;
                       }
                   }
             else
@@ -1607,9 +1622,9 @@ void AudioOutput::silence(unsigned n)
       {
       processInit(n);
       for (int i = 0; i < channels(); ++i)
-          if (config.useDenormalBias) {
+          if (MusEConfig::config.useDenormalBias) {
               for (unsigned int j=0; j < n; j++)
-                  buffer[i][j] = denormalBias;
+                  buffer[i][j] = MusEGlobal::denormalBias;
             } else {
                   memset(buffer[i], 0, n * sizeof(float));
                   }
@@ -1638,8 +1653,8 @@ void AudioOutput::processWrite()
                   }
             }
       // Changed by Tim. p3.3.18
-      //if (audioClickFlag && song->click()) {
-      if (sendMetronome() && audioClickFlag && song->click()) {
+      //if (MusEGlobal::audioClickFlag && song->click()) {
+      if (sendMetronome() && MusEGlobal::audioClickFlag && song->click()) {
             
             // Added by Tim. p3.3.18
             #ifdef METRONOME_DEBUG
@@ -1658,7 +1673,7 @@ void AudioOutput::processWrite()
 void AudioOutput::setName(const QString& s)
       {
       _name = s;
-      if (!checkAudioDevice()) return;
+      if (!MusEGlobal::checkAudioDevice()) return;
       for (int i = 0; i < channels(); ++i) {
             char buffer[128];
             snprintf(buffer, 128, "%s-%d", _name.toLatin1().constData(), i);
@@ -1680,7 +1695,7 @@ Fifo::Fifo()
       {
       muse_atomic_init(&count);
       //nbuffer = FIFO_BUFFER;
-      nbuffer = fifoLength;
+      nbuffer = MusEGlobal::fifoLength;
       buffer  = new FifoBuffer*[nbuffer];
       for (int i = 0; i < nbuffer; ++i)
             buffer[i]  = new FifoBuffer;
@@ -1915,7 +1930,7 @@ void AudioTrack::setTotalOutChannels(int num)
           
         outBuffers = new float*[chans];
         for (int i = 0; i < chans; ++i)
-              posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * segmentSize);
+              posix_memalign((void**)&outBuffers[i], 16, sizeof(float) * MusEGlobal::segmentSize);
         
         //chans = num;
         // Limit the actual track (meters, copying etc, all 'normal' operation) to two-channel stereo.

@@ -38,7 +38,7 @@
 #include "helper.h"
 #include "arranger.h"
 
-class VisibleTracks;
+namespace MusEWidget { class VisibleTracks; }
 
 
 class ArrangerView : public TopWin
@@ -61,8 +61,8 @@ class ArrangerView : public TopWin
 		QGridLayout* mainGrid;
 		QWidget* mainw;
 
-		EditToolBar *editTools;
-		VisibleTracks *visTracks;
+		MusEWidget::EditToolBar* editTools;
+		MusEWidget::VisibleTracks* visTracks;
 
 		Arranger* arranger;
 

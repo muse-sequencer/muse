@@ -5,6 +5,22 @@
 //  redesigned by oget on 2011/08/15
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Orcan Ogetbil (ogetbilo at sf.net)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <cmath>
@@ -16,6 +32,8 @@
 #include "meter.h"
 #include "gconfig.h"
 #include "fastlog.h"
+
+namespace MusEWidget {
 
 //---------------------------------------------------------
 //   Meter
@@ -36,7 +54,7 @@ Meter::Meter(QWidget* parent, MeterType type)
       overflow    = false;
       val         = 0.0;
       maxVal      = 0.0;
-      minScale    = mtype == DBMeter ? config.minMeter : 0.0;      // min value in dB or int
+      minScale    = mtype == DBMeter ? MusEConfig::config.minMeter : 0.0;      // min value in dB or int
       maxScale    = mtype == DBMeter ? 10.0 : 127.0;
       yellowScale = -10;
       redScale    = 0;
@@ -158,7 +176,7 @@ void Meter::setRange(double min, double max)
 //   paintEvent
 //---------------------------------------------------------
 
-void Meter::paintEvent(QPaintEvent* ev)
+void Meter::paintEvent(QPaintEvent* /*ev*/)
       {
       // TODO: Could make better use of event rectangle, for speed.
       
@@ -166,15 +184,17 @@ void Meter::paintEvent(QPaintEvent* ev)
       //p.setRenderHint(QPainter::Antialiasing);
       
       double range = maxScale - minScale;
-      /*
+      
       int fw = frameWidth();
       int w  = width() - 2*fw;
       int h  = height() - 2*fw;
-      */
-
+      
+      // FIXME (Orcan): With the event rectangle we get corruption when we toggle the mono/stereo switch. Why?
+      /*
       QRect rect = ev->rect();
       int w = rect.width();
       int h = rect.height();
+      */
       int yv;
       
       if(mtype == DBMeter)
@@ -339,3 +359,4 @@ void Meter::mousePressEvent(QMouseEvent*)
       emit mousePress();
       }
 
+} // namespace MusEWidget

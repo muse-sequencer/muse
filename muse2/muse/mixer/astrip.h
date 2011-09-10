@@ -4,6 +4,21 @@
 //  $Id: astrip.h,v 1.8.2.6 2009/11/14 03:37:48 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __ASTRIP_H__
@@ -14,17 +29,20 @@
 #include "strip.h"
 //#include "route.h"
 
+namespace MusEWidget {
+class DoubleLabel;
 class Slider;
 class Knob;
+class TransparentToolButton;
+}
+
 //class QDialog;
 class QToolButton;
 //class QAction;
 //class QPopupMenu;
 //class PopupMenu;
 class QButton;
-class TransparentToolButton;
 class AudioTrack;
-class DoubleLabel;
 class EffectRack;
 
 //---------------------------------------------------------
@@ -35,19 +53,19 @@ class AudioStrip : public Strip {
       Q_OBJECT
 
       int channel;
-      Slider* slider;
-      DoubleLabel* sl;
+      MusEWidget::Slider* slider;
+      MusEWidget::DoubleLabel* sl;
       EffectRack* rack;
 
-      Knob* pan;
-      DoubleLabel* panl;
+      MusEWidget::Knob* pan;
+      MusEWidget::DoubleLabel* panl;
 
-      std::vector<Knob*> auxKnob;
-      std::vector<DoubleLabel*> auxLabel;
+      std::vector<MusEWidget::Knob*> auxKnob;
+      std::vector<MusEWidget::DoubleLabel*> auxLabel;
 
       QToolButton* stereo;
       QToolButton* pre;
-      TransparentToolButton* off;
+      MusEWidget::TransparentToolButton* off;
 
       double volume;
       double panVal;
@@ -55,7 +73,7 @@ class AudioStrip : public Strip {
       //QToolButton* iR;
       //QToolButton* oR;
       
-      Knob* addKnob(int, int, DoubleLabel**);
+      MusEWidget::Knob* addKnob(int, int, MusEWidget::DoubleLabel**);
       
       void updateOffState();
       void updateVolume();

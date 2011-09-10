@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: pianoroll.h,v 1.5.2.4 2009/11/16 11:29:33 lunar_shuttle Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __PIANOROLL_H__
@@ -31,9 +46,7 @@ class QToolButton;
 class QToolBar;
 class QPushButton;
 class CtrlEdit;
-class Splitter;
 class PartList;
-class Toolbar1;
 class Xml;
 class ScrollScale;
 class Part;
@@ -42,8 +55,13 @@ class QMenu;
 class QAction;
 class QWidget;
 class QScrollBar;
-class MidiTrackInfo;
 class QScrollArea;
+
+namespace MusEWidget {
+class MidiTrackInfo;
+class Splitter;
+class Toolbar1;
+}
 
 //---------------------------------------------------------
 //   PianoRoll
@@ -62,7 +80,7 @@ class PianoRoll : public MidiEditor {
 
       
       QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
-      MidiTrackInfo *midiTrackInfo;
+      MusEWidget::MidiTrackInfo *midiTrackInfo;
       Track* selected;
       
       QAction* editCutAction; 
@@ -100,18 +118,18 @@ class PianoRoll : public MidiEditor {
       int veloOffOffset;
       bool deltaMode;
 
-      NoteInfo* info;
+      MusEWidget::NoteInfo* info;
       QToolButton* srec;
       QToolButton* midiin;
 
-      Toolbar1* toolbar;
-      Splitter* splitter;
-      Splitter* hsplitter;
-      Splitter* ctrlLane;
+      MusEWidget::Toolbar1* toolbar;
+      MusEWidget::Splitter* splitter;
+      MusEWidget::Splitter* hsplitter;
+      MusEWidget::Splitter* ctrlLane;
 
       QToolButton* speaker;
       QToolBar* tools;
-      EditToolBar* tools2;
+      MusEWidget::EditToolBar* tools2;
 
       int colorMode;
 
@@ -133,7 +151,7 @@ class PianoRoll : public MidiEditor {
 
    private slots:
       void setSelection(int, Event&, Part*);
-      void noteinfoChanged(NoteInfo::ValType, int);
+      void noteinfoChanged(MusEWidget::NoteInfo::ValType, int);
       //CtrlEdit* addCtrl();
       void removeCtrl(CtrlEdit* ctrl);
       void soloChanged(bool flag);

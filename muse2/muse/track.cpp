@@ -4,6 +4,21 @@
 //  $Id: track.cpp,v 1.34.2.11 2009/11/30 05:05:49 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include "track.h"
@@ -140,7 +155,7 @@ int Track::y() const
             yy += (*it)->height();
             }
       // FIXME Get this when loading a song with automation graphs showing. Benign. Likely song not fully loaded yet. p4.0.32
-      if(debugMsg)
+      if(MusEGlobal::debugMsg)
         printf("Track::y(%s): track not in tracklist\n", name().toLatin1().constData());
       return -1;
       }

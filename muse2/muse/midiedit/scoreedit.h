@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //  scoreedit.h
 //  (C) Copyright 2011 Florian Jung (flo93@users.sourceforge.net)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __SCOREEDIT_H__
@@ -52,7 +67,7 @@ using std::string;
 
 
 
-#define TICKS_PER_WHOLE (config.division*4) 
+#define TICKS_PER_WHOLE (MusEConfig::config.division*4) 
 #define SONG_LENGTH (song->len())
 
 
@@ -70,7 +85,10 @@ enum {CMD_COLOR_BLACK, CMD_COLOR_VELO, CMD_COLOR_PART,
 
 
 class ScoreCanvas;
+
+namespace MusEWidget {
 class EditToolBar;
+}
 
 //---------------------------------------------------------
 //   ScoreEdit
@@ -87,7 +105,7 @@ class ScoreEdit : public TopWin
 		QGridLayout* mainGrid;
 		QWidget* mainw;
 		
-		EditToolBar* edit_tools;
+		MusEWidget::EditToolBar* edit_tools;
 		QSpinBox* velo_spinbox;
 		QSpinBox* velo_off_spinbox;
 		
@@ -140,7 +158,7 @@ class ScoreEdit : public TopWin
 		QScrollBar* xscroll;
 		QScrollBar* yscroll;
 		ScoreCanvas* score_canvas;
-		MTScaleFlo* time_bar;
+		MusEWidget::MTScaleFlo* time_bar;
 		
 		QLabel* apply_velo_to_label;
 		bool apply_velo;
@@ -586,7 +604,7 @@ int calc_timesig_width(int num, int denom);
 int calc_number_width(int n);
 
 
-class ScoreCanvas : public View
+class ScoreCanvas : public MusEWidget::View
 {
 	Q_OBJECT
 	private:

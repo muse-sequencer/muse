@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: poslabel.cpp,v 1.2.2.2 2009/04/06 01:24:55 terminator356 Exp $
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <stdlib.h>
@@ -19,6 +34,8 @@
 #include "globals.h"
 
 extern int mtcType;
+
+namespace MusEWidget {
 
 //---------------------------------------------------------
 //   PosLabel
@@ -66,7 +83,7 @@ void PosLabel::updateValue()
       {
       QString s;
       if (_smpte) {
-            double time = double(_sampleValue) / double(sampleRate);
+            double time = double(_sampleValue) / double(MusEGlobal::sampleRate);
             int min  = int(time) / 60;
             int sec  = int(time) % 60;
             double rest = time - (min * 60 + sec);
@@ -154,3 +171,4 @@ void PosLabel::setSmpte(bool val)
       updateValue();
       }
 
+} // namespace MusEWidget

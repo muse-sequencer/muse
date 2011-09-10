@@ -4,6 +4,21 @@
 //  $Id: pos.cpp,v 1.11.2.1 2006/09/19 19:07:08 spamatica Exp $
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <cmath>
@@ -86,7 +101,7 @@ Pos::Pos(int min, int sec, int frame, int subframe)
                   break;
             }
       _type  = FRAMES;
-      _frame = lrint(time * sampleRate);
+      _frame = lrint(time * MusEGlobal::sampleRate);
       sn     = -1;
       }
 
@@ -526,7 +541,7 @@ void Pos::mbt(int* bar, int* beat, int* tk) const
 
 void Pos::msf(int* min, int* sec, int* fr, int* subFrame) const
       {
-      double time = double(frame()) / double(sampleRate);
+      double time = double(frame()) / double(MusEGlobal::sampleRate);
       *min  = int(time) / 60;
       *sec  = int(time) % 60;
       double rest = time - (*min * 60 + *sec);

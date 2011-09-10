@@ -4,6 +4,21 @@
 //  $Id: mitplugin.cpp,v 1.1.1.1 2003/10/27 18:52:40 wschweer Exp $
 //
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include "mitplugin.h"
@@ -21,6 +36,8 @@
 #endif
 
 MITPluginList mitPlugins;
+
+namespace MusEApp {
 
 //---------------------------------------------------------
 //   startMidiInputPlugin
@@ -113,16 +130,6 @@ void MusE::hideMidiRhythmGenerator()
 #endif
 
 //---------------------------------------------------------
-//   processMidiInputTransformPlugins
-//---------------------------------------------------------
-
-void processMidiInputTransformPlugins(MEvent& event)
-      {
-      for (iMITPlugin i = mitPlugins.begin(); i != mitPlugins.end(); ++i)
-            (*i)->process(event);
-      }
-
-//---------------------------------------------------------
 //   startMidiTransformer
 //---------------------------------------------------------
 
@@ -131,6 +138,18 @@ void MusE::startMidiTransformer()
       if (midiTransformerDialog == 0)
             midiTransformerDialog = new MidiTransformerDialog;
       midiTransformerDialog->show();
+      }
+
+} // namespace MusEApp
+
+//---------------------------------------------------------
+//   processMidiInputTransformPlugins
+//---------------------------------------------------------
+
+void processMidiInputTransformPlugins(MEvent& event)
+      {
+      for (iMITPlugin i = mitPlugins.begin(); i != mitPlugins.end(); ++i)
+            (*i)->process(event);
       }
 
 //---------------------------------------------------------

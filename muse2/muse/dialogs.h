@@ -9,31 +9,34 @@
 #define __DIALOGS_H__
 
 class QWidget;
-class GateTime;
-class Velocity;
-class Quantize;
-class Remove;
-class DelOverlaps;
-class Setlen;
-class Move;
-class Transpose;
-class Crescendo;
-class Legato;
-class PasteDialog;
+namespace MusEDialog
+{
+	class GateTime;
+	class Velocity;
+	class Quantize;
+	class Remove;
+	class DelOverlaps;
+	class Setlen;
+	class Move;
+	class Transpose;
+	class Crescendo;
+	class Legato;
+}
+class PasteDialog; //FINDMICHJETZT put into namespace
 
 class Xml;
 
-extern GateTime* gatetime_dialog;
-extern Velocity* velocity_dialog;
-extern Quantize* quantize_dialog;
-extern Remove* erase_dialog;
-extern DelOverlaps* del_overlaps_dialog;
-extern Setlen* set_notelen_dialog;
-extern Move* move_notes_dialog;
-extern Transpose* transpose_dialog;
-extern Crescendo* crescendo_dialog;
-extern Legato* legato_dialog;
-extern PasteDialog* paste_dialog;
+extern MusEDialog::GateTime* gatetime_dialog;
+extern MusEDialog::Velocity* velocity_dialog;
+extern MusEDialog::Quantize* quantize_dialog;
+extern MusEDialog::Remove* erase_dialog;
+extern MusEDialog::DelOverlaps* del_overlaps_dialog;
+extern MusEDialog::Setlen* set_notelen_dialog;
+extern MusEDialog::Move* move_notes_dialog;
+extern MusEDialog::Transpose* transpose_dialog;
+extern MusEDialog::Crescendo* crescendo_dialog;
+extern MusEDialog::Legato* legato_dialog;
+extern PasteDialog* paste_dialog; //FINDMICHJETZT
 
 void init_function_dialogs(QWidget* parent);
 void read_function_dialog_config(Xml& xml);

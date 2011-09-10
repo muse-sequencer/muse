@@ -4,6 +4,21 @@
 //  $Id: strip.h,v 1.3.2.2 2009/11/14 03:37:48 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __STRIP_H__
@@ -21,10 +36,13 @@
 class Track;
 class QLabel;
 //class QVBoxLayout;
-class Meter;
 class QToolButton;
 class QGridLayout;
+
+namespace MusEWidget {
 class ComboBox;
+class Meter;
+}
 
 static const int STRIP_WIDTH = 65;
 
@@ -41,7 +59,7 @@ class Strip : public QFrame {
       //QVBoxLayout* layout;
       QGridLayout* grid;
       int _curGridRow;
-      Meter* meter[MAX_CHANNELS];
+      MusEWidget::Meter* meter[MAX_CHANNELS];
       bool useSoloIconSet2;
       
       QToolButton* record;
@@ -50,7 +68,7 @@ class Strip : public QFrame {
       QToolButton* iR; // Input routing button
       QToolButton* oR; // Output routing button
       QGridLayout* sliderGrid;
-      ComboBox* autoType;
+      MusEWidget::ComboBox* autoType;
       void setLabelText();
 
    private slots:

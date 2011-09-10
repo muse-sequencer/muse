@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: waveedit.h,v 1.3.2.8 2008/01/26 07:23:21 terminator356 Exp $
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __WAVE_EDIT_H__
@@ -23,10 +38,13 @@ class PartList;
 class WaveView;
 class ScrollScale;
 class QSlider;
-class PosLabel;
 class QResizeEvent;
 class SNode;
 class QAction;
+
+namespace MusEWidget {
+class PosLabel;
+}
 
 //---------------------------------------------------------
 //   WaveEdit
@@ -40,8 +58,8 @@ class WaveEdit : public MidiEditor {
       QToolBar* tools;
       QToolBar* tb1;
       QToolButton* solo;
-      PosLabel* pos1;
-      PosLabel* pos2;
+      MusEWidget::PosLabel* pos1;
+      MusEWidget::PosLabel* pos2;
       QAction* selectAllAction;
       QAction* selectNoneAction;
       QAction* cutAction;

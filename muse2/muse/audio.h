@@ -4,6 +4,22 @@
 //  $Id: audio.h,v 1.25.2.13 2009/12/20 05:00:35 terminator356 Exp $
 //
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __AUDIO_H__
@@ -62,11 +78,11 @@ enum {
       MIDI_SHOW_INSTR_NATIVE_GUI,
       AUDIO_RECORD,
       AUDIO_ROUTEADD, AUDIO_ROUTEREMOVE, AUDIO_REMOVEROUTES,
-      AUDIO_VOL, AUDIO_PAN,
+      //AUDIO_VOL, AUDIO_PAN,
       AUDIO_ADDPLUGIN,
       AUDIO_SET_SEG_SIZE,
       AUDIO_SET_PREFADER, AUDIO_SET_CHANNELS,
-      AUDIO_SET_PLUGIN_CTRL_VAL,
+      //AUDIO_SET_PLUGIN_CTRL_VAL,
       AUDIO_SWAP_CONTROLLER_IDX,
       AUDIO_CLEAR_CONTROLLER_EVENTS,
       AUDIO_SEEK_PREV_AC_EVENT,
@@ -224,14 +240,14 @@ class Audio {
       bool sendMessage(AudioMsg* m, bool doUndo);
       void msgRemoveRoute(Route, Route);
       void msgRemoveRoute1(Route, Route);
-      void msgRemoveRoutes(Route, Route);  // p3.3.55
-      void msgRemoveRoutes1(Route, Route);  // p3.3.55
+      void msgRemoveRoutes(Route, Route);  
+      void msgRemoveRoutes1(Route, Route);  
       void msgAddRoute(Route, Route);
       void msgAddRoute1(Route, Route);
       void msgAddPlugin(AudioTrack*, int idx, PluginI* plugin);
       void msgSetMute(AudioTrack*, bool val);
-      void msgSetVolume(AudioTrack*, double val);
-      void msgSetPan(AudioTrack*, double val);
+      //void msgSetVolume(AudioTrack*, double val);
+      //void msgSetPan(AudioTrack*, double val);
       void msgAddSynthI(SynthI* synth);
       void msgRemoveSynthI(SynthI* synth);
       void msgSetSegSize(int, int);
@@ -246,7 +262,7 @@ class Audio {
       void msgResetMidiDevices();
       void msgIdle(bool);
       void msgBounce();
-      void msgSetPluginCtrlVal(AudioTrack*, int /*param*/, double /*val*/);
+      //void msgSetPluginCtrlVal(AudioTrack*, int /*param*/, double /*val*/);
       void msgSwapControllerIDX(AudioTrack*, int, int);
       void msgClearControllerEvents(AudioTrack*, int);
       void msgSeekPrevACEvent(AudioTrack*, int);
@@ -275,7 +291,8 @@ class Audio {
       int loopCount() { return _loopCount; }         // Number of times we have looped so far
       unsigned loopFrame() { return _loopFrame; }          
 
-      int tickPos() const         { return curTickPos; }
+      unsigned tickPos() const    { return curTickPos; }
+      unsigned nextTick() const   { return nextTickPos; }
       int timestamp() const;
       void processMidi();
       unsigned curFrame() const;

@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: tlist.cpp,v 1.31.2.31 2009/12/15 03:39:58 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 //#include "config.h"
@@ -51,7 +66,10 @@
 #include "dssihost.h"
 #endif
 
+//namespace MusEApp {  FINDMICHJETZT: again: dirty, dirty. implemented in arrangerview.cpp
+//                     should be moved together with populateAddTrack somewhere else
 extern QMenu* populateAddSynth(QWidget* parent);
+//}
 
 static const int MIN_TRACKHEIGHT = 20;
 static const int WHEEL_DELTA = 120;
@@ -61,7 +79,7 @@ QColor collist[] = { Qt::red, Qt::yellow, Qt::blue , Qt::black, Qt::white, Qt::g
 //   TList
 //---------------------------------------------------------
 
-TList::TList(Header* hdr, QWidget* parent, const char* name)
+TList::TList(MusEWidget::Header* hdr, QWidget* parent, const char* name)
    : QWidget(parent) // Qt::WNoAutoErase | Qt::WResizeNoErase are no longer needed according to Qt4 doc
       {
       setBackgroundRole(QPalette::NoRole);
@@ -88,7 +106,7 @@ TList::TList(Header* hdr, QWidget* parent, const char* name)
       resizeFlag = false;
 
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      connect(muse, SIGNAL(configChanged()), SLOT(redraw()));
+      connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(redraw()));
       }
 
 //---------------------------------------------------------
@@ -153,7 +171,7 @@ void TList::paint(const QRect& r)
       QPainter p(this);
 
       if (bgPixmap.isNull())
-            p.fillRect(rect, config.trackBg);
+            p.fillRect(rect, MusEConfig::config.trackBg);
       else
             p.drawTiledPixmap(rect, bgPixmap, QPoint(rect.x(), ypos + rect.y()));
       p.setClipRegion(rect);
@@ -188,35 +206,35 @@ void TList::paint(const QRect& r)
             //
             QColor bg;
             if (track->selected()) {
-                  bg = config.selectTrackBg;
+                  bg = MusEConfig::config.selectTrackBg;
                   //p.setPen(palette().active().text());
-                  p.setPen(config.selectTrackFg);
+                  p.setPen(MusEConfig::config.selectTrackFg);
                   }
             else {
                   switch(type) {
                         case Track::MIDI:
-                              bg = config.midiTrackBg;
+                              bg = MusEConfig::config.midiTrackBg;
                               break;
                         case Track::DRUM:
-                              bg = config.drumTrackBg;
+                              bg = MusEConfig::config.drumTrackBg;
                               break;
                         case Track::WAVE:
-                              bg = config.waveTrackBg;
+                              bg = MusEConfig::config.waveTrackBg;
                               break;
                         case Track::AUDIO_OUTPUT:
-                              bg = config.outputTrackBg;
+                              bg = MusEConfig::config.outputTrackBg;
                               break;
                         case Track::AUDIO_INPUT:
-                              bg = config.inputTrackBg;
+                              bg = MusEConfig::config.inputTrackBg;
                               break;
                         case Track::AUDIO_GROUP:
-                              bg = config.groupTrackBg;
+                              bg = MusEConfig::config.groupTrackBg;
                               break;
                         case Track::AUDIO_AUX:
-                              bg = config.auxTrackBg;
+                              bg = MusEConfig::config.auxTrackBg;
                               break;
                         case Track::AUDIO_SOFTSYNTH:
-                              bg = config.synthTrackBg;
+                              bg = MusEConfig::config.synthTrackBg;
                               break;
                         }
                   p.setPen(palette().color(QPalette::Active, QPalette::Text));
@@ -553,7 +571,7 @@ void TList::portsPopupMenu(Track* t, int x, int y)
                   {
                   MidiTrack* track = (MidiTrack*)t;
                   
-                  //QPopupMenu* p = midiPortsPopup(0);
+                  //QMusEWidget::PopupMenu* p = midiPortsPopup(0);
                   MidiDevice* md = 0;
                   int port = -1; 
                   if(t->type() == Track::AUDIO_SOFTSYNTH) 
@@ -612,7 +630,7 @@ void TList::portsPopupMenu(Track* t, int x, int y)
                             
                             // Compiler complains if simple cast from Track to SynthI...
                             midiSeq->msgSetMidiDevice(&midiPorts[n], (midiPorts[n].device() == md) ? 0 : md);
-                            muse->changeConfig(true);     // save configuration file
+                            MusEGlobal::muse->changeConfig(true);     // save configuration file
                           
                             //audio->msgIdle(false);
                             song->update();
@@ -847,7 +865,7 @@ void TList::moveSelection(int n)
 
                   // rec enable track if expected
                   TrackList recd = getRecEnabledTracks();
-                  if (recd.size() == 1 && config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+                  if (recd.size() == 1 && MusEConfig::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
                     song->setRecordFlag((Track*)recd.front(),false);
                     song->setRecordFlag((*t),true);
                   }
@@ -936,10 +954,10 @@ void TList::changeAutomationColor(QAction* act)
 //   colorMenu
 //---------------------------------------------------------
 //QMenu* TList::colorMenu(QColor c, int id)
-PopupMenu* TList::colorMenu(QColor c, int id)
+MusEWidget::PopupMenu* TList::colorMenu(QColor c, int id)
 {
   //QMenu * m = new QMenu(this);
-  PopupMenu * m = new PopupMenu(this);  //, true);  TODO
+  MusEWidget::PopupMenu * m = new MusEWidget::PopupMenu(this);  //, true);  TODO
   for (int i = 0; i< 6; i++) {
     QPixmap pix(10,10);
     QPainter p(&pix);
@@ -1040,7 +1058,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                               if (dev==0) 
                               {
                                 midiSeq->msgSetMidiDevice(port, (SynthI*)t);
-                                muse->changeConfig(true);     // save configuration file
+                                MusEGlobal::muse->changeConfig(true);     // save configuration file
                                 song->update();
                                 break;
                               }
@@ -1143,7 +1161,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                 {
                 if (!t->isMidiTrack()) {
                     editAutomation = t;
-                    PopupMenu* p = new PopupMenu(true);
+                    MusEWidget::PopupMenu* p = new MusEWidget::PopupMenu(true);
                     p->disconnect();
                     p->clear();
                     p->setTitle(tr("Viewable automation"));
@@ -1161,7 +1179,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       data += 150; // illegal color > 100
                       act->setData(data);
                       //QMenu *m = colorMenu(cl->color(), cl->id());
-                      PopupMenu *m = colorMenu(cl->color(), cl->id());
+                      MusEWidget::PopupMenu *m = colorMenu(cl->color(), cl->id());
                       act->setMenu(m);
                     }
                     connect(p, SIGNAL(triggered(QAction*)), SLOT(changeAutomation(QAction*)));
@@ -1179,7 +1197,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         if (!t->isMidiTrack()) {
                               if (t->type() == Track::AUDIO_OUTPUT) {
                                     if (val && t->recordFlag() == false) {
-                                          muse->bounceToFile((AudioOutput*)t);
+                                          MusEGlobal::muse->bounceToFile((AudioOutput*)t);
                                           }
                                     audio->msgSetRecord((AudioOutput*)t, val);
                                     if (!((AudioOutput*)t)->recFile())
@@ -1260,7 +1278,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                               // rec enable track if expected
                               TrackList recd = getRecEnabledTracks();
-                              if (recd.size() == 1 && config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+                              if (recd.size() == 1 && MusEConfig::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
                                 song->setRecordFlag((Track*)recd.front(),false);
                                 song->setRecordFlag(t,true);
                               }
@@ -1289,7 +1307,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
                                     case 1:     // show track comment
                                           {
-                                          TrackComment* tc = new TrackComment(t, 0);
+                                          MusEWidget::TrackComment* tc = new MusEWidget::TrackComment(t, 0);
                                           tc->show();
                                           //QToolTip::add( this, "FOOOOOOOOOOOOO" );
                                           }
@@ -1393,7 +1411,7 @@ void TList::selectTrack(Track* tr)
 
         // rec enable track if expected
         TrackList recd = getRecEnabledTracks();
-        if (recd.size() == 1 && config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+        if (recd.size() == 1 && MusEConfig::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
             song->setRecordFlag((Track*)recd.front(),false);
             song->setRecordFlag(tr,true);
         }

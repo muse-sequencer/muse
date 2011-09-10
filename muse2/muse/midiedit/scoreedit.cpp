@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //  scoreedit.cpp
 //  (C) Copyright 2011 Florian Jung (flo93@users.sourceforge.net)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 
@@ -175,7 +190,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	score_canvas=new ScoreCanvas(this, mainw);
 	xscroll = new QScrollBar(Qt::Horizontal, mainw);
 	yscroll = new QScrollBar(Qt::Vertical, mainw);
-	time_bar = new MTScaleFlo(score_canvas, mainw);
+	time_bar = new MusEWidget::MTScaleFlo(score_canvas, mainw);
 
 	connect(xscroll, SIGNAL(valueChanged(int)), score_canvas,   SLOT(x_scroll_event(int)));
 	connect(score_canvas, SIGNAL(xscroll_changed(int)), xscroll,   SLOT(setValue(int)));
@@ -210,7 +225,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	// Toolbars ---------------------------------------------------------
 	QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
 	undo_tools->setObjectName("Undo/Redo tools");
-	undo_tools->addActions(undoRedo->actions());
+	undo_tools->addActions(MusEGlobal::undoRedo->actions());
 	addToolBar(undo_tools);
 
 	QToolBar* steprec_tools=addToolBar(tr("Step recording tools"));
@@ -223,19 +238,19 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	connect(srec, SIGNAL(toggled(bool)), score_canvas, SLOT(set_steprec(bool)));
 
 
-	edit_tools = new EditToolBar(this, PointerTool | PencilTool | RubberTool);
+	edit_tools = new MusEWidget::EditToolBar(this, MusEWidget::PointerTool | MusEWidget::PencilTool | MusEWidget::RubberTool);
 	addToolBar(edit_tools);
-	edit_tools->set(PointerTool);
-	score_canvas->set_tool(PointerTool);
+	edit_tools->set(MusEWidget::PointerTool);
+	score_canvas->set_tool(MusEWidget::PointerTool);
 	connect(edit_tools, SIGNAL(toolChanged(int)), score_canvas,   SLOT(set_tool(int)));
 
 	QToolBar* panic_toolbar = addToolBar(tr("panic"));         
 	panic_toolbar->setObjectName("panic");
-	panic_toolbar->addAction(panicAction);
+	panic_toolbar->addAction(MusEGlobal::panicAction);
 
 	QToolBar* transport_toolbar = addToolBar(tr("transport"));
 	transport_toolbar->setObjectName("transport");
-	transport_toolbar->addActions(transportAction->actions());
+	transport_toolbar->addActions(MusEGlobal::transportAction->actions());
 
 	addToolBarBreak();
 
@@ -337,7 +352,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 	QMenu* edit_menu = menuBar()->addMenu(tr("&Edit"));      
 
-		edit_menu->addActions(undoRedo->actions());
+		edit_menu->addActions(MusEGlobal::undoRedo->actions());
 		edit_menu->addSeparator();
 
 		cut_action = edit_menu->addAction(QIcon(*editcutIconSet), tr("C&ut"));
@@ -452,7 +467,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 	init_shortcuts();
 	
-	connect(muse, SIGNAL(configChanged()), SLOT(init_shortcuts()));
+	connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(init_shortcuts()));
 
 	QClipboard* cb = QApplication::clipboard();
 	connect(cb, SIGNAL(dataChanged()), SLOT(clipboard_changed()));
@@ -737,11 +752,11 @@ Part* read_part(Xml& xml, QString tag_name="part")
 					else
 					{
 						sscanf(tag.toLatin1().constData(), "%d:%d", &trackIdx, &partIdx);
-						if (debugMsg) cout << "read_part: trackIdx="<<trackIdx<<", partIdx="<<partIdx;
+						if (MusEGlobal::debugMsg) cout << "read_part: trackIdx="<<trackIdx<<", partIdx="<<partIdx;
 						Track* track = song->tracks()->index(trackIdx);
 						if (track)
 							part = track->parts()->find(partIdx);
-						if (debugMsg) cout << ", track="<<track<<", part="<<part<<endl;
+						if (MusEGlobal::debugMsg) cout << ", track="<<track<<", part="<<part<<endl;
 					}
 				}
 				break;
@@ -1196,11 +1211,11 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 	x_scroll_pos=0;	
 	y_scroll_speed=0;
 	y_scroll_pos=0;	
-	connect (heartBeatTimer, SIGNAL(timeout()), SLOT(heartbeat_timer_event()));
+	connect (MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartbeat_timer_event()));
 	
 	connect(song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(pos_changed(int,unsigned,bool)));
 	connect(song, SIGNAL(playChanged(bool)), SLOT(play_changed(bool)));
-	connect(muse, SIGNAL(configChanged()), SLOT(config_changed()));
+	connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(config_changed()));
 	
 	
 	staff_menu=new QMenu(this);
@@ -1519,13 +1534,13 @@ void ScoreCanvas::init_pixmaps()
 {
 	if (!pixmaps_initalized)
 	{
-		if (debugMsg) cout << "initalizing colors..." << endl;
+		if (MusEGlobal::debugMsg) cout << "initalizing colors..." << endl;
 		
 		mycolors=new QColor[NUM_MYCOLORS];
 		
 		mycolors[0]=Qt::black;
 		for (int i=1;i<NUM_PARTCOLORS;i++)
-			mycolors[i]=config.partColors[i];
+			mycolors[i]=MusEConfig::config.partColors[i];
 		mycolors[BLACK_PIXMAP]=Qt::black;
 		mycolors[HIGHLIGHTED_PIXMAP]=Qt::red;
 		mycolors[SELECTED_PIXMAP]=QColor(255,160,0);
@@ -1536,7 +1551,7 @@ void ScoreCanvas::init_pixmaps()
 			mycolors[i+VELO_PIXMAP_BEGIN]=QColor(0xff,0,(127-i)*4);
 		
 		
-		if (debugMsg) cout << "loading pixmaps..." << endl;
+		if (MusEGlobal::debugMsg) cout << "loading pixmaps..." << endl;
 		
 		pix_whole=new QPixmap[NUM_MYCOLORS];
 		pix_half=new QPixmap[NUM_MYCOLORS];
@@ -1563,38 +1578,38 @@ void ScoreCanvas::init_pixmaps()
 		
 		
 		
-		load_colored_pixmaps(museGlobalShare + "/scoreglyphs/whole.png", pix_whole);
-		load_colored_pixmaps(museGlobalShare + "/scoreglyphs/half.png", pix_half);
-		load_colored_pixmaps(museGlobalShare + "/scoreglyphs/quarter.png", pix_quarter);
-		load_colored_pixmaps(museGlobalShare + "/scoreglyphs/dot.png", pix_dot);
-		load_colored_pixmaps(museGlobalShare + "/scoreglyphs/acc_none.png", pix_noacc);
-		load_colored_pixmaps(museGlobalShare + "/scoreglyphs/acc_sharp.png", pix_sharp);
-		load_colored_pixmaps(museGlobalShare + "/scoreglyphs/acc_b.png", pix_b);
+		load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/whole.png", pix_whole);
+		load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/half.png", pix_half);
+		load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/quarter.png", pix_quarter);
+		load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/dot.png", pix_dot);
+		load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/acc_none.png", pix_noacc);
+		load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/acc_sharp.png", pix_sharp);
+		load_colored_pixmaps(MusEGlobal::museGlobalShare + "/scoreglyphs/acc_b.png", pix_b);
 
-		pix_r1->load(museGlobalShare + "/scoreglyphs/rest1.png");
-		pix_r2->load(museGlobalShare + "/scoreglyphs/rest2.png");
-		pix_r4->load(museGlobalShare + "/scoreglyphs/rest4.png");
-		pix_r8->load(museGlobalShare + "/scoreglyphs/rest8.png");
-		pix_r16->load(museGlobalShare + "/scoreglyphs/rest16.png");
-		pix_r32->load(museGlobalShare + "/scoreglyphs/rest32.png");
-		pix_flag_up[0].load(museGlobalShare + "/scoreglyphs/flags8u.png");
-		pix_flag_up[1].load(museGlobalShare + "/scoreglyphs/flags16u.png");
-		pix_flag_up[2].load(museGlobalShare + "/scoreglyphs/flags32u.png");
-		pix_flag_up[3].load(museGlobalShare + "/scoreglyphs/flags64u.png");
-		pix_flag_down[0].load(museGlobalShare + "/scoreglyphs/flags8d.png");
-		pix_flag_down[1].load(museGlobalShare + "/scoreglyphs/flags16d.png");
-		pix_flag_down[2].load(museGlobalShare + "/scoreglyphs/flags32d.png");
-		pix_flag_down[3].load(museGlobalShare + "/scoreglyphs/flags64d.png");
+		pix_r1->load(MusEGlobal::museGlobalShare + "/scoreglyphs/rest1.png");
+		pix_r2->load(MusEGlobal::museGlobalShare + "/scoreglyphs/rest2.png");
+		pix_r4->load(MusEGlobal::museGlobalShare + "/scoreglyphs/rest4.png");
+		pix_r8->load(MusEGlobal::museGlobalShare + "/scoreglyphs/rest8.png");
+		pix_r16->load(MusEGlobal::museGlobalShare + "/scoreglyphs/rest16.png");
+		pix_r32->load(MusEGlobal::museGlobalShare + "/scoreglyphs/rest32.png");
+		pix_flag_up[0].load(MusEGlobal::museGlobalShare + "/scoreglyphs/flags8u.png");
+		pix_flag_up[1].load(MusEGlobal::museGlobalShare + "/scoreglyphs/flags16u.png");
+		pix_flag_up[2].load(MusEGlobal::museGlobalShare + "/scoreglyphs/flags32u.png");
+		pix_flag_up[3].load(MusEGlobal::museGlobalShare + "/scoreglyphs/flags64u.png");
+		pix_flag_down[0].load(MusEGlobal::museGlobalShare + "/scoreglyphs/flags8d.png");
+		pix_flag_down[1].load(MusEGlobal::museGlobalShare + "/scoreglyphs/flags16d.png");
+		pix_flag_down[2].load(MusEGlobal::museGlobalShare + "/scoreglyphs/flags32d.png");
+		pix_flag_down[3].load(MusEGlobal::museGlobalShare + "/scoreglyphs/flags64d.png");
 		
-		pix_clef_violin->load(museGlobalShare + "/scoreglyphs/clef_violin_big.png");
-		pix_clef_bass->load(museGlobalShare + "/scoreglyphs/clef_bass_big.png");
+		pix_clef_violin->load(MusEGlobal::museGlobalShare + "/scoreglyphs/clef_violin_big.png");
+		pix_clef_bass->load(MusEGlobal::museGlobalShare + "/scoreglyphs/clef_bass_big.png");
 		
 		for (int i=0;i<10;i++)
-			pix_num[i].load(museGlobalShare + "/scoreglyphs/"+IntToQStr(i)+".png");
+			pix_num[i].load(MusEGlobal::museGlobalShare + "/scoreglyphs/"+IntToQStr(i)+".png");
 		
 		pixmaps_initalized=true;
 		
-		if (debugMsg) cout << "done" << endl;
+		if (MusEGlobal::debugMsg) cout << "done" << endl;
 	}
 }
 
@@ -1676,11 +1691,11 @@ void staff_t::create_appropriate_eventlist()
 				end=flo_quantize(event.endTick()+part->tick(), parent->quant_ticks());
 				if (end==begin)
 				{
-					if (heavyDebugMsg) cout << "note len would be quantized to zero. using minimal possible length" << endl;
+					if (MusEGlobal::heavyDebugMsg) cout << "note len would be quantized to zero. using minimal possible length" << endl;
 					end=begin+parent->quant_ticks();
 				}
 				
-				if (heavyDebugMsg) cout << "inserting note on at "<<begin<<" with pitch="<<event.pitch()<<" and len="<<end-begin<<endl;
+				if (MusEGlobal::heavyDebugMsg) cout << "inserting note on at "<<begin<<" with pitch="<<event.pitch()<<" and len="<<end-begin<<endl;
 				eventlist.insert(pair<unsigned, FloEvent>(begin, FloEvent(begin,event.pitch(), event.velo(),end-begin,FloEvent::NOTE_ON,part,&it->second)));
 			}
 			//else ignore it
@@ -1697,7 +1712,7 @@ void staff_t::create_appropriate_eventlist()
 		if (to > unsigned(SONG_LENGTH))
 			to=SONG_LENGTH;
 		
-		if (heavyDebugMsg) cout << "new signature from tick "<<from<<" to " << to << ": "<<it->second->sig.z<<"/"<<it->second->sig.n<<"; ticks per measure = "<<ticks_per_measure<<endl;
+		if (MusEGlobal::heavyDebugMsg) cout << "new signature from tick "<<from<<" to " << to << ": "<<it->second->sig.z<<"/"<<it->second->sig.n<<"; ticks per measure = "<<ticks_per_measure<<endl;
 		eventlist.insert(pair<unsigned, FloEvent>(from,  FloEvent(from, FloEvent::TIME_SIG, it->second->sig.z, it->second->sig.n) ) );
 		for (unsigned t=from; t<to; t+=ticks_per_measure)
 			eventlist.insert(pair<unsigned, FloEvent>(t,  FloEvent(t,0,0,ticks_per_measure,FloEvent::BAR) ) );
@@ -1874,7 +1889,7 @@ int calc_measure_len(const list<int>& nums, int denom)
 
 vector<int> create_emphasize_list(const list<int>& nums, int denom)
 {
-	if (heavyDebugMsg)
+	if (MusEGlobal::heavyDebugMsg)
 	{
 		cout << "creating emphasize list for ";
 		for (list<int>::const_iterator it=nums.begin(); it!=nums.end(); it++)
@@ -1902,7 +1917,7 @@ vector<int> create_emphasize_list(const list<int>& nums, int denom)
 	
 	result[0]=0;
 	
-	if (heavyDebugMsg) 
+	if (MusEGlobal::heavyDebugMsg) 
 	{
 		for (int i=0;i<len;i++)
 		{
@@ -1984,7 +1999,7 @@ list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo,
 
 		len_now=len_now*TICKS_PER_WHOLE/64;
 
-		if (heavyDebugMsg) cout << "add " << len_now << " ticks" << endl;
+		if (MusEGlobal::heavyDebugMsg) cout << "add " << len_now << " ticks" << endl;
 		if (allow_dots)
 		{
 			for (int i=0;i<=MAX_QUANT_POWER;i++)
@@ -2127,7 +2142,7 @@ void staff_t::create_itemlist()
 		
 		note_pos_t notepos=note_pos(pitch,tmp_key,clef);
 		
-		if (heavyDebugMsg)
+		if (MusEGlobal::heavyDebugMsg)
 		{
 			printf("FLO: t=%i\ttype=%i\tpitch=%i\tvel=%i\tlen=%i\n",it->first, it->second.type, it->second.pitch, it->second.vel, it->second.len);
 			cout << "\tline="<<notepos.height<<"\tvorzeichen="<<notepos.vorzeichen << endl;
@@ -2140,7 +2155,7 @@ void staff_t::create_itemlist()
 				if (lastevent==last_measure) //there was no note?
 				{
 					unsigned tmppos=(last_measure+t-parent->quant_ticks())/2;
-					if (heavyDebugMsg) cout << "\tend-of-measure: this was an empty measure. inserting rest in between at t="<<tmppos << endl;
+					if (MusEGlobal::heavyDebugMsg) cout << "\tend-of-measure: this was an empty measure. inserting rest in between at t="<<tmppos << endl;
 					itemlist[tmppos].insert( FloItem(FloItem::REST,notepos,0,0) );
 					itemlist[t].insert( FloItem(FloItem::REST_END,notepos,0,0) );
 				}
@@ -2150,13 +2165,13 @@ void staff_t::create_itemlist()
 					int rest=t-lastevent;
 					if (rest)
 					{
-						if (heavyDebugMsg) printf("\tend-of-measure: set rest at %i with len %i\n",lastevent,rest);
+						if (MusEGlobal::heavyDebugMsg) printf("\tend-of-measure: set rest at %i with len %i\n",lastevent,rest);
 						
 						list<note_len_t> lens=parse_note_len(rest,lastevent-last_measure,emphasize_list,DOTTED_RESTS,UNSPLIT_RESTS);
 						unsigned tmppos=lastevent;
 						for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
 						{
-							if (heavyDebugMsg) cout << "\t\tpartial rest with len="<<x->len<<", dots="<<x->dots<<endl;
+							if (MusEGlobal::heavyDebugMsg) cout << "\t\tpartial rest with len="<<x->len<<", dots="<<x->dots<<endl;
 							itemlist[tmppos].insert( FloItem(FloItem::REST,notepos,x->len,x->dots) );
 							tmppos+=calc_len(x->len,x->dots);
 							itemlist[tmppos].insert( FloItem(FloItem::REST_END,notepos,0,0) );
@@ -2176,7 +2191,7 @@ void staff_t::create_itemlist()
 			int rest=t-lastevent;
 			if (rest)
 			{
-				if (heavyDebugMsg) printf("\tset rest at %i with len %i\n",lastevent,rest);
+				if (MusEGlobal::heavyDebugMsg) printf("\tset rest at %i with len %i\n",lastevent,rest);
 				// no need to check if the rest crosses measure boundaries;
 				// it can't.
 				
@@ -2184,7 +2199,7 @@ void staff_t::create_itemlist()
 				unsigned tmppos=lastevent;
 				for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
 				{
-					if (heavyDebugMsg) cout << "\t\tpartial rest with len="<<x->len<<", dots="<<x->dots<<endl;
+					if (MusEGlobal::heavyDebugMsg) cout << "\t\tpartial rest with len="<<x->len<<", dots="<<x->dots<<endl;
 					itemlist[tmppos].insert( FloItem(FloItem::REST,notepos,x->len,x->dots) );
 					tmppos+=calc_len(x->len,x->dots);
 					itemlist[tmppos].insert( FloItem(FloItem::REST_END,notepos,0,0) );
@@ -2193,7 +2208,7 @@ void staff_t::create_itemlist()
 			
 			
 			
-			if (heavyDebugMsg) printf("\tset note at %i with len=%i\n", t, len);
+			if (MusEGlobal::heavyDebugMsg) printf("\tset note at %i with len=%i\n", t, len);
 
 			int tmplen;
 			bool tied_note;
@@ -2210,14 +2225,14 @@ void staff_t::create_itemlist()
 				eventlist.insert(pair<unsigned, FloEvent>(next_measure, FloEvent(actual_tick,pitch, velo,0,FloEvent::NOTE_OFF, it->second.source_part, it->second.source_event)));
 				eventlist.insert(pair<unsigned, FloEvent>(next_measure, FloEvent(actual_tick,pitch, velo,newlen,FloEvent::NOTE_ON, it->second.source_part, it->second.source_event)));
 
-				if (heavyDebugMsg) cout << "\t\tnote was split to length "<<tmplen<<" + " << newlen<<endl;
+				if (MusEGlobal::heavyDebugMsg) cout << "\t\tnote was split to length "<<tmplen<<" + " << newlen<<endl;
 			}
 			else
 			{
 				tmplen=len;
 				tied_note=false;
 				
-				if (heavyDebugMsg) cout << "\t\tinserting NOTE OFF at "<<t+len<<endl;
+				if (MusEGlobal::heavyDebugMsg) cout << "\t\tinserting NOTE OFF at "<<t+len<<endl;
 				eventlist.insert(pair<unsigned, FloEvent>(t+len,   FloEvent(t+len,pitch, velo,0,FloEvent::NOTE_OFF,it->second.source_part, it->second.source_event)));
 			}
 							
@@ -2227,7 +2242,7 @@ void staff_t::create_itemlist()
 			int count=0;			
 			for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
 			{
-				if (heavyDebugMsg) cout << "\t\tpartial note with len="<<x->len<<", dots="<<x->dots<<endl;
+				if (MusEGlobal::heavyDebugMsg) cout << "\t\tpartial note with len="<<x->len<<", dots="<<x->dots<<endl;
 				count++;
 				
 				bool tie;
@@ -2248,14 +2263,14 @@ void staff_t::create_itemlist()
 		}
 		else if (type==FloEvent::TIME_SIG)
 		{
-			if (heavyDebugMsg) cout << "inserting TIME SIGNATURE "<<it->second.num<<"/"<<it->second.denom<<" at "<<t<<endl;
+			if (MusEGlobal::heavyDebugMsg) cout << "inserting TIME SIGNATURE "<<it->second.num<<"/"<<it->second.denom<<" at "<<t<<endl;
 			itemlist[t].insert( FloItem(FloItem::TIME_SIG, it->second.num, it->second.denom) );
 			
 			emphasize_list=create_emphasize_list(it->second.num, it->second.denom);
 		}
 		else if (type==FloEvent::KEY_CHANGE)
 		{
-			if (heavyDebugMsg) cout << "inserting KEY CHANGE ("<<it->second.key<<") at "<<t<<endl;
+			if (MusEGlobal::heavyDebugMsg) cout << "inserting KEY CHANGE ("<<it->second.key<<") at "<<t<<endl;
 			itemlist[t].insert( FloItem(FloItem::KEY_CHANGE, it->second.key) );
 			tmp_key=it->second.key;
 		}
@@ -2273,7 +2288,7 @@ void staff_t::process_itemlist()
 	{
 		set<FloItem, floComp>& curr_items=it2->second;
 		
-		if (heavyDebugMsg) cout << "at t="<<it2->first<<endl;
+		if (MusEGlobal::heavyDebugMsg) cout << "at t="<<it2->first<<endl;
 		
 		// phase 0: keep track of active notes, rests -------------------
 		//          (and occupied lines) and the last measure
@@ -2290,7 +2305,7 @@ void staff_t::process_itemlist()
 				emphasize_list=create_emphasize_list(it->num, it->denom);
 		}
 		
-		if (heavyDebugMsg)
+		if (MusEGlobal::heavyDebugMsg)
 		{
 			cout << "occupied: ";
 			for (map<int,int>::iterator i=occupied.begin(); i!=occupied.end(); i++)
@@ -2316,7 +2331,7 @@ void staff_t::process_itemlist()
 			//(can be seen on already_grouped)
 			if ((it->type==FloItem::REST) && (it->already_grouped==false))
 			{
-				if (heavyDebugMsg) cout << "trying to group" << endl;
+				if (MusEGlobal::heavyDebugMsg) cout << "trying to group" << endl;
 				
 				int lastheight;
 				int height_cumulative=0;
@@ -2327,12 +2342,12 @@ void staff_t::process_itemlist()
 				set<FloItem, floComp>::iterator tmp;
 				for (tmp=it; tmp!=curr_items.end();)
 				{
-					if (heavyDebugMsg) cout << "checking if we can proceed with an item at height="<<tmp->pos.height<<endl;
+					if (MusEGlobal::heavyDebugMsg) cout << "checking if we can proceed with an item at height="<<tmp->pos.height<<endl;
 					
 					for (int i=lastheight+1; i<=tmp->pos.height-1; i++)
 						if (occupied[i]!=0)
 						{
-							if (heavyDebugMsg) cout << "we can NOT, because occ["<<i<<"] != 0" << endl;
+							if (MusEGlobal::heavyDebugMsg) cout << "we can NOT, because occ["<<i<<"] != 0" << endl;
 							//stop grouping that rest
 							goto get_out_here;
 						}
@@ -2344,7 +2359,7 @@ void staff_t::process_itemlist()
 					{
 						// füge diese pause zur gruppe dazu und entferne sie von diesem set hier
 						// entfernen aber nur, wenn sie nicht it, also die erste pause ist, die brauchen wir noch!
-						if (heavyDebugMsg) cout << "\tgrouping rest at height="<<tmp->pos.height<<endl;
+						if (MusEGlobal::heavyDebugMsg) cout << "\tgrouping rest at height="<<tmp->pos.height<<endl;
 						height_cumulative+=tmp->pos.height;
 						counter++;
 						if (tmp!=it)
@@ -2354,12 +2369,12 @@ void staff_t::process_itemlist()
 					}
 					else //it's something else? well, we can stop grouping that rest then
 					{
-						if (heavyDebugMsg) cout << "we can NOT, because that item is not a rest" << endl;
+						if (MusEGlobal::heavyDebugMsg) cout << "we can NOT, because that item is not a rest" << endl;
 						//stop grouping that rest
 						goto get_out_here;
 					}
 				}
-				if (heavyDebugMsg) cout << "no items to proceed on left, continuing" << endl;
+				if (MusEGlobal::heavyDebugMsg) cout << "no items to proceed on left, continuing" << endl;
 				get_out_here:
 				
 				n_groups++;
@@ -2374,7 +2389,7 @@ void staff_t::process_itemlist()
 				// have we grouped all available rests into one single?
 				if ( (n_groups==1) && (tmp==curr_items.end()) && !dont_group)
 				{
-					if (heavyDebugMsg) cout << "wow, we were able to group all rests into one single" << endl;
+					if (MusEGlobal::heavyDebugMsg) cout << "wow, we were able to group all rests into one single" << endl;
 					if (temp.len==0) //the whole rest is shifted one line (one space and one line)
 						temp.pos.height=DEFAULT_REST_HEIGHT+2;
 					else
@@ -2382,7 +2397,7 @@ void staff_t::process_itemlist()
 				}
 				else
 				{
-					if (heavyDebugMsg) cout << "creating group #"<<n_groups<<endl;
+					if (MusEGlobal::heavyDebugMsg) cout << "creating group #"<<n_groups<<endl;
 					temp.pos.height=nearbyint((float)height_cumulative/counter);
 				}
 				
@@ -2393,7 +2408,7 @@ void staff_t::process_itemlist()
 				// the item. effect: you don't have the rest at all
 				curr_items.erase(it++);
 				
-				if (heavyDebugMsg) cout << "replacing all grouped rests with a rest at height="<<temp.pos.height<<endl;
+				if (MusEGlobal::heavyDebugMsg) cout << "replacing all grouped rests with a rest at height="<<temp.pos.height<<endl;
 				
 				curr_items.insert(temp);
 			}
@@ -2484,7 +2499,7 @@ group_them_again:
 			if (it->type==FloItem::NOTE)
 				lengths[it->len].add(it->pos.height);
 		
-		if (heavyDebugMsg)
+		if (MusEGlobal::heavyDebugMsg)
 		{
 			cout << "note lengths at that time are:";
 			for (map<int, cumulative_t>::iterator it=lengths.begin(); it!=lengths.end(); it++)
@@ -2497,14 +2512,14 @@ group_them_again:
 		
 		if (lengths.size()==0)
 		{
-			if (heavyDebugMsg) cout << "no notes other than wholes, or no notes at all. we can relax" << endl;
+			if (MusEGlobal::heavyDebugMsg) cout << "no notes other than wholes, or no notes at all. we can relax" << endl;
 		}
 		else if (lengths.size()==1)
 		{
 			pair<const int, cumulative_t>& group=*(lengths.begin());
 			stem_t stem;
 			int shift=0;
-			if (heavyDebugMsg) cout << "only one non-whole note group (len="<<group.first<<") at height="<<group.second.mean()<< endl;
+			if (MusEGlobal::heavyDebugMsg) cout << "only one non-whole note group (len="<<group.first<<") at height="<<group.second.mean()<< endl;
 			
 			if (group.second.mean()>=6)
 			{
@@ -2535,7 +2550,7 @@ group_them_again:
 			pair<const int, cumulative_t>& group2=*it;
 			stem_t stem1, stem2;
 			int shift1=0, shift2=0;
-			if (heavyDebugMsg) cout << "two non-whole note group: len="<<group1.first<<" at height="<<group1.second.mean()<<"  and len="<<group2.first<<" at height="<<group2.second.mean()<< endl;
+			if (MusEGlobal::heavyDebugMsg) cout << "two non-whole note group: len="<<group1.first<<" at height="<<group1.second.mean()<<"  and len="<<group2.first<<" at height="<<group2.second.mean()<< endl;
 			
 			if (group1.second.mean()<group2.second.mean())
 			{
@@ -2593,17 +2608,17 @@ group_them_again:
 			group1_len_ticks=calc_len(group1_len,0);
 			group2_len_ticks=calc_len(group2_len,0);
 			
-			if (heavyDebugMsg) cout << "we have "<<lengths.size()<<" groups. putting the "<<group1_n<<" longest and the "<<group2_n<<"shortest groups together"<<endl <<
+			if (MusEGlobal::heavyDebugMsg) cout << "we have "<<lengths.size()<<" groups. putting the "<<group1_n<<" longest and the "<<group2_n<<"shortest groups together"<<endl <<
 			                           "\tgroup1 will have len="<<group1_len<<" ("<<group1_len_ticks<<" ticks), group2 will have len="<<group2_len<<" ("<<group2_len_ticks<<" ticks)"<<endl;
 			
 			for (set<FloItem, floComp>::iterator it=curr_items.begin(); it!=curr_items.end();)
 				if (it->type==FloItem::NOTE)
 				{
 					//if *it belongs to group1 and has not already its destination length
-					if (heavyDebugMsg) cout << "\tprocessing note-item with len="<<it->len<<endl;
+					if (MusEGlobal::heavyDebugMsg) cout << "\tprocessing note-item with len="<<it->len<<endl;
 					if (it->len<group1_len)
 					{
-						if (heavyDebugMsg) cout << "\t\thas to be changed to fit into group 1" << endl;
+						if (MusEGlobal::heavyDebugMsg) cout << "\t\thas to be changed to fit into group 1" << endl;
 						FloItem tmp=*it;
 						curr_items.erase(it++);
 
@@ -2628,7 +2643,7 @@ group_them_again:
 						int count=0;			
 						for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
 						{
-							if (heavyDebugMsg) cout << "\t\twhile regrouping: partial note with len="<<x->len<<", dots="<<x->dots<<endl;
+							if (MusEGlobal::heavyDebugMsg) cout << "\t\twhile regrouping: partial note with len="<<x->len<<", dots="<<x->dots<<endl;
 							count++;
 							
 							bool tie;
@@ -2647,7 +2662,7 @@ group_them_again:
 					//else if *it belongs to group2 and has not already its destination length
 					else if ((it->len<group2_len) && (it->len>group1_len))
 					{
-						if (heavyDebugMsg) cout << "\t\thas to be changed to fit into group 2" << endl;
+						if (MusEGlobal::heavyDebugMsg) cout << "\t\thas to be changed to fit into group 2" << endl;
 						
 						FloItem tmp=*it;
 						curr_items.erase(it++);
@@ -2673,7 +2688,7 @@ group_them_again:
 						int count=0;			
 						for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
 						{
-							if (heavyDebugMsg) cout << "\t\twhile regrouping: partial note with len="<<x->len<<", dots="<<x->dots<<endl;
+							if (MusEGlobal::heavyDebugMsg) cout << "\t\twhile regrouping: partial note with len="<<x->len<<", dots="<<x->dots<<endl;
 							count++;
 							
 							bool tie;
@@ -2691,7 +2706,7 @@ group_them_again:
 					}
 					else //nothing to do?
 					{
-						if (heavyDebugMsg) cout << "\t\tnothing to do" << endl;
+						if (MusEGlobal::heavyDebugMsg) cout << "\t\tnothing to do" << endl;
 						it++;
 					}
 				}
@@ -2707,7 +2722,7 @@ group_them_again:
 //draw a pixmap centered
 void ScoreCanvas::draw_pixmap(QPainter& p, int x, int y, const QPixmap& pm)
 {
-	if (heavyDebugMsg) cout << "drawing pixmap with size="<<pm.width()<<"/"<<pm.height()<<" at "<<x<<"/"<<y<<endl;
+	if (MusEGlobal::heavyDebugMsg) cout << "drawing pixmap with size="<<pm.width()<<"/"<<pm.height()<<" at "<<x<<"/"<<y<<endl;
 	p.drawPixmap(x-pm.width()/2,y-pm.height()/2,pm);
 }
 
@@ -2924,7 +2939,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 
 	for (ScoreItemList::iterator it2=from_it; it2!=to_it; it2++)
 	{
-		if (heavyDebugMsg) cout << "at t="<<it2->first << endl;
+		if (MusEGlobal::heavyDebugMsg) cout << "at t="<<it2->first << endl;
 		
 		int upstem_y1 = -1, upstem_y2=-1, upstem_x=-1, upflag=-1;
 		int downstem_y1 = -1, downstem_y2=-1, downstem_x=-1, downflag=-1;
@@ -2933,7 +2948,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 		{
 			if (it->type==FloItem::NOTE)
 			{
-				if (heavyDebugMsg)
+				if (MusEGlobal::heavyDebugMsg)
 				{
 					cout << "\tNOTE at line"<<it->pos.height<<" with acc.="<<it->pos.vorzeichen<<", len="<<pow(2,it->len);
 					for (int i=0;i<it->dots;i++) cout << ".";
@@ -3067,7 +3082,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 				//if needed, draw tie
 				if (it->is_tie_dest)
 				{
-					if (heavyDebugMsg) cout << "drawing tie" << endl;
+					if (MusEGlobal::heavyDebugMsg) cout << "drawing tie" << endl;
 					draw_tie(p,it->tie_from_x-x_pos+x_left,it->x -x_pos+x_left,y_offset + it->y, (it->len==0) ? true : (it->stem==DOWNWARDS) , mycolors[color_index]);
 					// in english: "if it's a whole note, tie is upwards (true). if not, tie is upwards if
 					//              stem is downwards and vice versa"
@@ -3075,7 +3090,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 			}
 			else if (it->type==FloItem::REST)
 			{
-				if (heavyDebugMsg)
+				if (MusEGlobal::heavyDebugMsg)
 				{
 					cout << "\tREST at line"<<it->pos.height<<" with len="<<pow(2,it->len);
 					for (int i=0;i<it->dots;i++) cout << ".";
@@ -3105,7 +3120,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 			}
 			else if (it->type==FloItem::BAR)
 			{
-				if (heavyDebugMsg) cout << "\tBAR" << endl;
+				if (MusEGlobal::heavyDebugMsg) cout << "\tBAR" << endl;
 				
 				p.setPen(Qt::black);
 				p.drawLine(it->x -x_pos+x_left,y_offset  -2*YLEN,it->x -x_pos+x_left,y_offset +2*YLEN);
@@ -3115,14 +3130,14 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 			}
 			else if (it->type==FloItem::TIME_SIG)
 			{
-				if (heavyDebugMsg) cout << "\tTIME SIGNATURE: "<<it->num<<"/"<<it->denom<<endl;
+				if (MusEGlobal::heavyDebugMsg) cout << "\tTIME SIGNATURE: "<<it->num<<"/"<<it->denom<<endl;
 
 				draw_timesig(p,  it->x - x_pos+x_left, y_offset, it->num, it->denom);
 			}
 			else if (it->type==FloItem::KEY_CHANGE)
 			{
 				key_enum new_key=it->key;
-				if (heavyDebugMsg) cout << "\tKEY CHANGE: from "<<curr_key<<" to "<<new_key<<endl;
+				if (MusEGlobal::heavyDebugMsg) cout << "\tKEY CHANGE: from "<<curr_key<<" to "<<new_key<<endl;
 								
 				list<int> aufloes_list=calc_accidentials(curr_key, staff.clef, new_key);
 				list<int> new_acc_list=calc_accidentials(new_key, staff.clef);
@@ -3333,7 +3348,7 @@ void ScoreCanvas::draw_number(QPainter& p, int x, int y, int n)
 
 void ScoreCanvas::draw(QPainter& p, const QRect&)
 {
-	if (debugMsg) cout <<"now in ScoreCanvas::draw"<<endl;
+	if (MusEGlobal::debugMsg) cout <<"now in ScoreCanvas::draw"<<endl;
 
 	
 
@@ -3356,7 +3371,7 @@ void ScoreCanvas::draw(QPainter& p, const QRect&)
 		p.drawRect(lasso);
 	}
 	
-	if (debugMsg) cout << "drawing done." << endl;
+	if (MusEGlobal::debugMsg) cout << "drawing done." << endl;
 }
 
 
@@ -3539,7 +3554,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 		{
 			ScoreItemList& itemlist=staff_it->itemlist;
 
-			if (debugMsg) cout << "mousePressEvent at "<<x<<"/"<<y<<"; tick="<<tick<<endl;
+			if (MusEGlobal::debugMsg) cout << "mousePressEvent at "<<x<<"/"<<y<<"; tick="<<tick<<endl;
 			set<FloItem, floComp>::iterator set_it;
 			for (set_it=itemlist[tick].begin(); set_it!=itemlist[tick].end(); set_it++)
 				if (set_it->type==FloItem::NOTE)
@@ -3595,7 +3610,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 						mouse_x_drag_operation=NO_OP;
 				}
 				
-				if (debugMsg)
+				if (MusEGlobal::debugMsg)
 					cout << "you clicked at a note with begin at "<<set_it->begin_tick<<" and end at "<<t<<endl
 							 << "x-drag-operation will be "<<mouse_x_drag_operation<<endl
 							 << "pointer to part is "<<set_it->source_part << endl;
@@ -3663,13 +3678,13 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 							if (flo_quantize(newevent.lenTick(), quant_ticks()) <= 0)
 							{
 								newevent.setLenTick(quant_ticks());
-								if (debugMsg) cout << "inserted note's length would be invisible after quantisation (too short)." << endl <<
+								if (MusEGlobal::debugMsg) cout << "inserted note's length would be invisible after quantisation (too short)." << endl <<
 																			"       setting it to " << newevent.lenTick() << endl;
 							}
 							
 							if (newevent.endTick() > curr_part->lenTick())
 							{
-								if (debugMsg) cout << "clipping inserted note from len="<<newevent.endTick()<<" to len="<<(curr_part->lenTick() - newevent.tick())<<endl;
+								if (MusEGlobal::debugMsg) cout << "clipping inserted note from len="<<newevent.endTick()<<" to len="<<(curr_part->lenTick() - newevent.tick())<<endl;
 								newevent.setLenTick(curr_part->lenTick() - newevent.tick());
 							}
 							
@@ -3718,7 +3733,7 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 		{
 			if (flo_quantize(dragged_event.lenTick(), quant_ticks()) <= 0)
 			{
-				if (debugMsg) cout << "new length <= 0, erasing item" << endl;
+				if (MusEGlobal::debugMsg) cout << "new length <= 0, erasing item" << endl;
 				if (undo_started) song->undo();
 				audio->msgDeleteEvent(dragged_event, dragged_event_part, true, false, false);
 			}
@@ -3818,13 +3833,13 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 		{		
 			if ((abs(dx)>DRAG_INIT_DISTANCE) && (mouse_x_drag_operation!=NO_OP))
 			{
-				if (debugMsg) cout << "mouse-operation is now "<<mouse_x_drag_operation<<endl;
+				if (MusEGlobal::debugMsg) cout << "mouse-operation is now "<<mouse_x_drag_operation<<endl;
 				mouse_operation=mouse_x_drag_operation;
 				setCursor(Qt::SizeHorCursor);
 			}
 			else if (abs(dy)>DRAG_INIT_DISTANCE)
 			{
-				if (debugMsg) cout << "mouse-operation is now PITCH" << endl;
+				if (MusEGlobal::debugMsg) cout << "mouse-operation is now PITCH" << endl;
 				mouse_operation=PITCH;
 				setCursor(Qt::SizeVerCursor);
 			}
@@ -3855,7 +3870,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				break;
 				
 			case PITCH:
-				if (heavyDebugMsg) cout << "trying to change pitch, delta="<<-nearbyint((float)dy/PITCH_DELTA)<<endl;
+				if (MusEGlobal::heavyDebugMsg) cout << "trying to change pitch, delta="<<-nearbyint((float)dy/PITCH_DELTA)<<endl;
 				new_pitch=original_dragged_event.pitch() - nearbyint((float)dy/PITCH_DELTA);
 				
 				if (new_pitch < 0) new_pitch=0;
@@ -3863,7 +3878,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				
 				if (new_pitch != old_pitch)
 				{
-					if (debugMsg) cout << "changing pitch, delta="<<new_pitch-original_dragged_event.pitch()<<endl;
+					if (MusEGlobal::debugMsg) cout << "changing pitch, delta="<<new_pitch-original_dragged_event.pitch()<<endl;
 					if (undo_started) song->undo();
 					undo_started=transpose_notes(part_to_set(dragged_event_part),1, new_pitch-original_dragged_event.pitch());
 					old_pitch=new_pitch;
@@ -3881,7 +3896,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 					else
 					{
 						dest_tick=0;
-						if (debugMsg) cout << "not moving note before begin of part; setting it directly to the begin" << endl;
+						if (MusEGlobal::debugMsg) cout << "not moving note before begin of part; setting it directly to the begin" << endl;
 					}
 
 					if (dest_tick != old_dest_tick)
@@ -3907,7 +3922,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 					else
 					{
 						tmp.setLenTick(0);
-						if (debugMsg) cout << "not setting len to a negative value. using 0 instead" << endl;
+						if (MusEGlobal::debugMsg) cout << "not setting len to a negative value. using 0 instead" << endl;
 					}
 					
 					unsigned newpartlen=dragged_event_part->lenTick();
@@ -3916,12 +3931,12 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 						if (dragged_event_part->hasHiddenEvents()) // do not allow autoexpand
 						{
 							tmp.setLenTick(dragged_event_part->lenTick() - tmp.tick());
-							if (debugMsg) cout << "resized note would exceed its part; limiting length to " << tmp.lenTick() << endl;
+							if (MusEGlobal::debugMsg) cout << "resized note would exceed its part; limiting length to " << tmp.lenTick() << endl;
 						}
 						else
 						{
 							newpartlen=tmp.endTick();
-							if (debugMsg) cout << "resized note would exceeds its part; expanding the part..." << endl;
+							if (MusEGlobal::debugMsg) cout << "resized note would exceeds its part; expanding the part..." << endl;
 						}
 					}
 					
@@ -3997,7 +4012,7 @@ void ScoreCanvas::heartbeat_timer_event()
 	{
 		int old_xpos=x_pos;
 		
-		x_scroll_pos+=x_scroll_speed*heartBeatTimer->interval()/1000.0;
+		x_scroll_pos+=x_scroll_speed*MusEGlobal::heartBeatTimer->interval()/1000.0;
 		int tmp=int(x_scroll_pos);
 		if (tmp!=0)
 		x_pos+=tmp;
@@ -4013,7 +4028,7 @@ void ScoreCanvas::heartbeat_timer_event()
 	{
 		int old_ypos=y_pos;
 		
-		y_scroll_pos+=y_scroll_speed*heartBeatTimer->interval()/1000.0;
+		y_scroll_pos+=y_scroll_speed*MusEGlobal::heartBeatTimer->interval()/1000.0;
 		int tmp=int(y_scroll_pos);
 		if (tmp!=0)
 		y_pos+=tmp;
@@ -4028,14 +4043,14 @@ void ScoreCanvas::heartbeat_timer_event()
 
 void ScoreCanvas::x_scroll_event(int x)
 {
-	if (debugMsg) cout << "SCROLL EVENT: x="<<x<<endl;
+	if (MusEGlobal::debugMsg) cout << "SCROLL EVENT: x="<<x<<endl;
 	x_pos=x;
 	redraw();
 }
 
 void ScoreCanvas::y_scroll_event(int y)
 {
-	if (debugMsg) cout << "SCROLL EVENT: y="<<y<<endl;
+	if (MusEGlobal::debugMsg) cout << "SCROLL EVENT: y="<<y<<endl;
 	y_pos=y;
 	redraw();
 }
@@ -4178,9 +4193,9 @@ void ScoreCanvas::set_tool(int tool)
 {
 	switch (tool)
 	{
-		case PointerTool: mouse_erases_notes=false; mouse_inserts_notes=false; break;
-		case RubberTool:  mouse_erases_notes=true;  mouse_inserts_notes=false; break;
-		case PencilTool:  mouse_erases_notes=false; mouse_inserts_notes=true;  break;
+		case MusEWidget::PointerTool: mouse_erases_notes=false; mouse_inserts_notes=false; break;
+		case MusEWidget::RubberTool:  mouse_erases_notes=true;  mouse_inserts_notes=false; break;
+		case MusEWidget::PencilTool:  mouse_erases_notes=false; mouse_inserts_notes=true;  break;
 		default:
 			cerr << "ERROR: THIS SHOULD NEVER HAPPEN: set_tool called with unknown tool ("<<tool<<")"<<endl;
 	}
@@ -4239,7 +4254,7 @@ void ScoreCanvas::set_quant(int val)
 
 void ScoreCanvas::set_pixels_per_whole(int val)
 {
-	if (debugMsg) cout << "setting px per whole to " << val << endl;
+	if (MusEGlobal::debugMsg) cout << "setting px per whole to " << val << endl;
 	
 	int tick;
 	int old_xpos=x_pos;
@@ -4261,7 +4276,7 @@ void ScoreCanvas::set_pixels_per_whole(int val)
 	if (old_xpos!=0)
 	{
 		x_pos=tick_to_x(tick);
-		if (debugMsg) cout << "x_pos was not zero, readjusting to " << x_pos << endl;
+		if (MusEGlobal::debugMsg) cout << "x_pos was not zero, readjusting to " << x_pos << endl;
 		emit xscroll_changed(x_pos);
 	}
 	
@@ -4391,7 +4406,7 @@ void ScoreCanvas::midi_note(int pitch, int velo)
 		held_notes[pitch]=false;
 
 	if ( srec && selected_part && !audio->isPlaying() && velo )
-		steprec->record(selected_part,pitch,quant_ticks(),quant_ticks(),velo,globalKeyState&Qt::ControlModifier,globalKeyState&Qt::ShiftModifier);
+		steprec->record(selected_part,pitch,quant_ticks(),quant_ticks(),velo,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier);
 }
 
 
@@ -4436,17 +4451,17 @@ void ScoreEdit::keyPressEvent(QKeyEvent* event)
 	}
 	else if (key == shortcuts[SHRT_TOOL_POINTER].key)
 	{
-		edit_tools->set(PointerTool);
+		edit_tools->set(MusEWidget::PointerTool);
 		return;
 	}
 	else if (key == shortcuts[SHRT_TOOL_PENCIL].key)
 	{
-		edit_tools->set(PencilTool);
+		edit_tools->set(MusEWidget::PencilTool);
 		return;
 	}
 	else if (key == shortcuts[SHRT_TOOL_RUBBER].key)
 	{
-		edit_tools->set(RubberTool);
+		edit_tools->set(MusEWidget::RubberTool);
 		return;
 	}
 	else //Default:

@@ -4,6 +4,21 @@
 //  $Id: undo.cpp,v 1.12.2.9 2009/05/24 21:43:44 terminator356 Exp $
 //
 //  (C) Copyright 1999/2000 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 ///#include "sig.h"
@@ -189,7 +204,7 @@ void UndoList::clearDelete()
 void Song::startUndo()
       {
       redoList->clear(); // added by flo93: redo must be invalidated when
-			redoAction->setEnabled(false);     // a new undo is started
+			MusEGlobal::redoAction->setEnabled(false);     // a new undo is started
 			
       undoList->push_back(Undo());
       updateFlags = 0;
@@ -252,12 +267,12 @@ bool Song::applyOperationGroup(Undo& group, bool doUndo)
             if (!doUndo)
             {
                   undoList->pop_back();
-                  undoAction->setEnabled(!undoList->empty());
+                  MusEGlobal::undoAction->setEnabled(!undoList->empty());
             }
             else
             {
                   redoList->clear(); // added by flo93: redo must be invalidated when
-                  redoAction->setEnabled(false);     // a new undo is started
+                  MusEGlobal::redoAction->setEnabled(false);     // a new undo is started
 						}
             
             return doUndo;

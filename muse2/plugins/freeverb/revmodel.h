@@ -1,8 +1,15 @@
-// Reverb model declaration
+//=========================================================
+//  MusE
+//  Linux Music Editor
+//  $Id: ./plugins/freeverb/revmodel.h $
+//
 //
 // Written by Jezar at Dreampoint, June 2000
 // http://www.dreampoint.co.uk
 // This code is public domain
+//
+//=========================================================
+// Reverb model declaration
 
 #ifndef _revmodel_
 #define _revmodel_

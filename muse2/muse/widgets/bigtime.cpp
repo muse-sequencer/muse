@@ -1,3 +1,25 @@
+//=========================================================
+//  MusE
+//  Linux Music Editor
+//  $Id: ./muse/widgets/bigtime.cpp $
+//
+//  Copyright (C) 1999-2011 by Werner Schweer and others
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
+//=========================================================
 #include <stdio.h>
 #include <limits.h>
 
@@ -12,6 +34,8 @@
 #include "gconfig.h"
 
 extern int mtcType;
+
+namespace MusEWidget {
 
 //
 // the bigtime widget
@@ -165,8 +189,8 @@ void BigTime::fmtButtonToggled(bool v)
 
 void BigTime::configChanged()
       {
-      setBgColor(config.bigTimeBackgroundColor);
-      setFgColor(config.bigTimeForegroundColor);
+      setBgColor(MusEConfig::config.bigTimeBackgroundColor);
+      setFgColor(MusEConfig::config.bigTimeForegroundColor);
       }
 
 //---------------------------------------------------------
@@ -208,7 +232,7 @@ bool BigTime::setString(unsigned v)
       int bar, beat;
       unsigned tick;
       AL::sigmap.tickValues(v, &bar, &beat, &tick);
-      double time = double(absFrame)/double(sampleRate);
+      double time = double(absFrame)/double(MusEGlobal::sampleRate);
       //int hour    = int(time) / 3600;
       //int min     = (int(time) / 60) % 60;
       int min     = int(time) / 60;
@@ -335,8 +359,8 @@ void BigTime::resizeEvent(QResizeEvent *ev)
   //dwin->setFont(f);
   QString fstr = QString("font-size:%1px; font-family:'Courier'; ").arg(fs);  // Tim p4.0.8
   dwin->setStyleSheet(fstr);
-  setBgColor(config.bigTimeBackgroundColor);
-  setFgColor(config.bigTimeForegroundColor);
+  setBgColor(MusEConfig::config.bigTimeBackgroundColor);
+  setFgColor(MusEConfig::config.bigTimeForegroundColor);
   
   int digitWidth = dwin->fontMetrics().width(QString("0"));
 	int vspace = (ev->size().height() - (fs*2)) / 3;
@@ -446,3 +470,4 @@ void BigTime::setBgColor(QColor c)
         setPalette(newpalette);
       }
 
+} // namespace MusEWidget

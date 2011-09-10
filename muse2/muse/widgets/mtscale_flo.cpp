@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: mtscale_flo.cpp,v 1.8.2.7 2011/05/19 04:14:01 flo Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <values.h>
@@ -15,6 +30,8 @@
 #include "icons.h"
 #include "gconfig.h"
 #include "scoreedit.h"
+
+namespace MusEWidget {
 
 //---------------------------------------------------------
 //   MTScale
@@ -171,7 +188,7 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r)
 
       int y = 12;
       p.setPen(Qt::black);
-      p.setFont(config.fonts[4]);
+      p.setFont(MusEConfig::config.fonts[4]);
       p.drawLine(r.x(), y+1, r.x() + r.width(), y+1);
       QRect tr(r);
       tr.setHeight(12);
@@ -270,7 +287,7 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r)
                         n = 32;
                   if (bar % n)
                         continue;
-                  p.setFont(config.fonts[3]);
+                  p.setFont(MusEConfig::config.fonts[3]);
                   int x = parent->tick_to_x(stick) + xoffset - xpos;
                   QString s;
                   s.setNum(bar + 1);
@@ -291,12 +308,12 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r)
                         if (beat == 0) {
                               num = bar + 1;
                               y1  = y + 1;
-                              p.setFont(config.fonts[3]);
+                              p.setFont(MusEConfig::config.fonts[3]);
                               }
                         else {
                               num = beat + 1;
                               y1  = y + 7;
-                              p.setFont(config.fonts[1]);
+                              p.setFont(MusEConfig::config.fonts[1]);
                               r.setY(y+3);
                               }
                         s.setNum(num);
@@ -323,3 +340,5 @@ void MTScaleFlo::pos_add_changed()
 {
 	redraw();
 }
+
+} // namespace MusEWidget

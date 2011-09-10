@@ -7,6 +7,21 @@
 //
 //  PopupMenu sub-class of QMenu created by Tim.
 //  (C) Copyright 2010-2011 Tim E. Real (terminator356 A T sourceforge D O T net)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 //#include <stdio.h>
@@ -26,6 +41,8 @@
 #include "route.h"
  
  
+namespace MusEWidget {
+
 //======================
 // PopupMenu
 //======================
@@ -157,7 +174,7 @@ bool PopupMenu::event(QEvent* event)
     case QEvent::MouseButtonDblClick:
     {  
       if(_stayOpen)
-      //if(_stayOpen && config.popupsDefaultStayOpen)
+      //if(_stayOpen && MusEConfig::config.popupsDefaultStayOpen)
       {
         QMouseEvent* e = static_cast<QMouseEvent*>(event);
         if(e->modifiers() == Qt::NoModifier)
@@ -176,7 +193,7 @@ bool PopupMenu::event(QEvent* event)
     case QEvent::KeyPress:
     {
       if(_stayOpen)
-      //if(_stayOpen && config.popupsDefaultStayOpen)
+      //if(_stayOpen && MusEConfig::config.popupsDefaultStayOpen)
       {
         QKeyEvent* e = static_cast<QKeyEvent*>(event);
         if(e->modifiers() == Qt::NoModifier && e->key() == Qt::Key_Space)
@@ -330,7 +347,7 @@ void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
     
     #else
     // Check for Ctrl to stay open.
-    if(!_stayOpen || (!config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0))  
+    if(!_stayOpen || (!MusEConfig::config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0))  
     {
       QMenu::mouseReleaseEvent(e);
       return;
@@ -373,3 +390,4 @@ void PopupView::clear()
 }
 */ 
  
+} // namespace MusEWidget

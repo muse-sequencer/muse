@@ -2,6 +2,21 @@
 //  MusE
 //  Linux Music Editor
 //  (C) Copyright 2010 Werner Schweer and others (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <QTimer>
@@ -28,6 +43,8 @@
 #include "popupmenu.h"
 #include "routepopup.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   setTrack
 //---------------------------------------------------------
@@ -46,10 +63,10 @@ void MidiTrackInfo::setTrack(Track* t)
   
   QPalette pal;
   if(selected->type() == Track::DRUM) {
-    pal.setColor(trackNameLabel->backgroundRole(), config.drumTrackLabelBg); 
+    pal.setColor(trackNameLabel->backgroundRole(), MusEConfig::config.drumTrackLabelBg); 
     iOutputChannel->setEnabled(false);
   } else  {
-    pal.setColor(trackNameLabel->backgroundRole(), config.midiTrackLabelBg);
+    pal.setColor(trackNameLabel->backgroundRole(), MusEConfig::config.midiTrackLabelBg);
     iOutputChannel->setEnabled(true);
   }
   trackNameLabel->setPalette(pal);
@@ -75,7 +92,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
   pan      = -65;
   volume   = -1;
   
-  setFont(config.fonts[2]);
+  setFont(MusEConfig::config.fonts[2]);
   
   //iChanDetectLabel->setPixmap(*darkgreendotIcon);
   iChanDetectLabel->setPixmap(*darkRedLedIcon);
@@ -100,14 +117,14 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
     QPalette pal;
     //pal.setColor(trackNameLabel->backgroundRole(), QColor(0, 160, 255)); // Med blue
     if(selected->type() == Track::DRUM)
-      pal.setColor(trackNameLabel->backgroundRole(), config.drumTrackLabelBg); 
+      pal.setColor(trackNameLabel->backgroundRole(), MusEConfig::config.drumTrackLabelBg); 
     else  
-      pal.setColor(trackNameLabel->backgroundRole(), config.midiTrackLabelBg); 
+      pal.setColor(trackNameLabel->backgroundRole(), MusEConfig::config.midiTrackLabelBg); 
     trackNameLabel->setPalette(pal);
   }    
   //else
   //{
-  //  pal.setColor(trackNameLabel->backgroundRole(), config.midiTrackLabelBg); 
+  //  pal.setColor(trackNameLabel->backgroundRole(), MusEConfig::config.midiTrackLabelBg); 
   //  trackNameLabel->setPalette(pal);
   //}  
   
@@ -165,9 +182,9 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
   connect(oRButton, SIGNAL(pressed()), SLOT(outRoutesPressed()));
   
   connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-  connect(muse, SIGNAL(configChanged()), SLOT(configChanged()));
+  connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
   
-  connect(heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
+  connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
 }
 
 //---------------------------------------------------------
@@ -487,15 +504,15 @@ void MidiTrackInfo::configChanged()
       {
       //printf("MidiTrackInfo::configChanged\n");
       
-      //if (config.canvasBgPixmap.isEmpty()) {
-      //      canvas->setBg(config.partCanvasBg);
+      //if (MusEConfig::config.canvasBgPixmap.isEmpty()) {
+      //      canvas->setBg(MusEConfig::config.partCanvasBg);
       //      canvas->setBg(QPixmap());
       //}
       //else {
-      //      canvas->setBg(QPixmap(config.canvasBgPixmap));
+      //      canvas->setBg(QPixmap(MusEConfig::config.canvasBgPixmap));
       //}
       
-      setFont(config.fonts[2]);
+      setFont(MusEConfig::config.fonts[2]);
       //updateTrackInfo(type);
       }
 
@@ -540,9 +557,9 @@ void MidiTrackInfo::setLabelFont()
         
       // Use the new font #6 I created just for these labels (so far).
       // Set the label's font.
-      trackNameLabel->setFont(config.fonts[6]);
+      trackNameLabel->setFont(MusEConfig::config.fonts[6]);
       // Dealing with a horizontally constrained label. Ignore vertical. Use a minimum readable point size.
-      autoAdjustFontSize(trackNameLabel, trackNameLabel->text(), false, true, config.fonts[6].pointSize(), 5); 
+      MusEUtil::autoAdjustFontSize(trackNameLabel, trackNameLabel->text(), false, true, MusEConfig::config.fonts[6].pointSize(), 5); 
 }
   
 //---------------------------------------------------------
@@ -607,7 +624,7 @@ void MidiTrackInfo::inRoutesPressed()
   if(!selected->isMidiTrack())
     return;
   
-  RoutePopupMenu* pup = muse->getRoutingPopupMenu();
+  RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
   iRButton->setDown(false);     
   pup->exec(QCursor::pos(), selected, false);
 }
@@ -623,7 +640,7 @@ void MidiTrackInfo::outRoutesPressed()
   if(!selected->isMidiTrack())
     return;
   
-  RoutePopupMenu* pup = muse->getRoutingPopupMenu();
+  RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
   oRButton->setDown(false);     
   pup->exec(QCursor::pos(), selected, true);
 }
@@ -1549,3 +1566,4 @@ void MidiTrackInfo::recordClicked()
       }
     }
 
+} // namespace MusEWidget

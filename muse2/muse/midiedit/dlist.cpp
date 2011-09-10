@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: dlist.cpp,v 1.9.2.7 2009/10/16 21:50:16 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <QCursor>
@@ -75,10 +90,10 @@ void DList::draw(QPainter& p, const QRect& rect)
                               s.setNum(dm->len);
                               break;
                         case COL_ANOTE:
-                              s = pitch2string(dm->anote);
+                              s =  pitch2string(dm->anote);
                               break;
                         case COL_ENOTE:
-                              s = pitch2string(dm->enote);
+                              s =  pitch2string(dm->enote);
                               break;
                         case COL_LV1:
                               s.setNum(dm->lv1);
@@ -724,7 +739,7 @@ void DList::songChanged(int flags)
 //---------------------------------------------------------
 
 DList::DList(QHeaderView* h, QWidget* parent, int ymag)
-   : View(parent, 1, ymag)
+   : MusEWidget::View(parent, 1, ymag)
       {
       setBg(Qt::white);
       if (!h){

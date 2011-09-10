@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: utils.h,v 1.1.1.1.2.3 2009/11/14 03:37:48 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #ifndef __UTILS_H__
@@ -16,6 +31,7 @@ class QCanvas;
 class QPointF;
 class QColor;
 
+namespace MusEUtil {
 
 extern QString bitmap2String(int bm);
 extern int string2bitmap(const QString& str);
@@ -29,6 +45,8 @@ extern QFrame* hLine(QWidget* parent);
 extern QFrame* vLine(QWidget* parent);
 extern void dump(const unsigned char* p, int n);
 extern double curTime();
+
+} // namespace MusEUtils
 
 #endif
 

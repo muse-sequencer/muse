@@ -3,6 +3,21 @@
 //  Linux Music Editor
 //    $Id: mixdowndialog.cpp,v 1.1.1.1 2003/10/27 18:55:02 wschweer Exp $
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 #include <QFileDialog>
@@ -18,12 +33,14 @@
 
 SndFile* getSndFile(const SndFile* sf, QWidget* parent)
       {
-      MixdownFileDialog* dialog = new MixdownFileDialog(sf, parent);
+      MusEWidget::MixdownFileDialog* dialog = new MusEWidget::MixdownFileDialog(sf, parent);
       dialog->exec();
       SndFile* sndFile = dialog->sndFile();
       delete dialog;
       return sndFile;
       }
+
+namespace MusEWidget {
 
 //---------------------------------------------------------
 //   MixdownFileDialog
@@ -84,7 +101,7 @@ void MixdownFileDialog::accept()
       if (path.right(4) != ".wav")
             path += ".wav";
       sf = new SndFile(path);
-      sf->setFormat(format, channel, sampleRate);
+      sf->setFormat(format, channel, MusEGlobal::sampleRate);
       done(1);
       }
 
@@ -103,3 +120,4 @@ void MixdownFileDialog::fdialog()
             editPath->setText(path);
       }
 
+} // namespace MusEWidget
