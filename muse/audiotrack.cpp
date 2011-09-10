@@ -565,10 +565,10 @@ void AudioTrack::processAutomationEvents()
     }
   }
   
-  // Done with the recorded MusEGlobal::automation event list. Clear it.
+  // Done with the recorded automation event list. Clear it.
   _recEvents.clear();
         
-  // Try muse without this, so that the user can remain in MusEGlobal::automation write mode
+  // Try muse without this, so that the user can remain in automation write mode
   //  after a stop. 
   /*
   if (automationType() == AUTO_WRITE)
@@ -1014,7 +1014,7 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             l->read(xml);
 
             // Since (until now) muse wrote a 'zero' for plugin controller current value 
-            //  in the XML file, we can't use that value, now that plugin MusEGlobal::automation is added.
+            //  in the XML file, we can't use that value, now that plugin automation is added.
             // We must take the value from the plugin control value.
             // Otherwise we break all existing .med files with plugins, because the gui 
             //  controls would all be set to zero.
@@ -1138,7 +1138,7 @@ void AudioTrack::mapRackPluginsToControllers()
   // No matter of the outcome of the above - rack position is not too critical -
   //  making sure that each control has a controller is important. Otherwise they 
   //  are stuck at zero can't be adjusted.
-  // Muse med files created before the MusEGlobal::automation patches (before 0.9pre1) may have broken
+  // Muse med files created before the automation patches (before 0.9pre1) may have broken
   //  controller sections, so this will allow more tolerance of them.
   for(int idx = 0; idx < PipelineDepth; idx++)
   {
