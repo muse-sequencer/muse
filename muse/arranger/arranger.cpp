@@ -1013,7 +1013,7 @@ void Arranger::genTrackInfo(QWidget* parent)
       trackInfo->addWidget(midiTrackInfo, 1);
       trackInfo->addWidget(0, 2);
 
-///      genMusEWidget::MidiTrackInfo();
+///      genMidiTrackInfo();
       }
 
 //---------------------------------------------------------

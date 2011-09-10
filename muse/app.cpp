@@ -962,7 +962,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       //-------- View connections
       connect(viewTransportAction, SIGNAL(toggled(bool)), SLOT(toggleTransport(bool)));
-      connect(viewBigtimeAction, SIGNAL(toggled(bool)), SLOT(toggleMusEWidget::BigTime(bool)));
+      connect(viewBigtimeAction, SIGNAL(toggled(bool)), SLOT(toggleBigTime(bool)));
       connect(viewMixerAAction, SIGNAL(toggled(bool)),SLOT(toggleMixer1(bool)));
       connect(viewMixerBAction, SIGNAL(toggled(bool)), SLOT(toggleMixer2(bool)));
       connect(viewCliplistAction, SIGNAL(toggled(bool)), SLOT(startClipList(bool)));
@@ -3478,7 +3478,7 @@ void MusE::showBigtime(bool on)
       }
 
 //---------------------------------------------------------
-//   toggleMusEWidget::BigTime
+//   toggleBigTime
 //---------------------------------------------------------
 
 void MusE::toggleBigTime(bool checked)
