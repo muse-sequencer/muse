@@ -2634,7 +2634,7 @@ int Song::execAutomationCtlPopup(AudioTrack* track, const QPoint& menupos, int a
   eraseRangeAction->setData(CLEAR_RANGE);
   eraseRangeAction->setEnabled(canEraseRange);
 
-  QAction* clearAction = menu->addAction(tr("clear MusEGlobal::automation"));
+  QAction* clearAction = menu->addAction(tr("clear automation"));
   clearAction->setData(CLEAR_ALL_EVENTS);
   clearAction->setEnabled((bool)count);
 
@@ -2817,7 +2817,7 @@ int Song::execMidiAutomationCtlPopup(MidiTrack* track, MidiPart* part, const QPo
 //  menu->insertItem(tr("erase range"), CLEAR_RANGE, CLEAR_RANGE);
 //  menu->setItemEnabled(CLEAR_RANGE, canEraseRange);
 
-//  menu->insertItem(tr("clear MusEGlobal::automation"), CLEAR_ALL_EVENTS, CLEAR_ALL_EVENTS);
+//  menu->insertItem(tr("clear automation"), CLEAR_ALL_EVENTS, CLEAR_ALL_EVENTS);
 //  menu->setItemEnabled(CLEAR_ALL_EVENTS, (bool)count);
 
 

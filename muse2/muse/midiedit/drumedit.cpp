@@ -415,7 +415,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       split2->setSizes(mops);
       // By T356. Not much choice but to disable this for now, to stop runaway resize bug.
       // Can't seem to get the splitter to readjust when manually setting sizes.
-      //split2->setResizeMode(split1w1, QMusEWidget::Splitter::KeepSize);
+      //split2->setResizeMode(split1w1, QSplitter::KeepSize);
 
       gridS2->setRowStretch(1, 100);
       gridS2->setColumnStretch(0, 100);

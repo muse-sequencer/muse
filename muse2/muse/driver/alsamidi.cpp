@@ -400,6 +400,37 @@ bool MidiAlsaDevice::putEvent(snd_seq_event_t* event)
 //   Called from ALSA midi sequencer thread only.
 //---------------------------------------------------------
 
+#if 0
+void MidiAlsaDevice::processMidi()
+{
+  processStuckNotes();  
+  if (_playEvents.empty())
+        return;
+  int port = midiPort();
+  MidiPort* mp = port != -1 ? &midiPorts[port] : 0;
+  unsigned curFrame = audio->curFrame();
+  int tickpos = audio->tickPos();
+  bool extsync = extSyncFlag.value();
+  //int frameOffset = getFrameOffset();
+  //int nextTick = audio->nextTick();
+  
+  // Play all events up to current frame.
+  iMPEvent i = _playEvents.begin();            
+  for (; i != _playEvents.end(); ++i) {
+        if (i->time() > (extsync ? tickpos : curFrame))  // p3.3.25  Check: Should be nextTickPos? p4.0.34
+          break; 
+        if(mp){
+          if (mp->sendEvent(*i))
+            break;
+              }
+        else 
+          if(putMidiEvent(*i))
+            break;
+        }
+  _playEvents.erase(_playEvents.begin(), i);
+}
+
+#else
 void MidiAlsaDevice::processMidi()
 {
   bool stop = stopPending;  // Snapshots
@@ -638,6 +669,7 @@ void MidiAlsaDevice::handleSeek()
     }    
   }
 }
+#endif
 
 //---------------------------------------------------------
 //   initMidiAlsa

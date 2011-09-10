@@ -757,6 +757,7 @@ void Audio::msgPlay(bool val)
             }
       }
 
+/*
 //---------------------------------------------------------
 //   msgShowInstrumentGui
 //---------------------------------------------------------
@@ -764,11 +765,13 @@ void Audio::msgPlay(bool val)
 void Audio::msgShowInstrumentGui(MidiInstrument* instr, bool val)
       {
       instr->showGui(val);
-      AudioMsg msg;
-      msg.id = MIDI_SHOW_INSTR_GUI;
-      msg.p1 = instr;
-      msg.a  = val;
-      sendMessage(&msg, false);
+      // No need for this - it called msgUpdatePollFd which has nothing
+      //  to do with showing a gui.
+      //AudioMsg msg;
+      //msg.id = MIDI_SHOW_INSTR_GUI;
+      //msg.p1 = instr;
+      //msg.a  = val;
+      //sendMessage(&msg, false);
       }
 
 //---------------------------------------------------------
@@ -778,12 +781,13 @@ void Audio::msgShowInstrumentGui(MidiInstrument* instr, bool val)
 void Audio::msgShowInstrumentNativeGui(MidiInstrument* instr, bool val)
       {
       instr->showNativeGui(val);
-      AudioMsg msg;
-      msg.id = MIDI_SHOW_INSTR_NATIVE_GUI;
-      msg.p1 = instr;
-      msg.a  = val;
-      sendMessage(&msg, false);
+      //AudioMsg msg;
+      //msg.id = MIDI_SHOW_INSTR_NATIVE_GUI;
+      //msg.p1 = instr;
+      //msg.a  = val;
+      //sendMessage(&msg, false);
       }
+*/
 
 //---------------------------------------------------------
 //   msgAddTrack

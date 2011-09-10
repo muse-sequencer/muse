@@ -624,7 +624,7 @@ void AudioStrip::updateChannels()
       }
 
 //---------------------------------------------------------
-//   addMusEWidget::Knob
+//   addKnob
 //    type = 0 - panorama
 //           1 - aux send
 //---------------------------------------------------------

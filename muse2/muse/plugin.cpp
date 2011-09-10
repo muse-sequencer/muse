@@ -2557,7 +2557,7 @@ void PluginI::apply(unsigned long n)
           // Set the ladspa control port value.
           controls[k].tmpVal = v.value;
           
-          // Need to update the MusEGlobal::automation value, otherwise it overwrites later with the last MusEGlobal::automation value.
+          // Need to update the automation value, otherwise it overwrites later with the last automation value.
           if(_track && _id != -1)
           {
             // Since we are now in the audio thread context, there's no need to send a message,
@@ -2567,7 +2567,7 @@ void PluginI::apply(unsigned long n)
             //audio->msgSetPluginCtrlVal(_track, genACnum(_id, k), controls[k].val);
             _track->setPluginCtrlVal(genACnum(_id, k), v.value);
             
-            // Record MusEGlobal::automation.
+            // Record automation.
             // NO! Take care of this immediately in the OSC control handler, because we don't want 
             //  the silly delay associated with processing the fifo one-at-a-time here.
             
@@ -2583,7 +2583,7 @@ void PluginI::apply(unsigned long n)
         else
         #endif // OSC_SUPPORT
         {
-          // Process MusEGlobal::automation control value.
+          // Process automation control value.
           if(MusEGlobal::automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
           {
             if(controls[k].enCtrl && controls[k].en2Ctrl )
@@ -2650,7 +2650,7 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
       if(min_per > n)
         min_per = n;
       
-      // Process MusEGlobal::automation control values now.
+      // Process automation control values now.
       // TODO: This needs to be respect frame resolution. Put this inside the sample loop below.
       if(MusEGlobal::automation && _track && _track->automationType() != AUTO_OFF && _id != -1)
       {
@@ -2725,7 +2725,7 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
           controls[v.idx].tmpVal = v.value;
           
           /*
-          // Need to update the MusEGlobal::automation value, otherwise it overwrites later with the last MusEGlobal::automation value.
+          // Need to update the automation value, otherwise it overwrites later with the last MusEGlobal::automation value.
           if(_track && _id != -1)
           {
             // Since we are now in the audio thread context, there's no need to send a message,
@@ -2735,11 +2735,11 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
             //audio->msgSetPluginCtrlVal(_track, genACnum(_id, k), controls[k].val);
             _track->setPluginCtrlVal(genACnum(_id, v.idx), v.value);
             
-            // Record MusEGlobal::automation.
+            // Record automation.
             // NO! Take care of this immediately in the OSC control handler, because we don't want 
             //  any delay.
             // OTOH Since this is the actual place and time where the control ports values
-            //  are set, best to reflect what happens here to MusEGlobal::automation.
+            //  are set, best to reflect what happens here to automation.
             // However for dssi-vst it might be best to handle it that way.
             
             //AutomationType at = _track->automationType();
@@ -3019,7 +3019,7 @@ int PluginI::oscControl(unsigned long port, float value)
   }
   
    
-  // Record MusEGlobal::automation:
+  // Record automation:
   // Take care of this immediately, because we don't want the silly delay associated with 
   //  processing the fifo one-at-a-time in the apply().
   // NOTE: With some vsts we don't receive control events until the user RELEASES a control. 
@@ -3498,7 +3498,7 @@ PluginGui::PluginGui(PluginIBase* p)
                   gw[nobj].param  = parameter;
                   gw[nobj].type   = -1;
 
-                  if (strcmp(obj->metaObject()->className(), "MusEWidget::Slider") == 0) {
+                  if (strcmp(obj->metaObject()->className(), "Slider") == 0) {
                         gw[nobj].type = GuiWidgets::SLIDER;
                         ((MusEWidget::Slider*)obj)->setId(nobj);
                         ((MusEWidget::Slider*)obj)->setCursorHoming(true);
@@ -3513,7 +3513,7 @@ PluginGui::PluginGui(PluginIBase* p)
                         connect(obj, SIGNAL(sliderReleased(int)), SLOT(guiSliderReleased(int)));
                         connect(obj, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(guiSliderRightClicked(const QPoint &, int)));
                         }
-                  else if (strcmp(obj->metaObject()->className(), "MusEWidget::DoubleLabel") == 0) {
+                  else if (strcmp(obj->metaObject()->className(), "DoubleLabel") == 0) {
                         gw[nobj].type = GuiWidgets::DOUBLE_LABEL;
                         ((MusEWidget::DoubleLabel*)obj)->setId(nobj);
                         //for(int i = 0; i < nobj; i++)
@@ -3596,8 +3596,12 @@ PluginGui::PluginGui(PluginIBase* p)
                         params[i].label->setPrecision(2);
                         params[i].label->setId(i);
 
+                        // Let sliders all have different but unique colors
+                        uint hast = qHash(plugin->paramName(i));
+                        QColor color((uint) (hast * hast) % 16777216);
+
                         MusEWidget::Slider* s = new MusEWidget::Slider(0, "param", Qt::Horizontal,
-                           MusEWidget::Slider::None); //, style);
+                           MusEWidget::Slider::None, color);
                            
                         s->setCursorHoming(true);
                         s->setId(i);
@@ -3672,7 +3676,7 @@ PluginGui::PluginGui(PluginIBase* p)
                       m->setRange(dlower, dupper);
                       m->setVal(dval);
                       paramsOut[i].actuator = m;
-//                      paramsOut[i].label->setMusEWidget::Slider((MusEWidget::Slider*)params[i].actuator);
+//                      paramsOut[i].label->setSlider((MusEWidget::Slider*)params[i].actuator);
                       //paramsOut[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
                       label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
                       paramsOut[i].label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -4550,9 +4554,9 @@ void PluginGui::guiSliderRightClicked(const QPoint &p, int idx)
 //---------------------------------------------------------
 QWidget* PluginLoader::createWidget(const QString & className, QWidget * parent, const QString & name)
 {
-  if(className == QString("MusEWidget::DoubleLabel"))
+  if(className == QString("DoubleLabel"))
     return new MusEWidget::DoubleLabel(parent, name.toLatin1().constData()); 
-  if(className == QString("MusEWidget::Slider"))
+  if(className == QString("Slider"))
     return new MusEWidget::Slider(parent, name.toLatin1().constData(), Qt::Horizontal); 
 
   return QUiLoader::createWidget(className, parent, name);
