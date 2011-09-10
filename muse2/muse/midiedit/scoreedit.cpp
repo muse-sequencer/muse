@@ -4414,10 +4414,10 @@ void ScoreCanvas::midi_note(int pitch, int velo)
 void ScoreCanvas::update_parts()
 {
 	if (selected_part!=NULL) //if it's null, let it be null
-		selected_part=partFromSerialNumber(selected_part_index);
+		selected_part=MusEUtil::partFromSerialNumber(selected_part_index);
 	
 	if (dragged_event_part!=NULL) //same thing here
-		dragged_event_part=partFromSerialNumber(dragged_event_part_index);
+		dragged_event_part=MusEUtil::partFromSerialNumber(dragged_event_part_index);
 	
 	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 		it->update_parts();
@@ -4428,7 +4428,7 @@ void staff_t::update_parts()
 	parts.clear();
 	
 	for (set<int>::iterator it=part_indices.begin(); it!=part_indices.end(); it++)
-		parts.insert(partFromSerialNumber(*it));
+		parts.insert(MusEUtil::partFromSerialNumber(*it));
 }
 
 void staff_t::update_part_indices()

@@ -51,7 +51,7 @@ QString PitchEdit::mapValueToText(int v)
             return s;
             }
       else
-            return pitch2string(v);
+            return MusEUtil::pitch2string(v);
       }
 
 //---------------------------------------------------------

@@ -23,13 +23,22 @@
 #ifndef __HELPER_H__
 #define __HELPER_H__
 
-#include <QString>
+class QActionGroup;
+class QString;
+class QMenu;
+class QWidget;
 
 class Part;
 
-extern QString pitch2string(int v);
+namespace MusEUtil {
+
+QString pitch2string(int v);
 
 Part* partFromSerialNumber(int serial);
 
+QMenu* populateAddSynth(QWidget* parent);
+QActionGroup* populateAddTrack(QMenu* addTrack);
+
+}
 #endif
 

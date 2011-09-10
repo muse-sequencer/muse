@@ -33,6 +33,7 @@
 #include "listedit.h"
 #include "mtscale.h"
 #include "globals.h"
+#include "helper.h"
 #include "icons.h"
 #include "editevent.h"
 #include "xml.h"
@@ -381,7 +382,7 @@ QString EventListItem::text(int col) const
                   break;
             case 4:
                   if (event.isNote() || event.type() == PAfter)
-                        s =  pitch2string(event.dataA());
+                        s =  MusEUtil::pitch2string(event.dataA());
                   else if (event.type() == Controller)
                         s.setNum(event.dataA() & 0xffff);  // mask off type bits
                   else

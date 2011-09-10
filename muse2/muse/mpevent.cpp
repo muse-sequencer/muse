@@ -88,7 +88,7 @@ void MEvent::dump() const
       {
       printf("time:%d port:%d chan:%d ", _time, _port, _channel+1);
       if (_type == 0x90) {   // NoteOn
-            QString s = pitch2string(_a);
+            QString s = MusEUtil::pitch2string(_a);
             printf("NoteOn %s(0x%x) %d\n", s.toLatin1().constData(), _a, _b);
            }
       else if (_type == 0xf0) {

@@ -55,6 +55,7 @@
 #include "audio.h"
 #include "instruments/minstrument.h"
 #include "app.h"
+#include "helper.h"
 #include "gconfig.h"
 #include "event.h"
 #include "midiedit/drummap.h"
@@ -65,11 +66,6 @@
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
 #endif
-
-//namespace MusEApp {  FINDMICHJETZT: again: dirty, dirty. implemented in arrangerview.cpp
-//                     should be moved together with populateAddTrack somewhere else
-extern QMenu* populateAddSynth(QWidget* parent);
-//}
 
 static const int MIN_TRACKHEIGHT = 20;
 static const int WHEEL_DELTA = 120;
@@ -1022,7 +1018,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
 		  aaux->setData(Track::AUDIO_AUX);
                   
                   // Create a sub-menu and fill it with found synth types. Make p the owner.
-                  QMenu* synp = populateAddSynth(p);
+                  QMenu* synp = MusEUtil::populateAddSynth(p);
 		  synp->setIcon(*synthIcon);
 		  synp->setTitle(QT_TRANSLATE_NOOP("@default", "Add Synth"));
 

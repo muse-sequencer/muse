@@ -35,6 +35,7 @@
 #include <QAction>
 
 #include "app.h"
+#include "helper.h"
 #include "icons.h"
 #include "amixer.h"
 #include "song.h"
@@ -44,11 +45,6 @@
 
 #include "gconfig.h"
 #include "xml.h"
-
-//namespace MusEApp { FINDMICHJETZT dirty, dirty. this is implemented in arrangerview.cpp,
-//                    currently in global namespace. where to put it? in an own code file? helper.cpp?
-extern QActionGroup* populateAddTrack(QMenu* addTrack);
-//}
 
 #define __WIDTH_COMPENSATION 4
 
@@ -172,7 +168,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEConfig::MixerConfig* c)
       setWindowIcon(*museIcon);
 
       QMenu* menuConfig = menuBar()->addMenu(tr("&Create"));
-      populateAddTrack(menuConfig);
+      MusEUtil::populateAddTrack(menuConfig);
       
       QMenu* menuView = menuBar()->addMenu(tr("&View"));
       routingId = menuView->addAction(tr("Routing"), this, SLOT(toggleRouteDialog()));

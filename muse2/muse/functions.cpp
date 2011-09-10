@@ -1009,7 +1009,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 						Track* dest_track;
 						
 						if (paste_into_part == NULL)
-							dest_part = partFromSerialNumber(part_id);
+							dest_part = MusEUtil::partFromSerialNumber(part_id);
 						else
 							dest_part=paste_into_part;
 						

@@ -33,6 +33,7 @@
 #include "pitchedit.h"
 #include "midiport.h"
 #include "drummap.h"
+#include "helper.h"
 #include "icons.h"
 #include "dlist.h"
 #include "song.h"
@@ -90,10 +91,10 @@ void DList::draw(QPainter& p, const QRect& rect)
                               s.setNum(dm->len);
                               break;
                         case COL_ANOTE:
-                              s =  pitch2string(dm->anote);
+                              s =  MusEUtil::pitch2string(dm->anote);
                               break;
                         case COL_ENOTE:
-                              s =  pitch2string(dm->enote);
+                              s =  MusEUtil::pitch2string(dm->enote);
                               break;
                         case COL_LV1:
                               s.setNum(dm->lv1);

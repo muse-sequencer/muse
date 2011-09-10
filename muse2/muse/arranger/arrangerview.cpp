@@ -3,307 +3,70 @@
 //  Linux Music Editor
 //  arrangerview.cpp
 //  (C) Copyright 2011 Florian Jung (flo93@users.sourceforge.net)
+//
+//  This program is free software; you can redistribute it and/or
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; version 2 of
+//  the License, or (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program; if not, write to the Free Software
+//  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+//
 //=========================================================
 
 
-#include <QLayout>
-#include <QSizeGrip>
-#include <QLabel>
-#include <QScrollBar>
-#include <QPushButton>
-#include <QToolButton>
-#include <QToolTip>
-#include <QMenu>
-#include <QSignalMapper>
-#include <QMenuBar>
 #include <QApplication>
 #include <QClipboard>
-#include <QDir>
-#include <QKeySequence>
-#include <QKeyEvent>
-#include <QGridLayout>
-#include <QResizeEvent>
 #include <QCloseEvent>
-#include <QMimeData>
-#include <QScrollArea>
-#include <QSettings>
+#include <QDir>
+#include <QGridLayout>
 #include <QImage>
 #include <QInputDialog>
+#include <QKeyEvent>
+#include <QKeySequence>
+#include <QLabel>
+#include <QLayout>
+#include <QMenu>
+#include <QMenuBar>
 #include <QMessageBox>
+#include <QMimeData>
+#include <QPushButton>
+#include <QResizeEvent>
+#include <QScrollArea>
+#include <QScrollBar>
+#include <QSettings>
 #include <QShortcut>
+#include <QSignalMapper>
+#include <QSizeGrip>
+#include <QToolButton>
+#include <QToolTip>
 
-#include <stdio.h>
-#include <math.h>
-
-#include "arrangerview.h"
-#include "visibletracks.h"
-#include "structure.h"
-
-
-#include <iostream>
-#include <sstream>
-using namespace std;
-
-#include "app.h"
-#include "xml.h"
-#include "mtscale.h"
 #include "al/sig.h"
-#include "scoreedit.h"
-#include "tools.h"
-#include "ttoolbar.h"
-#include "tb1.h"
-#include "globals.h"
-#include "gconfig.h"
-#include "icons.h"
+#include "app.h"
+#include "arrangerview.h"
 #include "audio.h"
 #include "functions.h"
+#include "gconfig.h"
+#include "globals.h"
 #include "helper.h"
+#include "icons.h"
+#include "mtscale.h"
+#include "scoreedit.h"
+#include "shortcuts.h"
 #include "sig.h"
 #include "song.h"
-#include "shortcuts.h"
-#include "synth.h"
-
-#ifdef DSSI_SUPPORT
-#include "dssihost.h"
-#endif
-
-#ifdef VST_SUPPORT
-#include "vst.h"
-#endif
-
-
-//---------------------------------------------------------
-//   populateAddSynth
-//---------------------------------------------------------
-
-// ORCAN - CHECK
-QMenu* populateAddSynth(QWidget* parent)
-{
-  QMenu* synp = new QMenu(parent);
-  
-  //typedef std::multimap<std::string, int, addSynth_cmp_str > asmap;
-  typedef std::multimap<std::string, int > asmap;
-  
-  //typedef std::multimap<std::string, int, addSynth_cmp_str >::iterator imap;
-  typedef std::multimap<std::string, int >::iterator imap;
-  
-  MessSynth* synMESS   = 0;
-  QMenu* synpMESS = 0;
-  asmap mapMESS;
-
-  #ifdef DSSI_SUPPORT
-  DssiSynth* synDSSI   = 0;
-  QMenu* synpDSSI = 0;
-  asmap mapDSSI;
-  #endif                  
-  
-  #ifdef VST_SUPPORT
-  VstSynth*  synVST    = 0;
-  QMenu* synpVST  = 0;
-  asmap mapVST;
-  #endif                  
-  
-  // Not necessary, but what the heck.
-  QMenu* synpOther = 0;
-  asmap mapOther;
-  
-  //const int synth_base_id = 0x1000;
-  int ii = 0;
-  for(std::vector<Synth*>::iterator i = synthis.begin(); i != synthis.end(); ++i) 
-  {
-    synMESS = dynamic_cast<MessSynth*>(*i);
-    if(synMESS)
-    {
-      mapMESS.insert( std::pair<std::string, int> (std::string(synMESS->description().toLower().toLatin1().constData()), ii) );
-    }
-    else
-    {
-      
-      #ifdef DSSI_SUPPORT
-      synDSSI = dynamic_cast<DssiSynth*>(*i);
-      if(synDSSI)
-      {
-        mapDSSI.insert( std::pair<std::string, int> (std::string(synDSSI->description().toLower().toLatin1().constData()), ii) );
-      }
-      else
-      #endif                      
-      
-      {
-        #ifdef VST_SUPPORT
-        synVST = dynamic_cast<VstSynth*>(*i);
-        if(synVST)
-        {
-          mapVST.insert( std::pair<std::string, int> (std::string(synVST->description().toLower().toLatin1().constData()), ii) );
-        }
-        else
-        #endif                      
-        
-        {
-          mapOther.insert( std::pair<std::string, int> (std::string((*i)->description().toLower().toLatin1().constData()), ii) );
-        }
-      }
-    }
-  
-    ++ii;
-  }
-  
-  int sz = synthis.size();
-  for(imap i = mapMESS.begin(); i != mapMESS.end(); ++i) 
-  {
-    int idx = i->second;
-    if(idx > sz)           // Sanity check
-      continue;
-    Synth* s = synthis[idx];
-    if(s)
-    {
-      // No MESS sub-menu yet? Create it now.
-      if(!synpMESS)
-        synpMESS = new QMenu(parent);
-      QAction* sM = synpMESS->addAction(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">");
-      sM->setData(MENU_ADD_SYNTH_ID_BASE + idx);
-    }  
-  }
-  
-  #ifdef DSSI_SUPPORT
-  for(imap i = mapDSSI.begin(); i != mapDSSI.end(); ++i) 
-  {
-    int idx = i->second;
-    if(idx > sz)           
-      continue;
-    Synth* s = synthis[idx];
-    if(s)
-    {
-      // No DSSI sub-menu yet? Create it now.
-      if(!synpDSSI)
-        synpDSSI = new QMenu(parent);
-      //synpDSSI->insertItem(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
-      QAction* sD = synpDSSI->addAction(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">");
-      sD->setData(MENU_ADD_SYNTH_ID_BASE + idx);
-    }  
-  }
-  #endif
-  
-  #ifdef VST_SUPPORT
-  for(imap i = mapVST.begin(); i != mapVST.end(); ++i) 
-  {
-    int idx = i->second;
-    if(idx > sz)           
-      continue;
-    Synth* s = synthis[idx];
-    if(s)
-    {
-      // No VST sub-menu yet? Create it now.
-      if(!synpVST)
-        synpVST = new QMenu(parent);
-      QAction* sV = synpVST->addAction(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">");
-      sV->setData(MENU_ADD_SYNTH_ID_BASE + idx);
-    }  
-  }
-  #endif
-  
-  for(imap i = mapOther.begin(); i != mapOther.end(); ++i) 
-  {
-    int idx = i->second;
-    if(idx > sz)          
-      continue;
-    Synth* s = synthis[idx];
-    // No Other sub-menu yet? Create it now.
-    if(!synpOther)
-      synpOther = new QMenu(parent);
-    //synpOther->insertItem(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
-    QAction* sO = synpOther->addAction(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">");
-    sO->setData(MENU_ADD_SYNTH_ID_BASE + idx);
-  }
-  
-  if(synpMESS)
-  {
-    synpMESS->setIcon(*synthIcon);
-    synpMESS->setTitle(QT_TRANSLATE_NOOP("@default", "MESS"));
-    synp->addMenu(synpMESS);
-  }
-  
-  #ifdef DSSI_SUPPORT
-  if(synpDSSI)
-  {
-    synpDSSI->setIcon(*synthIcon);
-    synpDSSI->setTitle(QT_TRANSLATE_NOOP("@default", "DSSI"));
-    synp->addMenu(synpDSSI);
-  }  
-  #endif
-  
-  #ifdef VST_SUPPORT
-  if(synpVST)
-  {
-    synpVST->setIcon(*synthIcon);
-    synpVST->setTitle(QT_TRANSLATE_NOOP("@default", "FST"));
-    synp->addMenu(synpVST);
-  }  
-  #endif
-  
-  if(synpOther)
-  {
-    synpOther->setIcon(*synthIcon);
-    synpOther->setTitle(QObject::tr("Other"));
-    synp->addMenu(synpOther);
-  }
-  
-  return synp;
-}
-
-
-//---------------------------------------------------------
-//   populateAddTrack
-//    this is also used in "mixer"
-//---------------------------------------------------------
-
-QActionGroup* populateAddTrack(QMenu* addTrack)
-      {
-      QActionGroup* grp = new QActionGroup(addTrack);
-
-      QAction* midi = addTrack->addAction(QIcon(*addtrack_addmiditrackIcon),
-                                          QT_TRANSLATE_NOOP("@default", "Add Midi Track"));
-      midi->setData(Track::MIDI);
-      grp->addAction(midi);
-      QAction* drum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
-                                          QT_TRANSLATE_NOOP("@default", "Add Drum Track"));
-      drum->setData(Track::DRUM);
-      grp->addAction(drum);
-      QAction* wave = addTrack->addAction(QIcon(*addtrack_wavetrackIcon),
-                                          QT_TRANSLATE_NOOP("@default", "Add Wave Track"));
-      wave->setData(Track::WAVE);
-      grp->addAction(wave);
-      QAction* aoutput = addTrack->addAction(QIcon(*addtrack_audiooutputIcon),
-                                             QT_TRANSLATE_NOOP("@default", "Add Audio Output"));
-      aoutput->setData(Track::AUDIO_OUTPUT);
-      grp->addAction(aoutput);
-      QAction* agroup = addTrack->addAction(QIcon(*addtrack_audiogroupIcon),
-                                            QT_TRANSLATE_NOOP("@default", "Add Audio Group"));
-      agroup->setData(Track::AUDIO_GROUP);
-      grp->addAction(agroup);
-      QAction* ainput = addTrack->addAction(QIcon(*addtrack_audioinputIcon),
-                                            QT_TRANSLATE_NOOP("@default", "Add Audio Input"));
-      ainput->setData(Track::AUDIO_INPUT);
-      grp->addAction(ainput);
-      QAction* aaux = addTrack->addAction(QIcon(*addtrack_auxsendIcon),
-                                          QT_TRANSLATE_NOOP("@default", "Add Aux Send"));
-      aaux->setData(Track::AUDIO_AUX);
-      grp->addAction(aaux);
-
-      // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
-      QMenu* synp = populateAddSynth(addTrack);
-      synp->setIcon(*synthIcon);
-      synp->setTitle(QT_TRANSLATE_NOOP("@default", "Add Synth"));
-
-      // Add the sub-menu to the given menu.
-      addTrack->addMenu(synp);
-      
-      QObject::connect(addTrack, SIGNAL(triggered(QAction *)), song, SLOT(addNewTrack(QAction *)));
-
-      return grp;
-      }
-
-
-
+#include "structure.h"
+#include "tb1.h"
+#include "tools.h"
+#include "ttoolbar.h"
+#include "visibletracks.h"
+#include "xml.h"
 
 
 //---------------------------------------------------------
@@ -864,7 +627,7 @@ void ArrangerView::clearScoreMenuMappers()
 
 void ArrangerView::populateAddTrack()
 {
-      QActionGroup *grp = ::populateAddTrack(addTrack);
+      QActionGroup *grp = MusEUtil::populateAddTrack(addTrack);
       
       trackMidiAction = grp->actions()[0];
       trackDrumAction = grp->actions()[1];
