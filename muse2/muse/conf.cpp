@@ -455,7 +455,7 @@ static void loadConfigMetronom(Xml& xml)
                               MusEGlobal::midiClickFlag = xml.parseInt();
                         else if (tag == "audioClickEnable")
                               MusEGlobal::audioClickFlag = xml.parseInt();
-                        else if (tag == "MusEGlobal::audioClickVolume")
+                        else if (tag == "audioClickVolume")
                               MusEGlobal::audioClickVolume = xml.parseFloat();
                         else
                               xml.unknown("Metronome");
@@ -488,7 +488,7 @@ static void readSeqConfiguration(Xml& xml)
                               readConfigMidiPort(xml);
                         else if (tag == "rcStop")
                               MusEGlobal::rcStopNote = xml.parseInt();
-                        else if (tag == "MusEGlobal::rcEnable")
+                        else if (tag == "rcEnable")
                               MusEGlobal::rcEnable = xml.parseInt();
                         else if (tag == "rcRecord")
                               MusEGlobal::rcRecordNote = xml.parseInt();
@@ -740,19 +740,19 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               MusEConfig::config.importMidiSplitParts = xml.parseInt();
                         else if (tag == "midiInputDevice")
                               MusEGlobal::midiInputPorts = xml.parseInt();
-                        else if (tag == "MusEGlobal::midiInputChannel")
+                        else if (tag == "midiInputChannel")
                               MusEGlobal::midiInputChannel = xml.parseInt();
-                        else if (tag == "MusEGlobal::midiRecordType")
+                        else if (tag == "midiRecordType")
                               MusEGlobal::midiRecordType = xml.parseInt();
-                        else if (tag == "MusEGlobal::midiThruType")
+                        else if (tag == "midiThruType")
                               MusEGlobal::midiThruType = xml.parseInt();
-                        else if (tag == "MusEGlobal::midiFilterCtrl1")
+                        else if (tag == "midiFilterCtrl1")
                               MusEGlobal::midiFilterCtrl1 = xml.parseInt();
-                        else if (tag == "MusEGlobal::midiFilterCtrl2")
+                        else if (tag == "midiFilterCtrl2")
                               MusEGlobal::midiFilterCtrl2 = xml.parseInt();
-                        else if (tag == "MusEGlobal::midiFilterCtrl3")
+                        else if (tag == "midiFilterCtrl3")
                               MusEGlobal::midiFilterCtrl3 = xml.parseInt();
-                        else if (tag == "MusEGlobal::midiFilterCtrl4")
+                        else if (tag == "midiFilterCtrl4")
                               MusEGlobal::midiFilterCtrl4 = xml.parseInt();
                         else if (tag == "waveTracksVisible")
                                  WaveTrack::setVisible((bool)xml.parseInt());
@@ -1073,10 +1073,10 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       xml.intTag(level, "preroll", MusEGlobal::precountPreroll);
       xml.intTag(level, "midiClickEnable", MusEGlobal::midiClickFlag);
       xml.intTag(level, "audioClickEnable", MusEGlobal::audioClickFlag);
-      xml.floatTag(level, "MusEGlobal::audioClickVolume", MusEGlobal::audioClickVolume);
+      xml.floatTag(level, "audioClickVolume", MusEGlobal::audioClickVolume);
       xml.tag(level--, "/metronom");
 
-      xml.intTag(level, "MusEGlobal::rcEnable",   MusEGlobal::rcEnable);
+      xml.intTag(level, "rcEnable",   MusEGlobal::rcEnable);
       xml.intTag(level, "rcStop",     MusEGlobal::rcStopNote);
       xml.intTag(level, "rcRecord",   MusEGlobal::rcRecordNote);
       xml.intTag(level, "rcGotoLeft", MusEGlobal::rcGotoLeftMarkNote);
@@ -1229,13 +1229,13 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.intTag(level, "projectStoreInFolder", MusEConfig::config.projectStoreInFolder);
       xml.intTag(level, "useProjectSaveDialog", MusEConfig::config.useProjectSaveDialog);
       xml.intTag(level, "midiInputDevice", MusEGlobal::midiInputPorts);
-      xml.intTag(level, "MusEGlobal::midiInputChannel", MusEGlobal::midiInputChannel);
-      xml.intTag(level, "MusEGlobal::midiRecordType", MusEGlobal::midiRecordType);
-      xml.intTag(level, "MusEGlobal::midiThruType", MusEGlobal::midiThruType);
-      xml.intTag(level, "MusEGlobal::midiFilterCtrl1", MusEGlobal::midiFilterCtrl1);
-      xml.intTag(level, "MusEGlobal::midiFilterCtrl2", MusEGlobal::midiFilterCtrl2);
-      xml.intTag(level, "MusEGlobal::midiFilterCtrl3", MusEGlobal::midiFilterCtrl3);
-      xml.intTag(level, "MusEGlobal::midiFilterCtrl4", MusEGlobal::midiFilterCtrl4);
+      xml.intTag(level, "midiInputChannel", MusEGlobal::midiInputChannel);
+      xml.intTag(level, "midiRecordType", MusEGlobal::midiRecordType);
+      xml.intTag(level, "midiThruType", MusEGlobal::midiThruType);
+      xml.intTag(level, "midiFilterCtrl1", MusEGlobal::midiFilterCtrl1);
+      xml.intTag(level, "midiFilterCtrl2", MusEGlobal::midiFilterCtrl2);
+      xml.intTag(level, "midiFilterCtrl3", MusEGlobal::midiFilterCtrl3);
+      xml.intTag(level, "midiFilterCtrl4", MusEGlobal::midiFilterCtrl4);
       
       //xml.intTag(level, "txDeviceId", txDeviceId);
       //xml.intTag(level, "rxDeviceId", rxDeviceId);

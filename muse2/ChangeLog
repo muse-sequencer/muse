@@ -17,7 +17,7 @@
           TODO: Restoration of sustain upon play seems broken for a while - try putEvent instead of addScheduledEvent
            in Audio::startRolling().
         - Cleaned some namespace change artifacts. Fixed signal/slot mechanism related to bigtime, pianoroll,
-          drumedit (Orcan)
+          drumedit. Fixed config file corruption. (Orcan)
         - Made plugin slider colors fancy, experimental. (Orcan)
 08.09.2011:
         - Finished namespace MusEWidget. Added namespaces MusEUtil, MusEDialog. (Orcan)
