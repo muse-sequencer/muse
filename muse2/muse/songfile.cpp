@@ -1442,7 +1442,7 @@ void Song::read(Xml& xml, bool isTemplate)
                               readMarker(xml);
                         else if (tag == "globalPitchShift")
                               _globalPitchShift = xml.parseInt();
-                        else if (tag == "MusEGlobal::automation")
+                        else if (tag == "automation")
                               MusEGlobal::automation = xml.parseInt();
                         else if (tag == "cpos") {
                               int pos = xml.parseInt();
@@ -1490,7 +1490,7 @@ void Song::write(int level, Xml& xml) const
       xml.tag(level++, "song");
       xml.strTag(level, "info", songInfoStr);
       xml.intTag(level, "showinfo", showSongInfo);
-      xml.intTag(level, "MusEGlobal::automation", MusEGlobal::automation);
+      xml.intTag(level, "automation", MusEGlobal::automation);
       xml.intTag(level, "cpos", song->cpos());
       xml.intTag(level, "rpos", song->rpos());
       xml.intTag(level, "lpos", song->lpos());

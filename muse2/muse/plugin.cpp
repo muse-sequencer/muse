@@ -3498,7 +3498,7 @@ PluginGui::PluginGui(PluginIBase* p)
                   gw[nobj].param  = parameter;
                   gw[nobj].type   = -1;
 
-                  if (strcmp(obj->metaObject()->className(), "MusEWidget::Slider") == 0) {
+                  if (strcmp(obj->metaObject()->className(), "Slider") == 0) {
                         gw[nobj].type = GuiWidgets::SLIDER;
                         ((MusEWidget::Slider*)obj)->setId(nobj);
                         ((MusEWidget::Slider*)obj)->setCursorHoming(true);
@@ -3513,7 +3513,7 @@ PluginGui::PluginGui(PluginIBase* p)
                         connect(obj, SIGNAL(sliderReleased(int)), SLOT(guiSliderReleased(int)));
                         connect(obj, SIGNAL(sliderRightClicked(const QPoint &, int)), SLOT(guiSliderRightClicked(const QPoint &, int)));
                         }
-                  else if (strcmp(obj->metaObject()->className(), "MusEWidget::DoubleLabel") == 0) {
+                  else if (strcmp(obj->metaObject()->className(), "DoubleLabel") == 0) {
                         gw[nobj].type = GuiWidgets::DOUBLE_LABEL;
                         ((MusEWidget::DoubleLabel*)obj)->setId(nobj);
                         //for(int i = 0; i < nobj; i++)
@@ -4554,9 +4554,9 @@ void PluginGui::guiSliderRightClicked(const QPoint &p, int idx)
 //---------------------------------------------------------
 QWidget* PluginLoader::createWidget(const QString & className, QWidget * parent, const QString & name)
 {
-  if(className == QString("MusEWidget::DoubleLabel"))
+  if(className == QString("DoubleLabel"))
     return new MusEWidget::DoubleLabel(parent, name.toLatin1().constData()); 
-  if(className == QString("MusEWidget::Slider"))
+  if(className == QString("Slider"))
     return new MusEWidget::Slider(parent, name.toLatin1().constData(), Qt::Horizontal); 
 
   return QUiLoader::createWidget(className, parent, name);

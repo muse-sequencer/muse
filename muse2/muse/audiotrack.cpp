@@ -899,7 +899,7 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
       Track::writeProperties(level, xml);
       xml.intTag(level, "prefader", prefader());
       xml.intTag(level, "sendMetronome", sendMetronome());
-      xml.intTag(level, "MusEGlobal::automation", int(automationType()));
+      xml.intTag(level, "automation", int(automationType()));
       if (hasAuxSend()) {
             int naux = song->auxs()->size();
             for (int idx = 0; idx < naux; ++idx) {
@@ -1003,7 +1003,7 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             _prefader = xml.parseInt();
       else if (tag == "sendMetronome")
             _sendMetronome = xml.parseInt();
-      else if (tag == "MusEGlobal::automation")
+      else if (tag == "automation")
             setAutomationType(AutomationType(xml.parseInt()));
       // Removed by T356
       // "recfile" tag not saved anymore
