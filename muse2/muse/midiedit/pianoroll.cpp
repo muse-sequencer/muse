@@ -111,6 +111,10 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       mapper->setMapping(editPasteAction, PianoCanvas::CMD_PASTE);
       connect(editPasteAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
+      editPasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("&Paste (with dialog)"));
+      mapper->setMapping(editPasteDialogAction, PianoCanvas::CMD_PASTE_DIALOG);
+      connect(editPasteDialogAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      
       menuEdit->addSeparator();
       
       editDelEventsAction = menuEdit->addAction(tr("Delete &Events"));
@@ -632,7 +636,11 @@ void PianoRoll::cmd(int cmd)
             case PianoCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
             case PianoCanvas::CMD_PASTE: 
                               ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-                              paste_notes(); //(canvas->part()); TODO FINDMICHJETZT
+                              paste_notes(3072);
+                              break;
+            case PianoCanvas::CMD_PASTE_DIALOG: 
+                              ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
+                              paste_notes((canvas->part()));
                               break;
 						case PianoCanvas::CMD_MODIFY_GATE_TIME: modify_notelen(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
@@ -1196,6 +1204,7 @@ void PianoRoll::setEventColorMode(int mode)
 void PianoRoll::clipboardChanged()
       {
       editPasteAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
+      editPasteDialogAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
       }
 
 //---------------------------------------------------------
@@ -1243,6 +1252,7 @@ void PianoRoll::initShortcuts()
       editCutAction->setShortcut(shortcuts[SHRT_CUT].key);
       editCopyAction->setShortcut(shortcuts[SHRT_COPY].key);
       editPasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
+      editPasteDialogAction->setShortcut(shortcuts[SHRT_PASTE_DIALOG].key);
       editDelEventsAction->setShortcut(shortcuts[SHRT_DELETE].key);
       
       selectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key); 

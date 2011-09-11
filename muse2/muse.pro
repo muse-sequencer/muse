@@ -190,6 +190,7 @@ HEADERS = \
 	./muse/widgets/tempolabel.h \
 	./muse/widgets/mixdowndialog.h \
 	./muse/widgets/pastedialog.h \
+	./muse/widgets/pasteeventsdialog.h \
 	./muse/widgets/sigedit.h \
 	./muse/widgets/songinfo.h \
 	./muse/widgets/scldraw.h \
@@ -412,6 +413,7 @@ SOURCES = \
 	./muse/widgets/unusedwavefiles.cpp \
 	./muse/widgets/splitter.cpp \
 	./muse/widgets/pastedialog.cpp \
+	./muse/widgets/pasteeventsdialog.cpp \
 	./muse/widgets/ctrlcombo.cpp \
 	./muse/widgets/siglabel.cpp \
 	./muse/widgets/projectcreateimpl.cpp \
@@ -597,6 +599,7 @@ FORMS = \
 	./muse/widgets/editsysexdialogbase.ui \
 	./muse/widgets/projectcreate.ui \
 	./muse/widgets/pastedialogbase.ui \
+	./muse/widgets/pasteeventsdialogbase.ui \
 	./muse/widgets/didyouknow.ui \
 	./muse/widgets/itransformbase.ui \
 	./muse/widgets/aboutbox.ui \

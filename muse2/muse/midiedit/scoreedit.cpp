@@ -367,6 +367,10 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 		menu_mapper->setMapping(paste_action, CMD_PASTE);
 		connect(paste_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
 
+		paste_dialog_action = edit_menu->addAction(QIcon(*editpasteIconSet), tr("Paste (with dialog)"));
+		menu_mapper->setMapping(paste_dialog_action, CMD_PASTE_DIALOG);
+		connect(paste_dialog_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+
 		edit_menu->addSeparator();
 
 		del_action = edit_menu->addAction(tr("Delete &Events"));
@@ -497,6 +501,7 @@ void ScoreEdit::init_shortcuts()
 	cut_action->setShortcut(shortcuts[SHRT_CUT].key);
 	copy_action->setShortcut(shortcuts[SHRT_COPY].key);
 	paste_action->setShortcut(shortcuts[SHRT_PASTE].key);
+	paste_dialog_action->setShortcut(shortcuts[SHRT_PASTE_DIALOG].key);
 	del_action->setShortcut(shortcuts[SHRT_DELETE].key);
 
 	select_all_action->setShortcut(shortcuts[SHRT_SELECT_ALL].key); 
@@ -694,7 +699,11 @@ void ScoreEdit::menu_command(int cmd)
 		case CMD_COPY: copy_notes(score_canvas->get_all_parts(), 1); break;
 		case CMD_PASTE: 
 			menu_command(CMD_SELECT_NONE); 
-			paste_notes(); //(score_canvas->get_selected_part()); TODO FINDMICHJETZT
+			paste_notes(3072);
+			break;
+		case CMD_PASTE_DIALOG: 
+			menu_command(CMD_SELECT_NONE); 
+			paste_notes(score_canvas->get_selected_part());
 			break;
 		case CMD_QUANTIZE: quantize_notes(score_canvas->get_all_parts()); break;
 		case CMD_VELOCITY: modify_velocity(score_canvas->get_all_parts()); break;
@@ -716,6 +725,7 @@ void ScoreEdit::menu_command(int cmd)
 void ScoreEdit::clipboard_changed()
 {
 	paste_action->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
+	paste_dialog_action->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
 }
 
 void ScoreEdit::selection_changed()
@@ -4501,9 +4511,16 @@ void ScoreEdit::keyPressEvent(QKeyEvent* event)
  *     changing "share" status, the changed state isn't stored
  * 
  * CURRENT TODO
+ *   o pasting in editors sometimes fails oO? ( ERROR: reading eventlist from clipboard failed. ignoring this one... )
+ *   o ctrl+shift+c for editors
  *   o when pasting and creating new parts, inform the editors about that!
  *   o TEST pasting in editors!
- *   o pasting in editors: add dialogs
+ *   o sane default for raster
+ *   o use raster and amount in paste_notes!
+ *   x clone-bug
+ *   x pasting in editors: add dialogs
+ * 
+ *   o ticks-to-quarter spinboxes
  * 
  * ! o fix sigedit boxes
  * M o remove that ugly "bool initalizing" stuff. it's probably unneeded (watch out for the FINDMICH message)

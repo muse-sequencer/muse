@@ -97,8 +97,10 @@ enum {
       SHRT_UNDO,  //Ctrl+Z
       SHRT_REDO,  //Ctrl+Y
       SHRT_COPY,  //Ctrl+C
+      SHRT_COPY_RANGE, //Ctrl+Shift+C
       SHRT_CUT,   //Ctrl+X
       SHRT_PASTE, //Ctrl+V
+      SHRT_PASTE_DIALOG, //Ctrl+Shift+V
       SHRT_DELETE,//Delete
 
 
@@ -127,7 +129,6 @@ enum {
       SHRT_GLOBAL_CUT, //Default: undefined
       SHRT_GLOBAL_INSERT, //Default: undefined
       SHRT_GLOBAL_SPLIT, //Default: undefined
-      SHRT_COPY_RANGE, //Default: Ctrl+Shift+C
       SHRT_CUT_EVENTS, //Default: undefined
 
       SHRT_OPEN_TRANSPORT, //F11
@@ -190,7 +191,6 @@ enum {
 
       SHRT_INSERTMEAS, //Ctrl+Shift+M - insert measures
       
-      SHRT_PASTE_DIALOG, //CTRL+SHIFT+_V
       SHRT_PASTE_CLONE, //CTRL+B
       SHRT_PASTE_CLONE_DIALOG, //CTRL+SHIFT+B
       

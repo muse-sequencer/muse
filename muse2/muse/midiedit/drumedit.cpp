@@ -198,17 +198,20 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       cutAction = menuEdit->addAction(QIcon(*editcutIconSet), tr("Cut"));
       copyAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy"));
       pasteAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste"));
+      pasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste (with Dialog)"));
       menuEdit->addSeparator();
       deleteAction = menuEdit->addAction(tr("Delete Events"));
 
       connect(cutAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(copyAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(pasteAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(pasteDialogAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(deleteAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
 
       signalMapper->setMapping(cutAction, DrumCanvas::CMD_CUT);
       signalMapper->setMapping(copyAction, DrumCanvas::CMD_COPY);
       signalMapper->setMapping(pasteAction, DrumCanvas::CMD_PASTE);
+      signalMapper->setMapping(pasteDialogAction, DrumCanvas::CMD_PASTE_DIALOG);
       signalMapper->setMapping(deleteAction, DrumCanvas::CMD_DEL);
 
       menuSelect = menuEdit->addMenu(QIcon(*selectIcon), tr("&Select"));
@@ -919,7 +922,11 @@ void DrumEdit::cmd(int cmd)
             case DrumCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
             case DrumCanvas::CMD_PASTE: 
                   ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
-                  paste_notes(); // (canvas->part());  TODO FINDMICHJETZT
+                  paste_notes(3072);
+                  break;
+            case DrumCanvas::CMD_PASTE_DIALOG: 
+                  ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
+                  paste_notes((canvas->part()));
                   break;
             case DrumCanvas::CMD_LOAD: load(); break;
             case DrumCanvas::CMD_SAVE: save(); break;
@@ -952,6 +959,7 @@ void DrumEdit::cmd(int cmd)
 void DrumEdit::clipboardChanged()
       {
       pasteAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
+      pasteDialogAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
       }
 
 //---------------------------------------------------------
@@ -1268,6 +1276,7 @@ void DrumEdit::initShortcuts()
       cutAction->setShortcut(shortcuts[SHRT_CUT].key);
       copyAction->setShortcut(shortcuts[SHRT_COPY].key);
       pasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
+      pasteDialogAction->setShortcut(shortcuts[SHRT_PASTE_DIALOG].key);
       deleteAction->setShortcut(shortcuts[SHRT_DELETE].key);
 
       fixedAction->setShortcut(shortcuts[SHRT_FIXED_LEN].key);

@@ -39,6 +39,7 @@
 #include "widgets/function_dialogs/move.h"
 #include "widgets/function_dialogs/deloverlaps.h"
 #include "widgets/function_dialogs/legato.h"
+#include "widgets/pasteeventsdialog.h"
 
 #include <values.h>
 #include <iostream>
@@ -865,6 +866,20 @@ void copy_notes(const set<Part*>& parts, int range)
 		QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
 }
 
+bool paste_notes(Part* paste_into_part)
+{
+	// TODO FINDMICHJETZT sane defaults for raster!
+	paste_events_dialog->into_single_part_allowed = (paste_into_part!=NULL);
+	
+	if (!paste_events_dialog->exec())
+		return false;
+		
+	paste_notes(paste_events_dialog->max_distance, paste_events_dialog->always_new_part,
+	            paste_events_dialog->never_new_part, paste_events_dialog->into_single_part ? paste_into_part : NULL);
+	
+	return true;
+}
+
 void paste_notes(int max_distance, bool always_new_part, bool never_new_part, Part* paste_into_part)
 {
 	QString tmp="x-muse-groupedeventlists"; // QClipboard::text() expects a QString&, not a QString :(
@@ -1027,6 +1042,9 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 										 always_new_part ) && !never_new_part ) )
 							{
 								dest_part = dest_track->newPart();
+								dest_part->events()->incARef(-1); // the later song->applyOperationGroup() will increment it
+								                                  // so we must decrement it first :/
+
 								dest_part->setTick(AL::sigmap.raster1(first_paste_tick, config.division));
 								operations.push_back(UndoOp(UndoOp::AddPart, dest_part));
 							}

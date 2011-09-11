@@ -38,6 +38,7 @@ namespace MusEDialog
 	class Legato;
 }
 class PasteDialog; //FINDMICHJETZT put into namespace
+class PasteEventsDialog; //FINDMICHJETZT put into namespace
 
 class Xml;
 
@@ -52,6 +53,7 @@ extern MusEDialog::Transpose* transpose_dialog;
 extern MusEDialog::Crescendo* crescendo_dialog;
 extern MusEDialog::Legato* legato_dialog;
 extern PasteDialog* paste_dialog; //FINDMICHJETZT
+extern PasteEventsDialog* paste_events_dialog; //FINDMICHJETZT
 
 void init_function_dialogs(QWidget* parent);
 void read_function_dialog_config(Xml& xml);

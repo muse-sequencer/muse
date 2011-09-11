@@ -32,6 +32,7 @@
 #include "widgets/function_dialogs/deloverlaps.h"
 #include "widgets/function_dialogs/legato.h"
 #include "widgets/pastedialog.h"
+#include "widgets/pasteeventsdialog.h"
 
 #include "xml.h"
 
@@ -50,6 +51,7 @@ MusEDialog::Transpose* transpose_dialog=NULL;
 MusEDialog::Crescendo* crescendo_dialog=NULL;
 MusEDialog::Legato* legato_dialog=NULL;
 PasteDialog* paste_dialog=NULL; // FINDMICHJETZT
+PasteEventsDialog* paste_events_dialog=NULL; // FINDMICHJETZT
 
 void init_function_dialogs(QWidget* parent)
 {
@@ -64,6 +66,7 @@ void init_function_dialogs(QWidget* parent)
 	crescendo_dialog = new MusEDialog::Crescendo(parent);
 	legato_dialog = new MusEDialog::Legato(parent);
 	paste_dialog = new PasteDialog(parent); // FINDMICHJETZT
+	paste_events_dialog = new PasteEventsDialog(parent); // FINDMICHJETZT
 }
 
 void read_function_dialog_config(Xml& xml)
@@ -107,6 +110,8 @@ void read_function_dialog_config(Xml& xml)
 					legato_dialog->read_configuration(xml);
 				else if (tag == "pastedialog")
 					paste_dialog->read_configuration(xml);
+				else if (tag == "pasteeventsdialog")
+					paste_events_dialog->read_configuration(xml);
 				else
 					xml.unknown("dialogs");
 				break;
@@ -136,6 +141,7 @@ void write_function_dialog_config(int level, Xml& xml)
 	crescendo_dialog->write_configuration(level, xml);
 	legato_dialog->write_configuration(level, xml);
 	paste_dialog->write_configuration(level, xml);
+	paste_events_dialog->write_configuration(level, xml);
 
 	xml.tag(level, "/dialogs");
 }

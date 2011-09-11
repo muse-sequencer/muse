@@ -79,7 +79,7 @@ enum {CMD_COLOR_BLACK, CMD_COLOR_VELO, CMD_COLOR_PART,
       
       CMD_QUANTIZE, CMD_VELOCITY, CMD_CRESCENDO, CMD_NOTELEN, CMD_TRANSPOSE,
       CMD_ERASE, CMD_MOVE, CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO,
-      CMD_CUT, CMD_COPY, CMD_PASTE, CMD_DEL,
+      CMD_CUT, CMD_COPY, CMD_PASTE, CMD_PASTE_DIALOG, CMD_DEL,
       CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
       CMD_SELECT_ILOOP, CMD_SELECT_OLOOP};
 
@@ -134,6 +134,7 @@ class ScoreEdit : public TopWin
 		QAction* cut_action;
 		QAction* copy_action;
 		QAction* paste_action;
+		QAction* paste_dialog_action;
 		QAction* del_action;
 		
 		QAction* select_all_action;

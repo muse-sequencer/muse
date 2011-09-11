@@ -63,6 +63,7 @@ QT4_WRAP_CPP (widget_mocs
       nentry.h  
       noteinfo.h  
       pastedialog.h
+      pasteeventsdialog.h
       pitchedit.h  
       pitchlabel.h  
       popupmenu.h  
@@ -117,6 +118,7 @@ file (GLOB widgets_ui_files
       mixdowndialogbase.ui  
       mtrackinfobase.ui
       pastedialogbase.ui
+      pasteeventsdialogbase.ui
       projectcreate.ui
       shortcutcapturedialogbase.ui  
       shortcutconfigbase.ui  
@@ -165,6 +167,7 @@ file (GLOB widgets_source_files
       nentry.cpp 
       noteinfo.cpp 
       pastedialog.cpp
+      pasteeventsdialog.cpp
       pitchedit.cpp 
       pitchlabel.cpp 
       popupmenu.cpp 

@@ -91,7 +91,7 @@ class DrumEdit : public MidiEditor {
       static int _dlistWidthInit, _dcanvasWidthInit;
 
       QAction *loadAction, *saveAction, *resetAction;
-      QAction *cutAction, *copyAction, *pasteAction, *deleteAction;
+      QAction *cutAction, *copyAction, *pasteAction, *pasteDialogAction, *deleteAction;
       QAction *fixedAction, *veloAction, *crescAction, *quantizeAction;
       QAction *sallAction, *snoneAction, *invAction, *inAction , *outAction;
       QAction *prevAction, *nextAction;
