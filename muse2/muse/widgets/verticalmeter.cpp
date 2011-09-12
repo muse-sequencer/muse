@@ -31,6 +31,8 @@
 #include "verticalmeter.h"
 #include "gconfig.h"
 #include "fastlog.h"
+#include "mmath.h"
+#include "utils.h"
 
 namespace MusEWidget {
 
@@ -46,7 +48,8 @@ VerticalMeter::VerticalMeter(QWidget* parent, MeterType type)
       setAttribute(Qt::WA_StaticContents);
       // This is absolutely required for speed! Otherwise painfully slow because we get 
       //  full rect paint events even on small scrolls! See help on QPainter::scroll().
-      setAttribute(Qt::WA_OpaquePaintEvent);
+      // Commented out for now. Orcan 20110911
+      //setAttribute(Qt::WA_OpaquePaintEvent);
       
       mtype = type;
       overflow    = false;
@@ -56,6 +59,9 @@ VerticalMeter::VerticalMeter(QWidget* parent, MeterType type)
       maxScale    = mtype == DBMeter ? 10.0 : 127.0;
       yellowScale = -10;
       redScale    = 0;
+      xrad = 4;
+      yrad = 4;
+
       setLineWidth(0);
       setMidLineWidth(0);
       }
@@ -129,18 +135,19 @@ void VerticalMeter::paintEvent(QPaintEvent* ev)
       // TODO: Could make better use of event rectangle, for speed.
       
       QPainter p(this);
+      p.setRenderHint(QPainter::Antialiasing);
       
       double range = maxScale - minScale;
 
-      /*
       int fw = frameWidth();
+      /*
       int w  = width() - 2*fw;
       int h  = height() - 2*fw;
       */
 
       QRect rect = ev->rect();
-      int w = rect.width();
-      int h = rect.height();
+      int w = rect.width() - 2*fw;
+      int h = rect.height() - 2*fw;
       int xv;
 
 
@@ -157,18 +164,23 @@ void VerticalMeter::paintEvent(QPaintEvent* ev)
       drawVU(p, w, h, xv);
       
       // Draw the peak white line.
+      /*
       int xcenter;
       if(mtype == DBMeter) 
         xcenter = maxVal == 0 ? 0 : int(((maxScale - (fast_log10(0) * 20.0)) * w)/range);
       else
-        xcenter = maxVal == 0 ? 0 : int(((0) * w)/range);
+        xcenter = maxVal == 0 ? 0 : int(((maxVal) * w)/range);
       p.setPen(peak_color);
       p.drawLine(xcenter, 0, xcenter, h);
+      */
 
       // Draw the transparent layer on top of everything to give a 3d look
+      QPainterPath round_path = roundedPath(0, 0, w, h,
+                                            xrad, yrad,
+                                            (MusEUtil::Corner) (MusEUtil::UpperLeft | MusEUtil::UpperRight | MusEUtil::LowerLeft | MusEUtil::LowerRight ) );
       maskGrad.setStart(QPointF(0, 0));
       maskGrad.setFinalStop(QPointF(0, h));
-      p.fillRect(0, 0, w, h, QBrush(maskGrad));
+      p.fillPath(round_path, QBrush(maskGrad));
       }
 
 //---------------------------------------------------------
@@ -177,7 +189,7 @@ void VerticalMeter::paintEvent(QPaintEvent* ev)
 
 void VerticalMeter::drawVU(QPainter& p, int w, int h, int xv)
 {
-      if(mtype == DBMeter) 
+      if(mtype == DBMeter)
       {
         double range = maxScale - minScale;
         int x1 = int((maxScale - redScale) * w / range);
@@ -197,44 +209,65 @@ void VerticalMeter::drawVU(QPainter& p, int w, int h, int xv)
         lightGradRed.setStart(QPointF(0, 0));
         lightGradRed.setFinalStop(QPointF(x1, 0));
 
+        QPainterPath p_left = roundedPath(0, 0, x1, h,
+                                           xrad, yrad,
+                                           (MusEUtil::Corner) (MusEUtil::UpperLeft | MusEUtil::LowerLeft ) );
+
+        QPainterPath p_right = roundedPath(x2, 0, w-x2, h,
+                                            xrad, yrad,
+                                            (MusEUtil::Corner) (MusEUtil::LowerRight | MusEUtil::UpperRight ) );
         
         if(xv < x1)
         {
-          // Red section:
-          p.fillRect(0, 0,  xv, h,        QBrush(darkGradRed));     // dark red
-          p.fillRect(xv, 0, x1-xv, h,     QBrush(lightGradRed));     // light red
-          
-          // Yellow section:
-          p.fillRect(x1, 0, x2-x1, h,     QBrush(lightGradYellow));     // light yellow
-          
+
+	  QPainterPath p_light_green = roundedPath(0, 0, xv, h,
+						   xrad, yrad,
+						   (MusEUtil::Corner) (MusEUtil::UpperLeft | MusEUtil::LowerLeft ) );
+
+	  p_left = p_left.subtracted(p_light_green);
+
           // Green section:
-          p.fillRect(x2, 0, w-x2, h,      QBrush(lightGradGreen));     // light green
+          p.fillPath(p_light_green,       QBrush(lightGradGreen));     // light green
+          p.fillPath(p_left,              QBrush(darkGradGreen));      // dark green
+
+          // Yellow section:
+          p.fillRect(x1, 0, x2-x1, h,     QBrush(darkGradYellow));     // dark yellow
+          
+          // Red section:
+          p.fillPath(p_right,             QBrush(darkGradRed));        // dark red
         }
         else
         if(xv < x2)
         {
-          // Red section:
-          p.fillRect(0, 0,  x1, h,        QBrush(darkGradRed));     // dark red
+          // Green section:
+          p.fillPath(p_left,              QBrush(lightGradGreen));       // light green
           
           // Yellow section:
-          p.fillRect(x1, 0, xv-x1, h,     QBrush(darkGradYellow));     // dark yellow
-          p.fillRect(xv, 0, x2-xv, h,     QBrush(lightGradYellow));     // light yellow
+          p.fillRect(x1, 0, xv-x1, h,     QBrush(lightGradYellow));    // light yellow
+          p.fillRect(xv, 0, x2-xv, h,     QBrush(darkGradYellow));     // dark yellow
           
-          // Green section:
-          p.fillRect(x2, 0, w-x2, h,      QBrush(lightGradGreen));     // light green
+          // Red section:
+          p.fillPath(p_right,             QBrush(darkGradRed));        // dark red
         }
         else
-        //if(yv <= y3)   
+        //if(xv <= x3)
         {
-          // Red section:
-          p.fillRect(0, 0,  x1, h,        QBrush(darkGradRed));     // dark red
+	  QPainterPath p_dark_red = roundedPath(xv, 0, w-xv, h,
+                                                xrad, yrad,
+                                                (MusEUtil::Corner) (MusEUtil::LowerRight | MusEUtil::UpperRight ) );
+
+          p_right = p_right.subtracted(p_dark_red);
+
+          // Green section:
+          p.fillPath(p_left,              QBrush(lightGradGreen));     // light green
           
           // Yellow section:
-          p.fillRect(x1, 0, x2-x1, h,     QBrush(darkGradYellow));     // dark yellow
+          p.fillRect(x1, 0, x2-x1, h,     QBrush(lightGradYellow));    // light yellow
           
-          // Green section:
-          p.fillRect(x2, 0, xv-x2, h,     QBrush(darkGradGreen));     // dark green
-          p.fillRect(xv, 0, w-xv, h,      QBrush(lightGradGreen));     // light green
+          // Red section:
+          p.fillPath(p_right,             QBrush(lightGradRed));       // light red
+          p.fillPath(p_dark_red,          QBrush(darkGradRed));        // dark red
+
         }
 
       p.fillRect(x1,0, 1, h, separator_color);
@@ -249,8 +282,49 @@ void VerticalMeter::drawVU(QPainter& p, int w, int h, int xv)
         lightGradGreen.setStart(QPointF(0, 0));
         lightGradGreen.setFinalStop(QPointF(w, 0));
 
-        p.fillRect(0, 0,  xv, h,   QBrush(lightGradGreen));   // light green
-        p.fillRect(xv, 0, w-xv, h, QBrush(darkGradGreen));   // dark green
+        // We need to draw the meter in two parts. The cutoff for the left rectangle can be
+        // anywhere between xrad and w-xrad. Without loss of generality we pick the lower limit.
+        int cut = xrad;
+
+        QPainterPath p_left = roundedPath(0, 0, cut, h,
+                                          xrad, yrad,
+                                          (MusEUtil::Corner) (MusEUtil::UpperLeft | MusEUtil::LowerLeft ) );
+
+        QPainterPath p_right = roundedPath(cut, 0, w-cut, h,
+                                           xrad, yrad,
+                                           (MusEUtil::Corner) (MusEUtil::LowerRight | MusEUtil::UpperRight ) );
+
+        if(xv < cut)
+	  {
+
+	    QPainterPath p_light = roundedPath(0, 0, xv, h,
+                                               xrad, yrad,
+                                               (MusEUtil::Corner) (MusEUtil::UpperLeft | MusEUtil::LowerLeft ) );
+
+	    p_left = p_left.subtracted(p_light);
+
+	    // left section:
+	    p.fillPath(p_left,            QBrush(darkGradGreen));       // dark green
+	    p.fillPath(p_light,           QBrush(lightGradGreen));      // light green
+
+	    // bottom section:
+	    p.fillPath(p_right,           QBrush(darkGradGreen));       // dark green
+	  }
+        else
+	  {
+	    QPainterPath p_dark = roundedPath(xv, 0, w-xv, h,
+                                              xrad, yrad,
+                                              (MusEUtil::Corner) (MusEUtil::UpperRight | MusEUtil::LowerRight ) );
+	    p_right = p_right.subtracted(p_dark);
+
+	    // left section:
+	    p.fillPath(p_left,            QBrush(lightGradGreen));      // light green
+
+	    // right section:
+	    p.fillPath(p_dark,            QBrush(darkGradGreen));       // dark green
+	    p.fillPath(p_right,           QBrush(lightGradGreen));      // light green
+	  }
+
       }
 
 }
@@ -259,17 +333,8 @@ void VerticalMeter::drawVU(QPainter& p, int w, int h, int xv)
 //   resizeEvent
 //---------------------------------------------------------
 
-void VerticalMeter::resizeEvent(QResizeEvent* ev)
+void VerticalMeter::resizeEvent(QResizeEvent* /*ev*/)
     {
-    // Round corners of the widget.
-
-    QSize size = ev->size();
-    int w = size.width();
-    int h = size.height();
-    QPainterPath rounded_rect;
-    rounded_rect.addRoundedRect(0,0,w,h, h/3, h/2.5);
-    QRegion maskregion(rounded_rect.toFillPolygon().toPolygon());
-    setMask(maskregion);
     }
 
 } // namespace MusEWidget
