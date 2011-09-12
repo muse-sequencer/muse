@@ -27,6 +27,7 @@
 #include <QPainter>
 #include <QResizeEvent>
 
+#include "utils.h"
 #include "slider.h"
 
 namespace MusEWidget {
@@ -168,73 +169,6 @@ void Slider::fontChange(const QFont & /*oldFont*/)
 }
 
 //------------------------------------------------------------
-//
-// roundedPath
-// Returns a rectangle with rounded corners
-//
-// roundCorner can be an bitwise-or combination of
-// UpperLeft, UpperRight, LowerRight, LowerLeft
-//------------------------------------------------------------
-QPainterPath Slider::roundedPath(QRect r, int xrad, int yrad, RoundCorner roundCorner)
-{
-    return roundedPath(r.x(), r.y(),
-                     r.width(), r.height(),
-                     xrad, yrad,
-                     roundCorner);
-}
-
-QPainterPath Slider::roundedPath(int x, int y, int w, int h, int xrad, int yrad, RoundCorner roundCorner)
-{
-    QPainterPath rounded_rect;
-    rounded_rect.addRect(x, y + yrad, w, h - 2 * yrad);
-    if (roundCorner & UpperLeft)
-        {
-        rounded_rect.moveTo(x + xrad, y + yrad);
-        rounded_rect.arcTo(x, y, xrad*2, yrad*2, 180, -90);
-        }
-    else
-        {
-        rounded_rect.moveTo(x, y + yrad);
-        rounded_rect.lineTo(x,y);
-        rounded_rect.lineTo(x + xrad, y);
-        }
-
-    rounded_rect.lineTo(x + w - xrad, y);
-
-    if (roundCorner & UpperRight)
-        rounded_rect.arcTo(x + w - xrad * 2, y, xrad*2, yrad*2, 90, -90);
-    else
-        {
-        rounded_rect.lineTo(x + w, y);
-        rounded_rect.lineTo(x + w, y + yrad);
-        }
-
-    if (roundCorner & LowerLeft)
-        {
-        rounded_rect.moveTo(x + xrad, y + h - yrad);
-        rounded_rect.arcTo(x, y + h - yrad*2, xrad*2, yrad*2, 180, 90);
-        }
-    else
-        {
-        rounded_rect.moveTo(x, y + h - yrad);
-        rounded_rect.lineTo(x, y + h);
-        rounded_rect.lineTo(x + xrad, y + h);
-        }
-
-    rounded_rect.lineTo(x + w - xrad, y + h);
-
-    if (roundCorner & LowerRight)
-        rounded_rect.arcTo(x + w - xrad*2, y + h - yrad*2, xrad*2, yrad*2, 270, 90);
-    else
-        {
-        rounded_rect.lineTo(x + w, y + h);
-        rounded_rect.lineTo(x + w, y + h - yrad);
-        }
-
-    return rounded_rect;
-}
-
-//------------------------------------------------------------
 //    drawSlider
 //     Draw the slider into the specified rectangle.  
 //------------------------------------------------------------
@@ -315,9 +249,9 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         //
         // Draw background
         //
-        QPainterPath bg_rect = roundedPath(cr, 
+        QPainterPath bg_rect = MusEUtil::roundedPath(cr, 
                                            xrad, yrad, 
-                                           (RoundCorner) (UpperLeft | UpperRight | LowerLeft | LowerRight) );
+                                           (MusEUtil::Corner) (MusEUtil::UpperLeft | MusEUtil::UpperRight | MusEUtil::LowerLeft | MusEUtil::LowerRight) );
 	   
         p->fillPath(bg_rect, d_fillColor);
 	   
@@ -333,9 +267,9 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         e_mask.setStart(QPointF(0, cr.y()));
         e_mask.setFinalStop(QPointF(0, cr.y() + cr.height()));
 
-        QPainterPath e_rect = roundedPath(ipos + d_thumbLength, cr.y(), 
+        QPainterPath e_rect = MusEUtil::roundedPath(ipos + d_thumbLength, cr.y(), 
                                           cr.width() - d_thumbLength - dist1, cr.height(), 
-                                          xrad, yrad, (RoundCorner) (UpperRight | LowerRight) );
+                                          xrad, yrad, (MusEUtil::Corner) (MusEUtil::UpperRight | MusEUtil::LowerRight) );
    
         p->fillPath(e_rect, QBrush(e_mask));
    
@@ -347,10 +281,10 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         f_mask.setStart(QPointF(0, cr.y()));
         f_mask.setFinalStop(QPointF(0, cr.y() + cr.height()));
           
-        QPainterPath f_rect = roundedPath(cr.x(), cr.y(), 
+        QPainterPath f_rect = MusEUtil::roundedPath(cr.x(), cr.y(), 
                                           ipos + 1, cr.height(),
                                           xrad, yrad, 
-                                          (RoundCorner) (LowerLeft | UpperLeft) );
+                                          (MusEUtil::Corner) (MusEUtil::LowerLeft | MusEUtil::UpperLeft) );
 
         p->fillPath(f_rect, QBrush(f_mask));
           
@@ -359,10 +293,10 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         //  Draw thumb
         //
 	   
-        QPainterPath thumb_rect = roundedPath(ipos, r.y(), 
+        QPainterPath thumb_rect = MusEUtil::roundedPath(ipos, r.y(), 
                                               d_thumbLength, r.height(), 
                                               2, 2, 
-                                              (RoundCorner) (UpperLeft | UpperRight | LowerLeft | LowerRight) );
+                                              (MusEUtil::Corner) (MusEUtil::UpperLeft | MusEUtil::UpperRight | MusEUtil::LowerLeft | MusEUtil::LowerRight) );
    
         thumbGrad.setStart(QPointF(0, cr.y()));
         thumbGrad.setFinalStop(QPointF(0, cr.y() + cr.height()));
@@ -387,9 +321,9 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         //
         // Draw background
         //
-        QPainterPath bg_rect = roundedPath(cr,
+        QPainterPath bg_rect = MusEUtil::roundedPath(cr,
                                            xrad, yrad, 
-                                           (RoundCorner) (UpperLeft | UpperRight | LowerLeft | LowerRight) );
+                                           (MusEUtil::Corner) (MusEUtil::UpperLeft | MusEUtil::UpperRight | MusEUtil::LowerLeft | MusEUtil::LowerRight) );
 	    
         p->fillPath(bg_rect, d_fillColor);
 
@@ -405,10 +339,10 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         e_mask.setStart(QPointF(cr.x(), 0));
         e_mask.setFinalStop(QPointF(cr.x() + cr.width(), 0));
 	    
-        QPainterPath e_rect = roundedPath(cr.x(), cr.y(), 
+        QPainterPath e_rect = MusEUtil::roundedPath(cr.x(), cr.y(), 
                                           cr.width(), ipos + 1,
                                           xrad, yrad, 
-                                          (RoundCorner) (UpperLeft | UpperRight) );
+                                          (MusEUtil::Corner) (MusEUtil::UpperLeft | MusEUtil::UpperRight) );
 	    
         p->fillPath(e_rect, QBrush(e_mask));
             
@@ -420,9 +354,9 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         f_mask.setStart(QPointF(cr.x(), 0));
         f_mask.setFinalStop(QPointF(cr.x() + cr.width(), 0));
             
-        QPainterPath f_rect = roundedPath(cr.x(), ipos + d_thumbLength, 
+        QPainterPath f_rect = MusEUtil::roundedPath(cr.x(), ipos + d_thumbLength, 
                                           cr.width(), cr.height() - d_thumbLength - dist1,
-                                          xrad, yrad, (RoundCorner) (LowerLeft | LowerRight) );
+                                          xrad, yrad, (MusEUtil::Corner) (MusEUtil::LowerLeft | MusEUtil::LowerRight) );
 	    
         p->fillPath(f_rect, QBrush(f_mask));
             
@@ -431,10 +365,10 @@ void Slider::drawSlider(QPainter *p, const QRect &r)
         //  Draw thumb
         //
             
-        QPainterPath thumb_rect = roundedPath(r.x(), ipos, 
+        QPainterPath thumb_rect = MusEUtil::roundedPath(r.x(), ipos, 
                                               r.width(), d_thumbLength,
                                               2, 2, 
-                                              (RoundCorner) (UpperLeft | UpperRight | LowerLeft | LowerRight) );
+                                              (MusEUtil::Corner) (MusEUtil::UpperLeft | MusEUtil::UpperRight | MusEUtil::LowerLeft | MusEUtil::LowerRight) );
 	    
         thumbGrad.setStart(QPointF(cr.x(), 0));
         thumbGrad.setFinalStop(QPointF(cr.x() + cr.width(), 0));

@@ -42,7 +42,6 @@ class Slider : public SliderBase, public ScaleIf
 
  public:
   enum ScalePos { None, Left, Right, Top, Bottom };
-  enum RoundCorner { UpperLeft = 0x1, UpperRight = 0x2, LowerLeft = 0x4, LowerRight = 0x8 };
 
    private:
       Q_PROPERTY( double lineStep READ lineStep WRITE setLineStep )
@@ -70,8 +69,6 @@ class Slider : public SliderBase, public ScaleIf
   int d_bgStyle;
   int markerPos;
 
-  QPainterPath roundedPath(int x, int y, int w, int h, int xrad, int yrad, RoundCorner roundCorner);
-  QPainterPath roundedPath(QRect r, int xrad, int yrad, RoundCorner roundCorner);
   void drawHsBgSlot(QPainter *, const QRect&, const QRect&,const QBrush&);
   void drawVsBgSlot(QPainter *, const QRect&, const QRect&,const QBrush&);
 

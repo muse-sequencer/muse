@@ -404,4 +404,56 @@ QGradient gGradientFromQColor(const QColor& c, const QPointF& start, const QPoin
   return gradient;
 }
 
+QPainterPath roundedPath(QRect r, int xrad, int yrad, Corner roundCorner)
+{
+  return roundedPath(r.x(), r.y(),
+                       r.width(), r.height(),
+                       xrad, yrad,
+                       roundCorner);
+}
+
+QPainterPath roundedPath(int x, int y, int w, int h, int xrad, int yrad, Corner roundCorner)
+{
+  QPainterPath rounded_rect;
+  rounded_rect.addRect(x, y, w, h);
+
+   if (roundCorner & UpperLeft)
+    {
+      QPainterPath top_left_corner;
+      top_left_corner.addRect(x, y, xrad, yrad);
+      top_left_corner.moveTo(x + xrad, y + yrad);
+      top_left_corner.arcTo(x, y, xrad*2, yrad*2, 180, -90);
+      rounded_rect = rounded_rect.subtracted(top_left_corner);
+    }
+
+  if (roundCorner & UpperRight)
+    {
+      QPainterPath top_right_corner;
+      top_right_corner.addRect(x + w - xrad, y, xrad, yrad);
+      top_right_corner.moveTo(x + w - xrad, y + yrad);
+      top_right_corner.arcTo(x + w - xrad * 2, y, xrad*2, yrad*2, 90, -90);
+      rounded_rect = rounded_rect.subtracted(top_right_corner);
+    }
+
+  if (roundCorner & LowerLeft)
+    {
+      QPainterPath bottom_left_corner;
+      bottom_left_corner.addRect(x, y + h - yrad, xrad, yrad);
+      bottom_left_corner.moveTo(x + xrad, y + h - yrad);
+      bottom_left_corner.arcTo(x, y + h - yrad*2, xrad*2, yrad*2, 180, 90);
+      rounded_rect = rounded_rect.subtracted(bottom_left_corner);
+    }
+
+  if (roundCorner & LowerRight)
+    {
+      QPainterPath bottom_right_corner;
+      bottom_right_corner.addRect(x + w - xrad, y + h - yrad, xrad, yrad);
+      bottom_right_corner.moveTo(x + w - xrad, y + h - yrad);
+      bottom_right_corner.arcTo(x + w - xrad*2, y + h - yrad*2, xrad*2, yrad*2, 270, 90);
+      rounded_rect = rounded_rect.subtracted(bottom_right_corner);
+    }
+
+  return rounded_rect;
+}
+
 } // namespace MusEUtils

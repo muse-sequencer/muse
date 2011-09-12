@@ -30,8 +30,11 @@ class QGradient;
 class QCanvas;
 class QPointF;
 class QColor;
+class QPainterPath;
 
 namespace MusEUtil {
+
+enum Corner { UpperLeft = 0x1, UpperRight = 0x2, LowerLeft = 0x4, LowerRight = 0x8 };
 
 extern QString bitmap2String(int bm);
 extern int string2bitmap(const QString& str);
@@ -45,6 +48,9 @@ extern QFrame* hLine(QWidget* parent);
 extern QFrame* vLine(QWidget* parent);
 extern void dump(const unsigned char* p, int n);
 extern double curTime();
+
+extern QPainterPath roundedPath(QRect r, int xrad, int yrad, Corner roundCorner);
+extern QPainterPath roundedPath(int x, int y, int w, int h, int xrad, int yrad, Corner roundCorner);
 
 } // namespace MusEUtils
 
