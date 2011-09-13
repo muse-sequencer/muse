@@ -45,7 +45,7 @@ MidiEditor::MidiEditor(ToplevelType t, int r, PartList* pl,
       _pl = pl;
       if (_pl)
             for (iPart i = _pl->begin(); i != _pl->end(); ++i)
-                  _parts.push_back(i->second->sn());
+                  _parts.insert(i->second->sn());
       _raster  = r;
       canvas   = 0;
       wview    = 0;
@@ -59,6 +59,8 @@ MidiEditor::MidiEditor(ToplevelType t, int r, PartList* pl,
       mainGrid->setContentsMargins(0, 0, 0, 0);
       mainGrid->setSpacing(0);  
       setCentralWidget(mainw);
+      
+      connect(song, SIGNAL(newPartsCreated(const std::map< Part*, std::set<Part*> >&)), SLOT(addNewParts(const std::map< Part*, std::set<Part*> >&)));	
       }
 
 //---------------------------------------------------------
@@ -68,7 +70,7 @@ MidiEditor::MidiEditor(ToplevelType t, int r, PartList* pl,
 void MidiEditor::genPartlist()
       {
       _pl->clear();
-      for (std::list<int>::iterator i = _parts.begin(); i != _parts.end(); ++i) {
+      for (std::set<int>::iterator i = _parts.begin(); i != _parts.end(); ++i) {
             TrackList* tl = song->tracks();
             for (iTrack it = tl->begin(); it != tl->end(); ++it) {
                   PartList* pl = (*it)->parts();
@@ -84,6 +86,17 @@ void MidiEditor::genPartlist()
                   }
             }
       }
+
+//---------------------------------------------------------
+//   addPart
+//---------------------------------------------------------
+
+void MidiEditor::addPart(Part* p)
+{
+  _pl->add(p);
+  _parts.insert(p->sn());
+}
+
 
 //---------------------------------------------------------
 //   MidiEditor
@@ -265,4 +278,15 @@ void MidiEditor::horizontalZoomOut()
 
   hscroll->setMag(newmag);
 
+}
+
+void MidiEditor::addNewParts(const std::map< Part*, std::set<Part*> >& param)
+{
+  using std::map;
+  using std::set;
+  
+  for (map< Part*, set<Part*> >::const_iterator it = param.begin(); it!=param.end(); it++)
+    if (_pl->index(it->first) != -1)
+      for (set<Part*>::const_iterator it2=it->second.begin(); it2!=it->second.end(); it2++)
+        addPart(*it2);
 }

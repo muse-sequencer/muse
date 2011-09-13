@@ -1000,6 +1000,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 {
 	Undo operations;
 	map<Part*, unsigned> expand_map;
+	map<Part*, set<Part*> > new_part_map;
 	
 	Xml xml(pt.toLatin1().constData());
 	for (;;) 
@@ -1041,11 +1042,13 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 									 ( ( (dest_part->endTick() + max_distance < first_paste_tick) || // dest_part is too far away
 										 always_new_part ) && !never_new_part ) )
 							{
+								Part* old_dest_part=dest_part;
 								dest_part = dest_track->newPart();
 								dest_part->events()->incARef(-1); // the later song->applyOperationGroup() will increment it
 								                                  // so we must decrement it first :/
-
 								dest_part->setTick(AL::sigmap.raster1(first_paste_tick, config.division));
+
+								new_part_map[old_dest_part].insert(dest_part);
 								operations.push_back(UndoOp(UndoOp::AddPart, dest_part));
 							}
 							
@@ -1104,6 +1107,8 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 		if (it->second != it->first->lenTick())
 			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
 
+	song->informAboutNewParts(new_part_map); // must be called before apply. otherwise
+	                                         // pointer changes (by resize) screw it up
 	song->applyOperationGroup(operations);
 	song->update(SC_SELECTION);
 }

@@ -347,6 +347,8 @@ void globalSplit()
                         p1->events()->incARef(-1); // the later song->applyOperationGroup() will increment it
                         p2->events()->incARef(-1); // so we must decrement it first :/
 
+                        //song->informAboutNewParts(part, p1); // is unneccessary because of ModifyPart
+                        song->informAboutNewParts(part, p2);
                         operations.push_back(UndoOp(UndoOp::ModifyPart,part, p1, true, false));
                         operations.push_back(UndoOp(UndoOp::AddPart,p2));
                         break;

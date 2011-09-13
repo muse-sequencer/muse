@@ -762,6 +762,8 @@ class ScoreCanvas : public MusEWidget::View
 		
 		void deselect_all();
 		void midi_note(int pitch, int velo);
+		
+		void add_new_parts(const std::map< Part*, std::set<Part*> >&);
 
    public slots:
       void x_scroll_event(int);

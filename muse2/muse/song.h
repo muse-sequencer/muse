@@ -27,6 +27,9 @@
 #include <QObject>
 #include <QStringList>
 
+#include <map>
+#include <set>
+
 #include "pos.h"
 #include "globaldefs.h"
 #include "tempo.h"
@@ -163,6 +166,8 @@ class Song : public QObject {
       ~Song();
 
       bool applyOperationGroup(Undo& group, bool doUndo=true);
+      void informAboutNewParts(const std::map< Part*, std::set<Part*> >&);
+      void informAboutNewParts(Part* orig, Part* p1, Part* p2=NULL, Part* p3=NULL, Part* p4=NULL, Part* p5=NULL, Part* p6=NULL, Part* p7=NULL, Part* p8=NULL, Part* p9=NULL);
 
       void putEvent(int pv);
       void endMsgCmd();
@@ -421,6 +426,7 @@ class Song : public QObject {
       void midiPortsChanged();
       void midiNote(int pitch, int velo);  
       void controllerChanged(Track* t); 
+      void newPartsCreated(const std::map< Part*, std::set<Part*> >&);
       };
 
 extern Song* song;
