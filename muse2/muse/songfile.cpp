@@ -1033,7 +1033,7 @@ void MusE::readToplevels(Xml& xml)
                               }  
                               }
                         else if (tag == "scoreedit") {
-                                ScoreEdit* score = new ScoreEdit(this, 0, arranger->cursorValue());
+                                ScoreEdit* score = new ScoreEdit(this, 0, _arranger->cursorValue());
                                 score->show();
                                 toplevels.push_back(score);
                                 connect(score, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));

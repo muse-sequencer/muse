@@ -122,6 +122,7 @@ class AudioMixerApp : public QMainWindow {
       void songChanged(int);
       //void configChanged()    { songChanged(-1); }
       void configChanged();
+      //void addNewTrack(QAction*);
       void setSizing();
       void toggleRouteDialog();
       void routingDialogClosed();

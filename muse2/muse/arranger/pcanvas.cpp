@@ -349,7 +349,7 @@ UndoOp PartCanvas::moveItem(MusEWidget::CItem* item, const QPoint& newpos, DragT
             ntrack = tracks->size();
             if (MusEGlobal::debugMsg)
                 printf("PartCanvas::moveItem - add new track\n");
-            Track* newTrack = song->addTrack(int(type));
+            Track* newTrack = song->addTrack(type, false);  // Add at end of list.
             if (type == Track::WAVE) {
                   WaveTrack* st = (WaveTrack*) track;
                   WaveTrack* dt = (WaveTrack*) newTrack;
@@ -662,17 +662,17 @@ QMenu* PartCanvas::genItemPopup(MusEWidget::CItem* item)
       partPopup->addSeparator();
       switch(trackType) {
             case Track::MIDI: {
-                  partPopup->addAction(MusEGlobal::muse->arranger->parentWin->startPianoEditAction);
-                  partPopup->addMenu(MusEGlobal::muse->arranger->parentWin->scoreSubmenu);
-                  partPopup->addAction(MusEGlobal::muse->arranger->parentWin->startScoreEditAction);
-                  partPopup->addAction(MusEGlobal::muse->arranger->parentWin->startListEditAction);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startPianoEditAction);
+                  partPopup->addMenu(MusEGlobal::muse->arranger()->parentWin->scoreSubmenu);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startScoreEditAction);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startListEditAction);
                   QAction *act_mexport = partPopup->addAction(tr("save part to disk"));
                   act_mexport->setData(16);
                   }
                   break;
             case Track::DRUM: {
-                  partPopup->addAction(MusEGlobal::muse->arranger->parentWin->startDrumEditAction);
-                  partPopup->addAction(MusEGlobal::muse->arranger->parentWin->startListEditAction);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startDrumEditAction);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startListEditAction);
                   QAction *act_dexport = partPopup->addAction(tr("save part to disk"));
                   act_dexport->setData(16);
                   }
@@ -3236,9 +3236,9 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
 
                 if (!track) { // we need to create a track for this drop
                     if (text.endsWith(".mpt", Qt::CaseInsensitive)) {
-                        track = song->addTrack((Track::MIDI));
+                        track = song->addTrack(Track::MIDI, false);    // Add at end of list.
                     } else {
-                        track = song->addTrack((Track::WAVE));
+                        track = song->addTrack(Track::WAVE, false);    // Add at end of list.
                     }
                 }
                 if (track->type() == Track::WAVE &&

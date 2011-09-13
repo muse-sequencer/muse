@@ -930,7 +930,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(arrangerView, SIGNAL(closed()), SLOT(arrangerClosed()));
       toplevels.push_back(arrangerView);
       arrangerView->hide();
-      arranger=arrangerView->getArranger();
+      _arranger=arrangerView->getArranger();
       
       arrangerView->setIsMdiWin(true);
       
@@ -1151,7 +1151,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             mixer1->clear();
       if (mixer2)
             mixer2->clear();
-      arranger->clear();      // clear track info
+      _arranger->clear();      // clear track info
       //if (clearSong())
       if (clearSong(loadAll))  // Allow not touching things like midi ports. p4.0.17 TESTING: Maybe some problems...
             return;
@@ -1834,7 +1834,7 @@ void MusE::openInScoreEdit(ScoreEdit* destination, PartList* pl, bool allInOne)
 {
 	if (destination==NULL) // if no destination given, create a new one
 	{
-      destination = new ScoreEdit(this, 0, arranger->cursorValue());
+      destination = new ScoreEdit(this, 0, _arranger->cursorValue());
       destination->show();
       toplevels.push_back(destination);
       connect(destination, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
@@ -1870,7 +1870,7 @@ void MusE::startPianoroll()
 void MusE::startPianoroll(PartList* pl, bool showDefaultCtrls)
       {
       
-      PianoRoll* pianoroll = new PianoRoll(pl, this, 0, arranger->cursorValue());
+      PianoRoll* pianoroll = new PianoRoll(pl, this, 0, _arranger->cursorValue());
       if(showDefaultCtrls)       // p4.0.12
         pianoroll->addCtrl();
       pianoroll->show();
@@ -1944,7 +1944,7 @@ void MusE::startDrumEditor()
 void MusE::startDrumEditor(PartList* pl, bool showDefaultCtrls)
       {
       
-      DrumEdit* drumEditor = new DrumEdit(pl, this, 0, arranger->cursorValue());
+      DrumEdit* drumEditor = new DrumEdit(pl, this, 0, _arranger->cursorValue());
       if(showDefaultCtrls)       // p4.0.12
         drumEditor->addCtrl();
       drumEditor->show();
@@ -2313,7 +2313,7 @@ void MusE::cmd(int cmd)
 void MusE::configAppearance()
       {
       if (!appearance)
-            appearance = new Appearance(arranger);
+            appearance = new Appearance(_arranger);
       appearance->resetValues();
       if(appearance->isVisible()) {
           appearance->raise();

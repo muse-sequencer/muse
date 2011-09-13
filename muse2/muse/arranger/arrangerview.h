@@ -118,6 +118,7 @@ class ArrangerView : public TopWin
 		void globalInsert();
 		void globalSplit();
 		void cmd(int);
+                void addNewTrack(QAction* action);
 
 	signals:
 		void deleted(TopWin*);

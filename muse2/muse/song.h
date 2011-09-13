@@ -358,8 +358,7 @@ class Song : public QObject {
       //   Configuration
       //-----------------------------------------
 
-      //SynthI* createSynthI(const QString& sclass);
-      SynthI* createSynthI(const QString& sclass, const QString& label = QString());
+      SynthI* createSynthI(const QString& sclass, const QString& label = QString(), Track* insertAt = 0);
       
       void rescanAlsaPorts();
 
@@ -407,8 +406,8 @@ class Song : public QObject {
       void setQuantize(bool val);
       void panic();
       void seqSignal(int fd);
-      Track* addTrack(int);
-      Track* addNewTrack(QAction* action);
+      Track* addTrack(Track::TrackType type, Track* insertAt = 0);
+      Track* addNewTrack(QAction* action, Track* insertAt = 0);
       QString getScriptPath(int id, bool delivered);
       void populateScriptMenu(QMenu* menuPlugins, QObject* receiver);
 

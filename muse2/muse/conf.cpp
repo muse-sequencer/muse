@@ -1477,7 +1477,7 @@ void MusE::writeConfiguration(int level, Xml& xml) const
             //mixer2->write(level, xml, "mixer2");
             mixer2->write(level, xml);
 
-      arranger->writeStatus(level, xml);
+      _arranger->writeStatus(level, xml);
       writeSeqConfiguration(level, xml, true);
 
       DrumEdit::writeConfiguration(level, xml);

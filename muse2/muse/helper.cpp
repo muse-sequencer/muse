@@ -318,7 +318,7 @@ QActionGroup* populateAddTrack(QMenu* addTrack)
       // Add the sub-menu to the given menu.
       addTrack->addMenu(synp);
       
-      QObject::connect(addTrack, SIGNAL(triggered(QAction *)), song, SLOT(addNewTrack(QAction *)));
+      //QObject::connect(addTrack, SIGNAL(triggered(QAction *)), song, SLOT(addNewTrack(QAction *)));
 
       return grp;
       }

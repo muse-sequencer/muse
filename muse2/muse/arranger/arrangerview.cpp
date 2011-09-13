@@ -628,6 +628,7 @@ void ArrangerView::clearScoreMenuMappers()
 void ArrangerView::populateAddTrack()
 {
       QActionGroup *grp = MusEUtil::populateAddTrack(addTrack);
+      connect(addTrack, SIGNAL(triggered(QAction *)), SLOT(addNewTrack(QAction *)));
       
       trackMidiAction = grp->actions()[0];
       trackDrumAction = grp->actions()[1];
@@ -636,6 +637,12 @@ void ArrangerView::populateAddTrack()
       trackAGroupAction = grp->actions()[4];
       trackAInputAction = grp->actions()[5];
       trackAAuxAction = grp->actions()[6];
+}
+
+void ArrangerView::addNewTrack(QAction* action)
+{
+  song->addNewTrack(action, MusEGlobal::muse->arranger()->curTrack());  // Insert at current selected track.
+  //song->addNewTrack(action);  // Add at end.
 }
 
 void ArrangerView::updateShortcuts()

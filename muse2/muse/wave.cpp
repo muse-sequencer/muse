@@ -815,7 +815,7 @@ namespace MusEApp {
 
 void MusE::importWave()
       {
-      Track* track = arranger->curTrack();
+      Track* track = _arranger->curTrack();
       if (track == 0 || track->type() != Track::WAVE) {
             QMessageBox::critical(this, QString("MusE"),
               tr("to import an audio file you have first to select"
@@ -838,7 +838,7 @@ void MusE::importWave()
 bool MusE::importWaveToTrack(QString& name, unsigned tick, Track* track)
       {
       if (track==NULL)
-            track = (WaveTrack*)(arranger->curTrack());
+            track = (WaveTrack*)(_arranger->curTrack());
 
       SndFile* f = getWave(name, true);
 

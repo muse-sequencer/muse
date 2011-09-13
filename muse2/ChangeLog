@@ -1,3 +1,12 @@
+13.09.2011:
+        *Added: You can now insert new tracks instead of always at the track list end. (Tim)
+          If main menu 'Add track': Inserts before currently selected track, else adds at end.
+          If Track List right-click existing Track Name: New 'Insert track' menu inserts before clicked track.
+          If Track List right-click on empty space, or Mixer 'Create': Adds at end, as usual.
+        - Fixed track selection bug: Track info panel not clearing when clicking empty area. (Tim)
+          Added an emit selectionChanged(0) in TList::mousePressEvent.
+        - Observed: Ancient bug: Track Info doesn't change if selecting multiple tracks in reverse order.
+          Will need to be fixed if/when adding 'multiple track global editing'. 
 09.09.2011:
         - Removed sending of SEQM_ADD_TRACK, SEQM_REMOVE_TRACK, SEQM_CHANGE_TRACK, SEQM_REMOVE_PART, and 
            SEQM_CHANGE_PART to ALSA midi thread (which waits) from inside Audio::processMsg.

@@ -205,6 +205,7 @@ class MusE : public QMainWindow
       AudioMixerApp* mixer1;
       AudioMixerApp* mixer2;
 
+      Arranger* _arranger;
       ToplevelList toplevels;
       ClipListEdit* clipListEdit;
       MarkerView* markerView;
@@ -375,7 +376,7 @@ class MusE : public QMainWindow
    public:
       MusE(int argc, char** argv);
       ~MusE();
-      Arranger* arranger;
+      Arranger* arranger() { return _arranger; }
       QRect configGeometryMain;
       QProgressDialog *progress;
       bool importMidi(const QString name, bool merge);
