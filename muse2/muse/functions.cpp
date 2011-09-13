@@ -62,6 +62,15 @@ using namespace std;
 
 using MusEConfig::config;
 
+
+// unit private functions:
+
+bool read_eventlist_and_part(Xml& xml, EventList* el, int* part_id);
+
+// -----------------------
+
+
+
 set<Part*> partlist_to_set(PartList* pl)
 {
 	set<Part*> result;
@@ -866,25 +875,76 @@ void copy_notes(const set<Part*>& parts, int range)
 		QApplication::clipboard()->setMimeData(drag, QClipboard::Clipboard);
 }
 
+unsigned get_groupedevents_len(const QString& pt)
+{
+	unsigned maxlen=0;
+	
+	Xml xml(pt.toLatin1().constData());
+	for (;;) 
+	{
+		Xml::Token token = xml.parse();
+		const QString& tag = xml.s1();
+		switch (token) 
+		{
+			case Xml::Error:
+			case Xml::End:
+				return maxlen;
+				
+			case Xml::TagStart:
+				if (tag == "eventlist")
+				{
+					EventList el;
+					int part_id;
+					if (read_eventlist_and_part(xml, &el, &part_id))
+					{
+						unsigned len = el.rbegin()->first;
+						if (len > maxlen) maxlen=len;
+					}
+				}
+				else
+					xml.unknown("get_clipboard_len");
+				break;
+				
+			case Xml::Attribut:
+			case Xml::TagEnd:
+			default:
+				break;
+		}
+	}
+	
+	return maxlen; // see also the return statement above!
+}
+
+unsigned get_clipboard_len()
+{
+	QString tmp="x-muse-groupedeventlists"; // QClipboard::text() expects a QString&, not a QString :(
+	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);  // TODO CHECK Tim.
+	
+	return get_groupedevents_len(s);
+}
+
 bool paste_notes(Part* paste_into_part)
 {
-	// TODO FINDMICHJETZT sane defaults for raster!
+	unsigned temp_begin = AL::sigmap.raster1(song->cpos(),0);
+	unsigned temp_end = AL::sigmap.raster2(temp_begin + get_clipboard_len(), 0);
+	paste_events_dialog->raster = temp_end - temp_begin;
 	paste_events_dialog->into_single_part_allowed = (paste_into_part!=NULL);
 	
 	if (!paste_events_dialog->exec())
 		return false;
 		
 	paste_notes(paste_events_dialog->max_distance, paste_events_dialog->always_new_part,
-	            paste_events_dialog->never_new_part, paste_events_dialog->into_single_part ? paste_into_part : NULL);
+	            paste_events_dialog->never_new_part, paste_events_dialog->into_single_part ? paste_into_part : NULL,
+	            paste_events_dialog->number, paste_events_dialog->raster);
 	
 	return true;
 }
 
-void paste_notes(int max_distance, bool always_new_part, bool never_new_part, Part* paste_into_part)
+void paste_notes(int max_distance, bool always_new_part, bool never_new_part, Part* paste_into_part, int amount, int raster)
 {
 	QString tmp="x-muse-groupedeventlists"; // QClipboard::text() expects a QString&, not a QString :(
 	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);  // TODO CHECK Tim.
-	paste_at(s, song->cpos(), max_distance, always_new_part, never_new_part, paste_into_part);
+	paste_at(s, song->cpos(), max_distance, always_new_part, never_new_part, paste_into_part, amount, raster);
 }
 
 
@@ -996,7 +1056,7 @@ bool read_eventlist_and_part(Xml& xml, EventList* el, int* part_id) // true on s
 	}
 }
 
-void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part, bool never_new_part, Part* paste_into_part)
+void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part, bool never_new_part, Part* paste_into_part, int amount, int raster)
 {
 	Undo operations;
 	map<Part*, unsigned> expand_map;
@@ -1023,6 +1083,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 					{
 						Part* dest_part;
 						Track* dest_track;
+						Part* old_dest_part;
 						
 						if (paste_into_part == NULL)
 							dest_part = MusEUtil::partFromSerialNumber(part_id);
@@ -1036,52 +1097,59 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 						else
 						{
 							dest_track=dest_part->track();
-							
+							old_dest_part=dest_part;
 							unsigned first_paste_tick = el.begin()->first + pos;
-							if ( (dest_part->tick() > first_paste_tick) ||   // dest_part begins too late
+							bool create_new_part = ( (dest_part->tick() > first_paste_tick) ||   // dest_part begins too late
 									 ( ( (dest_part->endTick() + max_distance < first_paste_tick) || // dest_part is too far away
-										 always_new_part ) && !never_new_part ) )
-							{
-								Part* old_dest_part=dest_part;
-								dest_part = dest_track->newPart();
-								dest_part->events()->incARef(-1); // the later song->applyOperationGroup() will increment it
-								                                  // so we must decrement it first :/
-								dest_part->setTick(AL::sigmap.raster1(first_paste_tick, config.division));
-
-								new_part_map[old_dest_part].insert(dest_part);
-								operations.push_back(UndoOp(UndoOp::AddPart, dest_part));
-							}
+										                  always_new_part ) && !never_new_part ) );    // respect function arguments
 							
-							for (iEvent i = el.begin(); i != el.end(); ++i)
+							for (int i=0;i<amount;i++)
 							{
-								Event e = i->second;
-								int tick = e.tick() + pos - dest_part->tick();
-								if (tick<0)
+								unsigned curr_pos = pos + i*raster;
+								first_paste_tick = el.begin()->first + curr_pos;
+								
+								if (create_new_part)
 								{
-									printf("ERROR: trying to add event before current part! ignoring this event\n");
-									continue;
-								}
+									dest_part = dest_track->newPart();
+									dest_part->events()->incARef(-1); // the later song->applyOperationGroup() will increment it
+																										// so we must decrement it first :/
+									dest_part->setTick(AL::sigmap.raster1(first_paste_tick, config.division));
 
-								e.setTick(tick);
-								e.setSelected(true);
-								
-								if (e.endTick() > dest_part->lenTick()) // event exceeds part?
-								{
-									if (dest_part->hasHiddenEvents()) // auto-expanding is forbidden?
-									{
-										if (e.tick() < dest_part->lenTick())
-											e.setLenTick(dest_part->lenTick() - e.tick()); // clip
-										else
-											e.setLenTick(0); // don't insert that note at all
-									}
-									else
-									{
-										if (e.endTick() > expand_map[dest_part])
-											expand_map[dest_part]=e.endTick();
-									}
+									new_part_map[old_dest_part].insert(dest_part);
+									operations.push_back(UndoOp(UndoOp::AddPart, dest_part));
 								}
 								
-								if (e.lenTick() != 0) operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
+								for (iEvent i = el.begin(); i != el.end(); ++i)
+								{
+									Event e = i->second.clone();
+									int tick = e.tick() + curr_pos - dest_part->tick();
+									if (tick<0)
+									{
+										printf("ERROR: trying to add event before current part! ignoring this event\n");
+										continue;
+									}
+
+									e.setTick(tick);
+									e.setSelected(true);
+									
+									if (e.endTick() > dest_part->lenTick()) // event exceeds part?
+									{
+										if (dest_part->hasHiddenEvents()) // auto-expanding is forbidden?
+										{
+											if (e.tick() < dest_part->lenTick())
+												e.setLenTick(dest_part->lenTick() - e.tick()); // clip
+											else
+												e.setLenTick(0); // don't insert that note at all
+										}
+										else
+										{
+											if (e.endTick() > expand_map[dest_part])
+												expand_map[dest_part]=e.endTick();
+										}
+									}
+									
+									if (e.lenTick() != 0) operations.push_back(UndoOp(UndoOp::AddEvent,e, dest_part, false, false));
+								}
 							}
 						}
 					}

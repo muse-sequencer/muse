@@ -4534,8 +4534,8 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *   o pasting in editors sometimes fails oO? ( ERROR: reading eventlist from clipboard failed. ignoring this one... )
  *   o ctrl+shift+c for editors
  *   o TEST pasting in editors!
- *   o sane default for raster
- *   o use raster and amount in paste_notes!
+ *   x sane default for raster
+ *   x use raster and amount in paste_notes!
  *   x clone-bug
  *   x pasting in editors: add dialogs
  *   x when pasting and creating new parts, inform the editors about that!

@@ -85,9 +85,9 @@ bool legato();
 //functions for copy'n'paste
 void copy_notes(const std::set<Part*>& parts, int range);
 bool paste_notes(Part* paste_into_part=NULL); // shows a dialog
-void paste_notes(int max_distance=3072, bool always_new_part=false, bool never_new_part=false, Part* paste_into_part=NULL);
+void paste_notes(int max_distance=3072, bool always_new_part=false, bool never_new_part=false, Part* paste_into_part=NULL, int amount=1, int raster=3072);
 QMimeData* selected_events_to_mime(const std::set<Part*>& parts, int range);
-void paste_at(const QString& pt, int pos, int max_distance=3072, bool always_new_part=false, bool never_new_part=false, Part* paste_into_part=NULL);
+void paste_at(const QString& pt, int pos, int max_distance=3072, bool always_new_part=false, bool never_new_part=false, Part* paste_into_part=NULL, int amount=1, int raster=3072);
 
 //functions for selections
 void select_all(const std::set<Part*>& parts);
