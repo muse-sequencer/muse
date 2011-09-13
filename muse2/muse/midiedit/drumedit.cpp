@@ -59,6 +59,7 @@
 #include "audio.h"
 #include "gconfig.h"
 #include "functions.h"
+#include "helper.h"
 #include "widgets/function_dialogs/quantize.h"
 
 /*
@@ -197,6 +198,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       menuEdit->addSeparator();
       cutAction = menuEdit->addAction(QIcon(*editcutIconSet), tr("Cut"));
       copyAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy"));
+      copyRangeAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy events in range"));
       pasteAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste"));
       pasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste (with Dialog)"));
       menuEdit->addSeparator();
@@ -204,12 +206,14 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
 
       connect(cutAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(copyAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+      connect(copyRangeAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(pasteAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(pasteDialogAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(deleteAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
 
       signalMapper->setMapping(cutAction, DrumCanvas::CMD_CUT);
       signalMapper->setMapping(copyAction, DrumCanvas::CMD_COPY);
+      signalMapper->setMapping(copyRangeAction, DrumCanvas::CMD_COPY_RANGE);
       signalMapper->setMapping(pasteAction, DrumCanvas::CMD_PASTE);
       signalMapper->setMapping(pasteDialogAction, DrumCanvas::CMD_PASTE_DIALOG);
       signalMapper->setMapping(deleteAction, DrumCanvas::CMD_DEL);
@@ -920,6 +924,7 @@ void DrumEdit::cmd(int cmd)
                   erase_notes(partlist_to_set(parts()), 1);
                   break;
             case DrumCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
+            case DrumCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()), MusEUtil::any_event_selected(partlist_to_set(parts())) ? 3 : 2); break;
             case DrumCanvas::CMD_PASTE: 
                   ((DrumCanvas*)canvas)->cmd(DrumCanvas::CMD_SELECT_NONE);
                   paste_notes(3072);
@@ -1275,6 +1280,7 @@ void DrumEdit::initShortcuts()
 
       cutAction->setShortcut(shortcuts[SHRT_CUT].key);
       copyAction->setShortcut(shortcuts[SHRT_COPY].key);
+      copyRangeAction->setShortcut(shortcuts[SHRT_COPY_RANGE].key);
       pasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
       pasteDialogAction->setShortcut(shortcuts[SHRT_PASTE_DIALOG].key);
       deleteAction->setShortcut(shortcuts[SHRT_DELETE].key);

@@ -60,6 +60,7 @@
 #include "icons.h"
 #include "audio.h"
 #include "functions.h"
+#include "helper.h"
 
 
 #include "cmd.h"
@@ -106,6 +107,10 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       editCopyAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("&Copy"));
       mapper->setMapping(editCopyAction, PianoCanvas::CMD_COPY);
       connect(editCopyAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      
+      editCopyRangeAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy events in range"));
+      mapper->setMapping(editCopyRangeAction, PianoCanvas::CMD_COPY_RANGE);
+      connect(editCopyRangeAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
       editPasteAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("&Paste"));
       mapper->setMapping(editPasteAction, PianoCanvas::CMD_PASTE);
@@ -634,6 +639,7 @@ void PianoRoll::cmd(int cmd)
                   erase_notes(partlist_to_set(parts()), 1);
                   break;
             case PianoCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
+            case PianoCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()), MusEUtil::any_event_selected(partlist_to_set(parts())) ? 3 : 2); break;
             case PianoCanvas::CMD_PASTE: 
                               ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
                               paste_notes(3072);
@@ -1251,6 +1257,7 @@ void PianoRoll::initShortcuts()
       {
       editCutAction->setShortcut(shortcuts[SHRT_CUT].key);
       editCopyAction->setShortcut(shortcuts[SHRT_COPY].key);
+      editCopyRangeAction->setShortcut(shortcuts[SHRT_COPY_RANGE].key);
       editPasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
       editPasteDialogAction->setShortcut(shortcuts[SHRT_PASTE_DIALOG].key);
       editDelEventsAction->setShortcut(shortcuts[SHRT_DELETE].key);

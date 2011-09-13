@@ -27,6 +27,7 @@
 #include "app.h"
 #include "icons.h"
 #include "synth.h"
+#include "functions.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -36,6 +37,7 @@
 #include "vst.h"
 #endif
 
+using std::set;
 
 namespace MusEGlobal {
 extern bool hIsB;
@@ -320,5 +322,10 @@ QActionGroup* populateAddTrack(QMenu* addTrack)
 
       return grp;
       }
+
+bool any_event_selected(const set<Part*>& parts, bool in_range)
+{
+  return !get_events(parts, in_range ? 3 : 1).empty();
+}
 
 } // namespace MusEUtil

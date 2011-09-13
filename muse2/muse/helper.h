@@ -23,6 +23,8 @@
 #ifndef __HELPER_H__
 #define __HELPER_H__
 
+#include <set>
+
 class QActionGroup;
 class QString;
 class QMenu;
@@ -35,6 +37,8 @@ namespace MusEUtil {
 QString pitch2string(int v);
 
 Part* partFromSerialNumber(int serial);
+
+bool any_event_selected(const std::set<Part*>&, bool in_range=false);
 
 QMenu* populateAddSynth(QWidget* parent);
 QActionGroup* populateAddTrack(QMenu* addTrack);

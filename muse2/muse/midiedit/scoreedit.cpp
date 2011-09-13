@@ -366,6 +366,10 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 		menu_mapper->setMapping(copy_action, CMD_COPY);
 		connect(copy_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
 
+		copy_range_action = edit_menu->addAction(QIcon(*editcopyIconSet), tr("Copy events in range"));
+		menu_mapper->setMapping(copy_range_action, CMD_COPY_RANGE);
+		connect(copy_range_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+
 		paste_action = edit_menu->addAction(QIcon(*editpasteIconSet), tr("&Paste"));
 		menu_mapper->setMapping(paste_action, CMD_PASTE);
 		connect(paste_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
@@ -504,6 +508,7 @@ void ScoreEdit::init_shortcuts()
 {
 	cut_action->setShortcut(shortcuts[SHRT_CUT].key);
 	copy_action->setShortcut(shortcuts[SHRT_COPY].key);
+	copy_range_action->setShortcut(shortcuts[SHRT_COPY_RANGE].key);
 	paste_action->setShortcut(shortcuts[SHRT_PASTE].key);
 	paste_dialog_action->setShortcut(shortcuts[SHRT_PASTE_DIALOG].key);
 	del_action->setShortcut(shortcuts[SHRT_DELETE].key);
@@ -701,6 +706,7 @@ void ScoreEdit::menu_command(int cmd)
 			erase_notes(score_canvas->get_all_parts(), 1);
 			break;
 		case CMD_COPY: copy_notes(score_canvas->get_all_parts(), 1); break;
+		case CMD_COPY_RANGE: copy_notes(score_canvas->get_all_parts(), MusEUtil::any_event_selected(score_canvas->get_all_parts()) ? 3 : 2); break;
 		case CMD_PASTE: 
 			menu_command(CMD_SELECT_NONE); 
 			paste_notes(3072);
@@ -4529,16 +4535,11 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *     because after A (and B) got resized, the B-resize is invalid!
  *   o when changing toolbarstate when sharing and immediately after that
  *     changing "share" status, the changed state isn't stored
+ *   ? pasting in editors sometimes fails oO? ( ERROR: reading eventlist
+ *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  * 
  * CURRENT TODO
- *   o pasting in editors sometimes fails oO? ( ERROR: reading eventlist from clipboard failed. ignoring this one... )
- *   o ctrl+shift+c for editors
  *   o TEST pasting in editors!
- *   x sane default for raster
- *   x use raster and amount in paste_notes!
- *   x clone-bug
- *   x pasting in editors: add dialogs
- *   x when pasting and creating new parts, inform the editors about that!
  * 
  *   o ticks-to-quarter spinboxes
  * 
@@ -4547,7 +4548,6 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer
  *     journey to the menu bar. try to find a way which does not involve duplicate code!
  *   o sane defaults for toolbars
- *   o paste in midi editors
  *   o implement borland-style maximize: free windows do not cover the main menu, even when maximized
  *   o smart range selection: if range markers have been used recently (that is, a dialog with
  *     "range" setting, or they've been modified), default to "in range" or "selected in range"
