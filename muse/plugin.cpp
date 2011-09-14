@@ -3611,7 +3611,7 @@ PluginGui::PluginGui(PluginIBase* p)
                            
                         s->setCursorHoming(true);
                         s->setId(i);
-                        //s->setFixedHeight(h);
+                        s->setSizeHint(200, 8);
                         s->setRange(dlower, dupper);
                         if(LADSPA_IS_HINT_INTEGER(range.HintDescriptor))
                           s->setStep(1.0);
@@ -3620,7 +3620,7 @@ PluginGui::PluginGui(PluginIBase* p)
                         params[i].label->setSlider((MusEWidget::Slider*)params[i].actuator);
                         }
                   //params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum));
-                  params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+                  params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
                   if (params[i].type == GuiParam::GUI_SLIDER) {
                         //label->setFixedHeight(20);
                         //label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum));
@@ -3695,9 +3695,6 @@ PluginGui::PluginGui(PluginIBase* p)
               }
             }
 
-
-            // p3.3.43
-            resize(280, height());
 
             grid->setColumnStretch(2, 10);
             mw->setLayout(grid);

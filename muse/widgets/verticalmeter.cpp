@@ -130,7 +130,7 @@ void VerticalMeter::setRange(double min, double max)
 //   paintEvent
 //---------------------------------------------------------
 
-void VerticalMeter::paintEvent(QPaintEvent* ev)
+void VerticalMeter::paintEvent(QPaintEvent* /*ev*/)
       {
       // TODO: Could make better use of event rectangle, for speed.
       
@@ -140,14 +140,14 @@ void VerticalMeter::paintEvent(QPaintEvent* ev)
       double range = maxScale - minScale;
 
       int fw = frameWidth();
-      /*
       int w  = width() - 2*fw;
       int h  = height() - 2*fw;
-      */
 
+      /*
       QRect rect = ev->rect();
       int w = rect.width() - 2*fw;
       int h = rect.height() - 2*fw;
+      */
       int xv;
 
 

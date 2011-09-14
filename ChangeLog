@@ -1,3 +1,6 @@
+13.09.2011:
+	- Made Slider::sizeHint() a const function again, so that the plugin window respects its sizeHint. (Orcan)
+	- Explicitly disabled the scale support in Slider since it wasn't really in use for a while. (Orcan)
 11.09.2011:
         - Rewrote the rounding function for efficientcy. Moved the function into utils.cpp since it is written
           for general purpose. (Orcan)

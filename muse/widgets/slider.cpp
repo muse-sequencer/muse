@@ -57,7 +57,7 @@ namespace MusEWidget {
 //                    Defaults to Horizontal.
 //  ScalePos scalePos --  Position of the scale.  Can be Slider::None,
 //        Slider::Left, Slider::Right, Slider::Top,
-//        or Slider::Bottom. Defaults to Slider::None.
+//        or Slider::Bottom. Defaults to Slider::None.  !!! CURRENTLY only Slider::None supported - oget 20110913
 //  QColor fillcolor -- the color used to fill in the full side
 //        of the Slider
 //------------------------------------------------------------
@@ -82,6 +82,16 @@ Slider::Slider(QWidget *parent, const char *name,
 
       d_sliderRect.setRect(0, 0, 8, 8);
       setOrientation(orient);
+      }
+
+//------------------------------------------------------------
+//.F  Slider::setSizeHint
+//------------------------------------------------------------
+
+void Slider::setSizeHint(uint w, uint h)
+      {
+      horizontal_hint = w;
+      vertical_hint = h;
       }
 
 //------------------------------------------------------------
@@ -540,10 +550,11 @@ void Slider::getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrol
 //.f  void Slider::paintEvent(QPaintEvent *e)
 //------------------------------------------------------------
 
-void Slider::paintEvent(QPaintEvent* /*e*/)
+void Slider::paintEvent(QPaintEvent* /*ev*/)
       {
-      QPainter p;
+      QPainter p(this);
 
+      /* Scale is not supported
       if (p.begin(this)) {
             if (d_scalePos != None) {
                   p.fillRect(rect(), palette().window());
@@ -552,6 +563,8 @@ void Slider::paintEvent(QPaintEvent* /*e*/)
             drawSlider(&p, d_sliderRect);
             }
       p.end();
+      */
+      drawSlider(&p, d_sliderRect);
       }
 
 //------------------------------------------------------------
@@ -570,6 +583,7 @@ void Slider::resizeEvent(QResizeEvent *e)
 
     d_resized = TRUE;
     QSize s = e->size();
+    /* Scale is not supported
     int sliderWidth = d_thumbWidth;
 
     // reposition slider
@@ -642,8 +656,10 @@ void Slider::resizeEvent(QResizeEvent *e)
          s.width(), s.height());
       break;
   }
-
     }
+    */
+  d_sliderRect.setRect(this->rect().x(), this->rect().y(),
+                       s.width(), s.height());
 }
 
 //------------------------------------------------------------
@@ -714,13 +730,14 @@ void Slider::setMargins(int hor, int vert)
 //  scale.
 //------------------------------------------------------------
 
-QSize Slider::sizeHint() //const ddskrjo
+QSize Slider::sizeHint() const
       {
+      /* Scale is not supported
+      int w = 40;
+      int h = 40;
       QPainter p;
       int msWidth = 0, msHeight = 0;
 
-      int w = 40;
-      int h = 40;
       if (d_scalePos != None) {
             if (p.begin(this)) {
                   msWidth = d_scale.maxWidth(&p, FALSE);
@@ -747,7 +764,8 @@ QSize Slider::sizeHint() //const ddskrjo
                         break;
                   }
             }
-      return QSize(w, h);
+      */
+      return QSize(horizontal_hint, vertical_hint);
       }
 
 //---------------------------------------------------------
@@ -757,6 +775,7 @@ QSize Slider::sizeHint() //const ddskrjo
 void Slider::setOrientation(Qt::Orientation o)
       {
       d_orient = o;
+      /* Scale is not supported
       ScaleDraw::OrientationX so = ScaleDraw::Bottom;
       switch(d_orient) {
             case Qt::Vertical:
@@ -781,6 +800,18 @@ void Slider::setOrientation(Qt::Orientation o)
       QRect r = geometry();
       setGeometry(r.x(), r.y(), r.height(), r.width());
       update();
+      */
+
+      switch(d_orient) {
+            case Qt::Vertical:
+                  horizontal_hint = 16;
+                  vertical_hint = 64;
+                  break;
+            case Qt::Horizontal:
+                  horizontal_hint = 64;
+                  vertical_hint = 16;
+                  break;
+            }
       }
 
 Qt::Orientation Slider::orientation() const

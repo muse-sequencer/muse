@@ -69,6 +69,9 @@ class Slider : public SliderBase, public ScaleIf
   int d_bgStyle;
   int markerPos;
 
+  uint vertical_hint;
+  uint horizontal_hint;
+
   void drawHsBgSlot(QPainter *, const QRect&, const QRect&,const QBrush&);
   void drawVsBgSlot(QPainter *, const QRect&, const QRect&,const QBrush&);
 
@@ -102,8 +105,9 @@ class Slider : public SliderBase, public ScaleIf
   void setLineStep(double);
   void setPageStep(double);
 
-      void setMargins(int x, int y);
-  QSize sizeHint(); // const;
+  void setMargins(int x, int y);
+  virtual QSize sizeHint() const;
+  void setSizeHint(uint w, uint h);
       };
 
 } // namespace MusEWidget
