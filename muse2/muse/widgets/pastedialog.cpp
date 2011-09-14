@@ -27,6 +27,8 @@
 
 using MusEConfig::config;
 
+namespace MusEDialog {
+
 PasteDialog::PasteDialog(QWidget* parent)
 	: QDialog(parent)
 {
@@ -147,3 +149,5 @@ void PasteDialog::write_configuration(int level, Xml& xml)
 	xml.intTag(level, "all_in_one_track", all_in_one_track);
 	xml.tag(level, "/pastedialog");
 }
+
+} // namespace MusEDialog

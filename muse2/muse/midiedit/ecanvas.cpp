@@ -400,7 +400,7 @@ void EventCanvas::viewDropEvent(QDropEvent* event)
             int x = editor->rasterVal(event->pos().x());
             if (x < 0)
                   x = 0;
-            paste_at(text,x); //(curPart, text, x); TODO FINDMICHJETZT
+            paste_at(text,x,3072,false,false,curPart);
             //event->accept();  // TODO
             }
       else {

@@ -27,6 +27,8 @@
 
 using MusEConfig::config;
 
+namespace MusEDialog {
+
 PasteEventsDialog::PasteEventsDialog(QWidget* parent)
 	: QDialog(parent)
 {
@@ -169,3 +171,5 @@ void PasteEventsDialog::write_configuration(int level, Xml& xml)
 	xml.intTag(level, "into_single_part", into_single_part);
 	xml.tag(level, "/pasteeventsdialog");
 }
+
+} // namespace MusEDialog

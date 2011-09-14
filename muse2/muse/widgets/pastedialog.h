@@ -28,6 +28,8 @@
 
 class Xml;
 
+namespace MusEDialog {
+
 class PasteDialog : public QDialog, public Ui::PasteDialogBase
 {
  	Q_OBJECT
@@ -58,6 +60,8 @@ class PasteDialog : public QDialog, public Ui::PasteDialogBase
 	public slots:
 		int exec();
 };
+
+} // namespace MusEDialog
 
 #endif
 

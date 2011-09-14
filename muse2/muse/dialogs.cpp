@@ -50,8 +50,8 @@ MusEDialog::Move* move_notes_dialog=NULL;
 MusEDialog::Transpose* transpose_dialog=NULL;
 MusEDialog::Crescendo* crescendo_dialog=NULL;
 MusEDialog::Legato* legato_dialog=NULL;
-PasteDialog* paste_dialog=NULL; // FINDMICHJETZT
-PasteEventsDialog* paste_events_dialog=NULL; // FINDMICHJETZT
+MusEDialog::PasteDialog* paste_dialog=NULL;
+MusEDialog::PasteEventsDialog* paste_events_dialog=NULL;
 
 void init_function_dialogs(QWidget* parent)
 {
@@ -65,8 +65,8 @@ void init_function_dialogs(QWidget* parent)
 	transpose_dialog = new MusEDialog::Transpose(parent);
 	crescendo_dialog = new MusEDialog::Crescendo(parent);
 	legato_dialog = new MusEDialog::Legato(parent);
-	paste_dialog = new PasteDialog(parent); // FINDMICHJETZT
-	paste_events_dialog = new PasteEventsDialog(parent); // FINDMICHJETZT
+	paste_dialog = new MusEDialog::PasteDialog(parent);
+	paste_events_dialog = new MusEDialog::PasteEventsDialog(parent);
 }
 
 void read_function_dialog_config(Xml& xml)
