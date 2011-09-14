@@ -916,8 +916,14 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               LMaster::readConfiguration(xml);
                         else if (tag == "marker")
                               MarkerView::readConfiguration(xml);
-                        else if (tag == "arranger")
+                        else if (tag == "arrangerview")
                               ArrangerView::readConfiguration(xml);
+                        else if (tag == "arranger") {
+                              if (MusEGlobal::muse && MusEGlobal::muse->arranger())
+                                    MusEGlobal::muse->arranger()->readStatus(xml);
+                              else
+                                    xml.skip(tag);
+                              }
                         else if (tag == "dialogs")
                               read_function_dialog_config(xml);
                         else if (tag == "shortcuts")

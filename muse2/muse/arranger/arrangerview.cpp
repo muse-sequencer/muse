@@ -434,7 +434,7 @@ void ArrangerView::readConfiguration(Xml& xml)
                               xml.unknown("ArrangerView");
                         break;
                   case Xml::TagEnd:
-                        if (tag == "arranger")
+                        if (tag == "arrangerview")
                               return;
                   default:
                         break;
@@ -448,9 +448,9 @@ void ArrangerView::readConfiguration(Xml& xml)
 
 void ArrangerView::writeConfiguration(int level, Xml& xml)
       {
-      xml.tag(level++, "arranger");
+      xml.tag(level++, "arrangerview");
       TopWin::writeConfiguration(ARRANGER, level, xml);
-      xml.tag(level, "/arranger");
+      xml.tag(level, "/arrangerview");
       }
 
 
