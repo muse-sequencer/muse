@@ -262,7 +262,6 @@ MasterEdit::MasterEdit()
       connect(canvas, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
 
       initTopwinState();
-      initalizing=false;
       }
 
 //---------------------------------------------------------

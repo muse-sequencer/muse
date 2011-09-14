@@ -276,7 +276,6 @@ LMaster::LMaster()
       connect(keyButton, SIGNAL(clicked()), SLOT(insertKey()));
 
       initShortcuts();
-      initalizing=false;
       }
 
 //---------------------------------------------------------

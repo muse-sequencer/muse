@@ -1329,7 +1329,10 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             }
           
           if (maximizeArranger)
+          {
             arrangerView->showMaximized();
+            bringToFront(arrangerView);
+          }
         }
       }
       
@@ -3282,6 +3285,8 @@ void MusE::bringToFront(QWidget* widget)
     win->activateWindow();
     win->raise();
   }
+  
+  activeTopWinChangedSlot(win);
 }
 
 void MusE::setFullscreen(bool val)
@@ -3321,8 +3326,8 @@ void MusE::arrangeSubWindowsColumns()
   
   if (n==0)
     return;
-  else if (n==1)
-    (*wins.begin())->showMaximized();
+  //else if (n==1)
+  //  (*wins.begin())->showMaximized(); // commented out by flo. i like it better that way.
   else
   {
     int width = mdiArea->width();
@@ -3356,8 +3361,8 @@ void MusE::arrangeSubWindowsRows()
   
   if (n==0)
     return;
-  else if (n==1)
-    (*wins.begin())->showMaximized();
+  //else if (n==1)
+  //  (*wins.begin())->showMaximized(); // commented out by flo. i like it better that way.
   else
   {
     int width = mdiArea->width();
@@ -3391,8 +3396,8 @@ void MusE::tileSubWindows()
   
   if (n==0)
     return;
-  else if (n==1)
-    (*wins.begin())->showMaximized();
+  //else if (n==1)
+  //  (*wins.begin())->showMaximized(); // commented out by flo. i like it better that way.
   else
   {
     int nx,ny;

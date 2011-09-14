@@ -358,8 +358,6 @@ ArrangerView::ArrangerView(QWidget* parent)
   // bug: 2811156     Softsynth GUI unclosable with XFCE4 (and a few others)
   show();
   hide();
-        
-  initalizing=false;
 }
 
 ArrangerView::~ArrangerView()

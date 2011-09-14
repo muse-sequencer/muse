@@ -501,7 +501,6 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	apply_velo=true;
 	
 	initTopwinState();
-	initalizing=false;
 }
 
 void ScoreEdit::init_shortcuts()
@@ -4541,18 +4540,17 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  * CURRENT TODO
  * M o TEST pasting in editors!
  * 
+ * ! o fix sigedit boxes (see also "important todo")
  *   o ticks-to-quarter spinboxes
- * 
- * ! o fix sigedit boxes
- * M o remove that ugly "bool initalizing" stuff. it's probably unneeded (watch out for the FINDMICH message)
+ *   o newly created windows have to be focussed!
  *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer
  *     journey to the menu bar. try to find a way which does not involve duplicate code!
- *   o sane defaults for toolbars
  *   o implement borland-style maximize: free windows do not cover the main menu, even when maximized
  *   o smart range selection: if range markers have been used recently (that is, a dialog with
  *     "range" setting, or they've been modified), default to "in range" or "selected in range"
  *
  * IMPORTANT TODO
+ * ! o fix sigedit boxes (see also "current todo")
  *   o add "dotted quarter" quantize option (for 6/8 beat)
  * 
  *   o rename stuff with F2 key

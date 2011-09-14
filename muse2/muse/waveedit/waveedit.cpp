@@ -284,7 +284,6 @@ WaveEdit::WaveEdit(PartList* pl)
       }
 
       initTopwinState();
-      initalizing=false;
       }
 
 void WaveEdit::initShortcuts()

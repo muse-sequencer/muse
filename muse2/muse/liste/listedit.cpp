@@ -607,8 +607,6 @@ ListEdit::ListEdit(PartList* pl)
       initShortcuts();
       
       setWindowTitle("MusE: List Editor");
-      
-      initalizing=false;
       }
 
 //---------------------------------------------------------

@@ -51,11 +51,7 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
       if (initInited==false)
         initConfiguration();
       
-      initalizing=true;
-      
       _type=t;
-      
-      
       
       setObjectName(QString(name));
       // Allow multiple rows.  Tim.
@@ -350,12 +346,6 @@ void TopWin::shareToolsAndMenu(bool val)
 
 void TopWin::storeInitialState() const
       {
-        if (initalizing)
-        {
-          printf("THIS SHOULD NEVER HAPPEN: STORE INIT STATE CALLED WHILE INITING! please IMMEDIATELY report that to flo!\n");
-          exit(1);
-        }
-
         _widthInit[_type] = width();
         _heightInit[_type] = height();
         if (sharesToolsAndMenu())

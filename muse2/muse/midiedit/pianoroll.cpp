@@ -530,7 +530,6 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       }
 
       initTopwinState();
-      initalizing=false;
       }
 
 //---------------------------------------------------------

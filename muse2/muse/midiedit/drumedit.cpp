@@ -531,7 +531,6 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       
       
       initTopwinState();
-      initalizing=false;
       }
 
 //---------------------------------------------------------
