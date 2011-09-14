@@ -1,6 +1,9 @@
 14.09.2011:
         - added sane configuration defaults to muse (flo93)
         - several minor fixes (flo93)
+        - added MDI-like and borland-like user interface (flo93)
+        - improved pasting, added dialogs, added "copy in range",
+          changed shortcut keys (flo93)
 13.09.2011:
         *Added: You can now insert new tracks instead of always at the track list end. (Tim)
           If main menu 'Add track': Inserts before currently selected track, else adds at end.
