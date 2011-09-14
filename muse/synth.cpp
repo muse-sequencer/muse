@@ -35,13 +35,13 @@
 //#include <QMenu>
 
 #include "app.h"
+#include "arranger.h"
 #include "synth.h"
 #include "xml.h"
 #include "midi.h"
 #include "midiport.h"
 #include "mididev.h"
-//#include "libsynti/mess.h"
-#include "synti/libsynti/mess.h"   // p4.0.2
+#include "synti/libsynti/mess.h"  
 #include "song.h"
 #include "audio.h"
 #include "event.h"
@@ -162,7 +162,6 @@ static Synth* findSynth(const QString& sclass, const QString& label)
 //    create a synthesizer instance of class "label"
 //---------------------------------------------------------
 
-//static SynthI* createSynthI(const QString& sclass)
 static SynthI* createSynthInstance(const QString& sclass, const QString& label)
       {
       //Synth* s = findSynth(sclass);
@@ -648,10 +647,10 @@ void initMidiSynth()
 //---------------------------------------------------------
 //   createSynthI
 //    create a synthesizer instance of class "label"
+//    If insertAt is valid, inserts before insertAt. Else at the end after all tracks.
 //---------------------------------------------------------
 
-//SynthI* Song::createSynthI(const QString& sclass)
-SynthI* Song::createSynthI(const QString& sclass, const QString& label)
+SynthI* Song::createSynthI(const QString& sclass, const QString& label, Track* insertAt)
       {
       //printf("Song::createSynthI calling ::createSynthI class:%s\n", sclass.toLatin1().constData());
       
@@ -662,13 +661,15 @@ SynthI* Song::createSynthI(const QString& sclass, const QString& label)
         return 0;
       //printf("Song::createSynthI created SynthI. Before insertTrack1...\n");
       
-      insertTrack1(si, -1);
+      int idx = insertAt ? _tracks.index(insertAt) : -1;
+      
+      insertTrack1(si, idx);
       //printf("Song::createSynthI after insertTrack1. Before msgInsertTrack...\n");
       
-      msgInsertTrack(si, -1, true);       // add to instance list
+      msgInsertTrack(si, idx, true);       // add to instance list
       //printf("Song::createSynthI after msgInsertTrack. Before insertTrack3...\n");
       
-      insertTrack3(si, -1);
+      insertTrack3(si, idx);
 
       //printf("Song::createSynthI after insertTrack3. Adding default routes...\n");
       

@@ -55,10 +55,6 @@
 
 extern QColor readColor(Xml& xml);
 
-int WaveEdit::_widthInit = 600;
-int WaveEdit::_heightInit = 400;
-QByteArray WaveEdit::_toolbarInit;
-
 //---------------------------------------------------------
 //   closeEvent
 //---------------------------------------------------------
@@ -68,7 +64,7 @@ void WaveEdit::closeEvent(QCloseEvent* e)
       QSettings settings("MusE", "MusE-qt");
       //settings.setValue("Waveedit/geometry", saveGeometry());
       settings.setValue("Waveedit/windowState", saveState());
-      emit deleted((unsigned long)this);
+      emit deleted(static_cast<TopWin*>(this));
       e->accept();
       }
 
@@ -77,9 +73,8 @@ void WaveEdit::closeEvent(QCloseEvent* e)
 //---------------------------------------------------------
 
 WaveEdit::WaveEdit(PartList* pl)
-   : MidiEditor(1, pl)
+   : MidiEditor(TopWin::WAVE, 1, pl)
       {
-      resize(_widthInit, _heightInit);
       setFocusPolicy(Qt::StrongFocus);
 
       QSignalMapper* mapper = new QSignalMapper(this);
@@ -169,6 +164,12 @@ WaveEdit::WaveEdit(PartList* pl)
       mapper->setMapping(selectNoneAction, CMD_SELECT_NONE);
       connect(selectNoneAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
+      
+      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      settingsMenu->addAction(subwinAction);
+      settingsMenu->addAction(shareAction);
+      settingsMenu->addAction(fullscreenAction);
+
       //---------ToolBar----------------------------------
       tools = addToolBar(tr("Wave edit tools"));
       tools->setObjectName("Wave edit tools");
@@ -218,7 +219,7 @@ WaveEdit::WaveEdit(PartList* pl)
 
       if (!parts()->empty()) { // Roughly match total size of part
             Part* firstPart = parts()->begin()->second;
-            xscale = 0 - firstPart->lenFrame()/_widthInit;
+            xscale = 0 - firstPart->lenFrame()/_widthInit[_type];
             }
       else {
             xscale = -8000;
@@ -271,9 +272,6 @@ WaveEdit::WaveEdit(PartList* pl)
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
       connect(song, SIGNAL(songChanged(int)), SLOT(songChanged1(int)));
 
-      if (!_toolbarInit.isEmpty())
-            restoreState(_toolbarInit);
-
       initShortcuts();
       
       updateHScrollRange();
@@ -284,10 +282,8 @@ WaveEdit::WaveEdit(PartList* pl)
         WavePart* part = (WavePart*)(parts()->begin()->second);
         solo->setChecked(part->track()->solo());
       }
-      QSettings settings("MusE", "MusE-qt");
-      //restoreGeometry(settings.value("Waveedit/geometry").toByteArray());
-      restoreState(settings.value("Waveedit/windowState").toByteArray());
 
+      initTopwinState();
       }
 
 void WaveEdit::initShortcuts()
@@ -374,12 +370,8 @@ void WaveEdit::readConfiguration(Xml& xml)
                   case Xml::TagStart:
                         if (tag == "bgcolor")
                               MusEConfig::config.waveEditBackgroundColor = readColor(xml);
-                        else if (tag == "width")
-                              _widthInit = xml.parseInt();
-                        else if (tag == "height")
-                              _heightInit = xml.parseInt();
-                        else if (tag == "toolbars")
-                              _toolbarInit = QByteArray::fromHex(xml.parse1().toAscii());
+                        else if (tag == "topwin")
+                              TopWin::readConfiguration(WAVE, xml);
                         else
                               xml.unknown("WaveEdit");
                         break;
@@ -403,9 +395,7 @@ void WaveEdit::writeConfiguration(int level, Xml& xml)
       {
       xml.tag(level++, "waveedit");
       xml.colorTag(level, "bgcolor", MusEConfig::config.waveEditBackgroundColor);
-      xml.intTag(level, "width", _widthInit);
-      xml.intTag(level, "height", _heightInit);
-      xml.strTag(level, "toolbars", _toolbarInit.toHex().data());
+      TopWin::writeConfiguration(WAVE, level,xml);
       xml.tag(level, "/waveedit");
       }
 
@@ -455,38 +445,6 @@ void WaveEdit::readStatus(Xml& xml)
                         break;
                   }
             }
-      }
-
-//---------------------------------------------------------
-//   resizeEvent
-//---------------------------------------------------------
-
-void WaveEdit::resizeEvent(QResizeEvent* ev)
-      {
-      QWidget::resizeEvent(ev);
-      storeInitialState();
-      }
-
-//---------------------------------------------------------
-//   focusOutEvent
-//---------------------------------------------------------
-
-void WaveEdit::focusOutEvent(QFocusEvent* ev)
-      {
-      QWidget::focusOutEvent(ev);
-      storeInitialState();
-      }
-
-
-//---------------------------------------------------------
-//   storeInitialState
-//---------------------------------------------------------
-
-void WaveEdit::storeInitialState()
-      {
-      _widthInit = width();
-      _heightInit = height();
-      _toolbarInit=saveState();
       }
 
 

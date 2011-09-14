@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>526</width>
+    <width>556</width>
     <height>506</height>
    </rect>
   </property>
@@ -70,7 +70,7 @@
            </widget>
           </item>
           <item row="0" column="5">
-           <widget class="QSpinBox" name="arrangerH">
+           <widget class="QSpinBox" name="mainH">
             <property name="toolTip">
              <string>height</string>
             </property>
@@ -80,7 +80,7 @@
            </widget>
           </item>
           <item row="0" column="4">
-           <widget class="QSpinBox" name="arrangerW">
+           <widget class="QSpinBox" name="mainW">
             <property name="toolTip">
              <string>width</string>
             </property>
@@ -90,7 +90,7 @@
            </widget>
           </item>
           <item row="0" column="3">
-           <widget class="QSpinBox" name="arrangerY">
+           <widget class="QSpinBox" name="mainY">
             <property name="toolTip">
              <string>y-pos</string>
             </property>
@@ -100,7 +100,7 @@
            </widget>
           </item>
           <item row="0" column="2">
-           <widget class="QSpinBox" name="arrangerX">
+           <widget class="QSpinBox" name="mainX">
             <property name="toolTip">
              <string>x-pos</string>
             </property>
@@ -227,7 +227,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Arranger</string>
+             <string>Main Window</string>
             </property>
             <property name="wordWrap">
              <bool>false</bool>
@@ -379,7 +379,7 @@
            </widget>
           </item>
           <item row="0" column="6">
-           <widget class="QPushButton" name="setArrangerCurrent">
+           <widget class="QPushButton" name="setMainCurrent">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1333,19 +1333,6 @@ Adjusts responsiveness of audio controls and
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
           <item row="4" column="0">
            <widget class="QLabel" name="TextLabel1_3">
             <property name="toolTip">
@@ -1365,6 +1352,72 @@ Otherwise, hold Ctrl to keep them open.</string>
             <property name="text">
              <string/>
             </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>MDI-subwindowness and sharing menus</string>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_9">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Presets:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="buttonTraditionalPreset">
+              <property name="text">
+               <string>traditional MusE SDI</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="buttonMDIPreset">
+              <property name="text">
+               <string>Cakewalk-like MDI</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="buttonBorlandPreset">
+              <property name="text">
+               <string>Borland-/Mac-like MDI</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QScrollArea" name="scrollArea">
+            <property name="widgetResizable">
+             <bool>true</bool>
+            </property>
+            <widget class="QWidget" name="scrollAreaWidgetContents_2">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>0</y>
+               <width>482</width>
+               <height>168</height>
+              </rect>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <layout class="QVBoxLayout" name="layoutMdiSettings"/>
+              </item>
+             </layout>
+            </widget>
            </widget>
           </item>
          </layout>

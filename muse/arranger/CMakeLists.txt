@@ -27,6 +27,7 @@
 QT4_WRAP_CPP (arranger_mocs
       alayout.h
       arranger.h 
+      arrangerview.h 
       pcanvas.h 
       tlist.h 
       )
@@ -37,6 +38,7 @@ QT4_WRAP_CPP (arranger_mocs
 file (GLOB arranger_source_files
       alayout.cpp
       arranger.cpp
+      arrangerview.cpp
       pcanvas.cpp
       tlist.cpp
       )

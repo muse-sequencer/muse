@@ -79,7 +79,7 @@ enum {CMD_COLOR_BLACK, CMD_COLOR_VELO, CMD_COLOR_PART,
       
       CMD_QUANTIZE, CMD_VELOCITY, CMD_CRESCENDO, CMD_NOTELEN, CMD_TRANSPOSE,
       CMD_ERASE, CMD_MOVE, CMD_FIXED_LEN, CMD_DELETE_OVERLAPS, CMD_LEGATO,
-      CMD_CUT, CMD_COPY, CMD_PASTE, CMD_DEL,
+      CMD_CUT, CMD_COPY, CMD_COPY_RANGE, CMD_PASTE, CMD_PASTE_DIALOG, CMD_DEL,
       CMD_SELECT_ALL, CMD_SELECT_NONE, CMD_SELECT_INVERT,
       CMD_SELECT_ILOOP, CMD_SELECT_OLOOP};
 
@@ -99,10 +99,6 @@ class ScoreEdit : public TopWin
 	Q_OBJECT
 	private:
 		virtual void closeEvent(QCloseEvent*);
-		virtual void resizeEvent(QResizeEvent*);
-		virtual void focusOutEvent(QFocusEvent*);
-		
-		void store_initial_state();
 		
 		void init_name();
 
@@ -137,7 +133,9 @@ class ScoreEdit : public TopWin
 		
 		QAction* cut_action;
 		QAction* copy_action;
+		QAction* copy_range_action;
 		QAction* paste_action;
+		QAction* paste_dialog_action;
 		QAction* del_action;
 		
 		QAction* select_all_action;
@@ -168,14 +166,14 @@ class ScoreEdit : public TopWin
 		bool apply_velo;
 		
 		static set<QString> names;
-		static int width_init, height_init;
-		static QByteArray default_toolbar_state;
 		
 		QString name;
 		
 		QSignalMapper* menu_mapper;
 				
 		bool set_name(QString newname, bool emit_signal=true, bool emergency_name=false);
+
+		virtual void keyPressEvent(QKeyEvent*);
 		
 	private slots:
 		void menu_command(int);
@@ -186,7 +184,7 @@ class ScoreEdit : public TopWin
 		void clipboard_changed();
 		
 	signals:
-		void deleted(unsigned long);
+		void deleted(TopWin*);
 		void name_changed();
 		void velo_changed(int);
 		void velo_off_changed(int);
@@ -765,6 +763,8 @@ class ScoreCanvas : public MusEWidget::View
 		
 		void deselect_all();
 		void midi_note(int pitch, int velo);
+		
+		void add_new_parts(const std::map< Part*, std::set<Part*> >&);
 
    public slots:
       void x_scroll_event(int);

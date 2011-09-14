@@ -165,6 +165,7 @@ GlobalConfigValues config = {
       false,                        // mixer2Visible;
       
       false,                        // markerVisible;
+      true,                        // arrangerVisible;
       true,                         // showSplashScreen
       1,                            // canvasShowPartType 1 - names, 2 events
       5,                            // canvasShowPartEvent

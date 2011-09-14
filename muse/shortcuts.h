@@ -86,6 +86,7 @@ enum {
       SHRT_TOGGLE_METRO, // C
       SHRT_START_REC, // *(keypad)
       SHRT_REC_CLEAR, // *(keypad)
+      SHRT_FULLSCREEN,
 
       //Main + Drumeditor
       SHRT_NEW, //Ctrl+N
@@ -96,8 +97,10 @@ enum {
       SHRT_UNDO,  //Ctrl+Z
       SHRT_REDO,  //Ctrl+Y
       SHRT_COPY,  //Ctrl+C
+      SHRT_COPY_RANGE, //Ctrl+Shift+C
       SHRT_CUT,   //Ctrl+X
       SHRT_PASTE, //Ctrl+V
+      SHRT_PASTE_DIALOG, //Ctrl+Shift+V
       SHRT_DELETE,//Delete
 
 
@@ -126,7 +129,6 @@ enum {
       SHRT_GLOBAL_CUT, //Default: undefined
       SHRT_GLOBAL_INSERT, //Default: undefined
       SHRT_GLOBAL_SPLIT, //Default: undefined
-      SHRT_COPY_RANGE, //Default: undefined
       SHRT_CUT_EVENTS, //Default: undefined
 
       SHRT_OPEN_TRANSPORT, //F11
@@ -187,12 +189,10 @@ enum {
       SHRT_SEL_BELOW, //Down
       SHRT_SEL_BELOW_ADD, //move down and add to selection
 
-      SHRT_INSERT, //Ctrl+Shift+I   - insert parts instead of pasting
       SHRT_INSERTMEAS, //Ctrl+Shift+M - insert measures
       
-      SHRT_PASTE_CLONE, //CTRL+SHIFT+Key_V
-      SHRT_PASTE_TO_TRACK, //CTRL+Key_B
-      SHRT_PASTE_CLONE_TO_TRACK, //CTRL+SHIFT+Key_B
+      SHRT_PASTE_CLONE, //CTRL+B
+      SHRT_PASTE_CLONE_DIALOG, //CTRL+SHIFT+B
       
       //Arranger tracks
       SHRT_SEL_TRACK_BELOW,

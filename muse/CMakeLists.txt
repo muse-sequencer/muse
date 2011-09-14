@@ -88,6 +88,7 @@ file (GLOB core_source_files
       confmport.cpp
       controlfifo.cpp
       ctrl.cpp
+      dialogs.cpp
       dssihost.cpp 
       event.cpp
       eventlist.cpp 

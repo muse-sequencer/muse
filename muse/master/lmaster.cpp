@@ -55,6 +55,7 @@
 
 #define LMASTER_MSGBOX_STRING          "MusE: List Editor"
 
+
 //don't remove or insert new elements in keyStrs.
 //only renaming (keeping the semantic sense) is allowed! (flo)
 QStringList keyStrs = QStringList()
@@ -116,7 +117,7 @@ QString keyToString(key_enum key)
 
 void LMaster::closeEvent(QCloseEvent* e)
       {
-      emit deleted((unsigned long)this);
+      emit deleted(static_cast<TopWin*>(this));
       e->accept();
       }
 
@@ -135,7 +136,7 @@ void LMaster::songChanged(int type)
 //---------------------------------------------------------
 
 LMaster::LMaster()
-   : MidiEditor(0, 0, 0)
+   : MidiEditor(TopWin::LMASTER, 0, 0, 0)
       {
       pos_editor = 0;
       tempo_editor = 0;
@@ -168,6 +169,12 @@ LMaster::LMaster()
       delAction = menuEdit->addAction(tr("Delete Event"));
       delAction->setShortcut(Qt::Key_Delete);
 
+      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      settingsMenu->addAction(subwinAction);
+      settingsMenu->addAction(shareAction);
+      settingsMenu->addAction(fullscreenAction);
+
+      
       connect(tempoAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(signAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(keyAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
@@ -184,11 +191,13 @@ LMaster::LMaster()
 
       connect(signalMapper, SIGNAL(mapped(int)), SLOT(cmd(int)));
 
-      //---------ToolBar----------------------------------
-      tools = addToolBar(tr("Master tools"));
-      tools->addActions(MusEGlobal::undoRedo->actions());
+      // Toolbars ---------------------------------------------------------
+      QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
+      undo_tools->setObjectName("Undo/Redo tools");
+      undo_tools->addActions(MusEGlobal::undoRedo->actions());
 
       QToolBar* edit = addToolBar(tr("Edit tools"));
+      edit->setObjectName("Master List Edit Tools");
       QToolButton* tempoButton = new QToolButton();
       QToolButton* timeSigButton = new QToolButton();
       QToolButton* keyButton = new QToolButton();
@@ -202,6 +211,14 @@ LMaster::LMaster()
       edit->addWidget(timeSigButton);
       edit->addWidget(keyButton);
       
+      QToolBar* panic_toolbar = addToolBar(tr("panic"));         
+      panic_toolbar->setObjectName("panic");
+      panic_toolbar->addAction(MusEGlobal::panicAction);
+
+      QToolBar* transport_toolbar = addToolBar(tr("transport"));
+      transport_toolbar->setObjectName("transport");
+      transport_toolbar->addActions(MusEGlobal::transportAction->actions());
+
       ///Q3Accel* qa = new Q3Accel(this);
       ///qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Z), song, SLOT(undo()));
       ///qa->connectItem(qa->insertItem(Qt::CTRL+Qt::Key_Y), song, SLOT(redo()));
@@ -416,6 +433,45 @@ void LMaster::writeStatus(int level, Xml& xml) const
       {
       xml.tag(level++, "lmaster");
       MidiEditor::writeStatus(level, xml);
+      xml.tag(level, "/lmaster");
+      }
+
+//---------------------------------------------------------
+//   readConfiguration
+//---------------------------------------------------------
+
+void LMaster::readConfiguration(Xml& xml)
+      {
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case Xml::TagStart:
+                        if (tag == "topwin")
+                              TopWin::readConfiguration(LMASTER, xml);
+                        else
+                              xml.unknown("LMaster");
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "lmaster")
+                              return;
+                  default:
+                        break;
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   writeConfiguration
+//---------------------------------------------------------
+
+void LMaster::writeConfiguration(int level, Xml& xml)
+      {
+      xml.tag(level++, "lmaster");
+      TopWin::writeConfiguration(LMASTER, level, xml);
       xml.tag(level, "/lmaster");
       }
 

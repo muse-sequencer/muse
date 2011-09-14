@@ -25,8 +25,6 @@
 
 #include <QSpinBox>
 
-extern QString pitch2string(int v);
-
 namespace MusEWidget {
 
 //---------------------------------------------------------

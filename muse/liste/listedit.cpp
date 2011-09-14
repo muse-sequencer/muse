@@ -33,6 +33,7 @@
 #include "listedit.h"
 #include "mtscale.h"
 #include "globals.h"
+#include "helper.h"
 #include "icons.h"
 #include "editevent.h"
 #include "xml.h"
@@ -180,7 +181,7 @@ static QString midiMetaComment(const Event& ev)
 
 void ListEdit::closeEvent(QCloseEvent* e)
       {
-      emit deleted((unsigned long)this);
+      emit deleted(static_cast<TopWin*>(this));
       e->accept();
       }
 
@@ -381,7 +382,7 @@ QString EventListItem::text(int col) const
                   break;
             case 4:
                   if (event.isNote() || event.type() == PAfter)
-                        s =  pitch2string(event.dataA());
+                        s =  MusEUtil::pitch2string(event.dataA());
                   else if (event.type() == Controller)
                         s.setNum(event.dataA() & 0xffff);  // mask off type bits
                   else
@@ -460,7 +461,7 @@ QString EventListItem::text(int col) const
 //---------------------------------------------------------
 
 ListEdit::ListEdit(PartList* pl)
-   : MidiEditor(0, pl)
+   : MidiEditor(TopWin::LISTE, 0, pl)
       {
       insertItems = new QActionGroup(this);
       insertItems->setExclusive(false);
@@ -511,14 +512,29 @@ ListEdit::ListEdit(PartList* pl)
 
       connect(editSignalMapper, SIGNAL(mapped(int)), SLOT(cmd(int)));
 
-      //---------ToolBar----------------------------------
-      
-      listTools = addToolBar(tr("List tools"));
-      listTools->addActions(MusEGlobal::undoRedo->actions());
-      
+      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      settingsMenu->addAction(subwinAction);
+      settingsMenu->addAction(shareAction);
+      settingsMenu->addAction(fullscreenAction);
+
+
+      // Toolbars ---------------------------------------------------------
+      QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
+      undo_tools->setObjectName("Undo/Redo tools");
+      undo_tools->addActions(MusEGlobal::undoRedo->actions());
+
       QToolBar* insertTools = addToolBar(tr("Insert tools"));
+      insertTools->setObjectName("list insert tools");
       insertTools->addActions(insertItems->actions());
 
+      QToolBar* panic_toolbar = addToolBar(tr("panic"));         
+      panic_toolbar->setObjectName("panic");
+      panic_toolbar->addAction(MusEGlobal::panicAction);
+
+      QToolBar* transport_toolbar = addToolBar(tr("transport"));
+      transport_toolbar->setObjectName("transport");
+      transport_toolbar->addActions(MusEGlobal::transportAction->actions());
+      
       //
       //---------------------------------------------------
       //    liste
@@ -589,6 +605,8 @@ ListEdit::ListEdit(PartList* pl)
       }
       
       initShortcuts();
+      
+      setWindowTitle("MusE: List Editor");
       }
 
 //---------------------------------------------------------
@@ -825,6 +843,45 @@ void ListEdit::writeStatus(int level, Xml& xml) const
       xml.tag(level++, "listeditor");
       MidiEditor::writeStatus(level, xml);
       xml.tag(level, "/listeditor");
+      }
+
+//---------------------------------------------------------
+//   readConfiguration
+//---------------------------------------------------------
+
+void ListEdit::readConfiguration(Xml& xml)
+      {
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case Xml::TagStart:
+                        if (tag == "topwin")
+                              TopWin::readConfiguration(LISTE, xml);
+                        else
+                              xml.unknown("ListEdit");
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "listedit")
+                              return;
+                  default:
+                        break;
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   writeConfiguration
+//---------------------------------------------------------
+
+void ListEdit::writeConfiguration(int level, Xml& xml)
+      {
+      xml.tag(level++, "listedit");
+      TopWin::writeConfiguration(LISTE, level, xml);
+      xml.tag(level, "/listedit");
       }
 
 //---------------------------------------------------------

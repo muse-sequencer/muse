@@ -69,13 +69,15 @@ class ClipListEdit : public TopWin {
       void clicked(QTreeWidgetItem*, int);
 
    signals:
-      void deleted(unsigned long);
+      void deleted(TopWin*);
 
    public:
       ClipListEdit(QWidget* parent);
       ~ClipListEdit();
       virtual void readStatus(Xml&);
       virtual void writeStatus(int, Xml&) const;
+      static void readConfiguration(Xml&);
+      static void writeConfiguration(int, Xml&);
       };
 
 #endif

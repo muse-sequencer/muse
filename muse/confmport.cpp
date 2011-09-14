@@ -1341,8 +1341,7 @@ void MPConfig::addInstanceClicked()
       QTreeWidgetItem* item = synthList->currentItem();
       if (item == 0)
             return;
-      //SynthI *si = song->createSynthI(item->text(2));
-      SynthI *si = song->createSynthI(item->text(0), item->text(2));
+      SynthI *si = song->createSynthI(item->text(0), item->text(2), false); // Add at end of list.
       if(!si)
         return;
 

@@ -57,6 +57,8 @@ class Splitter;
 class SpinBox;
 }
 
+class ArrangerView;
+
 //---------------------------------------------------------
 //   WidgetStack
 //---------------------------------------------------------
@@ -167,10 +169,10 @@ class Arranger : public QWidget {
       void controllerChanged(Track *t);
 
    public:
-      enum { CMD_CUT_PART, CMD_COPY_PART, CMD_PASTE_PART, CMD_PASTE_CLONE_PART, CMD_PASTE_PART_TO_TRACK, CMD_PASTE_CLONE_PART_TO_TRACK,
-             CMD_INSERT_PART, CMD_INSERT_EMPTYMEAS };
+      enum { CMD_CUT_PART, CMD_COPY_PART, CMD_COPY_PART_IN_RANGE, CMD_PASTE_PART, CMD_PASTE_CLONE_PART,
+             CMD_PASTE_DIALOG, CMD_PASTE_CLONE_DIALOG, CMD_INSERT_EMPTYMEAS };
 
-      Arranger(QMainWindow* parent, const char* name = 0);
+      Arranger(ArrangerView* parent, const char* name = 0);
 
       PartCanvas* getCanvas() { return canvas; }
       void setMode(int);
@@ -187,6 +189,8 @@ class Arranger : public QWidget {
       void clear();
       
       unsigned cursorValue() { return cursVal; }
+      
+      ArrangerView* parentWin;
       };
 
 #endif

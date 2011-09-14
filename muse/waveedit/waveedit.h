@@ -66,15 +66,10 @@ class WaveEdit : public MidiEditor {
       QAction* copyAction;
       QAction* pasteAction;
       
-      static int _widthInit, _heightInit;
-      static QByteArray _toolbarInit;
 
       
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
-      virtual void resizeEvent(QResizeEvent* ev);
-      virtual void focusOutEvent(QFocusEvent*);
-      void storeInitialState();
 
       QMenu* menuFunctions, *select, *menuGain;
 
@@ -96,7 +91,7 @@ class WaveEdit : public MidiEditor {
 
 
    signals:
-      void deleted(unsigned long);
+      void deleted(TopWin*);
 
    public:
       WaveEdit(PartList*);

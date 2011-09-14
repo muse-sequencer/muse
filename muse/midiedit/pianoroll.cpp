@@ -60,6 +60,7 @@
 #include "icons.h"
 #include "audio.h"
 #include "functions.h"
+#include "helper.h"
 
 
 #include "cmd.h"
@@ -68,10 +69,7 @@
 #include "mtrackinfo.h"
 
 int PianoRoll::_rasterInit = 96;
-int PianoRoll::_widthInit = 600;
-int PianoRoll::_heightInit = 400;
 int PianoRoll::colorModeInit = 0;
-QByteArray PianoRoll::_toolbarInit;
 
 static const int xscale = -10;
 static const int yscale = 1;
@@ -84,10 +82,9 @@ static int pianorollTools = MusEWidget::PointerTool | MusEWidget::PencilTool | M
 //---------------------------------------------------------
 
 PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned initPos)
-   : MidiEditor(_rasterInit, pl, parent, name)
+   : MidiEditor(TopWin::PIANO_ROLL, _rasterInit, pl, parent, name)
       {
       deltaMode = false;
-      resize(_widthInit, _heightInit);
       selPart        = 0;
       _playEvents    = false;
       colorMode      = colorModeInit;
@@ -111,9 +108,17 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       mapper->setMapping(editCopyAction, PianoCanvas::CMD_COPY);
       connect(editCopyAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
+      editCopyRangeAction = menuEdit->addAction(QIcon(*editcopyIconSet), tr("Copy events in range"));
+      mapper->setMapping(editCopyRangeAction, PianoCanvas::CMD_COPY_RANGE);
+      connect(editCopyRangeAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      
       editPasteAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("&Paste"));
       mapper->setMapping(editPasteAction, PianoCanvas::CMD_PASTE);
       connect(editPasteAction, SIGNAL(triggered()), mapper, SLOT(map()));
+      
+      editPasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("&Paste (with dialog)"));
+      mapper->setMapping(editPasteDialogAction, PianoCanvas::CMD_PASTE_DIALOG);
+      connect(editPasteDialogAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
       menuEdit->addSeparator();
       
@@ -159,36 +164,10 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       mapper->setMapping(selectNextPartAction, PianoCanvas::CMD_SELECT_NEXT_PART);
       connect(selectNextPartAction, SIGNAL(triggered()), mapper, SLOT(map()));
 
-      menuConfig = menuBar()->addMenu(tr("&Config"));      
-      
-      eventColor = menuConfig->addMenu(tr("&Event Color"));      
-      
-      QActionGroup* actgrp = new QActionGroup(this);
-      actgrp->setExclusive(true);
-      
-      //evColorBlueAction = eventColor->addAction(tr("&Blue"));
-      evColorBlueAction = actgrp->addAction(tr("&Blue"));
-      evColorBlueAction->setCheckable(true);
-      colorMapper->setMapping(evColorBlueAction, 0);
-      
-      //evColorPitchAction = eventColor->addAction(tr("&Pitch colors"));
-      evColorPitchAction = actgrp->addAction(tr("&Pitch colors"));
-      evColorPitchAction->setCheckable(true);
-      colorMapper->setMapping(evColorPitchAction, 1);
-      
-      //evColorVelAction = eventColor->addAction(tr("&Velocity colors"));
-      evColorVelAction = actgrp->addAction(tr("&Velocity colors"));
-      evColorVelAction->setCheckable(true);
-      colorMapper->setMapping(evColorVelAction, 2);
-      
-      connect(evColorBlueAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
-      connect(evColorPitchAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
-      connect(evColorVelAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
-      
-      eventColor->addActions(actgrp->actions());
-      
-      connect(colorMapper, SIGNAL(mapped(int)), this, SLOT(eventColorModeChanged(int)));
-      
+
+
+
+
       menuFunctions = menuBar()->addMenu(tr("Fu&nctions"));
 
       menuFunctions->setTearOffEnabled(true);
@@ -238,6 +217,46 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       song->populateScriptMenu(menuPlugins, this);
 
       connect(mapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
+      
+
+      
+      
+      
+      menuConfig = menuBar()->addMenu(tr("Window &Config"));      
+      
+      eventColor = menuConfig->addMenu(tr("&Event Color"));      
+      
+      QActionGroup* actgrp = new QActionGroup(this);
+      actgrp->setExclusive(true);
+      
+      //evColorBlueAction = eventColor->addAction(tr("&Blue"));
+      evColorBlueAction = actgrp->addAction(tr("&Blue"));
+      evColorBlueAction->setCheckable(true);
+      colorMapper->setMapping(evColorBlueAction, 0);
+      
+      //evColorPitchAction = eventColor->addAction(tr("&Pitch colors"));
+      evColorPitchAction = actgrp->addAction(tr("&Pitch colors"));
+      evColorPitchAction->setCheckable(true);
+      colorMapper->setMapping(evColorPitchAction, 1);
+      
+      //evColorVelAction = eventColor->addAction(tr("&Velocity colors"));
+      evColorVelAction = actgrp->addAction(tr("&Velocity colors"));
+      evColorVelAction->setCheckable(true);
+      colorMapper->setMapping(evColorVelAction, 2);
+      
+      connect(evColorBlueAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
+      connect(evColorPitchAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
+      connect(evColorVelAction, SIGNAL(triggered()), colorMapper, SLOT(map()));
+      
+      eventColor->addActions(actgrp->actions());
+      
+      connect(colorMapper, SIGNAL(mapped(int)), this, SLOT(eventColorModeChanged(int)));
+      
+      menuConfig->addSeparator();
+      menuConfig->addAction(subwinAction);
+      menuConfig->addAction(shareAction);
+      menuConfig->addAction(fullscreenAction);
+
       
       //---------ToolBar----------------------------------
       tools = addToolBar(tr("Pianoroll tools"));
@@ -483,9 +502,6 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       setFocusPolicy(Qt::StrongFocus);
       setEventColorMode(colorMode);
 
-      if (!_toolbarInit.isEmpty())
-            restoreState(_toolbarInit);
-
 
       QClipboard* cb = QApplication::clipboard();
       connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
@@ -513,10 +529,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
         toolbar->setSolo(canvas->track()->solo());
       }
 
-      QSettings settings("MusE", "MusE-qt");
-      //restoreGeometry(settings.value("Pianoroll/geometry").toByteArray());
-      restoreState(settings.value("Pianoroll/windowState").toByteArray());
-
+      initTopwinState();
       }
 
 //---------------------------------------------------------
@@ -625,9 +638,14 @@ void PianoRoll::cmd(int cmd)
                   erase_notes(partlist_to_set(parts()), 1);
                   break;
             case PianoCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
+            case PianoCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()), MusEUtil::any_event_selected(partlist_to_set(parts())) ? 3 : 2); break;
             case PianoCanvas::CMD_PASTE: 
                               ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-                              paste_notes(canvas->part());
+                              paste_notes(3072);
+                              break;
+            case PianoCanvas::CMD_PASTE_DIALOG: 
+                              ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
+                              paste_notes((canvas->part()));
                               break;
 						case PianoCanvas::CMD_MODIFY_GATE_TIME: modify_notelen(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
@@ -803,7 +821,7 @@ void PianoRoll::closeEvent(QCloseEvent* e)
       //settings.setValue("Pianoroll/geometry", saveGeometry());
       settings.setValue("Pianoroll/windowState", saveState());
 
-      emit deleted((unsigned long)this);
+      emit deleted(static_cast<TopWin*>(this));
       e->accept();
       }
 
@@ -824,12 +842,8 @@ void PianoRoll::readConfiguration(Xml& xml)
                               _rasterInit = xml.parseInt();
                         else if (tag == "colormode")
                               colorModeInit = xml.parseInt();
-                        else if (tag == "width")
-                              _widthInit = xml.parseInt();
-                        else if (tag == "height")
-                              _heightInit = xml.parseInt();
-                        else if (tag == "toolbars")
-                              _toolbarInit = QByteArray::fromHex(xml.parse1().toAscii());
+                        else if (tag == "topwin")
+                              TopWin::readConfiguration(PIANO_ROLL,xml);
                         else
                               xml.unknown("PianoRoll");
                         break;
@@ -850,10 +864,8 @@ void PianoRoll::writeConfiguration(int level, Xml& xml)
       {
       xml.tag(level++, "pianoroll");
       xml.intTag(level, "raster", _rasterInit);
-      xml.intTag(level, "width", _widthInit);
-      xml.intTag(level, "height", _heightInit);
       xml.intTag(level, "colormode", colorModeInit);
-      xml.strTag(level, "toolbars", _toolbarInit.toHex().data());
+      TopWin::writeConfiguration(PIANO_ROLL, level, xml);
       xml.etag(level, "pianoroll");
       }
 
@@ -1196,7 +1208,8 @@ void PianoRoll::setEventColorMode(int mode)
 
 void PianoRoll::clipboardChanged()
       {
-      editPasteAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-eventlist")));
+      editPasteAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
+      editPasteDialogAction->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
       }
 
 //---------------------------------------------------------
@@ -1221,38 +1234,6 @@ void PianoRoll::setSpeaker(bool val)
       canvas->playEvents(_playEvents);
       }
 
-//---------------------------------------------------------
-//   resizeEvent
-//---------------------------------------------------------
-
-void PianoRoll::resizeEvent(QResizeEvent* ev)
-      {
-      QWidget::resizeEvent(ev);
-      storeInitialState();
-      }
-
-
-//---------------------------------------------------------
-//   focusOutEvent
-//---------------------------------------------------------
-
-void PianoRoll::focusOutEvent(QFocusEvent* ev)
-      {
-      QWidget::focusOutEvent(ev);
-      storeInitialState();
-      }
-
-
-//---------------------------------------------------------
-//   storeInitialState
-//---------------------------------------------------------
-
-void PianoRoll::storeInitialState()
-      {
-      _widthInit = width();
-      _heightInit = height();
-      _toolbarInit=saveState();
-      }
 
 
 /*
@@ -1275,7 +1256,9 @@ void PianoRoll::initShortcuts()
       {
       editCutAction->setShortcut(shortcuts[SHRT_CUT].key);
       editCopyAction->setShortcut(shortcuts[SHRT_COPY].key);
+      editCopyRangeAction->setShortcut(shortcuts[SHRT_COPY_RANGE].key);
       editPasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
+      editPasteDialogAction->setShortcut(shortcuts[SHRT_PASTE_DIALOG].key);
       editDelEventsAction->setShortcut(shortcuts[SHRT_DELETE].key);
       
       selectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key); 

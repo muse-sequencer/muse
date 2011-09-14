@@ -45,6 +45,7 @@ QT4_WRAP_CPP (widget_mocs
       doublelabel.h  
       filedialog.h  
       genset.h  
+      mdisettings.h  
       header.h  
       hitscale.h  
       intlabel.h  
@@ -61,6 +62,8 @@ QT4_WRAP_CPP (widget_mocs
       mtrackinfo.h
       nentry.h  
       noteinfo.h  
+      pastedialog.h
+      pasteeventsdialog.h
       pitchedit.h  
       pitchlabel.h  
       popupmenu.h  
@@ -107,12 +110,15 @@ file (GLOB widgets_ui_files
       editsysexdialogbase.ui  
       fdialogbuttons.ui  
       gensetbase.ui  
+      mdisettings_base.ui  
       itransformbase.ui  
       metronomebase.ui  
       midisync.ui  
       mittransposebase.ui  
       mixdowndialogbase.ui  
       mtrackinfobase.ui
+      pastedialogbase.ui
+      pasteeventsdialogbase.ui
       projectcreate.ui
       shortcutcapturedialogbase.ui  
       shortcutconfigbase.ui  
@@ -142,6 +148,7 @@ file (GLOB widgets_source_files
       drange.cpp
       filedialog.cpp 
       genset.cpp 
+      mdisettings.cpp 
       header.cpp 
       hitscale.cpp 
       intlabel.cpp 
@@ -159,6 +166,8 @@ file (GLOB widgets_source_files
       mtscale_flo.cpp 
       nentry.cpp 
       noteinfo.cpp 
+      pastedialog.cpp
+      pasteeventsdialog.cpp
       pitchedit.cpp 
       pitchlabel.cpp 
       popupmenu.cpp 

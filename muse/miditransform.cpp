@@ -1502,7 +1502,7 @@ void MidiTransformerDialog::selVal1aChanged(int val)
       data->cmt->selVal1a = val;
       if ((data->cmt->selEventOp != All)
          && (data->cmt->selType == Note)) {
-            selVal1a->setSuffix(" - " + pitch2string(val));
+            selVal1a->setSuffix(" - " + MusEUtil::pitch2string(val));
             }
       else
       {
@@ -1520,7 +1520,7 @@ void MidiTransformerDialog::selVal1bChanged(int val)
       data->cmt->selVal1b = val;
       if ((data->cmt->selEventOp != All)
          && (data->cmt->selType == Note)) {
-            selVal1b->setSuffix(" - " + pitch2string(val));
+            selVal1b->setSuffix(" - " + MusEUtil::pitch2string(val));
             }
       else
       {
@@ -1595,7 +1595,7 @@ void MidiTransformerDialog::procVal1aChanged(int val)
            (data->cmt->procVal1 == Fix || data->cmt->procVal1 == ScaleMap || data->cmt->procVal1 == Dynamic || 
             data->cmt->procVal1 == Random || data->cmt->procVal1 == Flip)) 
         {
-            procVal1a->setSuffix(" - " + pitch2string(val));
+            procVal1a->setSuffix(" - " + MusEUtil::pitch2string(val));
         }
       else
       {
@@ -1617,7 +1617,7 @@ void MidiTransformerDialog::procVal1bChanged(int val)
            (data->cmt->procVal1 == Fix || data->cmt->procVal1 == ScaleMap || data->cmt->procVal1 == Dynamic || 
             data->cmt->procVal1 == Random || data->cmt->procVal1 == Flip)) 
         {
-            procVal1b->setSuffix(" - " + pitch2string(val));
+            procVal1b->setSuffix(" - " + MusEUtil::pitch2string(val));
         }
       else
       {

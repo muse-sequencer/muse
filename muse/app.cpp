@@ -21,6 +21,8 @@
 //
 //=========================================================
 
+#include <typeinfo>
+
 #include <QClipboard>
 #include <QMessageBox>
 #include <QShortcut>
@@ -29,6 +31,8 @@
 #include <QWhatsThis>
 #include <QSettings>
 #include <QProgressDialog>
+#include <QMdiArea>
+#include <QMdiSubWindow>
 
 #include <iostream>
 
@@ -38,6 +42,7 @@
 #include "amixer.h"
 #include "appearance.h"
 #include "arranger.h"
+#include "arrangerview.h"
 #include "audio.h"
 #include "audiodev.h"
 #include "audioprefetch.h"
@@ -69,17 +74,9 @@
 #include "widgets/projectcreateimpl.h"
 #include "widgets/menutitleitem.h"
 #include "tools.h"
-#include "visibletracks.h"
 #include "widgets/unusedwavefiles.h"
 #include "functions.h"
 
-#ifdef DSSI_SUPPORT
-#include "dssihost.h"
-#endif
-
-#ifdef VST_SUPPORT
-#include "vst.h"
-#endif
 
 
 namespace MusEApp {
@@ -127,17 +124,6 @@ pthread_t splashThread;
 
 
 
-void MusE::clearScoreMenuMappers()
-{
-	delete scoreOneStaffPerTrackMapper;
-	delete scoreAllInOneMapper;
-	
-	scoreOneStaffPerTrackMapper = new QSignalMapper(this);
-	scoreAllInOneMapper = new QSignalMapper(this);
-	
-	connect(scoreOneStaffPerTrackMapper, SIGNAL(mapped(QWidget*)), this, SLOT(openInScoreEdit_oneStaffPerTrack(QWidget*)));
-	connect(scoreAllInOneMapper, SIGNAL(mapped(QWidget*)), this, SLOT(openInScoreEdit_allInOne(QWidget*)));
-}
 
 
 //---------------------------------------------------------
@@ -324,235 +310,6 @@ void addProject(const QString& name)
       }
 
 //---------------------------------------------------------
-//   populateAddSynth
-//---------------------------------------------------------
-
-// ORCAN - CHECK
-QMenu* populateAddSynth(QWidget* parent)
-{
-  QMenu* synp = new QMenu(parent);
-  
-  //typedef std::multimap<std::string, int, addSynth_cmp_str > asmap;
-  typedef std::multimap<std::string, int > asmap;
-  
-  //typedef std::multimap<std::string, int, addSynth_cmp_str >::iterator imap;
-  typedef std::multimap<std::string, int >::iterator imap;
-  
-  MessSynth* synMESS   = 0;
-  QMenu* synpMESS = 0;
-  asmap mapMESS;
-
-  #ifdef DSSI_SUPPORT
-  DssiSynth* synDSSI   = 0;
-  QMenu* synpDSSI = 0;
-  asmap mapDSSI;
-  #endif                  
-  
-  #ifdef VST_SUPPORT
-  VstSynth*  synVST    = 0;
-  QMenu* synpVST  = 0;
-  asmap mapVST;
-  #endif                  
-  
-  // Not necessary, but what the heck.
-  QMenu* synpOther = 0;
-  asmap mapOther;
-  
-  //const int synth_base_id = 0x1000;
-  int ii = 0;
-  for(std::vector<Synth*>::iterator i = synthis.begin(); i != synthis.end(); ++i) 
-  {
-    synMESS = dynamic_cast<MessSynth*>(*i);
-    if(synMESS)
-    {
-      mapMESS.insert( std::pair<std::string, int> (std::string(synMESS->description().toLower().toLatin1().constData()), ii) );
-    }
-    else
-    {
-      
-      #ifdef DSSI_SUPPORT
-      synDSSI = dynamic_cast<DssiSynth*>(*i);
-      if(synDSSI)
-      {
-        mapDSSI.insert( std::pair<std::string, int> (std::string(synDSSI->description().toLower().toLatin1().constData()), ii) );
-      }
-      else
-      #endif                      
-      
-      {
-        #ifdef VST_SUPPORT
-        synVST = dynamic_cast<VstSynth*>(*i);
-        if(synVST)
-        {
-          mapVST.insert( std::pair<std::string, int> (std::string(synVST->description().toLower().toLatin1().constData()), ii) );
-        }
-        else
-        #endif                      
-        
-        {
-          mapOther.insert( std::pair<std::string, int> (std::string((*i)->description().toLower().toLatin1().constData()), ii) );
-        }
-      }
-    }
-  
-    ++ii;
-  }
-  
-  int sz = synthis.size();
-  for(imap i = mapMESS.begin(); i != mapMESS.end(); ++i) 
-  {
-    int idx = i->second;
-    if(idx > sz)           // Sanity check
-      continue;
-    Synth* s = synthis[idx];
-    if(s)
-    {
-      // No MESS sub-menu yet? Create it now.
-      if(!synpMESS)
-        synpMESS = new QMenu(parent);
-      QAction* sM = synpMESS->addAction(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">");
-      sM->setData(MENU_ADD_SYNTH_ID_BASE + idx);
-    }  
-  }
-  
-  #ifdef DSSI_SUPPORT
-  for(imap i = mapDSSI.begin(); i != mapDSSI.end(); ++i) 
-  {
-    int idx = i->second;
-    if(idx > sz)           
-      continue;
-    Synth* s = synthis[idx];
-    if(s)
-    {
-      // No DSSI sub-menu yet? Create it now.
-      if(!synpDSSI)
-        synpDSSI = new QMenu(parent);
-      //synpDSSI->insertItem(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
-      QAction* sD = synpDSSI->addAction(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">");
-      sD->setData(MENU_ADD_SYNTH_ID_BASE + idx);
-    }  
-  }
-  #endif
-  
-  #ifdef VST_SUPPORT
-  for(imap i = mapVST.begin(); i != mapVST.end(); ++i) 
-  {
-    int idx = i->second;
-    if(idx > sz)           
-      continue;
-    Synth* s = synthis[idx];
-    if(s)
-    {
-      // No VST sub-menu yet? Create it now.
-      if(!synpVST)
-        synpVST = new QMenu(parent);
-      QAction* sV = synpVST->addAction(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">");
-      sV->setData(MENU_ADD_SYNTH_ID_BASE + idx);
-    }  
-  }
-  #endif
-  
-  for(imap i = mapOther.begin(); i != mapOther.end(); ++i) 
-  {
-    int idx = i->second;
-    if(idx > sz)          
-      continue;
-    Synth* s = synthis[idx];
-    // No Other sub-menu yet? Create it now.
-    if(!synpOther)
-      synpOther = new QMenu(parent);
-    //synpOther->insertItem(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
-    QAction* sO = synpOther->addAction(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">");
-    sO->setData(MENU_ADD_SYNTH_ID_BASE + idx);
-  }
-  
-  if(synpMESS)
-  {
-    synpMESS->setIcon(*synthIcon);
-    synpMESS->setTitle(QT_TRANSLATE_NOOP("@default", "MESS"));
-    synp->addMenu(synpMESS);
-  }
-  
-  #ifdef DSSI_SUPPORT
-  if(synpDSSI)
-  {
-    synpDSSI->setIcon(*synthIcon);
-    synpDSSI->setTitle(QT_TRANSLATE_NOOP("@default", "DSSI"));
-    synp->addMenu(synpDSSI);
-  }  
-  #endif
-  
-  #ifdef VST_SUPPORT
-  if(synpVST)
-  {
-    synpVST->setIcon(*synthIcon);
-    synpVST->setTitle(QT_TRANSLATE_NOOP("@default", "FST"));
-    synp->addMenu(synpVST);
-  }  
-  #endif
-  
-  if(synpOther)
-  {
-    synpOther->setIcon(*synthIcon);
-    synpOther->setTitle(QObject::tr("Other"));
-    synp->addMenu(synpOther);
-  }
-  
-  return synp;
-}
-
-//---------------------------------------------------------
-//   populateAddTrack
-//    this is also used in "mixer"
-//---------------------------------------------------------
-
-QActionGroup* populateAddTrack(QMenu* addTrack)
-      {
-      QActionGroup* grp = new QActionGroup(addTrack);
-
-      QAction* midi = addTrack->addAction(QIcon(*addtrack_addmiditrackIcon),
-					  QT_TRANSLATE_NOOP("@default", "Add Midi Track"));
-      midi->setData(Track::MIDI);
-      grp->addAction(midi);
-      QAction* drum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
-					  QT_TRANSLATE_NOOP("@default", "Add Drum Track"));
-      drum->setData(Track::DRUM);
-      grp->addAction(drum);
-      QAction* wave = addTrack->addAction(QIcon(*addtrack_wavetrackIcon),
-					  QT_TRANSLATE_NOOP("@default", "Add Wave Track"));
-      wave->setData(Track::WAVE);
-      grp->addAction(wave);
-      QAction* aoutput = addTrack->addAction(QIcon(*addtrack_audiooutputIcon),
-					     QT_TRANSLATE_NOOP("@default", "Add Audio Output"));
-      aoutput->setData(Track::AUDIO_OUTPUT);
-      grp->addAction(aoutput);
-      QAction* agroup = addTrack->addAction(QIcon(*addtrack_audiogroupIcon),
-					    QT_TRANSLATE_NOOP("@default", "Add Audio Group"));
-      agroup->setData(Track::AUDIO_GROUP);
-      grp->addAction(agroup);
-      QAction* ainput = addTrack->addAction(QIcon(*addtrack_audioinputIcon),
-					    QT_TRANSLATE_NOOP("@default", "Add Audio Input"));
-      ainput->setData(Track::AUDIO_INPUT);
-      grp->addAction(ainput);
-      QAction* aaux = addTrack->addAction(QIcon(*addtrack_auxsendIcon),
-					  QT_TRANSLATE_NOOP("@default", "Add Aux Send"));
-      aaux->setData(Track::AUDIO_AUX);
-      grp->addAction(aaux);
-
-      // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
-      QMenu* synp = populateAddSynth(addTrack);
-      synp->setIcon(*synthIcon);
-      synp->setTitle(QT_TRANSLATE_NOOP("@default", "Add Synth"));
-
-      // Add the sub-menu to the given menu.
-      addTrack->addMenu(synp);
-      
-      QObject::connect(addTrack, SIGNAL(triggered(QAction *)), song, SLOT(addNewTrack(QAction *)));
-
-      return grp;
-      }
-
-//---------------------------------------------------------
 //   MusE
 //---------------------------------------------------------
 
@@ -561,7 +318,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       {
       // By T356. For LADSPA plugins in plugin.cpp
       // QWidgetFactory::addWidgetFactory( new PluginWidgetFactory ); ddskrjo
-      
       setIconSize(ICON_SIZE);
       setFocusPolicy(Qt::WheelFocus);
       //setFocusPolicy(Qt::NoFocus);
@@ -578,6 +334,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       midiRhythmGenerator   = 0;
       globalSettingsConfig  = 0;
       markerView            = 0;
+      arrangerView          = 0;
       softSynthesizerConfig = 0;
       midiTransformerDialog = 0;
       shortcutConfig        = 0;
@@ -589,21 +346,25 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       editInstrument        = 0;
       routingPopupMenu      = 0;
       progress              = 0;
+      activeTopWin          = NULL;
+      currentMenuSharingTopwin = NULL;
       
       appName               = QString("MusE");
       setWindowTitle(appName);
-      editSignalMapper = new QSignalMapper(this);
       midiPluginSignalMapper = new QSignalMapper(this);
       followSignalMapper = new QSignalMapper(this);
-      scoreOneStaffPerTrackMapper = new QSignalMapper(this);
-      scoreAllInOneMapper = new QSignalMapper(this);
+      windowsMapper = new QSignalMapper(this);
+      connect(windowsMapper, SIGNAL(mapped(QWidget*)), SLOT(bringToFront(QWidget*)));
 
       song           = new Song("song");
       song->blockSignals(true);
       MusEGlobal::heartBeatTimer = new QTimer(this);
       MusEGlobal::heartBeatTimer->setObjectName("timer");
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), song, SLOT(beat()));
-
+      
+      
+      connect(this, SIGNAL(activeTopWinChanged(TopWin*)), SLOT(activeTopWinChangedSlot(TopWin*)));
+      
 #ifdef ENABLE_PYTHON
       //---------------------------------------------------
       //    Python bridge
@@ -748,61 +509,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       quitAction = new QAction(tr("&Quit"), this);
 
-      //-------- Edit Actions
-      editCutAction = new QAction(QIcon(*editcutIconSet), tr("C&ut"), this);
-      editCopyAction = new QAction(QIcon(*editcopyIconSet), tr("&Copy"), this);
-      editPasteAction = new QAction(QIcon(*editpasteIconSet), tr("&Paste"), this);
-      editInsertAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert"), this);
-      editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert Empty Measure"), this);
-      editPasteCloneAction = new QAction(QIcon(*editpasteCloneIconSet), tr("Paste c&lone"), this);
-      editPaste2TrackAction = new QAction(QIcon(*editpaste2TrackIconSet), tr("Paste to &track"), this);
-      editPasteC2TAction = new QAction(QIcon(*editpasteClone2TrackIconSet), tr("Paste clone to trac&k"), this);
-      editDeleteSelectedAction = new QAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"), this);
-      
-      editShrinkPartsAction = new QAction(tr("Shrink selected parts"), this); //FINDMICH TODO tooltips!
-      editExpandPartsAction = new QAction(tr("Expand selected parts"), this);
-      editCleanPartsAction = new QAction(tr("Clean selected parts"), this);
-
-
-      addTrack = new QMenu(tr("Add Track"), this);
-      addTrack->setIcon(QIcon(*edit_track_addIcon));
-      select = new QMenu(tr("Select"), this);
-      select->setIcon(QIcon(*selectIcon));
-
-      editSelectAllAction = new QAction(QIcon(*select_allIcon), tr("Select &All"), this);
-      editDeselectAllAction = new QAction(QIcon(*select_deselect_allIcon), tr("&Deselect All"), this);
-      editInvertSelectionAction = new QAction(QIcon(*select_invert_selectionIcon), tr("Invert &Selection"), this);
-      editInsideLoopAction = new QAction(QIcon(*select_inside_loopIcon), tr("&Inside Loop"), this);
-      editOutsideLoopAction = new QAction(QIcon(*select_outside_loopIcon), tr("&Outside Loop"), this);
-      editAllPartsAction = new QAction( QIcon(*select_all_parts_on_trackIcon), tr("All &Parts on Track"), this);
-
-            
-      scoreSubmenu = new QMenu(tr("Score"), this);
-      scoreSubmenu->setIcon(QIcon(*scoreIconSet));
-      
-      scoreAllInOneSubsubmenu = new QMenu(tr("all parts in one staff"), this);
-      scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("one staff per part"), this);
-
-      scoreSubmenu->addMenu(scoreAllInOneSubsubmenu);
-      scoreSubmenu->addMenu(scoreOneStaffPerTrackSubsubmenu);
-      updateScoreMenus();
-      
-      startScoreEditAction = new QAction(*scoreIconSet, tr("New score window"), this);
-      startPianoEditAction = new QAction(*pianoIconSet, tr("Pianoroll"), this);
-      startDrumEditAction = new QAction(QIcon(*edit_drummsIcon), tr("Drums"), this);
-      startListEditAction = new QAction(QIcon(*edit_listIcon), tr("List"), this);
-      startWaveEditAction = new QAction(QIcon(*edit_waveIcon), tr("Wave"), this);
-
-      master = new QMenu(tr("Mastertrack"), this);
-      master->setIcon(QIcon(*edit_mastertrackIcon));
-      masterGraphicAction = new QAction(QIcon(*mastertrack_graphicIcon),tr("Graphic"), this);
-      masterListAction = new QAction(QIcon(*mastertrack_listIcon),tr("List"), this);
-
-      midiEdit = new QMenu(tr("Midi"), this);
-      midiEdit->setIcon(QIcon(*edit_midiIcon));
-
-      midiTransformerAction = new QAction(QIcon(*midi_transformIcon), tr("Midi &Transform"), this);
-
       editSongInfoAction = new QAction(QIcon(*edit_listIcon), tr("Song Info"), this);
 
       //-------- View Actions
@@ -818,15 +524,11 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       viewCliplistAction->setCheckable(true);
       viewMarkerAction = new QAction(QIcon(*view_markerIcon), tr("Marker View"),  this);
       viewMarkerAction->setCheckable(true);
-
-      //-------- Structure Actions
-      strGlobalCutAction = new QAction(tr("Global Cut"), this);
-      strGlobalInsertAction = new QAction(tr("Global Insert"), this);
-      strGlobalSplitAction = new QAction(tr("Global Split"), this);
-      strCopyRangeAction = new QAction(tr("Copy Range"), this);
-      strCopyRangeAction->setEnabled(false);
-      strCutEventsAction = new QAction(tr("Cut Events"), this);
-      strCutEventsAction->setEnabled(false);
+      viewArrangerAction = new QAction(tr("Arranger View"),  this);
+      viewArrangerAction->setCheckable(true);
+      fullscreenAction=new QAction(tr("Fullscreen"), this);
+      fullscreenAction->setCheckable(true);
+      fullscreenAction->setChecked(false);
 
       //-------- Midi Actions
       menuScriptPlugins = new QMenu(tr("&Plugins"), this);
@@ -855,8 +557,15 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       autoSnapshotAction = new QAction(QIcon(*automation_take_snapshotIcon), tr("Take Snapshot"), this);
       autoClearAction = new QAction(QIcon(*automation_clear_dataIcon), tr("Clear Automation Data"), this);
       autoClearAction->setEnabled(false);
+      
 
-
+      //-------- Windows Actions
+      windowsCascadeAction = new QAction(tr("Cascade"), this);
+      windowsTileAction = new QAction(tr("Tile"), this);
+      windowsRowsAction = new QAction(tr("In rows"), this);
+      windowsColumnsAction = new QAction(tr("In columns"), this);
+      
+      
       //-------- Settings Actions
       settingsGlobalAction = new QAction(QIcon(*settings_globalsettingsIcon), tr("Global Settings"), this);
       settingsShortcutsAction = new QAction(QIcon(*settings_configureshortcutsIcon), tr("Configure Shortcuts"), this);
@@ -901,63 +610,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(fileMoveWaveFiles, SIGNAL(activated()), SLOT(findUnusedWaveFiles()));
       connect(quitAction, SIGNAL(activated()), SLOT(quitDoc()));
 
-      //-------- Edit connections
-      connect(editCutAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editCopyAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editPasteAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editInsertAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editInsertEMAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editPasteCloneAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editPaste2TrackAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editPasteC2TAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editDeleteSelectedAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-
-      connect(editShrinkPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editExpandPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editCleanPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-
-      connect(editSelectAllAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editDeselectAllAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editInvertSelectionAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editInsideLoopAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editOutsideLoopAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-      connect(editAllPartsAction, SIGNAL(triggered()), editSignalMapper, SLOT(map()));
-
-      editSignalMapper->setMapping(editCutAction, CMD_CUT);
-      editSignalMapper->setMapping(editCopyAction, CMD_COPY);
-      editSignalMapper->setMapping(editPasteAction, CMD_PASTE);
-      editSignalMapper->setMapping(editInsertAction, CMD_INSERT);
-      editSignalMapper->setMapping(editPasteCloneAction, CMD_PASTE_CLONE);
-      editSignalMapper->setMapping(editPaste2TrackAction, CMD_PASTE_TO_TRACK);
-      editSignalMapper->setMapping(editPasteC2TAction, CMD_PASTE_CLONE_TO_TRACK);
-      editSignalMapper->setMapping(editInsertEMAction, CMD_INSERTMEAS);
-      editSignalMapper->setMapping(editDeleteSelectedAction, CMD_DELETE_TRACK);
-      editSignalMapper->setMapping(editShrinkPartsAction, CMD_SHRINK_PART);
-      editSignalMapper->setMapping(editExpandPartsAction, CMD_EXPAND_PART);
-      editSignalMapper->setMapping(editCleanPartsAction, CMD_CLEAN_PART);
-      editSignalMapper->setMapping(editSelectAllAction, CMD_SELECT_ALL);
-      editSignalMapper->setMapping(editDeselectAllAction, CMD_SELECT_NONE);
-      editSignalMapper->setMapping(editInvertSelectionAction, CMD_SELECT_INVERT);
-      editSignalMapper->setMapping(editInsideLoopAction, CMD_SELECT_ILOOP);
-      editSignalMapper->setMapping(editOutsideLoopAction, CMD_SELECT_OLOOP);
-      editSignalMapper->setMapping(editAllPartsAction, CMD_SELECT_PARTS);
-
-      connect(editSignalMapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
-
-      connect(startPianoEditAction, SIGNAL(activated()), SLOT(startPianoroll()));
-      connect(startScoreEditAction, SIGNAL(activated()), SLOT(startScoreQuickly()));
-      connect(startDrumEditAction, SIGNAL(activated()), SLOT(startDrumEditor()));
-      connect(startListEditAction, SIGNAL(activated()), SLOT(startListEditor()));
-      connect(startWaveEditAction, SIGNAL(activated()), SLOT(startWaveEditor()));
-			connect(scoreOneStaffPerTrackMapper, SIGNAL(mapped(QWidget*)), this, SLOT(openInScoreEdit_oneStaffPerTrack(QWidget*)));
-			connect(scoreAllInOneMapper, SIGNAL(mapped(QWidget*)), this, SLOT(openInScoreEdit_allInOne(QWidget*)));
-
-
-      connect(masterGraphicAction, SIGNAL(activated()), SLOT(startMasterEditor()));
-      connect(masterListAction, SIGNAL(activated()), SLOT(startLMasterEditor()));
-
-      connect(midiTransformerAction, SIGNAL(activated()), SLOT(startMidiTransformer()));
-
       connect(editSongInfoAction, SIGNAL(activated()), SLOT(startSongInfo()));
 
       //-------- View connections
@@ -967,13 +619,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(viewMixerBAction, SIGNAL(toggled(bool)), SLOT(toggleMixer2(bool)));
       connect(viewCliplistAction, SIGNAL(toggled(bool)), SLOT(startClipList(bool)));
       connect(viewMarkerAction, SIGNAL(toggled(bool)), SLOT(toggleMarker(bool)));
-
-      //-------- Structure connections
-      connect(strGlobalCutAction, SIGNAL(activated()), SLOT(globalCut()));
-      connect(strGlobalInsertAction, SIGNAL(activated()), SLOT(globalInsert()));
-      connect(strGlobalSplitAction, SIGNAL(activated()), SLOT(globalSplit()));
-      connect(strCopyRangeAction, SIGNAL(activated()), SLOT(copyRange()));
-      connect(strCutEventsAction, SIGNAL(activated()), SLOT(cutEvents()));
+      connect(viewArrangerAction, SIGNAL(toggled(bool)), SLOT(toggleArranger(bool)));
+      connect(fullscreenAction, SIGNAL(toggled(bool)), SLOT(setFullscreen(bool)));
 
       //-------- Midi connections
       connect(midiEditInstAction, SIGNAL(activated()), SLOT(startEditInstrument()));
@@ -1034,47 +681,35 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(helpAboutAction, SIGNAL(activated()), SLOT(about()));
 
       //--------------------------------------------------
-      //    Miscellaneous shortcuts
-      //--------------------------------------------------
-      
-      QShortcut* sc = new QShortcut(shortcuts[SHRT_DELETE].key, this);
-      sc->setContext(Qt::WindowShortcut);
-      connect(sc, SIGNAL(activated()), editSignalMapper, SLOT(map()));
-      editSignalMapper->setMapping(sc, CMD_DELETE);
-      
-      //--------------------------------------------------
       //    Toolbar
       //--------------------------------------------------
       
+      // when adding a toolbar to the main window, remember adding it to
+      // either the requiredToolbars or optionalToolbars list!
+
       tools = addToolBar(tr("File Buttons"));
       tools->setObjectName("File Buttons");
       tools->addAction(fileNewAction);
       tools->addAction(fileOpenAction);
       tools->addAction(fileSaveAction);
-
-      
-      //
-      //    Whats This
-      //
       tools->addAction(QWhatsThis::createAction(this));
       
-      tools->addSeparator();
-      tools->addActions(MusEGlobal::undoRedo->actions());
-
-      tools1 = new MusEWidget::EditToolBar(this, MusEWidget::arrangerTools);
-      addToolBar(tools1);
-      tools1->setObjectName("arrangerTools");
+      QToolBar* undoToolbar = addToolBar(tr("Undo/Redo"));
+      undoToolbar->setObjectName("Undo/Redo (global)");
+      undoToolbar->addActions(MusEGlobal::undoRedo->actions());
 
       QToolBar* transportToolbar = addToolBar(tr("Transport"));
-      transportToolbar->setObjectName("Transport");
+      transportToolbar->setObjectName("Transport (global)");
       transportToolbar->addActions(MusEGlobal::transportAction->actions());
 
       QToolBar* panicToolbar = addToolBar(tr("Panic"));
-      panicToolbar->setObjectName("Panic");
+      panicToolbar->setObjectName("Panic (global)");
       panicToolbar->addAction(MusEGlobal::panicAction);
 
-      visTracks = new MusEWidget::VisibleTracks(this);
-      addToolBar(visTracks);
+      requiredToolbars.push_back(tools);
+      optionalToolbars.push_back(undoToolbar);
+      optionalToolbars.push_back(transportToolbar);
+      optionalToolbars.push_back(panicToolbar);
 
       
       //rlimit lim;
@@ -1107,17 +742,28 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //---------------------------------------------------
 
 
+      // when adding a menu to the main window, remember adding it to
+      // either the leadingMenus or trailingMenus list!
+      // also do NOT use menuBar()->addMenu(QString&), but ALWAYS
+      // create the menu with new QMenu and add it afterwards.
+      // the menu's owner must be this and not this->menuBar()!
+
+
       //-------------------------------------------------------------
       //    popup File
       //-------------------------------------------------------------
 
-      menu_file = menuBar()->addMenu(tr("&File"));
+      menu_file = new QMenu(tr("&File"), this);
+      menuBar()->addMenu(menu_file);
+      leadingMenus.push_back(menu_file);
       menu_file->addAction(fileNewAction);
       menu_file->addAction(fileOpenAction);
       menu_file->addMenu(openRecent);
       menu_file->addSeparator();
       menu_file->addAction(fileSaveAction);
       menu_file->addAction(fileSaveAsAction);
+      menu_file->addSeparator();
+      menu_file->addAction(editSongInfoAction);
       menu_file->addSeparator();
       menu_file->addAction(fileImportMidiAction);
       menu_file->addAction(fileExportMidiAction);
@@ -1130,72 +776,15 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       menu_file->addAction(quitAction);
       menu_file->addSeparator();
 
-      //-------------------------------------------------------------
-      //    popup Edit
-      //-------------------------------------------------------------
 
-      menuEdit = menuBar()->addMenu(tr("&Edit"));
-      menuEdit->addActions(MusEGlobal::undoRedo->actions());
-      menuEdit->addSeparator();
-
-      menuEdit->addAction(editCutAction);
-      menuEdit->addAction(editCopyAction);
-      menuEdit->addAction(editPasteAction);
-      menuEdit->addAction(editInsertAction);
-      menuEdit->addAction(editInsertEMAction);
-      menuEdit->addAction(editPasteCloneAction);
-      menuEdit->addAction(editPaste2TrackAction);
-      menuEdit->addAction(editPasteC2TAction);
-      menuEdit->addSeparator();
-      menuEdit->addAction(editShrinkPartsAction);
-      menuEdit->addAction(editExpandPartsAction);
-      menuEdit->addAction(editCleanPartsAction);
-      menuEdit->addSeparator();
-      menuEdit->addAction(editDeleteSelectedAction);
-
-      // Moved below. Have to wait until synths are available...
-      //populateAddTrack(addTrack);
-      menuEdit->addMenu(addTrack);
-      menuEdit->addMenu(select);
-      select->addAction(editSelectAllAction);
-      select->addAction(editDeselectAllAction);
-      select->addAction(editInvertSelectionAction);
-      select->addAction(editInsideLoopAction);
-      select->addAction(editOutsideLoopAction);
-      select->addAction(editAllPartsAction);
-      menuEdit->addSeparator();
-
-      menuEdit->addAction(startPianoEditAction);
-      menuEdit->addMenu(scoreSubmenu);
-      menuEdit->addAction(startScoreEditAction);
-      menuEdit->addAction(startDrumEditAction);
-      menuEdit->addAction(startListEditAction);
-      menuEdit->addAction(startWaveEditAction);
-
-      menuEdit->addMenu(master);
-      master->addAction(masterGraphicAction);
-      master->addAction(masterListAction);
-      menuEdit->addSeparator();
-
-
-      menuEdit->addMenu(midiEdit);
-/* commented out by flo: these are not implemented,
-   but maybe will be in future (state: revision 988)
-      midiEdit->insertItem(tr("Copy Measure"),     this, SLOT(copyMeasure()));   
-      midiEdit->insertItem(tr("Erase Measure"),    this, SLOT(eraseMeasure()));
-      midiEdit->insertItem(tr("Delete Measure"),   this, SLOT(deleteMeasure()));
-      midiEdit->insertItem(tr("Create Measure"),   this, SLOT(createMeasure()));
-      midiEdit->insertItem(tr("Mix Track"),        this, SLOT(mixTrack()));
-*/
-      midiEdit->addAction(midiTransformerAction);
-
-      menuEdit->addAction(editSongInfoAction);
 
       //-------------------------------------------------------------
       //    popup View
       //-------------------------------------------------------------
 
-      menuView = menuBar()->addMenu(tr("&View"));
+      menuView = new QMenu(tr("&View"), this);
+      menuBar()->addMenu(menuView);
+      trailingMenus.push_back(menuView);
 
       menuView->addAction(viewTransportAction);
       menuView->addAction(viewBigtimeAction);
@@ -1203,25 +792,19 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       menuView->addAction(viewMixerBAction);
       menuView->addAction(viewCliplistAction);
       menuView->addAction(viewMarkerAction);
+      menuView->addAction(viewArrangerAction);
+      menuView->addSeparator();
+      menuView->addAction(fullscreenAction);
 
       
-      //-------------------------------------------------------------
-      //    popup Structure
-      //-------------------------------------------------------------
-
-      menuStructure = menuBar()->addMenu(tr("&Structure"));
-      menuStructure->addAction(strGlobalCutAction);
-      menuStructure->addAction(strGlobalInsertAction);
-      menuStructure->addAction(strGlobalSplitAction);
-      menuStructure->addAction(strCopyRangeAction);
-      menuStructure->addSeparator();
-      menuStructure->addAction(strCutEventsAction);
-
       //-------------------------------------------------------------
       //    popup Midi
       //-------------------------------------------------------------
 
-      menu_functions = menuBar()->addMenu(tr("&Midi"));
+      menu_functions = new QMenu(tr("&Midi"), this);
+      menuBar()->addMenu(menu_functions);
+      trailingMenus.push_back(menu_functions);
+      
       song->populateScriptMenu(menuScriptPlugins, this);
       menu_functions->addMenu(menuScriptPlugins);
       menu_functions->addAction(midiEditInstAction);
@@ -1247,7 +830,10 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    popup Audio
       //-------------------------------------------------------------
 
-      menu_audio = menuBar()->addMenu(tr("&Audio"));
+      menu_audio = new QMenu(tr("&Audio"), this);
+      menuBar()->addMenu(menu_audio);
+      trailingMenus.push_back(menu_audio);
+      
       menu_audio->addAction(audioBounce2TrackAction);
       menu_audio->addAction(audioBounce2FileAction);
       menu_audio->addSeparator();
@@ -1258,17 +844,36 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    popup Automation
       //-------------------------------------------------------------
 
-      menuAutomation = menuBar()->addMenu(tr("A&utomation"));
+      menuAutomation = new QMenu(tr("A&utomation"), this);
+      menuBar()->addMenu(menuAutomation);
+      trailingMenus.push_back(menuAutomation);
+      
       menuAutomation->addAction(autoMixerAction);
       menuAutomation->addSeparator();
       menuAutomation->addAction(autoSnapshotAction);
       menuAutomation->addAction(autoClearAction);
 
       //-------------------------------------------------------------
+      //    popup Windows
+      //-------------------------------------------------------------
+
+      menuWindows = new QMenu(tr("&Windows"), this);
+      menuBar()->addMenu(menuWindows);
+      trailingMenus.push_back(menuWindows);
+      
+      menuWindows->addAction(windowsCascadeAction); 
+      menuWindows->addAction(windowsTileAction); 
+      menuWindows->addAction(windowsRowsAction); 
+      menuWindows->addAction(windowsColumnsAction); 
+
+      //-------------------------------------------------------------
       //    popup Settings
       //-------------------------------------------------------------
 
-      menuSettings = menuBar()->addMenu(tr("Se&ttings"));
+      menuSettings = new QMenu(tr("MusE Se&ttings"), this);
+      menuBar()->addMenu(menuSettings);
+      trailingMenus.push_back(menuSettings);
+      
       menuSettings->addAction(settingsGlobalAction);
       menuSettings->addAction(settingsShortcutsAction);
       menuSettings->addMenu(follow);
@@ -1288,7 +893,10 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    popup Help
       //---------------------------------------------------
 
-      menu_help = menuBar()->addMenu(tr("&Help"));
+      menu_help = new QMenu(tr("&Help"), this);
+      menuBar()->addMenu(menu_help);
+      trailingMenus.push_back(menu_help);
+      
       menu_help->addAction(helpManualAction);
       menu_help->addAction(helpHomepageAction);
       menu_help->addSeparator();
@@ -1300,24 +908,33 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //menu_help->addSeparator();
       //menu_ids[CMD_START_WHATSTHIS] = menu_help->insertItem(tr("What's &This?"), this, SLOT(whatsThis()), 0);
 
+
       //---------------------------------------------------
       //    Central Widget
       //---------------------------------------------------
 
-      arranger = new Arranger(this, "arranger");
-      setCentralWidget(arranger);
       
-      connect(tools1, SIGNAL(toolChanged(int)), arranger, SLOT(setTool(int)));
-      connect(visTracks, SIGNAL(visibilityChanged()), song, SLOT(update()) );
-      connect(arranger, SIGNAL(editPart(Track*)), SLOT(startEditor(Track*)));
-      connect(arranger, SIGNAL(dropSongFile(const QString&)), SLOT(loadProjectFile(const QString&)));
-      connect(arranger, SIGNAL(dropMidiFile(const QString&)), SLOT(importMidi(const QString&)));
-      connect(arranger, SIGNAL(startEditor(PartList*,int)),  SLOT(startEditor(PartList*,int)));
-      connect(arranger, SIGNAL(toolChanged(int)), tools1, SLOT(set(int)));
-      connect(this, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
+      mdiArea=new QMdiArea(this);
+      mdiArea->setOption(QMdiArea::DontMaximizeSubWindowOnActivation);
+      mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+      mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+      setCentralWidget(mdiArea);
+      connect(windowsTileAction, SIGNAL(activated()), this, SLOT(tileSubWindows()));
+      connect(windowsRowsAction, SIGNAL(activated()), this, SLOT(arrangeSubWindowsRows()));
+      connect(windowsColumnsAction, SIGNAL(activated()), this, SLOT(arrangeSubWindowsColumns()));
+      connect(windowsCascadeAction, SIGNAL(activated()), mdiArea, SLOT(cascadeSubWindows()));
 
-      connect(arranger, SIGNAL(setUsedTool(int)), SLOT(setUsedTool(int)));
 
+      arrangerView = new ArrangerView(this);
+      arrangerView->shareToolsAndMenu(true);
+      connect(arrangerView, SIGNAL(closed()), SLOT(arrangerClosed()));
+      toplevels.push_back(arrangerView);
+      arrangerView->hide();
+      _arranger=arrangerView->getArranger();
+      
+      arrangerView->setIsMdiWin(true);
+      
+      
       //---------------------------------------------------
       //  read list of "Recent Projects"
       //---------------------------------------------------
@@ -1347,23 +964,11 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       initMidiSynth();
       
-      QActionGroup *grp = populateAddTrack(addTrack);
-      
-      trackMidiAction = grp->actions()[0];
-      trackDrumAction = grp->actions()[1];
-      trackWaveAction = grp->actions()[2];
-      trackAOutputAction = grp->actions()[3];
-      trackAGroupAction = grp->actions()[4];
-      trackAInputAction = grp->actions()[5];
-      trackAAuxAction = grp->actions()[6];
+      arrangerView->populateAddTrack();
+      arrangerView->updateShortcuts();
       
       transport = new Transport(this, "transport");
       bigtime   = 0;
-
-      QClipboard* cb = QApplication::clipboard();
-      connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
-      connect(cb, SIGNAL(selectionChanged()), SLOT(clipboardChanged()));
-      connect(arranger, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
 
       //---------------------------------------------------
       //  load project
@@ -1398,10 +1003,12 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
 
       changeConfig(false);
       QSettings settings("MusE", "MusE-qt");
-      //restoreGeometry(settings.value("MusE/geometry").toByteArray());
-      restoreState(settings.value("MusE/windowState").toByteArray());
+      restoreGeometry(settings.value("MusE/geometry").toByteArray());
+      //restoreState(settings.value("MusE/windowState").toByteArray());
 
       song->update();
+      
+      updateWindowMenu();
       }
 
 MusE::~MusE()
@@ -1515,7 +1122,7 @@ void MusE::loadProjectFile(const QString& name, bool songTemplate, bool loadAll)
       if (restartSequencer)
             seqStart();
 
-      visTracks->updateVisibleTracksButtons();
+      arrangerView->updateVisibleTracksButtons();
       progress->setValue(100);
       delete progress;
       progress=0;
@@ -1544,7 +1151,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             mixer1->clear();
       if (mixer2)
             mixer2->clear();
-      arranger->clear();      // clear track info
+      _arranger->clear();      // clear track info
       //if (clearSong())
       if (clearSong(loadAll))  // Allow not touching things like midi ports. p4.0.17 TESTING: Maybe some problems...
             return;
@@ -1624,6 +1231,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
       viewTransportAction->setChecked(MusEConfig::config.transportVisible);
       viewBigtimeAction->setChecked(MusEConfig::config.bigTimeVisible);
       viewMarkerAction->setChecked(MusEConfig::config.markerVisible);
+      viewArrangerAction->setChecked(MusEConfig::config.arrangerVisible);
 
       autoMixerAction->setChecked(MusEGlobal::automation);
 
@@ -1669,9 +1277,9 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
       MusEGlobal::loopAction->setChecked(song->loop());
       song->update();
       song->updatePos();
-      clipboardChanged(); // enable/disable "Paste"
-      selectionChanged(); // enable/disable "Copy" & "Paste"
-      scoreNamingChanged(); // inform the score menus about the new scores and their names
+      arrangerView->clipboardChanged(); // enable/disable "Paste"
+      arrangerView->selectionChanged(); // enable/disable "Copy" & "Paste"
+      arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
       progress->setValue(50);
 
       // p3.3.53 Try this AFTER the song update above which does a mixer update... Tested OK - mixers resize properly now.
@@ -1705,6 +1313,27 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
         // Moved here from above due to crash with a song loaded and then File->New.
         // Marker view list was not updated, had non-existent items from marker list (cleared in ::clear()).
         showMarker(MusEConfig::config.markerVisible); 
+      }
+      
+      if (songTemplate)
+      {
+        // maximize the arranger in traditional SDI mode
+        if (TopWin::_defaultSubwin[TopWin::ARRANGER])
+        {
+          bool maximizeArranger=true;
+          for (int i=0; i<TopWin::TOPLEVELTYPE_LAST_ENTRY; i++)
+            if ((i!=TopWin::ARRANGER) && TopWin::_defaultSubwin[i])
+            {
+              maximizeArranger=false;
+              break;
+            }
+          
+          if (maximizeArranger)
+          {
+            arrangerView->showMaximized();
+            bringToFront(arrangerView);
+          }
+        }
       }
       
       }
@@ -1896,8 +1525,10 @@ void MusE::closeEvent(QCloseEvent* event)
             }
 
       QSettings settings("MusE", "MusE-qt");
-      //settings.setValue("MusE/geometry", saveGeometry());
-      settings.setValue("MusE/windowState", saveState());
+      settings.setValue("MusE/geometry", saveGeometry());
+      //settings.setValue("MusE/windowState", saveState());
+      
+      writeGlobalConfiguration();
 
       // save "Open Recent" list
       QString prjPath(MusEGlobal::configPath);
@@ -1995,16 +1626,17 @@ void MusE::showMarker(bool flag)
       if (markerView == 0) {
             markerView = new MarkerView(this);
 
-            // Removed p3.3.43 
-            // Song::addMarker() already emits a 'markerChanged'.
-            //connect(arranger, SIGNAL(addMarker(int)), markerView, SLOT(addMarker(int)));
-            
             connect(markerView, SIGNAL(closed()), SLOT(markerClosed()));
-            toplevels.push_back(Toplevel(Toplevel::MARKER, (unsigned long)(markerView), markerView));
+            toplevels.push_back(markerView);
             markerView->show();
             }
       markerView->setVisible(flag);
       viewMarkerAction->setChecked(flag);
+      if (!flag)
+        if (currentMenuSharingTopwin == markerView)
+          setCurrentMenuSharingTopwin(NULL);
+      
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -2014,6 +1646,43 @@ void MusE::showMarker(bool flag)
 void MusE::markerClosed()
       {
       viewMarkerAction->setChecked(false);
+      if (currentMenuSharingTopwin == markerView)
+        setCurrentMenuSharingTopwin(NULL);
+
+      updateWindowMenu();
+      }
+
+//---------------------------------------------------------
+//   toggleArranger
+//---------------------------------------------------------
+
+void MusE::toggleArranger(bool checked)
+      {
+      showArranger(checked);
+      }
+
+//---------------------------------------------------------
+//   showArranger
+//---------------------------------------------------------
+
+void MusE::showArranger(bool flag)
+      {
+      arrangerView->setVisible(flag);
+      viewArrangerAction->setChecked(flag);
+      if (!flag)
+        if (currentMenuSharingTopwin == arrangerView)
+          setCurrentMenuSharingTopwin(NULL);
+      updateWindowMenu();
+      }
+
+//---------------------------------------------------------
+//   arrangerClosed
+//---------------------------------------------------------
+
+void MusE::arrangerClosed()
+      {
+      viewArrangerAction->setChecked(false);
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -2141,48 +1810,6 @@ PartList* MusE::getMidiPartsToEdit()
       return pl;
       }
 
-void MusE::scoreNamingChanged()
-{
-	updateScoreMenus();
-}
-
-void MusE::updateScoreMenus()
-{
-	QAction* action;
-
-	
-	scoreOneStaffPerTrackSubsubmenu->clear();
-	scoreAllInOneSubsubmenu->clear();
-
-	
-	action=new QAction(tr("New"), this);
-	connect(action, SIGNAL(activated()), scoreOneStaffPerTrackMapper, SLOT(map()));
-	scoreOneStaffPerTrackMapper->setMapping(action, (QWidget*)NULL);
-	scoreOneStaffPerTrackSubsubmenu->addAction(action);
-	
-	
-	action=new QAction(tr("New"), this); //the above action may NOT be reused!
-	connect(action, SIGNAL(activated()), scoreAllInOneMapper, SLOT(map()));
-	scoreAllInOneMapper->setMapping(action, (QWidget*)NULL);
-	scoreAllInOneSubsubmenu->addAction(action);
-
-	for (ToplevelList::iterator it=toplevels.begin(); it!=toplevels.end(); it++)
-		if (it->type()==Toplevel::SCORE)
-		{
-			ScoreEdit* score = (ScoreEdit*) it->cobject();
-			
-			action=new QAction(score->get_name(), this);
-			connect(action, SIGNAL(activated()), scoreOneStaffPerTrackMapper, SLOT(map()));
-			scoreOneStaffPerTrackMapper->setMapping(action, (QWidget*)score);
-			scoreOneStaffPerTrackSubsubmenu->addAction(action);
-
-
-			action=new QAction(score->get_name(), this); //the above action may NOT be reused!
-			connect(action, SIGNAL(activated()), scoreAllInOneMapper, SLOT(map()));
-			scoreAllInOneMapper->setMapping(action, (QWidget*)score);
-			scoreAllInOneSubsubmenu->addAction(action);
-		}
-}
 
 //---------------------------------------------------------
 //   startScoreEdit
@@ -2210,16 +1837,17 @@ void MusE::openInScoreEdit(ScoreEdit* destination, PartList* pl, bool allInOne)
 {
 	if (destination==NULL) // if no destination given, create a new one
 	{
-      destination = new ScoreEdit(this, 0, arranger->cursorValue());
+      destination = new ScoreEdit(this, 0, _arranger->cursorValue());
       destination->show();
-      toplevels.push_back(Toplevel(Toplevel::SCORE, (unsigned long)(destination), destination));
-      connect(destination, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
-      connect(destination, SIGNAL(name_changed()), SLOT(scoreNamingChanged()));
+      toplevels.push_back(destination);
+      connect(destination, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
+      connect(destination, SIGNAL(name_changed()), arrangerView, SLOT(scoreNamingChanged()));
       //connect(muse, SIGNAL(configChanged()), destination, SLOT(config_changed()));
       //commented out by flo, because the ScoreEditor connects to all 
       //relevant signals on his own
       
-      updateScoreMenus();
+      arrangerView->updateScoreMenus();
+      updateWindowMenu();
   }
   
   destination->add_parts(pl, allInOne);
@@ -2245,13 +1873,14 @@ void MusE::startPianoroll()
 void MusE::startPianoroll(PartList* pl, bool showDefaultCtrls)
       {
       
-      PianoRoll* pianoroll = new PianoRoll(pl, this, 0, arranger->cursorValue());
+      PianoRoll* pianoroll = new PianoRoll(pl, this, 0, _arranger->cursorValue());
       if(showDefaultCtrls)       // p4.0.12
         pianoroll->addCtrl();
       pianoroll->show();
-      toplevels.push_back(Toplevel(Toplevel::PIANO_ROLL, (unsigned long)(pianoroll), pianoroll));
-      connect(pianoroll, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+      toplevels.push_back(pianoroll);
+      connect(pianoroll, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -2270,9 +1899,10 @@ void MusE::startListEditor(PartList* pl)
       {
       ListEdit* listEditor = new ListEdit(pl);
       listEditor->show();
-      toplevels.push_back(Toplevel(Toplevel::LISTE, (unsigned long)(listEditor), listEditor));
-      connect(listEditor, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+      toplevels.push_back(listEditor);
+      connect(listEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(MusEGlobal::muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -2283,8 +1913,9 @@ void MusE::startMasterEditor()
       {
       MasterEdit* masterEditor = new MasterEdit();
       masterEditor->show();
-      toplevels.push_back(Toplevel(Toplevel::MASTER, (unsigned long)(masterEditor), masterEditor));
-      connect(masterEditor, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+      toplevels.push_back(masterEditor);
+      connect(masterEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -2295,9 +1926,10 @@ void MusE::startLMasterEditor()
       {
       LMaster* lmaster = new LMaster();
       lmaster->show();
-      toplevels.push_back(Toplevel(Toplevel::LMASTER, (unsigned long)(lmaster), lmaster));
-      connect(lmaster, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+      toplevels.push_back(lmaster);
+      connect(lmaster, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), lmaster, SLOT(configChanged()));
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -2315,13 +1947,14 @@ void MusE::startDrumEditor()
 void MusE::startDrumEditor(PartList* pl, bool showDefaultCtrls)
       {
       
-      DrumEdit* drumEditor = new DrumEdit(pl, this, 0, arranger->cursorValue());
+      DrumEdit* drumEditor = new DrumEdit(pl, this, 0, _arranger->cursorValue());
       if(showDefaultCtrls)       // p4.0.12
         drumEditor->addCtrl();
       drumEditor->show();
-      toplevels.push_back(Toplevel(Toplevel::DRUM, (unsigned long)(drumEditor), drumEditor));
-      connect(drumEditor, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+      toplevels.push_back(drumEditor);
+      connect(drumEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -2343,8 +1976,9 @@ void MusE::startWaveEditor(PartList* pl)
       WaveEdit* waveEditor = new WaveEdit(pl);
       waveEditor->show();
       connect(MusEGlobal::muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
-      toplevels.push_back(Toplevel(Toplevel::WAVE, (unsigned long)(waveEditor), waveEditor));
-      connect(waveEditor, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+      toplevels.push_back(waveEditor);
+      connect(waveEditor, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
+      updateWindowMenu();
       }
 
 
@@ -2400,11 +2034,12 @@ void MusE::startClipList(bool checked)
       if (clipListEdit == 0) {
             //clipListEdit = new ClipListEdit();
             clipListEdit = new ClipListEdit(this);
-            toplevels.push_back(Toplevel(Toplevel::CLIPLIST, (unsigned long)(clipListEdit), clipListEdit));
-            connect(clipListEdit, SIGNAL(deleted(unsigned long)), SLOT(toplevelDeleted(unsigned long)));
+            toplevels.push_back(clipListEdit);
+            connect(clipListEdit, SIGNAL(deleted(TopWin*)), SLOT(toplevelDeleted(TopWin*)));
             }
       clipListEdit->show();
       viewCliplistAction->setChecked(checked);
+      updateWindowMenu();
       }
 
 //---------------------------------------------------------
@@ -2449,63 +2084,57 @@ void MusE::selectProject(QAction* act)
 //   toplevelDeleted
 //---------------------------------------------------------
 
-void MusE::toplevelDeleted(unsigned long tl)
+void MusE::toplevelDeleted(TopWin* tl)
       {
       for (iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
-            if (i->object() == tl) {
+            if (*i == tl) {
+                  
+                  if (tl == currentMenuSharingTopwin)
+                    setCurrentMenuSharingTopwin(NULL);
+              
+              
                   bool mustUpdateScoreMenus=false;
-                  switch(i->type()) {
-                        case Toplevel::MARKER:
+                  switch(tl->type()) {
+                        case TopWin::MARKER:
+                        case TopWin::ARRANGER:
                               break;
-                        case Toplevel::CLIPLIST:
+                        case TopWin::CLIPLIST:
                               // ORCAN: This needs to be verified. aid2 used to correspond to Cliplist:
                               //menu_audio->setItemChecked(aid2, false);
-                              viewCliplistAction->setChecked(false);  
+                              viewCliplistAction->setChecked(false); 
+                              if (currentMenuSharingTopwin == clipListEdit)
+                                setCurrentMenuSharingTopwin(NULL);
+                              updateWindowMenu(); 
                               return;
                               //break;
-                        // the followin editors can exist in more than
+
+                        // the following editors can exist in more than
                         // one instantiation:
-                        case Toplevel::PIANO_ROLL:
-                        case Toplevel::LISTE:
-                        case Toplevel::DRUM:
-                        case Toplevel::MASTER:
-                        case Toplevel::WAVE:
-                        case Toplevel::LMASTER:
+                        case TopWin::PIANO_ROLL:
+                        case TopWin::LISTE:
+                        case TopWin::DRUM:
+                        case TopWin::MASTER:
+                        case TopWin::WAVE:
+                        case TopWin::LMASTER:
                               break;
-                        case Toplevel::SCORE:
+                        case TopWin::SCORE:
                               mustUpdateScoreMenus=true;
+                        
+                        case TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
+                          break;
                         }
                   toplevels.erase(i);
                   if (mustUpdateScoreMenus)
-                        updateScoreMenus();
+                        arrangerView->updateScoreMenus();
+                  updateWindowMenu();
                   return;
                   }
             }
-      printf("topLevelDeleted: top level %lx not found\n", tl);
+      printf("topLevelDeleted: top level %p not found\n", tl);
       //assert(false);
       }
 
-//---------------------------------------------------------
-//   ctrlChanged
-//    midi ctrl value changed
-//---------------------------------------------------------
 
-#if 0
-void MusE::ctrlChanged()
-      {
-      arranger->updateInspector();
-      }
-#endif
-
-//---------------------------------------------------------
-//   keyPressEvent
-//---------------------------------------------------------
-
-void MusE::keyPressEvent(QKeyEvent* event)
-      {
-      // Pass it on to arranger part canvas.
-      arranger->getCanvas()->redirKeypress(event);
-      }
 
 //---------------------------------------------------------
 //   kbAccel
@@ -2653,37 +2282,6 @@ static void catchSignal(int sig)
       }
 #endif
 
-#if 0
-//---------------------------------------------------------
-//   configPart
-//---------------------------------------------------------
-
-void MusE::configPart(int id)
-      {
-      if (id < 3) {
-            partConfig->setItemChecked(0, id == 0);
-            partConfig->setItemChecked(1, id == 1);
-            partConfig->setItemChecked(2, id == 2);
-            arranger->setShowPartType(id);
-            for (int i = 3; i < 10; ++i) {
-                  partConfig->setItemEnabled(i, id == 2);
-                  }
-            }
-      else {
-            bool flag = !partConfig->isItemChecked(id);
-            partConfig->setItemChecked(id, flag);
-            int val = arranger->showPartEvent();
-            if (flag) {
-                  val |= 1 << (id-3);
-                  }
-            else {
-                  val &= ~(1 << (id-3));
-                  }
-            arranger->setShowPartEvent(val);
-            }
-      }
-#endif
-
 //---------------------------------------------------------
 //   cmd
 //    some cmd's from pulldown menu
@@ -2691,99 +2289,7 @@ void MusE::configPart(int id)
 
 void MusE::cmd(int cmd)
       {
-      TrackList* tracks = song->tracks();
-      int l = song->lpos();
-      int r = song->rpos();
-
       switch(cmd) {
-            case CMD_CUT:
-                  arranger->cmd(Arranger::CMD_CUT_PART);
-                  break;
-            case CMD_COPY:
-                  arranger->cmd(Arranger::CMD_COPY_PART);
-                  break;
-            case CMD_PASTE:
-                  arranger->cmd(Arranger::CMD_PASTE_PART);
-                  break;
-            case CMD_PASTE_CLONE:
-                  arranger->cmd(Arranger::CMD_PASTE_CLONE_PART);
-                  break;
-            case CMD_PASTE_TO_TRACK:
-                  arranger->cmd(Arranger::CMD_PASTE_PART_TO_TRACK);
-                  break;
-            case CMD_PASTE_CLONE_TO_TRACK:
-                  arranger->cmd(Arranger::CMD_PASTE_CLONE_PART_TO_TRACK);
-                  break;
-            case CMD_INSERT:
-                  arranger->cmd(Arranger::CMD_INSERT_PART);
-                  break;
-            case CMD_INSERTMEAS:
-                  arranger->cmd(Arranger::CMD_INSERT_EMPTYMEAS);
-                  break;
-            case CMD_DELETE:
-                  if (!song->msgRemoveParts()) //automatically does undo if neccessary and returns true then
-                  {
-                        //msgRemoveParts() returned false -> no parts to remove?
-                        song->startUndo();
-                        audio->msgRemoveTracks(); //TODO FINDME this could still be speeded up!
-                        song->endUndo(SC_TRACK_REMOVED);
-                  }
-                  break;
-            case CMD_DELETE_TRACK:
-                  song->startUndo();
-                  audio->msgRemoveTracks();
-                  song->endUndo(SC_TRACK_REMOVED);
-                  audio->msgUpdateSoloStates();
-                  break;
-
-            case CMD_SELECT_ALL:
-            case CMD_SELECT_NONE:
-            case CMD_SELECT_INVERT:
-            case CMD_SELECT_ILOOP:
-            case CMD_SELECT_OLOOP:
-                  for (iTrack i = tracks->begin(); i != tracks->end(); ++i) {
-                        PartList* parts = (*i)->parts();
-                        for (iPart p = parts->begin(); p != parts->end(); ++p) {
-                              bool f = false;
-                              int t1 = p->second->tick();
-                              int t2 = t1 + p->second->lenTick();
-                              bool inside =
-                                 ((t1 >= l) && (t1 < r))
-                                 ||  ((t2 > l) && (t2 < r))
-                                 ||  ((t1 <= l) && (t2 > r));
-                              switch(cmd) {
-                                    case CMD_SELECT_INVERT:
-                                          f = !p->second->selected();
-                                          break;
-                                    case CMD_SELECT_NONE:
-                                          f = false;
-                                          break;
-                                    case CMD_SELECT_ALL:
-                                          f = true;
-                                          break;
-                                    case CMD_SELECT_ILOOP:
-                                          f = inside;
-                                          break;
-                                    case CMD_SELECT_OLOOP:
-                                          f = !inside;
-                                          break;
-                                    }
-                              p->second->setSelected(f);
-                              }
-                        }
-                  song->update();
-                  break;
-
-            case CMD_SELECT_PARTS:
-                  for (iTrack i = tracks->begin(); i != tracks->end(); ++i) {
-                        if (!(*i)->selected())
-                              continue;
-                        PartList* parts = (*i)->parts();
-                        for (iPart p = parts->begin(); p != parts->end(); ++p)
-                              p->second->setSelected(true);
-                        }
-                  song->update();
-                  break;
             case CMD_FOLLOW_NO:
                   song->setFollow(Song::NO);
                   setFollow();
@@ -2796,43 +2302,10 @@ void MusE::cmd(int cmd)
                   song->setFollow(Song::CONTINUOUS);
                   setFollow();
                   break;
-                  
-            case CMD_SHRINK_PART: shrink_parts(); break;
-            case CMD_EXPAND_PART: expand_parts(); break;
-            case CMD_CLEAN_PART: clean_parts(); break;      
             }
       }
 
-//---------------------------------------------------------
-//   clipboardChanged
-//---------------------------------------------------------
 
-void MusE::clipboardChanged()
-      {
-      bool flag = false;
-      if(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-midipartlist")) ||
-         QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-wavepartlist")) ||
-         QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-mixedpartlist")))
-        flag = true;
-      
-      editPasteAction->setEnabled(flag);
-      editInsertAction->setEnabled(flag);
-      editPasteCloneAction->setEnabled(flag);
-      editPaste2TrackAction->setEnabled(flag);
-      editPasteC2TAction->setEnabled(flag);
-      }
-
-//---------------------------------------------------------
-//   selectionChanged
-//---------------------------------------------------------
-
-void MusE::selectionChanged()
-      {
-      //bool flag = arranger->isSingleSelection();  // -- Hmm, why only single? 
-      bool flag = arranger->selectionSize() > 0;    // -- Test OK cut and copy. For muse2. Tim.
-      editCutAction->setEnabled(flag);
-      editCopyAction->setEnabled(flag);
-      }
 
 
 
@@ -2843,7 +2316,7 @@ void MusE::selectionChanged()
 void MusE::configAppearance()
       {
       if (!appearance)
-            appearance = new Appearance(arranger);
+            appearance = new Appearance(_arranger);
       appearance->resetValues();
       if(appearance->isVisible()) {
           appearance->raise();
@@ -3255,21 +2728,24 @@ bool MusE::clearSong(bool clear_all)
 
 again:
       for (iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
-            Toplevel tl = *i;
-            unsigned long obj = tl.object();
-            switch (tl.type()) {
-                  case Toplevel::CLIPLIST:
-                  case Toplevel::MARKER:
+            TopWin* tl = *i;
+            switch (tl->type()) {
+                  case TopWin::CLIPLIST:
+                  case TopWin::MARKER:
+                  case TopWin::ARRANGER:
                         break;
-                  case Toplevel::PIANO_ROLL:
-                  case Toplevel::SCORE:
-                  case Toplevel::LISTE:
-                  case Toplevel::DRUM:
-                  case Toplevel::MASTER:
-                  case Toplevel::WAVE:
-                  case Toplevel::LMASTER:
-                        ((QWidget*)(obj))->close();
+                  case TopWin::PIANO_ROLL:
+                  case TopWin::SCORE:
+                  case TopWin::LISTE:
+                  case TopWin::DRUM:
+                  case TopWin::MASTER:
+                  case TopWin::WAVE:
+                  case TopWin::LMASTER:
+                        tl->close();
                         goto again;
+                  
+                  case TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
+                    break;
                   }
             }
       microSleep(100000);
@@ -3366,41 +2842,7 @@ void MusE::updateConfiguration()
       MusEGlobal::undoAction->setShortcut(shortcuts[SHRT_UNDO].key);  
       MusEGlobal::redoAction->setShortcut(shortcuts[SHRT_REDO].key);
 
-      editCutAction->setShortcut(shortcuts[SHRT_CUT].key);
-      editCopyAction->setShortcut(shortcuts[SHRT_COPY].key);
-      editPasteAction->setShortcut(shortcuts[SHRT_PASTE].key);
-      editInsertAction->setShortcut(shortcuts[SHRT_INSERT].key);
-      editInsertEMAction->setShortcut(shortcuts[SHRT_INSERTMEAS].key);
-      editPasteCloneAction->setShortcut(shortcuts[SHRT_PASTE_CLONE].key);
-      editPaste2TrackAction->setShortcut(shortcuts[SHRT_PASTE_TO_TRACK].key);
-      editPasteC2TAction->setShortcut(shortcuts[SHRT_PASTE_CLONE_TO_TRACK].key);
 
-      //editDeleteSelectedAction has no acceleration
-      
-      trackMidiAction->setShortcut(shortcuts[SHRT_ADD_MIDI_TRACK].key);
-      trackDrumAction->setShortcut(shortcuts[SHRT_ADD_DRUM_TRACK].key);
-      trackWaveAction->setShortcut(shortcuts[SHRT_ADD_WAVE_TRACK].key);
-      trackAOutputAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_OUTPUT].key);
-      trackAGroupAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_GROUP].key);
-      trackAInputAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_INPUT].key);
-      trackAAuxAction->setShortcut(shortcuts[SHRT_ADD_AUDIO_AUX].key);
-
-      editSelectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
-      editDeselectAllAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
-      editInvertSelectionAction->setShortcut(shortcuts[SHRT_SELECT_INVERT].key);
-      editInsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
-      editOutsideLoopAction->setShortcut(shortcuts[SHRT_SELECT_OLOOP].key);
-      editAllPartsAction->setShortcut(shortcuts[SHRT_SELECT_PRTSTRACK].key);
-
-      startPianoEditAction->setShortcut(shortcuts[SHRT_OPEN_PIANO].key);
-      startDrumEditAction->setShortcut(shortcuts[SHRT_OPEN_DRUMS].key);
-      startListEditAction->setShortcut(shortcuts[SHRT_OPEN_LIST].key);
-      startWaveEditAction->setShortcut(shortcuts[SHRT_OPEN_WAVE].key);
-
-      masterGraphicAction->setShortcut(shortcuts[SHRT_OPEN_GRAPHIC_MASTER].key);
-      masterListAction->setShortcut(shortcuts[SHRT_OPEN_LIST_MASTER].key);
-
-      midiTransformerAction->setShortcut(shortcuts[SHRT_OPEN_MIDI_TRANSFORM].key);
       //editSongInfoAction has no acceleration
 
       viewTransportAction->setShortcut(shortcuts[SHRT_OPEN_TRANSPORT].key);
@@ -3410,11 +2852,6 @@ void MusE::updateConfiguration()
       //viewCliplistAction has no acceleration
       viewMarkerAction->setShortcut(shortcuts[SHRT_OPEN_MARKER].key);
 
-      strGlobalCutAction->setShortcut(shortcuts[SHRT_GLOBAL_CUT].key);
-      strGlobalInsertAction->setShortcut(shortcuts[SHRT_GLOBAL_INSERT].key);
-      strGlobalSplitAction->setShortcut(shortcuts[SHRT_GLOBAL_SPLIT].key);
-      strCopyRangeAction->setShortcut(shortcuts[SHRT_COPY_RANGE].key);
-      strCutEventsAction->setShortcut(shortcuts[SHRT_CUT_EVENTS].key);
       
       // midiEditInstAction does not have acceleration
       midiResetInstAction->setShortcut(shortcuts[SHRT_MIDI_RESET].key);
@@ -3450,10 +2887,13 @@ void MusE::updateConfiguration()
       followCtsAction->setShortcut(shortcuts[SHRT_FOLLOW_CONTINUOUS].key);
       
       helpManualAction->setShortcut(shortcuts[SHRT_OPEN_HELP].key);
+      fullscreenAction->setShortcut(shortcuts[SHRT_FULLSCREEN].key);
       
       // Orcan: Old stuff, needs to be converted. These aren't used anywhere so I commented them out
       //menuSettings->setAccel(shortcuts[SHRT_CONFIG_AUDIO_PORTS].key, menu_ids[CMD_CONFIG_AUDIO_PORTS]);
       //menu_help->setAccel(menu_ids[CMD_START_WHATSTHIS], shortcuts[SHRT_START_WHATSTHIS].key);
+      
+      //arrangerView->updateShortcuts(); //commented out by flo: is done via signal
       
       }
 
@@ -3589,14 +3029,6 @@ void MusE::focusInEvent(QFocusEvent* ev)
       QMainWindow::focusInEvent(ev);
       }
 
-//---------------------------------------------------------
-//   setUsedTool
-//---------------------------------------------------------
-
-void MusE::setUsedTool(int tool)
-      {
-      tools1->set(tool);
-      }
 
 
 //---------------------------------------------------------
@@ -3623,6 +3055,386 @@ void MusE::findUnusedWaveFiles()
 {
     MusEWidget::UnusedWaveFiles unused(MusEGlobal::muse);
     unused.exec();
+}
+
+void MusE::focusChanged(QWidget*, QWidget* now)
+{
+  QWidget* ptr=now;
+
+  if (activeTopWin)
+    activeTopWin->storeInitialState();
+  
+  if (currentMenuSharingTopwin && (currentMenuSharingTopwin!=activeTopWin))
+    currentMenuSharingTopwin->storeInitialState();
+
+
+
+  while (ptr)
+  {
+    if ( (dynamic_cast<TopWin*>(ptr)!=0) || // *ptr is a TopWin or a derived class
+         (ptr==this) )                      // the main window is selected
+      break;
+    ptr=dynamic_cast<QWidget*>(ptr->parent()); //in the unlikely case that ptr is a QObject, this returns NULL, which stops the loop
+  }
+  
+  // ptr is either NULL, this or the pointer to a TopWin
+  if (ptr!=this) // if the main win is selected, don't treat that as "none", but also don't handle it
+  {
+    TopWin* win=dynamic_cast<TopWin*>(ptr);
+    
+    // now 'win' is either NULL or the pointer to the active TopWin
+    if (win!=activeTopWin)
+    {
+      activeTopWin=win;
+      emit activeTopWinChanged(activeTopWin);
+    }
+  }
+}
+
+
+void MusE::activeTopWinChangedSlot(TopWin* win)
+{
+  if (MusEGlobal::debugMsg) printf("ACTIVE TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toAscii().data() : "<None>", win);
+  
+  if ((win==NULL) || (win->isMdiWin()==false))
+  {
+    if (MusEGlobal::debugMsg) printf("  that's out of the MDI area\n");
+    menuBar()->setFocus(Qt::MenuBarFocusReason);
+  }
+  
+  if (win && (win->sharesToolsAndMenu()))
+    setCurrentMenuSharingTopwin(win);
+}
+
+
+
+void MusE::setCurrentMenuSharingTopwin(TopWin* win)
+{
+  if (win && (win->sharesToolsAndMenu()==false))
+  {
+    printf("WARNING: THIS SHOULD NEVER HAPPEN: MusE::setCurrentMenuSharingTopwin() called with a win which does not share (%s)! ignoring...\n", win->windowTitle().toAscii().data());
+    return;
+  }
+  
+  if (win!=currentMenuSharingTopwin)
+  {
+    TopWin* previousMenuSharingTopwin = currentMenuSharingTopwin;
+    currentMenuSharingTopwin = NULL;
+    
+    if (MusEGlobal::debugMsg) printf("MENU SHARING TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toAscii().data() : "<None>", win);
+    
+    // empty our toolbars
+    if (previousMenuSharingTopwin)
+    {
+      for (list<QToolBar*>::iterator it = foreignToolbars.begin(); it!=foreignToolbars.end(); it++)
+        if (*it) 
+        {
+          if (MusEGlobal::debugMsg) printf("  removing sharer's toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
+          removeToolBar(*it); // this does not delete *it, which is good
+          (*it)->setParent(NULL);
+        }
+
+      foreignToolbars.clear();
+    }
+    else
+    {
+      for (list<QToolBar*>::iterator it = optionalToolbars.begin(); it!=optionalToolbars.end(); it++)
+        if (*it) 
+        {
+          if (MusEGlobal::debugMsg) printf("  removing optional toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
+          removeToolBar(*it); // this does not delete *it, which is good
+          (*it)->setParent(NULL);
+        }
+    }
+    
+    //empty our menu
+    menuBar()->clear();
+        
+    
+    
+    
+    for (list<QMenu*>::iterator it = leadingMenus.begin(); it!=leadingMenus.end(); it++)
+      menuBar()->addMenu(*it);
+
+    if (win)
+    {
+      const QList<QAction*>& actions=win->menuBar()->actions();
+      for (QList<QAction*>::const_iterator it=actions.begin(); it!=actions.end(); it++)
+      {
+        if (MusEGlobal::debugMsg) printf("  menu entry '%s'\n", (*it)->text().toAscii().data());
+        
+        menuBar()->addAction(*it);
+      }
+
+
+      
+      const list<QToolBar*>& toolbars=win->toolbars();
+      for (list<QToolBar*>::const_iterator it=toolbars.begin(); it!=toolbars.end(); it++)
+        if (*it)
+        {
+          if (MusEGlobal::debugMsg) printf("  toolbar '%s'\n", (*it)->windowTitle().toAscii().data());
+          
+          addToolBar(*it);
+          foreignToolbars.push_back(*it);
+          (*it)->show();
+        }
+        else
+        {
+          if (MusEGlobal::debugMsg) printf("  toolbar break\n");
+          
+          addToolBarBreak();
+          foreignToolbars.push_back(NULL);
+        }
+    }
+
+    for (list<QMenu*>::iterator it = trailingMenus.begin(); it!=trailingMenus.end(); it++)
+      menuBar()->addMenu(*it);
+      
+
+    currentMenuSharingTopwin=win;
+    
+    if (win)
+      win->restoreMainwinState(); //restore toolbar positions in main window
+  }
+}
+
+void MusE::addMdiSubWindow(QMdiSubWindow* win)
+{
+  mdiArea->addSubWindow(win);
+}
+
+void MusE::shareMenuAndToolbarChanged(TopWin* win, bool val)
+{
+  if (val)
+  {
+    if ((win == activeTopWin) && (win != currentMenuSharingTopwin))
+      setCurrentMenuSharingTopwin(win);
+  }
+  else
+  {
+    if (win == currentMenuSharingTopwin)
+    {
+      if (activeTopWin && (win != activeTopWin) && (activeTopWin->sharesToolsAndMenu()))
+        setCurrentMenuSharingTopwin(activeTopWin);
+      else
+        setCurrentMenuSharingTopwin(NULL);
+    }
+  }
+}
+
+void MusE::updateWindowMenu()
+{
+  bool sep;
+  bool there_are_subwins=false;
+  
+  menuWindows->clear(); // frees memory automatically
+  
+  menuWindows->addAction(windowsCascadeAction);
+  menuWindows->addAction(windowsTileAction);
+  menuWindows->addAction(windowsRowsAction);
+  menuWindows->addAction(windowsColumnsAction);
+  
+  sep=false;
+  for (iToplevel it=toplevels.begin(); it!=toplevels.end(); it++)
+    if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && (*it)->isMdiWin())
+    // the isVisibleTo check is neccessary because isVisible returns false if a
+    // MdiSubWin is actually visible, but the muse main window is hidden for some reason
+    {
+      if (!sep)
+      {
+        menuWindows->addSeparator();
+        sep=true;
+      }
+      QAction* temp=menuWindows->addAction((*it)->windowTitle());
+      connect(temp, SIGNAL(activated()), windowsMapper, SLOT(map()));
+      windowsMapper->setMapping(temp, static_cast<QWidget*>(*it));
+      
+      there_are_subwins=true;
+    }
+
+  sep=false;
+  for (iToplevel it=toplevels.begin(); it!=toplevels.end(); it++)
+    if (((*it)->isVisible() || (*it)->isVisibleTo(this)) && !(*it)->isMdiWin())
+    {
+      if (!sep)
+      {
+        menuWindows->addSeparator();
+        sep=true;
+      }
+      QAction* temp=menuWindows->addAction((*it)->windowTitle());
+      connect(temp, SIGNAL(activated()), windowsMapper, SLOT(map()));
+      windowsMapper->setMapping(temp, static_cast<QWidget*>(*it));
+    }
+  
+  windowsCascadeAction->setEnabled(there_are_subwins);
+  windowsTileAction->setEnabled(there_are_subwins);
+  windowsRowsAction->setEnabled(there_are_subwins);
+  windowsColumnsAction->setEnabled(there_are_subwins);
+}
+
+void MusE::bringToFront(QWidget* widget)
+{
+  TopWin* win=dynamic_cast<TopWin*>(widget);
+  if (win->isMdiWin())
+  {
+    win->show();
+    mdiArea->setActiveSubWindow(win->getMdiWin());
+  }
+  else
+  {
+    win->activateWindow();
+    win->raise();
+  }
+  
+  activeTopWinChangedSlot(win);
+}
+
+void MusE::setFullscreen(bool val)
+{
+  if (val)
+    showFullScreen();
+  else
+    showNormal();
+}
+
+
+
+list<QMdiSubWindow*> get_all_visible_subwins(QMdiArea* mdiarea)
+{
+  QList<QMdiSubWindow*> wins = mdiarea->subWindowList();
+  list<QMdiSubWindow*> result;
+  
+  // always put the arranger at the top of the list, if visible
+  
+  for (QList<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++)
+    if ((*it)->isVisible() && ((*it)->isMinimized()==false))
+      if (dynamic_cast<TopWin*>((*it)->widget())->type()==TopWin::ARRANGER)
+        result.push_back(*it);
+  
+  for (QList<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++)
+    if ((*it)->isVisible() && ((*it)->isMinimized()==false))
+      if (dynamic_cast<TopWin*>((*it)->widget())->type()!=TopWin::ARRANGER)
+        result.push_back(*it);
+  
+  return result;
+}
+
+void MusE::arrangeSubWindowsColumns()
+{
+  list<QMdiSubWindow*> wins=get_all_visible_subwins(mdiArea);
+  int n=wins.size();
+  
+  if (n==0)
+    return;
+  //else if (n==1)
+  //  (*wins.begin())->showMaximized(); // commented out by flo. i like it better that way.
+  else
+  {
+    int width = mdiArea->width();
+    int height = mdiArea->height();
+    int x_add = (*wins.begin())->frameGeometry().width() - (*wins.begin())->geometry().width();
+    int y_add = (*wins.begin())->frameGeometry().height() - (*wins.begin())->geometry().height();
+    int width_per_win = width/n;
+    
+    if (x_add >= width_per_win)
+    {
+      printf("ERROR: tried to arrange subwins in columns, but there's too few space.\n");
+      return;
+    }
+    
+    int i=0;
+    for (list<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++, i++)
+    {
+      int left = (float) width*i/n;
+      int right = (float) width*(i+1.0)/n;
+      
+      (*it)->move(left,0);
+      (*it)->resize(right-left-x_add, height-y_add);
+    }
+  }
+}
+
+void MusE::arrangeSubWindowsRows()
+{
+  list<QMdiSubWindow*> wins=get_all_visible_subwins(mdiArea);
+  int n=wins.size();
+  
+  if (n==0)
+    return;
+  //else if (n==1)
+  //  (*wins.begin())->showMaximized(); // commented out by flo. i like it better that way.
+  else
+  {
+    int width = mdiArea->width();
+    int height = mdiArea->height();
+    int x_add = (*wins.begin())->frameGeometry().width() - (*wins.begin())->geometry().width();
+    int y_add = (*wins.begin())->frameGeometry().height() - (*wins.begin())->geometry().height();
+    int height_per_win = height/n;
+    
+    if (y_add >= height_per_win)
+    {
+      printf("ERROR: tried to arrange subwins in rows, but there's too few space.\n");
+      return;
+    }
+    
+    int i=0;
+    for (list<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++, i++)
+    {
+      int top = (float) height*i/n;
+      int bottom = (float) height*(i+1.0)/n;
+      
+      (*it)->move(0,top);
+      (*it)->resize(width-x_add, bottom-top-y_add);
+    }
+  }  
+}
+
+void MusE::tileSubWindows()
+{
+  list<QMdiSubWindow*> wins=get_all_visible_subwins(mdiArea);
+  int n=wins.size();
+  
+  if (n==0)
+    return;
+  //else if (n==1)
+  //  (*wins.begin())->showMaximized(); // commented out by flo. i like it better that way.
+  else
+  {
+    int nx,ny;
+    nx=ceil(sqrt(n));
+    ny=ceil((double)n/nx);
+    
+    int width = mdiArea->width();
+    int height = mdiArea->height();
+    int x_add = (*wins.begin())->frameGeometry().width() - (*wins.begin())->geometry().width();
+    int y_add = (*wins.begin())->frameGeometry().height() - (*wins.begin())->geometry().height();
+    int height_per_win = height/ny;
+    int width_per_win = height/nx;
+    
+    if ((x_add >= width_per_win) || (y_add >= height_per_win))
+    {
+      printf("ERROR: tried to tile subwins, but there's too few space.\n");
+      return;
+    }
+    
+    int i=0, j=0;
+    for (list<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++, i++)
+    {
+      if (i>=nx)
+      {
+        i=0;
+        j++;
+      }
+      
+      int top = (float) height*j/ny;
+      int bottom = (float) height*(j+1.0)/ny;
+      int left = (float) width*i/nx;
+      int right = (float) width*(i+1.0)/nx;
+      
+      (*it)->move(left,top);
+      (*it)->resize(right-left-x_add, bottom-top-y_add);
+    }
+  }
 }
 
 } //namespace MusEApp

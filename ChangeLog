@@ -1,6 +1,20 @@
+14.09.2011:
+        - added sane configuration defaults to muse (flo93)
+        - several minor fixes (flo93)
+        - added MDI-like and borland-like user interface (flo93)
+        - improved pasting, added dialogs, added "copy in range",
+          changed shortcut keys (flo93)
 13.09.2011:
-	- Made Slider::sizeHint() a const function again, so that the plugin window respects its sizeHint. (Orcan)
-	- Explicitly disabled the scale support in Slider since it wasn't really in use for a while. (Orcan)
+        *Added: You can now insert new tracks instead of always at the track list end. (Tim)
+          If main menu 'Add track': Inserts before currently selected track, else adds at end.
+          If Track List right-click existing Track Name: New 'Insert track' menu inserts before clicked track.
+          If Track List right-click on empty space, or Mixer 'Create': Adds at end, as usual.
+        - Fixed track selection bug: Track info panel not clearing when clicking empty area. (Tim)
+          Added an emit selectionChanged(0) in TList::mousePressEvent.
+        - Observed: Ancient bug: Track Info doesn't change if selecting multiple tracks in reverse order.
+          Will need to be fixed if/when adding 'multiple track global editing'. 
+        - Made Slider::sizeHint() a const function again, so that the plugin window respects its sizeHint. (Orcan)
+        - Explicitly disabled the scale support in Slider since it wasn't really in use for a while. (Orcan)
 11.09.2011:
         - Rewrote the rounding function for efficientcy. Moved the function into utils.cpp since it is written
           for general purpose. (Orcan)
@@ -45,6 +59,13 @@
 	  in paintEvent(). The latter caused corruption when toggling mono/stereo. (Orcan)
 04.09.2011:
         - Remodel the Slider (Orcan)
+        - moved and changed muse.pro file (flo93)
+        - added update_pro.sh and update_translations.sh (flo93)
+        - added paste dialog (flo93)
+        - updated translations (flo93)
+        - moved stuff from functions.cpp out to dialogs.cpp (flo93)
+        - fixed behaviour of movePartsTotheRight(): parts which
+          begin at "start of move" aren't expanded, but moved now (flo93)
 01.09.2011:
         - Fixed tough old skeleton: Selecting 'previous/next event' in Song::execAutomationCtlPopup now moves cursor
            with exact frame resolution, all the way through via proper song->setPos > audio->msgSeek rather than
@@ -54,6 +75,7 @@
           TODO: Fix current automation values (the 'off' value).
         - Removed unused PanKnob from mixer CMakeLists. (Tim)
 29.08.2011:
+        - Fixed Robert's fixes (flo93)
         - Fixed audio automation graph editing. And now 'snaps' to discrete integer or bool types. (Tim p4.0.32)
           All control movements should update display now. Also slightly changed behaviour of Ctrl class. 
           TODO: Fix some painting corruption, improve discrete display, add transparency etc. etc.
@@ -63,6 +85,8 @@
           something fishy with moving columns (rj)
 27.08.2011:
         - Changed mousewheel behaviour, vertical scrolling is default and horizontal scrolling (shift) is reversed (rj)
+        - Added fullscreen shortcut to all editors which have full screen action (rj)
+        - Part text editor now closes when focus is lost (rj)
 17.08.2011:
         - Convert some Qt3 style coding in ComboBox to Qt4 in terms of menu entry handling. (Orcan)
         - Add mouse wheel support to ComboBox. (Orcan)

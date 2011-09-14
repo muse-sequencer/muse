@@ -27,6 +27,9 @@
 #include "al/sig.h"
 #include "cobject.h"
 
+
+#include <set>
+
 class QGridLayout;
 class QWidget;
 
@@ -51,7 +54,7 @@ class MidiEditor : public TopWin  {
       Q_OBJECT
 
       PartList* _pl;
-      std::list<int> _parts;
+      std::set<int> _parts;
       int _curDrumInstrument;  // currently selected instrument if drum
                                // editor
    protected:
@@ -70,6 +73,9 @@ class MidiEditor : public TopWin  {
       void writePartList(int, Xml&) const;
       void genPartlist();
 
+   private slots:
+      void addNewParts(const std::map< Part*, std::set<Part*> >&);
+
    public slots:
       void songChanged(int type);
       void setCurDrumInstrument(int instr);
@@ -81,7 +87,7 @@ class MidiEditor : public TopWin  {
       void curDrumInstrumentChanged(int);
 
    public:
-      MidiEditor(int, PartList*,
+      MidiEditor(ToplevelType t, int, PartList*,
          QWidget* parent = 0, const char* name = 0);
       ~MidiEditor();
 
@@ -100,6 +106,7 @@ class MidiEditor : public TopWin  {
       Part* curCanvasPart();
       WavePart* curWavePart();
       void setCurCanvasPart(Part*); 
+      void addPart(Part*);
       };
 
 #endif

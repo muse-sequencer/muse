@@ -27,6 +27,9 @@
 #include <QObject>
 #include <QStringList>
 
+#include <map>
+#include <set>
+
 #include "pos.h"
 #include "globaldefs.h"
 #include "tempo.h"
@@ -163,6 +166,8 @@ class Song : public QObject {
       ~Song();
 
       bool applyOperationGroup(Undo& group, bool doUndo=true);
+      void informAboutNewParts(const std::map< Part*, std::set<Part*> >&);
+      void informAboutNewParts(Part* orig, Part* p1, Part* p2=NULL, Part* p3=NULL, Part* p4=NULL, Part* p5=NULL, Part* p6=NULL, Part* p7=NULL, Part* p8=NULL, Part* p9=NULL);
 
       void putEvent(int pv);
       void endMsgCmd();
@@ -353,8 +358,7 @@ class Song : public QObject {
       //   Configuration
       //-----------------------------------------
 
-      //SynthI* createSynthI(const QString& sclass);
-      SynthI* createSynthI(const QString& sclass, const QString& label = QString());
+      SynthI* createSynthI(const QString& sclass, const QString& label = QString(), Track* insertAt = 0);
       
       void rescanAlsaPorts();
 
@@ -402,8 +406,8 @@ class Song : public QObject {
       void setQuantize(bool val);
       void panic();
       void seqSignal(int fd);
-      Track* addTrack(int);
-      Track* addNewTrack(QAction* action);
+      Track* addTrack(Track::TrackType type, Track* insertAt = 0);
+      Track* addNewTrack(QAction* action, Track* insertAt = 0);
       QString getScriptPath(int id, bool delivered);
       void populateScriptMenu(QMenu* menuPlugins, QObject* receiver);
 
@@ -421,6 +425,7 @@ class Song : public QObject {
       void midiPortsChanged();
       void midiNote(int pitch, int velo);  
       void controllerChanged(Track* t); 
+      void newPartsCreated(const std::map< Part*, std::set<Part*> >&);
       };
 
 extern Song* song;

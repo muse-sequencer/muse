@@ -1,7 +1,7 @@
 //=========================================================
 //  MusE
 //  Linux Music Editor
-//  $Id: app.cpp,v 1.113.2.68 2009/12/21 14:51:51 spamatica Exp $
+//  $Id: structure.cpp,v 1.113.2.68 2009/12/21 14:51:51 spamatica Exp $
 //
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
 //  (C) Copyright 2011  Robert Jonsson (rj@spamatica.se)
@@ -31,8 +31,11 @@
 #include "keyevent.h"
 #include "audio.h"
 #include "marker/marker.h"
+#include "structure.h"
+#include "globals.h"
 
-namespace MusEApp {
+#include <set>
+using std::set;
 
 //---------------------------------------------------------
 //   adjustGlobalLists
@@ -41,7 +44,7 @@ namespace MusEApp {
 //    'diff' number of ticks.
 //---------------------------------------------------------
 
-void MusE::adjustGlobalLists(Undo& operations, int startPos, int diff)
+void adjustGlobalLists(Undo& operations, int startPos, int diff)
 {
   const TempoList* t = &tempomap;
   const AL::SigList* s   = &AL::sigmap;
@@ -132,7 +135,7 @@ void MusE::adjustGlobalLists(Undo& operations, int startPos, int diff)
 //    - cut master track
 //---------------------------------------------------------
 
-void MusE::globalCut()
+void globalCut()
       {
       int lpos = song->lpos();
       int rpos = song->rpos();
@@ -141,10 +144,17 @@ void MusE::globalCut()
 
       Undo operations;
       TrackList* tracks = song->tracks();
+      bool at_least_one_selected=false;
+      
+      for (iTrack it = tracks->begin(); it != tracks->end(); ++it)
+            if ( (*it)->selected() ) {
+                  at_least_one_selected=true;
+                  break;
+                  }
       
       for (iTrack it = tracks->begin(); it != tracks->end(); ++it) {
             MidiTrack* track = dynamic_cast<MidiTrack*>(*it);
-            if (track == 0 || track->mute())
+            if (track == 0 || (at_least_one_selected && !track->selected()))
                   continue;
             PartList* pl = track->parts();
             for (iPart p = pl->begin(); p != pl->end(); ++p) {
@@ -234,55 +244,69 @@ void MusE::globalCut()
 //    - insert in master track
 //---------------------------------------------------------
 
-void MusE::globalInsert()
+void globalInsert()
       {
-      unsigned lpos = song->lpos();
-      unsigned rpos = song->rpos();
-      if (lpos >= rpos)
-            return;
+      Undo operations=movePartsTotheRight(song->lpos(), song->rpos()-song->lpos(), true);
+      song->applyOperationGroup(operations);
+      }
+
+
+Undo movePartsTotheRight(unsigned int startTicks, int moveTicks, bool only_selected, set<Track*>* tracklist)
+      {
+      if (moveTicks<=0)
+            return Undo();
 
       Undo operations;
       TrackList* tracks = song->tracks();
+      bool at_least_one_selected=false;
+      
+      for (iTrack it = tracks->begin(); it != tracks->end(); ++it)
+            if ( (*it)->selected() ) {
+                  at_least_one_selected=true;
+                  break;
+                  }
+      
       
       for (iTrack it = tracks->begin(); it != tracks->end(); ++it) {
             MidiTrack* track = dynamic_cast<MidiTrack*>(*it);
-            if (track == 0 || track->mute())
+            if ( (track == 0) ||
+                 (only_selected && at_least_one_selected && !track->selected()) ||
+                 (tracklist && tracklist->find(track)==tracklist->end()) )
                   continue;
             PartList* pl = track->parts();
             for (riPart p = pl->rbegin(); p != pl->rend(); ++p) {
                   Part* part = p->second;
                   unsigned t = part->tick();
                   int l = part->lenTick();
-                  if (t + l <= lpos)
+                  if (t + l <= startTicks)
                         continue;
-                  if (lpos >= t && lpos < (t+l)) {
+                  if (startTicks > t && startTicks < (t+l)) {
                         MidiPart* nPart = new MidiPart(*(MidiPart*)part);
-                        nPart->setLenTick(l + (rpos-lpos));
+                        nPart->setLenTick(l + moveTicks);
                         EventList* el = nPart->events();
 
                         for (riEvent i = el->rbegin(); i!=el->rend(); ++i)
                         {
-                              if (i->first < lpos-t)
+                              if (i->first < startTicks-t)
                                     break;
                               Event event  = i->second;
                               Event nEvent = i->second.clone();
-                              nEvent.setTick(nEvent.tick() + (rpos-lpos));
+                              nEvent.setTick(nEvent.tick() + moveTicks);
                               operations.push_back(UndoOp(UndoOp::ModifyEvent, nEvent, event, nPart, false, false));
                               }
                         operations.push_back(UndoOp(UndoOp::ModifyPart, part, nPart, true, true));
                         }
-                  else if (t > lpos) {
+                  else if (t >= startTicks) {
                         MidiPart* nPart = new MidiPart(*(MidiPart*)part);
-                        nPart->setTick(t + (rpos -lpos));
+                        nPart->setTick(t + moveTicks);
                         operations.push_back(UndoOp(UndoOp::ModifyPart, part, nPart, true, false));
                         }
                   }
             }
 
-      int diff = rpos - lpos;
-      adjustGlobalLists(operations, lpos, diff);
+      adjustGlobalLists(operations, startTicks, moveTicks);
 
-      song->applyOperationGroup(operations);
+      return operations;
       }
 
 
@@ -291,15 +315,23 @@ void MusE::globalInsert()
 //    - split all parts at the song position pointer
 //---------------------------------------------------------
 
-void MusE::globalSplit()
+void globalSplit()
       {
       int pos = song->cpos();
       Undo operations;
       TrackList* tracks = song->tracks();
+      bool at_least_one_selected=false;
+      
+      for (iTrack it = tracks->begin(); it != tracks->end(); ++it)
+            if ( (*it)->selected() ) {
+                  at_least_one_selected=true;
+                  break;
+                  }
+      
 
       for (iTrack it = tracks->begin(); it != tracks->end(); ++it) {
             Track* track = *it;
-            if (track == 0 || track->mute())
+            if (track == 0 || (at_least_one_selected && !track->selected()))
                   continue;
 
             PartList* pl = track->parts();
@@ -315,6 +347,8 @@ void MusE::globalSplit()
                         p1->events()->incARef(-1); // the later song->applyOperationGroup() will increment it
                         p2->events()->incARef(-1); // so we must decrement it first :/
 
+                        //song->informAboutNewParts(part, p1); // is unneccessary because of ModifyPart
+                        song->informAboutNewParts(part, p2);
                         operations.push_back(UndoOp(UndoOp::ModifyPart,part, p1, true, false));
                         operations.push_back(UndoOp(UndoOp::AddPart,p2));
                         break;
@@ -324,35 +358,3 @@ void MusE::globalSplit()
       song->applyOperationGroup(operations);
       }
 
-//---------------------------------------------------------
-//   copyRange
-//    - copy space between left and right locator position
-//      to song position pointer
-//    - dont process muted tracks
-//    - create a new part for every track containing the
-//      copied events
-//---------------------------------------------------------
-
-void MusE::copyRange()
-      {
-      QMessageBox::critical(this,
-         tr("MusE: Copy Range"),
-         tr("not implemented")
-         );
-      }
-
-//---------------------------------------------------------
-//   cutEvents
-//    - make sure that all events in a part end where the
-//      part ends
-//    - process only marked parts
-//---------------------------------------------------------
-
-void MusE::cutEvents()
-      {
-      QMessageBox::critical(this,
-         tr("MusE: Cut Events"),
-         tr("not implemented")
-         );
-      }
-} // namespace MusEApp

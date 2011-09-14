@@ -156,7 +156,7 @@ void MarkerItem::setTick(unsigned v)
 
 void MarkerView::closeEvent(QCloseEvent* e)
       {
-      emit deleted((unsigned long)this);
+      emit deleted(static_cast<TopWin*>(this));
       emit closed();
       e->accept();
       }
@@ -166,7 +166,7 @@ void MarkerView::closeEvent(QCloseEvent* e)
 //---------------------------------------------------------
 
 MarkerView::MarkerView(QWidget* parent)
-   : TopWin(parent, "markerview", Qt::Window /*| WDestructiveClose*/)
+   : TopWin(TopWin::MARKER, parent, "markerview", Qt::Window /*| WDestructiveClose*/)
       {
       //setAttribute(Qt::WA_DeleteOnClose);
       
@@ -187,14 +187,31 @@ MarkerView::MarkerView(QWidget* parent)
       
       editMenu->addAction(markerAdd);
       editMenu->addAction(markerDelete);
-
-      //---------ToolBar----------------------------------
-      tools = addToolBar(tr("marker-tools"));
-      tools->addActions(MusEGlobal::undoRedo->actions());
+      
+      
+      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      settingsMenu->addAction(subwinAction);
+      settingsMenu->addAction(shareAction);
+      settingsMenu->addAction(fullscreenAction);
+      
+      
+      // Toolbars ---------------------------------------------------------
+      QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
+      undo_tools->setObjectName("Undo/Redo tools");
+      undo_tools->addActions(MusEGlobal::undoRedo->actions());
 
       QToolBar* edit = addToolBar(tr("edit tools"));
+      edit->setObjectName("marker edit tools");
       edit->addAction(markerAdd);
       edit->addAction(markerDelete);
+
+      QToolBar* panic_toolbar = addToolBar(tr("panic"));
+      panic_toolbar->setObjectName("panic");
+      panic_toolbar->addAction(MusEGlobal::panicAction);
+
+      QToolBar* transport_toolbar = addToolBar(tr("transport"));
+      transport_toolbar->setObjectName("transport");
+      transport_toolbar->addActions(MusEGlobal::transportAction->actions());
 
       //---------------------------------------------------
       //    master
@@ -284,7 +301,6 @@ MarkerView::MarkerView(QWidget* parent)
       // bug: 2811156  	 Softsynth GUI unclosable with XFCE4 (and a few others)
       show();
       hide();
-
       }
 
 //---------------------------------------------------------
@@ -311,7 +327,10 @@ void MarkerView::readStatus(Xml& xml)
                   break;
             switch (token) {
                   case Xml::TagStart:
-                        xml.unknown("Marker");
+                        if (tag=="topwin")
+                            TopWin::readStatus(xml);
+                        else
+                            xml.unknown("Marker");
                         break;
                   case Xml::TagEnd:
                         if (tag == "marker")
@@ -329,6 +348,46 @@ void MarkerView::readStatus(Xml& xml)
 void MarkerView::writeStatus(int level, Xml& xml) const
       {
       xml.tag(level++, "marker");
+      TopWin::writeStatus(level, xml);
+      xml.tag(level, "/marker");
+      }
+
+//---------------------------------------------------------
+//   readConfiguration
+//---------------------------------------------------------
+
+void MarkerView::readConfiguration(Xml& xml)
+      {
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case Xml::TagStart:
+                        if (tag == "topwin")
+                              TopWin::readConfiguration(MARKER, xml);
+                        else
+                              xml.unknown("MarkerView");
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "marker")
+                              return;
+                  default:
+                        break;
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   writeConfiguration
+//---------------------------------------------------------
+
+void MarkerView::writeConfiguration(int level, Xml& xml)
+      {
+      xml.tag(level++, "marker");
+      TopWin::writeConfiguration(MARKER, level, xml);
       xml.tag(level, "/marker");
       }
 
