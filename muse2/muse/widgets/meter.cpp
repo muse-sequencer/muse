@@ -182,7 +182,7 @@ void Meter::setRange(double min, double max)
 //   paintEvent
 //---------------------------------------------------------
 
-void Meter::paintEvent(QPaintEvent* ev)
+void Meter::paintEvent(QPaintEvent* /*ev*/)
       {
       // TODO: Could make better use of event rectangle, for speed.
       
@@ -192,14 +192,14 @@ void Meter::paintEvent(QPaintEvent* ev)
       double range = maxScale - minScale;
       
       int fw = frameWidth();
-      /*
       int w  = width() - 2*fw;
       int h  = height() - 2*fw;
-      */
 
+      /*
       QRect rect = ev->rect();
       int w = rect.width() - 2*fw;
       int h = rect.height() - 2*fw;
+      */
       int yv;
       
       if(mtype == DBMeter)
