@@ -167,6 +167,7 @@ void KeyList::delKey(unsigned tick)
 
 void KeyList::write(int level, Xml& xml) const
       {
+      xml.tag(level, "keylist");
       for (ciKeyEvent i = begin(); i != end(); ++i)
             i->second.write(level, xml, i->first);
       xml.tag(level, "/keylist");
