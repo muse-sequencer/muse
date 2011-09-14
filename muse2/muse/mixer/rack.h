@@ -44,7 +44,8 @@ class EffectRack : public QListWidget {
     
       AudioTrack* track;
       int itemheight;
-      
+      QColor activeColor;      
+
       virtual QSize minimumSizeHint() const;
       virtual QSize sizeHint() const;
       
@@ -75,6 +76,8 @@ class EffectRack : public QListWidget {
       
       AudioTrack* getTrack() { return track; } 
       QPoint getDragPos() { return dragPos; }
+      QColor getActiveColor() { return activeColor; }
+
       };
 
 #endif

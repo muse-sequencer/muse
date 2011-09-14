@@ -84,9 +84,9 @@ void EffectRackDelegate::paint ( QPainter * painter, const QStyleOptionViewItem 
       mask.setColorAt(1, mask_edge);
       mask.setStart(QPointF(0, cr.y()));
       mask.setFinalStop(QPointF(0, cr.y() + cr.height()));
-  
+
       painter->setBrush(tr->efxPipe()->isOn(index.row()) ?
-                        option.palette.mid() :
+                        er->getActiveColor() :
                         option.palette.dark());
       painter->setPen(Qt::NoPen);
       painter->drawRoundedRect(cr, 2, 2);
@@ -160,6 +160,7 @@ EffectRack::EffectRack(QWidget* parent, AudioTrack* t)
       track = t;
       itemheight = 19;
       setFont(MusEConfig::config.fonts[1]);
+      activeColor = QColor(74, 165, 49);
 
       setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -186,7 +187,7 @@ void EffectRack::updateContents()
       for (int i = 0; i < PipelineDepth; ++i) {
             QString name = track->efxPipe()->name(i);
             item(i)->setText(name);
-            item(i)->setBackground(track->efxPipe()->isOn(i) ? palette().mid() : palette().dark());
+            item(i)->setBackground(track->efxPipe()->isOn(i) ? activeColor : palette().dark());
             item(i)->setToolTip(name == QString("empty") ? tr("effect rack") : name );
             }	
       }

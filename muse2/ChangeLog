@@ -10,6 +10,16 @@
           Added an emit selectionChanged(0) in TList::mousePressEvent.
         - Observed: Ancient bug: Track Info doesn't change if selecting multiple tracks in reverse order.
           Will need to be fixed if/when adding 'multiple track global editing'. 
+        - Made Slider::sizeHint() a const function again, so that the plugin window respects its sizeHint. (Orcan)
+        - Explicitly disabled the scale support in Slider since it wasn't really in use for a while. (Orcan)
+11.09.2011:
+        - Rewrote the rounding function for efficientcy. Moved the function into utils.cpp since it is written
+          for general purpose. (Orcan)
+        - The rounding in the meter is done in paintEvent now. I also enabled Antialiasing to make the corners
+          look nicer. Therefore I had to comment out Qt::WA_OpaquePaintEvent attributes in the meter and the
+          verticalmeter for now. Some testing needed. (Orcan)
+        - Plugin slider color codes are now generated from plugin ID numbers. (Orcan)
+        - Active plugins are colored in green in the rack. (Orcan)
 09.09.2011:
         - Removed sending of SEQM_ADD_TRACK, SEQM_REMOVE_TRACK, SEQM_CHANGE_TRACK, SEQM_REMOVE_PART, and 
            SEQM_CHANGE_PART to ALSA midi thread (which waits) from inside Audio::processMsg.

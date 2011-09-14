@@ -72,6 +72,7 @@ class Meter : public QFrame {
 
       QColor separator_color;;
       QColor peak_color;
+      int xrad, yrad;
 
    private:
       MeterType mtype;

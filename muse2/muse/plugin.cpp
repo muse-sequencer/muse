@@ -1772,6 +1772,8 @@ void PluginI::updateControllers()
     //audio->msgSetPluginCtrlVal(_track, genACnum(_id, i), controls[i].val);
     // p4.0.21 audio->msgXXX waits. Do we really need to?
     _track->setPluginCtrlVal(genACnum(_id, i), controls[i].val);  // TODO A faster bulk message
+   
+  song->controllerChange(_track);
 }
   
 //---------------------------------------------------------
@@ -3597,15 +3599,19 @@ PluginGui::PluginGui(PluginIBase* p)
                         params[i].label->setId(i);
 
                         // Let sliders all have different but unique colors
-                        uint hast = qHash(plugin->paramName(i));
-                        QColor color((uint) (hast * hast) % 16777216);
+                        // Some prime number magic
+                        uint j = i+1;
+                        uint c1 = j * 211  % 256;
+                        uint c2 = j * j * 137  % 256;
+                        uint c3 = j * j * j * 43  % 256;
+                        QColor color(c1, c2, c3);
 
                         MusEWidget::Slider* s = new MusEWidget::Slider(0, "param", Qt::Horizontal,
                            MusEWidget::Slider::None, color);
                            
                         s->setCursorHoming(true);
                         s->setId(i);
-                        //s->setFixedHeight(h);
+                        s->setSizeHint(200, 8);
                         s->setRange(dlower, dupper);
                         if(LADSPA_IS_HINT_INTEGER(range.HintDescriptor))
                           s->setStep(1.0);
@@ -3614,7 +3620,7 @@ PluginGui::PluginGui(PluginIBase* p)
                         params[i].label->setSlider((MusEWidget::Slider*)params[i].actuator);
                         }
                   //params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum));
-                  params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
+                  params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
                   if (params[i].type == GuiParam::GUI_SLIDER) {
                         //label->setFixedHeight(20);
                         //label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum));
@@ -3648,6 +3654,7 @@ PluginGui::PluginGui(PluginIBase* p)
             if (n2 > 0) {
               paramsOut = new GuiParam[n2];
 
+              int h = fm.height() - 2;
               for (int i = 0; i < n2; ++i) {
                       QLabel* label = 0;
                       LADSPA_PortRangeHint range = plugin->rangeOut(i);
@@ -3675,6 +3682,7 @@ PluginGui::PluginGui(PluginIBase* p)
 
                       m->setRange(dlower, dupper);
                       m->setVal(dval);
+                      m->setFixedHeight(h);
                       paramsOut[i].actuator = m;
 //                      paramsOut[i].label->setSlider((MusEWidget::Slider*)params[i].actuator);
                       //paramsOut[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -3687,9 +3695,6 @@ PluginGui::PluginGui(PluginIBase* p)
               }
             }
 
-
-            // p3.3.43
-            resize(280, height());
 
             grid->setColumnStretch(2, 10);
             mw->setLayout(grid);
@@ -3786,6 +3791,7 @@ void PluginGui::ctrlPressed(int param)
           //audio->msgSetPluginCtrlVal(track, id, val);
           // p4.0.21 audio->msgXXX waits. Do we really need to?
           track->setPluginCtrlVal(id, val);
+          song->controllerChange(track);
           
           track->startAutoRecord(id, val);
         }  
@@ -3805,6 +3811,7 @@ void PluginGui::ctrlPressed(int param)
           //audio->msgSetPluginCtrlVal(track, id, val);
           // p4.0.21 audio->msgXXX waits. Do we really need to?
           track->setPluginCtrlVal(id, val);
+          song->controllerChange(track);
           
           track->startAutoRecord(id, val);
         }  
@@ -3899,6 +3906,7 @@ void PluginGui::sliderChanged(double val, int param)
         //audio->msgSetPluginCtrlVal(track, id, val);
         // p4.0.21 audio->msgXXX waits. Do we really need to?
         track->setPluginCtrlVal(id, val);
+        song->controllerChange(track);
         
         track->recordAutomation(id, val);
       }  
@@ -3943,6 +3951,7 @@ void PluginGui::labelChanged(double val, int param)
         //audio->msgSetPluginCtrlVal(track, id, val);
         // p4.0.21 audio->msgXXX waits. Do we really need to?
         track->setPluginCtrlVal(id, val);
+        song->controllerChange(track);
         
         track->startAutoRecord(id, val);
       }  
@@ -4345,6 +4354,7 @@ void PluginGui::guiParamChanged(int idx)
             //audio->msgSetPluginCtrlVal(track, id, val);
             // p4.0.21 audio->msgXXX waits. Do we really need to?
             track->setPluginCtrlVal(id, val);
+            song->controllerChange(track);
             
             switch(type) 
             {
@@ -4481,6 +4491,7 @@ void PluginGui::guiSliderPressed(int idx)
       //audio->msgSetPluginCtrlVal(track, id, val);
       // p4.0.21 audio->msgXXX waits. Do we really need to?
       track->setPluginCtrlVal(id, val);
+      song->controllerChange(track);
       
       track->startAutoRecord(id, val);
       

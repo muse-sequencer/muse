@@ -115,8 +115,6 @@ class TopWin : public QMainWindow
       
       void initTopwinState();
 
-      bool initalizing; //if true, no state is saved
-  
   private slots:
       void setFullscreen(bool);
   

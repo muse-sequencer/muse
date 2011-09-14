@@ -4538,8 +4538,6 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  * 
  * CURRENT TODO
- * M o TEST pasting in editors!
- * 
  * ! o fix sigedit boxes (see also "important todo")
  *   o ticks-to-quarter spinboxes
  *   o newly created windows have to be focussed!
