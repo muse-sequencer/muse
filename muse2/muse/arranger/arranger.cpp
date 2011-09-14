@@ -38,6 +38,7 @@
 #include <QWheelEvent>
 #include <QPainter>
 //#include <QStackedWidget>
+#include "arrangerview.h"
 
 #include "arranger.h"
 #include "song.h"
@@ -111,7 +112,7 @@ void Arranger::setHeaderWhatsThis()
 //    is the central widget in app
 //---------------------------------------------------------
 
-Arranger::Arranger(QMainWindow* parent, const char* name)
+Arranger::Arranger(ArrangerView* parent, const char* name)
    : QWidget(parent)
       {
       setObjectName(name);
@@ -122,10 +123,11 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       ///program  = CTRL_VAL_UNKNOWN;
       ///pan      = -65;
       ///volume   = -1;
-      setMinimumSize(600, 50);
       showTrackinfoFlag = true;
       
       cursVal = MAXINT;
+      
+      parentWin=parent;
       
       //setFocusPolicy(Qt::StrongFocus);
       
@@ -396,7 +398,7 @@ Arranger::Arranger(QMainWindow* parent, const char* name)
       canvas->setCanvasTools(MusEWidget::arrangerTools);
       canvas->setOrigin(-offset, 0);
       canvas->setFocus();
-      //parent->setFocusProxy(canvas);   // Tim.
+      setFocusProxy(canvas);   // once removed by Tim (r735), added by flo again
 
       connect(canvas, SIGNAL(setUsedTool(int)), this, SIGNAL(setUsedTool(int)));
       connect(canvas, SIGNAL(trackChanged(Track*)), list, SLOT(selectTrack(Track*)));
@@ -761,20 +763,20 @@ void Arranger::cmd(int cmd)
             case CMD_COPY_PART:
                   ncmd = PartCanvas::CMD_COPY_PART;
                   break;
+            case CMD_COPY_PART_IN_RANGE:
+                  ncmd = PartCanvas::CMD_COPY_PART_IN_RANGE;
+                  break;
             case CMD_PASTE_PART:
                   ncmd = PartCanvas::CMD_PASTE_PART;
                   break;
             case CMD_PASTE_CLONE_PART:
                   ncmd = PartCanvas::CMD_PASTE_CLONE_PART;
                   break;
-            case CMD_PASTE_PART_TO_TRACK:
-                  ncmd = PartCanvas::CMD_PASTE_PART_TO_TRACK;
+            case CMD_PASTE_DIALOG:
+                  ncmd = PartCanvas::CMD_PASTE_DIALOG;
                   break;
-            case CMD_PASTE_CLONE_PART_TO_TRACK:
-                  ncmd = PartCanvas::CMD_PASTE_CLONE_PART_TO_TRACK;
-                  break;
-            case CMD_INSERT_PART:
-                  ncmd = PartCanvas::CMD_INSERT_PART;
+            case CMD_PASTE_CLONE_DIALOG:
+                  ncmd = PartCanvas::CMD_PASTE_CLONE_DIALOG;
                   break;
             case CMD_INSERT_EMPTYMEAS:
                   ncmd = PartCanvas::CMD_INSERT_EMPTYMEAS;

@@ -550,7 +550,7 @@ void Appearance::bgSelectionChanged(QTreeWidgetItem* item)
 	          removeBgButton->setEnabled(true);
   
       lastSelectedBgItem = item;
-      MusEGlobal::muse->arranger->getCanvas()->setBg(QPixmap(item->data(0, Qt::UserRole).toString()));
+      MusEGlobal::muse->arranger()->getCanvas()->setBg(QPixmap(item->data(0, Qt::UserRole).toString()));
       }
 
 //---------------------------------------------------------
@@ -741,7 +741,7 @@ void Appearance::ok()
 
 void Appearance::cancel()
       {
-      MusEGlobal::muse->arranger->getCanvas()->setBg(QPixmap(config->canvasBgPixmap));
+      MusEGlobal::muse->arranger()->getCanvas()->setBg(QPixmap(config->canvasBgPixmap));
       close();
       }
 
@@ -752,7 +752,7 @@ void Appearance::cancel()
 void Appearance::removeBackground()
       {
       QTreeWidgetItem* item = backgroundTree->currentItem();
-      MusEGlobal::muse->arranger->getCanvas()->setBg(QPixmap());
+      MusEGlobal::muse->arranger()->getCanvas()->setBg(QPixmap());
       user_bg->takeChild(user_bg->indexOfChild(item));
       backgroundTree->setCurrentItem (0);
       removeBgButton->setEnabled(false);
@@ -791,7 +791,7 @@ void Appearance::addBackground()
 
 void Appearance::clearBackground()
       {
-      MusEGlobal::muse->arranger->getCanvas()->setBg(QPixmap());
+      MusEGlobal::muse->arranger()->getCanvas()->setBg(QPixmap());
       backgroundTree->setCurrentItem (0);
       removeBgButton->setEnabled(false);
       }

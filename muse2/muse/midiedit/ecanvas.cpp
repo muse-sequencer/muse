@@ -394,13 +394,13 @@ void EventCanvas::viewDropEvent(QDropEvent* event)
             //event->ignore();                     // TODO CHECK Tim.
             return;
             }
-      if (event->mimeData()->hasFormat("text/x-muse-eventlist")) {
-            text = QString(event->mimeData()->data("text/x-muse-eventlist"));
+      if (event->mimeData()->hasFormat("text/x-muse-groupedeventlists")) {
+            text = QString(event->mimeData()->data("text/x-muse-groupedeventlists"));
       
             int x = editor->rasterVal(event->pos().x());
             if (x < 0)
                   x = 0;
-            paste_at(curPart, text, x);
+            paste_at(text,x,3072,false,false,curPart);
             //event->accept();  // TODO
             }
       else {

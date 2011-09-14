@@ -92,7 +92,7 @@ class MarkerView : public TopWin {
       void songChanged(int);
       
    signals:
-      void deleted(unsigned long);
+      void deleted(TopWin*);
       void closed();
 
    public:
@@ -100,6 +100,8 @@ class MarkerView : public TopWin {
       ~MarkerView();
       virtual void readStatus(Xml&);
       virtual void writeStatus(int, Xml&) const;
+      static void readConfiguration(Xml&);
+      static void writeConfiguration(int, Xml&);
       void nextMarker();
       void prevMarker();
       };

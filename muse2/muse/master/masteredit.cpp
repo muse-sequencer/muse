@@ -46,12 +46,10 @@
 #include <QLabel>
 #include <QToolBar>
 #include <QToolButton>
-#include <QSettings>
+#include <QMenuBar>
+#include <QMenu>
 
 int MasterEdit::_rasterInit = 0;
-int MasterEdit::_widthInit = 600;
-int MasterEdit::_heightInit = 400;
-QByteArray MasterEdit::_toolbarInit;
 
 //---------------------------------------------------------
 //   closeEvent
@@ -59,11 +57,7 @@ QByteArray MasterEdit::_toolbarInit;
 
 void MasterEdit::closeEvent(QCloseEvent* e)
       {
-      QSettings settings("MusE", "MusE-qt");
-      //settings.setValue("MasterEdit/geometry", saveGeometry());
-      settings.setValue("MasterEdit/windowState", saveState());
-      
-      emit deleted((unsigned long)this);
+      emit deleted(static_cast<TopWin*>(this));
       e->accept();
       }
 
@@ -100,22 +94,33 @@ void MasterEdit::songChanged(int type)
 //---------------------------------------------------------
 
 MasterEdit::MasterEdit()
-   : MidiEditor(_rasterInit, 0)
+   : MidiEditor(TopWin::MASTER, _rasterInit, 0)
       {
       setWindowTitle(tr("MusE: Mastertrack"));
       _raster = 0;      // measure
-      setMinimumSize(400, 300);
-      resize(_widthInit, _heightInit);
 
       //---------Pulldown Menu----------------------------
 //      QPopupMenu* file = new QPopupMenu(this);
 //      menuBar()->insertItem("&File", file);
 
-      //---------ToolBar----------------------------------
-      
-      tools = addToolBar(tr("Master tools"));
-      tools->setObjectName("Master tools");
-      tools->addActions(MusEGlobal::undoRedo->actions());
+      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      settingsMenu->addAction(subwinAction);
+      settingsMenu->addAction(shareAction);
+      settingsMenu->addAction(fullscreenAction);
+
+      // Toolbars ---------------------------------------------------------
+      QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
+      undo_tools->setObjectName("Undo/Redo tools");
+      undo_tools->addActions(MusEGlobal::undoRedo->actions());
+
+
+      QToolBar* panic_toolbar = addToolBar(tr("panic"));         
+      panic_toolbar->setObjectName("panic");
+      panic_toolbar->addAction(MusEGlobal::panicAction);
+
+      QToolBar* transport_toolbar = addToolBar(tr("transport"));
+      transport_toolbar->setObjectName("transport");
+      transport_toolbar->addActions(MusEGlobal::transportAction->actions());
 
       MusEWidget::EditToolBar* tools2 = new MusEWidget::EditToolBar(this, MusEWidget::PointerTool | MusEWidget::PencilTool | MusEWidget::RubberTool);
       addToolBar(tools2);
@@ -256,12 +261,7 @@ MasterEdit::MasterEdit()
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
       connect(canvas, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
 
-      if (!_toolbarInit.isEmpty())
-            restoreState(_toolbarInit);      
-      
-      QSettings settings("MusE", "MusE-qt");
-      //restoreGeometry(settings.value("MasterEdit/geometry").toByteArray());
-      restoreState(settings.value("MasterEdit/windowState").toByteArray());
+      initTopwinState();
       }
 
 //---------------------------------------------------------
@@ -350,12 +350,8 @@ void MasterEdit::readConfiguration(Xml& xml)
                   case Xml::TagStart:
                         if (tag == "raster")
                               _rasterInit = xml.parseInt();
-                        else if (tag == "width")
-                              _widthInit = xml.parseInt();
-                        else if (tag == "height")
-                              _heightInit = xml.parseInt();
-                        else if (tag == "toolbars")
-                              _toolbarInit = QByteArray::fromHex(xml.parse1().toAscii());
+                        else if (tag == "topwin")
+                              TopWin::readConfiguration(MASTER, xml);
                         else
                               xml.unknown("MasterEdit");
                         break;
@@ -376,9 +372,7 @@ void MasterEdit::writeConfiguration(int level, Xml& xml)
       {
       xml.tag(level++, "masteredit");
       xml.intTag(level, "raster", _rasterInit);
-      xml.intTag(level, "width", _widthInit);
-      xml.intTag(level, "height", _heightInit);
-      xml.strTag(level, "toolbars", _toolbarInit.toHex().data());
+      TopWin::writeConfiguration(MASTER, level, xml);
       xml.tag(level, "/masteredit");
       }
 
@@ -447,34 +441,3 @@ void MasterEdit::setTempo(int val)
       }
 
 
-//---------------------------------------------------------
-//   resizeEvent
-//---------------------------------------------------------
-
-void MasterEdit::resizeEvent(QResizeEvent* ev)
-      {
-      QWidget::resizeEvent(ev);
-      storeInitialState();
-      }
-
-//---------------------------------------------------------
-//   focusOutEvent
-//---------------------------------------------------------
-
-void MasterEdit::focusOutEvent(QFocusEvent* ev)
-      {
-      QWidget::focusOutEvent(ev);
-      storeInitialState();
-      }
-
-
-//---------------------------------------------------------
-//   storeInitialState
-//---------------------------------------------------------
-
-void MasterEdit::storeInitialState()
-      {
-      _widthInit = width();
-      _heightInit = height();
-      _toolbarInit=saveState();
-      }

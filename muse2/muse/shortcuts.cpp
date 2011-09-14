@@ -60,12 +60,15 @@ void initShortCuts()
       defShrt(SHRT_TOGGLE_LOOP,   Qt::Key_Slash, "Transport: Toggle Loop section", GLOBAL_SHRT, "toggle_loop");
       defShrt(SHRT_START_REC,     Qt::Key_Asterisk, "Transport: Toggle Record",    GLOBAL_SHRT, "toggle_rec");
       defShrt(SHRT_REC_CLEAR,     Qt::Key_Backspace, "Transport: Clear all rec enabled tracks",    GLOBAL_SHRT, "rec_clear");
-      
+      defShrt(SHRT_FULLSCREEN,       Qt::CTRL + Qt::Key_F, "Toggle fullscreen", GLOBAL_SHRT, "fullscreen");
+
       defShrt(SHRT_COPY,          Qt::CTRL + Qt::Key_C, "Edit: Copy", INVIS_SHRT, "copy");
+      defShrt(SHRT_COPY_RANGE,    Qt::CTRL + Qt::SHIFT + Qt::Key_C, "Edit: Copy in range", GLOBAL_SHRT,    "copy_range");
       defShrt(SHRT_UNDO,          Qt::CTRL + Qt::Key_Z, "Edit: Undo", INVIS_SHRT, "undo");
       defShrt(SHRT_REDO,          Qt::CTRL + Qt::Key_Y, "Edit: Redo", INVIS_SHRT, "redo");
       defShrt(SHRT_CUT,           Qt::CTRL + Qt::Key_X, "Edit: Cut", INVIS_SHRT, "cut");
       defShrt(SHRT_PASTE,         Qt::CTRL + Qt::Key_V, "Edit: Paste", INVIS_SHRT, "paste");
+      defShrt(SHRT_PASTE_DIALOG,  Qt::CTRL + Qt::SHIFT + Qt::Key_V, "Edit: Paste (with dialog)", GLOBAL_SHRT, "paste_dialog");
       defShrt(SHRT_DELETE,        Qt::Key_Delete, "Edit: Delete", INVIS_SHRT, "delete");
 
       //-----------------------------------------------------------
@@ -103,7 +106,6 @@ void initShortCuts()
       defShrt(SHRT_GLOBAL_CUT,            0, "Structure: Global cut", ARRANG_SHRT, "global_cut");
       defShrt(SHRT_GLOBAL_INSERT,         0, "Structure: Global insert", ARRANG_SHRT, "global_insert");
       defShrt(SHRT_GLOBAL_SPLIT,          0, "Structure: Global split", ARRANG_SHRT,  "global_split");
-      defShrt(SHRT_COPY_RANGE,            0, "Structure: Copy range", ARRANG_SHRT,    "copy_range");
       defShrt(SHRT_CUT_EVENTS,            0, "Structure: Cut events", ARRANG_SHRT,    "cut_events");
       //defShrt(SHRT_OPEN_MIXER,            Qt::Key_F10, "View: Open mixer window", ARRANG_SHRT, "toggle_mixer");
       defShrt(SHRT_OPEN_MIXER,            Qt::Key_F10, "View: Open mixer #1 window", ARRANG_SHRT, "toggle_mixer");
@@ -156,12 +158,10 @@ void initShortCuts()
       defShrt(SHRT_SEL_BELOW,             Qt::Key_Down, "Edit: Select nearest part on track below", ARRANG_SHRT, "sel_part_below");
       defShrt(SHRT_SEL_BELOW_ADD,         Qt::SHIFT + Qt::Key_Down, "Edit: Add nearest part on track below", ARRANG_SHRT, "sel_part_below_add");
 
-      defShrt(SHRT_INSERT,                Qt::CTRL+Qt::SHIFT+ Qt::Key_I, "Edit: Insert parts, moving time", ARRANG_SHRT, "insert_parts");
       defShrt(SHRT_INSERTMEAS,            Qt::CTRL+Qt::SHIFT+ Qt::Key_O, "Edit: Insert empty measure", ARRANG_SHRT, "insert_measure");
 
-      defShrt(SHRT_PASTE_CLONE,           Qt::CTRL+Qt::SHIFT+Qt::Key_V, "Edit: Paste clone", ARRANG_SHRT, "paste_clone");
-      defShrt(SHRT_PASTE_TO_TRACK,        Qt::CTRL+Qt::Key_B, "Edit: Paste to track", ARRANG_SHRT, "paste_to_track");
-      defShrt(SHRT_PASTE_CLONE_TO_TRACK,  Qt::CTRL+Qt::SHIFT+Qt::Key_B, "Edit: Paste clone to track", ARRANG_SHRT, "paste_clone_to_track");
+      defShrt(SHRT_PASTE_CLONE,        Qt::CTRL+Qt::Key_B, "Edit: Paste as clones", ARRANG_SHRT, "paste_as_clone"); // i changed "paste_clone" to "paste_as_clone" intendedly. otherwise muse would keep its old, conflicting definition (ctrl+shift+v instead of ctrl+b) (flo)
+      defShrt(SHRT_PASTE_CLONE_DIALOG,  Qt::CTRL+Qt::SHIFT+Qt::Key_B, "Edit: Paste as clones (with dialog)", ARRANG_SHRT, "paste_as_clone_dialog");
       
       defShrt(SHRT_SEL_TRACK_ABOVE,       Qt::CTRL + Qt::Key_Up, "Select track above", ARRANG_SHRT, "sel_track_above");
       defShrt(SHRT_SEL_TRACK_BELOW,       Qt::CTRL + Qt::Key_Down, "Select track below", ARRANG_SHRT, "sel_track_below");

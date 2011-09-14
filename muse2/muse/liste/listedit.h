@@ -83,13 +83,15 @@ class ListEdit : public MidiEditor {
       void songChanged(int);
 
    signals:
-      void deleted(unsigned long);
+      void deleted(TopWin*);
 
    public:
       ListEdit(PartList*);
       ~ListEdit();
       virtual void readStatus(Xml&);
       virtual void writeStatus(int, Xml&) const;
+      static void readConfiguration(Xml&);
+      static void writeConfiguration(int, Xml&);
       };
 
 #endif

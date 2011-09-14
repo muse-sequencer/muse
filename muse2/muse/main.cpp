@@ -23,6 +23,7 @@
 
 #include <QApplication>
 #include <QDir>
+#include <QFile>
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QLocale>
@@ -118,6 +119,8 @@ class MuseApplication : public QApplication {
 
       void setMuse(MusEApp::MusE* m) {
             muse = m;
+            
+            connect(this,SIGNAL(focusChanged(QWidget*,QWidget*)),muse,SLOT(focusChanged(QWidget*,QWidget*)));
 #ifdef HAVE_LASH
             if(MusEGlobal::useLASH)
               startTimer (300);
@@ -258,6 +261,28 @@ int main(int argc, char* argv[])
       QDir cPath = QDir(MusEGlobal::configPath);
       if (! cPath.exists())
             cPath.mkpath(".");
+      
+      QFile cConf (MusEGlobal::configName);
+      QFile cConfTempl (MusEGlobal::museGlobalShare + QString("/templates/MusE.cfg"));
+      if (! cConf.exists())
+      {
+        printf ("creating new config...\n");
+        if (cConfTempl.copy(MusEGlobal::configName))
+          printf ("  success.\n");
+        else
+          printf ("  FAILED!\n");
+      }
+
+      QFile cConfQt (MusEGlobal::configPath + QString("/MusE-qt.conf"));
+      QFile cConfTemplQt (MusEGlobal::museGlobalShare + QString("/templates/MusE-qt.conf"));
+      if (! cConfQt.exists())
+      {
+        printf ("creating new qt config...\n");
+        if (cConfTemplQt.copy(cConfQt.fileName()))
+          printf ("  success.\n");
+        else
+          printf ("  FAILED!\n");
+      }
 
 #ifdef HAVE_LASH
       lash_args_t * lash_args = 0;

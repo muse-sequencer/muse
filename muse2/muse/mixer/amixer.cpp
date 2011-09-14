@@ -35,6 +35,7 @@
 #include <QAction>
 
 #include "app.h"
+#include "helper.h"
 #include "icons.h"
 #include "amixer.h"
 #include "song.h"
@@ -44,10 +45,6 @@
 
 #include "gconfig.h"
 #include "xml.h"
-
-namespace MusEApp {
-extern QActionGroup* populateAddTrack(QMenu* addTrack);
-}
 
 #define __WIDTH_COMPENSATION 4
 
@@ -171,7 +168,8 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEConfig::MixerConfig* c)
       setWindowIcon(*museIcon);
 
       QMenu* menuConfig = menuBar()->addMenu(tr("&Create"));
-      MusEApp::populateAddTrack(menuConfig);
+      MusEUtil::populateAddTrack(menuConfig);
+      connect(menuConfig, SIGNAL(triggered(QAction *)), song, SLOT(addNewTrack(QAction *)));
       
       QMenu* menuView = menuBar()->addMenu(tr("&View"));
       routingId = menuView->addAction(tr("Routing"), this, SLOT(toggleRouteDialog()));
@@ -254,6 +252,12 @@ bool AudioMixerApp::event(QEvent* event)
   return false;       
 }
 */
+
+//void AudioMixerApp::addNewTrack(QAction* action)
+//{
+  //song->addNewTrack(action, MusEGlobal::muse->arranger()->curTrack());  // Insert at current selected track.
+//  song->addNewTrack(action);  // Add at end.
+//}
 
 void AudioMixerApp::setSizing()
 {

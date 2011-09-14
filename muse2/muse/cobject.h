@@ -28,8 +28,14 @@
 
 #include <QMainWindow>
 #include <list>
+#include <QByteArray>
+#include <QString>
 
+class QMdiSubWindow;
+class QFocusEvent;
+class QToolBar;
 class Xml;
+class QAction;
 
 //---------------------------------------------------------
 //   TopWin
@@ -40,40 +46,91 @@ class TopWin : public QMainWindow
       Q_OBJECT
 
    public:
+      enum ToplevelType { PIANO_ROLL=0, LISTE, DRUM, MASTER, WAVE, //there shall be no
+         LMASTER, CLIPLIST, MARKER, SCORE, ARRANGER,               //gaps in the enum!
+#ifdef PATCHBAY
+         M_PATCHBAY,
+#endif /* PATCHBAY */
+         TOPLEVELTYPE_LAST_ENTRY //this has to be always the last entry
+         };
+
+      ToplevelType type() const { return _type; }
+      static QString typeName(ToplevelType t);
+
+
       virtual void readStatus(Xml&);
       virtual void writeStatus(int, Xml&) const;
-      TopWin(QWidget* parent=0, const char* name=0,
-         Qt::WindowFlags f = Qt::Window);
-      };
 
-//---------------------------------------------------------
-//   Toplevel
-//---------------------------------------------------------
+      static void readConfiguration(ToplevelType, Xml&);
+      static void writeConfiguration(ToplevelType, int, Xml&);
+      
+      
+      bool isMdiWin() const;
+      QMdiSubWindow* getMdiWin() const { return mdisubwin; }
 
-class Toplevel {
-   public:
-      enum ToplevelType { PIANO_ROLL, LISTE, DRUM, MASTER, WAVE, 
-         LMASTER, CLIPLIST, MARKER, SCORE
-#ifdef PATCHBAY
-         , M_PATCHBAY
-#endif /* PATCHBAY */
-         };
-      Toplevel(ToplevelType t, unsigned long obj, TopWin* cobj) {
-            _type = t;
-            _object = obj;
-            _cobject = cobj;
-            }
-      ToplevelType type() const { return _type; }
-      unsigned long object()        const { return _object; }
-      TopWin* cobject()   const { return _cobject; }
+      TopWin(ToplevelType t, QWidget* parent=0, const char* name=0, Qt::WindowFlags f = Qt::Window);
+         
+      bool sharesToolsAndMenu() const { return _sharesToolsAndMenu; }
+      const std::list<QToolBar*>& toolbars() { return _toolbars; }
+      
+      void addToolBar(QToolBar* toolbar);
+      QToolBar* addToolBar(const QString& title);
+      
+      void resize(int w, int h);
+      void resize(const QSize&);
+ 
+      static bool _sharesWhenFree[TOPLEVELTYPE_LAST_ENTRY];
+      static bool _sharesWhenSubwin[TOPLEVELTYPE_LAST_ENTRY];
+      static bool _defaultSubwin[TOPLEVELTYPE_LAST_ENTRY];
+ 
+  private:
+      QMdiSubWindow* mdisubwin;
+      bool _sharesToolsAndMenu;
+      std::list<QToolBar*> _toolbars;
 
-   private:
+      void insertToolBar(QToolBar*, QToolBar*);
+      void insertToolBarBreak(QToolBar*);
+      void removeToolBar(QToolBar*);
+      void removeToolBarBreak(QToolBar*);
+      void addToolBar(Qt::ToolBarArea, QToolBar*);
+
+      virtual QMdiSubWindow* createMdiWrapper();
+      
+      static void initConfiguration();
+
+  protected:
+      QAction* subwinAction;
+      QAction* shareAction;
+      QAction* fullscreenAction;
+
       ToplevelType _type;
-      unsigned long _object;
-      TopWin* _cobject;
+
+      static int _widthInit[TOPLEVELTYPE_LAST_ENTRY];
+      static int _heightInit[TOPLEVELTYPE_LAST_ENTRY];
+      static QByteArray _toolbarNonsharedInit[TOPLEVELTYPE_LAST_ENTRY];
+      static QByteArray _toolbarSharedInit[TOPLEVELTYPE_LAST_ENTRY];
+      static bool initInited;
+      
+      QByteArray _savedToolbarState;
+      
+      void initTopwinState();
+
+  private slots:
+      void setFullscreen(bool);
+  
+  public slots:
+      virtual void hide();
+      virtual void show();
+      virtual void setVisible(bool);
+      void setIsMdiWin(bool);
+      void shareToolsAndMenu(bool);
+      void restoreMainwinState();
+      void storeInitialState() const;
+  
       };
 
-typedef std::list <Toplevel> ToplevelList;
+
+typedef std::list <TopWin*> ToplevelList;
 typedef ToplevelList::iterator iToplevel;
 typedef ToplevelList::const_iterator ciToplevel;
 

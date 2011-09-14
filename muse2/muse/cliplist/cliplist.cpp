@@ -22,6 +22,9 @@
 //=========================================================
 
 #include <QCloseEvent>
+#include <QMenuBar>
+#include <QMenu>
+#include <QToolBar>
 
 #include "cliplist.h"
 #include "song.h"
@@ -118,7 +121,7 @@ QString ClipItem::text(int col) const
 //---------------------------------------------------------
 
 ClipListEdit::ClipListEdit(QWidget* parent)
-   : TopWin(parent, "cliplist", Qt::Window)
+   : TopWin(TopWin::CLIPLIST, parent, "cliplist", Qt::Window)
       {
       //setAttribute(Qt::WA_DeleteOnClose);
       setWindowTitle(tr("MusE: Clip List Editor"));
@@ -127,6 +130,25 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       setCentralWidget(editor);
 
       //editor->view->setColumnAlignment(COL_REFS, Qt::AlignRight);
+      
+      // Toolbars ---------------------------------------------------------
+      QToolBar* undo_tools=addToolBar(tr("Undo/Redo tools"));
+      undo_tools->setObjectName("Undo/Redo tools");
+      undo_tools->addActions(MusEGlobal::undoRedo->actions());
+
+
+      QToolBar* panic_toolbar = addToolBar(tr("panic"));         
+      panic_toolbar->setObjectName("panic");
+      panic_toolbar->addAction(MusEGlobal::panicAction);
+
+      QToolBar* transport_toolbar = addToolBar(tr("transport"));
+      transport_toolbar->setObjectName("transport");
+      transport_toolbar->addActions(MusEGlobal::transportAction->actions());
+
+      QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      settingsMenu->addAction(subwinAction);      
+      settingsMenu->addAction(shareAction);      
+      settingsMenu->addAction(fullscreenAction);      
       
       QFontMetrics fm(editor->view->font());
       int fw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth,0, this); // ddskrjo 0
@@ -170,7 +192,7 @@ void ClipListEdit::updateList()
 
 void ClipListEdit::closeEvent(QCloseEvent* e)
       {
-      emit deleted((unsigned long)this);
+      emit deleted(static_cast<TopWin*>(this));
       e->accept();
       }
 
@@ -223,6 +245,45 @@ void ClipListEdit::writeStatus(int level, Xml& xml) const
       xml.tag(level++, "cliplist");
       TopWin::writeStatus(level, xml);
       xml.etag(level, "cliplist");
+      }
+
+//---------------------------------------------------------
+//   readConfiguration
+//---------------------------------------------------------
+
+void ClipListEdit::readConfiguration(Xml& xml)
+      {
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case Xml::TagStart:
+                        if (tag == "topwin")
+                              TopWin::readConfiguration(CLIPLIST, xml);
+                        else
+                              xml.unknown("ClipListEdit");
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "cliplistedit")
+                              return;
+                  default:
+                        break;
+                  }
+            }
+      }
+
+//---------------------------------------------------------
+//   writeConfiguration
+//---------------------------------------------------------
+
+void ClipListEdit::writeConfiguration(int level, Xml& xml)
+      {
+      xml.tag(level++, "cliplistedit");
+      TopWin::writeConfiguration(CLIPLIST, level, xml);
+      xml.tag(level, "/cliplistedit");
       }
 
 //---------------------------------------------------------

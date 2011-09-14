@@ -55,6 +55,7 @@
 #include "audio.h"
 #include "instruments/minstrument.h"
 #include "app.h"
+#include "helper.h"
 #include "gconfig.h"
 #include "event.h"
 #include "midiedit/drummap.h"
@@ -65,10 +66,6 @@
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
 #endif
-
-namespace MusEApp {
-extern QMenu* populateAddSynth(QWidget* parent);
-}
 
 static const int MIN_TRACKHEIGHT = 20;
 static const int WHEEL_DELTA = 120;
@@ -993,105 +990,44 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
       Track* t    = y2Track(y + ypos);
 
+      // FIXME Observed: Ancient bug: Track Info doesn't change if selecting multiple tracks in reverse order.
+      // Will need to be fixed if/when adding 'multiple track global editing'. 
+      
       TrackColumn col = TrackColumn(header->logicalIndexAt(x));
       if (t == 0) {
             if (button == Qt::RightButton) {
                   QMenu* p = new QMenu;
-                  //p->clear();
-                  QAction* midi = p->addAction(*addtrack_addmiditrackIcon,
-					       tr("Add Midi Track"));
-		  midi->setData(Track::MIDI);
-                  QAction* drum = p->addAction(*addtrack_drumtrackIcon,
-					       tr("Add Drum Track"));
-		  drum->setData(Track::DRUM);
-                  QAction* wave = p->addAction(*addtrack_wavetrackIcon,
-						tr("Add Wave Track"));
-		  wave->setData(Track::WAVE);
-                  QAction* aoutput = p->addAction(*addtrack_audiooutputIcon,
-						  tr("Add Output"));
-		  aoutput->setData(Track::AUDIO_OUTPUT);
-                  QAction* agroup = p->addAction(*addtrack_audiogroupIcon,
-						 tr("Add Group"));
-		  agroup->setData(Track::AUDIO_GROUP);
-                  QAction* ainput = p->addAction(*addtrack_audioinputIcon,
-						 tr("Add Input"));
-		  ainput->setData(Track::AUDIO_INPUT);
-                  QAction* aaux = p->addAction(*addtrack_auxsendIcon,
-					       tr("Add Aux Send"));
-		  aaux->setData(Track::AUDIO_AUX);
+                  MusEUtil::populateAddTrack(p);
                   
-                  // Create a sub-menu and fill it with found synth types. Make p the owner.
-                  QMenu* synp = MusEApp::populateAddSynth(p);
-		  synp->setIcon(*synthIcon);
-		  synp->setTitle(QT_TRANSLATE_NOOP("@default", "Add Synth"));
-
-                  // Add the 'Add Synth' sub-menu to the menu.
-                  p->addMenu(synp);
-
                   // Show the menu
                   QAction* act = p->exec(ev->globalPos(), 0);
 
                   // Valid click?
                   if(act)
                   {
-                    int n = act->data().toInt();
-                    // Valid item?
-                    if((n >= 0) && ((Track::TrackType)n != Track::AUDIO_SOFTSYNTH))
+                    t = song->addNewTrack(act);  // Add at end of list.
+                    if(t)
                     {
-                      // Synth sub-menu id?
-                      if(n >= MENU_ADD_SYNTH_ID_BASE)
-                      {
-                        n -= MENU_ADD_SYNTH_ID_BASE;
-                        //if(n < synthis.size())
-                        //  t = song->createSynthI(synthis[n]->baseName());
-                        //if((n - MENU_ADD_SYNTH_ID_BASE) < (int)synthis.size())
-                        if(n < (int)synthis.size())
-                        {
-                          //t = song->createSynthI(synp->text(n));
-                          //t = song->createSynthI(synthis[n]->name());                        
-                          t = song->createSynthI(synthis[n]->baseName(), synthis[n]->name());
-                          
-                          if(t)
-                          {
-                            // Add instance last in midi device list.
-                            for (int i = 0; i < MIDI_PORTS; ++i) 
-                            {
-                              MidiPort* port  = &midiPorts[i];
-                              MidiDevice* dev = port->device();
-                              if (dev==0) 
-                              {
-                                midiSeq->msgSetMidiDevice(port, (SynthI*)t);
-                                MusEGlobal::muse->changeConfig(true);     // save configuration file
-                                song->update();
-                                break;
-                              }
-                            }  
-                          }
-                        }  
-                      }  
-                      // Normal track.
-                      else
-                        t = song->addTrack((Track::TrackType)n);
-                      
-                      if(t)
-                      {
-                        song->deselectTracks();
-                        t->setSelected(true);
-  
-                        ///emit selectionChanged();
-                        emit selectionChanged(t);
-                        adjustScrollbar();
-                      }  
-                    }
+                      song->deselectTracks();
+                      t->setSelected(true);
+
+                      ///emit selectionChanged();
+                      emit selectionChanged(t);
+                      adjustScrollbar();
+                    }  
                   }
                   
                   // Just delete p, and all its children will go too, right?
                   //delete synp;
                   delete p;
-                 }
+            }
             else if (button == Qt::LeftButton) {
-              if (!ctrl) song->deselectTracks();
-              }
+              if (!ctrl) 
+              {
+                song->deselectTracks();
+                emit selectionChanged(0);
+              }  
+            }
             return;
             }
 
@@ -1297,18 +1233,28 @@ void TList::mousePressEvent(QMouseEvent* ev)
                         mode = NORMAL;
                         QMenu* p = new QMenu;
                         //p->clear();
-                        p->addAction(QIcon(*automation_clear_dataIcon), tr("Delete Track"))->setData(0);
-                        p->addAction(QIcon(*track_commentIcon), tr("Track Comment"))->setData(1);
+                        // Leave room for normal track IDs - base these at AUDIO_SOFTSYNTH.
+                        p->addAction(QIcon(*automation_clear_dataIcon), tr("Delete Track"))->setData(Track::AUDIO_SOFTSYNTH + 1);
+                        p->addAction(QIcon(*track_commentIcon), tr("Track Comment"))->setData(Track::AUDIO_SOFTSYNTH + 2);
+                        p->addSeparator();
+                        QMenu* pnew = new QMenu(p);
+                        pnew->setTitle(tr("Insert Track"));
+                        pnew->setIcon(QIcon(*edit_track_addIcon));
+                        MusEUtil::populateAddTrack(pnew);
+                        p->addMenu(pnew);
                         QAction* act = p->exec(ev->globalPos(), 0);
                         if (act) {
                               int n = act->data().toInt();
-                              switch (n) {
-                                    case 0:     // delete track
+                              if(n >= Track::AUDIO_SOFTSYNTH && n < MENU_ADD_SYNTH_ID_BASE)
+                              {
+                                n -= Track::AUDIO_SOFTSYNTH;
+                                switch (n) {
+                                    case 1:     // delete track
                                           song->removeTrack0(t);
                                           audio->msgUpdateSoloStates();
                                           break;
 
-                                    case 1:     // show track comment
+                                    case 2:     // show track comment
                                           {
                                           MusEWidget::TrackComment* tc = new MusEWidget::TrackComment(t, 0);
                                           tc->show();
@@ -1320,8 +1266,19 @@ void TList::mousePressEvent(QMouseEvent* ev)
                                           printf("action %d\n", n);
                                           break;
                                     }
-
                               }
+                              else
+                              {
+                                t = song->addNewTrack(act, t);  // Let addNewTrack handle it. Insert before clicked-on track 't'.
+                                if(t)
+                                {
+                                  song->deselectTracks();
+                                  t->setSelected(true);
+                                  emit selectionChanged(t);
+                                  adjustScrollbar();
+                                }  
+                              }
+                            }
                         delete p;
                         }
                   break;
@@ -1405,24 +1362,24 @@ void TList::mousePressEvent(QMouseEvent* ev)
 //   selectTrack
 //---------------------------------------------------------
 void TList::selectTrack(Track* tr)
-      {
-      song->deselectTracks();
-      tr->setSelected(true);
-      
+{
+    song->deselectTracks();
 
-      // rec enable track if expected
-      TrackList recd = getRecEnabledTracks();
-      if (recd.size() == 1 && MusEConfig::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
-        song->setRecordFlag((Track*)recd.front(),false);
-        song->setRecordFlag(tr,true);
-      }
+    if (tr) {
+        tr->setSelected(true);
 
-      // By T356. Force a redraw for wave tracks, since it does not seem to happen.
-      //if(!tr->isMidiTrack())
-        redraw();
-      ///emit selectionChanged();
-      emit selectionChanged(tr);
-      }
+
+        // rec enable track if expected
+        TrackList recd = getRecEnabledTracks();
+        if (recd.size() == 1 && MusEConfig::config.moveArmedCheckBox) { // one rec enabled track, move rec enabled with selection
+            song->setRecordFlag((Track*)recd.front(),false);
+            song->setRecordFlag(tr,true);
+        }
+    }
+
+    redraw();
+    emit selectionChanged(tr);
+}
 
 //---------------------------------------------------------
 //   selectTrackAbove

@@ -162,12 +162,13 @@ void Song::setSig(const AL::TimeSignature& sig)
 //---------------------------------------------------------
 //    addNewTrack
 //    Called from GUI context
+//    If insertAt is valid, inserts before insertAt. Else at the end after all tracks.
 //    Besides normal track types, n includes synth menu ids from populateAddTrack()
 //---------------------------------------------------------
 
-Track* Song::addNewTrack(QAction* action)
+Track* Song::addNewTrack(QAction* action, Track* insertAt)
 {
-  int n = action->data().toInt();
+    int n = action->data().toInt();
     // Ignore negative numbers since this slot could be called by a menu or list etc. passing -1.
     if(n < 0)
       return 0;                  
@@ -176,45 +177,42 @@ Track* Song::addNewTrack(QAction* action)
     if(n >= MENU_ADD_SYNTH_ID_BASE)
     {
       n -= MENU_ADD_SYNTH_ID_BASE;
-      if(n < (int)synthis.size())
-      {
-        //SynthI* si = createSynthI(synthis[n]->baseName());
-        //SynthI* si = createSynthI(synthis[n]->name());
-        SynthI* si = createSynthI(synthis[n]->baseName(), synthis[n]->name());
-        if(!si)
-          return 0;
+      if(n >= (int)synthis.size())
+        return 0;
         
-        // Add instance last in midi device list.
-        for (int i = 0; i < MIDI_PORTS; ++i) 
+      SynthI* si = createSynthI(synthis[n]->baseName(), synthis[n]->name(), insertAt);
+      if(!si)
+        return 0;
+      
+      // Add instance last in midi device list.
+      for (int i = 0; i < MIDI_PORTS; ++i) 
+      {
+        MidiPort* port  = &midiPorts[i];
+        MidiDevice* dev = port->device();
+        if (dev==0) 
         {
-          MidiPort* port  = &midiPorts[i];
-          MidiDevice* dev = port->device();
-          if (dev==0) 
-          {
-            midiSeq->msgSetMidiDevice(port, si);
-	    MusEGlobal::muse->changeConfig(true);     // save configuration file
-            deselectTracks();
-            si->setSelected(true);
-            update();
-            return si;
-          }
+          midiSeq->msgSetMidiDevice(port, si);
+          MusEGlobal::muse->changeConfig(true);     // save configuration file
+          deselectTracks();
+          si->setSelected(true);
+          update();
+          return si;
         }
-        deselectTracks();
-        si->setSelected(true);
-        update(SC_SELECTION);
-        return si;
-      }  
-      else 
-        return 0;  
+      }
+      deselectTracks();
+      si->setSelected(true);
+      update(SC_SELECTION);
+      return si;
     }  
     // Normal track.
     else
     {
-      // Ignore AUDIO_SOFTSYNTH, now that we have it as the synth menu id, since addTrack doesn't like it.
-      if((Track::TrackType)n == Track::AUDIO_SOFTSYNTH)
+      // Ignore AUDIO_SOFTSYNTH (or anything greater, to allow for other entries in some menu), 
+      //  now that we have it as the synth menu id, since addTrack doesn't like it.
+      if((Track::TrackType)n >= Track::AUDIO_SOFTSYNTH)
         return 0;
       
-      Track* t = addTrack((Track::TrackType)n);
+      Track* t = addTrack((Track::TrackType)n, insertAt);
       deselectTracks();
       t->setSelected(true);
       update(SC_SELECTION);
@@ -226,11 +224,12 @@ Track* Song::addNewTrack(QAction* action)
 //---------------------------------------------------------
 //    addTrack
 //    called from GUI context
+//    type is track type
+//    If insertAt is valid, inserts before insertAt. Else at the end after all tracks.
 //---------------------------------------------------------
 
-Track* Song::addTrack(int t)
+Track* Song::addTrack(Track::TrackType type, Track* insertAt)
       {
-      Track::TrackType type = (Track::TrackType) t;
       Track* track = 0;
       int lastAuxIdx = _auxs.size();
       switch(type) {
@@ -270,9 +269,12 @@ Track* Song::addTrack(int t)
                   abort();
             }
       track->setDefaultName();
-      insertTrack1(track, -1);
-      msgInsertTrack(track, -1, true);
-      insertTrack3(track, -1);
+      
+      int idx = insertAt ? _tracks.index(insertAt) : -1;
+      
+      insertTrack1(track, idx);
+      msgInsertTrack(track, idx, true);
+      insertTrack3(track, idx);
 
       // Add default track <-> midiport routes. 
       if(track->isMidiTrack()) 
@@ -3927,3 +3929,26 @@ QString Song::getScriptPath(int id, bool isdelivered)
       return path;
 }
 
+void Song::informAboutNewParts(const std::map< Part*, std::set<Part*> >& param)
+{
+  emit newPartsCreated(param);
+}
+
+void Song::informAboutNewParts(Part* orig, Part* p1, Part* p2, Part* p3, Part* p4, Part* p5, Part* p6, Part* p7, Part* p8, Part* p9)
+{
+  std::map< Part*, std::set<Part*> > temp;
+  
+  temp[orig].insert(p1);
+  temp[orig].insert(p2);
+  temp[orig].insert(p3);
+  temp[orig].insert(p4);
+  temp[orig].insert(p5);
+  temp[orig].insert(p6);
+  temp[orig].insert(p7);
+  temp[orig].insert(p8);
+  temp[orig].insert(p9);
+  temp[orig].erase(static_cast<Part*>(NULL));
+  temp[orig].erase(orig);
+  
+  informAboutNewParts(temp);
+}

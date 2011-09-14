@@ -40,6 +40,9 @@
 
 #include "fastlog.h"
 #include "widgets/tools.h"
+#include "arranger.h"
+#include "arrangerview.h"
+#include "structure.h"
 #include "pcanvas.h"
 #include "midieditor.h"
 #include "globals.h"
@@ -58,10 +61,16 @@
 #include "midi.h"
 #include "midictrl.h"
 #include "utils.h"
+#include "dialogs.h"
+#include "widgets/pastedialog.h"
 
 //#define ABS(x)  ((x) < 0) ? -(x) : (x))
 //#define ABS(x) (x>=0?x:-x)
 #define ABS(x) (abs(x))
+
+using std::set;
+
+int get_paste_len();
 
 //---------------------------------------------------------
 //   colorRect
@@ -172,15 +181,19 @@ void PartCanvas::leaveEvent(QEvent*)
 void PartCanvas::returnPressed()
       {
       lineEditor->hide();
-      Part* oldPart = editPart->part();
-      Part* newPart = oldPart->clone();
-      //printf("PartCanvas::returnPressed before msgChangePart oldPart refs:%d Arefs:%d newPart refs:%d Arefs:%d\n", oldPart->events()->refCount(), oldPart->events()->arefCount(), newPart->events()->refCount(), newPart->events()->arefCount());
-      
-      newPart->setName(lineEditor->text());
-      // Indicate do undo, and do port controller values but not clone parts. 
-      audio->msgChangePart(oldPart, newPart, true, true, false);
-      
-      editMode = false;
+      if (editMode) {
+          //this check is neccessary, because it returnPressed may be called
+          //twice. the second call would cause a crash, however!
+          Part* oldPart = editPart->part();
+          Part* newPart = oldPart->clone();
+          //printf("PartCanvas::returnPressed before msgChangePart oldPart refs:%d Arefs:%d newPart refs:%d Arefs:%d\n", oldPart->events()->refCount(), oldPart->events()->arefCount(), newPart->events()->refCount(), newPart->events()->arefCount());
+          
+          newPart->setName(lineEditor->text());
+          // Indicate do undo, and do port controller values but not clone parts. 
+          audio->msgChangePart(oldPart, newPart, true, true, false);
+          
+          editMode = false;
+          }
       }
 
 //---------------------------------------------------------
@@ -203,6 +216,7 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
                   if (lineEditor == 0) {
                         lineEditor = new QLineEdit(this);
                         lineEditor->setFrame(true);
+                        connect(lineEditor, SIGNAL(editingFinished()),SLOT(returnPressed()));
                         }
                   editMode = true;
                   lineEditor->setGeometry(r);
@@ -335,7 +349,7 @@ UndoOp PartCanvas::moveItem(MusEWidget::CItem* item, const QPoint& newpos, DragT
             ntrack = tracks->size();
             if (MusEGlobal::debugMsg)
                 printf("PartCanvas::moveItem - add new track\n");
-            Track* newTrack = song->addTrack(int(type));
+            Track* newTrack = song->addTrack(type, false);  // Add at end of list.
             if (type == Track::WAVE) {
                   WaveTrack* st = (WaveTrack*) track;
                   WaveTrack* dt = (WaveTrack*) newTrack;
@@ -648,17 +662,17 @@ QMenu* PartCanvas::genItemPopup(MusEWidget::CItem* item)
       partPopup->addSeparator();
       switch(trackType) {
             case Track::MIDI: {
-                  partPopup->addAction(MusEGlobal::muse->startPianoEditAction);
-                  partPopup->addMenu(MusEGlobal::muse->scoreSubmenu);
-                  partPopup->addAction(MusEGlobal::muse->startScoreEditAction);
-                  partPopup->addAction(MusEGlobal::muse->startListEditAction);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startPianoEditAction);
+                  partPopup->addMenu(MusEGlobal::muse->arranger()->parentWin->scoreSubmenu);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startScoreEditAction);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startListEditAction);
                   QAction *act_mexport = partPopup->addAction(tr("save part to disk"));
                   act_mexport->setData(16);
                   }
                   break;
             case Track::DRUM: {
-                  partPopup->addAction(MusEGlobal::muse->startDrumEditAction);
-                  partPopup->addAction(MusEGlobal::muse->startListEditAction);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startDrumEditAction);
+                  partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startListEditAction);
                   QAction *act_dexport = partPopup->addAction(tr("save part to disk"));
                   act_dexport->setData(16);
                   }
@@ -705,6 +719,7 @@ void PartCanvas::itemPopup(MusEWidget::CItem* item, int n, const QPoint& pt)
                   if (lineEditor == 0) {
                         lineEditor = new QLineEdit(this);
                         lineEditor->setFrame(true);
+                        connect(lineEditor, SIGNAL(editingFinished()),SLOT(returnPressed()));
                         }
                   lineEditor->setText(editPart->name());
                   lineEditor->setFocus();
@@ -846,25 +861,32 @@ void PartCanvas::mousePress(QMouseEvent* event)
             }
       QPoint pt = event->pos();
       MusEWidget::CItem* item = items.find(pt);
-      if (item == 0 && _tool!=MusEWidget::AutomationTool)
-            return;
+
+      //if (item == 0 && _tool!=MusEWidget::AutomationTool) // FINDMICHJETZT. neccessary? (flo93)
+      //      return;
+
       switch (_tool) {
             default:
-                  emit trackChanged(item->part()->track());
+                  if (item)
+                      emit trackChanged(item->part()->track());
+                  else
+                      emit trackChanged(NULL);
                   break;
             case MusEWidget::CutTool:
-                  splitItem(item, pt);
+                  if (item) splitItem(item, pt);
                   break;
             case MusEWidget::GlueTool:
-                  glueItem(item);
+                  if (item) glueItem(item);
                   break;
             case MusEWidget::MuteTool:
                   {
-                  NPart* np = (NPart*) item;
-                  Part*  p = np->part();
-                  p->setMute(!p->mute());
-                  redraw();
-                  break;
+                  if (item) {
+                      NPart* np = (NPart*) item;
+                      Part*  p = np->part();
+                      p->setMute(!p->mute());
+                      redraw();
+                      break;
+                      }
                   }
             case MusEWidget::AutomationTool:
                     if (automation.controllerState != doNothing)
@@ -943,7 +965,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
             {
             if ( key == Qt::Key_Return || key == Qt::Key_Enter ) 
                   {
-                  returnPressed();
+                  //returnPressed(); commented out by flo
                   return;
                   }
             else if ( key == Qt::Key_Escape )
@@ -2588,21 +2610,39 @@ void PartCanvas::cmd(int cmd)
             case CMD_COPY_PART:
                   copy(&pl);
                   break;
+            case CMD_COPY_PART_IN_RANGE:
+                  copy_in_range(&pl);
+                  break;
             case CMD_PASTE_PART:
-                  paste(false, false);
-                  break;
-            case CMD_PASTE_CLONE_PART:
-                  paste(true, false);
-                  break;
-            case CMD_PASTE_PART_TO_TRACK:
                   paste();
                   break;
-            case CMD_PASTE_CLONE_PART_TO_TRACK:
+            case CMD_PASTE_CLONE_PART:
                   paste(true);
                   break;
-            case CMD_INSERT_PART:
-                  paste(false, false, true);
+            case CMD_PASTE_DIALOG:
+            case CMD_PASTE_CLONE_DIALOG:
+            {
+                  unsigned temp_begin = AL::sigmap.raster1(song->vcpos(),0);
+                  unsigned temp_end = AL::sigmap.raster2(temp_begin + get_paste_len(), 0);
+                  paste_dialog->raster = temp_end - temp_begin;
+                  paste_dialog->clone = (cmd == CMD_PASTE_CLONE_DIALOG);
+                  
+                  if (paste_dialog->exec())
+                  {
+                    paste_mode_t paste_mode;
+                    switch (paste_dialog->insert_method)
+                    {
+                      case 0: paste_mode=PASTEMODE_MIX; break;
+                      case 1: paste_mode=PASTEMODE_MOVEALL; break;
+                      case 2: paste_mode=PASTEMODE_MOVESOME; break;
+                    }
+
+                    paste(paste_dialog->clone, paste_mode, paste_dialog->all_in_one_track,
+                          paste_dialog->number, paste_dialog->raster);
+                  }
+                  
                   break;
+            }
             case CMD_INSERT_EMPTYMEAS:
                   int startPos=song->vcpos();
                   int oneMeas=AL::sigmap.ticksMeasure(startPos);
@@ -2616,6 +2656,70 @@ void PartCanvas::cmd(int cmd)
 //   copy
 //    cut copy paste
 //---------------------------------------------------------
+
+void PartCanvas::copy_in_range(PartList* pl_)
+{
+  PartList pl;
+  PartList result_pl;
+  unsigned int lpos = song->lpos();
+  unsigned int rpos = song->rpos();
+  
+  if (pl_->empty())
+  {
+    for (MusEWidget::iCItem i = items.begin(); i != items.end(); ++i)
+    {
+      Part* part=static_cast<NPart*>(i->second)->part();
+      if ( (part->track()->isMidiTrack()) || (part->track()->type() == Track::WAVE) )
+        pl.add(part);
+    }
+  }
+  else
+  {
+    for(ciPart p = pl_->begin(); p != pl_->end(); ++p) 
+      if ( (p->second->track()->isMidiTrack()) || (p->second->track()->type() == Track::WAVE) )
+        pl.add(p->second);
+  }
+  
+  if (!pl.empty() && (rpos>lpos))
+  {
+    for(ciPart p = pl.begin(); p != pl.end(); ++p) 
+    {
+      Part* part=p->second;
+      Track* track=part->track();
+      
+      if ((part->tick() < rpos) && (part->endTick() > lpos)) //is the part in the range?
+      {
+        if ((lpos > part->tick()) && (lpos < part->endTick()))
+        {
+          Part* p1;
+          Part* p2;
+          
+          track->splitPart(part, lpos, p1, p2);
+          p1->events()->incARef(-1);
+          p2->events()->incARef(-1);
+          
+          part=p2;
+        }
+        
+        if ((rpos > part->tick()) && (rpos < part->endTick()))
+        {
+          Part* p1;
+          Part* p2;
+          
+          track->splitPart(part, rpos, p1, p2);
+          p1->events()->incARef(-1);
+          p2->events()->incARef(-1);
+
+          part=p1;
+        }
+        
+        result_pl.add(part);
+      }
+    }
+    
+    copy(&result_pl);
+  }
+}
 
 void PartCanvas::copy(PartList* pl)
       {
@@ -2700,11 +2804,88 @@ void PartCanvas::copy(PartList* pl)
       fclose(tmp);
       }
 
-//---------------------------------------------------------
-//   pasteAt
-//---------------------------------------------------------
 
-Undo PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool clone, bool toTrack, int* finalPosPtr)
+
+int get_paste_len()
+{
+  QClipboard* cb  = QApplication::clipboard();
+  const QMimeData* md = cb->mimeData(QClipboard::Clipboard);
+
+  QString pfx("text/");
+  QString mdpl("x-muse-midipartlist");
+  QString wvpl("x-muse-wavepartlist");  
+  QString mxpl("x-muse-mixedpartlist");
+  QString txt;
+    
+  if(md->hasFormat(pfx + mdpl))
+    txt = cb->text(mdpl, QClipboard::Clipboard);  
+  else if(md->hasFormat(pfx + wvpl))
+    txt = cb->text(wvpl, QClipboard::Clipboard);  
+  else if(md->hasFormat(pfx + mxpl))
+    txt = cb->text(mxpl, QClipboard::Clipboard);  
+  else
+    return 0;
+
+
+  QByteArray ba = txt.toLatin1();
+  const char* ptxt = ba.constData();
+  Xml xml(ptxt);
+  bool end = false;
+
+  unsigned begin_tick=-1; //this uses the greatest possible begin_tick
+  unsigned end_tick=0;
+
+  for (;;)
+  {
+    Xml::Token token = xml.parse();
+    const QString& tag = xml.s1();
+    switch (token)
+    {
+      case Xml::Error:
+      case Xml::End:
+        end = true;
+        break;
+        
+      case Xml::TagStart:
+        if (tag == "part")
+        {                              
+          Part* p = 0;
+          p = readXmlPart(xml, NULL, false, false);
+
+          if (p)
+          {
+            if (p->tick() < begin_tick)
+            begin_tick=p->tick();
+
+            if (p->endTick() > end_tick)
+            end_tick=p->endTick();
+
+            delete p;
+          } 
+        }
+        else
+        xml.unknown("PartCanvas::get_paste_len");
+        break;
+        
+      case Xml::TagEnd:
+        break;
+        
+      default:
+        end = true;
+        break;
+    }
+    if(end)
+      break;
+  }
+  
+  if (begin_tick > end_tick)
+    return 0;
+  else
+    return end_tick - begin_tick;
+}
+
+
+Undo PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool clone, bool toTrack, int* finalPosPtr, set<Track*>* affected_tracks)
       {
       Undo operations;
       
@@ -2754,7 +2935,10 @@ Undo PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool
                               if (p->tick()+p->lenTick()>finalPos) {
                                 finalPos=p->tick()+p->lenTick();
                               }
+                              p->setSelected(true);
                               operations.push_back(UndoOp(UndoOp::AddPart,p));
+                              if (affected_tracks)
+                                affected_tracks->insert(p->track());
                               }
                         else
                               xml.unknown("PartCanvas::pasteAt");
@@ -2789,16 +2973,12 @@ Undo PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool
 //    paste part to current selected track at cpos
 //---------------------------------------------------------
 
-void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
+void PartCanvas::paste(bool clone, paste_mode_t paste_mode, bool to_single_track, int amount, int raster)
 {
       Track* track = 0;
-
-      if (doInsert) // logic depends on keeping track of newly selected tracks
-          deselectAll();
-
-
+      
       // If we want to paste to a selected track...
-      if(toTrack)
+      if (to_single_track)
       {  
         TrackList* tl = song->tracks();
         for (iTrack i = tl->begin(); i != tl->end(); ++i) {
@@ -2831,7 +3011,7 @@ void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
       if(md->hasFormat(pfx + mdpl))
       {
         // If we want to paste to a selected track...
-        if(toTrack && !track->isMidiTrack()) 
+        if(to_single_track && !track->isMidiTrack()) 
         {
           QMessageBox::critical(this, QString("MusE"),
             tr("Can only paste to midi/drum track"));
@@ -2839,11 +3019,10 @@ void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
         }
         txt = cb->text(mdpl, QClipboard::Clipboard);  
       }
-      else
-      if(md->hasFormat(pfx + wvpl))
+      else if(md->hasFormat(pfx + wvpl))
       {
         // If we want to paste to a selected track...
-        if(toTrack && track->type() != Track::WAVE) 
+        if(to_single_track && track->type() != Track::WAVE) 
         {
           QMessageBox::critical(this, QString("MusE"),
             tr("Can only paste to wave track"));
@@ -2851,11 +3030,10 @@ void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
         }
         txt = cb->text(wvpl, QClipboard::Clipboard);  
       }  
-      else
-      if(md->hasFormat(pfx + mxpl))
+      else if(md->hasFormat(pfx + mxpl))
       {
         // If we want to paste to a selected track...
-        if(toTrack && !track->isMidiTrack() && track->type() != Track::WAVE) 
+        if(to_single_track && !track->isMidiTrack() && track->type() != Track::WAVE) 
         {
           QMessageBox::critical(this, QString("MusE"),
             tr("Can only paste to midi or wave track"));
@@ -2874,53 +3052,40 @@ void PartCanvas::paste(bool clone, bool toTrack, bool doInsert)
       {
         int endPos=0;
         unsigned int startPos=song->vcpos();
-        Undo operations=pasteAt(txt, track, startPos, clone, toTrack, &endPos);
-        Pos p(endPos, true);
-        song->setPos(0, p);
-        if (doInsert) {
-          int offset = endPos-startPos;
-          Undo temp=movePartsTotheRight(startPos, offset);
+        set<Track*> affected_tracks;
+
+        deselectAll();
+        
+        Undo operations;
+        for (int i=0;i<amount;i++)
+        {
+          Undo temp = pasteAt(txt, track, startPos + i*raster, clone, to_single_track, &endPos, &affected_tracks);
           operations.insert(operations.end(), temp.begin(), temp.end());
         }
+        
+        Pos p(endPos, true);
+        song->setPos(0, p);
+        
+        if (paste_mode != PASTEMODE_MIX)
+        {
+          int offset;
+          if (amount==1) offset = endPos-startPos;
+          else           offset = amount*raster;
+            
+          Undo temp;
+          if (paste_mode==PASTEMODE_MOVESOME)
+            temp=movePartsTotheRight(startPos, offset, false, &affected_tracks);
+          else
+            temp=movePartsTotheRight(startPos, offset);
+            
+          operations.insert(operations.end(), temp.begin(), temp.end());
+        }
+        
         song->applyOperationGroup(operations);
       }
 
     }
 
-//---------------------------------------------------------
-//   movePartsToTheRight
-//---------------------------------------------------------
-Undo PartCanvas::movePartsTotheRight(unsigned int startTicks, int length)
-{
-        Undo operations;
-        
-        // all parts that start after the pasted parts will be moved the entire length of the pasted parts
-        for (MusEWidget::iCItem i = items.begin(); i != items.end(); ++i) {
-          if (!i->second->isSelected()) {
-              Part* part = i->second->part();
-              if (part->tick() >= startTicks) {
-                Part *newPart = part->clone();
-                newPart->setTick(newPart->tick()+length);
-                
-                operations.push_back(UndoOp(UndoOp::ModifyPart,part,newPart,false,false));
-              }
-          }
-        }
-        // perhaps ask if markers should be moved?
-        MarkerList *markerlist = song->marker();
-        for(iMarker i = markerlist->begin(); i != markerlist->end(); ++i)
-        {
-            Marker* m = &i->second;
-            if (m->tick() >= startTicks) {
-              Marker *oldMarker = new Marker();
-              *oldMarker = *m;
-              m->setTick(m->tick()+length);
-              operations.push_back(UndoOp(UndoOp::ModifyMarker,oldMarker, m));
-            }
-        }
-        
-        return operations;
-}
 //---------------------------------------------------------
 //   startDrag
 //---------------------------------------------------------
@@ -3044,6 +3209,7 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
                   track = tracks->index(trackNo);
             if (track)
             {
+                  deselectAll();
                   Undo temp=pasteAt(text, track, x);
                   song->applyOperationGroup(temp);
             }
@@ -3070,9 +3236,9 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
 
                 if (!track) { // we need to create a track for this drop
                     if (text.endsWith(".mpt", Qt::CaseInsensitive)) {
-                        track = song->addTrack((Track::MIDI));
+                        track = song->addTrack(Track::MIDI, false);    // Add at end of list.
                     } else {
-                        track = song->addTrack((Track::WAVE));
+                        track = song->addTrack(Track::WAVE, false);    // Add at end of list.
                     }
                 }
                 if (track->type() == Track::WAVE &&

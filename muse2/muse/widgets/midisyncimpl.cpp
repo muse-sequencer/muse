@@ -690,8 +690,6 @@ void MidiSyncConfig::closeEvent(QCloseEvent* e)
           apply();
       }
       
-      //emit deleted((unsigned long)this);
-      
       disconnect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), this, SLOT(heartBeat()));
       disconnect(song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
       

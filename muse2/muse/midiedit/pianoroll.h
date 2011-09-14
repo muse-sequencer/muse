@@ -27,7 +27,6 @@
 #include <QResizeEvent>
 #include <QLabel>
 #include <QKeyEvent>
-#include <QByteArray>
 
 #include <values.h>
 #include "noteinfo.h"
@@ -86,7 +85,9 @@ class PianoRoll : public MidiEditor {
       
       QAction* editCutAction; 
       QAction* editCopyAction; 
+      QAction* editCopyRangeAction; 
       QAction* editPasteAction; 
+      QAction* editPasteDialogAction; 
       QAction* editDelEventsAction;
       
       QAction* selectAllAction; 
@@ -135,8 +136,6 @@ class PianoRoll : public MidiEditor {
       int colorMode;
 
       static int _rasterInit;
-      static int _widthInit, _heightInit;
-      static QByteArray _toolbarInit;
 
       static int colorModeInit;
 
@@ -151,9 +150,6 @@ class PianoRoll : public MidiEditor {
       QWidget* genToolbar(QWidget* parent);
       virtual void closeEvent(QCloseEvent*);
       virtual void keyPressEvent(QKeyEvent*);
-      virtual void resizeEvent(QResizeEvent*);
-      virtual void focusOutEvent(QFocusEvent*);
-      void storeInitialState();
 
    private slots:
       void setSelection(int, Event&, Part*);
@@ -178,7 +174,7 @@ class PianoRoll : public MidiEditor {
       void updateTrackInfo();
 
    signals:
-      void deleted(unsigned long);
+      void deleted(TopWin*);
    
    public slots:
       virtual void updateHScrollRange();

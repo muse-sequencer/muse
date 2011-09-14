@@ -45,6 +45,7 @@
 #include <QImage>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QSpinBox>
 
 #include <stdio.h>
 #include <math.h>
@@ -73,6 +74,9 @@ using namespace std;
 #include "shortcuts.h"
 
 //#include "../ctrl/ctrledit.h"
+
+using MusEGlobal::debugMsg;
+using MusEGlobal::heavyDebugMsg;
 
 
 string IntToStr(int i);
@@ -161,9 +165,6 @@ QColor* mycolors; // array [NUM_MYCOLORS]
 
 
 set<QString> ScoreEdit::names;
-int ScoreEdit::width_init = 600;
-int ScoreEdit::height_init = 400;
-QByteArray ScoreEdit::default_toolbar_state;
 
 
 //---------------------------------------------------------
@@ -171,12 +172,10 @@ QByteArray ScoreEdit::default_toolbar_state;
 //---------------------------------------------------------
 
 ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
-   : TopWin(parent, name)
+   : TopWin(TopWin::SCORE, parent, name)
 {
 	setAttribute(Qt::WA_DeleteOnClose);
 	setFocusPolicy(Qt::StrongFocus);
-
-	resize(width_init, height_init);
 
 	mainw    = new QWidget(this);
 
@@ -367,9 +366,17 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 		menu_mapper->setMapping(copy_action, CMD_COPY);
 		connect(copy_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
 
+		copy_range_action = edit_menu->addAction(QIcon(*editcopyIconSet), tr("Copy events in range"));
+		menu_mapper->setMapping(copy_range_action, CMD_COPY_RANGE);
+		connect(copy_range_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+
 		paste_action = edit_menu->addAction(QIcon(*editpasteIconSet), tr("&Paste"));
 		menu_mapper->setMapping(paste_action, CMD_PASTE);
 		connect(paste_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
+
+		paste_dialog_action = edit_menu->addAction(QIcon(*editpasteIconSet), tr("Paste (with dialog)"));
+		menu_mapper->setMapping(paste_dialog_action, CMD_PASTE_DIALOG);
+		connect(paste_dialog_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
 
 		edit_menu->addSeparator();
 
@@ -404,42 +411,6 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 			connect(select_oloop_action, SIGNAL(triggered()), menu_mapper, SLOT(map()));
 
 
-	QMenu* settings_menu = menuBar()->addMenu(tr("&Settings"));      
-
-		color_menu = settings_menu->addMenu(tr("Note head &colors"));
-			color_actions = new QActionGroup(this);
-			color_black_action = color_menu->addAction(tr("&Black"), menu_mapper, SLOT(map()));
-			color_velo_action =  color_menu->addAction(tr("&Velocity"), menu_mapper, SLOT(map()));
-			color_part_action =  color_menu->addAction(tr("&Part"), menu_mapper, SLOT(map()));
-			color_black_action->setCheckable(true);
-			color_velo_action->setCheckable(true);
-			color_part_action->setCheckable(true);
-			color_actions->addAction(color_black_action);
-			color_actions->addAction(color_velo_action);
-			color_actions->addAction(color_part_action);
-			menu_mapper->setMapping(color_black_action, CMD_COLOR_BLACK);
-			menu_mapper->setMapping(color_velo_action, CMD_COLOR_VELO);
-			menu_mapper->setMapping(color_part_action, CMD_COLOR_PART);
-			
-			color_black_action->setChecked(true);
-			menu_command(CMD_COLOR_BLACK);
-  
-		QMenu* preamble_menu = settings_menu->addMenu(tr("Set up &preamble"));
-			preamble_keysig_action = preamble_menu->addAction(tr("Display &key signature"));
-			preamble_timesig_action =  preamble_menu->addAction(tr("Display &time signature"));
-			connect(preamble_keysig_action, SIGNAL(toggled(bool)), score_canvas, SLOT(preamble_keysig_slot(bool)));
-			connect(preamble_timesig_action, SIGNAL(toggled(bool)), score_canvas, SLOT(preamble_timesig_slot(bool)));
-
-			preamble_keysig_action->setCheckable(true);
-			preamble_timesig_action->setCheckable(true);
-			
-			preamble_keysig_action->setChecked(true);
-			preamble_timesig_action->setChecked(true);
-  
-		QAction* set_name_action = settings_menu->addAction(tr("Set Score &name"), menu_mapper, SLOT(map()));
-		menu_mapper->setMapping(set_name_action, CMD_SET_NAME);
-  
-
   QMenu* functions_menu = menuBar()->addMenu(tr("Fu&nctions"));      
 	
 		func_quantize_action = functions_menu->addAction(tr("&Quantize"), menu_mapper, SLOT(map()));
@@ -463,6 +434,48 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 		menu_mapper->setMapping(func_del_overlaps_action, CMD_DELETE_OVERLAPS);
 		menu_mapper->setMapping(func_legato_action, CMD_LEGATO);
 	
+
+	QMenu* settings_menu = menuBar()->addMenu(tr("Window &Config"));      
+
+		color_menu = settings_menu->addMenu(tr("Note head &colors"));
+			color_actions = new QActionGroup(this);
+			color_black_action = color_menu->addAction(tr("&Black"), menu_mapper, SLOT(map()));
+			color_velo_action =  color_menu->addAction(tr("&Velocity"), menu_mapper, SLOT(map()));
+			color_part_action =  color_menu->addAction(tr("&Part"), menu_mapper, SLOT(map()));
+			color_black_action->setCheckable(true);
+			color_velo_action->setCheckable(true);
+			color_part_action->setCheckable(true);
+			color_actions->addAction(color_black_action);
+			color_actions->addAction(color_velo_action);
+			color_actions->addAction(color_part_action);
+			menu_mapper->setMapping(color_black_action, CMD_COLOR_BLACK);
+			menu_mapper->setMapping(color_velo_action, CMD_COLOR_VELO);
+			menu_mapper->setMapping(color_part_action, CMD_COLOR_PART);
+			
+			color_black_action->setChecked(true);
+			menu_command(CMD_COLOR_BLACK);
+		
+		QMenu* preamble_menu = settings_menu->addMenu(tr("Set up &preamble"));
+			preamble_keysig_action = preamble_menu->addAction(tr("Display &key signature"));
+			preamble_timesig_action =  preamble_menu->addAction(tr("Display &time signature"));
+			connect(preamble_keysig_action, SIGNAL(toggled(bool)), score_canvas, SLOT(preamble_keysig_slot(bool)));
+			connect(preamble_timesig_action, SIGNAL(toggled(bool)), score_canvas, SLOT(preamble_timesig_slot(bool)));
+
+			preamble_keysig_action->setCheckable(true);
+			preamble_timesig_action->setCheckable(true);
+			
+			preamble_keysig_action->setChecked(true);
+			preamble_timesig_action->setChecked(true);
+  
+		QAction* set_name_action = settings_menu->addAction(tr("Set Score &name"), menu_mapper, SLOT(map()));
+		menu_mapper->setMapping(set_name_action, CMD_SET_NAME);
+
+	settings_menu->addSeparator();
+	settings_menu->addAction(subwinAction);
+	settings_menu->addAction(shareAction);
+	settings_menu->addAction(fullscreenAction);
+  
+
 	init_shortcuts();
 	
 	connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(init_shortcuts()));
@@ -473,10 +486,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	clipboard_changed();
 	selection_changed();
 
-	if (!default_toolbar_state.isEmpty())
-		restoreState(default_toolbar_state);
-
 	connect(song, SIGNAL(songChanged(int)), SLOT(song_changed(int)));	
+	connect(song, SIGNAL(newPartsCreated(const std::map< Part*, std::set<Part*> >&)), score_canvas, SLOT(add_new_parts(const std::map< Part*, std::set<Part*> >&)));	
 
 	score_canvas->fully_recalculate();
 	score_canvas->goto_tick(initPos,true);
@@ -488,13 +499,17 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 
 	apply_velo=true;
+	
+	initTopwinState();
 }
 
 void ScoreEdit::init_shortcuts()
 {
 	cut_action->setShortcut(shortcuts[SHRT_CUT].key);
 	copy_action->setShortcut(shortcuts[SHRT_COPY].key);
+	copy_range_action->setShortcut(shortcuts[SHRT_COPY_RANGE].key);
 	paste_action->setShortcut(shortcuts[SHRT_PASTE].key);
+	paste_dialog_action->setShortcut(shortcuts[SHRT_PASTE_DIALOG].key);
 	del_action->setShortcut(shortcuts[SHRT_DELETE].key);
 
 	select_all_action->setShortcut(shortcuts[SHRT_SELECT_ALL].key); 
@@ -656,30 +671,10 @@ void ScoreEdit::closeEvent(QCloseEvent* e)
 	//settings.setValue("ScoreEdit/geometry", saveGeometry());
 	settings.setValue("ScoreEdit/windowState", saveState());
 
-	emit deleted((unsigned long)this);
+	emit deleted(static_cast<TopWin*>(this));
 	e->accept();
 }
 
-void ScoreEdit::resizeEvent(QResizeEvent* ev)
-{
-	QWidget::resizeEvent(ev);
-	
-	store_initial_state();
-}
-
-void ScoreEdit::focusOutEvent(QFocusEvent* ev)
-{
-	QMainWindow::focusOutEvent(ev);
-	
-	store_initial_state();
-}
-
-void ScoreEdit::store_initial_state()
-{
-	width_init=width();
-	height_init=height();
-	default_toolbar_state=saveState();
-}
 
 void ScoreEdit::menu_command(int cmd)
 {
@@ -710,7 +705,12 @@ void ScoreEdit::menu_command(int cmd)
 			erase_notes(score_canvas->get_all_parts(), 1);
 			break;
 		case CMD_COPY: copy_notes(score_canvas->get_all_parts(), 1); break;
+		case CMD_COPY_RANGE: copy_notes(score_canvas->get_all_parts(), MusEUtil::any_event_selected(score_canvas->get_all_parts()) ? 3 : 2); break;
 		case CMD_PASTE: 
+			menu_command(CMD_SELECT_NONE); 
+			paste_notes(3072);
+			break;
+		case CMD_PASTE_DIALOG: 
 			menu_command(CMD_SELECT_NONE); 
 			paste_notes(score_canvas->get_selected_part());
 			break;
@@ -733,7 +733,8 @@ void ScoreEdit::menu_command(int cmd)
 
 void ScoreEdit::clipboard_changed()
 {
-	paste_action->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-eventlist")));
+	paste_action->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
+	paste_dialog_action->setEnabled(QApplication::clipboard()->mimeData()->hasFormat(QString("text/x-muse-groupedeventlists")));
 }
 
 void ScoreEdit::selection_changed()
@@ -770,11 +771,11 @@ Part* read_part(Xml& xml, QString tag_name="part")
 					else
 					{
 						sscanf(tag.toLatin1().constData(), "%d:%d", &trackIdx, &partIdx);
-						if (MusEGlobal::debugMsg) cout << "read_part: trackIdx="<<trackIdx<<", partIdx="<<partIdx;
+						if (debugMsg) cout << "read_part: trackIdx="<<trackIdx<<", partIdx="<<partIdx;
 						Track* track = song->tracks()->index(trackIdx);
 						if (track)
 							part = track->parts()->find(partIdx);
-						if (MusEGlobal::debugMsg) cout << ", track="<<track<<", part="<<part<<endl;
+						if (debugMsg) cout << ", track="<<track<<", part="<<part<<endl;
 					}
 				}
 				break;
@@ -1050,12 +1051,8 @@ void ScoreEdit::read_configuration(Xml& xml)
 		switch (token)
 		{
 			case Xml::TagStart:
-				if (tag == "height")
-					height_init = xml.parseInt();
-				else if (tag == "width")
-					width_init = xml.parseInt();
-				else if (tag == "toolbars")
-					default_toolbar_state = QByteArray::fromHex(xml.parse1().toAscii());
+				if (tag == "topwin")
+					TopWin::readConfiguration(SCORE, xml);
 				else
 					xml.unknown("ScoreEdit");
 				break;
@@ -1074,9 +1071,7 @@ void ScoreEdit::read_configuration(Xml& xml)
 void ScoreEdit::write_configuration(int level, Xml& xml)
 {
 	xml.tag(level++, "scoreedit");
-	xml.intTag(level, "width", width_init);
-	xml.intTag(level, "height", height_init);
-	xml.strTag(level, "toolbars", default_toolbar_state.toHex().data());
+	TopWin::writeConfiguration(SCORE, level, xml);
 	xml.etag(level, "scoreedit");
 }
 
@@ -1558,7 +1553,7 @@ void ScoreCanvas::init_pixmaps()
 {
 	if (!pixmaps_initalized)
 	{
-		if (MusEGlobal::debugMsg) cout << "initalizing colors..." << endl;
+		if (debugMsg) cout << "initalizing colors..." << endl;
 		
 		mycolors=new QColor[NUM_MYCOLORS];
 		
@@ -1575,7 +1570,7 @@ void ScoreCanvas::init_pixmaps()
 			mycolors[i+VELO_PIXMAP_BEGIN]=QColor(0xff,0,(127-i)*4);
 		
 		
-		if (MusEGlobal::debugMsg) cout << "loading pixmaps..." << endl;
+		if (debugMsg) cout << "loading pixmaps..." << endl;
 		
 		pix_whole=new QPixmap[NUM_MYCOLORS];
 		pix_half=new QPixmap[NUM_MYCOLORS];
@@ -1633,7 +1628,7 @@ void ScoreCanvas::init_pixmaps()
 		
 		pixmaps_initalized=true;
 		
-		if (MusEGlobal::debugMsg) cout << "done" << endl;
+		if (debugMsg) cout << "done" << endl;
 	}
 }
 
@@ -1715,11 +1710,11 @@ void staff_t::create_appropriate_eventlist()
 				end=flo_quantize(event.endTick()+part->tick(), parent->quant_ticks());
 				if (end==begin)
 				{
-					if (MusEGlobal::heavyDebugMsg) cout << "note len would be quantized to zero. using minimal possible length" << endl;
+					if (heavyDebugMsg) cout << "note len would be quantized to zero. using minimal possible length" << endl;
 					end=begin+parent->quant_ticks();
 				}
 				
-				if (MusEGlobal::heavyDebugMsg) cout << "inserting note on at "<<begin<<" with pitch="<<event.pitch()<<" and len="<<end-begin<<endl;
+				if (heavyDebugMsg) cout << "inserting note on at "<<begin<<" with pitch="<<event.pitch()<<" and len="<<end-begin<<endl;
 				eventlist.insert(pair<unsigned, FloEvent>(begin, FloEvent(begin,event.pitch(), event.velo(),end-begin,FloEvent::NOTE_ON,part,&it->second)));
 			}
 			//else ignore it
@@ -1736,7 +1731,7 @@ void staff_t::create_appropriate_eventlist()
 		if (to > unsigned(SONG_LENGTH))
 			to=SONG_LENGTH;
 		
-		if (MusEGlobal::heavyDebugMsg) cout << "new signature from tick "<<from<<" to " << to << ": "<<it->second->sig.z<<"/"<<it->second->sig.n<<"; ticks per measure = "<<ticks_per_measure<<endl;
+		if (heavyDebugMsg) cout << "new signature from tick "<<from<<" to " << to << ": "<<it->second->sig.z<<"/"<<it->second->sig.n<<"; ticks per measure = "<<ticks_per_measure<<endl;
 		eventlist.insert(pair<unsigned, FloEvent>(from,  FloEvent(from, FloEvent::TIME_SIG, it->second->sig.z, it->second->sig.n) ) );
 		for (unsigned t=from; t<to; t+=ticks_per_measure)
 			eventlist.insert(pair<unsigned, FloEvent>(t,  FloEvent(t,0,0,ticks_per_measure,FloEvent::BAR) ) );
@@ -1913,7 +1908,7 @@ int calc_measure_len(const list<int>& nums, int denom)
 
 vector<int> create_emphasize_list(const list<int>& nums, int denom)
 {
-	if (MusEGlobal::heavyDebugMsg)
+	if (heavyDebugMsg)
 	{
 		cout << "creating emphasize list for ";
 		for (list<int>::const_iterator it=nums.begin(); it!=nums.end(); it++)
@@ -1941,7 +1936,7 @@ vector<int> create_emphasize_list(const list<int>& nums, int denom)
 	
 	result[0]=0;
 	
-	if (MusEGlobal::heavyDebugMsg) 
+	if (heavyDebugMsg) 
 	{
 		for (int i=0;i<len;i++)
 		{
@@ -2023,7 +2018,7 @@ list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo,
 
 		len_now=len_now*TICKS_PER_WHOLE/64;
 
-		if (MusEGlobal::heavyDebugMsg) cout << "add " << len_now << " ticks" << endl;
+		if (heavyDebugMsg) cout << "add " << len_now << " ticks" << endl;
 		if (allow_dots)
 		{
 			for (int i=0;i<=MAX_QUANT_POWER;i++)
@@ -2166,7 +2161,7 @@ void staff_t::create_itemlist()
 		
 		note_pos_t notepos=note_pos(pitch,tmp_key,clef);
 		
-		if (MusEGlobal::heavyDebugMsg)
+		if (heavyDebugMsg)
 		{
 			printf("FLO: t=%i\ttype=%i\tpitch=%i\tvel=%i\tlen=%i\n",it->first, it->second.type, it->second.pitch, it->second.vel, it->second.len);
 			cout << "\tline="<<notepos.height<<"\tvorzeichen="<<notepos.vorzeichen << endl;
@@ -2179,7 +2174,7 @@ void staff_t::create_itemlist()
 				if (lastevent==last_measure) //there was no note?
 				{
 					unsigned tmppos=(last_measure+t-parent->quant_ticks())/2;
-					if (MusEGlobal::heavyDebugMsg) cout << "\tend-of-measure: this was an empty measure. inserting rest in between at t="<<tmppos << endl;
+					if (heavyDebugMsg) cout << "\tend-of-measure: this was an empty measure. inserting rest in between at t="<<tmppos << endl;
 					itemlist[tmppos].insert( FloItem(FloItem::REST,notepos,0,0) );
 					itemlist[t].insert( FloItem(FloItem::REST_END,notepos,0,0) );
 				}
@@ -2189,13 +2184,13 @@ void staff_t::create_itemlist()
 					int rest=t-lastevent;
 					if (rest)
 					{
-						if (MusEGlobal::heavyDebugMsg) printf("\tend-of-measure: set rest at %i with len %i\n",lastevent,rest);
+						if (heavyDebugMsg) printf("\tend-of-measure: set rest at %i with len %i\n",lastevent,rest);
 						
 						list<note_len_t> lens=parse_note_len(rest,lastevent-last_measure,emphasize_list,DOTTED_RESTS,UNSPLIT_RESTS);
 						unsigned tmppos=lastevent;
 						for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
 						{
-							if (MusEGlobal::heavyDebugMsg) cout << "\t\tpartial rest with len="<<x->len<<", dots="<<x->dots<<endl;
+							if (heavyDebugMsg) cout << "\t\tpartial rest with len="<<x->len<<", dots="<<x->dots<<endl;
 							itemlist[tmppos].insert( FloItem(FloItem::REST,notepos,x->len,x->dots) );
 							tmppos+=calc_len(x->len,x->dots);
 							itemlist[tmppos].insert( FloItem(FloItem::REST_END,notepos,0,0) );
@@ -2215,7 +2210,7 @@ void staff_t::create_itemlist()
 			int rest=t-lastevent;
 			if (rest)
 			{
-				if (MusEGlobal::heavyDebugMsg) printf("\tset rest at %i with len %i\n",lastevent,rest);
+				if (heavyDebugMsg) printf("\tset rest at %i with len %i\n",lastevent,rest);
 				// no need to check if the rest crosses measure boundaries;
 				// it can't.
 				
@@ -2223,7 +2218,7 @@ void staff_t::create_itemlist()
 				unsigned tmppos=lastevent;
 				for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
 				{
-					if (MusEGlobal::heavyDebugMsg) cout << "\t\tpartial rest with len="<<x->len<<", dots="<<x->dots<<endl;
+					if (heavyDebugMsg) cout << "\t\tpartial rest with len="<<x->len<<", dots="<<x->dots<<endl;
 					itemlist[tmppos].insert( FloItem(FloItem::REST,notepos,x->len,x->dots) );
 					tmppos+=calc_len(x->len,x->dots);
 					itemlist[tmppos].insert( FloItem(FloItem::REST_END,notepos,0,0) );
@@ -2232,7 +2227,7 @@ void staff_t::create_itemlist()
 			
 			
 			
-			if (MusEGlobal::heavyDebugMsg) printf("\tset note at %i with len=%i\n", t, len);
+			if (heavyDebugMsg) printf("\tset note at %i with len=%i\n", t, len);
 
 			int tmplen;
 			bool tied_note;
@@ -2249,14 +2244,14 @@ void staff_t::create_itemlist()
 				eventlist.insert(pair<unsigned, FloEvent>(next_measure, FloEvent(actual_tick,pitch, velo,0,FloEvent::NOTE_OFF, it->second.source_part, it->second.source_event)));
 				eventlist.insert(pair<unsigned, FloEvent>(next_measure, FloEvent(actual_tick,pitch, velo,newlen,FloEvent::NOTE_ON, it->second.source_part, it->second.source_event)));
 
-				if (MusEGlobal::heavyDebugMsg) cout << "\t\tnote was split to length "<<tmplen<<" + " << newlen<<endl;
+				if (heavyDebugMsg) cout << "\t\tnote was split to length "<<tmplen<<" + " << newlen<<endl;
 			}
 			else
 			{
 				tmplen=len;
 				tied_note=false;
 				
-				if (MusEGlobal::heavyDebugMsg) cout << "\t\tinserting NOTE OFF at "<<t+len<<endl;
+				if (heavyDebugMsg) cout << "\t\tinserting NOTE OFF at "<<t+len<<endl;
 				eventlist.insert(pair<unsigned, FloEvent>(t+len,   FloEvent(t+len,pitch, velo,0,FloEvent::NOTE_OFF,it->second.source_part, it->second.source_event)));
 			}
 							
@@ -2266,7 +2261,7 @@ void staff_t::create_itemlist()
 			int count=0;			
 			for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
 			{
-				if (MusEGlobal::heavyDebugMsg) cout << "\t\tpartial note with len="<<x->len<<", dots="<<x->dots<<endl;
+				if (heavyDebugMsg) cout << "\t\tpartial note with len="<<x->len<<", dots="<<x->dots<<endl;
 				count++;
 				
 				bool tie;
@@ -2287,14 +2282,14 @@ void staff_t::create_itemlist()
 		}
 		else if (type==FloEvent::TIME_SIG)
 		{
-			if (MusEGlobal::heavyDebugMsg) cout << "inserting TIME SIGNATURE "<<it->second.num<<"/"<<it->second.denom<<" at "<<t<<endl;
+			if (heavyDebugMsg) cout << "inserting TIME SIGNATURE "<<it->second.num<<"/"<<it->second.denom<<" at "<<t<<endl;
 			itemlist[t].insert( FloItem(FloItem::TIME_SIG, it->second.num, it->second.denom) );
 			
 			emphasize_list=create_emphasize_list(it->second.num, it->second.denom);
 		}
 		else if (type==FloEvent::KEY_CHANGE)
 		{
-			if (MusEGlobal::heavyDebugMsg) cout << "inserting KEY CHANGE ("<<it->second.key<<") at "<<t<<endl;
+			if (heavyDebugMsg) cout << "inserting KEY CHANGE ("<<it->second.key<<") at "<<t<<endl;
 			itemlist[t].insert( FloItem(FloItem::KEY_CHANGE, it->second.key) );
 			tmp_key=it->second.key;
 		}
@@ -2312,7 +2307,7 @@ void staff_t::process_itemlist()
 	{
 		set<FloItem, floComp>& curr_items=it2->second;
 		
-		if (MusEGlobal::heavyDebugMsg) cout << "at t="<<it2->first<<endl;
+		if (heavyDebugMsg) cout << "at t="<<it2->first<<endl;
 		
 		// phase 0: keep track of active notes, rests -------------------
 		//          (and occupied lines) and the last measure
@@ -2329,7 +2324,7 @@ void staff_t::process_itemlist()
 				emphasize_list=create_emphasize_list(it->num, it->denom);
 		}
 		
-		if (MusEGlobal::heavyDebugMsg)
+		if (heavyDebugMsg)
 		{
 			cout << "occupied: ";
 			for (map<int,int>::iterator i=occupied.begin(); i!=occupied.end(); i++)
@@ -2355,7 +2350,7 @@ void staff_t::process_itemlist()
 			//(can be seen on already_grouped)
 			if ((it->type==FloItem::REST) && (it->already_grouped==false))
 			{
-				if (MusEGlobal::heavyDebugMsg) cout << "trying to group" << endl;
+				if (heavyDebugMsg) cout << "trying to group" << endl;
 				
 				int lastheight;
 				int height_cumulative=0;
@@ -2366,12 +2361,12 @@ void staff_t::process_itemlist()
 				set<FloItem, floComp>::iterator tmp;
 				for (tmp=it; tmp!=curr_items.end();)
 				{
-					if (MusEGlobal::heavyDebugMsg) cout << "checking if we can proceed with an item at height="<<tmp->pos.height<<endl;
+					if (heavyDebugMsg) cout << "checking if we can proceed with an item at height="<<tmp->pos.height<<endl;
 					
 					for (int i=lastheight+1; i<=tmp->pos.height-1; i++)
 						if (occupied[i]!=0)
 						{
-							if (MusEGlobal::heavyDebugMsg) cout << "we can NOT, because occ["<<i<<"] != 0" << endl;
+							if (heavyDebugMsg) cout << "we can NOT, because occ["<<i<<"] != 0" << endl;
 							//stop grouping that rest
 							goto get_out_here;
 						}
@@ -2383,7 +2378,7 @@ void staff_t::process_itemlist()
 					{
 						// füge diese pause zur gruppe dazu und entferne sie von diesem set hier
 						// entfernen aber nur, wenn sie nicht it, also die erste pause ist, die brauchen wir noch!
-						if (MusEGlobal::heavyDebugMsg) cout << "\tgrouping rest at height="<<tmp->pos.height<<endl;
+						if (heavyDebugMsg) cout << "\tgrouping rest at height="<<tmp->pos.height<<endl;
 						height_cumulative+=tmp->pos.height;
 						counter++;
 						if (tmp!=it)
@@ -2393,12 +2388,12 @@ void staff_t::process_itemlist()
 					}
 					else //it's something else? well, we can stop grouping that rest then
 					{
-						if (MusEGlobal::heavyDebugMsg) cout << "we can NOT, because that item is not a rest" << endl;
+						if (heavyDebugMsg) cout << "we can NOT, because that item is not a rest" << endl;
 						//stop grouping that rest
 						goto get_out_here;
 					}
 				}
-				if (MusEGlobal::heavyDebugMsg) cout << "no items to proceed on left, continuing" << endl;
+				if (heavyDebugMsg) cout << "no items to proceed on left, continuing" << endl;
 				get_out_here:
 				
 				n_groups++;
@@ -2413,7 +2408,7 @@ void staff_t::process_itemlist()
 				// have we grouped all available rests into one single?
 				if ( (n_groups==1) && (tmp==curr_items.end()) && !dont_group)
 				{
-					if (MusEGlobal::heavyDebugMsg) cout << "wow, we were able to group all rests into one single" << endl;
+					if (heavyDebugMsg) cout << "wow, we were able to group all rests into one single" << endl;
 					if (temp.len==0) //the whole rest is shifted one line (one space and one line)
 						temp.pos.height=DEFAULT_REST_HEIGHT+2;
 					else
@@ -2421,7 +2416,7 @@ void staff_t::process_itemlist()
 				}
 				else
 				{
-					if (MusEGlobal::heavyDebugMsg) cout << "creating group #"<<n_groups<<endl;
+					if (heavyDebugMsg) cout << "creating group #"<<n_groups<<endl;
 					temp.pos.height=nearbyint((float)height_cumulative/counter);
 				}
 				
@@ -2432,7 +2427,7 @@ void staff_t::process_itemlist()
 				// the item. effect: you don't have the rest at all
 				curr_items.erase(it++);
 				
-				if (MusEGlobal::heavyDebugMsg) cout << "replacing all grouped rests with a rest at height="<<temp.pos.height<<endl;
+				if (heavyDebugMsg) cout << "replacing all grouped rests with a rest at height="<<temp.pos.height<<endl;
 				
 				curr_items.insert(temp);
 			}
@@ -2523,7 +2518,7 @@ group_them_again:
 			if (it->type==FloItem::NOTE)
 				lengths[it->len].add(it->pos.height);
 		
-		if (MusEGlobal::heavyDebugMsg)
+		if (heavyDebugMsg)
 		{
 			cout << "note lengths at that time are:";
 			for (map<int, cumulative_t>::iterator it=lengths.begin(); it!=lengths.end(); it++)
@@ -2536,14 +2531,14 @@ group_them_again:
 		
 		if (lengths.size()==0)
 		{
-			if (MusEGlobal::heavyDebugMsg) cout << "no notes other than wholes, or no notes at all. we can relax" << endl;
+			if (heavyDebugMsg) cout << "no notes other than wholes, or no notes at all. we can relax" << endl;
 		}
 		else if (lengths.size()==1)
 		{
 			pair<const int, cumulative_t>& group=*(lengths.begin());
 			stem_t stem;
 			int shift=0;
-			if (MusEGlobal::heavyDebugMsg) cout << "only one non-whole note group (len="<<group.first<<") at height="<<group.second.mean()<< endl;
+			if (heavyDebugMsg) cout << "only one non-whole note group (len="<<group.first<<") at height="<<group.second.mean()<< endl;
 			
 			if (group.second.mean()>=6)
 			{
@@ -2574,7 +2569,7 @@ group_them_again:
 			pair<const int, cumulative_t>& group2=*it;
 			stem_t stem1, stem2;
 			int shift1=0, shift2=0;
-			if (MusEGlobal::heavyDebugMsg) cout << "two non-whole note group: len="<<group1.first<<" at height="<<group1.second.mean()<<"  and len="<<group2.first<<" at height="<<group2.second.mean()<< endl;
+			if (heavyDebugMsg) cout << "two non-whole note group: len="<<group1.first<<" at height="<<group1.second.mean()<<"  and len="<<group2.first<<" at height="<<group2.second.mean()<< endl;
 			
 			if (group1.second.mean()<group2.second.mean())
 			{
@@ -2632,17 +2627,17 @@ group_them_again:
 			group1_len_ticks=calc_len(group1_len,0);
 			group2_len_ticks=calc_len(group2_len,0);
 			
-			if (MusEGlobal::heavyDebugMsg) cout << "we have "<<lengths.size()<<" groups. putting the "<<group1_n<<" longest and the "<<group2_n<<"shortest groups together"<<endl <<
+			if (heavyDebugMsg) cout << "we have "<<lengths.size()<<" groups. putting the "<<group1_n<<" longest and the "<<group2_n<<"shortest groups together"<<endl <<
 			                           "\tgroup1 will have len="<<group1_len<<" ("<<group1_len_ticks<<" ticks), group2 will have len="<<group2_len<<" ("<<group2_len_ticks<<" ticks)"<<endl;
 			
 			for (set<FloItem, floComp>::iterator it=curr_items.begin(); it!=curr_items.end();)
 				if (it->type==FloItem::NOTE)
 				{
 					//if *it belongs to group1 and has not already its destination length
-					if (MusEGlobal::heavyDebugMsg) cout << "\tprocessing note-item with len="<<it->len<<endl;
+					if (heavyDebugMsg) cout << "\tprocessing note-item with len="<<it->len<<endl;
 					if (it->len<group1_len)
 					{
-						if (MusEGlobal::heavyDebugMsg) cout << "\t\thas to be changed to fit into group 1" << endl;
+						if (heavyDebugMsg) cout << "\t\thas to be changed to fit into group 1" << endl;
 						FloItem tmp=*it;
 						curr_items.erase(it++);
 
@@ -2667,7 +2662,7 @@ group_them_again:
 						int count=0;			
 						for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
 						{
-							if (MusEGlobal::heavyDebugMsg) cout << "\t\twhile regrouping: partial note with len="<<x->len<<", dots="<<x->dots<<endl;
+							if (heavyDebugMsg) cout << "\t\twhile regrouping: partial note with len="<<x->len<<", dots="<<x->dots<<endl;
 							count++;
 							
 							bool tie;
@@ -2686,7 +2681,7 @@ group_them_again:
 					//else if *it belongs to group2 and has not already its destination length
 					else if ((it->len<group2_len) && (it->len>group1_len))
 					{
-						if (MusEGlobal::heavyDebugMsg) cout << "\t\thas to be changed to fit into group 2" << endl;
+						if (heavyDebugMsg) cout << "\t\thas to be changed to fit into group 2" << endl;
 						
 						FloItem tmp=*it;
 						curr_items.erase(it++);
@@ -2712,7 +2707,7 @@ group_them_again:
 						int count=0;			
 						for (list<note_len_t>::iterator x=lens.begin(); x!=lens.end(); x++)
 						{
-							if (MusEGlobal::heavyDebugMsg) cout << "\t\twhile regrouping: partial note with len="<<x->len<<", dots="<<x->dots<<endl;
+							if (heavyDebugMsg) cout << "\t\twhile regrouping: partial note with len="<<x->len<<", dots="<<x->dots<<endl;
 							count++;
 							
 							bool tie;
@@ -2730,7 +2725,7 @@ group_them_again:
 					}
 					else //nothing to do?
 					{
-						if (MusEGlobal::heavyDebugMsg) cout << "\t\tnothing to do" << endl;
+						if (heavyDebugMsg) cout << "\t\tnothing to do" << endl;
 						it++;
 					}
 				}
@@ -2746,7 +2741,7 @@ group_them_again:
 //draw a pixmap centered
 void ScoreCanvas::draw_pixmap(QPainter& p, int x, int y, const QPixmap& pm)
 {
-	if (MusEGlobal::heavyDebugMsg) cout << "drawing pixmap with size="<<pm.width()<<"/"<<pm.height()<<" at "<<x<<"/"<<y<<endl;
+	if (heavyDebugMsg) cout << "drawing pixmap with size="<<pm.width()<<"/"<<pm.height()<<" at "<<x<<"/"<<y<<endl;
 	p.drawPixmap(x-pm.width()/2,y-pm.height()/2,pm);
 }
 
@@ -2963,7 +2958,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 
 	for (ScoreItemList::iterator it2=from_it; it2!=to_it; it2++)
 	{
-		if (MusEGlobal::heavyDebugMsg) cout << "at t="<<it2->first << endl;
+		if (heavyDebugMsg) cout << "at t="<<it2->first << endl;
 		
 		int upstem_y1 = -1, upstem_y2=-1, upstem_x=-1, upflag=-1;
 		int downstem_y1 = -1, downstem_y2=-1, downstem_x=-1, downflag=-1;
@@ -2972,7 +2967,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 		{
 			if (it->type==FloItem::NOTE)
 			{
-				if (MusEGlobal::heavyDebugMsg)
+				if (heavyDebugMsg)
 				{
 					cout << "\tNOTE at line"<<it->pos.height<<" with acc.="<<it->pos.vorzeichen<<", len="<<pow(2,it->len);
 					for (int i=0;i<it->dots;i++) cout << ".";
@@ -3106,7 +3101,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 				//if needed, draw tie
 				if (it->is_tie_dest)
 				{
-					if (MusEGlobal::heavyDebugMsg) cout << "drawing tie" << endl;
+					if (heavyDebugMsg) cout << "drawing tie" << endl;
 					draw_tie(p,it->tie_from_x-x_pos+x_left,it->x -x_pos+x_left,y_offset + it->y, (it->len==0) ? true : (it->stem==DOWNWARDS) , mycolors[color_index]);
 					// in english: "if it's a whole note, tie is upwards (true). if not, tie is upwards if
 					//              stem is downwards and vice versa"
@@ -3114,7 +3109,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 			}
 			else if (it->type==FloItem::REST)
 			{
-				if (MusEGlobal::heavyDebugMsg)
+				if (heavyDebugMsg)
 				{
 					cout << "\tREST at line"<<it->pos.height<<" with len="<<pow(2,it->len);
 					for (int i=0;i<it->dots;i++) cout << ".";
@@ -3144,7 +3139,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 			}
 			else if (it->type==FloItem::BAR)
 			{
-				if (MusEGlobal::heavyDebugMsg) cout << "\tBAR" << endl;
+				if (heavyDebugMsg) cout << "\tBAR" << endl;
 				
 				p.setPen(Qt::black);
 				p.drawLine(it->x -x_pos+x_left,y_offset  -2*YLEN,it->x -x_pos+x_left,y_offset +2*YLEN);
@@ -3154,14 +3149,14 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 			}
 			else if (it->type==FloItem::TIME_SIG)
 			{
-				if (MusEGlobal::heavyDebugMsg) cout << "\tTIME SIGNATURE: "<<it->num<<"/"<<it->denom<<endl;
+				if (heavyDebugMsg) cout << "\tTIME SIGNATURE: "<<it->num<<"/"<<it->denom<<endl;
 
 				draw_timesig(p,  it->x - x_pos+x_left, y_offset, it->num, it->denom);
 			}
 			else if (it->type==FloItem::KEY_CHANGE)
 			{
 				key_enum new_key=it->key;
-				if (MusEGlobal::heavyDebugMsg) cout << "\tKEY CHANGE: from "<<curr_key<<" to "<<new_key<<endl;
+				if (heavyDebugMsg) cout << "\tKEY CHANGE: from "<<curr_key<<" to "<<new_key<<endl;
 								
 				list<int> aufloes_list=calc_accidentials(curr_key, staff.clef, new_key);
 				list<int> new_acc_list=calc_accidentials(new_key, staff.clef);
@@ -3372,7 +3367,7 @@ void ScoreCanvas::draw_number(QPainter& p, int x, int y, int n)
 
 void ScoreCanvas::draw(QPainter& p, const QRect&)
 {
-	if (MusEGlobal::debugMsg) cout <<"now in ScoreCanvas::draw"<<endl;
+	if (debugMsg) cout <<"now in ScoreCanvas::draw"<<endl;
 
 	
 
@@ -3395,7 +3390,7 @@ void ScoreCanvas::draw(QPainter& p, const QRect&)
 		p.drawRect(lasso);
 	}
 	
-	if (MusEGlobal::debugMsg) cout << "drawing done." << endl;
+	if (debugMsg) cout << "drawing done." << endl;
 }
 
 
@@ -3578,7 +3573,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 		{
 			ScoreItemList& itemlist=staff_it->itemlist;
 
-			if (MusEGlobal::debugMsg) cout << "mousePressEvent at "<<x<<"/"<<y<<"; tick="<<tick<<endl;
+			if (debugMsg) cout << "mousePressEvent at "<<x<<"/"<<y<<"; tick="<<tick<<endl;
 			set<FloItem, floComp>::iterator set_it;
 			for (set_it=itemlist[tick].begin(); set_it!=itemlist[tick].end(); set_it++)
 				if (set_it->type==FloItem::NOTE)
@@ -3634,7 +3629,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 						mouse_x_drag_operation=NO_OP;
 				}
 				
-				if (MusEGlobal::debugMsg)
+				if (debugMsg)
 					cout << "you clicked at a note with begin at "<<set_it->begin_tick<<" and end at "<<t<<endl
 							 << "x-drag-operation will be "<<mouse_x_drag_operation<<endl
 							 << "pointer to part is "<<set_it->source_part << endl;
@@ -3702,13 +3697,13 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 							if (flo_quantize(newevent.lenTick(), quant_ticks()) <= 0)
 							{
 								newevent.setLenTick(quant_ticks());
-								if (MusEGlobal::debugMsg) cout << "inserted note's length would be invisible after quantisation (too short)." << endl <<
+								if (debugMsg) cout << "inserted note's length would be invisible after quantisation (too short)." << endl <<
 																			"       setting it to " << newevent.lenTick() << endl;
 							}
 							
 							if (newevent.endTick() > curr_part->lenTick())
 							{
-								if (MusEGlobal::debugMsg) cout << "clipping inserted note from len="<<newevent.endTick()<<" to len="<<(curr_part->lenTick() - newevent.tick())<<endl;
+								if (debugMsg) cout << "clipping inserted note from len="<<newevent.endTick()<<" to len="<<(curr_part->lenTick() - newevent.tick())<<endl;
 								newevent.setLenTick(curr_part->lenTick() - newevent.tick());
 							}
 							
@@ -3757,7 +3752,7 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 		{
 			if (flo_quantize(dragged_event.lenTick(), quant_ticks()) <= 0)
 			{
-				if (MusEGlobal::debugMsg) cout << "new length <= 0, erasing item" << endl;
+				if (debugMsg) cout << "new length <= 0, erasing item" << endl;
 				if (undo_started) song->undo();
 				audio->msgDeleteEvent(dragged_event, dragged_event_part, true, false, false);
 			}
@@ -3857,13 +3852,13 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 		{		
 			if ((abs(dx)>DRAG_INIT_DISTANCE) && (mouse_x_drag_operation!=NO_OP))
 			{
-				if (MusEGlobal::debugMsg) cout << "mouse-operation is now "<<mouse_x_drag_operation<<endl;
+				if (debugMsg) cout << "mouse-operation is now "<<mouse_x_drag_operation<<endl;
 				mouse_operation=mouse_x_drag_operation;
 				setCursor(Qt::SizeHorCursor);
 			}
 			else if (abs(dy)>DRAG_INIT_DISTANCE)
 			{
-				if (MusEGlobal::debugMsg) cout << "mouse-operation is now PITCH" << endl;
+				if (debugMsg) cout << "mouse-operation is now PITCH" << endl;
 				mouse_operation=PITCH;
 				setCursor(Qt::SizeVerCursor);
 			}
@@ -3894,7 +3889,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				break;
 				
 			case PITCH:
-				if (MusEGlobal::heavyDebugMsg) cout << "trying to change pitch, delta="<<-nearbyint((float)dy/PITCH_DELTA)<<endl;
+				if (heavyDebugMsg) cout << "trying to change pitch, delta="<<-nearbyint((float)dy/PITCH_DELTA)<<endl;
 				new_pitch=original_dragged_event.pitch() - nearbyint((float)dy/PITCH_DELTA);
 				
 				if (new_pitch < 0) new_pitch=0;
@@ -3902,7 +3897,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				
 				if (new_pitch != old_pitch)
 				{
-					if (MusEGlobal::debugMsg) cout << "changing pitch, delta="<<new_pitch-original_dragged_event.pitch()<<endl;
+					if (debugMsg) cout << "changing pitch, delta="<<new_pitch-original_dragged_event.pitch()<<endl;
 					if (undo_started) song->undo();
 					undo_started=transpose_notes(part_to_set(dragged_event_part),1, new_pitch-original_dragged_event.pitch());
 					old_pitch=new_pitch;
@@ -3920,7 +3915,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 					else
 					{
 						dest_tick=0;
-						if (MusEGlobal::debugMsg) cout << "not moving note before begin of part; setting it directly to the begin" << endl;
+						if (debugMsg) cout << "not moving note before begin of part; setting it directly to the begin" << endl;
 					}
 
 					if (dest_tick != old_dest_tick)
@@ -3946,21 +3941,21 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 					else
 					{
 						tmp.setLenTick(0);
-						if (MusEGlobal::debugMsg) cout << "not setting len to a negative value. using 0 instead" << endl;
+						if (debugMsg) cout << "not setting len to a negative value. using 0 instead" << endl;
 					}
 					
 					unsigned newpartlen=dragged_event_part->lenTick();
 					if (tmp.endTick() > dragged_event_part->lenTick())
 					{
-                                                if (dragged_event_part->hasHiddenEvents()) // do not allow autoexpand
+						if (dragged_event_part->hasHiddenEvents()) // do not allow autoexpand
 						{
 							tmp.setLenTick(dragged_event_part->lenTick() - tmp.tick());
-							if (MusEGlobal::debugMsg) cout << "resized note would exceed its part; limiting length to " << tmp.lenTick() << endl;
+							if (debugMsg) cout << "resized note would exceed its part; limiting length to " << tmp.lenTick() << endl;
 						}
 						else
 						{
 							newpartlen=tmp.endTick();
-							if (MusEGlobal::debugMsg) cout << "resized note would exceeds its part; expanding the part..." << endl;
+							if (debugMsg) cout << "resized note would exceeds its part; expanding the part..." << endl;
 						}
 					}
 					
@@ -4067,14 +4062,14 @@ void ScoreCanvas::heartbeat_timer_event()
 
 void ScoreCanvas::x_scroll_event(int x)
 {
-	if (MusEGlobal::debugMsg) cout << "SCROLL EVENT: x="<<x<<endl;
+	if (debugMsg) cout << "SCROLL EVENT: x="<<x<<endl;
 	x_pos=x;
 	redraw();
 }
 
 void ScoreCanvas::y_scroll_event(int y)
 {
-	if (MusEGlobal::debugMsg) cout << "SCROLL EVENT: y="<<y<<endl;
+	if (debugMsg) cout << "SCROLL EVENT: y="<<y<<endl;
 	y_pos=y;
 	redraw();
 }
@@ -4278,7 +4273,7 @@ void ScoreCanvas::set_quant(int val)
 
 void ScoreCanvas::set_pixels_per_whole(int val)
 {
-	if (MusEGlobal::debugMsg) cout << "setting px per whole to " << val << endl;
+	if (debugMsg) cout << "setting px per whole to " << val << endl;
 	
 	int tick;
 	int old_xpos=x_pos;
@@ -4300,7 +4295,7 @@ void ScoreCanvas::set_pixels_per_whole(int val)
 	if (old_xpos!=0)
 	{
 		x_pos=tick_to_x(tick);
-		if (MusEGlobal::debugMsg) cout << "x_pos was not zero, readjusting to " << x_pos << endl;
+		if (debugMsg) cout << "x_pos was not zero, readjusting to " << x_pos << endl;
 		emit xscroll_changed(x_pos);
 	}
 	
@@ -4438,10 +4433,10 @@ void ScoreCanvas::midi_note(int pitch, int velo)
 void ScoreCanvas::update_parts()
 {
 	if (selected_part!=NULL) //if it's null, let it be null
-		selected_part=partFromSerialNumber(selected_part_index);
+		selected_part=MusEUtil::partFromSerialNumber(selected_part_index);
 	
 	if (dragged_event_part!=NULL) //same thing here
-		dragged_event_part=partFromSerialNumber(dragged_event_part_index);
+		dragged_event_part=MusEUtil::partFromSerialNumber(dragged_event_part_index);
 	
 	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 		it->update_parts();
@@ -4452,7 +4447,7 @@ void staff_t::update_parts()
 	parts.clear();
 	
 	for (set<int>::iterator it=part_indices.begin(); it!=part_indices.end(); it++)
-		parts.insert(partFromSerialNumber(*it));
+		parts.insert(MusEUtil::partFromSerialNumber(*it));
 }
 
 void staff_t::update_part_indices()
@@ -4461,6 +4456,55 @@ void staff_t::update_part_indices()
 	
 	for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
 		part_indices.insert((*it)->sn());
+}
+
+
+void ScoreEdit::keyPressEvent(QKeyEvent* event)
+{
+	int key = event->key();
+
+	if (key == Qt::Key_Escape)
+	{
+		close();
+		return;
+	}
+	else if (key == shortcuts[SHRT_TOOL_POINTER].key)
+	{
+		edit_tools->set(MusEWidget::PointerTool);
+		return;
+	}
+	else if (key == shortcuts[SHRT_TOOL_PENCIL].key)
+	{
+		edit_tools->set(MusEWidget::PencilTool);
+		return;
+	}
+	else if (key == shortcuts[SHRT_TOOL_RUBBER].key)
+	{
+		edit_tools->set(MusEWidget::RubberTool);
+		return;
+	}
+	else //Default:
+	{
+		event->ignore();
+		return;
+	}
+}
+
+
+void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
+{
+	for (list<staff_t>::iterator staff=staves.begin(); staff!=staves.end(); staff++)
+	{
+		for (std::map< Part*, set<Part*> >::const_iterator it = param.begin(); it!=param.end(); it++)
+			if (staff->parts.find(it->first)!=staff->parts.end())
+				staff->parts.insert(it->second.begin(), it->second.end());
+		
+		//staff->cleanup_parts(); // don't cleanup here, because at this point, the parts may only exist
+		                          // in the operation group. cleanup could remove them immediately
+		staff->update_part_indices();
+	}
+	
+	fully_recalculate();
 }
 
 //the following assertions are made:
@@ -4488,33 +4532,39 @@ void staff_t::update_part_indices()
  *     and both A and B get scheduled to be expanded (because we
  *     have one event from A and one event from B), this causes a bug,
  *     because after A (and B) got resized, the B-resize is invalid!
+ *   o when changing toolbarstate when sharing and immediately after that
+ *     changing "share" status, the changed state isn't stored
+ *   ? pasting in editors sometimes fails oO? ( ERROR: reading eventlist
+ *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  * 
  * CURRENT TODO
+ * ! o fix sigedit boxes (see also "important todo")
+ *   o ticks-to-quarter spinboxes
+ *   o newly created windows have to be focussed!
+ *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer
+ *     journey to the menu bar. try to find a way which does not involve duplicate code!
+ *   o implement borland-style maximize: free windows do not cover the main menu, even when maximized
+ *   o smart range selection: if range markers have been used recently (that is, a dialog with
+ *     "range" setting, or they've been modified), default to "in range" or "selected in range"
+ *
+ * IMPORTANT TODO
+ * ! o fix sigedit boxes (see also "current todo")
+ *   o add "dotted quarter" quantize option (for 6/8 beat)
+ * 
+ *   o rename stuff with F2 key
  *   o redo transport menu: offer "one beat" and "one bar" steps
  *                          maybe also offer scrollbar
  *   o quick "set left/right marker", "select between markers"
  *     or even "set marker and select between immediately"
  *   o support partially selected parts. when moving, automatically split
  * 
- *   o speed up structural operations
- *   o maybe remove "insert empty measure"?
- *   o structural OPs: don't erase note which begins at "end of cut"
- *   o add "move other notes" or "overwrite notes" or "mix with notes" to paste
- * 
- * IMPORTANT TODO
- *   o add "dotted quarter" quantize option (for 6/8 beat)
- *   o draw the edge of parts hiding notes "jagged" (hasHiddenEvents() is interesting for this)  - Done. Tim.
  *   o shrink a part from its beginning as well! watch out for clones!
- *   o insert empty measure should also work inside parts, that is,
- *     move notes _within_ parts
  *
  *   o canvas editor: create clone via "alt+drag" moves window instead
  *   o investigate with valgrind
  *   o controller view in score editor
- *   o fix sigedit boxes
  *   o solo button
  *   o grand staff brace
- *   o mastertrack editor: key-combobox is buggy
  *   o drum editor: channel-stuff
  *   o do partial recalculating; recalculating can take pretty long
  *     (0,5 sec) when displaying a whole song in scores
@@ -4537,7 +4587,6 @@ void staff_t::update_part_indices()
  *       keeping its own pos_add variable (which is only an optimisation)
  *   o support edge-scrolling when opening a lasso
  *   o save more configuration stuff (quant, color)
- *   o drum list: scroll while dragging (not important due to "reorder list")
  * 
  * really unimportant nice-to-haves
  *   o support in-song clef-changes
@@ -4545,7 +4594,7 @@ void staff_t::update_part_indices()
  *   o use timesig_t in all timesig-stuff
  *   o refuse to resize so that width gets smaller or equal than x_left
  *   o draw a margin around notes which are in a bright color
- *   o support drum tracks (x-note-heads etc.)
+ *   o support drum tracks in the score editor (x-note-heads etc.)
  *   o drum list: scroll while dragging: probably unneccessary with the "reorder list" function
  * 
  * 
@@ -4556,8 +4605,6 @@ void staff_t::update_part_indices()
  *
  *   o process accurate timesignatures from muse's list (has to be implemented first in muse)
  *      ( (2+2+3)/4 or (3+2+2)/4 instead of 7/4 )
- *   o maybe do expanding parts inside the msgChangeEvent or
- *     msgNewEvent functions (see my e-mail)
  */
 
 

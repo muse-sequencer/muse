@@ -88,12 +88,10 @@ class DrumEdit : public MidiEditor {
       QComboBox *stepLenWidget;
 
       static int _rasterInit;
-      static int _widthInit, _heightInit;
       static int _dlistWidthInit, _dcanvasWidthInit;
-      static QByteArray _toolbarInit;
 
       QAction *loadAction, *saveAction, *resetAction;
-      QAction *cutAction, *copyAction, *pasteAction, *deleteAction;
+      QAction *cutAction, *copyAction, *copyRangeAction, *pasteAction, *pasteDialogAction, *deleteAction;
       QAction *fixedAction, *veloAction, *crescAction, *quantizeAction;
       QAction *sallAction, *snoneAction, *invAction, *inAction , *outAction;
       QAction *prevAction, *nextAction;
@@ -104,10 +102,6 @@ class DrumEdit : public MidiEditor {
       virtual void closeEvent(QCloseEvent*);
       QWidget* genToolbar(QWidget* parent);
       virtual void keyPressEvent(QKeyEvent*);
-
-      virtual void resizeEvent(QResizeEvent*);
-      virtual void focusOutEvent(QFocusEvent*);
-      void storeInitialState();
 
       void setHeaderToolTips();
       void setHeaderWhatsThis();
@@ -139,7 +133,7 @@ class DrumEdit : public MidiEditor {
       
       virtual void updateHScrollRange();
    signals:
-      void deleted(unsigned long);
+      void deleted(TopWin*);
 
    public:
       DrumEdit(PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);

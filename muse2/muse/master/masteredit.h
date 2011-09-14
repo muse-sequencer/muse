@@ -79,14 +79,8 @@ class MasterEdit : public MidiEditor {
       QToolButton* enableButton;
       
       static int _rasterInit;
-      static int _widthInit, _heightInit;
-      static QByteArray _toolbarInit;
-
       
       virtual void closeEvent(QCloseEvent*);
-      virtual void resizeEvent(QResizeEvent*);
-      virtual void focusOutEvent(QFocusEvent*);
-      void storeInitialState();
 
    private slots:
       void _setRaster(int);
@@ -99,7 +93,7 @@ class MasterEdit : public MidiEditor {
 //      void tempoChanged(double);
 
    signals:
-      void deleted(unsigned long);
+      void deleted(TopWin*);
 
    public:
       MasterEdit();

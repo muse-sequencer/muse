@@ -34,6 +34,11 @@
 #include "pianoroll.h"
 #include "scoreedit.h"
 #include "master/masteredit.h"
+#include "listedit.h"
+#include "cliplist/cliplist.h"
+#include "arrangerview.h"
+#include "marker/markerview.h"
+#include "master/lmaster.h"
 ///#include "transport.h"
 #include "bigtime.h"
 #include "arranger.h"
@@ -893,12 +898,6 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               }
                         //else if (tag == "midiSyncInfo")
                         //      readConfigMidiSyncInfo(xml);
-                        else if (tag == "arranger") {
-                              if (MusEGlobal::muse && MusEGlobal::muse->arranger)
-                                    MusEGlobal::muse->arranger->readStatus(xml);
-                              else
-                                    xml.skip(tag);
-                              }
                         else if (tag == "drumedit")
                               DrumEdit::readConfiguration(xml);
                         else if (tag == "pianoroll")
@@ -909,6 +908,22 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                               MasterEdit::readConfiguration(xml);
                         else if (tag == "waveedit")
                               WaveEdit::readConfiguration(xml);
+                        else if (tag == "listedit")
+                              ListEdit::readConfiguration(xml);
+                        else if (tag == "cliplistedit")
+                              ClipListEdit::readConfiguration(xml);
+                        else if (tag == "lmaster")
+                              LMaster::readConfiguration(xml);
+                        else if (tag == "marker")
+                              MarkerView::readConfiguration(xml);
+                        else if (tag == "arrangerview")
+                              ArrangerView::readConfiguration(xml);
+                        else if (tag == "arranger") {
+                              if (MusEGlobal::muse && MusEGlobal::muse->arranger())
+                                    MusEGlobal::muse->arranger()->readStatus(xml);
+                              else
+                                    xml.skip(tag);
+                              }
                         else if (tag == "dialogs")
                               read_function_dialog_config(xml);
                         else if (tag == "shortcuts")
@@ -1354,6 +1369,11 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       ScoreEdit::write_configuration(level, xml);
       MasterEdit::writeConfiguration(level, xml);
       WaveEdit::writeConfiguration(level, xml);
+      ListEdit::writeConfiguration(level, xml);
+      ClipListEdit::writeConfiguration(level, xml);
+      LMaster::writeConfiguration(level, xml);
+      MarkerView::writeConfiguration(level, xml);
+      ArrangerView::writeConfiguration(level, xml);
       
       write_function_dialog_config(level, xml);
 
@@ -1463,7 +1483,7 @@ void MusE::writeConfiguration(int level, Xml& xml) const
             //mixer2->write(level, xml, "mixer2");
             mixer2->write(level, xml);
 
-      arranger->writeStatus(level, xml);
+      _arranger->writeStatus(level, xml);
       writeSeqConfiguration(level, xml, true);
 
       DrumEdit::writeConfiguration(level, xml);

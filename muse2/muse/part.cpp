@@ -648,8 +648,8 @@ int PartList::index(Part* part)
                   }
       if(MusEGlobal::debugMsg)
         printf("PartList::index(): not found!\n");
-      //return 0;
-      return -1;
+      //return 0; // don't comment this in again
+      return -1;  // don't change that value. at least MidiEditor::addNewParts relies on this
       }
 
 //---------------------------------------------------------
@@ -1044,6 +1044,9 @@ void Song::cmdSplitPart(Track* track, Part* part, int tick)
       Part* p1;
       Part* p2;
       track->splitPart(part, tick, p1, p2);
+      
+      //song->informAboutNewParts(part, p1); // is unneccessary because of ChangePart below
+      song->informAboutNewParts(part, p2);
 
       startUndo();
       // Indicate no undo, and do port controller values but not clone parts. 

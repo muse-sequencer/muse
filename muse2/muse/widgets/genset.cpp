@@ -129,10 +129,10 @@ Shorter periods are desirable.</string>
       showMixer->setChecked(MusEConfig::config.mixer1Visible);
       showMixer2->setChecked(MusEConfig::config.mixer2Visible);
 
-      arrangerX->setValue(MusEConfig::config.geometryMain.x());
-      arrangerY->setValue(MusEConfig::config.geometryMain.y());
-      arrangerW->setValue(MusEConfig::config.geometryMain.width());
-      arrangerH->setValue(MusEConfig::config.geometryMain.height());
+      mainX->setValue(MusEConfig::config.geometryMain.x());
+      mainY->setValue(MusEConfig::config.geometryMain.y());
+      mainW->setValue(MusEConfig::config.geometryMain.width());
+      mainH->setValue(MusEConfig::config.geometryMain.height());
 
       transportX->setValue(MusEConfig::config.geometryTransport.x());
       transportY->setValue(MusEConfig::config.geometryTransport.y());
@@ -178,9 +178,32 @@ Shorter periods are desirable.</string>
       connect(setMixerCurrent, SIGNAL(clicked()), SLOT(mixerCurrent()));
       connect(setMixer2Current, SIGNAL(clicked()), SLOT(mixer2Current()));
       connect(setBigtimeCurrent, SIGNAL(clicked()), SLOT(bigtimeCurrent()));
-      connect(setArrangerCurrent, SIGNAL(clicked()), SLOT(arrangerCurrent()));
+      connect(setMainCurrent, SIGNAL(clicked()), SLOT(mainCurrent()));
       connect(setTransportCurrent, SIGNAL(clicked()), SLOT(transportCurrent()));
+      
+      connect(buttonTraditionalPreset, SIGNAL(clicked()), SLOT(traditionalPreset()));
+      connect(buttonMDIPreset, SIGNAL(clicked()), SLOT(mdiPreset()));
+      connect(buttonBorlandPreset, SIGNAL(clicked()), SLOT(borlandPreset()));
+      
+      addMdiSettings(TopWin::ARRANGER);
+      addMdiSettings(TopWin::SCORE);
+      addMdiSettings(TopWin::PIANO_ROLL);
+      addMdiSettings(TopWin::DRUM);
+      addMdiSettings(TopWin::LISTE);
+      addMdiSettings(TopWin::WAVE);
+      addMdiSettings(TopWin::MASTER);
+      addMdiSettings(TopWin::LMASTER);
+      addMdiSettings(TopWin::CLIPLIST);
+      addMdiSettings(TopWin::MARKER);
+      
       }
+
+void GlobalSettingsConfig::addMdiSettings(TopWin::ToplevelType t)
+{
+  MdiSettings* temp = new MdiSettings(t, this);
+  layoutMdiSettings->addWidget(temp);
+  mdisettings.push_back(temp);
+}
 
 //---------------------------------------------------------
 //   updateSettings
@@ -242,10 +265,10 @@ void GlobalSettingsConfig::updateSettings()
       showMixer->setChecked(MusEConfig::config.mixer1Visible);
       showMixer2->setChecked(MusEConfig::config.mixer2Visible);
 
-      arrangerX->setValue(MusEConfig::config.geometryMain.x());
-      arrangerY->setValue(MusEConfig::config.geometryMain.y());
-      arrangerW->setValue(MusEConfig::config.geometryMain.width());
-      arrangerH->setValue(MusEConfig::config.geometryMain.height());
+      mainX->setValue(MusEConfig::config.geometryMain.x());
+      mainY->setValue(MusEConfig::config.geometryMain.y());
+      mainW->setValue(MusEConfig::config.geometryMain.width());
+      mainH->setValue(MusEConfig::config.geometryMain.height());
 
       transportX->setValue(MusEConfig::config.geometryTransport.x());
       transportY->setValue(MusEConfig::config.geometryTransport.y());
@@ -282,6 +305,20 @@ void GlobalSettingsConfig::updateSettings()
       moveArmedCheckBox->setChecked(MusEConfig::config.moveArmedCheckBox);
       projectSaveCheckBox->setChecked(MusEConfig::config.useProjectSaveDialog);
       popsDefStayOpenCheckBox->setChecked(MusEConfig::config.popupsDefaultStayOpen);
+      
+      updateMdiSettings();
+}
+
+void GlobalSettingsConfig::updateMdiSettings()
+{
+  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
+    (*it)->update_settings();
+}
+
+void GlobalSettingsConfig::applyMdiSettings()
+{
+  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
+    (*it)->apply_settings();
 }
 
 //---------------------------------------------------------
@@ -329,10 +366,10 @@ void GlobalSettingsConfig::apply()
       MusEConfig::config.mixer1Visible     = showMixer->isChecked();
       MusEConfig::config.mixer2Visible     = showMixer2->isChecked();
 
-      MusEConfig::config.geometryMain.setX(arrangerX->value());
-      MusEConfig::config.geometryMain.setY(arrangerY->value());
-      MusEConfig::config.geometryMain.setWidth(arrangerW->value());
-      MusEConfig::config.geometryMain.setHeight(arrangerH->value());
+      MusEConfig::config.geometryMain.setX(mainX->value());
+      MusEConfig::config.geometryMain.setY(mainY->value());
+      MusEConfig::config.geometryMain.setWidth(mainW->value());
+      MusEConfig::config.geometryMain.setHeight(mainH->value());
 
       MusEConfig::config.geometryTransport.setX(transportX->value());
       MusEConfig::config.geometryTransport.setY(transportY->value());
@@ -403,6 +440,9 @@ void GlobalSettingsConfig::apply()
 
       MusEGlobal::muse->setHeartBeat();        // set guiRefresh
       midiSeq->msgSetRtc();        // set midi tick rate
+      
+      applyMdiSettings();
+      
       MusEGlobal::muse->changeConfig(true);    // save settings
       }
 
@@ -437,8 +477,8 @@ void GlobalSettingsConfig::mixerCurrent()
       QRect r(w->frameGeometry());
       mixerX->setValue(r.x());
       mixerY->setValue(r.y());
-      mixerW->setValue(r.width());
-      mixerH->setValue(r.height());
+      mixerW->setValue(w->width());
+      mixerH->setValue(w->height());
       }
 
 //---------------------------------------------------------
@@ -453,8 +493,8 @@ void GlobalSettingsConfig::mixer2Current()
       QRect r(w->frameGeometry());
       mixer2X->setValue(r.x());
       mixer2Y->setValue(r.y());
-      mixer2W->setValue(r.width());
-      mixer2H->setValue(r.height());
+      mixer2W->setValue(w->width());
+      mixer2H->setValue(w->height());
       }
 
 //---------------------------------------------------------
@@ -469,21 +509,21 @@ void GlobalSettingsConfig::bigtimeCurrent()
       QRect r(w->frameGeometry());
       bigtimeX->setValue(r.x());
       bigtimeY->setValue(r.y());
-      bigtimeW->setValue(r.width());
-      bigtimeH->setValue(r.height());
+      bigtimeW->setValue(w->width());
+      bigtimeH->setValue(w->height());
       }
 
 //---------------------------------------------------------
-//   arrangerCurrent
+//   mainCurrent
 //---------------------------------------------------------
 
-void GlobalSettingsConfig::arrangerCurrent()
+void GlobalSettingsConfig::mainCurrent()
       {
       QRect r(MusEGlobal::muse->frameGeometry());
-      arrangerX->setValue(r.x());
-      arrangerY->setValue(r.y());
-      arrangerW->setValue(r.width());
-      arrangerH->setValue(r.height());
+      mainX->setValue(r.x());
+      mainY->setValue(r.y());
+      mainW->setValue(MusEGlobal::muse->width());  //this is intendedly not the frameGeometry, but
+      mainH->setValue(MusEGlobal::muse->height()); //the "non-frame-geom." to avoid a sizing bug
       }
 
 //---------------------------------------------------------
@@ -514,4 +554,43 @@ void GlobalSettingsConfig::defaultInstrumentsPath()
       userInstrumentsPath->setText(dir);
       }
 
+
+void GlobalSettingsConfig::traditionalPreset()
+{
+  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
+  {
+    TopWin::ToplevelType type = (*it)->type();
+    TopWin::_sharesWhenFree[type]=false;
+    TopWin::_defaultSubwin[type]=false;
+  }
+  TopWin::_defaultSubwin[TopWin::ARRANGER]=true;
+  
+  updateMdiSettings();
+}
+
+void GlobalSettingsConfig::mdiPreset()
+{
+  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
+  {
+    TopWin::ToplevelType type = (*it)->type();
+    TopWin::_sharesWhenSubwin[type]=true;
+    TopWin::_defaultSubwin[type]=true;
+  }
+  
+  updateMdiSettings();
+}
+
+void GlobalSettingsConfig::borlandPreset()
+{
+  for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
+  {
+    TopWin::ToplevelType type = (*it)->type();
+    TopWin::_sharesWhenFree[type]=true;
+    TopWin::_defaultSubwin[type]=false;
+  }
+  
+  updateMdiSettings();
+}
+
 } // namespace MusEWidget
+

@@ -23,37 +23,19 @@
 #ifndef __FUNCTIONS_H__
 #define __FUNCTIONS_H__
 
-#include "widgets/function_dialogs/velocity.h"
-#include "widgets/function_dialogs/quantize.h"
-#include "widgets/function_dialogs/crescendo.h"
-#include "widgets/function_dialogs/gatetime.h"
-#include "widgets/function_dialogs/remove.h"
-#include "widgets/function_dialogs/transpose.h"
-#include "widgets/function_dialogs/setlen.h"
-#include "widgets/function_dialogs/move.h"
-#include "widgets/function_dialogs/deloverlaps.h"
-#include "widgets/function_dialogs/legato.h"
-
 #include <set>
 #include "part.h"
+#include "dialogs.h"
+#include <QWidget>
 
 class QString;
 class QMimeData;
 class Undo;
 
-extern MusEDialog::GateTime* gatetime_dialog;
-extern MusEDialog::Velocity* velocity_dialog;
-extern MusEDialog::Quantize* quantize_dialog;
-extern MusEDialog::Remove* erase_dialog;
-extern MusEDialog::DelOverlaps* del_overlaps_dialog;
-extern MusEDialog::Setlen* set_notelen_dialog;
-extern MusEDialog::Move* move_notes_dialog;
-extern MusEDialog::Transpose* transpose_dialog;
-extern MusEDialog::Crescendo* crescendo_dialog;
-extern MusEDialog::Legato* legato_dialog;
 
+#define FUNCTION_RANGE_ONLY_SELECTED 1
+#define FUNCTION_RANGE_ONLY_BETWEEN_MARKERS 2
 
-void init_function_dialogs(QWidget* parent);
 
 
 std::set<Part*> partlist_to_set(PartList* pl);
@@ -87,12 +69,25 @@ bool erase_notes(const std::set<Part*>& parts);
 bool delete_overlaps(const std::set<Part*>& parts);
 bool legato(const std::set<Part*>& parts);
 
+//the below functions operate on selected parts
+bool modify_velocity();
+bool modify_notelen();
+bool quantize_notes();
+bool set_notelen();
+bool move_notes();
+bool transpose_notes();
+bool crescendo();
+bool erase_notes();
+bool delete_overlaps();
+bool legato();
+
 
 //functions for copy'n'paste
 void copy_notes(const std::set<Part*>& parts, int range);
-void paste_notes(Part* dest_part);
+bool paste_notes(Part* paste_into_part=NULL); // shows a dialog
+void paste_notes(int max_distance=3072, bool always_new_part=false, bool never_new_part=false, Part* paste_into_part=NULL, int amount=1, int raster=3072);
 QMimeData* selected_events_to_mime(const std::set<Part*>& parts, int range);
-void paste_at(Part* dest_part, const QString& pt, int pos);
+void paste_at(const QString& pt, int pos, int max_distance=3072, bool always_new_part=false, bool never_new_part=false, Part* paste_into_part=NULL, int amount=1, int raster=3072);
 
 //functions for selections
 void select_all(const std::set<Part*>& parts);
@@ -106,10 +101,5 @@ void shrink_parts(int raster=-1); //negative values mean "config.division"
 void expand_parts(int raster=-1);
 void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo& operations);
 void clean_parts();
-
-//functions for reading and writing default values
-class Xml;
-void read_function_dialog_config(Xml& xml);
-void write_function_dialog_config(int level, Xml& xml);
 
 #endif
