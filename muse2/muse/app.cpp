@@ -919,7 +919,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
       setCentralWidget(mdiArea);
-      connect(windowsTileAction, SIGNAL(activated()), mdiArea, SLOT(tileSubWindows()));
+      connect(windowsTileAction, SIGNAL(activated()), this, SLOT(tileSubWindows()));
       connect(windowsRowsAction, SIGNAL(activated()), this, SLOT(arrangeSubWindowsRows()));
       connect(windowsColumnsAction, SIGNAL(activated()), this, SLOT(arrangeSubWindowsColumns()));
       connect(windowsCascadeAction, SIGNAL(activated()), mdiArea, SLOT(cascadeSubWindows()));
@@ -3299,9 +3299,17 @@ list<QMdiSubWindow*> get_all_visible_subwins(QMdiArea* mdiarea)
   QList<QMdiSubWindow*> wins = mdiarea->subWindowList();
   list<QMdiSubWindow*> result;
   
+  // always put the arranger at the top of the list, if visible
+  
   for (QList<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++)
     if ((*it)->isVisible() && ((*it)->isMinimized()==false))
-      result.push_back(*it);
+      if (dynamic_cast<TopWin*>((*it)->widget())->type()==TopWin::ARRANGER)
+        result.push_back(*it);
+  
+  for (QList<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++)
+    if ((*it)->isVisible() && ((*it)->isMinimized()==false))
+      if (dynamic_cast<TopWin*>((*it)->widget())->type()!=TopWin::ARRANGER)
+        result.push_back(*it);
   
   return result;
 }
@@ -3374,6 +3382,54 @@ void MusE::arrangeSubWindowsRows()
       (*it)->resize(width-x_add, bottom-top-y_add);
     }
   }  
+}
+
+void MusE::tileSubWindows()
+{
+  list<QMdiSubWindow*> wins=get_all_visible_subwins(mdiArea);
+  int n=wins.size();
+  
+  if (n==0)
+    return;
+  else if (n==1)
+    (*wins.begin())->showMaximized();
+  else
+  {
+    int nx,ny;
+    nx=ceil(sqrt(n));
+    ny=ceil((double)n/nx);
+    
+    int width = mdiArea->width();
+    int height = mdiArea->height();
+    int x_add = (*wins.begin())->frameGeometry().width() - (*wins.begin())->geometry().width();
+    int y_add = (*wins.begin())->frameGeometry().height() - (*wins.begin())->geometry().height();
+    int height_per_win = height/ny;
+    int width_per_win = height/nx;
+    
+    if ((x_add >= width_per_win) || (y_add >= height_per_win))
+    {
+      printf("ERROR: tried to tile subwins, but there's too few space.\n");
+      return;
+    }
+    
+    int i=0, j=0;
+    for (list<QMdiSubWindow*>::iterator it=wins.begin(); it!=wins.end(); it++, i++)
+    {
+      if (i>=nx)
+      {
+        i=0;
+        j++;
+      }
+      
+      int top = (float) height*j/ny;
+      int bottom = (float) height*(j+1.0)/ny;
+      int left = (float) width*i/nx;
+      int right = (float) width*(i+1.0)/nx;
+      
+      (*it)->move(left,top);
+      (*it)->resize(right-left-x_add, bottom-top-y_add);
+    }
+  }
 }
 
 } //namespace MusEApp

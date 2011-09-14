@@ -325,6 +325,7 @@ class MusE : public QMainWindow
       
       void arrangeSubWindowsRows();
       void arrangeSubWindowsColumns();
+      void tileSubWindows();
 
    public slots:
       bool saveAs();

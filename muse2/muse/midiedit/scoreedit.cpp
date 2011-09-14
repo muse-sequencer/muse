@@ -4539,7 +4539,9 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  * 
  * CURRENT TODO
- *   o TEST pasting in editors!
+ * M o ecanvas: FINDMICH
+ * M o dialog.cpp: FINDMICH
+ * M o TEST pasting in editors!
  * 
  *   o ticks-to-quarter spinboxes
  * 
