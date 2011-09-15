@@ -4554,19 +4554,16 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *   o rename stuff with F2 key
  *   o redo transport menu: offer "one beat" and "one bar" steps
  *                          maybe also offer scrollbar
- *   o quick "set left/right marker", "select between markers"
- *     or even "set marker and select between immediately"
- *   o support partially selected parts. when moving, automatically split
- * 
+ *
  *   o shrink a part from its beginning as well! watch out for clones!
  *
  *   o canvas editor: create clone via "alt+drag" moves window instead
- *   o investigate with valgrind
+ * > o investigate with valgrind
  *   o controller view in score editor
  *   o solo button
- *   o grand staff brace
- *   o drum editor: channel-stuff
- *   o do partial recalculating; recalculating can take pretty long
+ * > o grand staff brace
+ * > o drum editor: channel-stuff
+ * > o do partial recalculating; recalculating can take pretty long
  *     (0,5 sec) when displaying a whole song in scores
  *   o transpose etc. must also transpose key-pressure events
  *   o transpose: support in-key-transpose
