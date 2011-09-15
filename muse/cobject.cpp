@@ -396,8 +396,8 @@ void TopWin::initConfiguration()
 
 void TopWin::readConfiguration(ToplevelType t, Xml& xml)
 {
-if (initInited==false)
-	initConfiguration();
+	if (initInited==false)
+		initConfiguration();
 
 	for (;;)
 	{

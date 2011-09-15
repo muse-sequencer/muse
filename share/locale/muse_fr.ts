@@ -7271,9 +7271,8 @@ midi</translation>
 <context>
     <name>MidiControllerEditDialogBase</name>
     <message>
-        <location filename="../../muse/instruments/ccontrolbase.ui" line="+16"/>
         <source>MusE: Define Midi Controller</source>
-        <translation type="unfinished">MusE: Définir un Contrôle Midi</translation>
+        <translation type="obsolete">MusE: Définir un Contrôle Midi</translation>
     </message>
     <message>
         <source>replace controller set</source>
@@ -7288,159 +7287,77 @@ midi</translation>
         <translation type="obsolete">Enregistrer le groupe de contrôles sous</translation>
     </message>
     <message>
-        <location line="+127"/>
         <source>Name                  </source>
-        <translation type="unfinished">Nom                  </translation>
+        <translation type="obsolete">Nom                  </translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Type       </source>
-        <translation type="unfinished">Type       </translation>
+        <translation type="obsolete">Type       </translation>
     </message>
     <message>
-        <location line="+11"/>
-        <location line="+266"/>
         <source>H-Ctrl</source>
-        <translation type="unfinished">H-Ctrl</translation>
+        <translation type="obsolete">H-Ctrl</translation>
     </message>
     <message>
-        <location line="-255"/>
-        <location line="+283"/>
         <source>L-Ctrl</source>
-        <translation type="unfinished">L-Ctrl</translation>
+        <translation type="obsolete">L-Ctrl</translation>
     </message>
     <message>
-        <location line="-272"/>
         <source>Min Val</source>
-        <translation type="unfinished">Val Min</translation>
+        <translation type="obsolete">Val Min</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Max Val</source>
-        <translation type="unfinished">Val Max</translation>
+        <translation type="obsolete">Val Max</translation>
     </message>
     <message>
-        <location line="+22"/>
         <source>list of defined controllers</source>
-        <translation type="unfinished">list des contrôles définis</translation>
+        <translation type="obsolete">list des contrôles définis</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>This is the MusE list of defined controllers.</source>
-        <translation type="unfinished">C&apos;est la liste des contrôles qui ont été
+        <translation type="obsolete">C&apos;est la liste des contrôles qui ont été
 définis.</translation>
     </message>
     <message>
-        <location line="+16"/>
-        <source>Managed Controller for Port</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
         <source>Channel</source>
-        <translation type="unfinished">Canal</translation>
+        <translation type="obsolete">Canal</translation>
     </message>
     <message>
-        <location line="+21"/>
-        <source>This is a list of commonly used midi controllers.
-Note that in MusE pitch and program changes are
-handled like normal controllers.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
         <source>Properties</source>
-        <translation type="unfinished">Propriétés</translation>
+        <translation type="obsolete">Propriétés</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Name</source>
-        <translation type="unfinished">Nom</translation>
+        <translation type="obsolete">Nom</translation>
     </message>
     <message>
-        <location line="+38"/>
         <source>Max Value</source>
-        <translation type="unfinished">Valeur Max</translation>
+        <translation type="obsolete">Valeur Max</translation>
     </message>
     <message>
-        <location line="+66"/>
-        <source>RPN14</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>NRPN14</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
         <source>Pitch</source>
-        <translation type="unfinished">Hauteur</translation>
+        <translation type="obsolete">Hauteur</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Program</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <source>Midi Controller Number High Byte</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+28"/>
-        <source>Midi Controller Number Low Byte</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Range</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-173"/>
         <source>Min Value</source>
-        <translation type="unfinished">Valeur Mini</translation>
+        <translation type="obsolete">Valeur Mini</translation>
     </message>
     <message>
-        <location line="-266"/>
-        <source>&amp;Add</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Alt+A</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+60"/>
-        <source>A&amp;pply</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>Predefined Controller:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+247"/>
         <source>Control7</source>
-        <translation type="unfinished">Control7</translation>
+        <translation type="obsolete">Control7</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Control14</source>
-        <translation type="unfinished">Control8</translation>
+        <translation type="obsolete">Control8</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>RPN</source>
-        <translation type="unfinished">RPN</translation>
+        <translation type="obsolete">RPN</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>NRPN</source>
-        <translation type="unfinished">NRPN</translation>
+        <translation type="obsolete">NRPN</translation>
     </message>
     <message>
         <source>XG-SysEx</source>
@@ -7451,45 +7368,38 @@ handled like normal controllers.</source>
         <translation type="obsolete">SysEx</translation>
     </message>
     <message>
-        <location line="-34"/>
         <source>Type</source>
-        <translation type="unfinished">Type</translation>
+        <translation type="obsolete">Type</translation>
     </message>
     <message>
         <source>&amp;New</source>
         <translation type="obsolete">&amp;Nouveau</translation>
     </message>
     <message>
-        <location line="-306"/>
         <source>create new entry</source>
-        <translation type="unfinished">Crée une nouvelle entrée</translation>
+        <translation type="obsolete">Crée une nouvelle entrée</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>pressing the New button you create a new entry
 in the MusE list of defined controllers</source>
-        <translation type="unfinished">Crée une nouvelle entrée dans la liste des
+        <translation type="obsolete">Crée une nouvelle entrée dans la liste des
 contrôles</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>&amp;Delete</source>
-        <translation type="unfinished">&amp;Effacer</translation>
+        <translation type="obsolete">&amp;Effacer</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>delete selected entry</source>
-        <translation type="unfinished">efface l&apos;entrée sélectionnée</translation>
+        <translation type="obsolete">efface l&apos;entrée sélectionnée</translation>
     </message>
     <message>
-        <location line="+25"/>
         <source>&amp;OK</source>
-        <translation type="unfinished">&amp;Ok</translation>
+        <translation type="obsolete">&amp;Ok</translation>
     </message>
     <message>
-        <location line="+22"/>
         <source>&amp;Cancel</source>
-        <translation type="unfinished">&amp;Annuler</translation>
+        <translation type="obsolete">&amp;Annuler</translation>
     </message>
 </context>
 <context>
@@ -10839,7 +10749,7 @@ Right-click to show GUI.</source>
     </message>
     <message>
         <location line="+1"/>
-        <source>&amp;Copy in range</source>
+        <source>Copy in range</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -12325,14 +12235,6 @@ Apply sync settings?</source>
     <message>
         <location filename="../../muse/widgets/visibletracks.cpp" line="+9"/>
         <source>Visible track types</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>MusEWidget::WTScale</name>
-    <message>
-        <location filename="../../muse/widgets/wtscale.cpp" line="+46"/>
-        <source>bar scale</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -13948,502 +13850,346 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>RhythmBase</name>
     <message>
-        <location filename="../../muse/mplugins/rhythmbase.ui" line="+14"/>
         <source>MusE: Random Rhythm Generator</source>
-        <translation type="unfinished">MusE: Générateur Aléatoire de Rythmes</translation>
+        <translation type="obsolete">MusE: Générateur Aléatoire de Rythmes</translation>
     </message>
     <message>
-        <location line="+21"/>
         <source>Instrument Properties</source>
-        <translation type="unfinished">Propriétés des Instruments</translation>
+        <translation type="obsolete">Propriétés des Instruments</translation>
     </message>
     <message>
-        <location line="+20"/>
-        <location line="+334"/>
         <source>counts/bar</source>
-        <translation type="unfinished">battements/mesure</translation>
+        <translation type="obsolete">battements/mesure</translation>
     </message>
     <message>
-        <location line="-324"/>
         <source>steps/count</source>
-        <translation type="unfinished">divisions/battements</translation>
+        <translation type="obsolete">divisions/battements</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <location line="+325"/>
         <source># bars</source>
-        <translation type="unfinished"># mesure</translation>
+        <translation type="obsolete"># mesure</translation>
     </message>
     <message>
-        <location line="-315"/>
         <source>test</source>
-        <translation type="unfinished">test</translation>
+        <translation type="obsolete">test</translation>
     </message>
     <message>
-        <location line="+26"/>
-        <location line="+300"/>
         <source>contrib</source>
-        <translation type="unfinished">contrib</translation>
+        <translation type="obsolete">contrib</translation>
     </message>
     <message>
-        <location line="-290"/>
         <source>randomize</source>
-        <translation type="unfinished">aléatoire</translation>
+        <translation type="obsolete">aléatoire</translation>
     </message>
     <message>
-        <location line="+19"/>
         <source>Group 1</source>
-        <translation type="unfinished">Groupe 1</translation>
+        <translation type="obsolete">Groupe 1</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Group 2</source>
-        <translation type="unfinished">Groupe 2</translation>
+        <translation type="obsolete">Groupe 2</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Group 3</source>
-        <translation type="unfinished">Groupe 3</translation>
+        <translation type="obsolete">Groupe 3</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Group 4</source>
-        <translation type="unfinished">Groupe 4</translation>
+        <translation type="obsolete">Groupe 4</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Group 5</source>
-        <translation type="unfinished">Groupe 5</translation>
+        <translation type="obsolete">Groupe 5</translation>
     </message>
     <message>
-        <location line="+34"/>
-        <location line="+228"/>
         <source>listen</source>
-        <translation type="unfinished">écoute</translation>
+        <translation type="obsolete">écoute</translation>
     </message>
     <message>
-        <location line="-218"/>
         <source>Instrument</source>
-        <translation type="unfinished">Instrument</translation>
+        <translation type="obsolete">Instrument</translation>
     </message>
     <message>
-        <location line="+36"/>
-        <location line="+127"/>
-        <source>Group</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-100"/>
-        <location line="+341"/>
         <source>&amp;New</source>
-        <translation type="unfinished">&amp;Nouveau</translation>
+        <translation type="obsolete">&amp;Nouveau</translation>
     </message>
     <message>
-        <location line="-348"/>
         <source>create new entry</source>
-        <translation type="unfinished">créer une nouvelle entrée</translation>
+        <translation type="obsolete">créer une nouvelle entrée</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>pressing the New button you create a new entry
 in the MusE list of defined controllers</source>
-        <translation type="unfinished">en appuyant sur Nouveau vous créez une nouvelle entrée
+        <translation type="obsolete">en appuyant sur Nouveau vous créez une nouvelle entrée
 dans la liste des contrôles</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>&amp;Delete</source>
-        <translation type="unfinished">&amp;Effacer</translation>
+        <translation type="obsolete">&amp;Effacer</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>delete selected entry</source>
-        <translation type="unfinished">efface l&apos;entrée sélectionnée</translation>
+        <translation type="obsolete">efface l&apos;entrée sélectionnée</translation>
     </message>
     <message>
-        <location line="+29"/>
         <source>Up</source>
-        <translation type="unfinished">Haut</translation>
+        <translation type="obsolete">Haut</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Down</source>
-        <translation type="unfinished">Bas</translation>
+        <translation type="obsolete">Bas</translation>
     </message>
     <message>
-        <location line="+43"/>
         <source>Instrument              </source>
-        <translation type="unfinished">Instrument</translation>
+        <translation type="obsolete">Instrument</translation>
     </message>
     <message>
-        <location line="+22"/>
         <source>steps/count      </source>
-        <translation type="unfinished">divisions/battement</translation>
+        <translation type="obsolete">divisions/battement</translation>
     </message>
     <message>
-        <location line="-35"/>
         <source>list of defined controllers</source>
-        <translation type="unfinished">liste des contrôles définis</translation>
+        <translation type="obsolete">liste des contrôles définis</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>This is the MusE list of defined controllers.</source>
-        <translation type="unfinished">Ceci est la liste des contrôles qui ont été
+        <translation type="obsolete">Ceci est la liste des contrôles qui ont été
 définis.</translation>
     </message>
     <message>
-        <location line="+178"/>
-        <source>&lt;b&gt;Notice!&lt;/b&gt;&lt;br&gt;
-Random Rhythm Generator is not enabled yet!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+41"/>
         <source>&amp;File</source>
-        <translation type="unfinished">&amp;Fichier</translation>
+        <translation type="obsolete">&amp;Fichier</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>&amp;Edit</source>
-        <translation type="unfinished">&amp;Edition</translation>
+        <translation type="obsolete">&amp;Edition</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>&amp;Help</source>
-        <translation type="unfinished">&amp;Aide</translation>
+        <translation type="obsolete">&amp;Aide</translation>
     </message>
     <message>
-        <location line="-44"/>
         <source>Tools</source>
-        <translation type="unfinished">Outils</translation>
+        <translation type="obsolete">Outils</translation>
     </message>
     <message>
-        <location line="+64"/>
         <source>New</source>
-        <translation type="unfinished">Nouveau</translation>
+        <translation type="obsolete">Nouveau</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Ctrl+N</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
         <source>Open</source>
-        <translation type="unfinished">Ouvrir</translation>
+        <translation type="obsolete">Ouvrir</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Open...</source>
-        <translation type="unfinished">&amp;Ouvrir...</translation>
+        <translation type="obsolete">&amp;Ouvrir...</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Ctrl+O</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
         <source>Save</source>
-        <translation type="unfinished">Sauvegarder</translation>
+        <translation type="obsolete">Sauvegarder</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Save</source>
-        <translation type="unfinished">&amp;Sauvegarder</translation>
+        <translation type="obsolete">&amp;Sauvegarder</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Ctrl+S</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
         <source>Save As</source>
-        <translation type="unfinished">Sauvegarder sous</translation>
+        <translation type="obsolete">Sauvegarder sous</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>Save &amp;As...</source>
-        <translation type="unfinished">Sauvegarder &amp;sous...</translation>
+        <translation type="obsolete">Sauvegarder &amp;sous...</translation>
     </message>
     <message>
-        <location line="+21"/>
         <source>Print</source>
-        <translation type="unfinished">Imprimer</translation>
+        <translation type="obsolete">Imprimer</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Print...</source>
-        <translation type="unfinished">Im&amp;primer...</translation>
+        <translation type="obsolete">Im&amp;primer...</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Ctrl+P</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
         <source>Exit</source>
-        <translation type="unfinished">Quitter</translation>
+        <translation type="obsolete">Quitter</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>E&amp;xit</source>
-        <translation type="unfinished">&amp;Quitter</translation>
+        <translation type="obsolete">&amp;Quitter</translation>
     </message>
     <message>
-        <location line="+21"/>
         <source>Undo</source>
-        <translation type="unfinished">Annuler</translation>
+        <translation type="obsolete">Annuler</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Undo</source>
-        <translation type="unfinished">&amp;Annuler</translation>
+        <translation type="obsolete">&amp;Annuler</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Ctrl+Z</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
         <source>Redo</source>
-        <translation type="unfinished">Refaire</translation>
+        <translation type="obsolete">Refaire</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Redo</source>
-        <translation type="unfinished">&amp;Refaire</translation>
+        <translation type="obsolete">&amp;Refaire</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Ctrl+Y</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
         <source>Cut</source>
-        <translation type="unfinished">Couper</translation>
+        <translation type="obsolete">Couper</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Cut</source>
-        <translation type="unfinished">Co&amp;uper</translation>
+        <translation type="obsolete">Co&amp;uper</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Ctrl+X</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
         <source>Copy</source>
-        <translation type="unfinished">Copier</translation>
+        <translation type="obsolete">Copier</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>C&amp;opy</source>
-        <translation type="unfinished">&amp;Copier</translation>
+        <translation type="obsolete">&amp;Copier</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Ctrl+C</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
         <source>Paste</source>
-        <translation type="unfinished">Coller</translation>
+        <translation type="obsolete">Coller</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Paste</source>
-        <translation type="unfinished">C&amp;oller</translation>
+        <translation type="obsolete">C&amp;oller</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Ctrl+V</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
         <source>Find</source>
-        <translation type="unfinished">Rechercher</translation>
+        <translation type="obsolete">Rechercher</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Find...</source>
-        <translation type="unfinished">&amp;Rechercher...</translation>
+        <translation type="obsolete">&amp;Rechercher...</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Ctrl+F</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
         <source>Contents</source>
-        <translation type="unfinished">Contenus</translation>
+        <translation type="obsolete">Contenus</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Contents...</source>
-        <translation type="unfinished">Co&amp;ntenus...</translation>
+        <translation type="obsolete">Co&amp;ntenus...</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Index</source>
-        <translation type="unfinished">Index</translation>
+        <translation type="obsolete">Index</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Index...</source>
-        <translation type="unfinished">&amp;Index...</translation>
+        <translation type="obsolete">&amp;Index...</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>About</source>
-        <translation type="unfinished">A propos</translation>
+        <translation type="obsolete">A propos</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;About...</source>
-        <translation type="unfinished">&amp;A propos...</translation>
+        <translation type="obsolete">&amp;A propos...</translation>
     </message>
 </context>
 <context>
     <name>RhythmGenerator</name>
     <message>
-        <location filename="../../muse/mplugins/rhythm.cpp" line="+244"/>
         <source>Form3</source>
-        <translation type="unfinished">Form3</translation>
+        <translation type="obsolete">Form3</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>Instrument Settings:</source>
-        <translation type="unfinished">Réglages des Instruments:</translation>
+        <translation type="obsolete">Réglages des Instruments:</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Instrument</source>
-        <translation type="unfinished">Instrument</translation>
+        <translation type="obsolete">Instrument</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Hi-Hat</source>
-        <translation type="unfinished">Charley (Hi-Hat)</translation>
+        <translation type="obsolete">Charley (Hi-Hat)</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>add</source>
-        <translation type="unfinished">ajouter</translation>
+        <translation type="obsolete">ajouter</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>delete</source>
-        <translation type="unfinished">effacer</translation>
+        <translation type="obsolete">effacer</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>steps/count</source>
-        <translation type="unfinished">battements/division</translation>
+        <translation type="obsolete">battements/division</translation>
     </message>
     <message>
-        <location line="+21"/>
         <source>count/bar</source>
-        <translation type="unfinished">divisions/mesure</translation>
+        <translation type="obsolete">divisions/mesure</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source># bars</source>
-        <translation type="unfinished"># mesures</translation>
+        <translation type="obsolete"># mesures</translation>
     </message>
     <message>
-        <location line="+34"/>
         <source>Group Settings:</source>
-        <translation type="unfinished">Réglages des Groupes:</translation>
+        <translation type="obsolete">Réglages des Groupes:</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>Group</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
         <source>Group 1</source>
-        <translation type="unfinished">Groupe 1</translation>
+        <translation type="obsolete">Groupe 1</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Group 2</source>
-        <translation type="unfinished">Groupe 2</translation>
+        <translation type="obsolete">Groupe 2</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Group 3</source>
-        <translation type="unfinished">Groupe 3</translation>
+        <translation type="obsolete">Groupe 3</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Group 4</source>
-        <translation type="unfinished">Groupe 4</translation>
+        <translation type="obsolete">Groupe 4</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Group 5</source>
-        <translation type="unfinished">Groupe 5</translation>
+        <translation type="obsolete">Groupe 5</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>contrib</source>
-        <translation type="unfinished">contrib</translation>
+        <translation type="obsolete">contrib</translation>
     </message>
     <message>
-        <location line="+19"/>
         <source>listen</source>
-        <translation type="unfinished">écoute</translation>
+        <translation type="obsolete">écoute</translation>
     </message>
     <message>
-        <location line="+22"/>
         <source>Randomize</source>
-        <translation type="unfinished">Aléatoire</translation>
+        <translation type="obsolete">Aléatoire</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Rhythm Style:</source>
-        <translation type="unfinished">Style de Rythme:</translation>
+        <translation type="obsolete">Style de Rythme:</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Clear</source>
-        <translation type="unfinished">Effacer</translation>
+        <translation type="obsolete">Effacer</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Open...</source>
-        <translation type="unfinished">Ouvrir...</translation>
+        <translation type="obsolete">Ouvrir...</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Save</source>
-        <translation type="unfinished">Sauvegarder</translation>
+        <translation type="obsolete">Sauvegarder</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Save as...</source>
-        <translation type="unfinished">Sauvegarder sous...</translation>
+        <translation type="obsolete">Sauvegarder sous...</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Generate</source>
-        <translation type="unfinished">Générer</translation>
+        <translation type="obsolete">Générer</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Close</source>
-        <translation type="unfinished">Fermer</translation>
+        <translation type="obsolete">Fermer</translation>
     </message>
 </context>
 <context>
@@ -14690,7 +14436,7 @@ sélectionnées</translation>
 <context>
     <name>ScoreCanvas</name>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="+1242"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="+1245"/>
         <source>Treble</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14710,7 +14456,7 @@ sélectionnées</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2423"/>
+        <location line="+2467"/>
         <source>Ambiguous part</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14792,7 +14538,7 @@ sélectionnées</translation>
 <context>
     <name>ScoreEdit</name>
     <message>
-        <location line="-3449"/>
+        <location line="-3493"/>
         <source>Undo/Redo tools</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15518,19 +15264,6 @@ disponibles</translation>
     </message>
 </context>
 <context>
-    <name>TimeCanvas</name>
-    <message>
-        <location filename="../../awl/tcanvas.cpp" line="+152"/>
-        <source>Ctrl</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Add Controller View</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>Toolbar1</name>
     <message>
         <source>Solo</source>
@@ -15587,7 +15320,7 @@ disponibles</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+416"/>
+        <location line="+418"/>
         <source>Piano roll</source>
         <translation type="unfinished"></translation>
     </message>
