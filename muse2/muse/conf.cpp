@@ -917,7 +917,7 @@ void readConfiguration(Xml& xml, bool readOnlySequencer)
                         else if (tag == "marker")
                               MarkerView::readConfiguration(xml);
                         else if (tag == "arrangerview")
-                              ArrangerView::readConfiguration(xml);
+                              MusEArranger::ArrangerView::readConfiguration(xml);
                         else if (tag == "arranger") {
                               if (MusEGlobal::muse && MusEGlobal::muse->arranger())
                                     MusEGlobal::muse->arranger()->readStatus(xml);
@@ -1373,7 +1373,7 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       ClipListEdit::writeConfiguration(level, xml);
       LMaster::writeConfiguration(level, xml);
       MarkerView::writeConfiguration(level, xml);
-      ArrangerView::writeConfiguration(level, xml);
+      MusEArranger::ArrangerView::writeConfiguration(level, xml);
       
       write_function_dialog_config(level, xml);
 

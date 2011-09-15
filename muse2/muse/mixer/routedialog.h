@@ -29,6 +29,8 @@
 class QCloseEvent;
 class QDialog;
 
+namespace MusEDialog {
+
 //---------------------------------------------------------
 //   RouteDialog
 //---------------------------------------------------------
@@ -54,6 +56,8 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       RouteDialog(QWidget* parent=0);
       };
 
+
+} // namespace MusEDialog
 
 #endif
 

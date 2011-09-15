@@ -43,8 +43,11 @@ class QToolButton;
 //class PopupMenu;
 class QButton;
 class AudioTrack;
-class EffectRack;
 
+namespace MusEMixer {
+
+class EffectRack;
+  
 //---------------------------------------------------------
 //   AudioStrip
 //---------------------------------------------------------
@@ -112,6 +115,8 @@ class AudioStrip : public Strip {
       ///virtual QSize minimumSizeHint () const;
       //virtual QSize sizeHint () const;
       };
+
+} // namespace MusEMixer
 
 #endif
 

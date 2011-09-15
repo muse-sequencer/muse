@@ -34,7 +34,7 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QMessageBox>
-#include <QPainter>
+//#include <QPainter>
 #include <QUrl>
 #include <QPoint>
 
@@ -48,7 +48,7 @@
 #include "globals.h"
 #include "icons.h"
 #include "event.h"
-#include "xml.h"
+//#include "xml.h"
 #include "wave.h"
 #include "audio.h"
 #include "shortcuts.h"
@@ -70,24 +70,7 @@
 
 using std::set;
 
-int get_paste_len();
-
-//---------------------------------------------------------
-//   colorRect
-//   paints a rectangular icon with a given color
-//---------------------------------------------------------
-
-QIcon colorRect(const QColor& color, int width, int height) {
-      QPainter painter;
-      QPixmap image(width, height);
-      painter.begin(&image);
-      painter.setBrush(color);
-      QRect rectangle(0, 0, width, height);
-      painter.drawRect(rectangle);
-      painter.end();
-      QIcon icon(image);
-      return icon;
-}
+namespace MusEArranger {
 
 //---------------------------------------------------------
 //   NPart
@@ -646,7 +629,7 @@ QMenu* PartCanvas::genItemPopup(MusEWidget::CItem* item)
 
       // part color selection
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
-            QAction *act_color = colorPopup->addAction(colorRect(MusEConfig::config.partColors[i], 80, 80), MusEConfig::config.partColorNames[i]);
+            QAction *act_color = colorPopup->addAction(MusEUtil::colorRect(MusEConfig::config.partColors[i], 80, 80), MusEConfig::config.partColorNames[i]);
             act_color->setData(20+i);
             }
 
@@ -2623,7 +2606,7 @@ void PartCanvas::cmd(int cmd)
             case CMD_PASTE_CLONE_DIALOG:
             {
                   unsigned temp_begin = AL::sigmap.raster1(song->vcpos(),0);
-                  unsigned temp_end = AL::sigmap.raster2(temp_begin + get_paste_len(), 0);
+                  unsigned temp_end = AL::sigmap.raster2(temp_begin + MusEUtil::get_paste_len(), 0);
                   paste_dialog->raster = temp_end - temp_begin;
                   paste_dialog->clone = (cmd == CMD_PASTE_CLONE_DIALOG);
                   
@@ -2803,86 +2786,6 @@ void PartCanvas::copy(PartList* pl)
       munmap(fbuf, n);
       fclose(tmp);
       }
-
-
-
-int get_paste_len()
-{
-  QClipboard* cb  = QApplication::clipboard();
-  const QMimeData* md = cb->mimeData(QClipboard::Clipboard);
-
-  QString pfx("text/");
-  QString mdpl("x-muse-midipartlist");
-  QString wvpl("x-muse-wavepartlist");  
-  QString mxpl("x-muse-mixedpartlist");
-  QString txt;
-    
-  if(md->hasFormat(pfx + mdpl))
-    txt = cb->text(mdpl, QClipboard::Clipboard);  
-  else if(md->hasFormat(pfx + wvpl))
-    txt = cb->text(wvpl, QClipboard::Clipboard);  
-  else if(md->hasFormat(pfx + mxpl))
-    txt = cb->text(mxpl, QClipboard::Clipboard);  
-  else
-    return 0;
-
-
-  QByteArray ba = txt.toLatin1();
-  const char* ptxt = ba.constData();
-  Xml xml(ptxt);
-  bool end = false;
-
-  unsigned begin_tick=-1; //this uses the greatest possible begin_tick
-  unsigned end_tick=0;
-
-  for (;;)
-  {
-    Xml::Token token = xml.parse();
-    const QString& tag = xml.s1();
-    switch (token)
-    {
-      case Xml::Error:
-      case Xml::End:
-        end = true;
-        break;
-        
-      case Xml::TagStart:
-        if (tag == "part")
-        {                              
-          Part* p = 0;
-          p = readXmlPart(xml, NULL, false, false);
-
-          if (p)
-          {
-            if (p->tick() < begin_tick)
-            begin_tick=p->tick();
-
-            if (p->endTick() > end_tick)
-            end_tick=p->endTick();
-
-            delete p;
-          } 
-        }
-        else
-        xml.unknown("PartCanvas::get_paste_len");
-        break;
-        
-      case Xml::TagEnd:
-        break;
-        
-      default:
-        end = true;
-        break;
-    }
-    if(end)
-      break;
-  }
-  
-  if (begin_tick > end_tick)
-    return 0;
-  else
-    return end_tick - begin_tick;
-}
 
 
 Undo PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool clone, bool toTrack, int* finalPosPtr, set<Track*>* affected_tracks)
@@ -4046,3 +3949,4 @@ void PartCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir)
       redraw();
       }
 
+} // namespace MusEArranger

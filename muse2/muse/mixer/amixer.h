@@ -45,15 +45,20 @@ class Slider;
 class Knob;
 class DoubleLabel;
 class ComboBox;
-class RouteDialog;
-class Strip;
 
 namespace MusEConfig {
 struct MixerConfig;
 }
 
+namespace MusEDialog {
+class RouteDialog;
+}
+
 #define EFX_HEIGHT     16
 
+namespace MusEMixer {
+
+class Strip;
 typedef std::list<Strip*> StripList;
 
 //---------------------------------------------------------
@@ -90,7 +95,7 @@ class AudioMixerApp : public QMainWindow {
       //Strip* master;
       QHBoxLayout* layout;
       QMenu* menuView;
-      RouteDialog* routingDialog;
+      MusEDialog::RouteDialog* routingDialog;
       QAction* routingId;
       int oldAuxsSize;
 
@@ -147,6 +152,8 @@ class AudioMixerApp : public QMainWindow {
       void write(int level, Xml& xml);
       void clear();
       };
+
+} // namespace MusEMixer
 
 #endif
 

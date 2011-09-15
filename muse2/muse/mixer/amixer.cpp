@@ -51,6 +51,7 @@
 //typedef std::list<Strip*> StripList;
 //static StripList stripList;
 
+namespace MusEMixer {
 
 /* 
 Nov 16, 2010: After making the strips variable width, we need a way to
@@ -596,7 +597,7 @@ void AudioMixerApp::toggleRouteDialog()
 void AudioMixerApp::showRouteDialog(bool on)
       {
       if (on && routingDialog == 0) {
-            routingDialog = new RouteDialog(this);
+            routingDialog = new MusEDialog::RouteDialog(this);
             connect(routingDialog, SIGNAL(closed()), SLOT(routingDialogClosed()));
             }
       if (routingDialog)
@@ -721,3 +722,4 @@ void AudioMixerApp::write(int level, Xml& xml)
       xml.etag(level, "Mixer");
       }
 
+} // namespace MusEMixer

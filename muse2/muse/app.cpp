@@ -925,7 +925,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(windowsCascadeAction, SIGNAL(activated()), mdiArea, SLOT(cascadeSubWindows()));
 
 
-      arrangerView = new ArrangerView(this);
+      arrangerView = new MusEArranger::ArrangerView(this);
       arrangerView->shareToolsAndMenu(true);
       connect(arrangerView, SIGNAL(closed()), SLOT(arrangerClosed()));
       toplevels.push_back(arrangerView);
@@ -2943,7 +2943,7 @@ void MusE::bigtimeClosed()
 void MusE::showMixer1(bool on)
       {
       if (on && mixer1 == 0) {
-            mixer1 = new AudioMixerApp(this, &(MusEConfig::config.mixer1));
+            mixer1 = new MusEMixer::AudioMixerApp(this, &(MusEConfig::config.mixer1));
             connect(mixer1, SIGNAL(closed()), SLOT(mixer1Closed()));
             mixer1->resize(MusEConfig::config.mixer1.geometry.size());
             mixer1->move(MusEConfig::config.mixer1.geometry.topLeft());
@@ -2960,7 +2960,7 @@ void MusE::showMixer1(bool on)
 void MusE::showMixer2(bool on)
       {
       if (on && mixer2 == 0) {
-            mixer2 = new AudioMixerApp(this, &(MusEConfig::config.mixer2));
+            mixer2 = new MusEMixer::AudioMixerApp(this, &(MusEConfig::config.mixer2));
             connect(mixer2, SIGNAL(closed()), SLOT(mixer2Closed()));
             mixer2->resize(MusEConfig::config.mixer2.geometry.size());
             mixer2->move(MusEConfig::config.mixer2.geometry.topLeft());

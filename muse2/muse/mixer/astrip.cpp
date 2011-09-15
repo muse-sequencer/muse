@@ -67,6 +67,8 @@
 //#include "popupmenu.h"
 #include "routepopup.h"
 
+namespace MusEMixer {
+
 /*
 //---------------------------------------------------------
 //   minimumSizeHint
@@ -229,7 +231,7 @@ void AudioStrip::songChanged(int val)
             //QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
             if(track->automationType() == AUTO_TOUCH || track->automationType() == AUTO_WRITE)
                   {
-                  palette.setColor(QPalette::Button, QColor(Qt::red));
+                  palette.setColor(QPalette::Button, QColor(215, 76, 39)); // red
                   //QColor c(Qt::red);
                   //gradient.setColorAt(0, c);
                   //gradient.setColorAt(1, c.darker());
@@ -238,7 +240,7 @@ void AudioStrip::songChanged(int val)
                   }
             else if(track->automationType() == AUTO_READ)
                   {
-                  palette.setColor(QPalette::Button, QColor(Qt::green));
+                  palette.setColor(QPalette::Button, QColor(100, 172, 49)); // green
                   //QColor c(Qt::green);
                   //gradient.setColorAt(0, c);
                   //gradient.setColorAt(1, c.darker());
@@ -1041,3 +1043,4 @@ void AudioStrip::oRoutePressed()
       pup->exec(QCursor::pos(), track, true);
 }
 
+} // namespace MusEMixer

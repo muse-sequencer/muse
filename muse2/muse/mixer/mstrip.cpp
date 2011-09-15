@@ -61,6 +61,8 @@
 //#include "popupmenu.h"
 #include "routepopup.h"
 
+namespace MusEMixer {
+
 enum { KNOB_PAN, KNOB_VAR_SEND, KNOB_REV_SEND, KNOB_CHO_SEND };
 
 //---------------------------------------------------------
@@ -218,8 +220,8 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       
       sliderGrid = new QGridLayout(); 
       sliderGrid->setRowStretch(0, 100);
-      sliderGrid->addWidget(slider, 0, 0, Qt::AlignRight);
-      sliderGrid->addWidget(meter[0], 0, 1, Qt::AlignLeft);
+      sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
+      sliderGrid->addWidget(meter[0], 0, 1, Qt::AlignHCenter);
       grid->addLayout(sliderGrid, _curGridRow++, 0, 1, 2); 
 
       sl = new MusEWidget::DoubleLabel(0.0, -98.0, 0.0, this);
@@ -1028,4 +1030,4 @@ void MidiStrip::oRoutePressed()
   pup->exec(QCursor::pos(), track, true);
 }
 
-
+} // namespace MusEMixer

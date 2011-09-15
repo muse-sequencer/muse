@@ -46,6 +46,8 @@
 #include "plugin.h"
 #include "filedialog.h"
 
+namespace MusEMixer {
+
 //---------------------------------------------------------
 //   class EffectRackDelegate
 //---------------------------------------------------------
@@ -700,3 +702,4 @@ void EffectRack::initPlugin(Xml xml, int idx)
             }
       }                        
 
+} // namespace MusEMixer

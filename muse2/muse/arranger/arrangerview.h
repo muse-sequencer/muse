@@ -55,6 +55,7 @@
 
 namespace MusEWidget { class VisibleTracks; }
 
+namespace MusEArranger {
 
 class ArrangerView : public TopWin
 {
@@ -149,8 +150,7 @@ class ArrangerView : public TopWin
 		static void writeConfiguration(int, Xml&);
 };
 
-
-
+}  // namespace MusEArranger
 
 #endif
 

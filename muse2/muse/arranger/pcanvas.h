@@ -36,8 +36,16 @@ class QMouseEvent;
 class QKeyEvent;
 class QEvent;
 class QDragEnterEvent;
+class QLineEdit;
+
+class MidiEditor;
+class QMenu;
+class Xml;
+class CtrlVal;
 
 #define beats     4
+
+namespace MusEArranger {
 
 //---------------------------------------------------------
 //   NPart
@@ -67,12 +75,6 @@ struct AutomationObject {
   bool moveController;
   ControllerVals controllerState;
 };
-
-class QLineEdit;
-class MidiEditor;
-class QMenu;
-class Xml;
-class CtrlVal;
 
 //---------------------------------------------------------
 //   PartCanvas
@@ -175,6 +177,8 @@ class PartCanvas : public MusEWidget::Canvas {
    void redirKeypress(QKeyEvent* e) { keyPress(e); }
    void controllerChanged(Track *t);
 };
+
+} // namespace MusEArranger
 
 #endif
 

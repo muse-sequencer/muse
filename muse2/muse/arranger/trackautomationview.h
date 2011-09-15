@@ -28,6 +28,8 @@ class QWidget;
 
 #include "track.h"
 
+namespace MusEArranger { 
+
 class TrackAutomationView : public QWidget
 {
     Track *_t;
@@ -38,5 +40,7 @@ public:
     Track *track() { return _t; }
     void collectAutomationData();
 };
+
+} // namespace MusEArranger
 
 #endif // TRACKAUTOMATIONVIEW_H

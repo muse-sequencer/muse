@@ -4,6 +4,13 @@
         - added MDI-like and borland-like user interface (flo93)
         - improved pasting, added dialogs, added "copy in range",
           changed shortcut keys (flo93)
+        - New namespaces MusEArranger and MusEMixer. (Orcan)
+        - Updated default track colors on arranger. Indicate the selected track with a gradient instead of a
+          separate color. (Orcan)
+        - moved colorRect() and get_paste_len() into utils.cpp. (Orcan)
+        - Updated default colors of transport handles, bigtime foreground, waveedit background, track labels.
+          Made them more pastelish, easier on eyes. (Orcan)
+        - Made horizontal alignment of meter and slider in mstrip consistent with in astrip. (Orcan)
 13.09.2011:
         *Added: You can now insert new tracks instead of always at the track list end. (Tim)
           If main menu 'Add track': Inserts before currently selected track, else adds at end.

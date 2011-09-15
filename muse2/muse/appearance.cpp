@@ -116,7 +116,7 @@ class IdListViewItem : public QTreeWidgetItem {
 //   Appearance
 //---------------------------------------------------------
 
-Appearance::Appearance(Arranger* a, QWidget* parent)
+Appearance::Appearance(MusEArranger::Arranger* a, QWidget* parent)
    : QDialog(parent, Qt::Window)
       {
       setupUi(this);
