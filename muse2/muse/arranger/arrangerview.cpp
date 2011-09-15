@@ -138,7 +138,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   //-------- Edit Actions
   editCutAction = new QAction(QIcon(*editcutIconSet), tr("C&ut"), this);
   editCopyAction = new QAction(QIcon(*editcopyIconSet), tr("&Copy"), this);
-  editCopyRangeAction = new QAction(QIcon(*editcopyIconSet), tr("&Copy in range"), this);
+  editCopyRangeAction = new QAction(QIcon(*editcopyIconSet), tr("Copy in range"), this);
   editPasteAction = new QAction(QIcon(*editpasteIconSet), tr("&Paste"), this);
   editPasteDialogAction = new QAction(QIcon(*editpasteIconSet), tr("Paste (show dialog)"), this);
   editPasteCloneAction = new QAction(QIcon(*editpasteCloneIconSet), tr("Paste c&lone"), this);
