@@ -83,10 +83,10 @@ GlobalConfigValues config = {
         QString("Piano"),
         QString("Saxophone")
       },
-      QColor(0, 0, 255),      // transportHandleColor;
-      QColor(255, 0, 0),      // bigTimeForegroundColor;
+      QColor(51, 114, 178),   // transportHandleColor;
+      QColor(219, 65, 65),    // bigTimeForegroundColor;
       QColor(0, 0, 0),        // bigTimeBackgroundColor;
-      QColor(200, 200, 200),  // waveEditBackgroundColor;
+      QColor(200, 192, 171),  // waveEditBackgroundColor;
       {
         QFont(QString("arial"), 10, QFont::Normal),
         QFont(QString("arial"), 8,  QFont::Normal),
@@ -97,27 +97,27 @@ GlobalConfigValues config = {
         QFont(QString("arial"), 8,  QFont::Bold, true)  // Mixer strip labels. Looks and fits better with bold + italic than bold alone, 
                                                         //  at the price of only few more pixels than Normal mode.
         },
-      QColor(84, 97, 114),     // trackBg;
-      QColor(0x80, 0xff, 0x80),     // selected track Bg;
+      QColor(84, 97, 114),          // trackBg;
+      QColor(120, 229, 166),        // selected track Bg;
       QColor(0x00, 0x00, 0x00),     // selected track Fg;
       
-      QColor(0, 160, 255),          // midiTrackLabelBg;   // Med blue
-      QColor(0, 160, 255),          // drumTrackLabelBg;   // Med blue
-      Qt::magenta,                  // waveTrackLabelBg;
-      Qt::green,                    // outputTrackLabelBg;
-      Qt::red,                      // inputTrackLabelBg;
-      Qt::yellow,                   // groupTrackLabelBg;
-      QColor(120, 255, 255),        // auxTrackLabelBg;    // Light blue
-      QColor(255, 130, 0),          // synthTrackLabelBg;  // Med orange
+      QColor(74, 150, 194),         // midiTrackLabelBg;   // Med blue
+      QColor(74, 150, 194),         // drumTrackLabelBg;   // Med blue
+      QColor(213, 128, 202),        // waveTrackLabelBg;   // magenta
+      QColor(84, 185, 58),          // outputTrackLabelBg; // green
+      QColor(199, 75, 64),          // inputTrackLabelBg;  // red
+      QColor(236, 214, 90),         // groupTrackLabelBg;  // yellow
+      QColor(161, 234, 242),        // auxTrackLabelBg;    // Light blue
+      QColor(229, 157, 101),        // synthTrackLabelBg;  // Med orange
       
-      QColor(220, 220, 220),     // midiTrackBg;
-      QColor(220, 220, 220),     // drumTrackBg;
-      QColor(220, 220, 220),     // waveTrackBg;
-      QColor(189, 220, 193),     // outputTrackBg;
-      QColor(189, 220, 193),     // inputTrackBg;
-      QColor(220, 220, 220),     // groupTrackBg;
-      QColor(220, 220, 220),     // auxTrackBg;
-      QColor(220, 220, 220),     // synthTrackBg;
+      QColor(215, 220, 230),     // midiTrackBg;
+      QColor(215, 220, 230),     // drumTrackBg;
+      QColor(220, 209, 217),     // waveTrackBg;
+      QColor(197, 220, 206),     // outputTrackBg;
+      QColor(220, 214, 206),     // inputTrackBg;
+      QColor(220, 216, 202),     // groupTrackBg;
+      QColor(208, 215, 220),     // auxTrackBg;
+      QColor(220, 211, 202),     // synthTrackBg;
       
       QColor(98, 124, 168),      // part canvas bg
       QColor(255, 170, 0),       // ctrlGraphFg;    Medium orange

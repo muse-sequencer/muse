@@ -25,6 +25,8 @@
 
 #include <QScrollBar>
 
+namespace MusEArranger {
+
 //---------------------------------------------------------
 //   wadd
 //---------------------------------------------------------
@@ -213,3 +215,5 @@ void TLLayout::clear()
             delete child;
             }
       }
+
+} // namespace MusEArranger

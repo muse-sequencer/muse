@@ -44,6 +44,8 @@ class ComboBox;
 class Meter;
 }
 
+namespace MusEMixer {
+
 static const int STRIP_WIDTH = 65;
 
 //---------------------------------------------------------
@@ -91,6 +93,8 @@ class Strip : public QFrame {
       Track* getTrack() const { return track; }
       void setLabelFont();
       };
+
+} // namespace MusEMixer
 
 #endif
 

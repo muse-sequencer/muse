@@ -39,6 +39,8 @@
 #include "meter.h"
 #include "utils.h"
 
+namespace MusEMixer {
+
 //---------------------------------------------------------
 //   setRecordFlag
 //---------------------------------------------------------
@@ -278,3 +280,4 @@ void Strip::setAutomationType(int t)
       song->update(SC_AUTOMATION);
       }
 
+} // namespace MusEMixer

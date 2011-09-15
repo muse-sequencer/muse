@@ -28,6 +28,8 @@
 
 class AudioTrack;
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   PanKnob
 //---------------------------------------------------------
@@ -42,6 +44,8 @@ class PanKnob : public Knob {
    public:
       PanKnob(QWidget* parent, AudioTrack*);
       };
+
+} // namespace MusEWidget
 
 #endif
 

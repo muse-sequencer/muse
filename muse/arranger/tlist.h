@@ -46,6 +46,8 @@ class Header;
 class PopupMenu;
 }
 
+namespace MusEArranger {
+
 enum TrackColumn {
       COL_RECORD = 0,
       COL_MUTE,
@@ -139,6 +141,8 @@ class TList : public QWidget {
       void writeStatus(int level, Xml&, const char* name) const;
       void readStatus(Xml&, const char* name);
       };
+
+} // namespace MusEArranger
 
 #endif
 

@@ -41,6 +41,7 @@ class TransparentToolButton;
 
 class MidiTrack;
 
+namespace MusEMixer {
 
 //---------------------------------------------------------
 //   MidiStrip
@@ -94,6 +95,7 @@ class MidiStrip : public Strip {
       MidiStrip(QWidget* parent, MidiTrack*);
       };
 
+} // namespace MusEMixer
 
 #endif
 

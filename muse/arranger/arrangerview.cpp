@@ -68,6 +68,7 @@
 #include "visibletracks.h"
 #include "xml.h"
 
+namespace MusEArranger {
 
 //---------------------------------------------------------
 //   ArrangerView
@@ -724,3 +725,5 @@ void ArrangerView::updateVisibleTracksButtons()
 void ArrangerView::globalCut() { ::globalCut(); }
 void ArrangerView::globalInsert() { ::globalInsert(); }
 void ArrangerView::globalSplit() { ::globalSplit(); }
+
+} // namespace MusEArranger
