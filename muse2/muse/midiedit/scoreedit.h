@@ -613,6 +613,7 @@ class ScoreCanvas : public MusEWidget::View
 		static void init_pixmaps();
 		static void draw_pixmap(QPainter& p, int x, int y, const QPixmap& pm);
 		static void draw_tie (QPainter& p, int x1, int x4, int yo, bool up=true, QColor color=Qt::black);
+		static void draw_akkolade (QPainter& p, int x, int y);
 
 		static void draw_accidentials(QPainter& p, int x, int y_offset, const list<int>& acc_list, const QPixmap& pix);
 
@@ -632,8 +633,8 @@ class ScoreCanvas : public MusEWidget::View
 
 
 
-		void draw_note_lines(QPainter& p, int y);
-		void draw_preamble(QPainter& p, int y, clef_t clef);
+		void draw_note_lines(QPainter& p, int y, bool reserve_akkolade_space=false);
+		void draw_preamble(QPainter& p, int y, clef_t clef, bool reserve_akkolade_space=false, bool with_akkolade=false);
 		void draw_items(QPainter& p, int y, staff_t& staff, ScoreItemList::iterator from_it, ScoreItemList::iterator to_it);
 		void draw_items(QPainter& p, int y, staff_t& staff, int x1, int x2);
 		void draw_items(QPainter& p, int y, staff_t& staff);
