@@ -10846,7 +10846,7 @@ Right-click to show GUI.</source>
     <message>
         <location line="+3"/>
         <source>all parts in one staff</source>
-        <translation>alle Parts in einem System</translation>
+        <translation type="unfinished">alle Parts in ein System</translation>
     </message>
     <message>
         <location line="+1"/>
