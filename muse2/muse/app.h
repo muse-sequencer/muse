@@ -384,7 +384,7 @@ class MusE : public QMainWindow
    public:
       MusE(int argc, char** argv);
       ~MusE();
-      MusEArranger::Arranger* arranger() { return _arranger; }
+      MusEArranger::Arranger* arranger() const { return _arranger; }
       QRect configGeometryMain;
       QProgressDialog *progress;
       bool importMidi(const QString name, bool merge);
