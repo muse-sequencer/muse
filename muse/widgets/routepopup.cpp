@@ -1152,7 +1152,7 @@ void RoutePopupMenu::prepare()
           continue;
         
         PopupMenu* subp = new PopupMenu(morep, true);
-        subp->setTitle(QString("%1:").arg(i) + tr("<none>")); 
+        subp->setTitle(QString("%1:%2").arg(i).arg(tr("<none>"))); 
         
         // MusE-2: Check this - needed with QMenu? Help says no. No - verified, it actually causes double triggers!
         //connect(subp, SIGNAL(triggered(QAction*)), pup, SIGNAL(triggered(QAction*)));

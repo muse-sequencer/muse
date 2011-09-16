@@ -3804,8 +3804,7 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
 
             if (myProcess->exitCode()) {
               QMessageBox::warning(MusEGlobal::muse, tr("MusE - external script failed"),
-                                   tr("MusE was unable to launch the script, error message:\n ")+ QString(errStr)
-                     );
+                                   tr("MusE was unable to launch the script, error message:\n%1").arg(QString(errStr)));
               endUndo(SC_EVENT_REMOVED);
               return;
             }

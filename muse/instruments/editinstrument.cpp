@@ -408,7 +408,7 @@ void EditInstrument::saveAs()
       {
         if(QMessageBox::question(this,
             tr("MusE:"),
-            tr("The user instrument directory\n") + MusEGlobal::museUserInstruments + tr("\ndoes not exist yet. Create it now?\n") +
+            tr("The user instrument directory\n%1\ndoes not exist yet. Create it now?\n").arg(MusEGlobal::museUserInstruments) +
               tr("(You can change the user instruments directory at Settings->Global Settings->Midi)"),
             QMessageBox::Ok | QMessageBox::Default,
             QMessageBox::Cancel | QMessageBox::Escape,
@@ -419,7 +419,7 @@ void EditInstrument::saveAs()
           else
           {
             printf("Unable to create user instrument directory: %s\n", MusEGlobal::museUserInstruments.toLatin1().constData());
-            QMessageBox::critical(this, tr("MusE:"), tr("Unable to create user instrument directory\n") + MusEGlobal::museUserInstruments);
+            QMessageBox::critical(this, tr("MusE:"), tr("Unable to create user instrument directory '%1'").arg(MusEGlobal::museUserInstruments));
             //return;
             path = MusEGlobal::museUser;
           }
@@ -610,7 +610,7 @@ void EditInstrument::fileSaveAs()
                 // Can not have two user files containing the same instrument name.
                 if(QMessageBox::question(this,
                     tr("MusE: Save instrument as"),
-                    tr("The user instrument:\n") + s + tr("\nalready exists. This will overwrite its .idf instrument file.\nAre you sure?"),
+                    tr("The user instrument '%1' already exists. This will overwrite its .idf instrument file.\nAre you sure?").arg(s),
                     QMessageBox::Ok | QMessageBox::Default,
                     QMessageBox::Cancel | QMessageBox::Escape,
                     Qt::NoButton) == QMessageBox::Ok)
@@ -700,7 +700,7 @@ void EditInstrument::fileSaveAs()
       {
         if(QMessageBox::question(this,
             tr("MusE:"),
-            tr("The user instrument directory\n") + MusEGlobal::museUserInstruments + tr("\ndoes not exist yet. Create it now?\n") +
+            tr("The user instrument directory\n%1\ndoes not exist yet. Create it now?\n").arg(MusEGlobal::museUserInstruments) +
               tr("(You can change the user instruments directory at Settings->Global Settings->Midi)"),
             QMessageBox::Ok | QMessageBox::Default,
             QMessageBox::Cancel | QMessageBox::Escape,
@@ -711,7 +711,7 @@ void EditInstrument::fileSaveAs()
           else
           {
             printf("Unable to create user instrument directory: %s\n", MusEGlobal::museUserInstruments.toLatin1().constData());
-            QMessageBox::critical(this, tr("MusE:"), tr("Unable to create user instrument directory\n") + MusEGlobal::museUserInstruments);
+            QMessageBox::critical(this, tr("MusE:"), tr("Unable to create user instrument directory '%1'").arg(MusEGlobal::museUserInstruments));
             //return;
             path = MusEGlobal::museUser;
           }
@@ -3111,7 +3111,7 @@ void EditInstrument::addControllerClicked()
     {
       QMessageBox::critical(this,
           tr("MusE: Cannot add common controller"),
-          tr("A controller named ") + name + tr(" already exists."),
+          tr("A controller named '%1' already exists.").arg(name),
           QMessageBox::Ok,
           Qt::NoButton,
           Qt::NoButton);
@@ -3123,7 +3123,7 @@ void EditInstrument::addControllerClicked()
     {
       QMessageBox::critical(this,
           tr("MusE: Cannot add common controller"),
-          tr("A controller number ") + QString().setNum(num) + tr(" already exists."),
+          tr("A controller number %1 already exists.").arg(num),
           QMessageBox::Ok,
           Qt::NoButton,
           Qt::NoButton);
