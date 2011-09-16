@@ -771,7 +771,7 @@ void PartCanvas::itemPopup(MusEWidget::CItem* item, int n, const QPoint& pt)
                   {
                     Part* p = item->part();
                     EventList* el = p->events();
-                    QString str = tr("Part name") + ": " + p->name() + "\n" + tr("Files") + ":";
+                    QString str = tr("Part name: %1\nFiles:").arg(p->name());
                     for (iEvent e = el->begin(); e != el->end(); ++e) 
                     {
                       Event event = e->second;
@@ -2861,9 +2861,8 @@ Undo PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool
       {
         int tot = notDone + done;
         QMessageBox::critical(this, QString("MusE"),
-           QString().setNum(notDone) + (tot > 1 ? (tr(" out of ") + QString().setNum(tot)) : QString("")) + 
-           (tot > 1 ? tr(" parts") : tr(" part")) + 
-           tr(" could not be pasted.\nLikely the selected track is the wrong type."));
+           (tot > 1  ?  tr("%n part(s) out of %1 could not be pasted.\nLikely the selected track is the wrong type.","",notDone).arg(tot)
+                     :  tr("%n part(s) could not be pasted.\nLikely the selected track is the wrong type.","",notDone)));
       }
       
       if (finalPosPtr) *finalPosPtr=finalPos;

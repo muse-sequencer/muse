@@ -85,9 +85,9 @@ QString PasteDialog::ticks_to_quarter_string(int ticks)
 		double quarters = (double) ticks/config.division;
 		bool one = ( quarters > 0.995 && quarters < 1.005 );
 		if (one)
-			return QString::number(quarters, 'f', 2) + " " + tr("quarter");
+			return tr("%1 quarter", "for floating-point arguments like 1.5").arg(quarters, 0, 'f', 2);
 		else
-			return QString::number(quarters, 'f', 2) + " " + tr("quarters");
+			return tr("%1 quarters", "for floating-point arguments like 1.5").arg(quarters, 0, 'f', 2);
 	}
 }
 

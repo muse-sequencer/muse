@@ -78,8 +78,7 @@ static bool testDirCreate(QWidget* parent, const QString& path)
       {
         if(QMessageBox::information(parent,
             QWidget::tr("MusE: get file name"),
-            QWidget::tr("The directory\n") + path
-              + QWidget::tr("\ndoes not exist.\nCreate it?"),
+            QWidget::tr("The directory\n%1\ndoes not exist.\nCreate it?").arg(path),
             QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Ok) != QMessageBox::Ok)
           return true;
         
@@ -483,7 +482,7 @@ FILE* fileOpen(QWidget* parent, QString name, const QString& ext,
             }
 
       if (strcmp(mode,"w") == 0 && overwriteWarning && info.exists()) {
-            QString s(QWidget::tr("File\n") + name + QWidget::tr("\nexists. Overwrite?"));
+            QString s(QWidget::tr("File\n%1\nexists. Overwrite?").arg(name));
             /*
             int rv = QMessageBox::warning(parent,
                QWidget::tr("MusE: write"),
@@ -516,8 +515,7 @@ FILE* fileOpen(QWidget* parent, QString name, const QString& ext,
             fp = fopen(name.toAscii().data(), mode);
             }
       if (fp == 0 && !noError) {
-            QString s(QWidget::tr("Open File\n") + name + QWidget::tr("\nfailed: ")
-               + QString(strerror(errno)));
+            QString s(QWidget::tr("Open File\n%1\nfailed: %2").arg(name).arg(strerror(errno)));
             QMessageBox::critical(parent, QWidget::tr("MusE: Open File"), s);
             return 0;
             }

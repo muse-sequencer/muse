@@ -1218,7 +1218,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             }
       else {
             QMessageBox::critical(this, QString("MusE"),
-               tr("Unknown File Format: ") + ex);
+               tr("Unknown File Format: %1").arg(ex));
             setUntitledProject();
             }
       if (!songTemplate) {
@@ -1348,7 +1348,7 @@ void MusE::setUntitledProject()
       QString name("untitled");
       MusEGlobal::museProject = "./"; //QFileInfo(name).absolutePath();
       project.setFile(name);
-      setWindowTitle(tr("MusE: Song: ") + project.completeBaseName());
+      setWindowTitle(tr("MusE: Song: %1").arg(project.completeBaseName()));
       }
 
 //---------------------------------------------------------
@@ -1756,7 +1756,7 @@ bool MusE::saveAs()
             ok = save(name, true);
             if (ok) {
                   project.setFile(name);
-                  setWindowTitle(tr("MusE: Song: ") + project.completeBaseName());
+                  setWindowTitle(tr("MusE: Song: %1").arg(project.completeBaseName()));
                   addProject(name);
                   }
             else
@@ -2651,7 +2651,7 @@ MusE::lash_idle_cb ()
           int ok = save (ss.toAscii(), false);
           if (ok) {
             project.setFile(ss.toAscii());
-            setWindowTitle(tr("MusE: Song: ") + project.completeBaseName());
+            setWindowTitle(tr("MusE: Song: %1").arg(project.completeBaseName()));
             addProject(ss.toAscii());
             MusEGlobal::museProject = QFileInfo(ss.toAscii()).absolutePath();
           }
