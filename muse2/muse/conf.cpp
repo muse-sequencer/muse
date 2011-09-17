@@ -818,7 +818,7 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                         else if (tag == "synthTrackBg")
                               MusEConfig::config.synthTrackBg = readColor(xml);
                         
-                        else if (tag == "extendedMidi") //FINDMICHJETZT begin
+                        else if (tag == "extendedMidi")
                               MusEConfig::config.extendedMidi = xml.parseInt();
                         else if (tag == "midiExportDivision")
                               MusEConfig::config.midiDivision = xml.parseInt();
@@ -869,7 +869,7 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               MusEConfig::config.waveEditBackgroundColor = readColor(xml);
                         //else if (tag == "midiSyncInfo")
                         //      readConfigMidiSyncInfo(xml);
-                        /* Obsolete. FINDMICH flo93
+                        /* Obsolete. done by song's toplevel list. arrangerview also handles arranger.
                         else if (tag == "arranger") {
                               if (MusEGlobal::muse && MusEGlobal::muse->arranger())
                                     MusEGlobal::muse->arranger()->readStatus(xml);
@@ -949,7 +949,7 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                         else if ((tag == "arranger") || (tag == "geometryPianoroll") || (tag == "geometryDrumedit"))
                               xml.skip(tag);
                         else if (tag == "markerVisible")
-                              //MusEConfig::config.markerVisible = xml.parseInt(); //Obsolete FINDMICH flo93
+                              //MusEConfig::config.markerVisible = xml.parseInt(); //Obsolete (done by song's toplevel list)
                               xml.skip(tag);
                         else if (tag == "mixerVisible")
                               // MusEConfig::config.mixerVisible = xml.parseInt();  // Obsolete
@@ -1476,10 +1476,11 @@ void MusE::writeConfiguration(int level, Xml& xml) const
 
       xml.intTag(level, "bigtimeVisible",   viewBigtimeAction->isChecked());
       xml.intTag(level, "transportVisible", viewTransportAction->isChecked());
-      //xml.intTag(level, "markerVisible",    viewMarkerAction->isChecked()); // Obsolete. FINDMICH flo93
+      //xml.intTag(level, "markerVisible",    viewMarkerAction->isChecked()); // Obsolete (done by song's toplevel list)
       //xml.intTag(level, "mixerVisible",     menuView->isItemChecked(aid1));  // Obsolete
 
-      // xml.geometryTag(level, "geometryMain", this); // Obsolete. FINDMICH flo93
+      xml.geometryTag(level, "geometryMain", this); // FINDME: maybe remove this? do we want
+                                                    // the main win to jump around when loading?
       if (transport)
             xml.geometryTag(level, "geometryTransport", transport);
       if (bigtime)
@@ -1496,7 +1497,7 @@ void MusE::writeConfiguration(int level, Xml& xml) const
             //mixer2->write(level, xml, "mixer2");
             mixer2->write(level, xml);
 
-      //_arranger->writeStatus(level, xml);  // Obsolete. FINDMICH flo93
+      //_arranger->writeStatus(level, xml);  // Obsolete.  done by song's toplevel list. arrangerview also handles arranger.
       writeSeqConfiguration(level, xml, true);
 
       write_function_dialog_config(level, xml);
