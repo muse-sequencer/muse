@@ -1,3 +1,6 @@
+16.09.2011:
+        - Fixed errors when ladspa plugins not found while loading. (Tim)
+        - Fixed forgotten bool to pointer conversion in some calls to song::addTrack, createSynthI. (Tim)
 14.09.2011:
         - added sane configuration defaults to muse (flo93)
         - several minor fixes (flo93)

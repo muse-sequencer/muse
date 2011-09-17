@@ -332,7 +332,7 @@ UndoOp PartCanvas::moveItem(MusEWidget::CItem* item, const QPoint& newpos, DragT
             ntrack = tracks->size();
             if (MusEGlobal::debugMsg)
                 printf("PartCanvas::moveItem - add new track\n");
-            Track* newTrack = song->addTrack(type, false);  // Add at end of list.
+            Track* newTrack = song->addTrack(type);  // Add at end of list.
             if (type == Track::WAVE) {
                   WaveTrack* st = (WaveTrack*) track;
                   WaveTrack* dt = (WaveTrack*) newTrack;
@@ -3138,9 +3138,9 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
 
                 if (!track) { // we need to create a track for this drop
                     if (text.endsWith(".mpt", Qt::CaseInsensitive)) {
-                        track = song->addTrack(Track::MIDI, false);    // Add at end of list.
+                        track = song->addTrack(Track::MIDI);    // Add at end of list.
                     } else {
-                        track = song->addTrack(Track::WAVE, false);    // Add at end of list.
+                        track = song->addTrack(Track::WAVE);    // Add at end of list.
                     }
                 }
                 if (track->type() == Track::WAVE &&
