@@ -126,8 +126,6 @@ struct GlobalConfigValues {
       QRect geometryMain;
       QRect geometryTransport;
       QRect geometryBigTime;
-      QRect geometryPianoroll;
-      QRect geometryDrumedit;
 //      QRect geometryMixer;
       MixerConfig mixer1;
       MixerConfig mixer2;

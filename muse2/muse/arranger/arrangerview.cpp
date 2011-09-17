@@ -380,6 +380,7 @@ void ArrangerView::writeStatus(int level, Xml& xml) const
   xml.tag(level++, "arrangerview");
   TopWin::writeStatus(level, xml);
   xml.intTag(level, "tool", editTools->curTool());
+  arranger->writeStatus(level,xml);
   xml.tag(level, "/arrangerview");
 }
 
@@ -399,6 +400,8 @@ void ArrangerView::readStatus(Xml& xml)
           editTools->set(xml.parseInt());
         else if (tag == "topwin") 
           TopWin::readStatus(xml);
+        else if (tag == "arranger") 
+          arranger->readStatus(xml);
         else
           xml.unknown("ArrangerView");
         break;

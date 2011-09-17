@@ -144,8 +144,6 @@ GlobalConfigValues config = {
       QRect(0, 0, 400, 300),        // GeometryMain;
       QRect(0, 0, 200, 100),        // GeometryTransport;
       QRect(0, 0, 600, 200),        // GeometryBigTime;
-      QRect(0, 0, 400, 300),        // GeometryPianoroll;
-      QRect(0, 0, 400, 300),        // GeometryDrumedit;
       //QRect(0, 0, 300, 500),        // GeometryMixer;  // Obsolete
       {
          QString("Mixer A"),

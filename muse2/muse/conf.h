@@ -48,6 +48,6 @@ class MidiFileConfig : public QDialog, public Ui::ConfigMidiFileBase {
 
 class Xml;
 extern bool readConfiguration();
-extern void readConfiguration(Xml&, bool readOnlySequencer);
+extern void readConfiguration(Xml&, bool readOnlySequencer, bool doReadGlobalConfig);
 #endif
 

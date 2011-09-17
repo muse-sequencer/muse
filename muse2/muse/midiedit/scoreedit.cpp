@@ -4586,6 +4586,7 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *   o cakewalk-mode is ignored when saving config
  * 
  * CURRENT TODO
+ *   o drum editor has "clef column"
  * ! o fix sigedit boxes (see also "important todo")
  *   o ticks-to-quarter spinboxes
  *   o newly created windows have to be focussed!
