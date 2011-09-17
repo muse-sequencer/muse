@@ -97,6 +97,7 @@ TList::TList(MusEWidget::Header* hdr, QWidget* parent, const char* name)
       _scroll    = 0;
       editTrack = 0;
       editor    = 0;
+      chan_edit = NULL;
       mode      = NORMAL;
 
       //setBackgroundMode(Qt::NoBackground); // ORCAN - FIXME
