@@ -11418,67 +11418,67 @@ Wahrscheinlich hat dir ausgewählte Spur den falschen Typ.</translation>
     <message>
         <location filename="../../muse/mixer/rack.cpp" line="+193"/>
         <source>effect rack</source>
-        <translation type="unfinished">Effekteinschub</translation>
+        <translation>Effekteinschub</translation>
     </message>
     <message>
         <location line="+83"/>
         <source>new</source>
-        <translation type="unfinished"></translation>
+        <translation>neu</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>change</source>
-        <translation type="unfinished">ändern</translation>
+        <translation>ändern</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>move up</source>
-        <translation type="unfinished">Nach oben bewegen</translation>
+        <translation>Nach oben bewegen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>move down</source>
-        <translation type="unfinished">Nach unten bewegen</translation>
+        <translation>Nach unten bewegen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>remove</source>
-        <translation type="unfinished">entfernen</translation>
+        <translation>entfernen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>bypass</source>
-        <translation type="unfinished">umleiten</translation>
+        <translation>übergehen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>show gui</source>
-        <translation type="unfinished">GUI anzeigen</translation>
+        <translation>GUI anzeigen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>show native gui</source>
-        <translation type="unfinished">Native GUI anzeigen</translation>
+        <translation>Native GUI anzeigen</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>save preset</source>
-        <translation type="unfinished"></translation>
+        <translation>Preset speichern</translation>
     </message>
     <message>
         <location line="+138"/>
         <source>MusE: Save Preset</source>
-        <translation type="unfinished"></translation>
+        <translation>MusE: Preset speichern</translation>
     </message>
     <message>
         <location line="+143"/>
         <source>Replace effect</source>
-        <translation type="unfinished"></translation>
+        <translation>Effekt ersetzen</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Do you really want to replace the effect %1?</source>
-        <translation type="unfinished"></translation>
+        <translation>Möchten Sie wirklich den Effekt %1 ersetzen?</translation>
     </message>
 </context>
 <context>

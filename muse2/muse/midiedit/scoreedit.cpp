@@ -2017,7 +2017,7 @@ list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo,
 		int len_now=0;
 		int last_number=foo[pos];
 		
-		do {pos++;len_done++;len_now++;} while (! ((foo[pos]<=last_number) || (len_done==len) || (pos==foo.size())) );
+		do {pos++;len_done++;len_now++;} while (! ((pos==foo.size()) || (foo[pos]<=last_number) || (len_done==len)) );
 
 		len_now=len_now*TICKS_PER_WHOLE/64;
 
@@ -4583,10 +4583,8 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *     changing "share" status, the changed state isn't stored
  *   ? pasting in editors sometimes fails oO? ( ERROR: reading eventlist
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
- *   o cakewalk-mode is ignored when saving config
  * 
  * CURRENT TODO
- *   o drum editor has "clef column"
  * ! o fix sigedit boxes (see also "important todo")
  *   o ticks-to-quarter spinboxes
  *   o newly created windows have to be focussed!

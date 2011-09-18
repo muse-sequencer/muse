@@ -879,7 +879,8 @@ unsigned get_groupedevents_len(const QString& pt)
 {
 	unsigned maxlen=0;
 	
-	Xml xml(pt.toLatin1().constData());
+	QByteArray pt_= pt.toLatin1();
+	Xml xml(pt_.constData());
 	for (;;) 
 	{
 		Xml::Token token = xml.parse();
@@ -1062,7 +1063,8 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 	map<Part*, unsigned> expand_map;
 	map<Part*, set<Part*> > new_part_map;
 	
-	Xml xml(pt.toLatin1().constData());
+	QByteArray pt_= pt.toLatin1();
+	Xml xml(pt_.constData());
 	for (;;) 
 	{
 		Xml::Token token = xml.parse();
