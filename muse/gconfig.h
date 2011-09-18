@@ -161,6 +161,7 @@ struct GlobalConfigValues {
       unsigned long minControlProcessPeriod;
       bool popupsDefaultStayOpen;
       bool leftMouseButtonCanDecrease;
+      bool rangeMarkerWithoutMMB;
       };
 
 extern GlobalConfigValues config;

@@ -946,6 +946,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               MusEConfig::config.popupsDefaultStayOpen = xml.parseInt();
                         else if (tag == "leftMouseButtonCanDecrease")
                               MusEConfig::config.leftMouseButtonCanDecrease = xml.parseInt();
+                        else if (tag == "rangeMarkerWithoutMMB")
+                              MusEConfig::config.rangeMarkerWithoutMMB = xml.parseInt();
 
                         // ---- the following only skips obsolete entries ----
                         else if ((tag == "arranger") || (tag == "geometryPianoroll") || (tag == "geometryDrumedit"))
@@ -1278,6 +1280,7 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.intTag(level, "moveArmedCheckBox", MusEConfig::config.moveArmedCheckBox);
       xml.intTag(level, "popupsDefaultStayOpen", MusEConfig::config.popupsDefaultStayOpen);
       xml.intTag(level, "leftMouseButtonCanDecrease", MusEConfig::config.leftMouseButtonCanDecrease);
+      xml.intTag(level, "rangeMarkerWithoutMMB", MusEConfig::config.rangeMarkerWithoutMMB);
       
       //for (int i = 0; i < 6; ++i) {
       for (int i = 0; i < NUM_FONTS; ++i) {

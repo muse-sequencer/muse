@@ -170,6 +170,7 @@ Shorter periods are desirable.</string>
       projectSaveCheckBox->setChecked(MusEConfig::config.useProjectSaveDialog);
       popsDefStayOpenCheckBox->setChecked(MusEConfig::config.popupsDefaultStayOpen);
       lmbDecreasesCheckBox->setChecked(MusEConfig::config.leftMouseButtonCanDecrease);
+      rangeMarkerWithoutMMBCheckBox->setChecked(MusEConfig::config.rangeMarkerWithoutMMB);
       
       //updateSettings();    // TESTING
       
@@ -307,6 +308,7 @@ void GlobalSettingsConfig::updateSettings()
       projectSaveCheckBox->setChecked(MusEConfig::config.useProjectSaveDialog);
       popsDefStayOpenCheckBox->setChecked(MusEConfig::config.popupsDefaultStayOpen);
       lmbDecreasesCheckBox->setChecked(MusEConfig::config.leftMouseButtonCanDecrease);
+      rangeMarkerWithoutMMBCheckBox->setChecked(MusEConfig::config.rangeMarkerWithoutMMB);
       
       updateMdiSettings();
 }
@@ -404,6 +406,7 @@ void GlobalSettingsConfig::apply()
       MusEConfig::config.useProjectSaveDialog = projectSaveCheckBox->isChecked();
       MusEConfig::config.popupsDefaultStayOpen = popsDefStayOpenCheckBox->isChecked();
       MusEConfig::config.leftMouseButtonCanDecrease = lmbDecreasesCheckBox->isChecked();
+      MusEConfig::config.rangeMarkerWithoutMMB = rangeMarkerWithoutMMBCheckBox->isChecked();
 
       //MusEGlobal::muse->showMixer(MusEConfig::config.mixerVisible);
       MusEGlobal::muse->showMixer1(MusEConfig::config.mixer1Visible);
