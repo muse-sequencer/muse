@@ -390,7 +390,7 @@ void TList::paint(const QRect& r)
                               }
                               break;
                         case COL_CLEF:
-                              if (track->isMidiTrack()) {
+                              if (track->isMidiTrack() && track->type() == Track::MIDI) { // no drum tracks!
                                 QString s = tr("no clef");
                                 if (((MidiTrack*)track)->getClef() == trebleClef)
                                   s=tr("Treble");
@@ -1081,7 +1081,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
       switch (col) {
               case COL_CLEF:
-                if (t->isMidiTrack()) {
+                if (t->isMidiTrack() && t->type() == Track::MIDI) {
                   QMenu* p = new QMenu;
                   p->addAction(tr("Treble clef"))->setData(0);
                   p->addAction(tr("Bass clef"))->setData(1);
