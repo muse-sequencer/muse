@@ -28,6 +28,7 @@
 #include <QTimer>
 
 #include "nentry.h"
+#include "gconfig.h"
 
 #define TIMER1    400
 #define TIMER2    200
@@ -254,7 +255,9 @@ void Nentry::repeat()
 
       switch (button) {
             case Qt::LeftButton:
-                  return;
+                  if (!MusEConfig::config.leftMouseButtonCanDecrease)
+                    return;
+                  // else fall through
             case Qt::MidButton:
                   decValue(evx);
                   break;

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>556</width>
-    <height>506</height>
+    <height>527</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1345,12 +1345,44 @@ Adjusts responsiveness of audio controls and
           </item>
           <item row="4" column="1">
            <widget class="QCheckBox" name="popsDefStayOpenCheckBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="toolTip">
              <string>Allows some popup menus to stay open.
 Otherwise, hold Ctrl to keep them open.</string>
             </property>
             <property name="text">
-             <string/>
+             <string notr="true"/>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="toolTip">
+             <string>In some areas, the middle mouse button decreases
+values, while the right button increases. Users without a
+middle mouse button can select this option to make the
+left button behave like the middle button in such areas.</string>
+            </property>
+            <property name="text">
+             <string>Use left mouse button for decreasing values</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QCheckBox" name="lmbDecreasesCheckBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string notr="true"/>
             </property>
            </widget>
           </item>
@@ -1409,7 +1441,7 @@ Otherwise, hold Ctrl to keep them open.</string>
                <x>0</x>
                <y>0</y>
                <width>482</width>
-               <height>168</height>
+               <height>166</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">

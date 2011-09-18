@@ -213,6 +213,7 @@ GlobalConfigValues config = {
       true,                         // useProjectSaveDialog
       64,                           // minControlProcessPeriod
       false                         // popupsDefaultStayOpen
+      true                         // leftMouseButtonCanDecrease
       };
 
 //---------------------------------------------------------

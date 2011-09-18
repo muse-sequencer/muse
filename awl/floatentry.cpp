@@ -22,6 +22,7 @@
 
 #include "floatentry.h"
 #include "fastlog.h"
+#include "gconfig.h"
 
 #include <QLineEdit>
 #include <QMouseEvent>
@@ -219,7 +220,9 @@ void FloatEntry::repeat()
 
       switch (button) {
             case Qt::LeftButton:
-                  return;
+                  if (!MusEConfig::config.leftMouseButtonCanDecrease)
+                    return;
+                  // else fall through
             case Qt::MidButton:
                   decValue(evx);
                   break;

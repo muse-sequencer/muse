@@ -27,6 +27,7 @@
 
 #include "dentry.h"
 #include "globals.h"
+#include "gconfig.h"
 
 #define TIMER1    400
 #define TIMER2    200
@@ -172,7 +173,9 @@ void Dentry::repeat()
 
       switch (button) {
             case Qt::LeftButton:
-                  return;
+                  if (!MusEConfig::config.leftMouseButtonCanDecrease)
+                    return;
+                  // else fall through
             case Qt::MidButton:
                   if(_slider)
                     _slider->stepPages(-1);

@@ -185,7 +185,8 @@ GlobalConfigValues config = {
       true,                         // projectStoreInFolder
       true,                         // useProjectSaveDialog
       64,                           // minControlProcessPeriod
-      false                         // popupsDefaultStayOpen
+      false,                        // popupsDefaultStayOpen
+      false                         // leftMouseButtonCanDecrease
     };
 
 } // namespace MusEConfig
