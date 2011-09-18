@@ -297,8 +297,14 @@ bool TimeCanvas::eventFilter(QObject* obj, QEvent* event)
                               int i = 0;
                               if (b & Qt::MidButton)
                                     i = 1;
-                              else if (b & Qt::RightButton)
-                                    i = 2;
+                              //else if (b & Qt::RightButton)
+                              //      i = 2;
+                              else if (b & Qt::RightButton) {
+                                    if ((MusEConfig::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
+                                        i = 1;
+                                    else
+                                        i = 2;
+                                    }
                               if (keyState & Qt::ShiftModifier)
                                     emit addMarker(i);
                               emit posChanged(i, pos);

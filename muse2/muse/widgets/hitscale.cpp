@@ -22,6 +22,7 @@
 
 #include "hitscale.h"
 #include "midieditor.h"
+#include "gconfig.h"
 
 #include <QMouseEvent>
 #include <QPainter>
@@ -97,7 +98,10 @@ void HitScale::viewMouseMoveEvent(QMouseEvent* event)
                   i = 1;
                   break;
             case Qt::RightButton:
-                  i = 2;
+                  if ((MusEConfig::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
+                      i = 1;
+                  else
+                      i = 2;
                   break;
             default:
                   return;

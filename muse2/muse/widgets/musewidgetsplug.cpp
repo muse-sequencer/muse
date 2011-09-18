@@ -212,8 +212,9 @@ GlobalConfigValues config = {
       true,                         // projectStoreInFolder
       true,                         // useProjectSaveDialog
       64,                           // minControlProcessPeriod
-      false                         // popupsDefaultStayOpen
-      true                         // leftMouseButtonCanDecrease
+      false,                        // popupsDefaultStayOpen
+      false,                        // leftMouseButtonCanDecrease
+      false                         // rangeMarkerWithoutMMBCheckBox
       };
 
 //---------------------------------------------------------

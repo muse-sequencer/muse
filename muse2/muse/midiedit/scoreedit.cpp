@@ -4586,6 +4586,12 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  * 
  * CURRENT TODO
  * ! o fix sigedit boxes (see also "important todo")
+ *   o fix valgrind problems
+ * > o drum editor: channel-stuff
+ *
+ * IMPORTANT TODO
+ * ! o fix sigedit boxes (see also "current todo")
+ *   o add "dotted quarter" quantize option (for 6/8 beat)
  *   o ticks-to-quarter spinboxes
  *   o newly created windows have to be focussed!
  *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer
@@ -4593,10 +4599,6 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *   o implement borland-style maximize: free windows do not cover the main menu, even when maximized
  *   o smart range selection: if range markers have been used recently (that is, a dialog with
  *     "range" setting, or they've been modified), default to "in range" or "selected in range"
- *
- * IMPORTANT TODO
- * ! o fix sigedit boxes (see also "current todo")
- *   o add "dotted quarter" quantize option (for 6/8 beat)
  * 
  *   o rename stuff with F2 key
  *   o redo transport menu: offer "one beat" and "one bar" steps
@@ -4605,16 +4607,13 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *   o shrink a part from its beginning as well! watch out for clones!
  *
  *   o canvas editor: create clone via "alt+drag" moves window instead
- * > o investigate with valgrind
  *   o controller view in score editor
  *   o solo button
- * > o drum editor: channel-stuff
  * > o do partial recalculating; recalculating can take pretty long
  *     (0,5 sec) when displaying a whole song in scores
  *   o transpose etc. must also transpose key-pressure events
  *   o transpose: support in-key-transpose
  *   o thin out: remove unneeded ctrl messages
- *   o make muse usable without the middle mouse button
  *
  * less important stuff
  *   o quantize-templates (everything is forced into a specified
