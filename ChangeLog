@@ -1,3 +1,5 @@
+17.09.2011:
+        - Minor namespace fix in osc.cpp. (Orcan)
 16.09.2011:
         - Fixed errors when ladspa plugins not found while loading. (Tim)
         - Fixed forgotten bool to pointer conversion in some calls to song::addTrack, createSynthI. (Tim)

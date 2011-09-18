@@ -622,7 +622,7 @@ int OscIF::oscUpdate(lo_arg **argv)
       printf(" _uiOscProgramPath:%s\n", _uiOscProgramPath);
       printf(" _uiOscControlPath:%s\n",_uiOscControlPath);
       printf(" _uiOscShowPath:%s\n", _uiOscShowPath);
-      printf(" museProject:%s\n", museProject.toLatin1().constData());
+      printf(" museProject:%s\n", MusEGlobal::museProject.toLatin1().constData());
       #endif
       
       // Send sample rate.
