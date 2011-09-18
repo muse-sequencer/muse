@@ -160,10 +160,10 @@ struct GlobalConfigValues {
       bool useProjectSaveDialog;
       unsigned long minControlProcessPeriod;
       bool popupsDefaultStayOpen;
+      bool leftMouseButtonCanDecrease;
       };
 
 extern GlobalConfigValues config;
-
 } // namespace MusEConfig
 
 #endif

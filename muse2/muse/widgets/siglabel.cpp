@@ -31,6 +31,7 @@
 #define TIMER4    50
 
 #include "globals.h"
+#include "gconfig.h"
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QLabel>
@@ -70,7 +71,9 @@ void SigLabel::mousePressEvent(QMouseEvent* event)
       int zz = z, nn = n;
       switch (button) {
             case Qt::LeftButton:
-                  return;
+                  if (!MusEConfig::config.leftMouseButtonCanDecrease)
+                    return;
+                  // else fall through
             case Qt::MidButton:
                   incValue(zaehler, false, zz, nn);
                   break;
