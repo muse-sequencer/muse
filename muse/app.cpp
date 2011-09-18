@@ -2089,6 +2089,9 @@ void MusE::toplevelDeleted(TopWin* tl)
       for (iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
             if (*i == tl) {
                   
+                  if (tl == activeTopWin)
+                    activeTopWinChangedSlot(NULL);
+              
                   if (tl == currentMenuSharingTopwin)
                     setCurrentMenuSharingTopwin(NULL);
               
