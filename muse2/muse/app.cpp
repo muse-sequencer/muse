@@ -2090,7 +2090,10 @@ void MusE::toplevelDeleted(TopWin* tl)
             if (*i == tl) {
                   
                   if (tl == activeTopWin)
-                    activeTopWinChangedSlot(NULL);
+                  {
+                    activeTopWin=NULL;
+                    emit activeTopWinChanged(NULL);
+                  }
               
                   if (tl == currentMenuSharingTopwin)
                     setCurrentMenuSharingTopwin(NULL);
@@ -3289,7 +3292,8 @@ void MusE::bringToFront(QWidget* widget)
     win->raise();
   }
   
-  activeTopWinChangedSlot(win);
+  activeTopWin=win;
+  emit activeTopWinChanged(win);
 }
 
 void MusE::setFullscreen(bool val)
