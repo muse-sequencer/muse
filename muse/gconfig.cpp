@@ -98,7 +98,7 @@ GlobalConfigValues config = {
                                                         //  at the price of only few more pixels than Normal mode.
         },
       QColor(84, 97, 114),          // trackBg;
-      QColor(120, 229, 166),        // selected track Bg;
+      QColor(109, 174, 178),        // selected track Bg;
       QColor(0x00, 0x00, 0x00),     // selected track Fg;
       
       QColor(74, 150, 194),         // midiTrackLabelBg;   // Med blue

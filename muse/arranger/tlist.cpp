@@ -193,7 +193,9 @@ void TList::paint(const QRect& r)
       mask.setColorAt(0, mask_edge);
       mask.setColorAt(0.15, mask_center);
       mask.setColorAt(0.3, mask_center);
+      mask.setColorAt(0.85, mask_edge);
       mask.setColorAt(1, mask_edge);
+
 
       TrackList* l = song->tracks();
       int idx = 0;
@@ -212,7 +214,11 @@ void TList::paint(const QRect& r)
             // clear one row
             //
             QColor bg;
-	
+            if (track->selected()) {
+                  bg = MusEConfig::config.selectTrackBg;
+                  p.setPen(MusEConfig::config.selectTrackFg);
+                  }
+            else {	
                   switch(type) {
                         case Track::MIDI:
                               bg = MusEConfig::config.midiTrackBg;
@@ -240,7 +246,8 @@ void TList::paint(const QRect& r)
                               break;
                         }
 
-            p.setPen(palette().color(QPalette::Active, QPalette::Text));
+                  p.setPen(palette().color(QPalette::Active, QPalette::Text));
+                  }
             p.fillRect(x1, yy, w, trackHeight, bg);
 
 	    if (track->selected()) {
