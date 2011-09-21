@@ -1,3 +1,8 @@
+20.09.2011:
+        - Revert the change in coloring of the selected track in tlist. Making full transpaency optional
+          requires more substantial changes. (Orcan)
+        - Update the default config file with the same defaults as in gconfig.cpp. Question: Why do we
+          have defaults defined in multiple places? (Orcan)
 17.09.2011:
         - Minor namespace fix in osc.cpp. (Orcan)
 16.09.2011:
