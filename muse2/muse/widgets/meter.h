@@ -6,6 +6,7 @@
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
 //  (C) Copyright 2011 Orcan Ogetbil (ogetbilo at sf.net)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -81,8 +82,9 @@ class Meter : public QFrame {
       double maxVal;
       double minScale, maxScale;
       int yellowScale, redScale;
+      int cur_yv, last_yv;
 
-      void drawVU(QPainter& p, int, int, int);
+      void drawVU(QPainter& p, const QRect&, int);
 
       void paintEvent(QPaintEvent*);
       void resizeEvent(QResizeEvent*);

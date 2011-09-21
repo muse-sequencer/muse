@@ -1,3 +1,8 @@
+21.09.2011:
+        - Drawing speed boosts in part canvas. TODO Fix slight dashed border shifting. Do 'hidden' polygons (Tim)
+        - Working on meter speed. WIP. Can enable by commenting out #define _USE_NEW_METERS in meter.cpp (Tim) 
+          Combined with part canvas fixes, meter work so far makes MusE2 near-Muse1 speed when playing big songs
+           with many active mixer strip meters.
 20.09.2011:
         - Revert the change in coloring of the selected track in tlist. Making full transpaency optional
           requires more substantial changes. (Orcan)
