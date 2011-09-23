@@ -3102,7 +3102,8 @@ void MusE::activeTopWinChangedSlot(TopWin* win)
 {
   if (MusEGlobal::debugMsg) printf("ACTIVE TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toAscii().data() : "<None>", win);
   
-  if (win && (win->isMdiWin()==false) && win->sharesToolsAndMenu())
+  if ( (win && (win->isMdiWin()==false) && win->sharesToolsAndMenu()) &&
+       ( (mdiArea->currentSubWindow() != NULL) && (mdiArea->currentSubWindow()->isVisible()==true) ) )
   {
     if (MusEGlobal::debugMsg) printf("  that's a menu sharing muse window which isn't inside the MDI area.\n");
     // if a window gets active which a) is a muse window, b) is not a mdi subwin and c) shares menu- and toolbar,
