@@ -183,7 +183,7 @@ Undo DrumCanvas::moveCanvasItems(MusEWidget::CItemList& items, int dp, int dx, D
 	
 	if (!forbidden)
 	{
-	        std::vector< MusEWidget::CItem* > doneList;
+		std::vector< MusEWidget::CItem* > doneList;
 		typedef std::vector< MusEWidget::CItem* >::iterator iDoneList;
 		
 		for(MusEWidget::iCItem ici = items.begin(); ici != items.end(); ++ici) 
