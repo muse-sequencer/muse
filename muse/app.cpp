@@ -3102,9 +3102,15 @@ void MusE::activeTopWinChangedSlot(TopWin* win)
 {
   if (MusEGlobal::debugMsg) printf("ACTIVE TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toAscii().data() : "<None>", win);
   
-  if ((win==NULL) || (win->isMdiWin()==false))
+  if (win && (win->isMdiWin()==false) && win->sharesToolsAndMenu())
   {
-    if (MusEGlobal::debugMsg) printf("  that's out of the MDI area\n");
+    if (MusEGlobal::debugMsg) printf("  that's a menu sharing muse window which isn't inside the MDI area.\n");
+    // if a window gets active which a) is a muse window, b) is not a mdi subwin and c) shares menu- and toolbar,
+    // then unfocus the MDI area and/or the currently active MDI subwin. otherwise you'll be unable to use win's
+    // tools or menu entries, as whenever you click at them, they're replaced by the currently active MDI subwin's
+    // menus and toolbars.
+    // as unfocusing the MDI area and/or the subwin does not work for some reason, we must do this workaround:
+    // simply focus anything in the main window except the mdi area.
     menuBar()->setFocus(Qt::MenuBarFocusReason);
   }
   
