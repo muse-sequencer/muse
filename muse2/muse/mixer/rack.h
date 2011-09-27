@@ -34,6 +34,8 @@ class QMouseEvent;
 class AudioTrack;
 class Xml;
 
+namespace MusEMixer {
+
 //---------------------------------------------------------
 //   EffectRack
 //---------------------------------------------------------
@@ -79,6 +81,8 @@ class EffectRack : public QListWidget {
       QColor getActiveColor() { return activeColor; }
 
       };
+
+} // namespace MusEMixer
 
 #endif
 

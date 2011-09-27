@@ -70,6 +70,8 @@
 #include "spinbox.h"
 #include "shortcuts.h"
 
+namespace MusEArranger {
+
 //---------------------------------------------------------
 //   Arranger::setHeaderToolTips
 //---------------------------------------------------------
@@ -595,7 +597,7 @@ void Arranger::songChanged(int type)
               
         if(type & SC_TRACK_REMOVED)
         {
-          AudioStrip* w = (AudioStrip*)(trackInfo->getWidget(2));
+          MusEMixer::AudioStrip* w = (MusEMixer::AudioStrip*)(trackInfo->getWidget(2));
           //AudioStrip* w = (AudioStrip*)(trackInfo->widget(2));
           if(w)
           {
@@ -954,7 +956,7 @@ QSize WidgetStack::minimumSizeHint() const
 
 void Arranger::clear()
       {
-      AudioStrip* w = (AudioStrip*)(trackInfo->getWidget(2));
+      MusEMixer::AudioStrip* w = (MusEMixer::AudioStrip*)(trackInfo->getWidget(2));
       if (w)
             delete w;
       trackInfo->addWidget(0, 2);
@@ -1054,11 +1056,11 @@ void Arranger::updateTrackInfo(int flags)
 void Arranger::switchInfo(int n)
       {
       if (n == 2) {
-            AudioStrip* w = (AudioStrip*)(trackInfo->getWidget(2));
+            MusEMixer::AudioStrip* w = (MusEMixer::AudioStrip*)(trackInfo->getWidget(2));
             if (w == 0 || selected != w->getTrack()) {
                   if (w)
                         delete w;
-                  w = new AudioStrip(trackInfo, (AudioTrack*)selected);
+                  w = new MusEMixer::AudioStrip(trackInfo, (AudioTrack*)selected);
                   //w->setFocusPolicy(Qt::TabFocus);  // p4.0.9
                   connect(song, SIGNAL(songChanged(int)), w, SLOT(songChanged(int)));
                   connect(MusEGlobal::muse, SIGNAL(configChanged()), w, SLOT(configChanged()));
@@ -1138,3 +1140,5 @@ void Arranger::horizontalZoomOut()
   hscroll->setMag(newmag);
 
 }
+
+} // namespace MusEArranger

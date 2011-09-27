@@ -61,6 +61,7 @@
 #include "al/sig.h"
 #include "keyevent.h"
 #include <sys/wait.h>
+//#include "utils.h"  
 
 extern void clearMidiTransforms();
 extern void clearMidiInputTransforms();
@@ -1700,6 +1701,21 @@ void Song::setMType(MType t)
 
 void Song::beat()
       {
+      #if 0
+      static double _heartbeatRateTimer = 0.0;
+      double t = MusEUtil::curTime();
+      if(t - _heartbeatRateTimer > 0.0)
+      {
+        double rate = 1/ (t - _heartbeatRateTimer);
+        printf("heartbeat rate:%f\n", rate);
+        // Results: Song::beat() is not even called sometimes because apparently all the other
+        //  stuff connected to the heartbeat is taking up all the time before the next timer event - 
+        //  apparently Song::beat() is called last, or close to last - after the others. (Possible to choose order?)
+        // With fancy strip meters active, Song::beat() was quiet for long periods of time!
+      }
+      _heartbeatRateTimer = t;
+      #endif
+      
       // Keep the sync detectors running... 
       for(int port = 0; port < MIDI_PORTS; ++port)
       {
@@ -3804,8 +3820,7 @@ void Song::executeScript(const char* scriptfile, PartList* parts, int quant, boo
 
             if (myProcess->exitCode()) {
               QMessageBox::warning(MusEGlobal::muse, tr("MusE - external script failed"),
-                                   tr("MusE was unable to launch the script, error message:\n ")+ QString(errStr)
-                     );
+                                   tr("MusE was unable to launch the script, error message:\n%1").arg(QString(errStr)));
               endUndo(SC_EVENT_REMOVED);
               return;
             }

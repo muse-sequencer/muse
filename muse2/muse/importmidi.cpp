@@ -618,9 +618,8 @@ void MusE::importPartToTrack(QString& filename, unsigned tick, Track* track)
         {
           int tot = notDone + done;
           QMessageBox::critical(this, QString("MusE"),
-            QString().setNum(notDone) + (tot > 1 ? (tr(" out of ") + QString().setNum(tot)) : QString("")) + 
-            (tot > 1 ? tr(" parts") : tr(" part")) + 
-            tr(" could not be imported.\nLikely the track is the wrong type."));
+            (tot > 1  ?  tr("%n part(s) out of %1 could not be imported.\nLikely the selected track is the wrong type.","",notDone).arg(tot)
+                      :  tr("%n part(s) could not be imported.\nLikely the selected track is the wrong type.","",notDone)));
         }
         
         return;

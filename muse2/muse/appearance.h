@@ -29,7 +29,9 @@ class QColor;
 class QDialog;
 
 class MusE;
+namespace MusEArranger {
 class Arranger;
+}
 namespace MusEConfig {
 class GlobalConfigValues;
 }
@@ -43,7 +45,7 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
     Q_OBJECT
     
  private:
-      Arranger* arr;
+      MusEArranger::Arranger* arr;
       QColor* color;
       MusEConfig::GlobalConfigValues* config;
       QButtonGroup* aPalette;
@@ -88,7 +90,7 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       void colorNameEditFinished();
 
    public:
-      Appearance(Arranger*, QWidget* parent=0);
+      Appearance(MusEArranger::Arranger*, QWidget* parent=0);
       ~Appearance();
       void resetValues();
       };

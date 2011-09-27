@@ -26,13 +26,20 @@
 #include <sys/time.h>
 //#include <time.h>
 
+#include <QApplication>
 #include <QFrame>
+#include <QClipboard>
 #include <QColor>
 #include <QGradient>
+#include <QIcon>
 #include <QLinearGradient>
+#include <QMimeData>
+#include <QPainter>
 #include <QPointF>
 
+#include "part.h"
 #include "utils.h"
+#include "xml.h"
 
 namespace MusEUtil {
 
@@ -454,6 +461,101 @@ QPainterPath roundedPath(int x, int y, int w, int h, int xrad, int yrad, Corner 
     }
 
   return rounded_rect;
+}
+
+//---------------------------------------------------------
+//   colorRect
+//   paints a rectangular icon with a given color
+//---------------------------------------------------------
+
+QIcon colorRect(const QColor& color, int width, int height) {
+      QPainter painter;
+      QPixmap image(width, height);
+      painter.begin(&image);
+      painter.setBrush(color);
+      QRect rectangle(0, 0, width, height);
+      painter.drawRect(rectangle);
+      painter.end();
+      QIcon icon(image);
+      return icon;
+}
+
+int get_paste_len()
+      {
+      QClipboard* cb  = QApplication::clipboard();
+      const QMimeData* md = cb->mimeData(QClipboard::Clipboard);
+
+      QString pfx("text/");
+      QString mdpl("x-muse-midipartlist");
+      QString wvpl("x-muse-wavepartlist");
+      QString mxpl("x-muse-mixedpartlist");
+      QString txt;
+
+      if(md->hasFormat(pfx + mdpl))
+            txt = cb->text(mdpl, QClipboard::Clipboard);
+      else if(md->hasFormat(pfx + wvpl))
+            txt = cb->text(wvpl, QClipboard::Clipboard);
+      else if(md->hasFormat(pfx + mxpl))
+            txt = cb->text(mxpl, QClipboard::Clipboard);
+      else
+            return 0;
+
+
+      QByteArray ba = txt.toLatin1();
+      const char* ptxt = ba.constData();
+      Xml xml(ptxt);
+      bool end = false;
+
+      unsigned begin_tick=-1; //this uses the greatest possible begin_tick
+      unsigned end_tick=0;
+
+      for (;;)
+            {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token)
+                  {
+                  case Xml::Error:
+                  case Xml::End:
+                        end = true;
+                        break;
+
+                  case Xml::TagStart:
+                        if (tag == "part")
+                              {
+                              Part* p = 0;
+                              p = readXmlPart(xml, NULL, false, false);
+
+                              if (p)
+                                    {
+                                    if (p->tick() < begin_tick)
+                                          begin_tick=p->tick();
+
+                                    if (p->endTick() > end_tick)
+                                          end_tick=p->endTick();
+
+                                    delete p;
+                                    }
+                              }
+                        else
+                              xml.unknown("PartCanvas::get_paste_len");
+                        break;
+
+                  case Xml::TagEnd:
+                        break;
+
+                  default:
+                        end = true;
+                        break;
+                  }
+            if(end)
+                  break;
+            }
+
+      if (begin_tick > end_tick)
+            return 0;
+      else
+            return end_tick - begin_tick;
 }
 
 } // namespace MusEUtils

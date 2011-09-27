@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //    $Id: pcanvas.h,v 1.11.2.4 2009/05/24 21:43:44 terminator356 Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
-//  Additions, modifications (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -36,8 +36,16 @@ class QMouseEvent;
 class QKeyEvent;
 class QEvent;
 class QDragEnterEvent;
+class QLineEdit;
+
+class MidiEditor;
+class QMenu;
+class Xml;
+class CtrlVal;
 
 #define beats     4
+
+namespace MusEArranger {
 
 //---------------------------------------------------------
 //   NPart
@@ -67,12 +75,6 @@ struct AutomationObject {
   bool moveController;
   ControllerVals controllerState;
 };
-
-class QLineEdit;
-class MidiEditor;
-class QMenu;
-class Xml;
-class CtrlVal;
 
 //---------------------------------------------------------
 //   PartCanvas
@@ -175,6 +177,8 @@ class PartCanvas : public MusEWidget::Canvas {
    void redirKeypress(QKeyEvent* e) { keyPress(e); }
    void controllerChanged(Track *t);
 };
+
+} // namespace MusEArranger
 
 #endif
 

@@ -67,6 +67,8 @@
 #include "dssihost.h"
 #endif
 
+namespace MusEArranger {
+
 static const int MIN_TRACKHEIGHT = 20;
 static const int WHEEL_DELTA = 120;
 QColor collist[] = { Qt::red, Qt::yellow, Qt::blue , Qt::black, Qt::white, Qt::green };
@@ -95,6 +97,7 @@ TList::TList(MusEWidget::Header* hdr, QWidget* parent, const char* name)
       _scroll    = 0;
       editTrack = 0;
       editor    = 0;
+      chan_edit = NULL;
       mode      = NORMAL;
 
       //setBackgroundMode(Qt::NoBackground); // ORCAN - FIXME
@@ -184,6 +187,16 @@ void TList::paint(const QRect& r)
       //    Tracks
       //---------------------------------------------------                         
 
+      QColor mask_edge = QColor(90, 90, 90, 45);
+      QColor mask_center = QColor(240, 240, 240, 175);
+      QLinearGradient mask;
+      mask.setColorAt(0, mask_edge);
+      mask.setColorAt(0.15, mask_center);
+      mask.setColorAt(0.3, mask_center);
+      mask.setColorAt(0.85, mask_edge);
+      mask.setColorAt(1, mask_edge);
+
+
       TrackList* l = song->tracks();
       int idx = 0;
       int yy  = -ypos;
@@ -203,10 +216,9 @@ void TList::paint(const QRect& r)
             QColor bg;
             if (track->selected()) {
                   bg = MusEConfig::config.selectTrackBg;
-                  //p.setPen(palette().active().text());
                   p.setPen(MusEConfig::config.selectTrackFg);
                   }
-            else {
+            else {	
                   switch(type) {
                         case Track::MIDI:
                               bg = MusEConfig::config.midiTrackBg;
@@ -233,9 +245,16 @@ void TList::paint(const QRect& r)
                               bg = MusEConfig::config.synthTrackBg;
                               break;
                         }
+
                   p.setPen(palette().color(QPalette::Active, QPalette::Text));
                   }
             p.fillRect(x1, yy, w, trackHeight, bg);
+
+	    if (track->selected()) {
+                  mask.setStart(QPointF(0, yy));
+                  mask.setFinalStop(QPointF(0, yy + trackHeight));
+                  p.fillRect(x1, yy, w, trackHeight, mask);
+                  }
 
             int x = 0;
             for (int index = 0; index < header->count(); ++index) {
@@ -378,7 +397,7 @@ void TList::paint(const QRect& r)
                               }
                               break;
                         case COL_CLEF:
-                              if (track->isMidiTrack()) {
+                              if (track->isMidiTrack() && track->type() == Track::MIDI) { // no drum tracks!
                                 QString s = tr("no clef");
                                 if (((MidiTrack*)track)->getClef() == trebleClef)
                                   s=tr("Treble");
@@ -1069,7 +1088,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
       switch (col) {
               case COL_CLEF:
-                if (t->isMidiTrack()) {
+                if (t->isMidiTrack() && t->type() == Track::MIDI) {
                   QMenu* p = new QMenu;
                   p->addAction(tr("Treble clef"))->setData(0);
                   p->addAction(tr("Bass clef"))->setData(1);
@@ -1789,3 +1808,4 @@ void TList::classesPopupMenu(Track* t, int x, int y)
             }
       }
 
+} // namespace MusEArranger

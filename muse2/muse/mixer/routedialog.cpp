@@ -32,6 +32,8 @@
 #include "audio.h"
 #include "driver/jackaudio.h"
 
+namespace MusEDialog {
+
 //---------------------------------------------------------
 //   RouteDialog
 //---------------------------------------------------------
@@ -199,3 +201,5 @@ void RouteDialog::closeEvent(QCloseEvent* e)
       emit closed();
       e->accept();
       }
+
+} // namespace MusEDialog

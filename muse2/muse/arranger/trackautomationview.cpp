@@ -28,6 +28,8 @@
 
 #include "track.h"
 
+namespace MusEArranger {
+
 TrackAutomationView::TrackAutomationView(QWidget *parent, Track *t) : QWidget(parent)
 {
   printf("created trackautomationview\n");
@@ -72,3 +74,5 @@ void TrackAutomationView::collectAutomationData()
 //  CtrlListList cll =((AudioTrack*)_t)->controller();
 //  cll.count()
 }
+
+} // namespace MusEArranger

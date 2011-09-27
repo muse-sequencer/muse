@@ -39,12 +39,13 @@ class QWheelEvent;
 class QKeyEvent;
 //class QStackedWidget;
 
-class TList;
 class Track;
 class Xml;
-class TLLayout;
 class WidgetStack;
+
+namespace MusEMixer {
 class AudioStrip;
+}
 
 namespace MusEWidget {
 class Header;
@@ -57,7 +58,10 @@ class Splitter;
 class SpinBox;
 }
 
+namespace MusEArranger {
 class ArrangerView;
+class TList;
+class TLLayout;
 
 //---------------------------------------------------------
 //   WidgetStack
@@ -101,7 +105,7 @@ class Arranger : public QWidget {
       QScrollBar* infoScroll;
       //MidiTrackInfoBase* midiTrackInfo;
       MusEWidget::MidiTrackInfo* midiTrackInfo;
-      AudioStrip* waveTrackInfo;
+      MusEMixer::AudioStrip* waveTrackInfo;
       QWidget* noTrackInfo;
       TLLayout* tgrid;
 
@@ -192,6 +196,8 @@ class Arranger : public QWidget {
       
       ArrangerView* parentWin;
       };
+
+} // namespace MusEArranger
 
 #endif
 

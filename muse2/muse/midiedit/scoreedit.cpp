@@ -123,6 +123,9 @@ QString IntToQStr(int i);
 
 
 
+#define AKKOLADE_WIDTH 8
+#define AKKOLADE_LEFTMARGIN 0
+#define AKKOLADE_RIGHTMARGIN 2
 #define STAFF_DISTANCE (10*YLEN)
 #define GRANDSTAFF_DISTANCE (8*YLEN)
 #define NOTE_YDIST 20
@@ -2014,7 +2017,7 @@ list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo,
 		int len_now=0;
 		int last_number=foo[pos];
 		
-		do {pos++;len_done++;len_now++;} while (! ((foo[pos]<=last_number) || (len_done==len) || (pos==foo.size())) );
+		do {pos++;len_done++;len_now++;} while (! ((pos==foo.size()) || (foo[pos]<=last_number) || (len_done==len)) );
 
 		len_now=len_now*TICKS_PER_WHOLE/64;
 
@@ -2122,6 +2125,29 @@ void ScoreCanvas::draw_tie (QPainter& p, int x1, int x4, int yo, bool up, QColor
 	p.setPen(color);
  	p.setBrush(color);
 
+	p.drawPath(path);
+}
+
+void ScoreCanvas::draw_akkolade (QPainter& p, int x, int y_)
+{
+	QPainterPath path;
+
+	qreal h = (2*2*YLEN+GRANDSTAFF_DISTANCE) /2.0  +3; //this is only the half height
+	qreal w         = AKKOLADE_WIDTH;
+	int y = y_ -h;
+	
+	const double X1 =  2.0 * w;
+	const double X2 = -0.7096 * w;
+	const double X3 = -1.234 * w;
+	const double X4 =  1.734 * w;
+
+	path.moveTo(x+ 0, y+ h);
+	path.cubicTo(x+ X1,  y+ h + h * .3359, x+ X2,  y+ h + h * .5089, x+ w, y+ 2 * h);
+	path.cubicTo(x+ X3,  y+ h + h * .5025, x+ X4,  y+ h + h * .2413, x+ 0, y+ h);
+	path.cubicTo(x+ X1,  y+ h - h * .3359, x+ X2,  y+ h - h * .5089, x+ w, y+ 0);
+	path.cubicTo(x+ X3,  y+ h - h * .5025, x+ X4,  y+ h - h * .2413, x+ 0, y+ h);
+
+	p.setBrush(Qt::black);
 	p.drawPath(path);
 }
 
@@ -2757,14 +2783,15 @@ QRect FloItem::bbox() const
 	return bbox_center(x,y,pix->size());
 }
 
-void ScoreCanvas::draw_note_lines(QPainter& p, int y)
+void ScoreCanvas::draw_note_lines(QPainter& p, int y, bool reserve_akkolade_space)
 {
+	int xbegin = reserve_akkolade_space ? AKKOLADE_LEFTMARGIN+AKKOLADE_WIDTH+AKKOLADE_RIGHTMARGIN : 0;
 	int xend=width();
 	
 	p.setPen(Qt::black);
 	
 	for (int i=0;i<5;i++)
-		p.drawLine(0,y + i*YLEN - 2*YLEN,xend,y + i*YLEN - 2*YLEN);
+		p.drawLine(xbegin, y + i*YLEN - 2*YLEN, xend, y + i*YLEN - 2*YLEN);
 }
 
 
@@ -3272,18 +3299,30 @@ int clef_height(clef_t clef)
 #define CLEF_LEFTMARGIN 5
 #define CLEF_RIGHTMARGIN 5
 
-void ScoreCanvas::draw_preamble(QPainter& p, int y_offset, clef_t clef)
+void ScoreCanvas::draw_preamble(QPainter& p, int y_offset, clef_t clef, bool reserve_akkolade_space, bool with_akkolade)
 {
 	int x_left_old=x_left;
 	int tick=x_to_tick(x_pos);
-
+	
+	// maybe draw akkolade ----------------------------------------------
+	if (reserve_akkolade_space)
+	{
+		if (with_akkolade)
+			draw_akkolade(p, AKKOLADE_LEFTMARGIN, y_offset+GRANDSTAFF_DISTANCE/2);
+		
+		x_left= AKKOLADE_LEFTMARGIN + AKKOLADE_WIDTH + AKKOLADE_RIGHTMARGIN;
+	}
+	else
+		x_left=0;
+	
+	
 	// draw clef --------------------------------------------------------
 	QPixmap* pix_clef= (clef==BASS) ? pix_clef_bass : pix_clef_violin;
 	int y_coord=2*YLEN  -  ( clef_height(clef) -2)*YLEN/2;
 	
-	draw_pixmap(p,CLEF_LEFTMARGIN + pix_clef->width()/2,y_offset + y_coord,*pix_clef);
+	draw_pixmap(p,x_left + CLEF_LEFTMARGIN + pix_clef->width()/2,y_offset + y_coord,*pix_clef);
 	
-	x_left= CLEF_LEFTMARGIN + pix_clef->width() + CLEF_RIGHTMARGIN;
+	x_left+= CLEF_LEFTMARGIN + pix_clef->width() + CLEF_RIGHTMARGIN;
 	
 
 	// draw accidentials ------------------------------------------------
@@ -3373,11 +3412,19 @@ void ScoreCanvas::draw(QPainter& p, const QRect&)
 
 	p.setPen(Qt::black);
 	
+	bool reserve_akkolade_space=false;
+	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
+		if (it->type==GRAND_TOP)
+		{
+			reserve_akkolade_space=true;
+			break;
+		}
+	
 	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 	{
 		//TODO: maybe only draw visible staves?
-		draw_note_lines(p,it->y_draw - y_pos);
-		draw_preamble(p,it->y_draw - y_pos, it->clef);
+		draw_note_lines(p,it->y_draw - y_pos, reserve_akkolade_space);
+		draw_preamble(p,it->y_draw - y_pos, it->clef, reserve_akkolade_space, (it->type==GRAND_TOP));
 		p.setClipRect(x_left+1,0,p.device()->width(),p.device()->height());
 		draw_items(p,it->y_draw - y_pos, *it);
 		p.setClipping(false);
@@ -4539,6 +4586,12 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  * 
  * CURRENT TODO
  * ! o fix sigedit boxes (see also "important todo")
+ *   o fix valgrind problems
+ * > o drum editor: channel-stuff
+ *
+ * IMPORTANT TODO
+ * ! o fix sigedit boxes (see also "current todo")
+ *   o add "dotted quarter" quantize option (for 6/8 beat)
  *   o ticks-to-quarter spinboxes
  *   o newly created windows have to be focussed!
  *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer
@@ -4546,32 +4599,21 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *   o implement borland-style maximize: free windows do not cover the main menu, even when maximized
  *   o smart range selection: if range markers have been used recently (that is, a dialog with
  *     "range" setting, or they've been modified), default to "in range" or "selected in range"
- *
- * IMPORTANT TODO
- * ! o fix sigedit boxes (see also "current todo")
- *   o add "dotted quarter" quantize option (for 6/8 beat)
  * 
  *   o rename stuff with F2 key
  *   o redo transport menu: offer "one beat" and "one bar" steps
  *                          maybe also offer scrollbar
- *   o quick "set left/right marker", "select between markers"
- *     or even "set marker and select between immediately"
- *   o support partially selected parts. when moving, automatically split
- * 
+ *
  *   o shrink a part from its beginning as well! watch out for clones!
  *
  *   o canvas editor: create clone via "alt+drag" moves window instead
- *   o investigate with valgrind
  *   o controller view in score editor
  *   o solo button
- *   o grand staff brace
- *   o drum editor: channel-stuff
- *   o do partial recalculating; recalculating can take pretty long
+ * > o do partial recalculating; recalculating can take pretty long
  *     (0,5 sec) when displaying a whole song in scores
  *   o transpose etc. must also transpose key-pressure events
  *   o transpose: support in-key-transpose
  *   o thin out: remove unneeded ctrl messages
- *   o make muse usable without the middle mouse button
  *
  * less important stuff
  *   o quantize-templates (everything is forced into a specified

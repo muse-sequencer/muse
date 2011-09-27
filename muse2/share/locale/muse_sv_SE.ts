@@ -4,7 +4,7 @@
 <context>
     <name>@default</name>
     <message>
-        <location filename="../../muse/transport.cpp" line="+31"/>
+        <location filename="../../muse/transport.cpp" line="+46"/>
         <source>Click this button to enable recording</source>
         <translation>Klicka här för att spela in</translation>
     </message>
@@ -17,7 +17,7 @@
 100 - full kvantisering</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="+16"/>
+        <location filename="../../muse/widgets/tools.cpp" line="+33"/>
         <source>select Pointer Tool:
 with the pointer tool you can:
   select parts
@@ -63,7 +63,7 @@ med pekverktyget kan du:
         <translation type="obsolete">Kvantisera &quot;note len&quot; som standard</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="+69"/>
+        <location filename="../../muse/app.cpp" line="+89"/>
         <source>Click this button to open a &lt;em&gt;new song&lt;/em&gt;.&lt;br&gt;You can also select the &lt;b&gt;Open command&lt;/b&gt; from the File menu.</source>
         <translation>Klicka här för att öppna en &lt;em&gt;ny sång&lt;/em&gt;.&lt;br&gt;Du kan också välja menyvalet &lt;b&gt;Öppna&lt;/b&gt; från Arkivmenyn.</translation>
     </message>
@@ -254,12 +254,12 @@ klicka på en part för att Tysta/Avtysta</translation>
         <translation>tysta parter</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="+138"/>
-        <location filename="../../muse/master/masteredit.cpp" line="+140"/>
-        <location filename="../../muse/widgets/comboQuant.cpp" line="+23"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="+155"/>
+        <location filename="../../muse/master/masteredit.cpp" line="+155"/>
+        <location filename="../../muse/widgets/comboQuant.cpp" line="+40"/>
         <location line="+1"/>
         <location line="+1"/>
-        <location filename="../../muse/widgets/tb1.cpp" line="+31"/>
+        <location filename="../../muse/widgets/tb1.cpp" line="+48"/>
         <location line="+1"/>
         <location line="+1"/>
         <source>Off</source>
@@ -270,7 +270,7 @@ klicka på en part för att Tysta/Avtysta</translation>
         <translation type="obsolete">Alla filer (*)</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="+221"/>
+        <location filename="../../muse/helper.cpp" line="+242"/>
         <source>MESS</source>
         <translation type="unfinished"></translation>
     </message>
@@ -325,8 +325,7 @@ klicka på en part för att Tysta/Avtysta</translation>
         <translation type="unfinished">sudd</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="+7"/>
-        <location filename="../../muse/arranger/tlist.cpp" line="+1005"/>
+        <location filename="../../muse/helper.cpp" line="+7"/>
         <source>Add Synth</source>
         <translation type="unfinished"></translation>
     </message>
@@ -336,7 +335,7 @@ klicka på en part för att Tysta/Avtysta</translation>
         <translation type="unfinished">Takt</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="+714"/>
+        <location filename="../../muse/confmport.cpp" line="+729"/>
         <source> Jack</source>
         <translation type="unfinished"></translation>
     </message>
@@ -356,10 +355,10 @@ klicka på en part för att Tysta/Avtysta</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/driver/alsamidi.cpp" line="+225"/>
-        <location filename="../../muse/driver/jackmidi.cpp" line="+737"/>
-        <location filename="../../muse/midiport.cpp" line="+1123"/>
-        <location filename="../../muse/track.cpp" line="+784"/>
+        <location filename="../../muse/driver/alsamidi.cpp" line="+209"/>
+        <location filename="../../muse/driver/jackmidi.cpp" line="+290"/>
+        <location filename="../../muse/midiport.cpp" line="+1138"/>
+        <location filename="../../muse/track.cpp" line="+799"/>
         <location line="+16"/>
         <location line="+30"/>
         <source>Route</source>
@@ -374,8 +373,8 @@ klicka på en part för att Tysta/Avtysta</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+34"/>
-        <location filename="../../muse/driver/jackmidi.cpp" line="+36"/>
+        <location line="+3"/>
+        <location filename="../../muse/driver/jackmidi.cpp" line="+3"/>
         <location filename="../../muse/midiport.cpp" line="+7"/>
         <location filename="../../muse/track.cpp" line="-48"/>
         <location line="+60"/>
@@ -390,17 +389,17 @@ klicka på en part för att Tysta/Avtysta</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location filename="../../muse/driver/jackmidi.cpp" line="-61"/>
-        <location line="+64"/>
+        <location filename="../../muse/driver/jackmidi.cpp" line="-20"/>
+        <location line="+23"/>
         <location filename="../../muse/track.cpp" line="-42"/>
         <location line="+48"/>
         <source> type=&quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <location filename="../../muse/driver/jackmidi.cpp" line="-61"/>
-        <location line="+64"/>
+        <location line="+1"/>
+        <location filename="../../muse/driver/jackmidi.cpp" line="-22"/>
+        <location line="+23"/>
         <location filename="../../muse/midiport.cpp" line="+1"/>
         <location filename="../../muse/track.cpp" line="-65"/>
         <location line="+18"/>
@@ -409,13 +408,13 @@ klicka på en part för att Tysta/Avtysta</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/driver/jackmidi.cpp" line="-69"/>
+        <location filename="../../muse/driver/jackmidi.cpp" line="-26"/>
         <location filename="../../muse/track.cpp" line="-56"/>
         <source>source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midictrl.cpp" line="+227"/>
+        <location filename="../../muse/midictrl.cpp" line="+242"/>
         <source>Velocity</source>
         <translation type="unfinished">Hastighet</translation>
     </message>
@@ -432,7 +431,7 @@ klicka på en part för att Tysta/Avtysta</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/osc.cpp" line="+1316"/>
+        <location filename="../../muse/osc.cpp" line="+1320"/>
         <source>dssi_synth</source>
         <translation type="unfinished"></translation>
     </message>
@@ -457,7 +456,7 @@ klicka på en part för att Tysta/Avtysta</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/visibletracks.cpp" line="+18"/>
+        <location filename="../../muse/widgets/visibletracks.cpp" line="+35"/>
         <location line="+9"/>
         <source>Show wave tracks</source>
         <translation type="unfinished"></translation>
@@ -574,7 +573,7 @@ Published under the GNU Public License</source>
         <translation type="obsolete">audioeditor bakgrundsfärg</translation>
     </message>
     <message>
-        <location filename="../../muse/appearance.cpp" line="+751"/>
+        <location filename="../../muse/appearance.cpp" line="+769"/>
         <source>MusE: load image</source>
         <translation>MusE: ladda bild</translation>
     </message>
@@ -998,14 +997,12 @@ Word-breaking but only with spaces.</source>
 <context>
     <name>Arranger</name>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="-13"/>
         <source>Arranger</source>
-        <translation>Arrangerare</translation>
+        <translation type="obsolete">Arrangerare</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Cursor</source>
-        <translation>Markör</translation>
+        <translation type="obsolete">Markör</translation>
     </message>
     <message>
         <source>Off</source>
@@ -1016,126 +1013,32 @@ Word-breaking but only with spaces.</source>
         <translation type="obsolete">Takt</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>Snap</source>
-        <translation type="unfinished">Fäst vid</translation>
+        <translation type="obsolete">Fäst vid</translation>
     </message>
     <message>
-        <location line="+16"/>
         <source>Len</source>
-        <translation type="unfinished">Längd</translation>
+        <translation type="obsolete">Längd</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>Type</source>
-        <translation>Typ</translation>
+        <translation type="obsolete">Typ</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>NO</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>GM</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>GS</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>XG</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <location line="+1"/>
         <source>midi song type</source>
-        <translation>typ av midsång</translation>
+        <translation type="obsolete">typ av midsång</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Pitch</source>
-        <translation type="unfinished">Tonhöjd</translation>
+        <translation type="obsolete">Tonhöjd</translation>
     </message>
     <message>
-        <location line="+7"/>
-        <source>midi pitch</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>global midi pitch shift</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Tempo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <location line="+1"/>
-        <source>midi tempo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>N</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+60"/>
         <source>TrackInfo</source>
-        <translation>Spårinfo</translation>
+        <translation type="obsolete">Spårinfo</translation>
     </message>
     <message>
-        <location line="+13"/>
-        <source>R</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>M</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>S</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>C</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Track</source>
-        <translation>Spår</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Ch</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>T</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Automation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Clef</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Spår</translation>
     </message>
     <message>
         <source>Master</source>
@@ -1158,392 +1061,143 @@ Word-breaking but only with spaces.</source>
         <translation type="obsolete">Grupp D</translation>
     </message>
     <message>
-        <location line="-233"/>
         <source>Enable Recording</source>
-        <translation type="unfinished">Slå på Inspelning</translation>
+        <translation type="obsolete">Slå på Inspelning</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Mute/Off Indicator</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Solo Indicator</source>
-        <translation type="unfinished">Solo-Indikator</translation>
+        <translation type="obsolete">Solo-Indikator</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Track Type</source>
-        <translation type="unfinished">Spårtyp</translation>
+        <translation type="obsolete">Spårtyp</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Track Name</source>
-        <translation type="unfinished">Spårnamn</translation>
+        <translation type="obsolete">Spårnamn</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Midi output channel number or audio channels</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Midi output port or synth midi port</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Time Lock</source>
-        <translation type="unfinished">Tidlås</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Automation parameter selection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Notation clef</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Enable recording. Click to toggle.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Mute indicator. Click to toggle.
-Right-click to toggle track on/off.
-Mute is designed for rapid, repeated action.
-On/Off is not!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Solo indicator. Click to toggle.
-Connected tracks are also &apos;phantom&apos; soloed,
- indicated by a dark square.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Track type. Right-click to change
- midi and drum track types.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Track name. Double-click to edit.
-Right-click for more options.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Midi/drum track: Output channel number.
-Audio track: Channels.
-Mid/right-click to change.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Midi/drum track: Output port.
-Synth track: Assigned midi port.
-Left-click to change.
-Right-click to show GUI.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Time lock</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Notation clef. Select this tracks notation clef.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+74"/>
-        <location line="+1"/>
-        <source>song length - bars</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+126"/>
-        <source>Port</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Tidlås</translation>
     </message>
 </context>
 <context>
     <name>ArrangerView</name>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="+22"/>
-        <source>MusE: Arranger</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Undo/Redo tools</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
         <source>panic</source>
-        <translation type="unfinished">panik</translation>
+        <translation type="obsolete">panik</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>transport</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+30"/>
         <source>C&amp;ut</source>
-        <translation type="unfinished">Klipp &amp;ut</translation>
+        <translation type="obsolete">Klipp &amp;ut</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Copy</source>
-        <translation type="unfinished">&amp;Kopiera</translation>
+        <translation type="obsolete">&amp;Kopiera</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>&amp;Copy in range</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>&amp;Paste</source>
-        <translation type="unfinished">K&amp;listra in</translation>
+        <translation type="obsolete">K&amp;listra in</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Paste (show dialog)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Paste c&amp;lone</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Paste clone (show dialog)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>&amp;Insert Empty Measure</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Delete Selected Tracks</source>
-        <translation type="unfinished">Ta bort valda spår</translation>
+        <translation type="obsolete">Ta bort valda spår</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Shrink selected parts</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Expand selected parts</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Clean selected parts</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
         <source>Add Track</source>
-        <translation type="unfinished">Lägg Till Spår</translation>
+        <translation type="obsolete">Lägg Till Spår</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Select</source>
-        <translation type="unfinished">Välj</translation>
+        <translation type="obsolete">Välj</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Select &amp;All</source>
-        <translation type="unfinished">Markera &amp;Allt</translation>
+        <translation type="obsolete">Markera &amp;Allt</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Deselect All</source>
-        <translation type="unfinished">A&amp;vmarkera Allt</translation>
+        <translation type="obsolete">A&amp;vmarkera Allt</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Invert &amp;Selection</source>
-        <translation type="unfinished">Invertera &amp;Markering</translation>
+        <translation type="obsolete">Invertera &amp;Markering</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Inside Loop</source>
-        <translation type="unfinished">&amp;I Loop</translation>
+        <translation type="obsolete">&amp;I Loop</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Outside Loop</source>
-        <translation type="unfinished">&amp;Utanför Loop</translation>
+        <translation type="obsolete">&amp;Utanför Loop</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>All &amp;Parts on Track</source>
-        <translation type="unfinished">Alla &amp;Parter i spår</translation>
+        <translation type="obsolete">Alla &amp;Parter i spår</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Score</source>
-        <translation type="unfinished">Partitur</translation>
+        <translation type="obsolete">Partitur</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>all parts in one staff</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>one staff per part</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>New score window</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Pianoroll</source>
-        <translation type="unfinished">Pianorulle</translation>
+        <translation type="obsolete">Pianorulle</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Drums</source>
-        <translation type="unfinished">Trummor</translation>
+        <translation type="obsolete">Trummor</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location line="+6"/>
         <source>List</source>
-        <translation type="unfinished">Lista</translation>
+        <translation type="obsolete">Lista</translation>
     </message>
     <message>
-        <location line="-5"/>
         <source>Wave</source>
-        <translation type="unfinished">Wave</translation>
+        <translation type="obsolete">Wave</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Mastertrack</source>
-        <translation type="unfinished">Masterspår</translation>
+        <translation type="obsolete">Masterspår</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Graphic</source>
-        <translation type="unfinished">Grafik</translation>
+        <translation type="obsolete">Grafik</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Midi &amp;Transform</source>
-        <translation type="unfinished">Midi &amp;Transform</translation>
+        <translation type="obsolete">Midi &amp;Transform</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Global Cut</source>
-        <translation type="unfinished">Globalt klipp</translation>
+        <translation type="obsolete">Globalt klipp</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Global Insert</source>
-        <translation type="unfinished">Global insättning</translation>
+        <translation type="obsolete">Global insättning</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Global Split</source>
-        <translation type="unfinished">Global delning</translation>
+        <translation type="obsolete">Global delning</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>&amp;Edit</source>
-        <translation type="unfinished">&amp;Redigera</translation>
+        <translation type="obsolete">&amp;Redigera</translation>
     </message>
     <message>
-        <location line="+43"/>
         <source>&amp;Structure</source>
-        <translation type="unfinished">&amp;Struktur</translation>
+        <translation type="obsolete">&amp;Struktur</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Functions</source>
-        <translation type="unfinished">Funktioner</translation>
+        <translation type="obsolete">Funktioner</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>&amp;Quantize Notes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Change note &amp;length</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Change note &amp;velocity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Crescendo/Decrescendo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Transpose</source>
-        <translation type="unfinished">Transponera</translation>
+        <translation type="obsolete">Transponera</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Erase Events (Not Parts)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Move Events (Not Parts)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Set Fixed Note Length</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Delete Overlapping Notes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Legato</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Window &amp;Config</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+310"/>
-        <location line="+6"/>
         <source>New</source>
-        <translation type="unfinished">Ny</translation>
+        <translation type="obsolete">Ny</translation>
     </message>
 </context>
 <context>
@@ -1668,186 +1322,69 @@ Right-click to show GUI.</source>
         <translation type="obsolete">Ingen</translation>
     </message>
     <message>
-        <location filename="../../muse/mixer/amixer.cpp" line="+156"/>
         <source>&amp;Create</source>
-        <translation type="unfinished">&amp;Skapa</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>&amp;View</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Routing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Show Midi Tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Show Drum Tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Show Wave Tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Show Inputs</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Show Outputs</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Show Groups</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Show Auxs</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Show Synthesizers</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">&amp;Skapa</translation>
     </message>
 </context>
 <context>
     <name>AudioStrip</name>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="+606"/>
-        <source>panorama</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
         <source>aux send level</source>
-        <translation type="unfinished">aux send nivå</translation>
+        <translation type="obsolete">aux send nivå</translation>
     </message>
     <message>
-        <location line="+286"/>
         <source>off</source>
-        <translation type="unfinished">av</translation>
+        <translation type="obsolete">av</translation>
     </message>
     <message>
-        <location line="-263"/>
-        <source>Pan</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+93"/>
         <source>1/2 channel</source>
-        <translation type="unfinished">1/2 kanal</translation>
+        <translation type="obsolete">1/2 kanal</translation>
     </message>
     <message>
-        <location line="+12"/>
-        <source>Pre</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>pre fader - post fader</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+64"/>
-        <source>dB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+36"/>
-        <source>record</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
         <source>mute</source>
-        <translation type="unfinished">tysta</translation>
+        <translation type="obsolete">tysta</translation>
     </message>
     <message>
-        <location line="+25"/>
         <source>record downmix</source>
-        <translation type="unfinished">spela in nermixning</translation>
+        <translation type="obsolete">spela in nermixning</translation>
     </message>
     <message>
         <source>pre fader listening</source>
         <translation type="obsolete">pre fader lyssning</translation>
     </message>
     <message>
-        <location line="+37"/>
-        <source>iR</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>intput routing</source>
         <translation type="obsolete">ingångsrouting</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>oR</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
         <source>output routing</source>
-        <translation type="unfinished">utgångsrouting</translation>
+        <translation type="obsolete">utgångsrouting</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>Off</source>
-        <translation type="unfinished">Av</translation>
+        <translation type="obsolete">Av</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Read</source>
-        <translation type="unfinished">Läs</translation>
+        <translation type="obsolete">Läs</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Touch</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Write</source>
-        <translation type="unfinished">Skriv</translation>
+        <translation type="obsolete">Skriv</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>automation type</source>
-        <translation type="unfinished">automationstyp</translation>
+        <translation type="obsolete">automationstyp</translation>
     </message>
     <message>
         <source>Channel</source>
         <translation type="obsolete">Kanal</translation>
     </message>
-    <message>
-        <location line="-82"/>
-        <location line="+4"/>
-        <source>solo mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+33"/>
-        <source>input routing</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>Awl::MidiVolEntry</name>
     <message>
-        <location filename="../../awl/midivolentry.cpp" line="+35"/>
+        <location filename="../../awl/midivolentry.cpp" line="+37"/>
         <source>off</source>
         <translation type="unfinished">av</translation>
     </message>
@@ -1860,7 +1397,7 @@ Right-click to show GUI.</source>
 <context>
     <name>Awl::VolEntry</name>
     <message>
-        <location filename="../../awl/volentry.cpp" line="+32"/>
+        <location filename="../../awl/volentry.cpp" line="+34"/>
         <source>off</source>
         <translation type="unfinished">av</translation>
     </message>
@@ -1868,57 +1405,18 @@ Right-click to show GUI.</source>
 <context>
     <name>BigTime</name>
     <message>
-        <location filename="../../muse/widgets/bigtime.cpp" line="+78"/>
-        <source>MusE: Bigtime</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-42"/>
-        <source>format display</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>bar</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>beat</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location line="+6"/>
-        <source>tick</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-4"/>
         <source>minute</source>
-        <translation type="unfinished">minut</translation>
+        <translation type="obsolete">minut</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>second</source>
-        <translation type="unfinished">sekund</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location line="+3"/>
-        <source>frame</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-2"/>
-        <source>subframe</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">sekund</translation>
     </message>
 </context>
 <context>
     <name>ClipListEdit</name>
     <message>
-        <location filename="../../muse/cliplist/cliplist.cpp" line="+112"/>
+        <location filename="../../muse/cliplist/cliplist.cpp" line="+127"/>
         <source>MusE: Clip List Editor</source>
         <translation type="unfinished">MusE: Clip-listredigerare</translation>
     </message>
@@ -2175,7 +1673,7 @@ Right-click to show GUI.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+47"/>
+        <location line="+60"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2188,7 +1686,7 @@ Right-click to show GUI.</source>
 <context>
     <name>CtrlPanel</name>
     <message>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="+79"/>
+        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="+94"/>
         <source>select controller</source>
         <translation>välj controller</translation>
     </message>
@@ -4035,7 +3533,7 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+44"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4071,7 +3569,7 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
 <context>
     <name>DrumEdit</name>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="+165"/>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="+181"/>
         <source>&amp;File</source>
         <translation>&amp;Arkiv</translation>
     </message>
@@ -4101,17 +3599,17 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
         <translation>Kopiera</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+2"/>
         <source>Paste</source>
         <translation>Klistra in</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+3"/>
         <source>Delete Events</source>
         <translation>Ta bort händelser</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+18"/>
         <source>Select All</source>
         <translation>Välj Allt</translation>
     </message>
@@ -4235,7 +3733,7 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
         <translation type="obsolete">trummappningar</translation>
     </message>
     <message>
-        <location line="+374"/>
+        <location line="+373"/>
         <source>Muse: Load Drum Map</source>
         <translation>Muse: Ladda trummappning</translation>
     </message>
@@ -4245,7 +3743,7 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
         <translation>MusE: Spara trummappning</translation>
     </message>
     <message>
-        <location line="-621"/>
+        <location line="-620"/>
         <source>Set Fixed Length</source>
         <translation type="unfinished">Sätt fast längd</translation>
     </message>
@@ -4259,7 +3757,7 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
         <translation type="unfinished">Modifiera Velocity</translation>
     </message>
     <message>
-        <location line="-142"/>
+        <location line="-148"/>
         <location line="+21"/>
         <source>mute instrument</source>
         <translation type="unfinished">tysta instrument</translation>
@@ -4346,7 +3844,17 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+16"/>
+        <source>Copy events in range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Paste (with Dialog)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+29"/>
         <source>Previous Part</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4431,7 +3939,7 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+462"/>
+        <location line="+461"/>
         <source>Drum map</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4444,7 +3952,7 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
 <context>
     <name>EditCAfterDialog</name>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="+428"/>
+        <location filename="../../muse/liste/editevent.cpp" line="+443"/>
         <source>MusE: Enter Channel Aftertouch</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4660,7 +4168,7 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
 <context>
     <name>EditInstrument</name>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="+296"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="+311"/>
         <location line="+34"/>
         <source>MusE: Create file failed</source>
         <translation type="unfinished"></translation>
@@ -5728,62 +5236,47 @@ Typically, set to 127/127, or an unused
 <context>
     <name>EditToolBar</name>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="+17"/>
         <source>Edit Tools</source>
-        <translation>Redigeringsverktyg</translation>
+        <translation type="obsolete">Redigeringsverktyg</translation>
     </message>
 </context>
 <context>
     <name>EffectRack</name>
     <message>
-        <location filename="../../muse/mixer/rack.cpp" line="+102"/>
         <source>effect rack</source>
-        <translation>effektrack</translation>
+        <translation type="obsolete">effektrack</translation>
     </message>
     <message>
-        <location line="+84"/>
         <source>move up</source>
-        <translation>flytta upp</translation>
+        <translation type="obsolete">flytta upp</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>move down</source>
-        <translation>flytta ner</translation>
+        <translation type="obsolete">flytta ner</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>remove</source>
-        <translation>ta bort</translation>
+        <translation type="obsolete">ta bort</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>bypass</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>show gui</source>
-        <translation>visa gui</translation>
+        <translation type="obsolete">visa gui</translation>
     </message>
     <message>
-        <location line="-6"/>
         <source>new</source>
-        <translation>ny</translation>
+        <translation type="obsolete">ny</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>change</source>
-        <translation>ändra</translation>
+        <translation type="obsolete">ändra</translation>
     </message>
     <message>
-        <location line="+288"/>
         <source>Replace effect</source>
-        <translation type="unfinished">Byt effekt</translation>
+        <translation type="obsolete">Byt effekt</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Do you really want to replace the effect %1?</source>
-        <translation type="unfinished">Vill du verkligen ersätta effekten %1?</translation>
+        <translation type="obsolete">Vill du verkligen ersätta effekten %1?</translation>
     </message>
     <message>
         <source>&amp;Yes</source>
@@ -5792,21 +5285,6 @@ Typically, set to 127/127, or an unused
     <message>
         <source>&amp;No</source>
         <translation type="obsolete">&amp;Nej</translation>
-    </message>
-    <message>
-        <location line="-282"/>
-        <source>show native gui</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>save preset</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+138"/>
-        <source>MusE: Save Preset</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -5830,7 +5308,7 @@ Message:</source>
 <context>
     <name>FLUIDGui</name>
     <message>
-        <location filename="../../synti/fluid/fluidgui.cpp" line="+62"/>
+        <location filename="../../synti/fluid/fluidgui.cpp" line="+77"/>
         <source>FLUID: open Soundfile</source>
         <translation type="unfinished">FLUID: öppna ljudbank</translation>
     </message>
@@ -6029,7 +5507,7 @@ Configuration</source>
 <context>
     <name>FluidSynthGui</name>
     <message>
-        <location filename="../../synti/fluidsynth/fluidsynthgui.cpp" line="+166"/>
+        <location filename="../../synti/fluidsynth/fluidsynthgui.cpp" line="+188"/>
         <source>Choose soundfont</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6107,7 +5585,7 @@ Configuration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+47"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6115,14 +5593,6 @@ Configuration</source>
         <location line="+13"/>
         <source>Cancel</source>
         <translation type="unfinished">Avbryt</translation>
-    </message>
-</context>
-<context>
-    <name>GlobalSettingsConfig</name>
-    <message>
-        <location filename="../../muse/widgets/genset.cpp" line="+529"/>
-        <source>Selects instruments directory</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -6681,17 +6151,9 @@ Adjusts responsiveness of audio controls and
     </message>
 </context>
 <context>
-    <name>Header</name>
-    <message>
-        <location filename="../../muse/widgets/header.cpp" line="+147"/>
-        <source>Track Info Columns</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>LMaster</name>
     <message>
-        <location filename="../../muse/master/lmaster.cpp" line="+132"/>
+        <location filename="../../muse/master/lmaster.cpp" line="+147"/>
         <source>MusE: Mastertrack</source>
         <translation>MusE: Masterspår</translation>
     </message>
@@ -6801,7 +6263,7 @@ Adjusts responsiveness of audio controls and
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+409"/>
+        <location line="+408"/>
         <source>Reposition of the initial tempo and signature events is not allowed</source>
         <translation type="unfinished">Ompositionering av initalt tempo och/eller signaturevent är inte tillåtet</translation>
     </message>
@@ -6821,7 +6283,7 @@ Adjusts responsiveness of audio controls and
         <translation type="unfinished">Ompositionering av tempo och/eller signaturevent till startposition är inte tillåtet</translation>
     </message>
     <message>
-        <location line="-496"/>
+        <location line="-495"/>
         <source>Edit tools</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6879,7 +6341,7 @@ Adjusts responsiveness of audio controls and
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+56"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6896,7 +6358,7 @@ Adjusts responsiveness of audio controls and
         <translation type="obsolete">Mata in Not</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="+452"/>
+        <location filename="../../muse/liste/listedit.cpp" line="+468"/>
         <source>insert Note</source>
         <translation>Mata in Not</translation>
     </message>
@@ -7416,23 +6878,14 @@ Do you want to apply to all existing midi tracks now?</source>
 <context>
     <name>MTScale</name>
     <message>
-        <location filename="../../muse/widgets/mtscale.cpp" line="+27"/>
         <source>bar scale</source>
-        <translation>takt skala</translation>
-    </message>
-</context>
-<context>
-    <name>MTScaleFlo</name>
-    <message>
-        <location filename="../../muse/widgets/mtscale_flo.cpp" line="+27"/>
-        <source>bar scale</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">takt skala</translation>
     </message>
 </context>
 <context>
     <name>MarkerView</name>
     <message>
-        <location filename="../../muse/marker/markerview.cpp" line="+158"/>
+        <location filename="../../muse/marker/markerview.cpp" line="+173"/>
         <source>MusE: Marker</source>
         <translation>MusE: Markör</translation>
     </message>
@@ -7805,9 +7258,8 @@ Do you want to apply to all existing midi tracks now?</source>
 <context>
     <name>MidiControllerEditDialogBase</name>
     <message>
-        <location filename="../../muse/instruments/ccontrolbase.ui" line="+16"/>
         <source>MusE: Define Midi Controller</source>
-        <translation type="unfinished">MusE: Definiera Midi-controller</translation>
+        <translation type="obsolete">MusE: Definiera Midi-controller</translation>
     </message>
     <message>
         <source>replace controller set</source>
@@ -7822,201 +7274,122 @@ Do you want to apply to all existing midi tracks now?</source>
         <translation type="obsolete">spara controller-set</translation>
     </message>
     <message>
-        <location line="+127"/>
         <source>Name                  </source>
-        <translation type="unfinished">Namn</translation>
+        <translation type="obsolete">Namn</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Type       </source>
-        <translation type="unfinished">Typ</translation>
+        <translation type="obsolete">Typ</translation>
     </message>
     <message>
-        <location line="+33"/>
         <source>Min Val</source>
-        <translation type="unfinished">Min.värde</translation>
+        <translation type="obsolete">Min.värde</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Max Val</source>
-        <translation type="unfinished">Max.värde</translation>
+        <translation type="obsolete">Max.värde</translation>
     </message>
     <message>
-        <location line="+22"/>
         <source>list of defined controllers</source>
-        <translation type="unfinished">lista med definierade controllers</translation>
+        <translation type="obsolete">lista med definierade controllers</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>This is the MusE list of defined controllers.</source>
-        <translation type="unfinished">Detta är MusEs lista med definierade controllers.</translation>
+        <translation type="obsolete">Detta är MusEs lista med definierade controllers.</translation>
     </message>
     <message>
-        <location line="+60"/>
         <source>Properties</source>
-        <translation type="unfinished">Egenskaper</translation>
+        <translation type="obsolete">Egenskaper</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Name</source>
-        <translation type="unfinished">Namn</translation>
+        <translation type="obsolete">Namn</translation>
     </message>
     <message>
-        <location line="+38"/>
         <source>Max Value</source>
-        <translation type="unfinished">Max.värde</translation>
+        <translation type="obsolete">Max.värde</translation>
     </message>
     <message>
-        <location line="-22"/>
         <source>Min Value</source>
-        <translation type="unfinished">Min.värde</translation>
+        <translation type="obsolete">Min.värde</translation>
     </message>
     <message>
-        <location line="+49"/>
         <source>Type</source>
-        <translation type="unfinished">Typ</translation>
+        <translation type="obsolete">Typ</translation>
     </message>
     <message>
         <source>&amp;New</source>
         <translation type="obsolete">&amp;Ny</translation>
     </message>
     <message>
-        <location line="-306"/>
         <source>create new entry</source>
-        <translation type="unfinished">skapa nytt inlägg</translation>
+        <translation type="obsolete">skapa nytt inlägg</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>pressing the New button you create a new entry
 in the MusE list of defined controllers</source>
-        <translation type="unfinished">tryck på Ny knappen för att skapa nytt inlägg
+        <translation type="obsolete">tryck på Ny knappen för att skapa nytt inlägg
 i MusEs lista med definierade controllers</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>&amp;Delete</source>
-        <translation type="unfinished">&amp;Ta bort</translation>
+        <translation type="obsolete">&amp;Ta bort</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>delete selected entry</source>
-        <translation type="unfinished">ta bort valt inlägg</translation>
+        <translation type="obsolete">ta bort valt inlägg</translation>
     </message>
     <message>
-        <location line="+25"/>
         <source>&amp;OK</source>
-        <translation type="unfinished">&amp;Ok</translation>
+        <translation type="obsolete">&amp;Ok</translation>
     </message>
     <message>
-        <location line="+22"/>
         <source>&amp;Cancel</source>
-        <translation type="unfinished">&amp;Avbryt</translation>
+        <translation type="obsolete">&amp;Avbryt</translation>
     </message>
     <message>
-        <location line="-74"/>
         <source>&amp;Add</source>
-        <translation type="unfinished">&amp;Lägg till</translation>
+        <translation type="obsolete">&amp;Lägg till</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Alt+A</source>
-        <translation type="unfinished">Alt+L</translation>
+        <translation type="obsolete">Alt+L</translation>
     </message>
     <message>
-        <location line="+60"/>
-        <source>A&amp;pply</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+24"/>
         <source>Predefined Controller:</source>
-        <translation type="unfinished">Fördefinieradecontrollers:</translation>
+        <translation type="obsolete">Fördefinieradecontrollers:</translation>
     </message>
     <message>
-        <location line="+28"/>
-        <location line="+266"/>
-        <source>H-Ctrl</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-255"/>
-        <location line="+283"/>
-        <source>L-Ctrl</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-220"/>
         <source>Managed Controller for Port</source>
-        <translation type="unfinished">Hanterad controller för port</translation>
+        <translation type="obsolete">Hanterad controller för port</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>Channel</source>
-        <translation type="unfinished">Kanal</translation>
+        <translation type="obsolete">Kanal</translation>
     </message>
     <message>
-        <location line="+21"/>
         <source>This is a list of commonly used midi controllers.
 Note that in MusE pitch and program changes are
 handled like normal controllers.</source>
-        <translation type="unfinished">Detta är en lista med vanligt använda midi-controllers.
+        <translation type="obsolete">Detta är en lista med vanligt använda midi-controllers.
 Notera att tonhöjd- och program-change hanteras
 som vanliga controllers i MusE.</translation>
     </message>
     <message>
-        <location line="+111"/>
-        <source>Control7</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Control14</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>RPN</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>NRPN</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>RPN14</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>NRPN14</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
         <source>Pitch</source>
-        <translation type="unfinished">Tonhöjd</translation>
+        <translation type="obsolete">Tonhöjd</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Program</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+32"/>
         <source>Midi Controller Number High Byte</source>
-        <translation type="unfinished">Midicontrollernummer, hög byte</translation>
+        <translation type="obsolete">Midicontrollernummer, hög byte</translation>
     </message>
     <message>
-        <location line="+28"/>
         <source>Midi Controller Number Low Byte</source>
-        <translation type="unfinished">Midicontrollernummer, låg byte</translation>
+        <translation type="obsolete">Midicontrollernummer, låg byte</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>Range</source>
-        <translation type="unfinished">Område</translation>
+        <translation type="obsolete">Område</translation>
     </message>
 </context>
 <context>
@@ -8187,7 +7560,7 @@ som vanliga controllers i MusE.</translation>
 <context>
     <name>MidiInputTransformDialog</name>
     <message>
-        <location filename="../../muse/mplugins/midiitransform.cpp" line="+703"/>
+        <location filename="../../muse/mplugins/midiitransform.cpp" line="+718"/>
         <location line="+2"/>
         <source>New</source>
         <translation type="unfinished">Ny</translation>
@@ -8597,66 +7970,20 @@ som vanliga controllers i MusE.</translation>
 <context>
     <name>MidiStrip</name>
     <message>
-        <location filename="../../muse/mixer/mstrip.cpp" line="+173"/>
-        <source>VariationSend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Var</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>ReverbSend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Rev</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>ChorusSend</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Cho</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-83"/>
-        <location line="+121"/>
-        <location line="+158"/>
         <source>off</source>
-        <translation type="unfinished">av</translation>
+        <translation type="obsolete">av</translation>
     </message>
     <message>
-        <location line="-157"/>
-        <source>dB</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+54"/>
         <source>Pan/Balance</source>
-        <translation type="unfinished">Pan/Balans</translation>
+        <translation type="obsolete">Pan/Balans</translation>
     </message>
     <message>
-        <location line="+0"/>
-        <source>Pan</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+20"/>
         <source>record</source>
-        <translation type="unfinished">spela in</translation>
+        <translation type="obsolete">spela in</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>mute</source>
-        <translation type="unfinished">tysta</translation>
+        <translation type="obsolete">tysta</translation>
     </message>
     <message>
         <source>pre fader listening</source>
@@ -8679,359 +8006,31 @@ som vanliga controllers i MusE.</translation>
         <translation type="obsolete">automationstyp</translation>
     </message>
     <message>
-        <location line="-206"/>
-        <location line="+122"/>
-        <source>double click on/off</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+105"/>
-        <source>solo mode</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+67"/>
-        <source>iR</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>input routing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>oR</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
         <source>output routing</source>
-        <translation type="unfinished">utgångsrouting</translation>
+        <translation type="obsolete">utgångsrouting</translation>
     </message>
 </context>
 <context>
     <name>MidiSyncConfig</name>
     <message>
-        <location filename="../../muse/widgets/midisyncimpl.cpp" line="+41"/>
-        <location line="+29"/>
         <source>Port Number</source>
-        <translation type="unfinished">Portnummer</translation>
+        <translation type="obsolete">Portnummer</translation>
     </message>
     <message>
-        <location line="-28"/>
-        <location line="+29"/>
         <source>Name of the midi device associated with this port number</source>
-        <translation type="unfinished">Namn på midienhet associerad med detta portnummer</translation>
+        <translation type="obsolete">Namn på midienhet associerad med detta portnummer</translation>
     </message>
     <message>
-        <location line="-27"/>
-        <source>Midi clock input detected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location line="+29"/>
-        <source>Midi tick input detected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-28"/>
-        <source>Midi real time input detected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>MMC input detected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>MTC input detected</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Detected SMPTE format</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Receive id number. 127 = Global. Double click to edit.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Accept midi clock input</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Accept midi real time input</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Accept MMC input</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Accept MTC input</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Receive start rewinds before playing</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Transmit id number. 127 = Global. Double click to edit.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Send midi clock output</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Send midi realtime output</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location line="+49"/>
-        <source>Send MMC output</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-48"/>
-        <location line="+49"/>
-        <source>Send MTC output</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-37"/>
-        <source>Midi clock input detected.
-Current port actually used is red.
-Click to force a port to be used.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Midi realtime input detected, including
- start/stop/continue, and song position.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>MMC input detected, including stop/play/deferred play, and locate.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>MTC input detected, including forward quarter-frame sync and full-frame locate.
-Current port actually used is red. Click to force a port to be current.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Detected SMPTE format: 24fps, 25fps, 30fps drop frame, or 30fps non-drop
-Detects format of MTC quarter and full frame, and MMC locate.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Receive id number. 127 = global receive all, even if not global.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Accept midi clock input. Only one input is used for clock.
-Auto-acquire: If two or more port realtime inputs are enabled,
- the first clock detected is used, until clock is lost,
- then another can take over. Best if each turns off its clock
- at stop, so MusE can re-acquire the clock from another port.
-Click on detect indicator to force another.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Accept midi realtime input, including
- start/stop/continue, and song position.
-Non-clock events (start,stop etc) are
- accepted by ALL enabled ports.
-This means you may have several master
- devices connected, and muse will accept
- input from them.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Accept MMC input, including stop/play/deferred play, and locate.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Accept MTC input, including forward quarter-frame sync and full-frame locate.
-See &apos;rc&apos; column for more help.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>When start is received, rewind before playing.
-Note: It may be impossible to rewind fast
- enough to synchronize with the external device.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Transmit id number. 127 = global transmit to all.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Send midi clock output. If &apos;Slave to External Sync&apos; is chosen,
- muse can re-transmit clock to any other chosen ports.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Send midi realtime output, including start/stop/continue,
- and song position. If &apos;Slave to external sync&apos; is chosen,
- muse can re-transmit midi realtime input messages to any
- other chosen ports. This means you may have several slave
- devices connected, and muse can re-send realtime messages
- to any or all of them.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+142"/>
-        <source>Port</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Device Name</source>
-        <translation type="unfinished">Enhetsnamn</translation>
+        <translation type="obsolete">Enhetsnamn</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>c</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>k</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>r</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>m</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>t</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>rid</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>rc</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>rr</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>rm</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>rt</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>rw</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>tid</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>tc</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>tr</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>tm</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>tt</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+399"/>
-        <source>MusE</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Settings have changed
-Apply sync settings?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>&amp;Apply</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
         <source>&amp;No</source>
-        <translation type="unfinished">&amp;Nej</translation>
+        <translation type="obsolete">&amp;Nej</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>&amp;Abort</source>
-        <translation type="unfinished">&amp;Avbryt</translation>
-    </message>
-    <message>
-        <location line="+123"/>
-        <source>&lt;none&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">&amp;Avbryt</translation>
     </message>
 </context>
 <context>
@@ -9257,15 +8256,6 @@ Enabled inputs in the list will
     <message>
         <location line="+19"/>
         <source>Send sync delay</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>MidiTrackInfo</name>
-    <message>
-        <location filename="../../muse/widgets/mtrackinfo.cpp" line="+302"/>
-        <location line="+1046"/>
-        <source>&lt;unknown&gt;</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9899,7 +8889,7 @@ inspelning:
 <context>
     <name>MidiTransformerDialog</name>
     <message>
-        <location filename="../../muse/miditransform.cpp" line="+248"/>
+        <location filename="../../muse/miditransform.cpp" line="+263"/>
         <location line="+2"/>
         <source>New</source>
         <translation>Ny</translation>
@@ -9908,9 +8898,8 @@ inspelning:
 <context>
     <name>MixdownFileDialog</name>
     <message>
-        <location filename="../../muse/widgets/mixdowndialog.cpp" line="+101"/>
         <source>Wave Files (*.wav);;All Files (*)</source>
-        <translation>Ljudfiler (*.wav);;Alla filer (*)</translation>
+        <translation type="obsolete">Ljudfiler (*.wav);;Alla filer (*)</translation>
     </message>
 </context>
 <context>
@@ -10035,7 +9024,7 @@ inspelning:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+56"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10052,10 +9041,8 @@ inspelning:
         <translation type="obsolete">för att importera en ljudfil måste du ha valt ett ljudspår</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="+401"/>
-        <location filename="../../muse/wave.cpp" line="+810"/>
         <source>Import Wave File</source>
-        <translation>Importera ljudfil</translation>
+        <translation type="obsolete">Importera ljudfil</translation>
     </message>
     <message>
         <source>UndoRedo</source>
@@ -10066,137 +9053,96 @@ inspelning:
         <translation type="obsolete">ångra</translation>
     </message>
     <message>
-        <location line="-119"/>
         <source>Und&amp;o</source>
-        <translation>&amp;Ångra</translation>
+        <translation type="obsolete">&amp;Ångra</translation>
     </message>
     <message>
         <source>redo</source>
         <translation type="obsolete">gör om</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Re&amp;do</source>
-        <translation>&amp;Gör om</translation>
+        <translation type="obsolete">&amp;Gör om</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>undo last change to song</source>
-        <translation>ångra sista ändring i sång</translation>
+        <translation type="obsolete">ångra sista ändring i sång</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>redo last undo</source>
-        <translation>gör om sista ångring</translation>
-    </message>
-    <message>
-        <location line="+307"/>
-        <source>Transport</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-293"/>
-        <source>Loop</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Punchin</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Punchout</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">gör om sista ångring</translation>
     </message>
     <message>
         <source>rewind</source>
         <translation type="obsolete">flytta tillbaka</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Rewind</source>
-        <translation type="unfinished">Flytta tillbaka</translation>
+        <translation type="obsolete">Flytta tillbaka</translation>
     </message>
     <message>
         <source>forward</source>
         <translation type="obsolete">frammåt</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Forward</source>
-        <translation type="unfinished">Frammåt</translation>
+        <translation type="obsolete">Frammåt</translation>
     </message>
     <message>
         <source>stop</source>
         <translation type="obsolete">stopp</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Stop</source>
-        <translation type="unfinished">Stopp</translation>
+        <translation type="obsolete">Stopp</translation>
     </message>
     <message>
         <source>play</source>
         <translation type="obsolete">spela</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Play</source>
-        <translation type="unfinished">Spela</translation>
+        <translation type="obsolete">Spela</translation>
     </message>
     <message>
         <source>record</source>
         <translation type="obsolete">spela in</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Record</source>
-        <translation type="unfinished">Spela in</translation>
+        <translation type="obsolete">Spela in</translation>
     </message>
     <message>
         <source>panic</source>
         <translation type="obsolete">panik</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location line="+232"/>
         <source>Panic</source>
-        <translation type="unfinished">Panik</translation>
+        <translation type="obsolete">Panik</translation>
     </message>
     <message>
         <source>new</source>
         <translation type="obsolete">ny</translation>
     </message>
     <message>
-        <location line="-220"/>
         <source>&amp;New</source>
-        <translation>&amp;Ny</translation>
+        <translation type="obsolete">&amp;Ny</translation>
     </message>
     <message>
         <source>open</source>
         <translation type="obsolete">öppna</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>&amp;Open</source>
-        <translation>&amp;Öppna</translation>
+        <translation type="obsolete">&amp;Öppna</translation>
     </message>
     <message>
         <source>save</source>
         <translation type="obsolete">spara</translation>
     </message>
     <message>
-        <location line="+7"/>
-        <location line="+1002"/>
-        <location line="+1207"/>
         <source>&amp;Save</source>
-        <translation>&amp;Spara</translation>
+        <translation type="obsolete">&amp;Spara</translation>
     </message>
     <message>
         <source>pianoroll</source>
@@ -10223,43 +9169,36 @@ inspelning:
         <translation type="obsolete">Markör</translation>
     </message>
     <message>
-        <location line="-2015"/>
         <source>File Buttons</source>
-        <translation>Arkivknappar</translation>
+        <translation type="obsolete">Arkivknappar</translation>
     </message>
     <message>
-        <location line="+66"/>
         <source>&amp;File</source>
-        <translation>&amp;Arkiv</translation>
+        <translation type="obsolete">&amp;Arkiv</translation>
     </message>
     <message>
-        <location line="-262"/>
         <source>Open &amp;Recent</source>
-        <translation>&amp;Nyligen öppnade</translation>
+        <translation type="obsolete">&amp;Nyligen öppnade</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Save &amp;As</source>
-        <translation>S&amp;para som</translation>
+        <translation type="obsolete">S&amp;para som</translation>
     </message>
     <message>
         <source>Config &amp;Printer</source>
         <translation type="obsolete">&amp;Konfigurera skrivare</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Import Midifile</source>
-        <translation>Importera midifil</translation>
+        <translation type="obsolete">Importera midifil</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Export Midifile</source>
-        <translation>Exportera midifil</translation>
+        <translation type="obsolete">Exportera midifil</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>&amp;Quit</source>
-        <translation>A&amp;vsluta</translation>
+        <translation type="obsolete">A&amp;vsluta</translation>
     </message>
     <message>
         <source>&amp;Edit</source>
@@ -10342,9 +9281,8 @@ inspelning:
         <translation type="obsolete">Modifiera Velocity</translation>
     </message>
     <message>
-        <location line="+28"/>
         <source>Transpose</source>
-        <translation>Transponera</translation>
+        <translation type="obsolete">Transponera</translation>
     </message>
     <message>
         <source>Thin Out</source>
@@ -10411,62 +9349,52 @@ inspelning:
         <translation type="obsolete">Klipp ut Händelse</translation>
     </message>
     <message>
-        <location line="-23"/>
         <source>Transport Panel</source>
-        <translation type="unfinished">Transportpanel</translation>
+        <translation type="obsolete">Transportpanel</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Bigtime Window</source>
-        <translation>Bigtime fönster</translation>
+        <translation type="obsolete">Bigtime fönster</translation>
     </message>
     <message>
-        <location line="+56"/>
         <source>Don&apos;t Follow Song</source>
-        <translation>följ inte Sång</translation>
+        <translation type="obsolete">följ inte Sång</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Follow Page</source>
-        <translation>följ sida</translation>
+        <translation type="obsolete">följ sida</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Follow Continuous</source>
-        <translation>följ kontinuerligt</translation>
+        <translation type="obsolete">följ kontinuerligt</translation>
     </message>
     <message>
         <source>&amp;Config</source>
         <translation type="obsolete">&amp;Inställningar</translation>
     </message>
     <message>
-        <location line="-8"/>
         <source>Global Settings</source>
-        <translation>Globala Inställningar</translation>
+        <translation type="obsolete">Globala Inställningar</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Follow Song</source>
-        <translation>följ sång</translation>
+        <translation type="obsolete">följ sång</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Metronome</source>
-        <translation>Metronom</translation>
+        <translation type="obsolete">Metronom</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Midi Sync</source>
-        <translation>Midi Synk</translation>
+        <translation type="obsolete">Midi Synk</translation>
     </message>
     <message>
         <source>Midi File Config</source>
         <translation type="obsolete">Midi Filkonfigurering</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Appearance Settings</source>
-        <translation>Utseendeinställningar</translation>
+        <translation type="obsolete">Utseendeinställningar</translation>
     </message>
     <message>
         <source>Soft Synthesizer</source>
@@ -10485,82 +9413,40 @@ inspelning:
         <translation type="obsolete">Spara Inställningar</translation>
     </message>
     <message>
-        <location line="-45"/>
-        <source>Midi Input Transform</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Midi Input Filter</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Midi Remote Control</source>
-        <translation>Midi-fjärrkontroll</translation>
+        <translation type="obsolete">Midi-fjärrkontroll</translation>
     </message>
     <message>
         <source>Random Rhythm Generator</source>
         <translation type="obsolete">Slumprytmgenerator</translation>
     </message>
     <message>
-        <location line="+263"/>
-        <source>&amp;Midi</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Define Controller</source>
         <translation type="obsolete">Definiera Controller</translation>
     </message>
     <message>
-        <location line="-268"/>
-        <source>Input Plugins</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
         <source>Reset Instr.</source>
-        <translation>Resetta Instr.</translation>
+        <translation type="obsolete">Resetta Instr.</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Init Instr.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Local Off</source>
-        <translation type="unfinished">lokal av</translation>
+        <translation type="obsolete">lokal av</translation>
     </message>
     <message>
-        <location line="+286"/>
         <source>&amp;Audio</source>
-        <translation type="unfinished">L&amp;jud</translation>
+        <translation type="obsolete">L&amp;jud</translation>
     </message>
     <message>
-        <location line="-283"/>
         <source>Bounce to Track</source>
-        <translation>Bounce till Spår</translation>
+        <translation type="obsolete">Bounce till Spår</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Bounce to File</source>
-        <translation>Bounce till Fil</translation>
+        <translation type="obsolete">Bounce till Fil</translation>
     </message>
     <message>
-        <location line="+309"/>
-        <source>&amp;Windows</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>MusE Se&amp;ttings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
         <source>&amp;Help</source>
-        <translation>&amp;Hjälp</translation>
+        <translation type="obsolete">&amp;Hjälp</translation>
     </message>
     <message>
         <source>Browser</source>
@@ -10587,20 +9473,17 @@ inspelning:
         <translation type="obsolete">inget</translation>
     </message>
     <message>
-        <location line="+486"/>
         <source>MusE: load project</source>
-        <translation>MusE: Öppna projekt</translation>
+        <translation type="obsolete">MusE: Öppna projekt</translation>
     </message>
     <message>
-        <location line="+76"/>
         <source>MusE: Write File failed</source>
-        <translation>MusE: Misslyckades med att skriva Fil</translation>
+        <translation type="obsolete">MusE: Misslyckades med att skriva Fil</translation>
     </message>
     <message>
-        <location line="+38"/>
         <source>The current Project contains unsaved data
 Save Current Project?</source>
-        <translation>Det nuvarande Projektet innehåller osparade ändringar
+        <translation type="obsolete">Det nuvarande Projektet innehåller osparade ändringar
 Spara nuvarande Projekt?</translation>
     </message>
     <message>
@@ -10608,43 +9491,33 @@ Spara nuvarande Projekt?</translation>
         <translation type="obsolete">&amp;Inte spara</translation>
     </message>
     <message>
-        <location line="+1209"/>
-        <location filename="../../muse/importmidi.cpp" line="+68"/>
         <source>&amp;Abort</source>
-        <translation>&amp;Avbryt</translation>
+        <translation type="obsolete">&amp;Avbryt</translation>
     </message>
     <message>
         <source>MusE: About</source>
         <translation type="obsolete">MusE: Om</translation>
     </message>
     <message>
-        <location line="-971"/>
-        <location line="+13"/>
         <source>MusE: Save As</source>
-        <translation>MusE: Spara Som</translation>
+        <translation type="obsolete">MusE: Spara Som</translation>
     </message>
     <message>
-        <location line="-399"/>
-        <location line="+408"/>
-        <location line="+895"/>
         <source>MusE: Song: </source>
-        <translation>MusE: Sång:</translation>
+        <translation type="obsolete">MusE: Sång:</translation>
     </message>
     <message>
-        <location filename="../../muse/importmidi.cpp" line="-12"/>
         <source>MusE: Import Midi</source>
-        <translation type="unfinished">MusE: Importera Midi</translation>
+        <translation type="obsolete">MusE: Importera Midi</translation>
     </message>
     <message>
-        <location filename="../../muse/exportmidi.cpp" line="+126"/>
         <source>MusE: Export Midi</source>
-        <translation type="unfinished">MusE: Exportera Midi</translation>
+        <translation type="obsolete">MusE: Exportera Midi</translation>
     </message>
     <message>
-        <location filename="../../muse/importmidi.cpp" line="+42"/>
         <source>reading midifile
   </source>
-        <translation type="unfinished">läser midifil</translation>
+        <translation type="obsolete">läser midifil</translation>
     </message>
     <message>
         <source>
@@ -10652,10 +9525,8 @@ failed</source>
         <translation type="obsolete">misslyckades</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="-847"/>
-        <location line="+161"/>
         <source>Nothing to edit</source>
-        <translation>Inget att redigera</translation>
+        <translation type="obsolete">Inget att redigera</translation>
     </message>
     <message>
         <source>MusE: Copy Range</source>
@@ -10670,13 +9541,8 @@ failed</source>
         <translation type="obsolete">MusE: Klipp ut Händelse</translation>
     </message>
     <message>
-        <location line="+474"/>
-        <location line="+10"/>
-        <location line="+31"/>
-        <location line="+34"/>
-        <location line="+8"/>
         <source>MusE: Bounce to Track</source>
-        <translation>MusE: Bounce till Spår</translation>
+        <translation type="obsolete">MusE: Bounce till Spår</translation>
     </message>
     <message>
         <source>more than one target track selected</source>
@@ -10693,11 +9559,10 @@ välj wave-spår som mål</translation>
         <translation type="obsolete">inget spår valt som mål</translation>
     </message>
     <message>
-        <location line="+180"/>
         <source>The current Project contains unsaved data
 Load overwrites current Project:
 Save Current Project?</source>
-        <translation>Det nuvarande Projektet innehåller osparade ändringar
+        <translation type="obsolete">Det nuvarande Projektet innehåller osparade ändringar
 Öppning skriver över nuvarande Projekt
 Spara nuvarande Projekt?</translation>
     </message>
@@ -10706,14 +9571,12 @@ Spara nuvarande Projekt?</translation>
         <translation type="obsolete">Skriv &amp;över</translation>
     </message>
     <message>
-        <location filename="../../muse/help.cpp" line="+33"/>
         <source>no help found at: </source>
-        <translation>ingen h jälp hittad vid:</translation>
+        <translation type="obsolete">ingen h jälp hittad vid:</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>MusE: Open Help</source>
-        <translation>Muse: Arkiv hjälp</translation>
+        <translation type="obsolete">Muse: Arkiv hjälp</translation>
     </message>
     <message>
         <source>to import a audio file you have first to selecta wave track</source>
@@ -10728,7 +9591,406 @@ Spara nuvarande Projekt?</translation>
         <translation type="obsolete">Vy</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="-2150"/>
+        <source>Restart Audio</source>
+        <translation type="obsolete">Starta om Audio</translation>
+    </message>
+    <message>
+        <source>Mixer Automation</source>
+        <translation type="obsolete">Mixerautomation</translation>
+    </message>
+    <message>
+        <source>Take Snapshot</source>
+        <translation type="obsolete">Ta ett snapshot</translation>
+    </message>
+    <message>
+        <source>Clear Automation Data</source>
+        <translation type="obsolete">Rensa automationsdata</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <translation type="obsolete">Inställningar</translation>
+    </message>
+    <message>
+        <source>Configure Shortcuts</source>
+        <translation type="obsolete">Konfigurera kortkommandon</translation>
+    </message>
+    <message>
+        <source>Midi File Export</source>
+        <translation type="obsolete">Midifilexport</translation>
+    </message>
+    <message>
+        <source>Midi Ports / Soft Synth</source>
+        <translation type="obsolete">Midiportar / Mjukvarusyntar</translation>
+    </message>
+    <message>
+        <source>&amp;MusE Homepage</source>
+        <translation type="obsolete">M&amp;usEs hemsida</translation>
+    </message>
+    <message>
+        <source>&amp;Report Bug...</source>
+        <translation type="obsolete">&amp;Rapportera fel...</translation>
+    </message>
+    <message>
+        <source>&amp;About MusE</source>
+        <translation type="obsolete">&amp;Om MusE</translation>
+    </message>
+    <message>
+        <source>What&apos;s &amp;This?</source>
+        <translation type="obsolete">Vad är &amp;detta?</translation>
+    </message>
+    <message>
+        <source>Cannot read template</source>
+        <translation type="obsolete">Kan inte läsa mall</translation>
+    </message>
+    <message>
+        <source>File open error</source>
+        <translation type="obsolete">Fel vid öppning av fil</translation>
+    </message>
+    <message>
+        <source>File read error</source>
+        <translation type="obsolete">Fel vid läsning av fil</translation>
+    </message>
+    <message>
+        <source>MusE: load template</source>
+        <translation type="obsolete">MusE: ladda mall</translation>
+    </message>
+    <message>
+        <source>set left/right marker for bounce range</source>
+        <translation type="obsolete">sätt vänster och höger markör till bounce-område</translation>
+    </message>
+    <message>
+        <source>MusE: Bounce to File</source>
+        <translation type="obsolete">MusE: Bounce till fil</translation>
+    </message>
+    <message>
+        <source>no output track found</source>
+        <translation type="obsolete">hittar inget utgångsspår</translation>
+    </message>
+    <message>
+        <source>Add midi file to current project?
+</source>
+        <translation type="obsolete">Lägg midifil till nuvarande projekt?</translation>
+    </message>
+    <message>
+        <source>&amp;Add to Project</source>
+        <translation type="obsolete">&amp;Lägg till projekt</translation>
+    </message>
+    <message>
+        <source>&amp;Replace</source>
+        <translation type="obsolete">&amp;Ersätt</translation>
+    </message>
+    <message>
+        <source>
+failed: </source>
+        <translation type="obsolete">
+misslyckades:</translation>
+    </message>
+    <message>
+        <source>Import Part</source>
+        <translation type="obsolete">Importera Part</translation>
+    </message>
+    <message>
+        <source>Marker View</source>
+        <translation type="obsolete">Markörvy</translation>
+    </message>
+    <message>
+        <source>&amp;Skip</source>
+        <translation type="obsolete">&amp;Hoppa över</translation>
+    </message>
+    <message>
+        <source>Import part is only valid for midi tracks!</source>
+        <translation type="obsolete">Bara midispår kan importera parter!</translation>
+    </message>
+    <message>
+        <source>MusE: load part</source>
+        <translation type="obsolete">MusE: ladda part</translation>
+    </message>
+    <message>
+        <source>No track selected for import</source>
+        <translation type="obsolete">Inget spår valt för import</translation>
+    </message>
+    <message>
+        <source>Wave</source>
+        <translation type="obsolete">Wave</translation>
+    </message>
+    <message>
+        <source>&amp;Cancel</source>
+        <translation type="obsolete">&amp;Avbryt</translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="obsolete">Ny</translation>
+    </message>
+    <message>
+        <source>&amp;Yes</source>
+        <translation type="obsolete">&amp;Ja</translation>
+    </message>
+    <message>
+        <source>&amp;No</source>
+        <translation type="obsolete">&amp;Nej</translation>
+    </message>
+</context>
+<context>
+    <name>MusEApp::MusE</name>
+    <message>
+        <location filename="../../muse/app.cpp" line="+46"/>
+        <location line="+16"/>
+        <source>Failed to start audio!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-15"/>
+        <source>Was not able to start audio, check if jack is running.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Timeout waiting for audio to run. Check if jack is running.
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+219"/>
+        <source>Und&amp;o</source>
+        <translation type="unfinished">&amp;Ångra</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Re&amp;do</source>
+        <translation type="unfinished">&amp;Gör om</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>undo last change to song</source>
+        <translation type="unfinished">ångra sista ändring i sång</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>redo last undo</source>
+        <translation type="unfinished">gör om sista ångring</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Loop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Punchin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Punchout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Rewind</source>
+        <translation type="unfinished">Flytta tillbaka</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Forward</source>
+        <translation type="unfinished">Frammåt</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Stop</source>
+        <translation type="unfinished">Stopp</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Play</source>
+        <translation type="unfinished">Spela</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Record</source>
+        <translation type="unfinished">Spela in</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <location line="+232"/>
+        <source>Panic</source>
+        <translation type="unfinished">Panik</translation>
+    </message>
+    <message>
+        <location line="-220"/>
+        <source>&amp;New</source>
+        <translation type="unfinished">&amp;Ny</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Open</source>
+        <translation type="unfinished">&amp;Öppna</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Open &amp;Recent</source>
+        <translation type="unfinished">&amp;Nyligen öppnade</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+1005"/>
+        <location line="+1207"/>
+        <source>&amp;Save</source>
+        <translation type="unfinished">&amp;Spara</translation>
+    </message>
+    <message>
+        <location line="-2207"/>
+        <source>Save &amp;As</source>
+        <translation type="unfinished">S&amp;para som</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Import Midifile</source>
+        <translation type="unfinished">Importera midifil</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export Midifile</source>
+        <translation type="unfinished">Exportera midifil</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Import Part</source>
+        <translation type="unfinished">Importera Part</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location filename="../../muse/wave.cpp" line="+827"/>
+        <source>Import Wave File</source>
+        <translation type="unfinished">Importera ljudfil</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Find unused wave files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>&amp;Quit</source>
+        <translation type="unfinished">A&amp;vsluta</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Song Info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Transport Panel</source>
+        <translation type="unfinished">Transportpanel</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Bigtime Window</source>
+        <translation type="unfinished">Bigtime fönster</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Mixer A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Mixer B</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Cliplist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Marker View</source>
+        <translation type="unfinished">Markörvy</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Arranger View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Fullscreen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>&amp;Plugins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit Instrument</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Input Plugins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Transpose</source>
+        <translation type="unfinished">Transponera</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi Input Transform</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi Input Filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi Remote Control</source>
+        <translation type="unfinished">Midi-fjärrkontroll</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Rhythm Generator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Reset Instr.</source>
+        <translation type="unfinished">Resetta Instr.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Init Instr.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Local Off</source>
+        <translation type="unfinished">lokal av</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Bounce to Track</source>
+        <translation type="unfinished">Bounce till Spår</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bounce to File</source>
+        <translation type="unfinished">Bounce till Fil</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Restart Audio</source>
         <translation type="unfinished">Starta om Audio</translation>
     </message>
@@ -10748,20 +10010,77 @@ Spara nuvarande Projekt?</translation>
         <translation type="unfinished">Rensa automationsdata</translation>
     </message>
     <message>
-        <source>Settings</source>
-        <translation type="obsolete">Inställningar</translation>
+        <location line="+5"/>
+        <source>Cascade</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+1"/>
+        <source>Tile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>In rows</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>In columns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Global Settings</source>
+        <translation type="unfinished">Globala Inställningar</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Configure Shortcuts</source>
         <translation type="unfinished">Konfigurera kortkommandon</translation>
     </message>
     <message>
-        <source>Midi File Export</source>
-        <translation type="obsolete">Midifilexport</translation>
+        <location line="+1"/>
+        <source>Follow Song</source>
+        <translation type="unfinished">följ sång</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+1"/>
+        <source>Don&apos;t Follow Song</source>
+        <translation type="unfinished">följ inte Sång</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Follow Page</source>
+        <translation type="unfinished">följ sida</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Follow Continuous</source>
+        <translation type="unfinished">följ kontinuerligt</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Metronome</source>
+        <translation type="unfinished">Metronom</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi Sync</source>
+        <translation type="unfinished">Midi Synk</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi File Import/Export</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Appearance Settings</source>
+        <translation type="unfinished">Utseendeinställningar</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Midi Ports / Soft Synth</source>
         <translation type="unfinished">Midiportar / Mjukvarusyntar</translation>
     </message>
@@ -10786,11 +10105,62 @@ Spara nuvarande Projekt?</translation>
         <translation type="unfinished">&amp;Om MusE</translation>
     </message>
     <message>
-        <source>What&apos;s &amp;This?</source>
-        <translation type="obsolete">Vad är &amp;detta?</translation>
+        <location line="+99"/>
+        <source>File Buttons</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+573"/>
+        <location line="+7"/>
+        <source>Undo/Redo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Transport</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+55"/>
+        <source>&amp;File</source>
+        <translation type="unfinished">&amp;Arkiv</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>&amp;View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>&amp;Midi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>&amp;Audio</source>
+        <translation type="unfinished">L&amp;jud</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>A&amp;utomation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>&amp;Windows</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>MusE Se&amp;ttings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>&amp;Help</source>
+        <translation type="unfinished">&amp;Hjälp</translation>
+    </message>
+    <message>
+        <location line="+268"/>
         <source>Cannot read template</source>
         <translation type="unfinished">Kan inte läsa mall</translation>
     </message>
@@ -10805,215 +10175,73 @@ Spara nuvarande Projekt?</translation>
         <translation type="unfinished">Fel vid läsning av fil</translation>
     </message>
     <message>
-        <location line="+188"/>
+        <location line="+13"/>
+        <source>Unknown File Format: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+130"/>
+        <location line="+408"/>
+        <location line="+895"/>
+        <source>MusE: Song: </source>
+        <translation type="unfinished">MusE: Sång:</translation>
+    </message>
+    <message>
+        <location line="-1269"/>
+        <source>MusE: load project</source>
+        <translation type="unfinished">MusE: Öppna projekt</translation>
+    </message>
+    <message>
+        <location line="+14"/>
         <source>MusE: load template</source>
         <translation type="unfinished">MusE: ladda mall</translation>
     </message>
     <message>
-        <location line="+102"/>
+        <location line="+62"/>
+        <source>MusE: Write File failed</source>
+        <translation type="unfinished">MusE: Misslyckades med att skriva Fil</translation>
+    </message>
+    <message>
+        <location line="+38"/>
+        <source>The current Project contains unsaved data
+Save Current Project?</source>
+        <translation type="unfinished">Det nuvarande Projektet innehåller osparade ändringar
+Spara nuvarande Projekt?</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <location line="+1207"/>
         <source>S&amp;kip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-86"/>
-        <source>MusE: Bounce</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>set left/right marker for bounce range</source>
-        <translation type="unfinished">sätt vänster och höger markör till bounce-område</translation>
-    </message>
-    <message>
-        <location line="-66"/>
-        <location line="+25"/>
-        <source>MusE: Bounce to File</source>
-        <translation type="unfinished">MusE: Bounce till fil</translation>
-    </message>
-    <message>
-        <source>no output track found</source>
-        <translation type="obsolete">hittar inget utgångsspår</translation>
-    </message>
-    <message>
-        <location filename="../../muse/importmidi.cpp" line="-33"/>
-        <source>Add midi file to current project?
-</source>
-        <translation type="unfinished">Lägg midifil till nuvarande projekt?</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>&amp;Add to Project</source>
-        <translation type="unfinished">&amp;Lägg till projekt</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>&amp;Replace</source>
-        <translation type="unfinished">&amp;Ersätt</translation>
-    </message>
-    <message>
-        <location line="+33"/>
-        <source>
-failed: </source>
-        <translation type="unfinished">
-misslyckades:</translation>
-    </message>
-    <message>
-        <location filename="../../muse/app.cpp" line="-2074"/>
-        <source>Import Part</source>
-        <translation type="unfinished">Importera Part</translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>Marker View</source>
-        <translation type="unfinished">Markörvy</translation>
-    </message>
-    <message>
-        <source>&amp;Skip</source>
-        <translation type="obsolete">&amp;Hoppa över</translation>
-    </message>
-    <message>
-        <source>Import part is only valid for midi tracks!</source>
-        <translation type="obsolete">Bara midispår kan importera parter!</translation>
-    </message>
-    <message>
-        <location filename="../../muse/importmidi.cpp" line="+364"/>
-        <source>MusE: load part</source>
-        <translation type="unfinished">MusE: ladda part</translation>
-    </message>
-    <message>
-        <location line="+18"/>
-        <source>No track selected for import</source>
-        <translation type="unfinished">Inget spår valt för import</translation>
-    </message>
-    <message>
-        <location filename="../../muse/app.cpp" line="-373"/>
-        <location line="+16"/>
-        <source>Failed to start audio!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-15"/>
-        <source>Was not able to start audio, check if jack is running.
-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>Timeout waiting for audio to run. Check if jack is running.
-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+339"/>
-        <source>Find unused wave files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Wave</source>
-        <translation type="obsolete">Wave</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Song Info</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Mixer A</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Mixer B</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Cliplist</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Arranger View</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Fullscreen</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>&amp;Plugins</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Edit Instrument</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Rhythm Generator</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>Cascade</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Tile</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>In rows</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>In columns</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>Midi File Import/Export</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+114"/>
-        <source>Undo/Redo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+88"/>
-        <source>&amp;View</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+62"/>
-        <source>A&amp;utomation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+374"/>
-        <source>Unknown File Format: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+277"/>
+        <location line="-1207"/>
         <source>&amp;Cancel</source>
         <translation type="unfinished">&amp;Avbryt</translation>
     </message>
     <message>
-        <source>New</source>
-        <translation type="obsolete">Ny</translation>
+        <location line="+236"/>
+        <location line="+13"/>
+        <source>MusE: Save As</source>
+        <translation type="unfinished">MusE: Spara Som</translation>
     </message>
     <message>
-        <location line="+942"/>
+        <location line="+57"/>
+        <location line="+161"/>
+        <source>Nothing to edit</source>
+        <translation type="unfinished">Inget att redigera</translation>
+    </message>
+    <message>
+        <location line="+474"/>
+        <location line="+10"/>
+        <location line="+31"/>
+        <location line="+34"/>
+        <location line="+8"/>
+        <source>MusE: Bounce to Track</source>
+        <translation type="unfinished">MusE: Bounce till Spår</translation>
+    </message>
+    <message>
+        <location line="-82"/>
         <source>No wave tracks found</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11041,17 +10269,118 @@ and one audio output track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+57"/>
+        <location line="+31"/>
+        <location line="+25"/>
+        <source>MusE: Bounce to File</source>
+        <translation type="unfinished">MusE: Bounce till fil</translation>
+    </message>
+    <message>
+        <location line="+1"/>
         <source>Select one audio output track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/importmidi.cpp" line="-26"/>
+        <location line="+39"/>
+        <source>MusE: Bounce</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>set left/right marker for bounce range</source>
+        <translation type="unfinished">sätt vänster och höger markör till bounce-område</translation>
+    </message>
+    <message>
+        <location line="+82"/>
+        <source>The current Project contains unsaved data
+Load overwrites current Project:
+Save Current Project?</source>
+        <translation type="unfinished">Det nuvarande Projektet innehåller osparade ändringar
+Öppning skriver över nuvarande Projekt
+Spara nuvarande Projekt?</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <location filename="../../muse/importmidi.cpp" line="+86"/>
+        <source>&amp;Abort</source>
+        <translation type="unfinished">&amp;Avbryt</translation>
+    </message>
+    <message>
+        <location filename="../../muse/exportmidi.cpp" line="+143"/>
+        <source>MusE: Export Midi</source>
+        <translation type="unfinished">MusE: Exportera Midi</translation>
+    </message>
+    <message>
+        <location filename="../../muse/help.cpp" line="+50"/>
+        <source>no help found at: </source>
+        <translation type="unfinished">ingen h jälp hittad vid:</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>MusE: Open Help</source>
+        <translation type="unfinished">Muse: Arkiv hjälp</translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>Unable to launch help</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>For some reason MusE has to launch the default
+browser on your machine.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/importmidi.cpp" line="-12"/>
+        <source>MusE: Import Midi</source>
+        <translation type="unfinished">MusE: Importera Midi</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Add midi file to current project?
+</source>
+        <translation type="unfinished">Lägg midifil till nuvarande projekt?</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Add to Project</source>
+        <translation type="unfinished">&amp;Lägg till projekt</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Replace</source>
+        <translation type="unfinished">&amp;Ersätt</translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>reading midifile
+  </source>
+        <translation type="unfinished">läser midifil</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>
+failed: </source>
+        <translation type="unfinished">
+misslyckades:</translation>
+    </message>
+    <message>
+        <location line="+356"/>
         <source>Import part is only valid for midi and wave tracks!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+147"/>
+        <location line="+8"/>
+        <source>MusE: load part</source>
+        <translation type="unfinished">MusE: ladda part</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>No track selected for import</source>
+        <translation type="unfinished">Inget spår valt för import</translation>
+    </message>
+    <message>
+        <location line="+121"/>
         <source> out of </source>
         <translation type="unfinished"></translation>
     </message>
@@ -11098,15 +10427,1778 @@ Do you still want to import it?</source>
         <source>&amp;No</source>
         <translation type="unfinished">&amp;Nej</translation>
     </message>
+</context>
+<context>
+    <name>MusEArranger::Arranger</name>
     <message>
-        <location filename="../../muse/help.cpp" line="+53"/>
-        <source>Unable to launch help</source>
+        <location filename="../../muse/arranger/arranger.cpp" line="-74"/>
+        <source>Enable Recording</source>
+        <translation type="unfinished">Slå på Inspelning</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mute/Off Indicator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>For some reason MusE has to launch the default
-browser on your machine.</source>
+        <source>Solo Indicator</source>
+        <translation type="unfinished">Solo-Indikator</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Track Type</source>
+        <translation type="unfinished">Spårtyp</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Track Name</source>
+        <translation type="unfinished">Spårnamn</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi output channel number or audio channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi output port or synth midi port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Time Lock</source>
+        <translation type="unfinished">Tidlås</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Automation parameter selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Notation clef</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Enable recording. Click to toggle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mute indicator. Click to toggle.
+Right-click to toggle track on/off.
+Mute is designed for rapid, repeated action.
+On/Off is not!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Solo indicator. Click to toggle.
+Connected tracks are also &apos;phantom&apos; soloed,
+ indicated by a dark square.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Track type. Right-click to change
+ midi and drum track types.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Track name. Double-click to edit.
+Right-click for more options.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi/drum track: Output channel number.
+Audio track: Channels.
+Mid/right-click to change.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi/drum track: Output port.
+Synth track: Assigned midi port.
+Left-click to change.
+Right-click to show GUI.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Time lock</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Notation clef. Select this tracks notation clef.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Arranger</source>
+        <translation type="unfinished">Arrangerare</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Cursor</source>
+        <translation type="unfinished">Markör</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Snap</source>
+        <translation type="unfinished">Fäst vid</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Len</source>
+        <translation type="unfinished">Längd</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <location line="+1"/>
+        <source>song length - bars</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Type</source>
+        <translation type="unfinished">Typ</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>NO</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>GM</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>GS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>XG</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+1"/>
+        <source>midi song type</source>
+        <translation type="unfinished">typ av midsång</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Pitch</source>
+        <translation type="unfinished">Tonhöjd</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>midi pitch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>global midi pitch shift</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Tempo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <location line="+1"/>
+        <source>midi tempo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>N</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+60"/>
+        <source>TrackInfo</source>
+        <translation type="unfinished">Spårinfo</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>R</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>M</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>S</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>C</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Track</source>
+        <translation type="unfinished">Spår</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Ch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>T</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Automation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Clef</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEArranger::ArrangerView</name>
+    <message>
+        <location filename="../../muse/arranger/arrangerview.cpp" line="+83"/>
+        <source>MusE: Arranger</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Undo/Redo tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>panic</source>
+        <translation type="unfinished">panik</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>transport</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>C&amp;ut</source>
+        <translation type="unfinished">Klipp &amp;ut</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Copy</source>
+        <translation type="unfinished">&amp;Kopiera</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copy in range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Paste</source>
+        <translation type="unfinished">K&amp;listra in</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Paste (show dialog)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Paste c&amp;lone</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Paste clone (show dialog)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Insert Empty Measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete Selected Tracks</source>
+        <translation type="unfinished">Ta bort valda spår</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Shrink selected parts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Expand selected parts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Clean selected parts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Add Track</source>
+        <translation type="unfinished">Lägg Till Spår</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Select</source>
+        <translation type="unfinished">Välj</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Select &amp;All</source>
+        <translation type="unfinished">Markera &amp;Allt</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Deselect All</source>
+        <translation type="unfinished">A&amp;vmarkera Allt</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Invert &amp;Selection</source>
+        <translation type="unfinished">Invertera &amp;Markering</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Inside Loop</source>
+        <translation type="unfinished">&amp;I Loop</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Outside Loop</source>
+        <translation type="unfinished">&amp;Utanför Loop</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>All &amp;Parts on Track</source>
+        <translation type="unfinished">Alla &amp;Parter i spår</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Score</source>
+        <translation type="unfinished">Partitur</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>all parts in one staff</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>one staff per part</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>New score window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Pianoroll</source>
+        <translation type="unfinished">Pianorulle</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Drums</source>
+        <translation type="unfinished">Trummor</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+6"/>
+        <source>List</source>
+        <translation type="unfinished">Lista</translation>
+    </message>
+    <message>
+        <location line="-5"/>
+        <source>Wave</source>
+        <translation type="unfinished">Wave</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Mastertrack</source>
+        <translation type="unfinished">Masterspår</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Graphic</source>
+        <translation type="unfinished">Grafik</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Midi &amp;Transform</source>
+        <translation type="unfinished">Midi &amp;Transform</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Global Cut</source>
+        <translation type="unfinished">Globalt klipp</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Global Insert</source>
+        <translation type="unfinished">Global insättning</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Global Split</source>
+        <translation type="unfinished">Global delning</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>&amp;Edit</source>
+        <translation type="unfinished">&amp;Redigera</translation>
+    </message>
+    <message>
+        <location line="+43"/>
+        <source>&amp;Structure</source>
+        <translation type="unfinished">&amp;Struktur</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Functions</source>
+        <translation type="unfinished">Funktioner</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Quantize Notes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Change note &amp;length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Change note &amp;velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Crescendo/Decrescendo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transpose</source>
+        <translation type="unfinished">Transponera</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Erase Events (Not Parts)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Move Events (Not Parts)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Set Fixed Note Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete Overlapping Notes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Legato</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Window &amp;Config</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+308"/>
+        <location line="+6"/>
+        <source>New</source>
+        <translation type="unfinished">Ny</translation>
+    </message>
+</context>
+<context>
+    <name>MusEArranger::PartCanvas</name>
+    <message>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="+346"/>
+        <source>Cannot copy/move/clone to different Track-Type</source>
+        <translation type="unfinished">Kan inte kopiera/flytta/klona till annan Spårtyp</translation>
+    </message>
+    <message>
+        <location line="+261"/>
+        <source>C&amp;ut</source>
+        <translation type="unfinished">Klipp &amp;ut</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Copy</source>
+        <translation type="unfinished">&amp;Kopiera</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>s&amp;elect </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>clones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>rename</source>
+        <translation type="unfinished">byt namn</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>color</source>
+        <translation type="unfinished">färg</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>delete</source>
+        <translation type="unfinished">ta bort</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>split</source>
+        <translation type="unfinished">dela</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>glue</source>
+        <translation type="unfinished">lim</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>de-clone</source>
+        <translation type="unfinished">häv kloning</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <location line="+7"/>
+        <location line="+7"/>
+        <source>save part to disk</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-2"/>
+        <source>wave edit</source>
+        <translation type="unfinished">wave redigering</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>file info</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+88"/>
+        <source>MusE: save part</source>
+        <translation type="unfinished">MusE: spara part</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Part name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2090"/>
+        <source> out of </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source> parts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source> part</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source> could not be pasted.
+Likely the selected track is the wrong type.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Cannot paste: multiple tracks selected</source>
+        <translation type="unfinished">Kan inte klistra in: flera spår valda</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Cannot paste: no track selected</source>
+        <translation type="unfinished">Kan inte klistra in: inget spår valt</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Can only paste to midi/drum track</source>
+        <translation type="unfinished">Kan endast klistra in på midi/trummspår</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Can only paste to wave track</source>
+        <translation type="unfinished">Kan endast klistra till wavespår</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Can only paste to midi or wave track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Cannot paste: wrong data type</source>
+        <translation type="unfinished">Kan inte klistra in: fel datatyp</translation>
+    </message>
+</context>
+<context>
+    <name>MusEArranger::TList</name>
+    <message>
+        <location filename="../../muse/arranger/tlist.cpp" line="+362"/>
+        <source>&lt;none&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>no clef</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Treble</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Bass</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Grand</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+47"/>
+        <source>MusE: bad trackname</source>
+        <translation type="unfinished">MusE: dåligt spårnamn</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>please choose a unique track name</source>
+        <translation type="unfinished">vänligen välj ett unikt spårnamn</translation>
+    </message>
+    <message>
+        <location line="+157"/>
+        <location line="+1143"/>
+        <source>Update drummap?</source>
+        <translation type="unfinished">Updatera trum-map?</translation>
+    </message>
+    <message>
+        <location line="-1142"/>
+        <source>Do you want to use same port for all instruments in the drummap?</source>
+        <translation type="unfinished">Vill du använda samma port för alla instrument i trum-map:en?</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+1143"/>
+        <source>&amp;Yes</source>
+        <translation type="unfinished">&amp;Ja</translation>
+    </message>
+    <message>
+        <location line="-1143"/>
+        <location line="+1143"/>
+        <source>&amp;No</source>
+        <translation type="unfinished">&amp;Nej</translation>
+    </message>
+    <message>
+        <location line="-1066"/>
+        <location line="+55"/>
+        <source>show gui</source>
+        <translation type="unfinished">visa gui</translation>
+    </message>
+    <message>
+        <location line="-46"/>
+        <location line="+55"/>
+        <source>show native gui</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+338"/>
+        <source>Treble clef</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bass clef</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Grand Staff</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Viewable automation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+131"/>
+        <source>Delete Track</source>
+        <translation type="unfinished">Ta bort spår</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Track Comment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Insert Track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+445"/>
+        <source>Midi</source>
+        <translation type="unfinished">Midi</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Drum</source>
+        <translation type="unfinished">Trumma</translation>
+    </message>
+    <message>
+        <location line="+50"/>
+        <source>Do you want to use same port and channel for all instruments in the drummap?</source>
+        <translation type="unfinished">Vill du använda samma port och kanal för alla instrument i trummap:en?</translation>
+    </message>
+</context>
+<context>
+    <name>MusEDialog::PasteDialog</name>
+    <message numerus="yes">
+        <location filename="../../muse/widgets/pastedialog.cpp" line="+81"/>
+        <source>%n quarter(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>quarter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>quarters</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEDialog::PasteEventsDialog</name>
+    <message numerus="yes">
+        <location filename="../../muse/widgets/pasteeventsdialog.cpp" line="+95"/>
+        <source>%n quarter(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>quarter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>quarters</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEMixer::AudioMixerApp</name>
+    <message>
+        <location filename="../../muse/mixer/amixer.cpp" line="+171"/>
+        <source>&amp;Create</source>
+        <translation type="unfinished">&amp;Skapa</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Routing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Show Midi Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show Drum Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show Wave Tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Show Inputs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show Outputs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show Groups</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show Auxs</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Show Synthesizers</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEMixer::AudioStrip</name>
+    <message>
+        <location filename="../../muse/mixer/astrip.cpp" line="+645"/>
+        <source>panorama</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>aux send level</source>
+        <translation type="unfinished">aux send nivå</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Pan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+93"/>
+        <source>1/2 channel</source>
+        <translation type="unfinished">1/2 kanal</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Pre</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>pre fader - post fader</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+64"/>
+        <source>dB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+36"/>
+        <source>record</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>mute</source>
+        <translation type="unfinished">tysta</translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>record downmix</source>
+        <translation type="unfinished">spela in nermixning</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+4"/>
+        <source>solo mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>off</source>
+        <translation type="unfinished">av</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>iR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>input routing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>oR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>output routing</source>
+        <translation type="unfinished">utgångsrouting</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Off</source>
+        <translation type="unfinished">Av</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Read</source>
+        <translation type="unfinished">Läs</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Touch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Write</source>
+        <translation type="unfinished">Skriv</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>automation type</source>
+        <translation type="unfinished">automationstyp</translation>
+    </message>
+</context>
+<context>
+    <name>MusEMixer::EffectRack</name>
+    <message>
+        <location filename="../../muse/mixer/rack.cpp" line="+193"/>
+        <source>effect rack</source>
+        <translation type="unfinished">effektrack</translation>
+    </message>
+    <message>
+        <location line="+83"/>
+        <source>new</source>
+        <translation type="unfinished">ny</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>change</source>
+        <translation type="unfinished">ändra</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>move up</source>
+        <translation type="unfinished">flytta upp</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>move down</source>
+        <translation type="unfinished">flytta ner</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>remove</source>
+        <translation type="unfinished">ta bort</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>bypass</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>show gui</source>
+        <translation type="unfinished">visa gui</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>show native gui</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>save preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+138"/>
+        <source>MusE: Save Preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+143"/>
+        <source>Replace effect</source>
+        <translation type="unfinished">Byt effekt</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Do you really want to replace the effect %1?</source>
+        <translation type="unfinished">Vill du verkligen ersätta effekten %1?</translation>
+    </message>
+</context>
+<context>
+    <name>MusEMixer::MidiStrip</name>
+    <message>
+        <location filename="../../muse/mixer/mstrip.cpp" line="+109"/>
+        <location line="+121"/>
+        <location line="+158"/>
+        <source>off</source>
+        <translation type="unfinished">av</translation>
+    </message>
+    <message>
+        <location line="-278"/>
+        <location line="+122"/>
+        <source>double click on/off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-42"/>
+        <source>VariationSend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Var</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>ReverbSend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Rev</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>ChorusSend</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Cho</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+39"/>
+        <source>dB</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+54"/>
+        <source>Pan/Balance</source>
+        <translation type="unfinished">Pan/Balans</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Pan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>record</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>mute</source>
+        <translation type="unfinished">tysta</translation>
+    </message>
+    <message>
+        <location line="+21"/>
+        <source>solo mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+67"/>
+        <source>iR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>input routing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>oR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>output routing</source>
+        <translation type="unfinished">utgångsrouting</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::BigTime</name>
+    <message>
+        <location filename="../../muse/widgets/bigtime.cpp" line="+60"/>
+        <source>format display</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>beat</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+6"/>
+        <source>tick</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-4"/>
+        <source>minute</source>
+        <translation type="unfinished">minut</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>second</source>
+        <translation type="unfinished">sekund</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+3"/>
+        <source>frame</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-2"/>
+        <source>subframe</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>MusE: Bigtime</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::EditToolBar</name>
+    <message>
+        <location filename="../../muse/widgets/tools.cpp" line="+17"/>
+        <source>Edit Tools</source>
+        <translation type="unfinished">Redigeringsverktyg</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::GlobalSettingsConfig</name>
+    <message>
+        <location filename="../../muse/widgets/genset.cpp" line="+546"/>
+        <source>Selects instruments directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::Header</name>
+    <message>
+        <location filename="../../muse/widgets/header.cpp" line="+164"/>
+        <source>Track Info Columns</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::MTScale</name>
+    <message>
+        <location filename="../../muse/widgets/mtscale.cpp" line="+44"/>
+        <source>bar scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::MTScaleFlo</name>
+    <message>
+        <location filename="../../muse/widgets/mtscale_flo.cpp" line="+44"/>
+        <source>bar scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::MidiSyncConfig</name>
+    <message>
+        <location filename="../../muse/widgets/midisyncimpl.cpp" line="+58"/>
+        <location line="+29"/>
+        <source>Port Number</source>
+        <translation type="unfinished">Portnummer</translation>
+    </message>
+    <message>
+        <location line="-28"/>
+        <location line="+29"/>
+        <source>Name of the midi device associated with this port number</source>
+        <translation type="unfinished">Namn på midienhet associerad med detta portnummer</translation>
+    </message>
+    <message>
+        <location line="-27"/>
+        <source>Midi clock input detected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+29"/>
+        <source>Midi tick input detected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-28"/>
+        <source>Midi real time input detected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>MMC input detected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>MTC input detected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Detected SMPTE format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Receive id number. 127 = Global. Double click to edit.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Accept midi clock input</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Accept midi real time input</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Accept MMC input</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Accept MTC input</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Receive start rewinds before playing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transmit id number. 127 = Global. Double click to edit.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Send midi clock output</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Send midi realtime output</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+49"/>
+        <source>Send MMC output</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-48"/>
+        <location line="+49"/>
+        <source>Send MTC output</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-37"/>
+        <source>Midi clock input detected.
+Current port actually used is red.
+Click to force a port to be used.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Midi realtime input detected, including
+ start/stop/continue, and song position.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>MMC input detected, including stop/play/deferred play, and locate.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>MTC input detected, including forward quarter-frame sync and full-frame locate.
+Current port actually used is red. Click to force a port to be current.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Detected SMPTE format: 24fps, 25fps, 30fps drop frame, or 30fps non-drop
+Detects format of MTC quarter and full frame, and MMC locate.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Receive id number. 127 = global receive all, even if not global.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Accept midi clock input. Only one input is used for clock.
+Auto-acquire: If two or more port realtime inputs are enabled,
+ the first clock detected is used, until clock is lost,
+ then another can take over. Best if each turns off its clock
+ at stop, so MusE can re-acquire the clock from another port.
+Click on detect indicator to force another.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Accept midi realtime input, including
+ start/stop/continue, and song position.
+Non-clock events (start,stop etc) are
+ accepted by ALL enabled ports.
+This means you may have several master
+ devices connected, and muse will accept
+ input from them.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Accept MMC input, including stop/play/deferred play, and locate.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Accept MTC input, including forward quarter-frame sync and full-frame locate.
+See &apos;rc&apos; column for more help.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>When start is received, rewind before playing.
+Note: It may be impossible to rewind fast
+ enough to synchronize with the external device.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Transmit id number. 127 = global transmit to all.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Send midi clock output. If &apos;Slave to External Sync&apos; is chosen,
+ muse can re-transmit clock to any other chosen ports.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Send midi realtime output, including start/stop/continue,
+ and song position. If &apos;Slave to external sync&apos; is chosen,
+ muse can re-transmit midi realtime input messages to any
+ other chosen ports. This means you may have several slave
+ devices connected, and muse can re-send realtime messages
+ to any or all of them.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+142"/>
+        <source>Port</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Device Name</source>
+        <translation type="unfinished">Enhetsnamn</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>c</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>k</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>r</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>m</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>t</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>rid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>rc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>rr</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>rm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>rt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>rw</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>tid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>tc</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>tr</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>tm</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>tt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+399"/>
+        <source>MusE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Settings have changed
+Apply sync settings?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>&amp;Apply</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>&amp;No</source>
+        <translation type="unfinished">&amp;Nej</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>&amp;Abort</source>
+        <translation type="unfinished">&amp;Avbryt</translation>
+    </message>
+    <message>
+        <location line="+123"/>
+        <source>&lt;none&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::MidiTrackInfo</name>
+    <message>
+        <location filename="../../muse/widgets/mtrackinfo.cpp" line="+319"/>
+        <location line="+1046"/>
+        <source>&lt;unknown&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::MixdownFileDialog</name>
+    <message>
+        <location filename="../../muse/widgets/mixdowndialog.cpp" line="+118"/>
+        <source>Wave Files (*.wav);;All Files (*)</source>
+        <translation type="unfinished">Ljudfiler (*.wav);;Alla filer (*)</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::NoteInfo</name>
+    <message>
+        <location filename="../../muse/widgets/noteinfo.cpp" line="+44"/>
+        <source>Note Info</source>
+        <translation type="unfinished">Notinfo</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Len</source>
+        <translation type="unfinished">Längd</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Pitch</source>
+        <translation type="unfinished">Tonhöjd</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Velo On</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Velo Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::RoutePopupMenu</name>
+    <message>
+        <location filename="../../muse/widgets/routepopup.cpp" line="+223"/>
+        <location line="+2"/>
+        <location line="+125"/>
+        <location line="+78"/>
+        <location line="+57"/>
+        <location line="+53"/>
+        <location line="+682"/>
+        <location line="+85"/>
+        <source>Channel</source>
+        <translation type="unfinished">Kanal</translation>
+    </message>
+    <message>
+        <location line="-274"/>
+        <location line="+224"/>
+        <location line="+85"/>
+        <source>Soloing chain</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-307"/>
+        <location line="+224"/>
+        <source>Audio returns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-185"/>
+        <source>Warning: No midi input devices!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Open midi config...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+45"/>
+        <location line="+33"/>
+        <source>&lt;none&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-19"/>
+        <source>Toggle all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>More...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+195"/>
+        <source>Audio sends</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Midi port sends</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::ScrollScale</name>
+    <message>
+        <location filename="../../muse/widgets/scrollscale.cpp" line="+316"/>
+        <source>next page</source>
+        <translation type="unfinished">nästa sida</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>previous page</source>
+        <translation type="unfinished">förra sidan</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>current page number</source>
+        <translation type="unfinished">nuvarande sidnummer</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::ShortcutCaptureDialog</name>
+    <message>
+        <location filename="../../muse/widgets/shortcutcapturedialog.cpp" line="+55"/>
+        <source>Ok</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Avbryt</translation>
+    </message>
+    <message>
+        <location line="+52"/>
+        <source>Shortcut conflicts with </source>
+        <translation type="unfinished">Kortkommando konfliktar med</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Undefined</source>
+        <translation type="unfinished">Odefinierad</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::SigScale</name>
+    <message>
+        <location filename="../../muse/widgets/sigscale.cpp" line="+44"/>
+        <source>signature scale</source>
+        <translation type="unfinished">signaturskala</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::Toolbar1</name>
+    <message>
+        <location filename="../../muse/widgets/tb1.cpp" line="+21"/>
+        <source>Solo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Cursor</source>
+        <translation type="unfinished">Markör</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Snap</source>
+        <translation type="unfinished">Fäst vid</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::TrackComment</name>
+    <message>
+        <location filename="../../muse/widgets/comment.cpp" line="+58"/>
+        <source>MusE: Track Comment</source>
+        <translation type="unfinished">MusE: Spårkommentar</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Track Comment:</source>
+        <translation type="unfinished">Spårkommentar:</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::VisibleTracks</name>
+    <message>
+        <location filename="../../muse/widgets/visibletracks.cpp" line="+9"/>
+        <source>Visible track types</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11136,34 +12228,16 @@ browser on your machine.</source>
 <context>
     <name>NoteInfo</name>
     <message>
-        <location filename="../../muse/widgets/noteinfo.cpp" line="+27"/>
         <source>Note Info</source>
-        <translation>Notinfo</translation>
+        <translation type="obsolete">Notinfo</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Start</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
         <source>Len</source>
-        <translation type="unfinished">Längd</translation>
+        <translation type="obsolete">Längd</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Pitch</source>
-        <translation type="unfinished">Tonhöjd</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Velo On</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Velo Off</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Tonhöjd</translation>
     </message>
 </context>
 <context>
@@ -11403,49 +12477,40 @@ browser on your machine.</source>
 <context>
     <name>PartCanvas</name>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="+347"/>
         <source>Cannot copy/move/clone to different Track-Type</source>
-        <translation>Kan inte kopiera/flytta/klona till annan Spårtyp</translation>
+        <translation type="obsolete">Kan inte kopiera/flytta/klona till annan Spårtyp</translation>
     </message>
     <message>
-        <location line="+261"/>
         <source>C&amp;ut</source>
-        <translation>Klipp &amp;ut</translation>
+        <translation type="obsolete">Klipp &amp;ut</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>&amp;Copy</source>
-        <translation>&amp;Kopiera</translation>
+        <translation type="obsolete">&amp;Kopiera</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>rename</source>
-        <translation>byt namn</translation>
+        <translation type="obsolete">byt namn</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>color</source>
-        <translation>färg</translation>
+        <translation type="obsolete">färg</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>delete</source>
-        <translation>ta bort</translation>
+        <translation type="obsolete">ta bort</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>split</source>
-        <translation>dela</translation>
+        <translation type="obsolete">dela</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>glue</source>
-        <translation>lim</translation>
+        <translation type="obsolete">lim</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>de-clone</source>
-        <translation>häv kloning</translation>
+        <translation type="obsolete">häv kloning</translation>
     </message>
     <message>
         <source>pianoroll</source>
@@ -11464,19 +12529,16 @@ browser on your machine.</source>
         <translation type="obsolete">trummor</translation>
     </message>
     <message>
-        <location line="+22"/>
         <source>wave edit</source>
-        <translation>wave redigering</translation>
+        <translation type="obsolete">wave redigering</translation>
     </message>
     <message>
-        <location line="+2302"/>
         <source>Cannot paste: multiple tracks selected</source>
-        <translation>Kan inte klistra in: flera spår valda</translation>
+        <translation type="obsolete">Kan inte klistra in: flera spår valda</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Cannot paste: no track selected</source>
-        <translation>Kan inte klistra in: inget spår valt</translation>
+        <translation type="obsolete">Kan inte klistra in: inget spår valt</translation>
     </message>
     <message>
         <source>Cannot paste midi parts to wave track</source>
@@ -11487,106 +12549,24 @@ browser on your machine.</source>
         <translation type="obsolete">Kan inte klistra in wavepart på midispår</translation>
     </message>
     <message>
-        <location line="+50"/>
         <source>Cannot paste: wrong data type</source>
-        <translation>Kan inte klistra in: fel datatyp</translation>
+        <translation type="obsolete">Kan inte klistra in: fel datatyp</translation>
     </message>
     <message>
-        <location line="-30"/>
         <source>Can only paste to midi/drum track</source>
-        <translation type="unfinished">Kan endast klistra in på midi/trummspår</translation>
+        <translation type="obsolete">Kan endast klistra in på midi/trummspår</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Can only paste to wave track</source>
-        <translation type="unfinished">Kan endast klistra till wavespår</translation>
+        <translation type="obsolete">Kan endast klistra till wavespår</translation>
     </message>
     <message>
         <source>export</source>
         <translation type="obsolete">exportera</translation>
     </message>
     <message>
-        <location line="-2250"/>
         <source>MusE: save part</source>
-        <translation type="unfinished">MusE: spara part</translation>
-    </message>
-    <message>
-        <location line="-139"/>
-        <source>s&amp;elect </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>clones</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+32"/>
-        <location line="+7"/>
-        <location line="+7"/>
-        <source>save part to disk</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>file info</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+106"/>
-        <source>Part name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2165"/>
-        <source> out of </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source> parts</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source> part</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source> could not be pasted.
-Likely the selected track is the wrong type.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+76"/>
-        <source>Can only paste to midi or wave track</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>PasteDialog</name>
-    <message numerus="yes">
-        <location filename="../../muse/widgets/pastedialog.cpp" line="+62"/>
-        <source>%n quarter(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-        </translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>quarter</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>quarters</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">MusE: spara part</translation>
     </message>
 </context>
 <context>
@@ -11622,13 +12602,7 @@ Likely the selected track is the wrong type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+19"/>
-        <location line="+7"/>
-        <source>1 quarter</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+38"/>
+        <location line="+64"/>
         <source>Move, Merge, Clone</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11669,9 +12643,79 @@ Likely the selected track is the wrong type.</source>
     </message>
 </context>
 <context>
+    <name>PasteEventsDialogBase</name>
+    <message>
+        <location filename="../../muse/widgets/pasteeventsdialogbase.ui" line="+14"/>
+        <source>MusE: Paste Events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Number and raster</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>insert</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source> times</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>raster</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <location line="+133"/>
+        <source> ticks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-69"/>
+        <source>Paste options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Always into existing parts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Never into existing parts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Into existing parts if part has not
+to be expanded by more than </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+88"/>
+        <source>Put everything into the (selected) part</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+44"/>
+        <source>OK</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Avbryt</translation>
+    </message>
+</context>
+<context>
     <name>PianoRoll</name>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="+81"/>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="+97"/>
         <source>&amp;Edit</source>
         <translation>&amp;Redigera</translation>
     </message>
@@ -11712,7 +12756,7 @@ Likely the selected track is the wrong type.</source>
         <translation type="obsolete">Utanför loop</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+34"/>
         <source>&amp;Select</source>
         <translation>&amp;Välj</translation>
     </message>
@@ -11841,7 +12885,7 @@ Likely the selected track is the wrong type.</source>
         <translation type="unfinished">Sätt fast längd</translation>
     </message>
     <message>
-        <location line="-92"/>
+        <location line="-100"/>
         <source>C&amp;ut</source>
         <translation type="unfinished">Klipp &amp;ut</translation>
     </message>
@@ -11852,8 +12896,18 @@ Likely the selected track is the wrong type.</source>
     </message>
     <message>
         <location line="+4"/>
+        <source>Copy events in range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>&amp;Paste</source>
         <translation type="unfinished">K&amp;listra in</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Paste (with dialog)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
@@ -11984,7 +13038,7 @@ Likely the selected track is the wrong type.</source>
 <context>
     <name>PluginDialog</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="+3078"/>
+        <location filename="../../muse/plugin.cpp" line="+3095"/>
         <source>MusE: select plugin</source>
         <translation>MusE: välj plugin</translation>
     </message>
@@ -12116,7 +13170,7 @@ Likely the selected track is the wrong type.</source>
         <translation>koppla ur plugin</translation>
     </message>
     <message>
-        <location line="+543"/>
+        <location line="+554"/>
         <source>MusE: load preset</source>
         <translation>MusE: öppna preset</translation>
     </message>
@@ -12331,12 +13385,12 @@ används inte för tillfället</translation>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../muse/arranger/arrangerview.cpp" line="-580"/>
+        <location filename="../../muse/helper.cpp" line="-49"/>
         <source>Other</source>
         <translation type="unfinished">Andra</translation>
     </message>
     <message>
-        <location filename="../../muse/functions.cpp" line="+215"/>
+        <location filename="../../muse/functions.cpp" line="+242"/>
         <location line="+159"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
@@ -12355,7 +13409,7 @@ används inte för tillfället</translation>
         <translation type="obsolete">Hastighet</translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/minstrument.cpp" line="+56"/>
+        <location filename="../../muse/instruments/minstrument.cpp" line="+72"/>
         <location filename="../../muse/liste/editevent.cpp" line="-418"/>
         <source>Cannot convert sysex string</source>
         <translation>Kan inte konvertera sysex-sträng</translation>
@@ -12377,7 +13431,7 @@ används inte för tillfället</translation>
         <translation>ny</translation>
     </message>
     <message>
-        <location filename="../../muse/wave.cpp" line="-675"/>
+        <location filename="../../muse/wave.cpp" line="-677"/>
         <source>create peakfile for </source>
         <translation>skapa &quot;peak&quot;-fil</translation>
     </message>
@@ -12386,7 +13440,7 @@ används inte för tillfället</translation>
         <translation type="obsolete">Kan inte transformera ej tomt spår</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/filedialog.cpp" line="+63"/>
+        <location filename="../../muse/widgets/filedialog.cpp" line="+80"/>
         <source>MusE: get file name</source>
         <translation>MusE: hämta filnamn</translation>
     </message>
@@ -12464,7 +13518,7 @@ misslyckades:</translation>
         <translation>MusE: Öppna fil</translation>
     </message>
     <message>
-        <location filename="../../muse/route.cpp" line="+1026"/>
+        <location filename="../../muse/route.cpp" line="+1041"/>
         <location line="+37"/>
         <source>None</source>
         <translation type="unfinished">Ingen</translation>
@@ -12486,7 +13540,7 @@ misslyckades:</translation>
         <translation type="obsolete">Grupp</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveview.cpp" line="+617"/>
+        <location filename="../../muse/waveedit/waveview.cpp" line="+632"/>
         <source>No selection. Ignoring</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12608,15 +13662,16 @@ exists. Overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+20"/>
         <source>If the proposed change in tick or length is smaller than threshold, nothing is done.
 If swing=0, this is normal
 If swing is 33, you get a 2:1-rhythm.
-If swing is -33, you get a 1:2-rhythm.</source>
+If swing is -33, you get a 1:2-rhythm.
+</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+51"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12721,7 +13776,7 @@ If swing is -33, you get a 1:2-rhythm.</source>
         <translation type="unfinished">Längd</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+13"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
@@ -12732,7 +13787,7 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+56"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12745,501 +13800,313 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>RhythmBase</name>
     <message>
-        <location filename="../../muse/mplugins/rhythmbase.ui" line="+14"/>
         <source>MusE: Random Rhythm Generator</source>
-        <translation type="unfinished">MusE: Slumprytmgenerator</translation>
+        <translation type="obsolete">MusE: Slumprytmgenerator</translation>
     </message>
     <message>
-        <location line="+21"/>
         <source>Instrument Properties</source>
-        <translation type="unfinished">Instrumentinställningar</translation>
+        <translation type="obsolete">Instrumentinställningar</translation>
     </message>
     <message>
-        <location line="+20"/>
-        <location line="+334"/>
         <source>counts/bar</source>
-        <translation type="unfinished">slag/takt</translation>
+        <translation type="obsolete">slag/takt</translation>
     </message>
     <message>
-        <location line="-324"/>
-        <source>steps/count</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <location line="+325"/>
         <source># bars</source>
-        <translation type="unfinished"># takter</translation>
+        <translation type="obsolete"># takter</translation>
     </message>
     <message>
-        <location line="-315"/>
-        <source>test</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <location line="+300"/>
-        <source>contrib</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-290"/>
         <source>randomize</source>
-        <translation type="unfinished">slumpa</translation>
+        <translation type="obsolete">slumpa</translation>
     </message>
     <message>
-        <location line="+19"/>
         <source>Group 1</source>
-        <translation type="unfinished">Grupp 1</translation>
+        <translation type="obsolete">Grupp 1</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Group 2</source>
-        <translation type="unfinished">Grupp 2</translation>
+        <translation type="obsolete">Grupp 2</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Group 3</source>
-        <translation type="unfinished">Grupp 3</translation>
+        <translation type="obsolete">Grupp 3</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Group 4</source>
-        <translation type="unfinished">Grupp 4</translation>
+        <translation type="obsolete">Grupp 4</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Group 5</source>
-        <translation type="unfinished">Grupp 5</translation>
+        <translation type="obsolete">Grupp 5</translation>
     </message>
     <message>
-        <location line="+34"/>
-        <location line="+228"/>
         <source>listen</source>
-        <translation type="unfinished">lyssna</translation>
+        <translation type="obsolete">lyssna</translation>
     </message>
     <message>
-        <location line="-218"/>
         <source>Instrument</source>
-        <translation type="unfinished">Instrument</translation>
+        <translation type="obsolete">Instrument</translation>
     </message>
     <message>
-        <location line="+36"/>
-        <location line="+127"/>
         <source>Group</source>
-        <translation type="unfinished">Grupp</translation>
+        <translation type="obsolete">Grupp</translation>
     </message>
     <message>
-        <location line="-100"/>
-        <location line="+341"/>
         <source>&amp;New</source>
-        <translation type="unfinished">&amp;Ny</translation>
+        <translation type="obsolete">&amp;Ny</translation>
     </message>
     <message>
-        <location line="-348"/>
         <source>create new entry</source>
-        <translation type="unfinished">skapa nytt inlägg</translation>
+        <translation type="obsolete">skapa nytt inlägg</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>pressing the New button you create a new entry
 in the MusE list of defined controllers</source>
-        <translation type="unfinished">skapa nytt inlägg genom att trycka på Ny knappen
+        <translation type="obsolete">skapa nytt inlägg genom att trycka på Ny knappen
 i MusEs lista över definierade controllers</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>&amp;Delete</source>
-        <translation type="unfinished">&amp;Ta bort</translation>
+        <translation type="obsolete">&amp;Ta bort</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>delete selected entry</source>
-        <translation type="unfinished">ta bort valt inlägg</translation>
+        <translation type="obsolete">ta bort valt inlägg</translation>
     </message>
     <message>
-        <location line="+29"/>
         <source>Up</source>
-        <translation type="unfinished">Upp</translation>
+        <translation type="obsolete">Upp</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Down</source>
-        <translation type="unfinished">Ner</translation>
+        <translation type="obsolete">Ner</translation>
     </message>
     <message>
-        <location line="+30"/>
         <source>list of defined controllers</source>
-        <translation type="unfinished">lista med definierade controllers</translation>
+        <translation type="obsolete">lista med definierade controllers</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>This is the MusE list of defined controllers.</source>
-        <translation type="unfinished">Detta är MusEs lista med definierade controllers.</translation>
+        <translation type="obsolete">Detta är MusEs lista med definierade controllers.</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <source>Instrument              </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+22"/>
-        <source>steps/count      </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+146"/>
-        <source>&lt;b&gt;Notice!&lt;/b&gt;&lt;br&gt;
-Random Rhythm Generator is not enabled yet!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+41"/>
         <source>&amp;File</source>
-        <translation type="unfinished">&amp;Arkiv</translation>
+        <translation type="obsolete">&amp;Arkiv</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>&amp;Edit</source>
-        <translation type="unfinished">&amp;Redigera</translation>
+        <translation type="obsolete">&amp;Redigera</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>&amp;Help</source>
-        <translation type="unfinished">&amp;Hjälp</translation>
+        <translation type="obsolete">&amp;Hjälp</translation>
     </message>
     <message>
-        <location line="-44"/>
         <source>Tools</source>
-        <translation type="unfinished">Verktyg</translation>
+        <translation type="obsolete">Verktyg</translation>
     </message>
     <message>
-        <location line="+64"/>
         <source>New</source>
-        <translation type="unfinished">Ny</translation>
+        <translation type="obsolete">Ny</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Ctrl+N</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
         <source>Open</source>
-        <translation type="unfinished">Öppna</translation>
+        <translation type="obsolete">Öppna</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Open...</source>
-        <translation type="unfinished">&amp;Öppna...</translation>
+        <translation type="obsolete">&amp;Öppna...</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Ctrl+O</source>
-        <translation type="unfinished">Ctrl+Ö</translation>
+        <translation type="obsolete">Ctrl+Ö</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>Save</source>
-        <translation type="unfinished">Spara</translation>
+        <translation type="obsolete">Spara</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Save</source>
-        <translation type="unfinished">&amp;Spara</translation>
+        <translation type="obsolete">&amp;Spara</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Ctrl+S</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
         <source>Save As</source>
-        <translation type="unfinished">Spara som</translation>
+        <translation type="obsolete">Spara som</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>Save &amp;As...</source>
-        <translation type="unfinished">S&amp;para som...</translation>
+        <translation type="obsolete">S&amp;para som...</translation>
     </message>
     <message>
-        <location line="+21"/>
         <source>Print</source>
-        <translation type="unfinished">Skriv ut</translation>
+        <translation type="obsolete">Skriv ut</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Print...</source>
-        <translation type="unfinished">Skriv &amp;ut...</translation>
+        <translation type="obsolete">Skriv &amp;ut...</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Ctrl+P</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
         <source>Exit</source>
-        <translation type="unfinished">Stäng</translation>
+        <translation type="obsolete">Stäng</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>E&amp;xit</source>
-        <translation type="unfinished">S&amp;täng</translation>
+        <translation type="obsolete">S&amp;täng</translation>
     </message>
     <message>
-        <location line="+21"/>
         <source>Undo</source>
-        <translation type="unfinished">Ångra</translation>
+        <translation type="obsolete">Ångra</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Undo</source>
-        <translation type="unfinished">&amp;Ångra</translation>
+        <translation type="obsolete">&amp;Ångra</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Ctrl+Z</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
         <source>Redo</source>
-        <translation type="unfinished">Gör om</translation>
+        <translation type="obsolete">Gör om</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Redo</source>
-        <translation type="unfinished">Gör &amp;om</translation>
+        <translation type="obsolete">Gör &amp;om</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Ctrl+Y</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
         <source>Cut</source>
-        <translation type="unfinished">Klipp ut</translation>
+        <translation type="obsolete">Klipp ut</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Cut</source>
-        <translation type="unfinished">Klipp &amp;ut</translation>
+        <translation type="obsolete">Klipp &amp;ut</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Ctrl+X</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
         <source>Copy</source>
-        <translation type="unfinished">Kopiera</translation>
+        <translation type="obsolete">Kopiera</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>C&amp;opy</source>
-        <translation type="unfinished">&amp;Öppna</translation>
+        <translation type="obsolete">&amp;Öppna</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Ctrl+C</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
         <source>Paste</source>
-        <translation type="unfinished">Klistra in</translation>
+        <translation type="obsolete">Klistra in</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Paste</source>
-        <translation type="unfinished">K&amp;listra in</translation>
+        <translation type="obsolete">K&amp;listra in</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Ctrl+V</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
         <source>Find</source>
-        <translation type="unfinished">Sök</translation>
+        <translation type="obsolete">Sök</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Find...</source>
-        <translation type="unfinished">&amp;Sök...</translation>
+        <translation type="obsolete">&amp;Sök...</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Ctrl+F</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
         <source>Contents</source>
-        <translation type="unfinished">Innehåll</translation>
+        <translation type="obsolete">Innehåll</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;Contents...</source>
-        <translation type="unfinished">&amp;Innehåll...</translation>
+        <translation type="obsolete">&amp;Innehåll...</translation>
     </message>
     <message>
-        <location line="+14"/>
-        <source>&amp;Index...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Index</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
         <source>About</source>
-        <translation type="unfinished">Om</translation>
+        <translation type="obsolete">Om</translation>
     </message>
     <message>
-        <location line="-3"/>
         <source>&amp;About...</source>
-        <translation type="unfinished">&amp;Om...</translation>
+        <translation type="obsolete">&amp;Om...</translation>
     </message>
 </context>
 <context>
     <name>RhythmGenerator</name>
     <message>
-        <location filename="../../muse/mplugins/rhythm.cpp" line="+229"/>
-        <source>Form3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
         <source>Instrument Settings:</source>
-        <translation type="unfinished">Instrumentinställningar:</translation>
+        <translation type="obsolete">Instrumentinställningar:</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Instrument</source>
-        <translation type="unfinished">Instrument</translation>
+        <translation type="obsolete">Instrument</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Hi-Hat</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+20"/>
         <source>add</source>
-        <translation type="unfinished">lägg till</translation>
+        <translation type="obsolete">lägg till</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>delete</source>
-        <translation type="unfinished">ta bort</translation>
+        <translation type="obsolete">ta bort</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>steps/count</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+21"/>
         <source>count/bar</source>
-        <translation type="unfinished">slag/takt</translation>
+        <translation type="obsolete">slag/takt</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source># bars</source>
-        <translation type="unfinished"># takt</translation>
+        <translation type="obsolete"># takt</translation>
     </message>
     <message>
-        <location line="+34"/>
         <source>Group Settings:</source>
-        <translation type="unfinished">Gruppinställningar:</translation>
+        <translation type="obsolete">Gruppinställningar:</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Group</source>
-        <translation type="unfinished">Grupp</translation>
+        <translation type="obsolete">Grupp</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Group 1</source>
-        <translation type="unfinished">Grupp 1</translation>
+        <translation type="obsolete">Grupp 1</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Group 2</source>
-        <translation type="unfinished">Grupp 2</translation>
+        <translation type="obsolete">Grupp 2</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Group 3</source>
-        <translation type="unfinished">Grupp 3</translation>
+        <translation type="obsolete">Grupp 3</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Group 4</source>
-        <translation type="unfinished">Grupp 4</translation>
+        <translation type="obsolete">Grupp 4</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Group 5</source>
-        <translation type="unfinished">Grupp 5</translation>
+        <translation type="obsolete">Grupp 5</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>contrib</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+19"/>
         <source>listen</source>
-        <translation type="unfinished">lyssna</translation>
+        <translation type="obsolete">lyssna</translation>
     </message>
     <message>
-        <location line="+22"/>
         <source>Randomize</source>
-        <translation type="unfinished">Slumpa</translation>
+        <translation type="obsolete">Slumpa</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Rhythm Style:</source>
-        <translation type="unfinished">Rytmstil:</translation>
+        <translation type="obsolete">Rytmstil:</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Clear</source>
-        <translation type="unfinished">Rensa</translation>
+        <translation type="obsolete">Rensa</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Open...</source>
-        <translation type="unfinished">Öppna...</translation>
+        <translation type="obsolete">Öppna...</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Save</source>
-        <translation type="unfinished">Spara</translation>
+        <translation type="obsolete">Spara</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Save as...</source>
-        <translation type="unfinished">Spara som...</translation>
+        <translation type="obsolete">Spara som...</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Generate</source>
-        <translation type="unfinished">Generera</translation>
+        <translation type="obsolete">Generera</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Close</source>
-        <translation type="unfinished">Stäng</translation>
+        <translation type="obsolete">Stäng</translation>
     </message>
     <message>
         <source></source>
@@ -13307,65 +14174,8 @@ Random Rhythm Generator is not enabled yet!</source>
 <context>
     <name>RoutePopupMenu</name>
     <message>
-        <location filename="../../muse/widgets/routepopup.cpp" line="+219"/>
-        <location line="+2"/>
-        <location line="+125"/>
-        <location line="+78"/>
-        <location line="+57"/>
-        <location line="+53"/>
-        <location line="+682"/>
-        <location line="+85"/>
         <source>Channel</source>
-        <translation type="unfinished">Kanal</translation>
-    </message>
-    <message>
-        <location line="-274"/>
-        <location line="+224"/>
-        <location line="+85"/>
-        <source>Soloing chain</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-307"/>
-        <location line="+224"/>
-        <source>Audio returns</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-185"/>
-        <source>Warning: No midi input devices!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Open midi config...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+45"/>
-        <location line="+33"/>
-        <source>&lt;none&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-19"/>
-        <source>Toggle all</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>More...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+195"/>
-        <source>Audio sends</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Midi port sends</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Kanal</translation>
     </message>
 </context>
 <context>
@@ -13424,7 +14234,7 @@ Random Rhythm Generator is not enabled yet!</source>
 <context>
     <name>SS_PluginFront</name>
     <message>
-        <location filename="../../synti/simpledrums2/ssplugingui.cpp" line="+223"/>
+        <location filename="../../synti/simpledrums2/ssplugingui.cpp" line="+238"/>
         <source>Clear and unload effect</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13538,7 +14348,7 @@ Random Rhythm Generator is not enabled yet!</source>
 <context>
     <name>ScoreCanvas</name>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="+1208"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="+1245"/>
         <source>Treble</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13558,7 +14368,7 @@ Random Rhythm Generator is not enabled yet!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2423"/>
+        <location line="+2467"/>
         <source>Ambiguous part</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13636,7 +14446,7 @@ Random Rhythm Generator is not enabled yet!</source>
 <context>
     <name>ScoreEdit</name>
     <message>
-        <location line="-3433"/>
+        <location line="-3493"/>
         <source>Undo/Redo tools</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13717,8 +14527,18 @@ Random Rhythm Generator is not enabled yet!</source>
     </message>
     <message>
         <location line="+4"/>
+        <source>Copy events in range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>&amp;Paste</source>
         <translation type="unfinished">K&amp;listra in</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Paste (with dialog)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
@@ -13856,7 +14676,7 @@ Random Rhythm Generator is not enabled yet!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+214"/>
+        <location line="+216"/>
         <location line="+1"/>
         <source>Enter the new score title</source>
         <translation type="unfinished"></translation>
@@ -13876,19 +14696,16 @@ the selected title is not unique</source>
 <context>
     <name>ScrollScale</name>
     <message>
-        <location filename="../../muse/widgets/scrollscale.cpp" line="+299"/>
         <source>next page</source>
-        <translation>nästa sida</translation>
+        <translation type="obsolete">nästa sida</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>previous page</source>
-        <translation>förra sidan</translation>
+        <translation type="obsolete">förra sidan</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>current page number</source>
-        <translation>nuvarande sidnummer</translation>
+        <translation type="obsolete">nuvarande sidnummer</translation>
     </message>
 </context>
 <context>
@@ -13939,7 +14756,7 @@ the selected title is not unique</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+40"/>
+        <location line="+53"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13952,24 +14769,16 @@ the selected title is not unique</source>
 <context>
     <name>ShortcutCaptureDialog</name>
     <message>
-        <location filename="../../muse/widgets/shortcutcapturedialog.cpp" line="+30"/>
-        <source>Ok</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Cancel</source>
-        <translation type="unfinished">Avbryt</translation>
+        <translation type="obsolete">Avbryt</translation>
     </message>
     <message>
-        <location line="+52"/>
         <source>Shortcut conflicts with </source>
-        <translation type="unfinished">Kortkommando konfliktar med</translation>
+        <translation type="obsolete">Kortkommando konfliktar med</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Undefined</source>
-        <translation type="unfinished">Odefinierad</translation>
+        <translation type="obsolete">Odefinierad</translation>
     </message>
 </context>
 <context>
@@ -14067,9 +14876,8 @@ the selected title is not unique</source>
 <context>
     <name>SigScale</name>
     <message>
-        <location filename="../../muse/widgets/sigscale.cpp" line="+27"/>
         <source>signature scale</source>
-        <translation>signaturskala</translation>
+        <translation type="obsolete">signaturskala</translation>
     </message>
 </context>
 <context>
@@ -14083,7 +14891,7 @@ the selected title is not unique</source>
 <context>
     <name>SimpleSynthGui</name>
     <message>
-        <location filename="../../synti/simpledrums2/simpledrumsgui.cpp" line="+429"/>
+        <location filename="../../synti/simpledrums2/simpledrumsgui.cpp" line="+442"/>
         <source>&amp;Load setup</source>
         <translation type="unfinished">&amp;Ladda setup</translation>
     </message>
@@ -14101,7 +14909,7 @@ the selected title is not unique</source>
 <context>
     <name>Song</name>
     <message>
-        <location filename="../../muse/song.cpp" line="+2361"/>
+        <location filename="../../muse/song.cpp" line="+2412"/>
         <source>Jack shutdown!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14125,7 +14933,7 @@ click on the Restart button.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+189"/>
+        <location line="+198"/>
         <source>previous event</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14314,39 +15122,32 @@ click on the Restart button.</source>
         <translation type="obsolete">Visa Gui</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="-24"/>
         <source>Add Midi Track</source>
-        <translation>Lägg till Midispår</translation>
+        <translation type="obsolete">Lägg till Midispår</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Add Drum Track</source>
-        <translation>Lägg till Trumspår</translation>
+        <translation type="obsolete">Lägg till Trumspår</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Add Wave Track</source>
-        <translation>Lägg till Wavespår</translation>
+        <translation type="obsolete">Lägg till Wavespår</translation>
     </message>
     <message>
-        <location line="+292"/>
         <source>Delete Track</source>
-        <translation>Ta bort spår</translation>
+        <translation type="obsolete">Ta bort spår</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Track Comment</source>
-        <translation>Spårkommentar</translation>
+        <translation type="obsolete">Spårkommentar</translation>
     </message>
     <message>
-        <location line="+428"/>
         <source>Midi</source>
-        <translation>Midi</translation>
+        <translation type="obsolete">Midi</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Drum</source>
-        <translation>Trumma</translation>
+        <translation type="obsolete">Trumma</translation>
     </message>
     <message>
         <source>Wave</source>
@@ -14376,119 +15177,52 @@ ljudfilerna skall hamna.</translation>
         <translation type="obsolete">Avbryt</translation>
     </message>
     <message>
-        <location line="-1288"/>
         <source>MusE: bad trackname</source>
-        <translation type="unfinished">MusE: dåligt spårnamn</translation>
+        <translation type="obsolete">MusE: dåligt spårnamn</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>please choose a unique track name</source>
-        <translation type="unfinished">vänligen välj ett unikt spårnamn</translation>
+        <translation type="obsolete">vänligen välj ett unikt spårnamn</translation>
     </message>
     <message>
-        <location line="+568"/>
         <source>Add Output</source>
-        <translation type="unfinished">Lägg till utgång</translation>
+        <translation type="obsolete">Lägg till utgång</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Add Group</source>
-        <translation type="unfinished">Lägg till grupp</translation>
+        <translation type="obsolete">Lägg till grupp</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Add Input</source>
-        <translation type="unfinished">Lägg till ingång</translation>
+        <translation type="obsolete">Lägg till ingång</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Add Aux Send</source>
-        <translation type="unfinished">Lägg till aux-send</translation>
+        <translation type="obsolete">Lägg till aux-send</translation>
     </message>
     <message>
-        <location line="-420"/>
-        <location line="+1179"/>
         <source>Update drummap?</source>
-        <translation type="unfinished">Updatera trum-map?</translation>
+        <translation type="obsolete">Updatera trum-map?</translation>
     </message>
     <message>
-        <location line="-1390"/>
-        <source>no clef</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Treble</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Bass</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Grand</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+206"/>
         <source>Do you want to use same port for all instruments in the drummap?</source>
-        <translation type="unfinished">Vill du använda samma port för alla instrument i trum-map:en?</translation>
+        <translation type="obsolete">Vill du använda samma port för alla instrument i trum-map:en?</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location line="+1179"/>
         <source>&amp;Yes</source>
-        <translation type="unfinished">&amp;Ja</translation>
+        <translation type="obsolete">&amp;Ja</translation>
     </message>
     <message>
-        <location line="-1179"/>
-        <location line="+1179"/>
         <source>&amp;No</source>
-        <translation type="unfinished">&amp;Nej</translation>
+        <translation type="obsolete">&amp;Nej</translation>
     </message>
     <message>
-        <location line="-1102"/>
-        <location line="+53"/>
         <source>show gui</source>
-        <translation type="unfinished">visa gui</translation>
+        <translation type="obsolete">visa gui</translation>
     </message>
     <message>
-        <location line="-44"/>
-        <location line="+53"/>
-        <source>show native gui</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+397"/>
-        <source>Treble clef</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Bass clef</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Grand Staff</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>Viewable automation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+610"/>
         <source>Do you want to use same port and channel for all instruments in the drummap?</source>
-        <translation type="unfinished">Vill du använda samma port och kanal för alla instrument i trummap:en?</translation>
-    </message>
-    <message>
-        <location line="-1422"/>
-        <source>&lt;none&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Vill du använda samma port och kanal för alla instrument i trummap:en?</translation>
     </message>
 </context>
 <context>
@@ -14500,34 +15234,14 @@ ljudfilerna skall hamna.</translation>
     </message>
 </context>
 <context>
-    <name>TimeCanvas</name>
-    <message>
-        <location filename="../../awl/tcanvas.cpp" line="+150"/>
-        <source>Ctrl</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Add Controller View</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>Toolbar1</name>
     <message>
-        <location filename="../../muse/widgets/tb1.cpp" line="+21"/>
-        <source>Solo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
         <source>Cursor</source>
-        <translation>Markör</translation>
+        <translation type="obsolete">Markör</translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>Snap</source>
-        <translation>Fäst vid</translation>
+        <translation type="obsolete">Fäst vid</translation>
     </message>
     <message>
         <source>Quantize</source>
@@ -14557,7 +15271,7 @@ ljudfilerna skall hamna.</translation>
 <context>
     <name>TopWin</name>
     <message>
-        <location filename="../../muse/cobject.cpp" line="+49"/>
+        <location filename="../../muse/cobject.cpp" line="+61"/>
         <source>As subwindow</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14572,7 +15286,7 @@ ljudfilerna skall hamna.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+406"/>
+        <location line="+418"/>
         <source>Piano roll</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14630,14 +15344,12 @@ ljudfilerna skall hamna.</translation>
 <context>
     <name>TrackComment</name>
     <message>
-        <location filename="../../muse/widgets/comment.cpp" line="+41"/>
         <source>MusE: Track Comment</source>
-        <translation>MusE: Spårkommentar</translation>
+        <translation type="obsolete">MusE: Spårkommentar</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Track Comment:</source>
-        <translation>Spårkommentar:</translation>
+        <translation type="obsolete">Spårkommentar:</translation>
     </message>
 </context>
 <context>
@@ -14840,7 +15552,7 @@ ljudfilerna skall hamna.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+56"/>
+        <location line="+69"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15199,7 +15911,7 @@ Robert Jonsson
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+44"/>
         <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15210,19 +15922,10 @@ Robert Jonsson
     </message>
 </context>
 <context>
-    <name>VisibleTracks</name>
-    <message>
-        <location filename="../../muse/widgets/visibletracks.cpp" line="+9"/>
-        <source>Visible track types</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>WTScale</name>
     <message>
-        <location filename="../../muse/widgets/wtscale.cpp" line="+29"/>
         <source>bar scale</source>
-        <translation type="unfinished">takt-skala</translation>
+        <translation type="obsolete">takt-skala</translation>
     </message>
 </context>
 <context>
@@ -15240,7 +15943,7 @@ Robert Jonsson
         <translation type="obsolete">Normalisera</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="+181"/>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="+196"/>
         <source>Solo</source>
         <translation type="unfinished"></translation>
     </message>

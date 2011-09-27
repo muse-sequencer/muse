@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //    $Id: pcanvas.cpp,v 1.48.2.26 2009/11/22 11:08:33 spamatica Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
-//  Additions, modifications (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -34,7 +34,7 @@
 #include <QLineEdit>
 #include <QMenu>
 #include <QMessageBox>
-#include <QPainter>
+//#include <QPainter>
 #include <QUrl>
 #include <QPoint>
 
@@ -48,7 +48,7 @@
 #include "globals.h"
 #include "icons.h"
 #include "event.h"
-#include "xml.h"
+//#include "xml.h"
 #include "wave.h"
 #include "audio.h"
 #include "shortcuts.h"
@@ -70,24 +70,7 @@
 
 using std::set;
 
-int get_paste_len();
-
-//---------------------------------------------------------
-//   colorRect
-//   paints a rectangular icon with a given color
-//---------------------------------------------------------
-
-QIcon colorRect(const QColor& color, int width, int height) {
-      QPainter painter;
-      QPixmap image(width, height);
-      painter.begin(&image);
-      painter.setBrush(color);
-      QRect rectangle(0, 0, width, height);
-      painter.drawRect(rectangle);
-      painter.end();
-      QIcon icon(image);
-      return icon;
-}
+namespace MusEArranger {
 
 //---------------------------------------------------------
 //   NPart
@@ -349,7 +332,7 @@ UndoOp PartCanvas::moveItem(MusEWidget::CItem* item, const QPoint& newpos, DragT
             ntrack = tracks->size();
             if (MusEGlobal::debugMsg)
                 printf("PartCanvas::moveItem - add new track\n");
-            Track* newTrack = song->addTrack(type, false);  // Add at end of list.
+            Track* newTrack = song->addTrack(type);  // Add at end of list.
             if (type == Track::WAVE) {
                   WaveTrack* st = (WaveTrack*) track;
                   WaveTrack* dt = (WaveTrack*) newTrack;
@@ -646,7 +629,7 @@ QMenu* PartCanvas::genItemPopup(MusEWidget::CItem* item)
 
       // part color selection
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
-            QAction *act_color = colorPopup->addAction(colorRect(MusEConfig::config.partColors[i], 80, 80), MusEConfig::config.partColorNames[i]);
+            QAction *act_color = colorPopup->addAction(MusEUtil::colorRect(MusEConfig::config.partColors[i], 80, 80), MusEConfig::config.partColorNames[i]);
             act_color->setData(20+i);
             }
 
@@ -788,7 +771,7 @@ void PartCanvas::itemPopup(MusEWidget::CItem* item, int n, const QPoint& pt)
                   {
                     Part* p = item->part();
                     EventList* el = p->events();
-                    QString str = tr("Part name") + ": " + p->name() + "\n" + tr("Files") + ":";
+                    QString str = tr("Part name: %1\nFiles:").arg(p->name());
                     for (iEvent e = el->begin(); e != el->end(); ++e) 
                     {
                       Event event = e->second;
@@ -1771,19 +1754,16 @@ void PartCanvas::drawItem(QPainter& p, const MusEWidget::CItem* item, const QRec
       //QRect rr = p.transform().mapRect(r);    // Gives inconsistent positions. Source shows wrong operation for our needs.
       QRect rr = map(r);                        // Use our own map instead.                                
       
+      QRect mr = map(rect);
+      
       // Item bounding box x is in tick coordinates, same as rectangle.
-      //if(item->bbox().intersect(rect).isNull())
-      //if((item->bbox() & rect).isNull())
-      if((rr & map(rect)).isNull())
+      if((rr & mr).isNull())
       {
         //printf("PartCanvas::drawItem rectangle is null\n");
         return;
       }
       
-      //printf("PartCanvas::drawItem called map rx:%d rw:%d  rrx:%d rrw:%d\n", r.x(), r.width(), rr.x(), rr.width());  
-      //printf("PartCanvas::drawItem called map rx:%d rw:%d\n", r.x(), r.width());  
-      
-      p.save();
+      //p.save();
       p.setWorldMatrixEnabled(false);
       
       // NOTE: Optimization: For each item, hasHiddenEvents() is called once in Canvas::draw(), and we use cachedHasHiddenEvents().
@@ -1831,6 +1811,15 @@ void PartCanvas::drawItem(QPainter& p, const MusEWidget::CItem* item, const QRec
       int ye_2 = ye_0 - 2;
       if(ye_2 < ys_0)
         ye_2 = ys_0;
+      
+      int mrxs_0 = mr.x();
+      int mrxe_0 = mrxs_0 + mr.width();
+      bool lbt = ((NPart*)item)->leftBorderTouches;
+      bool rbt = ((NPart*)item)->rightBorderTouches;
+      int lbx = lbt?xs_1:xs_0;
+      int rbx = rbt?xe_1:xe_0;
+      int lbx_c = lbx < mrxs_0 ? mrxs_0 : lbx;
+      int rbx_c = rbx > mrxe_0 ? mrxe_0 : rbx;
       
       int cidx = part->colorIndex();
       if (item->isMoving()) 
@@ -1890,8 +1879,11 @@ void PartCanvas::drawItem(QPainter& p, const MusEWidget::CItem* item, const QRec
       
       p.setBrush(brush);
       p.setPen(Qt::NoPen);
+      
       if(het)
       {
+        // TODO: Make this part respect the requested drawing rectangle (rr & mr), for speed !
+        
         pts = 0;
         if(het == (Part::LeftEventsHidden | Part::RightEventsHidden))
         {
@@ -2005,7 +1997,8 @@ void PartCanvas::drawItem(QPainter& p, const MusEWidget::CItem* item, const QRec
       }  
       else
       {
-        p.fillRect(rr, brush);
+        //p.fillRect(rr, brush);
+        p.fillRect(rr & mr, brush);  // Respect the requested drawing rectangle. Gives speed boost!
       }
           
       // Draw a pattern brush on muted parts...
@@ -2015,8 +2008,9 @@ void PartCanvas::drawItem(QPainter& p, const MusEWidget::CItem* item, const QRec
         //brush.setStyle(Qt::DiagCrossPattern);
         brush.setStyle(Qt::Dense7Pattern);
         
-        p.fillRect(rr, brush);                                                         // FIXME: Some shifting going on
+        //p.fillRect(rr, brush);                                                       // FIXME: Some shifting going on
         //p.fillRect(QRect(rr.x(), rr.y(), rr.width() + 1, rr.height() + 1), brush);   // Same here
+        p.fillRect(rr & mr, brush);   // Respect the requested drawing rectangle. Gives speed boost!                                                      
       }  
       
       p.setWorldMatrixEnabled(true);
@@ -2052,7 +2046,10 @@ void PartCanvas::drawItem(QPainter& p, const MusEWidget::CItem* item, const QRec
         p.setBrush(Qt::NoBrush);
         p.drawRect(r);
         
-  #else 
+  //#else 
+  #endif
+  
+  #if 1
         //
         // Now draw the borders, using custom segments...
         //
@@ -2106,17 +2103,19 @@ void PartCanvas::drawItem(QPainter& p, const MusEWidget::CItem* item, const QRec
           penSelect2V.setDashOffset(1.0);  
           penNormal2V.setDashOffset(1.0);  
           //penHidden2.setDashPattern(customDashPattern);  
+          
+          // FIXME: Some shifting still going on. Values likely not quite right here. 
+          int xdiff = mrxs_0 - lbx;
+          if(xdiff > 0)
+          {
+            int doff = xdiff % 10;
+            penSelect1H.setDashOffset(doff);
+            penNormal1H.setDashOffset(doff);
+            doff = xdiff % 5;
+            penSelect2H.setDashOffset(doff);
+            penNormal2H.setDashOffset(doff);
+          }
         }  
-        
-        bool lbt = ((NPart*)item)->leftBorderTouches;
-        bool rbt = ((NPart*)item)->rightBorderTouches;
-        
-        QLine l1(lbt?xs_1:xs_0, ys_0,             rbt?xe_1:xe_0, ys_0);            // Top 
-        //QLine l2(rbt?xe_1:xe_0, rbt?ys_1:ys_2,    rbt?xe_1:xe_0, rbt?ye_1:ye_2); // Right 
-        QLine l2(rbt?xe_1:xe_0, ys_0,             rbt?xe_1:xe_0, ye_0);            // Right 
-        QLine l3(lbt?xs_1:xs_0, ye_0,             rbt?xe_1:xe_0, ye_0);            // Bottom
-        //QLine l4(xs_0,          lbt?ys_1:ys_2,    xs_0,          lbt?ye_1:ye_2); // Left
-        QLine l4(xs_0,          ys_0,             xs_0,          ye_0);            // Left
         
         //if(het & Part::RightEventsHidden)
         //  p.setPen(((NPart*)item)->rightBorderTouches ? penHidden1 : penHidden2); 
@@ -2127,7 +2126,12 @@ void PartCanvas::drawItem(QPainter& p, const MusEWidget::CItem* item, const QRec
           else  
             p.setPen(part->selected() ? penSelect2V : penNormal2V); 
         }  
-        p.drawLine(l2);        // Right line
+        
+        if(rbx >= mrxs_0 && rbx <= mrxe_0)  // Respect the requested drawing rectangle. Gives speed boost!
+        {
+          QLine l2(rbx, ys_0, rbx, ye_0);            // Right 
+          p.drawLine(l2);        // Right line
+        }
         
         /*
         int xx = rbt?xe_1:xe_0; 
@@ -2155,7 +2159,12 @@ void PartCanvas::drawItem(QPainter& p, const MusEWidget::CItem* item, const QRec
           else  
             p.setPen(part->selected() ? penSelect2V : penNormal2V); 
         }  
-        p.drawLine(l4);        //  Left line
+        
+        if(xs_0 >= mrxs_0 && xs_0 <= mrxe_0)
+        {
+          QLine l4(xs_0, ys_0, xs_0, ye_0);            // Left
+          p.drawLine(l4);        //  Left line
+        }
         
         /*
         xx = xs_0;
@@ -2175,7 +2184,11 @@ void PartCanvas::drawItem(QPainter& p, const MusEWidget::CItem* item, const QRec
         */
         
         p.setPen(part->selected() ? penSelect2H : penNormal2H); 
+        
+        // Respect the requested drawing rectangle. Gives speed boost!
+        QLine l1(lbx_c, ys_0, rbx_c, ys_0);  
         p.drawLine(l1);  // Top line
+        QLine l3(lbx_c, ye_0, rbx_c, ye_0);  
         p.drawLine(l3);  // Bottom line
         
   #endif
@@ -2206,8 +2219,8 @@ void PartCanvas::drawItem(QPainter& p, const MusEWidget::CItem* item, const QRec
             p.drawText(tr, Qt::AlignBottom|Qt::AlignLeft, part->name());
             }
             
-      p.restore();
-      //p.setWorldMatrixEnabled(true);
+      //p.restore();
+      p.setWorldMatrixEnabled(true);
       }
 
 //---------------------------------------------------------
@@ -2623,7 +2636,7 @@ void PartCanvas::cmd(int cmd)
             case CMD_PASTE_CLONE_DIALOG:
             {
                   unsigned temp_begin = AL::sigmap.raster1(song->vcpos(),0);
-                  unsigned temp_end = AL::sigmap.raster2(temp_begin + get_paste_len(), 0);
+                  unsigned temp_end = AL::sigmap.raster2(temp_begin + MusEUtil::get_paste_len(), 0);
                   paste_dialog->raster = temp_end - temp_begin;
                   paste_dialog->clone = (cmd == CMD_PASTE_CLONE_DIALOG);
                   
@@ -2805,86 +2818,6 @@ void PartCanvas::copy(PartList* pl)
       }
 
 
-
-int get_paste_len()
-{
-  QClipboard* cb  = QApplication::clipboard();
-  const QMimeData* md = cb->mimeData(QClipboard::Clipboard);
-
-  QString pfx("text/");
-  QString mdpl("x-muse-midipartlist");
-  QString wvpl("x-muse-wavepartlist");  
-  QString mxpl("x-muse-mixedpartlist");
-  QString txt;
-    
-  if(md->hasFormat(pfx + mdpl))
-    txt = cb->text(mdpl, QClipboard::Clipboard);  
-  else if(md->hasFormat(pfx + wvpl))
-    txt = cb->text(wvpl, QClipboard::Clipboard);  
-  else if(md->hasFormat(pfx + mxpl))
-    txt = cb->text(mxpl, QClipboard::Clipboard);  
-  else
-    return 0;
-
-
-  QByteArray ba = txt.toLatin1();
-  const char* ptxt = ba.constData();
-  Xml xml(ptxt);
-  bool end = false;
-
-  unsigned begin_tick=-1; //this uses the greatest possible begin_tick
-  unsigned end_tick=0;
-
-  for (;;)
-  {
-    Xml::Token token = xml.parse();
-    const QString& tag = xml.s1();
-    switch (token)
-    {
-      case Xml::Error:
-      case Xml::End:
-        end = true;
-        break;
-        
-      case Xml::TagStart:
-        if (tag == "part")
-        {                              
-          Part* p = 0;
-          p = readXmlPart(xml, NULL, false, false);
-
-          if (p)
-          {
-            if (p->tick() < begin_tick)
-            begin_tick=p->tick();
-
-            if (p->endTick() > end_tick)
-            end_tick=p->endTick();
-
-            delete p;
-          } 
-        }
-        else
-        xml.unknown("PartCanvas::get_paste_len");
-        break;
-        
-      case Xml::TagEnd:
-        break;
-        
-      default:
-        end = true;
-        break;
-    }
-    if(end)
-      break;
-  }
-  
-  if (begin_tick > end_tick)
-    return 0;
-  else
-    return end_tick - begin_tick;
-}
-
-
 Undo PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool clone, bool toTrack, int* finalPosPtr, set<Track*>* affected_tracks)
       {
       Undo operations;
@@ -2958,9 +2891,8 @@ Undo PartCanvas::pasteAt(const QString& pt, Track* track, unsigned int pos, bool
       {
         int tot = notDone + done;
         QMessageBox::critical(this, QString("MusE"),
-           QString().setNum(notDone) + (tot > 1 ? (tr(" out of ") + QString().setNum(tot)) : QString("")) + 
-           (tot > 1 ? tr(" parts") : tr(" part")) + 
-           tr(" could not be pasted.\nLikely the selected track is the wrong type."));
+           (tot > 1  ?  tr("%n part(s) out of %1 could not be pasted.\nLikely the selected track is the wrong type.","",notDone).arg(tot)
+                     :  tr("%n part(s) could not be pasted.\nLikely the selected track is the wrong type.","",notDone)));
       }
       
       if (finalPosPtr) *finalPosPtr=finalPos;
@@ -3236,9 +3168,9 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
 
                 if (!track) { // we need to create a track for this drop
                     if (text.endsWith(".mpt", Qt::CaseInsensitive)) {
-                        track = song->addTrack(Track::MIDI, false);    // Add at end of list.
+                        track = song->addTrack(Track::MIDI);    // Add at end of list.
                     } else {
-                        track = song->addTrack(Track::WAVE, false);    // Add at end of list.
+                        track = song->addTrack(Track::WAVE);    // Add at end of list.
                     }
                 }
                 if (track->type() == Track::WAVE &&
@@ -4046,3 +3978,4 @@ void PartCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir)
       redraw();
       }
 
+} // namespace MusEArranger

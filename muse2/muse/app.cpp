@@ -925,7 +925,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       connect(windowsCascadeAction, SIGNAL(activated()), mdiArea, SLOT(cascadeSubWindows()));
 
 
-      arrangerView = new ArrangerView(this);
+      arrangerView = new MusEArranger::ArrangerView(this);
       arrangerView->shareToolsAndMenu(true);
       connect(arrangerView, SIGNAL(closed()), SLOT(arrangerClosed()));
       toplevels.push_back(arrangerView);
@@ -1218,7 +1218,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             }
       else {
             QMessageBox::critical(this, QString("MusE"),
-               tr("Unknown File Format: ") + ex);
+               tr("Unknown File Format: %1").arg(ex));
             setUntitledProject();
             }
       if (!songTemplate) {
@@ -1348,7 +1348,7 @@ void MusE::setUntitledProject()
       QString name("untitled");
       MusEGlobal::museProject = "./"; //QFileInfo(name).absolutePath();
       project.setFile(name);
-      setWindowTitle(tr("MusE: Song: ") + project.completeBaseName());
+      setWindowTitle(tr("MusE: Song: %1").arg(project.completeBaseName()));
       }
 
 //---------------------------------------------------------
@@ -1756,7 +1756,7 @@ bool MusE::saveAs()
             ok = save(name, true);
             if (ok) {
                   project.setFile(name);
-                  setWindowTitle(tr("MusE: Song: ") + project.completeBaseName());
+                  setWindowTitle(tr("MusE: Song: %1").arg(project.completeBaseName()));
                   addProject(name);
                   }
             else
@@ -2089,6 +2089,12 @@ void MusE::toplevelDeleted(TopWin* tl)
       for (iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
             if (*i == tl) {
                   
+                  if (tl == activeTopWin)
+                  {
+                    activeTopWin=NULL;
+                    emit activeTopWinChanged(NULL);
+                  }
+              
                   if (tl == currentMenuSharingTopwin)
                     setCurrentMenuSharingTopwin(NULL);
               
@@ -2651,7 +2657,7 @@ MusE::lash_idle_cb ()
           int ok = save (ss.toAscii(), false);
           if (ok) {
             project.setFile(ss.toAscii());
-            setWindowTitle(tr("MusE: Song: ") + project.completeBaseName());
+            setWindowTitle(tr("MusE: Song: %1").arg(project.completeBaseName()));
             addProject(ss.toAscii());
             MusEGlobal::museProject = QFileInfo(ss.toAscii()).absolutePath();
           }
@@ -2943,7 +2949,7 @@ void MusE::bigtimeClosed()
 void MusE::showMixer1(bool on)
       {
       if (on && mixer1 == 0) {
-            mixer1 = new AudioMixerApp(this, &(MusEConfig::config.mixer1));
+            mixer1 = new MusEMixer::AudioMixerApp(this, &(MusEConfig::config.mixer1));
             connect(mixer1, SIGNAL(closed()), SLOT(mixer1Closed()));
             mixer1->resize(MusEConfig::config.mixer1.geometry.size());
             mixer1->move(MusEConfig::config.mixer1.geometry.topLeft());
@@ -2960,7 +2966,7 @@ void MusE::showMixer1(bool on)
 void MusE::showMixer2(bool on)
       {
       if (on && mixer2 == 0) {
-            mixer2 = new AudioMixerApp(this, &(MusEConfig::config.mixer2));
+            mixer2 = new MusEMixer::AudioMixerApp(this, &(MusEConfig::config.mixer2));
             connect(mixer2, SIGNAL(closed()), SLOT(mixer2Closed()));
             mixer2->resize(MusEConfig::config.mixer2.geometry.size());
             mixer2->move(MusEConfig::config.mixer2.geometry.topLeft());
@@ -3096,9 +3102,16 @@ void MusE::activeTopWinChangedSlot(TopWin* win)
 {
   if (MusEGlobal::debugMsg) printf("ACTIVE TOPWIN CHANGED to '%s' (%p)\n", win ? win->windowTitle().toAscii().data() : "<None>", win);
   
-  if ((win==NULL) || (win->isMdiWin()==false))
+  if ( (win && (win->isMdiWin()==false) && win->sharesToolsAndMenu()) &&
+       ( (mdiArea->currentSubWindow() != NULL) && (mdiArea->currentSubWindow()->isVisible()==true) ) )
   {
-    if (MusEGlobal::debugMsg) printf("  that's out of the MDI area\n");
+    if (MusEGlobal::debugMsg) printf("  that's a menu sharing muse window which isn't inside the MDI area.\n");
+    // if a window gets active which a) is a muse window, b) is not a mdi subwin and c) shares menu- and toolbar,
+    // then unfocus the MDI area and/or the currently active MDI subwin. otherwise you'll be unable to use win's
+    // tools or menu entries, as whenever you click at them, they're replaced by the currently active MDI subwin's
+    // menus and toolbars.
+    // as unfocusing the MDI area and/or the subwin does not work for some reason, we must do this workaround:
+    // simply focus anything in the main window except the mdi area.
     menuBar()->setFocus(Qt::MenuBarFocusReason);
   }
   
@@ -3286,7 +3299,8 @@ void MusE::bringToFront(QWidget* widget)
     win->raise();
   }
   
-  activeTopWinChangedSlot(win);
+  activeTopWin=win;
+  emit activeTopWinChanged(win);
 }
 
 void MusE::setFullscreen(bool val)

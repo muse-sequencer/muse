@@ -29,6 +29,8 @@
 class QLayoutItem;
 class QScrollBar;
 
+namespace MusEArranger {
+
 class WidgetStack;
 
 //---------------------------------------------------------
@@ -72,4 +74,7 @@ class TLLayout : public QLayout
       virtual QLayoutItem* takeAt(int); // { return 0;} // ddskrjo, is pure virtual, overridden
       ///virtual int count() const { return ilist.count(); } // ddskrjo, is pure virtual, overridden
       };
+
+} // namespace MusEArranger
+
 #endif

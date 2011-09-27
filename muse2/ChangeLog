@@ -1,9 +1,31 @@
+21.09.2011:
+        - Drawing speed boosts in part canvas. TODO Fix slight dashed border shifting. Do 'hidden' polygons (Tim)
+        - Working on meter speed. WIP. Can enable by commenting out #define _USE_NEW_METERS in meter.cpp (Tim) 
+          Combined with part canvas fixes, meter work so far makes MusE2 near-Muse1 speed when playing big songs
+           with many active mixer strip meters.
+20.09.2011:
+        - Revert the change in coloring of the selected track in tlist. Making full transpaency optional
+          requires more substantial changes. (Orcan)
+        - Update the default config file with the same defaults as in gconfig.cpp. Question: Why do we
+          have defaults defined in multiple places? (Orcan)
+17.09.2011:
+        - Minor namespace fix in osc.cpp. (Orcan)
+16.09.2011:
+        - Fixed errors when ladspa plugins not found while loading. (Tim)
+        - Fixed forgotten bool to pointer conversion in some calls to song::addTrack, createSynthI. (Tim)
 14.09.2011:
         - added sane configuration defaults to muse (flo93)
         - several minor fixes (flo93)
         - added MDI-like and borland-like user interface (flo93)
         - improved pasting, added dialogs, added "copy in range",
           changed shortcut keys (flo93)
+        - New namespaces MusEArranger and MusEMixer. (Orcan)
+        - Updated default track colors on arranger. Indicate the selected track with a gradient instead of a
+          separate color. (Orcan)
+        - moved colorRect() and get_paste_len() into utils.cpp. (Orcan)
+        - Updated default colors of transport handles, bigtime foreground, waveedit background, track labels.
+          Made them more pastelish, easier on eyes. (Orcan)
+        - Made horizontal alignment of meter and slider in mstrip consistent with in astrip. (Orcan)
 13.09.2011:
         *Added: You can now insert new tracks instead of always at the track list end. (Tim)
           If main menu 'Add track': Inserts before currently selected track, else adds at end.

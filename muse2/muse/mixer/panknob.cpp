@@ -26,6 +26,8 @@
 #include "panknob.h"
 #include "track.h"
 
+namespace MusEWidget {
+
 //---------------------------------------------------------
 //   PanKnob
 //---------------------------------------------------------
@@ -49,4 +51,4 @@ void PanKnob::valueChanged(double val)
       song->controllerChange(src);
       }
 
-
+} // namespace MusEWidget

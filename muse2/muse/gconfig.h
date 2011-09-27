@@ -126,8 +126,6 @@ struct GlobalConfigValues {
       QRect geometryMain;
       QRect geometryTransport;
       QRect geometryBigTime;
-      QRect geometryPianoroll;
-      QRect geometryDrumedit;
 //      QRect geometryMixer;
       MixerConfig mixer1;
       MixerConfig mixer2;
@@ -162,10 +160,11 @@ struct GlobalConfigValues {
       bool useProjectSaveDialog;
       unsigned long minControlProcessPeriod;
       bool popupsDefaultStayOpen;
+      bool leftMouseButtonCanDecrease;
+      bool rangeMarkerWithoutMMB;
       };
 
 extern GlobalConfigValues config;
-
 } // namespace MusEConfig
 
 #endif

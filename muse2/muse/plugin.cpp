@@ -2252,22 +2252,25 @@ bool PluginI::loadControl(Xml& xml)
                               // p4.0.23 Special for loader - bypass the ring buffer and store directly,
                               //  so that upon the 'gui = 1' tag (show the gui), the gui has immediate 
                               //  access to the values.      
-                              bool found = false;      
-                              for(unsigned long i = 0; i < controlPorts; ++i) 
-                              {
-                                if(_plugin->portName(controls[i].idx) == name) 
-                                {
-                                  controls[i].val = controls[i].tmpVal = val;
-                                  found = true;
-                                }
-                              }
-                              if(!found)
-                              {
-                                printf("PluginI:loadControl(%s, %f) controller not found\n",
-                                  name.toLatin1().constData(), val);
-                                return false;
-                              }      
-                              initControlValues = true;
+                              if(_plugin)
+			      {		
+				bool found = false;      
+				for(unsigned long i = 0; i < controlPorts; ++i) 
+				{
+				  if(_plugin->portName(controls[i].idx) == name) 
+				  {
+				    controls[i].val = controls[i].tmpVal = val;
+				    found = true;
+				  }
+				}
+				if(!found)
+				{
+				  printf("PluginI:loadControl(%s, %f) controller not found\n",
+				    name.toLatin1().constData(), val);
+				  return false;
+				}      
+				initControlValues = true;
+			      }
                               }
                         return true;
                   default:
@@ -2304,11 +2307,22 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                               
                               //if (_plugin && initPluginInstance(_plugin, instances)) {
                               // p3.3.41
-                              if (_plugin && initPluginInstance(_plugin, channel)) {
+                              if (_plugin)
+			      {
+				if(initPluginInstance(_plugin, channel)) {
                                     _plugin = 0;
                                     xml.parse1();
-                                    break;
+                                    printf("Error initializing plugin instance (%s, %s)\n",
+                                       file.toLatin1().constData(), label.toLatin1().constData());
+                                    //break;      // Don't break - let it read any control tags.
                                     }
+			      }    
+			      else
+			      {
+                                //printf("Warning: Plugin not found (%s, %s)\n",
+                                //   file.toLatin1().constData(), label.toLatin1().constData());
+                                //break;      // Don't break - let it read any control tags.
+			      }
                               }
                         if (tag == "control")
                               loadControl(xml);
@@ -2319,7 +2333,8 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                               }
                         else if (tag == "gui") {
                               bool flag = xml.parseInt();
-                              showGui(flag);
+                              if (_plugin)
+			        showGui(flag);
                               }
                         else if (tag == "nativegui") {
                               // We can't tell OSC to show the native plugin gui 
@@ -2368,12 +2383,20 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                               if (!readPreset && _plugin == 0) {
                                     _plugin = plugins.find(file, label);
                                     if (_plugin == 0)
-                                          return true;
-                                    
+				    {  
+                                      printf("Warning: Plugin not found (%s, %s)\n",
+                                         file.toLatin1().constData(), label.toLatin1().constData());
+                                      return true;
+				    }
+				    
                                     //if (initPluginInstance(_plugin, instances))
                                     // p3.3.41
                                     if (initPluginInstance(_plugin, channel))
-                                          return true;
+				    {  
+                                      printf("Error initializing plugin instance (%s, %s)\n",
+                                        file.toLatin1().constData(), label.toLatin1().constData());
+                                      return true;
+				    }  
                                     }
                               if (_gui)
                                     _gui->updateValues();

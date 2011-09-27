@@ -68,6 +68,7 @@
 #include "visibletracks.h"
 #include "xml.h"
 
+namespace MusEArranger {
 
 //---------------------------------------------------------
 //   ArrangerView
@@ -137,7 +138,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   //-------- Edit Actions
   editCutAction = new QAction(QIcon(*editcutIconSet), tr("C&ut"), this);
   editCopyAction = new QAction(QIcon(*editcopyIconSet), tr("&Copy"), this);
-  editCopyRangeAction = new QAction(QIcon(*editcopyIconSet), tr("&Copy in range"), this);
+  editCopyRangeAction = new QAction(QIcon(*editcopyIconSet), tr("Copy in range"), this);
   editPasteAction = new QAction(QIcon(*editpasteIconSet), tr("&Paste"), this);
   editPasteDialogAction = new QAction(QIcon(*editpasteIconSet), tr("Paste (show dialog)"), this);
   editPasteCloneAction = new QAction(QIcon(*editpasteCloneIconSet), tr("Paste c&lone"), this);
@@ -379,6 +380,7 @@ void ArrangerView::writeStatus(int level, Xml& xml) const
   xml.tag(level++, "arrangerview");
   TopWin::writeStatus(level, xml);
   xml.intTag(level, "tool", editTools->curTool());
+  arranger->writeStatus(level,xml);
   xml.tag(level, "/arrangerview");
 }
 
@@ -398,6 +400,8 @@ void ArrangerView::readStatus(Xml& xml)
           editTools->set(xml.parseInt());
         else if (tag == "topwin") 
           TopWin::readStatus(xml);
+        else if (tag == "arranger") 
+          arranger->readStatus(xml);
         else
           xml.unknown("ArrangerView");
         break;
@@ -724,3 +728,5 @@ void ArrangerView::updateVisibleTracksButtons()
 void ArrangerView::globalCut() { ::globalCut(); }
 void ArrangerView::globalInsert() { ::globalInsert(); }
 void ArrangerView::globalSplit() { ::globalSplit(); }
+
+} // namespace MusEArranger

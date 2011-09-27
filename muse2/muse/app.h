@@ -56,23 +56,30 @@ class ShortcutConfig;
 class VisibleTracks;
 }
 
+namespace MusEArranger {
+class Arranger;
+class ArrangerView;
+}
+
 class Part;
 class PartList;
 class Transport;
-class Arranger;
 class Instrument;
 class Track;
 class PrinterConfig;
 class MRConfig;
 class AudioConf;
 class Xml;
+
+namespace MusEMixer {
 class AudioMixerApp;
+}
+
 class ClipListEdit;
 class AudioRecord;
 class MidiFileConfig;
 class MidiFilterConfig;
 class MarkerView;
-class ArrangerView;
 class GlobalSettingsConfig;
 class MidiControllerEditDialog;
 class MidiInputTransformDialog;
@@ -202,14 +209,14 @@ class MusE : public QMainWindow
       MidiInputTransformDialog* midiInputTransform;
       MusEWidget::ShortcutConfig* shortcutConfig;
       Appearance* appearance;
-      AudioMixerApp* mixer1;
-      AudioMixerApp* mixer2;
+      MusEMixer::AudioMixerApp* mixer1;
+      MusEMixer::AudioMixerApp* mixer2;
 
-      Arranger* _arranger;
+      MusEArranger::Arranger* _arranger;
       ToplevelList toplevels;
       ClipListEdit* clipListEdit;
       MarkerView* markerView;
-      ArrangerView* arrangerView;
+      MusEArranger::ArrangerView* arrangerView;
       MidiTransformerDialog* midiTransformerDialog;
       QMenu* openRecent;
       
@@ -377,7 +384,7 @@ class MusE : public QMainWindow
    public:
       MusE(int argc, char** argv);
       ~MusE();
-      Arranger* arranger() { return _arranger; }
+      MusEArranger::Arranger* arranger() const { return _arranger; }
       QRect configGeometryMain;
       QProgressDialog *progress;
       bool importMidi(const QString name, bool merge);
