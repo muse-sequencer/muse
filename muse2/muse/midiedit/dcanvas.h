@@ -26,6 +26,9 @@
 #include "ecanvas.h"
 #include "song.h"
 #include "steprec.h"
+#include <map>
+#include <QList>
+#include <QSet>
 
 #define TH 18
 
@@ -36,6 +39,7 @@ class QDropEvent;
 class QDragMoveEvent;
 class QDragLeaveEvent;
 
+class DrumMap;
 class MidiEditor;
 
 //---------------------------------------------------------
@@ -45,11 +49,30 @@ class MidiEditor;
 
 class DEvent : public MusEWidget::CItem {
    public:
-      DEvent(Event e, Part* p);
+      DEvent(Event e, Part* p, int instr);
       };
 
 class ScrollScale;
 class PianoRoll;
+
+
+struct instrument_number_mapping_t
+{
+  QSet<Track*> tracks;
+  int pitch;
+  
+  instrument_number_mapping_t()
+  {
+    pitch=-1;
+    tracks.clear();
+  }
+  
+  instrument_number_mapping_t(const QSet<Track*>& tr, int p)
+  {
+    tracks=tr;
+    pitch=p;
+  }
+};
 
 //---------------------------------------------------------
 //   DrumCanvas
@@ -57,6 +80,11 @@ class PianoRoll;
 
 class DrumCanvas : public EventCanvas {
       Q_OBJECT
+      
+      bool old_style_drummap_mode;
+      DrumMap* ourDrumMap;
+      bool must_delete_our_drum_map; //FINDMICH really delete it!
+      QVector<instrument_number_mapping_t> instrument_map;
       
       StepRec* steprec;
       
@@ -88,6 +116,13 @@ class DrumCanvas : public EventCanvas {
       virtual void resizeEvent(QResizeEvent*);
       virtual void curPartChanged();
       int getNextStep(unsigned int pos, int basicStep, int stepSize=1);
+      
+      /* FINDMICH OBSOLETE
+      int parts_first_instrument(Part* p);
+      int tracks_first_instrument(Track* t);
+      bool is_track_of_instrument(Track* t, int instr);
+      QSet<Track*> tracks_of_instrument(int instr);
+      */
 
    signals:
       void newWidth(int);
@@ -119,7 +154,8 @@ class DrumCanvas : public EventCanvas {
       virtual void keyPress(QKeyEvent* event);
       Event *getEventAtCursorPos();
       void selectCursorEvent(Event *ev);
-
+      int drum_map_size() { return instrument_map.size(); }
+      int pitch_and_track_to_instrument(int pitch, Track* track);
       };
 #endif
 

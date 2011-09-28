@@ -4587,7 +4587,28 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  * CURRENT TODO
  * ! o fix sigedit boxes (see also "important todo")
  *   o fix valgrind problems
+ *
  * > o drum editor: channel-stuff
+ *        o stuff is inserted into the right part, but displayed in the wrong part
+ * 
+ *        o each track has its own drumlist and a bool maintained_automatically
+ *        o whenever changing the patch and maintained_automatically==true,
+ *          the drumlist is replaced by the according one (for example, "jazz" drum kit's list)
+ *        o whenever changing the drumlist and maintained_automatically==true,
+ *          ask the user if he wants to proceed, and then set maintained_automatically to false
+ *        o offer some way to set maintained_automatically to true again
+ *        o each track has a bool hidden[128], which is used for hiding entries.
+ *          when mixing, the values of all tracks are ANDed
+ *
+ *        o drum editor can: "display each track separately", "mix all with same port, patch and drumlist"
+ *        x a map maps all y-coord.s to { set<Track*>, pitch }
+ *        o either open flo-tracks OR old-style-tracks
+ *        o replace all DRUM_MAPSIZE by instrument_map.size()
+ *        o signal for instrument_map.size or drum_map_size() changed!
+ *        o ...
+ *
+ *   o when playing back a flo-drum-track: treat as a MIDI track,
+ *     EXCEPT that the drum list's mute entries are respected!
  *
  * IMPORTANT TODO
  * ! o fix sigedit boxes (see also "current todo")

@@ -53,6 +53,7 @@ struct DrumMap {
 extern char drumOutmap[DRUM_MAPSIZE];
 extern char drumInmap[DRUM_MAPSIZE];
 extern DrumMap drumMap[DRUM_MAPSIZE];
+extern const DrumMap idrumMap[DRUM_MAPSIZE]; //FINDMICH dummy!
 extern void initDrumMap();
 extern void writeDrumMap(int level, Xml& xml, bool external);
 extern void readDrumMap(Xml& xml, bool external);

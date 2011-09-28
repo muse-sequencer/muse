@@ -406,7 +406,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       gridS2->setSpacing(0);  
       time                = new MusEWidget::MTScale(&_raster, split1w2, xscale);
       canvas              = new DrumCanvas(this, split1w2, xscale, yscale);
-      vscroll             = new MusEWidget::ScrollScale(-4, 1, yscale, DRUM_MAPSIZE*TH, Qt::Vertical, split1w2);
+      vscroll             = new MusEWidget::ScrollScale(-4, 1, yscale, dynamic_cast<DrumCanvas*>(canvas)->drum_map_size()*TH, Qt::Vertical, split1w2);
       int offset = -(MusEConfig::config.division/4);
       canvas->setOrigin(offset, 0);
       canvas->setCanvasTools(drumeditTools);
@@ -1321,4 +1321,13 @@ void DrumEdit::setStep(QString v)
   ((DrumCanvas*)canvas)->setStep(v.toInt());
   stepLenWidget->setFocusPolicy(Qt::NoFocus);
   canvas->setFocus();
+}
+
+bool DrumEdit::old_style_drummap_mode()
+{
+  for (ciPart p = parts()->begin(); p != parts()->end(); ++p)
+    if (p->second->track()->type()==Track::DRUM)
+      return true;
+  
+  return false;
 }

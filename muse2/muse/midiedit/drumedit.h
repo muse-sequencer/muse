@@ -142,6 +142,8 @@ class DrumEdit : public MidiEditor {
       virtual void writeStatus(int, Xml&) const;
       static void readConfiguration(Xml& xml);
       static void writeConfiguration(int, Xml&);
+      
+      bool old_style_drummap_mode();
       };
 
 #endif
