@@ -167,7 +167,6 @@ QString bitmap2String(int bm)
 //---------------------------------------------------------
 //   u32bitmap2String
 //---------------------------------------------------------
-// Added by Tim. p3.3.8
 
 QString u32bitmap2String(unsigned int bm)
       {
@@ -274,7 +273,6 @@ int string2bitmap(const QString& str)
 //---------------------------------------------------------
 //   string2u32bitmap
 //---------------------------------------------------------
-// Added by Tim. p3.3.8
 
 unsigned int string2u32bitmap(const QString& str)
       {
@@ -343,7 +341,6 @@ unsigned int string2u32bitmap(const QString& str)
 //   ignoreWidth: Set if dealing with a vertically constrained widget - one which is free to resize horizontally.
 //   ignoreHeight: Set if dealing with a horizontally constrained widget - one which is free to resize vertically. 
 //---------------------------------------------------------
-// Added by Tim. p3.3.8
 
 bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool ignoreHeight, int max, int min)
 {
@@ -373,12 +370,10 @@ bool autoAdjustFontSize(QFrame* w, const QString& s, bool ignoreWidth, bool igno
     if((ignoreWidth || (r.width() <= (cr.width() - extra))) && (ignoreHeight || (r.height() <= cr.height())))
       break;
   }
-  // Added by Tim. p3.3.9
   //printf("autoAdjustFontSize: ptsz:%d widget:%s before setFont x:%d y:%d w:%d h:%d\n", fnt.pointSize(), w->name(), w->x(), w->y(), w->width(), w->height());
   
   // Here we will always have a font ranging from min to max point size.
   w->setFont(fnt);
-  // Added by Tim. p3.3.9
   //printf("autoAdjustFontSize: ptsz:%d widget:%s x:%d y:%d w:%d h:%d frame w:%d rw:%d rh:%d\n", fnt.pointSize(), w->name(), w->x(), w->y(), w->width(), w->height(), w->frameWidth(), cr.width(), cr.height());
   
   // Force minimum height. Use the expected height for the highest given point size.
