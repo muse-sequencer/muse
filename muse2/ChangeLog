@@ -1,3 +1,7 @@
+28.09.2011:
+        - Optimization: Orcan's meters are insanely lightning-fast now.  (Tim)
+          TODO: Fix very slight oversize at bottom upon first showing of mixer.  Workaround: Simply resize vertically.
+          TODO: Redo the VerticalMeter (actually Horz) drawing, else should be easy Horz integration into existing Meter class.
 21.09.2011:
         - Drawing speed boosts in part canvas. TODO Fix slight dashed border shifting. Do 'hidden' polygons (Tim)
         - Working on meter speed. WIP. Can enable by commenting out #define _USE_NEW_METERS in meter.cpp (Tim) 
