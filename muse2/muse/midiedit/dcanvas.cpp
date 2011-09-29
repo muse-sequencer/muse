@@ -55,6 +55,7 @@
 #define CARET2   5
 
 using MusEGlobal::debugMsg;
+using MusEGlobal::heavyDebugMsg;
 
 //---------------------------------------------------------
 //   DEvent
@@ -83,7 +84,7 @@ void DrumCanvas::addItem(Part* part, Event& event)
       int instr=pitch_and_track_to_instrument(event.pitch(), part->track());
       if (instr<0)
       {
-        if (debugMsg) printf("trying to add event which is hidden or not in any part known to me\n");
+        if (heavyDebugMsg) printf("trying to add event which is hidden or not in any part known to me\n");
         return;
       }
       
@@ -109,7 +110,7 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
    int sy, const char* name)
    : EventCanvas(pr, parent, sx, sy, name)
       {
-      old_style_drummap_mode = dynamic_cast<DrumEdit*>(pr)->old_style_drummap_mode(); //FINDMICH TODO
+      old_style_drummap_mode = dynamic_cast<DrumEdit*>(pr)->old_style_drummap_mode();
 
       if (old_style_drummap_mode)
       {
@@ -300,7 +301,7 @@ Undo DrumCanvas::moveCanvasItems(MusEWidget::CItemList& items, int dp, int dx, D
 			// Do not process if the event has already been processed (meaning it's an event in a clone part)...
 			if (idl == doneList.end())
 			{
-				operations.push_back(moveItem(ci, newpos, dtype)); //FINDMICH update moveItem()
+				operations.push_back(moveItem(ci, newpos, dtype));
 				doneList.push_back(ci);
 			}
 			ci->move(newpos);
@@ -332,7 +333,7 @@ Undo DrumCanvas::moveCanvasItems(MusEWidget::CItemList& items, int dp, int dx, D
 //   moveItem
 //---------------------------------------------------------
 
-UndoOp DrumCanvas::moveItem(MusEWidget::CItem* item, const QPoint& pos, DragType dtype) //FINDMICHJETZT
+UndoOp DrumCanvas::moveItem(MusEWidget::CItem* item, const QPoint& pos, DragType dtype)
       {
       DEvent* nevent   = (DEvent*) item;
       
@@ -749,7 +750,7 @@ void DrumCanvas::cmd(int cmd)
                               DEvent* devent = (DEvent*)(k->second);
                               Event event    = devent->event();
                               Event newEvent = event.clone();
-                              // newEvent.setLenTick(ourDrumMap[event.pitch()].len);
+                              // newEvent.setLenTick(drumMap[event.pitch()].len);
                               newEvent.setLenTick(ourDrumMap[y2pitch(devent->y())].len); //FINDMICH
                               // Indicate no undo, and do not do port controller values and clone parts. 
                               audio->msgChangeEvent(event, newEvent, devent->part(), false, false, false);
@@ -1227,7 +1228,7 @@ void DrumCanvas::moveAwayUnused()
 {
   if (!old_style_drummap_mode)
   {
-    printf("THIS SHOULD NEVER HAPPEN: DrumCanvas::moveAwayUnused() cannot be used in new style mode\n"); //FINDMICH really disable that
+    printf("THIS SHOULD NEVER HAPPEN: DrumCanvas::moveAwayUnused() cannot be used in new style mode\n");
     return;
   }
 	

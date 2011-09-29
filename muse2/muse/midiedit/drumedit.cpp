@@ -253,8 +253,14 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       
       menuFunctions->setTearOffEnabled(true);
       
-      QAction* reorderListAction = menuFunctions->addAction(tr("Re-order list"));
-      menuFunctions->addSeparator();
+      if (old_style_drummap_mode())
+      {
+        QAction* reorderListAction = menuFunctions->addAction(tr("Re-order list"));
+        connect(reorderListAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+        signalMapper->setMapping(reorderListAction, DrumCanvas::CMD_REORDER_LIST);
+        menuFunctions->addSeparator();
+      }
+
       fixedAction = menuFunctions->addAction(tr("Set Fixed Length"));
       veloAction = menuFunctions->addAction(tr("Modify Velocity"));
       crescAction = menuFunctions->addAction(tr("Crescendo/Decrescendo"));
@@ -263,7 +269,6 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       QAction* noteShiftAction = menuFunctions->addAction(tr("Move Notes"));
       QAction* delOverlapsAction = menuFunctions->addAction(tr("Delete Overlaps"));
 
-      connect(reorderListAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(fixedAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(veloAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(crescAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
@@ -272,7 +277,6 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       connect(noteShiftAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
       connect(delOverlapsAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
 
-      signalMapper->setMapping(reorderListAction, DrumCanvas::CMD_REORDER_LIST);
       signalMapper->setMapping(fixedAction, DrumCanvas::CMD_FIXED_LEN);
       signalMapper->setMapping(veloAction, DrumCanvas::CMD_MODIFY_VELOCITY);
       signalMapper->setMapping(crescAction, DrumCanvas::CMD_CRESCENDO);

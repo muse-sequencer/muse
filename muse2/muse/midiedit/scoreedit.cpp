@@ -4581,6 +4581,7 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *     because after A (and B) got resized, the B-resize is invalid!
  *   o when changing toolbarstate when sharing and immediately after that
  *     changing "share" status, the changed state isn't stored
+ *   o arranger state and mixer state aren't stored (says tim)
  *   ? pasting in editors sometimes fails oO? ( ERROR: reading eventlist
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  * 
@@ -4589,8 +4590,6 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *   o fix valgrind problems
  *
  * > o drum editor: channel-stuff
- *        o stuff is inserted into the right part, but displayed in the wrong part
- * 
  *        o each track has its own drumlist and a bool maintained_automatically
  *        o whenever changing the patch and maintained_automatically==true,
  *          the drumlist is replaced by the according one (for example, "jazz" drum kit's list)
