@@ -156,6 +156,8 @@ class DrumCanvas : public EventCanvas {
       void selectCursorEvent(Event *ev);
       int drum_map_size() { return instrument_map.size(); }
       int pitch_and_track_to_instrument(int pitch, Track* track);
+      DrumMap* getOurDrumMap() { return ourDrumMap; } //FINDMICH UGLY
+      int getOurDrumMapSize() { return instrument_map.size(); } //FINDMICH UGLY
       };
 #endif
 

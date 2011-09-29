@@ -39,7 +39,7 @@ class ScrollScale;
 class Device;
 class QLineEdit;
 class DrumMap;
-
+class DrumCanvas;
 
 //---------------------------------------------------------
 //   DLineEdit
@@ -86,7 +86,11 @@ class DPitchEdit: public Awl::PitchEdit
 
 class DList : public MusEWidget::View {
       Q_OBJECT
-    
+      
+      DrumMap* ourDrumMap; //FINDMICHJETZT init!
+      int ourDrumMapSize;
+      bool old_style_drummap_mode;
+      
       QHeaderView* header;
       ScrollScale* scroll;
       QLineEdit* editor;
@@ -98,7 +102,7 @@ class DList : public MusEWidget::View {
       
       int startY;
       int curY;
-      int sPitch;
+      int sInstrument;
       enum { NORMAL, START_DRAG, DRAG } drag;
 
       virtual void draw(QPainter& p, const QRect&);
@@ -132,7 +136,7 @@ class DList : public MusEWidget::View {
       void lineEdit(int line, int section);
       void pitchEdit(int line, int section);
       void setCurDrumInstrument(int n);
-      DList(QHeaderView*, QWidget* parent, int ymag);
+      DList(QHeaderView*, QWidget* parent, int ymag, DrumCanvas* dcanvas, bool oldstyle);
       ~DList();
       void setScroll(ScrollScale* s) { scroll = s; }
       int getSelectedInstrument();

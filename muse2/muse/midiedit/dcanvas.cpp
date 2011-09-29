@@ -191,7 +191,7 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
         
         for (int i=0;i<size;i++)
           //ourDrumMap[i] = instrument_map[i].tracks.begin()->drummap()[instrument_map[i].pitch]; FINDMICH activate me when Track::drummap works
-          ourDrumMap[i] = idrumMap[instrument_map[i].pitch]; //FINDMICH dummy!
+          ourDrumMap[i] = idrumMap[instrument_map[i%128].pitch]; //FINDMICH dummy!
       }
       
       
@@ -887,13 +887,12 @@ void DrumCanvas::keyReleased(int index, bool) //FINDMICH later
 
 //---------------------------------------------------------
 //   mapChanged
-//   this function is only for old-style-drummaps
 //---------------------------------------------------------
 
 void DrumCanvas::mapChanged(int spitch, int dpitch)
-      {
-      if (!old_style_drummap_mode) return;
-      
+{
+   if (old_style_drummap_mode)
+   {
       Undo operations;
       std::vector< std::pair<Part*, Event*> > delete_events;
       std::vector< std::pair<Part*, Event> > add_events;
@@ -971,7 +970,20 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
       
       song->applyOperationGroup(operations, false); // do not indicate undo
       song->update(SC_DRUMMAP); //this update is neccessary, as it's not handled by applyOperationGroup()
-      }
+   }
+   else // if (!old_style_drummap_mode)
+   {
+      DrumMap dm = ourDrumMap[spitch];
+      ourDrumMap[spitch] = ourDrumMap[dpitch];
+      ourDrumMap[dpitch] = dm;
+
+      instrument_number_mapping_t im = instrument_map[spitch];
+      instrument_map[spitch] = instrument_map[dpitch];
+      instrument_map[dpitch] = im;
+
+      song->update(SC_DRUMMAP); //FINDMICHJETZT handle that properly!
+   }
+}
 
 //---------------------------------------------------------
 //   resizeEvent
@@ -1327,3 +1339,4 @@ int DrumCanvas::pitch_and_track_to_instrument(int pitch, Track* track)
   printf("ERROR: DrumCanvas::pitch_and_track_to_instrument() called with invalid arguments!\n");
   return -1;
 }
+

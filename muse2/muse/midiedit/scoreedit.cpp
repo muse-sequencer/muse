@@ -4604,6 +4604,7 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *        o either open flo-tracks OR old-style-tracks
  *        o replace all DRUM_MAPSIZE by instrument_map.size()
  *        o signal for instrument_map.size or drum_map_size() changed!
+ *        o move generation and deletion of ourDrumMap from DCanvas to DrumEditor and remove ugly wrapper functions
  *        o ...
  *
  *   o when playing back a flo-drum-track: treat as a MIDI track,

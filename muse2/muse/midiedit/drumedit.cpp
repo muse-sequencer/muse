@@ -458,7 +458,13 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       setHeaderToolTips();
       setHeaderWhatsThis();
 
-      dlist = new DList(header, split1w1, yscale);
+      if (!old_style_drummap_mode())
+      {
+        header->hideSection(COL_OUTPORT);
+        header->hideSection(COL_OUTCHANNEL);
+      }
+
+      dlist = new DList(header, split1w1, yscale, (DrumCanvas*)canvas, old_style_drummap_mode());
       // p3.3.44
       setCurDrumInstrument(dlist->getSelectedInstrument());
       

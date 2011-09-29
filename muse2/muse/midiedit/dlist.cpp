@@ -38,6 +38,7 @@
 #include "dlist.h"
 #include "song.h"
 #include "scrollscale.h"
+#include "dcanvas.h"
 
 //---------------------------------------------------------
 //   draw
@@ -56,13 +57,13 @@ void DList::draw(QPainter& p, const QRect& rect)
 
       p.setPen(Qt::black);
 
-      for (int i = 0; i < DRUM_MAPSIZE; ++i) {
+      for (int i = 0; i < ourDrumMapSize; ++i) {
             int yy = i * TH;
             if (yy+TH < y)
                   continue;
             if (yy > y + h)
                   break;
-            DrumMap* dm = &drumMap[i];
+            DrumMap* dm = &ourDrumMap[i];
             if (dm == currentlySelected)
                   p.fillRect(x, yy, w, TH, Qt::yellow);
 //            else
@@ -199,8 +200,8 @@ void DList::devicesPopupMenu(DrumMap* t, int x, int y, bool changeAll)
                   // Delete all port controller events.
                   song->changeAllPortDrumCtrlEvents(false);
                   
-                  for (int i = 0; i < DRUM_MAPSIZE; i++)
-                        drumMap[i].port = n;
+                  for (int i = 0; i < ourDrumMapSize; i++)
+                        ourDrumMap[i].port = n;
                   // Add all port controller events.
                   song->changeAllPortDrumCtrlEvents(true);
                   
@@ -227,16 +228,16 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
       int x      = ev->x();
       int y      = ev->y();
       int button = ev->button();
-      unsigned pitch = y / TH;
-      DrumMap* dm = &drumMap[pitch];
+      unsigned instrument = y / TH;
+      DrumMap* dm = &ourDrumMap[instrument];
 
-      setCurDrumInstrument(pitch);
+      setCurDrumInstrument(instrument);
 
       startY = y;
-      sPitch = pitch;
+      sInstrument = instrument;
       drag   = START_DRAG;
 
-      DCols col = DCols(x2col(x));
+      DCols col = DCols(x2col(x)); //FINDMICH update
 
       int val;
       int incVal = 0;
@@ -262,17 +263,17 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   if (button == Qt::LeftButton)
                         dm->mute = !dm->mute;
                   break;
-            case COL_PORT:
+            case COL_PORT: // this column isn't visible in new style drum mode
                   if ((button == Qt::RightButton) || (button == Qt::LeftButton)) {
                         bool changeAll = ev->modifiers() & Qt::ControlModifier;
-                        devicesPopupMenu(dm, mapx(x), mapy(pitch * TH), changeAll);
+                        devicesPopupMenu(dm, mapx(x), mapy(instrument * TH), changeAll);
                         }
                   break;
             case COL_VOL:
                   val = dm->vol + incVal;
                   if (val < 0)
                         val = 0;
-                  else if (val > 200)
+                  else if (val > 200) //FINDMICH: why 200? why not 999 or infinity? (flo93)
                         val = 200;
                   dm->vol = (unsigned char)val;      
                   break;
@@ -286,18 +287,22 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                         val = 0;
                   else if (val > 127)
                         val = 127;
-                  //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
-                  //If so, switch the inmap between the instruments
-                  for (int i=0; i<DRUM_MAPSIZE; i++) {
-                        if (drumMap[i].enote == val && &drumMap[i] != dm) {
-                              drumInmap[int(dm->enote)] = i;
-                              drumMap[i].enote = dm->enote;
-                              break;
-                              }
-                        }
-                  //TODO: Set all the notes on the track with pitch=dm->enote to pitch=val
+                  
+                  if (old_style_drummap_mode) //FINDMICH auch beim doppelklick!
+                  {
+                      //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
+                      //If so, switch the inmap between the instruments
+                      for (int i=0; i<ourDrumMapSize; i++) {
+                            if (ourDrumMap[i].enote == val && &ourDrumMap[i] != dm) {
+                                  drumInmap[int(dm->enote)] = i;
+                                  ourDrumMap[i].enote = dm->enote;
+                                  break;
+                                  }
+                            }
+                      //TODO: Set all the notes on the track with instrument=dm->enote to instrument=val
+                      drumInmap[val] = instrument;
+                  }
                   dm->enote = val;
-                  drumInmap[val] = pitch;
                   break;
             case COL_LEN:
                   val = dm->len + incVal;
@@ -306,6 +311,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   dm->len = val;
                   break;
             case COL_ANOTE:
+                  if (old_style_drummap_mode) //only allow changing in old style mode FINDMICH auch beim doppelklick
                   {
                     val = dm->anote + incVal;
                     if (val < 0)
@@ -315,16 +321,19 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                     if(val != dm->anote)
                     {
                       audio->msgIdle(true);
-                      song->remapPortDrumCtrlEvents(pitch, val, -1, -1);
+                      song->remapPortDrumCtrlEvents(instrument, val, -1, -1);
                       audio->msgIdle(false);
                       dm->anote = val;
                       song->update(SC_DRUMMAP);
                     }
-                    int velocity = 127 * float(ev->x()) / width();
-                    emit keyPressed(pitch, velocity);//(dm->anote, shift);
+                  }
+                  
+                  {
+                  int velocity = 127 * float(ev->x()) / width();
+                  emit keyPressed(instrument, velocity);//(dm->anote, shift);
                   }
                   break;
-            case COL_CHANNEL:
+            case COL_CHANNEL: // this column isn't visible in new style drum mode
                   val = dm->channel + incVal;
                   if (val < 0)
                         val = 0;
@@ -336,8 +345,8 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                         // Delete all port controller events.
                         song->changeAllPortDrumCtrlEvents(false, true);
                         
-                        for (int i = 0; i < DRUM_MAPSIZE; i++)
-                              drumMap[i].channel = val;
+                        for (int i = 0; i < ourDrumMapSize; i++)
+                              ourDrumMap[i].channel = val;
                         // Add all port controller events.
                         song->changeAllPortDrumCtrlEvents(true, true);
                         audio->msgIdle(false);
@@ -348,7 +357,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                       if(val != dm->channel)
                       {
                         audio->msgIdle(true);
-                        song->remapPortDrumCtrlEvents(pitch, -1, val, -1);
+                        song->remapPortDrumCtrlEvents(instrument, -1, val, -1);
                         audio->msgIdle(false);
                         dm->channel = val;
                         song->update(SC_DRUMMAP);
@@ -388,7 +397,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   dm->lv4 = val;
                   break;
             case COL_NAME:
-                  emit keyPressed(pitch, 100); //Mapping done on other side, send index
+                  emit keyPressed(instrument, 100); //Mapping done on other side, send index
                   break;
 
             default:
@@ -405,18 +414,18 @@ void DList::viewMouseDoubleClickEvent(QMouseEvent* ev)
       {
       int x = ev->x();
       int y = ev->y();
-      unsigned pitch = y / TH;
+      unsigned instrument = y / TH;
 
       int section = header->logicalIndexAt(x);
 
       if ((section == COL_NAME || section == COL_VOL || section == COL_LEN || section == COL_LV1 ||
-         section == COL_LV2 || section == COL_LV3 || section == COL_LV4 || section == COL_CHANNEL ||
-         section == COL_QNT) && (ev->button() == Qt::LeftButton))
+         section == COL_LV2 || section == COL_LV3 || section == COL_LV4 || section == COL_QNT ||
+         (section == COL_CHANNEL && old_style_drummap_mode) ) && (ev->button() == Qt::LeftButton))
          {
-           lineEdit(pitch, section);
+           lineEdit(instrument, section);
          }
-      else if ((section == COL_ANOTE || section == COL_ENOTE) && (ev->button() == Qt::LeftButton))
-        pitchEdit(pitch, section);
+      else if (((section == COL_ANOTE && old_style_drummap_mode) || section == COL_ENOTE) && (ev->button() == Qt::LeftButton))
+        pitchEdit(instrument, section);
       else
             viewMousePressEvent(ev);
       }
@@ -428,7 +437,7 @@ void DList::viewMouseDoubleClickEvent(QMouseEvent* ev)
 //---------------------------------------------------------
 void DList::lineEdit(int line, int section)
       {
-            DrumMap* dm = &drumMap[line];
+            DrumMap* dm = &ourDrumMap[line];
             editEntry = dm;
             if (editor == 0) {
                   editor = new DLineEdit(this);
@@ -496,7 +505,7 @@ void DList::lineEdit(int line, int section)
 //---------------------------------------------------------
 void DList::pitchEdit(int line, int section)
       {
-            DrumMap* dm = &drumMap[line];
+            DrumMap* dm = &ourDrumMap[line];
             editEntry = dm;
             if (pitch_editor == 0) {
                   pitch_editor = new DPitchEdit(this);
@@ -550,13 +559,13 @@ int DList::x2col(int x) const
 
 void DList::setCurDrumInstrument(int instr)
       {
-      if (instr < 0 || instr >= DRUM_MAPSIZE -1)
+      if (instr < 0 || instr >= ourDrumMapSize -1)
         return; // illegal instrument
-      DrumMap* dm = &drumMap[instr];
+      DrumMap* dm = &ourDrumMap[instr];
       if (currentlySelected != dm) {
-            currentlySelected = &drumMap[instr];
+            currentlySelected = dm;
             emit curDrumInstrumentChanged(instr);
-            song->update(SC_DRUMMAP);
+            song->update(SC_DRUMMAP); //FINDMICH necessary??
             }
       }
 
@@ -578,7 +587,6 @@ void DList::returnPressed()
       int val = -1;
       if (selectedColumn != COL_NAME) 
       {
-            ///val = atoi(editor->text().ascii());
             val = atoi(editor->text().toAscii().constData());
             
             switch (selectedColumn)
@@ -618,7 +626,6 @@ void DList::returnPressed()
                   break;
 
             case COL_LEN:
-                  ///editEntry->len = atoi(editor->text().ascii());
                   editEntry->len = atoi(editor->text().toAscii().constData());
                   break;
 
@@ -668,36 +675,44 @@ void DList::returnPressed()
 void DList::pitchEdited()
 {
       int val=pitch_editor->value();
-      int pitch=(editEntry-drumMap);
+      int instrument=(editEntry-ourDrumMap);
       
       switch(selectedColumn) {
             case COL_ANOTE:
+               if (old_style_drummap_mode) //should actually be always true, but to be sure...
+               {
                     if(val != editEntry->anote)
                     {
                       audio->msgIdle(true);
-                      song->remapPortDrumCtrlEvents(pitch, val, -1, -1);
+                      song->remapPortDrumCtrlEvents(instrument, val, -1, -1);
                       audio->msgIdle(false);
                       editEntry->anote = val;
                       song->update(SC_DRUMMAP);
                     }
-                  break;
+               }
+               else
+                  printf("ERROR: THIS SHOULD NEVER HAPPEN: pitch edited of anote in new style mode!\n");
+               break;
 
             case COL_ENOTE:
+               if (old_style_drummap_mode)
+               {
                   //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
                   //If so, switch the inmap between the instruments
-                  for (int i=0; i<DRUM_MAPSIZE; i++) {
-                        if (drumMap[i].enote == val && &drumMap[i] != editEntry) {
+                  for (int i=0; i<ourDrumMapSize; i++) {
+                        if (ourDrumMap[i].enote == val && &ourDrumMap[i] != editEntry) {
                               drumInmap[int(editEntry->enote)] = i;
-                              drumMap[i].enote = editEntry->enote;
+                              ourDrumMap[i].enote = editEntry->enote;
                               break;
                               }
                         }
-                  //TODO: Set all the notes on the track with pitch=dm->enote to pitch=val
-                  editEntry->enote = val;
-                  drumInmap[val] = pitch;
-                  break;
+                  //TODO: Set all the notes on the track with instrument=dm->enote to instrument=val
+                  drumInmap[val] = instrument;
+                }
+                editEntry->enote = val;
+               break;
             default:
-                  printf("Value changed in unknown column\n");
+                  printf("ERROR: THIS SHOULD NEVER HAPPEN: Value changed in unknown column\n");
                   break;
             }
       selectedColumn = -1;
@@ -739,10 +754,15 @@ void DList::songChanged(int flags)
 //   DList
 //---------------------------------------------------------
 
-DList::DList(QHeaderView* h, QWidget* parent, int ymag)
+DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas, bool oldstyle)
    : MusEWidget::View(parent, 1, ymag)
       {
       setBg(Qt::white);
+      
+      ourDrumMap=dcanvas->getOurDrumMap();
+      ourDrumMapSize=dcanvas->getOurDrumMapSize();
+      old_style_drummap_mode=oldstyle;
+      
       if (!h){
       h = new QHeaderView(Qt::Horizontal, parent);}
       header = h;
@@ -757,7 +777,7 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag)
       pitch_editor = 0;
       editEntry = 0;
       // always select a drum instrument
-      currentlySelected = &drumMap[0];
+      currentlySelected = &ourDrumMap[0];
       selectedColumn = -1;
       }
 
@@ -803,11 +823,11 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
       {
       if (drag == DRAG) {
             int y = ev->y();
-            unsigned dPitch = y / TH;
+            unsigned dInstrument = y / TH;
             setCursor(QCursor(Qt::ArrowCursor));
-            currentlySelected = &drumMap[int(dPitch)];
-            emit curDrumInstrumentChanged(dPitch);
-            emit mapChanged(sPitch, dPitch); //Track pitch change done in canvas
+            currentlySelected = &ourDrumMap[int(dInstrument)];
+            emit curDrumInstrumentChanged(dInstrument);
+            emit mapChanged(sInstrument, dInstrument); //Track instrument change done in canvas
             }
       drag = NORMAL;
 //??      redraw();          //commented out NOT by flo93; was already commented out
@@ -816,16 +836,16 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
       int x = ev->x();
       int y = ev->y();
       bool shift = ev->modifiers() & Qt::ShiftModifier;
-      unsigned pitch = y / TH;
+      unsigned instrument = y / TH;
 
       DCols col = DCols(x2col(x));
 
       switch (col) {
             case COL_NAME:
-                  emit keyReleased(pitch, shift);
+                  emit keyReleased(instrument, shift);
                   break;
             case COL_ANOTE:
-                  emit keyReleased(pitch, shift);
+                  emit keyReleased(instrument, shift);
                   break;
             default:
                   break;
