@@ -1,3 +1,9 @@
+30.09.2011:
+        - Fixed long-standing problem with themes (Ia Ora / Bespin etc) and MusE button icons. Some themes don't support 
+           multiple-pixmap icons. So mute/solo/rec/stereo/thru always showed the same icon. Replaced w single pm icons. (Tim)
+        - Fixed midi strip blank automation box at bottom, too high. (Tim)
+        - Gradient for strip labels. (Hm, too pastel? Had to go top-high. Maybe change colours again Orcan, he he...) (Tim)  
+        - Repaired some non-virtual paintEvent(), resizeEvent(), event() etc. (Tim)
 28.09.2011:
         - Optimization: Orcan's meters are insanely lightning-fast now.  (Tim)
           TODO: Fix very slight oversize at bottom upon first showing of mixer.  Workaround: Simply resize vertically.

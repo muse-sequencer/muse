@@ -532,8 +532,9 @@ void Meter::drawVU(QPainter& p, const QRect& rect, const QPainterPath& drawPath,
 //   resizeEvent
 //---------------------------------------------------------
 
-void Meter::resizeEvent(QResizeEvent* /*ev*/)
+void Meter::resizeEvent(QResizeEvent* ev)
     {  
+      QFrame::resizeEvent(ev);
       cur_yv = -1;  // Force re-initialization.
     }
 

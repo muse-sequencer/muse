@@ -333,8 +333,9 @@ void VerticalMeter::drawVU(QPainter& p, int w, int h, int xv)
 //   resizeEvent
 //---------------------------------------------------------
 
-void VerticalMeter::resizeEvent(QResizeEvent* /*ev*/)
+void VerticalMeter::resizeEvent(QResizeEvent* ev)
     {
+      MusEWidget::Meter::resizeEvent(ev);
     }
 
 } // namespace MusEWidget

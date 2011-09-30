@@ -2,6 +2,7 @@
 //  MusE
 //  Linux Music Editor
 //  (C) Copyright 2010 Werner Schweer and others (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -21,6 +22,9 @@
 
 #include <QTimer>
 #include <QMessageBox>
+#include <QLinearGradient>
+#include <QPalette>
+#include <QColor>
 
 #include <math.h>
 #include <string.h>
@@ -60,8 +64,10 @@ void MidiTrackInfo::setTrack(Track* t)
   if(!t->isMidiTrack())
     return;
   selected = t;
+
+  trackNameLabel->setObjectName(selected->cname());
   
-  QPalette pal;
+  /*QPalette pal;
   if(selected->type() == Track::DRUM) {
     pal.setColor(trackNameLabel->backgroundRole(), MusEConfig::config.drumTrackLabelBg); 
     iOutputChannel->setEnabled(false);
@@ -69,7 +75,8 @@ void MidiTrackInfo::setTrack(Track* t)
     pal.setColor(trackNameLabel->backgroundRole(), MusEConfig::config.midiTrackLabelBg);
     iOutputChannel->setEnabled(true);
   }
-  trackNameLabel->setPalette(pal);
+  trackNameLabel->setPalette(pal); */
+  //setLabelText();
   
   updateTrackInfo(-1);
 }
@@ -97,10 +104,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
   //iChanDetectLabel->setPixmap(*darkgreendotIcon);
   iChanDetectLabel->setPixmap(*darkRedLedIcon);
   
-  QIcon recEchoIconSet;
-  recEchoIconSet.addPixmap(*midiThruOnIcon, QIcon::Normal, QIcon::On);
-  recEchoIconSet.addPixmap(*midiThruOffIcon, QIcon::Normal, QIcon::Off);
-  recEchoButton->setIcon(recEchoIconSet);
+  recEchoButton->setIcon((selected && ((MidiTrack*)selected)->recEcho()) ? QIcon(*midiThruOnIcon) : QIcon(*midiThruOffIcon));
   recEchoButton->setIconSize(midiThruOnIcon->size());  
   
   // MusE-2: AlignCenter and WordBreak are set in the ui(3) file, but not supported by QLabel. Turn them on here.
@@ -114,14 +118,26 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, Track* sel_track) : QWidget(parent
   if(selected)
   {
     trackNameLabel->setObjectName(selected->cname());
-    QPalette pal;
+    
+    /*QPalette pal;
+    QColor c;
     //pal.setColor(trackNameLabel->backgroundRole(), QColor(0, 160, 255)); // Med blue
     if(selected->type() == Track::DRUM)
-      pal.setColor(trackNameLabel->backgroundRole(), MusEConfig::config.drumTrackLabelBg); 
+      c = MusEConfig::config.drumTrackLabelBg; 
     else  
-      pal.setColor(trackNameLabel->backgroundRole(), MusEConfig::config.midiTrackLabelBg); 
-    trackNameLabel->setPalette(pal);
-  }    
+      c = MusEConfig::config.midiTrackLabelBg; 
+    
+    QLinearGradient gradient(trackNameLabel->geometry().topLeft(), trackNameLabel->geometry().bottomLeft());
+    //gradient.setColorAt(0, c.darker());
+    //gradient.setColorAt(0, c);
+    //gradient.setColorAt(1, c.darker());
+    gradient.setColorAt(0, c.lighter());
+    gradient.setColorAt(1, c);
+    //palette.setBrush(QPalette::Button, gradient);
+    //palette.setBrush(QPalette::Window, gradient);
+    pal.setBrush(trackNameLabel->backgroundRole(), gradient);
+    trackNameLabel->setPalette(pal);  */
+  } 
   //else
   //{
   //  pal.setColor(trackNameLabel->backgroundRole(), MusEConfig::config.midiTrackLabelBg); 
@@ -543,6 +559,28 @@ void MidiTrackInfo::setLabelText()
         trackNameLabel->setText(track->name());
       else  
         trackNameLabel->setText(QString());
+      
+      if(track)
+      {  
+        QPalette pal;
+        QColor c;
+        //pal.setColor(trackNameLabel->backgroundRole(), QColor(0, 160, 255)); // Med blue
+        if(track->type() == Track::DRUM)
+          c = MusEConfig::config.drumTrackLabelBg; 
+        else  
+          c = MusEConfig::config.midiTrackLabelBg; 
+        
+        QLinearGradient gradient(trackNameLabel->geometry().topLeft(), trackNameLabel->geometry().bottomLeft());
+        //gradient.setColorAt(0, c.darker());
+        //gradient.setColorAt(0, c);
+        //gradient.setColorAt(1, c.darker());
+        gradient.setColorAt(0, c.lighter());
+        gradient.setColorAt(1, c);
+        //palette.setBrush(QPalette::Button, gradient);
+        //palette.setBrush(QPalette::Window, gradient);
+        pal.setBrush(trackNameLabel->backgroundRole(), gradient);
+        trackNameLabel->setPalette(pal);
+      }  
 }
   
 //---------------------------------------------------------
@@ -1340,6 +1378,8 @@ void MidiTrackInfo::updateTrackInfo(int flags)
           recEchoButton->setChecked(track->recEcho());
           recEchoButton->blockSignals(false);
         }
+        recEchoButton->setIcon(track->recEcho() ? QIcon(*midiThruOnIcon) : QIcon(*midiThruOffIcon));
+        //recEchoButton->setIconSize(midiThruOnIcon->size());  
       }
         
         int outChannel = track->outChannel();
@@ -1565,5 +1605,13 @@ void MidiTrackInfo::recordClicked()
         song->recordEvent(track, a);
       }
     }
+
+void MidiTrackInfo::resizeEvent(QResizeEvent* ev)
+{
+  //printf("MidiTrackInfo::resizeEvent\n");  
+  QWidget::resizeEvent(ev);
+  setLabelText();  
+  setLabelFont();
+}  
 
 } // namespace MusEWidget

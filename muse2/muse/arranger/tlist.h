@@ -103,7 +103,7 @@ class TList : public QWidget {
       void moveSelection(int n);
       void adjustScrollbar();
       void paint(const QRect& r);
-      virtual void resizeEvent(QResizeEvent*);
+      //virtual void resizeEvent(QResizeEvent*);
       void redraw(const QRect& r);
       Track* y2Track(int) const;
       void classesPopupMenu(Track*, int x, int y);

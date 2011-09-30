@@ -327,8 +327,9 @@ void Knob::rangeChange()
 //   resizeEvent
 //---------------------------------------------------------
 
-void Knob::resizeEvent(QResizeEvent *)
+void Knob::resizeEvent(QResizeEvent* ev)
       {
+      MusEWidget::SliderBase::resizeEvent(ev);
       int width, width_2;
 
       const QRect& r = rect();

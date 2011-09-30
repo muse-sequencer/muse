@@ -526,10 +526,10 @@ class QFramePitchEnvelope:private QFrame {
   void env2Points(int pl1, int pl2, int pl3, int pr1, int pr2, int pr3);
   void updateEnv(void) {update();};
  protected:
-  void paintEvent(QPaintEvent* e);
-  void mouseMoveEvent(QMouseEvent* e);
-  void mousePressEvent(QMouseEvent * e);
-  void mouseReleaseEvent(QMouseEvent * e);
+  virtual void paintEvent(QPaintEvent* e);
+  virtual void mouseMoveEvent(QMouseEvent* e);
+  virtual void mousePressEvent(QMouseEvent * e);
+  virtual void mouseReleaseEvent(QMouseEvent * e);
 };
 
 class QFrameEnvelope:private QFrame {

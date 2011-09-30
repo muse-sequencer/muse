@@ -334,6 +334,7 @@ void BigTime::setPos(int idx, unsigned v, bool)
 
 void BigTime::resizeEvent(QResizeEvent *ev)
       {
+  QWidget::resizeEvent(ev);
   dwin->resize(ev->size());    
   QFont f    = dwin->font();
       QFontMetrics fm(f);

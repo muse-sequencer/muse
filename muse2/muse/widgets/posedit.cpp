@@ -77,11 +77,11 @@ class PosEditor : public QLineEdit
 
    protected:
       void init();
-      bool event(QEvent *e);
-      void resizeEvent(QResizeEvent*);
-      void paintEvent(QPaintEvent*);
-      void mousePressEvent(QMouseEvent *e);
-      void keyPressEvent(QKeyEvent * event );
+      virtual bool event(QEvent *e);
+      virtual void resizeEvent(QResizeEvent*);
+      virtual void paintEvent(QPaintEvent*);
+      virtual void mousePressEvent(QMouseEvent *e);
+      virtual void keyPressEvent(QKeyEvent * event );
       void applyFocusSelection() {}
 
    public:
@@ -817,8 +817,9 @@ void PosEdit::removeLastNumber(int secNo)
 //   resizeEvent
 //---------------------------------------------------------
 
-void PosEdit::resizeEvent(QResizeEvent *)
+void PosEdit::resizeEvent(QResizeEvent* ev)
       {
+      QWidget::resizeEvent(ev);
       controls->resize(width(), height());
       }
 

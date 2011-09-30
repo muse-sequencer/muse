@@ -75,6 +75,10 @@ class Meter : public QFrame {
       QColor separator_color;;
       QColor peak_color;
       int xrad, yrad;
+
+      virtual void resizeEvent(QResizeEvent*);
+      virtual void paintEvent(QPaintEvent*);
+      virtual void mousePressEvent(QMouseEvent*);
       
    private:
       MeterType mtype;
@@ -86,10 +90,6 @@ class Meter : public QFrame {
       int cur_yv, last_yv, cur_ymax, last_ymax;
 
       void drawVU(QPainter& p, const QRect&, const QPainterPath&, int);
-
-      void paintEvent(QPaintEvent*);
-      void resizeEvent(QResizeEvent*);
-      void mousePressEvent(QMouseEvent*);
 
    public slots:
       void resetPeaks();

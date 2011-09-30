@@ -33,7 +33,7 @@ namespace MusEArranger {
 class TrackAutomationView : public QWidget
 {
     Track *_t;
-    void paintEvent(QPaintEvent *e);
+    virtual void paintEvent(QPaintEvent *e);
     std::map<int,int> automationList;
 public:
     TrackAutomationView(QWidget *parent, Track *t);
