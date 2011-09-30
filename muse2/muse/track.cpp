@@ -32,6 +32,7 @@
 #include "audio.h"
 #include "globaldefs.h"
 #include "route.h"
+#include "drummap.h"
 
 bool MidiTrack::_isVisible=true;
 //bool Track::_isVisible=true;
@@ -387,6 +388,15 @@ MidiTrack::MidiTrack()
       _events = new EventList;
       _mpevents = new MPEventList;
       clefType=trebleClef;
+      
+      _drummap=new DrumMap[128];
+      _drummap_hidden=new bool[128];
+      
+      for (int i=0;i<128;i++)
+      {
+        _drummap[i]=idrumMap[i];
+        _drummap_hidden[i]=false;
+      }
       }
 
 //MidiTrack::MidiTrack(const MidiTrack& mt)
@@ -407,12 +417,19 @@ MidiTrack::MidiTrack(const MidiTrack& mt, bool cloneParts)
       compression    = mt.compression;
       _recEcho       = mt.recEcho();
       clefType=trebleClef;
+
+      _drummap=new DrumMap[128];
+      _drummap_hidden=new bool[128];
+      memcpy(_drummap, mt._drummap, 128*sizeof(*_drummap));
+      memcpy(_drummap_hidden, mt._drummap_hidden, 128*sizeof(*_drummap_hidden));
       }
 
 MidiTrack::~MidiTrack()
       {
       delete _events;
       delete _mpevents;
+      delete [] _drummap;
+      delete [] _drummap_hidden;
       }
 
 //---------------------------------------------------------

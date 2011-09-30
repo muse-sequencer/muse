@@ -60,17 +60,20 @@ struct instrument_number_mapping_t
 {
   QSet<Track*> tracks;
   int pitch;
+  int track_dlist_index;
   
   instrument_number_mapping_t()
   {
     pitch=-1;
+    track_dlist_index=-1;
     tracks.clear();
   }
   
-  instrument_number_mapping_t(const QSet<Track*>& tr, int p)
+  instrument_number_mapping_t(const QSet<Track*>& tr, int p, int i)
   {
     tracks=tr;
     pitch=p;
+    track_dlist_index=i;
   }
 };
 
@@ -154,10 +157,11 @@ class DrumCanvas : public EventCanvas {
       virtual void keyPress(QKeyEvent* event);
       Event *getEventAtCursorPos();
       void selectCursorEvent(Event *ev);
-      int drum_map_size() { return instrument_map.size(); }
       int pitch_and_track_to_instrument(int pitch, Track* track);
       DrumMap* getOurDrumMap() { return ourDrumMap; } //FINDMICH UGLY
       int getOurDrumMapSize() { return instrument_map.size(); } //FINDMICH UGLY
+      
+      void propagate_drummap_change(int instrument); //FINDMICH move to drumedit
       };
 #endif
 

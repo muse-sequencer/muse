@@ -87,7 +87,8 @@ class DPitchEdit: public Awl::PitchEdit
 class DList : public MusEWidget::View {
       Q_OBJECT
       
-      DrumMap* ourDrumMap; //FINDMICHJETZT init!
+      DrumCanvas* dcanvas;
+      DrumMap* ourDrumMap;
       int ourDrumMapSize;
       bool old_style_drummap_mode;
       

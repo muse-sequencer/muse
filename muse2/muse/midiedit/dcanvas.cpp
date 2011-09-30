@@ -125,6 +125,7 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
         for (int i=0;i<DRUM_MAPSIZE;i++)
         {
           temp.pitch=i;
+          temp.track_dlist_index=i; // actually unneeded, but who knows...
           instrument_map.append(temp);
         }
       }
@@ -156,29 +157,27 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
 
         for (QList< QSet<Track*> >::iterator group=track_groups.begin(); group!=track_groups.end(); group++)
         {
-          /* FINDMICH activate me when Track::drummap() works!
-          for (int i=0;i<128;i++) // make "mute" consistent across groups
-          {
+          for (int i=0;i<128;i++) // find out if instrument is hidden and make "mute" 
+          {                       // consistent across groups for non-hidden instruments
             bool mute=true;
-            for (QSet<Track*>::iterator track=group->begin(); track!=group->end(); track++)
+            bool hidden=true;
+            for (QSet<Track*>::iterator track=group->begin(); track!=group->end() && (mute || hidden); track++)
             {
-              if (track->drummap()[i].mute == false)
-              {
+              if (dynamic_cast<MidiTrack*>(*track)->drummap()[i].mute == false)
                 mute=false;
-                break;
-              }
+              
+              if (dynamic_cast<MidiTrack*>(*track)->drummap_hidden()[i] == false)
+                hidden=false;
             }
 
-            for (QSet<Track*>::iterator track=group->begin(); track!=group->end(); track++)
-              track->drummap()[i].mute=mute; 
-          } */
-
-          bool hidden[128];
-          for (int i=0;i<128;i++) hidden[i]=false; //FINDMICH later: respect the track's hidden-lists!
-          
-          for (int i=0;i<128;i++)
-            if (!hidden[i])
-              instrument_map.append(instrument_number_mapping_t(*group, i));
+            if (!hidden)
+            {
+              for (QSet<Track*>::iterator track=group->begin(); track!=group->end(); track++)
+                dynamic_cast<MidiTrack*>(*track)->drummap()[i].mute=mute; 
+              
+              instrument_map.append(instrument_number_mapping_t(*group, dynamic_cast<MidiTrack*>(*group->begin())->drummap()[i].anote, i));
+            }
+          }
         }
         
 
@@ -190,8 +189,8 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
         must_delete_our_drum_map=true;
         
         for (int i=0;i<size;i++)
-          //ourDrumMap[i] = instrument_map[i].tracks.begin()->drummap()[instrument_map[i].pitch]; FINDMICH activate me when Track::drummap works
-          ourDrumMap[i] = idrumMap[instrument_map[i%128].pitch]; //FINDMICH dummy!
+          ourDrumMap[i] = dynamic_cast<MidiTrack*>(*instrument_map[i].tracks.begin())->drummap()[instrument_map[i].track_dlist_index];
+          //ourDrumMap[i] = idrumMap[instrument_map[i%128].pitch]; //FINDMICH dummy!
       }
       
       
@@ -1284,52 +1283,6 @@ void DrumCanvas::midiNote(int pitch, int velo) //FINDMICH later.
       }
 
 
-/* FINDMICH OBSOLETE 
-int DrumCanvas::tracks_first_instrument(Track* t)
-{
-  if (instrument_number_map.find(t) == instrument_number_map.end())
-  {
-    printf("THIS SHOULD NEVER HAPPEN: DrumCanvas::tracks_first_instrument() called with unknown track!\n");
-    return 0;
-  }
-  else
-    return instrument_number_map[t];
-}
-
-int DrumCanvas::parts_first_instrument(Part* p)
-{
-  return tracks_first_instrument(p->track());
-}
-
-QSet<Track*> DrumCanvas::tracks_of_instrument(int instr)
-{
-  QSet<Track*> result;
-  int first_instr = -1;
-  
-  for (std::map<Track*, int>::iterator it=instrument_number_map.begin(); it!=instrument_number_map.end(); it++)
-  {
-    if ((it->second <= instr) && (it->second > first_instr))
-    {
-      first_instr = it->second;
-      result.clear();
-      result.insert(it->first);
-    }
-    else if (it->second == first_instr)
-    {
-      result.insert(it->first);
-    }
-  }
-  
-  return result;
-}
-
-bool DrumCanvas::is_track_of_instrument(Track* t, int instr)
-{
-  QSet<Track*> temp = tracks_of_instrument(instr);
-  return (temp.find(t) != temp.end());
-}
-*/
-
 int DrumCanvas::pitch_and_track_to_instrument(int pitch, Track* track)
 {
   for (int i=0; i<instrument_map.size(); i++)
@@ -1340,3 +1293,12 @@ int DrumCanvas::pitch_and_track_to_instrument(int pitch, Track* track)
   return -1;
 }
 
+void DrumCanvas::propagate_drummap_change(int instr)
+//FINDMICHJETZT does that work properly?
+{
+  const QSet<Track*>& tracks=instrument_map[instr].tracks;
+  int index=instrument_map[instr].track_dlist_index;
+  
+  for (QSet<Track*>::const_iterator it = tracks.begin(); it != tracks.end(); it++)
+    dynamic_cast<MidiTrack*>(*it)->drummap()[index] = ourDrumMap[instr];
+}

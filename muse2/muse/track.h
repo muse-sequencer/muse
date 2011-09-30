@@ -43,6 +43,7 @@ class SndFile;
 class MPEventList;
 class SynthI;
 class PluginI;
+class DrumMap;
 
 //---------------------------------------------------------
 //   Track
@@ -225,6 +226,12 @@ class MidiTrack : public Track {
       MPEventList* _mpevents; // tmp Events druring recording
       static bool _isVisible;
       clefTypes clefType;
+      
+      DrumMap* _drummap;
+      bool _drummap_tied_to_patch; //if true, changing patch also changes drummap
+      bool* _drummap_hidden;
+
+      void init();
 
    public:
       MidiTrack();
@@ -232,7 +239,6 @@ class MidiTrack : public Track {
       MidiTrack(const MidiTrack&, bool cloneParts);
       virtual ~MidiTrack();
 
-      void init();
       virtual AutomationType automationType() const;
       virtual void setAutomationType(AutomationType);
 
@@ -293,6 +299,9 @@ class MidiTrack : public Track {
 
       void setClef(clefTypes i) { clefType = i; }
       clefTypes getClef() { return clefType; }
+      
+      DrumMap* drummap() { return _drummap; }
+      bool* drummap_hidden() { return _drummap_hidden; }
       };
 
 //---------------------------------------------------------

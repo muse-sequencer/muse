@@ -410,7 +410,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       gridS2->setSpacing(0);  
       time                = new MusEWidget::MTScale(&_raster, split1w2, xscale);
       canvas              = new DrumCanvas(this, split1w2, xscale, yscale);
-      vscroll             = new MusEWidget::ScrollScale(-4, 1, yscale, dynamic_cast<DrumCanvas*>(canvas)->drum_map_size()*TH, Qt::Vertical, split1w2);
+      vscroll             = new MusEWidget::ScrollScale(-4, 1, yscale, dynamic_cast<DrumCanvas*>(canvas)->getOurDrumMapSize()*TH, Qt::Vertical, split1w2);
       int offset = -(MusEConfig::config.division/4);
       canvas->setOrigin(offset, 0);
       canvas->setCanvasTools(drumeditTools);

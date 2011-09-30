@@ -44,8 +44,8 @@ struct DrumMap {
       bool mute;
 //      bool selected;
 
-      //bool const operator==(const DrumMap& map) const;
       bool operator==(const DrumMap& map) const;
+      bool operator!=(const DrumMap& map) const { return !operator==(map); }
       };
 
 #define DRUM_MAPSIZE  128

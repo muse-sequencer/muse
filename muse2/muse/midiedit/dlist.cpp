@@ -179,6 +179,12 @@ void DList::draw(QPainter& p, const QRect& rect)
 
 void DList::devicesPopupMenu(DrumMap* t, int x, int y, bool changeAll)
       {
+      if (!old_style_drummap_mode)
+      {
+        printf("THIS SHOULD NEVER HAPPEN: devicesPopupMenu() called in new style mode!\n");
+        return;
+      }
+      
       QMenu* p = midiPortsPopup();
       QAction* act = p->exec(mapToGlobal(QPoint(x, y)), 0);
       bool doemit = false;
@@ -230,6 +236,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
       int button = ev->button();
       unsigned instrument = y / TH;
       DrumMap* dm = &ourDrumMap[instrument];
+      DrumMap dm_old = *dm;
 
       setCurDrumInstrument(instrument);
 
@@ -273,8 +280,8 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   val = dm->vol + incVal;
                   if (val < 0)
                         val = 0;
-                  else if (val > 200) //FINDMICH: why 200? why not 999 or infinity? (flo93)
-                        val = 200;
+                  else if (val > 999) //changed from 200 to 999 by flo93
+                        val = 999;
                   dm->vol = (unsigned char)val;      
                   break;
             case COL_QNT:
@@ -403,6 +410,13 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
             default:
                   break;
             }
+      
+      if (!old_style_drummap_mode && dm_old != *dm) //something changed and we're in new style mode?
+      {
+        //FINDMICHJETZT propagate that!
+        dcanvas->propagate_drummap_change(dm-ourDrumMap);
+      }
+      
       redraw();
       }
 
@@ -592,8 +606,8 @@ void DList::returnPressed()
             switch (selectedColumn)
             {
               case COL_VOL:
-                  if (val > 200) //Check bounds for volume
-                  val = 200;
+                  if (val > 999) //changed from 200 to 999 by flo93
+                  val = 999;
                   if (val < 0)
                   val = 0;
                   break;
@@ -619,7 +633,8 @@ void DList::returnPressed()
               default: break;
             }  
       }     
-
+      
+      DrumMap editEntryOld = *editEntry;
       switch(selectedColumn) {
             case COL_NAME:
                   editEntry->name = editor->text();
@@ -661,6 +676,13 @@ void DList::returnPressed()
                   printf("Return pressed in unknown column\n");
                   break;
             }
+      
+      if (editEntryOld != *editEntry)
+      {
+        //FINDMICHJETZT propagate!
+        dcanvas->propagate_drummap_change(editEntry-ourDrumMap);
+      }
+      
       selectedColumn = -1;
       editor->hide();
       editEntry = 0;
@@ -677,6 +699,7 @@ void DList::pitchEdited()
       int val=pitch_editor->value();
       int instrument=(editEntry-ourDrumMap);
       
+      DrumMap editEntryOld=*editEntry;
       switch(selectedColumn) {
             case COL_ANOTE:
                if (old_style_drummap_mode) //should actually be always true, but to be sure...
@@ -709,12 +732,19 @@ void DList::pitchEdited()
                   //TODO: Set all the notes on the track with instrument=dm->enote to instrument=val
                   drumInmap[val] = instrument;
                 }
-                editEntry->enote = val;
+               editEntry->enote = val;
                break;
             default:
                   printf("ERROR: THIS SHOULD NEVER HAPPEN: Value changed in unknown column\n");
                   break;
             }
+      
+      if (editEntryOld != *editEntry)
+      {
+        //FINDMICHJETZT propagate
+        dcanvas->propagate_drummap_change(editEntry-ourDrumMap);
+      }
+      
       selectedColumn = -1;
       pitch_editor->hide();
       editEntry = 0;
@@ -754,11 +784,12 @@ void DList::songChanged(int flags)
 //   DList
 //---------------------------------------------------------
 
-DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas, bool oldstyle)
+DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_, bool oldstyle)
    : MusEWidget::View(parent, 1, ymag)
       {
       setBg(Qt::white);
       
+      dcanvas=dcanvas_;
       ourDrumMap=dcanvas->getOurDrumMap();
       ourDrumMapSize=dcanvas->getOurDrumMapSize();
       old_style_drummap_mode=oldstyle;
