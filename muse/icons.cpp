@@ -367,8 +367,8 @@ QPixmap* soloIconOn;
 QPixmap* soloIconOff;
 QPixmap* soloblksqIconOn;
 QPixmap* soloblksqIconOff;
-QIcon* soloIconSet1;
-QIcon* soloIconSet2;
+//QIcon* soloIconSet1;
+//QIcon* soloIconSet2;
 
 QPixmap* editmuteIcon;
 QPixmap* editmuteSIcon;
@@ -582,8 +582,12 @@ void initIcons()
       editpaste2TrackIcon       = new MICON(editpaste2track_xpm, NULL);
       editpasteClone2TrackIcon  = new MICON(editpasteclone2track_xpm, NULL);
       */
-      exitIcon             = new MPIXMAP(exit_xpm, "application-exit");
-      exit1Icon            = new MPIXMAP(exit1_xpm, "application-exit");
+
+      //exitIcon             = new MPIXMAP(exit_xpm, "application-exit");
+      //exit1Icon            = new MPIXMAP(exit1_xpm, "application-exit");
+      // Changed by Tim. There are IMO no suitable theme substitutes for these two so far...
+      exitIcon             = new MPIXMAP(exit_xpm, NULL);
+      exit1Icon            = new MPIXMAP(exit1_xpm, NULL);
 
       // 2 lines odd code
       newmuteIcon          = new MPIXMAP(newmutebutton_xpm, NULL);
@@ -597,12 +601,12 @@ void initIcons()
       soloIconOff          = new MPIXMAP(solobutton_off_xpm, NULL);
       soloblksqIconOn      = new MPIXMAP(solobutton_on_blksq_xpm, NULL);
       soloblksqIconOff     = new MPIXMAP(solobutton_off_blksq_xpm, NULL);
-      soloIconSet1         = new QIcon(); 
-      soloIconSet2         = new QIcon();
-      soloIconSet1->addPixmap(*soloIconOn, QIcon::Normal, QIcon::On);
-      soloIconSet1->addPixmap(*soloIconOff, QIcon::Normal, QIcon::Off);
-      soloIconSet2->addPixmap(*soloblksqIconOn, QIcon::Normal, QIcon::On);
-      soloIconSet2->addPixmap(*soloblksqIconOff, QIcon::Normal, QIcon::Off);
+      //soloIconSet1         = new QIcon(); 
+      //soloIconSet2         = new QIcon();
+      //soloIconSet1->addPixmap(*soloIconOn, QIcon::Normal, QIcon::On);
+      //soloIconSet1->addPixmap(*soloIconOff, QIcon::Normal, QIcon::Off);
+      //soloIconSet2->addPixmap(*soloblksqIconOn, QIcon::Normal, QIcon::On);
+      //soloIconSet2->addPixmap(*soloblksqIconOff, QIcon::Normal, QIcon::Off);
       
       redLedIcon           = new MPIXMAP(redled_xpm, NULL);
       darkRedLedIcon       = new MPIXMAP(darkredled_xpm, NULL);

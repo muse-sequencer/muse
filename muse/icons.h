@@ -151,8 +151,8 @@ extern QPixmap* soloIconOn;
 extern QPixmap* soloIconOff;
 extern QPixmap* soloblksqIconOn; 
 extern QPixmap* soloblksqIconOff;
-extern QIcon* soloIconSet1;
-extern QIcon* soloIconSet2;
+//extern QIcon* soloIconSet1;
+//extern QIcon* soloIconSet2;
 
 extern QPixmap* redLedIcon;
 extern QPixmap* darkRedLedIcon;

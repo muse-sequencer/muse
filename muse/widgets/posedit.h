@@ -74,9 +74,9 @@ class PosEdit : public QWidget
       void returnPressed();
 
    protected:
-      bool event(QEvent *e );
+      virtual bool event(QEvent *e );
       void timerEvent(QTimerEvent* e);
-      void resizeEvent(QResizeEvent*);
+      virtual void resizeEvent(QResizeEvent*);
       QString sectionFormattedText(int sec);
       void addNumber(int sec, int num);
       void removeLastNumber(int sec);

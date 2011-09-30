@@ -4,6 +4,7 @@
 //  $Id: strip.h,v 1.3.2.2 2009/11/14 03:37:48 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -62,7 +63,6 @@ class Strip : public QFrame {
       QGridLayout* grid;
       int _curGridRow;
       MusEWidget::Meter* meter[MAX_CHANNELS];
-      bool useSoloIconSet2;
       
       QToolButton* record;
       QToolButton* solo;
@@ -72,6 +72,7 @@ class Strip : public QFrame {
       QGridLayout* sliderGrid;
       MusEWidget::ComboBox* autoType;
       void setLabelText();
+      virtual void resizeEvent(QResizeEvent*);
 
    private slots:
       void recordToggled(bool);

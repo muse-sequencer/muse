@@ -4,6 +4,7 @@
 //  $Id: mstrip.cpp,v 1.9.2.13 2009/11/14 03:37:48 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -296,48 +297,32 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       record->setBackgroundRole(QPalette::Mid);
       record->setCheckable(true);
       record->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      
-      QIcon iconSet;
-      iconSet.addPixmap(*record_on_Icon, QIcon::Normal, QIcon::On);
-      iconSet.addPixmap(*record_off_Icon, QIcon::Normal, QIcon::Off);
-      record->setIcon(iconSet);
-      record->setIconSize(record_on_Icon->size());  
       record->setToolTip(tr("record"));
       record->setChecked(track->recordFlag());
+      record->setIcon(track->recordFlag() ? QIcon(*record_on_Icon) : QIcon(*record_off_Icon));
+      record->setIconSize(record_on_Icon->size());  
       connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
 
       mute  = new QToolButton();
-      QIcon muteSet;
-      muteSet.addPixmap(*muteIconOn, QIcon::Normal, QIcon::Off);
-      muteSet.addPixmap(*muteIconOff, QIcon::Normal, QIcon::On);
-      mute->setIcon(muteSet);
-      mute->setIconSize(muteIconOn->size());  
       mute->setCheckable(true);
       mute->setToolTip(tr("mute"));
       mute->setChecked(track->mute());
+      mute->setIcon(track->mute() ? QIcon(*muteIconOff) : QIcon(*muteIconOn));
+      mute->setIconSize(muteIconOn->size());  
       mute->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
       solo  = new QToolButton();
-
-      if((bool)t->internalSolo())
-      {
-        solo->setIcon(*soloIconSet2);
-        solo->setIconSize(soloIconOn->size());  
-        useSoloIconSet2 = true;
-      }  
-      else  
-      {
-        solo->setIcon(*soloIconSet1);
-        solo->setIconSize(soloblksqIconOn->size());  
-        useSoloIconSet2 = false;
-      }  
-      
       //solo->setToolTip(tr("pre fader listening"));
       solo->setToolTip(tr("solo mode"));
       solo->setCheckable(true);
-      solo->setChecked(t->solo());
+      solo->setChecked(track->solo());
       solo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      if(track->internalSolo())
+        solo->setIcon(track->solo() ? QIcon(*soloblksqIconOn) : QIcon(*soloblksqIconOff));
+      else
+        solo->setIcon(track->solo() ? QIcon(*soloIconOn) : QIcon(*soloIconOff));
+      solo->setIconSize(soloIconOn->size());  
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
       
       /*
@@ -363,8 +348,8 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       ///dev_ch_label->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum));
       dev_ch_label->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       dev_ch_label->setAlignment(Qt::AlignCenter);
-      int port = t->outPort();
-      int channel = t->outChannel();
+      int port = track->outPort();
+      int channel = track->outChannel();
       QString dcs;
       dcs.sprintf("%d-%d", port + 1, channel + 1);
       dev_ch_label->setText(dcs);
@@ -377,16 +362,13 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       */
       
       off  = new MusEWidget::TransparentToolButton(this);
-      QIcon iconOff;
-      iconOff.addPixmap(*exit1Icon, QIcon::Normal, QIcon::On);
-      iconOff.addPixmap(*exitIcon, QIcon::Normal, QIcon::Off);
-      off->setIcon(iconOff);
-      off->setIconSize(exit1Icon->size());  
       off->setBackgroundRole(QPalette::Mid);
       off->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       off->setCheckable(true);
       off->setToolTip(tr("off"));
-      off->setChecked(t->off());
+      off->setChecked(track->off());
+      off->setIcon(track->off() ? QIcon(*exit1Icon) : QIcon(*exitIcon));
+      off->setIconSize(exit1Icon->size());  
       connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
 
       grid->addWidget(off, _curGridRow, 0);
@@ -436,6 +418,8 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       //autoType->setCurrentItem(t->automationType());
       //autoType->setToolTip(tr("automation type"));      
       //connect(autoType, SIGNAL(activated(int)), SLOT(setAutomationType(int)));
+      autoType->addAction(" ", AUTO_OFF);  // Just a dummy text to fix sizing problems. REMOVE later if full automation added.
+      autoType->setCurrentItem(AUTO_OFF);    //
 
       grid->addWidget(autoType, _curGridRow++, 0, 1, 2);
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
@@ -461,8 +445,9 @@ void MidiStrip::updateOffState()
             solo->setEnabled(val);
       if (mute)
             mute->setEnabled(val);
-      if (autoType)
-            autoType->setEnabled(val);
+      // TODO: Disabled for now.
+      //if (autoType)
+      //      autoType->setEnabled(val);
       if (iR)
             iR->setEnabled(val);
       // TODO: Disabled for now.
@@ -472,6 +457,8 @@ void MidiStrip::updateOffState()
             off->blockSignals(true);
             off->setChecked(track->off());
             off->blockSignals(false);
+            off->setIcon(track->off() ? QIcon(*exit1Icon) : QIcon(*exitIcon));
+            //off->setIconSize(exit1Icon->size());  
             }
       }
 
@@ -483,30 +470,23 @@ void MidiStrip::songChanged(int val)
       {
       if (mute && (val & SC_MUTE)) {      // mute && off
             mute->blockSignals(true);
-            mute->setChecked(track->isMute());
-            updateOffState();
+            //mute->setChecked(track->isMute());  
+            mute->setChecked(track->mute());
             mute->blockSignals(false);
+            mute->setIcon(track->mute() ? QIcon(*muteIconOff) : QIcon(*muteIconOn));
+            //mute->setIconSize(muteIconOn->size());  
+            updateOffState();
             }
       if (solo && (val & SC_SOLO)) 
       {
-            if((bool)track->internalSolo())
-            {
-              if(!useSoloIconSet2)
-              {
-                solo->setIcon(*soloIconSet2);
-                solo->setIconSize(soloIconOn->size());  
-                useSoloIconSet2 = true;
-              }  
-            }  
-            else if(useSoloIconSet2)
-            {
-              solo->setIcon(*soloIconSet1);
-              solo->setIconSize(soloblksqIconOn->size());  
-              useSoloIconSet2 = false;
-            }  
             solo->blockSignals(true);
             solo->setChecked(track->solo());
             solo->blockSignals(false);
+            if(track->internalSolo())
+              solo->setIcon(track->solo() ? QIcon(*soloblksqIconOn) : QIcon(*soloblksqIconOff));
+            else
+              solo->setIcon(track->solo() ? QIcon(*soloIconOn) : QIcon(*soloIconOff));
+            //solo->setIconSize(soloIconOn->size());  
       }      
       
       if (val & SC_RECFLAG)

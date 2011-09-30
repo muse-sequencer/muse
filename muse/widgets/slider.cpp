@@ -580,7 +580,7 @@ void Slider::paintEvent(QPaintEvent* /*ev*/)
 
 void Slider::resizeEvent(QResizeEvent *e)
 {
-
+    MusEWidget::SliderBase::resizeEvent(e);
     d_resized = TRUE;
     QSize s = e->size();
     /* Scale is not supported
