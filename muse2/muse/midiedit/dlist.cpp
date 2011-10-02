@@ -854,11 +854,21 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
       {
       if (drag == DRAG) {
             int y = ev->y();
-            unsigned dInstrument = y / TH;
+            int dInstrument;
+            if (old_style_drummap_mode)
+                  dInstrument = y / TH;
+            else
+                  dInstrument = (y+TH/2) / TH;
+            
+            if (dInstrument < 0) dInstrument=0;
+            if (dInstrument >= ourDrumMapSize) dInstrument=ourDrumMapSize-1;
+            
+            int cur_sel = (!old_style_drummap_mode && dInstrument>sInstrument) ? dInstrument-1 : dInstrument;
+            
             setCursor(QCursor(Qt::ArrowCursor));
-            currentlySelected = &ourDrumMap[int(dInstrument)];
-            emit curDrumInstrumentChanged(dInstrument);
-            emit mapChanged(sInstrument, dInstrument); //Track instrument change done in canvas
+            currentlySelected = &ourDrumMap[cur_sel];
+            emit curDrumInstrumentChanged((unsigned)cur_sel);
+            emit mapChanged(sInstrument, (unsigned)dInstrument); //Track instrument change done in canvas
             }
       drag = NORMAL;
 //??      redraw();          //commented out NOT by flo93; was already commented out

@@ -59,5 +59,9 @@ extern void writeDrumMap(int level, Xml& xml, bool external);
 extern void readDrumMap(Xml& xml, bool external);
 extern void resetGMDrumMap();
 
+class MidiTrack;
+typedef QList< std::pair<MidiTrack*,int> > global_drum_ordering_t;
+
+extern global_drum_ordering_t global_drum_ordering;
 #endif
 

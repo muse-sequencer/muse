@@ -4590,19 +4590,23 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *   o fix valgrind problems
  *
  * > o drum editor: channel-stuff
- *        o hide instruments: should work
- *        o remember ordering of instruments: IMPLEMENT
- *        o tracks have own drumlists: should work.
+ *        o dialog for maintaining drum lists, hide etc
+ *        o grouping
  *        o respect "_drummap_tied_to_patch": IMPLEMENT
+ *        o save hide, ordering, track's drumlists
+ *        x hide instruments
+ *        x remember ordering of instruments
+ *        x tracks have own drumlists
  * 
- *        o each track has its own drumlist and a bool maintained_automatically
+ *        x each track has its own drumlist and a bool maintained_automatically
  *        o whenever changing the patch and maintained_automatically==true,
  *          the drumlist is replaced by the according one (for example, "jazz" drum kit's list)
  *        o whenever changing the drumlist and maintained_automatically==true,
  *          ask the user if he wants to proceed, and then set maintained_automatically to false
  *        o offer some way to set maintained_automatically to true again
- *        o each track has a bool hidden[128], which is used for hiding entries.
+ *        x each track has a bool hidden[128], which is used for hiding entries.
  *          when mixing, the values of all tracks are ANDed
+ *        o offer a way to hide/show instruments
  *
  *        o drum editor can: "display each track separately", "mix all with same port, patch and drumlist"
  *        x a map maps all y-coord.s to { set<Track*>, pitch }
@@ -4616,9 +4620,10 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *     EXCEPT that the drum list's mute entries are respected!
  *   o when recording or echoing a flo-drum-track: watch out for In-Notes!
  *   o update [midi]track::read/write, readproperties, writeprop... (drumlist etc), operator=
- *   o BUG: drummap[i].pitch MUST BE i! or instr_map.pitch must be set accordingly!
  *
  * IMPORTANT TODO
+ *   o support "new style" reordering with old style drum tracks as well
+ *     (not swapping but inserting!)
  * ! o fix sigedit boxes (see also "current todo")
  *   o add "dotted quarter" quantize option (for 6/8 beat)
  *   o ticks-to-quarter spinboxes

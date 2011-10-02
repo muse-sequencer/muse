@@ -60,20 +60,17 @@ struct instrument_number_mapping_t
 {
   QSet<Track*> tracks;
   int pitch;
-  int track_dlist_index;
   
   instrument_number_mapping_t()
   {
     pitch=-1;
-    track_dlist_index=-1;
     tracks.clear();
   }
   
-  instrument_number_mapping_t(const QSet<Track*>& tr, int p, int i)
+  instrument_number_mapping_t(const QSet<Track*>& tr, int p)
   {
     tracks=tr;
     pitch=p;
-    track_dlist_index=i;
   }
 };
 

@@ -26,6 +26,8 @@
 #include "xml.h"
 #include "song.h"
 
+global_drum_ordering_t global_drum_ordering;
+
 char drumOutmap[DRUM_MAPSIZE];
 char drumInmap[128];
 

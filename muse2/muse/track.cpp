@@ -394,9 +394,17 @@ MidiTrack::MidiTrack()
       
       for (int i=0;i<128;i++)
       {
-        _drummap[i]=idrumMap[i];
-        _drummap_hidden[i]=false;
+        int idx=idrumMap[i].anote;
+        if (idx < 0 || idx >= 128)
+          printf ("ERROR: THIS SHOULD NEVER HAPPEN: idrumMap[%i].anote is not within 0..127!\n", idx);
+        else
+          _drummap[idx]=idrumMap[i];
+        
+        global_drum_ordering.push_back(std::pair<MidiTrack*,int>(this,idx));
       }
+      for (int i=0;i<128;i++)
+        _drummap_hidden[i]=false;
+
       }
 
 //MidiTrack::MidiTrack(const MidiTrack& mt)
@@ -422,6 +430,14 @@ MidiTrack::MidiTrack(const MidiTrack& mt, bool cloneParts)
       _drummap_hidden=new bool[128];
       memcpy(_drummap, mt._drummap, 128*sizeof(*_drummap));
       memcpy(_drummap_hidden, mt._drummap_hidden, 128*sizeof(*_drummap_hidden));
+      
+      for (global_drum_ordering_t::iterator it=global_drum_ordering.begin(); it!=global_drum_ordering.end(); it++)
+        if (it->first == &mt)
+        {
+          it=global_drum_ordering.insert(it, *it); // duplicates the entry at it, set it to the first entry of both
+          it++;                                    // make it point to the second entry
+          it->first=this;
+        }
       }
 
 MidiTrack::~MidiTrack()
@@ -430,6 +446,15 @@ MidiTrack::~MidiTrack()
       delete _mpevents;
       delete [] _drummap;
       delete [] _drummap_hidden;
+      
+      // remove ourselves from the global_drum_ordering list
+      // this is not really necessary, but cleaner
+      for (global_drum_ordering_t::iterator it=global_drum_ordering.begin(); it!=global_drum_ordering.end();)
+        if (it->first == this)
+          it=global_drum_ordering.erase(it);
+        else
+          it++;
+
       }
 
 //---------------------------------------------------------
