@@ -601,7 +601,8 @@ void LMaster::itemDoubleClicked(QTreeWidgetItem* i)
                   tempo_editor->selectAll();
                   }
             else if (editedItem->getType() == LMASTER_SIGEVENT) { // Edit signatur value:
-                  sig_editor->setValue(editedItem->text(LMASTER_VAL_COL));
+                  //sig_editor->setValue(editedItem->text(LMASTER_VAL_COL));
+                  sig_editor->setValue(((LMasterSigEventItem*)editedItem)->getEvent()->sig);
                   sig_editor->setGeometry(itemRect);
                   sig_editor->show();
                   sig_editor->setFocus();
@@ -923,7 +924,7 @@ LMasterSigEventItem::LMasterSigEventItem(QTreeWidget* parent, const AL::SigEvent
       int msec = int((time - (min*60 + sec)) * 1000.0);
       c2.sprintf("%03d:%02d:%03d", min, sec, msec);
       c3 = "Timesig";
-      c4.sprintf("%d/%d", ev->sig.z, ev->sig.n);
+      c4.sprintf("%d  /  %d", ev->sig.z, ev->sig.n);
       setText(0, c1);
       setText(1, c2);
       setText(2, c3);

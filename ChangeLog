@@ -1,3 +1,6 @@
+02.09.2011:
+        - SigEdit reworked to use two spinboxes, plan on adding Enter/Return detection so the widget will close when 
+          Enter/Return is pressed (rj)
 30.09.2011:
         - Fixed long-standing problem with themes (Ia Ora / Bespin etc) and MusE button icons. Some themes don't support 
            multiple-pixmap icons. So mute/solo/rec/stereo/thru always showed the same icon. Replaced w single pm icons. (Tim)
