@@ -587,8 +587,12 @@ void DrumEdit::songChanged1(int bits)
             toolbar->setSolo(canvas->track()->solo());
             return;
         }      
+        if ( !old_style_drummap_mode() && 
+             ( bits & (SC_DRUMMAP | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED |
+                       SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED) ) )
+          ((DrumCanvas*)(canvas))->rebuildOurDrumMap();
+        
         songChanged(bits);
-
       }
 
 //---------------------------------------------------------

@@ -413,7 +413,8 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
       if (!old_style_drummap_mode && dm_old != *dm) //something changed and we're in new style mode?
         dcanvas->propagate_drummap_change(dm-ourDrumMap);
       
-      redraw();
+      song->update(SC_DRUMMAP);
+      //redraw(); //this is done by the songChanged slot
       }
 
 //---------------------------------------------------------
@@ -686,7 +687,8 @@ void DList::returnPressed()
       editor->hide();
       editEntry = 0;
       setFocus();
-      redraw();
+      song->update(SC_DRUMMAP);
+      //redraw(); //this is done by the songChanged slot
       }
 
 //---------------------------------------------------------
@@ -751,7 +753,8 @@ void DList::pitchEdited()
       pitch_editor->hide();
       editEntry = 0;
       setFocus();
-      redraw();
+      song->update(SC_DRUMMAP);
+      //redraw(); //this is done by the songChanged slot
       }
 
 //---------------------------------------------------------

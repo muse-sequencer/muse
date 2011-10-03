@@ -977,7 +977,9 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
       }
       
       
-      song->update(SC_DRUMMAP);
+      song->update(SC_DRUMMAP); // this causes a complete rebuild of ourDrumMap
+                                // which also handles the changed order in all
+                                // other drum editors
    }
 }
 
