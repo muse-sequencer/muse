@@ -101,6 +101,11 @@ class CItemList: public std::multimap<int, CItem*, std::less<int> > {
    public:
       void add(CItem*);
       CItem* find(const QPoint& pos) const;
+      void clearDelete() {
+            for (iCItem i = begin(); i != end(); ++i)
+                  delete i->second;
+            clear();
+            }
       };
 
 } // namespace MusEWidget

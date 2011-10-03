@@ -4,6 +4,7 @@
 //  $Id: plugin.cpp,v 1.21.2.23 2009/12/15 22:07:12 spamatica Exp $
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -770,6 +771,8 @@ Plugin::~Plugin()
 {
   //if(_portDescriptors)
   //  delete[] _portDescriptors;
+  if(plugin)
+    delete plugin;
 }
   
 //---------------------------------------------------------
@@ -851,6 +854,8 @@ int Plugin::incReferences(int val)
           plugin = descr->LADSPA_Plugin;
           break;
         }
+        //else
+        //  delete descr;
       }  
     }
     else
@@ -881,6 +886,8 @@ int Plugin::incReferences(int val)
             
             break;
           }
+          //else
+          //  delete descr;
         }  
       }
     }    
@@ -1106,8 +1113,10 @@ static void loadPluginLib(QFileInfo* fi)
       {
         // Make sure it doesn't already exist.
         if(plugins.find(fi->completeBaseName(), QString(descr->LADSPA_Plugin->Label)) != 0)
+        {  
+          //delete descr;
           continue;
-        
+        }
         #ifdef PLUGIN_DEBUGIN 
         fprintf(stderr, "loadPluginLib: dssi effect name:%s inPlaceBroken:%d\n", descr->LADSPA_Plugin->Name, LADSPA_IS_INPLACE_BROKEN(descr->LADSPA_Plugin->Properties));
         #endif
@@ -1120,6 +1129,8 @@ static void loadPluginLib(QFileInfo* fi)
       
         plugins.add(fi, descr->LADSPA_Plugin, true);
       }
+      //else
+      //  delete descr;
     }      
   }
   else
@@ -1152,8 +1163,10 @@ static void loadPluginLib(QFileInfo* fi)
       
       // Make sure it doesn't already exist.
       if(plugins.find(fi->completeBaseName(), QString(descr->Label)) != 0)
+      {  
+        //delete descr;
         continue;
-      
+      }
       #ifdef PLUGIN_DEBUGIN 
       fprintf(stderr, "loadPluginLib: ladspa effect name:%s inPlaceBroken:%d\n", descr->Name, LADSPA_IS_INPLACE_BROKEN(descr->Properties));
       #endif

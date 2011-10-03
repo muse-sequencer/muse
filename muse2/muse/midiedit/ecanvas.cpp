@@ -147,7 +147,8 @@ void EventCanvas::songChanged(int flags)
         return;
     
       if (flags & ~SC_SELECTION) {
-            items.clear();
+            //items.clear();
+            items.clearDelete();
             start_tick  = MAXINT;
             end_tick    = 0;
             curPart = 0;

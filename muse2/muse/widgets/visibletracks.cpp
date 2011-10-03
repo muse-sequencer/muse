@@ -139,7 +139,7 @@ void VisibleTracks::visibilityChanged(QAction* action)
 
 VisibleTracks::~VisibleTracks()
       {
-      delete actions;
+      delete [] actions;
       }
 
 } // namespace MusEWidget

@@ -252,6 +252,11 @@ Track::Track(const Track& t, bool cloneParts)
             }
       }
 
+Track::~Track()
+{
+  _parts.clearDelete();
+}
+
 //---------------------------------------------------------
 //   operator =
 //   Added by Tim. Parts' track members MUST point to this track, 

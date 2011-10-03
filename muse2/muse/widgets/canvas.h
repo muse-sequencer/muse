@@ -190,6 +190,7 @@ class Canvas : public View {
       void horizontalZoomOut();
    public:
       Canvas(QWidget* parent, int sx, int sy, const char* name = 0);
+      virtual ~Canvas();
       bool isSingleSelection();
       int selectionSize();
       Tool tool() const { return _tool; }

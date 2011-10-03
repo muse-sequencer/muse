@@ -90,7 +90,7 @@ SndFile::~SndFile()
       delete finfo;
       if (cache) {
             for (unsigned i = 0; i < channels(); ++i)
-                  delete cache[i];
+                  delete [] cache[i];
             delete[] cache;
             cache = 0;
             }
@@ -150,7 +150,7 @@ void SndFile::readCache(const QString& path, bool showProgress)
 
       if (cache) {
             for (unsigned i = 0; i < channels(); ++i)
-                  delete cache[i];
+                  delete [] cache[i];
             delete[] cache;
             }
       if (samples() == 0) {

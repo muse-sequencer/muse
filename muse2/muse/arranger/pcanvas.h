@@ -171,6 +171,7 @@ class PartCanvas : public MusEWidget::Canvas {
              CMD_PASTE_DIALOG, CMD_PASTE_CLONE_DIALOG, CMD_INSERT_EMPTYMEAS };
 
       PartCanvas(int* raster, QWidget* parent, int, int);
+      virtual ~PartCanvas();
       void partsChanged();
       void cmd(int);
    public slots:

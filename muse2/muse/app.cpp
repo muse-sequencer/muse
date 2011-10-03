@@ -112,6 +112,7 @@ extern void initMidiSynth();
 extern void exitJackAudio();
 extern void exitDummyAudio();
 extern void exitOSC();
+extern void exitMidiAlsa();
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
@@ -1562,11 +1563,12 @@ void MusE::closeEvent(QCloseEvent* event)
       }  
       #endif
       
-      // Changed by Tim. p3.3.14
-      //SynthIList* sl = song->syntis();
-      //for (iSynthI i = sl->begin(); i != sl->end(); ++i)
-      //      delete *i;
       song->cleanupForQuit();
+
+      // Give midi devices a chance to close first, above in cleanupForQuit.
+      if(MusEGlobal::debugMsg)
+        printf("Muse: Exiting ALSA midi\n");
+      exitMidiAlsa();
 
       if(MusEGlobal::debugMsg)
         printf("Muse: Cleaning up temporary wavefiles + peakfiles\n");

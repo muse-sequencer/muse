@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //  $Id: alsamidi.cpp,v 1.8.2.7 2009/11/19 04:20:33 terminator356 Exp $
 //  (C) Copyright 2000-2001 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -42,7 +42,7 @@
 static int alsaSeqFdi = -1;
 static int alsaSeqFdo = -1;
 
-snd_seq_t* alsaSeq;
+snd_seq_t* alsaSeq = 0;
 static snd_seq_addr_t musePort;
 
 //---------------------------------------------------------
@@ -794,6 +794,27 @@ bool initMidiAlsa()
             }
       return false;
       }
+
+namespace MusEApp {
+
+//---------------------------------------------------------
+//   exitMidiAlsa
+//---------------------------------------------------------
+
+void exitMidiAlsa()
+{
+  if(alsaSeq)
+  {  
+    int error = snd_seq_close(alsaSeq);  // FIXME Hm, this did not get rid of a buch of valgrind leaks.
+    if(error < 0) 
+    {
+      fprintf(stderr, "Could not close ALSA sequencer: %s\n", snd_strerror(error));
+    }
+  }  
+}
+
+} // namespace MusEApp
+
 
 struct AlsaPort {
       snd_seq_addr_t adr;
