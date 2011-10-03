@@ -115,6 +115,17 @@ FluidSynth::FluidSynth(int sr, pthread_mutex_t *_Globalsfloader_mutex) : Mess(2)
 
 FluidSynth::~FluidSynth()
       {
+
+      for (std::list<FluidSoundFont>::iterator it =stack.begin(); it !=stack.end(); it++) 
+      {
+        if(it->intid == FS_UNSPECIFIED_FONT || it->intid == FS_UNSPECIFIED_ID) 
+          continue;
+        //Try to unload soundfont
+        int err = fluid_synth_sfunload(fluidsynth, it->intid, 0);
+        if(err == -1)  
+          std::cerr << DEBUG_ARGS << "Error unloading soundfont!" << fluid_synth_error(fluidsynth) << std::endl;
+      }
+        
       int err = delete_fluid_synth (fluidsynth);
       if(gui)
         delete gui;

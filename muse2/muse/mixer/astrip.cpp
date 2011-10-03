@@ -4,6 +4,7 @@
 //  $Id: astrip.cpp,v 1.23.2.17 2009/11/16 01:55:55 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -172,28 +173,19 @@ void AudioStrip::songChanged(int val)
             mute->blockSignals(true);
             mute->setChecked(src->mute());
             mute->blockSignals(false);
+            mute->setIcon(src->mute() ? QIcon(*muteIconOff) : QIcon(*muteIconOn));
+            //mute->setIconSize(muteIconOn->size());  
             updateOffState();
             }
       if (solo && (val & SC_SOLO)) {
-            if((bool)track->internalSolo())
-            {
-              if(!useSoloIconSet2)
-              {
-                solo->setIcon(*soloIconSet2);
-                solo->setIconSize(soloIconOn->size());  
-                useSoloIconSet2 = true;
-              }  
-            }  
-            else if(useSoloIconSet2)
-            {
-              solo->setIcon(*soloIconSet1);
-              solo->setIconSize(soloblksqIconOn->size());  
-              useSoloIconSet2 = false;
-            }  
-            
             solo->blockSignals(true);
             solo->setChecked(track->solo());
             solo->blockSignals(false);
+            if(track->internalSolo())
+              solo->setIcon(track->solo() ? QIcon(*soloblksqIconOn) : QIcon(*soloblksqIconOff));
+            else
+              solo->setIcon(track->solo() ? QIcon(*soloIconOn) : QIcon(*soloIconOff));
+            //solo->setIconSize(soloIconOn->size());  
             }
       if (val & SC_RECFLAG)
             setRecordFlag(track->recordFlag());
@@ -232,19 +224,31 @@ void AudioStrip::songChanged(int val)
             if(track->automationType() == AUTO_TOUCH || track->automationType() == AUTO_WRITE)
                   {
                   palette.setColor(QPalette::Button, QColor(215, 76, 39)); // red
-                  //QColor c(Qt::red);
-                  //gradient.setColorAt(0, c);
-                  //gradient.setColorAt(1, c.darker());
-                  //palette.setBrush(QPalette::Button, gradient);
+                  //palette.setColor(QPalette::Window, QColor(215, 76, 39)); // red
+                  /*QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
+                  QColor c(Qt::red);
+                  //QColor c(215, 76, 39);       // red
+                  gradient.setColorAt(0, c.darker());
+                  gradient.setColorAt(0.5, c);
+                  gradient.setColorAt(1, c.darker());
+                  palette.setBrush(QPalette::Button, gradient);
+                  //palette.setBrush(autoType->backgroundRole(), gradient);
+                  //palette.setBrush(QPalette::Window, gradient);   */
                   autoType->setPalette(palette);
                   }
             else if(track->automationType() == AUTO_READ)
                   {
                   palette.setColor(QPalette::Button, QColor(100, 172, 49)); // green
-                  //QColor c(Qt::green);
-                  //gradient.setColorAt(0, c);
-                  //gradient.setColorAt(1, c.darker());
-                  //palette.setBrush(QPalette::Button, gradient);
+                  //palette.setColor(QPalette::Window, QColor(100, 172, 49)); // green
+                  /*QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
+                  QColor c(Qt::green);
+                  //QColor c(100, 172, 49);     // green
+                  gradient.setColorAt(0, c.darker());
+                  gradient.setColorAt(0.5, c);
+                  gradient.setColorAt(1, c.darker());
+                  palette.setBrush(QPalette::Button, gradient);
+                  //palette.setBrush(autoType->backgroundRole(), gradient);
+                  //palette.setBrush(QPalette::Window, gradient);  */
                   autoType->setPalette(palette);
                   }
             else  
@@ -354,6 +358,8 @@ void AudioStrip::updateOffState()
             off->blockSignals(true);
             off->setChecked(track->off());
             off->blockSignals(false);
+            off->setIcon(track->off() ? QIcon(*exit1Icon) : QIcon(*exitIcon));
+            //off->setIconSize(exit1Icon->size());  
             }
       }
 
@@ -623,6 +629,8 @@ void AudioStrip::updateChannels()
       stereo->blockSignals(true);
       stereo->setChecked(channel == 2);
       stereo->blockSignals(false);
+      stereo->setIcon(channel == 2 ? QIcon(*stereoIcon) : QIcon(*monoIcon));
+      //stereo->setIconSize(stereoIcon->size());  
       }
 
 //---------------------------------------------------------
@@ -753,15 +761,11 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
 
       stereo  = new QToolButton();
       stereo->setFont(MusEConfig::config.fonts[1]);
-      QIcon stereoSet;
-      stereoSet.addPixmap(*monoIcon, QIcon::Normal, QIcon::Off);
-      stereoSet.addPixmap(*stereoIcon, QIcon::Normal, QIcon::On);
-      stereo->setIcon(stereoSet);
-      stereo->setIconSize(monoIcon->size());  
-
       stereo->setCheckable(true);
       stereo->setToolTip(tr("1/2 channel"));
       stereo->setChecked(channel == 2);
+      stereo->setIcon(channel == 2 ? QIcon(*stereoIcon) : QIcon(*monoIcon));
+      stereo->setIconSize(monoIcon->size());  
       stereo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       connect(stereo, SIGNAL(clicked(bool)), SLOT(stereoToggled(bool)));
 
@@ -868,47 +872,33 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
             record->setCheckable(true);
             record->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
             record->setBackgroundRole(QPalette::Mid);
-            QIcon iconSet;
-            iconSet.addPixmap(*record_on_Icon, QIcon::Normal, QIcon::On);
-            iconSet.addPixmap(*record_off_Icon, QIcon::Normal, QIcon::Off);
-            record->setIcon(iconSet);
-            record->setIconSize(record_on_Icon->size());  
             record->setToolTip(tr("record"));
             record->setChecked(t->recordFlag());
+            record->setIcon(t->recordFlag() ? QIcon(*record_on_Icon) : QIcon(*record_off_Icon));
+            record->setIconSize(record_on_Icon->size());  
             connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
             }
 
       Track::TrackType type = t->type();
 
       mute  = new QToolButton();
-      QIcon muteSet;
-      muteSet.addPixmap(*muteIconOn, QIcon::Normal, QIcon::Off);
-      muteSet.addPixmap(*muteIconOff, QIcon::Normal, QIcon::On);
-      mute->setIcon(muteSet);
-      mute->setIconSize(muteIconOn->size());  
       mute->setCheckable(true);
       mute->setToolTip(tr("mute"));
       mute->setChecked(t->mute());
+      mute->setIcon(t->mute() ? QIcon(*muteIconOff) : QIcon(*muteIconOn));
+      mute->setIconSize(muteIconOn->size());  
       mute->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
       solo  = new QToolButton();
       
-      if((bool)t->internalSolo())
-      {
-        solo->setIcon(*soloIconSet2);
-        solo->setIconSize(soloIconOn->size());  
-        useSoloIconSet2 = true;
-      }  
-      else  
-      {
-        solo->setIcon(*soloIconSet1);
-        solo->setIconSize(soloblksqIconOn->size());  
-        useSoloIconSet2 = false;
-      }  
-              
       solo->setCheckable(true);
       solo->setChecked(t->solo());
+      if(t->internalSolo())
+        solo->setIcon(t->solo() ? QIcon(*soloblksqIconOn) : QIcon(*soloblksqIconOff));
+      else
+        solo->setIcon(t->solo() ? QIcon(*soloIconOn) : QIcon(*soloIconOff));
+      solo->setIconSize(soloIconOn->size());  
       solo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
       if (type == Track::AUDIO_OUTPUT) {
@@ -922,16 +912,13 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
             }
 
       off  = new MusEWidget::TransparentToolButton(this);
-      QIcon iconSet;
-      iconSet.addPixmap(*exit1Icon, QIcon::Normal, QIcon::On);
-      iconSet.addPixmap(*exitIcon, QIcon::Normal, QIcon::Off);
-      off->setIcon(iconSet);
-      off->setIconSize(exit1Icon->size());  
       off->setBackgroundRole(QPalette::Mid);
       off->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       off->setCheckable(true);
       off->setToolTip(tr("off"));
       off->setChecked(t->off());
+      off->setIcon(t->off() ? QIcon(*exit1Icon) : QIcon(*exitIcon));
+      off->setIconSize(exit1Icon->size());  
       connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
 
       grid->addWidget(off, _curGridRow, 0);
@@ -972,6 +959,7 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       autoType = new MusEWidget::ComboBox();
       autoType->setFont(MusEConfig::config.fonts[1]);
       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
+      //autoType->setAutoFillBackground(true);
       
       autoType->addAction(tr("Off"), AUTO_OFF);
       autoType->addAction(tr("Read"), AUTO_READ);
@@ -983,20 +971,30 @@ AudioStrip::AudioStrip(QWidget* parent, AudioTrack* at)
       //QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
       if(t->automationType() == AUTO_TOUCH || t->automationType() == AUTO_WRITE)
             {
-            palette.setColor(QPalette::Button, QColor(Qt::red));
-            //QColor c(Qt::red);
-            //gradient.setColorAt(0, c);
-            //gradient.setColorAt(1, c.darker());
-            //palette.setBrush(QPalette::Button, gradient);
+            palette.setColor(QPalette::Button, QColor(215, 76, 39));  // red
+            /* QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
+            QColor c(Qt::red);
+            //QColor c(215, 76, 39);       // red
+            gradient.setColorAt(0, c.darker());
+            gradient.setColorAt(0.5, c);
+            gradient.setColorAt(1, c.darker());
+            palette.setBrush(QPalette::Button, gradient);
+            //palette.setBrush(autoType->backgroundRole(), gradient);
+            //palette.setBrush(QPalette::Window, gradient);  */
             autoType->setPalette(palette);
             }
       else if(t->automationType() == AUTO_READ)
             {
-            palette.setColor(QPalette::Button, QColor(Qt::green));
-            //QColor c(Qt::green);
-            //gradient.setColorAt(0, c);
-            //gradient.setColorAt(1, c.darker());
-            //palette.setBrush(QPalette::Button, gradient);
+            palette.setColor(QPalette::Button, QColor(100, 172, 49));  // green
+            /*QLinearGradient gradient(autoType->geometry().topLeft(), autoType->geometry().bottomLeft());
+            QColor c(Qt::green);
+            //QColor c(100, 172, 49);     // green
+            gradient.setColorAt(0, c.darker());
+            gradient.setColorAt(0.5, c);
+            gradient.setColorAt(1, c.darker());
+            palette.setBrush(QPalette::Button, gradient);
+            //palette.setBrush(autoType->backgroundRole(), gradient);
+            //palette.setBrush(QPalette::Window, gradient);  */
             autoType->setPalette(palette);
             }
       else  

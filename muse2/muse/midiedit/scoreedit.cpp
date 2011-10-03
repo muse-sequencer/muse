@@ -1257,6 +1257,11 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 	unsetCursor();
 }
 
+ScoreCanvas::~ScoreCanvas()
+{
+	delete steprec;
+}
+
 void ScoreCanvas::staffmode_treble_slot()
 {
 	set_staffmode(current_staff, MODE_TREBLE);
@@ -4591,32 +4596,15 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *
  * > o drum editor: channel-stuff
  *        o dialog for maintaining drum lists, hide etc
- *        o grouping
  *        o respect "_drummap_tied_to_patch": IMPLEMENT
  *        o save hide, ordering, track's drumlists
- *        x hide instruments
- *        x remember ordering of instruments
- *        x tracks have own drumlists
- * 
  * 				o "copy drumlist" from one track to another
- * 
- *        x each track has its own drumlist and a bool maintained_automatically
  *        o whenever changing the patch and maintained_automatically==true,
  *          the drumlist is replaced by the according one (for example, "jazz" drum kit's list)
  *        o whenever changing the drumlist and maintained_automatically==true,
  *          ask the user if he wants to proceed, and then set maintained_automatically to false
  *        o offer some way to set maintained_automatically to true again
- *        x each track has a bool hidden[128], which is used for hiding entries.
- *          when mixing, the values of all tracks are ANDed
- *        o offer a way to hide/show instruments
- *
- *        o drum editor can: "display each track separately", "mix all with same port, patch and drumlist"
- *        x a map maps all y-coord.s to { set<Track*>, pitch }
- *        x either open flo-tracks OR old-style-tracks
- *        x replace all DRUM_MAPSIZE by instrument_map.size()
- *        o signal for instrument_map.size or drum_map_size() changed!
  *        o move generation and deletion of ourDrumMap from DCanvas to DrumEditor and remove ugly wrapper functions
- *        o ...
  *
  *   o when playing back a flo-drum-track: treat as a MIDI track,
  *     EXCEPT that the drum list's mute entries are respected!

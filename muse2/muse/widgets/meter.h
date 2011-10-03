@@ -32,6 +32,7 @@
 class QResizeEvent;
 class QMouseEvent;
 class QPainter;
+class QPainterPath;
 
 namespace MusEWidget {
 
@@ -75,6 +76,10 @@ class Meter : public QFrame {
       QColor peak_color;
       int xrad, yrad;
 
+      virtual void resizeEvent(QResizeEvent*);
+      virtual void paintEvent(QPaintEvent*);
+      virtual void mousePressEvent(QMouseEvent*);
+      
    private:
       MeterType mtype;
       bool overflow;
@@ -82,13 +87,9 @@ class Meter : public QFrame {
       double maxVal;
       double minScale, maxScale;
       int yellowScale, redScale;
-      int cur_yv, last_yv;
+      int cur_yv, last_yv, cur_ymax, last_ymax;
 
-      void drawVU(QPainter& p, const QRect&, int);
-
-      void paintEvent(QPaintEvent*);
-      void resizeEvent(QResizeEvent*);
-      void mousePressEvent(QMouseEvent*);
+      void drawVU(QPainter& p, const QRect&, const QPainterPath&, int);
 
    public slots:
       void resetPeaks();

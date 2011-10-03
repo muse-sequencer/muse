@@ -169,6 +169,11 @@ class PartList : public std::multimap<int, Part*, std::less<unsigned> > {
       void remove(Part* part);
       int index(Part*);
       Part* find(int idx);
+      void clearDelete() {
+            for (iPart i = begin(); i != end(); ++i)
+                  delete i->second;
+            clear();
+            }
       };
 
 extern void chainClone(Part* p);

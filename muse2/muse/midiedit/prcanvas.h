@@ -117,6 +117,7 @@ class PianoCanvas : public EventCanvas {
          };
 
       PianoCanvas(MidiEditor*, QWidget*, int, int);
+      virtual ~PianoCanvas();
       void cmd(int cmd);
       void setColorMode(int mode) {
             colorMode = mode;

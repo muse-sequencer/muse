@@ -43,12 +43,12 @@ namespace MusEWidget {
 //    edit Signature Values  (4/4)
 //---------------------------------------------------------
 
-SigLabel::SigLabel(int z, int n, QWidget* parent) : QLabel(parent)
+SigLabel::SigLabel(int zz, int nn, QWidget* parent) : QLabel(parent)
       {
-      z = n = 0;
+      z = n = 0;  
       setFocusPolicy(Qt::NoFocus);
       setAlignment(Qt::AlignCenter);
-      setValue(z, n);
+      setValue(zz, nn);
       }
 
 SigLabel::SigLabel(const AL::TimeSignature& sig, QWidget* parent) : QLabel(parent)

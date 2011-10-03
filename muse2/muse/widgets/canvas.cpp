@@ -82,6 +82,11 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
       connect(song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
       }
 
+Canvas::~Canvas()
+{
+  items.clearDelete();
+}
+
 //---------------------------------------------------------
 //   setPos
 //    set one of three markers

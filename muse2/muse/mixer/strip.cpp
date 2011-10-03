@@ -4,6 +4,7 @@
 //  $Id: strip.cpp,v 1.6.2.5 2009/11/14 03:37:48 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -38,6 +39,7 @@
 #include "strip.h"
 #include "meter.h"
 #include "utils.h"
+#include "icons.h"
 
 namespace MusEMixer {
 
@@ -51,6 +53,8 @@ void Strip::setRecordFlag(bool flag)
             record->blockSignals(true);
             record->setChecked(flag);
             record->blockSignals(false);
+            record->setIcon(flag ? QIcon(*record_on_Icon) : QIcon(*record_off_Icon));
+            //record->setIconSize(record_on_Icon->size());  
             }
       }
 
@@ -75,7 +79,11 @@ void Strip::recordToggled(bool val)
                   }
             audio->msgSetRecord((AudioOutput*)track, val);
             if (!((AudioOutput*)track)->recFile())
+            {  
                   record->setChecked(false);
+                  record->setIcon(QIcon(*record_off_Icon));
+                  //record->setIconSize(record_on_Icon->size());  
+            }      
             return;
             }
       song->setRecordFlag(track, val);
@@ -148,8 +156,18 @@ void Strip::setLabelText()
       
       label->setText(track->name());
       QPalette palette;
-      palette.setColor(label->backgroundRole(), c);
+      //palette.setColor(label->backgroundRole(), c);
+      QLinearGradient gradient(label->geometry().topLeft(), label->geometry().bottomLeft());
+      //gradient.setColorAt(0, c.darker());
+      //gradient.setColorAt(0, c);
+      //gradient.setColorAt(1, c.darker());
+      gradient.setColorAt(0, c.lighter());
+      gradient.setColorAt(1, c);
+      //palette.setBrush(QPalette::Button, gradient);
+      //palette.setBrush(QPalette::Window, gradient);
+      palette.setBrush(label->backgroundRole(), gradient);
       label->setPalette(palette);
+      
       //label->setStyleSheet(QString("background-color: ") + c.name());
 }
 
@@ -186,18 +204,16 @@ Strip::Strip(QWidget* parent, Track* t)
       iR            = 0;
       oR            = 0;
       
-      setBackgroundRole(QPalette::Mid);
+      ///setBackgroundRole(QPalette::Mid);
       setFrameStyle(Panel | Raised);
       setLineWidth(2);
       
       // NOTE: Workaround for freakin' improper disabled button text colour (at least with Oxygen colours). 
       // Just set the parent palette.
-      QPalette pal(palette());
-      pal.setColor(QPalette::Disabled, QPalette::ButtonText, 
-                   pal.color(QPalette::Disabled, QPalette::WindowText));
-      setPalette(pal);
-      
-      useSoloIconSet2 = false;
+      //QPalette pal(palette());
+      //pal.setColor(QPalette::Disabled, QPalette::ButtonText, 
+      //             pal.color(QPalette::Disabled, QPalette::WindowText));
+      //setPalette(pal);
       
       track    = t;
       meter[0] = 0;
@@ -233,7 +249,7 @@ Strip::Strip(QWidget* parent, Track* t)
       // Therefore 'fake' set the size of the label now.
       // Added by Tim. p3.3.9
       //label->setGeometry(label->x(), label->y(), STRIP_WIDTH - 2*frameWidth() - 2*layout->margin(), label->height());
-      label->setGeometry(label->x(), label->y(), STRIP_WIDTH - 2*grid->margin(), label->height());
+      ///label->setGeometry(label->x(), label->y(), STRIP_WIDTH - 2*grid->margin(), label->height());
       
       label->setTextFormat(Qt::PlainText);
       
@@ -279,5 +295,14 @@ void Strip::setAutomationType(int t)
       track->setAutomationType(AutomationType(t));
       song->update(SC_AUTOMATION);
       }
+      
+void Strip::resizeEvent(QResizeEvent* ev)
+{
+  //printf("Strip::resizeEvent\n");  
+  QFrame::resizeEvent(ev);
+  setLabelText();  
+  setLabelFont();
+}  
+      
 
 } // namespace MusEMixer

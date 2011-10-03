@@ -42,18 +42,7 @@ struct SampleV {
       unsigned char rms;
       };
 
-//---------------------------------------------------------
-//   SndFileList
-//---------------------------------------------------------
-
-class SndFile;
-class SndFileList : public std::list<SndFile*> {
-   public:
-      SndFile* search(const QString& name);
-      };
-
-typedef SndFileList::iterator iSndFile;
-typedef SndFileList::const_iterator ciSndFile;
+class SndFileList;
 
 //---------------------------------------------------------
 //   SndFile
@@ -182,6 +171,23 @@ class SndFileR {
       QString strerror() const { return sf->strerror(); }
       };
 
+
+//---------------------------------------------------------
+//   SndFileList
+//---------------------------------------------------------
+
+class SndFileList : public std::list<SndFile*> {
+   public:
+      SndFile* search(const QString& name);
+      void clearDelete() {
+            for (SndFileList::iterator i = begin(); i != end(); ++i)
+                  delete *i;
+            clear();
+            }
+      };
+
+typedef SndFileList::iterator iSndFile;
+typedef SndFileList::const_iterator ciSndFile;
 
 #if 0
 

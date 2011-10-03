@@ -47,8 +47,8 @@ class VerticalMeter : public Meter {
       void drawVU(QPainter& p, int, int, int);
 
       
-      void paintEvent(QPaintEvent*);
-      void resizeEvent(QResizeEvent*);
+      virtual void paintEvent(QPaintEvent*);
+      virtual void resizeEvent(QResizeEvent*);
 
    public slots:
       void resetPeaks();

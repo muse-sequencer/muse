@@ -265,8 +265,11 @@ void TList::paint(const QRect& r)
                   switch (section) {
                         case COL_RECORD:
                               if (track->canRecord() && !header->isSectionHidden(COL_RECORD)) {
+                                    //bool aa = p.testRenderHint(QPainter::SmoothPixmapTransform); // Antialiasing);  // The rec icon currently looks very jagged. AA should help.
+                                    //p.setRenderHint(QPainter::SmoothPixmapTransform); //Antialiasing);  
                                     drawCenteredPixmap(p,
                                        track->recordFlag() ? record_on_Icon : record_off_Icon, r);
+                                    //p.setRenderHint(QPainter::SmoothPixmapTransform, aa); //Antialiasing, aa);  
                                     }
                               break;
                         case COL_CLASS:
@@ -1689,10 +1692,10 @@ void TList::setYPos(int y)
 //   resizeEvent
 //---------------------------------------------------------
 
-void TList::resizeEvent(QResizeEvent* /*ev*/)
-      {
-      
-      }
+//void TList::resizeEvent(QResizeEvent* /*ev*/)
+//      {
+//      
+//      }
 
 //---------------------------------------------------------
 //   classesPopupMenu

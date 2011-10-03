@@ -58,7 +58,7 @@ class BgPreviewWidget : public QWidget {
       int text_w;
 
    protected:
-      void paintEvent(QPaintEvent* event)
+      virtual void paintEvent(QPaintEvent* event)
             {
             QPainter p(this);
             int w = t_widget->width() - 65;

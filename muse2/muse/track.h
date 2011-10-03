@@ -105,7 +105,7 @@ class Track {
       Track(TrackType);
       //Track(const Track&);
       Track(const Track&, bool cloneParts);
-      virtual ~Track() {};
+      virtual ~Track();
       virtual Track& operator=(const Track& t);
       
       static const char* _cname[];

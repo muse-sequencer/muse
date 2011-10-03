@@ -150,6 +150,15 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
       connect(song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
       }
 
+DrumCanvas::~DrumCanvas()
+{
+  //items.clearDelete();
+  
+  if (must_delete_our_drum_map && ourDrumMap!=NULL)
+    delete [] ourDrumMap;
+    delete steprec;
+}
+
 //---------------------------------------------------------
 //   moveCanvasItems
 //---------------------------------------------------------

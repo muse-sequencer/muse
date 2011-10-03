@@ -2,6 +2,7 @@
 //  MusE
 //  Linux Music Editor
 //  (C) Copyright 2010 Werner Schweer and others (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -40,7 +41,10 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
       int program, pan, volume;
       int heartBeatCounter;
       
-   private slots:
+    protected:
+      virtual void resizeEvent(QResizeEvent*);
+  
+    private slots:
       void iOutputChannelChanged(int);
       void iOutputPortChanged(int);
       void iProgHBankChanged();

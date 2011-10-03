@@ -110,6 +110,10 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
       connect(song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
       }
 
+PianoCanvas::~PianoCanvas()
+{
+  delete steprec;
+}
 //---------------------------------------------------------
 //   pitch2y
 //---------------------------------------------------------

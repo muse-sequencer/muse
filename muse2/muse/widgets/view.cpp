@@ -290,8 +290,9 @@ void View::setYPos(int y)
 //   resizeEvent
 //---------------------------------------------------------
 
-void View::resizeEvent(QResizeEvent* /*ev*/)
+void View::resizeEvent(QResizeEvent* ev)
       {
+      QWidget::resizeEvent(ev);  
       #ifdef VIEW_USE_DOUBLE_BUFFERING
       //pm.resize(ev->size());
       //printf("View::resizeEvent width:%d height:%d\n", 

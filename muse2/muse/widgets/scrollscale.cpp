@@ -197,9 +197,10 @@ void ScrollScale::setPosNoLimit ( unsigned pos )
 //   resizeEvent
 //---------------------------------------------------------
 
-void ScrollScale::resizeEvent ( QResizeEvent* )
+void ScrollScale::resizeEvent ( QResizeEvent* ev)
 {
-	setScale ( scale->value() );
+  QWidget::resizeEvent(ev);
+  setScale ( scale->value() );
 }
 
 //---------------------------------------------------------
@@ -223,6 +224,7 @@ ScrollScale::ScrollScale ( int s1, int s2, int cs, int max_, Qt::Orientation o,
 	down        = 0;
 	logbase     = bas;
 	invers      = inv;
+        scaleVal    = 0;
 
 	double min, max;
 	if ( scaleMin < 0 )

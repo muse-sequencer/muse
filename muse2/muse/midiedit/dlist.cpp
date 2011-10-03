@@ -243,7 +243,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
       sInstrument = instrument;
       drag   = START_DRAG;
 
-      DCols col = DCols(x2col(x)); //FINDMICH update
+      DCols col = DCols(x2col(x));
 
       int val;
       int incVal = 0;

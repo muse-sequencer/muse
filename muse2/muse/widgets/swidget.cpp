@@ -32,7 +32,8 @@ namespace MusEWidget {
 
 void SWidget::resizeEvent(QResizeEvent* ev)
       {
-      emit heightChanged(ev->size().height());
+        QWidget::resizeEvent(ev);
+        emit heightChanged(ev->size().height());
       }
 
 } // namespace MusEWidget
