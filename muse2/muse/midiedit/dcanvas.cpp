@@ -1424,6 +1424,10 @@ void DrumCanvas::rebuildOurDrumMap()
     for (int i=0;i<size;i++)
       ourDrumMap[i] = dynamic_cast<MidiTrack*>(*instrument_map[i].tracks.begin())->drummap()[instrument_map[i].pitch];  
     
+    if (debugMsg) printf("rebuilt drummap, size is now %i\n",size);
+    
+    songChanged(SC_EVENT_INSERTED); // force an update of the itemlist
+
     emit ourDrumMapChanged();
   }
 }

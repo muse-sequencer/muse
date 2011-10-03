@@ -287,10 +287,40 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       signalMapper->setMapping(noteShiftAction, DrumCanvas::CMD_NOTE_SHIFT);
       signalMapper->setMapping(delOverlapsAction, DrumCanvas::CMD_DELETE_OVERLAPS);
 
+
+
       QMenu* menuScriptPlugins = menuBar()->addMenu(tr("&Plugins"));
       song->populateScriptMenu(menuScriptPlugins, this);
       
       QMenu* settingsMenu = menuBar()->addMenu(tr("Window &Config"));
+      if (!old_style_drummap_mode())
+      {
+        QMenu* menuGrouping=settingsMenu->addMenu(tr("Group"));
+        groupNoneAction = menuGrouping->addAction(tr("Don't group"));
+        groupChanAction = menuGrouping->addAction(tr("Group by channel"));
+        groupMaxAction  = menuGrouping->addAction(tr("Group maximally"));
+        settingsMenu->addSeparator();
+        
+        groupNoneAction->setCheckable(true);
+        groupChanAction->setCheckable(true);
+        groupMaxAction ->setCheckable(true);
+        
+        connect(groupNoneAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+        connect(groupChanAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+        connect(groupMaxAction,  SIGNAL(triggered()), signalMapper, SLOT(map()));
+
+        signalMapper->setMapping(groupNoneAction, DrumCanvas::CMD_GROUP_NONE);
+        signalMapper->setMapping(groupChanAction, DrumCanvas::CMD_GROUP_CHAN);
+        signalMapper->setMapping(groupMaxAction,  DrumCanvas::CMD_GROUP_MAX);
+        
+        updateGroupingActions();
+      }
+      else
+      {
+        groupNoneAction=NULL;
+        groupChanAction=NULL;
+        groupMaxAction =NULL;
+      }
       settingsMenu->addAction(subwinAction);
       settingsMenu->addAction(shareAction);
       settingsMenu->addAction(fullscreenAction);
@@ -964,7 +994,11 @@ void DrumEdit::cmd(int cmd)
             case DrumCanvas::CMD_REORDER_LIST: ((DrumCanvas*)(canvas))->moveAwayUnused(); break;
             //case DrumCanvas::CMD_FIXED_LEN: // this must be handled by the drum canvas, due to its
                                               // special nature (each drum has its own length)
-
+            
+            case DrumCanvas::CMD_GROUP_NONE: _group_mode=DONT_GROUP; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
+            case DrumCanvas::CMD_GROUP_CHAN: _group_mode=GROUP_SAME_CHANNEL; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
+            case DrumCanvas::CMD_GROUP_MAX: _group_mode=GROUP_MAX; updateGroupingActions(); ((DrumCanvas*)(canvas))->rebuildOurDrumMap(); break;
+            
             default: ((DrumCanvas*)(canvas))->cmd(cmd);
             }
       }
@@ -1350,4 +1384,17 @@ void DrumEdit::ourDrumMapChanged()
   int vmin,vmax;
   vscroll->range(&vmin, &vmax);
   vscroll->setRange(vmin, dynamic_cast<DrumCanvas*>(canvas)->getOurDrumMapSize()*TH);
+}
+
+void DrumEdit::updateGroupingActions()
+{
+  if (groupNoneAction==NULL || groupChanAction==NULL || groupMaxAction==NULL)
+  {
+    printf("THIS SHOULD NEVER HAPPEN: DrumEdit::updateGroupingActions() called, but one of the actions is NULL!\n");
+    return;
+  }
+  
+  groupNoneAction->setChecked(_group_mode==DONT_GROUP);
+  groupChanAction->setChecked(_group_mode==GROUP_SAME_CHANNEL);
+  groupMaxAction ->setChecked(_group_mode==GROUP_MAX);
 }

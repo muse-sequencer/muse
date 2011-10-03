@@ -101,7 +101,7 @@ class DrumEdit : public MidiEditor {
       QAction *fixedAction, *veloAction, *crescAction, *quantizeAction;
       QAction *sallAction, *snoneAction, *invAction, *inAction , *outAction;
       QAction *prevAction, *nextAction;
-
+      QAction *groupNoneAction, *groupChanAction, *groupMaxAction;
       
       void initShortcuts();
 
@@ -129,6 +129,7 @@ class DrumEdit : public MidiEditor {
       void configChanged();
       void songChanged1(int);
       void setStep(QString);
+      void updateGroupingActions();
 
    public slots:
       void setSelection(int, Event&, Part*);
