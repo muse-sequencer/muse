@@ -114,6 +114,7 @@ class DrumCanvas : public EventCanvas {
          };
       DrumCanvas(MidiEditor*, QWidget*, int, int,
          const char* name = 0);
+      virtual ~DrumCanvas();
       void cmd(int);
       virtual void modifySelected(MusEWidget::NoteInfo::ValType type, int delta);
       virtual void keyPress(QKeyEvent* event);

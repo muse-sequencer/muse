@@ -4,6 +4,7 @@
 //  $Id: osc.h,v 1.0.0.0 2010/04/22 10:05:00 terminator356 Exp $
 //
 //  Copyright (C) 1999-2011 by Werner Schweer and others
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License
@@ -36,101 +37,10 @@ class QString;
 class PluginI;
 class OscIF;
 
-/*
-// Keep the OSC fifo small. There may be thousands of controls, and each control needs a fifo.
-// Oops, no, if the user keeps adjusting a slider without releasing the mouse button, then all of the 
-//  events are sent at once upon releasing the button, meaning there might be thousands of events at once.
-#define OSC_FIFO_SIZE 512
-
-//---------------------------------------------------------
-//  OscControlValue
-//  Item struct for OscGuiControlFifo. 
-//---------------------------------------------------------
-
-struct OscControlValue
-{
-  //int idx;
-  float value;
-  int frame;    // Added p4.0.15
-};
-
-//---------------------------------------------------------
-//  OscControlFifo
-//  A fifo for each of the OSC controls.
-//---------------------------------------------------------
-
-class OscControlFifo
-{
-      OscControlValue fifo[OSC_FIFO_SIZE];
-      volatile int size;
-      int wIndex;
-      int rIndex;
-
-   public:
-      OscControlFifo()  { clear(); }
-      bool put(const OscControlValue& event);   // returns true on fifo overflow
-      OscControlValue get();
-      const OscControlValue& peek(int n = 0);
-      void remove();
-      bool isEmpty() const { return size == 0; }
-      void clear()         { size = 0, wIndex = 0, rIndex = 0; }
-      int getSize() const  { return size; }
-};
-*/
-
-//---------------------------------------------------------
-//  OscIF
-//  Open Sound Control Interface
-//---------------------------------------------------------
-
-/*
-class OscIF
-{
-   private:
-      PluginI* _oscPluginI;
-      
-      #ifdef DSSI_SUPPORT
-      DssiSynthIF* _oscSynthIF;
-      #endif
-      
-      QProcess* _oscGuiQProc;
-      void* _uiOscTarget;
-      char* _uiOscShowPath;
-      char* _uiOscControlPath;
-      char* _uiOscConfigurePath;
-      char* _uiOscProgramPath;
-      char* _uiOscPath;
-      bool _oscGuiVisible;
-   
-      OscControlFifo* _oscControlFifos;
-      
-   public:
-      OscIF();
-      ~OscIF();
-      
-      void oscSetPluginI(PluginI*);
-      
-      #ifdef DSSI_SUPPORT
-      void oscSetSynthIF(DssiSynthIF*);
-      #endif
-      
-      int oscUpdate(lo_arg**);    
-      int oscProgram(lo_arg**);   
-      int oscControl(lo_arg**);   
-      int oscExiting(lo_arg**);   
-      int oscMidi(lo_arg**);      
-      int oscConfigure(lo_arg**); 
-   
-      bool oscInitGui();
-      void oscShowGui(bool);
-      bool oscGuiVisible() const;
-      OscControlFifo* oscFifo(unsigned long) const;
-};
-*/ 
- 
 class OscIF
 {
    protected:
+      pid_t _guiPid;
       QProcess* _oscGuiQProc;
       void* _uiOscTarget;
       char* _uiOscPath;
@@ -141,16 +51,12 @@ class OscIF
       char* _uiOscShowPath;
       bool _oscGuiVisible;
    
-      //OscControlFifo* _oscControlFifos;
-      
       virtual bool oscInitGui(const QString& /*typ*/, const QString& /*baseName*/, const QString& /*name*/, 
                        const QString& /*label*/, const QString& /*filePath*/, const QString& /*guiPath*/);
                        
    public:
       OscIF();
       virtual ~OscIF();
-      
-      //OscControlFifo* oscFifo(unsigned long) const;
       
       virtual int oscUpdate(lo_arg**);    
       virtual int oscProgram(lo_arg**)   { return 0; }   

@@ -202,6 +202,9 @@ AudioTrack::~AudioTrack()
       }
       delete[] outBuffers;
       
+      for(iCtrlList i = _controller.begin(); i != _controller.end(); ++i)
+        delete i->second;
+      
 }
 
 //---------------------------------------------------------

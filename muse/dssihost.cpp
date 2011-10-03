@@ -4,7 +4,7 @@
 //  $Id: dssihost.cpp,v 1.15.2.16 2009/12/15 03:39:58 terminator356 Exp $
 //
 //  Copyright (C) 1999-2011 by Werner Schweer and others
-//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License
@@ -84,8 +84,6 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
         {
           const DSSI_Descriptor* descr;
           
-          // CRAPPY PLUGIN ALERT: 
-          // Out of many plugins, with several, Valgrind says something in here is allocated with new. 
           descr = dssi(i);
           if (descr == 0)
                 break;
@@ -120,8 +118,10 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
                 break;
             }
             if(is != synthis.end())
+            {  
+              //delete descr;
               continue;
-            
+            }
             DssiSynth* s = new DssiSynth(fi, descr);
             
             if(MusEGlobal::debugMsg)
@@ -149,6 +149,9 @@ static void scanDSSILib(QFileInfo& fi) // ddskrjo removed const for argument
             
             synthis.push_back(s);
           }
+          //else
+          //  delete descr;
+
         }
       }  
       dlclose(handle);
@@ -270,7 +273,8 @@ DssiSynth::DssiSynth(QFileInfo& fi, const DSSI_Descriptor* d) : // ddskrjo remov
 
 DssiSynth::~DssiSynth() 
 { 
-
+  if(dssi)
+    delete dssi;
 }
 
 //---------------------------------------------------------

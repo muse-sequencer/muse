@@ -112,6 +112,11 @@ PartCanvas::PartCanvas(int* r, QWidget* parent, int sx, int sy)
       partsChanged();
       }
 
+PartCanvas::~PartCanvas()
+{
+  //items.clearDelete();
+}
+
 //---------------------------------------------------------
 //   y2pitch
 //---------------------------------------------------------
@@ -427,7 +432,8 @@ QPoint PartCanvas::raster(const QPoint& p) const
 
 void PartCanvas::partsChanged()
       {
-      items.clear();
+      //items.clear();
+      items.clearDelete();
       for (iTrack t = tracks->begin(); t != tracks->end(); ++t) {
             PartList* pl = (*t)->parts();
             for (iPart i = pl->begin(); i != pl->end(); ++i) {

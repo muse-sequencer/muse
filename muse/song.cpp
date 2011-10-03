@@ -2341,6 +2341,8 @@ void Song::cleanupForQuit()
         printf("deleting midi devices except synths\n");
       for(iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd)
       {
+        // Close the device. Handy to do all devices here, including synths.
+        (*imd)->close();
         // Since Syntis are midi devices, there's no need to delete them below.
         if((*imd)->isSynti())
           continue;
@@ -2373,11 +2375,15 @@ void Song::cleanupForQuit()
           continue;
         delete (*imi);
       }
-      midiInstruments.clear();     // midi devices
+      midiInstruments.clear();     // midi instruments
       
       // Nothing required for ladspa plugin list, and rack instances of them
       //  are handled by ~AudioTrack.
       
+      if(MusEGlobal::debugMsg)
+        printf("Muse: Deleting sound files\n");
+      SndFile::sndFiles.clearDelete();      
+
       if(MusEGlobal::debugMsg)
         printf("...finished cleaning up.\n");
 }

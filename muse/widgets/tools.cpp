@@ -129,7 +129,7 @@ void EditToolBar::toolChanged(QAction* action)
 
 EditToolBar::~EditToolBar()
       {
-      delete actions;
+      delete [] actions;
       }
 
 //---------------------------------------------------------

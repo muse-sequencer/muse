@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //  $Id: alsamidi.h,v 1.2 2004/01/14 09:06:43 wschweer Exp $
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on users dot sourceforge dot net)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -77,6 +77,7 @@ class MidiAlsaDevice : public MidiDevice {
       };
 
 extern bool initMidiAlsa();
+extern bool exitMidiAlsa();
 extern int alsaSelectRfd();
 extern int alsaSelectWfd();
 extern void alsaProcessMidiInput();

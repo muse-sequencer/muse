@@ -1,6 +1,12 @@
 02.09.2011:
         - SigEdit reworked to use two spinboxes, plan on adding Enter/Return detection so the widget will close when 
           Enter/Return is pressed (rj)
+        - Fixed HUGE massive memory leaks in all things using CItemList, and SndFile, dssi, fluidsynth and other huge leaks. (Tim) 
+          Addition of 'delete' in places hopefully does not introduce any new unforseen instabilities.
+          Result: A song with 20 wave/midi tracks and several dssi, vst and fluidsynths, which leaked HUNDREDS of megabytes,
+           now only leaks about 2 megabytes. TODO: Still some funny business with ALSA, and dssi scanning.  
+          Post-fix LEAK SUMMARY: definitely lost: 259,863 bytes in 356 blocks   indirectly lost: 611,874 bytes in 22,834 blocks
+                                 possibly lost: 180,508 bytes in 5,211 blocks   still reachable: 1,061,068 bytes in 10,522 blocks
 30.09.2011:
         - Fixed long-standing problem with themes (Ia Ora / Bespin etc) and MusE button icons. Some themes don't support 
            multiple-pixmap icons. So mute/solo/rec/stereo/thru always showed the same icon. Replaced w single pm icons. (Tim)

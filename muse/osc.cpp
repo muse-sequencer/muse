@@ -4,7 +4,7 @@
 //  $Id: osc.cpp,v 1.0.0.0 2010/04/22 03:39:58 terminator356 Exp $
 //
 //  Copyright (C) 1999-2011 by Werner Schweer and others
-//  OSC module added by Tim.
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License
@@ -28,21 +28,23 @@
 // Turn on debugging messages
 //#define OSC_DEBUG 
 
-#include <string.h>
-//#include <signal.h>
-//#include <dlfcn.h>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <errno.h>
-//#include <dssi.h>
-//#include <alsa/asoundlib.h>
+// Whether to use a QProcess or fork + execlp to start the gui. (Note fork + execlp give problems - zombies when synth window closed.)
+#define _USE_QPROCESS_FOR_GUI_ 1
 
-#include <QDir>
+#include <string.h>
+#include <stdlib.h>
+
 #include <QFileInfo>
 #include <QString>
 #include <QStringList>
-#include <QProcess>
-#include <QTimer>
+
+#ifdef _USE_QPROCESS_FOR_GUI_
+  #include <QProcess>
+#else
+  #include <unistd.h> 
+  #include <signal.h>
+  #include <errno.h>
+#endif
 
 #include <lo/lo.h>
 
@@ -55,23 +57,11 @@
 #include "track.h"
 #include "song.h"
 #include "synth.h"
-//#include "audio.h"
-//#include "jackaudio.h"
-//#include "midi.h"
-//#include "midiport.h"
-//#include "al/al.h"
-//#include "al/xml.h"
-//#include "xml.h"
-//#include "midictrl.h"
-//#include "ladspaplugin.h"
-
 #include "app.h"
 #include "globals.h"
 #include "globaldefs.h"
-//#include "al/dsp.h"
 
 static lo_server_thread serverThread = 0;
-///static char osc_path_tmp[1024];
 static char* url = 0;
 static bool oscServerRunning = false;
 
@@ -107,7 +97,6 @@ static int oscDebugHandler(const char* path, const char* types, lo_arg** argv,
 
 int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
    int argc, void* data, void* user_data)
-   //int argc, lo_message data, void* user_data)
 {
   const char* p = path;
   
@@ -409,61 +398,6 @@ void stopOSC()
         
 } // namespace MusEApp
 
-/*
-//---------------------------------------------------------
-//   OscControlFifo
-//    put
-//    return true on fifo overflow
-//---------------------------------------------------------
-
-bool OscControlFifo::put(const OscControlValue& event)
-      {
-      if (size < OSC_FIFO_SIZE) {
-            fifo[wIndex] = event;
-            wIndex = (wIndex + 1) % OSC_FIFO_SIZE;
-            // q_atomic_increment(&size);
-            ++size;
-            return false;
-            }
-      return true;
-      }
-
-//---------------------------------------------------------
-//   get
-//---------------------------------------------------------
-
-OscControlValue OscControlFifo::get()
-      {
-      OscControlValue event(fifo[rIndex]);
-      rIndex = (rIndex + 1) % OSC_FIFO_SIZE;
-      // q_atomic_decrement(&size);
-      --size;
-      return event;
-      }
-
-//---------------------------------------------------------
-//   peek
-//---------------------------------------------------------
-
-const OscControlValue& OscControlFifo::peek(int n)
-      {
-      int idx = (rIndex + n) % OSC_FIFO_SIZE;
-      return fifo[idx];
-      }
-
-//---------------------------------------------------------
-//   remove
-//---------------------------------------------------------
-
-void OscControlFifo::remove()
-      {
-      rIndex = (rIndex + 1) % OSC_FIFO_SIZE;
-      // q_atomic_decrement(&size);
-      --size;
-      }
-*/
-
-
 //---------------------------------------------------------
 //   OscIF
 //   Open Sound Control Interface
@@ -471,12 +405,6 @@ void OscControlFifo::remove()
 
 OscIF::OscIF()
 {
-  //_oscPluginI = 0;
-  
-  //#ifdef DSSI_SUPPORT
-  //_oscSynthIF = 0;
-  //#endif
-  
   _uiOscTarget = 0;
   _uiOscSampleRatePath = 0;
   _uiOscShowPath = 0;
@@ -484,17 +412,17 @@ OscIF::OscIF()
   _uiOscConfigurePath = 0;
   _uiOscProgramPath = 0;
   _uiOscPath = 0;
-  //guiPid = -1;
+#ifdef _USE_QPROCESS_FOR_GUI_
   _oscGuiQProc = 0;
+#else  
+  _guiPid = -1;
+#endif
   _oscGuiVisible = false;
-  
-  //_oscControlFifos = 0;
 }
 
 OscIF::~OscIF()
 {
-  //if (guiPid != -1)
-  //      kill(guiPid, SIGHUP);
+#ifdef _USE_QPROCESS_FOR_GUI_
   if(_oscGuiQProc)
   {
     if(_oscGuiQProc->state())
@@ -516,10 +444,20 @@ OscIF::~OscIF()
       //  so kill is not desirable.
       // We could wait until terminate finished but don't think that's good here.
       ///QTimer::singleShot( 5000, _oscGuiQProc, SLOT( kill() ) );          
+      _oscGuiQProc->waitForFinished(3000);
     }  
-    //delete _oscGuiQProc;
+    delete _oscGuiQProc;
   }
-      
+  
+#else  // NOT  _USE_QPROCESS_FOR_GUI_
+
+  if (_guiPid != -1)
+  {  
+    if(kill(_guiPid, SIGHUP) != -1)
+      _guiPid = -1;
+  }      
+#endif  // _USE_QPROCESS_FOR_GUI_
+
   if(_uiOscTarget)
     lo_address_free(_uiOscTarget);
   if(_uiOscSampleRatePath)
@@ -534,23 +472,7 @@ OscIF::~OscIF()
     free(_uiOscProgramPath);
   if(_uiOscPath)
     free(_uiOscPath);
-    
-  //if(_oscControlFifos)
-  //  delete[] _oscControlFifos;
 }
-
-/*
-//---------------------------------------------------------
-//   oscFifo
-//---------------------------------------------------------
-
-OscControlFifo* OscIF::oscFifo(unsigned long i) const
-{
-  if(!_oscControlFifos)
-    return 0;
-  return &_oscControlFifos[i];
-}
-*/
 
 //---------------------------------------------------------
 //   oscUpdate
@@ -709,6 +631,9 @@ int OscIF::oscExiting(lo_arg**)
       // The gui is gone now, right?
       _oscGuiVisible = false;
       
+// Just an attempt to really kill the process, an attempt to fix gui not re-showing after closing. Doesn't help.
+/*
+#ifdef _USE_QPROCESS_FOR_GUI_
       if(_oscGuiQProc)
       {
         if(_oscGuiQProc->state())
@@ -730,10 +655,34 @@ int OscIF::oscExiting(lo_arg**)
           //  so kill is not desirable.
           // We could wait until terminate finished but don't think that's good here.
           ///QTimer::singleShot( 5000, _oscGuiQProc, SLOT( kill() ) );          
+          _oscGuiQProc->waitForFinished(3000);
         }  
         //delete _oscGuiQProc;
+        //_oscGuiQProc = 0;
       }
-          
+      
+     
+#else  // NOT  _USE_QPROCESS_FOR_GUI_        
+
+      if(_guiPid != -1)
+      {  
+        #ifdef OSC_DEBUG 
+        printf("OscIF::oscExiting hanging up _guiPid:%d\n", _guiPid);
+        #endif
+        //if(kill(_guiPid, SIGHUP) != -1)
+        //if(kill(_guiPid, SIGTERM) != -1)
+        if(kill(_guiPid, SIGKILL) != -1)
+        {  
+          #ifdef OSC_DEBUG 
+          printf(" hang up sent\n");
+          #endif
+          _guiPid = -1;
+        }  
+      }  
+      
+#endif // _USE_QPROCESS_FOR_GUI_
+*/
+      
       if(_uiOscTarget)
         lo_address_free(_uiOscTarget);
       _uiOscTarget = 0;  
@@ -756,9 +705,6 @@ int OscIF::oscExiting(lo_arg**)
         free(_uiOscPath);
       _uiOscPath = 0;  
         
-      //if(_oscControlFifos)
-      //  delete[] _oscControlFifos;
-      
       //const DSSI_Descriptor* dssi = synth->dssi;
       //const LADSPA_Descriptor* ld = dssi->LADSPA_Plugin;
       //if(ld->deactivate) 
@@ -851,14 +797,22 @@ void OscIF::oscSendConfigure(const char *key, const char *val)
 //   oscInitGui
 //---------------------------------------------------------
 
-//bool OscIF::oscInitGui()
 bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QString& name, 
                        const QString& label, const QString& filePath, const QString& guiPath)
 {
       // Are we already running? We don't want to allow another process do we...
+#ifdef _USE_QPROCESS_FOR_GUI_
       if((_oscGuiQProc != 0) && (_oscGuiQProc->state()))
         return true;
+#else
+      if(_guiPid != -1)
+        return true;
+#endif
         
+      #ifdef OSC_DEBUG 
+      fprintf(stderr, "OscIF::oscInitGui\n");
+      #endif
+
       if(!url)
       {  
         fprintf(stderr, "OscIF::oscInitGui no server url!\n");
@@ -871,198 +825,83 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
         return false;
       }
             
-      //
-      //  start gui
-      //
-      //static char oscUrl[1024];
-      //char oscUrl[1024];
       QString oscUrl;
-      
-      //snprintf(oscUrl, 1024, "%s/%s/%s", url, baseName.ascii(), name.ascii());
-      //snprintf(oscUrl, 1024, "%s%s/%s/%s", url, typ.toLatin1().constData(), baseName.toLatin1().constData(), name.toLatin1().constData());
-      //oscUrl = QString("%1%2/%3/%4").arg(QString(QT_TRANSLATE_NOOP("@default", url))).arg(typ).arg(baseName).arg(name);
       oscUrl = QString("%1%2/%3/%4").arg(QString(QT_TRANSLATE_NOOP("@default", url))).arg(typ).arg(baseName).arg(label);
       
-      // Removed p4.0.19 Tim
-      /*
-      //QString guiPath(info.path() + "/" + info.baseName());
-      //QString guiPath(synth->info.dirPath() + "/" + synth->info.baseName());
-      QString guiPath(dirPath + "/" + baseName);
+                        
+#ifdef _USE_QPROCESS_FOR_GUI_
+      
+      // fork + execlp cause the process to remain (zombie) after closing gui, requiring manual kill.
+      // Using QProcess works OK. 
+      // No QProcess created yet? Do it now. Only once per SynthIF instance. Exists until parent destroyed.
+      if(_oscGuiQProc == 0)
+        //_oscGuiQProc = new QProcess(muse);                        
+        _oscGuiQProc = new QProcess();                        
+      
+      QString program(guiPath);
+      QStringList arguments;
+      arguments << oscUrl
+                << filePath
+                << name
+                << QString("channel-1");
 
       #ifdef OSC_DEBUG 
-      fprintf(stderr, "OscIF::oscInitGui guiPath:%s\n", guiPath.toLatin1().constData());
+      fprintf(stderr, "OscIF::oscInitGui starting QProcess\n");
+      #endif
+      _oscGuiQProc->start(program, arguments);
+        
+      if(_oscGuiQProc->state())
+      {
+        #ifdef OSC_DEBUG 
+        fprintf(stderr, "OscIF::oscInitGui started QProcess\n");
+        #endif
+      }
+      else
+      {
+        fprintf(stderr, "exec %s %s %s %s failed: %s\n",
+                guiPath.toLatin1().constData(),
+                oscUrl.toLatin1().constData(),
+                filePath.toLatin1().constData(),
+                name.toLatin1().constData(),
+                strerror(errno));
+        //exit(1);
+      }
+      
+      #ifdef OSC_DEBUG 
+      fprintf(stderr, "OscIF::oscInitGui after QProcess\n");
       #endif
       
-      QDir guiDir(guiPath, "*", QDir::Unsorted, QDir::Files);
-      if (guiDir.exists()) 
+#else  // NOT  _USE_QPROCESS_FOR_GUI_
+                                
+      #ifdef OSC_DEBUG 
+      fprintf(stderr, "forking...\n");
+      #endif
+
+      QString guiName = QFileInfo(guiPath).fileName();
+      // Note: fork + execlp cause the process to remain (zombie) after closing gui, requiring manual kill. Use QProcess instead.
+      if((_guiPid = fork()) == 0)  
       {
-            //const QFileInfoList list = guiDir.entryInfoList();
-            QStringList list = guiDir.entryList();
-            
-            //for (int i = 0; i < list.size(); ++i) {
-            for (int i = 0; i < list.count(); ++i) 
-            {
-                
-                //QFileInfo fi = list.at(i);
-                QFileInfo fi(guiPath + QString("/") + list[i]);
-                  
-                  QString gui(fi.filePath());
-                  if (gui.contains('_') == 0)
-                        continue;
-                  struct stat buf;
-                  
-                  //if (stat(gui.toAscii().data(), &buf)) {
-                  if (stat(gui.toLatin1().constData(), &buf)) {
-                  
-                        perror("stat failed");
-                        continue;
-                        }
+         execlp(
+                 guiPath.toLatin1().constData(),
+                 guiName.toLatin1().constData(),
+                 oscUrl.toLatin1().constData(),
+                 filePath.toLatin1().constData(),
+                 name.toLatin1().constData(),
+                 "channel 1", (void*)0);
 
-                  #ifdef OSC_DEBUG 
-                  fprintf(stderr, "OscIF::oscInitGui  %s %s %s %s\n",
-                      //fi.filePath().toAscii().data(),
-                      //fi.fileName().toAscii().data(),
-                      fi.filePath().toLatin1().constData(),
-                      //fi.fileName().ascii(),
-                      
-                      oscUrl.toLatin1().constData(),
-                      
-                      //synth->info.filePath().ascii(),
-                      filePath.toLatin1().constData(),
-                      
-                      //name().toAscii().data(),
-                      //synth->name().ascii());
-                      name.toLatin1().constData());
-                  #endif
-                  */      
-                      
-                  //if ((S_ISREG(buf.st_mode) || S_ISLNK(buf.st_mode)) &&
-                  //   (buf.st_mode & (S_IXUSR | S_IXGRP | S_IXOTH))) 
-                  //{
-                        
-                        // Changed by T356.
-                        // fork + execlp were causing the processes to remain after closing gui, requiring manual kill.
-                        // Changed to QProcess, works OK now. 
-                        //if((guiPid = fork()) == 0) 
-                        //{
-                              // No QProcess created yet? Do it now. Only once per SynthIF instance. Exists until parent destroyed.
-                              if(_oscGuiQProc == 0)
-                                //_oscGuiQProc = new QProcess(muse);                        
-                                _oscGuiQProc = new QProcess();                        
-			      
-                              //QString program(fi.filePath());
-                              QString program(guiPath);
-			      QStringList arguments;
-			      arguments << oscUrl
-					<< filePath
-					<< name
-					<< QString("channel-1");
-
-                              /*
-                              fprintf(stderr, "OscIF::oscInitGui  %s %s %s %s\n",
-                                //fi.filePath().toAscii().data(),
-                                //fi.fileName().toAscii().data(),
-                                guiPath.toLatin1().constData(),
-                                //fi.fileName().ascii(),
-                                
-                                oscUrl.toLatin1().constData(),
-                                
-                                //synth->info.filePath().ascii(),
-                                filePath.toLatin1().constData(),
-                                
-                                //name().toAscii().data(),
-                                //synth->name().ascii());
-                                name.toLatin1().constData());
-                              */  
-                      
-			      /* Leave out Qt3 stuff for reference - Orcan:
-                              // Don't forget this, he he...
-                              _oscGuiQProc->clearArguments();
-                              
-                              _oscGuiQProc->addArgument(fi.filePath());
-                              //_oscGuiQProc->addArgument(fi.fileName()); // No conventional 'Arg0' here.
-                              //_oscGuiQProc->addArgument(QString(oscUrl));
-                              _oscGuiQProc->addArgument(oscUrl);
-                              //_oscGuiQProc->addArgument(synth->info.filePath());
-                              _oscGuiQProc->addArgument(filePath);
-                              //_oscGuiQProc->addArgument(synth->name());
-                              _oscGuiQProc->addArgument(name);
-                              _oscGuiQProc->addArgument(QString("channel-1"));
-                              */
-                              #ifdef OSC_DEBUG 
-                              fprintf(stderr, "OscIF::oscInitGui starting QProcess\n");
-                              #endif
-			      _oscGuiQProc->start(program, arguments);
-			      
-                                
-                              if(_oscGuiQProc->state())
-                              {
-                                #ifdef OSC_DEBUG 
-                                fprintf(stderr, "OscIF::oscInitGui started QProcess\n");
-                                #endif
-                                
-                                //guiPid = _oscGuiQProc->processIdentifier();
-                              }
-                              else
-                              {
-                              
-                                /*
-                                execlp(
-                                        //fi.filePath().toAscii().data(),
-                                        //fi.fileName().toAscii().data(),
-                                        fi.filePath().ascii(),
-                                        fi.fileName().ascii(),
-                                        
-                                        oscUrl,
-                                        
-                                        //info.filePath().toAscii().data(),
-                                        //name().toAscii().data(),
-                                        synth->info.filePath().ascii(),
-                                        synth->name().ascii(),
-                                        
-                                        "channel 1", (void*)0);
-                                */
-                                        
-                                fprintf(stderr, "exec %s %s %s failed: %s\n",
-                                        //fi.filePath().toAscii().data(),
-                                        //fi.fileName().toAscii().data(),
-                                        //fi.filePath().toLatin1().constData(),
-                                        guiPath.toLatin1().constData(),
-                                        //fi.fileName().toLatin1().constData(),
-                                        
-                                        oscUrl.toLatin1().constData(),
-                                        
-                                        //name().toAscii().data(),
-                                        //synth->name().ascii(),
-                                        name.toLatin1().constData(),
-                                        
-                                        strerror(errno));
-                                        
-                                // It's Ok, Keep going. So nothing happens. So what. The timeout in showGui will just leave.
-                                // Maybe it's a 'busy' issue somewhere - allow to try again later + save work now.
-                                //exit(1);
-                                
-                              }
-                              
-                              #ifdef OSC_DEBUG 
-                              fprintf(stderr, "OscIF::oscInitGui after QProcess\n");
-                              #endif
-                        //}
-                  //}
-            //}
-            //synth->_hasGui = true;
-      /*
+        // Should not return after execlp. If so it's an error.
+        fprintf(stderr, "exec %s %s %s %s %s failed: %s\n",
+                guiPath.toLatin1().constData(),
+                guiName.toLatin1().constData(),
+                oscUrl.toLatin1().constData(),
+                filePath.toLatin1().constData(),
+                name.toLatin1().constData(),
+                strerror(errno));
+        //exit(1);
       }
-      else {
-            printf("OscIF::oscInitGui %s: no dir for gui found: %s\n",
-               //name().toAscii().data(), guiPath.toAscii().data());
-               //synth->name().ascii(), guiPath.ascii());
-               name.toLatin1().constData(), guiPath.toLatin1().constData());
-            
-            //synth->_hasGui = false;
-            }
-     */       
-            
+      
+#endif   // _USE_QPROCESS_FOR_GUI_
+      
   return true;          
 }
 
@@ -1080,8 +919,11 @@ void OscIF::oscShowGui(bool v)
       if (v == oscGuiVisible())
             return;
       
-      //if(guiPid == -1)
+#ifdef _USE_QPROCESS_FOR_GUI_
       if((_oscGuiQProc == 0) || (!_oscGuiQProc->state()))
+#else        
+      if(_guiPid == -1)
+#endif        
       {
         // We need an indicator that update was called - update must have been called to get new path etc...
         // If the process is not running this path is invalid, right?
@@ -1138,19 +980,9 @@ bool OscIF::oscGuiVisible() const
 //   oscSetSynthIF
 //---------------------------------------------------------
 
-//void OscIF::oscSetSynthIF(DssiSynthIF* s) 
 void OscDssiIF::oscSetSynthIF(DssiSynthIF* s)
 { 
   _oscSynthIF = s;
-  //if(_oscControlFifos)
-  //  delete[] _oscControlFifos;
-  //_oscControlFifos = 0;
-    
-  //if(_oscSynthIF && _oscSynthIF->dssiSynth())
-  //{
-  //  unsigned long ports = _oscSynthIF->dssiSynth()->inControls();
-  //  _oscControlFifos = new OscControlFifo[ports];  
-  //}  
 }
 
 //---------------------------------------------------------
@@ -1171,58 +1003,6 @@ int OscDssiIF::oscUpdate(lo_arg **argv)
       
       if(_oscSynthIF)
         _oscSynthIF->oscUpdate();
-      
-      /*
-      if(_oscSynthIF)
-      {
-        // Send current string configuration parameters.
-        StringParamMap& map = _oscSynthIF->dssiSynthI()->stringParameters();
-        int i = 0;
-        for(ciStringParamMap r = map.begin(); r != map.end(); ++r) 
-        {
-          lo_send(_uiOscTarget, _uiOscConfigurePath, "ss", r->first.c_str(), r->second.c_str());
-          // Avoid overloading the GUI if there are lots and lots of params. 
-          if((i+1) % 50 == 0)
-            usleep(300000);
-          ++i;      
-        }  
-        
-        // Send current bank and program.
-        unsigned long bank, prog;
-        _oscSynthIF->dssiSynthI()->currentProg(&prog, &bank, 0);
-        lo_send(_uiOscTarget, _uiOscProgramPath, "ii", bank, prog);
-        
-        // Send current control values.
-        unsigned long ports = _oscSynthIF->dssiSynth()->inControls();
-        for(unsigned long i = 0; i < ports; ++i) 
-        {
-          unsigned long k = _oscSynthIF->dssiSynth()->inControlPortIdx(i);
-          lo_send(_uiOscTarget, _uiOscControlPath, "if", k, _oscSynthIF->getParameter(i));
-          // Avoid overloading the GUI if there are lots and lots of ports. 
-          if((i+1) % 50 == 0)
-            usleep(300000);
-        }
-      }  
-      */
-      
-      /*
-      char uiOscGuiPath[strlen(_uiOscPath)+6];
-      sprintf(uiOscGuiPath, "%s/%s", _uiOscPath, "show");
-      
-      #ifdef OSC_DEBUG 
-      printf("OscIF::oscUpdate Sending show uiOscGuiPath:%s\n", uiOscGuiPath);
-      #endif
-      
-      lo_send(_uiOscTarget, uiOscGuiPath, "");
-      
-      sprintf(uiOscGuiPath, "%s/%s", _uiOscPath, "hide");
-      
-      #ifdef OSC_DEBUG 
-      printf("OscIF::oscUpdate Sending hide uiOscGuiPath:%s\n", uiOscGuiPath);
-      #endif
-      
-      lo_send(_uiOscTarget, uiOscGuiPath, "");
-      */
       
 #if 0
       /* Send current bank/program  (-FIX- another race...) */
@@ -1256,8 +1036,6 @@ int OscDssiIF::oscUpdate(lo_arg **argv)
 
 int OscDssiIF::oscConfigure(lo_arg** argv)
 {
-  //OscIF::oscConfigure(argv);
-  
   if(_oscSynthIF)
     _oscSynthIF->oscConfigure((const char*)&argv[0]->s, (const char*)&argv[1]->s);
   return 0;
@@ -1269,8 +1047,6 @@ int OscDssiIF::oscConfigure(lo_arg** argv)
 
 int OscDssiIF::oscMidi(lo_arg** argv)
 {
-  //OscIF::oscMidi(argv);
-  
   if(_oscSynthIF)
     _oscSynthIF->oscMidi(argv[0]->m[1], argv[0]->m[2], argv[0]->m[3]);
   
@@ -1283,8 +1059,6 @@ int OscDssiIF::oscMidi(lo_arg** argv)
 
 int OscDssiIF::oscProgram(lo_arg** argv)
 {
-  //OscIF::oscProgram(argv);
-  
   if(_oscSynthIF)
     _oscSynthIF->oscProgram(argv[1]->i, argv[0]->i);
   
@@ -1297,8 +1071,6 @@ int OscDssiIF::oscProgram(lo_arg** argv)
 
 int OscDssiIF::oscControl(lo_arg** argv)
 {
-  //OscIF::oscControl(argv);
-  
   int port = argv[0]->i;
   if(port < 0)
     return 0;
@@ -1319,8 +1091,7 @@ bool OscDssiIF::oscInitGui()
     
   return OscIF::oscInitGui(QT_TRANSLATE_NOOP("@default", "dssi_synth"), _oscSynthIF->dssiSynth()->baseName(), 
                            _oscSynthIF->dssiSynth()->name(), _oscSynthIF->dssiSynthI()->name(), 
-                           //_oscSynthIF->dssiSynth()->filePath(), _oscSynthIF->dssiSynth()->path());
-                           _oscSynthIF->dssiSynth()->fileName(), _oscSynthIF->dssi_ui_filename());    // p4.0.19
+                           _oscSynthIF->dssiSynth()->fileName(), _oscSynthIF->dssi_ui_filename()); 
 }
       
 #endif   // DSSI_SUPPORT
@@ -1334,15 +1105,6 @@ bool OscDssiIF::oscInitGui()
 void OscEffectIF::oscSetPluginI(PluginI* s)
 { 
   _oscPluginI = s; 
-  //if(_oscControlFifos)
-  //  delete[] _oscControlFifos;
-  //_oscControlFifos = 0;
-    
-  //if(_oscPluginI && _oscPluginI->plugin())
-  //{
-  //  unsigned long ports = _oscPluginI->plugin()->controlInPorts();
-  //  _oscControlFifos = new OscControlFifo[ports];  
-  //}  
 }
 
 //---------------------------------------------------------
@@ -1370,8 +1132,6 @@ int OscEffectIF::oscUpdate(lo_arg** argv)
 
 int OscEffectIF::oscConfigure(lo_arg** argv)
 {
-  //OscIF::oscConfigure(argv);
-  
   if(_oscPluginI)
     _oscPluginI->oscConfigure((const char*)&argv[0]->s, (const char*)&argv[1]->s);
   
@@ -1384,8 +1144,6 @@ int OscEffectIF::oscConfigure(lo_arg** argv)
 
 int OscEffectIF::oscControl(lo_arg** argv)
 {
-  //OscIF::oscControl(argv);
-  
   int port = argv[0]->i;
   if(port < 0)
     return 0;
@@ -1406,8 +1164,7 @@ bool OscEffectIF::oscInitGui()
     
   return OscIF::oscInitGui(QT_TRANSLATE_NOOP("@default", "ladspa_efx"), _oscPluginI->plugin()->lib(false), 
                            _oscPluginI->plugin()->label(), _oscPluginI->label(), 
-                           //_oscPluginI->plugin()->filePath(), _oscPluginI->plugin()->dirPath(false));
-                           _oscPluginI->plugin()->fileName(), _oscPluginI->dssi_ui_filename());    // p4.0.19
+                           _oscPluginI->plugin()->fileName(), _oscPluginI->dssi_ui_filename());  
 }
       
 

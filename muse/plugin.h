@@ -4,6 +4,7 @@
 //  $Id: plugin.h,v 1.9.2.13 2009/12/06 01:25:21 terminator356 Exp $
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
