@@ -177,6 +177,8 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       selPart  = 0;
       QSignalMapper *signalMapper = new QSignalMapper(this);
       
+      _group_mode = GROUP_SAME_CHANNEL;
+      
       //---------Pulldown Menu----------------------------
       menuFile = menuBar()->addMenu(tr("&File"));
 

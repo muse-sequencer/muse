@@ -295,7 +295,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   else if (val > 127)
                         val = 127;
                   
-                  if (old_style_drummap_mode) //FINDMICH auch beim doppelklick!
+                  if (old_style_drummap_mode)
                   {
                       //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
                       //If so, switch the inmap between the instruments
@@ -318,7 +318,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   dm->len = val;
                   break;
             case COL_ANOTE:
-                  if (old_style_drummap_mode) //only allow changing in old style mode FINDMICH auch beim doppelklick
+                  if (old_style_drummap_mode) //only allow changing in old style mode
                   {
                     val = dm->anote + incVal;
                     if (val < 0)
@@ -412,10 +412,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
             }
       
       if (!old_style_drummap_mode && dm_old != *dm) //something changed and we're in new style mode?
-      {
-        //FINDMICHJETZT propagate that!
         dcanvas->propagate_drummap_change(dm-ourDrumMap);
-      }
       
       redraw();
       }
@@ -579,7 +576,7 @@ void DList::setCurDrumInstrument(int instr)
       if (currentlySelected != dm) {
             currentlySelected = dm;
             emit curDrumInstrumentChanged(instr);
-            song->update(SC_DRUMMAP); //FINDMICH necessary??
+            song->update(SC_DRUMMAP);
             }
       }
 
@@ -678,10 +675,7 @@ void DList::returnPressed()
             }
       
       if (editEntryOld != *editEntry)
-      {
-        //FINDMICHJETZT propagate!
         dcanvas->propagate_drummap_change(editEntry-ourDrumMap);
-      }
       
       selectedColumn = -1;
       editor->hide();
@@ -740,10 +734,7 @@ void DList::pitchEdited()
             }
       
       if (editEntryOld != *editEntry)
-      {
-        //FINDMICHJETZT propagate
         dcanvas->propagate_drummap_change(editEntry-ourDrumMap);
-      }
       
       selectedColumn = -1;
       pitch_editor->hide();

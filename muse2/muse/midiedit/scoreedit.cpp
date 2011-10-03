@@ -4598,6 +4598,8 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *        x remember ordering of instruments
  *        x tracks have own drumlists
  * 
+ * 				o "copy drumlist" from one track to another
+ * 
  *        x each track has its own drumlist and a bool maintained_automatically
  *        o whenever changing the patch and maintained_automatically==true,
  *          the drumlist is replaced by the according one (for example, "jazz" drum kit's list)
@@ -4622,6 +4624,7 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *   o update [midi]track::read/write, readproperties, writeprop... (drumlist etc), operator=
  *
  * IMPORTANT TODO
+ *   o all places where i added doubleclick-edits: only react on left-click double clicks!
  *   o support "new style" reordering with old style drum tracks as well
  *     (not swapping but inserting!)
  * ! o fix sigedit boxes (see also "current todo")

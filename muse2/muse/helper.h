@@ -25,6 +25,8 @@
 
 #include <set>
 
+#include "drummap.h"
+
 class QActionGroup;
 class QString;
 class QMenu;
@@ -42,6 +44,8 @@ bool any_event_selected(const std::set<Part*>&, bool in_range=false);
 
 QMenu* populateAddSynth(QWidget* parent);
 QActionGroup* populateAddTrack(QMenu* addTrack);
+
+bool drummaps_almost_equal(DrumMap* one, DrumMap* two, int drummap_size=128);
 
 }
 #endif

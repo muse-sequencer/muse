@@ -117,13 +117,6 @@ class DrumCanvas : public EventCanvas {
       virtual void curPartChanged();
       int getNextStep(unsigned int pos, int basicStep, int stepSize=1);
       
-      /* FINDMICH OBSOLETE
-      int parts_first_instrument(Part* p);
-      int tracks_first_instrument(Track* t);
-      bool is_track_of_instrument(Track* t, int instr);
-      QSet<Track*> tracks_of_instrument(int instr);
-      */
-
    signals:
       void newWidth(int);
 

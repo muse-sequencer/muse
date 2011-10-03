@@ -50,6 +50,7 @@
 #include "shortcuts.h"
 #include "icons.h"
 #include "functions.h"
+#include "helper.h"
 
 #define CARET   10
 #define CARET2   5
@@ -110,6 +111,8 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
    int sy, const char* name)
    : EventCanvas(pr, parent, sx, sy, name)
       {
+      using MusEUtil::drummaps_almost_equal;
+      
       old_style_drummap_mode = dynamic_cast<DrumEdit*>(pr)->old_style_drummap_mode();
 
       if (old_style_drummap_mode)
@@ -131,7 +134,6 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
       else
       {
         if (debugMsg) printf("DrumCanvas in new style drummap mode\n");
-        // FINDMICHJETZT
         TrackList* tl=song->tracks();
         
         QList< QSet<Track*> > track_groups;
@@ -145,16 +147,61 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
           
           if (p_it!=pr->parts()->end()) // if *track is represented by some part in this editor
           {
-            QSet<Track*> temp;
-            temp.insert(*track);
-            track_groups.push_back(temp);
+            bool inserted=false;
+            
+            switch (dynamic_cast<DrumEdit*>(pr)->group_mode())
+            {
+              case DrumEdit::GROUP_SAME_CHANNEL:
+                for (QList< QSet<Track*> >::iterator group=track_groups.begin(); group!=track_groups.end(); group++)
+                  if ( ((MidiTrack*)*group->begin())->outChannel() == ((MidiTrack*)*track)->outChannel()  &&
+                       ((MidiTrack*)*group->begin())->outPort() == ((MidiTrack*)*track)->outPort()  &&
+                       (drummaps_almost_equal(((MidiTrack*)*group->begin())->drummap(), ((MidiTrack*)*track)->drummap())) )
+                  {
+                    group->insert(*track);
+                    inserted=true;
+                    break;
+                  }
+                break;
+              
+              case DrumEdit::GROUP_MAX:
+                for (QList< QSet<Track*> >::iterator group=track_groups.begin(); group!=track_groups.end(); group++)
+                  if (drummaps_almost_equal(((MidiTrack*)*group->begin())->drummap(), ((MidiTrack*)*track)->drummap()))
+                  {
+                    group->insert(*track);
+                    inserted=true;
+                    break;
+                  }
+                break;
+              
+              case DrumEdit::DONT_GROUP: 
+                inserted=false;
+                break;
+              
+              default:
+                printf("THIS SHOULD NEVER HAPPEN: group_mode() is invalid!\n");
+                inserted=false;
+            }
+
+            if (!inserted)
+            {
+              QSet<Track*> temp;
+              temp.insert(*track);
+              track_groups.push_back(temp);
+            }
           }
         }
         
+        printf("FINDMICH DEBUG: we have %i groups\n",track_groups.size());
+        
         // from now, we assume that every track_group's entry only groups tracks with identical
         // drum maps, but not necessarily identical hide-lists together.
+        QList< std::pair<MidiTrack*,int> > ignore_order_entries;
         for (global_drum_ordering_t::iterator order_it=global_drum_ordering.begin(); order_it!=global_drum_ordering.end(); order_it++)
         {
+          // if this entry should be ignored, ignore it.
+          if (ignore_order_entries.contains(*order_it))
+            continue;
+          
           // look if we have order_it->first (the MidiTrack*) in any of our track groups
           QList< QSet<Track*> >::iterator group;
           for (group=track_groups.begin(); group!=track_groups.end(); group++)
@@ -186,6 +233,9 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
               
               instrument_map.append(instrument_number_mapping_t(*group, pitch));
             }
+            
+            for (QSet<Track*>::iterator track=group->begin(); track!=group->end(); track++)
+              ignore_order_entries.append(std::pair<MidiTrack*,int>(dynamic_cast<MidiTrack*>(*track), pitch));
           }
           // else ignore it
         }
@@ -451,7 +501,7 @@ void DrumCanvas::newItem(MusEWidget::CItem* item, bool noSnap, bool replace)
       if (!noSnap)
             x = editor->rasterVal(x);
       event.setTick(x - nevent->part()->tick());
-      int npitch = event.pitch(); //FINDMICH
+      int npitch = event.pitch();
       //event.setPitch(npitch); // commented out by flo: has no effect
 
       //
@@ -758,7 +808,7 @@ void DrumCanvas::cmd(int cmd)
                               Event event    = devent->event();
                               Event newEvent = event.clone();
                               // newEvent.setLenTick(drumMap[event.pitch()].len);
-                              newEvent.setLenTick(ourDrumMap[y2pitch(devent->y())].len); //FINDMICH
+                              newEvent.setLenTick(ourDrumMap[y2pitch(devent->y())].len);
                               // Indicate no undo, and do not do port controller values and clone parts. 
                               audio->msgChangeEvent(event, newEvent, devent->part(), false, false, false);
                               }
@@ -1040,7 +1090,7 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
       }
       
       
-      song->update(SC_DRUMMAP); //FINDMICHJETZT handle that properly! if not done already (?) i think it is
+      song->update(SC_DRUMMAP);
    }
 }
 

@@ -24,7 +24,8 @@
 #ifndef __DRUMMAP_H__
 #define __DRUMMAP_H__
 
-class QString;
+#include <QString>
+#include <QList>
 
 class Xml;
 

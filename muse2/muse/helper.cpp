@@ -328,4 +328,16 @@ bool any_event_selected(const set<Part*>& parts, bool in_range)
   return !get_events(parts, in_range ? 3 : 1).empty();
 }
 
+bool drummaps_almost_equal(DrumMap* one, DrumMap* two, int len)
+{
+  for (int i=0; i<len; i++)
+  {
+    DrumMap tmp = one[i];
+    tmp.mute=two[i].mute;
+    if (tmp!=two[i])
+      return false;
+  }
+  return true;
+}
+
 } // namespace MusEUtil

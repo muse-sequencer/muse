@@ -67,7 +67,13 @@ class Toolbar1;
 
 class DrumEdit : public MidiEditor {
       Q_OBJECT
-    
+
+   public:
+      enum group_mode_t { DONT_GROUP, GROUP_SAME_CHANNEL, GROUP_MAX };
+  
+   private:
+      group_mode_t _group_mode;
+      
       Event selEvent;
       MidiPart* selPart;
       int selTick;
@@ -144,6 +150,7 @@ class DrumEdit : public MidiEditor {
       static void writeConfiguration(int, Xml&);
       
       bool old_style_drummap_mode();
+      group_mode_t group_mode() { return _group_mode; }
       };
 
 #endif
