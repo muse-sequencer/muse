@@ -37,7 +37,6 @@
 #include "icons.h"
 #include "dlist.h"
 #include "song.h"
-#include "scrollscale.h"
 #include "dcanvas.h"
 
 //---------------------------------------------------------
@@ -595,6 +594,12 @@ void DList::sizeChange(int, int, int)
 
 void DList::returnPressed()
       {
+      if (editEntry==NULL)
+      {
+        printf("THIS SHOULD NEVER HAPPEN: editEntry is NULL in DList::returnPressed()!\n");
+        return;
+      }
+      
       int val = -1;
       if (selectedColumn != COL_NAME) 
       {
@@ -690,6 +695,12 @@ void DList::returnPressed()
 
 void DList::pitchEdited()
 {
+      if (editEntry==NULL)
+      {
+        printf("THIS SHOULD NEVER HAPPEN: editEntry is NULL in DList::pitchEdited()!\n");
+        return;
+      }
+
       int val=pitch_editor->value();
       int instrument=(editEntry-ourDrumMap);
       
@@ -784,11 +795,11 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_, bo
       ourDrumMap=dcanvas->getOurDrumMap();
       ourDrumMapSize=dcanvas->getOurDrumMapSize();
       old_style_drummap_mode=oldstyle;
+      connect(dcanvas, SIGNAL(ourDrumMapChanged()), SLOT(ourDrumMapChanged()));
       
       if (!h){
       h = new QHeaderView(Qt::Horizontal, parent);}
       header = h;
-      scroll = 0;
       //ORCAN- CHECK if really needed: header->setTracking(true);
       connect(header, SIGNAL(sectionResized(int,int,int)),
          SLOT(sizeChange(int,int,int)));
@@ -896,3 +907,16 @@ int DList::getSelectedInstrument()
       }
 
 
+void DList::ourDrumMapChanged()
+{
+  int selIdx = currentlySelected - ourDrumMap;
+  
+  ourDrumMap=dcanvas->getOurDrumMap();
+  ourDrumMapSize=dcanvas->getOurDrumMapSize();
+  
+  editEntry=NULL;
+  if (selIdx >= ourDrumMapSize) selIdx=ourDrumMapSize-1;
+  currentlySelected = &ourDrumMap[selIdx];
+
+  redraw();
+}

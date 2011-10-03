@@ -420,6 +420,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
       connect(canvas, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
       connect(canvas, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
+      connect(canvas, SIGNAL(ourDrumMapChanged()), SLOT(ourDrumMapChanged()));
       time->setOrigin(offset, 0);
 
       QList<int> mops;
@@ -1342,4 +1343,11 @@ bool DrumEdit::old_style_drummap_mode()
       return true;
   
   return false;
+}
+
+void DrumEdit::ourDrumMapChanged()
+{
+  int vmin,vmax;
+  vscroll->range(&vmin, &vmax);
+  vscroll->setRange(vmin, dynamic_cast<DrumCanvas*>(canvas)->getOurDrumMapSize()*TH);
 }

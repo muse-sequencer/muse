@@ -41,6 +41,7 @@ class QDragLeaveEvent;
 
 class DrumMap;
 class MidiEditor;
+class DrumEdit;
 
 //---------------------------------------------------------
 //   DEvent
@@ -86,6 +87,8 @@ class DrumCanvas : public EventCanvas {
       bool must_delete_our_drum_map; //FINDMICH really delete it!
       QVector<instrument_number_mapping_t> instrument_map;
       
+      DrumEdit* drumEditor;
+      
       StepRec* steprec;
       
       // Cursor tool position
@@ -119,6 +122,7 @@ class DrumCanvas : public EventCanvas {
       
    signals:
       void newWidth(int);
+      void ourDrumMapChanged();
 
    private slots:
       void midiNote(int pitch, int velo);
@@ -152,6 +156,7 @@ class DrumCanvas : public EventCanvas {
       int getOurDrumMapSize() { return instrument_map.size(); } //FINDMICH UGLY
       
       void propagate_drummap_change(int instrument); //FINDMICH move to drumedit
+      void rebuildOurDrumMap();
       };
 #endif
 

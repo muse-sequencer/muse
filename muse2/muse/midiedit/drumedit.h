@@ -136,8 +136,9 @@ class DrumEdit : public MidiEditor {
       void execDeliveredScript(int);
       void execUserScript(int);
       CtrlEdit* addCtrl();
-      
+      void ourDrumMapChanged();
       virtual void updateHScrollRange();
+
    signals:
       void deleted(TopWin*);
 

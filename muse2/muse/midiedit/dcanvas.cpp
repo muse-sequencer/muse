@@ -111,9 +111,9 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
    int sy, const char* name)
    : EventCanvas(pr, parent, sx, sy, name)
       {
-      using MusEUtil::drummaps_almost_equal;
+      drumEditor=dynamic_cast<DrumEdit*>(pr);
       
-      old_style_drummap_mode = dynamic_cast<DrumEdit*>(pr)->old_style_drummap_mode();
+      old_style_drummap_mode = drumEditor->old_style_drummap_mode();
 
       if (old_style_drummap_mode)
       {
@@ -122,7 +122,7 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
         must_delete_our_drum_map=false;
         
         instrument_number_mapping_t temp;
-        for (ciPart it=pr->parts()->begin(); it!=pr->parts()->end(); it++)
+        for (ciPart it=drumEditor->parts()->begin(); it!=drumEditor->parts()->end(); it++)
           temp.tracks.insert(it->second->track());
 
         for (int i=0;i<DRUM_MAPSIZE;i++)
@@ -134,121 +134,8 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
       else
       {
         if (debugMsg) printf("DrumCanvas in new style drummap mode\n");
-        TrackList* tl=song->tracks();
-        
-        QList< QSet<Track*> > track_groups;
-        
-        for (ciTrack track = tl->begin(); track!=tl->end(); track++)
-        {
-          ciPart p_it;
-          for (p_it=pr->parts()->begin(); p_it!=pr->parts()->end(); p_it++)
-            if (p_it->second->track() == *track)
-              break;
-          
-          if (p_it!=pr->parts()->end()) // if *track is represented by some part in this editor
-          {
-            bool inserted=false;
-            
-            switch (dynamic_cast<DrumEdit*>(pr)->group_mode())
-            {
-              case DrumEdit::GROUP_SAME_CHANNEL:
-                for (QList< QSet<Track*> >::iterator group=track_groups.begin(); group!=track_groups.end(); group++)
-                  if ( ((MidiTrack*)*group->begin())->outChannel() == ((MidiTrack*)*track)->outChannel()  &&
-                       ((MidiTrack*)*group->begin())->outPort() == ((MidiTrack*)*track)->outPort()  &&
-                       (drummaps_almost_equal(((MidiTrack*)*group->begin())->drummap(), ((MidiTrack*)*track)->drummap())) )
-                  {
-                    group->insert(*track);
-                    inserted=true;
-                    break;
-                  }
-                break;
-              
-              case DrumEdit::GROUP_MAX:
-                for (QList< QSet<Track*> >::iterator group=track_groups.begin(); group!=track_groups.end(); group++)
-                  if (drummaps_almost_equal(((MidiTrack*)*group->begin())->drummap(), ((MidiTrack*)*track)->drummap()))
-                  {
-                    group->insert(*track);
-                    inserted=true;
-                    break;
-                  }
-                break;
-              
-              case DrumEdit::DONT_GROUP: 
-                inserted=false;
-                break;
-              
-              default:
-                printf("THIS SHOULD NEVER HAPPEN: group_mode() is invalid!\n");
-                inserted=false;
-            }
-
-            if (!inserted)
-            {
-              QSet<Track*> temp;
-              temp.insert(*track);
-              track_groups.push_back(temp);
-            }
-          }
-        }
-        
-        printf("FINDMICH DEBUG: we have %i groups\n",track_groups.size());
-        
-        // from now, we assume that every track_group's entry only groups tracks with identical
-        // drum maps, but not necessarily identical hide-lists together.
-        QList< std::pair<MidiTrack*,int> > ignore_order_entries;
-        for (global_drum_ordering_t::iterator order_it=global_drum_ordering.begin(); order_it!=global_drum_ordering.end(); order_it++)
-        {
-          // if this entry should be ignored, ignore it.
-          if (ignore_order_entries.contains(*order_it))
-            continue;
-          
-          // look if we have order_it->first (the MidiTrack*) in any of our track groups
-          QList< QSet<Track*> >::iterator group;
-          for (group=track_groups.begin(); group!=track_groups.end(); group++)
-            if (group->contains(order_it->first))
-              break;
-          
-          if (group!=track_groups.end()) // we have
-          {
-            int pitch=order_it->second;
-            
-            bool mute=true;
-            bool hidden=true;
-            for (QSet<Track*>::iterator track=group->begin(); track!=group->end() && (mute || hidden); track++)
-            {
-              if (dynamic_cast<MidiTrack*>(*track)->drummap()[pitch].mute == false)
-                mute=false;
-              
-              if (dynamic_cast<MidiTrack*>(*track)->drummap_hidden()[pitch] == false)
-                hidden=false;
-            }
-
-            if (!hidden)
-            {
-              for (QSet<Track*>::iterator track=group->begin(); track!=group->end(); track++)
-                dynamic_cast<MidiTrack*>(*track)->drummap()[pitch].mute=mute; 
-              
-              if (dynamic_cast<MidiTrack*>(*group->begin())->drummap()[pitch].anote != pitch)
-                printf("THIS SHOULD NEVER HAPPEN: track's_drummap[pitch].anote (%i)!= pitch (%i) !!!\n",dynamic_cast<MidiTrack*>(*group->begin())->drummap()[pitch].anote,pitch);
-              
-              instrument_map.append(instrument_number_mapping_t(*group, pitch));
-            }
-            
-            for (QSet<Track*>::iterator track=group->begin(); track!=group->end(); track++)
-              ignore_order_entries.append(std::pair<MidiTrack*,int>(dynamic_cast<MidiTrack*>(*track), pitch));
-          }
-          // else ignore it
-        }
-
-
-        // populate ourDrumMap
-        
-        int size = instrument_map.size();
-        ourDrumMap=new DrumMap[size];
-        must_delete_our_drum_map=true;
-        
-        for (int i=0;i<size;i++)
-          ourDrumMap[i] = dynamic_cast<MidiTrack*>(*instrument_map[i].tracks.begin())->drummap()[instrument_map[i].pitch];
+        ourDrumMap=NULL;
+        rebuildOurDrumMap();
       }
       
       
@@ -1410,4 +1297,133 @@ void DrumCanvas::propagate_drummap_change(int instr)
   
   for (QSet<Track*>::const_iterator it = tracks.begin(); it != tracks.end(); it++)
     dynamic_cast<MidiTrack*>(*it)->drummap()[index] = ourDrumMap[instr];
+}
+
+
+void DrumCanvas::rebuildOurDrumMap()
+{
+  using MusEUtil::drummaps_almost_equal;
+  
+  if (!old_style_drummap_mode)
+  {
+    TrackList* tl=song->tracks();
+    QList< QSet<Track*> > track_groups;
+    
+    instrument_map.clear();
+
+    for (ciTrack track = tl->begin(); track!=tl->end(); track++)
+    {
+      ciPart p_it;
+      for (p_it=drumEditor->parts()->begin(); p_it!=drumEditor->parts()->end(); p_it++)
+        if (p_it->second->track() == *track)
+          break;
+      
+      if (p_it!=drumEditor->parts()->end()) // if *track is represented by some part in this editor
+      {
+        bool inserted=false;
+        
+        switch (drumEditor->group_mode())
+        {
+          case DrumEdit::GROUP_SAME_CHANNEL:
+            for (QList< QSet<Track*> >::iterator group=track_groups.begin(); group!=track_groups.end(); group++)
+              if ( ((MidiTrack*)*group->begin())->outChannel() == ((MidiTrack*)*track)->outChannel()  &&
+                   ((MidiTrack*)*group->begin())->outPort() == ((MidiTrack*)*track)->outPort()  &&
+                   (drummaps_almost_equal(((MidiTrack*)*group->begin())->drummap(), ((MidiTrack*)*track)->drummap())) )
+              {
+                group->insert(*track);
+                inserted=true;
+                break;
+              }
+            break;
+          
+          case DrumEdit::GROUP_MAX:
+            for (QList< QSet<Track*> >::iterator group=track_groups.begin(); group!=track_groups.end(); group++)
+              if (drummaps_almost_equal(((MidiTrack*)*group->begin())->drummap(), ((MidiTrack*)*track)->drummap()))
+              {
+                group->insert(*track);
+                inserted=true;
+                break;
+              }
+            break;
+          
+          case DrumEdit::DONT_GROUP: 
+            inserted=false;
+            break;
+          
+          default:
+            printf("THIS SHOULD NEVER HAPPEN: group_mode() is invalid!\n");
+            inserted=false;
+        }
+
+        if (!inserted)
+        {
+          QSet<Track*> temp;
+          temp.insert(*track);
+          track_groups.push_back(temp);
+        }
+      }
+    }
+
+    // from now, we assume that every track_group's entry only groups tracks with identical
+    // drum maps, but not necessarily identical hide-lists together.
+    QList< std::pair<MidiTrack*,int> > ignore_order_entries;
+    for (global_drum_ordering_t::iterator order_it=global_drum_ordering.begin(); order_it!=global_drum_ordering.end(); order_it++)
+    {
+      // if this entry should be ignored, ignore it.
+      if (ignore_order_entries.contains(*order_it))
+        continue;
+      
+      // look if we have order_it->first (the MidiTrack*) in any of our track groups
+      QList< QSet<Track*> >::iterator group;
+      for (group=track_groups.begin(); group!=track_groups.end(); group++)
+        if (group->contains(order_it->first))
+          break;
+      
+      if (group!=track_groups.end()) // we have
+      {
+        int pitch=order_it->second;
+        
+        bool mute=true;
+        bool hidden=true;
+        for (QSet<Track*>::iterator track=group->begin(); track!=group->end() && (mute || hidden); track++)
+        {
+          if (dynamic_cast<MidiTrack*>(*track)->drummap()[pitch].mute == false)
+            mute=false;
+          
+          if (dynamic_cast<MidiTrack*>(*track)->drummap_hidden()[pitch] == false)
+            hidden=false;
+        }
+
+        if (!hidden)
+        {
+          for (QSet<Track*>::iterator track=group->begin(); track!=group->end(); track++)
+            dynamic_cast<MidiTrack*>(*track)->drummap()[pitch].mute=mute; 
+          
+          if (dynamic_cast<MidiTrack*>(*group->begin())->drummap()[pitch].anote != pitch)
+            printf("THIS SHOULD NEVER HAPPEN: track's_drummap[pitch].anote (%i)!= pitch (%i) !!!\n",dynamic_cast<MidiTrack*>(*group->begin())->drummap()[pitch].anote,pitch);
+          
+          instrument_map.append(instrument_number_mapping_t(*group, pitch));
+        }
+        
+        for (QSet<Track*>::iterator track=group->begin(); track!=group->end(); track++)
+          ignore_order_entries.append(std::pair<MidiTrack*,int>(dynamic_cast<MidiTrack*>(*track), pitch));
+      }
+      // else ignore it
+    }
+
+
+    // maybe delete and then populate ourDrumMap
+    
+    if (must_delete_our_drum_map && ourDrumMap!=NULL)
+      delete [] ourDrumMap;
+    
+    int size = instrument_map.size();
+    ourDrumMap=new DrumMap[size];
+    must_delete_our_drum_map=true;
+
+    for (int i=0;i<size;i++)
+      ourDrumMap[i] = dynamic_cast<MidiTrack*>(*instrument_map[i].tracks.begin())->drummap()[instrument_map[i].pitch];  
+    
+    emit ourDrumMapChanged();
+  }
 }

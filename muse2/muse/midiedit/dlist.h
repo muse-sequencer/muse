@@ -35,7 +35,6 @@ class QHeaderView;
 class QMouseEvent;
 class QPainter;
 
-class ScrollScale;
 class Device;
 class QLineEdit;
 class DrumMap;
@@ -93,7 +92,6 @@ class DList : public MusEWidget::View {
       bool old_style_drummap_mode;
       
       QHeaderView* header;
-      ScrollScale* scroll;
       QLineEdit* editor;
       DPitchEdit* pitch_editor;
       DrumMap* editEntry;
@@ -133,13 +131,14 @@ class DList : public MusEWidget::View {
    public slots:
       void tracklistChanged();
       void songChanged(int);
+      void ourDrumMapChanged();
+   
    public:
       void lineEdit(int line, int section);
       void pitchEdit(int line, int section);
       void setCurDrumInstrument(int n);
       DList(QHeaderView*, QWidget* parent, int ymag, DrumCanvas* dcanvas, bool oldstyle);
       ~DList();
-      void setScroll(ScrollScale* s) { scroll = s; }
       int getSelectedInstrument();
 
 enum DCols { COL_MUTE=0, COL_NAME, COL_VOL, COL_QNT, COL_ENOTE, COL_LEN,
