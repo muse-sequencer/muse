@@ -43,8 +43,8 @@ SigEdit::SigEdit(QWidget* parent)
       {
       initialized = false;
       slash = new QLabel("/",this);
-      zSpin = new QSpinBox(this);
-      nSpin = new QSpinBox(this);
+      zSpin = new SigSpinBox(this);
+      nSpin = new SigSpinBox(this);
       zSpin->setRange(1,100);
       nSpin->setRange(1,100);
       layout = new QHBoxLayout(this);
@@ -53,10 +53,15 @@ SigEdit::SigEdit(QWidget* parent)
       layout->addWidget(zSpin);
       layout->addWidget(slash);
       layout->addWidget(nSpin);
-      layout->addSpacing(40);
+      layout->addSpacing(30);
       connect(zSpin, SIGNAL(valueChanged(int)), SLOT(setZ(int)));
       connect(nSpin, SIGNAL(valueChanged(int)), SLOT(setN(int)));
+      connect(nSpin, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
+      connect(zSpin, SIGNAL(returnPressed()), SIGNAL(returnPressed()));
 
+      connect(zSpin, SIGNAL(moveFocus()), SLOT(moveFocus()));
+      connect(nSpin, SIGNAL(moveFocus()), SLOT(moveFocus()));
+      zSpin->selectAll();
       }
 
 SigEdit::~SigEdit()
@@ -66,6 +71,22 @@ SigEdit::~SigEdit()
       delete nSpin;
       }
 
+
+//---------------------------------------------------------
+//   moveFocus
+//---------------------------------------------------------
+
+void SigEdit::moveFocus()
+{
+  if (zSpin->hasFocus()) {
+    nSpin->setFocus();
+    nSpin->selectAll();
+  }
+  else {
+    zSpin->setFocus();
+    zSpin->selectAll();
+  }
+}
 
 //---------------------------------------------------------
 //   setZ
@@ -118,13 +139,18 @@ void SigEdit::updateValue()
       nSpin->setValue(_sig.n);
       }
 
- void SigEdit::paintEvent(QPaintEvent* event) {
+void SigEdit::paintEvent(QPaintEvent* event) {
             if (!initialized)
                   updateValue();
             initialized = true;
             QPainter p(this);
-            p.fillRect(event->rect(), Qt::white);
+            p.fillRect(event->rect(), p.background());
             QWidget::paintEvent(event);
             }
+void SigEdit::setFocus()
+{
+  zSpin->setFocus();
+}
+
 }
 
