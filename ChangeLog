@@ -1,3 +1,5 @@
+04.09.2011:
+        - More fixes to SigEdit, close on enter, navigate with arrows and / between values, fixed background color, focus (rj)
 02.09.2011:
         - SigEdit reworked to use two spinboxes, plan on adding Enter/Return detection so the widget will close when 
           Enter/Return is pressed (rj)

@@ -25,9 +25,9 @@
 
 #include "al/sig.h"
 //#include "sig.h"
+#include <awl/sigspinbox.h>
 
 #include <QWidget>
-#include <QSpinBox>
 #include <QHBoxLayout>
 #include <QLabel>
 
@@ -48,8 +48,8 @@ class SigEdit : public QWidget
       AL::TimeSignature _sig;
       bool initialized;
       QLabel *slash;
-      QSpinBox *zSpin;
-      QSpinBox *nSpin;
+      SigSpinBox *zSpin;
+      SigSpinBox *nSpin;
       QHBoxLayout *layout;
 
       virtual void paintEvent(QPaintEvent* event);
@@ -57,13 +57,16 @@ class SigEdit : public QWidget
 
    signals:
       void valueChanged(const AL::TimeSignature&);
+      void returnPressed();
 
    private slots:
       void setN(const int n);
       void setZ(const int z);
+      void moveFocus();
 
    public slots:
       void setValue(const AL::TimeSignature&);
+      void setFocus();
 
    public:
       SigEdit(QWidget* parent = 0);
