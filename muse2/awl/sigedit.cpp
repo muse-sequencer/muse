@@ -46,7 +46,8 @@ SigEdit::SigEdit(QWidget* parent)
       zSpin = new SigSpinBox(this);
       nSpin = new SigSpinBox(this);
       zSpin->setRange(1,100);
-      nSpin->setRange(1,100);
+      nSpin->setDenominator();
+      nSpin->setRange(1,128);
       layout = new QHBoxLayout(this);
       layout->setContentsMargins(0,0,0,0);
       layout->setSpacing(1);
