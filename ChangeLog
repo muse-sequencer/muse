@@ -1,3 +1,5 @@
+05.09.2011:
+        - SigEdit, up/down arrow in denominator only moves between powers of two, 2,4,8...128 (rj)
 04.09.2011:
         - More fixes to SigEdit, close on enter, navigate with arrows and / between values, fixed background color, focus (rj)
 02.09.2011:

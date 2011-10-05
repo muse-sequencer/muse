@@ -152,6 +152,9 @@ class LMaster : public MidiEditor {
 
       QAction *tempoAction, *signAction, *posAction, *valAction, *delAction, *keyAction;
 
+//   protected:
+//      virtual void keyPressEvent(QKeyEvent*);
+
    private slots:
       void select(QTreeWidgetItem*, QTreeWidgetItem*);
       void itemDoubleClicked(QTreeWidgetItem* item);

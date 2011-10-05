@@ -1063,5 +1063,18 @@ void LMaster::initShortcuts()
 
 void LMaster::comboboxTimerSlot()
 {
-  key_editor->showPopup();
+    key_editor->showPopup();
 }
+
+//void LMaster::keyPressEvent(QKeyEvent*ev)
+//{
+//    switch (ev->key()) {
+//      case Qt::Key_Return:
+//        // add return as a valid action for editing values too
+//        cmd (CMD_EDIT_VALUE);
+//        break;
+//      default:
+//        break;
+//    }
+//    MidiEditor::keyPressEvent(ev);
+//}
