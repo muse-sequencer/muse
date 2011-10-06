@@ -96,12 +96,7 @@ void SigEdit::moveFocus()
 void SigEdit::setZ(const int z)
 {
   _sig.z=z;
-  if (_sig.isValid()) {
-    zSpin->setStyleSheet("");
-    emit valueChanged(_sig);
-  }
-  else
-    zSpin->setStyleSheet("QSpinBox { background-color: red; }");
+  emit valueChanged(_sig);
 }
 //---------------------------------------------------------
 //   setN

@@ -1,3 +1,6 @@
+06.09.2011:
+        - SigEdit, up/down arrow in denominator only moves between powers of two (decreased thick headedness), 
+          numerator is no longer validated (rj)
 05.09.2011:
         - SigEdit, up/down arrow in denominator only moves between powers of two, 2,4,8...128 (rj)
 04.09.2011:
