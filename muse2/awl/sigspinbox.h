@@ -9,6 +9,7 @@ class SigSpinBox : public QSpinBox
     bool _denominator;
 protected:
     virtual void keyPressEvent(QKeyEvent*);
+    virtual void stepBy(int);
 public:
     explicit SigSpinBox(QWidget *parent = 0);
     void setDenominator();
