@@ -1317,8 +1317,11 @@ void DrumCanvas::rebuildOurDrumMap()
   
   if (!old_style_drummap_mode)
   {
+    bool need_update = false;
+    
     TrackList* tl=song->tracks();
     QList< QSet<Track*> > track_groups;
+    QVector<instrument_number_mapping_t> old_instrument_map = instrument_map;
     
     instrument_map.clear();
 
@@ -1396,6 +1399,9 @@ void DrumCanvas::rebuildOurDrumMap()
         
         bool mute=true;
         bool hidden=true;
+        
+        if (drumEditor->ignore_hide()) hidden=false;
+        
         for (QSet<Track*>::iterator track=group->begin(); track!=group->end() && (mute || hidden); track++)
         {
           if (dynamic_cast<MidiTrack*>(*track)->drummap()[pitch].mute == false)
@@ -1408,7 +1414,14 @@ void DrumCanvas::rebuildOurDrumMap()
         if (!hidden)
         {
           for (QSet<Track*>::iterator track=group->begin(); track!=group->end(); track++)
-            dynamic_cast<MidiTrack*>(*track)->drummap()[pitch].mute=mute; 
+          {
+            DrumMap* dm = &dynamic_cast<MidiTrack*>(*track)->drummap()[pitch];
+            if (dm->mute != mute)
+            {
+              dm->mute=mute; 
+              need_update = true;
+            }
+          }
           
           if (dynamic_cast<MidiTrack*>(*group->begin())->drummap()[pitch].anote != pitch)
             printf("THIS SHOULD NEVER HAPPEN: track's_drummap[pitch].anote (%i)!= pitch (%i) !!!\n",dynamic_cast<MidiTrack*>(*group->begin())->drummap()[pitch].anote,pitch);
@@ -1435,10 +1448,19 @@ void DrumCanvas::rebuildOurDrumMap()
     for (int i=0;i<size;i++)
       ourDrumMap[i] = dynamic_cast<MidiTrack*>(*instrument_map[i].tracks.begin())->drummap()[instrument_map[i].pitch];  
     
-    if (debugMsg) printf("rebuilt drummap, size is now %i\n",size);
+    if (instrument_map!=old_instrument_map)
+    {
+    if (debugMsg) printf("rebuilt drummap and instrument map, size is now %i\n",size);
     
-    songChanged(SC_EVENT_INSERTED); // force an update of the itemlist
-
-    emit ourDrumMapChanged();
+      songChanged(SC_EVENT_INSERTED); // force an update of the itemlist
+      emit ourDrumMapChanged(true);
+    }
+    else
+      emit ourDrumMapChanged(false);
+    
+    if (need_update)
+      song->update(SC_DRUMMAP, true); // i know, this causes a recursion, which possibly
+                                      // isn't the most elegant solution here. but it will
+                                      // never be an infinite recursion
   }
 }

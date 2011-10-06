@@ -73,6 +73,17 @@ struct instrument_number_mapping_t
     tracks=tr;
     pitch=p;
   }
+  
+  bool operator==(const instrument_number_mapping_t& that) //TODO maybe compare the Track* serial numbers, not the pointers themselves?
+  {
+    return (this->tracks == that.tracks && this->pitch==that.pitch);
+  }
+  
+  bool operator!=(const instrument_number_mapping_t& that)
+  {
+    return !operator==(that);
+  }
+  
 };
 
 //---------------------------------------------------------
@@ -122,7 +133,7 @@ class DrumCanvas : public EventCanvas {
       
    signals:
       void newWidth(int);
-      void ourDrumMapChanged();
+      void ourDrumMapChanged(bool /*instrumentMap changed as well?*/);
 
    private slots:
       void midiNote(int pitch, int velo);
@@ -156,7 +167,7 @@ class DrumCanvas : public EventCanvas {
       int pitch_and_track_to_instrument(int pitch, Track* track);
       DrumMap* getOurDrumMap() { return ourDrumMap; } //FINDMICH UGLY
       int getOurDrumMapSize() { return instrument_map.size(); } //FINDMICH UGLY
-      
+      QVector<instrument_number_mapping_t>& get_instrument_map() { return instrument_map; } //FINDMICH UGLY
       void propagate_drummap_change(int instrument); //FINDMICH move to drumedit
       void rebuildOurDrumMap();
       };

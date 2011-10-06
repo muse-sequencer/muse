@@ -4591,11 +4591,11 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  * 
  * CURRENT TODO
- * ! o fix sigedit boxes (see also "important todo")
  *   o fix valgrind problems
- *
+ * 
  * > o drum editor: channel-stuff
- *        o dialog for maintaining drum lists, hide etc
+ *        o clearly state in the changelog: when having multiple drumeditors open,
+ *          the mute-column may not work, because another editor is overriding this.
  *        o respect "_drummap_tied_to_patch": IMPLEMENT
  *        o save hide, ordering, track's drumlists
  * 				o "copy drumlist" from one track to another
@@ -4615,7 +4615,6 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *   o all places where i added doubleclick-edits: only react on left-click double clicks!
  *   o support "new style" reordering with old style drum tracks as well
  *     (not swapping but inserting!)
- * ! o fix sigedit boxes (see also "current todo")
  *   o add "dotted quarter" quantize option (for 6/8 beat)
  *   o ticks-to-quarter spinboxes
  *   o newly created windows have to be focussed!

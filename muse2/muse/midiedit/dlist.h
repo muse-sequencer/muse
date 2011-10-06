@@ -131,7 +131,7 @@ class DList : public MusEWidget::View {
    public slots:
       void tracklistChanged();
       void songChanged(int);
-      void ourDrumMapChanged();
+      void ourDrumMapChanged(bool);
    
    public:
       void lineEdit(int line, int section);
@@ -141,9 +141,6 @@ class DList : public MusEWidget::View {
       ~DList();
       int getSelectedInstrument();
 
-enum DCols { COL_MUTE=0, COL_NAME, COL_VOL, COL_QNT, COL_ENOTE, COL_LEN,
-         COL_ANOTE, COL_CHANNEL, COL_PORT,
-         COL_LV1, COL_LV2, COL_LV3, COL_LV4, COL_NONE=-1};
       };
 
 #endif // __DLIST_H_

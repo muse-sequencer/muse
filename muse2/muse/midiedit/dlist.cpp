@@ -33,6 +33,7 @@
 #include "pitchedit.h"
 #include "midiport.h"
 #include "drummap.h"
+#include "drumedit.h"
 #include "helper.h"
 #include "icons.h"
 #include "dlist.h"
@@ -56,13 +57,13 @@ void DList::draw(QPainter& p, const QRect& rect)
 
       p.setPen(Qt::black);
 
-      for (int i = 0; i < ourDrumMapSize; ++i) {
-            int yy = i * TH;
+      for (int instrument = 0; instrument < ourDrumMapSize; ++instrument) {
+            int yy = instrument * TH;
             if (yy+TH < y)
                   continue;
             if (yy > y + h)
                   break;
-            DrumMap* dm = &ourDrumMap[i];
+            DrumMap* dm = &ourDrumMap[instrument];
             if (dm == currentlySelected)
                   p.fillRect(x, yy, w, TH, Qt::yellow);
 //            else
@@ -71,6 +72,10 @@ void DList::draw(QPainter& p, const QRect& rect)
             p.save();
             p.setWorldMatrixEnabled(false);
             for (int k = 0; k < h->count(); ++k) {
+                  if (h->isSectionHidden(k))
+                      continue;
+                  
+                  
                   int x   = h->sectionPosition(k);
                   int w   = h->sectionSize(k);
                   //QRect r = p.combinedTransform().mapRect(QRect(x+2, yy, w-4, TH));  // Gives inconsistent positions. Source shows wrong operation for our needs.
@@ -81,33 +86,72 @@ void DList::draw(QPainter& p, const QRect& rect)
                   //p.save();
                   //p.setWorldMatrixEnabled(false);
                   switch (k) {
-                        case COL_VOL:
+                        case COL_VOLUME:
                               s.setNum(dm->vol);
                               break;
-                        case COL_QNT:
+                        case COL_QUANT:
                               s.setNum(dm->quant);
                               break;
-                        case COL_LEN:
+                        case COL_NOTELENGTH:
                               s.setNum(dm->len);
                               break;
-                        case COL_ANOTE:
+                        case COL_NOTE:
                               s =  MusEUtil::pitch2string(dm->anote);
                               break;
-                        case COL_ENOTE:
+                        case COL_INPUTTRIGGER:
                               s =  MusEUtil::pitch2string(dm->enote);
                               break;
-                        case COL_LV1:
+                        case COL_LEVEL1:
                               s.setNum(dm->lv1);
                               break;
-                        case COL_LV2:
+                        case COL_LEVEL2:
                               s.setNum(dm->lv2);
                               break;
-                        case COL_LV3:
+                        case COL_LEVEL3:
                               s.setNum(dm->lv3);
                               break;
-                        case COL_LV4:
+                        case COL_LEVEL4:
                               s.setNum(dm->lv4);
                               break;
+                        case COL_HIDE:
+                        {
+                              bool hidden=false;
+                              bool shown=false;
+                              QSet<Track*>* group = &dcanvas->get_instrument_map()[instrument].tracks;
+                              int pitch = dcanvas->get_instrument_map()[instrument].pitch;
+                              
+                              for (QSet<Track*>::iterator track=group->begin(); track!=group->end() && !(hidden&&shown); track++)
+                                if (dynamic_cast<MidiTrack*>(*track)->drummap_hidden()[pitch])
+                                  hidden=true;
+                                else
+                                  shown=true;
+                              
+                              if (!hidden && !shown)
+                                printf("THIS SHOULD NEVER HAPPEN: in DList::draw(): instrument %i's track group is empty. strange...\n", instrument);
+                              
+                              const QPixmap* pm = NULL;
+                              
+                              if (shown && !hidden)
+                                    pm = eyeIcon;
+                              else if (!shown && hidden)
+                                    pm = eyeCrossedIcon;
+                              else if (shown && hidden)
+                                    pm = eyeGrayIcon;
+                              else //if (!shown && !hidden)
+                                    pm = NULL;
+                              
+                              if (pm)
+                              {
+                               // p.setPen(Qt::red);
+                                p.drawPixmap(
+                                   r.x() + r.width()/2 - pm->width()/2,
+                                   r.y() + r.height()/2 - pm->height()/2,
+                                   *pm);
+                               // p.setPen(Qt::black);
+                              }
+                                    
+                              break;
+                        }
                         case COL_MUTE:
                               if (dm->mute) {
                                     p.setPen(Qt::red);
@@ -123,10 +167,10 @@ void DList::draw(QPainter& p, const QRect& rect)
                               s = dm->name;
                               align = Qt::AlignVCenter | Qt::AlignLeft;
                               break;
-                        case COL_CHANNEL:
+                        case COL_OUTCHANNEL:
                               s.setNum(dm->channel+1);
                               break;
-                        case COL_PORT:
+                        case COL_OUTPORT:
                               s.sprintf("%d:%s", dm->port+1, midiPorts[dm->port].portname().toLatin1().constData());
                               align = Qt::AlignVCenter | Qt::AlignLeft;
                               break;
@@ -243,7 +287,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
       sInstrument = instrument;
       drag   = START_DRAG;
 
-      DCols col = DCols(x2col(x));
+      DrumColumn col = DrumColumn(x2col(x));
 
       int val;
       int incVal = 0;
@@ -257,7 +301,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
       // In that case, treat it as if a return was pressed
 
       if (button == Qt::LeftButton) {
-            if (((editEntry && editEntry != dm)  || col != selectedColumn) && editEntry != 0) {
+            if (editEntry && (editEntry != dm  || col != selectedColumn)) {
                   returnPressed();
                   }
             }
@@ -265,17 +309,35 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
       switch (col) {
             case COL_NONE:
                   break;
+            case COL_HIDE:
+                  if (button == Qt::LeftButton)
+                  {
+                    bool hidden=true;
+                    QSet<Track*>* group = &dcanvas->get_instrument_map()[instrument].tracks;
+                    int pitch = dcanvas->get_instrument_map()[instrument].pitch;
+                    
+                    for (QSet<Track*>::iterator track=group->begin(); track!=group->end(); track++)
+                      if (dynamic_cast<MidiTrack*>(*track)->drummap_hidden()[pitch] == false)
+                      {
+                        hidden=false;
+                        break;
+                      }
+                    
+                    for (QSet<Track*>::iterator track=group->begin(); track!=group->end(); track++)
+                      dynamic_cast<MidiTrack*>(*track)->drummap_hidden()[pitch] = !hidden;
+                  }
+                  break;
             case COL_MUTE:
                   if (button == Qt::LeftButton)
                         dm->mute = !dm->mute;
                   break;
-            case COL_PORT: // this column isn't visible in new style drum mode
+            case COL_OUTPORT: // this column isn't visible in new style drum mode
                   if ((button == Qt::RightButton) || (button == Qt::LeftButton)) {
                         bool changeAll = ev->modifiers() & Qt::ControlModifier;
                         devicesPopupMenu(dm, mapx(x), mapy(instrument * TH), changeAll);
                         }
                   break;
-            case COL_VOL:
+            case COL_VOLUME:
                   val = dm->vol + incVal;
                   if (val < 0)
                         val = 0;
@@ -283,11 +345,11 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                         val = 999;
                   dm->vol = (unsigned char)val;      
                   break;
-            case COL_QNT:
+            case COL_QUANT:
                   dm->quant += incVal;
                   // ?? range
                   break;
-            case COL_ENOTE:
+            case COL_INPUTTRIGGER:
                   val = dm->enote + incVal;
                   if (val < 0)
                         val = 0;
@@ -310,13 +372,13 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   }
                   dm->enote = val;
                   break;
-            case COL_LEN:
+            case COL_NOTELENGTH:
                   val = dm->len + incVal;
                   if (val < 0)
                         val = 0;
                   dm->len = val;
                   break;
-            case COL_ANOTE:
+            case COL_NOTE:
                   if (old_style_drummap_mode) //only allow changing in old style mode
                   {
                     val = dm->anote + incVal;
@@ -339,7 +401,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   emit keyPressed(instrument, velocity);//(dm->anote, shift);
                   }
                   break;
-            case COL_CHANNEL: // this column isn't visible in new style drum mode
+            case COL_OUTCHANNEL: // this column isn't visible in new style drum mode
                   val = dm->channel + incVal;
                   if (val < 0)
                         val = 0;
@@ -370,7 +432,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                       }  
                   }      
                   break;
-            case COL_LV1:
+            case COL_LEVEL1:
                   val = dm->lv1 + incVal;
                   if (val < 0)
                         val = 0;
@@ -378,7 +440,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                         val = 127;
                   dm->lv1 = val;
                   break;
-            case COL_LV2:
+            case COL_LEVEL2:
                   val = dm->lv2 + incVal;
                   if (val < 0)
                         val = 0;
@@ -386,7 +448,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                         val = 127;
                   dm->lv2 = val;
                   break;
-            case COL_LV3:
+            case COL_LEVEL3:
                   val = dm->lv3 + incVal;
                   if (val < 0)
                         val = 0;
@@ -394,7 +456,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                         val = 127;
                   dm->lv3 = val;
                   break;
-            case COL_LV4:
+            case COL_LEVEL4:
                   val = dm->lv4 + incVal;
                   if (val < 0)
                         val = 0;
@@ -403,7 +465,48 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   dm->lv4 = val;
                   break;
             case COL_NAME:
-                  emit keyPressed(instrument, 100); //Mapping done on other side, send index
+                  if (button == Qt::LeftButton)
+                      emit keyPressed(instrument, 100); //Mapping done on other side, send index
+                  else if (button == Qt::MidButton) // hide that instrument
+                  {
+                    QSet<Track*>* group = &dcanvas->get_instrument_map()[instrument].tracks;
+                    int pitch = dcanvas->get_instrument_map()[instrument].pitch;
+                    for (QSet<Track*>::iterator track=group->begin(); track!=group->end(); track++)
+                      dynamic_cast<MidiTrack*>(*track)->drummap_hidden()[pitch] = true;                    
+                  }
+                  else if (button == Qt::RightButton)
+                  {
+                    bool hidden=false;
+                    bool shown=false;
+                    QSet<Track*>* group = &dcanvas->get_instrument_map()[instrument].tracks;
+                    int pitch = dcanvas->get_instrument_map()[instrument].pitch;
+                    
+                    for (QSet<Track*>::iterator track=group->begin(); track!=group->end() && !(hidden&&shown); track++)
+                      if (dynamic_cast<MidiTrack*>(*track)->drummap_hidden()[pitch])
+                        hidden=true;
+                      else
+                        shown=true;
+
+                    QMenu* popup = new QMenu(NULL /* intendedly not "this" */); 
+                    QAction* hideAction = popup->addAction(tr("hide this instrument"));
+                    QAction* showAction = popup->addAction(tr("show this instrument"));
+                    showAction->setToolTip(tr("this turns a grayed out eye into a blue eye"));
+                    
+                    if (!hidden)
+                      showAction->setEnabled(false);
+                    if (!shown)
+                      hideAction->setEnabled(false);
+                    
+                    QAction* result = popup->exec(ev->globalPos());
+                    if (result==hideAction)
+                      for (QSet<Track*>::iterator track=group->begin(); track!=group->end(); track++)
+                        dynamic_cast<MidiTrack*>(*track)->drummap_hidden()[pitch] = true;                    
+                    else if (result==showAction)
+                      for (QSet<Track*>::iterator track=group->begin(); track!=group->end(); track++)
+                        dynamic_cast<MidiTrack*>(*track)->drummap_hidden()[pitch] = false;       
+                    
+                    delete popup;
+                  }
                   break;
 
             default:
@@ -429,13 +532,13 @@ void DList::viewMouseDoubleClickEvent(QMouseEvent* ev)
 
       int section = header->logicalIndexAt(x);
 
-      if ((section == COL_NAME || section == COL_VOL || section == COL_LEN || section == COL_LV1 ||
-         section == COL_LV2 || section == COL_LV3 || section == COL_LV4 || section == COL_QNT ||
-         (section == COL_CHANNEL && old_style_drummap_mode) ) && (ev->button() == Qt::LeftButton))
+      if ((section == COL_NAME || section == COL_VOLUME || section == COL_NOTELENGTH || section == COL_LEVEL1 ||
+         section == COL_LEVEL2 || section == COL_LEVEL3 || section == COL_LEVEL4 || section == COL_QUANT ||
+         (section == COL_OUTCHANNEL && old_style_drummap_mode) ) && (ev->button() == Qt::LeftButton))
          {
            lineEdit(instrument, section);
          }
-      else if (((section == COL_ANOTE && old_style_drummap_mode) || section == COL_ENOTE) && (ev->button() == Qt::LeftButton))
+      else if (((section == COL_NOTE && old_style_drummap_mode) || section == COL_INPUTTRIGGER) && (ev->button() == Qt::LeftButton))
         pitchEdit(instrument, section);
       else
             viewMousePressEvent(ev);
@@ -466,37 +569,37 @@ void DList::lineEdit(int line, int section)
                   editor->setText(dm->name);
                   break;
 
-                  case COL_VOL: {
+                  case COL_VOLUME: {
                   editor->setText(QString::number(dm->vol));
                   break;
                   }
                   
-                  case COL_LEN: {
+                  case COL_NOTELENGTH: {
                   editor->setText(QString::number(dm->len));
                   break;
                   }
 
-                  case COL_LV1:
+                  case COL_LEVEL1:
                   editor->setText(QString::number(dm->lv1));
                   break;
 
-                  case COL_LV2:
+                  case COL_LEVEL2:
                   editor->setText(QString::number(dm->lv2));
                   break;
 
-                  case COL_LV3:
+                  case COL_LEVEL3:
                   editor->setText(QString::number(dm->lv3));
                   break;
 
-                  case COL_LV4:
+                  case COL_LEVEL4:
                   editor->setText(QString::number(dm->lv4));
                   break;
 
-                  case COL_QNT:
+                  case COL_QUANT:
                   editor->setText(QString::number(dm->quant));
                   break;
 
-                  case COL_CHANNEL:
+                  case COL_OUTCHANNEL:
                   editor->setText(QString::number(dm->channel+1));
                   break;
             }
@@ -530,11 +633,11 @@ void DList::pitchEdit(int line, int section)
             int colh = rmapy(TH);
             selectedColumn = section; //Store selected column to have an idea of which one was selected when return is pressed
             switch (section) {
-                  case COL_ENOTE:
+                  case COL_INPUTTRIGGER:
                   pitch_editor->setValue(dm->enote);
                   break;
 
-                  case COL_ANOTE:
+                  case COL_NOTE:
                   pitch_editor->setValue(dm->anote);
                   break;
             }
@@ -608,24 +711,24 @@ void DList::returnPressed()
             
             switch (selectedColumn)
             {
-              case COL_VOL:
+              case COL_VOLUME:
                   if (val > 999) //changed from 200 to 999 by flo93
                   val = 999;
                   if (val < 0)
                   val = 0;
                   break;
                   
-              case COL_LV1:
-              case COL_LV2:
-              case COL_LV3:
-              case COL_LV4:
+              case COL_LEVEL1:
+              case COL_LEVEL2:
+              case COL_LEVEL3:
+              case COL_LEVEL4:
                   if (val > 127) //Check bounds for lv1-lv4 values
                   val = 127;
                   if (val < 0)
                   val = 0;
                   break;
                   
-              case COL_CHANNEL:
+              case COL_OUTCHANNEL:
                   val--;
                   if (val >= 16)
                   val = 15;
@@ -643,35 +746,35 @@ void DList::returnPressed()
                   editEntry->name = editor->text();
                   break;
 
-            case COL_LEN:
+            case COL_NOTELENGTH:
                   editEntry->len = atoi(editor->text().toAscii().constData());
                   break;
 
-            case COL_VOL:
+            case COL_VOLUME:
                   editEntry->vol = val;
                   break;
 
-            case COL_LV1:
+            case COL_LEVEL1:
                   editEntry->lv1 = val;
                   break;
 
-            case COL_LV2:
+            case COL_LEVEL2:
                   editEntry->lv2 = val;
                   break;
 
-            case COL_LV3:
+            case COL_LEVEL3:
                   editEntry->lv3 = val;
                   break;
 
-            case COL_LV4:
+            case COL_LEVEL4:
                   editEntry->lv4 = val;
                   break;
 
-            case COL_QNT:
+            case COL_QUANT:
                   editEntry->quant = val;
                   break;
 
-            case COL_CHANNEL:
+            case COL_OUTCHANNEL:
                   editEntry->channel = val;
                   break;
 
@@ -708,7 +811,7 @@ void DList::pitchEdited()
       
       DrumMap editEntryOld=*editEntry;
       switch(selectedColumn) {
-            case COL_ANOTE:
+            case COL_NOTE:
                if (old_style_drummap_mode) //should actually be always true, but to be sure...
                {
                     if(val != editEntry->anote)
@@ -724,7 +827,7 @@ void DList::pitchEdited()
                   printf("ERROR: THIS SHOULD NEVER HAPPEN: pitch edited of anote in new style mode!\n");
                break;
 
-            case COL_ENOTE:
+            case COL_INPUTTRIGGER:
                if (old_style_drummap_mode)
                {
                   //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
@@ -798,7 +901,7 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_, bo
       ourDrumMap=dcanvas->getOurDrumMap();
       ourDrumMapSize=dcanvas->getOurDrumMapSize();
       old_style_drummap_mode=oldstyle;
-      connect(dcanvas, SIGNAL(ourDrumMapChanged()), SLOT(ourDrumMapChanged()));
+      connect(dcanvas, SIGNAL(ourDrumMapChanged(bool)), SLOT(ourDrumMapChanged(bool)));
       
       if (!h){
       h = new QHeaderView(Qt::Horizontal, parent);}
@@ -884,13 +987,13 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
       bool shift = ev->modifiers() & Qt::ShiftModifier;
       unsigned instrument = y / TH;
 
-      DCols col = DCols(x2col(x));
+      DrumColumn col = DrumColumn(x2col(x));
 
       switch (col) {
             case COL_NAME:
                   emit keyReleased(instrument, shift);
                   break;
-            case COL_ANOTE:
+            case COL_NOTE:
                   emit keyReleased(instrument, shift);
                   break;
             default:
@@ -910,14 +1013,16 @@ int DList::getSelectedInstrument()
       }
 
 
-void DList::ourDrumMapChanged()
+void DList::ourDrumMapChanged(bool instrMapChanged)
 {
   int selIdx = currentlySelected - ourDrumMap;
   
   ourDrumMap=dcanvas->getOurDrumMap();
   ourDrumMapSize=dcanvas->getOurDrumMapSize();
   
-  editEntry=NULL;
+  if (instrMapChanged)
+    editEntry=NULL;
+  
   if (selIdx >= ourDrumMapSize) selIdx=ourDrumMapSize-1;
   currentlySelected = &ourDrumMap[selIdx];
 

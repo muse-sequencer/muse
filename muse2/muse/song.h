@@ -379,7 +379,9 @@ class Song : public QObject {
 
    public slots:
       void seekTo(int tick);
-      void update(int flags = -1);
+      void update(int flags = -1, bool allowRecursion=false); // use allowRecursion with care! this
+                                                              // could lock up muse if you aren't sure
+                                                              // that your recursion will be finite!
       void beat();
 
       void undo();

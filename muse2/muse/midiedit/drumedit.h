@@ -61,6 +61,24 @@ class Splitter;
 class Toolbar1;
 }
 
+enum DrumColumn {
+  COL_HIDE = 0,
+  COL_MUTE,
+  COL_NAME,
+  COL_VOLUME,
+  COL_QUANT,
+  COL_INPUTTRIGGER,
+  COL_NOTELENGTH,
+  COL_NOTE,
+  COL_OUTCHANNEL,
+  COL_OUTPORT,
+  COL_LEVEL1,
+  COL_LEVEL2,
+  COL_LEVEL3,
+  COL_LEVEL4,
+  COL_NONE = -1
+};
+
 //---------------------------------------------------------
 //   DrumEdit
 //---------------------------------------------------------
@@ -73,6 +91,7 @@ class DrumEdit : public MidiEditor {
   
    private:
       group_mode_t _group_mode;
+      bool _ignore_hide;
       
       Event selEvent;
       MidiPart* selPart;
@@ -95,6 +114,7 @@ class DrumEdit : public MidiEditor {
 
       static int _rasterInit;
       static int _dlistWidthInit, _dcanvasWidthInit;
+      static bool _ignore_hide_init;
 
       QAction *loadAction, *saveAction, *resetAction;
       QAction *cutAction, *copyAction, *copyRangeAction, *pasteAction, *pasteDialogAction, *deleteAction;
@@ -130,6 +150,7 @@ class DrumEdit : public MidiEditor {
       void songChanged1(int);
       void setStep(QString);
       void updateGroupingActions();
+      void set_ignore_hide(bool);
 
    public slots:
       void setSelection(int, Event&, Part*);
@@ -137,7 +158,7 @@ class DrumEdit : public MidiEditor {
       void execDeliveredScript(int);
       void execUserScript(int);
       CtrlEdit* addCtrl();
-      void ourDrumMapChanged();
+      void ourDrumMapChanged(bool);
       virtual void updateHScrollRange();
 
    signals:
@@ -153,6 +174,7 @@ class DrumEdit : public MidiEditor {
       
       bool old_style_drummap_mode();
       group_mode_t group_mode() { return _group_mode; }
+      bool ignore_hide() { return _ignore_hide; }
       };
 
 #endif

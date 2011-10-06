@@ -80,27 +80,12 @@ static const char* map_file_save_pattern[] = {
 int DrumEdit::_rasterInit = 96;
 int DrumEdit::_dlistWidthInit = 50;
 int DrumEdit::_dcanvasWidthInit = 300;
+bool DrumEdit::_ignore_hide_init = false;
 
 static const int xscale = -10;
 static const int yscale = 1;
 static const int drumeditTools = MusEWidget::PointerTool | MusEWidget::PencilTool | MusEWidget::RubberTool | MusEWidget::CursorTool | MusEWidget::DrawTool;
 
-enum DrumColumn {
-  COL_MUTE = 0,
-  COL_NAME,
-  COL_VOLUME,
-  COL_QUANT,
-  COL_INPUTTRIGGER,
-  COL_NOTELENGTH,
-  COL_NOTE,
-  COL_OUTCHANNEL,
-  COL_OUTPORT,
-  COL_LEVEL1,
-  COL_LEVEL2,
-  COL_LEVEL3,
-  COL_LEVEL4,
-  COL_NONE = -1
-};
 
 //---------------------------------------------------------
 //   setHeaderWhatsThis
@@ -108,6 +93,7 @@ enum DrumColumn {
 
 void DrumEdit::setHeaderWhatsThis()
       {
+      header->setWhatsThis(COL_HIDE, tr("hide instrument"));
       header->setWhatsThis(COL_MUTE, tr("mute instrument"));
       header->setWhatsThis(COL_NAME, tr("sound name"));
       header->setWhatsThis(COL_VOLUME, tr("volume percent"));
@@ -129,6 +115,7 @@ void DrumEdit::setHeaderWhatsThis()
 
 void DrumEdit::setHeaderToolTips()
       {
+      header->setToolTip(COL_HIDE, tr("hide instrument"));
       header->setToolTip(COL_MUTE, tr("mute instrument"));
       header->setToolTip(COL_NAME, tr("sound name"));
       header->setToolTip(COL_VOLUME, tr("volume percent"));
@@ -178,6 +165,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       QSignalMapper *signalMapper = new QSignalMapper(this);
       
       _group_mode = GROUP_SAME_CHANNEL;
+      _ignore_hide = _ignore_hide_init;
       
       //---------Pulldown Menu----------------------------
       menuFile = menuBar()->addMenu(tr("&File"));
@@ -299,15 +287,19 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
         groupNoneAction = menuGrouping->addAction(tr("Don't group"));
         groupChanAction = menuGrouping->addAction(tr("Group by channel"));
         groupMaxAction  = menuGrouping->addAction(tr("Group maximally"));
+        QAction* ignoreHideAction = settingsMenu->addAction(tr("Also show hidden events"));
         settingsMenu->addSeparator();
         
         groupNoneAction->setCheckable(true);
         groupChanAction->setCheckable(true);
         groupMaxAction ->setCheckable(true);
+        ignoreHideAction->setCheckable(true);
+        ignoreHideAction->setChecked(_ignore_hide);
         
         connect(groupNoneAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
         connect(groupChanAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
         connect(groupMaxAction,  SIGNAL(triggered()), signalMapper, SLOT(map()));
+        connect(ignoreHideAction,  SIGNAL(toggled(bool)), SLOT(set_ignore_hide(bool)));
 
         signalMapper->setMapping(groupNoneAction, DrumCanvas::CMD_GROUP_NONE);
         signalMapper->setMapping(groupChanAction, DrumCanvas::CMD_GROUP_CHAN);
@@ -450,7 +442,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       connect(canvas, SIGNAL(toolChanged(int)), tools2, SLOT(set(int)));
       connect(canvas, SIGNAL(horizontalZoomIn()), SLOT(horizontalZoomIn()));
       connect(canvas, SIGNAL(horizontalZoomOut()), SLOT(horizontalZoomOut()));
-      connect(canvas, SIGNAL(ourDrumMapChanged()), SLOT(ourDrumMapChanged()));
+      connect(canvas, SIGNAL(ourDrumMapChanged(bool)), SLOT(ourDrumMapChanged(bool)));
       time->setOrigin(offset, 0);
 
       QList<int> mops;
@@ -474,6 +466,7 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
       //
       header = new MusEWidget::Header(split1w1, "header");
       header->setFixedHeight(31);
+      header->setColumnLabel(tr("H"), COL_HIDE, 20);
       header->setColumnLabel(tr("M"), COL_MUTE, 20);
       header->setColumnLabel(tr("Sound"), COL_NAME, 120);
       header->setColumnLabel(tr("Vol"), COL_VOLUME);
@@ -496,6 +489,11 @@ DrumEdit::DrumEdit(PartList* pl, QWidget* parent, const char* name, unsigned ini
         header->hideSection(COL_OUTPORT);
         header->hideSection(COL_OUTCHANNEL);
       }
+      
+      if (!old_style_drummap_mode() && _ignore_hide)
+        header->showSection(COL_HIDE);
+      else
+        header->hideSection(COL_HIDE);
 
       dlist = new DList(header, split1w1, yscale, (DrumCanvas*)canvas, old_style_drummap_mode());
       // p3.3.44
@@ -749,6 +747,7 @@ void DrumEdit::writeStatus(int level, Xml& xml) const
       xml.intTag(level, "xmag", hscroll->mag());
       xml.intTag(level, "ypos", vscroll->pos());
       xml.intTag(level, "ymag", vscroll->mag());
+      xml.intTag(level, "ignore_hide", _ignore_hide);
       xml.tag(level, "/drumedit");
       }
 
@@ -796,6 +795,8 @@ void DrumEdit::readStatus(Xml& xml)
                               vscroll->setMag(xml.parseInt());
                         else if (tag == "ypos")
                               vscroll->setPos(xml.parseInt());
+                        else if (tag == "ignore_hide")
+                              _ignore_hide=xml.parseInt();
                         else
                               xml.unknown("DrumEdit");
                         break;
@@ -832,6 +833,8 @@ void DrumEdit::readConfiguration(Xml& xml)
                               _dcanvasWidthInit = xml.parseInt();
                         else if (tag == "dlistwidth")
                               _dlistWidthInit = xml.parseInt();
+                        else if (tag == "ignore_hide_init")
+                              _ignore_hide_init = xml.parseInt();
                         else if (tag == "topwin")
                               TopWin::readConfiguration(DRUM, xml);
                         else
@@ -857,6 +860,7 @@ void DrumEdit::writeConfiguration(int level, Xml& xml)
       xml.intTag(level, "raster", _rasterInit);
       xml.intTag(level, "dlistwidth", _dlistWidthInit);
       xml.intTag(level, "dcanvaswidth", _dcanvasWidthInit);
+      xml.intTag(level, "ignore_hide_init", _ignore_hide_init);
       TopWin::writeConfiguration(DRUM, level,xml);
       xml.tag(level, "/drumedit");
       }
@@ -1177,7 +1181,7 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
             return;
       }
       else if (key == Qt::Key_F2) {
-            dlist->lineEdit(dlist->getSelectedInstrument(),(int)DList::COL_NAME);
+            dlist->lineEdit(dlist->getSelectedInstrument(),(int)COL_NAME);
             return;
             }
       else if (key == shortcuts[SHRT_INSTRUMENT_STEP_UP].key) {
@@ -1383,11 +1387,14 @@ bool DrumEdit::old_style_drummap_mode()
   return false;
 }
 
-void DrumEdit::ourDrumMapChanged()
+void DrumEdit::ourDrumMapChanged(bool instrMapChanged)
 {
-  int vmin,vmax;
-  vscroll->range(&vmin, &vmax);
-  vscroll->setRange(vmin, dynamic_cast<DrumCanvas*>(canvas)->getOurDrumMapSize()*TH);
+  if (instrMapChanged)
+  {
+    int vmin,vmax;
+    vscroll->range(&vmin, &vmax);
+    vscroll->setRange(vmin, dynamic_cast<DrumCanvas*>(canvas)->getOurDrumMapSize()*TH);
+  }
 }
 
 void DrumEdit::updateGroupingActions()
@@ -1401,4 +1408,19 @@ void DrumEdit::updateGroupingActions()
   groupNoneAction->setChecked(_group_mode==DONT_GROUP);
   groupChanAction->setChecked(_group_mode==GROUP_SAME_CHANNEL);
   groupMaxAction ->setChecked(_group_mode==GROUP_MAX);
+}
+
+void DrumEdit::set_ignore_hide(bool val)
+{
+  _ignore_hide=val;
+  _ignore_hide_init=val;
+  // this may only called be from the action's toggled signal.
+  // if called otherwise, the action's checked state isn't updated!
+
+  if (!old_style_drummap_mode() && _ignore_hide)
+    header->showSection(COL_HIDE);
+  else
+    header->hideSection(COL_HIDE);
+  
+  ((DrumCanvas*)(canvas))->rebuildOurDrumMap();
 }

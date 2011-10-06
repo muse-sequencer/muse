@@ -1468,11 +1468,13 @@ void Song::rewindStart()
 //   update
 //---------------------------------------------------------
 
-void Song::update(int flags)
+void Song::update(int flags, bool allowRecursion)
       {
       static int level = 0;         // DEBUG
-      if (level) {
-            printf("Song::update %08x, level %d\n", flags, level);
+      if (level && !allowRecursion) {
+            printf("THIS SHOULD NEVER HAPPEN: unallowed recursion in Song::update(%08x), level %d!\n"
+                   "                          the songChanged() signal is NOT emitted. this will\n"
+                   "                          probably cause windows being not up-to-date.\n", flags, level);
             return;
             }
       ++level;
