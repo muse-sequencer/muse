@@ -259,7 +259,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
           dlv = sl->minValue() - 0.5 * (sl->minValue() - sl->off());
         else
         {  
-          dlv = -fast_log10(float(127*127)/float(v*v))*20.0;
+          dlv = -MusECore::fast_log10(float(127*127)/float(v*v))*20.0;
           if(dlv > sl->maxValue())
             dlv = sl->maxValue();
         }    
@@ -693,7 +693,7 @@ void MidiStrip::updateControls()
                 }  
                 else
                 {  
-                  double v = -fast_log10(float(127*127)/float(ivol*ivol))*20.0;
+                  double v = -MusECore::fast_log10(float(127*127)/float(ivol*ivol))*20.0;
                   if(v > sl->maxValue())
                   {
                     //printf("MidiStrip::updateControls setting volume slider label\n");

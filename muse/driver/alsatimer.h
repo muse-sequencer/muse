@@ -30,6 +30,7 @@
 #include "alsa/asoundlib.h"
 #include "timerdev.h"
 
+namespace MusECore {
 
 //---------------------------------------------------------
 //   AlsaTimer
@@ -63,5 +64,7 @@ class AlsaTimer : public Timer{
        
        void setFindBestTimer(bool b) { findBest = b; }
 };
+
+} // namespace MusECore
 
 #endif //__ALSATIMER_H__

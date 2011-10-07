@@ -260,7 +260,7 @@ bool Audio::sync(int jackState, unsigned frame)
                 Pos p(frame, false);
                 seek(p);
               if (!_freewheel)
-                      done = audioPrefetch->seekDone();
+                      done = MusEGlobal::audioPrefetch->seekDone();
                 if (s == START_PLAY)
                         state = START_PLAY;
                 }
@@ -269,7 +269,7 @@ bool Audio::sync(int jackState, unsigned frame)
                         // seek during seek
                             seek(Pos(frame, false));
                         }
-                done = audioPrefetch->seekDone();
+                done = MusEGlobal::audioPrefetch->seekDone();
                   }
             }
       return done;
@@ -399,7 +399,7 @@ void Audio::process(unsigned frames)
 
       if (isPlaying()) {
             if (!freewheel())
-                  audioPrefetch->msgTick();
+                  MusEGlobal::audioPrefetch->msgTick();
 
             if (_bounce && _pos >= MusEGlobal::song->rPos()) {
                   _bounce = false;
@@ -759,11 +759,11 @@ void Audio::seek(const Pos& p)
       //loopPassed = true;   // for record loop mode
       if (state != LOOP2 && !freewheel())
       {
-            //audioPrefetch->msgSeek(_pos.frame());
+            //MusEGlobal::audioPrefetch->msgSeek(_pos.frame());
             // We need to force prefetch to update, to ensure the most recent data. 
             // Things can happen to a part before play is pressed - such as part muting, 
             //  part moving etc. Without a force, the wrong data was being played.  Tim 08/17/08
-            audioPrefetch->msgSeek(_pos.frame(), true);
+            MusEGlobal::audioPrefetch->msgSeek(_pos.frame(), true);
       }
             
       write(sigFd, "G", 1);   // signal seek to gui

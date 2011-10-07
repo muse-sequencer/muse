@@ -32,6 +32,8 @@
 #include "globals.h"
 #include "errno.h"
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   Thread
 //---------------------------------------------------------
@@ -104,7 +106,7 @@ void Thread::start(int prio, void* ptr)
 
 
       /*
-      if (pthread_create(&thread, attributes, ::loop, this))
+      if (pthread_create(&thread, attributes, MusECore::loop, this))
             perror("creating thread failed:");
 //      else
 //      {
@@ -114,7 +116,7 @@ void Thread::start(int prio, void* ptr)
       */
 
 
-      int rv = pthread_create(&thread, attributes, ::loop, this); 
+      int rv = pthread_create(&thread, attributes, MusECore::loop, this); 
       if(rv)
       {
         // p4.0.16: MusEGlobal::realTimeScheduling is unreliable. It is true even in some clearly non-RT cases.
@@ -122,7 +124,7 @@ void Thread::start(int prio, void* ptr)
         // MusE was failing with a stock kernel because of PTHREAD_EXPLICIT_SCHED.
         // So we'll just have to try again without attributes.
         if (MusEGlobal::realTimeScheduling && _realTimePriority > 0) 
-          rv = pthread_create(&thread, NULL, ::loop, this); 
+          rv = pthread_create(&thread, NULL, MusECore::loop, this); 
       }
 
       if(rv)
@@ -481,3 +483,4 @@ void Thread::readMsg1(int size)
       processMsg1(buffer);
       }
 
+} // namespace MusECore

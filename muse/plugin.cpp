@@ -3548,13 +3548,13 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
 
                   if (strcmp(obj->metaObject()->className(), "Slider") == 0) {
                         gw[nobj].type = GuiWidgets::SLIDER;
-                        ((MusEGui::Slider*)obj)->setId(nobj);
-                        ((MusEGui::Slider*)obj)->setCursorHoming(true);
+                        ((Slider*)obj)->setId(nobj);
+                        ((Slider*)obj)->setCursorHoming(true);
                         //for(int i = 0; i < nobj; i++)
                         for(unsigned long i = 0; i < nobj; i++)             // p4.0.21
                         {
                           if(gw[i].type == GuiWidgets::DOUBLE_LABEL && gw[i].param == parameter)
-                            ((MusEGui::DoubleLabel*)gw[i].widget)->setSlider((MusEGui::Slider*)obj);
+                            ((DoubleLabel*)gw[i].widget)->setSlider((Slider*)obj);
                         }
                         connect(obj, SIGNAL(sliderMoved(double,int)), mapper, SLOT(map()));
                         connect(obj, SIGNAL(sliderPressed(int)), SLOT(guiSliderPressed(int)));
@@ -3563,13 +3563,13 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         }
                   else if (strcmp(obj->metaObject()->className(), "DoubleLabel") == 0) {
                         gw[nobj].type = GuiWidgets::DOUBLE_LABEL;
-                        ((MusEGui::DoubleLabel*)obj)->setId(nobj);
+                        ((DoubleLabel*)obj)->setId(nobj);
                         //for(int i = 0; i < nobj; i++)
                         for(unsigned long i = 0; i < nobj; i++)
                         {
                           if(gw[i].type == GuiWidgets::SLIDER && gw[i].param == parameter)
                           {
-                            ((MusEGui::DoubleLabel*)obj)->setSlider((MusEGui::Slider*)gw[i].widget);
+                            ((DoubleLabel*)obj)->setSlider((Slider*)gw[i].widget);
                             break;  
                           }  
                         }
@@ -3609,7 +3609,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
             unsigned long n  = plugin->parameters();   // p4.0.21
             params = new GuiParam[n];
 
-            //int style       = MusEGui::Slider::BgTrough | MusEGui::Slider::BgSlot;
+            //int style       = Slider::BgTrough | Slider::BgSlot;
             QFontMetrics fm = fontMetrics();
             int h           = fm.height() + 4;
 
@@ -3629,7 +3629,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
 
                   if (LADSPA_IS_HINT_TOGGLED(range.HintDescriptor)) {
                         params[i].type = GuiParam::GUI_SWITCH;
-			MusEGui::CheckBox* cb = new MusEGui::CheckBox(mw, i, "param");
+			CheckBox* cb = new CheckBox(mw, i, "param");
                         cb->setId(i);
                         cb->setText(QString(plugin->paramName(i)));
                         cb->setChecked(plugin->param(i) != 0.0);
@@ -3639,7 +3639,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                   else {
                         label           = new QLabel(QString(plugin->paramName(i)), 0);
                         params[i].type  = GuiParam::GUI_SLIDER;
-                        params[i].label = new MusEGui::DoubleLabel(val, lower, upper, 0);
+                        params[i].label = new DoubleLabel(val, lower, upper, 0);
                         params[i].label->setFrame(true);
                         params[i].label->setPrecision(2);
                         params[i].label->setId(i);
@@ -3652,8 +3652,8 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                         uint c3 = j * j * j * 43  % 256;
                         QColor color(c1, c2, c3);
 
-                        MusEGui::Slider* s = new MusEGui::Slider(0, "param", Qt::Horizontal,
-                           MusEGui::Slider::None, color);
+                        Slider* s = new Slider(0, "param", Qt::Horizontal,
+                           Slider::None, color);
                            
                         s->setCursorHoming(true);
                         s->setId(i);
@@ -3663,7 +3663,7 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                           s->setStep(1.0);
                         s->setValue(dval);
                         params[i].actuator = s;
-                        params[i].label->setSlider((MusEGui::Slider*)params[i].actuator);
+                        params[i].label->setSlider((Slider*)params[i].actuator);
                         }
                   //params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum));
                   params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
@@ -3715,22 +3715,22 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
                       getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
                       label           = new QLabel(QString(plugin->paramOutName(i)), 0);
                       paramsOut[i].type  = GuiParam::GUI_METER;
-                      paramsOut[i].label = new MusEGui::DoubleLabel(val, lower, upper, 0);
+                      paramsOut[i].label = new DoubleLabel(val, lower, upper, 0);
                       paramsOut[i].label->setFrame(true);
                       paramsOut[i].label->setPrecision(2);
                       paramsOut[i].label->setId(i);
 
-		      MusEGui::Meter::MeterType mType=MusEGui::Meter::LinMeter;
+		      Meter::MeterType mType=Meter::LinMeter;
                       if(LADSPA_IS_HINT_INTEGER(range.HintDescriptor))
-                        mType=MusEGui::Meter::DBMeter;
-		      MusEGui::VerticalMeter* m = new MusEGui::VerticalMeter(this, mType);
+                        mType=Meter::DBMeter;
+		      VerticalMeter* m = new VerticalMeter(this, mType);
                       //printf("lower =%f upper=%f dlower=%f dupper=%f\n", lower, upper,dlower,dupper);
 
                       m->setRange(dlower, dupper);
                       m->setVal(dval);
                       m->setFixedHeight(h);
                       paramsOut[i].actuator = m;
-//                      paramsOut[i].label->setSlider((MusEGui::Slider*)params[i].actuator);
+//                      paramsOut[i].label->setSlider((Slider*)params[i].actuator);
                       //paramsOut[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
                       label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
                       paramsOut[i].label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -3781,9 +3781,9 @@ void PluginGui::getPluginConvertedValues(LADSPA_PortRangeHint range,
   if (LADSPA_IS_HINT_LOGARITHMIC(range.HintDescriptor)) {
         if (lower == 0.0)
               lower = 0.001;
-        dlower = fast_log10(lower)*20.0;
-        dupper = fast_log10(upper)*20.0;
-        dval  = fast_log10(dval) * 20.0;
+        dlower = MusECore::fast_log10(lower)*20.0;
+        dupper = MusECore::fast_log10(upper)*20.0;
+        dval  = MusECore::fast_log10(dval) * 20.0;
         }
 
 }
@@ -3820,13 +3820,13 @@ void PluginGui::ctrlPressed(int param)
       
       if(params[param].type == GuiParam::GUI_SLIDER)
       {
-        double val = ((MusEGui::Slider*)params[param].actuator)->value();  
+        double val = ((Slider*)params[param].actuator)->value();  
         if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
               val = pow(10.0, val/20.0);
         else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
               val = rint(val);
         plugin->setParam(param, val);
-        ((MusEGui::DoubleLabel*)params[param].label)->setValue(val);
+        ((DoubleLabel*)params[param].label)->setValue(val);
         
         // p3.3.43
         //MusEGlobal::audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
@@ -3844,8 +3844,8 @@ void PluginGui::ctrlPressed(int param)
       }       
       else if(params[param].type == GuiParam::GUI_SWITCH)
       {
-        //double val = (double)((MusEGui::CheckBox*)params[param].actuator)->isChecked();
-        float val = (float)((MusEGui::CheckBox*)params[param].actuator)->isChecked();      // p4.0.21
+        //double val = (double)((CheckBox*)params[param].actuator)->isChecked();
+        float val = (float)((CheckBox*)params[param].actuator)->isChecked();      // p4.0.21
         plugin->setParam(param, val);
         
         // p3.3.43
@@ -3888,7 +3888,7 @@ void PluginGui::ctrlReleased(int param)
         
       if(params[param].type == GuiParam::GUI_SLIDER)
       {
-        double val = ((MusEGui::Slider*)params[param].actuator)->value();
+        double val = ((Slider*)params[param].actuator)->value();
         if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
               val = pow(10.0, val/20.0);
         else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
@@ -3897,7 +3897,7 @@ void PluginGui::ctrlReleased(int param)
       }       
       //else if(params[param].type == GuiParam::GUI_SWITCH)
       //{
-        //double val = (double)((MusEGui::CheckBox*)params[param].actuator)->isChecked();
+        //double val = (double)((CheckBox*)params[param].actuator)->isChecked();
         // No concept of 'untouching' a checkbox. Remain 'touched' until stop.
         //plugin->track()->stopAutoRecord(MusECore::genACnum(plugin->id(), param), val);
       //}       
@@ -3935,7 +3935,7 @@ void PluginGui::sliderChanged(double val, int param)
             val = rint(val);
       if (plugin->param(param) != val) {
             plugin->setParam(param, val);
-            ((MusEGui::DoubleLabel*)params[param].label)->setValue(val);
+            ((DoubleLabel*)params[param].label)->setValue(val);
             }
             
       int id = plugin->id();
@@ -3974,12 +3974,12 @@ void PluginGui::labelChanged(double val, int param)
       
       double dval = val;
       if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
-            dval = fast_log10(val) * 20.0;
+            dval = MusECore::fast_log10(val) * 20.0;
       else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
             dval = rint(val);
       if (plugin->param(param) != val) {
             plugin->setParam(param, val);
-            ((MusEGui::Slider*)params[param].actuator)->setValue(dval);
+            ((Slider*)params[param].actuator)->setValue(dval);
             }
       
       int id = plugin->id();
@@ -4014,12 +4014,12 @@ void PluginGui::load()
       s += plugin->pluginLabel();
       s += "/";
 
-      QString fn = MusEGui::getOpenFileName(s, MusEGlobal::preset_file_pattern,
+      QString fn = getOpenFileName(s, MusEGlobal::preset_file_pattern,
          this, tr("MusE: load preset"), 0);
       if (fn.isEmpty())
             return;
       bool popenFlag;
-      FILE* f = MusEGui::fileOpen(this, fn, QString(".pre"), "r", popenFlag, true);
+      FILE* f = fileOpen(this, fn, QString(".pre"), "r", popenFlag, true);
       if (f == 0)
             return;
 
@@ -4079,13 +4079,13 @@ void PluginGui::save()
       s += plugin->pluginLabel();
       s += "/";
 
-      //QString fn = MusEGui::getSaveFileName(s, MusEGlobal::preset_file_pattern, this,
-      QString fn = MusEGui::getSaveFileName(s, MusEGlobal::preset_file_save_pattern, this,
+      //QString fn = getSaveFileName(s, MusEGlobal::preset_file_pattern, this,
+      QString fn = getSaveFileName(s, MusEGlobal::preset_file_save_pattern, this,
         tr("MusE: save preset"));
       if (fn.isEmpty())
             return;
       bool popenFlag;
-      FILE* f = MusEGui::fileOpen(this, fn, QString(".pre"), "w", popenFlag, false, true);
+      FILE* f = fileOpen(this, fn, QString(".pre"), "w", popenFlag, false, true);
       if (f == 0)
             return;
       MusECore::Xml xml(f);
@@ -4135,17 +4135,17 @@ void PluginGui::updateValues()
                         double lv = plugin->param(i);
                         double sv = lv;
                         if (LADSPA_IS_HINT_LOGARITHMIC(params[i].hint))
-                              sv = fast_log10(lv) * 20.0;
+                              sv = MusECore::fast_log10(lv) * 20.0;
                         else if (LADSPA_IS_HINT_INTEGER(params[i].hint))
                         {
                               sv = rint(lv);
                               lv = sv;
                         }      
                         gp->label->setValue(lv);
-                        ((MusEGui::Slider*)(gp->actuator))->setValue(sv);
+                        ((Slider*)(gp->actuator))->setValue(sv);
                         }
                   else if (gp->type == GuiParam::GUI_SWITCH) {
-                        ((MusEGui::CheckBox*)(gp->actuator))->setChecked(int(plugin->param(i)));
+                        ((CheckBox*)(gp->actuator))->setChecked(int(plugin->param(i)));
                         }
                   }
             }
@@ -4160,10 +4160,10 @@ void PluginGui::updateValues()
                   float val = plugin->param(param);
                   switch(type) {
                         case GuiWidgets::SLIDER:
-                              ((MusEGui::Slider*)widget)->setValue(val);    // Note conversion to double
+                              ((Slider*)widget)->setValue(val);    // Note conversion to double
                               break;
                         case GuiWidgets::DOUBLE_LABEL:
-                              ((MusEGui::DoubleLabel*)widget)->setValue(val);   // Note conversion to double
+                              ((DoubleLabel*)widget)->setValue(val);   // Note conversion to double
                               break;
                         case GuiWidgets::QCHECKBOX:
                               ((QCheckBox*)widget)->setChecked(int(val));
@@ -4194,13 +4194,13 @@ void PluginGui::updateControls()
                  double lv = plugin->paramOut(i);
                  double sv = lv;
                  if (LADSPA_IS_HINT_LOGARITHMIC(params[i].hint))
-                       sv = fast_log10(lv) * 20.0;
+                       sv = MusECore::fast_log10(lv) * 20.0;
                  else if (LADSPA_IS_HINT_INTEGER(params[i].hint))
                  {
                        sv = rint(lv);
                        lv = sv;
                  }
-                 ((MusEGui::VerticalMeter*)(gp->actuator))->setVal(sv);
+                 ((VerticalMeter*)(gp->actuator))->setVal(sv);
                  gp->label->setValue(lv);
 
                }
@@ -4223,22 +4223,22 @@ void PluginGui::updateControls()
                             double lv = plugin->track()->pluginCtrlVal(MusECore::genACnum(plugin->id(), i));
                             double sv = lv;
                             if (LADSPA_IS_HINT_LOGARITHMIC(params[i].hint))
-                                  sv = fast_log10(lv) * 20.0;
+                                  sv = MusECore::fast_log10(lv) * 20.0;
                             else 
                             if (LADSPA_IS_HINT_INTEGER(params[i].hint))
                             {
                                   sv = rint(lv);
                                   lv = sv;
                             }      
-                            if(((MusEGui::Slider*)(gp->actuator))->value() != sv)
+                            if(((Slider*)(gp->actuator))->value() != sv)
                             {
                               //printf("PluginGui::updateControls slider\n");
                               
                               gp->label->blockSignals(true);
-                              ((MusEGui::Slider*)(gp->actuator))->blockSignals(true);
-                              ((MusEGui::Slider*)(gp->actuator))->setValue(sv);
+                              ((Slider*)(gp->actuator))->blockSignals(true);
+                              ((Slider*)(gp->actuator))->setValue(sv);
                               gp->label->setValue(lv);
-                              ((MusEGui::Slider*)(gp->actuator))->blockSignals(false);
+                              ((Slider*)(gp->actuator))->blockSignals(false);
                               gp->label->blockSignals(false);
                             } 
                           }
@@ -4248,13 +4248,13 @@ void PluginGui::updateControls()
                         if( plugin->controllerEnabled(i) && plugin->controllerEnabled2(i) )
                           {
                             bool v = (int)plugin->track()->pluginCtrlVal(MusECore::genACnum(plugin->id(), i));
-                            if(((MusEGui::CheckBox*)(gp->actuator))->isChecked() != v)
+                            if(((CheckBox*)(gp->actuator))->isChecked() != v)
                             {
                               //printf("PluginGui::updateControls switch\n");
                               
-                              ((MusEGui::CheckBox*)(gp->actuator))->blockSignals(true);
-                              ((MusEGui::CheckBox*)(gp->actuator))->setChecked(v);
-                              ((MusEGui::CheckBox*)(gp->actuator))->blockSignals(false);
+                              ((CheckBox*)(gp->actuator))->blockSignals(true);
+                              ((CheckBox*)(gp->actuator))->setChecked(v);
+                              ((CheckBox*)(gp->actuator))->blockSignals(false);
                             } 
                           }
                         }
@@ -4272,13 +4272,13 @@ void PluginGui::updateControls()
                               if( plugin->controllerEnabled(param) && plugin->controllerEnabled2(param) )
                               {
                                 double v = plugin->track()->pluginCtrlVal(MusECore::genACnum(plugin->id(), param));
-                                if(((MusEGui::Slider*)widget)->value() != v)
+                                if(((Slider*)widget)->value() != v)
                                 {
                                   //printf("PluginGui::updateControls slider\n");
                               
-                                  ((MusEGui::Slider*)widget)->blockSignals(true);
-                                  ((MusEGui::Slider*)widget)->setValue(v);
-                                  ((MusEGui::Slider*)widget)->blockSignals(false);
+                                  ((Slider*)widget)->blockSignals(true);
+                                  ((Slider*)widget)->setValue(v);
+                                  ((Slider*)widget)->blockSignals(false);
                                 }
                               }
                               break;
@@ -4286,13 +4286,13 @@ void PluginGui::updateControls()
                               if( plugin->controllerEnabled(param) && plugin->controllerEnabled2(param) )
                               {
                                 double v = plugin->track()->pluginCtrlVal(MusECore::genACnum(plugin->id(), param));
-                                if(((MusEGui::DoubleLabel*)widget)->value() != v)
+                                if(((DoubleLabel*)widget)->value() != v)
                                 {
                                   //printf("PluginGui::updateControls label\n");
                               
-                                  ((MusEGui::DoubleLabel*)widget)->blockSignals(true);
-                                  ((MusEGui::DoubleLabel*)widget)->setValue(v);
-                                  ((MusEGui::DoubleLabel*)widget)->blockSignals(false);
+                                  ((DoubleLabel*)widget)->blockSignals(true);
+                                  ((DoubleLabel*)widget)->setValue(v);
+                                  ((DoubleLabel*)widget)->blockSignals(false);
                                 }
                               }
                               break;
@@ -4351,10 +4351,10 @@ void PluginGui::guiParamChanged(int idx)
       double val = 0.0;
       switch(type) {
             case GuiWidgets::SLIDER:
-                  val = ((MusEGui::Slider*)w)->value();
+                  val = ((Slider*)w)->value();
                   break;
             case GuiWidgets::DOUBLE_LABEL:
-                  val = ((MusEGui::DoubleLabel*)w)->value();
+                  val = ((DoubleLabel*)w)->value();
                   break;
             case GuiWidgets::QCHECKBOX:
                   val = double(((QCheckBox*)w)->isChecked());
@@ -4372,10 +4372,10 @@ void PluginGui::guiParamChanged(int idx)
             int type   = gw[i].type;
             switch(type) {
                   case GuiWidgets::SLIDER:
-                        ((MusEGui::Slider*)widget)->setValue(val);
+                        ((Slider*)widget)->setValue(val);
                         break;
                   case GuiWidgets::DOUBLE_LABEL:
-                        ((MusEGui::DoubleLabel*)widget)->setValue(val);
+                        ((DoubleLabel*)widget)->setValue(val);
                         break;
                   case GuiWidgets::QCHECKBOX:
                         ((QCheckBox*)widget)->setChecked(int(val));
@@ -4441,13 +4441,13 @@ void PluginGui::guiParamPressed(int idx)
       id = MusECore::genACnum(id, param);
       
       // NOTE: For this to be of any use, the freeverb gui 2142.ui
-      //  would have to be used, and changed to use MusEGui::CheckBox and ComboBox
+      //  would have to be used, and changed to use CheckBox and ComboBox
       //  instead of QCheckBox and QComboBox, since both of those would
       //  need customization (Ex. QCheckBox doesn't check on click).
       /*
       switch(type) {
             case GuiWidgets::QCHECKBOX:
-                    double val = (double)((MusEGui::CheckBox*)w)->isChecked();
+                    double val = (double)((CheckBox*)w)->isChecked();
                     track->startAutoRecord(id, val);
                   break;
             case GuiWidgets::QCOMBOBOX:
@@ -4487,13 +4487,13 @@ void PluginGui::guiParamReleased(int idx)
       id = MusECore::genACnum(id, param);
       
       // NOTE: For this to be of any use, the freeverb gui 2142.ui
-      //  would have to be used, and changed to use MusEGui::CheckBox and ComboBox
+      //  would have to be used, and changed to use CheckBox and ComboBox
       //  instead of QCheckBox and QComboBox, since both of those would
       //  need customization (Ex. QCheckBox doesn't check on click).
       /*
       switch(type) {
             case GuiWidgets::QCHECKBOX:
-                    double val = (double)((MusEGui::CheckBox*)w)->isChecked();
+                    double val = (double)((CheckBox*)w)->isChecked();
                     track->stopAutoRecord(id, param);
                   break;
             case GuiWidgets::QCOMBOBOX:
@@ -4529,7 +4529,7 @@ void PluginGui::guiSliderPressed(int idx)
       
       id = MusECore::genACnum(id, param);
       
-      double val = ((MusEGui::Slider*)w)->value();
+      double val = ((Slider*)w)->value();
       plugin->setParam(param, val);
       
       //MusEGlobal::audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
@@ -4550,10 +4550,10 @@ void PluginGui::guiSliderPressed(int idx)
             int type   = gw[i].type;
             switch(type) {
                   case GuiWidgets::SLIDER:
-                        ((MusEGui::Slider*)widget)->setValue(val);
+                        ((Slider*)widget)->setValue(val);
                         break;
                   case GuiWidgets::DOUBLE_LABEL:
-                        ((MusEGui::DoubleLabel*)widget)->setValue(val);
+                        ((DoubleLabel*)widget)->setValue(val);
                         break;
                   case GuiWidgets::QCHECKBOX:
                         ((QCheckBox*)widget)->setChecked(int(val));
@@ -4589,7 +4589,7 @@ void PluginGui::guiSliderReleased(int idx)
       
       id = MusECore::genACnum(id, param);
       
-      double val = ((MusEGui::Slider*)w)->value();
+      double val = ((Slider*)w)->value();
       track->stopAutoRecord(id, val);
       }
     
@@ -4612,9 +4612,9 @@ void PluginGui::guiSliderRightClicked(const QPoint &p, int idx)
 QWidget* PluginLoader::createWidget(const QString & className, QWidget * parent, const QString & name)
 {
   if(className == QString("DoubleLabel"))
-    return new MusEGui::DoubleLabel(parent, name.toLatin1().constData()); 
+    return new DoubleLabel(parent, name.toLatin1().constData()); 
   if(className == QString("Slider"))
-    return new MusEGui::Slider(parent, name.toLatin1().constData(), Qt::Horizontal); 
+    return new Slider(parent, name.toLatin1().constData(), Qt::Horizontal); 
 
   return QUiLoader::createWidget(className, parent, name);
 };

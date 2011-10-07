@@ -28,6 +28,8 @@
   #include <climits>
 
 #define TIMER_DEBUG 0
+
+namespace MusECore {
   
   AlsaTimer::AlsaTimer()
      {
@@ -238,3 +240,5 @@
       }
     return tr.ticks;
     }
+
+} // namespace MusECore

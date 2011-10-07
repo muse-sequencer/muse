@@ -164,7 +164,7 @@ void Meter::setVal(double v, double max, bool ovl)
       {
         maxVal = max;
         if(mtype == DBMeter)
-          cur_ymax = maxVal == 0 ? fw : int(((maxScale - (fast_log10(maxVal) * 20.0)) * h)/range);
+          cur_ymax = maxVal == 0 ? fw : int(((maxScale - (MusECore::fast_log10(maxVal) * 20.0)) * h)/range);
         else
           cur_ymax = maxVal == 0 ? fw : int(((maxScale - maxVal) * h)/range);
         if(cur_ymax > h) cur_ymax = h;
@@ -179,7 +179,7 @@ void Meter::setVal(double v, double max, bool ovl)
       if(ud)        
       {
         if(mtype == DBMeter)
-          cur_yv = val == 0 ? h : int(((maxScale - (fast_log10(val) * 20.0)) * h)/range);
+          cur_yv = val == 0 ? h : int(((maxScale - (MusECore::fast_log10(val) * 20.0)) * h)/range);
         else
           cur_yv = val == 0 ? h : int(((maxScale - val) * h)/range);
         if(cur_yv > h) cur_yv = h;
@@ -247,8 +247,8 @@ void Meter::paintEvent(QPaintEvent* ev)
       {
         if(mtype == DBMeter)
         {  
-          cur_yv = val == 0 ? h : int(((maxScale - (fast_log10(val) * 20.0)) * h)/range);
-          cur_ymax = maxVal == 0 ? fw : int(((maxScale - (fast_log10(maxVal) * 20.0)) * h)/range);
+          cur_yv = val == 0 ? h : int(((maxScale - (MusECore::fast_log10(val) * 20.0)) * h)/range);
+          cur_ymax = maxVal == 0 ? fw : int(((maxScale - (MusECore::fast_log10(maxVal) * 20.0)) * h)/range);
         }  
         else
         {  

@@ -6,6 +6,7 @@
             o MusECore:   For non-gui classes
             o MusEGui:    For gui classes
           One or two more namespaces will be added for the stuff outside the main tree (synti, al, etc) (Orcan)
+        - Fixed python control add-on building. Left it off by default. (Orcan)
 05.09.2011:
         - SigEdit, up/down arrow in denominator only moves between powers of two, 2,4,8...128 (rj)
 04.09.2011:

@@ -152,7 +152,7 @@ void VerticalMeter::paintEvent(QPaintEvent* /*ev*/)
 
 
       if(mtype == DBMeter) 
-        xv = int(((maxScale - (fast_log10(val) * 20.0)) * w)/range);
+        xv = int(((maxScale - (MusECore::fast_log10(val) * 20.0)) * w)/range);
       else {
         xv = int(((maxScale - val) * w)/range);
       }
@@ -167,7 +167,7 @@ void VerticalMeter::paintEvent(QPaintEvent* /*ev*/)
       /*
       int xcenter;
       if(mtype == DBMeter) 
-        xcenter = maxVal == 0 ? 0 : int(((maxScale - (fast_log10(0) * 20.0)) * w)/range);
+        xcenter = maxVal == 0 ? 0 : int(((maxScale - (MusECore::fast_log10(0) * 20.0)) * w)/range);
       else
         xcenter = maxVal == 0 ? 0 : int(((maxVal) * w)/range);
       p.setPen(peak_color);

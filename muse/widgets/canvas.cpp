@@ -489,7 +489,7 @@ void Canvas::wheelEvent(QWheelEvent* ev)
 
     if (shift) { // scroll horizontally
         int delta       = -ev->delta() / WHEEL_DELTA;
-        int xpixelscale = 5*fast_log10(rmapxDev(1));
+        int xpixelscale = 5*MusECore::fast_log10(rmapxDev(1));
 
         if (xpixelscale <= 0)
               xpixelscale = 1;

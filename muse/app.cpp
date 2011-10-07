@@ -65,6 +65,7 @@
 #include "mixdowndialog.h"
 #include "pianoroll.h"
 #include "scoreedit.h"
+#include "remote/pyapi.h"
 #include "routepopup.h"
 #include "shortcutconfig.h"
 #include "songinfo.h"
@@ -211,9 +212,9 @@ bool MusE::seqStart()
       //  printf("MusE: WARNING: Midi realtime priority %d is the same as audio prefetch realtime priority %d. Try a different setting.\n", 
       //         midiprio, pfprio);
       
-      audioPrefetch->start(pfprio);
+      MusEGlobal::audioPrefetch->start(pfprio);
       
-      audioPrefetch->msgSeek(0, true); // force
+      MusEGlobal::audioPrefetch->msgSeek(0, true); // force
       
       //MusEGlobal::midiSeqRunning = !midiSeq->start(MusEGlobal::realTimeScheduling ? MusEGlobal::realTimePriority : 0);
       // Changed by Tim. p3.3.22
@@ -255,7 +256,7 @@ void MusE::seqStop()
       MusEGlobal::song->setStopPlay(false);
       MusEGlobal::midiSeq->stop(true);
       MusEGlobal::audio->stop(true);
-      audioPrefetch->stop(true);
+      MusEGlobal::audioPrefetch->stop(true);
       if (MusEGlobal::realTimeScheduling && watchdogThread)
             pthread_cancel(watchdogThread);
       }
@@ -372,9 +373,9 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //    Python bridge
       //---------------------------------------------------
       // Uncomment in order to enable MusE Python bridge:
-      if (usePythonBridge) {
+      if (MusEGlobal::usePythonBridge) {
             printf("Initializing python bridge!\n");
-            if (initPythonBridge() == false) {
+            if (MusECore::initPythonBridge() == false) {
                   printf("Could not initialize Python bridge\n");
                   exit(1);
                   }
@@ -736,8 +737,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //MusEGlobal::midiSeq       = new MusECore::MidiSeq(MusEGlobal::realTimeScheduling ? MusEGlobal::realTimePriority : 0, "Midi");
       MusEGlobal::midiSeq       = new MusECore::MidiSeq("Midi");
       MusEGlobal::audio = new MusECore::Audio();
-      //audioPrefetch = new AudioPrefetch(0, "Disc");
-      audioPrefetch = new AudioPrefetch("Prefetch");
+      //MusEGlobal::audioPrefetch = new MusECore::AudioPrefetch(0, "Disc");
+      MusEGlobal::audioPrefetch = new MusECore::AudioPrefetch("Prefetch");
 
       //---------------------------------------------------
       //    Popups
@@ -1602,7 +1603,7 @@ void MusE::closeEvent(QCloseEvent* event)
       MusECore::exitOSC();
       
       // p3.3.47
-      delete audioPrefetch;
+      delete MusEGlobal::audioPrefetch;
       delete MusEGlobal::audio;
       delete MusEGlobal::midiSeq;
       delete MusEGlobal::song;

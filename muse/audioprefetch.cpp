@@ -33,6 +33,12 @@
 #include "audio.h"
 #include "sync.h"
 
+namespace MusEGlobal {
+MusECore::AudioPrefetch* audioPrefetch;
+}
+
+namespace MusECore {
+
 // Added by Tim. p3.3.20
 //#define AUDIOPREFETCH_DEBUG
 
@@ -46,8 +52,6 @@ enum { PREFETCH_TICK, PREFETCH_SEEK
 struct PrefetchMsg : public ThreadMsg {
       int pos;
       };
-
-AudioPrefetch* audioPrefetch;
 
 //---------------------------------------------------------
 //   AudioPrefetch
@@ -82,7 +86,7 @@ static void readMsgP(void* p, void*)
 void AudioPrefetch::start(int priority)
       {
       clearPollFd();
-      addPollFd(toThreadFdr, POLLIN, ::readMsgP, this, 0);
+      addPollFd(toThreadFdr, POLLIN, MusECore::readMsgP, this, 0);
       //Thread::start();
       Thread::start(priority);
       }
@@ -181,7 +185,7 @@ void AudioPrefetch::prefetch(bool doSeek)
             return;
             }
       if (MusEGlobal::song->loop() && !MusEGlobal::audio->bounce() && !MusEGlobal::extSyncFlag.value()) {
-            const MusECore::Pos& loop = MusEGlobal::song->rPos();
+            const Pos& loop = MusEGlobal::song->rPos();
             unsigned n = loop.frame() - writePos;
             if (n < MusEGlobal::segmentSize) {
                   unsigned lpos = MusEGlobal::song->lPos().frame();
@@ -192,9 +196,9 @@ void AudioPrefetch::prefetch(bool doSeek)
                   writePos = lpos - n;
                   }
             }
-      MusECore::WaveTrackList* tl = MusEGlobal::song->waves();
-      for (MusECore::iWaveTrack it = tl->begin(); it != tl->end(); ++it) {
-            MusECore::WaveTrack* track = *it;
+      WaveTrackList* tl = MusEGlobal::song->waves();
+      for (iWaveTrack it = tl->begin(); it != tl->end(); ++it) {
+            WaveTrack* track = *it;
             // p3.3.29
             // Save time. Don't bother if track is off. Track On/Off not designed for rapid repeated response (but mute is).
             if(track->off())
@@ -245,9 +249,9 @@ void AudioPrefetch::seek(unsigned seekTo)
       }
       
       writePos = seekTo;
-      MusECore::WaveTrackList* tl = MusEGlobal::song->waves();
-      for (MusECore::iWaveTrack it = tl->begin(); it != tl->end(); ++it) {
-            MusECore::WaveTrack* track = *it;
+      WaveTrackList* tl = MusEGlobal::song->waves();
+      for (iWaveTrack it = tl->begin(); it != tl->end(); ++it) {
+            WaveTrack* track = *it;
             track->clearPrefetchFifo();
             }
       
@@ -274,4 +278,6 @@ void AudioPrefetch::seek(unsigned seekTo)
       //seekDone = true;
       --seekCount;
       }
+
+} // namespace MusECore
 

@@ -28,6 +28,8 @@
 
 #include <math.h> /* for HUGE_VAL */
 
+namespace MusECore {
+
 static inline float fast_log2 (float val)
       {
 	/* don't use reinterpret_cast<> because that prevents this
@@ -56,5 +58,7 @@ static inline float fast_log10 (const float val)
       }
 
 static inline float minus_infinity() { return -HUGE_VAL; }
+
+} // namespace MusECore
 
 #endif /* __pbd_fastlog_h__ */

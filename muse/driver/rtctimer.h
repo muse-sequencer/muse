@@ -29,6 +29,7 @@
 
 #include "timerdev.h"
 
+namespace MusECore {
 
 //---------------------------------------------------------
 //   AlsaTimer
@@ -55,5 +56,7 @@ class RtcTimer : public Timer{
       int timerFd; 
 
 };
+
+} // namespace MusECore
 
 #endif //__ALSATIMER_H__

@@ -34,6 +34,8 @@
 #include "filedialog.h"
 #include "globals.h"
 
+namespace MusEGui {
+
 MidiControllerEditDialog* midiControllerEditDialog;
 
 static MidiController predefinedMidiController[] = {
@@ -738,3 +740,5 @@ void configMidiController()
           midiControllerEditDialog->show();
       }
     }
+
+} // namespace MusEGui
