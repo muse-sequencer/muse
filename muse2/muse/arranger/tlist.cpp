@@ -928,8 +928,7 @@ TrackList TList::getRecEnabledTracks()
 void TList::changeAutomation(QAction* act)
 {
   //printf("changeAutomation %d\n", act->data().toInt());
-  if (editAutomation->type() == Track::MIDI) { //FINDMICHJETZT is this correct? or should we also
-                                               //consider DRUM and NEW_DRUM? svn blame could help
+  if ( (editAutomation->type() == Track::MIDI) || (editAutomation->type() == Track::DRUM) || (editAutomation->type() == Track::NEW_DRUM) ) {
     printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
     return;
   }
