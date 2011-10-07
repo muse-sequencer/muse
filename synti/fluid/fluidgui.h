@@ -48,7 +48,7 @@ class FLUIDGui : public QDialog, public Ui::FLUIDGuiBase, public MessGui {
 
    public:
       FLUIDGui();
-      virtual void processEvent(const MidiPlayEvent&);
+      virtual void processEvent(const MusECore::MidiPlayEvent&);
       };
 
 #endif

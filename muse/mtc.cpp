@@ -24,7 +24,11 @@
 #include "mtc.h"
 #include <stdio.h>
 
+namespace MusEGlobal {
 extern int mtcType;
+}
+
+namespace MusECore {
 
 //---------------------------------------------------------
 //   MTC::time
@@ -37,7 +41,7 @@ double MTC::time(int type) const
       double time = _h * 3600 + _m * 60 + _s;
       double ft = 0.0;
       if(type == -1)
-        type = mtcType;
+        type = MusEGlobal::mtcType;
       switch (type) {
             case 0:     // 24 frames sec
                   ft = 1.0/24.0;
@@ -68,7 +72,7 @@ MTC::MTC(double t, int type)
       t -= _s;
       double ft = 1.0/24.0;
       if(type == -1)
-        type = mtcType;
+        type = MusEGlobal::mtcType;
       switch (type) {
             case 0:     // 24 frames sec
                   ft = 1.0/24.0;
@@ -97,7 +101,7 @@ void MTC::incQuarter(int type)
       {
       int frames = 24;
       if(type == -1)
-        type = mtcType;
+        type = MusEGlobal::mtcType;
       switch (type) {
             case 0:
                   frames = 24;
@@ -143,3 +147,4 @@ void MTC::print() const
       }
 
 
+} // namespace MusECore

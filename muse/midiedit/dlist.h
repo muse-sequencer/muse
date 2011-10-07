@@ -32,14 +32,17 @@
 #define TH  18                // normal Track-hight
 
 class QHeaderView;
+class QLineEdit;
 class QMouseEvent;
 class QPainter;
 
-class ScrollScale;
-class Device;
-class QLineEdit;
+namespace MusECore {
 class DrumMap;
+}
 
+namespace MusEGui {
+
+class ScrollScale;
 
 //---------------------------------------------------------
 //   DLineEdit
@@ -84,15 +87,15 @@ class DPitchEdit: public Awl::PitchEdit
 //   DList
 //---------------------------------------------------------
 
-class DList : public MusEWidget::View {
+class DList : public View {
       Q_OBJECT
     
       QHeaderView* header;
       ScrollScale* scroll;
       QLineEdit* editor;
       DPitchEdit* pitch_editor;
-      DrumMap* editEntry;
-      DrumMap* currentlySelected;
+      MusECore::DrumMap* editEntry;
+      MusECore::DrumMap* currentlySelected;
       int selectedColumn;
 
       
@@ -108,7 +111,7 @@ class DList : public MusEWidget::View {
       virtual void viewMouseMoveEvent(QMouseEvent*);
 
       int x2col(int x) const;
-      void devicesPopupMenu(DrumMap* t, int x, int y, bool changeAll);
+      void devicesPopupMenu(MusECore::DrumMap* t, int x, int y, bool changeAll);
       
       //void setCurDrumInstrument(int n);
 
@@ -141,6 +144,8 @@ enum DCols { COL_MUTE=0, COL_NAME, COL_VOL, COL_QNT, COL_ENOTE, COL_LEN,
          COL_ANOTE, COL_CHANNEL, COL_PORT,
          COL_LV1, COL_LV2, COL_LV3, COL_LV4, COL_NONE=-1};
       };
+
+} // namespace MusEGui
 
 #endif // __DLIST_H_
 

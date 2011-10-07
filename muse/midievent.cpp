@@ -27,6 +27,8 @@
 #include "mpevent.h"
 #include "midictrl.h"
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   MidiEventBase
 //---------------------------------------------------------
@@ -189,3 +191,4 @@ void MidiEventBase::read(Xml& xml)
             }
       }
 
+} // namespace MusECore

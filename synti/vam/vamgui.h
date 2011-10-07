@@ -56,7 +56,7 @@ class VAMGui : public QWidget, public Ui::VAMGuiBase, public MessGui {
       void addNewPreset(const QString&);
       void deleteNamedPreset(const QString&);
       void activatePreset(Preset* preset);
-      virtual void processEvent(const MidiPlayEvent&);
+      virtual void processEvent(const MusECore::MidiPlayEvent&);
 
    private slots:
       void ctrlChanged(int idx);

@@ -27,6 +27,9 @@
 #include <stdio.h>
 class QPainter;
 class QPoint;
+
+namespace MusECore {
+
 class Xml;
 
 //---------------------------------------------------------
@@ -65,5 +68,8 @@ class Scale {
       void setMajorMinor(bool f)  { minor = f; }      // true == minor
       int width() const;
       };
+
+} // namespace MusECore
+
 #endif
 

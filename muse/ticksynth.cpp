@@ -32,6 +32,8 @@
 
 //#define METRONOME_DEBUG
 
+namespace MusECore {
+
 MetronomeSynthI* metronome = 0;
 
 class MetronomeSynth;
@@ -109,7 +111,7 @@ class MetronomeSynthIF : public SynthIF
       virtual const char* getPatchName(int, int, int, bool) const { return ""; }
       virtual const char* getPatchName(int, int, MType, bool) { return ""; }
       //virtual void populatePatchPopup(QMenu*, int, MType, bool) {};
-      virtual void populatePatchPopup(MusEWidget::PopupMenu*, int, MType, bool) {};
+      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, MType, bool) {};
       virtual void write(int, Xml&) const {}
       virtual float getParameter(unsigned long) const  { return 0.0; }
       virtual void setParameter(unsigned long, float) {}
@@ -131,7 +133,7 @@ iMPEvent MetronomeSynthIF::getData(MidiPort*, MPEventList* el, iMPEvent i, unsig
       unsigned int curPos      = pos;             //prevent compiler warning: comparison signed/unsigned
       unsigned int endPos      = pos + n;         //prevent compiler warning: comparison signed/unsigned
       unsigned int off         = pos;             //prevent compiler warning: comparison signed/unsigned
-      int frameOffset = audio->getFrameOffset();
+      int frameOffset = MusEGlobal::audio->getFrameOffset();
 
       for (; i != el->end(); ++i) {
             unsigned int frame = i->time() - frameOffset; //prevent compiler warning: comparison signed /unsigned
@@ -238,3 +240,4 @@ void exitMetronome()
       metronomeSynth = 0;
 }
 
+} // namespace MusECore

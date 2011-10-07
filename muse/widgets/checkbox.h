@@ -25,7 +25,7 @@
 
 #include <QCheckBox>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   CheckBox
@@ -56,7 +56,7 @@ class CheckBox : public QCheckBox {
       void setId(int i)    { _id = i; }
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

@@ -32,6 +32,8 @@ class QDialog;
 class QMenu;
 class QCloseEvent;
 
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   EditInstrument
 //---------------------------------------------------------
@@ -39,18 +41,18 @@ class QCloseEvent;
 class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
     Q_OBJECT
 
-      MidiInstrument workingInstrument;
+      MusECore::MidiInstrument workingInstrument;
       QListWidgetItem*  oldMidiInstrument;
       QTreeWidgetItem* oldPatchItem;
       void closeEvent(QCloseEvent*);
-      int checkDirty(MidiInstrument*, bool isClose = false);
-      bool fileSave(MidiInstrument*, const QString&);
+      int checkDirty(MusECore::MidiInstrument*, bool isClose = false);
+      bool fileSave(MusECore::MidiInstrument*, const QString&);
       void saveAs();
-      void updateInstrument(MidiInstrument*);
-      void updatePatch(MidiInstrument*, Patch*);
-      void updatePatchGroup(MidiInstrument*, PatchGroup*);
+      void updateInstrument(MusECore::MidiInstrument*);
+      void updatePatch(MusECore::MidiInstrument*, MusECore::Patch*);
+      void updatePatchGroup(MusECore::MidiInstrument*, MusECore::PatchGroup*);
       void changeInstrument();
-      QTreeWidgetItem* addControllerToView(MidiController* mctrl);
+      QTreeWidgetItem* addControllerToView(MusECore::MidiController* mctrl);
       QString getPatchItemText(int);
       void enableDefaultControls(bool, bool);
       void setDefaultPatchName(int);
@@ -101,6 +103,8 @@ class EditInstrument : public QMainWindow, public Ui::EditInstrumentBase {
    public:
       EditInstrument(QWidget* parent = 0, Qt::WFlags fl = Qt::Window);
       };
+
+} // namespace MusEGui
 
 #endif
 

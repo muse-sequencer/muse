@@ -34,6 +34,8 @@
 
 #include <QHBoxLayout>
 
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   setTool
 //---------------------------------------------------------
@@ -55,12 +57,12 @@ CtrlEdit::CtrlEdit(QWidget* parent, MidiEditor* e, int xmag,
       QHBoxLayout* hbox = new QHBoxLayout;
       panel             = new CtrlPanel(0, e, "panel");
       canvas            = new CtrlCanvas(e, 0, xmag, "ctrlcanvas", panel);
-      QWidget* vscale   = new MusEWidget::VScale;
+      QWidget* vscale   = new MusEGui::VScale;
 
       hbox->setContentsMargins(0, 0, 0, 0);
       hbox->setSpacing (0);
 
-      canvas->setOrigin(-(MusEConfig::config.division/4), 0);
+      canvas->setOrigin(-(MusEGlobal::config.division/4), 0);
 
       canvas->setMinimumHeight(50);
       
@@ -80,7 +82,7 @@ CtrlEdit::CtrlEdit(QWidget* parent, MidiEditor* e, int xmag,
 //   writeStatus
 //---------------------------------------------------------
 
-void CtrlEdit::writeStatus(int level, Xml& xml)
+void CtrlEdit::writeStatus(int level, MusECore::Xml& xml)
       {
       if (canvas->controller()) {
             xml.tag(level++, "ctrledit");
@@ -94,26 +96,26 @@ void CtrlEdit::writeStatus(int level, Xml& xml)
 //   readStatus
 //---------------------------------------------------------
 
-void CtrlEdit::readStatus(Xml& xml)
+void CtrlEdit::readStatus(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
             switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return;
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "ctrl") {
                               xml.parse1();  // Obsolete. 
                               /*
                               QString name = xml.parse1();
                               int portno = canvas->track()->outPort();
-                              MidiPort* port = &midiPorts[portno];
-                              MidiInstrument* instr = port->instrument();
-                              MidiControllerList* mcl = instr->controller();
+                              MusECore::MidiPort* port = &midiPorts[portno];
+                              MusECore::MidiInstrument* instr = port->instrument();
+                              MusECore::MidiControllerList* mcl = instr->controller();
 
-                              for (iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) {
+                              for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) {
                                     if (ci->second->name() == name) {
                                           canvas->setController(ci->second->num());
                                           break;
@@ -128,7 +130,7 @@ void CtrlEdit::readStatus(Xml& xml)
                         else
                               xml.unknown("CtrlEdit");
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "ctrledit")
                               return;
                   default:
@@ -164,11 +166,11 @@ void CtrlEdit::setController(int n)
 void CtrlEdit::setController(const QString& name)
 {
   int portno = canvas->track()->outPort();
-  MidiPort* port = &midiPorts[portno];
-  MidiInstrument* instr = port->instrument();
-  MidiControllerList* mcl = instr->controller();
+  MusECore::MidiPort* port = &MusEGlobal::midiPorts[portno];
+  MusECore::MidiInstrument* instr = port->instrument();
+  MusECore::MidiControllerList* mcl = instr->controller();
 
-  for (iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) 
+  for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) 
   {
     if (ci->second->name() == name) 
     {
@@ -177,3 +179,5 @@ void CtrlEdit::setController(const QString& name)
     }
   }
 }
+
+} // namespace MusEGui

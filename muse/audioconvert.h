@@ -37,10 +37,12 @@
 #include <sys/types.h>
 
 //#include "eventbase.h"
+
+namespace MusECore {
 class EventBase;
 class EventList;
-
 class SndFileR;
+
 
 //---------------------------------------------------------
 //   AudioConverter
@@ -61,7 +63,7 @@ class AudioConverter
       
       //off_t readAudio(SndFileR& /*sf*/, off_t /*sfCurFrame*/, unsigned /*offset*/, float** /*buffer*/, 
       //                int /*channels*/, int /*frames*/, bool /*doSeek*/, bool /*overwrite*/);
-      off_t readAudio(SndFileR& /*sf*/, unsigned /*offset*/, float** /*buffer*/, 
+      off_t readAudio(MusECore::SndFileR& /*sf*/, unsigned /*offset*/, float** /*buffer*/, 
                       int /*channels*/, int /*frames*/, bool /*doSeek*/, bool /*overwrite*/);
       
       virtual bool isValid() = 0;
@@ -69,7 +71,7 @@ class AudioConverter
       virtual void setChannels(int ch) = 0;
       //virtual off_t process(SndFileR& /*sf*/, off_t /*sfCurFrame*/, float** /*buffer*/, 
       //                      int /*channels*/, int /*frames*/, bool /*overwrite*/) = 0; // Interleaved buffer if stereo.
-      virtual off_t process(SndFileR& /*sf*/, float** /*buffer*/, 
+      virtual off_t process(MusECore::SndFileR& /*sf*/, float** /*buffer*/, 
                             int /*channels*/, int /*frames*/, bool /*overwrite*/) = 0; // Interleaved buffer if stereo.
 };
 
@@ -92,7 +94,7 @@ class SRCAudioConverter : public AudioConverter
       virtual void setChannels(int ch);
       //virtual off_t process(SndFileR& /*sf*/, off_t /*sfCurFrame*/, float** /*buffer*/, 
       //                      int /*channels*/, int /*frames*/, bool /*overwrite*/); // Interleaved buffer if stereo.
-      virtual off_t process(SndFileR& /*sf*/, float** /*buffer*/, 
+      virtual off_t process(MusECore::SndFileR& /*sf*/, float** /*buffer*/, 
                             int /*channels*/, int /*frames*/, bool /*overwrite*/); // Interleaved buffer if stereo.
 };
 
@@ -117,7 +119,7 @@ class RubberBandAudioConverter : public AudioConverter
       virtual void setChannels(int ch);
       //virtual off_t process(SndFileR& /*sf*/, off_t /*sfCurFrame*/, float** /*buffer*/, 
       //                      int /*channels*/, int /*frames*/, bool /*overwrite*/); // Interleaved buffer if stereo.
-      virtual off_t process(SndFileR& /*sf*/, float** /*buffer*/, 
+      virtual off_t process(MusECore::SndFileR& /*sf*/, float** /*buffer*/, 
                             int /*channels*/, int /*frames*/, bool /*overwrite*/); // Interleaved buffer if stereo.
 };
 
@@ -140,6 +142,8 @@ class AudioConvertMap : public std::map<EventBase*, AudioConverter*, std::less<E
       //AudioConverter* getConverter(const EventBase*);
       iAudioConvertMap getConverter(EventBase*);
 };
+
+} // namespace MusECore
 
 #endif
 

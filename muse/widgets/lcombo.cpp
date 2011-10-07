@@ -25,7 +25,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   LabelCombo
@@ -66,4 +66,4 @@ void LabelCombo::setCurrentIndex(int i)
     box->setCurrentIndex(r); 
 } 
 
-} // namespace MusEWidget
+} // namespace MusEGui

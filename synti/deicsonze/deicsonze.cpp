@@ -143,15 +143,15 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   _gui->setWindowTitle(QString("DeicsOnze"));
 
   //FX
-  Plugin* p;
-  p = plugins.find("freeverb", "freeverb1");
+  MusECore::Plugin* p;
+  p = MusEGlobal::plugins.find("freeverb", "freeverb1");
   _pluginIReverb = NULL;
   if(p) initPluginReverb(p);
   _pluginIChorus = NULL;
-  p = plugins.find("doublechorus", "doublechorus1");
+  p = MusEGlobal::plugins.find("doublechorus", "doublechorus1");
   if(p) initPluginChorus(p);
   _pluginIDelay = NULL;
-  p = plugins.find("pandelay", "pandelay");
+  p = MusEGlobal::plugins.find("pandelay", "pandelay");
   if(p) initPluginDelay(p);
 
   //Filter
@@ -197,7 +197,7 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   unsigned char dataMasterVol[2];
   dataMasterVol[0]=SYSEX_MASTERVOL;
   dataMasterVol[1]=getMasterVol();
-  MidiPlayEvent evSysexMasterVol(0, 0, ME_SYSEX, 
+  MusECore::MidiPlayEvent evSysexMasterVol(0, 0, MusECore::ME_SYSEX, 
 			     (const unsigned char*)dataMasterVol,
 			     2);  
   _gui->writeEvent(evSysexMasterVol);
@@ -205,30 +205,30 @@ DeicsOnze::DeicsOnze() : Mess(2) {
   unsigned char *dataReverbRet = new unsigned char[2];
   dataReverbRet[0]=SYSEX_REVERBRETURN;
   dataReverbRet[1]=(unsigned char)getReverbReturn();
-  MidiPlayEvent evReverbRet(0, 0, ME_SYSEX,(const unsigned char*)dataReverbRet, 2);
+  MusECore::MidiPlayEvent evReverbRet(0, 0, MusECore::ME_SYSEX,(const unsigned char*)dataReverbRet, 2);
   _gui->writeEvent(evReverbRet);    
   unsigned char *dataChorusRet = new unsigned char[2];
   dataChorusRet[0]=SYSEX_CHORUSRETURN;
   dataChorusRet[1]=(unsigned char)getChorusReturn();
-  MidiPlayEvent evChorusRet(0, 0, ME_SYSEX,(const unsigned char*)dataChorusRet, 2);
+  MusECore::MidiPlayEvent evChorusRet(0, 0, MusECore::ME_SYSEX,(const unsigned char*)dataChorusRet, 2);
   _gui->writeEvent(evChorusRet);    
   unsigned char *dataDelayRet = new unsigned char[2];
   dataDelayRet[0]=SYSEX_DELAYRETURN;
   dataDelayRet[1]=(unsigned char)getDelayReturn();
   //printf("DELAY RET = %d, REVERB RET = %d\n",
   //getDelayReturn(), getReverbReturn());
-  MidiPlayEvent evDelayRet(0, 0, ME_SYSEX,(const unsigned char*)dataDelayRet, 2);
+  MusECore::MidiPlayEvent evDelayRet(0, 0, MusECore::ME_SYSEX,(const unsigned char*)dataDelayRet, 2);
   _gui->writeEvent(evDelayRet);    
   //update font size
   unsigned char *dataFontSize = new unsigned char[2];
   dataFontSize[0]=SYSEX_FONTSIZE;
   dataFontSize[1]=(unsigned char)_global.fontSize;
-  MidiPlayEvent evFontSize(0, 0, ME_SYSEX, (const unsigned char*)dataFontSize, 2);
+  MusECore::MidiPlayEvent evFontSize(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataFontSize, 2);
   _gui->writeEvent(evFontSize);
   //display load preset
   unsigned char dataUpdateGuiSet[1];
   dataUpdateGuiSet[0]=SYSEX_UPDATESETGUI;
-  MidiPlayEvent evSysexUpdateGuiSet(0, 0, ME_SYSEX, 
+  MusECore::MidiPlayEvent evSysexUpdateGuiSet(0, 0, MusECore::ME_SYSEX, 
 				(const unsigned char*)dataUpdateGuiSet,
 				1);
   _gui->writeEvent(evSysexUpdateGuiSet);
@@ -1271,7 +1271,7 @@ void DeicsOnze::loadSet(QString fileName) {
 	  //display load preset
 	  unsigned char dataUpdateGuiSet[1];
 	  dataUpdateGuiSet[0]=SYSEX_UPDATESETGUI;
-	  MidiPlayEvent evSysexUpdateGuiSet(0, 0, ME_SYSEX, 
+	  MusECore::MidiPlayEvent evSysexUpdateGuiSet(0, 0, MusECore::ME_SYSEX, 
 					(const unsigned char*)dataUpdateGuiSet,
 					1);
 	  _gui->writeEvent(evSysexUpdateGuiSet);
@@ -2065,7 +2065,7 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
     /*
       if(qdEl.tagName()==NBRVOICESSTR) {
       setNbrVoices(qdEl.text().toInt());
-      MidiPlayEvent evNbrVoices(0, 0, 0, ME_CONTROLLER,
+      MusECore::MidiPlayEvent evNbrVoices(0, 0, 0, MusECore::ME_CONTROLLER,
 			    CTRL_NBRVOICES, _global.nbrVoices);
       _gui->writeEvent(evNbrVoices);
       }*/
@@ -2076,8 +2076,8 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
       unsigned char *dataChannelNum = new unsigned char[2];
       dataChannelNum[0]=SYSEX_CHANNELNUM;
       dataChannelNum[1]=(unsigned char)_global.channelNum;
-      MidiPlayEvent 
-	evChannelNum(0, 0, ME_SYSEX, (const unsigned char*)dataChannelNum, 2);
+      MusECore::MidiPlayEvent 
+	evChannelNum(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataChannelNum, 2);
       _gui->writeEvent(evChannelNum);    
       }*/
     //quality
@@ -2089,7 +2089,7 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
       unsigned char *dataQuality = new unsigned char[2];
       dataQuality[0]=SYSEX_QUALITY;
       dataQuality[1]=(unsigned char)_global.quality;
-      MidiPlayEvent evQuality(0, 0, ME_SYSEX, (const unsigned char*)dataQuality, 2);
+      MusECore::MidiPlayEvent evQuality(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataQuality, 2);
       _gui->writeEvent(evQuality);
     }
     //filter
@@ -2098,7 +2098,7 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
       unsigned char *dataFilter = new unsigned char[2];
       dataFilter[0]=SYSEX_FILTER;
       dataFilter[1]=(unsigned char)getFilter();
-      MidiPlayEvent evFilter(0, 0, ME_SYSEX, (const unsigned char*)dataFilter, 2);
+      MusECore::MidiPlayEvent evFilter(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataFilter, 2);
       _gui->writeEvent(evFilter);
     }
     //font size
@@ -2107,7 +2107,7 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
       unsigned char *dataFontSize = new unsigned char[2];
       dataFontSize[0]=SYSEX_FONTSIZE;
       dataFontSize[1]=(unsigned char)_global.fontSize;
-      MidiPlayEvent evFontSize(0, 0, ME_SYSEX, (const unsigned char*)dataFontSize, 2);
+      MusECore::MidiPlayEvent evFontSize(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataFontSize, 2);
       _gui->writeEvent(evFontSize);
     }
     //saveConfig
@@ -2116,8 +2116,8 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
       unsigned char *dataSaveConfig = new unsigned char[2];
       dataSaveConfig[0]=SYSEX_SAVECONFIG;
       dataSaveConfig[1]=(unsigned char)_saveConfig;
-      MidiPlayEvent
-	evSaveConfig(0, 0, ME_SYSEX, (const unsigned char*)dataSaveConfig, 2);
+      MusECore::MidiPlayEvent
+	evSaveConfig(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataSaveConfig, 2);
       _gui->writeEvent(evSaveConfig);
     }
     //saveOnlyUsed
@@ -2126,8 +2126,8 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
       unsigned char *dataSaveOnlyUsed = new unsigned char[2];
       dataSaveOnlyUsed[0]=SYSEX_SAVEONLYUSED;
       dataSaveOnlyUsed[1]=(unsigned char)_saveOnlyUsed;
-      MidiPlayEvent
-	evSaveOnlyUsed(0, 0, ME_SYSEX, (const unsigned char*)dataSaveOnlyUsed, 2);
+      MusECore::MidiPlayEvent
+	evSaveOnlyUsed(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataSaveOnlyUsed, 2);
       _gui->writeEvent(evSaveOnlyUsed);
     }
     //colors
@@ -2145,8 +2145,8 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
       unsigned char *dataIsInitSet = new unsigned char[2];
       dataIsInitSet[0]=SYSEX_ISINITSET;
       dataIsInitSet[1]=(unsigned char)_isInitSet;
-      MidiPlayEvent
-	evIsInitSet(0, 0, ME_SYSEX, (const unsigned char*)dataIsInitSet, 2);
+      MusECore::MidiPlayEvent
+	evIsInitSet(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataIsInitSet, 2);
       _gui->writeEvent(evIsInitSet);
     }
     if(qdEl.tagName()==INITSETPATHSTR) {
@@ -2156,8 +2156,8 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
       dataInitSetPath[0]=SYSEX_INITSETPATH;
       strncpy((char*)&dataInitSetPath[1], _initSetPath.toLatin1().constData(), 
 	      MAXSTRLENGTHINITSETPATH);
-      MidiPlayEvent
-	evInitSetPath(0, 0, ME_SYSEX, (const unsigned char*)dataInitSetPath,
+      MusECore::MidiPlayEvent
+	evInitSetPath(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataInitSetPath,
 		      1+MAXSTRLENGTHINITSETPATH);
       _gui->writeEvent(evInitSetPath);
     }
@@ -2167,8 +2167,8 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
       unsigned char *dataIsBackgroundPix = new unsigned char[2];
       dataIsBackgroundPix[0]=SYSEX_ISBACKGROUNDPIX;
       dataIsBackgroundPix[1]=(unsigned char)_isBackgroundPix;
-      MidiPlayEvent
-	evIsBackgroundPix(0, 0, ME_SYSEX,
+      MusECore::MidiPlayEvent
+	evIsBackgroundPix(0, 0, MusECore::ME_SYSEX,
 			  (const unsigned char*)dataIsBackgroundPix, 2);
       _gui->writeEvent(evIsBackgroundPix);
     }
@@ -2180,8 +2180,8 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
       strncpy((char*)&dataBackgroundPixPath[1],
 	      _backgroundPixPath.toLatin1().constData(), 
 	      MAXSTRLENGTHBACKGROUNDPIXPATH);
-      MidiPlayEvent
-	evBackgroundPixPath(0, 0, ME_SYSEX,
+      MusECore::MidiPlayEvent
+	evBackgroundPixPath(0, 0, MusECore::ME_SYSEX,
 			    (const unsigned char*)dataBackgroundPixPath,
 			    1+MAXSTRLENGTHBACKGROUNDPIXPATH);
       _gui->writeEvent(evBackgroundPixPath);
@@ -2203,7 +2203,7 @@ void DeicsOnze::readConfiguration(QDomNode qdn) {
   dataColorGui[10]=(unsigned char)editBackgroundColor.red();
   dataColorGui[11]=(unsigned char)editBackgroundColor.green();
   dataColorGui[12]=(unsigned char)editBackgroundColor.blue();
-  MidiPlayEvent evSysexColor(0, 0, ME_SYSEX, (const unsigned char*)dataColorGui,
+  MusECore::MidiPlayEvent evSysexColor(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataColorGui,
 			 COLORSYSEXLENGTH+1);
   _gui->writeEvent(evSysexColor);
 }
@@ -2465,84 +2465,84 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     unsigned char *dataMasterVol = new unsigned char[2];
     dataMasterVol[0]=SYSEX_MASTERVOL;
     dataMasterVol[1]=(unsigned char) getMasterVol();
-    MidiPlayEvent 
-      evMasterVol(0, 0, ME_SYSEX, (const unsigned char*)dataMasterVol, 2);
+    MusECore::MidiPlayEvent 
+      evMasterVol(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataMasterVol, 2);
     _gui->writeEvent(evMasterVol);
     //channel configuration
     for(int c = 0; c < NBRCHANNELS; c++) {
       //isEnable
       setChannelEnable(c, data[NUM_CHANNEL_ENABLE + c]);
-      MidiPlayEvent 
-	evChEnable(0, 0, c, ME_CONTROLLER,
+      MusECore::MidiPlayEvent 
+	evChEnable(0, 0, c, MusECore::ME_CONTROLLER,
 		   CTRL_CHANNELENABLE, data[NUM_CHANNEL_ENABLE + c]);
       _gui->writeEvent(evChEnable);
       //nbrVoices
       setNbrVoices(c, data[NUM_NBRVOICES + c]);
-      MidiPlayEvent 
-	evNbrVoices(0, 0, c,ME_CONTROLLER,CTRL_NBRVOICES, data[NUM_NBRVOICES + c]);
+      MusECore::MidiPlayEvent 
+	evNbrVoices(0, 0, c,MusECore::ME_CONTROLLER,CTRL_NBRVOICES, data[NUM_NBRVOICES + c]);
       _gui->writeEvent(evNbrVoices);
       //channel volume
       setChannelVol(c, data[NUM_CHANNEL_VOL + c]);
-      MidiPlayEvent
-	evChVol(0, 0, c, ME_CONTROLLER,
+      MusECore::MidiPlayEvent
+	evChVol(0, 0, c, MusECore::ME_CONTROLLER,
 		CTRL_CHANNELVOLUME, data[NUM_CHANNEL_VOL + c]);
       _gui->writeEvent(evChVol);
       //channel pan
       setChannelPan(c, data[NUM_CHANNEL_PAN + c]);
-      MidiPlayEvent
-	evChPan(0, 0, c, ME_CONTROLLER, CTRL_CHANNELPAN,
+      MusECore::MidiPlayEvent
+	evChPan(0, 0, c, MusECore::ME_CONTROLLER, CTRL_CHANNELPAN,
 		data[NUM_CHANNEL_PAN + c]);
       _gui->writeEvent(evChPan);
       if(getChannelEnable(c)) applyChannelAmp(c);
       //channel detune
       setChannelDetune(c, data[NUM_CHANNEL_DETUNE + c]-MAXCHANNELDETUNE);
-      MidiPlayEvent
-	evChDetune(0, 0, c, ME_CONTROLLER, CTRL_CHANNELDETUNE,
+      MusECore::MidiPlayEvent
+	evChDetune(0, 0, c, MusECore::ME_CONTROLLER, CTRL_CHANNELDETUNE,
 		   data[NUM_CHANNEL_DETUNE + c]-MAXCHANNELDETUNE);
       _gui->writeEvent(evChDetune);
       //channel brightness
       setChannelBrightness(c,
 			   data[NUM_CHANNEL_BRIGHTNESS + 2*c]
 			   + data[NUM_CHANNEL_BRIGHTNESS + 2*c + 1] * 256);
-      MidiPlayEvent
-	evChBrightness(0, 0, c, ME_CONTROLLER,
+      MusECore::MidiPlayEvent
+	evChBrightness(0, 0, c, MusECore::ME_CONTROLLER,
 		       CTRL_FINEBRIGHTNESS, getChannelBrightness(c));
       _gui->writeEvent(evChBrightness);
       //channel modulation
       setChannelModulation(c, data[NUM_CHANNEL_MODULATION + c]);
-      MidiPlayEvent 
-	evChMod(0, 0, c, ME_CONTROLLER,
-		CTRL_MODULATION, data[NUM_CHANNEL_MODULATION + c]);
+      MusECore::MidiPlayEvent 
+	evChMod(0, 0, c, MusECore::ME_CONTROLLER,
+		MusECore::CTRL_MODULATION, data[NUM_CHANNEL_MODULATION + c]);
       _gui->writeEvent(evChMod);
       //channel attack
       setChannelAttack(c, data[NUM_CHANNEL_ATTACK + c]);
-      MidiPlayEvent 
-	evChAttack(0, 0, c, ME_CONTROLLER,
-		   CTRL_ATTACK_TIME, data[NUM_CHANNEL_ATTACK + c]);
+      MusECore::MidiPlayEvent 
+	evChAttack(0, 0, c, MusECore::ME_CONTROLLER,
+		   MusECore::CTRL_ATTACK_TIME, data[NUM_CHANNEL_ATTACK + c]);
       _gui->writeEvent(evChAttack);
       //channel release
       setChannelRelease(c, data[NUM_CHANNEL_RELEASE + c]);
-      MidiPlayEvent 
-	evChRelease(0, 0, c, ME_CONTROLLER,
-		    CTRL_RELEASE_TIME, data[NUM_CHANNEL_RELEASE + c]);
+      MusECore::MidiPlayEvent 
+	evChRelease(0, 0, c, MusECore::ME_CONTROLLER,
+		    MusECore::CTRL_RELEASE_TIME, data[NUM_CHANNEL_RELEASE + c]);
       _gui->writeEvent(evChRelease);      
       //channel reverb
       setChannelReverb(c, data[NUM_CHANNEL_REVERB + c]);
-      MidiPlayEvent 
-	evChReverb(0, 0, c, ME_CONTROLLER,
-		   CTRL_REVERB_SEND, data[NUM_CHANNEL_REVERB + c]);
+      MusECore::MidiPlayEvent 
+	evChReverb(0, 0, c, MusECore::ME_CONTROLLER,
+		   MusECore::CTRL_REVERB_SEND, data[NUM_CHANNEL_REVERB + c]);
       _gui->writeEvent(evChReverb);      
       //channel chorus
       setChannelChorus(c, data[NUM_CHANNEL_CHORUS + c]);
-      MidiPlayEvent 
-	evChChorus(0, 0, c, ME_CONTROLLER,
-		   CTRL_CHORUS_SEND, data[NUM_CHANNEL_CHORUS + c]);
+      MusECore::MidiPlayEvent 
+	evChChorus(0, 0, c, MusECore::ME_CONTROLLER,
+		   MusECore::CTRL_CHORUS_SEND, data[NUM_CHANNEL_CHORUS + c]);
       _gui->writeEvent(evChChorus);      
       //channel delay
       setChannelDelay(c, data[NUM_CHANNEL_DELAY + c]);
-      MidiPlayEvent 
-	evChDelay(0, 0, c, ME_CONTROLLER,
-		  CTRL_VARIATION_SEND, data[NUM_CHANNEL_DELAY + c]);
+      MusECore::MidiPlayEvent 
+	evChDelay(0, 0, c, MusECore::ME_CONTROLLER,
+		  MusECore::CTRL_VARIATION_SEND, data[NUM_CHANNEL_DELAY + c]);
       _gui->writeEvent(evChDelay);
     }
     //load configuration
@@ -2550,8 +2550,8 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     unsigned char *dataSaveConfig = new unsigned char[2];
     dataSaveConfig[0]=SYSEX_SAVECONFIG;
     dataSaveConfig[1]=(unsigned char)_saveConfig;
-    MidiPlayEvent 
-      evSaveConfig(0, 0, ME_SYSEX, (const unsigned char*)dataSaveConfig, 2);
+    MusECore::MidiPlayEvent 
+      evSaveConfig(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataSaveConfig, 2);
     _gui->writeEvent(evSaveConfig);    
     if(_saveConfig) {
       //saveOnlyUsed
@@ -2559,15 +2559,15 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
       unsigned char *dataSaveOnlyUsed = new unsigned char[2];
       dataSaveOnlyUsed[0]=SYSEX_SAVEONLYUSED;
       dataSaveOnlyUsed[1]=(unsigned char)_saveOnlyUsed;
-      MidiPlayEvent 
-	evSaveOnlyUsed(0, 0, ME_SYSEX, (const unsigned char*)dataSaveOnlyUsed, 2);
+      MusECore::MidiPlayEvent 
+	evSaveOnlyUsed(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataSaveOnlyUsed, 2);
       _gui->writeEvent(evSaveOnlyUsed);    
       //colors
       unsigned char dataColorGui[COLORSYSEXLENGTH+1];
       dataColorGui[0]=SYSEX_COLORGUI;
       for (int i=0; i<COLORSYSEXLENGTH; i++)
 	dataColorGui[i+1]=data[NUM_RED_TEXT+i];
-      MidiPlayEvent evSysexColor(0, 0, ME_SYSEX, (const unsigned char*)dataColorGui,
+      MusECore::MidiPlayEvent evSysexColor(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataColorGui,
 			     COLORSYSEXLENGTH+1);
       _gui->writeEvent(evSysexColor);
       //quality
@@ -2575,47 +2575,47 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
       dataQuality[0]=SYSEX_QUALITY;
       dataQuality[1]=data[NUM_QUALITY];
       setQuality((Quality)data[NUM_QUALITY]);
-      MidiPlayEvent evQuality(0, 0, ME_SYSEX, (const unsigned char*)dataQuality, 2);
+      MusECore::MidiPlayEvent evQuality(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataQuality, 2);
       _gui->writeEvent(evQuality);
       //filter
       unsigned char dataFilter[2];
       dataFilter[0]=SYSEX_FILTER;
       dataFilter[1]=data[NUM_FILTER];
       setFilter((bool)data[NUM_FILTER]);
-      MidiPlayEvent evFilter(0, 0, ME_SYSEX, (const unsigned char*)dataFilter, 2);
+      MusECore::MidiPlayEvent evFilter(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataFilter, 2);
       _gui->writeEvent(evFilter);
       //font size
       unsigned char dataFontSize[2];
       dataFontSize[0]=SYSEX_FONTSIZE;
       dataFontSize[1]=data[NUM_FONTSIZE];
-      MidiPlayEvent evFontSize(0, 0, ME_SYSEX, (const unsigned char*)dataFontSize, 2);
+      MusECore::MidiPlayEvent evFontSize(0, 0, MusECore::ME_SYSEX, (const unsigned char*)dataFontSize, 2);
       _gui->writeEvent(evFontSize);
       //load init set
       unsigned char dataIsInitSet[2];
       dataIsInitSet[0]=SYSEX_ISINITSET;
       dataIsInitSet[1]=data[NUM_ISINITSET];
-      MidiPlayEvent evIsInitSet(0, 0, ME_SYSEX,
+      MusECore::MidiPlayEvent evIsInitSet(0, 0, MusECore::ME_SYSEX,
 			    (const unsigned char*)dataIsInitSet, 2);
       _gui->writeEvent(evIsInitSet);
       unsigned char dataInitSetPath[1+MAXSTRLENGTHINITSETPATH];
       dataInitSetPath[0]=SYSEX_INITSETPATH;
       for(int a = 0; a < MAXSTRLENGTHINITSETPATH; a++)
 	dataInitSetPath[a+1] = data[a+NUM_INITSETPATH];
-      MidiPlayEvent evInitSetPath(0, 0, ME_SYSEX,(const unsigned char*)dataInitSetPath,
+      MusECore::MidiPlayEvent evInitSetPath(0, 0, MusECore::ME_SYSEX,(const unsigned char*)dataInitSetPath,
 			      1+MAXSTRLENGTHINITSETPATH);
       _gui->writeEvent(evInitSetPath);      
       //load background pix
       unsigned char dataIsBackgroundPix[2];
       dataIsBackgroundPix[0]=SYSEX_ISBACKGROUNDPIX;
       dataIsBackgroundPix[1]=data[NUM_ISBACKGROUNDPIX];
-      MidiPlayEvent evIsBackgroundPix(0, 0, ME_SYSEX,
+      MusECore::MidiPlayEvent evIsBackgroundPix(0, 0, MusECore::ME_SYSEX,
 			    (const unsigned char*)dataIsBackgroundPix, 2);
       _gui->writeEvent(evIsBackgroundPix);
       unsigned char dataBackgroundPixPath[1+MAXSTRLENGTHBACKGROUNDPIXPATH];
       dataBackgroundPixPath[0]=SYSEX_BACKGROUNDPIXPATH;
       for(int a = 0; a < MAXSTRLENGTHBACKGROUNDPIXPATH; a++)
 	dataBackgroundPixPath[a+1] = data[a+NUM_BACKGROUNDPIXPATH];
-      MidiPlayEvent evBackgroundPixPath(0, 0, ME_SYSEX,
+      MusECore::MidiPlayEvent evBackgroundPixPath(0, 0, MusECore::ME_SYSEX,
 			      (const unsigned char*)dataBackgroundPixPath,
 			      1+MAXSTRLENGTHBACKGROUNDPIXPATH);
       _gui->writeEvent(evBackgroundPixPath);      
@@ -2627,16 +2627,16 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     unsigned char *dataReverbAct = new unsigned char[2];
     dataReverbAct[0]=SYSEX_REVERBACTIV;
     dataReverbAct[1]=(unsigned char)_global.isReverbActivated;
-    MidiPlayEvent evReverbAct(0, 0, ME_SYSEX,(const unsigned char*)dataReverbAct, 2);
+    MusECore::MidiPlayEvent evReverbAct(0, 0, MusECore::ME_SYSEX,(const unsigned char*)dataReverbAct, 2);
     _gui->writeEvent(evReverbAct);    
     setReverbReturn((int)data[NUM_REVERB_RETURN]);
     unsigned char *dataReverbRet = new unsigned char[2];
     dataReverbRet[0]=SYSEX_REVERBRETURN;
     dataReverbRet[1]=(unsigned char)getReverbReturn();
-    MidiPlayEvent evReverbRet(0, 0, ME_SYSEX,(const unsigned char*)dataReverbRet, 2);
+    MusECore::MidiPlayEvent evReverbRet(0, 0, MusECore::ME_SYSEX,(const unsigned char*)dataReverbRet, 2);
     _gui->writeEvent(evReverbRet);
-    Plugin* p;
-    p = plugins.find((const char*)&data[NUM_REVERB_LIB], 
+    MusECore::Plugin* p;
+    p = MusEGlobal::plugins.find((const char*)&data[NUM_REVERB_LIB], 
 		     (const char*)&data[NUM_REVERB_LABEL]);
     if(p) { 
       initPluginReverb(p);
@@ -2648,7 +2648,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
       }
       char dataBuildRev;
       dataBuildRev = SYSEX_BUILDGUIREVERB;
-      MidiPlayEvent evSysexBuildRev(0, 0, ME_SYSEX,
+      MusECore::MidiPlayEvent evSysexBuildRev(0, 0, MusECore::ME_SYSEX,
 				(const unsigned char*)&dataBuildRev, 1);
       _gui->writeEvent(evSysexBuildRev);
     }
@@ -2658,15 +2658,15 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     unsigned char *dataChorusAct = new unsigned char[2];
     dataChorusAct[0]=SYSEX_CHORUSACTIV;
     dataChorusAct[1]=(unsigned char)_global.isChorusActivated;
-    MidiPlayEvent evChorusAct(0, 0, ME_SYSEX,(const unsigned char*)dataChorusAct, 2);
+    MusECore::MidiPlayEvent evChorusAct(0, 0, MusECore::ME_SYSEX,(const unsigned char*)dataChorusAct, 2);
     _gui->writeEvent(evChorusAct);    
     setChorusReturn((int)data[NUM_CHORUS_RETURN]);
     unsigned char *dataChorusRet = new unsigned char[2];
     dataChorusRet[0]=SYSEX_CHORUSRETURN;
     dataChorusRet[1]=(unsigned char)getChorusReturn();
-    MidiPlayEvent evChorusRet(0, 0, ME_SYSEX,(const unsigned char*)dataChorusRet, 2);
+    MusECore::MidiPlayEvent evChorusRet(0, 0, MusECore::ME_SYSEX,(const unsigned char*)dataChorusRet, 2);
     _gui->writeEvent(evChorusRet);
-    p = plugins.find((const char*)&data[NUM_CHORUS_LIB], 
+    p = MusEGlobal::plugins.find((const char*)&data[NUM_CHORUS_LIB], 
 		     (const char*)&data[NUM_CHORUS_LABEL]);
     if(p) {
       initPluginChorus(p);
@@ -2681,7 +2681,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
       }
       char dataBuildCho;
       dataBuildCho = SYSEX_BUILDGUICHORUS;
-      MidiPlayEvent evSysexBuildCho(0, 0, ME_SYSEX,
+      MusECore::MidiPlayEvent evSysexBuildCho(0, 0, MusECore::ME_SYSEX,
 				(const unsigned char*)&dataBuildCho, 1);
       _gui->writeEvent(evSysexBuildCho);
     }
@@ -2691,22 +2691,22 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     unsigned char *dataDelayAct = new unsigned char[2];
     dataDelayAct[0]=SYSEX_DELAYACTIV;
     dataDelayAct[1]=(unsigned char)_global.isDelayActivated;
-    MidiPlayEvent evDelayAct(0, 0, ME_SYSEX,(const unsigned char*)dataDelayAct, 2);
+    MusECore::MidiPlayEvent evDelayAct(0, 0, MusECore::ME_SYSEX,(const unsigned char*)dataDelayAct, 2);
     _gui->writeEvent(evDelayAct);    
     setDelayReturn((int)data[NUM_DELAY_RETURN]);
     unsigned char *dataDelayRet = new unsigned char[2];
     dataDelayRet[0]=SYSEX_DELAYRETURN;
     dataDelayRet[1]=(unsigned char)getDelayReturn();
-    MidiPlayEvent evDelayRet(0, 0, ME_SYSEX,(const unsigned char*)dataDelayRet, 2);
+    MusECore::MidiPlayEvent evDelayRet(0, 0, MusECore::ME_SYSEX,(const unsigned char*)dataDelayRet, 2);
     _gui->writeEvent(evDelayRet);    
-    //initPluginDelay(plugins.find("pandelay", "pandelay"));
+    //initPluginDelay(MusEGlobal::plugins.find("pandelay", "pandelay"));
     float delayfloat;
     memcpy(&delayfloat, &data[NUM_DELAY_BPM], sizeof(float));
     setDelayBPM(delayfloat);
     char dataDelayBPM[sizeof(float)+1];
     dataDelayBPM[0] = SYSEX_DELAYBPM;
     memcpy(&dataDelayBPM[1], &delayfloat, sizeof(float));
-    MidiPlayEvent evSysexDelayBPM(0, 0, ME_SYSEX,
+    MusECore::MidiPlayEvent evSysexDelayBPM(0, 0, MusECore::ME_SYSEX,
 			      (const unsigned char*)dataDelayBPM,
 			      sizeof(float)+1);
     _gui->writeEvent(evSysexDelayBPM);
@@ -2715,7 +2715,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     char dataDelayBeatRatio[sizeof(float)+1];
     dataDelayBeatRatio[0] = SYSEX_DELAYBEATRATIO;
     memcpy(&dataDelayBeatRatio[1], &delayfloat, sizeof(float));
-    MidiPlayEvent evSysexDelayBeatRatio(0, 0, ME_SYSEX,
+    MusECore::MidiPlayEvent evSysexDelayBeatRatio(0, 0, MusECore::ME_SYSEX,
 				    (const unsigned char*)dataDelayBeatRatio,
 				    sizeof(float)+1);
     _gui->writeEvent(evSysexDelayBeatRatio);
@@ -2724,7 +2724,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     char dataDelayFeedback[sizeof(float)+1];
     dataDelayFeedback[0] = SYSEX_DELAYFEEDBACK;
     memcpy(&dataDelayFeedback[1], &delayfloat, sizeof(float));
-    MidiPlayEvent evSysexDelayFeedback(0, 0, ME_SYSEX,
+    MusECore::MidiPlayEvent evSysexDelayFeedback(0, 0, MusECore::ME_SYSEX,
 				   (const unsigned char*)dataDelayFeedback,
 				   sizeof(float)+1);
     _gui->writeEvent(evSysexDelayFeedback);
@@ -2733,7 +2733,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     char dataDelayLFOFreq[sizeof(float)+1];
     dataDelayLFOFreq[0] = SYSEX_DELAYLFOFREQ;
     memcpy(&dataDelayLFOFreq[1], &delayfloat, sizeof(float));
-    MidiPlayEvent evSysexDelayLFOFreq(0, 0, ME_SYSEX,
+    MusECore::MidiPlayEvent evSysexDelayLFOFreq(0, 0, MusECore::ME_SYSEX,
 				  (const unsigned char*)dataDelayLFOFreq,
 				  sizeof(float)+1);
     _gui->writeEvent(evSysexDelayLFOFreq);
@@ -2742,7 +2742,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     char dataDelayLFODepth[sizeof(float)+1];
     dataDelayLFODepth[0] = SYSEX_DELAYLFODEPTH;
     memcpy(&dataDelayLFODepth[1], &delayfloat, sizeof(float));
-    MidiPlayEvent evSysexDelayLFODepth(0, 0, ME_SYSEX,
+    MusECore::MidiPlayEvent evSysexDelayLFODepth(0, 0, MusECore::ME_SYSEX,
 				   (const unsigned char*)dataDelayLFODepth,
 				   sizeof(float)+1);
     _gui->writeEvent(evSysexDelayLFODepth);
@@ -2804,7 +2804,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
     dataSend[0]=SYSEX_LOADSET;
     dataSend[1]=data[NUM_SAVEONLYUSED];
     //for(int i=2; i<dL; i++) dataSend[i]=baUncop.at(i-2);
-    MidiPlayEvent evSysex(0, 0, ME_SYSEX,(const unsigned char*)dataSend, dL);
+    MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX,(const unsigned char*)dataSend, dL);
     _gui->writeEvent(evSysex);
 
     //select programs per channel
@@ -2814,7 +2814,7 @@ void DeicsOnze::parseInitData(int length, const unsigned char* data) {
       int prog=(int)data[NUM_CURRENTPROG+c];
       programSelect(c, hbank, lbank, prog);
       int val=prog+(lbank<<8)+(hbank<<16);
-      MidiPlayEvent evProgSel(0, 0, c, ME_CONTROLLER, CTRL_PROGRAM, val);
+      MusECore::MidiPlayEvent evProgSel(0, 0, c, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, val);
       _gui->writeEvent(evProgSel);
     }
 
@@ -2853,8 +2853,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     ///setMasterVol((int)data[1]);
     setMasterVol((int)d[1]);
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
@@ -2862,8 +2862,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     ///_global.channelNum = (char)data[1];
     //_global.channelNum = (char)d[1];
     //if(!fromGui) {
-    ///  MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-    //  MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+    ///  MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+    //  MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
     //  _gui->writeEvent(evSysex);
     //}
     //break;
@@ -2871,8 +2871,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     ///setQuality((Quality)data[1]);
     setQuality((Quality)d[1]);
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
@@ -2880,8 +2880,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     ///setFilter((bool)data[1]);
     setFilter((bool)d[1]);
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
@@ -2889,8 +2889,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     ///_global.fontSize = (int)data[1];
     _global.fontSize = (int)d[1];
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
@@ -2898,8 +2898,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     ///_saveConfig = (bool)data[1];
     _saveConfig = (bool)d[1];
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
@@ -2907,8 +2907,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     ///_saveOnlyUsed = (bool)data[1];
     _saveOnlyUsed = (bool)d[1];
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
@@ -2916,8 +2916,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     ///_isInitSet = (bool)data[1];
     _isInitSet = (bool)d[1];
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
@@ -2925,8 +2925,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     ///_initSetPath = (char*)&data[1];
     _initSetPath = (char*)&d[1];
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
@@ -2934,8 +2934,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     ///_isBackgroundPix = (bool)data[1];
     _isBackgroundPix = (bool)d[1];
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
@@ -2943,8 +2943,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     ///_backgroundPixPath = (char*)&data[1];
     _backgroundPixPath = (char*)&d[1];
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
@@ -2955,8 +2955,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     ///_global.isChorusActivated = (bool)data[1];
     _global.isChorusActivated = (bool)d[1];
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
@@ -2967,8 +2967,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     memcpy(&f, &d[2], sizeof(float));
     setChorusParam(index, (double)f);
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;       
@@ -2976,8 +2976,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     ///_global.isReverbActivated = (bool)data[1];
     _global.isReverbActivated = (bool)d[1];
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
@@ -2988,8 +2988,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     memcpy(&f, &d[2], sizeof(float));
     setReverbParam(index, (double)f);
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;       
@@ -2997,8 +2997,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     ///_global.isDelayActivated = (bool)data[1];
     _global.isDelayActivated = (bool)d[1];
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
@@ -3006,8 +3006,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     ///setChorusReturn((int)data[1]);
     setChorusReturn((int)d[1]);
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
@@ -3015,8 +3015,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     ///setReverbReturn((int)data[1]);
     setReverbReturn((int)d[1]);
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
@@ -3024,21 +3024,21 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     ///setDelayReturn((int)data[1]);
     setDelayReturn((int)d[1]);
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;
   case SYSEX_SELECTREVERB:
-    Plugin* pluginReverb;
-    ///memcpy(&pluginReverb, &data[1], sizeof(Plugin*));
-    memcpy(&pluginReverb, &d[1], sizeof(Plugin*));
+    MusECore::Plugin* pluginReverb;
+    ///memcpy(&pluginReverb, &data[1], sizeof(MusECore::Plugin*));
+    memcpy(&pluginReverb, &d[1], sizeof(MusECore::Plugin*));
     initPluginReverb(pluginReverb);
     break;
   case SYSEX_SELECTCHORUS:
-    Plugin* pluginChorus;
-    ///memcpy(&pluginChorus, &data[1], sizeof(Plugin*));
-    memcpy(&pluginChorus, &d[1], sizeof(Plugin*));
+    MusECore::Plugin* pluginChorus;
+    ///memcpy(&pluginChorus, &data[1], sizeof(MusECore::Plugin*));
+    memcpy(&pluginChorus, &d[1], sizeof(MusECore::Plugin*));
     initPluginChorus(pluginChorus);
     break;
   case SYSEX_DELAYBPM:
@@ -3046,8 +3046,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     memcpy(&f, &d[1], sizeof(float));
     setDelayBPM(f);
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;    
@@ -3056,8 +3056,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     memcpy(&f, &d[1], sizeof(float));
     setDelayBeatRatio(f);
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;    
@@ -3066,8 +3066,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     memcpy(&f, &d[1], sizeof(float));
     setDelayFeedback(f);
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;    
@@ -3076,8 +3076,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     memcpy(&f, &d[1], sizeof(float));
     setDelayLFOFreq(f);
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;    
@@ -3086,8 +3086,8 @@ bool DeicsOnze::sysex(int length, const unsigned char* data, bool fromGui) {
     memcpy(&f, &d[1], sizeof(float));
     setDelayLFODepth(f);
     if(!fromGui) {
-      ///MidiPlayEvent evSysex(0, 0, ME_SYSEX, data, length);
-      MidiPlayEvent evSysex(0, 0, ME_SYSEX, d, l);
+      ///MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, data, length);
+      MusECore::MidiPlayEvent evSysex(0, 0, MusECore::ME_SYSEX, d, l);
       _gui->writeEvent(evSysex);
     }
     break;    
@@ -3119,7 +3119,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->eg[k].ar=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_AR+k*DECAPAR1,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_AR+k*DECAPAR1,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3127,7 +3127,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->eg[k].d1r=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_D1R+k*DECAPAR1,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_D1R+k*DECAPAR1,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3135,7 +3135,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->eg[k].d2r=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_D2R+k*DECAPAR1,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_D2R+k*DECAPAR1,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3143,7 +3143,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->eg[k].rr=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_RR+k*DECAPAR1,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_RR+k*DECAPAR1,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3151,7 +3151,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->eg[k].d1l=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_D1L+k*DECAPAR1,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_D1L+k*DECAPAR1,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3159,7 +3159,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->scaling.level[k]=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_LS+k*DECAPAR1,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_LS+k*DECAPAR1,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3167,7 +3167,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->scaling.rate[k]=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_RS+k*DECAPAR1,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_RS+k*DECAPAR1,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3175,7 +3175,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->sensitivity.egBias[k]=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_EBS+k*DECAPAR1,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_EBS+k*DECAPAR1,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3183,7 +3183,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->sensitivity.ampOn[k]=val==1;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_AME+k*DECAPAR1,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_AME+k*DECAPAR1,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3191,7 +3191,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->sensitivity.keyVelocity[k]=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_KVS+k*DECAPAR1,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_KVS+k*DECAPAR1,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3200,7 +3200,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->outLevel[k]=val;
       setOutLevel(k);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_OUT+k*DECAPAR1,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_OUT+k*DECAPAR1,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3208,7 +3208,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->frequency[k].ratio=((double)val)/100.0;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,
 		     CTRL_RATIO+k*DECAPAR1,val);
 	_gui->writeEvent(ev);
       }
@@ -3217,7 +3217,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->detune[k]=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_DET+k*DECAPAR1,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_DET+k*DECAPAR1,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3225,7 +3225,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->algorithm=(Algorithm)val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_ALG,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_ALG,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3234,7 +3234,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->feedback=val;
       setFeedback(ch);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_FEEDBACK,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_FEEDBACK,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3243,7 +3243,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->lfo.speed=val;
       setLfo(ch);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_SPEED,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_SPEED,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3252,7 +3252,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->lfo.delay=val;
       setLfo(ch);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_DELAY,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_DELAY,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3261,7 +3261,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->lfo.pModDepth=val;
       setLfo(ch);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_PMODDEPTH,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_PMODDEPTH,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3270,7 +3270,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->lfo.aModDepth=val;
       setLfo(ch);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_AMODDEPTH,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_AMODDEPTH,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3279,7 +3279,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->lfo.sync=val==1;
       setLfo(ch);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_SYNC,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_SYNC,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3288,7 +3288,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->lfo.wave=(Wave)val;
       setLfo(ch);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_WAVE,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_WAVE,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3297,7 +3297,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->sensitivity.pitch=val;
       setLfo(ch);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_PMODSENS,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_PMODSENS,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3306,7 +3306,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->sensitivity.amplitude=val;
       setLfo(ch);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_AMS,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_AMS,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3314,7 +3314,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.transpose=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_TRANSPOSE,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_TRANSPOSE,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3322,7 +3322,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.mode=(Mode)val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_POLYMODE,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_POLYMODE,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3330,7 +3330,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.pBendRange=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_PBENDRANGE,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_PBENDRANGE,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3338,7 +3338,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.portamento=(Portamento)val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_PORTAMODE,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_PORTAMODE,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3346,7 +3346,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.portamentoTime=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_PORTATIME,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_PORTATIME,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3354,7 +3354,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.fcVolume=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_FCVOLUME,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_FCVOLUME,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3362,7 +3362,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.footSw=(FootSw)val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_FSW,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_FSW,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3370,7 +3370,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.mwPitch=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_MWPITCH,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_MWPITCH,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3378,7 +3378,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.mwAmplitude=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_MWAMPLITUDE,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_MWAMPLITUDE,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3386,7 +3386,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.bcPitch=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_BCPITCH,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_BCPITCH,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3394,7 +3394,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.bcAmplitude=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_BCAMPLITUDE,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_BCAMPLITUDE,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3402,7 +3402,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.bcPitchBias=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_BCPITCHBIAS,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_BCPITCHBIAS,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3410,7 +3410,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.bcEgBias=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_BCEGBIAS,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_BCEGBIAS,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3418,7 +3418,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.atPitch=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_ATPITCH,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_ATPITCH,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3426,7 +3426,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.atAmplitude=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_ATAMPLITUDE,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_ATAMPLITUDE,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3434,7 +3434,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.atPitchBias=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_ATPITCHBIAS,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_ATPITCHBIAS,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3442,7 +3442,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.atEgBias=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_ATEGBIAS,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_ATEGBIAS,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3450,7 +3450,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->pitchEg.pr1=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_PR1,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_PR1,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3458,7 +3458,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->pitchEg.pr2=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_PR2,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_PR2,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3466,7 +3466,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->pitchEg.pr3=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_PR3,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_PR3,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3474,7 +3474,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->pitchEg.pl1=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_PL1,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_PL1,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3482,7 +3482,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->pitchEg.pl2=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_PL2,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_PL2,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3490,7 +3490,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->pitchEg.pl3=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_PL3,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_PL3,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3498,7 +3498,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->frequency[k].isFix=val==1;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_FIX+k*DECAPAR2,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_FIX+k*DECAPAR2,val);
 	_gui->writeEvent(ev);
       }	
       break;
@@ -3506,7 +3506,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->frequency[k].freq=((double)val)/100.0;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,
 		     CTRL_FIXRANGE+k*DECAPAR2,val);
 	_gui->writeEvent(ev);
       }	
@@ -3515,7 +3515,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->oscWave[k]=(OscWave)val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_OSW+k*DECAPAR2,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_OSW+k*DECAPAR2,val);
 	_gui->writeEvent(ev);
       }	
       break;
@@ -3523,7 +3523,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->eg[k].egShift=(egShiftValue)val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_SHFT+k*DECAPAR2,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_SHFT+k*DECAPAR2,val);
 	_gui->writeEvent(ev);
       }	
       break;
@@ -3531,7 +3531,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.reverbRate=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_REVERBRATE,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_REVERBRATE,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3539,7 +3539,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.fcPitch=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_FCPITCH,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_FCPITCH,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3547,14 +3547,14 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       _preset[ch]->function.fcAmplitude=val;
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_FCAMPLITUDE,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_FCAMPLITUDE,val);
 	_gui->writeEvent(ev);
       }
     break;
     case CTRL_CHANNELENABLE:
       setChannelEnable(ch, (bool)val);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_CHANNELENABLE,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_CHANNELENABLE,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3562,7 +3562,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       _preset[ch]->setIsUsed(true);
       setChannelDetune(ch, val);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_CHANNELDETUNE,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_CHANNELDETUNE,val);
 	_gui->writeEvent(ev);
       }
       break;
@@ -3570,18 +3570,18 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       setChannelVol(ch, val);
       applyChannelAmp(ch);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch,ME_CONTROLLER,CTRL_CHANNELVOLUME,val);
+	MusECore::MidiPlayEvent ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_CHANNELVOLUME,val);
 	_gui->writeEvent(ev);
       }
       break;
     case CTRL_NBRVOICES:
       setNbrVoices(ch, val);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch, ME_CONTROLLER, CTRL_NBRVOICES, val);
+	MusECore::MidiPlayEvent ev(0, 0, ch, MusECore::ME_CONTROLLER, CTRL_NBRVOICES, val);
 	_gui->writeEvent(ev);
       }
     break;
-    case CTRL_PROGRAM: {
+    case MusECore::CTRL_PROGRAM: {
       int hbank = (val & 0xff0000) >> 16;
       int lbank = (val & 0xff00) >> 8;
       int prog  = val & 0x7f;
@@ -3592,27 +3592,27 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       programSelect(ch, hbank, lbank, prog);
       _preset[ch]->setIsUsed(true);//TODO : not sure to put that
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch, ME_CONTROLLER, CTRL_PROGRAM, val);
+	MusECore::MidiPlayEvent ev(0, 0, ch, MusECore::ME_CONTROLLER, MusECore::CTRL_PROGRAM, val);
 	_gui->writeEvent(ev);
       }
     } break;
-    case CTRL_MODULATION:
+    case MusECore::CTRL_MODULATION:
       setModulation(ch, val);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch, ME_CONTROLLER, CTRL_MODULATION, val);
+	MusECore::MidiPlayEvent ev(0, 0, ch, MusECore::ME_CONTROLLER, MusECore::CTRL_MODULATION, val);
 	_gui->writeEvent(ev);
       }
       break;
-    case CTRL_PITCH:
+    case MusECore::CTRL_PITCH:
       setPitchBendCoef(ch, val);
       break;
-    case CTRL_PANPOT:
+    case MusECore::CTRL_PANPOT:
       _preset[ch]->setIsUsed(true);
       deiPan = val*2*MAXCHANNELPAN/127-MAXCHANNELPAN;
       setChannelPan(ch, deiPan);
       applyChannelAmp(ch);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch, ME_CONTROLLER, CTRL_CHANNELPAN, deiPan);
+	MusECore::MidiPlayEvent ev(0, 0, ch, MusECore::ME_CONTROLLER, CTRL_CHANNELPAN, deiPan);
 	_gui->writeEvent(ev);
       }
       break;      
@@ -3621,7 +3621,7 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       setChannelPan(ch, val);
       applyChannelAmp(ch);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch, ME_CONTROLLER, CTRL_CHANNELPAN, val);
+	MusECore::MidiPlayEvent ev(0, 0, ch, MusECore::ME_CONTROLLER, CTRL_CHANNELPAN, val);
 	_gui->writeEvent(ev);
       }
       break;      
@@ -3630,72 +3630,72 @@ bool DeicsOnze::setController(int ch, int ctrl, int val, bool fromGui) {
       setChannelBrightness(ch, val);
       setOutLevel(ch);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch, ME_CONTROLLER, CTRL_FINEBRIGHTNESS, val);
+	MusECore::MidiPlayEvent ev(0, 0, ch, MusECore::ME_CONTROLLER, CTRL_FINEBRIGHTNESS, val);
 	_gui->writeEvent(ev);
       }
       break;
-    case CTRL_BRIGHTNESS:
+    case MusECore::CTRL_BRIGHTNESS:
       _preset[ch]->setIsUsed(true);
       setChannelBrightness(ch, val*(MIDFINEBRIGHTNESS/MIDBRIGHTNESS));
       setOutLevel(ch);
       if(!fromGui) {
-	MidiPlayEvent
-	  ev(0, 0, ch,ME_CONTROLLER,CTRL_FINEBRIGHTNESS,getChannelBrightness(ch));
+	MusECore::MidiPlayEvent
+	  ev(0, 0, ch,MusECore::ME_CONTROLLER,CTRL_FINEBRIGHTNESS,getChannelBrightness(ch));
 	_gui->writeEvent(ev);
       }
       break;
-    case CTRL_ATTACK_TIME:
+    case MusECore::CTRL_ATTACK_TIME:
       _preset[ch]->setIsUsed(true);
       setChannelAttack(ch, val);
       setEnvAttack(ch);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch, ME_CONTROLLER, CTRL_ATTACK_TIME, val);
+	MusECore::MidiPlayEvent ev(0, 0, ch, MusECore::ME_CONTROLLER, MusECore::CTRL_ATTACK_TIME, val);
 	_gui->writeEvent(ev);
       }
       break;
-    case CTRL_RELEASE_TIME:
+    case MusECore::CTRL_RELEASE_TIME:
       _preset[ch]->setIsUsed(true);
       setChannelRelease(ch, val);
       setEnvRelease(ch);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch, ME_CONTROLLER, CTRL_RELEASE_TIME, val);
+	MusECore::MidiPlayEvent ev(0, 0, ch, MusECore::ME_CONTROLLER, MusECore::CTRL_RELEASE_TIME, val);
 	_gui->writeEvent(ev);
       }
       break;
-    case CTRL_REVERB_SEND:
+    case MusECore::CTRL_REVERB_SEND:
       setChannelReverb(ch, val);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch, ME_CONTROLLER, CTRL_REVERB_SEND, val);
+	MusECore::MidiPlayEvent ev(0, 0, ch, MusECore::ME_CONTROLLER, MusECore::CTRL_REVERB_SEND, val);
 	_gui->writeEvent(ev);
       }
       break;
-    case CTRL_CHORUS_SEND:
+    case MusECore::CTRL_CHORUS_SEND:
       setChannelChorus(ch, val);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch, ME_CONTROLLER, CTRL_CHORUS_SEND, val);
+	MusECore::MidiPlayEvent ev(0, 0, ch, MusECore::ME_CONTROLLER, MusECore::CTRL_CHORUS_SEND, val);
 	_gui->writeEvent(ev);
       }
       break;
-    case CTRL_VARIATION_SEND:
+    case MusECore::CTRL_VARIATION_SEND:
       setChannelDelay(ch, val);
       if(!fromGui) {
-	MidiPlayEvent ev(0, 0, ch, ME_CONTROLLER, CTRL_VARIATION_SEND, val);
+	MusECore::MidiPlayEvent ev(0, 0, ch, MusECore::ME_CONTROLLER, MusECore::CTRL_VARIATION_SEND, val);
 	_gui->writeEvent(ev);
       }
       break;
-    case CTRL_SUSTAIN:
+    case MusECore::CTRL_SUSTAIN:
       setSustain(ch, val);
       break;
-    case CTRL_VOLUME:
+    case MusECore::CTRL_VOLUME:
       setChannelVol(ch, val*(MAXCHANNELVOLUME/127));
       applyChannelAmp(ch);
       if(!fromGui) {
-	MidiPlayEvent
-	  ev(0, 0, ch, ME_CONTROLLER, CTRL_CHANNELVOLUME, getChannelVol(ch));
+	MusECore::MidiPlayEvent
+	  ev(0, 0, ch, MusECore::ME_CONTROLLER, CTRL_CHANNELVOLUME, getChannelVol(ch));
 	_gui->writeEvent(ev);
       }
       break;      
-    case CTRL_ALL_SOUNDS_OFF:
+    case MusECore::CTRL_ALL_SOUNDS_OFF:
       resetVoices();      
     default:
       break;
@@ -4090,12 +4090,12 @@ void DeicsOnze::processMessages()
 {
   //Process messages from the gui
   while (_gui->fifoSize()) {
-    MidiPlayEvent ev = _gui->readEvent();
-    if (ev.type() == ME_SYSEX) {
+    MusECore::MidiPlayEvent ev = _gui->readEvent();
+    if (ev.type() == MusECore::ME_SYSEX) {
       sysex(ev.len(), ev.data(), true);
       sendEvent(ev);
     }
-    else if (ev.type() == ME_CONTROLLER) {
+    else if (ev.type() == MusECore::ME_CONTROLLER) {
       setController(ev.channel(), ev.dataA(), ev.dataB(), true);
       sendEvent(ev);
     }
@@ -4110,12 +4110,12 @@ void DeicsOnze::process(float** buffer, int offset, int n) {
   /*
   //Process messages from the gui
   while (_gui->fifoSize()) {
-    MidiPlayEvent ev = _gui->readEvent();
-    if (ev.type() == ME_SYSEX) {
+    MusECore::MidiPlayEvent ev = _gui->readEvent();
+    if (ev.type() == MusECore::ME_SYSEX) {
       sysex(ev.len(), ev.data(), true);
       sendEvent(ev);
     }
-    else if (ev.type() == ME_CONTROLLER) {
+    else if (ev.type() == MusECore::ME_CONTROLLER) {
       setController(ev.channel(), ev.dataA(), ev.dataB(), true);
       sendEvent(ev);
     }

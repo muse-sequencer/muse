@@ -41,7 +41,7 @@
 #include "route.h"
  
  
-namespace MusEWidget {
+namespace MusEGui {
 
 //======================
 // PopupMenu
@@ -152,9 +152,9 @@ QAction* PopupMenu::findActionFromData(const QVariant& v) const
     //   are not called. Instead the values' addresses are compared."
     //
     // Take care of struct Route first. Insert other future custom structures here too !
-    if(act->data().canConvert<Route>() && v.canConvert<Route>())
+    if(act->data().canConvert<MusECore::Route>() && v.canConvert<MusECore::Route>())
     {
-      if(act->data().value<Route>() == v.value<Route>())
+      if(act->data().value<MusECore::Route>() == v.value<MusECore::Route>())
         return act;    
     }
     else
@@ -174,7 +174,7 @@ bool PopupMenu::event(QEvent* event)
     case QEvent::MouseButtonDblClick:
     {  
       if(_stayOpen)
-      //if(_stayOpen && MusEConfig::config.popupsDefaultStayOpen)
+      //if(_stayOpen && MusEGlobal::config.popupsDefaultStayOpen)
       {
         QMouseEvent* e = static_cast<QMouseEvent*>(event);
         if(e->modifiers() == Qt::NoModifier)
@@ -193,7 +193,7 @@ bool PopupMenu::event(QEvent* event)
     case QEvent::KeyPress:
     {
       if(_stayOpen)
-      //if(_stayOpen && MusEConfig::config.popupsDefaultStayOpen)
+      //if(_stayOpen && MusEGlobal::config.popupsDefaultStayOpen)
       {
         QKeyEvent* e = static_cast<QKeyEvent*>(event);
         if(e->modifiers() == Qt::NoModifier && e->key() == Qt::Key_Space)
@@ -347,7 +347,7 @@ void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
     
     #else
     // Check for Ctrl to stay open.
-    if(!_stayOpen || (!MusEConfig::config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0))  
+    if(!_stayOpen || (!MusEGlobal::config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0))  
     {
       QMenu::mouseReleaseEvent(e);
       return;
@@ -390,4 +390,4 @@ void PopupView::clear()
 }
 */ 
  
-} // namespace MusEWidget
+} // namespace MusEGui

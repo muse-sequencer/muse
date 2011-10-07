@@ -30,19 +30,18 @@ class QString;
 class QMenu;
 class QWidget;
 
+
+namespace MusECore {
 class Part;
-
-namespace MusEUtil {
-
 QString pitch2string(int v);
-
 Part* partFromSerialNumber(int serial);
-
 bool any_event_selected(const std::set<Part*>&, bool in_range=false);
+}
 
+namespace MusEGui {
 QMenu* populateAddSynth(QWidget* parent);
 QActionGroup* populateAddTrack(QMenu* addTrack);
+} 
 
-}
 #endif
 

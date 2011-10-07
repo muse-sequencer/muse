@@ -34,6 +34,8 @@
 // Added by Tim. p3.3.18
 //#define WAVETRACK_DEBUG
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   fetchData
 //    called from prefetch thread
@@ -116,7 +118,7 @@ void WaveTrack::fetchData(unsigned pos, unsigned samples, float** bp, bool doSee
               }
       }
               
-      if(MusEConfig::config.useDenormalBias) {
+      if(MusEGlobal::config.useDenormalBias) {
             // add denormal bias to outdata
             for (int i = 0; i < channels(); ++i)
                   for (unsigned int j = 0; j < samples; ++j)
@@ -222,7 +224,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
       //if(MusEGlobal::debugMsg)
       //  printf("WaveTrack::getData framePos:%u channels:%d nframe:%u processed?:%d\n", framePos, channels, nframe, processed());
       
-      if ((song->bounceTrack != this) && !noInRoute()) {
+      if ((MusEGlobal::song->bounceTrack != this) && !noInRoute()) {
             RouteList* irl = inRoutes();
             ciRoute i = irl->begin();
             if(i->track->isMidiTrack())
@@ -259,11 +261,11 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
               
             }
             if (recordFlag()) {
-                  if (audio->isRecording() && recFile()) {
-                        if (audio->freewheel()) {
+                  if (MusEGlobal::audio->isRecording() && recFile()) {
+                        if (MusEGlobal::audio->freewheel()) {
                               }
                         else {
-                              if (fifo.put(channels, nframe, bp, audio->pos().frame()))
+                              if (fifo.put(channels, nframe, bp, MusEGlobal::audio->pos().frame()))
                                     printf("WaveTrack::getData(%d, %d, %d): fifo overrun\n",
                                        framePos, channels, nframe);
                               }
@@ -271,7 +273,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
                   return true;
                   }
             }
-      if (!audio->isPlaying())
+      if (!MusEGlobal::audio->isPlaying())
             return false;
       
       // Removed by T356. Multiple out route cacheing now handled by AudioTrack::copyData and ::addData.
@@ -282,7 +284,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
                   printf("WaveTrack::getData bufferPos:%d != framePos\n", bufferPos);
                   
                   bufferPos = framePos;
-                  if (audio->freewheel()) {
+                  if (MusEGlobal::audio->freewheel()) {
                         // when freewheeling, read data direct from file:
                         fetchData(bufferPos, nframe, outBuffers);
                         }
@@ -318,7 +320,7 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
       
             //printf("WaveTrack::getData no out routes\n");
             
-            if (audio->freewheel()) {
+            if (MusEGlobal::audio->freewheel()) {
                   
                   // when freewheeling, read data direct from file:
                   // Indicate do not seek file before each read.
@@ -373,3 +375,4 @@ void WaveTrack::setChannels(int n)
             }
       }
 
+} // namespace MusECore

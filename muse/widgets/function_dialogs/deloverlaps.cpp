@@ -24,7 +24,7 @@
 #include "deloverlaps.h"
 #include "xml.h"
 
-namespace MusEDialog {
+namespace MusEGui {
 
 DelOverlaps::DelOverlaps(QWidget* parent)
 	: QDialog(parent)
@@ -59,25 +59,25 @@ int DelOverlaps::exec()
 	return QDialog::exec();
 }
 
-void DelOverlaps::read_configuration(Xml& xml)
+void DelOverlaps::read_configuration(MusECore::Xml& xml)
 {
 	for (;;)
 	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
 			
 		const QString& tag = xml.s1();
 		switch (token)
 		{
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "range")
 					range=xml.parseInt();
 				else
 					xml.unknown("DelOverlaps");
 				break;
 				
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "del_overlaps")
 					return;
 				
@@ -87,11 +87,11 @@ void DelOverlaps::read_configuration(Xml& xml)
 	}
 }
 
-void DelOverlaps::write_configuration(int level, Xml& xml)
+void DelOverlaps::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "del_overlaps");
 	xml.intTag(level, "range", range);
 	xml.tag(level, "/del_overlaps");
 }
 
-} // namespace MusEDialog
+} // namespace MusEGui

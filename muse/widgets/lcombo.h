@@ -29,7 +29,7 @@
 
 class QString;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   LabelCombo
@@ -57,6 +57,6 @@ class LabelCombo : public QWidget {
       void setFocusPolicy ( Qt::FocusPolicy fp ) { box->setFocusPolicy(fp); }
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif

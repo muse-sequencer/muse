@@ -42,6 +42,8 @@
 #include "gconfig.h"
 #include "midictrl.h"
 
+namespace MusECore {
+
 //
 // Order of events:
 // Note, Poly Pressure, Control, AfterTouch, Pitch Bend, NRPN, RPN
@@ -72,7 +74,7 @@ class MidiTransformation {
       QString comment;
 
       ValOp selEventOp;
-      EventType selType;
+      MusECore::EventType selType;
 
       ValOp selVal1;
       int selVal1a, selVal1b;
@@ -84,7 +86,7 @@ class MidiTransformation {
       int selRangeA, selRangeB;
 
       TransformOperator procEvent;
-      EventType eventType;
+      MusECore::EventType eventType;
       TransformOperator procVal1;
       int procVal1a, procVal1b;
       TransformOperator procVal2;
@@ -128,7 +130,7 @@ class MidiTransformation {
             procPos    = Keep;
             procPosA   = 0;
             funcOp     = Select;
-            quantVal   = MusEConfig::config.division;
+            quantVal   = MusEGlobal::config.division;
             selectedTracks = false;
             insideLoop = false;
             }
@@ -145,131 +147,7 @@ typedef std::list<MidiTransformation* > MidiTransformationList;
 typedef std::list<MidiTransformation* >::iterator iMidiTransformation;
 typedef std::list<MidiTransformation* >::const_iterator ciMidiTransformation;
 
-static MidiTransformationList mtlist;
-
-//---------------------------------------------------------
-//   MidiTransformDialog
-//    Widgets:
-//    presetList nameEntry commentEntry
-//    selEventOp   selType
-//    selVal1Op    selVal1a selVal1b
-//    selVal2Op    selVal2a selVal2b
-//    selLenOp     selLenA  selLenB
-//    selRangeOp   selBarA  selBarB
-//
-//    procEventOp  procType
-//    procVal1Op   procVal1a procVal1b
-//    procVal2Op   procVal2a procVal2b
-//    procLenOp    procLenA
-//    procPosOp    procPosA
-//    funcOp       funcQuantVal
-//    processAll   selectedTracks   insideLoop
-//    buttonNew buttonDelete buttonApply buttonOk
-//---------------------------------------------------------
-
-MidiTransformerDialog::MidiTransformerDialog(QDialog* parent, Qt::WFlags fl)
-   : QDialog(parent, fl)
-      {
-      setupUi(this);
-      data         = new MidiTransformPrivate;
-      data->cmt    = 0;
-      data->cindex = -1;
-      connect(buttonApply,  SIGNAL(clicked()),      SLOT(apply()));
-      connect(buttonNew,    SIGNAL(clicked()),      SLOT(presetNew()));
-      connect(buttonDelete, SIGNAL(clicked()),      SLOT(presetDelete()));
-      connect(selEventOp,   SIGNAL(activated(int)), SLOT(selEventOpSel(int)));
-      connect(selType,      SIGNAL(activated(int)), SLOT(selTypeSel(int)));
-      connect(selVal1Op,    SIGNAL(activated(int)), SLOT(selVal1OpSel(int)));
-      connect(selVal2Op,    SIGNAL(activated(int)), SLOT(selVal2OpSel(int)));
-      connect(selLenOp,     SIGNAL(activated(int)), SLOT(selLenOpSel(int)));
-      connect(selRangeOp,   SIGNAL(activated(int)), SLOT(selRangeOpSel(int)));
-      connect(procEventOp,  SIGNAL(activated(int)), SLOT(procEventOpSel(int)));
-      connect(procType,     SIGNAL(activated(int)), SLOT(procEventTypeSel(int)));
-      connect(procVal1Op,   SIGNAL(activated(int)), SLOT(procVal1OpSel(int)));
-      connect(procVal2Op,   SIGNAL(activated(int)), SLOT(procVal2OpSel(int)));
-      connect(procLenOp,    SIGNAL(activated(int)), SLOT(procLenOpSel(int)));
-      connect(procPosOp,    SIGNAL(activated(int)), SLOT(procPosOpSel(int)));
-      connect(funcOp,       SIGNAL(activated(int)), SLOT(funcOpSel(int)));
-      connect(funcQuantVal, SIGNAL(valueChanged(int)), SLOT(funcQuantValSel(int)));
-      connect(presetList,   SIGNAL(itemClicked(QListWidgetItem*)),
-         SLOT(presetChanged(QListWidgetItem*)));
-      connect(nameEntry,    SIGNAL(textChanged(const QString&)),
-         SLOT(nameChanged(const QString&)));
-      connect(commentEntry,    SIGNAL(textChanged()), SLOT(commentChanged()));
-
-      connect(selVal1a,  SIGNAL(valueChanged(int)), SLOT(selVal1aChanged(int)));
-      connect(selVal1b,  SIGNAL(valueChanged(int)), SLOT(selVal1bChanged(int)));
-      connect(selVal2a,  SIGNAL(valueChanged(int)), SLOT(selVal2aChanged(int)));
-      connect(selVal2b,  SIGNAL(valueChanged(int)), SLOT(selVal2bChanged(int)));
-      connect(selLenA,   SIGNAL(valueChanged(int)), SLOT(selLenAChanged(int)));
-      connect(selLenB,   SIGNAL(valueChanged(int)), SLOT(selLenBChanged(int)));
-      connect(selBarA,   SIGNAL(valueChanged(int)), SLOT(selBarAChanged(int)));
-      connect(selBarB,   SIGNAL(valueChanged(int)), SLOT(selBarBChanged(int)));
-      connect(procVal1a, SIGNAL(valueChanged(int)), SLOT(procVal1aChanged(int)));
-      connect(procVal1b, SIGNAL(valueChanged(int)), SLOT(procVal1bChanged(int)));
-      connect(procVal2a, SIGNAL(valueChanged(int)), SLOT(procVal2aChanged(int)));
-      connect(procVal2b, SIGNAL(valueChanged(int)), SLOT(procVal2bChanged(int)));
-      connect(procLenA,  SIGNAL(valueChanged(int)), SLOT(procLenAChanged(int)));
-      connect(procPosA,  SIGNAL(valueChanged(int)), SLOT(procPosAChanged(int)));
-
-      connect(processAll, SIGNAL(toggled(bool)), SLOT(processAllChanged(bool)));
-      connect(selectedTracks, SIGNAL(toggled(bool)), SLOT(selectedTracksChanged(bool)));
-      connect(insideLoop, SIGNAL(toggled(bool)), SLOT(insideLoopChanged(bool)));
-
-      //---------------------------------------------------
-      //  populate preset list
-      //---------------------------------------------------
-
-      updatePresetList();
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      }
-
-//---------------------------------------------------------
-//   ~MidiTransformDialog
-//---------------------------------------------------------
-
-MidiTransformerDialog::~MidiTransformerDialog()
-      {
-      delete data;
-      }
-
-//---------------------------------------------------------
-//   songChanged
-//---------------------------------------------------------
-
-void MidiTransformerDialog::songChanged(int flags)
-{
-  // Whenever a song is loaded, flags is -1. Since transforms are part of configuration, 
-  //  use SC_CONFIG here, to filter unwanted song change events.
-  if(flags & SC_CONFIG)
-    updatePresetList();
-}
-
-//---------------------------------------------------------
-//   updatePresetList
-//---------------------------------------------------------
-
-void MidiTransformerDialog::updatePresetList()
-{
-      data->cmt = 0;
-      data->cindex = 0;
-      presetList->clear();
-      for (iMidiTransformation i = mtlist.begin(); i != mtlist.end(); ++i) {
-            presetList->addItem((*i)->name);
-            if (data->cmt == 0)
-                  data->cmt = *i;
-            }
-      if (data->cmt == 0) {
-            data->cmt = new MidiTransformation(tr("New"));
-            mtlist.push_back(data->cmt);
-            presetList->addItem(tr("New"));
-            presetList->setCurrentItem(0);
-            }
-      
-      //data->cindex = 0;
-      //presetList->setCurrentItem(0);
-      
-}
+static MusECore::MidiTransformationList mtlist;
 
 //---------------------------------------------------------
 //   writeMidiTransforms
@@ -466,6 +344,134 @@ void clearMidiTransforms()
   mtlist.clear();
 }
 
+} // namespace MusECore
+
+namespace MusEGui {
+
+//---------------------------------------------------------
+//   MidiTransformDialog
+//    Widgets:
+//    presetList nameEntry commentEntry
+//    selEventOp   selType
+//    selVal1Op    selVal1a selVal1b
+//    selVal2Op    selVal2a selVal2b
+//    selLenOp     selLenA  selLenB
+//    selRangeOp   selBarA  selBarB
+//
+//    procEventOp  procType
+//    procVal1Op   procVal1a procVal1b
+//    procVal2Op   procVal2a procVal2b
+//    procLenOp    procLenA
+//    procPosOp    procPosA
+//    funcOp       funcQuantVal
+//    processAll   selectedTracks   insideLoop
+//    buttonNew buttonDelete buttonApply buttonOk
+//---------------------------------------------------------
+
+MidiTransformerDialog::MidiTransformerDialog(QDialog* parent, Qt::WFlags fl)
+   : QDialog(parent, fl)
+      {
+      setupUi(this);
+      data         = new MusECore::MidiTransformPrivate;
+      data->cmt    = 0;
+      data->cindex = -1;
+      connect(buttonApply,  SIGNAL(clicked()),      SLOT(apply()));
+      connect(buttonNew,    SIGNAL(clicked()),      SLOT(presetNew()));
+      connect(buttonDelete, SIGNAL(clicked()),      SLOT(presetDelete()));
+      connect(selEventOp,   SIGNAL(activated(int)), SLOT(selEventOpSel(int)));
+      connect(selType,      SIGNAL(activated(int)), SLOT(selTypeSel(int)));
+      connect(selVal1Op,    SIGNAL(activated(int)), SLOT(selVal1OpSel(int)));
+      connect(selVal2Op,    SIGNAL(activated(int)), SLOT(selVal2OpSel(int)));
+      connect(selLenOp,     SIGNAL(activated(int)), SLOT(selLenOpSel(int)));
+      connect(selRangeOp,   SIGNAL(activated(int)), SLOT(selRangeOpSel(int)));
+      connect(procEventOp,  SIGNAL(activated(int)), SLOT(procEventOpSel(int)));
+      connect(procType,     SIGNAL(activated(int)), SLOT(procEventTypeSel(int)));
+      connect(procVal1Op,   SIGNAL(activated(int)), SLOT(procVal1OpSel(int)));
+      connect(procVal2Op,   SIGNAL(activated(int)), SLOT(procVal2OpSel(int)));
+      connect(procLenOp,    SIGNAL(activated(int)), SLOT(procLenOpSel(int)));
+      connect(procPosOp,    SIGNAL(activated(int)), SLOT(procPosOpSel(int)));
+      connect(funcOp,       SIGNAL(activated(int)), SLOT(funcOpSel(int)));
+      connect(funcQuantVal, SIGNAL(valueChanged(int)), SLOT(funcQuantValSel(int)));
+      connect(presetList,   SIGNAL(itemClicked(QListWidgetItem*)),
+         SLOT(presetChanged(QListWidgetItem*)));
+      connect(nameEntry,    SIGNAL(textChanged(const QString&)),
+         SLOT(nameChanged(const QString&)));
+      connect(commentEntry,    SIGNAL(textChanged()), SLOT(commentChanged()));
+
+      connect(selVal1a,  SIGNAL(valueChanged(int)), SLOT(selVal1aChanged(int)));
+      connect(selVal1b,  SIGNAL(valueChanged(int)), SLOT(selVal1bChanged(int)));
+      connect(selVal2a,  SIGNAL(valueChanged(int)), SLOT(selVal2aChanged(int)));
+      connect(selVal2b,  SIGNAL(valueChanged(int)), SLOT(selVal2bChanged(int)));
+      connect(selLenA,   SIGNAL(valueChanged(int)), SLOT(selLenAChanged(int)));
+      connect(selLenB,   SIGNAL(valueChanged(int)), SLOT(selLenBChanged(int)));
+      connect(selBarA,   SIGNAL(valueChanged(int)), SLOT(selBarAChanged(int)));
+      connect(selBarB,   SIGNAL(valueChanged(int)), SLOT(selBarBChanged(int)));
+      connect(procVal1a, SIGNAL(valueChanged(int)), SLOT(procVal1aChanged(int)));
+      connect(procVal1b, SIGNAL(valueChanged(int)), SLOT(procVal1bChanged(int)));
+      connect(procVal2a, SIGNAL(valueChanged(int)), SLOT(procVal2aChanged(int)));
+      connect(procVal2b, SIGNAL(valueChanged(int)), SLOT(procVal2bChanged(int)));
+      connect(procLenA,  SIGNAL(valueChanged(int)), SLOT(procLenAChanged(int)));
+      connect(procPosA,  SIGNAL(valueChanged(int)), SLOT(procPosAChanged(int)));
+
+      connect(processAll, SIGNAL(toggled(bool)), SLOT(processAllChanged(bool)));
+      connect(selectedTracks, SIGNAL(toggled(bool)), SLOT(selectedTracksChanged(bool)));
+      connect(insideLoop, SIGNAL(toggled(bool)), SLOT(insideLoopChanged(bool)));
+
+      //---------------------------------------------------
+      //  populate preset list
+      //---------------------------------------------------
+
+      updatePresetList();
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      }
+
+//---------------------------------------------------------
+//   ~MidiTransformDialog
+//---------------------------------------------------------
+
+MidiTransformerDialog::~MidiTransformerDialog()
+      {
+      delete data;
+      }
+
+//---------------------------------------------------------
+//   songChanged
+//---------------------------------------------------------
+
+void MidiTransformerDialog::songChanged(int flags)
+{
+  // Whenever a song is loaded, flags is -1. Since transforms are part of configuration, 
+  //  use SC_CONFIG here, to filter unwanted song change events.
+  if(flags & SC_CONFIG)
+    updatePresetList();
+}
+
+//---------------------------------------------------------
+//   updatePresetList
+//---------------------------------------------------------
+
+void MidiTransformerDialog::updatePresetList()
+{
+      data->cmt = 0;
+      data->cindex = 0;
+      presetList->clear();
+      for (MusECore::iMidiTransformation i = MusECore::mtlist.begin(); i != MusECore::mtlist.end(); ++i) {
+            presetList->addItem((*i)->name);
+            if (data->cmt == 0)
+                  data->cmt = *i;
+            }
+      if (data->cmt == 0) {
+            data->cmt = new MusECore::MidiTransformation(tr("New"));
+            MusECore::mtlist.push_back(data->cmt);
+            presetList->addItem(tr("New"));
+            presetList->setCurrentItem(0);
+            }
+      
+      //data->cindex = 0;
+      //presetList->setCurrentItem(0);
+      
+}
+
 //---------------------------------------------------------
 //   accept
 //---------------------------------------------------------
@@ -481,13 +487,13 @@ void MidiTransformerDialog::accept()
 //    subfunction of processEvent()
 //---------------------------------------------------------
 
-void MidiTransformerDialog::transformEvent(Event& event, MidiPart* part,
-   MidiPart* newPart)
+void MidiTransformerDialog::transformEvent(MusECore::Event& event, MusECore::MidiPart* part,
+  MusECore::MidiPart* newPart)
       {
-      MidiTransformation* cmt = data->cmt;
-      Event newEvent = event.clone();
+      MusECore::MidiTransformation* cmt = data->cmt;
+      MusECore::Event newEvent = event.clone();
 
-      if (cmt->procEvent != Keep)
+      if (cmt->procEvent != MusECore::Keep)
             newEvent.setType(cmt->eventType);
 
       //---------------------------------------------------
@@ -496,41 +502,41 @@ void MidiTransformerDialog::transformEvent(Event& event, MidiPart* part,
 
       int val = newEvent.dataA();
       switch (cmt->procVal1) {
-            case Keep:
+            case MusECore::Keep:
                   break;
-            case Plus:
+            case MusECore::Plus:
                   val += cmt->procVal1a;
                   break;
-            case Minus:
+            case MusECore::Minus:
                   val -= cmt->procVal1a;
                   break;
-            case Multiply:
+            case MusECore::Multiply:
                   val = int(val * (cmt->procVal1a/100.0) + .5);
                   break;
-            case Divide:
+            case MusECore::Divide:
                   val = int(val / (cmt->procVal1a/100.0) + .5);
                   break;
-            case Fix:
+            case MusECore::Fix:
                   val = cmt->procVal1a;
                   break;
-            case Value:
+            case MusECore::Value:
                   val = cmt->procVal2a;
                   break;
-            case Invert:
+            case MusECore::Invert:
                   val = 128 - val;
                   break;
-            case ScaleMap:
+            case MusECore::ScaleMap:
                   printf("scale map not implemented\n");
                   break;
-            case Flip:
+            case MusECore::Flip:
                   val = cmt->procVal1a - val;
                   break;
-            case Dynamic:           // "crescendo"
+            case MusECore::Dynamic:           // "crescendo"
                   val = (((cmt->procVal2b-cmt->procVal2a)
-                        * (newEvent.tick() - song->lpos()))
-                        / (song->rpos() - song->lpos())) + cmt->procVal2a;
+                        * (newEvent.tick() - MusEGlobal::song->lpos()))
+                        / (MusEGlobal::song->rpos() - MusEGlobal::song->lpos())) + cmt->procVal2a;
                   break;
-            case Random:
+            case MusECore::Random:
                   {
                   int range = cmt->procVal1b - cmt->procVal1a;
                   if (range > 0)
@@ -554,33 +560,33 @@ void MidiTransformerDialog::transformEvent(Event& event, MidiPart* part,
 
       val = newEvent.dataB();
       switch (cmt->procVal2) {
-            case Plus:
+            case MusECore::Plus:
                   val += cmt->procVal2a;
                   break;
-            case Minus:
+            case MusECore::Minus:
                   val -= cmt->procVal2a;
                   break;
-            case Multiply:
+            case MusECore::Multiply:
                   val = int(val * (cmt->procVal2a/100.0) + .5);
                   break;
-            case Divide:
+            case MusECore::Divide:
                   val = int(val / (cmt->procVal2a/100.0) + .5);
                   break;
-            case Fix:
+            case MusECore::Fix:
                   val = cmt->procVal2a;
                   break;
-            case Value:
+            case MusECore::Value:
                   val = cmt->procVal1a;
                   break;
-            case Invert:
+            case MusECore::Invert:
                   val = 128 - val;
                   break;
-            case Dynamic:
+            case MusECore::Dynamic:
                   val = (((cmt->procVal2b-cmt->procVal2a)
-                        * (newEvent.tick() - song->lpos()))
-                        / (song->rpos() - song->lpos())) + cmt->procVal2a;
+                        * (newEvent.tick() - MusEGlobal::song->lpos()))
+                        / (MusEGlobal::song->rpos() - MusEGlobal::song->lpos())) + cmt->procVal2a;
                   break;
-            case Random:
+            case MusECore::Random:
                   {
                   int range = cmt->procVal2b - cmt->procVal2a;
                   if (range > 0)
@@ -591,9 +597,9 @@ void MidiTransformerDialog::transformEvent(Event& event, MidiPart* part,
                         val = cmt->procVal1a;
                   }
                   break;
-            case ScaleMap:
-            case Keep:
-            case Flip:
+            case MusECore::ScaleMap:
+            case MusECore::Keep:
+            case MusECore::Flip:
                   break;
             }
       if (val < 0)
@@ -608,28 +614,28 @@ void MidiTransformerDialog::transformEvent(Event& event, MidiPart* part,
 
       int len = newEvent.lenTick();
       switch (cmt->procLen) {
-            case Plus:
+            case MusECore::Plus:
                   len += cmt->procLenA;
                   break;
-            case Minus:
+            case MusECore::Minus:
                   len -= cmt->procLenA;
                   break;
-            case Multiply:
+            case MusECore::Multiply:
                   len = int(val * (cmt->procLenA/100.0) + .5);
                   break;
-            case Divide:
+            case MusECore::Divide:
                   len = int(val / (cmt->procLenA/100.0) + .5);
                   break;
-            case Fix:
+            case MusECore::Fix:
                   len = cmt->procLenA;
                   break;
-            case Invert:
-            case ScaleMap:
-            case Dynamic:
-            case Random:
-            case Keep:
-            case Flip:
-            case Value:
+            case MusECore::Invert:
+            case MusECore::ScaleMap:
+            case MusECore::Dynamic:
+            case MusECore::Random:
+            case MusECore::Keep:
+            case MusECore::Flip:
+            case MusECore::Value:
                   break;
             }
       if (len < 0)
@@ -642,63 +648,63 @@ void MidiTransformerDialog::transformEvent(Event& event, MidiPart* part,
 
       int pos = newEvent.tick();
       switch (cmt->procPos) {
-            case Plus:
+            case MusECore::Plus:
                   pos += cmt->procPosA;
                   break;
-            case Minus:
+            case MusECore::Minus:
                   pos -= cmt->procPosA;
                   break;
-            case Multiply:
+            case MusECore::Multiply:
                   pos = int(val * (cmt->procPosA/100.0) + .5);
                   break;
-            case Divide:
+            case MusECore::Divide:
                   pos = int(val / (cmt->procPosA/100.0) + .5);
                   break;
-            case Fix:
-            case Invert:
-            case ScaleMap:
-            case Dynamic:
-            case Random:
-            case Keep:
-            case Flip:
-            case Value:
+            case MusECore::Fix:
+            case MusECore::Invert:
+            case MusECore::ScaleMap:
+            case MusECore::Dynamic:
+            case MusECore::Random:
+            case MusECore::Keep:
+            case MusECore::Flip:
+            case MusECore::Value:
                   break;
             }
       if (pos < 0)
             pos = 0;
       newEvent.setTick(pos);
 
-      Event dummy;
+      MusECore::Event dummy;
       switch(data->cmt->funcOp) {
-            case Transform:
+            case MusECore::Transform:
                   // Indicate do clone parts. 
                   removePortCtrlEvents(event, part, true);
-                  song->changeEvent(event, newEvent, part);
+                  MusEGlobal::song->changeEvent(event, newEvent, part);
                   // Indicate do clone parts. 
                   addPortCtrlEvents(newEvent, part, true);
                   // Indicate do port controller values and clone parts. 
-                  //song->addUndo(UndoOp(UndoOp::ModifyEvent, newEvent, event, part));
-                  song->addUndo(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, true, true));
-                  song->addUpdateFlags(SC_EVENT_MODIFIED);
+                  //MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part));
+                  MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, true, true));
+                  MusEGlobal::song->addUpdateFlags(SC_EVENT_MODIFIED);
                   break;
-            case Insert:
+            case MusECore::Insert:
                   // Indicate do port controller values and clone parts. 
-                  //song->addUndo(UndoOp(UndoOp::AddEvent, dummy, newEvent, part));
-                  song->addUndo(UndoOp(UndoOp::AddEvent, dummy, newEvent, part, true, true));
-                  song->addEvent(newEvent, part);
+                  //MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::AddEvent, dummy, newEvent, part));
+                  MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::AddEvent, dummy, newEvent, part, true, true));
+                  MusEGlobal::song->addEvent(newEvent, part);
                   // Indicate do clone parts. 
                   addPortCtrlEvents(newEvent, part, true);
-                  song->addUpdateFlags(SC_EVENT_INSERTED);
+                  MusEGlobal::song->addUpdateFlags(SC_EVENT_INSERTED);
                   break;
-            case Extract:
+            case MusECore::Extract:
                   // Indicate do port controller values and clone parts. 
-                  //song->addUndo(UndoOp(UndoOp::DeleteEvent, dummy, event, part));
-                  song->addUndo(UndoOp(UndoOp::DeleteEvent, dummy, event, part, true, true));
+                  //MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, dummy, event, part));
+                  MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, dummy, event, part, true, true));
                   // Indicate do clone parts. 
                   removePortCtrlEvents(event, part, true);
-                  song->deleteEvent(event, part);
-                  song->addUpdateFlags(SC_EVENT_REMOVED);
-            case Copy:
+                  MusEGlobal::song->deleteEvent(event, part);
+                  MusEGlobal::song->addUpdateFlags(SC_EVENT_REMOVED);
+            case MusECore::Copy:
                   newPart->addEvent(newEvent);
                   break;
             default:
@@ -710,46 +716,46 @@ void MidiTransformerDialog::transformEvent(Event& event, MidiPart* part,
 //   processEvent
 //---------------------------------------------------------
 
-void MidiTransformerDialog::processEvent(Event& event, MidiPart* part, MidiPart* newPart)
+void MidiTransformerDialog::processEvent(MusECore::Event& event, MusECore::MidiPart* part, MusECore::MidiPart* newPart)
       {
       switch(data->cmt->funcOp) {
-            case Select:
+            case MusECore::Select:
                   break;
-            case Quantize:
+            case MusECore::Quantize:
                   {
                   int tick = event.tick();
                   int rt = AL::sigmap.raster(tick, data->cmt->quantVal) - tick;
                   if (tick != rt) {
                         // Indicate do clone parts. 
                         removePortCtrlEvents(event, part, true);
-                        Event newEvent = event.clone();
+                        MusECore::Event newEvent = event.clone();
                         newEvent.setTick(rt);
-                        song->changeEvent(event, newEvent, part);
+                        MusEGlobal::song->changeEvent(event, newEvent, part);
                         // Indicate do clone parts. 
                         addPortCtrlEvents(newEvent, part, true);
                         // Indicate do port controller values and clone parts. 
-                        //song->addUndo(UndoOp(UndoOp::ModifyEvent, newEvent, event, part));
-                        song->addUndo(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, true, true));
-                        song->addUpdateFlags(SC_EVENT_MODIFIED);
+                        //MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part));
+                        MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, true, true));
+                        MusEGlobal::song->addUpdateFlags(SC_EVENT_MODIFIED);
                         }
                   }
                   break;
-            case Delete:
+            case MusECore::Delete:
                   {
-                  Event ev;
+                  MusECore::Event ev;
                   // Indicate do port controller values and clone parts. 
-                  //song->addUndo(UndoOp(UndoOp::DeleteEvent, ev, event, part, true, true));
-                  song->addUndo(UndoOp(UndoOp::DeleteEvent, ev, event, part, true, true));
+                  //MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, ev, event, part, true, true));
+                  MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, ev, event, part, true, true));
                   // Indicate do clone parts. 
                   removePortCtrlEvents(event, part, true);
-                  song->deleteEvent(event, part);
-                  song->addUpdateFlags(SC_EVENT_REMOVED);
+                  MusEGlobal::song->deleteEvent(event, part);
+                  MusEGlobal::song->addUpdateFlags(SC_EVENT_REMOVED);
                   }
                   break;
-            case Transform:
-            case Insert:
-            case Copy:
-            case Extract:
+            case MusECore::Transform:
+            case MusECore::Insert:
+            case MusECore::Copy:
+            case MusECore::Extract:
                   transformEvent(event, part, newPart);
                   break;
             }
@@ -761,17 +767,17 @@ void MidiTransformerDialog::processEvent(Event& event, MidiPart* part, MidiPart*
 //    return true if event is selected
 //---------------------------------------------------------
 
-bool MidiTransformerDialog::isSelected(Event& event, MidiPart*)
+bool MidiTransformerDialog::isSelected(MusECore::Event& event, MusECore::MidiPart*)
       {
-      MidiTransformation* cmt = data->cmt;
+      MusECore::MidiTransformation* cmt = data->cmt;
 
       switch (cmt->selEventOp) {
-            case Equal:
+            case MusECore::Equal:
                   if (!typesMatch(event, cmt->selType)) {
                         return false;
                         }
                   break;
-            case Unequal:
+            case MusECore::Unequal:
                   if (typesMatch(event, cmt->selType))
                         return false;
                   break;
@@ -779,60 +785,60 @@ bool MidiTransformerDialog::isSelected(Event& event, MidiPart*)
                   break;
             }
       switch (cmt->selVal1) {
-            case Ignore:
+            case MusECore::Ignore:
                   break;
-            case Equal:
+            case MusECore::Equal:
                   if (event.dataA() != cmt->selVal1a)
                         return false;
                   break;
-            case Unequal:
+            case MusECore::Unequal:
                   if (event.dataA() == cmt->selVal1a)
                         return false;
                   break;
-            case Higher:
+            case MusECore::Higher:
                   if (event.dataA() <= cmt->selVal1a)
                         return false;
                   break;
-            case Lower:
+            case MusECore::Lower:
                   if (event.dataA() >= cmt->selVal1a)
                         return false;
                   break;
-            case Inside:
+            case MusECore::Inside:
                   if ((event.dataA() < cmt->selVal1a)
                      || (event.dataA() >= cmt->selVal1b))
                         return false;
                   break;
-            case Outside:
+            case MusECore::Outside:
                   if ((event.dataA() >= cmt->selVal1a)
                      && (event.dataA() < cmt->selVal1b))
                         return false;
                   break;
             }
       switch (cmt->selVal2) {
-            case Ignore:
+            case MusECore::Ignore:
                   break;
-            case Equal:
+            case MusECore::Equal:
                   if (event.dataB() != cmt->selVal2a)
                         return false;
                   break;
-            case Unequal:
+            case MusECore::Unequal:
                   if (event.dataB() == cmt->selVal2a)
                         return false;
                   break;
-            case Higher:
+            case MusECore::Higher:
                   if (event.dataB() <= cmt->selVal2a)
                         return false;
                   break;
-            case Lower:
+            case MusECore::Lower:
                   if (event.dataB() >= cmt->selVal2a)
                         return false;
                   break;
-            case Inside:
+            case MusECore::Inside:
                   if ((event.dataB() < cmt->selVal2a)
                      || (event.dataB() >= cmt->selVal2b))
                         return false;
                   break;
-            case Outside:
+            case MusECore::Outside:
                   if ((event.dataB() >= cmt->selVal2a)
                      && (event.dataB() < cmt->selVal2b))
                         return false;
@@ -840,29 +846,29 @@ bool MidiTransformerDialog::isSelected(Event& event, MidiPart*)
             }
       int len = event.lenTick();
       switch (cmt->selLen) {
-            case Ignore:
+            case MusECore::Ignore:
                   break;
-            case Equal:
+            case MusECore::Equal:
                   if (len != cmt->selLenA)
                         return false;
                   break;
-            case Unequal:
+            case MusECore::Unequal:
                   if (len == cmt->selLenA)
                         return false;
                   break;
-            case Higher:
+            case MusECore::Higher:
                   if (len <= cmt->selLenA)
                         return false;
                   break;
-            case Lower:
+            case MusECore::Lower:
                   if (len >= cmt->selLenA)
                         return false;
                   break;
-            case Inside:
+            case MusECore::Inside:
                   if ((len < cmt->selLenA) || (len >= cmt->selLenB))
                         return false;
                   break;
-            case Outside:
+            case MusECore::Outside:
                   if ((len >= cmt->selLenA) && (len < cmt->selLenB))
                         return false;
                   break;
@@ -875,29 +881,29 @@ bool MidiTransformerDialog::isSelected(Event& event, MidiPart*)
       int beat2 = cmt->selRangeB / 1000;
       unsigned tick2 = cmt->selRangeB % 1000;
       switch (cmt->selRange) {
-            case Ignore:
+            case MusECore::Ignore:
                   break;
-            case Equal:
+            case MusECore::Equal:
                   if (beat != beat1 || tick != tick1)
                         return false;
                   break;
-            case Unequal:
+            case MusECore::Unequal:
                   if (beat == beat1 && tick == tick1)
                         return false;
                   break;
-            case Higher:
+            case MusECore::Higher:
                   if (beat <= beat1)
                         return false;
                   if (beat == beat1 && tick <= tick1)
                         return false;
                   break;
-            case Lower:
+            case MusECore::Lower:
                   if (beat >= beat1)
                         return false;
                   if (beat == beat1 && tick >= tick1)
                         return false;
                   break;
-            case Inside:
+            case MusECore::Inside:
                   if ((beat < beat1) || (beat >= beat2))
                         return false;
                   if (beat == beat1 && tick < tick1)
@@ -905,7 +911,7 @@ bool MidiTransformerDialog::isSelected(Event& event, MidiPart*)
                   if (beat == beat2 && tick >= tick2)
                         return false;
                   break;
-            case Outside:
+            case MusECore::Outside:
                   if ((beat >= beat1) || (beat < beat2))
                         return false;
                   if (beat == beat1 && tick >= tick1)
@@ -924,27 +930,27 @@ bool MidiTransformerDialog::isSelected(Event& event, MidiPart*)
 void MidiTransformerDialog::apply()
       {
       int flags = 0;
-      song->startUndo();
-      audio->msgIdle(true);
-      bool copyExtract = (data->cmt->funcOp == Copy)
-                         || (data->cmt->funcOp == Extract);
+      MusEGlobal::song->startUndo();
+      MusEGlobal::audio->msgIdle(true);
+      bool copyExtract = (data->cmt->funcOp == MusECore::Copy)
+                         || (data->cmt->funcOp == MusECore::Extract);
 
-      std::vector< EventList* > doneList;
-      typedef std::vector< EventList* >::iterator iDoneList;
+      std::vector< MusECore::EventList* > doneList;
+      typedef std::vector< MusECore::EventList* >::iterator iDoneList;
       iDoneList idl;
       
-      MidiTrackList* tracks = song->midis();
-      MidiTrackList tl;
-      for (iMidiTrack t = tracks->begin(); t != tracks->end(); ++t) {
+      MusECore::MidiTrackList* tracks = MusEGlobal::song->midis();
+      MusECore::MidiTrackList tl;
+      for (MusECore::iMidiTrack t = tracks->begin(); t != tracks->end(); ++t) {
             if (data->cmt->selectedTracks && !(*t)->selected())
                   continue;
-            MidiTrack* newTrack = 0;
-            PartList *pl = (*t)->parts();
+            MusECore::MidiTrack* newTrack = 0;
+            MusECore::PartList *pl = (*t)->parts();
             if (copyExtract) {
                   // check wether we must generate a new track
-                  for (iPart p = pl->begin(); p != pl->end(); ++p) {
-                        MidiPart* part = (MidiPart *) p->second;
-                        EventList* el = part->events();
+                  for (MusECore::iPart p = pl->begin(); p != pl->end(); ++p) {
+                        MusECore::MidiPart* part = (MusECore::MidiPart *) p->second;
+                        MusECore::EventList* el = part->events();
                         // Check if the event list has already been done. Skip repeated clones.
                         for(idl = doneList.begin(); idl != doneList.end(); ++idl)
                           if(*idl == el)
@@ -953,13 +959,13 @@ void MidiTransformerDialog::apply()
                           break;
                         doneList.push_back(el);
                         
-                        for (iEvent i = el->begin(); i != el->end(); ++i) {
-                              Event event = i->second;
+                        for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
+                              MusECore::Event event = i->second;
                               unsigned tick = event.tick();
-                              if (data->cmt->insideLoop && (tick < song->lpos() || tick >= song->rpos()))
+                              if (data->cmt->insideLoop && (tick < MusEGlobal::song->lpos() || tick >= MusEGlobal::song->rpos()))
                                     continue;
                               if (isSelected(event, part)) {
-                                    newTrack = new MidiTrack();
+                                    newTrack = new MusECore::MidiTrack();
                                     tl.push_back(newTrack);
                                     break;
                                     }
@@ -969,10 +975,10 @@ void MidiTransformerDialog::apply()
                         }
                   }
 
-            for (iPart p = pl->begin(); p != pl->end(); ++p) {
-                  MidiPart* part = (MidiPart *) p->second;
-                  MidiPart* newPart = 0;
-                  EventList* el = part->events();
+            for (MusECore::iPart p = pl->begin(); p != pl->end(); ++p) {
+                  MusECore::MidiPart* part = (MusECore::MidiPart *) p->second;
+                  MusECore::MidiPart* newPart = 0;
+                  MusECore::EventList* el = part->events();
                   // Check if the event list has already been done. Skip repeated clones.
                   for(idl = doneList.begin(); idl != doneList.end(); ++idl)
                     if(*idl == el)
@@ -983,93 +989,93 @@ void MidiTransformerDialog::apply()
                   
                   if (copyExtract) {
                         // check wether we must generate a new part
-                        for (iEvent i = el->begin(); i != el->end(); ++i) {
-                              Event event = i->second;
+                        for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
+                              MusECore::Event event = i->second;
                               unsigned tick = event.tick();
-                              if (data->cmt->insideLoop && (tick < song->lpos() || tick >= song->rpos()))
+                              if (data->cmt->insideLoop && (tick < MusEGlobal::song->lpos() || tick >= MusEGlobal::song->rpos()))
                                     continue;
                               if (isSelected(event, part)) {
-                                    newPart = new MidiPart(newTrack);
+                                    newPart = new MusECore::MidiPart(newTrack);
                                     newPart->setName(part->name());
                                     newPart->setColorIndex(part->colorIndex());
                                     newPart->setTick(part->tick());
                                     newPart->setLenTick(part->lenTick());
-                                    song->addPart(newPart);
+                                    MusEGlobal::song->addPart(newPart);
                                     flags |= SC_PART_INSERTED;
                                     break;
                                     }
                               }
                         }
-                  EventList pel;
-                  for (iEvent i = el->begin(); i != el->end(); ++i) {
-                        Event event = i->second;
+                  MusECore::EventList pel;
+                  for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
+                        MusECore::Event event = i->second;
                         unsigned tick = event.tick();
-                        if (data->cmt->insideLoop && (tick < song->lpos() || tick >= song->rpos()))
+                        if (data->cmt->insideLoop && (tick < MusEGlobal::song->lpos() || tick >= MusEGlobal::song->rpos()))
                               continue;
                         int flag = isSelected(event, part);
-                        if (data->cmt->funcOp == Select)
+                        if (data->cmt->funcOp == MusECore::Select)
                               event.setSelected(flag);
                         else if (flag)
                               pel.add(event);
                         }
-                  for (iEvent i = pel.begin(); i != pel.end(); ++i) {
-                        Event event = i->second;
+                  for (MusECore::iEvent i = pel.begin(); i != pel.end(); ++i) {
+                        MusECore::Event event = i->second;
                         processEvent(event, part, newPart);
                         }
                   }
             }
       if (!tl.empty()) {
             flags |= SC_TRACK_INSERTED;
-            for (iTrack t = tl.begin(); t != tl.end(); ++t) {
-                  song->insertTrack0(*t, -1);
+            for (MusECore::iTrack t = tl.begin(); t != tl.end(); ++t) {
+                  MusEGlobal::song->insertTrack0(*t, -1);
                   }
             }
 
       switch(data->cmt->funcOp) {
-            case Select:
+            case MusECore::Select:
                   flags |= SC_SELECTION;
                   break;
-            case Quantize:
+            case MusECore::Quantize:
                   flags |= SC_EVENT_MODIFIED;
                   break;
-            case Delete:
+            case MusECore::Delete:
                   flags |= SC_EVENT_REMOVED;
                   break;
-            case Transform:
+            case MusECore::Transform:
                   flags |= SC_EVENT_MODIFIED;
                   break;
-            case Insert:
+            case MusECore::Insert:
                   flags |= SC_EVENT_INSERTED;
                   break;
-            case Copy:
+            case MusECore::Copy:
                   flags |= SC_EVENT_INSERTED;
-            case Extract:
+            case MusECore::Extract:
                   break;
             }
-      audio->msgIdle(false);
-      song->endUndo(flags);
+      MusEGlobal::audio->msgIdle(false);
+      MusEGlobal::song->endUndo(flags);
       }
 
 //---------------------------------------------------------
 //   setValOp
 //---------------------------------------------------------
 
-void MidiTransformerDialog::setValOp(QWidget* a, QWidget* b, ValOp op)
+void MidiTransformerDialog::setValOp(QWidget* a, QWidget* b, MusECore::ValOp op)
       {
       switch (op) {
-            case Ignore:
+            case MusECore::Ignore:
                   a->setEnabled(false);
                   b->setEnabled(false);
                   break;
-            case Equal:
-            case Unequal:
-            case Higher:
-            case Lower:
+            case MusECore::Equal:
+            case MusECore::Unequal:
+            case MusECore::Higher:
+            case MusECore::Lower:
                   a->setEnabled(true);
                   b->setEnabled(false);
                   break;
-            case Inside:
-            case Outside:
+            case MusECore::Inside:
+            case MusECore::Outside:
                   a->setEnabled(true);
                   b->setEnabled(true);
                   break;
@@ -1082,8 +1088,8 @@ void MidiTransformerDialog::setValOp(QWidget* a, QWidget* b, ValOp op)
 
 void MidiTransformerDialog::selEventOpSel(int val)
       {
-      selType->setEnabled(val != All);
-      data->cmt->selEventOp = ValOp(val);
+      selType->setEnabled(val != MusECore::All);
+      data->cmt->selEventOp = MusECore::ValOp(val);
       selVal1aChanged(data->cmt->selVal1a);
       selVal1bChanged(data->cmt->selVal1b);
       }
@@ -1094,7 +1100,7 @@ void MidiTransformerDialog::selEventOpSel(int val)
 
 void MidiTransformerDialog::selTypeSel(int val)
       {
-      data->cmt->selType = EventType(eventTypeTable[val]);
+      data->cmt->selType = MusECore::EventType(MusECore::eventTypeTable[val]);
       selVal1aChanged(data->cmt->selVal1a);
       selVal1bChanged(data->cmt->selVal1b);
       }
@@ -1105,8 +1111,8 @@ void MidiTransformerDialog::selTypeSel(int val)
 
 void MidiTransformerDialog::selVal1OpSel(int val)
       {
-      setValOp(selVal1a, selVal1b, ValOp(val));
-      data->cmt->selVal1 = ValOp(val);
+      setValOp(selVal1a, selVal1b, MusECore::ValOp(val));
+      data->cmt->selVal1 = MusECore::ValOp(val);
       }
 
 //---------------------------------------------------------
@@ -1115,8 +1121,8 @@ void MidiTransformerDialog::selVal1OpSel(int val)
 
 void MidiTransformerDialog::selVal2OpSel(int val)
       {
-      setValOp(selVal2a, selVal2b, ValOp(val));
-      data->cmt->selVal2 = ValOp(val);
+      setValOp(selVal2a, selVal2b, MusECore::ValOp(val));
+      data->cmt->selVal2 = MusECore::ValOp(val);
       }
 
 //---------------------------------------------------------
@@ -1125,8 +1131,8 @@ void MidiTransformerDialog::selVal2OpSel(int val)
 
 void MidiTransformerDialog::selLenOpSel(int val)
       {
-      setValOp(selLenA, selLenB, ValOp(val));
-      data->cmt->selLen = ValOp(val);
+      setValOp(selLenA, selLenB, MusECore::ValOp(val));
+      data->cmt->selLen = MusECore::ValOp(val);
       }
 
 //---------------------------------------------------------
@@ -1135,8 +1141,8 @@ void MidiTransformerDialog::selLenOpSel(int val)
 
 void MidiTransformerDialog::selRangeOpSel(int val)
       {
-      setValOp(selBarA, selBarB, ValOp(val));
-      data->cmt->selRange = ValOp(val);
+      setValOp(selBarA, selBarB, MusECore::ValOp(val));
+      data->cmt->selRange = MusECore::ValOp(val);
       }
 
 //---------------------------------------------------------
@@ -1145,8 +1151,8 @@ void MidiTransformerDialog::selRangeOpSel(int val)
 
 void MidiTransformerDialog::procEventOpSel(int val)
       {
-      TransformOperator op = val == 0 ? Keep : Fix;
-      procType->setEnabled(op == Fix);
+      MusECore::TransformOperator op = val == 0 ? MusECore::Keep : MusECore::Fix;
+      procType->setEnabled(op == MusECore::Fix);
       data->cmt->procEvent = op;
       
       procVal1aChanged(data->cmt->procVal1a);
@@ -1159,7 +1165,7 @@ void MidiTransformerDialog::procEventOpSel(int val)
 
 void MidiTransformerDialog::procEventTypeSel(int val)
       {
-      data->cmt->eventType = EventType(eventTypeTable[val]);
+      data->cmt->eventType = MusECore::EventType(MusECore::eventTypeTable[val]);
       procVal1aChanged(data->cmt->procVal1a);
       procVal1bChanged(data->cmt->procVal1b);
       }
@@ -1170,31 +1176,31 @@ void MidiTransformerDialog::procEventTypeSel(int val)
 
 void MidiTransformerDialog::procVal1OpSel(int val)
       {
-      data->cmt->procVal1 = TransformOperator(val);
-      switch(TransformOperator(val)) {
-            case Keep:
-            case Invert:
+      data->cmt->procVal1 = MusECore::TransformOperator(val);
+      switch(MusECore::TransformOperator(val)) {
+            case MusECore::Keep:
+            case MusECore::Invert:
                   procVal1a->setEnabled(false);
                   procVal1b->setEnabled(false);
                   break;
-            case Multiply:
-            case Divide:
+            case MusECore::Multiply:
+            case MusECore::Divide:
                   procVal1a->setEnabled(true);
                   procVal1a->setDecimals(2);
                   procVal1b->setEnabled(false);
                   break;
-            case Plus:
-            case Minus:
-            case Fix:
-            case Value:
-            case Flip:
+            case MusECore::Plus:
+            case MusECore::Minus:
+            case MusECore::Fix:
+            case MusECore::Value:
+            case MusECore::Flip:
                   procVal1a->setDecimals(0);
                   procVal1a->setEnabled(true);
                   procVal1b->setEnabled(false);
                   break;
-            case Random:
-            case ScaleMap:
-            case Dynamic:
+            case MusECore::Random:
+            case MusECore::ScaleMap:
+            case MusECore::Dynamic:
                   procVal1a->setDecimals(0);
                   procVal1a->setEnabled(true);
                   procVal1b->setEnabled(true);
@@ -1210,31 +1216,31 @@ void MidiTransformerDialog::procVal1OpSel(int val)
 
 void MidiTransformerDialog::procVal2OpSel(int val)
       {
-      TransformOperator op = TransformOperator(procVal2Map[val]);
+      MusECore::TransformOperator op = MusECore::TransformOperator(MusECore::procVal2Map[val]);
       data->cmt->procVal2 = op;
 
       switch (op) {
-            case Keep:
-            case Invert:
+            case MusECore::Keep:
+            case MusECore::Invert:
                   procVal2a->setEnabled(false);
                   procVal2b->setEnabled(false);
                   break;
-            case Multiply:
-            case Divide:
+            case MusECore::Multiply:
+            case MusECore::Divide:
                   procVal2a->setEnabled(true);
                   procVal2a->setDecimals(2);
                   procVal2b->setEnabled(false);
                   break;
-            case Plus:
-            case Minus:
-            case Fix:
-            case Value:
+            case MusECore::Plus:
+            case MusECore::Minus:
+            case MusECore::Fix:
+            case MusECore::Value:
                   procVal2a->setDecimals(0);
                   procVal2a->setEnabled(true);
                   procVal2b->setEnabled(false);
                   break;
-            case Random:
-            case Dynamic:
+            case MusECore::Random:
+            case MusECore::Dynamic:
                   procVal2a->setDecimals(0);
                   procVal2a->setEnabled(true);
                   procVal2b->setEnabled(true);
@@ -1250,22 +1256,22 @@ void MidiTransformerDialog::procVal2OpSel(int val)
 
 void MidiTransformerDialog::procLenOpSel(int val)
       {
-      TransformOperator op = TransformOperator(val);
+      MusECore::TransformOperator op = MusECore::TransformOperator(val);
       data->cmt->procLen = op;
 
       switch (op) {
-            case Keep:
-            case Invert:
+            case MusECore::Keep:
+            case MusECore::Invert:
                   procLenA->setEnabled(false);
                   break;
-            case Plus:
-            case Minus:
-            case Fix:
+            case MusECore::Plus:
+            case MusECore::Minus:
+            case MusECore::Fix:
                   procLenA->setDecimals(0);
                   procLenA->setEnabled(true);
                   break;
-            case Multiply:
-            case Divide:
+            case MusECore::Multiply:
+            case MusECore::Divide:
                   procLenA->setDecimals(2);
                   procLenA->setEnabled(true);
                   break;
@@ -1280,21 +1286,21 @@ void MidiTransformerDialog::procLenOpSel(int val)
 
 void MidiTransformerDialog::procPosOpSel(int val)
       {
-      TransformOperator op = TransformOperator(val);
+      MusECore::TransformOperator op = MusECore::TransformOperator(val);
       data->cmt->procPos = op;
 
       switch (op) {
-            case Keep:
-            case Invert:
+            case MusECore::Keep:
+            case MusECore::Invert:
                   procPosA->setEnabled(false);
                   break;
-            case Multiply:
-            case Divide:
+            case MusECore::Multiply:
+            case MusECore::Divide:
                   procPosA->setDecimals(2);
                   procPosA->setEnabled(true);
                   break;
-            case Plus:
-            case Minus:
+            case MusECore::Plus:
+            case MusECore::Minus:
                   procPosA->setDecimals(0);
                   procPosA->setEnabled(true);
                   break;
@@ -1309,8 +1315,8 @@ void MidiTransformerDialog::procPosOpSel(int val)
 
 void MidiTransformerDialog::funcOpSel(int val)
       {
-      funcQuantVal->setEnabled(val == Quantize);
-      bool isFuncOp = val == Transform || val == Insert;
+      funcQuantVal->setEnabled(val == MusECore::Quantize);
+      bool isFuncOp = val == MusECore::Transform || val == MusECore::Insert;
 
       procEventOp->setEnabled(isFuncOp);
       procType->setEnabled(isFuncOp);
@@ -1331,7 +1337,7 @@ void MidiTransformerDialog::funcOpSel(int val)
             procLenOpSel(data->cmt->procLen);
             procPosOpSel(data->cmt->procPos);
             }
-      data->cmt->funcOp = TransformFunction(val);
+      data->cmt->funcOp = MusECore::TransformFunction(val);
       }
 
 //---------------------------------------------------------
@@ -1343,18 +1349,18 @@ void MidiTransformerDialog::presetNew()
       QString name;
       for (int i = 0;; ++i) {
             name.sprintf("New-%d", i);
-            iMidiTransformation imt;
-            for (imt = mtlist.begin(); imt != mtlist.end(); ++imt) {
+	    MusECore::iMidiTransformation imt;
+            for (imt = MusECore::mtlist.begin(); imt != MusECore::mtlist.end(); ++imt) {
                   if (name == (*imt)->name)
                         break;
                   }
-            if (imt == mtlist.end())
+            if (imt == MusECore::mtlist.end())
                   break;
             }
-      MidiTransformation* mt = new MidiTransformation(name);
+      MusECore::MidiTransformation* mt = new MusECore::MidiTransformation(name);
       QListWidgetItem* lbi      = new QListWidgetItem(name);
       presetList->addItem(lbi);
-      mtlist.push_back(mt);
+      MusECore::mtlist.push_back(mt);
       presetList->setCurrentItem(lbi);
       presetChanged(lbi);
       }
@@ -1366,9 +1372,9 @@ void MidiTransformerDialog::presetNew()
 void MidiTransformerDialog::presetDelete()
       {
       if (data->cindex != -1) {
-            iMidiTransformation mt = mtlist.begin();
+            MusECore::iMidiTransformation mt = MusECore::mtlist.begin();
             for (int i = 0; i < data->cindex; ++i, ++mt) {
-                  mtlist.erase(mt);
+                  MusECore::mtlist.erase(mt);
                   presetList->setCurrentItem(presetList->item(data->cindex - 1));
                   presetList->takeItem(data->cindex);
                   presetChanged(presetList->item(data->cindex - 1));
@@ -1384,14 +1390,14 @@ void MidiTransformerDialog::presetDelete()
 void MidiTransformerDialog::presetChanged(QListWidgetItem* item)
       {
       data->cindex = presetList->row(item);
-      iMidiTransformation i;
-      for (i = mtlist.begin(); i != mtlist.end(); ++i) {
+      MusECore::iMidiTransformation i;
+      for (i = MusECore::mtlist.begin(); i != MusECore::mtlist.end(); ++i) {
             if (item->text() == (*i)->name) {
                   data->cmt = *i;
                   break;
                   }
             }
-      if (i == mtlist.end()) {
+      if (i == MusECore::mtlist.end()) {
             printf("MidiTransformerDialog::presetChanged: not found\n");
             return;
             }
@@ -1401,8 +1407,8 @@ void MidiTransformerDialog::presetChanged(QListWidgetItem* item)
       selEventOp->setCurrentIndex(data->cmt->selEventOp);
       selEventOpSel(data->cmt->selEventOp);
 
-      for (unsigned i = 0; i < sizeof(eventTypeTable)/sizeof(*eventTypeTable); ++i) {
-            if (eventTypeTable[i] == data->cmt->selType) {
+      for (unsigned i = 0; i < sizeof(MusECore::eventTypeTable)/sizeof(*MusECore::eventTypeTable); ++i) {
+            if (MusECore::eventTypeTable[i] == data->cmt->selType) {
                   selType->setCurrentIndex(i);
                   break;
                   }
@@ -1423,16 +1429,16 @@ void MidiTransformerDialog::presetChanged(QListWidgetItem* item)
       funcOp->setCurrentIndex(data->cmt->funcOp);
       funcOpSel(data->cmt->funcOp);
 
-      // TransformOperator procEvent: Keep, Fix
-      procEventOp->setCurrentIndex(data->cmt->procEvent == Fix);
+      // MusECore::TransformOperator procEvent: MusECore::Keep, MusECore::Fix
+      procEventOp->setCurrentIndex(data->cmt->procEvent == MusECore::Fix);
 
       procEventOpSel(data->cmt->procEvent);
 
       procVal1Op->setCurrentIndex(data->cmt->procVal1);
       procVal1OpSel(data->cmt->procVal1);
 
-      for (unsigned i = 0; i < sizeof(procVal2Map)/sizeof(*procVal2Map); ++i) {
-            if (procVal2Map[i] == data->cmt->procVal2) {
+      for (unsigned i = 0; i < sizeof(MusECore::procVal2Map)/sizeof(*MusECore::procVal2Map); ++i) {
+            if (MusECore::procVal2Map[i] == data->cmt->procVal2) {
                   procVal2Op->setCurrentIndex(i);
                   break;
                   }
@@ -1500,9 +1506,9 @@ void MidiTransformerDialog::commentChanged()
 void MidiTransformerDialog::selVal1aChanged(int val)
       {
       data->cmt->selVal1a = val;
-      if ((data->cmt->selEventOp != All)
-         && (data->cmt->selType == Note)) {
-            selVal1a->setSuffix(" - " + MusEUtil::pitch2string(val));
+      if ((data->cmt->selEventOp != MusECore::All)
+         && (data->cmt->selType == MusECore::Note)) {
+            selVal1a->setSuffix(" - " + MusECore::pitch2string(val));
             }
       else
       {
@@ -1518,9 +1524,9 @@ void MidiTransformerDialog::selVal1aChanged(int val)
 void MidiTransformerDialog::selVal1bChanged(int val)
       {
       data->cmt->selVal1b = val;
-      if ((data->cmt->selEventOp != All)
-         && (data->cmt->selType == Note)) {
-            selVal1b->setSuffix(" - " + MusEUtil::pitch2string(val));
+      if ((data->cmt->selEventOp != MusECore::All)
+         && (data->cmt->selType == MusECore::Note)) {
+            selVal1b->setSuffix(" - " + MusECore::pitch2string(val));
             }
       else
       {
@@ -1591,11 +1597,11 @@ void MidiTransformerDialog::procVal1aChanged(int val)
       {
       data->cmt->procVal1a = val;
       
-      if((data->cmt->procEvent == Keep && data->cmt->selType == MIDITRANSFORM_NOTE) && 
-           (data->cmt->procVal1 == Fix || data->cmt->procVal1 == ScaleMap || data->cmt->procVal1 == Dynamic || 
-            data->cmt->procVal1 == Random || data->cmt->procVal1 == Flip)) 
+      if((data->cmt->procEvent == MusECore::Keep && data->cmt->selType == MIDITRANSFORM_NOTE) && 
+           (data->cmt->procVal1 == MusECore::Fix || data->cmt->procVal1 == MusECore::ScaleMap || data->cmt->procVal1 == MusECore::Dynamic || 
+            data->cmt->procVal1 == MusECore::Random || data->cmt->procVal1 == MusECore::Flip)) 
         {
-            procVal1a->setSuffix(" - " + MusEUtil::pitch2string(val));
+            procVal1a->setSuffix(" - " + MusECore::pitch2string(val));
         }
       else
       {
@@ -1613,11 +1619,11 @@ void MidiTransformerDialog::procVal1bChanged(int val)
       {
       data->cmt->procVal1b = val;
       
-      if((data->cmt->procEvent == Keep && data->cmt->selType == MIDITRANSFORM_NOTE) && 
-           (data->cmt->procVal1 == Fix || data->cmt->procVal1 == ScaleMap || data->cmt->procVal1 == Dynamic || 
-            data->cmt->procVal1 == Random || data->cmt->procVal1 == Flip)) 
+      if((data->cmt->procEvent == MusECore::Keep && data->cmt->selType == MIDITRANSFORM_NOTE) && 
+           (data->cmt->procVal1 == MusECore::Fix || data->cmt->procVal1 == MusECore::ScaleMap || data->cmt->procVal1 == MusECore::Dynamic || 
+            data->cmt->procVal1 == MusECore::Random || data->cmt->procVal1 == MusECore::Flip)) 
         {
-            procVal1b->setSuffix(" - " + MusEUtil::pitch2string(val));
+            procVal1b->setSuffix(" - " + MusECore::pitch2string(val));
         }
       else
       {
@@ -1708,45 +1714,45 @@ void MidiTransformerDialog::insideLoopChanged(bool val)
 
 
 /*!
-    \fn MidiTransformerDialog::typesMatch(MidiEvent e, unsigned t)
+    \fn MidiTransformerDialog::typesMatch(MusECore::MidiEvent e, unsigned t)
  */
-bool MidiTransformerDialog::typesMatch(Event& e, unsigned selType)
+bool MidiTransformerDialog::typesMatch(MusECore::Event& e, unsigned selType)
       {
       bool matched = false;
       switch (selType)
          {
          case MIDITRANSFORM_NOTE:
-            matched = (e.type() == Note);
+            matched = (e.type() == MusECore::Note);
             break;
          case MIDITRANSFORM_POLY:
-            matched = (e.type() == PAfter);
+            matched = (e.type() == MusECore::PAfter);
             break;
          case MIDITRANSFORM_CTRL:
-            matched = (e.type() == Controller);
+            matched = (e.type() == MusECore::Controller);
             break;
          case MIDITRANSFORM_ATOUCH:
-            matched = (e.type() == CAfter);
+            matched = (e.type() == MusECore::CAfter);
             break;
          case MIDITRANSFORM_PITCHBEND:
             {
-            if (e.type() == Controller) {
-                  MidiController::ControllerType c = midiControllerType(e.dataA());
-                  matched = (c == MidiController::Pitch);
+            if (e.type() == MusECore::Controller) {
+                  MusECore::MidiController::ControllerType c = MusECore::midiControllerType(e.dataA());
+                  matched = (c == MusECore::MidiController::Pitch);
                   }
             break;
             }
          case MIDITRANSFORM_NRPN:
             {
-            if (e.type() == Controller) {
-                  MidiController::ControllerType c = midiControllerType(e.dataA());
-                  matched = (c == MidiController::NRPN);
+            if (e.type() == MusECore::Controller) {
+                  MusECore::MidiController::ControllerType c = MusECore::midiControllerType(e.dataA());
+                  matched = (c == MusECore::MidiController::NRPN);
                   }
             }
          case MIDITRANSFORM_RPN:
             {
-            if (e.type() == Controller) {
-                  MidiController::ControllerType c = midiControllerType(e.dataA());
-                  matched = (c == MidiController::RPN);
+            if (e.type() == MusECore::Controller) {
+                  MusECore::MidiController::ControllerType c = MusECore::midiControllerType(e.dataA());
+                  matched = (c == MusECore::MidiController::RPN);
                   }
             }
          default:
@@ -1756,3 +1762,5 @@ bool MidiTransformerDialog::typesMatch(Event& e, unsigned selType)
       //printf("Event type=%d, selType =%d matched=%d\n", e.type(), selType, matched);
       return matched;
       }
+
+} // namespace MusEGui

@@ -262,7 +262,7 @@ int SigList::ticks_beat(int n) const
       {
       
       ///int m = AL::division;
-      int m = MusEConfig::config.division;
+      int m = MusEGlobal::config.division;
       
       switch (n) {
             case  1:  m <<= 2; break;           // 1536
@@ -457,7 +457,7 @@ int SigList::rasterStep(unsigned t, int raster) const
 //---------------------------------------------------------
 
 #if 0
-void SigList::write(Xml& xml) const
+void SigList::write(MusECore::Xml& xml) const
       {
       xml.stag("siglist");
       for (ciSigEvent i = begin(); i != end(); ++i)
@@ -466,7 +466,7 @@ void SigList::write(Xml& xml) const
       }
 #endif
 
-void SigList::write(int level, Xml& xml) const
+void SigList::write(int level, MusECore::Xml& xml) const
       {
       xml.tag(level++, "siglist");
       for (ciSigEvent i = begin(); i != end(); ++i)
@@ -499,16 +499,16 @@ void SigList::read(QDomNode node)
       }
 #endif
 
-void SigList::read(Xml& xml)
+void SigList::read(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
             switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return;
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "sig") {
                               SigEvent* t = new SigEvent();
                               unsigned tick = t->read(xml);
@@ -520,9 +520,9 @@ void SigList::read(Xml& xml)
                         else
                               xml.unknown("SigList");
                         break;
-                  case Xml::Attribut:
+                  case MusECore::Xml::Attribut:
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "siglist") {
                               normalize();
                               return;
@@ -538,7 +538,7 @@ void SigList::read(Xml& xml)
 //---------------------------------------------------------
 
 #if 0
-void SigEvent::write(Xml& xml, int at) const
+void SigEvent::write(MusECore::Xml& xml, int at) const
       {
       xml.stag(QString("sig at=\"%1\"").arg(at));
       xml.tag("tick", tick);
@@ -548,7 +548,7 @@ void SigEvent::write(Xml& xml, int at) const
       }
 #endif
 
-void SigEvent::write(int level, Xml& xml, int at) const
+void SigEvent::write(int level, MusECore::Xml& xml, int at) const
       {
       xml.tag(level++, "sig at=\"%d\"", at);
       xml.intTag(level, "tick", tick);
@@ -586,17 +586,17 @@ int SigEvent::read(QDomNode node)
 }
 #endif
 
-int SigEvent::read(Xml& xml)
+int SigEvent::read(MusECore::Xml& xml)
       {
       int at = 0;
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
             switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return 0;
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "tick")
                               tick = xml.parseInt();
                         else if (tag == "nom")
@@ -606,11 +606,11 @@ int SigEvent::read(Xml& xml)
                         else
                               xml.unknown("SigEvent");
                         break;
-                  case Xml::Attribut:
+                  case MusECore::Xml::Attribut:
                         if (tag == "at")
                               at = xml.s2().toInt();
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "sig")
                               return at;
                   default:

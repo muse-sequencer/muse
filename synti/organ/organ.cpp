@@ -58,7 +58,7 @@ SynthCtrl Organ::synthCtrl[] = {
       { "reed",      REED,           1 },
       { "velocity",  VELO,           0 },
       // next controller not send as init data
-      { "volume",    CTRL_VOLUME,  100 },
+      { "volume",    MusECore::CTRL_VOLUME,  100 },
       };
 
 static int NUM_CONTROLLER = sizeof(Organ::synthCtrl)/sizeof(*(Organ::synthCtrl));
@@ -209,8 +209,8 @@ void Organ::processMessages()
   //
   while (gui->fifoSize()) 
   {
-    MidiPlayEvent ev = gui->readEvent();
-    if (ev.type() == ME_CONTROLLER) 
+    MusECore::MidiPlayEvent ev = gui->readEvent();
+    if (ev.type() == MusECore::ME_CONTROLLER) 
     {
       // process local?
       setController(ev.dataA(), ev.dataB());
@@ -238,8 +238,8 @@ void Organ::process(float** ports, int offset, int sampleCount)
       //  synthesizer GUI
       //
       while (gui->fifoSize()) {
-            MidiPlayEvent ev = gui->readEvent();
-            if (ev.type() == ME_CONTROLLER) {
+            MusECore::MidiPlayEvent ev = gui->readEvent();
+            if (ev.type() == MusECore::ME_CONTROLLER) {
                   // process local?
                   setController(ev.dataA(), ev.dataB());
                   sendEvent(ev);
@@ -537,15 +537,15 @@ void Organ::setController(int ctrl, int data)
             case VELO:
                   velo = data;
                   break;
-            case CTRL_VOLUME:
+            case MusECore::CTRL_VOLUME:
                   data &= 0x7f;
                   volume = data == 0 ? 0.0 : cb2amp(int(200 * log10((127.0 * 127)/(data*data))));
                   break;
-            case CTRL_ALL_SOUNDS_OFF:
+            case MusECore::CTRL_ALL_SOUNDS_OFF:
                   for (int i = 0; i < VOICES; ++i)
                         voices[i].isOn = false;
                   break;
-            case CTRL_RESET_ALL_CTRL:
+            case MusECore::CTRL_RESET_ALL_CTRL:
                   for (int i = 0; i < NUM_CONTROLLER; ++i)
                         setController(0, synthCtrl[i].num, synthCtrl[i].val);
                   break;
@@ -591,7 +591,7 @@ bool Organ::setController(int channel, int ctrl, int data)
             case REED:
             case VELO:
                   {
-                  MidiPlayEvent ev(0, 0, channel, ME_CONTROLLER, ctrl, data);
+                  MusECore::MidiPlayEvent ev(0, 0, channel, MusECore::ME_CONTROLLER, ctrl, data);
                   #ifdef ORGAN_DEBUG
                   fprintf(stderr, "OrganGui:setController before gui->writeEvent ctrl:%d data:%d\n", ctrl, data);
                   #endif
@@ -681,7 +681,7 @@ int Organ::getControllerInfo(int id, const char** name, int* controller,
       *name       = synthCtrl[id].name;
       *initval    = synthCtrl[id].val;
       
-      if(synthCtrl[id].num == CTRL_VOLUME)
+      if(synthCtrl[id].num == MusECore::CTRL_VOLUME)
       {
         *min = 0;
         *max = 127;

@@ -29,7 +29,7 @@
 #include <QMouseEvent>
 #include <QTimerEvent>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //   DESCRIPTION
 // SliderBase is a base class for
@@ -184,7 +184,7 @@ void SliderBase::mousePressEvent(QMouseEvent *e)
                   d_mouseOffset = 0;
                   DoubleRange::incPages(d_direction);
                   emit sliderMoved(value(), _id);
-                  d_tmrID = startTimer(MusEUtil::qwtMax(250, 2 * d_updTime));
+                  d_tmrID = startTimer(MusECore::qwtMax(250, 2 * d_updTime));
                   break;
   
             case ScrMouse:
@@ -729,7 +729,7 @@ void SliderBase::stepPages(int pages)
 //
 //------------------------------------------------------------
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 
 

@@ -25,7 +25,7 @@
 #ifndef __DOUBLE_RANGE_H__
 #define __DOUBLE_RANGE_H__
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   DoubleRange
@@ -79,6 +79,6 @@ class DoubleRange
       double step() const;
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif

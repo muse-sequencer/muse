@@ -32,9 +32,11 @@ namespace Awl {
 class QSpinBox;
 
 ///class PosEdit;
+namespace MusECore {
 class Pos;
+}
 
-namespace MusEWidget {
+namespace MusEGui {
 
 class PitchEdit;
 
@@ -67,16 +69,16 @@ class NoteInfo : public QToolBar {
       void velOnChanged(int);
       void velOffChanged(int);
       void pitchChanged(int);
-      void timeChanged(const Pos&);
+      void timeChanged(const MusECore::Pos&);
 
    public slots:
       void setValue(ValType, int);
 
    signals:
-      void valueChanged(MusEWidget::NoteInfo::ValType, int);
+      void valueChanged(MusEGui::NoteInfo::ValType, int);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

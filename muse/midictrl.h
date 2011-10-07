@@ -29,6 +29,11 @@
 
 #include <QString>
 
+namespace MusECore {
+
+class Xml;
+class Part;
+
 const int CTRL_HBANK = 0x00;
 const int CTRL_LBANK = 0x20;
 
@@ -93,9 +98,6 @@ const int CTRL_NRPN_OFFSET   = 0x30000;
 const int CTRL_RPN14_OFFSET  = 0x50000;
 const int CTRL_NRPN14_OFFSET = 0x60000;
 const int CTRL_NONE_OFFSET   = 0x70000;
-
-class Xml;
-class Part;
 
 //---------------------------------------------------------
 //   MidiController
@@ -267,6 +269,7 @@ typedef std::map<int, int, std::less<int> > MidiCtl2LadspaPortMap;
 typedef MidiCtl2LadspaPortMap::iterator iMidiCtl2LadspaPort;
 typedef MidiCtl2LadspaPortMap::const_iterator ciMidiCtl2LadspaPort;
 
+} // namespace MusECore
 
 #endif
 

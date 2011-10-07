@@ -28,13 +28,11 @@
 class QColor;
 class QDialog;
 
-class MusE;
-namespace MusEArranger {
+
+namespace MusEGui {
 class Arranger;
-}
-namespace MusEConfig {
 class GlobalConfigValues;
-}
+class MusE;
 
 //---------------------------------------------------------
 //   Appearance Dialog
@@ -45,9 +43,9 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
     Q_OBJECT
     
  private:
-      MusEArranger::Arranger* arr;
+      Arranger* arr;
       QColor* color;
-      MusEConfig::GlobalConfigValues* config;
+      GlobalConfigValues* config;
       QButtonGroup* aPalette;
       QTreeWidgetItem* user_bg;
       QTreeWidgetItem* global_bg;
@@ -90,9 +88,11 @@ class Appearance : public QDialog, public Ui::AppearanceDialogBase {
       void colorNameEditFinished();
 
    public:
-      Appearance(MusEArranger::Arranger*, QWidget* parent=0);
+      Appearance(Arranger*, QWidget* parent=0);
       ~Appearance();
       void resetValues();
       };
+
+} // namespace MusEGui
 
 #endif

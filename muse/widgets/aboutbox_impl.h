@@ -25,7 +25,7 @@
 
 #include "ui_aboutbox.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 class AboutBoxImpl : public QDialog, public Ui::AboutBox
 {

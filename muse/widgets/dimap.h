@@ -27,7 +27,7 @@
 
 #include <QtGlobal>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 class DiMap
       {
@@ -65,6 +65,6 @@ class DiMap
       bool logarithmic() const { return d_log;}
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif

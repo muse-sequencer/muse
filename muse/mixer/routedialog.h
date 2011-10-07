@@ -29,7 +29,7 @@
 class QCloseEvent;
 class QDialog;
 
-namespace MusEDialog {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   RouteDialog
@@ -57,7 +57,7 @@ class RouteDialog : public QDialog, public Ui::RouteDialogBase {
       };
 
 
-} // namespace MusEDialog
+} // namespace MusEGui
 
 #endif
 

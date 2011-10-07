@@ -41,7 +41,7 @@
 #include "utils.h"
 #include "icons.h"
 
-namespace MusEMixer {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   setRecordFlag
@@ -73,12 +73,12 @@ void Strip::resetPeaks()
 
 void Strip::recordToggled(bool val)
       {
-      if (track->type() == Track::AUDIO_OUTPUT) {
+      if (track->type() == MusECore::Track::AUDIO_OUTPUT) {
             if (val && track->recordFlag() == false) {
-                  MusEGlobal::muse->bounceToFile((AudioOutput*)track);
+                  MusEGlobal::muse->bounceToFile((MusECore::AudioOutput*)track);
                   }
-            audio->msgSetRecord((AudioOutput*)track, val);
-            if (!((AudioOutput*)track)->recFile())
+            MusEGlobal::audio->msgSetRecord((MusECore::AudioOutput*)track, val);
+            if (!((MusECore::AudioOutput*)track)->recFile())
             {  
                   record->setChecked(false);
                   record->setIcon(QIcon(*record_off_Icon));
@@ -86,7 +86,7 @@ void Strip::recordToggled(bool val)
             }      
             return;
             }
-      song->setRecordFlag(track, val);
+      MusEGlobal::song->setRecordFlag(track, val);
       }
 //---------------------------------------------------------
 //   heartBeat
@@ -105,9 +105,9 @@ void Strip::setLabelFont()
 {
   // Use the new font #6 I created just for these labels (so far).
   // Set the label's font.
-  label->setFont(MusEConfig::config.fonts[6]);
+  label->setFont(MusEGlobal::config.fonts[6]);
   // Dealing with a horizontally constrained label. Ignore vertical. Use a minimum readable point size.
-  MusEUtil::autoAdjustFontSize(label, label->text(), false, true, MusEConfig::config.fonts[6].pointSize(), 5); 
+  MusECore::autoAdjustFontSize(label, label->text(), false, true, MusEGlobal::config.fonts[6].pointSize(), 5); 
 }
 
 //---------------------------------------------------------
@@ -118,37 +118,37 @@ void Strip::setLabelText()
 {
       QColor c;
       switch(track->type()) {
-            case Track::AUDIO_OUTPUT:
+            case MusECore::Track::AUDIO_OUTPUT:
                   //c = Qt::green;
-                  c = MusEConfig::config.outputTrackLabelBg;
+                  c = MusEGlobal::config.outputTrackLabelBg;
                   break;
-            case Track::AUDIO_GROUP:
+            case MusECore::Track::AUDIO_GROUP:
                   //c = Qt::yellow;
-                  c = MusEConfig::config.groupTrackLabelBg;
+                  c = MusEGlobal::config.groupTrackLabelBg;
                   break;
-            case Track::AUDIO_AUX:
+            case MusECore::Track::AUDIO_AUX:
                   //c = QColor(120, 255, 255);   // Light blue
-                  c = MusEConfig::config.auxTrackLabelBg;
+                  c = MusEGlobal::config.auxTrackLabelBg;
                   break;
-            case Track::WAVE:
+            case MusECore::Track::WAVE:
                   //c = Qt::magenta;
-                  c = MusEConfig::config.waveTrackLabelBg;
+                  c = MusEGlobal::config.waveTrackLabelBg;
                   break;
-            case Track::AUDIO_INPUT:
+            case MusECore::Track::AUDIO_INPUT:
                   //c = Qt::red;
-                  c = MusEConfig::config.inputTrackLabelBg;
+                  c = MusEGlobal::config.inputTrackLabelBg;
                   break;
-            case Track::AUDIO_SOFTSYNTH:
+            case MusECore::Track::AUDIO_SOFTSYNTH:
                   //c = QColor(255, 130, 0);  // Med orange
-                  c = MusEConfig::config.synthTrackLabelBg;
+                  c = MusEGlobal::config.synthTrackLabelBg;
                   break;
-            case Track::MIDI:
+            case MusECore::Track::MIDI:
                   //c = QColor(0, 160, 255); // Med blue
-                  c = MusEConfig::config.midiTrackLabelBg;
+                  c = MusEGlobal::config.midiTrackLabelBg;
                   break;
-            case Track::DRUM:
+            case MusECore::Track::DRUM:
                   //c = QColor(0, 160, 255); // Med blue
-                  c = MusEConfig::config.drumTrackLabelBg;
+                  c = MusEGlobal::config.drumTrackLabelBg;
                   break;
             default:
                   return;      
@@ -178,7 +178,7 @@ void Strip::setLabelText()
 void Strip::muteToggled(bool val)
       {
       track->setMute(val);
-      song->update(SC_MUTE);
+      MusEGlobal::song->update(SC_MUTE);
       }
 
 //---------------------------------------------------------
@@ -187,8 +187,8 @@ void Strip::muteToggled(bool val)
 
 void Strip::soloToggled(bool val)
       {
-      audio->msgSetSolo(track, val);
-      song->update(SC_SOLO);
+      MusEGlobal::audio->msgSetSolo(track, val);
+      MusEGlobal::song->update(SC_SOLO);
       }
 
 //---------------------------------------------------------
@@ -196,7 +196,7 @@ void Strip::soloToggled(bool val)
 //    create mixer strip
 //---------------------------------------------------------
 
-Strip::Strip(QWidget* parent, Track* t)
+Strip::Strip(QWidget* parent, MusECore::Track* t)
    : QFrame(parent)
       {
       _curGridRow = 0;
@@ -240,7 +240,7 @@ Strip::Strip(QWidget* parent, Track* t)
       
       // Moved by Tim. p3.3.9
       //setLabelText();
-      //label->setFont(MusEConfig::config.fonts[1]);
+      //label->setFont(MusEGlobal::config.fonts[1]);
       
       //printf("Strip::Strip w:%d frw:%d layoutmarg:%d lx:%d ly:%d lw:%d lh:%d\n", STRIP_WIDTH, frameWidth(), layout->margin(), label->x(), label->y(), label->width(), label->height());
       
@@ -293,7 +293,7 @@ Strip::~Strip()
 void Strip::setAutomationType(int t)
       {
       track->setAutomationType(AutomationType(t));
-      song->update(SC_AUTOMATION);
+      MusEGlobal::song->update(SC_AUTOMATION);
       }
       
 void Strip::resizeEvent(QResizeEvent* ev)
@@ -305,4 +305,4 @@ void Strip::resizeEvent(QResizeEvent* ev)
 }  
       
 
-} // namespace MusEMixer
+} // namespace MusEGui

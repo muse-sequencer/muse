@@ -38,7 +38,7 @@
 // Just an experiment. Some undesirable effects, see below...
 //#define _USE_CLIPPER 1 
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   Meter
@@ -63,7 +63,7 @@ Meter::Meter(QWidget* parent, MeterType type)
       last_ymax   = 0;
       val         = 0.0;
       maxVal      = 0.0;
-      minScale    = mtype == DBMeter ? MusEConfig::config.minMeter : 0.0;      // min value in dB or int
+      minScale    = mtype == DBMeter ? MusEGlobal::config.minMeter : 0.0;      // min value in dB or int
       maxScale    = mtype == DBMeter ? 10.0 : 127.0;
       yellowScale = -10;
       redScale    = 0;
@@ -547,4 +547,4 @@ void Meter::mousePressEvent(QMouseEvent*)
       emit mousePress();
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

@@ -177,7 +177,7 @@ class FluidSynthGui : public QDialog, public Ui::FLUIDSynthGuiBase, public MessG
    {
    Q_OBJECT
    private:
-      virtual void processEvent(const MidiPlayEvent& ev);
+      virtual void processEvent(const MusECore::MidiPlayEvent& ev);
       void sendLastdir(QString);
       void sendLoadFont(QString);
       void sendChannelChange(byte font_id, byte channel);

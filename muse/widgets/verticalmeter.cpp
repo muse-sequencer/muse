@@ -34,7 +34,7 @@
 #include "mmath.h"
 #include "utils.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   VerticalMeter
@@ -55,7 +55,7 @@ VerticalMeter::VerticalMeter(QWidget* parent, MeterType type)
       overflow    = false;
       val         = 0.0;
       maxVal      = 0.0;
-      minScale    = mtype == DBMeter ? MusEConfig::config.minMeter : 0.0;      // min value in dB or int
+      minScale    = mtype == DBMeter ? MusEGlobal::config.minMeter : 0.0;      // min value in dB or int
       maxScale    = mtype == DBMeter ? 10.0 : 127.0;
       yellowScale = -10;
       redScale    = 0;
@@ -177,7 +177,7 @@ void VerticalMeter::paintEvent(QPaintEvent* /*ev*/)
       // Draw the transparent layer on top of everything to give a 3d look
       QPainterPath round_path = roundedPath(0, 0, w, h,
                                             xrad, yrad,
-                                            (MusEUtil::Corner) (MusEUtil::UpperLeft | MusEUtil::UpperRight | MusEUtil::LowerLeft | MusEUtil::LowerRight ) );
+                                            (MusECore::Corner) (MusECore::UpperLeft | MusECore::UpperRight | MusECore::LowerLeft | MusECore::LowerRight ) );
       maskGrad.setStart(QPointF(0, 0));
       maskGrad.setFinalStop(QPointF(0, h));
       p.fillPath(round_path, QBrush(maskGrad));
@@ -211,18 +211,18 @@ void VerticalMeter::drawVU(QPainter& p, int w, int h, int xv)
 
         QPainterPath p_left = roundedPath(0, 0, x1, h,
                                            xrad, yrad,
-                                           (MusEUtil::Corner) (MusEUtil::UpperLeft | MusEUtil::LowerLeft ) );
+                                           (MusECore::Corner) (MusECore::UpperLeft | MusECore::LowerLeft ) );
 
         QPainterPath p_right = roundedPath(x2, 0, w-x2, h,
                                             xrad, yrad,
-                                            (MusEUtil::Corner) (MusEUtil::LowerRight | MusEUtil::UpperRight ) );
+                                            (MusECore::Corner) (MusECore::LowerRight | MusECore::UpperRight ) );
         
         if(xv < x1)
         {
 
 	  QPainterPath p_light_green = roundedPath(0, 0, xv, h,
 						   xrad, yrad,
-						   (MusEUtil::Corner) (MusEUtil::UpperLeft | MusEUtil::LowerLeft ) );
+						   (MusECore::Corner) (MusECore::UpperLeft | MusECore::LowerLeft ) );
 
 	  p_left = p_left.subtracted(p_light_green);
 
@@ -254,7 +254,7 @@ void VerticalMeter::drawVU(QPainter& p, int w, int h, int xv)
         {
 	  QPainterPath p_dark_red = roundedPath(xv, 0, w-xv, h,
                                                 xrad, yrad,
-                                                (MusEUtil::Corner) (MusEUtil::LowerRight | MusEUtil::UpperRight ) );
+                                                (MusECore::Corner) (MusECore::LowerRight | MusECore::UpperRight ) );
 
           p_right = p_right.subtracted(p_dark_red);
 
@@ -288,18 +288,18 @@ void VerticalMeter::drawVU(QPainter& p, int w, int h, int xv)
 
         QPainterPath p_left = roundedPath(0, 0, cut, h,
                                           xrad, yrad,
-                                          (MusEUtil::Corner) (MusEUtil::UpperLeft | MusEUtil::LowerLeft ) );
+                                          (MusECore::Corner) (MusECore::UpperLeft | MusECore::LowerLeft ) );
 
         QPainterPath p_right = roundedPath(cut, 0, w-cut, h,
                                            xrad, yrad,
-                                           (MusEUtil::Corner) (MusEUtil::LowerRight | MusEUtil::UpperRight ) );
+                                           (MusECore::Corner) (MusECore::LowerRight | MusECore::UpperRight ) );
 
         if(xv < cut)
 	  {
 
 	    QPainterPath p_light = roundedPath(0, 0, xv, h,
                                                xrad, yrad,
-                                               (MusEUtil::Corner) (MusEUtil::UpperLeft | MusEUtil::LowerLeft ) );
+                                               (MusECore::Corner) (MusECore::UpperLeft | MusECore::LowerLeft ) );
 
 	    p_left = p_left.subtracted(p_light);
 
@@ -314,7 +314,7 @@ void VerticalMeter::drawVU(QPainter& p, int w, int h, int xv)
 	  {
 	    QPainterPath p_dark = roundedPath(xv, 0, w-xv, h,
                                               xrad, yrad,
-                                              (MusEUtil::Corner) (MusEUtil::UpperRight | MusEUtil::LowerRight ) );
+                                              (MusECore::Corner) (MusECore::UpperRight | MusECore::LowerRight ) );
 	    p_right = p_right.subtracted(p_dark);
 
 	    // left section:
@@ -335,7 +335,7 @@ void VerticalMeter::drawVU(QPainter& p, int w, int h, int xv)
 
 void VerticalMeter::resizeEvent(QResizeEvent* ev)
     {
-      MusEWidget::Meter::resizeEvent(ev);
+      Meter::resizeEvent(ev);
     }
 
-} // namespace MusEWidget
+} // namespace MusEGui

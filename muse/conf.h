@@ -29,6 +29,9 @@
 class QDialog;
 class QLineEdit;
 
+
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   MidiFileConfig
 //    config properties of exported midi files
@@ -46,8 +49,13 @@ class MidiFileConfig : public QDialog, public Ui::ConfigMidiFileBase {
       void updateValues();
       };
 
+} // namespace MusEGui
+
+namespace MusECore {
 class Xml;
 extern bool readConfiguration();
 extern void readConfiguration(Xml&, bool readOnlySequencer, bool doReadGlobalConfig);
+}
+
 #endif
 

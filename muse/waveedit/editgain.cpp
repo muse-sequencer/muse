@@ -36,6 +36,8 @@
 
 #include "editgain.h"
 
+namespace MusEGui {
+
 EditGain::EditGain(QWidget* parent, int initGainValue)
  : QDialog(parent)
       {
@@ -111,3 +113,5 @@ int EditGain::getGain()
       {
       return gain;
       }
+
+} // namespace MusEGui

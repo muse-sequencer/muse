@@ -24,7 +24,7 @@
 #include "crescendo.h"
 #include "xml.h"
 
-namespace MusEDialog {
+namespace MusEGui {
 
 Crescendo::Crescendo(QWidget* parent)
 	: QDialog(parent)
@@ -66,18 +66,18 @@ int Crescendo::exec()
 	return QDialog::exec();
 }
 
-void Crescendo::read_configuration(Xml& xml)
+void Crescendo::read_configuration(MusECore::Xml& xml)
 {
 	for (;;)
 	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
 			
 		const QString& tag = xml.s1();
 		switch (token)
 		{
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "range")
 					range=xml.parseInt();
 				else if (tag == "start")
@@ -90,7 +90,7 @@ void Crescendo::read_configuration(Xml& xml)
 					xml.unknown("Crescendo");
 				break;
 				
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "crescendo")
 					return;
 				
@@ -100,7 +100,7 @@ void Crescendo::read_configuration(Xml& xml)
 	}
 }
 
-void Crescendo::write_configuration(int level, Xml& xml)
+void Crescendo::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "crescendo");
 	xml.intTag(level, "range", range);
@@ -128,4 +128,4 @@ void Crescendo::absolute_changed(bool val)
 	}
 }
 
-} // namespace MusEDialog
+} // namespace MusEGui

@@ -26,7 +26,12 @@
 #include "synth.h"
 
 //class QMenu;
+
+namespace MusEGui {
 class PopupMenu;
+}
+
+namespace MusECore {
 
 struct _FSTHandle;
 struct _FST;
@@ -100,6 +105,7 @@ class VstSynthIF : public SynthIF
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) { return 0; }
       };
 
+} // namespace MusECore
 
 #endif
 

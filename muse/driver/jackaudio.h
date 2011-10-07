@@ -26,11 +26,12 @@
 #include <jack/jack.h>
 #include "audiodev.h"
 
-class MidiPlayEvent;
-
 namespace MusEGlobal {
 bool checkAudioDevice();
 }
+
+namespace MusECore {
+class MidiPlayEvent;
 
 //---------------------------------------------------------
 //   JackAudioDevice
@@ -110,6 +111,8 @@ class JackAudioDevice : public AudioDevice {
 
       //static bool jackStarted;
       };
+
+} // namespace MusECore
 
 #endif
 

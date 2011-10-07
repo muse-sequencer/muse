@@ -34,17 +34,19 @@
 #include <QColor>
 #include <QGridLayout>
 
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   MidiEditor
 //---------------------------------------------------------
 
-MidiEditor::MidiEditor(ToplevelType t, int r, PartList* pl,
+MidiEditor::MidiEditor(ToplevelType t, int r, MusECore::PartList* pl,
    QWidget* parent, const char* name) : TopWin(t, parent, name)
       {
       setAttribute(Qt::WA_DeleteOnClose);
       _pl = pl;
       if (_pl)
-            for (iPart i = _pl->begin(); i != _pl->end(); ++i)
+            for (MusECore::iPart i = _pl->begin(); i != _pl->end(); ++i)
                   _parts.insert(i->second->sn());
       _raster  = r;
       canvas   = 0;
@@ -60,7 +62,7 @@ MidiEditor::MidiEditor(ToplevelType t, int r, PartList* pl,
       mainGrid->setSpacing(0);  
       setCentralWidget(mainw);
       
-      connect(song, SIGNAL(newPartsCreated(const std::map< Part*, std::set<Part*> >&)), SLOT(addNewParts(const std::map< Part*, std::set<Part*> >&)));	
+      connect(MusEGlobal::song, SIGNAL(newPartsCreated(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&)), SLOT(addNewParts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&)));	
       }
 
 //---------------------------------------------------------
@@ -71,10 +73,10 @@ void MidiEditor::genPartlist()
       {
       _pl->clear();
       for (std::set<int>::iterator i = _parts.begin(); i != _parts.end(); ++i) {
-            TrackList* tl = song->tracks();
-            for (iTrack it = tl->begin(); it != tl->end(); ++it) {
-                  PartList* pl = (*it)->parts();
-                  iPart ip;
+            MusECore::TrackList* tl = MusEGlobal::song->tracks();
+            for (MusECore::iTrack it = tl->begin(); it != tl->end(); ++it) {
+                  MusECore::PartList* pl = (*it)->parts();
+                  MusECore::iPart ip;
                   for (ip = pl->begin(); ip != pl->end(); ++ip) {
                         if (ip->second->sn() == *i) {
                               _pl->add(ip->second);
@@ -91,7 +93,7 @@ void MidiEditor::genPartlist()
 //   addPart
 //---------------------------------------------------------
 
-void MidiEditor::addPart(Part* p)
+void MidiEditor::addPart(MusECore::Part* p)
 {
   _pl->add(p);
   _parts.insert(p->sn());
@@ -113,19 +115,19 @@ MidiEditor::~MidiEditor()
 //   readStatus
 //---------------------------------------------------------
 
-void MidiEditor::readStatus(Xml& xml)
+void MidiEditor::readStatus(MusECore::Xml& xml)
       {
       if (_pl == 0)
-            _pl = new PartList;
+            _pl = new MusECore::PartList;
 
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             QString tag = xml.s1();
             switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return;
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "raster")
                               _raster = xml.parseInt();
                         else if (tag == "topwin")
@@ -133,7 +135,7 @@ void MidiEditor::readStatus(Xml& xml)
                         else
                               xml.unknown("MidiEditor");
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "midieditor")
                               return;
                   default:
@@ -146,12 +148,12 @@ void MidiEditor::readStatus(Xml& xml)
 //   writePartList
 //---------------------------------------------------------
 
-void MidiEditor::writePartList(int level, Xml& xml) const
+void MidiEditor::writePartList(int level, MusECore::Xml& xml) const
       {
-      for (ciPart p = _pl->begin(); p != _pl->end(); ++p) {
-            Part* part   = p->second;
-            Track* track = part->track();
-            int trkIdx   = song->tracks()->index(track);
+      for (MusECore::ciPart p = _pl->begin(); p != _pl->end(); ++p) {
+            MusECore::Part* part   = p->second;
+            MusECore::Track* track = part->track();
+            int trkIdx   = MusEGlobal::song->tracks()->index(track);
             int partIdx  = track->parts()->index(part);
             
             if((trkIdx == -1) || (partIdx == -1))
@@ -165,7 +167,7 @@ void MidiEditor::writePartList(int level, Xml& xml) const
 //   writeStatus
 //---------------------------------------------------------
 
-void MidiEditor::writeStatus(int level, Xml& xml) const
+void MidiEditor::writeStatus(int level, MusECore::Xml& xml) const
       {
       xml.tag(level++, "midieditor");
       TopWin::writeStatus(level, xml);
@@ -224,7 +226,7 @@ void MidiEditor::setCurDrumInstrument(int instr)
 //   curCanvasPart
 //---------------------------------------------------------
 
-Part* MidiEditor::curCanvasPart() 
+MusECore::Part* MidiEditor::curCanvasPart() 
 { 
   if(canvas) 
     return canvas->part(); 
@@ -236,7 +238,7 @@ Part* MidiEditor::curCanvasPart()
 //   curWavePart
 //---------------------------------------------------------
 
-WavePart* MidiEditor::curWavePart() 
+MusECore::WavePart* MidiEditor::curWavePart() 
 { 
   if(wview) 
     return wview->part(); 
@@ -248,7 +250,7 @@ WavePart* MidiEditor::curWavePart()
 //   setCurCanvasPart
 //---------------------------------------------------------
 
-void MidiEditor::setCurCanvasPart(Part* part) 
+void MidiEditor::setCurCanvasPart(MusECore::Part* part) 
 { 
   if(canvas) 
     canvas->setCurrentPart(part); 
@@ -257,11 +259,11 @@ void MidiEditor::setCurCanvasPart(Part* part)
 void MidiEditor::horizontalZoomIn()
 {
   int mag = hscroll->mag();
-  int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
+  int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
   if (zoomlvl < 23)
         zoomlvl++;
 
-  int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+  int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
 
   hscroll->setMag(newmag);
 
@@ -270,23 +272,25 @@ void MidiEditor::horizontalZoomIn()
 void MidiEditor::horizontalZoomOut()
 {
   int mag = hscroll->mag();
-  int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
+  int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
   if (zoomlvl > 1)
         zoomlvl--;
 
-  int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+  int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
 
   hscroll->setMag(newmag);
 
 }
 
-void MidiEditor::addNewParts(const std::map< Part*, std::set<Part*> >& param)
+void MidiEditor::addNewParts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >& param)
 {
   using std::map;
   using std::set;
   
-  for (map< Part*, set<Part*> >::const_iterator it = param.begin(); it!=param.end(); it++)
+  for (map< MusECore::Part*, set<MusECore::Part*> >::const_iterator it = param.begin(); it!=param.end(); it++)
     if (_pl->index(it->first) != -1)
-      for (set<Part*>::const_iterator it2=it->second.begin(); it2!=it->second.end(); it2++)
+      for (set<MusECore::Part*>::const_iterator it2=it->second.begin(); it2!=it->second.end(); it2++)
         addPart(*it2);
 }
+
+} // namespace MusEGui

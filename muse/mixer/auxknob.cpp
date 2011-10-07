@@ -25,17 +25,17 @@
 #include "auxknob.h"
 #include "gconfig.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   Aux
 //---------------------------------------------------------
 
 AuxKnob::AuxKnob(QWidget* parent, int i)
-   : MusEWidget::Knob(parent, "aux")
+   : MusEGui::Knob(parent, "aux")
       {
       idx = i;
-      setRange(MusEConfig::config.minSlider-0.1, 10.0);
+      setRange(MusEGlobal::config.minSlider-0.1, 10.0);
       connect(this, SIGNAL(valueChanged(double,int)), SLOT(valueChanged(double)));
       }
 
@@ -46,7 +46,7 @@ AuxKnob::AuxKnob(QWidget* parent, int i)
 void AuxKnob::valueChanged(double val)
       {
       double vol;
-      if (val <= MusEConfig::config.minSlider) {
+      if (val <= MusEGlobal::config.minSlider) {
             vol = 0.0;
             val -= 1.0; // display special value "off"
             }
@@ -55,4 +55,4 @@ void AuxKnob::valueChanged(double val)
       emit auxChanged(idx, vol);
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

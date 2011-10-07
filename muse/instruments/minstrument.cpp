@@ -42,6 +42,7 @@
 #include "gconfig.h"
 #include "popupmenu.h"
 
+namespace MusECore {
 
 MidiInstrumentList midiInstruments;
 MidiInstrument* genericMidiInstrument;
@@ -530,7 +531,7 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
 
 void MidiInstrument::reset(int portNo, MType)
 {
-      MidiPort* port = &midiPorts[portNo];
+      MusECore::MidiPort* port = &MusEGlobal::midiPorts[portNo];
       //if (port == 0)
       //      return;
       if(port->device() == 0)  // p4.0.15
@@ -538,7 +539,7 @@ void MidiInstrument::reset(int portNo, MType)
         //printf("MidiInstrument::reset port device is 0\n"); 
         return;
       }  
-      MidiPlayEvent ev;
+      MusECore::MidiPlayEvent ev;
       ev.setType(0x90);
       ev.setPort(portNo);
       ev.setTime(0);          // p4.0.15
@@ -935,7 +936,11 @@ QString MidiInstrument::getPatchName(int channel, int prog, MType mode, bool dru
 //   populatePatchPopup
 //---------------------------------------------------------
 
-void MidiInstrument::populatePatchPopup(MusEWidget::PopupMenu* menu, int chan, MType songType, bool drum)
+} // namespace MusECore
+
+namespace MusEGui {
+
+void populatePatchPopup(MusECore::MidiInstrument* midiInstrument, PopupMenu* menu, int chan, MType songType, bool drum)
       {
       menu->clear();
       int mask = 0;
@@ -947,7 +952,7 @@ void MidiInstrument::populatePatchPopup(MusEWidget::PopupMenu* menu, int chan, M
               if(drumchan)
               {
                 int id = (0xff << 16) + (0xff << 8) + 0x00;  // First patch
-                QAction* act = menu->addAction(gmdrumname);
+                QAction* act = menu->addAction(MusECore::gmdrumname);
                 //act->setCheckable(true);
                 act->setData(id);
                 return;
@@ -956,16 +961,16 @@ void MidiInstrument::populatePatchPopup(MusEWidget::PopupMenu* menu, int chan, M
               break;
             case MT_UNKNOWN:  mask = 7; break;
             }
-      if (pg.size() > 1) {
-            for (ciPatchGroup i = pg.begin(); i != pg.end(); ++i) {
-                  PatchGroup* pgp = *i;
+      if (midiInstrument->groups()->size() > 1) {
+            for (MusECore::ciPatchGroup i = midiInstrument->groups()->begin(); i != midiInstrument->groups()->end(); ++i) {
+                  MusECore::PatchGroup* pgp = *i;
                   //QMenu* pm = menu->addMenu(pgp->name);
-                  MusEWidget::PopupMenu* pm = new MusEWidget::PopupMenu(pgp->name, menu, menu->stayOpen());  // Use the parent stayOpen here.
+                  PopupMenu* pm = new PopupMenu(pgp->name, menu, menu->stayOpen());  // Use the parent stayOpen here.
                   menu->addMenu(pm);
-                  pm->setFont(MusEConfig::config.fonts[0]);
-                  const PatchList& pl = pgp->patches;
-                  for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
-                        const Patch* mp = *ipl;
+                  pm->setFont(MusEGlobal::config.fonts[0]);
+                  const MusECore::PatchList& pl = pgp->patches;
+                  for (MusECore::ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
+                        const MusECore::Patch* mp = *ipl;
                         if ((mp->typ & mask) && 
                             ((drum && songType != MT_GM) || 
                             (mp->drum == drumchan)) )  
@@ -980,11 +985,11 @@ void MidiInstrument::populatePatchPopup(MusEWidget::PopupMenu* menu, int chan, M
                         }
                   }
             }
-      else if (pg.size() == 1 ){
+      else if (midiInstrument->groups()->size() == 1 ){
             // no groups
-            const PatchList& pl = pg.front()->patches;
-            for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
-                  const Patch* mp = *ipl;
+            const MusECore::PatchList& pl = midiInstrument->groups()->front()->patches;
+            for (MusECore::ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
+                  const MusECore::Patch* mp = *ipl;
                   if (mp->typ & mask) {
                         int id = ((mp->hbank & 0xff) << 16)
                                  + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
@@ -996,3 +1001,4 @@ void MidiInstrument::populatePatchPopup(MusEWidget::PopupMenu* menu, int chan, M
             }
       }
 
+} // namespace MusEGui

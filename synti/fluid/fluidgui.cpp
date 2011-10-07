@@ -50,7 +50,7 @@ FLUIDGui::FLUIDGui()
       QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
       connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
       
-      fdialogButton->setIcon(QIcon(*openIcon));
+      fdialogButton->setIcon(QIcon(*MusEGui::openIcon));
       connect(fdialogButton, SIGNAL(clicked()), SLOT(soundFontFileDialog()));
       connect(loadButton, SIGNAL(clicked()), SLOT(loadFont()));
 
@@ -102,10 +102,10 @@ void FLUIDGui::soundFontFileDialog()
             }
       }
 
-void FLUIDGui::processEvent(const MidiPlayEvent& ev) 
+void FLUIDGui::processEvent(const MusECore::MidiPlayEvent& ev) 
 {
       // p4.0.27 
-      if (ev.type() == ME_SYSEX)   {
+      if (ev.type() == MusECore::ME_SYSEX)   {
             const unsigned char* data = ev.data();
             switch (*data) {
                   case FS_SEND_SOUNDFONT_NAME: {

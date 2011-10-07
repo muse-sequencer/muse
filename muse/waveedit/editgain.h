@@ -39,6 +39,8 @@
 
 class QDialog;
 
+namespace MusEGui {
+
 class EditGain : public QDialog, public Ui::EditGainBase
 {
       Q_OBJECT
@@ -57,5 +59,7 @@ private slots:
     void cancelPressed();
     void gainChanged(int value);
 };
+
+} // namespace MusEGui
 
 #endif

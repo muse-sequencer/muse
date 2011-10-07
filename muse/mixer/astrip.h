@@ -30,24 +30,26 @@
 #include "strip.h"
 //#include "route.h"
 
-namespace MusEWidget {
-class DoubleLabel;
-class Slider;
-class Knob;
-class TransparentToolButton;
-}
-
 //class QDialog;
 class QToolButton;
 //class QAction;
 //class QPopupMenu;
 //class PopupMenu;
 class QButton;
+
+namespace MusEGui {
+}
+
+namespace MusECore {
 class AudioTrack;
+}
 
-namespace MusEMixer {
-
+namespace MusEGui {
+class DoubleLabel;
 class EffectRack;
+class Knob;
+class Slider;
+class TransparentToolButton;
   
 //---------------------------------------------------------
 //   AudioStrip
@@ -57,19 +59,19 @@ class AudioStrip : public Strip {
       Q_OBJECT
 
       int channel;
-      MusEWidget::Slider* slider;
-      MusEWidget::DoubleLabel* sl;
+      MusEGui::Slider* slider;
+      MusEGui::DoubleLabel* sl;
       EffectRack* rack;
 
-      MusEWidget::Knob* pan;
-      MusEWidget::DoubleLabel* panl;
+      MusEGui::Knob* pan;
+      MusEGui::DoubleLabel* panl;
 
-      std::vector<MusEWidget::Knob*> auxKnob;
-      std::vector<MusEWidget::DoubleLabel*> auxLabel;
+      std::vector<MusEGui::Knob*> auxKnob;
+      std::vector<MusEGui::DoubleLabel*> auxLabel;
 
       QToolButton* stereo;
       QToolButton* pre;
-      MusEWidget::TransparentToolButton* off;
+      MusEGui::TransparentToolButton* off;
 
       double volume;
       double panVal;
@@ -77,7 +79,7 @@ class AudioStrip : public Strip {
       //QToolButton* iR;
       //QToolButton* oR;
       
-      MusEWidget::Knob* addKnob(int, int, MusEWidget::DoubleLabel**);
+      MusEGui::Knob* addKnob(int, int, MusEGui::DoubleLabel**);
       
       void updateOffState();
       void updateVolume();
@@ -111,13 +113,13 @@ class AudioStrip : public Strip {
       virtual void songChanged(int);
 
    public:
-      AudioStrip(QWidget* parent, AudioTrack*);
+      AudioStrip(QWidget* parent, MusECore::AudioTrack*);
       ~AudioStrip();
       ///virtual QSize minimumSizeHint () const;
       //virtual QSize sizeHint () const;
       };
 
-} // namespace MusEMixer
+} // namespace MusEGui
 
 #endif
 

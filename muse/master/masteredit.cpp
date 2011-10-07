@@ -49,6 +49,8 @@
 #include <QMenuBar>
 #include <QMenu>
 
+namespace MusEGui {
+
 int MasterEdit::_rasterInit = 0;
 
 //---------------------------------------------------------
@@ -68,7 +70,7 @@ void MasterEdit::closeEvent(QCloseEvent* e)
 void MasterEdit::songChanged(int type)
       {
       if (type & SC_TEMPO) {
-            int tempo = tempomap.tempo(song->cpos());
+            int tempo = MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos());
             curTempo->blockSignals(true);
             curTempo->setValue(double(60000000.0/tempo));
             
@@ -76,7 +78,7 @@ void MasterEdit::songChanged(int type)
             }
       if (type & SC_SIG) {
             int z, n;
-            AL::sigmap.timesig(song->cpos(), z, n);
+            AL::sigmap.timesig(MusEGlobal::song->cpos(), z, n);
             curSig->blockSignals(true);
             curSig->setValue(AL::TimeSignature(z, n));
             curSig->blockSignals(false);
@@ -84,7 +86,7 @@ void MasterEdit::songChanged(int type)
             }
       if (type & SC_MASTER) {
             enableButton->blockSignals(true);
-            enableButton->setChecked(song->masterFlag());
+            enableButton->setChecked(MusEGlobal::song->masterFlag());
             enableButton->blockSignals(false);
             }
       }
@@ -122,7 +124,7 @@ MasterEdit::MasterEdit()
       transport_toolbar->setObjectName("transport");
       transport_toolbar->addActions(MusEGlobal::transportAction->actions());
 
-      MusEWidget::EditToolBar* tools2 = new MusEWidget::EditToolBar(this, MusEWidget::PointerTool | MusEWidget::PencilTool | MusEWidget::RubberTool);
+      MusEGui::EditToolBar* tools2 = new MusEGui::EditToolBar(this, MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool);
       addToolBar(tools2);
 
       QToolBar* enableMaster = addToolBar(tr("Enable master"));
@@ -131,9 +133,9 @@ MasterEdit::MasterEdit()
       enableButton->setCheckable(true);
       enableButton->setText(tr("Enable"));
       enableButton->setToolTip(tr("Enable usage of master track"));
-      enableButton->setChecked(song->masterFlag());
+      enableButton->setChecked(MusEGlobal::song->masterFlag());
       enableMaster->addWidget(enableButton);
-      connect(enableButton, SIGNAL(toggled(bool)), song, SLOT(setMasterFlag(bool)));
+      connect(enableButton, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setMasterFlag(bool)));
 
       QToolBar* info = addToolBar(tr("Info"));
       info->setObjectName("Info");
@@ -142,11 +144,11 @@ MasterEdit::MasterEdit()
       label->setIndent(3);
       info->addWidget(label);
 
-      cursorPos = new MusEWidget::PosLabel(0);
+      cursorPos = new MusEGui::PosLabel(0);
       cursorPos->setFixedHeight(22);
       cursorPos->setToolTip(tr("time at cursor position"));
       info->addWidget(cursorPos);
-      tempo = new MusEWidget::TempoLabel(0);
+      tempo = new MusEGui::TempoLabel(0);
       tempo->setFixedHeight(22);
       tempo->setToolTip(tr("tempo at cursor position"));
       info->addWidget(tempo);
@@ -154,7 +156,7 @@ MasterEdit::MasterEdit()
       const char* rastval[] = {
             QT_TRANSLATE_NOOP("@default", "Off"), "Bar", "1/2", "1/4", "1/8", "1/16"
             };
-      rasterLabel = new MusEWidget::LabelCombo(tr("Snap"), 0);
+      rasterLabel = new MusEGui::LabelCombo(tr("Snap"), 0);
       rasterLabel->setFocusPolicy(Qt::NoFocus);
       for (int i = 0; i < 6; i++)
             rasterLabel->insertItem(i, tr(rastval[i]));
@@ -164,7 +166,7 @@ MasterEdit::MasterEdit()
 
       //---------values for current position---------------
       info->addWidget(new QLabel(tr("CurPos ")));
-      curTempo = new MusEWidget::TempoEdit(0);
+      curTempo = new MusEGui::TempoEdit(0);
       curSig   = new SigEdit(0);
       curSig->setValue(AL::TimeSignature(4, 4));
       curTempo->setToolTip(tr("tempo at current position"));
@@ -172,10 +174,10 @@ MasterEdit::MasterEdit()
       info->addWidget(curTempo);
       info->addWidget(curSig);
       ///connect(curSig, SIGNAL(valueChanged(int,int)), song, SLOT(setSig(int,int)));
-      connect(curSig, SIGNAL(valueChanged(const AL::TimeSignature&)), song, SLOT(setSig(const AL::TimeSignature&)));
+      connect(curSig, SIGNAL(valueChanged(const AL::TimeSignature&)), MusEGlobal::song, SLOT(setSig(const AL::TimeSignature&)));
       
       ///connect(curTempo, SIGNAL(valueChanged(double)), song, SLOT(setTempo(double)));
-      connect(curTempo, SIGNAL(tempoChanged(double)), song, SLOT(setTempo(double)));
+      connect(curTempo, SIGNAL(tempoChanged(double)), MusEGlobal::song, SLOT(setTempo(double)));
                                                                                     
       //---------------------------------------------------
       //    master
@@ -183,17 +185,17 @@ MasterEdit::MasterEdit()
 
       int xscale = -20;
       int yscale = -500;
-      hscroll   = new MusEWidget::ScrollScale(-100, -2, xscale, song->len(), Qt::Horizontal, mainw);
-      vscroll   = new MusEWidget::ScrollScale(-1000, -100, yscale, 120000, Qt::Vertical, mainw);
+      hscroll   = new MusEGui::ScrollScale(-100, -2, xscale, MusEGlobal::song->len(), Qt::Horizontal, mainw);
+      vscroll   = new MusEGui::ScrollScale(-1000, -100, yscale, 120000, Qt::Vertical, mainw);
       vscroll->setRange(30000, 250000);
-      time1     = new MusEWidget::MTScale(&_raster, mainw, xscale);
-      sign      = new MusEWidget::SigScale(&_raster, mainw, xscale);
-//      thits     = new MusEWidget::HitScale(&_raster, mainw, xscale);
+      time1     = new MusEGui::MTScale(&_raster, mainw, xscale);
+      sign      = new MusEGui::SigScale(&_raster, mainw, xscale);
+//      thits     = new MusEGui::HitScale(&_raster, mainw, xscale);
 
       canvas    = new Master(this, mainw, xscale, yscale);
 
-//      zhits     = new MusEWidget::HitScale(&_raster, mainw, xscale);
-      time2     = new MusEWidget::MTScale(&_raster, mainw, xscale);
+//      zhits     = new MusEGui::HitScale(&_raster, mainw, xscale);
+      time2     = new MusEGui::MTScale(&_raster, mainw, xscale);
       tscale    = new TScale(mainw, yscale);
       time2->setBarLocator(true);
 
@@ -206,18 +208,18 @@ MasterEdit::MasterEdit()
       mainGrid->setRowStretch(5, 100);
       mainGrid->setColumnStretch(1, 100);
 
-      mainGrid->addWidget(MusEUtil::hLine(mainw),  0, 1);
+      mainGrid->addWidget(MusECore::hLine(mainw),  0, 1);
       mainGrid->addWidget(time1,         1, 1);
-      mainGrid->addWidget(MusEUtil::hLine(mainw),  2, 1);
+      mainGrid->addWidget(MusECore::hLine(mainw),  2, 1);
       mainGrid->addWidget(sign,          3, 1);
-      mainGrid->addWidget(MusEUtil::hLine(mainw),  4, 1);
+      mainGrid->addWidget(MusECore::hLine(mainw),  4, 1);
 //    mainGrid->addWidget(thits,         5, 1);
-//    mainGrid->addWidget(MusEUtil::hLine(mainw),  6, 1);
+//    mainGrid->addWidget(MusECore::hLine(mainw),  6, 1);
       mainGrid->addWidget(canvas,        5, 1);
       mainGrid->addWidget(tscale,        5, 0);
-      mainGrid->addWidget(MusEUtil::hLine(mainw),  6, 1);
+      mainGrid->addWidget(MusECore::hLine(mainw),  6, 1);
 //    mainGrid->addWidget(zhits,         9, 1);
-//    mainGrid->addWidget(MusEUtil::hLine(mainw),  7, 1);
+//    mainGrid->addWidget(MusECore::hLine(mainw),  7, 1);
       mainGrid->addWidget(time2,         7, 1);
       mainGrid->addWidget(hscroll,       8, 1);
       mainGrid->addWidget(vscroll, 0, 2, 10, 1);
@@ -255,8 +257,8 @@ MasterEdit::MasterEdit()
 
       connect(tscale, SIGNAL(tempoChanged(int)), SLOT(setTempo(int)));
       connect(canvas, SIGNAL(tempoChanged(int)), SLOT(setTempo(int)));
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      connect(song, SIGNAL(posChanged(int,unsigned,bool)), SLOT(posChanged(int,unsigned,bool)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(posChanged(int,unsigned,bool)), SLOT(posChanged(int,unsigned,bool)));
 
       connect(canvas, SIGNAL(followEvent(int)), hscroll, SLOT(setOffset(int)));
       connect(canvas, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
@@ -277,16 +279,16 @@ MasterEdit::~MasterEdit()
 //   readStatus
 //---------------------------------------------------------
 
-void MasterEdit::readStatus(Xml& xml)
+void MasterEdit::readStatus(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
             switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return;
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "midieditor")
                               MidiEditor::readStatus(xml);
                         else if (tag == "ypos")
@@ -299,7 +301,7 @@ void MasterEdit::readStatus(Xml& xml)
                         else
                               xml.unknown("MasterEdit");
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "master") {
                               // raster setzen
                               int item = 0;
@@ -325,7 +327,7 @@ void MasterEdit::readStatus(Xml& xml)
 //   writeStatus
 //---------------------------------------------------------
 
-void MasterEdit::writeStatus(int level, Xml& xml) const
+void MasterEdit::writeStatus(int level, MusECore::Xml& xml) const
       {
       xml.tag(level++, "master");
       xml.intTag(level, "ypos", vscroll->pos());
@@ -338,16 +340,16 @@ void MasterEdit::writeStatus(int level, Xml& xml) const
 //   readConfiguration
 //---------------------------------------------------------
 
-void MasterEdit::readConfiguration(Xml& xml)
+void MasterEdit::readConfiguration(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
             switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return;
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "raster")
                               _rasterInit = xml.parseInt();
                         else if (tag == "topwin")
@@ -355,7 +357,7 @@ void MasterEdit::readConfiguration(Xml& xml)
                         else
                               xml.unknown("MasterEdit");
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "masteredit")
                               return;
                   default:
@@ -368,7 +370,7 @@ void MasterEdit::readConfiguration(Xml& xml)
 //   writeConfiguration
 //---------------------------------------------------------
 
-void MasterEdit::writeConfiguration(int level, Xml& xml)
+void MasterEdit::writeConfiguration(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "masteredit");
       xml.intTag(level, "raster", _rasterInit);
@@ -397,7 +399,7 @@ void MasterEdit::posChanged(int idx, unsigned val, bool)
       {
       if (idx == 0) {
             int z, n;
-            int tempo = tempomap.tempo(val);
+            int tempo = MusEGlobal::tempomap.tempo(val);
             AL::sigmap.timesig(val, z, n);
             curTempo->blockSignals(true);
             curSig->blockSignals(true);
@@ -440,4 +442,4 @@ void MasterEdit::setTempo(int val)
             }
       }
 
-
+} // namespace MusEGui

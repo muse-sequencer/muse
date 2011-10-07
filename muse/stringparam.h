@@ -28,6 +28,9 @@
 #include <map>
 
 class QString;
+
+namespace MusECore {
+
 class Xml;
 
 //typedef std::pair<std::string, std::string >                 StringParamMapItem;
@@ -47,5 +50,6 @@ class StringParamMap : public std::map<std::string, std::string >
     void write(int /*level*/, Xml& /*xml*/, const char* /*name*/) const;
 };
 
+} // namespace MusECore
 
 #endif //__STRINGPARAM_H__

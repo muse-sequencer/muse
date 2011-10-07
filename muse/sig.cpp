@@ -27,7 +27,11 @@
 #include "gconfig.h"
 #include "xml.h"
 
-SigList sigmap;
+namespace MusEGlobal {
+MusECore::SigList sigmap;
+}
+
+namespace MusECore {
 
 //---------------------------------------------------------
 //   SigList
@@ -187,7 +191,7 @@ int SigList::ticksBeat(unsigned tick) const
 
 int SigList::ticks_beat(int n) const
       {
-      int m = MusEConfig::config.division;
+      int m = MusEGlobal::config.division;
       switch (n) {
             case  1:  m <<= 2; break;           // 1536
             case  2:  m <<= 1; break;           // 768
@@ -451,4 +455,4 @@ int SigEvent::read(Xml& xml)
       return 0;
       }
 
-
+} // namespace MusECore

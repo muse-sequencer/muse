@@ -30,7 +30,7 @@
 #include <QResizeEvent>
 #include <QPaintEvent>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   Knob
@@ -104,6 +104,6 @@ class Knob : public SliderBase, public ScaleIf
       void setMarkerColor(const QColor c);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif

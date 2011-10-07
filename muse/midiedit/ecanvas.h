@@ -28,14 +28,15 @@
 #include <QEvent>
 #include <QKeyEvent>
 
-class MidiPart;
-class MidiTrack;
-class MidiEditor;
-class Part;
 class QMimeData;
 class QDrag;
 class QString;
 class QDropEvent;
+
+namespace MusECore {
+class MidiPart;
+class MidiTrack;
+class Part;
 
 struct PartToChange
 {
@@ -45,11 +46,16 @@ struct PartToChange
 typedef std::map<Part*, PartToChange> PartsToChangeMap;
 typedef std::map<Part*, PartToChange>::iterator iPartToChange;
   
+}
+
+namespace MusEGui {
+
+class MidiEditor;
 //---------------------------------------------------------
 //   EventCanvas
 //---------------------------------------------------------
 
-class EventCanvas : public MusEWidget::Canvas {
+class EventCanvas : public Canvas {
       Q_OBJECT
       virtual void leaveEvent(QEvent*e);
       virtual void enterEvent(QEvent*e);
@@ -65,11 +71,11 @@ class EventCanvas : public MusEWidget::Canvas {
       bool _midiin;
 
       void updateSelection();
-      virtual void addItem(Part*, Event&) = 0;
+      virtual void addItem(MusECore::Part*, MusECore::Event&) = 0;
       // Added by T356.
       virtual QPoint raster(const QPoint&) const;
-      virtual Undo moveCanvasItems(MusEWidget::CItemList&, int, int, DragType) = 0;
-      virtual UndoOp moveItem(MusEWidget::CItem*, const QPoint&, DragType) = 0;
+      virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType) = 0;
+      virtual MusECore::UndoOp moveItem(CItem*, const QPoint&, DragType) = 0;
       virtual void endMoveItems(const QPoint&, DragType, int dir);
 
    public slots:
@@ -80,12 +86,12 @@ class EventCanvas : public MusEWidget::Canvas {
    signals:
       void pitchChanged(int);       // current cursor position
       void timeChanged(unsigned);
-      void selectionChanged(int, Event&, Part*);
+      void selectionChanged(int, MusECore::Event&, MusECore::Part*);
       void enterCanvas();
 
    public:
       EventCanvas(MidiEditor*, QWidget*, int, int, const char* name = 0);
-      MidiTrack* track() const;
+      MusECore::MidiTrack* track() const;
       unsigned start() const       { return start_tick; }
       unsigned end() const         { return end_tick; }
       bool midiin() const     { return _midiin; }
@@ -96,9 +102,11 @@ class EventCanvas : public MusEWidget::Canvas {
       void playEvents(bool flag) { _playEvents = flag; }
       void selectAtTick(unsigned int tick);
       void viewDropEvent(QDropEvent* event);
-      virtual void modifySelected(MusEWidget::NoteInfo::ValType, int) {}
+      virtual void modifySelected(NoteInfo::ValType, int) {}
       virtual void keyPress(QKeyEvent*);
       };
+
+} // namespace MusEGui
 
 #endif
 

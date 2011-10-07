@@ -27,7 +27,7 @@
 
 class MidiEditor;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   SigScale
@@ -60,7 +60,7 @@ class SigScale : public View {
       SigScale(int* raster, QWidget* parent, int xscale);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

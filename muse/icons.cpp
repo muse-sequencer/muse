@@ -248,6 +248,8 @@
 #define MICON(a,b) QIcon(QPixmap(a))
 #endif
 
+namespace MusEGui {
+
 /* Quick API reference:
    -------------------
 
@@ -711,3 +713,4 @@ void initIcons()
       sawIcon                                       = new MPIXMAP(saw_xpm, NULL);
       }
 
+} // namespace MusEGui

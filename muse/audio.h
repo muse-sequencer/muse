@@ -31,21 +31,22 @@
 #include "route.h"
 #include "event.h"
 
-class SndFile;
-class PluginI;
-class SynthI;
-class MidiDevice;
+namespace MusECore {
 class AudioDevice;
-class Track;
 class AudioTrack;
-class Part;
 class Event;
-class MidiPlayEvent;
 class Event;
-class MidiPort;
 class EventList;
+class MidiDevice;
 class MidiInstrument;
+class MidiPlayEvent;
+class MidiPort;
 class MidiTrack;
+class Part;
+class PluginI;
+class SndFile;
+class SynthI;
+class Track;
 
 //---------------------------------------------------------
 //   AudioMsgId
@@ -314,7 +315,12 @@ class Audio {
 extern int processAudio(unsigned long, void*);
 extern void processAudio1(void*, void*);
 
-extern Audio* audio;
-extern AudioDevice* audioDevice;   // current audio device in use
+} // namespace MusECore
+
+namespace MusEGlobal {
+extern MusECore::Audio* audio;
+extern MusECore::AudioDevice* audioDevice;   // current audio device in use
+}
+
 #endif
 

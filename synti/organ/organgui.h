@@ -51,7 +51,7 @@ class OrganGui : public QWidget, public Ui::OrganGuiBase, public MessGui {
       void readMessage(int);
 
    public:
-      virtual void processEvent(const MidiPlayEvent&);
+      virtual void processEvent(const MusECore::MidiPlayEvent&);
       int getControllerMinMax(int id, int* min, int* max) const;
       OrganGui();
       };

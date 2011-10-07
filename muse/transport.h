@@ -40,12 +40,13 @@ class QLabel;
 class QSlider;
 class QToolButton;
 
-namespace MusEWidget {
-class DoubleLabel;
-class SigLabel;
+namespace MusECore {
+class Pos;
 }
 
-class Pos;
+namespace MusEGui {
+class DoubleLabel;
+class SigLabel;
 
 //---------------------------------------------------------
 //    TempoSig
@@ -54,8 +55,8 @@ class Pos;
 class TempoSig : public QWidget {
     Q_OBJECT
     
-      MusEWidget::DoubleLabel* l1;
-      MusEWidget::SigLabel* l2;
+      DoubleLabel* l1;
+      SigLabel* l2;
       QLabel* l3;
       
 
@@ -122,10 +123,10 @@ class Transport : public QWidget
       Handle *lefthandle, *righthandle;
 
  private slots:
-      void cposChanged(const Pos&);
+      void cposChanged(const MusECore::Pos&);
       void cposChanged(int);
-      void lposChanged(const Pos&);
-      void rposChanged(const Pos&);
+      void lposChanged(const MusECore::Pos&);
+      void rposChanged(const MusECore::Pos&);
       void setRecMode(int);
       void setCycleMode(int);
       void songChanged(int);
@@ -152,5 +153,8 @@ class Transport : public QWidget
       ~Transport();
       QColor getHandleColor() const { return lefthandle->palette().color(QPalette::Window); }
       };
+
+} // namespace MusEGui
+
 #endif
 

@@ -30,13 +30,14 @@
 
 class QString;
 class QMimeData;
-class Undo;
-
 
 #define FUNCTION_RANGE_ONLY_SELECTED 1
 #define FUNCTION_RANGE_ONLY_BETWEEN_MARKERS 2
 
 
+
+namespace MusECore {
+class Undo;
 
 std::set<Part*> partlist_to_set(PartList* pl);
 std::set<Part*> part_to_set(Part* p);
@@ -101,5 +102,7 @@ void shrink_parts(int raster=-1); //negative values mean "config.division"
 void expand_parts(int raster=-1);
 void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo& operations);
 void clean_parts();
+
+} // namespace MusECore
 
 #endif

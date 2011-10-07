@@ -33,9 +33,11 @@
 #include "tempo.h"
 #include "globals.h"
 
+namespace MusEGlobal {
 extern int mtcType;
+}
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   PosLabel
@@ -87,7 +89,7 @@ void PosLabel::updateValue()
             int min  = int(time) / 60;
             int sec  = int(time) % 60;
             double rest = time - (min * 60 + sec);
-            switch(mtcType) {
+            switch(MusEGlobal::mtcType) {
                   case 0:     // 24 frames sec
                         rest *= 24;
                         break;
@@ -165,10 +167,10 @@ void PosLabel::setSmpte(bool val)
       {
       _smpte = val;
       if (val)
-            _sampleValue = tempomap.tick2frame(_tickValue);
+            _sampleValue = MusEGlobal::tempomap.tick2frame(_tickValue);
       else
-            _tickValue = tempomap.frame2tick(_sampleValue);
+            _tickValue = MusEGlobal::tempomap.frame2tick(_sampleValue);
       updateValue();
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

@@ -31,6 +31,7 @@
 #include "event.h"
 
 //class AudioConverter;
+namespace MusECore {
 class WavePart;
 
 //---------------------------------------------------------
@@ -108,5 +109,8 @@ class EventBase : public PosLen {
       virtual void readAudio(WavePart* /*part*/, unsigned /*offset*/, 
                              float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/) { }
       };
+
+} // namespace MusECore
+
 #endif
 

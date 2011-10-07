@@ -33,6 +33,8 @@
 
 #define CHORD_TIMEOUT 75
 
+namespace MusECore {
+
 StepRec::StepRec(bool* note_held_down_array)
 {
 	note_held_down=note_held_down_array;
@@ -46,16 +48,16 @@ StepRec::StepRec(bool* note_held_down_array)
 
 void StepRec::timeout()
 {
-	if (chord_timer_set_to_tick != song->cpos())
+	if (chord_timer_set_to_tick != MusEGlobal::song->cpos())
 	{
 		Pos p(chord_timer_set_to_tick, true);
-		song->setPos(0, p, true, false, true);
+		MusEGlobal::song->setPos(0, p, true, false, true);
 	}
 }
 
 void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ctrl, bool shift)
 {
-	unsigned tick = song->cpos();
+	unsigned tick = MusEGlobal::song->cpos();
 	unsigned lasttick=0;
 	Undo operations;
 	
@@ -100,7 +102,7 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 				Event ev = i->second;
 				if (ev.isNote() && ev.pitch() == pitch)
 				{
-					audio->msgDeleteEvent(ev, part, true, false, false);
+					MusEGlobal::audio->msgDeleteEvent(ev, part, true, false, false);
 
 					if (!shift)
 					{
@@ -180,8 +182,8 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 			chord_timer->stop();
 
 			// simply proceed, inserting a rest
-			Pos p(song->cpos() + step, true);
-			song->setPos(0, p, true, false, true);
+			Pos p(MusEGlobal::song->cpos() + step, true);
+			MusEGlobal::song->setPos(0, p, true, false, true);
 			
 			return;
 		}
@@ -193,6 +195,8 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 		if (lasttick > part->lenTick()) // we have to expand the part?
 			schedule_resize_all_same_len_clone_parts(part, lasttick, operations);
 		
-		song->applyOperationGroup(operations);
+		MusEGlobal::song->applyOperationGroup(operations);
 	}
 }
+
+} // namespace MusECore

@@ -29,6 +29,8 @@
 
 class QCloseEvent;
 
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   MidiFilterConfig
 //---------------------------------------------------------
@@ -101,6 +103,8 @@ class MidiFilterConfig : public QDialog, public Ui::MidiFilterConfigBase {
    public:
       MidiFilterConfig(QDialog* parent=0);
       };
+
+} // namespace MusEGui
 
 #endif
 

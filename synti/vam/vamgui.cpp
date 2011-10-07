@@ -68,9 +68,9 @@ const char *vam_ctrl_names[] = {
 struct Preset {
 	QString name;
 	int ctrl[NUM_CONTROLLER];
-	void readConfiguration(Xml& xml);
-	void readControl(Xml& xml);
-	void writeConfiguration(Xml& xml, int level);
+	void readConfiguration(MusECore::Xml& xml);
+	void readControl(MusECore::Xml& xml);
+	void writeConfiguration(MusECore::Xml& xml, int level);
       };
 
 std::list<Preset> presets;
@@ -91,21 +91,21 @@ typedef std::list<Preset>::iterator iPreset;
 //   readControl
 //---------------------------------------------------------
 
-void Preset::readControl(Xml& xml)
+void Preset::readControl(MusECore::Xml& xml)
 {
 	int idx = 0;
 	int val = 0;
 	for (;;) {
-		Xml::Token token(xml.parse());
+		MusECore::Xml::Token token(xml.parse());
 		const QString& tag(xml.s1());
 		switch (token) {
-			case Xml::Error:
-			case Xml::End:
+			case MusECore::Xml::Error:
+			case MusECore::Xml::End:
 				return;
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				xml.unknown("control");
 				break;
-			case Xml::Attribut:
+			case MusECore::Xml::Attribut:
 				if (tag == "idx") {
 					idx = xml.s2().toInt();
 						if (idx >= NUM_CONTROLLER)
@@ -114,7 +114,7 @@ void Preset::readControl(Xml& xml)
 				else if (tag == "val")
 					val = xml.s2().toInt();
 				break;
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "control") {
 					ctrl[idx] = val;
 					return;
@@ -129,26 +129,26 @@ void Preset::readControl(Xml& xml)
 //   readConfiguration
 //---------------------------------------------------------
 
-void Preset::readConfiguration(Xml& xml)
+void Preset::readConfiguration(MusECore::Xml& xml)
 {
 	for (;;) {
-		Xml::Token token(xml.parse());
+		MusECore::Xml::Token token(xml.parse());
 		const QString& tag(xml.s1());
 		switch (token) {
-			case Xml::Error:
-			case Xml::End:
+			case MusECore::Xml::Error:
+			case MusECore::Xml::End:
 				return;
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "control")
 					readControl(xml);
 				else
 					xml.unknown("preset");
 				break;
-			case Xml::Attribut:
+			case MusECore::Xml::Attribut:
 				if (tag == "name")
 					name = xml.s2();
 				break;
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "preset")
 					return;
 			default:
@@ -161,10 +161,10 @@ void Preset::readConfiguration(Xml& xml)
 //   writeConfiguration
 //---------------------------------------------------------
 
-void Preset::writeConfiguration(Xml& xml, int level)
+void Preset::writeConfiguration(MusECore::Xml& xml, int level)
 {
 	//xml.tag(level++, "preset name=\"%s\"", name.ascii());
-        xml.tag(level++, "preset name=\"%s\"", Xml::xmlString(name).toAscii().constData());
+        xml.tag(level++, "preset name=\"%s\"", MusECore::Xml::xmlString(name).toAscii().constData());
 	for (int i = 0; i < NUM_CONTROLLER; ++i) {
 		xml.tag(level, "control idx=\"%d\" val=\"%d\" /", i, ctrl[i]);
 	}
@@ -183,10 +183,10 @@ VAMGui::VAMGui()
       QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
       connect(s, SIGNAL(activated(int)), SLOT(readMessage(int)));
 
-      loadPresets->setIcon(QIcon(*openIcon));
-      savePresets->setIcon(QIcon(*saveIcon));
-      savePresetsToFile->setIcon(QIcon(*saveasIcon));
-      deletePreset->setIcon(QIcon(*deleteIcon));
+      loadPresets->setIcon(QIcon(*MusEGui::openIcon));
+      savePresets->setIcon(QIcon(*MusEGui::saveIcon));
+      savePresetsToFile->setIcon(QIcon(*MusEGui::saveasIcon));
+      deletePreset->setIcon(QIcon(*MusEGui::deleteIcon));
 
         // p4.0.27 First ctrl offset.
 	dctrl[DCO1_PITCHMOD - VAM_FIRST_CTRL] = SynthGuiCtrl(PitchModS, LCDNumber1,  SynthGuiCtrl::SLIDER);
@@ -277,7 +277,7 @@ void VAMGui::ctrlChanged(int idx)
 	else if (ctrl->type == SynthGuiCtrl::SWITCH) {
 		val = ((QCheckBox*)(ctrl->editor))->isChecked();
 	      }
-      //sendController(0, idx + CTRL_RPN14_OFFSET, val);
+      //sendController(0, idx + MusECore::CTRL_RPN14_OFFSET, val);
       sendController(0, idx + VAM_FIRST_CTRL, val);          // p4.0.27
       }
 
@@ -566,9 +566,9 @@ void VAMGui::sysexReceived(const unsigned char* /*data*/, int /*len*/)
 //   processEvent
 //---------------------------------------------------------
 
-void VAMGui::processEvent(const MidiPlayEvent& ev)
+void VAMGui::processEvent(const MusECore::MidiPlayEvent& ev)
       {
-      if (ev.type() == ME_CONTROLLER)
+      if (ev.type() == MusECore::ME_CONTROLLER)
       {
             //setParam(ev.dataA() & 0xfff, ev.dataB());
             // p4.0.27
@@ -583,7 +583,7 @@ void VAMGui::processEvent(const MidiPlayEvent& ev)
             setParam(ctl - VAM_FIRST_CTRL, ev.dataB());
             
       }      
-      else if (ev.type() == ME_SYSEX)
+      else if (ev.type() == MusECore::ME_SYSEX)
             sysexReceived(ev.data(), ev.len());
       else
       {
@@ -619,16 +619,16 @@ void VAMGui::loadPresetsPressed()
 	presets.clear();
 	presetList->clear();
 
-	Xml xml(f);
+	MusECore::Xml xml(f);
 	int mode = 0;
 	for (;;) {
-		Xml::Token token = xml.parse();
+		MusECore::Xml::Token token = xml.parse();
 		QString tag = xml.s1();
 		switch (token) {
-			case Xml::Error:
-			case Xml::End:
+			case MusECore::Xml::Error:
+			case MusECore::Xml::End:
 				return;
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (mode == 0 && tag == "muse")
 					mode = 1;
 //				else if (mode == 1 && tag == "instrument")
@@ -643,7 +643,7 @@ void VAMGui::loadPresetsPressed()
 				else if(mode != 1)
 					xml.unknown("SynthPreset");
 				break;
-			case Xml::Attribut:
+			case MusECore::Xml::Attribut:
 				if(mode == 1 && tag == "iname") {
 //					fprintf(stderr, "%s\n", xml.s2().toLatin1());
 					if(xml.s2() != "vam-1.0")
@@ -651,7 +651,7 @@ void VAMGui::loadPresetsPressed()
 					else mode = 2;
 				}
                     		break;
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "muse")
 				goto ende;
 			default:
@@ -692,7 +692,7 @@ void VAMGui::doSavePresets(const QString& fn, bool showWarning)
   FILE* f = fopen(fn.toAscii().constData(),"w");//fileOpen(this, fn, QString(".pre"), "w", popenFlag, false, showWarning);
 	if (f == 0)
 		return;
-	Xml xml(f);
+	MusECore::Xml xml(f);
 	xml.header();
 	xml.tag(0, "muse version=\"1.0\"");
 	xml.tag(0, "instrument iname=\"vam-1.0\" /");

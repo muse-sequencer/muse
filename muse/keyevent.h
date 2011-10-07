@@ -29,6 +29,8 @@
 #define MAX_TICK (0x7fffffff/100)
 #endif
 
+namespace MusECore {
+
 class Xml;
 
 //don't change this enum! changing the numeric values will affect
@@ -113,7 +115,10 @@ class KeyList : public KEYLIST {
       void delKey(unsigned tick);
       };
 
-extern KeyList keymap;
+} // namespace MusECore
 
+namespace MusEGlobal {
+extern MusECore::KeyList keymap;
+}
 
 #endif // KEYEVENT_H

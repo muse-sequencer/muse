@@ -24,7 +24,7 @@
 #include "setlen.h"
 #include "xml.h"
 
-namespace MusEDialog {
+namespace MusEGui {
 
 Setlen::Setlen(QWidget* parent)
 	: QDialog(parent)
@@ -61,18 +61,18 @@ int Setlen::exec()
 	return QDialog::exec();
 }
 
-void Setlen::read_configuration(Xml& xml)
+void Setlen::read_configuration(MusECore::Xml& xml)
 {
 	for (;;)
 	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
 			
 		const QString& tag = xml.s1();
 		switch (token)
 		{
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "range")
 					range=xml.parseInt();
 				else if (tag == "len")
@@ -81,7 +81,7 @@ void Setlen::read_configuration(Xml& xml)
 					xml.unknown("SetLen");
 				break;
 				
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "setlen")
 					return;
 				
@@ -91,7 +91,7 @@ void Setlen::read_configuration(Xml& xml)
 	}
 }
 
-void Setlen::write_configuration(int level, Xml& xml)
+void Setlen::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "setlen");
 	xml.intTag(level, "range", range);
@@ -99,4 +99,4 @@ void Setlen::write_configuration(int level, Xml& xml)
 	xml.tag(level, "/setlen");
 }
 
-} // namespace MusEDialog
+} // namespace MusEGui

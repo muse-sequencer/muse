@@ -26,9 +26,12 @@
 #include "ui_crescendobase.h"
 
 class QButtonGroup;
-class Xml;
 
-namespace MusEDialog {
+namespace MusECore {
+class Xml;
+}
+
+namespace MusEGui {
 
 class Crescendo : public QDialog, public Ui::CrescendoBase
 {
@@ -49,8 +52,8 @@ class Crescendo : public QDialog, public Ui::CrescendoBase
 		int end_val;
 		bool absolute;
 		
-		void read_configuration(Xml& xml);
-		void write_configuration(int level, Xml& xml);
+		void read_configuration(MusECore::Xml& xml);
+		void write_configuration(int level, MusECore::Xml& xml);
 		
 		
 	public slots:
@@ -60,7 +63,7 @@ class Crescendo : public QDialog, public Ui::CrescendoBase
 		void absolute_changed(bool);
 };
 
-} // namespace MusEDialog
+} // namespace MusEGui
 
 #endif
 

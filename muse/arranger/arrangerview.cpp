@@ -68,7 +68,7 @@
 #include "visibletracks.h"
 #include "xml.h"
 
-namespace MusEArranger {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   ArrangerView
@@ -110,21 +110,21 @@ ArrangerView::ArrangerView(QWidget* parent)
   transport_toolbar->setObjectName("transport");
   transport_toolbar->addActions(MusEGlobal::transportAction->actions());
 
-  editTools = new MusEWidget::EditToolBar(this, MusEWidget::arrangerTools);
+  editTools = new EditToolBar(this, arrangerTools);
   addToolBar(editTools);
   editTools->setObjectName("arrangerTools");
 
-  visTracks = new MusEWidget::VisibleTracks(this);
+  visTracks = new VisibleTracks(this);
   addToolBar(visTracks);
 
 
 
   connect(editTools, SIGNAL(toolChanged(int)), arranger, SLOT(setTool(int)));
-  connect(visTracks, SIGNAL(visibilityChanged()), song, SLOT(update()) );
-  connect(arranger, SIGNAL(editPart(Track*)), muse, SLOT(startEditor(Track*)));
+  connect(visTracks, SIGNAL(visibilityChanged()), MusEGlobal::song, SLOT(update()) );
+  connect(arranger, SIGNAL(editPart(MusECore::Track*)), muse, SLOT(startEditor(MusECore::Track*)));
   connect(arranger, SIGNAL(dropSongFile(const QString&)), muse, SLOT(loadProjectFile(const QString&)));
   connect(arranger, SIGNAL(dropMidiFile(const QString&)), muse, SLOT(importMidi(const QString&)));
-  connect(arranger, SIGNAL(startEditor(PartList*,int)),  muse, SLOT(startEditor(PartList*,int)));
+  connect(arranger, SIGNAL(startEditor(MusECore::PartList*,int)),  muse, SLOT(startEditor(MusECore::PartList*,int)));
   connect(arranger, SIGNAL(toolChanged(int)), editTools, SLOT(set(int)));
   connect(muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
   connect(arranger, SIGNAL(setUsedTool(int)), editTools, SLOT(set(int)));
@@ -375,7 +375,7 @@ void ArrangerView::closeEvent(QCloseEvent* e)
 
 
 
-void ArrangerView::writeStatus(int level, Xml& xml) const
+void ArrangerView::writeStatus(int level, MusECore::Xml& xml) const
 {
   xml.tag(level++, "arrangerview");
   TopWin::writeStatus(level, xml);
@@ -384,18 +384,18 @@ void ArrangerView::writeStatus(int level, Xml& xml) const
   xml.tag(level, "/arrangerview");
 }
 
-void ArrangerView::readStatus(Xml& xml)
+void ArrangerView::readStatus(MusECore::Xml& xml)
 {
   for (;;)
   {
-    Xml::Token token = xml.parse();
-    if (token == Xml::Error || token == Xml::End)
+    MusECore::Xml::Token token = xml.parse();
+    if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
       break;
       
     const QString& tag = xml.s1();
     switch (token)
     {
-      case Xml::TagStart:
+      case MusECore::Xml::TagStart:
         if (tag == "tool") 
           editTools->set(xml.parseInt());
         else if (tag == "topwin") 
@@ -406,7 +406,7 @@ void ArrangerView::readStatus(Xml& xml)
           xml.unknown("ArrangerView");
         break;
 
-      case Xml::TagEnd:
+      case MusECore::Xml::TagEnd:
         if (tag == "arrangerview")
           return;
           
@@ -420,22 +420,22 @@ void ArrangerView::readStatus(Xml& xml)
 //   readConfiguration
 //---------------------------------------------------------
 
-void ArrangerView::readConfiguration(Xml& xml)
+void ArrangerView::readConfiguration(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
             switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return;
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "topwin")
                               TopWin::readConfiguration(ARRANGER, xml);
                         else
                               xml.unknown("ArrangerView");
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "arrangerview")
                               return;
                   default:
@@ -448,7 +448,7 @@ void ArrangerView::readConfiguration(Xml& xml)
 //   writeConfiguration
 //---------------------------------------------------------
 
-void ArrangerView::writeConfiguration(int level, Xml& xml)
+void ArrangerView::writeConfiguration(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "arrangerview");
       TopWin::writeConfiguration(ARRANGER, level, xml);
@@ -458,9 +458,9 @@ void ArrangerView::writeConfiguration(int level, Xml& xml)
 
 void ArrangerView::cmd(int cmd)
       {
-      TrackList* tracks = song->tracks();
-      int l = song->lpos();
-      int r = song->rpos();
+      MusECore::TrackList* tracks = MusEGlobal::song->tracks();
+      int l = MusEGlobal::song->lpos();
+      int r = MusEGlobal::song->rpos();
 
       switch(cmd) {
             case CMD_CUT:
@@ -488,19 +488,19 @@ void ArrangerView::cmd(int cmd)
                   arranger->cmd(Arranger::CMD_INSERT_EMPTYMEAS);
                   break;
             case CMD_DELETE:
-                  if (!song->msgRemoveParts()) //automatically does undo if neccessary and returns true then
+                  if (!MusEGlobal::song->msgRemoveParts()) //automatically does undo if neccessary and returns true then
                   {
                         //msgRemoveParts() returned false -> no parts to remove?
-                        song->startUndo();
-                        audio->msgRemoveTracks(); //TODO FINDME this could still be speeded up!
-                        song->endUndo(SC_TRACK_REMOVED);
+                        MusEGlobal::song->startUndo();
+                        MusEGlobal::audio->msgRemoveTracks(); //TODO FINDME this could still be speeded up!
+                        MusEGlobal::song->endUndo(SC_TRACK_REMOVED);
                   }
                   break;
             case CMD_DELETE_TRACK:
-                  song->startUndo();
-                  audio->msgRemoveTracks();
-                  song->endUndo(SC_TRACK_REMOVED);
-                  audio->msgUpdateSoloStates();
+                  MusEGlobal::song->startUndo();
+                  MusEGlobal::audio->msgRemoveTracks();
+                  MusEGlobal::song->endUndo(SC_TRACK_REMOVED);
+                  MusEGlobal::audio->msgUpdateSoloStates();
                   break;
 
             case CMD_SELECT_ALL:
@@ -508,9 +508,9 @@ void ArrangerView::cmd(int cmd)
             case CMD_SELECT_INVERT:
             case CMD_SELECT_ILOOP:
             case CMD_SELECT_OLOOP:
-                  for (iTrack i = tracks->begin(); i != tracks->end(); ++i) {
-                        PartList* parts = (*i)->parts();
-                        for (iPart p = parts->begin(); p != parts->end(); ++p) {
+                  for (MusECore::iTrack i = tracks->begin(); i != tracks->end(); ++i) {
+                        MusECore::PartList* parts = (*i)->parts();
+                        for (MusECore::iPart p = parts->begin(); p != parts->end(); ++p) {
                               bool f = false;
                               int t1 = p->second->tick();
                               int t2 = t1 + p->second->lenTick();
@@ -538,34 +538,34 @@ void ArrangerView::cmd(int cmd)
                               p->second->setSelected(f);
                               }
                         }
-                  song->update();
+                  MusEGlobal::song->update();
                   break;
 
             case CMD_SELECT_PARTS:
-                  for (iTrack i = tracks->begin(); i != tracks->end(); ++i) {
+                  for (MusECore::iTrack i = tracks->begin(); i != tracks->end(); ++i) {
                         if (!(*i)->selected())
                               continue;
-                        PartList* parts = (*i)->parts();
-                        for (iPart p = parts->begin(); p != parts->end(); ++p)
+                        MusECore::PartList* parts = (*i)->parts();
+                        for (MusECore::iPart p = parts->begin(); p != parts->end(); ++p)
                               p->second->setSelected(true);
                         }
-                  song->update();
+                  MusEGlobal::song->update();
                   break;
                   
-            case CMD_SHRINK_PART: shrink_parts(); break;
-            case CMD_EXPAND_PART: expand_parts(); break;
-            case CMD_CLEAN_PART: clean_parts(); break;      
+            case CMD_SHRINK_PART: MusECore::shrink_parts(); break;
+            case CMD_EXPAND_PART: MusECore::expand_parts(); break;
+            case CMD_CLEAN_PART: MusECore::clean_parts(); break;      
 
-            case CMD_QUANTIZE: quantize_notes(); break;
-            case CMD_VELOCITY: modify_velocity(); break;
-            case CMD_CRESCENDO: crescendo(); break;
-            case CMD_NOTELEN: modify_notelen(); break;
-            case CMD_TRANSPOSE: transpose_notes(); break;
-            case CMD_ERASE: erase_notes(); break;
-            case CMD_MOVE: move_notes(); break;
-            case CMD_FIXED_LEN: set_notelen(); break;
-            case CMD_DELETE_OVERLAPS: delete_overlaps(); break;
-            case CMD_LEGATO: legato(); break;
+            case CMD_QUANTIZE: MusECore::quantize_notes(); break;
+            case CMD_VELOCITY: MusECore::modify_velocity(); break;
+            case CMD_CRESCENDO: MusECore::crescendo(); break;
+            case CMD_NOTELEN: MusECore::modify_notelen(); break;
+            case CMD_TRANSPOSE: MusECore::transpose_notes(); break;
+            case CMD_ERASE: MusECore::erase_notes(); break;
+            case CMD_MOVE: MusECore::move_notes(); break;
+            case CMD_FIXED_LEN: MusECore::set_notelen(); break;
+            case CMD_DELETE_OVERLAPS: MusECore::delete_overlaps(); break;
+            case CMD_LEGATO: MusECore::legato(); break;
 
             }
       }
@@ -629,7 +629,7 @@ void ArrangerView::clearScoreMenuMappers()
 
 void ArrangerView::populateAddTrack()
 {
-      QActionGroup *grp = MusEUtil::populateAddTrack(addTrack);
+      QActionGroup *grp = MusEGui::populateAddTrack(addTrack);
       connect(addTrack, SIGNAL(triggered(QAction *)), SLOT(addNewTrack(QAction *)));
       
       trackMidiAction = grp->actions()[0];
@@ -643,8 +643,8 @@ void ArrangerView::populateAddTrack()
 
 void ArrangerView::addNewTrack(QAction* action)
 {
-  song->addNewTrack(action, MusEGlobal::muse->arranger()->curTrack());  // Insert at current selected track.
-  //song->addNewTrack(action);  // Add at end.
+  MusEGlobal::song->addNewTrack(action, MusEGlobal::muse->arranger()->curTrack());  // Insert at current selected track.
+  //MusEGlobal::song->addNewTrack(action);  // Add at end.
 }
 
 void ArrangerView::updateShortcuts()
@@ -725,8 +725,8 @@ void ArrangerView::updateVisibleTracksButtons()
   visTracks->updateVisibleTracksButtons();
 }
 
-void ArrangerView::globalCut() { ::globalCut(); }
-void ArrangerView::globalInsert() { ::globalInsert(); }
-void ArrangerView::globalSplit() { ::globalSplit(); }
+void ArrangerView::globalCut() { MusECore::globalCut(); }
+void ArrangerView::globalInsert() { MusECore::globalInsert(); }
+void ArrangerView::globalSplit() { MusECore::globalSplit(); }
 
-} // namespace MusEArranger
+} // namespace MusEGui

@@ -27,6 +27,8 @@
 class QPixmap;
 class QIcon;
 
+namespace MusEGui {
+
 extern QPixmap* track_commentIcon;
 extern QPixmap* pointerIcon;
 extern QPixmap* pencilIcon;
@@ -253,6 +255,8 @@ extern QIcon* userIcon;
 
 extern QPixmap* sineIcon;
 extern QPixmap* sawIcon;
+
+} // namespace MusEGui
 
 #endif
 

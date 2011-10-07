@@ -30,6 +30,9 @@
 #include <QString>
 
 class QFileInfo;
+
+namespace MusECore {
+
 class Xml;
 
 //---------------------------------------------------------
@@ -282,5 +285,8 @@ extern ClipBase* readClip(Xml& xml);
 #endif
 
 extern SndFile* getWave(const QString& name, bool readOnlyFlag);
+
+} // namespace MusECore
+
 #endif
 

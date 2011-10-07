@@ -42,7 +42,7 @@ class PosEdit : public QAbstractSpinBox
       Q_PROPERTY(bool smpte READ smpte WRITE setSmpte)
 
       bool _smpte;
-      Pos _pos;
+      MusECore::Pos _pos;
       bool initialized;
 
       QIntValidator* validator;
@@ -58,7 +58,7 @@ class PosEdit : public QAbstractSpinBox
       void finishEdit();
 
    signals:
-      void valueChanged(const Pos&);
+      void valueChanged(const MusECore::Pos&);
       
       // Choose these three carefully, watch out for focusing recursion. 
       void returnPressed();
@@ -67,7 +67,7 @@ class PosEdit : public QAbstractSpinBox
       void editingFinished();
 
    public slots:
-      void setValue(const Pos& time);
+      void setValue(const MusECore::Pos& time);
       void setValue(int t);
       void setValue(const QString& s);
 
@@ -76,7 +76,7 @@ class PosEdit : public QAbstractSpinBox
       ~PosEdit();
       QSize sizeHint() const;
 
-      Pos pos() const { return _pos; }
+      MusECore::Pos pos() const { return _pos; }
       void setSmpte(bool);
       bool smpte() const { return _smpte; }
       // void* operator new(size_t);          // What was this for? Tim.

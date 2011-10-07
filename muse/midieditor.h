@@ -33,18 +33,20 @@
 class QGridLayout;
 class QWidget;
 
-class PartList;
-class Xml;
-class EventCanvas;
-class CtrlEdit;
-class WaveView;
-class Part;
-class WavePart;
 
-namespace MusEWidget {
+namespace MusECore {
+class Part;
+class PartList;
+class WavePart;
+class Xml;
+}
+
+namespace MusEGui {
+class CtrlEdit;
+class EventCanvas;
 class MTScale;
 class ScrollScale;
-}
+class WaveView;
 
 //---------------------------------------------------------
 //   MidiEditor
@@ -53,14 +55,14 @@ class ScrollScale;
 class MidiEditor : public TopWin  {
       Q_OBJECT
 
-      PartList* _pl;
+      MusECore::PartList* _pl;
       std::set<int> _parts;
       int _curDrumInstrument;  // currently selected instrument if drum
                                // editor
    protected:
-      MusEWidget::ScrollScale* hscroll;
-      MusEWidget::ScrollScale* vscroll;
-      MusEWidget::MTScale* time;
+      MusEGui::ScrollScale* hscroll;
+      MusEGui::ScrollScale* vscroll;
+      MusEGui::MTScale* time;
       EventCanvas* canvas;
       WaveView* wview;
 
@@ -68,13 +70,13 @@ class MidiEditor : public TopWin  {
       int _raster;
       QGridLayout* mainGrid;
       QWidget* mainw;
-      virtual void readStatus(Xml&);
-      virtual void writeStatus(int, Xml&) const;
-      void writePartList(int, Xml&) const;
+      virtual void readStatus(MusECore::Xml&);
+      virtual void writeStatus(int, MusECore::Xml&) const;
+      void writePartList(int, MusECore::Xml&) const;
       void genPartlist();
 
    private slots:
-      void addNewParts(const std::map< Part*, std::set<Part*> >&);
+      void addNewParts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&);
 
    public slots:
       void songChanged(int type);
@@ -87,7 +89,7 @@ class MidiEditor : public TopWin  {
       void curDrumInstrumentChanged(int);
 
    public:
-      MidiEditor(ToplevelType t, int, PartList*,
+      MidiEditor(ToplevelType t, int, MusECore::PartList*,
          QWidget* parent = 0, const char* name = 0);
       ~MidiEditor();
 
@@ -101,13 +103,15 @@ class MidiEditor : public TopWin  {
       unsigned rasterVal2(unsigned v) const { return AL::sigmap.raster2(v, _raster); }
       int raster() const           { return _raster; }
       void setRaster(int val)      { _raster = val; }
-      PartList* parts()            { return _pl;  }
+      MusECore::PartList* parts()            { return _pl;  }
       int curDrumInstrument() const  { return _curDrumInstrument; }
-      Part* curCanvasPart();
-      WavePart* curWavePart();
-      void setCurCanvasPart(Part*); 
-      void addPart(Part*);
+      MusECore::Part* curCanvasPart();
+      MusECore::WavePart* curWavePart();
+      void setCurCanvasPart(MusECore::Part*); 
+      void addPart(MusECore::Part*);
       };
+
+} // namespace MusEGui
 
 #endif
 

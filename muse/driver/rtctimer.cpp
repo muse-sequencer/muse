@@ -70,7 +70,7 @@ signed int RtcTimer::initTimer()
           MusEGlobal::undoSetuid();
           return timerFd;
           }
-    if (!setTimerFreq(MusEConfig::config.rtcTicks)) {
+    if (!setTimerFreq(MusEGlobal::config.rtcTicks)) {
           // unable to set timer frequency
           return -1;
           }

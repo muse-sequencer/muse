@@ -27,7 +27,7 @@
 
 class QPaintEvent;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   VScale
@@ -42,7 +42,7 @@ class VScale : public QWidget {
       VScale(QWidget* parent=0) : QWidget(parent) {setFixedWidth(18);}
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

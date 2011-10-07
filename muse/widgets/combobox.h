@@ -28,7 +28,7 @@
 class QMenu;
 class QSignalMapper;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   ComboBox
@@ -59,7 +59,7 @@ class ComboBox : public QToolButton {
       void addAction(const QString& s, int id = -1);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

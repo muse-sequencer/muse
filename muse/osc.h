@@ -27,13 +27,15 @@
 #include <lo/lo.h>
 
 #include "config.h"
- 
+
+class QProcess;
+class QString;
+
+namespace MusECore { 
 #ifdef DSSI_SUPPORT
 class DssiSynthIF;
 #endif
 
-class QProcess;
-class QString;
 class PluginI;
 class OscIF;
 
@@ -119,5 +121,7 @@ class OscDssiIF : public OscIF
 #endif // DSSI_SUPPORT
  
 extern void initOSC();
+
+} // namespace MusECore
 
 #endif

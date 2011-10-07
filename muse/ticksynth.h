@@ -24,6 +24,9 @@
 #define __TICKSYNTH_H__
 
 #include "synth.h"
+
+namespace MusECore {
+
 extern void initMetronome();
 extern void exitMetronome();
 class MetronomeSynthI : public SynthI
@@ -32,6 +35,8 @@ class MetronomeSynthI : public SynthI
 
 };
 extern MetronomeSynthI* metronome;
+
+} // namespace MusECore
 
 #endif
 

@@ -52,8 +52,11 @@
 #include "icons.h"
 #include "shortcuts.h"
 
+namespace MusECore {
+extern QColor readColor(MusECore::Xml& xml);
+}
 
-extern QColor readColor(Xml& xml);
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   closeEvent
@@ -72,7 +75,7 @@ void WaveEdit::closeEvent(QCloseEvent* e)
 //   WaveEdit
 //---------------------------------------------------------
 
-WaveEdit::WaveEdit(PartList* pl)
+WaveEdit::WaveEdit(MusECore::PartList* pl)
    : MidiEditor(TopWin::WAVE, 1, pl)
       {
       setFocusPolicy(Qt::StrongFocus);
@@ -202,10 +205,10 @@ WaveEdit::WaveEdit(PartList* pl)
       tb1->addWidget(label);
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
       label->setIndent(3);
-      pos1 = new MusEWidget::PosLabel(0);
+      pos1 = new PosLabel(0);
       pos1->setFixedHeight(22);
       tb1->addWidget(pos1);
-      pos2 = new MusEWidget::PosLabel(0);
+      pos2 = new PosLabel(0);
       pos2->setFixedHeight(22);
       pos2->setSmpte(true);
       tb1->addWidget(pos2);
@@ -218,14 +221,14 @@ WaveEdit::WaveEdit(PartList* pl)
       int xscale;
 
       if (!parts()->empty()) { // Roughly match total size of part
-            Part* firstPart = parts()->begin()->second;
+            MusECore::Part* firstPart = parts()->begin()->second;
             xscale = 0 - firstPart->lenFrame()/_widthInit[_type];
             }
       else {
             xscale = -8000;
             }
 
-      hscroll = new MusEWidget::ScrollScale(1, -32768, xscale, 10000, Qt::Horizontal, mainw, 0, true, 10000.0);
+      hscroll = new ScrollScale(1, -32768, xscale, 10000, Qt::Horizontal, mainw, 0, true, 10000.0);
       view    = new WaveView(this, mainw, xscale, yscale);
       wview   = view;   // HACK!
 
@@ -236,7 +239,7 @@ WaveEdit::WaveEdit(PartList* pl)
       ymag->setPageStep(256);
       ymag->setValue(yscale);
        
-      time                 = new MusEWidget::MTScale(&_raster, mainw, xscale, true);
+      time                 = new MTScale(&_raster, mainw, xscale, true);
       ymag->setFixedWidth(16);
       connect(view, SIGNAL(mouseWheelMoved(int)), this, SLOT(moveVerticalSlider(int)));
       connect(ymag, SIGNAL(valueChanged(int)), view, SLOT(setYScale(int)));
@@ -249,7 +252,7 @@ WaveEdit::WaveEdit(PartList* pl)
       mainGrid->setColumnStretch(0, 100);
 
       mainGrid->addWidget(time,   0, 0, 1, 2);
-      mainGrid->addWidget(MusEUtil::hLine(mainw),    1, 0, 1, 2);
+      mainGrid->addWidget(MusECore::hLine(mainw),    1, 0, 1, 2);
       mainGrid->addWidget(view,    2, 0);
       mainGrid->addWidget(ymag,    2, 1);
       mainGrid->addWidget(hscroll, 3, 0);
@@ -270,7 +273,7 @@ WaveEdit::WaveEdit(PartList* pl)
       connect(view,  SIGNAL(horizontalScroll(unsigned)),hscroll, SLOT(setPos(unsigned)));
 
       connect(hscroll, SIGNAL(scaleChanged(int)),  SLOT(updateHScrollRange()));
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged1(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged1(int)));
 
       initShortcuts();
       
@@ -279,7 +282,7 @@ WaveEdit::WaveEdit(PartList* pl)
       
       if(!parts()->empty())
       {
-        WavePart* part = (WavePart*)(parts()->begin()->second);
+        MusECore::WavePart* part = (MusECore::WavePart*)(parts()->begin()->second);
         solo->setChecked(part->track()->solo());
       }
 
@@ -301,7 +304,7 @@ void WaveEdit::initShortcuts()
 
 void WaveEdit::configChanged()
       {
-      view->setBg(MusEConfig::config.waveEditBackgroundColor);
+      view->setBg(MusEGlobal::config.waveEditBackgroundColor);
       selectAllAction->setShortcut(shortcuts[SHRT_SELECT_ALL].key);
       selectNoneAction->setShortcut(shortcuts[SHRT_SELECT_NONE].key);
       }
@@ -332,7 +335,7 @@ void WaveEdit::updateHScrollRange()
 void WaveEdit::setTime(unsigned samplepos)
       {
 //    printf("setTime %d %x\n", samplepos, samplepos);
-      unsigned tick = tempomap.frame2tick(samplepos);
+      unsigned tick = MusEGlobal::tempomap.frame2tick(samplepos);
       pos1->setValue(tick);
       //pos2->setValue(tick);
       pos2->setValue(samplepos);
@@ -361,27 +364,27 @@ void WaveEdit::cmd(int n)
 //   loadConfiguration
 //---------------------------------------------------------
 
-void WaveEdit::readConfiguration(Xml& xml)
+void WaveEdit::readConfiguration(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
             switch (token) {
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "bgcolor")
-                              MusEConfig::config.waveEditBackgroundColor = readColor(xml);
+                              MusEGlobal::config.waveEditBackgroundColor = readColor(xml);
                         else if (tag == "topwin")
                               TopWin::readConfiguration(WAVE, xml);
                         else
                               xml.unknown("WaveEdit");
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "waveedit")
                               return;
                   default:
                         break;
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return;
                   }
             }
@@ -391,10 +394,10 @@ void WaveEdit::readConfiguration(Xml& xml)
 //   saveConfiguration
 //---------------------------------------------------------
 
-void WaveEdit::writeConfiguration(int level, Xml& xml)
+void WaveEdit::writeConfiguration(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "waveedit");
-      xml.colorTag(level, "bgcolor", MusEConfig::config.waveEditBackgroundColor);
+      xml.colorTag(level, "bgcolor", MusEGlobal::config.waveEditBackgroundColor);
       TopWin::writeConfiguration(WAVE, level,xml);
       xml.tag(level, "/waveedit");
       }
@@ -403,7 +406,7 @@ void WaveEdit::writeConfiguration(int level, Xml& xml)
 //   writeStatus
 //---------------------------------------------------------
 
-void WaveEdit::writeStatus(int level, Xml& xml) const
+void WaveEdit::writeStatus(int level, MusECore::Xml& xml) const
       {
       writePartList(level, xml);
       xml.tag(level++, "waveedit");
@@ -418,15 +421,15 @@ void WaveEdit::writeStatus(int level, Xml& xml) const
 //   readStatus
 //---------------------------------------------------------
 
-void WaveEdit::readStatus(Xml& xml)
+void WaveEdit::readStatus(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
-            if (token == Xml::Error || token == Xml::End)
+            MusECore::Xml::Token token = xml.parse();
+            if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
                   break;
             QString tag = xml.s1();
             switch (token) {
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "midieditor")
                               MidiEditor::readStatus(xml);
                         else if (tag == "xmag")
@@ -438,7 +441,7 @@ void WaveEdit::readStatus(Xml& xml)
                         else
                               xml.unknown("WaveEdit");
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "waveedit")
                               return;
                   default:
@@ -458,7 +461,7 @@ void WaveEdit::songChanged1(int bits)
         
         if (bits & SC_SOLO)
         {
-          WavePart* part = (WavePart*)(parts()->begin()->second);
+          MusECore::WavePart* part = (MusECore::WavePart*)(parts()->begin()->second);
           solo->blockSignals(true);
           solo->setChecked(part->track()->solo());
           solo->blockSignals(false);
@@ -475,9 +478,9 @@ void WaveEdit::songChanged1(int bits)
 
 void WaveEdit::soloChanged(bool flag)
       {
-      WavePart* part = (WavePart*)(parts()->begin()->second);
-      audio->msgSetSolo(part->track(), flag);
-      song->update(SC_SOLO);
+      MusECore::WavePart* part = (MusECore::WavePart*)(parts()->begin()->second);
+      MusEGlobal::audio->msgSetSolo(part->track(), flag);
+      MusEGlobal::song->update(SC_SOLO);
       }
 
 //---------------------------------------------------------
@@ -509,11 +512,11 @@ void WaveEdit::moveVerticalSlider(int val)
 void WaveEdit::horizontalZoomIn()
 {
   int mag = hscroll->mag();
-  int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
+  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
   if (zoomlvl < 23)
         zoomlvl++;
 
-  int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
 
   hscroll->setMag(newmag);
 
@@ -522,12 +525,14 @@ void WaveEdit::horizontalZoomIn()
 void WaveEdit::horizontalZoomOut()
 {
   int mag = hscroll->mag();
-  int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
+  int zoomlvl = ScrollScale::getQuickZoomLevel(mag);
   if (zoomlvl > 1)
         zoomlvl--;
 
-  int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+  int newmag = ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
 
   hscroll->setMag(newmag);
 
 }
+
+} // namespace MusEGui

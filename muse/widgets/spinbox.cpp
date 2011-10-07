@@ -24,7 +24,7 @@
 #include <QEvent>
 #include "spinbox.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   SpinBox
@@ -99,4 +99,4 @@ void SpinBox::stepDown()
     _clearFocus = true;
 }
 
-} // namespace MusEWidget
+} // namespace MusEGui

@@ -39,29 +39,25 @@ class QWheelEvent;
 class QKeyEvent;
 //class QStackedWidget;
 
+namespace MusECore {
 class Track;
 class Xml;
-class WidgetStack;
-
-namespace MusEMixer {
-class AudioStrip;
 }
 
-namespace MusEWidget {
+namespace MusEGui {
+class ArrangerView;
+class AudioStrip;
 class Header;
 class LabelCombo;
-class MidiTrackInfo;
 class MTScale;
+class MidiTrackInfo;
 class PosLabel;
 class ScrollScale;
-class Splitter;
 class SpinBox;
-}
-
-namespace MusEArranger {
-class ArrangerView;
-class TList;
+class Splitter;
 class TLLayout;
+class TList;
+class WidgetStack;
 
 //---------------------------------------------------------
 //   WidgetStack
@@ -93,33 +89,33 @@ class Arranger : public QWidget {
 
       int _quant, _raster;
       PartCanvas* canvas;
-      MusEWidget::ScrollScale* hscroll;
+      ScrollScale* hscroll;
       QScrollBar* vscroll;
       TList* list;
-      MusEWidget::Header* header;
-      MusEWidget::MTScale* time;
-      MusEWidget::SpinBox* lenEntry;
+      Header* header;
+      MTScale* time;
+      SpinBox* lenEntry;
       bool showTrackinfoFlag;
       WidgetStack* trackInfo;
       //QStackedWidget* trackInfo;
       QScrollBar* infoScroll;
       //MidiTrackInfoBase* midiTrackInfo;
-      MusEWidget::MidiTrackInfo* midiTrackInfo;
-      MusEMixer::AudioStrip* waveTrackInfo;
+      MidiTrackInfo* midiTrackInfo;
+      AudioStrip* waveTrackInfo;
       QWidget* noTrackInfo;
       TLLayout* tgrid;
 
-      Track* selected;
+      MusECore::Track* selected;
 
-      MusEWidget::LabelCombo* typeBox;
+      LabelCombo* typeBox;
       QToolButton* ib;
       int trackInfoType;
-      MusEWidget::Splitter* split;
+      Splitter* split;
       ///QMenu* pop;
       int songType;
-      MusEWidget::PosLabel* cursorPos;
-      MusEWidget::SpinBox* globalTempoSpinBox;
-      MusEWidget::SpinBox* globalPitchSpinBox;
+      PosLabel* cursorPos;
+      SpinBox* globalTempoSpinBox;
+      SpinBox* globalPitchSpinBox;
       
       unsigned cursVal;
       void genTrackInfo(QWidget* parent);
@@ -151,11 +147,11 @@ class Arranger : public QWidget {
       
    signals:
       void redirectWheelEvent(QWheelEvent*);
-      void editPart(Track*);
+      void editPart(MusECore::Track*);
       void selectionChanged();
       void dropSongFile(const QString&);
       void dropMidiFile(const QString&);
-      void startEditor(PartList*, int);
+      void startEditor(MusECore::PartList*, int);
       void toolChanged(int);
       //void addMarker(int);
       void setUsedTool(int);
@@ -166,11 +162,11 @@ class Arranger : public QWidget {
       virtual void keyPressEvent(QKeyEvent* event);
 
    public slots:
-      void dclickPart(Track*);
+      void dclickPart(MusECore::Track*);
       void setTool(int);
       void updateTrackInfo(int flags);
       void configChanged();
-      void controllerChanged(Track *t);
+      void controllerChanged(MusECore::Track *t);
 
    public:
       enum { CMD_CUT_PART, CMD_COPY_PART, CMD_COPY_PART_IN_RANGE, CMD_PASTE_PART, CMD_PASTE_CLONE_PART,
@@ -182,10 +178,10 @@ class Arranger : public QWidget {
       void setMode(int);
       void reset();
       
-      void writeStatus(int level, Xml&);
-      void readStatus(Xml&);
+      void writeStatus(int level, MusECore::Xml&);
+      void readStatus(MusECore::Xml&);
 
-      Track* curTrack() const { return selected; }
+      MusECore::Track* curTrack() const { return selected; }
       void cmd(int);
       bool isSingleSelection() { return canvas->isSingleSelection(); }
       int selectionSize() { return canvas->selectionSize(); }
@@ -197,7 +193,7 @@ class Arranger : public QWidget {
       ArrangerView* parentWin;
       };
 
-} // namespace MusEArranger
+} // namespace MusEGui
 
 #endif
 

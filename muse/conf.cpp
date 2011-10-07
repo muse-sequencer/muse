@@ -66,6 +66,8 @@
 #include "amixer.h"
 #include "track.h"
 
+namespace MusECore {
+
 extern void writeMidiTransforms(int level, Xml& xml);
 extern void readMidiTransform(Xml&);
 
@@ -168,7 +170,7 @@ static void readController(Xml& xml, int midiPort, int channel)
                         break;
                   case Xml::TagEnd:
                         if (tag == "controller") {
-                              MidiPort* port = &midiPorts[midiPort];
+                              MidiPort* port = &MusEGlobal::midiPorts[midiPort];
                               //port->addManagedController(channel, id);
                               val = port->limitValToInstrCtlRange(id, val);
                               // The value here will actually be sent to the device LATER, in MidiPort::setMidiDevice()
@@ -269,7 +271,7 @@ static void readConfigMidiPort(Xml& xml)
                         else if (tag == "instrument") {
                               instrument = xml.parse1();
                               // Moved by Tim.
-                              //midiPorts[idx].setInstrument(
+                              //MusEGlobal::midiPorts[idx].setInstrument(
                               //   registerMidiInstrument(instrument)
                               //   );
                               }
@@ -295,7 +297,7 @@ static void readConfigMidiPort(Xml& xml)
                                     idx = 0;
                                     }
                               
-                              MidiDevice* dev = midiDevices.find(device);
+                              MidiDevice* dev = MusEGlobal::midiDevices.find(device);
                               
                               //if(MusEGlobal::debugMsg && !dev)
                               //  fprintf(stderr, "readConfigMidiPort: device not found %s\n", device.toLatin1().constData());
@@ -311,7 +313,7 @@ static void readConfigMidiPort(Xml& xml)
                               if(MusEGlobal::debugMsg && !dev)
                                 fprintf(stderr, "readConfigMidiPort: device not found %s\n", device.toLatin1().constData());
                               
-                              MidiPort* mp = &midiPorts[idx];
+                              MidiPort* mp = &MusEGlobal::midiPorts[idx];
                               
                               mp->setInstrument(registerMidiInstrument(instrument));  // By Tim.
                               if(dic != -1)                      // p4.0.17 Leave them alone unless set by song.
@@ -330,7 +332,7 @@ static void readConfigMidiPort(Xml& xml)
                               
                               if (dev) {
                                     dev->setOpenFlags(openFlags);
-                                    midiSeq->msgSetMidiDevice(mp, dev);
+                                    MusEGlobal::midiSeq->msgSetMidiDevice(mp, dev);
                                     }
                               return;
                               }
@@ -390,7 +392,7 @@ static void readConfigMidiSyncInfo(Xml& xml)
                   case Xml::TagEnd:
                         if(tag == "midiSyncInfo") 
                         {
-                          MidiDevice* dev = midiDevices.find(device);
+                          MidiDevice* dev = MusEGlobal::midiDevices.find(device);
                           if(dev) 
                           {
                             MidiSyncInfo& si = dev->syncInfo();
@@ -583,28 +585,28 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                         else if (tag == "synthTracksVisible")
                                  SynthI::setVisible((bool)xml.parseInt());
                         else if (tag == "bigtimeVisible")
-                              MusEConfig::config.bigTimeVisible = xml.parseInt();
+                              MusEGlobal::config.bigTimeVisible = xml.parseInt();
                         else if (tag == "transportVisible")
-                              MusEConfig::config.transportVisible = xml.parseInt();
+                              MusEGlobal::config.transportVisible = xml.parseInt();
                         else if (tag == "mixer1Visible")
-                              MusEConfig::config.mixer1Visible = xml.parseInt();
+                              MusEGlobal::config.mixer1Visible = xml.parseInt();
                         else if (tag == "mixer2Visible")
-                              MusEConfig::config.mixer2Visible = xml.parseInt();
+                              MusEGlobal::config.mixer2Visible = xml.parseInt();
                         else if (tag == "mtctype")
-                              mtcType= xml.parseInt();
+                              MusEGlobal::mtcType= xml.parseInt();
                         else if (tag == "sendClockDelay")
-                              syncSendFirstClockDelay = xml.parseUInt();
+                              MusEGlobal::syncSendFirstClockDelay = xml.parseUInt();
                         else if (tag == "extSync")
-                              extSyncFlag.setValue(xml.parseInt());
+                              MusEGlobal::extSyncFlag.setValue(xml.parseInt());
                         else if (tag == "useJackTransport")
                               {
-                              useJackTransport.setValue(xml.parseInt());
+                              MusEGlobal::useJackTransport.setValue(xml.parseInt());
                               }
                         else if (tag == "jackTransportMaster")
                               {
-                                jackTransportMaster = xml.parseInt();
-                                if(audioDevice)
-                                  audioDevice->setMaster(jackTransportMaster);      
+                                MusEGlobal::jackTransportMaster = xml.parseInt();
+                                if(MusEGlobal::audioDevice)
+                                      MusEGlobal::audioDevice->setMaster(MusEGlobal::jackTransportMaster);      
                               }  
                         else if (tag == "mtcoffset") {
                               QString qs(xml.parse1());
@@ -612,16 +614,16 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               const char* str = ba.constData();
                               int h, m, s, f, sf;
                               sscanf(str, "%d:%d:%d:%d:%d", &h, &m, &s, &f, &sf);
-                              mtcOffset = MTC(h, m, s, f, sf);
+                              MusEGlobal::mtcOffset = MTC(h, m, s, f, sf);
                               }
                         else if (tag == "midiTransform")
                               readMidiTransform(xml);
                         else if (tag == "midiInputTransform")
                               readMidiInputTransform(xml);
                         else if (tag == "geometryTransport")
-                              MusEConfig::config.geometryTransport = readGeometry(xml, tag);
+                              MusEGlobal::config.geometryTransport = readGeometry(xml, tag);
                         else if (tag == "geometryBigTime")
-                              MusEConfig::config.geometryBigTime = readGeometry(xml, tag);
+                              MusEGlobal::config.geometryBigTime = readGeometry(xml, tag);
 
                         else if (!doReadGlobalConfig) {
                               xml.skip(tag);
@@ -635,238 +637,238 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                         // ---- Global config stuff begins here ----
 
                         else if (tag == "geometryMain")
-                              MusEConfig::config.geometryMain = readGeometry(xml, tag);
+                              MusEGlobal::config.geometryMain = readGeometry(xml, tag);
 
                         else if (tag == "theme")
-                              MusEConfig::config.style = xml.parse1();
+                              MusEGlobal::config.style = xml.parse1();
                         else if (tag == "styleSheetFile")
-                              MusEConfig::config.styleSheetFile = xml.parse1();
+                              MusEGlobal::config.styleSheetFile = xml.parse1();
                         else if (tag == "useOldStyleStopShortCut")
-                              MusEConfig::config.useOldStyleStopShortCut = xml.parseInt();
+                              MusEGlobal::config.useOldStyleStopShortCut = xml.parseInt();
                         else if (tag == "moveArmedCheckBox")
-                              MusEConfig::config.moveArmedCheckBox = xml.parseInt();
+                              MusEGlobal::config.moveArmedCheckBox = xml.parseInt();
                         else if (tag == "externalWavEditor")
-                              MusEConfig::config.externalWavEditor = xml.parse1();
+                              MusEGlobal::config.externalWavEditor = xml.parse1();
                         else if (tag == "font0")
-                              MusEConfig::config.fonts[0].fromString(xml.parse1());
+                              MusEGlobal::config.fonts[0].fromString(xml.parse1());
                         else if (tag == "font1")
-                              MusEConfig::config.fonts[1].fromString(xml.parse1());
+                              MusEGlobal::config.fonts[1].fromString(xml.parse1());
                         else if (tag == "font2")
-                              MusEConfig::config.fonts[2].fromString(xml.parse1());
+                              MusEGlobal::config.fonts[2].fromString(xml.parse1());
                         else if (tag == "font3")
-                              MusEConfig::config.fonts[3].fromString(xml.parse1());
+                              MusEGlobal::config.fonts[3].fromString(xml.parse1());
                         else if (tag == "font4")
-                              MusEConfig::config.fonts[4].fromString(xml.parse1());
+                              MusEGlobal::config.fonts[4].fromString(xml.parse1());
                         else if (tag == "font5")
-                              MusEConfig::config.fonts[5].fromString(xml.parse1());
+                              MusEGlobal::config.fonts[5].fromString(xml.parse1());
                         else if (tag == "font6")
-                              MusEConfig::config.fonts[6].fromString(xml.parse1());
+                              MusEGlobal::config.fonts[6].fromString(xml.parse1());
                         else if (tag == "globalAlphaBlend")
-                              MusEConfig::config.globalAlphaBlend = xml.parseInt();
+                              MusEGlobal::config.globalAlphaBlend = xml.parseInt();
                         else if (tag == "palette0")
-                              MusEConfig::config.palette[0] = readColor(xml);
+                              MusEGlobal::config.palette[0] = readColor(xml);
                         else if (tag == "palette1")
-                              MusEConfig::config.palette[1] = readColor(xml);
+                              MusEGlobal::config.palette[1] = readColor(xml);
                         else if (tag == "palette2")
-                              MusEConfig::config.palette[2] = readColor(xml);
+                              MusEGlobal::config.palette[2] = readColor(xml);
                         else if (tag == "palette3")
-                              MusEConfig::config.palette[3] = readColor(xml);
+                              MusEGlobal::config.palette[3] = readColor(xml);
                         else if (tag == "palette4")
-                              MusEConfig::config.palette[4] = readColor(xml);
+                              MusEGlobal::config.palette[4] = readColor(xml);
                         else if (tag == "palette5")
-                              MusEConfig::config.palette[5] = readColor(xml);
+                              MusEGlobal::config.palette[5] = readColor(xml);
                         else if (tag == "palette6")
-                              MusEConfig::config.palette[6] = readColor(xml);
+                              MusEGlobal::config.palette[6] = readColor(xml);
                         else if (tag == "palette7")
-                              MusEConfig::config.palette[7] = readColor(xml);
+                              MusEGlobal::config.palette[7] = readColor(xml);
                         else if (tag == "palette8")
-                              MusEConfig::config.palette[8] = readColor(xml);
+                              MusEGlobal::config.palette[8] = readColor(xml);
                         else if (tag == "palette9")
-                              MusEConfig::config.palette[9] = readColor(xml);
+                              MusEGlobal::config.palette[9] = readColor(xml);
                         else if (tag == "palette10")
-                              MusEConfig::config.palette[10] = readColor(xml);
+                              MusEGlobal::config.palette[10] = readColor(xml);
                         else if (tag == "palette11")
-                              MusEConfig::config.palette[11] = readColor(xml);
+                              MusEGlobal::config.palette[11] = readColor(xml);
                         else if (tag == "palette12")
-                              MusEConfig::config.palette[12] = readColor(xml);
+                              MusEGlobal::config.palette[12] = readColor(xml);
                         else if (tag == "palette13")
-                              MusEConfig::config.palette[13] = readColor(xml);
+                              MusEGlobal::config.palette[13] = readColor(xml);
                         else if (tag == "palette14")
-                              MusEConfig::config.palette[14] = readColor(xml);
+                              MusEGlobal::config.palette[14] = readColor(xml);
                         else if (tag == "palette15")
-                              MusEConfig::config.palette[15] = readColor(xml);
+                              MusEGlobal::config.palette[15] = readColor(xml);
                         else if (tag == "palette16")
-                              MusEConfig::config.palette[16] = readColor(xml);
+                              MusEGlobal::config.palette[16] = readColor(xml);
                         else if (tag == "partColor0")
-                              MusEConfig::config.partColors[0] = readColor(xml);
+                              MusEGlobal::config.partColors[0] = readColor(xml);
                         else if (tag == "partColor1")
-                              MusEConfig::config.partColors[1] = readColor(xml);
+                              MusEGlobal::config.partColors[1] = readColor(xml);
                         else if (tag == "partColor2")
-                              MusEConfig::config.partColors[2] = readColor(xml);
+                              MusEGlobal::config.partColors[2] = readColor(xml);
                         else if (tag == "partColor3")
-                              MusEConfig::config.partColors[3] = readColor(xml);
+                              MusEGlobal::config.partColors[3] = readColor(xml);
                         else if (tag == "partColor4")
-                              MusEConfig::config.partColors[4] = readColor(xml);
+                              MusEGlobal::config.partColors[4] = readColor(xml);
                         else if (tag == "partColor5")
-                              MusEConfig::config.partColors[5] = readColor(xml);
+                              MusEGlobal::config.partColors[5] = readColor(xml);
                         else if (tag == "partColor6")
-                              MusEConfig::config.partColors[6] = readColor(xml);
+                              MusEGlobal::config.partColors[6] = readColor(xml);
                         else if (tag == "partColor7")
-                              MusEConfig::config.partColors[7] = readColor(xml);
+                              MusEGlobal::config.partColors[7] = readColor(xml);
                         else if (tag == "partColor8")
-                              MusEConfig::config.partColors[8] = readColor(xml);
+                              MusEGlobal::config.partColors[8] = readColor(xml);
                         else if (tag == "partColor9")
-                              MusEConfig::config.partColors[9] = readColor(xml);
+                              MusEGlobal::config.partColors[9] = readColor(xml);
                         else if (tag == "partColor10")
-                              MusEConfig::config.partColors[10] = readColor(xml);
+                              MusEGlobal::config.partColors[10] = readColor(xml);
                         else if (tag == "partColor11")
-                              MusEConfig::config.partColors[11] = readColor(xml);
+                              MusEGlobal::config.partColors[11] = readColor(xml);
                         else if (tag == "partColor12")
-                              MusEConfig::config.partColors[12] = readColor(xml);
+                              MusEGlobal::config.partColors[12] = readColor(xml);
                         else if (tag == "partColor13")
-                              MusEConfig::config.partColors[13] = readColor(xml);
+                              MusEGlobal::config.partColors[13] = readColor(xml);
                         else if (tag == "partColor14")
-                              MusEConfig::config.partColors[14] = readColor(xml);
+                              MusEGlobal::config.partColors[14] = readColor(xml);
                         else if (tag == "partColor15")
-                              MusEConfig::config.partColors[15] = readColor(xml);
+                              MusEGlobal::config.partColors[15] = readColor(xml);
                         else if (tag == "partColor16")
-                              MusEConfig::config.partColors[16] = readColor(xml);
+                              MusEGlobal::config.partColors[16] = readColor(xml);
                         else if (tag == "partColor17")
-                              MusEConfig::config.partColors[17] = readColor(xml);
+                              MusEGlobal::config.partColors[17] = readColor(xml);
                         
                         else if (tag == "partColorName0")
-                              MusEConfig::config.partColorNames[0] = xml.parse1();
+                              MusEGlobal::config.partColorNames[0] = xml.parse1();
                         else if (tag == "partColorName1")
-                              MusEConfig::config.partColorNames[1] = xml.parse1();
+                              MusEGlobal::config.partColorNames[1] = xml.parse1();
                         else if (tag == "partColorName2")
-                              MusEConfig::config.partColorNames[2] = xml.parse1();
+                              MusEGlobal::config.partColorNames[2] = xml.parse1();
                         else if (tag == "partColorName3")
-                              MusEConfig::config.partColorNames[3] = xml.parse1();
+                              MusEGlobal::config.partColorNames[3] = xml.parse1();
                         else if (tag == "partColorName4")
-                              MusEConfig::config.partColorNames[4] = xml.parse1();
+                              MusEGlobal::config.partColorNames[4] = xml.parse1();
                         else if (tag == "partColorName5")
-                              MusEConfig::config.partColorNames[5] = xml.parse1();
+                              MusEGlobal::config.partColorNames[5] = xml.parse1();
                         else if (tag == "partColorName6")
-                              MusEConfig::config.partColorNames[6] = xml.parse1();
+                              MusEGlobal::config.partColorNames[6] = xml.parse1();
                         else if (tag == "partColorName7")
-                              MusEConfig::config.partColorNames[7] = xml.parse1();
+                              MusEGlobal::config.partColorNames[7] = xml.parse1();
                         else if (tag == "partColorName8")
-                              MusEConfig::config.partColorNames[8] = xml.parse1();
+                              MusEGlobal::config.partColorNames[8] = xml.parse1();
                         else if (tag == "partColorName9")
-                              MusEConfig::config.partColorNames[9] = xml.parse1();
+                              MusEGlobal::config.partColorNames[9] = xml.parse1();
                         else if (tag == "partColorName10")
-                              MusEConfig::config.partColorNames[10] = xml.parse1();
+                              MusEGlobal::config.partColorNames[10] = xml.parse1();
                         else if (tag == "partColorName11")
-                              MusEConfig::config.partColorNames[11] = xml.parse1();
+                              MusEGlobal::config.partColorNames[11] = xml.parse1();
                         else if (tag == "partColorName12")
-                              MusEConfig::config.partColorNames[12] = xml.parse1();
+                              MusEGlobal::config.partColorNames[12] = xml.parse1();
                         else if (tag == "partColorName13")
-                              MusEConfig::config.partColorNames[13] = xml.parse1();
+                              MusEGlobal::config.partColorNames[13] = xml.parse1();
                         else if (tag == "partColorName14")
-                              MusEConfig::config.partColorNames[14] = xml.parse1();
+                              MusEGlobal::config.partColorNames[14] = xml.parse1();
                         else if (tag == "partColorName15")
-                              MusEConfig::config.partColorNames[15] = xml.parse1();
+                              MusEGlobal::config.partColorNames[15] = xml.parse1();
                         else if (tag == "partColorName16")
-                              MusEConfig::config.partColorNames[16] = xml.parse1();
+                              MusEGlobal::config.partColorNames[16] = xml.parse1();
                         else if (tag == "partColorName17")
-                              MusEConfig::config.partColorNames[17] = xml.parse1();
+                              MusEGlobal::config.partColorNames[17] = xml.parse1();
                         
                         else if (tag == "partCanvasBg")
-                              MusEConfig::config.partCanvasBg = readColor(xml);
+                              MusEGlobal::config.partCanvasBg = readColor(xml);
                         else if (tag == "trackBg")
-                              MusEConfig::config.trackBg = readColor(xml);
+                              MusEGlobal::config.trackBg = readColor(xml);
                         else if (tag == "selectTrackBg")
-                              MusEConfig::config.selectTrackBg = readColor(xml);
+                              MusEGlobal::config.selectTrackBg = readColor(xml);
                         else if (tag == "selectTrackFg")
-                              MusEConfig::config.selectTrackFg = readColor(xml);
+                              MusEGlobal::config.selectTrackFg = readColor(xml);
                         
                         else if (tag == "mixerBg")
-                              MusEConfig::config.mixerBg = readColor(xml);
+                              MusEGlobal::config.mixerBg = readColor(xml);
                         else if (tag == "midiTrackLabelBg")
-                              MusEConfig::config.midiTrackLabelBg = readColor(xml);
+                              MusEGlobal::config.midiTrackLabelBg = readColor(xml);
                         else if (tag == "drumTrackLabelBg")
-                              MusEConfig::config.drumTrackLabelBg = readColor(xml);
+                              MusEGlobal::config.drumTrackLabelBg = readColor(xml);
                         else if (tag == "waveTrackLabelBg")
-                              MusEConfig::config.waveTrackLabelBg = readColor(xml);
+                              MusEGlobal::config.waveTrackLabelBg = readColor(xml);
                         else if (tag == "outputTrackLabelBg")
-                              MusEConfig::config.outputTrackLabelBg = readColor(xml);
+                              MusEGlobal::config.outputTrackLabelBg = readColor(xml);
                         else if (tag == "inputTrackLabelBg")
-                              MusEConfig::config.inputTrackLabelBg = readColor(xml);
+                              MusEGlobal::config.inputTrackLabelBg = readColor(xml);
                         else if (tag == "groupTrackLabelBg")
-                              MusEConfig::config.groupTrackLabelBg = readColor(xml);
+                              MusEGlobal::config.groupTrackLabelBg = readColor(xml);
                         else if (tag == "auxTrackLabelBg")
-                              MusEConfig::config.auxTrackLabelBg = readColor(xml);
+                              MusEGlobal::config.auxTrackLabelBg = readColor(xml);
                         else if (tag == "synthTrackLabelBg")
-                              MusEConfig::config.synthTrackLabelBg = readColor(xml);
+                              MusEGlobal::config.synthTrackLabelBg = readColor(xml);
                         
                         else if (tag == "midiTrackBg")
-                              MusEConfig::config.midiTrackBg = readColor(xml);
+                              MusEGlobal::config.midiTrackBg = readColor(xml);
                         else if (tag == "ctrlGraphFg")
-                              MusEConfig::config.ctrlGraphFg = readColor(xml);
+                              MusEGlobal::config.ctrlGraphFg = readColor(xml);
                         else if (tag == "drumTrackBg")
-                              MusEConfig::config.drumTrackBg = readColor(xml);
+                              MusEGlobal::config.drumTrackBg = readColor(xml);
                         else if (tag == "waveTrackBg")
-                              MusEConfig::config.waveTrackBg = readColor(xml);
+                              MusEGlobal::config.waveTrackBg = readColor(xml);
                         else if (tag == "outputTrackBg")
-                              MusEConfig::config.outputTrackBg = readColor(xml);
+                              MusEGlobal::config.outputTrackBg = readColor(xml);
                         else if (tag == "inputTrackBg")
-                              MusEConfig::config.inputTrackBg = readColor(xml);
+                              MusEGlobal::config.inputTrackBg = readColor(xml);
                         else if (tag == "groupTrackBg")
-                              MusEConfig::config.groupTrackBg = readColor(xml);
+                              MusEGlobal::config.groupTrackBg = readColor(xml);
                         else if (tag == "auxTrackBg")
-                              MusEConfig::config.auxTrackBg = readColor(xml);
+                              MusEGlobal::config.auxTrackBg = readColor(xml);
                         else if (tag == "synthTrackBg")
-                              MusEConfig::config.synthTrackBg = readColor(xml);
+                              MusEGlobal::config.synthTrackBg = readColor(xml);
                         
                         else if (tag == "extendedMidi")
-                              MusEConfig::config.extendedMidi = xml.parseInt();
+                              MusEGlobal::config.extendedMidi = xml.parseInt();
                         else if (tag == "midiExportDivision")
-                              MusEConfig::config.midiDivision = xml.parseInt();
+                              MusEGlobal::config.midiDivision = xml.parseInt();
                         else if (tag == "copyright")
-                              MusEConfig::config.copyright = xml.parse1();
+                              MusEGlobal::config.copyright = xml.parse1();
                         else if (tag == "smfFormat")
-                              MusEConfig::config.smfFormat = xml.parseInt();
+                              MusEGlobal::config.smfFormat = xml.parseInt();
                         else if (tag == "exp2ByteTimeSigs")
-                              MusEConfig::config.exp2ByteTimeSigs = xml.parseInt();
+                              MusEGlobal::config.exp2ByteTimeSigs = xml.parseInt();
                         else if (tag == "expOptimNoteOffs")
-                              MusEConfig::config.expOptimNoteOffs = xml.parseInt();
+                              MusEGlobal::config.expOptimNoteOffs = xml.parseInt();
                         else if (tag == "importMidiSplitParts")
-                              MusEConfig::config.importMidiSplitParts = xml.parseInt();
+                              MusEGlobal::config.importMidiSplitParts = xml.parseInt();
                         
                         else if (tag == "showSplashScreen")
-                              MusEConfig::config.showSplashScreen = xml.parseInt();
+                              MusEGlobal::config.showSplashScreen = xml.parseInt();
                         else if (tag == "canvasShowPartType")
-                              MusEConfig::config.canvasShowPartType = xml.parseInt();
+                              MusEGlobal::config.canvasShowPartType = xml.parseInt();
                         else if (tag == "canvasShowPartEvent")
-                              MusEConfig::config.canvasShowPartEvent = xml.parseInt();
+                              MusEGlobal::config.canvasShowPartEvent = xml.parseInt();
                         else if (tag == "canvasShowGrid")
-                              MusEConfig::config.canvasShowGrid = xml.parseInt();
+                              MusEGlobal::config.canvasShowGrid = xml.parseInt();
                         else if (tag == "canvasBgPixmap")
-                              MusEConfig::config.canvasBgPixmap = xml.parse1();
+                              MusEGlobal::config.canvasBgPixmap = xml.parse1();
                         else if (tag == "canvasCustomBgList")
-                              MusEConfig::config.canvasCustomBgList = xml.parse1().split(";", QString::SkipEmptyParts);
+                              MusEGlobal::config.canvasCustomBgList = xml.parse1().split(";", QString::SkipEmptyParts);
                         
                         //else if (tag == "mixer1")
-                        //      MusEConfig::config.mixer1.read(xml);
+                        //      MusEGlobal::config.mixer1.read(xml);
                         //else if (tag == "mixer2")
-                        //      MusEConfig::config.mixer2.read(xml);
+                        //      MusEGlobal::config.mixer2.read(xml);
                         else if (tag == "Mixer")
                         {
                               if(mixers == 0)
-                                MusEConfig::config.mixer1.read(xml);
+                                MusEGlobal::config.mixer1.read(xml);
                               else  
-                                MusEConfig::config.mixer2.read(xml);
+                                MusEGlobal::config.mixer2.read(xml);
                               ++mixers;
                         }
                         
                         else if (tag == "bigtimeForegroundcolor")
-                              MusEConfig::config.bigTimeForegroundColor = readColor(xml);
+                              MusEGlobal::config.bigTimeForegroundColor = readColor(xml);
                         else if (tag == "bigtimeBackgroundcolor")
-                              MusEConfig::config.bigTimeBackgroundColor = readColor(xml);
+                              MusEGlobal::config.bigTimeBackgroundColor = readColor(xml);
                         else if (tag == "transportHandleColor")
-                              MusEConfig::config.transportHandleColor = readColor(xml);
+                              MusEGlobal::config.transportHandleColor = readColor(xml);
                         else if (tag == "waveEditBackgroundColor")
-                              MusEConfig::config.waveEditBackgroundColor = readColor(xml);
+                              MusEGlobal::config.waveEditBackgroundColor = readColor(xml);
                         //else if (tag == "midiSyncInfo")
                         //      readConfigMidiSyncInfo(xml);
                         /* Obsolete. done by song's toplevel list. arrangerview also handles arranger.
@@ -878,88 +880,88 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               }
                         */
                         else if (tag == "drumedit")
-                              DrumEdit::readConfiguration(xml);
+                              MusEGui::DrumEdit::readConfiguration(xml);
                         else if (tag == "pianoroll")
-                              PianoRoll::readConfiguration(xml);
+                              MusEGui::PianoRoll::readConfiguration(xml);
                         else if (tag == "scoreedit")
-                              ScoreEdit::read_configuration(xml);
+                              MusEGui::ScoreEdit::read_configuration(xml);
                         else if (tag == "masteredit")
-                              MasterEdit::readConfiguration(xml);
+                              MusEGui::MasterEdit::readConfiguration(xml);
                         else if (tag == "waveedit")
-                              WaveEdit::readConfiguration(xml);
+                              MusEGui::WaveEdit::readConfiguration(xml);
                         else if (tag == "listedit")
-                              ListEdit::readConfiguration(xml);
+                              MusEGui::ListEdit::readConfiguration(xml);
                         else if (tag == "cliplistedit")
-                              ClipListEdit::readConfiguration(xml);
+                              MusEGui::ClipListEdit::readConfiguration(xml);
                         else if (tag == "lmaster")
-                              LMaster::readConfiguration(xml);
+                              MusEGui::LMaster::readConfiguration(xml);
                         else if (tag == "marker")
-                              MarkerView::readConfiguration(xml);
+                              MusEGui::MarkerView::readConfiguration(xml);
                         else if (tag == "arrangerview")
-                              MusEArranger::ArrangerView::readConfiguration(xml);
+                              MusEGui::ArrangerView::readConfiguration(xml);
                         
                         else if (tag == "dialogs")
-                              read_function_dialog_config(xml);
+                              MusEGui::read_function_dialog_config(xml);
                         else if (tag == "shortcuts")
-                              readShortCuts(xml);
+                              MusEGui::readShortCuts(xml);
                         else if (tag == "division")
-                              MusEConfig::config.division = xml.parseInt();
+                              MusEGlobal::config.division = xml.parseInt();
                         else if (tag == "guiDivision")
-                              MusEConfig::config.guiDivision = xml.parseInt();
+                              MusEGlobal::config.guiDivision = xml.parseInt();
                         else if (tag == "rtcTicks")
-                              MusEConfig::config.rtcTicks = xml.parseInt();
+                              MusEGlobal::config.rtcTicks = xml.parseInt();
                         else if (tag == "minMeter")
-                              MusEConfig::config.minMeter = xml.parseInt();
+                              MusEGlobal::config.minMeter = xml.parseInt();
                         else if (tag == "minSlider")
-                              MusEConfig::config.minSlider = xml.parseDouble();
+                              MusEGlobal::config.minSlider = xml.parseDouble();
                         else if (tag == "freewheelMode")
-                              MusEConfig::config.freewheelMode = xml.parseInt();
+                              MusEGlobal::config.freewheelMode = xml.parseInt();
                         else if (tag == "denormalProtection")
-                              MusEConfig::config.useDenormalBias = xml.parseInt();
+                              MusEGlobal::config.useDenormalBias = xml.parseInt();
                         else if (tag == "didYouKnow")
-                              MusEConfig::config.showDidYouKnow = xml.parseInt();
+                              MusEGlobal::config.showDidYouKnow = xml.parseInt();
                         else if (tag == "outputLimiter")
-                              MusEConfig::config.useOutputLimiter = xml.parseInt();
+                              MusEGlobal::config.useOutputLimiter = xml.parseInt();
                         else if (tag == "vstInPlace")
-                              MusEConfig::config.vstInPlace = xml.parseInt();
+                              MusEGlobal::config.vstInPlace = xml.parseInt();
                         else if (tag == "dummyAudioSampleRate")
-                              MusEConfig::config.dummyAudioSampleRate = xml.parseInt();
+                              MusEGlobal::config.dummyAudioSampleRate = xml.parseInt();
                         else if (tag == "dummyAudioBufSize")
-                              MusEConfig::config.dummyAudioBufSize = xml.parseInt();
+                              MusEGlobal::config.dummyAudioBufSize = xml.parseInt();
                         else if (tag == "minControlProcessPeriod")
-                              MusEConfig::config.minControlProcessPeriod = xml.parseUInt();
+                              MusEGlobal::config.minControlProcessPeriod = xml.parseUInt();
                         else if (tag == "guiRefresh")
-                              MusEConfig::config.guiRefresh = xml.parseInt();
+                              MusEGlobal::config.guiRefresh = xml.parseInt();
                         else if (tag == "userInstrumentsDir")
-                              MusEConfig::config.userInstrumentsDir = xml.parse1();
+                              MusEGlobal::config.userInstrumentsDir = xml.parse1();
                         else if (tag == "startMode")
-                              MusEConfig::config.startMode = xml.parseInt();
+                              MusEGlobal::config.startMode = xml.parseInt();
                         else if (tag == "startSong")
-                              MusEConfig::config.startSong = xml.parse1();
+                              MusEGlobal::config.startSong = xml.parse1();
                         else if (tag == "projectBaseFolder")
-                              MusEConfig::config.projectBaseFolder = xml.parse1();
+                              MusEGlobal::config.projectBaseFolder = xml.parse1();
                         else if (tag == "projectStoreInFolder")
-                              MusEConfig::config.projectStoreInFolder = xml.parseInt();
+                              MusEGlobal::config.projectStoreInFolder = xml.parseInt();
                         else if (tag == "useProjectSaveDialog")
-                              MusEConfig::config.useProjectSaveDialog = xml.parseInt();
+                              MusEGlobal::config.useProjectSaveDialog = xml.parseInt();
                         else if (tag == "popupsDefaultStayOpen")
-                              MusEConfig::config.popupsDefaultStayOpen = xml.parseInt();
+                              MusEGlobal::config.popupsDefaultStayOpen = xml.parseInt();
                         else if (tag == "leftMouseButtonCanDecrease")
-                              MusEConfig::config.leftMouseButtonCanDecrease = xml.parseInt();
+                              MusEGlobal::config.leftMouseButtonCanDecrease = xml.parseInt();
                         else if (tag == "rangeMarkerWithoutMMB")
-                              MusEConfig::config.rangeMarkerWithoutMMB = xml.parseInt();
+                              MusEGlobal::config.rangeMarkerWithoutMMB = xml.parseInt();
 
                         // ---- the following only skips obsolete entries ----
                         else if ((tag == "arranger") || (tag == "geometryPianoroll") || (tag == "geometryDrumedit"))
                               xml.skip(tag);
                         else if (tag == "markerVisible")
-                              //MusEConfig::config.markerVisible = xml.parseInt(); //Obsolete (done by song's toplevel list)
+                              //MusEGlobal::config.markerVisible = xml.parseInt(); //Obsolete (done by song's toplevel list)
                               xml.skip(tag);
                         else if (tag == "mixerVisible")
-                              // MusEConfig::config.mixerVisible = xml.parseInt();  // Obsolete
+                              // MusEGlobal::config.mixerVisible = xml.parseInt();  // Obsolete
                               xml.skip(tag);
                         else if (tag == "geometryMixer")
-                              // MusEConfig::config.geometryMixer = readGeometry(xml, tag); // Obsolete
+                              // MusEGlobal::config.geometryMixer = readGeometry(xml, tag); // Obsolete
                               xml.skip(tag);
                         else if (tag == "txDeviceId")
                                 //txDeviceId = xml.parseInt();
@@ -1038,8 +1040,8 @@ bool readConfiguration()
             if (MusEGlobal::debugMsg || MusEGlobal::debugMode)
                   fprintf(stderr, "NO Config File <%s> found\n", MusEGlobal::configName.toLatin1().constData());
 
-            if (MusEConfig::config.userInstrumentsDir.isEmpty()) 
-                  MusEConfig::config.userInstrumentsDir = MusEGlobal::configPath + "/instruments";
+            if (MusEGlobal::config.userInstrumentsDir.isEmpty()) 
+                  MusEGlobal::config.userInstrumentsDir = MusEGlobal::configPath + "/instruments";
             return true;
             }
       Xml xml(f);
@@ -1124,7 +1126,7 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
             //
             for (int i = 0; i < MIDI_PORTS; ++i) {
                   bool used = false;
-                  MidiPort* mport = &midiPorts[i];
+                  MidiPort* mport = &MusEGlobal::midiPorts[i];
                   MidiDevice* dev = mport->device();
                   // Route check by Tim. Port can now be used for routing even if no device.
                   // Also, check for other non-defaults and save port, to preserve settings even if no device.
@@ -1142,7 +1144,7 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                     used = true;  
                   else  
                   {
-                    MidiTrackList* tl = song->midis();
+                    MidiTrackList* tl = MusEGlobal::song->midis();
                     for (iMidiTrack it = tl->begin(); it != tl->end(); ++it) 
                     {
                       MidiTrack* t = *it;
@@ -1207,7 +1209,10 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
       xml.tag(level, "/sequencer");
       }
 
-namespace MusEApp {
+} // namespace MusECore
+
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   writeGlobalConfiguration
 //---------------------------------------------------------
@@ -1220,7 +1225,7 @@ void MusE::writeGlobalConfiguration() const
                MusEGlobal::configName.toLatin1().constData(), strerror(errno));
             return;
             }
-      Xml xml(f);
+      MusECore::Xml xml(f);
       xml.header();
       xml.tag(0, "muse version=\"2.0\"");
       writeGlobalConfiguration(1, xml);
@@ -1228,40 +1233,40 @@ void MusE::writeGlobalConfiguration() const
       fclose(f);
       }
 
-void MusE::writeGlobalConfiguration(int level, Xml& xml) const
+void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       {
       xml.tag(level++, "configuration");
 
-      xml.intTag(level, "division", MusEConfig::config.division);
-      xml.intTag(level, "rtcTicks", MusEConfig::config.rtcTicks);
-      xml.intTag(level, "minMeter", MusEConfig::config.minMeter);
-      xml.doubleTag(level, "minSlider", MusEConfig::config.minSlider);
-      xml.intTag(level, "freewheelMode", MusEConfig::config.freewheelMode);
-      xml.intTag(level, "denormalProtection", MusEConfig::config.useDenormalBias);
-      xml.intTag(level, "didYouKnow", MusEConfig::config.showDidYouKnow);
-      xml.intTag(level, "outputLimiter", MusEConfig::config.useOutputLimiter);
-      xml.intTag(level, "vstInPlace", MusEConfig::config.vstInPlace);
-      xml.intTag(level, "dummyAudioBufSize", MusEConfig::config.dummyAudioBufSize);
-      xml.intTag(level, "dummyAudioSampleRate", MusEConfig::config.dummyAudioSampleRate);
-      xml.uintTag(level, "minControlProcessPeriod", MusEConfig::config.minControlProcessPeriod);
+      xml.intTag(level, "division", MusEGlobal::config.division);
+      xml.intTag(level, "rtcTicks", MusEGlobal::config.rtcTicks);
+      xml.intTag(level, "minMeter", MusEGlobal::config.minMeter);
+      xml.doubleTag(level, "minSlider", MusEGlobal::config.minSlider);
+      xml.intTag(level, "freewheelMode", MusEGlobal::config.freewheelMode);
+      xml.intTag(level, "denormalProtection", MusEGlobal::config.useDenormalBias);
+      xml.intTag(level, "didYouKnow", MusEGlobal::config.showDidYouKnow);
+      xml.intTag(level, "outputLimiter", MusEGlobal::config.useOutputLimiter);
+      xml.intTag(level, "vstInPlace", MusEGlobal::config.vstInPlace);
+      xml.intTag(level, "dummyAudioBufSize", MusEGlobal::config.dummyAudioBufSize);
+      xml.intTag(level, "dummyAudioSampleRate", MusEGlobal::config.dummyAudioSampleRate);
+      xml.uintTag(level, "minControlProcessPeriod", MusEGlobal::config.minControlProcessPeriod);
 
-      xml.intTag(level, "guiRefresh", MusEConfig::config.guiRefresh);
-      xml.strTag(level, "userInstrumentsDir", MusEConfig::config.userInstrumentsDir);
+      xml.intTag(level, "guiRefresh", MusEGlobal::config.guiRefresh);
+      xml.strTag(level, "userInstrumentsDir", MusEGlobal::config.userInstrumentsDir);
       // Removed by Orcan. 20101220
       //xml.strTag(level, "helpBrowser", config.helpBrowser);
-      xml.intTag(level, "extendedMidi", MusEConfig::config.extendedMidi);
-      xml.intTag(level, "midiExportDivision", MusEConfig::config.midiDivision);
-      xml.intTag(level, "guiDivision", MusEConfig::config.guiDivision);
-      xml.strTag(level, "copyright", MusEConfig::config.copyright);
-      xml.intTag(level, "smfFormat", MusEConfig::config.smfFormat);
-      xml.intTag(level, "exp2ByteTimeSigs", MusEConfig::config.exp2ByteTimeSigs);
-      xml.intTag(level, "expOptimNoteOffs", MusEConfig::config.expOptimNoteOffs);
-      xml.intTag(level, "importMidiSplitParts", MusEConfig::config.importMidiSplitParts);
-      xml.intTag(level, "startMode", MusEConfig::config.startMode);
-      xml.strTag(level, "startSong", MusEConfig::config.startSong);
-      xml.strTag(level, "projectBaseFolder", MusEConfig::config.projectBaseFolder);
-      xml.intTag(level, "projectStoreInFolder", MusEConfig::config.projectStoreInFolder);
-      xml.intTag(level, "useProjectSaveDialog", MusEConfig::config.useProjectSaveDialog);
+      xml.intTag(level, "extendedMidi", MusEGlobal::config.extendedMidi);
+      xml.intTag(level, "midiExportDivision", MusEGlobal::config.midiDivision);
+      xml.intTag(level, "guiDivision", MusEGlobal::config.guiDivision);
+      xml.strTag(level, "copyright", MusEGlobal::config.copyright);
+      xml.intTag(level, "smfFormat", MusEGlobal::config.smfFormat);
+      xml.intTag(level, "exp2ByteTimeSigs", MusEGlobal::config.exp2ByteTimeSigs);
+      xml.intTag(level, "expOptimNoteOffs", MusEGlobal::config.expOptimNoteOffs);
+      xml.intTag(level, "importMidiSplitParts", MusEGlobal::config.importMidiSplitParts);
+      xml.intTag(level, "startMode", MusEGlobal::config.startMode);
+      xml.strTag(level, "startSong", MusEGlobal::config.startSong);
+      xml.strTag(level, "projectBaseFolder", MusEGlobal::config.projectBaseFolder);
+      xml.intTag(level, "projectStoreInFolder", MusEGlobal::config.projectStoreInFolder);
+      xml.intTag(level, "useProjectSaveDialog", MusEGlobal::config.useProjectSaveDialog);
       xml.intTag(level, "midiInputDevice", MusEGlobal::midiInputPorts);
       xml.intTag(level, "midiInputChannel", MusEGlobal::midiInputChannel);
       xml.intTag(level, "midiRecordType", MusEGlobal::midiRecordType);
@@ -1273,78 +1278,78 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       
       //xml.intTag(level, "txDeviceId", txDeviceId);
       //xml.intTag(level, "rxDeviceId", rxDeviceId);
-      xml.strTag(level, "theme", MusEConfig::config.style);
-      xml.strTag(level, "styleSheetFile", MusEConfig::config.styleSheetFile);
-      xml.strTag(level, "externalWavEditor", MusEConfig::config.externalWavEditor);
-      xml.intTag(level, "useOldStyleStopShortCut", MusEConfig::config.useOldStyleStopShortCut);
-      xml.intTag(level, "moveArmedCheckBox", MusEConfig::config.moveArmedCheckBox);
-      xml.intTag(level, "popupsDefaultStayOpen", MusEConfig::config.popupsDefaultStayOpen);
-      xml.intTag(level, "leftMouseButtonCanDecrease", MusEConfig::config.leftMouseButtonCanDecrease);
-      xml.intTag(level, "rangeMarkerWithoutMMB", MusEConfig::config.rangeMarkerWithoutMMB);
+      xml.strTag(level, "theme", MusEGlobal::config.style);
+      xml.strTag(level, "styleSheetFile", MusEGlobal::config.styleSheetFile);
+      xml.strTag(level, "externalWavEditor", MusEGlobal::config.externalWavEditor);
+      xml.intTag(level, "useOldStyleStopShortCut", MusEGlobal::config.useOldStyleStopShortCut);
+      xml.intTag(level, "moveArmedCheckBox", MusEGlobal::config.moveArmedCheckBox);
+      xml.intTag(level, "popupsDefaultStayOpen", MusEGlobal::config.popupsDefaultStayOpen);
+      xml.intTag(level, "leftMouseButtonCanDecrease", MusEGlobal::config.leftMouseButtonCanDecrease);
+      xml.intTag(level, "rangeMarkerWithoutMMB", MusEGlobal::config.rangeMarkerWithoutMMB);
       
       //for (int i = 0; i < 6; ++i) {
       for (int i = 0; i < NUM_FONTS; ++i) {
             char buffer[32];
             sprintf(buffer, "font%d", i);
-            xml.strTag(level, buffer, MusEConfig::config.fonts[i].toString());
+            xml.strTag(level, buffer, MusEGlobal::config.fonts[i].toString());
             }
             
-      xml.intTag(level, "globalAlphaBlend", MusEConfig::config.globalAlphaBlend);
+      xml.intTag(level, "globalAlphaBlend", MusEGlobal::config.globalAlphaBlend);
       
       for (int i = 0; i < 16; ++i) {
             char buffer[32];
             sprintf(buffer, "palette%d", i);
-            xml.colorTag(level, buffer, MusEConfig::config.palette[i]);
+            xml.colorTag(level, buffer, MusEGlobal::config.palette[i]);
             }
 
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
             char buffer[32];
             sprintf(buffer, "partColor%d", i);
-            xml.colorTag(level, buffer, MusEConfig::config.partColors[i]);
+            xml.colorTag(level, buffer, MusEGlobal::config.partColors[i]);
             }
 
       for (int i = 0; i < NUM_PARTCOLORS; ++i) {
             char buffer[32];
             sprintf(buffer, "partColorName%d", i);
-            xml.strTag(level, buffer, MusEConfig::config.partColorNames[i]);
+            xml.strTag(level, buffer, MusEGlobal::config.partColorNames[i]);
             }
 
-      xml.colorTag(level, "partCanvasBg",  MusEConfig::config.partCanvasBg);
-      xml.colorTag(level, "trackBg",       MusEConfig::config.trackBg);
-      xml.colorTag(level, "selectTrackBg", MusEConfig::config.selectTrackBg);
-      xml.colorTag(level, "selectTrackFg", MusEConfig::config.selectTrackFg);
+      xml.colorTag(level, "partCanvasBg",  MusEGlobal::config.partCanvasBg);
+      xml.colorTag(level, "trackBg",       MusEGlobal::config.trackBg);
+      xml.colorTag(level, "selectTrackBg", MusEGlobal::config.selectTrackBg);
+      xml.colorTag(level, "selectTrackFg", MusEGlobal::config.selectTrackFg);
       
-      xml.colorTag(level, "mixerBg",            MusEConfig::config.mixerBg);
-      xml.colorTag(level, "midiTrackLabelBg",   MusEConfig::config.midiTrackLabelBg);
-      xml.colorTag(level, "drumTrackLabelBg",   MusEConfig::config.drumTrackLabelBg);
-      xml.colorTag(level, "waveTrackLabelBg",   MusEConfig::config.waveTrackLabelBg);
-      xml.colorTag(level, "outputTrackLabelBg", MusEConfig::config.outputTrackLabelBg);
-      xml.colorTag(level, "inputTrackLabelBg",  MusEConfig::config.inputTrackLabelBg);
-      xml.colorTag(level, "groupTrackLabelBg",  MusEConfig::config.groupTrackLabelBg);
-      xml.colorTag(level, "auxTrackLabelBg",    MusEConfig::config.auxTrackLabelBg);
-      xml.colorTag(level, "synthTrackLabelBg",  MusEConfig::config.synthTrackLabelBg);
+      xml.colorTag(level, "mixerBg",            MusEGlobal::config.mixerBg);
+      xml.colorTag(level, "midiTrackLabelBg",   MusEGlobal::config.midiTrackLabelBg);
+      xml.colorTag(level, "drumTrackLabelBg",   MusEGlobal::config.drumTrackLabelBg);
+      xml.colorTag(level, "waveTrackLabelBg",   MusEGlobal::config.waveTrackLabelBg);
+      xml.colorTag(level, "outputTrackLabelBg", MusEGlobal::config.outputTrackLabelBg);
+      xml.colorTag(level, "inputTrackLabelBg",  MusEGlobal::config.inputTrackLabelBg);
+      xml.colorTag(level, "groupTrackLabelBg",  MusEGlobal::config.groupTrackLabelBg);
+      xml.colorTag(level, "auxTrackLabelBg",    MusEGlobal::config.auxTrackLabelBg);
+      xml.colorTag(level, "synthTrackLabelBg",  MusEGlobal::config.synthTrackLabelBg);
       
-      xml.colorTag(level, "midiTrackBg",   MusEConfig::config.midiTrackBg);
-      xml.colorTag(level, "ctrlGraphFg",   MusEConfig::config.ctrlGraphFg);
-      xml.colorTag(level, "drumTrackBg",   MusEConfig::config.drumTrackBg);
-      xml.colorTag(level, "waveTrackBg",   MusEConfig::config.waveTrackBg);
-      xml.colorTag(level, "outputTrackBg", MusEConfig::config.outputTrackBg);
-      xml.colorTag(level, "inputTrackBg",  MusEConfig::config.inputTrackBg);
-      xml.colorTag(level, "groupTrackBg",  MusEConfig::config.groupTrackBg);
-      xml.colorTag(level, "auxTrackBg",    MusEConfig::config.auxTrackBg);
-      xml.colorTag(level, "synthTrackBg",  MusEConfig::config.synthTrackBg);
+      xml.colorTag(level, "midiTrackBg",   MusEGlobal::config.midiTrackBg);
+      xml.colorTag(level, "ctrlGraphFg",   MusEGlobal::config.ctrlGraphFg);
+      xml.colorTag(level, "drumTrackBg",   MusEGlobal::config.drumTrackBg);
+      xml.colorTag(level, "waveTrackBg",   MusEGlobal::config.waveTrackBg);
+      xml.colorTag(level, "outputTrackBg", MusEGlobal::config.outputTrackBg);
+      xml.colorTag(level, "inputTrackBg",  MusEGlobal::config.inputTrackBg);
+      xml.colorTag(level, "groupTrackBg",  MusEGlobal::config.groupTrackBg);
+      xml.colorTag(level, "auxTrackBg",    MusEGlobal::config.auxTrackBg);
+      xml.colorTag(level, "synthTrackBg",  MusEGlobal::config.synthTrackBg);
 
       // Removed by Tim. p3.3.6
       //xml.intTag(level, "txSyncPort", txSyncPort);
       //xml.intTag(level, "rxSyncPort", rxSyncPort);
-      xml.intTag(level, "mtctype", mtcType);
+      xml.intTag(level, "mtctype", MusEGlobal::mtcType);
       xml.nput(level, "<mtcoffset>%02d:%02d:%02d:%02d:%02d</mtcoffset>\n",
-        mtcOffset.h(), mtcOffset.m(), mtcOffset.s(),
-        mtcOffset.f(), mtcOffset.sf());
-      //xml.uintTag(level, "sendClockDelay", syncSendFirstClockDelay);
-      //xml.intTag(level, "useJackTransport", useJackTransport);
-      //xml.intTag(level, "jackTransportMaster", jackTransportMaster);
-      extSyncFlag.save(level, xml);
+        MusEGlobal::mtcOffset.h(), MusEGlobal::mtcOffset.m(), MusEGlobal::mtcOffset.s(),
+        MusEGlobal::mtcOffset.f(), MusEGlobal::mtcOffset.sf());
+      //xml.uintTag(level, "sendClockDelay", MusEGlobal::syncSendFirstClockDelay);
+      //xml.intTag(level, "useJackTransport", MusEGlobal::useJackTransport);
+      //xml.intTag(level, "jackTransportMaster", MusEGlobal::jackTransportMaster);
+      MusEGlobal::extSyncFlag.save(level, xml);
       
 //      xml.intTag(level, "genMTCSync", genMTCSync);
 //      xml.intTag(level, "genMCSync", genMCSync);
@@ -1353,50 +1358,50 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
 //      xml.intTag(level, "acceptMMC", acceptMMC);
 //      xml.intTag(level, "acceptMC", acceptMC);
 
-      xml.qrectTag(level, "geometryMain",      MusEConfig::config.geometryMain);
-      xml.qrectTag(level, "geometryTransport", MusEConfig::config.geometryTransport);
-      xml.qrectTag(level, "geometryBigTime",   MusEConfig::config.geometryBigTime);
-      //xml.qrectTag(level, "geometryMixer",     MusEConfig::config.geometryMixer);  // Obsolete
+      xml.qrectTag(level, "geometryMain",      MusEGlobal::config.geometryMain);
+      xml.qrectTag(level, "geometryTransport", MusEGlobal::config.geometryTransport);
+      xml.qrectTag(level, "geometryBigTime",   MusEGlobal::config.geometryBigTime);
+      //xml.qrectTag(level, "geometryMixer",     MusEGlobal::config.geometryMixer);  // Obsolete
 
-      xml.intTag(level, "bigtimeVisible", MusEConfig::config.bigTimeVisible);
-      xml.intTag(level, "transportVisible", MusEConfig::config.transportVisible);
+      xml.intTag(level, "bigtimeVisible", MusEGlobal::config.bigTimeVisible);
+      xml.intTag(level, "transportVisible", MusEGlobal::config.transportVisible);
       
-      //xml.intTag(level, "mixerVisible", MusEConfig::config.mixerVisible);  // Obsolete
-      xml.intTag(level, "mixer1Visible", MusEConfig::config.mixer1Visible);
-      xml.intTag(level, "mixer2Visible", MusEConfig::config.mixer2Visible);
-      //MusEConfig::config.mixer1.write(level, xml, "mixer1");
-      //MusEConfig::config.mixer2.write(level, xml, "mixer2");
-      MusEConfig::config.mixer1.write(level, xml);
-      MusEConfig::config.mixer2.write(level, xml);
+      //xml.intTag(level, "mixerVisible", MusEGlobal::config.mixerVisible);  // Obsolete
+      xml.intTag(level, "mixer1Visible", MusEGlobal::config.mixer1Visible);
+      xml.intTag(level, "mixer2Visible", MusEGlobal::config.mixer2Visible);
+      //MusEGlobal::config.mixer1.write(level, xml, "mixer1");
+      //MusEGlobal::config.mixer2.write(level, xml, "mixer2");
+      MusEGlobal::config.mixer1.write(level, xml);
+      MusEGlobal::config.mixer2.write(level, xml);
 
-      xml.intTag(level, "showSplashScreen", MusEConfig::config.showSplashScreen);
-      xml.intTag(level, "canvasShowPartType", MusEConfig::config.canvasShowPartType);
-      xml.intTag(level, "canvasShowPartEvent", MusEConfig::config.canvasShowPartEvent);
-      xml.intTag(level, "canvasShowGrid", MusEConfig::config.canvasShowGrid);
-      xml.strTag(level, "canvasBgPixmap", MusEConfig::config.canvasBgPixmap);
-      xml.strTag(level, "canvasCustomBgList", MusEConfig::config.canvasCustomBgList.join(";"));
+      xml.intTag(level, "showSplashScreen", MusEGlobal::config.showSplashScreen);
+      xml.intTag(level, "canvasShowPartType", MusEGlobal::config.canvasShowPartType);
+      xml.intTag(level, "canvasShowPartEvent", MusEGlobal::config.canvasShowPartEvent);
+      xml.intTag(level, "canvasShowGrid", MusEGlobal::config.canvasShowGrid);
+      xml.strTag(level, "canvasBgPixmap", MusEGlobal::config.canvasBgPixmap);
+      xml.strTag(level, "canvasCustomBgList", MusEGlobal::config.canvasCustomBgList.join(";"));
 
-      xml.colorTag(level, "transportHandleColor",  MusEConfig::config.transportHandleColor);
-      xml.colorTag(level, "bigtimeForegroundcolor", MusEConfig::config.bigTimeForegroundColor);
-      xml.colorTag(level, "bigtimeBackgroundcolor", MusEConfig::config.bigTimeBackgroundColor);
-      xml.colorTag(level, "waveEditBackgroundColor", MusEConfig::config.waveEditBackgroundColor);
+      xml.colorTag(level, "transportHandleColor",  MusEGlobal::config.transportHandleColor);
+      xml.colorTag(level, "bigtimeForegroundcolor", MusEGlobal::config.bigTimeForegroundColor);
+      xml.colorTag(level, "bigtimeBackgroundcolor", MusEGlobal::config.bigTimeBackgroundColor);
+      xml.colorTag(level, "waveEditBackgroundColor", MusEGlobal::config.waveEditBackgroundColor);
 
       writeSeqConfiguration(level, xml, false);
 
-      DrumEdit::writeConfiguration(level, xml);
-      PianoRoll::writeConfiguration(level, xml);
-      ScoreEdit::write_configuration(level, xml);
-      MasterEdit::writeConfiguration(level, xml);
-      WaveEdit::writeConfiguration(level, xml);
-      ListEdit::writeConfiguration(level, xml);
-      ClipListEdit::writeConfiguration(level, xml);
-      LMaster::writeConfiguration(level, xml);
-      MarkerView::writeConfiguration(level, xml);
-      MusEArranger::ArrangerView::writeConfiguration(level, xml);
+      MusEGui::DrumEdit::writeConfiguration(level, xml);
+      MusEGui::PianoRoll::writeConfiguration(level, xml);
+      MusEGui::ScoreEdit::write_configuration(level, xml);
+      MusEGui::MasterEdit::writeConfiguration(level, xml);
+      MusEGui::WaveEdit::writeConfiguration(level, xml);
+      MusEGui::ListEdit::writeConfiguration(level, xml);
+      MusEGui::ClipListEdit::writeConfiguration(level, xml);
+      MusEGui::LMaster::writeConfiguration(level, xml);
+      MusEGui::MarkerView::writeConfiguration(level, xml);
+      MusEGui::ArrangerView::writeConfiguration(level, xml);
       
-      write_function_dialog_config(level, xml);
+      MusEGui::write_function_dialog_config(level, xml);
 
-      writeShortCuts(level, xml);
+      MusEGui::writeShortCuts(level, xml);
       xml.etag(level, "configuration");
       }
 
@@ -1405,7 +1410,7 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
 //    write song specific configuration
 //---------------------------------------------------------
 
-void MusE::writeConfiguration(int level, Xml& xml) const
+void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
       {
       xml.tag(level++, "configuration");
 
@@ -1418,13 +1423,13 @@ void MusE::writeConfiguration(int level, Xml& xml) const
       xml.intTag(level, "midiFilterCtrl3",  MusEGlobal::midiFilterCtrl3);
       xml.intTag(level, "midiFilterCtrl4",  MusEGlobal::midiFilterCtrl4);
 
-      xml.intTag(level, "waveTracksVisible",  WaveTrack::visible());
-      xml.intTag(level, "auxTracksVisible",  AudioAux::visible());
-      xml.intTag(level, "groupTracksVisible",  AudioGroup::visible());
-      xml.intTag(level, "midiTracksVisible",  MidiTrack::visible());
-      xml.intTag(level, "inputTracksVisible",  AudioInput::visible());
-      xml.intTag(level, "outputTracksVisible",  AudioOutput::visible());
-      xml.intTag(level, "synthTracksVisible",  SynthI::visible());
+      xml.intTag(level, "waveTracksVisible",  MusECore::WaveTrack::visible());
+      xml.intTag(level, "auxTracksVisible",  MusECore::AudioAux::visible());
+      xml.intTag(level, "groupTracksVisible",  MusECore::AudioGroup::visible());
+      xml.intTag(level, "midiTracksVisible",  MusECore::MidiTrack::visible());
+      xml.intTag(level, "inputTracksVisible",  MusECore::AudioInput::visible());
+      xml.intTag(level, "outputTracksVisible",  MusECore::AudioOutput::visible());
+      xml.intTag(level, "synthTracksVisible",  MusECore::SynthI::visible());
       // Removed by Tim. p3.3.6
       
       //xml.intTag(level, "txDeviceId", txDeviceId);
@@ -1456,22 +1461,22 @@ void MusE::writeConfiguration(int level, Xml& xml) const
       // Added by Tim. p3.3.6
       
       //xml.tag(level++, "midiSyncInfo");
-      //for(iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) 
+      //for(iMusECore::MidiDevice id = MusECore::MusEGlobal::midiDevices.begin(); id != MusECore::MusEGlobal::midiDevices.end(); ++id) 
       //{
-      //  MidiDevice* md = *id;
+      //  MusECore::MidiDevice* md = *id;
       //  md->syncInfo().write(level, xml, md);
       //}      
       //xml.etag(level, "midiSyncInfo");
 
       //xml.intTag(level, "rxSyncPort", rxSyncPort);
-      xml.intTag(level, "mtctype", mtcType);
+      xml.intTag(level, "mtctype", MusEGlobal::mtcType);
       xml.nput(level, "<mtcoffset>%02d:%02d:%02d:%02d:%02d</mtcoffset>\n",
-        mtcOffset.h(), mtcOffset.m(), mtcOffset.s(),
-        mtcOffset.f(), mtcOffset.sf());
-      xml.uintTag(level, "sendClockDelay", syncSendFirstClockDelay);
-      xml.intTag(level, "useJackTransport", useJackTransport.value());
-      xml.intTag(level, "jackTransportMaster", jackTransportMaster);
-      extSyncFlag.save(level, xml);
+        MusEGlobal::mtcOffset.h(), MusEGlobal::mtcOffset.m(), MusEGlobal::mtcOffset.s(),
+        MusEGlobal::mtcOffset.f(), MusEGlobal::mtcOffset.sf());
+      xml.uintTag(level, "sendClockDelay", MusEGlobal::syncSendFirstClockDelay);
+      xml.intTag(level, "useJackTransport", MusEGlobal::useJackTransport.value());
+      xml.intTag(level, "jackTransportMaster", MusEGlobal::jackTransportMaster);
+      MusEGlobal::extSyncFlag.save(level, xml);
       
 //      xml.intTag(level, "genMTCSync", genMTCSync);
 //      xml.intTag(level, "genMCSync", genMCSync);
@@ -1506,7 +1511,7 @@ void MusE::writeConfiguration(int level, Xml& xml) const
       //_arranger->writeStatus(level, xml);  // Obsolete.  done by song's toplevel list. arrangerview also handles arranger.
       writeSeqConfiguration(level, xml, true);
 
-      write_function_dialog_config(level, xml);
+      MusEGui::write_function_dialog_config(level, xml);
 
       writeMidiTransforms(level, xml);
       writeMidiInputTransforms(level, xml);
@@ -1520,8 +1525,8 @@ void MusE::writeConfiguration(int level, Xml& xml) const
 void MusE::configMidiSync()
       {
       if (!midiSyncConfig)
-        //midiSyncConfig = new MusEWidget::MidiSyncConfig(this);
-        midiSyncConfig = new MusEWidget::MidiSyncConfig;
+        //midiSyncConfig = new MusEGui::MidiSyncConfig(this);
+        midiSyncConfig = new MusEGui::MidiSyncConfig;
         
       if (midiSyncConfig->isVisible()) {
           midiSyncConfig->raise();
@@ -1538,7 +1543,7 @@ void MusE::configMidiSync()
 void MusE::configMidiFile()
       {
       if (!midiFileConfig)
-            midiFileConfig = new MidiFileConfig();
+            midiFileConfig = new MusEGui::MidiFileConfig();
       midiFileConfig->updateValues();
 
       if (midiFileConfig->isVisible()) {
@@ -1556,7 +1561,7 @@ void MusE::configMidiFile()
 void MusE::configGlobalSettings()
       {
       if (!globalSettingsConfig)
-          globalSettingsConfig = new MusEWidget::GlobalSettingsConfig();
+          globalSettingsConfig = new MusEGui::GlobalSettingsConfig();
 
       if (globalSettingsConfig->isVisible()) {
           globalSettingsConfig->raise();
@@ -1566,7 +1571,6 @@ void MusE::configGlobalSettings()
           globalSettingsConfig->show();
       }
 
-} // namespace MusEApp
 
 //---------------------------------------------------------
 //   MidiFileConfig
@@ -1588,18 +1592,18 @@ MidiFileConfig::MidiFileConfig(QWidget* parent)
 void MidiFileConfig::updateValues()
       {
       int divisionIdx = 2;
-      switch(MusEConfig::config.midiDivision) {
+      switch(MusEGlobal::config.midiDivision) {
             case 96:  divisionIdx = 0; break;
             case 192:  divisionIdx = 1; break;
             case 384:  divisionIdx = 2; break;
             }
       divisionCombo->setCurrentIndex(divisionIdx);
-      formatCombo->setCurrentIndex(MusEConfig::config.smfFormat);
-      extendedFormat->setChecked(MusEConfig::config.extendedMidi);
-      copyrightEdit->setText(MusEConfig::config.copyright);
-      optNoteOffs->setChecked(MusEConfig::config.expOptimNoteOffs);
-      twoByteTimeSigs->setChecked(MusEConfig::config.exp2ByteTimeSigs);
-      splitPartsCheckBox->setChecked(MusEConfig::config.importMidiSplitParts);
+      formatCombo->setCurrentIndex(MusEGlobal::config.smfFormat);
+      extendedFormat->setChecked(MusEGlobal::config.extendedMidi);
+      copyrightEdit->setText(MusEGlobal::config.copyright);
+      optNoteOffs->setChecked(MusEGlobal::config.expOptimNoteOffs);
+      twoByteTimeSigs->setChecked(MusEGlobal::config.exp2ByteTimeSigs);
+      splitPartsCheckBox->setChecked(MusEGlobal::config.importMidiSplitParts);
       }
 
 //---------------------------------------------------------
@@ -1612,13 +1616,13 @@ void MidiFileConfig::okClicked()
 
       int divisions[3] = { 96, 192, 384 };
       if (divisionIdx >= 0 && divisionIdx < 3)
-            MusEConfig::config.midiDivision = divisions[divisionIdx];
-      MusEConfig::config.extendedMidi = extendedFormat->isChecked();
-      MusEConfig::config.smfFormat    = formatCombo->currentIndex();
-      MusEConfig::config.copyright    = copyrightEdit->text();
-      MusEConfig::config.expOptimNoteOffs = optNoteOffs->isChecked();
-      MusEConfig::config.exp2ByteTimeSigs = twoByteTimeSigs->isChecked();
-      MusEConfig::config.importMidiSplitParts = splitPartsCheckBox->isChecked();
+            MusEGlobal::config.midiDivision = divisions[divisionIdx];
+      MusEGlobal::config.extendedMidi = extendedFormat->isChecked();
+      MusEGlobal::config.smfFormat    = formatCombo->currentIndex();
+      MusEGlobal::config.copyright    = copyrightEdit->text();
+      MusEGlobal::config.expOptimNoteOffs = optNoteOffs->isChecked();
+      MusEGlobal::config.exp2ByteTimeSigs = twoByteTimeSigs->isChecked();
+      MusEGlobal::config.importMidiSplitParts = splitPartsCheckBox->isChecked();
 
       MusEGlobal::muse->changeConfig(true);  // write config file
       close();
@@ -1633,15 +1637,14 @@ void MidiFileConfig::cancelClicked()
       close();
       }
 
-namespace MusEConfig {
 
 //---------------------------------------------------------
 //   write
 //---------------------------------------------------------
 
-//void MixerConfig::write(Xml& xml, const char* name)
-void MixerConfig::write(int level, Xml& xml)
-//void MixerConfig::write(int level, Xml& xml, const char* name)
+//void MixerConfig::write(MusECore::Xml& xml, const char* name)
+void MixerConfig::write(int level, MusECore::Xml& xml)
+//void MixerConfig::write(int level, MusECore::Xml& xml, const char* name)
       {
       //xml.stag(QString(name));
       //xml.tag(level++, name.toLatin1().constData());
@@ -1673,17 +1676,17 @@ void MixerConfig::write(int level, Xml& xml)
 //---------------------------------------------------------
 
 //void MixerConfig::read(QDomNode node)
-void MixerConfig::read(Xml& xml)
-//void MixerConfig::read(Xml& xml, const QString& name)
+void MixerConfig::read(MusECore::Xml& xml)
+//void MixerConfig::read(MusECore::Xml& xml, const QString& name)
       {
       for (;;) {
-            Xml::Token token(xml.parse());
+            MusECore::Xml::Token token(xml.parse());
             const QString& tag(xml.s1());
             switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return;
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "name")
                               name = xml.parse1();
                         else if (tag == "geometry")
@@ -1708,7 +1711,7 @@ void MixerConfig::read(Xml& xml)
                               //xml.unknown(name.toLatin1().constData());
                               xml.unknown("Mixer");
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         //if (tag == name)
                         if (tag == "Mixer")
                             return;
@@ -1719,4 +1722,5 @@ void MixerConfig::read(Xml& xml)
       
       }
 
-} // namespace MusEConfig
+} // namespace MusEGui
+

@@ -41,7 +41,7 @@
 #include "utils.h"
 #include "xml.h"
 
-namespace MusEUtil {
+namespace MusECore {
 
 //---------------------------------------------------------
 //   curTime
@@ -553,4 +553,4 @@ int get_paste_len()
             return end_tick - begin_tick;
 }
 
-} // namespace MusEUtils
+} // namespace MusECore

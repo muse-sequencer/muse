@@ -40,6 +40,8 @@
 #include "dssihost.h"
 #include "app.h"
 
+namespace MusECore {
+
 bool AudioAux::_isVisible=true;
 bool AudioInput::_isVisible=true;
 bool AudioOutput::_isVisible=true;
@@ -59,7 +61,7 @@ typedef std::map <const AudioTrack*, jackRouteNameMap>::const_iterator ciJackRou
 void cacheJackRouteNames()
 {
     jackRouteNameCache.clear();
-    const InputList* il = song->inputs();
+    const InputList* il = MusEGlobal::song->inputs();
     for(ciAudioInput iai = il->begin(); iai != il->end(); ++iai) 
     {
       const RouteList* rl = (*iai)->inRoutes();
@@ -71,7 +73,7 @@ void cacheJackRouteNames()
         jackRouteNameCache.insert(std::pair<const AudioTrack*, jackRouteNameMap>(*iai, rm));
       }                            
     }
-    const OutputList* ol = song->outputs();
+    const OutputList* ol = MusEGlobal::song->outputs();
     for(ciAudioOutput iao = ol->begin(); iao != ol->end(); ++iao) 
     {
       const RouteList* rl = (*iao)->outRoutes();
@@ -486,8 +488,8 @@ void AudioTrack::processAutomationEvents()
     // Remove old events from record region.
     if (_automationType == AUTO_WRITE) 
     {
-      int start = audio->getStartRecordPos().frame();
-      int end   = audio->getEndRecordPos().frame();
+      int start = MusEGlobal::audio->getStartRecordPos().frame();
+      int end   = MusEGlobal::audio->getEndRecordPos().frame();
       iCtrl   s = cl->lower_bound(start);
       iCtrl   e = cl->lower_bound(end);
       
@@ -514,7 +516,7 @@ void AudioTrack::processAutomationEvents()
           
           if(icr == _recEvents.end())
           {
-            int end = audio->getEndRecordPos().frame();
+            int end = MusEGlobal::audio->getEndRecordPos().frame();
             iCtrl s = cl->lower_bound(start);
             iCtrl e = cl->lower_bound(end);
             cl->erase(s, e);
@@ -577,7 +579,7 @@ void AudioTrack::processAutomationEvents()
   if (automationType() == AUTO_WRITE)
     {
         setAutomationType(AUTO_READ);
-        song->update(SC_AUTOMATION);
+        MusEGlobal::song->update(SC_AUTOMATION);
     }     
   */
   
@@ -625,13 +627,13 @@ void AudioTrack::seekPrevACEvent(int id)
     if(cl->empty())
       return;
     
-    //iCtrl s = cl->lower_bound(song->cPos().frame());
-    iCtrl s = cl->lower_bound(audio->pos().frame());    // p4.0.33
+    //iCtrl s = cl->lower_bound(MusEGlobal::song->cPos().frame());
+    iCtrl s = cl->lower_bound(MusEGlobal::audio->pos().frame());    // p4.0.33
     if(s != cl->begin())
       --s;
     
-    //song->setPos(Song::CPOS, Pos(s->second.frame, false), true, false, true);
-    song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);  // p4.0.33
+    //MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), true, false, true);
+    MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);  // p4.0.33
     return;
 }
 
@@ -649,16 +651,16 @@ void AudioTrack::seekNextACEvent(int id)
     if(cl->empty())
       return;
     
-    //iCtrl s = cl->upper_bound(song->cPos().frame());
-    iCtrl s = cl->upper_bound(audio->pos().frame());         // p4.0.33
+    //iCtrl s = cl->upper_bound(MusEGlobal::song->cPos().frame());
+    iCtrl s = cl->upper_bound(MusEGlobal::audio->pos().frame());         // p4.0.33
     
     if(s == cl->end())
     {
       --s;
     }
     
-    //song->setPos(Song::CPOS, Pos(s->second.frame, false), true, false, true);
-    song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);  // p4.0.33
+    //MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), true, false, true);
+    MusEGlobal::song->setPos(Song::CPOS, Pos(s->second.frame, false), false, true, false);  // p4.0.33
     return;  
 }
 
@@ -747,7 +749,7 @@ double AudioTrack::volume() const
       
       if (MusEGlobal::automation && 
           automationType() != AUTO_OFF && _volumeEnCtrl && _volumeEn2Ctrl )
-            return cl->second->value(song->cPos().frame());
+            return cl->second->value(MusEGlobal::song->cPos().frame());
       else
             return cl->second->curVal();
       }
@@ -779,7 +781,7 @@ double AudioTrack::pan() const
       
       if (MusEGlobal::automation && 
           automationType() != AUTO_OFF && _panEnCtrl && _panEn2Ctrl )
-        return cl->second->value(song->cPos().frame());
+        return cl->second->value(MusEGlobal::song->cPos().frame());
       else
         return cl->second->curVal();
       }
@@ -809,7 +811,7 @@ double AudioTrack::pluginCtrlVal(int ctlID) const
             return 0.0;
       
       if (MusEGlobal::automation && (automationType() != AUTO_OFF))
-        return cl->second->value(song->cPos().frame());
+        return cl->second->value(MusEGlobal::song->cPos().frame());
       else
         return cl->second->curVal();
       }
@@ -831,12 +833,12 @@ void AudioTrack::recordAutomation(int n, double v)
       {
         if(!MusEGlobal::automation)
           return;
-        if(audio->isPlaying())
-          _recEvents.push_back(CtrlRecVal(song->cPos().frame(), n, v));
+        if(MusEGlobal::audio->isPlaying())
+          _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v));
         else 
         {
           if(automationType() == AUTO_WRITE)
-            _recEvents.push_back(CtrlRecVal(song->cPos().frame(), n, v));
+            _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v));
           else 
           if(automationType() == AUTO_TOUCH)
           // In touch mode and not playing. Send directly to controller list.
@@ -845,7 +847,7 @@ void AudioTrack::recordAutomation(int n, double v)
             if (cl == _controller.end()) 
               return;
             // Add will replace if found.
-            cl->second->add(song->cPos().frame(), v);
+            cl->second->add(MusEGlobal::song->cPos().frame(), v);
           }  
         }
       }
@@ -854,13 +856,13 @@ void AudioTrack::startAutoRecord(int n, double v)
       {
         if(!MusEGlobal::automation)
           return;
-        if(audio->isPlaying())
+        if(MusEGlobal::audio->isPlaying())
         {
           if(automationType() == AUTO_TOUCH)
-              _recEvents.push_back(CtrlRecVal(song->cPos().frame(), n, v, ARVT_START));
+              _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v, ARVT_START));
           else    
           if(automationType() == AUTO_WRITE)
-              _recEvents.push_back(CtrlRecVal(song->cPos().frame(), n, v));
+              _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v));
         } 
         else
         {
@@ -871,11 +873,11 @@ void AudioTrack::startAutoRecord(int n, double v)
             if (cl == _controller.end()) 
               return;
             // Add will replace if found.
-            cl->second->add(song->cPos().frame(), v);
+            cl->second->add(MusEGlobal::song->cPos().frame(), v);
           }    
           else    
           if(automationType() == AUTO_WRITE)
-            _recEvents.push_back(CtrlRecVal(song->cPos().frame(), n, v));
+            _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v));
         }   
       }
 
@@ -883,12 +885,12 @@ void AudioTrack::stopAutoRecord(int n, double v)
       {
         if(!MusEGlobal::automation)
           return;
-        if(audio->isPlaying())
+        if(MusEGlobal::audio->isPlaying())
         {
           if(automationType() == AUTO_TOUCH)
           {
-              audio->msgAddACEvent(this, n, song->cPos().frame(), v);
-              _recEvents.push_back(CtrlRecVal(song->cPos().frame(), n, v, ARVT_STOP));
+              MusEGlobal::audio->msgAddACEvent(this, n, MusEGlobal::song->cPos().frame(), v);
+              _recEvents.push_back(CtrlRecVal(MusEGlobal::song->cPos().frame(), n, v, ARVT_STOP));
           }   
         } 
       }
@@ -904,7 +906,7 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
       xml.intTag(level, "sendMetronome", sendMetronome());
       xml.intTag(level, "automation", int(automationType()));
       if (hasAuxSend()) {
-            int naux = song->auxs()->size();
+            int naux = MusEGlobal::song->auxs()->size();
             for (int idx = 0; idx < naux; ++idx) {
                   //QString s("<auxSend idx=%1>%2</auxSend>\n");
                   QString s("<auxSend idx=\"%1\">%2</auxSend>\n");  // Aux fix from Remon, thanks.
@@ -1362,7 +1364,7 @@ AudioInput::~AudioInput()
       if (!MusEGlobal::checkAudioDevice()) return;
       for (int i = 0; i < _channels; ++i) 
           if(jackPorts[i])
-            audioDevice->unregisterPort(jackPorts[i]);
+              MusEGlobal::audioDevice->unregisterPort(jackPorts[i]);
       }
 
 //---------------------------------------------------------
@@ -1439,7 +1441,7 @@ AudioOutput::~AudioOutput()
       if (!MusEGlobal::checkAudioDevice()) return;
       for (int i = 0; i < _channels; ++i)
           if(jackPorts[i])
-            audioDevice->unregisterPort(jackPorts[i]);
+            MusEGlobal::audioDevice->unregisterPort(jackPorts[i]);
       }
 
 //---------------------------------------------------------
@@ -1654,7 +1656,7 @@ bool AudioTrack::setRecordFlag1(bool f)
             return true;
       if (f) {
         // do nothing
-        if (_recFile == 0 && song->record()) {
+        if (_recFile == 0 && MusEGlobal::song->record()) {
           // this rec-enables a track if the global arm already was done
           // the standard case would be that rec-enable be done there
           prepareRecording();
@@ -1686,7 +1688,7 @@ bool AudioTrack::setRecordFlag1(bool f)
 
 //---------------------------------------------------------
 //   prepareRecording
-//     normally called from song->setRecord to defer creating
+//     normally called from MusEGlobal::song->setRecord to defer creating
 //     wave files until MusE is globally rec-enabled
 //     also called from track->setRecordFlag (above)
 //     if global rec enable already was done
@@ -1710,7 +1712,7 @@ bool AudioTrack::prepareRecording()
                if (!fil.exists())
                   break;
                   }
-            _recFile = new SndFile(QString(buffer));
+            _recFile = new MusECore::SndFile(QString(buffer));
             _recFile->setFormat(
                SF_FORMAT_WAV | SF_FORMAT_FLOAT,
                _channels, MusEGlobal::sampleRate);
@@ -1775,6 +1777,7 @@ int AudioGroup::height() const
     return _height;
   return 0;
 }
+
 int WaveTrack::height() const
 {
   if (_isVisible)
@@ -1782,3 +1785,4 @@ int WaveTrack::height() const
   return 0;
 }
 
+} // namespace MusECore

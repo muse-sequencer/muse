@@ -172,7 +172,7 @@ class SimpleSynthGui : public QDialog, public Ui::SimpleDrumsGuiBase, public Mes
    Q_OBJECT
    private:
       // MESS interface:
-      virtual void processEvent(const MidiPlayEvent& ev);
+      virtual void processEvent(const MusECore::MidiPlayEvent& ev);
       void setChannelVolume(int channel, int volume);
       void displayPluginGui();
       QGroupBox* channelButtonGroups[SS_NR_OF_CHANNELS];

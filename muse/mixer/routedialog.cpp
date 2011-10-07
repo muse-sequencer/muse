@@ -32,7 +32,7 @@
 #include "audio.h"
 #include "driver/jackaudio.h"
 
-namespace MusEDialog {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   RouteDialog
@@ -47,7 +47,7 @@ RouteDialog::RouteDialog(QWidget* parent)
       connect(newDstList, SIGNAL(itemSelectionChanged()), SLOT(dstSelectionChanged()));
       connect(removeButton, SIGNAL(clicked()), SLOT(removeRoute()));
       connect(connectButton, SIGNAL(clicked()), SLOT(addRoute()));
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       routingChanged();
       }
 
@@ -65,49 +65,49 @@ void RouteDialog::routingChanged()
       newSrcList->clear();
       newDstList->clear();
 
-      TrackList* tl = song->tracks();
-      for (ciTrack i = tl->begin(); i != tl->end(); ++i) {
+      MusECore::TrackList* tl = MusEGlobal::song->tracks();
+      for (MusECore::ciTrack i = tl->begin(); i != tl->end(); ++i) {
             if ((*i)->isMidiTrack())
                   continue;
             // p3.3.38
             //WaveTrack* track = (WaveTrack*)(*i);
-            AudioTrack* track = (AudioTrack*)(*i);
-            if (track->type() == Track::AUDIO_INPUT) {
+            MusECore::AudioTrack* track = (MusECore::AudioTrack*)(*i);
+            if (track->type() == MusECore::Track::AUDIO_INPUT) {
                   for (int channel = 0; channel < track->channels(); ++channel)
-                        newDstList->addItem(Route(track, channel).name());
-                  const RouteList* rl = track->inRoutes();
-                  for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
-                        //Route dst(track->name(), true, r->channel);
-                        Route dst(track->name(), true, r->channel, Route::TRACK_ROUTE);
+                        newDstList->addItem(MusECore::Route(track, channel).name());
+                  const MusECore::RouteList* rl = track->inRoutes();
+                  for (MusECore::ciRoute r = rl->begin(); r != rl->end(); ++r) {
+                        //MusECore::Route dst(track->name(), true, r->channel);
+                        MusECore::Route dst(track->name(), true, r->channel, MusECore::Route::TRACK_ROUTE);
                         new QTreeWidgetItem(routeList, QStringList() << r->name() << dst.name());
                         }
                   }
-            else if (track->type() != Track::AUDIO_AUX)
-                  newDstList->addItem(Route(track, -1).name());
-            if (track->type() == Track::AUDIO_OUTPUT) {
+            else if (track->type() != MusECore::Track::AUDIO_AUX)
+                  newDstList->addItem(MusECore::Route(track, -1).name());
+            if (track->type() == MusECore::Track::AUDIO_OUTPUT) {
                   for (int channel = 0; channel < track->channels(); ++channel) {
-                        Route r(track, channel);
+                        MusECore::Route r(track, channel);
                         newSrcList->addItem(r.name());
                         }
                   }
             else
-                  newSrcList->addItem(Route(track, -1).name());
+                  newSrcList->addItem(MusECore::Route(track, -1).name());
 
-            const RouteList* rl = track->outRoutes();
-            for (ciRoute r = rl->begin(); r != rl->end(); ++r) {
+            const MusECore::RouteList* rl = track->outRoutes();
+            for (MusECore::ciRoute r = rl->begin(); r != rl->end(); ++r) {
                   QString src(track->name());
-                  if (track->type() == Track::AUDIO_OUTPUT) {
-                        Route s(src, false, r->channel);
+                  if (track->type() == MusECore::Track::AUDIO_OUTPUT) {
+                        MusECore::Route s(src, false, r->channel);
                         src = s.name();
                         }
                   new QTreeWidgetItem(routeList, QStringList() << src << r->name());
                   }
             }
       if (!MusEGlobal::checkAudioDevice()) return;
-      std::list<QString> sl = audioDevice->outputPorts();
+      std::list<QString> sl = MusEGlobal::audioDevice->outputPorts();
       for (std::list<QString>::iterator i = sl.begin(); i != sl.end(); ++i)
             newSrcList->addItem(*i);
-      sl = audioDevice->inputPorts();
+      sl = MusEGlobal::audioDevice->inputPorts();
       for (std::list<QString>::iterator i = sl.begin(); i != sl.end(); ++i)
             newDstList->addItem(*i);
       routeSelectionChanged();   // init remove button
@@ -144,9 +144,9 @@ void RouteDialog::removeRoute()
       QTreeWidgetItem* item = routeList->currentItem();
       if (item == 0)
             return;
-      audio->msgRemoveRoute(Route(item->text(0), false, -1), Route(item->text(1), true, -1));
-      audio->msgUpdateSoloStates();
-      song->update(SC_SOLO);
+      MusEGlobal::audio->msgRemoveRoute(MusECore::Route(item->text(0), false, -1), MusECore::Route(item->text(1), true, -1));
+      MusEGlobal::audio->msgUpdateSoloStates();
+      MusEGlobal::song->update(SC_SOLO);
       delete item;
       }
 
@@ -160,9 +160,9 @@ void RouteDialog::addRoute()
       QListWidgetItem* dstItem = newDstList->currentItem();
       if (srcItem == 0 || dstItem == 0)
             return;
-      audio->msgAddRoute(Route(srcItem->text(), false, -1), Route(dstItem->text(), true, -1));
-      audio->msgUpdateSoloStates();
-      song->update(SC_SOLO);
+      MusEGlobal::audio->msgAddRoute(MusECore::Route(srcItem->text(), false, -1), MusECore::Route(dstItem->text(), true, -1));
+      MusEGlobal::audio->msgUpdateSoloStates();
+      MusEGlobal::song->update(SC_SOLO);
       new QTreeWidgetItem(routeList, QStringList() << srcItem->text() << dstItem->text());
       }
 
@@ -176,7 +176,7 @@ void RouteDialog::srcSelectionChanged()
       QListWidgetItem* dstItem = newDstList->currentItem();
       connectButton->setEnabled((srcItem != 0)
          && (dstItem != 0)
-         && checkRoute(srcItem->text(), dstItem->text()));
+         && MusECore::checkRoute(srcItem->text(), dstItem->text()));
       }
 
 //---------------------------------------------------------
@@ -189,7 +189,7 @@ void RouteDialog::dstSelectionChanged()
       QListWidgetItem* srcItem = newSrcList->currentItem();
       connectButton->setEnabled((srcItem != 0)
          && (dstItem != 0)
-         && checkRoute(srcItem->text(), dstItem->text()));
+         && MusECore::checkRoute(srcItem->text(), dstItem->text()));
       }
 
 //---------------------------------------------------------
@@ -202,4 +202,4 @@ void RouteDialog::closeEvent(QCloseEvent* e)
       e->accept();
       }
 
-} // namespace MusEDialog
+} // namespace MusEGui

@@ -22,11 +22,11 @@
 
 #include "mlabel.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 void MLabel::mousePressEvent(QMouseEvent*)
       {
       emit mousePressed();
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

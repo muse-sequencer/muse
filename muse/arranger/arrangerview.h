@@ -53,9 +53,10 @@
 #include "helper.h"
 #include "arranger.h"
 
-namespace MusEWidget { class VisibleTracks; }
 
-namespace MusEArranger {
+namespace MusEGui {
+
+class VisibleTracks;
 
 class ArrangerView : public TopWin
 {
@@ -77,8 +78,8 @@ class ArrangerView : public TopWin
 		QGridLayout* mainGrid;
 		QWidget* mainw;
 
-		MusEWidget::EditToolBar* editTools;
-		MusEWidget::VisibleTracks* visTracks;
+		EditToolBar* editTools;
+		VisibleTracks* visTracks;
 
 		Arranger* arranger;
 
@@ -122,7 +123,7 @@ class ArrangerView : public TopWin
                 void addNewTrack(QAction* action);
 
 	signals:
-		void deleted(TopWin*);
+		void deleted(MusEGui::TopWin*);
 		void closed();
 
 	public slots:
@@ -144,13 +145,13 @@ class ArrangerView : public TopWin
 
 		Arranger* getArranger() {return arranger;}
 
-		void writeStatus(int level, Xml& xml) const;
-		void readStatus(Xml& xml);
-		static void readConfiguration(Xml&);
-		static void writeConfiguration(int, Xml&);
+		void writeStatus(int level, MusECore::Xml& xml) const;
+		void readStatus(MusECore::Xml& xml);
+		static void readConfiguration(MusECore::Xml&);
+		static void writeConfiguration(int, MusECore::Xml&);
 };
 
-}  // namespace MusEArranger
+}  // namespace MusEGui
 
 #endif
 

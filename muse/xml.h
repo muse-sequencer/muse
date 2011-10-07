@@ -32,6 +32,8 @@ class QColor;
 class QRect;
 class QWidget;
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   Xml
 //    very simple XML-like parser
@@ -107,5 +109,8 @@ class Xml {
       };
 
 extern QRect readGeometry(Xml&, const QString&);
+
+} // namespace MusECore
+
 #endif
 

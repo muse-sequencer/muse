@@ -25,7 +25,7 @@
 
 #include <QSpinBox>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   PitchEdit
@@ -45,6 +45,6 @@ class PitchEdit : public QSpinBox {
       void setDeltaMode(bool);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif

@@ -28,6 +28,8 @@
 #include "ui_mdisettings_base.h"
 #include "cobject.h"
 
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   GlobalSettingsConfig
 //---------------------------------------------------------
@@ -45,5 +47,7 @@ class MdiSettings : public QWidget, private Ui::MdiSettingsBase
     void apply_settings();
     TopWin::ToplevelType type() { return _type; }
 };
+
+} // namespace MusEGui
 
 #endif

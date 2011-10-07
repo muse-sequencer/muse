@@ -25,6 +25,8 @@
 #include "event.h"
 #include "xml.h"
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   readEventList
 //---------------------------------------------------------
@@ -90,7 +92,7 @@ void EventList::move(Event& event, unsigned tick)
       
       // Added by T356.
       if(event.type() == Wave)
-        std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (tempomap.tick2frame(tick), event));
+        std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (MusEGlobal::tempomap.tick2frame(tick), event));
       else
       
         std::multimap<unsigned, Event, std::less<unsigned> >::insert(std::pair<const unsigned, Event> (tick, event));
@@ -125,3 +127,4 @@ void EventList::dump() const
             i->second.dump();
       }
 
+} // namespace MusECore

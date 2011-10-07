@@ -46,7 +46,7 @@
 #include "plugin.h"
 #include "filedialog.h"
 
-namespace MusEMixer {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   class EffectRackDelegate
@@ -55,16 +55,16 @@ namespace MusEMixer {
 class EffectRackDelegate : public QStyledItemDelegate {
   
       EffectRack* er;
-      AudioTrack* tr;
+      MusECore::AudioTrack* tr;
 
    public:
       void paint ( QPainter * painter, 
                    const QStyleOptionViewItem & option, 
                    const QModelIndex & index ) const;
-      EffectRackDelegate(QObject * parent, AudioTrack* at );
+      EffectRackDelegate(QObject * parent, MusECore::AudioTrack* at );
 };
 
-EffectRackDelegate::EffectRackDelegate(QObject * parent, AudioTrack* at ) : QStyledItemDelegate(parent) { 
+EffectRackDelegate::EffectRackDelegate(QObject * parent, MusECore::AudioTrack* at ) : QStyledItemDelegate(parent) { 
       er = (EffectRack*) parent; 
       tr = at;
 }
@@ -125,10 +125,10 @@ void EffectRackDelegate::paint ( QPainter * painter, const QStyleOptionViewItem 
 
 class RackSlot : public QListWidgetItem {
       int idx;
-      AudioTrack* node;
+      MusECore::AudioTrack* node;
 
    public:
-      RackSlot(QListWidget* lb, AudioTrack* t, int i, int h);
+      RackSlot(QListWidget* lb, MusECore::AudioTrack* t, int i, int h);
       ~RackSlot();
       void setBackgroundColor(const QBrush& brush) {setBackground(brush);};
       };
@@ -142,7 +142,7 @@ RackSlot::~RackSlot()
 //   RackSlot
 //---------------------------------------------------------
 
-RackSlot::RackSlot(QListWidget* b, AudioTrack* t, int i, int h)
+RackSlot::RackSlot(QListWidget* b, MusECore::AudioTrack* t, int i, int h)
    : QListWidgetItem(b)
       {
       node = t;
@@ -154,14 +154,14 @@ RackSlot::RackSlot(QListWidget* b, AudioTrack* t, int i, int h)
 //   EffectRack
 //---------------------------------------------------------
 
-EffectRack::EffectRack(QWidget* parent, AudioTrack* t)
+EffectRack::EffectRack(QWidget* parent, MusECore::AudioTrack* t)
    : QListWidget(parent)
       {
       setObjectName("Rack");
       setAttribute(Qt::WA_DeleteOnClose);
       track = t;
       itemheight = 19;
-      setFont(MusEConfig::config.fonts[1]);
+      setFont(MusEGlobal::config.fonts[1]);
       activeColor = QColor(74, 165, 49);
 
       setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -174,7 +174,7 @@ EffectRack::EffectRack(QWidget* parent, AudioTrack* t)
 
       connect(this, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
          this, SLOT(doubleClicked(QListWidgetItem*)));
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
 
       EffectRackDelegate* er_delegate = new EffectRackDelegate(this, track);
       setItemDelegate(er_delegate);
@@ -235,9 +235,9 @@ QSize EffectRack::sizeHint() const
 
 void EffectRack::choosePlugin(QListWidgetItem* it, bool replace)
       {
-      Plugin* plugin = PluginDialog::getPlugin(this);
+      MusECore::Plugin* plugin = PluginDialog::getPlugin(this);
       if (plugin) {
-            PluginI* plugi = new PluginI();
+            MusECore::PluginI* plugi = new MusECore::PluginI();
             if (plugi->initPluginInstance(plugin, track->channels())) {
                   printf("cannot instantiate plugin <%s>\n",
                       plugin->name().toLatin1().constData());
@@ -246,8 +246,8 @@ void EffectRack::choosePlugin(QListWidgetItem* it, bool replace)
                   }
             int idx = row(it);
 	    if (replace)
-                  audio->msgAddPlugin(track, idx, 0);
-            audio->msgAddPlugin(track, idx, plugi);
+                  MusEGlobal::audio->msgAddPlugin(track, idx, 0);
+            MusEGlobal::audio->msgAddPlugin(track, idx, plugi);
             updateContents();
             }
       }
@@ -264,7 +264,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
       int idx = row(curitem);
       QString name;
       //bool mute;
-      Pipeline* pipe = track->efxPipe();
+      MusECore::Pipeline* pipe = track->efxPipe();
       if (pipe) {
             name  = pipe->name(idx);
             //mute  = pipe->isOn(idx);
@@ -351,7 +351,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
                   break;
                   }
             case REMOVE:
-                  audio->msgAddPlugin(track, idx, 0);
+                  MusEGlobal::audio->msgAddPlugin(track, idx, 0);
                   break;
             case BYPASS:
                   {
@@ -388,7 +388,7 @@ void EffectRack::menuRequested(QListWidgetItem* it)
                   break;
             }
       updateContents();
-      song->update(SC_RACK);
+      MusEGlobal::song->update(SC_RACK);
       }
 
 //---------------------------------------------------------
@@ -403,7 +403,7 @@ void EffectRack::doubleClicked(QListWidgetItem* it)
 
       RackSlot* item = (RackSlot*)it;
       int idx        = row(item);
-      Pipeline* pipe = track->efxPipe();
+      MusECore::Pipeline* pipe = track->efxPipe();
 
       if (pipe->name(idx) == QString("empty")) {
             choosePlugin(it);
@@ -417,8 +417,8 @@ void EffectRack::doubleClicked(QListWidgetItem* it)
 
 void EffectRack::savePreset(int idx)
       {
-      //QString name = MusEWidget::getSaveFileName(QString(""), plug_file_pattern, this,
-      QString name = MusEWidget::getSaveFileName(QString(""), MusEGlobal::preset_file_save_pattern, this,
+      //QString name = MusEGui::getSaveFileName(QString(""), plug_file_pattern, this,
+      QString name = MusEGui::getSaveFileName(QString(""), MusEGlobal::preset_file_save_pattern, this,
          tr("MusE: Save Preset"));
       
       if(name.isEmpty())
@@ -426,14 +426,14 @@ void EffectRack::savePreset(int idx)
         
       //FILE* presetFp = fopen(name.ascii(),"w+");
       bool popenFlag;
-      FILE* presetFp = MusEWidget::fileOpen(this, name, QString(".pre"), "w", popenFlag, false, true);
+      FILE* presetFp = MusEGui::fileOpen(this, name, QString(".pre"), "w", popenFlag, false, true);
       if (presetFp == 0) {
             //fprintf(stderr, "EffectRack::savePreset() fopen failed: %s\n",
             //   strerror(errno));
             return;
             }
-      Xml xml(presetFp);
-      Pipeline* pipe = track->efxPipe();
+      MusECore::Xml xml(presetFp);
+      MusECore::Pipeline* pipe = track->efxPipe();
       if (pipe) {
             if ((*pipe)[idx] != NULL) {
                 xml.header();
@@ -486,8 +486,8 @@ void EffectRack::startDrag(int idx)
                strerror(errno));
             return;
             }
-      Xml xml(tmp);
-      Pipeline* pipe = track->efxPipe();
+      MusECore::Xml xml(tmp);
+      MusECore::Pipeline* pipe = track->efxPipe();
       if (pipe) {
             if ((*pipe)[idx] != NULL) {
                 xml.header();
@@ -541,7 +541,7 @@ void EffectRack::dropEvent(QDropEvent *event)
             return;
       int idx = row(i);
       
-      Pipeline* pipe = track->efxPipe();
+      MusECore::Pipeline* pipe = track->efxPipe();
       if (pipe) 
       {
             if ((*pipe)[idx] != NULL) {
@@ -551,7 +551,7 @@ void EffectRack::dropEvent(QDropEvent *event)
                   if(strcmp(sw->metaObject()->className(), "EffectRack") == 0) 
                   { 
                     EffectRack *ser = (EffectRack*)sw;
-                    Pipeline* spipe = ser->getTrack()->efxPipe();
+                    MusECore::Pipeline* spipe = ser->getTrack()->efxPipe();
                     if(!spipe)
                       return;
 
@@ -565,8 +565,8 @@ void EffectRack::dropEvent(QDropEvent *event)
                 if(QMessageBox::question(this, tr("Replace effect"),tr("Do you really want to replace the effect %1?").arg(pipe->name(idx)),
                       QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
                       {
-                        audio->msgAddPlugin(track, idx, 0);
-                        song->update(SC_RACK);
+                        MusEGlobal::audio->msgAddPlugin(track, idx, 0);
+                        MusEGlobal::song->update(SC_RACK);
                       }
                 else {
                       return;
@@ -577,7 +577,7 @@ void EffectRack::dropEvent(QDropEvent *event)
             {
               char *tmpStr = new char[event->mimeData()->data("text/x-muse-plugin").size()];
               strcpy(tmpStr, event->mimeData()->data("text/x-muse-plugin").data());
-              Xml xml(tmpStr);
+              MusECore::Xml xml(tmpStr);
               initPlugin(xml, idx);
               delete tmpStr;
             }
@@ -593,10 +593,10 @@ void EffectRack::dropEvent(QDropEvent *event)
               {
                   //bool popenFlag = false;
                   bool popenFlag;
-                  FILE* fp = MusEWidget::fileOpen(this, text, ".pre", "r", popenFlag, false, false);
+                  FILE* fp = MusEGui::fileOpen(this, text, ".pre", "r", popenFlag, false, false);
                   if (fp) 
                   {
-                      Xml xml(fp);
+                      MusECore::Xml xml(fp);
                       initPlugin(xml, idx);
                       
                       // Added by T356.
@@ -639,7 +639,7 @@ void EffectRack::mousePressEvent(QMouseEvent *event)
 void EffectRack::mouseMoveEvent(QMouseEvent *event)
 {
       if (event->buttons() & Qt::LeftButton) {
-            Pipeline* pipe = track->efxPipe();
+            MusECore::Pipeline* pipe = track->efxPipe();
             if(!pipe)
               return;
 
@@ -661,18 +661,18 @@ void EffectRack::mouseMoveEvent(QMouseEvent *event)
 }
 
 
-void EffectRack::initPlugin(Xml xml, int idx)
+void EffectRack::initPlugin(MusECore::Xml xml, int idx)
       {      
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             QString tag = xml.s1();
             switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return;
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "plugin") {
-                              PluginI* plugi = new PluginI();
+                              MusECore::PluginI* plugi = new MusECore::PluginI();
                               if (plugi->readConfiguration(xml, false)) {
                                   //QString d;
                                   //xml.dump(d);
@@ -681,8 +681,8 @@ void EffectRack::initPlugin(Xml xml, int idx)
                                   }
                               else {
                                   //printf("instantiated!\n");
-                                  audio->msgAddPlugin(track, idx, plugi);
-                                  song->update(SC_RACK);
+                                  MusEGlobal::audio->msgAddPlugin(track, idx, plugi);
+                                  MusEGlobal::song->update(SC_RACK);
                                   return;
                                   }
                               }
@@ -691,9 +691,9 @@ void EffectRack::initPlugin(Xml xml, int idx)
                         else
                               xml.unknown("EffectRack");
                         break;
-                  case Xml::Attribut:
+                  case MusECore::Xml::Attribut:
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "muse")
                               return;
                   default:
@@ -702,4 +702,4 @@ void EffectRack::initPlugin(Xml xml, int idx)
             }
       }                        
 
-} // namespace MusEMixer
+} // namespace MusEGui

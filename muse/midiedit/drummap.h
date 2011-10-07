@@ -26,6 +26,8 @@
 
 class QString;
 
+namespace MusECore {
+
 class Xml;
 
 //---------------------------------------------------------
@@ -50,13 +52,18 @@ struct DrumMap {
 
 #define DRUM_MAPSIZE  128
 
-extern char drumOutmap[DRUM_MAPSIZE];
-extern char drumInmap[DRUM_MAPSIZE];
-extern DrumMap drumMap[DRUM_MAPSIZE];
 extern void initDrumMap();
 extern void writeDrumMap(int level, Xml& xml, bool external);
 extern void readDrumMap(Xml& xml, bool external);
 extern void resetGMDrumMap();
+
+} // namespace MusECore
+
+namespace MusEGlobal {
+extern char drumOutmap[DRUM_MAPSIZE];
+extern char drumInmap[DRUM_MAPSIZE];
+extern MusECore::DrumMap drumMap[DRUM_MAPSIZE];
+}
 
 #endif
 

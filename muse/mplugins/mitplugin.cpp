@@ -35,9 +35,7 @@
 #include "rhythm.h"
 #endif
 
-MITPluginList mitPlugins;
-
-namespace MusEApp {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   startMidiInputPlugin
@@ -49,18 +47,18 @@ void MusE::startMidiInputPlugin(int id)
       QWidget* w = 0;
       QAction* act;
       if (id == 0) {
-            if (!mitPluginTranspose) {
-                  mitPluginTranspose = new MITPluginTranspose();
-                  mitPlugins.push_back(mitPluginTranspose);
-                  connect(mitPluginTranspose, SIGNAL(hideWindow()),
+            if (!MusEGlobal::mitPluginTranspose) {
+                  MusEGlobal::mitPluginTranspose = new MusEGui::MITPluginTranspose();
+                  MusECore::mitPlugins.push_back(MusEGlobal::mitPluginTranspose);
+                  connect(MusEGlobal::mitPluginTranspose, SIGNAL(hideWindow()),
                      SLOT(hideMitPluginTranspose()));
                   }
-            w = mitPluginTranspose;
+            w = MusEGlobal::mitPluginTranspose;
             act = midiTrpAction;
             }
       else if (id == 1) {
             if (!midiInputTransform) {
-                  midiInputTransform = new MidiInputTransformDialog();
+                  midiInputTransform = new MusEGui::MidiInputTransformDialog();
                   connect(midiInputTransform, SIGNAL(hideWindow()),
                      SLOT(hideMidiInputTransform()));
                   }
@@ -69,7 +67,7 @@ void MusE::startMidiInputPlugin(int id)
             }
       else if (id == 2) {
             if (!midiFilterConfig) {
-                  midiFilterConfig = new MidiFilterConfig();
+                  midiFilterConfig = new MusEGui::MidiFilterConfig();
                   connect(midiFilterConfig, SIGNAL(hideWindow()),
                      SLOT(hideMidiFilterConfig()));
                   }
@@ -78,7 +76,7 @@ void MusE::startMidiInputPlugin(int id)
             }
       else if (id == 3) {
             if (!midiRemoteConfig) {
-                  midiRemoteConfig = new MRConfig();
+                  midiRemoteConfig = new MusEGui::MRConfig();
                   connect(midiRemoteConfig, SIGNAL(hideWindow()),
                      SLOT(hideMidiRemoteConfig()));
                   }
@@ -136,11 +134,15 @@ void MusE::hideMidiRhythmGenerator()
 void MusE::startMidiTransformer()
       {
       if (midiTransformerDialog == 0)
-            midiTransformerDialog = new MidiTransformerDialog;
+            midiTransformerDialog = new MusEGui::MidiTransformerDialog;
       midiTransformerDialog->show();
       }
 
-} // namespace MusEApp
+} // namespace MusEGui
+
+namespace MusECore {
+
+MITPluginList mitPlugins;
 
 //---------------------------------------------------------
 //   processMidiInputTransformPlugins
@@ -173,3 +175,4 @@ void readStatusMidiInputTransformPlugin(Xml&)
       {
       }
 
+} // namespace MusECore

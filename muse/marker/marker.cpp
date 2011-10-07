@@ -23,6 +23,8 @@
 #include "marker.h"
 #include "xml.h"
 
+namespace MusECore {
+
 Marker* MarkerList::add(const Marker& marker)
       {
       iMarker i = insert(std::pair<const int, Marker> (marker.tick(), Marker(marker)));
@@ -103,3 +105,4 @@ void MarkerList::remove(Marker* m)
       printf("MarkerList::remove(): marker not found\n");
       }
 
+} // namespace MusECore

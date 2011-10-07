@@ -28,7 +28,7 @@
 
 class QDialog;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   MetronomeConfig
@@ -51,6 +51,6 @@ class MetronomeConfig : public QDialog, public Ui::MetronomeConfigBase {
       MetronomeConfig(QDialog* parent=0);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif

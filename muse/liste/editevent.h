@@ -28,24 +28,29 @@
 #include "ui_editctrlbase.h"
 #include "event.h"
 
-namespace Awl {
-      class PosEdit;
-      };
-
-///class PosEdit;
-namespace MusEWidget {
-class IntLabel;
-class PitchEdit;
-}
-
 class QDialog;
 class QLabel;
 class QGridLayout;
 class QTextEdit;
 class QRadioButton;
-class MidiPart;
 class QListWidgetItem;
 class QMenu;
+
+namespace Awl {
+      class PosEdit;
+      };
+
+namespace MusECore {
+class MidiPart;
+}
+
+namespace MusEGui {
+
+class IntLabel;
+class PitchEdit;
+///class PosEdit;
+
+
 //---------------------------------------------------------
 //   EditEventDialog
 //---------------------------------------------------------
@@ -58,7 +63,7 @@ class EditEventDialog : public QDialog {
 
    public:
       EditEventDialog(QWidget* parent=0);
-      virtual Event event() = 0;
+      virtual MusECore::Event event() = 0;
       };
 
 //---------------------------------------------------------
@@ -69,11 +74,11 @@ class EditNoteDialog : public QDialog, public Ui::EditNoteDialogBase {
       Q_OBJECT
 
    public:
-      EditNoteDialog(int tick, const Event&,
+      EditNoteDialog(int tick, const MusECore::Event&,
          QWidget* parent=0);
-      static Event getEvent(int tick, const Event&,
+      static MusECore::Event getEvent(int tick, const MusECore::Event&,
          QWidget* parent = 0);
-      virtual Event event();
+      virtual MusECore::Event event();
       };
 
 //---------------------------------------------------------
@@ -93,12 +98,12 @@ class EditSysexDialog : public QDialog, public Ui::EditSysexDialogBase {
       virtual void accept();
 
    public:
-      EditSysexDialog(int tick, const Event&,
+      EditSysexDialog(int tick, const MusECore::Event&,
          QWidget* parent=0);
       ~EditSysexDialog();
-      static Event getEvent(int tick, const Event&,
+      static MusECore::Event getEvent(int tick, const MusECore::Event&,
          QWidget* parent = 0);
-      virtual Event event();
+      virtual MusECore::Event event();
       };
 
 //---------------------------------------------------------
@@ -111,7 +116,7 @@ class EditCtrlDialog : public QDialog, public Ui::EditCtrlBase  {
       int num;          // controller number
       int val;          // controller value (for prog. changes)
 
-      const MidiPart* part;
+      const MusECore::MidiPart* part;
       ///QMenu* pop;
 
       void updatePatch();
@@ -127,11 +132,11 @@ class EditCtrlDialog : public QDialog, public Ui::EditCtrlBase  {
 
 
    public:
-      EditCtrlDialog(int tick, const Event&,
-         const MidiPart*, QWidget* parent=0);
-      static Event getEvent(int tick, const Event&, const MidiPart*,
+      EditCtrlDialog(int tick, const MusECore::Event&,
+         const MusECore::MidiPart*, QWidget* parent=0);
+      static MusECore::Event getEvent(int tick, const MusECore::Event&, const MusECore::MidiPart*,
          QWidget* parent = 0);
-      virtual Event event();
+      virtual MusECore::Event event();
       };
 
 //---------------------------------------------------------
@@ -146,7 +151,7 @@ class EditMetaDialog : public EditEventDialog {
       ///PosEdit* epos;
       Awl::PosEdit* epos;
       QTextEdit* edit;
-      MusEWidget::IntLabel* il2;
+      MusEGui::IntLabel* il2;
       QRadioButton* hexButton;
       QLabel* typeLabel;
 
@@ -159,12 +164,12 @@ class EditMetaDialog : public EditEventDialog {
       void typeChanged(int);
 
    public:
-      EditMetaDialog(int tick, const Event&,
+      EditMetaDialog(int tick, const MusECore::Event&,
          QWidget* parent=0);
       ~EditMetaDialog();
-      static Event getEvent(int tick, const Event&,
+      static MusECore::Event getEvent(int tick, const MusECore::Event&,
          QWidget* parent = 0);
-      virtual Event event();
+      virtual MusECore::Event event();
       };
 
 //---------------------------------------------------------
@@ -176,17 +181,17 @@ class EditCAfterDialog : public EditEventDialog {
 
       ///PosEdit* epos;
       Awl::PosEdit* epos;
-      MusEWidget::IntLabel* il2;
+      MusEGui::IntLabel* il2;
 
    protected:
       QGridLayout* layout;
 
    public:
-      EditCAfterDialog(int tick, const Event&,
+      EditCAfterDialog(int tick, const MusECore::Event&,
          QWidget* parent=0);
-      static Event getEvent(int tick, const Event&,
+      static MusECore::Event getEvent(int tick, const MusECore::Event&,
          QWidget* parent = 0);
-      virtual Event event();
+      virtual MusECore::Event event();
       };
 
 //---------------------------------------------------------
@@ -198,19 +203,21 @@ class EditPAfterDialog : public EditEventDialog {
 
       ///PosEdit* epos;
       Awl::PosEdit* epos;
-      MusEWidget::PitchEdit* pl;
-      MusEWidget::IntLabel* il2;
+      MusEGui::PitchEdit* pl;
+      MusEGui::IntLabel* il2;
 
    protected:
       QGridLayout* layout;
 
    public:
-      EditPAfterDialog(int tick, const Event&,
+      EditPAfterDialog(int tick, const MusECore::Event&,
          QWidget* parent=0);
-      static Event getEvent(int tick, const Event&,
+      static MusECore::Event getEvent(int tick, const MusECore::Event&,
          QWidget* parent = 0);
-      virtual Event event();
+      virtual MusECore::Event event();
       };
+
+} // namespace MusEGui
 
 #endif
 

@@ -31,6 +31,8 @@
 
 #include "xml.h"
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //  Note:
 //    this code is a Q/D hack for reading/parsing and
@@ -747,3 +749,5 @@ void Xml::dump(QString &dump)
           dump.append(lbuffer);
        fsetpos(f, &pos);
       }
+
+} // namespace MusECore

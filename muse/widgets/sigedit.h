@@ -30,7 +30,7 @@
 class QResizeEvent;
 class QTimerEvent;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 class SigEditor;
 class SpinBox;
@@ -102,6 +102,6 @@ class SigEdit : public QWidget
       void enterPressed();
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif

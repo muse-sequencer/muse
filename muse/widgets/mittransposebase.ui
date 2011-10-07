@@ -44,7 +44,7 @@
     </widget>
    </item>
    <item>
-    <widget class="MusEWidget::PitchEdit" name="triggerKeySpinBox" native="true"/>
+    <widget class="MusEGui::PitchEdit" name="triggerKeySpinBox" native="true"/>
    </item>
    <item>
     <widget class="QLabel" name="TextLabel2">
@@ -101,7 +101,7 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>MusEWidget::PitchEdit</class>
+   <class>MusEGui::PitchEdit</class>
    <extends>QWidget</extends>
    <header>pitchedit.h</header>
   </customwidget>

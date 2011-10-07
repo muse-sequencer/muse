@@ -40,6 +40,8 @@
 #include "drummap.h"
 #include "gconfig.h"
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   addController
 //---------------------------------------------------------
@@ -86,7 +88,7 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             int lb = (b >> 8) & 0xff;
             int pr = b & 0x7f;
             int tickoffset = 0;
-            switch(song->mtype()) {
+            switch(MusEGlobal::song->mtype()) {
                   case MT_GM:       // no HBANK/LBANK
                         break;
                   case MT_GS:
@@ -128,7 +130,9 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             }
       }
 
-namespace MusEApp {
+} // namespace MusECore
+
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   exportMidi
@@ -136,25 +140,25 @@ namespace MusEApp {
 
 void MusE::exportMidi()
       {
-      MusEWidget::MFile file(QString("midis"), QString(".mid"));
+      MusEGui::MFile file(QString("midis"), QString(".mid"));
 
       //FILE* fp = file.open("w", midi_file_pattern, this, false, true,
       FILE* fp = file.open("w", MusEGlobal::midi_file_save_pattern, this, false, true,
          tr("MusE: Export Midi"));
       if (fp == 0)
             return;
-      MidiFile mf(fp);
+      MusECore::MidiFile mf(fp);
 
-      MidiTrackList* tl = song->midis();
+      MusECore::MidiTrackList* tl = MusEGlobal::song->midis();
       int ntracks = tl->size();
-      MidiFileTrackList* mtl = new MidiFileTrackList;
+      MusECore::MidiFileTrackList* mtl = new MusECore::MidiFileTrackList;
 
       int i = 0;
-      for (iMidiTrack im = tl->begin(); im != tl->end(); ++im, ++i) {
-            MidiTrack* track = *im;
-            MidiFileTrack* mft = new MidiFileTrack;
+      for (MusECore::iMidiTrack im = tl->begin(); im != tl->end(); ++im, ++i) {
+            MusECore::MidiTrack* track = *im;
+            MusECore::MidiFileTrack* mft = new MusECore::MidiFileTrack;
             mtl->push_back(mft);
-            MPEventList* l   = &(mft->events);
+            MusECore::MPEventList* l   = &(mft->events);
             int port         = track->outPort();
             int channel      = track->outChannel();
 
@@ -171,12 +175,12 @@ void MusE::exportMidi()
                   //---------------------------------------------------
                   //    Write Track Marker
                   //
-                  MarkerList* ml = song->marker();
-                  for (ciMarker m = ml->begin(); m != ml->end(); ++m) {
+                  MusECore::MarkerList* ml = MusEGlobal::song->marker();
+                  for (MusECore::ciMarker m = ml->begin(); m != ml->end(); ++m) {
                         QByteArray ba = m->second.name().toLatin1();
                         const char* name = ba.constData();
                         int len = strlen(name);
-                        MidiPlayEvent ev(m->first, port, ME_META, (unsigned char*)name, len);
+                        MusECore::MidiPlayEvent ev(m->first, port, MusECore::ME_META, (unsigned char*)name, len);
                         ev.setA(0x6);
                         l->add(ev);
                         }
@@ -184,11 +188,11 @@ void MusE::exportMidi()
                   //---------------------------------------------------
                   //    Write Copyright
                   //
-                  QByteArray ba = MusEConfig::config.copyright.toLatin1();
+                  QByteArray ba = MusEGlobal::config.copyright.toLatin1();
                   const char* copyright = ba.constData();
                   if (copyright && *copyright) {
                         int len = strlen(copyright);
-                        MidiPlayEvent ev(0, port, ME_META, (unsigned char*)copyright, len);
+                        MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (unsigned char*)copyright, len);
                         ev.setA(0x2);
                         l->add(ev);
                         }
@@ -199,7 +203,7 @@ void MusE::exportMidi()
                   QString comment = track->comment();
                   if (!comment.isEmpty()) {
                         int len = comment.length();
-                        MidiPlayEvent ev(0, port, ME_META, (const unsigned char*)(comment.toLatin1().constData()), len);
+                        MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (const unsigned char*)(comment.toLatin1().constData()), len);
                         ev.setA(0x1);
                         l->add(ev);
                         }
@@ -208,17 +212,17 @@ void MusE::exportMidi()
                   //    Write Songtype SYSEX: GM/GS/XG
                   //
 
-                  switch(song->mtype()) {
+                  switch(MusEGlobal::song->mtype()) {
                         case MT_GM:
-                              l->add(MidiPlayEvent(0, port, ME_SYSEX, gmOnMsg, gmOnMsgLen));
+                              l->add(MusECore::MidiPlayEvent(0, port, MusECore::ME_SYSEX, MusECore::gmOnMsg, MusECore::gmOnMsgLen));
                               break;
                         case MT_GS:
-                              l->add(MidiPlayEvent(0, port, ME_SYSEX, gmOnMsg, gmOnMsgLen));
-                              l->add(MidiPlayEvent(250, port, ME_SYSEX, gsOnMsg, gsOnMsgLen));
+                              l->add(MusECore::MidiPlayEvent(0, port, MusECore::ME_SYSEX, MusECore::gmOnMsg, MusECore::gmOnMsgLen));
+                              l->add(MusECore::MidiPlayEvent(250, port, MusECore::ME_SYSEX, MusECore::gsOnMsg, MusECore::gsOnMsgLen));
                               break;
                         case MT_XG:
-                              l->add(MidiPlayEvent(0, port, ME_SYSEX, gmOnMsg, gmOnMsgLen));
-                              l->add(MidiPlayEvent(250, port, ME_SYSEX, xgOnMsg, xgOnMsgLen));
+                              l->add(MusECore::MidiPlayEvent(0, port, MusECore::ME_SYSEX, MusECore::gmOnMsg, MusECore::gmOnMsgLen));
+                              l->add(MusECore::MidiPlayEvent(250, port, MusECore::ME_SYSEX, MusECore::xgOnMsg, MusECore::xgOnMsgLen));
                               break;
                         case MT_UNKNOWN:
                               break;
@@ -227,15 +231,15 @@ void MusE::exportMidi()
                   //---------------------------------------------------
                   //    Write Tempomap
                   //
-                  TempoList* tl = &tempomap;
-                  for (ciTEvent e = tl->begin(); e != tl->end(); ++e) {
-                        TEvent* event = e->second;
+                  MusECore::TempoList* tl = &MusEGlobal::tempomap;
+                  for (MusECore::ciTEvent e = tl->begin(); e != tl->end(); ++e) {
+                        MusECore::TEvent* event = e->second;
                         unsigned char data[3];
                         int tempo = event->tempo;
                         data[2] = tempo & 0xff;
                         data[1] = (tempo >> 8) & 0xff;
                         data[0] = (tempo >> 16) & 0xff;
-                        MidiPlayEvent ev(event->tick, port, ME_META, data, 3);
+                        MusECore::MidiPlayEvent ev(event->tick, port, MusECore::ME_META, data, 3);
                         ev.setA(0x51);
                         l->add(ev);
                         }
@@ -249,7 +253,7 @@ void MusE::exportMidi()
                   for (AL::ciSigEvent e = sl->begin(); e != sl->end(); ++e) {
                         ///SigEvent* event = e->second;
                         AL::SigEvent* event = e->second;
-                        int sz = (MusEConfig::config.exp2ByteTimeSigs ? 2 : 4); // export 2 byte timesigs instead of 4 ?
+                        int sz = (MusEGlobal::config.exp2ByteTimeSigs ? 2 : 4); // export 2 byte timesigs instead of 4 ?
                         unsigned char data[sz];
                         data[0] = event->sig.z;
                         switch(event->sig.n) {
@@ -266,13 +270,13 @@ void MusE::exportMidi()
                               }
                         // By T356. In muse the metronome pulse is fixed at 24 (once per quarter-note).
                         // The number of 32nd notes per 24 MIDI clock signals (per quarter-note) is 8.
-                        if(!MusEConfig::config.exp2ByteTimeSigs)
+                        if(!MusEGlobal::config.exp2ByteTimeSigs)
                         {
                           data[2] = 24;
                           data[3] = 8;
                         }  
                         
-                        MidiPlayEvent ev(event->tick, port, ME_META, data, sz);
+                        MusECore::MidiPlayEvent ev(event->tick, port, MusECore::ME_META, data, sz);
                           
                         ev.setA(0x58);
                         l->add(ev);
@@ -287,7 +291,7 @@ void MusE::exportMidi()
                   QByteArray ba = track->name().toLatin1();
                   const char* name = ba.constData();
                   int len = strlen(name);
-                  MidiPlayEvent ev(0, port, ME_META, (unsigned char*)name, len+1);
+                  MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (unsigned char*)name, len+1);
                   ev.setA(0x3);    // Meta Sequence/Track Name
                   l->add(ev);
                   }
@@ -300,34 +304,34 @@ void MusE::exportMidi()
                   QByteArray ba = track->comment().toLatin1();
                   const char* comment = ba.constData();
                   int len = strlen(comment);
-                  MidiPlayEvent ev(0, port, ME_META, (unsigned char*)comment, len+1);
+                  MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (unsigned char*)comment, len+1);
                   ev.setA(0xf);    // Meta Text
                   l->add(ev);
                   }
-            PartList* parts = track->parts();
-            for (iPart p = parts->begin(); p != parts->end(); ++p) {
-                  MidiPart* part    = (MidiPart*) (p->second);
-                  EventList* evlist = part->events();
-                  for (iEvent i = evlist->begin(); i != evlist->end(); ++i) {
-                        Event ev = i->second;
+            MusECore::PartList* parts = track->parts();
+            for (MusECore::iPart p = parts->begin(); p != parts->end(); ++p) {
+                  MusECore::MidiPart* part    = (MusECore::MidiPart*) (p->second);
+                  MusECore::EventList* evlist = part->events();
+                  for (MusECore::iEvent i = evlist->begin(); i != evlist->end(); ++i) {
+                        MusECore::Event ev = i->second;
                         int tick = ev.tick() + part->tick();
 
                         switch (ev.type()) {
-                              case Note:
+                              case MusECore::Note:
                                     {
                                     if (ev.velo() == 0) {
                                           printf("Warning: midi note has velocity 0, (ignored)\n");
                                           continue;
                                           }
                                     int pitch;
-                                    if (track->type() == Track::DRUM) {
+                                    if (track->type() == MusECore::Track::DRUM) {
                                           //
                                           // Map drum-notes to the drum-map values
                                           //
                                           int instr = ev.pitch();
-                                          pitch = drumMap[instr].anote;
-                                          // port  = drumMap[instr].port;
-                                          // channel = drumMap[instr].channel;
+                                          pitch = MusEGlobal::drumMap[instr].anote;
+                                          // port  = MusEGlobal::drumMap[instr].port;
+                                          // channel = MusEGlobal::drumMap[instr].channel;
                                           }
                                     else
                                           pitch = ev.pitch();
@@ -359,48 +363,48 @@ void MusE::exportMidi()
                                           }
                                     if (len <= 0)
                                           len = 1;
-                                    l->add(MidiPlayEvent(tick, port, channel, ME_NOTEON, pitch, velo));
+                                    l->add(MusECore::MidiPlayEvent(tick, port, channel, MusECore::ME_NOTEON, pitch, velo));
                                     
-                                    if(MusEConfig::config.expOptimNoteOffs)  // Save space by replacing note offs with note on velocity 0
-                                      l->add(MidiPlayEvent(tick+len, port, channel, ME_NOTEON, pitch, 0));
+                                    if(MusEGlobal::config.expOptimNoteOffs)  // Save space by replacing note offs with note on velocity 0
+                                      l->add(MusECore::MidiPlayEvent(tick+len, port, channel, MusECore::ME_NOTEON, pitch, 0));
                                     else  
-                                      l->add(MidiPlayEvent(tick+len, port, channel, ME_NOTEOFF, pitch, velo));
+                                      l->add(MusECore::MidiPlayEvent(tick+len, port, channel, MusECore::ME_NOTEOFF, pitch, velo));
                                     }
                                     break;
 
-                              case Controller:
+                              case MusECore::Controller:
                                     addController(l, tick, port, channel, ev.dataA(), ev.dataB());
                                     break;
 
-                              case Sysex:
-                                    l->add(MidiPlayEvent(tick, port, ME_SYSEX, ev.eventData()));
+                              case MusECore::Sysex:
+                                    l->add(MusECore::MidiPlayEvent(tick, port, MusECore::ME_SYSEX, ev.eventData()));
                                     break;
 
-                              case PAfter:
-                                    l->add(MidiPlayEvent(tick, port, channel, ME_AFTERTOUCH, ev.dataA(), ev.dataB()));
+                              case MusECore::PAfter:
+                                    l->add(MusECore::MidiPlayEvent(tick, port, channel, MusECore::ME_AFTERTOUCH, ev.dataA(), ev.dataB()));
                                     break;
 
-                              case CAfter:
-                                    l->add(MidiPlayEvent(tick, port, channel, ME_POLYAFTER, ev.dataA(), ev.dataB()));
+                              case MusECore::CAfter:
+                                    l->add(MusECore::MidiPlayEvent(tick, port, channel, MusECore::ME_POLYAFTER, ev.dataA(), ev.dataB()));
                                     break;
 
-                              case Meta:
+                              case MusECore::Meta:
                                     {
-                                    MidiPlayEvent mpev(tick, port, ME_META, ev.eventData());
+                                    MusECore::MidiPlayEvent mpev(tick, port, MusECore::ME_META, ev.eventData());
                                     mpev.setA(ev.dataA());
                                     l->add(mpev);
                                     }
                                     break;
-                              case Wave:
+                              case MusECore::Wave:
                                     break;
                               }
                         }
                   }
             }
-      mf.setDivision(MusEConfig::config.midiDivision);
-      mf.setMType(song->mtype());
+      mf.setDivision(MusEGlobal::config.midiDivision);
+      mf.setMType(MusEGlobal::song->mtype());
       mf.setTrackList(mtl, ntracks);
       mf.write();
       }
 
-} // namespace MusEApp
+} // namespace MusEGui

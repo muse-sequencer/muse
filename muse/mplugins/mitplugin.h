@@ -26,6 +26,8 @@
 
 #include <list>
 
+namespace MusECore {
+
 class MEvent;
 class Xml;
 
@@ -49,6 +51,8 @@ extern MITPluginList mitPlugins;
 extern void processMidiInputTransformPlugins(MEvent&);
 extern void writeStatusMidiInputTransformPlugins(int, Xml&);
 extern void readStatusMidiInputTransformPlugin(Xml&);
+
+} // namespace MusECore
 
 #endif
 

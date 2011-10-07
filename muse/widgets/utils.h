@@ -32,7 +32,7 @@ class QPointF;
 class QColor;
 class QPainterPath;
 
-namespace MusEUtil {
+namespace MusECore {
 
 enum Corner { UpperLeft = 0x1, UpperRight = 0x2, LowerLeft = 0x4, LowerRight = 0x8 };
 
@@ -55,7 +55,7 @@ extern QPainterPath roundedPath(int x, int y, int w, int h, int xrad, int yrad, 
 extern QIcon colorRect(const QColor& color, int width, int height);
 extern int get_paste_len();
 
-} // namespace MusEUtils
+} // namespace MusECores
 
 #endif
 

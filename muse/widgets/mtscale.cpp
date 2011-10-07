@@ -30,7 +30,7 @@
 #include "icons.h"
 #include "gconfig.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   MTScale
@@ -45,21 +45,21 @@ MTScale::MTScale(int* r, QWidget* parent, int xs, bool _mode)
       barLocator = false;
       raster = r;
       if (waveMode) {
-            pos[0] = tempomap.tick2frame(song->cpos());
-            pos[1] = tempomap.tick2frame(song->lpos());
-            pos[2] = tempomap.tick2frame(song->rpos());
+            pos[0] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->cpos());
+            pos[1] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->lpos());
+            pos[2] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->rpos());
             }
       else {
-            pos[0] = song->cpos();
-            pos[1] = song->lpos();
-            pos[2] = song->rpos();
+            pos[0] = MusEGlobal::song->cpos();
+            pos[1] = MusEGlobal::song->lpos();
+            pos[2] = MusEGlobal::song->rpos();
             }
       pos[3] = MAXINT;            // do not show
       button = Qt::NoButton;
       setMouseTracking(true);
-      connect(song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      connect(song, SIGNAL(markerChanged(int)), SLOT(redraw()));
+      connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(markerChanged(int)), SLOT(redraw()));
 	
       setFixedHeight(28);
       setBg(QColor(0xe0, 0xe0, 0xe0));
@@ -73,9 +73,9 @@ void MTScale::songChanged(int type)
       {
       if (type & (SC_SIG|SC_TEMPO)) {
            if ((type & SC_TEMPO) && waveMode) {
-                  pos[0] = tempomap.tick2frame(song->cpos());
-                  pos[1] = tempomap.tick2frame(song->lpos());
-                  pos[2] = tempomap.tick2frame(song->rpos());
+                  pos[0] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->cpos());
+                  pos[1] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->lpos());
+                  pos[2] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->rpos());
                   }
             redraw();
             }
@@ -95,7 +95,7 @@ void MTScale::setPos(int idx, unsigned val, bool)
             return;
             }
       if (waveMode)
-            val = tempomap.tick2frame(val);
+            val = MusEGlobal::tempomap.tick2frame(val);
       if (val == pos[idx])
             return;
       //unsigned opos = mapx(pos[idx] == MAXINT ? val : pos[idx]);
@@ -160,7 +160,7 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
       
       int x = event->x();
       if (waveMode)
-            x = tempomap.frame2tick(x);
+            x = MusEGlobal::tempomap.frame2tick(x);
       x = AL::sigmap.raster(x, *raster);
       if (x < 0)
             x = 0;
@@ -175,7 +175,7 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
                   i = 1;
                   break;
             case Qt::RightButton:
-                  if ((MusEConfig::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
+                  if ((MusEGlobal::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
                       i = 1;
                   else
                       i = 2;
@@ -183,26 +183,26 @@ void MTScale::viewMouseMoveEvent(QMouseEvent* event)
             default:
                   return; // if no button is pressed the function returns here
             }
-      Pos p(x, true);
+      MusECore::Pos p(x, true);
       
       if(i== 0 && (event->modifiers() & Qt::ShiftModifier )) {        // If shift +LMB we add a marker 
-            Marker *alreadyExists = song->getMarkerAt(x);
+            MusECore::Marker *alreadyExists = MusEGlobal::song->getMarkerAt(x);
             if (!alreadyExists) {
-                  song->addMarker(QString(""), x, false);         
+                  MusEGlobal::song->addMarker(QString(""), x, false);         
                   // Removed p3.3.43 
                   // Song::addMarker() already emits a 'markerChanged'.
                   //emit addMarker(x);
                   }
             }
       else if (i== 2 && (event->modifiers() & Qt::ShiftModifier )) {  // If shift +RMB we remove a marker 
-            Marker *toRemove = song->getMarkerAt(x);
+            MusECore::Marker *toRemove = MusEGlobal::song->getMarkerAt(x);
             if (toRemove)
-              song->removeMarker(toRemove);
+              MusEGlobal::song->removeMarker(toRemove);
             else
               printf("No marker to remove\n");
             }
       else
-            song->setPos(i, p);                             // all other cases: relocating one of the locators
+            MusEGlobal::song->setPos(i, p);                             // all other cases: relocating one of the locators
       }
 
 //---------------------------------------------------------
@@ -235,12 +235,12 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
 
       int y = 12;
       p.setPen(Qt::black);
-      p.setFont(MusEConfig::config.fonts[4]);
+      p.setFont(MusEGlobal::config.fonts[4]);
       p.drawLine(r.x(), y+1, r.x() + r.width(), y+1);
       QRect tr(r);
       tr.setHeight(12);
-      MarkerList* marker = song->marker();
-      for (iMarker m = marker->begin(); m != marker->end(); ++m) {
+      MusECore::MarkerList* marker = MusEGlobal::song->marker();
+      for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
             
             int xp;
             if(waveMode) 
@@ -250,12 +250,12 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
             if (xp > x+w)
                   break;
             int xe = r.x() + r.width();
-            iMarker mm = m;
+	    MusECore::iMarker mm = m;
             ++mm;
             if (mm != marker->end()) {
                   
                   if(waveMode) 
-                    xe = mapx(tempomap.tick2frame(mm->first));
+                    xe = mapx(MusEGlobal::tempomap.tick2frame(mm->first));
                   else
                     xe = mapx(mm->first);
                   }
@@ -275,12 +275,12 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
               }
               
               int x2;
-              //iMarker mm = m;
+              //MusECore::iMarker mm = m;
               //++mm;
               if (mm != marker->end())
               {
                     if(waveMode) 
-                      x2 = mapx(tempomap.tick2frame(mm->first));
+                      x2 = mapx(MusEGlobal::tempomap.tick2frame(mm->first));
                     else
                       x2 = mapx(mm->first);
               }      
@@ -355,9 +355,9 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
       unsigned tick;
 
       if (waveMode) {
-            ctick = tempomap.frame2tick(mapxDev(x));
+            ctick = MusEGlobal::tempomap.frame2tick(mapxDev(x));
             AL::sigmap.tickValues(ctick, &bar1, &beat, &tick);
-            AL::sigmap.tickValues(tempomap.frame2tick(mapxDev(x+w)),
+            AL::sigmap.tickValues(MusEGlobal::tempomap.frame2tick(mapxDev(x+w)),
                &bar2, &beat, &tick);
             }
       else {
@@ -374,8 +374,8 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
             ntick     = AL::sigmap.bar2tick(bar+1, 0, 0);
             int tpix, a, b=0;
             if (waveMode) {
-                  a = tempomap.tick2frame(ntick);
-                  b = tempomap.tick2frame(stick);
+                  a = MusEGlobal::tempomap.tick2frame(ntick);
+                  b = MusEGlobal::tempomap.tick2frame(stick);
                   tpix  = rmapx(a - b);
                   }
             else {
@@ -396,7 +396,7 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
                         n = 32;
                   if (bar % n)
                         continue;
-                  p.setFont(MusEConfig::config.fonts[3]);
+                  p.setFont(MusEGlobal::config.fonts[3]);
                   int x = mapx(waveMode ? b : stick);
                   QString s;
                   s.setNum(bar + 1);
@@ -411,7 +411,7 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
                   for (int beat = 0; beat < z; beat++) {
                         int xx = AL::sigmap.bar2tick(bar, beat, 0);
                         if (waveMode)
-                              xx = tempomap.tick2frame(xx);
+                              xx = MusEGlobal::tempomap.tick2frame(xx);
                         int xp = mapx(xx);
                         QString s;
                         QRect r(xp+2, y, 1000, h);
@@ -420,12 +420,12 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
                         if (beat == 0) {
                               num = bar + 1;
                               y1  = y + 1;
-                              p.setFont(MusEConfig::config.fonts[3]);
+                              p.setFont(MusEGlobal::config.fonts[3]);
                               }
                         else {
                               num = beat + 1;
                               y1  = y + 7;
-                              p.setFont(MusEConfig::config.fonts[1]);
+                              p.setFont(MusEGlobal::config.fonts[1]);
                               r.setY(y+3);
                               }
                         s.setNum(num);
@@ -436,4 +436,4 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
             }
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

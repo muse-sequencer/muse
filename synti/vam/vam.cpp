@@ -450,8 +450,8 @@ void VAM::processMessages()
   //
   while (gui->fifoSize()) 
   {
-    MidiPlayEvent ev = gui->readEvent();
-    if (ev.type() == ME_CONTROLLER) 
+    MusECore::MidiPlayEvent ev = gui->readEvent();
+    if (ev.type() == MusECore::ME_CONTROLLER) 
     {
       // process local?
       //setController(ev.dataA() & 0xfff, ev.dataB());
@@ -480,8 +480,8 @@ void VAM::process(float** ports, int offset, int sampleCount)
       //  synthesizer GUI
       //
       while (gui->fifoSize()) {
-            MidiPlayEvent ev = gui->readEvent();
-            if (ev.type() == ME_CONTROLLER) {
+            MusECore::MidiPlayEvent ev = gui->readEvent();
+            if (ev.type() == MusECore::ME_CONTROLLER) {
                   // process local?
                   setController(ev.dataA() & 0xfff, ev.dataB());
                   sendEvent(ev);
@@ -636,7 +636,7 @@ bool VAM::setController(int /*channel*/, int ctrl, int data)
       }
       setController(ctrl, data);
       
-      MidiPlayEvent ev(0, 0, channel, ME_CONTROLLER, ctrl, data);
+      MusECore::MidiPlayEvent ev(0, 0, channel, MusECore::ME_CONTROLLER, ctrl, data);
       gui->writeEvent(ev);
       return false;
       }

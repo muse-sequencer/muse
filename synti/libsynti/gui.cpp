@@ -78,7 +78,7 @@ void MessGui::readMessage()
 //   sendEvent
 //---------------------------------------------------------
 
-void MessGui::sendEvent(const MidiPlayEvent& ev)
+void MessGui::sendEvent(const MusECore::MidiPlayEvent& ev)
       {
       if (wFifoSize == EVENT_FIFO_SIZE) {
             printf("event gui->synti  fifo overflow\n");
@@ -95,10 +95,10 @@ void MessGui::sendEvent(const MidiPlayEvent& ev)
 
 void MessGui::sendController(int ch, int idx, int val)
       {
-//      MidiPlayEvent pe(0, 0, ch, ME_CONTROLLER, idx, val);
+//      MusECore::MidiPlayEvent pe(0, 0, ch, MusECore::ME_CONTROLLER, idx, val);
 //      sendEvent(pe);
 
-      sendEvent(MidiPlayEvent(0, 0, ch, ME_CONTROLLER, idx, val));
+      sendEvent(MusECore::MidiPlayEvent(0, 0, ch, MusECore::ME_CONTROLLER, idx, val));
       }
 
 //---------------------------------------------------------
@@ -107,10 +107,10 @@ void MessGui::sendController(int ch, int idx, int val)
 
 void MessGui::sendSysex(unsigned char* p, int n)
       {
-//      MidiPlayEvent pe(0, 0, ME_SYSEX, p, n);
+//      MusECore::MidiPlayEvent pe(0, 0, MusECore::ME_SYSEX, p, n);
 //      sendEvent(pe);
         
-        sendEvent(MidiPlayEvent(0, 0, ME_SYSEX, p, n));
+        sendEvent(MusECore::MidiPlayEvent(0, 0, MusECore::ME_SYSEX, p, n));
       }
 
 //---------------------------------------------------------
@@ -118,7 +118,7 @@ void MessGui::sendSysex(unsigned char* p, int n)
 //    send an event to synti gui
 //---------------------------------------------------------
 
-void MessGui::writeEvent(const MidiPlayEvent& ev)
+void MessGui::writeEvent(const MusECore::MidiPlayEvent& ev)
       {
       if (rFifoSize == EVENT_FIFO_SIZE) {
             printf("event synti->gui  fifo overflow\n");
@@ -135,9 +135,9 @@ void MessGui::writeEvent(const MidiPlayEvent& ev)
 //    read event from synti gui
 //---------------------------------------------------------
 
-MidiPlayEvent MessGui::readEvent()
+MusECore::MidiPlayEvent MessGui::readEvent()
       {
-      MidiPlayEvent ev = wFifo[wFifoRindex];
+      MusECore::MidiPlayEvent ev = wFifo[wFifoRindex];
       wFifoRindex = (wFifoRindex + 1) % EVENT_FIFO_SIZE;
       --wFifoSize;
       return ev;

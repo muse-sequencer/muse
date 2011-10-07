@@ -42,15 +42,15 @@ class QAction;
 class QFont;
 class QMenu;
 
+namespace MusECore {
+
 class SynthI;
 struct MidiMsg;
-struct AudioMsg;
 class Event;
 class Xml;
 class Sequencer;
 class Track;
 class Part;
-class MidiPart;
 class PartList;
 class MPEventList;
 class EventList;
@@ -58,7 +58,11 @@ class MarkerList;
 class Marker;
 class SNode;
 
+struct AudioMsg;
+
+class MidiPart;
 class MidiPort;
+
 class MidiDevice;
 class AudioPort;
 class AudioDevice;
@@ -424,11 +428,15 @@ class Song : public QObject {
       void markerChanged(int);
       void midiPortsChanged();
       void midiNote(int pitch, int velo);  
-      void controllerChanged(Track* t); 
-      void newPartsCreated(const std::map< Part*, std::set<Part*> >&);
+      void controllerChanged(MusECore::Track* t); 
+      void newPartsCreated(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&);
       };
 
-extern Song* song;
+} // namespace MusECore
+
+namespace MusEGlobal {
+extern MusECore::Song* song;
+}
 
 #endif
 

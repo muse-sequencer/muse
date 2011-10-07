@@ -23,7 +23,7 @@
 
 class QDialog;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   DidYouKnowWidget
@@ -38,4 +38,4 @@ class DidYouKnowWidget : public QDialog, public Ui::DidYouKnow
       DidYouKnowWidget(QDialog *parent = 0) : QDialog(parent) { setupUi(this); }
 };
 
-} // namespace MusEWidget
+} // namespace MusEGui

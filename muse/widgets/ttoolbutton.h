@@ -25,7 +25,7 @@
 
 #include <QToolButton>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   TransparentToolButton
@@ -41,7 +41,7 @@ class TransparentToolButton : public QToolButton {
          : QToolButton(parent) {setObjectName(name);}
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

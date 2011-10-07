@@ -34,7 +34,7 @@ class QTimerEvent;
 class PosEditor;
 class SpinBox;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   PosEdit
@@ -118,6 +118,6 @@ class PosEdit : public QWidget
       void enterPressed();
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif

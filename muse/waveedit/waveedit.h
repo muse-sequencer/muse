@@ -33,18 +33,21 @@
 
 #include "midieditor.h"
 
-class QToolButton;
-class PartList;
-class WaveView;
-class ScrollScale;
-class QSlider;
-class QResizeEvent;
-class SNode;
 class QAction;
+class QResizeEvent;
+class QSlider;
+class QToolButton;
 
-namespace MusEWidget {
-class PosLabel;
+namespace MusECore {
+class PartList;
 }
+
+namespace MusEGui {
+
+class PosLabel;
+class ScrollScale;
+class SNode;
+class WaveView;
 
 //---------------------------------------------------------
 //   WaveEdit
@@ -58,8 +61,8 @@ class WaveEdit : public MidiEditor {
       QToolBar* tools;
       QToolBar* tb1;
       QToolButton* solo;
-      MusEWidget::PosLabel* pos1;
-      MusEWidget::PosLabel* pos2;
+      MusEGui::PosLabel* pos1;
+      MusEGui::PosLabel* pos2;
       QAction* selectAllAction;
       QAction* selectNoneAction;
       QAction* cutAction;
@@ -91,15 +94,15 @@ class WaveEdit : public MidiEditor {
 
 
    signals:
-      void deleted(TopWin*);
+      void deleted(MusEGui::TopWin*);
 
    public:
-      WaveEdit(PartList*);
+      WaveEdit(MusECore::PartList*);
       ~WaveEdit();
-      virtual void readStatus(Xml&);
-      virtual void writeStatus(int, Xml&) const;
-      static void readConfiguration(Xml&);
-      static void writeConfiguration(int, Xml&);
+      virtual void readStatus(MusECore::Xml&);
+      virtual void writeStatus(int, MusECore::Xml&) const;
+      static void readConfiguration(MusECore::Xml&);
+      static void writeConfiguration(int, MusECore::Xml&);
 
       enum { CMD_MUTE=0, CMD_NORMALIZE, CMD_FADE_IN, CMD_FADE_OUT, CMD_REVERSE,
              CMD_GAIN_FREE, CMD_GAIN_200, CMD_GAIN_150, CMD_GAIN_75, CMD_GAIN_50, CMD_GAIN_25,
@@ -107,6 +110,8 @@ class WaveEdit : public MidiEditor {
              CMD_EDIT_EXTERNAL,
              CMD_SELECT_ALL, CMD_SELECT_NONE };
       };
+
+} // namespace MusEGui
 
 #endif
 

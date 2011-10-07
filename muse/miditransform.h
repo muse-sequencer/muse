@@ -28,10 +28,13 @@
 
 class QListWidgetItem;
 class QDialog;
-class MidiTransformation;
-class MidiTransformPrivate;
+
+namespace MusECore {
+
 class Event;
 class MidiPart;
+class MidiTransformation;
+class MidiTransformPrivate;
 class Xml;
 
 enum ValOp {
@@ -48,21 +51,29 @@ enum TransformOperator {
       ScaleMap, Flip, Dynamic, Random
       };
 
+extern void writeMidiTransforms(int level, Xml& xml);
+extern void readMidiTransform(Xml&);
+extern void clearMidiTransforms();
+
+} // namespace MusECore
+
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   MidiTransformDialog
 //---------------------------------------------------------
 
 class MidiTransformerDialog : public QDialog, public Ui::MidiTransformDialogBase {
       Q_OBJECT
-      MidiTransformPrivate* data;
+      MusECore::MidiTransformPrivate* data;
 
       virtual void accept();
 //      virtual void reject();
-      void setValOp(QWidget* a, QWidget* b, ValOp op);
-      void processEvent(Event&, MidiPart*, MidiPart*);
-      bool isSelected(Event&, MidiPart*);
-      void transformEvent(Event&, MidiPart*, MidiPart*);
-      bool typesMatch(Event& e, unsigned selType);
+      void setValOp(QWidget* a, QWidget* b, MusECore::ValOp op);
+      void processEvent(MusECore::Event&, MusECore::MidiPart*, MusECore::MidiPart*);
+      bool isSelected(MusECore::Event&, MusECore::MidiPart*);
+      void transformEvent(MusECore::Event&, MusECore::MidiPart*, MusECore::MidiPart*);
+      bool typesMatch(MusECore::Event& e, unsigned selType);
       
       void updatePresetList();
 
@@ -114,7 +125,6 @@ class MidiTransformerDialog : public QDialog, public Ui::MidiTransformDialogBase
       ~MidiTransformerDialog();
       };
 
-extern void writeMidiTransforms(int level, Xml& xml);
-extern void readMidiTransform(Xml&);
-extern void clearMidiTransforms();
+} // namespace MusEGui
+
 #endif

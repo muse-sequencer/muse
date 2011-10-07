@@ -38,6 +38,8 @@
 //#define MIDI_REC_FIFO_SIZE  512
 #define MIDI_REC_FIFO_SIZE  160
 
+namespace MusECore {
+
 class Event;
 class EvData;
 
@@ -110,8 +112,6 @@ class MEvent {
 //   MidiRecordEvent
 //    allocated and deleted in midiseq thread context
 //---------------------------------------------------------
-
-class MidiPlayEvent;
 
 class MidiRecordEvent : public MEvent {
    public:
@@ -223,6 +223,8 @@ class MidiRecFifo {
       void clear()         { size = 0, wIndex = 0, rIndex = 0; }
       int getSize() const  { return size; }
       };
+
+} // namespace MusECore
 
 #endif
 

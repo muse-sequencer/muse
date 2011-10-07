@@ -25,7 +25,7 @@
 
 #include <QScrollBar>
 
-namespace MusEArranger {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   wadd
@@ -216,4 +216,4 @@ void TLLayout::clear()
             }
       }
 
-} // namespace MusEArranger
+} // namespace MusEGui

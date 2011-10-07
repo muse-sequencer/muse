@@ -34,7 +34,7 @@
 #include "globals.h"
 #include "icons.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 static int rtcResolutions[] = {
       1024, 2048, 4096, 8192, 16384, 32768
@@ -62,51 +62,51 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       startSongGroup->addButton(startEmptyButton, 1);
       startSongGroup->addButton(startSongButton, 2);
       for (unsigned i = 0; i < sizeof(rtcResolutions)/sizeof(*rtcResolutions); ++i) {
-            if (rtcResolutions[i] == MusEConfig::config.rtcTicks) {
+            if (rtcResolutions[i] == MusEGlobal::config.rtcTicks) {
                   rtcResolutionSelect->setCurrentIndex(i);
                   break;
                   }
             }
       for (unsigned i = 0; i < sizeof(divisions)/sizeof(*divisions); ++i) {
-            if (divisions[i] == MusEConfig::config.division) {
+            if (divisions[i] == MusEGlobal::config.division) {
                   midiDivisionSelect->setCurrentIndex(i);
                   break;
                   }
             }
       for (unsigned i = 0; i < sizeof(divisions)/sizeof(*divisions); ++i) {
-            if (divisions[i] == MusEConfig::config.guiDivision) {
+            if (divisions[i] == MusEGlobal::config.guiDivision) {
                   guiDivisionSelect->setCurrentIndex(i);
                   break;
                   }
             }
       for (unsigned i = 0; i < sizeof(dummyAudioBufSizes)/sizeof(*dummyAudioBufSizes); ++i) {
-            if (dummyAudioBufSizes[i] == MusEConfig::config.dummyAudioBufSize) {
+            if (dummyAudioBufSizes[i] == MusEGlobal::config.dummyAudioBufSize) {
                   dummyAudioSize->setCurrentIndex(i);
                   break;
                   }
             }
 
       for (unsigned i = 0; i < sizeof(minControlProcessPeriods)/sizeof(*minControlProcessPeriods); ++i) {
-            if (minControlProcessPeriods[i] == MusEConfig::config.minControlProcessPeriod) {
+            if (minControlProcessPeriods[i] == MusEGlobal::config.minControlProcessPeriod) {
                   minControlProcessPeriodComboBox->setCurrentIndex(i);
                   break;
                   }
             }
 
-      userInstrumentsPath->setText(MusEConfig::config.userInstrumentsDir);
+      userInstrumentsPath->setText(MusEGlobal::config.userInstrumentsDir);
       selectInstrumentsDirButton->setIcon(*openIcon);
       defaultInstrumentsDirButton->setIcon(*undoIcon);
       connect(selectInstrumentsDirButton, SIGNAL(clicked()), SLOT(selectInstrumentsPath()));
       connect(defaultInstrumentsDirButton, SIGNAL(clicked()), SLOT(defaultInstrumentsPath()));
 
-      guiRefreshSelect->setValue(MusEConfig::config.guiRefresh);
-      minSliderSelect->setValue(int(MusEConfig::config.minSlider));
-      minMeterSelect->setValue(MusEConfig::config.minMeter);
-      freewheelCheckBox->setChecked(MusEConfig::config.freewheelMode);
-      denormalCheckBox->setChecked(MusEConfig::config.useDenormalBias);
-      outputLimiterCheckBox->setChecked(MusEConfig::config.useOutputLimiter);
-      vstInPlaceCheckBox->setChecked(MusEConfig::config.vstInPlace);
-      dummyAudioRate->setValue(MusEConfig::config.dummyAudioSampleRate);
+      guiRefreshSelect->setValue(MusEGlobal::config.guiRefresh);
+      minSliderSelect->setValue(int(MusEGlobal::config.minSlider));
+      minMeterSelect->setValue(MusEGlobal::config.minMeter);
+      freewheelCheckBox->setChecked(MusEGlobal::config.freewheelMode);
+      denormalCheckBox->setChecked(MusEGlobal::config.useDenormalBias);
+      outputLimiterCheckBox->setChecked(MusEGlobal::config.useOutputLimiter);
+      vstInPlaceCheckBox->setChecked(MusEGlobal::config.vstInPlace);
+      dummyAudioRate->setValue(MusEGlobal::config.dummyAudioSampleRate);
       
       //DummyAudioDevice* dad = dynamic_cast<DummyAudioDevice*>(audioDevice);
       //dummyAudioRealRate->setText(dad ? QString().setNum(sampleRate) : "---");
@@ -120,40 +120,40 @@ Period affects midi playback resolution.
 Shorter periods are desirable.</string>
             </property>                       */
       
-      startSongEntry->setText(MusEConfig::config.startSong);
-      startSongGroup->button(MusEConfig::config.startMode)->setChecked(true);
+      startSongEntry->setText(MusEGlobal::config.startSong);
+      startSongGroup->button(MusEGlobal::config.startMode)->setChecked(true);
 
-      showTransport->setChecked(MusEConfig::config.transportVisible);
-      showBigtime->setChecked(MusEConfig::config.bigTimeVisible);
-      //showMixer->setChecked(MusEConfig::config.mixerVisible);
-      showMixer->setChecked(MusEConfig::config.mixer1Visible);
-      showMixer2->setChecked(MusEConfig::config.mixer2Visible);
+      showTransport->setChecked(MusEGlobal::config.transportVisible);
+      showBigtime->setChecked(MusEGlobal::config.bigTimeVisible);
+      //showMixer->setChecked(MusEGlobal::config.mixerVisible);
+      showMixer->setChecked(MusEGlobal::config.mixer1Visible);
+      showMixer2->setChecked(MusEGlobal::config.mixer2Visible);
 
-      mainX->setValue(MusEConfig::config.geometryMain.x());
-      mainY->setValue(MusEConfig::config.geometryMain.y());
-      mainW->setValue(MusEConfig::config.geometryMain.width());
-      mainH->setValue(MusEConfig::config.geometryMain.height());
+      mainX->setValue(MusEGlobal::config.geometryMain.x());
+      mainY->setValue(MusEGlobal::config.geometryMain.y());
+      mainW->setValue(MusEGlobal::config.geometryMain.width());
+      mainH->setValue(MusEGlobal::config.geometryMain.height());
 
-      transportX->setValue(MusEConfig::config.geometryTransport.x());
-      transportY->setValue(MusEConfig::config.geometryTransport.y());
+      transportX->setValue(MusEGlobal::config.geometryTransport.x());
+      transportY->setValue(MusEGlobal::config.geometryTransport.y());
 
-      bigtimeX->setValue(MusEConfig::config.geometryBigTime.x());
-      bigtimeY->setValue(MusEConfig::config.geometryBigTime.y());
-      bigtimeW->setValue(MusEConfig::config.geometryBigTime.width());
-      bigtimeH->setValue(MusEConfig::config.geometryBigTime.height());
+      bigtimeX->setValue(MusEGlobal::config.geometryBigTime.x());
+      bigtimeY->setValue(MusEGlobal::config.geometryBigTime.y());
+      bigtimeW->setValue(MusEGlobal::config.geometryBigTime.width());
+      bigtimeH->setValue(MusEGlobal::config.geometryBigTime.height());
 
-      //mixerX->setValue(MusEConfig::config.geometryMixer.x());
-      //mixerY->setValue(MusEConfig::config.geometryMixer.y());
-      //mixerW->setValue(MusEConfig::config.geometryMixer.width());
-      //mixerH->setValue(MusEConfig::config.geometryMixer.height());
-      mixerX->setValue(MusEConfig::config.mixer1.geometry.x());
-      mixerY->setValue(MusEConfig::config.mixer1.geometry.y());
-      mixerW->setValue(MusEConfig::config.mixer1.geometry.width());
-      mixerH->setValue(MusEConfig::config.mixer1.geometry.height());
-      mixer2X->setValue(MusEConfig::config.mixer2.geometry.x());
-      mixer2Y->setValue(MusEConfig::config.mixer2.geometry.y());
-      mixer2W->setValue(MusEConfig::config.mixer2.geometry.width());
-      mixer2H->setValue(MusEConfig::config.mixer2.geometry.height());
+      //mixerX->setValue(MusEGlobal::config.geometryMixer.x());
+      //mixerY->setValue(MusEGlobal::config.geometryMixer.y());
+      //mixerW->setValue(MusEGlobal::config.geometryMixer.width());
+      //mixerH->setValue(MusEGlobal::config.geometryMixer.height());
+      mixerX->setValue(MusEGlobal::config.mixer1.geometry.x());
+      mixerY->setValue(MusEGlobal::config.mixer1.geometry.y());
+      mixerW->setValue(MusEGlobal::config.mixer1.geometry.width());
+      mixerH->setValue(MusEGlobal::config.mixer1.geometry.height());
+      mixer2X->setValue(MusEGlobal::config.mixer2.geometry.x());
+      mixer2Y->setValue(MusEGlobal::config.mixer2.geometry.y());
+      mixer2W->setValue(MusEGlobal::config.mixer2.geometry.width());
+      mixer2H->setValue(MusEGlobal::config.mixer2.geometry.height());
 
       //setMixerCurrent->setEnabled(MusEGlobal::muse->mixerWindow());
       setMixerCurrent->setEnabled(MusEGlobal::muse->mixer1Window());
@@ -162,15 +162,15 @@ Shorter periods are desirable.</string>
       setBigtimeCurrent->setEnabled(MusEGlobal::muse->bigtimeWindow());
       setTransportCurrent->setEnabled(MusEGlobal::muse->transportWindow());
 
-      showSplash->setChecked(MusEConfig::config.showSplashScreen);
-      showDidYouKnow->setChecked(MusEConfig::config.showDidYouKnow);
-      externalWavEditorSelect->setText(MusEConfig::config.externalWavEditor);
-      oldStyleStopCheckBox->setChecked(MusEConfig::config.useOldStyleStopShortCut);
-      moveArmedCheckBox->setChecked(MusEConfig::config.moveArmedCheckBox);
-      projectSaveCheckBox->setChecked(MusEConfig::config.useProjectSaveDialog);
-      popsDefStayOpenCheckBox->setChecked(MusEConfig::config.popupsDefaultStayOpen);
-      lmbDecreasesCheckBox->setChecked(MusEConfig::config.leftMouseButtonCanDecrease);
-      rangeMarkerWithoutMMBCheckBox->setChecked(MusEConfig::config.rangeMarkerWithoutMMB);
+      showSplash->setChecked(MusEGlobal::config.showSplashScreen);
+      showDidYouKnow->setChecked(MusEGlobal::config.showDidYouKnow);
+      externalWavEditorSelect->setText(MusEGlobal::config.externalWavEditor);
+      oldStyleStopCheckBox->setChecked(MusEGlobal::config.useOldStyleStopShortCut);
+      moveArmedCheckBox->setChecked(MusEGlobal::config.moveArmedCheckBox);
+      projectSaveCheckBox->setChecked(MusEGlobal::config.useProjectSaveDialog);
+      popsDefStayOpenCheckBox->setChecked(MusEGlobal::config.popupsDefaultStayOpen);
+      lmbDecreasesCheckBox->setChecked(MusEGlobal::config.leftMouseButtonCanDecrease);
+      rangeMarkerWithoutMMBCheckBox->setChecked(MusEGlobal::config.rangeMarkerWithoutMMB);
       
       //updateSettings();    // TESTING
       
@@ -214,84 +214,84 @@ void GlobalSettingsConfig::addMdiSettings(TopWin::ToplevelType t)
 void GlobalSettingsConfig::updateSettings()
 {
       for (unsigned i = 0; i < sizeof(rtcResolutions)/sizeof(*rtcResolutions); ++i) {
-            if (rtcResolutions[i] == MusEConfig::config.rtcTicks) {
+            if (rtcResolutions[i] == MusEGlobal::config.rtcTicks) {
                   rtcResolutionSelect->setCurrentIndex(i);
                   break;
                   }
             }
       for (unsigned i = 0; i < sizeof(divisions)/sizeof(*divisions); ++i) {
-            if (divisions[i] == MusEConfig::config.division) {
+            if (divisions[i] == MusEGlobal::config.division) {
                   midiDivisionSelect->setCurrentIndex(i);
                   break;
                   }
             }
       for (unsigned i = 0; i < sizeof(divisions)/sizeof(*divisions); ++i) {
-            if (divisions[i] == MusEConfig::config.guiDivision) {
+            if (divisions[i] == MusEGlobal::config.guiDivision) {
                   guiDivisionSelect->setCurrentIndex(i);
                   break;
                   }
             }
       for (unsigned i = 0; i < sizeof(dummyAudioBufSizes)/sizeof(*dummyAudioBufSizes); ++i) {
-            if (dummyAudioBufSizes[i] == MusEConfig::config.dummyAudioBufSize) {
+            if (dummyAudioBufSizes[i] == MusEGlobal::config.dummyAudioBufSize) {
                   dummyAudioSize->setCurrentIndex(i);
                   break;
                   }
             }
       
       for (unsigned i = 0; i < sizeof(minControlProcessPeriods)/sizeof(*minControlProcessPeriods); ++i) {
-            if (minControlProcessPeriods[i] == MusEConfig::config.minControlProcessPeriod) {
+            if (minControlProcessPeriods[i] == MusEGlobal::config.minControlProcessPeriod) {
                   minControlProcessPeriodComboBox->setCurrentIndex(i);
                   break;
                   }
             }
 
-      guiRefreshSelect->setValue(MusEConfig::config.guiRefresh);
-      minSliderSelect->setValue(int(MusEConfig::config.minSlider));
-      minMeterSelect->setValue(MusEConfig::config.minMeter);
-      freewheelCheckBox->setChecked(MusEConfig::config.freewheelMode);
-      denormalCheckBox->setChecked(MusEConfig::config.useDenormalBias);
-      outputLimiterCheckBox->setChecked(MusEConfig::config.useOutputLimiter);
-      vstInPlaceCheckBox->setChecked(MusEConfig::config.vstInPlace);
-      dummyAudioRate->setValue(MusEConfig::config.dummyAudioSampleRate);
+      guiRefreshSelect->setValue(MusEGlobal::config.guiRefresh);
+      minSliderSelect->setValue(int(MusEGlobal::config.minSlider));
+      minMeterSelect->setValue(MusEGlobal::config.minMeter);
+      freewheelCheckBox->setChecked(MusEGlobal::config.freewheelMode);
+      denormalCheckBox->setChecked(MusEGlobal::config.useDenormalBias);
+      outputLimiterCheckBox->setChecked(MusEGlobal::config.useOutputLimiter);
+      vstInPlaceCheckBox->setChecked(MusEGlobal::config.vstInPlace);
+      dummyAudioRate->setValue(MusEGlobal::config.dummyAudioSampleRate);
       
       //DummyAudioDevice* dad = dynamic_cast<DummyAudioDevice*>(audioDevice);
       //dummyAudioRealRate->setText(dad ? QString().setNum(sampleRate) : "---");
       //dummyAudioRealRate->setText(QString().setNum(sampleRate));   // Not used any more. p4.0.20 
       
-      startSongEntry->setText(MusEConfig::config.startSong);
-      startSongGroup->button(MusEConfig::config.startMode)->setChecked(true);
+      startSongEntry->setText(MusEGlobal::config.startSong);
+      startSongGroup->button(MusEGlobal::config.startMode)->setChecked(true);
 
-      showTransport->setChecked(MusEConfig::config.transportVisible);
-      showBigtime->setChecked(MusEConfig::config.bigTimeVisible);
-      //showMixer->setChecked(MusEConfig::config.mixerVisible);
-      showMixer->setChecked(MusEConfig::config.mixer1Visible);
-      showMixer2->setChecked(MusEConfig::config.mixer2Visible);
+      showTransport->setChecked(MusEGlobal::config.transportVisible);
+      showBigtime->setChecked(MusEGlobal::config.bigTimeVisible);
+      //showMixer->setChecked(MusEGlobal::config.mixerVisible);
+      showMixer->setChecked(MusEGlobal::config.mixer1Visible);
+      showMixer2->setChecked(MusEGlobal::config.mixer2Visible);
 
-      mainX->setValue(MusEConfig::config.geometryMain.x());
-      mainY->setValue(MusEConfig::config.geometryMain.y());
-      mainW->setValue(MusEConfig::config.geometryMain.width());
-      mainH->setValue(MusEConfig::config.geometryMain.height());
+      mainX->setValue(MusEGlobal::config.geometryMain.x());
+      mainY->setValue(MusEGlobal::config.geometryMain.y());
+      mainW->setValue(MusEGlobal::config.geometryMain.width());
+      mainH->setValue(MusEGlobal::config.geometryMain.height());
 
-      transportX->setValue(MusEConfig::config.geometryTransport.x());
-      transportY->setValue(MusEConfig::config.geometryTransport.y());
+      transportX->setValue(MusEGlobal::config.geometryTransport.x());
+      transportY->setValue(MusEGlobal::config.geometryTransport.y());
 
-      bigtimeX->setValue(MusEConfig::config.geometryBigTime.x());
-      bigtimeY->setValue(MusEConfig::config.geometryBigTime.y());
-      bigtimeW->setValue(MusEConfig::config.geometryBigTime.width());
-      bigtimeH->setValue(MusEConfig::config.geometryBigTime.height());
+      bigtimeX->setValue(MusEGlobal::config.geometryBigTime.x());
+      bigtimeY->setValue(MusEGlobal::config.geometryBigTime.y());
+      bigtimeW->setValue(MusEGlobal::config.geometryBigTime.width());
+      bigtimeH->setValue(MusEGlobal::config.geometryBigTime.height());
 
-      //mixerX->setValue(MusEConfig::config.geometryMixer.x());
-      //mixerY->setValue(MusEConfig::config.geometryMixer.y());
-      //mixerW->setValue(MusEConfig::config.geometryMixer.width());
-      //mixerH->setValue(MusEConfig::config.geometryMixer.height());
-      mixerX->setValue(MusEConfig::config.mixer1.geometry.x());
-      mixerY->setValue(MusEConfig::config.mixer1.geometry.y());
-      mixerW->setValue(MusEConfig::config.mixer1.geometry.width());
-      mixerH->setValue(MusEConfig::config.mixer1.geometry.height());
-      mixer2X->setValue(MusEConfig::config.mixer2.geometry.x());
-      mixer2Y->setValue(MusEConfig::config.mixer2.geometry.y());
-      mixer2W->setValue(MusEConfig::config.mixer2.geometry.width());
-      mixer2H->setValue(MusEConfig::config.mixer2.geometry.height());
+      //mixerX->setValue(MusEGlobal::config.geometryMixer.x());
+      //mixerY->setValue(MusEGlobal::config.geometryMixer.y());
+      //mixerW->setValue(MusEGlobal::config.geometryMixer.width());
+      //mixerH->setValue(MusEGlobal::config.geometryMixer.height());
+      mixerX->setValue(MusEGlobal::config.mixer1.geometry.x());
+      mixerY->setValue(MusEGlobal::config.mixer1.geometry.y());
+      mixerW->setValue(MusEGlobal::config.mixer1.geometry.width());
+      mixerH->setValue(MusEGlobal::config.mixer1.geometry.height());
+      mixer2X->setValue(MusEGlobal::config.mixer2.geometry.x());
+      mixer2Y->setValue(MusEGlobal::config.mixer2.geometry.y());
+      mixer2W->setValue(MusEGlobal::config.mixer2.geometry.width());
+      mixer2H->setValue(MusEGlobal::config.mixer2.geometry.height());
 
       //setMixerCurrent->setEnabled(MusEGlobal::muse->mixerWindow());
       setMixerCurrent->setEnabled(MusEGlobal::muse->mixer1Window());
@@ -300,15 +300,15 @@ void GlobalSettingsConfig::updateSettings()
       setBigtimeCurrent->setEnabled(MusEGlobal::muse->bigtimeWindow());
       setTransportCurrent->setEnabled(MusEGlobal::muse->transportWindow());
 
-      showSplash->setChecked(MusEConfig::config.showSplashScreen);
-      showDidYouKnow->setChecked(MusEConfig::config.showDidYouKnow);
-      externalWavEditorSelect->setText(MusEConfig::config.externalWavEditor);
-      oldStyleStopCheckBox->setChecked(MusEConfig::config.useOldStyleStopShortCut);
-      moveArmedCheckBox->setChecked(MusEConfig::config.moveArmedCheckBox);
-      projectSaveCheckBox->setChecked(MusEConfig::config.useProjectSaveDialog);
-      popsDefStayOpenCheckBox->setChecked(MusEConfig::config.popupsDefaultStayOpen);
-      lmbDecreasesCheckBox->setChecked(MusEConfig::config.leftMouseButtonCanDecrease);
-      rangeMarkerWithoutMMBCheckBox->setChecked(MusEConfig::config.rangeMarkerWithoutMMB);
+      showSplash->setChecked(MusEGlobal::config.showSplashScreen);
+      showDidYouKnow->setChecked(MusEGlobal::config.showDidYouKnow);
+      externalWavEditorSelect->setText(MusEGlobal::config.externalWavEditor);
+      oldStyleStopCheckBox->setChecked(MusEGlobal::config.useOldStyleStopShortCut);
+      moveArmedCheckBox->setChecked(MusEGlobal::config.moveArmedCheckBox);
+      projectSaveCheckBox->setChecked(MusEGlobal::config.useProjectSaveDialog);
+      popsDefStayOpenCheckBox->setChecked(MusEGlobal::config.popupsDefaultStayOpen);
+      lmbDecreasesCheckBox->setChecked(MusEGlobal::config.leftMouseButtonCanDecrease);
+      rangeMarkerWithoutMMBCheckBox->setChecked(MusEGlobal::config.rangeMarkerWithoutMMB);
       
       updateMdiSettings();
 }
@@ -342,110 +342,110 @@ void GlobalSettingsConfig::showEvent(QShowEvent* e)
 void GlobalSettingsConfig::apply()
       {
       int rtcticks       = rtcResolutionSelect->currentIndex();
-      MusEConfig::config.guiRefresh  = guiRefreshSelect->value();
-      MusEConfig::config.minSlider   = minSliderSelect->value();
-      MusEConfig::config.minMeter    = minMeterSelect->value();
-      MusEConfig::config.freewheelMode = freewheelCheckBox->isChecked();
-      MusEConfig::config.useDenormalBias = denormalCheckBox->isChecked();
-      MusEConfig::config.useOutputLimiter = outputLimiterCheckBox->isChecked();
-      MusEConfig::config.vstInPlace  = vstInPlaceCheckBox->isChecked();
-      MusEConfig::config.rtcTicks    = rtcResolutions[rtcticks];
-      MusEConfig::config.userInstrumentsDir = userInstrumentsPath->text();
-      MusEConfig::config.startSong   = startSongEntry->text();
-      MusEConfig::config.startMode   = startSongGroup->checkedId();
+      MusEGlobal::config.guiRefresh  = guiRefreshSelect->value();
+      MusEGlobal::config.minSlider   = minSliderSelect->value();
+      MusEGlobal::config.minMeter    = minMeterSelect->value();
+      MusEGlobal::config.freewheelMode = freewheelCheckBox->isChecked();
+      MusEGlobal::config.useDenormalBias = denormalCheckBox->isChecked();
+      MusEGlobal::config.useOutputLimiter = outputLimiterCheckBox->isChecked();
+      MusEGlobal::config.vstInPlace  = vstInPlaceCheckBox->isChecked();
+      MusEGlobal::config.rtcTicks    = rtcResolutions[rtcticks];
+      MusEGlobal::config.userInstrumentsDir = userInstrumentsPath->text();
+      MusEGlobal::config.startSong   = startSongEntry->text();
+      MusEGlobal::config.startMode   = startSongGroup->checkedId();
       int das = dummyAudioSize->currentIndex();
-      MusEConfig::config.dummyAudioBufSize = dummyAudioBufSizes[das];
-      MusEConfig::config.dummyAudioSampleRate = dummyAudioRate->value();
+      MusEGlobal::config.dummyAudioBufSize = dummyAudioBufSizes[das];
+      MusEGlobal::config.dummyAudioSampleRate = dummyAudioRate->value();
       int mcp = minControlProcessPeriodComboBox->currentIndex();
-      MusEConfig::config.minControlProcessPeriod = minControlProcessPeriods[mcp];
+      MusEGlobal::config.minControlProcessPeriod = minControlProcessPeriods[mcp];
 
       int div            = midiDivisionSelect->currentIndex();
-      MusEConfig::config.division    = divisions[div];
+      MusEGlobal::config.division    = divisions[div];
       div                = guiDivisionSelect->currentIndex();
-      MusEConfig::config.guiDivision = divisions[div];
+      MusEGlobal::config.guiDivision = divisions[div];
       
-      MusEConfig::config.transportVisible = showTransport->isChecked();
-      MusEConfig::config.bigTimeVisible   = showBigtime->isChecked();
-      //MusEConfig::config.mixerVisible     = showMixer->isChecked();
-      MusEConfig::config.mixer1Visible     = showMixer->isChecked();
-      MusEConfig::config.mixer2Visible     = showMixer2->isChecked();
+      MusEGlobal::config.transportVisible = showTransport->isChecked();
+      MusEGlobal::config.bigTimeVisible   = showBigtime->isChecked();
+      //MusEGlobal::config.mixerVisible     = showMixer->isChecked();
+      MusEGlobal::config.mixer1Visible     = showMixer->isChecked();
+      MusEGlobal::config.mixer2Visible     = showMixer2->isChecked();
 
-      MusEConfig::config.geometryMain.setX(mainX->value());
-      MusEConfig::config.geometryMain.setY(mainY->value());
-      MusEConfig::config.geometryMain.setWidth(mainW->value());
-      MusEConfig::config.geometryMain.setHeight(mainH->value());
+      MusEGlobal::config.geometryMain.setX(mainX->value());
+      MusEGlobal::config.geometryMain.setY(mainY->value());
+      MusEGlobal::config.geometryMain.setWidth(mainW->value());
+      MusEGlobal::config.geometryMain.setHeight(mainH->value());
 
-      MusEConfig::config.geometryTransport.setX(transportX->value());
-      MusEConfig::config.geometryTransport.setY(transportY->value());
-      MusEConfig::config.geometryTransport.setWidth(0);
-      MusEConfig::config.geometryTransport.setHeight(0);
+      MusEGlobal::config.geometryTransport.setX(transportX->value());
+      MusEGlobal::config.geometryTransport.setY(transportY->value());
+      MusEGlobal::config.geometryTransport.setWidth(0);
+      MusEGlobal::config.geometryTransport.setHeight(0);
 
-      MusEConfig::config.geometryBigTime.setX(bigtimeX->value());
-      MusEConfig::config.geometryBigTime.setY(bigtimeY->value());
-      MusEConfig::config.geometryBigTime.setWidth(bigtimeW->value());
-      MusEConfig::config.geometryBigTime.setHeight(bigtimeH->value());
+      MusEGlobal::config.geometryBigTime.setX(bigtimeX->value());
+      MusEGlobal::config.geometryBigTime.setY(bigtimeY->value());
+      MusEGlobal::config.geometryBigTime.setWidth(bigtimeW->value());
+      MusEGlobal::config.geometryBigTime.setHeight(bigtimeH->value());
 
-      //MusEConfig::config.geometryMixer.setX(mixerX->value());
-      //MusEConfig::config.geometryMixer.setY(mixerY->value());
-      //MusEConfig::config.geometryMixer.setWidth(mixerW->value());
-      //MusEConfig::config.geometryMixer.setHeight(mixerH->value());
-      MusEConfig::config.mixer1.geometry.setX(mixerX->value());
-      MusEConfig::config.mixer1.geometry.setY(mixerY->value());
-      MusEConfig::config.mixer1.geometry.setWidth(mixerW->value());
-      MusEConfig::config.mixer1.geometry.setHeight(mixerH->value());
-      MusEConfig::config.mixer2.geometry.setX(mixer2X->value());
-      MusEConfig::config.mixer2.geometry.setY(mixer2Y->value());
-      MusEConfig::config.mixer2.geometry.setWidth(mixer2W->value());
-      MusEConfig::config.mixer2.geometry.setHeight(mixer2H->value());
+      //MusEGlobal::config.geometryMixer.setX(mixerX->value());
+      //MusEGlobal::config.geometryMixer.setY(mixerY->value());
+      //MusEGlobal::config.geometryMixer.setWidth(mixerW->value());
+      //MusEGlobal::config.geometryMixer.setHeight(mixerH->value());
+      MusEGlobal::config.mixer1.geometry.setX(mixerX->value());
+      MusEGlobal::config.mixer1.geometry.setY(mixerY->value());
+      MusEGlobal::config.mixer1.geometry.setWidth(mixerW->value());
+      MusEGlobal::config.mixer1.geometry.setHeight(mixerH->value());
+      MusEGlobal::config.mixer2.geometry.setX(mixer2X->value());
+      MusEGlobal::config.mixer2.geometry.setY(mixer2Y->value());
+      MusEGlobal::config.mixer2.geometry.setWidth(mixer2W->value());
+      MusEGlobal::config.mixer2.geometry.setHeight(mixer2H->value());
 
-      MusEConfig::config.showSplashScreen = showSplash->isChecked();
-      MusEConfig::config.showDidYouKnow   = showDidYouKnow->isChecked();
-      MusEConfig::config.externalWavEditor = externalWavEditorSelect->text();
-      MusEConfig::config.useOldStyleStopShortCut = oldStyleStopCheckBox->isChecked();
-      MusEConfig::config.moveArmedCheckBox = moveArmedCheckBox->isChecked();
-      MusEConfig::config.useProjectSaveDialog = projectSaveCheckBox->isChecked();
-      MusEConfig::config.popupsDefaultStayOpen = popsDefStayOpenCheckBox->isChecked();
-      MusEConfig::config.leftMouseButtonCanDecrease = lmbDecreasesCheckBox->isChecked();
-      MusEConfig::config.rangeMarkerWithoutMMB = rangeMarkerWithoutMMBCheckBox->isChecked();
+      MusEGlobal::config.showSplashScreen = showSplash->isChecked();
+      MusEGlobal::config.showDidYouKnow   = showDidYouKnow->isChecked();
+      MusEGlobal::config.externalWavEditor = externalWavEditorSelect->text();
+      MusEGlobal::config.useOldStyleStopShortCut = oldStyleStopCheckBox->isChecked();
+      MusEGlobal::config.moveArmedCheckBox = moveArmedCheckBox->isChecked();
+      MusEGlobal::config.useProjectSaveDialog = projectSaveCheckBox->isChecked();
+      MusEGlobal::config.popupsDefaultStayOpen = popsDefStayOpenCheckBox->isChecked();
+      MusEGlobal::config.leftMouseButtonCanDecrease = lmbDecreasesCheckBox->isChecked();
+      MusEGlobal::config.rangeMarkerWithoutMMB = rangeMarkerWithoutMMBCheckBox->isChecked();
 
-      //MusEGlobal::muse->showMixer(MusEConfig::config.mixerVisible);
-      MusEGlobal::muse->showMixer1(MusEConfig::config.mixer1Visible);
-      MusEGlobal::muse->showMixer2(MusEConfig::config.mixer2Visible);
+      //MusEGlobal::muse->showMixer(MusEGlobal::config.mixerVisible);
+      MusEGlobal::muse->showMixer1(MusEGlobal::config.mixer1Visible);
+      MusEGlobal::muse->showMixer2(MusEGlobal::config.mixer2Visible);
       
-      MusEGlobal::muse->showBigtime(MusEConfig::config.bigTimeVisible);
-      MusEGlobal::muse->showTransport(MusEConfig::config.transportVisible);
+      MusEGlobal::muse->showBigtime(MusEGlobal::config.bigTimeVisible);
+      MusEGlobal::muse->showTransport(MusEGlobal::config.transportVisible);
       QWidget* w = MusEGlobal::muse->transportWindow();
       if (w) {
-            w->resize(MusEConfig::config.geometryTransport.size());
-            w->move(MusEConfig::config.geometryTransport.topLeft());
+            w->resize(MusEGlobal::config.geometryTransport.size());
+            w->move(MusEGlobal::config.geometryTransport.topLeft());
             }
       //w = MusEGlobal::muse->mixerWindow();
       //if (w) {
-      //      w->resize(MusEConfig::config.geometryMixer.size());
-      //      w->move(MusEConfig::config.geometryMixer.topLeft());
+      //      w->resize(MusEGlobal::config.geometryMixer.size());
+      //      w->move(MusEGlobal::config.geometryMixer.topLeft());
       //      }
       w = MusEGlobal::muse->mixer1Window();
       if (w) {
-            w->resize(MusEConfig::config.mixer1.geometry.size());
-            w->move(MusEConfig::config.mixer1.geometry.topLeft());
+            w->resize(MusEGlobal::config.mixer1.geometry.size());
+            w->move(MusEGlobal::config.mixer1.geometry.topLeft());
             }
       w = MusEGlobal::muse->mixer2Window();
       if (w) {
-            w->resize(MusEConfig::config.mixer2.geometry.size());
-            w->move(MusEConfig::config.mixer2.geometry.topLeft());
+            w->resize(MusEGlobal::config.mixer2.geometry.size());
+            w->move(MusEGlobal::config.mixer2.geometry.topLeft());
             }
       w = MusEGlobal::muse->bigtimeWindow();
       if (w) {
-            w->resize(MusEConfig::config.geometryBigTime.size());
-            w->move(MusEConfig::config.geometryBigTime.topLeft());
+            w->resize(MusEGlobal::config.geometryBigTime.size());
+            w->move(MusEGlobal::config.geometryBigTime.topLeft());
             }
-      MusEGlobal::muse->resize(MusEConfig::config.geometryMain.size());
-      MusEGlobal::muse->move(MusEConfig::config.geometryMain.topLeft());
+      MusEGlobal::muse->resize(MusEGlobal::config.geometryMain.size());
+      MusEGlobal::muse->move(MusEGlobal::config.geometryMain.topLeft());
 
-      MusEGlobal::museUserInstruments = MusEConfig::config.userInstrumentsDir;
+      MusEGlobal::museUserInstruments = MusEGlobal::config.userInstrumentsDir;
 
       MusEGlobal::muse->setHeartBeat();        // set guiRefresh
-      midiSeq->msgSetRtc();        // set midi tick rate
+      MusEGlobal::midiSeq->msgSetRtc();        // set midi tick rate
       
       applyMdiSettings();
       
@@ -550,7 +550,7 @@ void GlobalSettingsConfig::selectInstrumentsPath()
       {
       QString dir = QFileDialog::getExistingDirectory(this, 
                                                       tr("Selects instruments directory"), 
-                                                      MusEConfig::config.userInstrumentsDir);
+                                                      MusEGlobal::config.userInstrumentsDir);
       userInstrumentsPath->setText(dir);
       }
 
@@ -598,5 +598,5 @@ void GlobalSettingsConfig::borlandPreset()
   updateMdiSettings();
 }
 
-} // namespace MusEWidget
+} // namespace MusEGui
 

@@ -23,9 +23,9 @@
 
 #include "gconfig.h"
 
-namespace MusEConfig {
+namespace MusEGlobal {
 
-GlobalConfigValues config = {
+MusEGui::GlobalConfigValues config = {
       190,                        // globalAlphaBlend    
       {
         QColor(0xff, 0xff, 0xff),   // palette
@@ -190,4 +190,4 @@ GlobalConfigValues config = {
       false                         // rangeMarkerWithoutMMB
     };
 
-} // namespace MusEConfig
+} // namespace MusEGlobal

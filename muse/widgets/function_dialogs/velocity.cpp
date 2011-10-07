@@ -24,7 +24,7 @@
 #include "velocity.h"
 #include "xml.h"
 
-namespace MusEDialog {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   Velocity
@@ -77,18 +77,18 @@ int Velocity::exec()
       return QDialog::exec();
       }
 
-void Velocity::read_configuration(Xml& xml)
+void Velocity::read_configuration(MusECore::Xml& xml)
 {
 	for (;;)
 	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
 			
 		const QString& tag = xml.s1();
 		switch (token)
 		{
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "range")
 					range=xml.parseInt();
 				else if (tag == "rate")
@@ -99,7 +99,7 @@ void Velocity::read_configuration(Xml& xml)
 					xml.unknown("ModVelo");
 				break;
 				
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "mod_velo")
 					return;
 				
@@ -109,7 +109,7 @@ void Velocity::read_configuration(Xml& xml)
 	}
 }
 
-void Velocity::write_configuration(int level, Xml& xml)
+void Velocity::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "mod_velo");
 	xml.intTag(level, "range", range);
@@ -118,4 +118,4 @@ void Velocity::write_configuration(int level, Xml& xml)
 	xml.tag(level, "/mod_velo");
 }
 
-} // namespace MusEDialog
+} // namespace MusEGui

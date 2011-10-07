@@ -33,6 +33,8 @@ class QPoint;
 class QRect;
 class QToolBar;
 
+namespace MusEGui {
+
 class MidiEditor;
 class ScrollScale;
 
@@ -40,7 +42,7 @@ class ScrollScale;
 //   Master
 //---------------------------------------------------------
 
-class Master : public MusEWidget::View {
+class Master : public MusEGui::View {
       Q_OBJECT
       enum DragMode { DRAG_OFF, DRAG_NEW, DRAG_MOVE_START, DRAG_MOVE,
             DRAG_DELETE, DRAG_COPY_START, DRAG_COPY,
@@ -49,7 +51,7 @@ class Master : public MusEWidget::View {
       ScrollScale* vscroll;
       unsigned pos[3];
       QPoint start;
-      MusEWidget::Tool tool;
+      MusEGui::Tool tool;
       DragMode drag;
       MidiEditor* editor;
 
@@ -79,6 +81,8 @@ class Master : public MusEWidget::View {
    public:
       Master(MidiEditor*, QWidget* parent, int xmag, int ymag);
       };
+
+} // namespace MusEGui
 
 #endif
 

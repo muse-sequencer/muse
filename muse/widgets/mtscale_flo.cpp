@@ -31,7 +31,7 @@
 #include "gconfig.h"
 #include "scoreedit.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   MTScale
@@ -42,14 +42,14 @@ MTScaleFlo::MTScaleFlo(ScoreCanvas* parent_editor, QWidget* parent_widget)
    : View(parent_widget, 1, 1)
       {
       setToolTip(tr("bar scale"));
-			pos[0] = song->cpos();
-			pos[1] = song->lpos();
-			pos[2] = song->rpos();
+			pos[0] = MusEGlobal::song->cpos();
+			pos[1] = MusEGlobal::song->lpos();
+			pos[2] = MusEGlobal::song->rpos();
       button = Qt::NoButton;
       setMouseTracking(true);
-      connect(song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      connect(song, SIGNAL(markerChanged(int)), SLOT(redraw()));
+      connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(markerChanged(int)), SLOT(redraw()));
       
       parent=parent_editor;
 	
@@ -145,7 +145,7 @@ void MTScaleFlo::mouseMoveEvent(QMouseEvent* event)
                   i = 1;
                   break;
             case Qt::RightButton:
-                  if ((MusEConfig::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
+                  if ((MusEGlobal::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
                       i = 1;
                   else
                       i = 2;
@@ -153,22 +153,22 @@ void MTScaleFlo::mouseMoveEvent(QMouseEvent* event)
             default:
                   return; // if no button is pressed the function returns here
             }
-      Pos p(tick, true);
+      MusECore::Pos p(tick, true);
       
       if(i== 0 && (event->modifiers() & Qt::ShiftModifier )) {        // If shift +LMB we add a marker 
-            Marker *alreadyExists = song->getMarkerAt(tick);
+            MusECore::Marker *alreadyExists = MusEGlobal::song->getMarkerAt(tick);
             if (!alreadyExists)
-                  song->addMarker(QString(""), tick, false);         
+                  MusEGlobal::song->addMarker(QString(""), tick, false);         
             }
       else if (i== 2 && (event->modifiers() & Qt::ShiftModifier )) {  // If shift +RMB we remove a marker 
-            Marker *toRemove = song->getMarkerAt(tick);
+            MusECore::Marker *toRemove = MusEGlobal::song->getMarkerAt(tick);
             if (toRemove)
-              song->removeMarker(toRemove);
+              MusEGlobal::song->removeMarker(toRemove);
             else
               printf("No marker to remove\n");
             }
       else
-            song->setPos(i, p);                             // all other cases: relocating one of the locators
+            MusEGlobal::song->setPos(i, p);                             // all other cases: relocating one of the locators
       }
 
 
@@ -191,18 +191,18 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r)
 
       int y = 12;
       p.setPen(Qt::black);
-      p.setFont(MusEConfig::config.fonts[4]);
+      p.setFont(MusEGlobal::config.fonts[4]);
       p.drawLine(r.x(), y+1, r.x() + r.width(), y+1);
       QRect tr(r);
       tr.setHeight(12);
-      MarkerList* marker = song->marker();
-      for (iMarker m = marker->begin(); m != marker->end(); ++m) {
+      MusECore::MarkerList* marker = MusEGlobal::song->marker();
+      for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
             
             int xp = parent->tick_to_x(m->second.tick()) + xoffset - xpos;
             if (xp > x+w)
                   break;
             int xe = r.x() + r.width();
-            iMarker mm = m;
+	    MusECore::iMarker mm = m;
             ++mm;
             if (mm != marker->end())
                     xe = parent->tick_to_x(mm->first) + xoffset - xpos;
@@ -290,7 +290,7 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r)
                         n = 32;
                   if (bar % n)
                         continue;
-                  p.setFont(MusEConfig::config.fonts[3]);
+                  p.setFont(MusEGlobal::config.fonts[3]);
                   int x = parent->tick_to_x(stick) + xoffset - xpos;
                   QString s;
                   s.setNum(bar + 1);
@@ -311,12 +311,12 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r)
                         if (beat == 0) {
                               num = bar + 1;
                               y1  = y + 1;
-                              p.setFont(MusEConfig::config.fonts[3]);
+                              p.setFont(MusEGlobal::config.fonts[3]);
                               }
                         else {
                               num = beat + 1;
                               y1  = y + 7;
-                              p.setFont(MusEConfig::config.fonts[1]);
+                              p.setFont(MusEGlobal::config.fonts[1]);
                               r.setY(y+3);
                               }
                         s.setNum(num);
@@ -344,4 +344,4 @@ void MTScaleFlo::pos_add_changed()
 	redraw();
 }
 
-} // namespace MusEWidget
+} // namespace MusEGui

@@ -359,7 +359,7 @@ class DeicsOnzeGui : public QDialog, public Ui::DeicsOnzeGuiBase, public MessGui
     void setSubcategory(QTreeWidgetItem*);
     void setPreset(QTreeWidgetItem*);
  public:
-    virtual void processEvent(const MidiPlayEvent&);
+    virtual void processEvent(const MusECore::MidiPlayEvent&);
     void updateSelectPreset(int hbank, int lbank, int prog);
     //update the gui
     void setEnabledPreset(bool b);

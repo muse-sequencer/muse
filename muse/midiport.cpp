@@ -42,7 +42,11 @@
 //#include "dssihost.h"
 //#endif
 
-MidiPort midiPorts[MIDI_PORTS];
+namespace MusEGlobal {
+MusECore::MidiPort midiPorts[MIDI_PORTS];
+}
+
+namespace MusECore {
 
 //---------------------------------------------------------
 //   initMidiPorts
@@ -51,7 +55,7 @@ MidiPort midiPorts[MIDI_PORTS];
 void initMidiPorts()
       {
       for (int i = 0; i < MIDI_PORTS; ++i) {
-            MidiPort* port = &midiPorts[i];
+            MidiPort* port = &MusEGlobal::midiPorts[i];
             ///port->setInstrument(genericMidiInstrument);
             port->setInstrument(registerMidiInstrument("GM")); // Changed by Tim. 
             port->syncInfo().setPort(i);
@@ -147,7 +151,7 @@ void MidiPort::setMidiDevice(MidiDevice* dev)
             }
       if (dev) {
             for (int i = 0; i < MIDI_PORTS; ++i) {
-                  MidiPort* mp = &midiPorts[i];
+                  MidiPort* mp = &MusEGlobal::midiPorts[i];
                   if (mp->device() == dev) {
                         if(dev->isSynti())
                           mp->setInstrument(genericMidiInstrument);
@@ -302,7 +306,7 @@ void MidiPort::clearDevice()
 int MidiPort::portno() const
       {
       for (int i = 0; i < MIDI_PORTS; ++i) {
-            if (&midiPorts[i] == this)
+            if (&MusEGlobal::midiPorts[i] == this)
                   return i;
             }
       return -1;
@@ -317,7 +321,7 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
       {
       QMenu* p = new QMenu(parent);
       for (int i = 0; i < MIDI_PORTS; ++i) {
-            MidiPort* port = &midiPorts[i];
+            MidiPort* port = &MusEGlobal::midiPorts[i];
             QString name;
             name.sprintf("%d:%s", port->portno()+1, port->portname().toLatin1().constData());
 	    QAction *act = p->addAction(name);
@@ -786,7 +790,7 @@ bool MidiPort::sendEvent(const MidiPlayEvent& ev, bool forceSend)
             {
               DrumMap* dm = &drumMap[da & 0x7f];
               int port = dm->port;
-              MidiPort* mp = &midiPorts[port];
+              MidiPort* mp = &MusEGlobal::midiPorts[port];
               // Is it NOT for this MidiPort?
               if(mp && (mp != this))
               {
@@ -1161,10 +1165,11 @@ void setPortExclusiveDefOutChan(int port, int c)
 { 
   if(port < 0 || port >= MIDI_PORTS)
     return;
-  midiPorts[port].setDefaultOutChannels(c);
+  MusEGlobal::midiPorts[port].setDefaultOutChannels(c);
   for(int i = 0; i < MIDI_PORTS; ++i)
     if(i != port)
-      midiPorts[i].setDefaultOutChannels(0);
+      MusEGlobal::midiPorts[i].setDefaultOutChannels(0);
 }
 #endif
 
+} // namespace MusECore

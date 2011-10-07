@@ -25,9 +25,11 @@
 
 #include <QSplitter>
 
+namespace MusECore {
 class Xml;
+}
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   Splitter
@@ -38,8 +40,8 @@ class Splitter : public QSplitter {
 
    public:
       Splitter(Qt::Orientation o, QWidget* parent, const char* name);
-      void writeStatus(int level, Xml&);
-      void readStatus(Xml&);
+      void writeStatus(int level, MusECore::Xml&);
+      void readStatus(MusECore::Xml&);
       };
 
 }

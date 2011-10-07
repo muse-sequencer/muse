@@ -29,6 +29,8 @@
 class QCloseEvent;
 class QWidget;
 
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   MRConfig
 //---------------------------------------------------------
@@ -52,6 +54,8 @@ class MRConfig : public QWidget, public Ui::MRConfigBase {
    public:
       MRConfig(QWidget* parent=0, Qt::WFlags fl = 0);
       };
+
+} // namespace MusEGui
 
 #endif
 

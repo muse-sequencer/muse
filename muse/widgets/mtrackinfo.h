@@ -25,9 +25,11 @@
 
 #include "ui_mtrackinfobase.h"
 
+namespace MusECore {
 class Track;
+}
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   MidiTrackInfo
@@ -36,7 +38,7 @@ namespace MusEWidget {
 class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase 
 {
       Q_OBJECT
-      Track* selected;
+      MusECore::Track* selected;
       bool _midiDetect;
       int program, pan, volume;
       int heartBeatCounter;
@@ -74,19 +76,19 @@ class MidiTrackInfo : public QWidget, public Ui::MidiTrackInfoBase
       virtual void heartBeat();
 
    public slots:
-      void setTrack(Track*); 
+      void setTrack(MusECore::Track*); 
       void configChanged();
       void songChanged(int);
    
    public:
-      MidiTrackInfo(QWidget*, Track* = 0);
-      Track* track() const { return selected; }
+      MidiTrackInfo(QWidget*, MusECore::Track* = 0);
+      MusECore::Track* track() const { return selected; }
       void setLabelText();
       void setLabelFont();
       void updateTrackInfo(int);
 };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

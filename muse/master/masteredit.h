@@ -39,19 +39,17 @@ class QCloseEvent;
 class QToolBar;
 class QToolButton;
 
-class Master;
-class TScale;
-
-namespace MusEWidget {
+namespace MusEGui {
 class HitScale;
 class LabelCombo;
+class Master;
 class MTScale;
 class PosLabel;
 class ScrollScale;
 class SigScale;
 class TempoEdit;
 class TempoLabel;
-}
+class TScale;
 
 //---------------------------------------------------------
 //   MasterEdit
@@ -61,21 +59,21 @@ class MasterEdit : public MidiEditor {
       Q_OBJECT
     
       Master* canvas;
-      MusEWidget::ScrollScale* hscroll;
-      MusEWidget::ScrollScale* vscroll;
-      MusEWidget::MTScale* time1;
-      MusEWidget::MTScale* time2;
-      MusEWidget::SigScale* sign;
-      MusEWidget::HitScale* thits;
-      MusEWidget::HitScale* zhits;
+      MusEGui::ScrollScale* hscroll;
+      MusEGui::ScrollScale* vscroll;
+      MusEGui::MTScale* time1;
+      MusEGui::MTScale* time2;
+      MusEGui::SigScale* sign;
+      MusEGui::HitScale* thits;
+      MusEGui::HitScale* zhits;
       TScale* tscale;
 
-      MusEWidget::TempoEdit* curTempo;
+      MusEGui::TempoEdit* curTempo;
       SigEdit* curSig;
-      MusEWidget::LabelCombo* rasterLabel;
+      MusEGui::LabelCombo* rasterLabel;
       QToolBar* tools;
-      MusEWidget::PosLabel* cursorPos;
-      MusEWidget::TempoLabel* tempo;
+      MusEGui::PosLabel* cursorPos;
+      MusEGui::TempoLabel* tempo;
       QToolButton* enableButton;
       
       static int _rasterInit;
@@ -93,16 +91,18 @@ class MasterEdit : public MidiEditor {
 //      void tempoChanged(double);
 
    signals:
-      void deleted(TopWin*);
+      void deleted(MusEGui::TopWin*);
 
    public:
       MasterEdit();
       ~MasterEdit();
-      virtual void readStatus(Xml&);
-      virtual void writeStatus(int, Xml&) const;
-      static void readConfiguration(Xml&);
-      static void writeConfiguration(int, Xml&);
+      virtual void readStatus(MusECore::Xml&);
+      virtual void writeStatus(int, MusECore::Xml&) const;
+      static void readConfiguration(MusECore::Xml&);
+      static void writeConfiguration(int, MusECore::Xml&);
       };
+
+} // namespace MusEGui
 
 #endif
 

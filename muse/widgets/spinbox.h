@@ -30,7 +30,7 @@
 #include <QSpinBox>
 #include <QEvent>
 
-namespace MusEWidget { 
+namespace MusEGui { 
 
 //---------------------------------------------------------
 //   SpinBox
@@ -56,7 +56,7 @@ class SpinBox : public QSpinBox {
       SpinBox(int minValue, int maxValue, int step = 1, QWidget* parent=0);
 };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

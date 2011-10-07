@@ -27,7 +27,7 @@
 #include "pitchlabel.h"
 #include "helper.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   PitchLabel
@@ -83,7 +83,7 @@ void PitchLabel::setValue(int val)
       _value = val;
       QString s;
       if (_pitchMode)
-            s = MusEUtil::pitch2string(_value);
+            s = MusECore::pitch2string(_value);
       else
             s.sprintf("%d", _value);
       setText(s);
@@ -112,4 +112,4 @@ void PitchLabel::setPitch(int val)
       setValue(val);
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

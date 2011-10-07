@@ -29,7 +29,7 @@
 
 #include "spinboxFP.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   SpinBoxFP
@@ -188,4 +188,4 @@ int SpinBoxFP::valueFromText(const QString& text) const
 
 */
 
-} // namespace MusEWidget
+} // namespace MusEGui

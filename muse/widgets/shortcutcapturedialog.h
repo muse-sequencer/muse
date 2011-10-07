@@ -38,7 +38,7 @@
 
 class QKeyEvent;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 class ShortcutCaptureDialog : public QDialog, public Ui::ShortcutCaptureDialogBase
       {
@@ -57,4 +57,4 @@ class ShortcutCaptureDialog : public QDialog, public Ui::ShortcutCaptureDialogBa
       ~ShortcutCaptureDialog();
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui

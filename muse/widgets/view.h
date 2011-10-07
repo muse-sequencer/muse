@@ -34,7 +34,7 @@ class QPainter;
 class QPixmap;
 class QResizeEvent;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   View
@@ -128,7 +128,7 @@ class View : public QWidget {
       int rmapx(int x) const;
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 
