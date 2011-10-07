@@ -31,6 +31,8 @@
 
 #define TIMER_DEBUG 0
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   AlsaTimer
 //---------------------------------------------------------
@@ -52,5 +54,7 @@ class Timer {
        virtual unsigned int getTimerTicks(bool printTicks = false) = 0;
         
 };
+
+} // namespace MusECore
 
 #endif //__ALSATIMER_H__

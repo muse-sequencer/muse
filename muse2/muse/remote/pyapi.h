@@ -23,6 +23,8 @@
 
 #include <QEvent>
 
+namespace MusECore {
+
 class QPybridgeEvent : public QEvent
 {
 public:
@@ -50,6 +52,8 @@ private:
 };
 
 bool initPythonBridge();
+
+} // namespace MusECore
 
 #endif
 

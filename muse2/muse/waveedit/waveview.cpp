@@ -414,7 +414,7 @@ void WaveView::wheelEvent(QWheelEvent* ev)
 
   if (shift) { // scroll vertically
       int delta       = -ev->delta() / WHEEL_DELTA;
-      int xpixelscale = 5*fast_log10(rmapxDev(1));
+      int xpixelscale = 5*MusECore::fast_log10(rmapxDev(1));
 
 
       if (xpixelscale <= 0)

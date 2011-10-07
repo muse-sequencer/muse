@@ -41,6 +41,7 @@
 #include "globals.h"
 #include "gconfig.h"
 
+namespace MusECore {
 
 RtcTimer::RtcTimer()
     {
@@ -168,3 +169,5 @@ unsigned int RtcTimer::getTimerTicks(bool /*printTicks*/)// prevent compiler war
         }
     return nn;
     }
+
+} // namespace MusECore

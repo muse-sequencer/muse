@@ -2234,8 +2234,8 @@ void exitJackAudio()
       {
       if (JACK_DEBUG)
             printf("exitJackAudio()\n");
-      if (MusECore::jackAudio)
-            delete MusECore::jackAudio;
+      if (jackAudio)
+            delete jackAudio;
             
       if (JACK_DEBUG)
             printf("exitJackAudio() after delete jackAudio\n");

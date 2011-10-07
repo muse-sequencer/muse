@@ -3953,7 +3953,7 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
 
 double PartCanvas::dbToVal(double inDb)
 {
-    return (20.0*fast_log10(inDb)+60.0) / 70.0;
+    return (20.0*MusECore::fast_log10(inDb)+60.0) / 70.0;
 }
 double PartCanvas::valToDb(double inV)
 {

@@ -207,7 +207,7 @@ void AudioStrip::songChanged(int val)
       if (val & SC_AUX) {
             int n = auxKnob.size();
             for (int idx = 0; idx < n; ++idx) {
-                  double val = fast_log10(src->auxSend(idx)) * 20.0;
+                  double val = MusECore::fast_log10(src->auxSend(idx)) * 20.0;
                   auxKnob[idx]->blockSignals(true);
                   auxLabel[idx]->blockSignals(true);
                   auxKnob[idx]->setValue(val);
@@ -278,7 +278,7 @@ void AudioStrip::updateVolume()
           
             slider->blockSignals(true);
             sl->blockSignals(true);
-            double val = fast_log10(vol) * 20.0;
+            double val = MusECore::fast_log10(vol) * 20.0;
             slider->setValue(val);
             sl->setValue(val);
             sl->blockSignals(false);
@@ -796,7 +796,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
                   MusEGui::Knob* ak = addKnob(1, idx, &al);
                   auxKnob.push_back(ak);
                   auxLabel.push_back(al);
-                  double val = fast_log10(t->auxSend(idx))*20.0;
+                  double val = MusECore::fast_log10(t->auxSend(idx))*20.0;
                   ak->setValue(val);
                   al->setValue(val);
                   }
@@ -822,7 +822,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       slider->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
       slider->setFixedWidth(20);
       slider->setFont(MusEGlobal::config.fonts[1]);
-      slider->setValue(fast_log10(t->volume())*20.0);
+      slider->setValue(MusECore::fast_log10(t->volume())*20.0);
 
       sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
 
@@ -845,7 +845,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       sl->setFrame(true);
       sl->setPrecision(0);
       sl->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum));
-      sl->setValue(fast_log10(t->volume()) * 20.0);
+      sl->setValue(MusECore::fast_log10(t->volume()) * 20.0);
 
       connect(sl, SIGNAL(valueChanged(double,int)), SLOT(volLabelChanged(double)));
       //connect(sl, SIGNAL(valueChanged(double,int)), SLOT(volumeChanged(double)));

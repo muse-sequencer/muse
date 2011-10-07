@@ -43,11 +43,11 @@ set (SubDirs
       widgets
       )
 
-if (ENABLE_PYTHON)
-      set ( PYREM_CPP_FLAGS "-DENABLE_PYTHON" )
-      set ( PYLIBS ${PYTHON_LIB} remote) 
+if (PYTHON_SUPPORT)
+      set ( REM_CPP_FLAGS "-DENABLE_PYTHON" )
+      set ( REM_LIB remote )
       set ( SubDirs ${SubDirs} remote )
-endif (ENABLE_PYTHON)
+endif (PYTHON_SUPPORT)
 
 subdirs (${SubDirs})
 
@@ -207,9 +207,9 @@ include_directories(
 ##
 set_target_properties( core
       # PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h"
-      # PROPERTIES COMPILE_FLAGS "-Imidiedit -Iarranger -Iliste -Iwidgets -Imixer -Idriver -Iwaveedit -Implugins -Iinstruments -Iremote ${PYREM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h "
-      # PROPERTIES COMPILE_FLAGS "${PYREM_CPP_FLAGS} -DINSTPREFIX='\"${CMAKE_INSTALL_PREFIX}\"' -DINSTLIBDIR='\"${LIBRARY_OUTPUT_DIRECTORY}\"' -include ${PROJECT_BINARY_DIR}/all.h "
-      PROPERTIES COMPILE_FLAGS "${PYREM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h"
+      # PROPERTIES COMPILE_FLAGS "-Imidiedit -Iarranger -Iliste -Iwidgets -Imixer -Idriver -Iwaveedit -Implugins -Iinstruments -Iremote ${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h "
+      # PROPERTIES COMPILE_FLAGS "${REM_CPP_FLAGS} -DINSTPREFIX='\"${CMAKE_INSTALL_PREFIX}\"' -DINSTLIBDIR='\"${LIBRARY_OUTPUT_DIRECTORY}\"' -include ${PROJECT_BINARY_DIR}/all.h "
+      PROPERTIES COMPILE_FLAGS "${REM_CPP_FLAGS} -include ${PROJECT_BINARY_DIR}/all.h"
       OUTPUT_NAME muse_core
       )
 set_target_properties( muse
@@ -246,7 +246,7 @@ target_link_libraries(core
       ${SNDFILE_LIBRARIES}
       ${SAMPLERATE_LIBRARIES}
       ${UUID_LIBRARIES}
-      ${PYLIBS}
+      ${REM_LIB}
       ${FST_LIB}
       dl
       )
