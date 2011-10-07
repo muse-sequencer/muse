@@ -4591,6 +4591,14 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  * 
  * CURRENT TODO
+ *   o in appearance.cpp: add the new stuff for drumTrackLabelBg and drumTrackBg 
+ *   o find and fix FINDMICHJETZT
+ *   o fix all segfaults and non-working stuff!
+ *        - creating, changing types to and from, erasing NEW_DRUM tracks
+ *        - move parts around
+ *        - playing them. mute?
+ *        - recording/echoing/steprec them
+ *        - load, save them
  *   o fix valgrind problems
  * 
  * > o drum editor: channel-stuff

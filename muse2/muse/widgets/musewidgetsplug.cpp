@@ -131,6 +131,7 @@ GlobalConfigValues config = {
       
       QColor(0, 160, 255),          // midiTrackLabelBg;   // Med blue
       QColor(0, 160, 255),          // drumTrackLabelBg;   // Med blue
+      QColor(0, 160, 255),          // newDrumTrackLabelBg;   // Med blue
       Qt::magenta,                  // waveTrackLabelBg;
       Qt::green,                    // outputTrackLabelBg;
       Qt::red,                      // inputTrackLabelBg;
@@ -140,6 +141,7 @@ GlobalConfigValues config = {
       
       QColor(220, 220, 220),     // midiTrackBg;
       QColor(220, 220, 220),     // drumTrackBg;
+      QColor(220, 220, 220),     // newDrumTrackBg;
       QColor(220, 220, 220),     // waveTrackBg;
       QColor(189, 220, 193),     // outputTrackBg;
       QColor(189, 220, 193),     // inputTrackBg;
@@ -178,13 +180,13 @@ GlobalConfigValues config = {
          QString("Mixer A"),
          QRect(0, 0, 300, 500),        // Mixer1
          true, true, true, true,
-         true, true, true, true
+         true, true, true, true, true
          },
       {
          QString("Mixer B"),
          QRect(200, 200, 300, 500),    // Mixer2
          true, true, true, true,
-         true, true, true, true
+         true, true, true, true, true
          },
       true,                         // TransportVisible;
       false,                        // BigTimeVisible;

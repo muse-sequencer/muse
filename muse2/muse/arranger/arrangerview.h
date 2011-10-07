@@ -88,7 +88,7 @@ class ArrangerView : public TopWin
 		QMenu* master;
 
 		QAction *strGlobalCutAction, *strGlobalInsertAction, *strGlobalSplitAction;
-		QAction *trackMidiAction, *trackDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
+		QAction *trackMidiAction, *trackDrumAction, *trackNewStyleDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
 		QAction *trackAInputAction, *trackAAuxAction;
 		QAction *editCutAction, *editCopyAction, *editCopyRangeAction;
 		QAction *editPasteAction, *editPasteCloneAction, *editPasteDialogAction, *editPasteCloneDialogAction;

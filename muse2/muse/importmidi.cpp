@@ -181,7 +181,7 @@ bool MusE::importMidi(const QString name, bool merge)
                         
                         MidiTrack* track = new MidiTrack();
                         if ((*t)->isDrumTrack)
-                              track->setType(Track::DRUM);
+                              track->setType(Track::DRUM); //FINDMICHJETZT
                               
                         track->setOutChannel(channel);
                         track->setOutPort(port);
@@ -200,7 +200,7 @@ bool MusE::importMidi(const QString name, bool merge)
                         // Hmm. buildMidiEventList already takes care of this. 
                         // But it seems to work. How? Must test. 
                         if (channel == 9 && song->mtype() != MT_UNKNOWN) {
-                              track->setType(Track::DRUM);
+                              track->setType(Track::DRUM); //FINDMICHJETZT
                               //
                               // remap drum pitch with drumInmap
                               //

@@ -43,8 +43,8 @@ bool Track::_tmpSoloChainDoIns   = false;
 bool Track::_tmpSoloChainNoDec   = false;
 
 const char* Track::_cname[] = {
-      "Midi", "Drum", "Wave", "AudioOut", "AudioIn", "AudioGroup", 
-      "AudioAux", "AudioSynth"
+      "Midi", "Drum", "NewStyleDrum", "Wave",
+      "AudioOut", "AudioIn", "AudioGroup", "AudioAux", "AudioSynth"
       };
 
 //---------------------------------------------------------
@@ -75,7 +75,7 @@ void addPortCtrlEvents(MidiTrack* t)
         
         MidiPort* mp = &midiPorts[t->outPort()];
         // Is it a drum controller event, according to the track port's instrument?
-        if(t->type() == Track::DRUM)
+        if(t->type() == Track::DRUM)  //FINDMICHJETZT was soll das? drumcontroller -_-
         {
           MidiController* mc = mp->drumController(cntrl);
           if(mc)
@@ -123,7 +123,7 @@ void removePortCtrlEvents(MidiTrack* t)
         
         MidiPort* mp = &midiPorts[t->outPort()];
         // Is it a drum controller event, according to the track port's instrument?
-        if(t->type() == Track::DRUM)
+        if(t->type() == Track::DRUM)  //FINDMICHJETZT was soll das? drumcontroller...
         {
           MidiController* mc = mp->drumController(cntrl);
           if(mc)
@@ -239,7 +239,8 @@ Track::Track(const Track& t, bool cloneParts)
         // A couple of schemes were conceived to deal with cloneList being invalid, but the best way is
         //  to not alter the part list here. It's a big headache because: Either the parts in the cloneList
         //  need to be reliably looked up replaced with the new ones, or the clipboard and cloneList must be cleared.
-        // Fortunately the ONLY part of muse using this function is track rename (in TrackList and TrackInfo).
+        // Fortunately the ONLY parts of muse using this function are track rename (in TrackList and TrackInfo) and
+        // changing track type from MIDI to NEW_DRUM or vice versa (NOT something -> DRUM or vice versa).
         // So we can get away with leaving this out: 
         //for (iPart ip = _parts.begin(); ip != _parts.end(); ++ip) 
         //      ip->second->setTrack(this);
@@ -311,6 +312,7 @@ void Track::setDefaultName()
       switch(_type) {
             case MIDI:
             case DRUM:
+            case NEW_DRUM:
             case WAVE:
                   base = QString("Track");
                   break;
@@ -469,7 +471,7 @@ MidiTrack::~MidiTrack()
 void MidiTrack::init()
       {
       _outPort       = 0;
-      _outChannel    = 0;
+      _outChannel    = (type()==NEW_DRUM) ? 9 : 0;
       // Changed by Tim. p3.3.8
       //_inPortMask    = 0xffff;
       ///_inPortMask    = 0xffffffff;
@@ -643,7 +645,7 @@ void MidiTrack::addPortCtrlEvents()
         
         MidiPort* mp = &midiPorts[_outPort];
         // Is it a drum controller event, according to the track port's instrument?
-        if(type() == DRUM)
+        if(type() == DRUM)  //FINDMICHJETZT commented out. was soll das?
         {
           MidiController* mc = mp->drumController(cntrl);
           if(mc)
@@ -684,7 +686,7 @@ void MidiTrack::removePortCtrlEvents()
         
         MidiPort* mp = &midiPorts[_outPort];
         // Is it a drum controller event, according to the track port's instrument?
-        if(type() == DRUM)
+        if(type() == DRUM)  //FINDMICHJETZT commented out: was soll das?
         {
           MidiController* mc = mp->drumController(cntrl);
           if(mc)
@@ -941,8 +943,13 @@ void MidiTrack::write(int level, Xml& xml) const
 
       if (type() == DRUM)
             tag = "drumtrack";
-      else
+      else if (type() == MIDI)
             tag = "miditrack";
+      else if (type() == NEW_DRUM)
+            tag = "newdrumtrack";
+      else
+            printf("THIS SHOULD NEVER HAPPEN: non-midi-type in MidiTrack::write()\n");
+      
       xml.tag(level++, tag);
       Track::writeProperties(level, xml);
 

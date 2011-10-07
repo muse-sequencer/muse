@@ -535,10 +535,10 @@ void CtrlCanvas::partControllers(const MidiPart* part, int num, int* dnum, int* 
     int di;
     int n;
     
-    if((mt->type() != Track::DRUM) && curDrumInstrument != -1)
+    if((mt->type() != Track::DRUM) && curDrumInstrument != -1) //FINDMICHJETZT was ist das?
       printf("keyfilter != -1 in non drum track?\n");
 
-    if((mt->type() == Track::DRUM) && (curDrumInstrument != -1) && ((num & 0xff) == 0xff)) 
+    if((mt->type() == Track::DRUM) && (curDrumInstrument != -1) && ((num & 0xff) == 0xff))  //FINDMICHJETZT was ist das?
     {
       di = (num & ~0xff) | curDrumInstrument;
       n = (num & ~0xff) | drumMap[curDrumInstrument].anote;  // construct real controller number
@@ -1688,7 +1688,7 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MidiPart* part
     MidiTrack* mt = part->track();
     MidiPort* mp;
     
-    if((mt->type() == Track::DRUM) && (curDrumInstrument != -1) && ((_cnum & 0xff) == 0xff)) 
+    if((mt->type() == Track::DRUM) && (curDrumInstrument != -1) && ((_cnum & 0xff) == 0xff))  //FINDMICHJETZT was ist das?
       mp = &midiPorts[drumMap[curDrumInstrument].port];          
     else
       mp = &midiPorts[mt->outPort()];          

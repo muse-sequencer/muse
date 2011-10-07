@@ -45,6 +45,7 @@ struct MixerConfig {
       QRect geometry;
       bool showMidiTracks;
       bool showDrumTracks;
+      bool showNewDrumTracks;
       bool showInputTracks;
       bool showOutputTracks;
       bool showWaveTracks;
@@ -81,6 +82,7 @@ struct GlobalConfigValues {
       
       QColor midiTrackLabelBg;
       QColor drumTrackLabelBg;
+      QColor newDrumTrackLabelBg;
       QColor waveTrackLabelBg;
       QColor outputTrackLabelBg;
       QColor inputTrackLabelBg;
@@ -90,6 +92,7 @@ struct GlobalConfigValues {
 
       QColor midiTrackBg;
       QColor drumTrackBg;
+      QColor newDrumTrackBg;
       QColor waveTrackBg;
       QColor outputTrackBg;
       QColor inputTrackBg;

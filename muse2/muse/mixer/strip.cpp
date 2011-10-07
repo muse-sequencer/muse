@@ -150,6 +150,10 @@ void Strip::setLabelText()
                   //c = QColor(0, 160, 255); // Med blue
                   c = MusEConfig::config.drumTrackLabelBg;
                   break;
+            case Track::NEW_DRUM:
+                  //c = QColor(0, 160, 255); // Med blue
+                  c = MusEConfig::config.newDrumTrackLabelBg;
+                  break;
             default:
                   return;      
             }

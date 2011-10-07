@@ -617,7 +617,7 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
       MidiTrack* track   = part->track();
       int portn          = track->outPort();
       MidiPort* port     = &midiPorts[portn];
-      bool isDrum        = track->type() == Track::DRUM;
+      bool isDrum        = track->type() == Track::DRUM; //FINDMICHJETZT was soll das?
       MidiCtrlValListList* cll = port->controller();
 
       ctrlList->clear();
@@ -833,7 +833,7 @@ void EditCtrlDialog::updatePatch()
       int port              = track->outPort();
       int channel           = track->outChannel();
       MidiInstrument* instr = midiPorts[port].instrument();
-      patchName->setText(instr->getPatchName(channel, val, song->mtype(), track->type() == Track::DRUM));
+      patchName->setText(instr->getPatchName(channel, val, song->mtype(), track->type() == Track::DRUM));  //FINDMICHJETZT was soll das?
 
       int hb = ((val >> 16) & 0xff) + 1;
       if (hb == 0x100)
@@ -872,7 +872,7 @@ void EditCtrlDialog::instrPopup()
       ///instr->populatePatchPopup(pop, channel, song->mtype(), track->type() == Track::DRUM);
       //QMenu* pup = new QMenu(this);
       MusEWidget::PopupMenu* pup = new MusEWidget::PopupMenu(this);
-      instr->populatePatchPopup(pup, channel, song->mtype(), track->type() == Track::DRUM);
+      instr->populatePatchPopup(pup, channel, song->mtype(), track->type() == Track::DRUM);  //FINDMICHJETZT was soll das?
 
       ///if(pop->actions().count() == 0)
       ///  return;

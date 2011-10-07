@@ -52,7 +52,7 @@ class DrumMap;
 class Track {
    public:
       enum TrackType {
-         MIDI=0, DRUM, WAVE, AUDIO_OUTPUT, AUDIO_INPUT, AUDIO_GROUP,
+         MIDI=0, DRUM, NEW_DRUM, WAVE, AUDIO_OUTPUT, AUDIO_INPUT, AUDIO_GROUP,
          AUDIO_AUX, AUDIO_SOFTSYNTH
          };
    private:
@@ -199,7 +199,7 @@ class Track {
       void setDefaultName();
       int channels() const                { return _channels; }
       virtual void setChannels(int n);
-      bool isMidiTrack() const       { return type() == MIDI || type() == DRUM; }
+      bool isMidiTrack() const       { return type() == MIDI || type() == DRUM || type() == NEW_DRUM; }
       virtual bool canRecord() const { return false; }
       virtual AutomationType automationType() const    = 0;
       virtual void setAutomationType(AutomationType t) = 0;

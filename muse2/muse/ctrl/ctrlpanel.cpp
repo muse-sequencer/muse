@@ -169,7 +169,7 @@ void CtrlPanel::heartBeat()
       int outport;
       int chan;
       int cdi = editor->curDrumInstrument();
-      if(_track->type() == Track::DRUM && ((_ctrl->num() & 0xff) == 0xff) && cdi != -1)
+      if(_track->type() == Track::DRUM && ((_ctrl->num() & 0xff) == 0xff) && cdi != -1) //FINDMICHJETZT was ist das? und ähnliche dinger
       {
         outport = drumMap[cdi].port;
         chan = drumMap[cdi].channel;
@@ -560,7 +560,7 @@ void CtrlPanel::ctrlPopup()
       int channel      = track->outChannel();
       MidiPort* port   = &midiPorts[track->outPort()];
       int curDrumInstrument = editor->curDrumInstrument();
-      bool isDrum      = track->type() == Track::DRUM;
+      bool isDrum      = track->type() == Track::DRUM; //FINDMICHJETZT ist das wichtig?
 
       QMenu* pop = new QMenu;
       //pop->clear();
@@ -718,7 +718,7 @@ void CtrlPanel::ctrlPopup()
       int channel      = track->outChannel();
       MidiPort* port   = &midiPorts[track->outPort()];
       int curDrumInstrument = editor->curDrumInstrument();
-      bool isDrum      = track->type() == Track::DRUM;
+      bool isDrum      = track->type() == Track::DRUM; //FINDMICHJETZT ist das wichtig?
       MidiInstrument* instr = port->instrument();
       MidiControllerList* mcl = instr->controller();
 

@@ -719,7 +719,7 @@ void Part::read(Xml& xml, int, bool toTrack)    // int newPartOffset
                                             newPartOffset=this->tick();
 
                                           int ctl = e.dataA();
-                                          if(mt->type() == Track::DRUM)
+                                          if(mt->type() == Track::DRUM) //FINDMICHJETZT commented out: was ist das?
                                           {
                                             // Is it a drum controller event, according to the track port's instrument?
                                             MidiController* mc = mp->drumController(ctl);
@@ -1400,6 +1400,12 @@ void Song::read(Xml& xml, bool isTemplate)
                         else if (tag == "drumtrack") {
                               MidiTrack* track = new MidiTrack();
                               track->setType(Track::DRUM);
+                              track->read(xml);
+                              insertTrack0(track, -1);
+                              }
+                        else if (tag == "newdrumtrack") {
+                              MidiTrack* track = new MidiTrack();
+                              track->setType(Track::NEW_DRUM);
                               track->read(xml);
                               insertTrack0(track, -1);
                               }

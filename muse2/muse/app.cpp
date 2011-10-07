@@ -1792,6 +1792,7 @@ void MusE::startEditor(Track* t)
       switch (t->type()) {
             case Track::MIDI: startPianoroll(); break;  
             case Track::DRUM: startDrumEditor(); break;
+            case Track::NEW_DRUM: startDrumEditor(); break;
             case Track::WAVE: startWaveEditor(); break;
             default:
                   break;

@@ -238,6 +238,7 @@ void PartCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
                   switch(track->type()) {
                         case Track::MIDI:
                         case Track::DRUM:
+                        case Track::NEW_DRUM:
                               {
                               MidiPart* part = new MidiPart((MidiTrack*)track);
                               part->setTick(pos[1]);
@@ -521,6 +522,7 @@ MusEWidget::CItem* PartCanvas::newItem(const QPoint& pos, int)
       switch(track->type()) {
             case Track::MIDI:
             case Track::DRUM:
+            case Track::NEW_DRUM:
                   pa = new MidiPart((MidiTrack*)track);
                   pa->setTick(x);
                   pa->setLenTick(0);
@@ -659,6 +661,7 @@ QMenu* PartCanvas::genItemPopup(MusEWidget::CItem* item)
                   act_mexport->setData(16);
                   }
                   break;
+            case Track::NEW_DRUM:
             case Track::DRUM: {
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startDrumEditAction);
                   partPopup->addAction(MusEGlobal::muse->arranger()->parentWin->startListEditAction);
@@ -1259,6 +1262,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
             //  else track is midi
 
             switch (track->type()) {
+                  case Track::NEW_DRUM:
                   case Track::DRUM:
                         type = 3;
                         break;
@@ -2302,7 +2306,7 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, EventList* events, Midi
       using std::pair;
       
       iEvent ito(events->lower_bound(to));
-      bool isdrum = (mt->type() == Track::DRUM);
+      bool isdrum = (mt->type() == Track::DRUM  ||  mt->type() == Track::NEW_DRUM);
 
       // draw controllers ------------------------------------------
       p.setPen(QColor(192,192,color_brightness/2));

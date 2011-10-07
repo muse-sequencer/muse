@@ -786,6 +786,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               MusEConfig::config.midiTrackLabelBg = readColor(xml);
                         else if (tag == "drumTrackLabelBg")
                               MusEConfig::config.drumTrackLabelBg = readColor(xml);
+                        else if (tag == "newDrumTrackLabelBg")
+                              MusEConfig::config.newDrumTrackLabelBg = readColor(xml);
                         else if (tag == "waveTrackLabelBg")
                               MusEConfig::config.waveTrackLabelBg = readColor(xml);
                         else if (tag == "outputTrackLabelBg")
@@ -805,6 +807,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               MusEConfig::config.ctrlGraphFg = readColor(xml);
                         else if (tag == "drumTrackBg")
                               MusEConfig::config.drumTrackBg = readColor(xml);
+                        else if (tag == "newDrumTrackBg")
+                              MusEConfig::config.newDrumTrackBg = readColor(xml);
                         else if (tag == "waveTrackBg")
                               MusEConfig::config.waveTrackBg = readColor(xml);
                         else if (tag == "outputTrackBg")
@@ -1317,6 +1321,7 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       xml.colorTag(level, "mixerBg",            MusEConfig::config.mixerBg);
       xml.colorTag(level, "midiTrackLabelBg",   MusEConfig::config.midiTrackLabelBg);
       xml.colorTag(level, "drumTrackLabelBg",   MusEConfig::config.drumTrackLabelBg);
+      xml.colorTag(level, "newDrumTrackLabelBg",   MusEConfig::config.newDrumTrackLabelBg);
       xml.colorTag(level, "waveTrackLabelBg",   MusEConfig::config.waveTrackLabelBg);
       xml.colorTag(level, "outputTrackLabelBg", MusEConfig::config.outputTrackLabelBg);
       xml.colorTag(level, "inputTrackLabelBg",  MusEConfig::config.inputTrackLabelBg);
@@ -1326,7 +1331,7 @@ void MusE::writeGlobalConfiguration(int level, Xml& xml) const
       
       xml.colorTag(level, "midiTrackBg",   MusEConfig::config.midiTrackBg);
       xml.colorTag(level, "ctrlGraphFg",   MusEConfig::config.ctrlGraphFg);
-      xml.colorTag(level, "drumTrackBg",   MusEConfig::config.drumTrackBg);
+      xml.colorTag(level, "newDrumTrackBg",   MusEConfig::config.newDrumTrackBg);
       xml.colorTag(level, "waveTrackBg",   MusEConfig::config.waveTrackBg);
       xml.colorTag(level, "outputTrackBg", MusEConfig::config.outputTrackBg);
       xml.colorTag(level, "inputTrackBg",  MusEConfig::config.inputTrackBg);
@@ -1655,6 +1660,7 @@ void MixerConfig::write(int level, Xml& xml)
       
       xml.intTag(level, "showMidiTracks",   showMidiTracks);
       xml.intTag(level, "showDrumTracks",   showDrumTracks);
+      xml.intTag(level, "showNewDrumTracks",   showNewDrumTracks);
       xml.intTag(level, "showInputTracks",  showInputTracks);
       xml.intTag(level, "showOutputTracks", showOutputTracks);
       xml.intTag(level, "showWaveTracks",   showWaveTracks);
@@ -1692,6 +1698,8 @@ void MixerConfig::read(Xml& xml)
                               showMidiTracks = xml.parseInt();
                         else if (tag == "showDrumTracks")
                               showDrumTracks = xml.parseInt();
+                        else if (tag == "showNewDrumTracks")
+                              showNewDrumTracks = xml.parseInt();
                         else if (tag == "showInputTracks")
                               showInputTracks = xml.parseInt();
                         else if (tag == "showOutputTracks")

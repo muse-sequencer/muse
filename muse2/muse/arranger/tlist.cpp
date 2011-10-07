@@ -226,6 +226,9 @@ void TList::paint(const QRect& r)
                         case Track::DRUM:
                               bg = MusEConfig::config.drumTrackBg;
                               break;
+                        case Track::NEW_DRUM:
+                              bg = MusEConfig::config.newDrumTrackBg;
+                              break;
                         case Track::WAVE:
                               bg = MusEConfig::config.waveTrackBg;
                               break;
@@ -281,6 +284,7 @@ void TList::paint(const QRect& r)
                                     case Track::MIDI:
                                           pm = addtrack_addmiditrackIcon;
                                           break;
+                                    case Track::NEW_DRUM:
                                     case Track::DRUM:
                                           pm = addtrack_drumtrackIcon;
                                           break;
@@ -585,6 +589,7 @@ void TList::portsPopupMenu(Track* t, int x, int y)
       switch(t->type()) {
             case Track::MIDI:
             case Track::DRUM:
+            case Track::NEW_DRUM:
             case Track::AUDIO_SOFTSYNTH: 
                   {
                   MidiTrack* track = (MidiTrack*)t;
@@ -739,7 +744,7 @@ void TList::oportPropertyPopupMenu(Track* t, int x, int y)
       }
       
       
-      if (t->type() != Track::MIDI && t->type() != Track::DRUM)
+      if (t->type() != Track::MIDI && t->type() != Track::DRUM && t->type() != Track::NEW_DRUM)
             return;
       int oPort      = ((MidiTrack*)t)->outPort();
       MidiPort* port = &midiPorts[oPort];
@@ -923,7 +928,8 @@ TrackList TList::getRecEnabledTracks()
 void TList::changeAutomation(QAction* act)
 {
   //printf("changeAutomation %d\n", act->data().toInt());
-  if (editAutomation->type() == Track::MIDI) {
+  if (editAutomation->type() == Track::MIDI) { //FINDMICHJETZT is this correct? or should we also
+                                               //consider DRUM and NEW_DRUM? svn blame could help
     printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
     return;
   }
@@ -949,7 +955,7 @@ void TList::changeAutomation(QAction* act)
 //---------------------------------------------------------
 void TList::changeAutomationColor(QAction* act)
 {
-  if (editAutomation->type() == Track::MIDI) {
+  if (editAutomation->type() == Track::MIDI) { //FINDMICHJETZT is this correct? see above
     printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
     return;
   }
@@ -1707,13 +1713,14 @@ void TList::classesPopupMenu(Track* t, int x, int y)
       p.clear();
       p.addAction(QIcon(*addtrack_addmiditrackIcon), tr("Midi"))->setData(Track::MIDI);
       p.addAction(QIcon(*addtrack_drumtrackIcon), tr("Drum"))->setData(Track::DRUM);
+      p.addAction(QIcon(*addtrack_drumtrackIcon), tr("New style drum"))->setData(Track::NEW_DRUM);
       QAction* act = p.exec(mapToGlobal(QPoint(x, y)), 0);
 
       if (!act)
             return;
 
       int n = act->data().toInt();
-      if (Track::TrackType(n) == Track::MIDI && t->type() == Track::DRUM) {
+      if ((Track::TrackType(n) == Track::MIDI  ||  Track::TrackType(n) == Track::NEW_DRUM) && t->type() == Track::DRUM) { //FINDMICHJETZT passt das?
             //
             //    Drum -> Midi
             //
@@ -1747,11 +1754,11 @@ void TList::classesPopupMenu(Track* t, int x, int y)
                           
                       }
                   }
-            t->setType(Track::MIDI);
+            t->setType(Track::TrackType(n));
             audio->msgIdle(false);
             song->update(SC_EVENT_MODIFIED);
             }
-      else if (Track::TrackType(n) == Track::DRUM && t->type() == Track::MIDI) {
+      else if (Track::TrackType(n) == Track::DRUM && (t->type() == Track::MIDI  ||  t->type() == Track::NEW_DRUM)) { //FINDMICHJETZT passt das?
             //
             //    Midi -> Drum
             //
@@ -1808,6 +1815,12 @@ void TList::classesPopupMenu(Track* t, int x, int y)
             song->changeAllPortDrumCtrlEvents(true);
             audio->msgIdle(false);
             song->update(SC_EVENT_MODIFIED);
+            }
+      else // MIDI -> NEW_DRUM or vice versa. added by flo. FINDMICHJETZT does this work properly?
+      {
+            Track* t2 = t->clone(false);
+            t->setType(Track::TrackType(n));
+            audio->msgChangeTrack(t2, t, true);
             }
       }
 

@@ -216,6 +216,7 @@ void MidiTrackInfo::heartBeat()
   {
     case Track::MIDI:
     case Track::DRUM:
+    case Track::NEW_DRUM:
     {
       MidiTrack* track = (MidiTrack*)selected;
       
@@ -344,7 +345,7 @@ void MidiTrackInfo::heartBeat()
         else
         {
           MidiInstrument* instr = mp->instrument();
-          QString name = instr->getPatchName(outChannel, nprogram, song->mtype(), track->type() == Track::DRUM);
+          QString name = instr->getPatchName(outChannel, nprogram, song->mtype(), track->type() == Track::DRUM); //FINDMICHJETZT was soll das?
           if(name.isEmpty())
           {
             const QString n("???");
@@ -390,7 +391,7 @@ void MidiTrackInfo::heartBeat()
               //else 
               //{
                     MidiInstrument* instr = mp->instrument();
-                    QString name = instr->getPatchName(outChannel, program, song->mtype(), track->type() == Track::DRUM);
+                    QString name = instr->getPatchName(outChannel, program, song->mtype(), track->type() == Track::DRUM);  //FINDMICHJETZT was soll das?
                     if(iPatch->text() != name)
                       iPatch->setText(name);
   
@@ -567,8 +568,12 @@ void MidiTrackInfo::setLabelText()
         //pal.setColor(trackNameLabel->backgroundRole(), QColor(0, 160, 255)); // Med blue
         if(track->type() == Track::DRUM)
           c = MusEConfig::config.drumTrackLabelBg; 
-        else  
+        else if (track->type() == Track::MIDI)
           c = MusEConfig::config.midiTrackLabelBg; 
+        else if (track->type() == Track::NEW_DRUM)
+          c = MusEConfig::config.newDrumTrackLabelBg;
+        else
+          printf("THIS SHOULD NEVER HAPPEN: track is not a MIDI track in MidiTrackInfo::setLabelText()!\n");
         
         QLinearGradient gradient(trackNameLabel->geometry().topLeft(), trackNameLabel->geometry().bottomLeft());
         //gradient.setColorAt(0, c.darker());
@@ -757,7 +762,7 @@ void MidiTrackInfo::iProgHBankChanged()
       audio->msgPlayMidiEvent(&ev);
       
       MidiInstrument* instr = mp->instrument();
-      iPatch->setText(instr->getPatchName(channel, program, song->mtype(), track->type() == Track::DRUM));
+      iPatch->setText(instr->getPatchName(channel, program, song->mtype(), track->type() == Track::DRUM));  //FINDMICHJETZT was soll das?
 //      updateTrackInfo();
       }
 
@@ -835,7 +840,7 @@ void MidiTrackInfo::iProgLBankChanged()
       audio->msgPlayMidiEvent(&ev);
       
       MidiInstrument* instr = mp->instrument();
-      iPatch->setText(instr->getPatchName(channel, program, song->mtype(), track->type() == Track::DRUM));
+      iPatch->setText(instr->getPatchName(channel, program, song->mtype(), track->type() == Track::DRUM)); //FINDMICHJETZT was soll das?
 //      updateTrackInfo();
       }
 
@@ -913,7 +918,7 @@ void MidiTrackInfo::iProgramChanged()
         audio->msgPlayMidiEvent(&ev);
         
         MidiInstrument* instr = mp->instrument();
-        iPatch->setText(instr->getPatchName(channel, program, song->mtype(), track->type() == Track::DRUM));
+        iPatch->setText(instr->getPatchName(channel, program, song->mtype(), track->type() == Track::DRUM)); //FINDMICHJETZT was soll das?
       }
         
 //      updateTrackInfo();
@@ -1082,7 +1087,7 @@ void MidiTrackInfo::instrPopup()
       PopupMenu* pup = new PopupMenu(true);
       
       //instr->populatePatchPopup(pop, channel, song->mtype(), track->type() == Track::DRUM);
-      instr->populatePatchPopup(pup, channel, song->mtype(), track->type() == Track::DRUM);
+      instr->populatePatchPopup(pup, channel, song->mtype(), track->type() == Track::DRUM); //FINDMICHJETZT was soll das?
 
       //if(pop->actions().count() == 0)
       //  return;
@@ -1406,7 +1411,7 @@ void MidiTrackInfo::updateTrackInfo(int flags)
           else
           {
             MidiInstrument* instr = mp->instrument();
-            iPatch->setText(instr->getPatchName(outChannel, nprogram, song->mtype(), track->type() == Track::DRUM));
+            iPatch->setText(instr->getPatchName(outChannel, nprogram, song->mtype(), track->type() == Track::DRUM)); //FINDMICHJETZT was soll das?
           }         
         }
         else
@@ -1422,7 +1427,7 @@ void MidiTrackInfo::updateTrackInfo(int flags)
               //else 
               //{
                     MidiInstrument* instr = mp->instrument();
-                    iPatch->setText(instr->getPatchName(outChannel, program, song->mtype(), track->type() == Track::DRUM));
+                    iPatch->setText(instr->getPatchName(outChannel, program, song->mtype(), track->type() == Track::DRUM)); //FINDMICHJETZT was soll das?
 
                     int hb = ((program >> 16) & 0xff) + 1;
                     if (hb == 0x100)

@@ -172,6 +172,7 @@ enum {
 
       SHRT_ADD_MIDI_TRACK, //Default: Ctrl+J
       SHRT_ADD_DRUM_TRACK, //Default: undefined
+      SHRT_ADD_NEW_STYLE_DRUM_TRACK, //Default: undefined
       SHRT_ADD_WAVE_TRACK, //Default: undefined
       SHRT_ADD_AUDIO_OUTPUT, //Default: undefined
       SHRT_ADD_AUDIO_GROUP, //Default: undefined

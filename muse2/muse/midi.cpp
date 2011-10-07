@@ -254,7 +254,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                   case ME_NOTEON:
                         e.setType(Note);
 
-                        if (track->type() == Track::DRUM) {
+                        if (track->type() == Track::DRUM) { //FINDMICHJETZT
                               int instr = drumInmap[ev.dataA()];
                               e.setPitch(instr);
                               }
@@ -268,7 +268,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                         break;
                   case ME_NOTEOFF:
                         e.setType(Note);
-                        if (track->type() == Track::DRUM) {
+                        if (track->type() == Track::DRUM) { //FINDMICHJETZT
                               int instr = drumInmap[ev.dataA()];
                               e.setPitch(instr);
                               }
@@ -370,7 +370,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                                     int ctl = ev.dataA();
                                     e.setA(ctl);
                                     
-                                    if(track->type() == Track::DRUM) 
+                                    if(track->type() == Track::DRUM)  //FINDMICHJETZT drum controller?
                                     {
                                       // Is it a drum controller event, according to the track port's instrument?
                                       MidiController *mc = midiPorts[track->outPort()].drumController(ctl);
@@ -723,7 +723,7 @@ void Audio::collectEvents(MidiTrack* track, unsigned int cts, unsigned int nts)
                   //
                   if (ev.type() == Meta)
                         continue;
-                  if (track->type() == Track::DRUM) {
+                  if (track->type() == Track::DRUM) { //FINDMICHJETZT ignore muted
                         int instr = ev.pitch();
                         // ignore muted drums
                         if (ev.isNote() && drumMap[instr].mute)
@@ -747,7 +747,7 @@ void Audio::collectEvents(MidiTrack* track, unsigned int cts, unsigned int nts)
                                    channel   = drumMap[instr].channel;
                                    velo      = int(double(velo) * (double(drumMap[instr].vol) / 100.0)) ;
                                    }
-                              else {
+                              else { //FINDMICHJETZT don't transpose for new style drum tracks
                                     //
                                     // transpose non drum notes
                                     //
@@ -800,7 +800,7 @@ void Audio::collectEvents(MidiTrack* track, unsigned int cts, unsigned int nts)
 
                         case Controller:
                               {
-                                if (track->type() == Track::DRUM)  
+                                if (track->type() == Track::DRUM)   //FINDMICHJETZT was ist das? drumcontroller -_-
                                 {
                                   int ctl   = ev.dataA();
                                   // Is it a drum controller event, according to the track port's instrument?
@@ -972,7 +972,7 @@ void Audio::processMidi()
                                       //
   
                                       //Apply drum inkey:
-                                      if (track->type() == Track::DRUM) 
+                                      if (track->type() == Track::DRUM)  //FINDMICHJETZT schwierig...
                                       {
                                             int pitch = event.dataA();
                                             //Map note that is played according to drumInmap
@@ -1009,7 +1009,7 @@ void Audio::processMidi()
                                 else
                                 if(event.type() == ME_CONTROLLER)
                                 {
-                                  if(track->type() == Track::DRUM) 
+                                  if(track->type() == Track::DRUM)  //FINDMICHJETZT was ist das?
                                   {
                                     ctl = event.dataA();
                                     // Regardless of what port the event came from, is it a drum controller event 
@@ -1072,7 +1072,7 @@ void Audio::processMidi()
                                       //  to the track port so buildMidiEventList will accept it. Even though 
                                       //  the port may have no device "<none>".
                                       //
-                                      if (track->type() == Track::DRUM) 
+                                      if (track->type() == Track::DRUM)  //FINDMICHJETZT was ist das?
                                       {
                                         // Is it a drum controller event?
                                         if(mc)

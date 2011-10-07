@@ -285,26 +285,44 @@ QActionGroup* populateAddTrack(QMenu* addTrack)
                                           QT_TRANSLATE_NOOP("@default", "Add Midi Track"));
       midi->setData(Track::MIDI);
       grp->addAction(midi);
+
+
       QAction* drum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
                                           QT_TRANSLATE_NOOP("@default", "Add Drum Track"));
       drum->setData(Track::DRUM);
       grp->addAction(drum);
+
+
+      QAction* newdrum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
+                                          QT_TRANSLATE_NOOP("@default", "Add New Style Drum Track"));
+      newdrum->setData(Track::NEW_DRUM);
+      grp->addAction(newdrum);
+
+
       QAction* wave = addTrack->addAction(QIcon(*addtrack_wavetrackIcon),
                                           QT_TRANSLATE_NOOP("@default", "Add Wave Track"));
       wave->setData(Track::WAVE);
       grp->addAction(wave);
+
+
       QAction* aoutput = addTrack->addAction(QIcon(*addtrack_audiooutputIcon),
                                              QT_TRANSLATE_NOOP("@default", "Add Audio Output"));
       aoutput->setData(Track::AUDIO_OUTPUT);
       grp->addAction(aoutput);
+
+
       QAction* agroup = addTrack->addAction(QIcon(*addtrack_audiogroupIcon),
                                             QT_TRANSLATE_NOOP("@default", "Add Audio Group"));
       agroup->setData(Track::AUDIO_GROUP);
       grp->addAction(agroup);
+
+
       QAction* ainput = addTrack->addAction(QIcon(*addtrack_audioinputIcon),
                                             QT_TRANSLATE_NOOP("@default", "Add Audio Input"));
       ainput->setData(Track::AUDIO_INPUT);
       grp->addAction(ainput);
+
+
       QAction* aaux = addTrack->addAction(QIcon(*addtrack_auxsendIcon),
                                           QT_TRANSLATE_NOOP("@default", "Add Aux Send"));
       aaux->setData(Track::AUDIO_AUX);

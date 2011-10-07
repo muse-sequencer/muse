@@ -1,5 +1,4 @@
 //=========================================================
-//=========================================================
 //  MusE
 //  Linux Music Editor
 //  $Id: appearance.cpp,v 1.11.2.5 2009/11/14 03:37:48 terminator356 Exp $
@@ -841,7 +840,7 @@ void Appearance::colorItemSelectionChanged()
             case 0x300: color = &config->waveEditBackgroundColor; break;
             case 0x411: color = &config->trackBg;       break;
             case 0x412: color = &config->midiTrackBg;   break;
-            case 0x413: color = &config->drumTrackBg;   break;
+            case 0x413: color = &config->drumTrackBg;   break; //FINDMICHJETZT add newDrum...
             case 0x414: color = &config->waveTrackBg;   break;
             case 0x415: color = &config->outputTrackBg; break;
             case 0x416: color = &config->inputTrackBg;  break;
@@ -855,7 +854,7 @@ void Appearance::colorItemSelectionChanged()
 
             case 0x500: color = &config->mixerBg;   break;
             case 0x501: color = &config->midiTrackLabelBg;   break;
-            case 0x502: color = &config->drumTrackLabelBg;   break;
+            case 0x502: color = &config->drumTrackLabelBg;   break; //FINDMICHJETZT add newDrum...
             case 0x503: color = &config->waveTrackLabelBg;   break;
             case 0x504: color = &config->outputTrackLabelBg; break;
             case 0x505: color = &config->inputTrackLabelBg;  break;

@@ -401,7 +401,7 @@ void addPortCtrlEvents(Event& event, Part* part, bool doClones)
             MidiPort* mp = &midiPorts[port];
             
             // Is it a drum controller event, according to the track port's instrument?
-            if(mt->type() == Track::DRUM)
+            if(mt->type() == Track::DRUM) //FINDMICHJETZT was ist das?
             {
               MidiController* mc = mp->drumController(cntrl);
               if(mc)
@@ -469,7 +469,7 @@ void addPortCtrlEvents(Part* part, bool doClones)
             MidiPort* mp = &midiPorts[port];
             
             // Is it a drum controller event, according to the track port's instrument?
-            if(mt->type() == Track::DRUM)
+            if(mt->type() == Track::DRUM) //FINDMICHJETZT was ist das?
             {
               MidiController* mc = mp->drumController(cntrl);
               if(mc)
@@ -528,7 +528,7 @@ void removePortCtrlEvents(Event& event, Part* part, bool doClones)
             MidiPort* mp = &midiPorts[port];
             
             // Is it a drum controller event, according to the track port's instrument?
-            if(mt->type() == Track::DRUM)
+            if(mt->type() == Track::DRUM) //FINDMICHJETZT was ist das?
             {
               MidiController* mc = mp->drumController(cntrl);
               if(mc)
@@ -597,7 +597,7 @@ void removePortCtrlEvents(Part* part, bool doClones)
             MidiPort* mp = &midiPorts[port];
             
             // Is it a drum controller event, according to the track port's instrument?
-            if(mt->type() == Track::DRUM)
+            if(mt->type() == Track::DRUM) //FINDMICHJETZT was ist das?
             {
               MidiController* mc = mp->drumController(cntrl);
               if(mc)
@@ -913,6 +913,7 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
                   break;
             case Track::MIDI:
             case Track::DRUM:
+            case Track::NEW_DRUM:
                   {
                   Undo operations;
 									
@@ -959,6 +960,7 @@ void Track::splitPart(Part* part, int tickpos, Part*& p1, Part*& p2)
                   break;
             case MIDI:
             case DRUM:
+            case NEW_DRUM:
                   l1 = tickpos - part->tick();
                   l2 = part->lenTick() - l1;
                   break;
@@ -982,6 +984,7 @@ void Track::splitPart(Part* part, int tickpos, Part*& p1, Part*& p2)
                   break;
             case MIDI:
             case DRUM:
+            case NEW_DRUM:
                   p1->setLenTick(l1);
                   p2->setTick(tickpos);
                   p2->setLenTick(l2);
