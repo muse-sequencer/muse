@@ -28,6 +28,7 @@
 
 #include "part.h"
 
+namespace MusECore {
 
 class StepRec : public QObject
 {
@@ -46,5 +47,7 @@ class StepRec : public QObject
 		unsigned int chord_timer_set_to_tick; 
 		bool* note_held_down;
 };
+
+} // namespace MusECore
 
 #endif

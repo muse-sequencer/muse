@@ -35,7 +35,7 @@
 
 class QMenu;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   Canvas
@@ -81,7 +81,7 @@ class Canvas : public View {
       CItemList items;
       CItemList moving;
       CItem* curItem;
-      Part* curPart;
+      MusECore::Part* curPart;
       int curPartId;
 
       DragMode drag;
@@ -194,12 +194,12 @@ class Canvas : public View {
       bool isSingleSelection();
       int selectionSize();
       Tool tool() const { return _tool; }
-      Part* part() const { return curPart; }
-      void setCurrentPart(Part*); 
+      MusECore::Part* part() const { return curPart; }
+      void setCurrentPart(MusECore::Part*); 
       void setCanvasTools(int n) { canvasTools = n; }
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

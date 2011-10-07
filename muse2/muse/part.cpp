@@ -37,6 +37,8 @@
 #include "drummap.h"
 //#include "midiedit/drummap.h"    // p4.0.2
 
+namespace MusECore {
+
 int Part::snGen;
 
 //---------------------------------------------------------
@@ -94,7 +96,7 @@ void chainCloneInternal(Part* p)
   if(!t || (t && t->isMidiTrack()))
   {
     MidiTrack* mt = 0;
-    MidiTrackList* mtl = song->midis();
+    MidiTrackList* mtl = MusEGlobal::song->midis();
     for(ciMidiTrack imt = mtl->begin(); imt != mtl->end(); ++imt)
     {
       mt = *imt;
@@ -116,9 +118,9 @@ void chainCloneInternal(Part* p)
   }  
   if((!p1 && !t) || (t && t->type() == Track::WAVE))
   {
-    WaveTrack* wt = 0;
-    WaveTrackList* wtl = song->waves();
-    for(ciWaveTrack iwt = wtl->begin(); iwt != wtl->end(); ++iwt)
+    MusECore::WaveTrack* wt = 0;
+    MusECore::WaveTrackList* wtl = MusEGlobal::song->waves();
+    for(MusECore::ciWaveTrack iwt = wtl->begin(); iwt != wtl->end(); ++iwt)
     {
       wt = *iwt;
       const PartList* pl = wt->cparts();
@@ -292,7 +294,7 @@ void chainTrackParts(Track* t, bool incRefCount)
     if(!t || (t && t->isMidiTrack()))
     {
       MidiTrack* mt = 0;
-      MidiTrackList* mtl = song->midis();
+      MidiTrackList* mtl = MusEGlobal::song->midis();
       for(ciMidiTrack imt = mtl->begin(); imt != mtl->end(); ++imt)
       {
         mt = *imt;
@@ -314,9 +316,9 @@ void chainTrackParts(Track* t, bool incRefCount)
     }  
     if((!p1 && !t) || (t && t->type() == Track::WAVE))
     {
-      WaveTrack* wt = 0;
-      WaveTrackList* wtl = song->waves();
-      for(ciWaveTrack iwt = wtl->begin(); iwt != wtl->end(); ++iwt)
+      MusECore::WaveTrack* wt = 0;
+      MusECore::WaveTrackList* wtl = MusEGlobal::song->waves();
+      for(MusECore::ciWaveTrack iwt = wtl->begin(); iwt != wtl->end(); ++iwt)
       {
         wt = *iwt;
         const PartList* pl = wt->cparts();
@@ -398,7 +400,7 @@ void addPortCtrlEvents(Event& event, Part* part, bool doClones)
             int tck  = event.tick() + p->tick();
             int cntrl = event.dataA();
             int val   = event.dataB();
-            MidiPort* mp = &midiPorts[port];
+            MidiPort* mp = &MusEGlobal::midiPorts[port];
             
             // Is it a drum controller event, according to the track port's instrument?
             if(mt->type() == Track::DRUM)
@@ -408,9 +410,9 @@ void addPortCtrlEvents(Event& event, Part* part, bool doClones)
               {
                 int note = cntrl & 0x7f;
                 cntrl &= ~0xff;
-                ch = drumMap[note].channel;
-                mp = &midiPorts[drumMap[note].port];
-                cntrl |= drumMap[note].anote;
+                ch = MusEGlobal::drumMap[note].channel;
+                mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+                cntrl |= MusEGlobal::drumMap[note].anote;
               }
             }
             
@@ -466,7 +468,7 @@ void addPortCtrlEvents(Part* part, bool doClones)
             int tck  = ev.tick() + p->tick();
             int cntrl = ev.dataA();
             int val   = ev.dataB();
-            MidiPort* mp = &midiPorts[port];
+            MidiPort* mp = &MusEGlobal::midiPorts[port];
             
             // Is it a drum controller event, according to the track port's instrument?
             if(mt->type() == Track::DRUM)
@@ -476,9 +478,9 @@ void addPortCtrlEvents(Part* part, bool doClones)
               {
                 int note = cntrl & 0x7f;
                 cntrl &= ~0xff;
-                ch = drumMap[note].channel;
-                mp = &midiPorts[drumMap[note].port];
-                cntrl |= drumMap[note].anote;
+                ch = MusEGlobal::drumMap[note].channel;
+                mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+                cntrl |= MusEGlobal::drumMap[note].anote;
               }
             }
             
@@ -525,7 +527,7 @@ void removePortCtrlEvents(Event& event, Part* part, bool doClones)
             int ch = mt->outChannel();
             int tck  = event.tick() + p->tick();
             int cntrl = event.dataA();
-            MidiPort* mp = &midiPorts[port];
+            MidiPort* mp = &MusEGlobal::midiPorts[port];
             
             // Is it a drum controller event, according to the track port's instrument?
             if(mt->type() == Track::DRUM)
@@ -535,9 +537,9 @@ void removePortCtrlEvents(Event& event, Part* part, bool doClones)
               {
                 int note = cntrl & 0x7f;
                 cntrl &= ~0xff;
-                ch = drumMap[note].channel;
-                mp = &midiPorts[drumMap[note].port];
-                cntrl |= drumMap[note].anote;
+                ch = MusEGlobal::drumMap[note].channel;
+                mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+                cntrl |= MusEGlobal::drumMap[note].anote;
               }
             }
             
@@ -594,7 +596,7 @@ void removePortCtrlEvents(Part* part, bool doClones)
             int ch = mt->outChannel();
             int tck  = ev.tick() + p->tick();
             int cntrl = ev.dataA();
-            MidiPort* mp = &midiPorts[port];
+            MidiPort* mp = &MusEGlobal::midiPorts[port];
             
             // Is it a drum controller event, according to the track port's instrument?
             if(mt->type() == Track::DRUM)
@@ -604,9 +606,9 @@ void removePortCtrlEvents(Part* part, bool doClones)
               {
                 int note = cntrl & 0x7f;
                 cntrl &= ~0xff;
-                ch = drumMap[note].channel;
-                mp = &midiPorts[drumMap[note].port];
-                cntrl |= drumMap[note].anote;
+                ch = MusEGlobal::drumMap[note].channel;
+                mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+                cntrl |= MusEGlobal::drumMap[note].anote;
               }
             }
             
@@ -714,6 +716,7 @@ MidiPart::MidiPart(const MidiPart& p) : Part(p)
   _nextClone = this;
 }
 
+
 //---------------------------------------------------------
 //   WavePart
 //---------------------------------------------------------
@@ -740,6 +743,7 @@ WavePart::WavePart(const WavePart& p) : Part(p)
   _prevClone = this;
   _nextClone = this;
 }
+
 
 //---------------------------------------------------------
 //   Part
@@ -842,9 +846,9 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
       switch(track->type()) {
             case Track::WAVE:
                   {
-                  WavePart* nPart = new WavePart(*(WavePart*)oPart);
+                  MusECore::WavePart* nPart = new MusECore::WavePart(*(MusECore::WavePart*)oPart);
                   EventList* el = nPart->events();
-                  unsigned new_partlength = tempomap.deltaTick2frame(oPart->tick(), oPart->tick() + len);
+                  unsigned new_partlength = MusEGlobal::tempomap.deltaTick2frame(oPart->tick(), oPart->tick() + len);
 
                   // If new nr of frames is less than previous what can happen is:
                   // -   0 or more events are beginning after the new final position. Those are removed from the part
@@ -874,7 +878,7 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
                         // Do not do port controller values and clone parts. 
                         operations.push_back(UndoOp(UndoOp::ModifyPart, oPart, nPart, false, false));
 
-                        song->applyOperationGroup(operations);
+                        MusEGlobal::song->applyOperationGroup(operations);
                         }
                   // If the part is expanded there can be no additional events beginning after the previous final position
                   // since those are removed if the part has been shrunk at some time (see above)
@@ -888,7 +892,7 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
                           i--;
                           Event last = i->second;
                           unsigned last_start = last.frame();
-                          SndFileR file = last.sndFile();
+			  MusECore::SndFileR file = last.sndFile();
                           if (file.isNull())
                                 return;
   
@@ -907,7 +911,7 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
                         nPart->setLenFrame(new_partlength);
                         // Do not do port controller values and clone parts. 
                         operations.push_back(UndoOp(UndoOp::ModifyPart, oPart, nPart, false, false));
-                        song->applyOperationGroup(operations);
+                        MusEGlobal::song->applyOperationGroup(operations);
                         }
                   }
                   break;
@@ -931,7 +935,7 @@ void Song::cmdResizePart(Track* track, Part* oPart, unsigned int len, bool doClo
 										part_it=(MidiPart*)part_it->nextClone();
 									} while (doClones && (part_it != (MidiPart*)oPart));
                   
-                  song->applyOperationGroup(operations);
+                  MusEGlobal::song->applyOperationGroup(operations);
                   break;
                   }
             default:
@@ -950,7 +954,7 @@ void Track::splitPart(Part* part, int tickpos, Part*& p1, Part*& p2)
       int l1 = 0;       // len of first new part (ticks or samples)
       int l2 = 0;       // len of second new part
 
-      int samplepos = tempomap.tick2frame(tickpos);
+      int samplepos = MusEGlobal::tempomap.tick2frame(tickpos);
 
       switch (type()) {
             case WAVE:
@@ -1045,14 +1049,14 @@ void Song::cmdSplitPart(Track* track, Part* part, int tick)
       Part* p2;
       track->splitPart(part, tick, p1, p2);
       
-      //song->informAboutNewParts(part, p1); // is unneccessary because of ChangePart below
-      song->informAboutNewParts(part, p2);
+      //MusEGlobal::song->informAboutNewParts(part, p1); // is unneccessary because of ChangePart below
+      MusEGlobal::song->informAboutNewParts(part, p2);
 
       startUndo();
       // Indicate no undo, and do port controller values but not clone parts. 
-      //audio->msgChangePart(part, p1, false);
-      audio->msgChangePart(part, p1, false, true, false);
-      audio->msgAddPart(p2, false);
+      //MusEGlobal::audio->msgChangePart(part, p1, false);
+      MusEGlobal::audio->msgChangePart(part, p1, false, true, false);
+      MusEGlobal::audio->msgAddPart(p2, false);
       endUndo(SC_TRACK_MODIFIED | SC_PART_MODIFIED | SC_PART_INSERTED);
       }
 
@@ -1138,9 +1142,9 @@ void Song::cmdGluePart(Track* track, Part* oPart)
       }
             
       startUndo();
-      audio->msgRemovePart(nextPart, false);
+      MusEGlobal::audio->msgRemovePart(nextPart, false);
       // Indicate no undo, and do port controller values but not clone parts. 
-      audio->msgChangePart(oPart, nPart, false, true, false);
+      MusEGlobal::audio->msgChangePart(oPart, nPart, false, true, false);
       endUndo(SC_PART_MODIFIED | SC_PART_REMOVED);
       }
 
@@ -1158,6 +1162,7 @@ void Part::dump(int n) const
       PosLen::dump();
       }
 
+
 void WavePart::dump(int n) const
       {
       Part::dump(n);
@@ -1165,6 +1170,7 @@ void WavePart::dump(int n) const
             putchar(' ');
       printf("WavePart\n");
       }
+
 
 void MidiPart::dump(int n) const
       {
@@ -1183,10 +1189,12 @@ MidiPart* MidiPart::clone() const
       return new MidiPart(*this);
       }
 
+
 WavePart* WavePart::clone() const
       {
       return new WavePart(*this);
       }
+
 
 /*
 bool Part::hasHiddenNotes()
@@ -1223,3 +1231,4 @@ int Part::hasHiddenEvents()
   return _hiddenEvents;
 }
 
+} // namespace MusECore

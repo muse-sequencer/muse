@@ -26,9 +26,12 @@
 #include "ui_gatetimebase.h"
 
 class QButtonGroup;
-class Xml;
 
-namespace MusEDialog {
+namespace MusECore {
+class Xml;
+}
+
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   GateTime
@@ -51,15 +54,15 @@ class GateTime : public QDialog, public Ui::GateTimeBase {
       int rateVal;
       int offsetVal;
       
-      void read_configuration(Xml& xml);
-      void write_configuration(int level, Xml& xml);
+      void read_configuration(MusECore::Xml& xml);
+      void write_configuration(int level, MusECore::Xml& xml);
 
       
    public slots:
       int exec();
       };
 
-} // namespace MusEDialog
+} // namespace MusEGui
 
 #endif
 

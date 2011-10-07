@@ -24,6 +24,8 @@
 #ifndef __MTC_H__
 #define __MTC_H__
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   MTC
 //---------------------------------------------------------
@@ -66,6 +68,7 @@ class MTC {
       void print() const;
       };
 
+} // namespace MusECore
 
 #endif
 

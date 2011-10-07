@@ -28,6 +28,8 @@
 #include "value.h"
 #include "globaldefs.h"
 
+namespace MusECore {
+
 class Xml;
 //class MidiDevice;
 
@@ -141,6 +143,10 @@ class MidiSyncInfo
     void write(int level, Xml& xml);
 };
 
+} // namespace MusECore
+
+namespace MusEGlobal {
+
 //extern MidiSync midiSyncPorts[MIDI_PORTS];
 
 extern bool debugSync;
@@ -151,8 +157,8 @@ extern bool debugSync;
 //extern int txDeviceId;
 
 extern int mtcType;
-extern MTC mtcOffset;
-extern BValue extSyncFlag;
+extern MusECore::MTC mtcOffset;
+extern MusECore::BValue extSyncFlag;
 //extern bool genMTCSync;       // output MTC Sync
 //extern bool genMCSync;        // output MidiClock Sync
 //extern bool genMMC;           // output Midi Machine Control
@@ -160,10 +166,11 @@ extern BValue extSyncFlag;
 //extern bool acceptMC;
 //extern bool acceptMMC;
 extern int volatile curMidiSyncInPort;
-extern BValue useJackTransport;
+extern MusECore::BValue useJackTransport;
 extern bool volatile jackTransportMaster;
 extern unsigned int syncSendFirstClockDelay; // In milliseconds.
 
+} // namespace MusEGlobal
 
 #endif
 

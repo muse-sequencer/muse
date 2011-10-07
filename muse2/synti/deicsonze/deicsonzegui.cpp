@@ -49,7 +49,9 @@
 
 //#include "deicsonzegui.h"
 
+namespace MusEGui {
 class PluginDialog;
+}
 
 DeicsOnzeGui::DeicsOnzeGui(DeicsOnze* deicsOnze)
     : QDialog(0),
@@ -503,10 +505,10 @@ void DeicsOnzeGui::setResCtrl() {
   sendController(_currentChannel, CTRL_FINEBRIGHTNESS, MIDFINEBRIGHTNESS);
   //Attack
   updateAttack(MIDATTACK);
-  sendController(_currentChannel, CTRL_ATTACK_TIME, MIDATTACK);
+  sendController(_currentChannel, MusECore::CTRL_ATTACK_TIME, MIDATTACK);
   //Release
   updateRelease(MIDRELEASE);
-  sendController(_currentChannel, CTRL_RELEASE_TIME, MIDRELEASE);
+  sendController(_currentChannel, MusECore::CTRL_RELEASE_TIME, MIDRELEASE);
 }
 
 //-----------------------------------------------------------
@@ -1393,10 +1395,10 @@ void QFrameEnvelope::env2Points(int ar, int d1r, int d1l, int d2r, int rr) {
 //-----------------------------------------------------------
 // processEvent(const MidiEvent&);
 //-----------------------------------------------------------
-void DeicsOnzeGui::processEvent(const MidiPlayEvent& ev) {
+void DeicsOnzeGui::processEvent(const MusECore::MidiPlayEvent& ev) {
   //Controler
-  if (ev.type() == ME_CONTROLLER) {
-    //printf("ME_CONTROLLER\n");
+  if (ev.type() == MusECore::ME_CONTROLLER) {
+    //printf("MusECore::ME_CONTROLLER\n");
     int id=ev.dataA();
     int ch=ev.channel();
     int val=ev.dataB();
@@ -1511,13 +1513,13 @@ void DeicsOnzeGui::processEvent(const MidiPlayEvent& ev) {
       case CTRL_CHANNELVOLUME: updateChannelVolume(val); break;
       case CTRL_NBRVOICES: updateNbrVoices(val); break;
       case CTRL_FINEBRIGHTNESS: updateBrightness(val); break;
-      case CTRL_ATTACK_TIME: updateAttack(val); break;
-      case CTRL_RELEASE_TIME: updateRelease(val); break;
-      case CTRL_CHORUS_SEND: updateChannelChorus(val); break;
-      case CTRL_REVERB_SEND: updateChannelReverb(val); break;
-      case CTRL_VARIATION_SEND: updateChannelDelay(val); break;
-      case CTRL_MODULATION: updateModulation(val); break;
-      case CTRL_PROGRAM :	
+      case MusECore::CTRL_ATTACK_TIME: updateAttack(val); break;
+      case MusECore::CTRL_RELEASE_TIME: updateRelease(val); break;
+      case MusECore::CTRL_CHORUS_SEND: updateChannelChorus(val); break;
+      case MusECore::CTRL_REVERB_SEND: updateChannelReverb(val); break;
+      case MusECore::CTRL_VARIATION_SEND: updateChannelDelay(val); break;
+      case MusECore::CTRL_MODULATION: updateModulation(val); break;
+      case MusECore::CTRL_PROGRAM :	
 	int hbank = (val & 0xff0000) >> 16;
 	int lbank = (val & 0xff00) >> 8;
 	if (hbank > 127)  // map "dont care" to 0
@@ -1538,8 +1540,8 @@ void DeicsOnzeGui::processEvent(const MidiPlayEvent& ev) {
     }
   }
   // Sysexes
-  else if (ev.type() == ME_SYSEX) {
-    //printf("ME_SYSEX\n");
+  else if (ev.type() == MusECore::ME_SYSEX) {
+    //printf("MusECore::ME_SYSEX\n");
     unsigned char* data = ev.data();
     
     int cmd = *data;
@@ -2587,7 +2589,7 @@ void DeicsOnzeGui::setChorusActiv(bool a) {
   sendSysex(message, 4);  
 }
 void DeicsOnzeGui::setChannelChorus(int c) {
-  sendController(_currentChannel, CTRL_CHORUS_SEND, c);
+  sendController(_currentChannel, MusECore::CTRL_CHORUS_SEND, c);
 }
 void DeicsOnzeGui::setChorusReturn(int val) {
   unsigned char message[4];
@@ -2598,14 +2600,14 @@ void DeicsOnzeGui::setChorusReturn(int val) {
   sendSysex(message, 4);
 }
 void DeicsOnzeGui::setSelectChorusPlugin() {
-  Plugin* pluginChorus = PluginDialog::getPlugin(this);
+  MusECore::Plugin* pluginChorus = MusEGui::PluginDialog::getPlugin(this);
   if(pluginChorus) {
-    unsigned char message[3+sizeof(Plugin*)];
+    unsigned char message[3+sizeof(MusECore::Plugin*)];
     message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
     message[1]=DEICSONZE_UNIQUE_ID;
     message[2]=SYSEX_SELECTCHORUS;
-    memcpy(&message[3], &pluginChorus, sizeof(Plugin*));
-    sendSysex(message, 3+sizeof(Plugin*));
+    memcpy(&message[3], &pluginChorus, sizeof(MusECore::Plugin*));
+    sendSysex(message, 3+sizeof(MusECore::Plugin*));
   }
 }
 /*void DeicsOnzeGui::setPanChorus1(double i) {
@@ -2665,7 +2667,7 @@ void DeicsOnzeGui::setReverbActiv(bool a) {
   sendSysex(message, 4);
 }
 void DeicsOnzeGui::setChannelReverb(int r) {
-  sendController(_currentChannel, CTRL_REVERB_SEND, r);
+  sendController(_currentChannel, MusECore::CTRL_REVERB_SEND, r);
 }
 void DeicsOnzeGui::setReverbReturn(int val) {
   unsigned char message[4];
@@ -2676,14 +2678,14 @@ void DeicsOnzeGui::setReverbReturn(int val) {
   sendSysex(message, 4);
 }
 void DeicsOnzeGui::setSelectReverbPlugin() {
-  Plugin* pluginReverb = PluginDialog::getPlugin(this);
+  MusECore::Plugin* pluginReverb = MusEGui::PluginDialog::getPlugin(this);
   if(pluginReverb) {
-    unsigned char message[3+sizeof(Plugin*)];
+    unsigned char message[3+sizeof(MusECore::Plugin*)];
     message[0]=MUSE_SYNTH_SYSEX_MFG_ID;
     message[1]=DEICSONZE_UNIQUE_ID;
     message[2]=SYSEX_SELECTREVERB;
-    memcpy(&message[3], &pluginReverb, sizeof(Plugin*));
-    sendSysex(message, 3+sizeof(Plugin*));
+    memcpy(&message[3], &pluginReverb, sizeof(MusECore::Plugin*));
+    sendSysex(message, 3+sizeof(MusECore::Plugin*));
   }
 }
 
@@ -2699,7 +2701,7 @@ void DeicsOnzeGui::setBrightnessKnob(double val) {
 		 (int)(val*(double)MAXFINEBRIGHTNESS));
 }
 void DeicsOnzeGui::setModulationKnob(double val) {
-  sendController(_currentChannel, CTRL_MODULATION,
+  sendController(_currentChannel, MusECore::CTRL_MODULATION,
 		 (int)(val*(double)MAXMODULATION));
 }
 void DeicsOnzeGui::setDetuneKnob(double val) {
@@ -2707,11 +2709,11 @@ void DeicsOnzeGui::setDetuneKnob(double val) {
   setChannelDetune((int)((2.0*val-1.0)*(double)MAXCHANNELDETUNE));
 }
 void DeicsOnzeGui::setAttackKnob(double val) {
-  sendController(_currentChannel, CTRL_ATTACK_TIME,
+  sendController(_currentChannel, MusECore::CTRL_ATTACK_TIME,
 		 (int)(val*(double)MAXATTACK));
 }
 void DeicsOnzeGui::setReleaseKnob(double val) {
-  sendController(_currentChannel, CTRL_RELEASE_TIME, (int)(val*(double)MAXRELEASE));
+  sendController(_currentChannel, MusECore::CTRL_RELEASE_TIME, (int)(val*(double)MAXRELEASE));
 }
 //-----------------------------------------------------------
 // Global control
@@ -3119,7 +3121,7 @@ void DeicsOnzeGui::setDelayReturn(int r) {
   sendSysex(message, 4);
 }
 void DeicsOnzeGui::setChannelDelay(int d) {
-  sendController(_currentChannel, CTRL_VARIATION_SEND, (unsigned char)d);
+  sendController(_currentChannel, MusECore::CTRL_VARIATION_SEND, (unsigned char)d);
 }
 //void DeicsOnzeGui::setDelayTime(int t) {
 //  unsigned char message[4];
@@ -3306,7 +3308,7 @@ void DeicsOnzeGui::setPreset(QTreeWidgetItem* pre) {
     int hbank = cpre->_preset->_subcategory->_category->_hbank;
     setEnabledPreset(true);
     updatePreset(cpre->_preset);
-    sendController(_currentChannel, CTRL_PROGRAM, (hbank<<16)+(lbank<<8)+prog);
+    sendController(_currentChannel, MusECore::CTRL_PROGRAM, (hbank<<16)+(lbank<<8)+prog);
   }
 }
 //--------------------------------------------------------------

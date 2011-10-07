@@ -35,11 +35,13 @@
 
 class QString;
 
-class Track;
+namespace MusECore {
+
 class MidiTrack;
-class WaveTrack;
+class Track;
 class Xml;
 class Part;
+class WaveTrack;
 
 struct ClonePart {
       const Part* cp;
@@ -117,6 +119,7 @@ class Part : public PosLen {
       virtual void dump(int n = 0) const;
       };
 
+
 //---------------------------------------------------------
 //   MidiPart
 //---------------------------------------------------------
@@ -133,6 +136,7 @@ class MidiPart : public Part {
 
       virtual void dump(int n = 0) const;
       };
+
 
 //---------------------------------------------------------
 //   WavePart
@@ -153,6 +157,7 @@ class WavePart : public Part {
 
       virtual void dump(int n = 0) const;
       };
+
 
 //---------------------------------------------------------
 //   PartList
@@ -187,8 +192,13 @@ extern void addPortCtrlEvents(Part* part, bool doClones);
 extern void addPortCtrlEvents(Event& event, Part* part, bool doClones);
 extern void removePortCtrlEvents(Part* part, bool doClones);
 extern void removePortCtrlEvents(Event& event, Part* part, bool doClones);
-extern CloneList cloneList;
 extern Part* readXmlPart(Xml&, Track*, bool doClone = false, bool toTrack = true);
+
+} // namespace MusECore
+
+namespace MusEGlobal {
+extern MusECore::CloneList cloneList;
+}
 
 #endif
 

@@ -30,7 +30,7 @@
 #include "sliderbase.h"
 #include "scldraw.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   Slider
@@ -110,6 +110,6 @@ class Slider : public SliderBase, public ScaleIf
   void setSizeHint(uint w, uint h);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif

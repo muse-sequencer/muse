@@ -31,7 +31,7 @@
 ///#include "posedit.h"
 #include "pitchedit.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------
 //    NoteInfo
@@ -105,7 +105,7 @@ NoteInfo::NoteInfo(QWidget* parent)
       connect(selPitch,   SIGNAL(valueChanged(int)), SLOT(pitchChanged(int)));
       connect(selVelOn,   SIGNAL(valueChanged(int)), SLOT(velOnChanged(int)));
       connect(selVelOff,  SIGNAL(valueChanged(int)), SLOT(velOffChanged(int)));
-      connect(selTime,    SIGNAL(valueChanged(const Pos&)), SLOT(timeChanged(const Pos&)));
+      connect(selTime,    SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(timeChanged(const MusECore::Pos&)));
       }
 
 //---------------------------------------------------------
@@ -220,10 +220,10 @@ void NoteInfo::setValues(unsigned tick, int val2, int val3, int val4,
 //   timeChanged
 //---------------------------------------------------------
 
-void NoteInfo::timeChanged(const Pos& pos)
+void NoteInfo::timeChanged(const MusECore::Pos& pos)
       {
       if (!signalsBlocked())
             emit valueChanged(VAL_TIME, pos.tick());
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

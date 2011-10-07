@@ -31,18 +31,20 @@
 #include <list>
 #include <qcolor.h>
 
-const int AC_VOLUME = 0;
-const int AC_PAN    = 1;
-const int AC_MUTE   = 2;
-
 #define AC_PLUGIN_CTL_BASE         0x1000
 #define AC_PLUGIN_CTL_BASE_POW     12
 #define AC_PLUGIN_CTL_ID_MASK      0xFFF
 
-//inline int genACnum(int plugin, int ctrl) { return (plugin + 1) * AC_PLUGIN_CTL_BASE + ctrl; }
-inline unsigned long genACnum(unsigned long plugin, unsigned long ctrl) { return (plugin + 1) * AC_PLUGIN_CTL_BASE + ctrl; }
+namespace MusECore {
 
 class Xml;
+
+const int AC_VOLUME = 0;
+const int AC_PAN    = 1;
+const int AC_MUTE   = 2;
+
+//inline int genACnum(int plugin, int ctrl) { return (plugin + 1) * AC_PLUGIN_CTL_BASE + ctrl; }
+inline unsigned long genACnum(unsigned long plugin, unsigned long ctrl) { return (plugin + 1) * AC_PLUGIN_CTL_BASE + ctrl; }
 
 enum CtrlValueType { VAL_LOG, VAL_LINEAR, VAL_INT, VAL_BOOL };
 enum CtrlRecValueType { ARVT_VAL, ARVT_START, ARVT_STOP };
@@ -167,6 +169,8 @@ class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
             return std::map<int, CtrlList*, std::less<int> >::find(id);
             }
       };
+
+} // namespace MusECore
 
 #endif
 

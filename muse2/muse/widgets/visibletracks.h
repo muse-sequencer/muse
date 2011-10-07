@@ -29,7 +29,7 @@ class QAction;
 class QPixmap;
 class QWidget;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 class Action;
 
@@ -62,6 +62,6 @@ class VisibleTracks : public QToolBar {
       ~VisibleTracks();
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif // VISIBLETRACKS_H

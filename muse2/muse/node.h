@@ -33,6 +33,8 @@ typedef struct { pthread_mutex_t lock; int counter; } muse_atomic_t;
 typedef struct { int counter; } muse_atomic_t;
 #endif
 
+namespace MusECore {
+
 static inline int muse_atomic_read(muse_atomic_t *v) {
 #ifndef i386
       int ret;
@@ -98,6 +100,7 @@ class Xml;
 class Pipeline;
 class SndFile;
 
+
 // superceeded by dynamic allocation of fifoLength
 //const int FIFO_BUFFER = 4096;//64;
 
@@ -141,6 +144,8 @@ class Fifo {
       void remove();
       int getCount();
       };
+
+} // namespace MusECore
 
 #endif
 

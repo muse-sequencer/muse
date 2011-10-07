@@ -43,6 +43,8 @@
 #include "gconfig.h"
 #include "app.h"
 
+namespace MusEGui {
+
 static const char* recordTransportText   = QT_TRANSLATE_NOOP("@default", "Click this button to enable recording");
 static const char* stopTransportText     = QT_TRANSLATE_NOOP("@default", "Click this button to stop playback");
 static const char* playTransportText     = QT_TRANSLATE_NOOP("@default", "Click this button to start playback");
@@ -92,7 +94,7 @@ Handle::Handle(QWidget* r, QWidget* parent)
       setFixedWidth(20);
       setCursor(Qt::PointingHandCursor);
       QPalette palette;
-      palette.setColor(this->backgroundRole(), MusEConfig::config.transportHandleColor);
+      palette.setColor(this->backgroundRole(), MusEGlobal::config.transportHandleColor);
       this->setPalette(palette);
       setAutoFillBackground(true);
       }
@@ -139,12 +141,12 @@ TempoSig::TempoSig(QWidget* parent)
       f->setLineWidth(1);
 
       // ORCAN get rid of l1 l2 last arguments (parent)?
-      l1 = new MusEWidget::DoubleLabel(120.0, 20.0, 400.0, 0);
+      l1 = new MusEGui::DoubleLabel(120.0, 20.0, 400.0, 0);
       l1->setFocusPolicy(Qt::NoFocus);
       l1->setSpecialText(QString("extern"));
       vb2->addWidget(l1);
       
-      l2 = new MusEWidget::SigLabel(4, 4, 0);
+      l2 = new MusEGui::SigLabel(4, 4, 0);
       l2->setFocusPolicy(Qt::NoFocus);
       vb2->addWidget(l2);
 
@@ -152,7 +154,7 @@ TempoSig::TempoSig(QWidget* parent)
       vb1->addWidget(f);
 
       l3 = new QLabel(tr("Tempo/Sig"));
-      l3->setFont(MusEConfig::config.fonts[2]);
+      l3->setFont(MusEGlobal::config.fonts[2]);
       vb1->addWidget(l3);
 
       l1->setBackgroundRole(QPalette::Light);
@@ -178,7 +180,7 @@ TempoSig::TempoSig(QWidget* parent)
 
 void TempoSig::configChanged()
       {
-      l3->setFont(MusEConfig::config.fonts[2]);
+      l3->setFont(MusEGlobal::config.fonts[2]);
       }
 
 //---------------------------------------------------------
@@ -256,29 +258,29 @@ Transport::Transport(QWidget* parent, const char* name)
       QVBoxLayout *box1 = new QVBoxLayout;
       recMode     = new QComboBox;
       recMode->setFocusPolicy(Qt::NoFocus);
-      recMode->insertItem(Song::REC_OVERDUP, tr("Overdub"));
-      recMode->insertItem(Song::REC_REPLACE, tr("Replace"));
-      recMode->setCurrentIndex(song->recMode());
+      recMode->insertItem(MusECore::Song::REC_OVERDUP, tr("Overdub"));
+      recMode->insertItem(MusECore::Song::REC_REPLACE, tr("Replace"));
+      recMode->setCurrentIndex(MusEGlobal::song->recMode());
 
       box1->addWidget(recMode);
 
       l2 = new QLabel(tr("Rec Mode"));
-      l2->setFont(MusEConfig::config.fonts[2]);
+      l2->setFont(MusEGlobal::config.fonts[2]);
       l2->setAlignment(Qt::AlignCenter);
       connect(recMode, SIGNAL(activated(int)), SLOT(setRecMode(int)));
       box1->addWidget(l2);
 
       cycleMode = new QComboBox;
       cycleMode->setFocusPolicy(Qt::NoFocus);
-      cycleMode->insertItem(Song::CYCLE_NORMAL,  tr("Normal"));
-      cycleMode->insertItem(Song::CYCLE_MIX,     tr("Mix"));
-      cycleMode->insertItem(Song::CYCLE_REPLACE, tr("Replace"));
-      cycleMode->setCurrentIndex(song->cycleMode());
+      cycleMode->insertItem(MusECore::Song::CYCLE_NORMAL,  tr("Normal"));
+      cycleMode->insertItem(MusECore::Song::CYCLE_MIX,     tr("Mix"));
+      cycleMode->insertItem(MusECore::Song::CYCLE_REPLACE, tr("Replace"));
+      cycleMode->setCurrentIndex(MusEGlobal::song->cycleMode());
 
       box1->addWidget(cycleMode);
 
       l3 = new QLabel(tr("Cycle Rec"));
-      l3->setFont(MusEConfig::config.fonts[2]);
+      l3->setFont(MusEGlobal::config.fonts[2]);
       l3->setAlignment(Qt::AlignCenter);
       connect(cycleMode, SIGNAL(activated(int)), SLOT(setCycleMode(int)));
       box1->addWidget(l3);
@@ -308,17 +310,17 @@ Transport::Transport(QWidget* parent, const char* name)
       b2->setWhatsThis(tr("Loop"));
       b3->setWhatsThis(tr("Punch Out"));
 
-      connect(b1, SIGNAL(toggled(bool)), song, SLOT(setPunchin(bool)));
-      connect(b2, SIGNAL(toggled(bool)), song, SLOT(setLoop(bool)));
-      connect(b3, SIGNAL(toggled(bool)), song, SLOT(setPunchout(bool)));
+      connect(b1, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchin(bool)));
+      connect(b2, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setLoop(bool)));
+      connect(b3, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchout(bool)));
 
-      b1->setChecked(song->punchin());
-      b2->setChecked(song->loop());
-      b3->setChecked(song->punchout());
+      b1->setChecked(MusEGlobal::song->punchin());
+      b2->setChecked(MusEGlobal::song->loop());
+      b3->setChecked(MusEGlobal::song->punchout());
 
-      connect(song, SIGNAL(punchinChanged(bool)),  b1, SLOT(setChecked(bool)));
-      connect(song, SIGNAL(punchoutChanged(bool)), b3, SLOT(setChecked(bool)));
-      connect(song, SIGNAL(loopChanged(bool)),     b2, SLOT(setChecked(bool)));
+      connect(MusEGlobal::song, SIGNAL(punchinChanged(bool)),  b1, SLOT(setChecked(bool)));
+      connect(MusEGlobal::song, SIGNAL(punchoutChanged(bool)), b3, SLOT(setChecked(bool)));
+      connect(MusEGlobal::song, SIGNAL(loopChanged(bool)),     b2, SLOT(setChecked(bool)));
 
       hbox->addLayout(button2);
 
@@ -340,7 +342,7 @@ Transport::Transport(QWidget* parent, const char* name)
       marken->addWidget(tl1);
 
       l5 = new QLabel(tr("Left Mark"));
-      l5->setFont(MusEConfig::config.fonts[2]);
+      l5->setFont(MusEGlobal::config.fonts[2]);
       l5->setAlignment(Qt::AlignCenter);
       marken->addWidget(l5);
 
@@ -352,7 +354,7 @@ Transport::Transport(QWidget* parent, const char* name)
       tl2->setFocusPolicy(Qt::NoFocus);
 
       l6 = new QLabel(tr("Right Mark"));
-      l6->setFont(MusEConfig::config.fonts[2]);
+      l6->setFont(MusEGlobal::config.fonts[2]);
       l6->setAlignment(Qt::AlignCenter);
       marken->addWidget(l6);
 
@@ -427,11 +429,11 @@ Transport::Transport(QWidget* parent, const char* name)
       connect(buttons[3], SIGNAL(toggled(bool)), SLOT(stopToggled(bool)));
       connect(buttons[4], SIGNAL(toggled(bool)), SLOT(playToggled(bool)));
 
-      connect(buttons[5], SIGNAL(toggled(bool)), song, SLOT(setRecord(bool)));
-      connect(song, SIGNAL(recordChanged(bool)), SLOT(setRecord(bool)));
-      connect(buttons[0], SIGNAL(clicked()), song, SLOT(rewindStart()));
-      connect(buttons[1], SIGNAL(clicked()), song, SLOT(rewind()));
-      connect(buttons[2], SIGNAL(clicked()), song, SLOT(forward()));
+      connect(buttons[5], SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setRecord(bool)));
+      connect(MusEGlobal::song, SIGNAL(recordChanged(bool)), SLOT(setRecord(bool)));
+      connect(buttons[0], SIGNAL(clicked()), MusEGlobal::song, SLOT(rewindStart()));
+      connect(buttons[1], SIGNAL(clicked()), MusEGlobal::song, SLOT(rewind()));
+      connect(buttons[2], SIGNAL(clicked()), MusEGlobal::song, SLOT(forward()));
 
       box4->addLayout(tb);
       hbox->addLayout(box4);
@@ -453,10 +455,10 @@ Transport::Transport(QWidget* parent, const char* name)
 
       jackTransportButton     = newButton(tr("Jack"), tr("Jack transport sync on/off"), true,19);
 
-      quantizeButton->setChecked(song->quantize());
-      clickButton->setChecked(song->click());
-      syncButton->setChecked(extSyncFlag.value());
-      jackTransportButton->setChecked(useJackTransport.value());
+      quantizeButton->setChecked(MusEGlobal::song->quantize());
+      clickButton->setChecked(MusEGlobal::song->click());
+      syncButton->setChecked(MusEGlobal::extSyncFlag.value());
+      jackTransportButton->setChecked(MusEGlobal::useJackTransport.value());
       quantizeButton->setFocusPolicy(Qt::NoFocus);
       clickButton->setFocusPolicy(Qt::NoFocus);
       syncButton->setFocusPolicy(Qt::NoFocus);
@@ -467,16 +469,16 @@ Transport::Transport(QWidget* parent, const char* name)
       button1->addWidget(syncButton);
       button1->addWidget(jackTransportButton);
 
-      connect(quantizeButton, SIGNAL(toggled(bool)), song, SLOT(setQuantize(bool)));
-      connect(clickButton, SIGNAL(toggled(bool)), song, SLOT(setClick(bool)));
+      connect(quantizeButton, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setQuantize(bool)));
+      connect(clickButton, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setClick(bool)));
 
-      connect(syncButton, SIGNAL(toggled(bool)), &extSyncFlag, SLOT(setValue(bool)));
-      connect(jackTransportButton, SIGNAL(toggled(bool)),&useJackTransport, SLOT(setValue(bool)));
-      connect(&extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(syncChanged(bool)));
-      connect(&useJackTransport, SIGNAL(valueChanged(bool)), SLOT(jackSyncChanged(bool)));
+      connect(syncButton, SIGNAL(toggled(bool)), &MusEGlobal::extSyncFlag, SLOT(setValue(bool)));
+      connect(jackTransportButton, SIGNAL(toggled(bool)),&MusEGlobal::useJackTransport, SLOT(setValue(bool)));
+      connect(&MusEGlobal::extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(syncChanged(bool)));
+      connect(&MusEGlobal::useJackTransport, SIGNAL(valueChanged(bool)), SLOT(jackSyncChanged(bool)));
 
-      connect(song, SIGNAL(quantizeChanged(bool)), this, SLOT(setQuantizeFlag(bool)));
-      connect(song, SIGNAL(clickChanged(bool)), this, SLOT(setClickFlag(bool)));
+      connect(MusEGlobal::song, SIGNAL(quantizeChanged(bool)), this, SLOT(setQuantizeFlag(bool)));
+      connect(MusEGlobal::song, SIGNAL(clickChanged(bool)), this, SLOT(setClickFlag(bool)));
 
       hbox->addLayout(button1);
 
@@ -499,24 +501,24 @@ Transport::Transport(QWidget* parent, const char* name)
       masterButton->setFocusPolicy(Qt::NoFocus);
       box5->addWidget(masterButton);
 
-      connect(masterButton, SIGNAL(toggled(bool)), song, SLOT(setMasterFlag(bool)));
+      connect(masterButton, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setMasterFlag(bool)));
 
       hbox->addLayout(box5);
       
       //-----------------------------------------------------
 
-      connect(tl1,   SIGNAL(valueChanged(const Pos&)), SLOT(lposChanged(const Pos&)));
-      connect(tl2,   SIGNAL(valueChanged(const Pos&)), SLOT(rposChanged(const Pos&)));
-      connect(time1, SIGNAL(valueChanged(const Pos&)), SLOT(cposChanged(const Pos&)));
-      connect(time2, SIGNAL(valueChanged(const Pos&)), SLOT(cposChanged(const Pos&)));
+      connect(tl1,   SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(lposChanged(const MusECore::Pos&)));
+      connect(tl2,   SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(rposChanged(const MusECore::Pos&)));
+      connect(time1, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(cposChanged(const MusECore::Pos&)));
+      connect(time2, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(cposChanged(const MusECore::Pos&)));
 
       connect(slider,SIGNAL(valueChanged(int)),  SLOT(cposChanged(int)));
-      connect(song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
-      connect(tempo, SIGNAL(tempoChanged(int)), song, SLOT(setTempo(int)));
-      ///connect(tempo, SIGNAL(sigChanged(int, int)), song, SLOT(setSig(int, int)));
-      connect(tempo, SIGNAL(sigChanged(const AL::TimeSignature&)), song, SLOT(setSig(const AL::TimeSignature&)));
-      connect(song, SIGNAL(playChanged(bool)), SLOT(setPlay(bool)));
-      connect(song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
+      connect(tempo, SIGNAL(tempoChanged(int)), MusEGlobal::song, SLOT(setTempo(int)));
+      ///connect(tempo, SIGNAL(sigChanged(int, int)), MusEGlobal::song, SLOT(setSig(int, int)));
+      connect(tempo, SIGNAL(sigChanged(const AL::TimeSignature&)), MusEGlobal::song, SLOT(setSig(const AL::TimeSignature&)));
+      connect(MusEGlobal::song, SIGNAL(playChanged(bool)), SLOT(setPlay(bool)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
 
 
@@ -536,13 +538,13 @@ Transport::~Transport()
 
 void Transport::configChanged()
       {
-      l2->setFont(MusEConfig::config.fonts[2]);
-      l3->setFont(MusEConfig::config.fonts[2]);
-      l5->setFont(MusEConfig::config.fonts[2]);
-      l6->setFont(MusEConfig::config.fonts[2]);
+      l2->setFont(MusEGlobal::config.fonts[2]);
+      l3->setFont(MusEGlobal::config.fonts[2]);
+      l5->setFont(MusEGlobal::config.fonts[2]);
+      l6->setFont(MusEGlobal::config.fonts[2]);
 
       QPalette pal;
-      pal.setColor(lefthandle->backgroundRole(), MusEConfig::config.transportHandleColor);
+      pal.setColor(lefthandle->backgroundRole(), MusEGlobal::config.transportHandleColor);
       lefthandle->setPalette(pal);
       righthandle->setPalette(pal);
       }
@@ -597,8 +599,8 @@ void Transport::setPos(int idx, unsigned v, bool)
                     slider->setValue(v);
                     slider->blockSignals(false);
                   }  
-                  if (song->masterFlag())
-                        setTempo(tempomap.tempo(v));
+                  if (MusEGlobal::song->masterFlag())
+                        setTempo(MusEGlobal::tempomap.tempo(v));
                   {
                   int z, n;
                   ///sigmap.timesig(v, z, n);
@@ -621,34 +623,34 @@ void Transport::setPos(int idx, unsigned v, bool)
 
 void Transport::cposChanged(int tick)
       {
-      song->setPos(0, tick);
+      MusEGlobal::song->setPos(0, tick);
       }
 
 //---------------------------------------------------------
 //   cposChanged
 //---------------------------------------------------------
 
-void Transport::cposChanged(const Pos& pos)
+void Transport::cposChanged(const MusECore::Pos& pos)
       {
-      song->setPos(0, pos.tick());
+      MusEGlobal::song->setPos(0, pos.tick());
       }
 
 //---------------------------------------------------------
 //   lposChanged
 //---------------------------------------------------------
 
-void Transport::lposChanged(const Pos& pos)
+void Transport::lposChanged(const MusECore::Pos& pos)
       {
-      song->setPos(1, pos.tick());
+      MusEGlobal::song->setPos(1, pos.tick());
       }
 
 //---------------------------------------------------------
 //   rposChanged
 //---------------------------------------------------------
 
-void Transport::rposChanged(const Pos& pos)
+void Transport::rposChanged(const MusECore::Pos& pos)
       {
-      song->setPos(2, pos.tick());
+      MusEGlobal::song->setPos(2, pos.tick());
       }
 
 //---------------------------------------------------------
@@ -709,7 +711,7 @@ void Transport::setSyncFlag(bool f)
 
 void Transport::setRecMode(int id)
       {
-      song->setRecMode(id);
+      MusEGlobal::song->setRecMode(id);
       }
 
 //---------------------------------------------------------
@@ -718,7 +720,7 @@ void Transport::setRecMode(int id)
 
 void Transport::setCycleMode(int id)
       {
-      song->setCycleMode(id);
+      MusEGlobal::song->setCycleMode(id);
       }
 
 //---------------------------------------------------------
@@ -731,11 +733,11 @@ void Transport::songChanged(int flags)
       if(flags == SC_MIDI_CONTROLLER)
         return;
     
-      slider->setRange(0, song->len());
-      int cpos  = song->cpos();
-      int t = tempomap.tempo(cpos);
+      slider->setRange(0, MusEGlobal::song->len());
+      int cpos  = MusEGlobal::song->cpos();
+      int t = MusEGlobal::tempomap.tempo(cpos);
       if (flags & (SC_MASTER | SC_TEMPO)) {
-            if (extSyncFlag.value())
+            if (MusEGlobal::extSyncFlag.value())
                   setTempo(0);
             else
                   setTempo(t);
@@ -747,7 +749,7 @@ void Transport::songChanged(int flags)
             setTimesig(z, n);
             }
       if (flags & SC_MASTER)
-            masterButton->setChecked(song->masterFlag());
+            masterButton->setChecked(MusEGlobal::song->masterFlag());
       }
 
 //---------------------------------------------------------
@@ -766,11 +768,11 @@ void Transport::syncChanged(bool flag)
       masterButton->setEnabled(!flag);
       if (flag) {
             masterButton->setChecked(false);
-            song->setMasterFlag(false);
+            MusEGlobal::song->setMasterFlag(false);
             tempo->setTempo(0);         // slave mode: show "extern"
             }
       else
-            tempo->setTempo(tempomap.tempo(song->cpos()));
+            tempo->setTempo(MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos()));
       MusEGlobal::playAction->setEnabled(!flag);
       MusEGlobal::startAction->setEnabled(!flag);
       MusEGlobal::stopAction->setEnabled(!flag);
@@ -789,7 +791,7 @@ void Transport::jackSyncChanged(bool flag)
 void Transport::stopToggled(bool val)
       {
       if (val)
-            song->setStop(true);
+            MusEGlobal::song->setStop(true);
       else {
             buttons[3]->blockSignals(true);
             buttons[3]->setChecked(true);
@@ -804,7 +806,7 @@ void Transport::stopToggled(bool val)
 void Transport::playToggled(bool val)
       {
       if (val)
-            song->setPlay(true);
+	MusEGlobal::song->setPlay(true);
       else {
             buttons[4]->blockSignals(true);
             buttons[4]->setChecked(true);
@@ -812,3 +814,4 @@ void Transport::playToggled(bool val)
             }
       }
 
+} // namespace MusEGui

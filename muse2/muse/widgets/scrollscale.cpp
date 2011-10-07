@@ -35,7 +35,7 @@
 #include "scrollscale.h"
 #include "icons.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   setScale
@@ -528,4 +528,4 @@ int ScrollScale::convertQuickZoomLevelToMag(int zoomlevel)
       return vals[zoomlevel];
 }
 
-} // namespace MusEWidget
+} // namespace MusEGui

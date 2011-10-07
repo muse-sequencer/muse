@@ -23,6 +23,8 @@
 
 #include "stringparam.h" 
 #include "xml.h" 
+
+namespace MusECore {
  
 //---------------------------------------------------------
 //   findKey
@@ -112,3 +114,4 @@ void StringParamMap::write(int level, Xml& xml, const char* name) const
     xml.tag(level, "%s name=\"%s\" val=\"%s\"/", name, r->first.c_str(), r->second.c_str());
 }
 
+} // namespace MusECore

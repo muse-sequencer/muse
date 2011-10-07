@@ -35,7 +35,7 @@
 #include "poslabel.h"
 #include "pitchlabel.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 static int rasterTable[] = {
       //------                8    4     2
@@ -210,4 +210,4 @@ void Toolbar1::setPitchMode(bool /*flag*/)
 //        pitch->setPitchMode(flag);
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

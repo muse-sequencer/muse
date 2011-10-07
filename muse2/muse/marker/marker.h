@@ -30,6 +30,8 @@
 
 class QString;
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   Marker
 //---------------------------------------------------------
@@ -63,6 +65,8 @@ class MarkerList : public std::multimap<unsigned, Marker, std::less<unsigned> > 
 
 typedef std::multimap<unsigned, Marker, std::less<unsigned> >::iterator iMarker;
 typedef std::multimap<unsigned, Marker, std::less<unsigned> >::const_iterator ciMarker;
+
+} // namespace MusECore
 
 #endif
 

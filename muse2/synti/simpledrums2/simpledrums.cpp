@@ -142,7 +142,7 @@ SimpleSynth::SimpleSynth(int sr)
 
       //Build controller list:
       controllers[0].name = "Master volume";
-      controllers[0].num  = CTRL_NRPN14_OFFSET;
+      controllers[0].num  = MusECore::CTRL_NRPN14_OFFSET;
       controllers[0].min  = 0;
       controllers[0].max  = 127;
 
@@ -157,36 +157,36 @@ SimpleSynth::SimpleSynth(int sr)
             QString c7 = "Channel " + QString::number(ch + 1) + " fx send 3";
             QString c8 = "Channel " + QString::number(ch + 1) + " fx send 4";
             controllers[i].name = c1.toLatin1().constData();
-            controllers[i].num  = CTRL_NRPN14_OFFSET+i;
+            controllers[i].num  = MusECore::CTRL_NRPN14_OFFSET+i;
             controllers[i].min  = 0;
             controllers[i].max  = 127;
 
             controllers[i+1].name = c2.toLatin1().constData();
-            controllers[i+1].num  = CTRL_NRPN14_OFFSET+i+1;
+            controllers[i+1].num  = MusECore::CTRL_NRPN14_OFFSET+i+1;
             controllers[i+1].min  = 0;
             controllers[i+1].max  = 127;
 
             controllers[i+2].name = c3.toLatin1().constData();
-            controllers[i+2].num  = CTRL_NRPN14_OFFSET+i+2;
+            controllers[i+2].num  = MusECore::CTRL_NRPN14_OFFSET+i+2;
             controllers[i+2].min  = 0;
             controllers[i+2].max  = 1;
 
             controllers[i+3].name = c4.toLatin1().constData();
-            controllers[i+3].num  = CTRL_NRPN14_OFFSET+i+3;
+            controllers[i+3].num  = MusECore::CTRL_NRPN14_OFFSET+i+3;
             controllers[i+3].min  = 0;
             controllers[i+3].max  = 1;
 
             controllers[i+4].name = c5.toLatin1().constData();
-            controllers[i+4].num  = CTRL_NRPN14_OFFSET+i+4;
+            controllers[i+4].num  = MusECore::CTRL_NRPN14_OFFSET+i+4;
 
             controllers[i+5].name = c6.toLatin1().constData();
-            controllers[i+5].num  = CTRL_NRPN14_OFFSET+i+5;
+            controllers[i+5].num  = MusECore::CTRL_NRPN14_OFFSET+i+5;
 
             controllers[i+6].name = c7.toLatin1().constData();
-            controllers[i+6].num  = CTRL_NRPN14_OFFSET+i+6;
+            controllers[i+6].num  = MusECore::CTRL_NRPN14_OFFSET+i+6;
 
             controllers[i+7].name = c8.toLatin1().constData();
-            controllers[i+7].num  = CTRL_NRPN14_OFFSET+i+7;
+            controllers[i+7].num  = MusECore::CTRL_NRPN14_OFFSET+i+7;
 
             controllers[i+4].min = controllers[i+5].min = controllers[i+6].min = controllers[i+7].min = 0;
             controllers[i+4].max = controllers[i+5].max = controllers[i+6].max = controllers[i+7].max = 127;
@@ -198,12 +198,12 @@ SimpleSynth::SimpleSynth(int sr)
             QString c1 = "Sendfx " + QString::number(sfx) + " ret gain";
             QString c2 = "Sendfx " + QString::number(sfx) + " on/off";
             controllers[i].name = c1.toLatin1().constData();
-            controllers[i].num  = CTRL_NRPN14_OFFSET+i;
+            controllers[i].num  = MusECore::CTRL_NRPN14_OFFSET+i;
             controllers[i].min  = 0;
             controllers[i].max  = 127;
 
             controllers[i+1].name = c2.toLatin1().constData();
-            controllers[i+1].num  = CTRL_NRPN14_OFFSET+i+1;
+            controllers[i+1].num  = MusECore::CTRL_NRPN14_OFFSET+i+1;
             controllers[i+1].min  = 0;
             controllers[i+1].max  = 1;
             i+=2;
@@ -355,11 +355,11 @@ bool SimpleSynth::playNote(int /*channel*/, int pitch, int velo)
     \return false for ok, true for not ok
  */
 //---------------------------------------------------------
-bool SimpleSynth::processEvent(const MidiPlayEvent& ev)
+bool SimpleSynth::processEvent(const MusECore::MidiPlayEvent& ev)
       {
       SS_TRACE_IN
       switch(ev.type()) {
-            case ME_CONTROLLER:
+            case MusECore::ME_CONTROLLER:
                   if (SS_DEBUG_MIDI) {
                         printf("SimpleSynth::processEvent - Controller. Chan: %x dataA: %x dataB: %x\n", ev.channel(), ev.dataA(), ev.dataB());
                         for (int i=0; i< ev.len(); i++)
@@ -367,11 +367,11 @@ bool SimpleSynth::processEvent(const MidiPlayEvent& ev)
                         }
                   setController(ev.channel(), ev.dataA(), ev.dataB(), false);
                   return true;
-            case ME_NOTEON:
+            case MusECore::ME_NOTEON:
                   return playNote(ev.channel(), ev.dataA(), ev.dataB());
-            case ME_NOTEOFF:
+            case MusECore::ME_NOTEOFF:
                   return playNote(ev.channel(), ev.dataA(), 0);
-            case ME_SYSEX:
+            case MusECore::ME_SYSEX:
                   //Debug print
                   if (SS_DEBUG_MIDI) {
                         printf("SimpleSynth::processEvent - Sysex received\n");
@@ -471,7 +471,7 @@ bool SimpleSynth::setController(int channel, int id, int val)
             master_vol = (double) master_vol_ctrlval / SS_MASTER_VOLUME_QUOT;
             }
       // Emmm, this one should've been there in the beginning
-      else if (id == CTRL_VOLUME) {
+      else if (id == MusECore::CTRL_VOLUME) {
             if (SS_DEBUG_MIDI) {
                   printf("Ctrl volume received: vol: %d\n", val);
                   }
@@ -620,8 +620,8 @@ bool SimpleSynth::sysex(int len, const unsigned char* d)
                   ///delete[] tmp_initdata;
                   ///tmp_initdata = NULL;
 
-                  ///MidiPlayEvent ev(0, 0, ME_SYSEX, event_data, totlen);
-                  MidiPlayEvent ev(0, 0, ME_SYSEX, tmp_initdata + 1, initdata_len - 1);  // Strip MFG ID.
+                  ///MusECore::MidiPlayEvent ev(0, 0, MusECore::ME_SYSEX, event_data, totlen);
+                  MusECore::MidiPlayEvent ev(0, 0, MusECore::ME_SYSEX, tmp_initdata + 1, initdata_len - 1);  // Strip MFG ID.
                   gui->writeEvent(ev);
                   ///delete[] event_data;
 
@@ -715,12 +715,12 @@ void SimpleSynth::processMessages()
 {
       //Process messages from the gui
       while (gui->fifoSize()) {
-            MidiPlayEvent ev = gui->readEvent();
-            if (ev.type() == ME_SYSEX) {
+            MusECore::MidiPlayEvent ev = gui->readEvent();
+            if (ev.type() == MusECore::ME_SYSEX) {
                   sysex(ev.len(), ev.data());
                   sendEvent(ev);
                   }
-            else if (ev.type() == ME_CONTROLLER) {
+            else if (ev.type() == MusECore::ME_CONTROLLER) {
                   setController(ev.channel(), ev.dataA(), ev.dataB(), true);
                   sendEvent(ev);
                   }
@@ -746,12 +746,12 @@ void SimpleSynth::process(float** out, int offset, int len)
       /*
       //Process messages from the gui
       while (gui->fifoSize()) {
-            MidiPlayEvent ev = gui->readEvent();
-            if (ev.type() == ME_SYSEX) {
+            MusECore::MidiPlayEvent ev = gui->readEvent();
+            if (ev.type() == MusECore::ME_SYSEX) {
                   sysex(ev.len(), ev.data());
                   sendEvent(ev);
                   }
-            else if (ev.type() == ME_CONTROLLER) {
+            else if (ev.type() == MusECore::ME_CONTROLLER) {
                   setController(ev.channel(), ev.dataA(), ev.dataB(), true);
                   sendEvent(ev);
                   }
@@ -1284,7 +1284,7 @@ void SimpleSynth::parseInitData(const unsigned char* data)
                   sendEffects[i].retgain_ctrlval = retgain;
                   sendEffects[i].retgain = retgain;
                   sendEffects[i].retgain = (double) retgain/ 75.0;
-                  MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, SS_PLUGIN_RETURNLEVEL_CONTROLLER(i), retgain);
+                  MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, SS_PLUGIN_RETURNLEVEL_CONTROLLER(i), retgain);
                   gui->writeEvent(ev);
 
                   // Jun 10 2011. This one was missing. p4.0.27 Tim.
@@ -1293,7 +1293,7 @@ void SimpleSynth::parseInitData(const unsigned char* data)
                     if (SS_DEBUG_INIT)
                         printf("buffer[%ld] - sendeffect[%d] state=%d\n", long(ptr-data), i, *(ptr));
                     sendEffects[i].state = (SS_SendFXState) *(ptr);
-                    MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, SS_PLUGIN_ONOFF_CONTROLLER(i), sendEffects[i].state);
+                    MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, SS_PLUGIN_ONOFF_CONTROLLER(i), sendEffects[i].state);
                     gui->writeEvent(ev);
                     ptr++;
                   }  
@@ -1547,7 +1547,7 @@ void SimpleSynth::updateVolume(int ch, int invol_ctrlval)
 void SimpleSynth::guiUpdateBalance(int ch, int bal)
       {
       SS_TRACE_IN
-      MidiPlayEvent ev(0, 0, ch, ME_CONTROLLER, SS_CHANNEL_PAN_CONTROLLER(ch), bal);
+      MusECore::MidiPlayEvent ev(0, 0, ch, MusECore::ME_CONTROLLER, SS_CHANNEL_PAN_CONTROLLER(ch), bal);
       gui->writeEvent(ev);
       SS_TRACE_OUT
       }
@@ -1559,7 +1559,7 @@ void SimpleSynth::guiUpdateBalance(int ch, int bal)
 void SimpleSynth::guiUpdateVolume(int ch, int val)
       {
       SS_TRACE_IN
-      MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, SS_CHANNEL_VOLUME_CONTROLLER(ch), val);
+      MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, SS_CHANNEL_VOLUME_CONTROLLER(ch), val);
       gui->writeEvent(ev);
       SS_TRACE_OUT
       }
@@ -1571,7 +1571,7 @@ void SimpleSynth::guiUpdateVolume(int ch, int val)
 void SimpleSynth::guiUpdateNoff(int ch, bool b)
       {
       SS_TRACE_IN
-      MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, SS_CHANNEL_NOFF_CONTROLLER(ch), b);
+      MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, SS_CHANNEL_NOFF_CONTROLLER(ch), b);
       gui->writeEvent(ev);
       SS_TRACE_OUT
       }
@@ -1583,7 +1583,7 @@ void SimpleSynth::guiUpdateNoff(int ch, bool b)
 void SimpleSynth::guiUpdateChoff(int ch, bool b)
       {
       SS_TRACE_IN
-      MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, SS_CHANNEL_ONOFF_CONTROLLER(ch), b);
+      MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, SS_CHANNEL_ONOFF_CONTROLLER(ch), b);
       gui->writeEvent(ev);
       SS_TRACE_OUT
       }
@@ -1595,7 +1595,7 @@ void SimpleSynth::guiUpdateChoff(int ch, bool b)
 void SimpleSynth::guiUpdateMasterVol(int val)
       {
       SS_TRACE_IN
-      MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, SS_MASTER_CTRL_VOLUME, val);
+      MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, SS_MASTER_CTRL_VOLUME, val);
       gui->writeEvent(ev);
       SS_TRACE_OUT
       }
@@ -1606,7 +1606,7 @@ void SimpleSynth::guiUpdateMasterVol(int val)
 void SimpleSynth::guiUpdateSendFxLevel(int channel, int fxid, int level)
       {
       SS_TRACE_IN
-      MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, SS_CHANNEL_SENDFX_CONTROLLER(channel, fxid), level);
+      MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, SS_CHANNEL_SENDFX_CONTROLLER(channel, fxid), level);
       gui->writeEvent(ev);
       SS_TRACE_OUT
       }
@@ -1636,7 +1636,7 @@ void SimpleSynth::guiSendSampleLoaded(bool success, int ch, const char* filename
       //out[3] = ch;
       memcpy(out+2, filename, strlen(filename)+1);
       //memcpy(out+4, filename, strlen(filename)+1);
-      MidiPlayEvent ev(0, 0, ME_SYSEX, out, len);
+      MusECore::MidiPlayEvent ev(0, 0, MusECore::ME_SYSEX, out, len);
       gui->writeEvent(ev);
       SS_TRACE_OUT
       }
@@ -1758,7 +1758,7 @@ bool SimpleSynth::initSendEffect(int id, QString lib, QString name)
                   ///out[2] = j;
                   //out[4] = j;
                   *((unsigned*)(out + 2)) = j;
-                  MidiPlayEvent ev(0, 0, ME_SYSEX, out, len);
+                  MusECore::MidiPlayEvent ev(0, 0, MusECore::ME_SYSEX, out, len);
                   gui->writeEvent(ev);
                   }
             }
@@ -1804,8 +1804,8 @@ void SimpleSynth::cleanupPlugin(int id)
       //d[1] = SIMPLEDRUMS_UNIQUE_ID;
       //d[2] = SS_SYSEX_CLEAR_SENDEFFECT_OK;
       //d[3] = id;
-      MidiPlayEvent ev(0, 0, ME_SYSEX, d, 2);
-      //MidiPlayEvent ev(0, 0, ME_SYSEX, d, 4);
+      MusECore::MidiPlayEvent ev(0, 0, MusECore::ME_SYSEX, d, 2);
+      //MusECore::MidiPlayEvent ev(0, 0, MusECore::ME_SYSEX, d, 4);
       gui->writeEvent(ev);
       SS_TRACE_OUT
       }
@@ -1870,8 +1870,8 @@ void SimpleSynth::guiUpdateFxParameter(int fxid, int param, float val)
       //d[3] = fxid;
       //d[4] = param;
       //d[5] = intval;
-      MidiPlayEvent ev(0, 0, ME_SYSEX, d, 4);
-      //MidiPlayEvent ev(0, 0, ME_SYSEX, d, 6);
+      MusECore::MidiPlayEvent ev(0, 0, MusECore::ME_SYSEX, d, 4);
+      //MusECore::MidiPlayEvent ev(0, 0, MusECore::ME_SYSEX, d, 6);
       gui->writeEvent(ev);
       SS_TRACE_OUT
       }
@@ -1922,8 +1922,8 @@ void SimpleSynth::guiNotifySampleCleared(int ch)
       //d[1] = SIMPLEDRUMS_UNIQUE_ID;
       //d[2] = SS_SYSEX_CLEAR_SAMPLE_OK;
       //d[3] = (byte) ch;
-      MidiPlayEvent ev(0, 0, ME_SYSEX, d, 2);
-      //MidiPlayEvent ev(0, 0, ME_SYSEX, d, 4);
+      MusECore::MidiPlayEvent ev(0, 0, MusECore::ME_SYSEX, d, 2);
+      //MusECore::MidiPlayEvent ev(0, 0, MusECore::ME_SYSEX, d, 4);
       gui->writeEvent(ev);
       SS_TRACE_OUT
       }

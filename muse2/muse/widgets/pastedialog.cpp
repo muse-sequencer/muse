@@ -25,9 +25,9 @@
 #include "xml.h"
 #include "gconfig.h"
 
-using MusEConfig::config;
+using MusEGlobal::config;
 
-namespace MusEDialog {
+namespace MusEGui {
 
 PasteDialog::PasteDialog(QWidget* parent)
 	: QDialog(parent)
@@ -103,18 +103,18 @@ void PasteDialog::number_changed(int n)
 }
 
 
-void PasteDialog::read_configuration(Xml& xml)
+void PasteDialog::read_configuration(MusECore::Xml& xml)
 {
 	for (;;)
 	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
 			
 		const QString& tag = xml.s1();
 		switch (token)
 		{
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "insert_method")
 					insert_method=xml.parseInt();
 				else if (tag == "number")
@@ -129,7 +129,7 @@ void PasteDialog::read_configuration(Xml& xml)
 					xml.unknown("PasteDialog");
 				break;
 				
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "pastedialog")
 					return;
 				
@@ -139,7 +139,7 @@ void PasteDialog::read_configuration(Xml& xml)
 	}
 }
 
-void PasteDialog::write_configuration(int level, Xml& xml)
+void PasteDialog::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "pastedialog");
 	xml.intTag(level, "insert_method", insert_method);
@@ -150,4 +150,4 @@ void PasteDialog::write_configuration(int level, Xml& xml)
 	xml.tag(level, "/pastedialog");
 }
 
-} // namespace MusEDialog
+} // namespace MusEGui

@@ -36,7 +36,7 @@
 #include <QWheelEvent>
 #include <QLabel>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   SigLabel
@@ -71,7 +71,7 @@ void SigLabel::mousePressEvent(QMouseEvent* event)
       int zz = z, nn = n;
       switch (button) {
             case Qt::LeftButton:
-                  if (!MusEConfig::config.leftMouseButtonCanDecrease)
+                  if (!MusEGlobal::config.leftMouseButtonCanDecrease)
                     return;
                   // else fall through
             case Qt::MidButton:
@@ -183,4 +183,4 @@ void SigLabel::setFrame(bool flag)
       setLineWidth(2);
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

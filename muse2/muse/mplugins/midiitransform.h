@@ -29,15 +29,25 @@
 #include <QCloseEvent>
 
 class QButtonGroup;
-class MidiTransformation;
-class MidiInputTransformation;
-class MidiRecordEvent;
-class MidiPart;
 class Xml;
 
 #include "miditransform.h"
 
+namespace MusECore {
+class MidiInputTransformation;
+class MidiPart;
+class MidiRecordEvent;
+class MidiTransformation;
+
 enum InputTransformProcEventOp { KeepType, FixType };
+
+extern void writeMidiInputTransforms(int level, Xml& xml);
+extern void readMidiInputTransform(Xml&);
+extern bool applyMidiInputTransformation(MidiRecordEvent& event);
+extern void clearMidiInputTransforms();
+}
+
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   MidiInputTransform
@@ -45,13 +55,13 @@ enum InputTransformProcEventOp { KeepType, FixType };
 
 class MidiInputTransformDialog : public QDialog, public Ui::MidiInputTransformDialogBase {
       Q_OBJECT
-      MidiInputTransformation* cmt;
+      MusECore::MidiInputTransformation* cmt;
       int cindex;                   // current index in preset list
       int cmodul;                   // current index in modules list
 
       virtual void accept();
       virtual void reject();
-      void setValOp(QWidget* a, QWidget* b, ValOp op);
+      void setValOp(QWidget* a, QWidget* b, MusECore::ValOp op);
       virtual void closeEvent(QCloseEvent*);
       
       void updatePresetList();
@@ -110,8 +120,6 @@ class MidiInputTransformDialog : public QDialog, public Ui::MidiInputTransformDi
       MidiInputTransformDialog(QDialog* parent = 0, Qt::WFlags fl = 0);
       };
 
-extern void writeMidiInputTransforms(int level, Xml& xml);
-extern void readMidiInputTransform(Xml&);
-extern bool applyMidiInputTransformation(MidiRecordEvent& event);
-extern void clearMidiInputTransforms();
+} // namespace MusEGui
+
 #endif

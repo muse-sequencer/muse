@@ -28,7 +28,8 @@
 
 class QString;
 
-class MidiPlayEvent;
+namespace MusECore {
+
 class Pos;
 
 //---------------------------------------------------------
@@ -86,6 +87,8 @@ class AudioDevice {
       virtual void registrationChanged() {}
       virtual int setMaster(bool f) = 0;
       };
+
+} // namespace MusECore
 
 #endif
 

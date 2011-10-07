@@ -89,24 +89,24 @@ struct Envelope {
             }
       };
 
-static const int HARM0      =  0 + CTRL_RPN14_OFFSET;
-static const int HARM1      =  1 + CTRL_RPN14_OFFSET;
-static const int HARM2      =  2 + CTRL_RPN14_OFFSET;
-static const int HARM3      =  3 + CTRL_RPN14_OFFSET;
-static const int HARM4      =  4 + CTRL_RPN14_OFFSET;
-static const int HARM5      =  5 + CTRL_RPN14_OFFSET;
-static const int ATTACK_LO  =  6 + CTRL_RPN14_OFFSET;
-static const int DECAY_LO   =  7 + CTRL_RPN14_OFFSET;
-static const int SUSTAIN_LO =  8 + CTRL_RPN14_OFFSET;
-static const int RELEASE_LO =  9 + CTRL_RPN14_OFFSET;
-static const int ATTACK_HI  = 10 + CTRL_RPN14_OFFSET;
-static const int DECAY_HI   = 11 + CTRL_RPN14_OFFSET;
-static const int SUSTAIN_HI = 12 + CTRL_RPN14_OFFSET;
-static const int RELEASE_HI = 13 + CTRL_RPN14_OFFSET;
-static const int BRASS      = 14 + CTRL_RPN14_OFFSET;
-static const int FLUTE      = 15 + CTRL_RPN14_OFFSET;
-static const int REED       = 16 + CTRL_RPN14_OFFSET;
-static const int VELO       = 17 + CTRL_RPN14_OFFSET;
+static const int HARM0      =  0 + MusECore::CTRL_RPN14_OFFSET;
+static const int HARM1      =  1 + MusECore::CTRL_RPN14_OFFSET;
+static const int HARM2      =  2 + MusECore::CTRL_RPN14_OFFSET;
+static const int HARM3      =  3 + MusECore::CTRL_RPN14_OFFSET;
+static const int HARM4      =  4 + MusECore::CTRL_RPN14_OFFSET;
+static const int HARM5      =  5 + MusECore::CTRL_RPN14_OFFSET;
+static const int ATTACK_LO  =  6 + MusECore::CTRL_RPN14_OFFSET;
+static const int DECAY_LO   =  7 + MusECore::CTRL_RPN14_OFFSET;
+static const int SUSTAIN_LO =  8 + MusECore::CTRL_RPN14_OFFSET;
+static const int RELEASE_LO =  9 + MusECore::CTRL_RPN14_OFFSET;
+static const int ATTACK_HI  = 10 + MusECore::CTRL_RPN14_OFFSET;
+static const int DECAY_HI   = 11 + MusECore::CTRL_RPN14_OFFSET;
+static const int SUSTAIN_HI = 12 + MusECore::CTRL_RPN14_OFFSET;
+static const int RELEASE_HI = 13 + MusECore::CTRL_RPN14_OFFSET;
+static const int BRASS      = 14 + MusECore::CTRL_RPN14_OFFSET;
+static const int FLUTE      = 15 + MusECore::CTRL_RPN14_OFFSET;
+static const int REED       = 16 + MusECore::CTRL_RPN14_OFFSET;
+static const int VELO       = 17 + MusECore::CTRL_RPN14_OFFSET;
 
 //---------------------------------------------------------
 //   SynthCtrl

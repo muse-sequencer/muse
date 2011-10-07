@@ -30,7 +30,7 @@
 #include <QTime>
 #include <QWidget>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   SliderBase
@@ -111,6 +111,6 @@ class SliderBase : public QWidget, public DoubleRange
       void setId(int i)          { _id = i; }
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif

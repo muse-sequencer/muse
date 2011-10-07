@@ -27,7 +27,7 @@
 
 #include "sliderbase.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   Dentry
@@ -88,6 +88,6 @@ class Dentry : public QLineEdit {
       void setSlider(SliderBase* s)         { _slider = s; }
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif

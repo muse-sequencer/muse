@@ -25,11 +25,15 @@
 
 #include "ui_commentbase.h"
 
-class Xml;
-class Track;
 class QWidget;
 
-namespace MusEWidget {
+
+namespace MusECore {
+class Xml;
+class Track;
+}
+
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   Comment
@@ -55,7 +59,7 @@ class Comment : public QWidget, public Ui::CommentBase {
 class TrackComment : public Comment {
       Q_OBJECT
     
-      Track* track;
+      MusECore::Track* track;
       
 
    private:
@@ -65,10 +69,10 @@ class TrackComment : public Comment {
       void songChanged(int);
 
    public:
-      TrackComment(Track*, QWidget*);
+      TrackComment(MusECore::Track*, QWidget*);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

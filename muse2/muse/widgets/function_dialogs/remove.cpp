@@ -24,7 +24,7 @@
 #include "remove.h"
 #include "xml.h"
 
-namespace MusEDialog {
+namespace MusEGui {
 
 Remove::Remove(QWidget* parent)
 	: QDialog(parent)
@@ -67,18 +67,18 @@ int Remove::exec()
 	return QDialog::exec();
 }
 
-void Remove::read_configuration(Xml& xml)
+void Remove::read_configuration(MusECore::Xml& xml)
 {
 	for (;;)
 	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
 			
 		const QString& tag = xml.s1();
 		switch (token)
 		{
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "range")
 					range=xml.parseInt();
 				else if (tag == "velo_threshold")
@@ -93,7 +93,7 @@ void Remove::read_configuration(Xml& xml)
 					xml.unknown("Erase");
 				break;
 				
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "erase")
 					return;
 				
@@ -103,7 +103,7 @@ void Remove::read_configuration(Xml& xml)
 	}
 }
 
-void Remove::write_configuration(int level, Xml& xml)
+void Remove::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "erase");
 	xml.intTag(level, "range", range);
@@ -114,5 +114,5 @@ void Remove::write_configuration(int level, Xml& xml)
 	xml.tag(level, "/erase");
 }
 
-} // namespace MusEDialog
+} // namespace MusEGui
 

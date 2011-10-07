@@ -38,6 +38,9 @@
 //#define ROUTE_DEBUG 
 
 //#define ROUTE_MIDIPORT_NAME_PREFIX       "MusE MidiPort "
+
+namespace MusECore {
+
 const QString ROUTE_MIDIPORT_NAME_PREFIX = "MusE MidiPort ";
 
 //---------------------------------------------------------
@@ -222,7 +225,7 @@ void addRoute(Route src, Route dst)
             if (dst.type == Route::MIDI_DEVICE_ROUTE) 
             //if (dst.type == Route::MIDI_PORT_ROUTE)      // p3.3.49
             {
-              //MidiDevice *md = midiPorts[dst.midiPort].device();
+              //MidiDevice *md = MusEGlobal::midiPorts[dst.midiPort].device();
               //if(dst.device->deviceType() == MidiDevice::JACK_MIDI)
               //if(!md)
               //{
@@ -374,7 +377,7 @@ void addRoute(Route src, Route dst)
                 return;
               }
               
-              MidiPort *mp = &midiPorts[src.midiPort];
+              MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
               //src.channel = dst.channel = -1;
               RouteList* outRoutes = mp->outRoutes();
               iRoute ir = outRoutes->begin();                                      
@@ -416,7 +419,7 @@ void addRoute(Route src, Route dst)
             }
             */
             
-            MidiPort *mp = &midiPorts[src.midiPort];
+            MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
             
             // p4.0.17 Do not allow ports with synth midi devices to connect to audio ins!
             if(dst.track->type() == Track::AUDIO_INPUT && mp->device() && mp->device()->isSynti())
@@ -431,7 +434,7 @@ void addRoute(Route src, Route dst)
               return;
             }
             
-            //MidiDevice *md = midiPorts[src.midiPort].device();
+            //MidiDevice *md = MusEGlobal::midiPorts[src.midiPort].device();
             //if(!md)
             //{
             //  fprintf(stderr, "addRoute: source is midi port, but no destination port device\n");
@@ -493,7 +496,7 @@ void addRoute(Route src, Route dst)
             }
             
             
-            //MidiDevice *md = midiPorts[dst.midiPort].device();
+            //MidiDevice *md = MusEGlobal::midiPorts[dst.midiPort].device();
             //if(!md)
             //{
             //  fprintf(stderr, "addRoute: dst is midi port, but no destination port device\n");
@@ -523,7 +526,7 @@ void addRoute(Route src, Route dst)
             if(ir == outRoutes->end())    // p3.3.50 Only if route not found, add the route, with the requested channel bits as mask to start with. 
               outRoutes->push_back(dst);
             
-            MidiPort *mp = &midiPorts[dst.midiPort];
+            MidiPort *mp = &MusEGlobal::midiPorts[dst.midiPort];
             
             #ifdef ROUTE_DEBUG
             fprintf(stderr, "addRoute: src track:%s dst midi port:%d pushing dst and src routes\n", src.track->name().toLatin1().constData(), dst.midiPort);
@@ -822,7 +825,7 @@ void removeRoute(Route src, Route dst)
         
         if(src.isValid())
         {
-          MidiPort *mp = &midiPorts[src.midiPort];
+          MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
           RouteList* outRoutes = mp->outRoutes();
           for (iRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
           {
@@ -895,7 +898,7 @@ void removeRoute(Route src, Route dst)
         
         if(dst.isValid())
         {
-          MidiPort *mp = &midiPorts[src.midiPort];
+          MidiPort *mp = &MusEGlobal::midiPorts[src.midiPort];
           RouteList* inRoutes = mp->inRoutes();
           for (iRoute i = inRoutes->begin(); i != inRoutes->end(); ++i) 
           {
@@ -1068,7 +1071,7 @@ QString Route::name() const
           // Like this:   device: "MyJackDevice1" ->  inport: "MyJackDevice1_in"  outport: "MyJackDevice1_out"
           /*  
           if(device->deviceType() == MidiDevice::JACK_MIDI)
-            return audioDevice->portName(device->clientPort());
+            return MusEGlobal::audioDevice->portName(device->clientPort());
           else
           */
           
@@ -1081,8 +1084,8 @@ QString Route::name() const
       if(type == JACK_ROUTE) 
       {
         if (!MusEGlobal::checkAudioDevice()) return "";
-        //return s + audioDevice->portName(jackPort);
-        return audioDevice->portName(jackPort);
+        //return s + MusEGlobal::audioDevice->portName(jackPort);
+        return MusEGlobal::audioDevice->portName(jackPort);
       }
       else
       if(type == MIDI_PORT_ROUTE) // p3.3.49
@@ -1118,12 +1121,12 @@ Route name2route(const QString& rn, bool /*dst*/, int rtype)
     //{
       if(MusEGlobal::checkAudioDevice())
       {
-        void* p = audioDevice->findPort(s.toLatin1().constData());
+        void* p = MusEGlobal::audioDevice->findPort(s.toLatin1().constData());
         if(p)
           return Route(p, channel);
       }
       
-      TrackList* tl = song->tracks();
+      TrackList* tl = MusEGlobal::song->tracks();
       for(iTrack i = tl->begin(); i != tl->end(); ++i) 
       {
         if((*i)->isMidiTrack())
@@ -1140,7 +1143,7 @@ Route name2route(const QString& rn, bool /*dst*/, int rtype)
         }      
       }
       
-      for(iMidiDevice i = midiDevices.begin(); i != midiDevices.end(); ++i) 
+      for(iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
       {
         if((*i)->name() == s)
             return Route(*i, channel);
@@ -1161,7 +1164,7 @@ Route name2route(const QString& rn, bool /*dst*/, int rtype)
     //{
       if(rtype == Route::TRACK_ROUTE)
       {  
-        TrackList* tl = song->tracks();
+        TrackList* tl = MusEGlobal::song->tracks();
         for(iTrack i = tl->begin(); i != tl->end(); ++i) 
         {
           if((*i)->isMidiTrack())
@@ -1185,7 +1188,7 @@ Route name2route(const QString& rn, bool /*dst*/, int rtype)
       // TODO Distinguish the device types
       if(rtype == Route::MIDI_DEVICE_ROUTE)
       {  
-        for(iMidiDevice i = midiDevices.begin(); i != midiDevices.end(); ++i) 
+        for(iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
         {
           if((*i)->name() == s)
           //if (jmd->name() == rn)
@@ -1215,7 +1218,7 @@ Route name2route(const QString& rn, bool /*dst*/, int rtype)
       {  
         if(MusEGlobal::checkAudioDevice())
         {
-          void* p = audioDevice->findPort(s.toLatin1().constData());
+          void* p = MusEGlobal::audioDevice->findPort(s.toLatin1().constData());
           if(p)
             return Route(p, channel);
         }      
@@ -1328,7 +1331,7 @@ bool checkRoute(const QString& s, const QString& d)
       }  
       else if (src.type == Route::MIDI_PORT_ROUTE) // p3.3.49
       {
-            RouteList* outRoutes = midiPorts[src.midiPort].outRoutes();
+            RouteList* outRoutes = MusEGlobal::midiPorts[src.midiPort].outRoutes();
             for (ciRoute i = outRoutes->begin(); i != outRoutes->end(); ++i) 
             {
                   if (*i == dst) {   // route already there
@@ -1421,7 +1424,7 @@ void Route::read(Xml& xml)
                         {
                           if(rtype == TRACK_ROUTE) 
                           {
-                            TrackList* tl = song->tracks();
+                            TrackList* tl = MusEGlobal::song->tracks();
                             iTrack i = tl->begin();
                             for ( ; i != tl->end(); ++i) 
                             {
@@ -1440,8 +1443,8 @@ void Route::read(Xml& xml)
                           if(rtype == JACK_ROUTE) 
                           {
                             void* jport = 0;
-                            if (audioDevice) // fix crash if jack is zombified at this point
-                              jport=audioDevice->findPort(s.toLatin1().constData());
+                            if (MusEGlobal::audioDevice) // fix crash if jack is zombified at this point
+                              jport=MusEGlobal::audioDevice->findPort(s.toLatin1().constData());
                             if(jport == 0)
                               printf("Route::read(): jack port <%s> not found\n", s.toLatin1().constData());
                             else
@@ -1453,8 +1456,8 @@ void Route::read(Xml& xml)
                           else
                           if(rtype == MIDI_DEVICE_ROUTE)
                           {
-                            iMidiDevice imd = midiDevices.begin();
-                            for( ; imd != midiDevices.end(); ++imd) 
+                            iMidiDevice imd = MusEGlobal::midiDevices.begin();
+                            for( ; imd != MusEGlobal::midiDevices.end(); ++imd) 
                             {
                               MidiDevice* md = *imd;
                               if(md->name() == s && md->deviceType() == dtype) 
@@ -1470,7 +1473,7 @@ void Route::read(Xml& xml)
                                 break;
                               }
                             }
-                            if(imd == midiDevices.end())
+                            if(imd == MusEGlobal::midiDevices.end())
                               printf("Route::read(): midi device <%s> not found\n", s.toLatin1().constData());
                           }
                         }
@@ -1653,7 +1656,7 @@ void Route::dump() const
       if (type == JACK_ROUTE)
       {
         if(MusEGlobal::checkAudioDevice())
-          printf("Route dump: jack audio port <%s> channel %d\n", audioDevice->portName(jackPort).toLatin1().constData(), channel);
+          printf("Route dump: jack audio port <%s> channel %d\n", MusEGlobal::audioDevice->portName(jackPort).toLatin1().constData(), channel);
       }
       else 
       if (type == MIDI_PORT_ROUTE) // p3.3.49
@@ -1669,16 +1672,16 @@ void Route::dump() const
           if(device->deviceType() == MidiDevice::JACK_MIDI)
           {
             if(MusEGlobal::checkAudioDevice())
-              //printf("jack midi port device <%s> ", audioDevice->portName(device->clientPort()).toLatin1().constData());
+              //printf("jack midi port device <%s> ", MusEGlobal::audioDevice->portName(device->clientPort()).toLatin1().constData());
             // p3.3.55
             {  
               printf("jack midi device <%s> ", device->name().toLatin1().constData());
               if(device->inClientPort())
                 printf("input port <%s> ", 
-                       audioDevice->portName(device->inClientPort()).toLatin1().constData());
+                       MusEGlobal::audioDevice->portName(device->inClientPort()).toLatin1().constData());
               if(device->outClientPort())
                 printf("output port <%s> ", 
-                       audioDevice->portName(device->outClientPort()).toLatin1().constData());
+                       MusEGlobal::audioDevice->portName(device->outClientPort()).toLatin1().constData());
             }           
           }
           else
@@ -1726,7 +1729,7 @@ bool Route::operator==(const Route& a) const
               if (type == JACK_ROUTE)
               {
                     //if (!MusEGlobal::checkAudioDevice()) return false;
-                    //return audioDevice->portName(jackPort) == audioDevice->portName(a.jackPort);
+                    //return MusEGlobal::audioDevice->portName(jackPort) == MusEGlobal::audioDevice->portName(a.jackPort);
                     // p3.3.55 Simplified.
                     return jackPort == a.jackPort;
               }
@@ -1746,7 +1749,7 @@ bool Route::operator==(const Route& a) const
                   if(device->deviceType() == MidiDevice::JACK_MIDI)
                   {
                     if (!MusEGlobal::checkAudioDevice()) return false;
-                    return audioDevice->portName(device->clientPort()) == audioDevice->portName(a.device->clientPort());
+                    return MusEGlobal::audioDevice->portName(device->clientPort()) == MusEGlobal::audioDevice->portName(a.device->clientPort());
                   }
                   else
                   if(device->deviceType() == MidiDevice::ALSA_MIDI)
@@ -1764,3 +1767,4 @@ bool Route::operator==(const Route& a) const
       return false;
 }
 
+} // namespace MusECore

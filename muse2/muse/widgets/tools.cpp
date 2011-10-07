@@ -28,7 +28,7 @@
 #include "icons.h"
 #include "action.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 const char* infoPointer = QT_TRANSLATE_NOOP("@default", "select Pointer Tool:\n"
       "with the pointer tool you can:\n"
@@ -162,4 +162,4 @@ int EditToolBar::curTool()
       return -1;
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

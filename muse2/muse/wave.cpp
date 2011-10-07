@@ -46,6 +46,8 @@
 //#define WAVE_DEBUG
 //#define WAVE_DEBUG_PRC
 
+namespace MusECore {
+
 /*
 const char* audioFilePattern[] = {
       "Wave/Binary (*.wav *.ogg *.bin)",
@@ -747,7 +749,7 @@ void SndFile::applyUndoFile(const QString& original, const QString& tmpfile, uns
                   }
             }
 
-      audio->msgIdle(true);
+      MusEGlobal::audio->msgIdle(true);
       tmp.setFormat(orig->format(), orig->channels(), orig->samplerate());
 
       // Read data in original file to memory before applying tmpfile to original
@@ -789,7 +791,7 @@ void SndFile::applyUndoFile(const QString& original, const QString& tmpfile, uns
       // Write the overwritten data to the tmpfile
       if (tmp.openWrite()) {
             printf("Cannot open tmpfile for writing - redo operation of this file won't be possible. Aborting.\n");
-            audio->msgIdle(false);
+            MusEGlobal::audio->msgIdle(false);
             return;
             }
       tmp.seek(0, 0);
@@ -804,88 +806,8 @@ void SndFile::applyUndoFile(const QString& original, const QString& tmpfile, uns
       orig->close();
       orig->openRead();
       orig->update();
-      audio->msgIdle(false);
+      MusEGlobal::audio->msgIdle(false);
       }
-
-namespace MusEApp {
-
-//---------------------------------------------------------
-//   importAudio
-//---------------------------------------------------------
-
-void MusE::importWave()
-      {
-      Track* track = _arranger->curTrack();
-      if (track == 0 || track->type() != Track::WAVE) {
-            QMessageBox::critical(this, QString("MusE"),
-              tr("to import an audio file you have first to select"
-              "a wave track"));
-            return;
-            }
-      //QString fn = MusEWidget::getOpenFileName(MusEGlobal::lastWavePath, audioFilePattern, this,
-      QString fn = MusEWidget::getOpenFileName(MusEGlobal::lastWavePath, MusEGlobal::audio_file_pattern, this,
-         tr("Import Wave File"), 0);                                    
-      if (!fn.isEmpty()) {
-            MusEGlobal::lastWavePath = fn;
-            importWaveToTrack(fn);
-            }
-      }
-
-//---------------------------------------------------------
-//   importWaveToTrack
-//---------------------------------------------------------
-
-bool MusE::importWaveToTrack(QString& name, unsigned tick, Track* track)
-      {
-      if (track==NULL)
-            track = (WaveTrack*)(_arranger->curTrack());
-
-      SndFile* f = getWave(name, true);
-
-      if (f == 0) {
-            printf("import audio file failed\n");
-            return true;
-            }
-      int samples = f->samples();
-      if ((unsigned)MusEGlobal::sampleRate !=f->samplerate()) {
-            if(QMessageBox::question(this, tr("Import Wavefile"),
-                  tr("This wave file has a samplerate of %1,\n"
-                  "as opposed to current setting %2.\n"
-                  "Do you still want to import it?").arg(f->samplerate()).arg(MusEGlobal::sampleRate),
-                  tr("&Yes"), tr("&No"),
-                  QString::null, 0, 1 ))
-                  {
-                  //printf("why won't muse let me delete the file object? %d\n", f->getRefCount());
-                  if (f->getRefCount() == 0)
-                        delete f;
-                  return true;
-                  }
-            }
-      track->setChannels(f->channels());
-
-      WavePart* part = new WavePart((WaveTrack *)track);
-      if (tick)
-          part->setTick(tick);
-      else
-          part->setTick(song->cpos());
-      part->setLenFrame(samples);
-
-      Event event(Wave);
-      SndFileR sf(f);
-      event.setSndFile(sf);
-      event.setSpos(0);
-      event.setLenFrame(samples);
-      part->addEvent(event);
-
-      part->setName(QFileInfo(name).completeBaseName());
-      audio->msgAddPart(part);
-      unsigned endTick = part->tick() + part->lenTick();
-      if (song->len() < endTick)
-            song->setLen(endTick);
-      return false;
-      }
-
-} // namespace MusEApp
 
 #if 0
 //---------------------------------------------------------
@@ -1061,13 +983,13 @@ int ClipList::idx(const Clip& clip) const
 //   cmdAddRecordedWave
 //---------------------------------------------------------
 
-//void Song::cmdAddRecordedWave(WaveTrack* track, const Pos& s, const Pos& e)
-void Song::cmdAddRecordedWave(WaveTrack* track, Pos s, Pos e)
+//void Song::cmdAddRecordedWave(WaveTrack* track, const MusECore::Pos& s, const MusECore::Pos& e)
+void Song::cmdAddRecordedWave(MusECore::WaveTrack* track, MusECore::Pos s, MusECore::Pos e)
       {
       if (MusEGlobal::debugMsg)
-          printf("cmdAddRecordedWave - loopCount = %d, punchin = %d", audio->loopCount(), punchin());
+          printf("cmdAddRecordedWave - loopCount = %d, punchin = %d", MusEGlobal::audio->loopCount(), punchin());
 
-      SndFile* f = track->recFile();
+      MusECore::SndFile* f = track->recFile();
       if (f == 0) {
             printf("cmdAddRecordedWave: no snd file for track <%s>\n",
                track->name().toLatin1().constData());
@@ -1080,13 +1002,13 @@ void Song::cmdAddRecordedWave(WaveTrack* track, Pos s, Pos e)
       
       // Added by Tim. p3.3.8
       
-      if((audio->loopCount() > 0 && s.tick() > lPos().tick()) || (punchin() && s.tick() < lPos().tick()))
+      if((MusEGlobal::audio->loopCount() > 0 && s.tick() > lPos().tick()) || (punchin() && s.tick() < lPos().tick()))
         s.setTick(lPos().tick());
       // If we are looping, just set the end to the right marker, since we don't know how many loops have occurred.
       // (Fixed: Added Audio::loopCount)
       // Otherwise if punchout is on, limit the end to the right marker.
       //if(loop() || (punchout() && e.tick() > rPos().tick()) )
-      if((audio->loopCount() > 0) || (punchout() && e.tick() > rPos().tick()) )
+      if((MusEGlobal::audio->loopCount() > 0) || (punchout() && e.tick() > rPos().tick()) )
         e.setTick(rPos().tick());
       // No part to be created? Delete the rec sound file.
       if(s.tick() >= e.tick())
@@ -1101,20 +1023,20 @@ void Song::cmdAddRecordedWave(WaveTrack* track, Pos s, Pos e)
         return;
       }
       // Round the start down using the Arranger part snap raster value. 
-      unsigned startTick = AL::sigmap.raster1(s.tick(), song->arrangerRaster());
+      unsigned startTick = AL::sigmap.raster1(s.tick(), MusEGlobal::song->arrangerRaster());
       // Round the end up using the Arranger part snap raster value. 
-      unsigned endTick   = AL::sigmap.raster2(e.tick(), song->arrangerRaster());
+      unsigned endTick   = AL::sigmap.raster2(e.tick(), MusEGlobal::song->arrangerRaster());
 
       f->update();
 
-      WavePart* part = new WavePart(track);
+      MusECore::WavePart* part = new MusECore::WavePart(track);
       part->setTick(startTick);
       part->setLenTick(endTick - startTick);
       part->setName(track->name());
 
       // create Event
-      Event event(Wave);
-      SndFileR sf(f);
+      MusECore::Event event(MusECore::Wave);
+      MusECore::SndFileR sf(f);
       event.setSndFile(sf);
       // We are done with the _recFile member. Set to zero. The function which 
       //  calls this function already does this immediately after. But do it here anyway.
@@ -1131,10 +1053,10 @@ void Song::cmdAddRecordedWave(WaveTrack* track, Pos s, Pos e)
       event.setLenFrame(e.frame() - s.frame());
       part->addEvent(event);
 
-      song->cmdAddPart(part);
+      MusEGlobal::song->cmdAddPart(part);
 
-      if (song->len() < endTick)
-            song->setLen(endTick);
+      if (MusEGlobal::song->len() < endTick)
+            MusEGlobal::song->setLen(endTick);
       }
 
 //---------------------------------------------------------
@@ -1147,7 +1069,7 @@ void Song::cmdChangeWave(QString original, QString tmpfile, unsigned sx, unsigne
       char* tmpfile_charstr = new char[tmpfile.length() + 1];
       strcpy(original_charstr, original.toLatin1().constData());
       strcpy(tmpfile_charstr, tmpfile.toLatin1().constData());
-      song->undoOp(UndoOp::ModifyClip, original_charstr, tmpfile_charstr, sx, ex);
+      MusEGlobal::song->undoOp(UndoOp::ModifyClip, original_charstr, tmpfile_charstr, sx, ex);
       }
 
 //---------------------------------------------------------
@@ -1197,3 +1119,86 @@ SndFileR::~SndFileR()
                 sf=NULL;
                 }
       }
+
+} // namespace MusECore
+
+namespace MusEGui {
+
+//---------------------------------------------------------
+//   importAudio
+//---------------------------------------------------------
+
+void MusE::importWave()
+      {
+      MusECore::Track* track = _arranger->curTrack();
+      if (track == 0 || track->type() != MusECore::Track::WAVE) {
+            QMessageBox::critical(this, QString("MusE"),
+              tr("to import an audio file you have first to select"
+              "a wave track"));
+            return;
+            }
+      //QString fn = MusEGui::getOpenFileName(MusEGlobal::lastWavePath, audioFilePattern, this,
+      QString fn = MusEGui::getOpenFileName(MusEGlobal::lastWavePath, MusEGlobal::audio_file_pattern, this,
+         tr("Import Wave File"), 0);                                    
+      if (!fn.isEmpty()) {
+            MusEGlobal::lastWavePath = fn;
+            importWaveToTrack(fn);
+            }
+      }
+
+//---------------------------------------------------------
+//   importWaveToTrack
+//---------------------------------------------------------
+
+bool MusE::importWaveToTrack(QString& name, unsigned tick, MusECore::Track* track)
+      {
+      if (track==NULL)
+            track = (MusECore::WaveTrack*)(_arranger->curTrack());
+
+      MusECore::SndFile* f = MusECore::getWave(name, true);
+
+      if (f == 0) {
+            printf("import audio file failed\n");
+            return true;
+            }
+      int samples = f->samples();
+      if ((unsigned)MusEGlobal::sampleRate !=f->samplerate()) {
+            if(QMessageBox::question(this, tr("Import Wavefile"),
+                  tr("This wave file has a samplerate of %1,\n"
+                  "as opposed to current setting %2.\n"
+                  "Do you still want to import it?").arg(f->samplerate()).arg(MusEGlobal::sampleRate),
+                  tr("&Yes"), tr("&No"),
+                  QString::null, 0, 1 ))
+                  {
+                  //printf("why won't muse let me delete the file object? %d\n", f->getRefCount());
+                  if (f->getRefCount() == 0)
+                        delete f;
+                  return true;
+                  }
+            }
+      track->setChannels(f->channels());
+
+      MusECore::WavePart* part = new MusECore::WavePart((MusECore::WaveTrack *)track);
+      if (tick)
+          part->setTick(tick);
+      else
+          part->setTick(MusEGlobal::song->cpos());
+      part->setLenFrame(samples);
+
+      MusECore::Event event(MusECore::Wave);
+      MusECore::SndFileR sf(f);
+      event.setSndFile(sf);
+      event.setSpos(0);
+      event.setLenFrame(samples);
+      part->addEvent(event);
+
+      part->setName(QFileInfo(name).completeBaseName());
+      MusEGlobal::audio->msgAddPart(part);
+      unsigned endTick = part->tick() + part->lenTick();
+      if (MusEGlobal::song->len() < endTick)
+            MusEGlobal::song->setLen(endTick);
+      return false;
+      }
+
+} // namespace MusEGui
+

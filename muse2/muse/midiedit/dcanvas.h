@@ -36,20 +36,21 @@ class QDropEvent;
 class QDragMoveEvent;
 class QDragLeaveEvent;
 
+namespace MusEGui {
+
 class MidiEditor;
+class PianoRoll;
+class ScrollScale;
 
 //---------------------------------------------------------
 //   DEvent
 //    ''visual'' Drum Event
 //---------------------------------------------------------
 
-class DEvent : public MusEWidget::CItem {
+class DEvent : public CItem {
    public:
-      DEvent(Event e, Part* p);
+      DEvent(MusECore::Event e, MusECore::Part* p);
       };
-
-class ScrollScale;
-class PianoRoll;
 
 //---------------------------------------------------------
 //   DrumCanvas
@@ -58,7 +59,7 @@ class PianoRoll;
 class DrumCanvas : public EventCanvas {
       Q_OBJECT
       
-      StepRec* steprec;
+      MusECore::StepRec* steprec;
       
       // Cursor tool position
       QPoint cursorPos;
@@ -66,25 +67,25 @@ class DrumCanvas : public EventCanvas {
 
       
       virtual void drawCanvas(QPainter&, const QRect&);
-      virtual void drawItem(QPainter&, const MusEWidget::CItem*, const QRect&);
+      virtual void drawItem(QPainter&, const CItem*, const QRect&);
       void drawTopItem(QPainter& p, const QRect& rect);
-      virtual void drawMoving(QPainter&, const MusEWidget::CItem*, const QRect&);
-      virtual Undo moveCanvasItems(MusEWidget::CItemList&, int, int, DragType);
-      virtual UndoOp moveItem(MusEWidget::CItem*, const QPoint&, DragType);
-      virtual MusEWidget::CItem* newItem(const QPoint&, int);
-      virtual void resizeItem(MusEWidget::CItem*, bool, bool);
-      virtual void newItem(MusEWidget::CItem*, bool);
-      virtual void newItem(MusEWidget::CItem*, bool, bool replace );
-      virtual bool deleteItem(MusEWidget::CItem*);
-      MusEWidget::CItem* newItem(int tick, int instrument, int velocity);
+      virtual void drawMoving(QPainter&, const CItem*, const QRect&);
+      virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType);
+      virtual MusECore::UndoOp moveItem(CItem*, const QPoint&, DragType);
+      virtual CItem* newItem(const QPoint&, int);
+      virtual void resizeItem(CItem*, bool, bool);
+      virtual void newItem(CItem*, bool);
+      virtual void newItem(CItem*, bool, bool replace );
+      virtual bool deleteItem(CItem*);
+      CItem* newItem(int tick, int instrument, int velocity);
 
       int y2pitch(int y) const;
       int pitch2y(int pitch) const;
-      void startDrag(MusEWidget::CItem*, bool copymode);
+      void startDrag(CItem*, bool copymode);
       void dragEnterEvent(QDragEnterEvent* event);
       void dragMoveEvent(QDragMoveEvent*);
       void dragLeaveEvent(QDragLeaveEvent*);
-      virtual void addItem(Part*, Event&);
+      virtual void addItem(MusECore::Part*, MusECore::Event&);
       virtual void resizeEvent(QResizeEvent*);
       virtual void curPartChanged();
       int getNextStep(unsigned int pos, int basicStep, int stepSize=1);
@@ -116,11 +117,14 @@ class DrumCanvas : public EventCanvas {
          const char* name = 0);
       virtual ~DrumCanvas();
       void cmd(int);
-      virtual void modifySelected(MusEWidget::NoteInfo::ValType type, int delta);
+      virtual void modifySelected(NoteInfo::ValType type, int delta);
       virtual void keyPress(QKeyEvent* event);
-      Event *getEventAtCursorPos();
-      void selectCursorEvent(Event *ev);
+      MusECore::Event *getEventAtCursorPos();
+      void selectCursorEvent(MusECore::Event *ev);
 
       };
+
+} // namespace MusEGui
+
 #endif
 

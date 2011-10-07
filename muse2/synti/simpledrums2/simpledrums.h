@@ -134,7 +134,7 @@ class SimpleSynth : public Mess
       virtual bool nativeGuiVisible() const;
       virtual bool hasNativeGui() const;
       virtual bool playNote(int arg1, int arg2, int arg3);
-      virtual bool processEvent(const MidiPlayEvent& arg1);
+      virtual bool processEvent(const MusECore::MidiPlayEvent& arg1);
       virtual bool setController(int arg1, int arg2, int arg3);
       virtual bool sysex(int arg1, const unsigned char* arg2);
       virtual const char* getPatchName(int arg1, int arg2, int arg3) const;

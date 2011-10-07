@@ -41,8 +41,8 @@ bool MessPoly::playNote(int /*channel*/, int /*pitch*/, int /*velo*/)
 bool MessPoly::setController(int /*channel*/, int num, int /*val*/)
       {
       switch(num) {
-            case CTRL_VOLUME:
-            case CTRL_EXPRESSION:
+            case MusECore::CTRL_VOLUME:
+            case MusECore::CTRL_EXPRESSION:
                   break;
             }
       return false;

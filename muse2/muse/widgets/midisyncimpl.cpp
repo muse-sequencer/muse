@@ -41,13 +41,13 @@
 #include "driver/audiodev.h"
 #include "audio.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 enum { DEVCOL_NO = 0, DEVCOL_NAME, DEVCOL_IN, DEVCOL_TICKIN, DEVCOL_MRTIN, DEVCOL_MMCIN, DEVCOL_MTCIN, DEVCOL_MTCTYPE, 
        DEVCOL_RID, DEVCOL_RCLK, DEVCOL_RMRT, DEVCOL_RMMC, DEVCOL_RMTC, DEVCOL_RREWSTART, 
        DEVCOL_TID, DEVCOL_TCLK, DEVCOL_TMRT, DEVCOL_TMMC, DEVCOL_TMTC, /* DEVCOL_TREWSTART, */  };
 
-//MidiSyncInfo tmpMidiSyncPorts[MIDI_PORTS];
+//MusECore::MidiSyncInfo tmpMidiSyncPorts[MIDI_PORTS];
 
 //---------------------------------------------------------
 //   MidiSyncConfig::setToolTips
@@ -143,7 +143,7 @@ void MidiSyncConfig::addDevice(QTreeWidgetItem *item, QTreeWidget *tree)
 //    setDevice
 //---------------------------------------------------------
 
-void MidiSyncLViewItem::setDevice(MidiDevice* d)
+void MidiSyncLViewItem::setDevice(MusECore::MidiDevice* d)
 { 
   _device = d; 
   if(_device)
@@ -162,8 +162,8 @@ void MidiSyncLViewItem::setPort(int port)
   if(_port < 0 || port > MIDI_PORTS)
     return;
     
-  //_syncInfo.copyParams(midiPorts[port].syncInfo());
-  copyFromSyncInfo(midiPorts[port].syncInfo());
+  //_syncInfo.copyParams(MusEGlobal::midiPorts[port].syncInfo());
+  copyFromSyncInfo(MusEGlobal::midiPorts[port].syncInfo());
 }
 
 //---------------------------------------------------------
@@ -171,7 +171,7 @@ void MidiSyncLViewItem::setPort(int port)
 //    copyFromSyncInfo
 //---------------------------------------------------------
 
-void MidiSyncLViewItem::copyFromSyncInfo(const MidiSyncInfo &sp)
+void MidiSyncLViewItem::copyFromSyncInfo(const MusECore::MidiSyncInfo &sp)
 {
   _idOut         = sp.idOut();
   _idIn          = sp.idIn();
@@ -192,7 +192,7 @@ void MidiSyncLViewItem::copyFromSyncInfo(const MidiSyncInfo &sp)
 //    copyToSyncInfo
 //---------------------------------------------------------
 
-void MidiSyncLViewItem::copyToSyncInfo(MidiSyncInfo &sp)
+void MidiSyncLViewItem::copyToSyncInfo(MusECore::MidiSyncInfo &sp)
 {
   sp.setIdOut(_idOut);
   sp.setIdIn(_idIn);
@@ -226,10 +226,10 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
       //for(int i = 0; i < MIDI_PORTS; ++i)
       //  tmpMidiSyncPorts[i] = midiSyncPorts[i];
         
-      //bool ext = extSyncFlag.value();
+      //bool ext = MusEGlobal::extSyncFlag.value();
       //syncMode->setButton(int(ext));
       //syncChanged(ext);
-//      extSyncCheckbox->setChecked(extSyncFlag.value());
+//      extSyncCheckbox->setChecked(MusEGlobal::extSyncFlag.value());
 
 //      dstDevId->setValue(txDeviceId);
 //      srcDevId->setValue(rxDeviceId);
@@ -245,13 +245,13 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
 //      acceptMCCheckbox->setChecked(acceptMC);
 //      acceptMMCCheckbox->setChecked(acceptMMC);
 
-//      mtcSyncType->setCurrentItem(mtcType);
+//      mtcSyncType->setCurrentItem(MusEGlobal::mtcType);
 
-//      mtcOffH->setValue(mtcOffset.h());
-//      mtcOffM->setValue(mtcOffset.m());
-//      mtcOffS->setValue(mtcOffset.s());
-//      mtcOffF->setValue(mtcOffset.f());
-//      mtcOffSf->setValue(mtcOffset.sf());
+//      mtcOffH->setValue(MusEGlobal::mtcOffset.h());
+//      mtcOffM->setValue(MusEGlobal::mtcOffset.m());
+//      mtcOffS->setValue(MusEGlobal::mtcOffset.s());
+//      mtcOffF->setValue(MusEGlobal::mtcOffset.f());
+//      mtcOffSf->setValue(MusEGlobal::mtcOffset.sf());
 
       
       
@@ -308,11 +308,11 @@ MidiSyncConfig::MidiSyncConfig(QWidget* parent)
       connect(mtcSyncType, SIGNAL(activated(int)), SLOT(syncChanged()));
       connect(useJackTransportCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
       connect(jackTransportMasterCheckbox, SIGNAL(clicked()), SLOT(syncChanged()));
-      connect(&extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(extSyncChanged(bool)));
+      connect(&MusEGlobal::extSyncFlag, SIGNAL(valueChanged(bool)), SLOT(extSyncChanged(bool)));
       connect(syncDelaySpinBox, SIGNAL(valueChanged(int)), SLOT(syncChanged()));
   
       // Done in show().
-      //connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      //connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       //connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
       
       //inHeartBeat = false;
@@ -347,28 +347,28 @@ void MidiSyncConfig::songChanged(int flags)
       useJackTransportCheckbox->blockSignals(true);
       jackTransportMasterCheckbox->blockSignals(true);
       syncDelaySpinBox->blockSignals(true);
-      extSyncCheckbox->setChecked(extSyncFlag.value());
-      useJackTransportCheckbox->setChecked(useJackTransport.value());
-      jackTransportMasterCheckbox->setChecked(jackTransportMaster);
-      //jackTransportMasterCheckbox->setEnabled(useJackTransport);
-      syncDelaySpinBox->setValue(syncSendFirstClockDelay);
+      extSyncCheckbox->setChecked(MusEGlobal::extSyncFlag.value());
+      useJackTransportCheckbox->setChecked(MusEGlobal::useJackTransport.value());
+      jackTransportMasterCheckbox->setChecked(MusEGlobal::jackTransportMaster);
+      //jackTransportMasterCheckbox->setEnabled(MusEGlobal::useJackTransport);
+      syncDelaySpinBox->setValue(MusEGlobal::syncSendFirstClockDelay);
       syncDelaySpinBox->blockSignals(false);
       jackTransportMasterCheckbox->blockSignals(false);
       useJackTransportCheckbox->blockSignals(false);
       extSyncCheckbox->blockSignals(false);
       
-      mtcSyncType->setCurrentIndex(mtcType);
+      mtcSyncType->setCurrentIndex(MusEGlobal::mtcType);
 
       mtcOffH->blockSignals(true);
       mtcOffM->blockSignals(true);
       mtcOffS->blockSignals(true);
       mtcOffF->blockSignals(true);
       mtcOffSf->blockSignals(true);
-      mtcOffH->setValue(mtcOffset.h());
-      mtcOffM->setValue(mtcOffset.m());
-      mtcOffS->setValue(mtcOffset.s());
-      mtcOffF->setValue(mtcOffset.f());
-      mtcOffSf->setValue(mtcOffset.sf());
+      mtcOffH->setValue(MusEGlobal::mtcOffset.h());
+      mtcOffM->setValue(MusEGlobal::mtcOffset.m());
+      mtcOffS->setValue(MusEGlobal::mtcOffset.s());
+      mtcOffF->setValue(MusEGlobal::mtcOffset.f());
+      mtcOffSf->setValue(MusEGlobal::mtcOffset.sf());
       mtcOffH->blockSignals(false);
       mtcOffM->blockSignals(false);
       mtcOffS->blockSignals(false);
@@ -393,10 +393,10 @@ void MidiSyncConfig::heartBeat()
       int port = lvi->port();
       if(port >= 0 && port < MIDI_PORTS)
         {
-          bool sdet = midiPorts[port].syncInfo().MCSyncDetect();
+          bool sdet = MusEGlobal::midiPorts[port].syncInfo().MCSyncDetect();
           if(sdet)
           {
-            if(port == curMidiSyncInPort)
+            if(port == MusEGlobal::curMidiSyncInPort)
             {
               if(!lvi->_curDet)
               {
@@ -432,7 +432,7 @@ void MidiSyncConfig::heartBeat()
             }  
           }
           
-          sdet = midiPorts[port].syncInfo().tickDetect();
+          sdet = MusEGlobal::midiPorts[port].syncInfo().tickDetect();
           if(sdet)
           {
             if(!lvi->_tickDet)
@@ -456,7 +456,7 @@ void MidiSyncConfig::heartBeat()
             }  
           }
         
-          sdet = midiPorts[port].syncInfo().MRTDetect();
+          sdet = MusEGlobal::midiPorts[port].syncInfo().MRTDetect();
           if(sdet)
           {
             if(!lvi->_MRTDet)
@@ -480,9 +480,9 @@ void MidiSyncConfig::heartBeat()
             }  
           }
         
-          int type = midiPorts[port].syncInfo().recMTCtype();
-          sdet = midiPorts[port].syncInfo().MMCDetect();
-          bool mtcdet = midiPorts[port].syncInfo().MTCDetect();
+          int type = MusEGlobal::midiPorts[port].syncInfo().recMTCtype();
+          sdet = MusEGlobal::midiPorts[port].syncInfo().MMCDetect();
+          bool mtcdet = MusEGlobal::midiPorts[port].syncInfo().MTCDetect();
           if(sdet)
           {
             if(!lvi->_MMCDet)
@@ -531,7 +531,7 @@ void MidiSyncConfig::heartBeat()
           
           if(mtcdet)
           {
-            if(port == curMidiSyncInPort)
+            if(port == MusEGlobal::curMidiSyncInPort)
             {
               if(!lvi->_curMTCDet)
               {
@@ -591,7 +591,7 @@ void MidiSyncConfig::heartBeat()
           }
         }
         
-        //MidiDevice* dev = lvi->device();
+        //MusECore::MidiDevice* dev = lvi->device();
         //bool sdet = dev->syncInfo().MCSyncDetect();
         //if(lvi->pixmap(DEVCOL_IN) != (sdet ? *dotIcon : *dothIcon))
         //  lvi->setIcon(DEVCOL_IN, QIcon( sdet ? *dotIcon : *dothIcon));
@@ -611,7 +611,7 @@ void MidiSyncConfig::syncChanged()
       {
       setDirty();
       
-      //jackTransportMasterCheckbox->setEnabled(useJackTransport);
+      //MusEGlobal::jackTransportMasterCheckbox->setEnabled(MusEGlobal::useJackTransport);
       
       //acceptMTCCheckbox->setEnabled(val);
 //      acceptMTCCheckbox->setEnabled(false);
@@ -628,7 +628,7 @@ void MidiSyncConfig::extSyncChanged(bool v)
       extSyncCheckbox->blockSignals(true);
       extSyncCheckbox->setChecked(v);
 //      if(v)
-//        song->setMasterFlag(false);
+//        MusEGlobal::song->setMasterFlag(false);
       extSyncCheckbox->blockSignals(false);
       }
 
@@ -662,7 +662,7 @@ void MidiSyncConfig::cancel()
 void MidiSyncConfig::show()
 {
   songChanged(-1);
-  connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+  connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
   connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartBeat()));
   QDialog::show();
 }
@@ -691,7 +691,7 @@ void MidiSyncConfig::closeEvent(QCloseEvent* e)
       }
       
       disconnect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), this, SLOT(heartBeat()));
-      disconnect(song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
+      disconnect(MusEGlobal::song, SIGNAL(songChanged(int)), this, SLOT(songChanged(int)));
       
       e->accept();
       }
@@ -711,29 +711,29 @@ void MidiSyncConfig::apply()
 //      genMCSync   = mcSync->isChecked();
 //      genMMC      = midiMachineControl->isChecked();
 
-      syncSendFirstClockDelay = syncDelaySpinBox->value();
+      MusEGlobal::syncSendFirstClockDelay = syncDelaySpinBox->value();
       
-      mtcType     = mtcSyncType->currentIndex();
-      //extSyncFlag.setValue(syncMode->id(syncMode->selected()));
-      //extSyncFlag.blockSignals(true);
-      extSyncFlag.setValue(extSyncCheckbox->isChecked());
-//      if(extSyncFlag.value())
-//        song->setMasterFlag(false);
-      //extSyncFlag.blockSignals(false);
-      useJackTransport.setValue(useJackTransportCheckbox->isChecked());
-//      if(useJackTransport)
-        jackTransportMaster = jackTransportMasterCheckbox->isChecked();
+      MusEGlobal::mtcType     = mtcSyncType->currentIndex();
+      //MusEGlobal::extSyncFlag.setValue(syncMode->id(syncMode->selected()));
+      //MusEGlobal::extSyncFlag.blockSignals(true);
+      MusEGlobal::extSyncFlag.setValue(extSyncCheckbox->isChecked());
+//      if(MusEGlobal::extSyncFlag.value())
+//        MusEGlobal::song->setMasterFlag(false);
+      //MusEGlobal::extSyncFlag.blockSignals(false);
+      MusEGlobal::useJackTransport.setValue(useJackTransportCheckbox->isChecked());
+//      if(MusEGlobal::useJackTransport)
+        MusEGlobal::jackTransportMaster = jackTransportMasterCheckbox->isChecked();
 //      else  
-//        jackTransportMaster = false;
-//      jackTransportMasterCheckbox->setEnabled(useJackTransport);
-      if(audioDevice)
-        audioDevice->setMaster(jackTransportMaster);      
+//        MusEGlobal::jackTransportMaster = false;
+//      MusEGlobal::jackTransportMasterCheckbox->setEnabled(MusEGlobal::useJackTransport);
+      if(MusEGlobal::audioDevice)
+        MusEGlobal::audioDevice->setMaster(MusEGlobal::jackTransportMaster);      
 
-      mtcOffset.setH(mtcOffH->value());
-      mtcOffset.setM(mtcOffM->value());
-      mtcOffset.setS(mtcOffS->value());
-      mtcOffset.setF(mtcOffF->value());
-      mtcOffset.setSf(mtcOffSf->value());
+      MusEGlobal::mtcOffset.setH(mtcOffH->value());
+      MusEGlobal::mtcOffset.setM(mtcOffM->value());
+      MusEGlobal::mtcOffset.setS(mtcOffS->value());
+      MusEGlobal::mtcOffset.setF(mtcOffF->value());
+      MusEGlobal::mtcOffset.setSf(mtcOffSf->value());
 
 //      acceptMC  = acceptMCCheckbox->isChecked();
 //      acceptMMC = acceptMMCCheckbox->isChecked();
@@ -745,14 +745,14 @@ void MidiSyncConfig::apply()
       for (int i = MIDI_PORTS-1; i >= 0; --i)	    
       {
 	MidiSyncLViewItem* lvi = (MidiSyncLViewItem*)devicesListView->topLevelItem(i);
-        //MidiDevice* dev = lvi->device();
+        //MusECore::MidiDevice* dev = lvi->device();
         // Does the device really exist?
         //if(midiDevices.find(dev) != midiDevices.end())
         //  dev->syncInfo().copyParams(lvi->syncInfo());
         int port = lvi->port();
         if(port >= 0 && port < MIDI_PORTS)
-          //midiPorts[port].syncInfo().copyParams(lvi->syncInfo());
-          lvi->copyToSyncInfo(midiPorts[port].syncInfo());
+          //MusEGlobal::midiPorts[port].syncInfo().copyParams(lvi->syncInfo());
+          lvi->copyToSyncInfo(MusEGlobal::midiPorts[port].syncInfo());
         
       }
   
@@ -775,8 +775,8 @@ void MidiSyncConfig::updateSyncInfoLV()
       devicesListView->clear();
       for(int i = 0; i < MIDI_PORTS; ++i) 
       {
-            MidiPort* port  = &midiPorts[i];
-            MidiDevice* dev = port->device();
+            MusECore::MidiPort* port  = &MusEGlobal::midiPorts[i];
+            MusECore::MidiDevice* dev = port->device();
             // p3.3.31
             // Don't show if it is a synthesizer device.
             // Hmm, some synths might support transport commands or even sync?
@@ -791,10 +791,10 @@ void MidiSyncConfig::updateSyncInfoLV()
             s.setNum(i+1);
             MidiSyncLViewItem* lvi = new MidiSyncLViewItem(devicesListView);
             lvi->setPort(i); // setPort will copy parameters.
-            //MidiSyncInfo& si = lvi->syncInfo();
+            //MusECore::MidiSyncInfo& si = lvi->syncInfo();
             //si.copyParams(port->syncInfo());
             //lvi.copyFromSyncInfo(port->syncInfo());
-            MidiSyncInfo& portsi = port->syncInfo();
+            MusECore::MidiSyncInfo& portsi = port->syncInfo();
             
             lvi->setText(DEVCOL_NO, s);
             
@@ -805,7 +805,7 @@ void MidiSyncConfig::updateSyncInfoLV()
             
             if(portsi.MCSyncDetect())
             {
-              if(i == curMidiSyncInPort)
+              if(i == MusEGlobal::curMidiSyncInPort)
               {
                 lvi->_curDet = true;
                 lvi->_inDet = false;
@@ -882,7 +882,7 @@ void MidiSyncConfig::updateSyncInfoLV()
 
             if(portsi.MTCDetect())
             {
-              if(i == curMidiSyncInPort)
+              if(i == MusEGlobal::curMidiSyncInPort)
               {
                 lvi->_curMTCDet = true;
                 lvi->_MTCDet = false;
@@ -990,17 +990,17 @@ void MidiSyncConfig::updateSyncInfoLV()
 
       
       /*
-      for(iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) 
+      for(MusECore::iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) 
       {
-            MidiDevice* dev = *id;
+            MusECore::MidiDevice* dev = *id;
       
-            //MidiPort* port  = &midiPorts[i];
-            //MidiDevice* dev = port->device();
+            //MusECore::MidiPort* port  = &MusEGlobal::midiPorts[i];
+            //MusECore::MidiDevice* dev = port->device();
             MidiSyncLViewItem* lvi = new MidiSyncLViewItem(devicesListView);
             //lvi->setPort(i);
             // setDevice will copy parameters.
             lvi->setDevice(dev);
-            MidiSyncInfo& si = lvi->syncInfo();
+            MusECore::MidiSyncInfo& si = lvi->syncInfo();
             //si.copyParams(dev->syncInfo());
             
             lvi->setText(DEVCOL_NAME, dev->name());
@@ -1037,18 +1037,18 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
       int no = lvi->port();
       if (no < 0 || no >= MIDI_PORTS)
         return;
-      //MidiDevice* dev = lvi->device();
+      //MusECore::MidiDevice* dev = lvi->device();
       // Does the device really exist?
       //if(midiDevices.find(dev) == midiDevices.end())
       //  return;
       
       //int n;
-      //MidiPort* port      = &midiPorts[no];
-      //MidiDevice* dev     = port->device();
+      //MusECore::MidiPort* port      = &MusEGlobal::midiPorts[no];
+      //MusECore::MidiDevice* dev     = port->device();
       //int rwFlags         = dev ? dev->rwFlags() : 0;
       //int openFlags       = dev ? dev->openFlags() : 0;
-      //MidiSyncInfo& si    = lvi->syncInfo();
-      //MidiSyncInfo& portsi  = midiPorts[no].syncInfo();
+      //MusECore::MidiSyncInfo& si    = lvi->syncInfo();
+      //MusECore::MidiSyncInfo& portsi  = MusEGlobal::midiPorts[no].syncInfo();
 
       switch (col) 
       {
@@ -1060,18 +1060,18 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
                   // If this is not the current midi sync in port, and sync in from this port is enabled,
                   //  and sync is in fact detected on this port, allow the user to force this port to now be the
                   //  current sync in port. 
-                  //if(no != curMidiSyncInPort && si.MCIn() && midiPorts[no].syncInfo().MCSyncDetect())
-                  //if(no != curMidiSyncInPort && lvi->_recMC && midiPorts[no].syncInfo().MCSyncDetect())
-                  if(no != curMidiSyncInPort)
+                  //if(no != MusEGlobal::curMidiSyncInPort && si.MCIn() && MusEGlobal::midiPorts[no].syncInfo().MCSyncDetect())
+                  //if(no != MusEGlobal::curMidiSyncInPort && lvi->_recMC && MusEGlobal::midiPorts[no].syncInfo().MCSyncDetect())
+                  if(no != MusEGlobal::curMidiSyncInPort)
                   {
-                    if(lvi->_recMC && midiPorts[no].syncInfo().MCSyncDetect())
+                    if(lvi->_recMC && MusEGlobal::midiPorts[no].syncInfo().MCSyncDetect())
                     {
-                      curMidiSyncInPort = no;
+                      MusEGlobal::curMidiSyncInPort = no;
                       lvi->setIcon(DEVCOL_IN, QIcon( *record1_Icon));
                     }  
-                    if(lvi->_recMTC && midiPorts[no].syncInfo().MTCDetect())
+                    if(lvi->_recMTC && MusEGlobal::midiPorts[no].syncInfo().MTCDetect())
                     {
-                      curMidiSyncInPort = no;
+                      MusEGlobal::curMidiSyncInPort = no;
                       lvi->setIcon(DEVCOL_MTCIN, QIcon( *record1_Icon));
                     }  
                   }  
@@ -1084,18 +1084,18 @@ void MidiSyncConfig::dlvClicked(QTreeWidgetItem* item, int col)
                   // If this is not the current midi sync in port, and sync in from this port is enabled,
                   //  and sync is in fact detected on this port, allow the user to force this port to now be the
                   //  current sync in port. 
-                  //if(no != curMidiSyncInPort && si.MTCIn() && midiPorts[no].syncInfo().MTCDetect())
-                  //if(no != curMidiSyncInPort && lvi->_recMTC && midiPorts[no].syncInfo().MTCDetect())
-                  if(no != curMidiSyncInPort)
+                  //if(no != MusEGlobal::curMidiSyncInPort && si.MTCIn() && MusEGlobal::midiPorts[no].syncInfo().MTCDetect())
+                  //if(no != MusEGlobal::curMidiSyncInPort && lvi->_recMTC && MusEGlobal::midiPorts[no].syncInfo().MTCDetect())
+                  if(no != MusEGlobal::curMidiSyncInPort)
                   {
-                    if(lvi->_recMTC && midiPorts[no].syncInfo().MTCDetect())
+                    if(lvi->_recMTC && MusEGlobal::midiPorts[no].syncInfo().MTCDetect())
                     {
-                      curMidiSyncInPort = no;
+                      MusEGlobal::curMidiSyncInPort = no;
                       lvi->setIcon(DEVCOL_MTCIN, QIcon( *record1_Icon));
                     }  
-                    if(lvi->_recMC && midiPorts[no].syncInfo().MCSyncDetect())
+                    if(lvi->_recMC && MusEGlobal::midiPorts[no].syncInfo().MCSyncDetect())
                     {
-                      curMidiSyncInPort = no;
+                      MusEGlobal::curMidiSyncInPort = no;
                       lvi->setIcon(DEVCOL_IN, QIcon( *record1_Icon));
                     }  
                   }  
@@ -1266,4 +1266,4 @@ void MidiSyncConfig::setDirty()
     applyButton->setEnabled(true);
 }
 
-} // namespace MusEWidget
+} // namespace MusEGui

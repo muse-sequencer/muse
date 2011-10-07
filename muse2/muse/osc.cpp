@@ -61,6 +61,8 @@
 #include "globals.h"
 #include "globaldefs.h"
 
+namespace MusECore {
+
 static lo_server_thread serverThread = 0;
 static char* url = 0;
 static bool oscServerRunning = false;
@@ -138,7 +140,7 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
   else
     return oscDebugHandler(path, types, argv, argc, data, user_data);
 
-  TrackList* tl = song->tracks();
+  TrackList* tl = MusEGlobal::song->tracks();
   
 
   #ifdef OSC_DEBUG 
@@ -164,7 +166,7 @@ int oscMessageHandler(const char* path, const char* types, lo_arg** argv,
     if(isSynth)
     {
       // Message is meant for a dssi synth. Check dssi synth instances...
-      SynthIList* sl = song->syntis();
+      SynthIList* sl = MusEGlobal::song->syntis();
       for(iSynthI si = sl->begin(); si != sl->end(); ++si) 
       {
         SynthI* synti = *si;
@@ -354,8 +356,6 @@ void initOSC()
   lo_server_thread_start(serverThread);
 }
 
-namespace MusEApp {
-
 //---------------------------------------------------------
 //   exitOSC
 //---------------------------------------------------------
@@ -396,8 +396,6 @@ void stopOSC()
   oscServerRunning = false;  
 }
         
-} // namespace MusEApp
-
 //---------------------------------------------------------
 //   OscIF
 //   Open Sound Control Interface
@@ -552,13 +550,13 @@ int OscIF::oscUpdate(lo_arg **argv)
       
       // Send project directory.
       //lo_send(_uiOscTarget, _uiOscConfigurePath, "ss",
-      //   DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());  // song->projectPath()
+      //   DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());  // MusEGlobal::song->projectPath()
       
       // Done in sub-classes.
       /*
       #ifdef DSSI_SUPPORT
       //lo_send(_uiOscTarget, _uiOscConfigurePath, "ss",
-         //DSSI_PROJECT_DIRECTORY_KEY, song->projectPath().toAscii().data());
+         //DSSI_PROJECT_DIRECTORY_KEY, MusEGlobal::song->projectPath().toAscii().data());
       lo_send(_uiOscTarget, _uiOscConfigurePath, "ss",
          DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());
       
@@ -999,7 +997,7 @@ int OscDssiIF::oscUpdate(lo_arg **argv)
       
       // Send project directory. No, done in DssiSynthIF.
       //lo_send(_uiOscTarget, _uiOscConfigurePath, "ss",
-      //   DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());  // song->projectPath()
+      //   DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());  // MusEGlobal::song->projectPath()
       
       if(_oscSynthIF)
         _oscSynthIF->oscUpdate();
@@ -1118,7 +1116,7 @@ int OscEffectIF::oscUpdate(lo_arg** argv)
   
   // Send project directory. No, done in PluginI.
   //lo_send(_uiOscTarget, _uiOscConfigurePath, "ss",
-  //   DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());  // song->projectPath()
+  //   DSSI_PROJECT_DIRECTORY_KEY, museProject.toLatin1().constData());  // MusEGlobal::song->projectPath()
   
   if(_oscPluginI)
     _oscPluginI->oscUpdate();
@@ -1171,5 +1169,6 @@ bool OscEffectIF::oscInitGui()
 #else //OSC_SUPPORT
 void initOSC() {}
 void exitOSC() {}
-
 #endif
+
+} // namespace MusECore

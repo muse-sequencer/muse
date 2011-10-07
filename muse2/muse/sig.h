@@ -30,6 +30,8 @@
 #define MAX_TICK (0x7fffffff/100)
 #endif
 
+namespace MusECore {
+
 class Xml;
 
 //---------------------------------------------------------
@@ -90,5 +92,10 @@ class SigList : public SIGLIST {
       int rasterStep(unsigned tick, int raster) const;
       };
 
-extern SigList sigmap;
+} // namespace MusECore
+
+namespace MusEGlobal {
+extern MusECore::SigList sigmap;
+}
+
 #endif

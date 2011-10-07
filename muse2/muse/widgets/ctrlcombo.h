@@ -26,7 +26,7 @@
 
 #include <QComboBox>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 class CtrlComboBox : public QComboBox {
       Q_OBJECT
@@ -34,7 +34,7 @@ class CtrlComboBox : public QComboBox {
       CtrlComboBox(QWidget* parent);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

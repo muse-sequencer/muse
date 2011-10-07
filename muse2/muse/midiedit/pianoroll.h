@@ -35,33 +35,35 @@
 #include "tools.h"
 #include "event.h"
 
-class MidiPart;
-class TimeLabel;
-class PitchLabel;
-class QLabel;
-class PianoCanvas;
-class MTScale;
-class Track;
-class QToolButton;
-class QToolBar;
-class QPushButton;
-class CtrlEdit;
-class PartList;
-class Xml;
-class ScrollScale;
-class Part;
-class SNode;
-class QMenu;
 class QAction;
-class QWidget;
-class QScrollBar;
+class QLabel;
+class QMenu;
+class QPushButton;
 class QScrollArea;
+class QScrollBar;
+class QToolBar;
+class QToolButton;
+class QWidget;
 
-namespace MusEWidget {
-class MidiTrackInfo;
-class Splitter;
-class Toolbar1;
+namespace MusECore {
+class MidiPart;
+class Part;
+class PartList;
+class Track;
+class Xml;
 }
+
+
+namespace MusEGui {
+class CtrlEdit;
+class MidiTrackInfo;
+class PianoCanvas;
+class PitchLabel;
+class SNode;
+class ScrollScale;
+class Splitter;
+class TimeLabel;
+class Toolbar1;
 
 //---------------------------------------------------------
 //   PianoRoll
@@ -70,8 +72,8 @@ class Toolbar1;
 class PianoRoll : public MidiEditor {
       Q_OBJECT
     
-      Event selEvent;
-      MidiPart* selPart;
+      MusECore::Event selEvent;
+      MusECore::MidiPart* selPart;
       int selTick;
 
       //enum { CMD_EVENT_COLOR, CMD_CONFIG_QUANT, CMD_LAST };
@@ -80,8 +82,8 @@ class PianoRoll : public MidiEditor {
 
       
       QMenu *menuEdit, *menuFunctions, *menuSelect, *menuConfig, *eventColor, *menuPlugins;
-      MusEWidget::MidiTrackInfo *midiTrackInfo;
-      Track* selected;
+      MusEGui::MidiTrackInfo *midiTrackInfo;
+      MusECore::Track* selected;
       
       QAction* editCutAction; 
       QAction* editCopyAction; 
@@ -120,18 +122,18 @@ class PianoRoll : public MidiEditor {
       int veloOffOffset;
       bool deltaMode;
 
-      MusEWidget::NoteInfo* info;
+      MusEGui::NoteInfo* info;
       QToolButton* srec;
       QToolButton* midiin;
 
-      MusEWidget::Toolbar1* toolbar;
-      MusEWidget::Splitter* splitter;
-      MusEWidget::Splitter* hsplitter;
-      MusEWidget::Splitter* ctrlLane;
+      MusEGui::Toolbar1* toolbar;
+      MusEGui::Splitter* splitter;
+      MusEGui::Splitter* hsplitter;
+      MusEGui::Splitter* ctrlLane;
 
       QToolButton* speaker;
       QToolBar* tools;
-      MusEWidget::EditToolBar* tools2;
+      MusEGui::EditToolBar* tools2;
 
       int colorMode;
 
@@ -152,8 +154,8 @@ class PianoRoll : public MidiEditor {
       virtual void keyPressEvent(QKeyEvent*);
 
    private slots:
-      void setSelection(int, Event&, Part*);
-      void noteinfoChanged(MusEWidget::NoteInfo::ValType, int);
+      void setSelection(int, MusECore::Event&, MusECore::Part*);
+      void noteinfoChanged(MusEGui::NoteInfo::ValType, int);
       //CtrlEdit* addCtrl();
       void removeCtrl(CtrlEdit* ctrl);
       void soloChanged(bool flag);
@@ -174,7 +176,7 @@ class PianoRoll : public MidiEditor {
       void updateTrackInfo();
 
    signals:
-      void deleted(TopWin*);
+      void deleted(MusEGui::TopWin*);
    
    public slots:
       virtual void updateHScrollRange();
@@ -183,13 +185,15 @@ class PianoRoll : public MidiEditor {
       CtrlEdit* addCtrl();
       
    public:
-      PianoRoll(PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
+      PianoRoll(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
       ~PianoRoll();
-      virtual void readStatus(Xml&);
-      virtual void writeStatus(int, Xml&) const;
-      static void readConfiguration(Xml&);
-      static void writeConfiguration(int, Xml&);
+      virtual void readStatus(MusECore::Xml&);
+      virtual void writeStatus(int, MusECore::Xml&) const;
+      static void readConfiguration(MusECore::Xml&);
+      static void writeConfiguration(int, MusECore::Xml&);
       };
+
+} // namespace MusEGui
 
 #endif
 

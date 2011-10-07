@@ -32,6 +32,8 @@
 #include <QAction>
 #include <set>
 
+namespace MusECore {
+
 // iundo points to last Undo() in Undo-list
 
 static bool undoMode = false;  // for debugging
@@ -500,12 +502,12 @@ void Song::doUndo2()
                         break;
                   case UndoOp::AddTempo:
                         //printf("doUndo2: UndoOp::AddTempo. deleting tempo at: %d\n", i->a);
-                        tempomap.delTempo(i->a);
+                        MusEGlobal::tempomap.delTempo(i->a);
                         updateFlags |= SC_TEMPO;
                         break;
                   case UndoOp::DeleteTempo:
                         //printf("doUndo2: UndoOp::DeleteTempo. adding tempo at: %d, tempo=%d\n", i->a, i->b);
-                        tempomap.addTempo(i->a, i->b);
+                        MusEGlobal::tempomap.addTempo(i->a, i->b);
                         updateFlags |= SC_TEMPO;
                         break;
                   case UndoOp::AddSig:
@@ -520,12 +522,12 @@ void Song::doUndo2()
                         break;
                   case UndoOp::AddKey:
                         ///sigmap.del(i->a);
-                        keymap.delKey(i->a);
+                        MusEGlobal::keymap.delKey(i->a);
                         updateFlags |= SC_KEY;
                         break;
                   case UndoOp::DeleteKey:
                         ///sigmap.add(i->a, i->b, i->c);
-                        keymap.addKey(i->a, (key_enum)i->b);
+                        MusEGlobal::keymap.addKey(i->a, (key_enum)i->b);
                         updateFlags |= SC_KEY;
                         break;
                   case UndoOp::ModifyClip:
@@ -739,12 +741,12 @@ void Song::doRedo2()
                         break;
                   case UndoOp::AddTempo:
                         //printf("doRedo2: UndoOp::AddTempo. adding tempo at: %d with tempo=%d\n", i->a, i->b);
-                        tempomap.addTempo(i->a, i->b);
+                        MusEGlobal::tempomap.addTempo(i->a, i->b);
                         updateFlags |= SC_TEMPO;
                         break;
                   case UndoOp::DeleteTempo:
                         //printf("doRedo2: UndoOp::DeleteTempo. deleting tempo at: %d with tempo=%d\n", i->a, i->b);
-                        tempomap.delTempo(i->a);
+                        MusEGlobal::tempomap.delTempo(i->a);
                         updateFlags |= SC_TEMPO;
                         break;
                   case UndoOp::AddSig:
@@ -758,11 +760,11 @@ void Song::doRedo2()
                         updateFlags |= SC_SIG;
                         break;
                   case UndoOp::AddKey:
-                        keymap.addKey(i->a, (key_enum)i->b);
+                        MusEGlobal::keymap.addKey(i->a, (key_enum)i->b);
                         updateFlags |= SC_KEY;
                         break;
                   case UndoOp::DeleteKey:
-                        keymap.delKey(i->a);
+                        MusEGlobal::keymap.delKey(i->a);
                         updateFlags |= SC_KEY;
                         break;
                   case UndoOp::ModifyClip:
@@ -930,7 +932,7 @@ bool Song::doUndo1()
 
                         break;
                   case UndoOp::ModifyClip:
-                        SndFile::applyUndoFile(i->filename, i->tmpwavfile, i->startframe, i->endframe);
+                        MusECore::SndFile::applyUndoFile(i->filename, i->tmpwavfile, i->startframe, i->endframe);
                         break;
 
                   default:
@@ -1021,7 +1023,7 @@ bool Song::doRedo1()
                         removeTrack1(i->oTrack);
                         break;
                   case UndoOp::ModifyClip:
-                        SndFile::applyUndoFile(i->filename, i->tmpwavfile, i->startframe, i->endframe);
+                        MusECore::SndFile::applyUndoFile(i->filename, i->tmpwavfile, i->startframe, i->endframe);
                         break;
                   default:
                         break;
@@ -1073,3 +1075,4 @@ void Song::doRedo3()
       dirty = true;
       }
 
+} // namespace MusECore

@@ -44,16 +44,21 @@
 #include "part.h"
 //#include "mpevent.h"
 
+namespace MusEGlobal {
+MusECore::MidiDeviceList midiDevices;
+extern unsigned int volatile lastExtMidiSyncTick;
+}
+
+namespace MusECore {
+
 #ifdef MIDI_DRIVER_MIDI_SERIAL
 extern void initMidiSerial();
 #endif
 extern bool initMidiAlsa();
 extern bool initMidiJack();
 
-MidiDeviceList midiDevices;
 extern void processMidiInputTransformPlugins(MEvent&);
 
-extern unsigned int volatile lastExtMidiSyncTick;
 
 //---------------------------------------------------------
 //   initMidiDevices
@@ -230,15 +235,15 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
       {
       // p3.3.35
       // TODO: Tested, but record resolution not so good. Switch to wall clock based separate list in MidiDevice. And revert this line.
-      //event.setTime(audio->timestamp());
-      event.setTime(extSyncFlag.value() ? lastExtMidiSyncTick : audio->timestamp());
+      //event.setTime(MusEGlobal::audio->timestamp());
+      event.setTime(MusEGlobal::extSyncFlag.value() ? MusEGlobal::lastExtMidiSyncTick : MusEGlobal::audio->timestamp());
       
       //printf("MidiDevice::recordEvent event time:%d\n", event.time());
       
       // By T356. Set the loop number which the event came in at.
-      //if(audio->isRecording())
-      if(audio->isPlaying())
-        event.setLoopNum(audio->loopCount());
+      //if(MusEGlobal::audio->isRecording())
+      if(MusEGlobal::audio->isPlaying())
+        event.setLoopNum(MusEGlobal::audio->loopCount());
       
       if (MusEGlobal::midiInputTrace) {
             printf("MidiInput: ");
@@ -249,7 +254,7 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
       
       if(_port != -1)
       {
-        int idin = midiPorts[_port].syncInfo().idIn();
+        int idin = MusEGlobal::midiPorts[_port].syncInfo().idIn();
         
 // p3.3.26 1/23/10 Section was disabled, enabled by Tim.
 //#if 0
@@ -267,25 +272,25 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
                       && ((p[1] == 0x7f) || (idin == 0x7f) || (p[1] == idin))) {
                           if (p[2] == 0x06) {
                                 //mmcInput(p, n);
-                                midiSeq->mmcInput(_port, p, n);
+                                MusEGlobal::midiSeq->mmcInput(_port, p, n);
                                 return;
                                 }
                           if (p[2] == 0x01) {
                                 //mtcInputFull(p, n);
-                                midiSeq->mtcInputFull(_port, p, n);
+                                MusEGlobal::midiSeq->mtcInputFull(_port, p, n);
                                 return;
                                 }
                           }
                     else if (p[0] == 0x7e) {
                           //nonRealtimeSystemSysex(p, n);
-                          midiSeq->nonRealtimeSystemSysex(_port, p, n);
+                          MusEGlobal::midiSeq->nonRealtimeSystemSysex(_port, p, n);
                           return;
                           }
                     }
               }
           else    
             // Trigger general activity indicator detector. Sysex has no channel, don't trigger.
-            midiPorts[_port].syncInfo().trigActDetect(event.channel());
+            MusEGlobal::midiPorts[_port].syncInfo().trigActDetect(event.channel());
               
 //#endif
 
@@ -313,11 +318,11 @@ void MidiDevice::recordEvent(MidiRecordEvent& event)
       //
       if (typ == ME_NOTEON) {
             int pv = ((event.dataA() & 0xff)<<8) + (event.dataB() & 0xff);
-            song->putEvent(pv);
+            MusEGlobal::song->putEvent(pv);
             }
       else if (typ == ME_NOTEOFF) {
             int pv = ((event.dataA() & 0xff)<<8) + (0x00); //send an event with velo=0
-            song->putEvent(pv);
+            MusEGlobal::song->putEvent(pv);
             }
       
       // Do not bother recording if it is NOT actually being used by a port.
@@ -401,7 +406,7 @@ bool MidiDevice::sendNullRPNParams(int chn, bool nrpn)
   if(_port == -1)
     return false;  
     
-  int nv = midiPorts[_port].nullSendValue();
+  int nv = MusEGlobal::midiPorts[_port].nullSendValue();
   if(nv == -1)
     return false;  
   
@@ -470,7 +475,7 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
                   }
             if (a == CTRL_PROGRAM) {
                   // don't output program changes for GM drum channel
-                  if (!(song->mtype() == MT_GM && chn == 9)) {
+                  if (!(MusEGlobal::song->mtype() == MT_GM && chn == 9)) {
                         int hb = (b >> 16) & 0xff;
                         int lb = (b >> 8) & 0xff;
                         int pr = b & 0x7f;
@@ -554,12 +559,12 @@ bool MidiDevice::putEvent(const MidiPlayEvent& ev)
 void MidiDevice::processStuckNotes() 
 {
   // Must be playing for valid nextTickPos, right? But wasn't checked in Audio::processMidi().
-  // audio->isPlaying() might not be true during seek right now.
-  //if(audio->isPlaying())  
+  // MusEGlobal::audio->isPlaying() might not be true during seek right now.
+  //if(MusEGlobal::audio->isPlaying())  
   {
-    bool extsync = extSyncFlag.value();
-    int frameOffset = audio->getFrameOffset();
-    unsigned nextTick = audio->nextTick();
+    bool extsync = MusEGlobal::extSyncFlag.value();
+    int frameOffset = MusEGlobal::audio->getFrameOffset();
+    unsigned nextTick = MusEGlobal::audio->nextTick();
     iMPEvent k;
     for (k = _stuckNotes.begin(); k != _stuckNotes.end(); ++k) {
           if (k->time() >= nextTick)  
@@ -568,7 +573,7 @@ void MidiDevice::processStuckNotes()
           if(extsync)              // p3.3.25
             ev.setTime(k->time());
           else 
-            ev.setTime(tempomap.tick2frame(k->time()) + frameOffset);
+            ev.setTime(MusEGlobal::tempomap.tick2frame(k->time()) + frameOffset);
           _playEvents.add(ev);
           }
     _stuckNotes.erase(_stuckNotes.begin(), k);
@@ -603,7 +608,7 @@ void MidiDevice::handleStop()
   //    reset sustain
   //---------------------------------------------------
   
-  MidiPort* mp = &midiPorts[_port];
+  MidiPort* mp = &MusEGlobal::midiPorts[_port];
   for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
   {
     if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
@@ -619,7 +624,7 @@ void MidiDevice::handleStop()
   //---------------------------------------------------
   
   // Don't send if external sync is on. The master, and our sync routing system will take care of that.   
-  if(!extSyncFlag.value())
+  if(!MusEGlobal::extSyncFlag.value())
   {
     // Shall we check open flags?
     //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
@@ -641,7 +646,7 @@ void MidiDevice::handleStop()
       // (Could try now that this is in MidiDevice. p4.0.22 )
       /*
       if(!si.sendContNotStart())
-        mp->sendSongpos(audio->tickPos() * 4 / MusEConfig::config.division);
+        mp->sendSongpos(MusEGlobal::audio->tickPos() * 4 / MusEGlobal::config.division);
       */  
     }
   }  
@@ -661,7 +666,7 @@ void MidiDevice::handleSeek()
   //    If playing, clear all notes and handle stuck notes
   //---------------------------------------------------
   
-  if(audio->isPlaying()) 
+  if(MusEGlobal::audio->isPlaying()) 
   {
     _playEvents.clear();
     for(iMPEvent i = _stuckNotes.begin(); i != _stuckNotes.end(); ++i) 
@@ -673,9 +678,9 @@ void MidiDevice::handleSeek()
     _stuckNotes.clear();
   }
   
-  MidiPort* mp = &midiPorts[_port];
+  MidiPort* mp = &MusEGlobal::midiPorts[_port];
   MidiCtrlValListList* cll = mp->controller();
-  int pos = audio->tickPos();
+  int pos = MusEGlobal::audio->tickPos();
   
   //---------------------------------------------------
   //    Send new contoller values
@@ -700,7 +705,7 @@ void MidiDevice::handleSeek()
   //---------------------------------------------------
     
   // Don't send if external sync is on. The master, and our sync routing system will take care of that.  
-  if(!extSyncFlag.value())
+  if(!MusEGlobal::extSyncFlag.value())
   {
     if(mp->syncInfo().MRTOut())
     {
@@ -711,12 +716,12 @@ void MidiDevice::handleSeek()
       //if(!(openFlags() & 1))
       //  continue;
       
-      int beat = (pos * 4) / MusEConfig::config.division;
+      int beat = (pos * 4) / MusEGlobal::config.division;
         
       //bool isPlaying = false;
       //if(state == PLAY)
       //  isPlaying = true;
-      bool isPlaying = audio->isPlaying();  // Check this it includes LOOP1 and LOOP2 besides PLAY.  p4.0.22
+      bool isPlaying = MusEGlobal::audio->isPlaying();  // Check this it includes LOOP1 and LOOP2 besides PLAY.  p4.0.22
         
       mp->sendStop();
       mp->sendSongpos(beat);
@@ -726,4 +731,5 @@ void MidiDevice::handleSeek()
   }
 }
 
+} // namespace MusECore
 

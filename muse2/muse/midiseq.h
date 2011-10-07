@@ -29,11 +29,13 @@
 #include "driver/alsatimer.h"
 #include "driver/rtctimer.h"
 
-class MPEventList;
-class SynthI;
-class MTC;
-class MidiPort;
+namespace MusECore {
+
 class MidiDevice;
+class MidiPort;
+class MPEventList;
+class MTC;
+class SynthI;
 
 //---------------------------------------------------------
 //   MidiSeq
@@ -113,7 +115,12 @@ class MidiSeq : public Thread {
       void msgSetMidiDevice(MidiPort*, MidiDevice*);
       };
 
-extern MidiSeq* midiSeq;
+} //namespace MusECore
+
+namespace MusEGlobal {
+extern MusECore::MidiSeq* midiSeq;
 extern volatile bool midiBusy;
+} // namespace MusEGlobal
+
 #endif
 

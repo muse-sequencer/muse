@@ -43,6 +43,7 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 
+namespace MusEGui {
 
 enum { COL_TICK = 0, COL_SMPTE, COL_LOCK, COL_NAME };
 
@@ -70,22 +71,22 @@ const QString MarkerItem::name() const
 
 bool MarkerItem::lock() const
       {
-      return _marker->type() == Pos::FRAMES;
+      return _marker->type() == MusECore::Pos::FRAMES;
       }
 
 //---------------------------------------------------------
 //   MarkerItem
 //---------------------------------------------------------
 
-MarkerItem::MarkerItem(QTreeWidget* parent, Marker* m)
+MarkerItem::MarkerItem(QTreeWidget* parent, MusECore::Marker* m)
   : QTreeWidgetItem(parent)
       {
       _marker = m;
       setText(COL_NAME, m->name());
       setTick(m->tick());
-      if (m->type() == Pos::FRAMES)
+      if (m->type() == MusECore::Pos::FRAMES)
             setIcon(COL_LOCK, QIcon(*lockIcon));
-      setLock(m->type() == Pos::FRAMES);
+      setLock(m->type() == MusECore::Pos::FRAMES);
       }
 
 //---------------------------------------------------------
@@ -95,7 +96,7 @@ MarkerItem::MarkerItem(QTreeWidget* parent, Marker* m)
 void MarkerItem::setName(const QString& s)
       {
       setText(COL_NAME, s);
-      _marker = song->setMarkerName(_marker, s);
+      _marker = MusEGlobal::song->setMarkerName(_marker, s);
       }
 
 //---------------------------------------------------------
@@ -105,7 +106,7 @@ void MarkerItem::setName(const QString& s)
 void MarkerItem::setLock(bool lck)
       {
       setIcon(COL_LOCK, QIcon(lck ? *lockIcon : 0));
-      _marker = song->setMarkerLock(_marker, lck);
+      _marker = MusEGlobal::song->setMarkerLock(_marker, lck);
       }
 
 //---------------------------------------------------------
@@ -115,7 +116,7 @@ void MarkerItem::setLock(bool lck)
 void MarkerItem::setTick(unsigned v)
       {
       if (_marker->tick() != v)
-            _marker = song->setMarkerTick(_marker, v);
+            _marker = MusEGlobal::song->setMarkerTick(_marker, v);
       QString s;
       int bar, beat;
       unsigned tick;
@@ -124,12 +125,12 @@ void MarkerItem::setTick(unsigned v)
       s.sprintf("%04d.%02d.%03d", bar+1, beat+1, tick);
       setText(COL_TICK, s);
 
-      double time = double(tempomap.tick2frame(v))/double(MusEGlobal::sampleRate);
+      double time = double(MusEGlobal::tempomap.tick2frame(v))/double(MusEGlobal::sampleRate);
       int hour = int(time) / 3600;
       int min  = (int(time) % 3600)/60;
       int sec  = int(time) % 60;
       double rest = time - (hour*3600 + min * 60 + sec);
-      switch(mtcType) {
+      switch(MusEGlobal::mtcType) {
             case 0:     // 24 frames sec
                   rest *= 24;
                   break;
@@ -270,17 +271,17 @@ MarkerView::MarkerView(QWidget* parent)
 
       connect(editName, SIGNAL(textChanged(const QString&)),
          SLOT(nameChanged(const QString&)));
-      connect(editTick, SIGNAL(valueChanged(const Pos&)),
-         SLOT(tickChanged(const Pos&)));
-      connect(editSMPTE, SIGNAL(valueChanged(const Pos&)),
-         SLOT(tickChanged(const Pos&)));
-      connect(editSMPTE, SIGNAL(valueChanged(const Pos&)),
-         editTick, SLOT(setValue(const Pos&)));
-      connect(editTick, SIGNAL(valueChanged(const Pos&)),
-         editSMPTE, SLOT(setValue(const Pos&)));
+      connect(editTick, SIGNAL(valueChanged(const MusECore::Pos&)),
+         SLOT(tickChanged(const MusECore::Pos&)));
+      connect(editSMPTE, SIGNAL(valueChanged(const MusECore::Pos&)),
+         SLOT(tickChanged(const MusECore::Pos&)));
+      connect(editSMPTE, SIGNAL(valueChanged(const MusECore::Pos&)),
+         editTick, SLOT(setValue(const MusECore::Pos&)));
+      connect(editTick, SIGNAL(valueChanged(const MusECore::Pos&)),
+         editSMPTE, SLOT(setValue(const MusECore::Pos&)));
       connect(lock, SIGNAL(toggled(bool)),
          SLOT(lockChanged(bool)));
-      connect(song, SIGNAL(markerChanged(int)),
+      connect(MusEGlobal::song, SIGNAL(markerChanged(int)),
          SLOT(markerChanged(int)));
 
       vbox->addWidget(table);
@@ -291,7 +292,7 @@ MarkerView::MarkerView(QWidget* parent)
       //---------------------------------------------------
 
       //connect(song, SIGNAL(songChanged(int)), SLOT(updateList()));
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       
       updateList();
 
@@ -318,21 +319,21 @@ MarkerView::~MarkerView()
 //   readStatus
 //---------------------------------------------------------
 
-void MarkerView::readStatus(Xml& xml)
+void MarkerView::readStatus(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
-            if (token == Xml::Error || token == Xml::End)
+            if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
                   break;
             switch (token) {
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag=="topwin")
                             TopWin::readStatus(xml);
                         else
                             xml.unknown("Marker");
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "marker")
                               return;
                   default:
@@ -345,7 +346,7 @@ void MarkerView::readStatus(Xml& xml)
 //   writeStatus
 //---------------------------------------------------------
 
-void MarkerView::writeStatus(int level, Xml& xml) const
+void MarkerView::writeStatus(int level, MusECore::Xml& xml) const
       {
       xml.tag(level++, "marker");
       TopWin::writeStatus(level, xml);
@@ -356,22 +357,22 @@ void MarkerView::writeStatus(int level, Xml& xml) const
 //   readConfiguration
 //---------------------------------------------------------
 
-void MarkerView::readConfiguration(Xml& xml)
+void MarkerView::readConfiguration(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
             switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return;
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "topwin")
                               TopWin::readConfiguration(MARKER, xml);
                         else
                               xml.unknown("MarkerView");
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "marker")
                               return;
                   default:
@@ -384,7 +385,7 @@ void MarkerView::readConfiguration(Xml& xml)
 //   writeConfiguration
 //---------------------------------------------------------
 
-void MarkerView::writeConfiguration(int level, Xml& xml)
+void MarkerView::writeConfiguration(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "marker");
       TopWin::writeConfiguration(MARKER, level, xml);
@@ -400,15 +401,15 @@ void MarkerView::addMarker()
       }
 void MarkerView::addMarker(int i)
       {
-      if( i==-1 ) i = song->cpos();
+      if( i==-1 ) i = MusEGlobal::song->cpos();
       
-      // Changed p3.3.43 Let Song::addMarker emit markerChanged(MARKER_ADD)
+      // Changed p3.3.43 Let MusECore::Song::addMarker emit markerChanged(MARKER_ADD)
       //  and handle it in MarkerView::markerChanged(int)
-      //Marker* m = song->addMarker(QString(""), i, false);
+      //MusECore::Marker* m = MusEGlobal::song->addMarker(QString(""), i, false);
       //MarkerItem* newItem = new MarkerItem(table, m);
       //table->setSelected(newItem, true);
       //
-      song->addMarker(QString(""), i, false);
+      MusEGlobal::song->addMarker(QString(""), i, false);
       }
 
 //---------------------------------------------------------
@@ -420,9 +421,9 @@ void MarkerView::deleteMarker()
       MarkerItem* item = (MarkerItem*)table->currentItem();
       if (item) {
             table->blockSignals(true);
-            song->removeMarker(item->marker());
+            MusEGlobal::song->removeMarker(item->marker());
             table->blockSignals(false);
-            // Removed p3.3.43 Let Song::removeMarker emit markerChanged(MARKER_REMOVE)
+            // Removed p3.3.43 Let MusECore::Song::removeMarker emit markerChanged(MARKER_REMOVE)
             //  and handle it in MarkerView::markerChanged(int)
             //delete item;
             }
@@ -448,9 +449,9 @@ void MarkerView::songChanged(int flags)
 void MarkerView::updateList()
 {
       // Added p3.3.43 Manage selected item, due to clearing of table...
-      MarkerList* marker = song->marker();
+      MusECore::MarkerList* marker = MusEGlobal::song->marker();
       MarkerItem* selitem     = (MarkerItem*)table->currentItem();
-      Marker* selm     = selitem ? selitem->marker() : 0;
+      MusECore::Marker* selm     = selitem ? selitem->marker() : 0;
       // p3.3.44 Look for removed markers before added markers...
       if(selitem)
       {
@@ -458,9 +459,9 @@ void MarkerView::updateList()
         while(mitem) 
         {
           bool found = false;
-          for(iMarker i = marker->begin(); i != marker->end(); ++i) 
+          for(MusECore::iMarker i = marker->begin(); i != marker->end(); ++i) 
           {
-            Marker* m = &i->second;
+            MusECore::Marker* m = &i->second;
             if(m == mitem->marker()) 
             {
               found = true;
@@ -485,9 +486,9 @@ void MarkerView::updateList()
         }
       }  
       // Look for added markers...
-      for(iMarker i = marker->begin(); i != marker->end(); ++i) 
+      for(MusECore::iMarker i = marker->begin(); i != marker->end(); ++i) 
       {
-        Marker* m = &i->second;
+        MusECore::Marker* m = &i->second;
         bool found = false;
         MarkerItem* item = (MarkerItem*)table->topLevelItem(0);
         while(item) 
@@ -509,10 +510,10 @@ void MarkerView::updateList()
       table->clear();
       table->blockSignals(false);
       
-      //MarkerList* marker = song->marker();
-      for (iMarker i = marker->begin(); i != marker->end(); ++i) 
+      //MusECore::MarkerList* marker = MusEGlobal::song->marker();
+      for (MusECore::iMarker i = marker->begin(); i != marker->end(); ++i) 
       {
-            Marker* m = &i->second;
+            MusECore::Marker* m = &i->second;
             
             // Changed p3.3.43 
             //QString tick;
@@ -570,8 +571,8 @@ void MarkerView::clicked(QTreeWidgetItem* i)
             table->clearSelection();
             return;
             }
-      Pos p(item->tick(), true);
-      song->setPos(0, p, true, true, false);
+      MusECore::Pos p(item->tick(), true);
+      MusEGlobal::song->setPos(0, p, true, true, false);
       }
 
 //---------------------------------------------------------
@@ -589,13 +590,13 @@ void MarkerView::nameChanged(const QString& s)
 //   tickChanged
 //---------------------------------------------------------
 
-void MarkerView::tickChanged(const Pos& pos)
+void MarkerView::tickChanged(const MusECore::Pos& pos)
       {
       MarkerItem* item = (MarkerItem*)table->currentItem();
       if (item) {
             item->setTick(pos.tick());
-            Pos p(pos.tick(), true);
-            song->setPos(0, p, true, true, false);
+            MusECore::Pos p(pos.tick(), true);
+            MusEGlobal::song->setPos(0, p, true, true, false);
             table->sortByColumn(COL_TICK, Qt::AscendingOrder);
             }
       }
@@ -621,23 +622,23 @@ void MarkerView::lockChanged(bool lck)
 
 void MarkerView::markerChanged(int val)
 {
-      //if (val != Song::MARKER_CUR)
+      //if (val != MusECore::Song::MARKER_CUR)
       //      return;
       // p3.3.43
       switch(val)
       {
          // MARKER_CUR, MARKER_ADD, MARKER_REMOVE, MARKER_NAME,
          // MARKER_TICK, MARKER_LOCK
-        case Song::MARKER_ADD:
-        case Song::MARKER_REMOVE:
+        case MusECore::Song::MARKER_ADD:
+        case MusECore::Song::MARKER_REMOVE:
           updateList();      
         break; // Try falling through and let it try to select something. No, let updateList() do it...
         
-        case Song::MARKER_CUR:
+        case MusECore::Song::MARKER_CUR:
         {
           
-          MarkerList* marker = song->marker();
-          for (iMarker i = marker->begin(); i != marker->end(); ++i) {
+          MusECore::MarkerList* marker = MusEGlobal::song->marker();
+          for (MusECore::iMarker i = marker->begin(); i != marker->end(); ++i) {
                 if (i->second.current()) {
                       MarkerItem* item = (MarkerItem*)table->topLevelItem(0);
                       while (item) {
@@ -659,30 +660,32 @@ void MarkerView::markerChanged(int val)
 
 void MarkerView::nextMarker()
       {
-      unsigned int curPos = song->cpos();//prevent compiler warning: comparison of sigend/unsigned
+      unsigned int curPos = MusEGlobal::song->cpos();//prevent compiler warning: comparison of sigend/unsigned
       unsigned int nextPos = 0xFFFFFFFF;
-      MarkerList* marker = song->marker();
-      for (iMarker i = marker->begin(); i != marker->end(); ++i) {
+      MusECore::MarkerList* marker = MusEGlobal::song->marker();
+      for (MusECore::iMarker i = marker->begin(); i != marker->end(); ++i) {
             if (i->second.tick() > curPos && i->second.tick() < nextPos)
               nextPos = i->second.tick();
             }
       if (nextPos == 0xFFFFFFFF)
           return;
-      Pos p(nextPos, true);
-      song->setPos(0, p, true, true, false);
+      MusECore::Pos p(nextPos, true);
+      MusEGlobal::song->setPos(0, p, true, true, false);
         
       }
 void MarkerView::prevMarker()
       {
-      unsigned int curPos = song->cpos();//prevent compiler warning: comparison of sigend/unsigned
+      unsigned int curPos = MusEGlobal::song->cpos();//prevent compiler warning: comparison of sigend/unsigned
       unsigned int nextPos = 0;
-      MarkerList* marker = song->marker();
-      for (iMarker i = marker->begin(); i != marker->end(); ++i) {
+      MusECore::MarkerList* marker = MusEGlobal::song->marker();
+      for (MusECore::iMarker i = marker->begin(); i != marker->end(); ++i) {
             if (i->second.tick() < curPos && i->second.tick() > nextPos)
               nextPos = i->second.tick();
             }
 /*      if (nextPos == 0)
           return;*/
-      Pos p(nextPos, true);
-      song->setPos(0, p, true, true, false);
+      MusECore::Pos p(nextPos, true);
+      MusEGlobal::song->setPos(0, p, true, true, false);
       }
+
+} // namespace MusEGui

@@ -28,11 +28,9 @@
 class QCheckBox;
 class QLabel;
 
-namespace MusEApp {
-class MusE;
-}
+namespace MusEGui {
 
-namespace MusEWidget {
+class MusE;
 
 //---------------------------------------------------------
 //   BigTime
@@ -42,7 +40,7 @@ class BigTime : public QWidget {
       Q_OBJECT
     
       bool tickmode;
-      MusEApp::MusE* seq;
+      MusE* seq;
       
 
       bool setString(unsigned);
@@ -78,6 +76,6 @@ class BigTime : public QWidget {
       BigTime(QWidget* parent);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif

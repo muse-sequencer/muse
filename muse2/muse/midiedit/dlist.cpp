@@ -39,6 +39,8 @@
 #include "song.h"
 #include "scrollscale.h"
 
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   draw
 //---------------------------------------------------------
@@ -62,7 +64,7 @@ void DList::draw(QPainter& p, const QRect& rect)
                   continue;
             if (yy > y + h)
                   break;
-            DrumMap* dm = &drumMap[i];
+            MusECore::DrumMap* dm = &MusEGlobal::drumMap[i];
             if (dm == currentlySelected)
                   p.fillRect(x, yy, w, TH, Qt::yellow);
 //            else
@@ -91,10 +93,10 @@ void DList::draw(QPainter& p, const QRect& rect)
                               s.setNum(dm->len);
                               break;
                         case COL_ANOTE:
-                              s =  MusEUtil::pitch2string(dm->anote);
+                              s =  MusECore::pitch2string(dm->anote);
                               break;
                         case COL_ENOTE:
-                              s =  MusEUtil::pitch2string(dm->enote);
+                              s =  MusECore::pitch2string(dm->enote);
                               break;
                         case COL_LV1:
                               s.setNum(dm->lv1);
@@ -127,7 +129,7 @@ void DList::draw(QPainter& p, const QRect& rect)
                               s.setNum(dm->channel+1);
                               break;
                         case COL_PORT:
-                              s.sprintf("%d:%s", dm->port+1, midiPorts[dm->port].portname().toLatin1().constData());
+                              s.sprintf("%d:%s", dm->port+1, MusEGlobal::midiPorts[dm->port].portname().toLatin1().constData());
                               align = Qt::AlignVCenter | Qt::AlignLeft;
                               break;
                         }
@@ -176,9 +178,9 @@ void DList::draw(QPainter& p, const QRect& rect)
 //   devicesPopupMenu
 //---------------------------------------------------------
 
-void DList::devicesPopupMenu(DrumMap* t, int x, int y, bool changeAll)
+void DList::devicesPopupMenu(MusECore::DrumMap* t, int x, int y, bool changeAll)
       {
-      QMenu* p = midiPortsPopup();
+      QMenu* p = MusECore::midiPortsPopup();
       QAction* act = p->exec(mapToGlobal(QPoint(x, y)), 0);
       bool doemit = false;
       if (act) {
@@ -187,24 +189,24 @@ void DList::devicesPopupMenu(DrumMap* t, int x, int y, bool changeAll)
             {
                 if(n != t->port)
                 {
-                  audio->msgIdle(true);
-                  song->remapPortDrumCtrlEvents(getSelectedInstrument(), -1, -1, n);
-                  audio->msgIdle(false);
+                  MusEGlobal::audio->msgIdle(true);
+                  MusEGlobal::song->remapPortDrumCtrlEvents(getSelectedInstrument(), -1, -1, n);
+                  MusEGlobal::audio->msgIdle(false);
                   t->port = n;
                   doemit = true;
                 }  
             }      
             else {
-                  audio->msgIdle(true);
+                  MusEGlobal::audio->msgIdle(true);
                   // Delete all port controller events.
-                  song->changeAllPortDrumCtrlEvents(false);
+                  MusEGlobal::song->changeAllPortDrumCtrlEvents(false);
                   
                   for (int i = 0; i < DRUM_MAPSIZE; i++)
-                        drumMap[i].port = n;
+                        MusEGlobal::drumMap[i].port = n;
                   // Add all port controller events.
-                  song->changeAllPortDrumCtrlEvents(true);
+                  MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
                   
-                  audio->msgIdle(false);
+                  MusEGlobal::audio->msgIdle(false);
                   doemit = true;
                   }
             }
@@ -214,7 +216,7 @@ void DList::devicesPopupMenu(DrumMap* t, int x, int y, bool changeAll)
         int instr = getSelectedInstrument();
         if(instr != -1)
           //emit curDrumInstrumentChanged(instr);
-          song->update(SC_DRUMMAP);
+          MusEGlobal::song->update(SC_DRUMMAP);
       }            
     }
 
@@ -228,7 +230,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
       int y      = ev->y();
       int button = ev->button();
       unsigned pitch = y / TH;
-      DrumMap* dm = &drumMap[pitch];
+      MusECore::DrumMap* dm = &MusEGlobal::drumMap[pitch];
 
       setCurDrumInstrument(pitch);
 
@@ -286,18 +288,18 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                         val = 0;
                   else if (val > 127)
                         val = 127;
-                  //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
+                  //Check if there is any other MusEGlobal::drumMap with the same inmap value (there should be one (and only one):-)
                   //If so, switch the inmap between the instruments
                   for (int i=0; i<DRUM_MAPSIZE; i++) {
-                        if (drumMap[i].enote == val && &drumMap[i] != dm) {
-                              drumInmap[int(dm->enote)] = i;
-                              drumMap[i].enote = dm->enote;
+                        if (MusEGlobal::drumMap[i].enote == val && &MusEGlobal::drumMap[i] != dm) {
+                              MusEGlobal::drumInmap[int(dm->enote)] = i;
+                              MusEGlobal::drumMap[i].enote = dm->enote;
                               break;
                               }
                         }
                   //TODO: Set all the notes on the track with pitch=dm->enote to pitch=val
                   dm->enote = val;
-                  drumInmap[val] = pitch;
+                  MusEGlobal::drumInmap[val] = pitch;
                   break;
             case COL_LEN:
                   val = dm->len + incVal;
@@ -314,11 +316,11 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                           val = 127;
                     if(val != dm->anote)
                     {
-                      audio->msgIdle(true);
-                      song->remapPortDrumCtrlEvents(pitch, val, -1, -1);
-                      audio->msgIdle(false);
+                      MusEGlobal::audio->msgIdle(true);
+                      MusEGlobal::song->remapPortDrumCtrlEvents(pitch, val, -1, -1);
+                      MusEGlobal::audio->msgIdle(false);
                       dm->anote = val;
-                      song->update(SC_DRUMMAP);
+                      MusEGlobal::song->update(SC_DRUMMAP);
                     }
                     int velocity = 127 * float(ev->x()) / width();
                     emit keyPressed(pitch, velocity);//(dm->anote, shift);
@@ -332,26 +334,26 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                         val = 127;
                   
                   if (ev->modifiers() & Qt::ControlModifier) {
-                        audio->msgIdle(true);
+                        MusEGlobal::audio->msgIdle(true);
                         // Delete all port controller events.
-                        song->changeAllPortDrumCtrlEvents(false, true);
+                        MusEGlobal::song->changeAllPortDrumCtrlEvents(false, true);
                         
                         for (int i = 0; i < DRUM_MAPSIZE; i++)
-                              drumMap[i].channel = val;
+                              MusEGlobal::drumMap[i].channel = val;
                         // Add all port controller events.
-                        song->changeAllPortDrumCtrlEvents(true, true);
-                        audio->msgIdle(false);
-                        song->update(SC_DRUMMAP);
+                        MusEGlobal::song->changeAllPortDrumCtrlEvents(true, true);
+                        MusEGlobal::audio->msgIdle(false);
+                        MusEGlobal::song->update(SC_DRUMMAP);
                         }
                   else
                   {
                       if(val != dm->channel)
                       {
-                        audio->msgIdle(true);
-                        song->remapPortDrumCtrlEvents(pitch, -1, val, -1);
-                        audio->msgIdle(false);
+                        MusEGlobal::audio->msgIdle(true);
+                        MusEGlobal::song->remapPortDrumCtrlEvents(pitch, -1, val, -1);
+                        MusEGlobal::audio->msgIdle(false);
                         dm->channel = val;
-                        song->update(SC_DRUMMAP);
+                        MusEGlobal::song->update(SC_DRUMMAP);
                       }  
                   }      
                   break;
@@ -428,7 +430,7 @@ void DList::viewMouseDoubleClickEvent(QMouseEvent* ev)
 //---------------------------------------------------------
 void DList::lineEdit(int line, int section)
       {
-            DrumMap* dm = &drumMap[line];
+            MusECore::DrumMap* dm = &MusEGlobal::drumMap[line];
             editEntry = dm;
             if (editor == 0) {
                   editor = new DLineEdit(this);
@@ -496,7 +498,7 @@ void DList::lineEdit(int line, int section)
 //---------------------------------------------------------
 void DList::pitchEdit(int line, int section)
       {
-            DrumMap* dm = &drumMap[line];
+            MusECore::DrumMap* dm = &MusEGlobal::drumMap[line];
             editEntry = dm;
             if (pitch_editor == 0) {
                   pitch_editor = new DPitchEdit(this);
@@ -552,11 +554,11 @@ void DList::setCurDrumInstrument(int instr)
       {
       if (instr < 0 || instr >= DRUM_MAPSIZE -1)
         return; // illegal instrument
-      DrumMap* dm = &drumMap[instr];
+      MusECore::DrumMap* dm = &MusEGlobal::drumMap[instr];
       if (currentlySelected != dm) {
-            currentlySelected = &drumMap[instr];
+            currentlySelected = &MusEGlobal::drumMap[instr];
             emit curDrumInstrumentChanged(instr);
-            song->update(SC_DRUMMAP);
+            MusEGlobal::song->update(SC_DRUMMAP);
             }
       }
 
@@ -668,33 +670,33 @@ void DList::returnPressed()
 void DList::pitchEdited()
 {
       int val=pitch_editor->value();
-      int pitch=(editEntry-drumMap);
+      int pitch=(editEntry-MusEGlobal::drumMap);
       
       switch(selectedColumn) {
             case COL_ANOTE:
                     if(val != editEntry->anote)
                     {
-                      audio->msgIdle(true);
-                      song->remapPortDrumCtrlEvents(pitch, val, -1, -1);
-                      audio->msgIdle(false);
+                      MusEGlobal::audio->msgIdle(true);
+                      MusEGlobal::song->remapPortDrumCtrlEvents(pitch, val, -1, -1);
+                      MusEGlobal::audio->msgIdle(false);
                       editEntry->anote = val;
-                      song->update(SC_DRUMMAP);
+                      MusEGlobal::song->update(SC_DRUMMAP);
                     }
                   break;
 
             case COL_ENOTE:
-                  //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
+                  //Check if there is any other MusEGlobal::drumMap with the same inmap value (there should be one (and only one):-)
                   //If so, switch the inmap between the instruments
                   for (int i=0; i<DRUM_MAPSIZE; i++) {
-                        if (drumMap[i].enote == val && &drumMap[i] != editEntry) {
-                              drumInmap[int(editEntry->enote)] = i;
-                              drumMap[i].enote = editEntry->enote;
+                        if (MusEGlobal::drumMap[i].enote == val && &MusEGlobal::drumMap[i] != editEntry) {
+                              MusEGlobal::drumInmap[int(editEntry->enote)] = i;
+                              MusEGlobal::drumMap[i].enote = editEntry->enote;
                               break;
                               }
                         }
                   //TODO: Set all the notes on the track with pitch=dm->enote to pitch=val
                   editEntry->enote = val;
-                  drumInmap[val] = pitch;
+                  MusEGlobal::drumInmap[val] = pitch;
                   break;
             default:
                   printf("Value changed in unknown column\n");
@@ -740,7 +742,7 @@ void DList::songChanged(int flags)
 //---------------------------------------------------------
 
 DList::DList(QHeaderView* h, QWidget* parent, int ymag)
-   : MusEWidget::View(parent, 1, ymag)
+   : MusEGui::View(parent, 1, ymag)
       {
       setBg(Qt::white);
       if (!h){
@@ -757,7 +759,7 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag)
       pitch_editor = 0;
       editEntry = 0;
       // always select a drum instrument
-      currentlySelected = &drumMap[0];
+      currentlySelected = &MusEGlobal::drumMap[0];
       selectedColumn = -1;
       }
 
@@ -805,7 +807,7 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
             int y = ev->y();
             unsigned dPitch = y / TH;
             setCursor(QCursor(Qt::ArrowCursor));
-            currentlySelected = &drumMap[int(dPitch)];
+            currentlySelected = &MusEGlobal::drumMap[int(dPitch)];
             emit curDrumInstrumentChanged(dPitch);
             emit mapChanged(sPitch, dPitch); //Track pitch change done in canvas
             }
@@ -840,7 +842,7 @@ int DList::getSelectedInstrument()
       {
       if (currentlySelected == 0)
             return -1;
-      return drumInmap[int(currentlySelected->enote)];
+      return MusEGlobal::drumInmap[int(currentlySelected->enote)];
       }
 
-
+} // namespace MusEGui

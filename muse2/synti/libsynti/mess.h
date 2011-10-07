@@ -81,7 +81,7 @@ class Mess {
       // the synti has to (re-)implement processEvent() or provide
       // some of the next three functions:
 
-      virtual bool processEvent(const MidiPlayEvent&);
+      virtual bool processEvent(const MusECore::MidiPlayEvent&);
       virtual bool setController(int, int, int) { return false; }
       virtual bool playNote(int, int, int) { return false; }
       virtual bool sysex(int, const unsigned char*) { return false; }
@@ -92,8 +92,8 @@ class Mess {
       virtual const MidiPatch* getPatchInfo(int, const MidiPatch*) const { return 0; }
 
       // synthesizer -> host communication
-      void sendEvent(MidiPlayEvent);  // called from synti
-      MidiPlayEvent receiveEvent();   // called from host
+      void sendEvent(MusECore::MidiPlayEvent);  // called from synti
+      MusECore::MidiPlayEvent receiveEvent();   // called from host
       int eventsPending() const;
 
       // GUI interface routines

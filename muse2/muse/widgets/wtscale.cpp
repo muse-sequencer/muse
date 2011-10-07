@@ -34,7 +34,7 @@
 #include "../marker/marker.h"
 #include "icons.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   WTScale
@@ -47,15 +47,15 @@ WTScale::WTScale(int* r, QWidget* parent, int xs)
       QToolTip::add(this, tr("bar scale"));
       barLocator = false;
       raster = r;
-      pos[0] = int(song->tempomap()->tick2time(song->cpos()) * sampleRate);
-      pos[1] = int(song->tempomap()->tick2time(song->lpos()) * sampleRate);
-      pos[2] = int(song->tempomap()->tick2time(song->rpos()) * sampleRate);
+      pos[0] = int(MusEGlobal::song->tempomap()->tick2time(MusEGlobal::song->cpos()) * sampleRate);
+      pos[1] = int(MusEGlobal::song->tempomap()->tick2time(MusEGlobal::song->lpos()) * sampleRate);
+      pos[2] = int(MusEGlobal::song->tempomap()->tick2time(MusEGlobal::song->rpos()) * sampleRate);
       pos[3] = -1;            // do not show
       button = Qt::NoButton;
       setMouseTracking(true);
-      connect(song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      connect(song, SIGNAL(markerChanged(int)), SLOT(redraw()));
+      connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(markerChanged(int)), SLOT(redraw()));
       setFixedHeight(28);
       setBg(QColor(0xe0, 0xe0, 0xe0));
       }
@@ -74,7 +74,7 @@ void WTScale::songChanged(int /*type*/)
 
 void WTScale::setPos(int idx, unsigned val, bool adjustScrollbar)
       {
-      val = int(song->tempomap()->tick2time(val) * sampleRate);
+      val = int(MusEGlobal::song->tempomap()->tick2time(val) * sampleRate);
       if (val == pos[idx])
             return;
       int opos = mapx(pos[idx] == -1 ? val : pos[idx]);
@@ -120,8 +120,8 @@ void WTScale::viewMouseReleaseEvent(QMouseEvent* event)
 
 void WTScale::viewMouseMoveEvent(QMouseEvent* event)
       {
-      int x= song->tempomap()->time2tick(double(event->x())/double(sampleRate));
-      x = song->raster(x, *raster);
+      int x= MusEGlobal::song->tempomap()->time2tick(double(event->x())/double(sampleRate));
+      x = MusEGlobal::song->raster(x, *raster);
       if (x < 0)
             x = 0;
       emit timeChanged(x);
@@ -134,7 +134,7 @@ void WTScale::viewMouseMoveEvent(QMouseEvent* event)
                   i = 1;
                   break;
             case Qt::RightButton:
-                  if ((MusEConfig::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
+                  if ((MusEGlobal::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
                       i = 1;
                   else
                       i = 2;
@@ -142,7 +142,7 @@ void WTScale::viewMouseMoveEvent(QMouseEvent* event)
             default:
                   return;
             }
-      song->setPos(i, x);
+      MusEGlobal::song->setPos(i, x);
       }
 
 //---------------------------------------------------------
@@ -175,7 +175,7 @@ void WTScale::pdraw(QPainter& p, const QRect& r)
       p.drawLine(r.x(), y+1, r.x() + r.width(), y+1);
       QRect tr(r);
       tr.setHeight(12);
-      MarkerList* marker = song->marker();
+      MarkerList* marker = MusEGlobal::song->marker();
       for (iMarker m = marker->begin(); m != marker->end(); ++m) {
             int xp = mapx(int(m->second.time() * sampleRate));
             if (xp > x+w)
@@ -239,19 +239,19 @@ void WTScale::pdraw(QPainter& p, const QRect& r)
                   p.drawLine(xp, 0, xp, height());
             }
 
-      int ctick = song->samples2tick(mapxDev(x));
+      int ctick = MusEGlobal::song->samples2tick(mapxDev(x));
       int bar1, bar2, beat, tick;
-      song->tickValues(ctick, &bar1, &beat, &tick);
-      song->tickValues(song->samples2tick(mapxDev(x+w)), &bar2, &beat, &tick);
+      MusEGlobal::song->tickValues(ctick, &bar1, &beat, &tick);
+      MusEGlobal::song->tickValues(MusEGlobal::song->samples2tick(mapxDev(x+w)), &bar2, &beat, &tick);
 
 //printf("bar %d  %d-%d=%d\n", bar, ntick, stick, ntick-stick);
 
-      int stick = song->bar2tick(bar1, 0, 0);
+      int stick = MusEGlobal::song->bar2tick(bar1, 0, 0);
       int ntick;
       for (int bar = bar1; bar <= bar2; bar++, stick = ntick) {
-            ntick     = song->bar2tick(bar+1, 0, 0);
-            int a = song->tick2samples(ntick);
-            int b = song->tick2samples(stick);
+            ntick     = MusEGlobal::song->bar2tick(bar+1, 0, 0);
+            int a = MusEGlobal::song->tick2samples(ntick);
+            int b = MusEGlobal::song->tick2samples(stick);
             int tpix  = rmapx(a - b);
             if (tpix < 64) {
                   // don´t show beats if measure is this small
@@ -278,9 +278,9 @@ void WTScale::pdraw(QPainter& p, const QRect& r)
                   }
             else {
                   int z, n;
-                  song->timesig(stick, z, n);
+                  MusEGlobal::song->timesig(stick, z, n);
                   for (int beat = 0; beat < z; beat++) {
-                        int xx = song->tick2samples(song->bar2tick(bar, beat, 0));
+                        int xx = MusEGlobal::song->tick2samples(MusEGlobal::song->bar2tick(bar, beat, 0));
                         int xp = mapx(xx);
                         QString s;
                         QRect r(xp+2, y, 0, h);
@@ -305,5 +305,5 @@ void WTScale::pdraw(QPainter& p, const QRect& r)
             }
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui
 

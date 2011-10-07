@@ -37,6 +37,8 @@
 #include <set>
 using std::set;
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   adjustGlobalLists
 //    helper that adjusts tempo, sig, key and marker
@@ -46,9 +48,9 @@ using std::set;
 
 void adjustGlobalLists(Undo& operations, int startPos, int diff)
 {
-  const TempoList* t = &tempomap;
+  const TempoList* t = &MusEGlobal::tempomap;
   const AL::SigList* s   = &AL::sigmap;
-  const KeyList* k   = &keymap;
+  const KeyList* k   = &MusEGlobal::keymap;
 
   criTEvent it   = t->rbegin();
   AL::criSigEvent is = s->rbegin();
@@ -106,7 +108,7 @@ void adjustGlobalLists(Undo& operations, int startPos, int diff)
     }
   }
 
-  MarkerList *markerlist = song->marker();
+  MarkerList *markerlist = MusEGlobal::song->marker();
   for(iMarker i = markerlist->begin(); i != markerlist->end(); ++i)
   {
       Marker* m = &i->second;
@@ -137,13 +139,13 @@ void adjustGlobalLists(Undo& operations, int startPos, int diff)
 
 void globalCut()
       {
-      int lpos = song->lpos();
-      int rpos = song->rpos();
+      int lpos = MusEGlobal::song->lpos();
+      int rpos = MusEGlobal::song->rpos();
       if ((lpos - rpos) >= 0)
             return;
 
       Undo operations;
-      TrackList* tracks = song->tracks();
+      TrackList* tracks = MusEGlobal::song->tracks();
       bool at_least_one_selected=false;
       
       for (iTrack it = tracks->begin(); it != tracks->end(); ++it)
@@ -234,7 +236,7 @@ void globalCut()
       int diff = lpos - rpos;
       adjustGlobalLists(operations, lpos, diff);
 
-      song->applyOperationGroup(operations);
+      MusEGlobal::song->applyOperationGroup(operations);
       }
 
 //---------------------------------------------------------
@@ -246,8 +248,8 @@ void globalCut()
 
 void globalInsert()
       {
-      Undo operations=movePartsTotheRight(song->lpos(), song->rpos()-song->lpos(), true);
-      song->applyOperationGroup(operations);
+      Undo operations=movePartsTotheRight(MusEGlobal::song->lpos(), MusEGlobal::song->rpos()-MusEGlobal::song->lpos(), true);
+      MusEGlobal::song->applyOperationGroup(operations);
       }
 
 
@@ -257,7 +259,7 @@ Undo movePartsTotheRight(unsigned int startTicks, int moveTicks, bool only_selec
             return Undo();
 
       Undo operations;
-      TrackList* tracks = song->tracks();
+      TrackList* tracks = MusEGlobal::song->tracks();
       bool at_least_one_selected=false;
       
       for (iTrack it = tracks->begin(); it != tracks->end(); ++it)
@@ -317,9 +319,9 @@ Undo movePartsTotheRight(unsigned int startTicks, int moveTicks, bool only_selec
 
 void globalSplit()
       {
-      int pos = song->cpos();
+      int pos = MusEGlobal::song->cpos();
       Undo operations;
-      TrackList* tracks = song->tracks();
+      TrackList* tracks = MusEGlobal::song->tracks();
       bool at_least_one_selected=false;
       
       for (iTrack it = tracks->begin(); it != tracks->end(); ++it)
@@ -344,17 +346,18 @@ void globalSplit()
                         Part* p2;
                         track->splitPart(part, pos, p1, p2);
 
-                        p1->events()->incARef(-1); // the later song->applyOperationGroup() will increment it
+                        p1->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
                         p2->events()->incARef(-1); // so we must decrement it first :/
 
-                        //song->informAboutNewParts(part, p1); // is unneccessary because of ModifyPart
-                        song->informAboutNewParts(part, p2);
+                        //MusEGlobal::song->informAboutNewParts(part, p1); // is unneccessary because of ModifyPart
+                        MusEGlobal::song->informAboutNewParts(part, p2);
                         operations.push_back(UndoOp(UndoOp::ModifyPart,part, p1, true, false));
                         operations.push_back(UndoOp(UndoOp::AddPart,p2));
                         break;
                         }
                   }
             }
-      song->applyOperationGroup(operations);
+      MusEGlobal::song->applyOperationGroup(operations);
       }
 
+} // namespace MusECore

@@ -26,7 +26,7 @@
 #include "scldiv.h"
 #include "mmath.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //	ScaleDiv - A class for building  scale divisions
 //
@@ -84,10 +84,10 @@ static bool limRange(double &val, double v1, double v2, double eps_rel = 0.0,
       {
 
     bool rv = TRUE;
-    double vmin = MusEUtil::qwtMin(v1, v2);
-    double vmax = MusEUtil::qwtMax(v1, v2);
-    double delta_min = MusEUtil::qwtMax(MusEUtil::qwtAbs(eps_rel * vmin), MusEUtil::qwtAbs(eps_abs));
-    double delta_max = MusEUtil::qwtMax(MusEUtil::qwtAbs(eps_rel * vmax), MusEUtil::qwtAbs(eps_abs));
+    double vmin = MusECore::qwtMin(v1, v2);
+    double vmax = MusECore::qwtMax(v1, v2);
+    double delta_min = MusECore::qwtMax(MusECore::qwtAbs(eps_rel * vmin), MusECore::qwtAbs(eps_abs));
+    double delta_max = MusECore::qwtMax(MusECore::qwtAbs(eps_rel * vmax), MusECore::qwtAbs(eps_abs));
 
     if (val < vmin)
     {
@@ -233,8 +233,8 @@ bool ScaleDiv::rebuild(double x1, double x2, int maxMajSteps, int maxMinSteps,
 
   int rv;
 
-  d_lBound = MusEUtil::qwtMin(x1, x2);
-  d_hBound = MusEUtil::qwtMax(x1, x2);
+  d_lBound = MusECore::qwtMin(x1, x2);
+  d_hBound = MusECore::qwtMax(x1, x2);
   d_log = log;
 
   if (d_log)
@@ -246,8 +246,8 @@ bool ScaleDiv::rebuild(double x1, double x2, int maxMajSteps, int maxMinSteps,
   {
       d_lBound = x1;
       d_hBound = x2;
-      MusEUtil::qwtTwistArray(d_majMarks.data(), d_majMarks.size());
-      MusEUtil::qwtTwistArray(d_minMarks.data(), d_minMarks.size());
+      MusECore::qwtTwistArray(d_majMarks.data(), d_majMarks.size());
+      MusECore::qwtTwistArray(d_minMarks.data(), d_minMarks.size());
   }
 
   return rv;
@@ -293,9 +293,9 @@ bool ScaleDiv::buildLinDiv(int maxMajSteps, int maxMinSteps, double step)
     bool rv = TRUE;
 
     // parameter range check
-    maxMajSteps = MusEUtil::qwtMax(1, maxMajSteps);
-    maxMinSteps = MusEUtil::qwtMax(0, maxMinSteps);
-    step = MusEUtil::qwtAbs(step);
+    maxMajSteps = MusECore::qwtMax(1, maxMajSteps);
+    maxMinSteps = MusECore::qwtMax(0, maxMinSteps);
+    step = MusECore::qwtAbs(step);
 
     // reset vectors
     d_minMarks.resize(0);
@@ -307,7 +307,7 @@ bool ScaleDiv::buildLinDiv(int maxMajSteps, int maxMinSteps, double step)
     // Set up major divisions
     //
     if (step == 0.0)
-       d_majStep = MusEUtil::qwtCeil125(MusEUtil::qwtAbs(d_hBound - d_lBound) * 0.999999
+       d_majStep = MusECore::qwtCeil125(MusECore::qwtAbs(d_hBound - d_lBound) * 0.999999
 			      / double(maxMajSteps));
     else
        d_majStep = step;
@@ -317,10 +317,10 @@ bool ScaleDiv::buildLinDiv(int maxMajSteps, int maxMinSteps, double step)
     firstTick = ceil( (d_lBound - step_eps * d_majStep) / d_majStep) * d_majStep;
     lastTick = floor( (d_hBound + step_eps * d_majStep) / d_majStep) * d_majStep;
 
-    nMaj = MusEUtil::qwtMin(10000, int(rint((lastTick - firstTick) / d_majStep)) + 1);
+    nMaj = MusECore::qwtMin(10000, int(rint((lastTick - firstTick) / d_majStep)) + 1);
     
     d_majMarks.resize(nMaj);
-    MusEUtil::qwtLinSpace(d_majMarks.data(), d_majMarks.size(), firstTick, lastTick);
+    MusECore::qwtLinSpace(d_majMarks.data(), d_majMarks.size(), firstTick, lastTick);
 
     //
     // Set up minor divisions
@@ -328,14 +328,14 @@ bool ScaleDiv::buildLinDiv(int maxMajSteps, int maxMinSteps, double step)
     if (maxMinSteps < 1) // no minor divs
        return TRUE;
 
-    minStep = MusEUtil::qwtCeil125( d_majStep  /  double(maxMinSteps) );
+    minStep = MusECore::qwtCeil125( d_majStep  /  double(maxMinSteps) );
 
     if (minStep == 0.0) return TRUE;
 
-    nMin = MusEUtil::qwtAbs(int(rint(d_majStep / minStep))) - 1; // # minor steps per interval
+    nMin = MusECore::qwtAbs(int(rint(d_majStep / minStep))) - 1; // # minor steps per interval
 
     // Do the minor steps fit into the interval?
-    if ( MusEUtil::qwtAbs(double(nMin +  1) * minStep - d_majStep) >  step_eps * d_majStep)
+    if ( MusECore::qwtAbs(double(nMin +  1) * minStep - d_majStep) >  step_eps * d_majStep)
     {
 	nMin = 1;
 	minStep = d_majStep * 0.5;
@@ -410,9 +410,9 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
 
 
     // Parameter range check
-    maxMajSteps = MusEUtil::qwtMax(1, MusEUtil::qwtAbs(maxMajSteps));
-    maxMinSteps = MusEUtil::qwtMax(0, MusEUtil::qwtAbs(maxMinSteps));
-    majStep = MusEUtil::qwtAbs(majStep);
+    maxMajSteps = MusECore::qwtMax(1, MusECore::qwtAbs(maxMajSteps));
+    maxMinSteps = MusECore::qwtMax(0, MusECore::qwtAbs(maxMinSteps));
+    majStep = MusECore::qwtAbs(majStep);
 
     // boundary check
     limRange(d_hBound, LOG_MIN, LOG_MAX);
@@ -442,12 +442,12 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
     //  Set up major scale divisions
     //
     if (majStep == 0.0)
-       d_majStep = MusEUtil::qwtCeil125( width * 0.999999 / double(maxMajSteps));
+       d_majStep = MusECore::qwtCeil125( width * 0.999999 / double(maxMajSteps));
     else
        d_majStep = majStep;
 
     // major step must be >= 1 decade
-    d_majStep = MusEUtil::qwtMax(d_majStep, 1.0);
+    d_majStep = MusECore::qwtMax(d_majStep, 1.0);
 
 
     lFirst = ceil((log10(d_lBound) - step_eps * d_majStep) / d_majStep) * d_majStep;
@@ -456,10 +456,10 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
     firstTick = pow(10.0, lFirst);
     lastTick = pow(10.0, lLast);
 
-    nMaj = MusEUtil::qwtMin(10000, int(rint(MusEUtil::qwtAbs(lLast - lFirst) / d_majStep)) + 1);
+    nMaj = MusECore::qwtMin(10000, int(rint(MusECore::qwtAbs(lLast - lFirst) / d_majStep)) + 1);
 
     d_majMarks.resize(nMaj);
-    MusEUtil::qwtLogSpace(d_majMarks.data(), d_majMarks.size(), firstTick, lastTick);
+    MusECore::qwtLogSpace(d_majMarks.data(), d_majMarks.size(), firstTick, lastTick);
 
 
     //
@@ -538,15 +538,15 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
     {
 	
 	// substep width in decades, at least one decade
-	minStep = MusEUtil::qwtCeil125( (d_majStep - step_eps * (d_majStep / double(maxMinSteps)))
+	minStep = MusECore::qwtCeil125( (d_majStep - step_eps * (d_majStep / double(maxMinSteps)))
 			 /  double(maxMinSteps) );
-	minStep = MusEUtil::qwtMax(1.0, minStep);
+	minStep = MusECore::qwtMax(1.0, minStep);
 
 	// # subticks per interval
 	nMin = int(rint(d_majStep / minStep)) - 1;
 
 	// Do the minor steps fit into the interval?
-	if ( MusEUtil::qwtAbs( double(nMin + 1) * minStep - d_majStep)  >  step_eps * d_majStep)
+	if ( MusECore::qwtAbs( double(nMin + 1) * minStep - d_majStep)  >  step_eps * d_majStep)
 	    nMin = 0;
 
 	if (nMin < 1) return TRUE;		// no subticks
@@ -555,7 +555,7 @@ bool ScaleDiv::buildLogDiv(int maxMajSteps, int maxMinSteps, double majStep)
 	buffer.resize((d_majMarks.size() + 1) * nMin );
 	
 	// substep factor = 10^substeps
-	minFactor = MusEUtil::qwtMax(pow(10,minStep), 10.0);
+	minFactor = MusECore::qwtMax(pow(10,minStep), 10.0);
 
 	// Are there minor ticks below the first major tick?
 	if ( d_lBound < firstTick )
@@ -659,7 +659,7 @@ void ScaleDiv::reset()
       d_log = FALSE;
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 
 

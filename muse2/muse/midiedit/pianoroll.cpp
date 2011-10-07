@@ -68,20 +68,22 @@
 
 #include "mtrackinfo.h"
 
+namespace MusEGui {
+
 int PianoRoll::_rasterInit = 96;
 int PianoRoll::colorModeInit = 0;
 
 static const int xscale = -10;
 static const int yscale = 1;
 static const int pianoWidth = 40;
-static int pianorollTools = MusEWidget::PointerTool | MusEWidget::PencilTool | MusEWidget::RubberTool | MusEWidget::DrawTool;
+static int pianorollTools = MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool | MusEGui::DrawTool;
 
 
 //---------------------------------------------------------
 //   PianoRoll
 //---------------------------------------------------------
 
-PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned initPos)
+PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, unsigned initPos)
    : MidiEditor(TopWin::PIANO_ROLL, _rasterInit, pl, parent, name)
       {
       deltaMode = false;
@@ -214,7 +216,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
             
                   
       menuPlugins = menuBar()->addMenu(tr("&Plugins"));
-      song->populateScriptMenu(menuPlugins, this);
+      MusEGlobal::song->populateScriptMenu(menuPlugins, this);
 
       connect(mapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
       
@@ -282,7 +284,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       speaker->setCheckable(true);
       tools->addWidget(speaker);
 
-      tools2 = new MusEWidget::EditToolBar(this, pianorollTools);
+      tools2 = new MusEGui::EditToolBar(this, pianorollTools);
       addToolBar(tools2);
 
       QToolBar* panicToolbar = addToolBar(tr("panic"));         
@@ -296,32 +298,32 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       transport->addActions(MusEGlobal::transportAction->actions());
 
       addToolBarBreak();
-      toolbar = new MusEWidget::Toolbar1(this, _rasterInit);
+      toolbar = new MusEGui::Toolbar1(this, _rasterInit);
       addToolBar(toolbar);
 
       addToolBarBreak();
-      info    = new MusEWidget::NoteInfo(this);
+      info    = new MusEGui::NoteInfo(this);
       addToolBar(info);
 
       //---------------------------------------------------
       //    split
       //---------------------------------------------------
 
-      splitter = new MusEWidget::Splitter(Qt::Vertical, mainw, "splitter");
+      splitter = new MusEGui::Splitter(Qt::Vertical, mainw, "splitter");
       splitter->setHandleWidth(2);  
       
-      hsplitter = new MusEWidget::Splitter(Qt::Horizontal, mainw, "hsplitter");
+      hsplitter = new MusEGui::Splitter(Qt::Horizontal, mainw, "hsplitter");
       hsplitter->setChildrenCollapsible(true);
       hsplitter->setHandleWidth(2);
       
       QPushButton* ctrl = new QPushButton(tr("ctrl"), mainw);
       //QPushButton* ctrl = new QPushButton(tr("C"), mainw);  // Tim.
       ctrl->setObjectName("Ctrl");
-      ctrl->setFont(MusEConfig::config.fonts[3]);
+      ctrl->setFont(MusEGlobal::config.fonts[3]);
       ctrl->setToolTip(tr("Add Controller View"));
-      //hscroll = new MusEWidget::ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
+      //hscroll = new MusEGui::ScrollScale(-25, -2, xscale, 20000, Qt::Horizontal, mainw);
       // Increased scale to -1. To resolve/select/edit 1-tick-wide (controller graph) events. p4.0.18 Tim.
-      hscroll = new MusEWidget::ScrollScale(-25, -1, xscale, 20000, Qt::Horizontal, mainw);
+      hscroll = new MusEGui::ScrollScale(-25, -1, xscale, 20000, Qt::Horizontal, mainw);
       ctrl->setFixedSize(pianoWidth, hscroll->sizeHint().height());
       //ctrl->setFixedSize(pianoWidth / 2, hscroll->sizeHint().height());  // Tim.
       
@@ -329,14 +331,14 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       /*
       QPushButton* trackInfoButton = new QPushButton(tr("T"), mainw);
       trackInfoButton->setObjectName("TrackInfo");
-      trackInfoButton->setFont(MusEConfig::config.fonts[3]);
+      trackInfoButton->setFont(MusEGlobal::config.fonts[3]);
       trackInfoButton->setToolTip(tr("Show track info"));
       trackInfoButton->setFixedSize(pianoWidth / 2, hscroll->sizeHint().height());
       */
       
       QSizeGrip* corner = new QSizeGrip(mainw);
 
-      midiTrackInfo       = new MusEWidget::MidiTrackInfo(mainw);        
+      midiTrackInfo       = new MusEGui::MidiTrackInfo(mainw);        
       int mtiw = midiTrackInfo->width(); // Save this.
       midiTrackInfo->setMinimumWidth(100);   
       //midiTrackInfo->setMaximumWidth(150);   
@@ -389,14 +391,14 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       gridS1->setSpacing(0);  
     //Defined and configure your program change bar here.
     //This may well be a copy of MTScale extended for our needs
-      time                = new MusEWidget::MTScale(&_raster, split1, xscale);
+      time                = new MusEGui::MTScale(&_raster, split1, xscale);
       Piano* piano        = new Piano(split1, yscale);
       canvas              = new PianoCanvas(this, split1, xscale, yscale);
-      vscroll             = new MusEWidget::ScrollScale(-3, 7, yscale, KH * 75, Qt::Vertical, split1);
+      vscroll             = new MusEGui::ScrollScale(-3, 7, yscale, KH * 75, Qt::Vertical, split1);
       
       //setFocusProxy(canvas);   // Tim.
       
-      int offset = -(MusEConfig::config.division/4);
+      int offset = -(MusEGlobal::config.division/4);
       canvas->setOrigin(offset, 0);
       canvas->setCanvasTools(pianorollTools);
       canvas->setFocus();
@@ -410,7 +412,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       //gridS1->setColumnStretch(2, 100);  // Tim.
 
       gridS1->addWidget(time,                   0, 1, 1, 2);
-      gridS1->addWidget(MusEUtil::hLine(split1),          1, 0, 1, 3);
+      gridS1->addWidget(MusECore::hLine(split1),          1, 0, 1, 3);
       gridS1->addWidget(piano,                  2,    0);
       gridS1->addWidget(canvas,                 2,    1);
       gridS1->addWidget(vscroll,                2,    2);
@@ -418,7 +420,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       // Tim.
       /*      
       gridS1->addWidget(time,                   0, 2, 1, 3);
-      gridS1->addWidget(MusEUtil::hLine(split1),          1, 1, 1, 4);
+      gridS1->addWidget(MusECore::hLine(split1),          1, 1, 1, 4);
       //gridS1->addWidget(infoScroll,             2,    0);
       gridS1->addWidget(infoScroll,             0, 0, 3, 1);
       gridS1->addWidget(piano,                  2,    1);
@@ -426,7 +428,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       gridS1->addWidget(vscroll,                2,    3);
       */
 
-      ctrlLane = new MusEWidget::Splitter(Qt::Vertical, splitter, "ctrllane");
+      ctrlLane = new MusEGui::Splitter(Qt::Vertical, splitter, "ctrllane");
       QWidget* split2     = new QWidget(splitter);
           split2->setMaximumHeight(hscroll->sizeHint().height());
           split2->setMinimumHeight(hscroll->sizeHint().height());
@@ -452,7 +454,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
 
       connect(ctrl, SIGNAL(clicked()), SLOT(addCtrl()));
       //connect(trackInfoButton, SIGNAL(clicked()), SLOT(toggleTrackInfo()));  Tim.
-      connect(info, SIGNAL(valueChanged(MusEWidget::NoteInfo::ValType, int)), SLOT(noteinfoChanged(MusEWidget::NoteInfo::ValType, int)));
+      connect(info, SIGNAL(valueChanged(MusEGui::NoteInfo::ValType, int)), SLOT(noteinfoChanged(MusEGui::NoteInfo::ValType, int)));
       connect(vscroll, SIGNAL(scrollChanged(int)), piano,  SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scrollChanged(int)), canvas, SLOT(setYPos(int)));
       connect(vscroll, SIGNAL(scaleChanged(int)),  canvas, SLOT(setYMag(int)));
@@ -469,8 +471,8 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       connect(canvas, SIGNAL(verticalScroll(unsigned)), vscroll, SLOT(setPos(unsigned)));
       connect(canvas,  SIGNAL(horizontalScroll(unsigned)),hscroll, SLOT(setPos(unsigned)));
       connect(canvas,  SIGNAL(horizontalScrollNoLimit(unsigned)),hscroll, SLOT(setPosNoLimit(unsigned))); 
-      connect(canvas, SIGNAL(selectionChanged(int, Event&, Part*)), this,
-         SLOT(setSelection(int, Event&, Part*)));
+      connect(canvas, SIGNAL(selectionChanged(int, MusECore::Event&, MusECore::Part*)), this,
+         SLOT(setSelection(int, MusECore::Event&, MusECore::Part*)));
 
       connect(piano, SIGNAL(keyPressed(int, int, bool)), canvas, SLOT(pianoPressed(int, int, bool)));
       connect(piano, SIGNAL(keyReleased(int, bool)), canvas, SLOT(pianoReleased(int, bool)));
@@ -486,7 +488,7 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       //setSelection(0, 0, 0); //Really necessary? Causes segfault when only 1 item selected, replaced by the following:
       info->setEnabled(false);
 
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged1(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged1(int)));
 
       setWindowTitle(canvas->getCaption());
       
@@ -510,14 +512,14 @@ PianoRoll::PianoRoll(PartList* pl, QWidget* parent, const char* name, unsigned i
       selectionChanged(); // enable/disable "Copy" & "Paste"
       initShortcuts(); // initialize shortcuts
 
-      const Pos cpos=song->cPos();
+      const MusECore::Pos cpos=MusEGlobal::song->cPos();
       canvas->setPos(0, cpos.tick(), true);
       canvas->selectAtTick(cpos.tick());
       //canvas->selectFirst();//      
         
       unsigned pos=0;
       if(initPos >= MAXINT)
-        pos = song->cpos();
+        pos = MusEGlobal::song->cpos();
       if(pos > MAXINT)
         pos = MAXINT;
       if (pos)
@@ -638,14 +640,14 @@ void PianoRoll::cmd(int cmd)
                   erase_notes(partlist_to_set(parts()), 1);
                   break;
             case PianoCanvas::CMD_COPY: copy_notes(partlist_to_set(parts()), 1); break;
-            case PianoCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()), MusEUtil::any_event_selected(partlist_to_set(parts())) ? 3 : 2); break;
+            case PianoCanvas::CMD_COPY_RANGE: copy_notes(partlist_to_set(parts()), MusECore::any_event_selected(partlist_to_set(parts())) ? 3 : 2); break;
             case PianoCanvas::CMD_PASTE: 
                               ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-                              paste_notes(3072);
+                              MusECore::paste_notes(3072);
                               break;
             case PianoCanvas::CMD_PASTE_DIALOG: 
                               ((PianoCanvas*)canvas)->cmd(PianoCanvas::CMD_SELECT_NONE);
-                              paste_notes((canvas->part()));
+                              MusECore::paste_notes((canvas->part()));
                               break;
 						case PianoCanvas::CMD_MODIFY_GATE_TIME: modify_notelen(partlist_to_set(parts())); break;
 						case PianoCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
@@ -668,12 +670,12 @@ void PianoRoll::cmd(int cmd)
 //    update Info Line
 //---------------------------------------------------------
 
-void PianoRoll::setSelection(int tick, Event& e, Part* p)
+void PianoRoll::setSelection(int tick, MusECore::Event& e, MusECore::Part* p)
       {
       int selections = canvas->selectionSize();
 
       selEvent = e;
-      selPart  = (MidiPart*)p;
+      selPart  = (MusECore::MidiPart*)p;
       selTick  = tick;
 
       if (selections > 1) {
@@ -710,7 +712,7 @@ void PianoRoll::setSelection(int tick, Event& e, Part* p)
 //    edit currently selected Event
 //---------------------------------------------------------
 
-void PianoRoll::noteinfoChanged(MusEWidget::NoteInfo::ValType type, int val)
+void PianoRoll::noteinfoChanged(MusEGui::NoteInfo::ValType type, int val)
       {
       int selections = canvas->selectionSize();
 
@@ -718,27 +720,27 @@ void PianoRoll::noteinfoChanged(MusEWidget::NoteInfo::ValType type, int val)
             printf("noteinfoChanged while nothing selected\n");
             }
       else if (selections == 1) {
-            Event event = selEvent.clone();
+            MusECore::Event event = selEvent.clone();
             switch(type) {
-                  case MusEWidget::NoteInfo::VAL_TIME:
+                  case MusEGui::NoteInfo::VAL_TIME:
                         event.setTick(val - selPart->tick());
                         break;
-                  case MusEWidget::NoteInfo::VAL_LEN:
+                  case MusEGui::NoteInfo::VAL_LEN:
                         event.setLenTick(val);
                         break;
-                  case MusEWidget::NoteInfo::VAL_VELON:
+                  case MusEGui::NoteInfo::VAL_VELON:
                         event.setVelo(val);
                         break;
-                  case MusEWidget::NoteInfo::VAL_VELOFF:
+                  case MusEGui::NoteInfo::VAL_VELOFF:
                         event.setVeloOff(val);
                         break;
-                  case MusEWidget::NoteInfo::VAL_PITCH:
+                  case MusEGui::NoteInfo::VAL_PITCH:
                         event.setPitch(val);
                         break;
                   }
             // Indicate do undo, and do not do port controller values and clone parts. 
-            //audio->msgChangeEvent(selEvent, event, selPart);
-            audio->msgChangeEvent(selEvent, event, selPart, true, false, false);
+            //MusEGlobal::audio->msgChangeEvent(selEvent, event, selPart);
+            MusEGlobal::audio->msgChangeEvent(selEvent, event, selPart, true, false, false);
             }
       else {
             // multiple events are selected; treat noteinfo values
@@ -746,23 +748,23 @@ void PianoRoll::noteinfoChanged(MusEWidget::NoteInfo::ValType type, int val)
 
             int delta = 0;
             switch (type) {
-                  case MusEWidget::NoteInfo::VAL_TIME:
+                  case MusEGui::NoteInfo::VAL_TIME:
                         delta = val - tickOffset;
                         tickOffset = val;
                         break;
-                  case MusEWidget::NoteInfo::VAL_LEN:
+                  case MusEGui::NoteInfo::VAL_LEN:
                         delta = val - lenOffset;
                         lenOffset = val;
                         break;
-                  case MusEWidget::NoteInfo::VAL_VELON:
+                  case MusEGui::NoteInfo::VAL_VELON:
                         delta = val - veloOnOffset;
                         veloOnOffset = val;
                         break;
-                  case MusEWidget::NoteInfo::VAL_VELOFF:
+                  case MusEGui::NoteInfo::VAL_VELOFF:
                         delta = val - veloOffOffset;
                         veloOffOffset = val;
                         break;
-                  case MusEWidget::NoteInfo::VAL_PITCH:
+                  case MusEGui::NoteInfo::VAL_PITCH:
                         delta = val - pitchOffset;
                         pitchOffset = val;
                         break;
@@ -829,15 +831,15 @@ void PianoRoll::closeEvent(QCloseEvent* e)
 //   readConfiguration
 //---------------------------------------------------------
 
-void PianoRoll::readConfiguration(Xml& xml)
+void PianoRoll::readConfiguration(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
-            if (token == Xml::Error || token == Xml::End)
+            MusECore::Xml::Token token = xml.parse();
+            if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
                   break;
             const QString& tag = xml.s1();
             switch (token) {
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "raster")
                               _rasterInit = xml.parseInt();
                         else if (tag == "colormode")
@@ -847,7 +849,7 @@ void PianoRoll::readConfiguration(Xml& xml)
                         else
                               xml.unknown("PianoRoll");
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "pianoroll")
                               return;
                   default:
@@ -860,7 +862,7 @@ void PianoRoll::readConfiguration(Xml& xml)
 //   writeConfiguration
 //---------------------------------------------------------
 
-void PianoRoll::writeConfiguration(int level, Xml& xml)
+void PianoRoll::writeConfiguration(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "pianoroll");
       xml.intTag(level, "raster", _rasterInit);
@@ -876,8 +878,8 @@ void PianoRoll::writeConfiguration(int level, Xml& xml)
 
 void PianoRoll::soloChanged(bool flag)
       {
-      audio->msgSetSolo(canvas->track(), flag);
-      song->update(SC_SOLO);
+      MusEGlobal::audio->msgSetSolo(canvas->track(), flag);
+      MusEGlobal::song->update(SC_SOLO);
       }
 
 //---------------------------------------------------------
@@ -896,7 +898,7 @@ void PianoRoll::setRaster(int val)
 //   writeStatus
 //---------------------------------------------------------
 
-void PianoRoll::writeStatus(int level, Xml& xml) const
+void PianoRoll::writeStatus(int level, MusECore::Xml& xml) const
       {
       writePartList(level, xml);
       xml.tag(level++, "pianoroll");
@@ -924,15 +926,15 @@ void PianoRoll::writeStatus(int level, Xml& xml) const
 //   readStatus
 //---------------------------------------------------------
 
-void PianoRoll::readStatus(Xml& xml)
+void PianoRoll::readStatus(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
-            if (token == Xml::Error || token == Xml::End)
+            MusECore::Xml::Token token = xml.parse();
+            if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
                   break;
             const QString& tag = xml.s1();
             switch (token) {
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "steprec") {
                               int val = xml.parseInt();
                               canvas->setSteprec(val);
@@ -974,7 +976,7 @@ void PianoRoll::readStatus(Xml& xml)
                         else
                               xml.unknown("PianoRoll");
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "pianoroll") {
                               _rasterInit = _raster;
                               toolbar->setRaster(_raster);
@@ -1034,19 +1036,19 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_POINTER].key) {
-            tools2->set(MusEWidget::PointerTool);
+            tools2->set(MusEGui::PointerTool);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_PENCIL].key) {
-            tools2->set(MusEWidget::PencilTool);
+            tools2->set(MusEGui::PencilTool);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_RUBBER].key) {
-            tools2->set(MusEWidget::RubberTool);
+            tools2->set(MusEGui::RubberTool);
             return;
             }
       else if (key == shortcuts[SHRT_TOOL_LINEDRAW].key) {
-            tools2->set(MusEWidget::DrawTool);
+            tools2->set(MusEGui::DrawTool);
             return;
             }
       else if (key == shortcuts[SHRT_POS_INC].key) {
@@ -1075,41 +1077,41 @@ void PianoRoll::keyPressEvent(QKeyEvent* event)
             }
       else if (key == shortcuts[SHRT_ZOOM_IN].key) {
             int mag = hscroll->mag();
-            int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
+            int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
             if (zoomlvl < 23)
                   zoomlvl++;
 
-            int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+            int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
             hscroll->setMag(newmag);
             //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
             return;
             }
       else if (key == shortcuts[SHRT_ZOOM_OUT].key) {
             int mag = hscroll->mag();
-            int zoomlvl = MusEWidget::ScrollScale::getQuickZoomLevel(mag);
+            int zoomlvl = MusEGui::ScrollScale::getQuickZoomLevel(mag);
             if (zoomlvl > 1)
                   zoomlvl--;
 
-            int newmag = MusEWidget::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
+            int newmag = MusEGui::ScrollScale::convertQuickZoomLevelToMag(zoomlvl);
             hscroll->setMag(newmag);
             //printf("mag = %d zoomlvl = %d newmag = %d\n", mag, zoomlvl, newmag);
             return;
             }
       else if (key == shortcuts[SHRT_GOTO_CPOS].key) {
-            PartList* p = this->parts();
-            Part* first = p->begin()->second;
-            hscroll->setPos(song->cpos() - first->tick() );
+            MusECore::PartList* p = this->parts();
+            MusECore::Part* first = p->begin()->second;
+            hscroll->setPos(MusEGlobal::song->cpos() - first->tick() );
             return;
             }
       else if (key == shortcuts[SHRT_SCROLL_LEFT].key) {
-            int pos = hscroll->pos() - MusEConfig::config.division;
+            int pos = hscroll->pos() - MusEGlobal::config.division;
             if (pos < 0)
                   pos = 0;
             hscroll->setPos(pos);
             return;
             }
       else if (key == shortcuts[SHRT_SCROLL_RIGHT].key) {
-            int pos = hscroll->pos() + MusEConfig::config.division;
+            int pos = hscroll->pos() + MusEGlobal::config.division;
             hscroll->setPos(pos);
             return;
             }
@@ -1292,8 +1294,8 @@ void PianoRoll::initShortcuts()
 void PianoRoll::execDeliveredScript(int id)
 {
       //QString scriptfile = QString(INSTPREFIX) + SCRIPTSSUFFIX + deliveredScriptNames[id];
-      QString scriptfile = song->getScriptPath(id, true);
-      song->executeScript(scriptfile.toAscii().data(), parts(), raster(), true);
+      QString scriptfile = MusEGlobal::song->getScriptPath(id, true);
+      MusEGlobal::song->executeScript(scriptfile.toAscii().data(), parts(), raster(), true);
 }
 
 //---------------------------------------------------------
@@ -1301,8 +1303,8 @@ void PianoRoll::execDeliveredScript(int id)
 //---------------------------------------------------------
 void PianoRoll::execUserScript(int id)
 {
-      QString scriptfile = song->getScriptPath(id, false);
-      song->executeScript(scriptfile.toAscii().data(), parts(), raster(), true);
+      QString scriptfile = MusEGlobal::song->getScriptPath(id, false);
+      MusEGlobal::song->executeScript(scriptfile.toAscii().data(), parts(), raster(), true);
 }
 
 //---------------------------------------------------------
@@ -1337,3 +1339,5 @@ void PianoRoll::toggleTrackInfo()
   infoScroll->setVisible(!vis);
   infoScroll->setEnabled(!vis);
 }
+
+} // namespace MusEGui

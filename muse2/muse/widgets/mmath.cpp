@@ -46,7 +46,7 @@
 //	qwtInt -- Return nearest integer
 //	qwtLim -- Limit a values
 
-namespace MusEUtil {
+namespace MusECore {
 
 //------------------------------------------------------------
 //.F	qwtGetMin
@@ -322,4 +322,4 @@ void qwtLogSpace(double *array, int size, double xmin, double xmax)
 
 }
 
-} // namespace MusEUtil
+} // namespace MusECore

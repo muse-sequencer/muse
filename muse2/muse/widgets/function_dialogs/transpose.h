@@ -26,9 +26,12 @@
 #include "ui_transposebase.h"
 
 class QButtonGroup;
-class Xml;
 
-namespace MusEDialog {
+namespace MusECore {
+class Xml;
+}
+
+namespace MusEGui {
 
 class Transpose : public QDialog, public Ui::TransposeBase
 {
@@ -45,15 +48,15 @@ class Transpose : public QDialog, public Ui::TransposeBase
 		int range;
 		int amount;
 		
-		void read_configuration(Xml& xml);
-		void write_configuration(int level, Xml& xml);
+		void read_configuration(MusECore::Xml& xml);
+		void write_configuration(int level, MusECore::Xml& xml);
 		
 		
 	public slots:
 		int exec();
 };
 
-} // namespace MusEDialog
+} // namespace MusEGui
 
 #endif
 

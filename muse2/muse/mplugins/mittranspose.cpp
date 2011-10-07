@@ -31,7 +31,11 @@
 #include "xml.h"
 #include "globals.h"
 
-MITPluginTranspose* mitPluginTranspose;
+namespace MusEGlobal {
+MusEGui::MITPluginTranspose* mitPluginTranspose;
+}
+
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   MITPluginTranspose
@@ -120,7 +124,7 @@ void MITPluginTranspose::onToggled(bool f)
 //   process
 //---------------------------------------------------------
 
-void MITPluginTranspose::process(MEvent& ev)
+void MITPluginTranspose::process(MusECore::MEvent& ev)
       {
       if (!on || (ev.type() != 0x90))
             return;
@@ -134,7 +138,7 @@ void MITPluginTranspose::process(MEvent& ev)
             }
       if (ev.dataB() == 0) {
             // Note Off
-            for (iKeyOn i = keyOnList.begin(); i != keyOnList.end(); ++i) {
+            for (MusECore::iKeyOn i = keyOnList.begin(); i != keyOnList.end(); ++i) {
                   if (i->pitch == pitch && i->channel == ev.channel()
                      && i->port == ev.port()) {
                         pitch += i->transpose;
@@ -145,7 +149,7 @@ void MITPluginTranspose::process(MEvent& ev)
             }
       else {
             // Note On
-            keyOnList.push_back(KeyOn(pitch, ev.channel(), ev.port(), transpose));
+            keyOnList.push_back(MusECore::KeyOn(pitch, ev.channel(), ev.port(), transpose));
             pitch += transpose;
             }
       ev.setA(pitch);
@@ -155,16 +159,16 @@ void MITPluginTranspose::process(MEvent& ev)
 //   readStatus
 //---------------------------------------------------------
 
-void MITPluginTranspose::readStatus(Xml& xml)
+void MITPluginTranspose::readStatus(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
             switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return;
-                  case Xml::Text:
+                  case MusECore::Xml::Text:
                         if (tag == "on")
                               on = xml.parseInt();
                         else if (tag == "trigger")
@@ -172,7 +176,7 @@ void MITPluginTranspose::readStatus(Xml& xml)
                         else
                               xml.unknown("TransposePlugin");
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (xml.s1() == "mplugin")
                               return;
                   default:
@@ -185,9 +189,10 @@ void MITPluginTranspose::readStatus(Xml& xml)
 //   writeStatus
 //---------------------------------------------------------
 
-void MITPluginTranspose::writeStatus(int level, Xml& xml) const
+void MITPluginTranspose::writeStatus(int level, MusECore::Xml& xml) const
       {
       xml.intTag(level, "on", on);
       xml.intTag(level, "trigger", trigger);
       }
 
+} // namespace MusEGui

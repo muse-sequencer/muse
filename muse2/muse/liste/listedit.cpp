@@ -46,16 +46,18 @@
 #include "midiport.h"
 #include "midictrl.h"
 
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   EventListItem
 //---------------------------------------------------------
 
 class EventListItem : public QTreeWidgetItem {
    public:
-      Event event;
-      MidiPart* part;
+      MusECore::Event event;
+      MusECore::MidiPart* part;
 
-      EventListItem(QTreeWidget* parent, Event ev, MidiPart* p)
+      EventListItem(QTreeWidget* parent, MusECore::Event ev, MusECore::MidiPart* p)
          : QTreeWidgetItem(parent) {
             event = ev;
             part  = p;
@@ -107,10 +109,10 @@ class EventListItem : public QTreeWidgetItem {
  *    midi_meta_name
  *---------------------------------------------------------*/
 
-static QString midiMetaComment(const Event& ev)
+static QString midiMetaComment(const MusECore::Event& ev)
       {
       int meta  = ev.dataA();
-      QString s = midiMetaName(meta);
+      QString s = MusECore::midiMetaName(meta);
 
       switch (meta) {
             case 0:
@@ -260,12 +262,12 @@ void ListEdit::songChanged(int type)
                   curTrack = 0;
                   liste->blockSignals(true);
                   liste->clear();
-                  for (iPart p = parts()->begin(); p != parts()->end(); ++p) {
-                        MidiPart* part = (MidiPart*) (p->second);
+                  for (MusECore::iPart p = parts()->begin(); p != parts()->end(); ++p) {
+                        MusECore::MidiPart* part = (MusECore::MidiPart*) (p->second);
                         if (part->sn() == curPartId)
                               curPart  = part;
-                        EventList* el = part->events();
-                        for (iEvent i = el->begin(); i != el->end(); ++i) {
+                        MusECore::EventList* el = part->events();
+                        for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
                               EventListItem* item = new EventListItem(liste, i->second, part);
                               for (int col = 0; col < liste->columnCount(); ++col)
                                     item->setText(col, item->text(col));
@@ -284,7 +286,7 @@ void ListEdit::songChanged(int type)
             {
               if(!parts()->empty())
               {
-                curPart  = (MidiPart*)(parts()->begin()->second);
+                curPart  = (MusECore::MidiPart*)(parts()->begin()->second);
                 if(curPart)
                   curTrack = curPart->track();
                 else  
@@ -318,27 +320,27 @@ QString EventListItem::text(int col) const
                   break;
             case 2:
                   switch(event.type()) {
-                        case Note:
+                        case MusECore::Note:
                               s = QString("Note");
                               break;
-                        case Controller:
+                        case MusECore::Controller:
                               {
                               const char* cs;
-                              switch (midiControllerType(event.dataA())) {
-                                    case MidiController::Controller7:  cs = "Ctrl7"; break;
-                                    case MidiController::Controller14: cs = "Ctrl14"; break;
-                                    case MidiController::RPN:          cs = "RPN"; break;
-                                    case MidiController::NRPN:         cs = "NRPN"; break;
-                                    case MidiController::Pitch:        cs = "Pitch"; break;
-                                    case MidiController::Program:      cs = "Program"; break;
-                                    case MidiController::RPN14:        cs = "RPN14"; break;
-                                    case MidiController::NRPN14:       cs = "NRPN14"; break;
+                              switch (MusECore::midiControllerType(event.dataA())) {
+                                    case MusECore::MidiController::Controller7:  cs = "Ctrl7"; break;
+                                    case MusECore::MidiController::Controller14: cs = "Ctrl14"; break;
+                                    case MusECore::MidiController::RPN:          cs = "RPN"; break;
+                                    case MusECore::MidiController::NRPN:         cs = "NRPN"; break;
+                                    case MusECore::MidiController::Pitch:        cs = "Pitch"; break;
+                                    case MusECore::MidiController::Program:      cs = "Program"; break;
+                                    case MusECore::MidiController::RPN14:        cs = "RPN14"; break;
+                                    case MusECore::MidiController::NRPN14:       cs = "NRPN14"; break;
                                     default:           cs = "Ctrl?"; break;
                                     }
                               s = QString(cs);
                               }
                               break;
-                        case Sysex:
+                        case MusECore::Sysex:
                               {
                               commentLabel = QString("len ");
                               QString k;
@@ -346,7 +348,7 @@ QString EventListItem::text(int col) const
                               commentLabel += k;
                               commentLabel += QString(" ");
 
-                              commentLabel += nameSysex(event.dataLen(), event.data());
+                              commentLabel += MusECore::nameSysex(event.dataLen(), event.data());
                               int i;
                               for (i = 0; i < 10; ++i) {
                                     if (i >= event.dataLen())
@@ -361,17 +363,17 @@ QString EventListItem::text(int col) const
                               }
                               s = QString("SysEx");
                               break;
-                        case PAfter:
+                        case MusECore::PAfter:
                               s = QString("PoAT");
                               break;
-                        case CAfter:
+                        case MusECore::CAfter:
                               s = QString("ChAT");
                               break;
-                        case Meta:
+                        case MusECore::Meta:
                               commentLabel = midiMetaComment(event);
                               s = QString("Meta");
                               break;
-                        case Wave:
+                        case MusECore::Wave:
                               break;
                         default:
                               printf("unknown event type %d\n", event.type());
@@ -381,16 +383,16 @@ QString EventListItem::text(int col) const
                   s.setNum(part->track()->outChannel() + 1);
                   break;
             case 4:
-                  if (event.isNote() || event.type() == PAfter)
-                        s =  MusEUtil::pitch2string(event.dataA());
-                  else if (event.type() == Controller)
+                  if (event.isNote() || event.type() == MusECore::PAfter)
+                        s =  MusECore::pitch2string(event.dataA());
+                  else if (event.type() == MusECore::Controller)
                         s.setNum(event.dataA() & 0xffff);  // mask off type bits
                   else
                         s.setNum(event.dataA());
                   break;
             case 5:
-                  if(event.type() == Controller &&
-                     midiControllerType(event.dataA()) == MidiController::Program) 
+                  if(event.type() == MusECore::Controller &&
+                    MusECore::midiControllerType(event.dataA()) == MusECore::MidiController::Program) 
                   {
                     int val = event.dataB();
                     int hb = ((val >> 16) & 0xff) + 1;
@@ -415,14 +417,14 @@ QString EventListItem::text(int col) const
                   break;
             case 8:
                   switch(event.type()) {
-                        case Controller:
+                        case MusECore::Controller:
                               {
-                              MidiPort* mp = &midiPorts[part->track()->outPort()];
-                              MidiController* mc = mp->midiController(event.dataA());
+                              MusECore::MidiPort* mp = &MusEGlobal::midiPorts[part->track()->outPort()];
+                              MusECore::MidiController* mc = mp->midiController(event.dataA());
                               s = mc->name();
                               }
                               break;
-                        case Sysex:
+                        case MusECore::Sysex:
                               {
                               s = QString("len ");
                               QString k;
@@ -430,7 +432,7 @@ QString EventListItem::text(int col) const
                               s += k;
                               s += QString(" ");
 
-                              commentLabel += nameSysex(event.dataLen(), event.data());
+                              commentLabel += MusECore::nameSysex(event.dataLen(), event.data());
                               int i;
                               for (i = 0; i < 10; ++i) {
                                     if (i >= event.dataLen())
@@ -444,7 +446,7 @@ QString EventListItem::text(int col) const
                                     s += QString("...");
                               }
                               break;
-                        case Meta:
+                        case MusECore::Meta:
                               s = midiMetaComment(event);
                               break;
                         default:
@@ -460,7 +462,7 @@ QString EventListItem::text(int col) const
 //   ListEdit
 //---------------------------------------------------------
 
-ListEdit::ListEdit(PartList* pl)
+ListEdit::ListEdit(MusECore::PartList* pl)
    : MidiEditor(TopWin::LISTE, 0, pl)
       {
       insertItems = new QActionGroup(this);
@@ -584,7 +586,7 @@ ListEdit::ListEdit(PartList* pl)
       mainGrid->setRowStretch(1, 100);
       mainGrid->setColumnStretch(0, 100);
       mainGrid->addWidget(liste, 1, 0, 2, 1);
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       songChanged(-1);
 
       if(pl->empty())
@@ -594,7 +596,7 @@ ListEdit::ListEdit(PartList* pl)
       }
       else
       {
-        curPart   = (MidiPart*)pl->begin()->second;
+        curPart   = (MusECore::MidiPart*)pl->begin()->second;
         if(curPart)
           curPartId = curPart->sn();
         else
@@ -627,7 +629,7 @@ void ListEdit::editInsertNote()
       if(!curPart)
         return;
         
-      Event event = EditNoteDialog::getEvent(curPart->tick(), Event(), this);
+      MusECore::Event event = EditNoteDialog::getEvent(curPart->tick(), MusECore::Event(), this);
       if (!event.empty()) {
             //No events before beginning of part + take Part offset into consideration
             unsigned tick = event.tick();
@@ -637,7 +639,7 @@ void ListEdit::editInsertNote()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do not handle port controller values. 
-            audio->msgAddEvent(event, curPart, true, false, false);
+            MusEGlobal::audio->msgAddEvent(event, curPart, true, false, false);
             }
       }
 
@@ -650,7 +652,7 @@ void ListEdit::editInsertSysEx()
       if(!curPart)
         return;
       
-      Event event = EditSysexDialog::getEvent(curPart->tick(), Event(), this);
+      MusECore::Event event = EditSysexDialog::getEvent(curPart->tick(), MusECore::Event(), this);
       if (!event.empty()) {
             //No events before beginning of part + take Part offset into consideration
             unsigned tick = event.tick();
@@ -660,7 +662,7 @@ void ListEdit::editInsertSysEx()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do not handle port controller values. 
-            audio->msgAddEvent(event, curPart, true, false, false);
+            MusEGlobal::audio->msgAddEvent(event, curPart, true, false, false);
             }
       }
 
@@ -673,7 +675,7 @@ void ListEdit::editInsertCtrl()
       if(!curPart)
         return;
       
-      Event event = EditCtrlDialog::getEvent(curPart->tick(), Event(), curPart, this);
+      MusECore::Event event = EditCtrlDialog::getEvent(curPart->tick(), MusECore::Event(), curPart, this);
       if (!event.empty()) {
             //No events before beginning of part + take Part offset into consideration
             unsigned tick = event.tick();
@@ -683,7 +685,7 @@ void ListEdit::editInsertCtrl()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do port controller values and clone parts. 
-            audio->msgAddEvent(event, curPart, true, true, true);
+            MusEGlobal::audio->msgAddEvent(event, curPart, true, true, true);
             }
       }
 
@@ -696,7 +698,7 @@ void ListEdit::editInsertMeta()
       if(!curPart)
         return;
       
-      Event event = EditMetaDialog::getEvent(curPart->tick(), Event(), this);
+      MusECore::Event event = EditMetaDialog::getEvent(curPart->tick(), MusECore::Event(), this);
       if (!event.empty()) {
             //No events before beginning of part + take Part offset into consideration
             unsigned tick = event.tick();
@@ -706,7 +708,7 @@ void ListEdit::editInsertMeta()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do not handle port controller values. 
-            audio->msgAddEvent(event, curPart, true, false, false);
+            MusEGlobal::audio->msgAddEvent(event, curPart, true, false, false);
             }
       }
 
@@ -719,7 +721,7 @@ void ListEdit::editInsertCAfter()
       if(!curPart)
         return;
       
-      Event event = EditCAfterDialog::getEvent(curPart->tick(), Event(), this);
+      MusECore::Event event = EditCAfterDialog::getEvent(curPart->tick(), MusECore::Event(), this);
       if (!event.empty()) {
             //No events before beginning of part + take Part offset into consideration
             unsigned tick = event.tick();
@@ -729,7 +731,7 @@ void ListEdit::editInsertCAfter()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do not handle port controller values. 
-            audio->msgAddEvent(event, curPart, true, false, false);
+            MusEGlobal::audio->msgAddEvent(event, curPart, true, false, false);
             }
       }
 
@@ -742,8 +744,8 @@ void ListEdit::editInsertPAfter()
       if(!curPart)
         return;
       
-      Event ev;
-      Event event = EditPAfterDialog::getEvent(curPart->tick(), ev, this);
+      MusECore::Event ev;
+      MusECore::Event event = EditPAfterDialog::getEvent(curPart->tick(), ev, this);
       if (!event.empty()) {
             //No events before beginning of part + take Part offset into consideration
             unsigned tick = event.tick();
@@ -753,7 +755,7 @@ void ListEdit::editInsertPAfter()
                   tick-= curPart->tick();
             event.setTick(tick);
             // Indicate do undo, and do not handle port controller values. 
-            audio->msgAddEvent(event, curPart, true, false, false);
+            MusEGlobal::audio->msgAddEvent(event, curPart, true, false, false);
             }
       }
 
@@ -761,27 +763,27 @@ void ListEdit::editInsertPAfter()
 //   editEvent
 //---------------------------------------------------------
 
-void ListEdit::editEvent(Event& event, MidiPart* part)
+void ListEdit::editEvent(MusECore::Event& event, MusECore::MidiPart* part)
       {
       int tick = event.tick() + part->tick();
-      Event nevent;
+      MusECore::Event nevent;
       switch(event.type()) {
-            case Note:
+            case MusECore::Note:
                   nevent = EditNoteDialog::getEvent(tick, event, this);
                   break;
-            case Controller:
+            case MusECore::Controller:
                   nevent = EditCtrlDialog::getEvent(tick, event, part, this);
                   break;
-            case Sysex:
+            case MusECore::Sysex:
                   nevent = EditSysexDialog::getEvent(tick, event, this);
                   break;
-            case PAfter:
+            case MusECore::PAfter:
                   nevent = EditPAfterDialog::getEvent(tick, event, this);
                   break;
-            case CAfter:
+            case MusECore::CAfter:
                   nevent = EditCAfterDialog::getEvent(tick, event, this);
                   break;
-            case Meta:
+            case MusECore::Meta:
                   nevent = EditMetaDialog::getEvent(tick, event, this);
                   break;
             default:
@@ -796,12 +798,12 @@ void ListEdit::editEvent(Event& event, MidiPart* part)
                      nevent.tick(), part->tick() + part->lenTick());
             else
             {
-              if(event.type() == Controller)
+              if(event.type() == MusECore::Controller)
                 // Indicate do undo, and do port controller values and clone parts. 
-                audio->msgChangeEvent(event, nevent, part, true, true, true);
+                MusEGlobal::audio->msgChangeEvent(event, nevent, part, true, true, true);
               else  
                 // Indicate do undo, and do not do port controller values and clone parts. 
-                audio->msgChangeEvent(event, nevent, part, true, false, false);
+                MusEGlobal::audio->msgChangeEvent(event, nevent, part, true, false, false);
             }      
           }
       }
@@ -810,21 +812,21 @@ void ListEdit::editEvent(Event& event, MidiPart* part)
 //   readStatus
 //---------------------------------------------------------
 
-void ListEdit::readStatus(Xml& xml)
+void ListEdit::readStatus(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
-            if (token == Xml::Error || token == Xml::End)
+            if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
                   break;
             switch (token) {
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "midieditor")
                               MidiEditor::readStatus(xml);
                         else
                               xml.unknown("ListEdit");
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "listeditor")
                               return;
                   default:
@@ -837,7 +839,7 @@ void ListEdit::readStatus(Xml& xml)
 //   writeStatus
 //---------------------------------------------------------
 
-void ListEdit::writeStatus(int level, Xml& xml) const
+void ListEdit::writeStatus(int level, MusECore::Xml& xml) const
       {
       writePartList(level, xml);
       xml.tag(level++, "listeditor");
@@ -849,22 +851,22 @@ void ListEdit::writeStatus(int level, Xml& xml) const
 //   readConfiguration
 //---------------------------------------------------------
 
-void ListEdit::readConfiguration(Xml& xml)
+void ListEdit::readConfiguration(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
             switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return;
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "topwin")
                               TopWin::readConfiguration(LISTE, xml);
                         else
                               xml.unknown("ListEdit");
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "listedit")
                               return;
                   default:
@@ -877,7 +879,7 @@ void ListEdit::readConfiguration(Xml& xml)
 //   writeConfiguration
 //---------------------------------------------------------
 
-void ListEdit::writeConfiguration(int level, Xml& xml)
+void ListEdit::writeConfiguration(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "listedit");
       TopWin::writeConfiguration(LISTE, level, xml);
@@ -899,7 +901,7 @@ void ListEdit::selectionChanged()
                   }
             }
       if (update)
-            song->update(SC_SELECTION);
+            MusEGlobal::song->update(SC_SELECTION);
       }
 
 //---------------------------------------------------------
@@ -935,7 +937,7 @@ void ListEdit::cmd(int cmd)
                   if(!found)
                     break;
                   
-                  Undo operations;
+                  MusECore::Undo operations;
                   
                   EventListItem *deletedEvent=NULL;
                   for (int row = 0; row < liste->topLevelItemCount(); ++row) {
@@ -945,7 +947,7 @@ void ListEdit::cmd(int cmd)
                         if (i->isSelected() || item->event.selected()) {
                               deletedEvent=item;
                               // Port controller values and clone parts. 
-                              operations.push_back(UndoOp(UndoOp::DeleteEvent,item->event, item->part, true, true));
+                              operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent,item->event, item->part, true, true));
                               }
                         }
                   
@@ -969,7 +971,7 @@ void ListEdit::cmd(int cmd)
                   }
                   selectedTick=nextTick;
 
-                  song->applyOperationGroup(operations);
+                  MusEGlobal::song->applyOperationGroup(operations);
                   break;
             }
       }
@@ -1009,3 +1011,5 @@ if (key == Qt::Key_Escape) {
             return;
             }
       }
+
+} // namespace MusEGui

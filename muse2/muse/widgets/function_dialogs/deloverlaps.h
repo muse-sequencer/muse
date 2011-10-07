@@ -26,9 +26,12 @@
 #include "ui_deloverlapsbase.h"
 
 class QButtonGroup;
-class Xml;
 
-namespace MusEDialog {
+namespace MusECore {
+class Xml;
+}
+
+namespace MusEGui {
 
 class DelOverlaps : public QDialog, public Ui::DelOverlapsBase
 {
@@ -46,14 +49,14 @@ class DelOverlaps : public QDialog, public Ui::DelOverlapsBase
 
 		int range;
 		
-		void read_configuration(Xml& xml);
-		void write_configuration(int level, Xml& xml);
+		void read_configuration(MusECore::Xml& xml);
+		void write_configuration(int level, MusECore::Xml& xml);
 		
 	public slots:
 		int exec();
 };
 
-} // namespace MusEDialog
+} // namespace MusEGui
 
 #endif
 

@@ -27,7 +27,9 @@
 
 #include <QKeyEvent>
 
+namespace MusEGlobal {
 extern QObject* song; // TODO FINDME this is a really dirty hack!
+}
 
 namespace Awl {
 
@@ -40,7 +42,7 @@ PitchEdit::PitchEdit(QWidget* parent)
       {
       setRange(0, 127);
       deltaMode = false;
-      connect(song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
+      connect(MusEGlobal::song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
       }
 
 //---------------------------------------------------------

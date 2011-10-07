@@ -25,7 +25,7 @@
 
 #include "view.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   WTScale
@@ -60,7 +60,7 @@ class WTScale : public View {
       void setBarLocator(bool f) { barLocator = f; }
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

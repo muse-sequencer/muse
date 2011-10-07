@@ -30,7 +30,7 @@
 class QWidget;
 class QTableWidget;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   ComboQuant

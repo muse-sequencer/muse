@@ -26,9 +26,12 @@
 #include "ui_quantbase.h"
 
 class QButtonGroup;
-class Xml;
 
-namespace MusEDialog {
+namespace MusECore {
+class Xml;
+}
+
+namespace MusEGui {
 
 class Quantize : public QDialog, public Ui::QuantBase
 {
@@ -51,15 +54,15 @@ class Quantize : public QDialog, public Ui::QuantBase
 		int swing;
 		bool quant_len;
 		
-		void read_configuration(Xml& xml);
-		void write_configuration(int level, Xml& xml);
+		void read_configuration(MusECore::Xml& xml);
+		void write_configuration(int level, MusECore::Xml& xml);
 		
 		
 	public slots:
 		int exec();
 };
 
-} // namespace MusEDialog
+} // namespace MusEGui
 
 #endif
 

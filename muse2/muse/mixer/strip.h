@@ -34,18 +34,18 @@
 #include "globaldefs.h"
 //#include "route.h"
 
-class Track;
 class QLabel;
 //class QVBoxLayout;
 class QToolButton;
 class QGridLayout;
 
-namespace MusEWidget {
-class ComboBox;
-class Meter;
+namespace MusECore {
+class Track;
 }
 
-namespace MusEMixer {
+namespace MusEGui {
+class ComboBox;
+class Meter;
 
 static const int STRIP_WIDTH = 65;
 
@@ -57,12 +57,12 @@ class Strip : public QFrame {
       Q_OBJECT
    
    protected:
-      Track* track;
+      MusECore::Track* track;
       QLabel* label;
       //QVBoxLayout* layout;
       QGridLayout* grid;
       int _curGridRow;
-      MusEWidget::Meter* meter[MAX_CHANNELS];
+      MusEGui::Meter* meter[MAX_CHANNELS];
       
       QToolButton* record;
       QToolButton* solo;
@@ -70,7 +70,7 @@ class Strip : public QFrame {
       QToolButton* iR; // Input routing button
       QToolButton* oR; // Output routing button
       QGridLayout* sliderGrid;
-      MusEWidget::ComboBox* autoType;
+      MusEGui::ComboBox* autoType;
       void setLabelText();
       virtual void resizeEvent(QResizeEvent*);
 
@@ -88,14 +88,14 @@ class Strip : public QFrame {
       virtual void songChanged(int) = 0;
 
    public:
-      Strip(QWidget* parent, Track* t);
+      Strip(QWidget* parent, MusECore::Track* t);
       ~Strip();
       void setRecordFlag(bool flag);
-      Track* getTrack() const { return track; }
+      MusECore::Track* getTrack() const { return track; }
       void setLabelFont();
       };
 
-} // namespace MusEMixer
+} // namespace MusEGui
 
 #endif
 

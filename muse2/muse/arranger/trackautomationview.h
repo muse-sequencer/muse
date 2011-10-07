@@ -28,19 +28,19 @@ class QWidget;
 
 #include "track.h"
 
-namespace MusEArranger { 
+namespace MusEGui { 
 
 class TrackAutomationView : public QWidget
 {
-    Track *_t;
+    MusECore::Track *_t;
     virtual void paintEvent(QPaintEvent *e);
     std::map<int,int> automationList;
 public:
-    TrackAutomationView(QWidget *parent, Track *t);
-    Track *track() { return _t; }
+    TrackAutomationView(QWidget *parent, MusECore::Track *t);
+    MusECore::Track *track() { return _t; }
     void collectAutomationData();
 };
 
-} // namespace MusEArranger
+} // namespace MusEGui
 
 #endif // TRACKAUTOMATIONVIEW_H

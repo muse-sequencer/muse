@@ -30,7 +30,12 @@
 ///#include "sig.h"
 #include "al/sig.h"
 
+namespace MusEGlobal {
 extern int mtcType;
+}
+
+namespace MusECore {
+
 
 //---------------------------------------------------------
 //   Pos
@@ -86,7 +91,7 @@ Pos::Pos(int min, int sec, int frame, int subframe)
       double time = min * 60.0 + sec;
 
       double f = frame + subframe/100.0;
-      switch(mtcType) {
+      switch(MusEGlobal::mtcType) {
             case 0:     // 24 frames sec
                   time += f * 1.0/24.0;
                   break;
@@ -116,11 +121,11 @@ void Pos::setType(TType t)
 
       if (_type == TICKS) {
             // convert from ticks to frames
-            _frame = tempomap.tick2frame(_tick, _frame, &sn);
+            _frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn);
             }
       else {
             // convert from frames to ticks
-            _tick = tempomap.frame2tick(_frame, _tick, &sn);
+            _tick = MusEGlobal::tempomap.frame2tick(_frame, _tick, &sn);
             }
       _type = t;
       }
@@ -221,7 +226,7 @@ bool Pos::operator==(const Pos& s) const
 unsigned Pos::tick() const
       {
       if (_type == FRAMES)
-            _tick = tempomap.frame2tick(_frame, _tick, &sn);
+            _tick = MusEGlobal::tempomap.frame2tick(_frame, _tick, &sn);
       return _tick;
       }
 
@@ -232,7 +237,7 @@ unsigned Pos::tick() const
 unsigned Pos::frame() const
       {
       if (_type == TICKS)
-            _frame = tempomap.tick2frame(_tick, _frame, &sn);
+            _frame = MusEGlobal::tempomap.tick2frame(_tick, _frame, &sn);
       return _frame;
       }
 
@@ -245,7 +250,7 @@ void Pos::setTick(unsigned pos)
       _tick = pos;
       sn    = -1;
       if (_type == FRAMES)
-            _frame = tempomap.tick2frame(pos, &sn);
+            _frame = MusEGlobal::tempomap.tick2frame(pos, &sn);
       }
 
 //---------------------------------------------------------
@@ -257,7 +262,7 @@ void Pos::setFrame(unsigned pos)
       _frame = pos;
       sn     = -1;
       if (_type == TICKS)
-            _tick = tempomap.frame2tick(pos, &sn);
+            _tick = MusEGlobal::tempomap.frame2tick(pos, &sn);
       }
 
 //---------------------------------------------------------
@@ -454,7 +459,7 @@ void PosLen::setLenTick(unsigned len)
       _lenTick = len;
       sn       = -1;
 //      if (type() == FRAMES)
-            _lenFrame = tempomap.deltaTick2frame(tick(), tick() + len, &sn);
+            _lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + len, &sn);
       }
 
 //---------------------------------------------------------
@@ -466,7 +471,7 @@ void PosLen::setLenFrame(unsigned len)
       _lenFrame = len;
       sn      = -1;
 //      if (type() == TICKS)
-            _lenTick = tempomap.deltaFrame2tick(frame(), frame() + len, &sn);
+            _lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + len, &sn);
       }
 
 //---------------------------------------------------------
@@ -476,7 +481,7 @@ void PosLen::setLenFrame(unsigned len)
 unsigned PosLen::lenTick() const
       {
       if (type() == FRAMES)
-            _lenTick = tempomap.deltaFrame2tick(frame(), frame() + _lenFrame, &sn);
+            _lenTick = MusEGlobal::tempomap.deltaFrame2tick(frame(), frame() + _lenFrame, &sn);
       return _lenTick;
       }
 
@@ -487,7 +492,7 @@ unsigned PosLen::lenTick() const
 unsigned PosLen::lenFrame() const
       {
       if (type() == TICKS)
-            _lenFrame = tempomap.deltaTick2frame(tick(), tick() + _lenTick, &sn); 
+            _lenFrame = MusEGlobal::tempomap.deltaTick2frame(tick(), tick() + _lenTick, &sn); 
       return _lenFrame;
       }
 
@@ -545,7 +550,7 @@ void Pos::msf(int* min, int* sec, int* fr, int* subFrame) const
       *min  = int(time) / 60;
       *sec  = int(time) % 60;
       double rest = time - (*min * 60 + *sec);
-      switch(mtcType) {
+      switch(MusEGlobal::mtcType) {
             case 0:     // 24 frames sec
                   rest *= 24;
                   break;
@@ -581,3 +586,4 @@ bool Pos::isValid(int,int,int,int)
       return true;
       }
 
+} // namespace MusECore

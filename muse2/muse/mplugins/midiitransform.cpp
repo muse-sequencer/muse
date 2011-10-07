@@ -52,6 +52,8 @@
 #define MIDITRANSFORM_NRPN        5
 #define MIDITRANSFORM_RPN         6
 
+namespace MusECore {
+
 static int selTypeTable[] = {
       MIDITRANSFORM_NOTE, MIDITRANSFORM_POLY, MIDITRANSFORM_CTRL, MIDITRANSFORM_ATOUCH,
          MIDITRANSFORM_PITCHBEND, MIDITRANSFORM_NRPN, MIDITRANSFORM_RPN
@@ -130,7 +132,7 @@ class MidiInputTransformation {
             procVal2a    = 0;
             procVal2b    = 0;
             funcOp       = Transform;
-            quantVal     = MusEConfig::config.division;
+            quantVal     = MusEGlobal::config.division;
             selPort      = Ignore;
             selChannel   = Ignore;
             selChannela  = 0;
@@ -585,160 +587,6 @@ bool MidiInputTransformation::typesMatch(MidiRecordEvent& e, int selType) const
       }
 
 //---------------------------------------------------------
-//   MidiInputTransformDialog
-//    Widgets:
-//    presetList nameEntry commentEntry
-//    selEventOp   selType
-//    selVal1Op    selVal1a selVal1b
-//    selVal2Op    selVal2a selVal2b
-//
-//    procEventOp  procType
-//    procVal1Op   procVal1a procVal1b
-//    procVal2Op   procVal2a procVal2b
-//    funcOp       funcQuantVal
-//    buttonNew    buttonDelete
-//
-//    modulGroup
-//    modul1select  modul1enable
-//    modul2select  modul2enable
-//    modul3select  modul3enable
-//    modul4select  modul4enable
-//
-//    selPortOp     selPortVala    selPortValb
-//    selChannelOp  selChannelVala selChannelValb
-//
-//    procPortOp    procPortVala    procPortValb
-//    procChannelOp procChannelVala procChannelValb
-//---------------------------------------------------------
-
-MidiInputTransformDialog::MidiInputTransformDialog(QDialog* parent, Qt::WFlags fl)
-   : QDialog(parent, fl)
-      {
-      setupUi(this);
-      cindex = 0;
-      cmodul = 0;
-      cmt    = 0;
-
-      modulGroup = new QButtonGroup;
-      modulGroup->addButton(modul1select,0);
-      modulGroup->addButton(modul2select,1);
-      modulGroup->addButton(modul3select,2);
-      modulGroup->addButton(modul4select,3);
-
-      for (unsigned i = 0; i < sizeof(oplist)/sizeof(*oplist); ++i)
-            funcOp->insertItem(i, oplist[i].text);
-
-      connect(buttonNew,    SIGNAL(clicked()),      SLOT(presetNew()));
-      connect(buttonDelete, SIGNAL(clicked()),      SLOT(presetDelete()));
-      connect(selEventOp,   SIGNAL(activated(int)), SLOT(selEventOpSel(int)));
-      connect(selType,      SIGNAL(activated(int)), SLOT(selTypeSel(int)));
-      connect(selVal1Op,    SIGNAL(activated(int)), SLOT(selVal1OpSel(int)));
-      connect(selVal2Op,    SIGNAL(activated(int)), SLOT(selVal2OpSel(int)));
-      connect(procEventOp,  SIGNAL(activated(int)), SLOT(procEventOpSel(int)));
-      connect(procType,     SIGNAL(activated(int)), SLOT(procEventTypeSel(int)));
-      connect(procVal1Op,   SIGNAL(activated(int)), SLOT(procVal1OpSel(int)));
-      connect(procVal2Op,   SIGNAL(activated(int)), SLOT(procVal2OpSel(int)));
-      connect(funcOp,       SIGNAL(activated(int)), SLOT(funcOpSel(int)));
-      connect(presetList,   SIGNAL(itemActivated(QListWidgetItem*)),
-         SLOT(presetChanged(QListWidgetItem*)));
-      connect(nameEntry,    SIGNAL(textChanged(const QString&)),
-         SLOT(nameChanged(const QString&)));
-      connect(commentEntry,    SIGNAL(textChanged()), SLOT(commentChanged()));
-
-      connect(selVal1a,  SIGNAL(valueChanged(int)), SLOT(selVal1aChanged(int)));
-      connect(selVal1b,  SIGNAL(valueChanged(int)), SLOT(selVal1bChanged(int)));
-      connect(selVal2a,  SIGNAL(valueChanged(int)), SLOT(selVal2aChanged(int)));
-      connect(selVal2b,  SIGNAL(valueChanged(int)), SLOT(selVal2bChanged(int)));
-      connect(procVal1a, SIGNAL(valueChanged(int)), SLOT(procVal1aChanged(int)));
-      connect(procVal1b, SIGNAL(valueChanged(int)), SLOT(procVal1bChanged(int)));
-      connect(procVal2a, SIGNAL(valueChanged(int)), SLOT(procVal2aChanged(int)));
-      connect(procVal2b, SIGNAL(valueChanged(int)), SLOT(procVal2bChanged(int)));
-
-      connect(modul1enable, SIGNAL(toggled(bool)), SLOT(modul1enableChanged(bool)));
-      connect(modul2enable, SIGNAL(toggled(bool)), SLOT(modul2enableChanged(bool)));
-      connect(modul3enable, SIGNAL(toggled(bool)), SLOT(modul3enableChanged(bool)));
-      connect(modul4enable, SIGNAL(toggled(bool)), SLOT(modul4enableChanged(bool)));
-      connect(modulGroup,   SIGNAL(buttonClicked(int)),  SLOT(changeModul(int)));
-
-      connect(selPortOp,   SIGNAL(activated(int)), SLOT(selPortOpSel(int)));
-      connect(selPortVala, SIGNAL(valueChanged(int)), SLOT(selPortValaChanged(int)));
-      connect(selPortValb, SIGNAL(valueChanged(int)), SLOT(selPortValbChanged(int)));
-
-      connect(selChannelOp,   SIGNAL(activated(int)), SLOT(selChannelOpSel(int)));
-      connect(selChannelVala, SIGNAL(valueChanged(int)), SLOT(selChannelValaChanged(int)));
-      connect(selChannelValb, SIGNAL(valueChanged(int)), SLOT(selChannelValbChanged(int)));
-
-      connect(procPortOp,   SIGNAL(activated(int)), SLOT(procPortOpSel(int)));
-      connect(procPortVala, SIGNAL(valueChanged(int)), SLOT(procPortValaChanged(int)));
-      connect(procPortValb, SIGNAL(valueChanged(int)), SLOT(procPortValbChanged(int)));
-
-      connect(procChannelOp,   SIGNAL(activated(int)), SLOT(procChannelOpSel(int)));
-      connect(procChannelVala, SIGNAL(valueChanged(int)), SLOT(procChannelValaChanged(int)));
-      connect(procChannelValb, SIGNAL(valueChanged(int)), SLOT(procChannelValbChanged(int)));
-
-      //---------------------------------------------------
-      //  populate preset list
-      //---------------------------------------------------
-
-      updatePresetList();
-      presetList->setCurrentItem(presetList->item(0));
-      presetChanged(presetList->item(0));
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      }
-
-//---------------------------------------------------------
-//   songChanged
-//---------------------------------------------------------
-
-void MidiInputTransformDialog::songChanged(int flags)
-{
-  // Whenever a song is loaded, flags is -1. Since transforms are part of configuration, 
-  //  use SC_CONFIG here, to filter unwanted song change events.
-  if(flags & SC_CONFIG)
-    updatePresetList();
-}
-
-//---------------------------------------------------------
-//   updatePresetList
-//---------------------------------------------------------
-
-void MidiInputTransformDialog::updatePresetList()
-{
-      cmt = 0;
-      presetList->clear();
-      
-      modul1select->setChecked(true);
-      for (iMidiInputTransformation i = mtlist.begin(); i != mtlist.end(); ++i) {
-            presetList->addItem((*i)->name);
-            if (cmt == 0)
-                  cmt = *i;
-            }
-      if (cmt == 0) {
-            // create default "New" preset
-            cmt = new MidiInputTransformation(tr("New"));
-            mtlist.push_back(cmt);
-            presetList->addItem(tr("New"));
-            presetList->setCurrentItem(0);
-            }
-      changeModul(0);
-
-      modul1enable->setChecked(modules[0].valid);
-      modul2enable->setChecked(modules[1].valid);
-      modul3enable->setChecked(modules[2].valid);
-      modul4enable->setChecked(modules[3].valid);
-}
-
-//---------------------------------------------------------
-//   closeEvent
-//---------------------------------------------------------
-
-void MidiInputTransformDialog::closeEvent(QCloseEvent* ev)
-      {
-      emit hideWindow();
-      QWidget::closeEvent(ev);
-      }
-
-//---------------------------------------------------------
 //   writeMidiTransforms
 //---------------------------------------------------------
 
@@ -967,6 +815,164 @@ void clearMidiInputTransforms()
   mtlist.clear();
 }
 
+} // namespace MusECore
+
+namespace MusEGui {
+
+//---------------------------------------------------------
+//   MidiInputTransformDialog
+//    Widgets:
+//    presetList nameEntry commentEntry
+//    selEventOp   selType
+//    selVal1Op    selVal1a selVal1b
+//    selVal2Op    selVal2a selVal2b
+//
+//    procEventOp  procType
+//    procVal1Op   procVal1a procVal1b
+//    procVal2Op   procVal2a procVal2b
+//    funcOp       funcQuantVal
+//    buttonNew    buttonDelete
+//
+//    modulGroup
+//    modul1select  modul1enable
+//    modul2select  modul2enable
+//    modul3select  modul3enable
+//    modul4select  modul4enable
+//
+//    selPortOp     selPortVala    selPortValb
+//    selChannelOp  selChannelVala selChannelValb
+//
+//    procPortOp    procPortVala    procPortValb
+//    procChannelOp procChannelVala procChannelValb
+//---------------------------------------------------------
+
+MidiInputTransformDialog::MidiInputTransformDialog(QDialog* parent, Qt::WFlags fl)
+   : QDialog(parent, fl)
+      {
+      setupUi(this);
+      cindex = 0;
+      cmodul = 0;
+      cmt    = 0;
+
+      modulGroup = new QButtonGroup;
+      modulGroup->addButton(modul1select,0);
+      modulGroup->addButton(modul2select,1);
+      modulGroup->addButton(modul3select,2);
+      modulGroup->addButton(modul4select,3);
+
+      for (unsigned i = 0; i < sizeof(MusECore::oplist)/sizeof(*MusECore::oplist); ++i)
+            funcOp->insertItem(i, MusECore::oplist[i].text);
+
+      connect(buttonNew,    SIGNAL(clicked()),      SLOT(presetNew()));
+      connect(buttonDelete, SIGNAL(clicked()),      SLOT(presetDelete()));
+      connect(selEventOp,   SIGNAL(activated(int)), SLOT(selEventOpSel(int)));
+      connect(selType,      SIGNAL(activated(int)), SLOT(selTypeSel(int)));
+      connect(selVal1Op,    SIGNAL(activated(int)), SLOT(selVal1OpSel(int)));
+      connect(selVal2Op,    SIGNAL(activated(int)), SLOT(selVal2OpSel(int)));
+      connect(procEventOp,  SIGNAL(activated(int)), SLOT(procEventOpSel(int)));
+      connect(procType,     SIGNAL(activated(int)), SLOT(procEventTypeSel(int)));
+      connect(procVal1Op,   SIGNAL(activated(int)), SLOT(procVal1OpSel(int)));
+      connect(procVal2Op,   SIGNAL(activated(int)), SLOT(procVal2OpSel(int)));
+      connect(funcOp,       SIGNAL(activated(int)), SLOT(funcOpSel(int)));
+      connect(presetList,   SIGNAL(itemActivated(QListWidgetItem*)),
+         SLOT(presetChanged(QListWidgetItem*)));
+      connect(nameEntry,    SIGNAL(textChanged(const QString&)),
+         SLOT(nameChanged(const QString&)));
+      connect(commentEntry,    SIGNAL(textChanged()), SLOT(commentChanged()));
+
+      connect(selVal1a,  SIGNAL(valueChanged(int)), SLOT(selVal1aChanged(int)));
+      connect(selVal1b,  SIGNAL(valueChanged(int)), SLOT(selVal1bChanged(int)));
+      connect(selVal2a,  SIGNAL(valueChanged(int)), SLOT(selVal2aChanged(int)));
+      connect(selVal2b,  SIGNAL(valueChanged(int)), SLOT(selVal2bChanged(int)));
+      connect(procVal1a, SIGNAL(valueChanged(int)), SLOT(procVal1aChanged(int)));
+      connect(procVal1b, SIGNAL(valueChanged(int)), SLOT(procVal1bChanged(int)));
+      connect(procVal2a, SIGNAL(valueChanged(int)), SLOT(procVal2aChanged(int)));
+      connect(procVal2b, SIGNAL(valueChanged(int)), SLOT(procVal2bChanged(int)));
+
+      connect(modul1enable, SIGNAL(toggled(bool)), SLOT(modul1enableChanged(bool)));
+      connect(modul2enable, SIGNAL(toggled(bool)), SLOT(modul2enableChanged(bool)));
+      connect(modul3enable, SIGNAL(toggled(bool)), SLOT(modul3enableChanged(bool)));
+      connect(modul4enable, SIGNAL(toggled(bool)), SLOT(modul4enableChanged(bool)));
+      connect(modulGroup,   SIGNAL(buttonClicked(int)),  SLOT(changeModul(int)));
+
+      connect(selPortOp,   SIGNAL(activated(int)), SLOT(selPortOpSel(int)));
+      connect(selPortVala, SIGNAL(valueChanged(int)), SLOT(selPortValaChanged(int)));
+      connect(selPortValb, SIGNAL(valueChanged(int)), SLOT(selPortValbChanged(int)));
+
+      connect(selChannelOp,   SIGNAL(activated(int)), SLOT(selChannelOpSel(int)));
+      connect(selChannelVala, SIGNAL(valueChanged(int)), SLOT(selChannelValaChanged(int)));
+      connect(selChannelValb, SIGNAL(valueChanged(int)), SLOT(selChannelValbChanged(int)));
+
+      connect(procPortOp,   SIGNAL(activated(int)), SLOT(procPortOpSel(int)));
+      connect(procPortVala, SIGNAL(valueChanged(int)), SLOT(procPortValaChanged(int)));
+      connect(procPortValb, SIGNAL(valueChanged(int)), SLOT(procPortValbChanged(int)));
+
+      connect(procChannelOp,   SIGNAL(activated(int)), SLOT(procChannelOpSel(int)));
+      connect(procChannelVala, SIGNAL(valueChanged(int)), SLOT(procChannelValaChanged(int)));
+      connect(procChannelValb, SIGNAL(valueChanged(int)), SLOT(procChannelValbChanged(int)));
+
+      //---------------------------------------------------
+      //  populate preset list
+      //---------------------------------------------------
+
+      updatePresetList();
+      presetList->setCurrentItem(presetList->item(0));
+      presetChanged(presetList->item(0));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      }
+
+//---------------------------------------------------------
+//   songChanged
+//---------------------------------------------------------
+
+void MidiInputTransformDialog::songChanged(int flags)
+{
+  // Whenever a song is loaded, flags is -1. Since transforms are part of configuration, 
+  //  use SC_CONFIG here, to filter unwanted song change events.
+  if(flags & SC_CONFIG)
+    updatePresetList();
+}
+
+//---------------------------------------------------------
+//   updatePresetList
+//---------------------------------------------------------
+
+void MidiInputTransformDialog::updatePresetList()
+{
+      cmt = 0;
+      presetList->clear();
+      
+      modul1select->setChecked(true);
+      for (MusECore::iMidiInputTransformation i = MusECore::mtlist.begin(); i != MusECore::mtlist.end(); ++i) {
+            presetList->addItem((*i)->name);
+            if (cmt == 0)
+                  cmt = *i;
+            }
+      if (cmt == 0) {
+            // create default "New" preset
+            cmt = new MusECore::MidiInputTransformation(tr("New"));
+            MusECore::mtlist.push_back(cmt);
+            presetList->addItem(tr("New"));
+            presetList->setCurrentItem(0);
+            }
+      changeModul(0);
+
+      modul1enable->setChecked(MusECore::modules[0].valid);
+      modul2enable->setChecked(MusECore::modules[1].valid);
+      modul3enable->setChecked(MusECore::modules[2].valid);
+      modul4enable->setChecked(MusECore::modules[3].valid);
+}
+
+//---------------------------------------------------------
+//   closeEvent
+//---------------------------------------------------------
+
+void MidiInputTransformDialog::closeEvent(QCloseEvent* ev)
+      {
+      emit hideWindow();
+      QWidget::closeEvent(ev);
+      }
+
 //---------------------------------------------------------
 //   accept
 //---------------------------------------------------------
@@ -989,22 +995,22 @@ void MidiInputTransformDialog::reject()
 //   setValOp
 //---------------------------------------------------------
 
-void MidiInputTransformDialog::setValOp(QWidget* a, QWidget* b, ValOp op)
+void MidiInputTransformDialog::setValOp(QWidget* a, QWidget* b, MusECore::ValOp op)
       {
       switch (op) {
-            case Ignore:
+            case MusECore::Ignore:
                   a->setEnabled(false);
                   b->setEnabled(false);
                   break;
-            case Equal:
-            case Unequal:
-            case Higher:
-            case Lower:
+            case MusECore::Equal:
+            case MusECore::Unequal:
+            case MusECore::Higher:
+            case MusECore::Lower:
                   a->setEnabled(true);
                   b->setEnabled(false);
                   break;
-            case Inside:
-            case Outside:
+            case MusECore::Inside:
+            case MusECore::Outside:
                   a->setEnabled(true);
                   b->setEnabled(true);
                   break;
@@ -1017,8 +1023,8 @@ void MidiInputTransformDialog::setValOp(QWidget* a, QWidget* b, ValOp op)
 
 void MidiInputTransformDialog::selEventOpSel(int val)
       {
-      selType->setEnabled(val != All);
-      cmt->selEventOp = ValOp(val);
+      selType->setEnabled(val != MusECore::All);
+      cmt->selEventOp = MusECore::ValOp(val);
       selVal1aChanged(cmt->selVal1a);
       selVal1bChanged(cmt->selVal1b);
       }
@@ -1029,7 +1035,7 @@ void MidiInputTransformDialog::selEventOpSel(int val)
 
 void MidiInputTransformDialog::selTypeSel(int val)
       {
-      cmt->selType = selTypeTable[val];
+      cmt->selType = MusECore::selTypeTable[val];
       selVal1aChanged(cmt->selVal1a);
       selVal1bChanged(cmt->selVal1b);
       }
@@ -1040,8 +1046,8 @@ void MidiInputTransformDialog::selTypeSel(int val)
 
 void MidiInputTransformDialog::selVal1OpSel(int val)
       {
-      setValOp(selVal1a, selVal1b, ValOp(val));
-      cmt->selVal1 = ValOp(val);
+      setValOp(selVal1a, selVal1b, MusECore::ValOp(val));
+      cmt->selVal1 = MusECore::ValOp(val);
       }
 
 //---------------------------------------------------------
@@ -1050,8 +1056,8 @@ void MidiInputTransformDialog::selVal1OpSel(int val)
 
 void MidiInputTransformDialog::selVal2OpSel(int val)
       {
-      setValOp(selVal2a, selVal2b, ValOp(val));
-      cmt->selVal2 = ValOp(val);
+      setValOp(selVal2a, selVal2b, MusECore::ValOp(val));
+      cmt->selVal2 = MusECore::ValOp(val);
       }
 
 //---------------------------------------------------------
@@ -1060,8 +1066,8 @@ void MidiInputTransformDialog::selVal2OpSel(int val)
 
 void MidiInputTransformDialog::procEventOpSel(int val)
       {
-      InputTransformProcEventOp op = val == 0 ? KeepType : FixType;
-      procType->setEnabled(op == FixType);
+      MusECore::InputTransformProcEventOp op = val == 0 ? MusECore::KeepType : MusECore::FixType;
+      procType->setEnabled(op == MusECore::FixType);
       cmt->procEvent = op;
       
       procVal1aChanged(cmt->procVal1a);
@@ -1074,7 +1080,7 @@ void MidiInputTransformDialog::procEventOpSel(int val)
 
 void MidiInputTransformDialog::procEventTypeSel(int val)
       {
-      cmt->eventType = procTypeTable[val];
+      cmt->eventType = MusECore::procTypeTable[val];
       procVal1aChanged(cmt->procVal1a);
       procVal1bChanged(cmt->procVal1b);
       }
@@ -1085,31 +1091,31 @@ void MidiInputTransformDialog::procEventTypeSel(int val)
 
 void MidiInputTransformDialog::procVal1OpSel(int val)
       {
-      cmt->procVal1 = TransformOperator(val);
-      switch(TransformOperator(val)) {
-            case Keep:
-            case Invert:
+      cmt->procVal1 = MusECore::TransformOperator(val);
+      switch(MusECore::TransformOperator(val)) {
+            case MusECore::Keep:
+            case MusECore::Invert:
                   procVal1a->setEnabled(false);
                   procVal1b->setEnabled(false);
                   break;
-            case Multiply:
-            case Divide:
+            case MusECore::Multiply:
+            case MusECore::Divide:
                   procVal1a->setEnabled(true);
                   procVal1a->setDecimals(2);
                   procVal1b->setEnabled(false);
                   break;
-            case Plus:
-            case Minus:
-            case Fix:
-            case Value:
-            case Flip:
+            case MusECore::Plus:
+            case MusECore::Minus:
+            case MusECore::Fix:
+            case MusECore::Value:
+            case MusECore::Flip:
                   procVal1a->setDecimals(0);
                   procVal1a->setEnabled(true);
                   procVal1b->setEnabled(false);
                   break;
-            case Random:
-            case ScaleMap:
-            case Dynamic:
+            case MusECore::Random:
+            case MusECore::ScaleMap:
+            case MusECore::Dynamic:
                   procVal1a->setDecimals(0);
                   procVal1a->setEnabled(true);
                   procVal1b->setEnabled(true);
@@ -1125,31 +1131,31 @@ void MidiInputTransformDialog::procVal1OpSel(int val)
 
 void MidiInputTransformDialog::procVal2OpSel(int val)
       {
-      TransformOperator op = TransformOperator(procVal2Map[val]);
+      MusECore::TransformOperator op = MusECore::TransformOperator(MusECore::procVal2Map[val]);
       cmt->procVal2 = op;
 
       switch (op) {
-            case Keep:
-            case Invert:
+            case MusECore::Keep:
+            case MusECore::Invert:
                   procVal2a->setEnabled(false);
                   procVal2b->setEnabled(false);
                   break;
-            case Multiply:
-            case Divide:
+            case MusECore::Multiply:
+            case MusECore::Divide:
                   procVal2a->setEnabled(true);
                   procVal2a->setDecimals(2);
                   procVal2b->setEnabled(false);
                   break;
-            case Plus:
-            case Minus:
-            case Fix:
-            case Value:
+            case MusECore::Plus:
+            case MusECore::Minus:
+            case MusECore::Fix:
+            case MusECore::Value:
                   procVal2a->setDecimals(0);
                   procVal2a->setEnabled(true);
                   procVal2b->setEnabled(false);
                   break;
-            case Random:
-            case Dynamic:
+            case MusECore::Random:
+            case MusECore::Dynamic:
                   procVal2a->setDecimals(0);
                   procVal2a->setEnabled(true);
                   procVal2b->setEnabled(true);
@@ -1165,9 +1171,9 @@ void MidiInputTransformDialog::procVal2OpSel(int val)
 
 void MidiInputTransformDialog::funcOpSel(int val)
       {
-      TransformFunction op = oplist[val].id;
+      MusECore::TransformFunction op = MusECore::oplist[val].id;
 
-      bool isFuncOp(op == Transform);
+      bool isFuncOp(op == MusECore::Transform);
 
       procEventOp->setEnabled(isFuncOp);
       procType->setEnabled(isFuncOp);
@@ -1202,18 +1208,18 @@ void MidiInputTransformDialog::presetNew()
       QString name;
       for (int i = 0;; ++i) {
             name.sprintf("New-%d", i);
-            iMidiInputTransformation imt;
-            for (imt = mtlist.begin(); imt != mtlist.end(); ++imt) {
+            MusECore::iMidiInputTransformation imt;
+            for (imt = MusECore::mtlist.begin(); imt != MusECore::mtlist.end(); ++imt) {
                   if (name == (*imt)->name)
                         break;
                   }
-            if (imt == mtlist.end())
+            if (imt == MusECore::mtlist.end())
                   break;
             }
-      MidiInputTransformation* mt = new MidiInputTransformation(name);
+      MusECore::MidiInputTransformation* mt = new MusECore::MidiInputTransformation(name);
       QListWidgetItem* lbi      = new QListWidgetItem(name);
       presetList->addItem(lbi);
-      mtlist.push_back(mt);
+      MusECore::mtlist.push_back(mt);
       presetList->setCurrentItem(lbi);
       presetChanged(lbi);
       }
@@ -1225,9 +1231,9 @@ void MidiInputTransformDialog::presetNew()
 void MidiInputTransformDialog::presetDelete()
       {
       if (cindex != -1) {
-            iMidiInputTransformation mt = mtlist.begin();
+            MusECore::iMidiInputTransformation mt = MusECore::mtlist.begin();
             for (int i = 0; i < cindex; ++i, ++mt) {
-                  mtlist.erase(mt);
+                  MusECore::mtlist.erase(mt);
                   presetList->setCurrentItem(presetList->item(cindex - 1));
                   presetList->takeItem(cindex);
                   presetChanged(presetList->item(cindex - 1));                  
@@ -1271,9 +1277,9 @@ void MidiInputTransformDialog::commentChanged()
 void MidiInputTransformDialog::selVal1aChanged(int val)
       {
       cmt->selVal1a = val;
-      if ((cmt->selEventOp != All)
+      if ((cmt->selEventOp != MusECore::All)
          && (cmt->selType == MIDITRANSFORM_NOTE)) {
-            selVal1a->setSuffix(" - " + MusEUtil::pitch2string(val));
+            selVal1a->setSuffix(" - " + MusECore::pitch2string(val));
             }
       else
       {
@@ -1289,9 +1295,9 @@ void MidiInputTransformDialog::selVal1aChanged(int val)
 void MidiInputTransformDialog::selVal1bChanged(int val)
       {
       cmt->selVal1b = val;
-      if ((cmt->selEventOp != All)
+      if ((cmt->selEventOp != MusECore::All)
          && (cmt->selType == MIDITRANSFORM_NOTE)) {
-            selVal1b->setSuffix(" - " + MusEUtil::pitch2string(val));
+            selVal1b->setSuffix(" - " + MusECore::pitch2string(val));
             }
       else
       {
@@ -1326,11 +1332,11 @@ void MidiInputTransformDialog::procVal1aChanged(int val)
       {
       cmt->procVal1a = val;
       
-      if((cmt->procEvent == KeepType && cmt->selType == MIDITRANSFORM_NOTE) && 
-           (cmt->procVal1 == Fix || cmt->procVal1 == ScaleMap || cmt->procVal1 == Dynamic || 
-            cmt->procVal1 == Random || cmt->procVal1 == Flip)) 
+      if((cmt->procEvent == MusECore::KeepType && cmt->selType == MIDITRANSFORM_NOTE) && 
+           (cmt->procVal1 == MusECore::Fix || cmt->procVal1 == MusECore::ScaleMap || cmt->procVal1 == MusECore::Dynamic || 
+            cmt->procVal1 == MusECore::Random || cmt->procVal1 == MusECore::Flip)) 
         {
-            procVal1a->setSuffix(" - " + MusEUtil::pitch2string(val));
+            procVal1a->setSuffix(" - " + MusECore::pitch2string(val));
         }
       else
       {
@@ -1347,11 +1353,11 @@ void MidiInputTransformDialog::procVal1bChanged(int val)
       {
       cmt->procVal1b = val;
       
-      if((cmt->procEvent == KeepType && cmt->selType == MIDITRANSFORM_NOTE) && 
-           (cmt->procVal1 == Fix || cmt->procVal1 == ScaleMap || cmt->procVal1 == Dynamic || 
-            cmt->procVal1 == Random || cmt->procVal1 == Flip)) 
+      if((cmt->procEvent == MusECore::KeepType && cmt->selType == MIDITRANSFORM_NOTE) && 
+           (cmt->procVal1 == MusECore::Fix || cmt->procVal1 == MusECore::ScaleMap || cmt->procVal1 == MusECore::Dynamic || 
+            cmt->procVal1 == MusECore::Random || cmt->procVal1 == MusECore::Flip)) 
         {
-            procVal1b->setSuffix(" - " + MusEUtil::pitch2string(val));
+            procVal1b->setSuffix(" - " + MusECore::pitch2string(val));
         }
       else
       {
@@ -1384,7 +1390,7 @@ void MidiInputTransformDialog::procVal2bChanged(int val)
 
 void MidiInputTransformDialog::modul1enableChanged(bool val)
       {
-      modules[0].valid = val;
+      MusECore::modules[0].valid = val;
       }
 
 //---------------------------------------------------------
@@ -1393,7 +1399,7 @@ void MidiInputTransformDialog::modul1enableChanged(bool val)
 
 void MidiInputTransformDialog::modul2enableChanged(bool val)
       {
-      modules[1].valid = val;
+      MusECore::modules[1].valid = val;
       }
 
 //---------------------------------------------------------
@@ -1402,7 +1408,7 @@ void MidiInputTransformDialog::modul2enableChanged(bool val)
 
 void MidiInputTransformDialog::modul3enableChanged(bool val)
       {
-      modules[2].valid = val;
+      MusECore::modules[2].valid = val;
       }
 
 //---------------------------------------------------------
@@ -1411,7 +1417,7 @@ void MidiInputTransformDialog::modul3enableChanged(bool val)
 
 void MidiInputTransformDialog::modul4enableChanged(bool val)
       {
-      modules[3].valid = val;
+      MusECore::modules[3].valid = val;
       }
 
 //---------------------------------------------------------
@@ -1420,8 +1426,8 @@ void MidiInputTransformDialog::modul4enableChanged(bool val)
 
 void MidiInputTransformDialog::selPortOpSel(int val)
       {
-      setValOp(selPortVala, selPortValb, ValOp(val));
-      cmt->selPort = ValOp(val);
+      setValOp(selPortVala, selPortValb, MusECore::ValOp(val));
+      cmt->selPort = MusECore::ValOp(val);
       }
 
 //---------------------------------------------------------
@@ -1448,8 +1454,8 @@ void MidiInputTransformDialog::selPortValbChanged(int val)
 
 void MidiInputTransformDialog::selChannelOpSel(int val)
       {
-      setValOp(selChannelVala, selChannelValb, ValOp(val));
-      cmt->selChannel = ValOp(val);
+      setValOp(selChannelVala, selChannelValb, MusECore::ValOp(val));
+      cmt->selChannel = MusECore::ValOp(val);
       }
 
 //---------------------------------------------------------
@@ -1476,31 +1482,31 @@ void MidiInputTransformDialog::selChannelValbChanged(int val)
 
 void MidiInputTransformDialog::procPortOpSel(int val)
       {
-      cmt->procPort = TransformOperator(val);
-      switch(TransformOperator(val)) {
-            case Keep:
-            case Invert:
+      cmt->procPort = MusECore::TransformOperator(val);
+      switch(MusECore::TransformOperator(val)) {
+            case MusECore::Keep:
+            case MusECore::Invert:
                   procPortVala->setEnabled(false);
                   procPortValb->setEnabled(false);
                   break;
-            case Multiply:
-            case Divide:
+            case MusECore::Multiply:
+            case MusECore::Divide:
                   procPortVala->setEnabled(true);
                   procPortVala->setDecimals(2);
                   procPortValb->setEnabled(false);
                   break;
-            case Plus:
-            case Minus:
-            case Fix:
-            case Value:
-            case Flip:
+            case MusECore::Plus:
+            case MusECore::Minus:
+            case MusECore::Fix:
+            case MusECore::Value:
+            case MusECore::Flip:
                   procPortVala->setDecimals(0);
                   procPortVala->setEnabled(true);
                   procPortValb->setEnabled(false);
                   break;
-            case Random:
-            case ScaleMap:
-            case Dynamic:
+            case MusECore::Random:
+            case MusECore::ScaleMap:
+            case MusECore::Dynamic:
                   procPortVala->setDecimals(0);
                   procPortVala->setEnabled(true);
                   procPortValb->setEnabled(true);
@@ -1532,31 +1538,31 @@ void MidiInputTransformDialog::procPortValbChanged(int val)
 
 void MidiInputTransformDialog::procChannelOpSel(int val)
       {
-      cmt->procChannel = TransformOperator(val);
-      switch(TransformOperator(val)) {
-            case Keep:
-            case Invert:
+      cmt->procChannel = MusECore::TransformOperator(val);
+      switch(MusECore::TransformOperator(val)) {
+            case MusECore::Keep:
+            case MusECore::Invert:
                   procChannelVala->setEnabled(false);
                   procChannelValb->setEnabled(false);
                   break;
-            case Multiply:
-            case Divide:
+            case MusECore::Multiply:
+            case MusECore::Divide:
                   procChannelVala->setEnabled(true);
                   procChannelVala->setDecimals(2);
                   procChannelValb->setEnabled(false);
                   break;
-            case Plus:
-            case Minus:
-            case Fix:
-            case Value:
-            case Flip:
+            case MusECore::Plus:
+            case MusECore::Minus:
+            case MusECore::Fix:
+            case MusECore::Value:
+            case MusECore::Flip:
                   procChannelVala->setDecimals(0);
                   procChannelVala->setEnabled(true);
                   procChannelValb->setEnabled(false);
                   break;
-            case Random:
-            case ScaleMap:
-            case Dynamic:
+            case MusECore::Random:
+            case MusECore::ScaleMap:
+            case MusECore::Dynamic:
                   procChannelVala->setDecimals(0);
                   procChannelVala->setEnabled(true);
                   procChannelValb->setEnabled(true);
@@ -1592,9 +1598,9 @@ void MidiInputTransformDialog::changeModul(int k)
 
       cmodul = k;       // current modul
 
-      if (modules[k].transform == 0) {
+      if (MusECore::modules[k].transform == 0) {
             //printf("transform %d ist null\n", k);
-            modules[k].transform = cmt;
+            MusECore::modules[k].transform = cmt;
             }
       else {
             //---------------------------------------------
@@ -1602,14 +1608,14 @@ void MidiInputTransformDialog::changeModul(int k)
             //---------------------------------------------
 
             int idx = 0;
-            iMidiInputTransformation i;
-            for (i = mtlist.begin(); i != mtlist.end(); ++i, ++idx) {
-                  if (*i == modules[k].transform) {
+            MusECore::iMidiInputTransformation i;
+            for (i = MusECore::mtlist.begin(); i != MusECore::mtlist.end(); ++i, ++idx) {
+                  if (*i == MusECore::modules[k].transform) {
                         presetList->setCurrentItem(presetList->item(idx));
                         break;
                         }
                   }
-            if (i == mtlist.end())
+            if (i == MusECore::mtlist.end())
                   printf("change to unknown transformation!\n");
             }
       }
@@ -1627,19 +1633,19 @@ void MidiInputTransformDialog::presetChanged(QListWidgetItem* item)
       //   cmt
       //---------------------------------------------------
 
-      iMidiInputTransformation i;
-      for (i = mtlist.begin(); i != mtlist.end(); ++i) {
+      MusECore::iMidiInputTransformation i;
+      for (i = MusECore::mtlist.begin(); i != MusECore::mtlist.end(); ++i) {
             if (item->text() == (*i)->name) {
                   if(MusEGlobal::debugMsg)
                     printf("found %s\n", (*i)->name.toLatin1().constData());
                   cmt = *i;
                   if (cmodul != -1) {
-                        modules[cmodul].transform = *i;
+                        MusECore::modules[cmodul].transform = *i;
                         }
                   break;
                   }
             }
-      if (i == mtlist.end()) {
+      if (i == MusECore::mtlist.end()) {
             printf("MidiInputTransformDialog::presetChanged: not found\n");
             return;
             }
@@ -1649,8 +1655,8 @@ void MidiInputTransformDialog::presetChanged(QListWidgetItem* item)
       selEventOp->setCurrentIndex(cmt->selEventOp);
       selEventOpSel(cmt->selEventOp);
 
-      for (unsigned i = 0; i < sizeof(selTypeTable)/sizeof(*selTypeTable); ++i) {
-            if (selTypeTable[i] == cmt->selType) {
+      for (unsigned i = 0; i < sizeof(MusECore::selTypeTable)/sizeof(*MusECore::selTypeTable); ++i) {
+            if (MusECore::selTypeTable[i] == cmt->selType) {
                   selType->setCurrentIndex(i);
                   break;
                   }
@@ -1670,19 +1676,19 @@ void MidiInputTransformDialog::presetChanged(QListWidgetItem* item)
 
       {
       unsigned i;
-      for (i = 0; i < sizeof(oplist)/sizeof(*oplist); ++i) {
-            if (oplist[i].id == cmt->funcOp) {
+      for (i = 0; i < sizeof(MusECore::oplist)/sizeof(*MusECore::oplist); ++i) {
+            if (MusECore::oplist[i].id == cmt->funcOp) {
                   funcOp->setCurrentIndex(i);
                   break;
                   }
             }
-      if (i == sizeof(oplist)/sizeof(*oplist))
+      if (i == sizeof(MusECore::oplist)/sizeof(*MusECore::oplist))
             printf("internal error: bad OpCode\n");
       funcOpSel(i);
       }
 
-      for (unsigned i = 0; i < sizeof(procTypeTable)/sizeof(*procTypeTable); ++i) {
-            if (procTypeTable[i] == cmt->eventType) {
+      for (unsigned i = 0; i < sizeof(MusECore::procTypeTable)/sizeof(*MusECore::procTypeTable); ++i) {
+            if (MusECore::procTypeTable[i] == cmt->eventType) {
                   procType->setCurrentIndex(i);
                   break;
                   }
@@ -1694,8 +1700,8 @@ void MidiInputTransformDialog::presetChanged(QListWidgetItem* item)
       procVal1Op->setCurrentIndex(cmt->procVal1);
       procVal1OpSel(cmt->procVal1);
 
-      for (unsigned i = 0; i < sizeof(procVal2Map)/sizeof(*procVal2Map); ++i) {
-            if (procVal2Map[i] == cmt->procVal2) {
+      for (unsigned i = 0; i < sizeof(MusECore::procVal2Map)/sizeof(*MusECore::procVal2Map); ++i) {
+            if (MusECore::procVal2Map[i] == cmt->procVal2) {
                   procVal2Op->setCurrentIndex(i);
                   break;
                   }
@@ -1735,3 +1741,4 @@ void MidiInputTransformDialog::presetChanged(QListWidgetItem* item)
       
       }
 
+} // namespace MusEGui

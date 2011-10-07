@@ -30,6 +30,8 @@
 #define MAX_TICK (0x7fffffff/100)
 #endif
 
+namespace MusECore {
+
 class Xml;
 
 //---------------------------------------------------------
@@ -101,5 +103,10 @@ class TempoList : public TEMPOLIST {
       void setGlobalTempo(int val);
       };
 
-extern TempoList tempomap;
+} // namespace MusECore
+
+namespace MusEGlobal {
+extern MusECore::TempoList tempomap;
+}
+
 #endif

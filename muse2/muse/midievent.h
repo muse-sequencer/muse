@@ -26,6 +26,8 @@
 
 #include "eventbase.h"
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   MidiEventBase
 //---------------------------------------------------------
@@ -72,6 +74,8 @@ class MidiEventBase : public EventBase {
       virtual void write(int, Xml&, const Pos& offset, bool forcePath = false) const;
       virtual EventBase* mid(unsigned, unsigned);
       };
+
+} // namespace MusECore
 
 #endif
 

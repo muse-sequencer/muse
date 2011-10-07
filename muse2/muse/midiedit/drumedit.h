@@ -43,23 +43,27 @@ class QToolButton;
 class QWidget;
 class QComboBox;
 
-class MidiPart;
-class DrumCanvas;
-class ScrollScale;
-class ScoreConfig;
-class PartList;
-class CtrlCanvas;
-class Xml;
-class DList;
-class CtrlEdit;
-class Part;
-class SNode;
 
-namespace MusEWidget {
+namespace MusECore {
+class MidiPart;
+class Part;
+class PartList;
+class SNode;
+class Xml;
+}
+
+namespace MusEGui {
+
+class CtrlCanvas;
+class CtrlEdit;
+class DList;
+class DrumCanvas;
 class Header;
+class ScoreConfig;
+class ScrollScale;
 class Splitter;
 class Toolbar1;
-}
+
 
 //---------------------------------------------------------
 //   DrumEdit
@@ -68,22 +72,22 @@ class Toolbar1;
 class DrumEdit : public MidiEditor {
       Q_OBJECT
     
-      Event selEvent;
-      MidiPart* selPart;
+      MusECore::Event selEvent;
+      MusECore::MidiPart* selPart;
       int selTick;
       QMenu* menuEdit, *menuFunctions, *menuFile, *menuSelect;
 
-      MusEWidget::NoteInfo* info;
+      MusEGui::NoteInfo* info;
       QToolButton* srec;
       QToolButton* midiin;
-      MusEWidget::EditToolBar* tools2;
+      MusEGui::EditToolBar* tools2;
 
-      MusEWidget::Toolbar1* toolbar;
-      MusEWidget::Splitter* split1;
-      MusEWidget::Splitter* split2;
+      MusEGui::Toolbar1* toolbar;
+      MusEGui::Splitter* split1;
+      MusEGui::Splitter* split2;
       QWidget* split1w1;
       DList* dlist;
-      MusEWidget::Header* header;
+      MusEGui::Header* header;
       QToolBar* tools;
       QComboBox *stepLenWidget;
 
@@ -108,7 +112,7 @@ class DrumEdit : public MidiEditor {
 
    private slots:
       void setRaster(int);
-      void noteinfoChanged(MusEWidget::NoteInfo::ValType type, int val);
+      void noteinfoChanged(MusEGui::NoteInfo::ValType type, int val);
       //CtrlEdit* addCtrl();
       void removeCtrl(CtrlEdit* ctrl);
       void cmd(int);
@@ -125,7 +129,7 @@ class DrumEdit : public MidiEditor {
       void setStep(QString);
 
    public slots:
-      void setSelection(int, Event&, Part*);
+      void setSelection(int, MusECore::Event&, MusECore::Part*);
       void soloChanged(bool);       // called by Solo button
       void execDeliveredScript(int);
       void execUserScript(int);
@@ -133,15 +137,17 @@ class DrumEdit : public MidiEditor {
       
       virtual void updateHScrollRange();
    signals:
-      void deleted(TopWin*);
+      void deleted(MusEGui::TopWin*);
 
    public:
-      DrumEdit(PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
+      DrumEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
       virtual ~DrumEdit();
-      virtual void readStatus(Xml&);
-      virtual void writeStatus(int, Xml&) const;
-      static void readConfiguration(Xml& xml);
-      static void writeConfiguration(int, Xml&);
+      virtual void readStatus(MusECore::Xml&);
+      virtual void writeStatus(int, MusECore::Xml&) const;
+      static void readConfiguration(MusECore::Xml& xml);
+      static void writeConfiguration(int, MusECore::Xml&);
       };
+
+} // namespace MusEGui
 
 #endif

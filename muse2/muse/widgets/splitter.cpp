@@ -26,7 +26,7 @@
 #include <QList>
 #include <QStringList>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   Splitter
@@ -43,38 +43,38 @@ Splitter::Splitter(Qt::Orientation o, QWidget* parent, const char* name)
 //   saveConfiguration
 //---------------------------------------------------------
 
-void Splitter::writeStatus(int level, Xml& xml)
+void Splitter::writeStatus(int level, MusECore::Xml& xml)
       {
       QList<int> vl = sizes();
       //xml.nput(level++, "<%s>", name());
-      xml.nput(level++, "<%s>", Xml::xmlString(objectName()).toLatin1().constData());
+      xml.nput(level++, "<%s>", MusECore::Xml::xmlString(objectName()).toLatin1().constData());
       QList<int>::iterator ivl = vl.begin();
       for (; ivl != vl.end(); ++ivl) {
             xml.nput("%d ", *ivl);
             }
       //xml.nput("</%s>\n", name());
-      xml.nput("</%s>\n", Xml::xmlString(objectName()).toLatin1().constData());
+      xml.nput("</%s>\n", MusECore::Xml::xmlString(objectName()).toLatin1().constData());
       }
 
 //---------------------------------------------------------
 //   loadConfiguration
 //---------------------------------------------------------
 
-void Splitter::readStatus(Xml& xml)
+void Splitter::readStatus(MusECore::Xml& xml)
       {
       QList<int> vl;
 
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
             switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return;
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         xml.unknown("Splitter");
                         break;
-                  case Xml::Text:
+                  case MusECore::Xml::Text:
                         {
                         //QStringList sl = QStringList::split(' ', tag);
                         QStringList sl = tag.split(QString(" "), QString::SkipEmptyParts);
@@ -84,7 +84,7 @@ void Splitter::readStatus(Xml& xml)
                               }
                         }
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == objectName()) {
                               setSizes(vl);
                               return;
@@ -95,4 +95,4 @@ void Splitter::readStatus(Xml& xml)
             }
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

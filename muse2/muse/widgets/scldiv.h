@@ -27,7 +27,7 @@
 
 #include <QVector>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 class ScaleDiv
       {
@@ -66,6 +66,6 @@ class ScaleDiv
          bool log, double step = 0.0, bool ascend = TRUE);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif

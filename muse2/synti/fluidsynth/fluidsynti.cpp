@@ -39,14 +39,14 @@
 #include "muse/midi.h"
 
 FluidCtrl FluidSynth::fluidCtrl[] = {
-      //{ "Expression", CTRL_EXPRESSION, 0, 127 },
-      //{ "Sustain", CTRL_SUSTAIN, 0, 127 },
-      //{ "Portamento", CTRL_PORTAMENTO, 0, 127 },
-      //{ "Soft Pedal", CTRL_SOFT_PEDAL, 0, 127 },
-      //{ "Variation", CTRL_VARIATION_SEND, 0, 127 },
-      //{ "Channel reverb send", CTRL_REVERB_SEND, 0, 127 },
-      //{ "Channel chorus send", CTRL_CHORUS_SEND, 0, 127 },
-      //{ "Pitch", CTRL_PITCH, -8192, 8191 }
+      //{ "Expression", MusECore::CTRL_EXPRESSION, 0, 127 },
+      //{ "Sustain", MusECore::CTRL_SUSTAIN, 0, 127 },
+      //{ "Portamento", MusECore::CTRL_PORTAMENTO, 0, 127 },
+      //{ "Soft Pedal", MusECore::CTRL_SOFT_PEDAL, 0, 127 },
+      //{ "Variation", MusECore::CTRL_VARIATION_SEND, 0, 127 },
+      //{ "Channel reverb send", MusECore::CTRL_REVERB_SEND, 0, 127 },
+      //{ "Channel chorus send", MusECore::CTRL_CHORUS_SEND, 0, 127 },
+      //{ "Pitch", MusECore::CTRL_PITCH, -8192, 8191 }
       
       // These controllers' initial values are set by the FS_PREDEF_ values, so just set them to zero here.
       { "Gain", FS_GAIN ,0, 127, 0},
@@ -62,19 +62,19 @@ FluidCtrl FluidSynth::fluidCtrl[] = {
       { "Master chorus depth", FS_CHORUS_DEPTH, 0, 16384, 0}, // [0,40]
       { "Master chorus level", FS_CHORUS_LEVEL, 0, 16384, 0}, // [0,1]
       
-      { "Program", CTRL_PROGRAM, 0, 0xffffff, 0},
-      { "Modulation", CTRL_MODULATION, 0, 127, 0},
-      { "Portamento time", CTRL_PORTAMENTO_TIME, 0, 127, 0},
-      { "Volume", CTRL_VOLUME, 0, 127, 100},
-      { "Pan", CTRL_PANPOT, -64, 63, 0},
-      { "Expression", CTRL_EXPRESSION, 0, 127, 127},
-      { "Sustain", CTRL_SUSTAIN, 0, 127, 0},
-      { "Portamento", CTRL_PORTAMENTO, 0, 127, 0},
-      { "Soft Pedal", CTRL_SOFT_PEDAL, 0, 127, 0},
-      { "Variation", CTRL_VARIATION_SEND, 0, 127, 0},
-      { "Channel reverb send", CTRL_REVERB_SEND, 0, 127, 40},
-      { "Channel chorus send", CTRL_CHORUS_SEND, 0, 127, 0},
-      { "Pitch", CTRL_PITCH, -8192, 8191, 0},
+      { "Program", MusECore::CTRL_PROGRAM, 0, 0xffffff, 0},
+      { "Modulation", MusECore::CTRL_MODULATION, 0, 127, 0},
+      { "Portamento time", MusECore::CTRL_PORTAMENTO_TIME, 0, 127, 0},
+      { "Volume", MusECore::CTRL_VOLUME, 0, 127, 100},
+      { "Pan", MusECore::CTRL_PANPOT, -64, 63, 0},
+      { "Expression", MusECore::CTRL_EXPRESSION, 0, 127, 127},
+      { "Sustain", MusECore::CTRL_SUSTAIN, 0, 127, 0},
+      { "Portamento", MusECore::CTRL_PORTAMENTO, 0, 127, 0},
+      { "Soft Pedal", MusECore::CTRL_SOFT_PEDAL, 0, 127, 0},
+      { "Variation", MusECore::CTRL_VARIATION_SEND, 0, 127, 0},
+      { "Channel reverb send", MusECore::CTRL_REVERB_SEND, 0, 127, 40},
+      { "Channel chorus send", MusECore::CTRL_CHORUS_SEND, 0, 127, 0},
+      { "Pitch", MusECore::CTRL_PITCH, -8192, 8191, 0},
       // Added by T356
       { "Pitch bend sensitivity", FS_PITCHWHEELSENS, 0, 24, 2}
     };
@@ -192,13 +192,13 @@ void FluidSynth::processMessages()
   //Process messages from the gui
   while (gui->fifoSize()) 
   {
-    MidiPlayEvent ev = gui->readEvent();
-    if (ev.type() == ME_SYSEX) 
+    MusECore::MidiPlayEvent ev = gui->readEvent();
+    if (ev.type() == MusECore::ME_SYSEX) 
     {
       sysex(ev.len(), ev.data());
       sendEvent(ev);
     }
-    else if (ev.type() == ME_CONTROLLER) 
+    else if (ev.type() == MusECore::ME_CONTROLLER) 
     {
       setController(ev.channel(), ev.dataA(), ev.dataB(), true);
       sendEvent(ev);
@@ -222,12 +222,12 @@ void FluidSynth::process(float** ports, int offset, int len)
       /*
       //Process messages from the gui
       while (gui->fifoSize()) {
-            MidiPlayEvent ev = gui->readEvent();
-            if (ev.type() == ME_SYSEX) {
+            MusECore::MidiPlayEvent ev = gui->readEvent();
+            if (ev.type() == MusECore::ME_SYSEX) {
                   sysex(ev.len(), ev.data());
                   sendEvent(ev);
                   }
-            else if (ev.type() == ME_CONTROLLER) {
+            else if (ev.type() == MusECore::ME_CONTROLLER) {
                   setController(ev.channel(), ev.dataA(), ev.dataB(), true);
                   sendEvent(ev);
                   }
@@ -478,10 +478,10 @@ void FluidSynth::parseInitData(int n, const byte* d)
 //    All events from the sequencer goes here
 //---------------------------------------------------------
 
-bool FluidSynth::processEvent(const MidiPlayEvent& ev)
+bool FluidSynth::processEvent(const MusECore::MidiPlayEvent& ev)
       {
       switch(ev.type()) {
-            case ME_CONTROLLER:
+            case MusECore::ME_CONTROLLER:
                   if (FS_DEBUG_DATA) {
                         printf("*** FluidSynth::process - Controller. Chan: %x dataA: %x dataB: %x\n", ev.channel(), ev.dataA(), ev.dataB());
                         for (int i=0; i< ev.len(); i++)
@@ -489,11 +489,11 @@ bool FluidSynth::processEvent(const MidiPlayEvent& ev)
                         }
                   setController(ev.channel(), ev.dataA(), ev.dataB(), false);
                   return true;
-            case ME_NOTEON:
+            case MusECore::ME_NOTEON:
                   return playNote(ev.channel(), ev.dataA(), ev.dataB());
-            case ME_NOTEOFF:
+            case MusECore::ME_NOTEOFF:
                   return playNote(ev.channel(), ev.dataA(), 0);
-            case ME_SYSEX:
+            case MusECore::ME_SYSEX:
                   //Debug print
                   if (FS_DEBUG_DATA) {
                         printf("*** FluidSynth::process - Sysex received\n");
@@ -502,12 +502,12 @@ bool FluidSynth::processEvent(const MidiPlayEvent& ev)
                         printf("\n");
                         }
                   return sysex(ev.len(), ev.data());
-            case ME_PITCHBEND:
-                setController(ev.channel(), CTRL_PITCH, ev.dataA(), false);
+            case MusECore::ME_PITCHBEND:
+                setController(ev.channel(), MusECore::CTRL_PITCH, ev.dataA(), false);
                 break;            
             
-            case ME_PROGRAM:
-                setController(ev.channel(), CTRL_PROGRAM, ev.dataA(), false);
+            case MusECore::ME_PROGRAM:
+                setController(ev.channel(), MusECore::CTRL_PROGRAM, ev.dataA(), false);
             break;   
             default:
             break;
@@ -584,7 +584,7 @@ bool FluidSynth::sysex(int n, const unsigned char* d)
 //---------------------------------------------------------
 void FluidSynth::sendSysex(int l, const unsigned char* d)
       {
-      MidiPlayEvent ev(0, 0, ME_SYSEX, d, l);
+      MusECore::MidiPlayEvent ev(0, 0, MusECore::ME_SYSEX, d, l);
       //printf("FluidSynth::sendSysex gui:%p\n", gui); 
       gui->writeEvent(ev);
       }
@@ -851,7 +851,7 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                   fluid_synth_set_gain(fluidsynth, (float) val/25); //gives val an interval of approximately[0,5]
                   //Forward to gui if not from Gui
                   if (!fromGui) {
-                        MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, FS_GAIN, val);
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_GAIN, val);
                         gui->writeEvent(ev);
                         }
                   break;
@@ -862,7 +862,7 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                   //if (rev_on)
                   //      fluid_synth_set_reverb(fluidsynth, rev_size, rev_damping, rev_width, rev_level);
                   if (!fromGui) {
-                        MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, FS_REVERB_ON, val);
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_REVERB_ON, val);
                         gui->writeEvent(ev);
                         }
                   break;
@@ -873,7 +873,7 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                   //if (rev_on)
                         fluid_synth_set_reverb(fluidsynth, rev_size, rev_damping, rev_width, rev_level);
                   if (!fromGui) {
-                        MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, FS_REVERB_LEVEL, val);
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_REVERB_LEVEL, val);
                         gui->writeEvent(ev);
                         }
                   break;
@@ -882,7 +882,7 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                   //if (rev_on)
                         fluid_synth_set_reverb(fluidsynth, rev_size, rev_damping, rev_width, rev_level);
                   if (!fromGui) {
-                        MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, FS_REVERB_WIDTH, val);
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_REVERB_WIDTH, val);
                         gui->writeEvent(ev);
                         }
                   break;
@@ -891,7 +891,7 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                   //if (rev_on)
                         fluid_synth_set_reverb(fluidsynth, rev_size, rev_damping, rev_width, rev_level);
                   if (!fromGui) {
-                        MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, FS_REVERB_DAMPING, val);
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_REVERB_DAMPING, val);
                         gui->writeEvent(ev);
                         }
                   break;
@@ -900,7 +900,7 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                   //if (rev_on)
                         fluid_synth_set_reverb(fluidsynth, rev_size, rev_damping, rev_width, rev_level);
                   if (!fromGui) {
-                        MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, FS_REVERB_ROOMSIZE, val);
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_REVERB_ROOMSIZE, val);
                         gui->writeEvent(ev);
                         }
                   break;
@@ -908,7 +908,7 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                   cho_on = val;
                   fluid_synth_set_chorus_on(fluidsynth, val);
                   if (!fromGui) {
-                        MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, FS_CHORUS_ON, val);
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_ON, val);
                         gui->writeEvent(ev);
                         }
                   break;
@@ -917,7 +917,7 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                   cho_num = val;
                   fluid_synth_set_chorus(fluidsynth, cho_num, cho_level, cho_speed, cho_depth, cho_type);
                   if (!fromGui) {
-                        MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, FS_CHORUS_NUM, val);
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_NUM, val);
                         gui->writeEvent(ev);
                         }
                   break;
@@ -926,7 +926,7 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                   cho_type = val;
                   fluid_synth_set_chorus(fluidsynth, cho_num, cho_level, cho_speed, cho_depth, cho_type);
                   if (!fromGui) {
-                        MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, FS_CHORUS_TYPE, val);
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_TYPE, val);
                         gui->writeEvent(ev);
                         }
                   break;
@@ -935,7 +935,7 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                   cho_speed = (double)(0.291 + (double)val/3479);
                   fluid_synth_set_chorus(fluidsynth, cho_num, cho_level, cho_speed, cho_depth, cho_type);
                   if (!fromGui) {
-                        MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, FS_CHORUS_SPEED, val);
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_SPEED, val);
                         gui->writeEvent(ev);
                         }
                   break;
@@ -944,7 +944,7 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                   cho_depth = (double) val*40/16383;
                   fluid_synth_set_chorus(fluidsynth, cho_num, cho_level, cho_speed, cho_depth, cho_type);
                   if (!fromGui) {
-                        MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, FS_CHORUS_DEPTH, val);
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_DEPTH, val);
                         gui->writeEvent(ev);
                         }
                   break;
@@ -953,7 +953,7 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                   cho_level = (double) val/16383;
                   fluid_synth_set_chorus(fluidsynth, cho_num, cho_level, cho_speed, cho_depth, cho_type);
                   if (!fromGui) {
-                        MidiPlayEvent ev(0, 0, 0, ME_CONTROLLER, FS_CHORUS_LEVEL, val);
+                        MusECore::MidiPlayEvent ev(0, 0, 0, MusECore::ME_CONTROLLER, FS_CHORUS_LEVEL, val);
                         gui->writeEvent(ev);
                         }
                   break;
@@ -961,7 +961,7 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
             //
             // Controllers that depend on channels
             //
-            case CTRL_PITCH:
+            case MusECore::CTRL_PITCH:
                   // MusE's range is from -8192 to +8191, fluidsynth seems to be [0, 16384]
                   val +=8192;
                   err = fluid_synth_pitch_bend (fluidsynth, channel, val);
@@ -972,7 +972,7 @@ void FluidSynth::setController(int channel, int id, int val, bool fromGui)
                   err = fluid_synth_pitch_wheel_sens(fluidsynth, channel, val);
                   break;
                   
-            case CTRL_PROGRAM: {
+            case MusECore::CTRL_PROGRAM: {
                   //Check if MusE is trying to set a preset on an unspecified font. If so, ignore.
                   if (FS_DEBUG)
                         printf("Program select : channel %d val %d\n",channel, val);
@@ -1140,7 +1140,7 @@ void FluidSynth::sendLastdir(const char* lastdir)
       memcpy(d+1,lastdir, strlen(lastdir)+1);
       //memcpy(d+3,lastdir, strlen(lastdir)+1);
 
-      MidiPlayEvent ev(0,0, ME_SYSEX, d, n);
+      MusECore::MidiPlayEvent ev(0,0, MusECore::ME_SYSEX, d, n);
       gui->writeEvent(ev);
       }
 

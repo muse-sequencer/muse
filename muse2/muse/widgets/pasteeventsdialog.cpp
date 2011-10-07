@@ -25,9 +25,9 @@
 #include "xml.h"
 #include "gconfig.h"
 
-using MusEConfig::config;
+using MusEGlobal::config;
 
-namespace MusEDialog {
+namespace MusEGui {
 
 PasteEventsDialog::PasteEventsDialog(QWidget* parent)
 	: QDialog(parent)
@@ -122,18 +122,18 @@ void PasteEventsDialog::number_changed(int n)
 }
 
 
-void PasteEventsDialog::read_configuration(Xml& xml)
+void PasteEventsDialog::read_configuration(MusECore::Xml& xml)
 {
 	for (;;)
 	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
 			
 		const QString& tag = xml.s1();
 		switch (token)
 		{
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "number")
 					number=xml.parseInt();
 				else if (tag == "raster")
@@ -150,7 +150,7 @@ void PasteEventsDialog::read_configuration(Xml& xml)
 					xml.unknown("PasteEventsDialog");
 				break;
 				
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "pasteeventsdialog")
 					return;
 				
@@ -160,7 +160,7 @@ void PasteEventsDialog::read_configuration(Xml& xml)
 	}
 }
 
-void PasteEventsDialog::write_configuration(int level, Xml& xml)
+void PasteEventsDialog::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "pasteeventsdialog");
 	xml.intTag(level, "number", number);
@@ -172,4 +172,4 @@ void PasteEventsDialog::write_configuration(int level, Xml& xml)
 	xml.tag(level, "/pasteeventsdialog");
 }
 
-} // namespace MusEDialog
+} // namespace MusEGui

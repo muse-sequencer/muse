@@ -26,9 +26,9 @@
 #include "view.h"
 
 
-class ScoreCanvas;
+namespace MusEGui {
 
-namespace MusEWidget {
+class ScoreCanvas;
 
 //---------------------------------------------------------
 //   MTScaleFlo
@@ -65,7 +65,7 @@ class MTScaleFlo : public View {
       MTScaleFlo(ScoreCanvas* parent_editor, QWidget* parent_widget);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

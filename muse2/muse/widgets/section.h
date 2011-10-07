@@ -23,7 +23,7 @@
 #ifndef __SECTION_H__
 #define __SECTION_H__
 
-namespace MusEWidget {
+namespace MusEGui {
 
 struct Section {
       int offset;
@@ -32,7 +32,7 @@ struct Section {
       int val;
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

@@ -32,7 +32,7 @@ static const int FIFO_SIZE = 32;
 
 struct MessP {
       // Event Fifo  synti -> Host:
-      MidiPlayEvent fifo[FIFO_SIZE];
+      MusECore::MidiPlayEvent fifo[FIFO_SIZE];
       volatile int fifoSize;
       int fifoWindex;
       int fifoRindex;
@@ -92,7 +92,7 @@ void Mess::getNativeGeometry(int* x, int* y, int* w, int* h) const
 //    send Event synti -> host
 //---------------------------------------------------------
 
-void Mess::sendEvent(MidiPlayEvent ev)
+void Mess::sendEvent(MusECore::MidiPlayEvent ev)
       {
       if (d->fifoSize == FIFO_SIZE) {
             printf("event synti->host  fifo overflow\n");
@@ -108,9 +108,9 @@ void Mess::sendEvent(MidiPlayEvent ev)
 //    called from host
 //---------------------------------------------------------
 
-MidiPlayEvent Mess::receiveEvent()
+MusECore::MidiPlayEvent Mess::receiveEvent()
       {
-      MidiPlayEvent ev = d->fifo[d->fifoRindex];
+      MusECore::MidiPlayEvent ev = d->fifo[d->fifoRindex];
       d->fifoRindex = (d->fifoRindex + 1) % FIFO_SIZE;
       --(d->fifoSize);
       return ev;
@@ -134,19 +134,19 @@ int Mess::eventsPending() const
 //    return true if synti is busy
 //---------------------------------------------------------
 
-bool Mess::processEvent(const MidiPlayEvent& ev)
+bool Mess::processEvent(const MusECore::MidiPlayEvent& ev)
       {
       switch(ev.type()) {
-            case ME_NOTEON:
+            case MusECore::ME_NOTEON:
                   return playNote(ev.channel(), ev.dataA(), ev.dataB());
-            case ME_NOTEOFF:
+            case MusECore::ME_NOTEOFF:
                   return playNote(ev.channel(), ev.dataA(), 0);
-            case ME_SYSEX:
+            case MusECore::ME_SYSEX:
 	            return sysex(ev.len(), ev.data());
-            case ME_CONTROLLER:
+            case MusECore::ME_CONTROLLER:
                   return setController(ev.channel(), ev.dataA(), ev.dataB());
-            case ME_PITCHBEND:       // Tim.
-                  return setController(ev.channel(), CTRL_PITCH, ev.dataA());
+            case MusECore::ME_PITCHBEND:       // Tim.
+                  return setController(ev.channel(), MusECore::CTRL_PITCH, ev.dataA());
             }
       return false;
       }

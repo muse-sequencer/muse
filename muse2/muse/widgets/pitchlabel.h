@@ -25,7 +25,7 @@
 
 #include <QLabel>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   PitchLabel
@@ -53,7 +53,7 @@ class PitchLabel : public QLabel {
       bool pitchMode() const { return _pitchMode; }
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

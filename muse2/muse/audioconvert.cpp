@@ -35,6 +35,8 @@
 //#define AUDIOCONVERT_DEBUG
 //#define AUDIOCONVERT_DEBUG_PRC
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   AudioConvertMap
 //---------------------------------------------------------
@@ -129,7 +131,7 @@ AudioConverter* AudioConverter::release(AudioConverter* cv)
 }
 
 //off_t AudioConverter::readAudio(SndFileR& f, off_t sfCurFrame, unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
-off_t AudioConverter::readAudio(SndFileR& f, unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
+off_t AudioConverter::readAudio(MusECore::SndFileR& f, unsigned offset, float** buffer, int channel, int n, bool doSeek, bool overwrite)
 {
   if(f.isNull())
     return _sfCurFrame;
@@ -327,7 +329,7 @@ void SRCAudioConverter::reset()
 }
 
 //off_t SRCAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** buffer, int channel, int n, bool overwrite)
-off_t SRCAudioConverter::process(SndFileR& f, float** buffer, int channel, int n, bool overwrite)
+off_t SRCAudioConverter::process(MusECore::SndFileR& f, float** buffer, int channel, int n, bool overwrite)
 {
   //return src_process(_src_state, sd);
   
@@ -623,7 +625,7 @@ void RubberBandAudioConverter::reset()
 // TODO: Not finished yet..
 ////////////////////////////////
 //off_t RubberBandAudioConverter::process(SndFileR& f, off_t sfCurFrame, float** buffer, int channel, int n, bool overwrite)
-off_t RubberBandAudioConverter::process(SndFileR& f, float** buffer, int channel, int n, bool overwrite)
+off_t RubberBandAudioConverter::process(MusECore::SndFileR& f, float** buffer, int channel, int n, bool overwrite)
 {
   //return src_process(_src_state, sd);
   
@@ -901,3 +903,5 @@ off_t RubberBandAudioConverter::process(SndFileR& f, float** buffer, int channel
 }
 
 #endif // RUBBERBAND_SUPPORT
+
+} // namespace MusECore

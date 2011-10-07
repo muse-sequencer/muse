@@ -39,13 +39,13 @@ class MessGui {
       int writeFd;
 
       // Event Fifo  synti -> GUI
-      MidiPlayEvent rFifo[EVENT_FIFO_SIZE];
+      MusECore::MidiPlayEvent rFifo[EVENT_FIFO_SIZE];
       volatile int rFifoSize;
       int rFifoWindex;
       int rFifoRindex;
 
       // Event Fifo  GUI -> synti
-      MidiPlayEvent wFifo[EVENT_FIFO_SIZE];
+      MusECore::MidiPlayEvent wFifo[EVENT_FIFO_SIZE];
       volatile int wFifoSize;
       int wFifoWindex;
       int wFifoRindex;
@@ -53,19 +53,19 @@ class MessGui {
    protected:
       int readFd;
       void readMessage();
-      void sendEvent(const MidiPlayEvent& ev);
+      void sendEvent(const MusECore::MidiPlayEvent& ev);
       void sendController(int,int,int);
       void sendSysex(unsigned char*, int);
 
-      virtual void processEvent(const MidiPlayEvent&) {};
+      virtual void processEvent(const MusECore::MidiPlayEvent&) {};
 
    public:
       MessGui();
       virtual ~MessGui();
 
-      void writeEvent(const MidiPlayEvent&);
+      void writeEvent(const MusECore::MidiPlayEvent&);
       int fifoSize() const { return wFifoSize; }
-      MidiPlayEvent readEvent();
+      MusECore::MidiPlayEvent readEvent();
       };
 
 //---------------------------------------------------------

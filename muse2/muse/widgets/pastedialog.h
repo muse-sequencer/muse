@@ -26,9 +26,11 @@
 #include "ui_pastedialogbase.h"
 #include <QString>
 
+namespace MusECore {
 class Xml;
+}
 
-namespace MusEDialog {
+namespace MusEGui {
 
 class PasteDialog : public QDialog, public Ui::PasteDialogBase
 {
@@ -53,15 +55,15 @@ class PasteDialog : public QDialog, public Ui::PasteDialogBase
 		bool all_in_one_track;
 		bool clone;
 		
-		void read_configuration(Xml& xml);
-		void write_configuration(int level, Xml& xml);
+		void read_configuration(MusECore::Xml& xml);
+		void write_configuration(int level, MusECore::Xml& xml);
 		
 	
 	public slots:
 		int exec();
 };
 
-} // namespace MusEDialog
+} // namespace MusEGui
 
 #endif
 

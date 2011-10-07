@@ -27,11 +27,12 @@
 
 class QWidget;
 
+namespace MusECore {
 class SndFile;
-
 extern SndFile* getSndFile(const SndFile* sf, QWidget* parent);
+}
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   MixdownFileDialog
@@ -39,16 +40,16 @@ namespace MusEWidget {
 
 class MixdownFileDialog : public QDialog, public Ui::MixdownFileDialogBase {
     Q_OBJECT
-      SndFile* sf;
+      MusECore::SndFile* sf;
 
    private slots:
       void fdialog();
       virtual void accept();
 
    public:
-      MixdownFileDialog(const SndFile* f, QWidget* parent = 0,
+      MixdownFileDialog(const MusECore::SndFile* f, QWidget* parent = 0,
          Qt::WFlags fl = 0);
-      SndFile* sndFile() { return sf; }
+      MusECore::SndFile* sndFile() { return sf; }
       };
 
 }

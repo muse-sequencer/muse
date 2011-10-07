@@ -48,6 +48,8 @@
 // Added by Tim. p3.3.18
 //#define METRONOME_DEBUG 
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   isMute
 //---------------------------------------------------------
@@ -74,6 +76,7 @@ bool AudioTrack::isMute() const
       return _mute;
       }
 
+
 //---------------------------------------------------------
 //   setSolo
 //---------------------------------------------------------
@@ -98,6 +101,7 @@ void AudioTrack::setSolo(bool val)
       if (isMute())
             resetMeter();
 }
+
 
 //---------------------------------------------------------
 //   setInternalSolo
@@ -165,6 +169,7 @@ void MidiTrack::updateInternalSoloStates()
       Track::updateInternalSoloStates();
 }
 
+
 //---------------------------------------------------------
 //   updateInternalSoloStates
 //---------------------------------------------------------
@@ -180,10 +185,10 @@ void AudioTrack::updateInternalSoloStates()
       {
         if(type() == AUDIO_SOFTSYNTH)
         {
-          const MidiTrackList* ml = song->midis();
-          for(ciMidiTrack im = ml->begin(); im != ml->end(); ++im)
+          const MusECore::MidiTrackList* ml = MusEGlobal::song->midis();
+          for(MusECore::ciMidiTrack im = ml->begin(); im != ml->end(); ++im)
           {
-            MidiTrack* mt = *im;
+            MusECore::MidiTrack* mt = *im;
             if(mt->outPort() >= 0 && mt->outPort() == ((SynthI*)this)->midiPort())
               mt->updateInternalSoloStates();
           }
@@ -207,6 +212,7 @@ void AudioTrack::updateInternalSoloStates()
       }  
 }
 
+
 //---------------------------------------------------------
 //   updateSoloStates
 //---------------------------------------------------------
@@ -223,7 +229,7 @@ void MidiTrack::updateSoloStates(bool noDec)
   
   if(outPort() >= 0)
   {
-    MidiPort* mp = &midiPorts[outPort()];
+    MidiPort* mp = &MusEGlobal::midiPorts[outPort()];
     MidiDevice *md = mp->device();
     if(md && md->isSynti())
       ((SynthI*)md)->updateInternalSoloStates();
@@ -241,6 +247,7 @@ void MidiTrack::updateSoloStates(bool noDec)
   }
 }
 
+
 //---------------------------------------------------------
 //   updateSoloStates
 //---------------------------------------------------------
@@ -257,7 +264,7 @@ void AudioTrack::updateSoloStates(bool noDec)
   _tmpSoloChainDoIns = true;
   if(type() == AUDIO_SOFTSYNTH)
   {
-    const MidiTrackList* ml = song->midis();
+    const MidiTrackList* ml = MusEGlobal::song->midis();
     for(ciMidiTrack im = ml->begin(); im != ml->end(); ++im)
     {
       MidiTrack* mt = *im;
@@ -276,7 +283,7 @@ void AudioTrack::updateSoloStates(bool noDec)
       // Support Midi Port -> Audio Input solo chains. p4.0.14 Tim.
       if(ir->type == Route::MIDI_PORT_ROUTE)    
       {
-        const MidiTrackList* ml = song->midis();
+        const MidiTrackList* ml = MusEGlobal::song->midis();
         for(ciMidiTrack im = ml->begin(); im != ml->end(); ++im)
         {
           MidiTrack* mt = *im;
@@ -297,6 +304,7 @@ void AudioTrack::updateSoloStates(bool noDec)
   }  
 }
 
+
 //---------------------------------------------------------
 //   setMute
 //---------------------------------------------------------
@@ -314,6 +322,7 @@ void Track::setOff(bool val)
       {
       _off = val;
       }
+
 
 //---------------------------------------------------------
 //   copyData
@@ -390,7 +399,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
       // No data was available from a previous call during this process cycle. Zero the supplied buffers and just return.
       for(i = 0; i < dstChannels; ++i) 
       {
-        if(MusEConfig::config.useDenormalBias) 
+        if(MusEGlobal::config.useDenormalBias) 
         {
           for(unsigned int q = 0; q < nframes; ++q)
             dstBuffer[i][q] = MusEGlobal::denormalBias;
@@ -431,7 +440,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
       unsigned int q;
       for(i = 0; i < dstChannels; ++i) 
       {
-        if(MusEConfig::config.useDenormalBias) 
+        if(MusEGlobal::config.useDenormalBias) 
         {
           for(q = 0; q < nframes; ++q)
             dstBuffer[i][q] = MusEGlobal::denormalBias;
@@ -448,7 +457,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
         /*
         if(!usedirectbuf)
         {
-          if(MusEConfig::config.useDenormalBias) 
+          if(MusEGlobal::config.useDenormalBias) 
           {
             for(q = 0; q < nframes; ++q)
               outBuffers[i][q] = MusEGlobal::denormalBias;
@@ -478,7 +487,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
 
     if(hasAuxSend() && !isMute()) 
     {
-      AuxList* al = song->auxs();
+      AuxList* al = MusEGlobal::song->auxs();
       unsigned naux = al->size();
       for(unsigned k = 0; k < naux; ++k) 
       {
@@ -540,7 +549,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
       unsigned int q;
       for(i = 0; i < dstChannels; ++i)
       {
-        if(MusEConfig::config.useDenormalBias) 
+        if(MusEGlobal::config.useDenormalBias) 
         {
           for(q = 0; q < nframes; q++)
             dstBuffer[i][q] = MusEGlobal::denormalBias;
@@ -554,7 +563,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
       {
         for(i = 0; i < srcChannels; ++i) 
         {
-          if(MusEConfig::config.useDenormalBias) 
+          if(MusEGlobal::config.useDenormalBias) 
           {
             for(q = 0; q < nframes; ++q)
               outBuffers[i][q] = MusEGlobal::denormalBias;
@@ -590,7 +599,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
     unsigned int q;
     for(i = 0; i < dstChannels; ++i)
     {
-      if(MusEConfig::config.useDenormalBias) 
+      if(MusEGlobal::config.useDenormalBias) 
       {
         for(q = 0; q < nframes; q++)
           dstBuffer[i][q] = MusEGlobal::denormalBias;
@@ -838,7 +847,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
         /*
         if(!usedirectbuf)
         {
-          if(MusEConfig::config.useDenormalBias) 
+          if(MusEGlobal::config.useDenormalBias) 
           {
             for(unsigned int q = 0; q < nframes; ++q)
               outBuffers[i][q] = MusEGlobal::denormalBias;
@@ -862,7 +871,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
     unsigned int q;
     for(i = 0; i < srcChans; ++i) 
     {
-      if(MusEConfig::config.useDenormalBias) 
+      if(MusEGlobal::config.useDenormalBias) 
       {
         for(q = 0; q < nframes; ++q)
         {
@@ -893,7 +902,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
 
     if(hasAuxSend() && !isMute()) 
     {
-      AuxList* al = song->auxs();
+      AuxList* al = MusEGlobal::song->auxs();
       unsigned naux = al->size();
       for(unsigned k = 0; k < naux; ++k) 
       {
@@ -958,7 +967,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
       {
         for(i = 0; i < srcChannels; ++i)
         {
-          if(MusEConfig::config.useDenormalBias) 
+          if(MusEGlobal::config.useDenormalBias) 
           {
             for(unsigned int q = 0; q < nframes; ++q)
               outBuffers[i][q] = MusEGlobal::denormalBias;
@@ -994,7 +1003,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
     unsigned int q;
     for(i = 0; i < dstChannels; ++i)
     {
-      if(MusEConfig::config.useDenormalBias) 
+      if(MusEGlobal::config.useDenormalBias) 
       {
         for(q = 0; q < nframes; q++)
           dstBuffer[i][q] = MusEGlobal::denormalBias;
@@ -1220,6 +1229,7 @@ void AudioTrack::readRecfile(Xml& xml)
       }
 */
 
+
 //---------------------------------------------------------
 //   setChannels
 //---------------------------------------------------------
@@ -1237,6 +1247,7 @@ void Track::setChannels(int n)
             _peak[i]  = 0.0;
             }
       }
+
 
 void AudioInput::setChannels(int n)
       {
@@ -1259,7 +1270,7 @@ void AudioOutput::setChannels(int n)
 
 void AudioTrack::putFifo(int channels, unsigned long n, float** bp)
       {
-      if (fifo.put(channels, n, bp, audio->pos().frame())) {
+      if (fifo.put(channels, n, bp, MusEGlobal::audio->pos().frame())) {
             printf("   overrun ???\n");
             }
       }
@@ -1336,9 +1347,9 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
             
             //if (jackPort) {
             // p3.3.41 Do not get buffers of unconnected client ports. Causes repeating leftover data, can be loud, or DC !
-            if (jackPort && audioDevice->connections(jackPort)) 
+            if (jackPort && MusEGlobal::audioDevice->connections(jackPort)) 
             {
-                  //buffer[ch] = audioDevice->getBuffer(jackPort, nframes);
+                  //buffer[ch] = MusEGlobal::audioDevice->getBuffer(jackPort, nframes);
                   // p3.3.41 If the client port buffer is also used by another channel (connected to the same jack port), 
                   //  don't directly set pointer, copy the data instead. 
                   // Otherwise the next channel will interfere - it will overwrite the buffer !
@@ -1348,11 +1359,11 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
                   // Solution: Rather than having to iterate all other channels, and all other Audio Input tracks and check 
                   //  their channel port buffers (if that's even possible) in order to determine if the buffer is shared, 
                   //  let's just copy always, for now shall we ?
-                  float* jackbuf = audioDevice->getBuffer(jackPort, nframes);
+                  float* jackbuf = MusEGlobal::audioDevice->getBuffer(jackPort, nframes);
                   //memcpy(buffer[ch], jackbuf, nframes* sizeof(float));
                   AL::dsp->cpy(buffer[ch], jackbuf, nframes);
                   
-                  if (MusEConfig::config.useDenormalBias) 
+                  if (MusEGlobal::config.useDenormalBias) 
                   {
                       for (unsigned int i=0; i < nframes; i++)
                               buffer[ch][i] += MusEGlobal::denormalBias;
@@ -1364,7 +1375,7 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
             } 
             else 
             {
-                  if (MusEConfig::config.useDenormalBias) 
+                  if (MusEGlobal::config.useDenormalBias) 
                   {
                       for (unsigned int i=0; i < nframes; i++)
                               buffer[ch][i] = MusEGlobal::denormalBias;
@@ -1394,13 +1405,14 @@ void AudioInput::setName(const QString& s)
             char buffer[128];
             snprintf(buffer, 128, "%s-%d", _name.toLatin1().constData(), i);
             if (jackPorts[i])
-                  audioDevice->setPortName(jackPorts[i], buffer);
+                  MusEGlobal::audioDevice->setPortName(jackPorts[i], buffer);
             else {
-                  //jackPorts[i] = audioDevice->registerInPort(buffer);
-                  jackPorts[i] = audioDevice->registerInPort(buffer, false);
+                  //jackPorts[i] = MusEGlobal::audioDevice->registerInPort(buffer);
+                  jackPorts[i] = MusEGlobal::audioDevice->registerInPort(buffer, false);
                   }
             }
       }
+
 
 //---------------------------------------------------------
 //   resetMeter
@@ -1431,10 +1443,11 @@ void Track::resetPeaks()
 
 void Track::resetAllMeter()
       {
-      TrackList* tl = song->tracks();
+      TrackList* tl = MusEGlobal::song->tracks();
       for (iTrack i = tl->begin(); i != tl->end(); ++i)
             (*i)->resetMeter();
       }
+
 
 //---------------------------------------------------------
 //   setRecordFlag2
@@ -1483,14 +1496,16 @@ void AudioTrack::setPrefader(bool val)
             resetAllMeter();
       }
 
+
 //---------------------------------------------------------
 //   canEnableRecord
 //---------------------------------------------------------
 
 bool WaveTrack::canEnableRecord() const
       {
-      return  (!noInRoute() || (this == song->bounceTrack));
+      return  (!noInRoute() || (this == MusEGlobal::song->bounceTrack));
       }
+
 
 //---------------------------------------------------------
 //   record
@@ -1545,20 +1560,20 @@ void AudioTrack::record()
                   // Since it is possible to start loop recording before the left marker (with punchin off), we must 
                   //  use startRecordPos or loopFrame or left marker, depending on punchin and whether we have looped yet.
                   unsigned fr;
-                  if(song->punchin() && (audio->loopCount() == 0))
-                    fr = song->lPos().frame();
+                  if(MusEGlobal::song->punchin() && (MusEGlobal::audio->loopCount() == 0))
+                    fr = MusEGlobal::song->lPos().frame();
                   else  
-                  if((audio->loopCount() > 0) && (audio->getStartRecordPos().frame() > audio->loopFrame()))
-                    fr = audio->loopFrame();
+                  if((MusEGlobal::audio->loopCount() > 0) && (MusEGlobal::audio->getStartRecordPos().frame() > MusEGlobal::audio->loopFrame()))
+                    fr = MusEGlobal::audio->loopFrame();
                   else
-                    fr = audio->getStartRecordPos().frame();
+                    fr = MusEGlobal::audio->getStartRecordPos().frame();
                   // Now seek and write. If we are looping and punchout is on, don't let punchout point interfere with looping point.
-                  if( (pos >= fr) && (!song->punchout() || (!song->loop() && pos < song->rPos().frame())) )
+                  if( (pos >= fr) && (!MusEGlobal::song->punchout() || (!MusEGlobal::song->loop() && pos < MusEGlobal::song->rPos().frame())) )
                   {
                     pos -= fr;
                     // Added by Tim. p3.3.8
                     //int position = _recFile->seek(0, SEEK_CUR);
-                    //printf("AudioTrack::record loopcnt:%d lframe:%d newpos:%d curpos:%d start:%d end:%d\n", audio->loopCount(), audio->loopFrame(), pos, position, audio->getStartRecordPos().frame(), audio->getEndRecordPos().frame());
+                    //printf("AudioTrack::record loopcnt:%d lframe:%d newpos:%d curpos:%d start:%d end:%d\n", MusEGlobal::audio->loopCount(), MusEGlobal::audio->loopFrame(), pos, position, MusEGlobal::audio->getStartRecordPos().frame(), MusEGlobal::audio->getEndRecordPos().frame());
                     
                     _recFile->seek(pos, 0);
                     _recFile->write(_channels, buffer, MusEGlobal::segmentSize);
@@ -1581,8 +1596,8 @@ void AudioOutput::processInit(unsigned nframes)
       if (!MusEGlobal::checkAudioDevice()) return;
       for (int i = 0; i < channels(); ++i) {
             if (jackPorts[i]) {
-                  buffer[i] = audioDevice->getBuffer(jackPorts[i], nframes);
-                  if (MusEConfig::config.useDenormalBias) {
+                  buffer[i] = MusEGlobal::audioDevice->getBuffer(jackPorts[i], nframes);
+                  if (MusEGlobal::config.useDenormalBias) {
                       for (unsigned int j=0; j < nframes; j++)
                               buffer[i][j] += MusEGlobal::denormalBias;
                       }
@@ -1622,7 +1637,7 @@ void AudioOutput::silence(unsigned n)
       {
       processInit(n);
       for (int i = 0; i < channels(); ++i)
-          if (MusEConfig::config.useDenormalBias) {
+          if (MusEGlobal::config.useDenormalBias) {
               for (unsigned int j=0; j < n; j++)
                   buffer[i][j] = MusEGlobal::denormalBias;
             } else {
@@ -1636,16 +1651,16 @@ void AudioOutput::silence(unsigned n)
 
 void AudioOutput::processWrite()
       {
-      if (audio->isRecording() && song->bounceOutput == this) {
-            if (audio->freewheel()) {
-                  WaveTrack* track = song->bounceTrack;
+      if (MusEGlobal::audio->isRecording() && MusEGlobal::song->bounceOutput == this) {
+            if (MusEGlobal::audio->freewheel()) {
+                  MusECore::WaveTrack* track = MusEGlobal::song->bounceTrack;
                   if (track && track->recordFlag() && track->recFile())
                         track->recFile()->write(_channels, buffer, _nframes);
                   if (recordFlag() && recFile())
                         _recFile->write(_channels, buffer, _nframes);
                   }
             else {
-                  WaveTrack* track = song->bounceTrack;
+                  MusECore::WaveTrack* track = MusEGlobal::song->bounceTrack;
                   if (track && track->recordFlag() && track->recFile())
                         track->putFifo(_channels, _nframes, buffer);
                   if (recordFlag() && recFile())
@@ -1653,17 +1668,17 @@ void AudioOutput::processWrite()
                   }
             }
       // Changed by Tim. p3.3.18
-      //if (MusEGlobal::audioClickFlag && song->click()) {
-      if (sendMetronome() && MusEGlobal::audioClickFlag && song->click()) {
+      //if (MusEGlobal::audioClickFlag && MusEGlobal::song->click()) {
+      if (sendMetronome() && MusEGlobal::audioClickFlag && MusEGlobal::song->click()) {
             
             // Added by Tim. p3.3.18
             #ifdef METRONOME_DEBUG
-            printf("MusE: AudioOutput::processWrite Calling metronome->addData frame:%u channels:%d frames:%lu\n", audio->pos().frame(), _channels, _nframes);
+            printf("MusE: AudioOutput::processWrite Calling metronome->addData frame:%u channels:%d frames:%lu\n", MusEGlobal::audio->pos().frame(), _channels, _nframes);
             #endif
     
             // p3.3.38
-            //metronome->addData(audio->pos().frame(), _channels, _nframes, buffer);
-            metronome->addData(audio->pos().frame(), _channels, -1, -1, _nframes, buffer);
+            //metronome->addData(MusEGlobal::audio->pos().frame(), _channels, _nframes, buffer);
+            metronome->addData(MusEGlobal::audio->pos().frame(), _channels, -1, -1, _nframes, buffer);
             }
       }
 //---------------------------------------------------------
@@ -1678,14 +1693,15 @@ void AudioOutput::setName(const QString& s)
             char buffer[128];
             snprintf(buffer, 128, "%s-%d", _name.toLatin1().constData(), i);
             if (jackPorts[i]) {
-                  audioDevice->setPortName(jackPorts[i], buffer);
+                  MusEGlobal::audioDevice->setPortName(jackPorts[i], buffer);
                   }
             else {
-                  //jackPorts[i] = audioDevice->registerOutPort(buffer);
-                  jackPorts[i] = audioDevice->registerOutPort(buffer, false);
+                  //jackPorts[i] = MusEGlobal::audioDevice->registerOutPort(buffer);
+                  jackPorts[i] = MusEGlobal::audioDevice->registerOutPort(buffer, false);
                   }
             }
       }
+
 
 //---------------------------------------------------------
 //   Fifo
@@ -1887,6 +1903,7 @@ void Fifo::add()
       muse_atomic_inc(&count);
       }
 
+
 //---------------------------------------------------------
 //   setChannels
 //---------------------------------------------------------
@@ -1956,3 +1973,4 @@ void AudioTrack::setTotalInChannels(int num)
       _totalInChannels = num;
 }
 
+} // namespace MusECore

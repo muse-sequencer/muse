@@ -40,9 +40,9 @@
 #include "sigedit.h"
 #include "spinbox.h"
 
-extern int mtcType;
+extern int MusEGlobal::mtcType;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 bool Sig::isValid() const
 {
@@ -756,4 +756,4 @@ void SigEdit::enterPressed()
       emit returnPressed();
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

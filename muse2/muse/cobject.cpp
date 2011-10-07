@@ -36,6 +36,8 @@
 using std::list;
 using MusEGlobal::muse;
 
+namespace MusEGui {
+
 int TopWin::_widthInit[TOPLEVELTYPE_LAST_ENTRY];
 int TopWin::_heightInit[TOPLEVELTYPE_LAST_ENTRY];
 QByteArray TopWin::_toolbarSharedInit[TOPLEVELTYPE_LAST_ENTRY];
@@ -92,18 +94,18 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 //	 readStatus
 //---------------------------------------------------------
 
-void TopWin::readStatus(Xml& xml)
+void TopWin::readStatus(MusECore::Xml& xml)
 {
 	for (;;)
 	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
 	
 		QString tag = xml.s1();
 		switch (token)
 		{
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "geometry_state")
 				{
 					if (!restoreGeometry(QByteArray::fromHex(xml.parse1().toAscii())))
@@ -135,7 +137,7 @@ void TopWin::readStatus(Xml& xml)
 					xml.unknown("TopWin");
 				break;
 
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "topwin")
 					return;
 	
@@ -149,7 +151,7 @@ void TopWin::readStatus(Xml& xml)
 //	 writeStatus
 //---------------------------------------------------------
 
-void TopWin::writeStatus(int level, Xml& xml) const
+void TopWin::writeStatus(int level, MusECore::Xml& xml) const
 {
 	xml.tag(level++, "topwin");
 
@@ -394,21 +396,21 @@ void TopWin::initConfiguration()
 //	 readConfiguration
 //---------------------------------------------------------
 
-void TopWin::readConfiguration(ToplevelType t, Xml& xml)
+void TopWin::readConfiguration(ToplevelType t, MusECore::Xml& xml)
 {
 	if (initInited==false)
 		initConfiguration();
 
 	for (;;)
 	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
 			
 		const QString& tag = xml.s1();
 		switch (token)
 		{
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "width")
 					_widthInit[t] = xml.parseInt();
 				else if (tag == "height")
@@ -427,7 +429,7 @@ void TopWin::readConfiguration(ToplevelType t, Xml& xml)
 					xml.unknown("TopWin");
 				break;
 
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "topwin")
 					return;
 
@@ -442,7 +444,7 @@ void TopWin::readConfiguration(ToplevelType t, Xml& xml)
 //	 writeConfiguration
 //---------------------------------------------------------
 
-void TopWin::writeConfiguration(ToplevelType t, int level, Xml& xml)
+void TopWin::writeConfiguration(ToplevelType t, int level, MusECore::Xml& xml)
 {
 	if (!initInited)
 	{
@@ -516,3 +518,5 @@ void TopWin::resize(const QSize& s)
 {
 	resize(s.width(), s.height());
 }
+
+} // namespace MusEGui

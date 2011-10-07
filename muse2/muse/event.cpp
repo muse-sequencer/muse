@@ -27,6 +27,8 @@
 #include "waveevent.h"
 #include "midievent.h"
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   Event
 //---------------------------------------------------------
@@ -88,9 +90,9 @@ Event::Event()
 
 Event::Event(EventType t) {
             if (t == Wave)
-                  ev = new WaveEventBase(t);
+                  ev = new MusECore::WaveEventBase(t);
             else
-                  ev = new MidiEventBase(t);
+                  ev = new MusECore::MidiEventBase(t);
             ++(ev->refCount);
             }
 Event::Event(const Event& e) {
@@ -145,9 +147,9 @@ void Event::setType(EventType t) {
                   ev = 0;
                   }
             if (t == Wave)
-                  ev = new WaveEventBase(t);
+                  ev = new MusECore::WaveEventBase(t);
             else
-                  ev = new MidiEventBase(t);
+                  ev = new MusECore::MidiEventBase(t);
             ++(ev->refCount);
             }
 
@@ -228,9 +230,9 @@ const QString Event::name() const            { return ev->name();  }
 void Event::setName(const QString& s)        { ev->setName(s);     }
 int Event::spos() const                      { return ev->spos();  }
 void Event::setSpos(int s)                   { ev->setSpos(s);     }
-SndFileR Event::sndFile() const              { return ev->sndFile(); }
+MusECore::SndFileR Event::sndFile() const              { return ev->sndFile(); }
 
-void Event::setSndFile(SndFileR& sf) 
+void Event::setSndFile(MusECore::SndFileR& sf) 
 { 
   ev->setSndFile(sf);   
   
@@ -253,7 +255,7 @@ void Event::setSndFile(SndFileR& sf)
   #endif
 }
 
-void Event::readAudio(WavePart* part, unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite)
+void Event::readAudio(MusECore::WavePart* part, unsigned offset, float** bpp, int channels, int nn, bool doSeek, bool overwrite)
       {
         ev->readAudio(part, offset, bpp, channels, nn, doSeek, overwrite);
       }
@@ -270,3 +272,4 @@ unsigned Event::endTick() const         { return ev->end().tick(); }
 unsigned Event::endFrame() const        { return ev->end().frame(); }
 void Event::setPos(const Pos& p)        { ev->setPos(p); }
 
+} // namespace MusECore

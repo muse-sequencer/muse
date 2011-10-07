@@ -26,7 +26,7 @@
 
 #include <QWidget>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   Comment
@@ -51,13 +51,13 @@ void Comment::textChanged()
 //   TrackComment
 //---------------------------------------------------------
 
-TrackComment::TrackComment(Track* t, QWidget* parent)
+TrackComment::TrackComment(MusECore::Track* t, QWidget* parent)
    : Comment(parent)
       {
       setAttribute(Qt::WA_DeleteOnClose);
       setWindowTitle(tr("MusE: Track Comment"));
       track = t;
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       textentry->setText(track->comment());
       textentry->moveCursor(QTextCursor::End);
       connect(textentry, SIGNAL(textChanged()), SLOT(textChanged()));
@@ -75,8 +75,8 @@ void TrackComment::songChanged(int flags)
             return;
 
       // check if track still exists:
-      TrackList* tl = song->tracks();
-      iTrack it;
+      MusECore::TrackList* tl = MusEGlobal::song->tracks();
+      MusECore::iTrack it;
       for (it = tl->begin(); it != tl->end(); ++it) {
             if (track == *it)
                   break;
@@ -101,7 +101,7 @@ void TrackComment::songChanged(int flags)
 void TrackComment::setText(const QString& s)
       {
       track->setComment(s);
-      song->update(SC_TRACK_MODIFIED);
+      MusEGlobal::song->update(SC_TRACK_MODIFIED);
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

@@ -24,7 +24,7 @@
 #include "quantize.h"
 #include "xml.h"
 
-namespace MusEDialog {
+namespace MusEGui {
 
 Quantize::Quantize(QWidget* parent)
 	: QDialog(parent)
@@ -69,18 +69,18 @@ int Quantize::exec()
 	return QDialog::exec();
 }
 
-void Quantize::read_configuration(Xml& xml)
+void Quantize::read_configuration(MusECore::Xml& xml)
 {
 	for (;;)
 	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
 			
 		const QString& tag = xml.s1();
 		switch (token)
 		{
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "range")
 					range=xml.parseInt();
 				else if (tag == "strength")
@@ -97,7 +97,7 @@ void Quantize::read_configuration(Xml& xml)
 					xml.unknown("Quantize");
 				break;
 				
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "quantize")
 					return;
 				
@@ -107,7 +107,7 @@ void Quantize::read_configuration(Xml& xml)
 	}
 }
 
-void Quantize::write_configuration(int level, Xml& xml)
+void Quantize::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "quantize");
 	xml.intTag(level, "range", range);
@@ -119,5 +119,5 @@ void Quantize::write_configuration(int level, Xml& xml)
 	xml.tag(level, "/quantize");
 }
 
-} // namespace MusEDialog
+} // namespace MusEGui
 

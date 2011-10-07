@@ -28,6 +28,8 @@
 #include "xml.h"
 #include "globals.h"
 
+namespace MusECore {
+
 static const char* ctrlName[] = {
        "BankSelMSB",  "Modulation",  "BreathCtrl",  "Control 3",  "Foot Ctrl",
        "Porta Time",  "DataEntMSB",  "MainVolume",  "Balance",    "Control 9",
@@ -863,3 +865,5 @@ MidiControllerList::MidiControllerList(const MidiControllerList& mcl) : std::map
 //  copy(mcl);
 //  return *this;
 //}
+
+} // namespace MusECore

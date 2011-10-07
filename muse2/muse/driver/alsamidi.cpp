@@ -39,6 +39,8 @@
 #include "part.h"
 #include "gconfig.h"
 
+namespace MusECore {
+
 static int alsaSeqFdi = -1;
 static int alsaSeqFdo = -1;
 
@@ -407,12 +409,12 @@ void MidiAlsaDevice::processMidi()
   if (_playEvents.empty())
         return;
   int port = midiPort();
-  MidiPort* mp = port != -1 ? &midiPorts[port] : 0;
-  unsigned curFrame = audio->curFrame();
-  int tickpos = audio->tickPos();
-  bool extsync = extSyncFlag.value();
+  MidiPort* mp = port != -1 ? &MusEGlobal::midiPorts[port] : 0;
+  unsigned curFrame = MusEGlobal::audio->curFrame();
+  int tickpos = MusEGlobal::audio->tickPos();
+  bool extsync = MusEGlobal::extSyncFlag.value();
   //int frameOffset = getFrameOffset();
-  //int nextTick = audio->nextTick();
+  //int nextTick = MusEGlobal::audio->nextTick();
   
   // Play all events up to current frame.
   iMPEvent i = _playEvents.begin();            
@@ -443,12 +445,12 @@ void MidiAlsaDevice::processMidi()
   while(!stuckNotesFifo.isEmpty())
     _stuckNotes.add(stuckNotesFifo.get());
     
-  bool extsync = extSyncFlag.value();
+  bool extsync = MusEGlobal::extSyncFlag.value();
   //int frameOffset = getFrameOffset();
-  //int nextTick = audio->nextTick();
+  //int nextTick = MusEGlobal::audio->nextTick();
   
-  // We're in the ALSA midi thread. audio->isPlaying() might not be true during seek right now.
-  //if(stop || (seek && audio->isPlaying()))
+  // We're in the ALSA midi thread. MusEGlobal::audio->isPlaying() might not be true during seek right now.
+  //if(stop || (seek && MusEGlobal::audio->isPlaying()))
   if(stop || seek)
   {
     //---------------------------------------------------
@@ -473,7 +475,7 @@ void MidiAlsaDevice::processMidi()
       _playEvents.add(playEventFifo.get());
       
     /*  TODO Handle these more directly than putting them into play events list.
-    //if(audio->isPlaying())  
+    //if(MusEGlobal::audio->isPlaying())  
     {
       iMPEvent k;
       for (k = _stuckNotes.begin(); k != _stuckNotes.end(); ++k) {
@@ -496,7 +498,7 @@ void MidiAlsaDevice::processMidi()
   if(stop)
   {
     // reset sustain...
-    MidiPort* mp = &midiPorts[_port];
+    MidiPort* mp = &MusEGlobal::midiPorts[_port];
     for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
     {
       if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
@@ -528,9 +530,9 @@ void MidiAlsaDevice::processMidi()
         return;
   
   int port = midiPort();
-  MidiPort* mp = port != -1 ? &midiPorts[port] : 0;
-  unsigned curFrame = audio->curFrame();
-  int tickpos = audio->tickPos();
+  MidiPort* mp = port != -1 ? &MusEGlobal::midiPorts[port] : 0;
+  unsigned curFrame = MusEGlobal::audio->curFrame();
+  int tickpos = MusEGlobal::audio->tickPos();
   
   // Play all events up to current frame.
   iMPEvent i = _playEvents.begin();            
@@ -564,7 +566,7 @@ void MidiAlsaDevice::handleStop()
   //    reset sustain
   //---------------------------------------------------
   
-  MidiPort* mp = &midiPorts[_port];
+  MidiPort* mp = &MusEGlobal::midiPorts[_port];
   for(int ch = 0; ch < MIDI_CHANNELS; ++ch) 
   {
     if(mp->hwCtrlState(ch, CTRL_SUSTAIN) == 127) 
@@ -580,7 +582,7 @@ void MidiAlsaDevice::handleStop()
   //---------------------------------------------------
   
   // Don't send if external sync is on. The master, and our sync routing system will take care of that.   
-  if(!extSyncFlag.value())
+  if(!MusEGlobal::extSyncFlag.value())
   {
     // Shall we check open flags?
     //if(!(dev->rwFlags() & 0x1) || !(dev->openFlags() & 1))
@@ -600,7 +602,7 @@ void MidiAlsaDevice::handleStop()
       // Hmm, is this required? Seems to make other devices unhappy.
       // (Could try now that this is in MidiDevice. p4.0.22 )
       //if(!si.sendContNotStart())
-      //  mp->sendSongpos(audio->tickPos() * 4 / config.division);
+      //  mp->sendSongpos(MusEGlobal::audio->tickPos() * 4 / config.division);
     }
   }  
 }
@@ -617,9 +619,9 @@ void MidiAlsaDevice::handleSeek()
   
   seekPending = true;  // Trigger seek handling in processMidi.
   
-  MidiPort* mp = &midiPorts[_port];
+  MidiPort* mp = &MusEGlobal::midiPorts[_port];
   MidiCtrlValListList* cll = mp->controller();
-  int pos = audio->tickPos();
+  int pos = MusEGlobal::audio->tickPos();
   
   //---------------------------------------------------
   //    Send new contoller values
@@ -646,7 +648,7 @@ void MidiAlsaDevice::handleSeek()
   //---------------------------------------------------
     
   // Don't send if external sync is on. The master, and our sync routing system will take care of that.  p3.3.31
-  if(!extSyncFlag.value())
+  if(!MusEGlobal::extSyncFlag.value())
   {
     if(mp->syncInfo().MRTOut())
     {
@@ -657,10 +659,10 @@ void MidiAlsaDevice::handleSeek()
       //if(!(openFlags() & 1))
       //  continue;
       
-      int beat = (pos * 4) / MusEConfig::config.division;
+      int beat = (pos * 4) / MusEGlobal::config.division;
         
       //bool isPlaying = (state == PLAY);
-      bool isPlaying = audio->isPlaying();  // TODO Check this it includes LOOP1 and LOOP2 besides PLAY.  p4.0.22
+      bool isPlaying = MusEGlobal::audio->isPlaying();  // TODO Check this it includes LOOP1 and LOOP2 besides PLAY.  p4.0.22
         
       mp->sendStop();
       mp->sendSongpos(beat);
@@ -721,18 +723,18 @@ bool initMidiAlsa()
                            snd_seq_port_info_get_name(pinfo),
                            adr.client, adr.port,
                            flags, capability);
-                  midiDevices.add(dev);
+                  MusEGlobal::midiDevices.add(dev);
                   
                   /*
                   // Experimental... Need to list 'sensible' devices first and ignore unwanted ones...
                   // Add instance last in midi device list.
                   for(int i = 0; i < MIDI_PORTS; ++i) 
                   {
-                    MidiPort* mp  = &midiPorts[i];
+                    MidiPort* mp  = &MusEGlobal::midiPorts[i];
                     if(mp->device() == 0) 
                     {
                       // midiSeq might not be initialzed yet!
-                      //midiSeq->msgSetMidiDevice(mp, dev);
+                      //MusEGlobal::midiSeq->msgSetMidiDevice(mp, dev);
                       mp->setMidiDevice(dev);
                       
                       //muse->changeConfig(true);     // save configuration file
@@ -746,7 +748,7 @@ bool initMidiAlsa()
             }
       
       //snd_seq_set_client_name(alsaSeq, "MusE Sequencer");
-      snd_seq_set_client_name(alsaSeq, audioDevice->clientName());
+      snd_seq_set_client_name(alsaSeq, MusEGlobal::audioDevice->clientName());
       
       int ci = snd_seq_poll_descriptors_count(alsaSeq, POLLIN);
       int co = snd_seq_poll_descriptors_count(alsaSeq, POLLOUT);
@@ -795,7 +797,6 @@ bool initMidiAlsa()
       return false;
       }
 
-namespace MusEApp {
 
 //---------------------------------------------------------
 //   exitMidiAlsa
@@ -812,8 +813,6 @@ void exitMidiAlsa()
     }
   }  
 }
-
-} // namespace MusEApp
 
 
 struct AlsaPort {
@@ -873,7 +872,7 @@ void alsaScanMidiPorts()
       //
       //  check for devices to delete
       //
-      for (iMidiDevice i = midiDevices.begin(); i != midiDevices.end();) {
+      for (iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end();) {
             MidiAlsaDevice* d = dynamic_cast<MidiAlsaDevice*>(*i);
             if (d == 0) {
                   ++i;
@@ -888,11 +887,11 @@ void alsaScanMidiPorts()
                   }
             if (k == portList.end()) {
                   if (d->midiPort() != -1)
-                        midiPorts[d->midiPort()].setMidiDevice(0);
+                        MusEGlobal::midiPorts[d->midiPort()].setMidiDevice(0);
                   iMidiDevice k = i;
 // printf("erase device\n");
                   ++i;
-                  midiDevices.erase(k);
+                  MusEGlobal::midiDevices.erase(k);
                   }
             else {
                   ++i;
@@ -902,9 +901,9 @@ void alsaScanMidiPorts()
       //  check for devices to add
       //
       for (std::list<AlsaPort>::iterator k = portList.begin(); k != portList.end(); ++k) {
-            iMidiDevice i = midiDevices.begin();
+            iMidiDevice i = MusEGlobal::midiDevices.begin();
 // printf("ALSA port: <%s>\n", k->name);
-            for (;i != midiDevices.end(); ++i) {
+            for (;i != MusEGlobal::midiDevices.end(); ++i) {
                   MidiAlsaDevice* d = dynamic_cast<MidiAlsaDevice*>(*i);
                   if (d == 0)
                         continue;
@@ -912,12 +911,12 @@ void alsaScanMidiPorts()
                         break;
                         }
                   }
-            if (i == midiDevices.end()) {
+            if (i == MusEGlobal::midiDevices.end()) {
                   // add device
                   MidiAlsaDevice* dev = new MidiAlsaDevice(k->adr,
                      QString(k->name));
                   dev->setrwFlags(k->flags);
-                  midiDevices.add(dev);
+                  MusEGlobal::midiDevices.add(dev);
 // printf("add device\n");
                   }
             }
@@ -971,7 +970,7 @@ void alsaProcessMidiInput()
                   case SND_SEQ_EVENT_PORT_START:
                   case SND_SEQ_EVENT_PORT_EXIT:
                         alsaScanMidiPorts();
-                        audio->midiPortsChanged();  // signal gui
+                        MusEGlobal::audio->midiPortsChanged();  // signal gui
                         snd_seq_free_event(ev);
                         return;
                   }
@@ -981,7 +980,7 @@ void alsaProcessMidiInput()
             //
             // find real source device
             //
-            for (iMidiDevice i = midiDevices.begin(); i != midiDevices.end(); ++i) {
+            for (iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) {
                   MidiAlsaDevice* d = dynamic_cast<MidiAlsaDevice*>(*i);
                   if (d  && d->adr.client == ev->source.client
                      && d->adr.port == ev->source.port) {
@@ -1046,24 +1045,24 @@ void alsaProcessMidiInput()
                         break;
 
                   case SND_SEQ_EVENT_CLOCK:
-                        midiSeq->realtimeSystemInput(curPort, ME_CLOCK);
+                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_CLOCK);
                         //mdev->syncInfo().trigMCSyncDetect();
                         break;
 
                   case SND_SEQ_EVENT_START:
-                        midiSeq->realtimeSystemInput(curPort, ME_START);
+                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_START);
                         break;
 
                   case SND_SEQ_EVENT_CONTINUE:
-                        midiSeq->realtimeSystemInput(curPort, ME_CONTINUE);
+                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_CONTINUE);
                         break;
 
                   case SND_SEQ_EVENT_STOP:
-                        midiSeq->realtimeSystemInput(curPort, ME_STOP);
+                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_STOP);
                         break;
 
                   case SND_SEQ_EVENT_TICK:
-                        midiSeq->realtimeSystemInput(curPort, ME_TICK);
+                        MusEGlobal::midiSeq->realtimeSystemInput(curPort, ME_TICK);
                         //mdev->syncInfo().trigTickDetect();
                         break;
 
@@ -1087,12 +1086,12 @@ void alsaProcessMidiInput()
                   case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:  // write port is released
                         break;
                   case SND_SEQ_EVENT_SONGPOS:
-                        midiSeq->setSongPosition(curPort, ev->data.control.value);
+                        MusEGlobal::midiSeq->setSongPosition(curPort, ev->data.control.value);
                         break;
                   case SND_SEQ_EVENT_SENSING:
                         break;
                   case SND_SEQ_EVENT_QFRAME:
-                        midiSeq->mtcInputQuarter(curPort, ev->data.control.value);
+                        MusEGlobal::midiSeq->mtcInputQuarter(curPort, ev->data.control.value);
                         break;
                   // case SND_SEQ_EVENT_CLIENT_START:
                   // case SND_SEQ_EVENT_CLIENT_EXIT:
@@ -1124,3 +1123,4 @@ void alsaProcessMidiInput()
       }
 }
 
+} // namespace MusECore

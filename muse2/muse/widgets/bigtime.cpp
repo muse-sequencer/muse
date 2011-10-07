@@ -33,9 +33,11 @@
 #include "app.h"
 #include "gconfig.h"
 
+namespace MusEGlobal {
 extern int mtcType;
+}
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //
 // the bigtime widget
@@ -189,8 +191,8 @@ void BigTime::fmtButtonToggled(bool v)
 
 void BigTime::configChanged()
       {
-      setBgColor(MusEConfig::config.bigTimeBackgroundColor);
-      setFgColor(MusEConfig::config.bigTimeForegroundColor);
+      setBgColor(MusEGlobal::config.bigTimeBackgroundColor);
+      setFgColor(MusEGlobal::config.bigTimeForegroundColor);
       }
 
 //---------------------------------------------------------
@@ -228,7 +230,7 @@ bool BigTime::setString(unsigned v)
             return true;
             }
 
-      unsigned absFrame = tempomap.tick2frame(v);
+      unsigned absFrame = MusEGlobal::tempomap.tick2frame(v);
       int bar, beat;
       unsigned tick;
       AL::sigmap.tickValues(v, &bar, &beat, &tick);
@@ -238,7 +240,7 @@ bool BigTime::setString(unsigned v)
       int min     = int(time) / 60;
       int sec     = int(time) % 60;
       double rest = time - (min * 60 + sec);
-      switch(mtcType) {
+      switch(MusEGlobal::mtcType) {
           case 0:     // 24 frames sec
                 rest *= 24;
                 break;
@@ -360,8 +362,8 @@ void BigTime::resizeEvent(QResizeEvent *ev)
   //dwin->setFont(f);
   QString fstr = QString("font-size:%1px; font-family:'Courier'; ").arg(fs);  // Tim p4.0.8
   dwin->setStyleSheet(fstr);
-  setBgColor(MusEConfig::config.bigTimeBackgroundColor);
-  setFgColor(MusEConfig::config.bigTimeForegroundColor);
+  setBgColor(MusEGlobal::config.bigTimeBackgroundColor);
+  setFgColor(MusEGlobal::config.bigTimeForegroundColor);
   
   int digitWidth = dwin->fontMetrics().width(QString("0"));
 	int vspace = (ev->size().height() - (fs*2)) / 3;
@@ -471,4 +473,4 @@ void BigTime::setBgColor(QColor c)
         setPalette(newpalette);
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

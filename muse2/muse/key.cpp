@@ -25,6 +25,8 @@
 #include "key.h"
 #include "globals.h"
 
+namespace MusECore {
+
 int NKey::offsets[14] = {
       0, 7, 14, -7,
       -(12),
@@ -48,3 +50,4 @@ int Scale::width() const
       return i * 7;
       }
 
+} // namespace MusECore

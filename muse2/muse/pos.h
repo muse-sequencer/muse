@@ -24,8 +24,11 @@
 #ifndef __POS_H__
 #define __POS_H__
 
-class Xml;
 class QString;
+
+namespace MusECore {
+
+class Xml;
 
 //---------------------------------------------------------
 //   Pos
@@ -110,5 +113,7 @@ class PosLen : public Pos {
       unsigned endFrame() const   { return end().frame(); }
       void setPos(const Pos&);
       };
+
+} // namespace MusECore
 
 #endif

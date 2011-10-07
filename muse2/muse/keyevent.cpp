@@ -31,7 +31,11 @@
 #include "xml.h"
 #include "keyevent.h"
 
-KeyList keymap;
+namespace MusEGlobal {
+  MusECore::KeyList keymap;
+}
+
+namespace MusECore {
 
 #define DEFAULT_KEY KEY_C
 
@@ -259,5 +263,6 @@ int KeyEvent::read(Xml& xml)
       return 0;
       }
 
+} // namespace MusECore
 
 

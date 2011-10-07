@@ -45,27 +45,32 @@
 #include "sync.h"
 #include "functions.h"
 
+#ifdef HAVE_LASH
+#include <lash/lash.h>
+#endif
+
+namespace MusECore {
 extern bool initDummyAudio();
-extern void initIcons();
 extern bool initJackAudio();
 extern void initMidiController();
 extern void initMetronome();
 extern void initOSC();
 extern void initVST();
 extern void initPlugins();
-extern void initShortCuts();
 extern void initDSSI();
 extern void readConfiguration();
+extern snd_seq_t * alsaSeq;
+}
+
+namespace MusEGui {
+extern void initIcons();
+extern void initShortCuts();
+#ifdef HAVE_LASH
+extern lash_client_t * lash_client;
+#endif
+}
 
 static QString locale_override;
-
-#ifdef HAVE_LASH
-#include <lash/lash.h>
-namespace MusEApp {
-extern lash_client_t * lash_client;
-}
-extern snd_seq_t * alsaSeq;
-#endif
 
 //---------------------------------------------------------
 //   getCapabilities
@@ -107,7 +112,7 @@ static void printVersion(const char* prog)
 //---------------------------------------------------------
 
 class MuseApplication : public QApplication {
-      MusEApp::MusE* muse;
+      MusEGui::MusE* muse;
 
    public:
       MuseApplication(int& argc, char** argv)
@@ -117,7 +122,7 @@ class MuseApplication : public QApplication {
             }
 
 
-      void setMuse(MusEApp::MusE* m) {
+      void setMuse(MusEGui::MusE* m) {
             muse = m;
             
             connect(this,SIGNAL(focusChanged(QWidget*,QWidget*)),muse,SLOT(focusChanged(QWidget*,QWidget*)));
@@ -292,20 +297,20 @@ int main(int argc, char* argv[])
 
       srand(time(0));   // initialize random number generator
 //      signal(SIGCHLD, catchSignal);  // interferes with initVST()
-      initMidiController();
+      MusECore::initMidiController();
       QApplication::setColorSpec(QApplication::ManyColor);
       MuseApplication app(argc, argv);
 
-      init_function_dialogs(MusEGlobal::muse);
-      initShortCuts();
-      readConfiguration();
+      MusEGui::init_function_dialogs(MusEGlobal::muse);
+      MusEGui::initShortCuts();
+      MusECore::readConfiguration();
 
-      MusEGlobal::museUserInstruments = MusEConfig::config.userInstrumentsDir;
+      MusEGlobal::museUserInstruments = MusEGlobal::config.userInstrumentsDir;
 
-      if (MusEConfig::config.useDenormalBias)
+      if (MusEGlobal::config.useDenormalBias)
           printf("Denormal protection enabled.\n");
       // SHOW MUSE SPLASH SCREEN
-      if (MusEConfig::config.showSplashScreen) {
+      if (MusEGlobal::config.showSplashScreen) {
             QPixmap splsh(MusEGlobal::museGlobalShare + "/splash.png");
 
             if (!splsh.isNull()) {
@@ -357,7 +362,7 @@ int main(int argc, char* argv[])
                               MusEGlobal::heavyDebugMsg=true;
                   case 'm': MusEGlobal::midiInputTrace = true; break;
                   case 'M': MusEGlobal::midiOutputTrace = true; break;
-                  case 's': debugSync = true; break;
+                  case 's': MusEGlobal::debugSync = true; break;
                   case 'P': MusEGlobal::realTimePriority = atoi(optarg); break;
                   case 'Y': MusEGlobal::midiRTPrioOverride = atoi(optarg); break;
                   case 'p': MusEGlobal::loadPlugins = false; break;
@@ -372,11 +377,11 @@ int main(int argc, char* argv[])
             }
       
       /*
-      if(!MusEConfig::config.styleSheetFile.isEmpty())
+      if(!MusEGlobal::config.styleSheetFile.isEmpty())
       {
         if(MusEGlobal::debugMsg)
-          printf("loading style sheet <%s> \n", qPrintable(MusEConfig::config.styleSheetFile));
-        QFile cf(MusEConfig::config.styleSheetFile);
+          printf("loading style sheet <%s> \n", qPrintable(MusEGlobal::config.styleSheetFile));
+        QFile cf(MusEGlobal::config.styleSheetFile);
         if (cf.open(QIODevice::ReadOnly)) {
               QByteArray ss = cf.readAll();
               QString sheet(QString::fromUtf8(ss.data()));
@@ -384,7 +389,7 @@ int main(int argc, char* argv[])
               cf.close();
               }
         else
-              printf("loading style sheet <%s> failed\n", qPrintable(MusEConfig::config.styleSheetFile));
+              printf("loading style sheet <%s> failed\n", qPrintable(MusEGlobal::config.styleSheetFile));
       }
       */
       
@@ -394,17 +399,17 @@ int main(int argc, char* argv[])
             printf("Start euid: %d ruid: %d, Now euid %d\n",
                   MusEGlobal::euid, MusEGlobal::ruid, geteuid());
       if (MusEGlobal::debugMode) {
-            initDummyAudio();
+            MusECore::initDummyAudio();
             MusEGlobal::realTimeScheduling = false;
             }
       else if (noAudio) {
-            initDummyAudio();
+            MusECore::initDummyAudio();
             MusEGlobal::realTimeScheduling = true;
             //if (MusEGlobal::debugMode) {              // ??
             //          MusEGlobal::realTimeScheduling = false;
             //          }
             }
-      else if (initJackAudio()) {
+      else if (MusECore::initJackAudio()) {
             if (!MusEGlobal::debugMode)
                   {
                   QMessageBox::critical(NULL, "MusE fatal error", "MusE <b>failed</b> to find a <b>Jack audio server</b>.<br><br>"
@@ -413,7 +418,7 @@ int main(int argc, char* argv[])
                                                                   "If Jack <i>was</i> started check that it was\n"
                                                                   "started as the same user as MusE.\n");
 
-                  initDummyAudio();
+                  MusECore::initDummyAudio();
                   noAudio = true;
                   MusEGlobal::realTimeScheduling = true;
                   if (MusEGlobal::debugMode) {
@@ -425,13 +430,13 @@ int main(int argc, char* argv[])
                   fprintf(stderr, "fatal error: no JACK audio server found\n");
                   fprintf(stderr, "no audio functions available\n");
                   fprintf(stderr, "*** experimental mode -- no play possible ***\n");
-                  initDummyAudio();
-                  //MusEGlobal::realTimeScheduling = audioDevice->isRealtime();
+                  MusECore::initDummyAudio();
+                  //MusEGlobal::realTimeScheduling = MusEGlobal::audioDevice->isRealtime();
                   }
             MusEGlobal::realTimeScheduling = true;
             }
       else
-            MusEGlobal::realTimeScheduling = audioDevice->isRealtime();
+            MusEGlobal::realTimeScheduling = MusEGlobal::audioDevice->isRealtime();
 
       
       // What unreliable nonsense. With Jack2 this reports true even if it is not running realtime. 
@@ -440,7 +445,7 @@ int main(int argc, char* argv[])
       //if (MusEGlobal::debugMsg) 
       //  printf("MusEGlobal::realTimeScheduling:%d\n", MusEGlobal::realTimeScheduling);
 
-      useJackTransport.setValue(true);
+      MusEGlobal::useJackTransport.setValue(true);
       
       // setup the prefetch fifo length now that the segmentSize is known
       // Changed by Tim. p3.3.17
@@ -483,20 +488,20 @@ int main(int argc, char* argv[])
             }
 
       if (MusEGlobal::loadPlugins)
-            initPlugins();
+            MusECore::initPlugins();
 
       if (MusEGlobal::loadVST)
-            initVST();
+            MusECore::initVST();
 
       if(MusEGlobal::loadDSSI)
-        initDSSI();
+            MusECore::initDSSI();
       
       // p3.3.39
-      initOSC();
+      MusECore::initOSC();
       
-      initIcons();
+      MusEGui::initIcons();
 
-      initMetronome();
+      MusECore::initMetronome();
       
       //QApplication::clipboard()->setSelectionMode(false); ddskrjo obsolete even in Qt3
       
@@ -511,9 +516,9 @@ int main(int argc, char* argv[])
                   }
             }
 
-      MusEGlobal::muse = new MusEApp::MusE(argc, &argv[optind]);
+      MusEGlobal::muse = new MusEGui::MusE(argc, &argv[optind]);
       app.setMuse(MusEGlobal::muse);
-      MusEGlobal::muse->setWindowIcon(*museIcon);
+      MusEGlobal::muse->setWindowIcon(*MusEGui::museIcon);
       
       
       // Added by Tim. p3.3.22
@@ -527,18 +532,18 @@ int main(int argc, char* argv[])
 
 #ifdef HAVE_LASH
       {
-        MusEApp::lash_client = 0;
+        MusEGui::lash_client = 0;
         if(MusEGlobal::useLASH)
         {
           int lash_flags = LASH_Config_File;
           const char *muse_name = PACKAGE_NAME;
-          MusEApp::lash_client = lash_init (lash_args, muse_name, lash_flags, LASH_PROTOCOL(2,0));
-          lash_alsa_client_id (MusEApp::lash_client, snd_seq_client_id (alsaSeq));
+          MusEGui::lash_client = lash_init (lash_args, muse_name, lash_flags, LASH_PROTOCOL(2,0));
+          lash_alsa_client_id (MusEGui::lash_client, snd_seq_client_id (MusECore::alsaSeq));
           if (!noAudio) {
                 // p3.3.38
-                //char *jack_name = ((JackAudioDevice*)audioDevice)->getJackName();
-                const char *jack_name = audioDevice->clientName();
-                lash_jack_client_name (MusEApp::lash_client, jack_name);
+                //char *jack_name = ((JackAudioDevice*)MusEGlobal::audioDevice)->getJackName();
+                const char *jack_name = MusEGlobal::audioDevice->clientName();
+                lash_jack_client_name (MusEGui::lash_client, jack_name);
           }      
         }
       }

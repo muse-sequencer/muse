@@ -30,6 +30,8 @@
 #include "globaldefs.h"
 #include "mpevent.h"
 
+namespace MusECore {
+
 struct MPEventList;
 class MidiPlayEvent;
 
@@ -101,6 +103,8 @@ class MidiFile {
       void setMType(MType t)          { _mtype = t; }
       MType mtype() const             { return _mtype; }
       };
+
+} // namespace MusECore
 
 #define XCHG_SHORT(x) ((((x)&0xFF)<<8) | (((x)>>8)&0xFF))
 #ifdef __i486__

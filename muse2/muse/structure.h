@@ -26,9 +26,12 @@
 #include "undo.h"
 #include <set>
 
+namespace MusECore {
 Undo movePartsTotheRight(unsigned int startTick, int moveTick, bool only_selected=false, std::set<Track*>* tracklist=NULL);
 void adjustGlobalLists(Undo& operations, int startPos, int diff);
 void globalCut();
 void globalInsert();
 void globalSplit();
+}
+
 #endif

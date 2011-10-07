@@ -66,8 +66,8 @@ FluidSynthGui::FluidSynthGui()
       fluidLabel->setPixmap(QIcon(":/fluidsynth1.png").pixmap(124, 45));
       FluidGrid->addWidget(fluidLabel, 2, 1, Qt::AlignHCenter);
 
-      ChorusType->setItemIcon(0, QIcon(*sineIcon));
-      ChorusType->setItemIcon(1, QIcon(*sawIcon));
+      ChorusType->setItemIcon(0, QIcon(*MusEGui::sineIcon));
+      ChorusType->setItemIcon(1, QIcon(*MusEGui::sawIcon));
 
       //Connect socketnotifier to fifo
       QSocketNotifier* s = new QSocketNotifier(readFd, QSocketNotifier::Read);
@@ -240,10 +240,10 @@ void FluidSynthGui::sendLoadFont(QString filename)
 //   processEvent
 //---------------------------------------------------------
 
-void FluidSynthGui::processEvent(const MidiPlayEvent& ev)
+void FluidSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
       {
       //Sysexes sent from the client
-      if (ev.type() == ME_SYSEX) {
+      if (ev.type() == MusECore::ME_SYSEX) {
             byte* data = ev.data();
             switch (*data) {
                   case FS_LASTDIR_CHANGE:
@@ -308,7 +308,7 @@ void FluidSynthGui::processEvent(const MidiPlayEvent& ev)
             }
             //Controllers sent from the client:
       else
-            if(ev.type() == ME_CONTROLLER) {
+            if(ev.type() == MusECore::ME_CONTROLLER) {
                   int id = ev.dataA();
                   int val = ev.dataB();
                   switch (id) {
@@ -439,9 +439,9 @@ void FluidSynthGui::updateChannelListView()
 
 	    QTableWidgetItem* chan_ = new QTableWidgetItem(chanstr);
 	    channelListView->setItem(i, FS_CHANNEL_COL, chan_);
-	    QTableWidgetItem* sfid_ = new QTableWidgetItem(QIcon(*buttondownIcon), sfidstr);
+	    QTableWidgetItem* sfid_ = new QTableWidgetItem(QIcon(*MusEGui::buttondownIcon), sfidstr);
 	    channelListView->setItem(i, FS_SF_ID_COL, sfid_);
-	    QTableWidgetItem* drum_ = new QTableWidgetItem(QIcon(*buttondownIcon), drumchanstr);
+	    QTableWidgetItem* drum_ = new QTableWidgetItem(QIcon(*MusEGui::buttondownIcon), drumchanstr);
 	    channelListView->setItem(i, FS_DRUM_CHANNEL_COL, drum_);
             }
       channelListView->resizeColumnsToContents();

@@ -43,6 +43,8 @@ using Awl::SigEdit;
 class QLineEdit;
 class QComboBox;
 
+namespace MusEGui {
+
 enum LMASTER_LVTYPE
    {
       LMASTER_TEMPO = 0,
@@ -74,12 +76,12 @@ class LMasterLViewItem : public QTreeWidgetItem {
 class LMasterTempoItem : public LMasterLViewItem {
 
    private:
-      const TEvent* tempoEvent;
+      const MusECore::TEvent* tempoEvent;
 
    public:
-      LMasterTempoItem(QTreeWidget* parent, const TEvent* t);
+      LMasterTempoItem(QTreeWidget* parent, const MusECore::TEvent* t);
       virtual LMASTER_LVTYPE getType() { return LMASTER_TEMPO; }
-      const TEvent* getEvent() { return tempoEvent; }
+      const MusECore::TEvent* getEvent() { return tempoEvent; }
       virtual unsigned tick() { return tempoEvent->tick; }
       int tempo() { return tempoEvent->tempo; }
       };
@@ -91,14 +93,14 @@ class LMasterTempoItem : public LMasterLViewItem {
 class LMasterKeyEventItem : public LMasterLViewItem {
 
    private:
-      KeyEvent keyEvent;
+      MusECore::KeyEvent keyEvent;
 
    public:
-      LMasterKeyEventItem(QTreeWidget* parent, const KeyEvent& t);
+      LMasterKeyEventItem(QTreeWidget* parent, const MusECore::KeyEvent& t);
       virtual LMASTER_LVTYPE getType() { return LMASTER_KEYEVENT; }
-      const KeyEvent& getEvent() { return keyEvent; }
+      const MusECore::KeyEvent& getEvent() { return keyEvent; }
       virtual unsigned tick() { return keyEvent.tick; }
-      key_enum key() { return keyEvent.key; }
+      MusECore::key_enum key() { return keyEvent.key; }
       };
 //---------------------------------------------------------
 //   LMasterTempoItem
@@ -136,9 +138,9 @@ class LMaster : public MidiEditor {
       
       virtual void closeEvent(QCloseEvent*);
       void updateList();
-      void insertTempo(const TEvent*);
+      void insertTempo(const MusECore::TEvent*);
       void insertSig(const AL::SigEvent*);
-      void insertKey(const KeyEvent&);
+      void insertKey(const MusECore::KeyEvent&);
       LMasterLViewItem* getItemAtPos(unsigned tick, LMASTER_LVTYPE t);
       void initShortcuts();
       QLineEdit* tempo_editor;
@@ -171,19 +173,20 @@ class LMaster : public MidiEditor {
       void configChanged();
 
    signals:
-      void deleted(TopWin*);
+      void deleted(MusEGui::TopWin*);
       void seekTo(int tick);
 
    public:
       LMaster();
       ~LMaster();
-      virtual void readStatus(Xml&);
-      virtual void writeStatus(int, Xml&) const;
-      static void readConfiguration(Xml&);
-      static void writeConfiguration(int, Xml&);
+      virtual void readStatus(MusECore::Xml&);
+      virtual void writeStatus(int, MusECore::Xml&) const;
+      static void readConfiguration(MusECore::Xml&);
+      static void writeConfiguration(int, MusECore::Xml&);
       LMasterLViewItem* getLastOfType(LMASTER_LVTYPE t);
       };
 
+} // namespace MusEGui
 
 #endif
 

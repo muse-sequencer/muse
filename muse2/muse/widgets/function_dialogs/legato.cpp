@@ -24,7 +24,7 @@
 #include "legato.h"
 #include "xml.h"
 
-namespace MusEDialog {
+namespace MusEGui {
 
 Legato::Legato(QWidget* parent)
 	: QDialog(parent)
@@ -63,18 +63,18 @@ int Legato::exec()
 	return QDialog::exec();
 }
 
-void Legato::read_configuration(Xml& xml)
+void Legato::read_configuration(MusECore::Xml& xml)
 {
 	for (;;)
 	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
 			
 		const QString& tag = xml.s1();
 		switch (token)
 		{
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "range")
 					range=xml.parseInt();
 				else if (tag == "min_len")
@@ -85,7 +85,7 @@ void Legato::read_configuration(Xml& xml)
 					xml.unknown("Legato");
 				break;
 				
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "legato")
 					return;
 				
@@ -95,7 +95,7 @@ void Legato::read_configuration(Xml& xml)
 	}
 }
 
-void Legato::write_configuration(int level, Xml& xml)
+void Legato::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "legato");
 	xml.intTag(level, "range", range);
@@ -104,4 +104,4 @@ void Legato::write_configuration(int level, Xml& xml)
 	xml.tag(level, "/legato");
 }
 
-} // namespace MusEDialog
+} // namespace MusEGui

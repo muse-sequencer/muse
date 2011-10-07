@@ -56,6 +56,8 @@
 
 #define SHRT_NUM_OF_CATEGORIES   7 //Number of shortcut categories
 
+namespace MusEGui {
+
 struct shortcut
       {
       int key;
@@ -346,7 +348,10 @@ enum {
 
 extern ShortCut shortcuts[SHRT_NUM_OF_ELEMENTS]; //size of last entry
 extern void initShortCuts();
-extern void writeShortCuts(int level, Xml& xml);
-extern void readShortCuts (Xml& xml);
+extern void writeShortCuts(int level, MusECore::Xml& xml);
+extern void readShortCuts (MusECore::Xml& xml);
 extern const shortcut_cg shortcut_category[SHRT_NUM_OF_CATEGORIES];
+
+} // namespace MusEGui
+
 #endif

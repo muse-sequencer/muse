@@ -26,9 +26,12 @@
 #include "ui_setlenbase.h"
 
 class QButtonGroup;
-class Xml;
 
-namespace MusEDialog {
+namespace MusECore {
+class Xml;
+}
+
+namespace MusEGui {
 
 class Setlen : public QDialog, public Ui::SetlenBase
 {
@@ -47,15 +50,15 @@ class Setlen : public QDialog, public Ui::SetlenBase
 		int range;
 		int len;
 		
-		void read_configuration(Xml& xml);
-		void write_configuration(int level, Xml& xml);
+		void read_configuration(MusECore::Xml& xml);
+		void write_configuration(int level, MusECore::Xml& xml);
 		
 		
 	public slots:
 		int exec();
 };
 
-} // namespace MusEDialog
+} // namespace MusEGui
 
 #endif
 

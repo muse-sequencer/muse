@@ -31,6 +31,9 @@
 #include "globaldefs.h"
 
 class QString;
+
+namespace MusECore {
+
 class Track;
 class MidiDevice;
 class Xml;
@@ -87,9 +90,6 @@ struct Route {
       void dump() const;
       };
 
-// Allow Routes to be a QVariant
-Q_DECLARE_METATYPE(Route) ;
-
 //---------------------------------------------------------
 //   RouteList
 //---------------------------------------------------------
@@ -116,6 +116,11 @@ extern bool checkRoute(const QString&, const QString&);
 //typedef std::map<int, Route, std::less<int> > RouteMenuMap;
 //typedef std::pair<int, Route> pRouteMenuMap;
 //typedef std::pair<iRouteMenuMap, bool > rpRouteMenuMap;
+
+} // namespace MusECore
+
+// Allow Routes to be a QVariant
+Q_DECLARE_METATYPE(MusECore::Route) ;
 
 #endif
 

@@ -27,6 +27,8 @@
 #include <string.h>
 // #include <memory.h>
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   EvData
 //    variable len event data (sysex, meta etc.)
@@ -79,6 +81,8 @@ class EvData {
             dataLen = l;
             }
       };
+
+} // namespace MusECore
 
 #endif
 

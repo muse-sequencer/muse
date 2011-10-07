@@ -64,20 +64,20 @@ struct FluidCtrl {
       };
 
 // NRPN-controllers:
-static const int FS_GAIN            = 0 + CTRL_NRPN14_OFFSET;
-static const int FS_REVERB_ON       = 1 + CTRL_NRPN14_OFFSET;
-static const int FS_REVERB_LEVEL    = 2 + CTRL_NRPN14_OFFSET;
-static const int FS_REVERB_ROOMSIZE = 3 + CTRL_NRPN14_OFFSET;
-static const int FS_REVERB_DAMPING  = 4 + CTRL_NRPN14_OFFSET;
-static const int FS_REVERB_WIDTH    = 5 + CTRL_NRPN14_OFFSET;
-static const int FS_CHORUS_ON       = 6 + CTRL_NRPN14_OFFSET;
-static const int FS_CHORUS_NUM      = 7 + CTRL_NRPN14_OFFSET;
-static const int FS_CHORUS_TYPE     = 8 + CTRL_NRPN14_OFFSET;
-static const int FS_CHORUS_SPEED    = 9 + CTRL_NRPN14_OFFSET;
-static const int FS_CHORUS_DEPTH   = 10 + CTRL_NRPN14_OFFSET;
-static const int FS_CHORUS_LEVEL   = 11 + CTRL_NRPN14_OFFSET;
+static const int FS_GAIN            = 0 + MusECore::CTRL_NRPN14_OFFSET;
+static const int FS_REVERB_ON       = 1 + MusECore::CTRL_NRPN14_OFFSET;
+static const int FS_REVERB_LEVEL    = 2 + MusECore::CTRL_NRPN14_OFFSET;
+static const int FS_REVERB_ROOMSIZE = 3 + MusECore::CTRL_NRPN14_OFFSET;
+static const int FS_REVERB_DAMPING  = 4 + MusECore::CTRL_NRPN14_OFFSET;
+static const int FS_REVERB_WIDTH    = 5 + MusECore::CTRL_NRPN14_OFFSET;
+static const int FS_CHORUS_ON       = 6 + MusECore::CTRL_NRPN14_OFFSET;
+static const int FS_CHORUS_NUM      = 7 + MusECore::CTRL_NRPN14_OFFSET;
+static const int FS_CHORUS_TYPE     = 8 + MusECore::CTRL_NRPN14_OFFSET;
+static const int FS_CHORUS_SPEED    = 9 + MusECore::CTRL_NRPN14_OFFSET;
+static const int FS_CHORUS_DEPTH   = 10 + MusECore::CTRL_NRPN14_OFFSET;
+static const int FS_CHORUS_LEVEL   = 11 + MusECore::CTRL_NRPN14_OFFSET;
 // Added by T356
-static const int FS_PITCHWHEELSENS  = 0 + CTRL_RPN_OFFSET;
+static const int FS_PITCHWHEELSENS  = 0 + MusECore::CTRL_RPN_OFFSET;
 
 // FluidChannel is used to map different soundfonts to different fluid-channels
 // This is to be able to select different presets from specific soundfonts, since
@@ -141,7 +141,7 @@ public:
       virtual const char* getPatchName(int, int, int, bool) const;
       virtual const MidiPatch* getPatchInfo(int i, const MidiPatch* patch) const;
       virtual int getControllerInfo(int, const char**, int*, int*, int*, int*) const;
-      virtual bool processEvent(const MidiPlayEvent&);
+      virtual bool processEvent(const MusECore::MidiPlayEvent&);
 
       //virtual bool hasGui() const { return true; }
       //virtual bool guiVisible() const;

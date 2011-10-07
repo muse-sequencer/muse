@@ -25,7 +25,7 @@
 #include "intlabel.h"
 #include "utils.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   IntLabel
@@ -41,7 +41,7 @@ IntLabel::IntLabel(int _val, int _min, int _max, QWidget* parent,
       val = _val+1;           // dont optimize away
       off = _off;
       setValue(_val);
-      int len = MusEUtil::num2cols(min, max);
+      int len = MusECore::num2cols(min, max);
       setSize(len);
       }
 
@@ -59,7 +59,7 @@ void IntLabel::setRange(int mn, int mx)
 {
   min = mn;
   max = mx;
-  setSize(MusEUtil::num2cols(min, max));
+  setSize(MusECore::num2cols(min, max));
   int v = val;
   if(val < mn)
     v = mn;
@@ -155,4 +155,4 @@ void IntLabel::setOff(int v)
       setString(val);
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

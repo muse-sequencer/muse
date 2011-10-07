@@ -53,7 +53,11 @@
 #include "popupmenu.h"
 #include "globaldefs.h"
 
-std::vector<Synth*> synthis;  // array of available synthis
+namespace MusEGlobal {
+std::vector<MusECore::Synth*> synthis;  // array of available MusEGlobal::synthis
+}
+
+namespace MusECore {
 
 extern void connectNodes(AudioTrack*, AudioTrack*);
 bool SynthI::_isVisible=true;
@@ -144,8 +148,8 @@ void MessSynthIF::setNativeGeometry(int x, int y, int w, int h)
 //static Synth* findSynth(const QString& sclass)
 static Synth* findSynth(const QString& sclass, const QString& label)
       {
-      for (std::vector<Synth*>::iterator i = synthis.begin();
-         i != synthis.end(); ++i) 
+      for (std::vector<Synth*>::iterator i = MusEGlobal::synthis.begin();
+         i != MusEGlobal::synthis.end(); ++i) 
          {
             //if ((*i)->baseName() == sclass)
             //if ((*i)->name() == sclass)
@@ -515,10 +519,10 @@ int MessSynthIF::getControllerInfo(int id, const char** name, int* ctrl, int* mi
 void SynthI::deactivate2()
       {
       removeMidiInstrument(this);
-      midiDevices.remove(this);
+      MusEGlobal::midiDevices.remove(this);
       if (midiPort() != -1) {
             // synthi is attached
-            midiPorts[midiPort()].setMidiDevice(0);
+            MusEGlobal::midiPorts[midiPort()].setMidiDevice(0);
             }
       }
 //---------------------------------------------------------
@@ -561,11 +565,10 @@ SynthI::~SynthI()
       deactivate3();
       }
 
-namespace MusEApp {
 
 //---------------------------------------------------------
 //   initMidiSynth
-//    search for software synthis and advertise
+//    search for software MusEGlobal::synthis and advertise
 //---------------------------------------------------------
 
 void initMidiSynth()
@@ -631,17 +634,16 @@ void initMidiSynth()
             
             
             
-                  //synthis.push_back(new MessSynth(*fi));
-                  synthis.push_back(new MessSynth(*fi, QString(descr->name), QString(descr->description), QString(""), QString(descr->version)));
+                  //MusEGlobal::synthis.push_back(new MessSynth(*fi));
+                  MusEGlobal::synthis.push_back(new MessSynth(*fi, QString(descr->name), QString(descr->description), QString(""), QString(descr->version)));
                   
                   dlclose(handle);
                   ++it;
                   }
             if (MusEGlobal::debugMsg)
-                  printf("%zd soft synth found\n", synthis.size());
+                  printf("%zd soft synth found\n", MusEGlobal::synthis.size());
             }
       }
-} // namespace MusEApp
 
 
 //---------------------------------------------------------
@@ -673,17 +675,17 @@ SynthI* Song::createSynthI(const QString& sclass, const QString& label, Track* i
 
       //printf("Song::createSynthI after insertTrack3. Adding default routes...\n");
       
-      OutputList* ol = song->outputs();
+      OutputList* ol = MusEGlobal::song->outputs();
       // add default route to master (first audio output)
       if (!ol->empty()) {
             AudioOutput* ao = ol->front();
             // p3.3.38
-            //audio->msgAddRoute(Route(si, -1), Route(ao, -1));
-            //audio->msgAddRoute(Route((AudioTrack*)si, -1), Route(ao, -1));
+            //MusEGlobal::audio->msgAddRoute(Route(si, -1), Route(ao, -1));
+            //MusEGlobal::audio->msgAddRoute(Route((AudioTrack*)si, -1), Route(ao, -1));
             // Make sure the route channel and channels are valid.
-            audio->msgAddRoute(Route((AudioTrack*)si, 0, ((AudioTrack*)si)->channels()), Route(ao, 0, ((AudioTrack*)si)->channels()));
+            MusEGlobal::audio->msgAddRoute(Route((AudioTrack*)si, 0, ((AudioTrack*)si)->channels()), Route(ao, 0, ((AudioTrack*)si)->channels()));
             
-            audio->msgUpdateSoloStates();
+            MusEGlobal::audio->msgUpdateSoloStates();
             }
       
       // Now that the track has been added to the lists in insertTrack2(),
@@ -870,10 +872,10 @@ void SynthI::read(Xml& xml)
                                     return;
                               if (initInstance(s, name()))
                                     return;
-                              song->insertTrack0(this, -1);
+                              MusEGlobal::song->insertTrack0(this, -1);
                               
                               if (port != -1 && port < MIDI_PORTS)
-                                    midiPorts[port].setMidiDevice(this);
+                                    MusEGlobal::midiPorts[port].setMidiDevice(this);
                               
                               // Now that the track has been added to the lists in insertTrack2(),
                               //  if it's a dssi synth, OSC can find the synth, and initialize (and show) its native gui.
@@ -921,7 +923,7 @@ const char* MessSynthIF::getPatchName(int channel, int prog, MType type, bool dr
 //   populatePatchPopup
 //---------------------------------------------------------
 
-void MessSynthIF::populatePatchPopup(MusEWidget::PopupMenu* menu, int ch, MType, bool)
+void MessSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int ch, MType, bool)
       {
       menu->clear();
       const MidiPatch* mp = _mess->getPatchInfo(ch, 0);
@@ -997,7 +999,7 @@ bool SynthI::getData(unsigned pos, int ports, unsigned n, float** buffer)
             memset(buffer[k], 0, n * sizeof(float));
 
       int p = midiPort();
-      MidiPort* mp = (p != -1) ? &midiPorts[p] : 0;
+      MidiPort* mp = (p != -1) ? &MusEGlobal::midiPorts[p] : 0;
       //MPEventList* el = playEvents();
                
       ///iMPEvent ie = nextPlayEvent();
@@ -1028,7 +1030,7 @@ iMPEvent MessSynthIF::getData(MidiPort* mp, MPEventList* el, iMPEvent i, unsigne
       int curPos      = pos;
       int endPos      = pos + n;
       int off         = pos;
-      int frameOffset = audio->getFrameOffset();
+      int frameOffset = MusEGlobal::audio->getFrameOffset();
 
       for (; i != el->end(); ++i) {
           int evTime = i->time(); 
@@ -1109,3 +1111,4 @@ int MessSynthIF::oldMidiStateHeader(const unsigned char** data) const
   return _mess ? _mess->oldMidiStateHeader(data) : 0;
 }
 
+} // namespace MusECore

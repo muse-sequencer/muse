@@ -36,7 +36,7 @@
 #define TIMEC2    20
 #define TIMER4    50
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   Dentry
@@ -173,7 +173,7 @@ void Dentry::repeat()
 
       switch (button) {
             case Qt::LeftButton:
-                  if (!MusEConfig::config.leftMouseButtonCanDecrease)
+                  if (!MusEGlobal::config.leftMouseButtonCanDecrease)
                     return;
                   // else fall through
             case Qt::MidButton:
@@ -260,4 +260,4 @@ void Dentry::setValue(double v)
       val = v;
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

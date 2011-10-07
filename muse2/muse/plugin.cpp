@@ -77,7 +77,9 @@
 // Turn on debugging messages.
 //#define PLUGIN_DEBUGIN 
 
-PluginList plugins;
+namespace MusEGlobal {
+MusECore::PluginList plugins;
+}
 
 /*
 static const char* MusEGlobal::preset_file_pattern[] = {
@@ -95,8 +97,13 @@ static const char* MusEGlobal::preset_file_save_pattern[] = {
       };
 */
 
+namespace MusEGui {
 int PluginDialog::selectedPlugType = 0;
 QStringList PluginDialog::sortItems = QStringList();
+
+}
+
+namespace MusECore {
 
 //---------------------------------------------------------
 //   ladspa2MidiControlValues
@@ -763,7 +770,7 @@ Plugin::Plugin(QFileInfo* f, const LADSPA_Descriptor* d, bool isDssi)
   // Hack: Special Flag required for example for control processing.
   _isDssiVst = fi.completeBaseName() == QString("dssi-vst");
   // Hack: Blacklist vst plugins in-place, configurable for now. 
-  if ((_inports != _outports) || (_isDssiVst && !MusEConfig::config.vstInPlace))
+  if ((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
         _inPlaceCapable = false;
 }
 
@@ -947,7 +954,7 @@ int Plugin::incReferences(int val)
       // Hack: Special flag required for example for control processing.
       _isDssiVst = fi.completeBaseName() == QString("dssi-vst");
       // Hack: Blacklist vst plugins in-place, configurable for now. 
-      if ((_inports != _outports) || (_isDssiVst && !MusEConfig::config.vstInPlace))
+      if ((_inports != _outports) || (_isDssiVst && !MusEGlobal::config.vstInPlace))
             _inPlaceCapable = false;
     }
   }      
@@ -1112,7 +1119,7 @@ static void loadPluginLib(QFileInfo* fi)
         !descr->run_multiple_synths_adding) 
       {
         // Make sure it doesn't already exist.
-        if(plugins.find(fi->completeBaseName(), QString(descr->LADSPA_Plugin->Label)) != 0)
+        if(MusEGlobal::plugins.find(fi->completeBaseName(), QString(descr->LADSPA_Plugin->Label)) != 0)
         {  
           //delete descr;
           continue;
@@ -1123,11 +1130,11 @@ static void loadPluginLib(QFileInfo* fi)
       
         //LADSPA_Properties properties = descr->LADSPA_Plugin->Properties;
         //bool inPlaceBroken = LADSPA_IS_INPLACE_BROKEN(properties);
-        //plugins.add(fi, descr, !inPlaceBroken);
+        //MusEGlobal::plugins.add(fi, descr, !inPlaceBroken);
         if(MusEGlobal::debugMsg)
           fprintf(stderr, "loadPluginLib: adding dssi effect plugin:%s name:%s label:%s\n", fi->filePath().toLatin1().constData(), descr->LADSPA_Plugin->Name, descr->LADSPA_Plugin->Label);
       
-        plugins.add(fi, descr->LADSPA_Plugin, true);
+        MusEGlobal::plugins.add(fi, descr->LADSPA_Plugin, true);
       }
       //else
       //  delete descr;
@@ -1162,7 +1169,7 @@ static void loadPluginLib(QFileInfo* fi)
             break;
       
       // Make sure it doesn't already exist.
-      if(plugins.find(fi->completeBaseName(), QString(descr->Label)) != 0)
+      if(MusEGlobal::plugins.find(fi->completeBaseName(), QString(descr->Label)) != 0)
       {  
         //delete descr;
         continue;
@@ -1173,10 +1180,10 @@ static void loadPluginLib(QFileInfo* fi)
       
       //LADSPA_Properties properties = descr->Properties;
       //bool inPlaceBroken = LADSPA_IS_INPLACE_BROKEN(properties);
-      //plugins.add(fi, ladspa, descr, !inPlaceBroken);
+      //MusEGlobal::plugins.add(fi, ladspa, descr, !inPlaceBroken);
       if(MusEGlobal::debugMsg)
         fprintf(stderr, "loadPluginLib: adding ladspa plugin:%s name:%s label:%s\n", fi->filePath().toLatin1().constData(), descr->Name, descr->Label);
-      plugins.add(fi, descr);
+      MusEGlobal::plugins.add(fi, descr);
     }
   }  
   
@@ -1432,7 +1439,7 @@ void Pipeline::move(int idx, bool up)
           {
             p1->setID(idx - 1);
             if(p1->track())
-              audio->msgSwapControllerIDX(p1->track(), idx, idx - 1);
+              MusEGlobal::audio->msgSwapControllerIDX(p1->track(), idx, idx - 1);
             }
       }
       else 
@@ -1448,7 +1455,7 @@ void Pipeline::move(int idx, bool up)
           {
             p1->setID(idx + 1);
             if(p1->track())
-              audio->msgSwapControllerIDX(p1->track(), idx, idx + 1);
+              MusEGlobal::audio->msgSwapControllerIDX(p1->track(), idx, idx + 1);
             }
       }
 }
@@ -1780,13 +1787,13 @@ void PluginI::updateControllers()
     
   //for(int i = 0; i < controlPorts; ++i) 
   for(unsigned long i = 0; i < controlPorts; ++i) 
-    //audio->msgSetPluginCtrlVal(this, genACnum(_id, i), controls[i].val);
+    //MusEGlobal::audio->msgSetPluginCtrlVal(this, genACnum(_id, i), controls[i].val);
     // p3.3.43
-    //audio->msgSetPluginCtrlVal(_track, genACnum(_id, i), controls[i].val);
-    // p4.0.21 audio->msgXXX waits. Do we really need to?
+    //MusEGlobal::audio->msgSetPluginCtrlVal(_track, genACnum(_id, i), controls[i].val);
+    // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
     _track->setPluginCtrlVal(genACnum(_id, i), controls[i].val);  // TODO A faster bulk message
    
-  song->controllerChange(_track);
+  MusEGlobal::song->controllerChange(_track);
 }
   
 //---------------------------------------------------------
@@ -1901,10 +1908,10 @@ void PluginI::setParam(unsigned long i, float val)
   // Time-stamp the event. This does a possibly slightly slow call to gettimeofday via timestamp().
   //  timestamp() is more or less an estimate of the current frame. (This is exactly how ALSA events 
   //  are treated when they arrive in our ALSA driver.) 
-  //ce.frame = audio->timestamp();  
+  //ce.frame = MusEGlobal::audio->timestamp();  
   // p4.0.23 timestamp() is circular, which is making it impossible to deal with 'modulo' events which 
   //  slip in 'under the wire' before processing the ring buffers. So try this linear timestamp instead:
-  ce.frame = audio->curFrame();  
+  ce.frame = MusEGlobal::audio->curFrame();  
   
   if(_controlFifo.put(ce))
   {
@@ -2316,7 +2323,7 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                         return true;
                   case Xml::TagStart:
                         if (!readPreset && _plugin == 0) {
-                              _plugin = plugins.find(file, label);
+                              _plugin = MusEGlobal::plugins.find(file, label);
                               
                               //if (_plugin && initPluginInstance(_plugin, instances)) {
                               // p3.3.41
@@ -2394,7 +2401,7 @@ bool PluginI::readConfiguration(Xml& xml, bool readPreset)
                   case Xml::TagEnd:
                         if (tag == "plugin") {
                               if (!readPreset && _plugin == 0) {
-                                    _plugin = plugins.find(file, label);
+                                    _plugin = MusEGlobal::plugins.find(file, label);
                                     if (_plugin == 0)
 				    {  
                                       printf("Warning: Plugin not found (%s, %s)\n",
@@ -2512,7 +2519,7 @@ bool PluginI::nativeGuiVisible()
 //void PluginI::makeGui()
 void PluginIBase::makeGui()
       {
-      _gui = new PluginGui(this);
+      _gui = new MusEGui::PluginGui(this);
       }
 
 //---------------------------------------------------------
@@ -2600,9 +2607,9 @@ void PluginI::apply(unsigned long n)
           {
             // Since we are now in the audio thread context, there's no need to send a message,
             //  just modify directly.
-            //audio->msgSetPluginCtrlVal(this, genACnum(_id, k), controls[k].val);
+            //MusEGlobal::audio->msgSetPluginCtrlVal(this, genACnum(_id, k), controls[k].val);
             // p3.3.43
-            //audio->msgSetPluginCtrlVal(_track, genACnum(_id, k), controls[k].val);
+            //MusEGlobal::audio->msgSetPluginCtrlVal(_track, genACnum(_id, k), controls[k].val);
             _track->setPluginCtrlVal(genACnum(_id, k), v.value);
             
             // Record automation.
@@ -2613,7 +2620,7 @@ void PluginI::apply(unsigned long n)
             // TODO: Taken from our native gui control handlers. 
             // This may need modification or may cause problems - 
             //  we don't have the luxury of access to the dssi gui controls !
-            //if(at == AUTO_WRITE || (audio->isPlaying() && at == AUTO_TOUCH))
+            //if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
             //  enableController(k, false);
             //_track->recordAutomation(id, v.value);
           }  
@@ -2663,8 +2670,8 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
       //const int cbsz = _controlFifo.getSize(); 
       
       //unsigned endPos = pos + n;
-      //unsigned long frameOffset = audio->getFrameOffset();
-      unsigned long syncFrame = audio->curSyncFrame();  
+      //unsigned long frameOffset = MusEGlobal::audio->getFrameOffset();
+      unsigned long syncFrame = MusEGlobal::audio->curSyncFrame();  
       
       unsigned long sample = 0;
       int loopcount = 0;      // REMOVE Tim.
@@ -2684,7 +2691,7 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
       if(fixedsize > n)
         fixedsize = n;
         
-      unsigned long min_per = MusEConfig::config.minControlProcessPeriod;  
+      unsigned long min_per = MusEGlobal::config.minControlProcessPeriod;  
       if(min_per > n)
         min_per = n;
       
@@ -2768,9 +2775,9 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
           {
             // Since we are now in the audio thread context, there's no need to send a message,
             //  just modify directly.
-            //audio->msgSetPluginCtrlVal(this, genACnum(_id, k), controls[k].val);
+            //MusEGlobal::audio->msgSetPluginCtrlVal(this, genACnum(_id, k), controls[k].val);
             // p3.3.43
-            //audio->msgSetPluginCtrlVal(_track, genACnum(_id, k), controls[k].val);
+            //MusEGlobal::audio->msgSetPluginCtrlVal(_track, genACnum(_id, k), controls[k].val);
             _track->setPluginCtrlVal(genACnum(_id, v.idx), v.value);
             
             // Record automation.
@@ -2784,7 +2791,7 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
             // TODO: Taken from our native gui control handlers. 
             // This may need modification or may cause problems - 
             //  we don't have the luxury of access to the dssi gui controls !
-            //if(at == AUTO_WRITE || (audio->isPlaying() && at == AUTO_TOUCH))
+            //if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
             //  enableController(k, false);
             //_track->recordAutomation(id, v.value);
           }  
@@ -2931,7 +2938,7 @@ int PluginI::oscUpdate()
 {
       #ifdef DSSI_SUPPORT
       // Send project directory.
-      _oscif.oscSendConfigure(DSSI_PROJECT_DIRECTORY_KEY, MusEGlobal::museProject.toLatin1().constData());  // song->projectPath()
+      _oscif.oscSendConfigure(DSSI_PROJECT_DIRECTORY_KEY, MusEGlobal::museProject.toLatin1().constData());  // MusEGlobal::song->projectPath()
       
       /*
       // Send current string configuration parameters.
@@ -3032,7 +3039,7 @@ int PluginI::oscControl(unsigned long port, float value)
     // Time-stamp the event. Looks like no choice but to use the (possibly slow) call to gettimeofday via timestamp(),
     //  because these are asynchronous events arriving from OSC.  timestamp() is more or less an estimate of the
     //  current frame. (This is exactly how ALSA events are treated when they arrive in our ALSA driver.) p4.0.15 Tim. 
-    cv.frame = audio->timestamp();  
+    cv.frame = MusEGlobal::audio->timestamp();  
     if(cfifo->put(cv))
     {
       fprintf(stderr, "PluginI::oscControl: fifo overflow: in control number:%lu\n", cport);
@@ -3047,10 +3054,10 @@ int PluginI::oscControl(unsigned long port, float value)
   // Time-stamp the event. This does a possibly slightly slow call to gettimeofday via timestamp().
   //  timestamp() is more or less an estimate of the current frame. (This is exactly how ALSA events 
   //  are treated when they arrive in our ALSA driver.) 
-  //ce.frame = audio->timestamp();  
+  //ce.frame = MusEGlobal::audio->timestamp();  
   // p4.0.23 timestamp() is circular, which is making it impossible to deal with 'modulo' events which 
   //  slip in 'under the wire' before processing the ring buffers. So try this linear timestamp instead:
-  ce.frame = audio->curFrame();  
+  ce.frame = MusEGlobal::audio->curFrame();  
   if(_controlFifo.put(ce))
   {
     fprintf(stderr, "PluginI::oscControl: fifo overflow: in control number:%lu\n", cport);
@@ -3072,7 +3079,7 @@ int PluginI::oscControl(unsigned long port, float value)
     // TODO: Taken from our native gui control handlers. 
     // This may need modification or may cause problems - 
     //  we don't have the luxury of access to the dssi gui controls !
-    if(at == AUTO_WRITE || (audio->isPlaying() && at == AUTO_TOUCH))
+    if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
       enableController(cport, false);
       
     _track->recordAutomation(id, value);
@@ -3119,6 +3126,9 @@ int PluginI::oscControl(unsigned long port, float value)
 
 #endif // OSC_SUPPORT
 
+} // namespace MusECore
+
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   PluginDialog
@@ -3269,11 +3279,11 @@ void PluginDialog::enableOkB()
 //   value
 //---------------------------------------------------------
 
-Plugin* PluginDialog::value()
+MusECore::Plugin* PluginDialog::value()
       {
       QTreeWidgetItem* item = pList->currentItem();
       if (item)
-        return plugins.find(item->text(0), item->text(1));
+        return MusEGlobal::plugins.find(item->text(0), item->text(1));
       printf("plugin not found\n");
       return 0;
       }
@@ -3314,7 +3324,7 @@ void PluginDialog::fillPlugs(QAbstractButton* ab)
 void PluginDialog::fillPlugs(int nbr)
 {
     pList->clear();
-    for (iPlugin i = plugins.begin(); i != plugins.end(); ++i) {
+    for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i) {
           //int ai = i->inports();
           //int ao = i->outports();
           //int ci = i->controlInPorts();
@@ -3366,7 +3376,7 @@ void PluginDialog::fillPlugs(int nbr)
 void PluginDialog::fillPlugs(const QString &sortValue)
 {
     pList->clear();
-    for (iPlugin i = plugins.begin(); i != plugins.end(); ++i) {
+    for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i) {
           //int ai = i->inports();
           //int ao = i->outports();
           //int ci = i->controlInPorts();
@@ -3404,7 +3414,7 @@ void PluginDialog::fillPlugs(const QString &sortValue)
 //   getPlugin
 //---------------------------------------------------------
 
-Plugin* PluginDialog::getPlugin(QWidget* parent)
+MusECore::Plugin* PluginDialog::getPlugin(QWidget* parent)
       {
       PluginDialog* dialog = new PluginDialog(parent);
       if (dialog->exec())
@@ -3427,7 +3437,7 @@ const char* presetBypassText = "Click this button to bypass effect unit";
 
 //PluginGui::PluginGui(PluginI* p)
 // p3.3.43
-PluginGui::PluginGui(PluginIBase* p)
+PluginGui::PluginGui(MusECore::PluginIBase* p)
    : QMainWindow(0)
       {
       gw     = 0;
@@ -3504,7 +3514,7 @@ PluginGui::PluginGui(PluginIBase* p)
             QSignalMapper* mapper = new QSignalMapper(this);
             
             // FIXME: There's no unsigned for gui params. We would need to limit nobj to MAXINT.    // p4.0.21
-            // FIXME: Our MusEWidget::Slider class uses doubles for values, giving some problems with float conversion.    // p4.0.21
+            // FIXME: Our MusEGui::Slider class uses doubles for values, giving some problems with float conversion.    // p4.0.21
             
             connect(mapper, SIGNAL(mapped(int)), SLOT(guiParamChanged(int)));
             
@@ -3538,13 +3548,13 @@ PluginGui::PluginGui(PluginIBase* p)
 
                   if (strcmp(obj->metaObject()->className(), "Slider") == 0) {
                         gw[nobj].type = GuiWidgets::SLIDER;
-                        ((MusEWidget::Slider*)obj)->setId(nobj);
-                        ((MusEWidget::Slider*)obj)->setCursorHoming(true);
+                        ((MusEGui::Slider*)obj)->setId(nobj);
+                        ((MusEGui::Slider*)obj)->setCursorHoming(true);
                         //for(int i = 0; i < nobj; i++)
                         for(unsigned long i = 0; i < nobj; i++)             // p4.0.21
                         {
                           if(gw[i].type == GuiWidgets::DOUBLE_LABEL && gw[i].param == parameter)
-                            ((MusEWidget::DoubleLabel*)gw[i].widget)->setSlider((MusEWidget::Slider*)obj);
+                            ((MusEGui::DoubleLabel*)gw[i].widget)->setSlider((MusEGui::Slider*)obj);
                         }
                         connect(obj, SIGNAL(sliderMoved(double,int)), mapper, SLOT(map()));
                         connect(obj, SIGNAL(sliderPressed(int)), SLOT(guiSliderPressed(int)));
@@ -3553,13 +3563,13 @@ PluginGui::PluginGui(PluginIBase* p)
                         }
                   else if (strcmp(obj->metaObject()->className(), "DoubleLabel") == 0) {
                         gw[nobj].type = GuiWidgets::DOUBLE_LABEL;
-                        ((MusEWidget::DoubleLabel*)obj)->setId(nobj);
+                        ((MusEGui::DoubleLabel*)obj)->setId(nobj);
                         //for(int i = 0; i < nobj; i++)
                         for(unsigned long i = 0; i < nobj; i++)
                         {
                           if(gw[i].type == GuiWidgets::SLIDER && gw[i].param == parameter)
                           {
-                            ((MusEWidget::DoubleLabel*)obj)->setSlider((MusEWidget::Slider*)gw[i].widget);
+                            ((MusEGui::DoubleLabel*)obj)->setSlider((MusEGui::Slider*)gw[i].widget);
                             break;  
                           }  
                         }
@@ -3599,7 +3609,7 @@ PluginGui::PluginGui(PluginIBase* p)
             unsigned long n  = plugin->parameters();   // p4.0.21
             params = new GuiParam[n];
 
-            //int style       = MusEWidget::Slider::BgTrough | MusEWidget::Slider::BgSlot;
+            //int style       = MusEGui::Slider::BgTrough | MusEGui::Slider::BgSlot;
             QFontMetrics fm = fontMetrics();
             int h           = fm.height() + 4;
 
@@ -3619,7 +3629,7 @@ PluginGui::PluginGui(PluginIBase* p)
 
                   if (LADSPA_IS_HINT_TOGGLED(range.HintDescriptor)) {
                         params[i].type = GuiParam::GUI_SWITCH;
-			MusEWidget::CheckBox* cb = new MusEWidget::CheckBox(mw, i, "param");
+			MusEGui::CheckBox* cb = new MusEGui::CheckBox(mw, i, "param");
                         cb->setId(i);
                         cb->setText(QString(plugin->paramName(i)));
                         cb->setChecked(plugin->param(i) != 0.0);
@@ -3629,7 +3639,7 @@ PluginGui::PluginGui(PluginIBase* p)
                   else {
                         label           = new QLabel(QString(plugin->paramName(i)), 0);
                         params[i].type  = GuiParam::GUI_SLIDER;
-                        params[i].label = new MusEWidget::DoubleLabel(val, lower, upper, 0);
+                        params[i].label = new MusEGui::DoubleLabel(val, lower, upper, 0);
                         params[i].label->setFrame(true);
                         params[i].label->setPrecision(2);
                         params[i].label->setId(i);
@@ -3642,8 +3652,8 @@ PluginGui::PluginGui(PluginIBase* p)
                         uint c3 = j * j * j * 43  % 256;
                         QColor color(c1, c2, c3);
 
-                        MusEWidget::Slider* s = new MusEWidget::Slider(0, "param", Qt::Horizontal,
-                           MusEWidget::Slider::None, color);
+                        MusEGui::Slider* s = new MusEGui::Slider(0, "param", Qt::Horizontal,
+                           MusEGui::Slider::None, color);
                            
                         s->setCursorHoming(true);
                         s->setId(i);
@@ -3653,7 +3663,7 @@ PluginGui::PluginGui(PluginIBase* p)
                           s->setStep(1.0);
                         s->setValue(dval);
                         params[i].actuator = s;
-                        params[i].label->setSlider((MusEWidget::Slider*)params[i].actuator);
+                        params[i].label->setSlider((MusEGui::Slider*)params[i].actuator);
                         }
                   //params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum));
                   params[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
@@ -3705,22 +3715,22 @@ PluginGui::PluginGui(PluginIBase* p)
                       getPluginConvertedValues(range, lower, upper, dlower, dupper, dval);
                       label           = new QLabel(QString(plugin->paramOutName(i)), 0);
                       paramsOut[i].type  = GuiParam::GUI_METER;
-                      paramsOut[i].label = new MusEWidget::DoubleLabel(val, lower, upper, 0);
+                      paramsOut[i].label = new MusEGui::DoubleLabel(val, lower, upper, 0);
                       paramsOut[i].label->setFrame(true);
                       paramsOut[i].label->setPrecision(2);
                       paramsOut[i].label->setId(i);
 
-		      MusEWidget::Meter::MeterType mType=MusEWidget::Meter::LinMeter;
+		      MusEGui::Meter::MeterType mType=MusEGui::Meter::LinMeter;
                       if(LADSPA_IS_HINT_INTEGER(range.HintDescriptor))
-                        mType=MusEWidget::Meter::DBMeter;
-		      MusEWidget::VerticalMeter* m = new MusEWidget::VerticalMeter(this, mType);
+                        mType=MusEGui::Meter::DBMeter;
+		      MusEGui::VerticalMeter* m = new MusEGui::VerticalMeter(this, mType);
                       //printf("lower =%f upper=%f dlower=%f dupper=%f\n", lower, upper,dlower,dupper);
 
                       m->setRange(dlower, dupper);
                       m->setVal(dval);
                       m->setFixedHeight(h);
                       paramsOut[i].actuator = m;
-//                      paramsOut[i].label->setSlider((MusEWidget::Slider*)params[i].actuator);
+//                      paramsOut[i].label->setSlider((MusEGui::Slider*)params[i].actuator);
                       //paramsOut[i].actuator->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
                       label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
                       paramsOut[i].label->setSizePolicy(QSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed));
@@ -3794,7 +3804,7 @@ void PluginGui::heartBeat()
 void PluginGui::ctrlPressed(int param)
 {
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = plugin->track();
+      MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
             
@@ -3806,48 +3816,48 @@ void PluginGui::ctrlPressed(int param)
       if(id == -1)
         return;
         
-      id = genACnum(id, param);
+      id = MusECore::genACnum(id, param);
       
       if(params[param].type == GuiParam::GUI_SLIDER)
       {
-        double val = ((MusEWidget::Slider*)params[param].actuator)->value();  
+        double val = ((MusEGui::Slider*)params[param].actuator)->value();  
         if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
               val = pow(10.0, val/20.0);
         else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
               val = rint(val);
         plugin->setParam(param, val);
-        ((MusEWidget::DoubleLabel*)params[param].label)->setValue(val);
+        ((MusEGui::DoubleLabel*)params[param].label)->setValue(val);
         
         // p3.3.43
-        //audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
+        //MusEGlobal::audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
         
         if(track)
         {
           // p3.3.43
-          //audio->msgSetPluginCtrlVal(track, id, val);
-          // p4.0.21 audio->msgXXX waits. Do we really need to?
+          //MusEGlobal::audio->msgSetPluginCtrlVal(track, id, val);
+          // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
           track->setPluginCtrlVal(id, val);
-          song->controllerChange(track);
+          MusEGlobal::song->controllerChange(track);
           
           track->startAutoRecord(id, val);
         }  
       }       
       else if(params[param].type == GuiParam::GUI_SWITCH)
       {
-        //double val = (double)((MusEWidget::CheckBox*)params[param].actuator)->isChecked();
-        float val = (float)((MusEWidget::CheckBox*)params[param].actuator)->isChecked();      // p4.0.21
+        //double val = (double)((MusEGui::CheckBox*)params[param].actuator)->isChecked();
+        float val = (float)((MusEGui::CheckBox*)params[param].actuator)->isChecked();      // p4.0.21
         plugin->setParam(param, val);
         
         // p3.3.43
-        //audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
+        //MusEGlobal::audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
         
         if(track)
         {
           // p3.3.43
-          //audio->msgSetPluginCtrlVal(track, id, val);
-          // p4.0.21 audio->msgXXX waits. Do we really need to?
+          //MusEGlobal::audio->msgSetPluginCtrlVal(track, id, val);
+          // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
           track->setPluginCtrlVal(id, val);
-          song->controllerChange(track);
+          MusEGlobal::song->controllerChange(track);
           
           track->startAutoRecord(id, val);
         }  
@@ -3861,24 +3871,24 @@ void PluginGui::ctrlPressed(int param)
 void PluginGui::ctrlReleased(int param)
 {
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = plugin->track();
+      MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
         
       // Special for switch - don't enable controller until transport stopped.
       if(at != AUTO_WRITE && ((params[param].type != GuiParam::GUI_SWITCH
-          || !audio->isPlaying()
-          || at != AUTO_TOUCH) || (!audio->isPlaying() && at == AUTO_TOUCH)) )
+          || !MusEGlobal::audio->isPlaying()
+          || at != AUTO_TOUCH) || (!MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH)) )
         plugin->enableController(param, true);
       
       int id = plugin->id();
       if(!track || id == -1)
         return;
-      id = genACnum(id, param);
+      id = MusECore::genACnum(id, param);
         
       if(params[param].type == GuiParam::GUI_SLIDER)
       {
-        double val = ((MusEWidget::Slider*)params[param].actuator)->value();
+        double val = ((MusEGui::Slider*)params[param].actuator)->value();
         if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
               val = pow(10.0, val/20.0);
         else if (LADSPA_IS_HINT_INTEGER(params[param].hint))
@@ -3887,9 +3897,9 @@ void PluginGui::ctrlReleased(int param)
       }       
       //else if(params[param].type == GuiParam::GUI_SWITCH)
       //{
-        //double val = (double)((MusEWidget::CheckBox*)params[param].actuator)->isChecked();
+        //double val = (double)((MusEGui::CheckBox*)params[param].actuator)->isChecked();
         // No concept of 'untouching' a checkbox. Remain 'touched' until stop.
-        //plugin->track()->stopAutoRecord(genACnum(plugin->id(), param), val);
+        //plugin->track()->stopAutoRecord(MusECore::genACnum(plugin->id(), param), val);
       //}       
 }
 
@@ -3901,8 +3911,8 @@ void PluginGui::ctrlRightClicked(const QPoint &p, int param)
 {
   int id = plugin->id();
   if(id != -1)
-    //song->execAutomationCtlPopup((AudioTrack*)plugin->track(), p, genACnum(id, param));
-    song->execAutomationCtlPopup(plugin->track(), p, genACnum(id, param));
+    //MusEGlobal::song->execAutomationCtlPopup((MusECore::AudioTrack*)plugin->track(), p, MusECore::genACnum(id, param));
+    MusEGlobal::song->execAutomationCtlPopup(plugin->track(), p, MusECore::genACnum(id, param));
 }
 
 //---------------------------------------------------------
@@ -3912,11 +3922,11 @@ void PluginGui::ctrlRightClicked(const QPoint &p, int param)
 void PluginGui::sliderChanged(double val, int param)
 {
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = plugin->track();
+      MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
       
-      if(at == AUTO_WRITE || (audio->isPlaying() && at == AUTO_TOUCH))
+      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
         plugin->enableController(param, false);
       
       if (LADSPA_IS_HINT_LOGARITHMIC(params[param].hint))
@@ -3925,24 +3935,24 @@ void PluginGui::sliderChanged(double val, int param)
             val = rint(val);
       if (plugin->param(param) != val) {
             plugin->setParam(param, val);
-            ((MusEWidget::DoubleLabel*)params[param].label)->setValue(val);
+            ((MusEGui::DoubleLabel*)params[param].label)->setValue(val);
             }
             
       int id = plugin->id();
       if(id == -1)
         return;
-      id = genACnum(id, param);
+      id = MusECore::genACnum(id, param);
           
       // p3.3.43
-      //audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
+      //MusEGlobal::audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
           
       if(track)
       {
         // p3.3.43
-        //audio->msgSetPluginCtrlVal(track, id, val);
-        // p4.0.21 audio->msgXXX waits. Do we really need to?
+        //MusEGlobal::audio->msgSetPluginCtrlVal(track, id, val);
+        // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
         track->setPluginCtrlVal(id, val);
-        song->controllerChange(track);
+        MusEGlobal::song->controllerChange(track);
         
         track->recordAutomation(id, val);
       }  
@@ -3955,11 +3965,11 @@ void PluginGui::sliderChanged(double val, int param)
 void PluginGui::labelChanged(double val, int param)
 {
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = plugin->track();
+      MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
       
-      if(at == AUTO_WRITE || (audio->isPlaying() && at == AUTO_TOUCH))
+      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
         plugin->enableController(param, false);
       
       double dval = val;
@@ -3969,25 +3979,25 @@ void PluginGui::labelChanged(double val, int param)
             dval = rint(val);
       if (plugin->param(param) != val) {
             plugin->setParam(param, val);
-            ((MusEWidget::Slider*)params[param].actuator)->setValue(dval);
+            ((MusEGui::Slider*)params[param].actuator)->setValue(dval);
             }
       
       int id = plugin->id();
       if(id == -1)
         return;
       
-      id = genACnum(id, param);
+      id = MusECore::genACnum(id, param);
       
       // p3.3.43
-      //audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
+      //MusEGlobal::audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
       
       if(track)
       {
         // p3.3.43
-        //audio->msgSetPluginCtrlVal(track, id, val);
-        // p4.0.21 audio->msgXXX waits. Do we really need to?
+        //MusEGlobal::audio->msgSetPluginCtrlVal(track, id, val);
+        // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
         track->setPluginCtrlVal(id, val);
-        song->controllerChange(track);
+        MusEGlobal::song->controllerChange(track);
         
         track->startAutoRecord(id, val);
       }  
@@ -4004,25 +4014,25 @@ void PluginGui::load()
       s += plugin->pluginLabel();
       s += "/";
 
-      QString fn = MusEWidget::getOpenFileName(s, MusEGlobal::preset_file_pattern,
+      QString fn = MusEGui::getOpenFileName(s, MusEGlobal::preset_file_pattern,
          this, tr("MusE: load preset"), 0);
       if (fn.isEmpty())
             return;
       bool popenFlag;
-      FILE* f = MusEWidget::fileOpen(this, fn, QString(".pre"), "r", popenFlag, true);
+      FILE* f = MusEGui::fileOpen(this, fn, QString(".pre"), "r", popenFlag, true);
       if (f == 0)
             return;
 
-      Xml xml(f);
+      MusECore::Xml xml(f);
       int mode = 0;
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             QString tag = xml.s1();
             switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return;
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (mode == 0 && tag == "muse")
                               mode = 1;
                         else if (mode == 1 && tag == "plugin") {
@@ -4039,9 +4049,9 @@ void PluginGui::load()
                         else
                               xml.unknown("PluginGui");
                         break;
-                  case Xml::Attribut:
+                  case MusECore::Xml::Attribut:
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (!mode && tag == "muse")
                         {
                               plugin->updateControllers();
@@ -4069,16 +4079,16 @@ void PluginGui::save()
       s += plugin->pluginLabel();
       s += "/";
 
-      //QString fn = MusEWidget::getSaveFileName(s, MusEGlobal::preset_file_pattern, this,
-      QString fn = MusEWidget::getSaveFileName(s, MusEGlobal::preset_file_save_pattern, this,
+      //QString fn = MusEGui::getSaveFileName(s, MusEGlobal::preset_file_pattern, this,
+      QString fn = MusEGui::getSaveFileName(s, MusEGlobal::preset_file_save_pattern, this,
         tr("MusE: save preset"));
       if (fn.isEmpty())
             return;
       bool popenFlag;
-      FILE* f = MusEWidget::fileOpen(this, fn, QString(".pre"), "w", popenFlag, false, true);
+      FILE* f = MusEGui::fileOpen(this, fn, QString(".pre"), "w", popenFlag, false, true);
       if (f == 0)
             return;
-      Xml xml(f);
+      MusECore::Xml xml(f);
       xml.header();
       xml.tag(0, "muse version=\"1.0\"");
       plugin->writeConfiguration(1, xml);
@@ -4097,7 +4107,7 @@ void PluginGui::save()
 void PluginGui::bypassToggled(bool val)
       {
       plugin->setOn(val);
-      song->update(SC_ROUTE);
+      MusEGlobal::song->update(SC_ROUTE);
       }
 
 //---------------------------------------------------------
@@ -4132,10 +4142,10 @@ void PluginGui::updateValues()
                               lv = sv;
                         }      
                         gp->label->setValue(lv);
-                        ((MusEWidget::Slider*)(gp->actuator))->setValue(sv);
+                        ((MusEGui::Slider*)(gp->actuator))->setValue(sv);
                         }
                   else if (gp->type == GuiParam::GUI_SWITCH) {
-                        ((MusEWidget::CheckBox*)(gp->actuator))->setChecked(int(plugin->param(i)));
+                        ((MusEGui::CheckBox*)(gp->actuator))->setChecked(int(plugin->param(i)));
                         }
                   }
             }
@@ -4150,10 +4160,10 @@ void PluginGui::updateValues()
                   float val = plugin->param(param);
                   switch(type) {
                         case GuiWidgets::SLIDER:
-                              ((MusEWidget::Slider*)widget)->setValue(val);    // Note conversion to double
+                              ((MusEGui::Slider*)widget)->setValue(val);    // Note conversion to double
                               break;
                         case GuiWidgets::DOUBLE_LABEL:
-                              ((MusEWidget::DoubleLabel*)widget)->setValue(val);   // Note conversion to double
+                              ((MusEGui::DoubleLabel*)widget)->setValue(val);   // Note conversion to double
                               break;
                         case GuiWidgets::QCHECKBOX:
                               ((QCheckBox*)widget)->setChecked(int(val));
@@ -4190,7 +4200,7 @@ void PluginGui::updateControls()
                        sv = rint(lv);
                        lv = sv;
                  }
-                 ((MusEWidget::VerticalMeter*)(gp->actuator))->setVal(sv);
+                 ((MusEGui::VerticalMeter*)(gp->actuator))->setVal(sv);
                  gp->label->setValue(lv);
 
                }
@@ -4210,7 +4220,7 @@ void PluginGui::updateControls()
                   if (gp->type == GuiParam::GUI_SLIDER) {
                         if( plugin->controllerEnabled(i) && plugin->controllerEnabled2(i) )
                           {
-                            double lv = plugin->track()->pluginCtrlVal(genACnum(plugin->id(), i));
+                            double lv = plugin->track()->pluginCtrlVal(MusECore::genACnum(plugin->id(), i));
                             double sv = lv;
                             if (LADSPA_IS_HINT_LOGARITHMIC(params[i].hint))
                                   sv = fast_log10(lv) * 20.0;
@@ -4220,15 +4230,15 @@ void PluginGui::updateControls()
                                   sv = rint(lv);
                                   lv = sv;
                             }      
-                            if(((MusEWidget::Slider*)(gp->actuator))->value() != sv)
+                            if(((MusEGui::Slider*)(gp->actuator))->value() != sv)
                             {
                               //printf("PluginGui::updateControls slider\n");
                               
                               gp->label->blockSignals(true);
-                              ((MusEWidget::Slider*)(gp->actuator))->blockSignals(true);
-                              ((MusEWidget::Slider*)(gp->actuator))->setValue(sv);
+                              ((MusEGui::Slider*)(gp->actuator))->blockSignals(true);
+                              ((MusEGui::Slider*)(gp->actuator))->setValue(sv);
                               gp->label->setValue(lv);
-                              ((MusEWidget::Slider*)(gp->actuator))->blockSignals(false);
+                              ((MusEGui::Slider*)(gp->actuator))->blockSignals(false);
                               gp->label->blockSignals(false);
                             } 
                           }
@@ -4237,14 +4247,14 @@ void PluginGui::updateControls()
                   else if (gp->type == GuiParam::GUI_SWITCH) {
                         if( plugin->controllerEnabled(i) && plugin->controllerEnabled2(i) )
                           {
-                            bool v = (int)plugin->track()->pluginCtrlVal(genACnum(plugin->id(), i));
-                            if(((MusEWidget::CheckBox*)(gp->actuator))->isChecked() != v)
+                            bool v = (int)plugin->track()->pluginCtrlVal(MusECore::genACnum(plugin->id(), i));
+                            if(((MusEGui::CheckBox*)(gp->actuator))->isChecked() != v)
                             {
                               //printf("PluginGui::updateControls switch\n");
                               
-                              ((MusEWidget::CheckBox*)(gp->actuator))->blockSignals(true);
-                              ((MusEWidget::CheckBox*)(gp->actuator))->setChecked(v);
-                              ((MusEWidget::CheckBox*)(gp->actuator))->blockSignals(false);
+                              ((MusEGui::CheckBox*)(gp->actuator))->blockSignals(true);
+                              ((MusEGui::CheckBox*)(gp->actuator))->setChecked(v);
+                              ((MusEGui::CheckBox*)(gp->actuator))->blockSignals(false);
                             } 
                           }
                         }
@@ -4261,35 +4271,35 @@ void PluginGui::updateControls()
                         case GuiWidgets::SLIDER:
                               if( plugin->controllerEnabled(param) && plugin->controllerEnabled2(param) )
                               {
-                                double v = plugin->track()->pluginCtrlVal(genACnum(plugin->id(), param));
-                                if(((MusEWidget::Slider*)widget)->value() != v)
+                                double v = plugin->track()->pluginCtrlVal(MusECore::genACnum(plugin->id(), param));
+                                if(((MusEGui::Slider*)widget)->value() != v)
                                 {
                                   //printf("PluginGui::updateControls slider\n");
                               
-                                  ((MusEWidget::Slider*)widget)->blockSignals(true);
-                                  ((MusEWidget::Slider*)widget)->setValue(v);
-                                  ((MusEWidget::Slider*)widget)->blockSignals(false);
+                                  ((MusEGui::Slider*)widget)->blockSignals(true);
+                                  ((MusEGui::Slider*)widget)->setValue(v);
+                                  ((MusEGui::Slider*)widget)->blockSignals(false);
                                 }
                               }
                               break;
                         case GuiWidgets::DOUBLE_LABEL:
                               if( plugin->controllerEnabled(param) && plugin->controllerEnabled2(param) )
                               {
-                                double v = plugin->track()->pluginCtrlVal(genACnum(plugin->id(), param));
-                                if(((MusEWidget::DoubleLabel*)widget)->value() != v)
+                                double v = plugin->track()->pluginCtrlVal(MusECore::genACnum(plugin->id(), param));
+                                if(((MusEGui::DoubleLabel*)widget)->value() != v)
                                 {
                                   //printf("PluginGui::updateControls label\n");
                               
-                                  ((MusEWidget::DoubleLabel*)widget)->blockSignals(true);
-                                  ((MusEWidget::DoubleLabel*)widget)->setValue(v);
-                                  ((MusEWidget::DoubleLabel*)widget)->blockSignals(false);
+                                  ((MusEGui::DoubleLabel*)widget)->blockSignals(true);
+                                  ((MusEGui::DoubleLabel*)widget)->setValue(v);
+                                  ((MusEGui::DoubleLabel*)widget)->blockSignals(false);
                                 }
                               }
                               break;
                         case GuiWidgets::QCHECKBOX:
                               if( plugin->controllerEnabled(param) && plugin->controllerEnabled2(param) )
                               { 
-                                bool b = (bool) plugin->track()->pluginCtrlVal(genACnum(plugin->id(), param));
+                                bool b = (bool) plugin->track()->pluginCtrlVal(MusECore::genACnum(plugin->id(), param));
                                 if(((QCheckBox*)widget)->isChecked() != b)
                                 {
                                   //printf("PluginGui::updateControls checkbox\n");
@@ -4303,7 +4313,7 @@ void PluginGui::updateControls()
                         case GuiWidgets::QCOMBOBOX:
                               if( plugin->controllerEnabled(param) && plugin->controllerEnabled2(param) )
                               { 
-                                int n = (int) plugin->track()->pluginCtrlVal(genACnum(plugin->id(), param));
+                                int n = (int) plugin->track()->pluginCtrlVal(MusECore::genACnum(plugin->id(), param));
                                 if(((QComboBox*)widget)->currentIndex() != n)
                                 {
                                   //printf("PluginGui::updateControls combobox\n");
@@ -4331,20 +4341,20 @@ void PluginGui::guiParamChanged(int idx)
       int type   = gw[idx].type;
 
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = plugin->track();
+      MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
       
-      if(at == AUTO_WRITE || (audio->isPlaying() && at == AUTO_TOUCH))
+      if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
         plugin->enableController(param, false);
       
       double val = 0.0;
       switch(type) {
             case GuiWidgets::SLIDER:
-                  val = ((MusEWidget::Slider*)w)->value();
+                  val = ((MusEGui::Slider*)w)->value();
                   break;
             case GuiWidgets::DOUBLE_LABEL:
-                  val = ((MusEWidget::DoubleLabel*)w)->value();
+                  val = ((MusEGui::DoubleLabel*)w)->value();
                   break;
             case GuiWidgets::QCHECKBOX:
                   val = double(((QCheckBox*)w)->isChecked());
@@ -4362,10 +4372,10 @@ void PluginGui::guiParamChanged(int idx)
             int type   = gw[i].type;
             switch(type) {
                   case GuiWidgets::SLIDER:
-                        ((MusEWidget::Slider*)widget)->setValue(val);
+                        ((MusEGui::Slider*)widget)->setValue(val);
                         break;
                   case GuiWidgets::DOUBLE_LABEL:
-                        ((MusEWidget::DoubleLabel*)widget)->setValue(val);
+                        ((MusEGui::DoubleLabel*)widget)->setValue(val);
                         break;
                   case GuiWidgets::QCHECKBOX:
                         ((QCheckBox*)widget)->setChecked(int(val));
@@ -4379,18 +4389,18 @@ void PluginGui::guiParamChanged(int idx)
       int id = plugin->id();
       if(track && id != -1)
       {
-          id = genACnum(id, param);
+          id = MusECore::genACnum(id, param);
           
           // p3.3.43
-          //audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
+          //MusEGlobal::audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
           
           //if(track)
           //{
             // p3.3.43
-            //audio->msgSetPluginCtrlVal(track, id, val);
-            // p4.0.21 audio->msgXXX waits. Do we really need to?
+            //MusEGlobal::audio->msgSetPluginCtrlVal(track, id, val);
+            // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
             track->setPluginCtrlVal(id, val);
-            song->controllerChange(track);
+            MusEGlobal::song->controllerChange(track);
             
             switch(type) 
             {
@@ -4417,7 +4427,7 @@ void PluginGui::guiParamPressed(int idx)
       unsigned long param  = gw[idx].param;     // p4.0.21
 
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = plugin->track();
+      MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
       
@@ -4428,16 +4438,16 @@ void PluginGui::guiParamPressed(int idx)
       if(!track || id == -1)
         return;
       
-      id = genACnum(id, param);
+      id = MusECore::genACnum(id, param);
       
       // NOTE: For this to be of any use, the freeverb gui 2142.ui
-      //  would have to be used, and changed to use MusEWidget::CheckBox and ComboBox
+      //  would have to be used, and changed to use MusEGui::CheckBox and ComboBox
       //  instead of QCheckBox and QComboBox, since both of those would
       //  need customization (Ex. QCheckBox doesn't check on click).
       /*
       switch(type) {
             case GuiWidgets::QCHECKBOX:
-                    double val = (double)((MusEWidget::CheckBox*)w)->isChecked();
+                    double val = (double)((MusEGui::CheckBox*)w)->isChecked();
                     track->startAutoRecord(id, val);
                   break;
             case GuiWidgets::QCOMBOBOX:
@@ -4459,13 +4469,13 @@ void PluginGui::guiParamReleased(int idx)
       int type   = gw[idx].type;
       
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = plugin->track();
+      MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
       
       // Special for switch - don't enable controller until transport stopped.
       if(at != AUTO_WRITE && (type != GuiWidgets::QCHECKBOX
-          || !audio->isPlaying()
+          || !MusEGlobal::audio->isPlaying()
           || at != AUTO_TOUCH))
         plugin->enableController(param, true);
       
@@ -4474,16 +4484,16 @@ void PluginGui::guiParamReleased(int idx)
       if(!track || id == -1)
         return;
       
-      id = genACnum(id, param);
+      id = MusECore::genACnum(id, param);
       
       // NOTE: For this to be of any use, the freeverb gui 2142.ui
-      //  would have to be used, and changed to use MusEWidget::CheckBox and ComboBox
+      //  would have to be used, and changed to use MusEGui::CheckBox and ComboBox
       //  instead of QCheckBox and QComboBox, since both of those would
       //  need customization (Ex. QCheckBox doesn't check on click).
       /*
       switch(type) {
             case GuiWidgets::QCHECKBOX:
-                    double val = (double)((MusEWidget::CheckBox*)w)->isChecked();
+                    double val = (double)((MusEGui::CheckBox*)w)->isChecked();
                     track->stopAutoRecord(id, param);
                   break;
             case GuiWidgets::QCOMBOBOX:
@@ -4505,7 +4515,7 @@ void PluginGui::guiSliderPressed(int idx)
       QWidget *w = gw[idx].widget;
       
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = plugin->track();
+      MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
       
@@ -4517,17 +4527,17 @@ void PluginGui::guiSliderPressed(int idx)
       if(!track || id == -1)
         return;
       
-      id = genACnum(id, param);
+      id = MusECore::genACnum(id, param);
       
-      double val = ((MusEWidget::Slider*)w)->value();
+      double val = ((MusEGui::Slider*)w)->value();
       plugin->setParam(param, val);
       
-      //audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
+      //MusEGlobal::audio->msgSetPluginCtrlVal(((PluginI*)plugin), id, val);
       // p3.3.43
-      //audio->msgSetPluginCtrlVal(track, id, val);
-      // p4.0.21 audio->msgXXX waits. Do we really need to?
+      //MusEGlobal::audio->msgSetPluginCtrlVal(track, id, val);
+      // p4.0.21 MusEGlobal::audio->msgXXX waits. Do we really need to?
       track->setPluginCtrlVal(id, val);
-      song->controllerChange(track);
+      MusEGlobal::song->controllerChange(track);
       
       track->startAutoRecord(id, val);
       
@@ -4540,10 +4550,10 @@ void PluginGui::guiSliderPressed(int idx)
             int type   = gw[i].type;
             switch(type) {
                   case GuiWidgets::SLIDER:
-                        ((MusEWidget::Slider*)widget)->setValue(val);
+                        ((MusEGui::Slider*)widget)->setValue(val);
                         break;
                   case GuiWidgets::DOUBLE_LABEL:
-                        ((MusEWidget::DoubleLabel*)widget)->setValue(val);
+                        ((MusEGui::DoubleLabel*)widget)->setValue(val);
                         break;
                   case GuiWidgets::QCHECKBOX:
                         ((QCheckBox*)widget)->setChecked(int(val));
@@ -4565,11 +4575,11 @@ void PluginGui::guiSliderReleased(int idx)
       QWidget *w = gw[idx].widget;
       
       AutomationType at = AUTO_OFF;
-      AudioTrack* track = plugin->track();
+      MusECore::AudioTrack* track = plugin->track();
       if(track)
         at = track->automationType();
       
-      if(at != AUTO_WRITE || (!audio->isPlaying() && at == AUTO_TOUCH))
+      if(at != AUTO_WRITE || (!MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
         plugin->enableController(param, true);
       
       int id = plugin->id();
@@ -4577,9 +4587,9 @@ void PluginGui::guiSliderReleased(int idx)
       if(!track || id == -1)
         return;
       
-      id = genACnum(id, param);
+      id = MusECore::genACnum(id, param);
       
-      double val = ((MusEWidget::Slider*)w)->value();
+      double val = ((MusEGui::Slider*)w)->value();
       track->stopAutoRecord(id, val);
       }
     
@@ -4592,8 +4602,8 @@ void PluginGui::guiSliderRightClicked(const QPoint &p, int idx)
   int param  = gw[idx].param;
   int id = plugin->id();
   if(id != -1)
-    //song->execAutomationCtlPopup((AudioTrack*)plugin->track(), p, genACnum(id, param));
-    song->execAutomationCtlPopup(plugin->track(), p, genACnum(id, param));
+    //MusEGlobal::song->execAutomationCtlPopup((MusECore::AudioTrack*)plugin->track(), p, MusECore::genACnum(id, param));
+    MusEGlobal::song->execAutomationCtlPopup(plugin->track(), p, MusECore::genACnum(id, param));
 }
 
 //---------------------------------------------------------
@@ -4602,9 +4612,11 @@ void PluginGui::guiSliderRightClicked(const QPoint &p, int idx)
 QWidget* PluginLoader::createWidget(const QString & className, QWidget * parent, const QString & name)
 {
   if(className == QString("DoubleLabel"))
-    return new MusEWidget::DoubleLabel(parent, name.toLatin1().constData()); 
+    return new MusEGui::DoubleLabel(parent, name.toLatin1().constData()); 
   if(className == QString("Slider"))
-    return new MusEWidget::Slider(parent, name.toLatin1().constData(), Qt::Horizontal); 
+    return new MusEGui::Slider(parent, name.toLatin1().constData(), Qt::Horizontal); 
 
   return QUiLoader::createWidget(className, parent, name);
 };
+
+} // namespace MusEGui

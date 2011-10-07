@@ -30,6 +30,8 @@
 #include "mpevent.h"
 #include "mididev.h"
 
+namespace MusECore {
+
 class Xml;
 
 //---------------------------------------------------------
@@ -43,8 +45,8 @@ class MidiAlsaDevice : public MidiDevice {
    private:
       // Special for ALSA midi device: Play event list is processed in the ALSA midi sequencer thread.
       // Need this FIFO, to decouple from audio thread which adds events to the list.       
-      MidiFifo playEventFifo;  
-      MidiFifo stuckNotesFifo;  
+      MusECore::MidiFifo playEventFifo;  
+      MusECore::MidiFifo stuckNotesFifo;  
       volatile bool stopPending;         
       volatile bool seekPending;
       
@@ -55,7 +57,7 @@ class MidiAlsaDevice : public MidiDevice {
       virtual int selectWfd();
 
       bool putEvent(snd_seq_event_t*);
-      virtual bool putMidiEvent(const MidiPlayEvent&);
+      virtual bool putMidiEvent(const MusECore::MidiPlayEvent&);
 
    public:
       MidiAlsaDevice(const snd_seq_addr_t&, const QString& name);
@@ -67,9 +69,9 @@ class MidiAlsaDevice : public MidiDevice {
       virtual void writeRouting(int, Xml&) const;
       virtual inline int deviceType() const { return ALSA_MIDI; } 
       // Schedule an event for playback. Returns false if event cannot be delivered.
-      virtual bool addScheduledEvent(const MidiPlayEvent& ev) { return !playEventFifo.put(ev); }
+      virtual bool addScheduledEvent(const MusECore::MidiPlayEvent& ev) { return !playEventFifo.put(ev); }
       // Add a stuck note. Returns false if event cannot be delivered.
-      virtual bool addStuckNote(const MidiPlayEvent& ev) { return !stuckNotesFifo.put(ev); }
+      virtual bool addStuckNote(const MusECore::MidiPlayEvent& ev) { return !stuckNotesFifo.put(ev); }
       // Play all events up to current frame.
       virtual void processMidi();
       virtual void handleStop();
@@ -77,11 +79,13 @@ class MidiAlsaDevice : public MidiDevice {
       };
 
 extern bool initMidiAlsa();
-extern bool exitMidiAlsa();
+extern void exitMidiAlsa();
 extern int alsaSelectRfd();
 extern int alsaSelectWfd();
 extern void alsaProcessMidiInput();
 extern void alsaScanMidiPorts();
+
+} // namespace MusECore
 
 #endif
 

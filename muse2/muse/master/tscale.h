@@ -25,11 +25,13 @@
 
 #include "view.h"
 
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   Tscale
 //---------------------------------------------------------
 
-class TScale : public MusEWidget::View {
+class TScale : public View {
       Q_OBJECT
         
       double curTempo;
@@ -46,6 +48,8 @@ class TScale : public MusEWidget::View {
    public:
       TScale(QWidget*, int);
       };
+
+} // namespace MusEGui
 
 #endif
 

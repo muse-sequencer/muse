@@ -31,13 +31,16 @@
 #include "pos.h"
 #include "evdata.h"
 
-enum EventType { Note, Controller, Sysex, PAfter, CAfter, Meta, Wave };
-
 class QString;
+
+namespace MusECore {
 
 class Xml;
 class EventBase;
 class WavePart;
+
+enum EventType { Note, Controller, Sysex, PAfter, CAfter, Meta, Wave };
+
 
 //---------------------------------------------------------
 //   Event
@@ -97,10 +100,10 @@ class Event {
       void setName(const QString& s);
       int spos() const;
       void setSpos(int s);
-      SndFileR sndFile() const;
-      virtual void setSndFile(SndFileR& sf);
+      MusECore::SndFileR sndFile() const;
+      virtual void setSndFile(MusECore::SndFileR& sf);
       
-      virtual void readAudio(WavePart* /*part*/, unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
+      virtual void readAudio(MusECore::WavePart* /*part*/, unsigned /*offset*/, float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
       
       void setTick(unsigned val);
       unsigned tick() const;
@@ -147,6 +150,8 @@ class EventList : public EL {
       void dump() const;
       void read(Xml& xml, const char* name, bool midi);
       };
+
+} // namespace MusECore
 
 #endif
 
