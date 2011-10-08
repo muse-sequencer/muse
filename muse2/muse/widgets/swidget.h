@@ -25,7 +25,7 @@
 
 #include <QWidget>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   SWidget
@@ -45,7 +45,7 @@ class SWidget : public QWidget {
       SWidget(QWidget* parent) : QWidget(parent) {}
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

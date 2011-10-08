@@ -34,9 +34,9 @@
 #include "route.h"
 #include "drummap.h"
 
-bool MidiTrack::_isVisible=true;
-//bool Track::_isVisible=true;
+namespace MusECore {
 
+//bool Track::_isVisible=true;
 unsigned int Track::_soloRefCnt = 0;
 Track* Track::_tmpSoloChainTrack = 0;
 bool Track::_tmpSoloChainDoIns   = false;
@@ -46,6 +46,9 @@ const char* Track::_cname[] = {
       "Midi", "Drum", "NewStyleDrum", "Wave",
       "AudioOut", "AudioIn", "AudioGroup", "AudioAux", "AudioSynth"
       };
+
+
+bool MidiTrack::_isVisible=true;
 
 //---------------------------------------------------------
 //   addPortCtrlEvents
@@ -73,7 +76,7 @@ void addPortCtrlEvents(MidiTrack* t)
         int val   = ev.dataB();
         int ch = t->outChannel();
         
-        MidiPort* mp = &midiPorts[t->outPort()];
+        MidiPort* mp = &MusEGlobal::midiPorts[t->outPort()];
         // Is it a drum controller event, according to the track port's instrument?
         if(t->type() == Track::DRUM)  //FINDMICHJETZT was soll das? drumcontroller -_-
         {
@@ -82,9 +85,9 @@ void addPortCtrlEvents(MidiTrack* t)
           {
             int note = cntrl & 0x7f;
             cntrl &= ~0xff;
-            ch = drumMap[note].channel;
-            mp = &midiPorts[drumMap[note].port];
-            cntrl |= drumMap[note].anote;
+            ch = MusEGlobal::drumMap[note].channel;
+            mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+            cntrl |= MusEGlobal::drumMap[note].anote;
           }
         }
         
@@ -121,7 +124,7 @@ void removePortCtrlEvents(MidiTrack* t)
         int cntrl = ev.dataA();
         int ch = t->outChannel();
         
-        MidiPort* mp = &midiPorts[t->outPort()];
+        MidiPort* mp = &MusEGlobal::midiPorts[t->outPort()];
         // Is it a drum controller event, according to the track port's instrument?
         if(t->type() == Track::DRUM)  //FINDMICHJETZT was soll das? drumcontroller...
         {
@@ -130,9 +133,9 @@ void removePortCtrlEvents(MidiTrack* t)
           {
             int note = cntrl & 0x7f;
             cntrl &= ~0xff;
-            ch = drumMap[note].channel;
-            mp = &midiPorts[drumMap[note].port];
-            cntrl |= drumMap[note].anote;
+            ch = MusEGlobal::drumMap[note].channel;
+            mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+            cntrl |= MusEGlobal::drumMap[note].anote;
           }
         }
         
@@ -142,13 +145,15 @@ void removePortCtrlEvents(MidiTrack* t)
   }
 }
 
+
+
 //---------------------------------------------------------
 //   y
 //---------------------------------------------------------
 
 int Track::y() const
       {
-      TrackList* tl = song->tracks();
+      TrackList* tl = MusEGlobal::song->tracks();
       int yy = 0;
       for (ciTrack it = tl->begin(); it != tl->end(); ++it) {
             if (this == *it)
@@ -337,7 +342,7 @@ void Track::setDefaultName()
             QString n;
             n.setNum(i);
             QString s = base + n;
-            Track* track = song->findTrack(s);
+            Track* track = MusEGlobal::song->findTrack(s);
             if (track == 0) {
                   setName(s);
                   break;
@@ -384,6 +389,7 @@ void Track::dump() const
          _name.toLatin1().constData(), _type, _parts.size(), _selected);
       }
 
+
 //---------------------------------------------------------
 //   MidiTrack
 //---------------------------------------------------------
@@ -407,7 +413,7 @@ MidiTrack::MidiTrack()
         else
           _drummap[idx]=idrumMap[i];
         
-        global_drum_ordering.push_back(std::pair<MidiTrack*,int>(this,idx));
+        MusEGlobal::global_drum_ordering.push_back(std::pair<MidiTrack*,int>(this,idx));
       }
       for (int i=0;i<128;i++)
         _drummap_hidden[i]=false;
@@ -438,11 +444,11 @@ MidiTrack::MidiTrack(const MidiTrack& mt, bool cloneParts)
       memcpy(_drummap, mt._drummap, 128*sizeof(*_drummap));
       memcpy(_drummap_hidden, mt._drummap_hidden, 128*sizeof(*_drummap_hidden));
       
-      for (global_drum_ordering_t::iterator it=global_drum_ordering.begin(); it!=global_drum_ordering.end(); it++)
+      for (MusEGlobal::global_drum_ordering_t::iterator it=MusEGlobal::global_drum_ordering.begin(); it!=MusEGlobal::global_drum_ordering.end(); it++)
         if (it->first == &mt)
         {
-          it=global_drum_ordering.insert(it, *it); // duplicates the entry at it, set it to the first entry of both
-          it++;                                    // make it point to the second entry
+          it=MusEGlobal::global_drum_ordering.insert(it, *it); // duplicates the entry at it, set it to the first entry of both
+          it++;                                                // make it point to the second entry
           it->first=this;
         }
       }
@@ -456,9 +462,9 @@ MidiTrack::~MidiTrack()
       
       // remove ourselves from the global_drum_ordering list
       // this is not really necessary, but cleaner
-      for (global_drum_ordering_t::iterator it=global_drum_ordering.begin(); it!=global_drum_ordering.end();)
+      for (MusEGlobal::global_drum_ordering_t::iterator it=MusEGlobal::global_drum_ordering.begin(); it!=MusEGlobal::global_drum_ordering.end();)
         if (it->first == this)
-          it=global_drum_ordering.erase(it);
+          it=MusEGlobal::global_drum_ordering.erase(it);
         else
           it++;
 
@@ -562,14 +568,14 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
   {
     // p3.3.50 If the port was not used in the song file to begin with, just ignore it.
     // This saves from having all of the first 32 ports' channels connected.
-    if(!midiPorts[port].foundInSongFile())
+    if(!MusEGlobal::midiPorts[port].foundInSongFile())
       continue;
       
     //if(!(portmask & (1 << port)))
     //  continue;
     
     // p3.3.50 Removed. Allow to connect to port with no device so user can change device later.
-    //MidiPort* mp = &midiPorts[port];
+    //MidiPort* mp = &MusEGlobal::midiPorts[port];
     //MidiDevice* md = mp->device();
     //if(!md)
     //  continue;
@@ -600,7 +606,7 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
         // Route already exists?
         //if(iir != rl->end()) 
         //  continue;
-        audio->msgAddRoute(aRoute, bRoute);
+        MusEGlobal::audio->msgAddRoute(aRoute, bRoute);
         changed = true;
       }
       else
@@ -608,7 +614,7 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
         // Route does not exist?
         //if(iir == rl->end()) 
         //  continue;
-        audio->msgRemoveRoute(aRoute, bRoute);
+        MusEGlobal::audio->msgRemoveRoute(aRoute, bRoute);
         changed = true;
       }
     //}
@@ -616,8 +622,8 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
    
   if(changed)
   {
-    audio->msgUpdateSoloStates();
-    song->update(SC_ROUTE);
+    MusEGlobal::audio->msgUpdateSoloStates();
+    MusEGlobal::song->update(SC_ROUTE);
   }  
 }
 
@@ -643,7 +649,7 @@ void MidiTrack::addPortCtrlEvents()
         int val   = ev.dataB();
         int ch = _outChannel;
         
-        MidiPort* mp = &midiPorts[_outPort];
+        MidiPort* mp = &MusEGlobal::midiPorts[_outPort];
         // Is it a drum controller event, according to the track port's instrument?
         if(type() == DRUM)  //FINDMICHJETZT commented out. was soll das?
         {
@@ -652,9 +658,9 @@ void MidiTrack::addPortCtrlEvents()
           {
             int note = cntrl & 0x7f;
             cntrl &= ~0xff;
-            ch = drumMap[note].channel;
-            mp = &midiPorts[drumMap[note].port];
-            cntrl |= drumMap[note].anote;
+            ch = MusEGlobal::drumMap[note].channel;
+            mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+            cntrl |= MusEGlobal::drumMap[note].anote;
           }
         }
         
@@ -684,7 +690,7 @@ void MidiTrack::removePortCtrlEvents()
         int cntrl = ev.dataA();
         int ch = _outChannel;
         
-        MidiPort* mp = &midiPorts[_outPort];
+        MidiPort* mp = &MusEGlobal::midiPorts[_outPort];
         // Is it a drum controller event, according to the track port's instrument?
         if(type() == DRUM)  //FINDMICHJETZT commented out: was soll das?
         {
@@ -693,9 +699,9 @@ void MidiTrack::removePortCtrlEvents()
           {
             int note = cntrl & 0x7f;
             cntrl &= ~0xff;
-            ch = drumMap[note].channel;
-            mp = &midiPorts[drumMap[note].port];
-            cntrl |= drumMap[note].anote;
+            ch = MusEGlobal::drumMap[note].channel;
+            mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[note].port];
+            cntrl |= MusEGlobal::drumMap[note].anote;
           }
         }
         
@@ -705,30 +711,6 @@ void MidiTrack::removePortCtrlEvents()
   }
 }
 */
-
-//---------------------------------------------------------
-//   addPart
-//---------------------------------------------------------
-
-iPart Track::addPart(Part* p)
-      {
-      p->setTrack(this);
-      return _parts.add(p);
-      }
-
-//---------------------------------------------------------
-//   findPart
-//---------------------------------------------------------
-
-Part* Track::findPart(unsigned tick)
-      {
-      for (iPart i = _parts.begin(); i != _parts.end(); ++i) {
-            Part* part = i->second;
-            if (tick >= part->tick() && tick < (part->tick()+part->lenTick()))
-                  return part;
-            }
-      return 0;
-      }
 
 //---------------------------------------------------------
 //   newPart
@@ -758,7 +740,7 @@ Part* MidiTrack::newPart(Part*p, bool clone)
 
 AutomationType MidiTrack::automationType() const
       {
-      MidiPort* port = &midiPorts[outPort()];
+      MidiPort* port = &MusEGlobal::midiPorts[outPort()];
       return port->automationType(outChannel());
       }
 
@@ -768,8 +750,152 @@ AutomationType MidiTrack::automationType() const
 
 void MidiTrack::setAutomationType(AutomationType t)
       {
-      MidiPort* port = &midiPorts[outPort()];
+      MidiPort* port = &MusEGlobal::midiPorts[outPort()];
       port->setAutomationType(outChannel(), t);
+      }
+
+//---------------------------------------------------------
+//   MidiTrack::write
+//---------------------------------------------------------
+
+void MidiTrack::write(int level, Xml& xml) const
+      {
+      const char* tag;
+
+      if (type() == DRUM)
+            tag = "drumtrack";
+      else if (type() == MIDI)
+            tag = "miditrack";
+      else if (type() == NEW_DRUM)
+            tag = "newdrumtrack";
+      else
+            printf("THIS SHOULD NEVER HAPPEN: non-midi-type in MidiTrack::write()\n");
+      
+      xml.tag(level++, tag);
+      Track::writeProperties(level, xml);
+
+      xml.intTag(level, "device", outPort());
+      xml.intTag(level, "channel", outChannel());
+      //xml.intTag(level, "inportMap", inPortMask());
+      ///xml.uintTag(level, "inportMap", inPortMask());       // Obsolete
+      ///xml.intTag(level, "inchannelMap", inChannelMask());  // Obsolete
+      xml.intTag(level, "locked", _locked);
+      xml.intTag(level, "echo", _recEcho);
+
+      xml.intTag(level, "transposition", transposition);
+      xml.intTag(level, "velocity", velocity);
+      xml.intTag(level, "delay", delay);
+      xml.intTag(level, "len", len);
+      xml.intTag(level, "compression", compression);
+      xml.intTag(level, "automation", int(automationType()));
+      xml.intTag(level, "clef", int(clefType));
+
+      const PartList* pl = cparts();
+      for (ciPart p = pl->begin(); p != pl->end(); ++p)
+            p->second->write(level, xml);
+      xml.etag(level, tag);
+      }
+
+//---------------------------------------------------------
+//   MidiTrack::read
+//---------------------------------------------------------
+
+void MidiTrack::read(Xml& xml)
+      {
+      unsigned int portmask = 0;
+      int chanmask = 0;
+      
+      for (;;) {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token) {
+                  case Xml::Error:
+                  case Xml::End:
+                        return;
+                  case Xml::TagStart:
+                        if (tag == "transposition")
+                              transposition = xml.parseInt();
+                        else if (tag == "velocity")
+                              velocity = xml.parseInt();
+                        else if (tag == "delay")
+                              delay = xml.parseInt();
+                        else if (tag == "len")
+                              len = xml.parseInt();
+                        else if (tag == "compression")
+                              compression = xml.parseInt();
+                        else if (tag == "part") {
+                              //Part* p = newPart();
+                              //p->read(xml);
+                              Part* p = 0;
+                              p = readXmlPart(xml, this);
+                              if(p)
+                                parts()->add(p);
+                              }
+                        else if (tag == "device")
+                              setOutPort(xml.parseInt());
+                        else if (tag == "channel")
+                              setOutChannel(xml.parseInt());
+                        else if (tag == "inportMap")
+                              //setInPortMask(xml.parseInt());
+                              ///setInPortMask(xml.parseUInt());
+                              //xml.skip(tag);                      // Obsolete. 
+                              portmask = xml.parseUInt();           // p3.3.48: Support old files.
+                        else if (tag == "inchannelMap")
+                              ///setInChannelMask(xml.parseInt());
+                              //xml.skip(tag);                      // Obsolete.
+                              chanmask = xml.parseInt();            // p3.3.48: Support old files.
+                        else if (tag == "locked")
+                              _locked = xml.parseInt();
+                        else if (tag == "echo")
+                              _recEcho = xml.parseInt();
+                        else if (tag == "automation")
+                              setAutomationType(AutomationType(xml.parseInt()));
+                        else if (tag == "clef")
+                              clefType = (clefTypes)xml.parseInt();
+                        else if (Track::readProperties(xml, tag)) {
+                              // version 1.0 compatibility:
+                              if (tag == "track" && xml.majorVersion() == 1 && xml.minorVersion() == 0)
+                                    break;
+                              xml.unknown("MidiTrack");
+                              }
+                        break;
+                  case Xml::Attribut:
+                        break;
+                  case Xml::TagEnd:
+                        if (tag == "miditrack" || tag == "drumtrack") 
+                        {
+                          setInPortAndChannelMask(portmask, chanmask); // p3.3.48: Support old files.
+                          return;
+                        }
+                  default:
+                        break;
+                  }
+            }
+      }
+
+
+//---------------------------------------------------------
+//   addPart
+//---------------------------------------------------------
+
+iPart Track::addPart(Part* p)
+      {
+      p->setTrack(this);
+      return _parts.add(p);
+      }
+
+//---------------------------------------------------------
+//   findPart
+//---------------------------------------------------------
+
+Part* Track::findPart(unsigned tick)
+      {
+      for (iPart i = _parts.begin(); i != _parts.end(); ++i) {
+            Part* part = i->second;
+            if (tick >= part->tick() && tick < (part->tick()+part->lenTick()))
+                  return part;
+            }
+      return 0;
       }
 
 //---------------------------------------------------------
@@ -932,123 +1058,5 @@ void Track::writeRouting(int level, Xml& xml) const
         }
       }
 }
-       
-//---------------------------------------------------------
-//   MidiTrack::write
-//---------------------------------------------------------
 
-void MidiTrack::write(int level, Xml& xml) const
-      {
-      const char* tag;
-
-      if (type() == DRUM)
-            tag = "drumtrack";
-      else if (type() == MIDI)
-            tag = "miditrack";
-      else if (type() == NEW_DRUM)
-            tag = "newdrumtrack";
-      else
-            printf("THIS SHOULD NEVER HAPPEN: non-midi-type in MidiTrack::write()\n");
-      
-      xml.tag(level++, tag);
-      Track::writeProperties(level, xml);
-
-      xml.intTag(level, "device", outPort());
-      xml.intTag(level, "channel", outChannel());
-      //xml.intTag(level, "inportMap", inPortMask());
-      ///xml.uintTag(level, "inportMap", inPortMask());       // Obsolete
-      ///xml.intTag(level, "inchannelMap", inChannelMask());  // Obsolete
-      xml.intTag(level, "locked", _locked);
-      xml.intTag(level, "echo", _recEcho);
-
-      xml.intTag(level, "transposition", transposition);
-      xml.intTag(level, "velocity", velocity);
-      xml.intTag(level, "delay", delay);
-      xml.intTag(level, "len", len);
-      xml.intTag(level, "compression", compression);
-      xml.intTag(level, "automation", int(automationType()));
-      xml.intTag(level, "clef", int(clefType));
-
-      const PartList* pl = cparts();
-      for (ciPart p = pl->begin(); p != pl->end(); ++p)
-            p->second->write(level, xml);
-      xml.etag(level, tag);
-      }
-
-//---------------------------------------------------------
-//   MidiTrack::read
-//---------------------------------------------------------
-
-void MidiTrack::read(Xml& xml)
-      {
-      unsigned int portmask = 0;
-      int chanmask = 0;
-      
-      for (;;) {
-            Xml::Token token = xml.parse();
-            const QString& tag = xml.s1();
-            switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
-                        return;
-                  case Xml::TagStart:
-                        if (tag == "transposition")
-                              transposition = xml.parseInt();
-                        else if (tag == "velocity")
-                              velocity = xml.parseInt();
-                        else if (tag == "delay")
-                              delay = xml.parseInt();
-                        else if (tag == "len")
-                              len = xml.parseInt();
-                        else if (tag == "compression")
-                              compression = xml.parseInt();
-                        else if (tag == "part") {
-                              //Part* p = newPart();
-                              //p->read(xml);
-                              Part* p = 0;
-                              p = readXmlPart(xml, this);
-                              if(p)
-                                parts()->add(p);
-                              }
-                        else if (tag == "device")
-                              setOutPort(xml.parseInt());
-                        else if (tag == "channel")
-                              setOutChannel(xml.parseInt());
-                        else if (tag == "inportMap")
-                              //setInPortMask(xml.parseInt());
-                              ///setInPortMask(xml.parseUInt());
-                              //xml.skip(tag);                      // Obsolete. 
-                              portmask = xml.parseUInt();           // p3.3.48: Support old files.
-                        else if (tag == "inchannelMap")
-                              ///setInChannelMask(xml.parseInt());
-                              //xml.skip(tag);                      // Obsolete.
-                              chanmask = xml.parseInt();            // p3.3.48: Support old files.
-                        else if (tag == "locked")
-                              _locked = xml.parseInt();
-                        else if (tag == "echo")
-                              _recEcho = xml.parseInt();
-                        else if (tag == "automation")
-                              setAutomationType(AutomationType(xml.parseInt()));
-                        else if (tag == "clef")
-                              clefType = (clefTypes)xml.parseInt();
-                        else if (Track::readProperties(xml, tag)) {
-                              // version 1.0 compatibility:
-                              if (tag == "track" && xml.majorVersion() == 1 && xml.minorVersion() == 0)
-                                    break;
-                              xml.unknown("MidiTrack");
-                              }
-                        break;
-                  case Xml::Attribut:
-                        break;
-                  case Xml::TagEnd:
-                        if (tag == "miditrack" || tag == "drumtrack") 
-                        {
-                          setInPortAndChannelMask(portmask, chanmask); // p3.3.48: Support old files.
-                          return;
-                        }
-                  default:
-                        break;
-                  }
-            }
-      }
-
+} // namespace MusECore

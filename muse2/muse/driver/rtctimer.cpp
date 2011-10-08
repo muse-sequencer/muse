@@ -41,6 +41,7 @@
 #include "globals.h"
 #include "gconfig.h"
 
+namespace MusECore {
 
 RtcTimer::RtcTimer()
     {
@@ -70,7 +71,7 @@ signed int RtcTimer::initTimer()
           MusEGlobal::undoSetuid();
           return timerFd;
           }
-    if (!setTimerFreq(MusEConfig::config.rtcTicks)) {
+    if (!setTimerFreq(MusEGlobal::config.rtcTicks)) {
           // unable to set timer frequency
           return -1;
           }
@@ -168,3 +169,5 @@ unsigned int RtcTimer::getTimerTicks(bool /*printTicks*/)// prevent compiler war
         }
     return nn;
     }
+
+} // namespace MusECore

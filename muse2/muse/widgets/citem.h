@@ -29,10 +29,11 @@
 
 #include "event.h"
 
-class Event;
+namespace MusECore {
 class Part;
+}
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   CItem
@@ -41,8 +42,8 @@ namespace MusEWidget {
 
 class CItem {
    private:
-      Event _event;
-      Part* _part;
+      MusECore::Event _event;
+      MusECore::Part* _part;
 
    protected:
       bool _isMoving;
@@ -54,8 +55,8 @@ class CItem {
       CItem(const QPoint& p, const QRect& r);
       CItem();
       // Changed by Tim. p3.3.20
-      //CItem(Event e, Part* p);
-      CItem(const Event& e, Part* p);
+      //CItem(MusECore::Event e, MusECore::Part* p);
+      CItem(const MusECore::Event& e, MusECore::Part* p);
 
       bool isMoving() const        { return _isMoving;  }
       void setMoving(bool f)       { _isMoving = f;     }
@@ -82,10 +83,10 @@ class CItem {
       bool contains(const QPoint& p) const  { return _bbox.contains(p); }
       bool intersects(const QRect& r) const { return r.intersects(_bbox); }
 
-      Event event() const         { return _event;  }
-      void setEvent(Event& e)     { _event = e;     }
-      Part* part() const          { return _part; }
-      void setPart(Part* p)       { _part = p; }
+      MusECore::Event event() const         { return _event;  }
+      void setEvent(MusECore::Event& e)     { _event = e;     }
+      MusECore::Part* part() const          { return _part; }
+      void setPart(MusECore::Part* p)       { _part = p; }
       };
 
 typedef std::multimap<int, CItem*, std::less<int> >::iterator iCItem;
@@ -108,7 +109,7 @@ class CItemList: public std::multimap<int, CItem*, std::less<int> > {
             }
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

@@ -24,7 +24,7 @@
 #include "move.h"
 #include "xml.h"
 
-namespace MusEDialog {
+namespace MusEGui {
 
 Move::Move(QWidget* parent)
 	: QDialog(parent)
@@ -62,18 +62,18 @@ int Move::exec()
 }
 
 
-void Move::read_configuration(Xml& xml)
+void Move::read_configuration(MusECore::Xml& xml)
 {
 	for (;;)
 	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
 			
 		const QString& tag = xml.s1();
 		switch (token)
 		{
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "range")
 					range=xml.parseInt();
 				else if (tag == "amount")
@@ -82,7 +82,7 @@ void Move::read_configuration(Xml& xml)
 					xml.unknown("Move");
 				break;
 				
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "move")
 					return;
 				
@@ -92,7 +92,7 @@ void Move::read_configuration(Xml& xml)
 	}
 }
 
-void Move::write_configuration(int level, Xml& xml)
+void Move::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "move");
 	xml.intTag(level, "range", range);
@@ -100,4 +100,4 @@ void Move::write_configuration(int level, Xml& xml)
 	xml.tag(level, "/move");
 }
 
-} // namespace MusEDialog
+} // namespace MusEGui

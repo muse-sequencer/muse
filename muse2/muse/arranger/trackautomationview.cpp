@@ -28,9 +28,9 @@
 
 #include "track.h"
 
-namespace MusEArranger {
+namespace MusEGui {
 
-TrackAutomationView::TrackAutomationView(QWidget *parent, Track *t) : QWidget(parent)
+TrackAutomationView::TrackAutomationView(QWidget *parent, MusECore::Track *t) : QWidget(parent)
 {
   printf("created trackautomationview\n");
   _t = t;
@@ -75,4 +75,4 @@ void TrackAutomationView::collectAutomationData()
 //  cll.count()
 }
 
-} // namespace MusEArranger
+} // namespace MusEGui

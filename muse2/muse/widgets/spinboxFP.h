@@ -29,7 +29,7 @@
 //class QValidator;
 //class QDoubleValidator;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   SpinBoxFP
@@ -66,7 +66,7 @@ class SpinBoxFP : public QDoubleSpinBox {
       //int decimals() const { return _decimals; }
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

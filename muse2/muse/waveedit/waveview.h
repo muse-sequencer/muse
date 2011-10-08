@@ -28,12 +28,13 @@
 #include <QMouseEvent>
 #include "wave.h"
 
-class PartList;
 class QPainter;
 class QRect;
-class WavePart;
-class MidiEditor;
+
+namespace MusECore {
+class PartList;
 class SndFileR;
+class WavePart;
 
 struct WaveEventSelection {
       SndFileR file;
@@ -44,11 +45,17 @@ struct WaveEventSelection {
 typedef std::list<WaveEventSelection> WaveSelectionList;
 typedef std::list<WaveEventSelection>::iterator iWaveSelection;
 
+} // namespace MusECore
+
+namespace MusEGui {
+
+class MidiEditor;
+
 //---------------------------------------------------------
 //   WaveView
 //---------------------------------------------------------
 
-class WaveView : public MusEWidget::View {
+class WaveView : public View {
       Q_OBJECT
     
       MidiEditor* editor;
@@ -58,7 +65,7 @@ class WaveView : public MusEWidget::View {
       int startSample;
       int endSample;
 
-      WavePart* curPart;
+      MusECore::WavePart* curPart;
       QString copiedPart;
       int curPartId;
 
@@ -75,7 +82,7 @@ class WaveView : public MusEWidget::View {
       virtual void wheelEvent(QWheelEvent*);
 
       //bool getUniqueTmpfileName(QString& newFilename); //!< Generates unique filename for temporary SndFile
-      WaveSelectionList getSelection(unsigned startpos, unsigned stoppos);
+      MusECore::WaveSelectionList getSelection(unsigned startpos, unsigned stoppos);
 
       int lastGainvalue; //!< Stores the last used gainvalue when specifiying gain value in the editgain dialog
       void modifySelection(int operation, unsigned startpos, unsigned stoppos, double paramA); //!< Modifies selection
@@ -113,8 +120,10 @@ class WaveView : public MusEWidget::View {
       QString getCaption() const;
       void range(int*, int*);
       void cmd(int n);
-      WavePart* part() { return curPart; }
+      MusECore::WavePart* part() { return curPart; }
       };
+
+} // namespace MusEGui
 
 #endif
 

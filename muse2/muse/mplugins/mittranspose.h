@@ -30,6 +30,10 @@
 
 class QCloseEvent;
 
+namespace MusECore {
+
+class Xml;
+
 struct KeyOn {
       unsigned char pitch;
       unsigned char channel;
@@ -46,16 +50,18 @@ struct KeyOn {
 typedef std::list<KeyOn > KeyOnList;
 typedef KeyOnList::iterator iKeyOn;
 
-class Xml;
+} // namespace MusECore
+
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   MITPluginTranspose
 //---------------------------------------------------------
 
-class MITPluginTranspose : public QWidget, public Ui::MITTransposeBase, public MITPlugin {
+class MITPluginTranspose : public QWidget, public Ui::MITTransposeBase, public MusECore::MITPlugin {
       Q_OBJECT
 
-      KeyOnList keyOnList;
+      MusECore::KeyOnList keyOnList;
       int transpose;    // current pitch offset
       int trigger;
       bool on;
@@ -74,12 +80,16 @@ class MITPluginTranspose : public QWidget, public Ui::MITTransposeBase, public M
 
    public:
       MITPluginTranspose(QWidget* parent = 0, Qt::WFlags fl = 0);
-      virtual void process(MEvent&);
-      virtual void readStatus(Xml&);
-      virtual void writeStatus(int, Xml&) const;
+      virtual void process(MusECore::MEvent&);
+      virtual void readStatus(MusECore::Xml&);
+      virtual void writeStatus(int, MusECore::Xml&) const;
       };
 
-extern MITPluginTranspose* mitPluginTranspose;
+} // namespace MusEGui
+
+namespace MusEGlobal {
+extern MusEGui::MITPluginTranspose* mitPluginTranspose;
+}
 
 #endif
 

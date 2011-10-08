@@ -34,8 +34,12 @@ class QDialog;
 class QWidget;
 class QTreeWidgetItem;
 
+namespace MusECore {
 class Xml;
 class Pos;
+}
+
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   ClipListEditorBaseWidget
@@ -63,22 +67,24 @@ class ClipListEdit : public TopWin {
 
    private slots:
       void songChanged(int);
-      void startChanged(const Pos&);
-      void lenChanged(const Pos&);
+      void startChanged(const MusECore::Pos&);
+      void lenChanged(const MusECore::Pos&);
       void clipSelectionChanged();
       void clicked(QTreeWidgetItem*, int);
 
    signals:
-      void deleted(TopWin*);
+      void deleted(MusEGui::TopWin*);
 
    public:
       ClipListEdit(QWidget* parent);
       ~ClipListEdit();
-      virtual void readStatus(Xml&);
-      virtual void writeStatus(int, Xml&) const;
-      static void readConfiguration(Xml&);
-      static void writeConfiguration(int, Xml&);
+      virtual void readStatus(MusECore::Xml&);
+      virtual void writeStatus(int, MusECore::Xml&) const;
+      static void readConfiguration(MusECore::Xml&);
+      static void writeConfiguration(int, MusECore::Xml&);
       };
+
+} // namespace MusEGui
 
 #endif
 

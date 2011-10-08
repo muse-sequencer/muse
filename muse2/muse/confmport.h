@@ -34,11 +34,13 @@ class QTableWidget;
 class QPoint;
 class QMenu;
 class QAction;
-class Xml;
 
-namespace MusEWidget {
-class PopupMenu;
+namespace MusECore {
+class Xml;
 }
+
+namespace MusEGui {
+class PopupMenu;
 
 //---------------------------------------------------------
 //   MPConfig
@@ -49,7 +51,7 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
       Q_OBJECT
       QMenu* instrPopup;
       //QMenu* popup;
-      MusEWidget::PopupMenu* defpup;
+      MusEGui::PopupMenu* defpup;
       int _showAliases; // -1: None. 0: First aliases. 1: Second aliases etc.
       void setWhatsThis(QTableWidgetItem *item, int col);
       void setToolTip(QTableWidgetItem *item, int col);
@@ -73,5 +75,7 @@ class MPConfig : public QDialog, Ui::SynthConfigBase {
       MPConfig(QWidget* parent=0);
       ~MPConfig();
       };
+
+} // namespace MusEGui
 
 #endif

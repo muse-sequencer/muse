@@ -27,6 +27,8 @@
 
 #include <QCloseEvent>
 
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   MRConfig
 //    Midi Remote Control Config
@@ -91,3 +93,4 @@ void MRConfig::setRcSteprecNote(int val)
       MusEGlobal::rcSteprecNote = val;
       }
 
+} // namespace MusEGui

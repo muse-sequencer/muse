@@ -26,7 +26,10 @@
 #include <map>
 
 #include "../muse/xml.h"
+
+namespace MusECore {
 class Xml;
+}
 
 namespace AL {
 
@@ -57,9 +60,9 @@ struct SigEvent {
       int bar;          // precomputed
 
       ///int read(QDomNode);
-      ///void write(Xml&, int) const;
-      int read(Xml&);
-      void write(int, Xml&, int) const;
+      ///void write(MusECore::Xml&, int) const;
+      int read(MusECore::Xml&);
+      void write(int, MusECore::Xml&, int) const;
 
       SigEvent() { }
       SigEvent(const TimeSignature& s, unsigned tk) {
@@ -94,9 +97,9 @@ class SigList : public SIGLIST {
       void del(unsigned tick);
 
       ///void read(QDomNode);
-      ///void write(Xml&) const;
-      void read(Xml&);
-      void write(int, Xml&) const;
+      ///void write(MusECore::Xml&) const;
+      void read(MusECore::Xml&);
+      void write(int, MusECore::Xml&) const;
       
       void dump() const;
 

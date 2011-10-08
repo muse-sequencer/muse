@@ -67,8 +67,8 @@ using std::string;
 
 
 
-#define TICKS_PER_WHOLE (MusEConfig::config.division*4) 
-#define SONG_LENGTH (song->len())
+#define TICKS_PER_WHOLE (MusEGlobal::config.division*4) 
+#define SONG_LENGTH (MusEGlobal::song->len())
 
 
 
@@ -84,11 +84,11 @@ enum {CMD_COLOR_BLACK, CMD_COLOR_VELO, CMD_COLOR_PART,
       CMD_SELECT_ILOOP, CMD_SELECT_OLOOP};
 
 
+
+namespace MusEGui {
+class EditToolBar;
 class ScoreCanvas;
 
-namespace MusEWidget {
-class EditToolBar;
-}
 
 //---------------------------------------------------------
 //   ScoreEdit
@@ -105,7 +105,7 @@ class ScoreEdit : public TopWin
 		QGridLayout* mainGrid;
 		QWidget* mainw;
 		
-		MusEWidget::EditToolBar* edit_tools;
+		MusEGui::EditToolBar* edit_tools;
 		QSpinBox* velo_spinbox;
 		QSpinBox* velo_off_spinbox;
 		
@@ -160,7 +160,7 @@ class ScoreEdit : public TopWin
 		QScrollBar* xscroll;
 		QScrollBar* yscroll;
 		ScoreCanvas* score_canvas;
-		MusEWidget::MTScaleFlo* time_bar;
+		MusEGui::MTScaleFlo* time_bar;
 		
 		QLabel* apply_velo_to_label;
 		bool apply_velo;
@@ -184,7 +184,7 @@ class ScoreEdit : public TopWin
 		void clipboard_changed();
 		
 	signals:
-		void deleted(TopWin*);
+		void deleted(MusEGui::TopWin*);
 		void name_changed();
 		void velo_changed(int);
 		void velo_off_changed(int);
@@ -200,12 +200,12 @@ class ScoreEdit : public TopWin
 		ScoreEdit(QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);
 		~ScoreEdit();
 
-		void writeStatus(int level, Xml& xml) const;
-		void readStatus(Xml& xml);
-		static void read_configuration(Xml&);
-		static void write_configuration(int, Xml&);
+		void writeStatus(int level, MusECore::Xml& xml) const;
+		void readStatus(MusECore::Xml& xml);
+		static void read_configuration(MusECore::Xml&);
+		static void write_configuration(int, MusECore::Xml&);
 		
-		void add_parts(PartList* pl, bool all_in_one=false);
+		void add_parts(MusECore::PartList* pl, bool all_in_one=false);
 		QString get_name() { return name; }
 		bool get_apply_velo() { return apply_velo; }
 	};
@@ -253,8 +253,8 @@ class FloEvent
 		enum typeEnum { NOTE_ON = 30, NOTE_OFF = 10, BAR = 20, KEY_CHANGE=23, TIME_SIG=26 }; //the order matters!
 		typeEnum type;
 		unsigned tick;
-		Part* source_part;
-		Event* source_event;
+		MusECore::Part* source_part;
+		MusECore::Event* source_event;
 		
 		int pitch;
 		mutable int vel;
@@ -263,10 +263,10 @@ class FloEvent
 		int num;
 		int denom;
 		
-		key_enum key;
+		MusECore::key_enum key;
 		
 		
-		FloEvent(unsigned ti, int p,int v,int l,typeEnum t, Part* part=NULL, Event* event=NULL)
+		FloEvent(unsigned ti, int p,int v,int l,typeEnum t, MusECore::Part* part=NULL, MusECore::Event* event=NULL)
 		{
 			pitch=p;
 			vel=v;
@@ -285,7 +285,7 @@ class FloEvent
 			source_event=NULL;
 			source_part=NULL;
 		}
-		FloEvent(unsigned ti, typeEnum t, key_enum k)
+		FloEvent(unsigned ti, typeEnum t, MusECore::key_enum k)
 		{
 			type=t;
 			key=k;
@@ -300,8 +300,8 @@ class FloItem
 		enum typeEnum { NOTE=21, REST=22, NOTE_END=01, REST_END=02, BAR =10, KEY_CHANGE=13, TIME_SIG=16}; //the order matters!
 		typeEnum type;
 		unsigned begin_tick;
-		Event* source_event;
-		Part* source_part;
+		MusECore::Event* source_event;
+		MusECore::Part* source_part;
 		
 		note_pos_t pos;
 		int len;
@@ -312,7 +312,7 @@ class FloItem
 		int num;
 		int denom;
 		
-		key_enum key;
+		MusECore::key_enum key;
 		
 		mutable stem_t stem;
 		mutable int shift;
@@ -331,7 +331,7 @@ class FloItem
 		
 
 		
-		FloItem(typeEnum t, note_pos_t p, int l=0,int d=0, bool ti=false, unsigned beg=0, Part* part=NULL, Event* event=NULL)
+		FloItem(typeEnum t, note_pos_t p, int l=0,int d=0, bool ti=false, unsigned beg=0, MusECore::Part* part=NULL, MusECore::Event* event=NULL)
 		{
 			pos=p;
 			dots=d;
@@ -357,7 +357,7 @@ class FloItem
 			source_part=NULL;
 		}
 		
-		FloItem(typeEnum t, key_enum k)
+		FloItem(typeEnum t, MusECore::key_enum k)
 		{
 			type=t;
 			key=k;
@@ -533,7 +533,7 @@ enum staff_mode_t
 
 struct staff_t
 {
-	set<Part*> parts;
+	set<MusECore::Part*> parts;
 	set<int> part_indices;
 	ScoreEventList eventlist;
 	ScoreItemList itemlist;
@@ -555,7 +555,7 @@ struct staff_t
 	void process_itemlist();
 	void calc_item_pos();
 	
-	void apply_lasso(QRect rect, set<Event*>& already_processed);
+	void apply_lasso(QRect rect, set<MusECore::Event*>& already_processed);
 	
 	void recalculate()
 	{
@@ -572,7 +572,7 @@ struct staff_t
 		parent=parent_;
 	}
 	
-	staff_t (ScoreCanvas* parent_, staff_type_t type_, clef_t clef_, set<Part*> parts_)
+	staff_t (ScoreCanvas* parent_, staff_type_t type_, clef_t clef_, set<MusECore::Part*> parts_)
 	{
 		type=type_;
 		clef=clef_;
@@ -583,18 +583,18 @@ struct staff_t
 	
 	bool cleanup_parts();
 	
-	set<Part*> parts_at_tick(unsigned tick);
+	set<MusECore::Part*> parts_at_tick(unsigned tick);
 	
-	void read_status(Xml& xml);
-	void write_status(int level, Xml& xml) const;
+	void read_status(MusECore::Xml& xml);
+	void write_status(int level, MusECore::Xml& xml) const;
 	
-	void update_parts(); //re-populates the set<Part*> from the set<int>
-	void update_part_indices(); //re-populates the set<int> from the set<Part*>
+	void update_parts(); //re-populates the set<MusECore::Part*> from the set<int>
+	void update_part_indices(); //re-populates the set<int> from the set<MusECore::Part*>
 };
 
-list<int> calc_accidentials(key_enum key, clef_t clef, key_enum next_key=KEY_C);
-note_pos_t note_pos_(int note, key_enum key);
-note_pos_t note_pos (unsigned note, key_enum key, clef_t clef);
+list<int> calc_accidentials(MusECore::key_enum key, clef_t clef, MusECore::key_enum next_key=MusECore::KEY_C);
+note_pos_t note_pos_(int note, MusECore::key_enum key);
+note_pos_t note_pos (unsigned note, MusECore::key_enum key, clef_t clef);
 
 int calc_len(int l, int d);
 list<note_len_t> parse_note_len(int len_ticks, int begin_tick, vector<int>& foo, bool allow_dots=true, bool allow_normal=true);
@@ -606,7 +606,7 @@ int calc_timesig_width(int num, int denom);
 int calc_number_width(int n);
 
 
-class ScoreCanvas : public MusEWidget::View
+class ScoreCanvas : public MusEGui::View
 {
 	Q_OBJECT
 	private:
@@ -625,7 +625,7 @@ class ScoreCanvas : public MusEWidget::View
 
 
 
-		static int height_to_pitch(int h, clef_t clef, key_enum key);
+		static int height_to_pitch(int h, clef_t clef, MusECore::key_enum key);
 		static int height_to_pitch(int h, clef_t clef);
 		static int y_to_height(int y);
 		int y_to_pitch(int y, int t, clef_t clef);
@@ -671,7 +671,7 @@ class ScoreCanvas : public MusEWidget::View
 		
 		list<staff_t> staves;
 		
-		StepRec* steprec;
+		MusECore::StepRec* steprec;
 		
 		// the drawing area is split into a "preamble" containing clef,
 		// key and time signature, and the "item's area" containing the
@@ -693,7 +693,7 @@ class ScoreCanvas : public MusEWidget::View
 		float y_scroll_speed;
 		float y_scroll_pos;
 
-		Part* selected_part;
+		MusECore::Part* selected_part;
 		int selected_part_index;
 		
 		int last_len;
@@ -717,11 +717,11 @@ class ScoreCanvas : public MusEWidget::View
 		bool inserting;
 		bool dragging;
 		bool drag_cursor_changed;
-		Part* dragged_event_part;
+		MusECore::Part* dragged_event_part;
 		int dragged_event_part_index;
-		Event dragged_event;
-		Event original_dragged_event;
-		Event* clicked_event_ptr;
+		MusECore::Event dragged_event;
+		MusECore::Event original_dragged_event;
+		MusECore::Event* clicked_event_ptr;
 		
 		int old_pitch;
 		unsigned old_dest_tick;
@@ -765,7 +765,7 @@ class ScoreCanvas : public MusEWidget::View
 		void deselect_all();
 		void midi_note(int pitch, int velo);
 		
-		void add_new_parts(const std::map< Part*, std::set<Part*> >&);
+		void add_new_parts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&);
 
    public slots:
       void x_scroll_event(int);
@@ -788,7 +788,7 @@ class ScoreCanvas : public MusEWidget::View
 
 			void set_steprec(bool);
 			
-			void update_parts(); //re-populates the set<Part*>s from the set<int>s
+			void update_parts(); //re-populates the set<MusECore::Part*>s from the set<int>s
 	signals:
 			void xscroll_changed(int);
 			void yscroll_changed(int);
@@ -813,7 +813,7 @@ class ScoreCanvas : public MusEWidget::View
 		ScoreCanvas(ScoreEdit*, QWidget*);
 		~ScoreCanvas();
 
-		void add_staves(PartList* pl, bool all_in_one);
+		void add_staves(MusECore::PartList* pl, bool all_in_one);
 		void push_back_staff(staff_t& staff) { staves.push_back(staff); } //FINDMICH dirty. very dirty.
 
 		int canvas_width();
@@ -830,17 +830,17 @@ class ScoreCanvas : public MusEWidget::View
 		int get_last_len() {return last_len;}
 		void set_last_len(int l) {last_len=l;}
 		
-		Part* get_selected_part() {return selected_part;}
-		void set_selected_part(Part* p) {selected_part=p; if (selected_part) selected_part_index=selected_part->sn();}
-		Part* get_dragged_event_part() {return dragged_event_part;}
-		void set_dragged_event_part(Part* p) {dragged_event_part=p; if (dragged_event_part) dragged_event_part_index=dragged_event_part->sn();}
+		MusECore::Part* get_selected_part() {return selected_part;}
+		void set_selected_part(MusECore::Part* p) {selected_part=p; if (selected_part) selected_part_index=selected_part->sn();}
+		MusECore::Part* get_dragged_event_part() {return dragged_event_part;}
+		void set_dragged_event_part(MusECore::Part* p) {dragged_event_part=p; if (dragged_event_part) dragged_event_part_index=dragged_event_part->sn();}
 		
-		set<Part*> get_all_parts();
+		set<MusECore::Part*> get_all_parts();
 		
-		void write_staves(int level, Xml& xml) const;
+		void write_staves(int level, MusECore::Xml& xml) const;
 
 		timesig_t timesig_at_tick(int t);
-		key_enum key_at_tick(int t);
+		MusECore::key_enum key_at_tick(int t);
 		int tick_to_x(int t);
 		int delta_tick_to_delta_x(int t);
 		int x_to_tick(int x);
@@ -851,6 +851,6 @@ int calc_measure_len(const list<int>& nums, int denom);
 vector<int> create_emphasize_list(const list<int>& nums, int denom);
 vector<int> create_emphasize_list(int num, int denom);
 
-
+} // namespace MusEGui
 #endif
 

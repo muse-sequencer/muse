@@ -24,7 +24,7 @@
 #include "citem.h"
 #include <stdio.h>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   CItem
@@ -43,8 +43,8 @@ CItem::CItem(const QPoint&p, const QRect& r)
       }
 
 // Changed by Tim. p3.3.20
-//CItem::CItem(Event e, Part* p)
-CItem::CItem(const Event& e, Part* p)
+//CItem::CItem(MusECore::Event e, Part* p)
+CItem::CItem(const MusECore::Event& e, MusECore::Part* p)
       {
       _event = e;
       _part  = p;
@@ -108,4 +108,4 @@ void CItemList::add(CItem* item)
       std::multimap<int, CItem*, std::less<int> >::insert(std::pair<const int, CItem*> (item->bbox().x(), item));
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

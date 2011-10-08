@@ -58,6 +58,8 @@
 #include "menutitleitem.h"
 #include "popupmenu.h"
 
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   CtrlPanel
 //---------------------------------------------------------
@@ -87,7 +89,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       dbox->setContentsMargins(0, 0, 0, 0);
 
       selCtrl = new QPushButton(tr("S"));
-      selCtrl->setFont(MusEConfig::config.fonts[3]);
+      selCtrl->setFont(MusEGlobal::config.fonts[3]);
       selCtrl->setFixedHeight(20);
       selCtrl->setSizePolicy(
          QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
@@ -97,7 +99,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
 
       // destroy button
       QPushButton* destroy = new QPushButton(tr("X"));
-      destroy->setFont(MusEConfig::config.fonts[3]);
+      destroy->setFont(MusEGlobal::config.fonts[3]);
       destroy->setFixedHeight(20);
       destroy->setSizePolicy(
          QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
@@ -108,10 +110,10 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       
       _track = 0;
       _ctrl = 0;
-      _val = CTRL_VAL_UNKNOWN;
+      _val = MusECore::CTRL_VAL_UNKNOWN;
       _dnum = -1;
       
-      _knob = new MusEWidget::Knob;
+      _knob = new MusEGui::Knob;
       _knob->setFixedWidth(25);
       _knob->setFixedHeight(25);
       _knob->setToolTip(tr("manual adjust"));
@@ -121,11 +123,11 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       _knob->hide();
       _knob->setAltFaceColor(Qt::red);
       
-      _dl = new MusEWidget::DoubleLabel(-1.0, 0.0, +127.0);
+      _dl = new MusEGui::DoubleLabel(-1.0, 0.0, +127.0);
       _dl->setPrecision(0);
       _dl->setToolTip(tr("double click on/off"));
       _dl->setSpecialText(tr("off"));
-      _dl->setFont(MusEConfig::config.fonts[1]);
+      _dl->setFont(MusEGlobal::config.fonts[1]);
       _dl->setBackgroundRole(QPalette::Mid);
       _dl->setFrame(true);
       _dl->setFixedWidth(36);
@@ -163,34 +165,34 @@ void CtrlPanel::heartBeat()
   
   if(_track && _ctrl && _dnum != -1)
   {
-    //if(_dnum != CTRL_VELOCITY && _dnum != CTRL_PROGRAM)
-    if(_dnum != CTRL_VELOCITY)
+    //if(_dnum != MusECore::CTRL_VELOCITY && _dnum != MusECore::CTRL_PROGRAM)
+    if(_dnum != MusECore::CTRL_VELOCITY)
     {
       int outport;
       int chan;
       int cdi = editor->curDrumInstrument();
-      if(_track->type() == Track::DRUM && ((_ctrl->num() & 0xff) == 0xff) && cdi != -1) //FINDMICHJETZT was ist das? und ähnliche dinger
+      if(_track->type() == MusECore::Track::DRUM && ((_ctrl->num() & 0xff) == 0xff) && cdi != -1) //FINDMICHJETZT was ist das? und ähnliche dinger
       {
-        outport = drumMap[cdi].port;
-        chan = drumMap[cdi].channel;
+        outport = MusEGlobal::drumMap[cdi].port;
+        chan = MusEGlobal::drumMap[cdi].channel;
       }  
       else  
       {
         outport = _track->outPort();
         chan = _track->outChannel();
       }
-      MidiPort* mp = &midiPorts[outport];          
+      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];          
       
       int v = mp->hwCtrlState(chan, _dnum);
-      if(v == CTRL_VAL_UNKNOWN)
+      if(v == MusECore::CTRL_VAL_UNKNOWN)
       {
-        // MusEWidget::DoubleLabel ignores the value if already set...
+        // MusEGui::DoubleLabel ignores the value if already set...
         _dl->setValue(_dl->off() - 1.0);
-        _val = CTRL_VAL_UNKNOWN;
+        _val = MusECore::CTRL_VAL_UNKNOWN;
         v = mp->lastValidHWCtrlState(chan, _dnum);
-        if(v != CTRL_VAL_UNKNOWN && ((_dnum != CTRL_PROGRAM) || ((v & 0xff) != 0xff) ))
+        if(v != MusECore::CTRL_VAL_UNKNOWN && ((_dnum != MusECore::CTRL_PROGRAM) || ((v & 0xff) != 0xff) ))
         {
-          if(_dnum == CTRL_PROGRAM)
+          if(_dnum == MusECore::CTRL_PROGRAM)
             v = (v & 0x7f) + 1;
           else  
             // Auto bias...
@@ -208,15 +210,15 @@ void CtrlPanel::heartBeat()
       if(v != _val)
       {
         _val = v;
-        if(v == CTRL_VAL_UNKNOWN || ((_dnum == CTRL_PROGRAM) && ((v & 0xff) == 0xff) ))
+        if(v == MusECore::CTRL_VAL_UNKNOWN || ((_dnum == MusECore::CTRL_PROGRAM) && ((v & 0xff) == 0xff) ))
         {
-          // MusEWidget::DoubleLabel ignores the value if already set...
+          // MusEGui::DoubleLabel ignores the value if already set...
           //_dl->setValue(double(_ctrl->minVal() - 1));
           _dl->setValue(_dl->off() - 1.0);
         }
         else
         {
-          if(_dnum == CTRL_PROGRAM)
+          if(_dnum == MusECore::CTRL_PROGRAM)
             v = (v & 0x7f) + 1;
           else  
             // Auto bias...
@@ -247,66 +249,66 @@ void CtrlPanel::labelDoubleClicked()
   int outport;
   int chan;
   int cdi = editor->curDrumInstrument();
-  if(_track->type() == Track::DRUM && ((_ctrl->num() & 0xff) == 0xff) && cdi != -1)
+  if(_track->type() == MusECore::Track::DRUM && ((_ctrl->num() & 0xff) == 0xff) && cdi != -1)
   {
-    outport = drumMap[cdi].port;
-    chan = drumMap[cdi].channel;
+    outport = MusEGlobal::drumMap[cdi].port;
+    chan = MusEGlobal::drumMap[cdi].channel;
   }  
   else  
   {
     outport = _track->outPort();
     chan = _track->outChannel();
   }
-  MidiPort* mp = &midiPorts[outport];          
+  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];          
   int lastv = mp->lastValidHWCtrlState(chan, _dnum);
   
   int curv = mp->hwCtrlState(chan, _dnum);
   
-  if(_dnum == CTRL_PROGRAM)
+  if(_dnum == MusECore::CTRL_PROGRAM)
   {
-    if(curv == CTRL_VAL_UNKNOWN || ((curv & 0xffffff) == 0xffffff))
+    if(curv == MusECore::CTRL_VAL_UNKNOWN || ((curv & 0xffffff) == 0xffffff))
     {
       // If no value has ever been set yet, use the current knob value 
       //  (or the controller's initial value?) to 'turn on' the controller.
-      if(lastv == CTRL_VAL_UNKNOWN || ((lastv & 0xffffff) == 0xffffff))
+      if(lastv == MusECore::CTRL_VAL_UNKNOWN || ((lastv & 0xffffff) == 0xffffff))
       {
         //int kiv = _ctrl->initVal());
         int kiv = lrint(_knob->value());
         --kiv;
         kiv &= 0x7f;
         kiv |= 0xffff00;
-        //MidiPlayEvent ev(song->cpos(), outport, chan, ME_CONTROLLER, _dnum, kiv);
-        MidiPlayEvent ev(0, outport, chan, ME_CONTROLLER, _dnum, kiv);
-        audio->msgPlayMidiEvent(&ev);
+        //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, _dnum, kiv);
+        MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, kiv);
+        MusEGlobal::audio->msgPlayMidiEvent(&ev);
       }
       else
       {
-        //MidiPlayEvent ev(song->cpos(), outport, chan, ME_CONTROLLER, _dnum, lastv);
-        MidiPlayEvent ev(0, outport, chan, ME_CONTROLLER, _dnum, lastv);
-        audio->msgPlayMidiEvent(&ev);
+        //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, _dnum, lastv);
+        MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, lastv);
+        MusEGlobal::audio->msgPlayMidiEvent(&ev);
       }
     }
     else
     {
       //if((curv & 0xffff00) == 0xffff00)
       //{
-        ////if(mp->hwCtrlState(chan, _dnum) != CTRL_VAL_UNKNOWN)
-          audio->msgSetHwCtrlState(mp, chan, _dnum, CTRL_VAL_UNKNOWN);
+        ////if(mp->hwCtrlState(chan, _dnum) != MusECore::CTRL_VAL_UNKNOWN)
+          MusEGlobal::audio->msgSetHwCtrlState(mp, chan, _dnum, MusECore::CTRL_VAL_UNKNOWN);
       //}
       //else
       //{
-      //  MidiPlayEvent ev(song->cpos(), outport, chan, ME_CONTROLLER, _dnum, (curv & 0xffff00) | 0xff);
-      //  audio->msgPlayMidiEvent(&ev);
+      //  MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, _dnum, (curv & 0xffff00) | 0xff);
+      //  MusEGlobal::audio->msgPlayMidiEvent(&ev);
       //}
     }  
   }
   else
   {
-    if(curv == CTRL_VAL_UNKNOWN)
+    if(curv == MusECore::CTRL_VAL_UNKNOWN)
     {
       // If no value has ever been set yet, use the current knob value 
       //  (or the controller's initial value?) to 'turn on' the controller.
-      if(lastv == CTRL_VAL_UNKNOWN)
+      if(lastv == MusECore::CTRL_VAL_UNKNOWN)
       {
         //int kiv = _ctrl->initVal());
         int kiv = lrint(_knob->value());
@@ -315,24 +317,24 @@ void CtrlPanel::labelDoubleClicked()
         if(kiv > _ctrl->maxVal())
           kiv = _ctrl->maxVal();
         kiv += _ctrl->bias();
-        //MidiPlayEvent ev(song->cpos(), outport, chan, ME_CONTROLLER, _dnum, kiv);
-        MidiPlayEvent ev(0, outport, chan, ME_CONTROLLER, _dnum, kiv);
-        audio->msgPlayMidiEvent(&ev);
+        //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, _dnum, kiv);
+        MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, kiv);
+        MusEGlobal::audio->msgPlayMidiEvent(&ev);
       }
       else
       {
-        //MidiPlayEvent ev(song->cpos(), outport, chan, ME_CONTROLLER, _dnum, lastv);
-        MidiPlayEvent ev(0, outport, chan, ME_CONTROLLER, _dnum, lastv);
-        audio->msgPlayMidiEvent(&ev);
+        //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, _dnum, lastv);
+        MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, lastv);
+        MusEGlobal::audio->msgPlayMidiEvent(&ev);
       }
     }  
     else
     {
-      //if(mp->hwCtrlState(chan, _dnum) != CTRL_VAL_UNKNOWN)
-        audio->msgSetHwCtrlState(mp, chan, _dnum, CTRL_VAL_UNKNOWN);
+      //if(mp->hwCtrlState(chan, _dnum) != MusECore::CTRL_VAL_UNKNOWN)
+        MusEGlobal::audio->msgSetHwCtrlState(mp, chan, _dnum, MusECore::CTRL_VAL_UNKNOWN);
     }    
   }
-  song->update(SC_MIDI_CONTROLLER);
+  MusEGlobal::song->update(SC_MIDI_CONTROLLER);
 }
 
 //---------------------------------------------------------
@@ -351,57 +353,57 @@ void CtrlPanel::ctrlChanged(double val)
       int outport;
       int chan;
       int cdi = editor->curDrumInstrument();
-      if(_track->type() == Track::DRUM && ((_ctrl->num() & 0xff) == 0xff) && cdi != -1)
+      if(_track->type() == MusECore::Track::DRUM && ((_ctrl->num() & 0xff) == 0xff) && cdi != -1)
       {
-        outport = drumMap[cdi].port;
-        chan = drumMap[cdi].channel;
+        outport = MusEGlobal::drumMap[cdi].port;
+        chan = MusEGlobal::drumMap[cdi].channel;
       }  
       else  
       {
         outport = _track->outPort();
         chan = _track->outChannel();
       }
-      MidiPort* mp = &midiPorts[outport];          
+      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];          
       int curval = mp->hwCtrlState(chan, _dnum);
       
-      if(_dnum == CTRL_PROGRAM)
+      if(_dnum == MusECore::CTRL_PROGRAM)
       {
         --ival; 
         ival &= 0x7f;
         
-        if(curval == CTRL_VAL_UNKNOWN)
+        if(curval == MusECore::CTRL_VAL_UNKNOWN)
           ival |= 0xffff00;
         else
           ival |= (curval & 0xffff00);  
-        //MidiPlayEvent ev(song->cpos(), outport, chan, ME_CONTROLLER, _dnum, ival);
-        MidiPlayEvent ev(0, outport, chan, ME_CONTROLLER, _dnum, ival);
-        audio->msgPlayMidiEvent(&ev);
+        //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
+        MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
+        MusEGlobal::audio->msgPlayMidiEvent(&ev);
       }
       else
       // Shouldn't happen, but...
       if((ival < _ctrl->minVal()) || (ival > _ctrl->maxVal()))
       {
-        //if(mp->hwCtrlState(chan, _dnum) != CTRL_VAL_UNKNOWN)
-        if(curval != CTRL_VAL_UNKNOWN)
-          audio->msgSetHwCtrlState(mp, chan, _dnum, CTRL_VAL_UNKNOWN);
+        //if(mp->hwCtrlState(chan, _dnum) != MusECore::CTRL_VAL_UNKNOWN)
+        if(curval != MusECore::CTRL_VAL_UNKNOWN)
+          MusEGlobal::audio->msgSetHwCtrlState(mp, chan, _dnum, MusECore::CTRL_VAL_UNKNOWN);
       }  
       else
       {
         // Auto bias...
         ival += _ctrl->bias();
       
-        //MidiPlayEvent ev(song->cpos(), outport, chan, ME_CONTROLLER, _dnum, ival);
-        MidiPlayEvent ev(0, outport, chan, ME_CONTROLLER, _dnum, ival);
-        audio->msgPlayMidiEvent(&ev);
+        //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
+        MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, _dnum, ival);
+        MusEGlobal::audio->msgPlayMidiEvent(&ev);
       }
-      song->update(SC_MIDI_CONTROLLER);
+      MusEGlobal::song->update(SC_MIDI_CONTROLLER);
     }
 
 //---------------------------------------------------------
 //   setHWController
 //---------------------------------------------------------
 
-void CtrlPanel::setHWController(MidiTrack* t, MidiController* ctrl) 
+void CtrlPanel::setHWController(MusECore::MidiTrack* t, MusECore::MidiController* ctrl) 
 { 
   inHeartBeat = true;
   
@@ -417,24 +419,24 @@ void CtrlPanel::setHWController(MidiTrack* t, MidiController* ctrl)
     return;
   }
   
-  MidiPort* mp;
+  MusECore::MidiPort* mp;
   int ch;
   int cdi = editor->curDrumInstrument();
   _dnum = _ctrl->num();
-  if(_track->type() == Track::DRUM && ((_dnum & 0xff) == 0xff) && cdi != -1)
+  if(_track->type() == MusECore::Track::DRUM && ((_dnum & 0xff) == 0xff) && cdi != -1)
   {
-    _dnum = (_dnum & ~0xff) | drumMap[cdi].anote;
-    mp = &midiPorts[drumMap[cdi].port];          
-    ch = drumMap[cdi].channel;
+    _dnum = (_dnum & ~0xff) | MusEGlobal::drumMap[cdi].anote;
+    mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[cdi].port];          
+    ch = MusEGlobal::drumMap[cdi].channel;
   }  
   else  
   {
-    mp = &midiPorts[_track->outPort()];
+    mp = &MusEGlobal::midiPorts[_track->outPort()];
     ch = _track->outChannel();
   }
   
-  //if(_dnum == CTRL_VELOCITY || _dnum == CTRL_PROGRAM)
-  if(_dnum == CTRL_VELOCITY)
+  //if(_dnum == MusECore::CTRL_VELOCITY || _dnum == MusECore::CTRL_PROGRAM)
+  if(_dnum == MusECore::CTRL_VELOCITY)
   {
     _knob->setEnabled(false);
     _dl->setEnabled(false);
@@ -447,7 +449,7 @@ void CtrlPanel::setHWController(MidiTrack* t, MidiController* ctrl)
     _dl->setEnabled(true);
     double dlv;
     int mn; int mx; int v;
-    if(_dnum == CTRL_PROGRAM)
+    if(_dnum == MusECore::CTRL_PROGRAM)
     {
       mn = 1;
       mx = 128;
@@ -456,13 +458,13 @@ void CtrlPanel::setHWController(MidiTrack* t, MidiController* ctrl)
       _knob->setRange(double(mn), double(mx), 1.0);
       _dl->setRange(double(mn), double(mx));
       //_dl->setOff(double(mn - 1));
-      if(v == CTRL_VAL_UNKNOWN || ((v & 0xffffff) == 0xffffff))
+      if(v == MusECore::CTRL_VAL_UNKNOWN || ((v & 0xffffff) == 0xffffff))
       {
         int lastv = mp->lastValidHWCtrlState(ch, _dnum);
-        if(lastv == CTRL_VAL_UNKNOWN || ((lastv & 0xffffff) == 0xffffff))
+        if(lastv == MusECore::CTRL_VAL_UNKNOWN || ((lastv & 0xffffff) == 0xffffff))
         {
           int initv = _ctrl->initVal();
-          if(initv == CTRL_VAL_UNKNOWN || ((initv & 0xffffff) == 0xffffff))
+          if(initv == MusECore::CTRL_VAL_UNKNOWN || ((initv & 0xffffff) == 0xffffff))
             v = 1;
           else  
             v = (initv + 1) & 0xff;
@@ -492,12 +494,12 @@ void CtrlPanel::setHWController(MidiTrack* t, MidiController* ctrl)
       _knob->setRange(double(mn), double(mx), 1.0);
       _dl->setRange(double(mn), double(mx));
       //_dl->setOff(double(mn - 1));
-      if(v == CTRL_VAL_UNKNOWN)
+      if(v == MusECore::CTRL_VAL_UNKNOWN)
       {
         int lastv = mp->lastValidHWCtrlState(ch, _dnum);
-        if(lastv == CTRL_VAL_UNKNOWN)
+        if(lastv == MusECore::CTRL_VAL_UNKNOWN)
         {
-          if(_ctrl->initVal() == CTRL_VAL_UNKNOWN)
+          if(_ctrl->initVal() == MusECore::CTRL_VAL_UNKNOWN)
             v = 0;
           else  
             v = _ctrl->initVal();
@@ -551,16 +553,16 @@ void CtrlPanel::ctrlPopup()
       {
       //---------------------------------------------------
       // build list of midi controllers for current
-      // MidiPort/channel
+      // MusECore::MidiPort/channel
       //---------------------------------------------------
 
-      PartList* parts  = editor->parts();
-      Part* part       = editor->curCanvasPart();
-      MidiTrack* track = (MidiTrack*)(part->track());
+      MusECore::PartList* parts  = editor->parts();
+      MusECore::Part* part       = editor->curCanvasPart();
+      MusECore::MidiTrack* track = (MusECore::MidiTrack*)(part->track());
       int channel      = track->outChannel();
-      MidiPort* port   = &midiPorts[track->outPort()];
+      MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
       int curDrumInstrument = editor->curDrumInstrument();
-      bool isDrum      = track->type() == Track::DRUM; //FINDMICHJETZT ist das wichtig?
+      bool isDrum      = track->type() == MusECore::Track::DRUM; //FINDMICHJETZT ist das wichtig?
 
       QMenu* pop = new QMenu;
       //pop->clear();
@@ -573,15 +575,15 @@ void CtrlPanel::ctrlPopup()
       std::list<CI> sList;
       typedef std::list<CI>::iterator isList;
 
-      for (iMidiCtrlValList i = cll->lower_bound(min); i != cll->lower_bound(max); ++i) {
+      for (MusECore::iMidiCtrlValList i = cll->lower_bound(min); i != cll->lower_bound(max); ++i) {
             MidiCtrlValList* cl = i->second;
-            MidiController* c   = port->midiController(cl->num());
+            MusECore::MidiController* c   = port->midiController(cl->num());
             // dont show drum specific controller if not a drum track
             if ((c->num() & 0xff) == 0xff) {
                   if (!isDrum)
                         continue;
                   // only show controller for curDrumInstrument:
-                  if ((cl->num() & 0xff) != drumMap[curDrumInstrument].anote) {
+                  if ((cl->num() & 0xff) != MusEGlobal::drumMap[curDrumInstrument].anote) {
                         continue;
                         }
                   }
@@ -592,11 +594,11 @@ void CtrlPanel::ctrlPopup()
                   }
             if (i == sList.end()) {
                   bool used = false;
-                  for (iPart ip = parts->begin(); ip != parts->end(); ++ip) {
-                        EventList* el = ip->second->events();
-                        for (iEvent ie = el->begin(); ie != el->end(); ++ie) {
-                              Event e = ie->second;
-                              if ((e.type() == Controller) && (e.dataA() == cl->num())) {
+                  for (MusECore::iPart ip = parts->begin(); ip != parts->end(); ++ip) {
+                        MusECore::EventList* el = ip->second->events();
+                        for (MusECore::iEvent ie = el->begin(); ie != el->end(); ++ie) {
+                              MusECore::Event e = ie->second;
+                              if ((e.type() == MusECore::Controller) && (e.dataA() == cl->num())) {
                                     used = true;
                                     break;
                                     }
@@ -629,7 +631,7 @@ void CtrlPanel::ctrlPopup()
       delete pop;
       
       if (rv == 1) {    // special case velocity
-            emit controllerChanged(CTRL_VELOCITY);
+            emit controllerChanged(MusECore::CTRL_VELOCITY);
             }
       else if (rv == 2) {
             //
@@ -642,12 +644,12 @@ void CtrlPanel::ctrlPopup()
             // current instrument
             //
             MidiInstrument* instr   = port->instrument();
-            MidiControllerList* mcl = instr->controller();
-            for (iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
+            MusECore::MidiControllerList* mcl = instr->controller();
+            for (iMusECore::MidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
             {
                 int num = ci->second->num();
                 if (isDrum && ((num & 0xff) == 0xff))
-                  num = (num & ~0xff) + drumMap[curDrumInstrument].anote;
+                  num = (num & ~0xff) + MusEGlobal::drumMap[curDrumInstrument].anote;
                 
                 if(cll->find(channel, num) == cll->end())
                   pop1->addAction(ci->second->name());
@@ -655,13 +657,13 @@ void CtrlPanel::ctrlPopup()
             QAction *act2 = pop1->exec(selCtrl->mapToGlobal(QPoint(0,0)));
             if (act2) {
                   QString s = act2->text();
-                  MidiController* c;
-                  for (iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) {
+                  MusECore::MidiController* c;
+                  for (iMusECore::MidiController ci = mcl->begin(); ci != mcl->end(); ++ci) {
                         c = ci->second;
                         if (c->name() == s) {
                               int num = c->num();
                               if (isDrum && ((num & 0xff) == 0xff))
-                                num = (num & ~0xff) + drumMap[curDrumInstrument].anote;
+                                num = (num & ~0xff) + MusEGlobal::drumMap[curDrumInstrument].anote;
                               
                               if(cll->find(channel, num) == cll->end())
                               {
@@ -669,7 +671,7 @@ void CtrlPanel::ctrlPopup()
                                 
                                 cll->add(channel, vl);
                                 emit controllerChanged(c->num());
-                                //song->update(SC_MIDI_CONTROLLER_ADD);
+                                //MusEGlobal::song->update(SC_MIDI_CONTROLLER_ADD);
                               }
                               else 
                                 emit controllerChanged(c->num());
@@ -681,10 +683,10 @@ void CtrlPanel::ctrlPopup()
             }
       else {
             ///QString s = act->text();
-            iMidiCtrlValList i = cll->begin();
+            MusECore::iMidiCtrlValList i = cll->begin();
             for (; i != cll->end(); ++i) {
                   MidiCtrlValList* cl = i->second;
-                  MidiController* c   = port->midiController(cl->num());
+                  MusECore::MidiController* c   = port->midiController(cl->num());
                   if (c->name() == s) {
                         emit controllerChanged(c->num());
                         break;
@@ -709,35 +711,35 @@ void CtrlPanel::ctrlPopup()
       {
       //---------------------------------------------------
       // build list of midi controllers for current
-      // MidiPort/channel
+      // MusECore::MidiPort/channel
       //---------------------------------------------------
 
-      PartList* parts  = editor->parts();
-      Part* part       = editor->curCanvasPart();
-      MidiTrack* track = (MidiTrack*)(part->track());
+      MusECore::PartList* parts  = editor->parts();
+      MusECore::Part* part       = editor->curCanvasPart();
+      MusECore::MidiTrack* track = (MusECore::MidiTrack*)(part->track());
       int channel      = track->outChannel();
-      MidiPort* port   = &midiPorts[track->outPort()];
+      MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
       int curDrumInstrument = editor->curDrumInstrument();
-      bool isDrum      = track->type() == Track::DRUM; //FINDMICHJETZT ist das wichtig?
-      MidiInstrument* instr = port->instrument();
-      MidiControllerList* mcl = instr->controller();
+      bool isDrum      = track->type() == MusECore::Track::DRUM; //FINDMICHJETZT ist das wichtig?
+      MusECore::MidiInstrument* instr = port->instrument();
+      MusECore::MidiControllerList* mcl = instr->controller();
 
-      MidiCtrlValListList* cll = port->controller();
+      MusECore::MidiCtrlValListList* cll = port->controller();
       int min = channel << 24;
       int max = min + 0x1000000;
 
       std::list<CI> sList;
       typedef std::list<CI>::iterator isList;
 
-      for (iMidiCtrlValList i = cll->lower_bound(min); i != cll->lower_bound(max); ++i) {
-            MidiCtrlValList* cl = i->second;
-            MidiController* c   = port->midiController(cl->num());
+      for (MusECore::iMidiCtrlValList i = cll->lower_bound(min); i != cll->lower_bound(max); ++i) {
+            MusECore::MidiCtrlValList* cl = i->second;
+            MusECore::MidiController* c   = port->midiController(cl->num());
             // dont show drum specific controller if not a drum track
             if ((c->num() & 0xff) == 0xff) {
                   if (!isDrum)
                         continue;
                   // only show controller for curDrumInstrument:
-                  if ((cl->num() & 0xff) != drumMap[curDrumInstrument].anote) {
+                  if ((cl->num() & 0xff) != MusEGlobal::drumMap[curDrumInstrument].anote) {
                         continue;
                         }
                   }
@@ -749,11 +751,11 @@ void CtrlPanel::ctrlPopup()
                   }
             if (i == sList.end()) {
                   bool used = false;
-                  for (iPart ip = parts->begin(); ip != parts->end(); ++ip) {
-                        EventList* el = ip->second->events();
-                        for (iEvent ie = el->begin(); ie != el->end(); ++ie) {
-                              Event e = ie->second;
-                              if ((e.type() == Controller) && (e.dataA() == cl->num())) {
+                  for (MusECore::iPart ip = parts->begin(); ip != parts->end(); ++ip) {
+                        MusECore::EventList* el = ip->second->events();
+                        for (MusECore::iEvent ie = el->begin(); ie != el->end(); ++ie) {
+                              MusECore::Event e = ie->second;
+                              if ((e.type() == MusECore::Controller) && (e.dataA() == cl->num())) {
                                     used = true;
                                     break;
                                     }
@@ -769,15 +771,15 @@ void CtrlPanel::ctrlPopup()
                   //  ie they 'overtake' definition of a global controller such that the
                   //  global def is no longer available.
                   sList.push_back(CI(cnum, 
-                                  isinstr ? midiCtrlNumString(cnum, true) + c->name() : midiCtrlName(cnum, true), 
+                                  isinstr ? MusECore::midiCtrlNumString(cnum, true) + c->name() : MusECore::midiCtrlName(cnum, true), 
                                   used, isinstr));
                   }
             }
       
-      MusEWidget::PopupMenu* ctrlMainPop = new MusEWidget::PopupMenu;
+      MusEGui::PopupMenu* ctrlMainPop = new MusEGui::PopupMenu;
       
       //ctrlMainPop->addSeparator();
-      ctrlMainPop->addAction(new MusEWidget::MenuTitleItem(tr("Instrument-defined"), ctrlMainPop));
+      ctrlMainPop->addAction(new MusEGui::MenuTitleItem(tr("Instrument-defined"), ctrlMainPop));
       
       //ctrlMainPop->addAction(QIcon(*configureIcon), tr("Add ..."))->setData(max + 1);
       
@@ -796,7 +798,7 @@ void CtrlPanel::ctrlPopup()
       //ctrlMainPop->addAction(QIcon(*midi_edit_instrumentIcon), tr("Edit instruments"))->setData(max + 2);
 
       ctrlMainPop->addSeparator();
-      ctrlMainPop->addAction(new MusEWidget::MenuTitleItem(tr("Others"), ctrlMainPop));
+      ctrlMainPop->addAction(new MusEGui::MenuTitleItem(tr("Others"), ctrlMainPop));
       
       //ctrlMainPop->addAction(QIcon(*configureIcon), tr("Add ..."))->setData(max + 3);
       
@@ -830,12 +832,12 @@ void CtrlPanel::ctrlPopup()
       delete ctrlMainPop;
       
       if (rv == max) {    // special case velocity
-            emit controllerChanged(CTRL_VELOCITY);
+            emit controllerChanged(MusECore::CTRL_VELOCITY);
             }
       else if (rv == max + 1) {  // add new instrument controller
             
-            MusEWidget::PopupMenu * ctrlSubPop = new MusEWidget::PopupMenu(this);
-            ctrlSubPop->addAction(new MusEWidget::MenuTitleItem(tr("Instrument-defined"), ctrlSubPop));
+            MusEGui::PopupMenu * ctrlSubPop = new MusEGui::PopupMenu(this);
+            ctrlSubPop->addAction(new MusEGui::MenuTitleItem(tr("Instrument-defined"), ctrlSubPop));
             
             //
             // populate popup with all controllers available for
@@ -844,7 +846,7 @@ void CtrlPanel::ctrlPopup()
             
             //ctrlSubPop->addAction(QIcon(*midi_edit_instrumentIcon), tr("Edit instruments"))->setData(max + 2);
             
-            for (iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
+            for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
             {
                 int num = ci->second->num();
                 if((num & 0xff) == 0xff)
@@ -852,15 +854,15 @@ void CtrlPanel::ctrlPopup()
                   // dont show drum specific controller if not a drum track
                   if(!isDrum)
                     continue;
-                  num = (num & ~0xff) + drumMap[curDrumInstrument].anote;
+                  num = (num & ~0xff) + MusEGlobal::drumMap[curDrumInstrument].anote;
                 }    
 
                 if(cll->find(channel, num) == cll->end())
-                  ctrlSubPop->addAction(midiCtrlNumString(num, true) + ci->second->name())->setData(num);
+                  ctrlSubPop->addAction(MusECore::midiCtrlNumString(num, true) + ci->second->name())->setData(num);
             }
             
             // Don't allow editing instrument if it's a synth
-            if(!port->device() || port->device()->deviceType() != MidiDevice::SYNTH_MIDI)
+            if(!port->device() || port->device()->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)
               ctrlSubPop->addAction(QIcon(*midi_edit_instrumentIcon), tr("Edit instrument ..."))->setData(max + 2);
             
             //connect(ctrlSubPop, SIGNAL(hovered(QAction*)), SLOT(ctrlSubPopHovered(QAction*)));
@@ -874,24 +876,24 @@ void CtrlPanel::ctrlPopup()
                 MusEGlobal::muse->startEditInstrument();
               else                           // select new instrument control
               {
-                MidiController* c;
-                for (iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) 
+                MusECore::MidiController* c;
+                for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) 
                 {
                       c = ci->second;
                       int num = c->num();
                       if (isDrum && ((num & 0xff) == 0xff))
-                        num = (num & ~0xff) + drumMap[curDrumInstrument].anote;
+                        num = (num & ~0xff) + MusEGlobal::drumMap[curDrumInstrument].anote;
                       
                       if(num != rv2)
                         continue;
                         
                       if(cll->find(channel, num) == cll->end())
                       {
-                        MidiCtrlValList* vl = new MidiCtrlValList(num);
+                        MusECore::MidiCtrlValList* vl = new MusECore::MidiCtrlValList(num);
                         
                         cll->add(channel, vl);
                         emit controllerChanged(c->num());
-                        //song->update(SC_MIDI_CONTROLLER_ADD);
+                        //MusEGlobal::song->update(SC_MIDI_CONTROLLER_ADD);
                       }
                       else 
                         emit controllerChanged(c->num());
@@ -906,25 +908,25 @@ void CtrlPanel::ctrlPopup()
       //      MusEGlobal::muse->startEditInstrument();
       
       else if (rv == max + 3) {             // add new other controller
-            MusEWidget::PopupMenu* ctrlSubPop = new MusEWidget::PopupMenu(this);
-            ctrlSubPop->addAction(new MusEWidget::MenuTitleItem(tr("Common Controls"), ctrlSubPop));
+            MusEGui::PopupMenu* ctrlSubPop = new MusEGui::PopupMenu(this);
+            ctrlSubPop->addAction(new MusEGui::MenuTitleItem(tr("Common Controls"), ctrlSubPop));
             
             for(int num = 0; num < 127; ++num)
               if(cll->find(channel, num) == cll->end())
-                ctrlSubPop->addAction(midiCtrlName(num, true))->setData(num);
+                ctrlSubPop->addAction(MusECore::midiCtrlName(num, true))->setData(num);
             QAction *act2 = ctrlSubPop->exec(selCtrl->mapToGlobal(QPoint(0,0)));
             if (act2) {
                   int rv2 = act2->data().toInt();
                   int num = rv2;
                   if (isDrum && ((num & 0xff) == 0xff))
-                    num = (num & ~0xff) + drumMap[curDrumInstrument].anote;
+                    num = (num & ~0xff) + MusEGlobal::drumMap[curDrumInstrument].anote;
                   if(cll->find(channel, num) == cll->end())
                   {
-                    MidiCtrlValList* vl = new MidiCtrlValList(num);
+                    MusECore::MidiCtrlValList* vl = new MusECore::MidiCtrlValList(num);
                     
                     cll->add(channel, vl);
                     emit controllerChanged(rv2);
-                    //song->update(SC_MIDI_CONTROLLER_ADD);
+                    //MusEGlobal::song->update(SC_MIDI_CONTROLLER_ADD);
                   }
                   else 
                     emit controllerChanged(rv2);
@@ -933,10 +935,10 @@ void CtrlPanel::ctrlPopup()
             }
       else {                           // Select a control
             //QString s = act->text();
-            iMidiCtrlValList i = cll->begin();
+            MusECore::iMidiCtrlValList i = cll->begin();
             for (; i != cll->end(); ++i) {
-                  MidiCtrlValList* cl = i->second;
-                  MidiController* c   = port->midiController(cl->num());
+                  MusECore::MidiCtrlValList* cl = i->second;
+                  MusECore::MidiController* c   = port->midiController(cl->num());
                   //if (c->name() == s) {
                   if (c->num() == rv) {
                         emit controllerChanged(c->num());
@@ -966,12 +968,12 @@ void CtrlPanel::ctrlRightClicked(const QPoint& p, int /*id*/)
     
   int cdi = editor->curDrumInstrument();
   int ctlnum = _ctrl->num();
-  if(_track->type() == Track::DRUM && ((ctlnum & 0xff) == 0xff) && cdi != -1)
-    //ctlnum = (ctlnum & ~0xff) | drumMap[cdi].enote;
+  if(_track->type() == MusECore::Track::DRUM && ((ctlnum & 0xff) == 0xff) && cdi != -1)
+    //ctlnum = (ctlnum & ~0xff) | MusEGlobal::drumMap[cdi].enote;
     ctlnum = (ctlnum & ~0xff) | cdi;
   
-  MidiPart* part = dynamic_cast<MidiPart*>(editor->curCanvasPart());
-  song->execMidiAutomationCtlPopup(0, part, p, ctlnum);
+  MusECore::MidiPart* part = dynamic_cast<MusECore::MidiPart*>(editor->curCanvasPart());
+  MusEGlobal::song->execMidiAutomationCtlPopup(0, part, p, ctlnum);
 }
 
 /*
@@ -985,3 +987,6 @@ void CtrlPanel::ctrlReleased(int id)
   //  _knob->selectFaceColor(false);
 }
 */
+
+} // namespace MusEGui
+

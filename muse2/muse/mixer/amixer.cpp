@@ -51,7 +51,7 @@
 //typedef std::list<Strip*> StripList;
 //static StripList stripList;
 
-namespace MusEMixer {
+namespace MusEGui {
 
 /* 
 Nov 16, 2010: After making the strips variable width, we need a way to
@@ -158,7 +158,7 @@ bool ScrollArea::viewportEvent(QEvent* event)
 //    inputs | synthis | tracks | groups | master
 //---------------------------------------------------------
 
-AudioMixerApp::AudioMixerApp(QWidget* parent, MusEConfig::MixerConfig* c)
+AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
    : QMainWindow(parent)
       {
       cfg = c;
@@ -169,8 +169,8 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEConfig::MixerConfig* c)
       setWindowIcon(*museIcon);
 
       QMenu* menuConfig = menuBar()->addMenu(tr("&Create"));
-      MusEUtil::populateAddTrack(menuConfig);
-      connect(menuConfig, SIGNAL(triggered(QAction *)), song, SLOT(addNewTrack(QAction *)));
+      MusEGui::populateAddTrack(menuConfig);
+      connect(menuConfig, SIGNAL(triggered(QAction *)), MusEGlobal::song, SLOT(addNewTrack(QAction *)));
       
       QMenu* menuView = menuBar()->addMenu(tr("&View"));
       routingId = menuView->addAction(tr("Routing"), this, SLOT(toggleRouteDialog()));
@@ -237,9 +237,9 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEConfig::MixerConfig* c)
       connect(view, SIGNAL(layoutRequest()), SLOT(setSizing()));  
       ///connect(this, SIGNAL(layoutRequest()), SLOT(setSizing()));  
       
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
-      song->update();  // calls update mixer
+      MusEGlobal::song->update();  // calls update mixer
       }
 
 /*
@@ -259,8 +259,8 @@ bool AudioMixerApp::event(QEvent* event)
 
 //void AudioMixerApp::addNewTrack(QAction* action)
 //{
-  //song->addNewTrack(action, MusEGlobal::muse->arranger()->curTrack());  // Insert at current selected track.
-//  song->addNewTrack(action);  // Add at end.
+  //MusEGlobal::song->addNewTrack(action, MusEGlobal::muse->arranger()->curTrack());  // Insert at current selected track.
+//  MusEGlobal::song->addNewTrack(action);  // Add at end.
 //}
 
 void AudioMixerApp::setSizing()
@@ -292,7 +292,7 @@ void AudioMixerApp::setSizing()
 //   addStrip
 //---------------------------------------------------------
 
-void AudioMixerApp::addStrip(Track* t, int idx)
+void AudioMixerApp::addStrip(MusECore::Track* t, int idx)
       {
       StripList::iterator si = stripList.begin();
       for (int i = 0; i < idx; ++i) {
@@ -314,9 +314,9 @@ void AudioMixerApp::addStrip(Track* t, int idx)
       else {
             Strip* strip;
             if (t->isMidiTrack())
-                  strip = new MidiStrip(central, (MidiTrack*)t);
+                  strip = new MidiStrip(central, (MusECore::MidiTrack*)t);
             else
-                  strip = new AudioStrip(central, (AudioTrack*)t);
+                  strip = new AudioStrip(central, (MusECore::AudioTrack*)t);
             layout->insertWidget(idx, strip);
             stripList.insert(si, strip);
             strip->show();  
@@ -360,7 +360,7 @@ void AudioMixerApp::updateMixer(UpdateAction action)
       showAuxTracksId->setChecked(cfg->showAuxTracks);
       showSyntiTracksId->setChecked(cfg->showSyntiTracks);
 
-      int auxsSize = song->auxs()->size();
+      int auxsSize = MusEGlobal::song->auxs()->size();
       if ((action == UPDATE_ALL) || (auxsSize != oldAuxsSize)) {
             clear();
             oldAuxsSize = auxsSize;
@@ -369,9 +369,9 @@ void AudioMixerApp::updateMixer(UpdateAction action)
       {
             StripList::iterator si = stripList.begin();
             for (; si != stripList.end();) {
-                  Track* track = (*si)->getTrack();
-                  TrackList* tl = song->tracks();
-                  iTrack it;
+                  MusECore::Track* track = (*si)->getTrack();
+                  MusECore::TrackList* tl = MusEGlobal::song->tracks();
+                  MusECore::iTrack it;
                   for (it = tl->begin(); it != tl->end(); ++it) {
                         if (*it == track)
                               break;
@@ -404,7 +404,7 @@ void AudioMixerApp::updateMixer(UpdateAction action)
             StripList::iterator si = stripList.begin();
             for (; si != stripList.end(); ++i) 
             {
-                  Track* track = (*si)->getTrack();
+                  MusECore::Track* track = (*si)->getTrack();
                   if(!track->isMidiTrack())
                   {
                     ++si;
@@ -428,11 +428,11 @@ void AudioMixerApp::updateMixer(UpdateAction action)
             //  generate Midi channel/port Strips
             //---------------------------------------------------
       
-            MidiTrackList* mtl = song->midis();
-            for (iMidiTrack i = mtl->begin(); i != mtl->end(); ++i) 
+            MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
+            for (MusECore::iMidiTrack i = mtl->begin(); i != mtl->end(); ++i) 
             {
-              MidiTrack* mt = *i;
-              if((mt->type() == Track::MIDI && cfg->showMidiTracks) || (mt->type() == Track::DRUM && cfg->showDrumTracks) || (mt->type() == Track::NEW_DRUM && cfg->showNewDrumTracks)) 
+              MusECore::MidiTrack* mt = *i;
+              if((mt->type() == MusECore::Track::MIDI && cfg->showMidiTracks) || (mt->type() == MusECore::Track::DRUM && cfg->showDrumTracks) || (mt->type() == MusECore::Track::NEW_DRUM && cfg->showNewDrumTracks)) 
                 addStrip(*i, idx++);
             }
       
@@ -454,8 +454,8 @@ void AudioMixerApp::updateMixer(UpdateAction action)
 
       if(cfg->showInputTracks)
       {
-        InputList* itl = song->inputs();
-        for (iAudioInput i = itl->begin(); i != itl->end(); ++i)
+        MusECore::InputList* itl = MusEGlobal::song->inputs();
+        for (MusECore::iAudioInput i = itl->begin(); i != itl->end(); ++i)
             addStrip(*i, idx++);
       }
       
@@ -465,8 +465,8 @@ void AudioMixerApp::updateMixer(UpdateAction action)
 
       if(cfg->showSyntiTracks)
       {
-        SynthIList* sl = song->syntis();
-        for (iSynthI i = sl->begin(); i != sl->end(); ++i)
+        MusECore::SynthIList* sl = MusEGlobal::song->syntis();
+        for (MusECore::iSynthI i = sl->begin(); i != sl->end(); ++i)
             addStrip(*i, idx++);
       }
       
@@ -476,8 +476,8 @@ void AudioMixerApp::updateMixer(UpdateAction action)
 
       if(cfg->showWaveTracks)
       {
-        WaveTrackList* wtl = song->waves();
-        for (iWaveTrack i = wtl->begin(); i != wtl->end(); ++i)
+	MusECore::WaveTrackList* wtl = MusEGlobal::song->waves();
+        for (MusECore::iWaveTrack i = wtl->begin(); i != wtl->end(); ++i)
             addStrip(*i, idx++);
       }
       
@@ -485,11 +485,11 @@ void AudioMixerApp::updateMixer(UpdateAction action)
       //  generate Midi channel/port Strips
       //---------------------------------------------------
 
-      MidiTrackList* mtl = song->midis();
-      for (iMidiTrack i = mtl->begin(); i != mtl->end(); ++i) 
+      MusECore::MidiTrackList* mtl = MusEGlobal::song->midis();
+      for (MusECore::iMidiTrack i = mtl->begin(); i != mtl->end(); ++i) 
       {
-        MidiTrack* mt = *i;
-        if((mt->type() == Track::MIDI && cfg->showMidiTracks) || (mt->type() == Track::DRUM && cfg->showDrumTracks) || (mt->type() == Track::NEW_DRUM && cfg->showNewDrumTracks)) 
+        MusECore::MidiTrack* mt = *i;
+        if((mt->type() == MusECore::Track::MIDI && cfg->showMidiTracks) || (mt->type() == MusECore::Track::DRUM && cfg->showDrumTracks) || (mt->type() == MusECore::Track::NEW_DRUM && cfg->showNewDrumTracks)) 
           addStrip(*i, idx++);
       }
 
@@ -499,8 +499,8 @@ void AudioMixerApp::updateMixer(UpdateAction action)
 
       if(cfg->showGroupTracks)
       {
-        GroupList* gtl = song->groups();
-        for (iAudioGroup i = gtl->begin(); i != gtl->end(); ++i)
+        MusECore::GroupList* gtl = MusEGlobal::song->groups();
+        for (MusECore::iAudioGroup i = gtl->begin(); i != gtl->end(); ++i)
             addStrip(*i, idx++);
       }
       
@@ -510,8 +510,8 @@ void AudioMixerApp::updateMixer(UpdateAction action)
 
       if(cfg->showAuxTracks)
       {
-        AuxList* al = song->auxs();
-        for (iAudioAux i = al->begin(); i != al->end(); ++i)
+        MusECore::AuxList* al = MusEGlobal::song->auxs();
+        for (MusECore::iAudioAux i = al->begin(); i != al->end(); ++i)
             addStrip(*i, idx++);
       }
       
@@ -521,8 +521,8 @@ void AudioMixerApp::updateMixer(UpdateAction action)
 
       if(cfg->showOutputTracks)
       {
-        OutputList* otl = song->outputs();
-        for (iAudioOutput i = otl->begin(); i != otl->end(); ++i)
+        MusECore::OutputList* otl = MusEGlobal::song->outputs();
+        for (MusECore::iAudioOutput i = otl->begin(); i != otl->end(); ++i)
             addStrip(*i, idx++);
       }
       
@@ -601,7 +601,7 @@ void AudioMixerApp::toggleRouteDialog()
 void AudioMixerApp::showRouteDialog(bool on)
       {
       if (on && routingDialog == 0) {
-            routingDialog = new MusEDialog::RouteDialog(this);
+            routingDialog = new MusEGui::RouteDialog(this);
             connect(routingDialog, SIGNAL(closed()), SLOT(routingDialogClosed()));
             }
       if (routingDialog)
@@ -707,9 +707,9 @@ void AudioMixerApp::showSyntiTracksChanged(bool v)
 //   write
 //---------------------------------------------------------
 
-//void AudioMixerApp::write(Xml& xml, const char* name)
-void AudioMixerApp::write(int level, Xml& xml)
-//void AudioMixerApp::write(int level, Xml& xml, const char* name)
+//void AudioMixerApp::write(MusECore::Xml& xml, const char* name)
+void AudioMixerApp::write(int level, MusECore::Xml& xml)
+//void AudioMixerApp::write(int level, MusECore::Xml& xml, const char* name)
       {
       //xml.stag(QString(name));
       //xml.tag(level++, name.toLatin1());
@@ -735,4 +735,4 @@ void AudioMixerApp::write(int level, Xml& xml)
       xml.etag(level, "Mixer");
       }
 
-} // namespace MusEMixer
+} // namespace MusEGui

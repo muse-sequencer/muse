@@ -86,7 +86,7 @@
     </widget>
    </item>
    <item row="2" column="0">
-    <widget class="MusEWidget::SpinBox" name="iOutputChannel">
+    <widget class="MusEGui::SpinBox" name="iOutputChannel">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -247,7 +247,7 @@
     </layout>
    </item>
    <item row="4" column="0">
-    <widget class="MusEWidget::SpinBox" name="iTransp">
+    <widget class="MusEGui::SpinBox" name="iTransp">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -291,7 +291,7 @@
     </widget>
    </item>
    <item row="5" column="0">
-    <widget class="MusEWidget::SpinBox" name="iVerz">
+    <widget class="MusEGui::SpinBox" name="iVerz">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -332,7 +332,7 @@
     </widget>
    </item>
    <item row="6" column="0">
-    <widget class="MusEWidget::SpinBox" name="iLen">
+    <widget class="MusEGui::SpinBox" name="iLen">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -376,7 +376,7 @@
     </widget>
    </item>
    <item row="7" column="0">
-    <widget class="MusEWidget::SpinBox" name="iAnschl">
+    <widget class="MusEGui::SpinBox" name="iAnschl">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -423,7 +423,7 @@
     </widget>
    </item>
    <item row="8" column="0">
-    <widget class="MusEWidget::SpinBox" name="iKompr">
+    <widget class="MusEGui::SpinBox" name="iKompr">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -575,7 +575,7 @@
     </layout>
    </item>
    <item row="12" column="0">
-    <widget class="MusEWidget::SpinBox" name="iHBank">
+    <widget class="MusEGui::SpinBox" name="iHBank">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -628,7 +628,7 @@
     </widget>
    </item>
    <item row="13" column="0">
-    <widget class="MusEWidget::SpinBox" name="iLBank">
+    <widget class="MusEGui::SpinBox" name="iLBank">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -681,7 +681,7 @@
     </widget>
    </item>
    <item row="14" column="0">
-    <widget class="MusEWidget::SpinBox" name="iProgram">
+    <widget class="MusEGui::SpinBox" name="iProgram">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -748,7 +748,7 @@
     </layout>
    </item>
    <item row="15" column="0">
-    <widget class="MusEWidget::SpinBox" name="iLautst">
+    <widget class="MusEGui::SpinBox" name="iLautst">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -815,7 +815,7 @@
     </layout>
    </item>
    <item row="16" column="0">
-    <widget class="MusEWidget::SpinBox" name="iPan">
+    <widget class="MusEGui::SpinBox" name="iPan">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -905,7 +905,7 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>MusEWidget::SpinBox</class>
+   <class>MusEGui::SpinBox</class>
    <extends>QSpinBox</extends>
    <header location="global">spinbox.h</header>
   </customwidget>

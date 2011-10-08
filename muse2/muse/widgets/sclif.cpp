@@ -24,7 +24,7 @@
 
 #include "sclif.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //  ScaleIf - An interface class for widgets containing a scale
 //
@@ -216,4 +216,4 @@ void ScaleIf::setScaleMaxMinor(int ticks)
             }
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

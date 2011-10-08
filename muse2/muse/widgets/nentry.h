@@ -30,7 +30,7 @@ class QLabel;
 class QLineEdit;
 class QTimer;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 class NentryFilter : public QObject {
       Q_OBJECT
@@ -99,6 +99,6 @@ class Nentry : public QFrame {
       bool contextMenu(QContextMenuEvent*);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif

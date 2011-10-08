@@ -30,7 +30,7 @@
 class QWheelEvent;
 class QMouseEvent;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   SigLabel
@@ -61,7 +61,7 @@ class SigLabel : public QLabel {
       void setFrame(bool);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

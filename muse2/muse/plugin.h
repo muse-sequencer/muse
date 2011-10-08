@@ -61,25 +61,16 @@ class QToolButton;
 class QToolButton;
 class QTreeWidget;
 
-class Xml;
-
-namespace MusEWidget {
-class DoubleLabel;
+namespace MusEGui {
+class PluginGui;
 }
 
+
+namespace MusECore {
 class AudioTrack;
+class Xml;
+
 class MidiController;
-
-//---------------------------------------------------------
-//   PluginLoader
-//---------------------------------------------------------
-
-class PluginLoader : public QUiLoader
-{
-   public:
-      virtual QWidget* createWidget(const QString & className, QWidget * parent = 0, const QString & name = QString()); 
-      PluginLoader(QObject * parent = 0) : QUiLoader(parent) {}
-};
 
 /*
 //---------------------------------------------------------
@@ -259,70 +250,6 @@ struct Port {
       };
 
 //---------------------------------------------------------
-//   GuiParam
-//---------------------------------------------------------
-
-struct GuiParam {
-      enum {
-            GUI_SLIDER, GUI_SWITCH, GUI_METER
-            };
-      int type;
-      int hint;
-      
-      MusEWidget::DoubleLabel* label;
-      QWidget* actuator;  // Slider or Toggle Button (SWITCH)
-      };
-
-//---------------------------------------------------------
-//   GuiWidgets
-//---------------------------------------------------------
-
-struct GuiWidgets {
-      enum {
-            SLIDER, DOUBLE_LABEL, QCHECKBOX, QCOMBOBOX
-            };
-      QWidget* widget;
-      int type;
-      //int param;
-      unsigned long param;   // p4.0.21
-      };
-
-class PluginI;
-class PluginGui;
-
-/*
-class PluginBase 
-{
-   public:
-      bool on() const        { return _on; }
-      void setOn(bool val)   { _on = val; }
-      int pluginID()                { return plugin()->id(); }
-      int id()                      { return _id; }
-      QString pluginLabel() const    { return _plugin->label(); }
-      QString name() const           { return _name; }
-      
-      AudioTrack* track()           { return _track; }
-      
-      void enableController(int i, bool v = true)   { controls[i].enCtrl = v; }
-      bool controllerEnabled(int i) const           { return controls[i].enCtrl; }
-      bool controllerEnabled2(int i) const          { return controls[i].en2Ctrl; }
-      void updateControllers();
-      
-      void writeConfiguration(int level, Xml& xml);
-      bool readConfiguration(Xml& xml, bool readPreset=false);
-      
-      int parameters() const           { return controlPorts; }
-      void setParam(int i, double val) { controls[i].tmpVal = val; }
-      double param(int i) const        { return controls[i].val; }
-      const char* paramName(int i)     { return _plugin->portName(controls[i].idx); }
-      LADSPA_PortRangeHint range(int i) 
-      {
-            return _plugin->range(controls[i].idx);
-      }
-};
-*/
-
-//---------------------------------------------------------
 //   PluginIBase 
 //---------------------------------------------------------
 
@@ -330,7 +257,7 @@ class PluginIBase
 {
    protected:
       ControlFifo _controlFifo;
-      PluginGui* _gui;
+      MusEGui::PluginGui* _gui;
 
       void makeGui();
 
@@ -382,60 +309,41 @@ class PluginIBase
       
       //virtual void showGui(bool) = 0;         // p4.0.20
       //virtual void showNativeGui(bool) = 0;   //
-      PluginGui* gui() const { return _gui; }
+      MusEGui::PluginGui* gui() const { return _gui; }
       void deleteGui();
 };
 
-//---------------------------------------------------------
-//   PluginGui
-//---------------------------------------------------------
-
-class PluginGui : public QMainWindow {
-      Q_OBJECT
-
-      //PluginI* plugin;        // plugin instance
-      PluginIBase* plugin;        // plugin instance
-      
-      GuiParam* params;
-      GuiParam* paramsOut;
-      //int nobj;               
-      unsigned long nobj;             // number of widgets in gw      // p4.0.21
-      GuiWidgets* gw;
-
-      QAction* onOff;
-      QWidget* mw;            // main widget
-      QScrollArea* view;
-
-      void updateControls();
-      void getPluginConvertedValues(LADSPA_PortRangeHint range,
-                     double &lower, double &upper, double &dlower, double &dupper, double &dval);
-   private slots:
-      void load();
-      void save();
-      void bypassToggled(bool);
-      void sliderChanged(double, int);
-      void labelChanged(double, int);
-      void guiParamChanged(int);
-      void ctrlPressed(int);
-      void ctrlReleased(int);
-      void guiParamPressed(int);
-      void guiParamReleased(int);
-      void guiSliderPressed(int);
-      void guiSliderReleased(int);
-      void ctrlRightClicked(const QPoint &, int);
-      void guiSliderRightClicked(const QPoint &, int);
-
-   protected slots:
-      void heartBeat();
-
+/*
+class PluginBase 
+{
    public:
-      //PluginGui(PluginI*);
-      PluginGui(PluginIBase*);
+      bool on() const        { return _on; }
+      void setOn(bool val)   { _on = val; }
+      int pluginID()                { return plugin()->id(); }
+      int id()                      { return _id; }
+      QString pluginLabel() const    { return _plugin->label(); }
+      QString name() const           { return _name; }
       
-      ~PluginGui();
-      void setOn(bool);
-      void updateValues();
-      };
+      AudioTrack* track()           { return _track; }
+      
+      void enableController(int i, bool v = true)   { controls[i].enCtrl = v; }
+      bool controllerEnabled(int i) const           { return controls[i].enCtrl; }
+      bool controllerEnabled2(int i) const          { return controls[i].en2Ctrl; }
+      void updateControllers();
+      
+      void writeConfiguration(int level, Xml& xml);
+      bool readConfiguration(Xml& xml, bool readPreset=false);
+      
+      int parameters() const           { return controlPorts; }
+      void setParam(int i, double val) { controls[i].tmpVal = val; }
+      double param(int i) const        { return controls[i].val; }
+      const char* paramName(int i)     { return _plugin->portName(controls[i].idx); }
+      LADSPA_PortRangeHint range(int i) 
+      {
+            return _plugin->range(controls[i].idx);
+      }
+};
+*/
 
 //---------------------------------------------------------
 //   PluginI
@@ -627,6 +535,119 @@ class Pipeline : public std::vector<PluginI*> {
 typedef Pipeline::iterator iPluginI;
 typedef Pipeline::const_iterator ciPluginI;
 
+extern void initPlugins();
+
+//extern bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, int port, float* val);
+//extern void ladspaControlRange(const LADSPA_Descriptor* plugin, int i, float* min, float* max);
+//extern bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, int port, int ctlnum, int* min, int* max, int* def);
+//extern float midi2LadspaValue(const LADSPA_Descriptor* plugin, int port, int ctlnum, int val);
+// p4.0.21
+extern bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long port, float* val);
+extern void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, float* min, float* max);
+extern bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned long port, int ctlnum, int* min, int* max, int* def);
+extern float midi2LadspaValue(const LADSPA_Descriptor* plugin, unsigned long port, int ctlnum, int val);
+extern CtrlValueType ladspaCtrlValueType(const LADSPA_Descriptor* plugin, int port);
+extern CtrlList::Mode ladspaCtrlMode(const LADSPA_Descriptor* plugin, int port);
+//extern MidiController* ladspa2MidiController(const LADSPA_Descriptor* plugin, unsigned long port, int ctlnum);
+
+} // namespace MusECore
+
+
+namespace MusEGui {
+class DoubleLabel;
+class PluginGui;
+
+//---------------------------------------------------------
+//   PluginLoader
+//---------------------------------------------------------
+
+class PluginLoader : public QUiLoader
+{
+   public:
+      virtual QWidget* createWidget(const QString & className, QWidget * parent = 0, const QString & name = QString()); 
+      PluginLoader(QObject * parent = 0) : QUiLoader(parent) {}
+};
+
+//---------------------------------------------------------
+//   GuiParam
+//---------------------------------------------------------
+
+struct GuiParam {
+      enum {
+            GUI_SLIDER, GUI_SWITCH, GUI_METER
+            };
+      int type;
+      int hint;
+      
+      MusEGui::DoubleLabel* label;
+      QWidget* actuator;  // Slider or Toggle Button (SWITCH)
+      };
+
+//---------------------------------------------------------
+//   GuiWidgets
+//---------------------------------------------------------
+
+struct GuiWidgets {
+      enum {
+            SLIDER, DOUBLE_LABEL, QCHECKBOX, QCOMBOBOX
+            };
+      QWidget* widget;
+      int type;
+      //int param;
+      unsigned long param;   // p4.0.21
+      };
+
+//---------------------------------------------------------
+//   PluginGui
+//---------------------------------------------------------
+
+class PluginGui : public QMainWindow {
+      Q_OBJECT
+
+      //PluginI* plugin;        // plugin instance
+      MusECore::PluginIBase* plugin;        // plugin instance
+      
+      GuiParam* params;
+      GuiParam* paramsOut;
+      //int nobj;               
+      unsigned long nobj;             // number of widgets in gw      // p4.0.21
+      GuiWidgets* gw;
+
+      QAction* onOff;
+      QWidget* mw;            // main widget
+      QScrollArea* view;
+
+      void updateControls();
+      void getPluginConvertedValues(LADSPA_PortRangeHint range,
+                     double &lower, double &upper, double &dlower, double &dupper, double &dval);
+   private slots:
+      void load();
+      void save();
+      void bypassToggled(bool);
+      void sliderChanged(double, int);
+      void labelChanged(double, int);
+      void guiParamChanged(int);
+      void ctrlPressed(int);
+      void ctrlReleased(int);
+      void guiParamPressed(int);
+      void guiParamReleased(int);
+      void guiSliderPressed(int);
+      void guiSliderReleased(int);
+      void ctrlRightClicked(const QPoint &, int);
+      void guiSliderRightClicked(const QPoint &, int);
+
+   protected slots:
+      void heartBeat();
+
+   public:
+      //PluginGui(MusECore::PluginI*);
+      PluginGui(MusECore::PluginIBase*);
+      
+      ~PluginGui();
+      void setOn(bool);
+      void updateValues();
+      };
+
 //---------------------------------------------------------
 //   PluginDialog
 //---------------------------------------------------------
@@ -645,8 +666,8 @@ class PluginDialog : public QDialog {
 
    public:
       PluginDialog(QWidget* parent=0);
-      static Plugin* getPlugin(QWidget* parent);
-      Plugin* value();
+      static MusECore::Plugin* getPlugin(QWidget* parent);
+      MusECore::Plugin* value();
       void accept();
 
    public slots:
@@ -663,21 +684,11 @@ class PluginDialog : public QDialog {
       static QStringList sortItems;
       };
 
-extern void initPlugins();
-extern PluginList plugins;
+}
 
-//extern bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, int port, float* val);
-//extern void ladspaControlRange(const LADSPA_Descriptor* plugin, int i, float* min, float* max);
-//extern bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, int port, int ctlnum, int* min, int* max, int* def);
-//extern float midi2LadspaValue(const LADSPA_Descriptor* plugin, int port, int ctlnum, int val);
-// p4.0.21
-extern bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long port, float* val);
-extern void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, float* min, float* max);
-extern bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned long port, int ctlnum, int* min, int* max, int* def);
-extern float midi2LadspaValue(const LADSPA_Descriptor* plugin, unsigned long port, int ctlnum, int val);
-extern CtrlValueType ladspaCtrlValueType(const LADSPA_Descriptor* plugin, int port);
-extern CtrlList::Mode ladspaCtrlMode(const LADSPA_Descriptor* plugin, int port);
-//extern MidiController* ladspa2MidiController(const LADSPA_Descriptor* plugin, unsigned long port, int ctlnum);
 
+namespace MusEGlobal {
+extern MusECore::PluginList plugins;
+}
 #endif
 

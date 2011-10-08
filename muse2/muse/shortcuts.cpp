@@ -36,6 +36,7 @@
 #include <QTranslator>
 #include <QKeySequence>
 
+namespace MusEGui {
 
 ShortCut shortcuts[SHRT_NUM_OF_ELEMENTS];
 void defShrt(int shrt, int key, const char* descr, int type, const char* xml)
@@ -349,7 +350,7 @@ int getShrtByTag(const char* xml)
       return -1;
       }
 
-void writeShortCuts(int level, Xml& xml)
+void writeShortCuts(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "shortcuts");
       for (int i=0; i < SHRT_NUM_OF_ELEMENTS; i++) {
@@ -359,16 +360,16 @@ void writeShortCuts(int level, Xml& xml)
       xml.etag(level, "shortcuts");
       }
 
-void readShortCuts(Xml& xml)
+void readShortCuts(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
-            if (token == Xml::Error || token == Xml::End)
+            MusECore::Xml::Token token = xml.parse();
+            if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
                   break;
 
             const QString& tag = xml.s1();
             switch (token) {
-                  case Xml::TagStart: {
+                  case MusECore::Xml::TagStart: {
                         if (tag.length()) {
                               int index = getShrtByTag(tag.toAscii().constData());
                               if (index == -1) //No such tag found
@@ -380,7 +381,7 @@ void readShortCuts(Xml& xml)
                                     }
                               }
                         }
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "shortcuts")
                               return;
                   default:
@@ -388,3 +389,5 @@ void readShortCuts(Xml& xml)
                   }
             }
       }
+
+} // namespace MusEGui

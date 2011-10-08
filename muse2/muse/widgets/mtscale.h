@@ -26,7 +26,7 @@
 #include "view.h"
 
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   MTScale

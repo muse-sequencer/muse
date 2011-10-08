@@ -62,7 +62,7 @@
 //#include "popupmenu.h"
 #include "routepopup.h"
 
-namespace MusEMixer {
+namespace MusEGui {
 
 enum { KNOB_PAN, KNOB_VAR_SEND, KNOB_REV_SEND, KNOB_CHO_SEND };
 
@@ -73,29 +73,29 @@ enum { KNOB_PAN, KNOB_VAR_SEND, KNOB_REV_SEND, KNOB_CHO_SEND };
 void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
    const char* slot, bool enabled)
       {
-      int ctl = CTRL_PANPOT, mn, mx, v;
-      int chan  = ((MidiTrack*)track)->outChannel();
+      int ctl = MusECore::CTRL_PANPOT, mn, mx, v;
+      int chan  = ((MusECore::MidiTrack*)track)->outChannel();
       switch(idx)
       {
         //case KNOB_PAN:
-        //  ctl = CTRL_PANPOT;
+        //  ctl = MusECore::CTRL_PANPOT;
         //break;
         case KNOB_VAR_SEND:
-          ctl = CTRL_VARIATION_SEND;
+          ctl = MusECore::CTRL_VARIATION_SEND;
         break;
         case KNOB_REV_SEND:
-          ctl = CTRL_REVERB_SEND;
+          ctl = MusECore::CTRL_REVERB_SEND;
         break;
         case KNOB_CHO_SEND:
-          ctl = CTRL_CHORUS_SEND;
+          ctl = MusECore::CTRL_CHORUS_SEND;
         break;
       }
-      MidiPort* mp = &midiPorts[((MidiTrack*)track)->outPort()];
-      MidiController* mc = mp->midiController(ctl);
+      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[((MusECore::MidiTrack*)track)->outPort()];
+      MusECore::MidiController* mc = mp->midiController(ctl);
       mn = mc->minVal();
       mx = mc->maxVal();
       
-      MusEWidget::Knob* knob = new MusEWidget::Knob(this);
+      MusEGui::Knob* knob = new MusEGui::Knob(this);
       knob->setRange(double(mn), double(mx), 1.0);
       knob->setId(ctl);
       
@@ -105,12 +105,12 @@ void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
       knob->setToolTip(tt);
       knob->setEnabled(enabled);
 
-      MusEWidget::DoubleLabel* dl = new MusEWidget::DoubleLabel(0.0, double(mn), double(mx), this);
+      MusEGui::DoubleLabel* dl = new MusEGui::DoubleLabel(0.0, double(mn), double(mx), this);
       dl->setId(idx);
       dl->setSpecialText(tr("off"));
       dl->setToolTip(tr("double click on/off"));
       controller[idx].dl = dl;
-      dl->setFont(MusEConfig::config.fonts[1]);
+      dl->setFont(MusEGlobal::config.fonts[1]);
       dl->setBackgroundRole(QPalette::Mid);
       dl->setFrame(true);
       dl->setPrecision(0);
@@ -119,16 +119,16 @@ void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
 
       double dlv;
       v = mp->hwCtrlState(chan, ctl);
-      if(v == CTRL_VAL_UNKNOWN)
+      if(v == MusECore::CTRL_VAL_UNKNOWN)
       {
         //v = mc->initVal();
-        //if(v == CTRL_VAL_UNKNOWN)
+        //if(v == MusECore::CTRL_VAL_UNKNOWN)
         //  v = 0;
 //        v = mn - 1;
         int lastv = mp->lastValidHWCtrlState(chan, ctl);
-        if(lastv == CTRL_VAL_UNKNOWN)
+        if(lastv == MusECore::CTRL_VAL_UNKNOWN)
         {
-          if(mc->initVal() == CTRL_VAL_UNKNOWN)
+          if(mc->initVal() == MusECore::CTRL_VAL_UNKNOWN)
             v = 0;
           else  
             v = mc->initVal();
@@ -153,7 +153,7 @@ void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
       
       QLabel* lb = new QLabel(label, this);
       controller[idx].lb = lb;
-      lb->setFont(MusEConfig::config.fonts[1]);
+      lb->setFont(MusEGlobal::config.fonts[1]);
       lb->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       lb->setAlignment(Qt::AlignCenter);
       lb->setEnabled(enabled);
@@ -173,7 +173,7 @@ void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
 //   MidiStrip
 //---------------------------------------------------------
 
-MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
+MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
    : Strip(parent, t)
       {
       inHeartBeat = true;
@@ -182,16 +182,16 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       t->setActivity(0);
       t->setLastActivity(0);
       
-      volume      = CTRL_VAL_UNKNOWN;
-      pan         = CTRL_VAL_UNKNOWN;
-      variSend    = CTRL_VAL_UNKNOWN;
-      chorusSend  = CTRL_VAL_UNKNOWN;
-      reverbSend  = CTRL_VAL_UNKNOWN;
+      volume      = MusECore::CTRL_VAL_UNKNOWN;
+      pan         = MusECore::CTRL_VAL_UNKNOWN;
+      variSend    = MusECore::CTRL_VAL_UNKNOWN;
+      chorusSend  = MusECore::CTRL_VAL_UNKNOWN;
+      reverbSend  = MusECore::CTRL_VAL_UNKNOWN;
       
       addKnob(KNOB_VAR_SEND, tr("VariationSend"), tr("Var"), SLOT(setVariSend(double)), false);
       addKnob(KNOB_REV_SEND, tr("ReverbSend"), tr("Rev"), SLOT(setReverbSend(double)), false);
       addKnob(KNOB_CHO_SEND, tr("ChorusSend"), tr("Cho"), SLOT(setChorusSend(double)), false);
-      ///int auxsSize = song->auxs()->size();
+      ///int auxsSize = MusEGlobal::song->auxs()->size();
       ///if (auxsSize)
             //layout->addSpacing((STRIP_WIDTH/2 + 1) * auxsSize);
             ///grid->addSpacing((STRIP_WIDTH/2 + 1) * auxsSize);  // ??
@@ -200,21 +200,21 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       //    slider, label, meter
       //---------------------------------------------------
 
-      MidiPort* mp = &midiPorts[t->outPort()];
-      MidiController* mc = mp->midiController(CTRL_VOLUME);
+      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[t->outPort()];
+      MusECore::MidiController* mc = mp->midiController(MusECore::CTRL_VOLUME);
       int chan  = t->outChannel();
       int mn = mc->minVal();
       int mx = mc->maxVal();
       
-      slider = new MusEWidget::Slider(this, "vol", Qt::Vertical, MusEWidget::Slider::None,
+      slider = new MusEGui::Slider(this, "vol", Qt::Vertical, MusEGui::Slider::None,
                           QColor(100, 255, 100));
       slider->setCursorHoming(true);
       slider->setRange(double(mn), double(mx), 1.0);
       slider->setFixedWidth(20);
-      slider->setFont(MusEConfig::config.fonts[1]);
-      slider->setId(CTRL_VOLUME);
+      slider->setFont(MusEGlobal::config.fonts[1]);
+      slider->setId(MusECore::CTRL_VOLUME);
 
-      meter[0] = new MusEWidget::Meter(this, MusEWidget::Meter::LinMeter);
+      meter[0] = new MusEGui::Meter(this, MusEGui::Meter::LinMeter);
       meter[0]->setRange(0, 127.0);
       meter[0]->setFixedWidth(15);
       connect(meter[0], SIGNAL(mousePress()), this, SLOT(resetPeaks()));
@@ -225,8 +225,8 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       sliderGrid->addWidget(meter[0], 0, 1, Qt::AlignHCenter);
       grid->addLayout(sliderGrid, _curGridRow++, 0, 1, 2); 
 
-      sl = new MusEWidget::DoubleLabel(0.0, -98.0, 0.0, this);
-      sl->setFont(MusEConfig::config.fonts[1]);
+      sl = new MusEGui::DoubleLabel(0.0, -98.0, 0.0, this);
+      sl->setFont(MusEGlobal::config.fonts[1]);
       sl->setBackgroundRole(QPalette::Mid);
       sl->setSpecialText(tr("off"));
       sl->setSuffix(tr("dB"));
@@ -238,13 +238,13 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       sl->setSlider(slider);
       
       double dlv;
-      int v = mp->hwCtrlState(chan, CTRL_VOLUME);
-      if(v == CTRL_VAL_UNKNOWN)
+      int v = mp->hwCtrlState(chan, MusECore::CTRL_VOLUME);
+      if(v == MusECore::CTRL_VAL_UNKNOWN)
       {
-        int lastv = mp->lastValidHWCtrlState(chan, CTRL_VOLUME);
-        if(lastv == CTRL_VAL_UNKNOWN)
+        int lastv = mp->lastValidHWCtrlState(chan, MusECore::CTRL_VOLUME);
+        if(lastv == MusECore::CTRL_VAL_UNKNOWN)
         {
-          if(mc->initVal() == CTRL_VAL_UNKNOWN)
+          if(mc->initVal() == MusECore::CTRL_VAL_UNKNOWN)
             v = 0;
           else  
             v = mc->initVal();
@@ -259,7 +259,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
           dlv = sl->minValue() - 0.5 * (sl->minValue() - sl->off());
         else
         {  
-          dlv = -fast_log10(float(127*127)/float(v*v))*20.0;
+          dlv = -MusECore::fast_log10(float(127*127)/float(v*v))*20.0;
           if(dlv > sl->maxValue())
             dlv = sl->maxValue();
         }    
@@ -293,7 +293,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       //    record, mixdownfile
       //---------------------------------------------------
 
-      record  = new MusEWidget::TransparentToolButton(this);
+      record  = new MusEGui::TransparentToolButton(this);
       record->setBackgroundRole(QPalette::Mid);
       record->setCheckable(true);
       record->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
@@ -335,7 +335,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       
       // Special here: Must make label same size as the 'exit' button would be IF this were an audio strip...
       // (The 'exit1' icon is BIGGER than the 'record on' icon.)
-      MusEWidget::TransparentToolButton* off  = new MusEWidget::TransparentToolButton(this);
+      MusEGui::TransparentToolButton* off  = new MusEGui::TransparentToolButton(this);
       QIcon iconOff;
       iconOff.addPixmap(*exit1Icon, QIcon::Normal, QIcon::On);
       iconOff.addPixmap(*exitIcon, QIcon::Normal, QIcon::Off);
@@ -354,14 +354,14 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       dcs.sprintf("%d-%d", port + 1, channel + 1);
       dev_ch_label->setText(dcs);
       //dev_ch_label->setBackgroundColor(QColor(0, 160, 255)); // Med blue
-      //dev_ch_label->setFont(MusEConfig::config.fonts[6]);
-      dev_ch_label->setFont(MusEConfig::config.fonts[1]);
+      //dev_ch_label->setFont(MusEGlobal::config.fonts[6]);
+      dev_ch_label->setFont(MusEGlobal::config.fonts[1]);
       // Dealing with a horizontally constrained label. Ignore vertical. Use a minimum readable point size.
-      //autoAdjustFontSize(dev_ch_label, dev_ch_label->text(), false, true, MusEConfig::config.fonts[6].pointSize(), 5);
+      //autoAdjustFontSize(dev_ch_label, dev_ch_label->text(), false, true, MusEGlobal::config.fonts[6].pointSize(), 5);
       QToolTip::add(dev_ch_label, tr("output port and channel"));
       */
       
-      off  = new MusEWidget::TransparentToolButton(this);
+      off  = new MusEGui::TransparentToolButton(this);
       off->setBackgroundRole(QPalette::Mid);
       off->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       off->setCheckable(true);
@@ -381,7 +381,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       //---------------------------------------------------
 
       iR = new QToolButton();
-      iR->setFont(MusEConfig::config.fonts[1]);
+      iR->setFont(MusEGlobal::config.fonts[1]);
       iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       iR->setText(tr("iR"));
       iR->setCheckable(false);
@@ -389,7 +389,7 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       grid->addWidget(iR, _curGridRow, 0);
       connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
       oR = new QToolButton();
-      oR->setFont(MusEConfig::config.fonts[1]);
+      oR->setFont(MusEGlobal::config.fonts[1]);
       oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       oR->setText(tr("oR"));
       oR->setCheckable(false);
@@ -404,8 +404,8 @@ MidiStrip::MidiStrip(QWidget* parent, MidiTrack* t)
       //    automation mode
       //---------------------------------------------------
 
-      autoType = new MusEWidget::ComboBox();
-      autoType->setFont(MusEConfig::config.fonts[1]);
+      autoType = new MusEGui::ComboBox();
+      autoType->setFont(MusEGlobal::config.fonts[1]);
       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       autoType->setEnabled(false);
       
@@ -502,7 +502,7 @@ void MidiStrip::songChanged(int val)
       if (val & SC_CONFIG)
       {
         // Set the strip label's font.
-        //label->setFont(MusEConfig::config.fonts[1]);
+        //label->setFont(MusEGlobal::config.fonts[1]);
         setLabelFont();
       }  
     }
@@ -513,7 +513,7 @@ void MidiStrip::songChanged(int val)
 
 void MidiStrip::controlRightClicked(const QPoint &p, int id)
 {
-  song->execMidiAutomationCtlPopup((MidiTrack*)track, 0, p, id);
+  MusEGlobal::song->execMidiAutomationCtlPopup((MusECore::MidiTrack*)track, 0, p, id);
 }
 
 //---------------------------------------------------------
@@ -523,40 +523,40 @@ void MidiStrip::controlRightClicked(const QPoint &p, int id)
 void MidiStrip::labelDoubleClicked(int idx)
 {
   //int mn, mx, v;
-  //int num = CTRL_VOLUME;
+  //int num = MusECore::CTRL_VOLUME;
   int num;
   switch(idx)
   {
     case KNOB_PAN:
-      num = CTRL_PANPOT;
+      num = MusECore::CTRL_PANPOT;
     break;
     case KNOB_VAR_SEND:
-      num = CTRL_VARIATION_SEND;
+      num = MusECore::CTRL_VARIATION_SEND;
     break;
     case KNOB_REV_SEND:
-      num = CTRL_REVERB_SEND;
+      num = MusECore::CTRL_REVERB_SEND;
     break;
     case KNOB_CHO_SEND:
-      num = CTRL_CHORUS_SEND;
+      num = MusECore::CTRL_CHORUS_SEND;
     break;
     //case -1:
     default:
-      num = CTRL_VOLUME;
+      num = MusECore::CTRL_VOLUME;
     break;  
   }
-  int outport = ((MidiTrack*)track)->outPort();
-  int chan = ((MidiTrack*)track)->outChannel();
-  MidiPort* mp = &midiPorts[outport];
-  MidiController* mc = mp->midiController(num);
+  int outport = ((MusECore::MidiTrack*)track)->outPort();
+  int chan = ((MusECore::MidiTrack*)track)->outChannel();
+  MusECore::MidiPort* mp = &MusEGlobal::midiPorts[outport];
+  MusECore::MidiController* mc = mp->midiController(num);
   
   int lastv = mp->lastValidHWCtrlState(chan, num);
   int curv = mp->hwCtrlState(chan, num);
   
-  if(curv == CTRL_VAL_UNKNOWN)
+  if(curv == MusECore::CTRL_VAL_UNKNOWN)
   {
     // If no value has ever been set yet, use the current knob value 
     //  (or the controller's initial value?) to 'turn on' the controller.
-    if(lastv == CTRL_VAL_UNKNOWN)
+    if(lastv == MusECore::CTRL_VAL_UNKNOWN)
     {
       //int kiv = _ctrl->initVal());
       int kiv;
@@ -570,23 +570,23 @@ void MidiStrip::labelDoubleClicked(int idx)
         kiv = mc->maxVal();
       kiv += mc->bias();
       
-      //MidiPlayEvent ev(song->cpos(), outport, chan, ME_CONTROLLER, num, kiv);
-      MidiPlayEvent ev(0, outport, chan, ME_CONTROLLER, num, kiv);
-      audio->msgPlayMidiEvent(&ev);
+      //MusECore::MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, num, kiv);
+      MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, num, kiv);
+      MusEGlobal::audio->msgPlayMidiEvent(&ev);
     }
     else
     {
-      //MidiPlayEvent ev(song->cpos(), outport, chan, ME_CONTROLLER, num, lastv);
-      MidiPlayEvent ev(0, outport, chan, ME_CONTROLLER, num, lastv);
-      audio->msgPlayMidiEvent(&ev);
+      //MidiPlayEvent ev(MusEGlobal::song->cpos(), outport, chan, MusECore::ME_CONTROLLER, num, lastv);
+      MusECore::MidiPlayEvent ev(0, outport, chan, MusECore::ME_CONTROLLER, num, lastv);
+      MusEGlobal::audio->msgPlayMidiEvent(&ev);
     }
   }  
   else
   {
-    if(mp->hwCtrlState(chan, num) != CTRL_VAL_UNKNOWN)
-      audio->msgSetHwCtrlState(mp, chan, num, CTRL_VAL_UNKNOWN);
+    if(mp->hwCtrlState(chan, num) != MusECore::CTRL_VAL_UNKNOWN)
+      MusEGlobal::audio->msgSetHwCtrlState(mp, chan, num, MusECore::CTRL_VAL_UNKNOWN);
   }
-  song->update(SC_MIDI_CONTROLLER);
+  MusEGlobal::song->update(SC_MIDI_CONTROLLER);
 }
 
 
@@ -597,7 +597,7 @@ void MidiStrip::labelDoubleClicked(int idx)
 void MidiStrip::offToggled(bool val)
       {
       track->setOff(val);
-      song->update(SC_MUTE);
+      MusEGlobal::song->update(SC_MUTE);
       }
 
 /*
@@ -645,25 +645,25 @@ void MidiStrip::heartBeat()
 void MidiStrip::updateControls()
       {
         bool en;
-        int channel  = ((MidiTrack*)track)->outChannel();
-        MidiPort* mp = &midiPorts[((MidiTrack*)track)->outPort()];
-        MidiCtrlValListList* mc = mp->controller();
-        ciMidiCtrlValList icl;
+        int channel  = ((MusECore::MidiTrack*)track)->outChannel();
+        MusECore::MidiPort* mp = &MusEGlobal::midiPorts[((MusECore::MidiTrack*)track)->outPort()];
+        MusECore::MidiCtrlValListList* mc = mp->controller();
+        MusECore::ciMidiCtrlValList icl;
         
-          MidiController* ctrl = mp->midiController(CTRL_VOLUME);
-          int nvolume = mp->hwCtrlState(channel, CTRL_VOLUME);
-          if(nvolume == CTRL_VAL_UNKNOWN)
+          MusECore::MidiController* ctrl = mp->midiController(MusECore::CTRL_VOLUME);
+          int nvolume = mp->hwCtrlState(channel, MusECore::CTRL_VOLUME);
+          if(nvolume == MusECore::CTRL_VAL_UNKNOWN)
           {
             //if(nvolume != volume) 
             //{
-              // MusEWidget::DoubleLabel ignores the value if already set...
+              // MusEGui::DoubleLabel ignores the value if already set...
               sl->setValue(sl->off() - 1.0);
               //volume = nvolume;
             //}  
-            volume = CTRL_VAL_UNKNOWN;
-            nvolume = mp->lastValidHWCtrlState(channel, CTRL_VOLUME);
+            volume = MusECore::CTRL_VAL_UNKNOWN;
+            nvolume = mp->lastValidHWCtrlState(channel, MusECore::CTRL_VOLUME);
             //if(nvolume != volume) 
-            if(nvolume != CTRL_VAL_UNKNOWN)
+            if(nvolume != MusECore::CTRL_VAL_UNKNOWN)
             {
               nvolume -= ctrl->bias();
               //slider->blockSignals(true);
@@ -693,7 +693,7 @@ void MidiStrip::updateControls()
                 }  
                 else
                 {  
-                  double v = -fast_log10(float(127*127)/float(ivol*ivol))*20.0;
+                  double v = -MusECore::fast_log10(float(127*127)/float(ivol*ivol))*20.0;
                   if(v > sl->maxValue())
                   {
                     //printf("MidiStrip::updateControls setting volume slider label\n");
@@ -714,19 +714,19 @@ void MidiStrip::updateControls()
         
         
           KNOB* gcon = &controller[KNOB_PAN];
-          ctrl = mp->midiController(CTRL_PANPOT);
-          int npan = mp->hwCtrlState(channel, CTRL_PANPOT);
-          if(npan == CTRL_VAL_UNKNOWN)
+          ctrl = mp->midiController(MusECore::CTRL_PANPOT);
+          int npan = mp->hwCtrlState(channel, MusECore::CTRL_PANPOT);
+          if(npan == MusECore::CTRL_VAL_UNKNOWN)
           {
-            // MusEWidget::DoubleLabel ignores the value if already set...
+            // MusEGui::DoubleLabel ignores the value if already set...
             //if(npan != pan) 
             //{
               gcon->dl->setValue(gcon->dl->off() - 1.0);
               //pan = npan;
             //}
-            pan = CTRL_VAL_UNKNOWN;
-            npan = mp->lastValidHWCtrlState(channel, CTRL_PANPOT);
-            if(npan != CTRL_VAL_UNKNOWN)
+            pan = MusECore::CTRL_VAL_UNKNOWN;
+            npan = mp->lastValidHWCtrlState(channel, MusECore::CTRL_PANPOT);
+            if(npan != MusECore::CTRL_VAL_UNKNOWN)
             {
               npan -= ctrl->bias();
               if(double(npan) != gcon->knob->value())
@@ -753,7 +753,7 @@ void MidiStrip::updateControls()
           }        
               
               
-        icl = mc->find(channel, CTRL_VARIATION_SEND);
+        icl = mc->find(channel, MusECore::CTRL_VARIATION_SEND);
         en = icl != mc->end();
         
         gcon = &controller[KNOB_VAR_SEND];
@@ -766,19 +766,19 @@ void MidiStrip::updateControls()
           
         if(en)
         {
-          ctrl = mp->midiController(CTRL_VARIATION_SEND);
+          ctrl = mp->midiController(MusECore::CTRL_VARIATION_SEND);
           int nvariSend = icl->second->hwVal();
-          if(nvariSend == CTRL_VAL_UNKNOWN)
+          if(nvariSend == MusECore::CTRL_VAL_UNKNOWN)
           {
-            // MusEWidget::DoubleLabel ignores the value if already set...
+            // MusEGui::DoubleLabel ignores the value if already set...
             //if(nvariSend != variSend) 
             //{
               gcon->dl->setValue(gcon->dl->off() - 1.0);
               //variSend = nvariSend;
             //}
-            variSend = CTRL_VAL_UNKNOWN;
-            nvariSend = mp->lastValidHWCtrlState(channel, CTRL_VARIATION_SEND);
-            if(nvariSend != CTRL_VAL_UNKNOWN)
+            variSend = MusECore::CTRL_VAL_UNKNOWN;
+            nvariSend = mp->lastValidHWCtrlState(channel, MusECore::CTRL_VARIATION_SEND);
+            if(nvariSend != MusECore::CTRL_VAL_UNKNOWN)
             {
               nvariSend -= ctrl->bias();
               if(double(nvariSend) != gcon->knob->value())
@@ -801,7 +801,7 @@ void MidiStrip::updateControls()
           }  
         }
         
-        icl = mc->find(channel, CTRL_REVERB_SEND);
+        icl = mc->find(channel, MusECore::CTRL_REVERB_SEND);
         en = icl != mc->end();
         
         gcon = &controller[KNOB_REV_SEND];
@@ -814,19 +814,19 @@ void MidiStrip::updateControls()
         
         if(en)
         {
-          ctrl = mp->midiController(CTRL_REVERB_SEND);
+          ctrl = mp->midiController(MusECore::CTRL_REVERB_SEND);
           int nreverbSend = icl->second->hwVal();
-          if(nreverbSend == CTRL_VAL_UNKNOWN)
+          if(nreverbSend == MusECore::CTRL_VAL_UNKNOWN)
           {
-            // MusEWidget::DoubleLabel ignores the value if already set...
+            // MusEGui::DoubleLabel ignores the value if already set...
             //if(nreverbSend != reverbSend) 
             //{
               gcon->dl->setValue(gcon->dl->off() - 1.0);
               //reverbSend = nreverbSend;
             //}
-            reverbSend = CTRL_VAL_UNKNOWN;
-            nreverbSend = mp->lastValidHWCtrlState(channel, CTRL_REVERB_SEND);
-            if(nreverbSend != CTRL_VAL_UNKNOWN)
+            reverbSend = MusECore::CTRL_VAL_UNKNOWN;
+            nreverbSend = mp->lastValidHWCtrlState(channel, MusECore::CTRL_REVERB_SEND);
+            if(nreverbSend != MusECore::CTRL_VAL_UNKNOWN)
             {
               nreverbSend -= ctrl->bias();
               if(double(nreverbSend) != gcon->knob->value())
@@ -849,7 +849,7 @@ void MidiStrip::updateControls()
           }    
         }
         
-        icl = mc->find(channel, CTRL_CHORUS_SEND);
+        icl = mc->find(channel, MusECore::CTRL_CHORUS_SEND);
         en = icl != mc->end();
         
         gcon = &controller[KNOB_CHO_SEND];
@@ -862,19 +862,19 @@ void MidiStrip::updateControls()
         
         if(en)
         {
-          ctrl = mp->midiController(CTRL_CHORUS_SEND);
+          ctrl = mp->midiController(MusECore::CTRL_CHORUS_SEND);
           int nchorusSend = icl->second->hwVal();
-          if(nchorusSend == CTRL_VAL_UNKNOWN)
+          if(nchorusSend == MusECore::CTRL_VAL_UNKNOWN)
           {
-            // MusEWidget::DoubleLabel ignores the value if already set...
+            // MusEGui::DoubleLabel ignores the value if already set...
             //if(nchorusSend != chorusSend) 
             //{
               gcon->dl->setValue(gcon->dl->off() - 1.0);
               //chorusSend = nchorusSend;
             //}
-            chorusSend = CTRL_VAL_UNKNOWN;
-            nchorusSend = mp->lastValidHWCtrlState(channel, CTRL_CHORUS_SEND);
-            if(nchorusSend != CTRL_VAL_UNKNOWN)
+            chorusSend = MusECore::CTRL_VAL_UNKNOWN;
+            nchorusSend = mp->lastValidHWCtrlState(channel, MusECore::CTRL_CHORUS_SEND);
+            if(nchorusSend != MusECore::CTRL_VAL_UNKNOWN)
             {
               nchorusSend -= ctrl->bias();
               if(double(nchorusSend) != gcon->knob->value())
@@ -904,28 +904,28 @@ void MidiStrip::ctrlChanged(int num, int val)
       if (inHeartBeat)
             return;
       
-      MidiTrack* t = (MidiTrack*) track;
+      MusECore::MidiTrack* t = (MusECore::MidiTrack*) track;
       int port     = t->outPort();
       
       int chan  = t->outChannel();
-      MidiPort* mp = &midiPorts[port];
-      MidiController* mctl = mp->midiController(num);
+      MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+      MusECore::MidiController* mctl = mp->midiController(num);
       if((val < mctl->minVal()) || (val > mctl->maxVal()))
       {
-        if(mp->hwCtrlState(chan, num) != CTRL_VAL_UNKNOWN)
-          audio->msgSetHwCtrlState(mp, chan, num, CTRL_VAL_UNKNOWN);
+        if(mp->hwCtrlState(chan, num) != MusECore::CTRL_VAL_UNKNOWN)
+          MusEGlobal::audio->msgSetHwCtrlState(mp, chan, num, MusECore::CTRL_VAL_UNKNOWN);
       }  
       else
       {
         val += mctl->bias();
         
-        int tick     = song->cpos();
+        int tick     = MusEGlobal::song->cpos();
         
-        MidiPlayEvent ev(tick, port, chan, ME_CONTROLLER, num, val);
+        MusECore::MidiPlayEvent ev(tick, port, chan, MusECore::ME_CONTROLLER, num, val);
         
-        audio->msgPlayMidiEvent(&ev);
+        MusEGlobal::audio->msgPlayMidiEvent(&ev);
       }  
-      song->update(SC_MIDI_CONTROLLER);
+      MusEGlobal::song->update(SC_MIDI_CONTROLLER);
     }
 
 //---------------------------------------------------------
@@ -936,7 +936,7 @@ void MidiStrip::volLabelChanged(double val)
       {
       val = sqrt( float(127*127) / pow(10.0, -val/20.0) );
       
-      ctrlChanged(CTRL_VOLUME, lrint(val));
+      ctrlChanged(MusECore::CTRL_VOLUME, lrint(val));
       
       }
       
@@ -948,7 +948,7 @@ void MidiStrip::setVolume(double val)
       {
       
 // printf("Vol %d\n", lrint(val));
-      ctrlChanged(CTRL_VOLUME, lrint(val));
+      ctrlChanged(MusECore::CTRL_VOLUME, lrint(val));
       }
       
 //---------------------------------------------------------
@@ -958,7 +958,7 @@ void MidiStrip::setVolume(double val)
 void MidiStrip::setPan(double val)
       {
       
-      ctrlChanged(CTRL_PANPOT, lrint(val));
+      ctrlChanged(MusECore::CTRL_PANPOT, lrint(val));
       }
 
 //---------------------------------------------------------
@@ -967,7 +967,7 @@ void MidiStrip::setPan(double val)
 
 void MidiStrip::setVariSend(double val)
       {
-      ctrlChanged(CTRL_VARIATION_SEND, lrint(val));
+      ctrlChanged(MusECore::CTRL_VARIATION_SEND, lrint(val));
       }
       
 //---------------------------------------------------------
@@ -976,7 +976,7 @@ void MidiStrip::setVariSend(double val)
 
 void MidiStrip::setChorusSend(double val)
       {
-      ctrlChanged(CTRL_CHORUS_SEND, lrint(val));
+      ctrlChanged(MusECore::CTRL_CHORUS_SEND, lrint(val));
       }
       
 //---------------------------------------------------------
@@ -985,7 +985,7 @@ void MidiStrip::setChorusSend(double val)
 
 void MidiStrip::setReverbSend(double val)
       {
-      ctrlChanged(CTRL_REVERB_SEND, lrint(val));
+      ctrlChanged(MusECore::CTRL_REVERB_SEND, lrint(val));
       }
       
 //---------------------------------------------------------
@@ -994,7 +994,7 @@ void MidiStrip::setReverbSend(double val)
 
 void MidiStrip::iRoutePressed()
 {
-  MusEWidget::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
+  MusEGui::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
   iR->setDown(false);     
   pup->exec(QCursor::pos(), track, false);
 }
@@ -1005,9 +1005,9 @@ void MidiStrip::iRoutePressed()
 
 void MidiStrip::oRoutePressed()
 {
-  MusEWidget::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
+  MusEGui::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
   oR->setDown(false);     
   pup->exec(QCursor::pos(), track, true);
 }
 
-} // namespace MusEMixer
+} // namespace MusEGui

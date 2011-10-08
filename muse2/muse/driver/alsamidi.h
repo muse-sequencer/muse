@@ -30,6 +30,8 @@
 #include "mpevent.h"
 #include "mididev.h"
 
+namespace MusECore {
+
 class Xml;
 
 //---------------------------------------------------------
@@ -77,11 +79,13 @@ class MidiAlsaDevice : public MidiDevice {
       };
 
 extern bool initMidiAlsa();
-extern bool exitMidiAlsa();
+extern void exitMidiAlsa();
 extern int alsaSelectRfd();
 extern int alsaSelectWfd();
 extern void alsaProcessMidiInput();
 extern void alsaScanMidiPorts();
+
+} // namespace MusECore
 
 #endif
 

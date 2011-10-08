@@ -34,7 +34,7 @@
 #include "icons.h"
 #include "aboutbox_impl.h"
 
-namespace MusEApp {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   startHelpBrowser
@@ -84,7 +84,7 @@ void MusE::startBugBrowser()
 
 void MusE::about()
       {
-      MusEWidget::AboutBoxImpl ab;
+      MusEGui::AboutBoxImpl ab;
       ab.show();
       ab.exec();
       }
@@ -110,4 +110,4 @@ void MusE::launchBrowser(QString &whereTo)
             }
       }
 
-} // namespace MusEApp
+} // namespace MusEGui

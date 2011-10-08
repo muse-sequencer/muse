@@ -37,13 +37,15 @@
 #include "globaldefs.h"
 #include "cleftypes.h"
 
-class Pipeline;
-class Xml;
-class SndFile;
+namespace MusECore {
 class MPEventList;
-class SynthI;
+class Pipeline;
 class PluginI;
+class SndFile;
+class SynthI;
+class Xml;
 class DrumMap;
+
 
 //---------------------------------------------------------
 //   Track
@@ -303,6 +305,10 @@ class MidiTrack : public Track {
       DrumMap* drummap() { return _drummap; }
       bool* drummap_hidden() { return _drummap_hidden; }
       };
+
+} // namespace MusECore
+
+namespace MusECore {
 
 //---------------------------------------------------------
 //   AudioTrack
@@ -566,6 +572,7 @@ class AudioAux : public AudioTrack {
       static bool visible() { return _isVisible; }
     };
 
+
 //---------------------------------------------------------
 //   WaveTrack
 //---------------------------------------------------------
@@ -733,6 +740,8 @@ typedef tracklist<SynthI*> SynthIList;
 
 extern void addPortCtrlEvents(MidiTrack* t);
 extern void removePortCtrlEvents(MidiTrack* t);
+
+} // namespace MusECore
 
 #endif
 

@@ -31,34 +31,29 @@
 #include "node.h"
 #include "routedialog.h"
 
+#define EFX_HEIGHT     16
+
 class QHBoxLayout;
 class QLabel;
 class QMenu;
 class QToolButton;
 class QWidget;
 
+namespace MusECore {
 class Xml;
 class AudioTrack;
 class Meter;
 class Track;
-class Slider;
-class Knob;
-class DoubleLabel;
+}
+
+namespace MusEGui {
 class ComboBox;
-
-namespace MusEConfig {
-struct MixerConfig;
-}
-
-namespace MusEDialog {
+class DoubleLabel;
+class Knob;
 class RouteDialog;
-}
-
-#define EFX_HEIGHT     16
-
-namespace MusEMixer {
-
+class Slider;
 class Strip;
+struct MixerConfig;
 typedef std::list<Strip*> StripList;
 
 //---------------------------------------------------------
@@ -87,7 +82,7 @@ class AudioMixerApp : public QMainWindow {
       Q_OBJECT
     
       //QString name;
-      MusEConfig::MixerConfig* cfg;
+      MixerConfig* cfg;
       StripList stripList;
       QScrollArea* view;
       QWidget* central;
@@ -95,7 +90,7 @@ class AudioMixerApp : public QMainWindow {
       //Strip* master;
       QHBoxLayout* layout;
       QMenu* menuView;
-      MusEDialog::RouteDialog* routingDialog;
+      MusEGui::RouteDialog* routingDialog;
       QAction* routingId;
       int oldAuxsSize;
 
@@ -112,7 +107,7 @@ class AudioMixerApp : public QMainWindow {
       
 
       virtual void closeEvent(QCloseEvent*);
-      void addStrip(Track*, int);
+      void addStrip(MusECore::Track*, int);
       void showRouteDialog(bool);
 
       enum UpdateAction {
@@ -148,14 +143,14 @@ class AudioMixerApp : public QMainWindow {
    
    public:
       //AudioMixerApp(QWidget* parent);
-      AudioMixerApp(QWidget* parent, MusEConfig::MixerConfig* c);
+      AudioMixerApp(QWidget* parent, MixerConfig* c);
       //void write(Xml&, const char* name);
       //void write(int level, Xml& xml, const char* name);
-      void write(int level, Xml& xml);
+      void write(int level, MusECore::Xml& xml);
       void clear();
       };
 
-} // namespace MusEMixer
+} // namespace MusEGui
 
 #endif
 

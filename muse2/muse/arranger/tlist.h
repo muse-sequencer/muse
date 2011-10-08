@@ -37,16 +37,15 @@ class QScrollBar;
 class QWheelEvent;
 //class QMenu;
 
-class ScrollScale;
+namespace MusECore {
 class Track;
 class Xml;
-
-namespace MusEWidget {
-class Header;
-class PopupMenu;
 }
 
-namespace MusEArranger {
+namespace MusEGui {
+class Header;
+class PopupMenu;
+class ScrollScale;
 
 enum TrackColumn {
       COL_RECORD = 0,
@@ -75,12 +74,12 @@ class TList : public QWidget {
       QPixmap bgPixmap;       // background Pixmap
       bool resizeFlag;        // true if resize cursor is shown
 
-      MusEWidget::Header* header;
+      Header* header;
       QScrollBar* _scroll;
       QLineEdit* editor;
       QSpinBox* chan_edit;
-      Track* editTrack;
-      Track* editAutomation;
+      MusECore::Track* editTrack;
+      MusECore::Track* editAutomation;
 
       int startY;
       int curY;
@@ -98,19 +97,19 @@ class TList : public QWidget {
       virtual void keyPressEvent(QKeyEvent* e);
       virtual void wheelEvent(QWheelEvent* e);
 
-      void portsPopupMenu(Track*, int, int);
-      void oportPropertyPopupMenu(Track*, int x, int y);
+      void portsPopupMenu(MusECore::Track*, int, int);
+      void oportPropertyPopupMenu(MusECore::Track*, int x, int y);
       void moveSelection(int n);
       void adjustScrollbar();
       void paint(const QRect& r);
       //virtual void resizeEvent(QResizeEvent*);
       void redraw(const QRect& r);
-      Track* y2Track(int) const;
-      void classesPopupMenu(Track*, int x, int y);
-      TrackList getRecEnabledTracks();
+      MusECore::Track* y2Track(int) const;
+      void classesPopupMenu(MusECore::Track*, int x, int y);
+      MusECore::TrackList getRecEnabledTracks();
       void setHeaderToolTips();
       //QMenu* colorMenu(QColor c, int id);
-      MusEWidget::PopupMenu* colorMenu(QColor c, int id);
+      PopupMenu* colorMenu(QColor c, int id);
 
    private slots:
       void returnPressed();
@@ -122,7 +121,7 @@ class TList : public QWidget {
 
    signals:
       ///void selectionChanged();
-      void selectionChanged(Track*);
+      void selectionChanged(MusECore::Track*);
       void keyPressExt(QKeyEvent*);
       void redirectWheelEvent(QWheelEvent*);
 
@@ -130,19 +129,19 @@ class TList : public QWidget {
       void tracklistChanged();
       void setYPos(int);
       void redraw();
-      void selectTrack(Track*);
+      void selectTrack(MusECore::Track*);
       void selectTrackAbove();
       void selectTrackBelow();
 
    public:
-      TList(MusEWidget::Header*, QWidget* parent, const char* name);
+      TList(Header*, QWidget* parent, const char* name);
       void setScroll(QScrollBar* s) { _scroll = s; }
-      Track* track() const { return editTrack; }
-      void writeStatus(int level, Xml&, const char* name) const;
-      void readStatus(Xml&, const char* name);
+      MusECore::Track* track() const { return editTrack; }
+      void writeStatus(int level, MusECore::Xml&, const char* name) const;
+      void readStatus(MusECore::Xml&, const char* name);
       };
 
-} // namespace MusEArranger
+} // namespace MusEGui
 
 #endif
 

@@ -42,6 +42,8 @@
 #include "audio.h"
 #include "functions.h"
 
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   EventCanvas
 //---------------------------------------------------------
@@ -61,7 +63,7 @@ EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
       setFocusPolicy(Qt::StrongFocus);
       setMouseTracking(true);
 
-      curPart   = (MidiPart*)(editor->parts()->begin()->second);
+      curPart   = (MusECore::MidiPart*)(editor->parts()->begin()->second);
       curPartId = curPart->sn();
       }
 
@@ -133,7 +135,7 @@ void EventCanvas::mouseMove(QMouseEvent* event)
 
 void EventCanvas::updateSelection()
       {
-      song->update(SC_SELECTION);
+      MusEGlobal::song->update(SC_SELECTION);
       }
 
 //---------------------------------------------------------
@@ -152,8 +154,8 @@ void EventCanvas::songChanged(int flags)
             start_tick  = MAXINT;
             end_tick    = 0;
             curPart = 0;
-            for (iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
-                  MidiPart* part = (MidiPart*)(p->second);
+            for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
+                  MusECore::MidiPart* part = (MusECore::MidiPart*)(p->second);
                   if (part->sn() == curPartId)
                         curPart = part;
                   unsigned stick = part->tick();
@@ -164,9 +166,9 @@ void EventCanvas::songChanged(int flags)
                   if (etick > end_tick)
                         end_tick = etick;
 
-                  EventList* el = part->events();
-                  for (iEvent i = el->begin(); i != el->end(); ++i) {
-                        Event e = i->second;
+                  MusECore::EventList* el = part->events();
+                  for (MusECore::iEvent i = el->begin(); i != el->end(); ++i) {
+                        MusECore::Event e = i->second;
                         // Added by T356. Do not add events which are either past, or extend past the end of the part.
                         // Reverted to just events which are past. p4.0.24 
                         if(e.tick() > len)      
@@ -180,32 +182,32 @@ void EventCanvas::songChanged(int flags)
                   }
             }
 
-      Event event;
-      MidiPart* part   = 0;
+      MusECore::Event event;
+      MusECore::MidiPart* part   = 0;
       int x            = 0;
-      MusEWidget::CItem*   nevent  = 0;
+      CItem*   nevent  = 0;
 
       int n  = 0;       // count selections
-      for (MusEWidget::iCItem k = items.begin(); k != items.end(); ++k) {
-            Event ev = k->second->event();
+      for (iCItem k = items.begin(); k != items.end(); ++k) {
+            MusECore::Event ev = k->second->event();
             bool selected = ev.selected();
             if (selected) {
                   k->second->setSelected(true);
                   ++n;
                   if (!nevent) {
                         nevent   =  k->second;
-                        Event mi = nevent->event();
+                        MusECore::Event mi = nevent->event();
                         curVelo  = mi.velo();
                         }
                   }
             }
-      start_tick = song->roundDownBar(start_tick);
-      end_tick   = song->roundUpBar(end_tick);
+      start_tick = MusEGlobal::song->roundDownBar(start_tick);
+      end_tick   = MusEGlobal::song->roundUpBar(end_tick);
 
       if (n == 1) {
             x     = nevent->x();
             event = nevent->event();
-            part  = (MidiPart*)nevent->part();
+            part  = (MusECore::MidiPart*)nevent->part();
             if (curPart != part) {
                   curPart = part;
                   curPartId = curPart->sn();
@@ -214,7 +216,7 @@ void EventCanvas::songChanged(int flags)
             }
       emit selectionChanged(x, event, part);
       if (curPart == 0)
-            curPart = (MidiPart*)(editor->parts()->begin()->second);
+            curPart = (MusECore::MidiPart*)(editor->parts()->begin()->second);
       redraw();
       }
 
@@ -225,11 +227,11 @@ void EventCanvas::selectAtTick(unsigned int tick)
       {
       //Select note nearest tick, if none selected and there are any
       if (!items.empty() && selectionSize() == 0) {
-            MusEWidget::iCItem i = items.begin();
-	    MusEWidget::CItem* nearest = i->second;
+            iCItem i = items.begin();
+	    CItem* nearest = i->second;
 
             while (i != items.end()) {
-                MusEWidget::CItem* cur=i->second;                
+                CItem* cur=i->second;                
                 unsigned int curtk=abs(cur->x() + cur->part()->tick() - tick);
                 unsigned int neartk=abs(nearest->x() + nearest->part()->tick() - tick);
 
@@ -251,9 +253,9 @@ void EventCanvas::selectAtTick(unsigned int tick)
 //   track
 //---------------------------------------------------------
 
-MidiTrack* EventCanvas::track() const
+MusECore::MidiTrack* EventCanvas::track() const
       {
-      return ((MidiPart*)curPart)->track();
+      return ((MusECore::MidiPart*)curPart)->track();
       }
 
 
@@ -283,7 +285,7 @@ void EventCanvas::keyPress(QKeyEvent* event)
             int tick_min = INT_MAX;
             bool found = false;
 
-            for (MusEWidget::iCItem i= items.begin(); i != items.end(); i++) {
+            for (iCItem i= items.begin(); i != items.end(); i++) {
                   if (!i->second->isSelected())
                         continue;
 
@@ -296,16 +298,16 @@ void EventCanvas::keyPress(QKeyEvent* event)
                         tick_min = tick;
                   }
             if (found) {
-                  Pos p1(tick_min, true);
-                  Pos p2(tick_max, true);
-                  song->setPos(1, p1);
-                  song->setPos(2, p2);
+                  MusECore::Pos p1(tick_min, true);
+                  MusECore::Pos p2(tick_max, true);
+                  MusEGlobal::song->setPos(1, p1);
+                  MusEGlobal::song->setPos(2, p2);
                   }
             }
       // Select items by key (PianoRoll & DrumEditor)
       else if (key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key) {
-            MusEWidget::iCItem i, iRightmost;
-	    MusEWidget::CItem* rightmost = NULL;
+            iCItem i, iRightmost;
+	    CItem* rightmost = NULL;
             //Get the rightmost selected note (if any)
             for (i = items.begin(); i != items.end(); ++i) {
                   if (i->second->isSelected()) {
@@ -313,7 +315,7 @@ void EventCanvas::keyPress(QKeyEvent* event)
                         }
                   }
                if (rightmost) {
-                     MusEWidget::iCItem temp = iRightmost; temp++;
+                     iCItem temp = iRightmost; temp++;
                      //If so, deselect current note and select the one to the right
                      if (temp != items.end()) {
                            if (key != shortcuts[SHRT_SEL_RIGHT_ADD].key)
@@ -330,8 +332,8 @@ void EventCanvas::keyPress(QKeyEvent* event)
             }
       //Select items by key: (PianoRoll & DrumEditor)
       else if (key == shortcuts[SHRT_SEL_LEFT].key || key == shortcuts[SHRT_SEL_LEFT_ADD].key) {
-            MusEWidget::iCItem i, iLeftmost;
-            MusEWidget::CItem* leftmost = NULL;
+            iCItem i, iLeftmost;
+            CItem* leftmost = NULL;
             if (items.size() > 0 ) {
                   for (i = items.end(), i--; i != items.begin(); i--) {
                         if (i->second->isSelected()) {
@@ -354,27 +356,27 @@ void EventCanvas::keyPress(QKeyEvent* event)
                   }
             }
       else if (key == shortcuts[SHRT_INC_PITCH].key) {
-            modifySelected(MusEWidget::NoteInfo::VAL_PITCH, 1);
+            modifySelected(NoteInfo::VAL_PITCH, 1);
             }
       else if (key == shortcuts[SHRT_DEC_PITCH].key) {
-            modifySelected(MusEWidget::NoteInfo::VAL_PITCH, -1);
+            modifySelected(NoteInfo::VAL_PITCH, -1);
             }
       else if (key == shortcuts[SHRT_INC_POS].key) {
             // TODO: Check boundaries
-            modifySelected(MusEWidget::NoteInfo::VAL_TIME, editor->raster());
+            modifySelected(NoteInfo::VAL_TIME, editor->raster());
             }
       else if (key == shortcuts[SHRT_DEC_POS].key) {
             // TODO: Check boundaries
-            modifySelected(MusEWidget::NoteInfo::VAL_TIME, 0 - editor->raster());
+            modifySelected(NoteInfo::VAL_TIME, 0 - editor->raster());
             }
 
       else if (key == shortcuts[SHRT_INCREASE_LEN].key) {
             // TODO: Check boundaries
-            modifySelected(MusEWidget::NoteInfo::VAL_LEN, editor->raster());
+            modifySelected(NoteInfo::VAL_LEN, editor->raster());
             }
       else if (key == shortcuts[SHRT_DECREASE_LEN].key) {
             // TODO: Check boundaries
-            modifySelected(MusEWidget::NoteInfo::VAL_LEN, 0 - editor->raster());
+            modifySelected(NoteInfo::VAL_LEN, 0 - editor->raster());
             }
 
       else
@@ -431,15 +433,17 @@ void EventCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir)
       
       
       
-      Undo operations = moveCanvasItems(moving, dp, dx, dragtype);
+      MusECore::Undo operations = moveCanvasItems(moving, dp, dx, dragtype);
       if (operations.empty())
         songChanged(SC_EVENT_MODIFIED); //this is a hack to force the canvas to repopulate
       	                                //itself. otherwise, if a moving operation was forbidden,
       	                                //the canvas would still show the movement
       else
-        song->applyOperationGroup(operations);
+        MusEGlobal::song->applyOperationGroup(operations);
       
       moving.clear();
       updateSelection();
       redraw();
       }
+
+} // namespace MusEGui

@@ -32,7 +32,9 @@
 #include <QLineEdit>
 #include <QStyle>
 
+namespace MusEGlobal {
 extern int mtcType;
+}
 
 namespace Awl {
 
@@ -217,7 +219,7 @@ void PosEdit::setSmpte(bool f)
 //   setValue
 //---------------------------------------------------------
 
-void PosEdit::setValue(const Pos& time)
+void PosEdit::setValue(const MusECore::Pos& time)
       {
       if(_pos == time)
         return;
@@ -227,13 +229,13 @@ void PosEdit::setValue(const Pos& time)
 
 void PosEdit::setValue(const QString& s)
       {
-      Pos time(s);
+      MusECore::Pos time(s);
       setValue(time);
       }
 
 void PosEdit::setValue(int t)
       {
-      Pos time(t);
+      MusECore::Pos time(t);
       setValue(time);
       }
 
@@ -287,7 +289,7 @@ QAbstractSpinBox::StepEnabled PosEdit::stepEnabled() const
                         else
                         {
                           int nf = 23;    // 24 frames sec
-                          switch(mtcType) {
+                          switch(MusEGlobal::mtcType) {
                                 //case 0:     // 24 frames sec
                                 //      nf = 23;
                                 //      break;
@@ -398,7 +400,7 @@ QValidator::State PosEdit::validate(QString& s,int& /*i*/) const
           rv = state;
           
         int nf = 23;      // 24 frames sec
-        switch(mtcType) {
+        switch(MusEGlobal::mtcType) {
               //case 0:     // 24 frames sec
               //      nf = 23;
               //      break;
@@ -541,7 +543,7 @@ void PosEdit::stepBy(int steps)
                   case 2:
                         {
                           int nf = 23;      // 24 frames sec
-                          switch(mtcType) {
+                          switch(MusEGlobal::mtcType) {
                                 //case 0:     // 24 frames sec
                                 //      nf = 23;
                                 //      break;
@@ -578,7 +580,7 @@ void PosEdit::stepBy(int steps)
                   default:
                         return;
                   }
-            Pos newPos(minute, sec, frame, subframe);
+            MusECore::Pos newPos(minute, sec, frame, subframe);
             if (!(newPos == _pos)) {
                   changed = true;
                   _pos = newPos;
@@ -623,7 +625,7 @@ void PosEdit::stepBy(int steps)
                   default:
                         return;
                   }
-            Pos newPos(bar, beat, tick);
+            MusECore::Pos newPos(bar, beat, tick);
             if (!(newPos == _pos)) {
                   changed = true;
                   _pos = newPos;
@@ -666,7 +668,7 @@ void PosEdit::finishEdit()
           return;
         }  
         
-        Pos newPos(sl[0].toInt(), sl[1].toInt(), sl[2].toInt(), sl[3].toInt());
+        MusECore::Pos newPos(sl[0].toInt(), sl[1].toInt(), sl[2].toInt(), sl[3].toInt());
         if (!(newPos == _pos)) 
         {
           changed = true;
@@ -681,7 +683,7 @@ void PosEdit::finishEdit()
           return;
         }
           
-        Pos newPos(sl[0].toInt() - 1, sl[1].toInt() - 1, sl[2].toInt());
+        MusECore::Pos newPos(sl[0].toInt() - 1, sl[1].toInt() - 1, sl[2].toInt());
         if (!(newPos == _pos)) 
         {
           changed = true;

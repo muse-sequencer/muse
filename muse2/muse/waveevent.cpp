@@ -36,6 +36,8 @@
 //#define WAVEEVENT_DEBUG
 //#define WAVEEVENT_DEBUG_PRC
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   WaveEvent
 //---------------------------------------------------------
@@ -466,3 +468,4 @@ void WaveEventBase::readAudio(WavePart* /*part*/, unsigned offset, float** buffe
   
 }
 
+} // namespace MusECore

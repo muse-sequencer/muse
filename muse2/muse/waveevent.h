@@ -30,6 +30,9 @@
 #include "eventbase.h"
 
 class AudioConverter;
+
+namespace MusECore {
+
 class WavePart;
 
 //---------------------------------------------------------
@@ -75,5 +78,7 @@ class WaveEventBase : public EventBase {
                              float** /*bpp*/, int /*channels*/, int /*nn*/, bool /*doSeek*/, bool /*overwrite*/);
       };
       
+} // namespace MusECore
+
 #endif
 

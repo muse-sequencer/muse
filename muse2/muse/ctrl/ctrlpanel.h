@@ -25,18 +25,18 @@
 
 #include <QWidget>
 
-class MidiController;
-
 class QPushButton;
 
-namespace MusEWidget {
-class Knob;
-class DoubleLabel;
-}
-
-class MidiEditor;
+namespace MusECore {
+class MidiController;
 class MidiPort;
 class MidiTrack;
+}
+
+namespace MusEGui {
+class DoubleLabel;
+class Knob;
+class MidiEditor;
 
 //---------------------------------------------------------
 //   CtrlPanel
@@ -49,12 +49,12 @@ class CtrlPanel: public QWidget {
       QPushButton* selCtrl;
       MidiEditor* editor;
       
-      MidiTrack* _track;
-      MidiController* _ctrl;
+      MusECore::MidiTrack* _track;
+      MusECore::MidiController* _ctrl;
       int _dnum;
       bool inHeartBeat;
-      MusEWidget::Knob* _knob;
-      MusEWidget::DoubleLabel* _dl;
+      MusEGui::Knob* _knob;
+      MusEGui::DoubleLabel* _dl;
       int _val;
       
       
@@ -78,6 +78,9 @@ class CtrlPanel: public QWidget {
 
    public:
       CtrlPanel(QWidget*, MidiEditor*, const char* name = 0);
-      void setHWController(MidiTrack* t, MidiController* ctrl);
+      void setHWController(MusECore::MidiTrack* t, MusECore::MidiController* ctrl);
       };
+
+} // namespace MusEGui
+
 #endif

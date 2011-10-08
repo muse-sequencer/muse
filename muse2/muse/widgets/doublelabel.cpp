@@ -24,7 +24,7 @@
 
 #include "doublelabel.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   DoubleLabel
@@ -209,4 +209,4 @@ QSize DoubleLabel::minimumSizeHint() const
   return sizeHint();
 }
 
-} // namespace MusEWidget
+} // namespace MusEGui

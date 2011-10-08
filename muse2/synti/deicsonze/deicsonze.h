@@ -470,13 +470,13 @@ class DeicsOnze : public Mess {
   Preset* _initialPreset;
 
   //FX
-  PluginI* _pluginIReverb;
-  PluginI* _pluginIChorus;
-  PluginI* _pluginIDelay;
+  MusECore::PluginI* _pluginIReverb;
+  MusECore::PluginI* _pluginIChorus;
+  MusECore::PluginI* _pluginIDelay;
 
-  void initPluginReverb(Plugin*);
-  void initPluginChorus(Plugin*);
-  void initPluginDelay(Plugin*);
+  void initPluginReverb(MusECore::Plugin*);
+  void initPluginChorus(MusECore::Plugin*);
+  void initPluginDelay(MusECore::Plugin*);
   
   void setReverbParam(int i, double val);
   double getReverbParam(int i) const;

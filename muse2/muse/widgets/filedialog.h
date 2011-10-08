@@ -26,7 +26,7 @@
 
 class QStringList;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   FileDialogButtonsWidget
@@ -125,4 +125,4 @@ class MFile {
          bool warnIfOverwrite, const QString& caption);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui

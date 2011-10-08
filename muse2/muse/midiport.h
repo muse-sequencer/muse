@@ -28,14 +28,19 @@
 #include "sync.h"
 #include "route.h"
 
+class QMenu;
+class QWidget;
+
+namespace MusECore {
+
 class MidiDevice;
-class MidiInstrument;
-class MidiCtrlValListList;
-class MidiPlayEvent;
-class MidiController;
-class MidiCtrlValList;
 class Part;
 //class MidiSyncInfo;
+class MidiController;
+class MidiCtrlValListList;
+class MidiCtrlValList;
+class MidiInstrument;
+class MidiPlayEvent;
 
 //---------------------------------------------------------
 //   MidiPort
@@ -141,7 +146,6 @@ class MidiPort {
       MidiSyncInfo& syncInfo() { return _syncInfo; }
       };
 
-extern MidiPort midiPorts[MIDI_PORTS];
 extern void initMidiPorts();
 
 // p4.0.17 Turn off if and when multiple output routes supported.
@@ -149,9 +153,14 @@ extern void initMidiPorts();
 extern void setPortExclusiveDefOutChan(int /*port*/, int /*chan*/);
 #endif
 
-class QMenu;
-class QWidget;
 //extern QPopupMenu* midiPortsPopup(QWidget*);
 extern QMenu* midiPortsPopup(QWidget* parent = 0, int checkPort = -1);
+
+} // namespace MusECore
+
+namespace MusEGlobal {
+extern MusECore::MidiPort midiPorts[MIDI_PORTS];
+}
+
 #endif
 

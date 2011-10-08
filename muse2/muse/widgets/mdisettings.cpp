@@ -34,6 +34,8 @@
 #include "globals.h"
 #include "icons.h"
 
+namespace MusEGui {
+
 MdiSettings::MdiSettings(TopWin::ToplevelType t, QWidget* parent) : QWidget(parent)
 {
   _type=t;
@@ -57,3 +59,5 @@ void MdiSettings::apply_settings()
   TopWin::_sharesWhenSubwin[_type] = shareSubwinCheckbox->isChecked();
   TopWin::_sharesWhenFree[_type] = shareFreeCheckbox->isChecked();
 }
+
+} // namespace MusEGui

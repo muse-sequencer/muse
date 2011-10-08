@@ -35,12 +35,17 @@ class QMouseEvent;
 class QEvent;
 class QWidget;
 
+namespace MusECore {
 class Event;
 class MidiPart;
-class PartList;
 class MidiTrack;
-class MidiEditor;
+class PartList;
+}
+
+namespace MusEGui {
+
 class CtrlPanel;
+class MidiEditor;
 
 //---------------------------------------------------------
 //   CEvent
@@ -52,16 +57,16 @@ class CEvent {
       //enum State { Normal, Selected };
    
    private:
-      Event _event;
+      MusECore::Event _event;
       //State _state;
       int       _val;
-      MidiPart* _part;
+      MusECore::MidiPart* _part;
       int ex;
 
    public:
-      CEvent(Event e, MidiPart* part, int v);
-      Event event() const          { return _event; }
-      void setEvent(Event& ev)     { _event = ev; }
+      CEvent(MusECore::Event e, MusECore::MidiPart* part, int v);
+      MusECore::Event event() const          { return _event; }
+      void setEvent(MusECore::Event& ev)     { _event = ev; }
       //State state() { return _state; }
       //void setState(State s) { _state = s; }
       //bool isSelected() { return _state == Selected; }
@@ -70,9 +75,9 @@ class CEvent {
       int val() const              { return _val;   }
       void setVal(int v)           { _val = v; }
       void setEX(int v)            { ex = v; }
-      MidiPart* part() const       { return _part;  }
+      MusECore::MidiPart* part() const       { return _part;  }
       bool contains(int /*x1*/, int /*x2*/) const;
-      bool intersects(const MidiController*, const QRect&, const int /*tickstep*/, const int /*windowHeight*/) const;
+      bool intersects(const MusECore::MidiController*, const QRect&, const int /*tickstep*/, const int /*windowHeight*/) const;
       int x()                      { return ex; }
       };
 
@@ -91,18 +96,19 @@ class CEventList: public std::list<CEvent*> {
       void clearDelete();
       };
 
+
 //---------------------------------------------------------
 //   CtrlCanvas
 //---------------------------------------------------------
 
-class CtrlCanvas : public MusEWidget::View {
+class CtrlCanvas : public MusEGui::View {
       Q_OBJECT
     
       MidiEditor* editor;
-      MidiTrack* curTrack;
-      MidiPart* curPart;
-      MidiCtrlValList* ctrl;
-      MidiController* _controller;
+      MusECore::MidiTrack* curTrack;
+      MusECore::MidiPart* curPart;
+      MusECore::MidiCtrlValList* ctrl;
+      MusECore::MidiController* _controller;
       CtrlPanel* _panel;
       int _cnum;
       // Current real drum controller number (anote).
@@ -134,8 +140,8 @@ class CtrlCanvas : public MusEWidget::View {
       void deleteVal(int x1, int x2, int y);
 
       bool setCurTrackAndPart();
-      void pdrawItems(QPainter&, const QRect&, const MidiPart*, bool, bool);
-      void partControllers(const MidiPart*, int, int*, int*, MidiController**, MidiCtrlValList**);
+      void pdrawItems(QPainter&, const QRect&, const MusECore::MidiPart*, bool, bool);
+      void partControllers(const MusECore::MidiPart*, int, int*, int*, MusECore::MidiController**, MusECore::MidiCtrlValList**);
       
       
 
@@ -153,7 +159,7 @@ class CtrlCanvas : public MusEWidget::View {
       DragMode drag;
       QRect lasso;
       QPoint start;
-      MusEWidget::Tool tool;
+      MusEGui::Tool tool;
       unsigned pos[3];
       int curDrumInstrument;    //Used by the drum-editor to view velocity of only one key (one drum)
       
@@ -190,9 +196,12 @@ class CtrlCanvas : public MusEWidget::View {
          const char* name = 0, CtrlPanel* pnl = 0);
       ~CtrlCanvas();   
       void setPanel(CtrlPanel* pnl) { _panel = pnl; }
-      MidiCtrlValList* ctrlValList() { return ctrl; }
-      MidiController* controller() { return _controller; }
-      MidiTrack* track() const { return curTrack; }
+      MusECore::MidiCtrlValList* ctrlValList() { return ctrl; }
+      MusECore::MidiController* controller() { return _controller; }
+      MusECore::MidiTrack* track() const { return curTrack; }
       };
+
+} // namespace MusEGui
+
 #endif
 

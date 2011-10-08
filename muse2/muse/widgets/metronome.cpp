@@ -30,7 +30,7 @@
 #include "track.h"
 #include "audio.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   MetronomeConfig
@@ -75,15 +75,15 @@ MetronomeConfig::MetronomeConfig(QDialog* parent)
 
 void MetronomeConfig::audioBeepRoutesClicked()
 {
-      if(song->outputs()->size() == 0)
+      if(MusEGlobal::song->outputs()->size() == 0)
         return;
         
       QMenu* pup = new QMenu;
       
-      OutputList* ol = song->outputs();
+      MusECore::OutputList* ol = MusEGlobal::song->outputs();
 
       int nn = 0;
-      for(iAudioOutput iao = ol->begin(); iao != ol->end(); ++iao)
+      for(MusECore::iAudioOutput iao = ol->begin(); iao != ol->end(); ++iao)
       {
         QAction* action = pup->addAction(QT_TRANSLATE_NOOP("@default", (*iao)->name()));
         action->setCheckable(true);
@@ -98,14 +98,14 @@ void MetronomeConfig::audioBeepRoutesClicked()
       {
         //QString s(pup->text(n));
         nn = 0;
-        for(iAudioOutput iao = ol->begin(); iao != ol->end(); ++iao)
+        for(MusECore::iAudioOutput iao = ol->begin(); iao != ol->end(); ++iao)
         {
           //if(((*iao)->name() == s) && (n == nn))
           if (nn == clickaction->data())
           {
             //(*iao)->setSendMetronome();
-            audio->msgSetSendMetronome(*iao, clickaction->isChecked());
-            //song->update(SC_ROUTE);
+	    MusEGlobal::audio->msgSetSendMetronome(*iao, clickaction->isChecked());
+            //MusEGlobal::song->update(SC_ROUTE);
             break;
           }
           ++nn;
@@ -199,5 +199,5 @@ void MetronomeConfig::beepVolumeChanged(int volume)
       MusEGlobal::audioClickVolume=volume/100.0;
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui
 

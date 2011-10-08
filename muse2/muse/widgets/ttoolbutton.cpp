@@ -27,7 +27,7 @@
 #include "gconfig.h"
 #include "icons.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   drawButton
@@ -43,4 +43,4 @@ void TransparentToolButton::drawButton(QPainter* p)
       p->drawPixmap(QPoint((w - pm.width())/2, (h - pm.height())/2), pm);
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

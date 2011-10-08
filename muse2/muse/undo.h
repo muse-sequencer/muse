@@ -31,6 +31,8 @@
 
 class QString;
 
+namespace MusECore {
+
 class Track;
 class TEvent;
 class SigEvent;
@@ -133,5 +135,6 @@ class UndoList : public std::list<Undo> {
 
 typedef UndoList::iterator iUndo;
 
+} // namespace MusECore
 
 #endif // __UNDO_H__

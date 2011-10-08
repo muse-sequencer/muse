@@ -26,6 +26,8 @@
 #include "mixdowndialog.h"
 #include "wave.h"
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   sndFileOpen
 //    sf - old soundfile, used to preset file parameters
@@ -33,20 +35,22 @@
 
 SndFile* getSndFile(const SndFile* sf, QWidget* parent)
       {
-      MusEWidget::MixdownFileDialog* dialog = new MusEWidget::MixdownFileDialog(sf, parent);
+      MusEGui::MixdownFileDialog* dialog = new MusEGui::MixdownFileDialog(sf, parent);
       dialog->exec();
-      SndFile* sndFile = dialog->sndFile();
+      MusECore::SndFile* sndFile = dialog->sndFile();
       delete dialog;
       return sndFile;
       }
 
-namespace MusEWidget {
+} // namespace MusECore
+
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   MixdownFileDialog
 //---------------------------------------------------------
 
-MixdownFileDialog::MixdownFileDialog(const SndFile* _sf,
+MixdownFileDialog::MixdownFileDialog(const MusECore::SndFile* _sf,
    QWidget* parent, Qt::WFlags fl)
    : QDialog(parent, fl)
       {
@@ -100,7 +104,7 @@ void MixdownFileDialog::accept()
             }
       if (path.right(4) != ".wav")
             path += ".wav";
-      sf = new SndFile(path);
+      sf = new MusECore::SndFile(path);
       sf->setFormat(format, channel, MusEGlobal::sampleRate);
       done(1);
       }
@@ -120,4 +124,4 @@ void MixdownFileDialog::fdialog()
             editPath->setText(path);
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

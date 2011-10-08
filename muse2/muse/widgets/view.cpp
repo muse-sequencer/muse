@@ -42,7 +42,7 @@
 //  just ate up all the time no matter what I tried.
 //#defines VIEW_USE_DOUBLE_BUFFERING 1
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   View::View
@@ -981,4 +981,4 @@ QRect View::devToVirt(const QRect& r)
 }
 */
 
-} // namespace MusEWidget
+} // namespace MusEGui

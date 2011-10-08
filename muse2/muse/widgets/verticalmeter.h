@@ -31,7 +31,7 @@ class QResizeEvent;
 class QMouseEvent;
 class QPainter;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 class VerticalMeter : public Meter {
       Q_OBJECT
@@ -59,7 +59,7 @@ class VerticalMeter : public Meter {
       void setRange(double min, double max);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

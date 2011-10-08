@@ -367,7 +367,7 @@ static const char *mk4_xpm[] = {
 //---------------------------------------------------------
 
 Piano::Piano(QWidget* parent, int ymag)
-   : MusEWidget::View(parent, 1, ymag)
+   : MusEGui::View(parent, 1, ymag)
       {
       setMouseTracking(true);
       curPitch = -1;

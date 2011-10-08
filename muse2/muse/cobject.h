@@ -34,8 +34,13 @@
 class QMdiSubWindow;
 class QFocusEvent;
 class QToolBar;
-class Xml;
 class QAction;
+
+namespace MusECore {
+class Xml;
+}
+
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   TopWin
@@ -58,11 +63,11 @@ class TopWin : public QMainWindow
       static QString typeName(ToplevelType t);
 
 
-      virtual void readStatus(Xml&);
-      virtual void writeStatus(int, Xml&) const;
+      virtual void readStatus(MusECore::Xml&);
+      virtual void writeStatus(int, MusECore::Xml&) const;
 
-      static void readConfiguration(ToplevelType, Xml&);
-      static void writeConfiguration(ToplevelType, int, Xml&);
+      static void readConfiguration(ToplevelType, MusECore::Xml&);
+      static void writeConfiguration(ToplevelType, int, MusECore::Xml&);
       
       
       bool isMdiWin() const;
@@ -133,6 +138,9 @@ class TopWin : public QMainWindow
 typedef std::list <TopWin*> ToplevelList;
 typedef ToplevelList::iterator iToplevel;
 typedef ToplevelList::const_iterator ciToplevel;
+
+} // namespace MusEGui
+
 
 #endif
 

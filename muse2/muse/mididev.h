@@ -34,6 +34,9 @@
 
 #include <QString>
 
+
+namespace MusECore {
+
 //class RouteList;
 class Xml;
 
@@ -159,9 +162,14 @@ class MidiDeviceList : public std::list<MidiDevice*>
       iMidiDevice find(const MidiDevice* dev);
 };
 
-extern MidiDeviceList midiDevices;
 extern void initMidiDevices();
 extern bool filterEvent(const MEvent& event, int type, bool thru);
+
+} // namespace MusECore
+
+namespace MusEGlobal {
+extern MusECore::MidiDeviceList midiDevices;
+}
 
 #endif
 

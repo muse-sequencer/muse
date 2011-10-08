@@ -25,7 +25,7 @@
 
 #include <QLabel>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   PosLabel
@@ -58,7 +58,7 @@ class PosLabel : public QLabel {
       bool smpte() const { return _smpte; }
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

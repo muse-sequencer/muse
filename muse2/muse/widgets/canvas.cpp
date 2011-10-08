@@ -46,7 +46,7 @@
 
 #define ABS(x)  ((x) < 0) ? -(x) : (x)
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   Canvas
@@ -73,13 +73,13 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
 
       drag    = DRAG_OFF;
       _tool   = PointerTool;
-      pos[0]  = song->cpos();
-      pos[1]  = song->lpos();
-      pos[2]  = song->rpos();
+      pos[0]  = MusEGlobal::song->cpos();
+      pos[1]  = MusEGlobal::song->lpos();
+      pos[2]  = MusEGlobal::song->rpos();
       curPart = NULL;
       curPartId = -1;
       curItem = NULL;
-      connect(song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
+      connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
       }
 
 Canvas::~Canvas()
@@ -103,10 +103,10 @@ void Canvas::setPos(int idx, unsigned val, bool adjustScrollbar)
       int npos = mapx(val);
 
       if (adjustScrollbar && idx == 0) {
-            switch (song->follow()) {
-                  case  Song::NO:
+            switch (MusEGlobal::song->follow()) {
+                  case  MusECore::Song::NO:
                         break;
-                  case Song::JUMP:
+                  case MusECore::Song::JUMP:
                         if (npos >= width()) {
                               int ppos =  val - xorg - rmapxDev(width()/8);
                               if (ppos < 0)
@@ -124,7 +124,7 @@ void Canvas::setPos(int idx, unsigned val, bool adjustScrollbar)
                               npos = mapx(val);
                               }
                         break;
-                  case Song::CONTINUOUS:
+                  case MusECore::Song::CONTINUOUS:
                         if (npos > (width()/2)) {
                               int ppos =  pos[idx] - xorg - rmapxDev(width()/2);
                               if (ppos < 0)
@@ -409,8 +409,8 @@ void Canvas::draw(QPainter& p, const QRect& rect)
       int my = mapy(y);
       //int y2 = y + h;
       int my2 = mapy(y + h);
-      MarkerList* marker = song->marker();
-      for (iMarker m = marker->begin(); m != marker->end(); ++m) {
+      MusECore::MarkerList* marker = MusEGlobal::song->marker();
+      for (MusECore::iMarker m = marker->begin(); m != marker->end(); ++m) {
             int xp = m->second.tick();
             if (xp >= x && xp < x+w) {
                   p.setPen(Qt::green);
@@ -489,7 +489,7 @@ void Canvas::wheelEvent(QWheelEvent* ev)
 
     if (shift) { // scroll horizontally
         int delta       = -ev->delta() / WHEEL_DELTA;
-        int xpixelscale = 5*fast_log10(rmapxDev(1));
+        int xpixelscale = 5*MusECore::fast_log10(rmapxDev(1));
 
         if (xpixelscale <= 0)
               xpixelscale = 1;
@@ -1539,7 +1539,7 @@ void Canvas::canvasPopup(int n)
       emit toolChanged(n);
       }
 
-void Canvas::setCurrentPart(Part* part)
+void Canvas::setCurrentPart(MusECore::Part* part)
 {
   curItem = NULL;
   deselectAll();
@@ -1548,4 +1548,4 @@ void Canvas::setCurrentPart(Part* part)
   curPartChanged();
 }
 
-} // namespace MusEWidget
+} // namespace MusEGui

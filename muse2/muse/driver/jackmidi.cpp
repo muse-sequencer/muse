@@ -47,7 +47,11 @@
 // Turn on debug messages.
 //#define JACK_MIDI_DEBUG
 
+namespace MusEGlobal {
 extern unsigned int volatile lastExtMidiSyncTick;
+}
+
+namespace MusECore {
 
 //---------------------------------------------------------
 //   MidiJackDevice
@@ -68,12 +72,12 @@ MidiJackDevice::~MidiJackDevice()
     printf("MidiJackDevice::~MidiJackDevice()\n");
   #endif  
   
-  if(audioDevice)
+  if(MusEGlobal::audioDevice)
   { 
     if(_in_client_jackport)
-      audioDevice->unregisterPort(_in_client_jackport);
+      MusEGlobal::audioDevice->unregisterPort(_in_client_jackport);
     if(_out_client_jackport)
-      audioDevice->unregisterPort(_out_client_jackport);
+      MusEGlobal::audioDevice->unregisterPort(_out_client_jackport);
   }  
     
     //close();
@@ -92,7 +96,7 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
     for( ; ni < 65536; ++ni)
     {
       name.sprintf("jack-midi-%d", ni);
-      if(!midiDevices.find(name))
+      if(!MusEGlobal::midiDevices.find(name))
         break;
     }
   }    
@@ -104,7 +108,7 @@ MidiDevice* MidiJackDevice::createJackMidiDevice(QString name, int rwflags) // 1
   
   MidiJackDevice* dev = new MidiJackDevice(name);  
   dev->setrwFlags(rwflags);
-  midiDevices.add(dev);
+  MusEGlobal::midiDevices.add(dev);
   return dev;
 }
 
@@ -120,9 +124,9 @@ void MidiJackDevice::setName(const QString& s)
   _name = s; 
   
   if(inClientPort())  
-    audioDevice->setPortName(inClientPort(), (s + QString(JACK_MIDI_IN_PORT_SUFFIX)).toLatin1().constData());
+    MusEGlobal::audioDevice->setPortName(inClientPort(), (s + QString(JACK_MIDI_IN_PORT_SUFFIX)).toLatin1().constData());
   if(outClientPort())  
-    audioDevice->setPortName(outClientPort(), (s + QString(JACK_MIDI_OUT_PORT_SUFFIX)).toLatin1().constData());
+    MusEGlobal::audioDevice->setPortName(outClientPort(), (s + QString(JACK_MIDI_OUT_PORT_SUFFIX)).toLatin1().constData());
 }
 
 //---------------------------------------------------------
@@ -142,10 +146,10 @@ QString MidiJackDevice::open()
   {
     if(!_out_client_jackport)
     {
-      if(audioDevice->deviceType() == AudioDevice::JACK_AUDIO)       
+      if(MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO)       
       {
         s = name() + QString(JACK_MIDI_OUT_PORT_SUFFIX);
-        _out_client_jackport = (jack_port_t*)audioDevice->registerOutPort(s.toLatin1().constData(), true);   
+        _out_client_jackport = (jack_port_t*)MusEGlobal::audioDevice->registerOutPort(s.toLatin1().constData(), true);   
         if(!_out_client_jackport)   
         {
           fprintf(stderr, "MusE: MidiJackDevice::open failed creating output port name %s\n", s.toLatin1().constData()); 
@@ -178,8 +182,8 @@ QString MidiJackDevice::open()
       // When I toggle the lights again (which kills, then recreates the ports here), the problem can disappear or come back again.
       // Also once observed a weird double connection from the port to two different Jack ports but one of
       //  the connections should not have been there and kept toggling along with the other (like a 'ghost' connection).
-      audio->msgRemoveRoutes(Route(this, 0), Route());   // New function msgRemoveRoutes simply uses Routes, for their pointers.
-      audioDevice->unregisterPort(_out_client_jackport);
+      MusEGlobal::audio->msgRemoveRoutes(Route(this, 0), Route());   // New function msgRemoveRoutes simply uses Routes, for their pointers.
+      MusEGlobal::audioDevice->unregisterPort(_out_client_jackport);
     }  
     _out_client_jackport = NULL;  
   }
@@ -188,10 +192,10 @@ QString MidiJackDevice::open()
   {  
     if(!_in_client_jackport)
     {
-      if(audioDevice->deviceType() == AudioDevice::JACK_AUDIO)       
+      if(MusEGlobal::audioDevice->deviceType() == AudioDevice::JACK_AUDIO)       
       {
         s = name() + QString(JACK_MIDI_IN_PORT_SUFFIX);
-        _in_client_jackport = (jack_port_t*)audioDevice->registerInPort(s.toLatin1().constData(), true);   
+        _in_client_jackport = (jack_port_t*)MusEGlobal::audioDevice->registerInPort(s.toLatin1().constData(), true);   
         if(!_in_client_jackport)    
         {
           fprintf(stderr, "MusE: MidiJackDevice::open failed creating input port name %s\n", s.toLatin1().constData());
@@ -204,8 +208,8 @@ QString MidiJackDevice::open()
   {
     if(_in_client_jackport)
     {
-      audio->msgRemoveRoutes(Route(), Route(this, 0));
-      audioDevice->unregisterPort(_in_client_jackport);
+      MusEGlobal::audio->msgRemoveRoutes(Route(), Route(this, 0));
+      MusEGlobal::audioDevice->unregisterPort(_in_client_jackport);
     }  
     _in_client_jackport = NULL;  
   }
@@ -241,7 +245,7 @@ void MidiJackDevice::close()
     else
     if(pf & JackPortIsInput)
       _nextInIdNum--;
-    audioDevice->unregisterPort(_client_jackport);
+    MusEGlobal::audioDevice->unregisterPort(_client_jackport);
     _client_jackport = 0;
     _writeEnable = false;
     _readEnable = false;
@@ -327,9 +331,9 @@ bool MidiJackDevice::putMidiEvent(const MidiPlayEvent& /*event*/)
 void MidiJackDevice::recordEvent(MidiRecordEvent& event)
       {
       // Set the loop number which the event came in at.
-      //if(audio->isRecording())
-      if(audio->isPlaying())
-        event.setLoopNum(audio->loopCount());
+      //if(MusEGlobal::audio->isRecording())
+      if(MusEGlobal::audio->isPlaying())
+        event.setLoopNum(MusEGlobal::audio->loopCount());
       
       if (MusEGlobal::midiInputTrace) {
             printf("Jack MidiInput: ");
@@ -340,7 +344,7 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
       
       if(_port != -1)
       {
-        int idin = midiPorts[_port].syncInfo().idIn();
+        int idin = MusEGlobal::midiPorts[_port].syncInfo().idIn();
         
         //---------------------------------------------------
         // filter some SYSEX events
@@ -355,25 +359,25 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
                       && ((p[1] == 0x7f) || (idin == 0x7f) || (p[1] == idin))) {
                           if (p[2] == 0x06) {
                                 //mmcInput(p, n);
-                                midiSeq->mmcInput(_port, p, n);
+                                MusEGlobal::midiSeq->mmcInput(_port, p, n);
                                 return;
                                 }
                           if (p[2] == 0x01) {
                                 //mtcInputFull(p, n);
-                                midiSeq->mtcInputFull(_port, p, n);
+                                MusEGlobal::midiSeq->mtcInputFull(_port, p, n);
                                 return;
                                 }
                           }
                     else if (p[0] == 0x7e) {
                           //nonRealtimeSystemSysex(p, n);
-                          midiSeq->nonRealtimeSystemSysex(_port, p, n);
+                          MusEGlobal::midiSeq->nonRealtimeSystemSysex(_port, p, n);
                           return;
                           }
                     }
               }
           else    
             // Trigger general activity indicator detector. Sysex has no channel, don't trigger.
-            midiPorts[_port].syncInfo().trigActDetect(event.channel());
+            MusEGlobal::midiPorts[_port].syncInfo().trigActDetect(event.channel());
       }
       
       //
@@ -398,11 +402,11 @@ void MidiJackDevice::recordEvent(MidiRecordEvent& event)
       //
       if (typ == ME_NOTEON) {
             int pv = ((event.dataA() & 0xff)<<8) + (event.dataB() & 0xff);
-            song->putEvent(pv);
+            MusEGlobal::song->putEvent(pv);
             }
       else if (typ == ME_NOTEOFF) {
             int pv = ((event.dataA() & 0xff)<<8) + (0x00); //send an event with velo=0
-            song->putEvent(pv);
+            MusEGlobal::song->putEvent(pv);
             }
       
       //if(_recordFifo.put(MidiPlayEvent(event)))
@@ -438,10 +442,10 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
       //               catch      process    play
       //
       
-      //int frameOffset = audio->getFrameOffset();
-      unsigned pos = audio->pos().frame();
+      //int frameOffset = MusEGlobal::audio->getFrameOffset();
+      unsigned pos = MusEGlobal::audio->pos().frame();
       
-      event.setTime(extSyncFlag.value() ? lastExtMidiSyncTick : (pos + ev->time));      // p3.3.25
+      event.setTime(MusEGlobal::extSyncFlag.value() ? MusEGlobal::lastExtMidiSyncTick : (pos + ev->time));      // p3.3.25
 
       event.setChannel(*(ev->buffer) & 0xf);
       int type = *(ev->buffer) & 0xf0;
@@ -486,11 +490,11 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                                 break;
                           case ME_MTC_QUARTER:
                                 if(_port != -1)
-                                  midiSeq->mtcInputQuarter(_port, *(ev->buffer + 1)); 
+                                  MusEGlobal::midiSeq->mtcInputQuarter(_port, *(ev->buffer + 1)); 
                                 return;
                           case ME_SONGPOS:    
                                 if(_port != -1)
-                                  midiSeq->setSongPosition(_port, *(ev->buffer + 1) | (*(ev->buffer + 2) >> 2 )); // LSB then MSB
+                                  MusEGlobal::midiSeq->setSongPosition(_port, *(ev->buffer + 1) | (*(ev->buffer + 2) >> 2 )); // LSB then MSB
                                 return;
                           //case ME_SONGSEL:    
                           //case ME_TUNE_REQ:   
@@ -501,7 +505,7 @@ void MidiJackDevice::eventReceived(jack_midi_event_t* ev)
                           case ME_CONTINUE:   
                           case ME_STOP:       
                                 if(_port != -1)
-                                  midiSeq->realtimeSystemInput(_port, type);
+                                  MusEGlobal::midiSeq->realtimeSystemInput(_port, type);
                                 return;
                           //case ME_SYSEX_END:  
                                 //break;
@@ -609,8 +613,8 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
       void* pb = jack_port_get_buffer(_out_client_jackport, MusEGlobal::segmentSize);  
     
       //unsigned frameCounter = ->frameTime();
-      int frameOffset = audio->getFrameOffset();
-      unsigned pos = audio->pos().frame();
+      int frameOffset = MusEGlobal::audio->getFrameOffset();
+      unsigned pos = MusEGlobal::audio->pos().frame();
       int ft = e.time() - frameOffset - pos;
       
       if (ft < 0)
@@ -715,8 +719,8 @@ bool MidiJackDevice::queueEvent(const MidiPlayEvent& e)
 
 bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
 {    
-  //int frameOffset = audio->getFrameOffset();
-  //unsigned pos = audio->pos().frame();
+  //int frameOffset = MusEGlobal::audio->getFrameOffset();
+  //unsigned pos = MusEGlobal::audio->pos().frame();
 
   int chn    = event.channel();
   unsigned t = event.time();
@@ -730,11 +734,11 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
   // Just do this 'standard midi 64T timing thing' for now until we figure out more precise external timings. 
   // Does require relatively short audio buffers, in order to catch the resolution, but buffer <= 256 should be OK... 
   // Tested OK so far with 128. 
-  //if(extSyncFlag.value()) 
+  //if(MusEGlobal::extSyncFlag.value()) 
   // p4.0.15 Or, is the event marked to be played immediately?
   // Nothing to do but stamp the event to be queued for frame 0+.
-  if(t == 0 || extSyncFlag.value())    
-    t = audio->getFrameOffset() + audio->pos().frame();
+  if(t == 0 || MusEGlobal::extSyncFlag.value())    
+    t = MusEGlobal::audio->getFrameOffset() + MusEGlobal::audio->pos().frame();
     //t = frameOffset + pos;
       
   #ifdef JACK_MIDI_DEBUG
@@ -744,7 +748,7 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
   if(event.type() == ME_PROGRAM) 
   {
     // don't output program changes for GM drum channel
-    //if (!(song->mtype() == MT_GM && chn == 9)) {
+    //if (!(MusEGlobal::song->mtype() == MT_GM && chn == 9)) {
           int hb = (a >> 16) & 0xff;
           int lb = (a >> 8) & 0xff;
           int pr = a & 0x7f;
@@ -782,7 +786,7 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
     int nvl = 0xff;
     if(_port != -1)
     {
-      int nv = midiPorts[_port].nullSendValue();
+      int nv = MusEGlobal::midiPorts[_port].nullSendValue();
       if(nv != -1)
       {
         nvh = (nv >> 8) & 0xff;
@@ -800,7 +804,7 @@ bool MidiJackDevice::processEvent(const MidiPlayEvent& event)
     else if (a == CTRL_PROGRAM) 
     {
       // don't output program changes for GM drum channel
-      //if (!(song->mtype() == MT_GM && chn == 9)) {
+      //if (!(MusEGlobal::song->mtype() == MT_GM && chn == 9)) {
             int hb = (b >> 16) & 0xff;
             int lb = (b >> 8) & 0xff;
             int pr = b & 0x7f;
@@ -1016,7 +1020,7 @@ void MidiJackDevice::processMidi()
     // Same code as in MidiPort::sendEvent()
     if(_port != -1)
     {
-      MidiPort* mp = &midiPorts[_port];
+      MidiPort* mp = &MusEGlobal::midiPorts[_port];
       if(i->type() == ME_CONTROLLER) 
       {
         int da = i->dataA();
@@ -1063,3 +1067,4 @@ bool initMidiJack()
   return false;
 }
 
+} // namespace MusECore

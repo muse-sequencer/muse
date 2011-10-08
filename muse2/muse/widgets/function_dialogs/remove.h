@@ -26,9 +26,12 @@
 #include "ui_removebase.h"
 
 class QButtonGroup;
-class Xml;
 
-namespace MusEDialog {
+namespace MusECore {
+class Xml;
+}
+
+namespace MusEGui {
 
 class Remove : public QDialog, public Ui::RemoveBase
 {
@@ -50,15 +53,15 @@ class Remove : public QDialog, public Ui::RemoveBase
 		int len_threshold;
 		bool len_thres_used;
 		
-		void read_configuration(Xml& xml);
-		void write_configuration(int level, Xml& xml);
+		void read_configuration(MusECore::Xml& xml);
+		void write_configuration(int level, MusECore::Xml& xml);
 		
 		
 	public slots:
 		int exec();
 };
 
-} // namespace MusEDialog
+} // namespace MusEGui
 
 #endif
 

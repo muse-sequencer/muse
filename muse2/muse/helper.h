@@ -32,21 +32,20 @@ class QString;
 class QMenu;
 class QWidget;
 
+
+namespace MusECore {
 class Part;
-
-namespace MusEUtil {
-
 QString pitch2string(int v);
-
 Part* partFromSerialNumber(int serial);
-
 bool any_event_selected(const std::set<Part*>&, bool in_range=false);
 
+bool drummaps_almost_equal(DrumMap* one, DrumMap* two, int drummap_size=128);
+}
+
+namespace MusEGui {
 QMenu* populateAddSynth(QWidget* parent);
 QActionGroup* populateAddTrack(QMenu* addTrack);
+} 
 
-bool drummaps_almost_equal(DrumMap* one, DrumMap* two, int drummap_size=128);
-
-}
 #endif
 

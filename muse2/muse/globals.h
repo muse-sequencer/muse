@@ -37,7 +37,7 @@ class QActionGroup;
 class QStringList;
 class QTimer;
 
-namespace MusEApp {
+namespace MusEGui {
 class MusE;
 }
 
@@ -162,7 +162,7 @@ extern QAction* panicAction;
 
 //class AudioMixerApp;
 //extern AudioMixerApp* audioMixer;
-extern MusEApp::MusE* muse;
+extern MusEGui::MusE* muse;
 
 extern int preMeasures;
 extern unsigned char measureClickNote;

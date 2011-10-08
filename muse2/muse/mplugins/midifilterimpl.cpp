@@ -27,6 +27,8 @@
 #include <QDialog>
 #include <QCloseEvent>
 
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   setCtrl
 //---------------------------------------------------------
@@ -142,4 +144,5 @@ void MidiFilterConfig::closeEvent(QCloseEvent* ev)
       QWidget::closeEvent(ev);
       }
 
+} // namespace MusEGui
 

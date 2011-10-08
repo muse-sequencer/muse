@@ -29,7 +29,7 @@
 class QLayoutItem;
 class QScrollBar;
 
-namespace MusEArranger {
+namespace MusEGui {
 
 class WidgetStack;
 
@@ -75,6 +75,6 @@ class TLLayout : public QLayout
       ///virtual int count() const { return ilist.count(); } // ddskrjo, is pure virtual, overridden
       };
 
-} // namespace MusEArranger
+} // namespace MusEGui
 
 #endif

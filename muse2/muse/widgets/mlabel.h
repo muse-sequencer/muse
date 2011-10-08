@@ -25,7 +25,7 @@
 
 #include <QLabel>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   MLabel
@@ -51,7 +51,7 @@ class MLabel : public QLabel {
          : QLabel(parent) {setObjectName(name);};
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

@@ -26,6 +26,8 @@
 
 #include "thread.h"
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   AudioPrefetch
 //---------------------------------------------------------
@@ -56,6 +58,10 @@ class AudioPrefetch : public Thread {
       bool seekDone() const { return seekCount == 0; }
       };
 
-extern AudioPrefetch* audioPrefetch;
+} // namespace MusECore
+
+namespace MusEGlobal {
+extern MusECore::AudioPrefetch* audioPrefetch;
+}
 
 #endif

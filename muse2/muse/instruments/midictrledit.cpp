@@ -34,6 +34,8 @@
 #include "filedialog.h"
 #include "globals.h"
 
+namespace MusEGui {
+
 MidiControllerEditDialog* midiControllerEditDialog;
 
 static MidiController predefinedMidiController[] = {
@@ -130,7 +132,7 @@ MidiControllerEditDialog::MidiControllerEditDialog(QWidget* parent, const char* 
       updateViewController();
       _modified = false;
       buttonApply->setEnabled(false);
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       }
 
 //---------------------------------------------------------
@@ -337,7 +339,7 @@ void MidiControllerEditDialog::apply()
       // Update the list before closing this dialog.
       //updateViewController();      
       //setModified(false);      
-      song->update(SC_CONFIG | SC_MIDI_CONTROLLER);
+      MusEGlobal::song->update(SC_CONFIG | SC_MIDI_CONTROLLER);
 }
       
 //---------------------------------------------------------
@@ -738,3 +740,5 @@ void configMidiController()
           midiControllerEditDialog->show();
       }
     }
+
+} // namespace MusEGui

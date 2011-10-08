@@ -37,20 +37,24 @@ namespace Awl {
       class PosEdit;
       };
 
+namespace MusECore {
 class Marker;
 ///class PosEdit;
 class Pos;
+}
+
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   MarkerItem
 //---------------------------------------------------------
 
 class MarkerItem : public QTreeWidgetItem {
-      Marker* _marker;
+      MusECore::Marker* _marker;
 
    public:
-      MarkerItem(QTreeWidget* parent, Marker* m);
-      Marker* marker() const { return _marker; }
+      MarkerItem(QTreeWidget* parent, MusECore::Marker* m);
+      MusECore::Marker* marker() const { return _marker; }
       unsigned tick() const;
       const QString name() const;
       bool lock() const;
@@ -84,7 +88,7 @@ class MarkerView : public TopWin {
       void deleteMarker();
       void markerSelectionChanged();
       void nameChanged(const QString&);
-      void tickChanged(const Pos&);
+      void tickChanged(const MusECore::Pos&);
       void lockChanged(bool);
       void markerChanged(int);
       void clicked(QTreeWidgetItem*);
@@ -92,19 +96,21 @@ class MarkerView : public TopWin {
       void songChanged(int);
       
    signals:
-      void deleted(TopWin*);
+      void deleted(MusEGui::TopWin*);
       void closed();
 
    public:
       MarkerView(QWidget* parent);
       ~MarkerView();
-      virtual void readStatus(Xml&);
-      virtual void writeStatus(int, Xml&) const;
-      static void readConfiguration(Xml&);
-      static void writeConfiguration(int, Xml&);
+      virtual void readStatus(MusECore::Xml&);
+      virtual void writeStatus(int, MusECore::Xml&) const;
+      static void readConfiguration(MusECore::Xml&);
+      static void writeConfiguration(int, MusECore::Xml&);
       void nextMarker();
       void prevMarker();
       };
+
+}
 
 #endif
 

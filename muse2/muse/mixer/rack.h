@@ -31,10 +31,12 @@ class QDragLeaveEvent;
 class QDropEvent;
 class QMouseEvent;
 
+namespace MusECore {
 class AudioTrack;
 class Xml;
+}
 
-namespace MusEMixer {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   EffectRack
@@ -44,7 +46,7 @@ class EffectRack : public QListWidget {
       Q_OBJECT
     
     
-      AudioTrack* track;
+      MusECore::AudioTrack* track;
       int itemheight;
       QColor activeColor;      
 
@@ -52,7 +54,7 @@ class EffectRack : public QListWidget {
       virtual QSize sizeHint() const;
       
       void startDrag(int idx);
-      void initPlugin(Xml xml, int idx);
+      void initPlugin(MusECore::Xml xml, int idx);
       QPoint dragPos;
       void savePreset(int idx);
       void choosePlugin(QListWidgetItem* item, bool replace = false);
@@ -73,16 +75,16 @@ class EffectRack : public QListWidget {
       Qt::DropActions supportedDropActions () const;
    
    public:
-      EffectRack(QWidget*, AudioTrack* t);
+      EffectRack(QWidget*, MusECore::AudioTrack* t);
       ~EffectRack();
       
-      AudioTrack* getTrack() { return track; } 
+      MusECore::AudioTrack* getTrack() { return track; } 
       QPoint getDragPos() { return dragPos; }
       QColor getActiveColor() { return activeColor; }
 
       };
 
-} // namespace MusEMixer
+} // namespace MusEGui
 
 #endif
 

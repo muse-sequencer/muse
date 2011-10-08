@@ -45,6 +45,7 @@ QT4_WRAP_CPP (awl_mocs
       posedit.h
       # poslabel.h
       sigedit.h
+      sigspinbox.h
       slider.h
       # tcanvas.h
       tempoedit.h
@@ -80,6 +81,7 @@ file (GLOB awl_source_files
       posedit.cpp
       # poslabel.cpp
       sigedit.cpp
+      sigspinbox.cpp
       slider.cpp
       # tcanvas.cpp
       tempoedit.cpp

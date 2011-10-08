@@ -30,15 +30,17 @@
 
 class QString;
 
+namespace MusEGui {
+class PopupMenu;
+}
+
+namespace MusECore {
+class EventList;
+class MidiControllerList;
 class MidiPort;
 class MidiPlayEvent;
 class Xml;
-class EventList;
-class MidiControllerList;
 
-namespace MusEWidget {
-class PopupMenu;
-}
 
 //---------------------------------------------------------
 //   Patch
@@ -141,7 +143,7 @@ class MidiInstrument {
       virtual void reset(int, MType);
       virtual QString getPatchName(int,int,MType,bool);
       //virtual void populatePatchPopup(QMenu*, int, MType, bool);
-      virtual void populatePatchPopup(MusEWidget::PopupMenu*, int, MType, bool);
+      //virtual void populatePatchPopup(MusEGui::PopupMenu*, int, MType, bool);
       void read(Xml&);
       void write(int level, Xml&);
       
@@ -167,5 +169,10 @@ extern MidiInstrument* registerMidiInstrument(const QString&);
 extern void removeMidiInstrument(const QString& name);
 extern void removeMidiInstrument(const MidiInstrument* instr);
 
+} // namespace MusECore
+
+namespace MusEGui {
+extern void populatePatchPopup(MusECore::MidiInstrument*, PopupMenu*, int, MType, bool);
+}
 #endif
 

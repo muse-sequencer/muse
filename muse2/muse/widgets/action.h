@@ -25,7 +25,7 @@
 
 #include <QAction>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   Action

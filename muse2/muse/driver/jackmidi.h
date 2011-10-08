@@ -36,9 +36,11 @@
 
 class QString;
 //class MidiFifo;
+//class RouteList;
+
+namespace MusECore {
 class MidiRecordEvent;
 class MidiPlayEvent;
-//class RouteList;
 class Xml;
 
 // It appears one client port per remote port will be necessary.
@@ -92,6 +94,8 @@ class MidiJackDevice : public MidiDevice {
       };
 
 extern bool initMidiJack();
+
+} // namespace MusECore
 
 #endif
 

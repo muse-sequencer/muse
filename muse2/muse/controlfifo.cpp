@@ -21,6 +21,8 @@
 
 #include "controlfifo.h"
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //   ControlFifo
 //    put
@@ -73,5 +75,6 @@ void ControlFifo::remove()
       --size;
       }
 
+} // namespace MusECore
 
 

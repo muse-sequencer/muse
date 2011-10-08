@@ -28,12 +28,18 @@
 #include "ctrlcanvas.h"
 #include "song.h"
 
+namespace MusECore {
+class Xml;
+}
+
+#define CTRL_PANEL_FIXED_WIDTH 40
+
+namespace MusEGui {
+
 class MidiEditor;
 class CtrlView;
 class CtrlPanel;
-class Xml;
 
-#define CTRL_PANEL_FIXED_WIDTH 40
 //---------------------------------------------------------
 //   CtrlEdit
 //---------------------------------------------------------
@@ -64,10 +70,12 @@ class CtrlEdit : public QWidget {
    public:
       CtrlEdit(QWidget*, MidiEditor* e, int xmag,
          bool expand = false, const char* name = 0);
-      void readStatus(Xml&);
-      void writeStatus(int, Xml&);
+      void readStatus(MusECore::Xml&);
+      void writeStatus(int, MusECore::Xml&);
       void setController(const QString& name);
       };
+
+} // namespace MusEGui
 
 #endif
 

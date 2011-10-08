@@ -34,7 +34,7 @@
 #include "../globals.h"
 #include "gconfig.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 MFileDialog::ViewType MFileDialog::lastViewUsed = GLOBAL_VIEW;
 //QString MFileDialog::lastUserDir = "";
@@ -149,7 +149,7 @@ void MFileDialog::projectToggled(bool flag)
                   // if project path is uninitialized, meaning it is still set to museProjectInitPath.
                   // then project path is set to current pwd instead.
                   //s = QString(getcwd(0,0)) + QString("/");
-                  s = MusEConfig::config.projectBaseFolder;
+                  s = MusEGlobal::config.projectBaseFolder;
                   }
             else
                   s = MusEGlobal::museProject + QString("/"); // + baseDir;
@@ -563,4 +563,4 @@ FILE* MFile::open(const char* mode, const QStringList& pattern,
       return f;
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

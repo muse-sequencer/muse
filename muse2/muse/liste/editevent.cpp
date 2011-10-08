@@ -53,6 +53,8 @@
 #include "midi.h"
 #include "popupmenu.h"
 
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   string2qhex
 //---------------------------------------------------------
@@ -114,10 +116,10 @@ char* hex2string(QWidget* parent, const char* src, int& len)
 //   getEvent
 //---------------------------------------------------------
 
-Event EditNoteDialog::getEvent(int tick, const Event& event, QWidget* parent)
+MusECore::Event EditNoteDialog::getEvent(int tick, const MusECore::Event& event, QWidget* parent)
       {
       EditNoteDialog* dlg = new EditNoteDialog(tick, event, parent);
-      Event nevent;
+      MusECore::Event nevent;
       if (dlg->exec() == QDialog::Accepted) {
             nevent = dlg->event();
             }
@@ -125,10 +127,10 @@ Event EditNoteDialog::getEvent(int tick, const Event& event, QWidget* parent)
       return nevent;
       }
 
-Event EditSysexDialog::getEvent(int tick, const Event& event, QWidget* parent)
+MusECore::Event EditSysexDialog::getEvent(int tick, const MusECore::Event& event, QWidget* parent)
       {
       EditSysexDialog* dlg = new EditSysexDialog(tick, event, parent);
-      Event nevent;
+      MusECore::Event nevent;
       if (dlg->exec() == QDialog::Accepted) {
             nevent = dlg->event();
             }
@@ -136,10 +138,10 @@ Event EditSysexDialog::getEvent(int tick, const Event& event, QWidget* parent)
       return nevent;
       }
 
-Event EditMetaDialog::getEvent(int tick, const Event& event, QWidget* parent)
+MusECore::Event EditMetaDialog::getEvent(int tick, const MusECore::Event& event, QWidget* parent)
       {
       EditEventDialog* dlg = new EditMetaDialog(tick, event, parent);
-      Event nevent;
+      MusECore::Event nevent;
       if (dlg->exec() == QDialog::Accepted) {
             nevent = dlg->event();
             }
@@ -147,10 +149,10 @@ Event EditMetaDialog::getEvent(int tick, const Event& event, QWidget* parent)
       return nevent;
       }
 
-Event EditCAfterDialog::getEvent(int tick, const Event& event, QWidget* parent)
+MusECore::Event EditCAfterDialog::getEvent(int tick, const MusECore::Event& event, QWidget* parent)
       {
       EditEventDialog* dlg = new EditCAfterDialog(tick, event, parent);
-      Event nevent;
+      MusECore::Event nevent;
       if (dlg->exec() == QDialog::Accepted) {
             nevent = dlg->event();
             }
@@ -158,10 +160,10 @@ Event EditCAfterDialog::getEvent(int tick, const Event& event, QWidget* parent)
       return nevent;
       }
 
-Event EditPAfterDialog::getEvent(int tick, const Event& event, QWidget* parent)
+MusECore::Event EditPAfterDialog::getEvent(int tick, const MusECore::Event& event, QWidget* parent)
       {
       EditEventDialog* dlg = new EditPAfterDialog(tick, event, parent);
-      Event nevent;
+      MusECore::Event nevent;
       if (dlg->exec() == QDialog::Accepted) {
             nevent = dlg->event();
             }
@@ -204,7 +206,7 @@ EditEventDialog::EditEventDialog(QWidget* parent)
 //   EditNoteDialog
 //---------------------------------------------------------
 
-EditNoteDialog::EditNoteDialog(int tick, const Event& event,
+EditNoteDialog::EditNoteDialog(int tick, const MusECore::Event& event,
    QWidget* parent)
    : QDialog(parent)
       {
@@ -229,9 +231,9 @@ EditNoteDialog::EditNoteDialog(int tick, const Event& event,
 //   EditNoteDialog::event
 //---------------------------------------------------------
 
-Event EditNoteDialog::event()
+MusECore::Event EditNoteDialog::event()
       {
-      Event event(Note);
+      MusECore::Event event(MusECore::Note);
       event.setTick(epos->pos().tick());
       event.setA(pl->value());
       event.setB(il2->value());
@@ -244,7 +246,7 @@ Event EditNoteDialog::event()
 //   EditSysExDialog
 //---------------------------------------------------------
 
-EditSysexDialog::EditSysexDialog(int tick, const Event& event,
+EditSysexDialog::EditSysexDialog(int tick, const MusECore::Event& event,
    QWidget* parent)
    : QDialog(parent)
       {
@@ -273,9 +275,9 @@ EditSysexDialog::~EditSysexDialog()
 //   EditSysExDialog::event
 //---------------------------------------------------------
 
-Event EditSysexDialog::event()
+MusECore::Event EditSysexDialog::event()
       {
-      Event event(Sysex);
+      MusECore::Event event(MusECore::Sysex);
       event.setTick(epos->pos().tick());
       event.setData(sysex, len);
       return event;
@@ -300,7 +302,7 @@ void EditSysexDialog::accept()
 //   EditMetaDialog
 //---------------------------------------------------------
 
-EditMetaDialog::EditMetaDialog(int tick, const Event& ev,
+EditMetaDialog::EditMetaDialog(int tick, const MusECore::Event& ev,
    QWidget* parent)
    : EditEventDialog(parent)
       {
@@ -312,7 +314,7 @@ EditMetaDialog::EditMetaDialog(int tick, const Event& ev,
       epos = new Awl::PosEdit;
 
       QLabel* l2 = new QLabel(tr("Meta Type"));
-      il2 = new MusEWidget::IntLabel(-1, 0, 127, this, -1);
+      il2 = new MusEGui::IntLabel(-1, 0, 127, this, -1);
       il2->setFixedWidth(100);
       il2->setFrame(true);
       il2->setDark();
@@ -328,7 +330,7 @@ EditMetaDialog::EditMetaDialog(int tick, const Event& ev,
       connect(hexButton, SIGNAL(toggled(bool)), SLOT(toggled(bool)));
 
       edit = new QTextEdit;
-      edit->setFont(MusEConfig::config.fonts[5]);
+      edit->setFont(MusEGlobal::config.fonts[5]);
 
       if (!ev.empty()) {
             epos->setValue(tick);
@@ -363,7 +365,7 @@ EditMetaDialog::EditMetaDialog(int tick, const Event& ev,
 
 void EditMetaDialog::typeChanged(int val)
 {
-  typeLabel->setText(midiMetaName(val));
+  typeLabel->setText(MusECore::midiMetaName(val));
 }
 
 //---------------------------------------------------------
@@ -402,9 +404,9 @@ EditMetaDialog::~EditMetaDialog()
 //   EditMetaDialog::event
 //---------------------------------------------------------
 
-Event EditMetaDialog::event()
+MusECore::Event EditMetaDialog::event()
       {
-      Event event(Meta);
+      MusECore::Event event(MusECore::Meta);
       event.setTick(epos->pos().tick());
       event.setA(il2->value());
       event.setData(meta, len);  // TODO ??
@@ -436,7 +438,7 @@ void EditMetaDialog::accept()
 //   EditCAfterDialog
 //---------------------------------------------------------
 
-EditCAfterDialog::EditCAfterDialog(int tick, const Event& event,
+EditCAfterDialog::EditCAfterDialog(int tick, const MusECore::Event& event,
    QWidget* parent)
    : EditEventDialog(parent)
       {
@@ -447,7 +449,7 @@ EditCAfterDialog::EditCAfterDialog(int tick, const Event& event,
       epos = new Awl::PosEdit;
 
       QLabel* l2 = new QLabel(tr("Pressure"));
-      il2  = new MusEWidget::IntLabel(-1, 0, 127, this, -1);
+      il2  = new MusEGui::IntLabel(-1, 0, 127, this, -1);
       il2->setFrame(true);
       il2->setDark();
 
@@ -483,9 +485,9 @@ EditCAfterDialog::EditCAfterDialog(int tick, const Event& event,
 //   EditCAfterDialog::event
 //---------------------------------------------------------
 
-Event EditCAfterDialog::event()
+MusECore::Event EditCAfterDialog::event()
       {
-      Event event(CAfter);
+      MusECore::Event event(MusECore::CAfter);
       event.setTick(epos->pos().tick());
       event.setA(il2->value());
       return event;
@@ -495,7 +497,7 @@ Event EditCAfterDialog::event()
 //   EditPAfterDialog
 //---------------------------------------------------------
 
-EditPAfterDialog::EditPAfterDialog(int tick, const Event& event,
+EditPAfterDialog::EditPAfterDialog(int tick, const MusECore::Event& event,
    QWidget* parent)
    : EditEventDialog(parent)
       {
@@ -506,9 +508,9 @@ EditPAfterDialog::EditPAfterDialog(int tick, const Event& event,
       epos = new Awl::PosEdit;
 
       QLabel* l2 = new QLabel(tr("Pitch"));
-      pl = new MusEWidget::PitchEdit;
+      pl = new MusEGui::PitchEdit;
       QLabel* l3 = new QLabel(tr("Pressure"));
-      il2  = new MusEWidget::IntLabel(-1, 0, 127, this, -1);
+      il2  = new MusEGui::IntLabel(-1, 0, 127, this, -1);
       il2->setFrame(true);
       il2->setDark();
 
@@ -548,9 +550,9 @@ EditPAfterDialog::EditPAfterDialog(int tick, const Event& event,
 //   EditPAfterDialog::event
 //---------------------------------------------------------
 
-Event EditPAfterDialog::event()
+MusECore::Event EditPAfterDialog::event()
       {
-      Event event(PAfter);
+      MusECore::Event event(MusECore::PAfter);
       event.setTick(epos->pos().tick());
       event.setA(pl->value());
       event.setB(il2->value());
@@ -560,11 +562,11 @@ Event EditPAfterDialog::event()
 //   getEvent
 //---------------------------------------------------------
 
-Event EditCtrlDialog::getEvent(int tick, const Event& event,
-   const MidiPart* part, QWidget* parent)
+MusECore::Event EditCtrlDialog::getEvent(int tick, const MusECore::Event& event,
+    const MusECore::MidiPart* part, QWidget* parent)
       {
       EditCtrlDialog* dlg = new EditCtrlDialog(tick, event, part, parent);
-      Event nevent;
+      MusECore::Event nevent;
       if (dlg->exec() == QDialog::Accepted) {
             nevent = dlg->event();
             }
@@ -576,15 +578,15 @@ Event EditCtrlDialog::getEvent(int tick, const Event& event,
 //   EditCtrlDialog::event
 //---------------------------------------------------------
 
-Event EditCtrlDialog::event()
+MusECore::Event EditCtrlDialog::event()
       {
-      Event event(Controller);
+      MusECore::Event event(MusECore::Controller);
       event.setTick(timePos->pos().tick());
       event.setA(num);
-      if (num == CTRL_PROGRAM)
+      if (num == MusECore::CTRL_PROGRAM)
             event.setB(val);
       else
-            event.setB(valSlider->value() + midiPorts[part->track()->outPort()].midiController(num)->bias());
+            event.setB(valSlider->value() + MusEGlobal::midiPorts[part->track()->outPort()].midiController(num)->bias());
       return event;
       }
 
@@ -598,8 +600,8 @@ Event EditCtrlDialog::event()
 //    QPushButton* buttonNewController;
 //---------------------------------------------------------
 
-EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
-   const MidiPart* p, QWidget* parent)
+EditCtrlDialog::EditCtrlDialog(int tick, const MusECore::Event& event,
+   const MusECore::MidiPart* p, QWidget* parent)
    : QDialog(parent), part(p)
       {
       setupUi(this);
@@ -614,11 +616,11 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
       ///pop = new QMenu(this);
       //pop->setCheckable(false);//not necessary in Qt4
 
-      MidiTrack* track   = part->track();
+      MusECore::MidiTrack* track   = part->track();
       int portn          = track->outPort();
-      MidiPort* port     = &midiPorts[portn];
-      bool isDrum        = track->type() == Track::DRUM; //FINDMICHJETZT was soll das?
-      MidiCtrlValListList* cll = port->controller();
+      MusECore::MidiPort* port     = &MusEGlobal::midiPorts[portn];
+      bool isDrum        = track->type() == MusECore::Track::DRUM; //FINDMICHJETZT was soll das?
+      MusECore::MidiCtrlValListList* cll = port->controller();
 
       ctrlList->clear();
       ctrlList->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -630,8 +632,8 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
       std::list<QString> sList;
       typedef std::list<QString>::iterator isList;
 
-      for (iMidiCtrlValList i = cll->begin(); i != cll->end(); ++i) {
-            MidiCtrlValList* cl = i->second;
+      for (MusECore::iMidiCtrlValList i = cll->begin(); i != cll->end(); ++i) {
+            MusECore::MidiCtrlValList* cl = i->second;
             int num             = cl->num();
 
             // dont show drum specific controller if not a drum track
@@ -639,7 +641,7 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
                   if (!isDrum)
                         continue;
                   }
-            MidiController* c = port->midiController(num);
+            MusECore::MidiController* c = port->midiController(num);
             isList i = sList.begin();
             for (; i != sList.end(); ++i) {
                   if (*i == c->name())
@@ -648,7 +650,7 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
             if (i == sList.end())
                   sList.push_back(c->name());
             }
-      MidiController* mc = port->midiController(num);
+      MusECore::MidiController* mc = port->midiController(num);
       int idx = 0;
       int selectionIndex = 0;
       for (isList i = sList.begin(); i != sList.end(); ++i, ++idx) {
@@ -665,7 +667,7 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
 
       if(!event.empty())
       {
-        if(num == CTRL_PROGRAM)
+        if(num == MusECore::CTRL_PROGRAM)
         {
           widgetStack->setCurrentIndex(1);
           updatePatch();
@@ -696,22 +698,22 @@ EditCtrlDialog::EditCtrlDialog(int tick, const Event& event,
 void EditCtrlDialog::newController()
       {
       //QMenu* pup = new QMenu(this);
-      MusEWidget::PopupMenu* pup = new MusEWidget::PopupMenu(this);
+      MusEGui::PopupMenu* pup = new MusEGui::PopupMenu(this);
       //pup->setCheckable(this);//not necessary in Qt4
       //
       // populate popup with all controllers available for
       // current instrument
       //
-      MidiTrack* track        = part->track();
+      MusECore::MidiTrack* track        = part->track();
       int portn               = track->outPort();
-      MidiPort* port          = &midiPorts[portn];
-      MidiInstrument* instr   = port->instrument();
-      MidiControllerList* mcl = instr->controller();
+      MusECore::MidiPort* port          = &MusEGlobal::midiPorts[portn];
+      MusECore::MidiInstrument* instr   = port->instrument();
+      MusECore::MidiControllerList* mcl = instr->controller();
       
-      MidiCtrlValListList* cll = port->controller();
+      MusECore::MidiCtrlValListList* cll = port->controller();
       int channel              = track->outChannel();
       int nn = 0;
-      for (iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
+      for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci)
       {
             if(cll->find(channel, ci->second->num()) == cll->end())
             {
@@ -723,14 +725,14 @@ void EditCtrlDialog::newController()
       QAction* rv = pup->exec(buttonNewController->mapToGlobal(QPoint(0,0)));
       if (rv) {
             QString s = rv->text();
-            for (iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) {
-                  MidiController* mc = ci->second;
+            for (MusECore::iMidiController ci = mcl->begin(); ci != mcl->end(); ++ci) {
+                  MusECore::MidiController* mc = ci->second;
                   if (mc->name() == s) {
                         if(cll->find(channel, mc->num()) == cll->end())
                         {
-                          MidiCtrlValList* vl = new MidiCtrlValList(mc->num());
+                          MusECore::MidiCtrlValList* vl = new MusECore::MidiCtrlValList(mc->num());
                           cll->add(channel, vl);
-                          //song->update(SC_MIDI_CONTROLLER_ADD);
+                          //MusEGlobal::song->update(SC_MIDI_CONTROLLER_ADD);
                         }
                         //for (int idx = 0; ;++idx) {
                         int idx = 0;
@@ -773,22 +775,22 @@ void EditCtrlDialog::ctrlListClicked(QListWidgetItem* item)
             return;
       QString s(item->text());
 
-      MidiTrack* track         = part->track();
+      MusECore::MidiTrack* track         = part->track();
       int portn                = track->outPort();
-      MidiPort* port           = &midiPorts[portn];
-      MidiCtrlValListList* cll = port->controller();
+      MusECore::MidiPort* port           = &MusEGlobal::midiPorts[portn];
+      MusECore::MidiCtrlValListList* cll = port->controller();
       
-      iMidiCtrlValList i;
+      MusECore::iMidiCtrlValList i;
       for (i = cll->begin(); i != cll->end(); ++i) {
-            MidiCtrlValList* cl = i->second;
+            MusECore::MidiCtrlValList* cl = i->second;
             num                 = cl->num();
-            MidiController* c   = port->midiController(num);
+            MusECore::MidiController* c   = port->midiController(num);
             if (s == c->name()) {
-                  if (num == CTRL_PROGRAM) {
+                  if (num == MusECore::CTRL_PROGRAM) {
                         widgetStack->setCurrentIndex(1);
                         
                         val = c->initVal();
-                        if(val == CTRL_VAL_UNKNOWN)
+                        if(val == MusECore::CTRL_VAL_UNKNOWN)
                           val = 0;
                         updatePatch();
                         }
@@ -799,14 +801,14 @@ void EditCtrlDialog::ctrlListClicked(QListWidgetItem* item)
                         controllerName->setText(s);
                         val = c->initVal();
                         
-                        if(val == CTRL_VAL_UNKNOWN || val == 0)
+                        if(val == MusECore::CTRL_VAL_UNKNOWN || val == 0)
                         {
                           switch(num)
                           {
-                            case CTRL_PANPOT:
+                            case MusECore::CTRL_PANPOT:
                               val = 64 - c->bias();
                             break;
-                            case CTRL_VOLUME:
+                            case MusECore::CTRL_VOLUME:
                               val = 100;
                             break;
                             default:  
@@ -829,11 +831,11 @@ void EditCtrlDialog::ctrlListClicked(QListWidgetItem* item)
 
 void EditCtrlDialog::updatePatch()
       {
-      MidiTrack* track      = part->track();
+      MusECore::MidiTrack* track      = part->track();
       int port              = track->outPort();
       int channel           = track->outChannel();
-      MidiInstrument* instr = midiPorts[port].instrument();
-      patchName->setText(instr->getPatchName(channel, val, song->mtype(), track->type() == Track::DRUM));  //FINDMICHJETZT was soll das?
+      MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
+      patchName->setText(instr->getPatchName(channel, val, MusEGlobal::song->mtype(), track->type() == MusECore::Track::DRUM));  //FINDMICHJETZT was soll das?
 
       int hb = ((val >> 16) & 0xff) + 1;
       if (hb == 0x100)
@@ -864,15 +866,15 @@ void EditCtrlDialog::updatePatch()
 
 void EditCtrlDialog::instrPopup()
       {
-      MidiTrack* track = part->track();
+      MusECore::MidiTrack* track = part->track();
       int channel = track->outChannel();
       int port    = track->outPort();
-      MidiInstrument* instr = midiPorts[port].instrument();
+      MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
       
-      ///instr->populatePatchPopup(pop, channel, song->mtype(), track->type() == Track::DRUM);
+      ///instr->populatePatchPopup(pop, channel, MusEGlobal::song->mtype(), track->type() == MusECore::Track::DRUM);
       //QMenu* pup = new QMenu(this);
-      MusEWidget::PopupMenu* pup = new MusEWidget::PopupMenu(this);
-      instr->populatePatchPopup(pup, channel, song->mtype(), track->type() == Track::DRUM);  //FINDMICHJETZT was soll das?
+      MusEGui::PopupMenu* pup = new MusEGui::PopupMenu(this);
+      populatePatchPopup(instr, pup, channel, MusEGlobal::song->mtype(), track->type() == MusECore::Track::DRUM);  //FINDMICHJETZT was soll das?
 
       ///if(pop->actions().count() == 0)
       ///  return;
@@ -898,7 +900,7 @@ void EditCtrlDialog::instrPopup()
 
 void EditCtrlDialog::programChanged()
       {
-//      MidiTrack* track = part->track();
+//      MusECore::MidiTrack* track = part->track();
 //      int channel = track->outChannel();
 //      int port    = track->outPort();
       int hb   = hbank->value();
@@ -922,3 +924,4 @@ void EditCtrlDialog::programChanged()
       updatePatch();
       }
 
+} // namespace MusEGui

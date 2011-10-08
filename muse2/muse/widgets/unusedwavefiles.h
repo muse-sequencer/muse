@@ -26,10 +26,10 @@
 #include <QDialog>
 
 namespace Ui {
-    class UnusedWaveFiles;
+class UnusedWaveFiles;
 }
 
-namespace MusEWidget {
+namespace MusEGui {
 
 class UnusedWaveFiles : public QDialog
 {
@@ -47,6 +47,6 @@ private:
     Ui::UnusedWaveFiles *ui;
 };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif // UNUSEDWAVEFILES_H

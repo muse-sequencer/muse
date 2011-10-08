@@ -36,9 +36,9 @@
 #include "sig.h"
 #include "spinbox.h"
 
-extern int mtcType;
+extern int MusEGlobal::mtcType;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   QNumberSection
@@ -644,7 +644,7 @@ void PosEdit::setSec(int secNo, int val)
                               val = 59;
                         break;
                   case 2:
-                        switch(mtcType) {
+                        switch(MusEGlobal::mtcType) {
                               case 0:     // 24 frames sec
                                     if (val > 23)
                                           val = 23;
@@ -719,7 +719,7 @@ bool PosEdit::outOfRange(int secNo, int val) const
                         limit = 59;
                         break;
                   case 2:
-                        switch(mtcType) {
+                        switch(MusEGlobal::mtcType) {
                               case 0:     // 24 frames sec
                                     limit = 23;
                                     break;
@@ -871,4 +871,4 @@ void PosEdit::setEnabled(bool v)
   updateButtons();
 }
 
-} // namespace MusEWidget
+} // namespace MusEGui

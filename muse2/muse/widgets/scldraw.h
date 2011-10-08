@@ -31,7 +31,7 @@
 class QPainter;
 class QRect;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 class ScaleDraw : public DiMap {
    public:
@@ -87,7 +87,7 @@ class ScaleDraw : public DiMap {
       void draw(QPainter *p) const;
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

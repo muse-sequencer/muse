@@ -24,7 +24,7 @@
 #include "pitchedit.h"
 #include "helper.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   PitchEdit
@@ -51,7 +51,7 @@ QString PitchEdit::mapValueToText(int v)
             return s;
             }
       else
-            return MusEUtil::pitch2string(v);
+            return MusECore::pitch2string(v);
       }
 
 //---------------------------------------------------------
@@ -79,4 +79,4 @@ void PitchEdit::setDeltaMode(bool val)
             setRange(0, 127);
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

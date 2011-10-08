@@ -38,6 +38,8 @@
 #include "mpevent.h"
 #include "gconfig.h"
 
+namespace MusECore {
+
 const char* errString[] = {
       "no Error",
       "unexpected EOF",
@@ -535,7 +537,7 @@ bool MidiFile::writeTrack(const MidiFileTrack* t)
                   printf("MidiFile::writeTrack: ntick %d < tick %d\n", ntick, tick);
                   ntick = tick;
                   }
-            putvl(((ntick - tick) * MusEConfig::config.midiDivision + MusEConfig::config.division/2)/MusEConfig::config.division);
+            putvl(((ntick - tick) * MusEGlobal::config.midiDivision + MusEGlobal::config.division/2)/MusEGlobal::config.division);
             tick = ntick;
             writeEvent(&(*i));
             }
@@ -567,7 +569,7 @@ void MidiFile::writeEvent(const MidiPlayEvent* event)
 
       // we dont save meta data into smf type 0 files:
 
-      if (MusEConfig::config.smfFormat == 0 && nstat == ME_META)
+      if (MusEGlobal::config.smfFormat == 0 && nstat == ME_META)
             return;
 
       nstat |= c;
@@ -617,8 +619,8 @@ bool MidiFile::write()
       {
       write("MThd", 4);
       writeLong(6);                 // header len
-      writeShort(MusEConfig::config.smfFormat);
-      if (MusEConfig::config.smfFormat == 0) {
+      writeShort(MusEGlobal::config.smfFormat);
+      if (MusEGlobal::config.smfFormat == 0) {
             writeShort(1);
             MidiFileTrack dst;
             for (iMidiFileTrack i = _tracks->begin(); i != _tracks->end(); ++i) {
@@ -691,3 +693,4 @@ bool MidiFile::read()
       return false;
       }
 
+} // namespace MusECore

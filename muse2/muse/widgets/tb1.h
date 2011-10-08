@@ -31,7 +31,7 @@ class QTableWidget;
 class Track;
 class LabelCombo;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 class PitchLabel;
 class PosLabel;
@@ -71,6 +71,6 @@ class Toolbar1 : public QToolBar {
       void setPitchMode(bool flag);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif

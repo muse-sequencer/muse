@@ -107,7 +107,7 @@ void OrganGui::ctrlChanged(int idx)
       else if (ctrl->type == SynthGuiCtrl::SWITCH) {
             val = ((QCheckBox*)(ctrl->editor))->isChecked();
             }
-      sendController(0, idx + CTRL_RPN14_OFFSET, val);
+      sendController(0, idx + MusECore::CTRL_RPN14_OFFSET, val);
       }
 
 //---------------------------------------------------------
@@ -185,9 +185,9 @@ void OrganGui::setParam(int param, int val)
 //   processEvent
 //---------------------------------------------------------
 
-void OrganGui::processEvent(const MidiPlayEvent& ev)
+void OrganGui::processEvent(const MusECore::MidiPlayEvent& ev)
       {
-      if (ev.type() == ME_CONTROLLER)
+      if (ev.type() == MusECore::ME_CONTROLLER)
             setParam(ev.dataA(), ev.dataB());
       else
       {

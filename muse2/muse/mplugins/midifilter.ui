@@ -269,16 +269,16 @@
        <number>11</number>
       </property>
       <item>
-       <widget class="MusEWidget::CtrlComboBox" name="cb1" native="true"/>
+       <widget class="MusEGui::CtrlComboBox" name="cb1" native="true"/>
       </item>
       <item>
-       <widget class="MusEWidget::CtrlComboBox" name="cb2" native="true"/>
+       <widget class="MusEGui::CtrlComboBox" name="cb2" native="true"/>
       </item>
       <item>
-       <widget class="MusEWidget::CtrlComboBox" name="cb3" native="true"/>
+       <widget class="MusEGui::CtrlComboBox" name="cb3" native="true"/>
       </item>
       <item>
-       <widget class="MusEWidget::CtrlComboBox" name="cb4" native="true"/>
+       <widget class="MusEGui::CtrlComboBox" name="cb4" native="true"/>
       </item>
      </layout>
     </widget>
@@ -685,7 +685,7 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>MusEWidget::CtrlComboBox</class>
+   <class>MusEGui::CtrlComboBox</class>
    <extends>QWidget</extends>
    <header location="global">ctrlcombo.h</header>
   </customwidget>

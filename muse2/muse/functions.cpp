@@ -60,8 +60,9 @@
 
 using namespace std;
 
-using MusEConfig::config;
+using MusEGlobal::config;
 
+namespace MusECore {
 
 // unit private functions:
 
@@ -92,7 +93,7 @@ set<Part*> get_all_parts()
 {
 	set<Part*> result;
 	
-	TrackList* tracks=song->tracks();
+	TrackList* tracks=MusEGlobal::song->tracks();
 	for (TrackList::const_iterator t_it=tracks->begin(); t_it!=tracks->end(); t_it++)
 	{
 		const PartList* parts=(*t_it)->cparts();
@@ -107,7 +108,7 @@ set<Part*> get_all_selected_parts()
 {
 	set<Part*> result;
 	
-	TrackList* tracks=song->tracks();
+	TrackList* tracks=MusEGlobal::song->tracks();
 	for (TrackList::const_iterator t_it=tracks->begin(); t_it!=tracks->end(); t_it++)
 	{
 		const PartList* parts=(*t_it)->cparts();
@@ -129,7 +130,7 @@ bool is_relevant(const Event& event, const Part* part, int range)
 	{
 		case 0: return true;
 		case 1: return event.selected();
-		case 2: tick=event.tick()+part->tick(); return (tick >= song->lpos()) && (tick < song->rpos());
+		case 2: tick=event.tick()+part->tick(); return (tick >= MusEGlobal::song->lpos()) && (tick < MusEGlobal::song->rpos());
 		case 3: return is_relevant(event,part,1) && is_relevant(event,part,2);
 		default: cout << "ERROR: ILLEGAL FUNCTION CALL in is_relevant: range is illegal: "<<range<<endl;
 		         return false;
@@ -154,109 +155,109 @@ map<Event*, Part*> get_events(const set<Part*>& parts, int range)
 
 bool modify_notelen(const set<Part*>& parts)
 {
-	if (!gatetime_dialog->exec())
+	if (!MusEGui::gatetime_dialog->exec())
 		return false;
 		
-	modify_notelen(parts,gatetime_dialog->range,gatetime_dialog->rateVal,gatetime_dialog->offsetVal);
+	modify_notelen(parts,MusEGui::gatetime_dialog->range,MusEGui::gatetime_dialog->rateVal,MusEGui::gatetime_dialog->offsetVal);
 	
 	return true;
 }
 
 bool modify_velocity(const set<Part*>& parts)
 {
-	if (!velocity_dialog->exec())
+	if (!MusEGui::velocity_dialog->exec())
 		return false;
 		
-	modify_velocity(parts,velocity_dialog->range,velocity_dialog->rateVal,velocity_dialog->offsetVal);
+	modify_velocity(parts,MusEGui::velocity_dialog->range,MusEGui::velocity_dialog->rateVal,MusEGui::velocity_dialog->offsetVal);
 	
 	return true;
 }
 
 bool quantize_notes(const set<Part*>& parts)
 {
-	if (!quantize_dialog->exec())
+	if (!MusEGui::quantize_dialog->exec())
 		return false;
 		
-	quantize_notes(parts, quantize_dialog->range, (MusEConfig::config.division*4)/(1<<quantize_dialog->raster_power2),
-	               quantize_dialog->quant_len, quantize_dialog->strength, quantize_dialog->swing,
-	               quantize_dialog->threshold);
+	quantize_notes(parts, MusEGui::quantize_dialog->range, (MusEGlobal::config.division*4)/(1<<MusEGui::quantize_dialog->raster_power2),
+	               MusEGui::quantize_dialog->quant_len, MusEGui::quantize_dialog->strength, MusEGui::quantize_dialog->swing,
+	               MusEGui::quantize_dialog->threshold);
 	
 	return true;
 }
 
 bool erase_notes(const set<Part*>& parts)
 {
-	if (!erase_dialog->exec())
+	if (!MusEGui::erase_dialog->exec())
 		return false;
 		
-	erase_notes(parts,erase_dialog->range, erase_dialog->velo_threshold, erase_dialog->velo_thres_used, 
-	                                       erase_dialog->len_threshold, erase_dialog->len_thres_used );
+	erase_notes(parts,MusEGui::erase_dialog->range, MusEGui::erase_dialog->velo_threshold, MusEGui::erase_dialog->velo_thres_used, 
+	                                       MusEGui::erase_dialog->len_threshold, MusEGui::erase_dialog->len_thres_used );
 	
 	return true;
 }
 
 bool delete_overlaps(const set<Part*>& parts)
 {
-	if (!del_overlaps_dialog->exec())
+	if (!MusEGui::del_overlaps_dialog->exec())
 		return false;
 		
-	delete_overlaps(parts,erase_dialog->range);
+	delete_overlaps(parts,MusEGui::erase_dialog->range);
 	
 	return true;
 }
 
 bool set_notelen(const set<Part*>& parts)
 {
-	if (!set_notelen_dialog->exec())
+	if (!MusEGui::set_notelen_dialog->exec())
 		return false;
 		
-	set_notelen(parts,set_notelen_dialog->range,set_notelen_dialog->len);
+	set_notelen(parts,MusEGui::set_notelen_dialog->range,MusEGui::set_notelen_dialog->len);
 	
 	return true;
 }
 
 bool move_notes(const set<Part*>& parts)
 {
-	if (!move_notes_dialog->exec())
+	if (!MusEGui::move_notes_dialog->exec())
 		return false;
 		
-	move_notes(parts,move_notes_dialog->range,move_notes_dialog->amount);
+	move_notes(parts,MusEGui::move_notes_dialog->range,MusEGui::move_notes_dialog->amount);
 	
 	return true;
 }
 
 bool transpose_notes(const set<Part*>& parts)
 {
-	if (!transpose_dialog->exec())
+	if (!MusEGui::transpose_dialog->exec())
 		return false;
 		
-	transpose_notes(parts,transpose_dialog->range,transpose_dialog->amount);
+	transpose_notes(parts,MusEGui::transpose_dialog->range,MusEGui::transpose_dialog->amount);
 	
 	return true;
 }
 
 bool crescendo(const set<Part*>& parts)
 {
-	if (song->rpos() <= song->lpos())
+	if (MusEGlobal::song->rpos() <= MusEGlobal::song->lpos())
 	{
 		QMessageBox::warning(NULL, QObject::tr("Error"), QObject::tr("Please first select the range for crescendo with the loop markers."));
 		return false;
 	}
 	
-	if (!crescendo_dialog->exec())
+	if (!MusEGui::crescendo_dialog->exec())
 		return false;
 		
-	crescendo(parts,crescendo_dialog->range,crescendo_dialog->start_val,crescendo_dialog->end_val,crescendo_dialog->absolute);
+	crescendo(parts,MusEGui::crescendo_dialog->range,MusEGui::crescendo_dialog->start_val,MusEGui::crescendo_dialog->end_val,MusEGui::crescendo_dialog->absolute);
 	
 	return true;
 }
 
 bool legato(const set<Part*>& parts)
 {
-	if (!legato_dialog->exec())
+	if (!MusEGui::legato_dialog->exec())
 		return false;
 		
-	legato(parts,legato_dialog->range, legato_dialog->min_len, !legato_dialog->allow_shortening);
+	legato(parts,MusEGui::legato_dialog->range, MusEGui::legato_dialog->min_len, !MusEGui::legato_dialog->allow_shortening);
 	
 	return true;
 }
@@ -265,169 +266,169 @@ bool legato(const set<Part*>& parts)
 
 bool modify_notelen()
 {
-	if (!gatetime_dialog->exec())
+	if (!MusEGui::gatetime_dialog->exec())
 		return false;
 		
 	set<Part*> parts;
-	if (gatetime_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+	if (MusEGui::gatetime_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
 		parts=get_all_parts();
 		
-	modify_notelen(parts,gatetime_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, gatetime_dialog->rateVal,gatetime_dialog->offsetVal);
+	modify_notelen(parts,MusEGui::gatetime_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::gatetime_dialog->rateVal,MusEGui::gatetime_dialog->offsetVal);
 	
 	return true;
 }
 
 bool modify_velocity()
 {
-	if (!velocity_dialog->exec())
+	if (!MusEGui::velocity_dialog->exec())
 		return false;
 		
 	set<Part*> parts;
-	if (velocity_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+	if (MusEGui::velocity_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
 		parts=get_all_parts();
 		
-	modify_velocity(parts,velocity_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS,velocity_dialog->rateVal,velocity_dialog->offsetVal);
+	modify_velocity(parts,MusEGui::velocity_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS,MusEGui::velocity_dialog->rateVal,MusEGui::velocity_dialog->offsetVal);
 	
 	return true;
 }
 
 bool quantize_notes()
 {
-	if (!quantize_dialog->exec())
+	if (!MusEGui::quantize_dialog->exec())
 		return false;
 		
 	set<Part*> parts;
-	if (quantize_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+	if (MusEGui::quantize_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
 		parts=get_all_parts();
 		
-	quantize_notes(parts, quantize_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, (config.division*4)/(1<<quantize_dialog->raster_power2),
-	               quantize_dialog->quant_len, quantize_dialog->strength, quantize_dialog->swing,
-	               quantize_dialog->threshold);
+	quantize_notes(parts, MusEGui::quantize_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, (config.division*4)/(1<<MusEGui::quantize_dialog->raster_power2),
+	               MusEGui::quantize_dialog->quant_len, MusEGui::quantize_dialog->strength, MusEGui::quantize_dialog->swing,
+	               MusEGui::quantize_dialog->threshold);
 	
 	return true;
 }
 
 bool erase_notes()
 {
-	if (!erase_dialog->exec())
+	if (!MusEGui::erase_dialog->exec())
 		return false;
 		
 	set<Part*> parts;
-	if (erase_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+	if (MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
 		parts=get_all_parts();
 		
-	erase_notes(parts,erase_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, erase_dialog->velo_threshold, erase_dialog->velo_thres_used, 
-	            erase_dialog->len_threshold, erase_dialog->len_thres_used );
+	erase_notes(parts,MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::erase_dialog->velo_threshold, MusEGui::erase_dialog->velo_thres_used, 
+	            MusEGui::erase_dialog->len_threshold, MusEGui::erase_dialog->len_thres_used );
 	
 	return true;
 }
 
 bool delete_overlaps()
 {
-	if (!del_overlaps_dialog->exec())
+	if (!MusEGui::del_overlaps_dialog->exec())
 		return false;
 		
 	set<Part*> parts;
-	if (del_overlaps_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+	if (MusEGui::del_overlaps_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
 		parts=get_all_parts();
 		
-	delete_overlaps(parts,erase_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS);
+	delete_overlaps(parts,MusEGui::erase_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS);
 	
 	return true;
 }
 
 bool set_notelen()
 {
-	if (!set_notelen_dialog->exec())
+	if (!MusEGui::set_notelen_dialog->exec())
 		return false;
 		
 	set<Part*> parts;
-	if (set_notelen_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+	if (MusEGui::set_notelen_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
 		parts=get_all_parts();
 		
-	set_notelen(parts,set_notelen_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, set_notelen_dialog->len);
+	set_notelen(parts,MusEGui::set_notelen_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::set_notelen_dialog->len);
 	
 	return true;
 }
 
 bool move_notes()
 {
-	if (!move_notes_dialog->exec())
+	if (!MusEGui::move_notes_dialog->exec())
 		return false;
 		
 	set<Part*> parts;
-	if (move_notes_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+	if (MusEGui::move_notes_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
 		parts=get_all_parts();
 		
-	move_notes(parts,move_notes_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, move_notes_dialog->amount);
+	move_notes(parts,MusEGui::move_notes_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::move_notes_dialog->amount);
 	
 	return true;
 }
 
 bool transpose_notes()
 {
-	if (!transpose_dialog->exec())
+	if (!MusEGui::transpose_dialog->exec())
 		return false;
 		
 	set<Part*> parts;
-	if (transpose_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+	if (MusEGui::transpose_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
 		parts=get_all_parts();
 		
-	transpose_notes(parts,transpose_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, transpose_dialog->amount);
+	transpose_notes(parts,MusEGui::transpose_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::transpose_dialog->amount);
 	
 	return true;
 }
 
 bool crescendo()
 {
-	if (song->rpos() <= song->lpos())
+	if (MusEGlobal::song->rpos() <= MusEGlobal::song->lpos())
 	{
 		QMessageBox::warning(NULL, QObject::tr("Error"), QObject::tr("Please first select the range for crescendo with the loop markers."));
 		return false;
 	}
 	
-	if (!crescendo_dialog->exec())
+	if (!MusEGui::crescendo_dialog->exec())
 		return false;
 		
 	set<Part*> parts;
-	if (crescendo_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+	if (MusEGui::crescendo_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
 		parts=get_all_parts();
 		
-	crescendo(parts,crescendo_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, crescendo_dialog->start_val,crescendo_dialog->end_val,crescendo_dialog->absolute);
+	crescendo(parts,MusEGui::crescendo_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::crescendo_dialog->start_val,MusEGui::crescendo_dialog->end_val,MusEGui::crescendo_dialog->absolute);
 	
 	return true;
 }
 
 bool legato()
 {
-	if (!legato_dialog->exec())
+	if (!MusEGui::legato_dialog->exec())
 		return false;
 		
 	set<Part*> parts;
-	if (legato_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
+	if (MusEGui::legato_dialog->range & FUNCTION_RANGE_ONLY_SELECTED)
 		parts=get_all_selected_parts();
 	else
 		parts=get_all_parts();
 		
-	legato(parts,legato_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, legato_dialog->min_len, !legato_dialog->allow_shortening);
+	legato(parts,MusEGui::legato_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, MusEGui::legato_dialog->min_len, !MusEGui::legato_dialog->allow_shortening);
 	
 	return true;
 }
@@ -467,7 +468,7 @@ bool modify_velocity(const set<Part*>& parts, int range, int rate, int offset)
 			}
 		}
 		
-		return song->applyOperationGroup(operations);
+		return MusEGlobal::song->applyOperationGroup(operations);
 	}
 	else
 		return false;
@@ -503,7 +504,7 @@ bool modify_off_velocity(const set<Part*>& parts, int range, int rate, int offse
 			}
 		}
 
-		return song->applyOperationGroup(operations);
+		return MusEGlobal::song->applyOperationGroup(operations);
 	}
 	else
 		return false;
@@ -544,7 +545,7 @@ bool modify_notelen(const set<Part*>& parts, int range, int rate, int offset)
 		for (map<Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
 			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
 
-		return song->applyOperationGroup(operations);
+		return MusEGlobal::song->applyOperationGroup(operations);
 	}
 	else
 		return false;
@@ -617,7 +618,7 @@ bool quantize_notes(const set<Part*>& parts, int range, int raster, bool quant_l
 			}
 		}
 		
-		return song->applyOperationGroup(operations);
+		return MusEGlobal::song->applyOperationGroup(operations);
 	}
 	else
 		return false;
@@ -641,7 +642,7 @@ bool erase_notes(const set<Part*>& parts, int range, int velo_threshold, bool ve
 				operations.push_back(UndoOp(UndoOp::DeleteEvent, event, part, false, false));
 		}
 		
-		return song->applyOperationGroup(operations);
+		return MusEGlobal::song->applyOperationGroup(operations);
 	}
 	else
 		return false;
@@ -667,7 +668,7 @@ bool transpose_notes(const set<Part*>& parts, int range, signed int halftonestep
 			operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
 		}
 		
-		return song->applyOperationGroup(operations);
+		return MusEGlobal::song->applyOperationGroup(operations);
 	}
 	else
 		return false;
@@ -678,8 +679,8 @@ bool crescendo(const set<Part*>& parts, int range, int start_val, int end_val, b
 	map<Event*, Part*> events = get_events(parts, range);
 	Undo operations;
 	
-	int from=song->lpos();
-	int to=song->rpos();
+	int from=MusEGlobal::song->lpos();
+	int to=MusEGlobal::song->rpos();
 	
 	if ( (!events.empty()) && (to>from) )
 	{
@@ -705,7 +706,7 @@ bool crescendo(const set<Part*>& parts, int range, int start_val, int end_val, b
 			operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
 		}
 		
-		return song->applyOperationGroup(operations);
+		return MusEGlobal::song->applyOperationGroup(operations);
 	}
 	else
 		return false;
@@ -753,7 +754,7 @@ bool move_notes(const set<Part*>& parts, int range, signed int ticks)
 		for (map<Part*, int>::iterator it=partlen.begin(); it!=partlen.end(); it++)
 			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
 		
-		return song->applyOperationGroup(operations);
+		return MusEGlobal::song->applyOperationGroup(operations);
 	}
 	else
 		return false;
@@ -809,7 +810,7 @@ bool delete_overlaps(const set<Part*>& parts, int range)
 			}
 		}
 		
-		return song->applyOperationGroup(operations);
+		return MusEGlobal::song->applyOperationGroup(operations);
 	}
 	else
 		return false;
@@ -859,7 +860,7 @@ bool legato(const set<Part*>& parts, int range, int min_len, bool dont_shorten)
 			}
 		}
 		
-		return song->applyOperationGroup(operations);
+		return MusEGlobal::song->applyOperationGroup(operations);
 	}
 	else
 		return false;
@@ -926,17 +927,17 @@ unsigned get_clipboard_len()
 
 bool paste_notes(Part* paste_into_part)
 {
-	unsigned temp_begin = AL::sigmap.raster1(song->cpos(),0);
+	unsigned temp_begin = AL::sigmap.raster1(MusEGlobal::song->cpos(),0);
 	unsigned temp_end = AL::sigmap.raster2(temp_begin + get_clipboard_len(), 0);
-	paste_events_dialog->raster = temp_end - temp_begin;
-	paste_events_dialog->into_single_part_allowed = (paste_into_part!=NULL);
+	MusEGui::paste_events_dialog->raster = temp_end - temp_begin;
+	MusEGui::paste_events_dialog->into_single_part_allowed = (paste_into_part!=NULL);
 	
-	if (!paste_events_dialog->exec())
+	if (!MusEGui::paste_events_dialog->exec())
 		return false;
 		
-	paste_notes(paste_events_dialog->max_distance, paste_events_dialog->always_new_part,
-	            paste_events_dialog->never_new_part, paste_events_dialog->into_single_part ? paste_into_part : NULL,
-	            paste_events_dialog->number, paste_events_dialog->raster);
+	paste_notes(MusEGui::paste_events_dialog->max_distance, MusEGui::paste_events_dialog->always_new_part,
+	            MusEGui::paste_events_dialog->never_new_part, MusEGui::paste_events_dialog->into_single_part ? paste_into_part : NULL,
+	            MusEGui::paste_events_dialog->number, MusEGui::paste_events_dialog->raster);
 	
 	return true;
 }
@@ -945,7 +946,7 @@ void paste_notes(int max_distance, bool always_new_part, bool never_new_part, Pa
 {
 	QString tmp="x-muse-groupedeventlists"; // QClipboard::text() expects a QString&, not a QString :(
 	QString s = QApplication::clipboard()->text(tmp, QClipboard::Clipboard);  // TODO CHECK Tim.
-	paste_at(s, song->cpos(), max_distance, always_new_part, never_new_part, paste_into_part, amount, raster);
+	paste_at(s, MusEGlobal::song->cpos(), max_distance, always_new_part, never_new_part, paste_into_part, amount, raster);
 }
 
 
@@ -1088,7 +1089,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 						Part* old_dest_part;
 						
 						if (paste_into_part == NULL)
-							dest_part = MusEUtil::partFromSerialNumber(part_id);
+							dest_part = partFromSerialNumber(part_id);
 						else
 							dest_part=paste_into_part;
 						
@@ -1113,7 +1114,7 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 								if (create_new_part)
 								{
 									dest_part = dest_track->newPart();
-									dest_part->events()->incARef(-1); // the later song->applyOperationGroup() will increment it
+									dest_part->events()->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
 																										// so we must decrement it first :/
 									dest_part->setTick(AL::sigmap.raster1(first_paste_tick, config.division));
 
@@ -1177,10 +1178,10 @@ void paste_at(const QString& pt, int pos, int max_distance, bool always_new_part
 		if (it->second != it->first->lenTick())
 			schedule_resize_all_same_len_clone_parts(it->first, it->second, operations);
 
-	song->informAboutNewParts(new_part_map); // must be called before apply. otherwise
+	MusEGlobal::song->informAboutNewParts(new_part_map); // must be called before apply. otherwise
 	                                         // pointer changes (by resize) screw it up
-	song->applyOperationGroup(operations);
-	song->update(SC_SELECTION);
+	MusEGlobal::song->applyOperationGroup(operations);
+	MusEGlobal::song->update(SC_SELECTION);
 }
 
 void select_all(const std::set<Part*>& parts)
@@ -1191,7 +1192,7 @@ void select_all(const std::set<Part*>& parts)
 			Event& event=ev_it->second;
 			event.setSelected(true);
 		}
-	song->update(SC_SELECTION);
+	MusEGlobal::song->update(SC_SELECTION);
 }
 
 void select_none(const std::set<Part*>& parts)
@@ -1202,7 +1203,7 @@ void select_none(const std::set<Part*>& parts)
 			Event& event=ev_it->second;
 			event.setSelected(false);
 		}
-	song->update(SC_SELECTION);
+	MusEGlobal::song->update(SC_SELECTION);
 }
 
 void select_invert(const std::set<Part*>& parts)
@@ -1213,7 +1214,7 @@ void select_invert(const std::set<Part*>& parts)
 			Event& event=ev_it->second;
 			event.setSelected(!event.selected());
 		}
-	song->update(SC_SELECTION);
+	MusEGlobal::song->update(SC_SELECTION);
 }
 
 void select_in_loop(const std::set<Part*>& parts)
@@ -1223,9 +1224,9 @@ void select_in_loop(const std::set<Part*>& parts)
 		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
 		{
 			Event& event=ev_it->second;
-			event.setSelected((event.tick()>=song->lpos() && event.endTick()<=song->rpos()));
+			event.setSelected((event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()));
 		}
-	song->update(SC_SELECTION);
+	MusEGlobal::song->update(SC_SELECTION);
 }
 
 void select_not_in_loop(const std::set<Part*>& parts)
@@ -1235,9 +1236,9 @@ void select_not_in_loop(const std::set<Part*>& parts)
 		for (iEvent ev_it=(*part)->events()->begin(); ev_it!=(*part)->events()->end(); ev_it++)
 		{
 			Event& event=ev_it->second;
-			event.setSelected(!(event.tick()>=song->lpos() && event.endTick()<=song->rpos()));
+			event.setSelected(!(event.tick()>=MusEGlobal::song->lpos() && event.endTick()<=MusEGlobal::song->rpos()));
 		}
-	song->update(SC_SELECTION);
+	MusEGlobal::song->update(SC_SELECTION);
 }
 
 
@@ -1246,10 +1247,10 @@ void shrink_parts(int raster)
 	Undo operations;
 	
 	unsigned min_len;
-	if (raster<0) raster=MusEConfig::config.division;
-	if (raster>=0) min_len=raster; else min_len=MusEConfig::config.division;
+	if (raster<0) raster=MusEGlobal::config.division;
+	if (raster>=0) min_len=raster; else min_len=MusEGlobal::config.division;
 	
-	TrackList* tracks = song->tracks();
+	TrackList* tracks = MusEGlobal::song->tracks();
 	for (iTrack track = tracks->begin(); track != tracks->end(); track++)
 		for (iPart part = (*track)->parts()->begin(); part != (*track)->parts()->end(); part++)
 			if (part->second->selected())
@@ -1272,7 +1273,7 @@ void shrink_parts(int raster)
 				}
 			}
 	
-	song->applyOperationGroup(operations);
+	MusEGlobal::song->applyOperationGroup(operations);
 }
 
 void internal_schedule_expand_part(Part* part, int raster, Undo& operations)
@@ -1319,10 +1320,10 @@ void expand_parts(int raster)
 	Undo operations;
 	
 	unsigned min_len;
-	if (raster<0) raster=MusEConfig::config.division;
-	if (raster>=0) min_len=raster; else min_len=MusEConfig::config.division;
+	if (raster<0) raster=MusEGlobal::config.division;
+	if (raster>=0) min_len=raster; else min_len=MusEGlobal::config.division;
 
-	TrackList* tracks = song->tracks();
+	TrackList* tracks = MusEGlobal::song->tracks();
 	for (iTrack track = tracks->begin(); track != tracks->end(); track++)
 		for (iPart part = (*track)->parts()->begin(); part != (*track)->parts()->end(); part++)
 			if (part->second->selected())
@@ -1345,7 +1346,7 @@ void expand_parts(int raster)
 				}
 			}
 			
-	song->applyOperationGroup(operations);
+	MusEGlobal::song->applyOperationGroup(operations);
 }
 
 void clean_parts()
@@ -1353,7 +1354,7 @@ void clean_parts()
 	Undo operations;
 	set<Part*> already_processed;
 	
-	TrackList* tracks = song->tracks();
+	TrackList* tracks = MusEGlobal::song->tracks();
 	for (iTrack track = tracks->begin(); track != tracks->end(); track++)
 		for (iPart part = (*track)->parts()->begin(); part != (*track)->parts()->end(); part++)
 			if ((part->second->selected()) && (already_processed.find(part->second)==already_processed.end()))
@@ -1389,6 +1390,7 @@ void clean_parts()
 					}
 			}
 	
-	song->applyOperationGroup(operations);
+	MusEGlobal::song->applyOperationGroup(operations);
 }
 
+} // namespace MusECore

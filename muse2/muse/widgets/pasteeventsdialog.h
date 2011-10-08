@@ -26,9 +26,11 @@
 #include "ui_pasteeventsdialogbase.h"
 #include <QString>
 
+namespace MusECore {
 class Xml;
+}
 
-namespace MusEDialog {
+namespace MusEGui {
 
 class PasteEventsDialog : public QDialog, public Ui::PasteEventsDialogBase
 {
@@ -55,15 +57,15 @@ class PasteEventsDialog : public QDialog, public Ui::PasteEventsDialogBase
 		bool into_single_part;
 		bool into_single_part_allowed;
 		
-		void read_configuration(Xml& xml);
-		void write_configuration(int level, Xml& xml);
+		void read_configuration(MusECore::Xml& xml);
+		void write_configuration(int level, MusECore::Xml& xml);
 		
 	
 	public slots:
 		int exec();
 };
 
-} // namespace MusEDialog
+} // namespace MusEGui
 
 #endif
 

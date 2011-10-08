@@ -55,6 +55,8 @@
 
 #define DSSI_PARAMSAVE_VERSION_MAJOR  0
 #define DSSI_PARAMSAVE_VERSION_MINOR  1
+
+namespace MusECore {
  
 struct _DSSI;
 class DssiPluginIF;
@@ -76,8 +78,8 @@ class DssiSynth : public Synth {
       std::vector<unsigned long> oIdx;  // Audio output index to port number.
       std::vector<bool> iUsedIdx;       // During process, tells whether an audio input port was used by any input routes.
       std::vector<unsigned long> rpIdx; // Port number to control input index. Item is -1 if it's not a control input.
-      MidiCtl2LadspaPortMap midiCtl2PortMap;   // Maps midi controller numbers to DSSI port numbers.
-      MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps DSSI port numbers to midi controller numbers.
+      MusECore::MidiCtl2LadspaPortMap midiCtl2PortMap;   // Maps midi controller numbers to DSSI port numbers.
+      MusECore::MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps DSSI port numbers to midi controller numbers.
       bool _hasGui;
       bool _inPlaceCapable;
       // Hack: Special flag required.
@@ -116,7 +118,7 @@ class DssiSynthIF : public SynthIF, public PluginIBase
 
       std::vector<DSSI_Program_Descriptor> programs;
       void queryPrograms();
-      bool processEvent(const MidiPlayEvent&, snd_seq_event_t*);
+      bool processEvent(const MusECore::MidiPlayEvent&, snd_seq_event_t*);
       
       float** audioInBuffers;
       float** audioOutBuffers;
@@ -146,9 +148,9 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       virtual void setNativeGeometry(int, int, int, int) {}
       
       virtual void preProcessAlways();
-      virtual iMPEvent getData(MidiPort*, MPEventList*, iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
-      virtual bool putEvent(const MidiPlayEvent& ev);
-      virtual MidiPlayEvent receiveEvent();
+      virtual MusECore::iMPEvent getData(MusECore::MidiPort*, MusECore::MPEventList*, MusECore::iMPEvent, unsigned pos, int ports, unsigned n, float** buffer);
+      virtual bool putEvent(const MusECore::MidiPlayEvent& ev);
+      virtual MusECore::MidiPlayEvent receiveEvent();
       virtual int eventsPending() const { return 0; }
       
       virtual int channels() const;
@@ -159,7 +161,7 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       
       virtual const char* getPatchName(int, int, int, bool) const { return ""; }
       virtual const char* getPatchName(int, int, MType, bool);
-      virtual void populatePatchPopup(MusEWidget::PopupMenu*, int, MType, bool);
+      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, MType, bool);
       
       virtual void write(int level, Xml& xml) const;
       
@@ -193,7 +195,7 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       QString lib() const;            
       QString dirPath() const;
       QString fileName() const;
-      AudioTrack* track();          
+      MusECore::AudioTrack* track();          
       void enableController(unsigned long /*i*/, bool v = true);      
       bool controllerEnabled(unsigned long /*i*/) const;          
       bool controllerEnabled2(unsigned long /*i*/) const;          
@@ -217,6 +219,8 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       };
 
 extern void initDSSI();
+
+} // namespace MusECore
 
 #endif
 

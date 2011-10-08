@@ -32,7 +32,7 @@
 #include "song.h"
 #include "gconfig.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   SigScale
@@ -43,12 +43,12 @@ SigScale::SigScale(int* r, QWidget* parent, int xs)
       {
       setToolTip(tr("signature scale"));
       raster = r;
-      pos[0] = song->cpos();
-      pos[1] = song->lpos();
-      pos[2] = song->rpos();
+      pos[0] = MusEGlobal::song->cpos();
+      pos[1] = MusEGlobal::song->lpos();
+      pos[2] = MusEGlobal::song->rpos();
       button = Qt::NoButton;
       setMouseTracking(true);
-      connect(song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
+      connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
       setFixedHeight(18);
       }
 
@@ -102,7 +102,7 @@ void SigScale::viewMouseMoveEvent(QMouseEvent* event)
                   i = 1;
                   break;
             case Qt::RightButton:
-                  if ((MusEConfig::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
+                  if ((MusEGlobal::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
                       i = 1;
                   else
                       i = 2;
@@ -110,8 +110,8 @@ void SigScale::viewMouseMoveEvent(QMouseEvent* event)
             default:
                   return;
             }
-      Pos p(x, true);
-      song->setPos(i, p);
+      MusECore::Pos p(x, true);
+      MusEGlobal::song->setPos(i, p);
       }
 
 //---------------------------------------------------------
@@ -135,7 +135,7 @@ void SigScale::pdraw(QPainter& p, const QRect& r)
 
       if (x < 0)
             x = 0;
-      p.setFont(MusEConfig::config.fonts[3]);
+      p.setFont(MusEGlobal::config.fonts[3]);
       ///for (ciSigEvent si = sigmap.begin(); si != sigmap.end(); ++si) {
       for (AL::ciSigEvent si = AL::sigmap.begin(); si != AL::sigmap.end(); ++si) {
             ///SigEvent* e = si->second;
@@ -169,4 +169,4 @@ void SigScale::pdraw(QPainter& p, const QRect& r)
             p.drawLine(xp, 0, xp, h);
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

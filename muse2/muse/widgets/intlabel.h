@@ -28,7 +28,7 @@
 
 class QString;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   IntLabel
@@ -60,6 +60,6 @@ class IntLabel : public Nentry {
       void setRange(int, int);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif

@@ -477,15 +477,15 @@ void SimpleSynthGui::readMessage(int)
       }
 
 /*!
-    \fn SimpleSynthGui::processEvent(const MidiPlayEvent& ev)
+    \fn SimpleSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
  */
-void SimpleSynthGui::processEvent(const MidiPlayEvent& ev)
+void SimpleSynthGui::processEvent(const MusECore::MidiPlayEvent& ev)
       {
       SS_TRACE_IN
       if (SS_DEBUG_MIDI) {
             printf("GUI received midi event\n");
             }
-      if (ev.type() == ME_CONTROLLER) {
+      if (ev.type() == MusECore::ME_CONTROLLER) {
             int id  = ev.dataA();
             int val = ev.dataB();
 
@@ -583,7 +583,7 @@ void SimpleSynthGui::processEvent(const MidiPlayEvent& ev)
             //
             // Sysexes:
             //
-            else if (ev.type() == ME_SYSEX) {
+            else if (ev.type() == MusECore::ME_SYSEX) {
                   byte* data = ev.data();
                   //byte* data = d + 2;
                   int cmd = *data;

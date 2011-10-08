@@ -220,7 +220,7 @@ void FloatEntry::repeat()
 
       switch (button) {
             case Qt::LeftButton:
-                  if (!MusEConfig::config.leftMouseButtonCanDecrease)
+                  if (!MusEGlobal::config.leftMouseButtonCanDecrease)
                     return;
                   // else fall through
             case Qt::MidButton:

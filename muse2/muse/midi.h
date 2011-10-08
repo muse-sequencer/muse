@@ -31,6 +31,10 @@
 
 class QString;
 
+namespace MusECore {
+
+class EventList;
+
 enum {
       ME_NOTEOFF     = 0x80,
       ME_NOTEON      = 0x90,
@@ -84,11 +88,12 @@ QString midiMetaName(int);
 // A special MusE soft synth sysex manufacturer ID.
 #define MUSE_SYNTH_SYSEX_MFG_ID 0x7c
 
-class EventList;
 class MPEventList;
 class MidiTrack;
 extern void buildMidiEventList(EventList* mel, const MPEventList* el, MidiTrack* track, int division, bool /*addSysexMeta*/, bool /*doLoops*/);
 // extern bool checkSysex(MidiTrack* track, unsigned int len, unsigned char* buf);
+
+} // namespace MusECore
 
 #endif
 

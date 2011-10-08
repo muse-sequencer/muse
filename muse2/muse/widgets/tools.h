@@ -30,7 +30,7 @@ class QAction;
 class QPixmap;
 class QWidget;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 class Action;
 
@@ -84,7 +84,7 @@ class EditToolBar : public QToolBar {
       int curTool();
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

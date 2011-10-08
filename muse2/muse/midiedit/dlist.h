@@ -32,12 +32,19 @@
 #define TH  18                // normal Track-hight
 
 class QHeaderView;
+class QLineEdit;
 class QMouseEvent;
 class QPainter;
-
 class Device;
 class QLineEdit;
+
+namespace MusECore {
 class DrumMap;
+}
+
+namespace MusEGui {
+
+class ScrollScale;
 class DrumCanvas;
 
 //---------------------------------------------------------
@@ -83,19 +90,19 @@ class DPitchEdit: public Awl::PitchEdit
 //   DList
 //---------------------------------------------------------
 
-class DList : public MusEWidget::View {
+class DList : public View {
       Q_OBJECT
       
-      DrumCanvas* dcanvas;
-      DrumMap* ourDrumMap;
+      MusEGui::DrumCanvas* dcanvas;
+      MusECore::DrumMap* ourDrumMap;
       int ourDrumMapSize;
       bool old_style_drummap_mode;
       
       QHeaderView* header;
       QLineEdit* editor;
       DPitchEdit* pitch_editor;
-      DrumMap* editEntry;
-      DrumMap* currentlySelected;
+      MusECore::DrumMap* editEntry;
+      MusECore::DrumMap* currentlySelected;
       int selectedColumn;
 
       
@@ -111,7 +118,7 @@ class DList : public MusEWidget::View {
       virtual void viewMouseMoveEvent(QMouseEvent*);
 
       int x2col(int x) const;
-      void devicesPopupMenu(DrumMap* t, int x, int y, bool changeAll);
+      void devicesPopupMenu(MusECore::DrumMap* t, int x, int y, bool changeAll);
       
       //void setCurDrumInstrument(int n);
 
@@ -137,11 +144,13 @@ class DList : public MusEWidget::View {
       void lineEdit(int line, int section);
       void pitchEdit(int line, int section);
       void setCurDrumInstrument(int n);
-      DList(QHeaderView*, QWidget* parent, int ymag, DrumCanvas* dcanvas, bool oldstyle);
+      DList(QHeaderView*, QWidget* parent, int ymag, MusEGui::DrumCanvas* dcanvas, bool oldstyle);
       ~DList();
       int getSelectedInstrument();
 
       };
+
+} // namespace MusEGui
 
 #endif // __DLIST_H_
 

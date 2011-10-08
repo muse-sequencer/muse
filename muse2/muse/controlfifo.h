@@ -24,6 +24,8 @@
 
 #define CONTROL_FIFO_SIZE 8192
 
+namespace MusECore {
+
 //---------------------------------------------------------
 //  ControlEvent
 //  Item struct for ControlFifo. 
@@ -62,5 +64,6 @@ class ControlFifo
       int getSize() const  { return size; }
 };
 
+} // namespace MusECore
 
 #endif

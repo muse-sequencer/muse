@@ -25,14 +25,17 @@
 
 #include <QObject>
 
-class Track;
+namespace MusECore {
 class AudioTrack;
+class Track;
+}
+
 class QWidget;
 class QString;
 class QAction;
 class QPoint;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 class PopupMenu;
 
@@ -41,38 +44,38 @@ class RoutePopupMenu : public QObject
   Q_OBJECT
   
     PopupMenu* _pup;
-    Track* _track;
+    MusECore::Track* _track;
     // Whether the route popup was shown by clicking the output routes button, or input routes button.
     bool _isOutMenu;
     
     void init();
     void prepare();
     
-    int addMenuItem(AudioTrack* track, Track* route_track, PopupMenu* lb, int id, int channel, 
+    int addMenuItem(MusECore::AudioTrack* track, MusECore::Track* route_track, PopupMenu* lb, int id, int channel, 
                     int channels, bool isOutput);
-    int addAuxPorts(AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
-    int addInPorts(AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
-    int addOutPorts(AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
-    int addGroupPorts(AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
-    int addWavePorts(AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
-    int addSyntiPorts(AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
-    int addMultiChannelPorts(AudioTrack* t, PopupMenu* pup, int id, bool isOutput);
-    int nonSyntiTrackAddSyntis(AudioTrack* t, PopupMenu* lb, int id, bool isOutput);
-    int addMidiPorts(AudioTrack* t, PopupMenu* pup, int id, bool isOutput);
+    int addAuxPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
+    int addInPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
+    int addOutPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
+    int addGroupPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
+    int addWavePorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
+    int addSyntiPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id, int channel, int channels, bool isOutput);
+    int addMultiChannelPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id, bool isOutput);
+    int nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* lb, int id, bool isOutput);
+    int addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id, bool isOutput);
     
   private slots:
     void popupActivated(QAction*);
     void songChanged(int);
   
   public:
-    RoutePopupMenu(QWidget* parent = 0, Track* track = 0, bool isOutput = false);
-    RoutePopupMenu(const QString& title, QWidget* parent = 0, Track* track = 0, bool isOutput = false);
+    RoutePopupMenu(QWidget* parent = 0, MusECore::Track* track = 0, bool isOutput = false);
+    RoutePopupMenu(const QString& title, QWidget* parent = 0, MusECore::Track* track = 0, bool isOutput = false);
     ~RoutePopupMenu();
     
     void updateRouteMenus();
-    void exec(Track* track = 0, bool isOutput = false);
-    void exec(const QPoint& p, Track* track = 0, bool isOutput = false);
-    void popup(const QPoint& p, Track* track = 0, bool isOutput = false);
+    void exec(MusECore::Track* track = 0, bool isOutput = false);
+    void exec(const QPoint& p, MusECore::Track* track = 0, bool isOutput = false);
+    void popup(const QPoint& p, MusECore::Track* track = 0, bool isOutput = false);
 };
 
 }

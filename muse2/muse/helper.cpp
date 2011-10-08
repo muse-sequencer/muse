@@ -43,7 +43,7 @@ namespace MusEGlobal {
 extern bool hIsB;
 }
 
-namespace MusEUtil {
+namespace MusECore {
 
 static const char* vall[] = {
       "c","c#","d","d#","e","f","f#","g","g#","a","a#","h"
@@ -79,7 +79,7 @@ QString pitch2string(int v)
 
 Part* partFromSerialNumber(int serial)
 {
-	TrackList* tl = song->tracks();
+        TrackList* tl = MusEGlobal::song->tracks();
 	for (iTrack it = tl->begin(); it != tl->end(); ++it)
 	{
 		PartList* pl = (*it)->parts();
@@ -93,6 +93,27 @@ Part* partFromSerialNumber(int serial)
 	return NULL;
 }
 
+bool any_event_selected(const set<Part*>& parts, bool in_range)
+{
+  return !get_events(parts, in_range ? 3 : 1).empty();
+}
+
+bool drummaps_almost_equal(DrumMap* one, DrumMap* two, int len)
+{
+  for (int i=0; i<len; i++)
+  {
+    DrumMap tmp = one[i];
+    tmp.mute=two[i].mute;
+    if (tmp!=two[i])
+      return false;
+  }
+  return true;
+}
+
+
+} // namespace MusECore
+
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   populateAddSynth
@@ -108,18 +129,18 @@ QMenu* populateAddSynth(QWidget* parent)
   //typedef std::multimap<std::string, int, addSynth_cmp_str >::iterator imap;
   typedef std::multimap<std::string, int >::iterator imap;
   
-  MessSynth* synMESS   = 0;
+  MusECore::MessSynth* synMESS   = 0;
   QMenu* synpMESS = 0;
   asmap mapMESS;
 
   #ifdef DSSI_SUPPORT
-  DssiSynth* synDSSI   = 0;
+  MusECore::DssiSynth* synDSSI   = 0;
   QMenu* synpDSSI = 0;
   asmap mapDSSI;
   #endif                  
   
   #ifdef VST_SUPPORT
-  VstSynth*  synVST    = 0;
+  MusECore::VstSynth*  synVST    = 0;
   QMenu* synpVST  = 0;
   asmap mapVST;
   #endif                  
@@ -130,9 +151,9 @@ QMenu* populateAddSynth(QWidget* parent)
   
   //const int synth_base_id = 0x1000;
   int ii = 0;
-  for(std::vector<Synth*>::iterator i = synthis.begin(); i != synthis.end(); ++i) 
+  for(std::vector<MusECore::Synth*>::iterator i = MusEGlobal::synthis.begin(); i != MusEGlobal::synthis.end(); ++i) 
   {
-    synMESS = dynamic_cast<MessSynth*>(*i);
+    synMESS = dynamic_cast<MusECore::MessSynth*>(*i);
     if(synMESS)
     {
       mapMESS.insert( std::pair<std::string, int> (std::string(synMESS->description().toLower().toLatin1().constData()), ii) );
@@ -141,7 +162,7 @@ QMenu* populateAddSynth(QWidget* parent)
     {
       
       #ifdef DSSI_SUPPORT
-      synDSSI = dynamic_cast<DssiSynth*>(*i);
+      synDSSI = dynamic_cast<MusECore::DssiSynth*>(*i);
       if(synDSSI)
       {
         mapDSSI.insert( std::pair<std::string, int> (std::string(synDSSI->description().toLower().toLatin1().constData()), ii) );
@@ -151,7 +172,7 @@ QMenu* populateAddSynth(QWidget* parent)
       
       {
         #ifdef VST_SUPPORT
-        synVST = dynamic_cast<VstSynth*>(*i);
+        synVST = dynamic_cast<MusECore::VstSynth*>(*i);
         if(synVST)
         {
           mapVST.insert( std::pair<std::string, int> (std::string(synVST->description().toLower().toLatin1().constData()), ii) );
@@ -168,13 +189,13 @@ QMenu* populateAddSynth(QWidget* parent)
     ++ii;
   }
   
-  int sz = synthis.size();
+  int sz = MusEGlobal::synthis.size();
   for(imap i = mapMESS.begin(); i != mapMESS.end(); ++i) 
   {
     int idx = i->second;
     if(idx > sz)           // Sanity check
       continue;
-    Synth* s = synthis[idx];
+    MusECore::Synth* s = MusEGlobal::synthis[idx];
     if(s)
     {
       // No MESS sub-menu yet? Create it now.
@@ -191,7 +212,7 @@ QMenu* populateAddSynth(QWidget* parent)
     int idx = i->second;
     if(idx > sz)           
       continue;
-    Synth* s = synthis[idx];
+    MusECore::Synth* s = MusEGlobal::synthis[idx];
     if(s)
     {
       // No DSSI sub-menu yet? Create it now.
@@ -210,7 +231,7 @@ QMenu* populateAddSynth(QWidget* parent)
     int idx = i->second;
     if(idx > sz)           
       continue;
-    Synth* s = synthis[idx];
+    Synth* s = MusEGlobal::synthis[idx];
     if(s)
     {
       // No VST sub-menu yet? Create it now.
@@ -227,7 +248,7 @@ QMenu* populateAddSynth(QWidget* parent)
     int idx = i->second;
     if(idx > sz)          
       continue;
-    Synth* s = synthis[idx];
+    MusECore::Synth* s = MusEGlobal::synthis[idx];
     // No Other sub-menu yet? Create it now.
     if(!synpOther)
       synpOther = new QMenu(parent);
@@ -283,49 +304,49 @@ QActionGroup* populateAddTrack(QMenu* addTrack)
 
       QAction* midi = addTrack->addAction(QIcon(*addtrack_addmiditrackIcon),
                                           QT_TRANSLATE_NOOP("@default", "Add Midi Track"));
-      midi->setData(Track::MIDI);
+      midi->setData(MusECore::Track::MIDI);
       grp->addAction(midi);
 
 
       QAction* drum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
                                           QT_TRANSLATE_NOOP("@default", "Add Drum Track"));
-      drum->setData(Track::DRUM);
+      drum->setData(MusECore::Track::DRUM);
       grp->addAction(drum);
 
 
       QAction* newdrum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
                                           QT_TRANSLATE_NOOP("@default", "Add New Style Drum Track"));
-      newdrum->setData(Track::NEW_DRUM);
+      newdrum->setData(MusECore::Track::NEW_DRUM);
       grp->addAction(newdrum);
 
 
       QAction* wave = addTrack->addAction(QIcon(*addtrack_wavetrackIcon),
                                           QT_TRANSLATE_NOOP("@default", "Add Wave Track"));
-      wave->setData(Track::WAVE);
+      wave->setData(MusECore::Track::WAVE);
       grp->addAction(wave);
 
 
       QAction* aoutput = addTrack->addAction(QIcon(*addtrack_audiooutputIcon),
                                              QT_TRANSLATE_NOOP("@default", "Add Audio Output"));
-      aoutput->setData(Track::AUDIO_OUTPUT);
+      aoutput->setData(MusECore::Track::AUDIO_OUTPUT);
       grp->addAction(aoutput);
 
 
       QAction* agroup = addTrack->addAction(QIcon(*addtrack_audiogroupIcon),
                                             QT_TRANSLATE_NOOP("@default", "Add Audio Group"));
-      agroup->setData(Track::AUDIO_GROUP);
+      agroup->setData(MusECore::Track::AUDIO_GROUP);
       grp->addAction(agroup);
 
 
       QAction* ainput = addTrack->addAction(QIcon(*addtrack_audioinputIcon),
                                             QT_TRANSLATE_NOOP("@default", "Add Audio Input"));
-      ainput->setData(Track::AUDIO_INPUT);
+      ainput->setData(MusECore::Track::AUDIO_INPUT);
       grp->addAction(ainput);
 
 
       QAction* aaux = addTrack->addAction(QIcon(*addtrack_auxsendIcon),
                                           QT_TRANSLATE_NOOP("@default", "Add Aux Send"));
-      aaux->setData(Track::AUDIO_AUX);
+      aaux->setData(MusECore::Track::AUDIO_AUX);
       grp->addAction(aaux);
 
       // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
@@ -336,26 +357,9 @@ QActionGroup* populateAddTrack(QMenu* addTrack)
       // Add the sub-menu to the given menu.
       addTrack->addMenu(synp);
       
-      //QObject::connect(addTrack, SIGNAL(triggered(QAction *)), song, SLOT(addNewTrack(QAction *)));
+      //QObject::connect(addTrack, SIGNAL(triggered(QAction *)), MusEGlobal::song, SLOT(addNewTrack(QAction *)));
 
       return grp;
       }
 
-bool any_event_selected(const set<Part*>& parts, bool in_range)
-{
-  return !get_events(parts, in_range ? 3 : 1).empty();
-}
-
-bool drummaps_almost_equal(DrumMap* one, DrumMap* two, int len)
-{
-  for (int i=0; i<len; i++)
-  {
-    DrumMap tmp = one[i];
-    tmp.mute=two[i].mute;
-    if (tmp!=two[i])
-      return false;
-  }
-  return true;
-}
-
-} // namespace MusEUtil
+} // namespace MusEGui

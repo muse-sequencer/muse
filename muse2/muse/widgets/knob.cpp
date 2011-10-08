@@ -34,7 +34,7 @@
 #include <QPaintEvent>
 #include <QResizeEvent>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //  The QwtKnob widget imitates look and behaviour of a volume knob on a radio.
@@ -329,15 +329,15 @@ void Knob::rangeChange()
 
 void Knob::resizeEvent(QResizeEvent* ev)
       {
-      MusEWidget::SliderBase::resizeEvent(ev);
+      SliderBase::resizeEvent(ev);
       int width, width_2;
 
       const QRect& r = rect();
 
 // printf("resize %d %d %d\n", r.height(), r.width(), d_knobWidth);
 
-//      width = MusEUtil::qwtMin(MusEUtil::qwtMin(r.height(), r.width()), d_knobWidth);
-      width = MusEUtil::qwtMin(r.height(), r.width());
+//      width = MusECore::qwtMin(MusECore::qwtMin(r.height(), r.width()), d_knobWidth);
+      width = MusECore::qwtMin(r.height(), r.width());
       width_2 = width / 2;
 
       int x = r.x() + r.width()  / 2 - width_2;
@@ -426,7 +426,7 @@ void Knob::drawMarker(QPainter *p, double arc, const QColor &c)
   
   p->setBrush(c);
   p->setPen(Qt::NoPen);
-  rb = double(MusEUtil::qwtMax(radius - 4 - d_dotWidth / 2, 0));
+  rb = double(MusECore::qwtMax(radius - 4 - d_dotWidth / 2, 0));
   p->drawEllipse(xm - int(rint(sa * rb)) - d_dotWidth / 2,
            ym - int(rint(ca * rb)) - d_dotWidth / 2,
            d_dotWidth, d_dotWidth);
@@ -439,8 +439,8 @@ void Knob::drawMarker(QPainter *p, double arc, const QColor &c)
   pn.setWidth(2);
   p->setPen(pn);
   
-  rb = MusEUtil::qwtMax(double((radius - 1) / 3.0), 0.0);
-  re = MusEUtil::qwtMax(double(radius - 1), 0.0);
+  rb = MusECore::qwtMax(double((radius - 1) / 3.0), 0.0);
+  re = MusECore::qwtMax(double(radius - 1), 0.0);
 
   p->setRenderHint(QPainter::Antialiasing, true);
   p->drawLine( xm,
@@ -471,7 +471,7 @@ void Knob::drawMarker(QPainter *p, double arc, const QColor &c)
 //------------------------------------------------------------
 void Knob::setKnobWidth(int w)
 {
-    d_knobWidth = MusEUtil::qwtMax(w,5);
+    d_knobWidth = MusECore::qwtMax(w,5);
     resize(size());
     repaint();
 }
@@ -490,7 +490,7 @@ void Knob::setKnobWidth(int w)
 //------------------------------------------------------------
 void Knob::setBorderWidth(int bw)
 {
-    d_borderWidth = MusEUtil::qwtMax(bw, 0);
+    d_borderWidth = MusECore::qwtMax(bw, 0);
     resize(size());
     repaint();
 }
@@ -574,4 +574,4 @@ void Knob::setMarkerColor(const QColor c)
   repaint();
 }
 
-} // namespace MusEWidget
+} // namespace MusEGui

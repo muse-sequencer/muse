@@ -137,7 +137,7 @@ bool ISynth::setController(int ch, int ctrl, int val)
             return true;
             }
       switch(ctrl) {
-            case CTRL_PROGRAM:
+            case MusECore::CTRL_PROGRAM:
                   {
                   int hbank = (val & 0xff0000) >> 16;
                   int lbank = (val & 0xff00) >> 8;
@@ -153,7 +153,7 @@ bool ISynth::setController(int ch, int ctrl, int val)
                   }
                   break;
 
-            case CTRL_PITCH:
+            case MusECore::CTRL_PITCH:
                   fluid_synth_pitch_bend (_fluidsynth, ch, val);
                   break;
 
@@ -374,23 +374,23 @@ void ISynth::process(float** ports, int offset, int n)
 //   processEvent
 //    All events from the sequencer go here
 //---------------------------------------------------------
-bool ISynth::processEvent(const MidiPlayEvent& ev)
+bool ISynth::processEvent(const MusECore::MidiPlayEvent& ev)
       {
       switch(ev.type()) {
-            case ME_CONTROLLER:
+            case MusECore::ME_CONTROLLER:
                   setController(ev.channel(), ev.dataA(), ev.dataB());
                   return true;
-            case ME_NOTEON:
+            case MusECore::ME_NOTEON:
                   return playNote(ev.channel(), ev.dataA(), ev.dataB());
-            case ME_NOTEOFF:
+            case MusECore::ME_NOTEOFF:
                   return playNote(ev.channel(), ev.dataA(), 0);
-            case ME_SYSEX:
+            case MusECore::ME_SYSEX:
                   return sysex(ev.len(), ev.data());
-            case ME_PITCHBEND:
-                setController(ev.channel(), CTRL_PITCH, ev.dataA());
+            case MusECore::ME_PITCHBEND:
+                setController(ev.channel(), MusECore::CTRL_PITCH, ev.dataA());
                 break;            
-            case ME_PROGRAM:
-                setController(ev.channel(), CTRL_PROGRAM, ev.dataA());
+            case MusECore::ME_PROGRAM:
+                setController(ev.channel(), MusECore::CTRL_PROGRAM, ev.dataA());
                 break;   
             default:
                 break;
@@ -405,7 +405,7 @@ bool ISynth::processEvent(const MidiPlayEvent& ev)
 const char* ISynth::getPatchName(int /*ch*/, int val, int, bool /*drum*/) const
       {
       int prog =   val & 0xff;
-      if(val == CTRL_VAL_UNKNOWN || prog == 0xff)
+      if(val == MusECore::CTRL_VAL_UNKNOWN || prog == 0xff)
             return "<unknown>";
       prog &= 0x7f;
       
@@ -593,7 +593,7 @@ void ISynth::noRTHelper()
                   if(slen != 0)
                     memcpy(d + 1, fontname, slen);
                   d[1 + slen] = 0;
-                  MidiPlayEvent ev(0,0, ME_SYSEX, d, n);
+                  MusECore::MidiPlayEvent ev(0,0, MusECore::ME_SYSEX, d, n);
                   gui->writeEvent(ev);
                   
                   #ifdef FS_DEBUG

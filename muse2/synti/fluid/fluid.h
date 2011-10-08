@@ -75,7 +75,7 @@ class ISynth : public Mess {
 	virtual bool setController(int, int, int);
       virtual bool sysex(int len, const unsigned char* p);
     
-      virtual bool processEvent(const MidiPlayEvent&);
+      virtual bool processEvent(const MusECore::MidiPlayEvent&);
       virtual const char* getPatchName (int, int, int, bool) const;
       virtual const MidiPatch* getPatchInfo(int, const MidiPatch *) const;
       virtual void getInitData(int*, const unsigned char**);

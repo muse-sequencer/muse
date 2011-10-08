@@ -24,7 +24,7 @@
 #include "config.h"
 #include "icons.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 AboutBoxImpl::AboutBoxImpl()
 {

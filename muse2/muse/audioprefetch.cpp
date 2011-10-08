@@ -33,6 +33,12 @@
 #include "audio.h"
 #include "sync.h"
 
+namespace MusEGlobal {
+MusECore::AudioPrefetch* audioPrefetch;
+}
+
+namespace MusECore {
+
 // Added by Tim. p3.3.20
 //#define AUDIOPREFETCH_DEBUG
 
@@ -46,8 +52,6 @@ enum { PREFETCH_TICK, PREFETCH_SEEK
 struct PrefetchMsg : public ThreadMsg {
       int pos;
       };
-
-AudioPrefetch* audioPrefetch;
 
 //---------------------------------------------------------
 //   AudioPrefetch
@@ -82,7 +86,7 @@ static void readMsgP(void* p, void*)
 void AudioPrefetch::start(int priority)
       {
       clearPollFd();
-      addPollFd(toThreadFdr, POLLIN, ::readMsgP, this, 0);
+      addPollFd(toThreadFdr, POLLIN, MusECore::readMsgP, this, 0);
       //Thread::start();
       Thread::start(priority);
       }
@@ -104,9 +108,9 @@ void AudioPrefetch::processMsg1(const void* m)
       const PrefetchMsg* msg = (PrefetchMsg*)m;
       switch(msg->id) {
             case PREFETCH_TICK:
-                  if (audio->isRecording()) {
+                  if (MusEGlobal::audio->isRecording()) {
                   //puts("writeTick");
-                        audio->writeTick();
+                        MusEGlobal::audio->writeTick();
                         }
                   // Indicate do not seek file before each read.
                   // Changed by Tim. p3.3.17 
@@ -180,11 +184,11 @@ void AudioPrefetch::prefetch(bool doSeek)
             printf("AudioPrefetch::prefetch: invalid write position\n");
             return;
             }
-      if (song->loop() && !audio->bounce() && !extSyncFlag.value()) {
-            const Pos& loop = song->rPos();
+      if (MusEGlobal::song->loop() && !MusEGlobal::audio->bounce() && !MusEGlobal::extSyncFlag.value()) {
+            const Pos& loop = MusEGlobal::song->rPos();
             unsigned n = loop.frame() - writePos;
             if (n < MusEGlobal::segmentSize) {
-                  unsigned lpos = song->lPos().frame();
+                  unsigned lpos = MusEGlobal::song->lPos().frame();
                   // adjust loop start so we get exact loop len
                   if (n > lpos)
                         n = 0;
@@ -192,7 +196,7 @@ void AudioPrefetch::prefetch(bool doSeek)
                   writePos = lpos - n;
                   }
             }
-      WaveTrackList* tl = song->waves();
+      WaveTrackList* tl = MusEGlobal::song->waves();
       for (iWaveTrack it = tl->begin(); it != tl->end(); ++it) {
             WaveTrack* track = *it;
             // p3.3.29
@@ -245,7 +249,7 @@ void AudioPrefetch::seek(unsigned seekTo)
       }
       
       writePos = seekTo;
-      WaveTrackList* tl = song->waves();
+      WaveTrackList* tl = MusEGlobal::song->waves();
       for (iWaveTrack it = tl->begin(); it != tl->end(); ++it) {
             WaveTrack* track = *it;
             track->clearPrefetchFifo();
@@ -274,4 +278,6 @@ void AudioPrefetch::seek(unsigned seekTo)
       //seekDone = true;
       --seekCount;
       }
+
+} // namespace MusECore
 

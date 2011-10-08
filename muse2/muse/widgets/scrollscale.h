@@ -31,7 +31,7 @@ class QResizeEvent;
 class QScrollBar;
 class QToolButton;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   ScrollScale
@@ -99,7 +99,7 @@ class ScrollScale : public QWidget {
       static int convertQuickZoomLevelToMag(int zoomlvl);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

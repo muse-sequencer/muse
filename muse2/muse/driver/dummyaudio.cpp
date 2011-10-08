@@ -38,9 +38,12 @@
 #include "gconfig.h"
 #include "utils.h"
 
+#define DEBUG_DUMMY 0
+
+namespace MusECore {
+
 class MidiPlayEvent;
 
-#define DEBUG_DUMMY 0
 //---------------------------------------------------------
 //   DummyAudioDevice
 //---------------------------------------------------------
@@ -140,7 +143,7 @@ class DummyAudioDevice : public AudioDevice {
       
       return _framePos; }
       virtual unsigned frameTime() const {
-            return lrint(MusEUtil::curTime() * MusEGlobal::sampleRate);
+            return lrint(curTime() * MusEGlobal::sampleRate);
             }
       virtual bool isRealtime() { return realtimeFlag; }
       //virtual int realtimePriority() const { return 40; }
@@ -215,19 +218,18 @@ DummyAudioDevice::DummyAudioDevice()
       // Added by Tim. p3.3.15
       // p3.3.30
       //posix_memalign((void**)&buffer, 16, sizeof(float) * dummyFrames);
-      posix_memalign((void**)&buffer, 16, sizeof(float) * MusEConfig::config.dummyAudioBufSize);
+      posix_memalign((void**)&buffer, 16, sizeof(float) * MusEGlobal::config.dummyAudioBufSize);
       
       dummyThread = 0;
       realtimeFlag = false;
       seekflag = false;
       state = Audio::STOP;
-      //startTime = MusEUtil::curTime();
+      //startTime = curTime();
       _framePos = 0;
       playPos = 0;
       cmdQueue.clear();
       }
 
-namespace MusEApp {
 
 //---------------------------------------------------------
 //   exitDummyAudio
@@ -238,10 +240,9 @@ void exitDummyAudio()
       if(dummyAudio)
         delete dummyAudio;
       dummyAudio = NULL;      
-      audioDevice = NULL;      
+      MusEGlobal::audioDevice = NULL;      
 }
 
-} // namespace MusEApp
 
 //---------------------------------------------------------
 //   initDummyAudio
@@ -250,7 +251,7 @@ void exitDummyAudio()
 bool initDummyAudio()
       {
       dummyAudio = new DummyAudioDevice();
-      audioDevice = dummyAudio;
+      MusEGlobal::audioDevice = dummyAudio;
       return false;
       }
 
@@ -294,9 +295,9 @@ static void* dummyLoop(void* ptr)
       
       // p3.3.30
       //MusEGlobal::sampleRate = 25600;
-      MusEGlobal::sampleRate = MusEConfig::config.dummyAudioSampleRate;
+      MusEGlobal::sampleRate = MusEGlobal::config.dummyAudioSampleRate;
       //MusEGlobal::segmentSize = dummyFrames;
-      MusEGlobal::segmentSize = MusEConfig::config.dummyAudioBufSize;
+      MusEGlobal::segmentSize = MusEGlobal::config.dummyAudioBufSize;
 #if 0      
       //unsigned int tickRate = MusEGlobal::sampleRate / dummyFrames;
       unsigned int tickRate = MusEGlobal::sampleRate / MusEGlobal::segmentSize;
@@ -455,19 +456,19 @@ static void* dummyLoop(void* ptr)
       for(;;) 
       {
             //if(audioState == AUDIO_RUNNING)
-            if(audio->isRunning())
-              //audio->process(MusEGlobal::segmentSize, drvPtr->state);
-              audio->process(MusEGlobal::segmentSize);
+            if(MusEGlobal::audio->isRunning())
+              //MusEGlobal::audio->process(MusEGlobal::segmentSize, drvPtr->state);
+              MusEGlobal::audio->process(MusEGlobal::segmentSize);
             //else if (audioState == AUDIO_START1)
             //  audioState = AUDIO_START2;
-            //usleep(dummyFrames*1000000/AL::MusEGlobal::sampleRate);
+            //usleep(dummyFrames*1000000/AL::sampleRate);
             usleep(MusEGlobal::segmentSize*1000000/MusEGlobal::sampleRate);
             //if(dummyAudio->seekflag) 
             if(drvPtr->seekflag) 
             {
-              //audio->sync(Audio::STOP, dummyAudio->pos);
-              //audio->sync(drvPtr->state, drvPtr->playPos);
-              audio->sync(Audio::STOP, drvPtr->playPos);
+              //MusEGlobal::audio->sync(Audio::STOP, dummyAudio->pos);
+              //MusEGlobal::audio->sync(drvPtr->state, drvPtr->playPos);
+              MusEGlobal::audio->sync(Audio::STOP, drvPtr->playPos);
               
               //dummyAudio->seekflag = false;
               drvPtr->seekflag = false;
@@ -515,7 +516,7 @@ void DummyAudioDevice::start(int priority)
                   }
             }
       
-      int rv = pthread_create(&dummyThread, attributes, ::dummyLoop, this); 
+      int rv = pthread_create(&dummyThread, attributes, dummyLoop, this); 
       if(rv)
       {  
         // p4.0.16: MusEGlobal::realTimeScheduling is unreliable. It is true even in some clearly non-RT cases.
@@ -523,7 +524,7 @@ void DummyAudioDevice::start(int priority)
         // MusE was failing with a stock kernel because of PTHREAD_EXPLICIT_SCHED.
         // So we'll just have to try again without attributes.
         if (MusEGlobal::realTimeScheduling && _realTimePriority > 0) 
-          rv = pthread_create(&dummyThread, NULL, ::dummyLoop, this); 
+          rv = pthread_create(&dummyThread, NULL, dummyLoop, this); 
       }
       
       if(rv)
@@ -543,3 +544,4 @@ void DummyAudioDevice::stop ()
       dummyThread = 0;
       }
 
+} // namespace MusECore

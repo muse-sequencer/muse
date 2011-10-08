@@ -35,12 +35,15 @@ class QTreeWidget;
 class QTreeWidgetItem;
 
 
+namespace MusECore {
 class Event;
+class MidiPart;
 class MidiTrack;
 class PartList;
-class MidiPart;
-class MidiPart;
 class Xml;
+}
+
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   ListEdit
@@ -53,8 +56,8 @@ class ListEdit : public MidiEditor {
       QMenu* menuEdit;
       QActionGroup* insertItems;
       QToolBar* listTools;
-      MidiTrack* curTrack;
-      MidiPart* curPart;
+      MusECore::MidiTrack* curTrack;
+      MusECore::MidiPart* curPart;
       int selectedTick;
       int curPartId;
 
@@ -73,7 +76,7 @@ class ListEdit : public MidiEditor {
       void editInsertMeta();
       void editInsertCAfter();
       void editInsertPAfter();
-      void editEvent(Event&, MidiPart*);
+      void editEvent(MusECore::Event&, MusECore::MidiPart*);
       void selectionChanged();
       void doubleClicked(QTreeWidgetItem*);
       void cmd(int cmd);
@@ -83,16 +86,18 @@ class ListEdit : public MidiEditor {
       void songChanged(int);
 
    signals:
-      void deleted(TopWin*);
+      void deleted(MusEGui::TopWin*);
 
    public:
-      ListEdit(PartList*);
+      ListEdit(MusECore::PartList*);
       ~ListEdit();
-      virtual void readStatus(Xml&);
-      virtual void writeStatus(int, Xml&) const;
-      static void readConfiguration(Xml&);
-      static void writeConfiguration(int, Xml&);
+      virtual void readStatus(MusECore::Xml&);
+      virtual void writeStatus(int, MusECore::Xml&) const;
+      static void readConfiguration(MusECore::Xml&);
+      static void writeConfiguration(int, MusECore::Xml&);
       };
+
+} // namespace MusEGui
 
 #endif
 

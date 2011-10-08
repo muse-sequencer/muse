@@ -30,7 +30,7 @@
 #include "track.h"
 #include "synth.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 const char* waveTrack = QT_TRANSLATE_NOOP("@default", "Show wave tracks");
 const char* groupTrack = QT_TRANSLATE_NOOP("@default", "Show group tracks");
@@ -90,13 +90,13 @@ VisibleTracks::VisibleTracks(QWidget* parent, const char*)
 //---------------------------------------------------------
 void VisibleTracks::updateVisibleTracksButtons()
 {
-    actions[0]->setChecked(WaveTrack::visible());
-    actions[1]->setChecked(AudioGroup::visible());
-    actions[2]->setChecked(AudioAux::visible());
-    actions[3]->setChecked(AudioInput::visible());
-    actions[4]->setChecked(AudioOutput::visible());
-    actions[5]->setChecked(MidiTrack::visible());
-    actions[6]->setChecked(SynthI::visible());
+    actions[0]->setChecked(MusECore::WaveTrack::visible());
+    actions[1]->setChecked(MusECore::AudioGroup::visible());
+    actions[2]->setChecked(MusECore::AudioAux::visible());
+    actions[3]->setChecked(MusECore::AudioInput::visible());
+    actions[4]->setChecked(MusECore::AudioOutput::visible());
+    actions[5]->setChecked(MusECore::MidiTrack::visible());
+    actions[6]->setChecked(MusECore::SynthI::visible());
 }
 //---------------------------------------------------------
 //   toolChanged
@@ -107,25 +107,25 @@ void VisibleTracks::visibilityChanged(QAction* action)
 //      printf("update visibility\n");
       switch (((Action*)action)->id()) {
           case 0:
-            WaveTrack::setVisible(action->isChecked());
+            MusECore::WaveTrack::setVisible(action->isChecked());
             break;
           case 1:
-            AudioGroup::setVisible(action->isChecked());
+            MusECore::AudioGroup::setVisible(action->isChecked());
             break;
           case 2:
-            AudioAux::setVisible(action->isChecked());
+            MusECore::AudioAux::setVisible(action->isChecked());
             break;
           case 3:
-            AudioInput::setVisible(action->isChecked());
+            MusECore::AudioInput::setVisible(action->isChecked());
             break;
           case 4:
-            AudioOutput::setVisible(action->isChecked());
+            MusECore::AudioOutput::setVisible(action->isChecked());
             break;
           case 5:
-            MidiTrack::setVisible(action->isChecked());
+            MusECore::MidiTrack::setVisible(action->isChecked());
             break;
           case 6:
-            SynthI::setVisible(action->isChecked());
+            MusECore::SynthI::setVisible(action->isChecked());
             break;
       default:
             break;
@@ -142,4 +142,4 @@ VisibleTracks::~VisibleTracks()
       delete [] actions;
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

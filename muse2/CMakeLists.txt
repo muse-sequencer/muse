@@ -109,6 +109,7 @@ option ( ENABLE_DSSI        "enable Disposable Soft Synth Interface (OSC also re
 option ( ENABLE_VST         "enable VST/win support"                                         OFF)
 option ( ENABLE_FLUID       "enable fluidsynth softsynth plugins"                            ON)
 option ( ENABLE_EXPERIMENTAL "enable building experimental features"                         OFF)
+option ( ENABLE_PYTHON      "enable Python control support"                                  OFF)
 option ( UPDATE_TRANSLATIONS "Update source translation share/locale/*.ts files 
          (WARNING: This will modify the .ts files in the source tree!!)"                     OFF)
 option ( MODULES_BUILD_STATIC "Build type of internal modules"                               OFF)
@@ -228,6 +229,17 @@ if (ENABLE_OSC)
 else (ENABLE_OSC)
       message("OSC disabled")
 endif (ENABLE_OSC)
+
+##
+## check for python >= 2.4
+##
+
+if (ENABLE_PYTHON)
+      PKG_CHECK_MODULES(PYTHON python>=2.4)
+      if (PYTHON_FOUND)
+            set(PYTHON_SUPPORT ON)
+      endif (PYTHON_FOUND)
+endif (ENABLE_PYTHON)
 
 ##
 ## check for dssi >= 0.9.0
@@ -400,6 +412,7 @@ add_custom_target(uninstall
 ## Show a summary of what we got
 summary_add("Lash support" HAVE_LASH)
 summary_add("OSC (Liblo) support" OSC_SUPPORT)
+summary_add("Python support" PYTHON_SUPPORT)
 summary_add("DSSI support" DSSI_SUPPORT)
 summary_add("VST support" VST_SUPPORT)
 summary_add("Fluidsynth support" HAVE_FLUIDSYNTH)

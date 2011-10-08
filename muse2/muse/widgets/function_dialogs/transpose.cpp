@@ -24,7 +24,7 @@
 #include "transpose.h"
 #include "xml.h"
 
-namespace MusEDialog {
+namespace MusEGui {
 
 Transpose::Transpose(QWidget* parent)
 	: QDialog(parent)
@@ -61,18 +61,18 @@ int Transpose::exec()
 	return QDialog::exec();
 }
 
-void Transpose::read_configuration(Xml& xml)
+void Transpose::read_configuration(MusECore::Xml& xml)
 {
 	for (;;)
 	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
 			
 		const QString& tag = xml.s1();
 		switch (token)
 		{
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "range")
 					range=xml.parseInt();
 				else if (tag == "amount")
@@ -81,7 +81,7 @@ void Transpose::read_configuration(Xml& xml)
 					xml.unknown("Transpose");
 				break;
 				
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "transpose")
 					return;
 				
@@ -91,7 +91,7 @@ void Transpose::read_configuration(Xml& xml)
 	}
 }
 
-void Transpose::write_configuration(int level, Xml& xml)
+void Transpose::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "transpose");
 	xml.intTag(level, "range", range);
@@ -99,4 +99,4 @@ void Transpose::write_configuration(int level, Xml& xml)
 	xml.tag(level, "/transpose");
 }
 
-} // namespace MusEDialog
+} // namespace MusEGui

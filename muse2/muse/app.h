@@ -30,7 +30,6 @@
 #include <QFileInfo>
 #include <list>
 
-class TopWin;
 class QCloseEvent;
 class QFocusEvent;
 class QMainWindow;
@@ -45,60 +44,54 @@ class QToolButton;
 class QProgressDialog;
 class QMdiArea;
 
-namespace MusEWidget {
-class BigTime;
-class EditToolBar;
-class GlobalSettingsConfig;
-class MetronomeConfig;
-class MidiSyncConfig;
-class RoutePopupMenu;
-class ShortcutConfig;
-class VisibleTracks;
-}
-
-namespace MusEArranger {
-class Arranger;
-class ArrangerView;
-}
-
-class Part;
-class PartList;
-class Transport;
+namespace MusECore {
+class AudioOutput;
 class Instrument;
-class Track;
-class PrinterConfig;
-class MRConfig;
-class AudioConf;
-class Xml;
-
-namespace MusEMixer {
-class AudioMixerApp;
-}
-
-class ClipListEdit;
-class AudioRecord;
-class MidiFileConfig;
-class MidiFilterConfig;
-class MarkerView;
-class GlobalSettingsConfig;
-class MidiControllerEditDialog;
-class MidiInputTransformDialog;
-class MidiTransformerDialog;
-class SynthI;
-class RhythmGen;
-class MidiTrack;
 class MidiInstrument;
 class MidiPort;
-class Appearance;
-class WaveTrack;
-class AudioOutput;
-class EditInstrument;
-class ScoreEdit;
+class MidiTrack;
+class Part;
+class PartList;
+class SynthI;
+class Track;
 class Undo;
+class WaveTrack;
+class Xml;
+}
+
+
+namespace MusEGui {
+class Appearance;
+class Arranger;
+class ArrangerView;
+class AudioConf;
+class AudioMixerApp;
+class AudioRecord;
+class BigTime;
+class ClipListEdit;
+class EditInstrument;
+class EditToolBar;
+class GlobalSettingsConfig;
+class GlobalSettingsConfig;
+class MRConfig;
+class MarkerView;
+class MetronomeConfig;
+class MidiControllerEditDialog;
+class MidiFileConfig;
+class MidiFilterConfig;
+class MidiInputTransformDialog;
+class MidiSyncConfig;
+class MidiTransformerDialog;
+class PrinterConfig;
+class RhythmGen;
+class RoutePopupMenu;
+class ScoreEdit;
+class ShortcutConfig;
+class TopWin;
+class Transport;
+class VisibleTracks;
 
 #define MENU_ADD_SYNTH_ID_BASE 0x1000
-
-namespace MusEApp {
 
 
 //---------------------------------------------------------
@@ -181,7 +174,7 @@ class MusE : public QMainWindow
       // either the requiredToolbars or optionalToolbars list!
 
       Transport* transport;
-      MusEWidget::BigTime* bigtime;
+      BigTime* bigtime;
       EditInstrument* editInstrument;
       
       // when adding a menu to the main window, remember adding it to
@@ -191,40 +184,40 @@ class MusE : public QMainWindow
       QMenu* menu_functions, *menuScriptPlugins;
 
       // Special common menu for routes. Used (so far) by audio and midi strip, and midi trackinfo.
-      MusEWidget::RoutePopupMenu* routingPopupMenu; 
+      RoutePopupMenu* routingPopupMenu; 
 
       QMenu* follow;
       QMenu* midiInputPlugins;
 
       QWidget* midiPortConfig;
       QWidget* softSynthesizerConfig;
-      MusEWidget::MidiSyncConfig* midiSyncConfig;
+      MidiSyncConfig* midiSyncConfig;
       MRConfig* midiRemoteConfig;
       RhythmGen* midiRhythmGenerator;
-      MusEWidget::MetronomeConfig* metronomeConfig;
+      MetronomeConfig* metronomeConfig;
       AudioConf* audioConfig;
       MidiFileConfig* midiFileConfig;
-      MusEWidget::GlobalSettingsConfig* globalSettingsConfig;
+      GlobalSettingsConfig* globalSettingsConfig;
       MidiFilterConfig* midiFilterConfig;
       MidiInputTransformDialog* midiInputTransform;
-      MusEWidget::ShortcutConfig* shortcutConfig;
+      ShortcutConfig* shortcutConfig;
       Appearance* appearance;
-      MusEMixer::AudioMixerApp* mixer1;
-      MusEMixer::AudioMixerApp* mixer2;
+      AudioMixerApp* mixer1;
+      AudioMixerApp* mixer2;
 
-      MusEArranger::Arranger* _arranger;
+      Arranger* _arranger;
       ToplevelList toplevels;
       ClipListEdit* clipListEdit;
       MarkerView* markerView;
-      MusEArranger::ArrangerView* arrangerView;
+      ArrangerView* arrangerView;
       MidiTransformerDialog* midiTransformerDialog;
       QMenu* openRecent;
       
       bool readMidi(FILE*);
-      void read(Xml& xml, bool skipConfig, bool isTemplate);
-      void processTrack(MidiTrack* track);
+      void read(MusECore::Xml& xml, bool skipConfig, bool isTemplate);
+      void processTrack(MusECore::MidiTrack* track);
 
-      void write(Xml& xml) const;
+      void write(MusECore::Xml& xml) const;
       // If clear_all is false, it will not touch things like midi ports.
       bool clearSong(bool clear_all = true);
       bool save(const QString&, bool);
@@ -232,17 +225,17 @@ class MusE : public QMainWindow
       void setConfigDefaults();
 
       void setFollow();
-      void readConfigParts(Xml& xml);
-      void readMidiport(Xml& xml);
-      void readMidichannel(Xml& xml, int port);
-      void readCtrl(Xml& xml, int port, int channel);
-      void readToplevels(Xml& xml);
-      PartList* getMidiPartsToEdit();
-      Part* readPart(Xml& xml);
+      void readConfigParts(MusECore::Xml& xml);
+      void readMidiport(MusECore::Xml& xml);
+      void readMidichannel(MusECore::Xml& xml, int port);
+      void readCtrl(MusECore::Xml& xml, int port, int channel);
+      void readToplevels(MusECore::Xml& xml);
+      MusECore::PartList* getMidiPartsToEdit();
+      MusECore::Part* readPart(MusECore::Xml& xml);
       bool checkRegionNotNull();
       void loadProjectFile1(const QString&, bool songTemplate, bool loadAll);
-      void writeGlobalConfiguration(int level, Xml&) const;
-      void writeConfiguration(int level, Xml&) const;
+      void writeGlobalConfiguration(int level, MusECore::Xml&) const;
+      void writeConfiguration(int level, MusECore::Xml&) const;
       void updateConfiguration();
 
       virtual void focusInEvent(QFocusEvent*);
@@ -253,7 +246,7 @@ class MusE : public QMainWindow
 
    signals:
       void configChanged();
-      void activeTopWinChanged(TopWin*);
+      void activeTopWinChanged(MusEGui::TopWin*);
 
    private slots:
       void loadProject();
@@ -324,8 +317,8 @@ class MusE : public QMainWindow
       void execDeliveredScript(int);
       void execUserScript(int);
       
-      void activeTopWinChangedSlot(TopWin*);
-      void setCurrentMenuSharingTopwin(TopWin*);
+      void activeTopWinChangedSlot(MusEGui::TopWin*);
+      void setCurrentMenuSharingTopwin(MusEGui::TopWin*);
       
       void bringToFront(QWidget* win);
       void setFullscreen(bool);
@@ -336,11 +329,11 @@ class MusE : public QMainWindow
 
    public slots:
       bool saveAs();
-      void bounceToFile(AudioOutput* ao = 0);
+      void bounceToFile(MusECore::AudioOutput* ao = 0);
       void closeEvent(QCloseEvent*e);
       void loadProjectFile(const QString&);
       void loadProjectFile(const QString&, bool songTemplate, bool loadAll);
-      void toplevelDeleted(TopWin* tl);
+      void toplevelDeleted(MusEGui::TopWin* tl);
       void loadTheme(const QString&);
       void loadStyleSheetFile(const QString&);
       bool seqRestart();
@@ -355,36 +348,36 @@ class MusE : public QMainWindow
       void startEditInstrument();
       void configMidiPorts();
 
-      void startEditor(PartList*, int);
+      void startEditor(MusECore::PartList*, int);
       void startScoreQuickly();
       void startPianoroll();
-      void startPianoroll(PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
+      void startPianoroll(MusECore::PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
       void startWaveEditor();
-      void startWaveEditor(PartList*);
-      void openInScoreEdit(ScoreEdit* destination, PartList* pl, bool allInOne=false);
+      void startWaveEditor(MusECore::PartList*);
+      void openInScoreEdit(ScoreEdit* destination, MusECore::PartList* pl, bool allInOne=false);
       void openInScoreEdit(ScoreEdit* destination, bool allInOne=false);
       void openInScoreEdit_allInOne(QWidget* destination);
       void openInScoreEdit_oneStaffPerTrack(QWidget* destination);
       void startMasterEditor();
       void startLMasterEditor();
       void startListEditor();
-      void startListEditor(PartList*);
+      void startListEditor(MusECore::PartList*);
       void startDrumEditor();
-      void startDrumEditor(PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
-      void startEditor(Track*);
+      void startDrumEditor(MusECore::PartList* /*pl*/, bool /*showDefaultCtrls*/ = false);
+      void startEditor(MusECore::Track*);
       void startMidiTransformer();
       
       void focusChanged(QWidget* old, QWidget* now);
       
       void addMdiSubWindow(QMdiSubWindow*);
-      void shareMenuAndToolbarChanged(TopWin*, bool);
+      void shareMenuAndToolbarChanged(MusEGui::TopWin*, bool);
 
       void updateWindowMenu();
 
    public:
       MusE(int argc, char** argv);
       ~MusE();
-      MusEArranger::Arranger* arranger() const { return _arranger; }
+      Arranger* arranger() const { return _arranger; }
       QRect configGeometryMain;
       QProgressDialog *progress;
       bool importMidi(const QString name, bool merge);
@@ -393,16 +386,16 @@ class MusE : public QMainWindow
       void seqStop();
       bool seqStart();
       void setHeartBeat();
-      void importController(int, MidiPort*, int);
+      void importController(int, MusECore::MidiPort*, int);
       QString projectName() { return project.fileName(); }
       QWidget* mixer1Window();
       QWidget* mixer2Window();
       QWidget* transportWindow();
       QWidget* bigtimeWindow();
-      bool importWaveToTrack(QString& name, unsigned tick=0, Track* track=NULL);
-      void importPartToTrack(QString& filename, unsigned tick, Track* track);
+      bool importWaveToTrack(QString& name, unsigned tick=0, MusECore::Track* track=NULL);
+      void importPartToTrack(QString& filename, unsigned tick, MusECore::Track* track);
       void showTransport(bool flag);
-      MusEWidget::RoutePopupMenu* getRoutingPopupMenu();
+      RoutePopupMenu* getRoutingPopupMenu();
       
       const ToplevelList* getToplevels() { return &toplevels; }
       
@@ -416,4 +409,4 @@ class MusE : public QMainWindow
 extern void addProject(const QString& name);
 #endif
 
-} // namespace MusEA
+} // namespace MusEGui

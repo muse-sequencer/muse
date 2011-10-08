@@ -47,6 +47,8 @@
 #include "conf.h"
 #include "gconfig.h"
 
+namespace MusEGui {
+
 int BG_ITEM_HEIGHT = 30;
 
 class BgPreviewWidget : public QWidget {
@@ -115,13 +117,13 @@ class IdListViewItem : public QTreeWidgetItem {
 //   Appearance
 //---------------------------------------------------------
 
-Appearance::Appearance(MusEArranger::Arranger* a, QWidget* parent)
+Appearance::Appearance(Arranger* a, QWidget* parent)
    : QDialog(parent, Qt::Window)
       {
       setupUi(this);
       arr    = a;
       color  = 0;
-      config = new MusEConfig::GlobalConfigValues;
+      config = new GlobalConfigValues;
 
       lastSelectedColorItem = 0;
       lastSelectedBgItem = 0;
@@ -207,7 +209,7 @@ Appearance::Appearance(MusEArranger::Arranger* a, QWidget* parent)
            new IdListViewItem(0x410, id, "Saxophon");
            */
            for(int i = 0; i < NUM_PARTCOLORS; ++i)
-             new IdListViewItem(0x400 + i, id, MusEConfig::config.partColorNames[i]);
+             new IdListViewItem(0x400 + i, id, MusEGlobal::config.partColorNames[i]);
            
            new IdListViewItem(0x41c, aid, "part canvas background");
       id = new IdListViewItem(0, aid, "Track List");
@@ -322,7 +324,7 @@ Appearance::Appearance(MusEArranger::Arranger* a, QWidget* parent)
 
 void Appearance::resetValues()
       {
-      *config = MusEConfig::config;  // init with global config values
+      *config = MusEGlobal::config;  // init with global config values
       styleSheetPath->setText(config->styleSheetFile);
       updateFonts();
 
@@ -697,7 +699,7 @@ void Appearance::apply()
       config->globalAlphaBlend = globalAlphaVal->value();
       
       // set colors...
-      MusEConfig::config = *config;
+      MusEGlobal::config = *config;
       MusEGlobal::muse->changeConfig(true);
       }
 
@@ -764,7 +766,7 @@ void Appearance::removeBackground()
 void Appearance::addBackground()
       {
       QString cur = getenv("HOME");
-      QString user_bgfile = MusEWidget::getImageFileName(cur, MusEGlobal::image_file_pattern, this,
+      QString user_bgfile = getImageFileName(cur, MusEGlobal::image_file_pattern, this,
                                              tr("MusE: load image"));
 
       bool image_exists = false;
@@ -1135,4 +1137,6 @@ void Appearance::browseFont(int n)
             updateFonts();
             }
       }
+
+} // namespace MusEGui
 

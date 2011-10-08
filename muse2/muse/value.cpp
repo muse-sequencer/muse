@@ -24,6 +24,7 @@
 #include "value.h"
 #include "xml.h"
 
+namespace MusECore {
 
 IValue::IValue(QObject* parent, const char* name)
    : QObject(parent)
@@ -75,3 +76,4 @@ void IValue::setValue(int v)
             }
       }
 
+} // namespace MusECore

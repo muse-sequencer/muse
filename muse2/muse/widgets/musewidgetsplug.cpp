@@ -43,7 +43,7 @@
 
 int sampleRate = 44100;   // some dummy values to get things compiled/linked
 int division   = 384;
-int mtcType    = 0;
+int MusEGlobal::mtcType    = 0;
 bool hIsB      = false;
 
 static const char* vall[] = {

@@ -34,7 +34,7 @@ class QMouseEvent;
 class QPainter;
 class QPainterPath;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 class Meter : public QFrame {
     Q_OBJECT
@@ -103,7 +103,7 @@ class Meter : public QFrame {
       void setRange(double min, double max);
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

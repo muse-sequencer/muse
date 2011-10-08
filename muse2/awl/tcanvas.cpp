@@ -300,7 +300,7 @@ bool TimeCanvas::eventFilter(QObject* obj, QEvent* event)
                               //else if (b & Qt::RightButton)
                               //      i = 2;
                               else if (b & Qt::RightButton) {
-                                    if ((MusEConfig::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
+                                    if ((MusEGlobal::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
                                         i = 1;
                                     else
                                         i = 2;

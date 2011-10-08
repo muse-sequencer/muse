@@ -1,3 +1,16 @@
+06.09.2011:
+        - SigEdit, up/down arrow in denominator only moves between powers of two (decreased thick headedness), 
+          numerator is no longer validated (rj)
+        - Hopefully last big namespace update. The only namespaces in use are 
+            o MusEGlobal: For global variables
+            o MusECore:   For non-gui classes
+            o MusEGui:    For gui classes
+          One or two more namespaces will be added for the stuff outside the main tree (synti, al, etc) (Orcan)
+        - Fixed python control add-on building. Left it off by default. (Orcan)
+05.09.2011:
+        - SigEdit, up/down arrow in denominator only moves between powers of two, 2,4,8...128 (rj)
+04.09.2011:
+        - More fixes to SigEdit, close on enter, navigate with arrows and / between values, fixed background color, focus (rj)
 02.09.2011:
         - SigEdit reworked to use two spinboxes, plan on adding Enter/Return detection so the widget will close when 
           Enter/Return is pressed (rj)

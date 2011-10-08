@@ -33,16 +33,15 @@ class QDialog;
 class QLabel;
 class QString;
 
-namespace MusEWidget {
+namespace MusECore {
+class MidiTrack;
+}
+
+namespace MusEGui {
 class DoubleLabel;
 class Knob;
 class Slider;
 class TransparentToolButton;
-}
-
-class MidiTrack;
-
-namespace MusEMixer {
 
 //---------------------------------------------------------
 //   MidiStrip
@@ -51,13 +50,13 @@ namespace MusEMixer {
 class MidiStrip : public Strip {
       Q_OBJECT
 
-      MusEWidget::Slider* slider;
-      MusEWidget::DoubleLabel* sl;
-      MusEWidget::TransparentToolButton* off;
+      MusEGui::Slider* slider;
+      MusEGui::DoubleLabel* sl;
+      MusEGui::TransparentToolButton* off;
 
       struct KNOB {
-            MusEWidget::Knob* knob;
-            MusEWidget::DoubleLabel* dl;
+            MusEGui::Knob* knob;
+            MusEGui::DoubleLabel* dl;
             QLabel* lb;
             } controller[4];    // pan variation reverb chorus
 
@@ -93,10 +92,10 @@ class MidiStrip : public Strip {
       virtual void songChanged(int);
 
    public:
-      MidiStrip(QWidget* parent, MidiTrack*);
+      MidiStrip(QWidget* parent, MusECore::MidiTrack*);
       };
 
-} // namespace MusEMixer
+} // namespace MusEGui
 
 #endif
 

@@ -26,6 +26,8 @@
 
 #include <QObject>
 
+namespace MusECore {
+
 class Xml;
 
 //---------------------------------------------------------
@@ -73,6 +75,8 @@ class BValue : public QObject {
       bool value() const    { return val; }
       void save(int level, Xml& xml);
       };
+
+} // namespace MusECore
 
 #endif
 

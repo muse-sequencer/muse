@@ -23,7 +23,7 @@
 
 #include "ctrlcombo.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   CtrlComboBox
@@ -71,4 +71,4 @@ CtrlComboBox::CtrlComboBox(QWidget* parent)
              insertItem(i, QString(ctxt[i]));
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

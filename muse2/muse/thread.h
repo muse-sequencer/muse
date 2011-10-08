@@ -27,6 +27,10 @@
 #include <pthread.h>
 #include <list>
 
+struct pollfd;
+
+namespace MusECore {
+
 //---------------------------------------------------------
 //   Poll
 //---------------------------------------------------------
@@ -114,6 +118,8 @@ class Thread {
       virtual void threadStart(void*){ }  // called from loop
       virtual void threadStop() { }  // called from loop before leaving
       };
+
+} // namespace MusECore
 
 #endif
 

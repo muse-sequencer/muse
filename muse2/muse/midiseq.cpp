@@ -45,10 +45,14 @@
 #include "song.h"
 #include "gconfig.h"
 
-MidiSeq* midiSeq;
-int MidiSeq::ticker = 0;
+namespace MusEGlobal {
+MusECore::MidiSeq* midiSeq;
 volatile bool midiBusy=false;
+}
 
+namespace MusECore {
+
+int MidiSeq::ticker = 0;
 
 //---------------------------------------------------------
 //   readMsg
@@ -67,78 +71,78 @@ static void readMsg(void* p, void*)
 
 void MidiSeq::processMsg(const ThreadMsg* m)
       {
-      AudioMsg* msg = (AudioMsg*)m;
+      MusECore::AudioMsg* msg = (MusECore::AudioMsg*)m;
       switch(msg->id) {
             // This does not appear to be used anymore. Was sent in Audio::process1, 
             //  now Audio::processMidi is called directly. p4.0.15 Tim.
-            //case MS_PROCESS:
+            //case MusECore::MS_PROCESS:
             //      audio->processMidi();
             //      break;
             
             // Removed p4.0.34
-            //case SEQM_SEEK:
+            //case MusECore::SEQM_SEEK:
             //      processSeek();
             //      break;
-            //case MS_STOP:
+            //case MusECore::MS_STOP:
             //      processStop();
             //      break;
             
-            case MS_SET_RTC:
+            case MusECore::MS_SET_RTC:
                   MusEGlobal::doSetuid();
                   setRtcTicks();
                   MusEGlobal::undoSetuid();
                   break;
-            case MS_UPDATE_POLL_FD:
+            case MusECore::MS_UPDATE_POLL_FD:
                   updatePollFd();
                   break;
             // Moved into Song::processMsg p4.0.34
             /*
-            case SEQM_ADD_TRACK:
-                  song->insertTrack2(msg->track, msg->ival);
+            case MusECore::SEQM_ADD_TRACK:
+                  MusEGlobal::song->insertTrack2(msg->track, msg->ival);
                   updatePollFd();
                   break;
-            case SEQM_REMOVE_TRACK:
-                  song->cmdRemoveTrack(msg->track);
+            case MusECore::SEQM_REMOVE_TRACK:
+                  MusEGlobal::song->cmdRemoveTrack(msg->track);
                   updatePollFd();
                   break;
-            case SEQM_CHANGE_TRACK:
-                  song->changeTrack((Track*)(msg->p1), (Track*)(msg->p2));
+            case MusECore::SEQM_CHANGE_TRACK:
+                  MusEGlobal::song->changeTrack((Track*)(msg->p1), (Track*)(msg->p2));
                   updatePollFd();
                   break;
-            case SEQM_ADD_PART:
-                  song->cmdAddPart((Part*)msg->p1);
+            case MusECore::SEQM_ADD_PART:
+                  MusEGlobal::song->cmdAddPart((Part*)msg->p1);
                   break;
-            case SEQM_REMOVE_PART:
-                  song->cmdRemovePart((Part*)msg->p1);
+            case MusECore::SEQM_REMOVE_PART:
+                  MusEGlobal::song->cmdRemovePart((Part*)msg->p1);
                   break;
-            case SEQM_CHANGE_PART:
-                  //song->cmdChangePart((Part*)msg->p1, (Part*)msg->p2);
-                  song->cmdChangePart((Part*)msg->p1, (Part*)msg->p2, msg->a, msg->b);
+            case MusECore::SEQM_CHANGE_PART:
+                  //MusEGlobal::song->cmdChangePart((Part*)msg->p1, (Part*)msg->p2);
+                  MusEGlobal::song->cmdChangePart((Part*)msg->p1, (Part*)msg->p2, msg->a, msg->b);
                   break;
             */
-            case SEQM_SET_TRACK_OUT_CHAN:
+            case MusECore::SEQM_SET_TRACK_OUT_CHAN:
                   {
                   MidiTrack* track = (MidiTrack*)(msg->p1);
                   track->setOutChanAndUpdate(msg->a);
                   }
                   break;
-            case SEQM_SET_TRACK_OUT_PORT:
+            case MusECore::SEQM_SET_TRACK_OUT_PORT:
                   {
                   MidiTrack* track = (MidiTrack*)(msg->p1);
                   track->setOutPortAndUpdate(msg->a);
                   }
                   break;
-            case SEQM_REMAP_PORT_DRUM_CTL_EVS:
-                    song->remapPortDrumCtrlEvents(msg->ival, msg->a, msg->b, msg->c);
+            case MusECore::SEQM_REMAP_PORT_DRUM_CTL_EVS:
+                    MusEGlobal::song->remapPortDrumCtrlEvents(msg->ival, msg->a, msg->b, msg->c);
                   break;
-            case SEQM_CHANGE_ALL_PORT_DRUM_CTL_EVS:      
-                    song->changeAllPortDrumCtrlEvents((bool)msg->a, (bool)msg->b);
+            case MusECore::SEQM_CHANGE_ALL_PORT_DRUM_CTL_EVS:      
+                    MusEGlobal::song->changeAllPortDrumCtrlEvents((bool)msg->a, (bool)msg->b);
                   break;
-            case SEQM_SET_MIDI_DEVICE:
+            case MusECore::SEQM_SET_MIDI_DEVICE:
                   ((MidiPort*)(msg->p1))->setMidiDevice((MidiDevice*)(msg->p2));
                   updatePollFd();
                   break;
-            case SEQM_IDLE:
+            case MusECore::SEQM_IDLE:
                   idle = msg->a;
                   break;
             default:
@@ -163,7 +167,7 @@ void MidiSeq::processStop()
   //    clear Alsa midi device notes and stop stuck notes
   //    Jack midi devices are handled in Audio::stopRolling()
   //
-  for(iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) 
+  for(iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id) 
   {
     //MidiDevice* md = *id;
     // Only ALSA devices are handled by this thread.
@@ -196,16 +200,16 @@ void MidiSeq::processStop()
 
 void MidiSeq::processSeek()
 {
-  //int pos = audio->tickPos();
-  // TODO Try to move this into audio::seek().   p4.0.22  Done p4.0.34
-  //if (pos == 0 && !song->record())
-  //      audio->initDevices();
+  //int pos = MusEGlobal::audio->tickPos();
+  // TODO Try to move this into MusEGlobal::audio::seek().   p4.0.22  Done p4.0.34
+  //if (pos == 0 && !MusEGlobal::song->record())
+  //      MusEGlobal::audio->initDevices();
 
   //---------------------------------------------------
   //    set all controller
   //---------------------------------------------------
 
-  for (iMidiDevice i = midiDevices.begin(); i != midiDevices.end(); ++i) 
+  for (iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
   {
     //MidiDevice* md = *i;
     // Only ALSA devices are handled by this thread.
@@ -215,12 +219,12 @@ void MidiSeq::processSeek()
     int port = md->midiPort();
     if (port == -1)
           continue;
-    MidiPort* mp = &midiPorts[port];
+    MidiPort* mp = &MusEGlobal::midiPorts[port];
     MidiCtrlValListList* cll = mp->controller();
 
     MPEventList* el = md->playEvents();
 
-    if (audio->isPlaying()) 
+    if (MusEGlobal::audio->isPlaying()) 
     {
       // stop all notes
       el->clear();
@@ -426,39 +430,39 @@ void MidiSeq::updatePollFd()
                   exit(-1);
             }
 
-      addPollFd(toThreadFdr, POLLIN, ::readMsg, this, 0);
+      addPollFd(toThreadFdr, POLLIN, MusECore::readMsg, this, 0);
 
       //---------------------------------------------------
       //  midi ports
       //---------------------------------------------------
 
-      for (iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd) {
+      for (iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) {
             MidiDevice* dev = *imd;
             int port = dev->midiPort();
             //const QString name = dev->name();
             if (port == -1)
                   continue;
-            if ((dev->rwFlags() & 0x2) || (extSyncFlag.value()
+            if ((dev->rwFlags() & 0x2) || (MusEGlobal::extSyncFlag.value()
                //&& (rxSyncPort == port || rxSyncPort == -1))) {
                //&& (dev->syncInfo().MCIn()))) {
-               && (midiPorts[port].syncInfo().MCIn()))) {
+               && (MusEGlobal::midiPorts[port].syncInfo().MCIn()))) {
                   if(dev->selectRfd() < 0){
                     //fprintf(stderr, "WARNING: read-file-descriptor for {%s} is negative\n", name.toLatin1());
                   }
-                  addPollFd(dev->selectRfd(), POLLIN, ::midiRead, this, dev);
+                  addPollFd(dev->selectRfd(), POLLIN, MusECore::midiRead, this, dev);
                   }
             if (dev->bytesToWrite()){
                   if(dev->selectWfd() < 0){
                     //fprintf(stderr, "WARNING: write-file-descriptor for {%s} is negative\n", name.toLatin1());
                   }
-                  addPollFd(dev->selectWfd(), POLLOUT, ::midiWrite, this, dev);
+                  addPollFd(dev->selectWfd(), POLLOUT, MusECore::midiWrite, this, dev);
             }      
             }
       // special handling for alsa midi:
       // (one fd for all devices)
       //    this allows for processing of some alsa events
       //    even if no alsa driver is active (assigned to a port)
-      addPollFd(alsaSelectRfd(), POLLIN, ::alsaMidiRead, this, 0);
+      addPollFd(alsaSelectRfd(), POLLIN, MusECore::alsaMidiRead, this, 0);
       }
 
 //---------------------------------------------------------
@@ -480,11 +484,11 @@ void MidiSeq::threadStop()
 bool MidiSeq::setRtcTicks()
       {
 
-      //timer.setTimerFreq(MusEConfig::config.rtcTicks);
+      //timer.setTimerFreq(MusEGlobal::config.rtcTicks);
       //timer.startTimer();
-      timer->setTimerFreq(MusEConfig::config.rtcTicks);
+      timer->setTimerFreq(MusEGlobal::config.rtcTicks);
       timer->startTimer();
-      realRtcTicks = MusEConfig::config.rtcTicks;
+      realRtcTicks = MusEGlobal::config.rtcTicks;
       return true;
       }
 
@@ -520,7 +524,7 @@ void MidiSeq::start(int priority)
 void MidiSeq::processMidiClock()
       {
 //      if (genMCSync) {
-//            midiPorts[txSyncPort].sendClock();
+//            MusEGlobal::midiPorts[txSyncPort].sendClock();
 //      }
 
 /*      if (state == START_PLAY) {
@@ -533,7 +537,7 @@ void MidiSeq::processMidiClock()
             sigmap.tickValues(_midiTick, &bar, &beat, &tick);
             midiClick      = sigmap.bar2tick(bar, beat+1, 0);
 
-            double cpos    = tempomap.tick2time(playTickPos);
+            double cpos    = MusEGlobal::tempomap.tick2time(playTickPos);
             samplePosStart = samplePos - lrint(cpos * MusEGlobal::sampleRate);
             rtcTickStart   = rtcTick - lrint(cpos * realRtcTicks);
 
@@ -541,12 +545,12 @@ void MidiSeq::processMidiClock()
             recTick        = playTickPos;
             lastTickPos    = playTickPos;
 
-            tempoSN = tempomap.tempoSN();
+            tempoSN = MusEGlobal::tempomap.tempoSN();
 
             startRecordPos.setPosTick(playTickPos);
             }
 */
-//      midiClock += MusEConfig::config.division/24;
+//      midiClock += MusEGlobal::config.division/24;
       }
 
 //---------------------------------------------------------
@@ -593,13 +597,13 @@ void MidiSeq::processTimerTick()
 //        printf("IDLE\n");
             return;
       }
-      if (midiBusy) {
-            // we hit audio: midiSeq->msgProcess (actually this has been audio->processMidi for some time now - Tim)
+      if (MusEGlobal::midiBusy) {
+            // we hit MusEGlobal::audio: MusEGlobal::midiSeq->msgProcess (actually this has been MusEGlobal::audio->processMidi for some time now - Tim)
             // miss this timer tick
             return;
             }
 
-      unsigned curFrame = audio->curFrame();
+      unsigned curFrame = MusEGlobal::audio->curFrame();
       
       // Keep the sync detectors running... 
       // No, done in Song::beat(), (at the much slower heartbeat rate).
@@ -607,19 +611,19 @@ void MidiSeq::processTimerTick()
       //for(int port = 0; port < MIDI_PORTS; ++port)
       //{
         // Must keep them running even if there's no device...
-        //if(midiPorts[port].device())
-      //    midiPorts[port].syncInfo().setCurFrame(curFrame);
+        //if(MusEGlobal::midiPorts[port].device())
+      //    MusEGlobal::midiPorts[port].syncInfo().setCurFrame(curFrame);
       //}  
-      //for(iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd) 
+      //for(iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) 
       //  (*imd)->syncInfo().setCurFrame(curFrame);
       
-      if (!extSyncFlag.value()) {
-            //int curTick = tempomap.frame2tick(curFrame);
+      if (!MusEGlobal::extSyncFlag.value()) {
+            //int curTick = MusEGlobal::tempomap.frame2tick(curFrame);
             // Copied from Tempomap.
-            //int curTick = lrint((double(curFrame)/double(MusEGlobal::sampleRate)) * tempomap.globalTempo() * MusEConfig::config.division * 10000.0 / double(tempomap.tempo(song->cpos())));
-            //int curTick = lrint((double(curFrame)/double(MusEGlobal::sampleRate)) * tempomap.globalTempo() * 240000.0 / double(tempomap.tempo(song->cpos())));
-            int curTick = lrint((double(curFrame)/double(MusEGlobal::sampleRate)) * double(tempomap.globalTempo()) * double(MusEConfig::config.division) * 10000.0 / double(tempomap.tempo(song->cpos())));
-            //int curTick = int((double(curFrame)/double(MusEGlobal::sampleRate)) * double(tempomap.globalTempo()) * double(MusEConfig::config.division * 10000.0) / double(tempomap.tempo(song->cpos())));
+            //int curTick = lrint((double(curFrame)/double(MusEGlobal::sampleRate)) * MusEGlobal::tempomap.globalTempo() * MusEGlobal::config.division * 10000.0 / double(MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos())));
+            //int curTick = lrint((double(curFrame)/double(MusEGlobal::sampleRate)) * MusEGlobal::tempomap.globalTempo() * 240000.0 / double(MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos())));
+            int curTick = lrint((double(curFrame)/double(MusEGlobal::sampleRate)) * double(MusEGlobal::tempomap.globalTempo()) * double(MusEGlobal::config.division) * 10000.0 / double(MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos())));
+            //int curTick = int((double(curFrame)/double(MusEGlobal::sampleRate)) * double(MusEGlobal::tempomap.globalTempo()) * double(MusEGlobal::config.division * 10000.0) / double(MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos())));
             
 /*            if ( midiClock > curTick + 100) // reinitialize
                 {
@@ -633,7 +637,7 @@ void MidiSeq::processTimerTick()
             if(midiClock > curTick)
               midiClock = curTick;
             
-            int div = MusEConfig::config.division/24;
+            int div = MusEGlobal::config.division/24;
             if(curTick >= midiClock + div)  {
             //if(curTick >= midiClock)  {
                   //processMidiClock();
@@ -644,10 +648,10 @@ void MidiSeq::processTimerTick()
                   
                   //if(genMCSync)
                   //{ 
-                    //midiPorts[txSyncPort].sendClock();
+                    //MusEGlobal::midiPorts[txSyncPort].sendClock();
                     for(int port = 0; port < MIDI_PORTS; ++port)
                     {
-                      MidiPort* mp = &midiPorts[port];
+                      MidiPort* mp = &MusEGlobal::midiPorts[port];
                       
                       // No device? Clock out not turned on?
                       //MidiDevice* dev = mp->device();
@@ -666,7 +670,7 @@ void MidiSeq::processTimerTick()
                     }
                     
                     /*
-                    for(iMidiDevice imd = midiDevices.begin(); imd != midiDevices.end(); ++imd) 
+                    for(iMidiDevice imd = MusEGlobal::midiDevices.begin(); imd != MusEGlobal::midiDevices.end(); ++imd) 
                     {
                       MidiDevice* dev = *imd;
                       
@@ -693,7 +697,7 @@ void MidiSeq::processTimerTick()
                       }  
                       else
                         // Go through the port...
-                        midiPorts[port].sendClock();
+                        MusEGlobal::midiPorts[port].sendClock();
                     }
                     */
                     
@@ -733,12 +737,12 @@ void MidiSeq::processTimerTick()
 //            }
 
       // p3.3.25
-      //int tickpos = audio->tickPos();
-      //bool extsync = extSyncFlag.value();
+      //int tickpos = MusEGlobal::audio->tickPos();
+      //bool extsync = MusEGlobal::extSyncFlag.value();
       //
       // play all events upto curFrame
       //
-      for (iMidiDevice id = midiDevices.begin(); id != midiDevices.end(); ++id) {
+      for (iMidiDevice id = MusEGlobal::midiDevices.begin(); id != MusEGlobal::midiDevices.end(); ++id) {
             //MidiDevice* md = *id;
             // Is it a Jack midi device? They are iterated in Audio::processMidi. p3.3.36 
             //MidiJackDevice* mjd = dynamic_cast<MidiJackDevice*>(md);
@@ -754,7 +758,7 @@ void MidiSeq::processTimerTick()
             // Moved into MidiAlsaDevice.      p4.0.34
             /*
             int port = md->midiPort();
-            MidiPort* mp = port != -1 ? &midiPorts[port] : 0;
+            MidiPort* mp = port != -1 ? &MusEGlobal::midiPorts[port] : 0;
             MPEventList* el = md->playEvents();
             if (el->empty())
                   continue;
@@ -801,7 +805,7 @@ void MidiSeq::processTimerTick()
 
 void MidiSeq::msgMsg(int id)
       {
-      AudioMsg msg;
+      MusECore::AudioMsg msg;
       msg.id = id;
       Thread::sendMsg(&msg);
       }
@@ -815,22 +819,23 @@ void MidiSeq::msgMsg(int id)
 
 void MidiSeq::msgSetMidiDevice(MidiPort* port, MidiDevice* device)
       {
-      AudioMsg msg;
-      msg.id = SEQM_IDLE;
+      MusECore::AudioMsg msg;
+      msg.id = MusECore::SEQM_IDLE;
       msg.a  = true;
       Thread::sendMsg(&msg);
 
       port->setMidiDevice(device);
 
-      msg.id = SEQM_IDLE;
+      msg.id = MusECore::SEQM_IDLE;
       msg.a  = false;
       Thread::sendMsg(&msg);
       }
 
 // This does not appear to be used anymore. Was called in Audio::process1, now Audio::processMidi is called directly. p4.0.15 Tim.
-//void MidiSeq::msgProcess()      { msgMsg(MS_PROCESS); }
-//void MidiSeq::msgSeek()         { msgMsg(SEQM_SEEK); }   // Removed p4.0.34
-//void MidiSeq::msgStop()         { msgMsg(MS_STOP); }     //
-void MidiSeq::msgSetRtc()       { msgMsg(MS_SET_RTC); }
-void MidiSeq::msgUpdatePollFd() { msgMsg(MS_UPDATE_POLL_FD); }
+//void MidiSeq::msgProcess()      { msgMsg(MusECore::MS_PROCESS); }
+//void MidiSeq::msgSeek()         { msgMsg(MusECore::SEQM_SEEK); }   // Removed p4.0.34
+//void MidiSeq::msgStop()         { msgMsg(MusECore::MS_STOP); }     //
+void MidiSeq::msgSetRtc()       { msgMsg(MusECore::MS_SET_RTC); }
+void MidiSeq::msgUpdatePollFd() { msgMsg(MusECore::MS_UPDATE_POLL_FD); }
 
+} // namespace MusECore

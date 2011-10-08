@@ -25,7 +25,7 @@
 class QDialog;
 
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   SongInfoWidget
@@ -40,4 +40,4 @@ class SongInfoWidget : public QDialog, public Ui::SongInfo
       SongInfoWidget(QDialog *parent = 0) : QDialog(parent) { setupUi(this); }
 };
 
-} // namespace MusEWidget
+} // namespace MusEGui

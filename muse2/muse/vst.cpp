@@ -44,6 +44,8 @@
 #include "midi.h"
 #include "xml.h"
 
+namespace MusECore {
+
 extern "C" void fst_error(const char *fmt, ...);
 extern long vstHostCallback (AEffect*, long, long, long, void*, float);
 
@@ -642,7 +644,12 @@ bool VstSynthIF::putEvent(const MidiPlayEvent& ev)
       int rv = plugin->dispatcher(plugin, effProcessEvents, 0, 0, &events, 0.0f);
       return false;
       }
+
+} // namespace MusECore
+
 #else
+namespace MusECore {
 void initVST() {}
+} // namespace MusECore
 #endif
 

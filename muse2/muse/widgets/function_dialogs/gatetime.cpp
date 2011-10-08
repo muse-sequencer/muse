@@ -28,7 +28,7 @@
 #include "xml.h"
 #include "song.h"
 
-namespace MusEDialog {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   GateTime
@@ -83,18 +83,18 @@ int GateTime::exec()
       }
 
 
-void GateTime::read_configuration(Xml& xml)
+void GateTime::read_configuration(MusECore::Xml& xml)
 {
 	for (;;)
 	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
 			
 		const QString& tag = xml.s1();
 		switch (token)
 		{
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "range")
 					range=xml.parseInt();
 				else if (tag == "rate")
@@ -105,7 +105,7 @@ void GateTime::read_configuration(Xml& xml)
 					xml.unknown("ModLen");
 				break;
 				
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "mod_len")
 					return;
 				
@@ -115,7 +115,7 @@ void GateTime::read_configuration(Xml& xml)
 	}
 }
 
-void GateTime::write_configuration(int level, Xml& xml)
+void GateTime::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "mod_len");
 	xml.intTag(level, "range", range);
@@ -124,4 +124,4 @@ void GateTime::write_configuration(int level, Xml& xml)
 	xml.tag(level, "/mod_len");
 }
 
-} // namespace MusEDialog
+} // namespace MusEGui

@@ -27,6 +27,8 @@
 #include <QString>
 #include <QList>
 
+namespace MusECore {
+
 class Xml;
 
 //---------------------------------------------------------
@@ -51,9 +53,6 @@ struct DrumMap {
 
 #define DRUM_MAPSIZE  128
 
-extern char drumOutmap[DRUM_MAPSIZE];
-extern char drumInmap[DRUM_MAPSIZE];
-extern DrumMap drumMap[DRUM_MAPSIZE];
 extern const DrumMap idrumMap[DRUM_MAPSIZE]; //FINDMICH dummy!
 extern void initDrumMap();
 extern void writeDrumMap(int level, Xml& xml, bool external);
@@ -61,8 +60,16 @@ extern void readDrumMap(Xml& xml, bool external);
 extern void resetGMDrumMap();
 
 class MidiTrack;
-typedef QList< std::pair<MidiTrack*,int> > global_drum_ordering_t;
+} // namespace MusECore
+
+namespace MusEGlobal {
+extern char drumOutmap[DRUM_MAPSIZE];
+extern char drumInmap[DRUM_MAPSIZE];
+extern MusECore::DrumMap drumMap[DRUM_MAPSIZE];
+typedef QList< std::pair<MusECore::MidiTrack*,int> > global_drum_ordering_t;
 
 extern global_drum_ordering_t global_drum_ordering;
+}
+
 #endif
 

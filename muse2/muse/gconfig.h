@@ -32,9 +32,11 @@
 #include <QRect>
 #include <QString>
 
+namespace MusECore {
 class Xml;
+}
 
-namespace MusEConfig {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   MixerConfig
@@ -53,12 +55,12 @@ struct MixerConfig {
       bool showAuxTracks;
       bool showSyntiTracks;
 
-      //void write(Xml&, const char* name);
-      //void write(int level, Xml& xml, const char* name);
-      void write(int level, Xml& xml);
+      //void write(MusECore::Xml&, const char* name);
+      //void write(int level, MusECore::Xml& xml, const char* name);
+      void write(int level, MusECore::Xml& xml);
       //void read(QDomNode);
-      //void read(Xml& xml, const QString& name);
-      void read(Xml& xml);
+      //void read(MusECore::Xml& xml, const QString& name);
+      void read(MusECore::Xml& xml);
       };
 
 //---------------------------------------------------------
@@ -167,8 +169,11 @@ struct GlobalConfigValues {
       bool rangeMarkerWithoutMMB;
       };
 
-extern GlobalConfigValues config;
-} // namespace MusEConfig
+} // namespace MusEGui
+
+namespace MusEGlobal {
+extern MusEGui::GlobalConfigValues config;
+} // namespace MusEGlobal
 
 #endif
 

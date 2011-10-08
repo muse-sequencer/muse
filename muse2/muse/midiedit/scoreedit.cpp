@@ -78,6 +78,7 @@ using namespace std;
 using MusEGlobal::debugMsg;
 using MusEGlobal::heavyDebugMsg;
 
+namespace MusEGui {
 
 string IntToStr(int i);
 QString IntToQStr(int i);
@@ -196,7 +197,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	score_canvas=new ScoreCanvas(this, mainw);
 	xscroll = new QScrollBar(Qt::Horizontal, mainw);
 	yscroll = new QScrollBar(Qt::Vertical, mainw);
-	time_bar = new MusEWidget::MTScaleFlo(score_canvas, mainw);
+	time_bar = new MusEGui::MTScaleFlo(score_canvas, mainw);
 
 	connect(xscroll, SIGNAL(valueChanged(int)), score_canvas,   SLOT(x_scroll_event(int)));
 	connect(score_canvas, SIGNAL(xscroll_changed(int)), xscroll,   SLOT(setValue(int)));
@@ -209,7 +210,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	connect(score_canvas, SIGNAL(canvas_height_changed(int)), SLOT(canvas_height_changed(int)));
 	connect(score_canvas, SIGNAL(viewport_height_changed(int)), SLOT(viewport_height_changed(int)));
 
-	connect(song, SIGNAL(songChanged(int)), score_canvas, SLOT(song_changed(int)));
+	connect(MusEGlobal::song, SIGNAL(songChanged(int)), score_canvas, SLOT(song_changed(int)));
 
 	connect(xscroll, SIGNAL(valueChanged(int)), time_bar, SLOT(set_xpos(int)));
 	connect(score_canvas, SIGNAL(pos_add_changed()), time_bar, SLOT(pos_add_changed()));
@@ -244,10 +245,10 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	connect(srec, SIGNAL(toggled(bool)), score_canvas, SLOT(set_steprec(bool)));
 
 
-	edit_tools = new MusEWidget::EditToolBar(this, MusEWidget::PointerTool | MusEWidget::PencilTool | MusEWidget::RubberTool);
+	edit_tools = new MusEGui::EditToolBar(this, MusEGui::PointerTool | MusEGui::PencilTool | MusEGui::RubberTool);
 	addToolBar(edit_tools);
-	edit_tools->set(MusEWidget::PointerTool);
-	score_canvas->set_tool(MusEWidget::PointerTool);
+	edit_tools->set(MusEGui::PointerTool);
+	score_canvas->set_tool(MusEGui::PointerTool);
 	connect(edit_tools, SIGNAL(toolChanged(int)), score_canvas,   SLOT(set_tool(int)));
 
 	QToolBar* panic_toolbar = addToolBar(tr("panic"));         
@@ -489,8 +490,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	clipboard_changed();
 	selection_changed();
 
-	connect(song, SIGNAL(songChanged(int)), SLOT(song_changed(int)));	
-	connect(song, SIGNAL(newPartsCreated(const std::map< Part*, std::set<Part*> >&)), score_canvas, SLOT(add_new_parts(const std::map< Part*, std::set<Part*> >&)));	
+	connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(song_changed(int)));	
+	connect(MusEGlobal::song, SIGNAL(newPartsCreated(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&)), score_canvas, SLOT(add_new_parts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&)));	
 
 	score_canvas->fully_recalculate();
 	score_canvas->goto_tick(initPos,true);
@@ -534,7 +535,7 @@ void ScoreEdit::init_shortcuts()
 }
 
 
-void ScoreEdit::add_parts(PartList* pl, bool all_in_one)
+void ScoreEdit::add_parts(MusECore::PartList* pl, bool all_in_one)
 {
 	score_canvas->add_staves(pl, all_in_one);
 }
@@ -605,7 +606,7 @@ void ScoreEdit::song_changed(int flags)
 {
 	if (flags & (SC_SELECTION | SC_EVENT_MODIFIED | SC_EVENT_REMOVED))
 	{
-		map<Event*, Part*> selection=get_events(score_canvas->get_all_parts(),1);
+		map<MusECore::Event*, MusECore::Part*> selection=get_events(score_canvas->get_all_parts(),1);
 		if (selection.empty())
 		{
 			apply_velo_to_label->setText(APPLY_TO_NEW_STRING);
@@ -616,8 +617,8 @@ void ScoreEdit::song_changed(int flags)
 			
 			int velo=-1;
 			int velo_off=-1;
-			for (map<Event*, Part*>::iterator it=selection.begin(); it!=selection.end(); it++)
-				if (it->first->type()==Note)
+			for (map<MusECore::Event*, MusECore::Part*>::iterator it=selection.begin(); it!=selection.end(); it++)
+				if (it->first->type()==MusECore::Note)
 				{
 					if (velo==-1) velo=it->first->velo();
 					else if ((velo>=0) && (velo!=it->first->velo())) velo=-2;
@@ -708,14 +709,14 @@ void ScoreEdit::menu_command(int cmd)
 			erase_notes(score_canvas->get_all_parts(), 1);
 			break;
 		case CMD_COPY: copy_notes(score_canvas->get_all_parts(), 1); break;
-		case CMD_COPY_RANGE: copy_notes(score_canvas->get_all_parts(), MusEUtil::any_event_selected(score_canvas->get_all_parts()) ? 3 : 2); break;
+		case CMD_COPY_RANGE: copy_notes(score_canvas->get_all_parts(), MusECore::any_event_selected(score_canvas->get_all_parts()) ? 3 : 2); break;
 		case CMD_PASTE: 
 			menu_command(CMD_SELECT_NONE); 
-			paste_notes(3072);
+			MusECore::paste_notes(3072);
 			break;
 		case CMD_PASTE_DIALOG: 
 			menu_command(CMD_SELECT_NONE); 
-			paste_notes(score_canvas->get_selected_part());
+			MusECore::paste_notes(score_canvas->get_selected_part());
 			break;
 		case CMD_QUANTIZE: quantize_notes(score_canvas->get_all_parts()); break;
 		case CMD_VELOCITY: modify_velocity(score_canvas->get_all_parts()); break;
@@ -751,22 +752,22 @@ void ScoreEdit::selection_changed()
 
 //duplicated from songfile.cpp's MusE::readPart(); the only differences: 
 //"none" is supported and tag_name is settable
-Part* read_part(Xml& xml, QString tag_name="part") 
+MusECore::Part* read_part(MusECore::Xml& xml, QString tag_name="part") 
 {
-	Part* part = 0;
+	MusECore::Part* part = 0;
 
 	for (;;) 
 	{
-		Xml::Token token = xml.parse();
+		MusECore::Xml::Token token = xml.parse();
 		const QString& tag = xml.s1();
 		
 		switch (token) 
 		{
-			case Xml::Error:
-			case Xml::End:
+			case MusECore::Xml::Error:
+			case MusECore::Xml::End:
 				return part;
 				
-			case Xml::Text:
+			case MusECore::Xml::Text:
 				{
 					int trackIdx, partIdx;
 					if (tag=="none")
@@ -775,7 +776,7 @@ Part* read_part(Xml& xml, QString tag_name="part")
 					{
 						sscanf(tag.toLatin1().constData(), "%d:%d", &trackIdx, &partIdx);
 						if (debugMsg) cout << "read_part: trackIdx="<<trackIdx<<", partIdx="<<partIdx;
-						Track* track = song->tracks()->index(trackIdx);
+						MusECore::Track* track = MusEGlobal::song->tracks()->index(trackIdx);
 						if (track)
 							part = track->parts()->find(partIdx);
 						if (debugMsg) cout << ", track="<<track<<", part="<<part<<endl;
@@ -783,11 +784,11 @@ Part* read_part(Xml& xml, QString tag_name="part")
 				}
 				break;
 				
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				xml.unknown("read_part");
 				break;
 				
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == tag_name)
 					return part;
 					
@@ -799,24 +800,24 @@ Part* read_part(Xml& xml, QString tag_name="part")
 
 
 
-void staff_t::read_status(Xml& xml)
+void staff_t::read_status(MusECore::Xml& xml)
 {
 	for (;;)
 	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
 		const QString& tag = xml.s1();
 		switch (token)
 		{
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "type") 
 					type = staff_type_t(xml.parseInt());
 				else if (tag == "clef") 
 					clef = clef_t(xml.parseInt());
 				else if (tag == "part") 
 				{
-					Part* part=read_part(xml);
+					MusECore::Part* part=read_part(xml);
 					if (part)
 						parts.insert(part);
 					else
@@ -826,7 +827,7 @@ void staff_t::read_status(Xml& xml)
 					xml.unknown("staff");
 				break;
 
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "staff")
 					goto staff_readstatus_end;
 
@@ -840,15 +841,15 @@ void staff_t::read_status(Xml& xml)
 }
 
 
-void staff_t::write_status(int level, Xml& xml) const
+void staff_t::write_status(int level, MusECore::Xml& xml) const
 {
 	xml.tag(level++, "staff");
 	xml.intTag(level, "type", type);
 	xml.intTag(level, "clef", clef);
-	for (set<Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
+	for (set<MusECore::Part*>::iterator part=parts.begin(); part!=parts.end(); part++)
 	{
-		Track* track = (*part)->track();
-		int trkIdx   = song->tracks()->index(track);
+		MusECore::Track* track = (*part)->track();
+		int trkIdx   = MusEGlobal::song->tracks()->index(track);
 		int partIdx  = track->parts()->index(*part);
 
 		if((trkIdx == -1) || (partIdx == -1))
@@ -863,7 +864,7 @@ void staff_t::write_status(int level, Xml& xml) const
 //   writeStatus
 //---------------------------------------------------------
 
-void ScoreEdit::writeStatus(int level, Xml& xml) const
+void ScoreEdit::writeStatus(int level, MusECore::Xml& xml) const
 {
 	xml.tag(level++, "scoreedit");
 	TopWin::writeStatus(level, xml);
@@ -910,15 +911,15 @@ void ScoreEdit::writeStatus(int level, Xml& xml) const
 	xml.intTag(level, "preambleContainsKeysig", preamble_keysig_action->isChecked());
 	xml.intTag(level, "preambleContainsTimesig", preamble_timesig_action->isChecked());
 
-	Part* selected_part=score_canvas->get_selected_part();
+	MusECore::Part* selected_part=score_canvas->get_selected_part();
 	if (selected_part==NULL)
 	{
 		xml.put(level, "<selectedPart>none</selectedPart>");
 	}
 	else
 	{
-		Track* track = selected_part->track();
-		int trkIdx   = song->tracks()->index(track);
+		MusECore::Track* track = selected_part->track();
+		int trkIdx   = MusEGlobal::song->tracks()->index(track);
 		int partIdx  = track->parts()->index(selected_part);
 
 		if((trkIdx == -1) || (partIdx == -1))
@@ -933,7 +934,7 @@ void ScoreEdit::writeStatus(int level, Xml& xml) const
 	xml.tag(level, "/scoreedit");
 }
 
-void ScoreCanvas::write_staves(int level, Xml& xml) const
+void ScoreCanvas::write_staves(int level, MusECore::Xml& xml) const
 {
 	for (list<staff_t>::const_iterator staff=staves.begin(); staff!=staves.end(); staff++)
 		staff->write_status(level, xml);
@@ -944,21 +945,21 @@ void ScoreCanvas::write_staves(int level, Xml& xml) const
 //   readStatus
 //---------------------------------------------------------
 
-void ScoreEdit::readStatus(Xml& xml)
+void ScoreEdit::readStatus(MusECore::Xml& xml)
 {
 	bool apply_velo_temp=apply_velo;
 	apply_velo=false;
 	
 	for (;;)
 	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
 			
 		const QString& tag = xml.s1();
 		switch (token)
 		{
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "name") 
 					set_name(xml.parse1());
 				else if (tag == "tool") 
@@ -1031,7 +1032,7 @@ void ScoreEdit::readStatus(Xml& xml)
 					xml.unknown("ScoreEdit");
 				break;
 
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "scoreedit")
 					return;
 					
@@ -1042,25 +1043,25 @@ void ScoreEdit::readStatus(Xml& xml)
 	apply_velo=apply_velo_temp;
 }
 
-void ScoreEdit::read_configuration(Xml& xml)
+void ScoreEdit::read_configuration(MusECore::Xml& xml)
 {
 	for (;;)
 	{
-		Xml::Token token = xml.parse();
-		if (token == Xml::Error || token == Xml::End)
+		MusECore::Xml::Token token = xml.parse();
+		if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
 			break;
 			
 		const QString& tag = xml.s1();
 		switch (token)
 		{
-			case Xml::TagStart:
+			case MusECore::Xml::TagStart:
 				if (tag == "topwin")
 					TopWin::readConfiguration(SCORE, xml);
 				else
 					xml.unknown("ScoreEdit");
 				break;
 				
-			case Xml::TagEnd:
+			case MusECore::Xml::TagEnd:
 				if (tag == "scoreedit")
 					return;
 				
@@ -1071,7 +1072,7 @@ void ScoreEdit::read_configuration(Xml& xml)
 }
 
 
-void ScoreEdit::write_configuration(int level, Xml& xml)
+void ScoreEdit::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "scoreedit");
 	TopWin::writeConfiguration(SCORE, level, xml);
@@ -1081,7 +1082,7 @@ void ScoreEdit::write_configuration(int level, Xml& xml)
 
 
 
-void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
+void ScoreCanvas::add_staves(MusECore::PartList* pl, bool all_in_one)
 {
 	if (!pl->empty())
 	{
@@ -1089,12 +1090,12 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 
 		if (all_in_one)
 		{
-			clefTypes clef=((MidiTrack*)pl->begin()->second->track())->getClef();
+			clefTypes clef=((MusECore::MidiTrack*)pl->begin()->second->track())->getClef();
 			
 			staff.parts.clear();
-			for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
+			for (MusECore::ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
 			{
-				if (((MidiTrack*)part_it->second->track())->getClef() != clef)
+				if (((MusECore::MidiTrack*)part_it->second->track())->getClef() != clef)
 					clef=grandStaff;
 					
 				staff.parts.insert(part_it->second);
@@ -1129,25 +1130,25 @@ void ScoreCanvas::add_staves(PartList* pl, bool all_in_one)
 		}
 		else
 		{
-			set<Track*> tracks;
-			for (ciPart it=pl->begin(); it!=pl->end(); it++)
+			set<MusECore::Track*> tracks;
+			for (MusECore::ciPart it=pl->begin(); it!=pl->end(); it++)
 				tracks.insert(it->second->track());
 			
-			TrackList* tracklist = song->tracks();
+			MusECore::TrackList* tracklist = MusEGlobal::song->tracks();
 			// this loop is used for inserting track-staves in the
 			// correct order. simply iterating through tracks's contents
 			// would sort after the pointer values, i.e. randomly
-			for (ciTrack track_it=tracklist->begin(); track_it!=tracklist->end(); track_it++)
+			for (MusECore::ciTrack track_it=tracklist->begin(); track_it!=tracklist->end(); track_it++)
 				if (tracks.find(*track_it)!=tracks.end())
 				{
 					staff.parts.clear();
-					for (ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
+					for (MusECore::ciPart part_it=pl->begin(); part_it!=pl->end(); part_it++)
 						if (part_it->second->track() == *track_it)
 							staff.parts.insert(part_it->second);
 					staff.cleanup_parts();
 					staff.update_part_indices();
 					
-					switch (((MidiTrack*)(*track_it))->getClef())
+					switch (((MusECore::MidiTrack*)(*track_it))->getClef())
 					{
 						case trebleClef:
 							staff.type=NORMAL;
@@ -1193,8 +1194,8 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 	
 	srec=false;
 	for (int i=0;i<128;i++) held_notes[i]=false;
-	steprec=new StepRec(held_notes);
-	connect(song, SIGNAL(midiNote(int, int)), SLOT(midi_note(int,int)));
+	steprec=new MusECore::StepRec(held_notes);
+	connect(MusEGlobal::song, SIGNAL(midiNote(int, int)), SLOT(midi_note(int,int)));
 	
 	x_pos=0;
 	x_left=0;
@@ -1235,8 +1236,8 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 	y_scroll_pos=0;	
 	connect (MusEGlobal::heartBeatTimer, SIGNAL(timeout()), SLOT(heartbeat_timer_event()));
 	
-	connect(song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(pos_changed(int,unsigned,bool)));
-	connect(song, SIGNAL(playChanged(bool)), SLOT(play_changed(bool)));
+	connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(pos_changed(int,unsigned,bool)));
+	connect(MusEGlobal::song, SIGNAL(playChanged(bool)), SLOT(play_changed(bool)));
 	connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(config_changed()));
 	
 	
@@ -1436,9 +1437,9 @@ void ScoreCanvas::move_staff_below(list<staff_t>::iterator dest, list<staff_t>::
 	move_staff_above(dest, src);
 }
 
-set<Part*> ScoreCanvas::get_all_parts()
+set<MusECore::Part*> ScoreCanvas::get_all_parts()
 {
-	set<Part*> result;
+	set<MusECore::Part*> result;
 	
 	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 		result.insert(it->parts.begin(), it->parts.end());
@@ -1567,7 +1568,7 @@ void ScoreCanvas::init_pixmaps()
 		
 		mycolors[0]=Qt::black;
 		for (int i=1;i<NUM_PARTCOLORS;i++)
-			mycolors[i]=MusEConfig::config.partColors[i];
+			mycolors[i]=MusEGlobal::config.partColors[i];
 		mycolors[BLACK_PIXMAP]=Qt::black;
 		mycolors[HIGHLIGHTED_PIXMAP]=Qt::red;
 		mycolors[SELECTED_PIXMAP]=QColor(255,160,0);
@@ -1697,14 +1698,14 @@ void staff_t::create_appropriate_eventlist()
 	// phase one: fill the list -----------------------------------------
 	
 	//insert note on events
-	for (set<Part*>::const_iterator part_it=parts.begin(); part_it!=parts.end(); part_it++)
+	for (set<MusECore::Part*>::const_iterator part_it=parts.begin(); part_it!=parts.end(); part_it++)
 	{
-		Part* part=*part_it;
-		EventList* el=part->events();
+		MusECore::Part* part=*part_it;
+		MusECore::EventList* el=part->events();
 		
-		for (iEvent it=el->begin(); it!=el->end(); it++)
+		for (MusECore::iEvent it=el->begin(); it!=el->end(); it++)
 		{
-			Event& event=it->second;
+			MusECore::Event& event=it->second;
 			
 			if ( ( event.isNote() && !event.isNoteOff() &&
 			       // (event.endTick() <= part->lenTick()) ) &&
@@ -1746,7 +1747,7 @@ void staff_t::create_appropriate_eventlist()
 	}
 
 	//insert key changes
-	for (iKeyEvent it=keymap.begin(); it!=keymap.end(); it++)
+	for (MusECore::iKeyEvent it=MusEGlobal::keymap.begin(); it!=MusEGlobal::keymap.end(); it++)
 		eventlist.insert(pair<unsigned, FloEvent>(it->second.tick,  FloEvent(it->second.tick,FloEvent::KEY_CHANGE, it->second.key ) ) );
 	
 	
@@ -1776,28 +1777,28 @@ void staff_t::create_appropriate_eventlist()
 }
 
 
-bool is_sharp_key(key_enum t)
+bool is_sharp_key(MusECore::key_enum t)
 {
-	return ((t>=KEY_SHARP_BEGIN) && (t<=KEY_SHARP_END));
+	return ((t>=MusECore::KEY_SHARP_BEGIN) && (t<=MusECore::KEY_SHARP_END));
 }
-bool is_b_key(key_enum t)
+bool is_b_key(MusECore::key_enum t)
 {
-	return ((t>=KEY_B_BEGIN) && (t<=KEY_B_END));
+	return ((t>=MusECore::KEY_B_BEGIN) && (t<=MusECore::KEY_B_END));
 }
 
-int n_accidentials(key_enum t)
+int n_accidentials(MusECore::key_enum t)
 {
 	if (is_sharp_key(t))
-		return t-KEY_SHARP_BEGIN-1;
+		return t-MusECore::KEY_SHARP_BEGIN-1;
 	else
-		return t-KEY_B_BEGIN-1;
+		return t-MusECore::KEY_B_BEGIN-1;
 }
 
 
 //note needs to be 0..11
 //always assumes violin clef
 //only for internal use
-note_pos_t note_pos_(int note, key_enum key)
+note_pos_t note_pos_(int note, MusECore::key_enum key)
 {
 	note_pos_t result;
 	           //C CIS D DIS E F FIS G GIS A AIS H
@@ -1826,7 +1827,7 @@ note_pos_t note_pos_(int note, key_enum key)
 	}
 	
 	// Special cases for GES / FIS keys
-	if (key==KEY_GES)
+	if (key==MusECore::KEY_GES)
 	{
 		// convert a H to a Ces
 		if (note==11)
@@ -1835,7 +1836,7 @@ note_pos_t note_pos_(int note, key_enum key)
 			result.vorzeichen=B;
 		}
 	}
-	else if (key==KEY_FIS)
+	else if (key==MusECore::KEY_FIS)
 	{
 		// convert a F to an Eis
 		if (note==5)
@@ -1864,7 +1865,7 @@ note_pos_t note_pos_(int note, key_enum key)
 // in violin clef, line 2 is E4
 // in bass clef, line 2 is G2
 
-note_pos_t note_pos (unsigned note, key_enum key, clef_t clef)
+note_pos_t note_pos (unsigned note, MusECore::key_enum key, clef_t clef)
 {
 	int octave=(note/12)-1; //integer division. note is unsigned
 	note=note%12;
@@ -2170,7 +2171,7 @@ void ScoreCanvas::draw_accidentials(QPainter& p, int x, int y_offset, const list
 
 void staff_t::create_itemlist()
 {
-	key_enum tmp_key=KEY_C;
+	MusECore::key_enum tmp_key=MusECore::KEY_C;
 	int lastevent=0;
 	int next_measure=-1;
 	int last_measure=-1;
@@ -2802,7 +2803,7 @@ void ScoreCanvas::draw_note_lines(QPainter& p, int y, bool reserve_akkolade_spac
 
 void staff_t::calc_item_pos()
 {
-	key_enum curr_key=KEY_C; //this has to be KEY_C or KEY_C_B and nothing else,
+	MusECore::key_enum curr_key=MusECore::KEY_C; //this has to be KEY_C or KEY_C_B and nothing else,
 	                         //because only with these two keys the next (initial)
 	                         //key signature is properly drawn.
 	int pos_add=0;
@@ -2884,7 +2885,7 @@ void staff_t::calc_item_pos()
 			}
 			else if (it->type==FloItem::KEY_CHANGE)
 			{
-				key_enum new_key=it->key;
+				MusECore::key_enum new_key=it->key;
 				
 				list<int> aufloes_list=calc_accidentials(curr_key, clef, new_key);
 				list<int> new_acc_list=calc_accidentials(new_key, clef);
@@ -2915,12 +2916,12 @@ void ScoreCanvas::calc_pos_add_list()
 	
 	
 	//process key changes
-	key_enum curr_key=KEY_C; //this has to be KEY_C or KEY_C_B and nothing else,
+	MusECore::key_enum curr_key=MusECore::KEY_C; //this has to be KEY_C or KEY_C_B and nothing else,
 	                         //because only with these two keys the next (initial)
 	                         //key signature is properly calculated.
-	for (iKeyEvent it=keymap.begin(); it!=keymap.end(); it++)
+	for (MusECore::iKeyEvent it=MusEGlobal::keymap.begin(); it!=MusEGlobal::keymap.end(); it++)
 	{
-		key_enum new_key=it->second.key;
+		MusECore::key_enum new_key=it->second.key;
 		list<int> aufloes_list=calc_accidentials(curr_key, VIOLIN, new_key); //clef argument is unneccessary
 		list<int> new_acc_list=calc_accidentials(new_key, VIOLIN);           //in this case
 		int n_acc_drawn=aufloes_list.size() + new_acc_list.size();
@@ -2974,7 +2975,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 	// init accidentials properly
 	vorzeichen_t curr_accidential[7];
 	vorzeichen_t default_accidential[7];
-	key_enum curr_key;
+	MusECore::key_enum curr_key;
 
 	curr_key=key_at_tick(from_it->first);
 	list<int> new_acc_list=calc_accidentials(curr_key, staff.clef);
@@ -3064,8 +3065,8 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 						p.drawLine(it->x-it->pix->width()*AUX_LINE_LEN/2 -x_pos+x_left,y_offset + 2*YLEN  -  (i-2)*YLEN/2,it->x+it->pix->width()*AUX_LINE_LEN/2-x_pos+x_left,y_offset + 2*YLEN  -  (i-2)*YLEN/2);
 				}
 								
-				it->is_active= ( (song->cpos() >= it->source_event->tick() + it->source_part->tick()) &&
-				     			       (song->cpos() < it->source_event->endTick() + it->source_part->tick()) );
+				it->is_active= ( (MusEGlobal::song->cpos() >= it->source_event->tick() + it->source_part->tick()) &&
+				     			       (MusEGlobal::song->cpos() < it->source_event->endTick() + it->source_part->tick()) );
 
 
 				int color_index;
@@ -3087,7 +3088,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 				if (it->source_event->selected())
 					color_index=SELECTED_PIXMAP;
 				
-				if (audio->isPlaying() && it->is_active)
+				if (MusEGlobal::audio->isPlaying() && it->is_active)
 					color_index=HIGHLIGHTED_PIXMAP;
 				
 				
@@ -3187,7 +3188,7 @@ void ScoreCanvas::draw_items(QPainter& p, int y_offset, staff_t& staff, ScoreIte
 			}
 			else if (it->type==FloItem::KEY_CHANGE)
 			{
-				key_enum new_key=it->key;
+				MusECore::key_enum new_key=it->key;
 				if (heavyDebugMsg) cout << "\tKEY CHANGE: from "<<curr_key<<" to "<<new_key<<endl;
 								
 				list<int> aufloes_list=calc_accidentials(curr_key, staff.clef, new_key);
@@ -3268,15 +3269,15 @@ bool ScoreCanvas::need_redraw_for_hilighting(ScoreItemList& itemlist, int x1, in
 bool ScoreCanvas::need_redraw_for_hilighting(ScoreItemList::iterator from_it, ScoreItemList::iterator to_it)
 {
 	//if we aren't playing, there will never be a need for redrawing due to highlighting things
-	if (audio->isPlaying()==false)
+	if (MusEGlobal::audio->isPlaying()==false)
 		return false;
 	
 	for (ScoreItemList::iterator it2=from_it; it2!=to_it; it2++)
 		for (set<FloItem, floComp>::iterator it=it2->second.begin(); it!=it2->second.end();it++)
 			if (it->type==FloItem::NOTE)
 			{
-				bool is_active= ( (song->cpos() >= it->source_event->tick() + it->source_part->tick()) &&
-				                  (song->cpos() < it->source_event->endTick() + it->source_part->tick()) );
+				bool is_active= ( (MusEGlobal::song->cpos() >= it->source_event->tick() + it->source_part->tick()) &&
+				                  (MusEGlobal::song->cpos() < it->source_event->endTick() + it->source_part->tick()) );
 				if (it->is_active != is_active)
 					return true;
 			}
@@ -3335,7 +3336,7 @@ void ScoreCanvas::draw_preamble(QPainter& p, int y_offset, clef_t clef, bool res
 	{
 		x_left+=KEYCHANGE_ACC_LEFTDIST;
 		
-		key_enum key=key_at_tick(tick);
+		MusECore::key_enum key=key_at_tick(tick);
 		QPixmap* pix_acc=is_sharp_key(key) ? &pix_sharp[BLACK_PIXMAP] : &pix_b[BLACK_PIXMAP];
 		list<int> acclist=calc_accidentials(key,clef);
 		
@@ -3446,7 +3447,7 @@ void ScoreCanvas::draw(QPainter& p, const QRect&)
 }
 
 
-list<int> calc_accidentials(key_enum key, clef_t clef, key_enum next_key)
+list<int> calc_accidentials(MusECore::key_enum key, clef_t clef, MusECore::key_enum next_key)
 {
 	list<int> result;
 	
@@ -3524,11 +3525,11 @@ int ScoreCanvas::x_to_tick(int x)
 	return t > min_t ? t : min_t;
 }
 
-key_enum ScoreCanvas::key_at_tick(int t_)
+MusECore::key_enum ScoreCanvas::key_at_tick(int t_)
 {
 	unsigned int t= (t_>=0) ? t_ : 0;
 	
-	return keymap.keyAtTick(t);
+	return MusEGlobal::keymap.keyAtTick(t);
 }
 
 timesig_t ScoreCanvas::timesig_at_tick(int t_)
@@ -3555,7 +3556,7 @@ int ScoreCanvas::height_to_pitch(int h, clef_t clef)
 	}
 }
 
-int ScoreCanvas::height_to_pitch(int h, clef_t clef, key_enum key)
+int ScoreCanvas::height_to_pitch(int h, clef_t clef, MusECore::key_enum key)
 {
 	int add=0;
 	
@@ -3697,7 +3698,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				
 				if ((mouse_erases_notes) || (event->button()==Qt::MidButton)) //erase?
 				{
-					audio->msgDeleteEvent(dragged_event, dragged_event_part, true, false, false);
+					MusEGlobal::audio->msgDeleteEvent(dragged_event, dragged_event_part, true, false, false);
 				}
 				else if (event->button()==Qt::LeftButton) //edit?
 				{
@@ -3711,8 +3712,8 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 				{
 					if (mouse_inserts_notes)
 					{
-						Part* curr_part = NULL;
-						set<Part*> possible_dests=staff_it->parts_at_tick(tick);
+						MusECore::Part* curr_part = NULL;
+						set<MusECore::Part*> possible_dests=staff_it->parts_at_tick(tick);
 
 						if (!possible_dests.empty())
 						{
@@ -3738,7 +3739,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 							if (!ctrl)
 								deselect_all();
 							
-							Event newevent(Note);
+							MusECore::Event newevent(MusECore::Note);
 							newevent.setPitch(y_to_pitch(y,tick, staff_it->clef));
 							newevent.setVelo(note_velo);
 							newevent.setVeloOff(note_velo_off);
@@ -3759,7 +3760,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 								newevent.setLenTick(curr_part->lenTick() - newevent.tick());
 							}
 							
-							audio->msgAddEvent(newevent, curr_part, true, false, false);
+							MusEGlobal::audio->msgAddEvent(newevent, curr_part, true, false, false);
 							
 							dragged_event_part=curr_part;
 							dragged_event=newevent;
@@ -3777,7 +3778,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 							drag_cursor_changed=true;
 							setCursor(Qt::SizeAllCursor);
 							
-							song->update(SC_SELECTION);
+							MusEGlobal::song->update(SC_SELECTION);
 						}
 					}
 					else // !mouse_inserts_notes. open a lasso
@@ -3805,8 +3806,8 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 			if (flo_quantize(dragged_event.lenTick(), quant_ticks()) <= 0)
 			{
 				if (debugMsg) cout << "new length <= 0, erasing item" << endl;
-				if (undo_started) song->undo();
-				audio->msgDeleteEvent(dragged_event, dragged_event_part, true, false, false);
+				if (undo_started) MusEGlobal::song->undo();
+				MusEGlobal::audio->msgDeleteEvent(dragged_event, dragged_event_part, true, false, false);
 			}
 			else
 			{
@@ -3823,7 +3824,7 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 
 			clicked_event_ptr->setSelected(!clicked_event_ptr->selected());
 
-			song->update(SC_SELECTION);
+			MusEGlobal::song->update(SC_SELECTION);
 		}
 		
 		setMouseTracking(false);
@@ -3864,12 +3865,12 @@ void ScoreCanvas::mouseReleaseEvent (QMouseEvent* event)
 		if (!ctrl)
 			deselect_all();
 		
-		set<Event*> already_processed;
+		set<MusECore::Event*> already_processed;
 		
 		for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 			it->apply_lasso(lasso.translated(x_pos-x_left, y_pos - it->y_draw), already_processed);
 		
-		song->update(SC_SELECTION);
+		MusEGlobal::song->update(SC_SELECTION);
 		
 		have_lasso=false;
 		redraw();
@@ -3924,7 +3925,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 					
 					clicked_event_ptr->setSelected(true);
 					
-					song->update(SC_SELECTION);
+					MusEGlobal::song->update(SC_SELECTION);
 				}
 				
 				old_pitch=-1;
@@ -3950,7 +3951,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				if (new_pitch != old_pitch)
 				{
 					if (debugMsg) cout << "changing pitch, delta="<<new_pitch-original_dragged_event.pitch()<<endl;
-					if (undo_started) song->undo();
+					if (undo_started) MusEGlobal::song->undo();
 					undo_started=transpose_notes(part_to_set(dragged_event_part),1, new_pitch-original_dragged_event.pitch());
 					old_pitch=new_pitch;
 				}
@@ -3972,7 +3973,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 
 					if (dest_tick != old_dest_tick)
 					{
-						if (undo_started) song->undo(); //FINDMICH EXTEND
+						if (undo_started) MusEGlobal::song->undo(); //FINDMICH EXTEND
 						undo_started=move_notes(part_to_set(dragged_event_part),1, (signed)dest_tick-original_dragged_event.tick());
 						old_dest_tick=dest_tick;
 					}
@@ -3984,7 +3985,7 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 				tick+=quant_ticks();
 				if (dragged_event.tick()+old_len + dragged_event_part->tick() != unsigned(tick))
 				{
-					Event tmp=dragged_event.clone();
+					MusECore::Event tmp=dragged_event.clone();
 					signed relative_tick=tick-signed(dragged_event_part->tick());
 					signed new_len=relative_tick-dragged_event.tick();
 					
@@ -4011,12 +4012,12 @@ void ScoreCanvas::mouseMoveEvent (QMouseEvent* event)
 						}
 					}
 					
-					if (undo_started) song->undo();
-					Undo operations;
-					operations.push_back(UndoOp(UndoOp::ModifyEvent, tmp, dragged_event, dragged_event_part, false, false));
+					if (undo_started) MusEGlobal::song->undo();
+					MusECore::Undo operations;
+					operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, tmp, dragged_event, dragged_event_part, false, false));
 					if (newpartlen != dragged_event_part->lenTick())
 						schedule_resize_all_same_len_clone_parts(dragged_event_part, newpartlen, operations);
-					undo_started=song->applyOperationGroup(operations);
+					undo_started=MusEGlobal::song->applyOperationGroup(operations);
 					
 					old_len=new_len;
 				}
@@ -4180,11 +4181,11 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
 	{
 		if (scroll) //potential need to scroll?
 		{
-			switch (song->follow())
+			switch (MusEGlobal::song->follow())
 			{
-				case  Song::NO: break;
-				case Song::JUMP:  goto_tick(tick,false);  break;
-				case Song::CONTINUOUS:  goto_tick(tick,true);  break;
+				case  MusECore::Song::NO: break;
+				case MusECore::Song::JUMP:  goto_tick(tick,false);  break;
+				case MusECore::Song::CONTINUOUS:  goto_tick(tick,true);  break;
 			}
 		}
 		
@@ -4264,9 +4265,9 @@ void ScoreCanvas::set_tool(int tool)
 {
 	switch (tool)
 	{
-		case MusEWidget::PointerTool: mouse_erases_notes=false; mouse_inserts_notes=false; break;
-		case MusEWidget::RubberTool:  mouse_erases_notes=true;  mouse_inserts_notes=false; break;
-		case MusEWidget::PencilTool:  mouse_erases_notes=false; mouse_inserts_notes=true;  break;
+		case MusEGui::PointerTool: mouse_erases_notes=false; mouse_inserts_notes=false; break;
+		case MusEGui::RubberTool:  mouse_erases_notes=true;  mouse_inserts_notes=false; break;
+		case MusEGui::PencilTool:  mouse_erases_notes=false; mouse_inserts_notes=true;  break;
 		default:
 			cerr << "ERROR: THIS SHOULD NEVER HAPPEN: set_tool called with unknown tool ("<<tool<<")"<<endl;
 	}
@@ -4394,28 +4395,28 @@ void ScoreCanvas::set_velo_off(int velo)
 
 void ScoreCanvas::deselect_all()
 {
-	set<Part*> all_parts=get_all_parts();
+	set<MusECore::Part*> all_parts=get_all_parts();
 
-	for (set<Part*>::iterator part=all_parts.begin(); part!=all_parts.end(); part++)
-		for (iEvent event=(*part)->events()->begin(); event!=(*part)->events()->end(); event++)
+	for (set<MusECore::Part*>::iterator part=all_parts.begin(); part!=all_parts.end(); part++)
+		for (MusECore::iEvent event=(*part)->events()->begin(); event!=(*part)->events()->end(); event++)
 			event->second.setSelected(false);
 	
-	song->update(SC_SELECTION);
+	MusEGlobal::song->update(SC_SELECTION);
 }
 
 bool staff_t::cleanup_parts()
 {
 	bool did_something=false;
 	
-	for (set<Part*>::iterator it=parts.begin(); it!=parts.end();)
+	for (set<MusECore::Part*>::iterator it=parts.begin(); it!=parts.end();)
 	{
 		bool valid=false;
 		
-		for (iTrack track=song->tracks()->begin(); track!=song->tracks()->end(); track++)
-			if ((*track)->type() == Track::MIDI)
+		for (MusECore::iTrack track=MusEGlobal::song->tracks()->begin(); track!=MusEGlobal::song->tracks()->end(); track++)
+			if ((*track)->type() == MusECore::Track::MIDI)
 			{
-				PartList* pl=(*track)->parts();
-				for (iPart part=pl->begin(); part!=pl->end(); part++)
+				MusECore::PartList* pl=(*track)->parts();
+				for (MusECore::iPart part=pl->begin(); part!=pl->end(); part++)
 					if (*it == part->second)
 					{
 						valid=true;
@@ -4438,18 +4439,18 @@ bool staff_t::cleanup_parts()
 	return did_something;
 }
 
-set<Part*> staff_t::parts_at_tick(unsigned tick)
+set<MusECore::Part*> staff_t::parts_at_tick(unsigned tick)
 {
-	set<Part*> result;
+	set<MusECore::Part*> result;
 	
-	for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+	for (set<MusECore::Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
 		if ((tick >= (*it)->tick()) && (tick<=(*it)->endTick()))
 			result.insert(*it);
 	
 	return result;
 }
 
-void staff_t::apply_lasso(QRect rect, set<Event*>& already_processed)
+void staff_t::apply_lasso(QRect rect, set<MusECore::Event*>& already_processed)
 {
 	for (ScoreItemList::iterator it=itemlist.begin(); it!=itemlist.end(); it++)
 		for (set<FloItem>::iterator it2=it->second.begin(); it2!=it->second.end(); it2++)
@@ -4476,7 +4477,7 @@ void ScoreCanvas::midi_note(int pitch, int velo)
 	else
 		held_notes[pitch]=false;
 
-	if ( srec && selected_part && !audio->isPlaying() && velo )
+	if ( srec && selected_part && !MusEGlobal::audio->isPlaying() && velo )
 		steprec->record(selected_part,pitch,quant_ticks(),quant_ticks(),velo,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier);
 }
 
@@ -4485,10 +4486,10 @@ void ScoreCanvas::midi_note(int pitch, int velo)
 void ScoreCanvas::update_parts()
 {
 	if (selected_part!=NULL) //if it's null, let it be null
-		selected_part=MusEUtil::partFromSerialNumber(selected_part_index);
+		selected_part=MusECore::partFromSerialNumber(selected_part_index);
 	
 	if (dragged_event_part!=NULL) //same thing here
-		dragged_event_part=MusEUtil::partFromSerialNumber(dragged_event_part_index);
+		dragged_event_part=MusECore::partFromSerialNumber(dragged_event_part_index);
 	
 	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 		it->update_parts();
@@ -4499,14 +4500,14 @@ void staff_t::update_parts()
 	parts.clear();
 	
 	for (set<int>::iterator it=part_indices.begin(); it!=part_indices.end(); it++)
-		parts.insert(MusEUtil::partFromSerialNumber(*it));
+		parts.insert(MusECore::partFromSerialNumber(*it));
 }
 
 void staff_t::update_part_indices()
 {
 	part_indices.clear();
 	
-	for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+	for (set<MusECore::Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
 		part_indices.insert((*it)->sn());
 }
 
@@ -4522,17 +4523,17 @@ void ScoreEdit::keyPressEvent(QKeyEvent* event)
 	}
 	else if (key == shortcuts[SHRT_TOOL_POINTER].key)
 	{
-		edit_tools->set(MusEWidget::PointerTool);
+		edit_tools->set(MusEGui::PointerTool);
 		return;
 	}
 	else if (key == shortcuts[SHRT_TOOL_PENCIL].key)
 	{
-		edit_tools->set(MusEWidget::PencilTool);
+		edit_tools->set(MusEGui::PencilTool);
 		return;
 	}
 	else if (key == shortcuts[SHRT_TOOL_RUBBER].key)
 	{
-		edit_tools->set(MusEWidget::RubberTool);
+		edit_tools->set(MusEGui::RubberTool);
 		return;
 	}
 	else //Default:
@@ -4543,11 +4544,11 @@ void ScoreEdit::keyPressEvent(QKeyEvent* event)
 }
 
 
-void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
+void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >& param)
 {
 	for (list<staff_t>::iterator staff=staves.begin(); staff!=staves.end(); staff++)
 	{
-		for (std::map< Part*, set<Part*> >::const_iterator it = param.begin(); it!=param.end(); it++)
+		for (std::map< MusECore::Part*, set<MusECore::Part*> >::const_iterator it = param.begin(); it!=param.end(); it++)
 			if (staff->parts.find(it->first)!=staff->parts.end())
 				staff->parts.insert(it->second.begin(), it->second.end());
 		
@@ -4558,6 +4559,8 @@ void ScoreCanvas::add_new_parts(const std::map< Part*, std::set<Part*> >& param)
 	
 	fully_recalculate();
 }
+
+} // namespace MusEGui
 
 //the following assertions are made:
 //  pix_quarter.width() == pix_half.width()

@@ -42,19 +42,21 @@
 #include "gconfig.h"
 #include "fastlog.h"
 
+namespace MusEGui {
+
 bool modifyWarnedYet = false;
 //---------------------------------------------------------
 //   WaveView
 //---------------------------------------------------------
 
 WaveView::WaveView(MidiEditor* pr, QWidget* parent, int xscale, int yscale)
-   : MusEWidget::View(parent, xscale, 1)
+   : View(parent, xscale, 1)
       {
       editor = pr;
       setVirt(true);
-      pos[0] = tempomap.tick2frame(song->cpos());
-      pos[1] = tempomap.tick2frame(song->lpos());
-      pos[2] = tempomap.tick2frame(song->rpos());
+      pos[0] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->cpos());
+      pos[1] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->lpos());
+      pos[2] = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->rpos());
       yScale = yscale;
       mode = NORMAL;
       selectionStart = 0;
@@ -71,13 +73,13 @@ WaveView::WaveView(MidiEditor* pr, QWidget* parent, int xscale, int yscale)
             curPartId = -1;
             }
       else {
-            curPart   = (WavePart*)(editor->parts()->begin()->second);
+            curPart   = (MusECore::WavePart*)(editor->parts()->begin()->second);
             curPartId = curPart->sn();
             }
 
 
-      connect(song, SIGNAL(posChanged(int,unsigned,bool)), SLOT(setPos(int,unsigned,bool)));
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(MusEGlobal::song, SIGNAL(posChanged(int,unsigned,bool)), SLOT(setPos(int,unsigned,bool)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       songChanged(SC_SELECTION);
       }
 
@@ -112,17 +114,17 @@ void WaveView::pdraw(QPainter& p, const QRect& rr)
       if (xScale < 0)
             xScale = -xScale;
       
-      for (iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip) {
-            WavePart* wp = (WavePart*)(ip->second);
+      for (MusECore::iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip) {
+            MusECore::WavePart* wp = (MusECore::WavePart*)(ip->second);
             int channels = wp->track()->channels();
             int px = wp->frame();
 
-            EventList* el = wp->events();
-            for (iEvent e = el->begin(); e != el->end(); ++e) {
-                  Event event  = e->second;
+            MusECore::EventList* el = wp->events();
+            for (MusECore::iEvent e = el->begin(); e != el->end(); ++e) {
+                  MusECore::Event event  = e->second;
                   if (event.empty())
                         continue;
-                  SndFileR f = event.sndFile();
+                  MusECore::SndFileR f = event.sndFile();
                   if (f.isNull())
                         continue;
                   
@@ -149,7 +151,7 @@ void WaveView::pdraw(QPainter& p, const QRect& rr)
 
                   for (int i = sx; i < ex; i++) {
                         y  = rr.y() + h;
-                        SampleV sa[f.channels()];
+                        MusECore::SampleV sa[f.channels()];
                         f.read(sa, xScale, pos);
                         pos += xScale;
                         if (pos < event.spos())
@@ -267,8 +269,8 @@ void WaveView::songChanged(int flags)
             startSample  = MAXINT;
             endSample    = 0;
             curPart      = 0;
-            for (iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
-                  WavePart* part = (WavePart*)(p->second);
+            for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
+                  MusECore::WavePart* part = (MusECore::WavePart*)(p->second);
                   if (part->sn() == curPartId)
                         curPart = part;
                   int ssample = part->frame();
@@ -287,9 +289,9 @@ void WaveView::songChanged(int flags)
             redraw(); // Boring, but the only thing possible to do
             }
       if (flags & SC_TEMPO) {
-            setPos(0, song->cpos(), false);
-            setPos(1, song->lpos(), false);
-            setPos(2, song->rpos(), false);
+            setPos(0, MusEGlobal::song->cpos(), false);
+            setPos(1, MusEGlobal::song->lpos(), false);
+            setPos(2, MusEGlobal::song->rpos(), false);
             }
       redraw();
       }
@@ -303,17 +305,17 @@ void WaveView::songChanged(int flags)
 
 void WaveView::setPos(int idx, unsigned val, bool adjustScrollbar)
       {
-      val = tempomap.tick2frame(val);
+      val = MusEGlobal::tempomap.tick2frame(val);
       if (pos[idx] == val)
             return;
       int opos = mapx(pos[idx]);
       int npos = mapx(val);
 
       if (adjustScrollbar && idx == 0) {
-            switch (song->follow()) {
-                  case  Song::NO:
+            switch (MusEGlobal::song->follow()) {
+                  case  MusECore::Song::NO:
                         break;
-                  case Song::JUMP:
+                  case MusECore::Song::JUMP:
                         if (npos >= width()) {
                               int ppos =  val - xorg - rmapxDev(width()/4);
                               if (ppos < 0)
@@ -331,7 +333,7 @@ void WaveView::setPos(int idx, unsigned val, bool adjustScrollbar)
                               npos = mapx(val);
                               }
                         break;
-                  case Song::CONTINUOUS:
+	    case MusECore::Song::CONTINUOUS:
                         if (npos > (width()*5)/8) {
                               int ppos =  pos[idx] - xorg - rmapxDev(width()*5/8);
                               if (ppos < 0)
@@ -412,7 +414,7 @@ void WaveView::wheelEvent(QWheelEvent* ev)
 
   if (shift) { // scroll vertically
       int delta       = -ev->delta() / WHEEL_DELTA;
-      int xpixelscale = 5*fast_log10(rmapxDev(1));
+      int xpixelscale = 5*MusECore::fast_log10(rmapxDev(1));
 
 
       if (xpixelscale <= 0)
@@ -485,7 +487,7 @@ void WaveView::viewMouseMoveEvent(QMouseEvent* event)
                   i = 1;
                   break;
             case Qt::RightButton:
-                  if ((MusEConfig::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
+                  if ((MusEGlobal::config.rangeMarkerWithoutMMB) && (event->modifiers() & Qt::ControlModifier))
                       i = 1;
                   else
                       i = 2;
@@ -493,8 +495,8 @@ void WaveView::viewMouseMoveEvent(QMouseEvent* event)
             default:
                   return;
             }
-      Pos p(tempomap.frame2tick(x), true);
-      song->setPos(i, p);
+      MusECore::Pos p(MusEGlobal::tempomap.frame2tick(x), true);
+      MusEGlobal::song->setPos(i, p);
       }
 
 //---------------------------------------------------------
@@ -505,16 +507,16 @@ void WaveView::viewMouseMoveEvent(QMouseEvent* event)
 void WaveView::range(int* s, int *e)
       {
       
-      PartList* lst = editor->parts();
+      MusECore::PartList* lst = editor->parts();
       if(lst->empty())
       {
         *s = 0;
-        *e = tempomap.tick2frame(song->len());
+        *e = MusEGlobal::tempomap.tick2frame(MusEGlobal::song->len());
         return;  
       }
-      int ps = song->len(), pe = 0;
+      int ps = MusEGlobal::song->len(), pe = 0;
       int tps, tpe;
-      for(iPart ip = lst->begin(); ip != lst->end(); ++ip) 
+      for(MusECore::iPart ip = lst->begin(); ip != lst->end(); ++ip) 
       {
         tps = ip->second->tick();
         if(tps < ps)
@@ -523,8 +525,8 @@ void WaveView::range(int* s, int *e)
         if(tpe > pe)
           pe = tpe;
       }
-      *s = tempomap.tick2frame(ps);
-      *e = tempomap.tick2frame(pe);
+      *s = MusEGlobal::tempomap.tick2frame(ps);
+      *e = MusEGlobal::tempomap.tick2frame(pe);
       }
 
 //---------------------------------------------------------
@@ -538,11 +540,11 @@ void WaveView::cmd(int n)
       switch(n) {
             case WaveEdit::CMD_SELECT_ALL:
             if (!editor->parts()->empty()) {
-                  iPart iBeg = editor->parts()->begin();
-                  iPart iEnd = editor->parts()->end();
+                  MusECore::iPart iBeg = editor->parts()->begin();
+                  MusECore::iPart iEnd = editor->parts()->end();
                   iEnd--;
-                  WavePart* beg = (WavePart*) iBeg->second;
-                  WavePart* end = (WavePart*) iEnd->second;
+                  MusECore::WavePart* beg = (MusECore::WavePart*) iBeg->second;
+                  MusECore::WavePart* end = (MusECore::WavePart*) iEnd->second;
                   selectionStart = beg->frame();
                   selectionStop  = end->frame() + end->lenFrame();
                   redraw();
@@ -655,22 +657,22 @@ void WaveView::cmd(int n)
 //---------------------------------------------------------
 //   getSelection
 //---------------------------------------------------------
-WaveSelectionList WaveView::getSelection(unsigned startpos, unsigned stoppos)
+MusECore::WaveSelectionList WaveView::getSelection(unsigned startpos, unsigned stoppos)
       {
-      WaveSelectionList selection;
+      MusECore::WaveSelectionList selection;
 
-      for (iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip) {
-            WavePart* wp = (WavePart*)(ip->second);
+      for (MusECore::iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip) {
+            MusECore::WavePart* wp = (MusECore::WavePart*)(ip->second);
             unsigned part_offset = wp->frame();
             
-            EventList* el = wp->events();
+            MusECore::EventList* el = wp->events();
             //printf("eventlist length=%d\n",el->size());
 
-            for (iEvent e = el->begin(); e != el->end(); ++e) {
-                  Event event  = e->second;
+            for (MusECore::iEvent e = el->begin(); e != el->end(); ++e) {
+                  MusECore::Event event  = e->second;
                   if (event.empty())
                         continue;
-                  SndFileR file = event.sndFile();
+                  MusECore::SndFileR file = event.sndFile();
                   if (file.isNull())
                         continue;
                   
@@ -690,7 +692,7 @@ WaveSelectionList WaveView::getSelection(unsigned startpos, unsigned stoppos)
                         tmp_ex > (int)event_length   ? ex = event_length   : ex = tmp_ex;
 
                         //printf("Event data affected: %d->%d filename:%s\n", sx, ex, file.name().toLatin1().constData());
-                        WaveEventSelection s;
+                        MusECore::WaveEventSelection s;
                         s.file = file;
                         s.startframe = sx;
                         s.endframe   = ex+1;
@@ -708,13 +710,13 @@ WaveSelectionList WaveView::getSelection(unsigned startpos, unsigned stoppos)
 //---------------------------------------------------------
 void WaveView::modifySelection(int operation, unsigned startpos, unsigned stoppos, double paramA)
       {
-         song->startUndo();
+         MusEGlobal::song->startUndo();
 
          if (operation == PASTE) {
            // we need to redefine startpos and stoppos
            if (copiedPart =="")
              return;
-           SndFile pasteFile(copiedPart);
+           MusECore::SndFile pasteFile(copiedPart);
            pasteFile.openRead();
            startpos = pos[0];
            stoppos = startpos+ pasteFile.samples(); // possibly this is wrong if there are tempo changes
@@ -722,10 +724,10 @@ void WaveView::modifySelection(int operation, unsigned startpos, unsigned stoppo
            pos[0]=stoppos;
          }
 
-         WaveSelectionList selection = getSelection(startpos, stoppos);
-         for (iWaveSelection i = selection.begin(); i != selection.end(); i++) {
-               WaveEventSelection w = *i;
-               SndFileR& file         = w.file;
+	 MusECore::WaveSelectionList selection = getSelection(startpos, stoppos);
+         for (MusECore::iWaveSelection i = selection.begin(); i != selection.end(); i++) {
+               MusECore::WaveEventSelection w = *i;
+               MusECore::SndFileR& file         = w.file;
                unsigned sx            = w.startframe;
                unsigned ex            = w.endframe;
                unsigned file_channels = file.channels();
@@ -735,11 +737,11 @@ void WaveView::modifySelection(int operation, unsigned startpos, unsigned stoppo
                      break;
                      }
 
-               audio->msgIdle(true); // Not good with playback during operations
-               SndFile tmpFile(tmpWavFile);
+               MusEGlobal::audio->msgIdle(true); // Not good with playback during operations
+               MusECore::SndFile tmpFile(tmpWavFile);
                tmpFile.setFormat(file.format(), file_channels, file.samplerate());
                if (tmpFile.openWrite()) {
-                     audio->msgIdle(false);
+                     MusEGlobal::audio->msgIdle(false);
                      printf("Could not open temporary file...\n");
                      break;
                      }
@@ -793,7 +795,7 @@ void WaveView::modifySelection(int operation, unsigned startpos, unsigned stoppo
                            break;
                      case PASTE:
                            {
-                           SndFile pasteFile(copiedPart);
+                           MusECore::SndFile pasteFile(copiedPart);
                            pasteFile.openRead();
                            pasteFile.seek(tmpdataoffset, 0);
                            pasteFile.readWithHeap(file_channels, tmpdata, tmpdatalen);
@@ -822,10 +824,10 @@ void WaveView::modifySelection(int operation, unsigned startpos, unsigned stoppo
                      }
 
                // Undo handling
-               song->cmdChangeWave(file.dirPath() + "/" + file.name(), tmpWavFile, sx, ex);
-               audio->msgIdle(false); // Not good with playback during operations
+               MusEGlobal::song->cmdChangeWave(file.dirPath() + "/" + file.name(), tmpWavFile, sx, ex);
+               MusEGlobal::audio->msgIdle(false); // Not good with playback during operations
                }
-         song->endUndo(SC_CLIP_MODIFIED);
+         MusEGlobal::song->endUndo(SC_CLIP_MODIFIED);
          redraw();
       }
 
@@ -841,7 +843,7 @@ void WaveView::copySelection(unsigned file_channels, float** tmpdata, unsigned l
             return;
             }
 
-      SndFile tmpFile(copiedPart);
+      MusECore::SndFile tmpFile(copiedPart);
       tmpFile.setFormat(format, file_channels, sampleRate);
       tmpFile.openWrite();
       tmpFile.write(file_channels, tmpdata, length);
@@ -959,7 +961,7 @@ void WaveView::editExternal(unsigned file_format, unsigned file_samplerate, unsi
             return;
             }
 
-      SndFile exttmpFile(exttmpFileName);
+      MusECore::SndFile exttmpFile(exttmpFileName);
       exttmpFile.setFormat(file_format, file_channels, file_samplerate);
       if (exttmpFile.openWrite()) {
             printf("Could not open temporary file...\n");
@@ -972,7 +974,7 @@ void WaveView::editExternal(unsigned file_format, unsigned file_samplerate, unsi
       // Forkaborkabork
       int pid = fork();
       if (pid == 0) {
-            if (execlp(MusEConfig::config.externalWavEditor.toLatin1().constData(), MusEConfig::config.externalWavEditor.toLatin1().constData(), exttmpFileName.toLatin1().constData(), NULL) == -1) {
+            if (execlp(MusEGlobal::config.externalWavEditor.toLatin1().constData(), MusEGlobal::config.externalWavEditor.toLatin1().constData(), exttmpFileName.toLatin1().constData(), NULL) == -1) {
                   perror("Failed to launch external editor");
                   // Get out of here
                   
@@ -1020,4 +1022,4 @@ void WaveView::editExternal(unsigned file_format, unsigned file_samplerate, unsi
             }
       }
 
-
+} // namespace MusECore

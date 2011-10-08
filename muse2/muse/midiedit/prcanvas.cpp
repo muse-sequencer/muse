@@ -56,11 +56,13 @@
 
 #define CHORD_TIMEOUT 75
 
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   NEvent
 //---------------------------------------------------------
 
-NEvent::NEvent(Event& e, Part* p, int y) : MusEWidget::CItem(e, p)
+NEvent::NEvent(MusECore::Event& e, MusECore::Part* p, int y) : MusEGui::CItem(e, p)
       {
       y = y - KH/4;
       unsigned tick = e.tick() + p->tick();
@@ -72,7 +74,7 @@ NEvent::NEvent(Event& e, Part* p, int y) : MusEWidget::CItem(e, p)
 //   addItem
 //---------------------------------------------------------
 
-void PianoCanvas::addItem(Part* part, Event& event)
+void PianoCanvas::addItem(MusECore::Part* part, MusECore::Event& event)
       {
       if (signed(event.tick())<0) {
             printf("ERROR: trying to add event before current part!\n");
@@ -85,9 +87,9 @@ void PianoCanvas::addItem(Part* part, Event& event)
       int diff = event.tick()-part->lenTick();
       if (diff > 0)  {// too short part? extend it
             //printf("addItem - this code should not be run!\n");
-            //Part* newPart = part->clone();
+            //MusECore::Part* newPart = part->clone();
             //newPart->setLenTick(newPart->lenTick()+diff);
-            //audio->msgChangePart(part, newPart,false);
+            //MusEGlobal::audio->msgChangePart(part, newPart,false);
             //part = newPart;
             part->setLenTick(part->lenTick()+diff);
             }
@@ -104,10 +106,10 @@ PianoCanvas::PianoCanvas(MidiEditor* pr, QWidget* parent, int sx, int sy)
       playedPitch = -1;
       for (int i=0;i<128;i++) noteHeldDown[i]=false;
       
-      steprec=new StepRec(noteHeldDown);
+      steprec=new MusECore::StepRec(noteHeldDown);
       
       songChanged(SC_TRACK_INSERTED);
-      connect(song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
+      connect(MusEGlobal::song, SIGNAL(midiNote(int, int)), SLOT(midiNote(int,int)));
       }
 
 PianoCanvas::~PianoCanvas()
@@ -160,7 +162,7 @@ int PianoCanvas::y2pitch(int y) const
 //    draws a note
 //---------------------------------------------------------
 
-void PianoCanvas::drawItem(QPainter& p, const MusEWidget::CItem* item,
+void PianoCanvas::drawItem(QPainter& p, const MusEGui::CItem* item,
    const QRect& rect)
       {
       QRect r = item->bbox();
@@ -205,7 +207,7 @@ void PianoCanvas::drawItem(QPainter& p, const MusEWidget::CItem* item,
 
       QColor color;
       NEvent* nevent   = (NEvent*) item;
-      Event event = nevent->event();
+      MusECore::Event event = nevent->event();
       if (nevent->part() != curPart){
             if(item->isMoving()) 
               color = Qt::gray;
@@ -265,7 +267,7 @@ void PianoCanvas::drawItem(QPainter& p, const MusEWidget::CItem* item,
       //int mfh = mh;
       //if(mfh == meh) mfh -= 1;
       //if(mfy == mey) mfh -= 1;
-      color.setAlpha(MusEConfig::config.globalAlphaBlend);
+      color.setAlpha(MusEGlobal::config.globalAlphaBlend);
       //QLinearGradient gradient(mex + 1, mey + 1, mex + 1, mey + meh - 2);    // Inside the border
       //gradient.setColorAt(0, color);
       //gradient.setColorAt(1, color.darker());
@@ -299,7 +301,7 @@ void PianoCanvas::drawTopItem(QPainter& , const QRect&)
 //    draws moving items
 //---------------------------------------------------------
 
-void PianoCanvas::drawMoving(QPainter& p, const MusEWidget::CItem* item, const QRect& rect)
+void PianoCanvas::drawMoving(QPainter& p, const MusEGui::CItem* item, const QRect& rect)
     {
       //if(((NEvent*)item)->part() != curPart)
       //  return;
@@ -320,7 +322,7 @@ void PianoCanvas::drawMoving(QPainter& p, const MusEWidget::CItem* item, const Q
 
 void PianoCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
       {
-      if ((_tool != MusEWidget::PointerTool) && (event->button() != Qt::LeftButton)) {
+      if ((_tool != MusEGui::PointerTool) && (event->button() != Qt::LeftButton)) {
             mousePress(event);
             return;
             }
@@ -330,24 +332,24 @@ void PianoCanvas::viewMouseDoubleClickEvent(QMouseEvent* event)
 //   moveCanvasItems
 //---------------------------------------------------------
 
-Undo PianoCanvas::moveCanvasItems(MusEWidget::CItemList& items, int dp, int dx, DragType dtype)
+MusECore::Undo PianoCanvas::moveCanvasItems(MusEGui::CItemList& items, int dp, int dx, DragType dtype)
 {      
   if(editor->parts()->empty())
-    return Undo(); //return empty list
+    return MusECore::Undo(); //return empty list
   
-  PartsToChangeMap parts2change;
-  Undo operations;  
+  MusECore::PartsToChangeMap parts2change;
+  MusECore::Undo operations;  
   
-  for(iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip)
+  for(MusECore::iPart ip = editor->parts()->begin(); ip != editor->parts()->end(); ++ip)
   {
-    Part* part = ip->second;
+    MusECore::Part* part = ip->second;
     if(!part)
       continue;
     
     int npartoffset = 0;
-    for(MusEWidget::iCItem ici = items.begin(); ici != items.end(); ++ici) 
+    for(MusEGui::iCItem ici = items.begin(); ici != items.end(); ++ici) 
     {
-      MusEWidget::CItem* ci = ici->second;
+      MusEGui::CItem* ci = ici->second;
       if(ci->part() != part)
         continue;
       
@@ -357,7 +359,7 @@ Undo PianoCanvas::moveCanvasItems(MusEWidget::CItemList& items, int dp, int dx, 
       
       // Test moving the item...
       NEvent* nevent = (NEvent*) ci;
-      Event event    = nevent->event();
+      MusECore::Event event    = nevent->event();
       x              = newpos.x();
       if(x < 0)
         x = 0;
@@ -373,11 +375,11 @@ Undo PianoCanvas::moveCanvasItems(MusEWidget::CItemList& items, int dp, int dx, 
         
     if(npartoffset > 0)
     {    
-      iPartToChange ip2c = parts2change.find(part);
+      MusECore::iPartToChange ip2c = parts2change.find(part);
       if(ip2c == parts2change.end())
       {
-        PartToChange p2c = {0, npartoffset};
-        parts2change.insert(std::pair<Part*, PartToChange> (part, p2c));
+        MusECore::PartToChange p2c = {0, npartoffset};
+        parts2change.insert(std::pair<MusECore::Part*, MusECore::PartToChange> (part, p2c));
       }
       else
         ip2c->second.xdiff = npartoffset;
@@ -385,9 +387,9 @@ Undo PianoCanvas::moveCanvasItems(MusEWidget::CItemList& items, int dp, int dx, 
   }
   
   bool forbidden=false;
-  for(iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
+  for(MusECore::iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
   {
-    Part* opart = ip2c->first;
+    MusECore::Part* opart = ip2c->first;
     if (opart->hasHiddenEvents())
     {
 			forbidden=true;
@@ -398,12 +400,12 @@ Undo PianoCanvas::moveCanvasItems(MusEWidget::CItemList& items, int dp, int dx, 
 	
 	if (!forbidden)
 	{
-		std::vector< MusEWidget::CItem* > doneList;
-		typedef std::vector< MusEWidget::CItem* >::iterator iDoneList;
+		std::vector< MusEGui::CItem* > doneList;
+		typedef std::vector< MusEGui::CItem* >::iterator iDoneList;
 		
-		for(MusEWidget::iCItem ici = items.begin(); ici != items.end(); ++ici) 
+		for(MusEGui::iCItem ici = items.begin(); ici != items.end(); ++ici) 
 		{
-		        MusEWidget::CItem* ci = ici->second;
+		        MusEGui::CItem* ci = ici->second;
 			
 			int x = ci->pos().x();
 			int y = ci->pos().y();
@@ -433,9 +435,9 @@ Undo PianoCanvas::moveCanvasItems(MusEWidget::CItemList& items, int dp, int dx, 
 						selectItem(ci, false);
 		}  
 
-    for(iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
+    for(MusECore::iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
     {
-      Part* opart = ip2c->first;
+      MusECore::Part* opart = ip2c->first;
       int diff = ip2c->second.xdiff;
       
       schedule_resize_all_same_len_clone_parts(opart, opart->lenTick() + diff, operations);
@@ -445,7 +447,7 @@ Undo PianoCanvas::moveCanvasItems(MusEWidget::CItemList& items, int dp, int dx, 
   }
   else
   {
-		return Undo(); //return empty list
+		return MusECore::Undo(); //return empty list
 	}
 }
       
@@ -454,12 +456,12 @@ Undo PianoCanvas::moveCanvasItems(MusEWidget::CItemList& items, int dp, int dx, 
 //    called after moving an object
 //---------------------------------------------------------
 
-UndoOp PianoCanvas::moveItem(MusEWidget::CItem* item, const QPoint& pos, DragType dtype)
+MusECore::UndoOp PianoCanvas::moveItem(MusEGui::CItem* item, const QPoint& pos, DragType dtype)
       {
       NEvent* nevent = (NEvent*) item;
-      Event event    = nevent->event();
+      MusECore::Event event    = nevent->event();
       int npitch     = y2pitch(pos.y());
-      Event newEvent = event.clone();
+      MusECore::Event newEvent = event.clone();
       int x          = pos.x();
       if (x < 0)
             x = 0;
@@ -467,15 +469,15 @@ UndoOp PianoCanvas::moveItem(MusEWidget::CItem* item, const QPoint& pos, DragTyp
             int port    = track()->outPort();
             int channel = track()->outChannel();
             // release note:
-            MidiPlayEvent ev1(0, port, channel, 0x90, event.pitch() + track()->transposition, 0);
-            audio->msgPlayMidiEvent(&ev1);
-            MidiPlayEvent ev2(0, port, channel, 0x90, npitch + track()->transposition, event.velo());
-            audio->msgPlayMidiEvent(&ev2);
+            MusECore::MidiPlayEvent ev1(0, port, channel, 0x90, event.pitch() + track()->transposition, 0);
+            MusEGlobal::audio->msgPlayMidiEvent(&ev1);
+            MusECore::MidiPlayEvent ev2(0, port, channel, 0x90, npitch + track()->transposition, event.velo());
+            MusEGlobal::audio->msgPlayMidiEvent(&ev2);
             }
       
       // Changed by T356. 
-      Part* part = nevent->part(); //
-      //Part* part = Canvas::part();  // part can be dynamically recreated, ask the authority
+      MusECore::Part* part = nevent->part(); //
+      //MusECore::Part* part = Canvas::part();  // part can be dynamically recreated, ask the authority
       
       newEvent.setPitch(npitch);
       int ntick = editor->rasterVal(x) - part->tick();
@@ -490,16 +492,16 @@ UndoOp PianoCanvas::moveItem(MusEWidget::CItem* item, const QPoint& pos, DragTyp
       //  printf("PianoCanvas::moveItem Error! New event end:%d exceeds length:%d of part:%s\n", newEvent.endTick(), part->lenTick(), part->name().toLatin1().constData());
       
       if (dtype == MOVE_COPY || dtype == MOVE_CLONE)
-            return UndoOp(UndoOp::AddEvent, newEvent, part, false, false);
+            return MusECore::UndoOp(MusECore::UndoOp::AddEvent, newEvent, part, false, false);
       else
-            return UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false);
+            return MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false);
       }
 
 //---------------------------------------------------------
 //   newItem(p, state)
 //---------------------------------------------------------
 
-MusEWidget::CItem* PianoCanvas::newItem(const QPoint& p, int)
+MusEGui::CItem* PianoCanvas::newItem(const QPoint& p, int)
       {
       //printf("newItem point\n");
       int pitch = y2pitch(p.y());
@@ -508,7 +510,7 @@ MusEWidget::CItem* PianoCanvas::newItem(const QPoint& p, int)
       tick     -= curPart->tick();
       if (tick < 0)
             tick=0;
-      Event e =  Event(Note);
+      MusECore::Event e =  MusECore::Event(MusECore::Note);
       e.setTick(tick);
       e.setPitch(pitch);
       e.setVelo(curVelo);
@@ -516,11 +518,11 @@ MusEWidget::CItem* PianoCanvas::newItem(const QPoint& p, int)
       return new NEvent(e, curPart, pitch2y(pitch));
       }
 
-void PianoCanvas::newItem(MusEWidget::CItem* item, bool noSnap)
+void PianoCanvas::newItem(MusEGui::CItem* item, bool noSnap)
       {
       //printf("newItem citem\n");
       NEvent* nevent = (NEvent*) item;
-      Event event    = nevent->event();
+      MusECore::Event event    = nevent->event();
       int x = item->x();
       if (x<0)
             x=0;
@@ -532,17 +534,17 @@ void PianoCanvas::newItem(MusEWidget::CItem* item, bool noSnap)
             if (w == 0)
                   w = editor->raster();
             }
-      Part* part = nevent->part();
+      MusECore::Part* part = nevent->part();
       event.setTick(x - part->tick());
       event.setLenTick(w);
       event.setPitch(y2pitch(item->y()));
 
-      Undo operations;
+      MusECore::Undo operations;
       int diff = event.endTick()-part->lenTick();
       
       if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
       {
-        operations.push_back(UndoOp(UndoOp::AddEvent,event, part, false, false));
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent,event, part, false, false));
         
         if (diff > 0)// part must be extended?
         {
@@ -550,7 +552,7 @@ void PianoCanvas::newItem(MusEWidget::CItem* item, bool noSnap)
               printf("newItem: extending\n");
         }
         
-        song->applyOperationGroup(operations);
+        MusEGlobal::song->applyOperationGroup(operations);
       }
       //else forbid action by not applying it
       else      
@@ -562,33 +564,33 @@ void PianoCanvas::newItem(MusEWidget::CItem* item, bool noSnap)
 //   resizeItem
 //---------------------------------------------------------
 
-void PianoCanvas::resizeItem(MusEWidget::CItem* item, bool noSnap, bool)         // experimental changes to try dynamically extending parts
+void PianoCanvas::resizeItem(MusEGui::CItem* item, bool noSnap, bool)         // experimental changes to try dynamically extending parts
       {
       //printf("resizeItem!\n");
       NEvent* nevent = (NEvent*) item;
-      Event event    = nevent->event();
-      Event newEvent = event.clone();
+      MusECore::Event event    = nevent->event();
+      MusECore::Event newEvent = event.clone();
       int len;
 
-      Part* part = nevent->part();
+      MusECore::Part* part = nevent->part();
 
       if (noSnap)
             len = nevent->width();
       else {
-            //Part* part = nevent->part();
+            //MusECore::Part* part = nevent->part();
             unsigned tick = event.tick() + part->tick();
             len = editor->rasterVal(tick + nevent->width()) - tick;
             if (len <= 0)
                   len = editor->raster();
       }
 
-      Undo operations;
+      MusECore::Undo operations;
       int diff = event.tick()+len-part->lenTick();
       
       if (! ((diff > 0) && part->hasHiddenEvents()) ) //operation is allowed
       {
         newEvent.setLenTick(len);
-        operations.push_back(UndoOp(UndoOp::ModifyEvent,newEvent, event, nevent->part(), false, false));
+        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent,newEvent, event, nevent->part(), false, false));
         
         if (diff > 0)// part must be extended?
         {
@@ -597,7 +599,7 @@ void PianoCanvas::resizeItem(MusEWidget::CItem* item, bool noSnap, bool)        
         }
       }
       //else forbid action by not performing it
-      song->applyOperationGroup(operations);
+      MusEGlobal::song->applyOperationGroup(operations);
       songChanged(SC_EVENT_MODIFIED); //this forces an update of the itemlist, which is neccessary
                                       //to remove "forbidden" events from the list again
       }
@@ -606,13 +608,13 @@ void PianoCanvas::resizeItem(MusEWidget::CItem* item, bool noSnap, bool)        
 //   deleteItem
 //---------------------------------------------------------
 
-bool PianoCanvas::deleteItem(MusEWidget::CItem* item)
+bool PianoCanvas::deleteItem(MusEGui::CItem* item)
       {
       NEvent* nevent = (NEvent*) item;
       if (nevent->part() == curPart) {
-            Event ev = nevent->event();
+            MusECore::Event ev = nevent->event();
             // Indicate do undo, and do not do port controller values and clone parts. 
-            audio->msgDeleteEvent(ev, curPart, true, false, false);
+            MusEGlobal::audio->msgDeleteEvent(ev, curPart, true, false, false);
             return true;
             }
       return false;
@@ -635,15 +637,15 @@ void PianoCanvas::pianoCmd(int cmd)
                   }  
                   if(spos < 0)
                     spos = 0;
-                  Pos p(spos,true);
-                  song->setPos(0, p, true, true, true);
+                  MusECore::Pos p(spos,true);
+                  MusEGlobal::song->setPos(0, p, true, true, true);
                   }
                   break;
             case CMD_RIGHT:
                   {
                   int spos = AL::sigmap.raster2(pos[0] + 1, editor->rasterStep(pos[0]));    // Nudge by +1, then snap up with raster2.
-                  Pos p(spos,true);
-                  song->setPos(0, p, true, true, true); 
+                  MusECore::Pos p(spos,true);
+                  MusEGlobal::song->setPos(0, p, true, true, true); 
                   }
                   break;
             case CMD_LEFT_NOSNAP:
@@ -651,68 +653,68 @@ void PianoCanvas::pianoCmd(int cmd)
                   int spos = pos[0] - editor->rasterStep(pos[0]);
                   if (spos < 0)
                         spos = 0;
-                  Pos p(spos,true);
-                  song->setPos(0, p, true, true, true); //CDW
+                  MusECore::Pos p(spos,true);
+                  MusEGlobal::song->setPos(0, p, true, true, true); //CDW
                   }
                   break;
             case CMD_RIGHT_NOSNAP:
                   {
-                  Pos p(pos[0] + editor->rasterStep(pos[0]), true);
-                  song->setPos(0, p, true, true, true); //CDW
+                  MusECore::Pos p(pos[0] + editor->rasterStep(pos[0]), true);
+                  MusEGlobal::song->setPos(0, p, true, true, true); //CDW
                   }
                   break;
             case CMD_INSERT:
                   {
                   if (pos[0] < start() || pos[0] >= end())
                         break;
-                  MidiPart* part = (MidiPart*)curPart;
+                  MusECore::MidiPart* part = (MusECore::MidiPart*)curPart;
 
                   if (part == 0)
                         break;
 
-                  EventList* el = part->events();
-                  Undo operations;
+                  MusECore::EventList* el = part->events();
+                  MusECore::Undo operations;
 
-                  std::list <Event> elist;
-                  for (iEvent e = el->lower_bound(pos[0] - part->tick()); e != el->end(); ++e)
-                        elist.push_back((Event)e->second);
-                  for (std::list<Event>::iterator i = elist.begin(); i != elist.end(); ++i) {
-                        Event event = *i;
-                        Event newEvent = event.clone();
+                  std::list <MusECore::Event> elist;
+                  for (MusECore::iEvent e = el->lower_bound(pos[0] - part->tick()); e != el->end(); ++e)
+                        elist.push_back((MusECore::Event)e->second);
+                  for (std::list<MusECore::Event>::iterator i = elist.begin(); i != elist.end(); ++i) {
+                        MusECore::Event event = *i;
+                        MusECore::Event newEvent = event.clone();
                         newEvent.setTick(event.tick() + editor->raster());// - part->tick());
                         // Do not do port controller values and clone parts. 
-                        operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
+                        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
                         }
-                  song->applyOperationGroup(operations);
+                  MusEGlobal::song->applyOperationGroup(operations);
                   
-                  Pos p(editor->rasterVal(pos[0] + editor->rasterStep(pos[0])), true);
-                  song->setPos(0, p, true, false, true);
+                  MusECore::Pos p(editor->rasterVal(pos[0] + editor->rasterStep(pos[0])), true);
+                  MusEGlobal::song->setPos(0, p, true, false, true);
                   }
                   return;
             case CMD_BACKSPACE:
                   if (pos[0] < start() || pos[0] >= end())
                         break;
                   {
-                  MidiPart* part = (MidiPart*)curPart;
+                  MusECore::MidiPart* part = (MusECore::MidiPart*)curPart;
                   if (part == 0)
                         break;
                   
-                  Undo operations;
-                  EventList* el = part->events();
+                  MusECore::Undo operations;
+                  MusECore::EventList* el = part->events();
 
-                  std::list<Event> elist;
-                  for (iEvent e = el->lower_bound(pos[0]); e != el->end(); ++e)
-                        elist.push_back((Event)e->second);
-                  for (std::list<Event>::iterator i = elist.begin(); i != elist.end(); ++i) {
-                        Event event = *i;
-                        Event newEvent = event.clone();
+                  std::list<MusECore::Event> elist;
+                  for (MusECore::iEvent e = el->lower_bound(pos[0]); e != el->end(); ++e)
+                        elist.push_back((MusECore::Event)e->second);
+                  for (std::list<MusECore::Event>::iterator i = elist.begin(); i != elist.end(); ++i) {
+                        MusECore::Event event = *i;
+                        MusECore::Event newEvent = event.clone();
                         newEvent.setTick(event.tick() - editor->raster() - part->tick());
                         // Do not do port controller values and clone parts. 
-                        operations.push_back(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
+                        operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
                         }
-                  song->applyOperationGroup(operations);
-                  Pos p(editor->rasterVal(pos[0] - editor->rasterStep(pos[0])), true);
-                  song->setPos(0, p, true, false, true);
+                  MusEGlobal::song->applyOperationGroup(operations);
+                  MusECore::Pos p(editor->rasterVal(pos[0] - editor->rasterStep(pos[0])), true);
+                  MusEGlobal::song->setPos(0, p, true, false, true);
                   }
                   break;
             }
@@ -729,8 +731,8 @@ void PianoCanvas::pianoPressed(int pitch, int velocity, bool shift)
       pitch        += track()->transposition;
 
       // play note:
-      MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
-      audio->msgPlayMidiEvent(&e);
+      MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
+      MusEGlobal::audio->msgPlayMidiEvent(&e);
       
       if (_steprec && pos[0] >= start_tick /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */ && curPart)
 				 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,shift);
@@ -747,8 +749,8 @@ void PianoCanvas::pianoReleased(int pitch, bool)
       pitch      += track()->transposition;
 
       // release key:
-      MidiPlayEvent e(0, port, channel, 0x90, pitch, 0);
-      audio->msgPlayMidiEvent(&e);
+      MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, 0);
+      MusEGlobal::audio->msgPlayMidiEvent(&e);
       }
 
 //---------------------------------------------------------
@@ -830,7 +832,7 @@ void PianoCanvas::cmd(int cmd)
       {
       switch (cmd) {
             case CMD_SELECT_ALL:     // select all
-                  for (MusEWidget::iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (MusEGui::iCItem k = items.begin(); k != items.end(); ++k) {
                         if (!k->second->isSelected())
                               selectItem(k->second, true);
                         }
@@ -839,29 +841,29 @@ void PianoCanvas::cmd(int cmd)
                   deselectAll();
                   break;
             case CMD_SELECT_INVERT:     // invert selection
-                  for (MusEWidget::iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (MusEGui::iCItem k = items.begin(); k != items.end(); ++k) {
                         selectItem(k->second, !k->second->isSelected());
                         }
                   break;
             case CMD_SELECT_ILOOP:     // select inside loop
-                  for (MusEWidget::iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (MusEGui::iCItem k = items.begin(); k != items.end(); ++k) {
                         NEvent* nevent = (NEvent*)(k->second);
-                        Part* part     = nevent->part();
-                        Event event    = nevent->event();
+                        MusECore::Part* part     = nevent->part();
+                        MusECore::Event event    = nevent->event();
                         unsigned tick  = event.tick() + part->tick();
-                        if (tick < song->lpos() || tick >= song->rpos())
+                        if (tick < MusEGlobal::song->lpos() || tick >= MusEGlobal::song->rpos())
                               selectItem(k->second, false);
                         else
                               selectItem(k->second, true);
                         }
                   break;
             case CMD_SELECT_OLOOP:     // select outside loop
-                  for (MusEWidget::iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (MusEGui::iCItem k = items.begin(); k != items.end(); ++k) {
                         NEvent* nevent = (NEvent*)(k->second);
-                        Part* part     = nevent->part();
-                        Event event    = nevent->event();
+                        MusECore::Part* part     = nevent->part();
+                        MusECore::Event event    = nevent->event();
                         unsigned tick  = event.tick() + part->tick();
-                        if (tick < song->lpos() || tick >= song->rpos())
+                        if (tick < MusEGlobal::song->lpos() || tick >= MusEGlobal::song->rpos())
                               selectItem(k->second, true);
                         else
                               selectItem(k->second, false);
@@ -869,10 +871,10 @@ void PianoCanvas::cmd(int cmd)
                   break;
             case CMD_SELECT_PREV_PART:     // select previous part
                   {
-                    Part* pt = editor->curCanvasPart();
-                    Part* newpt = pt;
-                    PartList* pl = editor->parts();
-                    for(iPart ip = pl->begin(); ip != pl->end(); ++ip)
+                    MusECore::Part* pt = editor->curCanvasPart();
+                    MusECore::Part* newpt = pt;
+                    MusECore::PartList* pl = editor->parts();
+                    for(MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip)
                       if(ip->second == pt) 
                       {
                         if(ip == pl->begin())
@@ -887,10 +889,10 @@ void PianoCanvas::cmd(int cmd)
                   break;
             case CMD_SELECT_NEXT_PART:     // select next part
                   {
-                    Part* pt = editor->curCanvasPart();
-                    Part* newpt = pt;
-                    PartList* pl = editor->parts();
-                    for(iPart ip = pl->begin(); ip != pl->end(); ++ip)
+                    MusECore::Part* pt = editor->curCanvasPart();
+                    MusECore::Part* newpt = pt;
+                    MusECore::PartList* pl = editor->parts();
+                    for(MusECore::iPart ip = pl->begin(); ip != pl->end(); ++ip)
                       if(ip->second == pt) 
                       {
                         ++ip;
@@ -946,7 +948,7 @@ void PianoCanvas::midiNote(int pitch, int velo)
       }
       
       if (_midiin && _steprec && curPart
-         && !audio->isPlaying() && velo && pos[0] >= start_tick
+         && !MusEGlobal::audio->isPlaying() && velo && pos[0] >= start_tick
          /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */
          && !(MusEGlobal::globalKeyState & Qt::AltModifier)) {
 					 steprec->record(curPart,pitch,editor->raster(),editor->raster(),velo,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier);
@@ -958,7 +960,7 @@ void PianoCanvas::midiNote(int pitch, int velo)
 //   startDrag
 //---------------------------------------------------------
 
-void PianoCanvas::startDrag(MusEWidget::CItem* /* item*/, bool copymode)
+void PianoCanvas::startDrag(MusEGui::CItem* /* item*/, bool copymode)
       {
       QMimeData* md = selected_events_to_mime(partlist_to_set(editor->parts()), 1);
       
@@ -1010,7 +1012,7 @@ void PianoCanvas::dragLeaveEvent(QDragLeaveEvent*)
 //   itemPressed
 //---------------------------------------------------------
 
-void PianoCanvas::itemPressed(const MusEWidget::CItem* item)
+void PianoCanvas::itemPressed(const MusEGui::CItem* item)
       {
       if (!_playEvents)
             return;
@@ -1018,20 +1020,20 @@ void PianoCanvas::itemPressed(const MusEWidget::CItem* item)
       int port         = track()->outPort();
       int channel      = track()->outChannel();
       NEvent* nevent   = (NEvent*) item;
-      Event event      = nevent->event();
+      MusECore::Event event      = nevent->event();
       playedPitch      = event.pitch() + track()->transposition;
       int velo         = event.velo();
 
       // play note:
-      MidiPlayEvent e(0, port, channel, 0x90, playedPitch, velo);
-      audio->msgPlayMidiEvent(&e);
+      MusECore::MidiPlayEvent e(0, port, channel, 0x90, playedPitch, velo);
+      MusEGlobal::audio->msgPlayMidiEvent(&e);
       }
 
 //---------------------------------------------------------
 //   itemReleased
 //---------------------------------------------------------
 
-void PianoCanvas::itemReleased(const MusEWidget::CItem*, const QPoint&)
+void PianoCanvas::itemReleased(const MusEGui::CItem*, const QPoint&)
       {
       if (!_playEvents)
             return;
@@ -1039,8 +1041,8 @@ void PianoCanvas::itemReleased(const MusEWidget::CItem*, const QPoint&)
       int channel = track()->outChannel();
 
       // release note:
-      MidiPlayEvent ev(0, port, channel, 0x90, playedPitch, 0);
-      audio->msgPlayMidiEvent(&ev);
+      MusECore::MidiPlayEvent ev(0, port, channel, 0x90, playedPitch, 0);
+      MusEGlobal::audio->msgPlayMidiEvent(&ev);
       playedPitch = -1;
       }
 
@@ -1048,21 +1050,21 @@ void PianoCanvas::itemReleased(const MusEWidget::CItem*, const QPoint&)
 //   itemMoved
 //---------------------------------------------------------
 
-void PianoCanvas::itemMoved(const MusEWidget::CItem* item, const QPoint& pos)
+void PianoCanvas::itemMoved(const MusEGui::CItem* item, const QPoint& pos)
       {
       int npitch = y2pitch(pos.y());
       if ((playedPitch != -1) && (playedPitch != npitch)) {
             int port         = track()->outPort();
             int channel      = track()->outChannel();
             NEvent* nevent   = (NEvent*) item;
-            Event event      = nevent->event();
+            MusECore::Event event      = nevent->event();
 
             // release note:
-            MidiPlayEvent ev1(0, port, channel, 0x90, playedPitch, 0);
-            audio->msgPlayMidiEvent(&ev1);
+            MusECore::MidiPlayEvent ev1(0, port, channel, 0x90, playedPitch, 0);
+            MusEGlobal::audio->msgPlayMidiEvent(&ev1);
             // play note:
-            MidiPlayEvent e2(0, port, channel, 0x90, npitch + track()->transposition, event.velo());
-            audio->msgPlayMidiEvent(&e2);
+            MusECore::MidiPlayEvent e2(0, port, channel, 0x90, npitch + track()->transposition, event.velo());
+            MusEGlobal::audio->msgPlayMidiEvent(&e2);
             playedPitch = npitch + track()->transposition;
             }
       }
@@ -1080,23 +1082,23 @@ void PianoCanvas::curPartChanged()
 //   modifySelected
 //---------------------------------------------------------
 
-void PianoCanvas::modifySelected(MusEWidget::NoteInfo::ValType type, int delta)
+void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int delta)
       {
-      audio->msgIdle(true);
-      song->startUndo();
-      for (MusEWidget::iCItem i = items.begin(); i != items.end(); ++i) {
+      MusEGlobal::audio->msgIdle(true);
+      MusEGlobal::song->startUndo();
+      for (MusEGui::iCItem i = items.begin(); i != items.end(); ++i) {
             if (!(i->second->isSelected()))
                   continue;
             NEvent* e   = (NEvent*)(i->second);
-            Event event = e->event();
-            if (event.type() != Note)
+            MusECore::Event event = e->event();
+            if (event.type() != MusECore::Note)
                   continue;
 
-            MidiPart* part = (MidiPart*)(e->part());
-            Event newEvent = event.clone();
+            MusECore::MidiPart* part = (MusECore::MidiPart*)(e->part());
+            MusECore::Event newEvent = event.clone();
 
             switch (type) {
-                  case MusEWidget::NoteInfo::VAL_TIME:
+                  case MusEGui::NoteInfo::VAL_TIME:
                         {
                         int newTime = event.tick() + delta;
                         if (newTime < 0)
@@ -1104,7 +1106,7 @@ void PianoCanvas::modifySelected(MusEWidget::NoteInfo::ValType type, int delta)
                         newEvent.setTick(newTime);
                         }
                         break;
-                  case MusEWidget::NoteInfo::VAL_LEN:
+                  case MusEGui::NoteInfo::VAL_LEN:
                         {
                         int len = event.lenTick() + delta;
                         if (len < 1)
@@ -1112,7 +1114,7 @@ void PianoCanvas::modifySelected(MusEWidget::NoteInfo::ValType type, int delta)
                         newEvent.setLenTick(len);
                         }
                         break;
-                  case MusEWidget::NoteInfo::VAL_VELON:
+                  case MusEGui::NoteInfo::VAL_VELON:
                         {
                         int velo = event.velo() + delta;
                         if (velo > 127)
@@ -1122,7 +1124,7 @@ void PianoCanvas::modifySelected(MusEWidget::NoteInfo::ValType type, int delta)
                         newEvent.setVelo(velo);
                         }
                         break;
-                  case MusEWidget::NoteInfo::VAL_VELOFF:
+                  case MusEGui::NoteInfo::VAL_VELOFF:
                         {
                         int velo = event.veloOff() + delta;
                         if (velo > 127)
@@ -1132,7 +1134,7 @@ void PianoCanvas::modifySelected(MusEWidget::NoteInfo::ValType type, int delta)
                         newEvent.setVeloOff(velo);
                         }
                         break;
-                  case MusEWidget::NoteInfo::VAL_PITCH:
+                  case MusEGui::NoteInfo::VAL_PITCH:
                         {
                         int pitch = event.pitch() + delta;
                         if (pitch > 127)
@@ -1143,13 +1145,13 @@ void PianoCanvas::modifySelected(MusEWidget::NoteInfo::ValType type, int delta)
                         }
                         break;
                   }
-            song->changeEvent(event, newEvent, part);
+            MusEGlobal::song->changeEvent(event, newEvent, part);
             // Indicate do not do port controller values and clone parts. 
-            //song->addUndo(UndoOp(UndoOp::ModifyEvent, newEvent, event, part));
-            song->addUndo(UndoOp(UndoOp::ModifyEvent, newEvent, event, part, false, false));
+            //MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part));
+            MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
             }
-      song->endUndo(SC_EVENT_MODIFIED);
-      audio->msgIdle(false);
+      MusEGlobal::song->endUndo(SC_EVENT_MODIFIED);
+      MusEGlobal::audio->msgIdle(false);
       }
 
 //---------------------------------------------------------
@@ -1163,3 +1165,4 @@ void PianoCanvas::resizeEvent(QResizeEvent* ev)
       EventCanvas::resizeEvent(ev);
       }
 
+} // namespace MusEGui

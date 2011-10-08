@@ -27,7 +27,7 @@
 #define LOG_MIN 1.0e-100
 #define LOG_MAX 1.0e100
 
-namespace MusEUtil {
+namespace MusECore {
 
 double qwtCeil125(double x);
 double qwtFloor125(double x);

@@ -37,6 +37,8 @@
 #include "icons.h"
 #include "audio.h"
 
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   Master
 //---------------------------------------------------------
@@ -52,8 +54,8 @@ Master::Master(MidiEditor* e, QWidget* parent, int xmag, int ymag)
       pos[2]  = 0;
       setFocusPolicy(Qt::StrongFocus);  // Tim.
       setMouseTracking(true);
-      connect(song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
-      connect(song, SIGNAL(songChanged(int)), this, SLOT(redraw()));
+      connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), this, SLOT(redraw()));
       }
 
 //---------------------------------------------------------
@@ -69,10 +71,10 @@ void Master::setPos(int idx, unsigned val, bool adjustScrollbar)
       int npos = mapx(val);
 
       if (adjustScrollbar && idx == 0) {
-            switch (song->follow()) {
-                  case  Song::NO:
+            switch (MusEGlobal::song->follow()) {
+                  case  MusECore::Song::NO:
                         break;
-                  case Song::JUMP:
+                  case MusECore::Song::JUMP:
                         if (npos >= width()) {
                               int ppos =  val - rmapxDev(width()/8);
                               if (ppos < 0)
@@ -90,7 +92,7 @@ void Master::setPos(int idx, unsigned val, bool adjustScrollbar)
                               npos = mapx(val);
                               }
                         break;
-                  case Song::CONTINUOUS:
+                  case MusECore::Song::CONTINUOUS:
                         if (npos > (width()/2)) {
                               int ppos =  pos[idx] - rmapxDev(width()/2);
                               if (ppos < 0)
@@ -154,9 +156,9 @@ void Master::pdraw(QPainter& p, const QRect& rect)
       // draw Canvas Items
       //---------------------------------------------------
 
-      const TempoList* tl = &tempomap;
-      for (ciTEvent i = tl->begin(); i != tl->end(); ++i) {
-            TEvent* e = i->second;
+      const MusECore::TempoList* tl = &MusEGlobal::tempomap;
+      for (MusECore::ciTEvent i = tl->begin(); i != tl->end(); ++i) {
+            MusECore::TEvent* e = i->second;
             int etick = mapx(i->first);
             int stick = mapx(i->second->tick);
             int tempo = mapy(280000 - int(60000000000.0/(e->tempo)));
@@ -206,23 +208,23 @@ void Master::draw(QPainter& p, const QRect& rect)
 void Master::viewMousePressEvent(QMouseEvent* event)
       {
       start = event->pos();
-      MusEWidget::Tool activeTool = tool;
+      MusEGui::Tool activeTool = tool;
 //      bool shift = event->state() & ShiftButton;
 
       switch (activeTool) {
-            case MusEWidget::PointerTool:
+            case MusEGui::PointerTool:
                   drag = DRAG_LASSO_START;
                   break;
 
-            case MusEWidget::PencilTool:
+            case MusEGui::PencilTool:
                   drag = DRAG_NEW;
-                  song->startUndo();
+                  MusEGlobal::song->startUndo();
                   newVal(start.x(), start.x(), start.y());
                   break;
 
-            case MusEWidget::RubberTool:
+            case MusEGui::RubberTool:
                   drag = DRAG_DELETE;
-                  song->startUndo();
+                  MusEGlobal::song->startUndo();
                   deleteVal(start.x(), start.x());
                   break;
 
@@ -272,7 +274,7 @@ void Master::viewMouseReleaseEvent(QMouseEvent*)
             case DRAG_RESIZE:
             case DRAG_NEW:
             case DRAG_DELETE:
-                  song->endUndo(SC_TEMPO);
+                  MusEGlobal::song->endUndo(SC_TEMPO);
                   break;
             default:
                   break;
@@ -288,17 +290,17 @@ bool Master::deleteVal1(unsigned int x1, unsigned int x2)
       {
       bool songChanged = false;
 
-      TempoList* tl = &tempomap;
-      for (iTEvent i = tl->begin(); i != tl->end(); ++i) {
+      MusECore::TempoList* tl = &MusEGlobal::tempomap;
+      for (MusECore::iTEvent i = tl->begin(); i != tl->end(); ++i) {
             if (i->first < x1)
                   continue;
             if (i->first >= x2)
                   break;
-            iTEvent ii = i;
+            MusECore::iTEvent ii = i;
             ++ii;
             if (ii != tl->end()) {
                   int tempo = ii->second->tempo;
-                  audio->msgDeleteTempo(i->first, tempo, false);
+                  MusEGlobal::audio->msgDeleteTempo(i->first, tempo, false);
                   songChanged = true;
                   }
             }
@@ -317,11 +319,11 @@ void Master::deleteVal(int x1, int x2)
 
 void Master::setTool(int t)
       {
-      if (tool == MusEWidget::Tool(t))
+      if (tool == MusEGui::Tool(t))
             return;
-      tool = MusEWidget::Tool(t);
+      tool = MusEGui::Tool(t);
       switch(tool) {
-            case MusEWidget::PencilTool:
+            case MusEGui::PencilTool:
                   setCursor(QCursor(*pencilIcon, 4, 15));
                   break;
             default:
@@ -345,6 +347,8 @@ void Master::newVal(int x1, int x2, int y)
             xx1 = tmp;
             }
       deleteVal1(xx1, xx2);
-      audio->msgAddTempo(xx1, int(60000000000.0/(280000 - y)), false);
+      MusEGlobal::audio->msgAddTempo(xx1, int(60000000000.0/(280000 - y)), false);
       redraw();
       }
+
+} // namespace MusEGui

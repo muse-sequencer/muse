@@ -33,7 +33,6 @@ file (GLOB remote_source_files
 ##
 add_library(remote ${MODULES_BUILD}
       ${remote_source_files}
-      ${PROJECT_BINARY_DIR}/all.h.pch
       )
 
 ##
@@ -48,9 +47,13 @@ set (FILES_TO_TRANSLATE
 ##
 ## Compilation flags and target name
 ##
-set_source_files_properties(
-      pyapi.cpp
-      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -include ${PYTHON_INCLUDES} -DENABLE_PYTHON"
+set_target_properties( remote
+      PROPERTIES COMPILE_FLAGS "-include ${PROJECT_BINARY_DIR}/all.h -I${PYTHON_INCLUDE_DIRS} -DENABLE_PYTHON"
+      OUTPUT_NAME muse_remote
+      )
+
+target_link_libraries(remote
+      ${PYTHON_LIBRARIES}
       )
 
 ##

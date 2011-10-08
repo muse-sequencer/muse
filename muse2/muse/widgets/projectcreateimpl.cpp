@@ -28,14 +28,14 @@
 #include "globals.h"
 #include "app.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 ProjectCreateImpl::ProjectCreateImpl(QWidget *parent) :
     QDialog(parent)
 {
   setupUi(this);
 
-  createFolderCheckbox->setChecked(MusEConfig::config.projectStoreInFolder);
+  createFolderCheckbox->setChecked(MusEGlobal::config.projectStoreInFolder);
   connect(browseDirButton,SIGNAL(clicked()), this, SLOT(selectDirectory()));
   connect(projectNameEdit,SIGNAL(textChanged(QString)), this, SLOT(updateDirectoryPath()));
   connect(createFolderCheckbox,SIGNAL(clicked()), this, SLOT(updateDirectoryPath()));
@@ -46,7 +46,7 @@ ProjectCreateImpl::ProjectCreateImpl(QWidget *parent) :
   //        as of Qt-4.7.1
   //commentEdit->setPlaceholderText("<Add information about project here>");
 #endif
-  directoryPath = MusEConfig::config.projectBaseFolder;
+  directoryPath = MusEGlobal::config.projectBaseFolder;
   updateDirectoryPath();
   show();
 }
@@ -88,10 +88,10 @@ QString ProjectCreateImpl::getSongInfo()
 }
 void ProjectCreateImpl::ok()
 {
-  MusEConfig::config.projectStoreInFolder = createFolderCheckbox->isChecked();
-  MusEConfig::config.projectBaseFolder = directoryPath;
+  MusEGlobal::config.projectStoreInFolder = createFolderCheckbox->isChecked();
+  MusEGlobal::config.projectBaseFolder = directoryPath;
   MusEGlobal::muse->changeConfig(true);
   emit accept();
 }
 
-} //namespace MusEWidget
+} //namespace MusEGui

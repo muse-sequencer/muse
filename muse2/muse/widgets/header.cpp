@@ -28,23 +28,23 @@
 #include <QStandardItemModel>
 #include <QMouseEvent>
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   readStatus
 //---------------------------------------------------------
 
-void Header::readStatus(Xml& xml)
+void Header::readStatus(MusECore::Xml& xml)
 {
 
     for (;;) {
-          Xml::Token token = xml.parse();
+          MusECore::Xml::Token token = xml.parse();
           const QString& tag = xml.s1();
           switch (token) {
-                case Xml::Error:
-                case Xml::End:
+                case MusECore::Xml::Error:
+                case MusECore::Xml::End:
                       return;
-                case Xml::Text:
+                case MusECore::Xml::Text:
                       {
                           QStringList l = tag.split(QString(" "), QString::SkipEmptyParts);
                           int index = count() -1;
@@ -76,10 +76,10 @@ void Header::readStatus(Xml& xml)
                           }
                       }
                       break;
-                case Xml::TagStart:
+                case MusECore::Xml::TagStart:
                       xml.unknown("Header");
                       break;
-                case Xml::TagEnd:
+                case MusECore::Xml::TagEnd:
                       if (tag ==objectName())
                             return;
                 default:
@@ -92,10 +92,10 @@ void Header::readStatus(Xml& xml)
 //   writeStatus
 //---------------------------------------------------------
 
-void Header::writeStatus(int level, Xml& xml) const
+void Header::writeStatus(int level, MusECore::Xml& xml) const
       {
       //xml.nput(level, "<%s> ", name());
-      xml.nput(level, "<%s> ", Xml::xmlString(objectName()).toLatin1().constData());
+      xml.nput(level, "<%s> ", MusECore::Xml::xmlString(objectName()).toLatin1().constData());
       int n = count();
       for (int i = n; i >= 0; --i) {
             if (isSectionHidden(logicalIndex(i)))
@@ -104,7 +104,7 @@ void Header::writeStatus(int level, Xml& xml) const
               xml.nput("%d ", logicalIndex(i));
           }
       //xml.put("</%s>", name());
-      xml.put("</%s>", Xml::xmlString(objectName()).toLatin1().constData());
+      xml.put("</%s>", MusECore::Xml::xmlString(objectName()).toLatin1().constData());
       }
 
 //---------------------------------------------------------
@@ -192,4 +192,4 @@ void Header::changeColumns(QAction *a)
     hideSection(section);
 }
 
-} // namespace MusEWidget
+} // namespace MusEGui

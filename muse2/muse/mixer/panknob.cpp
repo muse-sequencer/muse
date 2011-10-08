@@ -26,14 +26,14 @@
 #include "panknob.h"
 #include "track.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   PanKnob
 //---------------------------------------------------------
 
 PanKnob::PanKnob(QWidget* parent, AudioTrack* s)
-   : MusEWidget::Knob(parent, "pan")
+   : MusEGui::Knob(parent, "pan")
       {
       src = s;
       connect(this, SIGNAL(valueChanged(double,int)), SLOT(valueChanged(double)));
@@ -48,7 +48,7 @@ void PanKnob::valueChanged(double val)
       //audio->msgSetPan(src, val);
       // p4.0.21 audio->msgXXX waits. Do we really need to?
       src->setPan(val);
-      song->controllerChange(src);
+      MusEGlobal::song->controllerChange(src);
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

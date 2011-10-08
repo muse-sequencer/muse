@@ -28,7 +28,7 @@
 
 #include "comboQuant.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 static int quantTable[] = {
       1, 16, 32,  64, 128, 256,  512, 1024,
@@ -109,4 +109,4 @@ void ComboQuant::setValue(int val)
       setCurrentIndex(0);
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

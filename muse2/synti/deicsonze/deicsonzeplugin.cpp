@@ -43,11 +43,11 @@ using Awl::CheckBox;
 
 class PluginDialog;
 
-void DeicsOnze::initPluginReverb(Plugin* pluginReverb) {
+void DeicsOnze::initPluginReverb(MusECore::Plugin* pluginReverb) {
   //init plugin
   if(_pluginIReverb) delete(_pluginIReverb);
-  ///_pluginIReverb = new PluginI(NULL);
-  _pluginIReverb = new PluginI();
+  ///_pluginIReverb = new MusECore::PluginI(NULL);
+  _pluginIReverb = new MusECore::PluginI();
 
   _pluginIReverb->initPluginInstance(pluginReverb, 2);
 
@@ -66,14 +66,14 @@ void DeicsOnze::initPluginReverb(Plugin* pluginReverb) {
   //send build gui to the gui
   char data;
   data = SYSEX_BUILDGUIREVERB;
-  MidiPlayEvent evSysex(0, 0,ME_SYSEX,(const unsigned char*)&data, 1);
+  MusECore::MidiPlayEvent evSysex(0, 0,MusECore::ME_SYSEX,(const unsigned char*)&data, 1);
   _gui->writeEvent(evSysex);
 }
 
-void DeicsOnze::initPluginChorus(Plugin* pluginChorus) {
+void DeicsOnze::initPluginChorus(MusECore::Plugin* pluginChorus) {
   if(_pluginIChorus) delete(_pluginIChorus);
-  ///_pluginIChorus = new PluginI(NULL);
-  _pluginIChorus = new PluginI();
+  ///_pluginIChorus = new MusECore::PluginI(NULL);
+  _pluginIChorus = new MusECore::PluginI();
 
   _pluginIChorus->initPluginInstance(pluginChorus, 2);
 
@@ -93,14 +93,14 @@ void DeicsOnze::initPluginChorus(Plugin* pluginChorus) {
   //send build gui to the gui
   char data;
   data = SYSEX_BUILDGUICHORUS;
-  MidiPlayEvent evSysex(0, 0,ME_SYSEX,(const unsigned char*)&data, 1);
+  MusECore::MidiPlayEvent evSysex(0, 0,MusECore::ME_SYSEX,(const unsigned char*)&data, 1);
   _gui->writeEvent(evSysex);
 }
 
-void DeicsOnze::initPluginDelay(Plugin* pluginDelay) {
+void DeicsOnze::initPluginDelay(MusECore::Plugin* pluginDelay) {
   if(_pluginIDelay) delete(_pluginIDelay);
-  ///_pluginIDelay = new PluginI(NULL);
-  _pluginIDelay = new PluginI();
+  ///_pluginIDelay = new MusECore::PluginI(NULL);
+  _pluginIDelay = new MusECore::PluginI();
 
   _pluginIDelay->initPluginInstance(pluginDelay, 2);
 
@@ -123,7 +123,7 @@ void DeicsOnze::initPluginDelay(Plugin* pluginDelay) {
   dataDelayBPM[0] = SYSEX_DELAYBPM;
   f = getDelayBPM();
   memcpy(&dataDelayBPM[1], &f, sizeof(float));
-  MidiPlayEvent evSysexDelayBPM(0, 0,ME_SYSEX,
+  MusECore::MidiPlayEvent evSysexDelayBPM(0, 0,MusECore::ME_SYSEX,
 			    (const unsigned char*)dataDelayBPM,
 			    sizeof(float)+1);
   _gui->writeEvent(evSysexDelayBPM);
@@ -131,7 +131,7 @@ void DeicsOnze::initPluginDelay(Plugin* pluginDelay) {
   dataDelayBeatRatio[0] = SYSEX_DELAYBEATRATIO;
   f = getDelayBeatRatio();
   memcpy(&dataDelayBeatRatio[1], &f, sizeof(float));
-  MidiPlayEvent evSysexDelayBeatRatio(0, 0,ME_SYSEX,
+  MusECore::MidiPlayEvent evSysexDelayBeatRatio(0, 0,MusECore::ME_SYSEX,
 				  (const unsigned char*)dataDelayBeatRatio,
 				  sizeof(float)+1);
   _gui->writeEvent(evSysexDelayBeatRatio);
@@ -139,7 +139,7 @@ void DeicsOnze::initPluginDelay(Plugin* pluginDelay) {
   dataDelayFeedback[0] = SYSEX_DELAYFEEDBACK;
   f = getDelayFeedback();
   memcpy(&dataDelayFeedback[1], &f, sizeof(float));
-  MidiPlayEvent evSysexDelayFeedback(0, 0,ME_SYSEX,
+  MusECore::MidiPlayEvent evSysexDelayFeedback(0, 0,MusECore::ME_SYSEX,
 				 (const unsigned char*)dataDelayFeedback,
 				 sizeof(float)+1);
   _gui->writeEvent(evSysexDelayFeedback);
@@ -147,7 +147,7 @@ void DeicsOnze::initPluginDelay(Plugin* pluginDelay) {
   dataDelayLFOFreq[0] = SYSEX_DELAYLFOFREQ;
   f = getDelayLFOFreq();
   memcpy(&dataDelayLFOFreq[1], &f, sizeof(float));
-  MidiPlayEvent evSysexDelayLFOFreq(0, 0,ME_SYSEX,
+  MusECore::MidiPlayEvent evSysexDelayLFOFreq(0, 0,MusECore::ME_SYSEX,
 				(const unsigned char*)dataDelayLFOFreq,
 				sizeof(float)+1);
   _gui->writeEvent(evSysexDelayLFOFreq);
@@ -155,7 +155,7 @@ void DeicsOnze::initPluginDelay(Plugin* pluginDelay) {
   dataDelayLFODepth[0] = SYSEX_DELAYLFODEPTH;
   f = getDelayLFODepth();
   memcpy(&dataDelayLFODepth, &f, sizeof(float)+1);
-  MidiPlayEvent evSysexDelayLFODepth(0, 0,ME_SYSEX,
+  MusECore::MidiPlayEvent evSysexDelayLFODepth(0, 0,MusECore::ME_SYSEX,
 				 (const unsigned char*)dataDelayLFODepth,
 				 sizeof(float)+1);
   _gui->writeEvent(evSysexDelayLFODepth); 
@@ -275,7 +275,7 @@ void DeicsOnzeGui::addPluginSlider(int index, QString text, bool isLog,
 }
 
 void DeicsOnzeGui::buildGuiReverb() {
-  PluginI* plugI = _deicsOnze->_pluginIReverb;
+  MusECore::PluginI* plugI = _deicsOnze->_pluginIReverb;
   QString name = plugI->name();
   name.resize(name.size()-2);
   updateLadspaReverbLineEdit(name);
@@ -326,7 +326,7 @@ void DeicsOnzeGui::buildGuiReverb() {
 }
 
 void DeicsOnzeGui::buildGuiChorus() {
-  PluginI* plugI = _deicsOnze->_pluginIChorus;
+  MusECore::PluginI* plugI = _deicsOnze->_pluginIChorus;
   QString name = plugI->name();
   name.resize(name.size()-2);
   updateLadspaChorusLineEdit(name);

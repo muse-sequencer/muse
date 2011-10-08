@@ -34,6 +34,8 @@
 #include "ui_cliplisteditorbase.h"
 
 
+namespace MusEGui {
+
 extern int mtcType;
 enum { COL_NAME=0, COL_REFS, COL_POS, COL_LEN };
 
@@ -42,16 +44,16 @@ enum { COL_NAME=0, COL_REFS, COL_POS, COL_LEN };
 //---------------------------------------------------------
 
 class ClipItem : public QTreeWidgetItem {
-      SndFileR _wf;
+      MusECore::SndFileR _wf;
 
       //virtual QString text(int) const;
 
    public:
-      ClipItem(QTreeWidget*, const SndFileR&);
-      SndFileR* wf() { return &_wf; }
+      ClipItem(QTreeWidget*, const MusECore::SndFileR&);
+      MusECore::SndFileR* wf() { return &_wf; }
       };
 
-ClipItem::ClipItem(QTreeWidget* parent, const SndFileR& w)
+ClipItem::ClipItem(QTreeWidget* parent, const MusECore::SndFileR& w)
    : QTreeWidgetItem(parent), _wf(w)
       {
         setText(COL_NAME, _wf.name());
@@ -161,9 +163,9 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       connect(editor->view, SIGNAL(itemSelectionChanged()), SLOT(clipSelectionChanged()));
       connect(editor->view, SIGNAL(itemClicked(QTreeWidgetItem*, int)), SLOT(clicked(QTreeWidgetItem*, int)));
 
-      connect(song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      connect(editor->start, SIGNAL(valueChanged(const Pos&)), SLOT(startChanged(const Pos&)));
-      connect(editor->len, SIGNAL(valueChanged(const Pos&)), SLOT(lenChanged(const Pos&)));
+      connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
+      connect(editor->start, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(startChanged(const MusECore::Pos&)));
+      connect(editor->len, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(lenChanged(const MusECore::Pos&)));
 
       updateList();
       }
@@ -180,7 +182,7 @@ ClipListEdit::~ClipListEdit()
 void ClipListEdit::updateList()
       {
       editor->view->clear();
-      for (iSndFile f = SndFile::sndFiles.begin(); f != SndFile::sndFiles.end(); ++f) {
+      for (MusECore::iSndFile f = MusECore::SndFile::sndFiles.begin(); f != MusECore::SndFile::sndFiles.end(); ++f) {
             new ClipItem(editor->view, *f);
             }
       clipSelectionChanged();
@@ -213,21 +215,21 @@ void ClipListEdit::songChanged(int type)
 //   readStatus
 //---------------------------------------------------------
 
-void ClipListEdit::readStatus(Xml& xml)
+void ClipListEdit::readStatus(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
-            if (token == Xml::Error || token == Xml::End)
+            if (token == MusECore::Xml::Error || token == MusECore::Xml::End)
                   break;
             switch (token) {
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "topwin")
                               TopWin::readStatus(xml);
                         else
                               xml.unknown("CliplistEdit");
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "cliplist")
                               return;
                   default:
@@ -240,7 +242,7 @@ void ClipListEdit::readStatus(Xml& xml)
 //   writeStatus
 //---------------------------------------------------------
 
-void ClipListEdit::writeStatus(int level, Xml& xml) const
+void ClipListEdit::writeStatus(int level, MusECore::Xml& xml) const
       {
       xml.tag(level++, "cliplist");
       TopWin::writeStatus(level, xml);
@@ -251,22 +253,22 @@ void ClipListEdit::writeStatus(int level, Xml& xml) const
 //   readConfiguration
 //---------------------------------------------------------
 
-void ClipListEdit::readConfiguration(Xml& xml)
+void ClipListEdit::readConfiguration(MusECore::Xml& xml)
       {
       for (;;) {
-            Xml::Token token = xml.parse();
+            MusECore::Xml::Token token = xml.parse();
             const QString& tag = xml.s1();
             switch (token) {
-                  case Xml::Error:
-                  case Xml::End:
+                  case MusECore::Xml::Error:
+                  case MusECore::Xml::End:
                         return;
-                  case Xml::TagStart:
+                  case MusECore::Xml::TagStart:
                         if (tag == "topwin")
                               TopWin::readConfiguration(CLIPLIST, xml);
                         else
                               xml.unknown("ClipListEdit");
                         break;
-                  case Xml::TagEnd:
+                  case MusECore::Xml::TagEnd:
                         if (tag == "cliplistedit")
                               return;
                   default:
@@ -279,7 +281,7 @@ void ClipListEdit::readConfiguration(Xml& xml)
 //   writeConfiguration
 //---------------------------------------------------------
 
-void ClipListEdit::writeConfiguration(int level, Xml& xml)
+void ClipListEdit::writeConfiguration(int level, MusECore::Xml& xml)
       {
       xml.tag(level++, "cliplistedit");
       TopWin::writeConfiguration(CLIPLIST, level, xml);
@@ -290,7 +292,7 @@ void ClipListEdit::writeConfiguration(int level, Xml& xml)
 //   startChanged
 //---------------------------------------------------------
 
-void ClipListEdit::startChanged(const Pos& /*pos*/)//prevent compiler warning: unsused parameter
+void ClipListEdit::startChanged(const MusECore::Pos& /*pos*/)//prevent compiler warning: unsused parameter
       {
 //      editor->view->triggerUpdate();
       }
@@ -299,7 +301,7 @@ void ClipListEdit::startChanged(const Pos& /*pos*/)//prevent compiler warning: u
 //   lenChanged
 //---------------------------------------------------------
 
-void ClipListEdit::lenChanged(const Pos& /*pos*/) //prevent compiler warning: unsused parameter
+void ClipListEdit::lenChanged(const MusECore::Pos& /*pos*/) //prevent compiler warning: unsused parameter
       {
 //      curClip.setLenFrame(pos.frame());
 //      editor->view->triggerUpdate();
@@ -321,9 +323,9 @@ void ClipListEdit::clipSelectionChanged()
             }
       editor->start->setEnabled(true);
       editor->len->setEnabled(true);
-      Pos pos, len;
-      pos.setType(Pos::FRAMES);
-      len.setType(Pos::FRAMES);
+      MusECore::Pos pos, len;
+      pos.setType(MusECore::Pos::FRAMES);
+      len.setType(MusECore::Pos::FRAMES);
       pos.setFrame(curClip.spos());
       len.setFrame(curClip.lenFrame());
       editor->start->setValue(pos);
@@ -340,3 +342,4 @@ void ClipListEdit::clicked(QTreeWidgetItem*, int)
 //      printf("clicked\n");
       }
 
+} // namespace MusEGui

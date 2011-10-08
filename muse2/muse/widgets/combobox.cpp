@@ -26,7 +26,7 @@
 
 #include "combobox.h"
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //---------------------------------------------------------
 //   ComboBox
@@ -105,4 +105,4 @@ void ComboBox::addAction(const QString& s, int id)
       itemlist << id;
       }
 
-} // namespace MusEWidget
+} // namespace MusEGui

@@ -31,7 +31,7 @@ class QCloseEvent;
 class QDialog;
 class QTreeWidgetItem;
 
-namespace MusEWidget {
+namespace MusEGui {
 
 //----------------------------------------------------------
 //   MidiSyncLViewItem
@@ -39,7 +39,7 @@ namespace MusEWidget {
 
 class MidiSyncLViewItem : public QTreeWidgetItem
 {
-   //MidiSyncInfo _syncInfo;
+   //MusECore::MidiSyncInfo _syncInfo;
    //MidiDevice* _device;
    int _port;
    
@@ -87,9 +87,9 @@ class MidiSyncLViewItem : public QTreeWidgetItem
       //MidiDevice* device() const { return _device; }
       //void setDevice(MidiDevice* d);
       
-      //MidiSyncInfo& syncInfo()  { return _syncInfo; }
-      void copyFromSyncInfo(const MidiSyncInfo &sp);
-      void copyToSyncInfo(MidiSyncInfo &sp);
+      //MusECore::MidiSyncInfo& syncInfo()  { return _syncInfo; }
+      void copyFromSyncInfo(const MusECore::MidiSyncInfo &sp);
+      void copyToSyncInfo(MusECore::MidiSyncInfo &sp);
 };
 
 //---------------------------------------------------------
@@ -129,7 +129,7 @@ class MidiSyncConfig : public QDialog, public Ui::MidiSyncConfigBase {
       void setDirty();
       };
 
-} // namespace MusEWidget
+} // namespace MusEGui
 
 #endif
 

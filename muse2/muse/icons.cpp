@@ -1,5 +1,4 @@
 //=========================================================
-//=========================================================
 //  MusE
 //  Linux Music Editor
 //  $Id: icons.cpp,v 1.13.2.8 2009/11/14 03:37:48 terminator356 Exp $
@@ -252,6 +251,8 @@
 #define MPIXMAP(a,b) QPixmap(a)
 #define MICON(a,b) QIcon(QPixmap(a))
 #endif
+
+namespace MusEGui {
 
 /* Quick API reference:
    -------------------
@@ -722,3 +723,4 @@ void initIcons()
       sawIcon                                       = new MPIXMAP(saw_xpm, NULL);
       }
 
+} // namespace MusEGui
