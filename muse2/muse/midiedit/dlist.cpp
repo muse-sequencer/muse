@@ -322,8 +322,8 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                       dm->anote = val;
                       MusEGlobal::song->update(SC_DRUMMAP);
                     }
-                    int velocity = 127 * float(ev->x()) / width();
-                    emit keyPressed(pitch, velocity);//(dm->anote, shift);
+                    
+                    emit keyPressed(pitch, 100);
                   }
                   break;
             case COL_CHANNEL:
@@ -390,9 +390,13 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   dm->lv4 = val;
                   break;
             case COL_NAME:
-                  emit keyPressed(pitch, 100); //Mapping done on other side, send index
+            {
+                  int velo = 127 * (ev->x() - header->sectionPosition(COL_NAME)) / (header->sectionSize(COL_NAME) - 10);
+                  if (velo < 0) velo = 0;
+                  if (velo > 127 ) velo = 127;
+                  emit keyPressed(pitch, velo); //Mapping done on other side, send index
                   break;
-
+            }
             default:
                   break;
             }
