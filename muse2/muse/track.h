@@ -229,7 +229,7 @@ class MidiTrack : public Track {
       static bool _isVisible;
       clefTypes clefType;
       
-      DrumMap* _drummap;
+      DrumMap* _drummap; // _drummap[foo].anote is always equal to foo
       bool _drummap_tied_to_patch; //if true, changing patch also changes drummap
       bool* _drummap_hidden;
 

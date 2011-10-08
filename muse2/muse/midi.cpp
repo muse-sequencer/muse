@@ -730,10 +730,16 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                   //
                   if (ev.type() == Meta)
                         continue;
-                  if (track->type() == Track::DRUM) { //FINDMICHJETZT ignore muted
+                  if (track->type() == Track::DRUM) {
                         int instr = ev.pitch();
                         // ignore muted drums
                         if (ev.isNote() && MusEGlobal::drumMap[instr].mute)
+                              continue;
+                        }
+                  else if (track->type() == Track::NEW_DRUM) {
+                        int instr = ev.pitch();
+                        // ignore muted drums
+                        if (ev.isNote() && track->drummap()[instr].mute)
                               continue;
                         }
                   unsigned tick  = ev.tick() + offset;
