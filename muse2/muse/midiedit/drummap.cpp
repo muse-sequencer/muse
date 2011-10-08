@@ -26,6 +26,7 @@
 #include "xml.h"
 #include "song.h"
 
+#include <QSet>
 
 namespace MusEGlobal {
 char drumOutmap[DRUM_MAPSIZE];
@@ -522,3 +523,137 @@ void readDrumMap(Xml& xml, bool external)
       }
 
 } // namespace MusECore
+
+
+namespace MusEGlobal {
+
+void global_drum_ordering_t::cleanup()
+{
+  using MusEGlobal::song;
+  using MusECore::MidiTrack;
+  using MusECore::ciTrack;
+  
+  QSet<MidiTrack*> tracks;
+  for (ciTrack it = song->tracks()->begin(); it != song->tracks()->end(); it++)
+    tracks.insert( dynamic_cast<MidiTrack*>(*it) );
+  
+  for (iterator it = begin(); it != end();)
+  {
+    if (!tracks.contains(it->first))
+      it=erase(it);
+    else
+      it++;
+  }
+}
+
+void global_drum_ordering_t::write(int level, MusECore::Xml& xml)
+{
+  cleanup();
+  
+  xml.tag(level++, "drum_ordering");
+
+  for (iterator it = begin(); it != end(); it++)
+    write_single(level, xml, *it);
+
+  xml.etag(level, "drum_ordering");
+}
+
+void global_drum_ordering_t::write_single(int level, MusECore::Xml& xml, const entry_t& entry)
+{
+  xml.tag(level++, "entry");
+  xml.strTag(level, "track", entry.first->name());
+  xml.intTag(level, "instrument", entry.second);
+  xml.etag(level, "entry");
+}
+
+void global_drum_ordering_t::read(MusECore::Xml& xml)
+{
+  using MusECore::Xml;
+  
+  clear();
+  
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+			
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "entry")
+					append(read_single(xml));
+				else
+					xml.unknown("global_drum_ordering_t");
+				break;
+				
+			case Xml::TagEnd:
+				if (tag == "drum_ordering")
+					return;
+				
+			default:
+				break;
+		}
+	}
+}
+  
+global_drum_ordering_t::entry_t global_drum_ordering_t::read_single(MusECore::Xml& xml)
+{
+  using MusECore::Xml;
+  using MusEGlobal::song;
+  using MusECore::ciTrack;
+  
+  entry_t entry;
+  entry.first=NULL;
+  entry.second=-1;
+  
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+			
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "track")
+        {
+					QString track_name=xml.parse1();
+          
+          ciTrack it;
+          for (it = song->tracks()->begin(); it != song->tracks()->end(); it++)
+            if (track_name == (*it)->name())
+              break;
+          
+          if (it != song->tracks()->end())
+            entry.first=dynamic_cast<MusECore::MidiTrack*>(*it);
+        }
+				else if (tag == "instrument")
+					entry.second=xml.parseInt();
+				else
+					xml.unknown("global_drum_ordering_t (single entry)");
+				break;
+				
+			case Xml::TagEnd:
+				if (tag == "entry")
+					goto end_of_read_single;
+				
+			default:
+				break;
+		}
+	}
+
+  end_of_read_single:
+  
+  if (entry.first == NULL)
+    printf("ERROR: global_drum_ordering_t::read_single() couldn't find the specified track!\n");
+  
+  if (entry.second < 0 || entry.second > 127)
+    printf("ERROR: global_drum_ordering_t::read_single(): instrument number is out of bounds (%i)!\n", entry.second);
+  
+  return entry;
+}
+  
+} // namespace MusEGlobal

@@ -4617,7 +4617,7 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *        o offer some way to set maintained_automatically to true again
  *        o move generation and deletion of ourDrumMap from DCanvas to DrumEditor and remove ugly wrapper functions
  *
- *   o when playing back a flo-drum-track: treat as a MIDI track,
+ *   x when playing back a flo-drum-track: treat as a MIDI track,
  *     EXCEPT that the drum list's mute entries are respected!
  *   o when recording or echoing a flo-drum-track: watch out for In-Notes!
  *   o update [midi]track::read/write, readproperties, writeprop... (drumlist etc), operator=

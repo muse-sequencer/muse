@@ -862,7 +862,7 @@ void MidiTrack::read(Xml& xml)
                   case Xml::Attribut:
                         break;
                   case Xml::TagEnd:
-                        if (tag == "miditrack" || tag == "drumtrack") 
+                        if (tag == "miditrack" || tag == "drumtrack" || tag == "newdrumtrack") 
                         {
                           setInPortAndChannelMask(portmask, chanmask); // p3.3.48: Support old files.
                           return;

@@ -398,10 +398,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                     }
                   }
                   
-                  {
-                  int velocity = 127 * float(ev->x()) / width();
-                  emit keyPressed(instrument, velocity);//(dm->anote, shift);
-                  }
+                  emit keyPressed(instrument, 100);
                   break;
             case COL_OUTCHANNEL: // this column isn't visible in new style drum mode
                   val = dm->channel + incVal;
@@ -468,7 +465,12 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   break;
             case COL_NAME:
                   if (button == Qt::LeftButton)
-                      emit keyPressed(instrument, 100); //Mapping done on other side, send index
+                  {
+                      int velo = 127 * (ev->x() - header->sectionPosition(COL_NAME)) / (header->sectionSize(COL_NAME) - 10);
+                      if (velo < 0) velo = 0;
+                      if (velo > 127 ) velo = 127;
+                      emit keyPressed(instrument, velo); //Mapping done on other side, send index
+                  }
                   else if (button == Qt::MidButton) // hide that instrument
                   {
                     QSet<MusECore::Track*>* group = &dcanvas->get_instrument_map()[instrument].tracks;
@@ -510,7 +512,6 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                     delete popup;
                   }
                   break;
-
             default:
                   break;
             }

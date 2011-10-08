@@ -1121,6 +1121,8 @@ void Song::read(Xml& xml, bool isTemplate)
                               }
                         else if (tag == "drummap")
                               readDrumMap(xml, false);
+                        else if (tag == "drum_ordering")
+                              MusEGlobal::global_drum_ordering.read(xml);
                         else
                               xml.unknown("Song");
                         break;
@@ -1213,6 +1215,7 @@ void Song::write(int level, Xml& xml) const
       _markerList->write(level, xml);
 
       writeDrumMap(level, xml, false);
+      MusEGlobal::global_drum_ordering.write(level, xml);
       xml.tag(level, "/song");
       
       // Restore backup of the clone list, to retain any 'copy' items,
