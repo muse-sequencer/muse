@@ -37,6 +37,7 @@
 #include "synth.h"
 #include "app.h"
 #include "song.h"
+#include "menutitleitem.h"
 
 //#ifdef DSSI_SUPPORT
 //#include "dssihost.h"
@@ -316,20 +317,41 @@ int MidiPort::portno() const
 //   midiPortsPopup
 //---------------------------------------------------------
 
-//QPopupMenu* midiPortsPopup(QWidget* parent)
 QMenu* midiPortsPopup(QWidget* parent, int checkPort)
       {
       QMenu* p = new QMenu(parent);
+      p->addAction(new MusEGui::MenuTitleItem("Port / Device", p));
+      QMenu* subp = 0;
+      QAction *act = 0;
+      QString name;
       for (int i = 0; i < MIDI_PORTS; ++i) {
             MidiPort* port = &MusEGlobal::midiPorts[i];
-            QString name;
             name.sprintf("%d:%s", port->portno()+1, port->portname().toLatin1().constData());
-	    QAction *act = p->addAction(name);
-	    act->setData(i);
-            
-            if(i == checkPort)
-              act->setChecked(true);
+            if(port->device() || (i == checkPort))   
+            {  
+              act = p->addAction(name);
+              act->setData(i);
+              act->setCheckable(true);
+              act->setChecked(i == checkPort);
+            }  
+
+            if(!port->device())
+            {
+              if(!subp)                  // No submenu yet? Create it now.
+              {
+                subp = new QMenu(p);
+                subp->setTitle(subp->tr("Empty"));
+                subp->addAction(new MusEGui::MenuTitleItem("Empty Ports", subp));
+              }  
+              //act = subp->addAction(name);               // No need for all those "<None>" names. 
+              act = subp->addAction(QString().setNum(i+1));
+              act->setData(i);
+              act->setCheckable(true);
+              act->setChecked(i == checkPort);
+            }  
           }  
+      if(subp)
+        p->addMenu(subp);
       return p;
       }
 
