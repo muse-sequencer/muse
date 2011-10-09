@@ -121,6 +121,7 @@ struct GlobalConfigValues {
       bool exp2ByteTimeSigs;  // Export 2 byte time sigs instead of 4 bytes
       bool expOptimNoteOffs;  // Save space by replacing note offs with note on velocity 0
       bool importMidiSplitParts; // Split imported tracks into multiple parts.
+      bool importMidiNewStyleDrum; // Use new style drum tracks
       
       int startMode;          // 0 - start with last song
                               // 1 - start with default template

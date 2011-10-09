@@ -1610,6 +1610,8 @@ void MidiFileConfig::updateValues()
       optNoteOffs->setChecked(MusEGlobal::config.expOptimNoteOffs);
       twoByteTimeSigs->setChecked(MusEGlobal::config.exp2ByteTimeSigs);
       splitPartsCheckBox->setChecked(MusEGlobal::config.importMidiSplitParts);
+      newDrumsCheckbox->setChecked(MusEGlobal::config.importMidiNewStyleDrum);
+      oldDrumsCheckbox->setChecked(!MusEGlobal::config.importMidiNewStyleDrum);
       }
 
 //---------------------------------------------------------
@@ -1629,6 +1631,7 @@ void MidiFileConfig::okClicked()
       MusEGlobal::config.expOptimNoteOffs = optNoteOffs->isChecked();
       MusEGlobal::config.exp2ByteTimeSigs = twoByteTimeSigs->isChecked();
       MusEGlobal::config.importMidiSplitParts = splitPartsCheckBox->isChecked();
+      MusEGlobal::config.importMidiNewStyleDrum = newDrumsCheckbox->isChecked();
 
       MusEGlobal::muse->changeConfig(true);  // write config file
       close();

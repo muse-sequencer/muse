@@ -140,6 +140,7 @@ MusEGui::GlobalConfigValues config = {
       false,                        // midi export file 2 byte timesigs instead of 4
       true,                         // optimize midi export file note offs
       true,                         // Split imported tracks into multiple parts.
+      true,                         // importMidiNewStyleDrum
       1,                            // startMode
       QString(""),                  // start song path
       384,                          // gui division

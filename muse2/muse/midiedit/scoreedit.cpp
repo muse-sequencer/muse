@@ -4603,6 +4603,9 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *        - recording/echoing/steprec them
  *        - load, save them
  *   o fix valgrind problems
+ *   x midi-import settings
+ *   o support or handle duplicate enotes somehow!
+ *   o steprec, test midi thru
  * 
  * > o drum editor: channel-stuff
  *        o clearly state in the changelog: when having multiple drumeditors open,
