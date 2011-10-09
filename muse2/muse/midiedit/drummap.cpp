@@ -43,6 +43,15 @@ namespace MusECore {
 
 const DrumMap blankdm = { QString(""), 100, 16, 32, 9, 0, 70, 90, 127, 110, 127, 127, false };
 
+// this map must have 128 entries, as it's used for initalising new-style-drummaps as well.
+// new-style-drummaps only have 128 entries. also, the every "out-note" ("anote") must be
+// represented exactly once in that map, and there may be no duplicate or unused "out-notes".
+// reason: the track's drummap are inited as follows: iterate through the full idrumMap[],
+//         tracks_drummap[ idrumMap[i].anote ] = idrumMap[i]
+// if you ever want to change this, you will need to go through track.cpp/.h and 
+// {dlist,dcanvas,drumedit,drummap}{.cpp,.h} (and possibly some more) and find every usage
+// of idrumMap by new style drummaps, and fix the problem. a possible fix would be duplicating
+// idrumMap, change idrumMap, and use the duplicate for the new style stuff instead.
 const DrumMap idrumMap[DRUM_MAPSIZE] = {
       { QString("Acoustic Bass Drum"), 100, 16, 32, 9, 0, 70, 90, 127, 110, 35, 35, false },
       { QString("Bass Drum 1"),        100, 16, 32, 9, 0, 70, 90, 127, 110, 36, 36, false },

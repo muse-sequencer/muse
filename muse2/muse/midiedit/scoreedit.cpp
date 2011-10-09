@@ -4608,7 +4608,7 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *        o clearly state in the changelog: when having multiple drumeditors open,
  *          the mute-column may not work, because another editor is overriding this.
  *        o respect "_drummap_tied_to_patch": IMPLEMENT
- *        o save hide, ordering, track's drumlists
+ *        o allow loading and saving track-drumlists to external files
  * 				o "copy drumlist" from one track to another
  *        o whenever changing the patch and maintained_automatically==true,
  *          the drumlist is replaced by the according one (for example, "jazz" drum kit's list)
@@ -4616,11 +4616,13 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *          ask the user if he wants to proceed, and then set maintained_automatically to false
  *        o offer some way to set maintained_automatically to true again
  *        o move generation and deletion of ourDrumMap from DCanvas to DrumEditor and remove ugly wrapper functions
+ *        x save hide, ordering, track's drumlists
  *
  *   x when playing back a flo-drum-track: treat as a MIDI track,
  *     EXCEPT that the drum list's mute entries are respected!
  *   o when recording or echoing a flo-drum-track: watch out for In-Notes!
- *   o update [midi]track::read/write, readproperties, writeprop... (drumlist etc), operator=
+ *   * update [midi]track::read/write, readproperties, writeprop... (drumlist etc), operator=
+ *     _should_ be okay, but i'm not sure
  *
  * IMPORTANT TODO
  *   o all places where i added doubleclick-edits: only react on left-click double clicks!

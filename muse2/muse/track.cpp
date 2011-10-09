@@ -405,19 +405,7 @@ MidiTrack::MidiTrack()
       _drummap=new DrumMap[128];
       _drummap_hidden=new bool[128];
       
-      for (int i=0;i<128;i++)
-      {
-        int idx=idrumMap[i].anote;
-        if (idx < 0 || idx >= 128)
-          printf ("ERROR: THIS SHOULD NEVER HAPPEN: idrumMap[%i].anote is not within 0..127!\n", idx);
-        else
-          _drummap[idx]=idrumMap[i];
-        
-        MusEGlobal::global_drum_ordering.push_back(std::pair<MidiTrack*,int>(this,idx));
-      }
-      for (int i=0;i<128;i++)
-        _drummap_hidden[i]=false;
-
+      init_drummap(true /* write drummap ordering information as well */);
       }
 
 //MidiTrack::MidiTrack(const MidiTrack& mt)
@@ -460,15 +448,17 @@ MidiTrack::~MidiTrack()
       delete [] _drummap;
       delete [] _drummap_hidden;
       
-      // remove ourselves from the global_drum_ordering list
-      // this is not really necessary, but cleaner
-      for (MusEGlobal::global_drum_ordering_t::iterator it=MusEGlobal::global_drum_ordering.begin(); it!=MusEGlobal::global_drum_ordering.end();)
-        if (it->first == this)
-          it=MusEGlobal::global_drum_ordering.erase(it);
-        else
-          it++;
-
+      remove_ourselves_from_drum_ordering();
       }
+
+void MidiTrack::remove_ourselves_from_drum_ordering()
+{
+  for (MusEGlobal::global_drum_ordering_t::iterator it=MusEGlobal::global_drum_ordering.begin(); it!=MusEGlobal::global_drum_ordering.end();)
+    if (it->first == this)
+      it=MusEGlobal::global_drum_ordering.erase(it);
+    else
+      it++;
+}
 
 //---------------------------------------------------------
 //   init
@@ -490,6 +480,26 @@ void MidiTrack::init()
       compression    = 100;          // percent
       _recEcho       = true;
       }
+
+void MidiTrack::init_drummap(bool write_ordering)
+{
+  for (int i=0;i<128;i++)
+  {
+    int idx=idrumMap[i].anote;
+    if (idx < 0 || idx >= 128)
+      printf ("ERROR: THIS SHOULD NEVER HAPPEN: idrumMap[%i].anote is not within 0..127!\n", idx);
+    else
+      _drummap[idx]=idrumMap[i];
+    
+    if (write_ordering)
+      MusEGlobal::global_drum_ordering.push_back(std::pair<MidiTrack*,int>(this,idx));
+  }
+  
+  for (int i=0;i<128;i++)
+    _drummap_hidden[i]=false;
+}
+
+
 
 //---------------------------------------------------------
 //   height
@@ -793,8 +803,76 @@ void MidiTrack::write(int level, Xml& xml) const
       const PartList* pl = cparts();
       for (ciPart p = pl->begin(); p != pl->end(); ++p)
             p->second->write(level, xml);
+      
+      writeOurDrumSettings(level, xml);
+      
       xml.etag(level, tag);
       }
+
+void MidiTrack::writeOurDrumSettings(int level, Xml& xml) const
+{
+  xml.tag(level++, "our_drum_settings");
+  
+  xml.intTag(level, "tied", _drummap_tied_to_patch);
+  
+  writeOurDrumMap(level, xml);
+  
+  xml.etag(level, "our_drum_settings");
+}
+
+void MidiTrack::writeOurDrumMap(int level, Xml& xml) const
+{
+  xml.tag(level++, "our_drummap");
+  
+  for (int i=0;i<128;i++)
+  {
+    int j;
+    for (j=0;j<128;j++)
+      if (idrumMap[j].anote == i) break;
+    
+    if (j==128)
+      printf("THIS SHOULD NEVER HAPPEN: couldn't find initial drum map entry in MidiTrack::writeOurDrumMap()\n");
+    else
+    {
+      DrumMap* dm = &_drummap[i];
+      const DrumMap* idm = &idrumMap[j];
+    
+      if ( (dm->name != idm->name) || (dm->vol != idm->vol) ||
+           (dm->quant != idm->quant) || (dm->len != idm->len) ||
+           (dm->lv1 != idm->lv1) || (dm->lv2 != idm->lv2) ||
+           (dm->lv3 != idm->lv3) || (dm->lv4 != idm->lv4) ||
+           (dm->enote != idm->enote) || (dm->mute != idm->mute) ||
+           _drummap_hidden[i] )
+      {
+        xml.tag(level++, "entry pitch=\"%d\"", i);
+        
+        // when any of these "if"s changes, also update the large "if"
+        // above (this scope's parent)
+        if (dm->name != idm->name)   xml.strTag(level, "name", dm->name);
+        if (dm->vol != idm->vol)     xml.intTag(level, "vol", dm->vol);
+        if (dm->quant != idm->quant) xml.intTag(level, "quant", dm->quant);
+        if (dm->len != idm->len)     xml.intTag(level, "len", dm->len);
+        if (dm->lv1 != idm->lv1)     xml.intTag(level, "lv1", dm->lv1);
+        if (dm->lv2 != idm->lv2)     xml.intTag(level, "lv2", dm->lv2);
+        if (dm->lv3 != idm->lv3)     xml.intTag(level, "lv3", dm->lv3);
+        if (dm->lv4 != idm->lv4)     xml.intTag(level, "lv4", dm->lv4);
+        if (dm->enote != idm->enote) xml.intTag(level, "enote", dm->enote);
+        if (dm->mute != idm->mute)   xml.intTag(level, "mute", dm->mute);
+        if (_drummap_hidden[i])      xml.intTag(level, "hide", _drummap_hidden[i]);
+        
+        // anote is ignored anyway, as dm->anote == i, and this is
+        // already stored in the begin tag (pitch=...)
+        
+        // channel and port are ignored as well, as they're not used
+        // in new-style-drum-mode
+        
+        xml.tag(level--, "/entry");
+      }
+    }
+  }
+  
+  xml.etag(level, "our_drummap");
+}
 
 //---------------------------------------------------------
 //   MidiTrack::read
@@ -852,6 +930,8 @@ void MidiTrack::read(Xml& xml)
                               setAutomationType(AutomationType(xml.parseInt()));
                         else if (tag == "clef")
                               clefType = (clefTypes)xml.parseInt();
+                        else if (tag == "our_drum_settings")
+                              readOurDrumSettings(xml);
                         else if (Track::readProperties(xml, tag)) {
                               // version 1.0 compatibility:
                               if (tag == "track" && xml.majorVersion() == 1 && xml.minorVersion() == 0)
@@ -872,6 +952,129 @@ void MidiTrack::read(Xml& xml)
                   }
             }
       }
+
+void MidiTrack::readOurDrumSettings(Xml& xml)
+{
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "tied") 
+					_drummap_tied_to_patch = xml.parseInt();
+				else if (tag == "our_drummap") 
+					readOurDrumMap(xml);
+				else
+					xml.unknown("MidiTrack::readOurDrumSettings");
+				break;
+
+			case Xml::TagEnd:
+				if (tag == "our_drum_settings")
+					return;
+
+			default:
+				break;
+		}
+	}
+}
+
+void MidiTrack::readOurDrumMap(Xml& xml)
+{
+  init_drummap(false);
+  
+	for (;;)
+	{
+		Xml::Token token = xml.parse();
+		if (token == Xml::Error || token == Xml::End)
+			break;
+		const QString& tag = xml.s1();
+		switch (token)
+		{
+			case Xml::TagStart:
+				if (tag == "entry")  // then read that entry with a nested loop
+        {
+					DrumMap* dm=NULL;
+          bool* hidden=NULL;
+          for (;;) // nested loop
+          {
+            Xml::Token token = xml.parse();
+            const QString& tag = xml.s1();
+            switch (token)
+            {
+              case Xml::Error:
+              case Xml::End:
+                goto end_of_nested_for;
+              
+              case Xml::Attribut:
+                if (tag == "pitch")
+                {
+                  int pitch = xml.s2().toInt() & 0x7f;
+                  if (pitch < 0 || pitch > 127)
+                    printf("ERROR: THIS SHOULD NEVER HAPPEN: invalid pitch in MidiTrack::readOurDrumMap()!\n");
+                  else
+                  {
+                    dm = &_drummap[pitch];
+                    hidden = &_drummap_hidden[pitch];
+                  }
+                }
+                break;
+              
+              case Xml::TagStart:
+                if (dm==NULL)
+                  printf("ERROR: THIS SHOULD NEVER HAPPEN: no valid 'pitch' attribute in <entry> tag, but sub-tags follow in MidiTrack::readOurDrumMap()!\n");
+                else if (tag == "name")
+                  dm->name = xml.parse(QString("name"));
+                else if (tag == "vol")
+                  dm->vol = (unsigned char)xml.parseInt();
+                else if (tag == "quant")
+                  dm->quant = xml.parseInt();
+                else if (tag == "len")
+                  dm->len = xml.parseInt();
+                else if (tag == "lv1")
+                  dm->lv1 = xml.parseInt();
+                else if (tag == "lv2")
+                  dm->lv2 = xml.parseInt();
+                else if (tag == "lv3")
+                  dm->lv3 = xml.parseInt();
+                else if (tag == "lv4")
+                  dm->lv4 = xml.parseInt();
+                else if (tag == "enote")
+                  dm->enote = xml.parseInt();
+                else if (tag == "mute")
+                  dm->mute = xml.parseInt();
+                else if (tag == "hide")
+                  *hidden = xml.parseInt();
+                else
+                  xml.unknown("MidiTrack::readOurDrumMap");
+                break;
+              
+              case Xml::TagEnd:
+                if (tag == "entry")
+                  goto end_of_nested_for;
+              
+              default:
+                break;
+            }
+          } // end of nested loop
+          end_of_nested_for: ;
+        } // end of 'if (tag == "entry")'
+				else
+					xml.unknown("MidiTrack::readOurDrumMap");
+				break;
+
+			case Xml::TagEnd:
+				if (tag == "our_drummap")
+					return;
+
+			default:
+				break;
+		}
+	}
+}
 
 
 //---------------------------------------------------------

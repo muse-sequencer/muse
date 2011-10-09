@@ -230,10 +230,17 @@ class MidiTrack : public Track {
       clefTypes clefType;
       
       DrumMap* _drummap; // _drummap[foo].anote is always equal to foo
+      bool* _drummap_hidden; // _drummap und _drummap_hidden will be an array[128]
       bool _drummap_tied_to_patch; //if true, changing patch also changes drummap
-      bool* _drummap_hidden;
 
       void init();
+      void init_drummap(bool write_ordering=false);
+      void remove_ourselves_from_drum_ordering();
+      
+      void writeOurDrumSettings(int level, Xml& xml) const;
+      void writeOurDrumMap(int level, Xml& xml) const;
+      void readOurDrumSettings(Xml& xml);
+      void readOurDrumMap(Xml& xml);
 
    public:
       MidiTrack();
