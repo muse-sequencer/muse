@@ -1306,13 +1306,17 @@ int DrumCanvas::pitch_and_track_to_instrument(int pitch, MusECore::Track* track)
   return -1;
 }
 
-void DrumCanvas::propagate_drummap_change(int instr)
+void DrumCanvas::propagate_drummap_change(int instr, bool update_druminmap)
 {
   const QSet<MusECore::Track*>& tracks=instrument_map[instr].tracks;
   int index=instrument_map[instr].pitch;
   
   for (QSet<MusECore::Track*>::const_iterator it = tracks.begin(); it != tracks.end(); it++)
+  {
     dynamic_cast<MusECore::MidiTrack*>(*it)->drummap()[index] = ourDrumMap[instr];
+    if (update_druminmap)
+      dynamic_cast<MusECore::MidiTrack*>(*it)->update_drum_in_map();
+  }
 }
 
 

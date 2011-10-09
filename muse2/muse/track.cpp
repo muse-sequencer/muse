@@ -431,6 +431,7 @@ MidiTrack::MidiTrack(const MidiTrack& mt, bool cloneParts)
       _drummap_hidden=new bool[128];
       memcpy(_drummap, mt._drummap, 128*sizeof(*_drummap));
       memcpy(_drummap_hidden, mt._drummap_hidden, 128*sizeof(*_drummap_hidden));
+      update_drum_in_map();
       
       for (MusEGlobal::global_drum_ordering_t::iterator it=MusEGlobal::global_drum_ordering.begin(); it!=MusEGlobal::global_drum_ordering.end(); it++)
         if (it->first == &mt)
@@ -495,11 +496,17 @@ void MidiTrack::init_drummap(bool write_ordering)
       MusEGlobal::global_drum_ordering.push_back(std::pair<MidiTrack*,int>(this,idx));
   }
   
+  update_drum_in_map();
+  
   for (int i=0;i<128;i++)
     _drummap_hidden[i]=false;
 }
 
-
+void MidiTrack::update_drum_in_map()
+{
+  for (int i=0;i<127;i++)
+    drum_in_map[_drummap[i].enote]=i;
+}
 
 //---------------------------------------------------------
 //   height
@@ -966,7 +973,7 @@ void MidiTrack::readOurDrumSettings(Xml& xml)
 			case Xml::TagStart:
 				if (tag == "tied") 
 					_drummap_tied_to_patch = xml.parseInt();
-				else if (tag == "our_drummap") 
+				else if (tag == "our_drummap")
 					readOurDrumMap(xml);
 				else
 					xml.unknown("MidiTrack::readOurDrumSettings");
@@ -1068,7 +1075,10 @@ void MidiTrack::readOurDrumMap(Xml& xml)
 
 			case Xml::TagEnd:
 				if (tag == "our_drummap")
+        {
+          update_drum_in_map();
 					return;
+        }
 
 			default:
 				break;

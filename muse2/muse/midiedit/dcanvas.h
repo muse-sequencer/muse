@@ -166,7 +166,7 @@ class DrumCanvas : public EventCanvas {
       MusECore::DrumMap* getOurDrumMap() { return ourDrumMap; } //FINDMICH UGLY
       int getOurDrumMapSize() { return instrument_map.size(); } //FINDMICH UGLY
       QVector<instrument_number_mapping_t>& get_instrument_map() { return instrument_map; } //FINDMICH UGLY
-      void propagate_drummap_change(int instrument); //FINDMICH move to drumedit
+      void propagate_drummap_change(int instrument, bool update_druminmap); //FINDMICH move to drumedit
       void rebuildOurDrumMap();
       };
 

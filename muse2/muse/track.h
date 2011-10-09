@@ -232,7 +232,8 @@ class MidiTrack : public Track {
       DrumMap* _drummap; // _drummap[foo].anote is always equal to foo
       bool* _drummap_hidden; // _drummap und _drummap_hidden will be an array[128]
       bool _drummap_tied_to_patch; //if true, changing patch also changes drummap
-
+      int drum_in_map[128];
+      
       void init();
       void init_drummap(bool write_ordering=false);
       void remove_ourselves_from_drum_ordering();
@@ -311,6 +312,8 @@ class MidiTrack : public Track {
       
       DrumMap* drummap() { return _drummap; }
       bool* drummap_hidden() { return _drummap_hidden; }
+      int map_drum_in(int enote) { return drum_in_map[enote]; }
+      void update_drum_in_map();
       };
 
 } // namespace MusECore

@@ -262,9 +262,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                               e.setPitch(instr);
                               }
                         else
-                        {
                               e.setPitch(ev.dataA());
-                        }
                         
                         e.setVelo(ev.dataB());
                         e.setLenTick(0);
@@ -277,6 +275,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                               }
                         else
                               e.setPitch(ev.dataA());
+                        
                         e.setVelo(0);
                         e.setVeloOff(ev.dataB());
                         e.setLenTick(0);
@@ -751,19 +750,15 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
                               int pitch = ev.pitch();
                               int velo  = ev.velo();
                               if (track->type() == Track::DRUM)  {
-                                    //
                                     // Map drum-notes to the drum-map values
-                                    //
                                    int instr = ev.pitch();
                                    pitch     = MusEGlobal::drumMap[instr].anote;
                                    port      = MusEGlobal::drumMap[instr].port; //This changes to non-default port
                                    channel   = MusEGlobal::drumMap[instr].channel;
                                    velo      = int(double(velo) * (double(MusEGlobal::drumMap[instr].vol) / 100.0)) ;
                                    }
-                              else { //FINDMICHJETZT don't transpose for new style drum tracks
-                                    //
+                              else if (track->type() != Track::NEW_DRUM) {
                                     // transpose non drum notes
-                                    //
                                     pitch += (track->transposition + MusEGlobal::song->globalPitchShift());
                                     }
 
@@ -985,7 +980,7 @@ void Audio::processMidi()
                                       //
   
                                       //Apply drum inkey:
-                                      if (track->type() == Track::DRUM)  //FINDMICHJETZT schwierig...
+                                      if (track->type() == Track::DRUM)  //FINDMICHJETZT does this work?
                                       {
                                             int pitch = event.dataA();
                                             //Map note that is played according to MusEGlobal::drumInmap
@@ -996,7 +991,11 @@ void Audio::processMidi()
                                             event.setA(MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].anote);
                                             event.setChannel(channel);
                                       }
-                                      else 
+                                      else if (track->type() == Track::NEW_DRUM)
+                                      {
+                                        event.setA(track->map_drum_in(event.dataA()));
+                                      }
+                                      else
                                       { //Track transpose if non-drum
                                             prePitch = event.dataA();
                                             int pitch = prePitch + track->transposition;

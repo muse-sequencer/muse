@@ -517,7 +517,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
             }
       
       if (!old_style_drummap_mode && dm_old != *dm) //something changed and we're in new style mode?
-        dcanvas->propagate_drummap_change(dm-ourDrumMap);
+        dcanvas->propagate_drummap_change(dm-ourDrumMap, (dm_old.enote != dm->enote));
       
       MusEGlobal::song->update(SC_DRUMMAP);
       //redraw(); //this is done by the songChanged slot
@@ -787,7 +787,7 @@ void DList::returnPressed()
             }
       
       if (editEntryOld != *editEntry)
-        dcanvas->propagate_drummap_change(editEntry-ourDrumMap);
+        dcanvas->propagate_drummap_change(editEntry-ourDrumMap, false);
       
       selectedColumn = -1;
       editor->hide();
@@ -854,7 +854,7 @@ void DList::pitchEdited()
             }
       
       if (editEntryOld != *editEntry)
-        dcanvas->propagate_drummap_change(editEntry-ourDrumMap);
+        dcanvas->propagate_drummap_change(editEntry-ourDrumMap, (editEntryOld.enote!=editEntry->enote));
       
       selectedColumn = -1;
       pitch_editor->hide();
