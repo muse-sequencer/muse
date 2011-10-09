@@ -602,7 +602,7 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
                   else   
                     port = track->outPort();
                     
-                  QMenu* p = MusECore::midiPortsPopup(0, port);
+                  QMenu* p = MusECore::midiPortsPopup(this, port);     // 0, port);
                   QAction* act = p->exec(mapToGlobal(QPoint(x, y)), 0);
                   if (act) {
                         int n = act->data().toInt();
