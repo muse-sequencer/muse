@@ -29,6 +29,8 @@
 
 #include <stdio.h>
 
+#include "globals.h"
+#include "app.h"
 #include "audio.h"
 #include "pitchedit.h"
 #include "midiport.h"
@@ -180,37 +182,52 @@ void DList::draw(QPainter& p, const QRect& rect)
 
 void DList::devicesPopupMenu(MusECore::DrumMap* t, int x, int y, bool changeAll)
       {
-      QMenu* p = MusECore::midiPortsPopup();
+      QMenu* p = MusECore::midiPortsPopup(this, t->port);
       QAction* act = p->exec(mapToGlobal(QPoint(x, y)), 0);
       bool doemit = false;
-      if (act) {
-            int n = act->data().toInt();
-            if (!changeAll)
-            {
-                if(n != t->port)
-                {
-                  MusEGlobal::audio->msgIdle(true);
-                  MusEGlobal::song->remapPortDrumCtrlEvents(getSelectedInstrument(), -1, -1, n);
-                  MusEGlobal::audio->msgIdle(false);
-                  t->port = n;
-                  doemit = true;
-                }  
-            }      
-            else {
-                  MusEGlobal::audio->msgIdle(true);
-                  // Delete all port controller events.
-                  MusEGlobal::song->changeAllPortDrumCtrlEvents(false);
-                  
-                  for (int i = 0; i < DRUM_MAPSIZE; i++)
-                        MusEGlobal::drumMap[i].port = n;
-                  // Add all port controller events.
-                  MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
-                  
-                  MusEGlobal::audio->msgIdle(false);
-                  doemit = true;
-                  }
-            }
+      if(!act)
+      {
+        delete p;
+        return;
+      }  
+      
+      int n = act->data().toInt();
       delete p;
+
+      if(n < 0)              // Invalid item.
+        return;
+      
+      if(n >= MIDI_PORTS)    // Show port config dialog.
+      {
+        MusEGlobal::muse->configMidiPorts();
+        return;
+      }
+                  
+      if (!changeAll)
+      {
+          if(n != t->port)
+          {
+            MusEGlobal::audio->msgIdle(true);
+            MusEGlobal::song->remapPortDrumCtrlEvents(getSelectedInstrument(), -1, -1, n);
+            MusEGlobal::audio->msgIdle(false);
+            t->port = n;
+            doemit = true;
+          }  
+      }      
+      else {
+            MusEGlobal::audio->msgIdle(true);
+            // Delete all port controller events.
+            MusEGlobal::song->changeAllPortDrumCtrlEvents(false);
+            
+            for (int i = 0; i < DRUM_MAPSIZE; i++)
+                  MusEGlobal::drumMap[i].port = n;
+            // Add all port controller events.
+            MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
+            
+            MusEGlobal::audio->msgIdle(false);
+            doemit = true;
+            }
+
       if(doemit)
       {
         int instr = getSelectedInstrument();
