@@ -1318,7 +1318,7 @@ int DrumCanvas::pitch_and_track_to_instrument(int pitch, MusECore::Track* track)
     if (instrument_map[i].tracks.contains(track) && instrument_map[i].pitch==pitch)
       return i;
   
-  printf("ERROR: DrumCanvas::pitch_and_track_to_instrument() called with invalid arguments!\n");
+  if (heavyDebugMsg) printf("DrumCanvas::pitch_and_track_to_instrument() called with invalid arguments.\n");
   return -1;
 }
 

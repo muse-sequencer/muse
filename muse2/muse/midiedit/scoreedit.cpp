@@ -4596,6 +4596,7 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  * CURRENT TODO
  *   o don't record muted/hidden instr.s
  *   o offer menu entry for hiding all unused / empty drum instruments
+ *   o my record flag handling
  * 
  *   o in appearance.cpp: add the new stuff for drumTrackLabelBg and drumTrackBg 
  *   o find and fix FINDMICHJETZT
