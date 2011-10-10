@@ -1,5 +1,5 @@
 09.10.2011:
-        - Fixed track list midi port popup menu - too many ports listed. Seperated empty ports into submenu. (Tim)
+        - Fixed track list midi port popup menu - too many ports listed. Separated empty ports into submenu. (Tim)
 06.10.2011:
         - SigEdit, up/down arrow in denominator only moves between powers of two (decreased thick headedness), 
           numerator is no longer validated (rj)

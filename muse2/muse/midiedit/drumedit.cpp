@@ -118,7 +118,7 @@ void DrumEdit::setHeaderWhatsThis()
       header->setWhatsThis(COL_NOTELENGTH, tr("note length"));
       header->setWhatsThis(COL_NOTE, tr("this is the note which is played"));
       header->setWhatsThis(COL_OUTCHANNEL, tr("output channel (hold ctl to affect all rows)"));
-      header->setWhatsThis(COL_OUTPORT, tr("output port"));
+      header->setWhatsThis(COL_OUTPORT, tr("output port (hold ctl to affect all rows)"));
       header->setWhatsThis(COL_LEVEL1, tr("shift + control key: draw velocity level 1"));
       header->setWhatsThis(COL_LEVEL2, tr("control key: draw velocity level 2"));
       header->setWhatsThis(COL_LEVEL3, tr("shift key: draw velocity level 3"));
@@ -139,7 +139,7 @@ void DrumEdit::setHeaderToolTips()
       header->setToolTip(COL_NOTELENGTH, tr("note length"));
       header->setToolTip(COL_NOTE, tr("this is the note which is played"));
       header->setToolTip(COL_OUTCHANNEL, tr("output channel (ctl: affect all rows)"));
-      header->setToolTip(COL_OUTPORT, tr("output port"));
+      header->setToolTip(COL_OUTPORT, tr("output port (ctl: affect all rows)"));
       header->setToolTip(COL_LEVEL1, tr("shift + control key: draw velocity level 1"));
       header->setToolTip(COL_LEVEL2, tr("control key: draw velocity level 2"));
       header->setToolTip(COL_LEVEL3, tr("shift key: draw velocity level 3"));

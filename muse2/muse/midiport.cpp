@@ -38,6 +38,7 @@
 #include "app.h"
 #include "song.h"
 #include "menutitleitem.h"
+#include "icons.h"
 
 //#ifdef DSSI_SUPPORT
 //#include "dssihost.h"
@@ -320,10 +321,34 @@ int MidiPort::portno() const
 QMenu* midiPortsPopup(QWidget* parent, int checkPort)
       {
       QMenu* p = new QMenu(parent);
-      p->addAction(new MusEGui::MenuTitleItem("Port / Device", p));
       QMenu* subp = 0;
       QAction *act = 0;
       QString name;
+
+      // Warn if no devices available. Add an item to open midi config. 
+      int pi = 0;
+      for( ; pi < MIDI_PORTS; ++pi)
+      {
+        MusECore::MidiDevice* md = MusEGlobal::midiPorts[pi].device();
+        //if(md && !md->isSynti() && (md->rwFlags() & 1))
+        //if(md && (md->rwFlags() & 1))   
+        if(md && (md->rwFlags() & 1 || md->isSynti()) )  
+          break;
+      }
+      if(pi == MIDI_PORTS)
+      {
+        act = p->addAction(p->tr("Warning: No output devices!"));
+        act->setCheckable(false);
+        act->setData(-1);
+        p->addSeparator();
+      }
+      act = p->addAction(QIcon(*MusEGui::settings_midiport_softsynthsIcon), p->tr("Open midi config..."));
+      act->setCheckable(false);
+      act->setData(MIDI_PORTS);  
+      p->addSeparator();
+      
+      p->addAction(new MusEGui::MenuTitleItem("Output port/device", p));
+
       for (int i = 0; i < MIDI_PORTS; ++i) {
             MidiPort* port = &MusEGlobal::midiPorts[i];
             name.sprintf("%d:%s", port->portno()+1, port->portname().toLatin1().constData());
@@ -340,8 +365,8 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
               if(!subp)                  // No submenu yet? Create it now.
               {
                 subp = new QMenu(p);
-                subp->setTitle(subp->tr("Empty"));
-                subp->addAction(new MusEGui::MenuTitleItem("Empty Ports", subp));
+                subp->setTitle(subp->tr("Empty ports"));
+                //subp->addAction(new MusEGui::MenuTitleItem("Empty Ports", subp));
               }  
               //act = subp->addAction(name);               // No need for all those "<None>" names. 
               act = subp->addAction(QString().setNum(i+1));
