@@ -235,13 +235,13 @@ class MidiTrack : public Track {
       int drum_in_map[128];
       
       void init();
-      void init_drummap(bool write_ordering=false);
+      void init_drummap(bool write_ordering); // function without argument in public
       void remove_ourselves_from_drum_ordering();
       
       void writeOurDrumSettings(int level, Xml& xml) const;
-      void writeOurDrumMap(int level, Xml& xml) const;
       void readOurDrumSettings(Xml& xml);
-      void readOurDrumMap(Xml& xml);
+      //void writeOurDrumMap(int level, Xml& xml, bool full) const; //below in public:
+      //void readOurDrumMap(Xml& xml, bool dont_init=false); //below in public:
 
    public:
       MidiTrack();
@@ -314,6 +314,13 @@ class MidiTrack : public Track {
       bool* drummap_hidden() { return _drummap_hidden; }
       int map_drum_in(int enote) { return drum_in_map[enote]; }
       void update_drum_in_map();
+
+      void init_drummap() { init_drummap(false); } // function with argument in private
+
+      //void writeOurDrumSettings(int level, Xml& xml) const; // above in private:
+      //void readOurDrumSettings(Xml& xml); // above in private:
+      void writeOurDrumMap(int level, Xml& xml, bool full) const;
+      void readOurDrumMap(Xml& xml, bool dont_init=false);
       };
 
 } // namespace MusECore

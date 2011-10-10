@@ -820,14 +820,14 @@ void MidiTrack::writeOurDrumSettings(int level, Xml& xml) const
 {
   xml.tag(level++, "our_drum_settings");
   
-  xml.intTag(level, "tied", _drummap_tied_to_patch);
+  writeOurDrumMap(level, xml, false);
   
-  writeOurDrumMap(level, xml);
+  xml.intTag(level, "tied", _drummap_tied_to_patch);
   
   xml.etag(level, "our_drum_settings");
 }
 
-void MidiTrack::writeOurDrumMap(int level, Xml& xml) const
+void MidiTrack::writeOurDrumMap(int level, Xml& xml, bool full) const
 {
   xml.tag(level++, "our_drummap");
   
@@ -849,23 +849,23 @@ void MidiTrack::writeOurDrumMap(int level, Xml& xml) const
            (dm->lv1 != idm->lv1) || (dm->lv2 != idm->lv2) ||
            (dm->lv3 != idm->lv3) || (dm->lv4 != idm->lv4) ||
            (dm->enote != idm->enote) || (dm->mute != idm->mute) ||
-           _drummap_hidden[i] )
+           _drummap_hidden[i] || full)
       {
         xml.tag(level++, "entry pitch=\"%d\"", i);
         
         // when any of these "if"s changes, also update the large "if"
         // above (this scope's parent)
-        if (dm->name != idm->name)   xml.strTag(level, "name", dm->name);
-        if (dm->vol != idm->vol)     xml.intTag(level, "vol", dm->vol);
-        if (dm->quant != idm->quant) xml.intTag(level, "quant", dm->quant);
-        if (dm->len != idm->len)     xml.intTag(level, "len", dm->len);
-        if (dm->lv1 != idm->lv1)     xml.intTag(level, "lv1", dm->lv1);
-        if (dm->lv2 != idm->lv2)     xml.intTag(level, "lv2", dm->lv2);
-        if (dm->lv3 != idm->lv3)     xml.intTag(level, "lv3", dm->lv3);
-        if (dm->lv4 != idm->lv4)     xml.intTag(level, "lv4", dm->lv4);
-        if (dm->enote != idm->enote) xml.intTag(level, "enote", dm->enote);
-        if (dm->mute != idm->mute)   xml.intTag(level, "mute", dm->mute);
-        if (_drummap_hidden[i])      xml.intTag(level, "hide", _drummap_hidden[i]);
+        if (full || dm->name != idm->name)   xml.strTag(level, "name", dm->name);
+        if (full || dm->vol != idm->vol)     xml.intTag(level, "vol", dm->vol);
+        if (full || dm->quant != idm->quant) xml.intTag(level, "quant", dm->quant);
+        if (full || dm->len != idm->len)     xml.intTag(level, "len", dm->len);
+        if (full || dm->lv1 != idm->lv1)     xml.intTag(level, "lv1", dm->lv1);
+        if (full || dm->lv2 != idm->lv2)     xml.intTag(level, "lv2", dm->lv2);
+        if (full || dm->lv3 != idm->lv3)     xml.intTag(level, "lv3", dm->lv3);
+        if (full || dm->lv4 != idm->lv4)     xml.intTag(level, "lv4", dm->lv4);
+        if (full || dm->enote != idm->enote) xml.intTag(level, "enote", dm->enote);
+        if (full || dm->mute != idm->mute)   xml.intTag(level, "mute", dm->mute);
+        if (full || _drummap_hidden[i])      xml.intTag(level, "hide", _drummap_hidden[i]);
         
         // anote is ignored anyway, as dm->anote == i, and this is
         // already stored in the begin tag (pitch=...)
@@ -989,9 +989,10 @@ void MidiTrack::readOurDrumSettings(Xml& xml)
 	}
 }
 
-void MidiTrack::readOurDrumMap(Xml& xml)
+void MidiTrack::readOurDrumMap(Xml& xml, bool dont_init)
 {
-  init_drummap(false);
+  if (!dont_init) init_drummap(false);
+  _drummap_tied_to_patch=false;
   
 	for (;;)
 	{

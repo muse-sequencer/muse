@@ -118,6 +118,9 @@ class TList : public QWidget {
       void songChanged(int flags);
       void changeAutomation(QAction*);
       void changeAutomationColor(QAction*);
+      void loadTrackDrummap(MusECore::MidiTrack*, const char* filename=NULL);
+      void saveTrackDrummap(MusECore::MidiTrack*, bool full, const char* filename=NULL);
+      void copyTrackDrummap(MusECore::MidiTrack*, bool full);
 
    signals:
       ///void selectionChanged();

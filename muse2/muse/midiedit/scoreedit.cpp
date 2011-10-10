@@ -4610,8 +4610,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *        o clearly state in the changelog: when having multiple drumeditors open,
  *          the mute-column may not work, because another editor is overriding this.
  *        o respect "_drummap_tied_to_patch": IMPLEMENT
- *        o allow loading and saving track-drumlists to external files
- * 				o "copy drumlist" from one track to another
  *        o whenever changing the patch and maintained_automatically==true,
  *          the drumlist is replaced by the according one (for example, "jazz" drum kit's list)
  *        o whenever changing the drumlist and maintained_automatically==true,
