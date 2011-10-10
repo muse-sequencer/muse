@@ -372,8 +372,25 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                       //TODO: Set all the notes on the track with instrument=dm->enote to instrument=val
                       MusEGlobal::drumInmap[val] = instrument;
                   }
+                  else
+                  {
+                      //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
+                      //If so, switch the inmap between the instruments
+                      for (QSet<MusECore::Track*>::iterator it = dcanvas->get_instrument_map()[instrument].tracks.begin(); it!=dcanvas->get_instrument_map()[instrument].tracks.end(); it++)
+                      {
+                        MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(*it);
+                        mt->drummap()[mt->map_drum_in(val)].enote=dm->enote;
+                      }
+                      // propagating this is unneccessary as it's already done.
+                      // updating the drumInmap is unneccessary, as the propagate call below
+                      // does this for us.
+                      // updating ourDrumMap is unneccessary because the song->update(SC_DRUMMAP)
+                      // does this for us.
+                  }
+                  
                   dm->enote = val;
                   break;
+                  
             case COL_NOTELENGTH:
                   val = dm->len + incVal;
                   if (val < 0)
@@ -844,7 +861,22 @@ void DList::pitchEdited()
                         }
                   //TODO: Set all the notes on the track with instrument=dm->enote to instrument=val
                   MusEGlobal::drumInmap[val] = instrument;
-                }
+               }
+               else
+               {
+                      //Check if there is any other drumMap with the same inmap value (there should be one (and only one):-)
+                      //If so, switch the inmap between the instruments
+                      for (QSet<MusECore::Track*>::iterator it = dcanvas->get_instrument_map()[instrument].tracks.begin(); it!=dcanvas->get_instrument_map()[instrument].tracks.end(); it++)
+                      {
+                        MusECore::MidiTrack* mt = dynamic_cast<MusECore::MidiTrack*>(*it);
+                        mt->drummap()[mt->map_drum_in(val)].enote=editEntry->enote;
+                      }
+                      // propagating this is unneccessary as it's already done.
+                      // updating the drumInmap is unneccessary, as the propagate call below
+                      // does this for us.
+                      // updating ourDrumMap is unneccessary because the song->update(SC_DRUMMAP)
+                      // does this for us.
+               } 
                editEntry->enote = val;
                break;
 

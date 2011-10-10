@@ -158,7 +158,8 @@ DrumCanvas::~DrumCanvas()
   
   if (must_delete_our_drum_map && ourDrumMap!=NULL)
     delete [] ourDrumMap;
-    delete steprec;
+  
+  delete steprec;
 }
 
 //---------------------------------------------------------
@@ -808,19 +809,22 @@ void DrumCanvas::dragLeaveEvent(QDragLeaveEvent*)
 //   keyPressed - called from DList
 //---------------------------------------------------------
 
-void DrumCanvas::keyPressed(int index, int velocity) //FINDMICH later
+void DrumCanvas::keyPressed(int index, int velocity)
       {
+      using MusECore::MidiTrack;
+      
       // called from DList - play event
-      int port = ourDrumMap[index].port;
-      int channel = ourDrumMap[index].channel;
-      int pitch = ourDrumMap[index].anote;
+      int port = old_style_drummap_mode ? ourDrumMap[index].port : dynamic_cast<MidiTrack*>(*instrument_map[index].tracks.begin())->outPort();
+      int channel = old_style_drummap_mode ? ourDrumMap[index].channel : dynamic_cast<MidiTrack*>(*instrument_map[index].tracks.begin())->outChannel();
+      int pitch = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
 
       // play note:
       MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
       MusEGlobal::audio->msgPlayMidiEvent(&e);
 
-      if (_steprec && pos[0] >= start_tick /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */ && curPart)
-            steprec->record(curPart,index,ourDrumMap[index].len,editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier);
+      if (_steprec && pos[0] >= start_tick /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */ &&
+          curPart && instrument_map[index].tracks.contains(curPart->track()) )
+            steprec->record(curPart,instrument_map[index].pitch,ourDrumMap[index].len,editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier, -1 /* invalid pitch as "really played" -> the "insert rest" feature is never triggered */);
             
       }
 
@@ -828,12 +832,14 @@ void DrumCanvas::keyPressed(int index, int velocity) //FINDMICH later
 //   keyReleased
 //---------------------------------------------------------
 
-void DrumCanvas::keyReleased(int index, bool) //FINDMICH later
+void DrumCanvas::keyReleased(int index, bool)
       {
+      using MusECore::MidiTrack;
+      
       // called from DList - silence playing event
-      int port = ourDrumMap[index].port;
-      int channel = ourDrumMap[index].channel;
-      int pitch = ourDrumMap[index].anote;
+      int port = old_style_drummap_mode ? ourDrumMap[index].port : dynamic_cast<MidiTrack*>(*instrument_map[index].tracks.begin())->outPort();
+      int channel = old_style_drummap_mode ? ourDrumMap[index].channel : dynamic_cast<MidiTrack*>(*instrument_map[index].tracks.begin())->outChannel();
+      int pitch = old_style_drummap_mode ? ourDrumMap[index].anote : instrument_map[index].pitch;
 
       // release note:
       MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, 0);
@@ -1283,7 +1289,7 @@ void DrumCanvas::moveAwayUnused()
 //---------------------------------------------------------
 //   midiNote
 //---------------------------------------------------------
-void DrumCanvas::midiNote(int pitch, int velo) //FINDMICH later.
+void DrumCanvas::midiNote(int pitch, int velo)
       {
       if (debugMsg) printf("DrumCanvas::midiNote: pitch=%i, velo=%i\n", pitch, velo);
 
@@ -1291,7 +1297,17 @@ void DrumCanvas::midiNote(int pitch, int velo) //FINDMICH later.
          && !MusEGlobal::audio->isPlaying() && velo && pos[0] >= start_tick
          /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record()] */
          && !(MusEGlobal::globalKeyState & Qt::AltModifier)) {
-            steprec->record(curPart,MusEGlobal::drumInmap[pitch],ourDrumMap[(int)MusEGlobal::drumInmap[pitch]].len,editor->raster(),velo,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier);
+            
+            int ourDrumMapSize=getOurDrumMapSize();
+            int i;
+            for (i=0;i<ourDrumMapSize;i++)
+            {
+              if ( instrument_map[i].tracks.contains(curPart->track()) && ourDrumMap[i].enote==pitch)
+                break;
+            }
+            
+            if (i!=ourDrumMapSize)
+              steprec->record(curPart,instrument_map[i].pitch,ourDrumMap[i].len,editor->raster(),velo,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier, pitch);
          }
       }
 

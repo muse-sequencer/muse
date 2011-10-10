@@ -4592,8 +4592,11 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *   o arranger state and mixer state aren't stored (says tim)
  *   ? pasting in editors sometimes fails oO? ( ERROR: reading eventlist
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
- * 
+ *
  * CURRENT TODO
+ *   o don't record muted/hidden instr.s
+ *   o offer menu entry for hiding all unused / empty drum instruments
+ * 
  *   o in appearance.cpp: add the new stuff for drumTrackLabelBg and drumTrackBg 
  *   o find and fix FINDMICHJETZT
  *   o fix all segfaults and non-working stuff!
@@ -4603,9 +4606,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *        - recording/echoing/steprec them
  *        - load, save them
  *   o fix valgrind problems
- *   x midi-import settings
- *   o support or handle duplicate enotes somehow!
- *   o steprec, test midi thru
  * 
  * > o drum editor: channel-stuff
  *        o clearly state in the changelog: when having multiple drumeditors open,
@@ -4623,11 +4623,12 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *
  *   x when playing back a flo-drum-track: treat as a MIDI track,
  *     EXCEPT that the drum list's mute entries are respected!
- *   o when recording or echoing a flo-drum-track: watch out for In-Notes!
+ *   x when recording or echoing a flo-drum-track: watch out for In-Notes!
  *   * update [midi]track::read/write, readproperties, writeprop... (drumlist etc), operator=
  *     _should_ be okay, but i'm not sure
  *
  * IMPORTANT TODO
+ *   o allow steprec-insert-rest-note to be set to "off" / "unused"
  *   o all places where i added doubleclick-edits: only react on left-click double clicks!
  *   o support "new style" reordering with old style drum tracks as well
  *     (not swapping but inserting!)
