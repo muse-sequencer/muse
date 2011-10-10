@@ -190,7 +190,8 @@ MusEGui::GlobalConfigValues config = {
       64,                           // minControlProcessPeriod
       false,                        // popupsDefaultStayOpen
       false,                        // leftMouseButtonCanDecrease
-      false                         // rangeMarkerWithoutMMB
+      false,                        // rangeMarkerWithoutMMB
+      MusECore::DONT_REC_MUTED_OR_HIDDEN
     };
 
 } // namespace MusEGlobal

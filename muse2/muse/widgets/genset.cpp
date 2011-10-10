@@ -61,6 +61,13 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
       startSongGroup->addButton(startLastButton, 0);
       startSongGroup->addButton(startEmptyButton, 1);
       startSongGroup->addButton(startSongButton, 2);
+      
+      recDrumGroup = new QButtonGroup(this);
+      recDrumGroup->addButton(recordAllButton, MusECore::REC_ALL);
+      recDrumGroup->addButton(dontRecHiddenButton, MusECore::DONT_REC_HIDDEN);
+      recDrumGroup->addButton(dontRecMutedButton, MusECore::DONT_REC_MUTED);
+      recDrumGroup->addButton(dontRecBothButton, MusECore::DONT_REC_MUTED_OR_HIDDEN);
+      
       for (unsigned i = 0; i < sizeof(rtcResolutions)/sizeof(*rtcResolutions); ++i) {
             if (rtcResolutions[i] == MusEGlobal::config.rtcTicks) {
                   rtcResolutionSelect->setCurrentIndex(i);
@@ -122,6 +129,8 @@ Shorter periods are desirable.</string>
       
       startSongEntry->setText(MusEGlobal::config.startSong);
       startSongGroup->button(MusEGlobal::config.startMode)->setChecked(true);
+
+      recDrumGroup->button(MusEGlobal::config.newDrumRecordCondition)->setChecked(true);
 
       showTransport->setChecked(MusEGlobal::config.transportVisible);
       showBigtime->setChecked(MusEGlobal::config.bigTimeVisible);
@@ -261,6 +270,8 @@ void GlobalSettingsConfig::updateSettings()
       startSongEntry->setText(MusEGlobal::config.startSong);
       startSongGroup->button(MusEGlobal::config.startMode)->setChecked(true);
 
+      recDrumGroup->button(MusEGlobal::config.newDrumRecordCondition)->setChecked(true);
+
       showTransport->setChecked(MusEGlobal::config.transportVisible);
       showBigtime->setChecked(MusEGlobal::config.bigTimeVisible);
       //showMixer->setChecked(MusEGlobal::config.mixerVisible);
@@ -353,6 +364,8 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.userInstrumentsDir = userInstrumentsPath->text();
       MusEGlobal::config.startSong   = startSongEntry->text();
       MusEGlobal::config.startMode   = startSongGroup->checkedId();
+      MusEGlobal::config.newDrumRecordCondition = MusECore::newDrumRecordCondition_t(recDrumGroup->checkedId());
+
       int das = dummyAudioSize->currentIndex();
       MusEGlobal::config.dummyAudioBufSize = dummyAudioBufSizes[das];
       MusEGlobal::config.dummyAudioSampleRate = dummyAudioRate->value();

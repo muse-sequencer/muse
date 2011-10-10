@@ -257,7 +257,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                   case ME_NOTEON:
                         e.setType(Note);
 
-                        if (track->type() == Track::DRUM) { //FINDMICHJETZT
+                        if (track->type() == Track::DRUM) {
                               int instr = MusEGlobal::drumInmap[ev.dataA()];
                               e.setPitch(instr);
                               }
@@ -269,7 +269,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                         break;
                   case ME_NOTEOFF:
                         e.setType(Note);
-                        if (track->type() == Track::DRUM) { //FINDMICHJETZT
+                        if (track->type() == Track::DRUM) {
                               int instr = MusEGlobal::drumInmap[ev.dataA()];
                               e.setPitch(instr);
                               }
@@ -980,7 +980,7 @@ void Audio::processMidi()
                                       //
   
                                       //Apply drum inkey:
-                                      if (track->type() == Track::DRUM)  //FINDMICHJETZT does this work?
+                                      if (track->type() == Track::DRUM)
                                       {
                                             int pitch = event.dataA();
                                             //Map note that is played according to MusEGlobal::drumInmap
@@ -991,9 +991,17 @@ void Audio::processMidi()
                                             event.setA(MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].anote);
                                             event.setChannel(channel);
                                       }
-                                      else if (track->type() == Track::NEW_DRUM)
+                                      else if (track->type() == Track::NEW_DRUM) //FINDMICH DOES THAT WORK?
                                       {
                                         event.setA(track->map_drum_in(event.dataA()));
+
+                                        if (MusEGlobal::config.newDrumRecordCondition & MusECore::DONT_REC_HIDDEN &&
+                                            track->drummap_hidden()[event.dataA()] )
+                                          continue; // skip that event, proceed with the next
+
+                                        if (MusEGlobal::config.newDrumRecordCondition & MusECore::DONT_REC_MUTED &&
+                                            track->drummap()[event.dataA()].mute )
+                                          continue; // skip that event, proceed with the next
                                       }
                                       else
                                       { //Track transpose if non-drum

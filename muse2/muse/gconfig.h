@@ -34,6 +34,15 @@
 
 namespace MusECore {
 class Xml;
+
+enum newDrumRecordCondition_t
+{
+  REC_ALL = 0,
+  DONT_REC_HIDDEN = 1,
+  DONT_REC_MUTED = 2,
+  DONT_REC_MUTED_OR_HIDDEN = 3
+};
+
 }
 
 namespace MusEGui {
@@ -168,6 +177,7 @@ struct GlobalConfigValues {
       bool popupsDefaultStayOpen;
       bool leftMouseButtonCanDecrease;
       bool rangeMarkerWithoutMMB;
+      MusECore::newDrumRecordCondition_t newDrumRecordCondition;
       };
 
 } // namespace MusEGui

@@ -942,6 +942,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               MusEGlobal::config.startMode = xml.parseInt();
                         else if (tag == "startSong")
                               MusEGlobal::config.startSong = xml.parse1();
+                        else if (tag == "newDrumRecordCondition")
+                              MusEGlobal::config.newDrumRecordCondition = MusECore::newDrumRecordCondition_t(xml.parseInt());
                         else if (tag == "projectBaseFolder")
                               MusEGlobal::config.projectBaseFolder = xml.parse1();
                         else if (tag == "projectStoreInFolder")
@@ -1268,6 +1270,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "importMidiSplitParts", MusEGlobal::config.importMidiSplitParts);
       xml.intTag(level, "startMode", MusEGlobal::config.startMode);
       xml.strTag(level, "startSong", MusEGlobal::config.startSong);
+      xml.intTag(level, "newDrumRecordCondition", MusEGlobal::config.newDrumRecordCondition);
       xml.strTag(level, "projectBaseFolder", MusEGlobal::config.projectBaseFolder);
       xml.intTag(level, "projectStoreInFolder", MusEGlobal::config.projectStoreInFolder);
       xml.intTag(level, "useProjectSaveDialog", MusEGlobal::config.useProjectSaveDialog);

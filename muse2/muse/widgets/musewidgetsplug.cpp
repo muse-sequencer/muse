@@ -217,7 +217,8 @@ GlobalConfigValues config = {
       64,                           // minControlProcessPeriod
       false,                        // popupsDefaultStayOpen
       false,                        // leftMouseButtonCanDecrease
-      false                         // rangeMarkerWithoutMMBCheckBox
+      false,                        // rangeMarkerWithoutMMBCheckBox
+      MusECore::DONT_REC_MUTED_OR_HIDDEN
       };
 
 //---------------------------------------------------------

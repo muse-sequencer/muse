@@ -4594,9 +4594,9 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  *
  * CURRENT TODO
- *   o don't record muted/hidden instr.s
- *   o offer menu entry for hiding all unused / empty drum instruments
+ *   x offer menu entry for hiding all unused / empty drum instruments
  *   o my record flag handling
+ *   x don't record muted/hidden instr.s
  * 
  *   o in appearance.cpp: add the new stuff for drumTrackLabelBg and drumTrackBg 
  *   o find and fix FINDMICHJETZT
