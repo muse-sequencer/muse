@@ -293,7 +293,9 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
         QAction* ignoreHideAction = menuShowHide->addAction(tr("Also show hidden instruments"));
         menuShowHide->addSeparator();
         QAction* showAllAction = menuShowHide->addAction(tr("Show all instruments"));
+        QAction* hideAllAction = menuShowHide->addAction(tr("Hide all instruments"));
         QAction* hideUnusedAction = menuShowHide->addAction(tr("Only show used instruments"));
+        QAction* hideEmptyAction = menuShowHide->addAction(tr("Only show instruments with non-empty name or used instruments"));
         settingsMenu->addSeparator();
         
         groupNoneAction->setCheckable(true);
@@ -307,7 +309,9 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
         connect(groupMaxAction,  SIGNAL(triggered()), signalMapper, SLOT(map()));
         connect(ignoreHideAction,  SIGNAL(toggled(bool)), SLOT(set_ignore_hide(bool)));
         connect(showAllAction,  SIGNAL(triggered()), this, SLOT(showAllInstruments()));
+        connect(hideAllAction,  SIGNAL(triggered()), this, SLOT(hideAllInstruments()));
         connect(hideUnusedAction,  SIGNAL(triggered()), this, SLOT(hideUnusedInstruments()));
+        connect(hideEmptyAction,  SIGNAL(triggered()), this, SLOT(hideEmptyInstruments()));
 
         signalMapper->setMapping(groupNoneAction, DrumCanvas::CMD_GROUP_NONE);
         signalMapper->setMapping(groupChanAction, DrumCanvas::CMD_GROUP_CHAN);
@@ -1452,6 +1456,25 @@ void DrumEdit::showAllInstruments()
   ((DrumCanvas*)(canvas))->rebuildOurDrumMap();
 }
 
+void DrumEdit::hideAllInstruments()
+{
+  using MusECore::MidiTrack;
+  
+  QSet<MidiTrack*> tracks;
+  for (MusECore::ciPart p = parts()->begin(); p != parts()->end(); ++p)
+    tracks.insert((MidiTrack*)p->second->track());
+    
+  for (QSet<MidiTrack*>::iterator it=tracks.begin(); it!=tracks.end(); it++)
+  {
+    MidiTrack* track=*it;
+    
+    for (int i=0;i<128;i++)
+      track->drummap_hidden()[i]=true;
+  }
+  
+  ((DrumCanvas*)(canvas))->rebuildOurDrumMap();
+}
+
 void DrumEdit::hideUnusedInstruments()
 {
   using MusECore::MidiTrack;
@@ -1469,6 +1492,39 @@ void DrumEdit::hideUnusedInstruments()
     
     bool hide[128];
     for (int i=0;i<128;i++) hide[i]=true;
+    
+    for (MusECore::ciPart p = parts()->begin(); p != parts()->end(); ++p)
+      if (p->second->track() == track)
+      {
+        const EventList* el = p->second->cevents();
+        for (ciEvent ev=el->begin(); ev!=el->end(); ev++)
+          hide[ev->second.pitch()]=false;
+      }
+    
+    for (int i=0;i<128;i++)
+      track->drummap_hidden()[i]=hide[i];
+  }
+  
+  ((DrumCanvas*)(canvas))->rebuildOurDrumMap();
+}
+
+void DrumEdit::hideEmptyInstruments()
+{
+  using MusECore::MidiTrack;
+  using MusECore::ciEvent;
+  using MusECore::EventList;
+  using MusECore::ciPart;
+  
+  QSet<MidiTrack*> tracks;
+  for (MusECore::ciPart p = parts()->begin(); p != parts()->end(); ++p)
+    tracks.insert((MidiTrack*)p->second->track());
+    
+  for (QSet<MidiTrack*>::iterator it=tracks.begin(); it!=tracks.end(); it++)
+  {
+    MidiTrack* track=*it;
+    
+    bool hide[128];
+    for (int i=0;i<128;i++) hide[i]=track->drummap()[i].name.isEmpty();
     
     for (MusECore::ciPart p = parts()->begin(); p != parts()->end(); ++p)
       if (p->second->track() == track)

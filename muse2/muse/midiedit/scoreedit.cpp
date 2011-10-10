@@ -4594,9 +4594,7 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  *
  * CURRENT TODO
- *   x offer menu entry for hiding all unused / empty drum instruments
  *   o my record flag handling
- *   x don't record muted/hidden instr.s
  * 
  *   o in appearance.cpp: add the new stuff for drumTrackLabelBg and drumTrackBg 
  *   o find and fix FINDMICHJETZT
@@ -4620,13 +4618,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *          ask the user if he wants to proceed, and then set maintained_automatically to false
  *        o offer some way to set maintained_automatically to true again
  *        o move generation and deletion of ourDrumMap from DCanvas to DrumEditor and remove ugly wrapper functions
- *        x save hide, ordering, track's drumlists
- *
- *   x when playing back a flo-drum-track: treat as a MIDI track,
- *     EXCEPT that the drum list's mute entries are respected!
- *   x when recording or echoing a flo-drum-track: watch out for In-Notes!
- *   * update [midi]track::read/write, readproperties, writeprop... (drumlist etc), operator=
- *     _should_ be okay, but i'm not sure
  *
  * IMPORTANT TODO
  *   o allow steprec-insert-rest-note to be set to "off" / "unused"

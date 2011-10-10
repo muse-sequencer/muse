@@ -155,7 +155,9 @@ class DrumEdit : public MidiEditor {
       void updateGroupingActions();
       void set_ignore_hide(bool);
       void showAllInstruments();
+      void hideAllInstruments();
       void hideUnusedInstruments();
+      void hideEmptyInstruments();
 
    public slots:
       void setSelection(int, MusECore::Event&, MusECore::Part*);
