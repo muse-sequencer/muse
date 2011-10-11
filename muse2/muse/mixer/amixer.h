@@ -46,6 +46,10 @@ class Meter;
 class Track;
 }
 
+namespace MusEGlobal {
+  struct MixerConfig;
+}
+
 namespace MusEGui {
 class ComboBox;
 class DoubleLabel;
@@ -53,7 +57,6 @@ class Knob;
 class RouteDialog;
 class Slider;
 class Strip;
-struct MixerConfig;
 typedef std::list<Strip*> StripList;
 
 //---------------------------------------------------------
@@ -82,7 +85,7 @@ class AudioMixerApp : public QMainWindow {
       Q_OBJECT
     
       //QString name;
-      MixerConfig* cfg;
+      MusEGlobal::MixerConfig* cfg;
       StripList stripList;
       QScrollArea* view;
       QWidget* central;
@@ -143,7 +146,7 @@ class AudioMixerApp : public QMainWindow {
    
    public:
       //AudioMixerApp(QWidget* parent);
-      AudioMixerApp(QWidget* parent, MixerConfig* c);
+      AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c);
       //void write(Xml&, const char* name);
       //void write(int level, Xml& xml, const char* name);
       void write(int level, MusECore::Xml& xml);

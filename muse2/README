@@ -67,7 +67,16 @@ details.
       - To compile MusE, run the following commands from the 
          top level directory where the source code was unpacked
          (the directory where THIS README FILE is): 
-        
+       
+	******************************************************
+        *                      Notice:                       *
+        * a quicker way is to run the ./compile_muse.sh      *
+        * script in the same dir, it should perform the same *
+        * steps for a basic setup without asking any         *
+        * questions. If it fails you may be better of using  *
+        * the instructions below.                            *
+        ******************************************************
+ 
           # Create build directory. Choose any name like 'build'.
               mkdir build                                      
           # Enter build directory.

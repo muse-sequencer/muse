@@ -592,7 +592,7 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
             case MusECore::Track::DRUM:
             case MusECore::Track::NEW_DRUM:
             case MusECore::Track::AUDIO_SOFTSYNTH: 
-                  {
+            {
                   MusECore::MidiTrack* track = (MusECore::MidiTrack*)t;
                   
                   //QPopupMenu* p = MusECore::midiPortsPopup(0);
@@ -608,72 +608,86 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
                   else   
                     port = track->outPort();
                     
-                  QMenu* p = MusECore::midiPortsPopup(0, port);
+                  QMenu* p = MusECore::midiPortsPopup(this, port);     // 0, port);
                   QAction* act = p->exec(mapToGlobal(QPoint(x, y)), 0);
-                  if (act) {
-                        int n = act->data().toInt();
-                        // Changed by T356.
-                        //track->setOutPort(n);
-                        //MusEGlobal::audio->msgSetTrackOutPort(track, n);
+                  if(!act) 
+                  {
+                    delete p;
+                    break;
+                  }  
+                    
+                  int n = act->data().toInt();
+                  delete p;
                         
-                        //MusEGlobal::song->update();
-                        if (t->type() == MusECore::Track::DRUM) {
-                              bool change = QMessageBox::question(this, tr("Update drummap?"),
-                                             tr("Do you want to use same port for all instruments in the drummap?"),
-                                             tr("&Yes"), tr("&No"), QString::null, 0, 1);
-                              MusEGlobal::audio->msgIdle(true);
-                              if (!change) 
-                              {
-                                    // Delete all port controller events.
-                                    //MusEGlobal::audio->msgChangeAllPortDrumCtrlEvents(false);
-                                    MusEGlobal::song->changeAllPortDrumCtrlEvents(false);
-                                    track->setOutPort(n);
-                        
-                                    for (int i=0; i<DRUM_MAPSIZE; i++) //Remap all drum instruments to this port
-                                          MusEGlobal::drumMap[i].port = track->outPort();
-                                    // Add all port controller events.
-                                    //MusEGlobal::audio->msgChangeAllPortDrumCtrlEvents(true);
-                                    MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
-                              }
-                              else
-                              {
-                                //MusEGlobal::audio->msgSetTrackOutPort(track, n);
-                                track->setOutPortAndUpdate(n);
-                              }
-                              MusEGlobal::audio->msgIdle(false);
-                              MusEGlobal::audio->msgUpdateSoloStates();                   // (p4.0.14)  p4.0.17
-                              MusEGlobal::song->update();
-                        }
-                        else
-                        if (t->type() == MusECore::Track::AUDIO_SOFTSYNTH) 
+                  if(n < 0)              // Invalid item.
+                    break;
+                  
+                  if(n >= MIDI_PORTS)    // Show port config dialog.
+                  {
+                    MusEGlobal::muse->configMidiPorts();
+                    break;
+                  }
+
+                  // Changed by T356.
+                  //track->setOutPort(n);
+                  //MusEGlobal::audio->msgSetTrackOutPort(track, n);
+                  
+                  //MusEGlobal::song->update();
+                  if (t->type() == MusECore::Track::DRUM) {
+                        bool change = QMessageBox::question(this, tr("Update drummap?"),
+                                      tr("Do you want to use same port for all instruments in the drummap?"),
+                                      tr("&Yes"), tr("&No"), QString::null, 0, 1);
+                        MusEGlobal::audio->msgIdle(true);
+                        if (!change) 
                         {
-                          if(md != 0)
-                          {
-                            // Idling is already handled in msgSetMidiDevice.
-                            //MusEGlobal::audio->msgIdle(true);
-                            
-                            // Compiler complains if simple cast from Track to MusECore::SynthI...
-                            MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[n], (MusEGlobal::midiPorts[n].device() == md) ? 0 : md);
-                            MusEGlobal::muse->changeConfig(true);     // save configuration file
-                          
-                            //MusEGlobal::audio->msgIdle(false);
-                            MusEGlobal::song->update();
-                          }
+                              // Delete all port controller events.
+                              //MusEGlobal::audio->msgChangeAllPortDrumCtrlEvents(false);
+                              MusEGlobal::song->changeAllPortDrumCtrlEvents(false);
+                              track->setOutPort(n);
+                  
+                              for (int i=0; i<DRUM_MAPSIZE; i++) //Remap all drum instruments to this port
+                                    MusEGlobal::drumMap[i].port = track->outPort();
+                              // Add all port controller events.
+                              //MusEGlobal::audio->msgChangeAllPortDrumCtrlEvents(true);
+                              MusEGlobal::song->changeAllPortDrumCtrlEvents(true);
                         }
                         else
                         {
-                          MusEGlobal::audio->msgIdle(true);
                           //MusEGlobal::audio->msgSetTrackOutPort(track, n);
                           track->setOutPortAndUpdate(n);
-                          MusEGlobal::audio->msgIdle(false);
-                          //MusEGlobal::song->update();
-                          MusEGlobal::audio->msgUpdateSoloStates();                   // (p4.0.14) p4.0.17
-                          MusEGlobal::song->update(SC_MIDI_TRACK_PROP);               //
                         }
-                      }
-                  delete p;
+                        MusEGlobal::audio->msgIdle(false);
+                        MusEGlobal::audio->msgUpdateSoloStates();                   // (p4.0.14)  p4.0.17
+                        MusEGlobal::song->update();
                   }
-                  break;
+                  else
+                  if (t->type() == MusECore::Track::AUDIO_SOFTSYNTH) 
+                  {
+                    if(md != 0)
+                    {
+                      // Idling is already handled in msgSetMidiDevice.
+                      //MusEGlobal::audio->msgIdle(true);
+                      
+                      // Compiler complains if simple cast from Track to MusECore::SynthI...
+                      MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[n], (MusEGlobal::midiPorts[n].device() == md) ? 0 : md);
+                      MusEGlobal::muse->changeConfig(true);     // save configuration file
+                    
+                      //MusEGlobal::audio->msgIdle(false);
+                      MusEGlobal::song->update();
+                    }
+                  }
+                  else
+                  {
+                    MusEGlobal::audio->msgIdle(true);
+                    //MusEGlobal::audio->msgSetTrackOutPort(track, n);
+                    track->setOutPortAndUpdate(n);
+                    MusEGlobal::audio->msgIdle(false);
+                    //MusEGlobal::song->update();
+                    MusEGlobal::audio->msgUpdateSoloStates();                   // (p4.0.14) p4.0.17
+                    MusEGlobal::song->update(SC_MIDI_TRACK_PROP);               //
+                }
+            }
+            break;
                   
             case MusECore::Track::WAVE:
             case MusECore::Track::AUDIO_OUTPUT:

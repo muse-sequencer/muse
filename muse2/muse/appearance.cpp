@@ -123,7 +123,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       setupUi(this);
       arr    = a;
       color  = 0;
-      config = new GlobalConfigValues;
+      config = new MusEGlobal::GlobalConfigValues;
 
       lastSelectedColorItem = 0;
       lastSelectedBgItem = 0;

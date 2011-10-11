@@ -1649,6 +1649,10 @@ void MidiFileConfig::cancelClicked()
       close();
       }
 
+} // namespace MusEGui
+
+
+namespace MusEGlobal {
 
 //---------------------------------------------------------
 //   write
@@ -1737,5 +1741,5 @@ void MixerConfig::read(MusECore::Xml& xml)
       
       }
 
-} // namespace MusEGui
+} // namespace MusEGlobal
 

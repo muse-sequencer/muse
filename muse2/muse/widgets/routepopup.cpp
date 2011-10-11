@@ -1069,7 +1069,7 @@ void RoutePopupMenu::prepare()
       }
       if(pi == MIDI_PORTS)
       {
-        act = _pup->addAction(tr("Warning: No midi input devices!"));
+        act = _pup->addAction(tr("Warning: No input devices!"));
         act->setCheckable(false);
         act->setData(-1);
         _pup->addSeparator();
@@ -1080,7 +1080,7 @@ void RoutePopupMenu::prepare()
       _pup->addSeparator();
       ++gid;
       
-      _pup->addAction(new MenuTitleItem("Midi input ports", _pup)); 
+      _pup->addAction(new MenuTitleItem("Input port/device", _pup)); 
       
       for(int i = 0; i < MIDI_PORTS; ++i)
       {

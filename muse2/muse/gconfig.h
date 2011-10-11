@@ -45,7 +45,7 @@ enum newDrumRecordCondition_t
 
 }
 
-namespace MusEGui {
+namespace MusEGlobal {
 
 //---------------------------------------------------------
 //   MixerConfig
@@ -180,10 +180,10 @@ struct GlobalConfigValues {
       MusECore::newDrumRecordCondition_t newDrumRecordCondition;
       };
 
-} // namespace MusEGui
 
-namespace MusEGlobal {
-extern MusEGui::GlobalConfigValues config;
+
+
+extern GlobalConfigValues config;
 } // namespace MusEGlobal
 
 #endif
