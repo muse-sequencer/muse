@@ -750,11 +750,6 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
             switch (_tool) {
                   case PointerTool:
                         if (curItem) {
-                              if (curItem->part() != curPart) {
-                                    curPart = curItem->part();
-                                    curPartId = curPart->sn();
-                                    curPartChanged();
-                                    }
                               itemPressed(curItem);
                               // Changed by T356. Alt is default reserved for moving the whole window in KDE. Changed to Shift-Alt.
                               // Hmm, nope, shift-alt is also reserved sometimes. Must find a way to bypass, 
@@ -1226,6 +1221,12 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
             case DRAG_MOVE_START:
             case DRAG_COPY_START:
             case DRAG_CLONE_START:
+                  if (curItem->part() != curPart) {
+                        curPart = curItem->part();
+                        curPartId = curPart->sn();
+                        curPartChanged();
+                        }
+
                   if (!ctrl)
                         deselectAll();
                         

@@ -22,6 +22,7 @@
 
 #include <QPainter>
 #include <QApplication>
+#include <QMessageBox>
 #include <QClipboard>
 #include <QDrag>
 #include <QDragLeaveEvent>
@@ -114,6 +115,8 @@ DrumCanvas::DrumCanvas(MidiEditor* pr, QWidget* parent, int sx,
    : EventCanvas(pr, parent, sx, sy, name)
       {
       drumEditor=dynamic_cast<DrumEdit*>(pr);
+      
+      _setCurPartIfOnlyOneEventIsSelected=false;
       
       old_style_drummap_mode = drumEditor->old_style_drummap_mode();
 
@@ -257,7 +260,11 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, Dra
 			// Do not process if the event has already been processed (meaning it's an event in a clone part)...
 			if (idl == doneList.end())
 			{
-				operations.push_back(moveItem(ci, newpos, dtype));
+				if (moveItem(operations, ci, newpos, dtype) == false) //error?
+        {
+          QMessageBox::warning(this, tr("Moving items failed"), tr("The selection couldn't be moved, because at least one note would be moved into a track which is different from both the original track and the current part's track.\nChanging the current part with ALT+LEFT/RIGHT may help."));
+          return MusECore::Undo(); //return empty list
+        }
 				doneList.push_back(ci);
 			}
 			ci->move(newpos);
@@ -289,29 +296,38 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, Dra
 //   moveItem
 //---------------------------------------------------------
 
-MusECore::UndoOp DrumCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
+bool DrumCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint& pos, DragType dtype)
       {
       DEvent* nevent   = (DEvent*) item;
       
-      MusECore::MidiPart* part   = (MusECore::MidiPart*)nevent->part();   
+      MusECore::MidiPart* part   = (MusECore::MidiPart*)nevent->part();
+      MusECore::MidiPart* dest_part   = part;
       
+      int nheight       = y2pitch(pos.y());
+      
+      if (!instrument_map[nheight].tracks.contains(dest_part->track()))
+      {
+        if (debugMsg)
+          printf("trying to move an event into a different track. checking if curPart is set correctly...\n");
+        
+        if (!instrument_map[nheight].tracks.contains(curPart->track()))
+        {
+          printf ("ERROR: tried to move an event into a track which is different from both the initial part's and the curPart's track! ignoring this one...\n");
+          return false;
+        }
+        else
+          dest_part=(MusECore::MidiPart*)curPart;
+      }
+
       MusECore::Event event      = nevent->event();
       int x            = pos.x();
       if (x < 0)
             x = 0;
-      int ntick        = editor->rasterVal(x) - part->tick();
+      int ntick        = editor->rasterVal(x) - dest_part->tick();
       if (ntick < 0)
             ntick = 0;
-      int nheight       = y2pitch(pos.y());
       MusECore::Event newEvent   = event.clone();
-      
-      MusECore::Track* dest_track = part->track();
-      if (!instrument_map[nheight].tracks.contains(dest_track))
-      {
-        printf ("TODO FIXME: tried to move an event into a different track. this is not supported yet, but will be soon. ignoring this one...\n");
-        //FINDMICH
-        return MusECore::UndoOp();
-      }
+
       
       int ev_pitch = instrument_map[nheight].pitch;
       
@@ -324,10 +340,19 @@ MusECore::UndoOp DrumCanvas::moveItem(CItem* item, const QPoint& pos, DragType d
       //  printf("DrumCanvas::moveItem Error! New event end:%d exceeds length:%d of part:%s\n", newEvent.endTick(), part->lenTick(), part->name().toLatin1().constData());
       
       if (dtype == MOVE_COPY || dtype == MOVE_CLONE)
-            return MusECore::UndoOp(MusECore::UndoOp::AddEvent, newEvent, part, false, false);
+            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, newEvent, dest_part, false, false));
       else
-            return MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false);
+      {
+            if (dest_part == part)
+                operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
+            else
+            {
+                operations.push_back(MusECore::UndoOp(MusECore::UndoOp::DeleteEvent, event, part, false, false));
+                operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddEvent, newEvent, dest_part, false, false));
+            }
       }
+      return true;
+}
 
 //---------------------------------------------------------
 //   newItem

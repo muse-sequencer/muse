@@ -110,7 +110,7 @@ class DrumCanvas : public EventCanvas {
       void drawTopItem(QPainter& p, const QRect& rect);
       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
       virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType);
-      virtual MusECore::UndoOp moveItem(CItem*, const QPoint&, DragType);
+      virtual bool moveItem(MusECore::Undo&, CItem*, const QPoint&, DragType);
       virtual CItem* newItem(const QPoint&, int);
       virtual void resizeItem(CItem*, bool, bool);
       virtual void newItem(CItem*, bool);

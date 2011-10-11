@@ -56,6 +56,7 @@ EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
       _steprec    = false;
       _midiin     = false;
       _playEvents = false;
+      _setCurPartIfOnlyOneEventIsSelected = true;
       curVelo     = 70;
 
       setBg(Qt::white);
@@ -204,7 +205,7 @@ void EventCanvas::songChanged(int flags)
       start_tick = MusEGlobal::song->roundDownBar(start_tick);
       end_tick   = MusEGlobal::song->roundUpBar(end_tick);
 
-      if (n == 1) {
+      if (n == 1 && _setCurPartIfOnlyOneEventIsSelected) {
             x     = nevent->x();
             event = nevent->event();
             part  = (MusECore::MidiPart*)nevent->part();
@@ -214,6 +215,7 @@ void EventCanvas::songChanged(int flags)
                   curPartChanged();
                   }
             }
+      
       emit selectionChanged(x, event, part);
       if (curPart == 0)
             curPart = (MusECore::MidiPart*)(editor->parts()->begin()->second);
