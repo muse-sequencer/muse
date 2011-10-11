@@ -111,6 +111,42 @@ bool drummaps_almost_equal(DrumMap* one, DrumMap* two, int len)
 }
 
 
+QSet<Part*> parts_at_tick(unsigned tick)
+{
+  using MusEGlobal::song;
+  
+  QSet<Track*> tmp;
+  for (iTrack it=song->tracks()->begin(); it!=song->tracks()->end(); it++)
+    tmp.insert(*it);
+  
+  return parts_at_tick(tick, tmp);
+}
+
+QSet<Part*> parts_at_tick(unsigned tick, Track* track)
+{
+  QSet<Track*> tmp;
+  tmp.insert(track);
+  
+  return parts_at_tick(tick, tmp);
+}
+
+QSet<Part*> parts_at_tick(unsigned tick, const QSet<Track*>& tracks)
+{
+  QSet<Part*> result;
+  
+  for (QSet<Track*>::const_iterator it=tracks.begin(); it!=tracks.end(); it++)
+  {
+    Track* track=*it;
+    
+    for (iPart p_it=track->parts()->begin(); p_it!=track->parts()->end(); p_it++)
+      if (tick >= p_it->second->tick() && tick <= p_it->second->endTick())
+        result.insert(p_it->second);
+  }
+  
+  return result;
+}
+
+
 } // namespace MusECore
 
 namespace MusEGui {

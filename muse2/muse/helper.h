@@ -24,6 +24,7 @@
 #define __HELPER_H__
 
 #include <set>
+#include <QSet>
 
 #include "drummap.h"
 
@@ -35,11 +36,18 @@ class QWidget;
 
 namespace MusECore {
 class Part;
+class Track;
+
+
 QString pitch2string(int v);
 Part* partFromSerialNumber(int serial);
 bool any_event_selected(const std::set<Part*>&, bool in_range=false);
 
 bool drummaps_almost_equal(DrumMap* one, DrumMap* two, int drummap_size=128);
+
+QSet<Part*> parts_at_tick(unsigned tick);
+QSet<Part*> parts_at_tick(unsigned tick, const Track* track);
+QSet<Part*> parts_at_tick(unsigned tick, const QSet<Track*>& tracks);
 }
 
 namespace MusEGui {

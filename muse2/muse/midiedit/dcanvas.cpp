@@ -380,20 +380,31 @@ CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
 {
   if (!old_style_drummap_mode && !instrument_map[instrument].tracks.contains(curPart->track()))
   {
-    printf("FINDMICH: tried to create a new Item which cannot be inside the current track. returning NULL\n");
-    return NULL;
+    if (debugMsg)
+      printf("tried to create a new Item which cannot be inside the current track. looking for destination part...\n");
+    
+    QSet<MusECore::Part*> parts = parts_at_tick(tick, instrument_map[instrument].tracks);
+    
+    if (parts.count() != 1)
+    {
+      QMessageBox::warning(this, tr("Creating event failed"), tr("Couldn't create the event, because the currently selected part isn't the same track, and the selected instrument could be either on no or on multiple parts, which is ambiguous.\nSelect the destination part, then try again."));
+      return NULL;
+    }
+    else
+    {
+      setCurrentPart(*parts.begin());
+    }
   }
-  else
-  {
-    tick    -= curPart->tick();
-    MusECore::Event e(MusECore::Note);
-    e.setTick(tick);
-    e.setPitch(instrument_map[instrument].pitch);
-    e.setVelo(velocity);
-    e.setLenTick(ourDrumMap[instrument].len);
+  // else or if we found an alternative part (which has now been set as curPart)
 
-    return new DEvent(e, curPart, instrument);
-  }
+  tick    -= curPart->tick();
+  MusECore::Event e(MusECore::Note);
+  e.setTick(tick);
+  e.setPitch(instrument_map[instrument].pitch);
+  e.setVelo(velocity);
+  e.setLenTick(ourDrumMap[instrument].len);
+
+  return new DEvent(e, curPart, instrument);
 }
 
 //---------------------------------------------------------
