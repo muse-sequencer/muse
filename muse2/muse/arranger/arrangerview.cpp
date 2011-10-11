@@ -146,9 +146,9 @@ ArrangerView::ArrangerView(QWidget* parent)
   editInsertEMAction = new QAction(QIcon(*editpasteIconSet), tr("&Insert Empty Measure"), this);
   editDeleteSelectedAction = new QAction(QIcon(*edit_track_delIcon), tr("Delete Selected Tracks"), this);
 
-  editShrinkPartsAction = new QAction(tr("Shrink selected parts"), this); //FINDMICH TODO tooltips!
+  editShrinkPartsAction = new QAction(tr("Shrink selected parts"), this);
   editExpandPartsAction = new QAction(tr("Expand selected parts"), this);
-  editCleanPartsAction = new QAction(tr("Clean selected parts"), this);
+  editCleanPartsAction = new QAction(tr("Purge hidden events from selected parts"), this);
 
 
   addTrack = new QMenu(tr("Add Track"), this);

@@ -244,8 +244,7 @@ Track::Track(const Track& t, bool cloneParts)
         // A couple of schemes were conceived to deal with cloneList being invalid, but the best way is
         //  to not alter the part list here. It's a big headache because: Either the parts in the cloneList
         //  need to be reliably looked up replaced with the new ones, or the clipboard and cloneList must be cleared.
-        // Fortunately the ONLY parts of muse using this function are track rename (in TrackList and TrackInfo) and
-        // changing track type from MIDI to NEW_DRUM or vice versa (NOT something -> DRUM or vice versa).
+        // Fortunately the ONLY part of muse using this function is track rename (in TrackList and TrackInfo).
         // So we can get away with leaving this out: 
         //for (iPart ip = _parts.begin(); ip != _parts.end(); ++ip) 
         //      ip->second->setTrack(this);

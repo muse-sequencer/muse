@@ -392,13 +392,13 @@ MusECore::UndoOp PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragTyp
 
       if (t == MOVE_COPY || t == MOVE_CLONE) {
             // These will not increment ref count, and will not chain clones... 
-            // TODO FINDMICH: is this still correct (by flo93)? i doubt it!
+            // TODO: is comment this still correct (by flo93)? i doubt it!
             result=MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart);
             }
       else if (t == MOVE_MOVE) {
             dpart->setSelected(spart->selected());
             // These will increment ref count if not a clone, and will chain clones...
-            // TODO FINDMICH: is this still correct (by flo93)? i doubt it!
+            // TODO: is this comment still correct (by flo93)? i doubt it!
             result=MusECore::UndoOp(MusECore::UndoOp::ModifyPart,spart, dpart, true, false);
             
             spart->setSelected(false);
@@ -853,9 +853,6 @@ void PartCanvas::mousePress(QMouseEvent* event)
             }
       QPoint pt = event->pos();
       CItem* item = items.find(pt);
-
-      //if (item == 0 && _tool!=AutomationTool) // FINDMICHJETZT. neccessary? (flo93)
-      //      return;
 
       switch (_tool) {
             default:

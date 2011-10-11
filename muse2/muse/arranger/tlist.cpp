@@ -1888,7 +1888,7 @@ void TList::classesPopupMenu(MusECore::Track* t, int x, int y)
             return;
 
       int n = act->data().toInt();
-      if ((MusECore::Track::TrackType(n) == MusECore::Track::MIDI  ||  MusECore::Track::TrackType(n) == MusECore::Track::NEW_DRUM) && t->type() == MusECore::Track::DRUM) { //FINDMICHJETZT passt das?
+      if ((MusECore::Track::TrackType(n) == MusECore::Track::MIDI  ||  MusECore::Track::TrackType(n) == MusECore::Track::NEW_DRUM) && t->type() == MusECore::Track::DRUM) {
             //
             //    Drum -> Midi
             //
@@ -1926,7 +1926,7 @@ void TList::classesPopupMenu(MusECore::Track* t, int x, int y)
             MusEGlobal::audio->msgIdle(false);
             MusEGlobal::song->update(SC_EVENT_MODIFIED);
             }
-      else if (MusECore::Track::TrackType(n) == MusECore::Track::DRUM && (t->type() == MusECore::Track::MIDI  ||  t->type() == MusECore::Track::NEW_DRUM)) { //FINDMICHJETZT passt das?
+      else if (MusECore::Track::TrackType(n) == MusECore::Track::DRUM && (t->type() == MusECore::Track::MIDI  ||  t->type() == MusECore::Track::NEW_DRUM)) {
             //
             //    Midi -> Drum
             //
@@ -1984,11 +1984,12 @@ void TList::classesPopupMenu(MusECore::Track* t, int x, int y)
             MusEGlobal::audio->msgIdle(false);
             MusEGlobal::song->update(SC_EVENT_MODIFIED);
             }
-      else // MIDI -> NEW_DRUM or vice versa. added by flo. FINDMICHJETZT does this work properly?
+      else // MIDI -> NEW_DRUM or vice versa. added by flo.
       {
-            MusECore::Track* t2 = t->clone(false);
+            MusEGlobal::audio->msgIdle(true);
             t->setType(MusECore::Track::TrackType(n));
-            MusEGlobal::audio->msgChangeTrack(t2, t, true);
+            MusEGlobal::audio->msgIdle(false);
+            MusEGlobal::song->update(SC_TRACK_MODIFIED);
             }
       }
 

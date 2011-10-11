@@ -991,7 +991,7 @@ void Audio::processMidi()
                                             event.setA(MusEGlobal::drumMap[(unsigned int)MusEGlobal::drumInmap[pitch]].anote);
                                             event.setChannel(channel);
                                       }
-                                      else if (track->type() == Track::NEW_DRUM) //FINDMICH DOES THAT WORK?
+                                      else if (track->type() == Track::NEW_DRUM)
                                       {
                                         event.setA(track->map_drum_in(event.dataA()));
 
