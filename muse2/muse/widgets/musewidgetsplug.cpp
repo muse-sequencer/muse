@@ -53,7 +53,7 @@ static const char* valu[] = {
       "C","C#","D","D#","E","F","F#","G","G#","A","A#","H"
       };
 
-GlobalConfigValues config = {
+MusEGlobal::GlobalConfigValues config = {
       190,                        // globalAlphaBlend    
       {
         QColor(0xff, 0xff, 0xff),   // palette

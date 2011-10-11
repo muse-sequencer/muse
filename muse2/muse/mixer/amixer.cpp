@@ -158,7 +158,7 @@ bool ScrollArea::viewportEvent(QEvent* event)
 //    inputs | synthis | tracks | groups | master
 //---------------------------------------------------------
 
-AudioMixerApp::AudioMixerApp(QWidget* parent, MixerConfig* c)
+AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
    : QMainWindow(parent)
       {
       cfg = c;

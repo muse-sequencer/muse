@@ -25,7 +25,7 @@
 
 namespace MusEGlobal {
 
-MusEGui::GlobalConfigValues config = {
+GlobalConfigValues config = {
       190,                        // globalAlphaBlend    
       {
         QColor(0xff, 0xff, 0xff),   // palette

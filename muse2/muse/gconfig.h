@@ -36,7 +36,7 @@ namespace MusECore {
 class Xml;
 }
 
-namespace MusEGui {
+namespace MusEGlobal {
 
 //---------------------------------------------------------
 //   MixerConfig
@@ -166,10 +166,10 @@ struct GlobalConfigValues {
       bool rangeMarkerWithoutMMB;
       };
 
-} // namespace MusEGui
 
-namespace MusEGlobal {
-extern MusEGui::GlobalConfigValues config;
+
+
+extern GlobalConfigValues config;
 } // namespace MusEGlobal
 
 #endif
