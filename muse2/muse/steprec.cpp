@@ -61,6 +61,13 @@ void StepRec::record(Part* part, int pitch, int len, int step, int velo, bool ct
 	unsigned lasttick=0;
 	Undo operations;
 	
+	if (tick < part->tick()) //insert note before the part to insert?
+	{
+		if (MusEGlobal::debugMsg)
+		printf("StepRec::record(): tick (%i) is before part (begin tick is %i), ignoring...\n",tick, part->tick());
+		return;
+	}
+	
 	// if incoming_pitch wasn't specified, set it to pitch
 	if (incoming_pitch == 1337) incoming_pitch=pitch;
 	
