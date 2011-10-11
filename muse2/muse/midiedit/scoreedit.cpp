@@ -4607,7 +4607,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *        o offer some way to set maintained_automatically to true again
  *        o move generation and deletion of ourDrumMap from DCanvas to DrumEditor and remove ugly wrapper functions
  *
- *   o in appearance.cpp: add the new stuff for drumTrackLabelBg and drumTrackBg 
  *   o find and fix FINDMICHJETZT
  *   o fix all segfaults and non-working stuff!
  *        - creating, changing types to and from, erasing NEW_DRUM tracks

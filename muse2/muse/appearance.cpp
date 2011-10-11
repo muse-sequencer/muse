@@ -216,6 +216,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x411, id, "background");
            new IdListViewItem(0x412, id, "midi background");
            new IdListViewItem(0x413, id, "drum background");
+           new IdListViewItem(0x41e, id, "new drum background");
            new IdListViewItem(0x414, id, "wave background");
            new IdListViewItem(0x415, id, "output background");
            new IdListViewItem(0x416, id, "input background");
@@ -224,6 +225,7 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x419, id, "synth background");
            new IdListViewItem(0x41a, id, "selected track background");
            new IdListViewItem(0x41b, id, "selected track foreground");
+           //   0x41e is already used (between 413 and 414)
       id = new IdListViewItem(0, itemList, "BigTime");
            new IdListViewItem(0x100, id, "background");
            new IdListViewItem(0x101, id, "foreground");
@@ -237,12 +239,14 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
            new IdListViewItem(0x500, id, "background");
            new IdListViewItem(0x501, id, "midi label");
            new IdListViewItem(0x502, id, "drum label");
+           new IdListViewItem(0x509, id, "new drum label");
            new IdListViewItem(0x503, id, "wave label");
            new IdListViewItem(0x504, id, "audio output label");
            new IdListViewItem(0x505, id, "audio input label");
            new IdListViewItem(0x506, id, "group label");
            new IdListViewItem(0x507, id, "aux label");
            new IdListViewItem(0x508, id, "synth label");
+           //   0x509 is already used (between 502 and 503)
 
       colorNameLineEdit->setEnabled(false);
       
@@ -842,7 +846,8 @@ void Appearance::colorItemSelectionChanged()
             case 0x300: color = &config->waveEditBackgroundColor; break;
             case 0x411: color = &config->trackBg;       break;
             case 0x412: color = &config->midiTrackBg;   break;
-            case 0x413: color = &config->drumTrackBg;   break; //FINDMICHJETZT add newDrum...
+            case 0x413: color = &config->drumTrackBg;   break;
+            case 0x41e: color = &config->newDrumTrackBg;break;
             case 0x414: color = &config->waveTrackBg;   break;
             case 0x415: color = &config->outputTrackBg; break;
             case 0x416: color = &config->inputTrackBg;  break;
@@ -853,16 +858,19 @@ void Appearance::colorItemSelectionChanged()
             case 0x41b: color = &config->selectTrackFg;  break;
             case 0x41c: color = &config->partCanvasBg; break;
             case 0x41d: color = &config->ctrlGraphFg; break;
+            //   0x41e is already used (between 413 and 414)
 
             case 0x500: color = &config->mixerBg;   break;
             case 0x501: color = &config->midiTrackLabelBg;   break;
-            case 0x502: color = &config->drumTrackLabelBg;   break; //FINDMICHJETZT add newDrum...
+            case 0x502: color = &config->drumTrackLabelBg;   break;
+            case 0x509: color = &config->newDrumTrackLabelBg;break;
             case 0x503: color = &config->waveTrackLabelBg;   break;
             case 0x504: color = &config->outputTrackLabelBg; break;
             case 0x505: color = &config->inputTrackLabelBg;  break;
             case 0x506: color = &config->groupTrackLabelBg;  break;
             case 0x507: color = &config->auxTrackLabelBg;    break;
             case 0x508: color = &config->synthTrackLabelBg;  break;
+            //   0x509 is already used (between 502 and 503)
             
             default:
                   color = 0;
