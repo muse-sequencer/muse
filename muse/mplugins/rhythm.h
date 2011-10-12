@@ -34,17 +34,22 @@
 
 #include <QMainWindow>
 
+#define MAX_GROUPS  5
+#define MAX_KEYS   20
+
 class QCloseEvent;
+
+namespace MusECore {
+class Xml;
+}
+
+namespace MusEGui {
 
 class tTrack;
 class tEventWin;
 class tSong;
 class tBarInfo;
 
-#define MAX_GROUPS  5
-#define MAX_KEYS   20
-
-class Xml;
 
 #if 0
 //---------------------------------------------------------
@@ -59,8 +64,8 @@ struct tRhyGroup {
             listen = 0;
             contrib = 0;
             }
-//      void write(int, Xml&);
-//      void read(Xml&);
+//      void write(int, MusECore::Xml&);
+//      void read(MusECore::Xml&);
       };
 
 //---------------------------------------------------------
@@ -71,8 +76,8 @@ struct tRhyGroups {
       tRhyGroup g[MAX_GROUPS];
       tRhyGroup& operator [] (int i) { return g[i]; }
 
-//      void write(int, Xml&);
-//      void read(Xml&);
+//      void write(int, MusECore::Xml&);
+//      void read(MusECore::Xml&);
       };
 
 //---------------------------------------------------------
@@ -123,8 +128,8 @@ class tRhythm
       void GenInit(long start_clock);
       void GenerateEvent(tTrack *track, long clock, short vel, short len);
 
-      void write(int, Xml&);
-      void read(Xml&);
+      void write(int, MusECore::Xml&);
+      void read(MusECore::Xml&);
       };
 #endif
 
@@ -208,6 +213,8 @@ class RhythmGen : public QMainWindow, public Ui::RhythmBase
 //      void GenRhythm();
 //      bool OnClose();
       };
+
+} // namespace MusEGui
 
 #endif
 

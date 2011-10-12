@@ -29,6 +29,8 @@
 
 #include "rhythm.h"
 
+namespace MusEGui {
+
 //---------------------------------------------------------
 //   RhythmGen
 //---------------------------------------------------------
@@ -525,5 +527,7 @@ RhythmGenerator::~RhythmGenerator()
 {
     // no need to delete child widgets, Qt does it all for us
 }
+
 #endif
 
+} // namespace MusEGui
