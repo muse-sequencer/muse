@@ -99,7 +99,7 @@ class DrumEdit : public MidiEditor {
       MusECore::Event selEvent;
       MusECore::MidiPart* selPart;
       int selTick;
-      QMenu* menuEdit, *menuFunctions, *menuFile, *menuSelect;
+      QMenu* menuEdit, *menuFunctions, *menuSelect;
 
       MusEGui::NoteInfo* info;
       QToolButton* srec;

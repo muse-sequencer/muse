@@ -4594,10 +4594,9 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  *
  * CURRENT TODO
+ *   o drum controllers
  *   o my record flag handling
  *   o option for disabling old-style / new-style drum tracks?
- *   o steprec and mouse-inserting notes should automatically find out
- *     the proper destination part, or create a new one in dcanvas.cpp
  * 
  * > o drum editor: channel-stuff
  *        o clearly state in the changelog: when having multiple drumeditors open,

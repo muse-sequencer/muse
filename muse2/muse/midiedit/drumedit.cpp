@@ -170,20 +170,6 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       _ignore_hide = _ignore_hide_init;
       
       //---------Pulldown Menu----------------------------
-      menuFile = menuBar()->addMenu(tr("&File"));
-
-      loadAction = menuFile->addAction(QIcon(*openIcon), tr("Load Map"));
-      saveAction = menuFile->addAction(QIcon(*saveIcon), tr("Save Map"));
-      resetAction = menuFile->addAction(tr("Reset GM Map"));
-
-      connect(loadAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(saveAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-      connect(resetAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
-
-      signalMapper->setMapping(loadAction, DrumCanvas::CMD_LOAD);
-      signalMapper->setMapping(saveAction, DrumCanvas::CMD_SAVE);
-      signalMapper->setMapping(resetAction, DrumCanvas::CMD_RESET);
-
       menuEdit = menuBar()->addMenu(tr("&Edit"));
       menuEdit->addActions(MusEGlobal::undoRedo->actions());
       
@@ -247,11 +233,25 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       
       if (old_style_drummap_mode())
       {
-        QAction* reorderListAction = menuFunctions->addAction(tr("Re-order list"));
+        loadAction = menuFunctions->addAction(QIcon(*openIcon), tr("Load Map"));
+        saveAction = menuFunctions->addAction(QIcon(*saveIcon), tr("Save Map"));
+        resetAction = menuFunctions->addAction(tr("Reset GM Map"));
+
+        connect(loadAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+        connect(saveAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+        connect(resetAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
+
+        signalMapper->setMapping(loadAction, DrumCanvas::CMD_LOAD);
+        signalMapper->setMapping(saveAction, DrumCanvas::CMD_SAVE);
+        signalMapper->setMapping(resetAction, DrumCanvas::CMD_RESET);
+
+        QAction* reorderListAction = menuFunctions->addAction(tr("Re-order map"));
         connect(reorderListAction, SIGNAL(triggered()), signalMapper, SLOT(map()));
         signalMapper->setMapping(reorderListAction, DrumCanvas::CMD_REORDER_LIST);
         menuFunctions->addSeparator();
       }
+      else
+        loadAction=saveAction=resetAction=NULL;
 
       fixedAction = menuFunctions->addAction(tr("Set Fixed Length"));
       veloAction = menuFunctions->addAction(tr("Modify Velocity"));
@@ -334,25 +334,31 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       //---------------------------------------------------
       //    Toolbars
       //---------------------------------------------------
+    
+      if (old_style_drummap_mode())
+      {
+        QToolBar* maptools = addToolBar(tr("Drum map tools"));
+        maptools->setObjectName("Drum map tools");
+        
+        QToolButton *ldm = new QToolButton();
+        ldm->setToolTip(tr("Load Drummap"));
+        ldm->setIcon(*openIcon);
+        connect(ldm, SIGNAL(clicked()), SLOT(load()));
+        maptools->addWidget(ldm);
+        
+        QToolButton *sdm = new QToolButton();
+        sdm->setToolTip(tr("Store Drummap"));
+        sdm->setIcon(*saveIcon);
+        connect(sdm, SIGNAL(clicked()), SLOT(save()));
+        maptools->addWidget(sdm);
+        
+        maptools->addAction(QWhatsThis::createAction());
+      }
+
 
       tools = addToolBar(tr("Drum tools"));
       tools->setObjectName("Drum tools");
-      
-      QToolButton *ldm = new QToolButton();
-      ldm->setToolTip(tr("Load Drummap"));
-      ldm->setIcon(*openIcon);
-      connect(ldm, SIGNAL(clicked()), SLOT(load()));
-      tools->addWidget(ldm);
-      
-      QToolButton *sdm = new QToolButton();
-      sdm->setToolTip(tr("Store Drummap"));
-      sdm->setIcon(*saveIcon);
-      connect(sdm, SIGNAL(clicked()), SLOT(save()));
-      tools->addWidget(sdm);
-      
-      tools->addAction(QWhatsThis::createAction());
 
-      tools->addSeparator();
       tools->addActions(MusEGlobal::undoRedo->actions());
       tools->addSeparator();
 
@@ -1341,8 +1347,8 @@ void DrumEdit::keyPressEvent(QKeyEvent* event)
 
 void DrumEdit::initShortcuts()
       {
-      loadAction->setShortcut(shortcuts[SHRT_OPEN].key);
-      saveAction->setShortcut(shortcuts[SHRT_SAVE].key);
+      if (loadAction) loadAction->setShortcut(shortcuts[SHRT_OPEN].key);
+      if (saveAction) saveAction->setShortcut(shortcuts[SHRT_SAVE].key);
 
       cutAction->setShortcut(shortcuts[SHRT_CUT].key);
       copyAction->setShortcut(shortcuts[SHRT_COPY].key);
