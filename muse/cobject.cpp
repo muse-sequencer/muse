@@ -85,8 +85,11 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	subwinAction->setChecked(isMdiWin());
 	shareAction->setChecked(_sharesToolsAndMenu);
 	fullscreenAction->setEnabled(!isMdiWin());
-
-	resize(_widthInit[_type], _heightInit[_type]);
+	
+	if (mdisubwin)
+		mdisubwin->resize(_widthInit[_type], _heightInit[_type]);
+	else
+		resize(_widthInit[_type], _heightInit[_type]);
 }
 
 
@@ -359,8 +362,17 @@ void TopWin::shareToolsAndMenu(bool val)
 
 void TopWin::storeInitialState() const
 {
-	_widthInit[_type] = width();
-	_heightInit[_type] = height();
+	if (mdisubwin)
+	{
+		_widthInit[_type] = mdisubwin->width();
+		_heightInit[_type] = mdisubwin->height();
+	}
+	else
+	{
+		_widthInit[_type] = width();
+		_heightInit[_type] = height();
+	}
+	
 	if (sharesToolsAndMenu())
 	{
 		if (muse->getCurrentMenuSharingTopwin() == this)
