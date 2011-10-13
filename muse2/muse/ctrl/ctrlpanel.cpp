@@ -171,7 +171,7 @@ void CtrlPanel::heartBeat()
       int outport;
       int chan;
       int cdi = editor->curDrumInstrument();
-      if(_track->type() == MusECore::Track::DRUM && ((_ctrl->num() & 0xff) == 0xff) && cdi != -1) //FINDMICHJETZT was ist das? und ähnliche dinger
+      if(_track->type() == MusECore::Track::DRUM && ((_ctrl->num() & 0xff) == 0xff) && cdi != -1)
       {
         outport = MusEGlobal::drumMap[cdi].port;
         chan = MusEGlobal::drumMap[cdi].channel;
@@ -539,6 +539,21 @@ void CtrlPanel::setHeight(int h)
       }
 
 #if 0
+/* WARNING: INVALID CODE!                                           *\
+ * the code which has been disabled by the above #if 0 is partly    *
+ * OBSOLETE! it lacks support for new-style drum tracks, especially *
+ * the drum-controller-handling for these!                          *
+ *                                                                  *
+ * when you ever enable that code again, first check the changes    *
+ * flo93 did somewhere between revision 1188 and 1188+something     *
+ * (let's say, 1195; it's NOT the revision in which this comment    *
+ * has been introduced) in experimental to the currently enabled    *
+ * code below. then apply similar changes to the currently disabled *
+\* code here!                                                       */
+#error "INVALID CODE. please check the comment in ctrlpanel.cpp which starts with 'WARNING: INVALID CODE'"
+just to be sure: dear compiler, please refuse to compile.
+dear user: read the comment above!
+
 struct CI {
             QString s;
             bool used;
@@ -562,7 +577,7 @@ void CtrlPanel::ctrlPopup()
       int channel      = track->outChannel();
       MusECore::MidiPort* port   = &MusEGlobal::midiPorts[track->outPort()];
       int curDrumInstrument = editor->curDrumInstrument();
-      bool isDrum      = track->type() == MusECore::Track::DRUM; //FINDMICHJETZT ist das wichtig?
+      bool isDrum      = track->type() == MusECore::Track::DRUM;
 
       QMenu* pop = new QMenu;
       //pop->clear();

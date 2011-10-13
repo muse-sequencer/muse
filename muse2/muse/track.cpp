@@ -78,7 +78,7 @@ void addPortCtrlEvents(MidiTrack* t)
         
         MidiPort* mp = &MusEGlobal::midiPorts[t->outPort()];
         // Is it a drum controller event, according to the track port's instrument?
-        if(t->type() == Track::DRUM)  //FINDMICHJETZT was soll das? drumcontroller -_-
+        if(t->type() == Track::DRUM)
         {
           MidiController* mc = mp->drumController(cntrl);
           if(mc)
@@ -126,7 +126,7 @@ void removePortCtrlEvents(MidiTrack* t)
         
         MidiPort* mp = &MusEGlobal::midiPorts[t->outPort()];
         // Is it a drum controller event, according to the track port's instrument?
-        if(t->type() == Track::DRUM)  //FINDMICHJETZT was soll das? drumcontroller...
+        if(t->type() == Track::DRUM)
         {
           MidiController* mc = mp->drumController(cntrl);
           if(mc)
@@ -504,7 +504,7 @@ void MidiTrack::init_drummap(bool write_ordering)
 void MidiTrack::update_drum_in_map()
 {
   for (int i=0;i<127;i++)
-    drum_in_map[_drummap[i].enote]=i;
+    drum_in_map[(int)_drummap[i].enote]=i;
 }
 
 //---------------------------------------------------------
@@ -667,7 +667,7 @@ void MidiTrack::addPortCtrlEvents()
         
         MidiPort* mp = &MusEGlobal::midiPorts[_outPort];
         // Is it a drum controller event, according to the track port's instrument?
-        if(type() == DRUM)  //FINDMICHJETZT commented out. was soll das?
+        if(type() == DRUM)
         {
           MidiController* mc = mp->drumController(cntrl);
           if(mc)
@@ -708,7 +708,7 @@ void MidiTrack::removePortCtrlEvents()
         
         MidiPort* mp = &MusEGlobal::midiPorts[_outPort];
         // Is it a drum controller event, according to the track port's instrument?
-        if(type() == DRUM)  //FINDMICHJETZT commented out: was soll das?
+        if(type() == DRUM)
         {
           MidiController* mc = mp->drumController(cntrl);
           if(mc)

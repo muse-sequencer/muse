@@ -446,7 +446,7 @@ bool Song::addEvent(Event& event, Part* part)
             MidiPort* mp = &MusEGlobal::midiPorts[track->outPort()];
             
             // Is it a drum controller event, according to the track port's instrument?
-            if(track->type() == Track::DRUM) //FINDMICHJETZT was ist das?
+            if(track->type() == Track::DRUM)
             {
               MidiController* mc = mp->drumController(cntrl);
               if(mc)
@@ -519,7 +519,7 @@ void Song::changeEvent(Event& oldEvent, Event& newEvent, Part* part)
             int cntrl = oldEvent.dataA();
             MidiPort* mp = &MusEGlobal::midiPorts[track->outPort()];
             // Is it a drum controller event, according to the track port's instrument?
-            if(track->type() == Track::DRUM) //FINDMICHJETZT was ist das?
+            if(track->type() == Track::DRUM)
             {
               MidiController* mc = mp->drumController(cntrl);
               if(mc)
@@ -546,7 +546,7 @@ void Song::changeEvent(Event& oldEvent, Event& newEvent, Part* part)
             int val   = newEvent.dataB();
             MidiPort* mp = &MusEGlobal::midiPorts[track->outPort()];
             // Is it a drum controller event, according to the track port's instrument?
-            if(track->type() == Track::DRUM) //FINDMICHJETZT was ist das?
+            if(track->type() == Track::DRUM)
             {
               MidiController* mc = mp->drumController(cntrl);
               if(mc)
@@ -580,7 +580,7 @@ void Song::deleteEvent(Event& event, Part* part)
             
             MidiPort* mp = &MusEGlobal::midiPorts[track->outPort()];
             // Is it a drum controller event, according to the track port's instrument?
-            if(track->type() == Track::DRUM) //FINDMICHJETZT was ist das?
+            if(track->type() == Track::DRUM)
             {
               MidiController* mc = mp->drumController(cntrl);
               if(mc)
@@ -621,7 +621,7 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
   for(ciMidiTrack it = _midis.begin(); it != _midis.end(); ++it) 
   {
     MidiTrack* mt = *it;
-    if(mt->type() != Track::DRUM) //FINDMICHJETZT was ist das? drumcontroller?
+    if(mt->type() != Track::DRUM)
       continue;
       
     MidiPort* trackmp = &MusEGlobal::midiPorts[mt->outPort()];
@@ -630,7 +630,7 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
     {
       MidiPart* part = (MidiPart*)(ip->second);
       const EventList* el = part->cevents();
-      unsigned len = part->lenTick();
+      // unsigned len = part->lenTick(); // Commented out by flo, see below
       for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
       {
         const Event& ev = ie->second;
@@ -693,7 +693,7 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
   for(ciMidiTrack it = _midis.begin(); it != _midis.end(); ++it) 
   {
     MidiTrack* mt = *it;
-    if(mt->type() != Track::DRUM) //FINDMICHJETZT was ist das? drumcontroller
+    if(mt->type() != Track::DRUM)
       continue;
       
     trackmp = &MusEGlobal::midiPorts[mt->outPort()];
@@ -703,13 +703,15 @@ void Song::changeAllPortDrumCtrlEvents(bool add, bool drumonly)
     {
       MidiPart* part = (MidiPart*)(ip->second);
       const EventList* el = part->cevents();
-      unsigned len = part->lenTick();
+      // unsigned len = part->lenTick(); // Commented out by flo, see below
       for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
       {
         const Event& ev = ie->second;
         // Added by T356. Do not handle events which are past the end of the part.
-        if(ev.tick() >= len)
-          break;
+        // Commented out by flo: yes, DO handle them! these are "hidden events"
+        //                       which may be revealed later again!
+        // if(ev.tick() >= len)
+        //   break;
                     
         if(ev.type() != Controller)
           continue;

@@ -403,7 +403,7 @@ void addPortCtrlEvents(Event& event, Part* part, bool doClones)
             MidiPort* mp = &MusEGlobal::midiPorts[port];
             
             // Is it a drum controller event, according to the track port's instrument?
-            if(mt->type() == Track::DRUM) //FINDMICHJETZT was ist das?
+            if(mt->type() == Track::DRUM)
             {
               MidiController* mc = mp->drumController(cntrl);
               if(mc)
@@ -471,7 +471,7 @@ void addPortCtrlEvents(Part* part, bool doClones)
             MidiPort* mp = &MusEGlobal::midiPorts[port];
             
             // Is it a drum controller event, according to the track port's instrument?
-            if(mt->type() == Track::DRUM) //FINDMICHJETZT was ist das?
+            if(mt->type() == Track::DRUM)
             {
               MidiController* mc = mp->drumController(cntrl);
               if(mc)
@@ -530,7 +530,7 @@ void removePortCtrlEvents(Event& event, Part* part, bool doClones)
             MidiPort* mp = &MusEGlobal::midiPorts[port];
             
             // Is it a drum controller event, according to the track port's instrument?
-            if(mt->type() == Track::DRUM) //FINDMICHJETZT was ist das?
+            if(mt->type() == Track::DRUM)
             {
               MidiController* mc = mp->drumController(cntrl);
               if(mc)
@@ -599,7 +599,7 @@ void removePortCtrlEvents(Part* part, bool doClones)
             MidiPort* mp = &MusEGlobal::midiPorts[port];
             
             // Is it a drum controller event, according to the track port's instrument?
-            if(mt->type() == Track::DRUM) //FINDMICHJETZT was ist das?
+            if(mt->type() == Track::DRUM)
             {
               MidiController* mc = mp->drumController(cntrl);
               if(mc)

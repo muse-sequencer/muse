@@ -372,7 +372,7 @@ void buildMidiEventList(EventList* del, const MPEventList* el, MidiTrack* track,
                                     int ctl = ev.dataA();
                                     e.setA(ctl);
                                     
-                                    if(track->type() == Track::DRUM)  //FINDMICHJETZT drum controller?
+                                    if(track->type() == Track::DRUM)
                                     {
                                       // Is it a drum controller event, according to the track port's instrument?
                                       MidiController *mc = MusEGlobal::midiPorts[track->outPort()].drumController(ctl);
@@ -808,7 +808,7 @@ void Audio::collectEvents(MusECore::MidiTrack* track, unsigned int cts, unsigned
 
                         case Controller:
                               {
-                                if (track->type() == Track::DRUM)   //FINDMICHJETZT was ist das? drumcontroller -_-
+                                if (track->type() == Track::DRUM)
                                 {
                                   int ctl   = ev.dataA();
                                   // Is it a drum controller event, according to the track port's instrument?
@@ -1026,10 +1026,9 @@ void Audio::processMidi()
                                             event.setB(velo);
                                       }
                                 }
-                                else
-                                if(event.type() == MusECore::ME_CONTROLLER)
+                                else if(event.type() == MusECore::ME_CONTROLLER)
                                 {
-                                  if(track->type() == Track::DRUM)  //FINDMICHJETZT was ist das?
+                                  if(track->type() == Track::DRUM)
                                   {
                                     ctl = event.dataA();
                                     // Regardless of what port the event came from, is it a drum controller event 
@@ -1048,6 +1047,24 @@ void Audio::processMidi()
                                       event.setA(ctl | MusEGlobal::drumMap[dmindex].anote);
                                       event.setChannel(channel);
                                     }  
+                                  }
+                                  else if (track->type() == Track::NEW_DRUM) //FINDMICHJETZT TEST
+                                  {
+                                    ctl = event.dataA();
+                                    if (tport->drumController(ctl)) // is it a drum controller?
+                                    {
+                                      int pitch = ctl & 0x7f;            // pitch is now the incoming pitch
+                                      pitch = track->map_drum_in(pitch); // pitch is now the mapped (recorded) pitch
+                                      event.setA(ctl & ~0xff  |  pitch); // map the drum ctrl's value accordingly
+
+                                      if (MusEGlobal::config.newDrumRecordCondition & MusECore::DONT_REC_HIDDEN &&
+                                          track->drummap_hidden()[pitch] )
+                                        continue; // skip that event, proceed with the next
+
+                                      if (MusEGlobal::config.newDrumRecordCondition & MusECore::DONT_REC_MUTED &&
+                                          track->drummap()[pitch].mute )
+                                        continue; // skip that event, proceed with the next
+                                    }
                                   }
                                 }
                                 
@@ -1092,7 +1109,7 @@ void Audio::processMidi()
                                       //  to the track port so buildMidiEventList will accept it. Even though 
                                       //  the port may have no device "<none>".
                                       //
-                                      if (track->type() == Track::DRUM)  //FINDMICHJETZT was ist das?
+                                      if (track->type() == Track::DRUM)  //FINDMICHJETZT no changes. TEST
                                       {
                                         // Is it a drum controller event?
                                         if(mc)
