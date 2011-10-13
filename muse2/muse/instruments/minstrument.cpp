@@ -932,13 +932,13 @@ QString MidiInstrument::getPatchName(int channel, int prog, MType mode, bool dru
       return "<unknown>";
       }
 
-//---------------------------------------------------------
-//   populatePatchPopup
-//---------------------------------------------------------
-
 } // namespace MusECore
 
 namespace MusEGui {
+
+//---------------------------------------------------------
+//   populatePatchPopup
+//---------------------------------------------------------
 
 void populatePatchPopup(MusECore::MidiInstrument* midiInstrument, PopupMenu* menu, int chan, MType songType, bool drum)
       {

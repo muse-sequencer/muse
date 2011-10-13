@@ -635,9 +635,10 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
       {
         const Event& ev = ie->second;
         // Added by T356. Do not handle events which are past the end of the part.
-        //FINDMICHJETZT why not?
-        if(ev.tick() >= len)
-          break;
+        // Commented out by flo: yes, DO handle them! these are "hidden events"
+        //                       which may be revealed later again!
+        // if(ev.tick() >= len)
+        //   break;
                     
         if(ev.type() != Controller)
           continue;
