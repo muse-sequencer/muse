@@ -1,3 +1,5 @@
+12.10.2011:
+        - Made the plugins aware of namespaces. (Orcan)
 11.10.2011:
         - Fixed the build of experimental rhythm generator. (Orcan)
 09.10.2011:
