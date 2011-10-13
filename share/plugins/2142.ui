@@ -37,7 +37,7 @@
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="DoubleLabel" name="P0label" native="true">
+    <widget class="MusEGui::DoubleLabel" name="P0label" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -65,7 +65,7 @@
     </widget>
    </item>
    <item row="1" column="1">
-    <widget class="DoubleLabel" name="P1label" native="true">
+    <widget class="MusEGui::DoubleLabel" name="P1label" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -106,7 +106,7 @@
     </widget>
    </item>
    <item row="2" column="1">
-    <widget class="DoubleLabel" name="P2label" native="true">
+    <widget class="MusEGui::DoubleLabel" name="P2label" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
@@ -147,7 +147,7 @@
     </widget>
    </item>
    <item row="1" column="2" colspan="2">
-    <widget class="Slider" name="P1Slider" native="true">
+    <widget class="MusEGui::Slider" name="P1Slider" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
        <horstretch>10</horstretch>
@@ -166,7 +166,7 @@
     </widget>
    </item>
    <item row="2" column="2" colspan="2">
-    <widget class="Slider" name="P2Slider" native="true">
+    <widget class="MusEGui::Slider" name="P2Slider" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
        <horstretch>10</horstretch>
@@ -185,7 +185,7 @@
     </widget>
    </item>
    <item row="0" column="2" colspan="2">
-    <widget class="Slider" name="P0Slider" native="true">
+    <widget class="MusEGui::Slider" name="P0Slider" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
        <horstretch>10</horstretch>
@@ -478,12 +478,12 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>DoubleLabel</class>
+   <class>MusEGui::DoubleLabel</class>
    <extends>QWidget</extends>
    <header>doublelabel.h</header>
   </customwidget>
   <customwidget>
-   <class>Slider</class>
+   <class>MusEGui::Slider</class>
    <extends>QWidget</extends>
    <header>slider.h</header>
   </customwidget>
