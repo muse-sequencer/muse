@@ -29,6 +29,7 @@
 #include "app.h"
 #include "song.h"
 #include "arranger.h"
+#include "arrangerview.h"
 //#include "arranger/arranger.h"  // p4.0.2
 #include "cobject.h"
 #include "drumedit.h"
@@ -1296,7 +1297,7 @@ void MusE::readToplevels(MusECore::Xml& xml)
                                 score->show();
                                 toplevels.push_back(score);
                                 connect(score, SIGNAL(deleted(MusEGui::TopWin*)), SLOT(toplevelDeleted(MusEGui::TopWin*)));
-                                connect(score, SIGNAL(name_changed()), SLOT(scoreNamingChanged()));
+                                connect(score, SIGNAL(name_changed()), arrangerView, SLOT(scoreNamingChanged()));
                                 score->readStatus(xml);
                               }
                         else if (tag == "drumedit") {
