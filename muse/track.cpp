@@ -144,6 +144,34 @@ void removePortCtrlEvents(MidiTrack* t)
   }
 }
 
+//---------------------------------------------------------
+//   isVisible
+//---------------------------------------------------------
+bool Track::isVisible()
+{
+  switch (type())
+  {
+    case Track::AUDIO_AUX:
+        return AudioAux::visible();
+        break;
+    case Track::AUDIO_GROUP:
+        return AudioGroup::visible();
+    case Track::AUDIO_INPUT:
+        return AudioInput::visible();
+    case Track::AUDIO_OUTPUT:
+        return AudioOutput::visible();
+    case Track::WAVE:
+        return WaveTrack::visible();
+    case Track::MIDI:
+        return MidiTrack::visible();
+    case Track::AUDIO_SOFTSYNTH:
+        return AudioAux::visible();
+  default:
+    break;
+  }
+
+  return false;
+}
 
 
 //---------------------------------------------------------

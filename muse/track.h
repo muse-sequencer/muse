@@ -205,6 +205,7 @@ class Track {
       virtual AutomationType automationType() const    = 0;
       virtual void setAutomationType(AutomationType t) = 0;
       static void setVisible(bool ) { }
+      bool isVisible();
 
       };
 
