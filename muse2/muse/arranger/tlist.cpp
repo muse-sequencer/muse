@@ -579,7 +579,6 @@ void TList::mouseDoubleClickEvent(QMouseEvent* ev)
 //---------------------------------------------------------
 //   portsPopupMenu
 //---------------------------------------------------------
-
 void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
       {
       switch(t->type()) {
@@ -886,16 +885,24 @@ void TList::moveSelection(int n)
                               if (t == tracks->end()) {
                                     --t;
                                     break;
-                                    }
                               }
-                        }
+                              // skip over hidden tracks
+                              if (!(*t)->isVisible()) {
+                                    n++;
+                              }
+                         }
+                  }
                   else {
                         while (n++ != 0) {
                               if (t == tracks->begin())
                                     break;
                               --t;
+                              // skip over hidden tracks
+                              if (!(*t)->isVisible()) {
+                                    n--;
                               }
                         }
+                  }
                   (*s)->setSelected(false);
                   (*t)->setSelected(true);
 

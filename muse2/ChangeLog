@@ -1,3 +1,5 @@
+14.10.2011:
+        - Fixed keyboard navigation in tracks to work with hidden tracks (rj)
 12.10.2011:
         - Made the plugins aware of namespaces. (Orcan)
 11.10.2011:
