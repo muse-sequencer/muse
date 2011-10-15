@@ -15,7 +15,6 @@ class MyLineEdit : public QLineEdit
     virtual void mousePressEvent (QMouseEvent* e)
     {
       QLineEdit::mousePressEvent(e);
-      printf("!!!\n");
       selectAll();
     }
 };
