@@ -152,6 +152,8 @@ void DrumEdit::setHeaderToolTips()
 
 void DrumEdit::closeEvent(QCloseEvent* e)
       {
+      _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
+
       QSettings settings("MusE", "MusE-qt");
       //settings.setValue("Drumedit/geometry", saveGeometry());
       settings.setValue("Drumedit/windowState", saveState());
@@ -162,7 +164,7 @@ void DrumEdit::closeEvent(QCloseEvent* e)
       _dlistWidthInit = *it; //There are only 2 values stored in the sizelist, size of dlist widget and dcanvas widget
       it++;
       _dcanvasWidthInit = *it;
-      emit deleted(static_cast<TopWin*>(this));
+      emit isDeleting(static_cast<TopWin*>(this));
       e->accept();
       }
 
@@ -541,6 +543,9 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
 void DrumEdit::songChanged1(int bits)
       {
+        if(_isDeleting)  // Ignore while while deleting to prevent crash.
+          return;
+        
         if (bits & SC_SOLO)
         {
             toolbar->setSolo(canvas->track()->solo());

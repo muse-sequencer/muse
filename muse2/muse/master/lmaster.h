@@ -173,7 +173,7 @@ class LMaster : public MidiEditor {
       void configChanged();
 
    signals:
-      void deleted(MusEGui::TopWin*);
+      void isDeleting(MusEGui::TopWin*);
       void seekTo(int tick);
 
    public:

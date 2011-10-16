@@ -194,7 +194,7 @@ void ClipListEdit::updateList()
 
 void ClipListEdit::closeEvent(QCloseEvent* e)
       {
-      emit deleted(static_cast<TopWin*>(this));
+      emit isDeleting(static_cast<TopWin*>(this));
       e->accept();
       }
 

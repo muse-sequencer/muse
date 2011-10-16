@@ -1296,7 +1296,7 @@ void MusE::readToplevels(MusECore::Xml& xml)
                                 MusEGui::ScoreEdit* score = new MusEGui::ScoreEdit(this, 0, _arranger->cursorValue());
                                 score->show();
                                 toplevels.push_back(score);
-                                connect(score, SIGNAL(deleted(MusEGui::TopWin*)), SLOT(toplevelDeleted(MusEGui::TopWin*)));
+                                connect(score, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
                                 connect(score, SIGNAL(name_changed()), arrangerView, SLOT(scoreNamingChanged()));
                                 score->readStatus(xml);
                               }

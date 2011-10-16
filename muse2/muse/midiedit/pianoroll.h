@@ -176,7 +176,7 @@ class PianoRoll : public MidiEditor {
       void updateTrackInfo();
 
    signals:
-      void deleted(MusEGui::TopWin*);
+      void isDeleting(MusEGui::TopWin*);
    
    public slots:
       virtual void updateHScrollRange();

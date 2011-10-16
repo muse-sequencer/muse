@@ -1,3 +1,8 @@
+16.10.2011:
+        - Fixed crashes reloading songs having open editors. Previous memleak fixes revealed some problems. (Tim)
+          Installed bool TopWin::deleting(). It is set true when closeEvent() is called in any self-deleting TopWins.
+          Used it to make all such TopWins and their corresponding child canvasses ignore songChanged signals.
+          Test OK so far, multiple reloads of song with all track types, all windows open.
 14.10.2011:
         - Fixed keyboard navigation in tracks to work with hidden tracks (rj)
 12.10.2011:

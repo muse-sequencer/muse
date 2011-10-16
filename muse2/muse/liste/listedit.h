@@ -86,7 +86,7 @@ class ListEdit : public MidiEditor {
       void songChanged(int);
 
    signals:
-      void deleted(MusEGui::TopWin*);
+      void isDeleting(MusEGui::TopWin*);
 
    public:
       ListEdit(MusECore::PartList*);
