@@ -304,7 +304,9 @@ bool DrumCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
       MusECore::MidiPart* dest_part   = part;
       
       int nheight       = y2pitch(pos.y());
-      
+      if (nheight<0) nheight=0;
+      if (nheight>=getOurDrumMapSize()) nheight=getOurDrumMapSize()-1;
+            
       if (!instrument_map[nheight].tracks.contains(dest_part->track()))
       {
         if (debugMsg)
@@ -361,6 +363,9 @@ bool DrumCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
 CItem* DrumCanvas::newItem(const QPoint& p, int state)
       {
       int instr = y2pitch(p.y());         //MusEGlobal::drumInmap[y2pitch(p.y())];
+      if ((instr<0) || (instr>=getOurDrumMapSize()))
+        return NULL;
+      
       int velo  = ourDrumMap[instr].lv4;
       if (state == Qt::ShiftModifier)
             velo = ourDrumMap[instr].lv3;
@@ -378,6 +383,9 @@ CItem* DrumCanvas::newItem(const QPoint& p, int state)
 
 CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
 {
+  if ((instrument<0) || (instrument>=getOurDrumMapSize()))
+    return NULL;
+
   if (!old_style_drummap_mode && !instrument_map[instrument].tracks.contains(curPart->track()))
   {
     if (debugMsg)
@@ -634,6 +642,8 @@ int DrumCanvas::y2pitch(int y) const
       int pitch = y/TH;
       if (pitch >= instrument_map.size())
             pitch = instrument_map.size()-1;
+      else if (pitch<0)
+            pitch = 0;
       return pitch;
       }
 
@@ -849,6 +859,9 @@ void DrumCanvas::keyPressed(int index, int velocity)
       {
       using MusECore::MidiTrack;
       
+      if ((index<0) || (index>=getOurDrumMapSize()))
+        return;
+      
       // called from DList - play event
       int port = old_style_drummap_mode ? ourDrumMap[index].port : dynamic_cast<MidiTrack*>(*instrument_map[index].tracks.begin())->outPort();
       int channel = old_style_drummap_mode ? ourDrumMap[index].channel : dynamic_cast<MidiTrack*>(*instrument_map[index].tracks.begin())->outChannel();
@@ -883,6 +896,9 @@ void DrumCanvas::keyPressed(int index, int velocity)
 void DrumCanvas::keyReleased(int index, bool)
       {
       using MusECore::MidiTrack;
+      
+      if ((index<0) || (index>=getOurDrumMapSize()))
+        return;
       
       // called from DList - silence playing event
       int port = old_style_drummap_mode ? ourDrumMap[index].port : dynamic_cast<MidiTrack*>(*instrument_map[index].tracks.begin())->outPort();
@@ -1006,15 +1022,24 @@ void DrumCanvas::mapChanged(int spitch, int dpitch)
         }
         
         // the instrument represented by instrument_map[dpitch] is always the instrument
-        // which will be immediately AFTER our dragged instrument
-        for (global_drum_ordering_t::iterator it=global_drum_ordering.begin(); it!=global_drum_ordering.end(); it++)
-          if (instrument_map[dpitch].pitch==it->second && instrument_map[dpitch].tracks.contains(it->first))
-          {
-            while (!order_temp.empty())
-              it=global_drum_ordering.insert(it, order_temp.takeLast());
+        // which will be immediately AFTER our dragged instrument. or it's invalid
+        if (dpitch < getOurDrumMapSize())
+        {
+          for (global_drum_ordering_t::iterator it=global_drum_ordering.begin(); it!=global_drum_ordering.end(); it++)
+            if (instrument_map[dpitch].pitch==it->second && instrument_map[dpitch].tracks.contains(it->first))
+            {
+              while (!order_temp.empty())
+                it=global_drum_ordering.insert(it, order_temp.takeLast());
 
-            break;
-          }
+              break;
+            }
+        }
+        else
+        {
+          global_drum_ordering_t::iterator it=global_drum_ordering.end();
+          while (!order_temp.empty())
+            it=global_drum_ordering.insert(it, order_temp.takeLast());
+        }
 
 
 

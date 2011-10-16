@@ -33,6 +33,7 @@
 #include "header.h"
 #include "shortcuts.h"
 #include "event.h"
+#include "dcanvas.h" //FINDMICH UGLY. remove!
 
 class QCloseEvent;
 class QLabel;
@@ -182,6 +183,8 @@ class DrumEdit : public MidiEditor {
       bool old_style_drummap_mode();
       group_mode_t group_mode() { return _group_mode; }
       bool ignore_hide() { return _ignore_hide; }
+      
+      QVector<instrument_number_mapping_t>& get_instrument_map() { return static_cast<DrumCanvas*>(canvas)->get_instrument_map(); } //FINDMICH UGLY
       };
 
 } // namespace MusEGui

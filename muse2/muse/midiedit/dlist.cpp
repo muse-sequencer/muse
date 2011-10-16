@@ -296,7 +296,9 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
       int x      = ev->x();
       int y      = ev->y();
       int button = ev->button();
-      unsigned instrument = y / TH;
+      int instrument = y / TH;
+      if (instrument >= ourDrumMapSize) instrument=ourDrumMapSize-1;
+      if (instrument < 0) instrument=0;
       MusECore::DrumMap* dm = &ourDrumMap[instrument];
       MusECore::DrumMap dm_old = *dm;
 
@@ -551,7 +553,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
             }
       
       if (!old_style_drummap_mode && dm_old != *dm) //something changed and we're in new style mode?
-        dcanvas->propagate_drummap_change(dm-ourDrumMap, (dm_old.enote != dm->enote));
+        dcanvas->propagate_drummap_change(instrument, (dm_old.enote != dm->enote));
       
       MusEGlobal::song->update(SC_DRUMMAP);
       //redraw(); //this is done by the songChanged slot
@@ -588,6 +590,9 @@ void DList::viewMouseDoubleClickEvent(QMouseEvent* ev)
 //---------------------------------------------------------
 void DList::lineEdit(int line, int section)
       {
+            if (line >= ourDrumMapSize) line=ourDrumMapSize-1;
+            if (line < 0) line=0;
+
             MusECore::DrumMap* dm = &ourDrumMap[line];
             editEntry = dm;
             if (editor == 0) {
@@ -656,6 +661,9 @@ void DList::lineEdit(int line, int section)
 //---------------------------------------------------------
 void DList::pitchEdit(int line, int section)
       {
+            if (line >= ourDrumMapSize) line=ourDrumMapSize-1;
+            if (line < 0) line=0;
+
             MusECore::DrumMap* dm = &ourDrumMap[line];
             editEntry = dm;
             if (pitch_editor == 0) {
@@ -710,7 +718,7 @@ int DList::x2col(int x) const
 
 void DList::setCurDrumInstrument(int instr)
       {
-      if (instr < 0 || instr >= ourDrumMapSize -1)
+      if (instr < 0 || instr >= ourDrumMapSize)
         return; // illegal instrument
       MusECore::DrumMap* dm = &ourDrumMap[instr];
       if (currentlySelected != dm) {
@@ -1022,7 +1030,14 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
                   dInstrument = (y+TH/2) / TH;
             
             if (dInstrument < 0) dInstrument=0;
-            if (dInstrument >= ourDrumMapSize) dInstrument=ourDrumMapSize-1;
+            if (old_style_drummap_mode)
+            {
+              if (dInstrument >= ourDrumMapSize) dInstrument=ourDrumMapSize-1;
+            }
+            else
+            {
+              if (dInstrument > ourDrumMapSize) dInstrument=ourDrumMapSize; // allow moving something below the last element
+            }
             
             int cur_sel = (!old_style_drummap_mode && dInstrument>sInstrument) ? dInstrument-1 : dInstrument;
             
@@ -1077,6 +1092,7 @@ void DList::ourDrumMapChanged(bool instrMapChanged)
     editEntry=NULL;
   
   if (selIdx >= ourDrumMapSize) selIdx=ourDrumMapSize-1;
+  if (selIdx < 0) selIdx=0;
   currentlySelected = &ourDrumMap[selIdx];
 
   redraw();

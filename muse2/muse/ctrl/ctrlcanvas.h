@@ -121,6 +121,7 @@ class CtrlCanvas : public MusEGui::View {
       int line2y;
       bool drawLineMode;
       bool noEvents;
+      bool filterTrack;
 
       void viewMousePressEvent(QMouseEvent* event);
       void viewMouseMoveEvent(QMouseEvent*);
@@ -161,7 +162,7 @@ class CtrlCanvas : public MusEGui::View {
       QPoint start;
       MusEGui::Tool tool;
       unsigned pos[3];
-      int curDrumInstrument;    //Used by the drum-editor to view velocity of only one key (one drum)
+      int curDrumPitch;    //Used by the drum-editor to view velocity of only one key (one drum)
       
       void leaveEvent(QEvent*e);
       QPoint raster(const QPoint&) const;
@@ -179,7 +180,7 @@ class CtrlCanvas : public MusEGui::View {
    private slots:
       void songChanged(int type);
       void configChanged();    
-      void setCurDrumInstrument(int);
+      void setCurDrumPitch(int);
 
    public slots:
       void setTool(int t);
@@ -199,6 +200,7 @@ class CtrlCanvas : public MusEGui::View {
       MusECore::MidiCtrlValList* ctrlValList() { return ctrl; }
       MusECore::MidiController* controller() { return _controller; }
       MusECore::MidiTrack* track() const { return curTrack; }
+      int getCurDrumPitch() const { return curDrumPitch; }
       };
 
 } // namespace MusEGui

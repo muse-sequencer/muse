@@ -4597,6 +4597,7 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *   o drum controllers
  *       update ctrlcanvas/panel
  *       test!
+ *   o don't mix DRUM and NEW_DRUM in drumeditor!
  *   o my record flag handling
  *   o option for disabling old-style / new-style drum tracks?
  * 

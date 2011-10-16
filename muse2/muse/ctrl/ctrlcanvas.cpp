@@ -39,6 +39,7 @@
 #include "gconfig.h"
 #include "ctrlpanel.h"
 #include "midiedit/drummap.h"
+#include "drumedit.h"
 
 static MusECore::MidiCtrlValList veloList(MusECore::CTRL_VELOCITY);    // dummy
 
@@ -211,6 +212,11 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       noEvents=false;
       //_isFirstMove = true;
       //_lastDelta = QPoint(0, 0);
+      
+      if (dynamic_cast<DrumEdit*>(editor) && dynamic_cast<DrumEdit*>(editor)->old_style_drummap_mode()==false)
+        filterTrack=true;
+      else
+        filterTrack=false;
 
       ctrl   = &veloList;
       _controller = &MusECore::veloCtrl;
@@ -231,10 +237,10 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
       
-      curDrumInstrument = editor->curDrumInstrument();
-      //printf("CtrlCanvas::CtrlCanvas curDrumInstrument:%d\n", curDrumInstrument);
+      setCurDrumPitch(editor->curDrumInstrument());
+      //printf("CtrlCanvas::CtrlCanvas curDrumPitch:%d\n", curDrumPitch);
                           
-      connect(editor, SIGNAL(curDrumInstrumentChanged(int)), SLOT(setCurDrumInstrument(int)));
+      connect(editor, SIGNAL(curDrumInstrumentChanged(int)), SLOT(setCurDrumPitch(int)));
       updateItems();
       }
 
@@ -537,15 +543,21 @@ void CtrlCanvas::partControllers(const MusECore::MidiPart* part, int num, int* d
     int di;
     int n;
     
-    if((mt->type() != MusECore::Track::DRUM) && curDrumInstrument != -1) //FINDMICHJETZT was ist das?
+    if(!mt->isDrumTrack() && curDrumPitch != -1)
       printf("keyfilter != -1 in non drum track?\n");
 
-    if((mt->type() == MusECore::Track::DRUM) && (curDrumInstrument != -1) && ((num & 0xff) == 0xff))  //FINDMICHJETZT was ist das?
+    if((mt->type() == MusECore::Track::DRUM) && (curDrumPitch != -1) && ((num & 0xff) == 0xff))
     {
-      di = (num & ~0xff) | curDrumInstrument;
-      n = (num & ~0xff) | MusEGlobal::drumMap[curDrumInstrument].anote;  // construct real controller number
-      //num = (num & ~0xff) | curDrumInstrument);  // construct real controller number
-      mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[curDrumInstrument].port];          
+      di = (num & ~0xff) | curDrumPitch;
+      n = (num & ~0xff) | MusEGlobal::drumMap[curDrumPitch].anote;  // construct real controller number
+      //num = (num & ~0xff) | curDrumPitch);  // construct real controller number
+      mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[curDrumPitch].port];          
+    }
+    else if ((mt->type() == MusECore::Track::NEW_DRUM) && (curDrumPitch != -1) && ((num & 0xff) == 0xff))  //FINDMICHJETZT does this work?
+    {
+      di = (num & ~0xff) | curDrumPitch;
+      n =  (num & ~0xff) | curDrumPitch;
+      mp = &MusEGlobal::midiPorts[mt->outPort()];          
     }
     else
     {
@@ -601,6 +613,10 @@ void CtrlCanvas::updateItems()
               CEvent* lastce  = 0;
               
               MusECore::MidiPart* part = (MusECore::MidiPart*)(p->second);
+              
+              if (filterTrack && part->track() != curTrack)
+                continue;
+              
               MusECore::EventList* el = part->events();
               //MusECore::MidiController* mc;
               MusECore::MidiCtrlValList* mcvl;
@@ -617,15 +633,15 @@ void CtrlCanvas::updateItems()
                     
                     if(_cnum == MusECore::CTRL_VELOCITY && e.type() == MusECore::Note) 
                     {
-                          //printf("CtrlCanvas::updateItems MusECore::CTRL_VELOCITY curDrumInstrument:%d\n", curDrumInstrument);
+                          //printf("CtrlCanvas::updateItems MusECore::CTRL_VELOCITY curDrumPitch:%d\n", curDrumPitch);
                           newev = 0;
-                          if(curDrumInstrument == -1) 
+                          if(curDrumPitch == -1)
                           {
                                 // This is interesting - it would allow ALL drum note velocities to be shown.
                                 // But currently the drum list ALWAYS has a selected item so this is not supposed to happen.
                                 items.add(newev = new CEvent(e, part, e.velo()));
                           }
-                          else if (e.dataA() == curDrumInstrument) //same note
+                          else if (e.dataA() == curDrumPitch) //same note
                                 items.add(newev = new CEvent(e, part, e.velo()));
                           if(newev && e.selected())
                             selection.push_back(newev);
@@ -795,7 +811,7 @@ void CtrlCanvas::viewMouseMoveEvent(QMouseEvent* event)
                   if (!moving)
                         break;
                   drag = DRAG_LASSO;
-                  // weiter mit DRAG_LASSO:
+                  // fallthrough
             case DRAG_LASSO:
                   lasso.setRect(start.x(), start.y(), dist.x(), dist.y());
                   redraw();
@@ -857,7 +873,7 @@ void CtrlCanvas::viewMouseReleaseEvent(QMouseEvent* event)
 
             case DRAG_LASSO_START:
                   lasso.setRect(-1, -1, -1, -1);
-
+                  //fallthrough
             case DRAG_LASSO:
                   if(_controller)  // p4.0.27
                   {
@@ -1690,8 +1706,8 @@ void CtrlCanvas::pdrawItems(QPainter& p, const QRect& rect, const MusECore::Midi
     MusECore::MidiTrack* mt = part->track();
     MusECore::MidiPort* mp;
     
-    if((mt->type() == MusECore::Track::DRUM) && (curDrumInstrument != -1) && ((_cnum & 0xff) == 0xff))  //FINDMICHJETZT was ist das?
-      mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[curDrumInstrument].port];          
+    if((mt->type() == MusECore::Track::DRUM) && (curDrumPitch != -1) && ((_cnum & 0xff) == 0xff))
+      mp = &MusEGlobal::midiPorts[MusEGlobal::drumMap[curDrumPitch].port];          
     else
       mp = &MusEGlobal::midiPorts[mt->outPort()];          
     
@@ -1857,7 +1873,7 @@ void CtrlCanvas::pdraw(QPainter& p, const QRect& rect)
       {
         MusECore::MidiPart* part = (MusECore::MidiPart*)(ip->second);
         //if((velo && part == curPart) || (!velo && part != curPart))
-        if(part == curPart)
+        if(part == curPart || (filterTrack && part->track() != curTrack))
           continue;
         // Draw items for all parts - other than current part
         pdrawItems(p, rect, part, velo, !velo);
@@ -1978,13 +1994,24 @@ void CtrlCanvas::draw(QPainter& p, const QRect& rect)
       }
 
 //---------------------------------------------------------
-//   setCurDrumInstrument
+//   setCurDrumPitch
 //---------------------------------------------------------
 
-void CtrlCanvas::setCurDrumInstrument(int di)
+void CtrlCanvas::setCurDrumPitch(int instrument)
+{
+      DrumEdit* drumedit = dynamic_cast<DrumEdit*>(editor);
+      if (drumedit == NULL || drumedit->old_style_drummap_mode())
+        curDrumPitch = instrument;
+      else // new style drummap mode
       {
-      curDrumInstrument = di;
-      //printf("CtrlCanvas::setCurDrumInstrument curDrumInstrument:%d\n", curDrumInstrument);
+        if (drumedit->get_instrument_map()[instrument].tracks.contains(curTrack))
+          curDrumPitch = drumedit->get_instrument_map()[instrument].pitch;
+        else
+          curDrumPitch = -1;
+      }
+      
+      
+      //printf("CtrlCanvas::setCurDrumPitch curDrumPitch:%d\n", curDrumPitch);
       
       //
       //  check if current controller is only valid for
@@ -2000,6 +2027,6 @@ void CtrlCanvas::setCurDrumInstrument(int di)
       //      }
       // Removed by T356
       //songChanged(-1);
-      }
+}
 
 } // namespace MusEGui
