@@ -122,7 +122,9 @@ namespace MusEGui {
 
 void LMaster::closeEvent(QCloseEvent* e)
       {
-      emit deleted(static_cast<TopWin*>(this));
+      _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
+      
+      emit isDeleting(static_cast<TopWin*>(this));
       e->accept();
       }
 
@@ -132,6 +134,9 @@ void LMaster::closeEvent(QCloseEvent* e)
 
 void LMaster::songChanged(int type)
       {
+      if(_isDeleting)  // Ignore while while deleting to prevent crash.
+        return;
+      
       if (type & (SC_SIG | SC_TEMPO | SC_KEY ))
             updateList();
       }

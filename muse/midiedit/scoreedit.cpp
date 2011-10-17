@@ -604,6 +604,9 @@ void ScoreEdit::velo_off_box_changed()
 
 void ScoreEdit::song_changed(int flags)
 {
+        if(_isDeleting)  // Ignore while while deleting to prevent crash.
+          return;
+        
 	if (flags & (SC_SELECTION | SC_EVENT_MODIFIED | SC_EVENT_REMOVED))
 	{
 		map<MusECore::Event*, MusECore::Part*> selection=get_events(score_canvas->get_all_parts(),1);
@@ -671,11 +674,13 @@ void ScoreEdit::viewport_height_changed(int height)
 
 void ScoreEdit::closeEvent(QCloseEvent* e)
 {
+        _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
+        
 	QSettings settings("MusE", "MusE-qt");
 	//settings.setValue("ScoreEdit/geometry", saveGeometry());
 	settings.setValue("ScoreEdit/windowState", saveState());
 
-	emit deleted(static_cast<TopWin*>(this));
+	emit isDeleting(static_cast<TopWin*>(this));
 	e->accept();
 }
 
@@ -1449,6 +1454,9 @@ void ScoreCanvas::fully_recalculate()
 
 void ScoreCanvas::song_changed(int flags)
 {
+        if(parent && parent->deleting())  // Ignore while while deleting to prevent crash.
+          return;
+        
 	if (flags & (SC_PART_MODIFIED | SC_PART_REMOVED | SC_PART_INSERTED | SC_TRACK_REMOVED))
 	{
 		update_parts();

@@ -94,7 +94,7 @@ class WaveEdit : public MidiEditor {
 
 
    signals:
-      void deleted(MusEGui::TopWin*);
+      void isDeleting(MusEGui::TopWin*);
 
    public:
       WaveEdit(MusECore::PartList*);

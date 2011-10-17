@@ -184,7 +184,7 @@ class ScoreEdit : public TopWin
 		void clipboard_changed();
 		
 	signals:
-		void deleted(MusEGui::TopWin*);
+		void isDeleting(MusEGui::TopWin*);
 		void name_changed();
 		void velo_changed(int);
 		void velo_off_changed(int);

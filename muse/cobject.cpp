@@ -50,6 +50,7 @@ bool TopWin::initInited=false;
 TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlags f)
                  : QMainWindow(parent, f)
 {
+        _isDeleting = false;
 	if (initInited==false)
 		initConfiguration();
 

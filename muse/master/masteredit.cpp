@@ -59,7 +59,9 @@ int MasterEdit::_rasterInit = 0;
 
 void MasterEdit::closeEvent(QCloseEvent* e)
       {
-      emit deleted(static_cast<TopWin*>(this));
+      _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
+
+      emit isDeleting(static_cast<TopWin*>(this));
       e->accept();
       }
 
@@ -69,6 +71,9 @@ void MasterEdit::closeEvent(QCloseEvent* e)
 
 void MasterEdit::songChanged(int type)
       {
+      if(_isDeleting)  // Ignore while while deleting to prevent crash.
+        return;
+        
       if (type & SC_TEMPO) {
             int tempo = MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos());
             curTempo->blockSignals(true);

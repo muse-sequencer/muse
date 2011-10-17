@@ -1844,7 +1844,7 @@ void MusE::openInScoreEdit(MusEGui::ScoreEdit* destination, MusECore::PartList* 
       destination = new MusEGui::ScoreEdit(this, 0, _arranger->cursorValue());
       destination->show();
       toplevels.push_back(destination);
-      connect(destination, SIGNAL(deleted(MusEGui::TopWin*)), SLOT(toplevelDeleted(MusEGui::TopWin*)));
+      connect(destination, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
       connect(destination, SIGNAL(name_changed()), arrangerView, SLOT(scoreNamingChanged()));
       //connect(muse, SIGNAL(configChanged()), destination, SLOT(config_changed()));
       //commented out by flo, because the ScoreEditor connects to all 
@@ -1882,7 +1882,7 @@ void MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls)
         pianoroll->addCtrl();
       pianoroll->show();
       toplevels.push_back(pianoroll);
-      connect(pianoroll, SIGNAL(deleted(MusEGui::TopWin*)), SLOT(toplevelDeleted(MusEGui::TopWin*)));
+      connect(pianoroll, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
       updateWindowMenu();
       }
@@ -1904,7 +1904,7 @@ void MusE::startListEditor(MusECore::PartList* pl)
       MusEGui::ListEdit* listEditor = new MusEGui::ListEdit(pl);
       listEditor->show();
       toplevels.push_back(listEditor);
-      connect(listEditor, SIGNAL(deleted(MusEGui::TopWin*)), SLOT(toplevelDeleted(MusEGui::TopWin*)));
+      connect(listEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
       connect(MusEGlobal::muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
       updateWindowMenu();
       }
@@ -1918,7 +1918,7 @@ void MusE::startMasterEditor()
       MusEGui::MasterEdit* masterEditor = new MusEGui::MasterEdit();
       masterEditor->show();
       toplevels.push_back(masterEditor);
-      connect(masterEditor, SIGNAL(deleted(MusEGui::TopWin*)), SLOT(toplevelDeleted(MusEGui::TopWin*)));
+      connect(masterEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
       updateWindowMenu();
       }
 
@@ -1931,7 +1931,7 @@ void MusE::startLMasterEditor()
       MusEGui::LMaster* lmaster = new MusEGui::LMaster();
       lmaster->show();
       toplevels.push_back(lmaster);
-      connect(lmaster, SIGNAL(deleted(MusEGui::TopWin*)), SLOT(toplevelDeleted(MusEGui::TopWin*)));
+      connect(lmaster, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), lmaster, SLOT(configChanged()));
       updateWindowMenu();
       }
@@ -1955,7 +1955,7 @@ void MusE::startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls)
         drumEditor->addCtrl();
       drumEditor->show();
       toplevels.push_back(drumEditor);
-      connect(drumEditor, SIGNAL(deleted(MusEGui::TopWin*)), SLOT(toplevelDeleted(MusEGui::TopWin*)));
+      connect(drumEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
       updateWindowMenu();
       }
@@ -1980,7 +1980,7 @@ void MusE::startWaveEditor(MusECore::PartList* pl)
       waveEditor->show();
       connect(MusEGlobal::muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
       toplevels.push_back(waveEditor);
-      connect(waveEditor, SIGNAL(deleted(MusEGui::TopWin*)), SLOT(toplevelDeleted(MusEGui::TopWin*)));
+      connect(waveEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
       updateWindowMenu();
       }
 
@@ -2038,7 +2038,7 @@ void MusE::startClipList(bool checked)
             //clipListEdit = new ClipListEdit();
             clipListEdit = new MusEGui::ClipListEdit(this);
             toplevels.push_back(clipListEdit);
-            connect(clipListEdit, SIGNAL(deleted(MusEGui::TopWin*)), SLOT(toplevelDeleted(MusEGui::TopWin*)));
+            connect(clipListEdit, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
             }
       clipListEdit->show();
       viewCliplistAction->setChecked(checked);
@@ -2084,10 +2084,10 @@ void MusE::selectProject(QAction* act)
       }
 
 //---------------------------------------------------------
-//   toplevelDeleted
+//   toplevelDeleting
 //---------------------------------------------------------
 
-void MusE::toplevelDeleted(MusEGui::TopWin* tl)
+void MusE::toplevelDeleting(MusEGui::TopWin* tl)
       {
       for (MusEGui::iToplevel i = toplevels.begin(); i != toplevels.end(); ++i) {
             if (*i == tl) {
@@ -2132,18 +2132,16 @@ void MusE::toplevelDeleted(MusEGui::TopWin* tl)
                         case MusEGui::TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
                           break;
                         }
-                  toplevels.erase(i);
+                  toplevels.erase(i);   
                   if (mustUpdateScoreMenus)
                         arrangerView->updateScoreMenus();
                   updateWindowMenu();
                   return;
                   }
             }
-      printf("topLevelDeleted: top level %p not found\n", tl);
+      printf("topLevelDeleting: top level %p not found\n", tl);
       //assert(false);
       }
-
-
 
 //---------------------------------------------------------
 //   kbAccel
@@ -2750,16 +2748,21 @@ again:
                   case MusEGui::TopWin::MASTER:
                   case MusEGui::TopWin::WAVE:
                   case MusEGui::TopWin::LMASTER:
-                        tl->close();
-                        goto again;
-                  
+                  {  
+                        if(tl->isVisible())   // Don't keep trying to close, only if visible.
+                        {  
+                          if(!tl->close())
+                            printf("MusE::clearSong TopWin did not close!\n");  
+                          goto again;
+                        }  
+                  }
                   case MusEGui::TopWin::TOPLEVELTYPE_LAST_ENTRY: //to avoid a warning
                     break;
                   }
             }
-      microSleep(100000);
+      microSleep(100000);  
       MusEGlobal::song->clear(true, clear_all);
-      microSleep(100000);
+      microSleep(100000);  
       return false;
       }
 
