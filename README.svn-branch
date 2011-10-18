@@ -18,6 +18,7 @@ General note: ^/trunk means [url of the repo]/trunk. when you're inside
 a working copy, svn understands the ^/trunk notation.
 i assume you're inside some working copy
 
+whenever merging, make sure you're in the correct directory!
 
 CREATING A BRANCH
   the following command creates a branch called yourbranch in the branches
@@ -43,7 +44,10 @@ MERGING WITH THE PARENT BRANCH (in my example: the trunk)
   you know what you're doing. if you're reading and not skimming this,
   you're probably NOT knowing. svn help and google are your friends.
 
-  svn merge ^/trunk ^/branches/yourbranch --accept postpone
+  be in your branch'es working directory root (the dir which is containing
+  all the files/dirs also trunk (the parent) is containing as well.
+
+  svn merge ^/trunk --accept postpone
 
   does the job for you. there might be conflicts, when both in your branch
   and in trunk some file has been changes at a similar location. svn by
@@ -73,7 +77,7 @@ PUTTING YOUR WORK BACK INTO THE PARENT BRANCH (in my example: trunk)
   then there are several ways to proceed:
     o use svn merge --reintegrate, which doesn't work with the old repo
       version muse is using :(
-    o go into the trunk, and issue
+    o go into the trunk (or the parent branch'es directory), and issue
          svn merge ^/branches/yourbranch --accept theirs-full
       the problem with the merge is, that every previous merge from trunk
       into your branch will be applied a second time, which doesn't work.
