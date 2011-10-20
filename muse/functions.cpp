@@ -177,8 +177,9 @@ bool quantize_notes(const set<Part*>& parts)
 {
 	if (!MusEGui::quantize_dialog->exec())
 		return false;
-		
-	quantize_notes(parts, MusEGui::quantize_dialog->range, (MusEGlobal::config.division*4)/(1<<MusEGui::quantize_dialog->raster_power2),
+//  (1<<MusEGui::quantize_dialog->raster_power2)
+  int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
+  quantize_notes(parts, MusEGui::quantize_dialog->range, (MusEGlobal::config.division*4)/raster,
 	               MusEGui::quantize_dialog->quant_len, MusEGui::quantize_dialog->strength, MusEGui::quantize_dialog->swing,
 	               MusEGui::quantize_dialog->threshold);
 	
@@ -306,8 +307,9 @@ bool quantize_notes()
 		parts=get_all_selected_parts();
 	else
 		parts=get_all_parts();
-		
-	quantize_notes(parts, MusEGui::quantize_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, (config.division*4)/(1<<MusEGui::quantize_dialog->raster_power2),
+
+  int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
+  quantize_notes(parts, MusEGui::quantize_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, (config.division*4)/raster,
 	               MusEGui::quantize_dialog->quant_len, MusEGui::quantize_dialog->strength, MusEGui::quantize_dialog->swing,
 	               MusEGui::quantize_dialog->threshold);
 	

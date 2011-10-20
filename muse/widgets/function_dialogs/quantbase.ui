@@ -157,7 +157,7 @@
          <bool>false</bool>
         </property>
         <property name="currentIndex">
-         <number>3</number>
+         <number>0</number>
         </property>
         <property name="frame">
          <bool>true</bool>
@@ -174,7 +174,12 @@
         </item>
         <item>
          <property name="text">
-          <string>Quarter</string>
+          <string>4th</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>4th Triplet</string>
          </property>
         </item>
         <item>
@@ -184,12 +189,27 @@
         </item>
         <item>
          <property name="text">
+          <string>8th Triplet</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>16th</string>
          </property>
         </item>
         <item>
          <property name="text">
+          <string>16th Triplet</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
           <string>32th</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>32th Triplet</string>
          </property>
         </item>
        </widget>

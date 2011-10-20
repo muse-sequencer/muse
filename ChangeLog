@@ -1,3 +1,5 @@
+20.10.2011:
+        - Added missing triplets in quantisation dialog (rj)
 16.10.2011:
         - Fixed crashes reloading songs having open editors. Previous memleak fixes revealed some problems. (Tim)
           Installed bool TopWin::deleting(). It is set true when closeEvent() is called in any self-deleting TopWins.
