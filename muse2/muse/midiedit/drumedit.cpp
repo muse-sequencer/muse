@@ -945,12 +945,15 @@ void DrumEdit::cmd(int cmd)
             case DrumCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
             case DrumCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
             case DrumCanvas::CMD_QUANTIZE:
+                  {
+                  int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
                   if (quantize_dialog->exec())
                         quantize_notes(partlist_to_set(parts()), quantize_dialog->range, 
-                                       (MusEGlobal::config.division*4)/(1<<quantize_dialog->raster_power2),
+                                       (MusEGlobal::config.division*4)/raster,
                                        /* quant_len= */false, quantize_dialog->strength, 
                                        quantize_dialog->swing, quantize_dialog->threshold);
                   break;
+                  }
             case DrumCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
             case DrumCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break; //delete selected events
             case DrumCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;
