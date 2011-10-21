@@ -68,6 +68,8 @@
 //#define ABS(x) (x>=0?x:-x)
 #define ABS(x) (abs(x))
 
+#define EDITING_FINISHED_TIMEOUT 50 /* in milliseconds */
+
 using std::set;
 
 namespace MusEGui {
@@ -181,6 +183,8 @@ void PartCanvas::returnPressed()
           MusEGlobal::audio->msgChangePart(oldPart, newPart, true, true, false);
           
           editMode = false;
+          
+          editingFinishedTime.start();
           }
       }
 
@@ -952,11 +956,14 @@ void PartCanvas::keyPress(QKeyEvent* event)
 //      }
       if (editMode)
             {
+            // this will probably never happen, as edit mode has been set
+            // to "false" some usec ago by returnPressed, called by editingFinished.
             if ( key == Qt::Key_Return || key == Qt::Key_Enter ) 
                   {
                   //returnPressed(); commented out by flo
                   return;
                   }
+            // the below CAN indeed happen.
             else if ( key == Qt::Key_Escape )
                   {
                   lineEditor->hide();
@@ -964,6 +971,11 @@ void PartCanvas::keyPress(QKeyEvent* event)
                   return;
                   }
             }
+      // if returnPressed, called by editingFinished, was executed
+      // a short time ago, ignore this keypress if it was enter or return
+      if (editingFinishedTime.elapsed() < EDITING_FINISHED_TIMEOUT &&
+          (key == Qt::Key_Return || key == Qt::Key_Enter) )
+        return;
 
       if (event->modifiers() &  Qt::ShiftModifier)
             key +=  Qt::SHIFT;
