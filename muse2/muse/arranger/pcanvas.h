@@ -26,6 +26,7 @@
 
 #include <QVector>
 #include <set>
+#include <QTime>
 
 #include "song.h"
 #include "canvas.h"
@@ -93,6 +94,8 @@ class PartCanvas : public Canvas {
       NPart* editPart;
       int curColorIndex;
       bool editMode;
+      
+      QTime editingFinishedTime;
 
       AutomationObject automation;
 

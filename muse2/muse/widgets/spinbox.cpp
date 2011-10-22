@@ -99,4 +99,19 @@ void SpinBox::stepDown()
     _clearFocus = true;
 }
 
+void SpinBox::keyPressEvent(QKeyEvent* ev)
+{
+    switch (ev->key()) {
+      case Qt::Key_Return:
+        clearFocus();
+        //emit returnPressed();
+        //      return;
+        break;
+      default:
+        break;
+    }
+    QSpinBox::keyPressEvent(ev);
+}
+
 } // namespace MusEGui
+

@@ -43,7 +43,8 @@ class SpinBox : public QSpinBox {
 
    protected:
       bool eventFilter(QObject* obj, QEvent* ev);
-      
+      virtual void keyPressEvent(QKeyEvent*);
+
    public slots:
       virtual void stepUp();
       virtual void stepDown();
