@@ -221,13 +221,11 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
 
       setMouseTracking(true);
-      if (editor->parts()->empty()) {
-            curPart = 0;
-            curTrack = 0;
-            }
-      else {
+      curPart = 0;
+      curTrack = 0;
+      if (!editor->parts()->empty())
             setCurTrackAndPart();
-            }
+
       connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
       
@@ -1974,7 +1972,7 @@ void CtrlCanvas::draw(QPainter& p, const QRect& rect)
       //    draw line tool
       //---------------------------------------------------
 
-      if (drawLineMode && (tool == MusEGui::DrawTool)) {
+      if ((tool == MusEGui::DrawTool) && drawLineMode) {
             p.setPen(Qt::black);
             p.drawLine(line1x, line1y, line2x, line2y);
             }
