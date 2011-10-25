@@ -1,3 +1,11 @@
+24.10.2010:
+        - Fixed bug #3293339: Midi file export SMF format 0 broken. (Tim)
+          Removed erroneous extra 2 bytes. Allow metas in SMF0 in MidiFile::writeEvent().
+          Fixed very weird timing issue MidiFile::write(). See comments there (hidden problems lurking still?). 
+          Use single MidiFileTrack for SMF0 in MusE::exportMidi(). Added info to export dialog indicating that 
+           SMF 0 grabs the track name and comment from first midi track in arranger. Iterate full tracks list 
+           instead of midis list in MusE::exportMidi(), so that user can rearrange tracks on the fly before exporting. 
+          Some not fully understood useage of meta 0x0F/0x01 text events in MusE::exportMidi(). Hopefully correct...
 22.10.2010:
         - Catch return in spin boxes and move focus away (rj)
 20.10.2011:
