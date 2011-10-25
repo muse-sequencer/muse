@@ -33,6 +33,8 @@
 #include <QMouseEvent>
 #include <QKeyEvent>
 
+#include <vector>
+
 class QMenu;
 
 namespace MusEGui {
@@ -54,6 +56,7 @@ class Canvas : public View {
       bool canScrollRight;
       bool canScrollUp;
       bool canScrollDown;
+
    protected:
       enum DragMode {
             DRAG_OFF, DRAG_NEW,
@@ -78,11 +81,16 @@ class Canvas : public View {
             VSCROLL_NONE, VSCROLL_UP, VSCROLL_DOWN
             };
       
-      CItemList items;
+      //CItemList items;
       CItemList moving;
       CItem* curItem;
-      MusECore::Part* curPart;
-      int curPartId;
+
+      // Items layers. Used during painting. Exact usage depends on subclass. They are free to add as many layers as needed.
+      // The derived classes are asked to sort the 'items' list into the itemLayers for drawing.
+      // The draw() method will call sortLayerItem() for each item in each list in each layer. 
+      // Layer 0 is bottom layer of items (first drawn). (These are not allocated CItems, simply pointers.)
+      CItemLayers items;  
+      std::vector<std::vector<CItem*> > itemLayers;  
 
       DragMode drag;
       QRect lasso;
@@ -112,17 +120,27 @@ class Canvas : public View {
       virtual void drawCanvas(QPainter&, const QRect&) = 0;
       virtual void drawTopItem(QPainter& p, const QRect& rect) = 0;
 
-      virtual void drawItem(QPainter&, const CItem*, const QRect&) = 0;
+      // Subclasses can override with custom drawing sequences. For example automation requires drawing the layer 
+      //  once as connected lines, then drawing the layer again as vertex 'boxes' on TOP OF the lines.
+      // The default simply calls drawItem().
+      virtual void drawItemLayer(QPainter& p, const QRect& r, int layer); 
+      //virtual void drawItem(QPainter&, const CItem*, const QRect&) = 0;
+      virtual void drawItem(QPainter&, const CItem*, const QRect&, int layer) = 0;  // Layer can be -1 for moving.
       virtual void drawMoving(QPainter&, const CItem*, const QRect&) = 0;
       virtual void updateSelection() = 0;
       virtual QPoint raster(const QPoint&) const = 0;
       virtual int y2pitch(int) const = 0; //CDW
       virtual int pitch2y(int) const = 0; //CDW
+      // The derived classes are asked to sort the 'items' list into 'itemLayers' for drawing.
+      //virtual void sortLayerItem(CItem* item) = 0;
 
       virtual CItem* newItem(const QPoint&, int state) = 0;
       virtual void resizeItem(CItem*, bool noSnap=false, bool ctrl=false) = 0;
       virtual void newItem(CItem*, bool noSnap=false) = 0;
       virtual bool deleteItem(CItem*) = 0;
+      //virtual void deleteItem(const QPoint&);
+      virtual void deleteItemAtPoint(const QPoint&) = 0;
+
       int getCurrentDrag();
 
       /*!
@@ -158,8 +176,7 @@ class Canvas : public View {
       // selection
       virtual void deselectAll();
       virtual void selectItem(CItem* e, bool);
-
-      virtual void deleteItem(const QPoint&);
+      virtual void selectItemRow(bool) { }
 
       // moving
       void startMoving(const QPoint&, DragType);
@@ -167,11 +184,13 @@ class Canvas : public View {
       void moveItems(const QPoint&, int dir, bool rasterize = true);
       virtual void endMoveItems(const QPoint&, DragType, int dir) = 0;
 
+      // Default is to select all items in all layers. Override in subclasses for specific behaviour.
       virtual void selectLasso(bool toggle);
 
       virtual void itemPressed(const CItem*) {}
       virtual void itemReleased(const CItem*, const QPoint&) {}
       virtual void itemMoved(const CItem*, const QPoint&) {}
+      virtual void curItemChanged() {}
       virtual void curPartChanged() {}
 
    public slots:
@@ -191,11 +210,13 @@ class Canvas : public View {
    public:
       Canvas(QWidget* parent, int sx, int sy, const char* name = 0);
       virtual ~Canvas();
-      bool isSingleSelection();
-      int selectionSize();
+      //bool isSingleSelection();
+      bool isSingleSelection(int layer = -1);
+      //int selectionSize();
+      int selectionSize(int layer = -1);
       Tool tool() const { return _tool; }
-      MusECore::Part* part() const { return curPart; }
-      void setCurrentPart(MusECore::Part*); 
+      //MusECore::Part* part() const { return curPart; }
+      //void setCurrentPart(MusECore::Part*); 
       void setCanvasTools(int n) { canvasTools = n; }
       };
 

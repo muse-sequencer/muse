@@ -32,6 +32,10 @@
 #include "canvas.h"
 #include "trackautomationview.h"
 
+// Item layer indices:
+#define _PCANVAS_PART_ITEMS_         0
+#define _PCANVAS_AUTOMATION_ITEMS_   1
+
 class QDropEvent;
 class QMouseEvent;
 class QKeyEvent;
@@ -48,25 +52,34 @@ class Xml;
 #define beats     4
 
 namespace MusEGui {
-
+  
 class MidiEditor;
 
 //---------------------------------------------------------
-//   NPart
+//   PCItem
 //    ''visual'' Part
 //    wraps Parts with additional information needed
 //    for displaying
 //---------------------------------------------------------
 
-class NPart : public CItem {
+class PCItem : public CItem {
+   private:
+      MusECore::Part* _part;
+     
    public:
-      NPart(MusECore::Part* e);
-      const QString name() const     { return part()->name(); }
-      void setName(const QString& s) { part()->setName(s); }
-      MusECore::Track* track() const           { return part()->track(); }
+      PCItem(MusECore::Part* );
+      Type type() const { return PART; } 
+      const QString name() const       { return _part->name(); }
+      void setName(const QString& s)   { _part->setName(s); }
+      MusECore::Track* track() const   { return _part->track(); }
       
       bool leftBorderTouches;  // Whether the borders touch other part borders. 
       bool rightBorderTouches;
+
+      bool isSelected() const          { return _part->selected(); }
+      void setSelected(bool f)         { _part->setSelected(f); }
+      MusECore::Part* part() const     { return _part; }
+      void setPart(MusECore::Part* p)  { _part = p; }
       };
 
 enum ControllerVals { doNothing, movingController, addNewController };
@@ -91,7 +104,7 @@ class PartCanvas : public Canvas {
 
       MusECore::Part* resizePart;
       QLineEdit* lineEditor;
-      NPart* editPart;
+      PCItem* editPart;
       int curColorIndex;
       bool editMode;
       
@@ -107,7 +120,9 @@ class PartCanvas : public Canvas {
       virtual void mouseRelease(const QPoint&);
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
       virtual void leaveEvent(QEvent*e);
-      virtual void drawItem(QPainter&, const CItem*, const QRect&);
+      virtual void drawItemLayer(QPainter& p, const QRect& r, int layer); 
+      //virtual void drawItem(QPainter&, const CItem*, const QRect&);
+      virtual void drawItem(QPainter&, const CItem*, const QRect&, int layer);
       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
       virtual void updateSelection();
       virtual QPoint raster(const QPoint&) const;
@@ -117,9 +132,11 @@ class PartCanvas : public Canvas {
       virtual CItem* newItem(const QPoint&, int);
       virtual void resizeItem(CItem*,bool, bool ctrl);
       virtual void newItem(CItem*,bool);
+      virtual void deleteItemAtPoint(const QPoint&);
       virtual bool deleteItem(CItem*);
       virtual void moveCanvasItems(CItemList&, int, int, DragType);
       virtual MusECore::UndoOp moveItem(CItem*, const QPoint&, DragType);
+      virtual void curItemChanged();
 
       virtual void updateSong(DragType, int);
       virtual void startDrag(CItem*, DragType);
@@ -152,8 +169,14 @@ class PartCanvas : public Canvas {
       double valToDb(double inV);
 
    protected:
+      MusECore::Part* _curPart;
+      int _curPartId;
+
       virtual void drawCanvas(QPainter&, const QRect&);
       virtual void endMoveItems(const QPoint&, DragType, int dir);
+      virtual void selectLasso(bool);
+      virtual void selectItemRow(bool);
+      //virtual void sortLayerItem(CItem* item);
 
    signals:
       void timeChanged(unsigned);
@@ -180,9 +203,12 @@ class PartCanvas : public Canvas {
       virtual ~PartCanvas();
       void partsChanged();
       void cmd(int);
+      MusECore::Part* part() const { return _curPart; }
+      void setCurrentPart(MusECore::Part*); 
+      
    public slots:
-   void redirKeypress(QKeyEvent* e) { keyPress(e); }
-   void controllerChanged(MusECore::Track *t);
+     void redirKeypress(QKeyEvent* e) { keyPress(e); }
+     void controllerChanged(MusECore::Track *t);
 };
 
 } // namespace MusEGui

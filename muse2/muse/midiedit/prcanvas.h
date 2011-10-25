@@ -41,13 +41,14 @@ class QRect;
 namespace MusEGui {
 
 //---------------------------------------------------------
-//   NEvent
-//    ''visual'' Note Event
+//   NCItem
+//    ''visual'' Note Event canvas item
 //---------------------------------------------------------
 
-class NEvent : public CItem {
+class NCItem : public MusEGui::MCItem {
    public:
-      NEvent(MusECore::Event& e, MusECore::Part* p, int y);
+      NCItem(const MusECore::Event& e, MusECore::Part* p, int y);
+      Type type() const { return MEVENT; } 
       };
 
 class ScrollScale;
@@ -69,7 +70,8 @@ class PianoCanvas : public EventCanvas {
 
       
       virtual void viewMouseDoubleClickEvent(QMouseEvent*);
-      virtual void drawItem(QPainter&, const CItem*, const QRect&);
+      //virtual void drawItem(QPainter&, const CItem*, const QRect&);
+      virtual void drawItem(QPainter&, const CItem*, const QRect&, int layer);
       void drawTopItem(QPainter &p, const QRect &rect);
       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
       virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType);
@@ -77,7 +79,6 @@ class PianoCanvas : public EventCanvas {
       virtual CItem* newItem(const QPoint&, int);
       virtual void resizeItem(CItem*, bool noSnap, bool);
       virtual void newItem(CItem*, bool noSnap);
-      virtual bool deleteItem(CItem*);
       virtual void startDrag(CItem* item, bool copymode);
       virtual void dragEnterEvent(QDragEnterEvent* event);
       virtual void dragMoveEvent(QDragMoveEvent*);
@@ -93,6 +94,9 @@ class PianoCanvas : public EventCanvas {
       virtual void curPartChanged();
       virtual void resizeEvent(QResizeEvent*);
 
+   protected:
+      virtual bool deleteItem(CItem*);
+      
    private slots:
       void midiNote(int pitch, int velo);
 

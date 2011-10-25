@@ -29,7 +29,6 @@
 
 #define TH 18
 
-
 class QResizeEvent;
 class QDragEnterEvent;
 class QDropEvent;
@@ -43,13 +42,14 @@ class PianoRoll;
 class ScrollScale;
 
 //---------------------------------------------------------
-//   DEvent
-//    ''visual'' Drum Event
+//   DCItem
+//    ''visual'' Drum Event canvas item
 //---------------------------------------------------------
 
-class DEvent : public CItem {
-   public:
-      DEvent(MusECore::Event e, MusECore::Part* p);
+class DCItem : public MusEGui::MCItem {
+  public:
+      DCItem(const MusECore::Event& e, MusECore::Part* p);
+      Type type() const { return DEVENT; } 
       };
 
 //---------------------------------------------------------
@@ -67,7 +67,8 @@ class DrumCanvas : public EventCanvas {
 
       
       virtual void drawCanvas(QPainter&, const QRect&);
-      virtual void drawItem(QPainter&, const CItem*, const QRect&);
+      //virtual void drawItem(QPainter&, const CItem*, const QRect&);
+      virtual void drawItem(QPainter&, const CItem*, const QRect&, int layer);
       void drawTopItem(QPainter& p, const QRect& rect);
       virtual void drawMoving(QPainter&, const CItem*, const QRect&);
       virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType);
@@ -76,7 +77,6 @@ class DrumCanvas : public EventCanvas {
       virtual void resizeItem(CItem*, bool, bool);
       virtual void newItem(CItem*, bool);
       virtual void newItem(CItem*, bool, bool replace );
-      virtual bool deleteItem(CItem*);
       CItem* newItem(int tick, int instrument, int velocity);
 
       int y2pitch(int y) const;
@@ -90,6 +90,9 @@ class DrumCanvas : public EventCanvas {
       virtual void curPartChanged();
       int getNextStep(unsigned int pos, int basicStep, int stepSize=1);
 
+   protected:
+      virtual bool deleteItem(CItem*);
+      
    signals:
       void newWidth(int);
 

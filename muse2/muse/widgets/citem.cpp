@@ -42,47 +42,23 @@ CItem::CItem(const QPoint&p, const QRect& r)
       _isMoving = false;
       }
 
-// Changed by Tim. p3.3.20
-//CItem::CItem(MusECore::Event e, Part* p)
-CItem::CItem(const MusECore::Event& e, MusECore::Part* p)
-      {
-      _event = e;
-      _part  = p;
-      _isMoving = false;
-      }
-
-//---------------------------------------------------------
-//   isSelected
-//---------------------------------------------------------
-
-bool CItem::isSelected() const
-      {
-      return _event.empty() ? _part->selected() : _event.selected();
-      }
-
-//---------------------------------------------------------
-//   setSelected
-//---------------------------------------------------------
-
-void CItem::setSelected(bool f)
-      {
-      _event.empty() ? _part->setSelected(f) : _event.setSelected(f);
-      }
-
 //---------------------------------------------------------
 //   CItemList
+//    type: Default -1 is to find any item type. Otherwise it's a specific CItem::Type. 
 //---------------------------------------------------------
 
-CItem* CItemList::find(const QPoint& pos) const
+CItem* CItemList::find(const QPoint& pos, int type) const
       {
       rciCItem ius;
       bool usfound = false;
+      // Hm, why backwards here?
       for (rciCItem i = rbegin(); i != rend(); ++i) {
+            if(type != -1 && i->second->type() != type)
+              continue;
             if (i->second->contains(pos))
             {
               if(i->second->isSelected()) 
                   return i->second;
-              
               else
               {
                 if(!usfound)
@@ -107,5 +83,33 @@ void CItemList::add(CItem* item)
       {
       std::multimap<int, CItem*, std::less<int> >::insert(std::pair<const int, CItem*> (item->bbox().x(), item));
       }
+
+//---------------------------------------------------------
+//   CItemLayers
+//    layer: Layer number or -1. Default -1 is to find in any layer. 
+//    type: Default -1 is to find any item type. Otherwise it's a specific CItem::Type. 
+//---------------------------------------------------------
+
+CItem* CItemLayers::find(const QPoint& pos, int layer, int type) const
+{
+  if(layer == -1)
+  {
+    // Go from top layer down !
+    for(rciCItemLayer i = rbegin(); i != rend(); ++i)
+    {
+      CItem* item = i->find(pos, type);
+      if(item)
+        return item;
+    }
+  }
+  else
+  {
+    if(layer >= (int)size())
+      return 0;
+    return at(layer).find(pos, type);
+  }
+  return 0;
+}
+
 
 } // namespace MusEGui

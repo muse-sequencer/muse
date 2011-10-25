@@ -24,6 +24,7 @@
 #define __CITEM_H__
 
 #include <map>
+#include <vector>
 #include <QPoint>
 #include <QRect>
 
@@ -41,9 +42,9 @@ namespace MusEGui {
 //---------------------------------------------------------
 
 class CItem {
-   private:
-      MusECore::Event _event;
-      MusECore::Part* _part;
+   ///private:
+      ///MusECore::Event _event;
+      ///MusECore::Part* _part;
 
    protected:
       bool _isMoving;
@@ -52,16 +53,29 @@ class CItem {
       QPoint _pos;
 
    public:
+      //
+      // Canvas Item type. When creating new CItem sub-classes, be sure to add a new type enum here.
+      //
+      enum Type { //TRACK=0,        // Possible future use for tracks.
+                  PART=1,           // Part.
+                  MEVENT=2,         // Midi event.
+                  DEVENT=3,         // Drum event.
+                  //WEVENT=4,       // Possible future use for waves.
+                  CTRL=5            // Audio controller. Future including midi controller.
+                  //MIDI_CTRL=6     // Possible use for midi controller for now, until merge with audio controller.
+                };
+
       CItem(const QPoint& p, const QRect& r);
       CItem();
-      // Changed by Tim. p3.3.20
-      //CItem(MusECore::Event e, MusECore::Part* p);
-      CItem(const MusECore::Event& e, MusECore::Part* p);
+      ///CItem(const MusECore::Event& e, MusECore::Part* p);
 
+      virtual Type type() const = 0; 
       bool isMoving() const        { return _isMoving;  }
       void setMoving(bool f)       { _isMoving = f;     }
-      bool isSelected() const;
-      void setSelected(bool f);
+      ///bool isSelected() const;
+      ///void setSelected(bool f);
+      virtual bool isSelected() const = 0;
+      virtual void setSelected(bool f) = 0;
 
       int width() const            { return _bbox.width(); }
       void setWidth(int l)         { _bbox.setWidth(l); }
@@ -83,30 +97,67 @@ class CItem {
       bool contains(const QPoint& p) const  { return _bbox.contains(p); }
       bool intersects(const QRect& r) const { return r.intersects(_bbox); }
 
-      MusECore::Event event() const         { return _event;  }
-      void setEvent(MusECore::Event& e)     { _event = e;     }
-      MusECore::Part* part() const          { return _part; }
-      void setPart(MusECore::Part* p)       { _part = p; }
+      ///MusECore::Event event() const         { return _event;  }
+      ///void setEvent(MusECore::Event& e)     { _event = e;     }
+      ///MusECore::Part* part() const          { return _part; }
+      ///void setPart(MusECore::Part* p)       { _part = p; }
       };
 
-typedef std::multimap<int, CItem*, std::less<int> >::iterator iCItem;
-//typedef std::multimap<int, CItem*, std::less<int> >::const_iterator ciCItem;
-typedef std::multimap<int, CItem*, std::less<int> >::const_reverse_iterator rciCItem;
+//---------------------------------------------------------
+//   MCItem
+//    Base for note items and drum items
+//---------------------------------------------------------
+
+class MCItem : public CItem {
+   private:
+      MusECore::Event _event;
+      MusECore::Part* _part;
+     
+   public:
+      MCItem(const MusECore::Event& e, MusECore::Part* p) : _event(e) , _part(p) { } 
+      //Type type() const { return MEVENT; } 
+      
+      bool isSelected() const   { return _event.selected(); }
+      void setSelected(bool f)  { _event.setSelected(f);    }
+      
+      const MusECore::Event& event() const     { return _event;  }
+      void setEvent(const MusECore::Event& e)  { _event = e;     }
+      MusECore::Part* part() const             { return _part;   }
+      void setPart(MusECore::Part* p)          { _part = p;      }
+      };
 
 //---------------------------------------------------------
 //   CItemList
 //    Canvas Item List
 //---------------------------------------------------------
 
+typedef std::multimap<int, CItem*, std::less<int> >::iterator iCItem;
+typedef std::multimap<int, CItem*, std::less<int> >::const_iterator ciCItem;
+typedef std::multimap<int, CItem*, std::less<int> >::const_reverse_iterator rciCItem;
+
 class CItemList: public std::multimap<int, CItem*, std::less<int> > {
    public:
       void add(CItem*);
-      CItem* find(const QPoint& pos) const;
+      CItem* find(const QPoint&, int type = -1) const;  
       void clearDelete() {
             for (iCItem i = begin(); i != end(); ++i)
                   delete i->second;
             clear();
             }
+      };
+
+//---------------------------------------------------------
+//   CItemLayers
+//    Canvas Layer Item List
+//---------------------------------------------------------
+
+typedef std::vector<CItemList>::iterator iCItemLayer;
+typedef std::vector<CItemList>::const_iterator ciCItemLayer;
+typedef std::vector<CItemList>::const_reverse_iterator rciCItemLayer;
+
+class CItemLayers: public std::vector<CItemList> {
+   public:
+      CItem* find(const QPoint&, int layer = -1, int type = -1) const;  
       };
 
 } // namespace MusEGui

@@ -45,7 +45,6 @@ class SndFile;
 class SynthI;
 class Xml;
 
-
 //---------------------------------------------------------
 //   Track
 //---------------------------------------------------------
@@ -297,10 +296,6 @@ class MidiTrack : public Track {
       void setClef(clefTypes i) { clefType = i; }
       clefTypes getClef() { return clefType; }
       };
-
-} // namespace MusECore
-
-namespace MusECore {
 
 //---------------------------------------------------------
 //   AudioTrack

@@ -28,6 +28,9 @@
 #include <QEvent>
 #include <QKeyEvent>
 
+// Item layer indices:
+#define _ECANVAS_EVENT_ITEMS_            0
+
 class QMimeData;
 class QDrag;
 class QString;
@@ -69,14 +72,21 @@ class EventCanvas : public Canvas {
       int curVelo;
       bool _steprec;
       bool _midiin;
+      MusECore::Part* _curPart;
+      int _curPartId;
 
       void updateSelection();
       virtual void addItem(MusECore::Part*, MusECore::Event&) = 0;
-      // Added by T356.
+      virtual void deleteItemAtPoint(const QPoint&);
+      virtual void selectLasso(bool);
+      virtual void selectItemRow(bool);
       virtual QPoint raster(const QPoint&) const;
       virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType) = 0;
       virtual MusECore::UndoOp moveItem(CItem*, const QPoint&, DragType) = 0;
       virtual void endMoveItems(const QPoint&, DragType, int dir);
+      virtual void curItemChanged();
+      //virtual void sortLayerItem(CItem* item);
+      virtual void drawItemLayer(QPainter& p, const QRect& r, int layer); 
 
    public slots:
       void redrawGrid()       { redraw(); }
@@ -104,6 +114,8 @@ class EventCanvas : public Canvas {
       void viewDropEvent(QDropEvent* event);
       virtual void modifySelected(NoteInfo::ValType, int) {}
       virtual void keyPress(QKeyEvent*);
+      MusECore::Part* part() const { return _curPart; }
+      void setCurrentPart(MusECore::Part*); 
       };
 
 } // namespace MusEGui

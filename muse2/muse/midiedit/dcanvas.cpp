@@ -57,11 +57,10 @@
 namespace MusEGui {
 
 //---------------------------------------------------------
-//   DEvent
+//   DCItem
 //---------------------------------------------------------
 
-DEvent::DEvent(MusECore::Event e, MusECore::Part* p)
-  : CItem(e, p)
+DCItem::DCItem(const MusECore::Event& e, MusECore::Part* p) : MCItem(e, p)
       {
       int instr = e.pitch();
       int y  = instr * TH + TH/2;
@@ -81,8 +80,8 @@ void DrumCanvas::addItem(MusECore::Part* part, MusECore::Event& event)
             return;
       }
       
-      DEvent* ev = new DEvent(event, part);
-      items.add(ev);
+      DCItem* ev = new DCItem(event, part);
+      items[_ECANVAS_EVENT_ITEMS_].add(ev);
       
       int diff = event.endTick()-part->lenTick();
       if (diff > 0)  {// too short part? extend it
@@ -139,24 +138,26 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, Dra
     int npartoffset = 0;
     for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
     {
-      CItem* ci = ici->second;
-      if(ci->part() != part)
+      if(ici->second->type() != CItem::DEVENT)  // p4.1.0
+        continue;
+
+      DCItem* dcitem = (DCItem*) ici->second;
+      if(dcitem->part() != part)
         continue;
       
-      int x = ci->pos().x() + dx;
-      int y = pitch2y(y2pitch(ci->pos().y()) + dp);
+      int x = dcitem->pos().x() + dx;
+      int y = pitch2y(y2pitch(dcitem->pos().y()) + dp);
       QPoint newpos = raster(QPoint(x, y));
       
       // Test moving the item...
-      DEvent* nevent = (DEvent*) ci;
-      MusECore::Event event    = nevent->event();
+      //MusECore::Event event    = dcitem->event();
       x              = newpos.x();
       if(x < 0)
         x = 0;
       int ntick = editor->rasterVal(x) - part->tick();
       if(ntick < 0)
         ntick = 0;
-      int diff = ntick + event.lenTick() - part->lenTick();
+      int diff = ntick + dcitem->event().lenTick() - part->lenTick();
       
       // If moving the item would require a new part size...
       if(diff > npartoffset)
@@ -190,39 +191,40 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, Dra
 	
 	if (!forbidden)
 	{
-		std::vector< CItem* > doneList;
-		typedef std::vector< CItem* >::iterator iDoneList;
+		std::vector< DCItem* > doneList;
+		typedef std::vector< DCItem* >::iterator iDoneList;
 		
 		for(iCItem ici = items.begin(); ici != items.end(); ++ici) 
 		{
-		        CItem* ci = ici->second;
-			
-			int x = ci->pos().x();
-			int y = ci->pos().y();
+                        if(ici->second->type() != CItem::DEVENT)    // p4.1.0
+                          continue;
+                        DCItem* dcitem = (DCItem*)ici->second;
+			int x = dcitem->pos().x();
+			int y = dcitem->pos().y();
 			int nx = x + dx;
 			int ny = pitch2y(y2pitch(y) + dp);
 			QPoint newpos = raster(QPoint(nx, ny));
-			selectItem(ci, true);
+			selectItem(dcitem, true);
 			
 			iDoneList idl;
 			for(idl = doneList.begin(); idl != doneList.end(); ++idl)
 				// This compares EventBase pointers to see if they're the same...
-				if((*idl)->event() == ci->event())
+				if((*idl)->event() == dcitem->event())
 					break;
 				
 			// Do not process if the event has already been processed (meaning it's an event in a clone part)...
 			if (idl == doneList.end())
 			{
-				operations.push_back(moveItem(ci, newpos, dtype));
-				doneList.push_back(ci);
+				operations.push_back(moveItem(dcitem, newpos, dtype));
+				doneList.push_back(dcitem);
 			}
-			ci->move(newpos);
+			dcitem->move(newpos);
 						
 			if(moving.size() == 1) 
 						itemReleased(curItem, newpos);
 
 			if(dtype == MOVE_COPY || dtype == MOVE_CLONE)
-						selectItem(ci, false);
+						selectItem(dcitem, false);
 		}  
 
 		for(MusECore::iPartToChange ip2c = parts2change.begin(); ip2c != parts2change.end(); ++ip2c)
@@ -247,7 +249,11 @@ MusECore::Undo DrumCanvas::moveCanvasItems(CItemList& items, int dp, int dx, Dra
 
 MusECore::UndoOp DrumCanvas::moveItem(CItem* item, const QPoint& pos, DragType dtype)
       {
-      DEvent* nevent   = (DEvent*) item;
+      // p4.1.0 Only handle notes for now. 
+      if(item->type() != CItem::DEVENT)
+	return MusECore::UndoOp();
+      
+      DCItem* nevent   = (DCItem*) item;
       
       MusECore::MidiPart* part   = (MusECore::MidiPart*)nevent->part();   
       
@@ -280,7 +286,17 @@ MusECore::UndoOp DrumCanvas::moveItem(CItem* item, const QPoint& pos, DragType d
 //---------------------------------------------------------
 
 CItem* DrumCanvas::newItem(const QPoint& p, int state)
-      {
+{
+  switch (_tool) 
+  {
+    //case AutomationTool:
+      // 4.1.0 TODO: Handle automation, if and when we add it.
+    //  return 0;
+    //break;
+      
+    //case PointerTool:
+    default:
+    {  
       int instr = y2pitch(p.y());         //MusEGlobal::drumInmap[y2pitch(p.y())];
       int velo  = MusEGlobal::drumMap[instr].lv4;
       if (state == Qt::ShiftModifier)
@@ -290,8 +306,13 @@ CItem* DrumCanvas::newItem(const QPoint& p, int state)
       else if (state == (Qt::ControlModifier | Qt::ShiftModifier))
             velo = MusEGlobal::drumMap[instr].lv1;
       int tick = editor->rasterVal(p.x());
-      return newItem(tick, instr, velo);
-      }
+      //return newItem(tick, instr, velo);
+      CItem* ni = newItem(tick, instr, velo);
+      items[_ECANVAS_EVENT_ITEMS_].add(ni);
+      return ni;
+    }
+  }  
+}
 
 //---------------------------------------------------------
 //   newItem
@@ -299,13 +320,13 @@ CItem* DrumCanvas::newItem(const QPoint& p, int state)
 
 CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
 {
-  tick    -= curPart->tick();
+  tick    -= _curPart->tick();
   MusECore::Event e(MusECore::Note);
   e.setTick(tick);
   e.setPitch(instrument);
   e.setVelo(velocity);
   e.setLenTick(MusEGlobal::drumMap[instrument].len);
-  return new DEvent(e, curPart);
+  return new DCItem(e, _curPart);
 }
 
 //---------------------------------------------------------
@@ -314,7 +335,11 @@ CItem* DrumCanvas::newItem(int tick, int instrument, int velocity)
 
 void DrumCanvas::resizeItem(CItem* item, bool, bool)
       {
-      DEvent* nevent = (DEvent*) item;
+      // p4.1.0 Only handle notes for now. 
+      if(item->type() != CItem::DEVENT)
+	return;
+      
+      DCItem* nevent = (DCItem*) item;
       MusECore::Event ev = nevent->event();
       // Indicate do undo, and do not do port controller values and clone parts. 
       MusEGlobal::audio->msgDeleteEvent(ev, nevent->part(), true, false, false);
@@ -329,7 +354,11 @@ void DrumCanvas::newItem(CItem* item, bool noSnap) {
 
 void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
       {
-      DEvent* nevent = (DEvent*) item;
+      // p4.1.0 Only handle notes for now. 
+      if(item->type() != CItem::DEVENT)
+	return;
+      
+      DCItem* nevent = (DCItem*) item;
       MusECore::Event event    = nevent->event();
       int x = item->x();
       if (!noSnap)
@@ -390,19 +419,38 @@ void DrumCanvas::newItem(CItem* item, bool noSnap, bool replace)
 
 bool DrumCanvas::deleteItem(CItem* item)
       {
-      MusECore::Event ev = ((DEvent*)item)->event();
+      // p4.1.0 Only handle notes for now. 
+      if(item->type() != CItem::DEVENT)
+	return false;
+      
+      ///MusECore::Event ev = ((DCItem*)item)->event();
       // Indicate do undo, and do not do port controller values and clone parts. 
-      MusEGlobal::audio->msgDeleteEvent(ev, ((DEvent*)item)->part(), true, false, false);
-      return false;
+      ///MusEGlobal::audio->msgDeleteEvent(ev, ((DCItem*)item)->part(), true, false, false);
+      // p4.1.0 Borrowed from prcanvas. Correct?
+      DCItem* nevent = (DCItem*)item;
+      if (nevent->part() == _curPart) {
+            MusECore::Event ev = nevent->event();
+            // Indicate do undo, and do not do port controller values and clone parts. 
+            MusEGlobal::audio->msgDeleteEvent(ev, _curPart, true, false, false);
+            return true;
+            }
+      
+      //return false;
+      return true; // p4.1.0 Why was this false?
       }
 
 //---------------------------------------------------------
 //   drawItem
 //---------------------------------------------------------
 
-void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
+//void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
+void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect, int /*layer*/)
       {
-      DEvent* e   = (DEvent*) item;
+      // p4.1.0 Only handle notes for now. 
+      if(item->type() != CItem::DEVENT)
+	return;
+      
+      DCItem* e   = (DCItem*) item;
       int x = 0, y = 0;
         x = mapx(item->pos().x());
         y = mapy(item->pos().y());
@@ -418,7 +466,7 @@ void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
       
       p.setPen(Qt::black);
       
-      if (e->part() != curPart)
+      if (e->part() != _curPart)
       {
             if(item->isMoving()) 
               p.setBrush(Qt::gray);
@@ -460,6 +508,10 @@ void DrumCanvas::drawItem(QPainter&p, const CItem*item, const QRect& rect)
 
 void DrumCanvas::drawMoving(QPainter& p, const CItem* item, const QRect& rect)
     {
+      // p4.1.0 Only handle notes for now. 
+      if(item->type() != CItem::DEVENT)
+	return;
+      
       QPolygon pa(4);
       QPoint pt = map(item->mp());
       int x = pt.x();
@@ -550,7 +602,11 @@ void DrumCanvas::cmd(int cmd)
       {
       switch (cmd) {
             case CMD_SELECT_ALL:     // select all
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (iCItem k = items[_ECANVAS_EVENT_ITEMS_].begin(); k != items[_ECANVAS_EVENT_ITEMS_].end(); ++k) {
+			// p4.1.0 Only handle notes for now. 
+			if(k->second->type() != CItem::DEVENT)
+			  continue;
+			
                         if (!k->second->isSelected())
                               selectItem(k->second, true);
                         }
@@ -559,13 +615,21 @@ void DrumCanvas::cmd(int cmd)
                   deselectAll();
                   break;
             case CMD_SELECT_INVERT:     // invert selection
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        selectItem(k->second, !k->second->isSelected());
+                  for (iCItem k = items[_ECANVAS_EVENT_ITEMS_].begin(); k != items[_ECANVAS_EVENT_ITEMS_].end(); ++k) {
+			// p4.1.0 Only handle notes for now. 
+			if(k->second->type() != CItem::DEVENT)
+			  continue;
+                        
+			selectItem(k->second, !k->second->isSelected());
                         }
                   break;
             case CMD_SELECT_ILOOP:     // select inside loop
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        DEvent* nevent =(DEvent*)(k->second);
+                  for (iCItem k = items[_ECANVAS_EVENT_ITEMS_].begin(); k != items[_ECANVAS_EVENT_ITEMS_].end(); ++k) {
+			// p4.1.0 Only handle notes for now. 
+			if(k->second->type() != CItem::DEVENT)
+			  continue;
+
+			DCItem* nevent =(DCItem*)(k->second);
                         MusECore::Part* part = nevent->part();
                         MusECore::Event event = nevent->event();
                         unsigned tick  = event.tick() + part->tick();
@@ -576,8 +640,12 @@ void DrumCanvas::cmd(int cmd)
                         }
                   break;
             case CMD_SELECT_OLOOP:     // select outside loop
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
-                        DEvent* nevent = (DEvent*)(k->second);
+                  for (iCItem k = items[_ECANVAS_EVENT_ITEMS_].begin(); k != items[_ECANVAS_EVENT_ITEMS_].end(); ++k) {
+			// p4.1.0 Only handle notes for now. 
+			if(k->second->type() != CItem::DEVENT)
+			  continue;
+
+			DCItem* nevent = (DCItem*)(k->second);
                         MusECore::Part* part     = nevent->part();
                         MusECore::Event event    = nevent->event();
                         unsigned tick  = event.tick() + part->tick();
@@ -633,9 +701,13 @@ void DrumCanvas::cmd(int cmd)
                   if (!selectionSize())
                         break;
                   MusEGlobal::song->startUndo();
-                  for (iCItem k = items.begin(); k != items.end(); ++k) {
+                  for (iCItem k = items[_ECANVAS_EVENT_ITEMS_].begin(); k != items[_ECANVAS_EVENT_ITEMS_].end(); ++k) {
+			// p4.1.0 Only handle notes for now. 
+			if(k->second->type() != CItem::DEVENT)
+			  continue;
+			
                         if (k->second->isSelected()) {
-                              DEvent* devent = (DEvent*)(k->second);
+                              DCItem* devent = (DCItem*)(k->second);
                               MusECore::Event event    = devent->event();
                               MusECore::Event newEvent = event.clone();
                               newEvent.setLenTick(MusEGlobal::drumMap[event.pitch()].len);
@@ -751,8 +823,8 @@ void DrumCanvas::keyPressed(int index, int velocity)
       MusECore::MidiPlayEvent e(0, port, channel, 0x90, pitch, velocity);
       MusEGlobal::audio->msgPlayMidiEvent(&e);
 
-      if (_steprec && pos[0] >= start_tick /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */ && curPart)
-            steprec->record(curPart,index,MusEGlobal::drumMap[index].len,editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier);
+      if (_steprec && pos[0] >= start_tick /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */ && _curPart)
+            steprec->record(_curPart,index,MusEGlobal::drumMap[index].len,editor->raster(),velocity,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier);
             
       }
 
@@ -877,10 +949,14 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int delta)
       {
       MusEGlobal::audio->msgIdle(true);
       MusEGlobal::song->startUndo();
-      for (iCItem i = items.begin(); i != items.end(); ++i) {
+      for (iCItem i = items[_ECANVAS_EVENT_ITEMS_].begin(); i != items[_ECANVAS_EVENT_ITEMS_].end(); ++i) {
+	    // p4.1.0 Only handle notes for now. 
+	    if(i->second->type() != CItem::DEVENT)
+	      continue;
+	    
             if (!(i->second->isSelected()))
                   continue;
-            DEvent* e   = (DEvent*)(i->second);
+            DCItem* e   = (DCItem*)(i->second);
             MusECore::Event event = e->event();
             if (event.type() != MusECore::Note)
                   continue;
@@ -944,13 +1020,13 @@ int DrumCanvas::getNextStep(unsigned int pos, int basicStep, int stepSize)
   for (int i =0; i<stepSize;i++) {
     if (basicStep > 0) { // moving right
       newPos = AL::sigmap.raster2(newPos + basicStep, editor->rasterStep(newPos));    // Nudge by +1, then snap up with raster2.
-      if (unsigned(newPos) > curPart->endTick()- editor->rasterStep(curPart->endTick()))
-        newPos = curPart->tick();
+      if (unsigned(newPos) > _curPart->endTick()- editor->rasterStep(_curPart->endTick()))
+        newPos = _curPart->tick();
     }
     else { // moving left
       newPos = AL::sigmap.raster1(newPos + basicStep, editor->rasterStep(newPos));    // Nudge by -1, then snap up with raster1.
-      if (unsigned(newPos) < curPart->tick() ) {
-        newPos = AL::sigmap.raster1(curPart->endTick()-1, editor->rasterStep(curPart->endTick()));
+      if (unsigned(newPos) < _curPart->tick() ) {
+        newPos = AL::sigmap.raster1(_curPart->endTick()-1, editor->rasterStep(_curPart->endTick()));
       }
     }
   }
@@ -1043,8 +1119,8 @@ void DrumCanvas::setTool2(int)
 {
   if (_tool == CursorTool)
     deselectAll();
-  if (unsigned(cursorPos.x()) < curPart->tick())
-    cursorPos.setX(curPart->tick());
+  if (unsigned(cursorPos.x()) < _curPart->tick())
+    cursorPos.setX(_curPart->tick());
   update();
 }
 //---------------------------------------------------------
@@ -1071,9 +1147,9 @@ MusECore::Event *DrumCanvas::getEventAtCursorPos()
 {
     if (_tool != CursorTool)
       return 0;
-    MusECore::EventList* el = curPart->events();
-    MusECore::iEvent lower  = el->lower_bound(cursorPos.x()-curPart->tick());
-    MusECore::iEvent upper  = el->upper_bound(cursorPos.x()-curPart->tick());
+    MusECore::EventList* el = _curPart->events();
+    MusECore::iEvent lower  = el->lower_bound(cursorPos.x()-_curPart->tick());
+    MusECore::iEvent upper  = el->upper_bound(cursorPos.x()-_curPart->tick());
     for (MusECore::iEvent i = lower; i != upper; ++i) {
       MusECore::Event &ev = i->second;
       if(!ev.isNote())
@@ -1089,14 +1165,19 @@ MusECore::Event *DrumCanvas::getEventAtCursorPos()
 //---------------------------------------------------------
 void DrumCanvas::selectCursorEvent(MusECore::Event *ev)
 {
-  for (iCItem i = items.begin(); i != items.end(); ++i)
+  for (iCItem i = items[_ECANVAS_EVENT_ITEMS_].begin(); i != items[_ECANVAS_EVENT_ITEMS_].end(); ++i)
   {
-        MusECore::Event e = i->second->event();
+	// p4.1.0 Only handle notes for now. 
+        if(i->second->type() != CItem::DEVENT)
+          continue;
+        
+        DCItem* dcitem = (DCItem*)i->second;
+        MusECore::Event e = dcitem->event();
 
         if (ev && ev->tick() == e.tick() && ev->pitch() == e.pitch() && e.isNote())
-          i->second->setSelected(true);
+          dcitem->setSelected(true);
         else
-          i->second->setSelected(false);
+          dcitem->setSelected(false);
 
   }
   updateSelection();
@@ -1108,9 +1189,13 @@ void DrumCanvas::moveAwayUnused()
 	using std::set;
 	
 	set<int> used;
-	for (iCItem it=items.begin(); it!=items.end(); it++)
+	for (iCItem it=items[_ECANVAS_EVENT_ITEMS_].begin(); it!=items[_ECANVAS_EVENT_ITEMS_].end(); it++)
 	{
-		const MusECore::Event& ev=it->second->event();
+		// p4.1.0 Only handle notes for now. 
+		if(it->second->type() != CItem::DEVENT)
+                  continue;
+                DCItem* dcitem = (DCItem*)it->second;
+                const MusECore::Event& ev=dcitem->event();
 		
 		if (ev.type()==MusECore::Note)
 			used.insert(ev.pitch());
@@ -1138,11 +1223,11 @@ void DrumCanvas::midiNote(int pitch, int velo)
       {
       if (MusEGlobal::debugMsg) printf("DrumCanvas::midiNote: pitch=%i, velo=%i\n", pitch, velo);
 
-      if (_midiin && _steprec && curPart
+      if (_midiin && _steprec && _curPart
          && !MusEGlobal::audio->isPlaying() && velo && pos[0] >= start_tick
          /* && pos[0] < end_tick [removed by flo93: this is handled in steprec->record] */
          && !(MusEGlobal::globalKeyState & Qt::AltModifier)) {
-                                               steprec->record(curPart,MusEGlobal::drumInmap[pitch],MusEGlobal::drumMap[(int)MusEGlobal::drumInmap[pitch]].len,editor->raster(),velo,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier);
+                                               steprec->record(_curPart,MusEGlobal::drumInmap[pitch],MusEGlobal::drumMap[(int)MusEGlobal::drumInmap[pitch]].len,editor->raster(),velo,MusEGlobal::globalKeyState&Qt::ControlModifier,MusEGlobal::globalKeyState&Qt::ShiftModifier);
          }
       }
 

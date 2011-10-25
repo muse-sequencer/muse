@@ -35,9 +35,12 @@
 #define AC_PLUGIN_CTL_BASE_POW     12
 #define AC_PLUGIN_CTL_ID_MASK      0xFFF
 
+#include "citem.h"
+
 namespace MusECore {
 
 class Xml;
+class Track;
 
 const int AC_VOLUME = 0;
 const int AC_PAN    = 1;
@@ -171,6 +174,38 @@ class CtrlListList : public std::map<int, CtrlList*, std::less<int> > {
       };
 
 } // namespace MusECore
+
+
+namespace MusEGui {
+
+//---------------------------------------------------------
+//   CCItem
+//    Visual Item for controller items.
+//---------------------------------------------------------
+
+class CCItem : public CItem {
+   private:
+      int _id;
+      MusECore::CtrlVal _ctrlVal;
+      MusECore::Track* _track;
+     
+   public:
+      CCItem(int id, const MusECore::CtrlVal& v, MusECore::Track* t) : _id(id), _ctrlVal(v) , _track(t) { } 
+      Type type() const { return CTRL; } 
+      
+      bool isSelected() const                      { return false; }  // TODO  
+      void setSelected(bool /*f*/)                 { }                // TODO  
+      
+      const MusECore::CtrlVal& ctrlVal() const     { return _ctrlVal;  }
+      void setCtrlVal(const MusECore::CtrlVal& v)  { _ctrlVal = v;     }
+      MusECore::Track* track() const               { return _track;   }
+      void setTrack(MusECore::Track* t)            { _track = t;      }
+      int ctrlId() const                           { return _id; }
+      void setCtrlId(int id)                       { _id = id; }
+      };
+
+  
+} // namespace MusEGui 
 
 #endif
 

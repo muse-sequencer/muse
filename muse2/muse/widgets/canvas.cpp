@@ -34,8 +34,6 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 
-#include <vector>
-
 #include "song.h"
 #include "event.h"
 #include "citem.h"
@@ -76,15 +74,18 @@ Canvas::Canvas(QWidget* parent, int sx, int sy, const char* name)
       pos[0]  = MusEGlobal::song->cpos();
       pos[1]  = MusEGlobal::song->lpos();
       pos[2]  = MusEGlobal::song->rpos();
-      curPart = NULL;
-      curPartId = -1;
+      //curPart = NULL;
+      //curPartId = -1;
       curItem = NULL;
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
       }
 
 Canvas::~Canvas()
 {
-  items.clearDelete();
+  // Clear the item layers and delete the items.
+  int s = items.size();
+  for(int i = 0; i < s; ++i)
+    items[i].clearDelete();
 }
 
 //---------------------------------------------------------
@@ -160,6 +161,17 @@ void Canvas::setPos(int idx, unsigned val, bool adjustScrollbar)
       }
 
 //---------------------------------------------------------
+//   drawItemLayer
+//---------------------------------------------------------
+
+void Canvas::drawItemLayer(QPainter& p, const QRect& r, int layer)
+{ 
+  iCItem to( virt() ? items[layer].lower_bound(r.x() + r.width()) : items[layer].end());
+  for(iCItem i = items[layer].begin(); i != to; ++i)
+    drawItem(p, i->second, r, layer); 
+}  
+
+//---------------------------------------------------------
 //   draw
 //---------------------------------------------------------
 
@@ -173,105 +185,55 @@ void Canvas::draw(QPainter& p, const QRect& rect)
       int h = rect.height();
       int x2 = x + w;
 
-      std::vector<CItem*> list1;
-      std::vector<CItem*> list2;
-      //std::vector<CItem*> list3;
-      std::vector<CItem*> list4;
+      // Clear the item drawing layers. No, let the sublasses do that.
+      //int draw_layers = itemLayers.size();
+      //for(int i = 0; i < draw_layers; ++i)
+      //  itemLayers.at(i).clear();
+      
+      // Number of item layers.
+      int layers = items.size();
 
-      if (virt()) {
+      if (virt()) 
+      {
             drawCanvas(p, rect);
 
             //---------------------------------------------------
             // draw Canvas Items
             //---------------------------------------------------
 
-            iCItem to(items.lower_bound(x2));
-            
-            /*
-            // Draw items from other parts behind all others.
-            // Only for items with events (not arranger parts).
-            for(iCItem i = items.begin(); i != to; ++i)
-            { 
-              CItem* ci = i->second;
-              // NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
-              ci->part()->hasHiddenEvents();
-              if(!ci->event().empty() && ci->part() != curPart)
-                drawItem(p, ci, rect);
-            }
-                
-            // Draw unselected parts behind selected.
-            for (iCItem i = items.begin(); i != to; ++i) 
-            {
-                  CItem* ci = i->second;
-                  if((!ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
-                     && !(ci->event().empty() && (ci->part()->events()->arefCount() > 1 || ci->part()->cachedHasHiddenEvents())))  // p4.0.29 
-                  {
-                        drawItem(p, ci, rect);
-                  }      
-            }
-            
-            // Draw selected parts in front of unselected.
-            for (iCItem i = items.begin(); i != to; ++i) 
-            {
-                CItem* ci = i->second;
-                if(ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
-                //if((ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart)) 
-                //   || (ci->event().empty() && (ci->part()->events()->arefCount() > 1 || ci->part()->cachedHasHiddenEvents())))
-                {
-                      drawItem(p, ci, rect);
-                }      
-            }  
-            */
-            
-            // p4.0.29
-            for(iCItem i = items.begin(); i != to; ++i)
-            { 
-              CItem* ci = i->second;
-              // NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
-              // Not required for now.
-              //ci->part()->hasHiddenEvents();
-              
-              // Draw items from other parts behind all others.
-              // Only for items with events (not arranger parts).
-              if(!ci->event().empty() && ci->part() != curPart)
-                list1.push_back(ci);    
-              else if(!ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
-              {
-                // Draw selected parts in front of all others.
-                if(ci->isSelected()) 
-                  list4.push_back(ci);
-                // Draw clone parts, and parts with hidden events, in front of others all except selected.
-                //else if(ci->event().empty() && (ci->part()->events()->arefCount() > 1 || ci->part()->cachedHasHiddenEvents()))
-                // Draw clone parts in front of others all except selected.
-                //else if(ci->event().empty() && (ci->part()->events()->arefCount() > 1))
-                //  list3.push_back(ci);
-                else  
-                  // Draw unselected parts.
-                  list2.push_back(ci);
-              }  
-            }
-            int i;
-            int sz = list1.size();
-            for(i = 0; i != sz; ++i) 
-              drawItem(p, list1[i], rect);
-            sz = list2.size();
-            for(i = 0; i != sz; ++i) 
-              drawItem(p, list2[i], rect);
-            //sz = list3.size();
-            //for(i = 0; i != sz; ++i) 
-            //  drawItem(p, list3[i], rect);
-            sz = list4.size();
-            for(i = 0; i != sz; ++i) 
-              drawItem(p, list4[i], rect);
-            
-            to = moving.lower_bound(x2);
-            for (iCItem i = moving.begin(); i != to; ++i) 
-            {
-                  drawItem(p, i->second, rect);
-            }
+            for(int ilayer = 0; ilayer < layers; ++ilayer)
+	    {  
+	      /*
+	      iCItem to(items[ilayer].lower_bound(x2));
+	      
+	      for(iCItem i = items[ilayer].begin(); i != to; ++i)
+	      { 
+		// NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
+		// Not required for now.
+                //ci->part()->hasHiddenEvents();
+		// Ask the subclasses to sort.
+		sortLayerItem(i->second);
+	      }
+	      
+	      for(int i = 0; i < draw_layers; ++i)
+	      {  
+		int sz = itemLayers[i].size();
+		for(int j = 0; j < sz; ++j)
+		  //drawItem(p, itemLayers[i][j], rect);
+		  drawItem(p, itemLayers[i][j], rect, i);
+	      }
+	      */
+	      drawItemLayer(p, rect, ilayer);
+	    }
+	      
+	    iCItem to = moving.lower_bound(x2);
+	    for (iCItem i = moving.begin(); i != to; ++i) 
+	    {
+		//drawItem(p, i->second, rect);
+		drawItem(p, i->second, rect, -1); // TODO: Should we make moving a layer?
+	    }
 
-            drawTopItem(p,rect);
-
+	    drawTopItem(p,rect);
       }
       else {  
             p.save();
@@ -315,87 +277,38 @@ void Canvas::draw(QPainter& p, const QRect& rect)
             // draw Canvas Items
             //---------------------------------------------------
             
-            /*
-            // Draw items from other parts behind all others.
-            // Only for items with events (not arranger parts).
-            for(iCItem i = items.begin(); i != items.end(); ++i)
-            { 
-              CItem* ci = i->second;
-              // NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
-              ci->part()->hasHiddenEvents();
-              if(!ci->event().empty() && ci->part() != curPart)
-                drawItem(p, ci, rect);
-            }
-                
-            // Draw unselected parts behind selected.
-            for (iCItem i = items.begin(); i != items.end(); ++i) {
-                  CItem* ci = i->second;
-                  if(!ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
-                    {
-                        drawItem(p, ci, rect);
-                    }      
-                  }
-            
-            // Draw selected parts in front of unselected.
-            for (iCItem i = items.begin(); i != items.end(); ++i) {
-                  CItem* ci = i->second;
-                  if(ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
-                  //if((ci->isSelected() && !ci->isMoving() && (ci->event().empty() || ci->part() == curPart)) 
-                  //   || (ci->event().empty() && (ci->part()->events()->arefCount() > 1 || ci->part()->cachedHasHiddenEvents())))
-                  {    
-                      drawItem(p, ci, rect);
-                  }    
-                } 
-            */
-            
-            // p4.0.29
-            for(iCItem i = items.begin(); i != items.end(); ++i)
-            { 
-              CItem* ci = i->second;
-              // NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
-              // Not required for now.
-              //ci->part()->hasHiddenEvents();
-              
-              // Draw items from other parts behind all others.
-              // Only for items with events (not arranger parts).
-              if(!ci->event().empty() && ci->part() != curPart)
-                list1.push_back(ci);    
-              else if(!ci->isMoving() && (ci->event().empty() || ci->part() == curPart))
-              {
-                // Draw selected parts in front of all others.
-                if(ci->isSelected()) 
-                  list4.push_back(ci);
-                // Draw clone parts, and parts with hidden events, in front of others all except selected.
-                //else if(ci->event().empty() && (ci->part()->events()->arefCount() > 1 || ci->part()->cachedHasHiddenEvents()))
-                // Draw clone parts in front of others all except selected.
-                //else if(ci->event().empty() && (ci->part()->events()->arefCount() > 1))
-                //  list3.push_back(ci);
-                else  
-                  // Draw unselected parts.
-                  list2.push_back(ci);
-              }  
-            }  
-            int i;
-            int sz = list1.size();
-            for(i = 0; i != sz; ++i) 
-              drawItem(p, list1[i], rect);
-            sz = list2.size();
-            for(i = 0; i != sz; ++i) 
-              drawItem(p, list2[i], rect);
-            //sz = list3.size();
-            //for(i = 0; i != sz; ++i) 
-            //  drawItem(p, list3[i], rect);
-            sz = list4.size();
-            for(i = 0; i != sz; ++i) 
-              drawItem(p, list4[i], rect);
-            
-            for (iCItem i = moving.begin(); i != moving.end(); ++i) 
-                  {
-                        drawItem(p, i->second, rect);
-                  }
-            drawTopItem(p, QRect(x,y,w,h));
-            p.save();
-            setPainter(p);
+	    for(int ilayer = 0; ilayer < layers; ++ilayer)
+	    {  
+	      /*
+	      for(iCItem i = items[ilayer].begin(); i != items[ilayer].end(); ++i)
+	      { 
+		// NOTE Optimization: For each item call this once now, then use cached results later via cachedHasHiddenEvents().
+		// Not required for now.
+		//ci->part()->hasHiddenEvents();
+		// Ask the subclasses to sort.
+		sortLayerItem(i->second);
+	      }  
+	      
+	      for(int i = 0; i < draw_layers; ++i)
+	      {  
+		int sz = itemLayers[i].size();
+		for(int j = 0; j < sz; ++j)
+		  //drawItem(p, itemLayers[i][j], rect);
+		  drawItem(p, itemLayers[i][j], rect, i);
+	      }
+	      */
+	      drawItemLayer(p, rect, ilayer);
+	    }
+	    
+	    for (iCItem i = moving.begin(); i != moving.end(); ++i) 
+	    {
+		//drawItem(p, i->second, rect);
+		drawItem(p, i->second, rect, -1);   // TODO: Should we make moving a layer?
+	    }
+	    
+	    drawTopItem(p, QRect(x,y,w,h));
+	    p.save();
+	    setPainter(p);
       }
 
       //---------------------------------------------------
@@ -547,10 +460,17 @@ void Canvas::redirectedWheelEvent(QWheelEvent* ev)
 //---------------------------------------------------------
 
 void Canvas::deselectAll()
-      {
-      for (iCItem i = items.begin(); i != items.end(); ++i)
-            i->second->setSelected(false);
-      }
+{
+  // Number of item layers.
+  //int layers = items.size();
+  //for(int ilayer = 0; ilayer < layers; ++ilayer)
+  for(ciCItemLayer ilayer = items.begin(); ilayer != items.end(); ++ilayer)
+  {  
+    //for(iCItem i = items[ilayer].begin(); i != items[ilayer].end(); ++i)
+    for(ciCItem i = ilayer->begin(); i != ilayer->end(); ++i)
+        i->second->setSelected(false);
+  }  
+}
 
 //---------------------------------------------------------
 //   selectItem
@@ -567,15 +487,22 @@ void Canvas::selectItem(CItem* e, bool flag)
 //---------------------------------------------------------
 
 void Canvas::startMoving(const QPoint& pos, DragType)
-      {
-      for (iCItem i = items.begin(); i != items.end(); ++i) {
+{
+  // Number of item layers.
+  //int layers = items.size();
+  //for(int ilayer = 0; ilayer < layers; ++ilayer)
+  for(ciCItemLayer ilayer = items.begin(); ilayer != items.end(); ++ilayer)
+  {  
+      //for (iCItem i = items[ilayer].begin(); i != items[ilayer].end(); ++i) {
+      for(ciCItem i = ilayer->begin(); i != ilayer->end(); ++i) {
             if (i->second->isSelected()) {
                   i->second->setMoving(true);
                   moving.add(i->second);
                   }
             }
-      moveItems(pos, 0);
-      }
+  }          
+  moveItems(pos, 0);
+}
 
 //---------------------------------------------------------
 //   moveItems
@@ -675,13 +602,20 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
       //    (if any)
       //---------------------------------------------------
 
+      CItem* icur = 0;
+      //CItem* icur = curItem;
       if (virt())
-            curItem = items.find(start);
+            icur = items.find(start);   // Find any item type.
       else {
-            curItem = 0;
-            iCItem ius;
+            icur = 0;
+            ciCItem ius;
             bool usfound = false;
-            for (iCItem i = items.begin(); i != items.end(); ++i) {
+            // Go from top to bottom.
+            for(rciCItemLayer ilayer = items.rbegin(); ilayer != items.rend(); ++ilayer)
+            {  
+              //for (iCItem i = items.begin(); i != items.end(); ++i) {
+              //for (iCItem i = items[ilayer].begin(); i != items[ilayer].end(); ++i) {
+              for(ciCItem i = ilayer->begin(); i != ilayer->end(); ++i) {
                   QRect box = i->second->bbox();
                   int x = rmapxDev(box.x());
                   int y = rmapyDev(box.y());
@@ -693,7 +627,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                   if (r.contains(start)) {
                         if(i->second->isSelected())
                         {
-                          curItem = i->second;
+                          icur = i->second;
                           break;
                         }
                         else
@@ -704,12 +638,20 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         }
                      }
                   }
-                  if(!curItem && usfound)
-                    curItem = ius->second;
-            }
+                  if(!icur && usfound)
+                    icur = ius->second;
+            }   
+          }
 
+      {
+        bool icur_changed = (icur != curItem);
+        curItem = icur;
+        if(icur_changed)
+          curItemChanged();
+      }
+      
       if (curItem && (event->button() == Qt::MidButton)) {
-            deleteItem(start); // changed from "start drag" to "delete" by flo93
+            deleteItemAtPoint(start); // changed from "start drag" to "delete" by flo93
             drag = DRAG_DELETE;
             setCursor();
             }
@@ -750,11 +692,11 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
             switch (_tool) {
                   case PointerTool:
                         if (curItem) {
-                              if (curItem->part() != curPart) {
-                                    curPart = curItem->part();
-                                    curPartId = curPart->sn();
-                                    curPartChanged();
-                                    }
+                              //if (curItem->part() != curPart) {
+                              //      curPart = curItem->part();
+                              //      curPartId = curPart->sn();
+                              //      curPartChanged();
+                              //      }
                               itemPressed(curItem);
                               // Changed by T356. Alt is default reserved for moving the whole window in KDE. Changed to Shift-Alt.
                               // Hmm, nope, shift-alt is also reserved sometimes. Must find a way to bypass, 
@@ -773,7 +715,7 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                         break;
 
                   case RubberTool:
-                        deleteItem(start);
+                        deleteItemAtPoint(start);
                         drag = DRAG_DELETE;
                         setCursor();
                         break;
@@ -790,9 +732,10 @@ void Canvas::viewMousePressEvent(QMouseEvent* event)
                               drag = DRAG_NEW;
                               setCursor();
                               curItem = newItem(start, event->modifiers());
-                              if (curItem)
-                                    items.add(curItem);
-                              else {
+                              //if (curItem)
+                              //      items.add(curItem);  // p4.1.0 Moved into ::newItem()
+                              //else {
+                              if (!curItem){
                                     drag = DRAG_OFF;
                                     setCursor();
                                     }
@@ -1107,6 +1050,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
 
                   }
                   redraw();
+                  //redraw(lasso);
                   break;
 
             case DRAG_MOVE_START:
@@ -1192,7 +1136,7 @@ void Canvas::viewMouseMoveEvent(QMouseEvent* event)
                         }
                   break;
             case DRAG_DELETE:
-                  deleteItem(ev_pos);
+                  deleteItemAtPoint(ev_pos);
                   break;
 
             case DRAG_OFF:
@@ -1234,10 +1178,21 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
                       }
                   else { //Select or deselect all on the same pitch (e.g. same y-value)
                       bool selectionFlag = !(ctrl && curItem->isSelected());
-                      for (iCItem i = items.begin(); i != items.end(); ++i)
-                            if (i->second->y() == curItem->y() )
-                                  selectItem(i->second, selectionFlag);
-                      }
+                      //for (iCItem i = items.begin(); i != items.end(); ++i)
+                      //      if (i->second->y() == curItem->y() )
+                      //            selectItem(i->second, selectionFlag);
+                      // p4.1.0
+                      // Select all similar item types in all layers.
+                      //for(ciCItemLayer ilayer = items.begin(); ilayer != items.end(); ++ ilayer)
+                      //{  
+                      //  for (iCItem i = ilayer->begin(); i != ilayer->end(); ++i)
+                      //  {  
+                      //    if (i->second->type() == curItem->type() &&  i->second->y() == curItem->y() )
+                      //          selectItem(i->second, selectionFlag);
+                      //  }  
+                      //}
+                      selectItemRow(selectionFlag);      
+                  }
 
                   updateSelection();
                   redrawFlag = true;
@@ -1310,44 +1265,47 @@ void Canvas::viewMouseReleaseEvent(QMouseEvent* event)
 
 //---------------------------------------------------------
 //   selectLasso
+//   Default is to select all items in all layers. Override in subclasses for specific behaviour.
 //---------------------------------------------------------
 
 void Canvas::selectLasso(bool toggle)
       {
       int n = 0;
-      if (virt()) {
-            for (iCItem i = items.begin(); i != items.end(); ++i) {
-                  if (i->second->intersects(lasso)) {
-                        selectItem(i->second, !(toggle && i->second->isSelected()));
-                        ++n;
-                        }
-                  }
-            }
-      else {
-            for (iCItem i = items.begin(); i != items.end(); ++i) {
-                  QRect box = i->second->bbox();
-                  int x = rmapxDev(box.x());
-                  int y = rmapyDev(box.y());
-                  int w = rmapxDev(box.width());
-                  int h = rmapyDev(box.height());
-                  QRect r(x, y, w, h);
-                  ///r.moveBy(i->second->pos().x(), i->second->pos().y());
-                  r.translate(i->second->pos().x(), i->second->pos().y());
-                  if (r.intersects(lasso)) {
-                        selectItem(i->second, !(toggle && i->second->isSelected()));
-                        ++n;
-                        }
-                  }
-            }
-
-
+      for(ciCItemLayer ilayer = items.begin(); ilayer != items.end(); ++ilayer)
+      {  
+        if (virt()) {
+              //for (iCItem i = items.begin(); i != items.end(); ++i) {
+              for (ciCItem i = ilayer->begin(); i != ilayer->end(); ++i) {
+                    if (i->second->intersects(lasso)) {
+                          selectItem(i->second, !(toggle && i->second->isSelected()));
+                          ++n;
+                          }
+                    }
+              }
+        else {
+              //for (iCItem i = items.begin(); i != items.end(); ++i) {
+              for (ciCItem i = ilayer->begin(); i != ilayer->end(); ++i) {
+                    QRect box = i->second->bbox();
+                    int x = rmapxDev(box.x());
+                    int y = rmapyDev(box.y());
+                    int w = rmapxDev(box.width());
+                    int h = rmapyDev(box.height());
+                    QRect r(x, y, w, h);
+                    ///r.moveBy(i->second->pos().x(), i->second->pos().y());
+                    r.translate(i->second->pos().x(), i->second->pos().y());
+                    if (r.intersects(lasso)) {
+                          selectItem(i->second, !(toggle && i->second->isSelected()));
+                          ++n;
+                          }
+                    }
+              }
+      }
 
       if (n) {
             updateSelection();
             redraw();
             }
       }
-
 
 //---------------------------------------------------------
 //   getCurrentDrag
@@ -1360,17 +1318,21 @@ int Canvas::getCurrentDrag()
       return drag;
       }
 
+/*
 //---------------------------------------------------------
-//   deleteItem
+//   deleteItemAtPoint
 //---------------------------------------------------------
 
-void Canvas::deleteItem(const QPoint& p)
+void Canvas::deleteItemAtPoint(const QPoint& p)
       {
       if (virt()) {
             for (iCItem i = items.begin(); i != items.end(); ++i) {
                   if (i->second->contains(p)) {
+                        // p4.1.0 FIXME: Should we move this below? But item might be deleted by then. 
+                        // But this means items from other parts might be unselected.
                         selectItem(i->second, false);
                         if (!deleteItem(i->second)) {
+                              //selectItem(i->second, false);
                               if (drag == DRAG_DELETE)
                                     drag = DRAG_OFF;
                               }
@@ -1389,14 +1351,18 @@ void Canvas::deleteItem(const QPoint& p)
                   ///r.moveBy(i->second->pos().x(), i->second->pos().y());
                   r.translate(i->second->pos().x(), i->second->pos().y());
                   if (r.contains(p)) {
+                        //selectItem(i->second, false);
                         if (deleteItem(i->second)) {
-                              selectItem(i->second, false);
+                                // p4.1.0 FIXME: Want to move above. Item might be deleted by now. 
+                                // But it means items from other parts might be unselected.
+				selectItem(i->second, false);  
                               }
                         break;
                         }
                   }
             }
       }
+*/
 
 //---------------------------------------------------------
 //   setTool
@@ -1485,24 +1451,43 @@ void Canvas::keyPress(QKeyEvent* event)
 
 //---------------------------------------------------------
 //   isSingleSelection
+//    layer: Layer number, or default -1 for all layers.
 //---------------------------------------------------------
 
-bool Canvas::isSingleSelection()
+bool Canvas::isSingleSelection(int layer)
       {
-      return selectionSize() == 1;
+      return selectionSize(layer) == 1;
       }
 
 //---------------------------------------------------------
 //   selectionSize
+//    layer: Layer number, or default -1 for all layers.
 //---------------------------------------------------------
 
-int Canvas::selectionSize()
+int Canvas::selectionSize(int layer)
       {
       int n = 0;
-      for (iCItem i = items.begin(); i != items.end(); ++i) {
+      if(layer == -1)
+      {  
+        // Count all selected items in all layers.
+        for(ciCItemLayer ilayer = items.begin(); ilayer != items.end(); ++ilayer)
+        {  
+          for (ciCItem i = ilayer->begin(); i != ilayer->end(); ++i) {
+              if (i->second->isSelected())
+                    ++n;
+              }
+        }      
+      }
+      else
+      {
+        if(layer >= (int)items.size())
+          return 0; 
+        for (iCItem i = items[layer].begin(); i != items[layer].end(); ++i) {
             if (i->second->isSelected())
                   ++n;
             }
+      }
+        
       return n;
       }
 
@@ -1539,13 +1524,13 @@ void Canvas::canvasPopup(int n)
       emit toolChanged(n);
       }
 
-void Canvas::setCurrentPart(MusECore::Part* part)
-{
-  curItem = NULL;
-  deselectAll();
-  curPart = part;
-  curPartId = curPart->sn();
-  curPartChanged();
-}
+//void Canvas::setCurrentPart(MusECore::Part* part)
+//{
+//  curItem = NULL;
+//  deselectAll();
+//  curPart = part;
+//  curPartId = curPart->sn();
+//  curPartChanged();
+//}
 
 } // namespace MusEGui

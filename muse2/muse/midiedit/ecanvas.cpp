@@ -42,6 +42,12 @@
 #include "audio.h"
 #include "functions.h"
 
+// Item drawing layer indices:
+#define _NONCUR_PART_UNSEL_EVENT_LAYER_  0
+#define _NONCUR_PART_SEL_EVENT_LAYER_    1
+#define _UNSELECTED_EVENT_LAYER_         2
+#define _SELECTED_EVENT_LAYER_           3
+
 namespace MusEGui {
 
 //---------------------------------------------------------
@@ -52,19 +58,32 @@ EventCanvas::EventCanvas(MidiEditor* pr, QWidget* parent, int sx,
    int sy, const char* name)
    : Canvas(parent, sx, sy, name)
       {
+      _curPart    = NULL;
+      _curPartId  = -1;
       editor      = pr;
       _steprec    = false;
       _midiin     = false;
       _playEvents = false;
       curVelo     = 70;
 
+      // Create one item layer for notes.
+      items.push_back(CItemList());
+
+      // Create four item drawing layers. One for unselected events from non-current parts,
+      //  one for selected events from non-current parts, one for unselected events from current part,
+      //  one for selected events from current part.
+      itemLayers.push_back(std::vector<CItem*>() );
+      itemLayers.push_back(std::vector<CItem*>() );
+      itemLayers.push_back(std::vector<CItem*>() );
+      itemLayers.push_back(std::vector<CItem*>() );
+      
       setBg(Qt::white);
       setAcceptDrops(true);
       setFocusPolicy(Qt::StrongFocus);
       setMouseTracking(true);
 
-      curPart   = (MusECore::MidiPart*)(editor->parts()->begin()->second);
-      curPartId = curPart->sn();
+      _curPart   = (MusECore::MidiPart*)(editor->parts()->begin()->second);
+      _curPartId = _curPart->sn();
       }
 
 //---------------------------------------------------------
@@ -76,11 +95,11 @@ QString EventCanvas::getCaption() const
       int bar1, bar2, xx;
       unsigned x;
       ///sigmap.tickValues(curPart->tick(), &bar1, &xx, &x);
-      AL::sigmap.tickValues(curPart->tick(), &bar1, &xx, &x);
+      AL::sigmap.tickValues(_curPart->tick(), &bar1, &xx, &x);
       ///sigmap.tickValues(curPart->tick() + curPart->lenTick(), &bar2, &xx, &x);
-      AL::sigmap.tickValues(curPart->tick() + curPart->lenTick(), &bar2, &xx, &x);
+      AL::sigmap.tickValues(_curPart->tick() + _curPart->lenTick(), &bar2, &xx, &x);
 
-      return QString("MusE: Part <") + curPart->name()
+      return QString("MusE: Part <") + _curPart->name()
          + QString("> %1-%2").arg(bar1+1).arg(bar2+1);
       }
 
@@ -150,14 +169,14 @@ void EventCanvas::songChanged(int flags)
     
       if (flags & ~SC_SELECTION) {
             //items.clear();
-            items.clearDelete();
+            items[_ECANVAS_EVENT_ITEMS_].clearDelete();
             start_tick  = MAXINT;
             end_tick    = 0;
-            curPart = 0;
+            _curPart = 0;
             for (MusECore::iPart p = editor->parts()->begin(); p != editor->parts()->end(); ++p) {
                   MusECore::MidiPart* part = (MusECore::MidiPart*)(p->second);
-                  if (part->sn() == curPartId)
-                        curPart = part;
+                  if (part->sn() == _curPartId)
+                        _curPart = part;
                   unsigned stick = part->tick();
                   unsigned len = part->lenTick();
                   unsigned etick = stick + len;
@@ -185,17 +204,21 @@ void EventCanvas::songChanged(int flags)
       MusECore::Event event;
       MusECore::MidiPart* part   = 0;
       int x            = 0;
-      CItem*   nevent  = 0;
+      MCItem*   nevent = 0;
 
       int n  = 0;       // count selections
-      for (iCItem k = items.begin(); k != items.end(); ++k) {
-            MusECore::Event ev = k->second->event();
+      for (iCItem k = items[_ECANVAS_EVENT_ITEMS_].begin(); k != items[_ECANVAS_EVENT_ITEMS_].end(); ++k) {
+            // p4.1.0 Only handle notes for now. 
+	    if(k->second->type() != CItem::MEVENT && k->second->type() != CItem::DEVENT)
+              continue;
+            MCItem* mcitem = (MCItem*)k->second;
+            MusECore::Event ev = mcitem->event();
             bool selected = ev.selected();
             if (selected) {
-                  k->second->setSelected(true);
+                  mcitem->setSelected(true);
                   ++n;
                   if (!nevent) {
-                        nevent   =  k->second;
+                        nevent   =  mcitem;
                         MusECore::Event mi = nevent->event();
                         curVelo  = mi.velo();
                         }
@@ -208,30 +231,46 @@ void EventCanvas::songChanged(int flags)
             x     = nevent->x();
             event = nevent->event();
             part  = (MusECore::MidiPart*)nevent->part();
-            if (curPart != part) {
-                  curPart = part;
-                  curPartId = curPart->sn();
+            if (_curPart != part) {
+                  _curPart = part;
+                  _curPartId = _curPart->sn();
                   curPartChanged();
                   }
             }
       emit selectionChanged(x, event, part);
-      if (curPart == 0)
-            curPart = (MusECore::MidiPart*)(editor->parts()->begin()->second);
+      if (_curPart == 0)
+            _curPart = (MusECore::MidiPart*)(editor->parts()->begin()->second);
       redraw();
       }
 
 //---------------------------------------------------------
 //   selectAtTick
 //---------------------------------------------------------
+
 void EventCanvas::selectAtTick(unsigned int tick)
       {
       //Select note nearest tick, if none selected and there are any
-      if (!items.empty() && selectionSize() == 0) {
-            iCItem i = items.begin();
-	    CItem* nearest = i->second;
+      if (!items[_ECANVAS_EVENT_ITEMS_].empty() && selectionSize(_ECANVAS_EVENT_ITEMS_) == 0) {
+            iCItem i = items[_ECANVAS_EVENT_ITEMS_].begin();
+            //CItem* nearest = i->second;
 
-            while (i != items.end()) {
-                CItem* cur=i->second;                
+            // p4.1.0 Only handle notes for now. 
+            while (i != items[_ECANVAS_EVENT_ITEMS_].end()) {
+                if(i->second->type() == CItem::MEVENT && i->second->type() == CItem::DEVENT)
+                  break;
+		++i;
+            }
+            if(i == items[_ECANVAS_EVENT_ITEMS_].end())
+              return;      
+            
+            MCItem* nearest = (MCItem*)i->second;
+            
+            while (i != items[_ECANVAS_EVENT_ITEMS_].end()) {
+                // p4.1.0 Only handle notes for now. 
+                if(i->second->type() != CItem::MEVENT && i->second->type() != CItem::DEVENT)
+                  continue;
+                //CItem* cur=i->second;                
+                MCItem* cur = (MCItem*)i->second;
                 unsigned int curtk=abs(cur->x() + cur->part()->tick() - tick);
                 unsigned int neartk=abs(nearest->x() + nearest->part()->tick() - tick);
 
@@ -239,7 +278,7 @@ void EventCanvas::selectAtTick(unsigned int tick)
                     nearest=cur;
                     }
 
-                i++;
+                ++i;
                 }
 
             if (!nearest->isSelected()) {
@@ -255,7 +294,7 @@ void EventCanvas::selectAtTick(unsigned int tick)
 
 MusECore::MidiTrack* EventCanvas::track() const
       {
-      return ((MusECore::MidiPart*)curPart)->track();
+      return ((MusECore::MidiPart*)_curPart)->track();
       }
 
 
@@ -285,12 +324,21 @@ void EventCanvas::keyPress(QKeyEvent* event)
             int tick_min = INT_MAX;
             bool found = false;
 
-            for (iCItem i= items.begin(); i != items.end(); i++) {
-                  if (!i->second->isSelected())
+            for (iCItem i= items[_ECANVAS_EVENT_ITEMS_].begin(); i != items[_ECANVAS_EVENT_ITEMS_].end(); i++) {
+                  // p4.1.0 Only handle notes for now. 
+                  if(i->second->type() != CItem::MEVENT && i->second->type() != CItem::DEVENT)
+                    continue;
+
+		  if (!i->second->isSelected())
                         continue;
 
-                  int tick = i->second->x();
-                  int len = i->second->event().lenTick();
+                  MCItem* mcitem = (MCItem*)i->second;
+                
+                  //int tick = i->second->x();
+                  //int len = i->second->event().lenTick();
+                  int tick = mcitem->x();
+                  int len = mcitem->event().lenTick();
+
                   found = true;
                   if (tick + len > tick_max)
                         tick_max = tick + len;
@@ -309,15 +357,19 @@ void EventCanvas::keyPress(QKeyEvent* event)
             iCItem i, iRightmost;
 	    CItem* rightmost = NULL;
             //Get the rightmost selected note (if any)
-            for (i = items.begin(); i != items.end(); ++i) {
-                  if (i->second->isSelected()) {
+            for (i = items[_ECANVAS_EVENT_ITEMS_].begin(); i != items[_ECANVAS_EVENT_ITEMS_].end(); ++i) {
+                  // p4.1.0 Only handle notes for now. 
+                  if(i->second->type() != CItem::MEVENT && i->second->type() != CItem::DEVENT)
+                    continue;
+                  
+		  if (i->second->isSelected()) {
                         iRightmost = i; rightmost = i->second;
                         }
                   }
                if (rightmost) {
                      iCItem temp = iRightmost; temp++;
                      //If so, deselect current note and select the one to the right
-                     if (temp != items.end()) {
+                     if (temp != items[_ECANVAS_EVENT_ITEMS_].end()) {
                            if (key != shortcuts[SHRT_SEL_RIGHT_ADD].key)
                                  deselectAll();
 
@@ -334,14 +386,19 @@ void EventCanvas::keyPress(QKeyEvent* event)
       else if (key == shortcuts[SHRT_SEL_LEFT].key || key == shortcuts[SHRT_SEL_LEFT_ADD].key) {
             iCItem i, iLeftmost;
             CItem* leftmost = NULL;
-            if (items.size() > 0 ) {
-                  for (i = items.end(), i--; i != items.begin(); i--) {
-                        if (i->second->isSelected()) {
+            //if (items.size() > 0 ) {        // I read that this may be much slower than empty().
+            if (!items[_ECANVAS_EVENT_ITEMS_].empty() ) {       
+                  for (i = items[_ECANVAS_EVENT_ITEMS_].end(), i--; i != items[_ECANVAS_EVENT_ITEMS_].begin(); i--) {
+			// p4.1.0 Only handle notes for now. 
+			if(i->second->type() != CItem::MEVENT && i->second->type() != CItem::DEVENT)
+			  continue;
+                        
+			if (i->second->isSelected()) {
                               iLeftmost = i; leftmost = i->second;
                               }
                         }
                     if (leftmost) {
-                          if (iLeftmost != items.begin()) {
+                          if (iLeftmost != items[_ECANVAS_EVENT_ITEMS_].begin()) {
                                 //Add item
                                 if (key != shortcuts[SHRT_SEL_LEFT_ADD].key)
                                       deselectAll();
@@ -403,7 +460,7 @@ void EventCanvas::viewDropEvent(QDropEvent* event)
             int x = editor->rasterVal(event->pos().x());
             if (x < 0)
                   x = 0;
-            paste_at(text,x,3072,false,false,curPart);
+            paste_at(text,x,3072,false,false,_curPart);
             //event->accept();  // TODO
             }
       else {
@@ -445,5 +502,286 @@ void EventCanvas::endMoveItems(const QPoint& pos, DragType dragtype, int dir)
       updateSelection();
       redraw();
       }
+
+//---------------------------------------------------------
+//   setCurrentPart
+//---------------------------------------------------------
+
+void EventCanvas::setCurrentPart(MusECore::Part* part)
+{
+  curItem = NULL;
+  deselectAll();
+  _curPart = part;
+  _curPartId = _curPart->sn();
+  curPartChanged();
+}
+
+//---------------------------------------------------------
+//   curItemChanged
+//---------------------------------------------------------
+
+void EventCanvas::curItemChanged() 
+{
+  if(!curItem)
+  {  
+    //_curPart = NULL;
+    //_curPartId = -1;
+    return;
+  }
+  
+  switch(curItem->type())
+  {
+    case CItem::MEVENT:
+    {  
+      MCItem* i = (MCItem*)curItem;
+      if (i->part() != _curPart) {
+            _curPart = i->part();
+            _curPartId = _curPart->sn();
+            curPartChanged();
+            }
+    }
+    break;
+
+    default:
+    return;  
+  }      
+}
+
+//---------------------------------------------------------
+//   selectLasso
+//---------------------------------------------------------
+
+void EventCanvas::selectLasso(bool toggle)
+      {
+      int n = 0;
+      int ilayer;
+      switch(_tool)
+      {
+        //case AutomationTool:       // p4.1.0 TODO: Handle automation.
+        //  ilayer = items[ ? ];
+        //break;
+        default:
+          ilayer = _ECANVAS_EVENT_ITEMS_;
+        break;  
+      }
+      
+      if (virt()) {
+            for (ciCItem i = items[ilayer].begin(); i != items[ilayer].end(); ++i) {
+                  if (i->second->intersects(lasso)) {
+                        selectItem(i->second, !(toggle && i->second->isSelected()));
+                        ++n;
+                        }
+                  }
+            }
+      else {
+            for (ciCItem i = items[ilayer].begin(); i != items[ilayer].end(); ++i) {
+                  QRect box = i->second->bbox();
+                  int x = rmapxDev(box.x());
+                  int y = rmapyDev(box.y());
+                  int w = rmapxDev(box.width());
+                  int h = rmapyDev(box.height());
+                  QRect r(x, y, w, h);
+                  ///r.moveBy(i->second->pos().x(), i->second->pos().y());
+                  r.translate(i->second->pos().x(), i->second->pos().y());
+                  if (r.intersects(lasso)) {
+                        selectItem(i->second, !(toggle && i->second->isSelected()));
+                        ++n;
+                        }
+                  }
+            }
+
+      if (n) {
+            updateSelection();
+            redraw();
+            }
+      }
+
+//---------------------------------------------------------
+//   selectItemRow
+//---------------------------------------------------------
+
+void EventCanvas::selectItemRow(bool select)
+{
+  switch(_tool)
+  {  
+    case AutomationTool: // p4.1.0 TODO Handle automation.
+      return;
+      
+    default:  
+    {  
+      for (iCItem i = items[_ECANVAS_EVENT_ITEMS_].begin(); i != items[_ECANVAS_EVENT_ITEMS_].end(); ++i)
+      {  
+        if (i->second->type() == curItem->type() &&  i->second->y() == curItem->y() )
+              selectItem(i->second, select);
+      }  
+      return;  
+    }    
+  }      
+  
+  /*
+  // Select all similar item types in all layers.
+  for(ciCItemLayer ilayer = items.begin(); ilayer != items.end(); ++ ilayer)
+  {  
+    for (iCItem i = ilayer->begin(); i != ilayer->end(); ++i)
+    {  
+      if (i->second->type() == curItem->type() &&  i->second->y() == curItem->y() )
+            selectItem(i->second, select);
+    }  
+  }
+  */
+}
+
+//---------------------------------------------------------
+//   deleteItemAtPoint
+//---------------------------------------------------------
+
+void EventCanvas::deleteItemAtPoint(const QPoint& p)
+      {
+      int ilayer;
+      switch(_tool)
+      {
+        //case AutomationTool:        // p4.1.0 TODO: Handle automation.
+        //  ilayer = items[ ? ];
+        //break;  
+        default:
+          ilayer = _ECANVAS_EVENT_ITEMS_;
+        break;
+      }
+      
+      if (virt()) {
+            for (ciCItem i = items[ilayer].begin(); i != items[ilayer].end(); ++i) {
+                  if (i->second->contains(p)) {
+                        // p4.1.0 FIXME: Should we move this below? But item might be deleted by then. 
+                        // But this means items from other parts might be unselected.
+                        selectItem(i->second, false);
+                        if (!deleteItem(i->second)) {
+                              //selectItem(i->second, false);
+                              if (drag == DRAG_DELETE)
+                                    drag = DRAG_OFF;
+                              }
+                        break;
+                        }
+                  }
+            }
+      else {
+            for (ciCItem i = items[ilayer].begin(); i != items[ilayer].end(); ++i) {
+                  QRect box = i->second->bbox();
+                  int x = rmapxDev(box.x());
+                  int y = rmapyDev(box.y());
+                  int w = rmapxDev(box.width());
+                  int h = rmapyDev(box.height());
+                  QRect r(x, y, w, h);
+                  ///r.moveBy(i->second->pos().x(), i->second->pos().y());
+                  r.translate(i->second->pos().x(), i->second->pos().y());
+                  if (r.contains(p)) {
+                        //selectItem(i->second, false);
+                        if (deleteItem(i->second)) {
+                                // p4.1.0 FIXME: Want to move above. Item might be deleted by now. 
+                                // But it means items from other parts might be unselected.
+                                selectItem(i->second, false);  
+                              }
+                        break;
+                        }
+                  }
+            }
+      }
+
+/*
+//---------------------------------------------------------
+//   sortLayerItem
+//---------------------------------------------------------
+
+void EventCanvas::sortLayerItem(CItem* item)
+{
+  switch(item->type())
+  {  
+    case CItem::MEVENT:
+    case CItem::DEVENT:
+    {  
+      MCItem* mi = (MCItem*)item;
+      // Draw items from other parts behind all others.
+      if(!mi->event().empty() && mi->part() != _curPart)
+        itemLayers.at(_NONCUR_PART_EVENT_LAYER_).push_back(mi);
+      else 
+      if(!mi->isMoving() && (mi->event().empty() || mi->part() == _curPart))
+      {
+        // Draw selected parts in front of all others.
+        if(mi->isSelected()) 
+          itemLayers.at(_SELECTED_EVENT_LAYER_).push_back(mi);
+        else  
+          itemLayers.at(_UNSELECTED_EVENT_LAYER_).push_back(mi);
+      }  
+    }  
+    break;
+    
+    default:
+      return;  
+  }
+}
+*/
+
+//---------------------------------------------------------
+//   drawItemLayer
+//---------------------------------------------------------
+
+void EventCanvas::drawItemLayer(QPainter& p, const QRect& r, int layer)
+{ 
+  iCItem to( virt() ? items[layer].lower_bound(r.x() + r.width()) : items[layer].end());
+  
+  switch(layer)
+  {
+    case _ECANVAS_EVENT_ITEMS_:
+    {
+      // Clear the item drawing layers.
+      int draw_layers = itemLayers.size();
+      for(int i = 0; i < draw_layers; ++i)
+        itemLayers[i].clear();        
+      
+      for(iCItem i = items[layer].begin(); i != to; ++i)
+      {  
+        if(i->second->type() == CItem::MEVENT || i->second->type() == CItem::DEVENT)
+        {
+          MCItem* mcitem = (MCItem*)i->second;
+          if(!mcitem->isMoving())
+          {
+            if(mcitem->part() != _curPart)
+            {  
+              // Draw unselected events from non-current parts behind all others.
+              if(mcitem->isSelected())
+                itemLayers[_NONCUR_PART_SEL_EVENT_LAYER_].push_back(mcitem);
+              else
+                itemLayers[_NONCUR_PART_UNSEL_EVENT_LAYER_].push_back(mcitem);
+            }  
+            else
+            {  
+              // Draw selected events from current part in front of all others.
+              if(mcitem->isSelected())
+                itemLayers[_SELECTED_EVENT_LAYER_].push_back(mcitem);
+              else
+                itemLayers[_UNSELECTED_EVENT_LAYER_].push_back(mcitem);
+            }  
+          }
+        }
+      }
+      
+      for(int i = 0; i < draw_layers; ++i)
+      {  
+        int sz = itemLayers[i].size();
+        for (int j = 0; j < sz; ++j)
+          drawItem(p, itemLayers[i][j], r, i);
+      }
+    }
+    break;
+
+    //case _ECANVAS_AUTOMATION_ITEMS_:
+    //{
+      // TODO: Draw the items as connected lines, then redraw them as vertex 'boxes' on TOP OF the lines. 
+    //}
+    //break;
+    
+    default:
+      return;
+  }  
+}  
 
 } // namespace MusEGui
