@@ -1,0 +1,791 @@
+% feta-din-code.mf -- implement dynamic signs
+%
+% part of LilyPond's pretty-but-neat music font
+%
+% source file of the Feta (not the Font-En-Tja) music font
+%
+% (c) 1997--2009 Jan Nieuwenhuizen <janneke@gnu.org>
+
+
+ex# := (dynamic_design_size / 2.4) * pt#;
+descender# := 0.5 ex#;
+ascender# := 0.72 ex#;
+staffspace# := 1.75 / 2.0 * ex#;
+horizontal_space# := .66 ex#;
+
+font_x_height ex#;
+font_normal_space horizontal_space#;
+
+define_pixels (staffspace, linethickness, ex, descender, ascender);
+
+
+%
+% TODO: blot diameter should be fixed, not scalable.
+%
+
+save serif_thick, med_thick, bottom_blot;
+
+serif_thick# = 1.1 linethickness#;
+define_blacker_pixels (serif_thick);
+
+med_thick = round (1.5 linethickness);
+bottom_blot = 1.3 serif_thick;
+
+
+code := 32;
+
+fet_beginchar ("Space", "space");
+	set_char_box (0, horizontal_space#, 0, ex#);
+fet_endchar;
+
+
+%
+% Couldn't find many z examples.  This one is losely inspired
+% by a sfz from Mueller Etuden fuer Horn (Edition Hofmeister).
+%
+
+code := 121;
+
+fet_beginchar ("dynamic z", "z");
+	save thin_thick, top_narrow, over_shoot;
+	save bot_thick;
+
+	set_char_box (0, .98 ex#, 0, 0.9 ex#);
+
+	thin_thick = serif_thick;
+	top_narrow = thin_thick;
+	top_overshoot = .8 serif_thick;
+	top_thick = .3 h;
+	bot_thick = .2 ex;
+	bot_overshoot = serif_thick;
+
+	x0 = top_narrow;
+	y0 = .9 [y1r, y1l];
+
+	penpos1 (top_thick, 80);
+	y1l = .72 h;
+	x1r = .34 ex;
+
+	x2 = .66 ex;
+	y2 = y1r - top_overshoot;
+
+	y3 = h - .7 thin_thick;
+	x3 = w - .6 top_narrow - .5 thin_thick;
+	y4 = .5 thin_thick;
+	x4 = .5 thin_thick;
+
+	penpos3 (thin_thick, angle (z3 - z4) + 90);
+	penpos4 (thin_thick, angle (z3 - z4) + 90);
+
+	penpos5 (bot_thick, 70);
+	x5l =.25 ex;
+	y5l = .4 bot_overshoot;
+
+	penpos6 (3/2 bot_thick, 70);
+	y6l = -bot_overshoot;
+	x6 = w - 3 top_narrow;
+
+	x7 = w;
+	y7 = .82 [y8r, y6r];
+
+	penpos8 (thin_thick, 20);
+	x8r = w - .35 top_narrow;
+	y8r = .45 h;
+
+	penlabels (range 0 thru 8);
+
+%	pickup pencircle scaled 1;
+
+%	draw
+	fill z0{down}
+	     .. z1l{dir (10)}
+	     .. simple_serif (z3l, z3r, 90)
+	     .. z2{left}
+	     .. z1r{left}
+	     ..tension 1.2.. cycle;
+
+%	draw
+	fill z3l
+	     -- z3r
+	     -- z4r
+	     -- z4l
+	     -- cycle;
+
+%	draw
+	fill simple_serif (z4r, z4l, 90)
+	     .. z5l{right}
+	     .. z6l{right}
+	     .. z7{up}
+	     .. simple_serif (z8r, z8l, 90)
+	     .. z6r{left}
+	     .. z5r{left}
+	     .. cycle;
+fet_endchar;
+
+
+% forte f, grabbed from Ed Breitkopf Mozart horn concerto 3.
+%
+% NOTES:
+%
+% * the bulbs are open
+%
+% * blotting around the serif
+%
+% TODO: insert blots around the serif
+%
+
+slant_angle = 20;
+code := 101;
+
+fet_beginchar ("dynamic f", "f");
+	save left_angle, right_angle;
+	save serif_length, serif_eccentricity;
+	save f_thick;
+	save bulb_thick, bulb_diam, fill_up;
+	save slant;
+	save p;
+	path p;
+
+	set_char_box (0, 1.1 ex#, descender#, ex# + ascender#);
+
+	bulb_diam = 7.5 / 40 ex;
+	bulb_thick = 8.5 / 40 ex;
+	fill_up = 1.5 serif_thick;
+	left_angle = slant_angle - 6;
+	right_angle = slant_angle - 3;
+	f_thick = 7/16 ex;
+	serif_length = 0.96 ex;
+	serif_eccentricity = 0.01 ex;
+
+	% z1 is the `base point'
+	z1 = (0.2 ex, -serif_thick);
+
+	penpos2 (f_thick, 0);
+	y2 = y1 + ex;
+	z2l = z1 + whatever * dir (90 - left_angle);
+
+	penpos3 (med_thick, -90);
+	y3l = y1 + ex + ascender;
+	x3l = x1 + ex;
+
+	penpos4 (bulb_thick, -20);
+	z3r = whatever [z4r, z4l];
+
+	x4l - x3l = 1/10 ex;
+
+	penpos5 (bulb_thick, -45);
+	x5r = 0.1 [x4l, x4r];
+	y5l = y4l - bulb_diam;
+
+	z6 = z2r + whatever * dir (90 - right_angle);
+	y6 = y1 + 3/8 ex;
+
+	penpos7 (med_thick, -90);
+	x7 = x1 - 1/4 ex;
+	y7r = y1 -descender;
+
+	penpos8 (bulb_thick, 160);
+	x8l = x7l - 1/10 ex;
+
+	z7l = whatever [z8r, z8l];
+
+	penpos9 (bulb_thick, 135);
+	x9r = 0.1 [x8l, x8r];
+	y9l = y8l + bulb_diam;
+
+	labels (1, 6, 9);
+	penlabels (2, 3, 4, 5, 7, 8, 9);
+
+%	pickup pencircle scaled 1;
+
+%	draw
+	fill z1
+	     -- z2l{z2l - z1}
+	     ..tension 1.1.. z3l{right}
+	     .. z4r{down}
+	     .. z5r{left}
+	     .. z5l{up}
+	     ..tension 0.8.. z4l{up}
+	     .. z3r{left}
+	     ..tension 1.1.. z2r{z6 - z2r}
+	     -- z6{z6 - z2r}
+	     ..tension 1.25.. z7r{left}
+	     .. z8r{up}
+	     .. z9r{right}
+	     .. z9l{down}
+	     ..tension 0.8.. z8l{down}
+	     .. z7l{right}
+	     .. {z2l - z1}cycle;
+
+	x13 - x14 = serif_length;
+	y13 = y14;
+	y14 = y2;
+	0.5 [x13, x14] = x2 + serif_eccentricity;
+
+	draw_rounded_block (z14 - (0, 0.7 serif_thick),
+			    z13 + (0, 0.7 serif_thick),
+			    1.4 serif_thick);
+
+	labels (13, 14);
+fet_endchar;
+
+
+%
+% Notes:
+%
+% - The `s' is trapezoidal (i.e., narrower at the top).
+%
+% - The white space is differently shaped at the top (the bulb's inner
+%   curve is filled up).
+%
+% - Less heavy than the `f' and `p' signs.
+%
+
+code := 114;
+
+fet_beginchar ("dynamic s", "s");
+	save left_angle, right_angle;
+	save s_thick, s_thin;
+	save bulb_diam, bulb_len;
+	save over_shoot;
+	save base_point;
+	pair base_point;
+
+	set_char_box (0, 17/24 ex#, 0, ex#);
+
+	over_shoot = 0;			% .2 serif_thick;
+	bulb_diam = 11/70 ex;
+	bulb_len = 1.0 bulb_diam;
+	left_angle = slant_angle - 2;
+	right_angle = slant_angle - 11;
+	s_thick = 16/70 ex;
+	s_thin = serif_thick;
+
+	base_point = (0, 0);
+
+	penpos1 (bulb_diam, -45);
+	z1 = 0.35 [z2l, z2r] + bulb_len * dir (45);
+
+	penpos2 (bulb_diam, -25);
+	y2l = 0.845 [y7r, y3r];
+	z2l = base_point + whatever * dir (90 - left_angle);
+
+	penpos3 (s_thin, 100);
+	x3l = 1/2 w;
+	y3l = ypart base_point - over_shoot;
+
+	penpos4 (s_thick, 25);
+	y4l = y1r;
+	z4r = base_point + (w, 0) + whatever * dir (90 - right_angle);
+
+	penpos5 (s_thick, 40);
+	z5 = z3l + whatever * dir (90 - right_angle);
+	y5 = 0.48 [y7r, y3r];
+
+	penpos6 (s_thick, 25);
+	z6l = base_point + whatever * dir (90 - left_angle);
+	y6r = y9l;
+
+	penpos7 (.9 s_thin, 110);
+	z7l = 0.45 [z6r, z8l] + whatever * dir (90 - left_angle);
+	y7r = h + over_shoot;
+
+	penpos8 (.9 bulb_diam, -25);
+	z8 = .6 [z4l, z4r] + whatever * dir (90 - right_angle);
+	y8r = 0.23 [y7r, y3r];
+
+	penpos9 (.9 bulb_diam, -45);
+	z9 = .4 [z8r, z8l] + .9 bulb_len * dir (-135);
+
+	penlabels (range 1 thru 9);
+
+%	pickup pencircle scaled 1;
+
+%	draw
+	fill z2l{down}
+	     .. z3l{right}
+	     .. z4r{up}
+	     .. z5r
+	     .. z6r{up}
+	     .. z7l{right}
+	%    .. z8l{down}
+	     .. z9l{dir (-125)}
+	     .. z9r{right}
+	     .. z7r{left}
+	     .. z6l{down}
+	     .. z5l
+	     .. z4l{down}
+	     .. z3r{left}
+	     .. z2r{up}
+	     .. z1r{up}
+	     .. z1l{left}
+	     .. cycle;
+fet_endchar;
+
+
+% for `p' and `m'
+
+save slant;
+slant := ypart (dir (slant_angle));
+
+
+%
+% Piano `p', grabbed from Ed Breitkopf Mozart horn concerto 3.
+%
+% Notes:
+%
+% * There is no dishing in the serif (but we do it anyway).
+%
+% * The cheek is a little fatter than the stem.
+%
+% * The slant is extreme: 20 degrees.
+%
+% * The twiddle (what's-it-called) is a slightly darker than the serif.
+%
+% * The hole in the cheek has a straight right side.
+%
+% * Corners are filled up.
+%
+
+code := 111;
+
+fet_beginchar ("dynamic p", "p")
+	% TODO: w really is 13/12 ex
+	%       but should do kerning
+
+	save twiddle_thick, stem_thick, cheek_thick, cheek_width;
+	save fill_up, straigh_len;
+	save serif, dishing_angle, p, tmp;
+	save cheek_medium, left_serif_protrude, right_serif_protrude;
+	save lower_overshoot;
+	save blot_t, corner_t;
+	path serif, p;
+	pair tmp, updir;
+
+	set_char_box (0, 15/12 ex#, descender#, 1.0 ex#);
+
+	twiddle_thick = med_thick;
+	cheek_medium = 1/6 ex;
+
+	dishing_angle = 5;
+	fill_up = 1.5 serif_thick;
+	straigh_len = 0.5 ex;
+	lower_overshoot = .3 serif_thick;
+
+	stem_thick = 2/6 ex;
+	cheek_thick = 13/32 ex;
+	cheek_width = 0.72 ex;
+	left_serif_protrude = 18/60 ex;
+	right_serif_protrude = 15/60 ex;
+
+	currenttransform := currenttransform slanted slant;
+
+	penpos1 (twiddle_thick, -slant - 5);
+	penpos2 (cheek_medium, 90 - slant);
+	penpos3 (cheek_medium, 90 - slant);
+
+	x4r - x4l = cheek_thick;
+
+	penpos4 (whatever, 0);
+	penpos5 (whatever, -38);
+	penpos6 (stem_thick, 0);
+	penpos17 (straigh_len, 90 - slant);
+
+	whatever [z17l, z17r] =  z4l;
+	y17 = 7/16 ex;
+	x6l = 0;
+	y6l = -descender + serif_thick / 2;
+	z1l = z6l - whatever * dir (110);
+	y1r = 0.5 ex;
+	y2r = ex;
+	z7 = whatever * up + z6l;
+	y7 = 43/60 ex;
+	z2l = whatever * up + 0.3 [z7, z1r];
+	y8 = 0.9 [y7, y2l];
+	z8 = 2/3 [z6l, z6r] + whatever * up;
+	y3r = ex;
+	z3l = 0.58 [(stem_thick, -descender),
+		    (stem_thick + cheek_width - cheek_thick, -descender)]
+	      + whatever * up;
+	y4r = .38 ex;
+	z4r = whatever * up + (stem_thick + cheek_width, -descender);
+	z5l = whatever * up + z3l;
+	y5r = -lower_overshoot;
+	y5l = y5r + cheek_medium * ypart dir (55);
+	z9 = z6r + whatever * up;
+	y9 = .2 [y5l, y5r];
+
+	p := z2r{right}
+	     .. {dir (-60)}z8{dir 60}
+	     .. z3r{right}
+	     .. z4r{down}
+	     ..tension 1.1.. z5r{left}
+	     .. {curl 1}z9
+	     -- z6r
+	     -- z6l
+	     -- z7{up}
+	     .. z2l{left}
+	     ..tension 1.2.. simple_serif (z1r, z1l, -90)
+	     .. cycle;
+
+	blot_t := 0.13;
+	corner_t := xpart (p intersectiontimes z9);
+
+%	pickup pencircle scaled 1;
+
+%	draw
+	fill subpath (0, corner_t - 2 blot_t) of p
+	     .. subpath (corner_t + blot_t, length p) of p
+	     .. cycle;
+
+	y12 = 0.5 ex;
+	z12 = z6r + whatever * up;
+
+	unfill z17l
+	       ..tension 1.5.. z17r
+	       .. z3l{left}
+	       ..tension 1.05.. z12{down}
+	       ..tension 1.05.. z5l{right}
+	       .. cycle;
+
+	penlabels (1, 2, 3, 4, 5, 6, 17);
+	labels (7, 8, 9);
+
+	pickup pencircle scaled serif_thick;
+
+	lft x11 = -left_serif_protrude;
+	rt x10 = stem_thick + right_serif_protrude;
+	bot y10 = bot y11 = -descender;
+
+	z15 = z6l + up * fill_up;
+	z16 = z6r + up * 1.2 fill_up;
+
+	% Since pens are not affected by currenttransform we directly
+	% transform the necessary points, then simulating the pen with
+	% an outline while using the identity transformation.
+
+	forsuffixes $ = 7, 10, 11, 15, 16:
+		tmp := z$ transformed currenttransform;
+		x$ := xpart tmp;
+		y$ := ypart tmp;
+	endfor;
+
+	currenttransform := identity;
+
+	updir = z7 - z15;
+
+	serif := simple_serif (z10, z11, dishing_angle);
+
+	penpos10 (serif_thick, -dishing_angle - 90);
+	penpos11 (serif_thick, dishing_angle - 90);
+	penpos13 (serif_thick, angle (direction 0.05 of serif) + 90);
+	penpos14 (serif_thick, angle (direction 0.85 of serif) + 90);
+
+	z13 = point 0.05 of serif;
+	z14 = point 0.85 of serif;
+
+	penlabels (10, 11, 13, 14);
+	labels (15, 16);
+
+%	draw
+	fill z15{-updir}
+	     .. z14l{direction 0.85 of serif}
+	     .. z11l{-dir (dishing_angle)}
+	     .. z11r{dir (dishing_angle)}
+	     .. z14r{-direction 0.85 of serif}
+	     .. z13r{-direction 0.05 of serif}
+	     .. z10r{dir (-dishing_angle)}
+	     .. z10l{-dir (-dishing_angle)}
+	     .. z13l{direction 0.05 of serif}
+	     .. z16{updir}
+	     -- cycle;
+fet_endchar;
+
+
+%
+% NOTES:
+%
+% * Right stem is fatter and more straight than the left two stems.
+%
+% * The twiddle at the left is similar to the `p' twiddle.
+%
+% * The bottoms of the stems are blotted.
+%
+%
+% This is cut & paste programming.  Somehow three `i' shapes in two
+% characters (`p' and `m') -- doesn't seem worth the trouble of writing
+% a macro.
+%
+
+code := 108;
+
+fet_beginchar ("dynamic m", "m");
+	save i_thick, i_angle, i_twiddle_thick;
+	save i_twiddle_start_angle, i_twiddle_start_y;
+	save i_twiddle_end_angle, i_left_space;
+	save idir, center, right_ending;
+	save overshoot;
+	save p;
+	pair center, idir, right_ending;
+	path p;
+
+	set_char_box (0, 1.5 ex#, 0, 1.0 ex#);
+
+	% should share code with p for twiddle.
+
+	overshoot = .25 serif_thick;
+	i_thick := 21/80 ex;
+	i_twiddle_thick = 1.2 serif_thick;
+	i_twiddle_start_y = 8/16 ex;
+	i_twiddle_start_angle = 0;
+	i_twiddle_end_angle := 35;
+
+	center = (0, 0);
+
+	currenttransform := currenttransform slanted slant;
+
+	i_angle := 0;
+	idir := dir (90 - i_angle);
+	i_left_space = 16/80 ex;
+
+	penpos1 (i_twiddle_thick, -i_twiddle_start_angle);
+	y1 = i_twiddle_start_y;
+	z1r = center - (i_left_space, 0) + whatever * idir;
+
+	y2l = ex + overshoot;
+	z2l = .08 [z3l, z3r] + whatever * idir;
+	z2r = 5/8 [z1r, z3l] + whatever * idir;
+	y2r = y5l + 1/9 ex;
+	z2 = 1/2 [z2l, z2r];
+
+	penpos3 (i_thick, 0);
+	y3 = 0.5 bottom_blot + ypart center;
+	z3l = center + whatever * idir;
+
+	penpos4 (i_thick - bottom_blot, 0);
+	y4 = ypart center;
+	z4 - z3 = whatever * idir;
+
+	penpos5 (i_thick, 0);
+	z5 = z4 + whatever * idir;
+	y5 = 55/80 ex;
+
+	fill simple_serif (z1l, z1r, 90)
+	     ..tension 1.2.. z2r{right}
+	     .. z5l{z3 - z5}
+	     -- z3l{z3 - z5}
+	     .. z4l{right}
+	     -- z4r{right}
+	     .. z3r{z5 - z3}
+	     -- z5r{z5 - z3}
+	     ..tension 1.2.. z2l{left}
+	     .. cycle;
+
+	right_ending := z5r;
+	penlabels (1, 2, 3, 4, 5);
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	clearxy;
+
+	i_angle := -3.2;
+	idir := dir (90 - i_angle);
+	i_left_space := 14/80 ex;
+
+	penpos1 (serif_thick, -i_twiddle_start_angle);
+	z1r = right_ending;
+
+	y2l = ex+ overshoot;
+	z2l = .08 [z3l, z3r] + whatever * idir;
+	z2r = 5/8 [z1r, z3l] + whatever * idir;
+	y2r = y5l + 1/9 ex;
+	z2 = 1/2 [z2l, z2r];
+
+	penpos3 (i_thick, 0);
+	y3 = 0.5 bottom_blot + ypart center;
+	z3l = z5l + whatever * idir;
+
+	penpos4 (i_thick - bottom_blot, 0);
+	y4 = ypart center;
+	z4 - z3 = whatever * idir;
+
+	penpos5 (i_thick, 0);
+	z5l = right_ending + (i_left_space, 0);
+
+	fill simple_serif (z1l, z1r, 90)
+	     ..tension 1.05.. z2r{right}
+	     .. z5l{z3 - z5}
+	     -- z3l
+	     ..  z4l{right}
+	     -- z4r{right}
+	     .. z3r{z5 - z3}
+	     -- z5r{z5 - z3}
+	     ..tension 1.2.. z2l{left}
+	     .. cycle;
+
+	right_ending := z5r;
+	penlabels (1, 2, 3, 4, 5);
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	clearxy;
+
+	i_thick := 23/80 ex;
+	i_angle := -6;
+	idir := dir (90 - i_angle);
+	i_left_space := 14/80 ex;
+
+	penpos1 (serif_thick, -i_twiddle_start_angle);
+	z1r = right_ending;
+
+	y2l = ex + overshoot;
+	z2l = .08 [z3l, z3r] + whatever * idir;
+	z2r = 5/8 [z1r, z3l] + whatever * idir;
+	y2r = y5l + 1/9 ex;
+	z2 = 1/2 [z2l, z2r];
+
+	penpos3 (whatever, 20);
+	y3l = 1/8 ex + ypart center;
+	z3l = z7l + whatever * idir;
+	z3r = z7r + whatever * idir;
+
+	penpos5 (whatever, 10);
+	z5l = right_ending + (i_left_space, 0);
+	z5r = z7r + whatever * idir;
+
+	penpos6 (serif_thick, -i_twiddle_end_angle);
+	y6l = 23/80 ex + ypart center;
+	z6l = 1.6 [z3l, z3r] + whatever * idir;
+
+	penpos7 (i_thick, 0);
+	y7 = 0;
+	z7l = z5l + whatever * idir;
+
+	z8 = z7 - (0, overshoot);
+
+	fill simple_serif (z1l, z1r, 90)
+	     ..tension 1.05.. z2r{right}
+	     .. z5l{z3 - z5}
+	     -- z3l{z3 - z5}
+	     .. z8{right}
+	     .. simple_serif (z6r, z6l, 90)
+	     ..tension 0.85.. z3r{z5 - z3}
+	     -- z5r{z5 - z3}
+	     ..tension 1.2.. z2l{left}
+	     .. cycle;
+
+	penlabels (range 1 thru 8);
+fet_endchar;
+
+
+code := 113;
+
+fet_beginchar ("dynamic r", "r");
+	save base_point, stem_thick, bulb_diam;
+	save twiddle_thick, attach_len, overshoot, taille;
+	pair base_point;
+
+	set_char_box (0, .75 ex#, 0, ex#);
+
+	stem_thick =.26 ex;
+	bulb_diam = .30 ex;
+	twiddle_thick = 1.1 serif_thick;
+	overshoot = .5 serif_thick;
+	taille = -0.3 serif_thick;
+	attach_len + bulb_diam / 2 + stem_thick = w;
+
+
+	base_point = (0, 0);
+
+	currenttransform := identity slanted ypart (dir (15));
+
+	penpos1 (stem_thick, 0);
+	x1l = 0;
+	y1l = .5 bottom_blot;
+
+	penpos2 (stem_thick, 0);
+	x2l = x1l;
+	y2l - y1l = 36/47 ex;
+
+	penpos3 (twiddle_thick, -20);
+	x3r = x2l - .2 ex;
+	y3 = .77  ex;
+
+	x4l = -0.1 [x1l, x1r];
+	y4l = ex + overshoot;
+	x4r = 0.62 [x3r, x2l];
+	y4r = 0.5 [y4l, y2l];
+
+	penpos5 (whatever, -74);
+	y5l - y5r =  bulb_diam;
+	y5l = ex + overshoot;
+	x5 = x2r + attach_len;
+
+	penpos6 (bulb_diam, 0);
+	z6 = z5;
+
+%	z7 = z6l + taille * dir (180);
+	z7 = z6 + .4 * bulb_diam * dir (-125);
+
+	z8 = 9/10 [z1r, z2r];
+
+	x9 = 0.15 [x1r, x1l];
+	y9 = y4l - .12 ex;
+
+	penpos10 (stem_thick - bottom_blot, 0);
+	x10 = x1;
+	y10 = 0;
+
+%	pickup pencircle scaled 1;
+
+%	draw 
+	fill z1r{down}
+	     .. z10r{left}
+	     -- z10l{left}
+	     .. z1l{up}
+	     -- z2l{up}
+	     .. z4r{left}
+	     ..tension 1.2.. {down}simple_serif (z3r, z3l,-90){up}
+	     ..tension 0.95.. z4l
+	     .. {curl 1}z9{curl 1}
+	     .. z5l
+	     .. z6r{dir (-80)}
+	     .. z5r{left}
+	     .. z7
+	     .. z6l
+	     ..tension 1.2.. z8{down}
+	     -- cycle;
+
+	penlabels (range 1 thru 10);
+fet_endchar;
+
+
+%%% KERNING
+
+ligtable "m":
+	"p" kern 0.2 ex#,
+	"f" kern -0.1 ex#;
+
+ligtable "f":
+	"f" kern -0.13 ex#;
+
+ligtable "r":
+	"f" kern 0.1 ex#;
+
+
+%% notes from old dyn code.
+
+% `f' obviously has a _lot_ bigger slant than `p' (see Wanske p.239).
+% However; perhaps we need two f symbols:
+%  - a super-slanted one used in `f', `mf', `sfz', `sf'
+%  - a more normal-slanted in `ff', `fff', `fp', `fp' (see Wanske p.241)
+%
+% Looking at professionally typeset music reveals that typesetters
+% are somewhat unsure about slanting in `mf', `fp', `sfz'
+%
+% `f' and `p' (in any combination) are a lot (factor two) fatter than
+% `s', `m', and `z'.  Sometimes the `m' and `z' are a bit fatter than
+% `s'.
+%
+% Chester, Breitkopf suggest smaller sizes of these other glyphs,
+% using the x-height as reference point.

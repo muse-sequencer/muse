@@ -1,0 +1,102 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+# MusE external midi processing script
+# By: Robert Jonsson 2009
+# RemoveShortEvents
+#=============================================================================
+#  MusE
+#  Linux Music Editor
+#  $Id:$
+#
+#  Copyright (C) 2002-2011 by Werner Schweer and others
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the
+#  Free Software Foundation, Inc.,
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#=============================================================================
+
+
+import sys,time
+from PyQt4 import QtGui, QtCore
+
+class RemoveShortEvents(QtGui.QWidget):
+    def __init__(self, parent=None):
+        QtGui.QWidget.__init__(self, parent)
+
+        self.setWindowTitle('RemoveShortEvents')
+
+        title = QtGui.QLabel('Remove events shorter than:')
+        self.timeEdit = QtGui.QComboBox()
+        self.timeEdit.addItem('1/1',1)
+        self.timeEdit.addItem('1/2',2)
+        self.timeEdit.addItem('1/4',4)
+        self.timeEdit.addItem('1/8',8)
+        self.timeEdit.addItem('1/16',16)
+        self.timeEdit.addItem('1/32',32)
+        self.timeEdit.setCurrentIndex(3)
+        
+        button = QtGui.QPushButton("Execute")
+        self.connect(button,  QtCore.SIGNAL('clicked()'), self.execute) 
+
+        grid = QtGui.QGridLayout()
+        grid.setSpacing(3)
+
+        grid.addWidget(title, 1, 0)
+        grid.addWidget(self.timeEdit, 1, 1)
+
+        grid.addWidget(button, 2, 1)
+
+        self.setLayout(grid)
+        self.resize(200, 100)
+        button.setFocus()
+
+    def execute(self):
+        testFile = file(sys.argv[1],"r")
+        inputEvents = testFile.readlines()
+        testFile.close()
+        
+        beatDiv = int(self.timeEdit.itemData(self.timeEdit.currentIndex()).toInt()[0])
+        minSize=0 # fill in when we get the beat size value
+        outputEvents=[]
+
+        #get beat length to calculate minimum length of event
+        for line in inputEvents:
+            if line.startswith('BEATLEN'):
+              tag,tick = line.split(' ')
+              minSize=int(tick)/beatDiv
+              break
+        #loop through events
+        for line in inputEvents:
+            if line.startswith('NOTE'):
+              tag,tick,note,length,velocity = line.split(' ')
+              if int(length) > minSize:  # only append long enough events
+                outputEvents.append(line)
+                
+            else:
+              outputEvents.append(line)
+
+
+        testFile = file(sys.argv[1],"w")
+        testFile.writelines(outputEvents)
+        testFile.close()
+
+        
+        quit()
+
+
+
+app = QtGui.QApplication(sys.argv)
+qb = RemoveShortEvents()
+qb.show()
+sys.exit(app.exec_())

@@ -1,0 +1,7 @@
+% feta-alphabet20.mf
+% part of LilyPond's pretty-but-neat music font
+
+design_size := 20;
+input feta-alphabet;
+end.
+

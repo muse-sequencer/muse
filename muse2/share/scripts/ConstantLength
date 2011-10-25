@@ -1,0 +1,99 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+#=============================================================================
+#  MusE
+#  Linux Music Editor
+#  $Id:$
+#
+#  Copyright (C) 2002-2011 by Werner Schweer and others
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the
+#  Free Software Foundation, Inc.,
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#=============================================================================
+
+import sys,time
+from PyQt4 import QtGui, QtCore
+
+class ScriptClass(QtGui.QWidget):
+    def __init__(self, parent=None):
+        QtGui.QWidget.__init__(self, parent)
+
+        self.setWindowTitle('Constant length')
+        title = QtGui.QLabel('Make all events of length:')
+        self.titleEdit = QtGui.QComboBox()
+        self.titleEdit.addItem('1/1',1)
+        self.titleEdit.addItem('1/2',2)
+        self.titleEdit.addItem('1/4',4)
+        self.titleEdit.addItem('1/8',8)
+        self.titleEdit.addItem('1/16',16)
+        self.titleEdit.addItem('1/32',32)
+        self.titleEdit.addItem('1/64',64)
+        self.titleEdit.setCurrentIndex(4)
+
+        button = QtGui.QPushButton("Execute")
+        self.connect(button,  QtCore.SIGNAL('clicked()'), self.execute) 
+        grid = QtGui.QGridLayout()
+        grid.setSpacing(3)
+
+        grid.addWidget(title, 1, 0)
+        grid.addWidget(self.titleEdit, 1, 1)
+
+        grid.addWidget(button, 2, 1)
+
+        self.setLayout(grid)
+        self.resize(200, 100)
+        button.setFocus()
+
+    def execute(self):
+        testFile = file(sys.argv[1],"r")
+        inputEvents = testFile.readlines()
+        testFile.close()
+
+        beatDiv = self.titleEdit.itemData(self.titleEdit.currentIndex()).toInt()[0]
+        print "beatDiv=",beatDiv
+        eventLen=0
+        #get beat length to calculate minimum length of event
+        for line in inputEvents:
+            if line.startswith('BEATLEN'):
+              tag,tick = line.split(' ')
+              eventLen=int(tick)/beatDiv*4
+              break
+        
+        outputEvents=[]
+        #loop through events
+        for line in inputEvents:
+            
+            if line.startswith('NOTE'):
+              tag,tick,note,length,velocity = line.split(' ')
+
+              length=eventLen
+              newLine=tag+" "+tick+" "+note+" "+str(length)+" "+velocity
+              outputEvents.append(newLine)
+                
+            else:
+              outputEvents.append(line)
+            
+        testFile = file(sys.argv[1],"w")
+        testFile.writelines(outputEvents)
+        testFile.close()
+        
+        quit()
+
+
+
+app = QtGui.QApplication(sys.argv)
+qb = ScriptClass()
+qb.show()
+sys.exit(app.exec_())

@@ -1,0 +1,1492 @@
+% -%-Fundamental-%- -*-Metafont-*-
+% parmesan-heads.mf -- implement ancient note heads
+% 
+% source file of LilyPond's pretty-but-neat music font
+% 
+% (c) 2001--2009 Juergen Reuter <reuter@ipd.uka.de>
+% 
+% Neo-mensural heads originally by
+% Christian Mondrup and Mats Bengtsson
+% 
+
+save black_notehead_width;
+numeric black_notehead_width;
+
+fet_begingroup ("noteheads");
+
+%
+% character aligment:
+%
+%   The head is assumed to be vertically centered around (0, 0).
+%   The left-most edge of the head should touch the vertical line
+%   that goes though the point (0, 0).
+%
+% set_char_box() conventions:
+%
+% * breapth: Ignored (as far as I know).  Should be set to 0.
+%
+% * width: Should match the head's width.
+%
+% * depth: Should match the bottom edge of the head.  Affects vertical
+%   collision handling.
+%
+% * height: Should match the top edge of the head.  Affects vertical
+%   collision handling.
+%
+% TODO: should depth/height include appendages/stems?
+
+overdone_heads = 0;
+noteheight# := staff_space# + (1 + overdone_heads) * stafflinethickness#;
+define_pixels (noteheight);
+
+
+%%%%%%%%
+%
+%
+%
+% MENSURAL NOTATION
+%
+%
+%
+
+def draw_neomensural_brevis (expr brevwid) =
+	save beamheight, head_width;
+	save holeheight, stem_width;
+	save serif_size, serif_protrude;
+
+	head_width# = brevwid;
+	holeheight = 3 stafflinethickness;
+	stem_width = 1.4 stafflinethickness;
+
+	define_pixels (head_width);
+
+	set_char_box (0, head_width#,
+		      noteheight# / 2, noteheight# / 2);
+	
+	2 beamheight + holeheight = noteheight;
+	serif_size = (holeheight - stafflinethickness) / 2;
+	serif_protrude = 1.5 serif_size;
+
+	z1l = (0, 0);
+	z2l = (0, -stafflinethickness / 2);
+	z3r = z2r + serif_size * (1, -1);
+	y4r = y3r;
+	x4r = head_width / 2;
+	z5l = z3l + (-serif_size, -serif_protrude);
+
+	penpos1 (stem_width, 0);
+	penpos2 (stem_width, 0);
+	penpos3 (beamheight, 90);
+	penpos4 (beamheight, 90);
+	penpos5 (stem_width, 180);
+
+	save pat_in, pat_out;
+	path pat_in, pat_out;
+
+	pat_out := z4l
+		   -- z3l{left}
+		   .. z5l{down}
+		   .. z5r{up}
+		   -- z1l;
+	pat_out := pat_out
+		   -- reverse pat_out yscaled -1;
+	pat_out := pat_out
+		   -- reverse pat_out shifted (-x4r, 0)
+				      xscaled -1
+				      shifted (x4l, 0)
+		   -- cycle;
+	fill pat_out;
+
+	pat_in := z4r
+		  -- z3r{left}
+		  .. z2r{up}
+		  -- z1r;
+	pat_in := pat_in
+		  -- reverse pat_in yscaled -1;
+	pat_in := pat_in
+		  -- reverse pat_in shifted (-x4r, 0)
+				    xscaled -1
+				    shifted (x4l, 0)
+		  -- cycle;
+	unfill pat_in;
+
+	penlabels (1, 2, 3, 4, 5);
+enddef;
+
+
+%%% This head does not seem to be used anywhere.  Junk me?  -- jr
+def draw_neomensural_left_stemmed_head (expr wid) =
+	draw_neomensural_brevis (wid);
+
+	x6 = x7 = stem_width / 2;
+	y6 = y5;
+	y7 = y5 - 2.25 staff_space;
+
+	z17 = (x7, y7 - stem_width / 2);
+
+	penpos6 (stem_width, 0);
+	penpos7 (stem_width, 0);
+
+	fill z7l
+	     -- z6l
+	     -- z6r
+	     -- z7r
+	     .. z17
+	     .. cycle;
+
+	penlabels (6, 7);
+	labels (17);
+enddef;
+
+
+%%% This head does not seem to be used anywhere.  Junk me?  -- jr
+fet_beginchar ("Left stemmed notehead", "slneomensural");
+	draw_neomensural_left_stemmed_head (2 staff_space#);
+fet_endchar;
+
+
+%
+% Some sources (eg. Musix/OpusTeX) think that the appendage should be on
+% the left, some say right.  Right wins democratically.
+%
+def draw_neomensural_longa (expr wid) =
+	draw_neomensural_brevis (wid);
+
+	save theta;
+
+	x7r = head_width;
+	y7 = y5;
+	z6 - z7 = (stem_width / 2, -staff_space);
+	theta = angle (z6 - z7) + 90;
+
+	penpos7 (stem_width, 0);
+	penpos6 (1.2 stem_width, theta);
+	
+	z7' = find_tangent (z6l, pat_out,
+			    (x7l + 0.5 stem_width, y7l),
+			    (x7l - 0.5 stem_width, y7l));
+
+	fill z7r
+	     .. z6r{z6 - z7}
+	     .. {z7 - z6}z6l
+	     -- z7'
+	     -- cycle;
+
+	penlabels (6, 7);
+	labels (7');
+enddef;
+
+
+%
+% En wij presenteren U: de opvolgster van Emily
+%
+% (ze is wel breed)
+% 
+fet_beginchar ("Neo-mensural maxima notehead", "sM3neomensural");
+	draw_neomensural_longa (2.6 staff_space#);
+fet_endchar;
+
+
+fet_beginchar ("Neo-mensural longa notehead", "sM2neomensural");
+	draw_neomensural_longa (2 staff_space#);
+fet_endchar;
+
+
+fet_beginchar ("Neo-mensural brevis notehead", "sM1neomensural");
+	draw_neomensural_brevis (2 staff_space#);
+fet_endchar;
+
+
+def draw_neomensural_black_head (expr wid, height) =
+	save head_width;
+	save ne, nw, ne_dist, nw_dist;
+	pair ne, nw, ne_dist, nw_dist;
+
+	head_width# = wid;
+
+	set_char_box (0, head_width#,
+		      height / 2, height / 2);
+	
+	charwx := head_width# / 2;
+	charwy := height / 2;
+
+	y3 = y1 = 0;
+	x2 = x4 = (x1 + x3) / 2;
+
+	pickup pencircle scaled blot_diameter;
+
+	top y2 = h;
+	bot y4 = -d;
+	lft x1 = 0;
+	rt x3 = w;
+
+	ne := unitvector (z2 - z1);
+	nw_dist := (ne rotated 90) * 0.5 blot_diameter;
+	nw := unitvector (z2 - z3);
+	ne_dist := (nw rotated -90) * 0.5 blot_diameter;
+
+	fill lft z1{up}
+	     .. (z1 + nw_dist){ne}
+	     -- (z2 + nw_dist){ne}
+	     .. top z2{right}
+	     .. (z2 + ne_dist){-nw}
+	     -- (z3 + ne_dist){-nw}
+	     .. rt z3{down}
+	     .. (z3 - nw_dist){-ne}
+	     -- (z4 - nw_dist){-ne}
+	     .. bot z4{left}
+	     .. (z4 - ne_dist){nw}
+	     -- (z1 - ne_dist){nw}
+	     .. cycle;
+
+	labels (1, 2, 3, 4);
+enddef;
+
+
+def draw_neomensural_open_head (expr wid, height)=
+	draw_neomensural_black_head (wid, height);
+
+	save diamNW, diamSW;
+
+	diamNW = length (z2 - z1) + blot_diameter;
+	diamSW = length (z4 - z1) + blot_diameter;
+	
+	save hole_widthNW, hole_widthSW;
+
+	hole_widthNW = 0.34 diamNW ;
+	hole_widthSW + 2.6 linethickness = diamSW;
+
+	(z7 + z5) / 2 = (w / 2, 0);
+	(z8 + z6) / 2 = (w / 2, 0);
+	z6 - z5 = hole_widthNW * unitvector (z2 - z1);
+	z7 - z6 = hole_widthSW * unitvector (z4 - z1);
+
+	unfill z5
+	       -- z6
+	       -- z7
+	       -- z8
+	       -- cycle;
+
+	labels (5, 6, 7, 8);
+enddef;
+
+
+%
+% WL says the thin lines should be thinner.
+%
+fet_beginchar ("Harmonic notehead (Neo-mensural open)", "s0harmonic");
+	draw_neomensural_open_head (1.3 staff_space#, 1.3 noteheight#);
+	charwx := head_width#;
+	charwy := 0;
+fet_endchar;
+
+
+fet_beginchar ("Harmonic notehead (Neo-mensural black)", "s2harmonic");
+	draw_neomensural_black_head (1.3 staff_space#, 1.3 noteheight#);
+	charwx := head_width#;
+	charwy := 0;
+fet_endchar;
+
+
+fet_beginchar ("Neo-mensural semibrevis head", "s0neomensural");
+	draw_neomensural_open_head (staff_space#, noteheight#);
+fet_endchar;
+
+
+fet_beginchar ("Neo-mensural minima head", "s1neomensural");
+	draw_neomensural_open_head (staff_space#, noteheight#);
+fet_endchar;
+
+
+fet_beginchar ("Neo-mensural semiminima head", "s2neomensural");
+	draw_neomensural_black_head (staff_space#, noteheight#);
+fet_endchar;
+
+
+def draw_mensural_brevis (expr wid) =
+	% TODO.  For the moment, fall back to draw_neomensural_brevis.
+	draw_neomensural_brevis (wid);
+enddef;
+
+
+%%% This head does not seem to be used anywhere.  Junk me?  -- jr
+def draw_mensural_left_stemmed_head (expr wid) =
+	draw_mensural_brevis (wid);
+
+	x6 = x7 = stem_width / 2;
+	y6 = y5;
+	y7 = y5 - 2.25 staff_space;
+
+	z17 = (x7, y7 - stem_width / 2);
+
+	penpos6 (stem_width, 0);
+	penpos7 (stem_width, 0);
+
+	fill z7l
+	     -- z6l
+	     -- z6r
+	     -- z7r
+	     .. z17
+	     .. cycle;
+
+	penlabels (6, 7);
+	labels (17);
+enddef;
+
+
+def draw_mensural_longa (expr wid) =
+	draw_mensural_brevis (wid);
+
+	x6 = x7 = head_width - stem_width / 2;
+	y6 = y5;
+	y7 = y5 - 2.25 staff_space;
+
+	z17 = (x7, y7 - stem_width / 2);
+
+	penpos6 (stem_width, 0);
+	penpos7 (stem_width, 0);
+
+	fill z7l
+	     -- z6l
+	     -- z6r
+	     -- z7r
+	     .. z17
+	     .. cycle;
+
+	penlabels (6, 7);
+	labels (17);
+enddef;
+
+
+%%% This head does not seem to be used anywhere.  Junk me?  -- jr
+fet_beginchar ("Mensural left stemmed notehead", "slmensural");
+	draw_mensural_left_stemmed_head (staff_space#);
+fet_endchar;
+
+
+fet_beginchar ("Mensural maxima notehead", "sM3mensural");
+	draw_mensural_longa (2.0 staff_space#);
+fet_endchar;
+
+
+fet_beginchar ("Mensural longa notehead", "sM2mensural");
+	draw_mensural_longa (staff_space#);
+fet_endchar;
+
+
+fet_beginchar ("Mensural brevis notehead", "sM1mensural");
+	draw_mensural_brevis (staff_space#);
+fet_endchar;
+
+
+def draw_diamond_head (expr head_h, pen_w, pen_h, angle, open) =
+	save head_width, head_height;
+	save ellipse, ellipse_r;
+	path ellipse, ellipse_r, diamond_shape;
+
+	head_height# = head_h;
+	head_width# / head_height# = tand (angle);
+
+	set_char_box (0, head_width#,
+		      head_height# / 2, head_height# / 2);
+
+	charwx := head_width# / 2;
+	charwy := head_height# / 2 - linethickness#;
+
+	define_pixels (head_width, head_height);
+
+	ellipse := reverse fullcircle
+		     xscaled (max (blot_diameter, pen_w * head_width))
+		     yscaled (max (blot_diameter, pen_h * head_width))
+		     rotated -angle;
+
+	z1 = find_tangent_shift (((0, h) -- (0, -h)), ellipse,
+				 (0, 0), (w / 2, 0));
+	z2 = find_tangent_shift (((0, h) -- (w, h)), ellipse,
+				 (w / 2, h), (w / 2, 0));
+	z3 = find_tangent_shift (((w, h) -- (w, -h)), ellipse,
+				 (w, 0), (w / 2, 0));
+	z4 = find_tangent_shift (((0, -h) -- (w, -h)), ellipse,
+				 (w / 2, -h), (w / 2, 0));
+
+	diamond_shape := get_subpath (ellipse, z1 - z4, z2 - z1, z1)
+			 -- get_subpath (ellipse, z2 - z1, z3 - z2, z2)
+			 -- get_subpath (ellipse, z3 - z2, z4 - z3, z3)
+			 -- get_subpath (ellipse, z4 - z3, z1 - z4, z4)
+			 -- cycle;
+	fill diamond_shape;
+
+	if open:
+		save l;
+		path l[];
+
+		l12 := (directionpoint (z1 - z2) of ellipse) shifted z1
+			-- (directionpoint (z1 - z2) of ellipse) shifted z2;
+		l23 := (directionpoint (z2 - z3) of ellipse) shifted z2
+			-- (directionpoint (z2 - z3) of ellipse) shifted z3;
+		l34 := (directionpoint (z3 - z4) of ellipse) shifted z3
+			-- (directionpoint (z3 - z4) of ellipse) shifted z4;
+		l41 := (directionpoint (z4 - z1) of ellipse) shifted z4
+			-- (directionpoint (z4 - z1) of ellipse) shifted z1;
+
+		unfill l12 intersectionpoint l23
+		       -- l23 intersectionpoint l34
+		       -- l34 intersectionpoint l41
+		       -- l41 intersectionpoint l12
+		       -- cycle;
+	fi;
+
+	labels (1, 2, 3, 4);
+enddef;
+
+
+fet_beginchar ("Mensural semibrevis head", "s0mensural");
+	draw_diamond_head (staff_space#, 0.15, 0.30, 30, true);
+fet_endchar;
+
+
+fet_beginchar ("Mensural minima head", "s1mensural");
+	draw_diamond_head (staff_space#, 0.15, 0.30, 30, true);
+fet_endchar;
+
+
+fet_beginchar ("Mensural semiminima head", "s2mensural");
+	draw_diamond_head (staff_space#, 0.15, 0.30, 30, false);
+fet_endchar;
+
+
+fet_beginchar ("Petrucci semibrevis head", "s0petrucci");
+%	draw_diamond_head (1.8 staff_space#, 0.15, 0.40, 30, true);
+	draw_neomensural_open_head (staff_space#, 1.8 staff_space#);
+fet_endchar;
+
+
+fet_beginchar ("Petrucci minima head", "s1petrucci");
+%	draw_diamond_head (1.8 staff_space#, 0.15, 0.40, 30, true);
+	draw_neomensural_open_head (staff_space#, 1.8 staff_space#);
+fet_endchar;
+
+
+fet_beginchar ("Petrucci semiminima head", "s2petrucci");
+%	draw_diamond_head (1.8 staff_space#, 0.15, 0.40, 30, false);
+	draw_neomensural_black_head (staff_space#, 1.8 staff_space#);
+fet_endchar;
+
+
+%%%%%%%%
+%
+%
+%
+% EDITIO VATICANA (including solesmes extensions)
+%
+%
+%
+
+def vat_punctum_char (expr verbose_name, internal_name,
+			   linea, cavum, straight, auctum,
+			   d_up, up_shift, down_shift, mag) =
+	fet_beginchar (verbose_name, "s" & internal_name);
+		save a_b, b_h, a_w;
+
+		a_b := 1.54; % b_h * a_b / a_w = wd / ht
+		b_h := 0.85;
+		a_w := 1.09;
+
+		save a, beta, ht, wd;
+
+		ht# = noteheight# * mag;
+		2 beta = ht# * b_h;
+		a = beta * a_b;
+		wd# = 2 a / a_w;
+		black_notehead_width# := wd#;
+
+		% direction
+		save d_, d_sign;
+		pair d_;
+
+		if d_up:
+			d_ := up;
+			d_sign := 1;
+		else:
+			d_ := down;
+			d_sign := -1;
+		fi;
+
+		% convexity and eccentricity
+		save u_convexity, u_eccentricity;
+
+		if straight:
+			u_convexity# := -0.01 ht#;
+			u_eccentricity# := 0.0 ht#; % dummy
+		elseif auctum:
+			u_convexity# := -0.03 ht#;
+			u_eccentricity# := +0.25 ht#;
+		else:
+			u_convexity# := -0.05 ht#;
+			u_eccentricity# := 0.0 ht#; % dummy
+		fi;
+
+		save convexity, eccentricity;
+
+		convexity# := d_sign * u_convexity#;
+		eccentricity# := d_sign * u_eccentricity#;
+
+		% y shift offset
+		save yoffs;
+
+		if up_shift:
+			yoffs# := 0.08 ht#;
+		elseif down_shift:
+			yoffs# := -0.11 ht#;
+		else:
+			yoffs# := 0.00 ht#;
+		fi;
+
+		define_pixels (convexity, eccentricity, yoffs, ht, wd);
+
+		pickup pencircle scaled linethickness;
+
+		save height, yoffs_bt, p, circle, circle_r;
+		path p, circle, circle_r;
+
+		height# = 0.47 ht#;
+		yoffs_bt# = yoffs# - 0.5 height# - 0.25 convexity#;
+
+		define_pixels (height, yoffs_bt);
+
+		circle := fullcircle scaled linethickness;
+
+		x1 = x6;
+		x2 = x5;
+		x3 = x4;
+		y1 + height = y6;
+		y2 + height = y5;
+		y3 + height = y4;
+
+		save box_top, box_bt;
+
+		if auctum:
+			z1 = (0.00 wd + linethickness / 2, yoffs_bt);
+			z2 = (0.21 wd, yoffs_bt + convexity);
+			z3 = (0.42 wd - linethickness/ 2,
+			      yoffs_bt + eccentricity);
+			box_top# = height# + yoffs_bt# +
+				     max (0, convexity#, eccentricity#);
+			box_bt# = yoffs_bt# +
+				     min (0, convexity#, eccentricity#);
+			p = z1
+			    .. {right}z2
+			    .. {d_}z3
+			    -- z4{-d_}
+			    .. z5{left}
+			    .. z6
+			    -- cycle;
+		else:
+			z1 = (0.00 wd + linethickness / 2, yoffs_bt);
+			z2 = (0.21 wd, yoffs_bt + convexity);
+			z3 = (0.42 wd - linethickness / 2, yoffs_bt);
+			box_top# = height# + yoffs_bt# + max (0, convexity#);
+			box_bt# = yoffs_bt# + min (0, convexity#);
+			p = z1
+			    .. z2
+			    .. z3
+			    -- z4
+			    .. z5
+			    .. z6
+			    -- cycle;
+		fi;
+
+		labels (1, 2, 3, 4, 5, 6);
+
+		save dirs;
+		pair dirs[];
+
+		dirs12 := direction (0 + epsilon) of p;
+		dirs2 := direction 1 of p;
+		dirs32 := direction (2 - epsilon) of p;
+		dirs45 := direction (3 + epsilon) of p;
+		dirs5 := direction 4 of p;
+		dirs65 := direction (5 - epsilon) of p;
+
+		fill get_subpath (circle, down, dirs12, z1)
+		     .. (bot z2){dirs2}
+		     .. get_subpath (circle, dirs32, up, z3)
+		     -- get_subpath (circle, up, dirs45, z4)
+		     .. (top z5){dirs5}
+		     .. get_subpath (circle, dirs65, down, z6)
+		     -- cycle;
+
+		if cavum:
+			save pat, t;
+			path pat[];
+			numeric t[];
+
+			pat123 := ((directionpoint -dirs12 of circle)
+				    shifted z1){dirs12}
+				  .. (top z2){dirs2}
+				  .. {dirs32}((directionpoint -dirs32 of circle)
+				       shifted z3);
+			pat34 := lft z3
+				 -- lft z4;
+			pat456 := ((directionpoint -dirs45 of circle)
+				    shifted z4){dirs45}
+				  .. (bot z5){dirs5}
+				  .. {dirs65}((directionpoint -dirs65 of circle)
+				       shifted z6);
+			pat61 := rt z6
+				 -- rt z1;
+
+			t61 := ypart (pat61 intersectiontimes pat123);
+			t12 := xpart (pat123 intersectiontimes pat34);
+			t34 := ypart (pat34 intersectiontimes pat456);
+			t45 := xpart (pat456 intersectiontimes pat61);
+
+			unfill subpath (t61, t12) of pat123
+			       -- subpath (t34, t45) of pat456
+			       -- cycle;
+		fi;
+
+		set_char_box (0.00 wd#, 0.42 wd#,
+			      max (0, -box_bt#) + linethickness# / 2,
+			      max (0, box_top#) + linethickness# / 2);
+
+		if linea:
+			save linea_width, linea_height;
+
+			linea_width# = 0.6 linethickness#;
+			linea_height# = 0.7 ht#;
+
+			define_pixels (linea_width, linea_height);
+
+			pickup pencircle scaled 0.6 linethickness;
+
+			draw_rounded_block ((-0.10 wd - linea_width / 2,
+					     -linea_height / 2),
+					    (-0.10 wd + linea_width / 2,
+					     +linea_height / 2),
+					    0.6 linethickness);
+			draw_rounded_block ((+0.52 wd - linea_width / 2,
+					     -linea_height / 2),
+					    (+0.52 wd + linea_width / 2,
+					     +linea_height / 2),
+					    0.6 linethickness);
+
+			set_char_box (0, 0.62 wd# + linea_width#,
+				      linea_height# / 2,
+				      linea_height# / 2);
+
+			currentpicture := currentpicture
+				shifted (0.10 wd + linea_width / 2, 0);
+		fi;
+	fet_endchar;
+enddef;
+
+
+def plica_char (expr verbose_name, internal_name,
+		     d_up, mag) =
+	fet_beginchar (verbose_name, "s" & internal_name);
+		save a_b, b_h, a_w;
+
+		a_b := 1.54; % b_h * a_b / a_w = wd / ht
+		b_h := 0.85;
+		a_w := 1.09;
+
+		save a, beta, ht, wd;
+
+		ht# = noteheight# * mag;
+		2 beta = ht# * b_h;
+		a = beta * a_b;
+		wd# = 2 a / a_w;
+		black_notehead_width# := wd#;
+
+		% direction
+		save d_, d_sign;
+		pair d_;
+
+		if d_up:
+			d_ := up;
+			d_sign := 1;
+		else:
+			d_ := down;
+			d_sign := -1;
+		fi;
+
+		% convexity and eccentricity
+		save convexity, eccentricity;
+
+		convexity# := d_sign * -0.10 ht#;
+		eccentricity# := d_sign * -0.12 ht#;
+
+		% y shift offset
+		save yoffs;
+
+		yoffs# := -0.11 ht#;
+
+		define_pixels (convexity, eccentricity, yoffs, ht, wd);
+
+		pickup pencircle scaled linethickness;
+
+		save height, yoffs_bt, p, circle, circle_r;
+		path p, circle, circle_r;
+
+		height# = 0.47 ht#;
+		yoffs_bt# = yoffs# - 0.5 height# - 0.25 convexity#;
+
+		define_pixels (height, yoffs_bt);
+
+		circle := fullcircle scaled linethickness;
+
+		x1 = x6;
+		x2 = x5;
+		x3 = x4;
+		y1 + height = y6;
+		y2 + height = y5;
+		y3 + height = y4;
+
+		save box_top, box_bt;
+
+		z1 = (0.00 wd + linethickness / 2, yoffs_bt);
+		z2 = (0.21 wd, yoffs_bt + convexity);
+		z3 = (0.42 wd - linethickness/ 2, yoffs_bt + eccentricity);
+		box_top# = height# + yoffs_bt# +
+			     max (0, convexity#, eccentricity#);
+		box_bt# = yoffs_bt# +
+			     min (0, convexity#, eccentricity#);
+		p = z1
+		    .. z2{right}
+		    .. z3
+		    -- z4
+		    .. z5{left}
+		    .. z6
+		    -- cycle;
+
+		labels (1, 2, 3, 4, 5, 6);
+
+		save dirs;
+		pair dirs[];
+
+		dirs12 := direction (0 + epsilon) of p;
+		dirs2 := direction 1 of p;
+		dirs32 := direction (2 - epsilon) of p;
+		dirs45 := direction (3 + epsilon) of p;
+		dirs5 := direction 4 of p;
+		dirs65 := direction (5 - epsilon) of p;
+
+		fill get_subpath (circle, down, dirs12, z1)
+		     .. (bot z2){dirs2}
+		     .. get_subpath (circle, dirs32, up, z3)
+		     -- get_subpath (circle, up, dirs45, z4)
+		     .. (top z5){dirs5}
+		     .. get_subpath (circle, dirs65, down, z6)
+		     -- cycle;
+
+		pickup pencircle scaled 0.6 linethickness;
+
+		save stem_bt;
+
+		set_char_box (0.00 wd#, 0.42 wd#,
+			      max (0, -box_bt#) + linethickness# / 2,
+			      max (0, box_top#) + linethickness# / 2);
+
+	fet_endchar;
+enddef;
+
+
+def epiphonus_char (expr verbose_name, internal_name,
+			 left_stem, d_up, down_shift, mag) =
+	fet_beginchar (verbose_name, "s" & internal_name);
+		save a_b, b_h, a_w;
+
+		a_b := 1.54; % b_h * a_b / a_w = wd / ht
+		b_h := 0.85;
+		a_w := 1.09;
+
+		save a, beta, ht, wd;
+
+		ht# = noteheight# * mag;
+		2 beta = ht# * b_h;
+		a = beta * a_b;
+		wd# = 2 a / a_w;
+		black_notehead_width# := wd#;
+
+		% direction
+		save d_, d_sign;
+		pair d_;
+
+		if d_up:
+			d_ := up;
+			d_sign := 1;
+		else:
+			d_ := down;
+			d_sign := -1;
+		fi;
+
+		% convexity and eccentricity
+		save convexity;
+
+		convexity# := d_sign * -0.05ht#;
+
+		% y shift offset
+		save yoffs;
+
+		if down_shift:
+			yoffs# := -0.11 ht#;
+		else:
+			yoffs# := 0.00 ht#;
+		fi;
+
+		define_pixels (convexity, yoffs, ht, wd);
+
+		pickup pencircle scaled linethickness;
+
+		save height, yoffs_bt, p, circle, circle_r;
+		path p, circle, circle_r;
+
+		height# = 0.47 ht#;
+		yoffs_bt# = yoffs# - 0.5 height# - 0.25 convexity#;
+
+		define_pixels (height, yoffs_bt);
+
+		circle := fullcircle scaled linethickness;
+
+		x1 = x6;
+		x2 = x5;
+		x3 = x4;
+		y1 + height = y6;
+		y2 + height = y5;
+		y3 + height = y4;
+
+		save box_top, box_bt;
+
+		z1 = (0.00 wd + linethickness / 2, yoffs_bt - 2.5 convexity);
+		z2 = (0.06 wd, yoffs_bt + 1.4 convexity);
+		z3 = (0.42 wd - linethickness / 2, yoffs_bt - 1.0 convexity);
+		box_top# = height# + yoffs_bt# +
+			     max (-1.0 convexity#, 1.4 convexity#, 0);
+		box_bt# = yoffs_bt# +
+			     min (-1.0 convexity#, 1.4 convexity#, 0);
+		p = z1{-d_}
+		    .. {curl 1}z2{right}
+		    .. z3
+		    -- z4
+		    .. {left}z5{curl 1}
+		    .. {d_}z6
+		    -- cycle;
+
+		labels (1, 2, 3, 4, 5, 6);
+
+		save dirs;
+		pair dirs[];
+
+		dirs12 := direction (0 + epsilon) of p;
+		dirs21 := direction (1 - epsilon) of p;
+		dirs23 := direction (1 + epsilon) of p;
+		dirs32 := direction (2 - epsilon) of p;
+		dirs45 := direction (3 + epsilon) of p;
+		dirs54 := direction (4 - epsilon) of p;
+		dirs56 := direction (4 + epsilon) of p;
+		dirs65 := direction (5 - epsilon) of p;
+
+		fill get_subpath (circle, down, dirs12, z1)
+		     .. get_subpath (circle, dirs21, dirs23, z2)
+		     .. get_subpath (circle, dirs32, up, z3)
+		     -- get_subpath (circle, up, dirs45, z4)
+		     .. get_subpath (circle, dirs54, dirs56, z5)
+		     .. get_subpath (circle, dirs65, down, z6)
+		     -- cycle;
+
+		save stem_bt;
+
+		if left_stem:
+			pickup pencircle scaled 0.6 linethickness;
+
+			lft x11 = x1 - linethickness / 2;
+			bot y11 = yoffs - 1.1 ht - linethickness / 2;
+			x12 = x11;
+			y12 = y1;
+
+			draw_rounded_block (bot lft z11, top rt z12,
+					    0.6 linethickness);
+			stem_bt# = yoffs# - 1.1 ht#;
+
+			labels (11, 12);
+		else:
+			stem_bt# = 0;
+		fi;
+
+		set_char_box (0.00 wd#, 0.42 wd#,
+			      max (0, -box_bt#, -stem_bt#) + linethickness# / 2,
+			      max (0, box_top#) + linethickness# / 2);
+	fet_endchar;
+enddef;
+
+
+def inclinatum_char (expr verbose_name, internal_name,
+			  small, stropha, auctum) =
+	fet_beginchar (verbose_name, "s" & internal_name);
+		save ht, alpha;
+
+		alpha := 35;
+
+		if small:
+			ht# = 0.50 noteheight#;
+		else:
+			ht# = 0.80 noteheight#;
+		fi;
+
+		draw_diamond_head (ht#, 0, 0, alpha, false);
+
+		save off_angle;
+
+		off_angle := alpha + 15;
+
+		save stropha_ellipse, auctum_hook, circle;
+		path stropha_ellipse, auctum_hook, circle;
+
+		circle := reverse fullcircle scaled linethickness;
+
+		stropha_ellipse := fullcircle xscaled 0.25 head_height
+					      yscaled 0.55 head_height
+					      rotated alpha;
+
+		z11 = z12
+		      + linethickness / 2 * dir (180 - off_angle)
+		      - directionpoint dir (90 - off_angle)
+			  of stropha_ellipse;
+		z12 = directionpoint -dir (90 - off_angle) of diamond_shape +
+			linethickness / 2 * dir (180 - off_angle);
+		z13 = (0, -0.5 head_height + linethickness);
+
+		auctum_hook := z12{-dir (90 - off_angle)}
+			       .. {dir (90 + alpha)}z13;
+
+		labels (12);
+
+		if (stropha and not auctum):
+			clearit;
+
+			save t_in, t_out;
+
+			t_in := xpart ((stropha_ellipse shifted z11)
+				       intersectiontimes
+				       get_subpath (diamond_shape,
+						    left, up,
+						    (0, 0)));
+			t_out := xpart ((stropha_ellipse shifted z11)
+					intersectiontimes
+					get_subpath (diamond_shape,
+						     up, right,
+						     (0, 0)));
+
+			% the addition or subtraction of `1' is necessary
+			% so that we get the right starting point
+			fill get_subpath_i (diamond_shape,
+					    dir (angle (z2 - z1) - 1),
+					    dir (angle (z1 - z4) + 1),
+					    (0, 0))
+			     -- get_subpath (stropha_ellipse,
+					     direction t_in of stropha_ellipse,
+					     direction t_out of stropha_ellipse,
+					     z11)
+			     -- cycle;
+
+			labels (11);
+		fi;
+
+		if (auctum and not stropha):
+			clearit;
+
+			fill get_subpath (diamond_shape,
+					  left,
+					  -dir (90 - off_angle),
+					  (0, 0))
+			     .. get_subpath (circle,
+					     dir (90 + alpha),
+					     -dir (90 + alpha),
+					     z13)
+			     .. get_subpath (circle,
+					     dir (90 - off_angle),
+					     right,
+					     z12)
+			     -- cycle;
+
+			labels (13);
+		fi;
+
+		if (auctum and stropha):
+			clearit;
+
+			save t;
+
+			t := xpart ((stropha_ellipse shifted z11)
+				    intersectiontimes
+				    get_subpath (diamond_shape, up, right,
+						 (0, 0)));
+
+			% the addition or subtraction of `1' is necessary
+			% so that we get the right starting point
+			fill get_subpath_i (diamond_shape,
+					    dir (angle (z2 - z1) - 1),
+					    -dir (90 - off_angle),
+					    (0, 0))
+			     .. get_subpath (circle,
+					     dir (90 + alpha),
+					     -dir (90 + alpha),
+					     z13)
+			     .. get_subpath (stropha_ellipse,
+					     dir (90 - off_angle),
+					     direction t of stropha_ellipse,
+					     z11)
+			     -- cycle;
+
+			labels (11, 13);
+		fi;
+	fet_endchar;
+enddef;
+
+
+% punctum
+vat_punctum_char ("Ed. Vat. punctum", "vaticana.punctum",
+		  false, false, false, false,
+		  false, false, false, 1.0);
+
+
+% punctum cavum (for OpusTeX compatibility)
+vat_punctum_char ("Ed. Vat. punctum cavum", "vaticana.punctum.cavum",
+		  false, true, false, false,
+		  false, false, false, 1.0);
+
+
+% linea punctum (for OpusTeX compatibility)
+vat_punctum_char ("Ed. Vat. linea punctum", "vaticana.linea.punctum",
+		  true, false, false, false,
+		  false, false, false, 1.0);
+
+
+% linea punctum cavum (for OpusTeX compatibility)
+vat_punctum_char ("Ed. Vat. linea punctum cavum", "vaticana.linea.punctum.cavum",
+		  true, true, false, false,
+		  false, false, false, 1.0);
+
+
+% punctum inclinatum
+inclinatum_char ("Ed. Vat. inclinatum", "vaticana.inclinatum",
+		 false, false, false);
+
+
+% pes lower punctum
+vat_punctum_char ("Ed. Vat. pes lower punctum", "vaticana.lpes",
+		  false, false, true, false,
+		  true, false, false, 1.0);
+
+
+% pes lower punctum
+vat_punctum_char ("Ed. Vat. pes var lower punctum", "vaticana.vlpes",
+		  false, false, true, false,
+		  true, false, true, 1.0);
+
+
+% pes upper punctum
+vat_punctum_char ("Ed. Vat. pes upper punctum", "vaticana.upes", 
+		  false, false, true, false,
+		  false, false, false, 1.0);
+
+
+% pes upper punctum (shifted variation)
+%
+% This note head is used instead of the regular pes upper punctum to
+% avoid collision with the lower punctum note of the pes when the upper
+% punctum sits directly on top of the lower punctum.
+%
+vat_punctum_char ("Ed. Vat. var pes upper punctum", "vaticana.vupes",
+		  false, false, true, false,
+		  false, true, false, 1.0);
+
+
+% small punctum as used in epiphonus
+vat_punctum_char ("Ed. Vat. plica", "vaticana.plica", 
+		  false, false, false, false,
+		  false, false, false, 0.6);
+
+
+% small punctum as used in epiphonus
+plica_char ("Ed. Vat. var plica", "vaticana.vplica", 
+	    false, 0.6);
+
+
+% eccentric punctum as used in epiphonus
+epiphonus_char ("Ed. Vat. epiphonus", "vaticana.epiphonus", 
+		false, true, false, 1.0);
+
+
+% eccentric punctum as used in epiphonus (shifted variation)
+%
+% This note head is used instead of the regular epiphonus punctum to
+% avoid collision with the plica head when the plica sits directly on
+% top of the lower head.
+%
+epiphonus_char ("Ed. Vat. var epiphonus", "vaticana.vepiphonus",
+		false, true, true, 1.0);
+
+
+% small punctum as used in cephalicus
+vat_punctum_char ("Ed. Vat. rev. plica", "vaticana.reverse.plica",
+		  false, false, false, false,
+		  true, false, false, 0.6);
+
+
+% small punctum as used in cephalicus
+plica_char ("Ed. Vat. rev. var plica", "vaticana.reverse.vplica",
+	    true, 0.6);
+
+
+% eccentric punctum as used in cephalicus; without left stem
+epiphonus_char ("Ed. Vat. inner cephalicus", "vaticana.inner.cephalicus",
+		false, false, false, 1.0);
+
+
+% eccentric punctum as used in cephalicus; with left stem
+epiphonus_char ("Ed. Vat. cephalicus", "vaticana.cephalicus",
+		true, false, false, 1.0);
+
+
+% quilisma
+fet_beginchar ("Ed. Vat. quilisma", "svaticana.quilisma");
+	save a_b, b_h, a_w;
+
+	a_b := 1.54; % b_h * a_b / a_w = wd / ht
+	b_h := 0.85;
+	a_w := 1.09;
+
+	save a, beta, ht, wd;
+
+	ht# = noteheight#;
+	2 beta = ht# * b_h;
+	a = beta * a_b;
+	wd# = 2 a / a_w;
+
+	set_char_box (0, 0.42 wd#, 0.28 ht#, 0.36 ht#);
+
+	black_notehead_width# := wd#;
+
+	define_pixels (ht, wd);
+
+	save ellipse, T;
+	path ellipse;
+	transform T;
+
+	T := identity xscaled linethickness
+		      yscaled 0.44 ht;
+	pickup pencircle transformed T;
+	ellipse := reverse fullcircle transformed T;
+
+	z1 = (rt 0.00 wd, top -0.28 ht);
+	z2 = (0.11 wd, -0.14 ht);
+	z3 = (0.12 wd, +0.03 ht);
+	z4 = (0.25 wd, -0.09 ht);
+	z5 = (0.25 wd, +0.08 ht);
+	z6 = (lft 0.42 wd, -0.04 ht);
+	z7 = (lft 0.40 wd, bot +0.36 ht);
+
+	fill get_subpath (ellipse, z1 - z2, z2 - z1, z1)
+	     -- get_subpath (ellipse, z2 - z1, z1 - z2, z2)
+	     -- cycle;
+	fill get_subpath (ellipse, z3 - z4, z4 - z3, z3)
+	     -- get_subpath (ellipse, z4 - z3, z3 - z4, z4)
+	     -- cycle;
+	fill get_subpath (ellipse, z5 - z6, z6 - z5, z5)
+	     -- point 0 of get_subpath (ellipse, z6 - z5, z5 - z6, z6)
+	     -- get_subpath (ellipse, z7 - z6, z6 - z7, z7)
+	     -- get_subpath (ellipse, z6 - z7, z5 - z6, z6)
+	     -- cycle;
+
+	labels (1, 2, 3, 4, 5, 6, 7);
+fet_endchar;
+
+
+% solesmes punctum inclinatum parvum
+inclinatum_char ("Solesmes punctum inclinatum parvum", "solesmes.incl.parvum",
+		 true, false, false);
+
+
+% solesmes punctum auctum ascendens
+vat_punctum_char ("Solesmes punctum auctum ascendens", "solesmes.auct.asc",
+		  false, false, false, true,
+		  true, false, false, 1.0);
+
+
+% solesmes punctum auctum descendens
+vat_punctum_char ("Solesmes punctum auctum descendens", "solesmes.auct.desc",
+		  false, false, false, true,
+		  false, false, false, 1.0);
+
+
+% solesmes punctum inclinatum auctum
+inclinatum_char ("Solesmes punctum incl. auctum", "solesmes.incl.auctum",
+		 false, false, true);
+
+
+% solesmes stropha
+inclinatum_char ("Solesmes stropha", "solesmes.stropha",
+		 false, true, false);
+
+
+% solesmes stropha aucta
+inclinatum_char ("Solesmes stropha aucta", "solesmes.stropha.aucta",
+		 false, true, true);
+
+
+% solesmes oriscus
+fet_beginchar ("Solesmes oriscus", "ssolesmes.oriscus");
+	save a_b, b_h, a_w;
+
+	a_b := 1.54; % b_h * a_b / a_w = wd / ht
+	b_h := 0.85;
+	a_w := 1.09;
+
+	save a, beta, ht, wd;
+
+	ht# = noteheight#;
+	2 beta = ht# * b_h;
+	a = beta * a_b;
+	wd# = 2 a / a_w;
+	black_notehead_width# := wd#;
+
+	save convexity;
+
+	convexity# = +0.05 ht#;
+
+	define_pixels (ht, wd, convexity);
+
+	set_char_box (0.00 wd#, 0.50 wd#,
+		      0.25 ht# + convexity#, 0.25 ht# + convexity#);
+
+	z1 = (0.00 wd + blot_diameter / 2, -convexity);
+	z2 = (1/6 wd, +convexity);
+	z3 = (2/6 wd, -convexity);
+	z4 = (0.50 wd - blot_diameter / 2, +convexity);
+
+
+	save height;
+
+	height = 2 ypart (directionpoint right of (z1
+						   .. z2
+						   .. z3
+						   .. z4));
+
+	save ellipse, T;
+	path ellipse;
+	transform T;
+
+	T := identity xscaled blot_diameter
+		      yscaled (h + d - height);
+	pickup pencircle transformed T;
+	ellipse := fullcircle transformed T;
+
+	% Adjust vertical coordinates to touch bounding box.
+	y1 := top -d;
+	y4 := bot h;
+
+	save d_;
+	pair d_;
+
+	d_ := direction 0 of (z1
+			      .. z2
+			      .. z3
+			      .. z4);
+
+	fill get_subpath (ellipse, -d_, d_, z1)
+	     .. bot z2
+	     .. bot z3
+	     .. get_subpath (ellipse, d_, -d_, z4)
+	     .. top z3
+	     .. top z2
+	     .. cycle;
+
+	labels (1, 2, 3, 4);
+fet_endchar;
+
+
+%%%%%%%%
+%
+%
+%
+% EDITIO MEDICAEA
+%
+%
+%
+
+% inclinatum
+fet_beginchar ("Ed. Med. inclinatum", "smedicaea.inclinatum");
+	draw_diamond_head (1.2 staff_space#, 0, 0, 35, false);
+fet_endchar;
+
+
+def med_punctum_char (expr verbose_name, internal_name,
+			   left_up_stem, left_down_stem) =
+	fet_beginchar (verbose_name, "s" & internal_name);
+		save a, ht, wd;
+
+		ht# = 2 staff_space#;
+		wd# = ht#;
+		black_notehead_width# := wd#;
+
+		define_pixels (ht, wd);
+
+		save ellipse;
+		path ellipse;
+
+		ellipse := fullcircle xscaled blot_diameter
+				      yscaled 0.50 ht;
+
+		z1 = (0.00 wd + blot_diameter / 2, 0);
+		z2 = (0.4 wd - blot_diameter / 2, 0);
+
+		labels (1, 2);
+
+		pickup pencircle scaled linethickness;
+
+		if left_down_stem:
+			z4 = (0.00 wd + linethickness / 2, -1.25 ht);
+
+			fill get_subpath (ellipse, left, down, z1)
+			     -- top lft z4{down}
+			     .. z4{right}
+			     .. top rt z4{up}
+			     -- (rt x4, -.5 ht / 2)
+			     -- get_subpath (ellipse, right, left, z2)
+			     -- cycle;
+
+			labels (4);
+
+			set_char_box (0.0, 0.4 wd#, 1.25 ht#, 0.25 ht#);
+		elseif left_up_stem:
+			z4 = (0.00 wd + linethickness / 2, +1.25 ht);
+
+			fill get_subpath (ellipse, down, right, z1)
+			     -- get_subpath (ellipse, right, left, z2)
+			     -- (rt x4, .5 ht / 2)
+			     -- bot rt z4{up}
+			     .. z4{left}
+			     .. bot lft z4{down}
+			     -- cycle;
+
+			labels (4);
+
+			set_char_box (0.0, 0.4 wd#, 0.25 ht#, 1.25 ht#);
+		else:
+			fill get_subpath (ellipse, left, right, z1)
+			     -- get_subpath (ellipse, right, left, z2)
+			     -- cycle;
+
+			set_char_box (0.0, 0.4 wd#, 0.25 ht#, 0.25 ht#);
+		fi;
+
+	fet_endchar;
+enddef;
+
+
+% punctum
+med_punctum_char ("Ed. Med. punctum", "medicaea.punctum", 
+		  false, false);
+
+
+% left up-stemmed punctum
+med_punctum_char ("Ed. Med. reverse virga", "medicaea.rvirga",
+		  true, false);
+
+
+% virga (i.e. left down-stemmed punctum)
+med_punctum_char ("Ed. Med. virga", "medicaea.virga", 
+		  false, true);
+
+
+%%%%%%%%
+%
+%
+%
+% HUFNAGEL
+%
+%
+%
+
+def huf_punctum_char (expr verbose_name, internal_name,
+			   down_stem) =
+	fet_beginchar (verbose_name, "s" & internal_name);
+		save alpha;
+
+		alpha = 55;
+
+		draw_diamond_head (staff_space#, 0, 0, alpha, false);
+
+		if down_stem:
+			set_char_box (0, head_width#,
+				      1.5 staff_space#, head_height# / 2);
+
+			save ellipse;
+			path ellipse;
+
+			ellipse := reverse fullcircle xscaled blot_diameter
+						      yscaled 0.7 staff_space
+						      rotated -alpha;
+
+			z11 = (head_width / 2, 0);
+			z12 = find_tangent_shift (((0, -d) -- (w, -d)), ellipse,
+						  (w / 2, -d), (w / 2, 0));
+
+			fill get_subpath (ellipse, up, down, z11)
+			     -- get_subpath (ellipse, down, up, z12)
+			     -- cycle;
+
+			labels (11, 12);
+		fi;
+	fet_endchar;
+enddef;
+
+
+% punctum
+huf_punctum_char ("Hufnagel punctum", "hufnagel.punctum", false)
+
+
+% virga
+huf_punctum_char ("Hufnagel virga", "hufnagel.virga", true)
+
+
+% pes lower punctum
+fet_beginchar ("Hufnagel pes lower punctum", "shufnagel.lpes")
+	save width, height, alpha;
+
+	width# = 2 * staff_space#;
+	height# = 0.7 * staff_space#;
+	alpha = 35;
+
+	set_char_box (0, width#, height# / 2, height# / 2);
+
+	define_pixels (width, height);
+
+	save circle;
+	path circle;
+
+	circle := reverse fullcircle scaled linethickness;
+
+	pickup pencircle scaled linethickness;
+
+	rt x3 = -lft x1 = width / 2;
+	y2 = y3 = height / 2;
+	y1 = y4 = -height / 2;
+
+	tand (alpha) * (y2 - y1) = x2 - x1 = x3 - x4;
+
+	fill get_subpath (circle, left, z2 - z1, z1)
+	     -- get_subpath (circle, z2 - z1, right, z2)
+	     -- get_subpath (circle, right, z4 - z3, z3)
+	     -- get_subpath (circle, z4 - z3, left, z4)
+	     -- cycle;
+
+	currentpicture := currentpicture shifted (width/2, 0);
+
+%	labels (1, 2, 3, 4);
+fet_endchar;
+
+
+fet_endgroup ("noteheads");

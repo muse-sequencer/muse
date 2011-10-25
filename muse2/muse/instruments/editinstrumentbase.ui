@@ -1,0 +1,1649 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>EditInstrumentBase</class>
+ <widget class="QMainWindow" name="EditInstrumentBase">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>802</width>
+    <height>505</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>802</width>
+    <height>464</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>MusE: Instrument Editor</string>
+  </property>
+  <widget class="QWidget" name="widget">
+   <layout class="QVBoxLayout">
+    <item>
+     <widget class="QSplitter" name="splitter4">
+      <property name="minimumSize">
+       <size>
+        <width>780</width>
+        <height>365</height>
+       </size>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QWidget" name="layout26">
+       <layout class="QVBoxLayout">
+        <item>
+         <widget class="QLabel" name="textLabel2">
+          <property name="text">
+           <string>Instrument Name:</string>
+          </property>
+          <property name="wordWrap">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="instrumentName">
+          <property name="toolTip">
+           <string/>
+          </property>
+          <property name="whatsThis">
+           <string>Selected instrument name.</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QListWidget" name="instrumentList">
+          <property name="whatsThis">
+           <string>List of defined instruments.</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QTabWidget" name="tabWidget3">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="patchesTab">
+        <attribute name="title">
+         <string>Pa&amp;tches</string>
+        </attribute>
+        <layout class="QVBoxLayout">
+         <item>
+          <widget class="QSplitter" name="splitter5">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <widget class="QTreeWidget" name="patchView">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string/>
+            </property>
+            <property name="whatsThis">
+             <string>List of groups and patches.</string>
+            </property>
+            <property name="rootIsDecorated">
+             <bool>true</bool>
+            </property>
+            <property name="allColumnsShowFocus">
+             <bool>true</bool>
+            </property>
+            <column>
+             <property name="text">
+              <string>Group/Patch</string>
+             </property>
+            </column>
+           </widget>
+           <widget class="QWidget" name="layout27">
+            <layout class="QVBoxLayout">
+             <item>
+              <widget class="QGroupBox" name="groupBox2">
+               <property name="title">
+                <string>Properties</string>
+               </property>
+               <layout class="QVBoxLayout">
+                <item>
+                 <widget class="QLabel" name="textLabelPatchName">
+                  <property name="text">
+                   <string>Name:</string>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="patchNameEdit">
+                  <property name="toolTip">
+                   <string>Group or patch name</string>
+                  </property>
+                  <property name="whatsThis">
+                   <string>Group or patch name</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="textLabel2_2">
+                  <property name="text">
+                   <string>High Bank:</string>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout">
+                  <item>
+                   <widget class="QSpinBox" name="spinBoxHBank">
+                    <property name="toolTip">
+                     <string>Patch high bank number</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>Patch high bank number. --- means don't care.</string>
+                    </property>
+                    <property name="specialValueText">
+                     <string comment="dont care">---</string>
+                    </property>
+                    <property name="minimum">
+                     <number>0</number>
+                    </property>
+                    <property name="maximum">
+                     <number>128</number>
+                    </property>
+                    <property name="value">
+                     <number>0</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="spacer8">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>373</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <widget class="QLabel" name="textLabel3_2">
+                  <property name="text">
+                   <string>Low Bank:</string>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout">
+                  <item>
+                   <widget class="QSpinBox" name="spinBoxLBank">
+                    <property name="toolTip">
+                     <string>Patch low bank number</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>Patch low bank number. --- means don't care.</string>
+                    </property>
+                    <property name="specialValueText">
+                     <string>---</string>
+                    </property>
+                    <property name="minimum">
+                     <number>0</number>
+                    </property>
+                    <property name="maximum">
+                     <number>128</number>
+                    </property>
+                    <property name="value">
+                     <number>0</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="spacer9">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>373</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <widget class="QLabel" name="textLabel4_3">
+                  <property name="text">
+                   <string>Program:</string>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout">
+                  <item>
+                   <widget class="QSpinBox" name="spinBoxProgram">
+                    <property name="toolTip">
+                     <string>Patch program number</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>Patch program number</string>
+                    </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                    <property name="maximum">
+                     <number>128</number>
+                    </property>
+                    <property name="value">
+                     <number>1</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="spacer10">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>373</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout">
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxDrum">
+                    <property name="toolTip">
+                     <string>Drum patch</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>If set, the patch is available only for drum channels.</string>
+                    </property>
+                    <property name="text">
+                     <string>Drum</string>
+                    </property>
+                    <property name="shortcut">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxGM">
+                    <property name="toolTip">
+                     <string>GM patch</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>If set, the patch is available in a 'GM' or 'NO' midi song type.</string>
+                    </property>
+                    <property name="text">
+                     <string>GM</string>
+                    </property>
+                    <property name="shortcut">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxGS">
+                    <property name="toolTip">
+                     <string>GS patch</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>If set, the patch is available in a 'GS' or 'NO' midi song type.</string>
+                    </property>
+                    <property name="text">
+                     <string>GS</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxXG">
+                    <property name="toolTip">
+                     <string>XG patch</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>If set, the patch is available in an 'XG' or 'NO' midi song type.</string>
+                    </property>
+                    <property name="text">
+                     <string>XG</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <spacer name="spacer7">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Expanding</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>90</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <layout class="QHBoxLayout">
+               <item>
+                <widget class="QToolButton" name="patchDelete">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="toolTip">
+                  <string>Delete group or patch</string>
+                 </property>
+                 <property name="text">
+                  <string>&amp;Delete</string>
+                 </property>
+                 <property name="shortcut">
+                  <string>Alt+D</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="patchNew">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="toolTip">
+                  <string>New patch</string>
+                 </property>
+                 <property name="text">
+                  <string>New &amp;Patch</string>
+                 </property>
+                 <property name="shortcut">
+                  <string>Alt+P</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="patchNewGroup">
+                 <property name="toolTip">
+                  <string>New group</string>
+                 </property>
+                 <property name="text">
+                  <string>New &amp;Group</string>
+                 </property>
+                 <property name="shortcut">
+                  <string>Alt+G</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="spacer11">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Expanding</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>240</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="controllerTab">
+        <attribute name="title">
+         <string>Contro&amp;ller</string>
+        </attribute>
+        <layout class="QVBoxLayout">
+         <item>
+          <widget class="QSplitter" name="splitter6">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <widget class="QWidget" name="layout13">
+            <layout class="QVBoxLayout">
+             <item>
+              <widget class="QLabel" name="textLabel1">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Common:</string>
+               </property>
+               <property name="wordWrap">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QListWidget" name="listController">
+               <property name="toolTip">
+                <string/>
+               </property>
+               <property name="whatsThis">
+                <string>This is a list of commonly used midi controllers.
+Note that in MusE pitch and program changes are
+handled like normal controllers.</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="layout17">
+            <layout class="QVBoxLayout">
+             <item>
+              <widget class="QTreeWidget" name="viewController">
+               <property name="toolTip">
+                <string>List of defined controllers</string>
+               </property>
+               <property name="whatsThis">
+                <string>List of defined controllers.</string>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Sunken</enum>
+               </property>
+               <property name="allColumnsShowFocus">
+                <bool>true</bool>
+               </property>
+               <column>
+                <property name="text">
+                 <string>Name                  </string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Type       </string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>H-Ctrl</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>L-Ctrl</string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Min  </string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Max  </string>
+                </property>
+               </column>
+               <column>
+                <property name="text">
+                 <string>Def  </string>
+                </property>
+               </column>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="GroupBox1">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="title">
+                <string>Properties</string>
+               </property>
+               <layout class="QVBoxLayout">
+                <item>
+                 <layout class="QHBoxLayout">
+                  <item>
+                   <widget class="QLabel" name="TextLabel1_3">
+                    <property name="text">
+                     <string>Name:</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLineEdit" name="ctrlName">
+                    <property name="toolTip">
+                     <string/>
+                    </property>
+                    <property name="whatsThis">
+                     <string>Midi controller name</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout">
+                  <item>
+                   <widget class="QLabel" name="TextLabel2_4">
+                    <property name="text">
+                     <string>Type:</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QComboBox" name="ctrlType">
+                    <property name="toolTip">
+                     <string>Midi controller type</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>Midi controller type</string>
+                    </property>
+                    <item>
+                     <property name="text">
+                      <string>Control7</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Control14</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>RPN</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>NRPN</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>RPN14</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>NRPN14</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Pitch</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>Program</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="spacer15">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="TextLabel3_2">
+                    <property name="text">
+                     <string>H-Ctrl</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>false</bool>
+                    </property>
+                    <property name="indent">
+                     <number>10</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QSpinBox" name="spinBoxHCtrlNo">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="toolTip">
+                     <string>Midi controller number high byte</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>Midi controller number high byte</string>
+                    </property>
+                    <property name="minimum">
+                     <number>0</number>
+                    </property>
+                    <property name="maximum">
+                     <number>127</number>
+                    </property>
+                    <property name="value">
+                     <number>0</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="spacer16">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="TextLabel2_3_2">
+                    <property name="text">
+                     <string>L-Ctrl</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>false</bool>
+                    </property>
+                    <property name="indent">
+                     <number>10</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QSpinBox" name="spinBoxLCtrlNo">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="toolTip">
+                     <string>Midi controller number low byte (* means drum controller)</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>Midi controller number low byte. 
+If low byte is * then the controller is a 
+ 'drum controller'. For drum tracks and 
+ GS/XG type songs and instruments.
+Allows controllers for each instrument in 
+ Muse's drum map. The low byte will be 
+ replaced by the 'ANote' in the drum map.
+Examples: The GS and XG instruments' 
+ Drum controllers.</string>
+                    </property>
+                    <property name="specialValueText">
+                     <string comment="wild card">*</string>
+                    </property>
+                    <property name="minimum">
+                     <number>-1</number>
+                    </property>
+                    <property name="maximum">
+                     <number>127</number>
+                    </property>
+                    <property name="value">
+                     <number>0</number>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QHBoxLayout">
+                  <item>
+                   <widget class="QLabel" name="textLabel4_2">
+                    <property name="text">
+                     <string>Range:</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="spacer17">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="TextLabel1_2_2">
+                    <property name="text">
+                     <string>Min</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>false</bool>
+                    </property>
+                    <property name="indent">
+                     <number>10</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QSpinBox" name="spinBoxMin">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="toolTip">
+                     <string>Minimum value. If negative, auto-translate.</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>Minimum value. If the minimum value 
+ is negative, the range will automatically
+ be translated to a positive range. 
+
+Useful for controllers which should be 
+ displayed with zero bias. For example, 
+'Pan': Minimum: -64 Maximum: 63
+True range: Min: 0 Max: 127 (bias = 64)
+'CoarseTuning': Min: -24 Max: 23
+True range: Min: 40 Max: 87 (bias = 64)
+
+Bias is determined from controller type:
+7-bit Controller7 / RPN: Bias = 64 
+14-bit Controller14 / RPN14: Bias = 8192
+
+Type 'Pitch' is the exception. It is biased 
+ at zero, even with a negative minimum:
+'Pitch': Min: -8192 Max: 8191
+True range: Min: -8192 Max: 8191 (bias 0)</string>
+                    </property>
+                    <property name="minimum">
+                     <number>-16384</number>
+                    </property>
+                    <property name="maximum">
+                     <number>16383</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="spacer18">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="TextLabel2_2_2">
+                    <property name="text">
+                     <string>Max</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>false</bool>
+                    </property>
+                    <property name="indent">
+                     <number>10</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QSpinBox" name="spinBoxMax">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="toolTip">
+                     <string>Maximum value</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>Maximum value</string>
+                    </property>
+                    <property name="minimum">
+                     <number>-16384</number>
+                    </property>
+                    <property name="maximum">
+                     <number>16383</number>
+                    </property>
+                    <property name="value">
+                     <number>127</number>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item>
+                 <layout class="QGridLayout">
+                  <item row="1" column="0" colspan="2">
+                   <spacer name="spacer13_2">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="textLabel1_3">
+                    <property name="text">
+                     <string>Default:</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignVCenter</set>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="6">
+                   <widget class="QLabel" name="textLabel2_4">
+                    <property name="text">
+                     <string>L-Bank</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="5">
+                   <widget class="QSpinBox" name="defPatchH">
+                    <property name="specialValueText">
+                     <string>off</string>
+                    </property>
+                    <property name="minimum">
+                     <number>0</number>
+                    </property>
+                    <property name="maximum">
+                     <number>128</number>
+                    </property>
+                    <property name="value">
+                     <number>0</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="7">
+                   <widget class="QSpinBox" name="defPatchL">
+                    <property name="specialValueText">
+                     <string>off</string>
+                    </property>
+                    <property name="minimum">
+                     <number>0</number>
+                    </property>
+                    <property name="maximum">
+                     <number>128</number>
+                    </property>
+                    <property name="value">
+                     <number>0</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="6">
+                   <widget class="QLabel" name="textLabel3">
+                    <property name="text">
+                     <string>Progr.</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="7">
+                   <widget class="QSpinBox" name="defPatchProg">
+                    <property name="specialValueText">
+                     <string>off</string>
+                    </property>
+                    <property name="minimum">
+                     <number>0</number>
+                    </property>
+                    <property name="maximum">
+                     <number>128</number>
+                    </property>
+                    <property name="value">
+                     <number>0</number>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="2" colspan="4">
+                   <widget class="QPushButton" name="patchButton">
+                    <property name="enabled">
+                     <bool>true</bool>
+                    </property>
+                    <property name="minimumSize">
+                     <size>
+                      <width>210</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string>???</string>
+                    </property>
+                    <property name="shortcut">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="4">
+                   <widget class="QLabel" name="textLabel1_5">
+                    <property name="text">
+                     <string>H-Bank</string>
+                    </property>
+                    <property name="wordWrap">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="3">
+                   <spacer name="spacer12_2">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Expanding</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item row="0" column="1" colspan="2">
+                   <widget class="QSpinBox" name="spinBoxDefault">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
+                    <property name="minimumSize">
+                     <size>
+                      <width>0</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>85</width>
+                      <height>32767</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>Default value. Off: No default.</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>Default (initial) value. Off means no default.
+
+If a default value is chosen, the value will be sent
+ to the controller when the controller is added to
+ the song (in piano roll or event editor). When 
+ the song is re-loaded, the value is sent again.
+Otherwise the controller remains at its last value.
+Controllers are also automatically added to a 
+ song upon reception of a midi controller event.
+
+Caution! Watch out for controllers such as 
+ 'Sustain' and 'ResetAllController' with default 
+ values. You should probably turn 'off' their 
+ default (in piano roll or drum edit, and 
+ instrument editor).</string>
+                    </property>
+                    <property name="specialValueText">
+                     <string comment="dont care">off</string>
+                    </property>
+                    <property name="minimum">
+                     <number>-1</number>
+                    </property>
+                    <property name="maximum">
+                     <number>16383</number>
+                    </property>
+                    <property name="value">
+                     <number>-1</number>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout">
+               <item>
+                <widget class="QToolButton" name="addController">
+                 <property name="toolTip">
+                  <string>Add common controller</string>
+                 </property>
+                 <property name="text">
+                  <string>&amp;Add</string>
+                 </property>
+                 <property name="shortcut">
+                  <string>Alt+A</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="deleteController">
+                 <property name="toolTip">
+                  <string>Delete controller</string>
+                 </property>
+                 <property name="text">
+                  <string>&amp;Delete</string>
+                 </property>
+                 <property name="shortcut">
+                  <string>Alt+D</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="newController">
+                 <property name="toolTip">
+                  <string>Create a new controller</string>
+                 </property>
+                 <property name="text">
+                  <string>New &amp;Controller</string>
+                 </property>
+                 <property name="shortcut">
+                  <string>Alt+C</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="spacer13">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Expanding</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>200</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QLabel" name="nullValLabelH">
+                 <property name="text">
+                  <string>Null Param Hi:</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="nullParamSpinBoxH">
+                 <property name="toolTip">
+                  <string>Null parameter number High byte</string>
+                 </property>
+                 <property name="whatsThis">
+                  <string>If set, these 'null' parameter numbers will 
+ be sent after each RPN/NRPN event. 
+This prevents subsequent 'data' events
+ from corrupting the RPN/NRPN controller.
+Typically, set to 127/127, or an unused
+ RPN/NRPN controller number.</string>
+                 </property>
+                 <property name="specialValueText">
+                  <string>off</string>
+                 </property>
+                 <property name="minimum">
+                  <number>-1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>127</number>
+                 </property>
+                 <property name="value">
+                  <number>127</number>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="spacer13_3">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Expanding</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>200</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QLabel" name="nullValLabelL">
+                 <property name="text">
+                  <string> Lo:</string>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="nullParamSpinBoxL">
+                 <property name="toolTip">
+                  <string>Null parameter number Low byte</string>
+                 </property>
+                 <property name="whatsThis">
+                  <string>If set, these 'null' parameter numbers will 
+ be sent after each RPN/NRPN event. 
+This prevents subsequent 'data' events
+ from corrupting the RPN/NRPN controller.
+Typically, set to 127/127, or an unused
+ RPN/NRPN controller number.</string>
+                 </property>
+                 <property name="specialValueText">
+                  <string>off</string>
+                 </property>
+                 <property name="minimum">
+                  <number>-1</number>
+                 </property>
+                 <property name="maximum">
+                  <number>127</number>
+                 </property>
+                 <property name="value">
+                  <number>127</number>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="sysExTab">
+        <attribute name="title">
+         <string>S&amp;ysEx</string>
+        </attribute>
+        <layout class="QVBoxLayout">
+         <item>
+          <widget class="QSplitter" name="splitter2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <widget class="QWidget" name="layout12">
+            <layout class="QVBoxLayout">
+             <item>
+              <widget class="QLabel" name="textLabel2_3">
+               <property name="text">
+                <string>SysEx List:</string>
+               </property>
+               <property name="wordWrap">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QListWidget" name="sysexList">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="layout11">
+            <layout class="QVBoxLayout">
+             <item>
+              <widget class="QLabel" name="textLabel1_4">
+               <property name="text">
+                <string>Name:</string>
+               </property>
+               <property name="wordWrap">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="sysexName"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="textLabel1_2">
+               <property name="text">
+                <string>Hex Entry:</string>
+               </property>
+               <property name="wordWrap">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QTextEdit" name="sysexData"/>
+             </item>
+             <item>
+              <layout class="QHBoxLayout">
+               <item>
+                <widget class="QToolButton" name="deleteSysex">
+                 <property name="text">
+                  <string>&amp;Delete</string>
+                 </property>
+                 <property name="shortcut">
+                  <string>Alt+D</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="newSysex">
+                 <property name="text">
+                  <string>New SysE&amp;x</string>
+                 </property>
+                 <property name="shortcut">
+                  <string>Alt+X</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="spacer12">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeType">
+                  <enum>QSizePolicy::Expanding</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>60</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="label" stdset="0">
+    <string>Tools</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="fileNewAction"/>
+   <addaction name="fileOpenAction"/>
+   <addaction name="fileSaveAction"/>
+   <addaction name="fileSaveAsAction"/>
+  </widget>
+  <widget class="QMenuBar" name="MenuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>802</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="defaultUp">
+    <bool>false</bool>
+   </property>
+   <widget class="QMenu" name="fileMenu">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="fileNewAction"/>
+    <addaction name="fileOpenAction"/>
+    <addaction name="fileSaveAction"/>
+    <addaction name="fileSaveAsAction"/>
+    <addaction name="separator"/>
+    <addaction name="fileExitAction"/>
+   </widget>
+   <widget class="QMenu" name="Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+   </widget>
+   <addaction name="fileMenu"/>
+   <addaction name="Help"/>
+  </widget>
+  <action name="fileNewAction">
+   <property name="text">
+    <string>&amp;New</string>
+   </property>
+   <property name="iconText">
+    <string>New</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>fileNewAction</cstring>
+   </property>
+  </action>
+  <action name="fileOpenAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Open...</string>
+   </property>
+   <property name="iconText">
+    <string>Open</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>fileOpenAction</cstring>
+   </property>
+  </action>
+  <action name="fileSaveAction">
+   <property name="text">
+    <string>&amp;Save</string>
+   </property>
+   <property name="iconText">
+    <string>Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>fileSaveAction</cstring>
+   </property>
+  </action>
+  <action name="fileSaveAsAction">
+   <property name="text">
+    <string>Save &amp;As...</string>
+   </property>
+   <property name="iconText">
+    <string>Save As</string>
+   </property>
+   <property name="shortcut">
+    <string/>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>fileSaveAsAction</cstring>
+   </property>
+  </action>
+  <action name="fileExitAction">
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+   <property name="iconText">
+    <string>Exit</string>
+   </property>
+   <property name="shortcut">
+    <string/>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>fileExitAction</cstring>
+   </property>
+  </action>
+  <action name="filenew_itemAction">
+   <property name="text">
+    <string>new item</string>
+   </property>
+   <property name="iconText">
+    <string>new item</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>filenew_itemAction</cstring>
+   </property>
+  </action>
+  <action name="whatsThisAction">
+   <property name="text">
+    <string>What's this?</string>
+   </property>
+   <property name="iconText">
+    <string>What's this?</string>
+   </property>
+   <property name="name" stdset="0">
+    <cstring>whatsThisAction</cstring>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>instrumentName</tabstop>
+  <tabstop>instrumentList</tabstop>
+  <tabstop>tabWidget3</tabstop>
+  <tabstop>patchView</tabstop>
+  <tabstop>patchNameEdit</tabstop>
+  <tabstop>spinBoxHBank</tabstop>
+  <tabstop>spinBoxLBank</tabstop>
+  <tabstop>spinBoxProgram</tabstop>
+  <tabstop>checkBoxDrum</tabstop>
+  <tabstop>checkBoxGM</tabstop>
+  <tabstop>checkBoxGS</tabstop>
+  <tabstop>checkBoxXG</tabstop>
+  <tabstop>listController</tabstop>
+  <tabstop>viewController</tabstop>
+  <tabstop>ctrlName</tabstop>
+  <tabstop>ctrlType</tabstop>
+  <tabstop>spinBoxHCtrlNo</tabstop>
+  <tabstop>spinBoxLCtrlNo</tabstop>
+  <tabstop>spinBoxMin</tabstop>
+  <tabstop>spinBoxMax</tabstop>
+  <tabstop>spinBoxDefault</tabstop>
+  <tabstop>sysexList</tabstop>
+  <tabstop>sysexName</tabstop>
+  <tabstop>sysexData</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>fileNewAction</sender>
+   <signal>activated()</signal>
+   <receiver>EditInstrumentBase</receiver>
+   <slot>fileNew()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fileOpenAction</sender>
+   <signal>activated()</signal>
+   <receiver>EditInstrumentBase</receiver>
+   <slot>fileOpen()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fileSaveAction</sender>
+   <signal>activated()</signal>
+   <receiver>EditInstrumentBase</receiver>
+   <slot>fileSave()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fileSaveAsAction</sender>
+   <signal>activated()</signal>
+   <receiver>EditInstrumentBase</receiver>
+   <slot>fileSaveAs()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>fileExitAction</sender>
+   <signal>activated()</signal>
+   <receiver>EditInstrumentBase</receiver>
+   <slot>fileExit()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>whatsThisAction</sender>
+   <signal>activated()</signal>
+   <receiver>EditInstrumentBase</receiver>
+   <slot>helpWhatsThis()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>20</x>
+     <y>20</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

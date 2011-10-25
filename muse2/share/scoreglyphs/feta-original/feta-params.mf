@@ -1,0 +1,213 @@
+%
+% feta-params.mf -- global parameters for both feta and parmesan fonts
+%
+% source file of the GNU LilyPond music typesetter
+%
+% (c) 1997--2009 Han-Wen Nienhuys <hanwen@xs4all.nl>
+
+stafflines := 5;
+
+%
+% The design size of a staff should really be the 
+% staff_space, but we use staffsize for historical reasons.
+% 
+
+staff_space# := staffsize# / (stafflines - 1);
+staff_space_rounded# := staff_space#;
+
+
+%
+% Measuring on pocket scores turns out: stafflinethickness is
+% largely independent on staff size, and generally about 0.5 pt.
+%
+% By request of WL, we tune down the blackness a little
+% for increased contrast with beams.
+%
+
+%% !! synchronize with paper.scm
+
+save fixed_line_thickness, variable_line_factor;
+fixed_line_thickness + variable_line_factor * 5 pt# = 0.50 pt#;
+fixed_line_thickness + variable_line_factor * 4.125 pt# = 0.47 pt#;
+
+stafflinethickness# := fixed_line_thickness
+		       + variable_line_factor * staff_space#; 
+stafflinethickness_rounded# := stafflinethickness#;
+
+%
+% The following tunes the general blackness of the glyphs. 
+%
+
+linethickness# := stafflinethickness#;		%% 0.5 pt#;
+linethickness_rounded# := linethickness#;
+
+%
+% bigger puff_up_factor, relatively thicker stafflines.
+%
+%   20 pt = puff_up_factor 0
+%   10 pt = puff_up_factor 1
+%
+
+puff_up_factor = (linethickness# - 0.1 staff_space#) / (0.1 staff_space#);
+
+
+stemthickness# := 1.3 stafflinethickness#;
+stemthickness_rounded# := stemthickness#;
+ledgerlinethickness# := 2 stafflinethickness#;
+ledgerlinethickness_rounded# := ledgerlinethickness#;
+
+define_pixels (staff_space, stemthickness, stafflinethickness,
+	       ledgerlinethickness, linethickness);
+define_whole_pixels (staff_space_rounded);
+define_whole_blacker_pixels (stemthickness_rounded);
+define_whole_vertical_blacker_pixels (stafflinethickness_rounded,
+				      ledgerlinethickness_rounded,
+				      linethickness_rounded);
+
+if ledgerlinethickness_rounded > 2 stafflinethickness_rounded:
+	ledgerlinethickness_rounded := 2 stafflinethickness_rounded;
+fi;
+
+% 
+% Because of the engraving/stamping process, no traditional
+% characters have sharp edges and corners.
+% The following variable controls the amount of `roundness'.
+%
+% This is not a meta variable: it is related to absolute sizes.
+%
+% FIXME: According to [Wanske], only outside corners should be round
+%        I don't think we do this anywhere -- jcn
+%
+
+blot_diameter# = .40 pt#;
+if (blot_diameter# * hppp) < 1:
+	blot_diameter# := 1 / hppp;
+fi
+if (blot_diameter# * vppp) < 1:
+	blot_diameter# := 1 / vppp;
+fi
+
+define_pixels (blot_diameter);
+
+
+%
+% symmetry
+% --------
+%
+% Some glyphs have to be positioned exactly between stafflines (clefs,
+% note heads).  This needs some care at lower resolutions.
+%
+% Most glyphs use the staffline thickness and the space between two
+% staff lines as the fundamental parameters.  The latter is the distance
+% between the middle of one staff line to the middle of the next.  To
+% say it differently, the value `staff_space' is the sum of one staff line
+% thickness and the whitespace between two adjacent staff lines.
+%
+% Normally, feta's vertical origin for glyphs is either the middle
+% between two staff lines or the middle of a staff line.  For example, the
+% lower edge of the central staff line is at the vertical position
+% `-<staffline thickness> / 2', and the upper edge at
+% `<staffline thickness> / 2'.  Here we need a value rounded to an integer
+% (the feta code uses `stafflinethickness_rounded' for that purpose).
+%
+% If we have an odd number of pixels as the staffline thickness, Metafont
+% rounds `-stafflinethickness_rounded / 2' towards zero and
+% `stafflinethickness_rounded / 2' towards infinity.  Example: `round -1.5'
+% yields -1, `round 1.5' yields 2.  The whitespace between staff lines is
+% handled similarly.  If we assume that stafflinethickness_rounded is odd,
+% we have the following cases:
+%
+% o The glyph is centered between three stafflines or five stafflines
+%   (clef, `c' meter).  We have this:
+%
+%          ___________  a
+%          ___________  1
+%          ___________  a
+%
+%                            whitespace
+%
+%          ___________  a
+%   ...... ___________  1 ..................  x axis
+%          ___________  a
+%
+%                            whitespace
+%
+%          ___________  a
+%          ___________  1
+%          ___________  a
+%
+%   As can be seen, we get symmetry if we split staff lines into two
+%   equal parts `a' and a pixel line with thickness 1.  Consequently, we
+%   use the following algorithm:
+%
+%   . Decrease the height `h' by 1 temporarily.
+%
+%   . Compute the path for the upper half of the glyph.
+%
+%   . Mirror the path at the x axis.
+%
+%   . Shift the upper half one pixel up and connect it with the lower path.
+%
+%   . Restore height and decrease `d' by 1.
+%
+% o The glyph is centered between two or four staff lines, and the origin is
+%   the middle of the whitespace.  Assuming that the the whitespace consists
+%   of an odd number of pixels, we have this:
+%
+%          -----------
+%                       b
+%                       1
+%                       b
+%          ___________
+%                       b
+%   ..................  1  .................  x axis
+%                       b
+%          ___________
+%                       b
+%                       1
+%                       b
+%          ___________
+%
+%   For symmetrical glyphs, this leads to a similar algorithm as above.
+%   Glyphs which can't be constructed from an upper and lower part need
+%   to be handled differently, namely to shift up the vertical center by
+%   half a pixel:
+%
+%          ___________
+%                       b
+%
+%                       0.5
+%   ..................  0.5 ................  x axis
+%
+%                       b
+%          ___________
+%
+
+feta_eps := 0;
+feta_shift := 0;
+feta_space_shift := 0;
+
+% Use this for paths with a slant of 45 degrees to assure that
+% the middle point of a penpos gets covered.
+pair feta_offset;
+feta_offset := (0, 0);
+
+if known miterlimit:
+	pickup nullpen;
+else:
+	feta_eps := eps;
+
+	if odd stafflinethickness_rounded:
+		feta_shift := 1;
+	fi;
+
+	if odd (staff_space_rounded - stafflinethickness_rounded):
+		feta_space_shift := 1;
+	fi;
+
+	feta_offset := (0.5, 0.5);
+
+	pickup pencircle scaled 1;
+fi;
+
+feta_fillpen := savepen;

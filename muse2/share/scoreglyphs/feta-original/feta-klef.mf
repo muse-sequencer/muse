@@ -1,0 +1,698 @@
+% feta-klef.mf --  implement Clefs -*-Fundamental-*-
+%
+% part of LilyPond's pretty-but-neat music font
+%
+% source file of the Feta (not the Font-En-Tja) music font
+%
+% (c) 1997--2009 Han-Wen Nienhuys <hanwen@xs4all.nl>,
+% Jan Nieuwenhuizen <janneke@gnu.org>,
+% Juergen Reuter <reuter@ipd.uka.de>
+
+
+fet_begingroup ("clefs");
+
+%
+% [Wanske] says the bulbs should be positioned about 1/4 right of the
+% `arrow'.
+%
+% TODO: The hair-curve at z6r looks a little awkward.
+%
+
+def draw_c_clef (expr reduction) =
+	save hair, norm, reduced_ss, right_edge;
+	save xoff;
+
+	reduced_ss# = staff_space# * reduction;
+	norm# := 2/3 reduced_ss#;
+	hair# := 0.06 reduced_ss# + 0.5 linethickness#;
+	right_edge# = 15/4 norm# + 2 hair#;
+	define_pixels (norm, reduced_ss, right_edge);
+	define_whole_vertical_blacker_pixels (hair);
+
+	set_char_box (0, right_edge#, 2 reduced_ss#, 2 reduced_ss#);
+
+	% make unreduced glyph fit exactly into five staff lines
+	if reduction = 1:
+		h := d := 2 staff_space_rounded;
+	fi;
+
+	% assure that the gap between the left and right stem
+	% has the same number of pixels as the thickness of the right
+	% stem
+	draw_block ((0, -d + feta_shift),
+		    (3/4 norm + 1/2 hair, h));
+ 	draw_block ((3/4 norm + 1/2 hair + hround (3/2 hair), -d + feta_shift),
+		    (3/4 norm + 1/2 hair + 2 hround (3/2 hair), h));
+
+	% assure symmetry
+	h := h - feta_shift;
+
+	pickup feta_fillpen;
+
+	xoff = 3/4 norm + 1/2 hair + 2 hround (3/2 hair);
+	z5l = (xoff - 3/4 hair, 0);
+	z5r = (x4, 0);
+
+	penpos1 (hair - pen_top - pen_bot, -90);
+	top z1l = (xoff + norm + hair, h);
+
+	penpos2 (hround (norm - 3/2 hair) - pen_lft - pen_rt, 180);
+	rt z2l = (w, h / 2);
+
+	penpos3 (hair - pen_top - pen_bot, 90);
+	bot z3l = ((right_edge - xoff) / 2 + xoff,
+		   vround (.5 norm - 1.5 hair));
+
+	penpos4 (hair - pen_lft - pen_rt, 0);
+	top z4 = (xoff + 1/2 norm + 1/2 hair,
+		  vfloor (reduced_ss - linethickness - .2 hair));
+
+	bot z6 = (xoff + 3/4 norm, vround (.5 norm - .5 hair));
+
+	save t;
+	t = 0.833;
+
+	save pat;
+	path pat;
+
+	pat = z5l{curl 1}
+	      .. z4l{up}
+	      .. z4r{down}
+	      .. z3r{right}
+	      ..tension t.. z2r{up}
+	      ..tension t.. flare_path (top z1l, 180, 90,
+					hair, hfloor (norm - 1/2 hair), -1)
+	      ..tension t.. z2l{down}
+	      .. z3l{left}
+	      .. z6
+	      .. z5r{down};
+
+	filldraw pat shifted (0, feta_shift)
+		 -- reverse pat yscaled -1 shifted (0, -feta_eps)
+		 -- cycle;
+
+	penlabels (1, 2, 3, 4, 5, 6);
+
+	% ugh, should be bulb, not flare?
+
+	draw_staff (-2, 2, 0);
+enddef;
+
+
+fet_beginchar ("C clef", "C");
+	draw_c_clef (1.0);
+fet_endchar;
+
+
+fet_beginchar ("C clef", "C_change");
+	draw_c_clef (.8);
+fet_endchar;
+
+
+%
+% New bulb routine:
+%
+% Insert a brushed piece of the path, and draw the rest of the bulb
+% separately.
+%
+% The bulb has circular form.  Neat merging of the bulb and brushed path
+% is done by playing with tension.
+%
+
+def new_bulb (expr start_point, start_angle,
+	      outer_tangent_point,
+	      end_point, end_angle,
+	      big_radius, bulb_radius, flare,
+	      direction, turning_dir) =
+begingroup;
+	save pat, before, after;
+	save center;
+	save u, v;
+	path pat, before, after;
+	pair center;
+
+	clearxy;
+
+	center = outer_tangent_point
+		 + big_radius * dir (0);
+%		 + (big_radius - bulb_radius) * dir (-turning_dir * 90)
+
+	z1' = center + bulb_radius * dir (turning_dir * 180);
+	z2' = outer_tangent_point + flare * dir (0);
+	z3' = center + bulb_radius * dir (0);
+	z4' = center + bulb_radius * dir (turning_dir * 90);
+	z5' = center - 0.5 [big_radius, bulb_radius] * dir (turning_dir * 90);
+
+	labels (1', 2', 3', 4', 5');
+
+	before := z3'{dir (turning_dir * 90)}
+		  .. z4'{-dir (0)}
+		  ..tension 1.1.. z1'{-dir (turning_dir* 90)};
+	after := z2'{dir (turning_dir * 90)}
+		 .. end_point{dir (end_angle)};
+	(u, v) = before intersectiontimes after;
+
+	pat := start_point{dir (start_angle)}
+	       .. outer_tangent_point{dir (-turning_dir * 90)}
+	       ..tension 1.02.. z5'{dir (0)}
+	       .. subpath (0, u) of before
+	       .. subpath (v, infinity) of after;
+
+	if direction = 0:
+		pat := reverse pat;
+	fi
+
+pat
+endgroup
+enddef;
+
+
+%
+% There is some variation in the shape of bass clefs.
+%
+% * In some clefs the size of the swoosh tip almost reaches the
+%   bottom staff line; in some it crosses the 2nd line from the bottom
+%   with a small overshoot.
+%
+%   The most popular design is where the X part of the tip is aligned
+%   with the left bulb boundary, and the Y part ends on the 2nd
+%   staffline exactly.  This is what we do.
+%
+% * The diameter of the bulb is the width of the open space.
+%
+% * The vertical center of the bulb can be on or slightly above the
+%   staff line.
+%
+% * The vertical position of the dots can be symmetrical around the
+%   staffline, centered in the staff space.  The Baerenreiter SCS has
+%   the bottom dot raised by approximately 0.1 staff space.
+%
+% * Uncarefully set music may have overshoots at the top.  We have none.
+%
+% * It is not exactly clear where the vertical tangent at the right
+%   of the swoosh should be.
+%
+
+def draw_bass_clef (expr exact_center, reduction) =
+	save reduced_ss, swoosh_width;
+	save right_thickness, right_offset, tip_protrude;
+	save dot_diam, bulb_y_offset, bulb_flare;
+	pair tip_protrude;
+
+	reduced_ss# = staff_space# * reduction;
+	2.2 dot_diam# = reduction * (staff_space# - stafflinethickness#);
+	right_thickness# = 0.37 staff_space# + 1.2 linethickness#;
+	swoosh_width# = 2.1 reduced_ss#;
+	define_pixels (swoosh_width);
+	define_whole_pixels (reduced_ss);
+	define_whole_blacker_pixels (dot_diam, right_thickness);
+
+	right_offset = 0.05 staff_space;
+	bulb_y_offset := 0.075 staff_space;
+	bulb_flare := 2.5 linethickness;
+%	tip_protrude := (-linethickness, -.2 staff_space);
+	tip_protrude := (0, 0);
+
+	set_char_box (-xpart exact_center,
+		      xpart exact_center + swoosh_width# + 7/12 reduced_ss#,
+		      -ypart exact_center + 2.5 reduced_ss#,
+		      ypart exact_center + reduced_ss#);
+
+	y1 = bulb_y_offset;
+	x1 = 0;
+
+	x2 = .5 [x1, x3];
+	x2l = x2r = x2;
+
+	y2l := vround_pixels (reduced_ss# + 0.5 linethickness#);
+	y2l - y2r = linethickness;
+
+	x3l - x1 = swoosh_width;
+	x3l - x3r = right_thickness;
+
+	% optical correction: the top dot seems farther away if y3l = 0.
+	y3l = right_offset;
+
+	z4 = -(0, 2.0 reduced_ss) + tip_protrude;
+
+	penpos3 (whatever, 185);
+	penpos4 (linethickness, 135);
+
+	fill new_bulb (z2l, 180, z1, z2r, 0,
+		       0.45 reduced_ss, 0.4 reduced_ss,
+		       bulb_flare, 1, 1)
+	     .. z3r{down}
+	     .. {curl 0}simple_serif (z4r, z4l, 90){curl 0}
+	     .. z3l{up}
+	     ..tension 0.9.. cycle;
+
+	pickup pencircle scaled dot_diam;
+
+	lft x5 = hround (x3l + 1/3 reduced_ss - dot_diam / 2);
+	bot y5 = vfloor (.5 reduced_ss - dot_diam / 2);
+	z6 = z5 yscaled -1;
+
+	% for symmetry
+	y5 := y5 + feta_shift;
+
+	drawdot z5;
+	drawdot z6;
+
+	penlabels (1, 2, 3, 4, 5, 6);
+
+	draw_staff (-3, 1, 0);
+enddef;
+
+
+fet_beginchar ("F clef ", "F");
+	draw_bass_clef ((0, 0), 1.0);
+fet_endchar;
+
+
+fet_beginchar ("F clef (reduced)", "F_change");
+	draw_bass_clef ((0, 0), 0.8);
+fet_endchar;
+
+
+
+%
+% Inspired by Baerenreiter
+%
+%
+% Beste lezers, kijk,
+%
+% Een bolletje hebben we bij toeval allemaal wel eens getekend, maar begint u
+% toch eenvoudig.  Eerst een eenvoudig kruis of herstellingsteken
+% en via de dubbelslag naar een voorzichtig vlaggetje, en heb geduld!
+% Ikzelf heb bijvoorbeeld over mijn eerste gave G-sleutel
+% 35 kilobyte metafont, 12 patchlevels, 0 vriendinnen en 45 dagen gedaan
+%
+%  -- vrij naar Van Kooten & De Bie
+%
+
+def debugfill = fill enddef;
+
+def draw_gclef (expr reduction) =
+	save reduced_ss, downstroke_dir, downstroke_angle, center;
+	save breapth_factor, inner_thick_end, thinness, thickness, thinnib;
+	save start_angle, inner_start_angle, thinness;
+	save upward_swoosh_angle, bot_angle;
+	save pat;
+	path pat;
+	pair downstroke_dir, center;
+
+	reduced_ss# = staff_space# * reduction;
+	define_pixels (reduced_ss);
+
+	thinness = 0.095 staff_space + 0.75 linethickness;
+	downstroke_dir = unitvector (14, -75);
+	downstroke_angle = angle downstroke_dir;
+	bot_angle = -180;		% downstroke_angle - 87
+
+	upward_swoosh_angle = 132;
+	start_angle = -97;
+
+	breapth_factor = 21/14;
+	inner_thick_end = 45;
+	inner_start_angle = downstroke_angle - 43;
+	thickness = .32 reduced_ss + 1.1 linethickness;
+
+	thinnib = thinness;
+
+	set_char_box (0, 1.71 * breapth_factor * reduced_ss#,
+		      2.6 * reduced_ss#, 5 * reduced_ss#);
+
+	center := (breapth_factor * reduced_ss, 0);
+
+	z1 = center + whatever * dir (inner_start_angle);
+	x1 = xpart center - .28 reduced_ss;
+	penpos1 (thinnib, inner_start_angle);
+
+	x2r = xpart center;
+	y2r = vround_pixels (reduced_ss# + .5 stafflinethickness#);
+	penpos2 (thickness, 90);
+
+	z3 = (z4 - center) rotated inner_thick_end + center;
+	penpos3 (thinnib, -90 + inner_thick_end);
+
+	x4 = xpart center - .1 reduced_ss;
+	y4r = -y2r + feta_shift;
+	penpos4 (thinnib, -90);
+
+	x5r = -breapth_factor * reduced_ss + xpart center;
+	y5r = .37 reduced_ss + ypart center;
+	penpos5 (thickness, upward_swoosh_angle);
+
+	z6 = center + whatever * downstroke_dir;
+	y6 = ypart center + 2 reduced_ss;
+	% penpos6 is computed later
+
+	z7l - z6 = whatever * (z5 - z6) ;
+	y7l = 3.5 reduced_ss;
+	penpos7 (thickness, upward_swoosh_angle);
+
+	x9 = .7 [x10, x7r];
+	top y9l = 5 reduced_ss;
+	penpos9 (1.45 thickness, -70);
+
+	x11 - x13r = 1.5 reduced_ss + 0.5 thinnib;
+	y11 = ypart center - 47/28 reduced_ss;
+	y12 = ypart center - 71/28 reduced_ss;
+	y13 = .48 [y12, y4r];
+	x12r = xpart (.45 [z13r, z11] + .75 reduced_ss * downstroke_dir);
+
+%	z10 = center + whatever * dir (downstroke_angle - 1.5);
+	x10 = x6 - 2 thinnib;
+	y10 = ypart center + 3.5 reduced_ss;
+	y10l - y10r = 1.0 thickness;
+	z10r - z10l = .7 thinnib * dir (downstroke_angle + 90)
+		      + whatever * downstroke_dir;
+	z10 = .5 [z10l, z10r];
+	z11 = center + whatever * downstroke_dir + (-0.05 reduced_ss, 0);
+
+	penpos11 (thinnib, start_angle + 90);
+ 	penpos12 (thinnib, bot_angle + 90);
+	penpos13 (thinnib + 0.14 staff_space, 180);
+
+	% this auxiliary point ensures good contour overlapping
+	z8 = .5 [z9l, z9r] + .25 ((z9r - z9l) rotated -90);
+
+	z20 = z9l - (0, .25 blot_diameter);
+	penpos20 (blot_diameter, 0);
+	
+	pat := z10{down}
+	       .. z6
+	       ..tension 1.1.. z11{dir (start_angle)};
+
+	penpos6 (thinnib, angle (direction 1 of pat) + 90);
+
+	% two auxiliary points to simulate `draw' with `penstroke'
+	z10' = point 0.3 of pat;
+	penpos10' (1.3 thinnib, angle (direction 0.3 of pat) + 50);
+
+	z11' = point 1.5 of pat;
+	penpos11' (thinnib, angle (direction 1.5 of pat) + 90);
+
+	z21l = z20l;
+	z21r = z9r;
+
+	pat := z21l
+	       .. z10l{down}
+	       .. z10'l;
+
+	fill z2l{right}
+	     .. z3l
+	     .. z4l{left}
+	     ..tension 1.07.. z5l{up}  % inside curve
+	     .. z7l{up}
+	     ..tension 1.2.. z20r{curl 1}
+	     .. {direction 0 of pat}z20l
+	     -- z8
+	     -- z9r			% {dir (downstroke_angle + 0)}
+	     ..tension 0.8.. z7r{down}
+	     .. z5r{down}
+	     .. z4r{right}
+	     .. z3r
+	     .. z2r{left}
+	     ..tension .95.. z1r
+	     -- simple_serif (z1r, z1l, 80)
+	     -- z1l
+	     ..tension 0.85.. cycle;
+
+	penstroke z21e
+		  .. z10e{down}
+		  .. z10'e
+		  .. z6e
+		  .. z11'e
+		  .. z11e{dir (-95)}
+		  .. z12e{dir (bot_angle)};
+
+	fill new_bulb (z12r, bot_angle, z13r, z12l, bot_angle + 180,
+		       0.45 reduced_ss, 0.38 reduced_ss,
+		       thinnib + .05 staff_space, 1, -1)
+	     -- cycle;
+
+	penlabels (range 1 thru 21);
+	penlabels (10', 11');
+
+	draw_staff (-1, 3, 0);
+enddef;
+
+
+fet_beginchar ("G clef", "G");
+	draw_gclef (1.0);
+fet_endchar;
+
+
+fet_beginchar ("G clef", "G_change");
+	draw_gclef (0.8);
+fet_endchar;
+
+
+%%%%
+%
+% PERCUSSION
+%
+
+%
+% The percussion clef extent is not coincident with its bbox, since
+% the percussion clef needs more space in front than a normal clef.
+%
+
+def draw_percussion_clef (expr reduction) =
+	save reduced_ss, razt;
+
+	reduced_ss# = staff_space# * reduction;
+	define_pixels (reduced_ss);
+
+	set_char_box (-.67 reduced_ss#, 2.0 reduced_ss#,
+		      reduced_ss#, reduced_ss#);
+
+	razt := hround (0.45 reduced_ss);
+
+	d := d - feta_shift;
+
+	draw_block ((-b, -d), (-b + razt, h));
+	draw_block ((w - razt, -d), (w, h));
+
+	draw_staff (-3, 1, 1);
+enddef;
+
+
+fet_beginchar ("percussion clef", "percussion");
+	draw_percussion_clef (1.0);
+fet_endchar;
+
+
+fet_beginchar ("percussion clef (reduced)", "percussion_change");
+	draw_percussion_clef (.8);
+fet_endchar;
+
+
+def draw_tab_T (expr pos, siz, slant) =
+begingroup;
+	save vx, vy;
+	pair vx, vy;
+
+	clearxy;
+
+	vx = (xpart siz) * dir 0;
+	vy = (ypart siz) * dir 90;
+
+	penpos1 (.75 penh, 100);
+	z1 = z2 + (1/6 * vx - .15 * vy);
+	penpos2 (hround (.9 penw), 0);
+	x2l = hround xpart (pos + .75 vy);
+	y2l = ypart (pos + .75 vy);
+	penpos3 (penh, -100);
+	z3l = pos + .4 vx + vy;
+	penpos4 (penh, -90);
+	z4 = -.1 vy + .5 [z3, z5];
+	penpos5 (.8 penh, -30);
+	x5r = xpart (pos + siz);
+	y5l = ypart (pos + siz);
+
+	penpos10 (penw, 170);
+	z10 = pos + .55 vx + .9 vy;
+	penpos11 (.75 [penh, penw], 170);
+	z11 = z10 - .5 vy + .025 vx;
+	penpos12 (penh, 100);
+	z12l = (xpart .5 [z13, z11], ypart (pos - .025 * siz));
+	penpos13 (.75 penh, 60);
+	z13 = pos + .2 vx + .15 vy;
+
+	% penlabels (range 1 thru 13);
+
+	soft_penstroke (z1e
+			..tension 1.1.. z2e
+			.. z3e{right}
+			..tension 1.5.. z4e
+			..z5e)
+	  slanted slant shifted (slant * -ypart pos, 0);
+
+	soft_end_penstroke (z10e
+			    ..tension 1.5.. z11e
+			    .. z12e
+			    ..tension 1.1.. z13e{(z13r - z13l) rotated 90})
+	  slanted slant shifted (slant * -ypart pos, 0);
+endgroup;
+enddef;
+
+	
+def draw_tab_A (expr pos, siz, slant) =
+begingroup;
+	save vx, vy, pat;
+	pair vx, vy;
+	path pat;
+
+	clearxy;
+
+	vx = (xpart siz) * dir 0;
+	vy = (ypart siz) * dir 90;
+
+	penpos1 (.75 penh, -110);
+	z1r = pos + .07 vy;
+	penpos2 (penh, -75);
+	z2r = (.5 [x1, x3], ypart pos);
+	penpos3 (.25 [penh, penw], -30);
+	z3 = (.45 [x2, x4], .15 [y2, y4]);
+	penpos4 (1 [penh, penw], 0);
+	z4 = pos + .5 vx + .975 vy;
+
+	penpos5 (1 [penh, penw], -180);
+	z5 = z4;
+	penpos6 (.2 [penh, penw], -150);
+	z6l = (.8 [x5l, x7l], .9 [y5l, y7l]);
+	penpos7 (penh,-90);
+	z7r = (.5 [x6, x8], ypart pos);
+	penpos8 (.75 penh, -70);
+	z8r = (xpart (pos + siz), y7r + .075 ypart (siz));
+
+	pat := z2
+	       .. z3
+	       .. z4;
+
+	penpos10 (penh, angle (direction 1.2 of pat) - 180);
+	z10 = point 1.2 of pat;
+	penpos11 (.9 penh, -90);
+	z11 = .4 [z10, z6] - 0.05 vy;
+	penpos12 (.75 penh, -75);
+	z12 = .3 [z11, z6] + 0.02 vy;
+
+	% penlabels (range 1 thru 12);
+
+	soft_penstroke (z1e{(z1r - z1l) rotated 90}
+			.. z2e
+			.. z3e
+			.. z4e)
+	  slanted slant shifted (slant * -ypart pos, 0);
+
+	soft_end_penstroke (z5e
+			    .. z6e
+			    .. z7e
+			    .. z8e{(z8r - z8l) rotated 90})
+	  slanted slant shifted (slant * -ypart pos, 0);
+
+	soft_end_penstroke (z10e
+			    .. z11e
+			    .. z12e)
+	  slanted slant shifted (slant * -ypart pos, 0);
+endgroup;
+enddef;
+
+
+def draw_tab_B (expr pos, siz, slant) =
+begingroup;
+	save vx, vy;
+	pair vx, vy;
+
+	clearxy;
+
+	vx = (xpart siz) * dir 0;
+	vy = (ypart siz) * dir 90;
+
+	penpos1 (.75 penh, 100);
+	z1 = z2 + (.15 * vx - .1 * vy);
+	penpos2 (hround (.9 penw), 0);
+	x2l = hround xpart (pos + .75 vy);
+	y2l = ypart (pos + .75 vy);
+	penpos3 (penh, -100);
+	z3l = pos + .4 vx + 1.05 vy;
+	penpos4 (.8 [penh, penw], -180);
+	z4 = (xpart (pos + .75 siz), .5 [y3, y5]);
+	penpos5 (.8 penh, 90);
+	z5 = (.5 [x10, x4], ypart (pos + .55 siz));
+
+	penpos6 (.8 penh, 270);
+	z6 = z5;
+	penpos7 (penw, 180);
+	z7l = (xpart (pos + siz), .5 [y6, y8]);
+	penpos8 (.8 penh, 45);
+	z8 = .5 [z12l, z11l] + .15 vx - .05 vy;
+
+	penpos10 (.75 [penh, penw], 170);
+	z10 = pos + .375 vx + vy;
+	penpos11 (.8 [penh, penw], 150);
+	z11 = z10 - .5 vy + .04 vx;
+	penpos12 (penh, 100);
+	z12l = (xpart .5 [z13, z11], ypart pos);
+	penpos13 (.75 penh, 60);
+	z13 = pos + .1 vx + .15 vy;
+
+	% penlabels (range 1 thru 13);
+
+	soft_penstroke (z1e
+			..tension 1.1.. z2e
+			.. z3e
+			.. z4e
+			..z5e {left})
+	  slanted slant shifted (slant * -ypart pos, 0);
+
+	soft_end_penstroke (z6e{right}
+			    .. z7e
+			    .. z8e{(z8r - z8l) rotated 90})
+	  slanted slant shifted (slant * -ypart pos, 0);
+
+	soft_end_penstroke (z10e
+			    ..tension 1.5.. z11e
+			    .. z12e
+			    ..tension 1.1.. z13e{(z13r - z13l) rotated 90})
+	  slanted slant shifted (slant * -ypart pos, 0);
+endgroup;
+enddef;
+
+
+def draw_tab_clef (expr reduction) =
+	save reduced_ss, letterheight, penw, penh;
+
+	reduced_ss# = staff_space# * reduction;
+	letterheight# = 1.8 reduced_ss#;
+	define_pixels (reduced_ss, letterheight);
+
+	set_char_box (-.2 reduced_ss#, 2.8 reduced_ss#,
+		      1.6 letterheight#, 1.6 letterheight#);
+
+	penw = .45 reduced_ss;
+	penh = .2 reduced_ss;
+
+	draw_tab_T ((-b + .15 reduced_ss, h - letterheight),
+		    (2.1 reduced_ss, letterheight), 0.2);
+	draw_tab_A ((-b - .05 reduced_ss, -.5 letterheight +.15 reduced_ss),
+		    (2.2 reduced_ss, letterheight), 0.4);
+	draw_tab_B ((-b + .025 reduced_ss, -d),
+		    (2.1 reduced_ss, letterheight), 0.25);
+
+	draw_staff (-3, 2, 0.5);
+enddef;
+
+
+fet_beginchar ("tab clef", "tab");
+	draw_tab_clef (1.0);
+fet_endchar;
+
+
+fet_beginchar ("tab clef (reduced)", "tab_change");
+	draw_tab_clef (.8);
+fet_endchar;
+
+fet_endgroup ("clefs");

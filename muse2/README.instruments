@@ -1,0 +1,120 @@
+================================================
+    MusE loadable Midi Instrument Definitions
+    (valid from around MusE 0.8.1, Edited by Tim APR.25.2010, at MusE 2.0alpha)
+================================================
+
+  - File Extension  ".idf"
+  - searched in Subdirectory  "instruments"
+    (/usr/share/muse/instruments on my system)
+  - Can be viewed, created or edited with menu 'Midi -> Edit Instrument'
+
+  All found instrument definitions are presented by MusE
+  in Config->MidiPorts in Pulldown in column "Instrument".
+
+-------------------------------------------------
+   Example of Instrument Definition File:
+-------------------------------------------------
+
+<?xml version="1.0"?>
+<muse version="1.0">
+  <MidiInstrument name="GM">
+    <Init>
+      ...MusE event list which initializes instrument
+      </Init>
+    <PatchGroup name="Piano">
+       <Patch name="Grand Piano" prog="0"/>
+       <Patch name="Bright Piano" prog="1"/>
+       ...
+      </PatchGroup>
+    <PatchGroup name="Bass">
+      <Patch name="Acoustic Bass" prog="32"/>
+      <Patch name="Fingered Bass" prog="33"/>
+      </PatchGroup>
+    ...
+    <Controller name="Pan" l="10" min="-64" max="63" init="0" />
+    <Controller name="PitchBendSensitivity" type="RPN" h="0" l="0" max="24" init="2" />
+    ...
+    </MidiInstrument>
+  </muse>
+
+-------------------------------------------------
+      Notes
+-------------------------------------------------
+
+ (1)  PatchGroups are not mandatory; its valid to write:
+
+      <MidiInstrument name="GM">
+        <Patch name="Grand Piano" prog="0"/>
+        <Patch name="Bright Piano" prog="1"/>
+        <Patch name="Acoustic Bass" prog="32"/>
+        <Patch name="Fingered Bass" prog="33"/>
+        ...
+        </MidiInstrument>
+
+ (2)  An "Instrument Definition File" can define more than on
+      Instrument, but it is recommended to use one file for
+      one instrument
+
+ (3)  the "prog" parameter in a "Patch" is mandatory. Missing
+      "hbank" or "lbank" are treated as "don't care".
+      Missing "drum" is treated as drum="0".
+
+      A XG-Patch looks like:
+      <Patch name="Electro" drum="1" hbank="127" lbank="0" prog="24"/>
+
+ (5)  A patch can be associated with a "mode" with one of
+
+            1  - GM
+            2  - GS
+            4  - XG
+
+      Example:
+      <Patch name="Electro" mode="4" drum="1" hbank="127" lbank="0" prog="24"/>
+
+      Mode id's can be ore'd together for patches which are valid
+      for more than one mode:
+
+      <Patch name="Grand Piano" mode=7" hbank="0" lbank="0" prog="0"/>
+
+ (4)  example for MusE event (Sysex "XG-On"):
+
+      <event tick="0" type="5" datalen="7">
+        43 10 4c 00 00 7e 00
+        </event>
+
+ (5)  <Init> ... </Init> part can be omitted
+
+
+ (6)  Controller have the following porperties:
+
+      name: arbitrary unique (short) string describing the controller
+      
+      type:     Controller7       regular 7-bit controller
+                Controller14      14-bit controller
+                RPN               registered parameter 7-bit
+                NRPN              non registered parameter 7-bit
+                RPN14             registered parameter 14-bit
+                NRPN14            non registered parameter 14-bit
+                Pitch             pitch mod wheel
+                Program           program 
+
+            Default Controller7 if omitted.
+            Pitch and Program are convenience controllers which
+             wrap pitch or program functionality in one controller.
+
+      h:  controller number MSB. Default 0 if omitted.
+      l:  controller number LSB. Default 0 if omitted.
+            For drum controllers, this can also be "pitch" indicating
+             each drum 'note' has its own controller.
+
+      min:  minimum value for controller
+      max:  maximum value for controller
+      init: reset value for controller; when controller value is
+            undefined after instrument reset, use the ''undefined''
+            value 0x10000
+
+           The min/max/init values can be omitted
+           Auto-biasing feature: If min is less than zero, such as with 
+            pan = -64 -> 63, MusE automatically displays this range, 
+            yet uses the true range of 0-127 'behind the scenes'.
+

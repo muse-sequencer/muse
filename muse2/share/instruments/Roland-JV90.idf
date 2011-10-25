@@ -1,0 +1,929 @@
+<?xml version="1.0"?>
+<muse version="1.0">
+  <MidiInstrument name="Roland JV-90">
+    <Init>
+    </Init>
+    <PatchGroup name="Internal">
+      <Patch name="Crystal Vox"	 hbank="80" lbank="0" prog="0"/>
+      <Patch name="MIDI Ripper"	 hbank="80" lbank="0" prog="1"/>
+      <Patch name="Soundtrack"	 hbank="80" lbank="0" prog="2"/>
+      <Patch name="Poly Brass"	 hbank="80" lbank="0" prog="3"/>
+      <Patch name="Nice Piano"	 hbank="80" lbank="0" prog="4"/>
+      <Patch name="Blow Lead"	 hbank="80" lbank="0" prog="5"/>
+      <Patch name="Ultima Bass"	 hbank="80" lbank="0" prog="6"/>
+      <Patch name="Amazon Moon"	 hbank="80" lbank="0" prog="7"/>
+      <Patch name="Von Greece"	 hbank="80" lbank="0" prog="8"/>
+      <Patch name="BrightGuiter" hbank="80" lbank="0" prog="9"/>
+      <Patch name="Octava Strng" hbank="80" lbank="0" prog="10"/>
+      <Patch name="Brass Sect."	 hbank="80" lbank="0" prog="11"/>
+      <Patch name="Blissful" 	 hbank="80" lbank="0" prog="12"/>
+      <Patch name="Square Lead"	 hbank="80" lbank="0" prog="13"/>
+      <Patch name="Rubber Bs 3"	 hbank="80" lbank="0" prog="14"/>
+      <Patch name="X/Y/Z"	 hbank="80" lbank="0" prog="15"/>
+      <Patch name="Pulsynswell"	 hbank="80" lbank="0" prog="16"/>
+      <Patch name="Nylon Chorus" hbank="80" lbank="0" prog="17"/>
+      <Patch name="Orch Power"	 hbank="80" lbank="0" prog="18"/>
+      <Patch name="Mistress Brs" hbank="80" lbank="0" prog="19"/>
+      <Patch name="Stackoid"	 hbank="80" lbank="0" prog="20"/>
+      <Patch name="Sawteeth"	 hbank="80" lbank="0" prog="21"/>
+      <Patch name="Slap !!!"	 hbank="80" lbank="0" prog="22"/>
+      <Patch name="Kolor"	 hbank="80" lbank="0" prog="23"/>
+      <Patch name="Shakusphere"	 hbank="80" lbank="0" prog="24"/>
+      <Patch name="Rhythmatic"	 hbank="80" lbank="0" prog="25"/>
+      <Patch name="Vocal Oohz"	 hbank="80" lbank="0" prog="26"/>
+      <Patch name="Hybrid Bones" hbank="80" lbank="0" prog="27"/>
+      <Patch name="Fantasia JV"	 hbank="80" lbank="0" prog="28"/>
+      <Patch name="Doo Lead"	 hbank="80" lbank="0" prog="29"/>
+      <Patch name="Super JX Bs"	 hbank="80" lbank="0" prog="30"/>
+      <Patch name="Echo Riser"	 hbank="80" lbank="0" prog="31"/>
+      <Patch name="Sea Shore"	 hbank="80" lbank="0" prog="32"/>
+      <Patch name="Clean Strat"	 hbank="80" lbank="0" prog="33"/>
+      <Patch name="Mighty Pad"	 hbank="80" lbank="0" prog="34"/>
+      <Patch name="Reso Brass"	 hbank="80" lbank="0" prog="35"/>
+      <Patch name="Jimmee Dee !" hbank="80" lbank="0" prog="36"/>
+      <Patch name="Sax Lead"	 hbank="80" lbank="0" prog="37"/>
+      <Patch name="Untamed Bass" hbank="80" lbank="0" prog="38"/>
+      <Patch name="Morning"	 hbank="80" lbank="0" prog="39"/>
+      <Patch name="JV Heaven"	 hbank="80" lbank="0" prog="40"/>
+      <Patch name="Gtr String"	 hbank="80" lbank="0" prog="41"/>
+      <Patch name="Wavox"	 hbank="80" lbank="0" prog="42"/>
+      <Patch name="Afro Horn"	 hbank="80" lbank="0" prog="43"/>
+      <Patch name="West Coast"	 hbank="80" lbank="0" prog="44"/>
+      <Patch name="Doctor Bob"	 hbank="80" lbank="0" prog="45"/>
+      <Patch name="5-Strng Bass" hbank="80" lbank="0" prog="46"/>
+      <Patch name="House Hunter" hbank="80" lbank="0" prog="47"/>
+      <Patch name="Utakata"	 hbank="80" lbank="0" prog="48"/>
+      <Patch name="Classical Gt" hbank="80" lbank="0" prog="49"/>
+      <Patch name="ChuChu Vox"	 hbank="80" lbank="0" prog="50"/>
+      <Patch name="Brass Attack" hbank="80" lbank="0" prog="51"/>
+      <Patch name="Mr.Mellow!"	 hbank="80" lbank="0" prog="52"/>
+      <Patch name="Belly Lead"	 hbank="80" lbank="0" prog="53"/>
+      <Patch name="Mondo Bass"	 hbank="80" lbank="0" prog="54"/>
+      <Patch name="Ice Hall"	 hbank="80" lbank="0" prog="55"/>
+      <Patch name="Ebb Tide"	 hbank="80" lbank="0" prog="56"/>
+      <Patch name="Gtr Fantasia" hbank="80" lbank="0" prog="57"/>
+      <Patch name="Reso Swell"	 hbank="80" lbank="0" prog="58"/>
+      <Patch name="Jam Brass"	 hbank="80" lbank="0" prog="59"/>
+      <Patch name="JV Rhodes"	 hbank="80" lbank="0" prog="60"/>
+      <Patch name="Key Power !!" hbank="80" lbank="0" prog="61"/>
+      <Patch name="Radio Bass"	 hbank="80" lbank="0" prog="62"/>
+      <Patch name="Arctic Winds" hbank="80" lbank="0" prog="63"/>
+    </PatchGroup>
+    
+    <PatchGroup name="Data Card">
+      <Patch name="1"		 hbank="82" lbank="0" prog="1"/>
+      <Patch name="2"		 hbank="82" lbank="0" prog="2"/>
+      <Patch name="3"		 hbank="82" lbank="0" prog="3"/>
+      <Patch name="4"		 hbank="82" lbank="0" prog="4"/>
+      <Patch name="5"		 hbank="82" lbank="0" prog="5"/>
+      <Patch name="6"		 hbank="82" lbank="0" prog="6"/>
+      <Patch name="7"		 hbank="82" lbank="0" prog="7"/>
+      <Patch name="8"		 hbank="82" lbank="0" prog="8"/>
+      <Patch name="9"		 hbank="82" lbank="0" prog="9"/>
+      <Patch name="10"		 hbank="82" lbank="0" prog="10"/>
+      <Patch name="11"		 hbank="82" lbank="0" prog="11"/>
+      <Patch name="12"		 hbank="82" lbank="0" prog="12"/>
+      <Patch name="13"		 hbank="82" lbank="0" prog="13"/>
+      <Patch name="14"		 hbank="82" lbank="0" prog="14"/>
+      <Patch name="15"		 hbank="82" lbank="0" prog="15"/>
+      <Patch name="16"		 hbank="82" lbank="0" prog="16"/>
+      <Patch name="17"		 hbank="82" lbank="0" prog="17"/>
+      <Patch name="18"		 hbank="82" lbank="0" prog="18"/>
+      <Patch name="19"		 hbank="82" lbank="0" prog="19"/>
+      <Patch name="20"		 hbank="82" lbank="0" prog="20"/>
+      <Patch name="21"		 hbank="82" lbank="0" prog="21"/>
+      <Patch name="22"		 hbank="82" lbank="0" prog="22"/>
+      <Patch name="23"		 hbank="82" lbank="0" prog="23"/>
+      <Patch name="24"		 hbank="82" lbank="0" prog="24"/>
+      <Patch name="25"		 hbank="82" lbank="0" prog="25"/>
+      <Patch name="26"		 hbank="82" lbank="0" prog="26"/>
+      <Patch name="27"		 hbank="82" lbank="0" prog="27"/>
+      <Patch name="28"		 hbank="82" lbank="0" prog="28"/>
+      <Patch name="29"		 hbank="82" lbank="0" prog="29"/>
+      <Patch name="30"		 hbank="82" lbank="0" prog="30"/>
+      <Patch name="31"		 hbank="82" lbank="0" prog="31"/>
+      <Patch name="32"		 hbank="82" lbank="0" prog="32"/>
+      <Patch name="33"		 hbank="82" lbank="0" prog="33"/>
+      <Patch name="34"		 hbank="82" lbank="0" prog="34"/>
+      <Patch name="35"		 hbank="82" lbank="0" prog="35"/>
+      <Patch name="36"		 hbank="82" lbank="0" prog="36"/>
+      <Patch name="37"		 hbank="82" lbank="0" prog="37"/>
+      <Patch name="38"		 hbank="82" lbank="0" prog="38"/>
+      <Patch name="39"		 hbank="82" lbank="0" prog="39"/>
+      <Patch name="40"		 hbank="82" lbank="0" prog="40"/>
+      <Patch name="41"		 hbank="82" lbank="0" prog="41"/>
+      <Patch name="42"		 hbank="82" lbank="0" prog="42"/>
+      <Patch name="43"		 hbank="82" lbank="0" prog="43"/>
+      <Patch name="44"		 hbank="82" lbank="0" prog="44"/>
+      <Patch name="45"		 hbank="82" lbank="0" prog="45"/>
+      <Patch name="46"		 hbank="82" lbank="0" prog="46"/>
+      <Patch name="47"		 hbank="82" lbank="0" prog="47"/>
+      <Patch name="48"		 hbank="82" lbank="0" prog="48"/>
+      <Patch name="49"		 hbank="82" lbank="0" prog="49"/>
+      <Patch name="50"		 hbank="82" lbank="0" prog="50"/>
+      <Patch name="51"		 hbank="82" lbank="0" prog="51"/>
+      <Patch name="52"		 hbank="82" lbank="0" prog="52"/>
+      <Patch name="53"		 hbank="82" lbank="0" prog="53"/>
+      <Patch name="54"		 hbank="82" lbank="0" prog="54"/>
+      <Patch name="55"		 hbank="82" lbank="0" prog="55"/>
+      <Patch name="56"		 hbank="82" lbank="0" prog="56"/>
+      <Patch name="57"		 hbank="82" lbank="0" prog="57"/>
+      <Patch name="58"		 hbank="82" lbank="0" prog="58"/>
+      <Patch name="59"		 hbank="82" lbank="0" prog="59"/>
+      <Patch name="60"		 hbank="82" lbank="0" prog="60"/>
+      <Patch name="61"		 hbank="82" lbank="0" prog="61"/>
+      <Patch name="62"		 hbank="82" lbank="0" prog="62"/>
+      <Patch name="63"		 hbank="82" lbank="0" prog="63"/>
+      <Patch name="64"		 hbank="82" lbank="0" prog="64"/>
+      <Patch name="65"		 hbank="80" lbank="0" prog="65"/>
+      <Patch name="66"		 hbank="80" lbank="0" prog="66"/>
+      <Patch name="67"		 hbank="80" lbank="0" prog="67"/>
+      <Patch name="68"		 hbank="80" lbank="0" prog="68"/>
+      <Patch name="68"		 hbank="80" lbank="0" prog="69"/>
+      <Patch name="70"		 hbank="80" lbank="0" prog="70"/>
+      <Patch name="71"		 hbank="80" lbank="0" prog="71"/>
+      <Patch name="72"		 hbank="80" lbank="0" prog="72"/>
+      <Patch name="73"		 hbank="80" lbank="0" prog="73"/>
+      <Patch name="74"		 hbank="80" lbank="0" prog="74"/>
+      <Patch name="75"		 hbank="80" lbank="0" prog="75"/>
+      <Patch name="76"		 hbank="80" lbank="0" prog="76"/>
+      <Patch name="77"		 hbank="80" lbank="0" prog="77"/>
+      <Patch name="78"		 hbank="80" lbank="0" prog="78"/>
+      <Patch name="79"		 hbank="80" lbank="0" prog="79"/>
+      <Patch name="80"		 hbank="80" lbank="0" prog="80"/>
+      <Patch name="81"		 hbank="80" lbank="0" prog="81"/>
+      <Patch name="82"		 hbank="80" lbank="0" prog="82"/>
+      <Patch name="83"		 hbank="80" lbank="0" prog="83"/>
+      <Patch name="84"		 hbank="80" lbank="0" prog="84"/>
+      <Patch name="85"		 hbank="80" lbank="0" prog="85"/>
+      <Patch name="86"		 hbank="80" lbank="0" prog="86"/>
+      <Patch name="87"		 hbank="80" lbank="0" prog="87"/>
+      <Patch name="88"		 hbank="80" lbank="0" prog="88"/>
+      <Patch name="89"		 hbank="80" lbank="0" prog="89"/>
+      <Patch name="90"		 hbank="80" lbank="0" prog="90"/>
+      <Patch name="91"		 hbank="80" lbank="0" prog="91"/>
+      <Patch name="92"		 hbank="80" lbank="0" prog="92"/>
+      <Patch name="93"		 hbank="80" lbank="0" prog="93"/>
+      <Patch name="94"		 hbank="80" lbank="0" prog="94"/>
+      <Patch name="95"		 hbank="80" lbank="0" prog="95"/>
+      <Patch name="96"		 hbank="80" lbank="0" prog="96"/>
+      <Patch name="97"		 hbank="80" lbank="0" prog="97"/>
+      <Patch name="98"		 hbank="80" lbank="0" prog="98"/>
+      <Patch name="99"		 hbank="80" lbank="0" prog="99"/>
+      <Patch name="100"		 hbank="80" lbank="0" prog="100"/>
+      <Patch name="101"		 hbank="80" lbank="0" prog="101"/>
+      <Patch name="102"		 hbank="80" lbank="0" prog="102"/>
+      <Patch name="103"		 hbank="80" lbank="0" prog="103"/>
+      <Patch name="104"		 hbank="80" lbank="0" prog="104"/>
+      <Patch name="105"		 hbank="80" lbank="0" prog="105"/>
+      <Patch name="106"		 hbank="80" lbank="0" prog="106"/>
+      <Patch name="107"		 hbank="80" lbank="0" prog="107"/>
+      <Patch name="108"		 hbank="80" lbank="0" prog="108"/>
+      <Patch name="109"		 hbank="80" lbank="0" prog="109"/>
+      <Patch name="110"		 hbank="80" lbank="0" prog="110"/>
+      <Patch name="111"		 hbank="80" lbank="0" prog="111"/>
+      <Patch name="112"		 hbank="80" lbank="0" prog="112"/>
+      <Patch name="113"		 hbank="80" lbank="0" prog="113"/>
+      <Patch name="114"		 hbank="80" lbank="0" prog="114"/>
+      <Patch name="115"		 hbank="80" lbank="0" prog="115"/>
+      <Patch name="116"		 hbank="80" lbank="0" prog="116"/>
+      <Patch name="117"		 hbank="80" lbank="0" prog="117"/>
+      <Patch name="118"		 hbank="80" lbank="0" prog="118"/>
+      <Patch name="119"		 hbank="80" lbank="0" prog="119"/>
+      <Patch name="120"		 hbank="80" lbank="0" prog="120"/>
+      <Patch name="121"		 hbank="80" lbank="0" prog="121"/>
+      <Patch name="122"		 hbank="80" lbank="0" prog="122"/>
+      <Patch name="123"		 hbank="80" lbank="0" prog="123"/>
+      <Patch name="124"		 hbank="80" lbank="0" prog="124"/>
+      <Patch name="125"		 hbank="80" lbank="0" prog="125"/>
+      <Patch name="126"		 hbank="80" lbank="0" prog="126"/>
+      <Patch name="127"		 hbank="80" lbank="0" prog="127"/>
+    </PatchGroup>
+    
+    <PatchGroup name="JV-80 Preset A">
+      <Patch name="A.Piano 1"	 hbank="81" lbank="0" prog="0"/>
+      <Patch name="A.Piano 2"	 hbank="81" lbank="0" prog="1"/>
+      <Patch name="Mellow Piano" hbank="81" lbank="0" prog="2"/>
+      <Patch name="Pop Piano 1"	 hbank="81" lbank="0" prog="3"/>
+      <Patch name="Pop Piano 2"	 hbank="81" lbank="0" prog="4"/>
+      <Patch name="Pop Piano 3"	 hbank="81" lbank="0" prog="5"/>
+      <Patch name="MIDIed Grand" hbank="81" lbank="0" prog="6"/>
+      <Patch name="Country Bar"	 hbank="81" lbank="0" prog="7"/>
+      <Patch name="Glist El Pno" hbank="81" lbank="0" prog="8"/>
+      <Patch name="MIDI EPiano"  hbank="81" lbank="0" prog="9"/>
+      <Patch name="SA Rhodes" 	 hbank="81" lbank="0" prog="10"/>
+      <Patch name="Dig Rhodes 1" hbank="81" lbank="0" prog="11"/>
+      <Patch name="Dig Rhodes 2" hbank="81" lbank="0" prog="12"/>
+      <Patch name="Stiky Rhodes" hbank="81" lbank="0" prog="13"/>
+      <Patch name="Guitr Rhodes" hbank="81" lbank="0" prog="14"/>
+      <Patch name="Nylon Rhodes" hbank="81" lbank="0" prog="15"/>
+      <Patch name="Clav 1"	 hbank="81" lbank="0" prog="16"/>
+      <Patch name="Clav 2" 	 hbank="81" lbank="0" prog="17"/>
+      <Patch name="Marimba"	 hbank="81" lbank="0" prog="18"/>
+      <Patch name="Marimba SW"   hbank="81" lbank="0" prog="19"/>
+      <Patch name="Warm Vibe"	 hbank="81" lbank="0" prog="20"/>
+      <Patch name="Vibe"	 hbank="81" lbank="0" prog="21"/>
+      <Patch name="Wave Bells"	 hbank="81" lbank="0" prog="22"/>
+      <Patch name="Vibrobell"	 hbank="81" lbank="0" prog="23"/>
+      <Patch name="Pipe Organ 1" hbank="81" lbank="0" prog="24"/>
+      <Patch name="Pipe Organ 2" hbank="81" lbank="0" prog="25"/>
+      <Patch name="Pipe Organ 3" hbank="81" lbank="0" prog="26"/>
+      <Patch name="E.Organ 1" 	 hbank="81" lbank="0" prog="27"/>
+      <Patch name="E.Organ 2"	 hbank="81" lbank="0" prog="28"/>
+      <Patch name="Jazz Organ 1" hbank="81" lbank="0" prog="29"/>
+      <Patch name="Jazz Organ 2" hbank="81" lbank="0" prog="30"/>
+      <Patch name="Metal Organ"	 hbank="81" lbank="0" prog="31"/>
+      <Patch name="Nylon Gtr 1"	 hbank="81" lbank="0" prog="32"/>
+      <Patch name="Flanged Nyln" hbank="81" lbank="0" prog="33"/>
+      <Patch name="Steel Guitar" hbank="81" lbank="0" prog="34"/>
+      <Patch name="PickedGuitar" hbank="81" lbank="0" prog="35"/>
+      <Patch name="12 strings" 	 hbank="81" lbank="0" prog="36"/>
+      <Patch name="Velo Harmnix" hbank="81" lbank="0" prog="37"/>
+      <Patch name="Nylon+Steel"  hbank="81" lbank="0" prog="38"/>
+      <Patch name="SwitchOnMute" hbank="81" lbank="0" prog="39"/>
+      <Patch name="JC Strat"	 hbank="81" lbank="0" prog="40"/>
+      <Patch name="Stratus"	 hbank="81" lbank="0" prog="41"/>
+      <Patch name="Syn Strat"	 hbank="81" lbank="0" prog="42"/>
+      <Patch name="Pop Strat"	 hbank="81" lbank="0" prog="43"/>
+      <Patch name="Clean Strat"	 hbank="81" lbank="0" prog="44"/>
+      <Patch name="Funk Gtr"	 hbank="81" lbank="0" prog="45"/>
+      <Patch name="Syn Guitar"   hbank="81" lbank="0" prog="46"/>
+      <Patch name="Overdrive"    hbank="81" lbank="0" prog="47"/>
+      <Patch name="Fretless"	 hbank="81" lbank="0" prog="48"/>
+      <Patch name="St Fretless"  hbank="81" lbank="0" prog="49"/>
+      <Patch name="Woody Bass 1" hbank="81" lbank="0" prog="50"/>
+      <Patch name="Woody Bass 2" hbank="81" lbank="0" prog="51"/>
+      <Patch name="Analog Bs 1"	 hbank="81" lbank="0" prog="52"/>
+      <Patch name="House Bass"	 hbank="81" lbank="0" prog="53"/>
+      <Patch name="Hip Bass"	 hbank="81" lbank="0" prog="54"/>
+      <Patch name="RockOut Bass" hbank="81" lbank="0" prog="55"/>
+      <Patch name="Slap Bass"	 hbank="81" lbank="0" prog="56"/>
+      <Patch name="Thumpin Bass" hbank="81" lbank="0" prog="57"/>
+      <Patch name="Pick Bass"	 hbank="81" lbank="0" prog="58"/>
+      <Patch name="Wonder Bass"	 hbank="81" lbank="0" prog="59"/>
+      <Patch name="Yowza Bass"	 hbank="81" lbank="0" prog="60"/>
+      <Patch name="Rubber Bs 1"  hbank="81" lbank="0" prog="61"/>
+      <Patch name="Rubber Bs 2"	 hbank="81" lbank="0" prog="62"/>
+      <Patch name="Stereoww Bs"  hbank="81" lbank="0" prog="63"/>
+    </PatchGroup>
+
+    <PatchGroup name="JV-80 Preset B">
+      <Patch name="Pizzacato"	 hbank="81" lbank="0" prog="64"/>
+      <Patch name="Real Pizz"	 hbank="81" lbank="0" prog="65"/>
+      <Patch name="Harp"	 hbank="81" lbank="0" prog="66"/>
+      <Patch name="SoarinString" hbank="81" lbank="0" prog="67"/>
+      <Patch name="Warm String"	 hbank="81" lbank="0" prog="68"/>
+      <Patch name="Marcato"	 hbank="81" lbank="0" prog="69"/>
+      <Patch name="St Strings"	 hbank="81" lbank="0" prog="70"/>
+      <Patch name="Orch Strings" hbank="81" lbank="0" prog="71"/>
+      <Patch name="Slow Strings" hbank="81" lbank="0" prog="72"/>
+      <Patch name="Velo Strings" hbank="81" lbank="0" prog="73"/>
+      <Patch name="BrightStrngs" hbank="81" lbank="0" prog="74"/>
+      <Patch name="TremoloStrng" hbank="81" lbank="0" prog="75"/>
+      <Patch name="Orch Stab 1"	 hbank="81" lbank="0" prog="76"/>
+      <Patch name="Brite Stab"	 hbank="81" lbank="0" prog="77"/>
+      <Patch name="JP-8 Strings" hbank="81" lbank="0" prog="78"/>
+      <Patch name="String Synth" hbank="81" lbank="0" prog="79"/>
+      <Patch name="Wire String"	 hbank="81" lbank="0" prog="80"/>
+      <Patch name="New Age Vox"	 hbank="81" lbank="0" prog="81"/>
+      <Patch name="Arasian Morn" hbank="81" lbank="0" prog="82"/>
+      <Patch name="Beauty Vox"	 hbank="81" lbank="0" prog="83"/>
+      <Patch name="Vento Voxx"	 hbank="81" lbank="0" prog="84"/>
+      <Patch name="Pvox Oooze"	 hbank="81" lbank="0" prog="85"/>
+      <Patch name="GlassVoices"	 hbank="81" lbank="0" prog="86"/>
+      <Patch name="Space Ahh"	 hbank="81" lbank="0" prog="87"/>
+      <Patch name="Trumpet"	 hbank="81" lbank="0" prog="88"/>
+      <Patch name="Trumbone"	 hbank="81" lbank="0" prog="89"/>
+      <Patch name="Harmon Mute1" hbank="81" lbank="0" prog="90"/>
+      <Patch name="Harmon Mute2" hbank="81" lbank="0" prog="91"/>
+      <Patch name="TeaJay Brass" hbank="81" lbank="0" prog="92"/>
+      <Patch name="Brass Sect 1" hbank="81" lbank="0" prog="93"/>
+      <Patch name="Brass Sect 2" hbank="81" lbank="0" prog="94"/>
+      <Patch name="Brass Swell"	 hbank="81" lbank="0" prog="95"/>
+      <Patch name="Brass Combo"	 hbank="81" lbank="0" prog="96"/>
+      <Patch name="Stab Brass"	 hbank="81" lbank="0" prog="97"/>
+      <Patch name="Soft Brass"	 hbank="81" lbank="0" prog="98"/>
+      <Patch name="Horn Brass"	 hbank="81" lbank="0" prog="99"/>
+      <Patch name="French Horn"	 hbank="81" lbank="0" prog="100"/>
+      <Patch name="AltoLead Sax" hbank="81" lbank="0" prog="101"/>
+      <Patch name="Alto Sax"	 hbank="81" lbank="0" prog="102"/>
+      <Patch name="Tenor Sax 1"	 hbank="81" lbank="0" prog="103"/>
+      <Patch name="Tenor Sax 2"	 hbank="81" lbank="0" prog="104"/>
+      <Patch name="Sax Section"	 hbank="81" lbank="0" prog="105"/>
+      <Patch name="Sax Tp Tb"	 hbank="81" lbank="0" prog="106"/>
+      <Patch name="FlutePiccolo" hbank="81" lbank="0" prog="107"/>
+      <Patch name="Flute Mod"	 hbank="81" lbank="0" prog="108"/>
+      <Patch name="Ocarine"	 hbank="81" lbank="0" prog="109"/>
+      <Patch name="OverblownPan" hbank="81" lbank="0" prog="110"/>
+      <Patch name="Air Lead"	 hbank="81" lbank="0" prog="111"/>
+      <Patch name="Steel Drum"	 hbank="81" lbank="0" prog="112"/>
+      <Patch name="Log Drum"	 hbank="81" lbank="0" prog="113"/>
+      <Patch name="Box Lead"	 hbank="81" lbank="0" prog="114"/>
+      <Patch name="Soft Lead"	 hbank="81" lbank="0" prog="115"/>
+      <Patch name="Whistle"	 hbank="81" lbank="0" prog="116"/>
+      <Patch name="Square Lead"	 hbank="81" lbank="0" prog="117"/>
+      <Patch name="Touch Lead"	 hbank="81" lbank="0" prog="118"/>
+      <Patch name="NightShade"	 hbank="81" lbank="0" prog="119"/>
+      <Patch name="Pizza Hutt"	 hbank="81" lbank="0" prog="120"/>
+      <Patch name="EP+Exp Pad"	 hbank="81" lbank="0" prog="121"/>
+      <Patch name="JP-8 Pad"	 hbank="81" lbank="0" prog="122"/>
+      <Patch name="Puff"	 hbank="81" lbank="0" prog="123"/>
+      <Patch name="SpaciosSweep" hbank="81" lbank="0" prog="124"/>
+      <Patch name="Big n Beefy"	 hbank="81" lbank="0" prog="125"/>
+      <Patch name="RevCymBend"	 hbank="81" lbank="0" prog="126"/>
+      <Patch name="INITIAL DATA" hbank="81" lbank="0" prog="127"/>
+    </PatchGroup>
+
+    <PatchGroup name="Preset A">
+      <Patch name="A.Piano 1"	 hbank="81" lbank="1" prog="0"/>
+      <Patch name="A.Piano 2"	 hbank="81" lbank="1" prog="1"/>
+      <Patch name="A.Piano 3" 	 hbank="81" lbank="1" prog="2"/>
+      <Patch name="A.Piano 4"	 hbank="81" lbank="1" prog="3"/>
+      <Patch name="A.Piano 1Tx4" hbank="81" lbank="1" prog="4"/>
+      <Patch name="Rock Grand"	 hbank="81" lbank="1" prog="5"/>
+      <Patch name="MIDIed Grand" hbank="81" lbank="1" prog="6"/>
+      <Patch name="Pop Piano 1"	 hbank="81" lbank="1" prog="7"/>
+      <Patch name="Country Bar"  hbank="81" lbank="1" prog="8"/>
+      <Patch name="Stack Major"  hbank="81" lbank="1" prog="9"/>
+      <Patch name="Pop Piano 2"	 hbank="81" lbank="1" prog="10"/>
+      <Patch name="RD Rhodos 1"  hbank="81" lbank="1" prog="11"/>
+      <Patch name="Dig Rhodos 1" hbank="81" lbank="1" prog="12"/>
+      <Patch name="Dig Rhodos 2" hbank="81" lbank="1" prog="13"/>
+      <Patch name="Stiky Rhodos" hbank="81" lbank="1" prog="14"/>
+      <Patch name="Guitr Rhodes" hbank="81" lbank="1" prog="15"/>
+      <Patch name="Pop Piano 3"  hbank="81" lbank="1" prog="16"/>
+      <Patch name="FM.Piano"	 hbank="81" lbank="1" prog="17"/>
+      <Patch name="Hi-Cut Ep"	 hbank="81" lbank="1" prog="18"/>
+      <Patch name="MIDI EPiano"	 hbank="81" lbank="1" prog="19"/>
+      <Patch name="Clav 1"	 hbank="81" lbank="1" prog="20"/>
+      <Patch name="Pulse Klav"   hbank="81" lbank="1" prog="21"/>
+      <Patch name="Wire Klav"    hbank="81" lbank="1" prog="22"/>
+      <Patch name="Flange Clav"  hbank="81" lbank="1" prog="23"/>
+      <Patch name="Warm Vibe" 	 hbank="81" lbank="1" prog="24"/>
+      <Patch name="Vibe"	 hbank="81" lbank="1" prog="25"/>
+      <Patch name="Marimba"      hbank="81" lbank="1" prog="26"/>
+      <Patch name="Lumber Jacow" hbank="81" lbank="1" prog="27"/>
+      <Patch name="Toy Box"	 hbank="81" lbank="1" prog="28"/>
+      <Patch name="Steel Drum" 	 hbank="81" lbank="1" prog="29"/>
+      <Patch name="Islands" 	 hbank="81" lbank="1" prog="30"/>
+      <Patch name="AfricaMetals" hbank="81" lbank="1" prog="31"/>
+      <Patch name="Tria Bells"   hbank="81" lbank="1" prog="32"/>
+      <Patch name="Wave Bells" 	 hbank="81" lbank="1" prog="33"/>
+      <Patch name="Vibrobell"    hbank="81" lbank="1" prog="34"/>
+      <Patch name="Chime Inn"    hbank="81" lbank="1" prog="35"/>
+      <Patch name="E.Organ"      hbank="81" lbank="1" prog="36"/>
+      <Patch name="Jazz Organ 1" hbank="81" lbank="1" prog="37"/>
+      <Patch name="Jazz Organ 2" hbank="81" lbank="1" prog="38"/>
+      <Patch name="Rock Organe"	 hbank="81" lbank="1" prog="39"/>
+      <Patch name="Jazz Rattler" hbank="81" lbank="1" prog="40"/>
+      <Patch name="Fine Organ"	 hbank="81" lbank="1" prog="41"/>
+      <Patch name="Metal Organ"	 hbank="81" lbank="1" prog="42"/>
+      <Patch name="Organarimba"  hbank="81" lbank="1" prog="43"/>
+      <Patch name="Pipe Organ 1" hbank="81" lbank="1" prog="44"/>
+      <Patch name="Pipe Organ 2" hbank="81" lbank="1" prog="45"/>
+      <Patch name="Church Organ" hbank="81" lbank="1" prog="46"/>
+      <Patch name="Weddin Time"  hbank="81" lbank="1" prog="47"/>
+      <Patch name="Nylon Gtr 1"  hbank="81" lbank="1" prog="48"/>
+      <Patch name="Nylon Gtr 2"	 hbank="81" lbank="1" prog="49"/>
+      <Patch name="Flange Nyln"	 hbank="81" lbank="1" prog="50"/>
+      <Patch name="SteelGuitar1" hbank="81" lbank="1" prog="51"/>
+      <Patch name="SteelGuitar2" hbank="81" lbank="1" prog="52"/>
+      <Patch name="Velo Harmnix" hbank="81" lbank="1" prog="53"/>
+      <Patch name="12 string"    hbank="81" lbank="1" prog="54"/>
+      <Patch name="Fake12string" hbank="81" lbank="1" prog="55"/>
+      <Patch name="JC Strat"	 hbank="81" lbank="1" prog="56"/>
+      <Patch name="Clean Strat"	 hbank="81" lbank="1" prog="57"/>
+      <Patch name="Strata"       hbank="81" lbank="1" prog="58"/>
+      <Patch name="Stratus"      hbank="81" lbank="1" prog="59"/>
+      <Patch name="SwitchOnMute" hbank="81" lbank="1" prog="60"/>
+      <Patch name="Syn Strat"	 hbank="81" lbank="1" prog="61"/>
+      <Patch name="Syn Guitar"   hbank="81" lbank="1" prog="62"/>
+      <Patch name="Overdrive"    hbank="81" lbank="1" prog="63"/>
+     </PatchGroup>
+
+    <PatchGroup name="Preset B">
+      <Patch name="Woody Bass 1" hbank="81" lbank="1" prog="64"/>
+      <Patch name="Woody Bass 2" hbank="81" lbank="1" prog="65"/>
+      <Patch name="Hip Bass"	 hbank="81" lbank="1" prog="66"/>
+      <Patch name="Rock Bass" 	 hbank="81" lbank="1" prog="67"/>
+      <Patch name="Pick Bass"	 hbank="81" lbank="1" prog="68"/>
+      <Patch name="Thumpin Bass" hbank="81" lbank="1" prog="69"/>
+      <Patch name="Fretless 1"	 hbank="81" lbank="1" prog="70"/>
+      <Patch name="Fretless 2"   hbank="81" lbank="1" prog="71"/>
+      <Patch name="Analog Bs"    hbank="81" lbank="1" prog="72"/>
+      <Patch name="House Bass"   hbank="81" lbank="1" prog="73"/>
+      <Patch name="Wonder Bass"  hbank="81" lbank="1" prog="74"/>
+      <Patch name="Yowza Bass"   hbank="81" lbank="1" prog="75"/>
+      <Patch name="Rubber Bs 1"	 hbank="81" lbank="1" prog="76"/>
+      <Patch name="Rubber Bs 2"	 hbank="81" lbank="1" prog="77"/>
+      <Patch name="Asid Base"    hbank="81" lbank="1" prog="78"/>
+      <Patch name="Doom Bass"    hbank="81" lbank="1" prog="79"/>
+      <Patch name="St Strings"	 hbank="81" lbank="1" prog="80"/>
+      <Patch name="Warm Strings" hbank="81" lbank="1" prog="81"/>
+      <Patch name="Slow Strings" hbank="81" lbank="1" prog="82"/>
+      <Patch name="SoarinString" hbank="81" lbank="1" prog="83"/>
+      <Patch name="Marcato"	 hbank="81" lbank="1" prog="84"/>
+      <Patch name="Big Stringer" hbank="81" lbank="1" prog="85"/>
+      <Patch name="Score String" hbank="81" lbank="1" prog="86"/>
+      <Patch name="TremoloStrng" hbank="81" lbank="1" prog="87"/>
+      <Patch name="JP Strings 1" hbank="81" lbank="1" prog="88"/>
+      <Patch name="JP Strings 2" hbank="81" lbank="1" prog="89"/>
+      <Patch name="Synstringer"  hbank="81" lbank="1" prog="90"/>
+      <Patch name="String Synth" hbank="81" lbank="1" prog="91"/>
+      <Patch name="Pizzicato"    hbank="81" lbank="1" prog="92"/>
+      <Patch name="Real Pizz"    hbank="81" lbank="1" prog="93"/>
+      <Patch name="Pick it"      hbank="81" lbank="1" prog="94"/>
+      <Patch name="Harp"	 hbank="81" lbank="1" prog="95"/>
+      <Patch name="Brass Sect 1" hbank="81" lbank="1" prog="96"/>
+      <Patch name="Brass Sect 2" hbank="81" lbank="1" prog="97"/>
+      <Patch name="Brass Combo"	 hbank="81" lbank="1" prog="98"/>
+      <Patch name="Fake Brass"	 hbank="81" lbank="1" prog="99"/>
+      <Patch name="Stab Brass"   hbank="81" lbank="1" prog="100"/>
+      <Patch name="Brass Swell"  hbank="81" lbank="1" prog="101"/>	
+      <Patch name="Sax Section"  hbank="81" lbank="1" prog="102"/>
+      <Patch name="Horn Brass"	 hbank="81" lbank="1" prog="103"/>
+      <Patch name="Trumpet 1"	 hbank="81" lbank="1" prog="104"/>
+      <Patch name="Trumpet 2"	 hbank="81" lbank="1" prog="105"/>
+      <Patch name="Trombone"	 hbank="81" lbank="1" prog="106"/>
+      <Patch name="Harmon Mute1" hbank="81" lbank="1" prog="107"/>
+      <Patch name="Harmon Mute2" hbank="81" lbank="1" prog="108"/>
+      <Patch name="French Horn"	 hbank="81" lbank="1" prog="109"/>
+      <Patch name="Alto Sax 1"	 hbank="81" lbank="1" prog="110"/>
+      <Patch name="Alto Sax 2"   hbank="81" lbank="1" prog="111"/>
+      <Patch name="Tenor Sax 1"	 hbank="81" lbank="1" prog="112"/>
+      <Patch name="Tenor Sax 2"	 hbank="81" lbank="1" prog="113"/>
+      <Patch name="Flute mod"	 hbank="81" lbank="1" prog="114"/>
+      <Patch name="Piccolo"	 hbank="81" lbank="1" prog="115"/>
+      <Patch name="Air Lead"	 hbank="81" lbank="1" prog="116"/>
+      <Patch name="Pan Pipe 1"	 hbank="81" lbank="1" prog="117"/>
+      <Patch name="Pan Pipe 2"	 hbank="81" lbank="1" prog="118"/>
+      <Patch name="OverblownPan" hbank="81" lbank="1" prog="119"/>
+      <Patch name="Ocarina"	 hbank="81" lbank="1" prog="120"/>
+      <Patch name="Blow Square"	 hbank="81" lbank="1" prog="121"/>
+      <Patch name="Saku Pipe"	 hbank="81" lbank="1" prog="122"/>
+      <Patch name="Whistle 1"	 hbank="81" lbank="1" prog="123"/>
+      <Patch name="Whistle 2"	 hbank="81" lbank="1" prog="124"/>
+      <Patch name="Orch Stab 1"  hbank="81" lbank="1" prog="125"/>
+      <Patch name="Brite Stab"	 hbank="81" lbank="1" prog="126"/>
+      <Patch name="Orch Stab 2"	 hbank="81" lbank="1" prog="127"/>
+     </PatchGroup>
+
+<PatchGroup name="Preset C">
+      <Patch name="Saw Lead"	 hbank="81" lbank="2" prog="0"/>
+      <Patch name="Syn SAX Lead" hbank="81" lbank="2" prog="1"/>
+      <Patch name="Soft Lead 1"	 hbank="81" lbank="2" prog="2"/>
+      <Patch name="Soft Lead 2"	 hbank="81" lbank="2" prog="3"/>
+      <Patch name="Harmo Lead"   hbank="81" lbank="2" prog="4"/>
+      <Patch name="Reso Lead"	 hbank="81" lbank="2" prog="5"/>
+      <Patch name="Pulse Lead"   hbank="81" lbank="2" prog="6"/>
+      <Patch name="MMM Lead"	 hbank="81" lbank="2" prog="7"/>
+      <Patch name="Clav Lead"    hbank="81" lbank="2" prog="8"/>
+      <Patch name="Square"       hbank="81" lbank="2" prog="9"/>
+      <Patch name="OB Lead"	 hbank="81" lbank="2" prog="10"/>
+      <Patch name="High Lyle"    hbank="81" lbank="2" prog="11"/>
+      <Patch name="VOX Lead 1"   hbank="81" lbank="2" prog="12"/>
+      <Patch name="VOX Lead 2"   hbank="81" lbank="2" prog="13"/>
+      <Patch name="WhistlinAtom" hbank="81" lbank="2" prog="14"/>
+      <Patch name="Russiastan"   hbank="81" lbank="2" prog="15"/>
+      <Patch name="Touch Lead"   hbank="81" lbank="2" prog="16"/>
+      <Patch name="Digirez Lead" hbank="81" lbank="2" prog="17"/>
+      <Patch name="Another Lead" hbank="81" lbank="2" prog="18"/>
+      <Patch name="A.T DCO Lead" hbank="81" lbank="2" prog="19"/>
+      <Patch name="Feed Leed"    hbank="81" lbank="2" prog="20"/>
+      <Patch name="Real Pulse"   hbank="81" lbank="2" prog="21"/>
+      <Patch name="Box Lead"     hbank="81" lbank="2" prog="22"/>
+      <Patch name="Chu Ning!"    hbank="81" lbank="2" prog="23"/>
+      <Patch name="Lorise" 	 hbank="81" lbank="2" prog="24"/>
+      <Patch name="Old man"	 hbank="81" lbank="2" prog="25"/>
+      <Patch name="Duo Saw"      hbank="81" lbank="2" prog="26"/>
+      <Patch name="Wa-saw Phaze" hbank="81" lbank="2" prog="27"/>
+      <Patch name="Big Saw"	 hbank="81" lbank="2" prog="28"/>
+      <Patch name="Old Saw" 	 hbank="81" lbank="2" prog="29"/>
+      <Patch name="Pollyanna" 	 hbank="81" lbank="2" prog="30"/>
+      <Patch name="Poly Portame" hbank="81" lbank="2" prog="31"/>
+      <Patch name="Poly MG"   	 hbank="81" lbank="2" prog="32"/>
+      <Patch name="Dist Line" 	 hbank="81" lbank="2" prog="33"/>
+      <Patch name="Julia Pad"    hbank="81" lbank="2" prog="34"/>
+      <Patch name="Analog Horn"  hbank="81" lbank="2" prog="35"/>
+      <Patch name="Warm Brass"   hbank="81" lbank="2" prog="36"/>
+      <Patch name="Brass Pad"    hbank="81" lbank="2" prog="37"/>
+      <Patch name="SoulfulBrass" hbank="81" lbank="2" prog="38"/>
+      <Patch name="Ana Brass"	 hbank="81" lbank="2" prog="39"/>
+      <Patch name="Pizeza Hutt"  hbank="81" lbank="2" prog="40"/>
+      <Patch name="JV Pizzottle" hbank="81" lbank="2" prog="41"/>
+      <Patch name="Blo East"	 hbank="81" lbank="2" prog="42"/>
+      <Patch name="Spook Metal"  hbank="81" lbank="2" prog="43"/>
+      <Patch name="Journey East" hbank="81" lbank="2" prog="44"/>
+      <Patch name="Lite Delay"   hbank="81" lbank="2" prog="45"/>
+      <Patch name="Velocifex"    hbank="81" lbank="2" prog="46"/>
+      <Patch name="Rezitan"      hbank="81" lbank="2" prog="47"/>
+      <Patch name="Like Dee"     hbank="81" lbank="2" prog="48"/>
+      <Patch name="Huff N Stuff" hbank="81" lbank="2" prog="49"/>
+      <Patch name="Bit World"	 hbank="81" lbank="2" prog="50"/>
+      <Patch name="Meta Compa"   hbank="81" lbank="2" prog="51"/>
+      <Patch name="Stratosphere" hbank="81" lbank="2" prog="52"/>
+      <Patch name="Les Rhythmo"  hbank="81" lbank="2" prog="53"/>
+      <Patch name="Heavens Door" hbank="81" lbank="2" prog="54"/>
+      <Patch name="World Peace"  hbank="81" lbank="2" prog="55"/>
+      <Patch name="Lovley World" hbank="81" lbank="2" prog="56"/>
+      <Patch name="Williamsong"	 hbank="81" lbank="2" prog="57"/>
+      <Patch name="Son Of Atmos" hbank="81" lbank="2" prog="58"/>
+      <Patch name="Autumn Breez" hbank="81" lbank="2" prog="59"/>
+      <Patch name="On The Wire"  hbank="81" lbank="2" prog="60"/>
+      <Patch name="Easternal"	 hbank="81" lbank="2" prog="61"/>
+      <Patch name="Snake up"     hbank="81" lbank="2" prog="62"/>
+      <Patch name="Brassy VOX"   hbank="81" lbank="2" prog="63"/>
+     </PatchGroup>
+
+     <PatchGroup name="Preset D">
+      <Patch name="Beauty Vox"   hbank="81" lbank="2" prog="64"/>
+      <Patch name="New Age Vox"  hbank="81" lbank="2" prog="65"/>
+      <Patch name="Vento Voxx"	 hbank="81" lbank="2" prog="66"/>
+      <Patch name="Pvox Oooze" 	 hbank="81" lbank="2" prog="67"/>
+      <Patch name="Vocal Oohz 2" hbank="81" lbank="2" prog="68"/>
+      <Patch name="JV Vox"       hbank="81" lbank="2" prog="69"/>
+      <Patch name="Arasian Morn" hbank="81" lbank="2" prog="70"/>
+      <Patch name="Love Trans"   hbank="81" lbank="2" prog="71"/>
+      <Patch name="Cosmo Vox 2"  hbank="81" lbank="2" prog="72"/>
+      <Patch name="Aurora"       hbank="81" lbank="2" prog="73"/>
+      <Patch name="Press-Cooker" hbank="81" lbank="2" prog="74"/>
+      <Patch name="YASURAGI"     hbank="81" lbank="2" prog="75"/>
+      <Patch name="Space Ahh"	 hbank="81" lbank="2" prog="76"/>
+      <Patch name="Pick-a-Doodl" hbank="81" lbank="2" prog="77"/>
+      <Patch name="DooWah Diddy" hbank="81" lbank="2" prog="78"/>
+      <Patch name="Pop Voice"    hbank="81" lbank="2" prog="79"/>
+      <Patch name="Analog Pad 1" hbank="81" lbank="2" prog="80"/>
+      <Patch name="JP-8 Pad"     hbank="81" lbank="2" prog="81"/>
+      <Patch name="Analog Pad 2" hbank="81" lbank="2" prog="82"/>
+      <Patch name="Analog Str" 	 hbank="81" lbank="2" prog="83"/>
+      <Patch name="Analog Orch"	 hbank="81" lbank="2" prog="84"/>
+      <Patch name="SpaciosSweep" hbank="81" lbank="2" prog="85"/>
+      <Patch name="Story Pad"    hbank="81" lbank="2" prog="86"/>
+      <Patch name="The Pad"      hbank="81" lbank="2" prog="87"/>
+      <Patch name="Wire Strings" hbank="81" lbank="2" prog="88"/>
+      <Patch name="Rimms"        hbank="81" lbank="2" prog="89"/>
+      <Patch name="Slo Ep"  	 hbank="81" lbank="2" prog="90"/>
+      <Patch name="Glasswaves 1" hbank="81" lbank="2" prog="91"/>
+      <Patch name="Glasswaves 2" hbank="81" lbank="2" prog="92"/>
+      <Patch name="Glass 1T"     hbank="81" lbank="2" prog="93"/>
+      <Patch name="Glass Pad"    hbank="81" lbank="2" prog="94"/>
+      <Patch name="Hardy Winery" hbank="81" lbank="2" prog="95"/>
+      <Patch name="Ebb tide Pad" hbank="81" lbank="2" prog="96"/>
+      <Patch name="Tangerine"    hbank="81" lbank="2" prog="97"/>
+      <Patch name="MillenniumJV" hbank="81" lbank="2" prog="98"/>
+      <Patch name="Fantacy Vox"	 hbank="81" lbank="2" prog="99"/>
+      <Patch name="Wisp Rush"    hbank="81" lbank="2" prog="100"/>
+      <Patch name="Neurise"      hbank="81" lbank="2" prog="101"/>	
+      <Patch name="Mouse Pad"    hbank="81" lbank="2" prog="102"/>
+      <Patch name="Nature Pad"	 hbank="81" lbank="2" prog="103"/>
+      <Patch name="Slo Slagg"	 hbank="81" lbank="2" prog="104"/>
+      <Patch name="Starsearch"	 hbank="81" lbank="2" prog="105"/>
+      <Patch name="Atlantis"	 hbank="81" lbank="2" prog="106"/>
+      <Patch name="Vortex CAfe"  hbank="81" lbank="2" prog="107"/>
+      <Patch name="4thDimension" hbank="81" lbank="2" prog="108"/>
+      <Patch name="Hy Entropy"	 hbank="81" lbank="2" prog="109"/>
+      <Patch name="Mellowtron"	 hbank="81" lbank="2" prog="110"/>
+      <Patch name="Power Saw"    hbank="81" lbank="2" prog="111"/>
+      <Patch name="Big n Beefy"	 hbank="81" lbank="2" prog="112"/>
+      <Patch name="Canal Zone"	 hbank="81" lbank="2" prog="113"/>
+      <Patch name="Hie Cue"	 hbank="81" lbank="2" prog="114"/>
+      <Patch name="Talking Pad"	 hbank="81" lbank="2" prog="115"/>
+      <Patch name="MMM Pad"	 hbank="81" lbank="2" prog="116"/>
+      <Patch name="Low Wind"	 hbank="81" lbank="2" prog="117"/>
+      <Patch name="SuspendTrump" hbank="81" lbank="2" prog="118"/>
+      <Patch name="Andromida"    hbank="81" lbank="2" prog="119"/>
+      <Patch name="The Scope"	 hbank="81" lbank="2" prog="120"/>
+      <Patch name="Hammer Bell"	 hbank="81" lbank="2" prog="121"/>
+      <Patch name="Flue Taloo"	 hbank="81" lbank="2" prog="122"/>
+      <Patch name="BeezleBreath" hbank="81" lbank="2" prog="123"/>
+      <Patch name="DistanceCall" hbank="81" lbank="2" prog="124"/>
+      <Patch name="Analog Seq"   hbank="81" lbank="2" prog="125"/>
+      <Patch name="Reverse Mad"	 hbank="81" lbank="2" prog="126"/>
+      <Patch name="RevCymBend"	 hbank="81" lbank="2" prog="127"/>
+     </PatchGroup>
+
+     <PatchGroup name="Data Card(1)">
+      <Patch name="1"		 hbank="82" lbank="0" prog="1"/>
+      <Patch name="2"		 hbank="82" lbank="0" prog="2"/>
+      <Patch name="3"		 hbank="82" lbank="0" prog="3"/>
+      <Patch name="4"		 hbank="82" lbank="0" prog="4"/>
+      <Patch name="5"		 hbank="82" lbank="0" prog="5"/>
+      <Patch name="6"		 hbank="82" lbank="0" prog="6"/>
+      <Patch name="7"		 hbank="82" lbank="0" prog="7"/>
+      <Patch name="8"		 hbank="82" lbank="0" prog="8"/>
+      <Patch name="9"		 hbank="82" lbank="0" prog="9"/>
+      <Patch name="10"		 hbank="82" lbank="0" prog="10"/>
+      <Patch name="11"		 hbank="82" lbank="0" prog="11"/>
+      <Patch name="12"		 hbank="82" lbank="0" prog="12"/>
+      <Patch name="13"		 hbank="82" lbank="0" prog="13"/>
+      <Patch name="14"		 hbank="82" lbank="0" prog="14"/>
+      <Patch name="15"		 hbank="82" lbank="0" prog="15"/>
+      <Patch name="16"		 hbank="82" lbank="0" prog="16"/>
+      <Patch name="17"		 hbank="82" lbank="0" prog="17"/>
+      <Patch name="18"		 hbank="82" lbank="0" prog="18"/>
+      <Patch name="19"		 hbank="82" lbank="0" prog="19"/>
+      <Patch name="20"		 hbank="82" lbank="0" prog="20"/>
+      <Patch name="21"		 hbank="82" lbank="0" prog="21"/>
+      <Patch name="22"		 hbank="82" lbank="0" prog="22"/>
+      <Patch name="23"		 hbank="82" lbank="0" prog="23"/>
+      <Patch name="24"		 hbank="82" lbank="0" prog="24"/>
+      <Patch name="25"		 hbank="82" lbank="0" prog="25"/>
+      <Patch name="26"		 hbank="82" lbank="0" prog="26"/>
+      <Patch name="27"		 hbank="82" lbank="0" prog="27"/>
+      <Patch name="28"		 hbank="82" lbank="0" prog="28"/>
+      <Patch name="29"		 hbank="82" lbank="0" prog="29"/>
+      <Patch name="30"		 hbank="82" lbank="0" prog="30"/>
+      <Patch name="31"		 hbank="82" lbank="0" prog="31"/>
+      <Patch name="32"		 hbank="82" lbank="0" prog="32"/>
+      <Patch name="33"		 hbank="82" lbank="0" prog="33"/>
+      <Patch name="34"		 hbank="82" lbank="0" prog="34"/>
+      <Patch name="35"		 hbank="82" lbank="0" prog="35"/>
+      <Patch name="36"		 hbank="82" lbank="0" prog="36"/>
+      <Patch name="37"		 hbank="82" lbank="0" prog="37"/>
+      <Patch name="38"		 hbank="82" lbank="0" prog="38"/>
+      <Patch name="39"		 hbank="82" lbank="0" prog="39"/>
+      <Patch name="40"		 hbank="82" lbank="0" prog="40"/>
+      <Patch name="41"		 hbank="82" lbank="0" prog="41"/>
+      <Patch name="42"		 hbank="82" lbank="0" prog="42"/>
+      <Patch name="43"		 hbank="82" lbank="0" prog="43"/>
+      <Patch name="44"		 hbank="82" lbank="0" prog="44"/>
+      <Patch name="45"		 hbank="82" lbank="0" prog="45"/>
+      <Patch name="46"		 hbank="82" lbank="0" prog="46"/>
+      <Patch name="47"		 hbank="82" lbank="0" prog="47"/>
+      <Patch name="48"		 hbank="82" lbank="0" prog="48"/>
+      <Patch name="49"		 hbank="82" lbank="0" prog="49"/>
+      <Patch name="50"		 hbank="82" lbank="0" prog="50"/>
+      <Patch name="51"		 hbank="82" lbank="0" prog="51"/>
+      <Patch name="52"		 hbank="82" lbank="0" prog="52"/>
+      <Patch name="53"		 hbank="82" lbank="0" prog="53"/>
+      <Patch name="54"		 hbank="82" lbank="0" prog="54"/>
+      <Patch name="55"		 hbank="82" lbank="0" prog="55"/>
+      <Patch name="56"		 hbank="82" lbank="0" prog="56"/>
+      <Patch name="57"		 hbank="82" lbank="0" prog="57"/>
+      <Patch name="58"		 hbank="82" lbank="0" prog="58"/>
+      <Patch name="59"		 hbank="82" lbank="0" prog="59"/>
+      <Patch name="60"		 hbank="82" lbank="0" prog="60"/>
+      <Patch name="61"		 hbank="82" lbank="0" prog="61"/>
+      <Patch name="62"		 hbank="82" lbank="0" prog="62"/>
+      <Patch name="63"		 hbank="82" lbank="0" prog="63"/>
+      <Patch name="64"		 hbank="82" lbank="0" prog="64"/>
+    </PatchGroup>
+
+    <PatchGroup name="Expansion Board">
+      <Patch name="1"		 hbank="84" lbank="0" prog="1"/>
+      <Patch name="2"		 hbank="84" lbank="0" prog="2"/>
+      <Patch name="3"		 hbank="84" lbank="0" prog="3"/>
+      <Patch name="4"		 hbank="84" lbank="0" prog="4"/>
+      <Patch name="5"		 hbank="84" lbank="0" prog="5"/>
+      <Patch name="6"		 hbank="84" lbank="0" prog="6"/>
+      <Patch name="7"		 hbank="84" lbank="0" prog="7"/>
+      <Patch name="8"		 hbank="84" lbank="0" prog="8"/>
+      <Patch name="9"		 hbank="84" lbank="0" prog="9"/>
+      <Patch name="10"		 hbank="84" lbank="0" prog="10"/>
+      <Patch name="11"		 hbank="84" lbank="0" prog="11"/>
+      <Patch name="12"		 hbank="84" lbank="0" prog="12"/>
+      <Patch name="13"		 hbank="84" lbank="0" prog="13"/>
+      <Patch name="14"		 hbank="84" lbank="0" prog="14"/>
+      <Patch name="15"		 hbank="84" lbank="0" prog="15"/>
+      <Patch name="16"		 hbank="84" lbank="0" prog="16"/>
+      <Patch name="17"		 hbank="84" lbank="0" prog="17"/>
+      <Patch name="18"		 hbank="84" lbank="0" prog="18"/>
+      <Patch name="19"		 hbank="84" lbank="0" prog="19"/>
+      <Patch name="20"		 hbank="84" lbank="0" prog="20"/>
+      <Patch name="21"		 hbank="84" lbank="0" prog="21"/>
+      <Patch name="22"		 hbank="84" lbank="0" prog="22"/>
+      <Patch name="23"		 hbank="84" lbank="0" prog="23"/>
+      <Patch name="24"		 hbank="84" lbank="0" prog="24"/>
+      <Patch name="25"		 hbank="84" lbank="0" prog="25"/>
+      <Patch name="26"		 hbank="84" lbank="0" prog="26"/>
+      <Patch name="27"		 hbank="84" lbank="0" prog="27"/>
+      <Patch name="28"		 hbank="84" lbank="0" prog="28"/>
+      <Patch name="29"		 hbank="84" lbank="0" prog="29"/>
+      <Patch name="30"		 hbank="84" lbank="0" prog="30"/>
+      <Patch name="31"		 hbank="84" lbank="0" prog="31"/>
+      <Patch name="32"		 hbank="84" lbank="0" prog="32"/>
+      <Patch name="33"		 hbank="84" lbank="0" prog="33"/>
+      <Patch name="34"		 hbank="84" lbank="0" prog="34"/>
+      <Patch name="35"		 hbank="84" lbank="0" prog="35"/>
+      <Patch name="36"		 hbank="84" lbank="0" prog="36"/>
+      <Patch name="37"		 hbank="84" lbank="0" prog="37"/>
+      <Patch name="38"		 hbank="84" lbank="0" prog="38"/>
+      <Patch name="39"		 hbank="84" lbank="0" prog="39"/>
+      <Patch name="40"		 hbank="84" lbank="0" prog="40"/>
+      <Patch name="41"		 hbank="84" lbank="0" prog="41"/>
+      <Patch name="42"		 hbank="84" lbank="0" prog="42"/>
+      <Patch name="43"		 hbank="84" lbank="0" prog="43"/>
+      <Patch name="44"		 hbank="84" lbank="0" prog="44"/>
+      <Patch name="45"		 hbank="84" lbank="0" prog="45"/>
+      <Patch name="46"		 hbank="84" lbank="0" prog="46"/>
+      <Patch name="47"		 hbank="84" lbank="0" prog="47"/>
+      <Patch name="48"		 hbank="84" lbank="0" prog="48"/>
+      <Patch name="49"		 hbank="84" lbank="0" prog="49"/>
+      <Patch name="50"		 hbank="84" lbank="0" prog="50"/>
+      <Patch name="51"		 hbank="84" lbank="0" prog="51"/>
+      <Patch name="52"		 hbank="84" lbank="0" prog="52"/>
+      <Patch name="53"		 hbank="84" lbank="0" prog="53"/>
+      <Patch name="54"		 hbank="84" lbank="0" prog="54"/>
+      <Patch name="55"		 hbank="84" lbank="0" prog="55"/>
+      <Patch name="56"		 hbank="84" lbank="0" prog="56"/>
+      <Patch name="57"		 hbank="84" lbank="0" prog="57"/>
+      <Patch name="58"		 hbank="84" lbank="0" prog="58"/>
+      <Patch name="59"		 hbank="84" lbank="0" prog="59"/>
+      <Patch name="60"		 hbank="84" lbank="0" prog="60"/>
+      <Patch name="61"		 hbank="84" lbank="0" prog="61"/>
+      <Patch name="62"		 hbank="84" lbank="0" prog="62"/>
+      <Patch name="63"		 hbank="84" lbank="0" prog="63"/>
+      <Patch name="64"		 hbank="84" lbank="0" prog="64"/>
+      <Patch name="65"		 hbank="84" lbank="0" prog="65"/>
+      <Patch name="66"		 hbank="84" lbank="0" prog="66"/>
+      <Patch name="67"		 hbank="84" lbank="0" prog="67"/>
+      <Patch name="68"		 hbank="84" lbank="0" prog="68"/>
+      <Patch name="68"		 hbank="84" lbank="0" prog="69"/>
+      <Patch name="70"		 hbank="84" lbank="0" prog="70"/>
+      <Patch name="71"		 hbank="84" lbank="0" prog="71"/>
+      <Patch name="72"		 hbank="84" lbank="0" prog="72"/>
+      <Patch name="73"		 hbank="84" lbank="0" prog="73"/>
+      <Patch name="74"		 hbank="84" lbank="0" prog="74"/>
+      <Patch name="75"		 hbank="84" lbank="0" prog="75"/>
+      <Patch name="76"		 hbank="84" lbank="0" prog="76"/>
+      <Patch name="77"		 hbank="84" lbank="0" prog="77"/>
+      <Patch name="78"		 hbank="84" lbank="0" prog="78"/>
+      <Patch name="79"		 hbank="84" lbank="0" prog="79"/>
+      <Patch name="80"		 hbank="84" lbank="0" prog="80"/>
+      <Patch name="81"		 hbank="84" lbank="0" prog="81"/>
+      <Patch name="82"		 hbank="84" lbank="0" prog="82"/>
+      <Patch name="83"		 hbank="84" lbank="0" prog="83"/>
+      <Patch name="84"		 hbank="84" lbank="0" prog="84"/>
+      <Patch name="85"		 hbank="84" lbank="0" prog="85"/>
+      <Patch name="86"		 hbank="84" lbank="0" prog="86"/>
+      <Patch name="87"		 hbank="84" lbank="0" prog="87"/>
+      <Patch name="88"		 hbank="84" lbank="0" prog="88"/>
+      <Patch name="89"		 hbank="84" lbank="0" prog="89"/>
+      <Patch name="90"		 hbank="84" lbank="0" prog="90"/>
+      <Patch name="91"		 hbank="84" lbank="0" prog="91"/>
+      <Patch name="92"		 hbank="84" lbank="0" prog="92"/>
+      <Patch name="93"		 hbank="84" lbank="0" prog="93"/>
+      <Patch name="94"		 hbank="84" lbank="0" prog="94"/>
+      <Patch name="95"		 hbank="84" lbank="0" prog="95"/>
+      <Patch name="96"		 hbank="84" lbank="0" prog="96"/>
+      <Patch name="97"		 hbank="84" lbank="0" prog="97"/>
+      <Patch name="98"		 hbank="84" lbank="0" prog="98"/>
+      <Patch name="99"		 hbank="84" lbank="0" prog="99"/>
+      <Patch name="100"		 hbank="84" lbank="0" prog="100"/>
+      <Patch name="101"		 hbank="84" lbank="0" prog="101"/>
+      <Patch name="102"		 hbank="84" lbank="0" prog="102"/>
+      <Patch name="103"		 hbank="84" lbank="0" prog="103"/>
+      <Patch name="104"		 hbank="84" lbank="0" prog="104"/>
+      <Patch name="105"		 hbank="84" lbank="0" prog="105"/>
+      <Patch name="106"		 hbank="84" lbank="0" prog="106"/>
+      <Patch name="107"		 hbank="84" lbank="0" prog="107"/>
+      <Patch name="108"		 hbank="84" lbank="0" prog="108"/>
+      <Patch name="109"		 hbank="84" lbank="0" prog="109"/>
+      <Patch name="110"		 hbank="84" lbank="0" prog="110"/>
+      <Patch name="111"		 hbank="84" lbank="0" prog="111"/>
+      <Patch name="112"		 hbank="84" lbank="0" prog="112"/>
+      <Patch name="113"		 hbank="84" lbank="0" prog="113"/>
+      <Patch name="114"		 hbank="84" lbank="0" prog="114"/>
+      <Patch name="115"		 hbank="84" lbank="0" prog="115"/>
+      <Patch name="116"		 hbank="84" lbank="0" prog="116"/>
+      <Patch name="117"		 hbank="84" lbank="0" prog="117"/>
+      <Patch name="118"		 hbank="84" lbank="0" prog="118"/>
+      <Patch name="119"		 hbank="84" lbank="0" prog="119"/>
+      <Patch name="120"		 hbank="84" lbank="0" prog="120"/>
+      <Patch name="121"		 hbank="84" lbank="0" prog="121"/>
+      <Patch name="122"		 hbank="84" lbank="0" prog="122"/>
+      <Patch name="123"		 hbank="84" lbank="0" prog="123"/>
+      <Patch name="124"		 hbank="84" lbank="0" prog="124"/>
+      <Patch name="125"		 hbank="84" lbank="0" prog="125"/>
+      <Patch name="126"		 hbank="84" lbank="0" prog="126"/>
+      <Patch name="127"		 hbank="84" lbank="0" prog="127"/>
+      <Patch name="129"		 hbank="84" lbank="1" prog="1"/>
+      <Patch name="130"		 hbank="84" lbank="1" prog="2"/>
+      <Patch name="131"		 hbank="84" lbank="1" prog="3"/>
+      <Patch name="132"		 hbank="84" lbank="1" prog="4"/>
+      <Patch name="133"		 hbank="84" lbank="1" prog="5"/>
+      <Patch name="134"		 hbank="84" lbank="1" prog="6"/>
+      <Patch name="135"		 hbank="84" lbank="1" prog="7"/>
+      <Patch name="136"		 hbank="84" lbank="1" prog="8"/>
+      <Patch name="137"		 hbank="84" lbank="1" prog="9"/>
+      <Patch name="138"		 hbank="84" lbank="1" prog="10"/>
+      <Patch name="139"		 hbank="84" lbank="1" prog="11"/>
+      <Patch name="140"		 hbank="84" lbank="1" prog="12"/>
+      <Patch name="141"		 hbank="84" lbank="1" prog="13"/>
+      <Patch name="142"		 hbank="84" lbank="1" prog="14"/>
+      <Patch name="143"		 hbank="84" lbank="1" prog="15"/>
+      <Patch name="144"		 hbank="84" lbank="1" prog="16"/>
+      <Patch name="145"		 hbank="84" lbank="1" prog="17"/>
+      <Patch name="146"		 hbank="84" lbank="1" prog="18"/>
+      <Patch name="147"		 hbank="84" lbank="1" prog="19"/>
+      <Patch name="148"		 hbank="84" lbank="1" prog="20"/>
+      <Patch name="149"		 hbank="84" lbank="1" prog="21"/>
+      <Patch name="150"		 hbank="84" lbank="1" prog="22"/>
+      <Patch name="151"		 hbank="84" lbank="1" prog="23"/>
+      <Patch name="152"		 hbank="84" lbank="1" prog="24"/>
+      <Patch name="153"		 hbank="84" lbank="1" prog="25"/>
+      <Patch name="154"		 hbank="84" lbank="1" prog="26"/>
+      <Patch name="155"		 hbank="84" lbank="1" prog="27"/>
+      <Patch name="156"		 hbank="84" lbank="1" prog="28"/>
+      <Patch name="157"		 hbank="84" lbank="1" prog="29"/>
+      <Patch name="158"		 hbank="84" lbank="1" prog="30"/>
+      <Patch name="159"		 hbank="84" lbank="1" prog="31"/>
+      <Patch name="160"		 hbank="84" lbank="1" prog="32"/>
+      <Patch name="161"		 hbank="84" lbank="1" prog="33"/>
+      <Patch name="162"		 hbank="84" lbank="1" prog="34"/>
+      <Patch name="163"		 hbank="84" lbank="1" prog="35"/>
+      <Patch name="164"		 hbank="84" lbank="1" prog="36"/>
+      <Patch name="165"		 hbank="84" lbank="1" prog="37"/>
+      <Patch name="166"		 hbank="84" lbank="1" prog="38"/>
+      <Patch name="167"		 hbank="84" lbank="1" prog="39"/>
+      <Patch name="168"		 hbank="84" lbank="1" prog="40"/>
+      <Patch name="169"		 hbank="84" lbank="1" prog="41"/>
+      <Patch name="170"		 hbank="84" lbank="1" prog="42"/>
+      <Patch name="171"		 hbank="84" lbank="1" prog="43"/>
+      <Patch name="172"		 hbank="84" lbank="1" prog="44"/>
+      <Patch name="173"		 hbank="84" lbank="1" prog="45"/>
+      <Patch name="174"		 hbank="84" lbank="1" prog="46"/>
+      <Patch name="175"		 hbank="84" lbank="1" prog="47"/>
+      <Patch name="176"		 hbank="84" lbank="1" prog="48"/>
+      <Patch name="177"		 hbank="84" lbank="1" prog="49"/>
+      <Patch name="178"		 hbank="84" lbank="1" prog="50"/>
+      <Patch name="179"		 hbank="84" lbank="1" prog="51"/>
+      <Patch name="180"		 hbank="84" lbank="1" prog="52"/>
+      <Patch name="181"		 hbank="84" lbank="1" prog="53"/>
+      <Patch name="182"		 hbank="84" lbank="1" prog="54"/>
+      <Patch name="183"		 hbank="84" lbank="1" prog="55"/>
+      <Patch name="184"		 hbank="84" lbank="1" prog="56"/>
+      <Patch name="185"		 hbank="84" lbank="1" prog="57"/>
+      <Patch name="186"		 hbank="84" lbank="1" prog="58"/>
+      <Patch name="187"		 hbank="84" lbank="1" prog="59"/>
+      <Patch name="188"		 hbank="84" lbank="1" prog="60"/>
+      <Patch name="189"		 hbank="84" lbank="1" prog="61"/>
+      <Patch name="190"		 hbank="84" lbank="1" prog="62"/>
+      <Patch name="191"		 hbank="84" lbank="1" prog="63"/>
+      <Patch name="192"		 hbank="84" lbank="1" prog="64"/>
+      <Patch name="193"		 hbank="84" lbank="1" prog="65"/>
+      <Patch name="194"		 hbank="84" lbank="1" prog="66"/>
+      <Patch name="195"		 hbank="84" lbank="1" prog="67"/>
+      <Patch name="196"		 hbank="84" lbank="1" prog="68"/>
+      <Patch name="197"		 hbank="84" lbank="1" prog="69"/>
+      <Patch name="198"		 hbank="84" lbank="1" prog="70"/>
+      <Patch name="199"		 hbank="84" lbank="1" prog="71"/>
+      <Patch name="200"		 hbank="84" lbank="1" prog="72"/>
+      <Patch name="201"		 hbank="84" lbank="1" prog="73"/>
+      <Patch name="202"		 hbank="84" lbank="1" prog="74"/>
+      <Patch name="203"		 hbank="84" lbank="1" prog="75"/>
+      <Patch name="204"		 hbank="84" lbank="1" prog="76"/>
+      <Patch name="205"		 hbank="84" lbank="1" prog="77"/>
+      <Patch name="206"		 hbank="84" lbank="1" prog="78"/>
+      <Patch name="207"		 hbank="84" lbank="1" prog="79"/>
+      <Patch name="208"		 hbank="84" lbank="1" prog="80"/>
+      <Patch name="209"		 hbank="84" lbank="1" prog="81"/>
+      <Patch name="210"		 hbank="84" lbank="1" prog="82"/>
+      <Patch name="211"		 hbank="84" lbank="1" prog="83"/>
+      <Patch name="212"		 hbank="84" lbank="1" prog="84"/>
+      <Patch name="213"		 hbank="84" lbank="1" prog="85"/>
+      <Patch name="214"		 hbank="84" lbank="1" prog="86"/>
+      <Patch name="215"		 hbank="84" lbank="1" prog="87"/>
+      <Patch name="216"		 hbank="84" lbank="1" prog="88"/>
+      <Patch name="217"		 hbank="84" lbank="1" prog="89"/>
+      <Patch name="218"		 hbank="84" lbank="1" prog="90"/>
+      <Patch name="219"		 hbank="84" lbank="1" prog="91"/>
+      <Patch name="220"		 hbank="84" lbank="1" prog="92"/>
+      <Patch name="221"		 hbank="84" lbank="1" prog="93"/>
+      <Patch name="222"		 hbank="84" lbank="1" prog="94"/>
+      <Patch name="223"		 hbank="84" lbank="1" prog="95"/>
+      <Patch name="224"		 hbank="84" lbank="1" prog="96"/>
+      <Patch name="225"		 hbank="84" lbank="1" prog="97"/>
+      <Patch name="226"		 hbank="84" lbank="1" prog="98"/>
+      <Patch name="227"		 hbank="84" lbank="1" prog="99"/>
+      <Patch name="228"		 hbank="84" lbank="1" prog="100"/>
+      <Patch name="229"		 hbank="84" lbank="1" prog="101"/>
+      <Patch name="230"		 hbank="84" lbank="1" prog="102"/>
+      <Patch name="231"		 hbank="84" lbank="1" prog="103"/>
+      <Patch name="232"		 hbank="84" lbank="1" prog="104"/>
+      <Patch name="233"		 hbank="84" lbank="1" prog="105"/>
+      <Patch name="234"		 hbank="84" lbank="1" prog="106"/>
+      <Patch name="235"		 hbank="84" lbank="1" prog="107"/>
+      <Patch name="236"		 hbank="84" lbank="1" prog="108"/>
+      <Patch name="237"		 hbank="84" lbank="1" prog="109"/>
+      <Patch name="238"		 hbank="84" lbank="1" prog="110"/>
+      <Patch name="239"		 hbank="84" lbank="1" prog="111"/>
+      <Patch name="240"		 hbank="84" lbank="1" prog="112"/>
+      <Patch name="241"		 hbank="84" lbank="1" prog="113"/>
+      <Patch name="242"		 hbank="84" lbank="1" prog="114"/>
+      <Patch name="243"		 hbank="84" lbank="1" prog="115"/>
+      <Patch name="244"		 hbank="84" lbank="1" prog="116"/>
+      <Patch name="245"		 hbank="84" lbank="1" prog="117"/>
+      <Patch name="246"		 hbank="84" lbank="1" prog="118"/>
+      <Patch name="247"		 hbank="84" lbank="1" prog="119"/>
+      <Patch name="248"		 hbank="84" lbank="1" prog="120"/>
+      <Patch name="249"		 hbank="84" lbank="1" prog="121"/>
+      <Patch name="250"		 hbank="84" lbank="1" prog="122"/>
+      <Patch name="251"		 hbank="84" lbank="1" prog="123"/>
+      <Patch name="252"		 hbank="84" lbank="1" prog="124"/>
+      <Patch name="253"		 hbank="84" lbank="1" prog="125"/>
+      <Patch name="254"		 hbank="84" lbank="1" prog="126"/>
+      <Patch name="255"		 hbank="84" lbank="1" prog="127"/>
+    </PatchGroup>
+  </MidiInstrument>
+</muse>

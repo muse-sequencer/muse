@@ -1,0 +1,231 @@
+% -%-Fundamental-%- -*-Metafont-*-
+% parmesan-scripts.mf -- implement ancient script symbols
+% 
+% source file of LilyPond's pretty-but-neat music font
+% 
+% (c) 2002--2009 Juergen Reuter <reuter@ipd.uka.de>
+% 
+
+fet_begingroup ("scripts");
+
+fet_beginchar ("ictus", "ictus");
+	save ht, wd;
+	ht# = .35 staff_space#;
+	wd# = linethickness#;
+
+	define_pixels (wd, ht);
+
+	save ellipse, T;
+	path ellipse;
+	transform T;
+
+	T := identity xscaled wd
+		      yscaled blot_diameter;
+	pickup pencircle transformed T;
+	ellipse := fullcircle transformed T;
+
+	set_char_box (wd# / 2, wd# / 2, ht# / 2, ht# / 2);
+
+	x1 = 0;
+	top y1 = ht / 2;
+	x2 = 0;
+	bot y2 = -ht / 2;
+
+	fill get_subpath (ellipse, up, down, z1)
+	     -- get_subpath (ellipse, down, up, z2)
+	     -- cycle;
+
+	labels (1, 2);
+fet_endchar;
+
+
+def draw_accentus =
+	save thick, thin, ht, wd;
+
+	thin# = 1 linethickness#;
+	thick# = 1.2 linethickness#;
+	ht# = .35 staff_space#;
+	wd# = .25 staff_space#;
+
+	define_pixels (wd, ht, thin, thick);
+
+	z1 = z2 = (-wd / 2 + thin / 2, -ht / 2 + thin / 2);
+	z3 = z4 = (wd / 2 - thick / 2, ht / 2 - thick / 2);
+
+	penpos1 (thin, angle (z1 - z3));
+	penpos2 (thin, angle (z1 - z3) + 90);
+	penpos3 (thick, angle (z3 - z1) + 90);
+	penpos4 (thick, angle (z3 - z1));
+
+	fill z1r
+	     .. z2r
+	     -- z3l
+	     .. z4r
+	     .. z3r
+	     -- z2l
+	     .. cycle;
+
+	set_char_box (wd#/2, wd#/2, ht#/2, ht#/2);
+enddef;
+
+
+fet_beginchar ("accentus up", "uaccentus");
+	draw_accentus;
+	penlabels (1, 2, 3, 4);
+fet_endchar;
+
+
+fet_beginchar ("accentus down", "daccentus");
+	draw_accentus;
+	y_mirror_char;
+fet_endchar;
+
+
+def draw_half_circle (expr diam) =
+	save diameter, thick;
+
+	diameter# = diam;
+
+	define_pixels (diameter);
+
+	thick = 0.6 linethickness;
+
+	penpos1 (thick, 0);
+	penpos2 (thick, -90);
+	penpos3 (thick, -180);
+
+	z1r = (diameter / 2, 0);
+	z2r = (0, -diameter / 2);
+	z3r = (-diameter / 2, 0);
+	
+	penstroke z1e{down}
+		  .. z2e{left}
+		  .. z3e{up};
+enddef;
+
+
+fet_beginchar ("half circle", "usemicirculus");
+	draw_half_circle (5/16 staff_space#);
+
+	currentpicture := currentpicture yscaled -1;
+
+	set_char_box (diameter# / 2, diameter# / 2,
+		      0, diameter# / 2);
+fet_endchar;
+
+
+fet_beginchar ("half circle", "dsemicirculus");
+	draw_half_circle (5/16 staff_space#);
+
+	set_char_box (diameter# / 2, diameter# / 2,
+		      diameter# / 2, 0);
+
+	penlabels (1, 2, 3);
+fet_endchar;
+
+
+fet_beginchar ("circle", "circulus");
+	save diameter, thick;
+
+	diameter# = 5/16 staff_space#;
+
+	define_pixels (diameter);
+
+	thick = 0.6 linethickness;
+
+	fill fullcircle scaled diameter;
+	unfill fullcircle scaled (diameter - 2 thick);
+
+	set_char_box (diameter# / 2, diameter# / 2,
+		      diameter# / 2, diameter# / 2);
+fet_endchar;
+
+
+fet_beginchar ("augmentum", "augmentum");
+	save diameter;
+
+	diameter# = 0.25 staff_space#;
+
+	define_pixels (diameter);
+
+	pickup pencircle scaled diameter;
+
+	drawdot (0, 0);
+
+	set_char_box (diameter# / 2, diameter# / 2,
+		      diameter# / 2, diameter# / 2);
+fet_endchar;
+
+
+def draw_signum_congruentiae =
+	set_char_box (0.50 staff_space# + 1.5 linethickness#,
+		      0.50 staff_space# + 1.5 linethickness#,
+		      2.5 linethickness#,
+		      2.00 staff_space# + 3.5 linethickness#);
+
+	save ellipse, pat;
+	path ellipse, pat;
+
+	ellipse := fullcircle xscaled 1.0 linethickness
+			      yscaled 5.0 linethickness
+			      rotated -35;
+
+	z1 = (+0.50 staff_space, +2.00 staff_space);
+	z2 = (+0.00 staff_space, +2.00 staff_space);
+	z3 = (-0.50 staff_space, +1.50 staff_space);
+	z4 = (-0.25 staff_space, +1.00 staff_space);
+	z5 = (+0.10 staff_space, +0.80 staff_space);
+	z6 = (+0.00 staff_space, +0.00 staff_space);
+
+	pat := z1{-1, +1}
+	       .. z2
+	       .. z3
+	       .. z4
+	       .. z5
+	       .. z6;
+
+	% we avoid cusps originally present in `draw pat'
+	fill get_subpath (ellipse,
+			  -direction 0 of pat, direction 0 of pat, z1)
+	     .. get_subpoint (ellipse, direction 1 of pat, z2)
+		  {direction 1 of pat}
+	     .. get_subpoint (ellipse, direction 2 of pat, z3)
+		  {direction 2 of pat}
+	     .. get_subpoint (ellipse, direction 3 of pat, z4)
+		  {direction 3 of pat}
+	     .. get_subpoint (ellipse, direction 4 of pat, z5)
+		  {direction 4 of pat}
+	     .. get_subpath (ellipse,
+			     direction 4.8 of pat, -direction 5 of pat, z6)
+	     .. get_subpoint (ellipse, -direction 4 of pat, z5)
+		  {-direction 4 of pat}
+	     .. get_subpoint (ellipse, -direction 3 of pat, z4)
+		  {-direction 3 of pat}
+	     .. get_subpoint (ellipse, -direction 2.5 of pat, point 2.5 of pat)
+	     .. get_subpoint (ellipse, -direction 1 of pat, z2)
+		  {-direction 1 of pat}
+	     .. cycle;
+
+	pickup pencircle scaled 3.0 linethickness;
+
+	z7 = (-0.5 staff_space, +0.0 staff_space);
+	z8 = (+0.5 staff_space, +0.0 staff_space);
+
+	drawdot z7;
+	drawdot z8;
+enddef;
+
+
+fet_beginchar ("signum congruentiae up", "usignumcongruentiae");
+	draw_signum_congruentiae;
+	labels (1, 2, 3, 4, 5, 6, 7, 8);
+fet_endchar;
+
+
+fet_beginchar ("signum congruentiae down", "dsignumcongruentiae");
+	draw_signum_congruentiae;
+	xy_mirror_char;
+fet_endchar;
+
+
+fet_endgroup ("scripts");

@@ -1,0 +1,16 @@
+% feta-test20.mf
+% part of LilyPond's pretty-but-neat music font
+
+input feta-autometric;
+
+design_size := 20;
+test := 1;
+
+% smoked cheese
+% test := -1;
+
+input feta-generic;
+
+
+end.
+

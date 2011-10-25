@@ -1,0 +1,395 @@
+% -%-Fundamental-%- -*-Metafont-*-
+% parmesan-timesig.mf -- implement ancient time signatures
+% 
+% source file of LilyPond's pretty-but-neat music font
+% 
+% (c) 1998--2009 Mats Bengtsson <matsb@s3.kth.se>,
+%		 Christian Mondrup <scancm@biobase.dk>
+% (c) 2002--2009 Juergen Reuter <reuter@ipd.uka.de>
+% 
+
+fet_begingroup ("timesig");
+
+
+path threequartercircle;
+
+threequartercircle := halfcircle & quartercircle rotated 180;
+
+save mensural_Cdiameter, mensural_Cthickness, mensural_Chairpin;
+
+mensural_Cdiameter# := 3/2 staff_space#;
+mensural_Cthickness# := 2 linethickness#;
+mensural_Chairpin# := 0.5 linethickness#;
+
+define_pixels (mensural_Cdiameter, mensural_Cthickness, mensural_Chairpin);
+
+
+%%%%%%%%
+%
+%
+%
+% MENSURAL NOTATION
+%
+%
+%
+
+def draw_nail (expr bottom_left, top_right) =
+	save round;
+
+	round = floor min (blot_diameter,
+			   xpart (top_right-bottom_left),
+			   ypart (top_right-bottom_left));
+
+	pickup pencircle scaled round;
+
+	z2 + (round / 2, round / 2) = top_right +
+					(mensural_Cthickness / 2, 0);
+	z4 - (round / 2,round / 2) = bottom_left;
+	y3 = y2;
+	y4 = y1;
+	x2 = x1 + mensural_Cthickness / 2;
+	x2 - x1 = x4 - x3;
+	x5 = x1;
+	x6 = x4;
+	y5 = y6 = y2 - 2 mensural_Cthickness;
+
+	fill bot z1{right}
+	     .. rt z1{up}
+	     -- rt z5{up}
+	     .. rt z2
+	     .. top z2{left}
+	     -- top z3{left}
+	     .. lft z3
+	     .. lft z6{down}
+	     -- lft z4{down}
+	     .. bot z4{right}
+	     -- cycle;
+
+%	labels (1, 2, 3, 4, 5, 6);
+enddef;
+
+
+def mensural_timesig (expr verbose_name, internal_name,
+			   full_circle, reverse_circle, slashed, dotted) =
+	fet_beginchar (verbose_name, internal_name);
+		if slashed:
+			set_char_box (
+			  0,
+			  mensural_Cdiameter# + mensural_Cthickness#,
+			  .75 (mensural_Cdiameter# + mensural_Cthickness#),
+			  .75 (mensural_Cdiameter# + mensural_Cthickness#));
+
+			if (full_circle or dotted):
+				draw_nail ((-mensural_Cthickness / 2, -d),
+					   (mensural_Cthickness / 2, h));
+			elseif reverse_circle:
+				draw_nail ((0, -d), (mensural_Cthickness, h));
+			else:
+				draw_nail ((-mensural_Cthickness, -d), (0, h));
+			fi;
+		else:
+			set_char_box (
+			  0,
+			  mensural_Cdiameter# + mensural_Cthickness#,
+			  .5 (mensural_Cdiameter# + mensural_Cthickness#),
+			  .5 (mensural_Cdiameter# + mensural_Cthickness#));
+		fi;
+
+		save ellipse, pat;
+		path ellipse, pat;
+
+		ellipse := fullcircle xscaled mensural_Cthickness
+				      yscaled mensural_Chairpin;
+
+		save rot;
+
+		if reverse_circle:
+			rot := 225;
+		else:
+			rot := 45;
+		fi;
+
+		if full_circle:
+			pat := fullcircle scaled mensural_Cdiameter;
+
+			fill get_subpoint (ellipse,
+					   direction 0 of pat,
+					   point 0 of pat)
+			     for i = 1 step 1 until length pat:
+				     .. get_subpoint (ellipse,
+						      direction i of pat,
+						      point i of pat)
+			     endfor
+			     .. cycle;
+			unfill get_subpoint (ellipse,
+					     -direction 0 of pat,
+					     point 0 of pat)
+			       for i = 1 step 1 until length pat:
+				       .. get_subpoint (ellipse,
+							-direction i of pat,
+							point i of pat)
+			       endfor
+			       .. cycle;
+		else:
+			pat := threequartercircle rotated rot
+						  scaled mensural_Cdiameter;
+
+			fill get_subpath (ellipse,
+					  -direction 0 of pat,
+					  direction 0 of pat,
+					  point 0 of pat)
+			     for i = 1 step 1 until (length pat - 1):
+				     .. get_subpoint (ellipse,
+						      direction i of pat,
+						      point i of pat)
+			     endfor
+			     .. get_subpath (ellipse,
+					     direction infinity of pat,
+					     -direction infinity of pat,
+					     point infinity of pat)
+			     for i = (length pat - 1) step -1 until 1:
+				     .. get_subpoint (ellipse,
+						      -direction i of pat,
+						      point i of pat)
+			     endfor
+			     .. cycle;
+		fi;
+
+		if dotted:
+			pickup pencircle scaled 4 linethickness;
+			drawdot (0, 0);
+		fi;
+
+		currentpicture := currentpicture
+				    shifted 0.5 (mensural_Cdiameter
+						 + mensural_Cthickness, 0);
+	fet_endchar;
+enddef;
+
+
+%% tempus imperfectum cum prolatione imperfecta
+mensural_timesig ("Mensural 4/4 meter", "mensural44",
+		  false, false, false, false);
+
+
+%% tempus imperfectum cum prolatione imperfecta proportio dupla
+mensural_timesig ("Mensural 2/2 meter", "mensural22",
+		  false, false, true, false);
+
+
+%% tempus perfectum cum prolatione imperfecta
+mensural_timesig ("Mensural 3/2 meter", "mensural32",
+		  true, false, false, false);
+
+
+%% tempus imperfectum cum prolatione perfecta
+mensural_timesig ("Mensural 6/4 meter", "mensural64",
+		  false, false, false, true);
+
+
+%% tempus perfectum cum prolatione perfecta
+mensural_timesig ("Mensural 9/4 meter", "mensural94",
+		  true, false, false, true);
+
+
+%% tempus perfectum cum prolatione imperfecta proportio dupla
+mensural_timesig ("Mensural 3/4 meter", "mensural34",
+		  true, false, true, false);
+
+
+%% tempus imperfectum cum prolatione perfecta proportio dupla
+mensural_timesig ("Mensural 6/8 meter", "mensural68",
+		  false, false, true, true);
+
+
+%% tempus perfectum cum prolatione perfecta proportio dupla
+mensural_timesig ("Mensural 9/8 meter", "mensural98",
+		  true, false, true, true);
+
+	
+%% tempus imperfectum cum prolatione imperfecta diminutio simplex
+mensural_timesig ("Mensural 4/8 meter", "mensural48",
+		  false, true, false, false);
+
+
+%% tempus imperfectum cum prolatione perfecta diminutio simplex
+mensural_timesig ("Mensural 6/8 meter", "mensural68alt",
+		  false, true, false, true);
+
+
+%% tempus imperfectum cum prolatione imperfecta diminutio duplex
+mensural_timesig ("Mensural 2/4 meter", "mensural24",
+		  false, true, true, false);
+
+
+%%%%%%%%
+%
+%
+%
+% NEO-MENSURAL NOTATION
+%
+%
+%
+
+save neomensural_Cdiameter, neomensural_Cthickness;
+
+neomensural_Cdiameter# := 3/2 staff_space#;
+neomensural_Cthickness# := 2 linethickness#;
+
+define_pixels (neomensural_Cdiameter, neomensural_Cthickness);
+
+
+def neomensural_timesig (expr verbose_name, internal_name,
+			      full_circle, reverse_circle, slashed, dotted) =
+	fet_beginchar (verbose_name, internal_name);
+		set_char_box (
+		  0,
+		  neomensural_Cdiameter# + neomensural_Cthickness#,
+		  .5 (neomensural_Cdiameter# + neomensural_Cthickness#),
+		  .5 (neomensural_Cdiameter# + neomensural_Cthickness#));
+
+		if slashed:
+			pickup penrazor scaled neomensural_Cthickness;
+
+			save t;
+			t := neomensural_Cthickness / 2;
+
+			if (full_circle or dotted):
+				draw (0, -d + t)
+				     -- (0, h - t);
+			elseif reverse_circle:
+				draw (t, -d + t)
+				     -- (t, h - t);
+			else:
+				draw (-t, -d + t)
+				     -- (-t, h - t);
+			fi;
+		fi;
+
+		save ellipse, pat;
+		path ellipse, pat;
+
+		ellipse := fullcircle scaled neomensural_Cthickness;
+
+		save rot;
+
+		if reverse_circle:
+			rot := 225;
+		else:
+			rot := 45;
+		fi;
+
+		if full_circle:
+			pat := fullcircle scaled neomensural_Cdiameter;
+
+			fill get_subpoint (ellipse,
+					   direction 0 of pat,
+					   point 0 of pat)
+			     for i = 1 step 1 until length pat:
+				     .. get_subpoint (ellipse,
+						      direction i of pat,
+						      point i of pat)
+			     endfor
+			     .. cycle;
+			unfill get_subpoint (ellipse,
+					     -direction 0 of pat,
+					     point 0 of pat)
+			       for i = 1 step 1 until length pat:
+				       .. get_subpoint (ellipse,
+							-direction i of pat,
+							point i of pat)
+			       endfor
+			       .. cycle;
+		else:
+			pat := threequartercircle rotated rot
+						  scaled neomensural_Cdiameter;
+
+			fill get_subpath (ellipse,
+					  -direction 0 of pat,
+					  direction 0 of pat,
+					  point 0 of pat)
+			     for i = 1 step 1 until (length pat - 1):
+				     .. get_subpoint (ellipse,
+						      direction i of pat,
+						      point i of pat)
+			     endfor
+			     .. get_subpath (ellipse,
+					     direction infinity of pat,
+					     -direction infinity of pat,
+					     point infinity of pat)
+			     for i = (length pat - 1) step -1 until 1:
+				     .. get_subpoint (ellipse,
+						      -direction i of pat,
+						      point i of pat)
+			     endfor
+			     .. cycle;
+		fi;
+
+		if dotted:
+			pickup pencircle scaled 4 linethickness;
+			drawdot (0, 0);
+		fi;
+
+		currentpicture := currentpicture
+				     shifted 0.5 (neomensural_Cdiameter
+						  + neomensural_Cthickness, 0);
+	fet_endchar;
+enddef;
+
+
+%% tempus imperfectum cum prolatione imperfecta
+neomensural_timesig ("Mensural 4/4 meter", "neomensural44",
+		     false, false, false, false);
+
+
+%% tempus imperfectum cum prolatione imperfecta proportio dupla
+neomensural_timesig ("Mensural 2/2 meter", "neomensural22",
+		     false, false, true, false);
+
+
+%% tempus perfectum cum prolatione imperfecta
+neomensural_timesig ("Mensural 3/2 meter", "neomensural32",
+		     true, false, false, false);
+
+
+%% tempus imperfectum cum prolatione perfecta
+neomensural_timesig ("Mensural 6/4 meter", "neomensural64",
+		     false, false, false, true);
+
+
+%% tempus perfectum cum prolatione perfecta
+neomensural_timesig ("Mensural 9/4 meter", "neomensural94",
+		     true, false, false, true);
+
+
+%% tempus perfectum cum prolatione imperfecta proportio dupla
+neomensural_timesig ("Mensural 3/4 meter", "neomensural34",
+		     true, false, true, false);
+
+
+%% tempus imperfectum cum prolatione perfecta proportio dupla
+neomensural_timesig ("Mensural 6/8 meter", "neomensural68",
+		     false, false, true, true);
+
+
+%% tempus perfectum cum prolatione perfecta proportio dupla
+neomensural_timesig ("Mensural 9/8 meter", "neomensural98",
+		     true, false, true, true);
+
+	
+%% tempus imperfectum cum prolatione imperfecta diminutio simplex
+neomensural_timesig ("Mensural 4/8 meter", "neomensural48",
+		     false, true, false, false);
+
+
+%% tempus imperfectum cum prolatione perfecta diminutio simplex
+neomensural_timesig ("Mensural 6/8 meter", "neomensural68alt",
+		     false, true, false, true);
+
+
+%% tempus imperfectum cum prolatione imperfecta diminutio duplex
+neomensural_timesig ("Mensural 2/4 meter", "neomensural24",
+		     false, true, true, false);
+
+
+fet_endgroup ("timesig");

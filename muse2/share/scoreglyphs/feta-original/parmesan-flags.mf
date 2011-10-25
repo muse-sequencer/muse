@@ -1,0 +1,326 @@
+% -%-Fundamental-%- -*-Metafont-*-
+% parmesan-flags.mf -- implement ancient flags
+% 
+% source file of LilyPond's pretty-but-neat music font
+% 
+% (c) 2001--2009 Juergen Reuter <reuter@ipd.uka.de>
+% 
+
+fet_begingroup ("flags");
+
+save between_staff_lines, on_staff_line, anywhere;
+
+between_staff_lines := 0;
+on_staff_line := 1;
+anywhere := 2;
+
+save dir_up, dir_down;
+
+dir_up := 1;
+dir_down := -1;
+
+
+%%%%%%%%
+%
+%
+%
+% Mensural Notation
+%
+%
+%
+
+def draw_mensural_outermost_flare (expr staffline_adjustment, d_) =
+	define_pixels (linethickness, staff_space);
+
+	save ellipse, pat, T;
+	path ellipse, pat;
+	transform T;
+
+	T := identity xscaled 1.00 linethickness
+		      yscaled 0.22 staff_space
+		      rotated -35;
+	pickup pencircle transformed T;
+	ellipse := fullcircle transformed T;	
+
+	z11 = (+0.00 staff_space, -0.00 staff_space);
+	z12 = (+0.15 staff_space, -0.00 staff_space);
+
+	if staffline_adjustment = between_staff_lines:
+		z13 = (+0.45 staff_space, -0.35 staff_space);
+		z14 = (+0.45 staff_space, -0.85 staff_space);
+		z15 = (+0.00 staff_space, -2.00 staff_space);
+	elseif staffline_adjustment = on_staff_line:
+		z13 = (+0.20 staff_space, -0.05 staff_space);
+		z14 = (+0.20 staff_space, -1.15 staff_space);
+		z15 = (+0.00 staff_space, -1.40 staff_space);
+	else: % staffline_adjustment = anywhere
+		z13 = (+0.33 staff_space, -0.20 staff_space);
+		z14 = (+0.33 staff_space, -1.00 staff_space);
+		z15 = (+0.00 staff_space, -1.70 staff_space);
+	fi;
+
+	pat := z13{z13 - z12}
+	       .. {z15 - z14}z14;
+
+	fill get_subpath (ellipse, z11 - z12, z12 - z11, z11)
+	     -- get_subpoint (ellipse, z12 - z11, z12)
+	     -- get_subpoint (ellipse, z13 - z12, z12)
+	     -- get_subpoint (ellipse, direction 0 of pat, z13)
+		  {direction 0 of pat}
+	     .. {direction 1 of pat}
+		  get_subpoint (ellipse, direction 1 of pat, z14)
+	     -- get_subpath (ellipse, z15 - z14, z14 - z15, z15)
+	     -- get_subpoint (ellipse, -direction 1 of pat, z14)
+		  {-direction 1 of pat}
+	     .. {-direction 0 of pat}
+		  get_subpoint (ellipse, -direction 0 of pat, z13)
+	     -- get_subpath (ellipse, z12 - z13, z11 - z12, z12)
+	     -- cycle;
+
+	if d_ = dir_up:
+		labels (11, 12, 13, 14, 15);
+	fi;
+enddef;
+
+
+def draw_mensural_inner_flare (expr il_shift, idx, d_) =
+	define_pixels (linethickness, staff_space);
+
+	save ellipse, pat, T;
+	path ellipse, pat;
+	transform T;
+
+	T := identity xscaled 1.00 linethickness
+		      yscaled 0.22 staff_space
+		      rotated -35;
+	pickup pencircle transformed T;
+	ellipse := fullcircle transformed T;	
+
+	save i;
+	numeric i[];
+
+	i0 := idx * 10;
+	i1 := idx * 10 + 1;
+	i2 := idx * 10 + 2;
+	i3 := idx * 10 + 3;
+	i4 := idx * 10 + 4;
+
+	z[i0] = (0, -il_shift * staff_space);
+	z[i1] = z[i0] + (+0.00 staff_space, -0.10 staff_space);
+	z[i2] = z[i0] + (+0.33 staff_space, -0.30 staff_space);
+	z[i3] = z[i0] + (+0.33 staff_space, -0.70 staff_space);
+	z[i4] = z[i0] + (+0.00 staff_space, -0.90 staff_space);
+
+	pat := z[i1]{2, 1}
+	       .. z[i2]
+	       .. z[i3]
+	       .. {-2, -1}z[i4];
+
+	% we avoid cusps originally present in `draw pat'
+	fill get_subpath (ellipse,
+			  -direction 0 of pat, direction 0 of pat, z[i1])
+	     .. get_subpoint (ellipse, direction 1 of pat, z[i2])
+		  {direction 1 of pat}
+	     .. get_subpoint (ellipse, direction 2 of pat, z[i3])
+		  {direction 2 of pat}
+	     .. get_subpath (ellipse,
+			     direction 3 of pat, -direction 3 of pat, z[i4])
+	     .. get_subpoint (ellipse, -direction 2 of pat, z[i3])
+		  {-direction 2 of pat}
+	     .. get_subpoint (ellipse, -direction 1 of pat, z[i2])
+		  {-direction 1 of pat}
+	     .. cycle;
+
+	if d_ = dir_up:
+		labels ([i0], [i1], [i2], [i3], [i4]);
+	fi;
+enddef;
+
+
+def draw_mensural_flag (expr staffline_adjustment, flares, d_) =
+	save char_box_adjust, flare_shift;
+
+	if staffline_adjustment = between_staff_lines:
+		flare_shift := 0.5;
+	elseif staffline_adjustment = on_staff_line:
+		flare_shift := 0.0;
+	else: % staffline_adjustment = anywhere
+		flare_shift := 0.25;
+	fi;
+
+	char_box_adjust := flare_shift + 0.5;
+
+	if d_ = dir_up:
+		set_char_box (0,
+			      0.60 staff_space#,
+			      (flares + char_box_adjust) * staff_space#,
+			      0.10 staff_space#);
+	else: % d_ = dir_down
+		set_char_box (0.60 staff_space#,
+			      0,
+			      0.10 staff_space#,
+			      (flares + char_box_adjust) * staff_space#);
+	fi;
+
+	draw_mensural_outermost_flare (staffline_adjustment, d_);
+
+	for flare_count := 2 step 1 until 4:
+		if flares >= flare_count:
+			draw_mensural_inner_flare (flare_shift
+						   + flare_count - 0.5,
+						   flare_count, d_);
+		fi;
+	endfor;
+
+	if d_ = dir_down:
+		currentpicture := currentpicture xscaled -1
+						 yscaled -1;
+	fi;
+enddef;
+
+
+% 8th mensural flag, upwards, between staff lines
+fet_beginchar ("8th Mensural Flag (up)", "mensuralu03");
+	draw_mensural_flag (between_staff_lines, 1, dir_up);
+fet_endchar;
+
+
+% 8th mensural flag, upwards, on staff line
+fet_beginchar ("8th Mensural Flag (up)", "mensuralu13");
+	draw_mensural_flag (on_staff_line, 1, dir_up);
+fet_endchar;
+
+
+% 8th mensural flag, upwards, anywhere
+fet_beginchar ("8th Mensural Flag (up)", "mensuralu23");
+	draw_mensural_flag (anywhere, 1, dir_up);
+fet_endchar;
+
+
+% 8th mensural flag, downwards, between staff lines
+fet_beginchar ("8th Mensural Flag (down)", "mensurald03");
+	draw_mensural_flag (between_staff_lines, 1, dir_down);
+fet_endchar;
+
+
+% 8th mensural flag, downwards, on staff line
+fet_beginchar ("8th Mensural Flag (down)", "mensurald13");
+	draw_mensural_flag (on_staff_line, 1, dir_down);
+fet_endchar;
+
+
+% 8th mensural flag, downwards, anywhere
+fet_beginchar ("8th Mensural Flag (down)", "mensurald23");
+	draw_mensural_flag (anywhere, 1, dir_down);
+fet_endchar;
+
+
+% 16th mensural flag, upwards, between staff lines
+fet_beginchar ("16th Mensural Flag (up)", "mensuralu04");
+	draw_mensural_flag (between_staff_lines, 2, dir_up);
+fet_endchar;
+
+
+% 16th mensural flag, upwards, on staff line
+fet_beginchar ("16th Mensural Flag (up)", "mensuralu14");
+	draw_mensural_flag (on_staff_line, 2, dir_up);
+fet_endchar;
+
+
+% 16th mensural flag, upwards, anywhere
+fet_beginchar ("16th Mensural Flag (up)", "mensuralu24");
+	draw_mensural_flag (anywhere, 2, dir_up);
+fet_endchar;
+
+
+% 16th mensural flag, downwards, between staff lines
+fet_beginchar ("16th Mensural Flag (down)", "mensurald04");
+	draw_mensural_flag (between_staff_lines, 2, dir_down);
+fet_endchar;
+
+
+% 16th mensural flag, downwards, on staff line
+fet_beginchar ("16th Mensural Flag (down)", "mensurald14");
+	draw_mensural_flag (on_staff_line, 2, dir_down);
+fet_endchar;
+
+
+% 16th mensural flag, downwards, anywhere
+fet_beginchar ("16th Mensural Flag (down)", "mensurald24");
+	draw_mensural_flag (anywhere, 2, dir_down);
+fet_endchar;
+
+
+% 32th mensural flag, upwards, between staff lines
+fet_beginchar ("32th Mensural Flag (up)", "mensuralu05");
+	draw_mensural_flag (between_staff_lines, 3, dir_up);
+fet_endchar;
+
+
+% 32th mensural flag, upwards, on staff line
+fet_beginchar ("32th Mensural Flag (up)", "mensuralu15");
+	draw_mensural_flag (on_staff_line, 3, dir_up);
+fet_endchar;
+
+
+% 32th mensural flag, upwards, anywhere
+fet_beginchar ("32th Mensural Flag (up)", "mensuralu25");
+	draw_mensural_flag (anywhere, 3, dir_up);
+fet_endchar;
+
+
+% 32th mensural flag, downwards, between staff lines
+fet_beginchar ("32th Mensural Flag (down)", "mensurald05");
+	draw_mensural_flag (between_staff_lines, 3, dir_down);
+fet_endchar;
+
+
+% 32th mensural flag, downwards, on staff line
+fet_beginchar ("32th Mensural Flag (down)", "mensurald15");
+	draw_mensural_flag (on_staff_line, 3, dir_down);
+fet_endchar;
+
+
+% 32th mensural flag, downwards, anywhere
+fet_beginchar ("32th Mensural Flag (down)", "mensurald25");
+	draw_mensural_flag (anywhere, 3, dir_down);
+fet_endchar;
+
+
+% 64th mensural flag, upwards, between staff lines
+fet_beginchar ("64th Mensural Flag (up)", "mensuralu06");
+	draw_mensural_flag (between_staff_lines, 4, dir_up);
+fet_endchar;
+
+
+% 64th mensural flag, upwards, on staff line
+fet_beginchar ("64th Mensural Flag (up)", "mensuralu16");
+	draw_mensural_flag (on_staff_line, 4, dir_up);
+fet_endchar;
+
+
+% 64th mensural flag, upwards, anywhere
+fet_beginchar ("64th Mensural Flag (up)", "mensuralu26");
+	draw_mensural_flag (anywhere, 4, dir_up);
+fet_endchar;
+
+
+% 64th mensural flag, downwards, between staff lines
+fet_beginchar ("64th Mensural Flag (down)", "mensurald06");
+	draw_mensural_flag (between_staff_lines, 4, dir_down);
+fet_endchar;
+
+
+% 64th mensural flag, downwards, on staff line
+fet_beginchar ("64th Mensural Flag (down)", "mensurald16");
+	draw_mensural_flag (on_staff_line, 4, dir_down);
+fet_endchar;
+
+
+% 64th mensural flag, downwards, anywhere
+fet_beginchar ("64th Mensural Flag (down)", "mensurald26");
+	draw_mensural_flag (anywhere, 4, dir_down);
+fet_endchar;
+
+
+fet_endgroup ("flags");

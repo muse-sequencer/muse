@@ -1,0 +1,82 @@
+Sept 1, 2011 v0.0.3 by Tim.
+
+Understanding the Effects Rack
+------------------------------
+
+All audio track types (Input, Output, Group, Wave, Synth, and Aux) have
+ an effects rack into which audio plugins can be inserted in a chain. 
+Currently each rack can accomodate up to four plugins.
+
+MusE currently supports LADSPA plugins and DSSI effects plugins.
+
+One must carefully consider how many audio inputs and outputs a plugin has, 
+ and how may channels the particular audio track has (1 mono or 2 stereo), 
+ and how MusE uses the plugins in the rack.
+ 
+MusE will try to internally create as many independent copies (instances) of 
+ a plugin as necessary, to satisfy the number of channels in the audio track.
+Basically it divides the number of track channels by the number of 
+ plugin audio inputs or outputs to determine how many copies to make.
+First it examines the number of plugin audio outputs, and if there are none,
+ it will examine the number of audio inputs, and if there are none,
+ it will simply use just one plugin copy.
+
+For mono tracks with plugins having more than one audio input or output, 
+ MusE uses the first input or output and ignores the rest. 
+
+For stereo tracks:
+    
+    Plugin    Plugin      Independent   Real number      Real number 
+    audio     audio       plugin        of track         of track
+    inputs:   outputs:    copies:       input route      output route 
+                                        channels used:   channels used:
+    -------------------------------------------------------------------
+       0          0          1              0                0
+       0          1          2              0                2
+       0       >= 2          1              0                2
+       1          0          2              2                0
+       1          1          2              2                2
+       1       >= 2          1              1 L only!        2
+    >= 2          0          1              2                0
+    >= 2          1          2              2                2
+    >= 2       >= 2          1              2                2
+ 
+Notice that on a stereo track with a plugin having one audio input and two 
+ audio outputs, only the first track input route channel is used (left only).
+ 
+These same rules apply to inter-plugin audio when more than one plugin 
+ is in the rack chain. Extra audio outputs of one plugin may be ignored
+ by the next plugin if not used. 
+ 
+Currently specialized plugins with many inputs and/or outputs are not 
+ really useful in MusE.
+
+Nor are so-called 'realtime' control plugins which use audio inputs 
+ and outputs for control signals. 
+Loud noise alert! Beware of using such plugins in an audio effects rack. 
+
+
+Example: Consider a stereo Audio Input track with these effect rack 
+ LADSPA plugins: 
+ 
+    comb_splitter      Comb Splitter      by Steve Harris, and
+    tap_stereo_echo    Tap Stereo Echo    by Tom Szilagyi
+
+The Comb Splitter has one audio input and two audio outputs. 
+The Stereo Echo has two audio inputs and two audio outputs.
+  
+The stereo Audio Input track will therefore ignore its second
+ input route connection. It will process the left input only,
+ separating it into stereo with the Comb Splitter, passing the  
+ split stereo signal into the Stereo Echo, finally producing 
+ stereo output available at the Audio Input track's output routes.      
+  
+  
+One improvement would be not creating unused redundant plugin copies
+ between plugins in stereo tracks.
+For example, for a plugin having one audio input and one audio output,
+ feeding a plugin having one audio input and two audio outputs,  
+ the extra copy of the first plugin is redundant and not required,
+ but currently it is created anyway.
+  
+  

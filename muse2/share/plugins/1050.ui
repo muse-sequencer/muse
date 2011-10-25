@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>freeverb</class>
+ <widget class="QWidget" name="freeverb">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>516</width>
+    <height>87</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>FreeVerb</string>
+  </property>
+  <layout class="QGridLayout">
+   <property name="margin">
+    <number>4</number>
+   </property>
+   <property name="spacing">
+    <number>2</number>
+   </property>
+   <item row="0" column="0">
+    <widget class="QLabel" name="textLabel1">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Room Size</string>
+     </property>
+     <property name="wordWrap">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="MusEGui::Slider" name="P1slider" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>10</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="id" stdset="0">
+      <number>1</number>
+     </property>
+     <property name="maxValue" stdset="0">
+      <number>1</number>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="MusEGui::DoubleLabel" name="P0label" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="frame" stdset="0">
+      <bool>true</bool>
+     </property>
+     <property name="id" stdset="0">
+      <number>0</number>
+     </property>
+     <property name="value" stdset="0">
+      <number>0</number>
+     </property>
+     <property name="minValue" stdset="0">
+      <number>0</number>
+     </property>
+     <property name="maxValue" stdset="0">
+      <number>1</number>
+     </property>
+     <property name="precision" stdset="0">
+      <number>4</number>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="MusEGui::DoubleLabel" name="P1label" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="frame" stdset="0">
+      <bool>true</bool>
+     </property>
+     <property name="id" stdset="0">
+      <number>1</number>
+     </property>
+     <property name="value" stdset="0">
+      <number>0</number>
+     </property>
+     <property name="minValue" stdset="0">
+      <number>0</number>
+     </property>
+     <property name="maxValue" stdset="0">
+      <number>1</number>
+     </property>
+     <property name="precision" stdset="0">
+      <number>4</number>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="textLabel2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Damping</string>
+     </property>
+     <property name="wordWrap">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="MusEGui::Slider" name="P2slider" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>10</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="id" stdset="0">
+      <number>2</number>
+     </property>
+     <property name="maxValue" stdset="0">
+      <number>1</number>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="MusEGui::DoubleLabel" name="P2label" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="frame" stdset="0">
+      <bool>true</bool>
+     </property>
+     <property name="id" stdset="0">
+      <number>2</number>
+     </property>
+     <property name="value" stdset="0">
+      <number>0</number>
+     </property>
+     <property name="minValue" stdset="0">
+      <number>0</number>
+     </property>
+     <property name="maxValue" stdset="0">
+      <number>1</number>
+     </property>
+     <property name="precision" stdset="0">
+      <number>4</number>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="textLabel3">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Wet Level</string>
+     </property>
+     <property name="wordWrap">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="MusEGui::Slider" name="P0slider" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>10</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="id" stdset="0">
+      <number>0</number>
+     </property>
+     <property name="maxValue" stdset="0">
+      <number>1</number>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>MusEGui::Slider</class>
+   <extends>QWidget</extends>
+   <header>slider.h</header>
+  </customwidget>
+  <customwidget>
+   <class>MusEGui::DoubleLabel</class>
+   <extends>QWidget</extends>
+   <header>doublelabel.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

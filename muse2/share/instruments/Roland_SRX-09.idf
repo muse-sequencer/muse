@@ -1,0 +1,443 @@
+<?xml version="1.0"?>
+<muse version="1.0">
+  <MidiInstrument name="Roland SRX-09 World Collection">
+    <PatchGroup name="SRX09 Percussion Kits">
+      <Patch name="LatinDrmKit" hbank="92" lbank="19" prog="0" drum="1" />
+      <Patch name="AsiaDrm Kit" hbank="92" lbank="19" prog="1" drum="1" />
+      <Patch name="IndiaDrmKit" hbank="92" lbank="19" prog="2" drum="1" />
+      <Patch name="MidEastDrKit" hbank="92" lbank="19" prog="3" drum="1" />
+      <Patch name="World Phrase" hbank="92" lbank="19" prog="4" drum="1" />
+      <Patch name="Gtr Phrase" hbank="92" lbank="19" prog="5" drum="1" />
+      <Patch name="Latin Menu1" hbank="92" lbank="19" prog="6" drum="1" />
+      <Patch name="Latin Menu2" hbank="92" lbank="19" prog="7" drum="1" />
+      <Patch name="Latin Menu3" hbank="92" lbank="19" prog="8" drum="1" />
+      <Patch name="Asia Menu" hbank="92" lbank="19" prog="9" drum="1" />
+      <Patch name="India Menu" hbank="92" lbank="19" prog="10" drum="1" />
+      <Patch name="MidEast Menu" hbank="92" lbank="19" prog="11" drum="1" />
+    </PatchGroup>
+    <PatchGroup name="SRX09 World Collection 1">
+      <Patch name="World Sounds" hbank="93" lbank="19" prog="0" />
+      <Patch name="Go2China /C2" hbank="93" lbank="19" prog="1" />
+      <Patch name="Go2India /C2" hbank="93" lbank="19" prog="2" />
+      <Patch name="The Great W" hbank="93" lbank="19" prog="3" />
+      <Patch name="Yuehchin+" hbank="93" lbank="19" prog="4" />
+      <Patch name="Sweet Nylon" hbank="93" lbank="19" prog="5" />
+      <Patch name="Tele R and F" hbank="93" lbank="19" prog="6" />
+      <Patch name="Tubby Baby" hbank="93" lbank="19" prog="7" />
+      <Patch name="HeavenGender" hbank="93" lbank="19" prog="8" />
+      <Patch name="Gamelan Ems" hbank="93" lbank="19" prog="9" />
+      <Patch name="Childwood" hbank="93" lbank="19" prog="10" />
+      <Patch name="La Musette" hbank="93" lbank="19" prog="11" />
+      <Patch name="Essence" hbank="93" lbank="19" prog="12" />
+      <Patch name="Zampona" hbank="93" lbank="19" prog="13" />
+      <Patch name="GipsyTrumpt/" hbank="93" lbank="19" prog="14" />
+      <Patch name="We Dream }{" hbank="93" lbank="19" prog="15" />
+      <Patch name="Fun WithPerc" hbank="93" lbank="19" prog="16" />
+      <Patch name="GuZheng arp" hbank="93" lbank="19" prog="17" />
+      <Patch name="Feets" hbank="93" lbank="19" prog="18" />
+      <Patch name="World Radio" hbank="93" lbank="19" prog="19" />
+      <Patch name="ClanAdvances" hbank="93" lbank="19" prog="20" />
+      <Patch name="Eastern Tour" hbank="93" lbank="19" prog="21" />
+      <Patch name="Enough!STOP!" hbank="93" lbank="19" prog="22" />
+      <Patch name="Banjo Phrs" hbank="93" lbank="19" prog="23" />
+      <Patch name="Guitar Phrs1" hbank="93" lbank="19" prog="24" />
+      <Patch name="Guitar Phrs2" hbank="93" lbank="19" prog="25" />
+      <Patch name="PdlStl Phrs" hbank="93" lbank="19" prog="26" />
+      <Patch name="Asia UFO" hbank="93" lbank="19" prog="27" />
+      <Patch name="UBeenSoBaa" hbank="93" lbank="19" prog="28" />
+      <Patch name="Didgeri /" hbank="93" lbank="19" prog="29" />
+      <Patch name="WorldGroove" hbank="93" lbank="19" prog="30" />
+      <Patch name="LoopPhrase 1" hbank="93" lbank="19" prog="31" />
+      <Patch name="LoopPhrase 2" hbank="93" lbank="19" prog="32" />
+      <Patch name="TABLA groove" hbank="93" lbank="19" prog="33" />
+      <Patch name="JasonGoEast" hbank="93" lbank="19" prog="34" />
+      <Patch name="Flu and AcompSRX" hbank="93" lbank="19" prog="35" />
+      <Patch name="Split Floot" hbank="93" lbank="19" prog="36" />
+      <Patch name="Hot Salsa" hbank="93" lbank="19" prog="37" />
+      <Patch name="TempBassSolo" hbank="93" lbank="19" prog="38" />
+      <Patch name="CherryFlower" hbank="93" lbank="19" prog="39" />
+      <Patch name="SplitThisSRX" hbank="93" lbank="19" prog="40" />
+      <Patch name="Crane Dance" hbank="93" lbank="19" prog="41" />
+      <Patch name="LostInMists" hbank="93" lbank="19" prog="42" />
+      <Patch name="Qu DiEnsembl" hbank="93" lbank="19" prog="43" />
+      <Patch name="NasalBlossom" hbank="93" lbank="19" prog="44" />
+      <Patch name="Meditation 1" hbank="93" lbank="19" prog="45" />
+      <Patch name="Art Of Feng" hbank="93" lbank="19" prog="46" />
+      <Patch name="Orient xPres" hbank="93" lbank="19" prog="47" />
+      <Patch name="Padded Sitar" hbank="93" lbank="19" prog="48" />
+      <Patch name="No Worries" hbank="93" lbank="19" prog="49" />
+      <Patch name="IntarMel SRX" hbank="93" lbank="19" prog="50" />
+      <Patch name="Ode 2 An Oud" hbank="93" lbank="19" prog="51" />
+      <Patch name="Fugi-man" hbank="93" lbank="19" prog="52" />
+      <Patch name="China pluck" hbank="93" lbank="19" prog="53" />
+      <Patch name="Yuehchin SRX" hbank="93" lbank="19" prog="54" />
+      <Patch name="Kayakeum" hbank="93" lbank="19" prog="55" />
+      <Patch name="Asian Pizz" hbank="93" lbank="19" prog="56" />
+      <Patch name="PiPa SRX" hbank="93" lbank="19" prog="57" />
+      <Patch name="Koto SRX" hbank="93" lbank="19" prog="58" />
+      <Patch name="Shamisen SRX" hbank="93" lbank="19" prog="59" />
+      <Patch name="Sanshin SRX" hbank="93" lbank="19" prog="60" />
+      <Patch name="Yang Qin trm" hbank="93" lbank="19" prog="61" />
+      <Patch name="Yang Qin /Mod" hbank="93" lbank="19" prog="62" />
+      <Patch name="SultanPalace" hbank="93" lbank="19" prog="63" />
+      <Patch name="Marco Polo" hbank="93" lbank="19" prog="64" />
+      <Patch name="Bandolim SRX" hbank="93" lbank="19" prog="65" />
+      <Patch name="K.Bandolim" hbank="93" lbank="19" prog="66" />
+      <Patch name="Afro Harp" hbank="93" lbank="19" prog="67" />
+      <Patch name="Ethnhit!" hbank="93" lbank="19" prog="68" />
+      <Patch name="OctaHarp+" hbank="93" lbank="19" prog="69" />
+      <Patch name="St.GuShngSRX" hbank="93" lbank="19" prog="70" />
+      <Patch name="Sheng Sither" hbank="93" lbank="19" prog="71" />
+      <Patch name="Distance" hbank="93" lbank="19" prog="72" />
+      <Patch name="Mandolin/Mod" hbank="93" lbank="19" prog="73" />
+      <Patch name="Mandolin" hbank="93" lbank="19" prog="74" />
+      <Patch name="Mando Club" hbank="93" lbank="19" prog="75" />
+      <Patch name="MdlnTrmStSRX" hbank="93" lbank="19" prog="76" />
+      <Patch name="Drone Sitar" hbank="93" lbank="19" prog="77" />
+      <Patch name="Conch and Sitar" hbank="93" lbank="19" prog="78" />
+      <Patch name="Punjab Rocks" hbank="93" lbank="19" prog="79" />
+      <Patch name="Pas2IndiaSRX" hbank="93" lbank="19" prog="80" />
+      <Patch name="Rain Drone" hbank="93" lbank="19" prog="81" />
+      <Patch name="SitarGlisSRX" hbank="93" lbank="19" prog="82" />
+      <Patch name="Tambura SRX" hbank="93" lbank="19" prog="83" />
+      <Patch name="TambDroneSRX" hbank="93" lbank="19" prog="84" />
+      <Patch name="St.SanturSRX" hbank="93" lbank="19" prog="85" />
+      <Patch name="SanturTrmSRX" hbank="93" lbank="19" prog="86" />
+      <Patch name="Santur /Mod" hbank="93" lbank="19" prog="87" />
+      <Patch name="Canton" hbank="93" lbank="19" prog="88" />
+      <Patch name="HamrDulcimer" hbank="93" lbank="19" prog="89" />
+      <Patch name="3D Dulcimer" hbank="93" lbank="19" prog="90" />
+      <Patch name="Zither" hbank="93" lbank="19" prog="91" />
+      <Patch name="Magic Pluck" hbank="93" lbank="19" prog="92" />
+      <Patch name="Biwa SRX" hbank="93" lbank="19" prog="93" />
+      <Patch name="Biwa Menu" hbank="93" lbank="19" prog="94" />
+      <Patch name="BerimbauMenu" hbank="93" lbank="19" prog="95" />
+      <Patch name="Berimbau" hbank="93" lbank="19" prog="96" />
+      <Patch name="JawHarp Menu" hbank="93" lbank="19" prog="97" />
+      <Patch name="Steel Rhythm" hbank="93" lbank="19" prog="98" />
+      <Patch name="SoloSteelGtr" hbank="93" lbank="19" prog="99" />
+      <Patch name="N-Ville Soft" hbank="93" lbank="19" prog="100" />
+      <Patch name="Spruce Top" hbank="93" lbank="19" prog="101" />
+      <Patch name="Procssd AGtr" hbank="93" lbank="19" prog="102" />
+      <Patch name="High Strung" hbank="93" lbank="19" prog="103" />
+      <Patch name="Compresd D18" hbank="93" lbank="19" prog="104" />
+      <Patch name="12 String" hbank="93" lbank="19" prog="105" />
+      <Patch name="Mixed 12Str1" hbank="93" lbank="19" prog="106" />
+      <Patch name="Mixed 12Str2" hbank="93" lbank="19" prog="107" />
+      <Patch name="Ac Gtr 12stg" hbank="93" lbank="19" prog="108" />
+      <Patch name="No Borders" hbank="93" lbank="19" prog="109" />
+      <Patch name="Loose 12Str" hbank="93" lbank="19" prog="110" />
+      <Patch name="Living R.Gtr" hbank="93" lbank="19" prog="111" />
+      <Patch name="Dobro Modro" hbank="93" lbank="19" prog="112" />
+      <Patch name="ResonatorGtr" hbank="93" lbank="19" prog="113" />
+      <Patch name="Ac.Gtrs SRX" hbank="93" lbank="19" prog="114" />
+      <Patch name="2 Players" hbank="93" lbank="19" prog="115" />
+      <Patch name="Solo RequGtr" hbank="93" lbank="19" prog="116" />
+      <Patch name="Loose Nylon" hbank="93" lbank="19" prog="117" />
+      <Patch name="AcousticBros" hbank="93" lbank="19" prog="118" />
+      <Patch name="So Sad Nylon" hbank="93" lbank="19" prog="119" />
+      <Patch name="Chinese Duo" hbank="93" lbank="19" prog="120" />
+      <Patch name="ChugRunTrSRX" hbank="93" lbank="19" prog="121" />
+      <Patch name="Chung Ruan" hbank="93" lbank="19" prog="122" />
+      <Patch name="ChungRuanSRX" hbank="93" lbank="19" prog="123" />
+      <Patch name="Bottom Ruan" hbank="93" lbank="19" prog="124" />
+      <Patch name="RuangGtr SRX" hbank="93" lbank="19" prog="125" />
+      <Patch name="Oud SRX" hbank="93" lbank="19" prog="126" />
+      <Patch name="BlugrsSldSRX" hbank="93" lbank="19" prog="127" />
+    </PatchGroup>
+    <PatchGroup name="SRX09 World Collection 2">
+      <Patch name="Guitaro SRX" hbank="93" lbank="20" prog="0" />
+      <Patch name="Natural Tele" hbank="93" lbank="20" prog="1" />
+      <Patch name="Psyche Tele" hbank="93" lbank="20" prog="2" />
+      <Patch name="Coral" hbank="93" lbank="20" prog="3" />
+      <Patch name="Chorus Twang" hbank="93" lbank="20" prog="4" />
+      <Patch name="Pick Licker" hbank="93" lbank="20" prog="5" />
+      <Patch name="CleanStrtSRX" hbank="93" lbank="20" prog="6" />
+      <Patch name="Velo 335 SRX" hbank="93" lbank="20" prog="7" />
+      <Patch name="Right Funky" hbank="93" lbank="20" prog="8" />
+      <Patch name="Comp Muted" hbank="93" lbank="20" prog="9" />
+      <Patch name="E.GtrMt SRX" hbank="93" lbank="20" prog="10" />
+      <Patch name="335VelMt SRX" hbank="93" lbank="20" prog="11" />
+      <Patch name="Wide Guitar" hbank="93" lbank="20" prog="12" />
+      <Patch name="Dob-Compress" hbank="93" lbank="20" prog="13" />
+      <Patch name="Nice Twelvey" hbank="93" lbank="20" prog="14" />
+      <Patch name="RotaryCrunch" hbank="93" lbank="20" prog="15" />
+      <Patch name="FastRotrySRX" hbank="93" lbank="20" prog="16" />
+      <Patch name="EGDynaPikSRX" hbank="93" lbank="20" prog="17" />
+      <Patch name="BackingEGSRX" hbank="93" lbank="20" prog="18" />
+      <Patch name="Room Slide" hbank="93" lbank="20" prog="19" />
+      <Patch name="Pedal Steel" hbank="93" lbank="20" prog="20" />
+      <Patch name="Phased P.Stl" hbank="93" lbank="20" prog="21" />
+      <Patch name="PureSteelSRX" hbank="93" lbank="20" prog="22" />
+      <Patch name="MutedAmbient" hbank="93" lbank="20" prog="23" />
+      <Patch name="GtrFX Menu" hbank="93" lbank="20" prog="24" />
+      <Patch name="LP Gtr SRX" hbank="93" lbank="20" prog="25" />
+      <Patch name="Tele-Funfken" hbank="93" lbank="20" prog="26" />
+      <Patch name="335 and Cabinet" hbank="93" lbank="20" prog="27" />
+      <Patch name="Tele Licker" hbank="93" lbank="20" prog="28" />
+      <Patch name="Short and Long" hbank="93" lbank="20" prog="29" />
+      <Patch name="NewBeginning" hbank="93" lbank="20" prog="30" />
+      <Patch name="Bouzouki" hbank="93" lbank="20" prog="31" />
+      <Patch name="Bousoukhit!" hbank="93" lbank="20" prog="32" />
+      <Patch name="3ChdStrumSRX" hbank="93" lbank="20" prog="33" />
+      <Patch name="Strum Poetic" hbank="93" lbank="20" prog="34" />
+      <Patch name="Strum Away" hbank="93" lbank="20" prog="35" />
+      <Patch name="Banjo-Mando" hbank="93" lbank="20" prog="36" />
+      <Patch name="5StringBanjo" hbank="93" lbank="20" prog="37" />
+      <Patch name="Banjo SRX 1" hbank="93" lbank="20" prog="38" />
+      <Patch name="Banjo SRX 2" hbank="93" lbank="20" prog="39" />
+      <Patch name="Banjo SRX 3" hbank="93" lbank="20" prog="40" />
+      <Patch name="Fiddle" hbank="93" lbank="20" prog="41" />
+      <Patch name="Fiddle 2002" hbank="93" lbank="20" prog="42" />
+      <Patch name="FiddleSwitch" hbank="93" lbank="20" prog="43" />
+      <Patch name="Fiddle Sect." hbank="93" lbank="20" prog="44" />
+      <Patch name="FiddleStacto" hbank="93" lbank="20" prog="45" />
+      <Patch name="AsianOrcPizz" hbank="93" lbank="20" prog="46" />
+      <Patch name="AJapaneseInn" hbank="93" lbank="20" prog="47" />
+      <Patch name="Deep Blue" hbank="93" lbank="20" prog="48" />
+      <Patch name="Ethnic Ens" hbank="93" lbank="20" prog="49" />
+      <Patch name="ChinesOrcSRX" hbank="93" lbank="20" prog="50" />
+      <Patch name="ErHu / SRX" hbank="93" lbank="20" prog="51" />
+      <Patch name="ErHuSolo SRX" hbank="93" lbank="20" prog="52" />
+      <Patch name="ErHu Ld SRX" hbank="93" lbank="20" prog="53" />
+      <Patch name="FiddleFXmenu" hbank="93" lbank="20" prog="54" />
+      <Patch name="ViolnSoloSRX" hbank="93" lbank="20" prog="55" />
+      <Patch name="Comp BabyBss" hbank="93" lbank="20" prog="56" />
+      <Patch name="Baby Bass" hbank="93" lbank="20" prog="57" />
+      <Patch name="Comp Fingerd" hbank="93" lbank="20" prog="58" />
+      <Patch name="Jazz Fing.BS" hbank="93" lbank="20" prog="59" />
+      <Patch name="Live Bass" hbank="93" lbank="20" prog="60" />
+      <Patch name="Flango Bass" hbank="93" lbank="20" prog="61" />
+      <Patch name="Bass Oddesy" hbank="93" lbank="20" prog="62" />
+      <Patch name="6Str Bs SRX1" hbank="93" lbank="20" prog="63" />
+      <Patch name="Muted Bass" hbank="93" lbank="20" prog="64" />
+      <Patch name="6Str/Mt SRX" hbank="93" lbank="20" prog="65" />
+      <Patch name="PickBsHd SRX" hbank="93" lbank="20" prog="66" />
+      <Patch name="PickedBs SRX" hbank="93" lbank="20" prog="67" />
+      <Patch name="Tub Bass" hbank="93" lbank="20" prog="68" />
+      <Patch name="GuitarnBsSRX" hbank="93" lbank="20" prog="69" />
+      <Patch name="GtrnOct SRX" hbank="93" lbank="20" prog="70" />
+      <Patch name="PacificDream" hbank="93" lbank="20" prog="71" />
+      <Patch name="Meditation 2" hbank="93" lbank="20" prog="72" />
+      <Patch name="HybridKemong" hbank="93" lbank="20" prog="73" />
+      <Patch name="Purify" hbank="93" lbank="20" prog="74" />
+      <Patch name="Asia Bells" hbank="93" lbank="20" prog="75" />
+      <Patch name="Rama Cym SRX" hbank="93" lbank="20" prog="76" />
+      <Patch name="Bell Orchest" hbank="93" lbank="20" prog="77" />
+      <Patch name="Sacred Bells" hbank="93" lbank="20" prog="78" />
+      <Patch name="Spokes" hbank="93" lbank="20" prog="79" />
+      <Patch name="Winter Bells" hbank="93" lbank="20" prog="80" />
+      <Patch name="Wind Bells" hbank="93" lbank="20" prog="81" />
+      <Patch name="BelAngk SRX" hbank="93" lbank="20" prog="82" />
+      <Patch name="Tcheekolyna" hbank="93" lbank="20" prog="83" />
+      <Patch name="Wood EPiano" hbank="93" lbank="20" prog="84" />
+      <Patch name="Kalimba" hbank="93" lbank="20" prog="85" />
+      <Patch name="Kalimbatch" hbank="93" lbank="20" prog="86" />
+      <Patch name="VelAfro SRX1" hbank="93" lbank="20" prog="87" />
+      <Patch name="BSKalimbaSRX" hbank="93" lbank="20" prog="88" />
+      <Patch name="LogDetunrSRX" hbank="93" lbank="20" prog="89" />
+      <Patch name="Baateri SRX" hbank="93" lbank="20" prog="90" />
+      <Patch name="Balafon SRX" hbank="93" lbank="20" prog="91" />
+      <Patch name="Asian Wood" hbank="93" lbank="20" prog="92" />
+      <Patch name="Mellow tone" hbank="93" lbank="20" prog="93" />
+      <Patch name="Glas Mlt SRX" hbank="93" lbank="20" prog="94" />
+      <Patch name="SteelDr SRX1" hbank="93" lbank="20" prog="95" />
+      <Patch name="SteelDr SRX2" hbank="93" lbank="20" prog="96" />
+      <Patch name="Gendrous SRX" hbank="93" lbank="20" prog="97" />
+      <Patch name="BonangGamSRX" hbank="93" lbank="20" prog="98" />
+      <Patch name="VelAfro SRX2" hbank="93" lbank="20" prog="99" />
+      <Patch name="TemleMetlSRX" hbank="93" lbank="20" prog="100" />
+      <Patch name="Kemong / SRX" hbank="93" lbank="20" prog="101" />
+      <Patch name="Kane / SRX" hbank="93" lbank="20" prog="102" />
+      <Patch name="JeGong / SRX" hbank="93" lbank="20" prog="103" />
+      <Patch name="Jegogn / SRX" hbank="93" lbank="20" prog="104" />
+      <Patch name="Jublag / SRX" hbank="93" lbank="20" prog="105" />
+      <Patch name="Reyong / SRX" hbank="93" lbank="20" prog="106" />
+      <Patch name="Pemade / SRX" hbank="93" lbank="20" prog="107" />
+      <Patch name="Cajun" hbank="93" lbank="20" prog="108" />
+      <Patch name="D.Accordion" hbank="93" lbank="20" prog="109" />
+      <Patch name="SquezeBoxSRX" hbank="93" lbank="20" prog="110" />
+      <Patch name="Squeeze Box" hbank="93" lbank="20" prog="111" />
+      <Patch name="St.AcdOp SRX" hbank="93" lbank="20" prog="112" />
+      <Patch name="AcdionOp SRX" hbank="93" lbank="20" prog="113" />
+      <Patch name="Acd ffOp SRX" hbank="93" lbank="20" prog="114" />
+      <Patch name="STt.AcdCl SRX" hbank="93" lbank="20" prog="115" />
+      <Patch name="Bluesy" hbank="93" lbank="20" prog="116" />
+      <Patch name="HarmonicaSRX" hbank="93" lbank="20" prog="117" />
+      <Patch name="CuntryHrpSRX" hbank="93" lbank="20" prog="118" />
+      <Patch name="Sessn HrpSRX" hbank="93" lbank="20" prog="119" />
+      <Patch name="Esraj and Mizmar" hbank="93" lbank="20" prog="120" />
+      <Patch name="Before Time" hbank="93" lbank="20" prog="121" />
+      <Patch name="Gagaku Ems" hbank="93" lbank="20" prog="122" />
+      <Patch name="Mizmar solo" hbank="93" lbank="20" prog="123" />
+      <Patch name="PiriSolo SRX" hbank="93" lbank="20" prog="124" />
+      <Patch name="Shahnai SRX" hbank="93" lbank="20" prog="125" />
+      <Patch name="HichirikSRX" hbank="93" lbank="20" prog="126" />
+      <Patch name="Bagpipes SRX" hbank="93" lbank="20" prog="127" />
+    </PatchGroup>
+    <PatchGroup name="SRX09 World Collection 3">
+      <Patch name="Sheng / SRX" hbank="93" lbank="21" prog="0" />
+      <Patch name="Suona / SRX" hbank="93" lbank="21" prog="1" />
+      <Patch name="VillageDance" hbank="93" lbank="21" prog="2" />
+      <Patch name="Indian Ens" hbank="93" lbank="21" prog="3" />
+      <Patch name="Nature Loves" hbank="93" lbank="21" prog="4" />
+      <Patch name="PanPipes SRX" hbank="93" lbank="21" prog="5" />
+      <Patch name="Sad Pipe" hbank="93" lbank="21" prog="6" />
+      <Patch name="Shell blow" hbank="93" lbank="21" prog="7" />
+      <Patch name="Desert Flute" hbank="93" lbank="21" prog="8" />
+      <Patch name="Zampona" hbank="93" lbank="21" prog="9" />
+      <Patch name="Isolation" hbank="93" lbank="21" prog="10" />
+      <Patch name="Ocarina" hbank="93" lbank="21" prog="11" />
+      <Patch name="New IndFlute" hbank="93" lbank="21" prog="12" />
+      <Patch name="Qu Di Vib" hbank="93" lbank="21" prog="13" />
+      <Patch name="Bang Di Vib" hbank="93" lbank="21" prog="14" />
+      <Patch name="New Kawala" hbank="93" lbank="21" prog="15" />
+      <Patch name="BreathyIndia" hbank="93" lbank="21" prog="16" />
+      <Patch name="New Shaku" hbank="93" lbank="21" prog="17" />
+      <Patch name="Shakuhachi" hbank="93" lbank="21" prog="18" />
+      <Patch name="DreamInColor" hbank="93" lbank="21" prog="19" />
+      <Patch name="TwinHillyLd" hbank="93" lbank="21" prog="20" />
+      <Patch name="Snake Eyes" hbank="93" lbank="21" prog="21" />
+      <Patch name="Latin Trumpt" hbank="93" lbank="21" prog="22" />
+      <Patch name="MariachiTpts" hbank="93" lbank="21" prog="23" />
+      <Patch name="Trumpets" hbank="93" lbank="21" prog="24" />
+      <Patch name="GrowlWah/Mod" hbank="93" lbank="21" prog="25" />
+      <Patch name="Muted-Grw /" hbank="93" lbank="21" prog="26" />
+      <Patch name="SoloTuba SRX" hbank="93" lbank="21" prog="27" />
+      <Patch name="LatinTubaSRX" hbank="93" lbank="21" prog="28" />
+      <Patch name="World Orch" hbank="93" lbank="21" prog="29" />
+      <Patch name="Stab and Hold" hbank="93" lbank="21" prog="30" />
+      <Patch name="Indian Radio" hbank="93" lbank="21" prog="31" />
+      <Patch name="Wide Brass" hbank="93" lbank="21" prog="32" />
+      <Patch name="Trombones" hbank="93" lbank="21" prog="33" />
+      <Patch name="Brass Snapz" hbank="93" lbank="21" prog="34" />
+      <Patch name="Brass sfzzZZ" hbank="93" lbank="21" prog="35" />
+      <Patch name="2Tp+Tbn SRX" hbank="93" lbank="21" prog="36" />
+      <Patch name="MemphisHORNS" hbank="93" lbank="21" prog="37" />
+      <Patch name="SectStactSRX" hbank="93" lbank="21" prog="38" />
+      <Patch name="LatinBrasses" hbank="93" lbank="21" prog="39" />
+      <Patch name="Hit and Fall" hbank="93" lbank="21" prog="40" />
+      <Patch name="BrsChd13 SRX" hbank="93" lbank="21" prog="41" />
+      <Patch name="BrsChdMi9SRX" hbank="93" lbank="21" prog="42" />
+      <Patch name="BrsChdMj9SRX" hbank="93" lbank="21" prog="43" />
+      <Patch name="Blow Pad" hbank="93" lbank="21" prog="44" />
+      <Patch name="Ceremony" hbank="93" lbank="21" prog="45" />
+      <Patch name="Glasses" hbank="93" lbank="21" prog="46" />
+      <Patch name="Ambiccordian" hbank="93" lbank="21" prog="47" />
+      <Patch name="DroneFlanger" hbank="93" lbank="21" prog="48" />
+      <Patch name="Rock Gods" hbank="93" lbank="21" prog="49" />
+      <Patch name="ScotlandLass" hbank="93" lbank="21" prog="50" />
+      <Patch name="Dry Fishes" hbank="93" lbank="21" prog="51" />
+      <Patch name="SteroidBrass" hbank="93" lbank="21" prog="52" />
+      <Patch name="Soul revived" hbank="93" lbank="21" prog="53" />
+      <Patch name="Rain Pad" hbank="93" lbank="21" prog="54" />
+      <Patch name="Rising Sun" hbank="93" lbank="21" prog="55" />
+      <Patch name="Ethnopad" hbank="93" lbank="21" prog="56" />
+      <Patch name="Ethno Strngs" hbank="93" lbank="21" prog="57" />
+      <Patch name="and 40 Thieves" hbank="93" lbank="21" prog="58" />
+      <Patch name="TromboSynthy" hbank="93" lbank="21" prog="59" />
+      <Patch name="GrandExaltd1" hbank="93" lbank="21" prog="60" />
+      <Patch name="Sun Dog" hbank="93" lbank="21" prog="61" />
+      <Patch name="TechnoSpirit" hbank="93" lbank="21" prog="62" />
+      <Patch name="Play Softly" hbank="93" lbank="21" prog="63" />
+      <Patch name="WorkerBeetle" hbank="93" lbank="21" prog="64" />
+      <Patch name="Glass Cut" hbank="93" lbank="21" prog="65" />
+      <Patch name="GuruTronics" hbank="93" lbank="21" prog="66" />
+      <Patch name="DubJazz Trip" hbank="93" lbank="21" prog="67" />
+      <Patch name="Meditation 2" hbank="93" lbank="21" prog="68" />
+      <Patch name="Political" hbank="93" lbank="21" prog="69" />
+      <Patch name="G-day Mate" hbank="93" lbank="21" prog="70" />
+      <Patch name="Mission" hbank="93" lbank="21" prog="71" />
+      <Patch name="Jegorgan" hbank="93" lbank="21" prog="72" />
+      <Patch name="Dyno Conga 1" hbank="93" lbank="21" prog="73" />
+      <Patch name="Dyno Conga 2" hbank="93" lbank="21" prog="74" />
+      <Patch name="Congas+Bongo" hbank="93" lbank="21" prog="75" />
+      <Patch name="DynTimbale 1" hbank="93" lbank="21" prog="76" />
+      <Patch name="DynTimbale 2" hbank="93" lbank="21" prog="77" />
+      <Patch name="TimbaleCuica" hbank="93" lbank="21" prog="78" />
+      <Patch name="Dyno Surdo" hbank="93" lbank="21" prog="79" />
+      <Patch name="Rhythm Sect" hbank="93" lbank="21" prog="80" />
+      <Patch name="Rainstick" hbank="93" lbank="21" prog="81" />
+      <Patch name="Clap and Snap" hbank="93" lbank="21" prog="82" />
+      <Patch name="CowbellRandm" hbank="93" lbank="21" prog="83" />
+      <Patch name="Karachi-Man" hbank="93" lbank="21" prog="84" />
+      <Patch name="That Was Zen" hbank="93" lbank="21" prog="85" />
+      <Patch name="StreetParade" hbank="93" lbank="21" prog="86" />
+      <Patch name="BUK" hbank="93" lbank="21" prog="87" />
+      <Patch name="Gongs" hbank="93" lbank="21" prog="88" />
+      <Patch name="Chenchen /" hbank="93" lbank="21" prog="89" />
+      <Patch name="WisdomWithin" hbank="93" lbank="21" prog="90" />
+      <Patch name="Tabla+" hbank="93" lbank="21" prog="91" />
+      <Patch name="DrumsScene" hbank="93" lbank="21" prog="92" />
+      <Patch name="Doholla Fun" hbank="93" lbank="21" prog="93" />
+      <Patch name="AfricanRhtms" hbank="93" lbank="21" prog="94" />
+      <Patch name="Big Logs SRX" hbank="93" lbank="21" prog="95" />
+      <Patch name="WarDrums SRX" hbank="93" lbank="21" prog="96" />
+      <Patch name="Samba Menu" hbank="93" lbank="21" prog="97" />
+      <Patch name="Shaker Menu" hbank="93" lbank="21" prog="98" />
+      <Patch name="Caixa Menu" hbank="93" lbank="21" prog="99" />
+      <Patch name="Cowbell Menu" hbank="93" lbank="21" prog="100" />
+      <Patch name="JapanPrcMenu" hbank="93" lbank="21" prog="101" />
+      <Patch name="Kabuki Menu" hbank="93" lbank="21" prog="102" />
+      <Patch name="KwangawariSRX" hbank="93" lbank="21" prog="103" />
+      <Patch name="Tuzumi / SRX" hbank="93" lbank="21" prog="104" />
+      <Patch name="KoreaPrcMenu" hbank="93" lbank="21" prog="105" />
+      <Patch name="ChinaPrcMenu" hbank="93" lbank="21" prog="106" />
+      <Patch name="China Menu" hbank="93" lbank="21" prog="107" />
+      <Patch name="ChinaGongSRX" hbank="93" lbank="21" prog="108" />
+      <Patch name="Sanba / SRX" hbank="93" lbank="21" prog="109" />
+      <Patch name="St.ShouBoSRX" hbank="93" lbank="21" prog="110" />
+      <Patch name="AsiaCym Menu" hbank="93" lbank="21" prog="111" />
+      <Patch name="Gong Menu" hbank="93" lbank="21" prog="112" />
+      <Patch name="Gamelan Menu" hbank="93" lbank="21" prog="113" />
+      <Patch name="GamlnPrcMenu" hbank="93" lbank="21" prog="114" />
+      <Patch name="BigBazar SRX" hbank="93" lbank="21" prog="115" />
+      <Patch name="Udu Pot Menu" hbank="93" lbank="21" prog="116" />
+      <Patch name="TablaBy Menu" hbank="93" lbank="21" prog="117" />
+      <Patch name="Rek Menu" hbank="93" lbank="21" prog="118" />
+      <Patch name="Dholak Menu1" hbank="93" lbank="21" prog="119" />
+      <Patch name="Dholak Menu2" hbank="93" lbank="21" prog="120" />
+      <Patch name="Dhol Menu" hbank="93" lbank="21" prog="121" />
+      <Patch name="Egypt Tablah" hbank="93" lbank="21" prog="122" />
+      <Patch name="Madal Menu" hbank="93" lbank="21" prog="123" />
+      <Patch name="AfropercMenu" hbank="93" lbank="21" prog="124" />
+      <Patch name="CommSatelite" hbank="93" lbank="21" prog="125" />
+      <Patch name="Amazone" hbank="93" lbank="21" prog="126" />
+      <Patch name="Tasman Sea" hbank="93" lbank="21" prog="127" />
+    </PatchGroup>
+    <PatchGroup name="SRX09 World Collection 4">
+      <Patch name="Ethnic FX 1" hbank="93" lbank="22" prog="0" />
+      <Patch name="Ethnic FX 2" hbank="93" lbank="22" prog="1" />
+      <Patch name="SpacetualBoy" hbank="93" lbank="22" prog="2" />
+      <Patch name="Crystal" hbank="93" lbank="22" prog="3" />
+      <Patch name="SpaceLuvSick" hbank="93" lbank="22" prog="4" />
+      <Patch name="HitAscension" hbank="93" lbank="22" prog="5" />
+      <Patch name="Nervous Man" hbank="93" lbank="22" prog="6" />
+      <Patch name="Silk Stream" hbank="93" lbank="22" prog="7" />
+      <Patch name="DerangedMind" hbank="93" lbank="22" prog="8" />
+      <Patch name="PolyDrone" hbank="93" lbank="22" prog="9" />
+      <Patch name="TequillaWorm" hbank="93" lbank="22" prog="10" />
+      <Patch name="GlistenToYou" hbank="93" lbank="22" prog="11" />
+      <Patch name="Dream Harp" hbank="93" lbank="22" prog="12" />
+      <Patch name="Waterfall" hbank="93" lbank="22" prog="13" />
+      <Patch name="Gender 3D" hbank="93" lbank="22" prog="14" />
+      <Patch name="Doom Drum" hbank="93" lbank="22" prog="15" />
+      <Patch name="Stalker" hbank="93" lbank="22" prog="16" />
+      <Patch name="PlasticBones" hbank="93" lbank="22" prog="17" />
+      <Patch name="PakistanVibe" hbank="93" lbank="22" prog="18" />
+      <Patch name="ThusSpokeZtr" hbank="93" lbank="22" prog="19" />
+      <Patch name="Kalissando" hbank="93" lbank="22" prog="20" />
+      <Patch name="Rain Forest" hbank="93" lbank="22" prog="21" />
+      <Patch name="AfropunchSRX" hbank="93" lbank="22" prog="22" />
+      <Patch name="Dance Tape" hbank="93" lbank="22" prog="23" />
+      <Patch name="Zaghruta SRX" hbank="93" lbank="22" prog="24" />
+      <Patch name="1,2,3,4! SRX" hbank="93" lbank="22" prog="25" />
+      <Patch name="Voices SRX" hbank="93" lbank="22" prog="26" />
+      <Patch name="Voice Menu 1" hbank="93" lbank="22" prog="27" />
+      <Patch name="Voice Menu 2" hbank="93" lbank="22" prog="28" />
+      <Patch name="Voice Menu3" hbank="93" lbank="22" prog="29" />
+    </PatchGroup>
+    <Controller name="Program" type="Program" />
+  </MidiInstrument>
+</muse>
+

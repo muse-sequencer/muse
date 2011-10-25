@@ -1,0 +1,500 @@
+<?xml version="1.0"?>
+<muse version="2.0">
+  <configuration>
+    <midiInputDevice>0</midiInputDevice>
+    <midiInputChannel>0</midiInputChannel>
+    <midiRecordType>0</midiRecordType>
+    <midiThruType>0</midiThruType>
+    <midiFilterCtrl1>0</midiFilterCtrl1>
+    <midiFilterCtrl2>0</midiFilterCtrl2>
+    <midiFilterCtrl3>0</midiFilterCtrl3>
+    <midiFilterCtrl4>0</midiFilterCtrl4>
+    <waveTracksVisible>1</waveTracksVisible>
+    <auxTracksVisible>1</auxTracksVisible>
+    <groupTracksVisible>1</groupTracksVisible>
+    <midiTracksVisible>1</midiTracksVisible>
+    <inputTracksVisible>1</inputTracksVisible>
+    <outputTracksVisible>1</outputTracksVisible>
+    <synthTracksVisible>1</synthTracksVisible>
+    <mtctype>1</mtctype>
+    <mtcoffset>00:00:00:00:00</mtcoffset>
+    <sendClockDelay>1</sendClockDelay>
+    <useJackTransport>1</useJackTransport>
+    <jackTransportMaster>1</jackTransportMaster>
+    <extSync>0</extSync>
+    <bigtimeVisible>0</bigtimeVisible>
+    <transportVisible>0</transportVisible>
+    <markerVisible>0</markerVisible>
+    <geometryMain x="0" y="0" w="1024" h="691"></geometryMain>
+    <geometryTransport x="0" y="0" w="100" h="30"></geometryTransport>
+    <mixer1Visible>0</mixer1Visible>
+    <mixer2Visible>0</mixer2Visible>
+    <arranger>
+      <info>1</info>
+      <split>418 600 </split>
+      <list>
+        <header> -1 9 8 7 6 5 4 3 2 1 0 </header>
+        </list>
+      <xpos>0</xpos>
+      <xmag>266</xmag>
+      <ypos>0</ypos>
+      </arranger>
+    <sequencer>
+      <metronom>
+        <premeasures>2</premeasures>
+        <measurepitch>63</measurepitch>
+        <measurevelo>127</measurevelo>
+        <beatpitch>63</beatpitch>
+        <beatvelo>70</beatvelo>
+        <channel>9</channel>
+        <port>0</port>
+        <precountEnable>0</precountEnable>
+        <fromMastertrack>0</fromMastertrack>
+        <signatureZ>4</signatureZ>
+        <signatureN>4</signatureN>
+        <prerecord>0</prerecord>
+        <preroll>0</preroll>
+        <midiClickEnable>1</midiClickEnable>
+        <audioClickEnable>0</audioClickEnable>
+        <audioClickVolume>0.5</audioClickVolume>
+        </metronom>
+      <rcEnable>0</rcEnable>
+      <rcStop>28</rcStop>
+      <rcRecord>31</rcRecord>
+      <rcGotoLeft>33</rcGotoLeft>
+      <rcPlay>29</rcPlay>
+      <rcSteprec>36</rcSteprec>
+      <midiport idx="0">
+        <defaultOutChans>1</defaultOutChans>
+        <channel idx="0">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="1">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="2">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="3">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="4">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="5">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="6">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="7">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="8">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="9">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="10">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="11">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="12">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="13">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="14">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        <channel idx="15">
+          <controller id="7">
+            </controller>
+          <controller id="10">
+            </controller>
+          <controller id="91">
+            </controller>
+          <controller id="93">
+            </controller>
+          <controller id="262144">
+            </controller>
+          <controller id="262145">
+            </controller>
+          </channel>
+        </midiport>
+      </sequencer>
+    <drumedit>
+      <raster>96</raster>
+      <dlistwidth>126</dlistwidth>
+      <dcanvaswidth>753</dcanvaswidth>
+      <topwin>
+        <width>934</width>
+        <height>488</height>
+        <nonshared_toolbars>000000ff00000000fd00000000000003ae0000019e00000004000000040000000800000008fc00000002000000020000000400000014004400720075006d00200074006f006f006c00730100000000ffffffff000000000000000000000014004500640069007400200054006f006f006c007301000000f5ffffffff000000000000000000000012007400720061006e00730070006f007200740100000198ffffffff00000000000000000000000a00700061006e0069006301000002be000000f8000000000000000000000002000000030000000c0063007500720073006f00720100000000ffffffff0000000000000000000000260050006f0073002f0053006e00610070002f0053006f006c006f002d0074006f006f006c00730100000081ffffffff000000000000000000000012004e006f0074006500200049006e0066006f01000001a90000020d0000000000000000</nonshared_toolbars>
+        <shared_toolbars>000000ff00000000fd00000000000004000000024d00000004000000040000000800000008fc0000000200000002000000050000001800460069006c006500200042007500740074006f006e007301000000000000008c000000000000000000000014004400720075006d00200074006f006f006c0073010000008cffffffff000000000000000000000014004500640069007400200054006f006f006c00730100000181ffffffff000000000000000000000012007400720061006e00730070006f007200740100000224ffffffff00000000000000000000000a00700061006e00690063010000034a000000b6000000000000000000000002000000030000000c0063007500720073006f00720100000000ffffffff0000000000000000000000260050006f0073002f0053006e00610070002f0053006f006c006f002d0074006f006f006c00730100000081ffffffff000000000000000000000012004e006f0074006500200049006e0066006f01000001a9000002570000000000000000</shared_toolbars>
+        <shares_when_free>0</shares_when_free>
+        <shares_when_subwin>1</shares_when_subwin>
+        <default_subwin>0</default_subwin>
+        </topwin>
+      </drumedit>
+    <pianoroll>
+      <raster>96</raster>
+      <colormode>0</colormode>
+      <topwin>
+        <width>852</width>
+        <height>460</height>
+        <nonshared_toolbars>000000ff00000000fd000000000000035c0000018200000004000000040000000800000008fc0000000200000002000000040000001e005000690061006e006f0072006f006c006c00200074006f006f006c00730100000000ffffffff000000000000000000000014004500640069007400200054006f006f006c007301000000ae00000098000000000000000000000012007400720061006e00730070006f007200740100000146ffffffff00000000000000000000000a00700061006e00690063010000026c000000f800000000000000000000000200000002000000260050006f0073002f0053006e00610070002f0053006f006c006f002d0074006f006f006c00730100000000ffffffff000000000000000000000012004e006f0074006500200049006e0066006f0100000152000002120000000000000000</nonshared_toolbars>
+        <shared_toolbars>000000ff00000000fd00000000000004000000024d00000004000000040000000800000008fc0000000200000002000000050000001800460069006c006500200042007500740074006f006e007301000000000000008c00000000000000000000001e005000690061006e006f0072006f006c006c00200074006f006f006c0073010000008cffffffff000000000000000000000014004500640069007400200054006f006f006c0073010000013affffffff000000000000000000000012007400720061006e00730070006f0072007401000001bfffffffff00000000000000000000000a00700061006e0069006301000002e50000011b00000000000000000000000200000002000000260050006f0073002f0053006e00610070002f0053006f006c006f002d0074006f006f006c00730100000000ffffffff000000000000000000000012004e006f0074006500200049006e0066006f0100000152000002ae0000000000000000</shared_toolbars>
+        <shares_when_free>0</shares_when_free>
+        <shares_when_subwin>1</shares_when_subwin>
+        <default_subwin>0</default_subwin>
+        </topwin>
+      </pianoroll>
+    <scoreedit>
+      <topwin>
+        <width>867</width>
+        <height>544</height>
+        <nonshared_toolbars>000000ff00000000fd000000000000036b000001e300000004000000040000000800000008fc0000000200000002000000060000001e0055006e0064006f002f005200650064006f00200074006f006f006c00730100000000ffffffff00000000000000000000002800530074006500700020007200650063006f007200640069006e006700200074006f006f006c00730100000049ffffffff000000000000000000000014004500640069007400200054006f006f006c00730100000074ffffffff00000000000000000000002a005100750061006e007400690073006100740069006f006e002000730065007400740069006e0067007301000000dbffffffff000000000000000000000012007400720061006e00730070006f007200740100000203ffffffff00000000000000000000000a00700061006e006900630100000329000000420000000000000000000000020000000100000022004e006500770020006e006f00740065002000730065007400740069006e006700730100000000ffffffff0000000000000000</nonshared_toolbars>
+        <shared_toolbars>000000ff00000000fd00000000000004000000025900000004000000040000000800000008fc0000000200000002000000060000001800460069006c006500200042007500740074006f006e007301000000000000008c00000000000000000000001e0055006e0064006f002f005200650064006f00200074006f006f006c0073010000008cffffffff00000000000000000000002800530074006500700020007200650063006f007200640069006e006700200074006f006f006c007301000000d5ffffffff000000000000000000000014004500640069007400200054006f006f006c00730100000100ffffffff000000000000000000000012007400720061006e00730070006f007200740100000167ffffffff00000000000000000000000a00700061006e00690063010000028d000001730000000000000000000000020000000200000022004e006500770020006e006f00740065002000730065007400740069006e006700730100000000ffffffff00000000000000000000002a005100750061006e007400690073006100740069006f006e002000730065007400740069006e0067007301000002650000019b0000000000000000</shared_toolbars>
+        <shares_when_free>0</shares_when_free>
+        <shares_when_subwin>1</shares_when_subwin>
+        <default_subwin>0</default_subwin>
+        </topwin>
+      </scoreedit>
+    <masteredit>
+      <raster>0</raster>
+      <topwin>
+        <width>784</width>
+        <height>544</height>
+        <nonshared_toolbars>000000ff00000000fd0000000000000318000001ce00000004000000040000000800000008fc0000000200000002000000040000001e0055006e0064006f002f005200650064006f00200074006f006f006c00730100000000ffffffff000000000000000000000014004500640069007400200054006f006f006c00730100000049ffffffff000000000000000000000012007400720061006e00730070006f0072007401000000b0ffffffff00000000000000000000000a00700061006e0069006301000001d600000142000000000000000000000002000000020000001a0045006e00610062006c00650020006d006100730074006500720100000000ffffffff0000000000000000000000080049006e0066006f010000005d000002bb0000000000000000</nonshared_toolbars>
+        <shared_toolbars>000000ff00000000fd00000000000004000000024500000004000000040000000800000008fc0000000200000002000000050000001800460069006c006500200042007500740074006f006e007301000000000000008c00000000000000000000001e0055006e0064006f002f005200650064006f00200074006f006f006c0073010000008cffffffff000000000000000000000014004500640069007400200054006f006f006c007301000000d500000071000000000000000000000012007400720061006e00730070006f007200740100000146ffffffff00000000000000000000000a00700061006e00690063010000026c00000194000000000000000000000002000000020000001a0045006e00610062006c00650020006d006100730074006500720100000000ffffffff0000000000000000000000080049006e0066006f010000005d000003a30000000000000000</shared_toolbars>
+        <shares_when_free>0</shares_when_free>
+        <shares_when_subwin>1</shares_when_subwin>
+        <default_subwin>0</default_subwin>
+        </topwin>
+      </masteredit>
+    <waveedit>
+      <bgcolor r="200" g="200" b="200"></bgcolor>
+      <topwin>
+        <width>760</width>
+        <height>460</height>
+        <nonshared_toolbars>000000ff00000000fd0000000000000300000001ac00000004000000040000000800000008fc0000000100000002000000030000001e00570061007600650020006500640069007400200074006f006f006c00730100000000ffffffff00000000000000000000001c0057006100760065004500640069007400200074006f006f006c00730100000049ffffffff000000000000000000000012007400720061006e00730070006f007200740100000184ffffffff0000000000000000</nonshared_toolbars>
+        <shared_toolbars>000000ff00000000fd00000000000004000000027700000004000000040000000800000008fc0000000100000002000000040000001800460069006c006500200042007500740074006f006e007301000000000000008c00000000000000000000001e00570061007600650020006500640069007400200074006f006f006c0073010000008cffffffff00000000000000000000001c0057006100760065004500640069007400200074006f006f006c007301000000d5ffffffff000000000000000000000012007400720061006e00730070006f007200740100000210ffffffff0000000000000000</shared_toolbars>
+        <shares_when_free>0</shares_when_free>
+        <shares_when_subwin>1</shares_when_subwin>
+        <default_subwin>0</default_subwin>
+        </topwin>
+      </waveedit>
+    <dialogs>
+      <mod_len>
+        <range>1</range>
+        <offset>0</offset>
+        <rate>100</rate>
+        </mod_len>
+      <mod_velo>
+        <range>1</range>
+        <offset>0</offset>
+        <rate>100</rate>
+        </mod_velo>
+      <quantize>
+        <range>1</range>
+        <strength>90</strength>
+        <threshold>0</threshold>
+        <raster>3</raster>
+        <swing>0</swing>
+        <quant_len>1</quant_len>
+        </quantize>
+      <erase>
+        <range>1</range>
+        <velo_threshold>16</velo_threshold>
+        <velo_thres_used>0</velo_thres_used>
+        <len_threshold>12</len_threshold>
+        <len_thres_used>0</len_thres_used>
+        </erase>
+      <del_overlaps>
+        <range>1</range>
+        </del_overlaps>
+      <setlen>
+        <range>1</range>
+        <len>384</len>
+        </setlen>
+      <move>
+        <range>1</range>
+        <amount>0</amount>
+        </move>
+      <transpose>
+        <range>1</range>
+        <amount>0</amount>
+        </transpose>
+      <crescendo>
+        <range>3</range>
+        <start>80</start>
+        <end>130</end>
+        <absolute>0</absolute>
+        </crescendo>
+      <legato>
+        <range>1</range>
+        <min_len>0</min_len>
+        <allow_shortening>0</allow_shortening>
+        </legato>
+      <pastedialog>
+        <insert_method>0</insert_method>
+        <number>1</number>
+        <raster>384</raster>
+        <clone>0</clone>
+        <all_in_one_track>0</all_in_one_track>
+        </pastedialog>
+      <pasteeventsdialog>
+        <number>1</number>
+        <raster>384</raster>
+        <always_new_part>0</always_new_part>
+        <never_new_part>0</never_new_part>
+        <max_distance>3072</max_distance>
+        <into_single_part>0</into_single_part>
+        </pasteeventsdialog>
+      </dialogs>
+    </configuration>
+  <song>
+    <info></info>
+    <showinfo>1</showinfo>
+    <automation>1</automation>
+    <cpos>0</cpos>
+    <rpos>0</rpos>
+    <lpos>0</lpos>
+    <master>1</master>
+    <loop>0</loop>
+    <punchin>0</punchin>
+    <punchout>0</punchout>
+    <record>0</record>
+    <solo>0</solo>
+    <type>1</type>
+    <recmode>0</recmode>
+    <cycle>0</cycle>
+    <click>0</click>
+    <quantize>0</quantize>
+    <len>0</len>
+    <follow>1</follow>
+    <sampleRate>44100</sampleRate>
+    <AudioOutput>
+      <name>Out 1</name>
+      <record>0</record>
+      <mute>0</mute>
+      <solo>0</solo>
+      <off>0</off>
+      <channels>2</channels>
+      <height>20</height>
+      <locked>0</locked>
+      <selected>1</selected>
+      <prefader>0</prefader>
+      <sendMetronome>0</sendMetronome>
+      <automation>0</automation>
+      <controller id="0" cur="1" color="#ff0000" visible="0">
+        </controller>
+      <controller id="1" cur="0" color="#ff0000" visible="0">
+        </controller>
+      <controller id="2" cur="0" color="#ff0000" visible="0">
+        </controller>
+      </AudioOutput>
+    <tempolist fix="500000">
+      <tempo at="21474837">
+        <tick>0</tick>
+        <val>500000</val>
+        </tempo>
+      </tempolist>
+    <siglist>
+      <sig at="21474836">
+        <tick>0</tick>
+        <nom>4</nom>
+        <denom>4</denom>
+        </sig>
+      </siglist>
+    <keylist>
+    <key at="21474837">
+      <tick>0</tick>
+      <val>1</val>
+      </key>
+    </keylist>
+    <drummap>
+      </drummap>
+    </song>
+  <toplevels>
+    <arrangerview>
+      <topwin>
+        <is_subwin>1</is_subwin>
+        <geometry_state>01d9d0cb000100000000000000000000000003ff000002440000000000000000000003ff00000244000000000000</geometry_state>
+        <shares_menu>1</shares_menu>
+        <toolbars>000000ff00000000fd00000000000000000000000000000004000000040000000800000008fc00000000</toolbars>
+        </topwin>
+      <tool>1</tool>
+      </arrangerview>
+    </toplevels>
+  </muse>

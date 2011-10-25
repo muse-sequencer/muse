@@ -1,0 +1,57 @@
+% 
+% feta-generic.mf -- implement generic stuff: include lots of files, but don't
+%  set dims.
+%
+% source file of the Feta (defintively not an abbreviation for Font-En-Tja)
+% music font
+% 
+% (c) 1997--2009 Han-Wen Nienhuys <hanwen@xs4all.nl>
+% 
+
+
+if test = -1:
+	mode := smoke;
+fi
+
+staffsize# := design_size * pt#;
+
+mode_setup;
+
+input feta-macros;
+
+input feta-params;
+
+font_x_height staff_space#;
+
+%% this is a fallback so we can run the font without including feta-bolletjes.
+black_notehead_width# := 1.0 staff_space#;
+
+
+fet_beginfont ("feta", design_size, "fetaMusic");
+
+if test = 0: 
+	input feta-eindelijk;
+	input feta-toevallig;
+	input feta-arrow;
+	input feta-puntje;
+	input feta-bolletjes;
+	input feta-schrift;
+	input feta-banier;
+	input feta-klef;
+	input feta-timesig;
+	input feta-pendaal;
+	input feta-haak;
+	input feta-accordion;
+else:
+	input feta-test-generic.mf;
+fi
+
+autometric_parameter ("staffsize", staffsize#);
+autometric_parameter ("stafflinethickness", stafflinethickness#);
+autometric_parameter ("staff_space", staff_space#);
+autometric_parameter ("linethickness", linethickness#);
+autometric_parameter ("black_notehead_width", black_notehead_width#);
+autometric_parameter ("ledgerlinethickness", ledgerlinethickness#);
+autometric_parameter ("blot_diameter", blot_diameter#);
+
+fet_endfont;

@@ -1,0 +1,87 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+#=============================================================================
+#  MusE
+#  Linux Music Editor
+#  $Id:$
+#
+#  Copyright (C) 1999-2011 by Werner Schweer and others
+#
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the
+#  Free Software Foundation, Inc.,
+#  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#=============================================================================
+
+import os
+import string
+import shutil
+
+dirlist = os.listdir(".")
+
+wavs=[]
+
+print "muse-find-unused-wavs - check wav file usage in all *.med files in current dir."
+print ""
+print "This utility scans all med files in the current dir, maps their"
+print "wave file usage to what is currently available in current dir."
+print "The output is printed."
+print "Files no longer used are moved to the subdir 'unused'"
+print "Press enter to continue."
+print ""
+raw_input()
+
+for line in dirlist:
+        if (line.endswith( ".wav")):
+                #print "HA!", line
+                wavs.append(line)
+print "===================================================="
+print "===================================================="
+print " These wave files were found in current directory:\n"
+if wavs == []:
+    print "No files were found."
+    sys.exit(0)
+else:
+    for f in wavs:
+        print f
+
+for line in dirlist:
+        if (line.endswith( ".med") ):
+                #print "HO!", line
+                med = file(line)
+                for line in med:
+                        for wav in wavs:
+                                if line.find(wav) != -1:
+                                        #print "found %s removing %s"%(line, wav)
+                                        wavs.remove(wav)
+
+print "===================================================="
+print " These wave files were unused:\n"
+if wavs == []:
+    print "None"
+else:
+    for f in wavs:
+        print f
+
+    print "moving to new subdir unused, press Enter to continue"
+    raw_input()
+
+    try:
+        os.mkdir('unused')
+    except:
+        pass
+    for f in wavs:
+        shutil.move(f,'unused')
+print "===================================================="
+print "===================================================="
+
