@@ -74,11 +74,11 @@ NEvent::NEvent(MusECore::Event& e, MusECore::Part* p, int y) : MusEGui::CItem(e,
 //   addItem
 //---------------------------------------------------------
 
-void PianoCanvas::addItem(MusECore::Part* part, MusECore::Event& event)
+CItem* PianoCanvas::addItem(MusECore::Part* part, MusECore::Event& event)
       {
       if (signed(event.tick())<0) {
             printf("ERROR: trying to add event before current part!\n");
-            return;
+            return NULL;
       }
 
       NEvent* ev = new NEvent(event, part, pitch2y(event.pitch()));
@@ -93,6 +93,8 @@ void PianoCanvas::addItem(MusECore::Part* part, MusECore::Event& event)
             //part = newPart;
             part->setLenTick(part->lenTick()+diff);
             }
+      
+      return ev;
       }
 
 //---------------------------------------------------------

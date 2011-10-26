@@ -275,6 +275,9 @@ class FloEvent
 			tick=ti;
 			source_event=event;
 			source_part=part;
+			
+			num=denom=0xdeadbeef; //unused, but valgrind complains if uninited
+			key=MusECore::KEY_C;
 		}
 		FloEvent(unsigned ti, typeEnum t, int num_, int denom_)
 		{
@@ -284,6 +287,9 @@ class FloEvent
 			tick=ti;
 			source_event=NULL;
 			source_part=NULL;
+			
+			len=vel=pitch=0xdeadbeef; //unused, but valgrind complains if uninited
+			key=MusECore::KEY_C;
 		}
 		FloEvent(unsigned ti, typeEnum t, MusECore::key_enum k)
 		{
@@ -292,6 +298,8 @@ class FloEvent
 			tick=ti;
 			source_event=NULL;
 			source_part=NULL;
+			
+			pitch=vel=len=num=denom=0xdeadbeef; //unused, but valgrind complains if uninited
 		}
 };
 class FloItem

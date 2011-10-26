@@ -150,6 +150,17 @@ void EventCanvas::songChanged(int flags)
     
       if (flags & ~SC_SELECTION) {
             //items.clear();
+            bool curItemNeedsRestore=false;
+            MusECore::Event storedEvent;
+            int partSn;
+            if (curItem)
+            {
+              curItemNeedsRestore=true;
+              storedEvent=curItem->event();
+              partSn=curItem->part()->sn();
+            }
+            curItem=NULL;
+            
             items.clearDelete();
             start_tick  = MAXINT;
             end_tick    = 0;
@@ -176,7 +187,15 @@ void EventCanvas::songChanged(int flags)
                           break;
                         
                         if (e.isNote()) {
-                              addItem(part, e);
+                              CItem* temp = addItem(part, e);
+                              
+                              if (temp && curItemNeedsRestore && e==storedEvent && part->sn()==partSn)
+                              {
+                                  if (curItem!=NULL)
+                                    printf("THIS SHOULD NEVER HAPPEN: curItemNeedsRestore=true, event fits, but there was already a fitting event!?\n");
+                                  
+                                  curItem=temp;
+                                  }
                               }
                         }
                   }
