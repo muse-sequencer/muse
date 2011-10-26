@@ -60,7 +60,7 @@ std::vector<MusECore::Synth*> synthis;  // array of available MusEGlobal::synthi
 namespace MusECore {
 
 extern void connectNodes(AudioTrack*, AudioTrack*);
-bool SynthI::_isVisible=true;
+bool SynthI::_isVisible=false;
 
 /*
 //---------------------------------------------------------

@@ -1,3 +1,6 @@
+26.10.2010:
+        - Changed visibility of utility tracks so they are not seen by default in arranger (rj)
+        - Added a default audio connection in default.med (rj)
 24.10.2010:
         - Fixed bug #3293339: Midi file export SMF format 0 broken. (Tim)
           Removed erroneous extra 2 bytes. Allow metas in SMF0 in MidiFile::writeEvent().

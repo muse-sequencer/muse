@@ -42,10 +42,10 @@
 
 namespace MusECore {
 
-bool AudioAux::_isVisible=true;
-bool AudioInput::_isVisible=true;
-bool AudioOutput::_isVisible=true;
-bool AudioGroup::_isVisible = true;
+bool AudioAux::_isVisible=false;
+bool AudioInput::_isVisible=false;
+bool AudioOutput::_isVisible=false;
+bool AudioGroup::_isVisible =false;
 bool WaveTrack::_isVisible=true;
 
 // By T356. For caching jack in/out routing names BEFORE file save. 

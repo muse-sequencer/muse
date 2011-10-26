@@ -9,13 +9,6 @@
     <midiFilterCtrl2>0</midiFilterCtrl2>
     <midiFilterCtrl3>0</midiFilterCtrl3>
     <midiFilterCtrl4>0</midiFilterCtrl4>
-    <waveTracksVisible>1</waveTracksVisible>
-    <auxTracksVisible>1</auxTracksVisible>
-    <groupTracksVisible>1</groupTracksVisible>
-    <midiTracksVisible>1</midiTracksVisible>
-    <inputTracksVisible>1</inputTracksVisible>
-    <outputTracksVisible>1</outputTracksVisible>
-    <synthTracksVisible>1</synthTracksVisible>
     <mtctype>1</mtctype>
     <mtcoffset>00:00:00:00:00</mtcoffset>
     <sendClockDelay>1</sendClockDelay>
@@ -464,6 +457,16 @@
       <controller id="2" cur="0" color="#ff0000" visible="0">
         </controller>
       </AudioOutput>
+    <Route channel="1">
+      <source name="Out 1"/>
+      <dest type="1" name="system:playback_2"/>
+      </Route>
+    <Route channel="0">
+      <source name="Out 1"/>
+      <dest type="1" name="system:playback_1"/>
+      </Route>
+    <Route>
+
     <tempolist fix="500000">
       <tempo at="21474837">
         <tick>0</tick>
