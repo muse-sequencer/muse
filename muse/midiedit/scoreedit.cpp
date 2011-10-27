@@ -1506,7 +1506,7 @@ int ScoreCanvas::canvas_width()
 
 int ScoreCanvas::canvas_height()
 {
-	return staves.rbegin()->y_bottom;
+	return staves.empty() ? 0 : staves.rbegin()->y_bottom;
 }
 
 int ScoreCanvas::viewport_width()
