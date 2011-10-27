@@ -40,7 +40,7 @@ bool any_event_selected(const std::set<Part*>&, bool in_range=false);
 
 namespace MusEGui {
 QMenu* populateAddSynth(QWidget* parent);
-QActionGroup* populateAddTrack(QMenu* addTrack);
+QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll=false);
 } 
 
 #endif

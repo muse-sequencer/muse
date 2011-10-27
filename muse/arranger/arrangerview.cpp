@@ -629,7 +629,7 @@ void ArrangerView::clearScoreMenuMappers()
 
 void ArrangerView::populateAddTrack()
 {
-      QActionGroup *grp = MusEGui::populateAddTrack(addTrack);
+      QActionGroup *grp = MusEGui::populateAddTrack(addTrack, true);
       connect(addTrack, SIGNAL(triggered(QAction *)), SLOT(addNewTrack(QAction *)));
       
       trackMidiAction = grp->actions()[0];

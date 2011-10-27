@@ -1,3 +1,6 @@
+27.10.2010:
+        - Adapt context menu in arranger after what track types are currently visible there
+          Now it only allows to create the track types which are set to be visible (rj)
 26.10.2010:
         - Changed visibility of utility tracks so they are not seen by default in arranger (rj)
         - Added a default audio connection in default.med (rj)

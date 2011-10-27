@@ -285,7 +285,7 @@ QMenu* populateAddSynth(QWidget* parent)
 //    this is also used in "mixer"
 //---------------------------------------------------------
 
-QActionGroup* populateAddTrack(QMenu* addTrack)
+QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll)
       {
       QActionGroup* grp = new QActionGroup(addTrack);
 
@@ -301,22 +301,34 @@ QActionGroup* populateAddTrack(QMenu* addTrack)
                                           QT_TRANSLATE_NOOP("@default", "Add Wave Track"));
       wave->setData(MusECore::Track::WAVE);
       grp->addAction(wave);
-      QAction* aoutput = addTrack->addAction(QIcon(*addtrack_audiooutputIcon),
-                                             QT_TRANSLATE_NOOP("@default", "Add Audio Output"));
-      aoutput->setData(MusECore::Track::AUDIO_OUTPUT);
-      grp->addAction(aoutput);
-      QAction* agroup = addTrack->addAction(QIcon(*addtrack_audiogroupIcon),
-                                            QT_TRANSLATE_NOOP("@default", "Add Audio Group"));
-      agroup->setData(MusECore::Track::AUDIO_GROUP);
-      grp->addAction(agroup);
-      QAction* ainput = addTrack->addAction(QIcon(*addtrack_audioinputIcon),
-                                            QT_TRANSLATE_NOOP("@default", "Add Audio Input"));
-      ainput->setData(MusECore::Track::AUDIO_INPUT);
-      grp->addAction(ainput);
-      QAction* aaux = addTrack->addAction(QIcon(*addtrack_auxsendIcon),
-                                          QT_TRANSLATE_NOOP("@default", "Add Aux Send"));
-      aaux->setData(MusECore::Track::AUDIO_AUX);
-      grp->addAction(aaux);
+
+      if (populateAll || MusECore::AudioOutput::visible()) {
+        QAction* aoutput = addTrack->addAction(QIcon(*addtrack_audiooutputIcon),
+                                               QT_TRANSLATE_NOOP("@default", "Add Audio Output"));
+        aoutput->setData(MusECore::Track::AUDIO_OUTPUT);
+        grp->addAction(aoutput);
+      }
+
+      if (populateAll || MusECore::AudioGroup::visible()) {
+        QAction* agroup = addTrack->addAction(QIcon(*addtrack_audiogroupIcon),
+                                              QT_TRANSLATE_NOOP("@default", "Add Audio Group"));
+        agroup->setData(MusECore::Track::AUDIO_GROUP);
+        grp->addAction(agroup);
+      }
+
+      if (populateAll || MusECore::AudioInput::visible()) {
+        QAction* ainput = addTrack->addAction(QIcon(*addtrack_audioinputIcon),
+                                              QT_TRANSLATE_NOOP("@default", "Add Audio Input"));
+        ainput->setData(MusECore::Track::AUDIO_INPUT);
+        grp->addAction(ainput);
+      }
+
+      if (populateAll || MusECore::AudioAux::visible()) {
+        QAction* aaux = addTrack->addAction(QIcon(*addtrack_auxsendIcon),
+                                            QT_TRANSLATE_NOOP("@default", "Add Aux Send"));
+        aaux->setData(MusECore::Track::AUDIO_AUX);
+        grp->addAction(aaux);
+      }
 
       // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
       QMenu* synp = populateAddSynth(addTrack);
