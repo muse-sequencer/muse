@@ -1,3 +1,5 @@
+28.10.2010:
+        - Slight fix of midi SMF 1 export. Include meta 0x01 text event comment. (Tim)
 27.10.2010:
         - Adapt context menu in arranger after what track types are currently visible there
           Now it only allows to create the track types which are set to be visible (rj)

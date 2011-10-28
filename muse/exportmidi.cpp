@@ -213,7 +213,7 @@ void MusE::exportMidi()
                   //---------------------------------------------------
                   //    Write Coment
                   //
-                  if (MusEGlobal::config.smfFormat == 0)  // Only for smf 0 added by Tim. FIXME: Is this correct? See below.
+                  //if (MusEGlobal::config.smfFormat == 0)  // Only for smf 0 added by Tim. FIXME: Is this correct? See below.
                   {
                     QString comment = track->comment();
                     if (!comment.isEmpty()) {
