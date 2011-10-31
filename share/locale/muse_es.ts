@@ -4,9 +4,8 @@
 <context>
     <name>@default</name>
     <message>
-        <location filename="../../muse/transport.cpp" line="+48"/>
         <source>Click this button to enable recording</source>
-        <translation type="unfinished">Pulsa este botón para habilitar la captura</translation>
+        <translation type="obsolete">Pulsa este botón para habilitar la captura</translation>
     </message>
     <message>
         <source>sets amount of quantization:
@@ -17,59 +16,50 @@
 100 - sobrecuantizado</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="+33"/>
         <source>select Pointer Tool:
 with the pointer tool you can:
   select parts
   move parts
   copy parts</source>
-        <translation type="unfinished">selecciona la Herramienta de Puntero:
+        <translation type="obsolete">selecciona la Herramienta de Puntero:
 con la herramienta de puntero puedes:
   seleccionar partes
   mover partes
   copiar partes</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="+97"/>
         <source>Click this button to open a &lt;em&gt;new song&lt;/em&gt;.&lt;br&gt;You can also select the &lt;b&gt;Open command&lt;/b&gt; from the File menu.</source>
-        <translation type="unfinished">Pulsa este botón para abrir una &lt;em&gt;nueva canción&lt;/em&gt;Puedes usar también el comando &lt;b&gt;Abrir&lt;/b&gt; del me de archivo</translation>
+        <translation type="obsolete">Pulsa este botón para abrir una &lt;em&gt;nueva canción&lt;/em&gt;Puedes usar también el comando &lt;b&gt;Abrir&lt;/b&gt; del me de archivo</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Click this button to save the song you are editing.  You will be prompted for a file name.
 You can also select the Save command from the File menu.</source>
-        <translation type="unfinished">Pulsa este botón para guardar la canción que está editando. Se te preguntará por un nombre de archivo.
+        <translation type="obsolete">Pulsa este botón para guardar la canción que está editando. Se te preguntará por un nombre de archivo.
 Puedes seleccionar también el comando Guardar del men de Archivo</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Create New Song</source>
-        <translation type="unfinished">Crea una nueva canción</translation>
+        <translation type="obsolete">Crea una nueva canción</translation>
     </message>
     <message>
-        <location filename="../../muse/transport.cpp" line="+1"/>
         <source>Click this button to stop playback</source>
-        <translation type="unfinished">Pulsa este botón para detener la reproducción</translation>
+        <translation type="obsolete">Pulsa este botón para detener la reproducción</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Click this button to start playback</source>
-        <translation type="unfinished">Pulsa este botón para iniciar la reproducción</translation>
+        <translation type="obsolete">Pulsa este botón para iniciar la reproducción</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Click this button to rewind to start position</source>
-        <translation type="unfinished">Pulsa este botón para regresar al principio</translation>
+        <translation type="obsolete">Pulsa este botón para regresar al principio</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Click this button to rewind</source>
-        <translation type="unfinished">Pulsa este botón para ir hacia atrás</translation>
+        <translation type="obsolete">Pulsa este botón para ir hacia atrás</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Click this button to forward current play position</source>
-        <translation type="unfinished">Pulsa este botón para adelantar la posición de reproducción</translation>
+        <translation type="obsolete">Pulsa este botón para adelantar la posición de reproducción</translation>
     </message>
     <message>
         <source>don&apos;t quantize notes above this tick limit</source>
@@ -80,188 +70,134 @@ Puedes seleccionar también el comando Guardar del men de Archivo</translation>
         <translation type="obsolete">cuantiza también la longitud de la nota al valor por defecto</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="+2"/>
         <source>loop between left mark and right mark</source>
-        <translation type="unfinished">hace un bucle entre las marcas de izquierda y derecha</translation>
+        <translation type="obsolete">hace un bucle entre las marcas de izquierda y derecha</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>record starts at left mark</source>
-        <translation type="unfinished">la captura comienza en la marca izquierda</translation>
+        <translation type="obsolete">la captura comienza en la marca izquierda</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>record stops at right mark</source>
-        <translation type="unfinished">la captura termina en la merca derecha</translation>
+        <translation type="obsolete">la captura termina en la merca derecha</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>rewind to start position</source>
-        <translation type="unfinished">retrocede a la posición de inicio</translation>
+        <translation type="obsolete">retrocede a la posición de inicio</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>rewind current position</source>
-        <translation type="unfinished">retrasa la posición actual</translation>
+        <translation type="obsolete">retrasa la posición actual</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>move current position</source>
-        <translation type="unfinished">mueve la posición actual</translation>
+        <translation type="obsolete">mueve la posición actual</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>stop sequencer</source>
-        <translation type="unfinished">para el secuenciador</translation>
+        <translation type="obsolete">para el secuenciador</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>start sequencer play</source>
-        <translation type="unfinished">inicia el secuenciador</translation>
+        <translation type="obsolete">inicia el secuenciador</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>to record press record and then play</source>
-        <translation type="unfinished">para grabar pulsa grabar y después reproducir</translation>
+        <translation type="obsolete">para grabar pulsa grabar y después reproducir</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>send note off to all midi channels</source>
-        <translation type="unfinished">envia un apagado de nota (note off) a todos los canales midi</translation>
+        <translation type="obsolete">envia un apagado de nota (note off) a todos los canales midi</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="+5"/>
         <source>select Pencil Tool:
 with the pencil tool you can:
   create new parts
   modify length of parts</source>
-        <translation type="unfinished">selecciona la Herramienta de Lápiz:
+        <translation type="obsolete">selecciona la Herramienta de Lápiz:
 con la herramienta de lápiz puedes:
   crear nuevas partes
   modificar la longitud de las partes</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>select Delete Tool:
 with the delete tool you can delete parts</source>
-        <translation type="unfinished">selecciona la Herramienta de Borrado:
+        <translation type="obsolete">selecciona la Herramienta de Borrado:
 con la herramienta de borrado puedes borrar partes</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>select Cut Tool:
 with the cut tool you can split a part</source>
-        <translation type="unfinished">selecciona la Herramienta de Corte:
+        <translation type="obsolete">selecciona la Herramienta de Corte:
 con la herramienta de core puedes partir una parte</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>select Glue Tool:
 with the glue tool you can glue two parts</source>
-        <translation type="unfinished">selecciona la Herramienta de Pegado:
+        <translation type="obsolete">selecciona la Herramienta de Pegado:
 con la herramienta de pegado puedes unir dos partes</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>select Score Tool:
 </source>
-        <translation type="unfinished">selecciona la Herramienta de Partitura:
+        <translation type="obsolete">selecciona la Herramienta de Partitura:
 </translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>select Quantize Tool:
 insert display quantize event</source>
-        <translation type="unfinished">selecciona la Herramianta de Cuantización:
+        <translation type="obsolete">selecciona la Herramianta de Cuantización:
 inserta un evento de cuantización de visualización</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>select Drawing Tool</source>
-        <translation type="unfinished">selecciona la Herramienta de Dibujo</translation>
+        <translation type="obsolete">selecciona la Herramienta de Dibujo</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>select Muting Tool:
 click on part to mute/unmute</source>
-        <translation type="unfinished">selecciona la Herramienta de Silenciar:
+        <translation type="obsolete">selecciona la Herramienta de Silenciar:
 haz click en una parte para silenciar/des-silenciar</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Manipulate automation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Cursor tool</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
         <source>pointer</source>
-        <translation type="unfinished">puntero</translation>
+        <translation type="obsolete">puntero</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>pencil</source>
-        <translation type="unfinished">lápiz</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>edit automation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>cursor</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">lápiz</translation>
     </message>
     <message>
         <source>rubber</source>
         <translation type="obsolete">goma</translation>
     </message>
     <message>
-        <location line="-7"/>
         <source>cutter</source>
-        <translation type="unfinished">cortador</translation>
+        <translation type="obsolete">cortador</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>score</source>
-        <translation type="unfinished">partitura</translation>
+        <translation type="obsolete">partitura</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>glue</source>
-        <translation type="unfinished">pegamento</translation>
+        <translation type="obsolete">pegamento</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>quantize</source>
-        <translation type="unfinished">cuantizador</translation>
+        <translation type="obsolete">cuantizador</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>draw</source>
-        <translation type="unfinished">dibujar</translation>
+        <translation type="obsolete">dibujar</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>mute parts</source>
-        <translation type="unfinished">silenciar partes</translation>
+        <translation type="obsolete">silenciar partes</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="+155"/>
-        <location filename="../../muse/master/masteredit.cpp" line="+162"/>
-        <location filename="../../muse/widgets/comboQuant.cpp" line="+40"/>
-        <location line="+1"/>
-        <location line="+1"/>
-        <location filename="../../muse/widgets/tb1.cpp" line="+48"/>
-        <location line="+1"/>
-        <location line="+1"/>
         <source>Off</source>
-        <translation type="unfinished">Apagar</translation>
+        <translation type="obsolete">Apagar</translation>
     </message>
     <message>
         <source>presets (*.pre *.pre.gz *.pre.bz2)</source>
@@ -272,22 +208,7 @@ haz click en una parte para silenciar/des-silenciar</translation>
         <translation type="obsolete">Todos los archivos (*)</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="+250"/>
-        <source>MESS</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>DSSI</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>FST</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
+        <location filename="../../muse/helper.cpp" line="+295"/>
         <source>Add Midi Track</source>
         <translation type="unfinished">Agregar pista MIDI</translation>
     </message>
@@ -322,181 +243,52 @@ haz click en una parte para silenciar/des-silenciar</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="-6"/>
-        <source>eraser</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../muse/helper.cpp" line="+8"/>
+        <location line="+8"/>
         <source>Add Synth</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="+0"/>
-        <source>Bar</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../muse/confmport.cpp" line="+733"/>
-        <source> Jack</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+46"/>
-        <source>ALSA:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>SYNTH:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>JACK:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../muse/driver/alsamidi.cpp" line="+211"/>
-        <location filename="../../muse/driver/jackmidi.cpp" line="+294"/>
-        <location filename="../../muse/midiport.cpp" line="+1189"/>
-        <location filename="../../muse/track.cpp" line="+953"/>
-        <location line="+16"/>
-        <location line="+30"/>
+        <location filename="../../muse/midiport.cpp" line="+1190"/>
         <source>Route</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <location filename="../../muse/driver/jackmidi.cpp" line="+2"/>
-        <location filename="../../muse/track.cpp" line="-28"/>
-        <location line="+37"/>
-        <source> channel=&quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <location filename="../../muse/driver/jackmidi.cpp" line="+3"/>
-        <location filename="../../muse/midiport.cpp" line="+7"/>
-        <location filename="../../muse/track.cpp" line="-48"/>
-        <location line="+60"/>
+        <location line="+7"/>
         <source>dest</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+2"/>
-        <location filename="../../muse/driver/jackmidi.cpp" line="+2"/>
-        <source> devtype=&quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <location filename="../../muse/driver/jackmidi.cpp" line="-20"/>
-        <location line="+23"/>
-        <location filename="../../muse/track.cpp" line="-42"/>
-        <location line="+48"/>
-        <source> type=&quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location line="+1"/>
-        <location filename="../../muse/driver/jackmidi.cpp" line="-22"/>
-        <location line="+23"/>
-        <location filename="../../muse/midiport.cpp" line="+1"/>
-        <location filename="../../muse/track.cpp" line="-65"/>
-        <location line="+18"/>
-        <location line="+53"/>
         <source> name=&quot;%1&quot;/</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/driver/jackmidi.cpp" line="-26"/>
-        <location filename="../../muse/track.cpp" line="-56"/>
-        <source>source</source>
+        <source>Velocity</source>
+        <translation type="obsolete">Velocidad</translation>
+    </message>
+    <message>
+        <location line="-857"/>
+        <source>Warning: No output devices!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midictrl.cpp" line="+244"/>
-        <source>Velocity</source>
-        <translation type="unfinished">Velocidad</translation>
+        <location line="+5"/>
+        <source>Open midi config...</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="-807"/>
+        <location line="+23"/>
+        <source>Empty ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+22"/>
         <source>&lt;none&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+801"/>
-        <location filename="../../muse/track.cpp" line="-21"/>
-        <location line="+48"/>
         <source> channelMask=&quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../muse/osc.cpp" line="+1090"/>
-        <source>dssi_synth</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+73"/>
-        <source>ladspa_efx</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../muse/track.cpp" line="+8"/>
-        <source> channels=&quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source> remch=&quot;%1&quot;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source> mport=&quot;%1&quot;/</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../muse/widgets/visibletracks.cpp" line="+35"/>
-        <location line="+9"/>
-        <source>Show wave tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-8"/>
-        <location line="+9"/>
-        <source>Show group tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-8"/>
-        <location line="+9"/>
-        <source>Show aux tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-8"/>
-        <location line="+9"/>
-        <source>Show input tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-8"/>
-        <location line="+9"/>
-        <source>Show output tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-8"/>
-        <location line="+9"/>
-        <source>Show midi tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-8"/>
-        <location line="+9"/>
-        <source>Show synth tracks</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -9567,24 +9359,6 @@ falló </translation>
     </message>
 </context>
 <context>
-    <name>MusECore</name>
-    <message>
-        <location filename="../../muse/midiport.cpp" line="-851"/>
-        <source>Warning: No output devices!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Open midi config...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Empty ports</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>MusECore::Song</name>
     <message>
         <location filename="../../muse/song.cpp" line="+2439"/>
@@ -9761,7 +9535,7 @@ Word-breaking but only with spaces.</source>
 <context>
     <name>MusEGui::Arranger</name>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="-74"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="+81"/>
         <source>Enable Recording</source>
         <translation type="unfinished">Habilita captura</translation>
     </message>
@@ -9878,7 +9652,17 @@ Right-click to show GUI.</source>
         <translation type="unfinished">Cursor</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+10"/>
+        <source>Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Snap</source>
         <translation type="unfinished">Snap</translation>
     </message>
@@ -10523,6 +10307,16 @@ Right-click to show GUI.</source>
     <message>
         <location line="+4"/>
         <source>Window &amp;Config</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::ComboQuant</name>
+    <message>
+        <location filename="../../muse/widgets/comboQuant.cpp" line="+40"/>
+        <location line="+1"/>
+        <location line="+1"/>
+        <source>Off</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -11220,7 +11014,143 @@ Save Current Instrument?</source>
 <context>
     <name>MusEGui::EditToolBar</name>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="+17"/>
+        <location filename="../../muse/widgets/tools.cpp" line="+33"/>
+        <source>select Pointer Tool:
+with the pointer tool you can:
+  select parts
+  move parts
+  copy parts</source>
+        <translation type="unfinished">selecciona la Herramienta de Puntero:
+con la herramienta de puntero puedes:
+  seleccionar partes
+  mover partes
+  copiar partes</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>select Pencil Tool:
+with the pencil tool you can:
+  create new parts
+  modify length of parts</source>
+        <translation type="unfinished">selecciona la Herramienta de Lápiz:
+con la herramienta de lápiz puedes:
+  crear nuevas partes
+  modificar la longitud de las partes</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>select Delete Tool:
+with the delete tool you can delete parts</source>
+        <translation type="unfinished">selecciona la Herramienta de Borrado:
+con la herramienta de borrado puedes borrar partes</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>select Cut Tool:
+with the cut tool you can split a part</source>
+        <translation type="unfinished">selecciona la Herramienta de Corte:
+con la herramienta de core puedes partir una parte</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>select Glue Tool:
+with the glue tool you can glue two parts</source>
+        <translation type="unfinished">selecciona la Herramienta de Pegado:
+con la herramienta de pegado puedes unir dos partes</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>select Score Tool:
+</source>
+        <translation type="unfinished">selecciona la Herramienta de Partitura:
+</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>select Quantize Tool:
+insert display quantize event</source>
+        <translation type="unfinished">selecciona la Herramianta de Cuantización:
+inserta un evento de cuantización de visualización</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>select Drawing Tool</source>
+        <translation type="unfinished">selecciona la Herramienta de Dibujo</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>select Muting Tool:
+click on part to mute/unmute</source>
+        <translation type="unfinished">selecciona la Herramienta de Silenciar:
+haz click en una parte para silenciar/des-silenciar</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Manipulate automation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cursor tool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>pointer</source>
+        <translation type="unfinished">puntero</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>pencil</source>
+        <translation type="unfinished">lápiz</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>eraser</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>cutter</source>
+        <translation type="unfinished">cortador</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>score</source>
+        <translation type="unfinished">partitura</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>glue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>quantize</source>
+        <translation type="unfinished">cuantizador</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>draw</source>
+        <translation type="unfinished">dibujar</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>mute parts</source>
+        <translation type="unfinished">silenciar partes</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>edit automation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>cursor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Edit Tools</source>
         <translation type="unfinished">Editar herramientas</translation>
     </message>
@@ -11578,7 +11508,7 @@ Save Current Instrument?</source>
 <context>
     <name>MusEGui::MPConfig</name>
     <message>
-        <location filename="../../muse/confmport.cpp" line="-730"/>
+        <location filename="../../muse/confmport.cpp" line="+101"/>
         <location line="+176"/>
         <source>Default input connections</source>
         <translation type="unfinished"></translation>
@@ -11648,12 +11578,7 @@ Do you want to apply to all existing midi tracks now?</source>
     </message>
     <message>
         <location line="+43"/>
-        <source>Create</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source> device</source>
+        <source>Create Jack device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -11931,7 +11856,7 @@ Do you want to apply to all existing midi tracks now?</source>
 <context>
     <name>MusEGui::MasterEdit</name>
     <message>
-        <location filename="../../muse/master/masteredit.cpp" line="-56"/>
+        <location filename="../../muse/master/masteredit.cpp" line="+106"/>
         <source>MusE: Mastertrack</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11991,7 +11916,17 @@ Do you want to apply to all existing midi tracks now?</source>
         <translation type="unfinished">tempo en la posición del cursor</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+4"/>
+        <source>Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Bar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Snap</source>
         <translation type="unfinished">Snap</translation>
     </message>
@@ -12469,7 +12404,7 @@ Apply sync settings?</source>
 <context>
     <name>MusEGui::MusE</name>
     <message>
-        <location filename="../../muse/app.cpp" line="+41"/>
+        <location filename="../../muse/app.cpp" line="+137"/>
         <location line="+16"/>
         <source>Failed to start audio!</source>
         <translation type="unfinished"></translation>
@@ -12512,75 +12447,145 @@ Apply sync settings?</source>
         <translation type="unfinished">Bucle</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+3"/>
+        <source>loop between left mark and right mark</source>
+        <translation type="unfinished">hace un bucle entre las marcas de izquierda y derecha</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Punchin</source>
         <translation type="unfinished">Pinchar</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+3"/>
+        <source>record starts at left mark</source>
+        <translation type="unfinished">la captura comienza en la marca izquierda</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Punchout</source>
         <translation type="unfinished">Fin pinchado</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+3"/>
+        <source>record stops at right mark</source>
+        <translation type="unfinished">la captura termina en la merca derecha</translation>
+    </message>
+    <message>
+        <location line="+8"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+2"/>
+        <source>rewind to start position</source>
+        <translation type="unfinished">retrocede a la posición de inicio</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Rewind</source>
         <translation type="unfinished">Retroceder</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+2"/>
+        <source>rewind current position</source>
+        <translation type="unfinished">retrasa la posición actual</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Forward</source>
         <translation type="unfinished">Avanzar</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+2"/>
+        <source>move current position</source>
+        <translation type="unfinished">mueve la posición actual</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Stop</source>
         <translation type="unfinished">Parar</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+3"/>
+        <source>stop sequencer</source>
+        <translation type="unfinished">para el secuenciador</translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Play</source>
         <translation type="unfinished">Reproducir</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+3"/>
+        <source>start sequencer play</source>
+        <translation type="unfinished">inicia el secuenciador</translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Record</source>
         <translation type="unfinished">Grabar</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location line="+232"/>
+        <location line="+2"/>
+        <source>to record press record and then play</source>
+        <translation type="unfinished">para grabar pulsa grabar y después reproducir</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <location line="+238"/>
         <source>Panic</source>
         <translation type="unfinished">Pánico</translation>
     </message>
     <message>
-        <location line="-220"/>
+        <location line="-236"/>
+        <source>send note off to all midi channels</source>
+        <translation type="unfinished">envia un apagado de nota (note off) a todos los canales midi</translation>
+    </message>
+    <message>
+        <location line="+10"/>
         <source>&amp;New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+1"/>
+        <location line="+1"/>
+        <source>Create New Song</source>
+        <translation type="unfinished">Crea una nueva canción</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>&amp;Open</source>
         <translation type="unfinished">&amp;Abrir</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+2"/>
+        <location line="+2"/>
+        <source>Click this button to open a &lt;em&gt;new song&lt;/em&gt;.&lt;br&gt;You can also select the &lt;b&gt;Open command&lt;/b&gt; from the File menu.</source>
+        <translation type="unfinished">Pulsa este botón para abrir una &lt;em&gt;nueva canción&lt;/em&gt;Puedes usar también el comando &lt;b&gt;Abrir&lt;/b&gt; del me de archivo</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Open &amp;Recent</source>
         <translation type="unfinished">Abrir &amp;Recientes</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+1005"/>
+        <location line="+1009"/>
         <location line="+1211"/>
         <source>&amp;Save</source>
         <translation type="unfinished">&amp;Guardar</translation>
     </message>
     <message>
-        <location line="-2211"/>
+        <location line="-2218"/>
+        <location line="+3"/>
+        <source>Click this button to save the song you are editing.  You will be prompted for a file name.
+You can also select the Save command from the File menu.</source>
+        <translation type="unfinished">Pulsa este botón para guardar la canción que está editando. Se te preguntará por un nombre de archivo.
+Puedes seleccionar también el comando Guardar del men de Archivo</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Save &amp;As</source>
         <translation type="unfinished">Guardar c&amp;omo</translation>
     </message>
@@ -13781,7 +13786,7 @@ Likely the selected track is the wrong type.</source>
 <context>
     <name>MusEGui::ScoreCanvas</name>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="+1251"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="+1247"/>
         <source>Treble</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13864,7 +13869,20 @@ Likely the selected track is the wrong type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+28"/>
+        <location line="+1"/>
+        <location line="+311"/>
+        <source>Apply to new notes:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-310"/>
+        <location line="+314"/>
+        <source>Apply to selected notes:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-307"/>
         <source>Velocity:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14246,7 +14264,7 @@ the selected title is not unique</source>
 <context>
     <name>MusEGui::TempoSig</name>
     <message>
-        <location filename="../../muse/transport.cpp" line="+103"/>
+        <location filename="../../muse/transport.cpp" line="+149"/>
         <source>Tempo/Sig</source>
         <translation type="unfinished">tempo/firma</translation>
     </message>
@@ -14254,7 +14272,14 @@ the selected title is not unique</source>
 <context>
     <name>MusEGui::Toolbar1</name>
     <message>
-        <location filename="../../muse/widgets/tb1.cpp" line="+21"/>
+        <location filename="../../muse/widgets/tb1.cpp" line="+48"/>
+        <location line="+1"/>
+        <location line="+1"/>
+        <source>Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
         <source>Solo</source>
         <translation type="unfinished">Solo</translation>
     </message>
@@ -14437,32 +14462,62 @@ the selected title is not unique</source>
         <translation type="unfinished">retroceder al inicio</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+1"/>
+        <source>Click this button to rewind to start position</source>
+        <translation type="unfinished">Pulsa este botón para regresar al principio</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>rewind</source>
         <translation type="unfinished">retroceder</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+2"/>
+        <source>Click this button to rewind</source>
+        <translation type="unfinished">Pulsa este botón para ir hacia atrás</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>forward</source>
         <translation type="unfinished">avanzar</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+2"/>
+        <source>Click this button to forward current play position</source>
+        <translation type="unfinished">Pulsa este botón para adelantar la posición de reproducción</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>stop</source>
         <translation type="unfinished">parar</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+2"/>
+        <source>Click this button to stop playback</source>
+        <translation type="unfinished">Pulsa este botón para detener la reproducción</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>play</source>
         <translation type="unfinished">reproducir</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+1"/>
+        <source>Click this button to start playback</source>
+        <translation type="unfinished">Pulsa este botón para iniciar la reproducción</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>record</source>
         <translation type="unfinished">grabar</translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+1"/>
+        <source>Click this button to enable recording</source>
+        <translation type="unfinished">Pulsa este botón para habilitar la captura</translation>
+    </message>
+    <message>
+        <location line="+27"/>
         <source>AC</source>
         <translation type="unfinished">AC</translation>
     </message>
@@ -14515,7 +14570,49 @@ the selected title is not unique</source>
 <context>
     <name>MusEGui::VisibleTracks</name>
     <message>
-        <location filename="../../muse/widgets/visibletracks.cpp" line="+9"/>
+        <location filename="../../muse/widgets/visibletracks.cpp" line="+35"/>
+        <location line="+9"/>
+        <source>Show wave tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <location line="+9"/>
+        <source>Show group tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <location line="+9"/>
+        <source>Show aux tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <location line="+9"/>
+        <source>Show input tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <location line="+9"/>
+        <source>Show output tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <location line="+9"/>
+        <source>Show midi tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <location line="+9"/>
+        <source>Show synth tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Visible track types</source>
         <translation type="unfinished"></translation>
     </message>

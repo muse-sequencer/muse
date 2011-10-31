@@ -730,7 +730,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       //act = pup->addAction(tr("Create") + QT_TRANSLATE_NOOP("@default", " Jack") + tr(" output"));
                       //act = pup->addAction(tr("Create") + QT_TRANSLATE_NOOP("@default", " Jack") + tr(" combo"));
                       // ... or keep it simple and let the user click on the green lights instead.
-                      act = pup->addAction(tr("Create") + QT_TRANSLATE_NOOP("@default", " Jack") + tr(" device"));
+                      act = pup->addAction(tr("Create Jack device"));
                       act->setData(0);
                       
                       typedef std::map<std::string, int > asmap;
@@ -776,7 +776,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       //if(!mapALSA.empty())
                       {
                         pup->addSeparator();
-                        pup->addAction(new MusEGui::MenuTitleItem(QT_TRANSLATE_NOOP("@default", "ALSA:"), pup));
+                        pup->addAction(new MusEGui::MenuTitleItem("ALSA:", pup));
                         
                         for(imap i = mapALSA.begin(); i != mapALSA.end(); ++i) 
                         {
@@ -791,7 +791,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                             if(md->deviceType() != MusECore::MidiDevice::ALSA_MIDI)  
                               continue;
                               
-                            act = pup->addAction(QT_TRANSLATE_NOOP("@default", md->name()));
+                            act = pup->addAction(md->name());
                             act->setData(idx);
                             act->setCheckable(true);
                             act->setChecked(md == dev);
@@ -802,7 +802,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       if(!mapSYNTH.empty())
                       {
                         pup->addSeparator();
-                        pup->addAction(new MusEGui::MenuTitleItem(QT_TRANSLATE_NOOP("@default", "SYNTH:"), pup));
+                        pup->addAction(new MusEGui::MenuTitleItem("SYNTH:", pup));
                         
                         for(imap i = mapSYNTH.begin(); i != mapSYNTH.end(); ++i) 
                         {
@@ -817,7 +817,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                             if(md->deviceType() != MusECore::MidiDevice::SYNTH_MIDI)  
                               continue;
                               
-                            act = pup->addAction(QT_TRANSLATE_NOOP("@default", md->name()));
+                            act = pup->addAction(md->name());
                             act->setData(idx);
                             act->setCheckable(true);
                             act->setChecked(md == dev);
@@ -828,7 +828,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                       //if(!mapJACK.empty())
                       {
                         pup->addSeparator();
-                        pup->addAction(new MusEGui::MenuTitleItem(QT_TRANSLATE_NOOP("@default", "JACK:"), pup));
+                        pup->addAction(new MusEGui::MenuTitleItem("JACK:", pup));
                         
                         for(imap i = mapJACK.begin(); i != mapJACK.end(); ++i) 
                         {
@@ -843,7 +843,7 @@ void MPConfig::rbClicked(QTableWidgetItem* item)
                             if(md->deviceType() != MusECore::MidiDevice::JACK_MIDI)  
                               continue;
                               
-                            act = pup->addAction(QT_TRANSLATE_NOOP("@default", md->name()));
+                            act = pup->addAction(md->name());
                             act->setData(idx);
                             act->setCheckable(true);
                             act->setChecked(md == dev);

@@ -45,9 +45,9 @@ static int rasterTable[] = {
       };
 
 static const char* rasterStrings[] = {
-      QT_TRANSLATE_NOOP("@default", "Off"), "2pp", "5pp", "64T", "32T", "16T", "8T", "4T", "2T", "1T",
-      QT_TRANSLATE_NOOP("@default", "Off"), "3pp", "6pp", "64",  "32",  "16",  "8",  "4",  "2",  "1",
-      QT_TRANSLATE_NOOP("@default", "Off"), "4pp", "7pp", "64.", "32.", "16.", "8.", "4.", "2.", "1."
+      QT_TRANSLATE_NOOP("MusEGui::Toolbar1", "Off"), "2pp", "5pp", "64T", "32T", "16T", "8T", "4T", "2T", "1T",
+      QT_TRANSLATE_NOOP("MusEGui::Toolbar1", "Off"), "3pp", "6pp", "64",  "32",  "16",  "8",  "4",  "2",  "1",
+      QT_TRANSLATE_NOOP("MusEGui::Toolbar1", "Off"), "4pp", "7pp", "64.", "32.", "16.", "8.", "4.", "2.", "1."
       };
 
 

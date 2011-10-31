@@ -93,25 +93,7 @@ namespace MusEGui {
 
 static pthread_t watchdogThread;
 //ErrorHandler *error;
-static const char* fileOpenText =
-      QT_TRANSLATE_NOOP("@default", "Click this button to open a <em>new song</em>.<br>"
-      "You can also select the <b>Open command</b> from the File menu.");
-static const char* fileSaveText =
-      QT_TRANSLATE_NOOP("@default", "Click this button to save the song you are "
-      "editing.  You will be prompted for a file name.\n"
-      "You can also select the Save command from the File menu.");
-static const char* fileNewText        = QT_TRANSLATE_NOOP("@default", "Create New Song");
 
-static const char* infoLoopButton     = QT_TRANSLATE_NOOP("@default", "loop between left mark and right mark");
-static const char* infoPunchinButton  = QT_TRANSLATE_NOOP("@default", "record starts at left mark");
-static const char* infoPunchoutButton = QT_TRANSLATE_NOOP("@default", "record stops at right mark");
-static const char* infoStartButton    = QT_TRANSLATE_NOOP("@default", "rewind to start position");
-static const char* infoRewindButton   = QT_TRANSLATE_NOOP("@default", "rewind current position");
-static const char* infoForwardButton  = QT_TRANSLATE_NOOP("@default", "move current position");
-static const char* infoStopButton     = QT_TRANSLATE_NOOP("@default", "stop sequencer");
-static const char* infoPlayButton     = QT_TRANSLATE_NOOP("@default", "start sequencer play");
-static const char* infoRecordButton   = QT_TRANSLATE_NOOP("@default", "to record press record and then play");
-static const char* infoPanicButton    = QT_TRANSLATE_NOOP("@default", "send note off to all midi channels");
 
 #define PROJECT_LIST_LEN  6
 static QString* projectList[PROJECT_LIST_LEN];
@@ -411,21 +393,21 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
          tr("Loop"), MusEGlobal::transportAction);
       MusEGlobal::loopAction->setCheckable(true);
 
-      MusEGlobal::loopAction->setWhatsThis(tr(infoLoopButton));
+      MusEGlobal::loopAction->setWhatsThis(tr("loop between left mark and right mark"));
       connect(MusEGlobal::loopAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setLoop(bool)));
       
       MusEGlobal::punchinAction = new QAction(QIcon(*MusEGui::punchin1Icon),
          tr("Punchin"), MusEGlobal::transportAction);
       MusEGlobal::punchinAction->setCheckable(true);
 
-      MusEGlobal::punchinAction->setWhatsThis(tr(infoPunchinButton));
+      MusEGlobal::punchinAction->setWhatsThis(tr("record starts at left mark"));
       connect(MusEGlobal::punchinAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchin(bool)));
 
       MusEGlobal::punchoutAction = new QAction(QIcon(*MusEGui::punchout1Icon),
          tr("Punchout"), MusEGlobal::transportAction);
       MusEGlobal::punchoutAction->setCheckable(true);
 
-      MusEGlobal::punchoutAction->setWhatsThis(tr(infoPunchoutButton));
+      MusEGlobal::punchoutAction->setWhatsThis(tr("record stops at right mark"));
       connect(MusEGlobal::punchoutAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPunchout(bool)));
 
       QAction *tseparator = new QAction(this);
@@ -435,26 +417,26 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       MusEGlobal::startAction = new QAction(QIcon(*MusEGui::startIcon),
          tr("Start"), MusEGlobal::transportAction);
 
-      MusEGlobal::startAction->setWhatsThis(tr(infoStartButton));
+      MusEGlobal::startAction->setWhatsThis(tr("rewind to start position"));
       connect(MusEGlobal::startAction, SIGNAL(activated()), MusEGlobal::song, SLOT(rewindStart()));
 
       MusEGlobal::rewindAction = new QAction(QIcon(*MusEGui::frewindIcon),
          tr("Rewind"), MusEGlobal::transportAction);
 
-      MusEGlobal::rewindAction->setWhatsThis(tr(infoRewindButton));
+      MusEGlobal::rewindAction->setWhatsThis(tr("rewind current position"));
       connect(MusEGlobal::rewindAction, SIGNAL(activated()), MusEGlobal::song, SLOT(rewind()));
 
       MusEGlobal::forwardAction = new QAction(QIcon(*MusEGui::fforwardIcon),
 	 tr("Forward"), MusEGlobal::transportAction);
 
-      MusEGlobal::forwardAction->setWhatsThis(tr(infoForwardButton));
+      MusEGlobal::forwardAction->setWhatsThis(tr("move current position"));
       connect(MusEGlobal::forwardAction, SIGNAL(activated()), MusEGlobal::song, SLOT(forward()));
 
       MusEGlobal::stopAction = new QAction(QIcon(*MusEGui::stopIcon),
          tr("Stop"), MusEGlobal::transportAction);
       MusEGlobal::stopAction->setCheckable(true);
 
-      MusEGlobal::stopAction->setWhatsThis(tr(infoStopButton));
+      MusEGlobal::stopAction->setWhatsThis(tr("stop sequencer"));
       MusEGlobal::stopAction->setChecked(true);
       connect(MusEGlobal::stopAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setStop(bool)));
 
@@ -462,20 +444,20 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
          tr("Play"), MusEGlobal::transportAction);
       MusEGlobal::playAction->setCheckable(true);
 
-      MusEGlobal::playAction->setWhatsThis(tr(infoPlayButton));
+      MusEGlobal::playAction->setWhatsThis(tr("start sequencer play"));
       MusEGlobal::playAction->setChecked(false);
       connect(MusEGlobal::playAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setPlay(bool)));
 
       MusEGlobal::recordAction = new QAction(QIcon(*MusEGui::recordIcon),
          tr("Record"), MusEGlobal::transportAction);
       MusEGlobal::recordAction->setCheckable(true);
-      MusEGlobal::recordAction->setWhatsThis(tr(infoRecordButton));
+      MusEGlobal::recordAction->setWhatsThis(tr("to record press record and then play"));
       connect(MusEGlobal::recordAction, SIGNAL(toggled(bool)), MusEGlobal::song, SLOT(setRecord(bool)));
 
       MusEGlobal::panicAction = new QAction(QIcon(*MusEGui::panicIcon),
          tr("Panic"), this);
 
-      MusEGlobal::panicAction->setWhatsThis(tr(infoPanicButton));
+      MusEGlobal::panicAction->setWhatsThis(tr("send note off to all midi channels"));
       connect(MusEGlobal::panicAction, SIGNAL(activated()), MusEGlobal::song, SLOT(panic()));
 
       MusECore::initMidiInstruments();
@@ -486,20 +468,26 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //-------- File Actions
 
       fileNewAction = new QAction(QIcon(*MusEGui::filenewIcon), tr("&New"), this); 
-      fileNewAction->setToolTip(tr(fileNewText));
-      fileNewAction->setWhatsThis(tr(fileNewText));
+      fileNewAction->setToolTip(tr("Create New Song"));
+      fileNewAction->setWhatsThis(tr("Create New Song"));
 
       fileOpenAction = new QAction(QIcon(*MusEGui::openIcon), tr("&Open"), this); 
 
-      fileOpenAction->setToolTip(tr(fileOpenText));
-      fileOpenAction->setWhatsThis(tr(fileOpenText));
+      fileOpenAction->setToolTip(tr("Click this button to open a <em>new song</em>.<br>"
+      "You can also select the <b>Open command</b> from the File menu."));
+      fileOpenAction->setWhatsThis(tr("Click this button to open a <em>new song</em>.<br>"
+      "You can also select the <b>Open command</b> from the File menu."));
 
       openRecent = new QMenu(tr("Open &Recent"), this);
 
       fileSaveAction = new QAction(QIcon(*MusEGui::saveIcon), tr("&Save"), this); 
 
-      fileSaveAction->setToolTip(tr(fileSaveText));
-      fileSaveAction->setWhatsThis(tr(fileSaveText));
+      fileSaveAction->setToolTip(tr("Click this button to save the song you are "
+      "editing.  You will be prompted for a file name.\n"
+      "You can also select the Save command from the File menu."));
+      fileSaveAction->setWhatsThis(tr("Click this button to save the song you are "
+      "editing.  You will be prompted for a file name.\n"
+      "You can also select the Save command from the File menu."));
 
       fileSaveAsAction = new QAction(tr("Save &As"), this);
 

@@ -24,6 +24,7 @@
 //#include "config.h"
 
 #include <QMenu>
+#include <QApplication>
 
 #include "mididev.h"
 #include "midiport.h"
@@ -337,12 +338,12 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
       }
       if(pi == MIDI_PORTS)
       {
-        act = p->addAction(p->tr("Warning: No output devices!"));
+        act = p->addAction(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Warning: No output devices!")));
         act->setCheckable(false);
         act->setData(-1);
         p->addSeparator();
       }
-      act = p->addAction(QIcon(*MusEGui::settings_midiport_softsynthsIcon), p->tr("Open midi config..."));
+      act = p->addAction(QIcon(*MusEGui::settings_midiport_softsynthsIcon), qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Open midi config...")));
       act->setCheckable(false);
       act->setData(MIDI_PORTS);  
       p->addSeparator();
@@ -365,7 +366,7 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
               if(!subp)                  // No submenu yet? Create it now.
               {
                 subp = new QMenu(p);
-                subp->setTitle(subp->tr("Empty ports"));
+                subp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Empty ports")));
                 //subp->addAction(new MusEGui::MenuTitleItem("Empty Ports", subp));
               }  
               //act = subp->addAction(name);               // No need for all those "<None>" names. 

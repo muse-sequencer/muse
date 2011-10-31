@@ -88,10 +88,6 @@ QString IntToQStr(int i);
 
 
 
-#define APPLY_TO_SELECTED_STRING tr("Apply to selected notes:")
-#define APPLY_TO_NEW_STRING tr("Apply to new notes:")
-
-
 //PIXELS_PER_NOTEPOS must be greater or equal to 3*NOTE_XLEN + 2*NOTE_SHIFT
 //because if tick 0 is at x=0: the notes can be shifted by NOTE_SHIFT.
 //additionally, they can be moved by NOTE_XLEN (collision avoiding)
@@ -300,9 +296,9 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	
 	note_settings_toolbar->addSeparator();
 	
-	apply_velo_to_label = new QLabel(APPLY_TO_NEW_STRING, note_settings_toolbar);
-		int w1 = apply_velo_to_label->fontMetrics().width(APPLY_TO_NEW_STRING);
-		int w2 = apply_velo_to_label->fontMetrics().width(APPLY_TO_SELECTED_STRING);
+	apply_velo_to_label = new QLabel(tr("Apply to new notes:"), note_settings_toolbar);
+		int w1 = apply_velo_to_label->fontMetrics().width(tr("Apply to new notes:"));
+		int w2 = apply_velo_to_label->fontMetrics().width(tr("Apply to selected notes:"));
 		if (w1>w2) 
 			apply_velo_to_label->setFixedWidth(w1+5);
 		else 
@@ -612,11 +608,11 @@ void ScoreEdit::song_changed(int flags)
 		map<MusECore::Event*, MusECore::Part*> selection=get_events(score_canvas->get_all_parts(),1);
 		if (selection.empty())
 		{
-			apply_velo_to_label->setText(APPLY_TO_NEW_STRING);
+			apply_velo_to_label->setText(tr("Apply to new notes:"));
 		}
 		else
 		{
-			apply_velo_to_label->setText(APPLY_TO_SELECTED_STRING);
+			apply_velo_to_label->setText(tr("Apply to selected notes:"));
 			
 			int velo=-1;
 			int velo_off=-1;

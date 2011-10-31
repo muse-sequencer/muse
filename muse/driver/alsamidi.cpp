@@ -39,6 +39,8 @@
 #include "part.h"
 #include "gconfig.h"
 
+#include <QApplication>
+
 namespace MusECore {
 
 static int alsaSeqFdi = -1;
@@ -208,18 +210,18 @@ void MidiAlsaDevice::writeRouting(int level, Xml& xml) const
       {
         if(!r->name().isEmpty())
         {
-          s = QT_TRANSLATE_NOOP("@default", "Route");
+          s = "Route";
           if(r->channel != -1)
-            s += QString(QT_TRANSLATE_NOOP("@default", " channel=\"%1\"")).arg(r->channel);
+            s += QString(" channel=\"%1\"").arg(r->channel);
           xml.tag(level++, s.toLatin1().constData());
           xml.tag(level, "source devtype=\"%d\" name=\"%s\"/", MidiDevice::ALSA_MIDI, Xml::xmlString(name()).toLatin1().constData());
-          s = QT_TRANSLATE_NOOP("@default", "dest");
+          s = "dest";
           if(r->type == Route::MIDI_DEVICE_ROUTE)
-            s += QString(QT_TRANSLATE_NOOP("@default", " devtype=\"%1\"")).arg(r->device->deviceType());
+            s += QString(" devtype=\"%1\"").arg(r->device->deviceType());
           else
           if(r->type != Route::TRACK_ROUTE)
-            s += QString(QT_TRANSLATE_NOOP("@default", " type=\"%1\"")).arg(r->type);
-          s += QString(QT_TRANSLATE_NOOP("@default", " name=\"%1\"/")).arg(Xml::xmlString(r->name()));
+            s += QString(" type=\"%1\"").arg(r->type);
+          s += QString(" name=\"%1\"/").arg(Xml::xmlString(r->name()));
           xml.tag(level, s.toLatin1().constData());
           
           xml.etag(level--, "Route");

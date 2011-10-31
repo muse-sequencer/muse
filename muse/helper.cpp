@@ -29,6 +29,8 @@
 #include "synth.h"
 #include "functions.h"
 
+#include <QApplication>
+
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
 #endif
@@ -188,7 +190,7 @@ QMenu* populateAddSynth(QWidget* parent)
       // No MESS sub-menu yet? Create it now.
       if(!synpMESS)
         synpMESS = new QMenu(parent);
-      QAction* sM = synpMESS->addAction(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">");
+      QAction* sM = synpMESS->addAction(s->description() + " <" + s->name() + ">");
       sM->setData(MENU_ADD_SYNTH_ID_BASE + idx);
     }  
   }
@@ -206,7 +208,7 @@ QMenu* populateAddSynth(QWidget* parent)
       if(!synpDSSI)
         synpDSSI = new QMenu(parent);
       //synpDSSI->insertItem(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
-      QAction* sD = synpDSSI->addAction(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">");
+      QAction* sD = synpDSSI->addAction(s->description() + " <" + s->name() + ">");
       sD->setData(MENU_ADD_SYNTH_ID_BASE + idx);
     }  
   }
@@ -224,7 +226,7 @@ QMenu* populateAddSynth(QWidget* parent)
       // No VST sub-menu yet? Create it now.
       if(!synpVST)
         synpVST = new QMenu(parent);
-      QAction* sV = synpVST->addAction(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">");
+      QAction* sV = synpVST->addAction(s->description() + " <" + "@default", s->name() + ">");
       sV->setData(MENU_ADD_SYNTH_ID_BASE + idx);
     }  
   }
@@ -240,14 +242,14 @@ QMenu* populateAddSynth(QWidget* parent)
     if(!synpOther)
       synpOther = new QMenu(parent);
     //synpOther->insertItem(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
-    QAction* sO = synpOther->addAction(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">");
+    QAction* sO = synpOther->addAction(s->description() + " <" + s->name() + ">");
     sO->setData(MENU_ADD_SYNTH_ID_BASE + idx);
   }
   
   if(synpMESS)
   {
     synpMESS->setIcon(*synthIcon);
-    synpMESS->setTitle(QT_TRANSLATE_NOOP("@default", "MESS"));
+    synpMESS->setTitle("MESS");
     synp->addMenu(synpMESS);
   }
   
@@ -255,7 +257,7 @@ QMenu* populateAddSynth(QWidget* parent)
   if(synpDSSI)
   {
     synpDSSI->setIcon(*synthIcon);
-    synpDSSI->setTitle(QT_TRANSLATE_NOOP("@default", "DSSI"));
+    synpDSSI->setTitle("DSSI");
     synp->addMenu(synpDSSI);
   }  
   #endif
@@ -264,7 +266,7 @@ QMenu* populateAddSynth(QWidget* parent)
   if(synpVST)
   {
     synpVST->setIcon(*synthIcon);
-    synpVST->setTitle(QT_TRANSLATE_NOOP("@default", "FST"));
+    synpVST->setTitle("FST");
     synp->addMenu(synpVST);
   }  
   #endif
@@ -290,42 +292,42 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll)
       QActionGroup* grp = new QActionGroup(addTrack);
 
       QAction* midi = addTrack->addAction(QIcon(*addtrack_addmiditrackIcon),
-                                          QT_TRANSLATE_NOOP("@default", "Add Midi Track"));
+                                          qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Midi Track")));
       midi->setData(MusECore::Track::MIDI);
       grp->addAction(midi);
       QAction* drum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
-                                          QT_TRANSLATE_NOOP("@default", "Add Drum Track"));
+                                          qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Drum Track")));
       drum->setData(MusECore::Track::DRUM);
       grp->addAction(drum);
       QAction* wave = addTrack->addAction(QIcon(*addtrack_wavetrackIcon),
-                                          QT_TRANSLATE_NOOP("@default", "Add Wave Track"));
+                                          qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Wave Track")));
       wave->setData(MusECore::Track::WAVE);
       grp->addAction(wave);
 
       if (populateAll || MusECore::AudioOutput::visible()) {
         QAction* aoutput = addTrack->addAction(QIcon(*addtrack_audiooutputIcon),
-                                               QT_TRANSLATE_NOOP("@default", "Add Audio Output"));
+                                               qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Audio Output")));
         aoutput->setData(MusECore::Track::AUDIO_OUTPUT);
         grp->addAction(aoutput);
       }
 
       if (populateAll || MusECore::AudioGroup::visible()) {
         QAction* agroup = addTrack->addAction(QIcon(*addtrack_audiogroupIcon),
-                                              QT_TRANSLATE_NOOP("@default", "Add Audio Group"));
+                                              qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Audio Group")));
         agroup->setData(MusECore::Track::AUDIO_GROUP);
         grp->addAction(agroup);
       }
 
       if (populateAll || MusECore::AudioInput::visible()) {
         QAction* ainput = addTrack->addAction(QIcon(*addtrack_audioinputIcon),
-                                              QT_TRANSLATE_NOOP("@default", "Add Audio Input"));
+                                              qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Audio Input")));
         ainput->setData(MusECore::Track::AUDIO_INPUT);
         grp->addAction(ainput);
       }
 
       if (populateAll || MusECore::AudioAux::visible()) {
         QAction* aaux = addTrack->addAction(QIcon(*addtrack_auxsendIcon),
-                                            QT_TRANSLATE_NOOP("@default", "Add Aux Send"));
+                                            qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Aux Send")));
         aaux->setData(MusECore::Track::AUDIO_AUX);
         grp->addAction(aaux);
       }
@@ -333,7 +335,7 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll)
       // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
       QMenu* synp = populateAddSynth(addTrack);
       synp->setIcon(*synthIcon);
-      synp->setTitle(QT_TRANSLATE_NOOP("@default", "Add Synth"));
+      synp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Synth")));
 
       // Add the sub-menu to the given menu.
       addTrack->addMenu(synp);

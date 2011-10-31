@@ -4,9 +4,8 @@
 <context>
     <name>@default</name>
     <message>
-        <location filename="../../muse/transport.cpp" line="+48"/>
         <source>Click this button to enable recording</source>
-        <translation>Щелкните по этой кнопке для активизации режима записи</translation>
+        <translation type="obsolete">Щелкните по этой кнопке для активизации режима записи</translation>
     </message>
     <message>
         <source>sets amount of quantization:
@@ -17,42 +16,36 @@
 100 - полное квантование</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="+33"/>
         <source>select Pointer Tool:
 with the pointer tool you can:
   select parts
   move parts
   copy parts</source>
-        <translation>выбрать инструмент &quot;Указатель&quot;:
+        <translation type="obsolete">выбрать инструмент &quot;Указатель&quot;:
 при помощи указателя можно:
   выделять партии(new line)
   перемещать партии(new line)
   копировать партии</translation>
     </message>
     <message>
-        <location filename="../../muse/transport.cpp" line="+1"/>
         <source>Click this button to stop playback</source>
-        <translation>Щелкните по этой кнопке для остановки воспроизведения</translation>
+        <translation type="obsolete">Щелкните по этой кнопке для остановки воспроизведения</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Click this button to start playback</source>
-        <translation>Щелкните по этой кнопке, чтобы начать воспроизведение</translation>
+        <translation type="obsolete">Щелкните по этой кнопке, чтобы начать воспроизведение</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Click this button to rewind to start position</source>
-        <translation>Щелкните по этой кнопке для перемещения к началу</translation>
+        <translation type="obsolete">Щелкните по этой кнопке для перемещения к началу</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Click this button to rewind</source>
-        <translation>Щелкните по этой кнопке для перемотки назад</translation>
+        <translation type="obsolete">Щелкните по этой кнопке для перемотки назад</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Click this button to forward current play position</source>
-        <translation>Щелкните по этой кнопке для перемещения вперёд</translation>
+        <translation type="obsolete">Щелкните по этой кнопке для перемещения вперёд</translation>
     </message>
     <message>
         <source>don&apos;t quantize notes above this tick limit</source>
@@ -63,201 +56,144 @@ with the pointer tool you can:
         <translation type="obsolete">также квантовать длительность нот по умолчанию</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="+97"/>
         <source>Click this button to open a &lt;em&gt;new song&lt;/em&gt;.&lt;br&gt;You can also select the &lt;b&gt;Open command&lt;/b&gt; from the File menu.</source>
-        <translation>Щелкните по этой кнопке для открытия другого проекта. Вы также можете выбрать пункт Открыть в меню &quot;Файл&quot;.</translation>
+        <translation type="obsolete">Щелкните по этой кнопке для открытия другого проекта. Вы также можете выбрать пункт Открыть в меню &quot;Файл&quot;.</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Click this button to save the song you are editing.  You will be prompted for a file name.
 You can also select the Save command from the File menu.</source>
-        <translation>Щелкните по этой кнопке для сохранения проекта.  Будет предложено ввести имя файла.
+        <translation type="obsolete">Щелкните по этой кнопке для сохранения проекта.  Будет предложено ввести имя файла.
 Вы также можете выбрать пункт &quot;Сохранить&quot; в меню &quot;Файл&quot;.</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Create New Song</source>
-        <translation>Создать новый проект</translation>
+        <translation type="obsolete">Создать новый проект</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>loop between left mark and right mark</source>
-        <translation>цикл между левым и правым маркерами</translation>
+        <translation type="obsolete">цикл между левым и правым маркерами</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>record starts at left mark</source>
-        <translation>запись начинается с левого маркера</translation>
+        <translation type="obsolete">запись начинается с левого маркера</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>record stops at right mark</source>
-        <translation>запись останавливается на правом маркере</translation>
+        <translation type="obsolete">запись останавливается на правом маркере</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>rewind to start position</source>
-        <translation>перемотать к начальной позиции</translation>
+        <translation type="obsolete">перемотать к начальной позиции</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>rewind current position</source>
-        <translation>перемотать к текущей позиции</translation>
+        <translation type="obsolete">перемотать к текущей позиции</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>move current position</source>
-        <translation>переместить текущую позицию</translation>
+        <translation type="obsolete">переместить текущую позицию</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>stop sequencer</source>
-        <translation>остановить секвенсер</translation>
+        <translation type="obsolete">остановить секвенсер</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>start sequencer play</source>
-        <translation>начать воспроизведение в секвенсере</translation>
+        <translation type="obsolete">начать воспроизведение в секвенсере</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>to record press record and then play</source>
-        <translation>чтобы начать запись нажмите &quot;запись&quot;, а затем &quot;воспроизвести&quot;</translation>
+        <translation type="obsolete">чтобы начать запись нажмите &quot;запись&quot;, а затем &quot;воспроизвести&quot;</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>send note off to all midi channels</source>
-        <translation>послать сообщение &quot;note off&quot; на все midi-каналы</translation>
+        <translation type="obsolete">послать сообщение &quot;note off&quot; на все midi-каналы</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="+5"/>
         <source>select Pencil Tool:
 with the pencil tool you can:
   create new parts
   modify length of parts</source>
-        <translation>выбрать инструмент &quot;Карандаш&quot;:
+        <translation type="obsolete">выбрать инструмент &quot;Карандаш&quot;:
 с помощью инструмента &quot;Карандаш&quot; вы можете:
   создавать новые партии
   изменять длину партий</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>select Delete Tool:
 with the delete tool you can delete parts</source>
-        <translation>выбрать инструмент &quot;Ластик&quot;:
+        <translation type="obsolete">выбрать инструмент &quot;Ластик&quot;:
 с помощью инструмента &quot;Ластик&quot; вы можете удалять партии</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>select Cut Tool:
 with the cut tool you can split a part</source>
-        <translation>выбрать инструмент &quot;Ножницы&quot;:(new line)
+        <translation type="obsolete">выбрать инструмент &quot;Ножницы&quot;:(new line)
 с помощью инструмента &quot;Ножницы&quot; вы можете разрезать партию</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>select Glue Tool:
 with the glue tool you can glue two parts</source>
-        <translation>выбрать инструмент &quot;Клей&quot;:
+        <translation type="obsolete">выбрать инструмент &quot;Клей&quot;:
 с помощью инструмента &quot;Клей&quot; вы можете соединить две партии</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>select Score Tool:
 </source>
-        <translation>выбрать редактор партитур:
+        <translation type="obsolete">выбрать редактор партитур:
 </translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>select Quantize Tool:
 insert display quantize event</source>
-        <translation>выбрать инструмент &quot;Квантование&quot;:
+        <translation type="obsolete">выбрать инструмент &quot;Квантование&quot;:
 вставить отображение квантуемых событий</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>select Drawing Tool</source>
-        <translation>выбрать инструмент &quot;Рисование&quot;</translation>
+        <translation type="obsolete">выбрать инструмент &quot;Рисование&quot;</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>select Muting Tool:
 click on part to mute/unmute</source>
-        <translation>выбрать инструмент &quot;Не проигрывать партию (Заглушить)&quot;:
+        <translation type="obsolete">выбрать инструмент &quot;Не проигрывать партию (Заглушить)&quot;:
 Щелкните по партии, чтобы &quot;Проигрывать&quot; или &quot;Не проигрывать&quot; ее</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Manipulate automation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Cursor tool</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
         <source>pointer</source>
-        <translation>указатель</translation>
+        <translation type="obsolete">указатель</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>pencil</source>
-        <translation>карандаш</translation>
+        <translation type="obsolete">карандаш</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>cutter</source>
-        <translation>ножницы</translation>
+        <translation type="obsolete">ножницы</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>score</source>
-        <translation>партитура</translation>
+        <translation type="obsolete">партитура</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>glue</source>
-        <translation>клей</translation>
+        <translation type="obsolete">клей</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>quantize</source>
-        <translation>квантовать</translation>
+        <translation type="obsolete">квантовать</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>draw</source>
-        <translation>рисовать</translation>
+        <translation type="obsolete">рисовать</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>mute parts</source>
-        <translation>заглушить партии</translation>
+        <translation type="obsolete">заглушить партии</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>edit automation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>cursor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="+155"/>
-        <location filename="../../muse/master/masteredit.cpp" line="+162"/>
-        <location filename="../../muse/widgets/comboQuant.cpp" line="+40"/>
-        <location line="+1"/>
-        <location line="+1"/>
-        <location filename="../../muse/widgets/tb1.cpp" line="+48"/>
-        <location line="+1"/>
-        <location line="+1"/>
         <source>Off</source>
-        <translation>Выкл</translation>
+        <translation type="obsolete">Выкл</translation>
     </message>
     <message>
         <source>presets (*.pre *.pre.gz *.pre.bz2)</source>
@@ -268,7 +204,7 @@ click on part to mute/unmute</source>
         <translation type="obsolete">Все файлы (*)</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="+293"/>
+        <location filename="../../muse/helper.cpp" line="+295"/>
         <source>Add Midi Track</source>
         <translation type="unfinished">Добавить Midi Трек</translation>
     </message>
@@ -303,197 +239,125 @@ click on part to mute/unmute</source>
         <translation type="unfinished">Добавить Aux посыл</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="-8"/>
         <source>eraser</source>
-        <translation>ластик</translation>
+        <translation type="obsolete">ластик</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="-78"/>
         <source>MESS</source>
-        <translation type="unfinished">MESS</translation>
+        <translation type="obsolete">MESS</translation>
+    </message>
+    <message>
+        <source>DSSI</source>
+        <translation type="obsolete">DSSI</translation>
+    </message>
+    <message>
+        <source>FST</source>
+        <translation type="obsolete">FST</translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>DSSI</source>
-        <translation type="unfinished">DSSI</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>FST</source>
-        <translation type="unfinished">FST</translation>
-    </message>
-    <message>
-        <location line="+69"/>
         <source>Add Synth</source>
         <translation>Добавить синтезатор</translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="+0"/>
         <source>Bar</source>
-        <translation>Такт</translation>
+        <translation type="obsolete">Такт</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="+733"/>
         <source> Jack</source>
-        <translation> Jack</translation>
+        <translation type="obsolete"> Jack</translation>
     </message>
     <message>
-        <location line="+46"/>
         <source>ALSA:</source>
-        <translation>ALSA:</translation>
+        <translation type="obsolete">ALSA:</translation>
     </message>
     <message>
-        <location line="+26"/>
         <source>SYNTH:</source>
-        <translation>SYNTH:</translation>
+        <translation type="obsolete">SYNTH:</translation>
     </message>
     <message>
-        <location line="+26"/>
         <source>JACK:</source>
-        <translation>JACK:</translation>
+        <translation type="obsolete">JACK:</translation>
     </message>
     <message>
-        <location filename="../../muse/driver/alsamidi.cpp" line="+211"/>
-        <location filename="../../muse/driver/jackmidi.cpp" line="+294"/>
-        <location filename="../../muse/midiport.cpp" line="+1189"/>
-        <location filename="../../muse/track.cpp" line="+953"/>
-        <location line="+16"/>
-        <location line="+30"/>
+        <location filename="../../muse/midiport.cpp" line="+1190"/>
         <source>Route</source>
         <translation>Маршрут</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <location filename="../../muse/driver/jackmidi.cpp" line="+2"/>
-        <location filename="../../muse/track.cpp" line="-28"/>
-        <location line="+37"/>
         <source> channel=&quot;%1&quot;</source>
-        <translation> канал=&quot;%1&quot;</translation>
+        <translation type="obsolete"> канал=&quot;%1&quot;</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location filename="../../muse/driver/jackmidi.cpp" line="+3"/>
-        <location filename="../../muse/midiport.cpp" line="+7"/>
-        <location filename="../../muse/track.cpp" line="-48"/>
-        <location line="+60"/>
+        <location line="+7"/>
         <source>dest</source>
         <translation>dest</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <location filename="../../muse/driver/jackmidi.cpp" line="+2"/>
         <source> devtype=&quot;%1&quot;</source>
-        <translation> типУстр=&quot;%1&quot;</translation>
+        <translation type="obsolete"> типУстр=&quot;%1&quot;</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location filename="../../muse/driver/jackmidi.cpp" line="-20"/>
-        <location line="+23"/>
-        <location filename="../../muse/track.cpp" line="-42"/>
-        <location line="+48"/>
         <source> type=&quot;%1&quot;</source>
-        <translation> тип=&quot;%1&quot;</translation>
+        <translation type="obsolete"> тип=&quot;%1&quot;</translation>
     </message>
     <message>
         <location line="+1"/>
-        <location filename="../../muse/driver/jackmidi.cpp" line="-22"/>
-        <location line="+23"/>
-        <location filename="../../muse/midiport.cpp" line="+1"/>
-        <location filename="../../muse/track.cpp" line="-65"/>
-        <location line="+18"/>
-        <location line="+53"/>
         <source> name=&quot;%1&quot;/</source>
         <translation> имя=&quot;%1&quot;/</translation>
     </message>
     <message>
-        <location filename="../../muse/driver/jackmidi.cpp" line="-26"/>
-        <location filename="../../muse/track.cpp" line="-56"/>
         <source>source</source>
-        <translation>источник</translation>
+        <translation type="obsolete">источник</translation>
     </message>
     <message>
-        <location filename="../../muse/midictrl.cpp" line="+244"/>
         <source>Velocity</source>
-        <translation>Скорость нажатия</translation>
+        <translation type="obsolete">Скорость нажатия</translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="-807"/>
+        <location line="-857"/>
+        <source>Warning: No output devices!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Open midi config...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Empty ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+22"/>
         <source>&lt;none&gt;</source>
         <translation>&lt;ничего&gt;</translation>
     </message>
     <message>
         <location line="+801"/>
-        <location filename="../../muse/track.cpp" line="-21"/>
-        <location line="+48"/>
         <source> channelMask=&quot;%1&quot;</source>
         <translation> МаскаКанала=&quot;%1&quot;</translation>
     </message>
     <message>
-        <location filename="../../muse/osc.cpp" line="+1090"/>
         <source>dssi_synth</source>
-        <translation>dssi_synth</translation>
+        <translation type="obsolete">dssi_synth</translation>
     </message>
     <message>
-        <location line="+73"/>
         <source>ladspa_efx</source>
-        <translation>ladspa_efx</translation>
+        <translation type="obsolete">ladspa_efx</translation>
     </message>
     <message>
-        <location filename="../../muse/track.cpp" line="+8"/>
         <source> channels=&quot;%1&quot;</source>
-        <translation> каналы=&quot;%1&quot;</translation>
+        <translation type="obsolete"> каналы=&quot;%1&quot;</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source> remch=&quot;%1&quot;</source>
-        <translation> remch=&quot;%1&quot;</translation>
+        <translation type="obsolete"> remch=&quot;%1&quot;</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source> mport=&quot;%1&quot;/</source>
-        <translation> mport=&quot;%1&quot;/</translation>
-    </message>
-    <message>
-        <location filename="../../muse/widgets/visibletracks.cpp" line="+35"/>
-        <location line="+9"/>
-        <source>Show wave tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-8"/>
-        <location line="+9"/>
-        <source>Show group tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-8"/>
-        <location line="+9"/>
-        <source>Show aux tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-8"/>
-        <location line="+9"/>
-        <source>Show input tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-8"/>
-        <location line="+9"/>
-        <source>Show output tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-8"/>
-        <location line="+9"/>
-        <source>Show midi tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-8"/>
-        <location line="+9"/>
-        <source>Show synth tracks</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete"> mport=&quot;%1&quot;/</translation>
     </message>
 </context>
 <context>
@@ -10968,24 +10832,6 @@ Likely the selected track is the wrong type.</source>
     </message>
 </context>
 <context>
-    <name>MusECore</name>
-    <message>
-        <location filename="../../muse/midiport.cpp" line="-851"/>
-        <source>Warning: No output devices!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Open midi config...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Empty ports</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>MusECore::Song</name>
     <message>
         <location filename="../../muse/song.cpp" line="+2439"/>
@@ -11181,7 +11027,7 @@ Word-breaking but only with spaces.</source>
 <context>
     <name>MusEGui::Arranger</name>
     <message>
-        <location filename="../../muse/arranger/arranger.cpp" line="-74"/>
+        <location filename="../../muse/arranger/arranger.cpp" line="+81"/>
         <source>Enable Recording</source>
         <translation type="unfinished">Разрешить запись</translation>
     </message>
@@ -11310,7 +11156,17 @@ Right-click to show GUI.</source>
         <translation type="unfinished">Курсор</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+10"/>
+        <source>Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Bar</source>
+        <translation type="unfinished">Такт</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Snap</source>
         <translation type="unfinished">Привязка</translation>
     </message>
@@ -11955,6 +11811,16 @@ Right-click to show GUI.</source>
     <message>
         <location line="+4"/>
         <source>Window &amp;Config</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::ComboQuant</name>
+    <message>
+        <location filename="../../muse/widgets/comboQuant.cpp" line="+40"/>
+        <location line="+1"/>
+        <location line="+1"/>
+        <source>Off</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -12654,7 +12520,143 @@ Save Current Instrument?</source>
 <context>
     <name>MusEGui::EditToolBar</name>
     <message>
-        <location filename="../../muse/widgets/tools.cpp" line="+17"/>
+        <location filename="../../muse/widgets/tools.cpp" line="+33"/>
+        <source>select Pointer Tool:
+with the pointer tool you can:
+  select parts
+  move parts
+  copy parts</source>
+        <translation type="unfinished">выбрать инструмент &quot;Указатель&quot;:
+при помощи указателя можно:
+  выделять партии(new line)
+  перемещать партии(new line)
+  копировать партии</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>select Pencil Tool:
+with the pencil tool you can:
+  create new parts
+  modify length of parts</source>
+        <translation type="unfinished">выбрать инструмент &quot;Карандаш&quot;:
+с помощью инструмента &quot;Карандаш&quot; вы можете:
+  создавать новые партии
+  изменять длину партий</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>select Delete Tool:
+with the delete tool you can delete parts</source>
+        <translation type="unfinished">выбрать инструмент &quot;Ластик&quot;:
+с помощью инструмента &quot;Ластик&quot; вы можете удалять партии</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>select Cut Tool:
+with the cut tool you can split a part</source>
+        <translation type="unfinished">выбрать инструмент &quot;Ножницы&quot;:(new line)
+с помощью инструмента &quot;Ножницы&quot; вы можете разрезать партию</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>select Glue Tool:
+with the glue tool you can glue two parts</source>
+        <translation type="unfinished">выбрать инструмент &quot;Клей&quot;:
+с помощью инструмента &quot;Клей&quot; вы можете соединить две партии</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>select Score Tool:
+</source>
+        <translation type="unfinished">выбрать редактор партитур:
+</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>select Quantize Tool:
+insert display quantize event</source>
+        <translation type="unfinished">выбрать инструмент &quot;Квантование&quot;:
+вставить отображение квантуемых событий</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>select Drawing Tool</source>
+        <translation type="unfinished">выбрать инструмент &quot;Рисование&quot;</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>select Muting Tool:
+click on part to mute/unmute</source>
+        <translation type="unfinished">выбрать инструмент &quot;Не проигрывать партию (Заглушить)&quot;:
+Щелкните по партии, чтобы &quot;Проигрывать&quot; или &quot;Не проигрывать&quot; ее</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Manipulate automation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cursor tool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>pointer</source>
+        <translation type="unfinished">указатель</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>pencil</source>
+        <translation type="unfinished">карандаш</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>eraser</source>
+        <translation type="unfinished">ластик</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>cutter</source>
+        <translation type="unfinished">ножницы</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>score</source>
+        <translation type="unfinished">партитура</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>glue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>quantize</source>
+        <translation type="unfinished">квантовать</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>draw</source>
+        <translation type="unfinished">рисовать</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>mute parts</source>
+        <translation type="unfinished">заглушить партии</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>edit automation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>cursor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Edit Tools</source>
         <translation type="unfinished">Инструменты редактирования</translation>
     </message>
@@ -13012,7 +13014,7 @@ Save Current Instrument?</source>
 <context>
     <name>MusEGui::MPConfig</name>
     <message>
-        <location filename="../../muse/confmport.cpp" line="-730"/>
+        <location filename="../../muse/confmport.cpp" line="+101"/>
         <location line="+176"/>
         <source>Default input connections</source>
         <translation type="unfinished"></translation>
@@ -13081,14 +13083,17 @@ Do you want to apply to all existing midi tracks now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+43"/>
         <source>Create</source>
-        <translation type="unfinished">Создать</translation>
+        <translation type="obsolete">Создать</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source> device</source>
-        <translation type="unfinished"> устройство</translation>
+        <translation type="obsolete"> устройство</translation>
+    </message>
+    <message>
+        <location line="+43"/>
+        <source>Create Jack device</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+229"/>
@@ -13365,7 +13370,7 @@ Do you want to apply to all existing midi tracks now?</source>
 <context>
     <name>MusEGui::MasterEdit</name>
     <message>
-        <location filename="../../muse/master/masteredit.cpp" line="-56"/>
+        <location filename="../../muse/master/masteredit.cpp" line="+106"/>
         <source>MusE: Mastertrack</source>
         <translation type="unfinished">MusE: Мастер-трек</translation>
     </message>
@@ -13425,7 +13430,17 @@ Do you want to apply to all existing midi tracks now?</source>
         <translation type="unfinished">темп в позиции курсора</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+4"/>
+        <source>Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Bar</source>
+        <translation type="unfinished">Такт</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>Snap</source>
         <translation type="unfinished">Привязка</translation>
     </message>
@@ -13933,7 +13948,7 @@ Apply sync settings?</source>
 <context>
     <name>MusEGui::MusE</name>
     <message>
-        <location filename="../../muse/app.cpp" line="+41"/>
+        <location filename="../../muse/app.cpp" line="+137"/>
         <location line="+16"/>
         <source>Failed to start audio!</source>
         <translation type="unfinished">Не могу воспроизводить аудио!</translation>
@@ -13978,75 +13993,145 @@ Apply sync settings?</source>
         <translation type="unfinished">Цикл</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+3"/>
+        <source>loop between left mark and right mark</source>
+        <translation type="unfinished">цикл между левым и правым маркерами</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Punchin</source>
         <translation type="unfinished">Начало врезки</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+3"/>
+        <source>record starts at left mark</source>
+        <translation type="unfinished">запись начинается с левого маркера</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Punchout</source>
         <translation type="unfinished">Конец врезки</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+3"/>
+        <source>record stops at right mark</source>
+        <translation type="unfinished">запись останавливается на правом маркере</translation>
+    </message>
+    <message>
+        <location line="+8"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+2"/>
+        <source>rewind to start position</source>
+        <translation type="unfinished">перемотать к начальной позиции</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Rewind</source>
         <translation type="unfinished">Перемотать назад</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+2"/>
+        <source>rewind current position</source>
+        <translation type="unfinished">перемотать к текущей позиции</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Forward</source>
         <translation type="unfinished">Перемотать вперёд</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+2"/>
+        <source>move current position</source>
+        <translation type="unfinished">переместить текущую позицию</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Stop</source>
         <translation type="unfinished">Остановить</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+3"/>
+        <source>stop sequencer</source>
+        <translation type="unfinished">остановить секвенсер</translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Play</source>
         <translation type="unfinished">Воспроизвести</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+3"/>
+        <source>start sequencer play</source>
+        <translation type="unfinished">начать воспроизведение в секвенсере</translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Record</source>
         <translation type="unfinished">Записать</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location line="+232"/>
+        <location line="+2"/>
+        <source>to record press record and then play</source>
+        <translation type="unfinished">чтобы начать запись нажмите &quot;запись&quot;, а затем &quot;воспроизвести&quot;</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <location line="+238"/>
         <source>Panic</source>
         <translation type="unfinished">Паника</translation>
     </message>
     <message>
-        <location line="-220"/>
+        <location line="-236"/>
+        <source>send note off to all midi channels</source>
+        <translation type="unfinished">послать сообщение &quot;note off&quot; на все midi-каналы</translation>
+    </message>
+    <message>
+        <location line="+10"/>
         <source>&amp;New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+1"/>
+        <location line="+1"/>
+        <source>Create New Song</source>
+        <translation type="unfinished">Создать новый проект</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>&amp;Open</source>
         <translation type="unfinished">&amp;Открыть</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+2"/>
+        <location line="+2"/>
+        <source>Click this button to open a &lt;em&gt;new song&lt;/em&gt;.&lt;br&gt;You can also select the &lt;b&gt;Open command&lt;/b&gt; from the File menu.</source>
+        <translation type="unfinished">Щелкните по этой кнопке для открытия другого проекта. Вы также можете выбрать пункт Открыть в меню &quot;Файл&quot;.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Open &amp;Recent</source>
         <translation type="unfinished">Открыть  &amp;Недавние</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+1005"/>
+        <location line="+1009"/>
         <location line="+1211"/>
         <source>&amp;Save</source>
         <translation type="unfinished">&amp;Сохранить</translation>
     </message>
     <message>
-        <location line="-2211"/>
+        <location line="-2218"/>
+        <location line="+3"/>
+        <source>Click this button to save the song you are editing.  You will be prompted for a file name.
+You can also select the Save command from the File menu.</source>
+        <translation type="unfinished">Щелкните по этой кнопке для сохранения проекта.  Будет предложено ввести имя файла.
+Вы также можете выбрать пункт &quot;Сохранить&quot; в меню &quot;Файл&quot;.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Save &amp;As</source>
         <translation type="unfinished">Сохранить &amp;Как</translation>
     </message>
@@ -15253,7 +15338,7 @@ Likely the selected track is the wrong type.</source>
 <context>
     <name>MusEGui::ScoreCanvas</name>
     <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="+1251"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="+1247"/>
         <source>Treble</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15336,7 +15421,20 @@ Likely the selected track is the wrong type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+28"/>
+        <location line="+1"/>
+        <location line="+311"/>
+        <source>Apply to new notes:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-310"/>
+        <location line="+314"/>
+        <source>Apply to selected notes:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-307"/>
         <source>Velocity:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15718,7 +15816,7 @@ the selected title is not unique</source>
 <context>
     <name>MusEGui::TempoSig</name>
     <message>
-        <location filename="../../muse/transport.cpp" line="+103"/>
+        <location filename="../../muse/transport.cpp" line="+149"/>
         <source>Tempo/Sig</source>
         <translation type="unfinished">Темп/Знаки альтерации</translation>
     </message>
@@ -15726,7 +15824,14 @@ the selected title is not unique</source>
 <context>
     <name>MusEGui::Toolbar1</name>
     <message>
-        <location filename="../../muse/widgets/tb1.cpp" line="+21"/>
+        <location filename="../../muse/widgets/tb1.cpp" line="+48"/>
+        <location line="+1"/>
+        <location line="+1"/>
+        <source>Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+21"/>
         <source>Solo</source>
         <translation type="unfinished">Соло</translation>
     </message>
@@ -15909,32 +16014,62 @@ the selected title is not unique</source>
         <translation type="unfinished">перемотать к началу</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+1"/>
+        <source>Click this button to rewind to start position</source>
+        <translation type="unfinished">Щелкните по этой кнопке для перемещения к началу</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>rewind</source>
         <translation type="unfinished">перемотать назад</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+2"/>
+        <source>Click this button to rewind</source>
+        <translation type="unfinished">Щелкните по этой кнопке для перемотки назад</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>forward</source>
         <translation type="unfinished">перемотать вперёд</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+2"/>
+        <source>Click this button to forward current play position</source>
+        <translation type="unfinished">Щелкните по этой кнопке для перемещения вперёд</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>stop</source>
         <translation type="unfinished">остановить</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+2"/>
+        <source>Click this button to stop playback</source>
+        <translation type="unfinished">Щелкните по этой кнопке для остановки воспроизведения</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>play</source>
         <translation type="unfinished">воспроизвести</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+1"/>
+        <source>Click this button to start playback</source>
+        <translation type="unfinished">Щелкните по этой кнопке, чтобы начать воспроизведение</translation>
+    </message>
+    <message>
+        <location line="+2"/>
         <source>record</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+28"/>
+        <location line="+1"/>
+        <source>Click this button to enable recording</source>
+        <translation type="unfinished">Щелкните по этой кнопке для активизации режима записи</translation>
+    </message>
+    <message>
+        <location line="+27"/>
         <source>AC</source>
         <translation type="unfinished">AC</translation>
     </message>
@@ -15987,7 +16122,49 @@ the selected title is not unique</source>
 <context>
     <name>MusEGui::VisibleTracks</name>
     <message>
-        <location filename="../../muse/widgets/visibletracks.cpp" line="+9"/>
+        <location filename="../../muse/widgets/visibletracks.cpp" line="+35"/>
+        <location line="+9"/>
+        <source>Show wave tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <location line="+9"/>
+        <source>Show group tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <location line="+9"/>
+        <source>Show aux tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <location line="+9"/>
+        <source>Show input tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <location line="+9"/>
+        <source>Show output tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <location line="+9"/>
+        <source>Show midi tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-8"/>
+        <location line="+9"/>
+        <source>Show synth tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Visible track types</source>
         <translation type="unfinished"></translation>
     </message>

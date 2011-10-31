@@ -220,9 +220,9 @@ int RoutePopupMenu::addSyntiPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id
               {
                 char buffer[128];
                 if(tchans == 2)
-                  snprintf(buffer, 128, "%s %d,%d", chpup->tr("Channel").toLatin1().constData(), ch+1, ch+2);
+                  snprintf(buffer, 128, "%s %d,%d", tr("Channel").toLatin1().constData(), ch+1, ch+2);
                 else  
-                  snprintf(buffer, 128, "%s %d", chpup->tr("Channel").toLatin1().constData(), ch+1);
+                  snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), ch+1);
                 act = chpup->addAction(QString(buffer));
                 act->setCheckable(true);
                 
@@ -347,7 +347,7 @@ int RoutePopupMenu::addMultiChannelPorts(MusECore::AudioTrack* t, PopupMenu* pup
     if(chans > 1)
     {
       char buffer[128];
-      snprintf(buffer, 128, "%s %d", pup->tr("Channel").toLatin1().constData(), ch+1);
+      snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), ch+1);
       chpup->setTitle(QString(buffer));
       pup->addMenu(chpup);
     }  
@@ -425,7 +425,7 @@ int RoutePopupMenu::addMultiChannelPorts(MusECore::AudioTrack* t, PopupMenu* pup
       if(chans > 2)
       {
         char buffer[128];
-        snprintf(buffer, 128, "%s %d,%d", pup->tr("Channel").toLatin1().constData(), ch+1, ch+2);
+        snprintf(buffer, 128, "%s %d,%d", tr("Channel").toLatin1().constData(), ch+1, ch+2);
         chpup->setTitle(QString(buffer));
         pup->addMenu(chpup);
       }  
@@ -482,7 +482,7 @@ int RoutePopupMenu::nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* l
               for(int ch = 0; ch < chans; ++ch)
               {
                 char buffer[128];
-                snprintf(buffer, 128, "%s %d", chpup->tr("Channel").toLatin1().constData(), ch+1);
+                snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), ch+1);
                 act = chpup->addAction(QString(buffer));
                 act->setCheckable(true);
                 
@@ -535,7 +535,7 @@ int RoutePopupMenu::nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* l
                 for(int ch = 0; ch < chans; ++ch)
                 {
                   char buffer[128];
-                  snprintf(buffer, 128, "%s %d,%d", chpup->tr("Channel").toLatin1().constData(), ch+1, ch+2);
+                  snprintf(buffer, 128, "%s %d,%d", tr("Channel").toLatin1().constData(), ch+1, ch+2);
                   act = chpup->addAction(QString(buffer));
                   act->setCheckable(true);
                   
