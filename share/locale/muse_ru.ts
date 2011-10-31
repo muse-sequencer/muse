@@ -4,7 +4,7 @@
 <context>
     <name>@default</name>
     <message>
-        <location filename="../../muse/transport.cpp" line="+46"/>
+        <location filename="../../muse/transport.cpp" line="+48"/>
         <source>Click this button to enable recording</source>
         <translation>Щелкните по этой кнопке для активизации режима записи</translation>
     </message>
@@ -63,7 +63,7 @@ with the pointer tool you can:
         <translation type="obsolete">также квантовать длительность нот по умолчанию</translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="+89"/>
+        <location filename="../../muse/app.cpp" line="+97"/>
         <source>Click this button to open a &lt;em&gt;new song&lt;/em&gt;.&lt;br&gt;You can also select the &lt;b&gt;Open command&lt;/b&gt; from the File menu.</source>
         <translation>Щелкните по этой кнопке для открытия другого проекта. Вы также можете выбрать пункт Открыть в меню &quot;Файл&quot;.</translation>
     </message>
@@ -249,7 +249,7 @@ click on part to mute/unmute</source>
     </message>
     <message>
         <location filename="../../muse/arranger/arranger.cpp" line="+155"/>
-        <location filename="../../muse/master/masteredit.cpp" line="+155"/>
+        <location filename="../../muse/master/masteredit.cpp" line="+162"/>
         <location filename="../../muse/widgets/comboQuant.cpp" line="+40"/>
         <location line="+1"/>
         <location line="+1"/>
@@ -268,7 +268,7 @@ click on part to mute/unmute</source>
         <translation type="obsolete">Все файлы (*)</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="+285"/>
+        <location filename="../../muse/helper.cpp" line="+293"/>
         <source>Add Midi Track</source>
         <translation type="unfinished">Добавить Midi Трек</translation>
     </message>
@@ -283,22 +283,22 @@ click on part to mute/unmute</source>
         <translation type="unfinished">Добавить wave-трек</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+6"/>
         <source>Add Audio Output</source>
         <translation type="unfinished">Добавить аудиовыход</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+7"/>
         <source>Add Audio Group</source>
         <translation type="unfinished">Добавить аудиогруппу</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+7"/>
         <source>Add Audio Input</source>
         <translation type="unfinished">Добавить аудиовход</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+7"/>
         <source>Add Aux Send</source>
         <translation type="unfinished">Добавить Aux посыл</translation>
     </message>
@@ -308,7 +308,7 @@ click on part to mute/unmute</source>
         <translation>ластик</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="-67"/>
+        <location filename="../../muse/helper.cpp" line="-78"/>
         <source>MESS</source>
         <translation type="unfinished">MESS</translation>
     </message>
@@ -323,7 +323,7 @@ click on part to mute/unmute</source>
         <translation type="unfinished">FST</translation>
     </message>
     <message>
-        <location line="+57"/>
+        <location line="+69"/>
         <source>Add Synth</source>
         <translation>Добавить синтезатор</translation>
     </message>
@@ -333,7 +333,7 @@ click on part to mute/unmute</source>
         <translation>Такт</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="+729"/>
+        <location filename="../../muse/confmport.cpp" line="+733"/>
         <source> Jack</source>
         <translation> Jack</translation>
     </message>
@@ -353,10 +353,10 @@ click on part to mute/unmute</source>
         <translation>JACK:</translation>
     </message>
     <message>
-        <location filename="../../muse/driver/alsamidi.cpp" line="+209"/>
-        <location filename="../../muse/driver/jackmidi.cpp" line="+290"/>
-        <location filename="../../muse/midiport.cpp" line="+1138"/>
-        <location filename="../../muse/track.cpp" line="+799"/>
+        <location filename="../../muse/driver/alsamidi.cpp" line="+211"/>
+        <location filename="../../muse/driver/jackmidi.cpp" line="+294"/>
+        <location filename="../../muse/midiport.cpp" line="+1189"/>
+        <location filename="../../muse/track.cpp" line="+953"/>
         <location line="+16"/>
         <location line="+30"/>
         <source>Route</source>
@@ -412,7 +412,7 @@ click on part to mute/unmute</source>
         <translation>источник</translation>
     </message>
     <message>
-        <location filename="../../muse/midictrl.cpp" line="+242"/>
+        <location filename="../../muse/midictrl.cpp" line="+244"/>
         <source>Velocity</source>
         <translation>Скорость нажатия</translation>
     </message>
@@ -429,12 +429,12 @@ click on part to mute/unmute</source>
         <translation> МаскаКанала=&quot;%1&quot;</translation>
     </message>
     <message>
-        <location filename="../../muse/osc.cpp" line="+1320"/>
+        <location filename="../../muse/osc.cpp" line="+1090"/>
         <source>dssi_synth</source>
         <translation>dssi_synth</translation>
     </message>
     <message>
-        <location line="+87"/>
+        <location line="+73"/>
         <source>ladspa_efx</source>
         <translation>ladspa_efx</translation>
     </message>
@@ -554,87 +554,61 @@ Published under the GNU Public License</source>
 <context>
     <name>Appearance</name>
     <message>
-        <location filename="../../muse/appearance.cpp" line="+769"/>
         <source>MusE: load image</source>
-        <translation>MusE: загрузить изображение</translation>
+        <translation type="obsolete">MusE: загрузить изображение</translation>
     </message>
     <message>
-        <location line="-639"/>
         <source>Main application font, and default font for any
  controls not defined here.</source>
-        <translation>Главный шрифт приложения, и шрифт по умолчанию 
+        <translation type="obsolete">Главный шрифт приложения, и шрифт по умолчанию 
 для всех средств управления, здесь не определены.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>For small controls like mixer strips.
 Also timescale small numbers, arranger part name overlay,
  and effects rack.</source>
-        <translation>Для небольших средств контроля, типа линеек микшера.
+        <translation type="obsolete">Для небольших средств контроля, типа линеек микшера.
 Также для маленьких цифр на линейке времени, названий партий в компоновщике и рэка эффектов.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Midi track info panel. Transport controls.</source>
-        <translation>Инфо-панель Midi-трека. Управление транспортом.</translation>
+        <translation type="obsolete">Инфо-панель Midi-трека. Управление транспортом.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Controller graph and S/X buttons. Large numbers for time
  and tempo scale, and time signature.</source>
-        <translation>Диаграмма контроллера и S/X кнопки. Большие цифры для
+        <translation type="obsolete">Диаграмма контроллера и S/X кнопки. Большие цифры для
 линеек времени и темпа, а также для тактового размера.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Time scale markers.</source>
-        <translation>Маркеры на линейке времени.</translation>
+        <translation type="obsolete">Маркеры на линейке времени.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>List editor: meta event edit dialog multi-line edit box.</source>
-        <translation>Редактор списка: редактирование мета-события многострочное окно редактирования. </translation>
+        <translation type="obsolete">Редактор списка: редактирование мета-события многострочное окно редактирования. </translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Mixer label font. Auto-font-sizing up to chosen font size.
 Word-breaking but only with spaces.</source>
-        <translation>Шрифт метки микшера. Автоматическое изменение размера шрифта до выбранного размера.
+        <translation type="obsolete">Шрифт метки микшера. Автоматическое изменение размера шрифта до выбранного размера.
 Переносы только по пробелам.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Maximum mixer label auto-font-sizing font size.</source>
-        <translation>Максимальный размер автоматически изменяющегося шрифта метки микшера.</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Global opacity (opposite of transparency).</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Standard</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Custom</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Максимальный размер автоматически изменяющегося шрифта метки микшера.</translation>
     </message>
     <message>
         <source>&lt;none&gt;</source>
         <translation type="obsolete">&lt;ничего&gt;</translation>
     </message>
     <message>
-        <location line="+958"/>
         <source>Select style sheet</source>
-        <translation>Выберите таблицу стилей</translation>
+        <translation type="obsolete">Выберите таблицу стилей</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Qt style sheets (*.qss)</source>
-        <translation>Таблицы стилей Qt (*.qss)</translation>
+        <translation type="obsolete">Таблицы стилей Qt (*.qss)</translation>
     </message>
 </context>
 <context>
@@ -1514,29 +1488,16 @@ Right-click to show GUI.</source>
 <context>
     <name>ClipListEdit</name>
     <message>
-        <location filename="../../muse/cliplist/cliplist.cpp" line="+127"/>
         <source>MusE: Clip List Editor</source>
-        <translation>MusE: Редактор списка фрагментов</translation>
+        <translation type="obsolete">MusE: Редактор списка фрагментов</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>Undo/Redo tools</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
         <source>panic</source>
-        <translation type="unfinished">паника</translation>
+        <translation type="obsolete">паника</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>transport</source>
-        <translation type="unfinished">транспорт</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Window &amp;Config</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">транспорт</translation>
     </message>
 </context>
 <context>
@@ -1612,7 +1573,7 @@ Right-click to show GUI.</source>
         <translation type="obsolete">Настроить экспорт midi-файла</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/configmidifilebase.ui" line="+193"/>
+        <location filename="../../muse/widgets/configmidifilebase.ui" line="+202"/>
         <source>&amp;OK</source>
         <translation>&amp;ОК</translation>
     </message>
@@ -1632,7 +1593,7 @@ Right-click to show GUI.</source>
         <translation>1 (несколько треков)</translation>
     </message>
     <message>
-        <location line="-36"/>
+        <location line="-52"/>
         <source>Format:</source>
         <translation>Формат:</translation>
     </message>
@@ -1652,12 +1613,12 @@ Right-click to show GUI.</source>
         <translation>384</translation>
     </message>
     <message>
-        <location line="+48"/>
+        <location line="+64"/>
         <source>Division:</source>
         <translation>Деление(Division):</translation>
     </message>
     <message>
-        <location line="-20"/>
+        <location line="-36"/>
         <source>Copyright:</source>
         <translation>Copyright:</translation>
     </message>
@@ -1666,17 +1627,17 @@ Right-click to show GUI.</source>
         <translation type="obsolete">Разрешить расширенный формат SMF</translation>
     </message>
     <message>
-        <location line="-95"/>
+        <location line="-91"/>
         <source>MusE: Config Midi File Import/Export</source>
         <translation>MusE: Настроить Импорт/Экспорт Midi-файла</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+15"/>
         <source>Import:</source>
         <translation>Импорт:</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+9"/>
         <source>Split tracks into &amp;parts</source>
         <translation>Разделить треки на &amp;партии</translation>
     </message>
@@ -1686,12 +1647,12 @@ Right-click to show GUI.</source>
         <translation>Alt+P</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-6"/>
         <source>Split tracks into parts, or one single part</source>
         <translation>Разделить треки на партии, или одну партию</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+22"/>
         <source>Export:</source>
         <translation>Экспорт:</translation>
     </message>
@@ -1711,7 +1672,12 @@ Right-click to show GUI.</source>
         <translation>Alt+2</translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+33"/>
+        <source>Note: Format 0 uses the FIRST midi track&apos;s name/comment in the arranger</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+20"/>
         <source>Save space by replacing note-offs with &amp;zero velocity note-ons</source>
         <translation>Сохранить место, заменяя note-offs на &amp;note-ons с нулевой скоростью нажатия</translation>
     </message>
@@ -1792,87 +1758,50 @@ Right-click to show GUI.</source>
         <translation type="obsolete">Выбр</translation>
     </message>
     <message>
-        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="+94"/>
         <source>select controller</source>
-        <translation>выбрать контроллер</translation>
+        <translation type="obsolete">выбрать контроллер</translation>
     </message>
     <message>
         <source>x</source>
         <translation type="obsolete">x</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>remove panel</source>
-        <translation>удалить панель</translation>
+        <translation type="obsolete">удалить панель</translation>
     </message>
     <message>
-        <location line="+463"/>
-        <location line="+236"/>
         <source>Velocity</source>
-        <translation>Скорость нажатия</translation>
+        <translation type="obsolete">Скорость нажатия</translation>
     </message>
     <message>
-        <location line="-186"/>
         <source>add new ...</source>
-        <translation>Добавить новый...</translation>
+        <translation type="obsolete">Добавить новый...</translation>
     </message>
     <message>
-        <location line="-528"/>
         <source>S</source>
-        <translation>S</translation>
+        <translation type="obsolete">S</translation>
     </message>
     <message>
-        <location line="+10"/>
         <source>X</source>
-        <translation>X</translation>
+        <translation type="obsolete">X</translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>manual adjust</source>
-        <translation>настройка вручную</translation>
+        <translation type="obsolete">настройка вручную</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>double click on/off</source>
-        <translation>двойной щелчок вкл/выкл</translation>
+        <translation type="obsolete">двойной щелчок вкл/выкл</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>off</source>
-        <translation>выкл</translation>
-    </message>
-    <message>
-        <location line="+653"/>
-        <location line="+58"/>
-        <source>Instrument-defined</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-43"/>
-        <location line="+21"/>
-        <source>Add ...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-17"/>
-        <source>Others</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+65"/>
-        <source>Edit instrument ...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+46"/>
-        <source>Common Controls</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">выкл</translation>
     </message>
 </context>
 <context>
     <name>DeicsOnzeGui</name>
     <message>
-        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="+1904"/>
+        <location filename="../../synti/deicsonze/deicsonzegui.cpp" line="+1906"/>
         <location line="+389"/>
         <source>Delete preset</source>
         <translation>Удалить пресет</translation>
@@ -3747,402 +3676,279 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
 <context>
     <name>DrumEdit</name>
     <message>
-        <location filename="../../muse/midiedit/drumedit.cpp" line="+181"/>
         <source>&amp;File</source>
-        <translation>&amp;Файл</translation>
+        <translation type="obsolete">&amp;Файл</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Load Map</source>
-        <translation>Загрузить карту</translation>
+        <translation type="obsolete">Загрузить карту</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Save Map</source>
-        <translation>Сохранить карту</translation>
+        <translation type="obsolete">Сохранить карту</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>&amp;Edit</source>
-        <translation>&amp;Правка</translation>
+        <translation type="obsolete">&amp;Правка</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Cut</source>
-        <translation>Вырезать</translation>
+        <translation type="obsolete">Вырезать</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Copy</source>
-        <translation>Копировать</translation>
+        <translation type="obsolete">Копировать</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Paste</source>
-        <translation>Вставить</translation>
+        <translation type="obsolete">Вставить</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Delete Events</source>
-        <translation>Удалить события</translation>
+        <translation type="obsolete">Удалить события</translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>Select All</source>
-        <translation>Выделить всё</translation>
+        <translation type="obsolete">Выделить всё</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Select None</source>
-        <translation>Убрать выделение</translation>
+        <translation type="obsolete">Убрать выделение</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Invert</source>
-        <translation>Инвертировать</translation>
+        <translation type="obsolete">Инвертировать</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Inside Loop</source>
-        <translation>Внутри цикла</translation>
+        <translation type="obsolete">Внутри цикла</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Outside Loop</source>
-        <translation>Вне цикла</translation>
+        <translation type="obsolete">Вне цикла</translation>
     </message>
     <message>
-        <location line="-7"/>
         <source>&amp;Select</source>
-        <translation>&amp;Выделение</translation>
+        <translation type="obsolete">&amp;Выделение</translation>
     </message>
     <message>
-        <location line="+81"/>
         <source>Load Drummap</source>
-        <translation>Загрузить драм-карту</translation>
+        <translation type="obsolete">Загрузить драм-карту</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Store Drummap</source>
-        <translation>Сохранить драм-карту</translation>
+        <translation type="obsolete">Сохранить драм-карту</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>Step Record</source>
-        <translation>Пошаговая запись</translation>
+        <translation type="obsolete">Пошаговая запись</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Midi Input</source>
-        <translation>MIDI-вход</translation>
+        <translation type="obsolete">MIDI-вход</translation>
     </message>
     <message>
-        <location line="+50"/>
         <source>ctrl</source>
-        <translation>ctrl</translation>
+        <translation type="obsolete">ctrl</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Add Controller View</source>
-        <translation>Показать контроллеры</translation>
+        <translation type="obsolete">Показать контроллеры</translation>
     </message>
     <message>
-        <location line="+57"/>
         <source>M</source>
-        <translation>M</translation>
+        <translation type="obsolete">M</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Sound</source>
-        <translation>Звук</translation>
+        <translation type="obsolete">Звук</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>QNT</source>
-        <translation>КВНТ</translation>
+        <translation type="obsolete">КВНТ</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>E-Note</source>
-        <translation>E-Нота</translation>
+        <translation type="obsolete">E-Нота</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Len</source>
-        <translation>Дл</translation>
+        <translation type="obsolete">Дл</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>A-Note</source>
-        <translation>A-Нота</translation>
+        <translation type="obsolete">A-Нота</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Ch</source>
-        <translation>Кан</translation>
+        <translation type="obsolete">Кан</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Port</source>
-        <translation>Порт</translation>
+        <translation type="obsolete">Порт</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>LV1</source>
-        <translation>LV1</translation>
+        <translation type="obsolete">LV1</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>LV2</source>
-        <translation>LV2</translation>
+        <translation type="obsolete">LV2</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>LV3</source>
-        <translation>LV3</translation>
+        <translation type="obsolete">LV3</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>LV4</source>
-        <translation>LV4</translation>
+        <translation type="obsolete">LV4</translation>
     </message>
     <message>
         <source>drummaps</source>
         <translation type="obsolete">драм-карты</translation>
     </message>
     <message>
-        <location line="+373"/>
         <source>Muse: Load Drum Map</source>
-        <translation>Muse: Загрузить драм-карту</translation>
+        <translation type="obsolete">Muse: Загрузить драм-карту</translation>
     </message>
     <message>
-        <location line="+53"/>
         <source>MusE: Store Drum Map</source>
-        <translation>Muse: Сохранить драм-карту</translation>
+        <translation type="obsolete">Muse: Сохранить драм-карту</translation>
     </message>
     <message>
-        <location line="-620"/>
         <source>Set Fixed Length</source>
-        <translation>Установить фикс. длительность</translation>
+        <translation type="obsolete">Установить фикс. длительность</translation>
     </message>
     <message>
         <source>&amp;Functions</source>
         <translation type="obsolete">&amp;Функции</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Modify Velocity</source>
-        <translation>Изменить скорость нажатия</translation>
+        <translation type="obsolete">Изменить скорость нажатия</translation>
     </message>
     <message>
-        <location line="-148"/>
-        <location line="+21"/>
         <source>mute instrument</source>
-        <translation>заглушить инструмент</translation>
+        <translation type="obsolete">заглушить инструмент</translation>
     </message>
     <message>
-        <location line="-20"/>
-        <location line="+21"/>
         <source>sound name</source>
-        <translation>название звука</translation>
+        <translation type="obsolete">название звука</translation>
     </message>
     <message>
-        <location line="-20"/>
-        <location line="+21"/>
         <source>volume percent</source>
-        <translation>громкость в процентах</translation>
+        <translation type="obsolete">громкость в процентах</translation>
     </message>
     <message>
-        <location line="-20"/>
-        <location line="+21"/>
         <source>quantisation</source>
-        <translation>квантование</translation>
+        <translation type="obsolete">квантование</translation>
     </message>
     <message>
-        <location line="-20"/>
-        <location line="+21"/>
         <source>this input note triggers the sound</source>
-        <translation>эта входящая нота включает звук</translation>
+        <translation type="obsolete">эта входящая нота включает звук</translation>
     </message>
     <message>
-        <location line="-20"/>
-        <location line="+21"/>
         <source>note length</source>
-        <translation>длина ноты</translation>
+        <translation type="obsolete">длина ноты</translation>
     </message>
     <message>
-        <location line="-20"/>
-        <location line="+21"/>
         <source>this is the note which is played</source>
-        <translation>это нота, которая воспроизводится</translation>
+        <translation type="obsolete">это нота, которая воспроизводится</translation>
     </message>
     <message>
-        <location line="-20"/>
         <source>output channel (hold ctl to affect all rows)</source>
-        <translation>канал выхода (удерживайте ctrl, чтобы воздействовать на все ряды)</translation>
+        <translation type="obsolete">канал выхода (удерживайте ctrl, чтобы воздействовать на все ряды)</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location line="+21"/>
         <source>output port</source>
-        <translation>порт выхода</translation>
+        <translation type="obsolete">порт выхода</translation>
     </message>
     <message>
-        <location line="-20"/>
-        <location line="+21"/>
         <source>shift + control key: draw velocity level 1</source>
-        <translation>клавиши shift+control: рисовать уровень 1 скорости нажатия</translation>
+        <translation type="obsolete">клавиши shift+control: рисовать уровень 1 скорости нажатия</translation>
     </message>
     <message>
-        <location line="-20"/>
-        <location line="+21"/>
         <source>control key: draw velocity level 2</source>
-        <translation>Клавиша control: рисовать уровень 2 скорости нажатия</translation>
+        <translation type="obsolete">Клавиша control: рисовать уровень 2 скорости нажатия</translation>
     </message>
     <message>
-        <location line="-20"/>
-        <location line="+21"/>
         <source>shift key: draw velocity level 3</source>
-        <translation>Клавиша shift: рисовать уровень 3 скорости нажатия</translation>
+        <translation type="obsolete">Клавиша shift: рисовать уровень 3 скорости нажатия</translation>
     </message>
     <message>
-        <location line="-20"/>
-        <location line="+21"/>
         <source>draw velocity level 4</source>
-        <translation>рисовать уровень 4 скорости нажатия</translation>
+        <translation type="obsolete">рисовать уровень 4 скорости нажатия</translation>
     </message>
     <message>
-        <location line="-5"/>
         <source>output channel (ctl: affect all rows)</source>
-        <translation>канал выхода (ctrl: действует на все ряды)</translation>
+        <translation type="obsolete">канал выхода (ctrl: действует на все ряды)</translation>
     </message>
     <message>
-        <location line="+46"/>
         <source>Reset GM Map</source>
-        <translation>Настроить карту GM по умолчанию </translation>
+        <translation type="obsolete">Настроить карту GM по умолчанию </translation>
     </message>
     <message>
-        <location line="+16"/>
-        <source>Copy events in range</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Paste (with Dialog)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+29"/>
         <source>Previous Part</source>
-        <translation>Предыдущая партия</translation>
+        <translation type="obsolete">Предыдущая партия</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Next Part</source>
-        <translation>Следующая партия</translation>
+        <translation type="obsolete">Следующая партия</translation>
     </message>
     <message>
-        <location line="+19"/>
-        <source>Fu&amp;nctions</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Re-order list</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Crescendo/Decrescendo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Quantize</source>
-        <translation type="unfinished">Квантовать</translation>
+        <translation type="obsolete">Квантовать</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Erase Event</source>
-        <translation type="unfinished">Удалить событие</translation>
+        <translation type="obsolete">Удалить событие</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Move Notes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Delete Overlaps</source>
-        <translation type="unfinished">Удалить наложения</translation>
+        <translation type="obsolete">Удалить наложения</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>&amp;Plugins</source>
-        <translation>&amp;Плагины</translation>
+        <translation type="obsolete">&amp;Плагины</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Window &amp;Config</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
         <source>Drum tools</source>
-        <translation>Инструменты ударных</translation>
+        <translation type="obsolete">Инструменты ударных</translation>
     </message>
     <message>
-        <location line="+37"/>
-        <source>cursor tools</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Set step size for cursor edit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
         <source>panic</source>
-        <translation>паника</translation>
+        <translation type="obsolete">паника</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>transport</source>
-        <translation>транспорт</translation>
+        <translation type="obsolete">транспорт</translation>
     </message>
     <message>
-        <location line="+84"/>
         <source>Vol</source>
-        <translation>Громк</translation>
+        <translation type="obsolete">Громк</translation>
     </message>
     <message>
-        <location line="+461"/>
         <source>Drum map</source>
-        <translation>Карта ударных</translation>
+        <translation type="obsolete">Карта ударных</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Reset the drum map with GM defaults?</source>
-        <translation>Сброс карты ударных на GM по умолчанию?</translation>
+        <translation type="obsolete">Сброс карты ударных на GM по умолчанию?</translation>
     </message>
 </context>
 <context>
     <name>EditCAfterDialog</name>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="+443"/>
         <source>MusE: Enter Channel Aftertouch</source>
-        <translation>MusE: Ввести Channel Aftertouch</translation>
+        <translation type="obsolete">MusE: Ввести Channel Aftertouch</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Time Position</source>
-        <translation>Позиция по времени</translation>
+        <translation type="obsolete">Позиция по времени</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Pressure</source>
-        <translation>Давление</translation>
+        <translation type="obsolete">Давление</translation>
     </message>
 </context>
 <context>
@@ -4253,14 +4059,12 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
 <context>
     <name>EditEventDialog</name>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="-261"/>
         <source>Ok</source>
-        <translation>ОК</translation>
+        <translation type="obsolete">ОК</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Cancel</source>
-        <translation>Отмена</translation>
+        <translation type="obsolete">Отмена</translation>
     </message>
 </context>
 <context>
@@ -4324,188 +4128,137 @@ Wave form 8 = &lt;i&gt;if &lt;b&gt;t&lt;/b&gt;&amp;#060 pi then sin(2*&lt;b&gt;t
 <context>
     <name>EditInstrument</name>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="+311"/>
-        <location line="+34"/>
         <source>MusE: Create file failed</source>
-        <translation>MusE: Не удалось создать файл</translation>
+        <translation type="obsolete">MusE: Не удалось создать файл</translation>
     </message>
     <message>
-        <location line="+33"/>
         <source>MusE: Write File failed</source>
-        <translation>MusE: Не удалось записать файл</translation>
+        <translation type="obsolete">MusE: Не удалось записать файл</translation>
     </message>
     <message>
-        <location line="+32"/>
-        <location line="+12"/>
-        <location line="+280"/>
-        <location line="+12"/>
         <source>MusE:</source>
-        <translation>MusE:</translation>
+        <translation type="obsolete">MusE:</translation>
     </message>
     <message>
-        <location line="-303"/>
-        <location line="+292"/>
         <source>The user instrument directory
 </source>
-        <translation>Пользовательский инструментальный каталог</translation>
+        <translation type="obsolete">Пользовательский инструментальный каталог</translation>
     </message>
     <message>
-        <location line="-292"/>
-        <location line="+292"/>
         <source>
 does not exist yet. Create it now?
 </source>
-        <translation>не существует. Создать?</translation>
+        <translation type="obsolete">не существует. Создать?</translation>
     </message>
     <message>
         <source>(You can override with the environment variable MUSEINSTRUMENTS)</source>
         <translation type="obsolete">(Вы можете переписать с переменной окружения MUSEINSTRUMENTS)</translation>
     </message>
     <message>
-        <location line="-291"/>
-        <location line="+292"/>
-        <source>(You can change the user instruments directory at Settings-&gt;Global Settings-&gt;Midi)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-282"/>
-        <location line="+292"/>
         <source>Unable to create user instrument directory
 </source>
-        <translation>Невозможно создать пользовательский инструментальный каталог</translation>
+        <translation type="obsolete">Невозможно создать пользовательский инструментальный каталог</translation>
     </message>
     <message>
-        <location line="-244"/>
-        <location line="+266"/>
         <source>MusE: Save Instrument Definition</source>
-        <translation>MusE: Сохранить Определение Инструмента</translation>
+        <translation type="obsolete">MusE: Сохранить Определение Инструмента</translation>
     </message>
     <message>
-        <location line="-265"/>
-        <location line="+266"/>
         <source>Instrument Definition (*.idf)</source>
-        <translation>Определение инструмента (*.idf)</translation>
+        <translation type="obsolete">Определение инструмента (*.idf)</translation>
     </message>
     <message>
-        <location line="-154"/>
-        <location line="+29"/>
         <source>MusE: Save instrument as</source>
-        <translation>MusE: Сохранить инструмент как</translation>
+        <translation type="obsolete">MusE: Сохранить инструмент как</translation>
     </message>
     <message>
-        <location line="-29"/>
         <source>Enter a new unique instrument name:</source>
-        <translation>Введите неповторяющееся имя инструмента:</translation>
+        <translation type="obsolete">Введите неповторяющееся имя инструмента:</translation>
     </message>
     <message>
-        <location line="+30"/>
         <source>The user instrument:
 </source>
-        <translation>Инструмент пользователя:</translation>
+        <translation type="obsolete">Инструмент пользователя:</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>
 already exists. This will overwrite its .idf instrument file.
 Are you sure?</source>
-        <translation>уже существует. Нажатие на кнопку &quot;ОК&quot;
+        <translation type="obsolete">уже существует. Нажатие на кнопку &quot;ОК&quot;
 перепишет .idf файл инструмента.
 Вы уверены?</translation>
     </message>
     <message>
-        <location line="+525"/>
         <source>MusE: Bad instrument name</source>
-        <translation>MusE: Неверное имя инструмента</translation>
+        <translation type="obsolete">MusE: Неверное имя инструмента</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Please choose a unique instrument name.
 (The name might be used by a hidden instrument.)</source>
-        <translation>Пожалуйста, выберите неповторяющееся имя для инструмента.
+        <translation type="obsolete">Пожалуйста, выберите неповторяющееся имя для инструмента.
 (Имя может использоваться в скрытых инструментах)</translation>
     </message>
     <message>
-        <location line="+136"/>
         <source>MusE: Bad patch name</source>
-        <translation>MusE: Неверное имя патча</translation>
+        <translation type="obsolete">MusE: Неверное имя патча</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Please choose a unique patch name</source>
-        <translation>Пожалуйста, выберите неповторяющееся имя патча</translation>
+        <translation type="obsolete">Пожалуйста, выберите неповторяющееся имя патча</translation>
     </message>
     <message>
-        <location line="+22"/>
         <source>MusE: Bad patchgroup name</source>
-        <translation>MusE: Неверное имя группы</translation>
+        <translation type="obsolete">MusE: Неверное имя группы</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Please choose a unique patchgroup name</source>
-        <translation>Пожалуйста, выберите неповторяющееся имя группы</translation>
+        <translation type="obsolete">Пожалуйста, выберите неповторяющееся имя группы</translation>
     </message>
     <message>
-        <location line="+526"/>
         <source>MusE: Bad controller name</source>
-        <translation>MusE: Неверное имя контроллера</translation>
+        <translation type="obsolete">MusE: Неверное имя контроллера</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Please choose a unique controller name</source>
-        <translation>Пожалуйста, выберите неповторяющееся имя для контроллера</translation>
+        <translation type="obsolete">Пожалуйста, выберите неповторяющееся имя для контроллера</translation>
     </message>
     <message>
-        <location line="+1287"/>
-        <location line="+12"/>
         <source>MusE: Cannot add common controller</source>
-        <translation>MusE: Невозможно добавить обычный контроллер</translation>
+        <translation type="obsolete">MusE: Невозможно добавить обычный контроллер</translation>
     </message>
     <message>
-        <location line="-11"/>
         <source>A controller named </source>
-        <translation>Контроллер названый </translation>
+        <translation type="obsolete">Контроллер названый </translation>
     </message>
     <message>
-        <location line="+0"/>
-        <location line="+12"/>
         <source> already exists.</source>
-        <translation> уже существует.</translation>
+        <translation type="obsolete"> уже существует.</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>A controller number </source>
-        <translation>Номер контроллера </translation>
+        <translation type="obsolete">Номер контроллера </translation>
     </message>
     <message>
-        <location line="+283"/>
-        <location line="+5"/>
         <source>MusE</source>
-        <translation>MusE</translation>
+        <translation type="obsolete">MusE</translation>
     </message>
     <message>
-        <location line="-4"/>
-        <location line="+5"/>
         <source>The current Instrument contains unsaved data
 Save Current Instrument?</source>
-        <translation>Текущий Инструмент содержит несохраненные данные
+        <translation type="obsolete">Текущий Инструмент содержит несохраненные данные
 Сохранить этот Инструмент?</translation>
     </message>
     <message>
-        <location line="-3"/>
-        <location line="+5"/>
         <source>&amp;Save</source>
-        <translation>&amp;Сохранить</translation>
+        <translation type="obsolete">&amp;Сохранить</translation>
     </message>
     <message>
-        <location line="-5"/>
-        <location line="+5"/>
         <source>&amp;Nosave</source>
-        <translation>&amp;Не сохранять</translation>
+        <translation type="obsolete">&amp;Не сохранять</translation>
     </message>
     <message>
-        <location line="-5"/>
         <source>&amp;Abort</source>
-        <translation>&amp;Отмена</translation>
+        <translation type="obsolete">&amp;Отмена</translation>
     </message>
 </context>
 <context>
@@ -5315,24 +5068,20 @@ Typically, set to 127/127, or an unused
 <context>
     <name>EditMetaDialog</name>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="+118"/>
         <source>MusE: Enter Meta Event</source>
-        <translation>MusE: Ввести метасобытие</translation>
+        <translation type="obsolete">MusE: Ввести метасобытие</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Time Position</source>
-        <translation>Позиция по времени</translation>
+        <translation type="obsolete">Позиция по времени</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Meta Type</source>
-        <translation>Метатип</translation>
+        <translation type="obsolete">Метатип</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>Enter Hex</source>
-        <translation>Ввести Hex</translation>
+        <translation type="obsolete">Ввести Hex</translation>
     </message>
 </context>
 <context>
@@ -5412,24 +5161,20 @@ Typically, set to 127/127, or an unused
 <context>
     <name>EditPAfterDialog</name>
     <message>
-        <location filename="../../muse/liste/editevent.cpp" line="+176"/>
         <source>MusE: Enter Poly Aftertouch</source>
-        <translation>MusE: Ввести полиф. посленажатие</translation>
+        <translation type="obsolete">MusE: Ввести полиф. посленажатие</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Time Position</source>
-        <translation>Позиция по времени</translation>
+        <translation type="obsolete">Позиция по времени</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Pitch</source>
-        <translation>Высота тона</translation>
+        <translation type="obsolete">Высота тона</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Pressure</source>
-        <translation>Давление</translation>
+        <translation type="obsolete">Давление</translation>
     </message>
 </context>
 <context>
@@ -5841,13 +5586,31 @@ Configuration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+13"/>
         <source>Allows some popup menus to stay open.
 Otherwise, hold Ctrl to keep them open.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+11"/>
+        <source>In some areas, the middle mouse button decreases
+values, while the right button increases. Users without a
+middle mouse button can select this option to make the
+left button behave like the middle button in such areas.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Use left mouse button for decreasing values</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Shift + Right click sets left range marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
         <source>MDI-subwindowness and sharing menus</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5887,7 +5650,7 @@ Otherwise, hold Ctrl to keep them open.</source>
         <translation>&amp;Отмена</translation>
     </message>
     <message>
-        <location line="-924"/>
+        <location line="-976"/>
         <source>Audio</source>
         <translation>Аудио</translation>
     </message>
@@ -6426,143 +6189,96 @@ Adjusts responsiveness of audio controls and
 <context>
     <name>LMaster</name>
     <message>
-        <location filename="../../muse/master/lmaster.cpp" line="+147"/>
         <source>MusE: Mastertrack</source>
-        <translation>MusE: Мастер-трек</translation>
+        <translation type="obsolete">MusE: Мастер-трек</translation>
     </message>
     <message>
-        <location line="+57"/>
         <source>Tempo</source>
-        <translation>Темп</translation>
+        <translation type="obsolete">Темп</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Timesig</source>
-        <translation>Размер</translation>
+        <translation type="obsolete">Размер</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>new tempo</source>
-        <translation>новый темп</translation>
+        <translation type="obsolete">новый темп</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>new signature</source>
-        <translation>новый размер</translation>
+        <translation type="obsolete">новый размер</translation>
     </message>
     <message>
-        <location line="+26"/>
         <source>Meter</source>
-        <translation>Индикатор</translation>
+        <translation type="obsolete">Индикатор</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Time</source>
-        <translation>Время</translation>
+        <translation type="obsolete">Время</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Type</source>
-        <translation>Тип</translation>
+        <translation type="obsolete">Тип</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Value</source>
-        <translation>Значение</translation>
+        <translation type="obsolete">Значение</translation>
     </message>
     <message>
-        <location line="-77"/>
         <source>&amp;Edit</source>
-        <translation>&amp;Правка</translation>
+        <translation type="obsolete">&amp;Правка</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Insert Tempo</source>
-        <translation>Вставить темп</translation>
+        <translation type="obsolete">Вставить темп</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Insert Signature</source>
-        <translation>Вставить размер</translation>
+        <translation type="obsolete">Вставить размер</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Insert Key</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Edit Positon</source>
-        <translation>Изменить позицию</translation>
+        <translation type="obsolete">Изменить позицию</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Edit Value</source>
-        <translation>Изменить значение</translation>
+        <translation type="obsolete">Изменить значение</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Delete Event</source>
-        <translation>Удалить событие</translation>
+        <translation type="obsolete">Удалить событие</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Window &amp;Config</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>Undo/Redo tools</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Key</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>new key</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
         <source>panic</source>
-        <translation type="unfinished">паника</translation>
+        <translation type="obsolete">паника</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>transport</source>
-        <translation type="unfinished">транспорт</translation>
+        <translation type="obsolete">транспорт</translation>
     </message>
     <message>
-        <location line="+408"/>
         <source>Reposition of the initial tempo and signature events is not allowed</source>
-        <translation>Изменение начального темпа и размера запрещено</translation>
+        <translation type="obsolete">Изменение начального темпа и размера запрещено</translation>
     </message>
     <message>
-        <location line="+54"/>
         <source>MusE: List Editor</source>
-        <translation>MusE: Редактор списка событий</translation>
+        <translation type="obsolete">MusE: Редактор списка событий</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Input error, conversion not OK or value out of range</source>
-        <translation>Ошибка ввода, неверная конверсия или значение вне диапазона</translation>
+        <translation type="obsolete">Ошибка ввода, неверная конверсия или значение вне диапазона</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>Reposition of tempo and signature events to start position is not allowed!</source>
-        <translation>Изменение темпа и размера запрещено</translation>
+        <translation type="obsolete">Изменение темпа и размера запрещено</translation>
     </message>
     <message>
         <source>Master tools</source>
         <translation type="obsolete">Основные инструменты</translation>
     </message>
     <message>
-        <location line="-495"/>
         <source>Edit tools</source>
-        <translation>Инструменты редактирования</translation>
+        <translation type="obsolete">Инструменты редактирования</translation>
     </message>
 </context>
 <context>
@@ -6635,89 +6351,68 @@ Adjusts responsiveness of audio controls and
         <translation type="obsolete">Вставить ноту</translation>
     </message>
     <message>
-        <location filename="../../muse/liste/listedit.cpp" line="+468"/>
         <source>insert Note</source>
-        <translation>вставить Ноту</translation>
+        <translation type="obsolete">вставить Ноту</translation>
     </message>
     <message>
         <source>Insert SysEx</source>
         <translation type="obsolete">Вставить SysEx</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>insert SysEx</source>
-        <translation>вставить SysEx</translation>
+        <translation type="obsolete">вставить SysEx</translation>
     </message>
     <message>
         <source>Insert Ctrl</source>
         <translation type="obsolete">Вставить кнтрл</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>insert Ctrl</source>
-        <translation>Вставить кнтрл</translation>
+        <translation type="obsolete">Вставить кнтрл</translation>
     </message>
     <message>
         <source>Insert Meta</source>
         <translation type="obsolete">Вставить Meta</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>insert Meta</source>
-        <translation>вставить Meta</translation>
+        <translation type="obsolete">вставить Meta</translation>
     </message>
     <message>
         <source>Insert Channel Aftertouch</source>
         <translation type="obsolete">Вставить Channel Aftertouch</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>insert Channel Aftertouch</source>
-        <translation>вставить Channel Aftertouch</translation>
+        <translation type="obsolete">вставить Channel Aftertouch</translation>
     </message>
     <message>
         <source>Insert Key Aftertouch</source>
         <translation type="obsolete">Вставить Key Aftertouch</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>insert Poly Aftertouch</source>
-        <translation>вставить Poly Aftertouch</translation>
+        <translation type="obsolete">вставить Poly Aftertouch</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>&amp;Edit</source>
-        <translation>&amp;Правка</translation>
+        <translation type="obsolete">&amp;Правка</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Cut</source>
-        <translation>Вырезать</translation>
+        <translation type="obsolete">Вырезать</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Copy</source>
-        <translation>Скопировать</translation>
+        <translation type="obsolete">Скопировать</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Paste</source>
-        <translation>Вставить</translation>
+        <translation type="obsolete">Вставить</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Delete Events</source>
-        <translation>Удалить события</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Window &amp;Config</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Undo/Redo tools</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Удалить события</translation>
     </message>
     <message>
         <source>List Tools</source>
@@ -6728,72 +6423,60 @@ Adjusts responsiveness of audio controls and
         <translation type="obsolete">Вставить инструменты</translation>
     </message>
     <message>
-        <location line="+34"/>
         <source>Tick</source>
-        <translation>Тик</translation>
+        <translation type="obsolete">Тик</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Bar</source>
-        <translation>Такт</translation>
+        <translation type="obsolete">Такт</translation>
     </message>
     <message>
         <source>Typ</source>
         <translation type="obsolete">Тип</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Ch</source>
-        <translation>Кан</translation>
+        <translation type="obsolete">Кан</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Val A</source>
-        <translation>Знач. А</translation>
+        <translation type="obsolete">Знач. А</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Val B</source>
-        <translation>Знач. B</translation>
+        <translation type="obsolete">Знач. B</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Val C</source>
-        <translation>Знач. С</translation>
+        <translation type="obsolete">Знач. С</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Len</source>
-        <translation>Дл</translation>
+        <translation type="obsolete">Дл</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Comment</source>
-        <translation>Комментарий</translation>
+        <translation type="obsolete">Комментарий</translation>
     </message>
     <message>
         <source>List tools</source>
         <translation type="obsolete">Инструменты редактора списка</translation>
     </message>
     <message>
-        <location line="-38"/>
         <source>Insert tools</source>
-        <translation>Инструменты для вставки</translation>
+        <translation type="obsolete">Инструменты для вставки</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>panic</source>
-        <translation type="unfinished">паника</translation>
+        <translation type="obsolete">паника</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>transport</source>
-        <translation type="unfinished">транспорт</translation>
+        <translation type="obsolete">транспорт</translation>
     </message>
     <message>
-        <location line="+24"/>
         <source>Type</source>
-        <translation>Тип</translation>
+        <translation type="obsolete">Тип</translation>
     </message>
 </context>
 <context>
@@ -6831,193 +6514,100 @@ Adjusts responsiveness of audio controls and
         <translation type="obsolete">ничего</translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="+236"/>
         <source>Port</source>
-        <translation>Порт</translation>
+        <translation type="obsolete">Порт</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>GUI</source>
-        <translation>ГИП</translation>
+        <translation type="obsolete">ГИП</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Instrument</source>
-        <translation>Инструмент</translation>
+        <translation type="obsolete">Инструмент</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Device Name</source>
-        <translation>Имя устройства</translation>
+        <translation type="obsolete">Имя устройства</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>State</source>
-        <translation>Состояние</translation>
+        <translation type="obsolete">Состояние</translation>
     </message>
     <message>
         <source>unknown</source>
         <translation type="obsolete">неизвестно</translation>
     </message>
     <message>
-        <location line="-8"/>
         <source>I</source>
-        <translation>Вх</translation>
+        <translation type="obsolete">Вх</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>O</source>
-        <translation>Вых</translation>
+        <translation type="obsolete">Вых</translation>
     </message>
     <message>
-        <location line="-715"/>
         <source>MusE: bad device name</source>
-        <translation>MusE: неверное имя устройства</translation>
+        <translation type="obsolete">MusE: неверное имя устройства</translation>
     </message>
     <message>
-        <location line="-254"/>
-        <location line="+176"/>
-        <source>Default input connections</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-175"/>
-        <location line="+66"/>
-        <source>Are you sure you want to apply to all existing midi tracks now?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-1"/>
-        <location line="+148"/>
-        <source>Default output connections</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-37"/>
-        <location line="+38"/>
-        <source>Setting will apply to new midi tracks.
-Do you want to apply to all existing midi tracks now?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+40"/>
         <source>please choose a unique device name</source>
-        <translation>пожалуйста выберите неповторяющееся имя для устройства</translation>
+        <translation type="obsolete">пожалуйста выберите неповторяющееся имя для устройства</translation>
     </message>
     <message>
-        <location line="+72"/>
-        <location line="+860"/>
         <source>in</source>
-        <translation>в</translation>
+        <translation type="obsolete">в</translation>
     </message>
     <message>
-        <location line="-837"/>
-        <location line="+828"/>
         <source>out</source>
-        <translation>вне (из)</translation>
+        <translation type="obsolete">вне (из)</translation>
     </message>
     <message>
-        <location line="-772"/>
         <source>Show first aliases</source>
-        <translation>Показать первые псевдонимы</translation>
+        <translation type="obsolete">Показать первые псевдонимы</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Show second aliases</source>
-        <translation>Показать вторые псевдонимы</translation>
+        <translation type="obsolete">Показать вторые псевдонимы</translation>
     </message>
     <message>
-        <location line="+130"/>
-        <location line="+42"/>
-        <source>Toggle all</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-38"/>
-        <location line="+43"/>
-        <source>Change all tracks now</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+43"/>
         <source>Create</source>
-        <translation>Создать</translation>
+        <translation type="obsolete">Создать</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source> device</source>
-        <translation> устройство</translation>
+        <translation type="obsolete"> устройство</translation>
     </message>
     <message>
-        <location line="+229"/>
-        <location line="+29"/>
         <source>Port Number</source>
-        <translation>Номер порта</translation>
+        <translation type="obsolete">Номер порта</translation>
     </message>
     <message>
-        <location line="-28"/>
         <source>Enable gui</source>
-        <translation>Разрешить ГИП</translation>
+        <translation type="obsolete">Разрешить ГИП</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Enable reading</source>
-        <translation>Разрешить чтение</translation>
+        <translation type="obsolete">Разрешить чтение</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Enable writing</source>
-        <translation>Разрешить запись</translation>
+        <translation type="obsolete">Разрешить запись</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Port instrument</source>
-        <translation>Инструмент, назначенный на порт</translation>
+        <translation type="obsolete">Инструмент, назначенный на порт</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Midi device name. Click to edit (Jack)</source>
-        <translation>Имя midi-устройства. Щелкните для редактирования (Jack)</translation>
+        <translation type="obsolete">Имя midi-устройства. Щелкните для редактирования (Jack)</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Connections from Jack Midi outputs</source>
-        <translation>Соединения от midi-выходов Jack</translation>
+        <translation type="obsolete">Соединения от midi-выходов Jack</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Connections to Jack Midi inputs</source>
-        <translation>Соединения к midi-входам Jack</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Auto-connect these channels to new midi tracks</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Auto-connect new midi tracks to these channels</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Auto-connect new midi tracks to this channel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+41"/>
-        <source>Auto-connect these channels, on this port, to new midi tracks.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Connect new midi tracks to these channels, on this port.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Connect new midi tracks to this channel, on this port.</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Соединения к midi-входам Jack</translation>
     </message>
     <message>
         <source>Connect these to new midi tracks</source>
@@ -7028,44 +6618,36 @@ Do you want to apply to all existing midi tracks now?</source>
         <translation type="obsolete">Подсоединять новые midi-треки сюда (только к первому в списке)</translation>
     </message>
     <message>
-        <location line="-45"/>
         <source>Device state</source>
-        <translation>Состояние устройства</translation>
+        <translation type="obsolete">Состояние устройства</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>Enable gui for device</source>
-        <translation>Разрешить ГИП для устройства</translation>
+        <translation type="obsolete">Разрешить ГИП для устройства</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Enable reading from device</source>
-        <translation>Разрешить чтение с устройства</translation>
+        <translation type="obsolete">Разрешить чтение с устройства</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Enable writing to device</source>
-        <translation>Разрешить запись на устройство</translation>
+        <translation type="obsolete">Разрешить запись на устройство</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Name of the midi device associated with this port number. Click to edit Jack midi name.</source>
-        <translation>Имя midi-устройства связано с номером порта &quot;Jack&quot;. Щелкните, чтобы редактировать его.</translation>
+        <translation type="obsolete">Имя midi-устройства связано с номером порта &quot;Jack&quot;. Щелкните, чтобы редактировать его.</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Instrument connected to port</source>
-        <translation>Инструмент, подсоединённый к порту</translation>
+        <translation type="obsolete">Инструмент, подсоединённый к порту</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Connections from Jack Midi output ports</source>
-        <translation>Соединения от выходных midi-портов Jack</translation>
+        <translation type="obsolete">Соединения от выходных midi-портов Jack</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Connections to Jack Midi input ports</source>
-        <translation>Соединения с входными midi-портами Jack</translation>
+        <translation type="obsolete">Соединения с входными midi-портами Jack</translation>
     </message>
     <message>
         <source>Connect these channels, on this port, to new midi tracks.
@@ -7093,40 +6675,32 @@ NOTE: Currently only one output port and channel supported (first found)</source
 (первый найденный)</translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>State: result of opening the device</source>
-        <translation>Состояние: результат открытия устройства</translation>
+        <translation type="obsolete">Состояние: результат открытия устройства</translation>
     </message>
     <message>
-        <location line="+47"/>
         <source>In routes</source>
-        <translation>Маршруты входа</translation>
+        <translation type="obsolete">Маршруты входа</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Out routes</source>
-        <translation>Маршруты выхода</translation>
+        <translation type="obsolete">Маршруты выхода</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Def in ch</source>
-        <translation>вх кан по ум</translation>
+        <translation type="obsolete">вх кан по ум</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Def out ch</source>
-        <translation>вых кан по ум</translation>
+        <translation type="obsolete">вых кан по ум</translation>
     </message>
     <message>
-        <location line="+86"/>
         <source>&lt;unknown&gt;</source>
-        <translation>&lt;неизвестно&gt;</translation>
+        <translation type="obsolete">&lt;неизвестно&gt;</translation>
     </message>
     <message>
-        <location line="+87"/>
-        <location line="+74"/>
         <source>&lt;none&gt;</source>
-        <translation>&lt;ничего&gt;</translation>
+        <translation type="obsolete">&lt;ничего&gt;</translation>
     </message>
 </context>
 <context>
@@ -7187,23 +6761,20 @@ NOTE: Currently only one output port and channel supported (first found)</source
 <context>
     <name>MarkerView</name>
     <message>
-        <location filename="../../muse/marker/markerview.cpp" line="+173"/>
         <source>MusE: Marker</source>
-        <translation>MusE: Маркер</translation>
+        <translation type="obsolete">MusE: Маркер</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>add marker</source>
-        <translation>добавить маркер</translation>
+        <translation type="obsolete">добавить маркер</translation>
     </message>
     <message>
         <source>Add Marker</source>
         <translation type="obsolete">Добавить Маркер</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>delete marker</source>
-        <translation>удалить маркер</translation>
+        <translation type="obsolete">удалить маркер</translation>
     </message>
     <message>
         <source>Delete Marker</source>
@@ -7214,71 +6785,51 @@ NOTE: Currently only one output port and channel supported (first found)</source
         <translation type="obsolete">&amp;Файл</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>&amp;Edit</source>
-        <translation>&amp;Правка</translation>
+        <translation type="obsolete">&amp;Правка</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Window &amp;Config</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Undo/Redo tools</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
         <source>panic</source>
-        <translation type="unfinished">паника</translation>
+        <translation type="obsolete">паника</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>transport</source>
-        <translation type="unfinished">транспорт</translation>
+        <translation type="obsolete">транспорт</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Bar:Beat:Tick</source>
-        <translation>Такт:Доля:Тик</translation>
+        <translation type="obsolete">Такт:Доля:Тик</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Hr:Mn:Sc:Fr:Sf</source>
-        <translation>Чс:Мин:Сек:Фрм:Субфрм</translation>
+        <translation type="obsolete">Чс:Мин:Сек:Фрм:Субфрм</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Lock</source>
-        <translation>Закрыть</translation>
+        <translation type="obsolete">Закрыть</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Text</source>
-        <translation>Текст</translation>
+        <translation type="obsolete">Текст</translation>
     </message>
     <message>
-        <location line="+11"/>
         <source>Marker Properties</source>
-        <translation>Свойства маркера</translation>
+        <translation type="obsolete">Свойства маркера</translation>
     </message>
     <message>
         <source>marker-tools</source>
         <translation type="obsolete">инструменты маркера</translation>
     </message>
     <message>
-        <location line="-40"/>
         <source>edit tools</source>
-        <translation>инструменты редактирования</translation>
+        <translation type="obsolete">инструменты редактирования</translation>
     </message>
 </context>
 <context>
     <name>MasterEdit</name>
     <message>
-        <location filename="../../muse/master/masteredit.cpp" line="-56"/>
         <source>MusE: Mastertrack</source>
-        <translation>MusE: Мастер-трек</translation>
+        <translation type="obsolete">MusE: Мастер-трек</translation>
     </message>
     <message>
         <source>edit tools</source>
@@ -7289,87 +6840,64 @@ NOTE: Currently only one output port and channel supported (first found)</source
         <translation type="obsolete">Разрешить(Мастер)</translation>
     </message>
     <message>
-        <location line="+39"/>
         <source>Info</source>
-        <translation>Инфо</translation>
+        <translation type="obsolete">Инфо</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Cursor</source>
-        <translation>Курсор</translation>
+        <translation type="obsolete">Курсор</translation>
     </message>
     <message>
         <source>Off</source>
         <translation type="obsolete">выкл</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Snap</source>
-        <translation>Привязка</translation>
+        <translation type="obsolete">Привязка</translation>
     </message>
     <message>
-        <location line="-10"/>
         <source>time at cursor position</source>
-        <translation>время в позиции курсора</translation>
+        <translation type="obsolete">время в позиции курсора</translation>
     </message>
     <message>
-        <location line="-41"/>
-        <source>Window &amp;Config</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>Undo/Redo tools</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
         <source>panic</source>
-        <translation type="unfinished">паника</translation>
+        <translation type="obsolete">паника</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>transport</source>
-        <translation type="unfinished">транспорт</translation>
+        <translation type="obsolete">транспорт</translation>
     </message>
     <message>
-        <location line="+30"/>
         <source>tempo at cursor position</source>
-        <translation>темп в позиции курсора</translation>
+        <translation type="obsolete">темп в позиции курсора</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>CurPos </source>
-        <translation>КурсПоз</translation>
+        <translation type="obsolete">КурсПоз</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>tempo at current position</source>
-        <translation>темп в текущей позиции</translation>
+        <translation type="obsolete">темп в текущей позиции</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>time signature at current position</source>
-        <translation>размер в текущей позиции</translation>
+        <translation type="obsolete">размер в текущей позиции</translation>
     </message>
     <message>
-        <location line="-39"/>
         <source>Enable</source>
-        <translation>Разрешить</translation>
+        <translation type="obsolete">Разрешить</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Enable usage of master track</source>
-        <translation>Разрешить использование мастер-трека</translation>
+        <translation type="obsolete">Разрешить использование мастер-трека</translation>
     </message>
     <message>
         <source>Master tools</source>
         <translation type="obsolete">Основные инструменты</translation>
     </message>
     <message>
-        <location line="-5"/>
         <source>Enable master</source>
-        <translation>Разрешить мастер(а)</translation>
+        <translation type="obsolete">Разрешить мастер(а)</translation>
     </message>
 </context>
 <context>
@@ -7860,10 +7388,8 @@ handled like normal controllers.</source>
 <context>
     <name>MidiInputTransformDialog</name>
     <message>
-        <location filename="../../muse/mplugins/midiitransform.cpp" line="+718"/>
-        <location line="+2"/>
         <source>New</source>
-        <translation>Новый</translation>
+        <translation type="obsolete">Новый</translation>
     </message>
 </context>
 <context>
@@ -9549,10 +9075,8 @@ recording:
 <context>
     <name>MidiTransformerDialog</name>
     <message>
-        <location filename="../../muse/miditransform.cpp" line="+263"/>
-        <location line="+2"/>
         <source>New</source>
-        <translation>Новый</translation>
+        <translation type="obsolete">Новый</translation>
     </message>
 </context>
 <context>
@@ -10506,713 +10030,1156 @@ Do you still want to import it?</source>
 <context>
     <name>MusEApp::MusE</name>
     <message>
-        <location filename="../../muse/app.cpp" line="+46"/>
-        <location line="+16"/>
         <source>Failed to start audio!</source>
-        <translation type="unfinished">Не могу воспроизводить аудио!</translation>
+        <translation type="obsolete">Не могу воспроизводить аудио!</translation>
     </message>
     <message>
-        <location line="-15"/>
         <source>Was not able to start audio, check if jack is running.
 </source>
-        <translation type="unfinished">Не могу воспроизводить аудио, проверте работает ли &quot;Jack&quot;.
+        <translation type="obsolete">Не могу воспроизводить аудио, проверте работает ли &quot;Jack&quot;.
 </translation>
     </message>
     <message>
-        <location line="+16"/>
         <source>Timeout waiting for audio to run. Check if jack is running.
 </source>
-        <translation type="unfinished">Ожидание запуска аудио. Проверте, работает ли &quot;Jack&quot;.
+        <translation type="obsolete">Ожидание запуска аудио. Проверте, работает ли &quot;Jack&quot;.
  </translation>
     </message>
     <message>
-        <location line="+219"/>
         <source>Und&amp;o</source>
-        <translation type="unfinished">&amp;Отменить действие</translation>
+        <translation type="obsolete">&amp;Отменить действие</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Re&amp;do</source>
-        <translation type="unfinished">&amp;Повторить</translation>
+        <translation type="obsolete">&amp;Повторить</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>undo last change to song</source>
-        <translation type="unfinished">отменить последнее изменение в проекте</translation>
+        <translation type="obsolete">отменить последнее изменение в проекте</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>redo last undo</source>
-        <translation type="unfinished">повторить последнюю отмену</translation>
+        <translation type="obsolete">повторить последнюю отмену</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>Loop</source>
-        <translation type="unfinished">Цикл</translation>
+        <translation type="obsolete">Цикл</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Punchin</source>
-        <translation type="unfinished">Начало врезки</translation>
+        <translation type="obsolete">Начало врезки</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Punchout</source>
-        <translation type="unfinished">Конец врезки</translation>
+        <translation type="obsolete">Конец врезки</translation>
     </message>
     <message>
-        <location line="+11"/>
-        <source>Start</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
         <source>Rewind</source>
-        <translation type="unfinished">Перемотать назад</translation>
+        <translation type="obsolete">Перемотать назад</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Forward</source>
-        <translation type="unfinished">Перемотать вперёд</translation>
+        <translation type="obsolete">Перемотать вперёд</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Stop</source>
-        <translation type="unfinished">Остановить</translation>
+        <translation type="obsolete">Остановить</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Play</source>
-        <translation type="unfinished">Воспроизвести</translation>
+        <translation type="obsolete">Воспроизвести</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Record</source>
-        <translation type="unfinished">Записать</translation>
+        <translation type="obsolete">Записать</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location line="+232"/>
         <source>Panic</source>
-        <translation type="unfinished">Паника</translation>
+        <translation type="obsolete">Паника</translation>
     </message>
     <message>
-        <location line="-220"/>
-        <source>&amp;New</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
         <source>&amp;Open</source>
-        <translation type="unfinished">&amp;Открыть</translation>
+        <translation type="obsolete">&amp;Открыть</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Open &amp;Recent</source>
-        <translation type="unfinished">Открыть  &amp;Недавние</translation>
+        <translation type="obsolete">Открыть  &amp;Недавние</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <location line="+1005"/>
-        <location line="+1207"/>
         <source>&amp;Save</source>
-        <translation type="unfinished">&amp;Сохранить</translation>
+        <translation type="obsolete">&amp;Сохранить</translation>
     </message>
     <message>
-        <location line="-2207"/>
         <source>Save &amp;As</source>
-        <translation type="unfinished">Сохранить &amp;Как</translation>
+        <translation type="obsolete">Сохранить &amp;Как</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Import Midifile</source>
-        <translation type="unfinished">Импортировать MIDI-файл</translation>
+        <translation type="obsolete">Импортировать MIDI-файл</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Export Midifile</source>
-        <translation type="unfinished">Экспортировать MIDI-файл</translation>
+        <translation type="obsolete">Экспортировать MIDI-файл</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Import Part</source>
-        <translation type="unfinished">Импортировать Партию</translation>
+        <translation type="obsolete">Импортировать Партию</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <location filename="../../muse/wave.cpp" line="+827"/>
         <source>Import Wave File</source>
-        <translation type="unfinished">Импортировать WAV-файл</translation>
+        <translation type="obsolete">Импортировать WAV-файл</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Find unused wave files</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
         <source>&amp;Quit</source>
-        <translation type="unfinished">Вы&amp;йти</translation>
+        <translation type="obsolete">Вы&amp;йти</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Song Info</source>
-        <translation type="unfinished">Проект инфо</translation>
+        <translation type="obsolete">Проект инфо</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Transport Panel</source>
-        <translation type="unfinished">Панель транспорта</translation>
+        <translation type="obsolete">Панель транспорта</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Bigtime Window</source>
-        <translation type="unfinished">Окно хронометра</translation>
+        <translation type="obsolete">Окно хронометра</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Mixer A</source>
-        <translation type="unfinished">Микшер А</translation>
+        <translation type="obsolete">Микшер А</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Mixer B</source>
-        <translation type="unfinished">Микшер В</translation>
+        <translation type="obsolete">Микшер В</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Cliplist</source>
-        <translation type="unfinished">Список фрагментов</translation>
+        <translation type="obsolete">Список фрагментов</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Marker View</source>
-        <translation type="unfinished">Маркеры</translation>
+        <translation type="obsolete">Маркеры</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Arranger View</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Fullscreen</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
         <source>&amp;Plugins</source>
-        <translation type="unfinished">&amp;Плагины</translation>
+        <translation type="obsolete">&amp;Плагины</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Edit Instrument</source>
-        <translation type="unfinished">Редактировать Инструмент</translation>
+        <translation type="obsolete">Редактировать Инструмент</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Input Plugins</source>
-        <translation type="unfinished">Плагины на входе</translation>
+        <translation type="obsolete">Плагины на входе</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Transpose</source>
-        <translation type="unfinished">Транспонировать</translation>
+        <translation type="obsolete">Транспонировать</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Midi Input Transform</source>
-        <translation type="unfinished">Преобразование входящих MIDI-сообщений</translation>
+        <translation type="obsolete">Преобразование входящих MIDI-сообщений</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Midi Input Filter</source>
-        <translation type="unfinished">Фильтр входящих MIDI-событий</translation>
+        <translation type="obsolete">Фильтр входящих MIDI-событий</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Midi Remote Control</source>
-        <translation type="unfinished">Дистанционное управление MIDI</translation>
+        <translation type="obsolete">Дистанционное управление MIDI</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Rhythm Generator</source>
-        <translation type="unfinished">Генератор Ритма</translation>
+        <translation type="obsolete">Генератор Ритма</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Reset Instr.</source>
-        <translation type="unfinished">Перезагрузить Инстр.</translation>
+        <translation type="obsolete">Перезагрузить Инстр.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Init Instr.</source>
-        <translation type="unfinished">Запустить Инстр.</translation>
+        <translation type="obsolete">Запустить Инстр.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Local Off</source>
-        <translation type="unfinished">откл. локальное управление</translation>
+        <translation type="obsolete">откл. локальное управление</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Bounce to Track</source>
-        <translation type="unfinished">Свести в трек</translation>
+        <translation type="obsolete">Свести в трек</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Bounce to File</source>
-        <translation type="unfinished">Свести в файл</translation>
+        <translation type="obsolete">Свести в файл</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Restart Audio</source>
-        <translation type="unfinished">Перезапустить аудио</translation>
+        <translation type="obsolete">Перезапустить аудио</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Mixer Automation</source>
-        <translation type="unfinished">Автоматизация микшера</translation>
+        <translation type="obsolete">Автоматизация микшера</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Take Snapshot</source>
-        <translation type="unfinished">Сделать снимок</translation>
+        <translation type="obsolete">Сделать снимок</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Clear Automation Data</source>
-        <translation type="unfinished">Удалить Данные Автоматизации</translation>
+        <translation type="obsolete">Удалить Данные Автоматизации</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Cascade</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Tile</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>In rows</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>In columns</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
         <source>Global Settings</source>
-        <translation type="unfinished">Общие настройки</translation>
+        <translation type="obsolete">Общие настройки</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Configure Shortcuts</source>
-        <translation type="unfinished">Настроить горячие клавиши</translation>
+        <translation type="obsolete">Настроить горячие клавиши</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Follow Song</source>
-        <translation type="unfinished">следовать за проектом</translation>
+        <translation type="obsolete">следовать за проектом</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Don&apos;t Follow Song</source>
-        <translation type="unfinished">не следовать за проектом</translation>
+        <translation type="obsolete">не следовать за проектом</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Follow Page</source>
-        <translation type="unfinished">следовать постранично</translation>
+        <translation type="obsolete">следовать постранично</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Follow Continuous</source>
-        <translation type="unfinished">следовать плавно</translation>
+        <translation type="obsolete">следовать плавно</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Metronome</source>
-        <translation type="unfinished">Метроном</translation>
+        <translation type="obsolete">Метроном</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Midi Sync</source>
-        <translation type="unfinished">MIDI-синхр</translation>
+        <translation type="obsolete">MIDI-синхр</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Midi File Import/Export</source>
-        <translation type="unfinished">Импорт/Экспорт midi-файла</translation>
+        <translation type="obsolete">Импорт/Экспорт midi-файла</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Appearance Settings</source>
-        <translation type="unfinished">Настройки вида</translation>
+        <translation type="obsolete">Настройки вида</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Midi Ports / Soft Synth</source>
-        <translation type="unfinished">MIDI-порты / Прогр. синтезаторы</translation>
+        <translation type="obsolete">MIDI-порты / Прогр. синтезаторы</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>&amp;Manual</source>
-        <translation type="unfinished">&amp;Руководство</translation>
+        <translation type="obsolete">&amp;Руководство</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;MusE Homepage</source>
-        <translation type="unfinished">&amp;Домашняя страница MusE</translation>
+        <translation type="obsolete">&amp;Домашняя страница MusE</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Report Bug...</source>
-        <translation type="unfinished">&amp;Сообщить об ошибке...</translation>
+        <translation type="obsolete">&amp;Сообщить об ошибке...</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;About MusE</source>
-        <translation type="unfinished">&amp;О программе MusE</translation>
+        <translation type="obsolete">&amp;О программе MusE</translation>
     </message>
     <message>
-        <location line="+99"/>
         <source>File Buttons</source>
-        <translation type="unfinished">Файловые кнопки</translation>
+        <translation type="obsolete">Файловые кнопки</translation>
     </message>
     <message>
-        <location line="+7"/>
-        <source>Undo/Redo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
         <source>Transport</source>
-        <translation type="unfinished">Транспорт</translation>
+        <translation type="obsolete">Транспорт</translation>
     </message>
     <message>
-        <location line="+55"/>
         <source>&amp;File</source>
-        <translation type="unfinished">&amp;Файл</translation>
+        <translation type="obsolete">&amp;Файл</translation>
     </message>
     <message>
-        <location line="+29"/>
         <source>&amp;View</source>
-        <translation type="unfinished">&amp;Вид</translation>
+        <translation type="obsolete">&amp;Вид</translation>
     </message>
     <message>
-        <location line="+19"/>
         <source>&amp;Midi</source>
-        <translation type="unfinished">&amp;MIDI</translation>
+        <translation type="obsolete">&amp;MIDI</translation>
     </message>
     <message>
-        <location line="+29"/>
         <source>&amp;Audio</source>
-        <translation type="unfinished">&amp;Аудио</translation>
+        <translation type="obsolete">&amp;Аудио</translation>
     </message>
     <message>
-        <location line="+14"/>
-        <source>A&amp;utomation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>&amp;Windows</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>MusE Se&amp;ttings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>&amp;Help</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+268"/>
         <source>Cannot read template</source>
-        <translation type="unfinished">Не могу прочитать шаблон</translation>
+        <translation type="obsolete">Не могу прочитать шаблон</translation>
     </message>
     <message>
-        <location line="+31"/>
         <source>File open error</source>
-        <translation type="unfinished">Ошибка при открытии файла</translation>
+        <translation type="obsolete">Ошибка при открытии файла</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>File read error</source>
-        <translation type="unfinished">Ошибка прочтения файла</translation>
+        <translation type="obsolete">Ошибка прочтения файла</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>Unknown File Format: </source>
-        <translation type="unfinished">Несзвестный формат файла: </translation>
+        <translation type="obsolete">Несзвестный формат файла: </translation>
     </message>
     <message>
-        <location line="+130"/>
-        <location line="+408"/>
-        <location line="+895"/>
         <source>MusE: Song: </source>
-        <translation type="unfinished">MusE: Проект: </translation>
+        <translation type="obsolete">MusE: Проект: </translation>
     </message>
     <message>
-        <location line="-1269"/>
         <source>MusE: load project</source>
-        <translation type="unfinished">MusE: Открыть проект</translation>
+        <translation type="obsolete">MusE: Открыть проект</translation>
     </message>
     <message>
-        <location line="+14"/>
         <source>MusE: load template</source>
-        <translation type="unfinished">MusE: открыть шаблон</translation>
+        <translation type="obsolete">MusE: открыть шаблон</translation>
     </message>
     <message>
-        <location line="+62"/>
-        <source>MusE: Write File failed</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+38"/>
         <source>The current Project contains unsaved data
 Save Current Project?</source>
-        <translation type="unfinished">Текущий проект содержит не сохранённые данные.
+        <translation type="obsolete">Текущий проект содержит не сохранённые данные.
 Сохранить текущий проект?</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <location line="+1207"/>
-        <source>S&amp;kip</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-1207"/>
-        <source>&amp;Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+236"/>
-        <location line="+13"/>
         <source>MusE: Save As</source>
-        <translation type="unfinished">MusE: Сохранить как</translation>
+        <translation type="obsolete">MusE: Сохранить как</translation>
     </message>
     <message>
-        <location line="+57"/>
-        <location line="+161"/>
         <source>Nothing to edit</source>
-        <translation type="unfinished">Нечего редактировать</translation>
+        <translation type="obsolete">Нечего редактировать</translation>
     </message>
     <message>
-        <location line="+474"/>
-        <location line="+10"/>
-        <location line="+31"/>
-        <location line="+34"/>
-        <location line="+8"/>
         <source>MusE: Bounce to Track</source>
-        <translation type="unfinished">MusE: Сведение в Трек</translation>
+        <translation type="obsolete">MusE: Сведение в Трек</translation>
     </message>
     <message>
-        <location line="-82"/>
         <source>No wave tracks found</source>
-        <translation type="unfinished">wave-треки не найдены</translation>
+        <translation type="obsolete">wave-треки не найдены</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <location line="+105"/>
         <source>No audio output tracks found</source>
-        <translation type="unfinished">Выходные аудио треки не найдены</translation>
+        <translation type="obsolete">Выходные аудио треки не найдены</translation>
     </message>
     <message>
-        <location line="-74"/>
         <source>Select one audio output track,
 and one target wave track</source>
-        <translation type="unfinished">Выберите один трек аудио выхода
+        <translation type="obsolete">Выберите один трек аудио выхода
 и один wave-трек, как цель </translation>
     </message>
     <message>
-        <location line="+34"/>
         <source>Select one target wave track</source>
-        <translation type="unfinished">Выделите один wave-трек, как цель (трек назначения) </translation>
+        <translation type="obsolete">Выделите один wave-трек, как цель (трек назначения) </translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Select one target wave track,
 and one audio output track</source>
-        <translation type="unfinished">Выберите один wave-трек, как цель,
+        <translation type="obsolete">Выберите один wave-трек, как цель,
 (трек назначения) и один трек аудио выхода</translation>
     </message>
     <message>
-        <location line="+31"/>
-        <location line="+25"/>
         <source>MusE: Bounce to File</source>
-        <translation type="unfinished">MusE: Свести в файл</translation>
+        <translation type="obsolete">MusE: Свести в файл</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Select one audio output track</source>
-        <translation type="unfinished">Выделите один трек аудио выхода</translation>
+        <translation type="obsolete">Выделите один трек аудио выхода</translation>
     </message>
     <message>
-        <location line="+39"/>
         <source>MusE: Bounce</source>
-        <translation type="unfinished">MusE: Свести</translation>
+        <translation type="obsolete">MusE: Свести</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>set left/right marker for bounce range</source>
-        <translation type="unfinished">настройте левый/правый маркеры для установки диапазона сведения</translation>
+        <translation type="obsolete">настройте левый/правый маркеры для установки диапазона сведения</translation>
     </message>
     <message>
-        <location line="+82"/>
         <source>The current Project contains unsaved data
 Load overwrites current Project:
 Save Current Project?</source>
-        <translation type="unfinished">Текущий проект содержит не сохранённые данные.
+        <translation type="obsolete">Текущий проект содержит не сохранённые данные.
 Загрузка нового проекта приведёт к перезаписи данных текущего проекта.
 Сохранить текущий проект?</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location filename="../../muse/importmidi.cpp" line="+86"/>
         <source>&amp;Abort</source>
-        <translation type="unfinished">&amp;Отмена</translation>
+        <translation type="obsolete">&amp;Отмена</translation>
     </message>
     <message>
-        <location filename="../../muse/exportmidi.cpp" line="+143"/>
         <source>MusE: Export Midi</source>
-        <translation type="unfinished">MusE:Экспорт MIDI</translation>
+        <translation type="obsolete">MusE:Экспорт MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/help.cpp" line="+50"/>
         <source>no help found at: </source>
-        <translation type="unfinished">справка не найдена в: </translation>
+        <translation type="obsolete">справка не найдена в: </translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>MusE: Open Help</source>
-        <translation type="unfinished">MusE: Открыть справку</translation>
+        <translation type="obsolete">MusE: Открыть справку</translation>
     </message>
     <message>
-        <location line="+53"/>
-        <source>Unable to launch help</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>For some reason MusE has to launch the default
-browser on your machine.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../muse/importmidi.cpp" line="-12"/>
         <source>MusE: Import Midi</source>
-        <translation type="unfinished">MusE: Импорт MIDI</translation>
+        <translation type="obsolete">MusE: Импорт MIDI</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>Add midi file to current project?
 </source>
-        <translation type="unfinished">Добавить midi файл в текущий проект?
+        <translation type="obsolete">Добавить midi файл в текущий проект?
 </translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Add to Project</source>
-        <translation type="unfinished">&amp;Добавить в Проект</translation>
+        <translation type="obsolete">&amp;Добавить в Проект</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>&amp;Replace</source>
-        <translation type="unfinished">&amp;Заменить</translation>
+        <translation type="obsolete">&amp;Заменить</translation>
     </message>
     <message>
-        <location line="+31"/>
         <source>reading midifile
   </source>
-        <translation type="unfinished">читается MIDI-файл
+        <translation type="obsolete">читается MIDI-файл
   
   </translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>
 failed: </source>
-        <translation type="unfinished">
+        <translation type="obsolete">
 не удалось:</translation>
     </message>
     <message>
-        <location line="+356"/>
         <source>Import part is only valid for midi and wave tracks!</source>
-        <translation type="unfinished">Импортирование партий допустимо только для midi и wave треков!</translation>
+        <translation type="obsolete">Импортирование партий допустимо только для midi и wave треков!</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>MusE: load part</source>
-        <translation type="unfinished">MusE: открыть партию</translation>
+        <translation type="obsolete">MusE: открыть партию</translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>No track selected for import</source>
-        <translation type="unfinished">Не выбран трек для импорта</translation>
+        <translation type="obsolete">Не выбран трек для импорта</translation>
     </message>
     <message>
-        <location line="+121"/>
-        <source> out of </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source> parts</source>
-        <translation type="unfinished"> партии</translation>
+        <translation type="obsolete"> партии</translation>
     </message>
     <message>
-        <location line="+0"/>
-        <source> part</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source> could not be imported.
 Likely the track is the wrong type.</source>
-        <translation type="unfinished"> не может быть импортирована
+        <translation type="obsolete"> не может быть импортирована
 Возможно неверный тип трека.</translation>
     </message>
     <message>
-        <location filename="../../muse/wave.cpp" line="-6"/>
         <source>to import an audio file you have first to selecta wave track</source>
-        <translation type="unfinished">чтобы импортировать аудио файл, вы должны сначала выделить wave-трек</translation>
+        <translation type="obsolete">чтобы импортировать аудио файл, вы должны сначала выделить wave-трек</translation>
     </message>
     <message>
-        <location line="+30"/>
         <source>Import Wavefile</source>
-        <translation type="unfinished">Импортировать wave-файл</translation>
+        <translation type="obsolete">Импортировать wave-файл</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>This wave file has a samplerate of %1,
 as opposed to current setting %2.
 Do you still want to import it?</source>
-        <translation type="unfinished">Samplerate этого wave-файла %1,
+        <translation type="obsolete">Samplerate этого wave-файла %1,
 в то время как текущий Samplerate %2.
 Хотите ли вы импортировать его?</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>&amp;Yes</source>
-        <translation type="unfinished">&amp;Да</translation>
+        <translation type="obsolete">&amp;Да</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>&amp;No</source>
-        <translation type="unfinished">&amp;Нет</translation>
+        <translation type="obsolete">&amp;Нет</translation>
     </message>
 </context>
 <context>
     <name>MusEArranger::Arranger</name>
+    <message>
+        <source>Enable Recording</source>
+        <translation type="obsolete">Разрешить запись</translation>
+    </message>
+    <message>
+        <source>Mute/Off Indicator</source>
+        <translation type="obsolete">Индикатор глушения вкл/выкл</translation>
+    </message>
+    <message>
+        <source>Solo Indicator</source>
+        <translation type="obsolete">Индикатор соло</translation>
+    </message>
+    <message>
+        <source>Track Type</source>
+        <translation type="obsolete">Тип трека</translation>
+    </message>
+    <message>
+        <source>Track Name</source>
+        <translation type="obsolete">Имя трека</translation>
+    </message>
+    <message>
+        <source>Midi output channel number or audio channels</source>
+        <translation type="obsolete">Номер выходного Midi-канала или аудио каналов</translation>
+    </message>
+    <message>
+        <source>Midi output port or synth midi port</source>
+        <translation type="obsolete">Выходной midi-порт или midi-порт синтезатора</translation>
+    </message>
+    <message>
+        <source>Time Lock</source>
+        <translation type="obsolete">Изменение времени заблокировано</translation>
+    </message>
+    <message>
+        <source>Enable recording. Click to toggle.</source>
+        <translation type="obsolete">Разрешить запись. Щелкните для переключения.</translation>
+    </message>
+    <message>
+        <source>Mute indicator. Click to toggle.
+Right-click to toggle track on/off.
+Mute is designed for rapid, repeated action.
+On/Off is not!</source>
+        <translation type="obsolete">Индикатор заглушки. Щелкните для переключения.
+Щелчок правой кнопкой мыши включает/выключает трек.
+Заглушка предназначена для быстрых, повторяющихся действий.
+А Вкл/Выкл нет!</translation>
+    </message>
+    <message>
+        <source>Solo indicator. Click to toggle.
+Connected tracks are also &apos;phantom&apos; soloed,
+ indicated by a dark square.</source>
+        <translation type="obsolete">Индикатор Соло.  Щелкните для переключения.
+Все треки, связанные с этим треком тоже перейдут режим &quot;фантомного&quot; соло,
+Они будут обозначены темными квадратами.</translation>
+    </message>
+    <message>
+        <source>Track type. Right-click to change
+ midi and drum track types.</source>
+        <translation type="obsolete">Тип трека. Щелкните правой кнопкой мыши чтобы
+изменить тип трека (midi-трек или трек ударных).</translation>
+    </message>
+    <message>
+        <source>Track name. Double-click to edit.
+Right-click for more options.</source>
+        <translation type="obsolete">Название трека. Редактирование - двойной щелчок.
+Большее количество опций -  правый щелчок мыши.</translation>
+    </message>
+    <message>
+        <source>Midi/drum track: Output channel number.
+Audio track: Channels.
+Mid/right-click to change.</source>
+        <translation type="obsolete">Трек Midi/Ударных: номер канала выхода.
+Аудио трек: Каналы.
+Чтобы изменить, щелкните Средней/Правой кнопкой мыши.</translation>
+    </message>
+    <message>
+        <source>Midi/drum track: Output port.
+Synth track: Assigned midi port.
+Left-click to change.
+Right-click to show GUI.</source>
+        <translation type="obsolete">Трек Midi/Ударных: Порт выхода.
+Трек синтезатора: Назначенный midi-порт.
+Щелчок левой кнопкой - изменить.
+Щелчок правой кнопкой - показать ГИП.</translation>
+    </message>
+    <message>
+        <source>Time lock</source>
+        <translation type="obsolete">Изменение времени заблокировано</translation>
+    </message>
+    <message>
+        <source>Arranger</source>
+        <translation type="obsolete">Компоновщик</translation>
+    </message>
+    <message>
+        <source>Cursor</source>
+        <translation type="obsolete">Курсор</translation>
+    </message>
+    <message>
+        <source>Snap</source>
+        <translation type="obsolete">Привязка</translation>
+    </message>
+    <message>
+        <source>Len</source>
+        <translation type="obsolete">Дл</translation>
+    </message>
+    <message>
+        <source>song length - bars</source>
+        <translation type="obsolete">длина проекта - в тактах</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="obsolete">Тип</translation>
+    </message>
+    <message>
+        <source>NO</source>
+        <translation type="obsolete">НЕТ</translation>
+    </message>
+    <message>
+        <source>GM</source>
+        <translation type="obsolete">GM</translation>
+    </message>
+    <message>
+        <source>GS</source>
+        <translation type="obsolete">GS</translation>
+    </message>
+    <message>
+        <source>XG</source>
+        <translation type="obsolete">XG</translation>
+    </message>
+    <message>
+        <source>midi song type</source>
+        <translation type="obsolete">тип midi-проекта</translation>
+    </message>
+    <message>
+        <source>Pitch</source>
+        <translation type="obsolete">Высота тона</translation>
+    </message>
+    <message>
+        <source>midi pitch</source>
+        <translation type="obsolete">midi высотность</translation>
+    </message>
+    <message>
+        <source>global midi pitch shift</source>
+        <translation type="obsolete">общий сдвиг midi-высотности</translation>
+    </message>
+    <message>
+        <source>Tempo</source>
+        <translation type="obsolete">Темп</translation>
+    </message>
+    <message>
+        <source>midi tempo</source>
+        <translation type="obsolete">midi-темп</translation>
+    </message>
+    <message>
+        <source>N</source>
+        <translation type="obsolete">N</translation>
+    </message>
+    <message>
+        <source>TrackInfo</source>
+        <translation type="obsolete">ТрекИнфо</translation>
+    </message>
+    <message>
+        <source>R</source>
+        <translation type="obsolete">R</translation>
+    </message>
+    <message>
+        <source>M</source>
+        <translation type="obsolete">M</translation>
+    </message>
+    <message>
+        <source>S</source>
+        <translation type="obsolete">S</translation>
+    </message>
+    <message>
+        <source>C</source>
+        <translation type="obsolete">Т</translation>
+    </message>
+    <message>
+        <source>Track</source>
+        <translation type="obsolete"> Трек</translation>
+    </message>
+    <message>
+        <source>Port</source>
+        <translation type="obsolete">Порт</translation>
+    </message>
+    <message>
+        <source>Ch</source>
+        <translation type="obsolete">Кан</translation>
+    </message>
+    <message>
+        <source>T</source>
+        <translation type="obsolete">Т</translation>
+    </message>
+    <message>
+        <source>Automation</source>
+        <translation type="obsolete">Автоматизация</translation>
+    </message>
+</context>
+<context>
+    <name>MusEArranger::ArrangerView</name>
+    <message>
+        <source>panic</source>
+        <translation type="obsolete">паника</translation>
+    </message>
+    <message>
+        <source>transport</source>
+        <translation type="obsolete">транспорт</translation>
+    </message>
+    <message>
+        <source>C&amp;ut</source>
+        <translation type="obsolete">&amp;Вырезать</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation type="obsolete">С&amp;копировать</translation>
+    </message>
+    <message>
+        <source>&amp;Paste</source>
+        <translation type="obsolete">&amp;Вставить</translation>
+    </message>
+    <message>
+        <source>Paste c&amp;lone</source>
+        <translation type="obsolete">Вставить к&amp;лон</translation>
+    </message>
+    <message>
+        <source>&amp;Insert Empty Measure</source>
+        <translation type="obsolete">&amp;Вставить пустой такт</translation>
+    </message>
+    <message>
+        <source>Delete Selected Tracks</source>
+        <translation type="obsolete">Удалить выделенные треки</translation>
+    </message>
+    <message>
+        <source>Add Track</source>
+        <translation type="obsolete">Добавить трек</translation>
+    </message>
+    <message>
+        <source>Select</source>
+        <translation type="obsolete">Выделить</translation>
+    </message>
+    <message>
+        <source>&amp;Deselect All</source>
+        <translation type="obsolete">&amp;Убрать выделение</translation>
+    </message>
+    <message>
+        <source>&amp;Inside Loop</source>
+        <translation type="obsolete">&amp;Внутри цикла</translation>
+    </message>
+    <message>
+        <source>&amp;Outside Loop</source>
+        <translation type="obsolete">&amp;Вне цикла</translation>
+    </message>
+    <message>
+        <source>All &amp;Parts on Track</source>
+        <translation type="obsolete">Все &amp;партии в треке</translation>
+    </message>
+    <message>
+        <source>Pianoroll</source>
+        <translation type="obsolete">Пианоролл</translation>
+    </message>
+    <message>
+        <source>Drums</source>
+        <translation type="obsolete">Ударные</translation>
+    </message>
+    <message>
+        <source>List</source>
+        <translation type="obsolete">Список</translation>
+    </message>
+    <message>
+        <source>Wave</source>
+        <translation type="obsolete">Wave</translation>
+    </message>
+    <message>
+        <source>Mastertrack</source>
+        <translation type="obsolete">Мастер-трек</translation>
+    </message>
+    <message>
+        <source>Graphic</source>
+        <translation type="obsolete">Графика</translation>
+    </message>
+    <message>
+        <source>Midi &amp;Transform</source>
+        <translation type="obsolete">&amp;Преобразовать MIDI-сообщения</translation>
+    </message>
+    <message>
+        <source>Global Cut</source>
+        <translation type="obsolete">Глобальное вырезание</translation>
+    </message>
+    <message>
+        <source>Global Insert</source>
+        <translation type="obsolete">Глобальная вставка</translation>
+    </message>
+    <message>
+        <source>Global Split</source>
+        <translation type="obsolete">Глобальное разделение</translation>
+    </message>
+    <message>
+        <source>&amp;Edit</source>
+        <translation type="obsolete">&amp;Правка</translation>
+    </message>
+    <message>
+        <source>&amp;Structure</source>
+        <translation type="obsolete">&amp;Структура</translation>
+    </message>
+    <message>
+        <source>Transpose</source>
+        <translation type="obsolete">Транспонировать</translation>
+    </message>
+    <message>
+        <source>New</source>
+        <translation type="obsolete">Новый</translation>
+    </message>
+</context>
+<context>
+    <name>MusEArranger::PartCanvas</name>
+    <message>
+        <source>Cannot copy/move/clone to different Track-Type</source>
+        <translation type="obsolete">Невозможно копировать/перемещать/клонировать данные в другие типы дорожек</translation>
+    </message>
+    <message>
+        <source>C&amp;ut</source>
+        <translation type="obsolete">&amp;Вырезать</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation type="obsolete">С&amp;копировать</translation>
+    </message>
+    <message>
+        <source>s&amp;elect </source>
+        <translation type="obsolete">В&amp;ыбрать </translation>
+    </message>
+    <message>
+        <source>clones</source>
+        <translation type="obsolete">клоны</translation>
+    </message>
+    <message>
+        <source>rename</source>
+        <translation type="obsolete">Переименовать</translation>
+    </message>
+    <message>
+        <source>color</source>
+        <translation type="obsolete">цвет</translation>
+    </message>
+    <message>
+        <source>delete</source>
+        <translation type="obsolete">удалить</translation>
+    </message>
+    <message>
+        <source>split</source>
+        <translation type="obsolete">разделить</translation>
+    </message>
+    <message>
+        <source>de-clone</source>
+        <translation type="obsolete">деклонировать</translation>
+    </message>
+    <message>
+        <source>wave edit</source>
+        <translation type="obsolete">Редактор семплов</translation>
+    </message>
+    <message>
+        <source>file info</source>
+        <translation type="obsolete">файл-инфо</translation>
+    </message>
+    <message>
+        <source>MusE: save part</source>
+        <translation type="obsolete">MusE: сохранить партию</translation>
+    </message>
+    <message>
+        <source>Part name</source>
+        <translation type="obsolete">Имя партии</translation>
+    </message>
+    <message>
+        <source>Files</source>
+        <translation type="obsolete">Файлы</translation>
+    </message>
+    <message>
+        <source> parts</source>
+        <translation type="obsolete"> партии</translation>
+    </message>
+    <message>
+        <source> could not be pasted.
+Likely the selected track is the wrong type.</source>
+        <translation type="obsolete"> не может быть вставлена.
+Возможно выбранный трек не того типа.</translation>
+    </message>
+    <message>
+        <source>Cannot paste: multiple tracks selected</source>
+        <translation type="obsolete">Вставка невозможна: выделено несколько треков</translation>
+    </message>
+    <message>
+        <source>Cannot paste: no track selected</source>
+        <translation type="obsolete">Вставка невозможна: не выделено ни  одного трека</translation>
+    </message>
+    <message>
+        <source>Can only paste to midi/drum track</source>
+        <translation type="obsolete">Можно вставить только в midi/drum трек</translation>
+    </message>
+    <message>
+        <source>Can only paste to wave track</source>
+        <translation type="obsolete">Можно вставить только в звуковой трек</translation>
+    </message>
+    <message>
+        <source>Can only paste to midi or wave track</source>
+        <translation type="obsolete">Можно вставить только в midi или wave треки</translation>
+    </message>
+    <message>
+        <source>Cannot paste: wrong data type</source>
+        <translation type="obsolete">Вставка невозможна: неверный тип данных</translation>
+    </message>
+</context>
+<context>
+    <name>MusEArranger::TList</name>
+    <message>
+        <source>&lt;none&gt;</source>
+        <translation type="obsolete">&lt;ничего&gt;</translation>
+    </message>
+    <message>
+        <source>MusE: bad trackname</source>
+        <translation type="obsolete">MusE: неверное имя трека</translation>
+    </message>
+    <message>
+        <source>please choose a unique track name</source>
+        <translation type="obsolete">Выберите неповторяющееся имя для трека</translation>
+    </message>
+    <message>
+        <source>Update drummap?</source>
+        <translation type="obsolete">Обновить карту ударных?</translation>
+    </message>
+    <message>
+        <source>Do you want to use same port for all instruments in the drummap?</source>
+        <translation type="obsolete">Вы хотите использовать один и тот же порт для всех инструментов в списке ударных?</translation>
+    </message>
+    <message>
+        <source>&amp;Yes</source>
+        <translation type="obsolete">&amp;Да</translation>
+    </message>
+    <message>
+        <source>&amp;No</source>
+        <translation type="obsolete">&amp;Нет</translation>
+    </message>
+    <message>
+        <source>show gui</source>
+        <translation type="obsolete">показать ГИП</translation>
+    </message>
+    <message>
+        <source>show native gui</source>
+        <translation type="obsolete">показать ГИП</translation>
+    </message>
+    <message>
+        <source>Delete Track</source>
+        <translation type="obsolete">Удалить трек</translation>
+    </message>
+    <message>
+        <source>Track Comment</source>
+        <translation type="obsolete">Комментарий к треку</translation>
+    </message>
+    <message>
+        <source>Drum</source>
+        <translation type="obsolete">Ударные</translation>
+    </message>
+    <message>
+        <source>Do you want to use same port and channel for all instruments in the drummap?</source>
+        <translation type="obsolete">Вы хотите использовать один и тот же порт и канал для всех инструментов в списке ударных?</translation>
+    </message>
+</context>
+<context>
+    <name>MusECore</name>
+    <message>
+        <location filename="../../muse/midiport.cpp" line="-851"/>
+        <source>Warning: No output devices!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Open midi config...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Empty ports</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusECore::Song</name>
+    <message>
+        <location filename="../../muse/song.cpp" line="+2439"/>
+        <source>Jack shutdown!</source>
+        <translation type="unfinished">Jack прекратил работу!</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Jack has detected a performance problem which has lead to
+MusE being disconnected.
+This could happen due to a number of reasons:
+- a performance issue with your particular setup.
+- a bug in MusE (or possibly in another connected software).
+- a random hiccup which might never occur again.
+- jack was voluntary stopped by you or someone else
+- jack crashed
+If there is a persisting problem you are much welcome to discuss it
+on the MusE mailinglist.
+(there is information about joining the mailinglist on the MusE
+ homepage which is available through the help menu)
+
+To proceed check the status of Jack and try to restart it and then .
+click on the Restart button.</source>
+        <translation type="unfinished">Проблемы в работе &quot;Jack&quot;, привели к его рассоединению с &quot;MusE&quot;.
+Это могло произойти по разным причинам:
+-проблемы в работе, вызванные особенностью ваших настроек.
+-баг в &quot;MusE&quot; (или, возможно, в других подсоединенных программах).
+-случайное выключение, которое больше никогда не повторится.
+-&quot;Jack&quot; остановлен вами или кем-нибудь еще.
+-&quot;Jack&quot; рухнул
+Если это постоянная проблема мы приглашаем вас обсудить её
+в почтовой рассылке &quot;MusE&quot;.
+(в меню &quot;Помощь&quot; есть информация о том, как присоединиться
+к почтовой рассылке &quot;MusE&quot;)
+
+Чтобы продолжить работу, проверте состояние &quot;Jack&quot;, постарайтесь
+перезапустить его, а затем щелкните по кнопке &quot;Перезапустить&quot;.
+
+</translation>
+    </message>
+    <message>
+        <location line="+194"/>
+        <source>Automation:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>previous event</source>
+        <translation type="unfinished">предыдущее событие</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>next event</source>
+        <translation type="unfinished">следующее событие</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <location line="+183"/>
+        <source>set event</source>
+        <translation type="unfinished">настроить событие</translation>
+    </message>
+    <message>
+        <location line="-181"/>
+        <location line="+183"/>
+        <source>add event</source>
+        <translation type="unfinished">добавить событие</translation>
+    </message>
+    <message>
+        <location line="-179"/>
+        <location line="+184"/>
+        <source>erase event</source>
+        <translation type="unfinished">стереть событие</translation>
+    </message>
+    <message>
+        <location line="-180"/>
+        <source>erase range</source>
+        <translation type="unfinished">стереть диапазон</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>clear automation</source>
+        <translation type="unfinished">Очистить автоматизацию</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Clear all controller events?</source>
+        <translation type="unfinished">Очистить все события контроллеров?</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>&amp;Ok</source>
+        <translation type="unfinished">&amp;ОК</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>&amp;Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1134"/>
+        <source>MusE - external script failed</source>
+        <translation type="unfinished">MusE - ошибка запуска внешнего скрипта</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>MusE was unable to launch the script, error message:
+%1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::Appearance</name>
+    <message>
+        <location filename="../../muse/appearance.cpp" line="+132"/>
+        <source>Main application font, and default font for any
+ controls not defined here.</source>
+        <translation type="unfinished">Главный шрифт приложения, и шрифт по умолчанию 
+для всех средств управления, здесь не определены.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>For small controls like mixer strips.
+Also timescale small numbers, arranger part name overlay,
+ and effects rack.</source>
+        <translation type="unfinished">Для небольших средств контроля, типа линеек микшера.
+Также для маленьких цифр на линейке времени, названий партий в компоновщике и рэка эффектов.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi track info panel. Transport controls.</source>
+        <translation type="unfinished">Инфо-панель Midi-трека. Управление транспортом.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Controller graph and S/X buttons. Large numbers for time
+ and tempo scale, and time signature.</source>
+        <translation type="unfinished">Диаграмма контроллера и S/X кнопки. Большие цифры для
+линеек времени и темпа, а также для тактового размера.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Time scale markers.</source>
+        <translation type="unfinished">Маркеры на линейке времени.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>List editor: meta event edit dialog multi-line edit box.</source>
+        <translation type="unfinished">Редактор списка: редактирование мета-события многострочное окно редактирования. </translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mixer label font. Auto-font-sizing up to chosen font size.
+Word-breaking but only with spaces.</source>
+        <translation type="unfinished">Шрифт метки микшера. Автоматическое изменение размера шрифта до выбранного размера.
+Переносы только по пробелам.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Maximum mixer label auto-font-sizing font size.</source>
+        <translation type="unfinished">Максимальный размер автоматически изменяющегося шрифта метки микшера.</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Global opacity (opposite of transparency).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Standard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Custom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+624"/>
+        <source>MusE: load image</source>
+        <translation type="unfinished">MusE: загрузить изображение</translation>
+    </message>
+    <message>
+        <location line="+334"/>
+        <source>Select style sheet</source>
+        <translation type="unfinished">Выберите таблицу стилей</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Qt style sheets (*.qss)</source>
+        <translation type="unfinished">Таблицы стилей Qt (*.qss)</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::Arranger</name>
     <message>
         <location filename="../../muse/arranger/arranger.cpp" line="-74"/>
         <source>Enable Recording</source>
@@ -11477,7 +11444,7 @@ Right-click to show GUI.</source>
     </message>
 </context>
 <context>
-    <name>MusEArranger::ArrangerView</name>
+    <name>MusEGui::ArrangerView</name>
     <message>
         <location filename="../../muse/arranger/arrangerview.cpp" line="+83"/>
         <source>MusE: Arranger</source>
@@ -11740,319 +11707,14 @@ Right-click to show GUI.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+308"/>
+        <location line="+311"/>
         <location line="+6"/>
         <source>New</source>
         <translation type="unfinished">Новый</translation>
     </message>
 </context>
 <context>
-    <name>MusEArranger::PartCanvas</name>
-    <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="+346"/>
-        <source>Cannot copy/move/clone to different Track-Type</source>
-        <translation type="unfinished">Невозможно копировать/перемещать/клонировать данные в другие типы дорожек</translation>
-    </message>
-    <message>
-        <location line="+261"/>
-        <source>C&amp;ut</source>
-        <translation type="unfinished">&amp;Вырезать</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>&amp;Copy</source>
-        <translation type="unfinished">С&amp;копировать</translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>s&amp;elect </source>
-        <translation type="unfinished">В&amp;ыбрать </translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>clones</source>
-        <translation type="unfinished">клоны</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>rename</source>
-        <translation type="unfinished">Переименовать</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>color</source>
-        <translation type="unfinished">цвет</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>delete</source>
-        <translation type="unfinished">удалить</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>split</source>
-        <translation type="unfinished">разделить</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>glue</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>de-clone</source>
-        <translation type="unfinished">деклонировать</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <location line="+7"/>
-        <location line="+7"/>
-        <source>save part to disk</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-2"/>
-        <source>wave edit</source>
-        <translation type="unfinished">Редактор семплов</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>file info</source>
-        <translation type="unfinished">файл-инфо</translation>
-    </message>
-    <message>
-        <location line="+88"/>
-        <source>MusE: save part</source>
-        <translation type="unfinished">MusE: сохранить партию</translation>
-    </message>
-    <message>
-        <location line="+18"/>
-        <source>Part name</source>
-        <translation type="unfinished">Имя партии</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Files</source>
-        <translation type="unfinished">Файлы</translation>
-    </message>
-    <message>
-        <location line="+2090"/>
-        <source> out of </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source> parts</source>
-        <translation type="unfinished"> партии</translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source> part</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source> could not be pasted.
-Likely the selected track is the wrong type.</source>
-        <translation type="unfinished"> не может быть вставлена.
-Возможно выбранный трек не того типа.</translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>Cannot paste: multiple tracks selected</source>
-        <translation type="unfinished">Вставка невозможна: выделено несколько треков</translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>Cannot paste: no track selected</source>
-        <translation type="unfinished">Вставка невозможна: не выделено ни  одного трека</translation>
-    </message>
-    <message>
-        <location line="+20"/>
-        <source>Can only paste to midi/drum track</source>
-        <translation type="unfinished">Можно вставить только в midi/drum трек</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Can only paste to wave track</source>
-        <translation type="unfinished">Можно вставить только в звуковой трек</translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Can only paste to midi or wave track</source>
-        <translation type="unfinished">Можно вставить только в midi или wave треки</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Cannot paste: wrong data type</source>
-        <translation type="unfinished">Вставка невозможна: неверный тип данных</translation>
-    </message>
-</context>
-<context>
-    <name>MusEArranger::TList</name>
-    <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="+362"/>
-        <source>&lt;none&gt;</source>
-        <translation type="unfinished">&lt;ничего&gt;</translation>
-    </message>
-    <message>
-        <location line="+31"/>
-        <source>no clef</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Treble</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Bass</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Grand</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+47"/>
-        <source>MusE: bad trackname</source>
-        <translation type="unfinished">MusE: неверное имя трека</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>please choose a unique track name</source>
-        <translation type="unfinished">Выберите неповторяющееся имя для трека</translation>
-    </message>
-    <message>
-        <location line="+157"/>
-        <location line="+1143"/>
-        <source>Update drummap?</source>
-        <translation type="unfinished">Обновить карту ударных?</translation>
-    </message>
-    <message>
-        <location line="-1142"/>
-        <source>Do you want to use same port for all instruments in the drummap?</source>
-        <translation type="unfinished">Вы хотите использовать один и тот же порт для всех инструментов в списке ударных?</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location line="+1143"/>
-        <source>&amp;Yes</source>
-        <translation type="unfinished">&amp;Да</translation>
-    </message>
-    <message>
-        <location line="-1143"/>
-        <location line="+1143"/>
-        <source>&amp;No</source>
-        <translation type="unfinished">&amp;Нет</translation>
-    </message>
-    <message>
-        <location line="-1066"/>
-        <location line="+55"/>
-        <source>show gui</source>
-        <translation type="unfinished">показать ГИП</translation>
-    </message>
-    <message>
-        <location line="-46"/>
-        <location line="+55"/>
-        <source>show native gui</source>
-        <translation type="unfinished">показать ГИП</translation>
-    </message>
-    <message>
-        <location line="+338"/>
-        <source>Treble clef</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Bass clef</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Grand Staff</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+30"/>
-        <source>Viewable automation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+131"/>
-        <source>Delete Track</source>
-        <translation type="unfinished">Удалить трек</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Track Comment</source>
-        <translation type="unfinished">Комментарий к треку</translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Insert Track</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+445"/>
-        <source>Midi</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Drum</source>
-        <translation type="unfinished">Ударные</translation>
-    </message>
-    <message>
-        <location line="+50"/>
-        <source>Do you want to use same port and channel for all instruments in the drummap?</source>
-        <translation type="unfinished">Вы хотите использовать один и тот же порт и канал для всех инструментов в списке ударных?</translation>
-    </message>
-</context>
-<context>
-    <name>MusEDialog::PasteDialog</name>
-    <message numerus="yes">
-        <location filename="../../muse/widgets/pastedialog.cpp" line="+81"/>
-        <source>%n quarter(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-        </translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>quarter</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>quarters</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>MusEDialog::PasteEventsDialog</name>
-    <message numerus="yes">
-        <location filename="../../muse/widgets/pasteeventsdialog.cpp" line="+95"/>
-        <source>%n quarter(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-        </translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>quarter</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>quarters</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>MusEMixer::AudioMixerApp</name>
+    <name>MusEGui::AudioMixerApp</name>
     <message>
         <location filename="../../muse/mixer/amixer.cpp" line="+171"/>
         <source>&amp;Create</source>
@@ -12110,9 +11772,9 @@ Likely the selected track is the wrong type.</source>
     </message>
 </context>
 <context>
-    <name>MusEMixer::AudioStrip</name>
+    <name>MusEGui::AudioStrip</name>
     <message>
-        <location filename="../../muse/mixer/astrip.cpp" line="+645"/>
+        <location filename="../../muse/mixer/astrip.cpp" line="+653"/>
         <source>panorama</source>
         <translation type="unfinished">панорама</translation>
     </message>
@@ -12127,12 +11789,12 @@ Likely the selected track is the wrong type.</source>
         <translation type="unfinished">Пан</translation>
     </message>
     <message>
-        <location line="+93"/>
+        <location line="+87"/>
         <source>1/2 channel</source>
         <translation type="unfinished">стерео-моно</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+14"/>
         <source>Pre</source>
         <translation type="unfinished">Пре</translation>
     </message>
@@ -12147,17 +11809,17 @@ Likely the selected track is the wrong type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+31"/>
         <source>record</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="+11"/>
         <source>mute</source>
         <translation type="unfinished">заглушить</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+19"/>
         <source>record downmix</source>
         <translation type="unfinished">записать downmix</translation>
     </message>
@@ -12168,12 +11830,12 @@ Likely the selected track is the wrong type.</source>
         <translation type="unfinished">режим соло</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+7"/>
         <source>off</source>
         <translation type="unfinished">выкл</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+21"/>
         <source>iR</source>
         <translation type="unfinished">вх</translation>
     </message>
@@ -12193,7 +11855,7 @@ Likely the selected track is the wrong type.</source>
         <translation type="unfinished">маршрут выхода</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location line="+13"/>
         <source>Off</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12213,13 +11875,792 @@ Likely the selected track is the wrong type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+43"/>
         <source>automation type</source>
         <translation type="unfinished">тип автоматизации</translation>
     </message>
 </context>
 <context>
-    <name>MusEMixer::EffectRack</name>
+    <name>MusEGui::BigTime</name>
+    <message>
+        <location filename="../../muse/widgets/bigtime.cpp" line="+62"/>
+        <source>format display</source>
+        <translation type="unfinished">формат дисплея</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>bar</source>
+        <translation type="unfinished">такт</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>beat</source>
+        <translation type="unfinished">доля</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+6"/>
+        <source>tick</source>
+        <translation type="unfinished">тик</translation>
+    </message>
+    <message>
+        <location line="-4"/>
+        <source>minute</source>
+        <translation type="unfinished">минут(а)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>second</source>
+        <translation type="unfinished">секунд(а)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+3"/>
+        <source>frame</source>
+        <translation type="unfinished">фреймов</translation>
+    </message>
+    <message>
+        <location line="-2"/>
+        <source>subframe</source>
+        <translation type="unfinished">субфреймов</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>MusE: Bigtime</source>
+        <translation type="unfinished">MusE: Хронометр</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::ClipListEdit</name>
+    <message>
+        <location filename="../../muse/cliplist/cliplist.cpp" line="+129"/>
+        <source>MusE: Clip List Editor</source>
+        <translation type="unfinished">MusE: Редактор списка фрагментов</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Undo/Redo tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>panic</source>
+        <translation type="unfinished">паника</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>transport</source>
+        <translation type="unfinished">транспорт</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Window &amp;Config</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::CtrlPanel</name>
+    <message>
+        <location filename="../../muse/ctrl/ctrlpanel.cpp" line="+91"/>
+        <source>S</source>
+        <translation type="unfinished">S</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>select controller</source>
+        <translation type="unfinished">выбрать контроллер</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>X</source>
+        <translation type="unfinished">X</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>remove panel</source>
+        <translation type="unfinished">удалить панель</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>manual adjust</source>
+        <translation type="unfinished">настройка вручную</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>double click on/off</source>
+        <translation type="unfinished">двойной щелчок вкл/выкл</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>off</source>
+        <translation type="unfinished">выкл</translation>
+    </message>
+    <message>
+        <location line="+443"/>
+        <location line="+236"/>
+        <source>Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-186"/>
+        <source>add new ...</source>
+        <translation type="unfinished">Добавить новый...</translation>
+    </message>
+    <message>
+        <location line="+163"/>
+        <location line="+58"/>
+        <source>Instrument-defined</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-43"/>
+        <location line="+21"/>
+        <source>Add ...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-17"/>
+        <source>Others</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+65"/>
+        <source>Edit instrument ...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+46"/>
+        <source>Common Controls</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::DrumEdit</name>
+    <message>
+        <location filename="../../muse/midiedit/drumedit.cpp" line="+113"/>
+        <location line="+21"/>
+        <source>mute instrument</source>
+        <translation type="unfinished">заглушить инструмент</translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <location line="+21"/>
+        <source>sound name</source>
+        <translation type="unfinished">название звука</translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <location line="+21"/>
+        <source>volume percent</source>
+        <translation type="unfinished">громкость в процентах</translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <location line="+21"/>
+        <source>quantisation</source>
+        <translation type="unfinished">квантование</translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <location line="+21"/>
+        <source>this input note triggers the sound</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <location line="+21"/>
+        <source>note length</source>
+        <translation type="unfinished">длина ноты</translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <location line="+21"/>
+        <source>this is the note which is played</source>
+        <translation type="unfinished">это нота, которая воспроизводится</translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <source>output channel (hold ctl to affect all rows)</source>
+        <translation type="unfinished">канал выхода (удерживайте ctrl, чтобы воздействовать на все ряды)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>output port (hold ctl to affect all rows)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+21"/>
+        <source>shift + control key: draw velocity level 1</source>
+        <translation type="unfinished">клавиши shift+control: рисовать уровень 1 скорости нажатия</translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <location line="+21"/>
+        <source>control key: draw velocity level 2</source>
+        <translation type="unfinished">Клавиша control: рисовать уровень 2 скорости нажатия</translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <location line="+21"/>
+        <source>shift key: draw velocity level 3</source>
+        <translation type="unfinished">Клавиша shift: рисовать уровень 3 скорости нажатия</translation>
+    </message>
+    <message>
+        <location line="-20"/>
+        <location line="+21"/>
+        <source>draw velocity level 4</source>
+        <translation type="unfinished">рисовать уровень 4 скорости нажатия</translation>
+    </message>
+    <message>
+        <location line="-5"/>
+        <source>output channel (ctl: affect all rows)</source>
+        <translation type="unfinished">канал выхода (ctrl: действует на все ряды)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>output port (ctl: affect all rows)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+43"/>
+        <source>&amp;File</source>
+        <translation type="unfinished">&amp;Файл</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Load Map</source>
+        <translation type="unfinished">Загрузить карту</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Save Map</source>
+        <translation type="unfinished">Сохранить карту</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reset GM Map</source>
+        <translation type="unfinished">Настроить карту GM по умолчанию </translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>&amp;Edit</source>
+        <translation type="unfinished">&amp;Правка</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Cut</source>
+        <translation type="unfinished">Вырезать</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copy events in range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Paste</source>
+        <translation type="unfinished">Вставить</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Paste (with Dialog)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Delete Events</source>
+        <translation type="unfinished">Удалить события</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>&amp;Select</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Select All</source>
+        <translation type="unfinished">Выделить всё</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Select None</source>
+        <translation type="unfinished">Убрать выделение</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Invert</source>
+        <translation type="unfinished">Инвертировать</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Inside Loop</source>
+        <translation type="unfinished">Внутри цикла</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Outside Loop</source>
+        <translation type="unfinished">Вне цикла</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Previous Part</source>
+        <translation type="unfinished">Предыдущая партия</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Next Part</source>
+        <translation type="unfinished">Следующая партия</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Fu&amp;nctions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Re-order list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Set Fixed Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Modify Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Crescendo/Decrescendo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Quantize</source>
+        <translation type="unfinished">Квантовать</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Erase Event</source>
+        <translation type="unfinished">Удалить событие</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Move Notes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete Overlaps</source>
+        <translation type="unfinished">Удалить наложения</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>&amp;Plugins</source>
+        <translation type="unfinished">&amp;Плагины</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Window &amp;Config</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Drum tools</source>
+        <translation type="unfinished">Инструменты ударных</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Load Drummap</source>
+        <translation type="unfinished">Загрузить драм-карту</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Store Drummap</source>
+        <translation type="unfinished">Сохранить драм-карту</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Step Record</source>
+        <translation type="unfinished">Пошаговая запись</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Midi Input</source>
+        <translation type="unfinished">MIDI-вход</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>cursor tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Set step size for cursor edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>panic</source>
+        <translation type="unfinished">паника</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>transport</source>
+        <translation type="unfinished">транспорт</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>ctrl</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Add Controller View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+57"/>
+        <source>M</source>
+        <translation type="unfinished">M</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Sound</source>
+        <translation type="unfinished">Звук</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Vol</source>
+        <translation type="unfinished">Громк</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>QNT</source>
+        <translation type="unfinished">КВНТ</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>E-Note</source>
+        <translation type="unfinished">E-Нота</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Len</source>
+        <translation type="unfinished">Дл</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>A-Note</source>
+        <translation type="unfinished">A-Нота</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Ch</source>
+        <translation type="unfinished">Кан</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Port</source>
+        <translation type="unfinished">Порт</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>LV1</source>
+        <translation type="unfinished">LV1</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>LV2</source>
+        <translation type="unfinished">LV2</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>LV3</source>
+        <translation type="unfinished">LV3</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>LV4</source>
+        <translation type="unfinished">LV4</translation>
+    </message>
+    <message>
+        <location line="+376"/>
+        <source>Muse: Load Drum Map</source>
+        <translation type="unfinished">Muse: Загрузить драм-карту</translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>MusE: Store Drum Map</source>
+        <translation type="unfinished">Muse: Сохранить драм-карту</translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Drum map</source>
+        <translation type="unfinished">Карта ударных</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Reset the drum map with GM defaults?</source>
+        <translation type="unfinished">Сброс карты ударных на GM по умолчанию?</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::EditCAfterDialog</name>
+    <message>
+        <location filename="../../muse/liste/editevent.cpp" line="+445"/>
+        <source>MusE: Enter Channel Aftertouch</source>
+        <translation type="unfinished">MusE: Ввести Channel Aftertouch</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Time Position</source>
+        <translation type="unfinished">Позиция по времени</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Pressure</source>
+        <translation type="unfinished">Давление</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::EditEventDialog</name>
+    <message>
+        <location line="-261"/>
+        <source>Ok</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Отмена</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::EditInstrument</name>
+    <message>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="+312"/>
+        <location line="+34"/>
+        <source>MusE: Create file failed</source>
+        <translation type="unfinished">MusE: Не удалось создать файл</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>MusE: Write File failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+32"/>
+        <location line="+12"/>
+        <location line="+280"/>
+        <location line="+12"/>
+        <source>MusE:</source>
+        <translation type="unfinished">MusE:</translation>
+    </message>
+    <message>
+        <location line="-303"/>
+        <location line="+292"/>
+        <source>The user instrument directory
+%1
+does not exist yet. Create it now?
+</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-291"/>
+        <location line="+292"/>
+        <source>(You can change the user instruments directory at Settings-&gt;Global Settings-&gt;Midi)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-282"/>
+        <location line="+292"/>
+        <source>Unable to create user instrument directory &apos;%1&apos;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-244"/>
+        <location line="+266"/>
+        <source>MusE: Save Instrument Definition</source>
+        <translation type="unfinished">MusE: Сохранить Определение Инструмента</translation>
+    </message>
+    <message>
+        <location line="-265"/>
+        <location line="+266"/>
+        <source>Instrument Definition (*.idf)</source>
+        <translation type="unfinished">Определение инструмента (*.idf)</translation>
+    </message>
+    <message>
+        <location line="-154"/>
+        <location line="+29"/>
+        <source>MusE: Save instrument as</source>
+        <translation type="unfinished">MusE: Сохранить инструмент как</translation>
+    </message>
+    <message>
+        <location line="-29"/>
+        <source>Enter a new unique instrument name:</source>
+        <translation type="unfinished">Введите неповторяющееся имя инструмента:</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>The user instrument &apos;%1&apos; already exists. This will overwrite its .idf instrument file.
+Are you sure?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+526"/>
+        <source>MusE: Bad instrument name</source>
+        <translation type="unfinished">MusE: Неверное имя инструмента</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Please choose a unique instrument name.
+(The name might be used by a hidden instrument.)</source>
+        <translation type="unfinished">Пожалуйста, выберите неповторяющееся имя для инструмента.
+(Имя может использоваться в скрытых инструментах)</translation>
+    </message>
+    <message>
+        <location line="+136"/>
+        <source>MusE: Bad patch name</source>
+        <translation type="unfinished">MusE: Неверное имя патча</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Please choose a unique patch name</source>
+        <translation type="unfinished">Пожалуйста, выберите неповторяющееся имя патча</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>MusE: Bad patchgroup name</source>
+        <translation type="unfinished">MusE: Неверное имя группы</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Please choose a unique patchgroup name</source>
+        <translation type="unfinished">Пожалуйста, выберите неповторяющееся имя группы</translation>
+    </message>
+    <message>
+        <location line="+526"/>
+        <source>MusE: Bad controller name</source>
+        <translation type="unfinished">MusE: Неверное имя контроллера</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Please choose a unique controller name</source>
+        <translation type="unfinished">Пожалуйста, выберите неповторяющееся имя для контроллера</translation>
+    </message>
+    <message>
+        <location line="+1287"/>
+        <location line="+12"/>
+        <source>MusE: Cannot add common controller</source>
+        <translation type="unfinished">MusE: Невозможно добавить обычный контроллер</translation>
+    </message>
+    <message>
+        <location line="-11"/>
+        <source>A controller named &apos;%1&apos; already exists.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>A controller number %1 already exists.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+283"/>
+        <location line="+5"/>
+        <source>MusE</source>
+        <translation type="unfinished">MusE</translation>
+    </message>
+    <message>
+        <location line="-4"/>
+        <location line="+5"/>
+        <source>The current Instrument contains unsaved data
+Save Current Instrument?</source>
+        <translation type="unfinished">Текущий Инструмент содержит несохраненные данные
+Сохранить этот Инструмент?</translation>
+    </message>
+    <message>
+        <location line="-3"/>
+        <location line="+5"/>
+        <source>&amp;Save</source>
+        <translation type="unfinished">&amp;Сохранить</translation>
+    </message>
+    <message>
+        <location line="-5"/>
+        <location line="+5"/>
+        <source>&amp;Nosave</source>
+        <translation type="unfinished">&amp;Не сохранять</translation>
+    </message>
+    <message>
+        <location line="-5"/>
+        <source>&amp;Abort</source>
+        <translation type="unfinished">&amp;Отмена</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::EditMetaDialog</name>
+    <message>
+        <location filename="../../muse/liste/editevent.cpp" line="+118"/>
+        <source>MusE: Enter Meta Event</source>
+        <translation type="unfinished">MusE: Ввести метасобытие</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Time Position</source>
+        <translation type="unfinished">Позиция по времени</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Meta Type</source>
+        <translation type="unfinished">Метатип</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Enter Hex</source>
+        <translation type="unfinished">Ввести Hex</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::EditPAfterDialog</name>
+    <message>
+        <location line="+176"/>
+        <source>MusE: Enter Poly Aftertouch</source>
+        <translation type="unfinished">MusE: Ввести полиф. посленажатие</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Time Position</source>
+        <translation type="unfinished">Позиция по времени</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Pitch</source>
+        <translation type="unfinished">Высота тона</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Pressure</source>
+        <translation type="unfinished">Давление</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::EditToolBar</name>
+    <message>
+        <location filename="../../muse/widgets/tools.cpp" line="+17"/>
+        <source>Edit Tools</source>
+        <translation type="unfinished">Инструменты редактирования</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::EffectRack</name>
     <message>
         <location filename="../../muse/mixer/rack.cpp" line="+193"/>
         <source>effect rack</source>
@@ -12287,16 +12728,743 @@ Likely the selected track is the wrong type.</source>
     </message>
 </context>
 <context>
-    <name>MusEMixer::MidiStrip</name>
+    <name>MusEGui::GlobalSettingsConfig</name>
     <message>
-        <location filename="../../muse/mixer/mstrip.cpp" line="+109"/>
+        <location filename="../../muse/widgets/genset.cpp" line="+552"/>
+        <source>Selects instruments directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::Header</name>
+    <message>
+        <location filename="../../muse/widgets/header.cpp" line="+164"/>
+        <source>Track Info Columns</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::LMaster</name>
+    <message>
+        <location filename="../../muse/master/lmaster.cpp" line="+157"/>
+        <source>MusE: Mastertrack</source>
+        <translation type="unfinished">MusE: Мастер-трек</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>&amp;Edit</source>
+        <translation type="unfinished">&amp;Правка</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Insert Tempo</source>
+        <translation type="unfinished">Вставить темп</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Insert Signature</source>
+        <translation type="unfinished">Вставить размер</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Insert Key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit Positon</source>
+        <translation type="unfinished">Изменить позицию</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit Value</source>
+        <translation type="unfinished">Изменить значение</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete Event</source>
+        <translation type="unfinished">Удалить событие</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Window &amp;Config</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>Undo/Redo tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Edit tools</source>
+        <translation type="unfinished">Инструменты редактирования</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Tempo</source>
+        <translation type="unfinished">Темп</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Timesig</source>
+        <translation type="unfinished">Размер</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>new tempo</source>
+        <translation type="unfinished">новый темп</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>new signature</source>
+        <translation type="unfinished">новый размер</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>new key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>panic</source>
+        <translation type="unfinished">паника</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>transport</source>
+        <translation type="unfinished">транспорт</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Meter</source>
+        <translation type="unfinished">Индикатор</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Time</source>
+        <translation type="unfinished">Время</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Type</source>
+        <translation type="unfinished">Тип</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Value</source>
+        <translation type="unfinished">Значение</translation>
+    </message>
+    <message>
+        <location line="+390"/>
+        <source>Reposition of the initial tempo and signature events is not allowed</source>
+        <translation type="unfinished">Изменение начального темпа и размера запрещено</translation>
+    </message>
+    <message>
+        <location line="+54"/>
+        <source>MusE: List Editor</source>
+        <translation type="unfinished">MusE: Редактор списка событий</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Input error, conversion not OK or value out of range</source>
+        <translation type="unfinished">Ошибка ввода, неверная конверсия или значение вне диапазона</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Reposition of tempo and signature events to start position is not allowed!</source>
+        <translation type="unfinished">Изменение темпа и размера запрещено</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::ListEdit</name>
+    <message>
+        <location filename="../../muse/liste/listedit.cpp" line="+476"/>
+        <source>insert Note</source>
+        <translation type="unfinished">вставить Ноту</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>insert SysEx</source>
+        <translation type="unfinished">вставить SysEx</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>insert Ctrl</source>
+        <translation type="unfinished">Вставить кнтрл</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>insert Meta</source>
+        <translation type="unfinished">вставить Meta</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>insert Channel Aftertouch</source>
+        <translation type="unfinished">вставить Channel Aftertouch</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>insert Poly Aftertouch</source>
+        <translation type="unfinished">вставить Poly Aftertouch</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>&amp;Edit</source>
+        <translation type="unfinished">&amp;Правка</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Cut</source>
+        <translation type="unfinished">Вырезать</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Paste</source>
+        <translation type="unfinished">Вставить</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Delete Events</source>
+        <translation type="unfinished">Удалить события</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Window &amp;Config</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Undo/Redo tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Insert tools</source>
+        <translation type="unfinished">Инструменты для вставки</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>panic</source>
+        <translation type="unfinished">паника</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>transport</source>
+        <translation type="unfinished">транспорт</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Tick</source>
+        <translation type="unfinished">Тик</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bar</source>
+        <translation type="unfinished">Такт</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Type</source>
+        <translation type="unfinished">Тип</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Ch</source>
+        <translation type="unfinished">Кан</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Val A</source>
+        <translation type="unfinished">Знач. А</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Val B</source>
+        <translation type="unfinished">Знач. B</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Val C</source>
+        <translation type="unfinished">Знач. С</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Len</source>
+        <translation type="unfinished">Дл</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Comment</source>
+        <translation type="unfinished">Комментарий</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::MPConfig</name>
+    <message>
+        <location filename="../../muse/confmport.cpp" line="-730"/>
+        <location line="+176"/>
+        <source>Default input connections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-175"/>
+        <location line="+66"/>
+        <source>Are you sure you want to apply to all existing midi tracks now?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-1"/>
+        <location line="+148"/>
+        <source>Default output connections</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-37"/>
+        <location line="+38"/>
+        <source>Setting will apply to new midi tracks.
+Do you want to apply to all existing midi tracks now?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+39"/>
+        <source>MusE: bad device name</source>
+        <translation type="unfinished">MusE: неверное имя устройства</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>please choose a unique device name</source>
+        <translation type="unfinished">пожалуйста выберите неповторяющееся имя для устройства</translation>
+    </message>
+    <message>
+        <location line="+72"/>
+        <location line="+860"/>
+        <source>in</source>
+        <translation type="unfinished">в</translation>
+    </message>
+    <message>
+        <location line="-837"/>
+        <location line="+828"/>
+        <source>out</source>
+        <translation type="unfinished">вне (из)</translation>
+    </message>
+    <message>
+        <location line="-772"/>
+        <source>Show first aliases</source>
+        <translation type="unfinished">Показать первые псевдонимы</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Show second aliases</source>
+        <translation type="unfinished">Показать вторые псевдонимы</translation>
+    </message>
+    <message>
+        <location line="+130"/>
+        <location line="+42"/>
+        <source>Toggle all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-38"/>
+        <location line="+43"/>
+        <source>Change all tracks now</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+43"/>
+        <source>Create</source>
+        <translation type="unfinished">Создать</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source> device</source>
+        <translation type="unfinished"> устройство</translation>
+    </message>
+    <message>
+        <location line="+229"/>
+        <location line="+29"/>
+        <source>Port Number</source>
+        <translation type="unfinished">Номер порта</translation>
+    </message>
+    <message>
+        <location line="-28"/>
+        <source>Enable gui</source>
+        <translation type="unfinished">Разрешить ГИП</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable reading</source>
+        <translation type="unfinished">Разрешить чтение</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable writing</source>
+        <translation type="unfinished">Разрешить запись</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Port instrument</source>
+        <translation type="unfinished">Инструмент, назначенный на порт</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi device name. Click to edit (Jack)</source>
+        <translation type="unfinished">Имя midi-устройства. Щелкните для редактирования (Jack)</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Connections from Jack Midi outputs</source>
+        <translation type="unfinished">Соединения от midi-выходов Jack</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Connections to Jack Midi inputs</source>
+        <translation type="unfinished">Соединения к midi-входам Jack</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Auto-connect these channels to new midi tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Auto-connect new midi tracks to these channels</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Auto-connect new midi tracks to this channel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Device state</source>
+        <translation type="unfinished">Состояние устройства</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Enable gui for device</source>
+        <translation type="unfinished">Разрешить ГИП для устройства</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Enable reading from device</source>
+        <translation type="unfinished">Разрешить чтение с устройства</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Enable writing to device</source>
+        <translation type="unfinished">Разрешить запись на устройство</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Name of the midi device associated with this port number. Click to edit Jack midi name.</source>
+        <translation type="unfinished">Имя midi-устройства связано с номером порта &quot;Jack&quot;. Щелкните, чтобы редактировать его.</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Instrument connected to port</source>
+        <translation type="unfinished">Инструмент, подсоединённый к порту</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Connections from Jack Midi output ports</source>
+        <translation type="unfinished">Соединения от выходных midi-портов Jack</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Connections to Jack Midi input ports</source>
+        <translation type="unfinished">Соединения с входными midi-портами Jack</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Auto-connect these channels, on this port, to new midi tracks.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Connect new midi tracks to these channels, on this port.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Connect new midi tracks to this channel, on this port.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>State: result of opening the device</source>
+        <translation type="unfinished">Состояние: результат открытия устройства</translation>
+    </message>
+    <message>
+        <location line="+41"/>
+        <source>Port</source>
+        <translation type="unfinished">Порт</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>GUI</source>
+        <translation type="unfinished">ГИП</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>I</source>
+        <translation type="unfinished">Вх</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>O</source>
+        <translation type="unfinished">Вых</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Instrument</source>
+        <translation type="unfinished">Инструмент</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Device Name</source>
+        <translation type="unfinished">Имя устройства</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>In routes</source>
+        <translation type="unfinished">Маршруты входа</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Out routes</source>
+        <translation type="unfinished">Маршруты выхода</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Def in ch</source>
+        <translation type="unfinished">вх кан по ум</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Def out ch</source>
+        <translation type="unfinished">вых кан по ум</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>State</source>
+        <translation type="unfinished">Состояние</translation>
+    </message>
+    <message>
+        <location line="+85"/>
+        <source>&lt;unknown&gt;</source>
+        <translation type="unfinished">&lt;неизвестно&gt;</translation>
+    </message>
+    <message>
+        <location line="+87"/>
+        <location line="+74"/>
+        <source>&lt;none&gt;</source>
+        <translation type="unfinished">&lt;ничего&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::MTScale</name>
+    <message>
+        <location filename="../../muse/widgets/mtscale.cpp" line="+44"/>
+        <source>bar scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::MTScaleFlo</name>
+    <message>
+        <location filename="../../muse/widgets/mtscale_flo.cpp" line="+44"/>
+        <source>bar scale</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::MarkerView</name>
+    <message>
+        <location filename="../../muse/marker/markerview.cpp" line="+174"/>
+        <source>MusE: Marker</source>
+        <translation type="unfinished">MusE: Маркер</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>add marker</source>
+        <translation type="unfinished">добавить маркер</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>delete marker</source>
+        <translation type="unfinished">удалить маркер</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>&amp;Edit</source>
+        <translation type="unfinished">&amp;Правка</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Window &amp;Config</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Undo/Redo tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>edit tools</source>
+        <translation type="unfinished">инструменты редактирования</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>panic</source>
+        <translation type="unfinished">паника</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>transport</source>
+        <translation type="unfinished">транспорт</translation>
+    </message>
+    <message>
+        <location line="+17"/>
+        <source>Bar:Beat:Tick</source>
+        <translation type="unfinished">Такт:Доля:Тик</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Hr:Mn:Sc:Fr:Sf</source>
+        <translation type="unfinished">Чс:Мин:Сек:Фрм:Субфрм</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Lock</source>
+        <translation type="unfinished">Закрыть</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Text</source>
+        <translation type="unfinished">Текст</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Marker Properties</source>
+        <translation type="unfinished">Свойства маркера</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::MasterEdit</name>
+    <message>
+        <location filename="../../muse/master/masteredit.cpp" line="-56"/>
+        <source>MusE: Mastertrack</source>
+        <translation type="unfinished">MusE: Мастер-трек</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Window &amp;Config</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Undo/Redo tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>panic</source>
+        <translation type="unfinished">паника</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>transport</source>
+        <translation type="unfinished">транспорт</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Enable master</source>
+        <translation type="unfinished">Разрешить мастер(а)</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Enable</source>
+        <translation type="unfinished">Разрешить</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Enable usage of master track</source>
+        <translation type="unfinished">Разрешить использование мастер-трека</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Info</source>
+        <translation type="unfinished">Инфо</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Cursor</source>
+        <translation type="unfinished">Курсор</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>time at cursor position</source>
+        <translation type="unfinished">время в позиции курсора</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>tempo at cursor position</source>
+        <translation type="unfinished">темп в позиции курсора</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Snap</source>
+        <translation type="unfinished">Привязка</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>CurPos </source>
+        <translation type="unfinished">КурсПоз</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>tempo at current position</source>
+        <translation type="unfinished">темп в текущей позиции</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>time signature at current position</source>
+        <translation type="unfinished">размер в текущей позиции</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::MidiInputTransformDialog</name>
+    <message>
+        <location filename="../../muse/mplugins/midiitransform.cpp" line="+953"/>
+        <location line="+2"/>
+        <source>New</source>
+        <translation type="unfinished">Новый</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::MidiStrip</name>
+    <message>
+        <location filename="../../muse/mixer/mstrip.cpp" line="+110"/>
         <location line="+121"/>
-        <location line="+158"/>
+        <location line="+137"/>
         <source>off</source>
         <translation type="unfinished">выкл</translation>
     </message>
     <message>
-        <location line="-278"/>
+        <location line="-257"/>
         <location line="+122"/>
         <source>double click on/off</source>
         <translation type="unfinished">двойной щелчок вкл/выкл</translation>
@@ -12347,22 +13515,22 @@ Likely the selected track is the wrong type.</source>
         <translation type="unfinished">Пан</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+14"/>
         <source>record</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+8"/>
         <source>mute</source>
         <translation type="unfinished">заглушить</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+9"/>
         <source>solo mode</source>
         <translation type="unfinished">режим соло</translation>
     </message>
     <message>
-        <location line="+67"/>
+        <location line="+69"/>
         <source>iR</source>
         <translation type="unfinished">вх</translation>
     </message>
@@ -12383,97 +13551,7 @@ Likely the selected track is the wrong type.</source>
     </message>
 </context>
 <context>
-    <name>MusEWidget::BigTime</name>
-    <message>
-        <location filename="../../muse/widgets/bigtime.cpp" line="+60"/>
-        <source>format display</source>
-        <translation type="unfinished">формат дисплея</translation>
-    </message>
-    <message>
-        <location line="+17"/>
-        <source>bar</source>
-        <translation type="unfinished">такт</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>beat</source>
-        <translation type="unfinished">доля</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location line="+6"/>
-        <source>tick</source>
-        <translation type="unfinished">тик</translation>
-    </message>
-    <message>
-        <location line="-4"/>
-        <source>minute</source>
-        <translation type="unfinished">минут(а)</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>second</source>
-        <translation type="unfinished">секунд(а)</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <location line="+3"/>
-        <source>frame</source>
-        <translation type="unfinished">фреймов</translation>
-    </message>
-    <message>
-        <location line="-2"/>
-        <source>subframe</source>
-        <translation type="unfinished">субфреймов</translation>
-    </message>
-    <message>
-        <location line="+18"/>
-        <source>MusE: Bigtime</source>
-        <translation type="unfinished">MusE: Хронометр</translation>
-    </message>
-</context>
-<context>
-    <name>MusEWidget::EditToolBar</name>
-    <message>
-        <location filename="../../muse/widgets/tools.cpp" line="+17"/>
-        <source>Edit Tools</source>
-        <translation type="unfinished">Инструменты редактирования</translation>
-    </message>
-</context>
-<context>
-    <name>MusEWidget::GlobalSettingsConfig</name>
-    <message>
-        <location filename="../../muse/widgets/genset.cpp" line="+546"/>
-        <source>Selects instruments directory</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>MusEWidget::Header</name>
-    <message>
-        <location filename="../../muse/widgets/header.cpp" line="+164"/>
-        <source>Track Info Columns</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>MusEWidget::MTScale</name>
-    <message>
-        <location filename="../../muse/widgets/mtscale.cpp" line="+44"/>
-        <source>bar scale</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>MusEWidget::MTScaleFlo</name>
-    <message>
-        <location filename="../../muse/widgets/mtscale_flo.cpp" line="+44"/>
-        <source>bar scale</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>MusEWidget::MidiSyncConfig</name>
+    <name>MusEGui::MidiSyncConfig</name>
     <message>
         <location filename="../../muse/widgets/midisyncimpl.cpp" line="+58"/>
         <location line="+29"/>
@@ -12827,24 +13905,735 @@ Apply sync settings?</source>
     </message>
 </context>
 <context>
-    <name>MusEWidget::MidiTrackInfo</name>
+    <name>MusEGui::MidiTrackInfo</name>
     <message>
-        <location filename="../../muse/widgets/mtrackinfo.cpp" line="+319"/>
-        <location line="+1046"/>
+        <location filename="../../muse/widgets/mtrackinfo.cpp" line="+335"/>
+        <location line="+1070"/>
         <source>&lt;unknown&gt;</source>
         <translation type="unfinished">&lt;неизвестно&gt;</translation>
     </message>
 </context>
 <context>
-    <name>MusEWidget::MixdownFileDialog</name>
+    <name>MusEGui::MidiTransformerDialog</name>
     <message>
-        <location filename="../../muse/widgets/mixdowndialog.cpp" line="+118"/>
+        <location filename="../../muse/miditransform.cpp" line="+464"/>
+        <location line="+2"/>
+        <source>New</source>
+        <translation type="unfinished">Новый</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::MixdownFileDialog</name>
+    <message>
+        <location filename="../../muse/widgets/mixdowndialog.cpp" line="+122"/>
         <source>Wave Files (*.wav);;All Files (*)</source>
         <translation type="unfinished">Файлы Wave (*.wav);;Все файлы (*)</translation>
     </message>
 </context>
 <context>
-    <name>MusEWidget::NoteInfo</name>
+    <name>MusEGui::MusE</name>
+    <message>
+        <location filename="../../muse/app.cpp" line="+41"/>
+        <location line="+16"/>
+        <source>Failed to start audio!</source>
+        <translation type="unfinished">Не могу воспроизводить аудио!</translation>
+    </message>
+    <message>
+        <location line="-15"/>
+        <source>Was not able to start audio, check if jack is running.
+</source>
+        <translation type="unfinished">Не могу воспроизводить аудио, проверте работает ли &quot;Jack&quot;.
+</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Timeout waiting for audio to run. Check if jack is running.
+</source>
+        <translation type="unfinished">Ожидание запуска аудио. Проверте, работает ли &quot;Jack&quot;.
+ </translation>
+    </message>
+    <message>
+        <location line="+219"/>
+        <source>Und&amp;o</source>
+        <translation type="unfinished">&amp;Отменить действие</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Re&amp;do</source>
+        <translation type="unfinished">&amp;Повторить</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>undo last change to song</source>
+        <translation type="unfinished">отменить последнее изменение в проекте</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>redo last undo</source>
+        <translation type="unfinished">повторить последнюю отмену</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Loop</source>
+        <translation type="unfinished">Цикл</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Punchin</source>
+        <translation type="unfinished">Начало врезки</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Punchout</source>
+        <translation type="unfinished">Конец врезки</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Rewind</source>
+        <translation type="unfinished">Перемотать назад</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Forward</source>
+        <translation type="unfinished">Перемотать вперёд</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Stop</source>
+        <translation type="unfinished">Остановить</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Play</source>
+        <translation type="unfinished">Воспроизвести</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Record</source>
+        <translation type="unfinished">Записать</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <location line="+232"/>
+        <source>Panic</source>
+        <translation type="unfinished">Паника</translation>
+    </message>
+    <message>
+        <location line="-220"/>
+        <source>&amp;New</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Open</source>
+        <translation type="unfinished">&amp;Открыть</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Open &amp;Recent</source>
+        <translation type="unfinished">Открыть  &amp;Недавние</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+1005"/>
+        <location line="+1211"/>
+        <source>&amp;Save</source>
+        <translation type="unfinished">&amp;Сохранить</translation>
+    </message>
+    <message>
+        <location line="-2211"/>
+        <source>Save &amp;As</source>
+        <translation type="unfinished">Сохранить &amp;Как</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Import Midifile</source>
+        <translation type="unfinished">Импортировать MIDI-файл</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Export Midifile</source>
+        <translation type="unfinished">Экспортировать MIDI-файл</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Import Part</source>
+        <translation type="unfinished">Импортировать Партию</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location filename="../../muse/wave.cpp" line="+1142"/>
+        <source>Import Wave File</source>
+        <translation type="unfinished">Импортировать WAV-файл</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Find unused wave files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>&amp;Quit</source>
+        <translation type="unfinished">Вы&amp;йти</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Song Info</source>
+        <translation type="unfinished">Проект инфо</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Transport Panel</source>
+        <translation type="unfinished">Панель транспорта</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Bigtime Window</source>
+        <translation type="unfinished">Окно хронометра</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Mixer A</source>
+        <translation type="unfinished">Микшер А</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Mixer B</source>
+        <translation type="unfinished">Микшер В</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Cliplist</source>
+        <translation type="unfinished">Список фрагментов</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Marker View</source>
+        <translation type="unfinished">Маркеры</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Arranger View</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Fullscreen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>&amp;Plugins</source>
+        <translation type="unfinished">&amp;Плагины</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit Instrument</source>
+        <translation type="unfinished">Редактировать Инструмент</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Input Plugins</source>
+        <translation type="unfinished">Плагины на входе</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Transpose</source>
+        <translation type="unfinished">Транспонировать</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi Input Transform</source>
+        <translation type="unfinished">Преобразование входящих MIDI-сообщений</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi Input Filter</source>
+        <translation type="unfinished">Фильтр входящих MIDI-событий</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi Remote Control</source>
+        <translation type="unfinished">Дистанционное управление MIDI</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Rhythm Generator</source>
+        <translation type="unfinished">Генератор Ритма</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Reset Instr.</source>
+        <translation type="unfinished">Перезагрузить Инстр.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Init Instr.</source>
+        <translation type="unfinished">Запустить Инстр.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Local Off</source>
+        <translation type="unfinished">откл. локальное управление</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Bounce to Track</source>
+        <translation type="unfinished">Свести в трек</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bounce to File</source>
+        <translation type="unfinished">Свести в файл</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Restart Audio</source>
+        <translation type="unfinished">Перезапустить аудио</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Mixer Automation</source>
+        <translation type="unfinished">Автоматизация микшера</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Take Snapshot</source>
+        <translation type="unfinished">Сделать снимок</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Clear Automation Data</source>
+        <translation type="unfinished">Удалить Данные Автоматизации</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Cascade</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tile</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>In rows</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>In columns</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Global Settings</source>
+        <translation type="unfinished">Общие настройки</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Configure Shortcuts</source>
+        <translation type="unfinished">Настроить горячие клавиши</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Follow Song</source>
+        <translation type="unfinished">следовать за проектом</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Don&apos;t Follow Song</source>
+        <translation type="unfinished">не следовать за проектом</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Follow Page</source>
+        <translation type="unfinished">следовать постранично</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Follow Continuous</source>
+        <translation type="unfinished">следовать плавно</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Metronome</source>
+        <translation type="unfinished">Метроном</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi Sync</source>
+        <translation type="unfinished">MIDI-синхр</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi File Import/Export</source>
+        <translation type="unfinished">Импорт/Экспорт midi-файла</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Appearance Settings</source>
+        <translation type="unfinished">Настройки вида</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi Ports / Soft Synth</source>
+        <translation type="unfinished">MIDI-порты / Прогр. синтезаторы</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>&amp;Manual</source>
+        <translation type="unfinished">&amp;Руководство</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;MusE Homepage</source>
+        <translation type="unfinished">&amp;Домашняя страница MusE</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Report Bug...</source>
+        <translation type="unfinished">&amp;Сообщить об ошибке...</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;About MusE</source>
+        <translation type="unfinished">&amp;О программе MusE</translation>
+    </message>
+    <message>
+        <location line="+99"/>
+        <source>File Buttons</source>
+        <translation type="unfinished">Файловые кнопки</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Undo/Redo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Transport</source>
+        <translation type="unfinished">Транспорт</translation>
+    </message>
+    <message>
+        <location line="+55"/>
+        <source>&amp;File</source>
+        <translation type="unfinished">&amp;Файл</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>&amp;View</source>
+        <translation type="unfinished">&amp;Вид</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>&amp;Midi</source>
+        <translation type="unfinished">&amp;MIDI</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>&amp;Audio</source>
+        <translation type="unfinished">&amp;Аудио</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>A&amp;utomation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>&amp;Windows</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>MusE Se&amp;ttings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>&amp;Help</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+268"/>
+        <source>Cannot read template</source>
+        <translation type="unfinished">Не могу прочитать шаблон</translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>File open error</source>
+        <translation type="unfinished">Ошибка при открытии файла</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>File read error</source>
+        <translation type="unfinished">Ошибка прочтения файла</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Unknown File Format: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+130"/>
+        <location line="+409"/>
+        <location line="+898"/>
+        <source>MusE: Song: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-1273"/>
+        <source>MusE: load project</source>
+        <translation type="unfinished">MusE: Открыть проект</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>MusE: load template</source>
+        <translation type="unfinished">MusE: открыть шаблон</translation>
+    </message>
+    <message>
+        <location line="+62"/>
+        <source>MusE: Write File failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+38"/>
+        <source>The current Project contains unsaved data
+Save Current Project?</source>
+        <translation type="unfinished">Текущий проект содержит не сохранённые данные.
+Сохранить текущий проект?</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+1211"/>
+        <source>S&amp;kip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-1211"/>
+        <source>&amp;Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+237"/>
+        <location line="+13"/>
+        <source>MusE: Save As</source>
+        <translation type="unfinished">MusE: Сохранить как</translation>
+    </message>
+    <message>
+        <location line="+57"/>
+        <location line="+160"/>
+        <source>Nothing to edit</source>
+        <translation type="unfinished">Нечего редактировать</translation>
+    </message>
+    <message>
+        <location line="+478"/>
+        <location line="+10"/>
+        <location line="+31"/>
+        <location line="+34"/>
+        <location line="+8"/>
+        <source>MusE: Bounce to Track</source>
+        <translation type="unfinished">MusE: Сведение в Трек</translation>
+    </message>
+    <message>
+        <location line="-82"/>
+        <source>No wave tracks found</source>
+        <translation type="unfinished">wave-треки не найдены</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <location line="+105"/>
+        <source>No audio output tracks found</source>
+        <translation type="unfinished">Выходные аудио треки не найдены</translation>
+    </message>
+    <message>
+        <location line="-74"/>
+        <source>Select one audio output track,
+and one target wave track</source>
+        <translation type="unfinished">Выберите один трек аудио выхода
+и один wave-трек, как цель </translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Select one target wave track</source>
+        <translation type="unfinished">Выделите один wave-трек, как цель (трек назначения) </translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Select one target wave track,
+and one audio output track</source>
+        <translation type="unfinished">Выберите один wave-трек, как цель,
+(трек назначения) и один трек аудио выхода</translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <location line="+25"/>
+        <source>MusE: Bounce to File</source>
+        <translation type="unfinished">MusE: Свести в файл</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Select one audio output track</source>
+        <translation type="unfinished">Выделите один трек аудио выхода</translation>
+    </message>
+    <message>
+        <location line="+39"/>
+        <source>MusE: Bounce</source>
+        <translation type="unfinished">MusE: Свести</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>set left/right marker for bounce range</source>
+        <translation type="unfinished">настройте левый/правый маркеры для установки диапазона сведения</translation>
+    </message>
+    <message>
+        <location line="+82"/>
+        <source>The current Project contains unsaved data
+Load overwrites current Project:
+Save Current Project?</source>
+        <translation type="unfinished">Текущий проект содержит не сохранённые данные.
+Загрузка нового проекта приведёт к перезаписи данных текущего проекта.
+Сохранить текущий проект?</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <location filename="../../muse/importmidi.cpp" line="+86"/>
+        <source>&amp;Abort</source>
+        <translation type="unfinished">&amp;Отмена</translation>
+    </message>
+    <message>
+        <location filename="../../muse/exportmidi.cpp" line="+147"/>
+        <source>MusE: Export Midi</source>
+        <translation type="unfinished">MusE:Экспорт MIDI</translation>
+    </message>
+    <message>
+        <location filename="../../muse/help.cpp" line="+50"/>
+        <source>no help found at: </source>
+        <translation type="unfinished">справка не найдена в: </translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>MusE: Open Help</source>
+        <translation type="unfinished">MusE: Открыть справку</translation>
+    </message>
+    <message>
+        <location line="+53"/>
+        <source>Unable to launch help</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>For some reason MusE has to launch the default
+browser on your machine.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/importmidi.cpp" line="-12"/>
+        <source>MusE: Import Midi</source>
+        <translation type="unfinished">MusE: Импорт MIDI</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Add midi file to current project?
+</source>
+        <translation type="unfinished">Добавить midi файл в текущий проект?
+</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Add to Project</source>
+        <translation type="unfinished">&amp;Добавить в Проект</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Replace</source>
+        <translation type="unfinished">&amp;Заменить</translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>reading midifile
+  </source>
+        <translation type="unfinished">читается MIDI-файл
+  
+  </translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>
+failed: </source>
+        <translation type="unfinished">
+не удалось:</translation>
+    </message>
+    <message>
+        <location line="+356"/>
+        <source>Import part is only valid for midi and wave tracks!</source>
+        <translation type="unfinished">Импортирование партий допустимо только для midi и wave треков!</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>MusE: load part</source>
+        <translation type="unfinished">MusE: открыть партию</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>No track selected for import</source>
+        <translation type="unfinished">Не выбран трек для импорта</translation>
+    </message>
+    <message numerus="yes">
+        <location line="+121"/>
+        <source>%n part(s) out of %1 could not be imported.
+Likely the selected track is the wrong type.</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location line="+1"/>
+        <source>%n part(s) could not be imported.
+Likely the selected track is the wrong type.</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../../muse/wave.cpp" line="-6"/>
+        <source>to import an audio file you have first to selecta wave track</source>
+        <translation type="unfinished">чтобы импортировать аудио файл, вы должны сначала выделить wave-трек</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Import Wavefile</source>
+        <translation type="unfinished">Импортировать wave-файл</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>This wave file has a samplerate of %1,
+as opposed to current setting %2.
+Do you still want to import it?</source>
+        <translation type="unfinished">Samplerate этого wave-файла %1,
+в то время как текущий Samplerate %2.
+Хотите ли вы импортировать его?</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>&amp;Yes</source>
+        <translation type="unfinished">&amp;Да</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>&amp;No</source>
+        <translation type="unfinished">&amp;Нет</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::NoteInfo</name>
     <message>
         <location filename="../../muse/widgets/noteinfo.cpp" line="+44"/>
         <source>Note Info</source>
@@ -12877,7 +14666,528 @@ Apply sync settings?</source>
     </message>
 </context>
 <context>
-    <name>MusEWidget::RoutePopupMenu</name>
+    <name>MusEGui::PartCanvas</name>
+    <message>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="+355"/>
+        <source>Cannot copy/move/clone to different Track-Type</source>
+        <translation type="unfinished">Невозможно копировать/перемещать/клонировать данные в другие типы дорожек</translation>
+    </message>
+    <message>
+        <location line="+270"/>
+        <source>C&amp;ut</source>
+        <translation type="unfinished">&amp;Вырезать</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Copy</source>
+        <translation type="unfinished">С&amp;копировать</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>s&amp;elect </source>
+        <translation type="unfinished">В&amp;ыбрать </translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>clones</source>
+        <translation type="unfinished">клоны</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>rename</source>
+        <translation type="unfinished">Переименовать</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>color</source>
+        <translation type="unfinished">цвет</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>delete</source>
+        <translation type="unfinished">удалить</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>split</source>
+        <translation type="unfinished">разделить</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>glue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>de-clone</source>
+        <translation type="unfinished">деклонировать</translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <location line="+7"/>
+        <location line="+7"/>
+        <source>save part to disk</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-2"/>
+        <source>wave edit</source>
+        <translation type="unfinished">Редактор семплов</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>file info</source>
+        <translation type="unfinished">файл-инфо</translation>
+    </message>
+    <message>
+        <location line="+88"/>
+        <source>MusE: save part</source>
+        <translation type="unfinished">MusE: сохранить партию</translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Part name: %1
+Files:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message numerus="yes">
+        <location line="+2128"/>
+        <source>%n part(s) out of %1 could not be pasted.
+Likely the selected track is the wrong type.</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location line="+1"/>
+        <source>%n part(s) could not be pasted.
+Likely the selected track is the wrong type.</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Cannot paste: multiple tracks selected</source>
+        <translation type="unfinished">Вставка невозможна: выделено несколько треков</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Cannot paste: no track selected</source>
+        <translation type="unfinished">Вставка невозможна: не выделено ни  одного трека</translation>
+    </message>
+    <message>
+        <location line="+20"/>
+        <source>Can only paste to midi/drum track</source>
+        <translation type="unfinished">Можно вставить только в midi/drum трек</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Can only paste to wave track</source>
+        <translation type="unfinished">Можно вставить только в звуковой трек</translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Can only paste to midi or wave track</source>
+        <translation type="unfinished">Можно вставить только в midi или wave треки</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Cannot paste: wrong data type</source>
+        <translation type="unfinished">Вставка невозможна: неверный тип данных</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::PasteDialog</name>
+    <message numerus="yes">
+        <location filename="../../muse/widgets/pastedialog.cpp" line="+81"/>
+        <source>%n quarter(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>%1 quarter</source>
+        <comment>for floating-point arguments like 1.5</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>%1 quarters</source>
+        <comment>for floating-point arguments like 1.5</comment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::PasteEventsDialog</name>
+    <message numerus="yes">
+        <location filename="../../muse/widgets/pasteeventsdialog.cpp" line="+95"/>
+        <source>%n quarter(s)</source>
+        <translation type="unfinished">
+            <numerusform></numerusform>
+        </translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>%1 quarter</source>
+        <comment>for floating-point arguments like 1.5</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>%1 quarters</source>
+        <comment>for floating-point arguments like 1.5</comment>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::PianoRoll</name>
+    <message>
+        <location filename="../../muse/midiedit/pianoroll.cpp" line="+99"/>
+        <source>&amp;Edit</source>
+        <translation type="unfinished">&amp;Правка</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>C&amp;ut</source>
+        <translation type="unfinished">&amp;Вырезать</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Copy</source>
+        <translation type="unfinished">С&amp;копировать</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Copy events in range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Paste</source>
+        <translation type="unfinished">&amp;Вставить</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Paste (with dialog)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Delete &amp;Events</source>
+        <translation type="unfinished">Удалить &amp;События</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>&amp;Select</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Select &amp;All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Deselect All</source>
+        <translation type="unfinished">&amp;Убрать выделение</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Invert &amp;Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>&amp;Inside Loop</source>
+        <translation type="unfinished">&amp;Внутри цикла</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Outside Loop</source>
+        <translation type="unfinished">&amp;Вне цикла</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>&amp;Previous Part</source>
+        <translation type="unfinished">&amp;Предыдущая партия</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>&amp;Next Part</source>
+        <translation type="unfinished">&amp;Следующая партия</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Fu&amp;nctions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Quantize</source>
+        <translation type="unfinished">Квантовать</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Modify Note Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Modify Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Crescendo/Decrescendo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Transpose</source>
+        <translation type="unfinished">Транспонировать</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Erase Events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Move Notes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Set Fixed Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Delete Overlaps</source>
+        <translation type="unfinished">Удалить наложения</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Legato</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>&amp;Plugins</source>
+        <translation type="unfinished">&amp;Плагины</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Window &amp;Config</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>&amp;Event Color</source>
+        <translation type="unfinished">&amp;Цвет события</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>&amp;Blue</source>
+        <translation type="unfinished">&amp;Синий</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>&amp;Pitch colors</source>
+        <translation type="unfinished">&amp;Цвета высоты тона</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>&amp;Velocity colors</source>
+        <translation type="unfinished">&amp;Цвета скорости нажатия</translation>
+    </message>
+    <message>
+        <location line="+19"/>
+        <source>Pianoroll tools</source>
+        <translation type="unfinished">Инструменты пианоролла</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Step Record</source>
+        <translation type="unfinished">Пошаговая запись</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Midi Input</source>
+        <translation type="unfinished">MIDI-вход</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Play Events</source>
+        <translation type="unfinished">Воспроизвести события</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>panic</source>
+        <translation type="unfinished">паника</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>transport</source>
+        <translation type="unfinished">транспорт</translation>
+    </message>
+    <message>
+        <location line="+23"/>
+        <source>ctrl</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Add Controller View</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::PluginDialog</name>
+    <message>
+        <location filename="../../muse/plugin.cpp" line="+3141"/>
+        <source>MusE: select plugin</source>
+        <translation type="unfinished">MusE: выбрать плагин</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Lib</source>
+        <translation type="unfinished">Библ.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Label</source>
+        <translation type="unfinished">Метка</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Name</source>
+        <translation type="unfinished">Имя</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>AI</source>
+        <translation type="unfinished">AI</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>AO</source>
+        <translation type="unfinished">AO</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>CI</source>
+        <translation type="unfinished">CI</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>CO</source>
+        <translation type="unfinished">CP</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>IP</source>
+        <translation type="unfinished">IP</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>id</source>
+        <translation type="unfinished">id</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Maker</source>
+        <translation type="unfinished">Создатель</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Copyright</source>
+        <translation type="unfinished">Copyright</translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Ok</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Cancel</source>
+        <translation type="unfinished">Отмена</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Mono and Stereo</source>
+        <translation type="unfinished">Моно и Стерео</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Stereo</source>
+        <translation type="unfinished">Стерео</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Mono</source>
+        <translation type="unfinished">Моно</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Show All</source>
+        <translation type="unfinished">Показать Все</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Select which types of plugins should be visible in the list.&lt;br&gt;Note that using mono plugins on stereo tracks is not a problem, two will be used in parallell.&lt;br&gt;Also beware that the &apos;all&apos; alternative includes plugins that probably not are usable by MusE.</source>
+        <translation type="unfinished">Выберите типы плагинов, которые будут видны в списке.&lt;br&gt;Обратите внимание, что можно использовать моно плагины в стерео треках, два будут использованы параллельно.&lt;br&gt;Также будте осторожны с плагинами категории &quot;все&quot; альтернативные, возможно их нельзя использовать в MusE.</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Search in &apos;Label&apos; and &apos;Name&apos;:</source>
+        <translation type="unfinished">Искать по &quot;Меткам&quot; и &quot;Именам&quot;:</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::PluginGui</name>
+    <message>
+        <location line="+207"/>
+        <source>File Buttons</source>
+        <translation type="unfinished">Файловые кнопки</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Load Preset</source>
+        <translation type="unfinished">Загрузить пресет</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Save Preset</source>
+        <translation type="unfinished">Сохранить пресет</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <location line="+3"/>
+        <source>bypass plugin</source>
+        <translation type="unfinished">обойти плагин</translation>
+    </message>
+    <message>
+        <location line="+554"/>
+        <source>MusE: load preset</source>
+        <translation type="unfinished">MusE: загрузить пресет</translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Error reading preset. Might not be right type for this plugin</source>
+        <translation type="unfinished">Ошибка прочтения пресета. Возможно неверный тип для этого плагина</translation>
+    </message>
+    <message>
+        <location line="+41"/>
+        <source>MusE: save preset</source>
+        <translation type="unfinished">MusE: сохранить пресет</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::RoutePopupMenu</name>
     <message>
         <location filename="../../muse/widgets/routepopup.cpp" line="+223"/>
         <location line="+2"/>
@@ -12905,7 +15215,7 @@ Apply sync settings?</source>
     </message>
     <message>
         <location line="-185"/>
-        <source>Warning: No midi input devices!</source>
+        <source>Warning: No input devices!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -12941,9 +15251,302 @@ Apply sync settings?</source>
     </message>
 </context>
 <context>
-    <name>MusEWidget::ScrollScale</name>
+    <name>MusEGui::ScoreCanvas</name>
     <message>
-        <location filename="../../muse/widgets/scrollscale.cpp" line="+316"/>
+        <location filename="../../muse/midiedit/scoreedit.cpp" line="+1251"/>
+        <source>Treble</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Bass</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Grand Staff</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Remove staff</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2470"/>
+        <source>Ambiguous part</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>There are two or more possible parts you could add the note to, but none matches the selected part. Please select the destination part by clicking on any note belonging to it and try again, or add a new stave containing only the destination part.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>No part</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>There are no parts you could add the note to.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::ScoreEdit</name>
+    <message>
+        <location line="-3501"/>
+        <source>Undo/Redo tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Step recording tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Step Record</source>
+        <translation type="unfinished">Пошаговая запись</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>panic</source>
+        <translation type="unfinished">паника</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>transport</source>
+        <translation type="unfinished">транспорт</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Note settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Note length:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>last</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+37"/>
+        <source>Velocity:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Off-Velocity:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Quantisation settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Quantisation:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Pixels per whole:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>&amp;Edit</source>
+        <translation type="unfinished">&amp;Правка</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>C&amp;ut</source>
+        <translation type="unfinished">&amp;Вырезать</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Copy</source>
+        <translation type="unfinished">С&amp;копировать</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Copy events in range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Paste</source>
+        <translation type="unfinished">&amp;Вставить</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Paste (with dialog)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Delete &amp;Events</source>
+        <translation type="unfinished">Удалить &amp;События</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>&amp;Select</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Select &amp;All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Deselect All</source>
+        <translation type="unfinished">&amp;Убрать выделение</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Invert &amp;Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>&amp;Inside Loop</source>
+        <translation type="unfinished">&amp;Внутри цикла</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Outside Loop</source>
+        <translation type="unfinished">&amp;Вне цикла</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Fu&amp;nctions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>&amp;Quantize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Change note &amp;length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Change note &amp;velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Crescendo/Decrescendo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transpose</source>
+        <translation type="unfinished">Транспонировать</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Erase Events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Move Notes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Set Fixed Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Delete Overlaps</source>
+        <translation type="unfinished">Удалить наложения</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Legato</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Window &amp;Config</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Note head &amp;colors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>&amp;Black</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Part</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Set up &amp;preamble</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Display &amp;key signature</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Display &amp;time signature</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Set Score &amp;name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+221"/>
+        <location line="+1"/>
+        <source>Enter the new score title</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Changing score title failed:
+the selected title is not unique</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::ScrollScale</name>
+    <message>
+        <location filename="../../muse/widgets/scrollscale.cpp" line="+318"/>
         <source>next page</source>
         <translation type="unfinished">след страница</translation>
     </message>
@@ -12959,7 +15562,7 @@ Apply sync settings?</source>
     </message>
 </context>
 <context>
-    <name>MusEWidget::ShortcutCaptureDialog</name>
+    <name>MusEGui::ShortcutCaptureDialog</name>
     <message>
         <location filename="../../muse/widgets/shortcutcapturedialog.cpp" line="+55"/>
         <source>Ok</source>
@@ -12972,8 +15575,8 @@ Apply sync settings?</source>
     </message>
     <message>
         <location line="+52"/>
-        <source>Shortcut conflicts with </source>
-        <translation type="unfinished">&quot;Горячая клавиша&quot; конфликтует с </translation>
+        <source>Shortcut conflicts with %1</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
@@ -12982,7 +15585,7 @@ Apply sync settings?</source>
     </message>
 </context>
 <context>
-    <name>MusEWidget::SigScale</name>
+    <name>MusEGui::SigScale</name>
     <message>
         <location filename="../../muse/widgets/sigscale.cpp" line="+44"/>
         <source>signature scale</source>
@@ -12990,7 +15593,138 @@ Apply sync settings?</source>
     </message>
 </context>
 <context>
-    <name>MusEWidget::Toolbar1</name>
+    <name>MusEGui::TList</name>
+    <message>
+        <location filename="../../muse/arranger/tlist.cpp" line="+373"/>
+        <source>&lt;none&gt;</source>
+        <translation type="unfinished">&lt;ничего&gt;</translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>no clef</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Treble</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Bass</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Grand</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+47"/>
+        <source>MusE: bad trackname</source>
+        <translation type="unfinished">MusE: неверное имя трека</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>please choose a unique track name</source>
+        <translation type="unfinished">Выберите неповторяющееся имя для трека</translation>
+    </message>
+    <message>
+        <location line="+172"/>
+        <location line="+1149"/>
+        <source>Update drummap?</source>
+        <translation type="unfinished">Обновить карту ударных?</translation>
+    </message>
+    <message>
+        <location line="-1148"/>
+        <source>Do you want to use same port for all instruments in the drummap?</source>
+        <translation type="unfinished">Вы хотите использовать один и тот же порт для всех инструментов в списке ударных?</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+1149"/>
+        <source>&amp;Yes</source>
+        <translation type="unfinished">&amp;Да</translation>
+    </message>
+    <message>
+        <location line="-1149"/>
+        <location line="+1149"/>
+        <source>&amp;No</source>
+        <translation type="unfinished">&amp;Нет</translation>
+    </message>
+    <message>
+        <location line="-1074"/>
+        <location line="+55"/>
+        <source>show gui</source>
+        <translation type="unfinished">показать ГИП</translation>
+    </message>
+    <message>
+        <location line="-46"/>
+        <location line="+55"/>
+        <source>show native gui</source>
+        <translation type="unfinished">показать ГИП</translation>
+    </message>
+    <message>
+        <location line="+346"/>
+        <source>Treble clef</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bass clef</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Grand Staff</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+30"/>
+        <source>Viewable automation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+131"/>
+        <source>Delete Track</source>
+        <translation type="unfinished">Удалить трек</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Track Comment</source>
+        <translation type="unfinished">Комментарий к треку</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Insert Track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+445"/>
+        <source>Midi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Drum</source>
+        <translation type="unfinished">Ударные</translation>
+    </message>
+    <message>
+        <location line="+50"/>
+        <source>Do you want to use same port and channel for all instruments in the drummap?</source>
+        <translation type="unfinished">Вы хотите использовать один и тот же порт и канал для всех инструментов в списке ударных?</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::TempoSig</name>
+    <message>
+        <location filename="../../muse/transport.cpp" line="+103"/>
+        <source>Tempo/Sig</source>
+        <translation type="unfinished">Темп/Знаки альтерации</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::Toolbar1</name>
     <message>
         <location filename="../../muse/widgets/tb1.cpp" line="+21"/>
         <source>Solo</source>
@@ -13008,7 +15742,80 @@ Apply sync settings?</source>
     </message>
 </context>
 <context>
-    <name>MusEWidget::TrackComment</name>
+    <name>MusEGui::TopWin</name>
+    <message>
+        <location filename="../../muse/cobject.cpp" line="+64"/>
+        <source>As subwindow</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Shares tools and menu</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Fullscreen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+428"/>
+        <source>Piano roll</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>List editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Drum editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Master track editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Master track list editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Wave editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Clip list</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Marker view</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Score editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Arranger</source>
+        <translation type="unfinished">Компоновщик</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&lt;unknown toplevel type&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::TrackComment</name>
     <message>
         <location filename="../../muse/widgets/comment.cpp" line="+58"/>
         <source>MusE: Track Comment</source>
@@ -13021,11 +15828,1016 @@ Apply sync settings?</source>
     </message>
 </context>
 <context>
-    <name>MusEWidget::VisibleTracks</name>
+    <name>MusEGui::Transport</name>
+    <message>
+        <location filename="../../muse/transport.cpp" line="+105"/>
+        <source>Overdub</source>
+        <translation type="unfinished">Наложить</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+15"/>
+        <source>Replace</source>
+        <translation type="unfinished">Заменить</translation>
+    </message>
+    <message>
+        <location line="-10"/>
+        <source>Rec Mode</source>
+        <translation type="unfinished">Режим записи</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Normal</source>
+        <translation type="unfinished">Норм.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mix</source>
+        <translation type="unfinished">Смешать</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Cycle Rec</source>
+        <translation type="unfinished">Циклич. запись</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>punchin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>loop</source>
+        <translation type="unfinished">цикл</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>punchout</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <location line="+3"/>
+        <source>Punch In</source>
+        <translation type="unfinished">Начало врезки</translation>
+    </message>
+    <message>
+        <location line="-2"/>
+        <location line="+3"/>
+        <source>Loop</source>
+        <translation type="unfinished">Цикл</translation>
+    </message>
+    <message>
+        <location line="-2"/>
+        <location line="+3"/>
+        <source>Punch Out</source>
+        <translation type="unfinished">Конец врезки</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Left Mark</source>
+        <translation type="unfinished">Левый маркер</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Right Mark</source>
+        <translation type="unfinished">Правый маркер</translation>
+    </message>
+    <message>
+        <location line="+47"/>
+        <source>rewind to start</source>
+        <translation type="unfinished">перемотать к началу</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>rewind</source>
+        <translation type="unfinished">перемотать назад</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>forward</source>
+        <translation type="unfinished">перемотать вперёд</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>stop</source>
+        <translation type="unfinished">остановить</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>play</source>
+        <translation type="unfinished">воспроизвести</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>record</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <source>AC</source>
+        <translation type="unfinished">AC</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>quantize during record</source>
+        <translation type="unfinished">квантовать при записи</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Click</source>
+        <translation type="unfinished">Метр.</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>metronom click on/off</source>
+        <translation type="unfinished">Метроном вкл/выкл</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Sync</source>
+        <translation type="unfinished">Синхр.</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>external sync on/off</source>
+        <translation type="unfinished">Вкл/выкл внешн. синхр.</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Jack</source>
+        <translation type="unfinished">Jack</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>Jack transport sync on/off</source>
+        <translation type="unfinished">Синхр. транспорта &quot;Jack&quot; вкл/выкл</translation>
+    </message>
+    <message>
+        <location line="+43"/>
+        <source>Master</source>
+        <translation type="unfinished">Мастер</translation>
+    </message>
+    <message>
+        <location line="+0"/>
+        <source>use master track</source>
+        <translation type="unfinished">использовать мастер-трек</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::VisibleTracks</name>
     <message>
         <location filename="../../muse/widgets/visibletracks.cpp" line="+9"/>
         <source>Visible track types</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::WaveEdit</name>
+    <message>
+        <location filename="../../muse/waveedit/waveedit.cpp" line="+91"/>
+        <source>&amp;Edit</source>
+        <translation type="unfinished">&amp;Правка</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Func&amp;tions</source>
+        <translation type="unfinished">Фу&amp;нкции</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>&amp;Gain</source>
+        <translation type="unfinished">&amp;Усиление</translation>
+    </message>
+    <message>
+        <source>200%</source>
+        <translation type="obsolete">200%</translation>
+    </message>
+    <message>
+        <source>150%</source>
+        <translation type="obsolete">150%</translation>
+    </message>
+    <message>
+        <source>75%</source>
+        <translation type="obsolete">75%</translation>
+    </message>
+    <message>
+        <source>50%</source>
+        <translation type="obsolete">50%</translation>
+    </message>
+    <message>
+        <source>25%</source>
+        <translation type="obsolete">25%</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>Other</source>
+        <translation type="unfinished">Другой</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>&amp;Copy</source>
+        <translation type="unfinished">С&amp;копировать</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>C&amp;ut</source>
+        <translation type="unfinished">&amp;Вырезать</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Paste</source>
+        <translation type="unfinished">&amp;Вставить</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Edit in E&amp;xternal Editor</source>
+        <translation type="unfinished">Редактировать во &amp;внешнем редакторе</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Mute Selection</source>
+        <translation type="unfinished">Заглушить выделенное</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Normalize Selection</source>
+        <translation type="unfinished">Нормализовать выделенное</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Fade In Selection</source>
+        <translation type="unfinished">Нарастание звука в выделенном</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Fade Out Selection</source>
+        <translation type="unfinished">Затихание звука в выделенном</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Reverse Selection</source>
+        <translation type="unfinished">Перевернуть выделенное</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Select</source>
+        <translation type="unfinished">Выделить</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Select &amp;All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>&amp;Deselect All</source>
+        <translation type="unfinished">&amp;Убрать выделение</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Window &amp;Config</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Wave edit tools</source>
+        <translation type="unfinished">Инструменты редактирования Wave</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>transport</source>
+        <translation type="unfinished">транспорт</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>WaveEdit tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Solo</source>
+        <translation type="unfinished">Соло</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Cursor</source>
+        <translation type="unfinished">Курсор</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::WaveView</name>
+    <message>
+        <location filename="../../muse/waveedit/waveview.cpp" line="+996"/>
+        <source>MusE - external editor failed</source>
+        <translation type="unfinished">MusE - ошибка запуска внешнего редактора</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>MusE was unable to launch the external editor
+check if the editor setting in:
+Global Settings-&gt;Audio:External Waveditor
+is set to a valid editor.</source>
+        <translation type="unfinished">&quot;MusE&quot; не может запустить внешний редактор.
+Проверте, действительно ли в:
+Общие настройки-&gt;Аудио:Внешний редактор
+выбран правильный редактор.</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>MusE - file size changed</source>
+        <translation type="unfinished">MusE - размер файла изменился</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>When editing in external editor - you should not change the filesize
+since it must fit the selected region.
+
+Missing data is muted</source>
+        <translation type="unfinished">При редактировании во внешнем редакторе - не изменяйте размер файла
+так как он должен соответствовать выбранной области.
+
+Утерянные данные заглушены</translation>
+    </message>
+</context>
+<context>
+    <name>MusEMixer::AudioMixerApp</name>
+    <message>
+        <source>&amp;View</source>
+        <translation type="obsolete">&amp;Вид</translation>
+    </message>
+    <message>
+        <source>Routing</source>
+        <translation type="obsolete">Маршрутизация</translation>
+    </message>
+    <message>
+        <source>Show Midi Tracks</source>
+        <translation type="obsolete">Показать Midi-треки</translation>
+    </message>
+    <message>
+        <source>Show Drum Tracks</source>
+        <translation type="obsolete">Показать треки ударных</translation>
+    </message>
+    <message>
+        <source>Show Wave Tracks</source>
+        <translation type="obsolete">Показать Wave-треки</translation>
+    </message>
+    <message>
+        <source>Show Inputs</source>
+        <translation type="obsolete">Показать входы</translation>
+    </message>
+    <message>
+        <source>Show Outputs</source>
+        <translation type="obsolete">Показать выходы</translation>
+    </message>
+    <message>
+        <source>Show Groups</source>
+        <translation type="obsolete">Показать группы</translation>
+    </message>
+    <message>
+        <source>Show Auxs</source>
+        <translation type="obsolete">Показать Auxs</translation>
+    </message>
+    <message>
+        <source>Show Synthesizers</source>
+        <translation type="obsolete">Показать синтезаторы</translation>
+    </message>
+</context>
+<context>
+    <name>MusEMixer::AudioStrip</name>
+    <message>
+        <source>panorama</source>
+        <translation type="obsolete">панорама</translation>
+    </message>
+    <message>
+        <source>aux send level</source>
+        <translation type="obsolete">уровень aux посыла</translation>
+    </message>
+    <message>
+        <source>Pan</source>
+        <translation type="obsolete">Пан</translation>
+    </message>
+    <message>
+        <source>1/2 channel</source>
+        <translation type="obsolete">стерео-моно</translation>
+    </message>
+    <message>
+        <source>Pre</source>
+        <translation type="obsolete">Пре</translation>
+    </message>
+    <message>
+        <source>pre fader - post fader</source>
+        <translation type="obsolete">пре федер - пост федер</translation>
+    </message>
+    <message>
+        <source>mute</source>
+        <translation type="obsolete">заглушить</translation>
+    </message>
+    <message>
+        <source>record downmix</source>
+        <translation type="obsolete">записать downmix</translation>
+    </message>
+    <message>
+        <source>solo mode</source>
+        <translation type="obsolete">режим соло</translation>
+    </message>
+    <message>
+        <source>off</source>
+        <translation type="obsolete">выкл</translation>
+    </message>
+    <message>
+        <source>iR</source>
+        <translation type="obsolete">вх</translation>
+    </message>
+    <message>
+        <source>input routing</source>
+        <translation type="obsolete">маршрут входа</translation>
+    </message>
+    <message>
+        <source>oR</source>
+        <translation type="obsolete">вых</translation>
+    </message>
+    <message>
+        <source>output routing</source>
+        <translation type="obsolete">маршрут выхода</translation>
+    </message>
+    <message>
+        <source>Read</source>
+        <translation type="obsolete">Читать</translation>
+    </message>
+    <message>
+        <source>Touch</source>
+        <translation type="obsolete">По касанию</translation>
+    </message>
+    <message>
+        <source>automation type</source>
+        <translation type="obsolete">тип автоматизации</translation>
+    </message>
+</context>
+<context>
+    <name>MusEMixer::EffectRack</name>
+    <message>
+        <source>effect rack</source>
+        <translation type="obsolete">рэк эффектов</translation>
+    </message>
+    <message>
+        <source>new</source>
+        <translation type="obsolete">новый</translation>
+    </message>
+    <message>
+        <source>change</source>
+        <translation type="obsolete">изменить</translation>
+    </message>
+    <message>
+        <source>move up</source>
+        <translation type="obsolete">сдвинуть выше</translation>
+    </message>
+    <message>
+        <source>move down</source>
+        <translation type="obsolete">сдвинуть ниже</translation>
+    </message>
+    <message>
+        <source>remove</source>
+        <translation type="obsolete">удалить</translation>
+    </message>
+    <message>
+        <source>bypass</source>
+        <translation type="obsolete">обойти</translation>
+    </message>
+    <message>
+        <source>show gui</source>
+        <translation type="obsolete">показать ГИП</translation>
+    </message>
+    <message>
+        <source>show native gui</source>
+        <translation type="obsolete">показать ГИП</translation>
+    </message>
+    <message>
+        <source>save preset</source>
+        <translation type="obsolete">сохранить пресет</translation>
+    </message>
+    <message>
+        <source>MusE: Save Preset</source>
+        <translation type="obsolete">MusE: Сохранить Пресет</translation>
+    </message>
+    <message>
+        <source>Replace effect</source>
+        <translation type="obsolete">Заменить эффект</translation>
+    </message>
+    <message>
+        <source>Do you really want to replace the effect %1?</source>
+        <translation type="obsolete">Вы действительно хотите заменить эффект %1?</translation>
+    </message>
+</context>
+<context>
+    <name>MusEMixer::MidiStrip</name>
+    <message>
+        <source>off</source>
+        <translation type="obsolete">выкл</translation>
+    </message>
+    <message>
+        <source>double click on/off</source>
+        <translation type="obsolete">двойной щелчок вкл/выкл</translation>
+    </message>
+    <message>
+        <source>VariationSend</source>
+        <translation type="obsolete">Вариационный посыл</translation>
+    </message>
+    <message>
+        <source>Var</source>
+        <translation type="obsolete">Вар</translation>
+    </message>
+    <message>
+        <source>ReverbSend</source>
+        <translation type="obsolete">Посыл Реверберации</translation>
+    </message>
+    <message>
+        <source>Rev</source>
+        <translation type="obsolete">Ревер</translation>
+    </message>
+    <message>
+        <source>ChorusSend</source>
+        <translation type="obsolete">Посыл Хоруса</translation>
+    </message>
+    <message>
+        <source>Cho</source>
+        <translation type="obsolete">Хорус</translation>
+    </message>
+    <message>
+        <source>Pan/Balance</source>
+        <translation type="obsolete">Пан/Баланс</translation>
+    </message>
+    <message>
+        <source>Pan</source>
+        <translation type="obsolete">Пан</translation>
+    </message>
+    <message>
+        <source>mute</source>
+        <translation type="obsolete">заглушить</translation>
+    </message>
+    <message>
+        <source>solo mode</source>
+        <translation type="obsolete">режим соло</translation>
+    </message>
+    <message>
+        <source>iR</source>
+        <translation type="obsolete">вх</translation>
+    </message>
+    <message>
+        <source>input routing</source>
+        <translation type="obsolete">маршрут входа</translation>
+    </message>
+    <message>
+        <source>oR</source>
+        <translation type="obsolete">вых</translation>
+    </message>
+    <message>
+        <source>output routing</source>
+        <translation type="obsolete">маршрут выхода</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::BigTime</name>
+    <message>
+        <source>format display</source>
+        <translation type="obsolete">формат дисплея</translation>
+    </message>
+    <message>
+        <source>bar</source>
+        <translation type="obsolete">такт</translation>
+    </message>
+    <message>
+        <source>beat</source>
+        <translation type="obsolete">доля</translation>
+    </message>
+    <message>
+        <source>tick</source>
+        <translation type="obsolete">тик</translation>
+    </message>
+    <message>
+        <source>minute</source>
+        <translation type="obsolete">минут(а)</translation>
+    </message>
+    <message>
+        <source>second</source>
+        <translation type="obsolete">секунд(а)</translation>
+    </message>
+    <message>
+        <source>frame</source>
+        <translation type="obsolete">фреймов</translation>
+    </message>
+    <message>
+        <source>subframe</source>
+        <translation type="obsolete">субфреймов</translation>
+    </message>
+    <message>
+        <source>MusE: Bigtime</source>
+        <translation type="obsolete">MusE: Хронометр</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::EditToolBar</name>
+    <message>
+        <source>Edit Tools</source>
+        <translation type="obsolete">Инструменты редактирования</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::MidiSyncConfig</name>
+    <message>
+        <source>Port Number</source>
+        <translation type="obsolete">Номер порта</translation>
+    </message>
+    <message>
+        <source>Name of the midi device associated with this port number</source>
+        <translation type="obsolete">Имя MIDI-устройства, ассоциированного с номером этого порта </translation>
+    </message>
+    <message>
+        <source>Midi clock input detected</source>
+        <translation type="obsolete">Обнаружен вход midi-clock</translation>
+    </message>
+    <message>
+        <source>Midi tick input detected</source>
+        <translation type="obsolete">Обнаружен вход midi-тика</translation>
+    </message>
+    <message>
+        <source>Midi real time input detected</source>
+        <translation type="obsolete">Обнаружен midi-вход реального времени</translation>
+    </message>
+    <message>
+        <source>MMC input detected</source>
+        <translation type="obsolete">Обнаружен вход MMC</translation>
+    </message>
+    <message>
+        <source>MTC input detected</source>
+        <translation type="obsolete">Обнаружен вход MTC</translation>
+    </message>
+    <message>
+        <source>Detected SMPTE format</source>
+        <translation type="obsolete">Обнаруженые SMPTE форматы</translation>
+    </message>
+    <message>
+        <source>Receive id number. 127 = Global. Double click to edit.</source>
+        <translation type="obsolete">Получить id номер. 127 = Глобально. Двойной щелчок для редактирования.</translation>
+    </message>
+    <message>
+        <source>Accept midi clock input</source>
+        <translation type="obsolete">Принять вход Midi-clock</translation>
+    </message>
+    <message>
+        <source>Accept midi real time input</source>
+        <translation type="obsolete">Принять midi-вход реального времени</translation>
+    </message>
+    <message>
+        <source>Accept MMC input</source>
+        <translation type="obsolete">Принять вход MMC</translation>
+    </message>
+    <message>
+        <source>Accept MTC input</source>
+        <translation type="obsolete">Принять вход MTC</translation>
+    </message>
+    <message>
+        <source>Receive start rewinds before playing</source>
+        <translation type="obsolete">Получить перед воспроизведением сообщение о начале перемотки</translation>
+    </message>
+    <message>
+        <source>Transmit id number. 127 = Global. Double click to edit.</source>
+        <translation type="obsolete">Передать номер id. 127 = Общий. Двойной щелчок для редактирования.</translation>
+    </message>
+    <message>
+        <source>Send midi clock output</source>
+        <translation type="obsolete">Послать выход midi-clock</translation>
+    </message>
+    <message>
+        <source>Send midi realtime output</source>
+        <translation type="obsolete">Послать midi-выход реального времени</translation>
+    </message>
+    <message>
+        <source>Send MMC output</source>
+        <translation type="obsolete">Послать выход MMC</translation>
+    </message>
+    <message>
+        <source>Send MTC output</source>
+        <translation type="obsolete">Послать выход MTC</translation>
+    </message>
+    <message>
+        <source>Midi clock input detected.
+Current port actually used is red.
+Click to force a port to be used.</source>
+        <translation type="obsolete">Обнаружен вход midi-clock.
+Фактически используемый
+текущий порт - красный.
+Щелкните, чтобы принудительно
+использовать порт.</translation>
+    </message>
+    <message>
+        <source>Midi realtime input detected, including
+ start/stop/continue, and song position.</source>
+        <translation type="obsolete">Обнаружен midi-вход реального времени,
+с &quot;старт/стоп/продолжить&quot; и позицией проекта.</translation>
+    </message>
+    <message>
+        <source>MMC input detected, including stop/play/deferred play, and locate.</source>
+        <translation type="obsolete">Обнаружен MMC-вход c &quot;старт/стоп/отложенное воспроизведение&quot;
+ и локацией.</translation>
+    </message>
+    <message>
+        <source>MTC input detected, including forward quarter-frame sync and full-frame locate.
+Current port actually used is red. Click to force a port to be current.</source>
+        <translation type="obsolete">Обнаружен MTC-вход, с четверть-фреймовой
+синхронизацией и полно-фреймовой локацией.
+Фактически используемый
+текущий порт - красный.
+Щелкните, чтобы принудительно
+сделать порт текущим.</translation>
+    </message>
+    <message>
+        <source>Detected SMPTE format: 24fps, 25fps, 30fps drop frame, or 30fps non-drop
+Detects format of MTC quarter and full frame, and MMC locate.</source>
+        <translation type="obsolete">Обнаруженые форматы SMPTE: 24fps, 25fps, 30fps с пропущенным
+фреймом, или 30fps без пропущенного фрейма
+Обнаруживает MTC-формат четверть и полно-фреймовый, и MMC локацию.</translation>
+    </message>
+    <message>
+        <source>Receive id number. 127 = global receive all, even if not global.</source>
+        <translation type="obsolete">Получить номер id. 127 =глобальный получает все, даже если не глобальный.</translation>
+    </message>
+    <message>
+        <source>Accept midi clock input. Only one input is used for clock.
+Auto-acquire: If two or more port realtime inputs are enabled,
+ the first clock detected is used, until clock is lost,
+ then another can take over. Best if each turns off its clock
+ at stop, so MusE can re-acquire the clock from another port.
+Click on detect indicator to force another.</source>
+        <translation type="obsolete">Принять вход midi-clock. Только один вход используется для &quot;clock&quot;.
+Авто-получение: если разрешены два или более входов реального времени на порт, то будут использован первый обнаруженный &quot;clock&quot;, пока он не будет потерян, затем будет использован другой. Самое лучшее, если каждый отключит свой &quot;clock&quot; во время остановки, чтобы MusE снова получил &quot;clock&quot; с другого порта. Щелкните по индикатору обнаружения, чтобы сделать по другому.</translation>
+    </message>
+    <message>
+        <source>Accept midi realtime input, including
+ start/stop/continue, and song position.
+Non-clock events (start,stop etc) are
+ accepted by ALL enabled ports.
+This means you may have several master
+ devices connected, and muse will accept
+ input from them.</source>
+        <translation type="obsolete">Принять midi-вход реального времени
+с &quot;старт/стоп/продолжить&quot; и позицией проекта.
+События &quot;Non-clock&quot; (старт, стоп, и т. п.) принимаются
+ВСЕМИ разрешенными портами. Это означает, что вы
+можете иметь несколько подсоединенных мастер-устройств,
+и MusE примет вход от них.</translation>
+    </message>
+    <message>
+        <source>Accept MMC input, including stop/play/deferred play, and locate.</source>
+        <translation type="obsolete">Принять вход MMC,  с &quot;стоп/старт/отложенным воспроизведением&quot; и локацией.</translation>
+    </message>
+    <message>
+        <source>Accept MTC input, including forward quarter-frame sync and full-frame locate.
+See &apos;rc&apos; column for more help.</source>
+        <translation type="obsolete">Принять вход MTC, с четверть-фреймовой
+синхронизацией и полно-фреймовой локацией.
+См. колонку &quot;rc&quot; для получения помощи.</translation>
+    </message>
+    <message>
+        <source>When start is received, rewind before playing.
+Note: It may be impossible to rewind fast
+ enough to synchronize with the external device.</source>
+        <translation type="obsolete">Когда сообщение &quot;старт&quot; получено, перемотать перед
+воспроизведением. Примечание: может быть
+так, что перемотка окажется недостаточно быстрой
+для синхронизации с внешним устройством.</translation>
+    </message>
+    <message>
+        <source>Transmit id number. 127 = global transmit to all.</source>
+        <translation type="obsolete">Передавать номер id. 127 =общая передача для всех.</translation>
+    </message>
+    <message>
+        <source>Send midi clock output. If &apos;Slave to External Sync&apos; is chosen,
+ muse can re-transmit clock to any other chosen ports.</source>
+        <translation type="obsolete">Посылать выход midi-clock. Если выбрано &quot;Slave to External Sync&quot;,
+то MusE может снова передать &quot;clock&quot; на любой другой выбранный порт.</translation>
+    </message>
+    <message>
+        <source>Send midi realtime output, including start/stop/continue,
+ and song position. If &apos;Slave to external sync&apos; is chosen,
+ muse can re-transmit midi realtime input messages to any
+ other chosen ports. This means you may have several slave
+ devices connected, and muse can re-send realtime messages
+ to any or all of them.</source>
+        <translation type="obsolete">Послать midi-выход реального времени, с &quot;старт/стоп/продолжить&quot;
+и позицией проекта. Если выбрано &quot;Slave to External Sync&quot;,
+то MusE может снова передать сообщения с midi-входа реального
+времени на любой другой выбранный порт. Это значит, что вы можете
+иметь несколько присоединенных ведомых устройств, и MusE может снова послать сообщения реального времени на любое из них или на все.</translation>
+    </message>
+    <message>
+        <source>Port</source>
+        <translation type="obsolete">Порт</translation>
+    </message>
+    <message>
+        <source>Device Name</source>
+        <translation type="obsolete">Имя устройства</translation>
+    </message>
+    <message>
+        <source>c</source>
+        <translation type="obsolete">c</translation>
+    </message>
+    <message>
+        <source>k</source>
+        <translation type="obsolete">k</translation>
+    </message>
+    <message>
+        <source>r</source>
+        <translation type="obsolete">r</translation>
+    </message>
+    <message>
+        <source>t</source>
+        <translation type="obsolete">t</translation>
+    </message>
+    <message>
+        <source>type</source>
+        <translation type="obsolete">тип</translation>
+    </message>
+    <message>
+        <source>rid</source>
+        <translation type="obsolete">rid</translation>
+    </message>
+    <message>
+        <source>rc</source>
+        <translation type="obsolete">rc</translation>
+    </message>
+    <message>
+        <source>rr</source>
+        <translation type="obsolete">rr</translation>
+    </message>
+    <message>
+        <source>rm</source>
+        <translation type="obsolete">rm</translation>
+    </message>
+    <message>
+        <source>rt</source>
+        <translation type="obsolete">rt</translation>
+    </message>
+    <message>
+        <source>rw</source>
+        <translation type="obsolete">rw</translation>
+    </message>
+    <message>
+        <source>tid</source>
+        <translation type="obsolete">tid</translation>
+    </message>
+    <message>
+        <source>tc</source>
+        <translation type="obsolete">tc</translation>
+    </message>
+    <message>
+        <source>tr</source>
+        <translation type="obsolete">tr</translation>
+    </message>
+    <message>
+        <source>tm</source>
+        <translation type="obsolete">tm</translation>
+    </message>
+    <message>
+        <source>tt</source>
+        <translation type="obsolete">tt</translation>
+    </message>
+    <message>
+        <source>MusE</source>
+        <translation type="obsolete">MusE</translation>
+    </message>
+    <message>
+        <source>Settings have changed
+Apply sync settings?</source>
+        <translation type="obsolete">Настройки изменились
+Применить настройки синхронизации?</translation>
+    </message>
+    <message>
+        <source>&amp;Apply</source>
+        <translation type="obsolete">&amp;Применить</translation>
+    </message>
+    <message>
+        <source>&amp;No</source>
+        <translation type="obsolete">&amp;Нет</translation>
+    </message>
+    <message>
+        <source>&amp;Abort</source>
+        <translation type="obsolete">&amp;Отмена</translation>
+    </message>
+    <message>
+        <source>&lt;none&gt;</source>
+        <translation type="obsolete">&lt;ничего&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::MidiTrackInfo</name>
+    <message>
+        <source>&lt;unknown&gt;</source>
+        <translation type="obsolete">&lt;неизвестно&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::MixdownFileDialog</name>
+    <message>
+        <source>Wave Files (*.wav);;All Files (*)</source>
+        <translation type="obsolete">Файлы Wave (*.wav);;Все файлы (*)</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::NoteInfo</name>
+    <message>
+        <source>Note Info</source>
+        <translation type="obsolete">Информация о ноте</translation>
+    </message>
+    <message>
+        <source>Len</source>
+        <translation type="obsolete">Дл</translation>
+    </message>
+    <message>
+        <source>Pitch</source>
+        <translation type="obsolete">Высота тона</translation>
+    </message>
+    <message>
+        <source>Velo On</source>
+        <translation type="obsolete">Скор. наж</translation>
+    </message>
+    <message>
+        <source>Velo Off</source>
+        <translation type="obsolete">Скор. снятия</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::RoutePopupMenu</name>
+    <message>
+        <source>Channel</source>
+        <translation type="obsolete">Канал</translation>
+    </message>
+    <message>
+        <source>&lt;none&gt;</source>
+        <translation type="obsolete">&lt;ничего&gt;</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::ScrollScale</name>
+    <message>
+        <source>next page</source>
+        <translation type="obsolete">след страница</translation>
+    </message>
+    <message>
+        <source>previous page</source>
+        <translation type="obsolete">пред страница</translation>
+    </message>
+    <message>
+        <source>current page number</source>
+        <translation type="obsolete">номер текущей страницы</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::ShortcutCaptureDialog</name>
+    <message>
+        <source>Cancel</source>
+        <translation type="obsolete">Отмена</translation>
+    </message>
+    <message>
+        <source>Shortcut conflicts with </source>
+        <translation type="obsolete">&quot;Горячая клавиша&quot; конфликтует с </translation>
+    </message>
+    <message>
+        <source>Undefined</source>
+        <translation type="obsolete">Не назначено</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::SigScale</name>
+    <message>
+        <source>signature scale</source>
+        <translation type="obsolete">шкала ключей </translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::Toolbar1</name>
+    <message>
+        <source>Solo</source>
+        <translation type="obsolete">Соло</translation>
+    </message>
+    <message>
+        <source>Cursor</source>
+        <translation type="obsolete">Курсор</translation>
+    </message>
+    <message>
+        <source>Snap</source>
+        <translation type="obsolete">Привязка</translation>
+    </message>
+</context>
+<context>
+    <name>MusEWidget::TrackComment</name>
+    <message>
+        <source>MusE: Track Comment</source>
+        <translation type="obsolete">MusE: Комментарий к треку</translation>
+    </message>
+    <message>
+        <source>Track Comment:</source>
+        <translation type="obsolete">Комментарий к треку:</translation>
     </message>
 </context>
 <context>
@@ -13522,9 +17334,8 @@ to be expanded by more than </source>
 <context>
     <name>PianoRoll</name>
     <message>
-        <location filename="../../muse/midiedit/pianoroll.cpp" line="+97"/>
         <source>&amp;Edit</source>
-        <translation>&amp;Правка</translation>
+        <translation type="obsolete">&amp;Правка</translation>
     </message>
     <message>
         <source>Cut</source>
@@ -13563,9 +17374,8 @@ to be expanded by more than </source>
         <translation type="obsolete">Вне цикла</translation>
     </message>
     <message>
-        <location line="+34"/>
         <source>&amp;Select</source>
-        <translation>&amp;Выбрать</translation>
+        <translation type="obsolete">&amp;Выбрать</translation>
     </message>
     <message>
         <source>blue</source>
@@ -13616,18 +17426,16 @@ to be expanded by more than </source>
         <translation type="obsolete">Изменить время звучания</translation>
     </message>
     <message>
-        <location line="+52"/>
         <source>Modify Velocity</source>
-        <translation>Изменить скорость нажатия</translation>
+        <translation type="obsolete">Изменить скорость нажатия</translation>
     </message>
     <message>
         <source>Crescendo</source>
         <translation type="obsolete">Крещендо</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Transpose</source>
-        <translation>Транспонировать</translation>
+        <translation type="obsolete">Транспонировать</translation>
     </message>
     <message>
         <source>Thin Out</source>
@@ -13666,334 +17474,234 @@ to be expanded by more than </source>
         <translation type="obsolete">Инструменты пианорола</translation>
     </message>
     <message>
-        <location line="+77"/>
         <source>Step Record</source>
-        <translation>Пошаговая запись</translation>
+        <translation type="obsolete">Пошаговая запись</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Midi Input</source>
-        <translation>MIDI-вход</translation>
+        <translation type="obsolete">MIDI-вход</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Play Events</source>
-        <translation>Воспроизвести события</translation>
+        <translation type="obsolete">Воспроизвести события</translation>
     </message>
     <message>
-        <location line="+37"/>
         <source>ctrl</source>
-        <translation>кнтр</translation>
+        <translation type="obsolete">кнтр</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Add Controller View</source>
-        <translation>Добавить панель контроллеров</translation>
+        <translation type="obsolete">Добавить панель контроллеров</translation>
     </message>
     <message>
-        <location line="-118"/>
         <source>Set Fixed Length</source>
-        <translation>Установить фикс. длину</translation>
+        <translation type="obsolete">Установить фикс. длину</translation>
     </message>
     <message>
-        <location line="-100"/>
         <source>C&amp;ut</source>
-        <translation>&amp;Вырезать</translation>
+        <translation type="obsolete">&amp;Вырезать</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>&amp;Copy</source>
-        <translation>С&amp;копировать</translation>
+        <translation type="obsolete">С&amp;копировать</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Copy events in range</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
         <source>&amp;Paste</source>
-        <translation>&amp;Вставить</translation>
+        <translation type="obsolete">&amp;Вставить</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>&amp;Paste (with dialog)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
         <source>Delete &amp;Events</source>
-        <translation>Удалить &amp;События</translation>
+        <translation type="obsolete">Удалить &amp;События</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Select &amp;All</source>
-        <translation>Выбрать &amp;Всё</translation>
+        <translation type="obsolete">Выбрать &amp;Всё</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>&amp;Deselect All</source>
-        <translation>&amp;Убрать выделение</translation>
+        <translation type="obsolete">&amp;Убрать выделение</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Invert &amp;Selection</source>
-        <translation>Обратить В&amp;ыделение</translation>
+        <translation type="obsolete">Обратить В&amp;ыделение</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>&amp;Inside Loop</source>
-        <translation>&amp;Внутри цикла</translation>
+        <translation type="obsolete">&amp;Внутри цикла</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>&amp;Outside Loop</source>
-        <translation>&amp;Вне цикла</translation>
+        <translation type="obsolete">&amp;Вне цикла</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>&amp;Previous Part</source>
-        <translation>&amp;Предыдущая партия</translation>
+        <translation type="obsolete">&amp;Предыдущая партия</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>&amp;Next Part</source>
-        <translation>&amp;Следующая партия</translation>
+        <translation type="obsolete">&amp;Следующая партия</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>Fu&amp;nctions</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+54"/>
-        <source>Window &amp;Config</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
         <source>&amp;Event Color</source>
-        <translation>&amp;Цвет события</translation>
+        <translation type="obsolete">&amp;Цвет события</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>&amp;Blue</source>
-        <translation>&amp;Синий</translation>
+        <translation type="obsolete">&amp;Синий</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>&amp;Pitch colors</source>
-        <translation>&amp;Цвета высоты тона</translation>
+        <translation type="obsolete">&amp;Цвета высоты тона</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>&amp;Velocity colors</source>
-        <translation>&amp;Цвета скорости нажатия</translation>
+        <translation type="obsolete">&amp;Цвета скорости нажатия</translation>
     </message>
     <message>
-        <location line="-68"/>
         <source>Quantize</source>
-        <translation type="unfinished">Квантовать</translation>
+        <translation type="obsolete">Квантовать</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Modify Note Length</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Crescendo/Decrescendo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Erase Events</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Move Notes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
         <source>Delete Overlaps</source>
-        <translation>Удалить наложения</translation>
+        <translation type="obsolete">Удалить наложения</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Legato</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
         <source>&amp;Plugins</source>
-        <translation>&amp;Плагины</translation>
+        <translation type="obsolete">&amp;Плагины</translation>
     </message>
     <message>
-        <location line="+46"/>
         <source>Pianoroll tools</source>
-        <translation>Инструменты пианоролла</translation>
+        <translation type="obsolete">Инструменты пианоролла</translation>
     </message>
     <message>
-        <location line="+26"/>
         <source>panic</source>
-        <translation>паника</translation>
+        <translation type="obsolete">паника</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>transport</source>
-        <translation>транспорт</translation>
+        <translation type="obsolete">транспорт</translation>
     </message>
 </context>
 <context>
     <name>PluginDialog</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="+3095"/>
         <source>MusE: select plugin</source>
-        <translation>MusE: выбрать плагин</translation>
+        <translation type="obsolete">MusE: выбрать плагин</translation>
     </message>
     <message>
-        <location line="+7"/>
         <source>Lib</source>
-        <translation>Библ.</translation>
+        <translation type="obsolete">Библ.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Label</source>
-        <translation>Метка</translation>
+        <translation type="obsolete">Метка</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Name</source>
-        <translation>Имя</translation>
+        <translation type="obsolete">Имя</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>AI</source>
-        <translation>AI</translation>
+        <translation type="obsolete">AI</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>AO</source>
-        <translation>AO</translation>
+        <translation type="obsolete">AO</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>CI</source>
-        <translation>CI</translation>
+        <translation type="obsolete">CI</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>CO</source>
-        <translation>CP</translation>
+        <translation type="obsolete">CP</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>IP</source>
-        <translation>IP</translation>
+        <translation type="obsolete">IP</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>id</source>
-        <translation>id</translation>
+        <translation type="obsolete">id</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Maker</source>
-        <translation>Создатель</translation>
+        <translation type="obsolete">Создатель</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Copyright</source>
-        <translation>Copyright</translation>
+        <translation type="obsolete">Copyright</translation>
     </message>
     <message>
-        <location line="+30"/>
         <source>Ok</source>
-        <translation>Ok</translation>
+        <translation type="obsolete">Ok</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Cancel</source>
-        <translation>Отмена</translation>
+        <translation type="obsolete">Отмена</translation>
     </message>
     <message>
         <source>Stereo and Mono</source>
         <translation type="obsolete">Стерео и Моно</translation>
     </message>
     <message>
-        <location line="+20"/>
         <source>Stereo</source>
-        <translation>Стерео</translation>
+        <translation type="obsolete">Стерео</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Mono</source>
-        <translation>Моно</translation>
+        <translation type="obsolete">Моно</translation>
     </message>
     <message>
         <source>All</source>
         <translation type="obsolete">Все</translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>Select which types of plugins should be visible in the list.&lt;br&gt;Note that using mono plugins on stereo tracks is not a problem, two will be used in parallell.&lt;br&gt;Also beware that the &apos;all&apos; alternative includes plugins that probably not are usable by MusE.</source>
-        <translation>Выберите типы плагинов, которые будут видны в списке.&lt;br&gt;Обратите внимание, что можно использовать моно плагины в стерео треках, два будут использованы параллельно.&lt;br&gt;Также будте осторожны с плагинами категории &quot;все&quot; альтернативные, возможно их нельзя использовать в MusE.</translation>
+        <translation type="obsolete">Выберите типы плагинов, которые будут видны в списке.&lt;br&gt;Обратите внимание, что можно использовать моно плагины в стерео треках, два будут использованы параллельно.&lt;br&gt;Также будте осторожны с плагинами категории &quot;все&quot; альтернативные, возможно их нельзя использовать в MusE.</translation>
     </message>
     <message>
-        <location line="-28"/>
         <source>Mono and Stereo</source>
-        <translation>Моно и Стерео</translation>
+        <translation type="obsolete">Моно и Стерео</translation>
     </message>
     <message>
-        <location line="+15"/>
         <source>Show All</source>
-        <translation>Показать Все</translation>
+        <translation type="obsolete">Показать Все</translation>
     </message>
     <message>
-        <location line="+22"/>
         <source>Search in &apos;Label&apos; and &apos;Name&apos;:</source>
-        <translation>Искать по &quot;Меткам&quot; и &quot;Именам&quot;:</translation>
+        <translation type="obsolete">Искать по &quot;Меткам&quot; и &quot;Именам&quot;:</translation>
     </message>
 </context>
 <context>
     <name>PluginGui</name>
     <message>
-        <location line="+207"/>
         <source>File Buttons</source>
-        <translation>Файловые кнопки</translation>
+        <translation type="obsolete">Файловые кнопки</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Load Preset</source>
-        <translation>Загрузить пресет</translation>
+        <translation type="obsolete">Загрузить пресет</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Save Preset</source>
-        <translation>Сохранить пресет</translation>
+        <translation type="obsolete">Сохранить пресет</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <location line="+3"/>
         <source>bypass plugin</source>
-        <translation>обойти плагин</translation>
+        <translation type="obsolete">обойти плагин</translation>
     </message>
     <message>
-        <location line="+554"/>
         <source>MusE: load preset</source>
-        <translation>MusE: загрузить пресет</translation>
+        <translation type="obsolete">MusE: загрузить пресет</translation>
     </message>
     <message>
-        <location line="+66"/>
         <source>MusE: save preset</source>
-        <translation>MusE: сохранить пресет</translation>
+        <translation type="obsolete">MusE: сохранить пресет</translation>
     </message>
     <message>
-        <location line="-41"/>
         <source>Error reading preset. Might not be right type for this plugin</source>
-        <translation>Ошибка прочтения пресета. Возможно неверный тип для этого плагина</translation>
+        <translation type="obsolete">Ошибка прочтения пресета. Возможно неверный тип для этого плагина</translation>
     </message>
 </context>
 <context>
@@ -14165,19 +17873,19 @@ currently not used</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../../muse/helper.cpp" line="-49"/>
+        <location filename="../../muse/helper.cpp" line="-61"/>
         <source>Other</source>
         <translation type="unfinished">Другой</translation>
     </message>
     <message>
-        <location filename="../../muse/functions.cpp" line="+242"/>
-        <location line="+159"/>
+        <location filename="../../muse/functions.cpp" line="+244"/>
+        <location line="+160"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-159"/>
-        <location line="+159"/>
+        <location line="-160"/>
+        <location line="+160"/>
         <source>Please first select the range for crescendo with the loop markers.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14185,7 +17893,7 @@ currently not used</source>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../../muse/instruments/minstrument.cpp" line="+72"/>
+        <location filename="../../muse/instruments/minstrument.cpp" line="+73"/>
         <location filename="../../muse/liste/editevent.cpp" line="-418"/>
         <source>Cannot convert sysex string</source>
         <translation>Невозможно конвертировать строку SysEx</translation>
@@ -14202,12 +17910,12 @@ currently not used</source>
         <translation>обычный MIDI</translation>
     </message>
     <message>
-        <location filename="../../muse/miditransform.cpp" line="+92"/>
+        <location filename="../../muse/miditransform.cpp" line="-231"/>
         <source>new</source>
         <translation>новый</translation>
     </message>
     <message>
-        <location filename="../../muse/wave.cpp" line="-677"/>
+        <location filename="../../muse/wave.cpp" line="-990"/>
         <source>create peakfile for </source>
         <translation>создать пиковый файл для </translation>
     </message>
@@ -14239,7 +17947,15 @@ create?</source>
         <translation type="obsolete">Отмена</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+1"/>
+        <source>The directory
+%1
+does not exist.
+Create it?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>MusE: create directory</source>
         <translation>MusE: создать каталог</translation>
     </message>
@@ -14251,8 +17967,21 @@ create?</source>
     <message>
         <location line="+396"/>
         <source>File
+%1
+exists. Overwrite?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Open File
+%1
+failed: %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>File
 </source>
-        <translation>Файл</translation>
+        <translation type="obsolete">Файл</translation>
     </message>
     <message>
         <source>
@@ -14261,7 +17990,7 @@ exists</source>
 существует</translation>
     </message>
     <message>
-        <location line="+14"/>
+        <location line="-19"/>
         <source>MusE: write</source>
         <translation>MusE: записать</translation>
     </message>
@@ -14274,55 +18003,50 @@ exists</source>
         <translation type="obsolete">Выйти</translation>
     </message>
     <message>
-        <location line="+19"/>
         <source>Open File
 </source>
-        <translation>Открыть файл</translation>
+        <translation type="obsolete">Открыть файл</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>
 failed: </source>
-        <translation>
+        <translation type="obsolete">
 не удалось:</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+20"/>
         <source>MusE: Open File</source>
         <translation>MusE: Открыть файл</translation>
     </message>
     <message>
-        <location filename="../../muse/route.cpp" line="+1041"/>
+        <location filename="../../muse/route.cpp" line="+1044"/>
         <location line="+37"/>
         <source>None</source>
         <translation>Ничего</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveview.cpp" line="+632"/>
+        <location filename="../../muse/waveedit/waveview.cpp" line="-374"/>
         <source>No selection. Ignoring</source>
         <translation>Не выделено. Игнорируется</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/filedialog.cpp" line="-440"/>
         <source>The directory
 </source>
-        <translation>Директория
+        <translation type="obsolete">Директория
 </translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>
 does not exist.
 Create it?</source>
-        <translation>
+        <translation type="obsolete">
 не существует.
 Создать?</translation>
     </message>
     <message>
-        <location line="+404"/>
         <source>
 exists. Overwrite?</source>
-        <translation>
+        <translation type="obsolete">
 существует. Переписать?</translation>
     </message>
 </context>
@@ -14400,7 +18124,12 @@ exists. Overwrite?</source>
     </message>
     <message>
         <location line="+5"/>
-        <source>Quarter</source>
+        <source>4th</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>4th Triplet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -14410,12 +18139,27 @@ exists. Overwrite?</source>
     </message>
     <message>
         <location line="+5"/>
+        <source>8th Triplet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>16th</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+5"/>
+        <source>16th Triplet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>32th</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>32th Triplet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -15088,296 +18832,58 @@ Random Rhythm Generator is not enabled yet!</source>
     </message>
 </context>
 <context>
-    <name>ScoreCanvas</name>
-    <message>
-        <location filename="../../muse/midiedit/scoreedit.cpp" line="+1245"/>
-        <source>Treble</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Bass</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Grand Staff</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Remove staff</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2467"/>
-        <source>Ambiguous part</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>There are two or more possible parts you could add the note to, but none matches the selected part. Please select the destination part by clicking on any note belonging to it and try again, or add a new stave containing only the destination part.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>No part</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>There are no parts you could add the note to.</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>ScoreEdit</name>
     <message>
-        <location line="-3493"/>
-        <source>Undo/Redo tools</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Step recording tools</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
         <source>Step Record</source>
-        <translation type="unfinished">Пошаговая запись</translation>
+        <translation type="obsolete">Пошаговая запись</translation>
     </message>
     <message>
-        <location line="+13"/>
         <source>panic</source>
-        <translation type="unfinished">паника</translation>
+        <translation type="obsolete">паника</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>transport</source>
-        <translation type="unfinished">транспорт</translation>
+        <translation type="obsolete">транспорт</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Note settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+3"/>
-        <source>Note length:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>last</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+37"/>
-        <source>Velocity:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>Off-Velocity:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Quantisation settings</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Quantisation:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Pixels per whole:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
         <source>&amp;Edit</source>
-        <translation type="unfinished">&amp;Правка</translation>
+        <translation type="obsolete">&amp;Правка</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>C&amp;ut</source>
-        <translation type="unfinished">&amp;Вырезать</translation>
+        <translation type="obsolete">&amp;Вырезать</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>&amp;Copy</source>
-        <translation type="unfinished">С&amp;копировать</translation>
+        <translation type="obsolete">С&amp;копировать</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Copy events in range</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
         <source>&amp;Paste</source>
-        <translation type="unfinished">&amp;Вставить</translation>
+        <translation type="obsolete">&amp;Вставить</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Paste (with dialog)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
         <source>Delete &amp;Events</source>
-        <translation type="unfinished">Удалить &amp;События</translation>
+        <translation type="obsolete">Удалить &amp;События</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>&amp;Select</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Select &amp;All</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
         <source>&amp;Deselect All</source>
-        <translation type="unfinished">&amp;Убрать выделение</translation>
+        <translation type="obsolete">&amp;Убрать выделение</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <source>Invert &amp;Selection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
         <source>&amp;Inside Loop</source>
-        <translation type="unfinished">&amp;Внутри цикла</translation>
+        <translation type="obsolete">&amp;Внутри цикла</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>&amp;Outside Loop</source>
-        <translation type="unfinished">&amp;Вне цикла</translation>
+        <translation type="obsolete">&amp;Вне цикла</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Fu&amp;nctions</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>&amp;Quantize</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Change note &amp;length</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Change note &amp;velocity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Crescendo/Decrescendo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Transpose</source>
-        <translation type="unfinished">Транспонировать</translation>
+        <translation type="obsolete">Транспонировать</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Erase Events</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Move Notes</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Set Fixed Length</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Delete Overlaps</source>
-        <translation type="unfinished">Удалить наложения</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Legato</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Window &amp;Config</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Note head &amp;colors</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>&amp;Black</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>&amp;Velocity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>&amp;Part</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+14"/>
-        <source>Set up &amp;preamble</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Display &amp;key signature</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Display &amp;time signature</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Set Score &amp;name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+216"/>
-        <location line="+1"/>
-        <source>Enter the new score title</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Error</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+0"/>
-        <source>Changing score title failed:
-the selected title is not unique</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Удалить наложения</translation>
     </message>
 </context>
 <context>
@@ -15600,12 +19106,10 @@ the selected title is not unique</source>
 <context>
     <name>Song</name>
     <message>
-        <location filename="../../muse/song.cpp" line="+2412"/>
         <source>Jack shutdown!</source>
-        <translation>Jack прекратил работу!</translation>
+        <translation type="obsolete">Jack прекратил работу!</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Jack has detected a performance problem which has lead to
 MusE being disconnected.
 This could happen due to a number of reasons:
@@ -15621,7 +19125,7 @@ on the MusE mailinglist.
 
 To proceed check the status of Jack and try to restart it and then .
 click on the Restart button.</source>
-        <translation>Проблемы в работе &quot;Jack&quot;, привели к его рассоединению с &quot;MusE&quot;.
+        <translation type="obsolete">Проблемы в работе &quot;Jack&quot;, привели к его рассоединению с &quot;MusE&quot;.
 Это могло произойти по разным причинам:
 -проблемы в работе, вызванные особенностью ваших настроек.
 -баг в &quot;MusE&quot; (или, возможно, в других подсоединенных программах).
@@ -15639,78 +19143,53 @@ click on the Restart button.</source>
 </translation>
     </message>
     <message>
-        <location line="+198"/>
         <source>previous event</source>
-        <translation>предыдущее событие</translation>
+        <translation type="obsolete">предыдущее событие</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>next event</source>
-        <translation>следующее событие</translation>
+        <translation type="obsolete">следующее событие</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <location line="+183"/>
         <source>set event</source>
-        <translation>настроить событие</translation>
+        <translation type="obsolete">настроить событие</translation>
     </message>
     <message>
-        <location line="-181"/>
-        <location line="+183"/>
         <source>add event</source>
-        <translation>добавить событие</translation>
+        <translation type="obsolete">добавить событие</translation>
     </message>
     <message>
-        <location line="-179"/>
-        <location line="+184"/>
         <source>erase event</source>
-        <translation>стереть событие</translation>
+        <translation type="obsolete">стереть событие</translation>
     </message>
     <message>
-        <location line="-180"/>
         <source>erase range</source>
-        <translation>стереть диапазон</translation>
+        <translation type="obsolete">стереть диапазон</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>clear automation</source>
-        <translation>Очистить автоматизацию</translation>
+        <translation type="obsolete">Очистить автоматизацию</translation>
     </message>
     <message>
-        <location line="+33"/>
         <source>Clear all controller events?</source>
-        <translation>Очистить все события контроллеров?</translation>
+        <translation type="obsolete">Очистить все события контроллеров?</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>&amp;Ok</source>
-        <translation>&amp;ОК</translation>
+        <translation type="obsolete">&amp;ОК</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>&amp;Cancel</source>
-        <translation>&amp;Отменить</translation>
+        <translation type="obsolete">&amp;Отменить</translation>
     </message>
     <message>
-        <location line="+1134"/>
         <source>MusE - external script failed</source>
-        <translation>MusE - ошибка запуска внешнего скрипта</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>MusE was unable to launch the script, error message:
- </source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">MusE - ошибка запуска внешнего скрипта</translation>
     </message>
     <message>
         <source>MusE was unable to launch the script
 </source>
         <translation type="obsolete">MusE не может запустить скрипт</translation>
-    </message>
-    <message>
-        <location line="-1200"/>
-        <source>Automation:</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -15909,9 +19388,8 @@ click on the Restart button.</source>
 <context>
     <name>TempoSig</name>
     <message>
-        <location filename="../../muse/transport.cpp" line="+103"/>
         <source>Tempo/Sig</source>
-        <translation>Темп/Знаки альтерации</translation>
+        <translation type="obsolete">Темп/Знаки альтерации</translation>
     </message>
 </context>
 <context>
@@ -15968,74 +19446,8 @@ click on the Restart button.</source>
 <context>
     <name>TopWin</name>
     <message>
-        <location filename="../../muse/cobject.cpp" line="+61"/>
-        <source>As subwindow</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Shares tools and menu</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Fullscreen</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+418"/>
-        <source>Piano roll</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>List editor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Drum editor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Master track editor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Master track list editor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Wave editor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Clip list</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Marker view</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Score editor</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+1"/>
         <source>Arranger</source>
-        <translation type="unfinished">Компоновщик</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>&lt;unknown toplevel type&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">Компоновщик</translation>
     </message>
 </context>
 <context>
@@ -16052,158 +19464,124 @@ click on the Restart button.</source>
 <context>
     <name>Transport</name>
     <message>
-        <location filename="../../muse/transport.cpp" line="+105"/>
         <source>Overdub</source>
-        <translation>Наложить</translation>
+        <translation type="obsolete">Наложить</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <location line="+15"/>
         <source>Replace</source>
-        <translation>Заменить</translation>
+        <translation type="obsolete">Заменить</translation>
     </message>
     <message>
-        <location line="-10"/>
         <source>Rec Mode</source>
-        <translation>Режим записи</translation>
+        <translation type="obsolete">Режим записи</translation>
     </message>
     <message>
-        <location line="+8"/>
         <source>Normal</source>
-        <translation>Норм.</translation>
+        <translation type="obsolete">Норм.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Mix</source>
-        <translation>Смешать</translation>
+        <translation type="obsolete">Смешать</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Cycle Rec</source>
-        <translation>Циклич. запись</translation>
+        <translation type="obsolete">Циклич. запись</translation>
     </message>
     <message>
-        <location line="+16"/>
         <source>punchin</source>
-        <translation>нач. врезки</translation>
+        <translation type="obsolete">нач. врезки</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>loop</source>
-        <translation>цикл</translation>
+        <translation type="obsolete">цикл</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>punchout</source>
-        <translation>кнц. врезки</translation>
+        <translation type="obsolete">кнц. врезки</translation>
     </message>
     <message>
-        <location line="+4"/>
-        <location line="+3"/>
         <source>Punch In</source>
-        <translation>Начало врезки</translation>
+        <translation type="obsolete">Начало врезки</translation>
     </message>
     <message>
-        <location line="-2"/>
-        <location line="+3"/>
         <source>Loop</source>
-        <translation>Цикл</translation>
+        <translation type="obsolete">Цикл</translation>
     </message>
     <message>
-        <location line="-2"/>
-        <location line="+3"/>
         <source>Punch Out</source>
-        <translation>Конец врезки</translation>
+        <translation type="obsolete">Конец врезки</translation>
     </message>
     <message>
-        <location line="+33"/>
         <source>Left Mark</source>
-        <translation>Левый маркер</translation>
+        <translation type="obsolete">Левый маркер</translation>
     </message>
     <message>
-        <location line="+12"/>
         <source>Right Mark</source>
-        <translation>Правый маркер</translation>
+        <translation type="obsolete">Правый маркер</translation>
     </message>
     <message>
-        <location line="+47"/>
         <source>rewind to start</source>
-        <translation>перемотать к началу</translation>
+        <translation type="obsolete">перемотать к началу</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>rewind</source>
-        <translation>перемотать назад</translation>
+        <translation type="obsolete">перемотать назад</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>forward</source>
-        <translation>перемотать вперёд</translation>
+        <translation type="obsolete">перемотать вперёд</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>stop</source>
-        <translation>остановить</translation>
+        <translation type="obsolete">остановить</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>play</source>
-        <translation>воспроизвести</translation>
+        <translation type="obsolete">воспроизвести</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>record</source>
-        <translation>записать</translation>
+        <translation type="obsolete">записать</translation>
     </message>
     <message>
-        <location line="+28"/>
         <source>AC</source>
-        <translation>AC</translation>
+        <translation type="obsolete">AC</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>quantize during record</source>
-        <translation>квантовать при записи</translation>
+        <translation type="obsolete">квантовать при записи</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Click</source>
-        <translation>Метр.</translation>
+        <translation type="obsolete">Метр.</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>metronom click on/off</source>
-        <translation>Метроном вкл/выкл</translation>
+        <translation type="obsolete">Метроном вкл/выкл</translation>
     </message>
     <message>
-        <location line="+3"/>
         <source>Sync</source>
-        <translation>Синхр.</translation>
+        <translation type="obsolete">Синхр.</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>external sync on/off</source>
-        <translation>Вкл/выкл внешн. синхр.</translation>
+        <translation type="obsolete">Вкл/выкл внешн. синхр.</translation>
     </message>
     <message>
-        <location line="+45"/>
         <source>Master</source>
-        <translation>Мастер</translation>
+        <translation type="obsolete">Мастер</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>use master track</source>
-        <translation>использовать мастер-трек</translation>
+        <translation type="obsolete">использовать мастер-трек</translation>
     </message>
     <message>
-        <location line="-43"/>
         <source>Jack</source>
-        <translation>Jack</translation>
+        <translation type="obsolete">Jack</translation>
     </message>
     <message>
-        <location line="+0"/>
         <source>Jack transport sync on/off</source>
-        <translation>Синхр. транспорта &quot;Jack&quot; вкл/выкл</translation>
+        <translation type="obsolete">Синхр. транспорта &quot;Jack&quot; вкл/выкл</translation>
     </message>
 </context>
 <context>
@@ -16662,139 +20040,104 @@ Robert Jonsson
         <translation type="obsolete">weTools</translation>
     </message>
     <message>
-        <location filename="../../muse/waveedit/waveedit.cpp" line="+196"/>
         <source>Solo</source>
-        <translation>Соло</translation>
+        <translation type="obsolete">Соло</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Cursor</source>
-        <translation>Курсор</translation>
+        <translation type="obsolete">Курсор</translation>
     </message>
     <message>
-        <location line="-115"/>
         <source>&amp;Edit</source>
-        <translation>&amp;Правка</translation>
+        <translation type="obsolete">&amp;Правка</translation>
     </message>
     <message>
-        <location line="+2"/>
         <source>Func&amp;tions</source>
-        <translation>Фу&amp;нкции</translation>
+        <translation type="obsolete">Фу&amp;нкции</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>200%</source>
-        <translation>200%</translation>
+        <translation type="obsolete">200%</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>150%</source>
-        <translation>150%</translation>
+        <translation type="obsolete">150%</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>75%</source>
-        <translation>75%</translation>
+        <translation type="obsolete">75%</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>50%</source>
-        <translation>50%</translation>
+        <translation type="obsolete">50%</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>25%</source>
-        <translation>25%</translation>
+        <translation type="obsolete">25%</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Other</source>
-        <translation>Другой</translation>
+        <translation type="obsolete">Другой</translation>
     </message>
     <message>
-        <location line="-22"/>
         <source>&amp;Gain</source>
-        <translation>&amp;Усиление</translation>
+        <translation type="obsolete">&amp;Усиление</translation>
     </message>
     <message>
-        <location line="+30"/>
         <source>&amp;Copy</source>
-        <translation type="unfinished">С&amp;копировать</translation>
+        <translation type="obsolete">С&amp;копировать</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>C&amp;ut</source>
-        <translation type="unfinished">&amp;Вырезать</translation>
+        <translation type="obsolete">&amp;Вырезать</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>&amp;Paste</source>
-        <translation type="unfinished">&amp;Вставить</translation>
+        <translation type="obsolete">&amp;Вставить</translation>
     </message>
     <message>
-        <location line="+5"/>
         <source>Edit in E&amp;xternal Editor</source>
-        <translation>Редактировать во &amp;внешнем редакторе</translation>
+        <translation type="obsolete">Редактировать во &amp;внешнем редакторе</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Mute Selection</source>
-        <translation>Заглушить выделенное</translation>
+        <translation type="obsolete">Заглушить выделенное</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Normalize Selection</source>
-        <translation>Нормализовать выделенное</translation>
+        <translation type="obsolete">Нормализовать выделенное</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Fade In Selection</source>
-        <translation>Нарастание звука в выделенном</translation>
+        <translation type="obsolete">Нарастание звука в выделенном</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Fade Out Selection</source>
-        <translation>Затихание звука в выделенном</translation>
+        <translation type="obsolete">Затихание звука в выделенном</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>Reverse Selection</source>
-        <translation>Перевернуть выделенное</translation>
+        <translation type="obsolete">Перевернуть выделенное</translation>
     </message>
     <message>
-        <location line="+6"/>
         <source>Select &amp;All</source>
-        <translation>Выделить &amp;Всё</translation>
+        <translation type="obsolete">Выделить &amp;Всё</translation>
     </message>
     <message>
-        <location line="+4"/>
         <source>&amp;Deselect All</source>
-        <translation>&amp;Убрать выделение</translation>
+        <translation type="obsolete">&amp;Убрать выделение</translation>
     </message>
     <message>
-        <location line="+5"/>
-        <source>Window &amp;Config</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>WaveEdit tools</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-34"/>
         <source>Select</source>
-        <translation>Выделить</translation>
+        <translation type="obsolete">Выделить</translation>
     </message>
     <message>
-        <location line="+17"/>
         <source>Wave edit tools</source>
-        <translation>Инструменты редактирования Wave</translation>
+        <translation type="obsolete">Инструменты редактирования Wave</translation>
     </message>
     <message>
-        <location line="+9"/>
         <source>transport</source>
-        <translation>транспорт</translation>
+        <translation type="obsolete">транспорт</translation>
     </message>
     <message>
         <source>Pianoroll tools</source>
@@ -16839,33 +20182,29 @@ Robert Jonsson
 <context>
     <name>WaveView</name>
     <message>
-        <location filename="../../muse/waveedit/waveview.cpp" line="+373"/>
         <source>MusE - file size changed</source>
-        <translation>MusE - размер файла изменился</translation>
+        <translation type="obsolete">MusE - размер файла изменился</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>When editing in external editor - you should not change the filesize
 since it must fit the selected region.
 
 Missing data is muted</source>
-        <translation>При редактировании во внешнем редакторе - не изменяйте размер файла
+        <translation type="obsolete">При редактировании во внешнем редакторе - не изменяйте размер файла
 так как он должен соответствовать выбранной области.
 
 Утерянные данные заглушены</translation>
     </message>
     <message>
-        <location line="-15"/>
         <source>MusE - external editor failed</source>
-        <translation>MusE - ошибка запуска внешнего редактора</translation>
+        <translation type="obsolete">MusE - ошибка запуска внешнего редактора</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>MusE was unable to launch the external editor
 check if the editor setting in:
 Global Settings-&gt;Audio:External Waveditor
 is set to a valid editor.</source>
-        <translation>&quot;MusE&quot; не может запустить внешний редактор.
+        <translation type="obsolete">&quot;MusE&quot; не может запустить внешний редактор.
 Проверте, действительно ли в:
 Общие настройки-&gt;Аудио:Внешний редактор
 выбран правильный редактор.</translation>

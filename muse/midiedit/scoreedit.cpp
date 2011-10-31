@@ -4594,14 +4594,12 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     changing "share" status, the changed state isn't stored
  *   ? pasting in editors sometimes fails oO? ( ERROR: reading eventlist
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
+ *   o topwin posistions aren't restored!
  * 
  * CURRENT TODO
- * ! o fix sigedit boxes (see also "important todo")
  *   o fix valgrind problems
- * > o drum editor: channel-stuff
  *
  * IMPORTANT TODO
- * ! o fix sigedit boxes (see also "current todo")
  *   o add "dotted quarter" quantize option (for 6/8 beat)
  *   o ticks-to-quarter spinboxes
  *   o newly created windows have to be focussed!

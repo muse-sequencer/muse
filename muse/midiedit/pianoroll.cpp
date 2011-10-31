@@ -118,7 +118,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       mapper->setMapping(editPasteAction, PianoCanvas::CMD_PASTE);
       connect(editPasteAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      editPasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("&Paste (with dialog)"));
+      editPasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste (with dialog)"));
       mapper->setMapping(editPasteDialogAction, PianoCanvas::CMD_PASTE_DIALOG);
       connect(editPasteDialogAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
