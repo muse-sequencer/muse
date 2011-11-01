@@ -16848,7 +16848,7 @@ gegenwärtig nicht benutzt</translation>
         <translation>Pegelspitzendatei erzeugen für</translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/filedialog.cpp" line="+80"/>
+        <location filename="../../muse/widgets/filedialog.cpp" line="+81"/>
         <source>MusE: get file name</source>
         <translation>MusE: Dateinamen übermitteln</translation>
     </message>
@@ -16894,7 +16894,7 @@ Erzeugen?</translation>
         <translation>Verzeichnis erzeugen schlug fehl</translation>
     </message>
     <message>
-        <location line="+396"/>
+        <location line="+399"/>
         <source>File
 %1
 exists. Overwrite?</source>
@@ -18940,6 +18940,178 @@ Robert Jonsson
     <message>
         <source>Stereo</source>
         <translation type="obsolete">Stereo</translation>
+    </message>
+</context>
+<context>
+    <name>file_patterns</name>
+    <message>
+        <location filename="../../muse/globals.cpp" line="+120"/>
+        <source>Midi/Kar (*.mid *.MID *.kar *.KAR *.mid.gz *.mid.bz2)</source>
+        <translation>Midi/Kar (*.mid *.MID *.kar *.KAR *.mid.gz *.mid.bz2)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi (*.mid *.MID *.mid.gz *.mid.bz2)</source>
+        <translation>Midi (*.mid *.MID *.mid.gz *.mid.bz2)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Karaoke (*.kar *.KAR *.kar.gz *.kar.bz2)</source>
+        <translation>Karaoke (*.kar *.KAR *.kar.gz *.kar.bz2)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+24"/>
+        <location line="+11"/>
+        <location line="+7"/>
+        <location line="+9"/>
+        <location line="+15"/>
+        <location line="+7"/>
+        <location line="+14"/>
+        <location line="+8"/>
+        <location line="+6"/>
+        <location line="+8"/>
+        <location line="+8"/>
+        <source>All Files (*)</source>
+        <translation>Alle Dateien (*)</translation>
+    </message>
+    <message>
+        <location line="-95"/>
+        <source>Midi (*.mid)</source>
+        <translation>Midi (*.mid)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Karaoke (*.kar)</source>
+        <translation>Karaoke (*.kar)</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>all known files (*.med *.med.gz *.med.bz2 *.mid *.midi *.kar)</source>
+        <translation>Alle bekannten Dateien (*.med *.med.gz *.med.bz2 *.mid *.midi *.kar)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>med Files (*.med *.med.gz *.med.bz2)</source>
+        <translation>med Files (*.med *.med.gz *.med.bz2)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+8"/>
+        <source>Uncompressed med Files (*.med)</source>
+        <translation>Unkomprimierte med-Dateien (*.med)</translation>
+    </message>
+    <message>
+        <location line="-7"/>
+        <location line="+8"/>
+        <source>gzip compressed med Files (*.med.gz)</source>
+        <translation>Mit gzip komprimierte med-Dateien (*.med.gz)</translation>
+    </message>
+    <message>
+        <location line="-7"/>
+        <location line="+8"/>
+        <source>bzip2 compressed med Files (*.med.bz2)</source>
+        <translation>Mit bzip2 komprimierte med-Dateien (*.med.bz2)</translation>
+    </message>
+    <message>
+        <location line="-7"/>
+        <source>mid Files (*.mid *.midi *.kar *.MID *.MIDI *.KAR)</source>
+        <translation>Midi-Dateien (*.mid *.midi *.kar *.MID *.MIDI *.KAR)</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>(*.jpg *.gif *.png)</source>
+        <translation>(*.jpg *.gif *.png)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>(*.jpg)</source>
+        <translation>(*.jpg)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>(*.gif)</source>
+        <translation>(*.gif)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>(*.png)</source>
+        <translation>(*.png)</translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>part Files (*.mpt *.mpt.gz *.mpt.bz2)</source>
+        <translation>Part-Dateien (*.mpt *.mpt.gz *.mpt.bz2)</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>part Files (*.mpt)</source>
+        <translation>Part-Dateien (*.mpt)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>gzip compressed part Files (*.mpt.gz)</source>
+        <translation>Mit gzip komprimierte Part-Dateien (*.mpt.gz)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>bzip2 compressed part Files (*.mpt.bz2)</source>
+        <translation>Mit bzip2 komprimierte Part-Dateien (*.mpt.bz2)</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Presets (*.pre *.pre.gz *.pre.bz2)</source>
+        <translation>Voreinstellungen (*.pre *.pre.gz *.pre.bz2)</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Presets (*.pre)</source>
+        <translation>Voreinstellungen (*.pre)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>gzip compressed presets (*.pre.gz)</source>
+        <translation>mit gzip komprimierte Voreinstellungen (*.pre.gz)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>bzip2 compressed presets (*.pre.bz2)</source>
+        <translation>mit bzip2 komprimierte Voreinstellungen (*.pre.bz2)</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Presets (*.map *.map.gz *.map.bz2)</source>
+        <translation>Schlagzeugbelegungen (*.map *.map.gz *.map.bz2)</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Presets (*.map)</source>
+        <translation>Schlagzeugbelegungen (*.map)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>gzip compressed presets (*.map.gz)</source>
+        <translation>mit gzip komprimierte Schlagzeugbelegungen (*.map.gz)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>bzip2 compressed presets (*.map.bz2)</source>
+        <translation>mit bzip2 komprimierte Schlagzeugbelegungen (*.map.bz2)</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Wave/Binary (*.wav *.ogg *.bin)</source>
+        <translation>Wave/Binär (*.wav *.ogg *.bin)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Wave (*.wav *.ogg)</source>
+        <translation>Wave (*.wav *.ogg)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Binary (*.bin)</source>
+        <translation>Binär (*.bin)</translation>
     </message>
 </context>
 <context>

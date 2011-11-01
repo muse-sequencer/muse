@@ -24,6 +24,7 @@
 #define __HELPER_H__
 
 #include <set>
+#include <QStringList>
 
 class QActionGroup;
 class QString;
@@ -43,5 +44,6 @@ QMenu* populateAddSynth(QWidget* parent);
 QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll=false);
 } 
 
+QStringList localizedStringListFromCharArray(const char** array, const char* context);
 #endif
 

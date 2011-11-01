@@ -346,3 +346,12 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll)
       }
 
 } // namespace MusEGui
+
+QStringList localizedStringListFromCharArray(const char** array, const char* context)
+{
+  QStringList temp;
+  for (int i=0;array[i];i++)
+    temp << qApp->translate(context, array[i]);
+  
+  return temp;
+}
