@@ -12998,7 +12998,7 @@ Do you still want to import it?</source>
 différent</translation>
     </message>
     <message>
-        <location line="+270"/>
+        <location line="+277"/>
         <source>C&amp;ut</source>
         <translation type="unfinished">Co&amp;uper</translation>
     </message>

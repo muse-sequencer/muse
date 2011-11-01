@@ -9677,85 +9677,85 @@ Do you still want to import it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="625"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="632"/>
         <source>C&amp;ut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="629"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="636"/>
         <source>&amp;Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="635"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="642"/>
         <source>s&amp;elect </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="638"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="645"/>
         <source>clones</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="643"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="650"/>
         <source>rename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="646"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="653"/>
         <source>color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="654"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="661"/>
         <source>delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="656"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="663"/>
         <source>split</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="658"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="665"/>
         <source>glue</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="660"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="667"/>
         <source>de-clone</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="670"/>
         <location filename="../../muse/arranger/pcanvas.cpp" line="677"/>
         <location filename="../../muse/arranger/pcanvas.cpp" line="684"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="691"/>
         <source>save part to disk</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="682"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="689"/>
         <source>wave edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="686"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="693"/>
         <source>file info</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="774"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="781"/>
         <source>MusE: save part</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="792"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="799"/>
         <source>Part name: %1
 Files:</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../../muse/arranger/pcanvas.cpp" line="2920"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="2927"/>
         <source>%n part(s) out of %1 could not be pasted.
 Likely the selected track is the wrong type.</source>
         <translation>
@@ -9766,7 +9766,7 @@ Likely the selected track is the wrong type.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../muse/arranger/pcanvas.cpp" line="2921"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="2928"/>
         <source>%n part(s) could not be pasted.
 Likely the selected track is the wrong type.</source>
         <translation>
@@ -9777,32 +9777,32 @@ Likely the selected track is the wrong type.</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="2946"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="2953"/>
         <source>Cannot paste: multiple tracks selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="2955"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="2962"/>
         <source>Cannot paste: no track selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="2975"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="2982"/>
         <source>Can only paste to midi/drum track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="2986"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="2993"/>
         <source>Can only paste to wave track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="2997"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="3004"/>
         <source>Can only paste to midi or wave track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/pcanvas.cpp" line="3005"/>
+        <location filename="../../muse/arranger/pcanvas.cpp" line="3012"/>
         <source>Cannot paste: wrong data type</source>
         <translation type="unfinished"></translation>
     </message>

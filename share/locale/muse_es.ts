@@ -13209,7 +13209,7 @@ Do you still want to import it?</source>
         <translation>No puedo copiar/mover/clonar a un tipo diferente de pista</translation>
     </message>
     <message>
-        <location line="+270"/>
+        <location line="+277"/>
         <source>C&amp;ut</source>
         <translation>C&amp;ortar</translation>
     </message>

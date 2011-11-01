@@ -430,6 +430,13 @@ QPoint PartCanvas::raster(const QPoint& p) const
       return QPoint(x, y);
       }
 
+
+void PartCanvas::songIsClearing()
+{
+  curItem=NULL;
+  items.clearDelete();
+}
+
 //---------------------------------------------------------
 //   partsChanged
 //---------------------------------------------------------

@@ -1932,7 +1932,7 @@ void Song::clear(bool signal, bool /*clear_all*/)
         printf("Song::clear\n");
       
       bounceTrack    = 0;
-
+      
       _tracks.clear();
       _midis.clearDelete();
       _waves.clearDelete();

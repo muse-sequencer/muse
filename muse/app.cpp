@@ -2749,6 +2749,7 @@ again:
                   }
             }
       microSleep(100000);  
+      _arranger->songIsClearing();
       MusEGlobal::song->clear(true, clear_all);
       microSleep(100000);  
       return false;

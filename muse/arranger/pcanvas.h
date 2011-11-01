@@ -180,9 +180,11 @@ class PartCanvas : public Canvas {
       virtual ~PartCanvas();
       void partsChanged();
       void cmd(int);
+      void songIsClearing();
+      
    public slots:
-   void redirKeypress(QKeyEvent* e) { keyPress(e); }
-   void controllerChanged(MusECore::Track *t);
+      void redirKeypress(QKeyEvent* e) { keyPress(e); }
+      void controllerChanged(MusECore::Track *t);
 };
 
 } // namespace MusEGui

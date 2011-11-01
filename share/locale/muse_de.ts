@@ -13881,7 +13881,7 @@ Möchten Sie sie dennoch importieren?</translation>
         <translation>Kopieren/verschieben/klonen auf anderen Spurtyp nicht möglich</translation>
     </message>
     <message>
-        <location line="+270"/>
+        <location line="+277"/>
         <source>C&amp;ut</source>
         <translation>&amp;Ausschneiden</translation>
     </message>

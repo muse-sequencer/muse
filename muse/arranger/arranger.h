@@ -187,6 +187,7 @@ class Arranger : public QWidget {
       int selectionSize() { return canvas->selectionSize(); }
       void setGlobalTempo(int);
       void clear();
+      void songIsClearing() { canvas->songIsClearing(); }
       
       unsigned cursorValue() { return cursVal; }
       

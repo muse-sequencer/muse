@@ -13011,7 +13011,7 @@ Do you still want to import it?</source>
         <translation type="unfinished">Kan inte kopiera/flytta/klona till annan Spårtyp</translation>
     </message>
     <message>
-        <location line="+270"/>
+        <location line="+277"/>
         <source>C&amp;ut</source>
         <translation type="unfinished">Klipp &amp;ut</translation>
     </message>
