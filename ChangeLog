@@ -1,3 +1,6 @@
+01.11.2011:
+        - Fixed Shortcut translations (flo)
+        - Added a QSplitter to the shortcut dialog (flo)
 31.10.2011:
         - Translation code fixes and added almost-complete German translation (flo)
 28.10.2011:

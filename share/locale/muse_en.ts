@@ -5808,12 +5808,12 @@ Enabled inputs in the list will
 <context>
     <name>MusECore::Song</name>
     <message>
-        <location filename="../../muse/song.cpp" line="2439"/>
+        <location filename="../../muse/song.cpp" line="2205"/>
         <source>Jack shutdown!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2440"/>
+        <location filename="../../muse/song.cpp" line="2206"/>
         <source>Jack has detected a performance problem which has lead to
 MusE being disconnected.
 This could happen due to a number of reasons:
@@ -5832,70 +5832,71 @@ click on the Restart button.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2634"/>
+        <location filename="../../muse/song.cpp" line="2392"/>
+        <location filename="../../muse/song.cpp" line="2571"/>
         <source>Automation:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2638"/>
+        <location filename="../../muse/song.cpp" line="2394"/>
         <source>previous event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2642"/>
+        <location filename="../../muse/song.cpp" line="2398"/>
         <source>next event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2652"/>
-        <location filename="../../muse/song.cpp" line="2835"/>
+        <location filename="../../muse/song.cpp" line="2407"/>
+        <location filename="../../muse/song.cpp" line="2576"/>
         <source>set event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2654"/>
-        <location filename="../../muse/song.cpp" line="2837"/>
+        <location filename="../../muse/song.cpp" line="2409"/>
+        <location filename="../../muse/song.cpp" line="2578"/>
         <source>add event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2658"/>
-        <location filename="../../muse/song.cpp" line="2842"/>
+        <location filename="../../muse/song.cpp" line="2413"/>
+        <location filename="../../muse/song.cpp" line="2583"/>
         <source>erase event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2662"/>
+        <location filename="../../muse/song.cpp" line="2417"/>
         <source>erase range</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2666"/>
+        <location filename="../../muse/song.cpp" line="2421"/>
         <source>clear automation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2699"/>
+        <location filename="../../muse/song.cpp" line="2454"/>
         <source>Clear all controller events?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2699"/>
+        <location filename="../../muse/song.cpp" line="2454"/>
         <source>&amp;Ok</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="2699"/>
+        <location filename="../../muse/song.cpp" line="2454"/>
         <source>&amp;Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="3833"/>
+        <location filename="../../muse/song.cpp" line="3297"/>
         <source>MusE - external script failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/song.cpp" line="3834"/>
+        <location filename="../../muse/song.cpp" line="3298"/>
         <source>MusE was unable to launch the script, error message:
 %1</source>
         <translation type="unfinished"></translation>
@@ -12112,47 +12113,47 @@ p, li { white-space: pre-wrap; }
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="48"/>
+        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="49"/>
         <source>Shortcut Category</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="69"/>
+        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="68"/>
         <source>Shortcut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="74"/>
+        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="73"/>
         <source>Description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="106"/>
+        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="103"/>
         <source>&amp;Clear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="109"/>
+        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="106"/>
         <source>Alt+C</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="119"/>
+        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="116"/>
         <source>&amp;Define</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="122"/>
+        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="119"/>
         <source>Alt+D</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="145"/>
+        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="142"/>
         <source>&amp;Apply</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="148"/>
+        <location filename="../../muse/widgets/shortcutconfigbase.ui" line="145"/>
         <source>Alt+A</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12940,6 +12941,880 @@ Robert Jonsson
     <message>
         <location filename="../plugins/2142.ui" line="472"/>
         <source>Enhanced Stereo</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>shortcuts</name>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="54"/>
+        <source>Transport: Start playback from current location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="55"/>
+        <source>Transport: Toggle metronome</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="56"/>
+        <source>Transport: Stop Playback</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="57"/>
+        <source>Transport: Goto Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="58"/>
+        <source>Transport: Play, Stop, Rewind</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="59"/>
+        <source>Transport: Goto left marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="60"/>
+        <source>Transport: Goto right marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="61"/>
+        <source>Transport: Toggle Loop section</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="62"/>
+        <source>Transport: Toggle Record</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="63"/>
+        <source>Transport: Clear all rec enabled tracks</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="64"/>
+        <source>Toggle fullscreen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="66"/>
+        <source>Edit: Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="67"/>
+        <source>Edit: Copy in range</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="68"/>
+        <source>Edit: Undo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="69"/>
+        <source>Edit: Redo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="70"/>
+        <source>Edit: Cut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="71"/>
+        <source>Edit: Paste</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="72"/>
+        <source>Edit: Paste (with dialog)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="73"/>
+        <source>Edit: Delete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="77"/>
+        <source>File: New project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="78"/>
+        <source>File: Open from disk</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="79"/>
+        <source>File: Save project</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="82"/>
+        <source>File: Open recent file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="83"/>
+        <source>File: Save as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="84"/>
+        <source>File: Load template</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="86"/>
+        <source>File: Import midi file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="87"/>
+        <source>File: Export midi file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="88"/>
+        <source>File: Import midi part</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="89"/>
+        <source>File: Import audio file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="90"/>
+        <source>File: Quit MusE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="92"/>
+        <source>Edit: Select parts on track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="93"/>
+        <source>Open pianoroll</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="94"/>
+        <source>Open drumeditor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="95"/>
+        <source>Open listeditor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="96"/>
+        <source>Open waveeditor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="97"/>
+        <source>Open graphical mastertrack editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="98"/>
+        <source>Open list mastertrack editor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="99"/>
+        <source>Open midi transformer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="100"/>
+        <source>Add midi track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="101"/>
+        <source>Add drum track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="102"/>
+        <source>Add wave track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="103"/>
+        <source>Add audio output</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="104"/>
+        <source>Add audio group</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="105"/>
+        <source>Add audio input</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="106"/>
+        <source>Add audio aux</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="107"/>
+        <source>Structure: Global cut</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="108"/>
+        <source>Structure: Global insert</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="109"/>
+        <source>Structure: Global split</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="110"/>
+        <source>Structure: Cut events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="112"/>
+        <source>View: Open mixer #1 window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="113"/>
+        <source>View: Open mixer #2 window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="114"/>
+        <source>View: Toggle transport window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="115"/>
+        <source>View: Toggle bigtime window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="116"/>
+        <source>View: Open marker window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="118"/>
+        <source>Settings: Follow song by page</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="119"/>
+        <source>Settings: Follow song off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="120"/>
+        <source>Settings: Follow song continuous</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="122"/>
+        <source>Settings: Global configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="123"/>
+        <source>Settings: Configure shortcuts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="124"/>
+        <source>Settings: Configure metronome</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="125"/>
+        <source>Settings: Midi sync configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="126"/>
+        <source>Settings: Midi file import/export configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="127"/>
+        <source>Settings: Appearance settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="128"/>
+        <source>Settings: Midi ports / Soft Synth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="129"/>
+        <source>Settings: Audio subsystem configuration</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="132"/>
+        <source>Midi: Edit midi instruments</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="133"/>
+        <source>Midi: Open midi input transform</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="134"/>
+        <source>Midi: Open midi input filter</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="135"/>
+        <source>Midi: Midi input transpose</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="136"/>
+        <source>Midi: Midi remote control</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="138"/>
+        <source>Midi: Random rhythm generator</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="140"/>
+        <source>Midi: Reset midi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="141"/>
+        <source>Midi: Init midi</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="142"/>
+        <source>Midi: Midi local off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="144"/>
+        <source>Audio: Bounce audio to track</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="145"/>
+        <source>Audio: Bounce audio to file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="146"/>
+        <source>Audio: Restart audio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="148"/>
+        <source>Automation: Mixer automation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="149"/>
+        <source>Automation: Take mixer snapshot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="150"/>
+        <source>Automation: Clear mixer automation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="153"/>
+        <source>Help: Open Manual</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="154"/>
+        <source>Help: Toggle whatsthis mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="156"/>
+        <source>Edit: Edit selected part</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="157"/>
+        <source>Edit: Select nearest part on track above</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="158"/>
+        <source>Edit: Add nearest part on track above</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="159"/>
+        <source>Edit: Select nearest part on track below</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="160"/>
+        <source>Edit: Add nearest part on track below</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="162"/>
+        <source>Edit: Insert empty measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="164"/>
+        <source>Edit: Paste as clones</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="165"/>
+        <source>Edit: Paste as clones (with dialog)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="167"/>
+        <source>Select track above</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="168"/>
+        <source>Select track below</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="172"/>
+        <source>Midi: Transpose</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="176"/>
+        <source>Edit: Select all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="177"/>
+        <source>Edit: Select none</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="178"/>
+        <source>Edit: Invert Selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="179"/>
+        <source>Edit: Select events/parts inside locators</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="180"/>
+        <source>Edit: Select events/parts outside locators</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="181"/>
+        <source>Edit: Select previous part</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="182"/>
+        <source>Edit: Select next part</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="183"/>
+        <source>Edit: Select nearest part/event to the left or move cursor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="184"/>
+        <source>Edit: Add nearest part/event to the left to selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="185"/>
+        <source>Edit: Select nearest part/event to the right or move cursor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="186"/>
+        <source>Edit: Add nearest part/event to the right to selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="187"/>
+        <source>Edit: Set locators to selection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="188"/>
+        <source>Edit: Increase pitch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="189"/>
+        <source>Edit: Decrease pitch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="190"/>
+        <source>Edit: Increase event position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="191"/>
+        <source>Edit: Decrease event position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="192"/>
+        <source>View: Zoom in</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="193"/>
+        <source>View: Zoom out</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="194"/>
+        <source>View: Goto Current Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="195"/>
+        <location filename="../../muse/shortcuts.cpp" line="196"/>
+        <source>View: Scroll left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="202"/>
+        <source>Edit: Set Fixed Length on Midi Events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="208"/>
+        <source>Quantize</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="209"/>
+        <source>Modify Note Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="210"/>
+        <source>Modify Velocity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="211"/>
+        <source>Edit: Crescendo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="212"/>
+        <source>Edit: Thin Out</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="213"/>
+        <source>Edit: Erase Event</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="214"/>
+        <source>Edit: Delete Overlaps</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="215"/>
+        <source>Edit: Note Shift</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="216"/>
+        <source>Edit: Move Clock</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="217"/>
+        <source>Edit: Copy Measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="218"/>
+        <source>Edit: Erase Measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="219"/>
+        <source>Edit: Delete Measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="220"/>
+        <source>Edit: Create Measure</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="221"/>
+        <source>Edit: Change Event Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="226"/>
+        <source>Tool: Pointer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="227"/>
+        <source>Tool: Pencil</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="228"/>
+        <source>Tool: Eraser</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="230"/>
+        <source>Tool: Line Draw</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="233"/>
+        <source>Tool: Cursor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="234"/>
+        <source>Add note velocity 1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="235"/>
+        <source>Add note velocity 2</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="236"/>
+        <source>Add note velocity 3</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="237"/>
+        <source>Add note velocity 4</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="239"/>
+        <source>Cursor step size: larger</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="240"/>
+        <source>Cursor step size: smaller</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="241"/>
+        <source>Instrument/Cursor up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="242"/>
+        <source>Instrument/Cursor down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="245"/>
+        <source>Tool: Scissor</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="246"/>
+        <source>Tool: Glue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="247"/>
+        <source>Tool: Mute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="251"/>
+        <source>Transport: Increase current position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="252"/>
+        <source>Transport: Decrease current position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="254"/>
+        <source>Transport: Increase current position, no snap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="255"/>
+        <source>Transport: Decrease current position, no snap</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="288"/>
+        <source>Quantize: Set quantize to 1/1 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="289"/>
+        <source>Quantize: Set quantize to 1/2 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="290"/>
+        <source>Quantize: Set quantize to 1/4 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="291"/>
+        <source>Quantize: Set quantize to 1/8 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="292"/>
+        <source>Quantize: Set quantize to 1/16 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="293"/>
+        <source>Quantize: Set quantize to 1/32 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="294"/>
+        <source>Quantize: Set quantize to 1/64 note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="296"/>
+        <source>Quantize: Toggle triol quantization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="297"/>
+        <source>Quantize: Toggle punctuation quantization</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="298"/>
+        <source>Quantize: Toggle punctuation quantization (2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="299"/>
+        <source>Edit: Insert at location</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="301"/>
+        <source>Edit: Increase length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="302"/>
+        <source>Edit: Decrease length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="308"/>
+        <source>Insert Note</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="309"/>
+        <source>Insert SysEx</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="310"/>
+        <source>Insert Ctrl</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="311"/>
+        <source>Insert Meta</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="312"/>
+        <source>Insert Channel Aftertouch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="313"/>
+        <source>Insert Key Aftertouch</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="318"/>
+        <source>Insert Tempo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="319"/>
+        <source>Insert Signature</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="320"/>
+        <source>Change Event Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="321"/>
+        <source>Edit Event Value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="322"/>
+        <source>Insert Key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="324"/>
+        <source>Goto Next Marker</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="325"/>
+        <source>Goto Prev Marker</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -9912,7 +9912,7 @@ Wahrscheinlich hat dir ausgewählte Spur den falschen Typ.</translation>
 <context>
     <name>MusECore::Song</name>
     <message>
-        <location filename="../../muse/song.cpp" line="+2439"/>
+        <location filename="../../muse/song.cpp" line="+2205"/>
         <source>Jack shutdown!</source>
         <translation>Jack heruntergefahren!</translation>
     </message>
@@ -9952,12 +9952,13 @@ versuchen, Jack neu zu starten und klicken dann auf den &quot;Neustart&quot;-
 Knopf.</translation>
     </message>
     <message>
-        <location line="+194"/>
+        <location line="+186"/>
+        <location line="+179"/>
         <source>Automation:</source>
         <translation>Automatisierung:</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="-177"/>
         <source>previous event</source>
         <translation>vorheriges Ereignis</translation>
     </message>
@@ -9967,25 +9968,25 @@ Knopf.</translation>
         <translation>nächstes Ereignis</translation>
     </message>
     <message>
-        <location line="+10"/>
-        <location line="+183"/>
+        <location line="+9"/>
+        <location line="+169"/>
         <source>set event</source>
         <translation>setze Ereignis</translation>
     </message>
     <message>
-        <location line="-181"/>
-        <location line="+183"/>
+        <location line="-167"/>
+        <location line="+169"/>
         <source>add event</source>
         <translation>füge Ereignis hinzu</translation>
     </message>
     <message>
-        <location line="-179"/>
-        <location line="+184"/>
+        <location line="-165"/>
+        <location line="+170"/>
         <source>erase event</source>
         <translation>lösche Ereignis</translation>
     </message>
     <message>
-        <location line="-180"/>
+        <location line="-166"/>
         <source>erase range</source>
         <translation>Lösche Bereich</translation>
     </message>
@@ -10010,7 +10011,7 @@ Knopf.</translation>
         <translation>&amp;Abbrechen</translation>
     </message>
     <message>
-        <location line="+1134"/>
+        <location line="+843"/>
         <source>MusE - external script failed</source>
         <translation>MusE - externes Skript fehlgeschlagen</translation>
     </message>
@@ -13238,7 +13239,7 @@ Sync-Einstellungen anwenden?</translation>
         <location line="+1009"/>
         <location line="+1211"/>
         <source>&amp;Save</source>
-        <translation></translation>
+        <translation>&amp;Speichern</translation>
     </message>
     <message>
         <location line="-2218"/>
@@ -17942,12 +17943,12 @@ Rhythmus Zufallsgenerator noch nicht eingeführt!</translation>
         <translation>Tastenkürzel einstellen</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+35"/>
         <source>Shortcut Category</source>
         <translation>Kategorie Tastenkürzel</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location line="+24"/>
         <source>Description</source>
         <translation>Beschreibung</translation>
     </message>
@@ -17957,7 +17958,7 @@ Rhythmus Zufallsgenerator noch nicht eingeführt!</translation>
         <translation>Tastenkürzel</translation>
     </message>
     <message>
-        <location line="+37"/>
+        <location line="+35"/>
         <source>&amp;Clear</source>
         <translation>&amp;Löschen</translation>
     </message>
@@ -19228,6 +19229,880 @@ Robert Jonsson
         <location line="+7"/>
         <source>Enhanced Stereo</source>
         <translation>Erweitertes Stereo</translation>
+    </message>
+</context>
+<context>
+    <name>shortcuts</name>
+    <message>
+        <location filename="../../muse/shortcuts.cpp" line="+54"/>
+        <source>Transport: Start playback from current location</source>
+        <translation>Transport: Abspielen ab momentaner Position</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transport: Toggle metronome</source>
+        <translation>Transport: Metronom ein-/ausschalten</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transport: Stop Playback</source>
+        <translation>Transport: Stopp</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transport: Goto Start</source>
+        <translation>Transport: Zum Anfang gehen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transport: Play, Stop, Rewind</source>
+        <translation>Transport: Start, Stopp, Zurückspulen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transport: Goto left marker</source>
+        <translation>Transport: Zum linken Marker gehen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transport: Goto right marker</source>
+        <translation>Transport: zum rechten Marker gehen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transport: Toggle Loop section</source>
+        <translation>Transport: Schleife umschalten</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transport: Toggle Record</source>
+        <translation>Transport: Aufnahme ein-/ausschalten</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transport: Clear all rec enabled tracks</source>
+        <translation>Transport: Alle Aufnahmemarkierungen zurücksetzen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Toggle fullscreen</source>
+        <translation>Vollbild umschalten</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Edit: Copy</source>
+        <translation>Bearbeiten: Kopieren</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Copy in range</source>
+        <translation>Bearbeiten: Im Bereich kopieren</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Undo</source>
+        <translation>Bearbeiten: Rückgängig</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Redo</source>
+        <translation>Bearbeiten: Wiederholen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Cut</source>
+        <translation>Bearbeiten: Ausschneiden</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Paste</source>
+        <translation>Bearbeiten: Einfügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Paste (with dialog)</source>
+        <translation>Bearbeiten: Einfügen (Dialog zeigen)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Delete</source>
+        <translation>Bearbeiten: Löschen</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>File: New project</source>
+        <translation>Datei: Neues Projekt</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>File: Open from disk</source>
+        <translation>Datei: Öffnen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>File: Save project</source>
+        <translation>Datei: Speichern</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>File: Open recent file</source>
+        <translation>Datei: Letzt Datei öffnen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>File: Save as</source>
+        <translation>Datei: Speichern unter</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>File: Load template</source>
+        <translation>Datei: als Vorlage laden</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>File: Import midi file</source>
+        <translation>Datei: MIDI-Datei importieren</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>File: Export midi file</source>
+        <translation>Datei: MIDI-Datei exportieren</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>File: Import midi part</source>
+        <translation>Datei: Midipart importieren</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>File: Import audio file</source>
+        <translation>Datei: Audiodatei importieren</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>File: Quit MusE</source>
+        <translation>Datei: Beenden</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Edit: Select parts on track</source>
+        <translation>Bearbeiten: Parts auf der Spur auswählen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Open pianoroll</source>
+        <translation>Piano Roll öffnen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Open drumeditor</source>
+        <translation>Schlagzeugeditor öffnen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Open listeditor</source>
+        <translation>Listeneditor öffnen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Open waveeditor</source>
+        <translation>Wave-Editor öffnen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Open graphical mastertrack editor</source>
+        <translation>Graphischen Masterspureditor öffnen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Open list mastertrack editor</source>
+        <translation>Listen-Masterspureditor öffnen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Open midi transformer</source>
+        <translation>Midi-Transformer öffnen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add midi track</source>
+        <translation>Midispur hinzufügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add drum track</source>
+        <translation>Schlagzeugspur hinzufügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add wave track</source>
+        <translation>Wavespur hinzufügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add audio output</source>
+        <translation>Audioausgang hinzufügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add audio group</source>
+        <translation>Audiogruppe hinzufügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add audio input</source>
+        <translation>Audioeingang hinzufügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add audio aux</source>
+        <translation>Audio Aux hinzufügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Structure: Global cut</source>
+        <translation>Struktur: Globaler Schnitt</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Structure: Global insert</source>
+        <translation>Struktur: Globales Einfügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Structure: Global split</source>
+        <translation>Struktur: Globales Teilen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Structure: Cut events</source>
+        <translation>Struktur: Events ausschneiden</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>View: Open mixer #1 window</source>
+        <translation>Zeigen: Mixerfenster 1 anzeigen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>View: Open mixer #2 window</source>
+        <translation>Zeigen: Mixerfenster 2 anzeigen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>View: Toggle transport window</source>
+        <translation>Zeigen: Transportfenster umschalten</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>View: Toggle bigtime window</source>
+        <translation>Zeigen: Große Zeitanzeige umschalten</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>View: Open marker window</source>
+        <translation>Zeigen: Markerfenster umschalten</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Settings: Follow song by page</source>
+        <translation>Einstellungen: Dem Lied seitenweise folgen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Settings: Follow song off</source>
+        <translation>Einstellungen: Dem Lied nicht folgen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Settings: Follow song continuous</source>
+        <translation>Einstellungen: Dem Lied ständig folgen</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Settings: Global configuration</source>
+        <translation>Einstellungen: Globale Konfiguration</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Settings: Configure shortcuts</source>
+        <translation>Einstellungen: Tastenkürzel einstellen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Settings: Configure metronome</source>
+        <translation>Einstellungen: Metronom einstellen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Settings: Midi sync configuration</source>
+        <translation>Einstellungen: Midi Sync Konfiguration</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Settings: Midi file import/export configuration</source>
+        <translation>Einstellungen: Midi Import/Export-Konfiguration</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Settings: Appearance settings</source>
+        <translation>Einstellungen: Erscheinungsbild einstellen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Settings: Midi ports / Soft Synth</source>
+        <translation>Einstellungen: Midianschlüsse / Software Synthesizer</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Settings: Audio subsystem configuration</source>
+        <translation>Einstellungen: Audiosystem einstellen</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Midi: Edit midi instruments</source>
+        <translation>Midi: Midiinstrumente bearbeiten</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi: Open midi input transform</source>
+        <translation>Midi: Midi-Eingangstransformation öffnen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi: Open midi input filter</source>
+        <translation>Midi: Midi-Eingangsfilter öffnen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi: Midi input transpose</source>
+        <translation>Midi: Midieingang transponieren</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi: Midi remote control</source>
+        <translation>Midi: Midi-Fernbedienung</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Midi: Random rhythm generator</source>
+        <translation>Midi: Zufälliger-Rhythmus-Generator</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Midi: Reset midi</source>
+        <translation>Midi: Zurücksetzen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi: Init midi</source>
+        <translation>Midi: Initialisieren</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Midi: Midi local off</source>
+        <translation>Midi: Lokal aus</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Audio: Bounce audio to track</source>
+        <translation>Audio: Auf Spur abmischen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Audio: Bounce audio to file</source>
+        <translation>Audio: In Datei abmischen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Audio: Restart audio</source>
+        <translation>Audio: Neustarten</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Automation: Mixer automation</source>
+        <translation>Automatisierung: Mixerautomatisierung</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Automation: Take mixer snapshot</source>
+        <translation>Automatisierung: Mixer-Schnappschuss aufnehmen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Automation: Clear mixer automation</source>
+        <translation>Automatisierung: Mixerautomatisierung löschen</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Help: Open Manual</source>
+        <translation>Hilfe: Handbuch öffnen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Help: Toggle whatsthis mode</source>
+        <translation>Hilfe: &quot;Was ist das?&quot;</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Edit: Edit selected part</source>
+        <translation>Bearbeiten: Markierten Part bearbeiten</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Select nearest part on track above</source>
+        <translation>Bearbeiten: Nächsten Part auf vorheriger Spur markieren</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Add nearest part on track above</source>
+        <translation>Bearbeiten: Nächsten Part auf vorheriger Spur hinzufügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Select nearest part on track below</source>
+        <translation>Bearbeiten: Nächsten Part auf nächster Spur markieren</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Add nearest part on track below</source>
+        <translation>Bearbeiten: Nächsten Part auf nächster Spur hinzufügen</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Edit: Insert empty measure</source>
+        <translation>Bearbeiten: Leeren Takt einfügen</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Edit: Paste as clones</source>
+        <translation>Bearbeiten: Als Klone einfügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Paste as clones (with dialog)</source>
+        <translation>Bearbeiten: Als Klone einfügen (Dialog zeigen)</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Select track above</source>
+        <translation>Vorherige Spur auswählen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Select track below</source>
+        <translation>Nächste Spur auswählen</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Midi: Transpose</source>
+        <translation>Midi: Transponieren</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Edit: Select all</source>
+        <translation>Bearbeiten: Alles auswählen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Select none</source>
+        <translation>Bearbeiten: Nichts auswählen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Invert Selection</source>
+        <translation>Bearbeiten: Auswahl invertieren</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Select events/parts inside locators</source>
+        <translation>Bearbeiten: Alles im Bereich auswählen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Select events/parts outside locators</source>
+        <translation>Bearbeiten: Alles außerhalb des Bereichs auswählen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Select previous part</source>
+        <translation>Bearbeiten: Vorherigen Part auswählen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Select next part</source>
+        <translation>Bearbeiten: Nächsten Part auswählen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Select nearest part/event to the left or move cursor</source>
+        <translation>Bearbeiten: Nächsten Part / nächstes Event links auswählen, oder Cursor verschieben</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Add nearest part/event to the left to selection</source>
+        <translation>Bearbeiten: Nächsten Part / nächstes Event links zur Auswahl hinzufügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Select nearest part/event to the right or move cursor</source>
+        <translation>Bearbeiten: Nächsten Part / nächstes Event rechts auswählen, oder Cursor verschieben</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Add nearest part/event to the right to selection</source>
+        <translation>Bearbeiten: Nächsten Part / nächstes Event rechts zur Auswahl hinzufügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Set locators to selection</source>
+        <translation>Bearbeiten: Bereich von Auswahl setzen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Increase pitch</source>
+        <translation>Bearbeiten: Tonhöhe erhöhen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Decrease pitch</source>
+        <translation>Bearbeiten: Tonhöhe erniedrigen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Increase event position</source>
+        <translation>Bearbeiten: Eventposition erhöhen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Decrease event position</source>
+        <translation>Bearbeiten: Eventposition erniedrigen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>View: Zoom in</source>
+        <translation>Zeigen: Hereinzoomen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>View: Zoom out</source>
+        <translation>Zeigen: Herauszoomen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>View: Goto Current Position</source>
+        <translation>Zeigen: Zur momentanen Position gehen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+1"/>
+        <source>View: Scroll left</source>
+        <translation>Zeigen: Nach links scrollen</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Edit: Set Fixed Length on Midi Events</source>
+        <translation>Bearbeiten: feste Länge für Midi-Events setzen</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Quantize</source>
+        <translation>Quantisieren</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Modify Note Length</source>
+        <translation>Notenlänge verändern</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Modify Velocity</source>
+        <translation>Anschlagsdynamik ändern</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Crescendo</source>
+        <translation>Bearbeiten: Crescendo</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Thin Out</source>
+        <translation>Bearbeiten: Ausdünnen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Erase Event</source>
+        <translation>Bearbeiten: Event löschen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Delete Overlaps</source>
+        <translation>Bearbeiten: Überlappende Noten entfernen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Note Shift</source>
+        <translation>Bearbeiten: Noten verschieben</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Move Clock</source>
+        <translation>Bearbeiten: Uhr verschieben</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Copy Measure</source>
+        <translation>Bearbeiten: Takt kopieren</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Erase Measure</source>
+        <translation>Bearbeiten: Takt löschen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Delete Measure</source>
+        <translation>Bearbeiten: Takt löschen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Create Measure</source>
+        <translation>Bearbeiten: Takt erstellen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Change Event Color</source>
+        <translation>Bearbeiten: Eventfarbe ändern</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Tool: Pointer</source>
+        <translation>Werkzeug: Zeiger</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tool: Pencil</source>
+        <translation>Werkzeug: Stift</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tool: Eraser</source>
+        <translation>Werkzeug: Radierer</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Tool: Line Draw</source>
+        <translation>Werkzeug: Linie</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Tool: Cursor</source>
+        <translation>Werkzeug: Cursor</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add note velocity 1</source>
+        <translation>Note mit Anschlagsdynamik 1 hinzufügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add note velocity 2</source>
+        <translation>Note mit Anschlagsdynamik 2 hinzufügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add note velocity 3</source>
+        <translation>Note mit Anschlagsdynamik 3 hinzufügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Add note velocity 4</source>
+        <translation>Note mit Anschlagsdynamik 4 hinzufügen</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Cursor step size: larger</source>
+        <translation>Cursorschrittweite: größer</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cursor step size: smaller</source>
+        <translation>Cursorschrittweite: kleiner</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Instrument/Cursor up</source>
+        <translation>Instrument/Cursor nach oben</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Instrument/Cursor down</source>
+        <translation>Instrument/Cursor nach unten</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Tool: Scissor</source>
+        <translation>Werkzeug: Schere</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tool: Glue</source>
+        <translation>Werkzeug: Kleber</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tool: Mute</source>
+        <translation>Werkzeug: Stummschalten</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Transport: Increase current position</source>
+        <translation>Transport: Momentane Position erhöhen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transport: Decrease current position</source>
+        <translation>Transport: Momentane Position erniedrigen</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Transport: Increase current position, no snap</source>
+        <translation>Transport: Momentane Position erhöhen, kein Einrasten</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transport: Decrease current position, no snap</source>
+        <translation>Transport: Momentane Position erniedrigen, kein Einrasten</translation>
+    </message>
+    <message>
+        <location line="+33"/>
+        <source>Quantize: Set quantize to 1/1 note</source>
+        <translation>Quantisieren: Ganze Noten</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Quantize: Set quantize to 1/2 note</source>
+        <translation>Quantisieren: Halbe Noten</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Quantize: Set quantize to 1/4 note</source>
+        <translation>Quantisieren: Viertelnoten</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Quantize: Set quantize to 1/8 note</source>
+        <translation>Quantisieren: Achtelnoten</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Quantize: Set quantize to 1/16 note</source>
+        <translation>Quantisieren: 16telnoten</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Quantize: Set quantize to 1/32 note</source>
+        <translation>Quantisieren: 32telnoten</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Quantize: Set quantize to 1/64 note</source>
+        <translation>Quantisieren: 64telnoten</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Quantize: Toggle triol quantization</source>
+        <translation>Quantisieren: Triolenquantisierung umschalten</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Quantize: Toggle punctuation quantization</source>
+        <translation>Quantisieren: punktierte Quantisierung umschalten</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Quantize: Toggle punctuation quantization (2)</source>
+        <translation>Quantisieren: punktierte Quantisierung umschalten (2)</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Insert at location</source>
+        <translation>Bearbeiten: Bei Position einfügen</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Edit: Increase length</source>
+        <translation>Bearbeiten: Länge erhöhen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit: Decrease length</source>
+        <translation>Bearbeiten: Länge erniedrigen</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Insert Note</source>
+        <translation>Note einfügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Insert SysEx</source>
+        <translation>SysEx einfügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Insert Ctrl</source>
+        <translation>Ctrl einfügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Insert Meta</source>
+        <translation>Meta einfügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Insert Channel Aftertouch</source>
+        <translation>Channel Aftertouch einfügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Insert Key Aftertouch</source>
+        <translation>Key Aftertouch einfügen</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Insert Tempo</source>
+        <translation>Tempo einfügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Insert Signature</source>
+        <translation>Taktmaß einfügen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Change Event Position</source>
+        <translation>Eventposition verändern</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit Event Value</source>
+        <translation>Eventwert bearbeiten</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Insert Key</source>
+        <translation>Tonart einfügen</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Goto Next Marker</source>
+        <translation>Zum nächsten Marker gehen</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Goto Prev Marker</source>
+        <translation>Zum vorherigen Marker gehen</translation>
     </message>
 </context>
 </TS>

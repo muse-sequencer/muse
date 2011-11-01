@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>466</width>
-    <height>403</height>
+    <width>512</width>
+    <height>452</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,67 +16,64 @@
   <property name="sizeGripEnabled">
    <bool>true</bool>
   </property>
-  <layout class="QVBoxLayout">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="groupBox3">
-     <property name="title">
-      <string/>
+    <widget class="QSplitter" name="splitter">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
-     <layout class="QHBoxLayout">
-      <property name="spacing">
-       <number>3</number>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="childrenCollapsible">
+      <bool>false</bool>
+     </property>
+     <widget class="QTreeWidget" name="cgListView">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
-      <property name="margin">
-       <number>0</number>
+      <property name="minimumSize">
+       <size>
+        <width>105</width>
+        <height>200</height>
+       </size>
       </property>
-      <item>
-       <widget class="QTreeWidget" name="cgListView">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-          <horstretch>1</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>105</width>
-          <height>200</height>
-         </size>
-        </property>
-        <column>
-         <property name="text">
-          <string>Shortcut Category</string>
-         </property>
-        </column>
-       </widget>
-      </item>
-      <item>
-       <widget class="QTreeWidget" name="scListView">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-          <horstretch>2</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>170</width>
-          <height>230</height>
-         </size>
-        </property>
-        <column>
-         <property name="text">
-          <string>Shortcut</string>
-         </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Description</string>
-         </property>
-        </column>
-       </widget>
-      </item>
-     </layout>
+      <column>
+       <property name="text">
+        <string>Shortcut Category</string>
+       </property>
+      </column>
+     </widget>
+     <widget class="QTreeWidget" name="scListView">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+        <horstretch>2</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>170</width>
+        <height>230</height>
+       </size>
+      </property>
+      <column>
+       <property name="text">
+        <string>Shortcut</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Description</string>
+       </property>
+      </column>
+     </widget>
     </widget>
    </item>
    <item>

@@ -30,7 +30,6 @@
 //
 // Description:
 // Dialog window for capturing keyboard shortcuts
-//
 
 #include "shortcutcapturedialog.h"
 #include "shortcuts.h"
@@ -39,6 +38,7 @@
 #include <QKeySequence>
 #include <QInputEvent>
 #include <QChar>
+#include <QApplication>
 
 namespace MusEGui {
 
@@ -105,7 +105,7 @@ void ShortcutCaptureDialog::keyPressEvent(QKeyEvent* e)
                       (( shortcuts[i].type  & (shortcuts[shortcutindex].type | INVIS_SHRT)) ||
                          shortcuts[i].type & GLOBAL_SHRT ||
                          shortcuts[shortcutindex].type & GLOBAL_SHRT)) { // affect the same scope
-                      msgString = tr("Shortcut conflicts with %1").arg(shortcuts[i].descr);
+                      msgString = tr("Shortcut conflicts with %1").arg(qApp->translate("shortcuts",shortcuts[i].descr));
                       conflict = true;
                       break;
                       }
