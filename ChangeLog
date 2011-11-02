@@ -1,3 +1,8 @@
+02.11.2011:
+        - Fixed new runtime errors "undefined symbol fluid_synth_cc" and "fluid_synth_set_reverb", seen on Ubuntu 11.10 (Tim).
+          MusE "fluidsynth.so" module renamed "fluid_synth.so". Error seems due to required cmakelists LINK_FLAGS line, now removed. 
+          Also removed required LINK_FLAGS line in fluid cmakelists.  
+          PLEASE REMOVE THE OLD fluidsynth.so ! Or uninstall muse before installing again.
 01.11.2011:
         - Fixed Shortcut translations (flo)
         - Added a QSplitter to the shortcut dialog (flo)
