@@ -88,6 +88,8 @@ Song::Song(const char* name)
       redoList     = new UndoList;
       _markerList  = new MarkerList;
       _globalPitchShift = 0;
+      bounceTrack = NULL;
+      bounceOutput = NULL;
       showSongInfo=true;
       clear(false);
       }

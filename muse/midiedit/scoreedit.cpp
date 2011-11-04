@@ -658,6 +658,7 @@ void ScoreEdit::canvas_height_changed(int height)
 void ScoreEdit::viewport_height_changed(int height)
 {
 	int val=score_canvas->canvas_height() - height;
+	// FINDMICHJETZT canvas_height() is uninitalized!
 	if (val<0) val=0;
 	yscroll->setPageStep(height * PAGESTEP);
 	yscroll->setMaximum(val);
@@ -2792,6 +2793,7 @@ void ScoreCanvas::draw_note_lines(QPainter& p, int y, bool reserve_akkolade_spac
 {
 	int xbegin = reserve_akkolade_space ? AKKOLADE_LEFTMARGIN+AKKOLADE_WIDTH+AKKOLADE_RIGHTMARGIN : 0;
 	int xend=width();
+	// FINDMICHJETZT y is uninitalized!
 	
 	p.setPen(Qt::black);
 	
@@ -4182,7 +4184,7 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
 		{
 			switch (MusEGlobal::song->follow())
 			{
-				case  MusECore::Song::NO: break;
+				case MusECore::Song::NO: break;
 				case MusECore::Song::JUMP:  goto_tick(tick,false);  break;
 				case MusECore::Song::CONTINUOUS:  goto_tick(tick,true);  break;
 			}
@@ -4590,11 +4592,11 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     changing "share" status, the changed state isn't stored
  *   ? pasting in editors sometimes fails oO? ( ERROR: reading eventlist
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
- *   o topwin posistions aren't restored!
+ *   o topwin window states aren't restored for subwins!
  *   o sometimes failing assertions!
  * 
  * CURRENT TODO
- *   o fix valgrind problems
+ *   o fix valgrind problems (the two "FINDMICHJETZT" lines in scoreedit.cpp)
  *   o newly created windows have to be focussed!
  *
  * IMPORTANT TODO

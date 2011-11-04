@@ -54,6 +54,8 @@ Master::Master(MidiEditor* e, QWidget* parent, int xmag, int ymag)
       pos[0]  = 0;
       pos[1]  = 0;
       pos[2]  = 0;
+      drag = DRAG_OFF;
+      tool = MusEGui::PointerTool; // should be overridden soon anyway, but to be sure...
       setFocusPolicy(Qt::StrongFocus);  // Tim.
       setMouseTracking(true);
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));

@@ -353,6 +353,7 @@ class FloItem
 			begin_tick=beg;
 			source_event=event;
 			source_part=part;
+			is_active=false;
 		}
 		
 		FloItem(typeEnum t, int num_, int denom_)
