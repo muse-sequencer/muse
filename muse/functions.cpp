@@ -1278,24 +1278,6 @@ void shrink_parts(int raster)
 	MusEGlobal::song->applyOperationGroup(operations);
 }
 
-void internal_schedule_expand_part(Part* part, int raster, Undo& operations)
-{
-	EventList* events=part->events();
-	unsigned len=part->lenTick();
-	
-	for (iEvent ev=events->begin(); ev!=events->end(); ev++)
-		if (ev->second.endTick() > len)
-			len=ev->second.endTick();
-
-	if (raster) len=ceil((float)len/raster)*raster;
-					
-	if (len > part->lenTick())
-	{
-		MidiPart* new_part = new MidiPart(*(MidiPart*)part);
-		new_part->setLenTick(len);
-		operations.push_back(UndoOp(UndoOp::ModifyPart, part, new_part, true, false));
-	}
-}
 
 void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo& operations)
 {
