@@ -55,7 +55,7 @@
 #include <QDrag>
 #include <QMessageBox>
 #include <QClipboard>
-
+#include <QSet>
 
 
 using namespace std;
@@ -1281,13 +1281,19 @@ void shrink_parts(int raster)
 
 void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo& operations)
 {
+	QSet<const Part*> already_done;
+	
+	for (Undo::iterator op_it=operations.begin(); op_it!=operations.end();op_it++)
+		if (op_it->type==UndoOp::ModifyPart || op_it->type==UndoOp::DeletePart)
+			already_done.insert(op_it->nPart);
+			
 	unsigned old_len=part->lenTick();
 	if (old_len!=new_len)
 	{
 		Part* part_it=part;
 		do
 		{
-			if (part_it->lenTick()==old_len)
+			if (part_it->lenTick()==old_len && !already_done.contains(part_it))
 			{
 				MidiPart* new_part = new MidiPart(*(MidiPart*)part_it);
 				new_part->setLenTick(new_len);
