@@ -1918,7 +1918,7 @@ Slot. Wollen Sie sie ersetzen oder in den nächsten freien Slot hinzufügen?</tr
     <message>
         <location line="+15"/>
         <source>Program numerous</source>
-        <translation type="unfinished"></translation>
+        <translation>Programmnummer</translation>
     </message>
     <message>
         <location line="+16"/>
@@ -1939,7 +1939,7 @@ Slot. Wollen Sie sie ersetzen oder in den nächsten freien Slot hinzufügen?</tr
         <location line="+11"/>
         <location line="+42"/>
         <source>Bank numerous</source>
-        <translation type="unfinished"></translation>
+        <translation>Banknummer</translation>
     </message>
     <message>
         <location line="-26"/>
@@ -3263,7 +3263,7 @@ Wellenform 8 = &lt;i&gt;wenn &lt;b&gt;t&lt;/b&gt;&amp;#060 pi dann sin(2*&lt;b&g
     <message>
         <location line="+44"/>
         <source>Channel Ctrl</source>
-        <translation type="unfinished"></translation>
+        <translation>Kanal Ctrl</translation>
     </message>
     <message>
         <location line="+37"/>
@@ -5439,7 +5439,7 @@ Bereichen die linke Maustaste wie die mittlere verhält.</translation>
     <message>
         <location line="+60"/>
         <source>Enable denormal protection</source>
-        <translation type="unfinished"></translation>
+        <translation>Denormal-Schutz aktivieren</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -5528,13 +5528,13 @@ sein sollten. Einstellung erfordert Neustart.</translation>
     <message>
         <location line="+13"/>
         <source>Minimum control period</source>
-        <translation type="unfinished"></translation>
+        <translation>Minimale Kontroll-Periode</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Minimum audio controller process period (samples).
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Minimale Audiocontroller-Periode (Samples).</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -5543,7 +5543,12 @@ Adjusts responsiveness of audio controls and
  controller graphs. Set a low value for fast, smooth 
  control. If it causes performance problems, set a 
  higher value. </source>
-        <translation type="unfinished"></translation>
+        <translation>Minimale Audiocontroller-Periode (Samples).
+Beeinflusst die Reaktionszeit von Audiocontrols
+und Controller-Graphen. Setzen Sie einen niedrigen
+Wert für schnelle, weiche Kontrolle. Wenn das
+Geschwindigkeitsprobleme verursacht, benutzen Sie
+einen höheren Wert.</translation>
     </message>
     <message>
         <location line="+11"/>
@@ -19155,12 +19160,16 @@ Robert Jonsson
     <message>
         <location line="-31"/>
         <source>Dry Level [dB]</source>
-        <translation type="unfinished"></translation>
+        <translation>Lautstärke des
+unmodifizierten
+Signals (Dry Level) [dB]</translation>
     </message>
     <message>
         <location line="+41"/>
         <source>Wet Level [dB]</source>
-        <translation type="unfinished"></translation>
+        <translation>Lautstärke des
+modifizierten
+Signals (Wet Level) [dB]</translation>
     </message>
     <message>
         <location line="+72"/>
