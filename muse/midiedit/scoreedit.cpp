@@ -4594,7 +4594,7 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     changing "share" status, the changed state isn't stored
  *   ? pasting in editors sometimes fails oO? ( ERROR: reading eventlist
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
- * > o topwin window states aren't restored for subwins!
+ * > o non-mdi topwin states aren't restored when launching muse2 somefile.med
  * 
  * CURRENT TODO
  * > o fix valgrind problems (the two "FINDMICHJETZT" lines in scoreedit.cpp)
