@@ -21,7 +21,6 @@
 //
 //=========================================================
 
-#include <assert.h>
 #include <stdio.h>
 
 #include "midictrl.h"

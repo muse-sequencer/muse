@@ -21,7 +21,6 @@
 //
 //=========================================================
 
-#include <assert.h>
 #include <uuid/uuid.h>
 #include <QProgressDialog>
 #include <QMessageBox>

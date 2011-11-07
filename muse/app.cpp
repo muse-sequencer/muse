@@ -2064,7 +2064,11 @@ void MusE::selectProject(QAction* act)
       if (!act)
             return;
       int id = act->data().toInt();
-      assert(id < PROJECT_LIST_LEN);
+      if (!(id < PROJECT_LIST_LEN))
+      {
+        printf("THIS SHOULD NEVER HAPPEN: id(%i) < PROJECT_LIST_LEN(%i) in MusE::selectProject!\n",id, PROJECT_LIST_LEN);
+        return;
+      }
       QString* name = projectList[id];
       if (name == 0)
             return;
@@ -2128,7 +2132,6 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
                   }
             }
       printf("topLevelDeleting: top level %p not found\n", tl);
-      //assert(false);
       }
 
 //---------------------------------------------------------

@@ -26,7 +26,6 @@
 // 02111-1301, USA or point your web browser to http://www.gnu.org.
 //=========================================================
 
-#include <assert.h>
 #include <cmath>
 #include <stdio.h>
 #include <list>
