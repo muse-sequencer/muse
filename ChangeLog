@@ -1,6 +1,7 @@
 07.11.2011:
         - fixed restore-window-state bug (flo)
         - fixed dialog translation problem (flo)
+        - Updated spanish translation by Cristian Ramos (rj)
 06.11.2011:
         - auto-expand fix (flo)
         - NoteInfo-toolbar fix (flo)
