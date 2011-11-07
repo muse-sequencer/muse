@@ -100,6 +100,8 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
 void TopWin::readStatus(MusECore::Xml& xml)
 {
+	int x=0, y=0, width=800, height=600;
+	
 	for (;;)
 	{
 		MusECore::Xml::Token token = xml.parse();
@@ -110,11 +112,14 @@ void TopWin::readStatus(MusECore::Xml& xml)
 		switch (token)
 		{
 			case MusECore::Xml::TagStart:
-				if (tag == "geometry_state")
-				{
-					if (!restoreGeometry(QByteArray::fromHex(xml.parse1().toAscii())))
-						fprintf(stderr,"ERROR: couldn't restore geometry. however, this is probably not really a problem.\n");
-				}
+				if (tag == "x")
+					x=xml.parseInt();
+				else if (tag == "y")
+					y=xml.parseInt();
+				else if (tag == "width")
+					width=xml.parseInt();
+				else if (tag == "height")
+					height=xml.parseInt();
 				else if (tag == "toolbars")
 				{
 					if (!sharesToolsAndMenu())
@@ -143,7 +148,20 @@ void TopWin::readStatus(MusECore::Xml& xml)
 
 			case MusECore::Xml::TagEnd:
 				if (tag == "topwin")
+				{
+					if (mdisubwin)
+					{
+						mdisubwin->move(x, y);
+						mdisubwin->resize(width, height);
+					}
+					else
+					{
+						move(x,y);
+						resize(width,height);
+					}
+
 					return;
+				}
 	
 			default:
 				break;
@@ -163,7 +181,22 @@ void TopWin::writeStatus(int level, MusECore::Xml& xml) const
 	// changing it won't break muse, but it may break proper
 	// restoring of the positions
 	xml.intTag(level, "is_subwin", isMdiWin());
-	xml.strTag(level, "geometry_state", saveGeometry().toHex().data());
+
+	if (mdisubwin)
+	{
+		xml.intTag(level, "x", mdisubwin->x());
+		xml.intTag(level, "y", mdisubwin->y());
+		xml.intTag(level, "width", mdisubwin->width());
+		xml.intTag(level, "height", mdisubwin->height());
+	}
+	else
+	{
+		xml.intTag(level, "x", x());
+		xml.intTag(level, "y", y());
+		xml.intTag(level, "width", width());
+		xml.intTag(level, "height", height());
+	}
+
 	xml.intTag(level, "shares_menu", sharesToolsAndMenu());
 
 	if (!sharesToolsAndMenu())

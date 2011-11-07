@@ -219,6 +219,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 	xscroll->setMinimum(0);
 	yscroll->setMinimum(0);
+	xscroll->setValue(0);
+	yscroll->setValue(0);
 
 	menu_mapper=new QSignalMapper(this);
 	connect(menu_mapper, SIGNAL(mapped(int)), SLOT(menu_command(int)));
@@ -1451,8 +1453,8 @@ void ScoreCanvas::fully_recalculate()
 
 void ScoreCanvas::song_changed(int flags)
 {
-        if(parent && parent->deleting())  // Ignore while while deleting to prevent crash.
-          return;
+	if(parent && parent->deleting())  // Ignore while while deleting to prevent crash.
+		return;
         
 	if (flags & (SC_PART_MODIFIED | SC_PART_REMOVED | SC_PART_INSERTED | SC_TRACK_REMOVED))
 	{
@@ -4592,12 +4594,11 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     changing "share" status, the changed state isn't stored
  *   ? pasting in editors sometimes fails oO? ( ERROR: reading eventlist
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
- *   o topwin window states aren't restored for subwins!
- *   o sometimes failing assertions!
+ * > o topwin window states aren't restored for subwins!
  * 
  * CURRENT TODO
- *   o fix valgrind problems (the two "FINDMICHJETZT" lines in scoreedit.cpp)
- *   o newly created windows have to be focussed!
+ * > o fix valgrind problems (the two "FINDMICHJETZT" lines in scoreedit.cpp)
+ * > o newly created windows have to be focussed!
  *
  * IMPORTANT TODO
  *   o add "dotted quarter" quantize option (for 6/8 beat)
