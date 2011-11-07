@@ -5745,7 +5745,7 @@ einen höheren Wert.</translation>
     <message>
         <location line="+24"/>
         <source> ticks</source>
-        <translation>Ticks</translation>
+        <translation> Ticks</translation>
     </message>
     <message>
         <location line="+19"/>
