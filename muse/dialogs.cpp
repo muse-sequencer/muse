@@ -71,6 +71,22 @@ void init_function_dialogs(QWidget* parent)
 	paste_events_dialog = new PasteEventsDialog(parent);
 }
 
+void retranslate_function_dialogs()
+{
+	gatetime_dialog->retranslateUi(gatetime_dialog);
+	velocity_dialog->retranslateUi(velocity_dialog);
+	quantize_dialog->retranslateUi(quantize_dialog);
+	erase_dialog->retranslateUi(erase_dialog);
+	del_overlaps_dialog->retranslateUi(del_overlaps_dialog);
+	set_notelen_dialog->retranslateUi(set_notelen_dialog);
+	move_notes_dialog->retranslateUi(move_notes_dialog);
+	transpose_dialog->retranslateUi(transpose_dialog);
+	crescendo_dialog->retranslateUi(crescendo_dialog);
+	legato_dialog->retranslateUi(legato_dialog);
+	paste_dialog->retranslateUi(paste_dialog);
+	paste_events_dialog->retranslateUi(paste_events_dialog);
+}
+
 void read_function_dialog_config(MusECore::Xml& xml)
 {
 	if (erase_dialog==NULL)
