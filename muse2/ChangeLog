@@ -1,4 +1,34 @@
-24.10.2010:
+07.11.2011:
+        - fixed restore-window-state bug (flo)
+        - fixed dialog translation problem (flo)
+06.11.2011:
+        - auto-expand fix (flo)
+        - NoteInfo-toolbar fix (flo)
+04.11.2011:
+        - more valgrind fixes (flo)
+02.11.2011:
+        - Fixed new runtime errors "undefined symbol fluid_synth_cc" and "fluid_synth_set_reverb", seen on Ubuntu 11.10 (Tim).
+          MusE "fluidsynth.so" module renamed "fluid_synth.so". Error seems due to required cmakelists LINK_FLAGS line, now removed. 
+          Also removed required LINK_FLAGS line in fluid cmakelists.  
+          PLEASE REMOVE THE OLD fluidsynth.so ! Or uninstall muse before installing again.
+01.11.2011:
+        - Fixed Shortcut translations (flo)
+        - Added a QSplitter to the shortcut dialog (flo)
+31.10.2011:
+        - Translation code fixes and added almost-complete German translation (flo)
+28.10.2011:
+        - Slight fix of midi SMF 1 export. Include meta 0x01 text event comment. (Tim)
+        - Added Automation header in Song::execMidiAutomationCtlPopup().
+        - Code comments cleanup in Song. 
+27.10.2011:
+        - Adapt context menu in arranger after what track types are currently visible there
+          Now it only allows to create the track types which are set to be visible (rj)
+        - Uninitalized value fixes in ScoreEdit (flo)
+26.10.2011:
+        - Changed visibility of utility tracks so they are not seen by default in arranger (rj)
+        - Added a default audio connection in default.med (rj)
+        - More memory access fixes (flo)
+24.10.2011:
         - Fixed bug #3293339: Midi file export SMF format 0 broken. (Tim)
           Removed erroneous extra 2 bytes. Allow metas in SMF0 in MidiFile::writeEvent().
           Fixed very weird timing issue MidiFile::write(). See comments there (hidden problems lurking still?). 
@@ -6,8 +36,11 @@
            SMF 0 grabs the track name and comment from first midi track in arranger. Iterate full tracks list 
            instead of midis list in MusE::exportMidi(), so that user can rearrange tracks on the fly before exporting. 
           Some not fully understood useage of meta 0x0F/0x01 text events in MusE::exportMidi(). Hopefully correct...
-22.10.2010:
+        - Memory access fixes (flo)
+22.10.2011:
         - Catch return in spin boxes and move focus away (rj)
+21.10.2011:
+        - rename fix (flo)
 20.10.2011:
         - Added missing triplets in quantisation dialog (rj)
 16.10.2011:

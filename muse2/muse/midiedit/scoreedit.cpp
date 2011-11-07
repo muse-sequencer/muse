@@ -88,10 +88,6 @@ QString IntToQStr(int i);
 
 
 
-#define APPLY_TO_SELECTED_STRING tr("Apply to selected notes:")
-#define APPLY_TO_NEW_STRING tr("Apply to new notes:")
-
-
 //PIXELS_PER_NOTEPOS must be greater or equal to 3*NOTE_XLEN + 2*NOTE_SHIFT
 //because if tick 0 is at x=0: the notes can be shifted by NOTE_SHIFT.
 //additionally, they can be moved by NOTE_XLEN (collision avoiding)
@@ -223,6 +219,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 
 	xscroll->setMinimum(0);
 	yscroll->setMinimum(0);
+	xscroll->setValue(0);
+	yscroll->setValue(0);
 
 	menu_mapper=new QSignalMapper(this);
 	connect(menu_mapper, SIGNAL(mapped(int)), SLOT(menu_command(int)));
@@ -300,9 +298,9 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	
 	note_settings_toolbar->addSeparator();
 	
-	apply_velo_to_label = new QLabel(APPLY_TO_NEW_STRING, note_settings_toolbar);
-		int w1 = apply_velo_to_label->fontMetrics().width(APPLY_TO_NEW_STRING);
-		int w2 = apply_velo_to_label->fontMetrics().width(APPLY_TO_SELECTED_STRING);
+	apply_velo_to_label = new QLabel(tr("Apply to new notes:"), note_settings_toolbar);
+		int w1 = apply_velo_to_label->fontMetrics().width(tr("Apply to new notes:"));
+		int w2 = apply_velo_to_label->fontMetrics().width(tr("Apply to selected notes:"));
 		if (w1>w2) 
 			apply_velo_to_label->setFixedWidth(w1+5);
 		else 
@@ -612,11 +610,11 @@ void ScoreEdit::song_changed(int flags)
 		map<MusECore::Event*, MusECore::Part*> selection=get_events(score_canvas->get_all_parts(),1);
 		if (selection.empty())
 		{
-			apply_velo_to_label->setText(APPLY_TO_NEW_STRING);
+			apply_velo_to_label->setText(tr("Apply to new notes:"));
 		}
 		else
 		{
-			apply_velo_to_label->setText(APPLY_TO_SELECTED_STRING);
+			apply_velo_to_label->setText(tr("Apply to selected notes:"));
 			
 			int velo=-1;
 			int velo_off=-1;
@@ -662,6 +660,7 @@ void ScoreEdit::canvas_height_changed(int height)
 void ScoreEdit::viewport_height_changed(int height)
 {
 	int val=score_canvas->canvas_height() - height;
+	// FINDMICHJETZT canvas_height() is uninitalized!
 	if (val<0) val=0;
 	yscroll->setPageStep(height * PAGESTEP);
 	yscroll->setMaximum(val);
@@ -1454,8 +1453,8 @@ void ScoreCanvas::fully_recalculate()
 
 void ScoreCanvas::song_changed(int flags)
 {
-        if(parent && parent->deleting())  // Ignore while while deleting to prevent crash.
-          return;
+	if(parent && parent->deleting())  // Ignore while while deleting to prevent crash.
+		return;
         
 	if (flags & (SC_PART_MODIFIED | SC_PART_REMOVED | SC_PART_INSERTED | SC_TRACK_REMOVED))
 	{
@@ -1506,7 +1505,7 @@ int ScoreCanvas::canvas_width()
 
 int ScoreCanvas::canvas_height()
 {
-	return staves.rbegin()->y_bottom;
+	return staves.empty() ? 0 : staves.rbegin()->y_bottom;
 }
 
 int ScoreCanvas::viewport_width()
@@ -2796,6 +2795,7 @@ void ScoreCanvas::draw_note_lines(QPainter& p, int y, bool reserve_akkolade_spac
 {
 	int xbegin = reserve_akkolade_space ? AKKOLADE_LEFTMARGIN+AKKOLADE_WIDTH+AKKOLADE_RIGHTMARGIN : 0;
 	int xend=width();
+	// FINDMICHJETZT y is uninitalized!
 	
 	p.setPen(Qt::black);
 	
@@ -4186,7 +4186,7 @@ void ScoreCanvas::pos_changed(int index, unsigned tick, bool scroll)
 		{
 			switch (MusEGlobal::song->follow())
 			{
-				case  MusECore::Song::NO: break;
+				case MusECore::Song::NO: break;
 				case MusECore::Song::JUMP:  goto_tick(tick,false);  break;
 				case MusECore::Song::CONTINUOUS:  goto_tick(tick,true);  break;
 			}
@@ -4594,17 +4594,15 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     changing "share" status, the changed state isn't stored
  *   ? pasting in editors sometimes fails oO? ( ERROR: reading eventlist
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
+ * > o non-mdi topwin states aren't restored when launching muse2 somefile.med
  * 
  * CURRENT TODO
- * ! o fix sigedit boxes (see also "important todo")
- *   o fix valgrind problems
- * > o drum editor: channel-stuff
+ * > o fix valgrind problems (the two "FINDMICHJETZT" lines in scoreedit.cpp)
+ * > o newly created windows have to be focussed!
  *
  * IMPORTANT TODO
- * ! o fix sigedit boxes (see also "current todo")
  *   o add "dotted quarter" quantize option (for 6/8 beat)
  *   o ticks-to-quarter spinboxes
- *   o newly created windows have to be focussed!
  *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer
  *     journey to the menu bar. try to find a way which does not involve duplicate code!
  *   o implement borland-style maximize: free windows do not cover the main menu, even when maximized

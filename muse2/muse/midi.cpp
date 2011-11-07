@@ -25,7 +25,6 @@
 #include <cmath>
 #include <errno.h>
 #include <values.h>
-#include <assert.h>
 
 #include "song.h"
 #include "midi.h"

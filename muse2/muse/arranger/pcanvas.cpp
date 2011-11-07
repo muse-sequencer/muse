@@ -430,6 +430,13 @@ QPoint PartCanvas::raster(const QPoint& p) const
       return QPoint(x, y);
       }
 
+
+void PartCanvas::songIsClearing()
+{
+  curItem=NULL;
+  items.clearDelete();
+}
+
 //---------------------------------------------------------
 //   partsChanged
 //---------------------------------------------------------
@@ -437,6 +444,10 @@ QPoint PartCanvas::raster(const QPoint& p) const
 void PartCanvas::partsChanged()
       {
       //items.clear();
+      int sn = -1;
+      if (curItem) sn=curItem->part()->sn();
+      curItem=NULL;      
+      
       items.clearDelete();
       for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
             MusECore::PartList* pl = (*t)->parts();
@@ -444,6 +455,10 @@ void PartCanvas::partsChanged()
                   MusECore::Part* part = i->second;
                   NPart* np = new NPart(part);
                   items.add(np);
+                  
+                  if (np->part()->sn() == sn)
+                    curItem=np;
+                  
                   if (i->second->selected()) {
                         selectItem(np, true);
                         }

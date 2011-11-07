@@ -71,7 +71,7 @@ class EventCanvas : public Canvas {
       bool _midiin;
 
       void updateSelection();
-      virtual void addItem(MusECore::Part*, MusECore::Event&) = 0;
+      virtual CItem* addItem(MusECore::Part*, MusECore::Event&) = 0;
       // Added by T356.
       virtual QPoint raster(const QPoint&) const;
       virtual MusECore::Undo moveCanvasItems(CItemList&, int, int, DragType) = 0;

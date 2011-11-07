@@ -24,8 +24,6 @@
 
 #include "ui_fdialogbuttons.h"
 
-class QStringList;
-
 namespace MusEGui {
 
 //---------------------------------------------------------
@@ -91,14 +89,11 @@ class ContentsPreview : public QWidget, public Q3FilePreview {
       };
 */
 
-//QString getSaveFileName(const QString& startWidth, const char** filter,
-QString getSaveFileName(const QString& startWidth, const QStringList& filters,
+QString getSaveFileName(const QString& startWidth, const char** filters,
          QWidget* parent, const QString& name);
-//QString getOpenFileName(const QString& startWidth, const char** filter,
-QString getOpenFileName(const QString& startWidth, const QStringList& filters,
+QString getOpenFileName(const QString& startWidth, const char** filters,
                         QWidget* parent, const QString& name, bool* openAll, MFileDialog::ViewType viewType = MFileDialog::PROJECT_VIEW);
-//QString getImageFileName(const QString& startWith, const char** filters, 
-QString getImageFileName(const QString& startWith, const QStringList& filters, 
+QString getImageFileName(const QString& startWith, const char** filters, 
          QWidget* parent, const QString& name);
 
 FILE* fileOpen(QWidget*, QString, const QString&,
@@ -119,8 +114,7 @@ class MFile {
    public:
       MFile(const QString& path, const QString& ext);
       ~MFile();
-      //FILE* open(const char* mode, const char** pattern,
-      FILE* open(const char* mode, const QStringList& pattern,
+      FILE* open(const char* mode, const char** patterns,
          QWidget* parent, bool noError,
          bool warnIfOverwrite, const QString& caption);
       };

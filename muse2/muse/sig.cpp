@@ -22,7 +22,6 @@
 //=========================================================
 
 #include <stdio.h>
-#include <assert.h>
 #include "sig.h"
 #include "gconfig.h"
 #include "xml.h"
@@ -51,14 +50,18 @@ SigList::SigList()
 void SigList::add(unsigned tick, int z, int n)
       {
       if (z == 0 || n == 0) {
-            printf("SigList::add illegal signature %d/%d\n", z, n);
+            printf("THIS SHOULD NEVER HAPPEN: SigList::add() illegal signature %d/%d\n", z, n);
             
             // Added p3.3.43
             return;
             }
       tick = raster1(tick, 0);
       iSigEvent e = upper_bound(tick);
-      assert(e != end());
+      if (e == end())
+      {
+        printf("THIS SHOULD NEVER HAPPEN: could not find upper_bound(%i) in SigList::add()!\n", tick);
+        return;
+      }
 
       if (tick == e->second->tick) {
             e->second->z = z;
@@ -185,7 +188,11 @@ int SigList::ticksMeasure(unsigned tick) const
 int SigList::ticksBeat(unsigned tick) const
       {
       ciSigEvent i = upper_bound(tick);
-      assert(i != end());
+      if (i == end())
+      {
+        printf("THIS SHOULD NEVER HAPPEN: couldn't find sig event for tick=%i in SigList::ticksBeat()!\n",tick);
+        return 0;
+      }
       return ticks_beat(i->second->n);
       }
 
@@ -202,7 +209,7 @@ int SigList::ticks_beat(int n) const
             case 32:  m >>= 3; break;           // 48
             case 64:  m >>= 4; break;           // 24
             case 128: m >>= 5; break;           // 12
-            default: assert(false); break;
+            default: printf("THIS SHOULD NEVER HAPPEN: invalid function call in SigList::ticks_beat(): n=%i\n",n); break;
             }
       return m;
       }
@@ -308,7 +315,11 @@ unsigned SigList::raster1(unsigned t, int raster) const
       if (raster == 1)
             return t;
       ciSigEvent e = upper_bound(t);
-      assert(e != end());
+      if (e == end())
+      {
+        printf("THIS SHOULD NEVER HAPPEN: couldn't find sig event for tick=%i in SigList::raster1()!\n", t);
+        return 0;
+      }
 
       int delta  = t - e->second->tick;
       int ticksM = ticks_beat(e->second->n) * e->second->z;
@@ -329,7 +340,11 @@ unsigned SigList::raster2(unsigned t, int raster) const
       if (raster == 1)
             return t;
       ciSigEvent e = upper_bound(t);
-      assert(e != end());
+      if (e == end())
+      {
+        printf("THIS SHOULD NEVER HAPPEN: couldn't find sig event for tick=%i in SigList::raster2()!\n", t);
+        return 0;
+      }
 
       int delta  = t - e->second->tick;
       int ticksM = ticks_beat(e->second->n) * e->second->z;
@@ -348,7 +363,11 @@ int SigList::rasterStep(unsigned t, int raster) const
       {
       if (raster == 0) {
             ciSigEvent e = upper_bound(t);
-            assert(e != end());
+            if (e == end())
+            {
+              printf("THIS SHOULD NEVER HAPPEN: couldn't find sig event for tick=%i in SigList::rasterStep()!\n", t);
+              return 0;
+            }
             return ticks_beat(e->second->n) * e->second->z;
             }
       return raster;

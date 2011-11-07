@@ -486,7 +486,9 @@ int main(int argc, char* argv[])
             printf("locale de\n");
 	    MusEGlobal::hIsB = false;
             }
-
+      
+      MusEGui::retranslate_function_dialogs();
+      
       if (MusEGlobal::loadPlugins)
             MusECore::initPlugins();
 

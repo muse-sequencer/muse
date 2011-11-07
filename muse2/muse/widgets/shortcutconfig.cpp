@@ -30,12 +30,12 @@
 //
 // Description:
 // Dialog for configuring keyboard shortcuts
-//
 
 #include <QCloseEvent>
 #include <QKeySequence>
 #include <QString>
 #include <QSettings>
+#include <QApplication>
 
 #include "shortcutconfig.h"
 #include "shortcutcapturedialog.h"
@@ -86,12 +86,12 @@ void ShortcutConfig::updateSCListView(int category)
       for (int i=0; i < SHRT_NUM_OF_ELEMENTS; i++) {
             if (shortcuts[i].type & category) {
                   newItem = new SCListViewItem(scListView, i);
-                  newItem->setText(SHRT_DESCR_COL, tr(shortcuts[i].descr));
+                  newItem->setText(SHRT_DESCR_COL, qApp->translate("shortcuts", shortcuts[i].descr));
                   //if(category == ALL_SHRT)
                   //  catpre = QString(shortcut_category[shortcuts[i].type].name) + QString(": ");
                   //else 
                   //  catpre.clear();  
-                  //newItem->setText(SHRT_DESCR_COL, catpre + tr(shortcuts[i].descr));  // Tim
+                  //newItem->setText(SHRT_DESCR_COL, catpre + tr(qApp->translate("shortcuts", shortcuts[i].descr));  // Tim
                   QKeySequence key = QKeySequence(shortcuts[i].key);
                   newItem->setText(SHRT_SHRTCUT_COL, key);
                   }

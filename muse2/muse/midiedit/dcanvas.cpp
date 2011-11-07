@@ -74,11 +74,11 @@ DEvent::DEvent(MusECore::Event e, MusECore::Part* p)
 //   addItem
 //---------------------------------------------------------
 
-void DrumCanvas::addItem(MusECore::Part* part, MusECore::Event& event)
+CItem* DrumCanvas::addItem(MusECore::Part* part, MusECore::Event& event)
       {
       if (signed(event.tick())<0) {
             printf("ERROR: trying to add event before current part!\n");
-            return;
+            return NULL;
       }
       
       DEvent* ev = new DEvent(event, part);
@@ -93,6 +93,8 @@ void DrumCanvas::addItem(MusECore::Part* part, MusECore::Event& event)
             //part = newPart;
             part->setLenTick(part->lenTick()+diff);
             }
+      
+      return ev;
       }
 
 //---------------------------------------------------------

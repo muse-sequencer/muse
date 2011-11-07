@@ -824,7 +824,7 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
       }
             
       QString oscUrl;
-      oscUrl = QString("%1%2/%3/%4").arg(QString(QT_TRANSLATE_NOOP("@default", url))).arg(typ).arg(baseName).arg(label);
+      oscUrl = QString("%1%2/%3/%4").arg(QString( url)).arg(typ).arg(baseName).arg(label);
       
                         
 #ifdef _USE_QPROCESS_FOR_GUI_
@@ -1087,7 +1087,7 @@ bool OscDssiIF::oscInitGui()
   if(!_oscSynthIF)
     return false;
     
-  return OscIF::oscInitGui(QT_TRANSLATE_NOOP("@default", "dssi_synth"), _oscSynthIF->dssiSynth()->baseName(), 
+  return OscIF::oscInitGui("dssi_synth", _oscSynthIF->dssiSynth()->baseName(), 
                            _oscSynthIF->dssiSynth()->name(), _oscSynthIF->dssiSynthI()->name(), 
                            _oscSynthIF->dssiSynth()->fileName(), _oscSynthIF->dssi_ui_filename()); 
 }
@@ -1160,7 +1160,7 @@ bool OscEffectIF::oscInitGui()
   if(!_oscPluginI)
     return false;
     
-  return OscIF::oscInitGui(QT_TRANSLATE_NOOP("@default", "ladspa_efx"), _oscPluginI->plugin()->lib(false), 
+  return OscIF::oscInitGui("ladspa_efx", _oscPluginI->plugin()->lib(false), 
                            _oscPluginI->plugin()->label(), _oscPluginI->label(), 
                            _oscPluginI->plugin()->fileName(), _oscPluginI->dssi_ui_filename());  
 }

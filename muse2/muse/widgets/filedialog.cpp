@@ -33,6 +33,7 @@
 #include "filedialog.h"
 #include "../globals.h"
 #include "gconfig.h"
+#include "helper.h"
 
 namespace MusEGui {
 
@@ -300,9 +301,11 @@ QString getFilterExtension(const QString &filter)
 //---------------------------------------------------------
 //   getOpenFileName
 //---------------------------------------------------------
-QString getOpenFileName(const QString &startWith,
-                        const QStringList& filters, QWidget* parent, const QString& name, bool* all, MFileDialog::ViewType viewType)
+QString getOpenFileName(const QString &startWith, const char** filters_chararray,
+            QWidget* parent, const QString& name, bool* all, MFileDialog::ViewType viewType)
       {
+      QStringList filters = localizedStringListFromCharArray(filters_chararray, "file_patterns");
+      
       QString initialSelection;  // FIXME Tim.
       MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, false);
       dlg->setNameFilters(filters);
@@ -339,9 +342,10 @@ QString getOpenFileName(const QString &startWith,
 //---------------------------------------------------------
 
 QString getSaveFileName(const QString &startWith,
-   //const char** filters, QWidget* parent, const QString& name)
-   const QStringList& filters, QWidget* parent, const QString& name)
+   const char** filters_chararray, QWidget* parent, const QString& name)
       {
+      QStringList filters = localizedStringListFromCharArray(filters_chararray, "file_patterns");
+      
       MFileDialog *dlg = new MFileDialog(startWith, QString::null, parent, true);
       dlg->setNameFilters(filters);
       dlg->setWindowTitle(name);
@@ -404,9 +408,9 @@ QString getSaveFileName(const QString &startWith,
 //---------------------------------------------------------
 
 QString getImageFileName(const QString& startWith,
-   //const char** filters, QWidget* parent, const QString& name)
-   const QStringList& filters, QWidget* parent, const QString& name)
+   const char** filters_chararray, QWidget* parent, const QString& name)
       {
+      QStringList filters = localizedStringListFromCharArray(filters_chararray, "file_patterns");
       QString initialSelection;
 	QString* workingDirectory = new QString(QDir::currentPath());
       if (!startWith.isEmpty() ) {
@@ -547,15 +551,14 @@ MFile::~MFile()
 //   open
 //---------------------------------------------------------
 
-//FILE* MFile::open(const char* mode, const char** pattern,
-FILE* MFile::open(const char* mode, const QStringList& pattern,
+FILE* MFile::open(const char* mode, const char** patterns_chararray,
    QWidget* parent, bool noError, bool warnIfOverwrite, const QString& caption)
       {
       QString name;
       if (strcmp(mode, "r") == 0)
-           name = getOpenFileName(path, pattern, parent, caption, 0);
+           name = getOpenFileName(path, patterns_chararray, parent, caption, 0);
       else
-           name = getSaveFileName(path, pattern, parent, caption);
+           name = getSaveFileName(path, patterns_chararray, parent, caption);
       if (name.isEmpty())
             return 0;
       f = fileOpen(parent, name, ext, mode, isPopen, noError,

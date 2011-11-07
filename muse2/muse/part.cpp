@@ -23,7 +23,6 @@
 //=========================================================
 
 #include <stdio.h>
-#include <assert.h>
 #include <cmath>
 
 #include "song.h"
@@ -805,7 +804,8 @@ void PartList::remove(Part* part)
                   break;
                   }
             }
-      assert(i != end());
+      if (i == end())
+        printf("THIS SHOULD NEVER HAPPEN: could not find the part in PartList::remove()!\n");
       }
 
 //---------------------------------------------------------
