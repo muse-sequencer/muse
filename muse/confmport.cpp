@@ -1125,8 +1125,7 @@ void MPConfig::songChanged(int flags)
       // Is it simply a midi controller value adjustment? Forget it.
       //if(flags == SC_MIDI_CONTROLLER)
       //  return;
-      // No need for anything but this, yet.
-      if(!(flags & SC_CONFIG))
+      if(!(flags & (SC_CONFIG | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED)))
         return;
     
       // Get currently selected index...
@@ -1299,32 +1298,29 @@ void MPConfig::songChanged(int flags)
       synthList->clear();
       for (std::vector<MusECore::Synth*>::iterator i = MusEGlobal::synthis.begin();
          i != MusEGlobal::synthis.end(); ++i) {
-            //s = (*i)->baseName();
-            //s = (*i)->name();
-
             QTreeWidgetItem* item = new QTreeWidgetItem(synthList);
-            //item->setText(0, s);
             item->setText(0, QString((*i)->baseName()));
+            item->setText(1, MusECore::synthType2String((*i)->synthType()));
             s.setNum((*i)->instances());
-            item->setText(1, s);
-	    item->setTextAlignment(1, Qt::AlignHCenter);
-            //item->setText(2, QString((*i)->baseName()));
-            item->setText(2, QString((*i)->name()));
+            item->setText(2, s);
+            //item->setTextAlignment(2, Qt::AlignHCenter);
+            item->setText(3, QString((*i)->name()));
             
-            item->setText(3, QString((*i)->version()));
-            item->setText(4, QString((*i)->description()));
+            item->setText(4, QString((*i)->version()));
+            item->setText(5, QString((*i)->description()));
             }
       instanceList->clear();
       MusECore::SynthIList* sl = MusEGlobal::song->syntis();
       for (MusECore::iSynthI si = sl->begin(); si != sl->end(); ++si) {
             QTreeWidgetItem* iitem = new QTreeWidgetItem(instanceList);
             iitem->setText(0, (*si)->name());
+            iitem->setText(1, MusECore::synthType2String((*si)->synth()->synthType()));
             if ((*si)->midiPort() == -1)
                   s = tr("<none>");
             else
                   s.setNum((*si)->midiPort() + 1);
-            iitem->setText(1, s);
-	    iitem->setTextAlignment(1, Qt::AlignHCenter);
+            iitem->setText(2, s);
+	    //iitem->setTextAlignment(2, Qt::AlignHCenter);
             }
       synthList->resizeColumnToContents(1);
       mdevView->resizeColumnsToContents();
@@ -1345,7 +1341,10 @@ void MPConfig::addInstanceClicked()
       QTreeWidgetItem* item = synthList->currentItem();
       if (item == 0)
             return;
-      MusECore::SynthI *si = MusEGlobal::song->createSynthI(item->text(0), item->text(2)); // Add at end of list.
+      // Add at end of list.
+      MusECore::SynthI *si = MusEGlobal::song->createSynthI(item->text(0), 
+                                                            item->text(3), 
+                                                            MusECore::string2SynthType(item->text(1))); 
       if(!si)
         return;
 
@@ -1374,8 +1373,9 @@ void MPConfig::removeInstanceClicked()
       MusECore::SynthIList* sl = MusEGlobal::song->syntis();
       MusECore::iSynthI ii;
       for (ii = sl->begin(); ii != sl->end(); ++ii) {
-            if ((*ii)->iname() == item->text(0))
-                  break;
+            if( (*ii)->iname() == item->text(0) && 
+                 MusECore::synthType2String((*ii)->synth()->synthType()) == item->text(1) )
+              break;
             }
       if (ii == sl->end()) {
             printf("synthesizerConfig::removeInstanceClicked(): synthi not found\n");

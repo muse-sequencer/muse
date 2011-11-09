@@ -91,7 +91,7 @@ class TopWin;
 class Transport;
 class VisibleTracks;
 
-#define MENU_ADD_SYNTH_ID_BASE 0x1000
+#define MENU_ADD_SYNTH_ID_BASE 0x8000
 
 
 //---------------------------------------------------------

@@ -1,3 +1,9 @@
+09.11.2011: 
+        - Further to 02.11.2011: Automatically convert old songs to use new 'fluid_synth' name.  (Tim...)
+        - Added enum Synth::Type (MESS_SYNTH, DSSI_SYNTH etc) and used it throughout, ex. in findSynth(), also in song file.
+          Protects from name conflicts with future MESS, DSSI synths, and simplifies adding future types (say LV2 etc.)
+        - Simplified populateAddSynth(), made it agnostic. No more hard-coded synth type sorting - uses Synth::Type now. 
+        - Fixed settings synth config lists not updated when 'Remove Instance' clicked. Also now shows the type in the lists. 
 07.11.2011:
         - fixed restore-window-state bug (flo)
         - fixed dialog translation problem (flo)

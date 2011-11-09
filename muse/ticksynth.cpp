@@ -49,6 +49,7 @@ class MetronomeSynth : public Synth {
       //MetronomeSynth(const QFileInfo& fi) : Synth(fi, QString("Metronome")) {}
       MetronomeSynth(const QFileInfo& fi) : Synth(fi, QString("Metronome"), QString("Metronome"), QString(), QString()) {}
       virtual ~MetronomeSynth() {}
+      virtual Type synthType() const { return METRO_SYNTH; }
       virtual void incInstances(int) {}
       virtual void* instantiate();
       

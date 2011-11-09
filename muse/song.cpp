@@ -165,10 +165,16 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
     if(n >= MENU_ADD_SYNTH_ID_BASE)
     {
       n -= MENU_ADD_SYNTH_ID_BASE;
+      int ntype = n / MENU_ADD_SYNTH_ID_BASE;
+      if(ntype >= Synth::SYNTH_TYPE_END)
+        return 0;
+
+      n %= MENU_ADD_SYNTH_ID_BASE;
       if(n >= (int)MusEGlobal::synthis.size())
         return 0;
         
-      SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->name(), insertAt);
+      printf("Song::addNewTrack synth: type:%d idx:%d class:%s label:%s\n", ntype, n, MusEGlobal::synthis[n]->baseName().toLatin1().constData(), MusEGlobal::synthis[n]->name().toLatin1().constData());  // REMOVE Tim.
+      SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->name(), (Synth::Type)ntype, insertAt);
       if(!si)
         return 0;
       

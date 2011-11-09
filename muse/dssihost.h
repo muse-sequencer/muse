@@ -88,6 +88,8 @@ class DssiSynth : public Synth {
    public:
       DssiSynth(QFileInfo&, const DSSI_Descriptor*); // removed const for QFileInfo
       virtual ~DssiSynth();
+      virtual Type synthType() const { return DSSI_SYNTH; }
+
       virtual void incInstances(int);
       virtual SynthIF* createSIF(SynthI*);
       

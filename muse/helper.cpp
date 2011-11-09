@@ -118,169 +118,55 @@ QMenu* populateAddSynth(QWidget* parent)
   //typedef std::multimap<std::string, int, addSynth_cmp_str >::iterator imap;
   typedef std::multimap<std::string, int >::iterator imap;
   
-  MusECore::MessSynth* synMESS   = 0;
-  QMenu* synpMESS = 0;
-  asmap mapMESS;
-
-  #ifdef DSSI_SUPPORT
-  MusECore::DssiSynth* synDSSI   = 0;
-  QMenu* synpDSSI = 0;
-  asmap mapDSSI;
-  #endif                  
   
-  #ifdef VST_SUPPORT
-  MusECore::VstSynth*  synVST    = 0;
-  QMenu* synpVST  = 0;
-  asmap mapVST;
-  #endif                  
+  int ntypes = MusECore::Synth::SYNTH_TYPE_END;
+  asmap smaps[ntypes];
+  QMenu* mmaps[ntypes];
+  for(int itype = 0; itype < ntypes; ++itype)
+    mmaps[itype] = 0;
   
-  // Not necessary, but what the heck.
-  QMenu* synpOther = 0;
-  asmap mapOther;
+  MusECore::Synth* synth;
+  MusECore::Synth::Type type;
   
-  //const int synth_base_id = 0x1000;
   int ii = 0;
   for(std::vector<MusECore::Synth*>::iterator i = MusEGlobal::synthis.begin(); i != MusEGlobal::synthis.end(); ++i) 
   {
-    synMESS = dynamic_cast<MusECore::MessSynth*>(*i);
-    if(synMESS)
-    {
-      mapMESS.insert( std::pair<std::string, int> (std::string(synMESS->description().toLower().toLatin1().constData()), ii) );
-    }
-    else
-    {
-      
-      #ifdef DSSI_SUPPORT
-      synDSSI = dynamic_cast<MusECore::DssiSynth*>(*i);
-      if(synDSSI)
-      {
-        mapDSSI.insert( std::pair<std::string, int> (std::string(synDSSI->description().toLower().toLatin1().constData()), ii) );
-      }
-      else
-      #endif                      
-      
-      {
-        #ifdef VST_SUPPORT
-        synVST = dynamic_cast<MusECore::VstSynth*>(*i);
-        if(synVST)
-        {
-          mapVST.insert( std::pair<std::string, int> (std::string(synVST->description().toLower().toLatin1().constData()), ii) );
-        }
-        else
-        #endif                      
-        
-        {
-          mapOther.insert( std::pair<std::string, int> (std::string((*i)->description().toLower().toLatin1().constData()), ii) );
-        }
-      }
-    }
+    synth = *i;
+    type = synth->synthType();
+    if(type >= ntypes)
+      continue; 
+    smaps[type].insert( std::pair<std::string, int> (std::string(synth->description().toLower().toLatin1().constData()), ii) );
   
     ++ii;
   }
   
   int sz = MusEGlobal::synthis.size();
-  for(imap i = mapMESS.begin(); i != mapMESS.end(); ++i) 
-  {
-    int idx = i->second;
-    if(idx > sz)           // Sanity check
-      continue;
-    MusECore::Synth* s = MusEGlobal::synthis[idx];
-    if(s)
+  for(int itype = 0; itype < ntypes; ++itype)
+  {  
+    for(imap i = smaps[itype].begin(); i != smaps[itype].end(); ++i) 
     {
-      // No MESS sub-menu yet? Create it now.
-      if(!synpMESS)
-        synpMESS = new QMenu(parent);
-      QAction* sM = synpMESS->addAction(s->description() + " <" + s->name() + ">");
-      sM->setData(MENU_ADD_SYNTH_ID_BASE + idx);
-    }  
+      int idx = i->second;
+      if(idx > sz)           // Sanity check
+        continue;
+      synth = MusEGlobal::synthis[idx];
+      if(synth)
+      {
+        // No sub-menu yet? Create it now.
+        if(!mmaps[itype])
+        {  
+          mmaps[itype] = new QMenu(parent);
+          mmaps[itype]->setIcon(*synthIcon);
+          mmaps[itype]->setTitle(MusECore::synthType2String((MusECore::Synth::Type)itype));
+          synp->addMenu(mmaps[itype]);
+        }  
+        QAction* act = mmaps[itype]->addAction(synth->description() + " <" + synth->name() + ">");
+        act->setData( MENU_ADD_SYNTH_ID_BASE * (itype + 1) + idx );
+      }  
+    }
   }
-  
-  #ifdef DSSI_SUPPORT
-  for(imap i = mapDSSI.begin(); i != mapDSSI.end(); ++i) 
-  {
-    int idx = i->second;
-    if(idx > sz)           
-      continue;
-    MusECore::Synth* s = MusEGlobal::synthis[idx];
-    if(s)
-    {
-      // No DSSI sub-menu yet? Create it now.
-      if(!synpDSSI)
-        synpDSSI = new QMenu(parent);
-      //synpDSSI->insertItem(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
-      QAction* sD = synpDSSI->addAction(s->description() + " <" + s->name() + ">");
-      sD->setData(MENU_ADD_SYNTH_ID_BASE + idx);
-    }  
-  }
-  #endif
-  
-  #ifdef VST_SUPPORT
-  for(imap i = mapVST.begin(); i != mapVST.end(); ++i) 
-  {
-    int idx = i->second;
-    if(idx > sz)           
-      continue;
-    Synth* s = MusEGlobal::synthis[idx];
-    if(s)
-    {
-      // No VST sub-menu yet? Create it now.
-      if(!synpVST)
-        synpVST = new QMenu(parent);
-      QAction* sV = synpVST->addAction(s->description() + " <" + "@default", s->name() + ">");
-      sV->setData(MENU_ADD_SYNTH_ID_BASE + idx);
-    }  
-  }
-  #endif
-  
-  for(imap i = mapOther.begin(); i != mapOther.end(); ++i) 
-  {
-    int idx = i->second;
-    if(idx > sz)          
-      continue;
-    MusECore::Synth* s = MusEGlobal::synthis[idx];
-    // No Other sub-menu yet? Create it now.
-    if(!synpOther)
-      synpOther = new QMenu(parent);
-    //synpOther->insertItem(QT_TRANSLATE_NOOP("@default", s->description()) + " <" + QT_TRANSLATE_NOOP("@default", s->name()) + ">", MENU_ADD_SYNTH_ID_BASE + idx);
-    QAction* sO = synpOther->addAction(s->description() + " <" + s->name() + ">");
-    sO->setData(MENU_ADD_SYNTH_ID_BASE + idx);
-  }
-  
-  if(synpMESS)
-  {
-    synpMESS->setIcon(*synthIcon);
-    synpMESS->setTitle("MESS");
-    synp->addMenu(synpMESS);
-  }
-  
-  #ifdef DSSI_SUPPORT
-  if(synpDSSI)
-  {
-    synpDSSI->setIcon(*synthIcon);
-    synpDSSI->setTitle("DSSI");
-    synp->addMenu(synpDSSI);
-  }  
-  #endif
-  
-  #ifdef VST_SUPPORT
-  if(synpVST)
-  {
-    synpVST->setIcon(*synthIcon);
-    synpVST->setTitle("FST");
-    synp->addMenu(synpVST);
-  }  
-  #endif
-  
-  if(synpOther)
-  {
-    synpOther->setIcon(*synthIcon);
-    synpOther->setTitle(QObject::tr("Other"));
-    synp->addMenu(synpOther);
-  }
-  
+
   return synp;
 }
-
 
 //---------------------------------------------------------
 //   populateAddTrack
