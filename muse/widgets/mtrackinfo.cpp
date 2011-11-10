@@ -1081,11 +1081,9 @@ void MidiTrackInfo::instrPopup()
       //QMenu* pup = new QMenu;
       PopupMenu* pup = new PopupMenu(true);
       
-      //instr->populatePatchPopup(pop, channel, MusEGlobal::song->mtype(), track->type() == MusECore::Track::DRUM);
-      populatePatchPopup(instr, pup, channel, MusEGlobal::song->mtype(), track->type() == MusECore::Track::DRUM);
+      instr->populatePatchPopup(pup, channel, MusEGlobal::song->mtype(), track->type() == MusECore::Track::DRUM);
+      //populatePatchPopup(instr, pup, channel, MusEGlobal::song->mtype(), track->type() == MusECore::Track::DRUM);
 
-      //if(pop->actions().count() == 0)
-      //  return;
       if(pup->actions().count() == 0)
       {
         delete pup;
@@ -1095,7 +1093,6 @@ void MidiTrackInfo::instrPopup()
       connect(pup, SIGNAL(triggered(QAction*)), SLOT(instrPopupActivated(QAction*)));
       //connect(pup, SIGNAL(hovered(QAction*)), SLOT(instrPopupActivated(QAction*)));
       
-      //QAction *act = pop->exec(iPatch->mapToGlobal(QPoint(10,5)));
       QAction *act = pup->exec(iPatch->mapToGlobal(QPoint(10,5)));
       if(act) 
       {

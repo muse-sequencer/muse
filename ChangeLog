@@ -4,6 +4,7 @@
           Protects from name conflicts with future MESS, DSSI synths, and simplifies adding future types (say LV2 etc.)
         - Simplified populateAddSynth(), made it agnostic. No more hard-coded synth type sorting - uses Synth::Type now. 
         - Fixed settings synth config lists not updated when 'Remove Instance' clicked. Also now shows the type in the lists. 
+        - Fixed regression: No synthesizer patch names were listed.
 07.11.2011:
         - fixed restore-window-state bug (flo)
         - fixed dialog translation problem (flo)
