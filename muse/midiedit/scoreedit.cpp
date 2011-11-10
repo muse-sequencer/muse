@@ -4586,12 +4586,9 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
 /* BUGS and potential bugs
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
- *   o schedule_all_same_len_parts: if there are two clones A and B,
- *     and both A and B get scheduled to be expanded (because we
- *     have one event from A and one event from B), this causes a bug,
- *     because after A (and B) got resized, the B-resize is invalid!
- *   o when changing toolbarstate when sharing and immediately after that
+ * > o when changing toolbarstate when sharing and immediately after that
  *     changing "share" status, the changed state isn't stored
+ *     (could be solved by storing the current window when quitting/saving whatever)
  *   ? pasting in editors sometimes fails oO? ( ERROR: reading eventlist
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  * > o non-mdi topwin states aren't restored when launching muse2 somefile.med
