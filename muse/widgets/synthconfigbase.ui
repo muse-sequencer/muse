@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>630</width>
+    <width>810</width>
     <height>492</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MusE: Synth Configuration</string>
+   <string>Midi Port and Soft Synth Configuration</string>
   </property>
   <layout class="QGridLayout">
    <item row="1" column="1">
