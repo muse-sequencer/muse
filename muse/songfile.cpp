@@ -1325,13 +1325,19 @@ void MusE::readToplevels(MusECore::Xml& xml)
                               }
                         else if (tag == "marker") {
                               showMarker(true);
-                              if (toplevels.back()->type()==MusEGui::TopWin::MARKER)
-                                toplevels.back()->readStatus(xml);
+                              TopWin* tw = toplevels.findType(TopWin::MARKER);
+                              if(!tw)
+                                xml.skip("marker");
+                              else
+                                tw->readStatus(xml);
                               }
                         else if (tag == "arrangerview") {
                               showArranger(true);
-                              if (toplevels.back()->type()==MusEGui::TopWin::ARRANGER)
-                                toplevels.back()->readStatus(xml);
+                              TopWin* tw = toplevels.findType(TopWin::ARRANGER);
+                              if(!tw)
+                                xml.skip("arrangerview");
+                              else
+                                tw->readStatus(xml);
                               }
                         else if (tag == "waveedit") {
                               if(!pl->empty())
@@ -1343,8 +1349,11 @@ void MusE::readToplevels(MusECore::Xml& xml)
                               }
                         else if (tag == "cliplist") {
                               startClipList(true);
-                              if (toplevels.back()->type()==MusEGui::TopWin::CLIPLIST)
-                                toplevels.back()->readStatus(xml);
+                              TopWin* tw = toplevels.findType(TopWin::CLIPLIST);
+                              if(!tw)
+                                xml.skip("cliplist");
+                              else
+                                tw->readStatus(xml);
                               }
                         else
                               xml.unknown("MusE");

@@ -123,7 +123,7 @@ class ArrangerView : public TopWin
                 void addNewTrack(QAction* action);
 
 	signals:
-		void deleted(MusEGui::TopWin*);
+		void isDeleting(MusEGui::TopWin*);
 		void closed();
 
 	public slots:

@@ -368,7 +368,7 @@ ArrangerView::~ArrangerView()
 
 void ArrangerView::closeEvent(QCloseEvent* e)
 {
-  emit deleted(static_cast<TopWin*>(this));
+  emit isDeleting(static_cast<TopWin*>(this));
   emit closed();
   e->accept();
 }

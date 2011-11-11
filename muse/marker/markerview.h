@@ -96,7 +96,7 @@ class MarkerView : public TopWin {
       void songChanged(int);
       
    signals:
-      void deleted(MusEGui::TopWin*);
+      void isDeleting(MusEGui::TopWin*);
       void closed();
 
    public:

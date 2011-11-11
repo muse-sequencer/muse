@@ -572,4 +572,15 @@ void TopWin::resize(const QSize& s)
 	resize(s.width(), s.height());
 }
 
+TopWin* ToplevelList::findType(TopWin::ToplevelType type) const
+{
+  for (ciToplevel i = begin(); i != end(); ++i) 
+  {
+    if((*i)->type() == type) 
+      return (*i);
+  }  
+  return 0;
+}
+
+
 } // namespace MusEGui
