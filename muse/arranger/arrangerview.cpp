@@ -37,7 +37,7 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QPushButton>
-#include <QResizeEvent>
+//#include <QResizeEvent>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QSettings>

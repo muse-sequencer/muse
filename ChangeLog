@@ -1,5 +1,6 @@
 10.11.2011:
         - Updated spanish translation by Cristian Ramos (rj)
+        - Fixed meters not updating upon vertically shrinking arranger. (Tim)
 09.11.2011: 
         - Further to 02.11.2011: Automatically convert old songs to use new 'fluid_synth' name.  (Tim...)
         - Added enum Synth::Type (MESS_SYNTH, DSSI_SYNTH etc) and used it throughout, ex. in findSynth(), also in song file.
