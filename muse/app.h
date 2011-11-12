@@ -128,6 +128,7 @@ class MusE : public QMainWindow
       
       TopWin* activeTopWin;
       TopWin* currentMenuSharingTopwin;
+      TopWin* waitingForTopwin;
       
       std::list<QToolBar*> requiredToolbars; //always displayed
       std::list<QToolBar*> optionalToolbars; //only displayed when no toolbar-sharing window is active
@@ -371,6 +372,7 @@ class MusE : public QMainWindow
       
       void addMdiSubWindow(QMdiSubWindow*);
       void shareMenuAndToolbarChanged(MusEGui::TopWin*, bool);
+      void topwinMenuInited(MusEGui::TopWin*);
 
       void updateWindowMenu();
 

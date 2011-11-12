@@ -333,6 +333,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       progress              = 0;
       activeTopWin          = NULL;
       currentMenuSharingTopwin = NULL;
+      waitingForTopwin      = NULL;
       
       appName               = QString("MusE");
       setWindowTitle(appName);
@@ -1619,8 +1620,8 @@ void MusE::showMarker(bool flag)
             markerView = new MusEGui::MarkerView(this);
 
             connect(markerView, SIGNAL(closed()), SLOT(markerClosed()));
-            toplevels.push_back(markerView);
             markerView->show();
+            toplevels.push_back(markerView);
             }
       markerView->setVisible(flag);
       viewMarkerAction->setChecked(flag);
@@ -1642,6 +1643,20 @@ void MusE::markerClosed()
         setCurrentMenuSharingTopwin(NULL);
 
       updateWindowMenu();
+
+      // focus the last activated topwin which is not the marker view
+      QList<QMdiSubWindow*> l = mdiArea->subWindowList(QMdiArea::StackingOrder);
+      for (QList<QMdiSubWindow*>::iterator lit=l.begin(); lit!=l.end(); lit++)
+        if ((*lit)->isVisible() && (*lit)->widget() != markerView)
+        {
+          if (MusEGlobal::debugMsg)
+            printf("bringing '%s' to front instead of closed arranger window\n",(*lit)->widget()->windowTitle().toAscii().data());
+
+          bringToFront((*lit)->widget());
+
+          break; 
+        }
+      
       }
 
 //---------------------------------------------------------
@@ -1675,6 +1690,20 @@ void MusE::arrangerClosed()
       {
       viewArrangerAction->setChecked(false);
       updateWindowMenu();
+
+      // focus the last activated topwin which is not the arranger view
+      QList<QMdiSubWindow*> l = mdiArea->subWindowList(QMdiArea::StackingOrder);
+      for (QList<QMdiSubWindow*>::iterator lit=l.begin(); lit!=l.end(); lit++)
+        if ((*lit)->isVisible() && (*lit)->widget() != arrangerView)
+        {
+          if (MusEGlobal::debugMsg)
+            printf("bringing '%s' to front instead of closed arranger window\n",(*lit)->widget()->windowTitle().toAscii().data());
+
+          bringToFront((*lit)->widget());
+
+          break; 
+        }
+      
       }
 
 //---------------------------------------------------------
@@ -1830,8 +1859,8 @@ void MusE::openInScoreEdit(MusEGui::ScoreEdit* destination, MusECore::PartList* 
 	if (destination==NULL) // if no destination given, create a new one
 	{
       destination = new MusEGui::ScoreEdit(this, 0, _arranger->cursorValue());
-      destination->show();
       toplevels.push_back(destination);
+      destination->show();
       connect(destination, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
       connect(destination, SIGNAL(name_changed()), arrangerView, SLOT(scoreNamingChanged()));
       //connect(muse, SIGNAL(configChanged()), destination, SLOT(config_changed()));
@@ -1868,8 +1897,8 @@ void MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls)
       MusEGui::PianoRoll* pianoroll = new MusEGui::PianoRoll(pl, this, 0, _arranger->cursorValue());
       if(showDefaultCtrls)       // p4.0.12
         pianoroll->addCtrl();
-      pianoroll->show();
       toplevels.push_back(pianoroll);
+      pianoroll->show();
       connect(pianoroll, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), pianoroll, SLOT(configChanged()));
       updateWindowMenu();
@@ -1890,8 +1919,8 @@ void MusE::startListEditor()
 void MusE::startListEditor(MusECore::PartList* pl)
       {
       MusEGui::ListEdit* listEditor = new MusEGui::ListEdit(pl);
-      listEditor->show();
       toplevels.push_back(listEditor);
+      listEditor->show();
       connect(listEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
       connect(MusEGlobal::muse,SIGNAL(configChanged()), listEditor, SLOT(configChanged()));
       updateWindowMenu();
@@ -1904,8 +1933,8 @@ void MusE::startListEditor(MusECore::PartList* pl)
 void MusE::startMasterEditor()
       {
       MusEGui::MasterEdit* masterEditor = new MusEGui::MasterEdit();
-      masterEditor->show();
       toplevels.push_back(masterEditor);
+      masterEditor->show();
       connect(masterEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
       updateWindowMenu();
       }
@@ -1917,8 +1946,8 @@ void MusE::startMasterEditor()
 void MusE::startLMasterEditor()
       {
       MusEGui::LMaster* lmaster = new MusEGui::LMaster();
-      lmaster->show();
       toplevels.push_back(lmaster);
+      lmaster->show();
       connect(lmaster, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), lmaster, SLOT(configChanged()));
       updateWindowMenu();
@@ -1941,8 +1970,8 @@ void MusE::startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls)
       MusEGui::DrumEdit* drumEditor = new MusEGui::DrumEdit(pl, this, 0, _arranger->cursorValue());
       if(showDefaultCtrls)       // p4.0.12
         drumEditor->addCtrl();
-      drumEditor->show();
       toplevels.push_back(drumEditor);
+      drumEditor->show();
       connect(drumEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), drumEditor, SLOT(configChanged()));
       updateWindowMenu();
@@ -1966,8 +1995,8 @@ void MusE::startWaveEditor(MusECore::PartList* pl)
       {
       MusEGui::WaveEdit* waveEditor = new MusEGui::WaveEdit(pl);
       waveEditor->show();
-      connect(MusEGlobal::muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
       toplevels.push_back(waveEditor);
+      connect(MusEGlobal::muse, SIGNAL(configChanged()), waveEditor, SLOT(configChanged()));
       connect(waveEditor, SIGNAL(isDeleting(MusEGui::TopWin*)), SLOT(toplevelDeleting(MusEGui::TopWin*)));
       updateWindowMenu();
       }
@@ -2088,6 +2117,19 @@ void MusE::toplevelDeleting(MusEGui::TopWin* tl)
                   {
                     activeTopWin=NULL;
                     emit activeTopWinChanged(NULL);
+
+                    // focus the last activated topwin which is not the deleting one
+                    QList<QMdiSubWindow*> l = mdiArea->subWindowList(QMdiArea::StackingOrder);
+                    for (QList<QMdiSubWindow*>::iterator lit=l.begin(); lit!=l.end(); lit++)
+                      if ((*lit)->isVisible() && (*lit)->widget() != tl)
+                      {
+                        if (MusEGlobal::debugMsg)
+                          printf("bringing '%s' to front instead of closed window\n",(*lit)->widget()->windowTitle().toAscii().data());
+
+                        bringToFront((*lit)->widget());
+
+                        break; 
+                      }
                   }
               
                   if (tl == currentMenuSharingTopwin)
@@ -3071,21 +3113,32 @@ void MusE::focusChanged(QWidget*, QWidget* now)
   if (currentMenuSharingTopwin && (currentMenuSharingTopwin!=activeTopWin))
     currentMenuSharingTopwin->storeInitialState();
 
-
+  // if the activated widget is a QMdiSubWindow containing some TopWin
+  if ( (dynamic_cast<QMdiSubWindow*>(ptr)!=0) &&
+       (dynamic_cast<MusEGui::TopWin*>( ((QMdiSubWindow*)ptr)->widget() )!=0) )
+  {
+    waitingForTopwin=(MusEGui::TopWin*) ((QMdiSubWindow*)ptr)->widget();
+    return;
+  }
 
   while (ptr)
   {
+    if (MusEGlobal::heavyDebugMsg)  
+      printf("focusChanged: at widget %p with type %s\n",ptr, typeid(*ptr).name());
+    
     if ( (dynamic_cast<MusEGui::TopWin*>(ptr)!=0) || // *ptr is a TopWin or a derived class
          (ptr==this) )                      // the main window is selected
       break;
     ptr=dynamic_cast<QWidget*>(ptr->parent()); //in the unlikely case that ptr is a QObject, this returns NULL, which stops the loop
   }
   
+  MusEGui::TopWin* win=dynamic_cast<MusEGui::TopWin*>(ptr);
   // ptr is either NULL, this or the pointer to a TopWin
-  if (ptr!=this) // if the main win is selected, don't treat that as "none", but also don't handle it
+  
+  // if the main win or some deleting topwin is selected,
+  // don't treat that as "none", but also don't handle it
+  if (ptr!=this && (!win || !win->deleting()) )
   {
-    MusEGui::TopWin* win=dynamic_cast<MusEGui::TopWin*>(ptr);
-    
     // now 'win' is either NULL or the pointer to the active TopWin
     if (win!=activeTopWin)
     {
@@ -3233,6 +3286,26 @@ void MusE::shareMenuAndToolbarChanged(MusEGui::TopWin* win, bool val)
   }
 }
 
+void MusE::topwinMenuInited(MusEGui::TopWin* topwin)
+{
+  if (topwin==NULL)
+    return;
+    
+  if (topwin == waitingForTopwin)
+  {
+    if (waitingForTopwin->deleting())
+    {
+      waitingForTopwin=NULL;
+    }
+    else
+    {
+      activeTopWin=waitingForTopwin;
+      waitingForTopwin=NULL;
+      emit activeTopWinChanged(activeTopWin);
+    }
+  }
+}
+
 void MusE::updateWindowMenu()
 {
   bool sep;
@@ -3286,6 +3359,8 @@ void MusE::updateWindowMenu()
 void MusE::bringToFront(QWidget* widget)
 {
   MusEGui::TopWin* win=dynamic_cast<MusEGui::TopWin*>(widget);
+  if (!win) return;
+  
   if (win->isMdiWin())
   {
     win->show();

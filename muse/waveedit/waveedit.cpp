@@ -289,6 +289,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       }
 
       initTopwinState();
+      MusEGlobal::muse->topwinMenuInited(this);
       }
 
 void WaveEdit::initShortcuts()

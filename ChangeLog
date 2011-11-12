@@ -1,5 +1,11 @@
+12.11.2011:
+        - fixed "newly created subwins aren't focussed" problem (flo)
+        - when closing a subwin, automatically another (topmost) subwin 
+          gets activated (flo)
+        - fixed "non-subwin topwin-states aren't restored when using
+          'muse2 songfile.med'. (don't know who, probably Tim)
 11.11.2011:
-        - Fixed all template .med song files. (Tim)
+        -  Fixed all template .med song files. (Tim)
 10.11.2011:
         - Updated spanish translation by Cristian Ramos (rj)
         - Fixed meters not updating upon vertically shrinking arranger. (Tim)

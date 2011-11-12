@@ -503,6 +503,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	apply_velo=true;
 	
 	initTopwinState();
+	MusEGlobal::muse->topwinMenuInited(this);
 }
 
 void ScoreEdit::init_shortcuts()
@@ -4591,13 +4592,18 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     (could be solved by storing the current window when quitting/saving whatever)
  *   ? pasting in editors sometimes fails oO? ( ERROR: reading eventlist
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
- * > o non-mdi topwin states aren't restored when launching muse2 somefile.med
  * 
  * CURRENT TODO
  * > o fix valgrind problems (the two "FINDMICHJETZT" lines in scoreedit.cpp)
- * > o newly created windows have to be focussed!
+ * > o save more configuration stuff (quantPower, pxPerWhole, newLen,
+ *                              newNoteVelo, newNoteVeloOff, noteColor,
+ *                      preambleContainsKeysig, preambleContainsTimesig)
+ * > o add a songposition scrollbar-toolbar (in different sizes)
+ *     this might be equivalent to "redo transport menu" (below).
+ * > o add toolbar(s) for tempo- etc spinboxes from the transport window 
  *
  * IMPORTANT TODO
+ *   o support edge-scrolling when opening a lasso
  *   o add "dotted quarter" quantize option (for 6/8 beat)
  *   o ticks-to-quarter spinboxes
  *   o mirror most menus to an additional right-click context menu to avoid the long mouse pointer
@@ -4633,8 +4639,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *       calc_pos_add_list must be called before calc_item_pos then,
  *       and calc_item_pos must respect the pos_add_list instead of
  *       keeping its own pos_add variable (which is only an optimisation)
- *   o support edge-scrolling when opening a lasso
- *   o save more configuration stuff (quant, color)
  * 
  * really unimportant nice-to-haves
  *   o support in-song clef-changes
@@ -4647,10 +4651,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  * 
  * 
  * stuff for the other muse developers
- *   o update translations
- *   o remove ambiguous translation: "offset"="zeitversatz"
- *     this is ambigous in mod. note len and WRONG in mod. velo dialogs
- *
  *   o process accurate timesignatures from muse's list (has to be implemented first in muse)
  *      ( (2+2+3)/4 or (3+2+2)/4 instead of 7/4 )
  */
