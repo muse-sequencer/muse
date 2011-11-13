@@ -668,8 +668,20 @@ class ScoreCanvas : public MusEGui::View
 		void move_staff_below(list<staff_t>::iterator dest, list<staff_t>::iterator src);
 		void cleanup_staves();
 		void maybe_close_if_empty();
-		
+
+// defaults  ----------------------------------------------------------
+	public:
+		enum coloring_mode_t {COLOR_MODE_BLACK, COLOR_MODE_PART, COLOR_MODE_VELO};
+		static int _quant_power2_init;
+		static int _pixels_per_whole_init;
+		static int note_velo_init, note_velo_off_init;
+		static int new_len_init;
+		static coloring_mode_t coloring_mode_init;
+		static bool preamble_contains_timesig_init;
+		static bool preamble_contains_keysig_init;
+
 // member variables ---------------------------------------------------
+	private:
 		int _quant_power2;
 		int _pixels_per_whole;
 
@@ -746,7 +758,7 @@ class ScoreCanvas : public MusEGui::View
 		bool srec;
 		bool held_notes[128];
 
-		enum {COLOR_MODE_BLACK, COLOR_MODE_PART, COLOR_MODE_VELO} coloring_mode;
+		coloring_mode_t coloring_mode;
 		bool preamble_contains_keysig;
 		bool preamble_contains_timesig;
 

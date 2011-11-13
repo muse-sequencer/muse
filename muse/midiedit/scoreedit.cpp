@@ -166,6 +166,15 @@ QColor* mycolors; // array [NUM_MYCOLORS]
 
 set<QString> ScoreEdit::names;
 
+int ScoreCanvas::_quant_power2_init=3;
+int ScoreCanvas::_pixels_per_whole_init=300;
+int ScoreCanvas::note_velo_init=64;
+int ScoreCanvas::note_velo_off_init=64;
+int ScoreCanvas::new_len_init=0;
+ScoreCanvas::coloring_mode_t ScoreCanvas::coloring_mode_init=COLOR_MODE_BLACK;
+bool ScoreCanvas::preamble_contains_timesig_init=true;
+bool ScoreCanvas::preamble_contains_keysig_init=true;
+
 
 //---------------------------------------------------------
 //   ScoreEdit
@@ -293,8 +302,22 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	len_actions->addAction(n32_action);
 	len_actions->addAction(nlast_action);
 	
-	nlast_action->setChecked(true);
-	menu_command(CMD_NOTELEN_LAST);
+	switch (ScoreCanvas::new_len_init)
+	{
+		case 0: nlast_action->setChecked(true); menu_command(CMD_NOTELEN_LAST); break;
+		case 1: n1_action->setChecked(true); menu_command(CMD_NOTELEN_1); break;
+		case 2: n2_action->setChecked(true); menu_command(CMD_NOTELEN_2); break;
+		case 4: n4_action->setChecked(true); menu_command(CMD_NOTELEN_4); break;
+		case 8: n8_action->setChecked(true); menu_command(CMD_NOTELEN_8); break;
+		case 16: n16_action->setChecked(true); menu_command(CMD_NOTELEN_16); break;
+		case 32: n32_action->setChecked(true); menu_command(CMD_NOTELEN_32); break;
+		default:
+			cerr << "ERROR: THIS SHOULD NEVER HAPPEN. newLen is invalid in ScoreEdit::ScoreEdit.\n" <<
+							"       (newLen="<<ScoreCanvas::new_len_init<<"; the only valid values are 0,1,2,4,8,16 and 32)\n" <<
+							"       however, don't worry, this is no major problem, using 0 instead" << endl;
+			nlast_action->setChecked(true);
+			menu_command(CMD_NOTELEN_LAST);
+	}
 	
 	note_settings_toolbar->addSeparator();
 	
@@ -316,7 +339,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	connect(velo_spinbox, SIGNAL(editingFinished()), SLOT(velo_box_changed()));
 	connect(this,SIGNAL(velo_changed(int)), score_canvas, SLOT(set_velo(int)));
 	note_settings_toolbar->addWidget(velo_spinbox);
-	velo_spinbox->setValue(64);
+	velo_spinbox->setValue(ScoreCanvas::note_velo_init);
 
 	note_settings_toolbar->addWidget(new QLabel(tr("Off-Velocity:"), note_settings_toolbar));
 	velo_off_spinbox = new QSpinBox(this);
@@ -327,7 +350,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	connect(velo_off_spinbox, SIGNAL(editingFinished()), SLOT(velo_off_box_changed()));
 	connect(this,SIGNAL(velo_off_changed(int)), score_canvas, SLOT(set_velo_off(int)));
 	note_settings_toolbar->addWidget(velo_off_spinbox);
-	velo_off_spinbox->setValue(64);
+	velo_off_spinbox->setValue(ScoreCanvas::note_velo_off_init);
 
 
 	
@@ -336,13 +359,16 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	quant_toolbar->addWidget(new QLabel(tr("Quantisation:"), quant_toolbar));
 	quant_combobox = new QComboBox(this);
 	quant_combobox->addItem("2");  // if you add or remove items from
-	quant_combobox->addItem("4");  // here, also change quant_mapper[]
-	quant_combobox->addItem("8");  // in ScoreCanvas::set_quant()!
+	quant_combobox->addItem("4");  // here, also change all code regarding
+	quant_combobox->addItem("8");  // _quant_power2 and _quant_power2_init
 	quant_combobox->addItem("16"); // and MAX_QUANT_POWER (must be log2(largest_value))
 	quant_combobox->addItem("32");
+	quant_combobox->setCurrentIndex(score_canvas->quant_power2()-1);
+	// the above is intendedly executed BEFORE connecting. otherwise this would
+	// destroy pixels_per_whole_init!
 	connect(quant_combobox, SIGNAL(currentIndexChanged(int)), score_canvas, SLOT(set_quant(int)));
 	quant_toolbar->addWidget(quant_combobox);
-	quant_combobox->setCurrentIndex(2);
+	
 	
 	quant_toolbar->addSeparator();
 
@@ -353,7 +379,7 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 	connect(px_per_whole_spinbox, SIGNAL(valueChanged(int)), score_canvas, SLOT(set_pixels_per_whole(int)));
 	connect(score_canvas, SIGNAL(pixels_per_whole_changed(int)), px_per_whole_spinbox, SLOT(setValue(int)));
 	quant_toolbar->addWidget(px_per_whole_spinbox);
-	px_per_whole_spinbox->setValue(300);
+	px_per_whole_spinbox->setValue(ScoreCanvas::_pixels_per_whole_init);
 
 	QMenu* edit_menu = menuBar()->addMenu(tr("&Edit"));      
 
@@ -454,8 +480,18 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 			menu_mapper->setMapping(color_velo_action, CMD_COLOR_VELO);
 			menu_mapper->setMapping(color_part_action, CMD_COLOR_PART);
 			
-			color_black_action->setChecked(true);
-			menu_command(CMD_COLOR_BLACK);
+			switch (ScoreCanvas::coloring_mode_init)
+			{
+				case 0: color_black_action->setChecked(true); menu_command(CMD_COLOR_BLACK); break;
+				case 1: color_velo_action->setChecked(true); menu_command(CMD_COLOR_VELO); break;
+				case 2: color_part_action->setChecked(true); menu_command(CMD_COLOR_PART); break;
+				default:
+					cerr << "ERROR: THIS SHOULD NEVER HAPPEN. noteColor is invalid in ScoreEdit::ScoreEdit.\n" <<
+									"       (noteColor="<<ScoreCanvas::coloring_mode_init<<"; the only valid values are 0,1 and 2)\n" <<
+									"       however, don't worry, this is no major problem, using 0 instead" << endl;
+					color_black_action->setChecked(true);
+					menu_command(CMD_COLOR_BLACK);
+			}
 		
 		QMenu* preamble_menu = settings_menu->addMenu(tr("Set up &preamble"));
 			preamble_keysig_action = preamble_menu->addAction(tr("Display &key signature"));
@@ -466,8 +502,8 @@ ScoreEdit::ScoreEdit(QWidget* parent, const char* name, unsigned initPos)
 			preamble_keysig_action->setCheckable(true);
 			preamble_timesig_action->setCheckable(true);
 			
-			preamble_keysig_action->setChecked(true);
-			preamble_timesig_action->setChecked(true);
+			preamble_keysig_action->setChecked(ScoreCanvas::preamble_contains_keysig_init);
+			preamble_timesig_action->setChecked(ScoreCanvas::preamble_contains_timesig_init);
   
 		QAction* set_name_action = settings_menu->addAction(tr("Set Score &name"), menu_mapper, SLOT(map()));
 		menu_mapper->setMapping(set_name_action, CMD_SET_NAME);
@@ -1060,7 +1096,23 @@ void ScoreEdit::read_configuration(MusECore::Xml& xml)
 		switch (token)
 		{
 			case MusECore::Xml::TagStart:
-				if (tag == "topwin")
+				if (tag=="quantPowerInit")
+					ScoreCanvas::_quant_power2_init=xml.parseInt();
+				else if (tag=="pxPerWholeInit")
+					ScoreCanvas::_pixels_per_whole_init=xml.parseInt();
+				else if (tag=="newNoteVeloInit")
+					ScoreCanvas::note_velo_init=xml.parseInt();
+				else if (tag=="newNoteVeloOffInit")
+					ScoreCanvas::note_velo_off_init=xml.parseInt();
+				else if (tag=="newLenInit")
+					ScoreCanvas::new_len_init=xml.parseInt();
+				else if (tag=="noteColorInit")
+					ScoreCanvas::coloring_mode_init=(ScoreCanvas::coloring_mode_t)xml.parseInt();
+				else if (tag=="preambleContainsKeysig")
+					ScoreCanvas::preamble_contains_keysig_init=xml.parseInt();
+				else if (tag=="preambleContainsTimesig")
+					ScoreCanvas::preamble_contains_timesig_init=xml.parseInt();
+				else if (tag == "topwin")
 					TopWin::readConfiguration(SCORE, xml);
 				else
 					xml.unknown("ScoreEdit");
@@ -1080,7 +1132,18 @@ void ScoreEdit::read_configuration(MusECore::Xml& xml)
 void ScoreEdit::write_configuration(int level, MusECore::Xml& xml)
 {
 	xml.tag(level++, "scoreedit");
+
+	xml.intTag(level, "quantPowerInit", ScoreCanvas::_quant_power2_init);
+	xml.intTag(level, "pxPerWholeInit", ScoreCanvas::_pixels_per_whole_init);
+	xml.intTag(level, "newNoteVeloInit", ScoreCanvas::note_velo_init);
+	xml.intTag(level, "newNoteVeloOffInit", ScoreCanvas::note_velo_off_init);
+	xml.intTag(level, "newLenInit", ScoreCanvas::new_len_init);
+	xml.intTag(level, "noteColorInit", ScoreCanvas::coloring_mode_init);
+	xml.intTag(level, "preambleContainsKeysig", ScoreCanvas::preamble_contains_keysig_init);
+	xml.intTag(level, "preambleContainsTimesig", ScoreCanvas::preamble_contains_timesig_init);
+	
 	TopWin::writeConfiguration(SCORE, level, xml);
+
 	xml.etag(level, "scoreedit");
 }
 
@@ -1217,22 +1280,20 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 	dragged_event_part=NULL;
 	
 	last_len=384;
-	new_len=-1;
+	new_len=-1; // will be initalized with new_len_init by ScoreEdit::ScoreEdit();
 	
-	set_quant(2); //this is actually unneccessary, as while
-	              //initalizing the quant_combobox, this gets
-	              //called again. but for safety...
-	set_pixels_per_whole(300); //same as above. but safety rocks
+	_quant_power2=_quant_power2_init; // ScoreEdit relies on this to be done!
+	_pixels_per_whole_init = _pixels_per_whole_init;
 
-	set_velo(64);
-	set_velo_off(64);
+	note_velo=note_velo_init;
+	note_velo_off_init=note_velo_off_init;
 	
 	dragging_staff=false;
 	
 	
-	coloring_mode=COLOR_MODE_BLACK;
-	preamble_contains_keysig=true;
-	preamble_contains_timesig=true;
+	coloring_mode=coloring_mode_init;
+	preamble_contains_keysig=preamble_contains_keysig_init;
+	preamble_contains_timesig=preamble_contains_timesig_init;
 	
 	
 	x_scroll_speed=0;
@@ -4281,16 +4342,16 @@ void ScoreCanvas::menu_command(int cmd)
 {
 	switch (cmd)
 	{
-		case CMD_COLOR_BLACK:  coloring_mode=COLOR_MODE_BLACK; redraw(); break;
-		case CMD_COLOR_PART:   coloring_mode=COLOR_MODE_PART;  redraw(); break;
-		case CMD_COLOR_VELO:   coloring_mode=COLOR_MODE_VELO;  redraw(); break;
-		case CMD_NOTELEN_1:    new_len=TICKS_PER_WHOLE/ 1; break;
-		case CMD_NOTELEN_2:    new_len=TICKS_PER_WHOLE/ 2; break;
-		case CMD_NOTELEN_4:    new_len=TICKS_PER_WHOLE/ 4; break;
-		case CMD_NOTELEN_8:    new_len=TICKS_PER_WHOLE/ 8; break;
-		case CMD_NOTELEN_16:   new_len=TICKS_PER_WHOLE/16; break;
-		case CMD_NOTELEN_32:   new_len=TICKS_PER_WHOLE/32; break;
-		case CMD_NOTELEN_LAST: new_len=-1; break;
+		case CMD_COLOR_BLACK:  coloring_mode_init=coloring_mode=COLOR_MODE_BLACK; redraw(); break;
+		case CMD_COLOR_PART:   coloring_mode_init=coloring_mode=COLOR_MODE_PART;  redraw(); break;
+		case CMD_COLOR_VELO:   coloring_mode_init=coloring_mode=COLOR_MODE_VELO;  redraw(); break;
+		case CMD_NOTELEN_1:    new_len_init= 1; new_len=TICKS_PER_WHOLE/ 1; break;
+		case CMD_NOTELEN_2:    new_len_init= 2; new_len=TICKS_PER_WHOLE/ 2; break;
+		case CMD_NOTELEN_4:    new_len_init= 4; new_len=TICKS_PER_WHOLE/ 4; break;
+		case CMD_NOTELEN_8:    new_len_init= 8; new_len=TICKS_PER_WHOLE/ 8; break;
+		case CMD_NOTELEN_16:   new_len_init=16; new_len=TICKS_PER_WHOLE/16; break;
+		case CMD_NOTELEN_32:   new_len_init=32; new_len=TICKS_PER_WHOLE/32; break;
+		case CMD_NOTELEN_LAST: new_len_init= 0; new_len=-1; break;
 		
 		default: 
 			cerr << "ERROR: ILLEGAL FUNCTION CALL: ScoreCanvas::menu_command called with unknown command ("<<cmd<<")"<<endl;
@@ -4300,23 +4361,24 @@ void ScoreCanvas::menu_command(int cmd)
 void ScoreCanvas::preamble_keysig_slot(bool state)
 {
 	preamble_contains_keysig=state;
+	preamble_contains_keysig_init=state;
 	redraw();
 }
 void ScoreCanvas::preamble_timesig_slot(bool state)
 {
 	preamble_contains_timesig=state;
+	preamble_contains_timesig_init=state;
 	redraw();
 }
 
 void ScoreCanvas::set_quant(int val)
 {
-	int quant_mapper[]={1,2,3,4,5};
-
-	if ((val>=0) && (val<signed(sizeof(quant_mapper)/sizeof(*quant_mapper))))
+	if ((val>=0) && (val<5))
 	{
 		int old_len=quant_len();
 
-		_quant_power2=quant_mapper[val];
+		_quant_power2=val+1;
+		_quant_power2_init=_quant_power2;
 		
 		set_pixels_per_whole(pixels_per_whole() * quant_len() / old_len );
 
@@ -4343,6 +4405,7 @@ void ScoreCanvas::set_pixels_per_whole(int val)
 	// zero!)
 	
 	_pixels_per_whole=val;
+	_pixels_per_whole_init=val;
 	
 	for (list<staff_t>::iterator it=staves.begin(); it!=staves.end(); it++)
 		it->calc_item_pos();
@@ -4384,6 +4447,7 @@ void ScoreCanvas::maybe_close_if_empty()
 void ScoreCanvas::set_velo(int velo)
 {
 	note_velo=velo;
+	note_velo_init=velo;
 
 	if (parent->get_apply_velo())
 		modify_velocity(get_all_parts(),1, 0,velo);
@@ -4392,6 +4456,7 @@ void ScoreCanvas::set_velo(int velo)
 void ScoreCanvas::set_velo_off(int velo)
 {
 	note_velo_off=velo;
+	note_velo_off_init=velo;
 
 	if (parent->get_apply_velo())
 		modify_off_velocity(get_all_parts(),1, 0,velo);
@@ -4595,9 +4660,6 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  * 
  * CURRENT TODO
  * > o fix valgrind problems (the two "FINDMICHJETZT" lines in scoreedit.cpp)
- * > o save more configuration stuff (quantPower, pxPerWhole, newLen,
- *                              newNoteVelo, newNoteVeloOff, noteColor,
- *                      preambleContainsKeysig, preambleContainsTimesig)
  * > o add a songposition scrollbar-toolbar (in different sizes)
  *     this might be equivalent to "redo transport menu" (below).
  * > o add toolbar(s) for tempo- etc spinboxes from the transport window 
