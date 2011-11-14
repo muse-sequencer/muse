@@ -1,3 +1,8 @@
+14.11.2011:
+        - Fixed: Do not clear midi ports upon 'new' (template) or 'import midi'. (Tim)
+          Enabled some old code with which I had problems before, but that was long before 'clearing' fixes. 
+          Remaining TODOS: 'New' Synth.med template still replaces existing midi ports, and only
+           the first port appears to be auto-connected to inputs upon import midi.
 13.11.2011:
         - ScoreEdit now saves some default init values (flo)
         - seems like this fixed some valgrind bugs as well (flo)

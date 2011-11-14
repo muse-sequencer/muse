@@ -1392,14 +1392,14 @@ void MusE::loadTemplate()
       if (!fn.isEmpty()) {
             // MusEGlobal::museProject = QFileInfo(fn).absolutePath();
             
-            loadProjectFile(fn, true, true);
+            //loadProjectFile(fn, true, true);
             // With templates, don't clear midi ports. 
             // Any named ports in the template file are useless since they likely 
             //  would not be found on other users' machines.
             // So keep whatever the user currently has set up for ports.  
             // Note that this will also keep the current window configurations etc.
             //  but actually that's also probably a good thing. p4.0.17 Tim.  TESTING: Maybe some problems...
-            //loadProjectFile(fn, true, false);
+            loadProjectFile(fn, true, false);
             
             setUntitledProject();
             }

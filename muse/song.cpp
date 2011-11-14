@@ -1935,7 +1935,7 @@ void Song::panic()
 //    If clear_all is false, it will not touch things like midi ports.  
 //---------------------------------------------------------
 
-void Song::clear(bool signal, bool /*clear_all*/)
+void Song::clear(bool signal, bool clear_all)
       {
       if(MusEGlobal::debugMsg)
         printf("Song::clear\n");
@@ -1960,7 +1960,7 @@ void Song::clear(bool signal, bool /*clear_all*/)
         // p3.3.50 Reset this.
         MusEGlobal::midiPorts[i].setFoundInSongFile(false);
 
-        //if(clear_all)  // Allow not touching devices. p4.0.17  TESTING: Maybe some problems...
+        if(clear_all)  // Allow not touching devices. p4.0.17  TESTING: Maybe some problems...
           // This will also close the device.
           MusEGlobal::midiPorts[i].setMidiDevice(0);
       }
@@ -1979,7 +1979,7 @@ void Song::clear(bool signal, bool /*clear_all*/)
           //if((*imd)->deviceType() == MidiDevice::JACK_MIDI)
           if(dynamic_cast< MidiJackDevice* >(*imd))
           {
-            //if(clear_all)  // Allow not touching devices. p4.0.17  TESTING: Maybe some problems...
+            if(clear_all)  // Allow not touching devices. p4.0.17  TESTING: Maybe some problems...
             {
               // Remove the device from the list.
               MusEGlobal::midiDevices.erase(imd);
@@ -2942,7 +2942,7 @@ void Song::insertTrack2(Track* track, int idx)
       for (iTrack i = _tracks.begin(); i != _tracks.end(); ++i) {
             if ((*i)->isMidiTrack())
                   continue;
-            MusECore::WaveTrack* wt = (MusECore::WaveTrack*)*i;
+            MusECore::AudioTrack* wt = (MusECore::AudioTrack*)*i;
             if (wt->hasAuxSend()) {
                   wt->addAuxSend(n);
                   }

@@ -2064,8 +2064,8 @@ int DssiSynthIF::oscMidi(int a, int b, int c)
       {
         MusECore::MidiPlayEvent event(0, port, channel, a, b, c);
       
-        #ifdef DSSI_DEBUG 
-        printf(stderr, "DssiSynthIF::oscMidi midi event chn:%d a:%d b:%d\n", event.channel(), event.dataA(), event.dataB());  
+        #ifdef DSSI_DEBUG   
+        printf("DssiSynthIF::oscMidi midi event chn:%d a:%d b:%d\n", event.channel(), event.dataA(), event.dataB());  
         #endif
         
         MusEGlobal::midiPorts[port].sendEvent(event);
