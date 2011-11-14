@@ -259,8 +259,9 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
                   // ((AudioTrack*)track)->addAuxSend(lastAuxIdx);
                   break;
             default:
-                  printf("Song::addTrack() illegal type %d\n", type);
-                  abort();
+                  printf("THIS SHOULD NEVER HAPPEN: Song::addTrack() illegal type %d. returning NULL.\n"
+                         "save your work if you can and expect soon crashes!\n", type);
+                  return NULL;
             }
       track->setDefaultName();
       
@@ -2925,7 +2926,6 @@ void Song::insertTrack2(Track* track, int idx)
                   break;
             default:
                   fprintf(stderr, "unknown track type %d\n", track->type());
-                  // abort();
                   return;
             }
 
