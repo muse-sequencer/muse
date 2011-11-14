@@ -50,7 +50,7 @@ bool TopWin::initInited=false;
 TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlags f)
                  : QMainWindow(parent, f)
 {
-        _isDeleting = false;
+	_isDeleting = false;
 	if (initInited==false)
 		initConfiguration();
 
@@ -574,12 +574,12 @@ void TopWin::resize(const QSize& s)
 
 TopWin* ToplevelList::findType(TopWin::ToplevelType type) const
 {
-  for (ciToplevel i = begin(); i != end(); ++i) 
-  {
-    if((*i)->type() == type) 
-      return (*i);
-  }  
-  return 0;
+	for (ciToplevel i = begin(); i != end(); ++i) 
+	{
+		if((*i)->type() == type) 
+			return (*i);
+	}  
+	return 0;
 }
 
 

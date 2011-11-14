@@ -788,38 +788,38 @@ class ScoreCanvas : public MusEGui::View
 		
 		void add_new_parts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&);
 
-   public slots:
-      void x_scroll_event(int);
-      void y_scroll_event(int);
-      void song_changed(int);
-      void fully_recalculate();
-			void goto_tick(int,bool);
-			void pos_changed(int i, unsigned u, bool b);
-			void heartbeat_timer_event();
-			
-			void set_tool(int);
-			void set_quant(int);
-			void menu_command(int);
-			void preamble_keysig_slot(bool);
-			void preamble_timesig_slot(bool);
-			void set_pixels_per_whole(int);
+	public slots:
+		void x_scroll_event(int);
+		void y_scroll_event(int);
+		void song_changed(int);
+		void fully_recalculate();
+		void goto_tick(int,bool);
+		void pos_changed(int i, unsigned u, bool b);
+		void heartbeat_timer_event();
 
-			void set_velo(int);
-			void set_velo_off(int);
+		void set_tool(int);
+		void set_quant(int);
+		void menu_command(int);
+		void preamble_keysig_slot(bool);
+		void preamble_timesig_slot(bool);
+		void set_pixels_per_whole(int);
 
-			void set_steprec(bool);
-			
-			void update_parts(); //re-populates the set<MusECore::Part*>s from the set<int>s
+		void set_velo(int);
+		void set_velo_off(int);
+
+		void set_steprec(bool);
+
+		void update_parts(); //re-populates the set<MusECore::Part*>s from the set<int>s
 	signals:
-			void xscroll_changed(int);
-			void yscroll_changed(int);
-			void viewport_width_changed(int);
-			void canvas_width_changed(int);
-			void preamble_width_changed(int);
-			void viewport_height_changed(int);
-			void canvas_height_changed(int);
-			void pixels_per_whole_changed(int);
-			void pos_add_changed();
+		void xscroll_changed(int);
+		void yscroll_changed(int);
+		void viewport_width_changed(int);
+		void canvas_width_changed(int);
+		void preamble_width_changed(int);
+		void viewport_height_changed(int);
+		void canvas_height_changed(int);
+		void pixels_per_whole_changed(int);
+		void pos_add_changed();
 			
 	protected:
 		virtual void draw(QPainter& p, const QRect& rect);

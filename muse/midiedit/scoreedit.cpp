@@ -624,7 +624,7 @@ bool ScoreEdit::set_name(QString newname, bool emit_signal, bool emergency_name)
 
 ScoreEdit::~ScoreEdit()
 {
-	
+	names.erase(name);
 }
 
 void ScoreEdit::velo_box_changed()
@@ -639,9 +639,9 @@ void ScoreEdit::velo_off_box_changed()
 
 void ScoreEdit::song_changed(int flags)
 {
-        if(_isDeleting)  // Ignore while while deleting to prevent crash.
-          return;
-        
+	if(_isDeleting)  // Ignore while while deleting to prevent crash.
+		return;
+	     
 	if (flags & (SC_SELECTION | SC_EVENT_MODIFIED | SC_EVENT_REMOVED))
 	{
 		map<MusECore::Event*, MusECore::Part*> selection=get_events(score_canvas->get_all_parts(),1);
@@ -710,8 +710,9 @@ void ScoreEdit::viewport_height_changed(int height)
 
 void ScoreEdit::closeEvent(QCloseEvent* e)
 {
-        _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
-        
+	_isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
+	names.erase(name);
+	     
 	QSettings settings("MusE", "MusE-qt");
 	//settings.setValue("ScoreEdit/geometry", saveGeometry());
 	settings.setValue("ScoreEdit/windowState", saveState());
@@ -729,8 +730,8 @@ void ScoreEdit::menu_command(int cmd)
 		{
 			bool ok;
 			QString newname = QInputDialog::getText(this, tr("Enter the new score title"),
-                                          tr("Enter the new score title"), QLineEdit::Normal,
-                                          name, &ok);
+			                                    tr("Enter the new score title"), QLineEdit::Normal,
+			                                    name, &ok);
 			if (ok)
 			{
 				if (!set_name(newname))
@@ -1517,7 +1518,7 @@ void ScoreCanvas::song_changed(int flags)
 {
 	if(parent && parent->deleting())  // Ignore while while deleting to prevent crash.
 		return;
-        
+	     
 	if (flags & (SC_PART_MODIFIED | SC_PART_REMOVED | SC_PART_INSERTED | SC_TRACK_REMOVED))
 	{
 		update_parts();
@@ -1596,7 +1597,7 @@ void color_image(QImage& img, const QColor& color)
 {
 	uchar* ptr=img.bits();
 	//int bytes=img.byteCount();
-        int bytes=img.bytesPerLine() * img.height();   // By Tim. For older Qt versions. Tested OK on Qt4.5.
+	int bytes=img.bytesPerLine() * img.height();   // By Tim. For older Qt versions. Tested OK on Qt4.5.
 	int r,g,b;
 	color.getRgb(&r,&g,&b);
 	

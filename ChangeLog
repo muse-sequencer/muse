@@ -3,6 +3,8 @@
           Enabled some old code with which I had problems before, but that was long before 'clearing' fixes. 
           Remaining TODOS: 'New' Synth.med template still replaces existing midi ports, and only
            the first port appears to be auto-connected to inputs upon import midi.
+        - fixed ScoreEdit bug: names are removed from the set on close and on delete
+        - indentation fixes in scoreedit.cpp,h and cobject.cpp
 13.11.2011:
         - ScoreEdit now saves some default init values (flo)
         - seems like this fixed some valgrind bugs as well (flo)
