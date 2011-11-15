@@ -528,7 +528,8 @@ int get_paste_len()
 
                                     if (p->endTick() > end_tick)
                                           end_tick=p->endTick();
-
+                                    
+                                    unchainClone(p);
                                     delete p;
                                     }
                               }
