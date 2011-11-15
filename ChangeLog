@@ -3,8 +3,11 @@
           Enabled some old code with which I had problems before, but that was long before 'clearing' fixes. 
           Remaining TODOS: 'New' Synth.med template still replaces existing midi ports, and only
            the first port appears to be auto-connected to inputs upon import midi.
-        - fixed ScoreEdit bug: names are removed from the set on close and on delete
-        - indentation fixes in scoreedit.cpp,h and cobject.cpp
+        - fixed ScoreEdit bug: names are removed from the set on close and on delete. (Flo)
+        - indentation fixes in scoreedit.cpp,h and cobject.cpp (Flo)
+        - Removed 18.06.2011 experiment. Do not allow Synths to route to midi track inputs. (Tim) 
+          It worked with MESS so far, allowed recording gui control movement. May prove useful 
+           in future, but is a big auto-routing hassle ATM. Sections marked p4.0.35.
 13.11.2011:
         - ScoreEdit now saves some default init values (flo)
         - seems like this fixed some valgrind bugs as well (flo)
