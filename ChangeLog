@@ -1,3 +1,7 @@
+15.11.2011:
+        - Fixed wacky arranger part selection via KB when 'Move single armed track with selection' set. (Tim)
+          Arranger::songChanged() was way too liberal, esp calling partsChanged(). Side benefit: Arranger speed-ups.
+        - Changed internal 'undo' shortcut from ctrl-y to standard shift-ctrl-z. (Tim)
 14.11.2011:
         - Fixed: Do not clear midi ports upon 'new' (template) or 'import midi'. (Tim)
           Enabled some old code with which I had problems before, but that was long before 'clearing' fixes. 

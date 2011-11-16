@@ -574,7 +574,8 @@ void MidiTrackInfo::setLabelText()
         //gradient.setColorAt(0, c.darker());
         //gradient.setColorAt(0, c);
         //gradient.setColorAt(1, c.darker());
-        gradient.setColorAt(0, c.lighter());
+        gradient.setColorAt(0, c);
+        gradient.setColorAt(0.5, c.lighter());
         gradient.setColorAt(1, c);
         //palette.setBrush(QPalette::Button, gradient);
         //palette.setBrush(QPalette::Window, gradient);

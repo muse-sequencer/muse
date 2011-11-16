@@ -504,6 +504,7 @@ void MidiStrip::songChanged(int val)
         // Set the strip label's font.
         //label->setFont(MusEGlobal::config.fonts[1]);
         setLabelFont();
+        setLabelText();        
       }  
     }
 

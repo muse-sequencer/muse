@@ -147,6 +147,7 @@ void AudioStrip::songChanged(int val)
         // Set the strip label's font.
         //label->setFont(MusEGlobal::config.fonts[1]);
         setLabelFont();
+        setLabelText();        
         
         // Adjust minimum volume slider and label values.
         slider->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
