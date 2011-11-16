@@ -325,9 +325,8 @@ void Knob::rangeChange()
 
 void Knob::mousePressEvent(QMouseEvent *e)
 {
-  if (e->button() == Qt::MiddleButton || e->modifiers() & Qt::ControlModifier) {
+  if (e->button() == Qt::MidButton || e->modifiers() & Qt::ControlModifier) {
     int xpos = e->x() - width() /2;
-    int ypos = e->y() - height() /2;
     double v = float(e->y()) / height() * 1.2;
 
     double halfRange = (maxValue() - minValue())/2;
@@ -338,6 +337,11 @@ void Knob::mousePressEvent(QMouseEvent *e)
     }
     setValue(v * halfRange + midValue);
     SliderBase::valueChange();
+    
+    // fake a left-click to make the knob still "stick" to
+    // the mouse.
+    QMouseEvent temp(e->type(), e->pos(), Qt::LeftButton, e->buttons(), e->modifiers());
+    SliderBase::mousePressEvent(&temp);
     return;
   }
   SliderBase::mousePressEvent(e);
