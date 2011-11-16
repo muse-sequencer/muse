@@ -1,3 +1,7 @@
+16.11.2011:
+        - Ctrl+click or middle button now sets an absolute value for Knobs (as good as possible without advanced arithmetic) (rj)
+        - Structure operations: Split,Cut,Insert now work on audio tracks. The previous functionality with operating on selected
+          tracks have been split into separate menu items (rj)
 15.11.2011:
         - Fixed wacky arranger part selection via KB when 'Move single armed track with selection' set. (Tim)
           Arranger::songChanged() was way too liberal, esp calling partsChanged(). Side benefit: Arranger speed-ups.

@@ -89,7 +89,8 @@ class ArrangerView : public TopWin
 		QMenu* master;
 
 		QAction *strGlobalCutAction, *strGlobalInsertAction, *strGlobalSplitAction;
-		QAction *trackMidiAction, *trackDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
+    QAction *strGlobalCutSelAction, *strGlobalInsertSelAction, *strGlobalSplitSelAction;
+    QAction *trackMidiAction, *trackDrumAction, *trackWaveAction, *trackAOutputAction, *trackAGroupAction;
 		QAction *trackAInputAction, *trackAAuxAction;
 		QAction *editCutAction, *editCopyAction, *editCopyRangeAction;
 		QAction *editPasteAction, *editPasteCloneAction, *editPasteDialogAction, *editPasteCloneDialogAction;
@@ -119,7 +120,10 @@ class ArrangerView : public TopWin
 		void globalCut();
 		void globalInsert();
 		void globalSplit();
-		void cmd(int);
+    void globalCutSel();
+    void globalInsertSel();
+    void globalSplitSel();
+    void cmd(int);
                 void addNewTrack(QAction* action);
 
 	signals:

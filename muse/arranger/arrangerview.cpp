@@ -193,6 +193,10 @@ ArrangerView::ArrangerView(QWidget* parent)
   strGlobalInsertAction = new QAction(tr("Global Insert"), this);
   strGlobalSplitAction = new QAction(tr("Global Split"), this);
 
+  strGlobalCutSelAction = new QAction(tr("Global Cut - selected tracks"), this);
+  strGlobalInsertSelAction = new QAction(tr("Global Insert - selected tracks"), this);
+  strGlobalSplitSelAction = new QAction(tr("Global Split - selected tracks"), this);
+
 
 
   //-------------------------------------------------------------
@@ -246,7 +250,11 @@ ArrangerView::ArrangerView(QWidget* parent)
     menuStructure->addAction(strGlobalCutAction);
     menuStructure->addAction(strGlobalInsertAction);
     menuStructure->addAction(strGlobalSplitAction);
-  
+    menuStructure->addSeparator();
+    menuStructure->addAction(strGlobalCutSelAction);
+    menuStructure->addAction(strGlobalInsertSelAction);
+    menuStructure->addAction(strGlobalSplitSelAction);
+
   
   
   QMenu* functions_menu = menuBar()->addMenu(tr("Functions"));
@@ -341,6 +349,9 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(strGlobalCutAction, SIGNAL(activated()), SLOT(globalCut()));
   connect(strGlobalInsertAction, SIGNAL(activated()), SLOT(globalInsert()));
   connect(strGlobalSplitAction, SIGNAL(activated()), SLOT(globalSplit()));
+  connect(strGlobalCutSelAction, SIGNAL(activated()), SLOT(globalCutSel()));
+  connect(strGlobalInsertSelAction, SIGNAL(activated()), SLOT(globalInsertSel()));
+  connect(strGlobalSplitSelAction, SIGNAL(activated()), SLOT(globalSplitSel()));
 
 
 
@@ -728,5 +739,10 @@ void ArrangerView::updateVisibleTracksButtons()
 void ArrangerView::globalCut() { MusECore::globalCut(); }
 void ArrangerView::globalInsert() { MusECore::globalInsert(); }
 void ArrangerView::globalSplit() { MusECore::globalSplit(); }
+
+// variants only applicable for selected tracks
+void ArrangerView::globalCutSel() { MusECore::globalCut(true); }
+void ArrangerView::globalInsertSel() { MusECore::globalInsert(true); }
+void ArrangerView::globalSplitSel() { MusECore::globalSplit(true); }
 
 } // namespace MusEGui

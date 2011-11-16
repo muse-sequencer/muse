@@ -323,6 +323,26 @@ void Knob::rangeChange()
     repaint();
 }
 
+void Knob::mousePressEvent(QMouseEvent *e)
+{
+  if (e->button() == Qt::MiddleButton || e->modifiers() & Qt::ControlModifier) {
+    int xpos = e->x() - width() /2;
+    int ypos = e->y() - height() /2;
+    double v = float(e->y()) / height() * 1.2;
+
+    double halfRange = (maxValue() - minValue())/2;
+    double midValue = minValue() + halfRange;
+    // apply to range
+    if (xpos < 0) { // left values
+     v = -v;
+    }
+    setValue(v * halfRange + midValue);
+    SliderBase::valueChange();
+    return;
+  }
+  SliderBase::mousePressEvent(e);
+}
+
 //---------------------------------------------------------
 //   resizeEvent
 //---------------------------------------------------------
