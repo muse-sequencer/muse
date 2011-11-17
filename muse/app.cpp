@@ -991,17 +991,38 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
             name = MusEGlobal::config.startSong;
       }
       MusEGlobal::song->blockSignals(false);
-      loadProjectFile(name, useTemplate, true);
+      // loadProjectFile(name, useTemplate, true);  //commented out by flo: see below (*)
 
       changeConfig(false);
       QSettings settings("MusE", "MusE-qt");
       restoreGeometry(settings.value("MusE/geometry").toByteArray());
       //restoreState(settings.value("MusE/windowState").toByteArray());
 
-      MusEGlobal::song->update();
-      
-      updateWindowMenu();
+      //MusEGlobal::song->update(); // commented out by flo: will be done by the below (*)
+      //updateWindowMenu();         // same here
+
+      // this is (*).
+      // this is a really hackish workaround for the loading-on-startup problem.
+      // i have absolutely no idea WHY it breaks when using loadProjectFile()
+      // above, but it does on my machine (it doesn't on others!).
+      // the problem can be worked around by delaying loading the song file.
+      // i use hackishSongOpenTimer for this, which calls after 10ms a slot
+      // which then does the actual loadProjectFile() call.
+      // FIXME: please, if anyone finds the real problem, FIX it and
+      //        remove that dirty, dirty workaround!
+      hackishSongOpenFilename=name;
+      hackishSongOpenUseTemplate=useTemplate;
+      hackishSongOpenTimer=new QTimer(this);
+      hackishSongOpenTimer->setInterval(10);
+      hackishSongOpenTimer->setSingleShot(true);
+      connect(hackishSongOpenTimer, SIGNAL(timeout()), this, SLOT(hackishSongOpenTimerTimeout()));
+      hackishSongOpenTimer->start();
       }
+
+void MusE::hackishSongOpenTimerTimeout()
+{
+  loadProjectFile(hackishSongOpenFilename, hackishSongOpenUseTemplate, true);
+}
 
 MusE::~MusE()
 {

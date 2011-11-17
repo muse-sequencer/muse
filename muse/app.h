@@ -43,6 +43,7 @@ class QToolBar;
 class QToolButton;
 class QProgressDialog;
 class QMdiArea;
+class QTimer;
 
 namespace MusECore {
 class AudioOutput;
@@ -214,6 +215,10 @@ class MusE : public QMainWindow
       MidiTransformerDialog* midiTransformerDialog;
       QMenu* openRecent;
       
+      QTimer* hackishSongOpenTimer;
+      QString hackishSongOpenFilename;
+      bool hackishSongOpenUseTemplate;
+      
       bool readMidi(FILE*);
       void read(MusECore::Xml& xml, bool skipConfig, bool isTemplate);
       void processTrack(MusECore::MidiTrack* track);
@@ -328,6 +333,8 @@ class MusE : public QMainWindow
       void arrangeSubWindowsColumns();
       void tileSubWindows();
 
+      void hackishSongOpenTimerTimeout();
+      
    public slots:
       bool saveAs();
       void bounceToFile(MusECore::AudioOutput* ao = 0);
