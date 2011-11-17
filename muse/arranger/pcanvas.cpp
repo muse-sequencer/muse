@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //    $Id: pcanvas.cpp,v 1.48.2.26 2009/11/22 11:08:33 spamatica Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -1187,7 +1187,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
 
             //If we're at topmost, leave
             if (!track) {
-              printf("no track above!\n");
+              //printf("no track above!\n");
                   return;
                 }
             int middle = curItem->x() + curItem->part()->lenTick()/2;
@@ -1321,17 +1321,25 @@ void PartCanvas::keyPress(QKeyEvent* event)
             curItem = newItem;
             selectItem(newItem, true);
 
-            //Check if we've hit the upper or lower boundaries of the window. If so, set a new position
+            //Check if we've hit the left, right, upper or lower boundaries of the window. If so, scroll to new position.
             if (newItem->x() < mapxDev(0)) {
-                  int curpos = pos[0];
-                  setPos(0,newItem->x(),true);
-                  setPos(0,curpos,false); //Dummy to put the current position back once we've scrolled
+                  emit horizontalScroll(rmapx(newItem->x() - xorg) - 10);  // Leave some room.
                   }
-            else if (newItem->x() > mapxDev(width())) {
-                  int curpos = pos[0];
-                  setPos(0,newItem->x(),true);
-                  setPos(0,curpos,false); //Dummy to put the current position back once we've scrolled
+            else if (newItem->x() + newItem->width() > mapxDev(width())) {
+                  int mx = rmapx(newItem->x());
+                  int newx = mx + rmapx(newItem->width()) - width();
+                  emit horizontalScroll( (newx > mx ? mx - 10 : newx + 10) - rmapx(xorg) );
                   }
+                  
+            if (newItem->y() < mapyDev(0)) {
+                  int my = rmapy(newItem->y());
+                  int newy = my + rmapy(newItem->height()) - height();
+                  emit verticalScroll( (newy < my ? my - 10 : newy + 10) - rmapy(yorg) );
+                  }
+            else if (newItem->y() + newItem->height() > mapyDev(height())) {
+                  emit verticalScroll( rmapy(newItem->y() + newItem->height() - yorg) - height() + 10);
+                  }
+                  
             redraw();
             }
       }

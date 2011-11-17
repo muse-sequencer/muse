@@ -1,3 +1,6 @@
+17.11.2011:
+        - Fixed all arranger/pianoroll/drumedit keyboard scrolling. (Tim)
+          Changed PartCanvas and EventCanvas ::keyPress() key scrolling sections. Plus custom behavior tweaks in each case.
 16.11.2011:
         - Ctrl+click or middle button now sets an absolute value for Knobs (as good as possible without advanced arithmetic) (rj)
         - Structure operations: Split,Cut,Insert now work on audio tracks. The previous functionality with operating on selected
