@@ -4595,6 +4595,9 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *   ? pasting in editors sometimes fails oO? ( ERROR: reading eventlist
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  * > o non-mdi topwin states aren't restored when launching muse2 somefile.med
+ * ! o using super glue while a score editor displaying the glued parts
+ *     is open lets muse segfault. this may or may not be fixed in
+ *     the release branch :/
  * 
  * CURRENT TODO
  * > o fix valgrind problems (the two "FINDMICHJETZT" lines in scoreedit.cpp)

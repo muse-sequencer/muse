@@ -102,6 +102,8 @@ void shrink_parts(int raster=-1); //negative values mean "config.division"
 void expand_parts(int raster=-1);
 void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo& operations);
 void clean_parts();
+bool merge_selected_parts();
+bool merge_parts(const std::set<Part*>& parts);
 
 } // namespace MusECore
 

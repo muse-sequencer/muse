@@ -54,6 +54,7 @@
 #include "shortcuts.h"
 #include "gconfig.h"
 #include "app.h"
+#include "functions.h"
 #include "filedialog.h"
 #include "marker/marker.h"
 #include "mpevent.h"
@@ -664,6 +665,8 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       act_split->setData(2);
       QAction *act_glue = partPopup->addAction(QIcon(*glueIcon), tr("glue"));
       act_glue->setData(3);
+      QAction *act_superglue = partPopup->addAction(QIcon(*glueIcon), tr("super glue (merge selection)"));
+      act_superglue->setData(6);
       QAction *act_declone = partPopup->addAction(tr("de-clone"));
       act_declone->setData(15);
 
@@ -752,6 +755,9 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
             case 5:
                   copy(pl);
                   break;
+            case 6:
+                  MusECore::merge_selected_parts();
+                  break;
 
             case 14:    // wave edit
                     emit startEditor(pl, 4);
@@ -772,7 +778,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                   // Indicate undo, and do port controller values but not clone parts. 
                   // changed by flo93: removed start and endUndo, instead changed first bool to true
                   MusEGlobal::audio->msgChangePart(spart, dpart, true, true, false);
-                  break; // Has to be break here, right?
+                  break;
                   }
             case 16: // Export to file
                   {
@@ -800,7 +806,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                     for (MusECore::iEvent e = el->begin(); e != el->end(); ++e) 
                     {
                       MusECore::Event event = e->second;
-		      MusECore::SndFileR f  = event.sndFile();
+                      MusECore::SndFileR f  = event.sndFile();
                       if (f.isNull())
                         continue;
                       str.append(QString("\n@") + QString().setNum(event.tick()) + QString(" len:") + 
