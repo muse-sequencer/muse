@@ -10551,13 +10551,13 @@ Rechtsklick, um die GUI zu zeigen.</translation>
     </message>
     <message>
         <location line="+3"/>
-        <source>all parts in one staff</source>
-        <translation>alle Parts in ein System</translation>
+        <source>all tracks in one staff</source>
+        <translation>alle Spuren in ein System</translation>
     </message>
     <message>
         <location line="+1"/>
-        <source>one staff per part</source>
-        <translation>ein System pro Part</translation>
+        <source>one staff per track</source>
+        <translation>ein System pro Spur</translation>
     </message>
     <message>
         <location line="+6"/>
