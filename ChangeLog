@@ -1,3 +1,5 @@
+22.11.2011:
+        - Increased contrast for midi event drawing in parts (rj)
 17.11.2011:
         - Fixed all arranger/pianoroll/drumedit keyboard scrolling. (Tim)
           Changed PartCanvas and EventCanvas ::keyPress() key scrolling sections. Plus custom behavior tweaks in each case.

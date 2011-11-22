@@ -148,8 +148,8 @@ class PartCanvas : public Canvas {
 
       void checkAutomation(MusECore::Track * t, const QPoint& pointer, bool addNewCtrl);
       void processAutomationMovements(QPoint pos, bool addPoint);
-      double dbToVal(double inDb);
-      double valToDb(double inV);
+      double dbToVal(double inDb, double min, double max);
+      double valToDb(double inV, double min, double max);
 
    protected:
       virtual void drawCanvas(QPainter&, const QRect&);

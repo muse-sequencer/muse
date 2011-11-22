@@ -2301,9 +2301,9 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* ev
     //else
     //  color_brightness=64;  // otherwise use dark color 
     if (brightness >= 12000 && !pt->selected())
-      color_brightness=64; // 96;    // too bright: use dark color 
+      color_brightness=54; // 96;    // too bright: use dark color
     else
-      color_brightness=190; //160;   // too dark: use lighter color 
+      color_brightness=200; //160;   // too dark: use lighter color
   }
   else
     color_brightness=80;
@@ -3636,7 +3636,8 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
       {
         double y;   
         if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-          y = dbToVal(cl->curVal()); // represent volume between 0 and 1
+          //printf("log conversion val=%f min=%f max=%f\n", cl->curVal(), min, max);
+          y = dbToVal(cl->curVal(), min, max); // represent volume between 0 and 1
           if (y < 0) y = 0.0;
         }
         else 
@@ -3649,7 +3650,8 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
         {
             double y = ic->second.val; 
             if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-              y = dbToVal(y); // represent volume between 0 and 1
+              //printf("log conversion val=%f min=%f max=%f\n", cl->curVal(), min, max);
+              y = dbToVal(y, min, max); // represent volume between 0 and 1
               if (y < 0) y = 0.0;
             }
             else 
@@ -3748,7 +3750,7 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
         {
           double y;   
           if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-            y = dbToVal(cl->curVal()); // represent volume between 0 and 1
+            y = dbToVal(cl->curVal(), min, max); // represent volume between 0 and 1
             if (y < 0) y = 0.0;
           }
           else 
@@ -3761,7 +3763,7 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
           {
              double y = ic->second.val;
              if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-                y = dbToVal(y); // represent volume between 0 and 1
+                y = dbToVal(y, min, max); // represent volume between 0 and 1
                if (y < 0) y = 0;
              }
              else 
@@ -3953,7 +3955,8 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
     automation.currentCtrlList->range(&min,&max);
     double cvval;    
     if (automation.currentCtrlList->valueType() == MusECore::VAL_LOG  ) { // use db scale for volume
-       cvval = valToDb(yfraction);
+       //printf("log conversion val=%d min=%d max=%d\n", yfraction, min, max);
+       cvval = valToDb(yfraction, min, max);
        //printf("calc yfraction = %f v=%f ",yfraction,cvval);
        if (cvval< min) cvval=min;
        if (cvval>max) cvval=max;
@@ -3986,13 +3989,16 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
 
 }
 
-double PartCanvas::dbToVal(double inDb)
+double PartCanvas::dbToVal(double inDb, double min, double max)
 {
+// För volym så är invärdet mellan 0-3.16, -70 -> +10
+// vi behöver forma om detta till en rak skala
+
     return (20.0*MusECore::fast_log10(inDb)+60.0) / 70.0;
 }
-double PartCanvas::valToDb(double inV)
+double PartCanvas::valToDb(double inV, double min, double max)
 {
-    return exp10((inV*70.0-60.0)/20.0);
+    return exp10((inV*70.0-60)/20.0);
 }
 
 //---------------------------------------------------------
