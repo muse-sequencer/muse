@@ -473,10 +473,20 @@ void addRoute(Route src, Route dst)
         //
         // make sure AUDIO_AUX is processed last
         //
-        if (src.track->type() == Track::AUDIO_AUX)
-              inRoutes->push_back(src);
+        if (src.track->type() == Track::AUDIO_AUX)       // REMOVE Tim. This special aux code may not be useful or needed now.
+              inRoutes->push_back(src);                  //
         else
               inRoutes->insert(inRoutes->begin(), src);
+        
+        // Is the source an Aux Track or else does it have Aux Tracks routed to it?
+        // Update the destination track's aux ref count, and all tracks it is routed to.
+        if(src.track->auxRefCount())
+            //dst.track->updateAuxStates( src.track->auxRefCount() );
+            src.track->updateAuxRoute( src.track->auxRefCount(), dst.track );
+        else 
+        if(src.track->type() == Track::AUDIO_AUX)
+            //dst.track->updateAuxStates( 1 );
+            src.track->updateAuxRoute( 1, dst.track );
       }
 }
 
@@ -686,6 +696,19 @@ void removeRoute(Route src, Route dst)
               return;
             }
             
+            // Is the source an Aux Track or else does it have Aux Tracks routed to it?
+            // Update the destination track's aux ref count, and all tracks it is routed to.
+            if(src.isValid() && dst.isValid())
+            {
+              if(src.track->auxRefCount())
+                //dst.track->updateAuxStates( -src.track->auxRefCount() );
+                src.track->updateAuxRoute( -src.track->auxRefCount(), dst.track );
+              else
+              if(src.track->type() == Track::AUDIO_AUX)
+                //dst.track->updateAuxStates( -1 );
+                src.track->updateAuxRoute( -1, dst.track );
+            }
+            
             if(src.isValid())
             {
               RouteList* outRoutes = src.track->outRoutes();
@@ -730,6 +753,17 @@ void removeRoute(Route src, Route dst)
 
 void removeAllRoutes(Route src, Route dst)
 {
+    // TODO: Is the source an Aux Track or else does it have Aux Tracks routed to it?
+    // Update the destination track's aux ref count, and all tracks it is routed to.
+    /* if(src.isValid() && dst.isValid())
+    {
+      if(src.track->auxRefCount())
+        dst.track->updateAuxStates( -src.track->auxRefCount() );
+      else  
+      if(src.track->type() == Track::TrackType::AUDIO_AUX))
+        dst.track->updateAuxStates( -1 );
+    }  */
+
     if(src.isValid())  
     {
       if(src.type == Route::MIDI_DEVICE_ROUTE)
@@ -1417,5 +1451,57 @@ bool Route::operator==(const Route& a) const
       }
       return false;
 }
+
+/*
+//---------------------------------------------------------
+//   isCircularRoute
+//   Recursive.
+//   If dst is valid, start traversal from there, not from src.
+//   Returns true if circular.
+//---------------------------------------------------------
+
+bool isCircularRoutePath(Track* src, Track* dst)
+{
+  //if(isMidiTrack() || _type == AUDIO_AUX)
+  //if(isMidiTrack())
+  //  return;
+  
+  bool rv = false;
+  
+  if(dst)
+  {  
+    src->setNodeTraversed(true);
+    rv = isCircularRoutePath(dst, NULL);
+    src->setNodeTraversed(false);
+    //if(rv)
+    //  fprintf(stderr, "  Circular route %s -> %s\n", src->name().toLatin1().constData(), dst->name().toLatin1().constData()); 
+    return rv;
+  }
+  
+  if(src->nodeTraversed())
+    return true;
+  
+  src->setNodeTraversed(true);
+  
+  //printf("isCircularRoute %s\n", src->name().toLatin1().constData()); 
+  
+  RouteList* orl = src->outRoutes();
+  for (iRoute i = orl->begin(); i != orl->end(); ++i) 
+  {
+    if( !(*i).isValid() || (*i).type != Route::TRACK_ROUTE )
+      continue;
+    Track* t = (*i).track;
+    //if(t->isMidiTrack())
+    //  continue;
+    rv = isCircularRoutePath(src, NULL);
+    if(rv)
+      break; 
+  }
+  
+  src->setNodeTraversed(false);
+  return rv;
+}
+*/
+
 
 } // namespace MusECore

@@ -531,6 +531,26 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       // Pre-process the metronome.
       ((AudioTrack*)metronome)->preProcessAlways();
       
+      // Process Aux tracks first.
+      for(ciTrack it = tl->begin(); it != tl->end(); ++it) 
+      {
+        if((*it)->isMidiTrack())
+          continue;
+        track = (AudioTrack*)(*it);
+        if(!track->processed() && track->type() == Track::AUDIO_AUX)
+        {
+          //printf("Audio::process1 Do aux: track:%s\n", track->name().toLatin1().constData());  
+          channels = track->channels();
+          // Just a dummy buffer.
+          float* buffer[channels];
+          float data[frames * channels];
+          for (int i = 0; i < channels; ++i)
+                buffer[i] = data + i * frames;
+          //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1());
+          track->copyData(samplePos, channels, -1, -1, frames, buffer);
+        }
+      }      
+      
       OutputList* ol = MusEGlobal::song->outputs();
       for (ciAudioOutput i = ol->begin(); i != ol->end(); ++i) 
         (*i)->process(samplePos, offset, frames);
@@ -548,8 +568,11 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         track = (AudioTrack*)(*it);
         // Ignore unprocessed tracks which have an output route, because they will be processed by 
         //  whatever track(s) they are routed to.
-        if(!track->processed() && track->noOutRoute() && (track->type() != Track::AUDIO_OUTPUT))
+        //if(!track->processed() && track->noOutRoute() && (track->type() != Track::AUDIO_OUTPUT))
+        // No, do all.
+        if(!track->processed() && (track->type() != Track::AUDIO_OUTPUT))
         {
+          //printf("Audio::process1 track:%s\n", track->name().toLatin1().constData()); 
           channels = track->channels();
           // Just a dummy buffer.
           float* buffer[channels];

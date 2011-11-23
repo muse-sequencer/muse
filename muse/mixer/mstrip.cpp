@@ -448,9 +448,8 @@ void MidiStrip::updateOffState()
       // TODO: Disabled for now.
       //if (autoType)
       //      autoType->setEnabled(val);
-      if (iR)
-            iR->setEnabled(val);
-      // TODO: Disabled for now.
+      //if (iR)
+      //      iR->setEnabled(val);
       //if (oR)
       //      oR->setEnabled(val);
       if (off) {

@@ -4,6 +4,7 @@
 //  $Id: track.cpp,v 1.34.2.11 2009/11/30 05:05:49 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -36,10 +37,12 @@
 namespace MusECore {
 
 //bool Track::_isVisible=true;
-unsigned int Track::_soloRefCnt = 0;
+unsigned int Track::_soloRefCnt  = 0;
 Track* Track::_tmpSoloChainTrack = 0;
 bool Track::_tmpSoloChainDoIns   = false;
 bool Track::_tmpSoloChainNoDec   = false;
+//bool Track::_tmpIsAuxProcessing  = false; 
+//int Track::_tmpIsAuxProcRefCount = 0; 
 
 const char* Track::_cname[] = {
       "Midi", "Drum", "Wave", "AudioOut", "AudioIn", "AudioGroup", 
@@ -199,6 +202,8 @@ int Track::y() const
 
 void Track::init()
       {
+      _auxRouteCount = 0;  
+      _nodeTraversed = false;
       _activity      = 0;
       _lastActivity  = 0;
       _recordFlag    = false;
@@ -233,6 +238,8 @@ Track::Track(Track::TrackType t)
 //Track::Track(const Track& t)
 Track::Track(const Track& t, bool cloneParts)
       {
+      _auxRouteCount = t._auxRouteCount;
+      _nodeTraversed = t._nodeTraversed;
       _activity     = t._activity;
       _lastActivity = t._lastActivity;
       _recordFlag   = t._recordFlag;
@@ -298,6 +305,8 @@ Track::~Track()
 
 Track& Track::operator=(const Track& t) 
 {
+      _auxRouteCount = t._auxRouteCount;
+      _nodeTraversed = t._nodeTraversed;
       _activity     = t._activity;
       _lastActivity = t._lastActivity;
       _recordFlag   = t._recordFlag;
@@ -414,6 +423,107 @@ void Track::dump() const
          _name.toLatin1().constData(), _type, _parts.size(), _selected);
       }
 
+//---------------------------------------------------------
+//   updateAuxRoute
+//   Internal use. Update all the Aux ref counts of tracks dst is connected to.
+//   If dst is valid, start traversal from there, not from this track.
+//---------------------------------------------------------
+
+void Track::updateAuxRoute(int refInc, Track* dst)
+{
+  //if(isMidiTrack() || _type == AUDIO_AUX)
+  if(isMidiTrack())
+    return;
+  
+  //printf("Track::updateAuxRoute %s _auxRouteCount:%d refInc:%d\n", name().toLatin1().constData(), _auxRouteCount, refInc); 
+
+  if(dst)
+  {  
+    _nodeTraversed = true;
+    dst->updateAuxRoute(refInc, NULL);
+    _nodeTraversed = false;
+    return;
+  }  
+  
+  if(_type == AUDIO_AUX)
+    return;
+  
+  if(_nodeTraversed)
+  {
+    fprintf(stderr, "Track::updateAuxRoute %s _auxRouteCount:%d refInc:%d :\n", name().toLatin1().constData(), _auxRouteCount, refInc); 
+    if(refInc >= 0)
+      fprintf(stderr, "  MusE Warning: Please check your routes: Circular path found!\n"); 
+    else
+      fprintf(stderr, "  MusE: Circular path removed.\n"); 
+    return;
+  }
+  
+  _nodeTraversed = true;
+  
+  _auxRouteCount += refInc;
+  if(_auxRouteCount < 0)
+  {
+    fprintf(stderr, "Track::updateAuxRoute Ref underflow! %s _auxRouteCount:%d refInc:%d\n", name().toLatin1().constData(), _auxRouteCount, refInc); 
+    //_auxRouteCount = 0;    
+  }
+  
+  for (iRoute i = _outRoutes.begin(); i != _outRoutes.end(); ++i) 
+  {
+    if( !(*i).isValid() || (*i).type != Route::TRACK_ROUTE )
+      continue;
+    Track* t = (*i).track;
+    //if(t->isMidiTrack())
+    //  continue;
+    t->updateAuxRoute(refInc, NULL);
+  }
+  
+  _nodeTraversed = false;
+}
+
+//---------------------------------------------------------
+//   isCircularRoute
+//   If dst is valid, start traversal from there, not from this track.
+//   Returns true if circular.
+//---------------------------------------------------------
+
+bool Track::isCircularRoute(Track* dst)
+{
+  //if(isMidiTrack() || _type == AUDIO_AUX)
+  //if(isMidiTrack())
+  //  return;
+  
+  bool rv = false;
+  
+  if(dst)
+  {  
+    _nodeTraversed = true;
+    rv = dst->isCircularRoute(NULL);
+    _nodeTraversed = false;
+    //if(rv)
+    //  fprintf(stderr, "  Circular route %s -> %s\n", name().toLatin1().constData(), dst->name().toLatin1().constData()); 
+    return rv;
+  }
+  
+  if(_nodeTraversed)
+    return true;
+  
+  _nodeTraversed = true;
+  
+  for (iRoute i = _outRoutes.begin(); i != _outRoutes.end(); ++i) 
+  {
+    if( !(*i).isValid() || (*i).type != Route::TRACK_ROUTE )
+      continue;
+    Track* t = (*i).track;
+    //if(t->isMidiTrack())
+    //  continue;
+    rv = t->isCircularRoute(NULL);
+    if(rv)
+      break; 
+  }
+  
+  _nodeTraversed = false;
+  return rv;
+}
 
 //---------------------------------------------------------
 //   MidiTrack
@@ -462,7 +572,6 @@ void MidiTrack::init()
       {
       _outPort       = 0;
       _outChannel    = 0;
-      // Changed by Tim. p3.3.8
       //_inPortMask    = 0xffff;
       ///_inPortMask    = 0xffffffff;
       
@@ -537,7 +646,7 @@ void MidiTrack::setOutPortAndChannelAndUpdate(int port, int ch)
 //---------------------------------------------------------
 //   setInPortAndChannelMask
 //   For old song files with port mask (max 32 ports) and channel mask (16 channels), 
-//    before midi routing was added (the iR button). p3.3.48
+//    before midi routing was added (the iR button). 
 //---------------------------------------------------------
 
 void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask) 
@@ -550,7 +659,7 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
   
   for(int port = 0; port < 32; ++port)  // 32 is the old maximum number of ports.
   {
-    // p3.3.50 If the port was not used in the song file to begin with, just ignore it.
+    // If the port was not used in the song file to begin with, just ignore it.
     // This saves from having all of the first 32 ports' channels connected.
     if(!MusEGlobal::midiPorts[port].foundInSongFile())
       continue;
@@ -558,34 +667,18 @@ void MidiTrack::setInPortAndChannelMask(unsigned int portmask, int chanmask)
     //if(!(portmask & (1 << port)))
     //  continue;
     
-    // p3.3.50 Removed. Allow to connect to port with no device so user can change device later.
+    // Removed. Allow to connect to port with no device so user can change device later.
     //MidiPort* mp = &MusEGlobal::midiPorts[port];
     //MidiDevice* md = mp->device();
     //if(!md)
     //  continue;
         
-    //for(int ch = 0; ch < MIDI_CHANNELS; ++ch)  // p3.3.50 Removed.
-    //{
-      //if(!(chanmask & (1 << ch)))
-      //  continue;
-    
-      //Route aRoute(md, ch);
-      //Route bRoute(this, ch);
-      Route aRoute(port, chanmask);     // p3.3.50
+      Route aRoute(port, chanmask);     
       Route bRoute(this, chanmask);
     
-      // p3.3.50 Removed.
-      //iRoute iir = rl->begin();
-      //for(; iir != rl->end(); ++iir) 
-      //{
-        //if(*iir == aRoute)
-      //  if(iir->type == Route::MIDI_PORT_ROUTE && iir->midiPort == port)      // p3.3.50
-      //    break;
-      //}
-      
       // Route wanted?
       //if((portmask & (1 << port)) && (chanmask & (1 << ch)))
-      if(portmask & (1 << port))                                          // p3.3.50
+      if(portmask & (1 << port))                                          
       {
         // Route already exists?
         //if(iir != rl->end()) 
@@ -818,11 +911,11 @@ void MidiTrack::read(Xml& xml)
                               //setInPortMask(xml.parseInt());
                               ///setInPortMask(xml.parseUInt());
                               //xml.skip(tag);                      // Obsolete. 
-                              portmask = xml.parseUInt();           // p3.3.48: Support old files.
+                              portmask = xml.parseUInt();           // Support old files.
                         else if (tag == "inchannelMap")
                               ///setInChannelMask(xml.parseInt());
                               //xml.skip(tag);                      // Obsolete.
-                              chanmask = xml.parseInt();            // p3.3.48: Support old files.
+                              chanmask = xml.parseInt();            // Support old files.
                         else if (tag == "locked")
                               _locked = xml.parseInt();
                         else if (tag == "echo")
@@ -843,7 +936,7 @@ void MidiTrack::read(Xml& xml)
                   case Xml::TagEnd:
                         if (tag == "miditrack" || tag == "drumtrack") 
                         {
-                          setInPortAndChannelMask(portmask, chanmask); // p3.3.48: Support old files.
+                          setInPortAndChannelMask(portmask, chanmask); // Support old files.
                           return;
                         }
                   default:
@@ -972,7 +1065,7 @@ void Track::writeRouting(int level, Xml& xml) const
             
             xml.tag(level++, s.toAscii().constData());
             
-            // p3.3.38 New routing scheme.
+            // New routing scheme.
             s = "source";
             if(r->type != Route::TRACK_ROUTE)
               s += QString(" type=\"%1\"").arg(r->type);
@@ -994,10 +1087,10 @@ void Track::writeRouting(int level, Xml& xml) const
         if(r->type == Route::TRACK_ROUTE && r->track && r->track->type() == Track::AUDIO_INPUT) 
           continue;
             
-        if(r->midiPort != -1 || !r->name().isEmpty()) // p3.3.49
+        if(r->midiPort != -1 || !r->name().isEmpty()) 
         {
           s = "Route";
-          if(r->type == Route::MIDI_PORT_ROUTE)  // p3.3.50
+          if(r->type == Route::MIDI_PORT_ROUTE)  
           {
             if(r->channel != -1 && r->channel != 0)
               s += QString(" channelMask=\"%1\"").arg(r->channel);  // Use new channel mask.
@@ -1019,14 +1112,14 @@ void Track::writeRouting(int level, Xml& xml) const
           
           s = "dest";
           
-          //if(r->type == Route::MIDI_DEVICE_ROUTE)                                      // p3.3.49 Obsolete since 1.1-RC2    
+          //if(r->type == Route::MIDI_DEVICE_ROUTE)                                      // Obsolete since 1.1-RC2    
           //  s += QString(QT_TRANSLATE_NOOP("@default", " devtype=\"%1\"")).arg(r->device->deviceType());  //
           //if(r->type != Route::TRACK_ROUTE)                                            //
           if(r->type != Route::TRACK_ROUTE && r->type != Route::MIDI_PORT_ROUTE)
             s += QString(" type=\"%1\"").arg(r->type);
 
           //s += QString(QT_TRANSLATE_NOOP("@default", " name=\"%1\"/")).arg(r->name());
-          if(r->type == Route::MIDI_PORT_ROUTE)                                          // p3.3.49 
+          if(r->type == Route::MIDI_PORT_ROUTE)                                          
             s += QString(" mport=\"%1\"/").arg(r->midiPort);
           else  
             s += QString(" name=\"%1\"/").arg(Xml::xmlString(r->name()));

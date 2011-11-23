@@ -95,6 +95,13 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
       }
     }  
   }
+  
+  if(!act->isChecked())  // If circular route exists, allow user to break it, otherwise forbidden.
+  {
+    if( (isOutput ? track : route_track)->isCircularRoute(isOutput ? route_track : track) ) 
+      act->setEnabled(false);
+  }
+
   return ++id;      
 }
 
@@ -259,6 +266,13 @@ int RoutePopupMenu::addSyntiPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id
                     }
                   }
                 }  
+
+                if(!act->isChecked())  // If circular route exists, allow user to break it, otherwise forbidden.
+                {
+                  if( (isOutput ? t : track)->isCircularRoute(isOutput ? track : t) ) 
+                    act->setEnabled(false);
+                }
+
                 ++id;
               }
             
@@ -520,6 +534,13 @@ int RoutePopupMenu::nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* l
                     }
                   }
                 }
+                
+                if(!act->isChecked())  // If circular route exists, allow user to break it, otherwise forbidden.
+                {
+                  if( (isOutput ? t : track)->isCircularRoute(isOutput ? track : t) ) 
+                    act->setEnabled(false);
+                }
+
                 ++id;
               }
             
@@ -573,6 +594,13 @@ int RoutePopupMenu::nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* l
                       }
                     }  
                   }
+                  
+                  if(!act->isChecked())  // If circular route exists, allow user to break it, otherwise forbidden.
+                  {
+                    if( (isOutput ? t : track)->isCircularRoute(isOutput ? track : t) ) 
+                      act->setEnabled(false);
+                  }
+
                   ++id;
                 }
               }

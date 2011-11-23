@@ -1567,6 +1567,33 @@ MusECore::iMPEvent DssiSynthIF::getData(MusECore::MidiPort* /*mp*/, MusECore::MP
       index = v.idx;
       // Set the ladspa control port value.
       controls[v.idx].val = v.value;
+      
+      // Need to update the automation value, otherwise it overwrites later with the last MusEGlobal::automation value.
+      if(id() != -1)
+      {
+        // Since we are now in the audio thread context, there's no need to send a message,
+        //  just modify directly.
+        //MusEGlobal::audio->msgSetPluginCtrlVal(this, genACnum(_id, k), controls[k].val);
+        // p3.3.43
+        //MusEGlobal::audio->msgSetPluginCtrlVal(_track, genACnum(_id, k), controls[k].val);
+        synti->setPluginCtrlVal(genACnum(id(), v.idx), v.value);
+        
+        // Record automation.
+        // NO! Take care of this immediately in the OSC control handler, because we don't want 
+        //  any delay.
+        // OTOH Since this is the actual place and time where the control ports values
+        //  are set, best to reflect what happens here to automation.
+        // However for dssi-vst it might be best to handle it that way.
+        
+        //AutomationType at = _track->automationType();
+        // TODO: Taken from our native gui control handlers. 
+        // This may need modification or may cause problems - 
+        //  we don't have the luxury of access to the dssi gui controls !
+        //if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+        //  enableController(k, false);
+        //_track->recordAutomation(id, v.value);
+      }  
+      
     }
     
     // Process automation control values now.
@@ -2033,16 +2060,37 @@ int DssiSynthIF::oscControl(unsigned long port, float value)
     fprintf(stderr, "DssiSynthIF::oscControl: fifo overflow: in control number:%lu\n", cport);
   }
   
-  MusECore::ciMidiCtl2LadspaPort ip = synth->port2MidiCtlMap.find(cport);
-  if(ip != synth->port2MidiCtlMap.end())
+  // Record automation:
+  // Take care of this immediately, because we don't want the silly delay associated with 
+  //  processing the fifo one-at-a-time in the apply().
+  // NOTE: With some vsts we don't receive control events until the user RELEASES a control. 
+  // So the events all arrive at once when the user releases a control.
+  // That makes this pretty useless... But what the heck...
+  if(id() != -1)
   {
+    //int id = genACnum(_id, cport);
+    unsigned long pid = genACnum(id(), cport);
+    AutomationType at = synti->automationType();
+  
+    // TODO: Taken from our native gui control handlers. 
+    // This may need modification or may cause problems - 
+    //  we don't have the luxury of access to the dssi gui controls !
+    if(at == AUTO_WRITE || (MusEGlobal::audio->isPlaying() && at == AUTO_TOUCH))
+      enableController(cport, false);
+      
+    synti->recordAutomation(pid, value);
+  } 
+   
+  //MusECore::ciMidiCtl2LadspaPort ip = synth->port2MidiCtlMap.find(cport);
+  //if(ip != synth->port2MidiCtlMap.end())
+  //{
     // TODO: TODO: Update midi MusE's midi controller knobs, sliders, boxes etc with a call to the midi port's setHwCtrlState() etc.
     // But first we need a ladspa2MidiValue() function!  ... 
     //
     //
     //float val = ladspa2MidiValue(ld, i, ?, ?); 
   
-  }
+  //}
 
   return 0;
 }

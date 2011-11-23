@@ -2963,6 +2963,13 @@ void Song::insertTrack2(Track* track, int idx)
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->outRoutes()->push_back(src);
+                  // Is the source an Aux Track or else does it have Aux Tracks routed to it?
+                  // Update the Audio Output track's aux ref count.     p4.0.37
+                  if(r->track->auxRefCount())
+                    track->updateAuxRoute( r->track->auxRefCount(), NULL );
+                  else
+                  if(r->track->type() == Track::AUDIO_AUX)
+                    track->updateAuxRoute( 1, NULL );
             }      
       }
       else if (track->type() == Track::AUDIO_INPUT) 
@@ -2976,6 +2983,13 @@ void Song::insertTrack2(Track* track, int idx)
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->inRoutes()->push_back(src);
+                  // Is this track an Aux Track or else does it have Aux Tracks routed to it?
+                  // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
+                  if(track->auxRefCount())
+                    r->track->updateAuxRoute( track->auxRefCount(), NULL );
+                  else
+                  if(track->type() == Track::AUDIO_AUX)
+                    r->track->updateAuxRoute( 1, NULL );
             }      
       }
       else if (track->isMidiTrack())          // p3.3.50
@@ -3006,6 +3020,13 @@ void Song::insertTrack2(Track* track, int idx)
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->outRoutes()->push_back(src);
+                  // Is the source an Aux Track or else does it have Aux Tracks routed to it?
+                  // Update this track's aux ref count.     p4.0.37
+                  if(r->track->auxRefCount())
+                    track->updateAuxRoute( r->track->auxRefCount(), NULL );
+                  else
+                  if(r->track->type() == Track::AUDIO_AUX)
+                    track->updateAuxRoute( 1, NULL );
             }
             rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
@@ -3016,6 +3037,13 @@ void Song::insertTrack2(Track* track, int idx)
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->inRoutes()->push_back(src);
+                  // Is this track an Aux Track or else does it have Aux Tracks routed to it?
+                  // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
+                  if(track->auxRefCount())
+                    r->track->updateAuxRoute( track->auxRefCount(), NULL );
+                  else
+                  if(track->type() == Track::AUDIO_AUX)
+                    r->track->updateAuxRoute( 1, NULL );
             }      
       }
       
@@ -3159,6 +3187,13 @@ void Song::removeTrack2(Track* track)
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->outRoutes()->removeRoute(src);
+                  // Is the source an Aux Track or else does it have Aux Tracks routed to it?
+                  // Update the Audio Output track's aux ref count.     p4.0.37
+                  if(r->track->auxRefCount())
+                    track->updateAuxRoute( -r->track->auxRefCount(), NULL );
+                  else
+                  if(r->track->type() == Track::AUDIO_AUX)
+                    track->updateAuxRoute( -1, NULL );
             }      
       }
       else if (track->type() == Track::AUDIO_INPUT) 
@@ -3173,6 +3208,13 @@ void Song::removeTrack2(Track* track)
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->inRoutes()->removeRoute(src);
+                  // Is this track an Aux Track or else does it have Aux Tracks routed to it?
+                  // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
+                  if(track->auxRefCount())
+                    r->track->updateAuxRoute( -track->auxRefCount(), NULL );
+                  else
+                  if(track->type() == Track::AUDIO_AUX)
+                    r->track->updateAuxRoute( -1, NULL );
             }      
       }
       else if (track->isMidiTrack())          // p3.3.50
@@ -3204,6 +3246,13 @@ void Song::removeTrack2(Track* track)
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->outRoutes()->removeRoute(src);
+                  // Is the source an Aux Track or else does it have Aux Tracks routed to it?
+                  // Update this track's aux ref count.     p4.0.37
+                  if(r->track->auxRefCount())
+                    track->updateAuxRoute( -r->track->auxRefCount(), NULL );
+                  else
+                  if(r->track->type() == Track::AUDIO_AUX)
+                    track->updateAuxRoute( -1, NULL );
             }
             rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
@@ -3215,6 +3264,13 @@ void Song::removeTrack2(Track* track)
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->inRoutes()->removeRoute(src);
+                  // Is this track an Aux Track or else does it have Aux Tracks routed to it?
+                  // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
+                  if(track->auxRefCount())
+                    r->track->updateAuxRoute( -track->auxRefCount(), NULL );
+                  else
+                  if(track->type() == Track::AUDIO_AUX)
+                    r->track->updateAuxRoute( -1, NULL );
             }      
       }
       

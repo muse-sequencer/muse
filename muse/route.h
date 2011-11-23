@@ -105,6 +105,7 @@ extern void removeRoute(Route, Route);
 extern void removeAllRoutes(Route, Route);  // p3.3.55
 extern Route name2route(const QString&, bool dst, int rtype = -1);
 extern bool checkRoute(const QString&, const QString&);
+//extern bool isCircularRoutePath(Track* src, Track* dst);  // Recursive.
 
 //---------------------------------------------------------
 //   RouteMenuMap

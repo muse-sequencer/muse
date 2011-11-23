@@ -1,3 +1,12 @@
+23.11.2011:
+        - Fundamental audio engine fixes/changes together with a variety of other fixes. (Tim...)
+        - Process track and plugin dssi controls always now, even if off. Fixed problems adjusting/saving gui values. TODO: Dssi when off.
+        - User is now forbidden to do circular routing. Routing menu items are now disabled according to whether they would cause a loop.
+          Installed anti-circular routing mechanism, allows processing should a circular route actually exist (old files, bugs, deliberate? etc). 
+        - Fixed jack.cpp: Connecting routes. Some code was not checking if routes were JACK_ROUTE types, leading to errors.
+        * Fixed: Soloing system problems. Forgot to solo-chain all the way back to a midi track. Also fixed crashes if soloing a circular route.
+        * Fixed: Aux Tracks. They should 'just work' always now. Required major processing-order changes and routing path support/checking.
+          NOTE: Cannot use a track's aux sends if the track has an input route path from ANY Aux Track! Aux knobs/labels now DISABLED in that case.
 22.11.2011:
         - Increased contrast for midi event drawing in parts (rj)
 17.11.2011:
