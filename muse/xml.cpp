@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include <QByteArray>
 #include <QString>
 #include <QColor>
 #include <QWidget>
@@ -112,9 +113,12 @@ void Xml::nextc()
 
 void Xml::token(int cc)
       {
-      char buffer[512];
+      //char buffer[512];
+      QByteArray buffer;
+
       int i = 0;
-      for (; i < 511;) {
+      //for (; i < 511;) {
+      for (; i < 9999999;) {   // Stop at a reasonably large amount 10 million.
             if (c == ' ' || c == '\t' || c == cc || c == '\n' || c == EOF)
                   break;
             buffer[i++] = c;
@@ -131,12 +135,16 @@ void Xml::token(int cc)
 
 void Xml::stoken()
       {
-      char buffer[1024*4];
+      //char buffer[1024*4];
+      QByteArray buffer;
+      
       int i = 0;
       buffer[i] = c;
       ++i;
       next();
-      for (;i < 1024*4-1;) {
+
+      //for (;i < 1024*4-1;) {
+      for (;i < 10000000*4-1;) {  // Stop at a reasonably large amount 10 million.
             if (c == '"') {
                   buffer[i++] = c;
                   next();
@@ -207,8 +215,10 @@ QString Xml::strip(const QString& s)
 
 Xml::Token Xml::parse()
       {
-      char buffer[1024*1024];   // increase buffer -rj
-      char* p;
+      //char buffer[1024*1024];   // increase buffer -rj
+      //char* p;
+      QByteArray buffer;
+      int idx = 0;
 
  again:
       bool endFlag = false;
@@ -262,15 +272,23 @@ Xml::Token Xml::parse()
                   }
             if (c == '?') {
                   next();
-                  p = buffer;
+                  //p = buffer;
+                  //p = buffer.data();
+                  idx = 0;
                   for (;;) {
                         if (c == '?' || c == EOF || c == '>')
                               break;
-                        *p++ = c;
+                        
+                        //*p++ = c;
+                        buffer[idx++] = c;
+                        
                         // TODO: check overflow
                         next();
                         }
-                  *p = 0;
+                  
+                  //*p = 0;
+                  buffer[idx] = 0;
+                  
                   _s1 = QString(buffer);
                   if (c == EOF) {
                         fprintf(stderr, "XML: unexpected EOF\n");
@@ -298,15 +316,23 @@ Xml::Token Xml::parse()
                         }
                   goto again;
                   }
-            p = buffer;
+            //p = buffer;
+            //p = buffer.data();
+            idx = 0;
             for (;;) {
                   if (c == '/' || c == ' ' || c == '\t' || c == '>' || c == '\n' || c == EOF)
                         break;
                   // TODO: check overflow
-                  *p++ = c;
+                  
+                  //*p++ = c;
+                  buffer[idx++] = c;
+                  
                   next();
                   }
-            *p = 0;
+            
+            //*p = 0;
+            buffer[idx] = 0;
+            
             _s1 = QString(buffer);
             // skip white space:
             while (c == ' ' || c == '\t' || c == '\n')
@@ -355,26 +381,43 @@ Xml::Token Xml::parse()
                   fprintf(stderr, "XML: level = 0\n");
                   goto error;
                   }
-            p = buffer;
+            //p = buffer;
+            //p = buffer.data();
+            idx = 0;
             for (;;) {
                   if (c == EOF || c == '<')
                         break;
                   if (c == '&') {
                         next();
                         if (c == '<') {         // be tolerant with old muse files
-                              *p++ = '&';
+                              
+                              //*p++ = '&';
+                              buffer[idx++] = '&';
+                              
                               continue;
                               }
-                        char name[32];
-                        char* dp = name;
-                        *dp++ = c;
-                        for (; dp-name < 31;) {
+                              
+                        //char name[32];
+                        //char* dp = name;
+                        QByteArray name;
+                        int name_idx = 0;
+                        
+                        //*dp++ = c;
+                        name[name_idx++] = c;
+                        
+                        //for (; dp-name < 31;) {
+                        for (; name_idx < 9999999;) {   // Stop at a reasonably large amount 10 million.
                               next();
                               if (c == ';')
                                     break;
-                              *dp++ = c;
+                              
+                              //*dp++ = c;
+                              name[name_idx++] = c;
                               }
-                        *dp = 0;
+                              
+                        //*dp = 0;
+                        name[name_idx] = 0;
+                        
                         if (strcmp(name, "lt") == 0)
                               c = '<';
                         else if (strcmp(name, "gt") == 0)
@@ -388,10 +431,16 @@ Xml::Token Xml::parse()
                         else
                               c = '?';
                         }
-                  *p++ = c;
+                        
+                  //*p++ = c;
+                  buffer[idx++] = c;
+                  
                   next();
                   }
-            *p = 0;
+                  
+            //*p = 0;
+            buffer[idx] = 0;
+            
             _s1 = QString(buffer);
 
             if (c == '<')
