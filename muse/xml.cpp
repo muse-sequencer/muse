@@ -4,6 +4,7 @@
 //  $Id: xml.cpp,v 1.17.2.6 2009/12/07 20:48:45 spamatica Exp $
 //
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
