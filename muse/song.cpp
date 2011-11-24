@@ -3286,6 +3286,7 @@ void Song::removeTrack2(Track* track)
 //    non realtime part of removeTrack
 //---------------------------------------------------------
 
+//FINDMICH empty function, remove?
 void Song::removeTrack3(Track* /*track*/)//prevent of compiler warning: unused parameter
       {
       /*
