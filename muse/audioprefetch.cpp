@@ -140,6 +140,7 @@ void AudioPrefetch::msgTick()
       {
       PrefetchMsg msg;
       msg.id  = PREFETCH_TICK;
+      msg.pos = 0; // seems to be unused, was uninitalized.
       while (sendMsg1(&msg, sizeof(msg))) {
             printf("AudioPrefetch::msgTick(): send failed!\n");
             }
