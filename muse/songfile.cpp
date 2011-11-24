@@ -1515,9 +1515,11 @@ void MusE::read(MusECore::Xml& xml, bool skipConfig, bool isTemplate)
                         else if (tag == "configuration")
                               if (skipConfig)
                                     //xml.skip(tag);
-                                    readConfiguration(xml,true /* only read sequencer settings */, false /* do NOT read global settings */);
+                                    //readConfiguration(xml,true /* only read sequencer settings */, false /* do NOT read global settings */);
+                                    readConfiguration(xml,true /* only read sequencer settings */, true /* read global settings */);
                               else
-                                    readConfiguration(xml, false, false /* do NOT read global settings */);
+                                    //readConfiguration(xml, false, false /* do NOT read global settings */);
+                                    readConfiguration(xml, false, true /* read global settings */);
                         else if (tag == "song")
                         {
                               MusEGlobal::song->read(xml, isTemplate);

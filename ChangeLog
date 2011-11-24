@@ -1,6 +1,7 @@
 24.11.2011:
         - Fixed: xml song loading ignores very large text such as with Hexter-DSSI. Reported by jphaenlin. (Tim)
           Changed all local buffers to QByteArray (for unlimited size). Test OK loading/saving large songs + Hexter-DSSI.
+        - Fixed configuration saving (mixers etc): Tried reverting to load global configuration in MusE::read(). (Tim)
 23.11.2011:
         - Fundamental audio engine fixes/changes together with a variety of other fixes. (Tim...)
         - Process track and plugin dssi controls always now, even if off. Fixed problems adjusting/saving gui values. TODO: Dssi when off.
