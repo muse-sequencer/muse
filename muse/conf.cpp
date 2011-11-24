@@ -624,7 +624,9 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               MusEGlobal::config.geometryTransport = readGeometry(xml, tag);
                         else if (tag == "geometryBigTime")
                               MusEGlobal::config.geometryBigTime = readGeometry(xml, tag);
-
+                        
+                        // don't insert else if(...) clauses between
+                        // this line and "Global config stuff begins here".
                         else if (!doReadGlobalConfig) {
                               xml.skip(tag);
                               break;

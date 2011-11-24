@@ -1515,11 +1515,34 @@ void MusE::read(MusECore::Xml& xml, bool skipConfig, bool isTemplate)
                         else if (tag == "configuration")
                               if (skipConfig)
                                     //xml.skip(tag);
-                                    //readConfiguration(xml,true /* only read sequencer settings */, false /* do NOT read global settings */);
-                                    readConfiguration(xml,true /* only read sequencer settings */, true /* read global settings */);
+                                    readConfiguration(xml,true /* only read sequencer settings */, false /* do NOT read global settings, see below */);
+                                    // see even more below!
                               else
-                                    //readConfiguration(xml, false, false /* do NOT read global settings */);
-                                    readConfiguration(xml, false, true /* read global settings */);
+                                    readConfiguration(xml, false, false /* do NOT read global settings, see below */);
+                        /* Explanation for why "do NOT read global settings":
+                         * if you would use true here, then muse would overwrite certain global config stuff
+                         * by the settings stored in the song. but you don't want this. imagine that you
+                         * send a friend a .med file. your friend opens it and baaam, his configuration is
+                         * garbled. why? well, because these readConfigurations here would have overwritten
+                         * parts (but not all) of his global config (like MDI/SDI, toolbar states etc.)
+                         * with the data stored in the song. (it IS stored there. dunny why, i find it pretty
+                         * senseless.)
+                         * 
+                         * If you've a problem which seems to be solved by replacing "false" with "true", i've
+                         * a better solution for you: go into conf.cpp, in void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig)
+                         * (around line 525), look for a comment like this:
+                         * "Global and/or per-song config stuff ends here" (alternatively just search for
+                         * "----"). Your problem is probably that some non-global setting should be loaded but
+                         * is not. Fix it by either placing the else if (foo)... clause responsible for that
+                         * setting to be loaded into the first part, that is, before "else if (!doReadGlobalConfig)"
+                         * or (if the settings actually IS global and not per-song), ensure that the routine
+                         * which writes the global (and not the song-)configuration really writes that setting.
+                         * (it might happen that it formerly worked because it was written to the song instead
+                         *  of the global config by mistake, and now isn't loaded anymore. write it to the
+                         *  correct location.)
+                         * 
+                         *                                                                                -- flo93
+                         */
                         else if (tag == "song")
                         {
                               MusEGlobal::song->read(xml, isTemplate);
