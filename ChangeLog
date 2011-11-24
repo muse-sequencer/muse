@@ -1,6 +1,20 @@
 24.11.2011:
         - Fixed: xml song loading ignores very large text such as with Hexter-DSSI. Reported by jphaenlin. (Tim)
           Changed all local buffers to QByteArray (for unlimited size). Test OK loading/saving large songs + Hexter-DSSI.
+        - Fixed "Invalid Read/Write"-bug with moving parts past the song's end or past the last track. (flo93)
+          The problem was: when the song was automatically enlargened / a new track has automatically been
+                           created, the song was update()d, and thus songChanged() was called. Within
+                           songChanged(), the PartCanvas clearDelete()d its items list, deleting every
+                           data pointed to by that list. However, right after that, the current loop's
+                           CItem* is still used (which has just been deleted, that is, invalidated.).
+                           In case the loop will go on, there would be even more similar errors.
+          Solution: - Added UndoOp::ModifySongLen-action, and used that one for altering song length.
+                    - changed Song::addTrack() to write into operation groups.
+                      adapted all code using Song::addTrack() accordingly
+                    - changed PartCanvas::moveItem() to support whole lists of operations.
+        - Fixed a small unused-parameter warning (flo)
+        - Updated broken (but unused) UndoOp::typeName() function (flo)
+                    
 23.11.2011:
         - Fundamental audio engine fixes/changes together with a variety of other fixes. (Tim...)
         - Process track and plugin dssi controls always now, even if off. Fixed problems adjusting/saving gui values. TODO: Dssi when off.

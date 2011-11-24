@@ -206,7 +206,9 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
       if((Track::TrackType)n >= Track::AUDIO_SOFTSYNTH)
         return 0;
       
-      Track* t = addTrack((Track::TrackType)n, insertAt);
+      Undo operations;
+      Track* t = addTrack(operations, (Track::TrackType)n, insertAt);
+      applyOperationGroup(operations);
       deselectTracks();
       t->setSelected(true);
       update(SC_SELECTION);
@@ -222,7 +224,7 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
 //    If insertAt is valid, inserts before insertAt. Else at the end after all tracks.
 //---------------------------------------------------------
 
-Track* Song::addTrack(Track::TrackType type, Track* insertAt)
+Track* Song::addTrack(Undo& operations, Track::TrackType type, Track* insertAt)
       {
       Track* track = 0;
       int lastAuxIdx = _auxs.size();
@@ -267,9 +269,10 @@ Track* Song::addTrack(Track::TrackType type, Track* insertAt)
       
       int idx = insertAt ? _tracks.index(insertAt) : -1;
       
-      insertTrack1(track, idx);
-      msgInsertTrack(track, idx, true);
-      insertTrack3(track, idx);
+      // insertTrack1(track, idx);         // this and the below are replaced
+      // msgInsertTrack(track, idx, true); // by the UndoOp-operation
+      // insertTrack3(track, idx); // does nothing
+      operations.push_back(UndoOp(UndoOp::AddTrack, idx, track));
 
       // Add default track <-> midiport routes. 
       if(track->isMidiTrack()) 
@@ -3056,6 +3059,8 @@ void Song::insertTrack2(Track* track, int idx)
 //    non realtime part of insertTrack
 //---------------------------------------------------------
 
+
+//FINDMICH empty function. delete?
 void Song::insertTrack3(Track* /*track*/, int /*idx*/)//prevent compiler warning: unused parameter
 {
       //printf("Song::insertTrack3\n");

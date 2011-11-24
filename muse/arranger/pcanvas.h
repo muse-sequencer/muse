@@ -119,7 +119,7 @@ class PartCanvas : public Canvas {
       virtual void newItem(CItem*,bool);
       virtual bool deleteItem(CItem*);
       virtual void moveCanvasItems(CItemList&, int, int, DragType);
-      virtual MusECore::UndoOp moveItem(CItem*, const QPoint&, DragType);
+      virtual bool moveItem(MusECore::Undo& operations, CItem*, const QPoint&, DragType);
 
       virtual void updateSong(DragType, int);
       virtual void startDrag(CItem*, DragType);

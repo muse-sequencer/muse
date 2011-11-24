@@ -301,12 +301,9 @@ void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
     QPoint newpos = raster(QPoint(nx, ny));
     selectItem(ci, true);
     
-    MusECore::UndoOp operation=moveItem(ci, newpos, dtype);
-    if (operation.type != MusECore::UndoOp::DoNothing)
-    {
-    	ci->move(newpos);
-      operations.push_back(operation);
-    }
+    bool result=moveItem(operations, ci, newpos, dtype); //FINDMICH here, items gets clearDeleted(). OUR items aren't cleared, but the data pointed to is invalidated
+    if (result)
+    	ci->move(newpos);                                 //FINDMICH and here, an invalid ci is used
     
     if(moving.size() == 1) {
           itemReleased(curItem, newpos);
@@ -325,37 +322,42 @@ void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
 //---------------------------------------------------------
 
 // Changed by T356.
-MusECore::UndoOp PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
+bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint& newpos, DragType t)
       {
-      MusECore::UndoOp result;
       NPart* npart    = (NPart*) item;
       MusECore::Part* spart     = npart->part();
       MusECore::Track* track    = npart->track();
+      MusECore::Track* dtrack=NULL;
       unsigned dtick  = newpos.x();
       unsigned ntrack = y2pitch(item->mp().y());
       MusECore::Track::TrackType type = track->type();
       if (tracks->index(track) == ntrack && (dtick == spart->tick())) {
-            return MusECore::UndoOp(MusECore::UndoOp::DoNothing);
+            return false;
             }
       if (ntrack >= tracks->size()) {
             ntrack = tracks->size();
             if (MusEGlobal::debugMsg)
                 printf("PartCanvas::moveItem - add new track\n");
-            MusECore::Track* newTrack = MusEGlobal::song->addTrack(type);  // Add at end of list.
+            dtrack = MusEGlobal::song->addTrack(operations, type);  // Add at end of list.
+            // FINDMICH: the above causes songChanged to be triggered ->
+            // items.clearDelete is called while other actions are done on items!!
             if (type == MusECore::Track::WAVE) {
                   MusECore::WaveTrack* st = (MusECore::WaveTrack*) track;
-                  MusECore::WaveTrack* dt = (MusECore::WaveTrack*) newTrack;
+                  MusECore::WaveTrack* dt = (MusECore::WaveTrack*) dtrack;
                   dt->setChannels(st->channels());
                   }
             emit tracklistChanged();
             }
-      MusECore::Track* dtrack = tracks->index(ntrack);
-      if (dtrack->type() != type) {
-            QMessageBox::critical(this, QString("MusE"),
-               tr("Cannot copy/move/clone to different Track-Type"));
-            return MusECore::UndoOp(MusECore::UndoOp::DoNothing);
+      else
+      {      
+            dtrack = tracks->index(ntrack);
+            if (dtrack->type() != type) {
+                  QMessageBox::critical(this, QString("MusE"),
+                     tr("Cannot copy/move/clone to different Track-Type"));
+                  return false;
+                  }
             }
-
+      
       MusECore::Part* dpart;
       bool clone = (t == MOVE_CLONE || (t == MOVE_COPY && spart->events()->arefCount() > 1));
       
@@ -396,22 +398,26 @@ MusECore::UndoOp PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragTyp
       if (t == MOVE_COPY || t == MOVE_CLONE) {
             // These will not increment ref count, and will not chain clones... 
             // TODO FINDMICH: is this still correct (by flo93)? i doubt it!
-            result=MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart);
+            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
             }
       else if (t == MOVE_MOVE) {
             dpart->setSelected(spart->selected());
             // These will increment ref count if not a clone, and will chain clones...
             // TODO FINDMICH: is this still correct (by flo93)? i doubt it!
-            result=MusECore::UndoOp(MusECore::UndoOp::ModifyPart,spart, dpart, true, false);
+            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPart,spart, dpart, true, false));
             
             spart->setSelected(false);
             }
-      // else // will never happen -> result will always be defined
+      // else // will never happen -> operations will never be empty
       
       if (MusEGlobal::song->len() < (dpart->lenTick() + dpart->tick()))
-            MusEGlobal::song->setLen(dpart->lenTick() + dpart->tick());
-
-      return result;
+            operations.push_back(  MusECore::UndoOp(MusECore::UndoOp::ModifySongLen, 
+                                                    dpart->lenTick() + dpart->tick(),
+                                                    MusEGlobal::song->len() )  );
+      // FINDMICH: the above causes songChanged to be triggered ->
+      // items.clearDelete is called while other actions are done on items!!
+      
+      return true;
       }
 
 //---------------------------------------------------------
@@ -3209,9 +3215,13 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
 
                 if (!track) { // we need to create a track for this drop
                     if (text.endsWith(".mpt", Qt::CaseInsensitive)) {
-                        track = MusEGlobal::song->addTrack(MusECore::Track::MIDI);    // Add at end of list.
+                        MusECore::Undo operations;
+                        track = MusEGlobal::song->addTrack(operations, MusECore::Track::MIDI);    // Add at end of list.
+                        MusEGlobal::song->applyOperationGroup(operations);
                     } else {
-                        track = MusEGlobal::song->addTrack(MusECore::Track::WAVE);    // Add at end of list.
+                        MusECore::Undo operations;
+                        track = MusEGlobal::song->addTrack(operations, MusECore::Track::WAVE);    // Add at end of list.
+                        MusEGlobal::song->applyOperationGroup(operations);
                     }
                 }
                 if (track->type() == MusECore::Track::WAVE &&
@@ -3989,14 +3999,14 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
 
 }
 
-double PartCanvas::dbToVal(double inDb, double min, double max)
+double PartCanvas::dbToVal(double inDb, double /*min*/, double /*max*/)
 {
 // För volym så är invärdet mellan 0-3.16, -70 -> +10
 // vi behöver forma om detta till en rak skala
 
     return (20.0*MusECore::fast_log10(inDb)+60.0) / 70.0;
 }
-double PartCanvas::valToDb(double inV, double min, double max)
+double PartCanvas::valToDb(double inV, double /*min*/, double /*max*/)
 {
     return exp10((inV*70.0-60)/20.0);
 }

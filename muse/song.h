@@ -411,7 +411,7 @@ class Song : public QObject {
       void setQuantize(bool val);
       void panic();
       void seqSignal(int fd);
-      Track* addTrack(Track::TrackType type, Track* insertAt = 0);
+      Track* addTrack(Undo& operations, Track::TrackType type, Track* insertAt = 0);
       Track* addNewTrack(QAction* action, Track* insertAt = 0);
       QString getScriptPath(int id, bool delivered);
       void populateScriptMenu(QMenu* menuPlugins, QObject* receiver);
