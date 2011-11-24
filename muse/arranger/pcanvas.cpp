@@ -301,9 +301,9 @@ void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
     QPoint newpos = raster(QPoint(nx, ny));
     selectItem(ci, true);
     
-    bool result=moveItem(operations, ci, newpos, dtype); //FINDMICH here, items gets clearDeleted(). OUR items aren't cleared, but the data pointed to is invalidated
+    bool result=moveItem(operations, ci, newpos, dtype);
     if (result)
-    	ci->move(newpos);                                 //FINDMICH and here, an invalid ci is used
+    	ci->move(newpos);
     
     if(moving.size() == 1) {
           itemReleased(curItem, newpos);
@@ -339,8 +339,7 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
             if (MusEGlobal::debugMsg)
                 printf("PartCanvas::moveItem - add new track\n");
             dtrack = MusEGlobal::song->addTrack(operations, type);  // Add at end of list.
-            // FINDMICH: the above causes songChanged to be triggered ->
-            // items.clearDelete is called while other actions are done on items!!
+
             if (type == MusECore::Track::WAVE) {
                   MusECore::WaveTrack* st = (MusECore::WaveTrack*) track;
                   MusECore::WaveTrack* dt = (MusECore::WaveTrack*) dtrack;
@@ -414,8 +413,6 @@ bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint&
             operations.push_back(  MusECore::UndoOp(MusECore::UndoOp::ModifySongLen, 
                                                     dpart->lenTick() + dpart->tick(),
                                                     MusEGlobal::song->len() )  );
-      // FINDMICH: the above causes songChanged to be triggered ->
-      // items.clearDelete is called while other actions are done on items!!
       
       return true;
       }
