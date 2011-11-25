@@ -182,11 +182,7 @@ class SndFileR {
 class SndFileList : public std::list<SndFile*> {
    public:
       SndFile* search(const QString& name);
-      void clearDelete() {
-            for (SndFileList::iterator i = begin(); i != end(); ++i)
-                  delete *i;
-            clear();
-            }
+      void clearDelete();
       };
 
 typedef SndFileList::iterator iSndFile;
