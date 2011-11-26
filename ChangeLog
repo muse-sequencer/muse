@@ -1,3 +1,10 @@
+26.11.2011:
+        - Added config properties for add-track menu, show all, show only visible and property for making visible what you add (rj)
+        - Split behaviour and style configuration to two tabs (rj)
+        - Adding invisible tracks no longer update track-info in arranger (rj)
+        - clicking the background in tracklist and arranger no longer clear focus (rj)
+        - moved configuration items for track visibility to global config (rj)
+        - Added right click quit to channel strips (rj)
 25.11.2011:
         - fixed segfault when closing and SndFileList had more than 1 entry (flo)
         - fixed some mismatched deletes (delete vs delete[]) (flo)

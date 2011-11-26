@@ -9,13 +9,6 @@
     <midiFilterCtrl2>0</midiFilterCtrl2>
     <midiFilterCtrl3>0</midiFilterCtrl3>
     <midiFilterCtrl4>0</midiFilterCtrl4>
-    <waveTracksVisible>1</waveTracksVisible>
-    <auxTracksVisible>0</auxTracksVisible>
-    <groupTracksVisible>0</groupTracksVisible>
-    <midiTracksVisible>1</midiTracksVisible>
-    <inputTracksVisible>0</inputTracksVisible>
-    <outputTracksVisible>1</outputTracksVisible>
-    <synthTracksVisible>0</synthTracksVisible>
     <mtctype>1</mtctype>
     <mtcoffset>00:00:00:00:00</mtcoffset>
     <sendClockDelay>1</sendClockDelay>
@@ -24,8 +17,6 @@
     <extSync>0</extSync>
     <bigtimeVisible>0</bigtimeVisible>
     <transportVisible>0</transportVisible>
-    <geometryMain x="0" y="0" w="878" h="468"></geometryMain>
-    <geometryTransport x="0" y="0" w="607" h="86"></geometryTransport>
     <mixer1Visible>0</mixer1Visible>
     <mixer2Visible>0</mixer2Visible>
     <sequencer>
