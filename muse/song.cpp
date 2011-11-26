@@ -3059,20 +3059,9 @@ void Song::insertTrack2(Track* track, int idx)
 //    non realtime part of insertTrack
 //---------------------------------------------------------
 
-
-//FINDMICH empty function. delete?
+// empty. gets executed after the realtime part
 void Song::insertTrack3(Track* /*track*/, int /*idx*/)//prevent compiler warning: unused parameter
 {
-      //printf("Song::insertTrack3\n");
-      
-      /*
-      switch(track->type()) {
-            case Track::AUDIO_SOFTSYNTH:
-                  break;
-            default:
-                  break;
-            }
-      */
 }
 
 //---------------------------------------------------------
@@ -3286,22 +3275,10 @@ void Song::removeTrack2(Track* track)
 //    non realtime part of removeTrack
 //---------------------------------------------------------
 
-//FINDMICH empty function, remove?
+//empty. gets executed after the realtime part
 void Song::removeTrack3(Track* /*track*/)//prevent of compiler warning: unused parameter
-      {
-      /*
-      switch(track->type()) {
-            case Track::AUDIO_SOFTSYNTH:
-                  {
-                  SynthI* s = (SynthI*) track;
-                  s->deactivate3();
-                  }
-                  break;
-            default:
-                  break;
-            }
-      */
-      }
+{
+}
 
 //---------------------------------------------------------
 //   executeScript

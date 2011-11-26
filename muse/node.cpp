@@ -719,8 +719,6 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
         //printf("2 dstBuffer[c]=%d\n",long(dstBuffer[c]));
         for(unsigned k = 0; k < nframes; ++k) 
         {
-          if ((c>=2) || (c<0)) printf("c out of bounds! c = %i\n",c);
-          if (k >= MusEGlobal::segmentSize) printf("k out of bounds! k = %i, segsize=%i\n",k,MusEGlobal::segmentSize);
           float val = *sp++ * vol[c];
           *dp++ = val;
           double f = fabs(val);
