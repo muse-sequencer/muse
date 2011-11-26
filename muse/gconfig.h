@@ -164,6 +164,9 @@ struct GlobalConfigValues {
       bool popupsDefaultStayOpen;
       bool leftMouseButtonCanDecrease;
       bool rangeMarkerWithoutMMB;
+      bool addHiddenTracks;
+      bool unhideTracks;
+
       };
 
 

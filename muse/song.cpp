@@ -156,6 +156,7 @@ void Song::setSig(const AL::TimeSignature& sig)
 
 Track* Song::addNewTrack(QAction* action, Track* insertAt)
 {
+printf("Song::addNewTrack\n");
     int n = action->data().toInt();
     // Ignore negative numbers since this slot could be called by a menu or list etc. passing -1.
     if(n < 0)
@@ -177,7 +178,8 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
       SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->name(), (Synth::Type)ntype, insertAt);
       if(!si)
         return 0;
-      
+      if (MusEGlobal::config.unhideTracks) SynthI::setVisible(true);
+
       // Add instance last in midi device list.
       for (int i = 0; i < MIDI_PORTS; ++i) 
       {
@@ -187,15 +189,19 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
         {
           MusEGlobal::midiSeq->msgSetMidiDevice(port, si);
           MusEGlobal::muse->changeConfig(true);     // save configuration file
-          deselectTracks();
-          si->setSelected(true);
-          update();
+          if (SynthI::visible()) {
+            deselectTracks();
+            si->setSelected(true);
+            update();
+          }
           return si;
         }
       }
-      deselectTracks();
-      si->setSelected(true);
-      update(SC_SELECTION);
+      if (SynthI::visible()) {
+        deselectTracks();
+        si->setSelected(true);
+        update(SC_SELECTION);
+      }
       return si;
     }  
     // Normal track.
@@ -209,9 +215,11 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
       Undo operations;
       Track* t = addTrack(operations, (Track::TrackType)n, insertAt);
       applyOperationGroup(operations);
-      deselectTracks();
-      t->setSelected(true);
-      update(SC_SELECTION);
+      if (t->isVisible()) {
+        deselectTracks();
+        t->setSelected(true);
+        update(SC_SELECTION);
+      }
       return t;
     }  
 }          
@@ -226,35 +234,43 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
 
 Track* Song::addTrack(Undo& operations, Track::TrackType type, Track* insertAt)
       {
+  printf("Song::addTrack\n");
       Track* track = 0;
       int lastAuxIdx = _auxs.size();
       switch(type) {
             case Track::MIDI:
                   track = new MidiTrack();
                   track->setType(Track::MIDI);
+                  if (MusEGlobal::config.unhideTracks) MidiTrack::setVisible(true);
                   break;
             case Track::DRUM:
                   track = new MidiTrack();
                   track->setType(Track::DRUM);
                   ((MidiTrack*)track)->setOutChannel(9);
+                  if (MusEGlobal::config.unhideTracks) MidiTrack::setVisible(true);
                   break;
             case Track::WAVE:
                   track = new MusECore::WaveTrack();
                   ((AudioTrack*)track)->addAuxSend(lastAuxIdx);
+                  if (MusEGlobal::config.unhideTracks) WaveTrack::setVisible(true);
                   break;
             case Track::AUDIO_OUTPUT:
                   track = new AudioOutput();
+                  if (MusEGlobal::config.unhideTracks) AudioOutput::setVisible(true);
                   break;
             case Track::AUDIO_GROUP:
                   track = new AudioGroup();
                   ((AudioTrack*)track)->addAuxSend(lastAuxIdx);
+                  if (MusEGlobal::config.unhideTracks) AudioGroup::setVisible(true);
                   break;
             case Track::AUDIO_AUX:
                   track = new AudioAux();
+                  if (MusEGlobal::config.unhideTracks) AudioAux::setVisible(true);
                   break;
             case Track::AUDIO_INPUT:
                   track = new AudioInput();
                   ((AudioTrack*)track)->addAuxSend(lastAuxIdx);
+                  if (MusEGlobal::config.unhideTracks) AudioInput::setVisible(true);
                   break;
             case Track::AUDIO_SOFTSYNTH:
                   printf("not implemented: Song::addTrack(SOFTSYNTH)\n");

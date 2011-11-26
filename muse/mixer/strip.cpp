@@ -29,6 +29,8 @@
 #include <QColor>
 #include <QVBoxLayout>
 #include <QFrame>
+#include <QMouseEvent>
+#include <QMenu>
 
 #include "globals.h"
 #include "gconfig.h"
@@ -304,6 +306,23 @@ void Strip::resizeEvent(QResizeEvent* ev)
   setLabelText();  
   setLabelFont();
 }  
-      
+
+void Strip::mousePressEvent(QMouseEvent* ev)
+{
+  if (ev->button() == Qt::RightButton) {
+    QMenu* menu = new QMenu;
+    QAction* newAction = menu->addAction(tr("Remove track?"));
+    QPoint pt = QCursor::pos();
+    QAction* act = menu->exec(pt, 0);
+    if (!act)
+    {
+      delete menu;
+      return;
+    }
+    MusEGlobal::song->removeTrack0(track);
+    MusEGlobal::audio->msgUpdateSoloStates();
+  }
+}
+
 
 } // namespace MusEGui

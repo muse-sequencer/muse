@@ -1049,7 +1049,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   if(act)
                   {
                     t = MusEGlobal::song->addNewTrack(act);  // Add at end of list.
-                    if(t)
+                    if(t && t->isVisible())
                     {
                       MusEGlobal::song->deselectTracks();
                       t->setSelected(true);
@@ -1064,13 +1064,13 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   //delete synp;
                   delete p;
             }
-            else if (button == Qt::LeftButton) {
+            /*else if (button == Qt::LeftButton) {
               if (!ctrl) 
               {
                 MusEGlobal::song->deselectTracks();
                 emit selectionChanged(0);
               }  
-            }
+            }*/
             return;
             }
 

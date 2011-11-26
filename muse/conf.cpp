@@ -236,8 +236,6 @@ static void readConfigMidiPort(Xml& xml)
       
       int openFlags = 1;
       bool thruFlag = false;
-      //int dic = 0;
-      //int doc = 0;
       int dic = -1;   // p4.0.17
       int doc = -1;
       
@@ -580,8 +578,10 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                                  MidiTrack::setVisible((bool)xml.parseInt());
                         else if (tag == "inputTracksVisible")
                                  AudioInput::setVisible((bool)xml.parseInt());
-                        else if (tag == "outputTracksVisible")
+                        else if (tag == "outputTracksVisible") {
+                                 printf("output track set from config!\n");
                                  AudioOutput::setVisible((bool)xml.parseInt());
+                        }
                         else if (tag == "synthTracksVisible")
                                  SynthI::setVisible((bool)xml.parseInt());
                         else if (tag == "bigtimeVisible")
@@ -850,10 +850,6 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                         else if (tag == "canvasCustomBgList")
                               MusEGlobal::config.canvasCustomBgList = xml.parse1().split(";", QString::SkipEmptyParts);
                         
-                        //else if (tag == "mixer1")
-                        //      MusEGlobal::config.mixer1.read(xml);
-                        //else if (tag == "mixer2")
-                        //      MusEGlobal::config.mixer2.read(xml);
                         else if (tag == "Mixer")
                         {
                               if(mixers == 0)
@@ -952,6 +948,10 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               MusEGlobal::config.leftMouseButtonCanDecrease = xml.parseInt();
                         else if (tag == "rangeMarkerWithoutMMB")
                               MusEGlobal::config.rangeMarkerWithoutMMB = xml.parseInt();
+                        else if (tag == "addHiddenTracks")
+                              MusEGlobal::config.addHiddenTracks = xml.parseInt();
+                        else if (tag == "unhideTracks")
+                              MusEGlobal::config.unhideTracks = xml.parseInt();
 
                         // ---- the following only skips obsolete entries ----
                         else if ((tag == "arranger") || (tag == "geometryPianoroll") || (tag == "geometryDrumedit"))
@@ -1289,6 +1289,17 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "leftMouseButtonCanDecrease", MusEGlobal::config.leftMouseButtonCanDecrease);
       xml.intTag(level, "rangeMarkerWithoutMMB", MusEGlobal::config.rangeMarkerWithoutMMB);
       
+      xml.intTag(level, "unhideTracks", MusEGlobal::config.unhideTracks);
+      xml.intTag(level, "addHiddenTracks", MusEGlobal::config.addHiddenTracks);
+
+      xml.intTag(level, "waveTracksVisible",  MusECore::WaveTrack::visible());
+      xml.intTag(level, "auxTracksVisible",  MusECore::AudioAux::visible());
+      xml.intTag(level, "groupTracksVisible",  MusECore::AudioGroup::visible());
+      xml.intTag(level, "midiTracksVisible",  MusECore::MidiTrack::visible());
+      xml.intTag(level, "inputTracksVisible",  MusECore::AudioInput::visible());
+      xml.intTag(level, "outputTracksVisible",  MusECore::AudioOutput::visible());
+      xml.intTag(level, "synthTracksVisible",  MusECore::SynthI::visible());
+
       //for (int i = 0; i < 6; ++i) {
       for (int i = 0; i < NUM_FONTS; ++i) {
             char buffer[32];
@@ -1368,11 +1379,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "bigtimeVisible", MusEGlobal::config.bigTimeVisible);
       xml.intTag(level, "transportVisible", MusEGlobal::config.transportVisible);
       
-      //xml.intTag(level, "mixerVisible", MusEGlobal::config.mixerVisible);  // Obsolete
       xml.intTag(level, "mixer1Visible", MusEGlobal::config.mixer1Visible);
       xml.intTag(level, "mixer2Visible", MusEGlobal::config.mixer2Visible);
-      //MusEGlobal::config.mixer1.write(level, xml, "mixer1");
-      //MusEGlobal::config.mixer2.write(level, xml, "mixer2");
       MusEGlobal::config.mixer1.write(level, xml);
       MusEGlobal::config.mixer2.write(level, xml);
 
@@ -1425,13 +1433,6 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "midiFilterCtrl3",  MusEGlobal::midiFilterCtrl3);
       xml.intTag(level, "midiFilterCtrl4",  MusEGlobal::midiFilterCtrl4);
 
-      xml.intTag(level, "waveTracksVisible",  MusECore::WaveTrack::visible());
-      xml.intTag(level, "auxTracksVisible",  MusECore::AudioAux::visible());
-      xml.intTag(level, "groupTracksVisible",  MusECore::AudioGroup::visible());
-      xml.intTag(level, "midiTracksVisible",  MusECore::MidiTrack::visible());
-      xml.intTag(level, "inputTracksVisible",  MusECore::AudioInput::visible());
-      xml.intTag(level, "outputTracksVisible",  MusECore::AudioOutput::visible());
-      xml.intTag(level, "synthTracksVisible",  MusECore::SynthI::visible());
       // Removed by Tim. p3.3.6
       
       //xml.intTag(level, "txDeviceId", txDeviceId);
@@ -1489,8 +1490,6 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
 
       xml.intTag(level, "bigtimeVisible",   viewBigtimeAction->isChecked());
       xml.intTag(level, "transportVisible", viewTransportAction->isChecked());
-      //xml.intTag(level, "markerVisible",    viewMarkerAction->isChecked()); // Obsolete (done by song's toplevel list)
-      //xml.intTag(level, "mixerVisible",     menuView->isItemChecked(aid1));  // Obsolete
 
       xml.geometryTag(level, "geometryMain", this); // FINDME: maybe remove this? do we want
                                                     // the main win to jump around when loading?
@@ -1499,18 +1498,13 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
       if (bigtime)
             xml.geometryTag(level, "geometryBigTime", bigtime);
       
-      //if (audioMixer)
-      //      xml.geometryTag(level, "geometryMixer", audioMixer);   // Obsolete
       xml.intTag(level, "mixer1Visible",    viewMixerAAction->isChecked());
       xml.intTag(level, "mixer2Visible",    viewMixerBAction->isChecked());
       if (mixer1)
-            //mixer1->write(level, xml, "mixer1");
             mixer1->write(level, xml);
       if (mixer2)
-            //mixer2->write(level, xml, "mixer2");
             mixer2->write(level, xml);
 
-      //_arranger->writeStatus(level, xml);  // Obsolete.  done by song's toplevel list. arrangerview also handles arranger.
       writeSeqConfiguration(level, xml, true);
 
       MusEGui::write_function_dialog_config(level, xml);
@@ -1648,18 +1642,12 @@ namespace MusEGlobal {
 //   write
 //---------------------------------------------------------
 
-//void MixerConfig::write(MusECore::Xml& xml, const char* name)
 void MixerConfig::write(int level, MusECore::Xml& xml)
-//void MixerConfig::write(int level, MusECore::Xml& xml, const char* name)
       {
-      //xml.stag(QString(name));
-      //xml.tag(level++, name.toLatin1().constData());
       xml.tag(level++, "Mixer");
-      //xml.tag(level++, name);
-      
+
       xml.strTag(level, "name", name);
       
-      //xml.tag("geometry",       geometry);
       xml.qrectTag(level, "geometry", geometry);
       
       xml.intTag(level, "showMidiTracks",   showMidiTracks);
@@ -1671,19 +1659,14 @@ void MixerConfig::write(int level, MusECore::Xml& xml)
       xml.intTag(level, "showAuxTracks",    showAuxTracks);
       xml.intTag(level, "showSyntiTracks",  showSyntiTracks);
       
-      //xml.etag(name);
-      //xml.etag(level, name.toLatin1().constData());
       xml.etag(level, "Mixer");
-      //xml.etag(level, name);
       }
 
 //---------------------------------------------------------
 //   read
 //---------------------------------------------------------
 
-//void MixerConfig::read(QDomNode node)
 void MixerConfig::read(MusECore::Xml& xml)
-//void MixerConfig::read(MusECore::Xml& xml, const QString& name)
       {
       for (;;) {
             MusECore::Xml::Token token(xml.parse());

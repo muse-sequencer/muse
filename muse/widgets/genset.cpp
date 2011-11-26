@@ -171,7 +171,10 @@ Shorter periods are desirable.</string>
       popsDefStayOpenCheckBox->setChecked(MusEGlobal::config.popupsDefaultStayOpen);
       lmbDecreasesCheckBox->setChecked(MusEGlobal::config.leftMouseButtonCanDecrease);
       rangeMarkerWithoutMMBCheckBox->setChecked(MusEGlobal::config.rangeMarkerWithoutMMB);
-      
+
+      addHiddenCheckBox->setChecked(MusEGlobal::config.addHiddenTracks);
+      unhideTracksCheckBox->setChecked(MusEGlobal::config.unhideTracks);
+
       //updateSettings();    // TESTING
       
       connect(applyButton, SIGNAL(clicked()), SLOT(apply()));
@@ -310,6 +313,9 @@ void GlobalSettingsConfig::updateSettings()
       lmbDecreasesCheckBox->setChecked(MusEGlobal::config.leftMouseButtonCanDecrease);
       rangeMarkerWithoutMMBCheckBox->setChecked(MusEGlobal::config.rangeMarkerWithoutMMB);
       
+      addHiddenCheckBox->setChecked(MusEGlobal::config.addHiddenTracks);
+      unhideTracksCheckBox->setChecked(MusEGlobal::config.unhideTracks);
+
       updateMdiSettings();
 }
 
@@ -407,6 +413,9 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.popupsDefaultStayOpen = popsDefStayOpenCheckBox->isChecked();
       MusEGlobal::config.leftMouseButtonCanDecrease = lmbDecreasesCheckBox->isChecked();
       MusEGlobal::config.rangeMarkerWithoutMMB = rangeMarkerWithoutMMBCheckBox->isChecked();
+
+      MusEGlobal::config.addHiddenTracks = addHiddenCheckBox->isChecked();
+      MusEGlobal::config.unhideTracks = unhideTracksCheckBox->isChecked();
 
       //MusEGlobal::muse->showMixer(MusEGlobal::config.mixerVisible);
       MusEGlobal::muse->showMixer1(MusEGlobal::config.mixer1Visible);

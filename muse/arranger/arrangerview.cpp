@@ -129,6 +129,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
   connect(arranger, SIGNAL(setUsedTool(int)), editTools, SLOT(set(int)));
   connect(arranger, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
+  connect(MusEGlobal::song, SIGNAL(songChanged(int)), visTracks, SLOT(updateVisibleTracksButtons()));
 
 
 

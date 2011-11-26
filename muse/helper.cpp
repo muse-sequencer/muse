@@ -28,6 +28,7 @@
 #include "icons.h"
 #include "synth.h"
 #include "functions.h"
+#include "gconfig.h"
 
 #include <QApplication>
 
@@ -176,19 +177,27 @@ QMenu* populateAddSynth(QWidget* parent)
 QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll)
       {
       QActionGroup* grp = new QActionGroup(addTrack);
+      if (MusEGlobal::config.addHiddenTracks)
+        populateAll=true;
 
-      QAction* midi = addTrack->addAction(QIcon(*addtrack_addmiditrackIcon),
+      if (populateAll || MusECore::MidiTrack::visible()) {
+        QAction* midi = addTrack->addAction(QIcon(*addtrack_addmiditrackIcon),
                                           qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Midi Track")));
-      midi->setData(MusECore::Track::MIDI);
-      grp->addAction(midi);
-      QAction* drum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
+        midi->setData(MusECore::Track::MIDI);
+        grp->addAction(midi);
+      }
+      if (populateAll || MusECore::MidiTrack::visible()) {
+        QAction* drum = addTrack->addAction(QIcon(*addtrack_drumtrackIcon),
                                           qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Drum Track")));
-      drum->setData(MusECore::Track::DRUM);
-      grp->addAction(drum);
-      QAction* wave = addTrack->addAction(QIcon(*addtrack_wavetrackIcon),
+        drum->setData(MusECore::Track::DRUM);
+        grp->addAction(drum);
+      }
+      if (populateAll || MusECore::WaveTrack::visible()) {
+        QAction* wave = addTrack->addAction(QIcon(*addtrack_wavetrackIcon),
                                           qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Wave Track")));
-      wave->setData(MusECore::Track::WAVE);
-      grp->addAction(wave);
+       wave->setData(MusECore::Track::WAVE);
+       grp->addAction(wave);
+      }
 
       if (populateAll || MusECore::AudioOutput::visible()) {
         QAction* aoutput = addTrack->addAction(QIcon(*addtrack_audiooutputIcon),
@@ -218,14 +227,16 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll)
         grp->addAction(aaux);
       }
 
-      // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
-      QMenu* synp = populateAddSynth(addTrack);
-      synp->setIcon(*synthIcon);
-      synp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Synth")));
+      if (populateAll || MusECore::SynthI::visible()) {
+        // Create a sub-menu and fill it with found synth types. Make addTrack the owner.
+        QMenu* synp = populateAddSynth(addTrack);
+        synp->setIcon(*synthIcon);
+        synp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Add Synth")));
 
-      // Add the sub-menu to the given menu.
-      addTrack->addMenu(synp);
-      
+        // Add the sub-menu to the given menu.
+        addTrack->addMenu(synp);
+      }
+
       //QObject::connect(addTrack, SIGNAL(triggered(QAction *)), MusEGlobal::song, SLOT(addNewTrack(QAction *)));
 
       return grp;

@@ -880,8 +880,8 @@ void PartCanvas::mousePress(QMouseEvent* event)
             default:
                   if (item)
                       emit trackChanged(item->part()->track());
-                  else
-                      emit trackChanged(NULL);
+                  //else -- don't see the point of removing track selection, commenting out (rj)
+                  //    emit trackChanged(NULL);
                   break;
             case CutTool:
                   if (item) splitItem(item, pt);

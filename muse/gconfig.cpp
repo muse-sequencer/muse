@@ -187,7 +187,10 @@ GlobalConfigValues config = {
       64,                           // minControlProcessPeriod
       false,                        // popupsDefaultStayOpen
       false,                        // leftMouseButtonCanDecrease
-      false                         // rangeMarkerWithoutMMB
+      false,                        // rangeMarkerWithoutMMB
+      true,                         // addHiddenTracks
+      true                          // unhideTracks
+
     };
 
 } // namespace MusEGlobal
