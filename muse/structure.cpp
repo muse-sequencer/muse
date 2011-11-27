@@ -333,8 +333,11 @@ Undo partSplitter(unsigned int pos, bool onlySelectedTracks)
                     MusEGlobal::song->informAboutNewParts(part, p2);
                     operations.push_back(UndoOp(UndoOp::ModifyPart,part, p1, true, false));
                     operations.push_back(UndoOp(UndoOp::AddPart,p2));
-                    printf("part1 %d\n",p1->events()->refCount());
-                    printf("part2 %d\n",p2->events()->refCount());
+                    if (MusEGlobal::debugMsg)
+                    {
+                          printf("in partSplitter: part1 %d\n",p1->events()->refCount());
+                          printf("in partSplitter: part2 %d\n",p2->events()->refCount());
+                          }
                     break;
                     }
               }
