@@ -4691,6 +4691,7 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *   o thin out: remove unneeded ctrl messages
  *
  * less important stuff
+ *   o allow "fixating" toolbars?
  *   o quantize-templates (everything is forced into a specified
  *                         rhythm)
  *   o part-templates (you specify some notes and a control-chord;

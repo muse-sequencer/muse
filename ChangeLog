@@ -1,3 +1,7 @@
+27.11.2011:
+        - fixed invalid read problem in node.cpp: replaced the (ab-)use
+          of a temporary stacked buffer (which was deleted too soon)
+          by the use of a temporary heap buffer (new[])   (flo)
 26.11.2011:
         - Added config properties for add-track menu, show all, show only visible and property for making visible what you add (rj)
         - Split behaviour and style configuration to two tabs (rj)

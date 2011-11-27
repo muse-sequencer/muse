@@ -420,6 +420,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
   int i;
   
   float* buffer[srcTotalOutChans];
+  float* temp_data = NULL;
   
   // precalculate stereo volume
   double vol[2];
@@ -518,11 +519,13 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
       //_isProcessing = false;  // Unblock.
       return;
     }
-      
-    // Point the input buffers at a temporary stack buffer.
-    float data[nframes * srcTotalOutChans];
+    
+    // Point the input buffers at a temporary buffer.
+    // This may NOT be a stack buffer, otherwise it would be
+    // freed after this block, but still be used! (flo93)
+    temp_data = new float[nframes * srcTotalOutChans];
     for(i = 0; i < srcTotalOutChans; ++i)
-        buffer[i] = data + i * nframes;
+        buffer[i] = temp_data + i * nframes;
   
     // getData can use the supplied buffers, or change buffer to point to its own local buffers or Jack buffers etc. 
     // For ex. if this is an audio input, Jack will set the pointers for us in AudioInput::getData!
@@ -655,6 +658,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
       //_haveData = false;
       //_processed = true;
       //_isProcessing = false;  // Unblock.
+      if (temp_data) delete[] temp_data;
       return;
     }
     
@@ -685,6 +689,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
     }        
     //_processed = true;
     //_isProcessing = false;  // Unblock.
+    if (temp_data) delete[] temp_data;
     return;
   }
   // Force a source range to fit actual available total out channels.
@@ -802,6 +807,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
         
   //_processed = true;
   //_isProcessing = false;  // Unblock.
+  if (temp_data) delete[] temp_data;
 }
 
 //---------------------------------------------------------
@@ -858,6 +864,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   int i;
   
   float* buffer[srcTotalOutChans];
+  float* temp_data = NULL;
   
   // precalculate stereo volume
   double vol[2];
@@ -936,10 +943,12 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
       return;
     }
       
-    // Point the input buffers at a temporary stack buffer.
-    float data[nframes * srcTotalOutChans];
+    // Point the input buffers at a temporary buffer.
+    // This may NOT be a stack buffer, otherwise it would be
+    // freed after this block, but still be used! (flo93)
+    temp_data = new float[nframes * srcTotalOutChans];
     for(i = 0; i < srcTotalOutChans; ++i)
-        buffer[i] = data + i * nframes;
+        buffer[i] = temp_data + i * nframes;
   
     // getData can use the supplied buffers, or change buffer to point to its own local buffers or Jack buffers etc. 
     // For ex. if this is an audio input, Jack will set the pointers for us.
@@ -1056,6 +1065,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
       //_haveData = false;
       //_processed = true;
       //_isProcessing = false;  // Unblock.
+      if (temp_data) delete[] temp_data;
       return;
     }
     
@@ -1086,6 +1096,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
     }        
     //_processed = true;
     //_isProcessing = false;  // Unblock.
+    if (temp_data) delete[] temp_data;
     return;
   }
   // Force a source range to fit actual available total out channels.
@@ -1201,6 +1212,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   
   //_processed = true;
   //_isProcessing = false;  // Unblock.
+  if (temp_data) delete[] temp_data;
 }
 
 //---------------------------------------------------------
