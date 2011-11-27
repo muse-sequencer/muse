@@ -1,3 +1,5 @@
+28.11.2011:
+        - MusE 2.0 release candidate 1 released (rj)
 27.11.2011:
         - fixed invalid read problem in node.cpp: replaced the (ab-)use
           of a temporary stacked buffer (which was deleted too soon)

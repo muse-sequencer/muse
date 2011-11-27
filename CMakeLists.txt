@@ -66,9 +66,9 @@ set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 SET(MusE_VERSION_MAJOR 2)
 SET(MusE_VERSION_MINOR 0)
 SET(MusE_VERSION_PATCH 0)
-SET(MusE_VERSION       "2.0beta2")
-SET(MusE_VERSION_FULL  "2.0beta2")
-SET(MusE_INSTALL_NAME  "muse-2.0beta")
+SET(MusE_VERSION       "2.0rc1")
+SET(MusE_VERSION_FULL  "2.0rc1")
+SET(MusE_INSTALL_NAME  "muse-2.0")
 SET(MusE_EXEC_NAME     "muse2")
 
 ## The directory where we will install the shared components:
