@@ -687,8 +687,9 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
     for(int c = 0; c < dstChannels; ++c) 
     {
       double v;
-      if(srcStartChan > 2)      // Don't apply pan to extra channels above 2.
-        v = _volume;
+      if(srcStartChan > 2)      // Don't apply pan or volume to extra channels above 2.
+        //v = _volume;
+        v = 1.0;
       else
       if(srcChans >= 2)         // If 2 channels apply pan normally.
         v = vol[c];
@@ -710,8 +711,9 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
     for(int c = 0; c < dstChannels; ++c) 
     {
       double v;
-      if(srcStartChan > 2)      // Don't apply pan to extra channels above 2.
-        v = _volume;
+      if(srcStartChan > 2)      // Don't apply pan or volume to extra channels above 2.
+        //v = _volume;
+        v = 1.0;
       else
       if(trackChans <= 1)       // If track is mono apply pan.
         v = vol[c];
@@ -727,8 +729,10 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
   }
   else if(srcChans == 2 && dstChannels == 1) 
   {
-    double v1 = (srcStartChan > 2 ? _volume : vol[srcStartChan]);       // Don't apply pan to extra channels above 2.
-    double v2 = (srcStartChan > 2 ? _volume : vol[srcStartChan + 1]);   // 
+    //double v1 = (srcStartChan > 2 ? _volume : vol[srcStartChan]);       // Don't apply pan to extra channels above 2.
+    //double v2 = (srcStartChan > 2 ? _volume : vol[srcStartChan + 1]);   // 
+    double v1 = (srcStartChan > 2 ? 1.0 : vol[srcStartChan]);             // Don't apply pan or volume to extra channels above 2.
+    double v2 = (srcStartChan > 2 ? 1.0 : vol[srcStartChan + 1]);         // 
     float* dp = dstBuffer[0];
     float* sp1 = buffer[srcStartChan];
     float* sp2 = buffer[srcStartChan + 1];
@@ -1030,8 +1034,9 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
     for(int c = 0; c < dstChannels; ++c) 
     {
       double v;
-      if(srcStartChan > 2)      // Don't apply pan to extra channels above 2.
-        v = _volume;
+      if(srcStartChan > 2)      // Don't apply pan or volume to extra channels above 2.
+        //v = _volume;
+        v = 1.0;
       else
       if(srcChans >= 2)         // If 2 channels apply pan normally.
         v = vol[c];
@@ -1053,8 +1058,9 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
     for(int c = 0; c < dstChannels; ++c) 
     {
       double v;
-      if(srcStartChan > 2)      // Don't apply pan to extra channels above 2.
-        v = _volume;
+      if(srcStartChan > 2)      // Don't apply pan or volume to extra channels above 2.
+        //v = _volume;
+        v = 1.0;
       else
       if(trackChans <= 1)       // If track is mono apply pan.
         v = vol[c];
@@ -1070,8 +1076,10 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   }
   else if(srcChans == 2 && dstChannels == 1) 
   {
-    double v1 = (srcStartChan > 2 ? _volume : vol[srcStartChan]);       // Don't apply pan to extra channels above 2.
-    double v2 = (srcStartChan > 2 ? _volume : vol[srcStartChan + 1]);   // 
+    //double v1 = (srcStartChan > 2 ? _volume : vol[srcStartChan]);       // Don't apply pan to extra channels above 2.
+    //double v2 = (srcStartChan > 2 ? _volume : vol[srcStartChan + 1]);   // 
+    double v1 = (srcStartChan > 2 ? 1.0 : vol[srcStartChan]);             // Don't apply pan or volume to extra channels above 2.
+    double v2 = (srcStartChan > 2 ? 1.0 : vol[srcStartChan + 1]);         // 
     float* sp1 = buffer[srcStartChan];
     float* sp2 = buffer[srcStartChan + 1];
     float* dp = dstBuffer[0];
