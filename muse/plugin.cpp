@@ -2434,6 +2434,7 @@ void PluginI::showGui()
       if (_plugin) {
             if (_gui == 0)
                     makeGui();
+            _gui->setWindowTitle(titlePrefix() + name());
             if (_gui->isVisible())
                     _gui->hide();
             else
@@ -2550,6 +2551,15 @@ void PluginI::enable2AllControllers(bool v)
   //for(int i = 0; i < controlPorts; ++i) 
   for(unsigned long i = 0; i < controlPorts; ++i) 
     controls[i].en2Ctrl = v;
+}
+
+//---------------------------------------------------------
+//   titlePrefix
+//---------------------------------------------------------
+
+QString PluginI::titlePrefix() const    
+{ 
+  return _track->name() + QString(": "); 
 }
 
 //---------------------------------------------------------
@@ -3440,7 +3450,8 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       params = 0;
       paramsOut = 0;
       plugin = p;
-      setWindowTitle(plugin->name());
+      //setWindowTitle(plugin->name());
+      setWindowTitle(plugin->titlePrefix() + plugin->name());
 
       QToolBar* tools = addToolBar(tr("File Buttons"));
 
@@ -4102,16 +4113,18 @@ void PluginGui::save()
 
 void PluginGui::bypassToggled(bool val)
       {
+      setWindowTitle(plugin->titlePrefix() + plugin->name());
       plugin->setOn(val);
       MusEGlobal::song->update(SC_ROUTE);
       }
 
 //---------------------------------------------------------
-//   songChanged
+//   setOn
 //---------------------------------------------------------
 
 void PluginGui::setOn(bool val)
       {
+      setWindowTitle(plugin->titlePrefix() + plugin->name());
       onOff->blockSignals(true);
       onOff->setChecked(val);
       onOff->blockSignals(false);

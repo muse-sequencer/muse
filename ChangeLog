@@ -1,4 +1,9 @@
 28.11.2011:
+        *Fixed: DSSI synth audio inputs. This means dssi vocoders, samplers etc. should work now. (Tim...)
+        *Re-write: Fixed audio mixing, meter processing. Audio, and meters, for all mono <-> stereo route combinations work sensibly now.
+        - (Re-)fixed valgrind 'invalid read size' in node.cpp, my very-old bad. Moved temp stack buffers to top. (Thnx to Flo)
+        - Window titles of ladspa and dssi plugins now have track name prefix to help identify them.
+28.11.2011:
         - MusE 2.0 release candidate 1 released (rj)
 27.11.2011:
         - fixed invalid read problem in node.cpp: replaced the (ab-)use

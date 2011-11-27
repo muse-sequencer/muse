@@ -26,6 +26,8 @@
 #include <sndfile.h>
 #include <stdlib.h>
 
+#include <QString>
+
 #include "node.h"
 #include "globals.h"
 #include "gconfig.h"
@@ -373,32 +375,6 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
   // Make better use of AudioTrack::outBuffers as a post-effect pre-volume cache system for multiple calls here during processing.
   // Previously only WaveTrack used them. (Changed WaveTrack as well).
   
-  /*
-  // Anti feedback loop mechanism: Is something else already in the middle of processing this track?
-  if(_isProcessing)
-  {  
-    #ifdef NODE_DEBUG
-    printf("MusE: AudioTrack::copyData name:%s Anti-Feedback!\n", name().toLatin1().constData());
-    #endif
-    
-    // Break the loop: Zero the supplied buffers and just return.
-    for(int i = 0; i < dstChannels; ++i) 
-    {
-      if(MusEGlobal::config.useDenormalBias) 
-      {
-        for(unsigned int q = 0; q < nframes; ++q)
-          dstBuffer[i][q] = MusEGlobal::denormalBias;
-      } 
-      else
-        memset(dstBuffer[i], 0, sizeof(float) * nframes);
-    }
-    //_haveData = false;
-    //_processed = false;
-    return;  
-  }
-  _isProcessing = true; // Block.
-  */
-  
   #ifdef NODE_DEBUG
   printf("MusE: AudioTrack::copyData name:%s processed:%d\n", name().toLatin1().constData(), processed());
   #endif
@@ -406,7 +382,8 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
   if(srcStartChan == -1)
     srcStartChan = 0;
     
-  int srcChans = (srcChannels == -1) ? channels() : srcChannels;
+  int trackChans = channels();
+  int srcChans = (srcChannels == -1) ? trackChans : srcChannels;
   int srcTotalOutChans = totalOutChannels();
   if(channels() == 1)
     srcTotalOutChans = 1;
@@ -428,20 +405,15 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
   double _pan = pan();
   vol[0] = _volume * (1.0 - _pan);
   vol[1] = _volume * (1.0 + _pan);
-  float meter[srcChans];
+  float meter[trackChans];
 
   // Have we been here already during this process cycle?
   if(processed())
-  //if(processed() || _isProcessing)
   {
     // If there is only one (or no) output routes, it's an error - we've been called more than once per process cycle!
     // No, this is no longer an error, it's deliberate. Processing no longer done in 'chains', now done randomly.  p4.0.37
     #ifdef NODE_DEBUG
-    //if(usedirectbuf)
-    //  printf("MusE: AudioTrack::copyData Error! One or no out routes, but already processed! _haveData:%d Copying local buffers anyway...\n", _haveData);
-    //else
-    //  printf("MusE: AudioTrack::copyData name:%s Anti-Feedback! _haveData:%d\n", name().toLatin1().constData(), _haveData);
-    printf("MusE: AudioTrack::copyData name:%s already processed _haveData:%d usedirectbuf:%d\n", name().toLatin1().constData(), _haveData, usedirectbuf);
+    printf("MusE: AudioTrack::copyData name:%s already processed _haveData:%d\n", name().toLatin1().constData(), _haveData);
     #endif
     
     // Is there already some data gathered from a previous call during this process cycle?
@@ -450,8 +422,6 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
       // Point the input buffers at our local cached 'pre-volume' buffers. They need processing, so continue on after.
       for(i = 0; i < srcTotalOutChans; ++i)
         buffer[i] = outBuffers[i];
-      
-      //_isProcessing = true; // Block.
     }
     else
     {
@@ -466,7 +436,6 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
         else
           memset(dstBuffer[i], 0, sizeof(float) * nframes);
       }
-      //_isProcessing = false;  // Unblock.
       return;  
     }
   }
@@ -476,7 +445,6 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
     
     _haveData = false;  // Reset.
     _processed = true;  // Set this now.
-    //_isProcessing = true; // Block.
 
     if(off())  
     {  
@@ -499,7 +467,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
       
       _efxPipe->apply(0, nframes, 0);  // Just process controls only, not audio (do not 'run').    
 
-      for(i = 0; i < srcChans; ++i) 
+      for(i = 0; i < trackChans; ++i) 
       {
         _meter[i] = 0.0;
         /*if(!usedirectbuf)
@@ -553,7 +521,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
     //---------------------------------------------------
 
     //fprintf(stderr, "AudioTrack::copyData %s efx apply srcChans:%d\n", name().toLatin1().constData(), srcChans);
-    _efxPipe->apply(srcChans, nframes, buffer);
+    _efxPipe->apply(trackChans, nframes, buffer);   
 
     //---------------------------------------------------
     // aux sends
@@ -600,18 +568,16 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
 
     if(_prefader) 
     {
-      for(i = 0; i < srcChans; ++i) 
+      for(i = 0; i < trackChans; ++i)   
       {
         float* p = buffer[i];
         meter[i] = 0.0;
         for(unsigned k = 0; k < nframes; ++k) 
         {
-          double f = fabs(*p);
+          double f = fabs(*p++);
           if(f > meter[i])
             meter[i] = f;
-          ++p;
         }
-        //_meter[i] = lrint(meter[i] * 32767.0);
         _meter[i] = meter[i];
         if(_meter[i] > _peak[i])
           _peak[i] = _meter[i];
@@ -649,12 +615,9 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
       
       
       if(!_prefader) 
-        for(i = 0; i < srcChans; ++i) 
+        for(i = 0; i < trackChans; ++i) // Must process ALL channels, even if unconnected. Only max 2 channels.
           _meter[i] = 0.0;
 
-      //_haveData = false;
-      //_processed = true;
-      //_isProcessing = false;  // Unblock.
       return;
     }
     
@@ -683,10 +646,9 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
       else 
         memset(dstBuffer[i], 0, sizeof(float) * nframes);
     }        
-    //_processed = true;
-    //_isProcessing = false;  // Unblock.
     return;
   }
+
   // Force a source range to fit actual available total out channels.
   if((srcStartChan + srcChans) > srcTotalOutChans) 
     srcChans = srcTotalOutChans - srcStartChan;
@@ -696,112 +658,84 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
   //    postfader metering
   //---------------------------------------------------
 
+  #ifdef NODE_DEBUG
+  printf("MusE: AudioTrack::copyData trackChans:%d srcTotalOutChans:%d srcStartChan:%d srcChans:%d dstChannels:%d\n", trackChans, srcTotalOutChans, srcStartChan, srcChans, dstChannels);
+  #endif
+      
+  if(!_prefader) 
+  {
+    for(int c = 0; c < trackChans; ++c)     
+    {
+      meter[c] = 0.0;
+      double v = (trackChans == 1 ? _volume : vol[c]);        
+      float* sp = buffer[c];
+      for(unsigned k = 0; k < nframes; ++k) 
+      {
+        float val = *sp++ * v;  // If the track is mono pan has no effect on meters.
+        double f = fabs(val);
+        if(f > meter[c])
+          meter[c] = f;
+      }
+      _meter[c] = meter[c];
+      if(_meter[c] > _peak[c])
+        _peak[c] = _meter[c];
+    }  
+  }
     
   if(srcChans == dstChannels) 
   {
-    if(_prefader) 
+    for(int c = 0; c < dstChannels; ++c) 
     {
-      for(int c = 0; c < dstChannels; ++c) 
-      {
-        float* sp = buffer[c + srcStartChan];
-        float* dp = dstBuffer[c];
-        for(unsigned k = 0; k < nframes; ++k)
-          *dp++ = (*sp++ * vol[c]);
-      }
-    }
-    else 
-    {
-      for(int c = 0; c < dstChannels; ++c) 
-      {
-        meter[c] = 0.0;
-        float* sp = buffer[c + srcStartChan];
-        float* dp = dstBuffer[c];
-        //printf("2 dstBuffer[c]=%d\n",long(dstBuffer[c]));
-        for(unsigned k = 0; k < nframes; ++k) 
-        {
-          float val = *sp++ * vol[c];
-          *dp++ = val;
-          double f = fabs(val);
-          if(f > meter[c])
-            meter[c] = f;
-        }
-        //_meter[c] = lrint(meter[c] * 32767.0);
-        _meter[c] = meter[c];
-        if(_meter[c] > _peak[c])
-          _peak[c] = _meter[c];
-      }
+      double v;
+      if(srcStartChan > 2)      // Don't apply pan to extra channels above 2.
+        v = _volume;
+      else
+      if(srcChans >= 2)         // If 2 channels apply pan normally.
+        v = vol[c];
+      else
+      if(trackChans < 2)        // If 1 channel and track is 1 channel, don't apply pan.
+        v = _volume;
+      else
+        v = vol[srcStartChan];  // Otherwise 1 channel but track is 2 channels. Apply the channel volume.
+      
+      float* sp = buffer[c + srcStartChan];
+      float* dp = dstBuffer[c];
+      for(unsigned k = 0; k < nframes; ++k)
+        //*dp++ = (*sp++ * vol[c]);
+        *dp++ = (*sp++ * v);
     }
   }
   else if(srcChans == 1 && dstChannels == 2) 
   {
-    float* sp = buffer[srcStartChan];
-    if(_prefader) 
+    for(int c = 0; c < dstChannels; ++c) 
     {
-      for(int c = 0; c < dstChannels; ++c) 
-      {
-        float* dp = dstBuffer[c];
-        for(unsigned k = 0; k < nframes; ++k)
-          *dp++ = (*sp++ * vol[c]);
-      }
-    }
-    else 
-    {
-      meter[0] = 0.0;
-      for(unsigned k = 0; k < nframes; ++k) 
-      {
-        float val = *sp++;
-        double f = fabs(val) * _volume;
-        if(f > meter[0])
-          meter[0] = f;
-        *(dstBuffer[0] + k) = val * vol[0];
-        *(dstBuffer[1] + k) = val * vol[1];
-      }
-      //_meter[0] = lrint(meter[0] * 32767.0);
-      _meter[0] = meter[0];
-      if(_meter[0] > _peak[0])
-        _peak[0] = _meter[0];
+      double v;
+      if(srcStartChan > 2)      // Don't apply pan to extra channels above 2.
+        v = _volume;
+      else
+      if(trackChans <= 1)       // If track is mono apply pan.
+        v = vol[c];
+      else
+        v = vol[srcStartChan];  // Otherwise track is stereo, apply the same channel volume to both.
+      
+      float* sp = buffer[srcStartChan];
+      float* dp = dstBuffer[c];
+      for(unsigned k = 0; k < nframes; ++k)
+        //*dp++ = (*sp++ * vol[c]);
+        *dp++ = (*sp++ * v);
     }
   }
   else if(srcChans == 2 && dstChannels == 1) 
   {
+    double v1 = (srcStartChan > 2 ? _volume : vol[srcStartChan]);       // Don't apply pan to extra channels above 2.
+    double v2 = (srcStartChan > 2 ? _volume : vol[srcStartChan + 1]);   // 
+    float* dp = dstBuffer[0];
     float* sp1 = buffer[srcStartChan];
     float* sp2 = buffer[srcStartChan + 1];
-    if(_prefader) 
-    {
-      float* dp = dstBuffer[0];
-      for(unsigned k = 0; k < nframes; ++k)
-        *dp++ = (*sp1++ * vol[0] + *sp2++ * vol[1]);
-    }
-    else 
-    {
-      float* dp = dstBuffer[0];
-      meter[0] = 0.0;
-      meter[1] = 0.0;
-      for(unsigned k = 0; k < nframes; ++k) 
-      {
-        float val1 = *sp1++ * vol[0];
-        float val2 = *sp2++ * vol[1];
-        double f1 = fabs(val1);
-        if(f1 > meter[0])
-          meter[0] = f1;
-        double f2 = fabs(val2);
-        if(f2 > meter[1])
-          meter[1] = f2;
-        *dp++ = (val1 + val2);
-      }
-      //_meter[0] = lrint(meter[0] * 32767.0);
-      _meter[0] = meter[0];
-      if(_meter[0] > _peak[0])
-        _peak[0] = _meter[0];
-      //_meter[1] = lrint(meter[1] * 32767.0);
-      _meter[1] = meter[1];
-      if(_meter[1] > _peak[1])
-        _peak[1] = _meter[1];
-    }
+    for(unsigned k = 0; k < nframes; ++k)
+      //*dp++ = (*sp1++ * vol[0] + *sp2++ * vol[1]);
+      *dp++ = (*sp1++ * v1 + *sp2++ * v2);
   }
-        
-  //_processed = true;
-  //_isProcessing = false;  // Unblock.
 }
 
 //---------------------------------------------------------
@@ -816,22 +750,6 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   // Make better use of AudioTrack::outBuffers as a post-effect pre-volume cache system for multiple calls here during processing.
   // Previously only WaveTrack used them. (Changed WaveTrack as well).
   
-  /*
-  // Anti feedback loop mechanism: Is something else already in the middle of processing this track?
-  if(_isProcessing)
-  {  
-    #ifdef NODE_DEBUG
-    printf("MusE: AudioTrack::addData name:%s Anti-Feedback!\n", name().toLatin1().constData());
-    #endif
-    
-    // Break the loop: Nothing to add, just return.
-    //_haveData = false;
-    //_processed = false;
-    return;  
-  }
-  _isProcessing = true;  // Block.
-  */
-  
   #ifdef NODE_DEBUG
   printf("MusE: AudioTrack::addData name:%s processed:%d\n", name().toLatin1().constData(), processed());
   #endif
@@ -845,7 +763,8 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   if(srcStartChan == -1)
     srcStartChan = 0;
     
-  int srcChans = (srcChannels == -1) ? channels() : srcChannels;
+  int trackChans = channels();
+  int srcChans = (srcChannels == -1) ? trackChans : srcChannels;
   int srcTotalOutChans = totalOutChannels();
   if(channels() == 1)
     srcTotalOutChans = 1;
@@ -866,20 +785,16 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   double _pan = pan();
   vol[0] = _volume * (1.0 - _pan);
   vol[1] = _volume * (1.0 + _pan);
-  float meter[srcChans];
+  //float meter[srcChans];
+  float meter[trackChans];
 
   // Have we been here already during this process cycle?
   if(processed())
-  //if(processed() || _isProcessing)
   {
     // If there is only one (or no) output routes, it's an error - we've been called more than once per process cycle!
     // No, this is no longer an error, it's deliberate. Processing no longer done in 'chains', now done randomly.  p4.0.37
     #ifdef NODE_DEBUG
-    //if(usedirectbuf)
-    //  printf("MusE: AudioTrack::addData Error! One or no out routes, but already processed! _haveData:%d Copying local buffers anyway...\n", _haveData);
-    //else
-    //  printf("MusE: AudioTrack::addData name:%s Anti-Feedback! _haveData:%d\n", name().toLatin1().constData(), _haveData);
-    printf("MusE: AudioTrack::addData name:%s already processed _haveData:%d usedirectbuf:%d\n", name().toLatin1().constData(), _haveData, usedirectbuf);
+    printf("MusE: AudioTrack::addData name:%s already processed _haveData:%d\n", name().toLatin1().constData(), _haveData);
     #endif
     
     // Is there already some data gathered from a previous call during this process cycle?
@@ -888,13 +803,10 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
       // Point the input buffers at our local cached 'pre-volume' buffers. They need processing, so continue on after.
       for(i = 0; i < srcTotalOutChans; ++i)
         buffer[i] = outBuffers[i];
-      
-      //_isProcessing = true; // Block.
     }
     else
     {  
       // No data was available from a previous call during this process cycle. Nothing to add, just return.
-      //_isProcessing = false;  // Unblock.
       return;  
     }  
   }
@@ -904,7 +816,6 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
     
     _haveData = false;  // Reset.
     _processed = true;  // Set this now.
-    //_isProcessing = true; // Block.
     
     if(off())  
     {  
@@ -916,7 +827,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
       
       _efxPipe->apply(0, nframes, 0);  // Track is off. Just process controls only, not audio (do not 'run').    
 
-      for(i = 0; i < srcChans; ++i) 
+      for(i = 0; i < trackChans; ++i) 
       {
         _meter[i] = 0.0;
         /*if(!usedirectbuf)
@@ -930,10 +841,6 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
             memset(outBuffers[i], 0, sizeof(float) * nframes);
         } */
       }
-      
-      //_haveData = false;
-      //_processed = true;
-      //_isProcessing = false;  // Unblock.
       return;
     }
       
@@ -965,7 +872,9 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
 
     //fprintf(stderr, "AudioTrack::addData %s efx apply srcChans:%d nframes:%ld %e %e %e %e\n", 
     //        name().toLatin1().constData(), srcChans, nframes, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
-    _efxPipe->apply(srcChans, nframes, buffer);
+    
+    _efxPipe->apply(trackChans, nframes, buffer);   
+    
     //fprintf(stderr, "AudioTrack::addData after efx: %e %e %e %e\n", 
     //        buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
 
@@ -1014,18 +923,16 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
 
     if(_prefader) 
     {
-      for(i = 0; i < srcChans; ++i) 
+      for(i = 0; i < trackChans; ++i) 
       {
         float* p = buffer[i];
         meter[i] = 0.0;
         for(unsigned k = 0; k < nframes; ++k) 
         {
-          double f = fabs(*p);
+          double f = fabs(*p++);
           if(f > meter[i])
             meter[i] = f;
-          ++p;
         }
-        //_meter[i] = lrint(meter[i] * 32767.0);
         _meter[i] = meter[i];
         if(_meter[i] > _peak[i])
           _peak[i] = _meter[i];
@@ -1050,12 +957,10 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
       } */ 
       
       if(!_prefader) 
-        for(i = 0; i < srcChans; ++i) 
+        //for(i = 0; i < srcChans; ++i) 
+        for(i = 0; i < trackChans; ++i)   
           _meter[i] = 0.0;
-
-      //_haveData = false;
-      //_processed = true;
-      //_isProcessing = false;  // Unblock.
+        
       return;
     }
     
@@ -1084,10 +989,9 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
       else 
         memset(dstBuffer[i], 0, sizeof(float) * nframes);
     }        
-    //_processed = true;
-    //_isProcessing = false;  // Unblock.
     return;
   }
+  
   // Force a source range to fit actual available total out channels.
   if((srcStartChan + srcChans) > srcTotalOutChans) 
     srcChans = srcTotalOutChans - srcStartChan;
@@ -1097,110 +1001,84 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   //    postfader metering
   //---------------------------------------------------
 
+  #ifdef NODE_DEBUG
+  printf("MusE: AudioTrack::addData trackChans:%d srcTotalOutChans:%d srcChans:%d dstChannels:%d\n", trackChans, srcTotalOutChans, srcChans, dstChannels);
+  #endif
+      
+  if(!_prefader) 
+  {
+    for(int c = 0; c < trackChans; ++c)     
+    {
+      meter[c] = 0.0;
+      double v = (trackChans == 1 ? _volume : vol[c]);        
+      float* sp = buffer[c];
+      for(unsigned k = 0; k < nframes; ++k) 
+      {
+        float val = *sp++ * v;  // If the track is mono pan has no effect on meters.
+        double f = fabs(val);
+        if(f > meter[c])
+          meter[c] = f;
+      }
+      _meter[c] = meter[c];
+      if(_meter[c] > _peak[c])
+        _peak[c] = _meter[c];
+    }  
+  }
+  
   if(srcChans == dstChannels) 
   {
-    if(_prefader) 
+    for(int c = 0; c < dstChannels; ++c) 
     {
-      for(int c = 0; c < dstChannels; ++c) 
-      {
-        float* sp = buffer[c + srcStartChan];
-        float* dp = dstBuffer[c];
-        for(unsigned k = 0; k < nframes; ++k)
-          *dp++ += (*sp++ * vol[c]);
-      }
-    }
-    else 
-    {
-      for(int c = 0; c < dstChannels; ++c) 
-      {
-        meter[c] = 0.0;
-        float* sp = buffer[c + srcStartChan];
-        float* dp = dstBuffer[c];
-        for(unsigned k = 0; k < nframes; ++k) 
-        {
-          float val = *sp++ * vol[c];
-          *dp++ += val;
-          double f = fabs(val);
-          if (f > meter[c])
-                meter[c] = f;
-        }
-        //_meter[c] = lrint(meter[c] * 32767.0);
-        _meter[c] = meter[c];
-        if(_meter[c] > _peak[c])
-          _peak[c] = _meter[c];
-      }
+      double v;
+      if(srcStartChan > 2)      // Don't apply pan to extra channels above 2.
+        v = _volume;
+      else
+      if(srcChans >= 2)         // If 2 channels apply pan normally.
+        v = vol[c];
+      else
+      if(trackChans < 2)        // If 1 channel and track is 1 channel, don't apply pan.
+        v = _volume;
+      else
+        v = vol[srcStartChan];  // Otherwise 1 channel but track is 2 channels. Apply the channel volume.
+      
+      float* sp = buffer[c + srcStartChan];
+      float* dp = dstBuffer[c];
+      for(unsigned k = 0; k < nframes; ++k)
+        //*dp++ += (*sp++ * vol[c]);
+        *dp++ += (*sp++ * v);
     }
   }
   else if(srcChans == 1 && dstChannels == 2) 
   {
-    float* sp = buffer[srcStartChan];
-    if(_prefader) 
+    for(int c = 0; c < dstChannels; ++c) 
     {
-      for(int c = 0; c < dstChannels; ++c) 
-      {
-        float* dp = dstBuffer[c];
-        for(unsigned k = 0; k < nframes; ++k)
-          *dp++ += (*sp++ * vol[c]);
-      }
-    }
-    else 
-    {
-      meter[0]  = 0.0;
-      for(unsigned k = 0; k < nframes; ++k) 
-      {
-        float val = *sp++;
-        double f = fabs(val) * _volume;
-        if(f > meter[0])
-          meter[0] = f;
-        *(dstBuffer[0] + k) += val * vol[0];
-        *(dstBuffer[1] + k) += val * vol[1];
-      }
-      //_meter[0] = lrint(meter[0] * 32767.0);
-      _meter[0] = meter[0];
-      if(_meter[0] > _peak[0])
-        _peak[0] = _meter[0];
+      double v;
+      if(srcStartChan > 2)      // Don't apply pan to extra channels above 2.
+        v = _volume;
+      else
+      if(trackChans <= 1)       // If track is mono apply pan.
+        v = vol[c];
+      else
+        v = vol[srcStartChan];  // Otherwise track is stereo, apply the same channel volume to both.
+      
+      float* sp = buffer[srcStartChan];
+      float* dp = dstBuffer[c];
+      for(unsigned k = 0; k < nframes; ++k)
+        //*dp++ += (*sp++ * vol[c]);
+        *dp++ += (*sp++ * v);
     }
   }
   else if(srcChans == 2 && dstChannels == 1) 
   {
+    double v1 = (srcStartChan > 2 ? _volume : vol[srcStartChan]);       // Don't apply pan to extra channels above 2.
+    double v2 = (srcStartChan > 2 ? _volume : vol[srcStartChan + 1]);   // 
     float* sp1 = buffer[srcStartChan];
     float* sp2 = buffer[srcStartChan + 1];
-    if(_prefader) 
-    {
-      float* dp = dstBuffer[0];
-      for(unsigned k = 0; k < nframes; ++k)
-        *dp++ += (*sp1++ * vol[0] + *sp2++ * vol[1]);
-    }
-    else 
-    {
-      float* dp = dstBuffer[0];
-      meter[0] = 0.0;
-      meter[1] = 0.0;
-      for(unsigned k = 0; k < nframes; ++k) 
-      {
-        float val1 = *sp1++ * vol[0];
-        float val2 = *sp2++ * vol[1];
-        double f1 = fabs(val1);
-        if(f1 > meter[0])
-          meter[0] = f1;
-        double f2 = fabs(val2);
-        if(f2 > meter[1])
-          meter[1] = f2;
-        *dp++ += (val1 + val2);
-      }
-      //_meter[0] = lrint(meter[0] * 32767.0);
-      _meter[0] = meter[0];
-      if(_meter[0] > _peak[0])
-        _peak[0] = _meter[0];
-      //_meter[1] = lrint(meter[1] * 32767.0);
-      _meter[1] = meter[1];
-      if(_meter[1] > _peak[1])
-        _peak[1] = _meter[1];
-    }
+    float* dp = dstBuffer[0];
+    for(unsigned k = 0; k < nframes; ++k)
+      //*dp++ += (*sp1++ * vol[0] + *sp2++ * vol[1]);
+      *dp++ += (*sp1++ * v1 + *sp2++ * v2);
   }
-  
-  //_processed = true;
-  //_isProcessing = false;  // Unblock.
 }
 
 //---------------------------------------------------------

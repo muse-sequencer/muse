@@ -76,7 +76,8 @@ class DssiSynth : public Synth {
       unsigned long _portCount, _inports, _outports, _controlInPorts, _controlOutPorts;
       std::vector<unsigned long> iIdx;  // Audio input index to port number.
       std::vector<unsigned long> oIdx;  // Audio output index to port number.
-      std::vector<bool> iUsedIdx;       // During process, tells whether an audio input port was used by any input routes.
+      //std::vector<bool> iUsedIdx;       // During process, tells whether an audio input port was used by any input routes.
+      std::vector<int> iUsedIdx;       // During process, tells whether an audio input port was used by any input routes.
       std::vector<unsigned long> rpIdx; // Port number to control input index. Item is -1 if it's not a control input.
       MusECore::MidiCtl2LadspaPortMap midiCtl2PortMap;   // Maps midi controller numbers to DSSI port numbers.
       MusECore::MidiCtl2LadspaPortMap port2MidiCtlMap;   // Maps DSSI port numbers to midi controller numbers.
@@ -124,6 +125,7 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       
       float** audioInBuffers;
       float** audioOutBuffers;
+      float*  audioInSilenceBuf; // Just all zeros all the time, so we don't have to clear for silence.
       
    public:
       DssiSynthIF(SynthI* s);
@@ -197,6 +199,7 @@ class DssiSynthIF : public SynthIF, public PluginIBase
       QString lib() const;            
       QString dirPath() const;
       QString fileName() const;
+      QString titlePrefix() const;
       MusECore::AudioTrack* track();          
       void enableController(unsigned long /*i*/, bool v = true);      
       bool controllerEnabled(unsigned long /*i*/) const;          
