@@ -311,7 +311,7 @@ void Strip::mousePressEvent(QMouseEvent* ev)
 {
   if (ev->button() == Qt::RightButton) {
     QMenu* menu = new QMenu;
-    QAction* newAction = menu->addAction(tr("Remove track?"));
+    menu->addAction(tr("Remove track?"));
     QPoint pt = QCursor::pos();
     QAction* act = menu->exec(pt, 0);
     if (!act)
