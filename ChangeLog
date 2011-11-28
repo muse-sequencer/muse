@@ -4,6 +4,8 @@
         - Do not apply the track pan or volume to extra synth channels above 2.
         - (Re-)fixed valgrind 'invalid read size' in node.cpp, my very-old bad. Moved temp stack buffers to top. (Thnx to Flo)
         - Window titles of ladspa and dssi plugins now have track name prefix to help identify them.
+        
+        - Added "Unused Devices" menu to the arranger's port popupmenu for rapid device selection (flo)
 28.11.2011:
         - MusE 2.0 release candidate 1 released (rj)
 27.11.2011:

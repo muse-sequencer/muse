@@ -14877,7 +14877,7 @@ Titel ist nicht einzigartig</translation>
     <message>
         <location filename="../../muse/mixer/strip.cpp" line="+314"/>
         <source>Remove track?</source>
-        <translation type="unfinished"></translation>
+        <translation>Spur entfernen?</translation>
     </message>
 </context>
 <context>
@@ -15001,6 +15001,10 @@ Titel ist nicht einzigartig</translation>
         <location line="+50"/>
         <source>Do you want to use same port and channel for all instruments in the drummap?</source>
         <translation>Möchten Sie für alle Instrumente der Drumbelegung den selben Anschluss und Kanal verwenden?</translation>
+    </message>
+    <message>
+        <source>Unused Devices</source>
+        <translation>Ungenutzte Geräte</translation>
     </message>
 </context>
 <context>

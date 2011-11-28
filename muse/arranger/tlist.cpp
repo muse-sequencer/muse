@@ -62,6 +62,7 @@
 #include "synth.h"
 #include "config.h"
 #include "popupmenu.h"
+#include "menutitleitem.h"
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -584,12 +585,17 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
       switch(t->type()) {
             case MusECore::Track::MIDI:
             case MusECore::Track::DRUM:
+            // FINDMICHJETZT: this is a notice for flo's experimental
+            //                branch! don't forget NEW_DRUM here!
+            //                please don't remove this. i'll do it when
+            //                the time is there.
             case MusECore::Track::AUDIO_SOFTSYNTH: 
             {
                   MusECore::MidiTrack* track = (MusECore::MidiTrack*)t;
                   
                   //QPopupMenu* p = MusECore::midiPortsPopup(0);
                   MusECore::MidiDevice* md = 0;
+                  int potential_new_port_no=-1;
                   int port = -1; 
                   if(t->type() == MusECore::Track::AUDIO_SOFTSYNTH) 
                   {
@@ -602,25 +608,158 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
                     port = track->outPort();
                     
                   QMenu* p = MusECore::midiPortsPopup(this, port);     // 0, port);
+                  
+                  if (t->type()==MusECore::Track::MIDI || t->type()==MusECore::Track::DRUM) //FINDMICHJETZT
+                  {
+                    // extend that menu a bit
+
+
+                    // find first free port number
+                    // do not permit numbers already used in other tracks!
+                    // except if it's only used in this track.
+                    int no;
+                    for (no=0;no<MIDI_PORTS;no++)
+                      if (MusEGlobal::midiPorts[no].device()==NULL)
+                      {
+                        MusECore::ciTrack it;
+                        for (it=MusEGlobal::song->tracks()->begin(); it!=MusEGlobal::song->tracks()->end(); it++)
+                        {
+                          MusECore::MidiTrack* mt=dynamic_cast<MusECore::MidiTrack*>(*it);
+                          if (mt && mt!=t && mt->outPort()==no)
+                            break;
+                        }
+                        if (it == MusEGlobal::song->tracks()->end())
+                          break;
+                      }
+                  
+                    if (no==MIDI_PORTS)
+                    {
+                      delete p;
+                      printf("THIS IS VERY UNLIKELY TO HAPPEN: no free midi ports! you have used all %i!\n",MIDI_PORTS);
+                      break;
+                    }
+                    
+                    
+                    potential_new_port_no=no;
+                    typedef std::map<std::string, int > asmap;
+                    typedef std::map<std::string, int >::iterator imap;
+                    
+                    asmap mapALSA;
+                    asmap mapJACK;
+                    
+                    int aix = 0x10000000;
+                    int jix = 0x20000000;
+                    for(MusECore::iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
+                    {
+                      if((*i)->deviceType() == MusECore::MidiDevice::ALSA_MIDI)
+                      {
+                        // don't add devices which are used somewhere
+                        int j;
+                        for (j=0;j<MIDI_PORTS;j++)
+                          if (MusEGlobal::midiPorts[j].device() == *i)
+                            break;
+                            
+                        if (j==MIDI_PORTS) mapALSA.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), aix) );
+                        
+                        ++aix;
+                      }  
+                      else if((*i)->deviceType() == MusECore::MidiDevice::JACK_MIDI)
+                      {
+                        // don't add devices which are used somewhere
+                        int j;
+                        for (j=0;j<MIDI_PORTS;j++)
+                          if (MusEGlobal::midiPorts[j].device() == *i)
+                            break;
+
+                        if (j==MIDI_PORTS) mapJACK.insert( std::pair<std::string, int> (std::string((*i)->name().toLatin1().constData()), jix) );
+                        ++jix;
+                      }
+                    }
+
+                    if (!mapALSA.empty() || !mapJACK.empty())
+                    {
+                      QMenu* pup = p->addMenu(tr("Unused Devices"));
+                      QAction* act;
+                      
+                      
+                      if (!mapALSA.empty())
+                      {
+                        pup->addAction(new MusEGui::MenuTitleItem("ALSA:", pup));
+                        
+                        for(imap i = mapALSA.begin(); i != mapALSA.end(); ++i) 
+                        {
+                          int idx = i->second;
+                          QString s(i->first.c_str());
+                          MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::ALSA_MIDI);
+                          if(md)
+                          {
+                            if(md->deviceType() != MusECore::MidiDevice::ALSA_MIDI)  
+                              continue;
+                              
+                            act = pup->addAction(md->name());
+                            act->setData(idx);
+                          }  
+                        }
+                      }
+                      
+                      if (!mapALSA.empty() && !mapJACK.empty())
+                        pup->addSeparator();
+                      
+                      if (!mapJACK.empty())
+                      {
+                        pup->addAction(new MusEGui::MenuTitleItem("JACK:", pup));
+                        
+                        for(imap i = mapJACK.begin(); i != mapJACK.end(); ++i) 
+                        {
+                          int idx = i->second;
+                          QString s(i->first.c_str());
+                          MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(s, MusECore::MidiDevice::JACK_MIDI);
+                          if(md)
+                          {
+                            if(md->deviceType() != MusECore::MidiDevice::JACK_MIDI)  
+                              continue;
+                              
+                            act = pup->addAction(md->name());
+                            act->setData(idx);
+                          }  
+                        }
+                      }
+                    }
+                  }
+                  
+                  
                   QAction* act = p->exec(mapToGlobal(QPoint(x, y)), 0);
                   if(!act) 
                   {
                     delete p;
                     break;
                   }  
-                    
+                  
+                  QString acttext=act->text();
                   int n = act->data().toInt();
                   delete p;
                         
                   if(n < 0)              // Invalid item.
                     break;
                   
-                  if(n >= MIDI_PORTS)    // Show port config dialog.
+                  if(n == MIDI_PORTS)    // Show port config dialog.
                   {
                     MusEGlobal::muse->configMidiPorts();
                     break;
                   }
+                  else if (n & 0x30000000)
+                  {
+                    int typ;
+                    if (n & 0x10000000)
+                      typ = MusECore::MidiDevice::ALSA_MIDI;
+                    else
+                      typ = MusECore::MidiDevice::JACK_MIDI;
 
+                    MusECore::MidiDevice* sdev = MusEGlobal::midiDevices.find(acttext, typ);
+
+                    MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[potential_new_port_no], sdev);
+                    n=potential_new_port_no;
+                  }
                   // Changed by T356.
                   //track->setOutPort(n);
                   //MusEGlobal::audio->msgSetTrackOutPort(track, n);
