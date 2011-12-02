@@ -1,5 +1,7 @@
 02.12.2011:
         * Added: Project creation dialog now has file type combobox (.med, .med.gz, .med.bz2) (Tim)
+        * Fixed: Remaining bugs with Header saving and loading (ex track, drum list header). (Tim)
+                 Made two slight fixes in Header::writeStatus and readStatus. Tested thoroughly OK.
 01.12.2011:
         - Removed global settings User Instruments dir. Now fixed to muse config. Support for old files included. (Tim...)
         - Changed:  In File Dialog, 'User' initial prepend path changed to muse ./config path. So user files + templates are shown.
