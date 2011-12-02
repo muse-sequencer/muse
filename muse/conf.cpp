@@ -624,7 +624,16 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               MusEGlobal::config.geometryTransport = readGeometry(xml, tag);
                         else if (tag == "geometryBigTime")
                               MusEGlobal::config.geometryBigTime = readGeometry(xml, tag);
-                        
+                        else if (tag == "Mixer") {
+                              if(mixers == 0)
+                                MusEGlobal::config.mixer1.read(xml);
+                              else  
+                                MusEGlobal::config.mixer2.read(xml);
+                              ++mixers;
+                              }
+                        else if (tag == "geometryMain")
+                              MusEGlobal::config.geometryMain = readGeometry(xml, tag);
+                              
                         // don't insert else if(...) clauses between
                         // this line and "Global config stuff begins here".
                         else if (!doReadGlobalConfig) {
@@ -637,9 +646,6 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                         
                         
                         // ---- Global config stuff begins here ----
-
-                        else if (tag == "geometryMain")
-                              MusEGlobal::config.geometryMain = readGeometry(xml, tag);
 
                         else if (tag == "theme")
                               MusEGlobal::config.style = xml.parse1();
@@ -849,16 +855,6 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               MusEGlobal::config.canvasBgPixmap = xml.parse1();
                         else if (tag == "canvasCustomBgList")
                               MusEGlobal::config.canvasCustomBgList = xml.parse1().split(";", QString::SkipEmptyParts);
-                        
-                        else if (tag == "Mixer")
-                        {
-                              if(mixers == 0)
-                                MusEGlobal::config.mixer1.read(xml);
-                              else  
-                                MusEGlobal::config.mixer2.read(xml);
-                              ++mixers;
-                        }
-                        
                         else if (tag == "bigtimeForegroundcolor")
                               MusEGlobal::config.bigTimeForegroundColor = readColor(xml);
                         else if (tag == "bigtimeBackgroundcolor")
@@ -930,8 +926,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               MusEGlobal::config.minControlProcessPeriod = xml.parseUInt();
                         else if (tag == "guiRefresh")
                               MusEGlobal::config.guiRefresh = xml.parseInt();
-                        else if (tag == "userInstrumentsDir")
-                              MusEGlobal::config.userInstrumentsDir = xml.parse1();
+                        else if (tag == "userInstrumentsDir")                        // Obsolete
+                              MusEGlobal::config.userInstrumentsDir = xml.parse1();  // Keep for compatibility 
                         else if (tag == "startMode")
                               MusEGlobal::config.startMode = xml.parseInt();
                         else if (tag == "startSong")
@@ -1251,9 +1247,8 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "dummyAudioBufSize", MusEGlobal::config.dummyAudioBufSize);
       xml.intTag(level, "dummyAudioSampleRate", MusEGlobal::config.dummyAudioSampleRate);
       xml.uintTag(level, "minControlProcessPeriod", MusEGlobal::config.minControlProcessPeriod);
-
       xml.intTag(level, "guiRefresh", MusEGlobal::config.guiRefresh);
-      xml.strTag(level, "userInstrumentsDir", MusEGlobal::config.userInstrumentsDir);
+      
       // Removed by Orcan. 20101220
       //xml.strTag(level, "helpBrowser", config.helpBrowser);
       xml.intTag(level, "extendedMidi", MusEGlobal::config.extendedMidi);

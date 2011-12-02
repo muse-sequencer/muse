@@ -93,12 +93,6 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
                   }
             }
 
-      userInstrumentsPath->setText(MusEGlobal::config.userInstrumentsDir);
-      selectInstrumentsDirButton->setIcon(*openIcon);
-      defaultInstrumentsDirButton->setIcon(*undoIcon);
-      connect(selectInstrumentsDirButton, SIGNAL(clicked()), SLOT(selectInstrumentsPath()));
-      connect(defaultInstrumentsDirButton, SIGNAL(clicked()), SLOT(defaultInstrumentsPath()));
-
       guiRefreshSelect->setValue(MusEGlobal::config.guiRefresh);
       minSliderSelect->setValue(int(MusEGlobal::config.minSlider));
       minMeterSelect->setValue(MusEGlobal::config.minMeter);
@@ -356,7 +350,6 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.useOutputLimiter = outputLimiterCheckBox->isChecked();
       MusEGlobal::config.vstInPlace  = vstInPlaceCheckBox->isChecked();
       MusEGlobal::config.rtcTicks    = rtcResolutions[rtcticks];
-      MusEGlobal::config.userInstrumentsDir = userInstrumentsPath->text();
       MusEGlobal::config.startSong   = startSongEntry->text();
       MusEGlobal::config.startMode   = startSongGroup->checkedId();
       int das = dummyAudioSize->currentIndex();
@@ -450,8 +443,6 @@ void GlobalSettingsConfig::apply()
             }
       MusEGlobal::muse->resize(MusEGlobal::config.geometryMain.size());
       MusEGlobal::muse->move(MusEGlobal::config.geometryMain.topLeft());
-
-      MusEGlobal::museUserInstruments = MusEGlobal::config.userInstrumentsDir;
 
       MusEGlobal::muse->setHeartBeat();        // set guiRefresh
       MusEGlobal::midiSeq->msgSetRtc();        // set midi tick rate
@@ -554,21 +545,6 @@ void GlobalSettingsConfig::transportCurrent()
       transportX->setValue(r.x());
       transportY->setValue(r.y());
       }
-
-void GlobalSettingsConfig::selectInstrumentsPath()
-      {
-      QString dir = QFileDialog::getExistingDirectory(this, 
-                                                      tr("Selects instruments directory"), 
-                                                      MusEGlobal::config.userInstrumentsDir);
-      userInstrumentsPath->setText(dir);
-      }
-
-void GlobalSettingsConfig::defaultInstrumentsPath()
-      {
-      QString dir = MusEGlobal::configPath + "/instruments";
-      userInstrumentsPath->setText(dir);
-      }
-
 
 void GlobalSettingsConfig::traditionalPreset()
 {

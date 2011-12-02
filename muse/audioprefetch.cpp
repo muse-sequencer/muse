@@ -39,7 +39,11 @@ MusECore::AudioPrefetch* audioPrefetch;
 
 namespace MusECore {
 
-// Added by Tim. p3.3.20
+void initAudioPrefetch()  
+{
+  MusEGlobal::audioPrefetch = new AudioPrefetch("Prefetch");
+}
+
 //#define AUDIOPREFETCH_DEBUG
 
 enum { PREFETCH_TICK, PREFETCH_SEEK

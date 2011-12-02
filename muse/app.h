@@ -218,7 +218,7 @@ class MusE : public QMainWindow
       QTimer* hackishSongOpenTimer;
       QString hackishSongOpenFilename;
       bool hackishSongOpenUseTemplate;
-      
+
       bool readMidi(FILE*);
       void read(MusECore::Xml& xml, bool skipConfig, bool isTemplate);
       void processTrack(MusECore::MidiTrack* track);
@@ -393,7 +393,7 @@ class MusE : public QMainWindow
       void kbAccel(int);
       void changeConfig(bool writeFlag);
       void seqStop();
-      bool seqStart();
+      bool seqStart();  
       void setHeartBeat();
       void importController(int, MusECore::MidiPort*, int);
       QString projectName() { return project.fileName(); }

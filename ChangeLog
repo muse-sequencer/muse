@@ -1,3 +1,10 @@
+01.12.2011:
+        - Removed global settings User Instruments dir. Now fixed to muse config. Support for old files included. (Tim...)
+        - Changed:  In File Dialog, 'User' initial prepend path changed to muse ./config path. So user files + templates are shown.
+        - Fixed: Template directory changed from /home/templates to muse config directory. Support for old files included.
+        - Moved QSocketNotifier from Audio::Audio into MusE::MusE.
+        - Fixed mixer and main geometry restoration. Moved ahead of doReadGlobalConfig check. 
+        - Work In Progress! More to follow...
 28.11.2011:
         *Fixed: DSSI synth audio inputs. This means dssi vocoders, samplers etc. should work now. (Tim...)
         *Re-write: Fixed audio mixing, meter processing. Audio, and meters, for all mono <-> stereo route combinations work sensibly now.

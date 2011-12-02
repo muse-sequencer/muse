@@ -53,8 +53,6 @@ class GlobalSettingsConfig : public QDialog, public Ui::GlobalSettingsDialogBase
       void bigtimeCurrent();
       void mainCurrent();
       void transportCurrent();
-      void selectInstrumentsPath();
-      void defaultInstrumentsPath();
       void traditionalPreset();
       void mdiPreset();
       void borlandPreset();

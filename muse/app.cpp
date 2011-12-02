@@ -33,6 +33,7 @@
 #include <QProgressDialog>
 #include <QMdiArea>
 #include <QMdiSubWindow>
+#include <QSocketNotifier>  
 
 #include <iostream>
 
@@ -84,8 +85,11 @@ extern void exitJackAudio();
 extern void exitDummyAudio();
 extern void exitOSC();
 extern void exitMidiAlsa();
-}
 
+extern void initMidiSequencer();   
+extern void initAudio();           
+extern void initAudioPrefetch();   
+}
 
 namespace MusEGui {
 
@@ -93,7 +97,6 @@ namespace MusEGui {
 
 static pthread_t watchdogThread;
 //ErrorHandler *error;
-
 
 #define PROJECT_LIST_LEN  6
 static QString* projectList[PROJECT_LIST_LEN];
@@ -171,14 +174,7 @@ bool MusE::seqStart()
       if(MusEGlobal::realTimeScheduling) 
       {
         {
-          //pfprio = MusEGlobal::realTimePriority - 5;
-          // p3.3.40
           pfprio = MusEGlobal::realTimePriority + 1;
-          
-          //midiprio = MusEGlobal::realTimePriority - 2;
-          // p3.3.37
-          //midiprio = MusEGlobal::realTimePriority + 1;
-          // p3.3.40
           midiprio = MusEGlobal::realTimePriority + 2;
         }  
       }
@@ -198,9 +194,6 @@ bool MusE::seqStart()
       
       MusEGlobal::audioPrefetch->msgSeek(0, true); // force
       
-      //MusEGlobal::midiSeqRunning = !midiSeq->start(MusEGlobal::realTimeScheduling ? MusEGlobal::realTimePriority : 0);
-      // Changed by Tim. p3.3.22
-      //MusEGlobal::midiSeq->start(MusEGlobal::realTimeScheduling ? MusEGlobal::realTimePriority : 0);
       MusEGlobal::midiSeq->start(midiprio);
       
       int counter=0;
@@ -224,7 +217,7 @@ bool MusE::seqStart()
       }  
       return true;
       }
-
+      
 //---------------------------------------------------------
 //   stop
 //---------------------------------------------------------
@@ -258,6 +251,7 @@ bool MusE::seqRestart()
                 }
           seqStop();
           }
+
     if(!seqStart())
         return false;
 
@@ -347,8 +341,6 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       MusEGlobal::heartBeatTimer = new QTimer(this);
       MusEGlobal::heartBeatTimer->setObjectName("timer");
       connect(MusEGlobal::heartBeatTimer, SIGNAL(timeout()), MusEGlobal::song, SLOT(beat()));
-      
-      
       connect(this, SIGNAL(activeTopWinChanged(MusEGui::TopWin*)), SLOT(activeTopWinChangedSlot(MusEGui::TopWin*)));
       
 #ifdef ENABLE_PYTHON
@@ -461,7 +453,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       MusEGlobal::panicAction->setWhatsThis(tr("send note off to all midi channels"));
       connect(MusEGlobal::panicAction, SIGNAL(activated()), MusEGlobal::song, SLOT(panic()));
 
-      MusECore::initMidiInstruments();
+      MusECore::initMidiInstruments();  
       MusECore::initMidiPorts();
       MusECore::initMidiDevices();
 
@@ -707,7 +699,7 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       //rlimit lim;
       //getrlimit(RLIMIT_RTPRIO, &lim);
       //printf("RLIMIT_RTPRIO soft:%d hard:%d\n", lim.rlim_cur, lim.rlim_max);    // Reported 80, 80 even with non-RT kernel.
-      
+
       if (MusEGlobal::realTimePriority < sched_get_priority_min(SCHED_FIFO))
             MusEGlobal::realTimePriority = sched_get_priority_min(SCHED_FIFO);
       else if (MusEGlobal::realTimePriority > sched_get_priority_max(SCHED_FIFO))
@@ -722,17 +714,18 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
             MusEGlobal::midiRTPrioOverride = sched_get_priority_max(SCHED_FIFO);
       }
             
-      // Changed by Tim. p3.3.17
-      //MusEGlobal::midiSeq       = new MusECore::MidiSeq(MusEGlobal::realTimeScheduling ? MusEGlobal::realTimePriority : 0, "Midi");
-      MusEGlobal::midiSeq       = new MusECore::MidiSeq("Midi");
-      MusEGlobal::audio = new MusECore::Audio();
-      //MusEGlobal::audioPrefetch = new MusECore::AudioPrefetch(0, "Disc");
-      MusEGlobal::audioPrefetch = new MusECore::AudioPrefetch("Prefetch");
-
+      MusECore::initMidiSequencer();   
+      MusECore::initAudio();           
+      
+      // Moved here from Audio::Audio
+      QSocketNotifier* ss = new QSocketNotifier(MusEGlobal::audio->getFromThreadFdr(), QSocketNotifier::Read, this); 
+      connect(ss, SIGNAL(activated(int)), MusEGlobal::song, SLOT(seqSignal(int)));  
+      
+      MusECore::initAudioPrefetch();   
+      
       //---------------------------------------------------
       //    Popups
       //---------------------------------------------------
-
 
       // when adding a menu to the main window, remember adding it to
       // either the leadingMenus or trailingMenus list!
@@ -1258,7 +1251,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             //  set the geometry if the mixer has already been created.
             if(mixer1)
             {
-              //if(mixer1->geometry().size() != MusEGlobal::config.mixer1.geometry.size())   // p3.3.53 Moved below
+              //if(mixer1->geometry().size() != MusEGlobal::config.mixer1.geometry.size())   // Moved below
               //  mixer1->resize(MusEGlobal::config.mixer1.geometry.size());
               
               if(mixer1->geometry().topLeft() != MusEGlobal::config.mixer1.geometry.topLeft())
@@ -1266,7 +1259,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             }
             if(mixer2)
             {
-              //if(mixer2->geometry().size() != MusEGlobal::config.mixer2.geometry.size())   // p3.3.53 Moved below
+              //if(mixer2->geometry().size() != MusEGlobal::config.mixer2.geometry.size())   // Moved below
               //  mixer2->resize(MusEGlobal::config.mixer2.geometry.size());
               
               if(mixer2->geometry().topLeft() != MusEGlobal::config.mixer2.geometry.topLeft())
@@ -1295,7 +1288,7 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
       arrangerView->scoreNamingChanged(); // inform the score menus about the new scores and their names
       progress->setValue(50);
 
-      // p3.3.53 Try this AFTER the song update above which does a mixer update... Tested OK - mixers resize properly now.
+      // Try this AFTER the song update above which does a mixer update... Tested OK - mixers resize properly now.
       if (loadAll) 
       {
         if(mixer1)
@@ -1564,7 +1557,7 @@ void MusE::closeEvent(QCloseEvent* event)
       MusECore::exitMetronome();
       
       // Make sure to delete the menu. ~routingPopupMenu() will NOT be called automatically.
-      // Even though it is a child of MusE, it just passes MusE onto the underlying PopupMenus. p4.0.26
+      // Even though it is a child of MusE, it just passes MusE onto the underlying PopupMenus. 
       if(routingPopupMenu)
         delete routingPopupMenu;     
       #if 0
@@ -1594,7 +1587,7 @@ void MusE::closeEvent(QCloseEvent* event)
             }
       
 #ifdef HAVE_LASH
-      // Disconnect gracefully from LASH. Tim. p3.3.14
+      // Disconnect gracefully from LASH. 
       if(lash_client)
       {
         if(MusEGlobal::debugMsg)
@@ -1612,7 +1605,6 @@ void MusE::closeEvent(QCloseEvent* event)
         printf("MusE: Exiting OSC\n");
       MusECore::exitOSC();
       
-      // p3.3.47
       delete MusEGlobal::audioPrefetch;
       delete MusEGlobal::audio;
       delete MusEGlobal::midiSeq;
@@ -1916,7 +1908,7 @@ void MusE::startPianoroll(MusECore::PartList* pl, bool showDefaultCtrls)
       {
       
       MusEGui::PianoRoll* pianoroll = new MusEGui::PianoRoll(pl, this, 0, _arranger->cursorValue());
-      if(showDefaultCtrls)       // p4.0.12
+      if(showDefaultCtrls)       
         pianoroll->addCtrl();
       toplevels.push_back(pianoroll);
       pianoroll->show();
@@ -1989,7 +1981,7 @@ void MusE::startDrumEditor()
 void MusE::startDrumEditor(MusECore::PartList* pl, bool showDefaultCtrls)
       {
       MusEGui::DrumEdit* drumEditor = new MusEGui::DrumEdit(pl, this, 0, _arranger->cursorValue());
-      if(showDefaultCtrls)       // p4.0.12
+      if(showDefaultCtrls)       
         drumEditor->addCtrl();
       toplevels.push_back(drumEditor);
       drumEditor->show();
@@ -2231,7 +2223,7 @@ void MusE::kbAccel(int key)
             MusEGlobal::song->setPlay(true);
             }
       
-      // p4.0.10 Tim. Normally each editor window handles these, to inc by the editor's raster snap value.
+      // Normally each editor window handles these, to inc by the editor's raster snap value.
       // But users were asking for a global version - "they don't work when I'm in mixer or transport".
       // Since no editor claimed the key event, we don't know a specific editor's snap setting,
       //  so adopt a policy where the arranger is the 'main' raster reference, I guess...

@@ -407,6 +407,8 @@ void EditInstrument::saveAs()
       
       if(!QDir(MusEGlobal::museUserInstruments).exists())
       {
+        // REMOVE Tim.
+        /*
         if(QMessageBox::question(this,
             tr("MusE:"),
             tr("The user instrument directory\n%1\ndoes not exist yet. Create it now?\n").arg(MusEGlobal::museUserInstruments) +
@@ -428,6 +430,12 @@ void EditInstrument::saveAs()
         else 
         //  return;  
           path = MusEGlobal::museUser;
+        */
+          
+        printf("MusE Error! User instrument directory: %s does not exist. Should be created at startup!\n", MusEGlobal::museUserInstruments.toLatin1().constData());
+        
+        //path = MusEGlobal::museUser;
+        //path = MusEGlobal::configPath;  
       }
         
       //if (instrument->filePath().isEmpty())
@@ -699,6 +707,8 @@ void EditInstrument::fileSaveAs()
       
       if(!QDir(MusEGlobal::museUserInstruments).exists())
       {
+        // REMOVE Tim.
+        /*
         if(QMessageBox::question(this,
             tr("MusE:"),
             tr("The user instrument directory\n%1\ndoes not exist yet. Create it now?\n").arg(MusEGlobal::museUserInstruments) +
@@ -720,6 +730,13 @@ void EditInstrument::fileSaveAs()
         else 
         //  return;  
           path = MusEGlobal::museUser;
+        */
+        
+        printf("MusE Error! User instrument directory: %s does not exist. Should be created at startup!\n", MusEGlobal::museUserInstruments.toLatin1().constData());
+        
+        //path = MusEGlobal::museUser;
+        //path = MusEGlobal::configPath;  
+          
       }
       path += QString("/%1.idf").arg(so);
       
