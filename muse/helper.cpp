@@ -241,8 +241,33 @@ QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll)
 
       return grp;
       }
+  
+//---------------------------------------------------------
+//   getFilterExtension
+//---------------------------------------------------------
 
-} // namespace MusEGui
+QString getFilterExtension(const QString &filter)
+{
+  //
+  // Return the first extension found. Must contain at least one * character.
+  //
+  
+  int pos = filter.indexOf('*');
+  if(pos == -1)
+    return QString(); 
+  
+  QString filt;
+  int len = filter.length();
+  ++pos;
+  for( ; pos < len; ++pos)
+  {
+    QChar c = filter[pos];
+    if((c == ')') || (c == ';') || (c == ',') || (c == ' '))
+      break; 
+    filt += filter[pos];
+  }
+  return filt;
+}
 
 QStringList localizedStringListFromCharArray(const char** array, const char* context)
 {
@@ -252,3 +277,6 @@ QStringList localizedStringListFromCharArray(const char** array, const char* con
   
   return temp;
 }
+
+} // namespace MusEGui
+

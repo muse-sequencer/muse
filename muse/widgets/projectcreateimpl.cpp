@@ -4,6 +4,7 @@
 //  $Id: ./muse/widgets/projectcreateimpl.cpp $
 //
 //  Copyright (C) 1999-2011 by Werner Schweer and others
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -21,12 +22,15 @@
 //
 //=========================================================
 #include <stdio.h>
-#include <qfiledialog.h>
-#include <qdir.h>
+#include <QFileDialog>
+#include <QDir>
+#include <QStringList>
+
 #include "projectcreateimpl.h"
 #include "gconfig.h"
 #include "globals.h"
 #include "app.h"
+#include "helper.h"
 
 namespace MusEGui {
 
@@ -35,10 +39,15 @@ ProjectCreateImpl::ProjectCreateImpl(QWidget *parent) :
 {
   setupUi(this);
 
+  QStringList filters = localizedStringListFromCharArray(MusEGlobal::project_create_file_save_pattern, "file_patterns");
+  projectFileTypeCB->addItems(filters);
+  projectFileTypeCB->setCurrentIndex(0);
+
   createFolderCheckbox->setChecked(MusEGlobal::config.projectStoreInFolder);
   connect(browseDirButton,SIGNAL(clicked()), this, SLOT(selectDirectory()));
   connect(projectNameEdit,SIGNAL(textChanged(QString)), this, SLOT(updateDirectoryPath()));
   connect(createFolderCheckbox,SIGNAL(clicked()), this, SLOT(updateDirectoryPath()));
+  connect(projectFileTypeCB,SIGNAL(currentIndexChanged(int)), this, SLOT(updateDirectoryPath()));
   connect(buttonBox, SIGNAL(accepted()), this, SLOT(ok()));
 #if QT_VERSION >= 0x040700
   projectNameEdit->setPlaceholderText("<Project Name>");
@@ -65,14 +74,27 @@ void ProjectCreateImpl::selectDirectory()
 
 void ProjectCreateImpl::updateDirectoryPath()
 {
+  QString curExt = projectFileTypeCB->currentText();  
+  if(curExt.isEmpty())
+    curExt = ".med";
+  else
+  {  
+    curExt = getFilterExtension(curExt);
+    // Do we have a valid extension?
+    if(curExt.isEmpty())
+      curExt = ".med";
+  }
+  
   QString name = "";
   if (createFolderCheckbox->isChecked()) {
     if (!projectNameEdit->text().isEmpty())
-      name = projectNameEdit->text() + "/" + projectNameEdit->text() + ".med";
+      //name = projectNameEdit->text() + "/" + projectNameEdit->text() + ".med";
+      name = projectNameEdit->text() + "/" + projectNameEdit->text() + curExt;
     //storageDirEdit->setText(directoryPath + name );
   }  else {
     if (!projectNameEdit->text().isEmpty())
-      name = projectNameEdit->text() + ".med";
+      //name = projectNameEdit->text() + ".med";
+      name = projectNameEdit->text() + curExt;
     //storageDirEdit->setText(directoryPath +"/" + name);
   }
   storageDirEdit->setText(directoryPath +"/" + name );    // Tim

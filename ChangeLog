@@ -1,3 +1,5 @@
+02.12.2011:
+        * Added: Project creation dialog now has file type combobox (.med, .med.gz, .med.bz2) (Tim)
 01.12.2011:
         - Removed global settings User Instruments dir. Now fixed to muse config. Support for old files included. (Tim...)
         - Changed:  In File Dialog, 'User' initial prepend path changed to muse ./config path. So user files + templates are shown.
