@@ -1,3 +1,9 @@
+03.12.2011:
+        * Improved: Project save dialog: Now has quick save as Template. Separate project/result paths shown. Editable project folder. (Tim...)
+        * Added: Project directory in global settings dialog. 
+        * Added: Untitled project unique names.
+        - Fixed bug saving compressed files with spaces in name, in filedialog.cpp fileOpen().
+          More work in progress... 
 02.12.2011:
         * Added: Project creation dialog now has file type combobox (.med, .med.gz, .med.bz2) (Tim)
         * Fixed: Remaining bugs with Header saving and loading (ex track, drum list header). (Tim)

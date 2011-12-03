@@ -4,6 +4,7 @@
 //  $Id: genset.cpp,v 1.7.2.8 2009/12/01 03:52:40 terminator356 Exp $
 //
 //  (C) Copyright 2001-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -24,8 +25,10 @@
 #include <stdio.h>
 
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QRect>
 #include <QShowEvent>
+#include <QString>
 
 #include "genset.h"
 #include "app.h"
@@ -33,6 +36,7 @@
 #include "midiseq.h"
 #include "globals.h"
 #include "icons.h"
+#include "helper.h"
 
 namespace MusEGui {
 
@@ -113,6 +117,9 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
 Period affects midi playback resolution. 
 Shorter periods are desirable.</string>
             </property>                       */
+
+      projDirEntry->setText(MusEGlobal::config.projectBaseFolder);
+      projDirOpenToolButton->setIcon(*openIcon);
       
       startSongEntry->setText(MusEGlobal::config.startSong);
       startSongGroup->button(MusEGlobal::config.startMode)->setChecked(true);
@@ -171,6 +178,8 @@ Shorter periods are desirable.</string>
 
       //updateSettings();    // TESTING
       
+      connect(projDirOpenToolButton, SIGNAL(clicked()), SLOT(browseProjDir()));
+
       connect(applyButton, SIGNAL(clicked()), SLOT(apply()));
       connect(okButton, SIGNAL(clicked()), SLOT(ok()));
       connect(cancelButton, SIGNAL(clicked()), SLOT(cancel()));
@@ -255,6 +264,8 @@ void GlobalSettingsConfig::updateSettings()
       //dummyAudioRealRate->setText(dad ? QString().setNum(sampleRate) : "---");
       //dummyAudioRealRate->setText(QString().setNum(sampleRate));   // Not used any more. p4.0.20 
       
+      projDirEntry->setText(MusEGlobal::config.projectBaseFolder);
+
       startSongEntry->setText(MusEGlobal::config.startSong);
       startSongGroup->button(MusEGlobal::config.startMode)->setChecked(true);
 
@@ -350,6 +361,9 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.useOutputLimiter = outputLimiterCheckBox->isChecked();
       MusEGlobal::config.vstInPlace  = vstInPlaceCheckBox->isChecked();
       MusEGlobal::config.rtcTicks    = rtcResolutions[rtcticks];
+      
+      MusEGlobal::config.projectBaseFolder = projDirEntry->text();
+      
       MusEGlobal::config.startSong   = startSongEntry->text();
       MusEGlobal::config.startMode   = startSongGroup->checkedId();
       int das = dummyAudioSize->currentIndex();
@@ -581,6 +595,13 @@ void GlobalSettingsConfig::borlandPreset()
   }
   
   updateMdiSettings();
+}
+
+void GlobalSettingsConfig::browseProjDir()
+{
+  QString dir = MusEGui::browseProjectFolder(this);
+  if(!dir.isEmpty())
+    projDirEntry->setText(dir);
 }
 
 } // namespace MusEGui

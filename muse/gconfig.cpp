@@ -193,6 +193,6 @@ GlobalConfigValues config = {
 
     };
 
-GlobalConfigValues globalConfig = config;
+//GlobalConfigValues globalConfig = config;
     
 } // namespace MusEGlobal

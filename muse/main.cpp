@@ -301,7 +301,8 @@ int main(int argc, char* argv[])
       
       QFile cConf (MusEGlobal::configName);
       QFile cConfTempl (MusEGlobal::museGlobalShare + QString("/templates/MusE.cfg"));
-      if (! cConf.exists())
+      bool cConfExists = cConf.exists();
+      if (!cConfExists)
       {
         printf ("creating new config...\n");
         if (cConfTempl.copy(MusEGlobal::configName))
@@ -338,6 +339,9 @@ int main(int argc, char* argv[])
 
       MusECore::readConfiguration();
 
+      // Need to put a sane default here because we can't use ~ in the file name string.
+      if(!cConfExists)
+        MusEGlobal::config.projectBaseFolder = MusEGlobal::museUser + QString("/My MusE");
 
       //MusEGlobal::museUserInstruments = MusEGlobal::config.userInstrumentsDir;
       

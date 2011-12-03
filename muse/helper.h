@@ -44,6 +44,9 @@ QMenu* populateAddSynth(QWidget* parent);
 QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll=false);
 QStringList localizedStringListFromCharArray(const char** array, const char* context);
 QString getFilterExtension(const QString &filter);
+QString browseProjectFolder(QWidget* parent = 0);
+QString projectTitleFromFilename(QString filename);
+QString getUniqueUntitledName();
 } 
 
 #endif

@@ -31,6 +31,10 @@
 #include "gconfig.h"
 
 #include <QApplication>
+#include <QFileInfo>
+#include <QFileDialog>
+#include <QString>
+//#include <QTemporaryFile>
 
 #ifdef DSSI_SUPPORT
 #include "dssihost.h"
@@ -276,6 +280,75 @@ QStringList localizedStringListFromCharArray(const char** array, const char* con
     temp << qApp->translate(context, array[i]);
   
   return temp;
+}
+
+QString browseProjectFolder(QWidget* parent)
+{
+  QString path;
+  if(!MusEGlobal::config.projectBaseFolder.isEmpty())
+  {  
+    QDir d(MusEGlobal::config.projectBaseFolder);
+    path = d.absolutePath();
+  }
+  
+  QString dir = QFileDialog::getExistingDirectory(parent, qApp->tr("Select project directory"), path);
+  if(dir.isEmpty())
+    dir = MusEGlobal::config.projectBaseFolder;
+  //  projDirLineEdit->setText(dir);
+  //return QFileDialog::getExistingDirectory(this, qApp.tr("Select project directory"), path);
+  return dir;
+}
+
+QString projectTitleFromFilename(QString filename)
+{
+  int idx;
+  idx = filename.lastIndexOf(".med.bz2", -1, Qt::CaseInsensitive);
+  if(idx == -1)
+    idx = filename.lastIndexOf(".med.gz", -1, Qt::CaseInsensitive);
+  if(idx == -1)
+    idx = filename.lastIndexOf(".med", -1, Qt::CaseInsensitive);
+   
+  if(idx != -1)
+    filename.truncate(idx);
+  
+  QFileInfo fi(filename);
+  return fi.baseName();
+}
+
+QString getUniqueUntitledName()
+{
+  QString filename("untitled");
+  //QTemporaryFile tf(MusEGlobal::config.projectBaseFolder +"/" + s + "XXXXXX.med");
+  //if(tf.open())
+  //  s = MusEGui::projectTitleFromFilename(tf.fileName());
+  
+  QString fbase(MusEGlobal::config.projectBaseFolder);
+  
+  QString nfb = fbase;
+  if(MusEGlobal::config.projectStoreInFolder) 
+    nfb += "/" + filename;
+  QFileInfo fi(nfb + "/" + filename + ".med");  // TODO p4.0.40 Check other extensions.
+  if(!fi.exists())
+    return filename;
+
+  // Find a new filename
+  QString nfn = filename;  
+  int idx;
+  for (idx=2; idx<10000; idx++) {
+      QString num = QString::number(idx);
+      nfn = filename + "_" + num;
+      nfb = fbase;
+      if(MusEGlobal::config.projectStoreInFolder) 
+        nfb += "/" + nfn;
+      QFileInfo fi(nfb + "/" + nfn + ".med");
+      if(!fi.exists())
+        break;
+  }    
+
+  if(idx >= 10000)
+    printf("MusE error: Could not make untitled project name (10000 or more untitled projects in project dir - clean up!\n");
+  
+  return nfn;
 }
 
 } // namespace MusEGui

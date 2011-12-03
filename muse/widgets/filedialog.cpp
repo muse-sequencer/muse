@@ -483,10 +483,12 @@ FILE* fileOpen(QWidget* parent, QString name, const QString& ext,
       FILE* fp = 0;
       if (popenFlag) {
             if (strcmp(mode, "r") == 0)
-                  zip += QString(" -d < ");
+                  //zip += QString(" -d < ");
+                  zip += QString(" -d < \"");    // p4.0.40
             else
-                  zip += QString(" > ");
-            zip += name;
+                  zip += QString(" > \"");
+            //zip += name;
+            zip = zip + name + QString("\"");    // p4.0.40
             fp  = popen(zip.toAscii().data(), mode);
             }
       else {

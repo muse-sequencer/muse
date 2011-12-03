@@ -4,6 +4,7 @@
 //  $Id: app.cpp,v 1.113.2.68 2009/12/21 14:51:51 spamatica Exp $
 //
 //  (C) Copyright 1999-2011 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -969,7 +970,8 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
             name = argv[0];
       else if (MusEGlobal::config.startMode == 0) {
             if (argc < 2)
-                  name = projectList[0] ? *projectList[0] : QString("untitled");
+                  //name = projectList[0] ? *projectList[0] : QString("untitled");
+                  name = projectList[0] ? *projectList[0] : MusEGui::getUniqueUntitledName();  // p4.0.40
             else
                   name = argv[0];
             printf("starting with selected song %s\n", MusEGlobal::config.startSong.toLatin1().constData());
@@ -1171,7 +1173,8 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
                   QApplication::restoreOverrideCursor();
                   return;
                   }
-            project.setFile("untitled");
+            //project.setFile("untitled");
+            project.setFile(MusEGui::getUniqueUntitledName());  // p4.0.40
             MusEGlobal::museProject = MusEGlobal::museProjectInitPath;
             }
       else {
@@ -1229,7 +1232,8 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
             }
       if (!songTemplate) {
             addProject(project.absoluteFilePath());
-            setWindowTitle(QString("MusE: Song: ") + project.completeBaseName());
+            //setWindowTitle(QString("MusE: Song: ") + project.completeBaseName());
+            setWindowTitle(QString("MusE: Song: ") + MusEGui::projectTitleFromFilename(project.absoluteFilePath()));
             }
       MusEGlobal::song->dirty = false;
       progress->setValue(30);
@@ -1351,10 +1355,13 @@ void MusE::loadProjectFile1(const QString& name, bool songTemplate, bool loadAll
 void MusE::setUntitledProject()
       {
       setConfigDefaults();
-      QString name("untitled");
+      //QString name("untitled");
+      QString name(MusEGui::getUniqueUntitledName());  // p4.0.40
       MusEGlobal::museProject = "./"; //QFileInfo(name).absolutePath();
       project.setFile(name);
-      setWindowTitle(tr("MusE: Song: %1").arg(project.completeBaseName()));
+      //setWindowTitle(tr("MusE: Song: %1").arg(project.completeBaseName()));
+      //setWindowTitle(tr("MusE: Song: %1").arg(MusEGui::projectTitleFromFilename(name)));
+      setWindowTitle(tr("MusE: Song: %1").arg(name));
       }
 
 //---------------------------------------------------------
@@ -1425,7 +1432,9 @@ void MusE::loadTemplate()
 
 bool MusE::save()
       {
-      if (project.completeBaseName() == "untitled")
+      //if (project.completeBaseName() == "untitled")    // FIXME p4.0.40 Must catch "untitled 1" "untitled 2" etc  
+      //if (MusEGui::projectTitleFromFilename(project.absoluteFilePath()) == "untitled")                      // REMOVE Tim.
+      if (MusEGui::projectTitleFromFilename(project.absoluteFilePath()) == MusEGui::getUniqueUntitledName())  
             return saveAs();
       else
             return save(project.filePath(), false);
@@ -1758,7 +1767,7 @@ MusEGui::RoutePopupMenu* MusE::getRoutingPopupMenu()
 bool MusE::saveAs()
       {
       QString name;
-      if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath ) {
+      //if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath )  // Use project dialog always now.
         if (MusEGlobal::config.useProjectSaveDialog) {
             MusEGui::ProjectCreateImpl pci(MusEGlobal::muse);
             if (pci.exec() == QDialog::Rejected) {
@@ -1779,10 +1788,11 @@ bool MusE::saveAs()
           QMessageBox::warning(this,"Path error","Can't create project path", QMessageBox::Ok);
           return false;
         }
-      }
-      else {
-        name = MusEGui::getSaveFileName(QString(""), MusEGlobal::med_file_save_pattern, this, tr("MusE: Save As"));
-      }
+      //}
+      //else {
+      //  name = MusEGui::getSaveFileName(QString(""), MusEGlobal::med_file_save_pattern, this, tr("MusE: Save As"));
+      //}
+      
       bool ok = false;
       if (!name.isEmpty()) {
             QString tempOldProj = MusEGlobal::museProject;
@@ -1790,7 +1800,8 @@ bool MusE::saveAs()
             ok = save(name, true);
             if (ok) {
                   project.setFile(name);
-                  setWindowTitle(tr("MusE: Song: %1").arg(project.completeBaseName()));
+                  //setWindowTitle(tr("MusE: Song: %1").arg(project.completeBaseName()));
+                  setWindowTitle(tr("MusE: Song: %1").arg(MusEGui::projectTitleFromFilename(name)));
                   addProject(name);
                   }
             else
@@ -2704,7 +2715,8 @@ MusE::lash_idle_cb ()
           int ok = save (ss.toAscii(), false);
           if (ok) {
             project.setFile(ss.toAscii());
-            setWindowTitle(tr("MusE: Song: %1").arg(project.completeBaseName()));
+            //setWindowTitle(tr("MusE: Song: %1").arg(project.completeBaseName()));
+            setWindowTitle(tr("MusE: Song: %1").arg(MusEGui::projectTitleFromFilename(project.absoluteFilePath())));
             addProject(ss.toAscii());
             MusEGlobal::museProject = QFileInfo(ss.toAscii()).absolutePath();
           }

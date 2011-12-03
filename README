@@ -17,7 +17,7 @@ details.
 `-----------------------------------------------------------------'
 
   =============================
-      Requirements
+      Requirements:
   =============================
       
 
@@ -62,7 +62,7 @@ details.
                disabled by setting ENABLE_DOCUMENTATION to OFF)
 
   =============================
-      Compiling:
+      Building MusE:
   =============================
 
       - Download source from http://lmuse.sourceforge.net/
@@ -74,7 +74,7 @@ details.
 
       - To compile MusE, run the following commands from the 
          top level directory where the source code was unpacked
-         (the directory where THIS README FILE is): 
+         (the directory where THIS README FILE is found): 
        
 	******************************************************
         *                      Notice:                       *
@@ -124,14 +124,16 @@ details.
         ----------  
           After configuration, while still in the build directory,type:
             make 
+
+        Installing:
+        ----------  
+          After compiling, type:
             make install (as root) 
            or
             sudo make install
 
-          You can of course use some other build directory location and/or name.
-
   =============================
-      running MusE
+      Running MusE:
   =============================
 
       Recommended setup:
@@ -143,6 +145,9 @@ details.
         However, for the best performance a so-called 'low latency' or 'realtime' 
          kernel may be required. Check your distro's packages for availability. 
 
+      - create an "audio" group if it does not already exists
+        and put yourself into this group
+
       - For realtime priority, you may want to ensure either the file:
            /etc/security/limits.conf
          or
@@ -150,9 +155,6 @@ details.
          contains:
            @audio   -  rtprio     95
            @audio   -  memlock    unlimited
-
-      - create an "audio" group if it does not already exists
-        and put yourself into this group
 
       - make sure you can acces the realtime clock (RTC)
             chmod 660 /dev/rtc
