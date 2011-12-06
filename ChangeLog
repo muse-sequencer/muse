@@ -1,3 +1,6 @@
+06.12.2011
+        - Fixed drawing of logarithmic values (god how I hate these conversions!..!$%) hopefully...
+          should be improved by precalulating max and min values (rj)
 05.12.2011:
         - Complete Spanish translation from Cristian Ramos (rj)
 03.12.2011:

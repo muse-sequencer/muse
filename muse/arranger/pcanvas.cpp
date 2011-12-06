@@ -3644,7 +3644,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
         double y;   
         if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
           //printf("log conversion val=%f min=%f max=%f\n", cl->curVal(), min, max);
-          y = dbToVal(cl->curVal(), min, max); // represent volume between 0 and 1
+          y = logToVal(cl->curVal(), min, max); // represent volume between 0 and 1
           if (y < 0) y = 0.0;
         }
         else 
@@ -3658,7 +3658,7 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
             double y = ic->second.val; 
             if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
               //printf("log conversion val=%f min=%f max=%f\n", cl->curVal(), min, max);
-              y = dbToVal(y, min, max); // represent volume between 0 and 1
+              y = logToVal(y, min, max); // represent volume between 0 and 1
               if (y < 0) y = 0.0;
             }
             else 
@@ -3757,7 +3757,7 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
         {
           double y;   
           if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-            y = dbToVal(cl->curVal(), min, max); // represent volume between 0 and 1
+            y = logToVal(cl->curVal(), min, max); // represent volume between 0 and 1
             if (y < 0) y = 0.0;
           }
           else 
@@ -3770,7 +3770,7 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
           {
              double y = ic->second.val;
              if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-                y = dbToVal(y, min, max); // represent volume between 0 and 1
+                y = logToVal(y, min, max); // represent volume between 0 and 1
                if (y < 0) y = 0;
              }
              else 
@@ -3962,8 +3962,8 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
     automation.currentCtrlList->range(&min,&max);
     double cvval;    
     if (automation.currentCtrlList->valueType() == MusECore::VAL_LOG  ) { // use db scale for volume
-       //printf("log conversion val=%d min=%d max=%d\n", yfraction, min, max);
-       cvval = valToDb(yfraction, min, max);
+       printf("log conversion val=%f min=%f max=%f\n", yfraction, min, max);
+       cvval = valToLog(yfraction, min, max);
        //printf("calc yfraction = %f v=%f ",yfraction,cvval);
        if (cvval< min) cvval=min;
        if (cvval>max) cvval=max;
@@ -3996,16 +3996,45 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
 
 }
 
-double PartCanvas::dbToVal(double inDb, double /*min*/, double /*max*/)
+//---------------------------------------------------------
+//
+//  logToVal
+//   - represent logarithmic value on linear scale from 0 to 1
+//
+//---------------------------------------------------------
+double PartCanvas::logToVal(double inLog, double min, double max)
 {
-// För volym så är invärdet mellan 0-3.16, -70 -> +10
-// vi behöver forma om detta till en rak skala
+    //printf("logToVal inLog %f :", inLog);
+    if (inLog < min) inLog = min;
+    if (inLog > max) inLog = max;
+    double linMin = 20.0*MusECore::fast_log10(min);
+    double linMax = 20.0*MusECore::fast_log10(max);
+    double linVal = 20.0*MusECore::fast_log10(inLog);
 
-    return (20.0*MusECore::fast_log10(inDb)+60.0) / 70.0;
+    double outVal = (linVal-linMin) / (linMax - linMin);
+    // printf("inLog %f outVal %f linVal %f min %f max %f dbMin %f dbMax %f\n", inLog, outVal, linVal, min, max, linMin, linMax);
+
+    return outVal;
 }
-double PartCanvas::valToDb(double inV, double /*min*/, double /*max*/)
+
+//---------------------------------------------------------
+//
+//  valToLog
+//   - represent value from 0 to 1 as logarithmic value between min and max
+//
+//---------------------------------------------------------
+double PartCanvas::valToLog(double inV, double min, double max)
 {
-    return exp10((inV*70.0-60)/20.0);
+    double linMin = 20.0*MusECore::fast_log10(min);
+    double linMax = 20.0*MusECore::fast_log10(max);
+
+    double linVal = (inV * (linMax - linMin)) + linMin;
+    double outVal = exp10((linVal)/20.0);
+
+    //printf("::valToLog inV %f outVal %f linVal %f min %f max %f\n", inV, outVal, linVal, min, max);
+    if (outVal > max) outVal = max;
+    if (outVal < min) outVal = min;
+    return outVal;
 }
 
 //---------------------------------------------------------
