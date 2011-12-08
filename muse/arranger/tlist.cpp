@@ -1247,7 +1247,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
             return;
             }
-      mode = START_DRAG;
+
+      mode = NORMAL;
 
       switch (col) {
               case COL_CLEF:
@@ -1276,8 +1277,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   }
                   delete p;
                 }
-
                 break;
+                
               case COL_AUTOMATION:
                 {
                 if (!t->isMidiTrack()) {
@@ -1313,6 +1314,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
 
             case COL_RECORD:
                   {
+                      mode = START_DRAG;
+                      
                       bool val = !(t->recordFlag());
                       if (button == Qt::LeftButton) {
                         if (!t->isMidiTrack()) {
@@ -1351,6 +1354,7 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   }
                   break;
             case COL_NONE:
+                  mode = START_DRAG;
                   break;
             case COL_CLASS:
                   if (t->isMidiTrack())
@@ -1371,9 +1375,10 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     
                   //MusEGlobal::audio->msgUpdateSoloStates(); // p4.0.14
                   //MusEGlobal::song->update(SC_ROUTE);       //
-                  
                   break;
+                  
             case COL_MUTE:
+                  mode = START_DRAG;
                   // p3.3.29
                   if ((button == Qt::RightButton) || (((QInputEvent*)ev)->modifiers() & Qt::ShiftModifier))
                     t->setOff(!t->off());
@@ -1387,11 +1392,13 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   MusEGlobal::song->update(SC_MUTE);
                   break;
             case COL_SOLO:
+                  mode = START_DRAG;
                   MusEGlobal::audio->msgSetSolo(t, !t->solo());
                   MusEGlobal::song->update(SC_SOLO);
                   break;
 
             case COL_NAME:
+                  mode = START_DRAG;
                   if (button == Qt::LeftButton) {
                         if (!ctrl) {
                               MusEGlobal::song->deselectTracks();
@@ -1466,11 +1473,13 @@ void TList::mousePressEvent(QMouseEvent* ev)
                   break;
 
             case COL_TIMELOCK:
+                  mode = START_DRAG;
                   t->setLocked(!t->locked());
                   break;
 
             case COL_OCHANNEL:
                   {
+                    mode = START_DRAG; // or not? (flo)
                     int delta = 0;
                     if (button == Qt::RightButton) 
                       delta = 1;
@@ -1536,6 +1545,9 @@ void TList::mousePressEvent(QMouseEvent* ev)
                     }      
                   }
                   break;
+            
+            default:
+                  mode = START_DRAG;
           }        
       redraw();
       }
