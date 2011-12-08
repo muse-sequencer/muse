@@ -393,7 +393,7 @@ void TList::paint(const QRect& r)
                                             countVisible++;
                                     }
                                     //int count = ((MusECore::AudioTrack*)track)->controller()->size(); //commented out by flo: gives a "unused variable" warning
-                                    s.sprintf(" %d(%d) visible",countVisible, countAll);
+                                    s.sprintf(" %d(%d) %s",countVisible, countAll, tr("visible").toAscii().data());
                                     }
 
 
