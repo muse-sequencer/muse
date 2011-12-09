@@ -219,7 +219,7 @@ click on part to mute/unmute</source>
         <translation type="obsolete">Alle Dateien (*)</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="+185"/>
+        <location filename="../../muse/helper.cpp" line="+189"/>
         <source>Add Midi Track</source>
         <translation>Midispur hinzufügen</translation>
     </message>
@@ -5074,7 +5074,7 @@ Konfiguration</translation>
         <translation>MusE: Globale Einstellungen</translation>
     </message>
     <message>
-        <location line="+530"/>
+        <location line="+559"/>
         <source>Audio</source>
         <translation>Audio</translation>
     </message>
@@ -5204,7 +5204,7 @@ Konfiguration</translation>
         <translation type="obsolete">GUI</translation>
     </message>
     <message>
-        <location line="+240"/>
+        <location line="+216"/>
         <source>/sec</source>
         <translation>/sek</translation>
     </message>
@@ -5312,12 +5312,12 @@ Bereichen die linke Maustaste wie die mittlere verhält.</translation>
         <translation type="obsolete">Hilfe Browser:</translation>
     </message>
     <message>
-        <location line="-1538"/>
+        <location line="-1543"/>
         <source>Application</source>
         <translation>Anwendung</translation>
     </message>
     <message>
-        <location line="+389"/>
+        <location line="+418"/>
         <source>Start Muse</source>
         <translation>MusE starten</translation>
     </message>
@@ -5497,7 +5497,22 @@ Bereichen die linke Maustaste wie die mittlere verhält.</translation>
         <translation>16</translation>
     </message>
     <message>
-        <location line="-719"/>
+        <location line="-942"/>
+        <source>Project directory</source>
+        <translation>Projektverzeichnis</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Projects:</source>
+        <translation>Projekte:</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>...</source>
+        <translation>...</translation>
+    </message>
+    <message>
+        <location line="+204"/>
         <source>Main Window</source>
         <translation>Hauptfenster</translation>
     </message>
@@ -5647,12 +5662,11 @@ einen höheren Wert.</translation>
 (Ticks/Viertelnote)</translation>
     </message>
     <message>
-        <location line="+126"/>
         <source>Instruments Directory</source>
-        <translation>Instrumentenverzeichnis</translation>
+        <translation type="obsolete">Instrumentenverzeichnis</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+143"/>
         <source>GUI Behaviour</source>
         <translation>GUI-Verhalten</translation>
     </message>
@@ -5667,12 +5681,12 @@ einen höheren Wert.</translation>
         <translation>Bewege &quot;für Aufnahme scharfschalten&quot; mit Auswahl</translation>
     </message>
     <message>
-        <location line="-791"/>
+        <location line="-767"/>
         <source>On Launch</source>
         <translation>Beim Start</translation>
     </message>
     <message>
-        <location line="+736"/>
+        <location line="+712"/>
         <source>Behavior</source>
         <translation>Verhalten</translation>
     </message>
@@ -10089,6 +10103,14 @@ Knopf.</translation>
     </message>
 </context>
 <context>
+    <name>MusEGui</name>
+    <message>
+        <location filename="../../muse/helper.cpp" line="+56"/>
+        <source>Select project directory</source>
+        <translation>Projektverzeichnis auswählen</translation>
+    </message>
+</context>
+<context>
     <name>MusEGui::Appearance</name>
     <message>
         <location filename="../../muse/appearance.cpp" line="+132"/>
@@ -11486,50 +11508,40 @@ Rechtsklick, um die GUI zu zeigen.</translation>
         <translation>MusE: Datei schreiben schlug fehl</translation>
     </message>
     <message>
-        <location line="+32"/>
-        <location line="+12"/>
-        <location line="+280"/>
-        <location line="+12"/>
         <source>MusE:</source>
-        <translation>MusE:</translation>
+        <translation type="obsolete">MusE:</translation>
     </message>
     <message>
-        <location line="-303"/>
-        <location line="+292"/>
         <source>The user instrument directory
 %1
 does not exist yet. Create it now?
 </source>
-        <translation>Das Benutzerinstrumentenverzeichnis
+        <translation type="obsolete">Das Benutzerinstrumentenverzeichnis
 %1
 existiert nicht. Jetzt erzeugen?</translation>
     </message>
     <message>
-        <location line="-291"/>
-        <location line="+292"/>
         <source>(You can change the user instruments directory at Settings-&gt;Global Settings-&gt;Midi)</source>
-        <translation>(Sie können das Benutzer-Instrumentenversuchnis unter Einstellungen -&gt; Globale Einstellungen -&gt; Midi ändern)</translation>
+        <translation type="obsolete">(Sie können das Benutzer-Instrumentenversuchnis unter Einstellungen -&gt; Globale Einstellungen -&gt; Midi ändern)</translation>
     </message>
     <message>
-        <location line="-282"/>
-        <location line="+292"/>
         <source>Unable to create user instrument directory &apos;%1&apos;</source>
-        <translation>Konnte das Benutzer-Instrumentenverzeichnis &quot;%1&quot; nicht anlegen</translation>
+        <translation type="obsolete">Konnte das Benutzer-Instrumentenverzeichnis &quot;%1&quot; nicht anlegen</translation>
     </message>
     <message>
-        <location line="-244"/>
-        <location line="+266"/>
+        <location line="+75"/>
+        <location line="+249"/>
         <source>MusE: Save Instrument Definition</source>
         <translation>MusE: Instrumentendefinition speichern</translation>
     </message>
     <message>
-        <location line="-265"/>
-        <location line="+266"/>
+        <location line="-248"/>
+        <location line="+249"/>
         <source>Instrument Definition (*.idf)</source>
         <translation>Instrumentendefinition (*.idf)</translation>
     </message>
     <message>
-        <location line="-154"/>
+        <location line="-137"/>
         <location line="+29"/>
         <source>MusE: Save instrument as</source>
         <translation>MusE: Instrument speichern unter</translation>
@@ -11547,7 +11559,7 @@ Are you sure?</source>
 Sind Sie sicher?</translation>
     </message>
     <message>
-        <location line="+526"/>
+        <location line="+509"/>
         <source>MusE: Bad instrument name</source>
         <translation>MusE: Ungeeigneter Instrumentenname</translation>
     </message>
@@ -11896,9 +11908,8 @@ click on part to mute/unmute</source>
 <context>
     <name>MusEGui::GlobalSettingsConfig</name>
     <message>
-        <location filename="../../muse/widgets/genset.cpp" line="+561"/>
         <source>Selects instruments directory</source>
-        <translation>Wählt Instrumentenverzeichnis aus</translation>
+        <translation type="obsolete">Wählt Instrumentenverzeichnis aus</translation>
     </message>
 </context>
 <context>
@@ -13113,7 +13124,7 @@ Sync-Einstellungen anwenden?</translation>
 <context>
     <name>MusEGui::MusE</name>
     <message>
-        <location filename="../../muse/app.cpp" line="+137"/>
+        <location filename="../../muse/app.cpp" line="+141"/>
         <location line="+16"/>
         <source>Failed to start audio!</source>
         <translation>Audio konnte nicht gestartet werden!</translation>
@@ -13131,7 +13142,7 @@ Sync-Einstellungen anwenden?</translation>
         <translation>Timeout beim Warten auf Audio. Überprüfen Sie, ob Jack läuft.</translation>
     </message>
     <message>
-        <location line="+220"/>
+        <location line="+209"/>
         <source>Und&amp;o</source>
         <translation>&amp;Rückgängig</translation>
     </message>
@@ -13280,13 +13291,13 @@ Sync-Einstellungen anwenden?</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+1030"/>
-        <location line="+1255"/>
+        <location line="+1039"/>
+        <location line="+1257"/>
         <source>&amp;Save</source>
         <translation>&amp;Speichern</translation>
     </message>
     <message>
-        <location line="-2283"/>
+        <location line="-2294"/>
         <location line="+3"/>
         <source>Click this button to save the song you are editing.  You will be prompted for a file name.
 You can also select the Save command from the File menu.</source>
@@ -13570,7 +13581,7 @@ Alternativ das Lied mit dem Befehl &quot;Sichern&quot; im Menü &quot;Datei&quot
         <translation>Transport</translation>
     </message>
     <message>
-        <location line="+55"/>
+        <location line="+56"/>
         <source>&amp;File</source>
         <translation>&amp;Datei</translation>
     </message>
@@ -13610,12 +13621,12 @@ Alternativ das Lied mit dem Befehl &quot;Sichern&quot; im Menü &quot;Datei&quot
         <translation>&amp;Hilfe</translation>
     </message>
     <message>
-        <location line="+289"/>
+        <location line="+290"/>
         <source>Cannot read template</source>
         <translation>Vorlage nicht lesbar</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+32"/>
         <source>File open error</source>
         <translation>Fehler beim Datei öffnen</translation>
     </message>
@@ -13630,14 +13641,14 @@ Alternativ das Lied mit dem Befehl &quot;Sichern&quot; im Menü &quot;Datei&quot
         <translation>Unbekanntes Dateiformat: %1</translation>
     </message>
     <message>
-        <location line="+130"/>
-        <location line="+437"/>
-        <location line="+914"/>
+        <location line="+134"/>
+        <location line="+440"/>
+        <location line="+915"/>
         <source>MusE: Song: %1</source>
         <translation>MusE: Lied: %1</translation>
     </message>
     <message>
-        <location line="-1317"/>
+        <location line="-1321"/>
         <source>MusE: load project</source>
         <translation>Muse: Projekt laden</translation>
     </message>
@@ -13647,7 +13658,7 @@ Alternativ das Lied mit dem Befehl &quot;Sichern&quot; im Menü &quot;Datei&quot
         <translation>Muse: Vorlage laden</translation>
     </message>
     <message>
-        <location line="+62"/>
+        <location line="+64"/>
         <source>MusE: Write File failed</source>
         <translation>MusE: Datei schreiben schlug fehl</translation>
     </message>
@@ -13660,23 +13671,22 @@ Aktuelles Projekt sichern?</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+1255"/>
+        <location line="+1257"/>
         <source>S&amp;kip</source>
         <translation>&amp;Überspringen</translation>
     </message>
     <message>
-        <location line="-1255"/>
+        <location line="-1257"/>
         <source>&amp;Cancel</source>
         <translation>&amp;Abbrechen</translation>
     </message>
     <message>
-        <location line="+265"/>
-        <location line="+13"/>
+        <location line="+264"/>
         <source>MusE: Save As</source>
         <translation>MusE: Speichern unter</translation>
     </message>
     <message>
-        <location line="+57"/>
+        <location line="+72"/>
         <location line="+160"/>
         <source>Nothing to edit</source>
         <translation>Es gibt nichts zu editieren</translation>
@@ -13742,7 +13752,7 @@ und eine Audio-Ausgangs-Spur</translation>
         <translation>Linken/rechten Marker für Abmischbereich einstellen</translation>
     </message>
     <message>
-        <location line="+82"/>
+        <location line="+83"/>
         <source>The current Project contains unsaved data
 Load overwrites current Project:
 Save Current Project?</source>
@@ -14312,7 +14322,7 @@ Wahrscheinlich hat die ausgewählte Spur den falschen Typ.</numerusform>
 <context>
     <name>MusEGui::PluginDialog</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="+3137"/>
+        <location filename="../../muse/plugin.cpp" line="+3147"/>
         <source>MusE: select plugin</source>
         <translation>MusE: PlugIn wählen</translation>
     </message>
@@ -14415,7 +14425,7 @@ Wahrscheinlich hat die ausgewählte Spur den falschen Typ.</numerusform>
 <context>
     <name>MusEGui::PluginGui</name>
     <message>
-        <location line="+207"/>
+        <location line="+208"/>
         <source>File Buttons</source>
         <translation>Datei-Knöpfe</translation>
     </message>
@@ -14449,6 +14459,14 @@ Wahrscheinlich hat die ausgewählte Spur den falschen Typ.</numerusform>
         <location line="+41"/>
         <source>MusE: save preset</source>
         <translation>MusE: Vorlage sichern</translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::ProjectCreateImpl</name>
+    <message>
+        <location filename="../../muse/widgets/projectcreateimpl.cpp" line="+83"/>
+        <source>Select directory</source>
+        <translation>Verzeichnis auswählen</translation>
     </message>
 </context>
 <context>
@@ -14883,12 +14901,17 @@ Titel ist nicht einzigartig</translation>
 <context>
     <name>MusEGui::TList</name>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="+373"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="+374"/>
         <source>&lt;none&gt;</source>
         <translation>&lt;kein&gt;</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+22"/>
+        <source>visible</source>
+        <translation>sichtbar</translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>no clef</source>
         <translation>kein Notenschlüssel</translation>
     </message>
@@ -14918,30 +14941,30 @@ Titel ist nicht einzigartig</translation>
         <translation>Bitte eindeutigen Spurnamen wählen</translation>
     </message>
     <message>
-        <location line="+172"/>
-        <location line="+1149"/>
+        <location line="+310"/>
+        <location line="+1161"/>
         <source>Update drummap?</source>
         <translation>Drumbelegung aktualisieren?</translation>
     </message>
     <message>
-        <location line="-1148"/>
+        <location line="-1160"/>
         <source>Do you want to use same port for all instruments in the drummap?</source>
         <translation>Möchten Sie für alle Instrumente der Drumbelegung den selben Anschluss verwenden?</translation>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+1149"/>
+        <location line="+1161"/>
         <source>&amp;Yes</source>
         <translation>&amp;Ja</translation>
     </message>
     <message>
-        <location line="-1149"/>
-        <location line="+1149"/>
+        <location line="-1161"/>
+        <location line="+1161"/>
         <source>&amp;No</source>
         <translation>&amp;Nein</translation>
     </message>
     <message>
-        <location line="-1074"/>
+        <location line="-1086"/>
         <location line="+55"/>
         <source>show gui</source>
         <translation>GUI anzeigen</translation>
@@ -14953,7 +14976,7 @@ Titel ist nicht einzigartig</translation>
         <translation>Native GUI anzeigen</translation>
     </message>
     <message>
-        <location line="+346"/>
+        <location line="+347"/>
         <source>Treble clef</source>
         <translation>Violinschlüssel</translation>
     </message>
@@ -14973,7 +14996,7 @@ Titel ist nicht einzigartig</translation>
         <translation>Sichtbare Automatisierung</translation>
     </message>
     <message>
-        <location line="+131"/>
+        <location line="+137"/>
         <source>Delete Track</source>
         <translation>Spur löschen</translation>
     </message>
@@ -14988,7 +15011,7 @@ Titel ist nicht einzigartig</translation>
         <translation>Spur einfügen</translation>
     </message>
     <message>
-        <location line="+445"/>
+        <location line="+450"/>
         <source>Midi</source>
         <translation>Midi</translation>
     </message>
@@ -15003,6 +15026,7 @@ Titel ist nicht einzigartig</translation>
         <translation>Möchten Sie für alle Instrumente der Drumbelegung den selben Anschluss und Kanal verwenden?</translation>
     </message>
     <message>
+        <location line="-1250"/>
         <source>Unused Devices</source>
         <translation>Ungenutzte Geräte</translation>
     </message>
@@ -16701,12 +16725,34 @@ erweitert werden muss um nicht mehr als</translation>
         <translation>Projekt erzeugen</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+10"/>
+        <source>Projects folder:</source>
+        <translation>Projektverzeichnis:</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <location line="+120"/>
+        <location line="+7"/>
+        <source>...</source>
+        <translation>......</translation>
+    </message>
+    <message>
+        <location line="-109"/>
         <source>Project Name:</source>
         <translation>Projekt-Name:</translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+10"/>
+        <source>Project is a Template</source>
+        <translation>Projekt ist eine Vorlage</translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Project song file type:</source>
+        <translation>Projekt-Lieddatei-Typ:</translation>
+    </message>
+    <message>
+        <location line="+27"/>
         <source>Project Path to song file:</source>
         <translation>Projektpfad zur Lieddatei:</translation>
     </message>
@@ -16716,12 +16762,11 @@ erweitert werden muss um nicht mehr als</translation>
         <translation>Erzeuge Projektverzeichnis (empfohlen für Audioprojekte)</translation>
     </message>
     <message>
-        <location line="+18"/>
         <source>Browse</source>
-        <translation>Durchsuchen</translation>
+        <translation type="obsolete">Durchsuchen</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location line="+34"/>
         <source>Song information:</source>
         <translation>Lied-Information:</translation>
     </message>
@@ -16949,7 +16994,7 @@ Erzeugen?</translation>
         <translation>Verzeichnis erzeugen schlug fehl</translation>
     </message>
     <message>
-        <location line="+399"/>
+        <location line="+373"/>
         <source>File
 %1
 exists. Overwrite?</source>
@@ -16958,7 +17003,7 @@ exists. Overwrite?</source>
 existiert. Überschreiben?</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+35"/>
         <source>Open File
 %1
 failed: %2</source>
@@ -16975,7 +17020,7 @@ exists</source>
         <translation type="obsolete">besteht</translation>
     </message>
     <message>
-        <location line="-19"/>
+        <location line="-21"/>
         <source>MusE: write</source>
         <translation>MusE: schreiben</translation>
     </message>
@@ -16998,7 +17043,7 @@ failed: </source>
         <translation type="obsolete">schlug fehl:</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+22"/>
         <source>MusE: Open File</source>
         <translation>MusE: Datei öffnen</translation>
     </message>
@@ -18166,7 +18211,7 @@ Rhythmus Zufallsgenerator noch nicht eingeführt!</translation>
     <message>
         <location line="-26"/>
         <source>Midi Port and Soft Synth Configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>MIDI-Port- und SoftSynth-Konfiguration</translation>
     </message>
     <message>
         <location line="+21"/>
@@ -19029,7 +19074,7 @@ Robert Jonsson
         <location line="+24"/>
         <location line="+11"/>
         <location line="+7"/>
-        <location line="+9"/>
+        <location line="+15"/>
         <location line="+15"/>
         <location line="+7"/>
         <location line="+14"/>
@@ -19041,7 +19086,7 @@ Robert Jonsson
         <translation>Alle Dateien (*)</translation>
     </message>
     <message>
-        <location line="-95"/>
+        <location line="-101"/>
         <source>Midi (*.mid)</source>
         <translation>Midi (*.mid)</translation>
     </message>
@@ -19063,28 +19108,31 @@ Robert Jonsson
     <message>
         <location line="+1"/>
         <location line="+8"/>
+        <location line="+7"/>
         <source>Uncompressed med Files (*.med)</source>
         <translation>Unkomprimierte med-Dateien (*.med)</translation>
     </message>
     <message>
-        <location line="-7"/>
+        <location line="-14"/>
         <location line="+8"/>
+        <location line="+7"/>
         <source>gzip compressed med Files (*.med.gz)</source>
         <translation>Mit gzip komprimierte med-Dateien (*.med.gz)</translation>
     </message>
     <message>
-        <location line="-7"/>
+        <location line="-14"/>
         <location line="+8"/>
+        <location line="+7"/>
         <source>bzip2 compressed med Files (*.med.bz2)</source>
         <translation>Mit bzip2 komprimierte med-Dateien (*.med.bz2)</translation>
     </message>
     <message>
-        <location line="-7"/>
+        <location line="-14"/>
         <source>mid Files (*.mid *.midi *.kar *.MID *.MIDI *.KAR)</source>
         <translation>Midi-Dateien (*.mid *.midi *.kar *.MID *.MIDI *.KAR)</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+19"/>
         <source>(*.jpg *.gif *.png)</source>
         <translation>(*.jpg *.gif *.png)</translation>
     </message>
