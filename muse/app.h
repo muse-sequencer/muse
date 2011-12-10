@@ -397,6 +397,9 @@ class MusE : public QMainWindow
       void setHeartBeat();
       void importController(int, MusECore::MidiPort*, int);
       QString projectName() { return project.fileName(); }
+      QString projectTitle() const;
+      QString projectPath() const;
+      QString projectExtension() const;
       QWidget* mixer1Window();
       QWidget* mixer2Window();
       QWidget* transportWindow();

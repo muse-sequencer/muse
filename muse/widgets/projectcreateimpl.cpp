@@ -40,26 +40,50 @@ ProjectCreateImpl::ProjectCreateImpl(QWidget *parent) :
 {
   setupUi(this);
 
+  //bool is_new = (MusEGlobal::museProject == MusEGlobal::museProjectInitPath);  
+  directoryPath = MusEGlobal::config.projectBaseFolder;
+
   QStringList filters = localizedStringListFromCharArray(MusEGlobal::project_create_file_save_pattern, "file_patterns");
   projectFileTypeCB->addItems(filters);
-  projectFileTypeCB->setCurrentIndex(0);
 
-  projectNameEdit->setText(MusEGui::projectTitleFromFilename(MusEGlobal::muse->projectName())); 
-  //projectNameEdit->setText(MusEGui::getUniqueUntitledName(MusEGui::projectTitleFromFilename(MusEGlobal::muse->projectName())));   TODO p4.0.40  // REMOVE Tim.
+  QString proj_title = MusEGlobal::muse->projectTitle();
+  QString proj_path  = MusEGlobal::muse->projectPath();
+  QString proj_ext   = MusEGlobal::muse->projectExtension();
+  
+  projectNameEdit->setText(proj_title); 
+
+  bool is_template = proj_path.startsWith(MusEGlobal::configPath + "/templates");
+  
+  templateCheckBox->setChecked(is_template);
+  
+  projDirPath = proj_path;
+    
+  int type_idx = 0;
+  if(!proj_ext.isEmpty())
+  {  
+    // FIXME Imperfect. Trying to avoid adding yet another series of character strings.   p4.0.40
+    type_idx = projectFileTypeCB->findText(proj_ext, Qt::MatchContains | Qt::MatchCaseSensitive);
+    if(type_idx == -1)
+      type_idx = 0;
+  }  
+  projectFileTypeCB->setCurrentIndex(type_idx);
   
   projDirToolButton->setIcon(*openIcon);
   browseDirButton->setIcon(*openIcon);
   restorePathButton->setIcon(*undoIcon);
+
+  restorePathButton->setEnabled(false);  // Disabled at first.
   
-  createFolderCheckbox->setChecked(MusEGlobal::config.projectStoreInFolder);
-  //connect(templateCheckBox,SIGNAL(stateChanged(int)), this, SLOT(templateButtonChanged(int)));
-  connect(templateCheckBox,SIGNAL(stateChanged(int)), this, SLOT(updateDirectoryPath()));
+  //createFolderCheckbox->setChecked(MusEGlobal::config.projectStoreInFolder && is_new); // Suggest no folder if not new.
+  
+  connect(templateCheckBox,SIGNAL(clicked()), this, SLOT(templateButtonChanged()));
+  //connect(templateCheckBox,SIGNAL(clicked()), this, SLOT(updateDirectoryPath()));
   connect(projDirToolButton,SIGNAL(clicked()), this, SLOT(browseProjDir()));
   connect(restorePathButton,SIGNAL(clicked()), this, SLOT(restorePath()));
   connect(browseDirButton,SIGNAL(clicked()), this, SLOT(selectDirectory()));
   //connect(projectNameEdit,SIGNAL(textChanged(QString)), this, SLOT(updateDirectoryPath()));
   connect(projectNameEdit,SIGNAL(textChanged(QString)), this, SLOT(updateProjectName()));
-  connect(createFolderCheckbox,SIGNAL(clicked()), this, SLOT(updateDirectoryPath()));
+  connect(createFolderCheckbox,SIGNAL(clicked()), this, SLOT(createProjFolderChanged()));
   connect(projectFileTypeCB,SIGNAL(currentIndexChanged(int)), this, SLOT(updateDirectoryPath()));
   connect(buttonBox, SIGNAL(accepted()), this, SLOT(ok()));
 #if QT_VERSION >= 0x040700
@@ -68,8 +92,6 @@ ProjectCreateImpl::ProjectCreateImpl(QWidget *parent) :
   //        as of Qt-4.7.1
   //commentEdit->setPlaceholderText("<Add information about project here>");
 #endif
-  directoryPath = MusEGlobal::config.projectBaseFolder;
-  //templDirPath = MusEGlobal::configPath + "/templates";
   updateDirectoryPath();
   show();
 }
@@ -77,14 +99,15 @@ ProjectCreateImpl::ProjectCreateImpl(QWidget *parent) :
 void ProjectCreateImpl::selectDirectory()
 {
   QString dpath = templateCheckBox->isChecked() ? 
-                   (templDirPath.isEmpty()    ? (MusEGlobal::configPath + QString("/templates")) : templDirPath) :
+                   (overrideTemplDirPath.isEmpty()    ? (MusEGlobal::configPath + QString("/templates")) : overrideTemplDirPath) :
                    (overrideDirPath.isEmpty() ? directoryPath : overrideDirPath);
   
   QString dir = QFileDialog::getExistingDirectory(this, tr("Select directory"), dpath);
   if(dir.isEmpty())
      return;
   
-  (templateCheckBox->isChecked() ? templDirPath : overrideDirPath) = dir;
+  (templateCheckBox->isChecked() ? overrideTemplDirPath : overrideDirPath) = dir;
+  restorePathButton->setEnabled(true); 
   updateDirectoryPath();
 }
 
@@ -114,14 +137,36 @@ void ProjectCreateImpl::updateProjectName()
     //storageDirEdit->setText(directoryPath +"/" + name);
   }
   
-  //QString dpath = templateCheckBox->isChecked() ? templDirPath : directoryPath;
+  bool is_new = (MusEGlobal::museProject == MusEGlobal::museProjectInitPath);  
+
   QString dpath = templateCheckBox->isChecked() ? 
-                   (templDirPath.isEmpty()    ? (MusEGlobal::configPath + QString("/templates")) : templDirPath) :
-                   (overrideDirPath.isEmpty() ? directoryPath : overrideDirPath);
+                   (overrideTemplDirPath.isEmpty()    ? (MusEGlobal::configPath + QString("/templates")) : overrideTemplDirPath) :
+                   (overrideDirPath.isEmpty() ? (is_new ? directoryPath : projDirPath) : overrideDirPath);
+  
+  QDir proj_dir(dpath);
+  //if(is_project && MusEGlobal::config.projectStoreInFolder)
+  bool is_project = dpath.startsWith(MusEGlobal::config.projectBaseFolder);
+  //bool is_template = dpath.startsWith(MusEGlobal::configPath + "/templates") && templateCheckBox->isChecked();
+  //bool is_new = (MusEGlobal::museProject == MusEGlobal::museProjectInitPath) && MusEGlobal::config.projectStoreInFolder;  
+  //bool is_new = (MusEGlobal::museProject == MusEGlobal::museProjectInitPath) && 
+                MusEGlobal::config.projectStoreInFolder && 
+                (templateCheckBox->isChecked() ? overrideTemplDirPath.isEmpty() : overrideDirPath.isEmpty());  
+  bool is_template = is_new && dpath.startsWith(MusEGlobal::configPath + "/templates") && templateCheckBox->isChecked();
+  if(!is_new && createFolderCheckbox->isChecked() && !templateCheckBox->isChecked() && 
+     (templateCheckBox->isChecked() ? overrideTemplDirPath.isEmpty() : overrideDirPath.isEmpty()))
+    proj_dir.cdUp();
+  dpath = proj_dir.absolutePath();
+  
+  //if(!initProjPath.isEmpty())
+  //{  
+  //  initProjPath.clear();
+  //}
   
   storageDirEdit->blockSignals(true);
   storageDirEdit->setText(dpath + "/" + name );    
   storageDirEdit->blockSignals(false);
+  
+  projDirLineEdit->setEnabled(!templateCheckBox->isChecked() && is_project);
 }
 
 void ProjectCreateImpl::updateDirectoryPath()
@@ -131,8 +176,6 @@ void ProjectCreateImpl::updateDirectoryPath()
   projDirLineEdit->blockSignals(true);
   projDirLineEdit->setText(MusEGlobal::config.projectBaseFolder);
   projDirLineEdit->blockSignals(false);
-    
-  projDirLineEdit->setEnabled(!templateCheckBox->isChecked() && overrideDirPath.isEmpty());
 }
 
 QString ProjectCreateImpl::getProjectPath() const
@@ -148,9 +191,16 @@ QString ProjectCreateImpl::getSongInfo() const
 void ProjectCreateImpl::ok()
 {
   MusEGlobal::config.projectStoreInFolder = createFolderCheckbox->isChecked();
-  MusEGlobal::config.projectBaseFolder = directoryPath;
-  MusEGlobal::muse->changeConfig(true);
+  //MusEGlobal::config.projectBaseFolder = directoryPath;
+  //MusEGlobal::muse->changeConfig(true);
   emit accept();
+}
+
+void ProjectCreateImpl::createProjFolderChanged()
+{
+  //MusEGlobal::config.projectStoreInFolder = createFolderCheckbox->isChecked();
+  //MusEGlobal::muse->changeConfig(true);  // Save to config file.
+  updateDirectoryPath();
 }
 
 void ProjectCreateImpl::browseProjDir()
@@ -165,26 +215,19 @@ void ProjectCreateImpl::browseProjDir()
   }  
 }
 
-/*
-void ProjectCreateImpl::templateButtonChanged(int newVal)
+void ProjectCreateImpl::templateButtonChanged()
 {
-  //if(newVal == Qt::Checked)
-  //  projDirLineEdit->setEnabled(false);
-  //else
-  //  projDirLineEdit->setEnabled(true);
+  restorePathButton->setEnabled(templateCheckBox->isChecked() ? !overrideTemplDirPath.isEmpty() : !overrideDirPath.isEmpty()); 
   updateDirectoryPath();
 }
-*/
 
 void ProjectCreateImpl::restorePath()  
 {
   if(templateCheckBox->isChecked())
-    templDirPath.clear();
+    overrideTemplDirPath.clear();
   else
-  {  
     overrideDirPath.clear();
-    //projDirLineEdit->setEnabled(true);
-  }  
+  restorePathButton->setEnabled(templateCheckBox->isChecked() ? !overrideTemplDirPath.isEmpty() : !overrideDirPath.isEmpty()); 
   updateDirectoryPath();
 }
 

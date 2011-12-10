@@ -341,7 +341,7 @@ int main(int argc, char* argv[])
 
       // Need to put a sane default here because we can't use ~ in the file name string.
       if(!cConfExists)
-        MusEGlobal::config.projectBaseFolder = MusEGlobal::museUser + QString("/My MusE");
+        MusEGlobal::config.projectBaseFolder = MusEGlobal::museUser + QString("/MusE");
 
       //MusEGlobal::museUserInstruments = MusEGlobal::config.userInstrumentsDir;
       

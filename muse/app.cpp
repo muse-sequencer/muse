@@ -104,6 +104,7 @@ static QString* projectList[PROJECT_LIST_LEN];
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>
+#include <lo/lo_osc_types.h>
 lash_client_t * lash_client = 0;
 extern snd_seq_t * alsaSeq;
 #endif /* HAVE_LASH */
@@ -1357,11 +1358,11 @@ void MusE::setUntitledProject()
       setConfigDefaults();
       //QString name("untitled");
       QString name(MusEGui::getUniqueUntitledName());  // p4.0.40
+
       MusEGlobal::museProject = "./"; //QFileInfo(name).absolutePath();
       project.setFile(name);
       //setWindowTitle(tr("MusE: Song: %1").arg(project.completeBaseName()));
-      //setWindowTitle(tr("MusE: Song: %1").arg(MusEGui::projectTitleFromFilename(name)));
-      setWindowTitle(tr("MusE: Song: %1").arg(name));
+      setWindowTitle(tr("MusE: Song: %1").arg(MusEGui::projectTitleFromFilename(name)));
       }
 
 //---------------------------------------------------------
@@ -1434,7 +1435,9 @@ bool MusE::save()
       {
       //if (project.completeBaseName() == "untitled")    // FIXME p4.0.40 Must catch "untitled 1" "untitled 2" etc  
       //if (MusEGui::projectTitleFromFilename(project.absoluteFilePath()) == "untitled")                      // REMOVE Tim.
-      if (MusEGui::projectTitleFromFilename(project.absoluteFilePath()) == MusEGui::getUniqueUntitledName())  
+      //if (MusEGui::projectTitleFromFilename(project.absoluteFilePath()) == MusEGui::getUniqueUntitledName())  
+      ///if (project.absoluteFilePath() == MusEGui::getUniqueUntitledName())  
+      if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath )  
             return saveAs();
       else
             return save(project.filePath(), false);
@@ -3547,6 +3550,21 @@ void MusE::tileSubWindows()
       (*it)->resize(right-left-x_add, bottom-top-y_add);
     }
   }
+}
+
+QString MusE::projectTitle() const
+{ 
+  return MusEGui::projectTitleFromFilename(project.fileName());
+}
+
+QString MusE::projectPath() const 
+{ 
+  return MusEGui::projectPathFromFilename(project.absoluteFilePath()); 
+}
+
+QString MusE::projectExtension() const
+{
+  return MusEGui::projectExtensionFromFilename(project.fileName()); 
 }
 
 } //namespace MusEGui

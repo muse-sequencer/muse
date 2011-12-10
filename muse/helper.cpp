@@ -31,6 +31,7 @@
 #include "gconfig.h"
 
 #include <QApplication>
+#include <QDir>
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QString>
@@ -312,7 +313,31 @@ QString projectTitleFromFilename(QString filename)
     filename.truncate(idx);
   
   QFileInfo fi(filename);
-  return fi.baseName();
+
+  //return fi.baseName();
+  return fi.fileName();
+}
+
+QString projectPathFromFilename(QString filename)
+{
+  QFileInfo fi(filename);
+  return QDir::cleanPath(fi.absolutePath());
+}
+
+QString projectExtensionFromFilename(QString filename)
+{
+  int idx;
+  idx = filename.lastIndexOf(".med.bz2", -1, Qt::CaseInsensitive);
+  if(idx == -1)
+    idx = filename.lastIndexOf(".med.gz", -1, Qt::CaseInsensitive);
+  if(idx == -1)
+    idx = filename.lastIndexOf(".med", -1, Qt::CaseInsensitive);
+  if(idx == -1)
+    idx = filename.lastIndexOf(".bz2", -1, Qt::CaseInsensitive);
+  if(idx == -1)
+    idx = filename.lastIndexOf(".gz", -1, Qt::CaseInsensitive);
+   
+  return (idx == -1) ? QString() : filename.right(filename.size() - idx);
 }
 
 QString getUniqueUntitledName()
@@ -329,7 +354,8 @@ QString getUniqueUntitledName()
     nfb += "/" + filename;
   QFileInfo fi(nfb + "/" + filename + ".med");  // TODO p4.0.40 Check other extensions.
   if(!fi.exists())
-    return filename;
+    //return filename;
+    return fi.filePath();
 
   // Find a new filename
   QString nfn = filename;  
@@ -342,13 +368,19 @@ QString getUniqueUntitledName()
         nfb += "/" + nfn;
       QFileInfo fi(nfb + "/" + nfn + ".med");
       if(!fi.exists())
-        break;
+        //break;
+        return fi.filePath();
   }    
 
-  if(idx >= 10000)
+  //if(idx >= 10000)
     printf("MusE error: Could not make untitled project name (10000 or more untitled projects in project dir - clean up!\n");
   
-  return nfn;
+  //return nfn;
+    
+  nfb = fbase;
+  if(MusEGlobal::config.projectStoreInFolder) 
+    nfb += "/" + filename;
+  return nfb + "/" + filename + ".med";
 }
 
 } // namespace MusEGui

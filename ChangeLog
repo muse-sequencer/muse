@@ -1,3 +1,6 @@
+10.12.2011:
+        - More improvements to project save dialog. And tries to suggest parent folder if saving existing project. (Tim...)
+        - Midi ports dialog: Auto dis/connect the stated default channels when selecting a device. 
 09.12.2011:
         - Fixed popup menu behaviour with (nonstandard!) checkable submenus (flo)
         - Fixed wrong START_DRAG when clicking on popup-columns (flo)

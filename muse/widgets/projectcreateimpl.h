@@ -35,7 +35,8 @@ class ProjectCreateImpl : public QDialog, Ui::ProjectCreate
 
     QString directoryPath;
     QString overrideDirPath;
-    QString templDirPath;
+    QString overrideTemplDirPath;
+    QString projDirPath;
     
 public:
     explicit ProjectCreateImpl(QWidget *parent = 0);
@@ -51,8 +52,9 @@ protected slots:
     void updateDirectoryPath();
     void selectDirectory();
     void ok();
+    void createProjFolderChanged();
     void browseProjDir();
-    //void templateButtonChanged(int);
+    void templateButtonChanged();
     void restorePath();
 };
 
