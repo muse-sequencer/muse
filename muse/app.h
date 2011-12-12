@@ -215,9 +215,9 @@ class MusE : public QMainWindow
       MidiTransformerDialog* midiTransformerDialog;
       QMenu* openRecent;
       
-      QTimer* hackishSongOpenTimer;
-      QString hackishSongOpenFilename;
-      bool hackishSongOpenUseTemplate;
+      //QTimer* hackishSongOpenTimer;
+      //QString hackishSongOpenFilename;
+      //bool hackishSongOpenUseTemplate;
 
       bool readMidi(FILE*);
       void read(MusECore::Xml& xml, bool skipConfig, bool isTemplate);
@@ -333,7 +333,7 @@ class MusE : public QMainWindow
       void arrangeSubWindowsColumns();
       void tileSubWindows();
 
-      void hackishSongOpenTimerTimeout();
+      //void hackishSongOpenTimerTimeout();
       
    public slots:
       bool saveAs();
@@ -386,6 +386,7 @@ class MusE : public QMainWindow
    public:
       MusE(int argc, char** argv);
       ~MusE();
+      void loadDefaultSong(int argc, char** argv);
       Arranger* arranger() const { return _arranger; }
       QRect configGeometryMain;
       QProgressDialog *progress;

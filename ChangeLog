@@ -1,3 +1,18 @@
+12.12.2011:
+        * Improved: Midi ports list now fills automatically at start. (Marked as p4.0.41 Tim...)
+          An effort to help new users and others. If auto-filling the mid ports proves too much or unpopular, a simple change
+           will keep them out of the list, yet still auto-create and auto-connect Jack midi devices, which is still better than before.
+          Even if and when 'set and forget' configuration is added, this initial filling step may be welcome for new users.
+          NOTE: Virtually impossible to 'auto-pair' together Jack midi inputs and outputs. But I'm working on it, some code in there...
+        - When opening a song, choosing only 'Song data', without configuration, now does not upset the midi configuration at all, 
+           yet controller data was attempted to be kept - may need to remove that effort.
+        - Moved start song loading into main.cpp, with helper in app.cpp. Disabled Florian's 'hackish loader', may be fixed now - TO BE TESTED!. 
+        - List only writeable ports in track list output port column and midi track info combo box.
+        - Jack midi devices now save an additional required rwFlags xml tag.
+        - ALSA Midi fixes: (Un)subscription errors. Delete our simple port! Unsubscribe from announce port. Ignore SND_SEQ_PORT_CAP_NO_EXPORT 
+           ports like 'qjackctrl' or 'port'. TODO: Possibly auto-assign newly discovered devices to available midi ports, in alsaScanMidiPorts().
+        - Hack: "Midi Through" ALSA and Jack devices pushed to end of list, and list sorted, so useful outputs appear first. 
+        - Stopped our own ALSA client from appearing as Jack midi alsa_pcm device.
 10.12.2011:
         - More improvements to project save dialog. And tries to suggest parent folder if saving existing project. (Tim...)
         - Midi ports dialog: Auto dis/connect the stated default channels when selecting a device. 

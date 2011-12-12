@@ -50,6 +50,7 @@ class JackAudioDevice : public AudioDevice {
       // Free-running frame counter incremented always in process.
       jack_nframes_t _frameCounter; 
       
+      void getJackPorts(const char** ports, std::list<QString>& name_list, bool midi, bool physical, int aliases);
       static int processAudio(jack_nframes_t frames, void*);
 
    public:

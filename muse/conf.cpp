@@ -220,7 +220,7 @@ static void readPortChannel(Xml& xml, int midiPort)
 //   readConfigMidiPort
 //---------------------------------------------------------
 
-static void readConfigMidiPort(Xml& xml)
+static void readConfigMidiPort(Xml& xml, bool skipConfig)
       {
       int idx = 0;
       QString device;
@@ -234,9 +234,9 @@ static void readConfigMidiPort(Xml& xml)
       // FIXME: TODO: Make this user-configurable!
       QString instrument("GM"); 
       
+      int rwFlags = 0;
       int openFlags = 1;
-      bool thruFlag = false;
-      int dic = -1;   // p4.0.17
+      int dic = -1;   
       int doc = -1;
       
       MidiSyncInfo tmpSi;
@@ -249,6 +249,19 @@ static void readConfigMidiPort(Xml& xml)
             QString tag = xml.s1();
             switch (token) {
                   case Xml::TagStart:
+                        
+                        // skipConfig added so it doesn't overwrite midi ports.   p4.0.41 Tim.
+                        // Try to keep the controller information. But, this may need to be moved below.  
+                        // Also may want to try to keep sync info, but that's a bit risky, so let's not for now.
+                        if (tag == "channel") {
+                              readPortChannel(xml, idx);
+                              break;
+                              }
+                        else if (skipConfig){
+                              xml.skip(tag);
+                              break;
+                              }
+                              
                         if (tag == "name")
                               device = xml.parse1();
                         else if (tag == "type")
@@ -260,6 +273,8 @@ static void readConfigMidiPort(Xml& xml)
                               }
                         else if (tag == "openFlags")
                               openFlags = xml.parseInt();
+                        else if (tag == "rwFlags")             // Jack midi devs need this.   p4.0.41
+                              rwFlags = xml.parseInt();
                         else if (tag == "defaultInChans")
                               dic = xml.parseInt(); 
                         else if (tag == "defaultOutChans")
@@ -268,16 +283,15 @@ static void readConfigMidiPort(Xml& xml)
                               tmpSi.read(xml);
                         else if (tag == "instrument") {
                               instrument = xml.parse1();
-                              // Moved by Tim.
-                              //MusEGlobal::midiPorts[idx].setInstrument(
+                              //MusEGlobal::midiPorts[idx].setInstrument(    // Moved below
                               //   registerMidiInstrument(instrument)
                               //   );
                               }
                         else if (tag == "midithru")
-                              thruFlag = xml.parseInt(); // obsolete
-                        else if (tag == "channel") {
-                              readPortChannel(xml, idx);
-                              }
+                              xml.parseInt(); // obsolete
+                        //else if (tag == "channel") {
+                        //      readPortChannel(xml, idx);   // Moved above
+                        //      }
                         else
                               xml.unknown("MidiDevice");
                         break;
@@ -288,6 +302,10 @@ static void readConfigMidiPort(Xml& xml)
                         break;
                   case Xml::TagEnd:
                         if (tag == "midiport") {
+                              
+                              if(skipConfig)      // p4.0.41
+                                return;
+                              
                               //if (idx > MIDI_PORTS) {
                               if (idx < 0 || idx >= MIDI_PORTS) {
                                     fprintf(stderr, "bad midi port %d (>%d)\n",
@@ -303,9 +321,8 @@ static void readConfigMidiPort(Xml& xml)
                               if(!dev && type == MidiDevice::JACK_MIDI)
                               {
                                 if(MusEGlobal::debugMsg)
-                                  fprintf(stderr, "readConfigMidiPort: creating jack midi device %s\n", device.toLatin1().constData());
-                                //dev = MidiJackDevice::createJackMidiDevice(device, openFlags);
-                                dev = MidiJackDevice::createJackMidiDevice(device);  // p3.3.55
+                                  fprintf(stderr, "readConfigMidiPort: creating jack midi device %s with rwFlags:%d\n", device.toLatin1().constData(), rwFlags);
+                                dev = MidiJackDevice::createJackMidiDevice(device, rwFlags);  
                               }
                               
                               if(MusEGlobal::debugMsg && !dev)
@@ -313,7 +330,7 @@ static void readConfigMidiPort(Xml& xml)
                               
                               MidiPort* mp = &MusEGlobal::midiPorts[idx];
                               
-                              mp->setInstrument(registerMidiInstrument(instrument));  // By Tim.
+                              mp->setInstrument(registerMidiInstrument(instrument));  
                               if(dic != -1)                      // p4.0.17 Leave them alone unless set by song.
                                 mp->setDefaultInChannels(dic);
                               if(doc != -1)
@@ -478,7 +495,7 @@ static void loadConfigMetronom(Xml& xml)
 //   readSeqConfiguration
 //---------------------------------------------------------
 
-static void readSeqConfiguration(Xml& xml)
+static void readSeqConfiguration(Xml& xml, bool skipConfig)
       {
       for (;;) {
             Xml::Token token = xml.parse();
@@ -490,7 +507,7 @@ static void readSeqConfiguration(Xml& xml)
                         if (tag == "metronom")
                               loadConfigMetronom(xml);
                         else if (tag == "midiport")
-                              readConfigMidiPort(xml);
+                              readConfigMidiPort(xml, skipConfig);
                         else if (tag == "rcStop")
                               MusEGlobal::rcStopNote = xml.parseInt();
                         else if (tag == "rcEnable")
@@ -540,7 +557,7 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                            midiport configuration and VOLUME.
                         */
                         if (tag == "sequencer") {
-                              readSeqConfiguration(xml);
+                              readSeqConfiguration(xml, readOnlySequencer);
                               break;
                               }
                         else if (readOnlySequencer) {
@@ -1171,7 +1188,6 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                   if (dev) {
                         xml.strTag(level, "name",   dev->name());
                         
-                        // p3.3.38
                         //if(dynamic_cast<MidiJackDevice*>(dev))
                         if(dev->deviceType() != MidiDevice::ALSA_MIDI)
                           //xml.intTag(level, "type", MidiDevice::JACK_MIDI);
@@ -1181,6 +1197,9 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                         // openFlags was read before, but never written here.
                         //xml.intTag(level, "record", dev->rwFlags() & 0x2 ? 1 : 0);
                         xml.intTag(level, "openFlags", dev->openFlags());
+                        
+                        if(dev->deviceType() == MidiDevice::JACK_MIDI)
+                          xml.intTag(level, "rwFlags", dev->rwFlags());   // Need this. Jack midi devs are created by app.   p4.0.41 
                         }
                   mport->syncInfo().write(level, xml);
                   // write out registered controller for all channels
@@ -1347,7 +1366,6 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       xml.colorTag(level, "auxTrackBg",    MusEGlobal::config.auxTrackBg);
       xml.colorTag(level, "synthTrackBg",  MusEGlobal::config.synthTrackBg);
 
-      // Removed by Tim. p3.3.6
       //xml.intTag(level, "txSyncPort", txSyncPort);
       //xml.intTag(level, "rxSyncPort", rxSyncPort);
       xml.intTag(level, "mtctype", MusEGlobal::mtcType);
@@ -1428,13 +1446,9 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
       xml.intTag(level, "midiFilterCtrl3",  MusEGlobal::midiFilterCtrl3);
       xml.intTag(level, "midiFilterCtrl4",  MusEGlobal::midiFilterCtrl4);
 
-      // Removed by Tim. p3.3.6
-      
       //xml.intTag(level, "txDeviceId", txDeviceId);
       //xml.intTag(level, "rxDeviceId", rxDeviceId);
 
-      // Changed by Tim. p3.3.6
-      
       //xml.intTag(level, "txSyncPort", txSyncPort);
       /*
       // To keep old muse versions happy...
@@ -1455,8 +1469,6 @@ void MusE::writeConfiguration(int level, MusECore::Xml& xml) const
         }  
       }
       */
-      
-      // Added by Tim. p3.3.6
       
       //xml.tag(level++, "midiSyncInfo");
       //for(iMusECore::MidiDevice id = MusECore::MusEGlobal::midiDevices.begin(); id != MusECore::MusEGlobal::midiDevices.end(); ++id) 

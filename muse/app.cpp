@@ -35,6 +35,7 @@
 #include <QMdiArea>
 #include <QMdiSubWindow>
 #include <QSocketNotifier>  
+#include <QString>
 
 #include <iostream>
 
@@ -57,6 +58,7 @@
 #include "filedialog.h"
 #include "gconfig.h"
 #include "gui.h"
+#include "helper.h"
 #include "icons.h"
 #include "instruments/editinstrument.h"
 #include "listedit.h"
@@ -295,7 +297,7 @@ void addProject(const QString& name)
 //---------------------------------------------------------
 
 //MusE::MusE(int argc, char** argv) : QMainWindow(0, "mainwindow")
-MusE::MusE(int argc, char** argv) : QMainWindow()
+MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
       {
       // By T356. For LADSPA plugins in plugin.cpp
       // QWidgetFactory::addWidgetFactory( new PluginWidgetFactory ); ddskrjo
@@ -957,6 +959,11 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       transport = new MusEGui::Transport(this, "transport");
       bigtime   = 0;
 
+      MusEGlobal::song->blockSignals(false);
+      
+      // Load start song moved to main.cpp     p4.0.41 REMOVE Tim.
+      /*
+      
       //---------------------------------------------------
       //  load project
       //    if no songname entered on command line:
@@ -986,16 +993,20 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
             printf("starting with pre configured song %s\n", MusEGlobal::config.startSong.toLatin1().constData());
             name = MusEGlobal::config.startSong;
       }
-      MusEGlobal::song->blockSignals(false);
+      
       // loadProjectFile(name, useTemplate, true);  //commented out by flo: see below (*)
-
+      */
+      
       changeConfig(false);
       QSettings settings("MusE", "MusE-qt");
       restoreGeometry(settings.value("MusE/geometry").toByteArray());
       //restoreState(settings.value("MusE/windowState").toByteArray());
 
-      //MusEGlobal::song->update(); // commented out by flo: will be done by the below (*)
-      //updateWindowMenu();         // same here
+      MusEGlobal::song->update(); // commented out by flo: will be done by the below (*)
+      updateWindowMenu();         // same here
+
+      // Load start song moved to main.cpp     p4.0.41 REMOVE Tim.
+      /*
 
       // this is (*).
       // this is a really hackish workaround for the loading-on-startup problem.
@@ -1013,12 +1024,15 @@ MusE::MusE(int argc, char** argv) : QMainWindow()
       hackishSongOpenTimer->setSingleShot(true);
       connect(hackishSongOpenTimer, SIGNAL(timeout()), this, SLOT(hackishSongOpenTimerTimeout()));
       hackishSongOpenTimer->start();
+      */
       }
 
-void MusE::hackishSongOpenTimerTimeout()
-{
-  loadProjectFile(hackishSongOpenFilename, hackishSongOpenUseTemplate, true);
-}
+// Load start song moved to main.cpp     p4.0.41 REMOVE Tim.
+//void MusE::hackishSongOpenTimerTimeout()
+//{
+  ///loadProjectFile(hackishSongOpenFilename, hackishSongOpenUseTemplate, true);   
+  //loadProjectFile(hackishSongOpenFilename, hackishSongOpenUseTemplate, !hackishSongOpenUseTemplate);   
+//}
 
 MusE::~MusE()
 {
@@ -1033,6 +1047,44 @@ void MusE::setHeartBeat()
       MusEGlobal::heartBeatTimer->start(1000/MusEGlobal::config.guiRefresh);
       }
 
+//---------------------------------------------------
+//  loadDefaultSong
+//    if no songname entered on command line:
+//    startMode: 0  - load last song
+//               1  - load default template
+//               2  - load configured start song
+//---------------------------------------------------
+
+void MusE::loadDefaultSong(int argc, char** argv)
+{
+  QString name;
+  bool useTemplate = false;
+  if (argc >= 2)
+        name = argv[0];
+  else if (MusEGlobal::config.startMode == 0) {
+        if (argc < 2)
+              //name = projectList[0] ? *projectList[0] : QString("untitled");
+              name = projectList[0] ? *projectList[0] : MusEGui::getUniqueUntitledName();  // p4.0.40
+        else
+              name = argv[0];
+        printf("starting with selected song %s\n", MusEGlobal::config.startSong.toLatin1().constData());
+        }
+  else if (MusEGlobal::config.startMode == 1) {
+        printf("starting with default template\n");
+        name = MusEGlobal::museGlobalShare + QString("/templates/default.med");
+        useTemplate = true;
+        }
+  else if (MusEGlobal::config.startMode == 2) {
+        printf("starting with pre configured song %s\n", MusEGlobal::config.startSong.toLatin1().constData());
+        name = MusEGlobal::config.startSong;
+  }
+  //loadProjectFile(name, useTemplate, true);  
+  loadProjectFile(name, useTemplate, !useTemplate);  
+  
+  //MusEGlobal::song->update(); 
+  //updateWindowMenu();         
+}
+      
 //---------------------------------------------------------
 //   resetDevices
 //---------------------------------------------------------
@@ -1433,8 +1485,8 @@ void MusE::loadTemplate()
 
 bool MusE::save()
       {
-      //if (project.completeBaseName() == "untitled")    // FIXME p4.0.40 Must catch "untitled 1" "untitled 2" etc  
-      //if (MusEGui::projectTitleFromFilename(project.absoluteFilePath()) == "untitled")                      // REMOVE Tim.
+      //if (project.completeBaseName() == "untitled")    // p4.0.40 Must catch "untitled 1" "untitled 2" etc  
+      //if (MusEGui::projectTitleFromFilename(project.absoluteFilePath()) == "untitled")                      
       //if (MusEGui::projectTitleFromFilename(project.absoluteFilePath()) == MusEGui::getUniqueUntitledName())  
       ///if (project.absoluteFilePath() == MusEGui::getUniqueUntitledName())  
       if (MusEGlobal::museProject == MusEGlobal::museProjectInitPath )  

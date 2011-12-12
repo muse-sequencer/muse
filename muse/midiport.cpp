@@ -332,8 +332,8 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
       {
         MusECore::MidiDevice* md = MusEGlobal::midiPorts[pi].device();
         //if(md && !md->isSynti() && (md->rwFlags() & 1))
-        //if(md && (md->rwFlags() & 1))   
-        if(md && (md->rwFlags() & 1 || md->isSynti()) )  
+        if(md && (md->rwFlags() & 1))   
+        //if(md && (md->rwFlags() & 1 || md->isSynti()) )  // Revert. Hm, why synths? Only writeable ports.  p4.0.41
           break;
       }
       if(pi == MIDI_PORTS)
@@ -352,8 +352,12 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
 
       for (int i = 0; i < MIDI_PORTS; ++i) {
             MidiPort* port = &MusEGlobal::midiPorts[i];
+            MusECore::MidiDevice* md = port->device();
+            //if(md && !(md->rwFlags() & 1 || md->isSynti()) && (i != checkPort))  
+            if(md && !(md->rwFlags() & 1) && (i != checkPort))                     // Only writeable ports, or current one.
+              continue;
             name.sprintf("%d:%s", port->portno()+1, port->portname().toLatin1().constData());
-            if(port->device() || (i == checkPort))   
+            if(md || (i == checkPort))   
             {  
               act = p->addAction(name);
               act->setData(i);
@@ -361,7 +365,7 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
               act->setChecked(i == checkPort);
             }  
 
-            if(!port->device())
+            if(!md)
             {
               if(!subp)                  // No submenu yet? Create it now.
               {

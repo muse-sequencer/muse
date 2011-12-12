@@ -49,6 +49,7 @@ QString projectTitleFromFilename(QString filename);
 QString projectPathFromFilename(QString filename);
 QString projectExtensionFromFilename(QString filename);
 QString getUniqueUntitledName();
+void populateMidiPorts();
 } 
 
 #endif

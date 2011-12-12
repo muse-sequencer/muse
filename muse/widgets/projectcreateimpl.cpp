@@ -151,7 +151,7 @@ void ProjectCreateImpl::updateProjectName()
   //bool is_new = (MusEGlobal::museProject == MusEGlobal::museProjectInitPath) && 
                 MusEGlobal::config.projectStoreInFolder && 
                 (templateCheckBox->isChecked() ? overrideTemplDirPath.isEmpty() : overrideDirPath.isEmpty());  
-  bool is_template = is_new && dpath.startsWith(MusEGlobal::configPath + "/templates") && templateCheckBox->isChecked();
+  //bool is_template = is_new && dpath.startsWith(MusEGlobal::configPath + "/templates") && templateCheckBox->isChecked();
   if(!is_new && createFolderCheckbox->isChecked() && !templateCheckBox->isChecked() && 
      (templateCheckBox->isChecked() ? overrideTemplDirPath.isEmpty() : overrideDirPath.isEmpty()))
     proj_dir.cdUp();

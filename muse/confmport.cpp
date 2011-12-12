@@ -1161,7 +1161,8 @@ MPConfig::MPConfig(QWidget* parent)
       //popup      = 0;
       instrPopup = 0;
       defpup = 0;
-      _showAliases = -1; // 0: Show first aliases, if available. Nah, stick with -1: none at first.
+      //_showAliases = -1; // 0: Show first aliases, if available. Nah, stick with -1: none at first.
+      _showAliases = 0; // 0: Show first aliases, if available. 
       
       QStringList columnnames;
       columnnames << tr("Port")

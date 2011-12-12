@@ -45,6 +45,7 @@
 #include "audiodev.h"
 #include "gconfig.h"
 #include "globals.h"
+#include "helper.h"
 #include "icons.h"
 #include "sync.h"
 #include "functions.h"
@@ -615,6 +616,22 @@ int main(int argc, char* argv[])
         }
       }
 #endif /* HAVE_LASH */
+
+      //--------------------------------------------------
+      // Auto-fill the midi ports, if appropriate.         p4.0.41
+      //--------------------------------------------------
+      if(argc < 2 && MusEGlobal::config.startMode == 1)
+      {  
+        MusEGui::populateMidiPorts();
+        //MusEGlobal::muse->changeConfig(true);     // save configuration file
+        //MusEGlobal::song->update();
+      }
+
+      //--------------------------------------------------
+      // Load the default song.                            
+      //--------------------------------------------------
+      MusEGlobal::muse->loadDefaultSong(argc, &argv[optind]);    // p4.0.41
+      
       QTimer::singleShot(100, MusEGlobal::muse, SLOT(showDidYouKnowDialog()));
       
       int rv = app.exec();

@@ -1631,6 +1631,107 @@ int JackAudioDevice::frameDelay() const
 #endif
 
 //---------------------------------------------------------
+//   getJackPorts
+//---------------------------------------------------------
+
+void JackAudioDevice::getJackPorts(const char** ports, std::list<QString>& name_list, bool midi, bool physical, int aliases)
+      {
+      if (JACK_DEBUG)
+            printf("JackAudioDevice::getJackPorts()\n");
+      //std::list<QString> clientList;
+      //if(!checkJackClient(_client)) return clientList;
+      //if(!checkJackClient(_client)) return;
+      QString qname;
+      //const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
+      //const char** ports = jack_get_ports(_client, 0, type, JackPortIsInput);
+      //const char** ports = jack_get_ports(_client, 0, type, jflags);
+      
+      QString cname(jack_get_client_name(_client));
+      
+      for (const char** p = ports; p && *p; ++p) {
+            jack_port_t* port = jack_port_by_name(_client, *p);
+            //int flags = jack_port_flags(port);
+            //if (!(flags & JackPortIsInput))
+            //      continue;
+            //char buffer[128];
+            
+            int port_flags = jack_port_flags(port);
+            //printf("JackAudioDevice::getJackPorts port: %s flags: %d\n", *p, port_flags); 
+
+            // Ignore our own client ports.
+            if(jack_port_is_mine(_client, port))
+            {
+              if(MusEGlobal::debugMsg)
+                printf("JackAudioDevice::getJackPorts ignoring own port: %s\n", *p);
+              continue;         
+            }
+            
+            int nsz = jack_port_name_size();
+            char buffer[nsz];
+
+            bool mthrough = false;
+            
+            if(midi)
+            {  
+              strncpy(buffer, *p, nsz);
+              char a2[nsz]; 
+              char* al[2];
+              al[0] = buffer;
+              al[1] = a2;
+              int na = jack_port_get_aliases(port, al);
+              if(na >= 1)
+              {
+                qname = QString(al[0]);
+                    //printf("Checking port name for: %s\n", (QString("alsa_pcm:") + cname + QString("/")).toLatin1().constData());  
+                // Ignore our own ALSA client!
+                if(qname.startsWith(QString("alsa_pcm:") + cname + QString("/")))
+                  continue;
+                // Put Midi Through after all others.
+                mthrough = qname.startsWith(QString("alsa_pcm:Midi-Through/"));  
+                //if((physical && mthrough) || (!physical && !mthrough))
+                //if(physical && mthrough)
+                //  continue;
+              }    
+            }  
+            // Put physical/terminal ports before others.
+            bool is_phys = (port_flags & (JackPortIsTerminal | JackPortIsPhysical)) && !mthrough;
+            if((physical && !is_phys) || (!physical && is_phys))
+              continue;
+            
+
+            strncpy(buffer, *p, nsz);
+            if((aliases == 0) || (aliases == 1)) 
+            {
+              char a2[nsz]; 
+              char* al[2];
+              al[0] = buffer;
+              al[1] = a2;
+              int na = jack_port_get_aliases(port, al);  
+              int a = aliases;
+              if(a >= na)
+              {
+                a = na;
+                if(a > 0)
+                  a--;
+              }    
+              qname = QString(al[a]);
+            }
+            else
+              qname = QString(buffer);
+            
+            //clientList.push_back(QString(buffer));
+            name_list.push_back(qname);
+            }
+            
+      // p3.3.37
+      //if(ports)
+        //free(ports);      
+      //  jack_free(ports);  // p4.0.29
+      
+      //return clientList;
+      }
+      
+//---------------------------------------------------------
 //   outputPorts
 //---------------------------------------------------------
 
@@ -1640,9 +1741,11 @@ std::list<QString> JackAudioDevice::outputPorts(bool midi, int aliases)
             printf("JackAudioDevice::outputPorts()\n");
       std::list<QString> clientList;
       if(!checkJackClient(_client)) return clientList;
-      QString qname;
       const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
       const char** ports = jack_get_ports(_client, 0, type, JackPortIsOutput);
+      
+      /*
+      QString qname;
       for (const char** p = ports; p && *p; ++p) {
             jack_port_t* port = jack_port_by_name(_client, *p);
             //int flags = jack_port_flags(port);
@@ -1694,12 +1797,15 @@ std::list<QString> JackAudioDevice::outputPorts(bool midi, int aliases)
             //clientList.push_back(QString(buffer));
             clientList.push_back(qname);
             }
-            
-      // p3.3.37
-      if(ports)
-        //free(ports);      
-        jack_free(ports);  // p4.0.29
+      */
       
+      if(ports)
+      {
+        getJackPorts(ports, clientList, midi, true, aliases);   // Get physical ports first.
+        getJackPorts(ports, clientList, midi, false, aliases);  // Get non-physical ports last.
+        jack_free(ports);  
+      }
+        
       return clientList;
       }
 
@@ -1711,11 +1817,14 @@ std::list<QString> JackAudioDevice::inputPorts(bool midi, int aliases)
       {
       if (JACK_DEBUG)
             printf("JackAudioDevice::inputPorts()\n");
+      
       std::list<QString> clientList;
       if(!checkJackClient(_client)) return clientList;
-      QString qname;
       const char* type = midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE;
       const char** ports = jack_get_ports(_client, 0, type, JackPortIsInput);
+      
+      /*
+      QString qname;
       for (const char** p = ports; p && *p; ++p) {
             jack_port_t* port = jack_port_by_name(_client, *p);
             //int flags = jack_port_flags(port);
@@ -1767,12 +1876,15 @@ std::list<QString> JackAudioDevice::inputPorts(bool midi, int aliases)
             //clientList.push_back(QString(buffer));
             clientList.push_back(qname);
             }
-            
-      // p3.3.37
-      if(ports)
-        //free(ports);      
-        jack_free(ports);  // p4.0.29
+      */
       
+      if(ports)
+      {
+        getJackPorts(ports, clientList, midi, true, aliases);   // Get physical ports first.
+        getJackPorts(ports, clientList, midi, false, aliases);  // Get non-physical ports last.
+        jack_free(ports);  
+      }
+        
       return clientList;
       }
 
