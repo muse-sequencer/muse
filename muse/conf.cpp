@@ -234,7 +234,7 @@ static void readConfigMidiPort(Xml& xml, bool skipConfig)
       // FIXME: TODO: Make this user-configurable!
       QString instrument("GM"); 
       
-      int rwFlags = 0;
+      int rwFlags = 3;
       int openFlags = 1;
       int dic = -1;   
       int doc = -1;
