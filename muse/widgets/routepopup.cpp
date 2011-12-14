@@ -635,7 +635,7 @@ int RoutePopupMenu::addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id
     if(md->isSynti())
       continue;
           
-   MusECore::RouteList* rl = isOutput ? t->outRoutes() : t->inRoutes();
+    MusECore::RouteList* rl = isOutput ? t->outRoutes() : t->inRoutes();
     
     PopupMenu* subp = new PopupMenu(pup, true);
     subp->setTitle(md->name()); 

@@ -1095,7 +1095,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
 
 void AudioTrack::readVolume(Xml& xml)
       {
-      int ch = 0;
+      //int ch = 0;
       for (;;) {
             Xml::Token token = xml.parse();
             switch (token) {
@@ -1110,7 +1110,8 @@ void AudioTrack::readVolume(Xml& xml)
                         break;
                   case Xml::Attribut:
                         if (xml.s1() == "ch")
-                              ch = xml.s2().toInt();
+                              //ch = xml.s2().toInt();
+                              xml.s2();
                         break;
                   case Xml::TagEnd:
                         if (xml.s1() == "volume")
