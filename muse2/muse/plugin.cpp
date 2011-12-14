@@ -1573,65 +1573,60 @@ bool Pipeline::nativeGuiVisible(int idx)
 
 //---------------------------------------------------------
 //   apply
+//   If ports is 0, just process controllers only, not audio (do not 'run').
 //---------------------------------------------------------
 
-//void Pipeline::apply(int ports, unsigned long nframes, float** buffer1)
 void Pipeline::apply(unsigned long ports, unsigned long nframes, float** buffer1)
 {
       // prepare a second set of buffers in case a plugin is not
       // capable of inPlace processing
-
-      // Removed by Tim. p3.3.15
       //float* buffer2[ports];
       //float data[nframes * ports];
       //for (int i = 0; i < ports; ++i)
       //      buffer2[i] = data + i * nframes;
 
-      // p3.3.41
-      //fprintf(stderr, "Pipeline::apply data: nframes:%lu %e %e %e %e\n", nframes, buffer1[0][0], buffer1[0][1], buffer1[0][2], buffer1[0][3]);
+      //fprintf(stderr, "Pipeline::apply data: nframes:%lu %e %e %e %e\n", nframes, buffer1[0][0], buffer1[0][1], buffer1[0][2], buffer1[0][3]);  
       
       bool swap = false;
 
       for (iPluginI ip = begin(); ip != end(); ++ip) {
             PluginI* p = *ip;
-            if (p && p->on()) {
-                  if (p->inPlaceCapable()) 
-                  {
-                        if (swap)
-                              //p->connect(ports, buffer2, buffer2);
-                              //p->connect(ports, buffer, buffer);
-                              p->apply(nframes, ports, buffer, buffer);     // p4.0.21
-                        else
-                              //p->connect(ports, buffer1, buffer1);
-                              p->apply(nframes, ports, buffer1, buffer1);   //
-                  }
-                  else 
-                  {
-                        if (swap)
-                              //p->connect(ports, buffer2, buffer1);
-                              //p->connect(ports, buffer, buffer1);
-                              p->apply(nframes, ports, buffer, buffer1);    //
-                        else
-                              //p->connect(ports, buffer1, buffer2);
-                              //p->connect(ports, buffer1, buffer);
-                              p->apply(nframes, ports, buffer1, buffer);    //
-                        swap = !swap;
-                  }
-                  //p->apply(nframes);                                      // Rem. p4.0.21
-                  }
+            
+            if(p)
+            {
+              //if (p && p->on()) {
+              if (p->on()) 
+              {
+                //fprintf(stderr, "Pipeline::apply PluginI:%p on:%d\n", p, p->on()); 
+                if (p->inPlaceCapable()) 
+                {
+                      if (swap)
+                            p->apply(nframes, ports, buffer, buffer);     
+                      else
+                            p->apply(nframes, ports, buffer1, buffer1);   
+                }
+                else 
+                {
+                      if (swap)
+                            p->apply(nframes, ports, buffer, buffer1);    
+                      else
+                            p->apply(nframes, ports, buffer1, buffer);    
+                      swap = !swap;
+                }
+              }
+              else
+              {
+                p->apply(nframes, 0, 0, 0); // Do not process (run) audio, process controllers only.    
+              }
             }
-      if (swap) 
+      }
+      if (ports != 0 && swap) 
       {
-            //for (int i = 0; i < ports; ++i)
-            for (unsigned long i = 0; i < ports; ++i)    // p4.0.21
+            for (unsigned long i = 0; i < ports; ++i)    
                   //memcpy(buffer1[i], buffer2[i], sizeof(float) * nframes);
                   //memcpy(buffer1[i], buffer[i], sizeof(float) * nframes);
                   AL::dsp->cpy(buffer1[i], buffer[i], nframes);
       }
-      
-      // p3.3.41
-      //fprintf(stderr, "Pipeline::apply after data: nframes:%lu %e %e %e %e\n", nframes, buffer1[0][0], buffer1[0][1], buffer1[0][2], buffer1[0][3]);
-      
 }
 
 //---------------------------------------------------------
@@ -2439,6 +2434,7 @@ void PluginI::showGui()
       if (_plugin) {
             if (_gui == 0)
                     makeGui();
+            _gui->setWindowTitle(titlePrefix() + name());
             if (_gui->isVisible())
                     _gui->hide();
             else
@@ -2558,7 +2554,17 @@ void PluginI::enable2AllControllers(bool v)
 }
 
 //---------------------------------------------------------
+//   titlePrefix
+//---------------------------------------------------------
+
+QString PluginI::titlePrefix() const    
+{ 
+  return _track->name() + QString(": "); 
+}
+
+//---------------------------------------------------------
 //   apply
+//   If ports is 0, just process controllers only, not audio (do not 'run').
 //---------------------------------------------------------
 
 /*
@@ -2653,7 +2659,6 @@ void PluginI::apply(unsigned long n)
 */
       
 #if 1
-// p4.0.21
 void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float** bufOut)
 {
       // Process control value changes.
@@ -2769,7 +2774,6 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
           //controls[v.idx].val = v.value;
           controls[v.idx].tmpVal = v.value;
           
-          /*
           // Need to update the automation value, otherwise it overwrites later with the last MusEGlobal::automation value.
           if(_track && _id != -1)
           {
@@ -2795,7 +2799,6 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
             //  enableController(k, false);
             //_track->recordAutomation(id, v.value);
           }  
-          */
         }
 
         // Now update the actual values from the temporary values...
@@ -2813,20 +2816,23 @@ void PluginI::apply(unsigned long n, unsigned long ports, float** bufIn, float**
           nsamp = n - sample; 
         
         //printf("PluginI::apply ports:%lu n:%lu frame:%lu sample:%lu nsamp:%lu syncFrame:%lu loopcount:%d\n", 
-        //      ports, n, frame, sample, nsamp, syncFrame, loopcount);   // REMOVE Tim.
+        //      ports, n, frame, sample, nsamp, syncFrame, loopcount);   
         
         // Don't allow zero-length runs. This could/should be checked in the control loop instead.
         // Note this means it is still possible to get stuck in the top loop (at least for a while).
         if(nsamp == 0)
           continue;
           
-        connect(ports, sample, bufIn, bufOut);
+        if(ports != 0)
+        {  
+          connect(ports, sample, bufIn, bufOut);
         
-        for(int i = 0; i < instances; ++i)
-        {
-          //fprintf(stderr, "PluginI::apply handle %d\n", i);
-          _plugin->apply(handle[i], nsamp);
-        }      
+          for(int i = 0; i < instances; ++i)
+          {
+            //fprintf(stderr, "PluginI::apply handle %d\n", i);
+            _plugin->apply(handle[i], nsamp);
+          }      
+        }
         
         sample += nsamp;
         loopcount++;       // REMOVE Tim.
@@ -3444,7 +3450,8 @@ PluginGui::PluginGui(MusECore::PluginIBase* p)
       params = 0;
       paramsOut = 0;
       plugin = p;
-      setWindowTitle(plugin->name());
+      //setWindowTitle(plugin->name());
+      setWindowTitle(plugin->titlePrefix() + plugin->name());
 
       QToolBar* tools = addToolBar(tr("File Buttons"));
 
@@ -4106,16 +4113,18 @@ void PluginGui::save()
 
 void PluginGui::bypassToggled(bool val)
       {
+      setWindowTitle(plugin->titlePrefix() + plugin->name());
       plugin->setOn(val);
       MusEGlobal::song->update(SC_ROUTE);
       }
 
 //---------------------------------------------------------
-//   songChanged
+//   setOn
 //---------------------------------------------------------
 
 void PluginGui::setOn(bool val)
       {
+      setWindowTitle(plugin->titlePrefix() + plugin->name());
       onOff->blockSignals(true);
       onOff->setChecked(val);
       onOff->blockSignals(false);
@@ -4208,11 +4217,11 @@ void PluginGui::updateControls()
        }
 
 
-      if(!MusEGlobal::automation)
-        return;
-      AutomationType at = plugin->track()->automationType();
-      if(at == AUTO_OFF)
-        return;
+      //if(!MusEGlobal::automation)
+      //  return;
+      //AutomationType at = plugin->track()->automationType();
+      //if(at == AUTO_OFF)
+      //  return;
       if (params) {
             //for (int i = 0; i < plugin->parameters(); ++i) {
             for (unsigned long i = 0; i < plugin->parameters(); ++i) {      // p4.0.21

@@ -73,7 +73,6 @@ set (FILES_TO_TRANSLATE
 set_target_properties ( fluid
       PROPERTIES PREFIX ""
       COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
-      # LINK_FLAGS "${FLUIDSYN_LDFLAGS}"   # "-lfluidsynth"
       )
 
 ##
@@ -82,11 +81,6 @@ set_target_properties ( fluid
 target_link_libraries(fluid
       synti
       ${QT_LIBRARIES}
-      # Can't do this. FLUIDSYN_LIBRARIES = fluidsynth, which is the name 
-      # of our fluidsynth.so shared synthesizer library.
-      # This caused ../fluidsynth/fluidsynth.so to appear in the link line.
-      # Nov 1, 2011. fluidsynth module renamed fluid_synth to avoid bizarre new conflict on Ubuntu 11.10, seems due to LINK_FLAGS line.
-      # Got undefined symbol fluid_synth_cc, in fluid, at startup at runtime.    So we can enable this now. 
       ${FLUIDSYN_LIBRARIES}
       )
 

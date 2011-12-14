@@ -27,6 +27,7 @@
 #include "xml.h"
 #include "song.h"
 #include "globals.h"
+#include "app.h"
 #include "audio.h"
 //#include "posedit.h"
 //#include "sigedit.h"
@@ -286,6 +287,7 @@ LMaster::LMaster()
       connect(keyButton, SIGNAL(clicked()), SLOT(insertKey()));
 
       initShortcuts();
+      MusEGlobal::muse->topwinMenuInited(this);
       }
 
 //---------------------------------------------------------

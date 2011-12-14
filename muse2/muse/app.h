@@ -43,6 +43,7 @@ class QToolBar;
 class QToolButton;
 class QProgressDialog;
 class QMdiArea;
+class QTimer;
 
 namespace MusECore {
 class AudioOutput;
@@ -91,7 +92,7 @@ class TopWin;
 class Transport;
 class VisibleTracks;
 
-#define MENU_ADD_SYNTH_ID_BASE 0x1000
+#define MENU_ADD_SYNTH_ID_BASE 0x8000
 
 
 //---------------------------------------------------------
@@ -128,6 +129,7 @@ class MusE : public QMainWindow
       
       TopWin* activeTopWin;
       TopWin* currentMenuSharingTopwin;
+      TopWin* waitingForTopwin;
       
       std::list<QToolBar*> requiredToolbars; //always displayed
       std::list<QToolBar*> optionalToolbars; //only displayed when no toolbar-sharing window is active
@@ -213,6 +215,10 @@ class MusE : public QMainWindow
       MidiTransformerDialog* midiTransformerDialog;
       QMenu* openRecent;
       
+      //QTimer* hackishSongOpenTimer;
+      //QString hackishSongOpenFilename;
+      //bool hackishSongOpenUseTemplate;
+
       bool readMidi(FILE*);
       void read(MusECore::Xml& xml, bool skipConfig, bool isTemplate);
       void processTrack(MusECore::MidiTrack* track);
@@ -327,6 +333,8 @@ class MusE : public QMainWindow
       void arrangeSubWindowsColumns();
       void tileSubWindows();
 
+      //void hackishSongOpenTimerTimeout();
+      
    public slots:
       bool saveAs();
       void bounceToFile(MusECore::AudioOutput* ao = 0);
@@ -371,12 +379,14 @@ class MusE : public QMainWindow
       
       void addMdiSubWindow(QMdiSubWindow*);
       void shareMenuAndToolbarChanged(MusEGui::TopWin*, bool);
+      void topwinMenuInited(MusEGui::TopWin*);
 
       void updateWindowMenu();
 
    public:
       MusE(int argc, char** argv);
       ~MusE();
+      void loadDefaultSong(int argc, char** argv);
       Arranger* arranger() const { return _arranger; }
       QRect configGeometryMain;
       QProgressDialog *progress;
@@ -384,10 +394,13 @@ class MusE : public QMainWindow
       void kbAccel(int);
       void changeConfig(bool writeFlag);
       void seqStop();
-      bool seqStart();
+      bool seqStart();  
       void setHeartBeat();
       void importController(int, MusECore::MidiPort*, int);
       QString projectName() { return project.fileName(); }
+      QString projectTitle() const;
+      QString projectPath() const;
+      QString projectExtension() const;
       QWidget* mixer1Window();
       QWidget* mixer2Window();
       QWidget* transportWindow();

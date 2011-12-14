@@ -37,6 +37,7 @@
 #include "al/sig.h"
 #include "undo.h"
 #include "track.h"
+#include "synth.h"
 
 class QAction;
 class QFont;
@@ -362,7 +363,7 @@ class Song : public QObject {
       //   Configuration
       //-----------------------------------------
 
-      SynthI* createSynthI(const QString& sclass, const QString& label = QString(), Track* insertAt = 0);
+      SynthI* createSynthI(const QString& sclass, const QString& label = QString(), Synth::Type type = Synth::SYNTH_TYPE_END, Track* insertAt = 0);
       
       void rescanAlsaPorts();
 
@@ -410,7 +411,7 @@ class Song : public QObject {
       void setQuantize(bool val);
       void panic();
       void seqSignal(int fd);
-      Track* addTrack(Track::TrackType type, Track* insertAt = 0);
+      Track* addTrack(Undo& operations, Track::TrackType type, Track* insertAt = 0);
       Track* addNewTrack(QAction* action, Track* insertAt = 0);
       QString getScriptPath(int id, bool delivered);
       void populateScriptMenu(QMenu* menuPlugins, QObject* receiver);

@@ -44,6 +44,7 @@
 #include "synth.h"
 #include "song.h"
 #include "gconfig.h"
+#include <lo/lo_osc_types.h>
 
 namespace MusEGlobal {
 MusECore::MidiSeq* midiSeq;
@@ -53,6 +54,12 @@ volatile bool midiBusy=false;
 namespace MusECore {
 
 int MidiSeq::ticker = 0;
+
+void initMidiSequencer()   
+{
+      //MusEGlobal::midiSeq       = new MidiSeq(MusEGlobal::realTimeScheduling ? MusEGlobal::realTimePriority : 0, "Midi");
+      MusEGlobal::midiSeq       = new MidiSeq("Midi");
+}
 
 //---------------------------------------------------------
 //   readMsg
@@ -819,16 +826,16 @@ void MidiSeq::msgMsg(int id)
 
 void MidiSeq::msgSetMidiDevice(MidiPort* port, MidiDevice* device)
       {
-      MusECore::AudioMsg msg;
-      msg.id = MusECore::SEQM_IDLE;
-      msg.a  = true;
-      Thread::sendMsg(&msg);
+        MusECore::AudioMsg msg;
+        msg.id = MusECore::SEQM_IDLE;
+        msg.a  = true;
+        Thread::sendMsg(&msg);
+        
+        port->setMidiDevice(device);
 
-      port->setMidiDevice(device);
-
-      msg.id = MusECore::SEQM_IDLE;
-      msg.a  = false;
-      Thread::sendMsg(&msg);
+        msg.id = MusECore::SEQM_IDLE;
+        msg.a  = false;
+        Thread::sendMsg(&msg);
       }
 
 // This does not appear to be used anymore. Was called in Audio::process1, now Audio::processMidi is called directly. p4.0.15 Tim.

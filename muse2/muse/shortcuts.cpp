@@ -66,7 +66,7 @@ void initShortCuts()
       defShrt(SHRT_COPY,          Qt::CTRL + Qt::Key_C, QT_TRANSLATE_NOOP("shortcuts", "Edit: Copy"), INVIS_SHRT, "copy");
       defShrt(SHRT_COPY_RANGE,    Qt::CTRL + Qt::SHIFT + Qt::Key_C, QT_TRANSLATE_NOOP("shortcuts", "Edit: Copy in range"), GLOBAL_SHRT,    "copy_range");
       defShrt(SHRT_UNDO,          Qt::CTRL + Qt::Key_Z, QT_TRANSLATE_NOOP("shortcuts", "Edit: Undo"), INVIS_SHRT, "undo");
-      defShrt(SHRT_REDO,          Qt::CTRL + Qt::Key_Y, QT_TRANSLATE_NOOP("shortcuts", "Edit: Redo"), INVIS_SHRT, "redo");
+      defShrt(SHRT_REDO,          Qt::CTRL + Qt::SHIFT + Qt::Key_Z, QT_TRANSLATE_NOOP("shortcuts", "Edit: Redo"), INVIS_SHRT, "redo");
       defShrt(SHRT_CUT,           Qt::CTRL + Qt::Key_X, QT_TRANSLATE_NOOP("shortcuts", "Edit: Cut"), INVIS_SHRT, "cut");
       defShrt(SHRT_PASTE,         Qt::CTRL + Qt::Key_V, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste"), INVIS_SHRT, "paste");
       defShrt(SHRT_PASTE_DIALOG,  Qt::CTRL + Qt::SHIFT + Qt::Key_V, QT_TRANSLATE_NOOP("shortcuts", "Edit: Paste (with dialog)"), GLOBAL_SHRT, "paste_dialog");

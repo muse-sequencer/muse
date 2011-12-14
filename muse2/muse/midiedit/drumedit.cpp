@@ -53,6 +53,7 @@
 #include "vscale.h"
 #include "swidget.h"
 #include "globals.h"
+#include "app.h"
 #include "icons.h"
 #include "filedialog.h"
 #include "drummap.h"
@@ -535,6 +536,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       
       
       initTopwinState();
+      MusEGlobal::muse->topwinMenuInited(this);
       }
 
 //---------------------------------------------------------

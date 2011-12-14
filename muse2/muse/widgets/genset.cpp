@@ -4,6 +4,7 @@
 //  $Id: genset.cpp,v 1.7.2.8 2009/12/01 03:52:40 terminator356 Exp $
 //
 //  (C) Copyright 2001-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -24,8 +25,10 @@
 #include <stdio.h>
 
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QRect>
 #include <QShowEvent>
+#include <QString>
 
 #include "genset.h"
 #include "app.h"
@@ -33,6 +36,7 @@
 #include "midiseq.h"
 #include "globals.h"
 #include "icons.h"
+#include "helper.h"
 
 namespace MusEGui {
 
@@ -93,12 +97,6 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
                   }
             }
 
-      userInstrumentsPath->setText(MusEGlobal::config.userInstrumentsDir);
-      selectInstrumentsDirButton->setIcon(*openIcon);
-      defaultInstrumentsDirButton->setIcon(*undoIcon);
-      connect(selectInstrumentsDirButton, SIGNAL(clicked()), SLOT(selectInstrumentsPath()));
-      connect(defaultInstrumentsDirButton, SIGNAL(clicked()), SLOT(defaultInstrumentsPath()));
-
       guiRefreshSelect->setValue(MusEGlobal::config.guiRefresh);
       minSliderSelect->setValue(int(MusEGlobal::config.minSlider));
       minMeterSelect->setValue(MusEGlobal::config.minMeter);
@@ -119,6 +117,9 @@ GlobalSettingsConfig::GlobalSettingsConfig(QWidget* parent)
 Period affects midi playback resolution. 
 Shorter periods are desirable.</string>
             </property>                       */
+
+      projDirEntry->setText(MusEGlobal::config.projectBaseFolder);
+      projDirOpenToolButton->setIcon(*openIcon);
       
       startSongEntry->setText(MusEGlobal::config.startSong);
       startSongGroup->button(MusEGlobal::config.startMode)->setChecked(true);
@@ -171,9 +172,14 @@ Shorter periods are desirable.</string>
       popsDefStayOpenCheckBox->setChecked(MusEGlobal::config.popupsDefaultStayOpen);
       lmbDecreasesCheckBox->setChecked(MusEGlobal::config.leftMouseButtonCanDecrease);
       rangeMarkerWithoutMMBCheckBox->setChecked(MusEGlobal::config.rangeMarkerWithoutMMB);
-      
+
+      addHiddenCheckBox->setChecked(MusEGlobal::config.addHiddenTracks);
+      unhideTracksCheckBox->setChecked(MusEGlobal::config.unhideTracks);
+
       //updateSettings();    // TESTING
       
+      connect(projDirOpenToolButton, SIGNAL(clicked()), SLOT(browseProjDir()));
+
       connect(applyButton, SIGNAL(clicked()), SLOT(apply()));
       connect(okButton, SIGNAL(clicked()), SLOT(ok()));
       connect(cancelButton, SIGNAL(clicked()), SLOT(cancel()));
@@ -258,6 +264,8 @@ void GlobalSettingsConfig::updateSettings()
       //dummyAudioRealRate->setText(dad ? QString().setNum(sampleRate) : "---");
       //dummyAudioRealRate->setText(QString().setNum(sampleRate));   // Not used any more. p4.0.20 
       
+      projDirEntry->setText(MusEGlobal::config.projectBaseFolder);
+
       startSongEntry->setText(MusEGlobal::config.startSong);
       startSongGroup->button(MusEGlobal::config.startMode)->setChecked(true);
 
@@ -310,6 +318,9 @@ void GlobalSettingsConfig::updateSettings()
       lmbDecreasesCheckBox->setChecked(MusEGlobal::config.leftMouseButtonCanDecrease);
       rangeMarkerWithoutMMBCheckBox->setChecked(MusEGlobal::config.rangeMarkerWithoutMMB);
       
+      addHiddenCheckBox->setChecked(MusEGlobal::config.addHiddenTracks);
+      unhideTracksCheckBox->setChecked(MusEGlobal::config.unhideTracks);
+
       updateMdiSettings();
 }
 
@@ -350,7 +361,9 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.useOutputLimiter = outputLimiterCheckBox->isChecked();
       MusEGlobal::config.vstInPlace  = vstInPlaceCheckBox->isChecked();
       MusEGlobal::config.rtcTicks    = rtcResolutions[rtcticks];
-      MusEGlobal::config.userInstrumentsDir = userInstrumentsPath->text();
+      
+      MusEGlobal::config.projectBaseFolder = projDirEntry->text();
+      
       MusEGlobal::config.startSong   = startSongEntry->text();
       MusEGlobal::config.startMode   = startSongGroup->checkedId();
       int das = dummyAudioSize->currentIndex();
@@ -408,6 +421,9 @@ void GlobalSettingsConfig::apply()
       MusEGlobal::config.leftMouseButtonCanDecrease = lmbDecreasesCheckBox->isChecked();
       MusEGlobal::config.rangeMarkerWithoutMMB = rangeMarkerWithoutMMBCheckBox->isChecked();
 
+      MusEGlobal::config.addHiddenTracks = addHiddenCheckBox->isChecked();
+      MusEGlobal::config.unhideTracks = unhideTracksCheckBox->isChecked();
+
       //MusEGlobal::muse->showMixer(MusEGlobal::config.mixerVisible);
       MusEGlobal::muse->showMixer1(MusEGlobal::config.mixer1Visible);
       MusEGlobal::muse->showMixer2(MusEGlobal::config.mixer2Visible);
@@ -441,8 +457,6 @@ void GlobalSettingsConfig::apply()
             }
       MusEGlobal::muse->resize(MusEGlobal::config.geometryMain.size());
       MusEGlobal::muse->move(MusEGlobal::config.geometryMain.topLeft());
-
-      MusEGlobal::museUserInstruments = MusEGlobal::config.userInstrumentsDir;
 
       MusEGlobal::muse->setHeartBeat();        // set guiRefresh
       MusEGlobal::midiSeq->msgSetRtc();        // set midi tick rate
@@ -546,21 +560,6 @@ void GlobalSettingsConfig::transportCurrent()
       transportY->setValue(r.y());
       }
 
-void GlobalSettingsConfig::selectInstrumentsPath()
-      {
-      QString dir = QFileDialog::getExistingDirectory(this, 
-                                                      tr("Selects instruments directory"), 
-                                                      MusEGlobal::config.userInstrumentsDir);
-      userInstrumentsPath->setText(dir);
-      }
-
-void GlobalSettingsConfig::defaultInstrumentsPath()
-      {
-      QString dir = MusEGlobal::configPath + "/instruments";
-      userInstrumentsPath->setText(dir);
-      }
-
-
 void GlobalSettingsConfig::traditionalPreset()
 {
   for (std::list<MdiSettings*>::iterator it = mdisettings.begin(); it!=mdisettings.end(); it++)
@@ -596,6 +595,13 @@ void GlobalSettingsConfig::borlandPreset()
   }
   
   updateMdiSettings();
+}
+
+void GlobalSettingsConfig::browseProjDir()
+{
+  QString dir = MusEGui::browseProjectFolder(this);
+  if(!dir.isEmpty())
+    projDirEntry->setText(dir);
 }
 
 } // namespace MusEGui

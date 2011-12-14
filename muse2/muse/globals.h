@@ -94,6 +94,7 @@ extern const char* midi_file_pattern[];
 extern const char* midi_file_save_pattern[];
 extern const char* med_file_pattern[];
 extern const char* med_file_save_pattern[];
+extern const char* project_create_file_save_pattern[];
 extern const char* image_file_pattern[];
 //extern const char* ctrl_file_pattern[];
 extern const char* part_file_pattern[];

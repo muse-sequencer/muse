@@ -50,7 +50,7 @@ bool TopWin::initInited=false;
 TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlags f)
                  : QMainWindow(parent, f)
 {
-        _isDeleting = false;
+	_isDeleting = false;
 	if (initInited==false)
 		initConfiguration();
 
@@ -78,7 +78,10 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	mdisubwin=NULL;
 	_sharesToolsAndMenu=_defaultSubwin[_type] ? _sharesWhenSubwin[_type] : _sharesWhenFree[_type];
 	if (_defaultSubwin[_type])
+	{
 		setIsMdiWin(true);
+		_savedToolbarState=_toolbarNonsharedInit[_type];
+	}
 
 	if (_sharesToolsAndMenu)
 		menuBar()->hide();
@@ -125,7 +128,11 @@ void TopWin::readStatus(MusECore::Xml& xml)
 					if (!sharesToolsAndMenu())
 					{
 						if (!restoreState(QByteArray::fromHex(xml.parse1().toAscii())))
-						 fprintf(stderr,"ERROR: couldn't restore toolbars. however, this is not really a problem.\n");
+						{
+							fprintf(stderr,"ERROR: couldn't restore toolbars. trying default configuration...\n");
+							if (!restoreState(_toolbarNonsharedInit[_type]))
+								fprintf(stderr,"ERROR: couldn't restore default toolbars. this is not really a problem.\n");
+						}
 					}
 					else
 					{
@@ -564,5 +571,16 @@ void TopWin::resize(const QSize& s)
 {
 	resize(s.width(), s.height());
 }
+
+TopWin* ToplevelList::findType(TopWin::ToplevelType type) const
+{
+	for (ciToplevel i = begin(); i != end(); ++i) 
+	{
+		if((*i)->type() == type) 
+			return (*i);
+	}  
+	return 0;
+}
+
 
 } // namespace MusEGui

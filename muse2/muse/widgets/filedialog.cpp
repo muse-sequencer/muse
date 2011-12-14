@@ -123,11 +123,13 @@ void MFileDialog::userToggled(bool flag)
 
 
             if (lastUserDir.isEmpty()) {
-                  lastUserDir = MusEGlobal::museUser + QString("/") + baseDir; // Initialize if first time
+                  //lastUserDir = MusEGlobal::museUser + QString("/") + baseDir; // Initialize if first time
+                  lastUserDir = MusEGlobal::configPath + QString("/") + baseDir; // Initialize if first time    // p4.0.39
                   }
 
             if (testDirCreate(this, lastUserDir))
-                  setDirectory(MusEGlobal::museUser);
+                  //setDirectory(MusEGlobal::museUser);
+                  setDirectory(MusEGlobal::configPath);  // p4.0.39
             else
                   setDirectory(lastUserDir);
 
@@ -269,34 +271,6 @@ void MFileDialog::directoryChanged(const QString&)
                   break;
             }
       }
-
-
-//---------------------------------------------------------
-//   getFilterExtension
-//---------------------------------------------------------
-
-QString getFilterExtension(const QString &filter)
-{
-  //
-  // Return the first extension found. Must contain at least one * character.
-  //
-  
-  int pos = filter.indexOf('*');
-  if(pos == -1)
-    return QString(); 
-  
-  QString filt;
-  int len = filter.length();
-  ++pos;
-  for( ; pos < len; ++pos)
-  {
-    QChar c = filter[pos];
-    if((c == ')') || (c == ';') || (c == ',') || (c == ' '))
-      break; 
-    filt += filter[pos];
-  }
-  return filt;
-}
 
 //---------------------------------------------------------
 //   getOpenFileName
@@ -509,10 +483,12 @@ FILE* fileOpen(QWidget* parent, QString name, const QString& ext,
       FILE* fp = 0;
       if (popenFlag) {
             if (strcmp(mode, "r") == 0)
-                  zip += QString(" -d < ");
+                  //zip += QString(" -d < ");
+                  zip += QString(" -d < \"");    // p4.0.40
             else
-                  zip += QString(" > ");
-            zip += name;
+                  zip += QString(" > \"");
+            //zip += name;
+            zip = zip + name + QString("\"");    // p4.0.40
             fp  = popen(zip.toAscii().data(), mode);
             }
       else {

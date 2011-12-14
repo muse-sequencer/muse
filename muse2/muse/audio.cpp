@@ -25,8 +25,6 @@
 #include <cmath>
 #include <errno.h>
 
-#include <QSocketNotifier>
-
 #include "app.h"
 #include "song.h"
 #include "node.h"
@@ -51,10 +49,18 @@
 namespace MusEGlobal {
 MusECore::Audio* audio;
 MusECore::AudioDevice* audioDevice;   // current audio device in use
-extern unsigned int volatile midiExtSyncTicks;   // p3.3.25
+extern unsigned int volatile midiExtSyncTicks;   
 }
 
 namespace MusECore {
+  
+  
+void initAudio()   
+{
+      MusEGlobal::audio = new Audio();
+}
+
+  
 extern double curTime();
 
 //static const unsigned char mmcDeferredPlayMsg[] = { 0x7f, 0x7f, 0x06, 0x03 };
@@ -166,8 +172,11 @@ Audio::Audio()
             exit(-1);
             }
       sigFd = filedes[1];
-      QSocketNotifier* ss = new QSocketNotifier(filedes[0], QSocketNotifier::Read);
-      MusEGlobal::song->connect(ss, SIGNAL(activated(int)), MusEGlobal::song, SLOT(seqSignal(int)));
+      sigFdr = filedes[0];
+
+      // Moved to MusE::MusE
+      //QSocketNotifier* ss = new QSocketNotifier(filedes[0], QSocketNotifier::Read);
+      //MusEGlobal::song->connect(ss, SIGNAL(activated(int)), MusEGlobal::song, SLOT(seqSignal(int)));
       }
 
 //---------------------------------------------------------
@@ -182,7 +191,9 @@ bool Audio::start()
       //process(MusEGlobal::segmentSize);   // warm up caches
       state = STOP;
       _loopCount = 0;
-      MusEGlobal::muse->setHeartBeat();
+      
+      MusEGlobal::muse->setHeartBeat();  
+      
       if (MusEGlobal::audioDevice) {
           //_running = true;
           //MusEGlobal::audioDevice->start();
@@ -221,9 +232,11 @@ bool Audio::start()
       // shall we really stop JACK transport and locate to
       // saved position?
 
-      MusEGlobal::audioDevice->stopTransport();
+      MusEGlobal::audioDevice->stopTransport();  
+      
       //MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->cPos().frame());
-      MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->cPos());
+      MusEGlobal::audioDevice->seekTransport(MusEGlobal::song->cPos());   
+      
       return true;
       }
 
@@ -531,6 +544,26 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
       // Pre-process the metronome.
       ((AudioTrack*)metronome)->preProcessAlways();
       
+      // Process Aux tracks first.
+      for(ciTrack it = tl->begin(); it != tl->end(); ++it) 
+      {
+        if((*it)->isMidiTrack())
+          continue;
+        track = (AudioTrack*)(*it);
+        if(!track->processed() && track->type() == Track::AUDIO_AUX)
+        {
+          //printf("Audio::process1 Do aux: track:%s\n", track->name().toLatin1().constData());  
+          channels = track->channels();
+          // Just a dummy buffer.
+          float* buffer[channels];
+          float data[frames * channels];
+          for (int i = 0; i < channels; ++i)
+                buffer[i] = data + i * frames;
+          //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1());
+          track->copyData(samplePos, channels, -1, -1, frames, buffer);
+        }
+      }      
+      
       OutputList* ol = MusEGlobal::song->outputs();
       for (ciAudioOutput i = ol->begin(); i != ol->end(); ++i) 
         (*i)->process(samplePos, offset, frames);
@@ -548,8 +581,11 @@ void Audio::process1(unsigned samplePos, unsigned offset, unsigned frames)
         track = (AudioTrack*)(*it);
         // Ignore unprocessed tracks which have an output route, because they will be processed by 
         //  whatever track(s) they are routed to.
-        if(!track->processed() && track->noOutRoute() && (track->type() != Track::AUDIO_OUTPUT))
+        //if(!track->processed() && track->noOutRoute() && (track->type() != Track::AUDIO_OUTPUT))
+        // No, do all.
+        if(!track->processed() && (track->type() != Track::AUDIO_OUTPUT))
         {
+          //printf("Audio::process1 track:%s\n", track->name().toLatin1().constData()); 
           channels = track->channels();
           // Just a dummy buffer.
           float* buffer[channels];

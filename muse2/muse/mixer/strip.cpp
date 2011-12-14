@@ -29,6 +29,8 @@
 #include <QColor>
 #include <QVBoxLayout>
 #include <QFrame>
+#include <QMouseEvent>
+#include <QMenu>
 
 #include "globals.h"
 #include "gconfig.h"
@@ -161,7 +163,8 @@ void Strip::setLabelText()
       //gradient.setColorAt(0, c.darker());
       //gradient.setColorAt(0, c);
       //gradient.setColorAt(1, c.darker());
-      gradient.setColorAt(0, c.lighter());
+      gradient.setColorAt(0, c);
+      gradient.setColorAt(0.5, c.lighter());
       gradient.setColorAt(1, c);
       //palette.setBrush(QPalette::Button, gradient);
       //palette.setBrush(QPalette::Window, gradient);
@@ -303,6 +306,23 @@ void Strip::resizeEvent(QResizeEvent* ev)
   setLabelText();  
   setLabelFont();
 }  
-      
+
+void Strip::mousePressEvent(QMouseEvent* ev)
+{
+  if (ev->button() == Qt::RightButton) {
+    QMenu* menu = new QMenu;
+    menu->addAction(tr("Remove track?"));
+    QPoint pt = QCursor::pos();
+    QAction* act = menu->exec(pt, 0);
+    if (!act)
+    {
+      delete menu;
+      return;
+    }
+    MusEGlobal::song->removeTrack0(track);
+    MusEGlobal::audio->msgUpdateSoloStates();
+  }
+}
+
 
 } // namespace MusEGui

@@ -105,7 +105,7 @@ SndFile::~SndFile()
 bool SndFile::openRead()
       {
       if (openFlag) {
-            printf("SndFile:: alread open\n");
+            printf("SndFile:: already open\n");
             return false;
             }
       QString p = path();
@@ -468,7 +468,7 @@ size_t SndFile::readWithHeap(int srcChannels, float** dst, size_t n, bool overwr
       {
       float *buffer = new float[n * sfinfo.channels];
       int rn = readInternal(srcChannels,dst,n,overwrite, buffer);
-      delete buffer;
+      delete[] buffer;
       return rn;
       }
 
@@ -588,11 +588,11 @@ size_t SndFile::write(int srcChannels, float** src, size_t n)
       else {
             printf("SndFile:write channel mismatch %d -> %d\n",
                srcChannels, dstChannels);
-            delete buffer;
+            delete[] buffer;
             return 0;
             }
       int nbr = sf_writef_float(sf, buffer, n) ;
-      delete buffer;
+      delete[] buffer;
       return nbr;
       }
 
@@ -1119,6 +1119,22 @@ SndFileR::~SndFileR()
                 sf=NULL;
                 }
       }
+
+void SndFileList::clearDelete()
+{
+      // ~SndFile searches itself on the list (and will find for
+      // sure) and deletes the entry on its own.
+      while (!empty()) 
+            delete *begin();
+
+      /* this is wrong, because ~SndFile deletes itself from the
+       * list, causing the iterator to be invalidated -> fail.
+      for (SndFileList::iterator i = begin(); i != end(); ++i)
+            delete *i;
+      clear();
+      */
+}
+
 
 } // namespace MusECore
 

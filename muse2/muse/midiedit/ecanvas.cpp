@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: ecanvas.cpp,v 1.8.2.6 2009/05/03 04:14:00 terminator356 Exp $
 //  (C) Copyright 2001 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -325,54 +326,54 @@ void EventCanvas::keyPress(QKeyEvent* event)
             }
       // Select items by key (PianoRoll & DrumEditor)
       else if (key == shortcuts[SHRT_SEL_RIGHT].key || key == shortcuts[SHRT_SEL_RIGHT_ADD].key) {
-            iCItem i, iRightmost;
-	    CItem* rightmost = NULL;
-            //Get the rightmost selected note (if any)
-            for (i = items.begin(); i != items.end(); ++i) {
-                  if (i->second->isSelected()) {
-                        iRightmost = i; rightmost = i->second;
-                        }
-                  }
-               if (rightmost) {
-                     iCItem temp = iRightmost; temp++;
-                     //If so, deselect current note and select the one to the right
-                     if (temp != items.end()) {
-                           if (key != shortcuts[SHRT_SEL_RIGHT_ADD].key)
-                                 deselectAll();
+              rciCItem i;
+              for (i = items.rbegin(); i != items.rend(); ++i) 
+                if (i->second->isSelected()) 
+                  break;
 
-                           iRightmost++;
-                           iRightmost->second->setSelected(true);
-                           updateSelection();
-                           }
-                     }
-               //if (rightmost && mapx(rightmost->event().tick()) > width()) for some reason this doesn't this doesnt move the event in view
-               //   emit followEvent(rightmost->x());
-
+              if(i == items.rend())
+                i = items.rbegin();
+              
+              if(i != items.rbegin())
+                --i;
+              if(i->second)
+              {
+                if (key != shortcuts[SHRT_SEL_RIGHT_ADD].key)
+                      deselectAll();
+                CItem* sel = i->second;
+                sel->setSelected(true);
+                updateSelection();
+                if (sel->x() + sel->width() > mapxDev(width())) 
+                {  
+                  int mx = rmapx(sel->x());  
+                  int newx = mx + rmapx(sel->width()) - width();
+                  // Leave a bit of room for the specially-drawn drum notes. But good for piano too.
+                  emit horizontalScroll( (newx > mx ? mx - 10: newx + 10) - rmapx(xorg) );
+                }  
+              }
             }
       //Select items by key: (PianoRoll & DrumEditor)
       else if (key == shortcuts[SHRT_SEL_LEFT].key || key == shortcuts[SHRT_SEL_LEFT_ADD].key) {
-            iCItem i, iLeftmost;
-            CItem* leftmost = NULL;
-            if (items.size() > 0 ) {
-                  for (i = items.end(), i--; i != items.begin(); i--) {
-                        if (i->second->isSelected()) {
-                              iLeftmost = i; leftmost = i->second;
-                              }
-                        }
-                    if (leftmost) {
-                          if (iLeftmost != items.begin()) {
-                                //Add item
-                                if (key != shortcuts[SHRT_SEL_LEFT_ADD].key)
-                                      deselectAll();
-      
-                                iLeftmost--;
-                                iLeftmost->second->setSelected(true);
-                                updateSelection();
-                                }
-                          }
-                    //if (leftmost && mapx(leftmost->event().tick())< 0 ) for some reason this doesn't this doesnt move the event in view
-                    //  emit followEvent(leftmost->x());
-                  }
+              ciCItem i;
+              for (i = items.begin(); i != items.end(); ++i) 
+                if (i->second->isSelected()) 
+                  break;
+
+              if(i == items.end())
+                i = items.begin();
+              
+              if(i != items.begin())
+                --i;
+              if(i->second)
+              {
+                if (key != shortcuts[SHRT_SEL_LEFT_ADD].key)
+                      deselectAll();
+                CItem* sel = i->second;
+                sel->setSelected(true);
+                updateSelection();
+                if (sel->x() <= mapxDev(0)) 
+                  emit horizontalScroll(rmapx(sel->x() - xorg) - 10);  // Leave a bit of room.
+              }
             }
       else if (key == shortcuts[SHRT_INC_PITCH].key) {
             modifySelected(NoteInfo::VAL_PITCH, 1);

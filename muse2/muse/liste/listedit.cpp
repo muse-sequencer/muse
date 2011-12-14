@@ -45,6 +45,7 @@
 #include "event.h"
 #include "midiport.h"
 #include "midictrl.h"
+#include "app.h"
 
 namespace MusEGui {
 
@@ -616,6 +617,8 @@ ListEdit::ListEdit(MusECore::PartList* pl)
       initShortcuts();
       
       setWindowTitle("MusE: List Editor");
+      
+      MusEGlobal::muse->topwinMenuInited(this);
       }
 
 //---------------------------------------------------------

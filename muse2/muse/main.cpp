@@ -24,6 +24,8 @@
 #include <QApplication>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
+#include <QFileInfoList>
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QLocale>
@@ -31,6 +33,8 @@
 #include <QTimer>
 #include <QTranslator>
 #include <QIcon>
+#include <QString>
+#include <QStringList>
 
 #include <sys/mman.h>
 #include <alsa/asoundlib.h>
@@ -41,6 +45,7 @@
 #include "audiodev.h"
 #include "gconfig.h"
 #include "globals.h"
+#include "helper.h"
 #include "icons.h"
 #include "sync.h"
 #include "functions.h"
@@ -267,9 +272,38 @@ int main(int argc, char* argv[])
       if (! cPath.exists())
             cPath.mkpath(".");
       
+      // Create user templates dir if it doesn't exist
+      QDir utemplDir = QDir(MusEGlobal::configPath + QString("/templates"));
+      if(!utemplDir.exists())
+      {  
+        utemplDir.mkpath(".");
+        // Support old versions: Copy existing templates over.
+        QDir old_utemplDir = QDir(QString(getenv("HOME")) + QString("/templates"));
+        // printf(" old templates dir:%s\n", (QString(getenv("HOME")) + QString("/templates")).toLatin1().constData()); 
+        if(old_utemplDir.exists())
+        {
+          //printf(" found old templates dir\n"); 
+          // We really just want these, even though it's possible other filenames were saved.
+          // Another application might have used that directory.
+          QStringList flt; flt << "*.med" << "*.med.gz" << "*.med.bz2" << "*.mid" << "*.midi" << "*.kar";
+          old_utemplDir.setNameFilters(flt);
+          
+          QFileInfoList fil = old_utemplDir.entryInfoList();
+          QFileInfo fi;
+          foreach(fi, fil)
+          {
+            QString fn = fi.fileName();
+            QFile f(fi.absoluteFilePath());
+            f.copy(utemplDir.absolutePath() + "/" + fn);
+            //printf(" copy old template to:%s result:%d\n", QString(utemplPath.absolutePath() + "/" + fn).toLatin1().constData(), rv); 
+          }
+        }
+      }
+      
       QFile cConf (MusEGlobal::configName);
       QFile cConfTempl (MusEGlobal::museGlobalShare + QString("/templates/MusE.cfg"));
-      if (! cConf.exists())
+      bool cConfExists = cConf.exists();
+      if (!cConfExists)
       {
         printf ("creating new config...\n");
         if (cConfTempl.copy(MusEGlobal::configName))
@@ -303,10 +337,51 @@ int main(int argc, char* argv[])
 
       MusEGui::init_function_dialogs(MusEGlobal::muse);
       MusEGui::initShortCuts();
+
       MusECore::readConfiguration();
 
-      MusEGlobal::museUserInstruments = MusEGlobal::config.userInstrumentsDir;
+      // Need to put a sane default here because we can't use ~ in the file name string.
+      if(!cConfExists)
+        MusEGlobal::config.projectBaseFolder = MusEGlobal::museUser + QString("/MusE");
 
+      //MusEGlobal::museUserInstruments = MusEGlobal::config.userInstrumentsDir;
+      
+      // Create user instruments dir if it doesn't exist
+      {
+        QString uinstrPath = MusEGlobal::configPath + QString("/instruments");
+        QDir uinstrDir = QDir(uinstrPath);
+        if(!uinstrDir.exists())
+          uinstrDir.mkpath(".");
+        
+        if(!MusEGlobal::config.userInstrumentsDir.isEmpty() && MusEGlobal::config.userInstrumentsDir != uinstrPath)  // Only if it is different.
+        {
+          // Support old versions: Copy existing instruments over.
+          QDir old_uinstrDir(MusEGlobal::config.userInstrumentsDir);
+          //printf(" old instruments dir:%s\n", MusEGlobal::config.userInstrumentsDir.toLatin1().constData()); 
+          if(old_uinstrDir.exists())
+          {
+            //printf(" found old instruments dir\n"); 
+            QStringList flt; flt << "*.idf";
+            old_uinstrDir.setNameFilters(flt);
+            
+            QFileInfoList fil = old_uinstrDir.entryInfoList();
+            QFileInfo fi;
+            foreach(fi, fil)
+            {
+              QString fn = fi.fileName();
+              QFile f(fi.absoluteFilePath());
+              QFile newf(uinstrDir.absolutePath() + "/" + fn);
+              if(!newf.exists())
+              {  
+                f.copy(newf.fileName());
+                //printf(" copy old instrument to:%s result:%d\n", newf.fileName().toLatin1().constData(), rv); 
+              }  
+            }
+          }
+        }  
+        MusEGlobal::museUserInstruments = uinstrPath;
+      }
+      
       if (MusEGlobal::config.useDenormalBias)
           printf("Denormal protection enabled.\n");
       // SHOW MUSE SPLASH SCREEN
@@ -324,7 +399,7 @@ int main(int argc, char* argv[])
                   stimer->start(6000);
                   }
             }
-      
+
       int i;
       
       QString optstr("ahvdDmMsP:Y:l:py");
@@ -393,6 +468,7 @@ int main(int argc, char* argv[])
       }
       */
       
+      
       AL::initDsp();
       
       if (MusEGlobal::debugMsg)
@@ -438,8 +514,7 @@ int main(int argc, char* argv[])
       else
             MusEGlobal::realTimeScheduling = MusEGlobal::audioDevice->isRealtime();
 
-      
-      // What unreliable nonsense. With Jack2 this reports true even if it is not running realtime. 
+      // ??? With Jack2 this reports true even if it is not running realtime. 
       // Jack says: "Cannot use real-time scheduling (RR/10)(1: Operation not permitted)". The kernel is non-RT.
       // I cannot seem to find a reliable answer to the question, even with dummy audio and system calls.
       //if (MusEGlobal::debugMsg) 
@@ -448,11 +523,7 @@ int main(int argc, char* argv[])
       MusEGlobal::useJackTransport.setValue(true);
       
       // setup the prefetch fifo length now that the segmentSize is known
-      // Changed by Tim. p3.3.17
-      // Changed to 4 *, JUST FOR TEST!!!
       MusEGlobal::fifoLength = 131072 / MusEGlobal::segmentSize;
-      //MusEGlobal::fifoLength = (131072 / MusEGlobal::segmentSize) * 4;
-      
       
       argc -= optind;
       ++argc;
@@ -498,7 +569,6 @@ int main(int argc, char* argv[])
       if(MusEGlobal::loadDSSI)
             MusECore::initDSSI();
       
-      // p3.3.39
       MusECore::initOSC();
       
       MusEGui::initIcons();
@@ -517,21 +587,19 @@ int main(int argc, char* argv[])
                   ++it;
                   }
             }
-
+            
       MusEGlobal::muse = new MusEGui::MusE(argc, &argv[optind]);
       app.setMuse(MusEGlobal::muse);
       MusEGlobal::muse->setWindowIcon(*MusEGui::museIcon);
       
-      
-      // Added by Tim. p3.3.22
       if (!MusEGlobal::debugMode) {
             if (mlockall(MCL_CURRENT | MCL_FUTURE))
                   perror("WARNING: Cannot lock memory:");
             }
       
       MusEGlobal::muse->show();
-      MusEGlobal::muse->seqStart();
-
+      MusEGlobal::muse->seqStart();  
+      
 #ifdef HAVE_LASH
       {
         MusEGui::lash_client = 0;
@@ -542,14 +610,28 @@ int main(int argc, char* argv[])
           MusEGui::lash_client = lash_init (lash_args, muse_name, lash_flags, LASH_PROTOCOL(2,0));
           lash_alsa_client_id (MusEGui::lash_client, snd_seq_client_id (MusECore::alsaSeq));
           if (!noAudio) {
-                // p3.3.38
-                //char *jack_name = ((JackAudioDevice*)MusEGlobal::audioDevice)->getJackName();
                 const char *jack_name = MusEGlobal::audioDevice->clientName();
                 lash_jack_client_name (MusEGui::lash_client, jack_name);
           }      
         }
       }
 #endif /* HAVE_LASH */
+
+      //--------------------------------------------------
+      // Auto-fill the midi ports, if appropriate.         p4.0.41
+      //--------------------------------------------------
+      if(argc < 2 && MusEGlobal::config.startMode == 1)
+      {  
+        MusEGui::populateMidiPorts();
+        //MusEGlobal::muse->changeConfig(true);     // save configuration file
+        //MusEGlobal::song->update();
+      }
+
+      //--------------------------------------------------
+      // Load the default song.                            
+      //--------------------------------------------------
+      MusEGlobal::muse->loadDefaultSong(argc, &argv[optind]);    // p4.0.41
+      
       QTimer::singleShot(100, MusEGlobal::muse, SLOT(showDidYouKnowDialog()));
       
       int rv = app.exec();

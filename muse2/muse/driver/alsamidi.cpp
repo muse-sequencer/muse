@@ -48,6 +48,7 @@ static int alsaSeqFdo = -1;
 
 snd_seq_t* alsaSeq = 0;
 static snd_seq_addr_t musePort;
+static snd_seq_addr_t announce_adr;
 
 //---------------------------------------------------------
 //   MidiAlsaDevice
@@ -85,42 +86,55 @@ QString MidiAlsaDevice::open()
       QString estr;
       int wer = 0;
       int rer = 0;
+
+      snd_seq_port_info_t *pinfo;
+      snd_seq_port_info_alloca(&pinfo);
+      //snd_seq_port_info_set_client(pinfo, snd_seq_client_info_get_client(cinfo));
+      snd_seq_port_info_set_addr(pinfo, &adr);
+
+      int cap = snd_seq_port_info_get_capability(pinfo);
       
       // subscribe for writing
       if (_openFlags & 1) 
       {
-            snd_seq_port_subscribe_set_sender(subs, &musePort);
-            snd_seq_port_subscribe_set_dest(subs, &adr);
-            // Not already subscribed (or error)? Then try subscribing.
-            if(snd_seq_get_port_subscription(alsaSeq, subs) < 0)
-            {
-              //int error = snd_seq_subscribe_port(alsaSeq, subs);
-              wer = snd_seq_subscribe_port(alsaSeq, subs);
-              //if (error < 0)
-              if(wer < 0)
-                    //return QString("Play: ")+QString(snd_strerror(error));
-                    estr += (QString("Play: ") + QString(snd_strerror(wer)) + QString(" "));
-            }        
-            if(!wer)
+            if(cap & SND_SEQ_PORT_CAP_SUBS_WRITE)
+            {  
+              snd_seq_port_subscribe_set_sender(subs, &musePort);
+              snd_seq_port_subscribe_set_dest(subs, &adr);
+              // Not already subscribed (or error)? Then try subscribing.
+              if(snd_seq_get_port_subscription(alsaSeq, subs) < 0)
+              {
+                //int error = snd_seq_subscribe_port(alsaSeq, subs);
+                wer = snd_seq_subscribe_port(alsaSeq, subs);
+                //if (error < 0)
+                if(wer < 0)
+                      //return QString("Play: ")+QString(snd_strerror(error));
+                      estr += (QString("Play: ") + QString(snd_strerror(wer)) + QString(" "));
+              }        
+            }  
+            if(!wer && (cap & SND_SEQ_PORT_CAP_WRITE))
               _writeEnable = true;      
       }
 
       // subscribe for reading
       if (_openFlags & 2) 
       {
-            snd_seq_port_subscribe_set_dest(subs, &musePort);
-	          snd_seq_port_subscribe_set_sender(subs, &adr);
-            // Not already subscribed (or error)? Then try subscribing.
-            if(snd_seq_get_port_subscription(alsaSeq, subs) < 0)
-            {
-              //int error = snd_seq_subscribe_port(alsaSeq, subs);
-              rer = snd_seq_subscribe_port(alsaSeq, subs);
-              //if (error < 0)
-              if(rer < 0)
-                    //return QString("Rec: ") + QString(snd_strerror(error));
-                    estr += (QString("Rec: ") + QString(snd_strerror(rer)));
-            }        
-            if(!rer)
+            if(cap & SND_SEQ_PORT_CAP_SUBS_READ)
+            {  
+              snd_seq_port_subscribe_set_dest(subs, &musePort);
+                    snd_seq_port_subscribe_set_sender(subs, &adr);
+              // Not already subscribed (or error)? Then try subscribing.
+              if(snd_seq_get_port_subscription(alsaSeq, subs) < 0)
+              {
+                //int error = snd_seq_subscribe_port(alsaSeq, subs);
+                rer = snd_seq_subscribe_port(alsaSeq, subs);
+                //if (error < 0)
+                if(rer < 0)
+                      //return QString("Rec: ") + QString(snd_strerror(error));
+                      estr += (QString("Rec: ") + QString(snd_strerror(rer)));
+              }
+            }  
+            if(!rer && (cap & SND_SEQ_PORT_CAP_READ))
               _readEnable = true;      
       }
       
@@ -141,6 +155,16 @@ void MidiAlsaDevice::close()
       // Allocated on stack, no need to call snd_seq_port_subscribe_free() later.
       snd_seq_port_subscribe_alloca(&subs);
       
+      int wer = 0;
+      int rer = 0;
+
+      snd_seq_port_info_t *pinfo;
+      snd_seq_port_info_alloca(&pinfo);
+      //snd_seq_port_info_set_client(pinfo, snd_seq_client_info_get_client(cinfo));
+      snd_seq_port_info_set_addr(pinfo, &adr);
+
+      int cap = snd_seq_port_info_get_capability(pinfo);
+
       // This function appears to be called only by MidiPort::setMidiDevice(), 
       //  which closes then opens the device.
       // Because the open flags are set BEFORE setMidiDevice() is called, we must ignore the flags.
@@ -160,37 +184,49 @@ void MidiAlsaDevice::close()
       //if (_openFlags & 1) {
       //if (!(_openFlags & 1)) 
       {
-            snd_seq_port_subscribe_set_sender(subs, &musePort);
-            snd_seq_port_subscribe_set_dest(subs, &adr);
-            
-            // Already subscribed? Then unsubscribe.
-            if(!snd_seq_get_port_subscription(alsaSeq, subs))
-            {
-              if(!snd_seq_unsubscribe_port(alsaSeq, subs))
-                _writeEnable = false;      
-              else
-                printf("MidiAlsaDevice::close Error unsubscribing alsa midi port for writing\n");
+            if(cap & SND_SEQ_PORT_CAP_SUBS_WRITE)
+            {  
+              snd_seq_port_subscribe_set_sender(subs, &musePort);
+              snd_seq_port_subscribe_set_dest(subs, &adr);
+              
+              // Already subscribed? Then unsubscribe.
+              if(!snd_seq_get_port_subscription(alsaSeq, subs))
+              {
+                wer = snd_seq_unsubscribe_port(alsaSeq, subs);
+                //if(!wer)
+                //  _writeEnable = false;      
+                //else
+                if(wer < 0)
+                  printf("MidiAlsaDevice::close Error unsubscribing alsa midi port %d:%d for writing: %s\n", adr.client, adr.port, snd_strerror(wer));
+              }   
+              //else
+                //_writeEnable = false;      
             }   
-            else
-              _writeEnable = false;      
+            _writeEnable = false;      
       }
 
       //if (_openFlags & 2) {
       //if (!(_openFlags & 2)) 
       {
-            snd_seq_port_subscribe_set_dest(subs, &musePort);
-            snd_seq_port_subscribe_set_sender(subs, &adr);
-            
-            // Already subscribed? Then unsubscribe.
-            if(!snd_seq_get_port_subscription(alsaSeq, subs))
-            {
-              if(!snd_seq_unsubscribe_port(alsaSeq, subs))
-                _readEnable = false;      
-              else  
-                printf("MidiAlsaDevice::close Error unsubscribing alsa midi port for reading\n");
-            }  
-            else
-              _readEnable = false;      
+            if(cap & SND_SEQ_PORT_CAP_SUBS_READ)
+            {  
+              snd_seq_port_subscribe_set_dest(subs, &musePort);
+              snd_seq_port_subscribe_set_sender(subs, &adr);
+              
+              // Already subscribed? Then unsubscribe.
+              if(!snd_seq_get_port_subscription(alsaSeq, subs))
+              {
+                rer = snd_seq_unsubscribe_port(alsaSeq, subs);
+                //if(!rer)
+                //  _readEnable = false;      
+                //else  
+                if(rer < 0)
+                  printf("MidiAlsaDevice::close Error unsubscribing alsa midi port %d:%d for reading: %s\n", adr.client, adr.port, snd_strerror(rer));
+              }  
+              //else
+              //  _readEnable = false;      
+            }   
+            _readEnable = false;      
       }
 }
 
@@ -698,6 +734,13 @@ bool initMidiAlsa()
       snd_seq_client_info_set_client(cinfo, -1);
 
       while (snd_seq_query_next_client(alsaSeq, cinfo) >= 0) {
+            const char* cname = snd_seq_client_info_get_name(cinfo);
+            //printf( "ALSA client name: %s\n", cname);  
+            
+            // Put Midi Through and user clients after others. Insert other unwanted clients here:          // p4.0.41
+            if(snd_seq_client_info_get_type(cinfo) == SND_SEQ_USER_CLIENT || strcmp("Midi Through", cname) == 0)                   
+              continue;
+            
             snd_seq_port_info_t *pinfo;
             snd_seq_port_info_alloca(&pinfo);
             snd_seq_port_info_set_client(pinfo, snd_seq_client_info_get_client(cinfo));
@@ -705,6 +748,8 @@ bool initMidiAlsa()
 
             while (snd_seq_query_next_port(alsaSeq, pinfo) >= 0) {
                   unsigned int capability = snd_seq_port_info_get_capability(pinfo);
+                  if (capability & SND_SEQ_PORT_CAP_NO_EXPORT)  // Ignore ports like "qjackctl" or "port".    p4.0.41
+                    continue;
                   if ((capability & outCap) == 0) {
                           const char *name = snd_seq_port_info_get_name(pinfo);
                           if (strcmp("Timer", name) == 0 || 
@@ -726,29 +771,52 @@ bool initMidiAlsa()
                            adr.client, adr.port,
                            flags, capability);
                   MusEGlobal::midiDevices.add(dev);
-                  
-                  /*
-                  // Experimental... Need to list 'sensible' devices first and ignore unwanted ones...
-                  // Add instance last in midi device list.
-                  for(int i = 0; i < MIDI_PORTS; ++i) 
-                  {
-                    MidiPort* mp  = &MusEGlobal::midiPorts[i];
-                    if(mp->device() == 0) 
-                    {
-                      // midiSeq might not be initialzed yet!
-                      //MusEGlobal::midiSeq->msgSetMidiDevice(mp, dev);
-                      mp->setMidiDevice(dev);
-                      
-                      //muse->changeConfig(true);     // save configuration file
-                      //update();
-                      break;
-                    }
-                  }
-                  */
-                  
                   }
             }
-      
+
+      snd_seq_client_info_set_client(cinfo, -1);   // Reset
+      while (snd_seq_query_next_client(alsaSeq, cinfo) >= 0) {
+            const char* cname = snd_seq_client_info_get_name(cinfo);
+            //printf( "ALSA client name: %s\n", cname);  
+            
+            // Put Midi Through and user clients after others. Insert other unwanted clients here:          // p4.0.41
+            if( !(snd_seq_client_info_get_type(cinfo) == SND_SEQ_USER_CLIENT || strcmp("Midi Through", cname) == 0) )                   
+              continue;
+            
+            snd_seq_port_info_t *pinfo;
+            snd_seq_port_info_alloca(&pinfo);
+            snd_seq_port_info_set_client(pinfo, snd_seq_client_info_get_client(cinfo));
+            snd_seq_port_info_set_port(pinfo, -1);
+
+            while (snd_seq_query_next_port(alsaSeq, pinfo) >= 0) {
+                  unsigned int capability = snd_seq_port_info_get_capability(pinfo);
+                  if (capability & SND_SEQ_PORT_CAP_NO_EXPORT)  // Ignore ports like "qjackctl" or "port".    p4.0.41
+                    continue;
+                  if ((capability & outCap) == 0) {
+                          const char *name = snd_seq_port_info_get_name(pinfo);
+                          if (strcmp("Timer", name) == 0 || 
+                              strcmp("Announce", name) == 0 || 
+                              strcmp("Receiver", name) == 0)
+                                continue;
+                          }
+                  snd_seq_addr_t adr = *snd_seq_port_info_get_addr(pinfo);
+                  MidiAlsaDevice* dev = new MidiAlsaDevice(adr, QString(snd_seq_port_info_get_name(pinfo)));
+                  int flags = 0;
+                  if (capability & outCap)
+                        flags |= 1;
+                  if (capability & inCap)
+                        flags |= 2;
+                  dev->setrwFlags(flags);
+                  if (MusEGlobal::debugMsg)
+                        printf("ALSA port add: <%s>, %d:%d flags %d 0x%0x\n",
+                           snd_seq_port_info_get_name(pinfo),
+                           adr.client, adr.port,
+                           flags, capability);
+                  MusEGlobal::midiDevices.add(dev);
+                  }
+            }
+            
+            
       //snd_seq_set_client_name(alsaSeq, "MusE Sequencer");
       snd_seq_set_client_name(alsaSeq, MusEGlobal::audioDevice->clientName());
       
@@ -783,14 +851,14 @@ bool initMidiAlsa()
       //    alsa port changes
       //-----------------------------------------
 
-      snd_seq_addr_t aadr;
-      aadr.client = SND_SEQ_CLIENT_SYSTEM;
-      aadr.port   = SND_SEQ_PORT_SYSTEM_ANNOUNCE;
+      //snd_seq_addr_t aadr;
+      announce_adr.client = SND_SEQ_CLIENT_SYSTEM;
+      announce_adr.port   = SND_SEQ_PORT_SYSTEM_ANNOUNCE;
 
       snd_seq_port_subscribe_t* subs;
       snd_seq_port_subscribe_alloca(&subs);
       snd_seq_port_subscribe_set_dest(subs, &musePort);
-      snd_seq_port_subscribe_set_sender(subs, &aadr);
+      snd_seq_port_subscribe_set_sender(subs, &announce_adr);
       error = snd_seq_subscribe_port(alsaSeq, subs);
       if (error < 0) {
             printf("Alsa: Subscribe System failed: %s", snd_strerror(error));
@@ -807,12 +875,35 @@ bool initMidiAlsa()
 void exitMidiAlsa()
 {
   if(alsaSeq)
-  {  
-    int error = snd_seq_close(alsaSeq);  // FIXME Hm, this did not get rid of a buch of valgrind leaks.
-    if(error < 0) 
+  { 
+    int error = 0;
+    snd_seq_port_subscribe_t* subs;
+    // Allocated on stack, no need to call snd_seq_port_subscribe_free() later.
+    snd_seq_port_subscribe_alloca(&subs);
+    
+    snd_seq_port_info_t *pinfo;
+    snd_seq_port_info_alloca(&pinfo);
+    //snd_seq_port_info_set_client(pinfo, snd_seq_client_info_get_client(cinfo));
+    snd_seq_port_info_set_addr(pinfo, &announce_adr);
+
+    snd_seq_port_subscribe_set_dest(subs, &musePort);
+    snd_seq_port_subscribe_set_sender(subs, &announce_adr);
+    
+    // Already subscribed? Then unsubscribe.
+    if(!snd_seq_get_port_subscription(alsaSeq, subs))
     {
-      fprintf(stderr, "Could not close ALSA sequencer: %s\n", snd_strerror(error));
-    }
+      error = snd_seq_unsubscribe_port(alsaSeq, subs);
+      if(error < 0)
+        printf("MusE: exitMidiAlsa: Error unsubscribing alsa midi Announce port %d:%d for reading: %s\n", announce_adr.client, announce_adr.port, snd_strerror(error));
+    }   
+    
+    error = snd_seq_delete_simple_port(alsaSeq, musePort.port);
+    if(error < 0) 
+      fprintf(stderr, "MusE: Could not delete ALSA simple port: %s\n", snd_strerror(error));
+    
+    error = snd_seq_close(alsaSeq);  
+    if(error < 0) 
+      fprintf(stderr, "MusE: Could not close ALSA sequencer: %s\n", snd_strerror(error));
   }  
 }
 
@@ -852,7 +943,9 @@ void alsaScanMidiPorts()
             snd_seq_port_info_set_client(pinfo, snd_seq_client_info_get_client(cinfo));
             snd_seq_port_info_set_port(pinfo, -1);
             while (snd_seq_query_next_port(alsaSeq, pinfo) >= 0) {
-		      unsigned int capability = snd_seq_port_info_get_capability(pinfo);
+                  unsigned int capability = snd_seq_port_info_get_capability(pinfo);
+                  if (capability & SND_SEQ_PORT_CAP_NO_EXPORT)  // Ignore ports like "qjackctl" or "port".    p4.0.41
+                    continue;
                   if (((capability & outCap) == 0)
                      && ((capability & inCap) == 0))
                         continue;
@@ -902,6 +995,8 @@ void alsaScanMidiPorts()
       //
       //  check for devices to add
       //
+      // TODO: Possibly auto-add them to available midi ports.    p4.0.41            
+      //
       for (std::list<AlsaPort>::iterator k = portList.begin(); k != portList.end(); ++k) {
             iMidiDevice i = MusEGlobal::midiDevices.begin();
 // printf("ALSA port: <%s>\n", k->name);
@@ -922,6 +1017,8 @@ void alsaScanMidiPorts()
 // printf("add device\n");
                   }
             }
+            
+            
       }
 
 //---------------------------------------------------------

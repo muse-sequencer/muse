@@ -42,8 +42,15 @@ bool any_event_selected(const std::set<Part*>&, bool in_range=false);
 namespace MusEGui {
 QMenu* populateAddSynth(QWidget* parent);
 QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll=false);
+QStringList localizedStringListFromCharArray(const char** array, const char* context);
+QString getFilterExtension(const QString &filter);
+QString browseProjectFolder(QWidget* parent = 0);
+QString projectTitleFromFilename(QString filename);
+QString projectPathFromFilename(QString filename);
+QString projectExtensionFromFilename(QString filename);
+QString getUniqueUntitledName();
+void populateMidiPorts();
 } 
 
-QStringList localizedStringListFromCharArray(const char** array, const char* context);
 #endif
 

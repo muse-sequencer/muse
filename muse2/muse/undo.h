@@ -54,6 +54,7 @@ struct UndoOp {
             SwapTrack,
             ModifyClip,
             ModifyMarker,
+            ModifySongLen, // a = new len, b = old len
             DoNothing
             };
       UndoType type;

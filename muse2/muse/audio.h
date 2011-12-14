@@ -166,7 +166,9 @@ class Audio {
       int fromThreadFdw, fromThreadFdr;  // message pipe
 
       int sigFd;              // pipe fd for messages to gui
-
+      //QSocketNotifier* _socketNotifier;
+      int sigFdr;
+      
       // record values:
       Pos startRecordPos;
       Pos endRecordPos;
@@ -189,8 +191,12 @@ class Audio {
 
    public:
       Audio();
-      virtual ~Audio() {}
+      virtual ~Audio() { } 
 
+      // Access to message pipe (like from gui namespace), otherwise audio would need to depend on gui.
+      int getFromThreadFdw() { return sigFd; } 
+      int getFromThreadFdr() { return sigFdr; }  
+      
       void process(unsigned frames);
       bool sync(int state, unsigned frame);
       void shutdown();

@@ -229,8 +229,8 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
             ciRoute i = irl->begin();
             if(i->track->isMidiTrack())
             {
-              if(MusEGlobal::debugMsg)
-                printf("WaveTrack::getData: Error: First route is a midi track route!\n");
+              //if(MusEGlobal::debugMsg)
+              //  printf("WaveTrack::getData: Error: First route is a midi track route!\n");
               return false;
             }
             // p3.3.38
@@ -246,8 +246,8 @@ bool WaveTrack::getData(unsigned framePos, int channels, unsigned nframe, float*
             {
               if(i->track->isMidiTrack())
               {
-                if(MusEGlobal::debugMsg)
-                  printf("WaveTrack::getData: Error: Route is a midi track route!\n");
+                //if(MusEGlobal::debugMsg)
+                //  printf("WaveTrack::getData: Error: Route is a midi track route!\n");
                 //return false;
                 continue;
               }

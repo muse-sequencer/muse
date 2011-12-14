@@ -165,6 +165,12 @@ const char* med_file_save_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "All Files (*)"),
       0
       };
+const char* project_create_file_save_pattern[] = {
+      QT_TRANSLATE_NOOP("file_patterns", "Uncompressed med Files (*.med)"),
+      QT_TRANSLATE_NOOP("file_patterns", "gzip compressed med Files (*.med.gz)"),
+      QT_TRANSLATE_NOOP("file_patterns", "bzip2 compressed med Files (*.med.bz2)"),
+      0
+      };
 
 const char* image_file_pattern[] = {
       QT_TRANSLATE_NOOP("file_patterns", "(*.jpg *.gif *.png)"),

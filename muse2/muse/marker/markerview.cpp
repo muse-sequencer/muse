@@ -26,6 +26,7 @@
 #include "markerview.h"
 #include "xml.h"
 #include "globals.h"
+#include "app.h"
 #include "sync.h"
 #include "icons.h"
 #include "song.h"
@@ -157,7 +158,7 @@ void MarkerItem::setTick(unsigned v)
 
 void MarkerView::closeEvent(QCloseEvent* e)
       {
-      emit deleted(static_cast<TopWin*>(this));
+      emit isDeleting(static_cast<TopWin*>(this));
       emit closed();
       e->accept();
       }
@@ -295,6 +296,8 @@ MarkerView::MarkerView(QWidget* parent)
       connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       
       updateList();
+
+      MusEGlobal::muse->topwinMenuInited(this);
 
       // work around for probable QT/WM interaction bug.
       // for certain window managers, e.g xfce, this window is

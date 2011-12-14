@@ -1928,7 +1928,7 @@ void CtrlCanvas::drawOverlay(QPainter& p)
            //p.setFont(MusEGlobal::config.fonts[3]);
            //p.setPen(Qt::black);
            //p.drawText(width()/2-100,height()/2-10, "Use shift + pencil or line tool to draw new events");
-           p.drawText(2 , y * 2, "Use shift + pencil or line tool to draw new events");
+           p.drawText(2 , y * 2, "Drawing hint: Hold Ctrl to affect only existing events");
            }
       }
 

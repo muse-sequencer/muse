@@ -156,6 +156,7 @@ void Song::setSig(const AL::TimeSignature& sig)
 
 Track* Song::addNewTrack(QAction* action, Track* insertAt)
 {
+printf("Song::addNewTrack\n");
     int n = action->data().toInt();
     // Ignore negative numbers since this slot could be called by a menu or list etc. passing -1.
     if(n < 0)
@@ -165,13 +166,20 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
     if(n >= MENU_ADD_SYNTH_ID_BASE)
     {
       n -= MENU_ADD_SYNTH_ID_BASE;
+      int ntype = n / MENU_ADD_SYNTH_ID_BASE;
+      if(ntype >= Synth::SYNTH_TYPE_END)
+        return 0;
+
+      n %= MENU_ADD_SYNTH_ID_BASE;
       if(n >= (int)MusEGlobal::synthis.size())
         return 0;
         
-      SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->name(), insertAt);
+      //printf("Song::addNewTrack synth: type:%d idx:%d class:%s label:%s\n", ntype, n, MusEGlobal::synthis[n]->baseName().toLatin1().constData(), MusEGlobal::synthis[n]->name().toLatin1().constData());  
+      SynthI* si = createSynthI(MusEGlobal::synthis[n]->baseName(), MusEGlobal::synthis[n]->name(), (Synth::Type)ntype, insertAt);
       if(!si)
         return 0;
-      
+      if (MusEGlobal::config.unhideTracks) SynthI::setVisible(true);
+
       // Add instance last in midi device list.
       for (int i = 0; i < MIDI_PORTS; ++i) 
       {
@@ -181,15 +189,19 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
         {
           MusEGlobal::midiSeq->msgSetMidiDevice(port, si);
           MusEGlobal::muse->changeConfig(true);     // save configuration file
-          deselectTracks();
-          si->setSelected(true);
-          update();
+          if (SynthI::visible()) {
+            deselectTracks();
+            si->setSelected(true);
+            update();
+          }
           return si;
         }
       }
-      deselectTracks();
-      si->setSelected(true);
-      update(SC_SELECTION);
+      if (SynthI::visible()) {
+        deselectTracks();
+        si->setSelected(true);
+        update(SC_SELECTION);
+      }
       return si;
     }  
     // Normal track.
@@ -200,10 +212,14 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
       if((Track::TrackType)n >= Track::AUDIO_SOFTSYNTH)
         return 0;
       
-      Track* t = addTrack((Track::TrackType)n, insertAt);
-      deselectTracks();
-      t->setSelected(true);
-      update(SC_SELECTION);
+      Undo operations;
+      Track* t = addTrack(operations, (Track::TrackType)n, insertAt);
+      applyOperationGroup(operations);
+      if (t->isVisible()) {
+        deselectTracks();
+        t->setSelected(true);
+        update(SC_SELECTION);
+      }
       return t;
     }  
 }          
@@ -216,53 +232,63 @@ Track* Song::addNewTrack(QAction* action, Track* insertAt)
 //    If insertAt is valid, inserts before insertAt. Else at the end after all tracks.
 //---------------------------------------------------------
 
-Track* Song::addTrack(Track::TrackType type, Track* insertAt)
+Track* Song::addTrack(Undo& operations, Track::TrackType type, Track* insertAt)
       {
+  printf("Song::addTrack\n");
       Track* track = 0;
       int lastAuxIdx = _auxs.size();
       switch(type) {
             case Track::MIDI:
                   track = new MidiTrack();
                   track->setType(Track::MIDI);
+                  if (MusEGlobal::config.unhideTracks) MidiTrack::setVisible(true);
                   break;
             case Track::DRUM:
                   track = new MidiTrack();
                   track->setType(Track::DRUM);
                   ((MidiTrack*)track)->setOutChannel(9);
+                  if (MusEGlobal::config.unhideTracks) MidiTrack::setVisible(true);
                   break;
             case Track::WAVE:
                   track = new MusECore::WaveTrack();
                   ((AudioTrack*)track)->addAuxSend(lastAuxIdx);
+                  if (MusEGlobal::config.unhideTracks) WaveTrack::setVisible(true);
                   break;
             case Track::AUDIO_OUTPUT:
                   track = new AudioOutput();
+                  if (MusEGlobal::config.unhideTracks) AudioOutput::setVisible(true);
                   break;
             case Track::AUDIO_GROUP:
                   track = new AudioGroup();
                   ((AudioTrack*)track)->addAuxSend(lastAuxIdx);
+                  if (MusEGlobal::config.unhideTracks) AudioGroup::setVisible(true);
                   break;
             case Track::AUDIO_AUX:
                   track = new AudioAux();
+                  if (MusEGlobal::config.unhideTracks) AudioAux::setVisible(true);
                   break;
             case Track::AUDIO_INPUT:
                   track = new AudioInput();
                   ((AudioTrack*)track)->addAuxSend(lastAuxIdx);
+                  if (MusEGlobal::config.unhideTracks) AudioInput::setVisible(true);
                   break;
             case Track::AUDIO_SOFTSYNTH:
                   printf("not implemented: Song::addTrack(SOFTSYNTH)\n");
                   // ((AudioTrack*)track)->addAuxSend(lastAuxIdx);
                   break;
             default:
-                  printf("Song::addTrack() illegal type %d\n", type);
-                  abort();
+                  printf("THIS SHOULD NEVER HAPPEN: Song::addTrack() illegal type %d. returning NULL.\n"
+                         "save your work if you can and expect soon crashes!\n", type);
+                  return NULL;
             }
       track->setDefaultName();
       
       int idx = insertAt ? _tracks.index(insertAt) : -1;
       
-      insertTrack1(track, idx);
-      msgInsertTrack(track, idx, true);
-      insertTrack3(track, idx);
+      // insertTrack1(track, idx);         // this and the below are replaced
+      // msgInsertTrack(track, idx, true); // by the UndoOp-operation
+      // insertTrack3(track, idx); // does nothing
+      operations.push_back(UndoOp(UndoOp::AddTrack, idx, track));
 
       // Add default track <-> midiport routes. 
       if(track->isMidiTrack()) 
@@ -1928,7 +1954,7 @@ void Song::panic()
 //    If clear_all is false, it will not touch things like midi ports.  
 //---------------------------------------------------------
 
-void Song::clear(bool signal, bool /*clear_all*/)
+void Song::clear(bool signal, bool clear_all)
       {
       if(MusEGlobal::debugMsg)
         printf("Song::clear\n");
@@ -1953,7 +1979,7 @@ void Song::clear(bool signal, bool /*clear_all*/)
         // p3.3.50 Reset this.
         MusEGlobal::midiPorts[i].setFoundInSongFile(false);
 
-        //if(clear_all)  // Allow not touching devices. p4.0.17  TESTING: Maybe some problems...
+        if(clear_all)  // Allow not touching devices. p4.0.17  TESTING: Maybe some problems...
           // This will also close the device.
           MusEGlobal::midiPorts[i].setMidiDevice(0);
       }
@@ -1972,7 +1998,7 @@ void Song::clear(bool signal, bool /*clear_all*/)
           //if((*imd)->deviceType() == MidiDevice::JACK_MIDI)
           if(dynamic_cast< MidiJackDevice* >(*imd))
           {
-            //if(clear_all)  // Allow not touching devices. p4.0.17  TESTING: Maybe some problems...
+            if(clear_all)  // Allow not touching devices. p4.0.17  TESTING: Maybe some problems...
             {
               // Remove the device from the list.
               MusEGlobal::midiDevices.erase(imd);
@@ -2919,7 +2945,6 @@ void Song::insertTrack2(Track* track, int idx)
                   break;
             default:
                   fprintf(stderr, "unknown track type %d\n", track->type());
-                  // abort();
                   return;
             }
 
@@ -2936,7 +2961,7 @@ void Song::insertTrack2(Track* track, int idx)
       for (iTrack i = _tracks.begin(); i != _tracks.end(); ++i) {
             if ((*i)->isMidiTrack())
                   continue;
-            MusECore::WaveTrack* wt = (MusECore::WaveTrack*)*i;
+            MusECore::AudioTrack* wt = (MusECore::AudioTrack*)*i;
             if (wt->hasAuxSend()) {
                   wt->addAuxSend(n);
                   }
@@ -2957,6 +2982,13 @@ void Song::insertTrack2(Track* track, int idx)
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->outRoutes()->push_back(src);
+                  // Is the source an Aux Track or else does it have Aux Tracks routed to it?
+                  // Update the Audio Output track's aux ref count.     p4.0.37
+                  if(r->track->auxRefCount())
+                    track->updateAuxRoute( r->track->auxRefCount(), NULL );
+                  else
+                  if(r->track->type() == Track::AUDIO_AUX)
+                    track->updateAuxRoute( 1, NULL );
             }      
       }
       else if (track->type() == Track::AUDIO_INPUT) 
@@ -2970,6 +3002,13 @@ void Song::insertTrack2(Track* track, int idx)
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->inRoutes()->push_back(src);
+                  // Is this track an Aux Track or else does it have Aux Tracks routed to it?
+                  // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
+                  if(track->auxRefCount())
+                    r->track->updateAuxRoute( track->auxRefCount(), NULL );
+                  else
+                  if(track->type() == Track::AUDIO_AUX)
+                    r->track->updateAuxRoute( 1, NULL );
             }      
       }
       else if (track->isMidiTrack())          // p3.3.50
@@ -3000,6 +3039,13 @@ void Song::insertTrack2(Track* track, int idx)
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->outRoutes()->push_back(src);
+                  // Is the source an Aux Track or else does it have Aux Tracks routed to it?
+                  // Update this track's aux ref count.     p4.0.37
+                  if(r->track->auxRefCount())
+                    track->updateAuxRoute( r->track->auxRefCount(), NULL );
+                  else
+                  if(r->track->type() == Track::AUDIO_AUX)
+                    track->updateAuxRoute( 1, NULL );
             }
             rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
@@ -3010,6 +3056,13 @@ void Song::insertTrack2(Track* track, int idx)
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->inRoutes()->push_back(src);
+                  // Is this track an Aux Track or else does it have Aux Tracks routed to it?
+                  // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
+                  if(track->auxRefCount())
+                    r->track->updateAuxRoute( track->auxRefCount(), NULL );
+                  else
+                  if(track->type() == Track::AUDIO_AUX)
+                    r->track->updateAuxRoute( 1, NULL );
             }      
       }
       
@@ -3022,18 +3075,9 @@ void Song::insertTrack2(Track* track, int idx)
 //    non realtime part of insertTrack
 //---------------------------------------------------------
 
+// empty. gets executed after the realtime part
 void Song::insertTrack3(Track* /*track*/, int /*idx*/)//prevent compiler warning: unused parameter
 {
-      //printf("Song::insertTrack3\n");
-      
-      /*
-      switch(track->type()) {
-            case Track::AUDIO_SOFTSYNTH:
-                  break;
-            default:
-                  break;
-            }
-      */
 }
 
 //---------------------------------------------------------
@@ -3153,6 +3197,13 @@ void Song::removeTrack2(Track* track)
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->outRoutes()->removeRoute(src);
+                  // Is the source an Aux Track or else does it have Aux Tracks routed to it?
+                  // Update the Audio Output track's aux ref count.     p4.0.37
+                  if(r->track->auxRefCount())
+                    track->updateAuxRoute( -r->track->auxRefCount(), NULL );
+                  else
+                  if(r->track->type() == Track::AUDIO_AUX)
+                    track->updateAuxRoute( -1, NULL );
             }      
       }
       else if (track->type() == Track::AUDIO_INPUT) 
@@ -3167,6 +3218,13 @@ void Song::removeTrack2(Track* track)
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->inRoutes()->removeRoute(src);
+                  // Is this track an Aux Track or else does it have Aux Tracks routed to it?
+                  // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
+                  if(track->auxRefCount())
+                    r->track->updateAuxRoute( -track->auxRefCount(), NULL );
+                  else
+                  if(track->type() == Track::AUDIO_AUX)
+                    r->track->updateAuxRoute( -1, NULL );
             }      
       }
       else if (track->isMidiTrack())          // p3.3.50
@@ -3198,6 +3256,13 @@ void Song::removeTrack2(Track* track)
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->outRoutes()->removeRoute(src);
+                  // Is the source an Aux Track or else does it have Aux Tracks routed to it?
+                  // Update this track's aux ref count.     p4.0.37
+                  if(r->track->auxRefCount())
+                    track->updateAuxRoute( -r->track->auxRefCount(), NULL );
+                  else
+                  if(r->track->type() == Track::AUDIO_AUX)
+                    track->updateAuxRoute( -1, NULL );
             }
             rl = track->outRoutes();
             for (ciRoute r = rl->begin(); r != rl->end(); ++r)
@@ -3209,6 +3274,13 @@ void Song::removeTrack2(Track* track)
                   Route src(track, r->channel, r->channels);
                   src.remoteChannel = r->remoteChannel;
                   r->track->inRoutes()->removeRoute(src);
+                  // Is this track an Aux Track or else does it have Aux Tracks routed to it?
+                  // Update the other track's aux ref count and all tracks it is connected to.     p4.0.37
+                  if(track->auxRefCount())
+                    r->track->updateAuxRoute( -track->auxRefCount(), NULL );
+                  else
+                  if(track->type() == Track::AUDIO_AUX)
+                    r->track->updateAuxRoute( -1, NULL );
             }      
       }
       
@@ -3219,21 +3291,10 @@ void Song::removeTrack2(Track* track)
 //    non realtime part of removeTrack
 //---------------------------------------------------------
 
+//empty. gets executed after the realtime part
 void Song::removeTrack3(Track* /*track*/)//prevent of compiler warning: unused parameter
-      {
-      /*
-      switch(track->type()) {
-            case Track::AUDIO_SOFTSYNTH:
-                  {
-                  SynthI* s = (SynthI*) track;
-                  s->deactivate3();
-                  }
-                  break;
-            default:
-                  break;
-            }
-      */
-      }
+{
+}
 
 //---------------------------------------------------------
 //   executeScript

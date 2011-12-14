@@ -4,6 +4,7 @@
 //  $Id: node.cpp,v 1.36.2.25 2009/12/20 05:00:35 terminator356 Exp $
 //
 //  (C) Copyright 2000-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -25,6 +26,8 @@
 #include <sndfile.h>
 #include <stdlib.h>
 
+#include <QString>
+
 #include "node.h"
 #include "globals.h"
 #include "gconfig.h"
@@ -44,7 +47,6 @@
 //#define NODE_DEBUG 
 //#define FIFO_DEBUG 
 
-// Added by Tim. p3.3.18
 //#define METRONOME_DEBUG 
 
 namespace MusECore {
@@ -162,10 +164,19 @@ void Track::updateInternalSoloStates()
 
 void MidiTrack::updateInternalSoloStates()
 {
-      if(this == _tmpSoloChainTrack)
-        return;
-      
-      Track::updateInternalSoloStates();
+  if(_nodeTraversed)         // Anti circular mechanism.
+  {
+    fprintf(stderr, "MidiTrack::updateInternalSoloStates %s :\n  MusE Warning: Please check your routes: Circular path found!\n", name().toLatin1().constData()); 
+    return;                         
+  }  
+  //if(this == _tmpSoloChainTrack)  
+  //  return;
+  
+  _nodeTraversed = true; 
+  
+  Track::updateInternalSoloStates();
+  
+  _nodeTraversed = false;  // Reset.
 }
 
 
@@ -175,40 +186,61 @@ void MidiTrack::updateInternalSoloStates()
 
 void AudioTrack::updateInternalSoloStates()
 {
-      if(this == _tmpSoloChainTrack)
-        return;
-      
-      Track::updateInternalSoloStates();
-      
-      if(_tmpSoloChainDoIns)
+  if(_nodeTraversed)         // Anti circular mechanism.
+  {
+    fprintf(stderr, "AudioTrack::updateInternalSoloStates %s :\n  MusE Warning: Please check your routes: Circular path found!\n", name().toLatin1().constData()); 
+    return;                         
+  }  
+  //if(this == _tmpSoloChainTrack)  
+  //  return;
+  
+  _nodeTraversed = true; 
+
+  Track::updateInternalSoloStates();
+  
+  if(_tmpSoloChainDoIns)
+  {
+    if(type() == AUDIO_SOFTSYNTH)
+    {
+      const MusECore::MidiTrackList* ml = MusEGlobal::song->midis();
+      for(MusECore::ciMidiTrack im = ml->begin(); im != ml->end(); ++im)
       {
-        if(type() == AUDIO_SOFTSYNTH)
+        MusECore::MidiTrack* mt = *im;
+        if(mt->outPort() >= 0 && mt->outPort() == ((SynthI*)this)->midiPort())
+          mt->updateInternalSoloStates();
+      }
+    }
+    
+    const RouteList* rl = inRoutes();
+    for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
+    {
+      if(ir->type == Route::TRACK_ROUTE)
+        ir->track->updateInternalSoloStates();
+      else  
+      // Support Midi Port -> Audio Input solo chains. p4.0.37 Tim.
+      if(ir->type == Route::MIDI_PORT_ROUTE)    
+      {
+        const MidiTrackList* ml = MusEGlobal::song->midis();
+        for(ciMidiTrack im = ml->begin(); im != ml->end(); ++im)
         {
-          const MusECore::MidiTrackList* ml = MusEGlobal::song->midis();
-          for(MusECore::ciMidiTrack im = ml->begin(); im != ml->end(); ++im)
-          {
-            MusECore::MidiTrack* mt = *im;
-            if(mt->outPort() >= 0 && mt->outPort() == ((SynthI*)this)->midiPort())
-              mt->updateInternalSoloStates();
-          }
-        }
-        
-        const RouteList* rl = inRoutes();
-        for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
-        {
-          if(ir->type == Route::TRACK_ROUTE)
-            ir->track->updateInternalSoloStates();
+          MidiTrack* mt = *im;
+          if(mt->outPort() == ir->midiPort && ((1 << mt->outChannel()) & ir->channel) )
+            mt->updateInternalSoloStates();
         }
       }
-      else
-      {  
-        const RouteList* rl = outRoutes();
-        for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
-        {
-          if(ir->type == Route::TRACK_ROUTE)
-            ir->track->updateInternalSoloStates();
-        }
-      }  
+    }
+  }
+  else
+  {  
+    const RouteList* rl = outRoutes();
+    for(ciRoute ir = rl->begin(); ir != rl->end(); ++ir)
+    {
+      if(ir->type == Route::TRACK_ROUTE)
+        ir->track->updateInternalSoloStates();
+    }
+  }  
+  
+  _nodeTraversed = false; // Reset.
 }
 
 
@@ -220,6 +252,8 @@ void MidiTrack::updateSoloStates(bool noDec)
 {
   if(noDec && !_solo)
     return;
+  
+  _nodeTraversed = true;  // Anti circular mechanism.
   
   _tmpSoloChainTrack = this;
   _tmpSoloChainDoIns = false;
@@ -244,6 +278,8 @@ void MidiTrack::updateSoloStates(bool noDec)
       }  
     }
   }
+  
+  _nodeTraversed = false; // Reset.
 }
 
 
@@ -256,6 +292,8 @@ void AudioTrack::updateSoloStates(bool noDec)
   if(noDec && !_solo)
     return;
   
+  _nodeTraversed = true;  // Anti circular mechanism.
+
   _tmpSoloChainTrack = this;
   _tmpSoloChainNoDec = noDec;
   updateSoloState();
@@ -301,6 +339,8 @@ void AudioTrack::updateSoloStates(bool noDec)
         ir->track->updateInternalSoloStates();
     }
   }  
+  
+  _nodeTraversed = false; // Reset.
 }
 
 
@@ -327,7 +367,6 @@ void Track::setOff(bool val)
 //   copyData
 //---------------------------------------------------------
 
-//void AudioTrack::copyData(unsigned pos, int dstChannels, unsigned nframes, float** dstBuffer)
 void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int srcChannels, unsigned nframes, float** dstBuffer)
 {
   //Changed by T356. 12/12/09. 
@@ -336,60 +375,51 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
   // Make better use of AudioTrack::outBuffers as a post-effect pre-volume cache system for multiple calls here during processing.
   // Previously only WaveTrack used them. (Changed WaveTrack as well).
   
-  if(srcStartChan == -1)
-    srcStartChan = 0;
-    
-  int srcChans = (srcChannels == -1) ? channels() : srcChannels;
-  int srcTotalOutChans = totalOutChannels();
-  if(channels() == 1)
-    srcTotalOutChans = 1;
-  
   #ifdef NODE_DEBUG
   printf("MusE: AudioTrack::copyData name:%s processed:%d\n", name().toLatin1().constData(), processed());
   #endif
+  
+  if(srcStartChan == -1)
+    srcStartChan = 0;
+    
+  int trackChans = channels();
+  int srcChans = (srcChannels == -1) ? trackChans : srcChannels;
+  int srcTotalOutChans = totalOutChannels();
+  if(channels() == 1)
+    srcTotalOutChans = 1;
   
   // Special consideration for metronome: It is not part of the track list,
   //  and it has no in or out routes, yet multiple output tracks may call addData on it !
   // We can't tell how many output tracks call it, so we can only assume there might be more than one.
   // Not strictly necessary here because only addData is ever called, but just to be consistent...
-  //bool usedirectbuf = (outRoutes()->size() <= 1) || (type() == AUDIO_OUTPUT);
-  bool usedirectbuf = ((outRoutes()->size() <= 1) || (type() == AUDIO_OUTPUT)) && (this != metronome);
+  //bool usedirectbuf = ((outRoutes()->size() <= 1) || (type() == AUDIO_OUTPUT)) && (this != metronome);
   
   int i;
   
-  // p3.3.38
-  //float* buffer[srcChannels];
   float* buffer[srcTotalOutChans];
+  float data[nframes * srcTotalOutChans];
   
-  
-  //float data[nframes * srcChannels];
-  //for(i = 0; i < srcChannels; ++i)
-  //      buffer[i] = data + i * nframes;
-        
   // precalculate stereo volume
   double vol[2];
   double _volume = volume();
   double _pan = pan();
   vol[0] = _volume * (1.0 - _pan);
   vol[1] = _volume * (1.0 + _pan);
-  float meter[srcChans];
+  float meter[trackChans];
 
   // Have we been here already during this process cycle?
   if(processed())
   {
     // If there is only one (or no) output routes, it's an error - we've been called more than once per process cycle!
+    // No, this is no longer an error, it's deliberate. Processing no longer done in 'chains', now done randomly.  p4.0.37
     #ifdef NODE_DEBUG
-    if(usedirectbuf)
-      printf("MusE: AudioTrack::copyData Error! One or no out routes, but already processed! Copying local buffers anyway...\n");
+    printf("MusE: AudioTrack::copyData name:%s already processed _haveData:%d\n", name().toLatin1().constData(), _haveData);
     #endif
     
     // Is there already some data gathered from a previous call during this process cycle?
     if(_haveData)
     {
       // Point the input buffers at our local cached 'pre-volume' buffers. They need processing, so continue on after.
-      //for(i = 0; i < srcChannels; ++i)
-      //  buffer[i] = outBuffers[i];
-      // p3.3.38
       for(i = 0; i < srcTotalOutChans; ++i)
         buffer[i] = outBuffers[i];
     }
@@ -413,29 +443,16 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
   {
     // First time here during this process cycle. 
     
-    // Point the input buffers at a temporary stack buffer.
-    //float data[nframes * srcChannels];
-    //for(i = 0; i < srcChannels; ++i)
-    //    buffer[i] = data + i * nframes;
-    // p3.3.38
-    float data[nframes * srcTotalOutChans];
-    for(i = 0; i < srcTotalOutChans; ++i)
-        buffer[i] = data + i * nframes;
-  
-    // getData can use the supplied buffers, or change buffer to point to its own local buffers or Jack buffers etc. 
-    // For ex. if this is an audio input, Jack will set the pointers for us in AudioInput::getData!
-    // p3.3.29 1/27/10 Don't do any processing at all if off. Whereas, mute needs to be ready for action at all times,
-    //  so still call getData before it. Off is NOT meant to be toggled rapidly, but mute is !
-    //if(!getData(pos, srcChannels, nframes, buffer) || off() || (isMute() && !_prefader)) 
-    //if(off() || !getData(pos, srcChannels, nframes, buffer) || (isMute() && !_prefader)) 
-    // p3.3.38
-    if(off() || !getData(pos, srcTotalOutChans, nframes, buffer) || (isMute() && !_prefader)) 
-    {
+    _haveData = false;  // Reset.
+    _processed = true;  // Set this now.
+
+    if(off())  
+    {  
       #ifdef NODE_DEBUG
-      printf("MusE: AudioTrack::copyData name:%s dstChannels:%d zeroing buffers\n", name().toLatin1().constData(), dstChannels);
+      printf("MusE: AudioTrack::copyData name:%s dstChannels:%d Off, zeroing buffers\n", name().toLatin1().constData(), dstChannels);
       #endif
       
-      // No data was available. Zero the supplied buffers.
+      // Track is off. Zero the supplied buffers.
       unsigned int q;
       for(i = 0; i < dstChannels; ++i) 
       {
@@ -448,13 +465,12 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
           memset(dstBuffer[i], 0, sizeof(float) * nframes);
       }  
       
-      for(i = 0; i < srcChans; ++i) 
+      _efxPipe->apply(0, nframes, 0);  // Just process controls only, not audio (do not 'run').    
+
+      for(i = 0; i < trackChans; ++i) 
       {
-        //_meter[i] = 0;
         _meter[i] = 0.0;
-        
-        /*
-        if(!usedirectbuf)
+        /*if(!usedirectbuf)
         {
           if(MusEGlobal::config.useDenormalBias) 
           {
@@ -463,22 +479,49 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
           }
           else    
             memset(outBuffers[i], 0, sizeof(float) * nframes);
-        }
-        */
+        } */
       }
       
-      _haveData = false;
-      _processed = true;
+      //_haveData = false;
+      //_processed = true;
+      //_isProcessing = false;  // Unblock.
       return;
+    }
+    
+    // Point the input buffers at a temporary stack buffer.
+    for(i = 0; i < srcTotalOutChans; ++i)
+        buffer[i] = data + i * nframes;
+  
+    // getData can use the supplied buffers, or change buffer to point to its own local buffers or Jack buffers etc. 
+    // For ex. if this is an audio input, Jack will set the pointers for us in AudioInput::getData!
+    // Don't do any processing at all if off. Whereas, mute needs to be ready for action at all times,
+    //  so still call getData before it. Off is NOT meant to be toggled rapidly, but mute is !
+    if(!getData(pos, srcTotalOutChans, nframes, buffer) || (isMute() && !_prefader)) 
+    {
+      #ifdef NODE_DEBUG
+      printf("MusE: AudioTrack::copyData name:%s srcTotalOutChans:%d zeroing buffers\n", name().toLatin1().constData(), srcTotalOutChans);
+      #endif
+      
+      // No data was available. Track is not off. Zero the working buffers and continue on.
+      unsigned int q;
+      for(i = 0; i < srcTotalOutChans; ++i)
+      {  
+        if(MusEGlobal::config.useDenormalBias) 
+        {
+          for(q = 0; q < nframes; ++q)
+            buffer[i][q] = MusEGlobal::denormalBias;
+        } 
+        else
+          memset(buffer[i], 0, sizeof(float) * nframes);
+      }  
     }
 
     //---------------------------------------------------
     // apply plugin chain
     //---------------------------------------------------
 
-    // p3.3.41
     //fprintf(stderr, "AudioTrack::copyData %s efx apply srcChans:%d\n", name().toLatin1().constData(), srcChans);
-    _efxPipe->apply(srcChans, nframes, buffer);
+    _efxPipe->apply(trackChans, nframes, buffer);   
 
     //---------------------------------------------------
     // aux sends
@@ -525,18 +568,16 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
 
     if(_prefader) 
     {
-      for(i = 0; i < srcChans; ++i) 
+      for(i = 0; i < trackChans; ++i)   
       {
         float* p = buffer[i];
         meter[i] = 0.0;
         for(unsigned k = 0; k < nframes; ++k) 
         {
-          double f = fabs(*p);
+          double f = fabs(*p++);
           if(f > meter[i])
             meter[i] = f;
-          ++p;
         }
-        //_meter[i] = lrint(meter[i] * 32767.0);
         _meter[i] = meter[i];
         if(_meter[i] > _peak[i])
           _peak[i] = _meter[i];
@@ -570,20 +611,19 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
           else    
             memset(outBuffers[i], 0, sizeof(float) * nframes);
         }
-      }
-      */  
+      } */
       
-      _haveData = false;
-      _processed = true;
+      
+      if(!_prefader) 
+        for(i = 0; i < trackChans; ++i) // Must process ALL channels, even if unconnected. Only max 2 channels.
+          _meter[i] = 0.0;
+
       return;
     }
     
     // If we're using local cached 'pre-volume' buffers, copy the input buffers (as they are right now: post-effect pre-volume) back to them. 
-    if(!usedirectbuf)
+    //if(!usedirectbuf)
     {
-      //for(i = 0; i < srcChannels; ++i)
-      //  AL::dsp->cpy(outBuffers[i], buffer[i], nframes);
-      // p3.3.38
       for(i = 0; i < srcTotalOutChans; ++i)
         AL::dsp->cpy(outBuffers[i], buffer[i], nframes);
     }
@@ -606,9 +646,9 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
       else 
         memset(dstBuffer[i], 0, sizeof(float) * nframes);
     }        
-    _processed = true;
     return;
   }
+
   // Force a source range to fit actual available total out channels.
   if((srcStartChan + srcChans) > srcTotalOutChans) 
     srcChans = srcTotalOutChans - srcStartChan;
@@ -618,132 +658,94 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
   //    postfader metering
   //---------------------------------------------------
 
+  #ifdef NODE_DEBUG
+  printf("MusE: AudioTrack::copyData trackChans:%d srcTotalOutChans:%d srcStartChan:%d srcChans:%d dstChannels:%d\n", trackChans, srcTotalOutChans, srcStartChan, srcChans, dstChannels);
+  #endif
+      
+  if(!_prefader) 
+  {
+    for(int c = 0; c < trackChans; ++c)     
+    {
+      meter[c] = 0.0;
+      double v = (trackChans == 1 ? _volume : vol[c]);        
+      float* sp = buffer[c];
+      for(unsigned k = 0; k < nframes; ++k) 
+      {
+        float val = *sp++ * v;  // If the track is mono pan has no effect on meters.
+        double f = fabs(val);
+        if(f > meter[c])
+          meter[c] = f;
+      }
+      _meter[c] = meter[c];
+      if(_meter[c] > _peak[c])
+        _peak[c] = _meter[c];
+    }  
+  }
     
   if(srcChans == dstChannels) 
   {
-    if(_prefader) 
+    for(int c = 0; c < dstChannels; ++c) 
     {
-      for(int c = 0; c < dstChannels; ++c) 
-      {
-        // p3.3.38
-        //float* sp = buffer[c];
-        float* sp = buffer[c + srcStartChan];
-        
-        float* dp = dstBuffer[c];
-        for(unsigned k = 0; k < nframes; ++k)
-          *dp++ = (*sp++ * vol[c]);
-      }
-    }
-    else 
-    {
-      for(int c = 0; c < dstChannels; ++c) 
-      {
-        meter[c] = 0.0;
-        
-        // p3.3.38
-        //float* sp = buffer[c];
-        float* sp = buffer[c + srcStartChan];
-        
-        float* dp = dstBuffer[c];
-        //printf("2 dstBuffer[c]=%d\n",long(dstBuffer[c]));
-        for(unsigned k = 0; k < nframes; ++k) 
-        {
-          float val = *sp++ * vol[c];
-          *dp++ = val;
-          double f = fabs(val);
-          if(f > meter[c])
-            meter[c] = f;
-        }
-        //_meter[c] = lrint(meter[c] * 32767.0);
-        _meter[c] = meter[c];
-        if(_meter[c] > _peak[c])
-          _peak[c] = _meter[c];
-      }
+      double v;
+      if(srcStartChan > 2)      // Don't apply pan or volume to extra channels above 2.
+        //v = _volume;
+        v = 1.0;
+      else
+      if(srcChans >= 2)         // If 2 channels apply pan normally.
+        v = vol[c];
+      else
+      if(trackChans < 2)        // If 1 channel and track is 1 channel, don't apply pan.
+        v = _volume;
+      else
+        v = vol[srcStartChan];  // Otherwise 1 channel but track is 2 channels. Apply the channel volume.
+      
+      float* sp = buffer[c + srcStartChan];
+      float* dp = dstBuffer[c];
+      for(unsigned k = 0; k < nframes; ++k)
+        //*dp++ = (*sp++ * vol[c]);
+        *dp++ = (*sp++ * v);
     }
   }
   else if(srcChans == 1 && dstChannels == 2) 
   {
-    // p3.3.38
-    //float* sp = buffer[0];
-    float* sp = buffer[srcStartChan];
-    
-    if(_prefader) 
+    for(int c = 0; c < dstChannels; ++c) 
     {
-      for(int c = 0; c < dstChannels; ++c) 
-      {
-        float* dp = dstBuffer[c];
-        for(unsigned k = 0; k < nframes; ++k)
-          *dp++ = (*sp++ * vol[c]);
-      }
-    }
-    else 
-    {
-      meter[0] = 0.0;
-      for(unsigned k = 0; k < nframes; ++k) 
-      {
-        float val = *sp++;
-        double f = fabs(val) * _volume;
-        if(f > meter[0])
-          meter[0] = f;
-        *(dstBuffer[0] + k) = val * vol[0];
-        *(dstBuffer[1] + k) = val * vol[1];
-      }
-      //_meter[0] = lrint(meter[0] * 32767.0);
-      _meter[0] = meter[0];
-      if(_meter[0] > _peak[0])
-        _peak[0] = _meter[0];
+      double v;
+      if(srcStartChan > 2)      // Don't apply pan or volume to extra channels above 2.
+        //v = _volume;
+        v = 1.0;
+      else
+      if(trackChans <= 1)       // If track is mono apply pan.
+        v = vol[c];
+      else
+        v = vol[srcStartChan];  // Otherwise track is stereo, apply the same channel volume to both.
+      
+      float* sp = buffer[srcStartChan];
+      float* dp = dstBuffer[c];
+      for(unsigned k = 0; k < nframes; ++k)
+        //*dp++ = (*sp++ * vol[c]);
+        *dp++ = (*sp++ * v);
     }
   }
   else if(srcChans == 2 && dstChannels == 1) 
   {
-    // p3.3.38
-    //float* sp1 = buffer[0];
-    //float* sp2 = buffer[1];
+    //double v1 = (srcStartChan > 2 ? _volume : vol[srcStartChan]);       // Don't apply pan to extra channels above 2.
+    //double v2 = (srcStartChan > 2 ? _volume : vol[srcStartChan + 1]);   // 
+    double v1 = (srcStartChan > 2 ? 1.0 : vol[srcStartChan]);             // Don't apply pan or volume to extra channels above 2.
+    double v2 = (srcStartChan > 2 ? 1.0 : vol[srcStartChan + 1]);         // 
+    float* dp = dstBuffer[0];
     float* sp1 = buffer[srcStartChan];
     float* sp2 = buffer[srcStartChan + 1];
-    
-    if(_prefader) 
-    {
-      float* dp = dstBuffer[0];
-      for(unsigned k = 0; k < nframes; ++k)
-        *dp++ = (*sp1++ * vol[0] + *sp2++ * vol[1]);
-    }
-    else 
-    {
-      float* dp = dstBuffer[0];
-      meter[0] = 0.0;
-      meter[1] = 0.0;
-      for(unsigned k = 0; k < nframes; ++k) 
-      {
-        float val1 = *sp1++ * vol[0];
-        float val2 = *sp2++ * vol[1];
-        double f1 = fabs(val1);
-        if(f1 > meter[0])
-          meter[0] = f1;
-        double f2 = fabs(val2);
-        if(f2 > meter[1])
-          meter[1] = f2;
-        *dp++ = (val1 + val2);
-      }
-      //_meter[0] = lrint(meter[0] * 32767.0);
-      _meter[0] = meter[0];
-      if(_meter[0] > _peak[0])
-        _peak[0] = _meter[0];
-      //_meter[1] = lrint(meter[1] * 32767.0);
-      _meter[1] = meter[1];
-      if(_meter[1] > _peak[1])
-        _peak[1] = _meter[1];
-    }
+    for(unsigned k = 0; k < nframes; ++k)
+      //*dp++ = (*sp1++ * vol[0] + *sp2++ * vol[1]);
+      *dp++ = (*sp1++ * v1 + *sp2++ * v2);
   }
-        
-  _processed = true;
 }
 
 //---------------------------------------------------------
 //   addData
 //---------------------------------------------------------
 
-//void AudioTrack::addData(unsigned pos, int dstChannels, unsigned nframes, float** dstBuffer)
 void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int srcChannels, unsigned nframes, float** dstBuffer)
 {
   //Changed by T356. 12/12/09. 
@@ -752,21 +754,21 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   // Make better use of AudioTrack::outBuffers as a post-effect pre-volume cache system for multiple calls here during processing.
   // Previously only WaveTrack used them. (Changed WaveTrack as well).
   
-  //Added by Tim. p3.3.16
   #ifdef NODE_DEBUG
   printf("MusE: AudioTrack::addData name:%s processed:%d\n", name().toLatin1().constData(), processed());
   #endif
   
-  if (off())
-  {
-    _processed = true;
-    return;
-  } 
+  //if (off())
+  //{
+  //  _processed = true;
+  //  return;
+  //} 
         
   if(srcStartChan == -1)
     srcStartChan = 0;
     
-  int srcChans = (srcChannels == -1) ? channels() : srcChannels;
+  int trackChans = channels();
+  int srcChans = (srcChannels == -1) ? trackChans : srcChannels;
   int srcTotalOutChans = totalOutChannels();
   if(channels() == 1)
     srcTotalOutChans = 1;
@@ -774,18 +776,12 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   // Special consideration for metronome: It is not part of the track list,
   //  and it has no in or out routes, yet multiple output tracks may call addData on it !
   // We can't tell how many output tracks call it, so we can only assume there might be more than one.
-  //bool usedirectbuf = (outRoutes()->size() <= 1) || (type() == AUDIO_OUTPUT);
-  bool usedirectbuf = ((outRoutes()->size() <= 1) || (type() == AUDIO_OUTPUT)) && (this != metronome);
+  //bool usedirectbuf = ((outRoutes()->size() <= 1) || (type() == AUDIO_OUTPUT)) && (this != metronome);
   
   int i;
   
-  // p3.3.38
-  //float* buffer[srcChannels];
   float* buffer[srcTotalOutChans];
-  
-  //float data[nframes * srcChannels];
-  //for (i = 0; i < srcChannels; ++i)
-  //      buffer[i] = data + i * nframes;
+  float data[nframes * srcTotalOutChans];
   
   // precalculate stereo volume
   double vol[2];
@@ -793,105 +789,96 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   double _pan = pan();
   vol[0] = _volume * (1.0 - _pan);
   vol[1] = _volume * (1.0 + _pan);
-  float meter[srcChans];
+  //float meter[srcChans];
+  float meter[trackChans];
 
   // Have we been here already during this process cycle?
   if(processed())
   {
     // If there is only one (or no) output routes, it's an error - we've been called more than once per process cycle!
+    // No, this is no longer an error, it's deliberate. Processing no longer done in 'chains', now done randomly.  p4.0.37
     #ifdef NODE_DEBUG
-    if(usedirectbuf)
-      printf("MusE: AudioTrack::addData Error! One or no out routes, but already processed! Copying local buffers anyway...\n");
+    printf("MusE: AudioTrack::addData name:%s already processed _haveData:%d\n", name().toLatin1().constData(), _haveData);
     #endif
     
     // Is there already some data gathered from a previous call during this process cycle?
     if(_haveData)
     {
       // Point the input buffers at our local cached 'pre-volume' buffers. They need processing, so continue on after.
-      //for(i = 0; i < srcChannels; ++i)
-      //  buffer[i] = outBuffers[i];
-      // p3.3.38
       for(i = 0; i < srcTotalOutChans; ++i)
         buffer[i] = outBuffers[i];
     }
     else
+    {  
       // No data was available from a previous call during this process cycle. Nothing to add, just return.
       return;  
+    }  
   }
   else
   {
     // First time here during this process cycle. 
     
-    // Point the input buffers at a temporary stack buffer.
-    //float data[nframes * srcChannels];
-    //for(i = 0; i < srcChannels; ++i)
-    //  buffer[i] = data + i * nframes;
-    // p3.3.38
-    float data[nframes * srcTotalOutChans];
-    for(i = 0; i < srcTotalOutChans; ++i)
-        buffer[i] = data + i * nframes;
-  
+    _haveData = false;  // Reset.
+    _processed = true;  // Set this now.
     
-    // getData can use the supplied buffers, or change buffer to point to its own local buffers or Jack buffers etc. 
-    // For ex. if this is an audio input, Jack will set the pointers for us.
-    //if(!getData(pos, srcChannels, nframes, buffer)) 
-    // p3.3.38
-    if(!getData(pos, srcTotalOutChans, nframes, buffer)) 
-    {
-      // No data was available. Nothing to add, but zero our local buffers and the meters.
-      for(i = 0; i < srcChans; ++i)
+    if(off())  
+    {  
+      #ifdef NODE_DEBUG
+      printf("MusE: AudioTrack::addData name:%s dstChannels:%d Track is Off \n", name().toLatin1().constData(), dstChannels);
+      #endif
+      
+      //  Nothing to zero or add...
+      
+      _efxPipe->apply(0, nframes, 0);  // Track is off. Just process controls only, not audio (do not 'run').    
+
+      for(i = 0; i < trackChans; ++i) 
       {
-        // If we're using local buffers, we must zero them so that the next thing requiring them 
-        //  during this process cycle will see zeros.
-        /*
-        if(!usedirectbuf)
+        _meter[i] = 0.0;
+        /*if(!usedirectbuf)
         {
           if(MusEGlobal::config.useDenormalBias) 
           {
-            for(unsigned int q = 0; q < nframes; ++q)
+            for(q = 0; q < nframes; ++q)
               outBuffers[i][q] = MusEGlobal::denormalBias;
-          }  
-          else
+          }
+          else    
             memset(outBuffers[i], 0, sizeof(float) * nframes);
-        }
-        */  
-          
-        //_meter[i] = 0;
-        _meter[i] = 0.0;
-      }      
-      
-      _haveData = false;
-      _processed = true;
+        } */
+      }
       return;
     }
-
-    /*
-    // p3.3.41 Added.
-    unsigned int q;
-    for(i = 0; i < srcChans; ++i) 
+      
+    // Point the input buffers at a temporary stack buffer.
+    for(i = 0; i < srcTotalOutChans; ++i)
+        buffer[i] = data + i * nframes;
+  
+    // getData can use the supplied buffers, or change buffer to point to its own local buffers or Jack buffers etc. 
+    // For ex. if this is an audio input, Jack will set the pointers for us.
+    if(!getData(pos, srcTotalOutChans, nframes, buffer)) 
     {
-      if(MusEGlobal::config.useDenormalBias) 
-      {
-        for(q = 0; q < nframes; ++q)
+      // No data was available. Track is not off. Zero the working buffers and continue on.
+      unsigned int q;
+      for(i = 0; i < srcTotalOutChans; ++i)
+      {  
+        if(MusEGlobal::config.useDenormalBias) 
         {
-          if(q & 1)
-            buffer[i][q] -= MusEGlobal::denormalBias;
-          else
-            buffer[i][q] += MusEGlobal::denormalBias;
-        }  
-      } 
-    }  
-    */
-    
+          for(q = 0; q < nframes; ++q)
+            buffer[i][q] = MusEGlobal::denormalBias;
+        } 
+        else
+          memset(buffer[i], 0, sizeof(float) * nframes);
+      }  
+    }
+
     //---------------------------------------------------
     // apply plugin chain
     //---------------------------------------------------
 
-    // p3.3.41
     //fprintf(stderr, "AudioTrack::addData %s efx apply srcChans:%d nframes:%ld %e %e %e %e\n", 
     //        name().toLatin1().constData(), srcChans, nframes, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
-    _efxPipe->apply(srcChans, nframes, buffer);
-    // p3.3.41
+    
+    _efxPipe->apply(trackChans, nframes, buffer);   
+    
     //fprintf(stderr, "AudioTrack::addData after efx: %e %e %e %e\n", 
     //        buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
 
@@ -940,18 +927,16 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
 
     if(_prefader) 
     {
-      for(i = 0; i < srcChans; ++i) 
+      for(i = 0; i < trackChans; ++i) 
       {
         float* p = buffer[i];
         meter[i] = 0.0;
         for(unsigned k = 0; k < nframes; ++k) 
         {
-          double f = fabs(*p);
+          double f = fabs(*p++);
           if(f > meter[i])
             meter[i] = f;
-          ++p;
         }
-        //_meter[i] = lrint(meter[i] * 32767.0);
         _meter[i] = meter[i];
         if(_meter[i] > _peak[i])
           _peak[i] = _meter[i];
@@ -961,8 +946,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
     if(isMute())
     {
       // If we're using local buffers, we must zero them.
-      /*
-      if(!usedirectbuf)
+      /* if(!usedirectbuf)
       {
         for(i = 0; i < srcChannels; ++i)
         {
@@ -974,20 +958,19 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
           else
             memset(outBuffers[i], 0, sizeof(float) * nframes);
         }    
-      }  
-      */
+      } */ 
       
-      _haveData = false;
-      _processed = true;
+      if(!_prefader) 
+        //for(i = 0; i < srcChans; ++i) 
+        for(i = 0; i < trackChans; ++i)   
+          _meter[i] = 0.0;
+        
       return;
     }
     
     // If we're using local cached 'pre-volume' buffers, copy the input buffers (as they are right now: post-effect pre-volume) back to them. 
-    if(!usedirectbuf)
+    //if(!usedirectbuf)
     {
-      //for(i = 0; i < srcChannels; ++i)
-      //  AL::dsp->cpy(outBuffers[i], buffer[i], nframes);
-      // p3.3.38
       for(i = 0; i < srcTotalOutChans; ++i)
         AL::dsp->cpy(outBuffers[i], buffer[i], nframes);
     }
@@ -1010,9 +993,9 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
       else 
         memset(dstBuffer[i], 0, sizeof(float) * nframes);
     }        
-    _processed = true;
     return;
   }
+  
   // Force a source range to fit actual available total out channels.
   if((srcStartChan + srcChans) > srcTotalOutChans) 
     srcChans = srcTotalOutChans - srcStartChan;
@@ -1022,123 +1005,88 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   //    postfader metering
   //---------------------------------------------------
 
+  #ifdef NODE_DEBUG
+  printf("MusE: AudioTrack::addData trackChans:%d srcTotalOutChans:%d srcChans:%d dstChannels:%d\n", trackChans, srcTotalOutChans, srcChans, dstChannels);
+  #endif
+      
+  if(!_prefader) 
+  {
+    for(int c = 0; c < trackChans; ++c)     
+    {
+      meter[c] = 0.0;
+      double v = (trackChans == 1 ? _volume : vol[c]);        
+      float* sp = buffer[c];
+      for(unsigned k = 0; k < nframes; ++k) 
+      {
+        float val = *sp++ * v;  // If the track is mono pan has no effect on meters.
+        double f = fabs(val);
+        if(f > meter[c])
+          meter[c] = f;
+      }
+      _meter[c] = meter[c];
+      if(_meter[c] > _peak[c])
+        _peak[c] = _meter[c];
+    }  
+  }
+  
   if(srcChans == dstChannels) 
   {
-    if(_prefader) 
+    for(int c = 0; c < dstChannels; ++c) 
     {
-      for(int c = 0; c < dstChannels; ++c) 
-      {
-        // p3.3.38
-        //float* sp = buffer[c];
-        float* sp = buffer[c + srcStartChan];
-        
-        float* dp = dstBuffer[c];
-        for(unsigned k = 0; k < nframes; ++k)
-          *dp++ += (*sp++ * vol[c]);
-      }
-    }
-    else 
-    {
-      for(int c = 0; c < dstChannels; ++c) 
-      {
-        meter[c] = 0.0;
-        // p3.3.38
-        //float* sp = buffer[c];
-        float* sp = buffer[c + srcStartChan];
-        
-        float* dp = dstBuffer[c];
-        for(unsigned k = 0; k < nframes; ++k) 
-        {
-          float val = *sp++ * vol[c];
-          *dp++ += val;
-          double f = fabs(val);
-          if (f > meter[c])
-                meter[c] = f;
-        }
-        //_meter[c] = lrint(meter[c] * 32767.0);
-        _meter[c] = meter[c];
-        if(_meter[c] > _peak[c])
-          _peak[c] = _meter[c];
-      }
+      double v;
+      if(srcStartChan > 2)      // Don't apply pan or volume to extra channels above 2.
+        //v = _volume;
+        v = 1.0;
+      else
+      if(srcChans >= 2)         // If 2 channels apply pan normally.
+        v = vol[c];
+      else
+      if(trackChans < 2)        // If 1 channel and track is 1 channel, don't apply pan.
+        v = _volume;
+      else
+        v = vol[srcStartChan];  // Otherwise 1 channel but track is 2 channels. Apply the channel volume.
+      
+      float* sp = buffer[c + srcStartChan];
+      float* dp = dstBuffer[c];
+      for(unsigned k = 0; k < nframes; ++k)
+        //*dp++ += (*sp++ * vol[c]);
+        *dp++ += (*sp++ * v);
     }
   }
   else if(srcChans == 1 && dstChannels == 2) 
   {
-    // p3.3.38
-    float* sp = buffer[srcStartChan];
-    
-    if(_prefader) 
+    for(int c = 0; c < dstChannels; ++c) 
     {
-      for(int c = 0; c < dstChannels; ++c) 
-      {
-        float* dp = dstBuffer[c];
-        //float* sp = buffer[0];
-        for(unsigned k = 0; k < nframes; ++k)
-          *dp++ += (*sp++ * vol[c]);
-      }
-    }
-    else 
-    {
-      //float* sp = buffer[0];
-      meter[0]  = 0.0;
-      for(unsigned k = 0; k < nframes; ++k) 
-      {
-        float val = *sp++;
-        double f = fabs(val) * _volume;
-        if(f > meter[0])
-          meter[0] = f;
-        *(dstBuffer[0] + k) += val * vol[0];
-        *(dstBuffer[1] + k) += val * vol[1];
-      }
-      //_meter[0] = lrint(meter[0] * 32767.0);
-      _meter[0] = meter[0];
-      if(_meter[0] > _peak[0])
-        _peak[0] = _meter[0];
+      double v;
+      if(srcStartChan > 2)      // Don't apply pan or volume to extra channels above 2.
+        //v = _volume;
+        v = 1.0;
+      else
+      if(trackChans <= 1)       // If track is mono apply pan.
+        v = vol[c];
+      else
+        v = vol[srcStartChan];  // Otherwise track is stereo, apply the same channel volume to both.
+      
+      float* sp = buffer[srcStartChan];
+      float* dp = dstBuffer[c];
+      for(unsigned k = 0; k < nframes; ++k)
+        //*dp++ += (*sp++ * vol[c]);
+        *dp++ += (*sp++ * v);
     }
   }
   else if(srcChans == 2 && dstChannels == 1) 
   {
-    // p3.3.38
-    //float* sp1 = buffer[0];
-    //float* sp2 = buffer[1];
+    //double v1 = (srcStartChan > 2 ? _volume : vol[srcStartChan]);       // Don't apply pan to extra channels above 2.
+    //double v2 = (srcStartChan > 2 ? _volume : vol[srcStartChan + 1]);   // 
+    double v1 = (srcStartChan > 2 ? 1.0 : vol[srcStartChan]);             // Don't apply pan or volume to extra channels above 2.
+    double v2 = (srcStartChan > 2 ? 1.0 : vol[srcStartChan + 1]);         // 
     float* sp1 = buffer[srcStartChan];
     float* sp2 = buffer[srcStartChan + 1];
-    
-    if(_prefader) 
-    {
-      float* dp = dstBuffer[0];
-      for(unsigned k = 0; k < nframes; ++k)
-        *dp++ += (*sp1++ * vol[0] + *sp2++ * vol[1]);
-    }
-    else 
-    {
-      float* dp = dstBuffer[0];
-      meter[0] = 0.0;
-      meter[1] = 0.0;
-      for(unsigned k = 0; k < nframes; ++k) 
-      {
-        float val1 = *sp1++ * vol[0];
-        float val2 = *sp2++ * vol[1];
-        double f1 = fabs(val1);
-        if(f1 > meter[0])
-          meter[0] = f1;
-        double f2 = fabs(val2);
-        if(f2 > meter[1])
-          meter[1] = f2;
-        *dp++ += (val1 + val2);
-      }
-      //_meter[0] = lrint(meter[0] * 32767.0);
-      _meter[0] = meter[0];
-      if(_meter[0] > _peak[0])
-        _peak[0] = _meter[0];
-      //_meter[1] = lrint(meter[1] * 32767.0);
-      _meter[1] = meter[1];
-      if(_meter[1] > _peak[1])
-        _peak[1] = _meter[1];
-    }
+    float* dp = dstBuffer[0];
+    for(unsigned k = 0; k < nframes; ++k)
+      //*dp++ += (*sp1++ * vol[0] + *sp2++ * vol[1]);
+      *dp++ += (*sp1++ * v1 + *sp2++ * v2);
   }
-  
-  _processed = true;
 }
 
 //---------------------------------------------------------
@@ -1300,15 +1248,12 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
       printf("    calling copyData on %s...\n", ir->track->name().toLatin1().constData());
       #endif
       
-      // p3.3.38
-      //((AudioTrack*)ir->track)->copyData(pos, channels, nframes, buffer);
       ((AudioTrack*)ir->track)->copyData(pos, channels, 
                                          //(ir->track->type() == Track::AUDIO_SOFTSYNTH && ir->channel != -1) ? ir->channel : 0,
                                          ir->channel,
                                          ir->channels,
                                          nframes, buffer);
       
-      // p3.3.41
       //fprintf(stderr, "AudioTrack::getData %s data: nframes:%ld %e %e %e %e\n", name().toLatin1().constData(), nframes, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
       
       ++ir;
@@ -1320,8 +1265,6 @@ bool AudioTrack::getData(unsigned pos, int channels, unsigned nframes, float** b
             if(ir->track->isMidiTrack())
               continue;
               
-            // p3.3.38
-            //((AudioTrack*)ir->track)->addData(pos, channels, nframes, buffer);
             ((AudioTrack*)ir->track)->addData(pos, channels, 
                                               //(ir->track->type() == Track::AUDIO_SOFTSYNTH && ir->channel != -1) ? ir->channel : 0,
                                               ir->channel,
@@ -1344,12 +1287,11 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
             void* jackPort = jackPorts[ch];
             //float* jackbuf = 0;
             
-            //if (jackPort) {
-            // p3.3.41 Do not get buffers of unconnected client ports. Causes repeating leftover data, can be loud, or DC !
+            // Do not get buffers of unconnected client ports. Causes repeating leftover data, can be loud, or DC !
             if (jackPort && MusEGlobal::audioDevice->connections(jackPort)) 
             {
                   //buffer[ch] = MusEGlobal::audioDevice->getBuffer(jackPort, nframes);
-                  // p3.3.41 If the client port buffer is also used by another channel (connected to the same jack port), 
+                  // If the client port buffer is also used by another channel (connected to the same jack port), 
                   //  don't directly set pointer, copy the data instead. 
                   // Otherwise the next channel will interfere - it will overwrite the buffer !
                   // Verified symptoms: Can't use a splitter. Mono noise source on a stereo track sounds in mono. Etc...
@@ -1366,8 +1308,6 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
                   {
                       for (unsigned int i=0; i < nframes; i++)
                               buffer[ch][i] += MusEGlobal::denormalBias;
-                      
-                      // p3.3.41
                       //fprintf(stderr, "AudioInput::getData %s Jack port %p efx apply channels:%d nframes:%ld %e %e %e %e\n", 
                       //        name().toLatin1().constData(), jackPort, channels, nframes, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
                   }
@@ -1384,8 +1324,6 @@ bool AudioInput::getData(unsigned, int channels, unsigned nframes, float** buffe
                               memset(buffer[ch], 0, nframes * sizeof(float));
                   }
                   
-                  // p3.3.41
-                  //fprintf(stderr, "AudioInput::getData %s No Jack port efx apply channels:%d nframes:%ld %e %e %e %e\n", 
                   //        name().toLatin1().constData(), channels, nframes, buffer[0][0], buffer[0][1], buffer[0][2], buffer[0][3]);
             }
       }
@@ -1524,7 +1462,7 @@ void AudioTrack::record()
                   return;
                   }
             if (_recFile) {
-                  // Line removed by Tim. p3.3.8 Oct 28, 2009
+                  // Line removed by Tim. Oct 28, 2009
                   //_recFile->seek(pos, 0);
                   //
                   // Fix for recorded waves being shifted ahead by an amount
@@ -1570,7 +1508,6 @@ void AudioTrack::record()
                   if( (pos >= fr) && (!MusEGlobal::song->punchout() || (!MusEGlobal::song->loop() && pos < MusEGlobal::song->rPos().frame())) )
                   {
                     pos -= fr;
-                    // Added by Tim. p3.3.8
                     //int position = _recFile->seek(0, SEEK_CUR);
                     //printf("AudioTrack::record loopcnt:%d lframe:%d newpos:%d curpos:%d start:%d end:%d\n", MusEGlobal::audio->loopCount(), MusEGlobal::audio->loopFrame(), pos, position, MusEGlobal::audio->getStartRecordPos().frame(), MusEGlobal::audio->getEndRecordPos().frame());
                     
@@ -1614,7 +1551,6 @@ void AudioOutput::processInit(unsigned nframes)
 
 void AudioOutput::process(unsigned pos, unsigned offset, unsigned n)
 {
-      //Added by Tim. p3.3.16
       #ifdef NODE_DEBUG
       printf("MusE: AudioOutput::process name:%s processed:%d\n", name().toLatin1().constData(), processed());
       #endif
@@ -1622,9 +1558,6 @@ void AudioOutput::process(unsigned pos, unsigned offset, unsigned n)
       for (int i = 0; i < _channels; ++i) {
             buffer1[i] = buffer[i] + offset;
       }
-      
-      // p3.3.38
-      //copyData(pos, _channels, n, buffer1);
       copyData(pos, _channels, -1, -1, n, buffer1);
 }
 
@@ -1666,17 +1599,13 @@ void AudioOutput::processWrite()
                         putFifo(_channels, _nframes, buffer);
                   }
             }
-      // Changed by Tim. p3.3.18
+      // Changed by Tim. 
       //if (MusEGlobal::audioClickFlag && MusEGlobal::song->click()) {
       if (sendMetronome() && MusEGlobal::audioClickFlag && MusEGlobal::song->click()) {
             
-            // Added by Tim. p3.3.18
             #ifdef METRONOME_DEBUG
             printf("MusE: AudioOutput::processWrite Calling metronome->addData frame:%u channels:%d frames:%lu\n", MusEGlobal::audio->pos().frame(), _channels, _nframes);
             #endif
-    
-            // p3.3.38
-            //metronome->addData(MusEGlobal::audio->pos().frame(), _channels, _nframes, buffer);
             metronome->addData(MusEGlobal::audio->pos().frame(), _channels, -1, -1, _nframes, buffer);
             }
       }
@@ -1721,7 +1650,6 @@ Fifo::~Fifo()
       {
       for (int i = 0; i < nbuffer; ++i)
       {
-        // p3.3.45
         if(buffer[i]->buffer)
         {
           //printf("Fifo::~Fifo freeing buffer\n");
@@ -1742,7 +1670,6 @@ Fifo::~Fifo()
 
 bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
       {
-      // Added by Tim. p3.3.17
       #ifdef FIFO_DEBUG
       printf("FIFO::put segs:%d samples:%lu pos:%u\n", segs, samples, pos);
       #endif
@@ -1765,7 +1692,6 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
             // Changed by Tim. p3.3.15
             //b->buffer  = new float[n];
             posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
-            // p3.3.45
             if(!b->buffer)
             {
               printf("Fifo::put could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
@@ -1774,7 +1700,6 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
             
             b->maxSize = n;
             }
-      // p3.3.45
       if(!b->buffer)
       {
         printf("Fifo::put no buffer! segs:%d samples:%lu pos:%u\n", segs, samples, pos);
@@ -1798,7 +1723,6 @@ bool Fifo::put(int segs, unsigned long samples, float** src, unsigned pos)
 
 bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos)
       {
-      // Added by Tim. p3.3.17
       #ifdef FIFO_DEBUG
       printf("FIFO::get segs:%d samples:%lu\n", segs, samples);
       #endif
@@ -1808,7 +1732,6 @@ bool Fifo::get(int segs, unsigned long samples, float** dst, unsigned* pos)
             return true;
             }
       FifoBuffer* b = buffer[ridx];
-      // p3.3.45
       if(!b->buffer)
       {
         printf("Fifo::get no buffer! segs:%d samples:%lu b->pos:%u\n", segs, samples, b->pos);
@@ -1844,7 +1767,6 @@ void Fifo::remove()
 
 bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned pos)
       {
-      // Added by Tim. p3.3.17
       #ifdef FIFO_DEBUG
       printf("Fifo::getWriteBuffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
       #endif
@@ -1866,7 +1788,6 @@ bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned
             // Changed by Tim. p3.3.15
             //b->buffer = new float[n];
             posix_memalign((void**)&(b->buffer), 16, sizeof(float) * n);
-            // p3.3.45
             if(!b->buffer)
             {
               printf("Fifo::getWriteBuffer could not allocate buffer segs:%d samples:%lu pos:%u\n", segs, samples, pos);
@@ -1875,8 +1796,6 @@ bool Fifo::getWriteBuffer(int segs, unsigned long samples, float** buf, unsigned
             
             b->maxSize = n;
             }
-      
-      // p3.3.45
       if(!b->buffer)
       {
         printf("Fifo::getWriteBuffer no buffer! segs:%d samples:%lu pos:%u\n", segs, samples, pos);

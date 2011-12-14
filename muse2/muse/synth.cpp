@@ -32,6 +32,7 @@
 #include <dlfcn.h>
 
 #include <QDir>
+#include <QString>
 //#include <QMenu>
 
 #include "app.h"
@@ -61,6 +62,19 @@ namespace MusECore {
 
 extern void connectNodes(AudioTrack*, AudioTrack*);
 bool SynthI::_isVisible=false;
+
+const char* synthTypes[] = { "METRONOME", "MESS", "DSSI", "VST", "UNKNOWN" };
+QString synthType2String(Synth::Type type) { return QString(synthTypes[type]); } 
+
+Synth::Type string2SynthType(const QString& type) 
+{ 
+  for(int i = 0; i < Synth::SYNTH_TYPE_END; ++i)
+  {  
+    if(synthType2String((Synth::Type)i) == type)
+      return (Synth::Type)i; 
+  }  
+  return Synth::SYNTH_TYPE_END;
+} 
 
 /*
 //---------------------------------------------------------
@@ -145,19 +159,17 @@ void MessSynthIF::setNativeGeometry(int x, int y, int w, int h)
 //    search for synthesizer base class
 //---------------------------------------------------------
 
-//static Synth* findSynth(const QString& sclass)
-static Synth* findSynth(const QString& sclass, const QString& label)
+static Synth* findSynth(const QString& sclass, const QString& label, Synth::Type type = Synth::SYNTH_TYPE_END)
       {
       for (std::vector<Synth*>::iterator i = MusEGlobal::synthis.begin();
          i != MusEGlobal::synthis.end(); ++i) 
          {
-            //if ((*i)->baseName() == sclass)
-            //if ((*i)->name() == sclass)
-            if ( ((*i)->baseName() == sclass) && (label.isEmpty() || ((*i)->name() == label)) )
-                  
-                  return *i;
+            if( ((*i)->baseName() == sclass) && 
+                (label.isEmpty() || ((*i)->name() == label)) && 
+                (type == Synth::SYNTH_TYPE_END || type == (*i)->synthType()) )
+              return *i;
          }
-      printf("synthi class:%s label:%s not found\n", sclass.toLatin1().constData(), label.toLatin1().constData());
+      printf("synthi type:%d class:%s label:%s not found\n", type, sclass.toLatin1().constData(), label.toLatin1().constData());
       return 0;
       }
 
@@ -166,10 +178,9 @@ static Synth* findSynth(const QString& sclass, const QString& label)
 //    create a synthesizer instance of class "label"
 //---------------------------------------------------------
 
-static SynthI* createSynthInstance(const QString& sclass, const QString& label)
+static SynthI* createSynthInstance(const QString& sclass, const QString& label, Synth::Type type = Synth::SYNTH_TYPE_END)
       {
-      //Synth* s = findSynth(sclass);
-      Synth* s = findSynth(sclass, label);
+      Synth* s = findSynth(sclass, label, type);
       SynthI* si = 0;
       if (s) {
             si = new SynthI();
@@ -652,13 +663,11 @@ void initMidiSynth()
 //    If insertAt is valid, inserts before insertAt. Else at the end after all tracks.
 //---------------------------------------------------------
 
-SynthI* Song::createSynthI(const QString& sclass, const QString& label, Track* insertAt)
+SynthI* Song::createSynthI(const QString& sclass, const QString& label, Synth::Type type, Track* insertAt)
       {
       //printf("Song::createSynthI calling ::createSynthI class:%s\n", sclass.toLatin1().constData());
       
-      //SynthI* si = ::createSynthI(sclass);
-      //SynthI* si = ::createSynthI(sclass, label);
-      SynthI* si = createSynthInstance(sclass, label);
+      SynthI* si = createSynthInstance(sclass, label, type);
       if(!si)
         return 0;
       //printf("Song::createSynthI created SynthI. Before insertTrack1...\n");
@@ -705,6 +714,9 @@ void SynthI::write(int level, Xml& xml) const
       {
       xml.tag(level++, "SynthI");
       AudioTrack::writeProperties(level, xml);
+      //xml.intTag(level, "synthType", synth()->synthType());
+      xml.strTag(level, "synthType", synthType2String(synth()->synthType()));
+
       xml.strTag(level, "class", synth()->baseName());
       
       // To support plugins like dssi-vst where all the baseNames are the same 'dssi-vst' and the label is the name of the dll file.
@@ -823,7 +835,8 @@ void SynthI::read(Xml& xml)
       {
       QString sclass;
       QString label;
-      
+      Synth::Type type = Synth::SYNTH_TYPE_END;
+
       int port = -1;
       bool startgui = false;
       bool startngui = false;
@@ -837,7 +850,10 @@ void SynthI::read(Xml& xml)
                   case Xml::End:
                         return;
                   case Xml::TagStart:
-                        if (tag == "class")
+                        if (tag == "synthType")
+                              //type = xml.parseInt();
+                              type = string2SynthType(xml.parse1());
+                        else if (tag == "class")
                               sclass = xml.parse1();
                         else if (tag == "label")
                               label  = xml.parse1();
@@ -866,8 +882,15 @@ void SynthI::read(Xml& xml)
                         break;
                   case Xml::TagEnd:
                         if (tag == "SynthI") {
-                              //Synth* s = findSynth(sclass);
-                              Synth* s = findSynth(sclass, label);
+                              
+                              // NOTICE: This is a hack to quietly change songs to use the new 'fluid_synth' name instead of 'fluidsynth'.
+                              //         Recent linker changes required the name change in fluidsynth's cmakelists. Nov 8, 2011 By Tim.
+                              if(sclass == QString("fluidsynth") && 
+                                 (type == Synth::SYNTH_TYPE_END || type == Synth::MESS_SYNTH) &&
+                                 (label.isEmpty() || label == QString("FluidSynth")) )
+                                sclass = QString("fluid_synth");
+                              
+                              Synth* s = findSynth(sclass, label, type);
                               if (s == 0)
                                     return;
                               if (initInstance(s, name()))

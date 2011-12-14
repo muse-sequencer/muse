@@ -29,6 +29,7 @@
 #include "action.h"
 #include "track.h"
 #include "synth.h"
+#include "app.h"
 
 namespace MusEGui {
 
@@ -130,6 +131,7 @@ void VisibleTracks::visibilityChanged(QAction* action)
       default:
             break;
       }
+      MusEGlobal::muse->changeConfig(true);    // save settings
       emit visibilityChanged();
 }
 

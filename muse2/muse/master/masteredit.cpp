@@ -37,6 +37,7 @@
 #include "doublelabel.h"
 ///#include "sigedit.h"
 #include "globals.h"
+#include "app.h"
 
 #include <values.h>
 
@@ -269,6 +270,7 @@ MasterEdit::MasterEdit()
       connect(canvas, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
 
       initTopwinState();
+      MusEGlobal::muse->topwinMenuInited(this);
       }
 
 //---------------------------------------------------------

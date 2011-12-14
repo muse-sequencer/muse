@@ -54,8 +54,6 @@ file (GLOB fluidsynth_source_files
 ##
 ## Define target
 ##
-# Nov 1, 2011. fluidsynth module renamed fluid_synth to avoid bizarre new conflict on Ubuntu 11.10, seems due to LINK_FLAGS line.
-# Got undefined symbol fluid_synth_set_reverb at startup at runtime.
 add_library ( fluid_synth SHARED 
       ${fluidsynth_source_files}
       ${fluidsynth_mocs}
@@ -83,7 +81,6 @@ set (FILES_TO_TRANSLATE
 set_target_properties ( fluid_synth 
       PROPERTIES PREFIX ""
       COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
-      # LINK_FLAGS "${FLUIDSYN_LDFLAGS}"   # "-lfluidsynth"
       )
 
 ##
@@ -92,9 +89,6 @@ set_target_properties ( fluid_synth
 target_link_libraries(fluid_synth
       synti
       ${QT_LIBRARIES}
-      # Can't do this here, since FLUIDSYN_LIBRARIES evaluates 
-      # to 'fluidsynth', the same name as our target.
-      # Fixed Nov 1, 2011
       ${FLUIDSYN_LIBRARIES}
       )
 

@@ -51,7 +51,7 @@ void Header::readStatus(MusECore::Xml& xml)
                           for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
                                 int logialIdx=abs((*it).toInt());
                                 bool isHidden = (*it).toInt() < 0 ? true:false;
-                                int section = visualIndex(logialIdx);
+                                int section = visualIndex(logialIdx - (isHidden? 1:0));
                                 moveSection(section, index);
                                 if (isHidden)
                                   hideSection(logialIdx-1);
@@ -65,7 +65,7 @@ void Header::readStatus(MusECore::Xml& xml)
                               bool foundIt=false;
                               for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
                                 int id=((*it).toInt());
-                                if ( id == i || i ==1-id )
+                                if ( id == i || i == -1 - id )
                                     foundIt=true;
                               }
                               if (foundIt == false) {
@@ -97,7 +97,7 @@ void Header::writeStatus(int level, MusECore::Xml& xml) const
       //xml.nput(level, "<%s> ", name());
       xml.nput(level, "<%s> ", MusECore::Xml::xmlString(objectName()).toLatin1().constData());
       int n = count();
-      for (int i = n; i >= 0; --i) {
+      for (int i = n-1; i >= 0; --i) {
             if (isSectionHidden(logicalIndex(i)))
               xml.nput("%d ", -logicalIndex(i)-1); // hidden is stored as negative value starting from -1
             else

@@ -56,6 +56,7 @@
 #include "tb1.h"
 #include "utils.h"
 #include "globals.h"
+#include "app.h"
 #include "gconfig.h"
 #include "icons.h"
 #include "audio.h"
@@ -532,6 +533,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       }
 
       initTopwinState();
+      MusEGlobal::muse->topwinMenuInited(this);
       }
 
 //---------------------------------------------------------

@@ -50,8 +50,11 @@ const char* UndoOp::typeName()
             "AddTrack", "DeleteTrack", "ModifyTrack",
             "AddPart",  "DeletePart",  "ModifyPart",
             "AddEvent", "DeleteEvent", "ModifyEvent",
-            "AddTempo", "DeleteTempo", "AddSig", "DeleteSig",
-            "SwapTrack", "ModifyClip"
+            "AddTempo", "DeleteTempo",
+            "AddSig", "DeleteSig",
+            "AddKey", "DeleteKey",
+            "SwapTrack", "ModifyClip", "ModifyMarker",
+            "ModifySongLen", "DoNothing"
             };
       return name[type];
       }
@@ -95,6 +98,7 @@ void UndoOp::dump()
             case ModifyMarker:
             case AddKey:
             case DeleteKey:
+            case ModifySongLen:
             case DoNothing:
                   break;
             }
@@ -530,6 +534,10 @@ void Song::doUndo2()
                         MusEGlobal::keymap.addKey(i->a, (key_enum)i->b);
                         updateFlags |= SC_KEY;
                         break;
+                  case UndoOp::ModifySongLen:
+                        _len=i->b;
+                        updateFlags = -1; // set all flags
+                        break;
                   case UndoOp::ModifyClip:
                   case UndoOp::ModifyMarker:
                   case UndoOp::DoNothing:
@@ -766,6 +774,10 @@ void Song::doRedo2()
                   case UndoOp::DeleteKey:
                         MusEGlobal::keymap.delKey(i->a);
                         updateFlags |= SC_KEY;
+                        break;
+                  case UndoOp::ModifySongLen:
+                        _len=i->a;
+                        updateFlags = -1; // set all flags
                         break;
                   case UndoOp::ModifyClip:
                   case UndoOp::ModifyMarker:

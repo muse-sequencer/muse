@@ -141,9 +141,21 @@ class TopWin : public QMainWindow
       };
 
 
-typedef std::list <TopWin*> ToplevelList;
-typedef ToplevelList::iterator iToplevel;
-typedef ToplevelList::const_iterator ciToplevel;
+//---------------------------------------------------------
+//   ToplevelList
+//---------------------------------------------------------
+
+//typedef std::list <TopWin*> ToplevelList;
+//typedef ToplevelList::iterator iToplevel;
+//typedef ToplevelList::const_iterator ciToplevel;
+
+typedef std::list<TopWin*>::iterator iToplevel;
+typedef std::list<TopWin*>::const_iterator ciToplevel;
+
+class ToplevelList : public std::list<TopWin* > {
+   public:
+        TopWin* findType(TopWin::ToplevelType) const;
+      };
 
 } // namespace MusEGui
 

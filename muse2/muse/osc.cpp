@@ -841,7 +841,8 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
       arguments << oscUrl
                 << filePath
                 << name
-                << QString("channel-1");
+                //<< QString("channel-1");
+                << (titlePrefix() + label);
 
       #ifdef OSC_DEBUG 
       fprintf(stderr, "OscIF::oscInitGui starting QProcess\n");
@@ -885,7 +886,8 @@ bool OscIF::oscInitGui(const QString& typ, const QString& baseName, const QStrin
                  oscUrl.toLatin1().constData(),
                  filePath.toLatin1().constData(),
                  name.toLatin1().constData(),
-                 "channel 1", (void*)0);
+                 //"channel 1", (void*)0);
+                 label.toLatin1().constData(), (void*)0);
 
         // Should not return after execlp. If so it's an error.
         fprintf(stderr, "exec %s %s %s %s %s failed: %s\n",
@@ -941,13 +943,13 @@ void OscIF::oscShowGui(bool v)
       }  
       
       //for (int i = 0; i < 5; ++i) {
-      for (int i = 0; i < 10; ++i) {    // Give it a wee bit more time?
+      for (int i = 0; i < 20; ++i) {    // Give it a wee bit more time?
             if (_uiOscPath)
                   break;
             sleep(1);
             }
       if (_uiOscPath == 0) {
-            printf("OscIF::oscShowGui(): no _uiOscPath. Error: Timeout - synth gui did not start within 10 seconds.\n");
+            printf("OscIF::oscShowGui(): no _uiOscPath. Error: Timeout - synth gui did not start within 20 seconds.\n");
             return;
             }
       
@@ -1091,10 +1093,14 @@ bool OscDssiIF::oscInitGui()
                            _oscSynthIF->dssiSynth()->name(), _oscSynthIF->dssiSynthI()->name(), 
                            _oscSynthIF->dssiSynth()->fileName(), _oscSynthIF->dssi_ui_filename()); 
 }
+
+QString OscDssiIF::titlePrefix() const 
+{ 
+  return _oscSynthIF ? _oscSynthIF->titlePrefix() : QString(); 
+}
       
 #endif   // DSSI_SUPPORT
       
-
 //---------------------------------------------------------
 //   OscEffectIF::
 //   oscSetPluginI
@@ -1165,6 +1171,11 @@ bool OscEffectIF::oscInitGui()
                            _oscPluginI->plugin()->fileName(), _oscPluginI->dssi_ui_filename());  
 }
       
+QString OscEffectIF::titlePrefix() const 
+{ 
+  return _oscPluginI ? _oscPluginI->titlePrefix() : QString(); 
+}
+
 
 #else //OSC_SUPPORT
 void initOSC() {}
