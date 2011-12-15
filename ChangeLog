@@ -1,3 +1,5 @@
+14.12.2011:
+        - Corrected FSF address in ladspa.h and vam/COPYING. (Orcan)
 12.12.2011:
         * Improved: Midi ports list now fills automatically at start. (Marked as p4.0.41 Tim...)
           An effort to help new users and others. If auto-filling the mid ports proves too much or unpopular, a simple change
