@@ -630,11 +630,11 @@ int RoutePopupMenu::addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id
   
 #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
 
-        PixmapButtonsHeaderWidgetAction* wa_hdr = new PixmapButtonsHeaderWidgetAction("Input port/device", darkRedLedIcon, MIDI_CHANNELS, pup);
+        PixmapButtonsHeaderWidgetAction* wa_hdr = new PixmapButtonsHeaderWidgetAction("Output port/device", darkRedLedIcon, MIDI_CHANNELS, pup);
         pup->addAction(wa_hdr);  
         ++id;
 #else   
-      pup->addAction(new MenuTitleItem("Input port/device", pup)); 
+      pup->addAction(new MenuTitleItem("Output port/device", pup)); 
 #endif
         
   for(int i = 0; i < MIDI_PORTS; ++i)
@@ -671,7 +671,8 @@ int RoutePopupMenu::addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id
     
 #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
 
-    PixmapButtonsWidgetAction* wa = new PixmapButtonsWidgetAction(md->name(), redLedIcon, darkRedLedIcon,MIDI_CHANNELS, chanmask, pup);
+    PixmapButtonsWidgetAction* wa = new PixmapButtonsWidgetAction(QString::number(i + 1) + ":" + md->name(), 
+                                                                  redLedIcon, darkRedLedIcon,MIDI_CHANNELS, chanmask, pup);
     MusECore::Route srcRoute(i, 0); // Ignore the routing channels - our action holds the channels.   
     //wa->setData(id++);   
     wa->setData(qVariantFromValue(srcRoute));   
@@ -962,15 +963,12 @@ void RoutePopupMenu::popupActivated(QAction* action)
           else if(aRoute.type == MusECore::Route::MIDI_PORT_ROUTE)
           {
             // Check for custom midi channel select action.
-            PixmapButtonsWidgetAction
-* cs_wa = dynamic_cast<PixmapButtonsWidgetAction
-*>(action);
+            PixmapButtonsWidgetAction* cs_wa = dynamic_cast<PixmapButtonsWidgetAction*>(action);
             if(cs_wa)
             {
               //MusECore::Route aRoute = action->data().value<MusECore::Route>();
               MusECore::Route aRoute = action->data().value<MusECore::Route>();
-              int chbits = cs_wa->currentState
-();
+              int chbits = cs_wa->currentState();
               aRoute.channel = chbits;  // Restore the desired route channels from the custom widget action state.
               
               int mdidx = aRoute.midiPort;
@@ -1115,13 +1113,10 @@ void RoutePopupMenu::popupActivated(QAction* action)
           if(_track->type() == MusECore::Track::AUDIO_INPUT && srcRoute.type == MusECore::Route::MIDI_PORT_ROUTE)
           {
             // Check for custom midi channel select action.
-            PixmapButtonsWidgetAction
-* cs_wa = dynamic_cast<PixmapButtonsWidgetAction
-*>(action);
+            PixmapButtonsWidgetAction* cs_wa = dynamic_cast<PixmapButtonsWidgetAction*>(action);
             if(cs_wa)
             {
-              int chbits = cs_wa->currentState
-();
+              int chbits = cs_wa->currentState();
               srcRoute.channel = chbits;  // Restore the desired route channels from the custom widget action state.
               int mdidx = srcRoute.midiPort;
 
@@ -1346,7 +1341,8 @@ void RoutePopupMenu::prepare()
         
 #ifdef _USE_CUSTOM_WIDGET_ACTIONS_
 
-        PixmapButtonsWidgetAction* wa = new PixmapButtonsWidgetAction(md->name(), redLedIcon, darkRedLedIcon, MIDI_CHANNELS, chanmask, _pup);
+        PixmapButtonsWidgetAction* wa = new PixmapButtonsWidgetAction(QString::number(i + 1) + ":" + md->name(), 
+                                                                      redLedIcon, darkRedLedIcon, MIDI_CHANNELS, chanmask, _pup);
         MusECore::Route srcRoute(i, 0); // Ignore the routing channels - our action holds the channels.   
         //wa->setData(id++);   
         wa->setData(qVariantFromValue(srcRoute));   
