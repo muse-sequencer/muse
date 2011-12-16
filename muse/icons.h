@@ -156,6 +156,7 @@ extern QPixmap* soloblksqIconOff;
 //extern QIcon* soloIconSet1;
 //extern QIcon* soloIconSet2;
 
+extern QPixmap* toggle_small_Icon;
 extern QPixmap* redLedIcon;
 extern QPixmap* darkRedLedIcon;
 extern QPixmap* greendotIcon;

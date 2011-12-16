@@ -40,6 +40,7 @@ QT4_WRAP_CPP (widget_mocs
       combobox.h  
       comment.h  
       ctrlcombo.h  
+      custom_widget_actions.h
       dentry.h  
       didyouknow.h
       doublelabel.h  
@@ -66,6 +67,7 @@ QT4_WRAP_CPP (widget_mocs
       pasteeventsdialog.h
       pitchedit.h  
       pitchlabel.h  
+      pixmap_button.h
       popupmenu.h  
       # posedit.h  
       poslabel.h  
@@ -142,6 +144,7 @@ file (GLOB widgets_source_files
       combobox.cpp  
       comment.cpp 
       ctrlcombo.cpp 
+      custom_widget_actions.cpp
       dentry.cpp 
       dimap.cpp
       doublelabel.cpp 
@@ -170,6 +173,7 @@ file (GLOB widgets_source_files
       pasteeventsdialog.cpp
       pitchedit.cpp 
       pitchlabel.cpp 
+      pixmap_button.cpp
       popupmenu.cpp 
       # posedit.cpp 
       poslabel.cpp

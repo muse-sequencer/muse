@@ -174,6 +174,7 @@
 #include "xpm/exit.xpm"
 #include "xpm/exit1.xpm"
 
+#include "xpm/toggle_small.xpm"
 #include "xpm/redled.xpm"
 #include "xpm/darkredled.xpm"
 #include "xpm/greendot.xpm"
@@ -239,6 +240,7 @@
 
 #include "xpm/sine.xpm"
 #include "xpm/saw.xpm"
+#include "icons.h"
 
 #if QT_VERSION >= 0x040600
 #define MPIXMAP(a,b) QPixmap(QIcon::fromTheme(b, QIcon(QPixmap(a))).pixmap(QPixmap(a).width(),QPixmap(a).height()))
@@ -396,6 +398,7 @@ QIcon* editpaste2TrackIcon;
 QIcon* editpasteClone2TrackIcon;
 */
 
+QPixmap* toggle_small_Icon;
 QPixmap* redLedIcon;
 QPixmap* darkRedLedIcon;
 QPixmap* greendotIcon;
@@ -610,6 +613,7 @@ void initIcons()
       //soloIconSet2->addPixmap(*soloblksqIconOn, QIcon::Normal, QIcon::On);
       //soloIconSet2->addPixmap(*soloblksqIconOff, QIcon::Normal, QIcon::Off);
       
+      toggle_small_Icon    = new MPIXMAP(toggle_small_xpm, NULL);
       redLedIcon           = new MPIXMAP(redled_xpm, NULL);
       darkRedLedIcon       = new MPIXMAP(darkredled_xpm, NULL);
       greendotIcon         = new MPIXMAP(greendot_xpm, NULL);
