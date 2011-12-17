@@ -647,7 +647,7 @@ int RoutePopupMenu::addMidiPorts(MusECore::AudioTrack* t, PopupMenu* pup, int id
     // So for now, just list all valid ports whether read or write.
     //if(!md)
     //  continue;
-    if(!md || !(md->rwFlags() & (isOutput ? 1 : 2)))
+    if(!md || !(md->rwFlags() & (isOutput ? 2 : 1)))  // If this is an input click we are looking for midi outputs here.
       continue;
           
     // Do not list synth devices!
@@ -966,7 +966,6 @@ void RoutePopupMenu::popupActivated(QAction* action)
             PixmapButtonsWidgetAction* cs_wa = dynamic_cast<PixmapButtonsWidgetAction*>(action);
             if(cs_wa)
             {
-              //MusECore::Route aRoute = action->data().value<MusECore::Route>();
               MusECore::Route aRoute = action->data().value<MusECore::Route>();
               int chbits = cs_wa->currentState();
               aRoute.channel = chbits;  // Restore the desired route channels from the custom widget action state.

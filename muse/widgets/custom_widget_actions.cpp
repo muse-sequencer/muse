@@ -41,6 +41,8 @@ PixmapButtonsHeaderWidgetAction::PixmapButtonsHeaderWidgetAction(const QString& 
   _refPixmap = ref_pixmap;
   _channels = channels;
   _text = text;
+  // Just to be safe, set to -1 instead of default 0.
+  setData(-1);
 }
 
 QWidget* PixmapButtonsHeaderWidgetAction::createWidget(QWidget* parent)
