@@ -327,7 +327,7 @@ MusE::MusE(int /*argc*/, char** /*argv*/) : QMainWindow()
       mixer2                = 0;
       watchdogThread        = 0;
       editInstrument        = 0;
-      routingPopupMenu      = 0;
+      //routingPopupMenu      = 0;
       progress              = 0;
       activeTopWin          = NULL;
       currentMenuSharingTopwin = NULL;
@@ -1620,18 +1620,6 @@ void MusE::closeEvent(QCloseEvent* event)
         printf("MusE: Exiting Metronome\n");
       MusECore::exitMetronome();
       
-      // Make sure to delete the menu. ~routingPopupMenu() will NOT be called automatically.
-      // Even though it is a child of MusE, it just passes MusE onto the underlying PopupMenus. 
-      if(routingPopupMenu)
-        delete routingPopupMenu;     
-      #if 0
-      if(routingPopupView)
-      {
-        routingPopupView->clear();
-        delete routingPopupView;
-      }  
-      #endif
-      
       MusEGlobal::song->cleanupForQuit();
 
       // Give midi devices a chance to close first, above in cleanupForQuit.
@@ -1802,18 +1790,20 @@ void MusE::showTransport(bool flag)
       viewTransportAction->setChecked(flag);
       }
 
+/*      
 //---------------------------------------------------------
 //   getRoutingPopupMenu
 //   Get the special common routing popup menu. Used (so far) 
 //    by audio strip, midi strip, and midi trackinfo.
 //---------------------------------------------------------
 
-MusEGui::RoutePopupMenu* MusE::getRoutingPopupMenu()
+MusEGui::RoutePopupMenu* MusE::()
 {
   if(!routingPopupMenu)
     routingPopupMenu = new MusEGui::RoutePopupMenu(this);
   return routingPopupMenu;
 }
+*/
 
 //---------------------------------------------------------
 //   saveAs

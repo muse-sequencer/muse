@@ -666,9 +666,11 @@ void MidiTrackInfo::inRoutesPressed()
   if(!selected->isMidiTrack())
     return;
   
-  RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
-  iRButton->setDown(false);     
+  //RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
+  RoutePopupMenu* pup = new RoutePopupMenu();
   pup->exec(QCursor::pos(), selected, false);
+  delete pup;
+  iRButton->setDown(false);     
 }
 
 //---------------------------------------------------------
@@ -682,9 +684,11 @@ void MidiTrackInfo::outRoutesPressed()
   if(!selected->isMidiTrack())
     return;
   
-  RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
-  oRButton->setDown(false);     
+  //RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
+  RoutePopupMenu* pup = new RoutePopupMenu();
   pup->exec(QCursor::pos(), selected, true);
+  delete pup;
+  oRButton->setDown(false);     
 }
 
 //---------------------------------------------------------

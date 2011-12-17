@@ -1,3 +1,10 @@
+17.12.2011:
+        - Fixed long-time graphics corruption issue: Large areas of desktop erased to background.  (Tim...) 
+          Fixed class RoutePopupMenu. Now a subclass of PopupMenu. Changed all usages to 'short-lived' ::exe(), 
+           no more single 'long-life' pointer in class MusE. That should allow multiple instances, using ::popup(). 
+          Also fixed class PopupMenu. Tested all submenu and item destructors - OK, everything destroyed on close. 
+        - Fixed TList::ColorMenu parenting. Pass it a parent from TList::mousePressEvent. 
+        - If Jack is running but no Jack midi devices were found at start, auto-fill with ALSA just to give something.
 16.12.2011:
         * New: Midi routing matrix! No more clumsy routing menu items. Currently for Midi Track iR and Audio Input iR solo routes. (Tim)
 14.12.2011:

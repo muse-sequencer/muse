@@ -1045,9 +1045,11 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
 
 void AudioStrip::iRoutePressed()
       {
-      MusEGui::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
-      iR->setDown(false);     
+      //MusEGui::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
+      RoutePopupMenu* pup = new RoutePopupMenu();
       pup->exec(QCursor::pos(), track, false);
+      delete pup;
+      iR->setDown(false);     
       }
       
 //---------------------------------------------------------
@@ -1056,9 +1058,11 @@ void AudioStrip::iRoutePressed()
 
 void AudioStrip::oRoutePressed()
 {
-      MusEGui::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
-      oR->setDown(false);     
+      //MusEGui::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
+      RoutePopupMenu* pup = new RoutePopupMenu();
       pup->exec(QCursor::pos(), track, true);
+      delete pup;
+      oR->setDown(false);     
 }
 
 } // namespace MusEGui
