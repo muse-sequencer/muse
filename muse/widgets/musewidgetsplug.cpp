@@ -121,7 +121,7 @@ MusEGlobal::GlobalConfigValues config = {
         QFont(QString("arial"), 10, QFont::Normal),
         QFont(QString("arial"), 10, QFont::Bold),
         QFont(QString("arial"), 8,  QFont::Normal),    // Small numbers: Timescale and markers, part name overlay
-        QFont(QString("Lucidatypewriter"), 14,  QFont::Bold),
+        QFont(QString("arial"), 8,  QFont::Bold),      // Small bold numbers such as marker text
         QFont(QString("arial"), 8,  QFont::Bold, true)  // Mixer strip labels. Looks and fits better with bold + italic than bold alone, 
                                                         //  at the price of only few more pixels than Normal mode.
         },

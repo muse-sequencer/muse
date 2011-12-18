@@ -194,7 +194,7 @@ void MTScaleFlo::draw(QPainter& p, const QRect& r)
 
       int y = 12;
       p.setPen(Qt::black);
-      p.setFont(MusEGlobal::config.fonts[4]);
+      p.setFont(MusEGlobal::config.fonts[5]);
       p.drawLine(r.x(), y+1, r.x() + r.width(), y+1);
       QRect tr(r);
       tr.setHeight(12);

@@ -132,9 +132,9 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       fontName0->setToolTip(tr("Main application font, and default font for any\n controls not defined here."));
       fontName1->setToolTip(tr("Mixer strips and effects racks. Midi track info panel.\nMidi control panel entry box."));
       fontName2->setToolTip(tr("Transport controls."));
-      fontName3->setToolTip(tr("Large numbers for time and tempo scale, and time signature.\nController graph and S/X buttons."));
-      fontName4->setToolTip(tr("Small numbers for time scale and markers, and arranger\n part name overlay."));
-      fontName5->setToolTip(tr("List editor: meta event edit dialog multi-line edit box."));
+      fontName3->setToolTip(tr("Large bold text for time and tempo scale, and time signature.\nController graph and S/X buttons."));
+      fontName4->setToolTip(tr("Small text for time scale and markers, and arranger\n part name overlay."));
+      fontName5->setToolTip(tr("Small bold text, such as markers."));
       fontName6->setToolTip(tr("Mixer label font. Auto-font-sizing up to chosen font size.\nWord-breaking but only with spaces."));
       fontSize6->setToolTip(tr("Maximum mixer label auto-font-sizing font size."));
       
