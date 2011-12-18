@@ -2483,7 +2483,8 @@ void MusE::changeConfig(bool writeFlag)
       //loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
       loadTheme(MusEGlobal::config.style);
       QApplication::setFont(MusEGlobal::config.fonts[0]);
-      loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
+      if(!MusEGlobal::config.styleSheetFile.isEmpty())
+        loadStyleSheetFile(MusEGlobal::config.styleSheetFile);
       
       emit configChanged();
       updateConfiguration();

@@ -1757,7 +1757,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             //bool rev = (brightness < 12000 || part->selected()) && !part->mute() && !item->isMoving();
             bool rev = brightness >= 12000 && !part->selected();
             p.save();
-            p.setFont(MusEGlobal::config.fonts[1]);
+            p.setFont(MusEGlobal::config.fonts[4]);
             p.setWorldMatrixEnabled(false);
             if (rev)
               p.setPen(Qt::white); 
@@ -2250,7 +2250,7 @@ void PartCanvas::drawItem(QPainter& p, const CItem* item, const QRect& rect)
             brightness =  part_r*29 + part_g*59 + part_b*12;
             //bool rev = (brightness < 12000 || part->selected()) && !part->mute() && !item->isMoving();
             bool rev = brightness >= 12000 && !part->selected();
-            p.setFont(MusEGlobal::config.fonts[1]);
+            p.setFont(MusEGlobal::config.fonts[4]);
             if (rev)
               p.setPen(Qt::white); 
             else

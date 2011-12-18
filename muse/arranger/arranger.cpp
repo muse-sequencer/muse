@@ -1032,12 +1032,13 @@ void Arranger::genTrackInfo(QWidget* parent)
       noTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding));
 
       midiTrackInfo = new MidiTrackInfo(trackInfo);
+      
       //midiTrackInfo->setFocusPolicy(Qt::TabFocus);    // p4.0.9
       //midiTrackInfo->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum));
       trackInfo->addWidget(noTrackInfo,   0);
       trackInfo->addWidget(midiTrackInfo, 1);
       trackInfo->addWidget(0, 2);
-
+      
 ///      genMidiTrackInfo();
       }
 

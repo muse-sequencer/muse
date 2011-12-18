@@ -425,7 +425,7 @@ void MTScale::pdraw(QPainter& p, const QRect& r)
                         else {
                               num = beat + 1;
                               y1  = y + 7;
-                              p.setFont(MusEGlobal::config.fonts[1]);
+                              p.setFont(MusEGlobal::config.fonts[4]);
                               r.setY(y+3);
                               }
                         s.setNum(num);

@@ -127,7 +127,7 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, const char* name)
       _dl->setPrecision(0);
       _dl->setToolTip(tr("double click on/off"));
       _dl->setSpecialText(tr("off"));
-      _dl->setFont(MusEGlobal::config.fonts[1]);
+      _dl->setFont(MusEGlobal::config.fonts[4]);
       _dl->setBackgroundRole(QPalette::Mid);
       _dl->setFrame(true);
       _dl->setFixedWidth(36);

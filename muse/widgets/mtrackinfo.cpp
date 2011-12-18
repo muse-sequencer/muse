@@ -99,7 +99,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   pan      = -65;
   volume   = -1;
   
-  setFont(MusEGlobal::config.fonts[2]);
+  setFont(MusEGlobal::config.fonts[1]);
   
   //iChanDetectLabel->setPixmap(*darkgreendotIcon);
   iChanDetectLabel->setPixmap(*darkRedLedIcon);
@@ -528,7 +528,7 @@ void MidiTrackInfo::configChanged()
       //      canvas->setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
       //}
       
-      setFont(MusEGlobal::config.fonts[2]);
+      setFont(MusEGlobal::config.fonts[1]);
       //updateTrackInfo(type);
       }
 

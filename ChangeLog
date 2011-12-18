@@ -5,6 +5,11 @@
           Also fixed class PopupMenu. Tested all submenu and item destructors - OK, everything destroyed on close. 
         - Fixed TList::ColorMenu parenting. Pass it a parent from TList::mousePressEvent. 
         - If Jack is running but no Jack midi devices were found at start, auto-fill with ALSA just to give something.
+        * Fixed: Some relief from mixer strip and midi track info bloated size. (Tim)
+          Changed default strip font size from 8 to 7. Changed icon sizing - just let strip layout do its thing, instead of forcing size. 
+          Changed default style sheet to blank. Was causing problems with track info font size. 
+          Fixed mixer: Rebuild mixer upon config font changes.
+          Re-arranged some font usages. Updated descriptive tooltips on font entry boxes.
 16.12.2011:
         * New: Midi routing matrix! No more clumsy routing menu items. Currently for Midi Track iR and Audio Input iR solo routes. (Tim)
 14.12.2011:

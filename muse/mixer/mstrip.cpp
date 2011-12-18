@@ -300,7 +300,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       record->setToolTip(tr("record"));
       record->setChecked(track->recordFlag());
       record->setIcon(track->recordFlag() ? QIcon(*record_on_Icon) : QIcon(*record_off_Icon));
-      record->setIconSize(record_on_Icon->size());  
+      ///record->setIconSize(record_on_Icon->size());  
       connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
 
       mute  = new QToolButton();
@@ -308,7 +308,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       mute->setToolTip(tr("mute"));
       mute->setChecked(track->mute());
       mute->setIcon(track->mute() ? QIcon(*muteIconOff) : QIcon(*muteIconOn));
-      mute->setIconSize(muteIconOn->size());  
+      ///mute->setIconSize(muteIconOn->size());  
       mute->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
@@ -322,7 +322,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
         solo->setIcon(track->solo() ? QIcon(*soloblksqIconOn) : QIcon(*soloblksqIconOff));
       else
         solo->setIcon(track->solo() ? QIcon(*soloIconOn) : QIcon(*soloIconOff));
-      solo->setIconSize(soloIconOn->size());  
+      ///solo->setIconSize(soloIconOn->size());  
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
       
       /*
@@ -368,7 +368,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       off->setToolTip(tr("off"));
       off->setChecked(track->off());
       off->setIcon(track->off() ? QIcon(*exit1Icon) : QIcon(*exitIcon));
-      off->setIconSize(exit1Icon->size());  
+      ///off->setIconSize(exit1Icon->size());  
       connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
 
       grid->addWidget(off, _curGridRow, 0);
