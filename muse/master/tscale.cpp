@@ -37,7 +37,7 @@ namespace MusEGui {
 TScale::TScale(QWidget* parent, int ymag)
    : View(parent, 1, ymag)
       {
-      setFont(MusEGlobal::config.fonts[4]);
+      setFont(MusEGlobal::config.fonts[5]);
       //int w = 4 * QFontMetrics(MusEGlobal::config.fonts[4]).width('0');
       int w = 4 * fontMetrics().width('0');
       setFixedWidth(w);
