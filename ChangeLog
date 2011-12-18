@@ -1,3 +1,5 @@
+18.12.2011:
+        * Fixed: Annoying ladspa browser issues. Leak: Dialog was not destroyed. Sorting. Save complete state. (Tim)
 17.12.2011:
         - Fixed long-time graphics corruption issue: Large areas of desktop erased to background.  (Tim...) 
           Fixed class RoutePopupMenu. Now a subclass of PopupMenu. Changed all usages to 'short-lived' ::exe(), 
