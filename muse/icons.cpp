@@ -43,8 +43,8 @@
 #include "xpm/midi_inputplugins_random_rhythm_generator.xpm"
 #include "xpm/midi_local_off.xpm"
 #include "xpm/midi_reset_instr.xpm"
-#include "xpm/midi_thru_off3.xpm"
-#include "xpm/midi_thru_on3.xpm"
+#include "xpm/midi_thru_off4.xpm"
+#include "xpm/midi_thru_on4.xpm"
 #include "xpm/settings_appearance_settings.xpm"
 #include "xpm/settings_configureshortcuts.xpm"
 #include "xpm/settings_follow_song.xpm"
@@ -119,6 +119,10 @@
 #include "xpm/mutebutton_off.xpm"
 #include "xpm/rec_echo_on.xpm"
 #include "xpm/rec_echo_off.xpm"
+#include "xpm/routing_input_button_slim_4.xpm"
+#include "xpm/routing_output_button_slim_4.xpm"
+#include "xpm/routing_midi_input_button_slim.xpm"
+#include "xpm/routing_midi_output_button_slim.xpm"
 
 #include "xpm/up.xpm"
 #include "xpm/down.xpm"
@@ -285,6 +289,11 @@ QPixmap* exitIcon;
 QPixmap* exit1Icon;
 QPixmap* newmuteIcon;
 QPixmap* soloIcon;
+
+QPixmap* routesInIcon;
+QPixmap* routesOutIcon;
+QPixmap* routesMidiInIcon;
+QPixmap* routesMidiOutIcon;
 
 QPixmap* pointerIcon;
 QPixmap* pencilIcon;
@@ -598,6 +607,11 @@ void initIcons()
       newmuteIcon          = new MPIXMAP(newmutebutton_xpm, NULL);
       soloIcon             = new MPIXMAP(solobutton_xpm, NULL);
 
+      routesInIcon         = new MPIXMAP(routing_input_button_slim_4_xpm, NULL);
+      routesOutIcon        = new MPIXMAP(routing_output_button_slim_4_xpm, NULL);
+      routesMidiInIcon     = new MPIXMAP(routing_midi_input_button_slim_xpm, NULL);
+      routesMidiOutIcon    = new MPIXMAP(routing_midi_output_button_slim_xpm, NULL);
+
       recEchoIconOn        = new MPIXMAP(rec_echo_on_xpm, NULL);
       recEchoIconOff       = new MPIXMAP(rec_echo_off_xpm, NULL);
       muteIconOn           = new MPIXMAP(mutebutton_on_xpm, NULL);
@@ -629,8 +643,8 @@ void initIcons()
       miditransformSIcon   = new MPIXMAP(miditransformS_xpm, NULL);
       midi_plugSIcon       = new MPIXMAP(midi_plugS_xpm, NULL);
       miditransposeSIcon   = new MPIXMAP(miditransposeS_xpm, NULL);
-      midiThruOnIcon       = new MPIXMAP(midi_thru_on3_xpm, NULL);      
-      midiThruOffIcon      = new MPIXMAP(midi_thru_off3_xpm, NULL);      
+      midiThruOnIcon       = new MPIXMAP(midi_thru_on4_xpm, NULL);      
+      midiThruOffIcon      = new MPIXMAP(midi_thru_off4_xpm, NULL);      
       
       mixerSIcon           = new MPIXMAP(mixerS_xpm, NULL);
       mustangSIcon         = new MPIXMAP(mustangS_xpm, NULL);

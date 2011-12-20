@@ -955,8 +955,10 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       if (type != MusECore::Track::AUDIO_AUX) {
             iR = new QToolButton();
             iR->setFont(MusEGlobal::config.fonts[1]);
-            iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-            iR->setText(tr("iR"));
+            iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
+            ///iR->setText(tr("iR"));
+            iR->setIcon(QIcon(*routesInIcon));
+            iR->setIconSize(routesInIcon->size());  
             iR->setCheckable(false);
             iR->setToolTip(tr("input routing"));
             grid->addWidget(iR, _curGridRow, 0);
@@ -965,8 +967,10 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       
       oR = new QToolButton();
       oR->setFont(MusEGlobal::config.fonts[1]);
-      oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      oR->setText(tr("oR"));
+      oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
+      ///oR->setText(tr("oR"));
+      oR->setIcon(QIcon(*routesOutIcon));
+      oR->setIconSize(routesOutIcon->size());  
       oR->setCheckable(false);
       oR->setToolTip(tr("output routing"));
       grid->addWidget(oR, _curGridRow++, 1);

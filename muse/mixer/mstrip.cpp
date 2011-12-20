@@ -382,16 +382,20 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
 
       iR = new QToolButton();
       iR->setFont(MusEGlobal::config.fonts[1]);
-      iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      iR->setText(tr("iR"));
+      iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
+      ///iR->setText(tr("iR"));
+      iR->setIcon(QIcon(*routesMidiInIcon));
+      iR->setIconSize(routesMidiInIcon->size());  
       iR->setCheckable(false);
       iR->setToolTip(tr("input routing"));
       grid->addWidget(iR, _curGridRow, 0);
       connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
       oR = new QToolButton();
       oR->setFont(MusEGlobal::config.fonts[1]);
-      oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      oR->setText(tr("oR"));
+      oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
+      ///oR->setText(tr("oR"));
+      oR->setIcon(QIcon(*routesMidiOutIcon));
+      oR->setIconSize(routesMidiOutIcon->size());  
       oR->setCheckable(false);
       // TODO: Works OK, but disabled for now, until we figure out what to do about multiple out routes and display values...
       // Enabled (for Midi Port to Audio Input routing). p4.0.14 Tim.

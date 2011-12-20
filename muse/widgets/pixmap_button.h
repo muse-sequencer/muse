@@ -39,27 +39,47 @@ namespace MusEGui {
 class PixmapButton : public QWidget 
 { 
       Q_OBJECT
+      
+      Q_PROPERTY(bool checkable READ isCheckable WRITE setCheckable)
+      Q_PROPERTY(bool checked READ isChecked WRITE setChecked)
+      //Q_PROPERTY(QPixmap* offPixmap READ offPixmap WRITE setOffPixmap)
+      //Q_PROPERTY(QPixmap* onPixmap READ onPixmap WRITE setOnPixmap)
+      Q_PROPERTY(int margin READ margin WRITE setMargin)
+      
    private:
      QString _text;
+     bool _checkable;
+     bool _checked;
      int _margin;
-     bool _checkable; 
-     bool _checked; 
      QPixmap* _onPixmap;
      QPixmap* _offPixmap;
       
   protected:
     virtual void paintEvent(QPaintEvent* );
     virtual void mousePressEvent(QMouseEvent* );
+    virtual void mouseReleaseEvent(QMouseEvent* );
     
    signals:
      void clicked(bool checked = false);
+     void toggled(bool checked = false);
+     void pressed();
      
    public:
+      PixmapButton(QWidget* parent = 0);
       PixmapButton(QPixmap* on_pixmap, QPixmap* off_pixmap, int margin, QWidget* parent = 0, const QString& text = QString());
+      virtual QSize minimumSizeHint () const;
+      virtual bool margin() const { return _margin; }
+      virtual void setMargin(int v); 
       virtual bool isChecked() const { return _checked; }
       virtual void setChecked(bool);
+      virtual bool isDown() const { return _checked; }
+      virtual void setDown(bool);
       virtual bool isCheckable() const { return _checkable; }
       virtual void setCheckable(bool);
+      virtual QPixmap* offPixmap() const { return _offPixmap; }
+      virtual void setOffPixmap(QPixmap*);
+      virtual QPixmap* onPixmap() const { return _onPixmap; }
+      virtual void setOnPixmap(QPixmap*);
 };
       
 

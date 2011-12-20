@@ -77,7 +77,7 @@ QWidget* PixmapButtonsHeaderWidgetAction::createWidget(QWidget* parent)
   {
     PixmapButton* b = new PixmapButton(_refPixmap, _refPixmap, 2, lw, QString::number(i + 1));  // Margin  = 2
     mapper->setMapping(b, i);
-    connect(b, SIGNAL(clicked(bool)), mapper, SLOT(map()));
+    connect(b, SIGNAL(pressed()), mapper, SLOT(map()));
     if((i != 0) && (i % 4 == 0))
       layout->addSpacing(6);
     layout->addWidget(b); 
@@ -137,7 +137,7 @@ QWidget* PixmapButtonsWidgetAction::createWidget(QWidget *parent)
   mapper->setMapping(pb, _channels);  // Set to one past end.
   layout->addWidget(pb); 
   layout->addSpacing(6);
-  connect(pb, SIGNAL(clicked(bool)), mapper, SLOT(map()));
+  connect(pb, SIGNAL(pressed()), mapper, SLOT(map()));
   
   for(int i = 0; i < _channels; ++i)
   {
@@ -145,9 +145,9 @@ QWidget* PixmapButtonsWidgetAction::createWidget(QWidget *parent)
     PixmapButton* b = new PixmapButton(_onPixmap, _offPixmap, 2, lw);  // Margin  = 2
     _chan_buttons.append(b);
     b->setCheckable(true);
-    b->setChecked(set);
+    b->setDown(set);
     mapper->setMapping(b, i);
-    connect(b, SIGNAL(clicked(bool)), mapper, SLOT(map()));
+    connect(b, SIGNAL(toggled(bool)), mapper, SLOT(map()));
     if((i != 0) && (i % 4 == 0))
       layout->addSpacing(6);
     layout->addWidget(b); 
@@ -169,7 +169,7 @@ void PixmapButtonsWidgetAction::chanClickMap(int idx)
       _current  = allch;
     // Set and redraw the buttons.
     for(int i = 0; i < _channels; ++i)
-      _chan_buttons.at(i)->setChecked(_current != 0);
+      _chan_buttons.at(i)->setDown(_current != 0);
   }
   else
   {
@@ -190,7 +190,7 @@ void PixmapButtonsWidgetAction::setCurrentState(int state)
     _current = state;
     // Set and redraw the buttons.
     for(int i = 0; i < _channels; ++i)
-      _chan_buttons.at(i)->setChecked((_current & (1 << i)) != 0);
+      _chan_buttons.at(i)->setDown((_current & (1 << i)) != 0);
 }
 
 } // namespace MusEGui

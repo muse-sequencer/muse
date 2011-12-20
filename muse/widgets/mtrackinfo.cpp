@@ -106,6 +106,16 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   
   recEchoButton->setIcon((selected && ((MusECore::MidiTrack*)selected)->recEcho()) ? QIcon(*midiThruOnIcon) : QIcon(*midiThruOffIcon));
   recEchoButton->setIconSize(midiThruOnIcon->size());  
+  //recEchoButton->setOffPixmap(midiThruOffIcon);
+  //recEchoButton->setOnPixmap(midiThruOnIcon);
+  
+  iRButton->setIcon(QIcon(*routesMidiInIcon));
+  iRButton->setIconSize(routesMidiInIcon->size());  
+  //iRButton->setOffPixmap(routesMidiInIcon);
+  
+  oRButton->setIcon(QIcon(*routesMidiOutIcon));
+  oRButton->setIconSize(routesMidiOutIcon->size());  
+  //oRButton->setOffPixmap(routesMidiOutIcon);
   
   // MusE-2: AlignCenter and WordBreak are set in the ui(3) file, but not supported by QLabel. Turn them on here.
   trackNameLabel->setAlignment(Qt::AlignCenter);
@@ -159,7 +169,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   
   connect(iPatch, SIGNAL(released()), SLOT(instrPopup()));
 
-  ///pop = new QMenu(iPatch);
+  //pop = new QMenu(iPatch);
   //pop->setCheckable(false); // not needed in Qt4
 
   // Removed by Tim. p3.3.9

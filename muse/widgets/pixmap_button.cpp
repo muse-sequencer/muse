@@ -21,6 +21,7 @@
 
 #include <QString>
 #include <QWidget>
+#include <QSize>
 #include <QFont>
 #include <QPainter>
 #include <QPixmap>
@@ -31,6 +32,20 @@
 
 namespace MusEGui {
   
+PixmapButton::PixmapButton(QWidget* parent)
+             : QWidget(parent)
+{
+  _onPixmap = 0;
+  _offPixmap = 0;
+  _margin = 0;
+  _checked = false;
+  _checkable = false;
+    
+  QFont fnt = font();
+  fnt.setPointSize(8);
+  setFont(fnt);
+}
+
 PixmapButton::PixmapButton(QPixmap* on_pixmap, QPixmap* off_pixmap, int margin, QWidget* parent, const QString& text) 
              : QWidget(parent)
 {
@@ -40,8 +55,10 @@ PixmapButton::PixmapButton(QPixmap* on_pixmap, QPixmap* off_pixmap, int margin, 
   _margin = margin;
   _checked = false;
   _checkable = false;
-  if(_onPixmap)
+  if(_offPixmap)
     setMinimumSize(_offPixmap->size().width() + 2*_margin, _offPixmap->size().height() + 2*_margin);
+  else
+    setMinimumSize(10 + 2*_margin, 10 + 2*_margin);
   //font().s
     
   QFont fnt = font();
@@ -49,19 +66,61 @@ PixmapButton::PixmapButton(QPixmap* on_pixmap, QPixmap* off_pixmap, int margin, 
   setFont(fnt);
 }
 
-void PixmapButton::setCheckable(bool checkable)
+QSize PixmapButton::minimumSizeHint () const
 {
-  _checkable = checkable;
+  return QSize(10, 10);
+}
+
+void PixmapButton::setMargin(int v) 
+{ 
+  _margin = v; 
+  if(_offPixmap)
+    setMinimumSize(_offPixmap->size().width() + 2*_margin, _offPixmap->size().height() + 2*_margin);
+  update(); 
+}
+
+void PixmapButton::setOffPixmap(QPixmap* pm)
+{
+  _offPixmap = pm;
+  if(_offPixmap)
+    setMinimumSize(_offPixmap->size().width() + 2*_margin, _offPixmap->size().height() + 2*_margin);
+  else
+    setMinimumSize(10 + 2*_margin, 10 + 2*_margin);
+  update();
+}
+
+void PixmapButton::setOnPixmap(QPixmap* pm)
+{
+  _onPixmap = pm;
+  update();
+}
+
+void PixmapButton::setCheckable(bool v)
+{
+  _checkable = v;
   if(!_checkable)
     _checked = false;
   update();
 }
 
-void PixmapButton::setChecked(bool checked)
+void PixmapButton::setChecked(bool v)
 {
   if(!_checkable)
     return;
-  _checked = checked;
+  if(_checked == v)
+    return;
+  _checked = v;
+  update();
+  emit toggled(_checked);
+}
+
+void PixmapButton::setDown(bool v)
+{
+  if(!_checkable)
+    return;
+  if(_checked == v)
+    return;
+  _checked = v;
   update();
 }
 
@@ -90,11 +149,26 @@ void PixmapButton::mousePressEvent(QMouseEvent* e)
 {
   //if(e->button() != Qt::LeftButton)
   //  return;
-  _checked = !_checked;
+  if(_checkable)
+    _checked = !_checked;
   update();
-  emit clicked(_checked);
+  
+  emit pressed();
+  if(_checkable)
+    emit toggled(_checked);
+  
   //e->setAccepted(true);   // This makes menu not close when mouse is released. May be desireable with many small buttons... 
   QWidget::mousePressEvent(e);
+}
+
+void PixmapButton::mouseReleaseEvent(QMouseEvent* e)
+{
+  //if(e->button() != Qt::LeftButton)
+  //  return;
+  emit clicked(_checked);
+  
+  //e->setAccepted(true);   // This makes menu not close when mouse is released. May be desireable with many small buttons... 
+  QWidget::mouseReleaseEvent(e);
 }
 
 } // MusEGui

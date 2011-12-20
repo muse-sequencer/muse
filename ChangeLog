@@ -1,3 +1,5 @@
+20.12.2011:
+        - Litle break for some polish. Route button icons. Rebuild midi track info ui file - was 3 columns not 2. (Tim)
 18.12.2011:
         * Fixed: Annoying ladspa browser issues. Leak: Dialog was not destroyed. Sorting. Save complete state. (Tim)
 17.12.2011:
