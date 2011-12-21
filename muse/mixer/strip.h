@@ -87,6 +87,7 @@ class Strip : public QFrame {
    public slots:
       void resetPeaks();
       virtual void songChanged(int) = 0;
+      virtual void configChanged() = 0;
 
    public:
       Strip(QWidget* parent, MusECore::Track* t);

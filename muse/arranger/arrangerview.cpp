@@ -77,7 +77,7 @@ namespace MusEGui {
 ArrangerView::ArrangerView(QWidget* parent)
    : TopWin(TopWin::ARRANGER, parent, "arrangerview", Qt::Window)
 {
-  using MusEGlobal::muse;
+  //using MusEGlobal::muse;
   
   //setAttribute(Qt::WA_DeleteOnClose);
   setWindowTitle(tr("MusE: Arranger"));
@@ -121,12 +121,12 @@ ArrangerView::ArrangerView(QWidget* parent)
 
   connect(editTools, SIGNAL(toolChanged(int)), arranger, SLOT(setTool(int)));
   connect(visTracks, SIGNAL(visibilityChanged()), MusEGlobal::song, SLOT(update()) );
-  connect(arranger, SIGNAL(editPart(MusECore::Track*)), muse, SLOT(startEditor(MusECore::Track*)));
-  connect(arranger, SIGNAL(dropSongFile(const QString&)), muse, SLOT(loadProjectFile(const QString&)));
-  connect(arranger, SIGNAL(dropMidiFile(const QString&)), muse, SLOT(importMidi(const QString&)));
-  connect(arranger, SIGNAL(startEditor(MusECore::PartList*,int)),  muse, SLOT(startEditor(MusECore::PartList*,int)));
+  connect(arranger, SIGNAL(editPart(MusECore::Track*)), MusEGlobal::muse, SLOT(startEditor(MusECore::Track*)));
+  connect(arranger, SIGNAL(dropSongFile(const QString&)), MusEGlobal::muse, SLOT(loadProjectFile(const QString&)));
+  connect(arranger, SIGNAL(dropMidiFile(const QString&)), MusEGlobal::muse, SLOT(importMidi(const QString&)));
+  connect(arranger, SIGNAL(startEditor(MusECore::PartList*,int)),  MusEGlobal::muse, SLOT(startEditor(MusECore::PartList*,int)));
   connect(arranger, SIGNAL(toolChanged(int)), editTools, SLOT(set(int)));
-  connect(muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
+  connect(MusEGlobal::muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
   connect(arranger, SIGNAL(setUsedTool(int)), editTools, SLOT(set(int)));
   connect(arranger, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
   connect(MusEGlobal::song, SIGNAL(songChanged(int)), visTracks, SLOT(updateVisibleTracksButtons()));
@@ -331,19 +331,19 @@ ArrangerView::ArrangerView(QWidget* parent)
 
   connect(editSignalMapper, SIGNAL(mapped(int)), this, SLOT(cmd(int)));
 
-  connect(startPianoEditAction, SIGNAL(activated()), muse, SLOT(startPianoroll()));
-  connect(startScoreEditAction, SIGNAL(activated()), muse, SLOT(startScoreQuickly()));
-  connect(startDrumEditAction, SIGNAL(activated()), muse, SLOT(startDrumEditor()));
-  connect(startListEditAction, SIGNAL(activated()), muse, SLOT(startListEditor()));
-  connect(startWaveEditAction, SIGNAL(activated()), muse, SLOT(startWaveEditor()));
-  connect(scoreOneStaffPerTrackMapper, SIGNAL(mapped(QWidget*)), muse, SLOT(openInScoreEdit_oneStaffPerTrack(QWidget*)));
-  connect(scoreAllInOneMapper, SIGNAL(mapped(QWidget*)), muse, SLOT(openInScoreEdit_allInOne(QWidget*)));
+  connect(startPianoEditAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startPianoroll()));
+  connect(startScoreEditAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startScoreQuickly()));
+  connect(startDrumEditAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startDrumEditor()));
+  connect(startListEditAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startListEditor()));
+  connect(startWaveEditAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startWaveEditor()));
+  connect(scoreOneStaffPerTrackMapper, SIGNAL(mapped(QWidget*)), MusEGlobal::muse, SLOT(openInScoreEdit_oneStaffPerTrack(QWidget*)));
+  connect(scoreAllInOneMapper, SIGNAL(mapped(QWidget*)), MusEGlobal::muse, SLOT(openInScoreEdit_allInOne(QWidget*)));
 
 
-  connect(masterGraphicAction, SIGNAL(activated()), muse, SLOT(startMasterEditor()));
-  connect(masterListAction, SIGNAL(activated()), muse, SLOT(startLMasterEditor()));
+  connect(masterGraphicAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startMasterEditor()));
+  connect(masterListAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startLMasterEditor()));
 
-  connect(midiTransformerAction, SIGNAL(activated()), muse, SLOT(startMidiTransformer()));
+  connect(midiTransformerAction, SIGNAL(activated()), MusEGlobal::muse, SLOT(startMidiTransformer()));
 
 
   //-------- Structure connections
@@ -356,7 +356,7 @@ ArrangerView::ArrangerView(QWidget* parent)
 
 
 
-  connect(muse, SIGNAL(configChanged()), SLOT(updateShortcuts()));
+  connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(updateShortcuts()));
 
 
   QClipboard* cb = QApplication::clipboard();

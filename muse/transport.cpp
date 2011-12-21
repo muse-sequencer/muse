@@ -520,11 +520,6 @@ Transport::Transport(QWidget* parent, const char* name)
       hbox->addWidget(righthandle);
       }
 
-Transport::~Transport()
-{
-  //printf("Transport::~Transport\n");  
-}
-
 //---------------------------------------------------------
 //   configChanged
 //---------------------------------------------------------

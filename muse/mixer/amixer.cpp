@@ -236,7 +236,9 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       
       connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
-      MusEGlobal::song->update();  // calls update mixer
+      
+      //MusEGlobal::song->update();  // calls update mixer
+      updateMixer(UPDATE_ALL);       // Build the mixer, add the strips.   p4.0.45  
       }
 
 /*
@@ -392,7 +394,6 @@ void AudioMixerApp::updateMixer(UpdateAction action)
                   
             return;
       }
-      // Added by Tim. p3.3.7
       else if (action == UPDATE_MIDI) 
       {
             int i = 0;
@@ -538,7 +539,10 @@ void AudioMixerApp::updateMixer(UpdateAction action)
 
 void AudioMixerApp::configChanged()    
 { 
-  songChanged(-1); // Catch when fonts change, do full rebuild.
+  //songChanged(-1); // SC_CONFIG // Catch when fonts change, do full rebuild. 
+  StripList::iterator si = stripList.begin();  // Catch when fonts change, viewable tracks, etc. No full rebuild.  p4.0.45
+  for (; si != stripList.end(); ++si) 
+        (*si)->configChanged();
 }
 
 //---------------------------------------------------------
@@ -552,7 +556,8 @@ void AudioMixerApp::songChanged(int flags)
         return;
     
       UpdateAction action = NO_UPDATE;
-      if (flags == -1)
+      
+      if (flags == -1)                   
             action = UPDATE_ALL;
       else if (flags & SC_TRACK_REMOVED)
             action = STRIP_REMOVED;
@@ -560,15 +565,18 @@ void AudioMixerApp::songChanged(int flags)
             action = STRIP_INSERTED;
       else if (flags & SC_MIDI_TRACK_PROP)
             action = UPDATE_MIDI;
+      
       //if (action != NO_UPDATE)
-      if (action != NO_UPDATE && action != UPDATE_MIDI)  // p4.0.14 Fix for very slow track prop adjusting. 
+      if (action != NO_UPDATE && action != UPDATE_MIDI)  // Fix for very slow track prop adjusting. 
             updateMixer(action);
-      if (action != UPDATE_ALL) {
+      
+      if (action != UPDATE_ALL)                        
+      {
             StripList::iterator si = stripList.begin();
             for (; si != stripList.end(); ++si) {
                   (*si)->songChanged(flags);
                   }
-            }
+      }
       }
 
 //---------------------------------------------------------

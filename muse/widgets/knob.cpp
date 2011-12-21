@@ -115,6 +115,9 @@ void Knob::setTotalAngle (double angle)
 
 void Knob::setRange(double vmin, double vmax, double vstep, int pagesize)
       {
+      //if(vmin == d_minValue && vmax == d_maxValue && vstep == d_step && pageSize == d_pageSize)    // p4.0.45
+      //  return;
+      
       // divide by zero protection. probably too cautious
       if (! (vmin == vmax || qMax(-vmin, vmax) == 0))
             {

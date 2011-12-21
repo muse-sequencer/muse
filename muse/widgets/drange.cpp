@@ -165,6 +165,9 @@ void DoubleRange::setRange(double vmin, double vmax, double vstep, int pageSize)
       {
       bool rchg = ((d_maxValue != vmax) || (d_minValue != vmin));
 
+      if(!rchg && vstep == d_step && pageSize == d_pageSize)    // p4.0.45
+        return;
+      
       if (rchg) {
             d_minValue = vmin;
             d_maxValue = vmax;
