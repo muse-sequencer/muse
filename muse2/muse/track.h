@@ -4,6 +4,7 @@
 //  $Id: track.h,v 1.39.2.17 2009/12/20 05:00:35 terminator356 Exp $
 //
 //  (C) Copyright 1999-2004 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -71,9 +72,10 @@ class Track {
       static bool _tmpSoloChainDoIns;
       static bool _tmpSoloChainNoDec;
       
-      // p3.3.38
       RouteList _inRoutes;
       RouteList _outRoutes;
+      bool _nodeTraversed;   // Internal anti circular route traversal flag.
+      int _auxRouteCount;    // Number of aux paths feeding this track.
       
       QString _name;
       bool _recordFlag;
@@ -90,8 +92,6 @@ class Track {
       
       int _activity;
       int _lastActivity;
-      //int _meter[MAX_CHANNELS];
-      //int _peak[MAX_CHANNELS];
       double _meter[MAX_CHANNELS];
       double _peak[MAX_CHANNELS];
 
@@ -148,7 +148,10 @@ class Track {
       bool noInRoute() const   { return _inRoutes.empty();  }
       bool noOutRoute() const  { return _outRoutes.empty(); }
       void writeRouting(int, Xml&) const;
-
+      bool isCircularRoute(Track* dst);   
+      int auxRefCount() const { return _auxRouteCount; }  // Number of Aux Tracks with routing paths to this track. 
+      void updateAuxRoute(int refInc, Track* dst);  // Internal use. 
+      
       PartList* parts()               { return &_parts; }
       const PartList* cparts() const  { return &_parts; }
       Part* findPart(unsigned tick);
@@ -169,20 +172,21 @@ class Track {
 
       virtual void setMute(bool val);
       virtual void setOff(bool val);
-      virtual void updateSoloStates(bool noDec) = 0;
-      virtual void updateInternalSoloStates();
-      void updateSoloState();
       void setInternalSolo(unsigned int val);
-      static void clearSoloRefCounts();
       virtual void setSolo(bool val) = 0;
       virtual bool isMute() const = 0;
-      
       unsigned int internalSolo() const  { return _internalSolo; }
       bool soloMode() const              { return _soloRefCnt; }
       bool solo() const                  { return _solo;         }
       bool mute() const                  { return _mute;         }
       bool off() const                   { return _off;          }
       bool recordFlag() const            { return _recordFlag;   }
+      //
+      // Internal use...
+      static void clearSoloRefCounts();
+      void updateSoloState();
+      virtual void updateSoloStates(bool noDec) = 0;  
+      virtual void updateInternalSoloStates();        
 
       int activity()                     { return _activity;     }
       void setActivity(int v)            { _activity = v;        }
@@ -191,8 +195,6 @@ class Track {
       void addActivity(int v)            { _activity += v;       }
       void resetPeaks();
       static void resetAllMeter();
-      //int meter(int ch) const  { return _meter[ch]; }
-      //int peak(int ch) const   { return _peak[ch]; }
       double meter(int ch) const  { return _meter[ch]; }
       double peak(int ch) const   { return _peak[ch]; }
       void resetMeter();
@@ -207,6 +209,7 @@ class Track {
       virtual AutomationType automationType() const    = 0;
       virtual void setAutomationType(AutomationType t) = 0;
       static void setVisible(bool) { }
+      bool isVisible();
 
       };
 
@@ -221,9 +224,9 @@ class MidiTrack : public Track {
       int _outPort;
       int _outChannel;
       //int _inPortMask;        
-      ///unsigned int _inPortMask; // bitmask of accepted record ports
-      ///int _inChannelMask;     // bitmask of accepted record channels
-      bool _recEcho;          // For midi (and audio). Whether to echo incoming record events to output device.
+      //unsigned int _inPortMask; // bitmask of accepted record ports
+      //int _inChannelMask;       // bitmask of accepted record channels
+      bool _recEcho;              // For midi (and audio). Whether to echo incoming record events to output device.
 
       EventList* _events;     // tmp Events during midi import
       MPEventList* _mpevents; // tmp Events druring recording
@@ -284,17 +287,17 @@ class MidiTrack : public Track {
       void setOutPortAndChannelAndUpdate(int /*port*/, int /*chan*/);
       
       //void setInPortMask(int i)       { _inPortMask = i; }
-      ///void setInPortMask(unsigned int i) { _inPortMask = i; }  // Obsolete
-      ///void setInChannelMask(int i)    { _inChannelMask = i; }  //
+      //void setInPortMask(unsigned int i) { _inPortMask = i; }  // Obsolete
+      //void setInChannelMask(int i)    { _inChannelMask = i; }  //
       // Backward compatibility: For reading old songs.
       void setInPortAndChannelMask(unsigned int /*portmask*/, int /*chanmask*/); 
       
       void setRecEcho(bool b)         { _recEcho = b; }
       int outPort() const             { return _outPort;     }
       //int inPortMask() const          { return _inPortMask;  }
-      ///unsigned int inPortMask() const { return _inPortMask;  }
+      //unsigned int inPortMask() const { return _inPortMask;  }
       int outChannel() const          { return _outChannel;  }
-      ///int inChannelMask() const       { return _inChannelMask; }
+      //int inChannelMask() const       { return _inChannelMask; }
       bool recEcho() const            { return _recEcho; }
 
       virtual bool isMute() const;
@@ -324,14 +327,10 @@ class MidiTrack : public Track {
       void readOurDrumMap(Xml& xml, bool dont_init=false);
       };
 
-} // namespace MusECore
-
-namespace MusECore {
-
 //---------------------------------------------------------
 //   AudioTrack
 //    this track can hold audio automation data and can
-//    hold tracktypes AUDIO, AUDIO_MASTER, AUDIO_GROUP,
+//    hold tracktypes WAVE, AUDIO_GROUP, AUDIO_OUTPUT,
 //    AUDIO_INPUT, AUDIO_SOFTSYNTH, AUDIO_AUX
 //---------------------------------------------------------
 
@@ -339,25 +338,19 @@ class AudioTrack : public Track {
       //friend class MidiTrack;
       //static unsigned int _soloRefCnt;
       
-      bool _haveData;
+      bool _haveData; // Whether we have data from a previous process call during current cycle.
       
       CtrlListList _controller;
       CtrlRecList _recEvents;     // recorded automation events
 
       bool _prefader;               // prefader metering
       std::vector<double> _auxSend;
-      Pipeline* _efxPipe;
-
-      AutomationType _automationType;
-
-      //RouteList _inRoutes;
-      //RouteList _outRoutes;
-      
-      bool _sendMetronome;
-      
       //void readRecfile(Xml& xml);
       void readAuxSend(Xml& xml);
-
+      
+      bool _sendMetronome;
+      AutomationType _automationType;
+      Pipeline* _efxPipe;
 
    protected:
       float** outBuffers;
@@ -370,7 +363,7 @@ class AudioTrack : public Track {
       SndFile* _recFile;
       Fifo fifo;                    // fifo -> _recFile
       bool _processed;
-
+      
    public:
       AudioTrack(TrackType t);
       //AudioTrack(TrackType t, int num_out_bufs = MAX_CHANNELS); 
@@ -449,12 +442,6 @@ class AudioTrack : public Track {
       
       void readVolume(Xml& xml);
       //void writeRouting(int, Xml&) const;
-
-      // routing
-      //RouteList* inRoutes()    { return &_inRoutes; }
-      //RouteList* outRoutes()   { return &_outRoutes; }
-      //bool noInRoute() const   { return _inRoutes.empty();  }
-      //bool noOutRoute() const  { return _outRoutes.empty(); }
 
       virtual void preProcessAlways() { _processed = false; }
       virtual void  addData(unsigned /*samplePos*/, int /*channels*/, int /*srcStartChan*/, int /*srcChannels*/, unsigned /*frames*/, float** /*buffer*/);

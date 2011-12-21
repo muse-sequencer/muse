@@ -29,25 +29,26 @@
 #include "action.h"
 #include "track.h"
 #include "synth.h"
+#include "app.h"
 
 namespace MusEGui {
 
-const char* waveTrack = QT_TRANSLATE_NOOP("@default", "Show wave tracks");
-const char* groupTrack = QT_TRANSLATE_NOOP("@default", "Show group tracks");
-const char* auxTrack = QT_TRANSLATE_NOOP("@default", "Show aux tracks");
-const char* inputTrack = QT_TRANSLATE_NOOP("@default", "Show input tracks");
-const char* outputTrack = QT_TRANSLATE_NOOP("@default", "Show output tracks");
-const char* midiTrack = QT_TRANSLATE_NOOP("@default", "Show midi tracks");
-const char* synthTrack = QT_TRANSLATE_NOOP("@default", "Show synth tracks");
+const char* waveTrack = QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show wave tracks");
+const char* groupTrack = QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show group tracks");
+const char* auxTrack = QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show aux tracks");
+const char* inputTrack = QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show input tracks");
+const char* outputTrack = QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show output tracks");
+const char* midiTrack = QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show midi tracks");
+const char* synthTrack = QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show synth tracks");
 
 VisibleToolB visTrackList[] = {
-      {&addtrack_wavetrackIcon,   QT_TRANSLATE_NOOP("@default", "Show wave tracks"),     waveTrack   },
-      {&addtrack_audiogroupIcon,  QT_TRANSLATE_NOOP("@default", "Show group tracks"),    groupTrack  },
-      {&addtrack_auxsendIcon,     QT_TRANSLATE_NOOP("@default", "Show aux tracks"),      auxTrack    },
-      {&addtrack_audioinputIcon,  QT_TRANSLATE_NOOP("@default", "Show input tracks"),    inputTrack  },
-      {&addtrack_audiooutputIcon, QT_TRANSLATE_NOOP("@default", "Show output tracks"),   outputTrack },
-      {&addtrack_addmiditrackIcon,QT_TRANSLATE_NOOP("@default", "Show midi tracks"),     midiTrack   },
-      {&synthIcon,                QT_TRANSLATE_NOOP("@default", "Show synth tracks"),    midiTrack   },
+      {&addtrack_wavetrackIcon,   QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show wave tracks"),     waveTrack   },
+      {&addtrack_audiogroupIcon,  QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show group tracks"),    groupTrack  },
+      {&addtrack_auxsendIcon,     QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show aux tracks"),      auxTrack    },
+      {&addtrack_audioinputIcon,  QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show input tracks"),    inputTrack  },
+      {&addtrack_audiooutputIcon, QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show output tracks"),   outputTrack },
+      {&addtrack_addmiditrackIcon,QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show midi tracks"),     midiTrack   },
+      {&synthIcon,                QT_TRANSLATE_NOOP("MusEGui::VisibleTracks", "Show synth tracks"),    midiTrack   },
       };
 
 //---------------------------------------------------------
@@ -67,7 +68,7 @@ VisibleTracks::VisibleTracks(QWidget* parent, const char*)
       for (unsigned i = 0; i < sizeof(visTrackList)/sizeof(*visTrackList); ++i) {
             VisibleToolB* t = &visTrackList[i];
 
-            Action* a = new Action(action, i, t->tip, true);
+            Action* a = new Action(action, i, tr(t->tip).toAscii().data(), true);
             actions[n] = a;
             //a->setIconSet(QIcon(**(t->icon)));
             a->setIcon(QIcon(**(t->icon)));
@@ -130,6 +131,7 @@ void VisibleTracks::visibilityChanged(QAction* action)
       default:
             break;
       }
+      MusEGlobal::muse->changeConfig(true);    // save settings
       emit visibilityChanged();
 }
 

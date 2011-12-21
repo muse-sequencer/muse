@@ -117,7 +117,7 @@ void TLLayout::setGeometry(const QRect &rect)
 
       QSize s1 = li[1]->sizeHint();
       QSize s2 = li[2]->sizeHint();
-      QSize s3 = li[3]->sizeHint();
+      //QSize s3 = li[3]->sizeHint();
       QSize s4 = li[4]->sizeHint();
       QSize s5 = li[5]->sizeHint();
 

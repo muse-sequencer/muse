@@ -227,13 +227,11 @@ CtrlCanvas::CtrlCanvas(MidiEditor* e, QWidget* parent, int xmag,
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
 
       setMouseTracking(true);
-      if (editor->parts()->empty()) {
-            curPart = 0;
-            curTrack = 0;
-            }
-      else {
+      curPart = 0;
+      curTrack = 0;
+      if (!editor->parts()->empty())
             setCurTrackAndPart();
-            }
+
       connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
       connect(MusEGlobal::muse, SIGNAL(configChanged()), SLOT(configChanged()));
       
@@ -474,6 +472,9 @@ void CtrlCanvas::configChanged()
 
 void CtrlCanvas::songChanged(int type)
 {
+  if(editor->deleting())  // Ignore while while deleting to prevent crash.
+    return; 
+  
   //printf("CtrlCanvas::songChanged type:%x\n", type);  
   // Is it simply a midi controller value adjustment? Forget it.
   if(type == SC_MIDI_CONTROLLER)
@@ -1947,7 +1948,7 @@ void CtrlCanvas::drawOverlay(QPainter& p)
            //p.setFont(MusEGlobal::config.fonts[3]);
            //p.setPen(Qt::black);
            //p.drawText(width()/2-100,height()/2-10, "Use shift + pencil or line tool to draw new events");
-           p.drawText(2 , y * 2, tr("Use pencil or line tool to draw new events"));
+           p.drawText(2 , y * 2, tr("Drawing hint: Hold Ctrl to affect only existing events"));
            }
       }
 
@@ -1998,7 +1999,7 @@ void CtrlCanvas::draw(QPainter& p, const QRect& rect)
       //    draw line tool
       //---------------------------------------------------
 
-      if (drawLineMode && (tool == MusEGui::DrawTool)) {
+      if ((tool == MusEGui::DrawTool) && drawLineMode) {
             p.setPen(Qt::black);
             p.drawLine(line1x, line1y, line2x, line2y);
             }

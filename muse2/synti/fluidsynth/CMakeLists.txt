@@ -54,7 +54,7 @@ file (GLOB fluidsynth_source_files
 ##
 ## Define target
 ##
-add_library ( fluidsynth SHARED 
+add_library ( fluid_synth SHARED 
       ${fluidsynth_source_files}
       ${fluidsynth_mocs}
       ${fluidsynth_uis}
@@ -78,30 +78,24 @@ set (FILES_TO_TRANSLATE
 #   libfluidsynth.so
 # - use precompiled header files
 #
-set_target_properties ( fluidsynth 
+set_target_properties ( fluid_synth 
       PROPERTIES PREFIX ""
       COMPILE_FLAGS "-fvisibility=hidden -include ${PROJECT_BINARY_DIR}/all-pic.h"
-      LINK_FLAGS "${FLUIDSYN_LDFLAGS}"   # "-lfluidsynth"
       )
-
 
 ##
 ## Linkage
 ##
-target_link_libraries(fluidsynth
+target_link_libraries(fluid_synth
       synti
       ${QT_LIBRARIES}
-      # Can't do this here, since FLUIDSYN_LIBRARIES evaluates 
-      # to 'fluidsynth', the same name as our target.
-      # ${FLUIDSYN_LIBRARIES}
-      # Try giving full path:  Nope, path is empty!
-      #${FLUIDSYN_LIBRARY_DIRS}/${FLUIDSYN_LIBRARIES}
+      ${FLUIDSYN_LIBRARIES}
       )
 
 ##
 ## Install location
 ##
-install( TARGETS fluidsynth 
+install( TARGETS fluid_synth 
       DESTINATION ${MusE_SYNTHI_DIR}
       )
 install( FILES README.txt TODO

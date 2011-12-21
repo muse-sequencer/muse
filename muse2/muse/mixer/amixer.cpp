@@ -169,7 +169,7 @@ AudioMixerApp::AudioMixerApp(QWidget* parent, MusEGlobal::MixerConfig* c)
       setWindowIcon(*museIcon);
 
       QMenu* menuConfig = menuBar()->addMenu(tr("&Create"));
-      MusEGui::populateAddTrack(menuConfig);
+      MusEGui::populateAddTrack(menuConfig,true);
       connect(menuConfig, SIGNAL(triggered(QAction *)), MusEGlobal::song, SLOT(addNewTrack(QAction *)));
       
       QMenu* menuView = menuBar()->addMenu(tr("&View"));

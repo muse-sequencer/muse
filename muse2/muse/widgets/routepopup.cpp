@@ -43,10 +43,10 @@ namespace MusEGui {
 int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* route_track, PopupMenu* lb, int id, int channel, int channels, bool isOutput)
 {
   // totalInChannels is only used by syntis.
-  int toch = ((MusECore::AudioTrack*)track)->totalOutChannels();
+  //int toch = ((MusECore::AudioTrack*)track)->totalOutChannels();
   // If track channels = 1, it must be a mono synth. And synti channels cannot be changed by user.
-  if(track->channels() == 1)
-    toch = 1;
+  //if(track->channels() == 1)
+  //  toch = 1;
   
   // Don't add the last stray mono route if the track is stereo.
   //if(route_track->channels() > 1 && (channel+1 == chans))
@@ -95,6 +95,13 @@ int RoutePopupMenu::addMenuItem(MusECore::AudioTrack* track, MusECore::Track* ro
       }
     }  
   }
+  
+  if(!act->isChecked())  // If circular route exists, allow user to break it, otherwise forbidden.
+  {
+    if( (isOutput ? track : route_track)->isCircularRoute(isOutput ? route_track : track) ) 
+      act->setEnabled(false);
+  }
+
   return ++id;      
 }
 
@@ -220,9 +227,9 @@ int RoutePopupMenu::addSyntiPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id
               {
                 char buffer[128];
                 if(tchans == 2)
-                  snprintf(buffer, 128, "%s %d,%d", chpup->tr("Channel").toLatin1().constData(), ch+1, ch+2);
+                  snprintf(buffer, 128, "%s %d,%d", tr("Channel").toLatin1().constData(), ch+1, ch+2);
                 else  
-                  snprintf(buffer, 128, "%s %d", chpup->tr("Channel").toLatin1().constData(), ch+1);
+                  snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), ch+1);
                 act = chpup->addAction(QString(buffer));
                 act->setCheckable(true);
                 
@@ -259,6 +266,13 @@ int RoutePopupMenu::addSyntiPorts(MusECore::AudioTrack* t, PopupMenu* lb, int id
                     }
                   }
                 }  
+
+                if(!act->isChecked())  // If circular route exists, allow user to break it, otherwise forbidden.
+                {
+                  if( (isOutput ? t : track)->isCircularRoute(isOutput ? track : t) ) 
+                    act->setEnabled(false);
+                }
+
                 ++id;
               }
             
@@ -347,7 +361,7 @@ int RoutePopupMenu::addMultiChannelPorts(MusECore::AudioTrack* t, PopupMenu* pup
     if(chans > 1)
     {
       char buffer[128];
-      snprintf(buffer, 128, "%s %d", pup->tr("Channel").toLatin1().constData(), ch+1);
+      snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), ch+1);
       chpup->setTitle(QString(buffer));
       pup->addMenu(chpup);
     }  
@@ -425,7 +439,7 @@ int RoutePopupMenu::addMultiChannelPorts(MusECore::AudioTrack* t, PopupMenu* pup
       if(chans > 2)
       {
         char buffer[128];
-        snprintf(buffer, 128, "%s %d,%d", pup->tr("Channel").toLatin1().constData(), ch+1, ch+2);
+        snprintf(buffer, 128, "%s %d,%d", tr("Channel").toLatin1().constData(), ch+1, ch+2);
         chpup->setTitle(QString(buffer));
         pup->addMenu(chpup);
       }  
@@ -482,7 +496,7 @@ int RoutePopupMenu::nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* l
               for(int ch = 0; ch < chans; ++ch)
               {
                 char buffer[128];
-                snprintf(buffer, 128, "%s %d", chpup->tr("Channel").toLatin1().constData(), ch+1);
+                snprintf(buffer, 128, "%s %d", tr("Channel").toLatin1().constData(), ch+1);
                 act = chpup->addAction(QString(buffer));
                 act->setCheckable(true);
                 
@@ -520,6 +534,13 @@ int RoutePopupMenu::nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* l
                     }
                   }
                 }
+                
+                if(!act->isChecked())  // If circular route exists, allow user to break it, otherwise forbidden.
+                {
+                  if( (isOutput ? t : track)->isCircularRoute(isOutput ? track : t) ) 
+                    act->setEnabled(false);
+                }
+
                 ++id;
               }
             
@@ -535,7 +556,7 @@ int RoutePopupMenu::nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* l
                 for(int ch = 0; ch < chans; ++ch)
                 {
                   char buffer[128];
-                  snprintf(buffer, 128, "%s %d,%d", chpup->tr("Channel").toLatin1().constData(), ch+1, ch+2);
+                  snprintf(buffer, 128, "%s %d,%d", tr("Channel").toLatin1().constData(), ch+1, ch+2);
                   act = chpup->addAction(QString(buffer));
                   act->setCheckable(true);
                   
@@ -573,6 +594,13 @@ int RoutePopupMenu::nonSyntiTrackAddSyntis(MusECore::AudioTrack* t, PopupMenu* l
                       }
                     }  
                   }
+                  
+                  if(!act->isChecked())  // If circular route exists, allow user to break it, otherwise forbidden.
+                  {
+                    if( (isOutput ? t : track)->isCircularRoute(isOutput ? track : t) ) 
+                      act->setEnabled(false);
+                  }
+
                   ++id;
                 }
               }
@@ -1062,9 +1090,8 @@ void RoutePopupMenu::prepare()
       for( ; pi < MIDI_PORTS; ++pi)
       {
         MusECore::MidiDevice* md = MusEGlobal::midiPorts[pi].device();
-        //if(md && !md->isSynti() && (md->rwFlags() & 2))
-        //if(md && (md->rwFlags() & 2))   // p4.0.27
-        if(md && (md->rwFlags() & 2 || md->isSynti()) )  // p4.0.27
+        if(md && !md->isSynti() && (md->rwFlags() & 2))
+        //if(md && (md->rwFlags() & 2 || md->isSynti()) )  // p4.0.27 Reverted p4.0.35 
           break;
       }
       if(pi == MIDI_PORTS)
@@ -1091,12 +1118,9 @@ void RoutePopupMenu::prepare()
         //  continue;
         
         // Do not list synth devices!
-        ///if(md && md->isSynti())
-        ///  continue;
-        ///if(md && !(md->rwFlags() & 2))
-        ///  continue;
-        // p4.0.27 Go ahead. Synths esp MESS send out stuff. 
-        if( md && !(md->rwFlags() & 2) && !md->isSynti() )
+        if( md && (!(md->rwFlags() & 2) || md->isSynti()) )
+        // p4.0.27 Go ahead. Synths esp MESS send out stuff. Reverted p4.0.35 
+        //if( md && !(md->rwFlags() & 2) && !md->isSynti() )
           continue;
           
         //printf("MusE::prepareRoutingPopupMenu adding submenu portnum:%d\n", i);

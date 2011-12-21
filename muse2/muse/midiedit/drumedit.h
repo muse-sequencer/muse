@@ -170,7 +170,7 @@ class DrumEdit : public MidiEditor {
       virtual void updateHScrollRange();
 
    signals:
-      void deleted(MusEGui::TopWin*);
+      void isDeleting(MusEGui::TopWin*);
 
    public:
       DrumEdit(MusECore::PartList*, QWidget* parent = 0, const char* name = 0, unsigned initPos = MAXINT);

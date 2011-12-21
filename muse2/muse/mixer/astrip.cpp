@@ -147,6 +147,7 @@ void AudioStrip::songChanged(int val)
         // Set the strip label's font.
         //label->setFont(MusEGlobal::config.fonts[1]);
         setLabelFont();
+        setLabelText();        
         
         // Adjust minimum volume slider and label values.
         slider->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
@@ -203,7 +204,17 @@ void AudioStrip::songChanged(int val)
                   pre->setChecked(src->prefader());
                   pre->blockSignals(false);
                   }
-            }
+            
+            // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
+            // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
+            int rc = track->auxRefCount();
+            int n = auxKnob.size();
+            for (int idx = 0; idx < n; ++idx) 
+            {  
+              auxKnob[idx]->setEnabled( rc == 0 );
+              auxLabel[idx]->setEnabled( rc == 0 );
+            }  
+          }
       if (val & SC_AUX) {
             int n = auxKnob.size();
             for (int idx = 0; idx < n; ++idx) {
@@ -333,11 +344,14 @@ void AudioStrip::updateOffState()
             stereo->setEnabled(val);
       label->setEnabled(val);
       
+      // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
+      // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
+      bool ae = track->auxRefCount() == 0 && val;
       int n = auxKnob.size();
       for (int i = 0; i < n; ++i) 
       {
-        auxKnob[i]->setEnabled(val);
-        auxLabel[i]->setEnabled(val);
+        auxKnob[i]->setEnabled(ae);
+        auxLabel[i]->setEnabled(ae);
       }
             
       if (pre)
@@ -348,12 +362,12 @@ void AudioStrip::updateOffState()
             solo->setEnabled(val);
       if (mute)
             mute->setEnabled(val);
-      if (autoType)
-            autoType->setEnabled(val);
-      if (iR)
-            iR->setEnabled(val);
-      if (oR)
-            oR->setEnabled(val);
+      //if (autoType)
+      //      autoType->setEnabled(val);
+      //if (iR)
+      //      iR->setEnabled(val);
+      //if (oR)
+      //      oR->setEnabled(val);
       if (off) {
             off->blockSignals(true);
             off->setChecked(track->off());
@@ -799,6 +813,12 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
                   double val = MusECore::fast_log10(t->auxSend(idx))*20.0;
                   ak->setValue(val);
                   al->setValue(val);
+                  
+                  // Are there any Aux Track routing paths to this track? Then we cannot process aux for this track! 
+                  // Hate to do this, but as a quick visual reminder, seems most logical to disable Aux knobs and labels. 
+                  int rc = track->auxRefCount();
+                  ak->setEnabled( rc == 0 );
+                  al->setEnabled( rc == 0 );
                   }
             }
       else {

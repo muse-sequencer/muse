@@ -25,6 +25,7 @@
 
 #include <set>
 #include <QSet>
+#include <QStringList>
 
 #include "drummap.h"
 
@@ -52,7 +53,15 @@ QSet<Part*> parts_at_tick(unsigned tick, const QSet<Track*>& tracks);
 
 namespace MusEGui {
 QMenu* populateAddSynth(QWidget* parent);
-QActionGroup* populateAddTrack(QMenu* addTrack);
+QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll=false);
+QStringList localizedStringListFromCharArray(const char** array, const char* context);
+QString getFilterExtension(const QString &filter);
+QString browseProjectFolder(QWidget* parent = 0);
+QString projectTitleFromFilename(QString filename);
+QString projectPathFromFilename(QString filename);
+QString projectExtensionFromFilename(QString filename);
+QString getUniqueUntitledName();
+void populateMidiPorts();
 } 
 
 #endif

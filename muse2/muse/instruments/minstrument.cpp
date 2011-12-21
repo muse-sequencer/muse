@@ -932,15 +932,11 @@ QString MidiInstrument::getPatchName(int channel, int prog, MType mode, bool dru
       return "<unknown>";
       }
 
-} // namespace MusECore
-
-namespace MusEGui {
-
 //---------------------------------------------------------
 //   populatePatchPopup
 //---------------------------------------------------------
 
-void populatePatchPopup(MusECore::MidiInstrument* midiInstrument, PopupMenu* menu, int chan, MType songType, bool drum)
+void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int chan, MType songType, bool drum)
       {
       menu->clear();
       int mask = 0;
@@ -952,7 +948,7 @@ void populatePatchPopup(MusECore::MidiInstrument* midiInstrument, PopupMenu* men
               if(drumchan)
               {
                 int id = (0xff << 16) + (0xff << 8) + 0x00;  // First patch
-                QAction* act = menu->addAction(MusECore::gmdrumname);
+                QAction* act = menu->addAction(gmdrumname);
                 //act->setCheckable(true);
                 act->setData(id);
                 return;
@@ -961,16 +957,16 @@ void populatePatchPopup(MusECore::MidiInstrument* midiInstrument, PopupMenu* men
               break;
             case MT_UNKNOWN:  mask = 7; break;
             }
-      if (midiInstrument->groups()->size() > 1) {
-            for (MusECore::ciPatchGroup i = midiInstrument->groups()->begin(); i != midiInstrument->groups()->end(); ++i) {
-                  MusECore::PatchGroup* pgp = *i;
+      if (pg.size() > 1) {
+            for (ciPatchGroup i = pg.begin(); i != pg.end(); ++i) {
+                  PatchGroup* pgp = *i;
                   //QMenu* pm = menu->addMenu(pgp->name);
-                  PopupMenu* pm = new PopupMenu(pgp->name, menu, menu->stayOpen());  // Use the parent stayOpen here.
+                  MusEGui::PopupMenu* pm = new MusEGui::PopupMenu(pgp->name, menu, menu->stayOpen());  // Use the parent stayOpen here.
                   menu->addMenu(pm);
                   pm->setFont(MusEGlobal::config.fonts[0]);
-                  const MusECore::PatchList& pl = pgp->patches;
-                  for (MusECore::ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
-                        const MusECore::Patch* mp = *ipl;
+                  const PatchList& pl = pgp->patches;
+                  for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
+                        const Patch* mp = *ipl;
                         if ((mp->typ & mask) && 
                             ((drum && songType != MT_GM) || 
                             (mp->drum == drumchan)) )  
@@ -985,11 +981,11 @@ void populatePatchPopup(MusECore::MidiInstrument* midiInstrument, PopupMenu* men
                         }
                   }
             }
-      else if (midiInstrument->groups()->size() == 1 ){
+      else if (pg.size() == 1 ){
             // no groups
-            const MusECore::PatchList& pl = midiInstrument->groups()->front()->patches;
-            for (MusECore::ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
-                  const MusECore::Patch* mp = *ipl;
+            const PatchList& pl = pg.front()->patches;
+            for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
+                  const Patch* mp = *ipl;
                   if (mp->typ & mask) {
                         int id = ((mp->hbank & 0xff) << 16)
                                  + ((mp->lbank & 0xff) << 8) + (mp->prog & 0xff);
@@ -999,6 +995,7 @@ void populatePatchPopup(MusECore::MidiInstrument* midiInstrument, PopupMenu* men
                         }
                   }
             }
-      }
 
-} // namespace MusEGui
+    }
+
+} // namespace MusECore

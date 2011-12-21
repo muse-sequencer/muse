@@ -48,7 +48,7 @@ void MusE::startMidiInputPlugin(int id)
       QAction* act;
       if (id == 0) {
             if (!MusEGlobal::mitPluginTranspose) {
-                  MusEGlobal::mitPluginTranspose = new MusEGui::MITPluginTranspose();
+                  MusEGlobal::mitPluginTranspose = new MITPluginTranspose();
                   MusECore::mitPlugins.push_back(MusEGlobal::mitPluginTranspose);
                   connect(MusEGlobal::mitPluginTranspose, SIGNAL(hideWindow()),
                      SLOT(hideMitPluginTranspose()));
@@ -58,7 +58,7 @@ void MusE::startMidiInputPlugin(int id)
             }
       else if (id == 1) {
             if (!midiInputTransform) {
-                  midiInputTransform = new MusEGui::MidiInputTransformDialog();
+                  midiInputTransform = new MidiInputTransformDialog();
                   connect(midiInputTransform, SIGNAL(hideWindow()),
                      SLOT(hideMidiInputTransform()));
                   }
@@ -67,7 +67,7 @@ void MusE::startMidiInputPlugin(int id)
             }
       else if (id == 2) {
             if (!midiFilterConfig) {
-                  midiFilterConfig = new MusEGui::MidiFilterConfig();
+                  midiFilterConfig = new MidiFilterConfig();
                   connect(midiFilterConfig, SIGNAL(hideWindow()),
                      SLOT(hideMidiFilterConfig()));
                   }
@@ -76,7 +76,7 @@ void MusE::startMidiInputPlugin(int id)
             }
       else if (id == 3) {
             if (!midiRemoteConfig) {
-                  midiRemoteConfig = new MusEGui::MRConfig();
+                  midiRemoteConfig = new MRConfig();
                   connect(midiRemoteConfig, SIGNAL(hideWindow()),
                      SLOT(hideMidiRemoteConfig()));
                   }
@@ -134,7 +134,7 @@ void MusE::hideMidiRhythmGenerator()
 void MusE::startMidiTransformer()
       {
       if (midiTransformerDialog == 0)
-            midiTransformerDialog = new MusEGui::MidiTransformerDialog;
+            midiTransformerDialog = new MidiTransformerDialog;
       midiTransformerDialog->show();
       }
 

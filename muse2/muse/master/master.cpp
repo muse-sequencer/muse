@@ -27,6 +27,8 @@
 #include <QEvent>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QList>
+#include <QPair>
 
 #include "globals.h"
 #include "master.h"
@@ -52,6 +54,8 @@ Master::Master(MidiEditor* e, QWidget* parent, int xmag, int ymag)
       pos[0]  = 0;
       pos[1]  = 0;
       pos[2]  = 0;
+      drag = DRAG_OFF;
+      tool = MusEGui::PointerTool; // should be overridden soon anyway, but to be sure...
       setFocusPolicy(Qt::StrongFocus);  // Tim.
       setMouseTracking(true);
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), this, SLOT(setPos(int, unsigned, bool)));
@@ -288,8 +292,8 @@ void Master::viewMouseReleaseEvent(QMouseEvent*)
 
 bool Master::deleteVal1(unsigned int x1, unsigned int x2)
       {
-      bool songChanged = false;
-
+      QList< QPair<int,int> > stuff_to_do;
+      
       MusECore::TempoList* tl = &MusEGlobal::tempomap;
       for (MusECore::iTEvent i = tl->begin(); i != tl->end(); ++i) {
             if (i->first < x1)
@@ -300,11 +304,17 @@ bool Master::deleteVal1(unsigned int x1, unsigned int x2)
             ++ii;
             if (ii != tl->end()) {
                   int tempo = ii->second->tempo;
-                  MusEGlobal::audio->msgDeleteTempo(i->first, tempo, false);
-                  songChanged = true;
+                  // changed by flo: postpone the actual delete operation
+                  // to avoid race conditions and invalidating the iterator
+                  //MusEGlobal::audio->msgDeleteTempo(i->first, tempo, false);
+                  stuff_to_do.append(QPair<int,int>(i->first, tempo));
                   }
             }
-      return songChanged;
+      
+      for (QList< QPair<int,int> >::iterator it=stuff_to_do.begin(); it!=stuff_to_do.end(); it++)
+        MusEGlobal::audio->msgDeleteTempo(it->first, it->second, false);
+      
+      return !stuff_to_do.empty();
       }
 
 void Master::deleteVal(int x1, int x2)

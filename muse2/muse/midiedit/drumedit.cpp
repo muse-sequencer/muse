@@ -53,6 +53,7 @@
 #include "vscale.h"
 #include "swidget.h"
 #include "globals.h"
+#include "app.h"
 #include "icons.h"
 #include "filedialog.h"
 #include "drummap.h"
@@ -139,6 +140,8 @@ void DrumEdit::setHeaderToolTips()
 
 void DrumEdit::closeEvent(QCloseEvent* e)
       {
+      _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
+
       QSettings settings("MusE", "MusE-qt");
       //settings.setValue("Drumedit/geometry", saveGeometry());
       settings.setValue("Drumedit/windowState", saveState());
@@ -149,7 +152,7 @@ void DrumEdit::closeEvent(QCloseEvent* e)
       _dlistWidthInit = *it; //There are only 2 values stored in the sizelist, size of dlist widget and dcanvas widget
       it++;
       _dcanvasWidthInit = *it;
-      emit deleted(static_cast<TopWin*>(this));
+      emit isDeleting(static_cast<TopWin*>(this));
       e->accept();
       }
 
@@ -590,6 +593,7 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       
       
       initTopwinState();
+      MusEGlobal::muse->topwinMenuInited(this);
       }
 
 //---------------------------------------------------------
@@ -598,6 +602,9 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
 
 void DrumEdit::songChanged1(int bits)
       {
+        if(_isDeleting)  // Ignore while while deleting to prevent crash.
+          return;
+        
         if (bits & SC_SOLO)
         {
             toolbar->setSolo(canvas->track()->solo());
@@ -1007,12 +1014,15 @@ void DrumEdit::cmd(int cmd)
             case DrumCanvas::CMD_MODIFY_VELOCITY: modify_velocity(partlist_to_set(parts())); break;
             case DrumCanvas::CMD_CRESCENDO: crescendo(partlist_to_set(parts())); break;
             case DrumCanvas::CMD_QUANTIZE:
+                  {
+                  int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
                   if (quantize_dialog->exec())
                         quantize_notes(partlist_to_set(parts()), quantize_dialog->range, 
-                                       (MusEGlobal::config.division*4)/(1<<quantize_dialog->raster_power2),
+                                       (MusEGlobal::config.division*4)/raster,
                                        /* quant_len= */false, quantize_dialog->strength, 
                                        quantize_dialog->swing, quantize_dialog->threshold);
                   break;
+                  }
             case DrumCanvas::CMD_ERASE_EVENT: erase_notes(partlist_to_set(parts())); break;
             case DrumCanvas::CMD_DEL: erase_notes(partlist_to_set(parts()),1); break; //delete selected events
             case DrumCanvas::CMD_DELETE_OVERLAPS: delete_overlaps(partlist_to_set(parts())); break;

@@ -73,7 +73,7 @@ class ClipListEdit : public TopWin {
       void clicked(QTreeWidgetItem*, int);
 
    signals:
-      void deleted(MusEGui::TopWin*);
+      void isDeleting(MusEGui::TopWin*);
 
    public:
       ClipListEdit(QWidget* parent);

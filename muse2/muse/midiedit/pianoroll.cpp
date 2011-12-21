@@ -56,6 +56,7 @@
 #include "tb1.h"
 #include "utils.h"
 #include "globals.h"
+#include "app.h"
 #include "gconfig.h"
 #include "icons.h"
 #include "audio.h"
@@ -118,7 +119,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       mapper->setMapping(editPasteAction, PianoCanvas::CMD_PASTE);
       connect(editPasteAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      editPasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("&Paste (with dialog)"));
+      editPasteDialogAction = menuEdit->addAction(QIcon(*editpasteIconSet), tr("Paste (with dialog)"));
       mapper->setMapping(editPasteDialogAction, PianoCanvas::CMD_PASTE_DIALOG);
       connect(editPasteDialogAction, SIGNAL(triggered()), mapper, SLOT(map()));
       
@@ -532,6 +533,7 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
       }
 
       initTopwinState();
+      MusEGlobal::muse->topwinMenuInited(this);
       }
 
 //---------------------------------------------------------
@@ -540,6 +542,8 @@ PianoRoll::PianoRoll(MusECore::PartList* pl, QWidget* parent, const char* name, 
 
 void PianoRoll::songChanged1(int bits)
       {
+        if(_isDeleting)  // Ignore while while deleting to prevent crash.
+          return;
         
         if (bits & SC_SOLO)
         {
@@ -815,15 +819,19 @@ void PianoRoll::removeCtrl(CtrlEdit* ctrl)
 
 //---------------------------------------------------------
 //   closeEvent
+//   Save state. 
+//   Disconnect signals which may cause crash due to Qt deferred deletion on close.
 //---------------------------------------------------------
 
 void PianoRoll::closeEvent(QCloseEvent* e)
       {
+      _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
+
       QSettings settings("MusE", "MusE-qt");
       //settings.setValue("Pianoroll/geometry", saveGeometry());
       settings.setValue("Pianoroll/windowState", saveState());
 
-      emit deleted(static_cast<TopWin*>(this));
+      emit isDeleting(static_cast<TopWin*>(this));
       e->accept();
       }
 

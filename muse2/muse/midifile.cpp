@@ -23,7 +23,6 @@
 
 #include <errno.h>
 #include <values.h>
-#include <assert.h>
 
 #include "song.h"
 #include "midi.h"
@@ -568,9 +567,9 @@ void MidiFile::writeEvent(const MidiPlayEvent* event)
       int nstat = event->type();
 
       // we dont save meta data into smf type 0 files:
-
-      if (MusEGlobal::config.smfFormat == 0 && nstat == ME_META)
-            return;
+      // Oct 16, 2011: Apparently it is legal to do that. Part of fix for bug tracker 3293339.
+      //if (MusEGlobal::config.smfFormat == 0 && nstat == ME_META)
+      //      return;
 
       nstat |= c;
       //
@@ -621,24 +620,45 @@ bool MidiFile::write()
       writeLong(6);                 // header len
       writeShort(MusEGlobal::config.smfFormat);
       if (MusEGlobal::config.smfFormat == 0) {
-            writeShort(1);
+            /*
+            //writeShort(1);    // Removed. Bug tracker 3293339
             MidiFileTrack dst;
             for (iMidiFileTrack i = _tracks->begin(); i != _tracks->end(); ++i) {
                   MPEventList* sl = &((*i)->events);
                   for (iMPEvent ie = sl->begin(); ie != sl->end(); ++ie)
+                  {  
+                        // ALERT: Observed a problem here, apparently some of the events are being added too fast. 
+                        //        The dump below tells me some of the events (sysex/meta) are missing from the list! 
+                        //        Apparently it's a timing problem. Very puzzling. 
+                        //        Attempting wild-guess fix now to eliminate multiple MidiFileTracks in MusE::exportMidi()...
+                        //        Nope. Didn't help. Now that it's a single MidiFileTrack, try skipping this section altogether...
+                        //        Yes that appears to have fixed it. Weird. What's the difference - the local 'dst' variable ?
+                        //        Or are there still lurking problems, or something more fundamentally wrong with Event or MPEvent?
+                        printf("MidiFile::write adding event to dst:\n"); // REMOVE Tim.
+                        ie->dump();  // REMOVE Tim.
                         dst.events.add(*ie);
+                  }      
                   }
             writeShort(1);
             writeShort(_division);
             writeTrack(&dst);
+            */
+            
+            writeShort(1);
+            //writeShort(_division);
+            //if(!_tracks->empty())
+            //  writeTrack(*(_tracks->begin()));
+            
             }
       else {
+        
+        
             writeShort(ntracks);
-
+      }
             writeShort(_division);
             for (ciMidiFileTrack i = _tracks->begin(); i != _tracks->end(); ++i)
                   writeTrack(*i);
-            }
+///      }
       return (ferror(fp) != 0);
       }
 

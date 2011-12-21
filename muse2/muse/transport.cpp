@@ -45,13 +45,6 @@
 
 namespace MusEGui {
 
-static const char* recordTransportText   = QT_TRANSLATE_NOOP("@default", "Click this button to enable recording");
-static const char* stopTransportText     = QT_TRANSLATE_NOOP("@default", "Click this button to stop playback");
-static const char* playTransportText     = QT_TRANSLATE_NOOP("@default", "Click this button to start playback");
-static const char* startTransportText    = QT_TRANSLATE_NOOP("@default", "Click this button to rewind to start position");
-static const char* frewindTransportText  = QT_TRANSLATE_NOOP("@default", "Click this button to rewind");
-static const char* fforwardTransportText = QT_TRANSLATE_NOOP("@default", "Click this button to forward current play position");
-
 //---------------------------------------------------------
 //   toolButton
 //---------------------------------------------------------
@@ -401,25 +394,25 @@ Transport::Transport(QWidget* parent, const char* name)
       tb->setSpacing(0);
 
       buttons[0] = newButton(startIcon, tr("rewind to start"));
-      buttons[0]->setWhatsThis(tr(startTransportText));
+      buttons[0]->setWhatsThis(tr("Click this button to rewind to start position"));
 
       buttons[1] = newButton(frewindIcon, tr("rewind"));
       buttons[1]->setAutoRepeat(true);
-      buttons[1]->setWhatsThis(tr(frewindTransportText));
+      buttons[1]->setWhatsThis(tr("Click this button to rewind"));
 
       buttons[2] = newButton(fforwardIcon, tr("forward"));
       buttons[2]->setAutoRepeat(true);
-      buttons[2]->setWhatsThis(tr(fforwardTransportText));
+      buttons[2]->setWhatsThis(tr("Click this button to forward current play position"));
 
       buttons[3] = newButton(stopIcon, tr("stop"), true);
       buttons[3]->setChecked(true);     // set STOP
-      buttons[3]->setWhatsThis(tr(stopTransportText));
+      buttons[3]->setWhatsThis(tr("Click this button to stop playback"));
 
       buttons[4] = newButton(playIcon, tr("play"), true);
-      buttons[4]->setWhatsThis(tr(playTransportText));
+      buttons[4]->setWhatsThis(tr("Click this button to start playback"));
 
       buttons[5] = newButton(record_on_Icon, tr("record"), true);
-      buttons[5]->setWhatsThis(tr(recordTransportText));
+      buttons[5]->setWhatsThis(tr("Click this button to enable recording"));
 
       for (int i = 0; i < 6; ++i)
         {

@@ -121,7 +121,7 @@ struct GlobalConfigValues {
       double minSlider;
       bool freewheelMode;
       int guiRefresh;
-      QString userInstrumentsDir;
+      QString userInstrumentsDir;  // Obsolete. Must keep for compatibility.
 
       bool extendedMidi;      // extended smf format
       int midiDivision;       // division for smf export
@@ -178,6 +178,8 @@ struct GlobalConfigValues {
       bool leftMouseButtonCanDecrease;
       bool rangeMarkerWithoutMMB;
       MusECore::newDrumRecordCondition_t newDrumRecordCondition;
+      bool addHiddenTracks;
+      bool unhideTracks;
       };
 
 

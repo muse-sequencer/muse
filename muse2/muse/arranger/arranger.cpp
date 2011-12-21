@@ -152,7 +152,7 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       toolbar->addWidget(cursorPos);
 
       const char* rastval[] = {
-            QT_TRANSLATE_NOOP("@default", "Off"), QT_TRANSLATE_NOOP("@default", "Bar"), "1/2", "1/4", "1/8", "1/16"
+            QT_TRANSLATE_NOOP("MusEGui::Arranger", "Off"), QT_TRANSLATE_NOOP("MusEGui::Arranger", "Bar"), "1/2", "1/4", "1/8", "1/16"
             };
       label = new QLabel(tr("Snap"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
@@ -569,27 +569,40 @@ void Arranger::songChanged(int type)
       // Is it simply a midi controller value adjustment? Forget it.
       if(type != SC_MIDI_CONTROLLER)
       {
-        unsigned endTick = MusEGlobal::song->len();
-        int offset  = AL::sigmap.ticksMeasure(endTick);
-        hscroll->setRange(-offset, endTick + offset);  //DEBUG
-        canvas->setOrigin(-offset, 0);
-        time->setOrigin(-offset, 0);
-  
-        int bar, beat;
-        unsigned tick;
-        AL::sigmap.tickValues(endTick, &bar, &beat, &tick);
-        if (tick || beat)
-              ++bar;
-        lenEntry->blockSignals(true);
-        lenEntry->setValue(bar);
-        lenEntry->blockSignals(false);
-  
-        if(type & SC_SONG_TYPE)    // p4.0.7 Tim.
+        // TEST p4.0.36 Try these, may need more/less. 
+        if(type & ( SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
+           SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED))  
+        {
+          unsigned endTick = MusEGlobal::song->len();
+          int offset  = AL::sigmap.ticksMeasure(endTick);
+          hscroll->setRange(-offset, endTick + offset);  //DEBUG
+          canvas->setOrigin(-offset, 0);
+          time->setOrigin(-offset, 0);
+    
+          int bar, beat;
+          unsigned tick;
+          AL::sigmap.tickValues(endTick, &bar, &beat, &tick);
+          if (tick || beat)
+                ++bar;
+          lenEntry->blockSignals(true);
+          lenEntry->setValue(bar);
+          lenEntry->blockSignals(false);
+        }
+        
+        if(type & SC_SONG_TYPE)    
           setMode(MusEGlobal::song->mtype());
           
-        trackSelectionChanged();
-        canvas->partsChanged();
-        typeBox->setCurrentIndex(int(MusEGlobal::song->mtype()));
+        if(type & SC_SELECTION)       // TEST p4.0.36 Try this alone, may need more.
+          trackSelectionChanged();
+        
+        // Keep this light, partsChanged is a heavy move!       TEST p4.0.36 Try these, may need more.
+        if(type & (SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
+                   SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
+                   SC_SIG | SC_TEMPO)) // Maybe sig. Requires tempo.
+          canvas->partsChanged();
+        
+        //typeBox->setCurrentIndex(int(MusEGlobal::song->mtype()));  // REMOVE Tim.  Redundant.
+        
         if (type & SC_SIG)
               time->redraw();
         if (type & SC_TEMPO)
@@ -616,6 +629,14 @@ void Arranger::songChanged(int type)
             }   
           } 
         }
+        
+        // TEST p4.0.36 Try this
+        if(type & ( //SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED | 
+           SC_PART_INSERTED | SC_PART_REMOVED | SC_PART_MODIFIED | 
+           SC_EVENT_INSERTED | SC_EVENT_REMOVED | SC_EVENT_MODIFIED)) //|
+           //SC_SIG | SC_TEMPO))  // Maybe sig. and tempo. No, moved above.
+        canvas->redraw();
+        
       }
             
       updateTrackInfo(type);

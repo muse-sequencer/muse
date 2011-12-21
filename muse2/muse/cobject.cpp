@@ -50,6 +50,7 @@ bool TopWin::initInited=false;
 TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlags f)
                  : QMainWindow(parent, f)
 {
+	_isDeleting = false;
 	if (initInited==false)
 		initConfiguration();
 
@@ -77,7 +78,10 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	mdisubwin=NULL;
 	_sharesToolsAndMenu=_defaultSubwin[_type] ? _sharesWhenSubwin[_type] : _sharesWhenFree[_type];
 	if (_defaultSubwin[_type])
+	{
 		setIsMdiWin(true);
+		_savedToolbarState=_toolbarNonsharedInit[_type];
+	}
 
 	if (_sharesToolsAndMenu)
 		menuBar()->hide();
@@ -85,8 +89,11 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 	subwinAction->setChecked(isMdiWin());
 	shareAction->setChecked(_sharesToolsAndMenu);
 	fullscreenAction->setEnabled(!isMdiWin());
-
-	resize(_widthInit[_type], _heightInit[_type]);
+	
+	if (mdisubwin)
+		mdisubwin->resize(_widthInit[_type], _heightInit[_type]);
+	else
+		resize(_widthInit[_type], _heightInit[_type]);
 }
 
 
@@ -96,6 +103,8 @@ TopWin::TopWin(ToplevelType t, QWidget* parent, const char* name, Qt::WindowFlag
 
 void TopWin::readStatus(MusECore::Xml& xml)
 {
+	int x=0, y=0, width=800, height=600;
+	
 	for (;;)
 	{
 		MusECore::Xml::Token token = xml.parse();
@@ -106,17 +115,24 @@ void TopWin::readStatus(MusECore::Xml& xml)
 		switch (token)
 		{
 			case MusECore::Xml::TagStart:
-				if (tag == "geometry_state")
-				{
-					if (!restoreGeometry(QByteArray::fromHex(xml.parse1().toAscii())))
-						fprintf(stderr,"ERROR: couldn't restore geometry. however, this is probably not really a problem.\n");
-				}
+				if (tag == "x")
+					x=xml.parseInt();
+				else if (tag == "y")
+					y=xml.parseInt();
+				else if (tag == "width")
+					width=xml.parseInt();
+				else if (tag == "height")
+					height=xml.parseInt();
 				else if (tag == "toolbars")
 				{
 					if (!sharesToolsAndMenu())
 					{
 						if (!restoreState(QByteArray::fromHex(xml.parse1().toAscii())))
-						 fprintf(stderr,"ERROR: couldn't restore toolbars. however, this is not really a problem.\n");
+						{
+							fprintf(stderr,"ERROR: couldn't restore toolbars. trying default configuration...\n");
+							if (!restoreState(_toolbarNonsharedInit[_type]))
+								fprintf(stderr,"ERROR: couldn't restore default toolbars. this is not really a problem.\n");
+						}
 					}
 					else
 					{
@@ -139,7 +155,20 @@ void TopWin::readStatus(MusECore::Xml& xml)
 
 			case MusECore::Xml::TagEnd:
 				if (tag == "topwin")
+				{
+					if (mdisubwin)
+					{
+						mdisubwin->move(x, y);
+						mdisubwin->resize(width, height);
+					}
+					else
+					{
+						move(x,y);
+						resize(width,height);
+					}
+
 					return;
+				}
 	
 			default:
 				break;
@@ -159,7 +188,22 @@ void TopWin::writeStatus(int level, MusECore::Xml& xml) const
 	// changing it won't break muse, but it may break proper
 	// restoring of the positions
 	xml.intTag(level, "is_subwin", isMdiWin());
-	xml.strTag(level, "geometry_state", saveGeometry().toHex().data());
+
+	if (mdisubwin)
+	{
+		xml.intTag(level, "x", mdisubwin->x());
+		xml.intTag(level, "y", mdisubwin->y());
+		xml.intTag(level, "width", mdisubwin->width());
+		xml.intTag(level, "height", mdisubwin->height());
+	}
+	else
+	{
+		xml.intTag(level, "x", x());
+		xml.intTag(level, "y", y());
+		xml.intTag(level, "width", width());
+		xml.intTag(level, "height", height());
+	}
+
 	xml.intTag(level, "shares_menu", sharesToolsAndMenu());
 
 	if (!sharesToolsAndMenu())
@@ -359,8 +403,17 @@ void TopWin::shareToolsAndMenu(bool val)
 
 void TopWin::storeInitialState() const
 {
-	_widthInit[_type] = width();
-	_heightInit[_type] = height();
+	if (mdisubwin)
+	{
+		_widthInit[_type] = mdisubwin->width();
+		_heightInit[_type] = mdisubwin->height();
+	}
+	else
+	{
+		_widthInit[_type] = width();
+		_heightInit[_type] = height();
+	}
+	
 	if (sharesToolsAndMenu())
 	{
 		if (muse->getCurrentMenuSharingTopwin() == this)
@@ -518,5 +571,16 @@ void TopWin::resize(const QSize& s)
 {
 	resize(s.width(), s.height());
 }
+
+TopWin* ToplevelList::findType(TopWin::ToplevelType type) const
+{
+	for (ciToplevel i = begin(); i != end(); ++i) 
+	{
+		if((*i)->type() == type) 
+			return (*i);
+	}  
+	return 0;
+}
+
 
 } // namespace MusEGui

@@ -25,7 +25,6 @@
 #include <cmath>
 #include <errno.h>
 #include <values.h>
-#include <assert.h>
 
 #include "song.h"
 #include "midi.h"
@@ -1055,7 +1054,7 @@ void Audio::processMidi()
                                     {
                                       int pitch = ctl & 0x7f;            // pitch is now the incoming pitch
                                       pitch = track->map_drum_in(pitch); // pitch is now the mapped (recorded) pitch
-                                      event.setA(ctl & ~0xff  |  pitch); // map the drum ctrl's value accordingly
+                                      event.setA((ctl & ~0xff)  |  pitch); // map the drum ctrl's value accordingly
 
                                       if (MusEGlobal::config.newDrumRecordCondition & MusECore::DONT_REC_HIDDEN &&
                                           track->drummap_hidden()[pitch] )

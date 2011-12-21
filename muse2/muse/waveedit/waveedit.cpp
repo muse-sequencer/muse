@@ -64,10 +64,12 @@ namespace MusEGui {
 
 void WaveEdit::closeEvent(QCloseEvent* e)
       {
+      _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
+      
       QSettings settings("MusE", "MusE-qt");
       //settings.setValue("Waveedit/geometry", saveGeometry());
       settings.setValue("Waveedit/windowState", saveState());
-      emit deleted(static_cast<TopWin*>(this));
+      emit isDeleting(static_cast<TopWin*>(this));
       e->accept();
       }
 
@@ -92,23 +94,23 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
 
       menuGain = menuFunctions->addMenu(tr("&Gain"));
       
-      act = menuGain->addAction(tr("200%"));
+      act = menuGain->addAction("200%");
       mapper->setMapping(act, CMD_GAIN_200);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      act = menuGain->addAction(tr("150%"));
+      act = menuGain->addAction("150%");
       mapper->setMapping(act, CMD_GAIN_150);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      act = menuGain->addAction(tr("75%"));
+      act = menuGain->addAction("75%");
       mapper->setMapping(act, CMD_GAIN_75);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      act = menuGain->addAction(tr("50%"));
+      act = menuGain->addAction("50%");
       mapper->setMapping(act, CMD_GAIN_50);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
-      act = menuGain->addAction(tr("25%"));
+      act = menuGain->addAction("25%");
       mapper->setMapping(act, CMD_GAIN_25);
       connect(act, SIGNAL(triggered()), mapper, SLOT(map()));
       
@@ -287,6 +289,7 @@ WaveEdit::WaveEdit(MusECore::PartList* pl)
       }
 
       initTopwinState();
+      MusEGlobal::muse->topwinMenuInited(this);
       }
 
 void WaveEdit::initShortcuts()
@@ -458,7 +461,9 @@ void WaveEdit::readStatus(MusECore::Xml& xml)
 
 void WaveEdit::songChanged1(int bits)
       {
-        
+        if(_isDeleting)  // Ignore while while deleting to prevent crash.
+          return;
+
         if (bits & SC_SOLO)
         {
           MusECore::WavePart* part = (MusECore::WavePart*)(parts()->begin()->second);

@@ -37,6 +37,7 @@
 #include "doublelabel.h"
 ///#include "sigedit.h"
 #include "globals.h"
+#include "app.h"
 
 #include <values.h>
 
@@ -59,7 +60,9 @@ int MasterEdit::_rasterInit = 0;
 
 void MasterEdit::closeEvent(QCloseEvent* e)
       {
-      emit deleted(static_cast<TopWin*>(this));
+      _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
+
+      emit isDeleting(static_cast<TopWin*>(this));
       e->accept();
       }
 
@@ -69,6 +72,9 @@ void MasterEdit::closeEvent(QCloseEvent* e)
 
 void MasterEdit::songChanged(int type)
       {
+      if(_isDeleting)  // Ignore while while deleting to prevent crash.
+        return;
+        
       if (type & SC_TEMPO) {
             int tempo = MusEGlobal::tempomap.tempo(MusEGlobal::song->cpos());
             curTempo->blockSignals(true);
@@ -154,7 +160,7 @@ MasterEdit::MasterEdit()
       info->addWidget(tempo);
 
       const char* rastval[] = {
-            QT_TRANSLATE_NOOP("@default", "Off"), "Bar", "1/2", "1/4", "1/8", "1/16"
+            QT_TRANSLATE_NOOP("MusEGui::MasterEdit", "Off"), QT_TRANSLATE_NOOP("MusEGui::MasterEdit", "Bar"), "1/2", "1/4", "1/8", "1/16"
             };
       rasterLabel = new MusEGui::LabelCombo(tr("Snap"), 0);
       rasterLabel->setFocusPolicy(Qt::NoFocus);
@@ -264,6 +270,7 @@ MasterEdit::MasterEdit()
       connect(canvas, SIGNAL(timeChanged(unsigned)),   SLOT(setTime(unsigned)));
 
       initTopwinState();
+      MusEGlobal::muse->topwinMenuInited(this);
       }
 
 //---------------------------------------------------------

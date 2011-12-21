@@ -55,7 +55,7 @@
 #include <QDrag>
 #include <QMessageBox>
 #include <QClipboard>
-
+#include <QSet>
 
 
 using namespace std;
@@ -177,8 +177,9 @@ bool quantize_notes(const set<Part*>& parts)
 {
 	if (!MusEGui::quantize_dialog->exec())
 		return false;
-		
-	quantize_notes(parts, MusEGui::quantize_dialog->range, (MusEGlobal::config.division*4)/(1<<MusEGui::quantize_dialog->raster_power2),
+//  (1<<MusEGui::quantize_dialog->raster_power2)
+  int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
+  quantize_notes(parts, MusEGui::quantize_dialog->range, (MusEGlobal::config.division*4)/raster,
 	               MusEGui::quantize_dialog->quant_len, MusEGui::quantize_dialog->strength, MusEGui::quantize_dialog->swing,
 	               MusEGui::quantize_dialog->threshold);
 	
@@ -306,8 +307,9 @@ bool quantize_notes()
 		parts=get_all_selected_parts();
 	else
 		parts=get_all_parts();
-		
-	quantize_notes(parts, MusEGui::quantize_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, (config.division*4)/(1<<MusEGui::quantize_dialog->raster_power2),
+
+  int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
+  quantize_notes(parts, MusEGui::quantize_dialog->range & FUNCTION_RANGE_ONLY_BETWEEN_MARKERS, (config.division*4)/raster,
 	               MusEGui::quantize_dialog->quant_len, MusEGui::quantize_dialog->strength, MusEGui::quantize_dialog->swing,
 	               MusEGui::quantize_dialog->threshold);
 	
@@ -1276,34 +1278,22 @@ void shrink_parts(int raster)
 	MusEGlobal::song->applyOperationGroup(operations);
 }
 
-void internal_schedule_expand_part(Part* part, int raster, Undo& operations)
-{
-	EventList* events=part->events();
-	unsigned len=part->lenTick();
-	
-	for (iEvent ev=events->begin(); ev!=events->end(); ev++)
-		if (ev->second.endTick() > len)
-			len=ev->second.endTick();
-
-	if (raster) len=ceil((float)len/raster)*raster;
-					
-	if (len > part->lenTick())
-	{
-		MidiPart* new_part = new MidiPart(*(MidiPart*)part);
-		new_part->setLenTick(len);
-		operations.push_back(UndoOp(UndoOp::ModifyPart, part, new_part, true, false));
-	}
-}
 
 void schedule_resize_all_same_len_clone_parts(Part* part, unsigned new_len, Undo& operations)
 {
+	QSet<const Part*> already_done;
+	
+	for (Undo::iterator op_it=operations.begin(); op_it!=operations.end();op_it++)
+		if (op_it->type==UndoOp::ModifyPart || op_it->type==UndoOp::DeletePart)
+			already_done.insert(op_it->nPart);
+			
 	unsigned old_len=part->lenTick();
 	if (old_len!=new_len)
 	{
 		Part* part_it=part;
 		do
 		{
-			if (part_it->lenTick()==old_len)
+			if (part_it->lenTick()==old_len && !already_done.contains(part_it))
 			{
 				MidiPart* new_part = new MidiPart(*(MidiPart*)part_it);
 				new_part->setLenTick(new_len);
@@ -1391,6 +1381,83 @@ void clean_parts()
 			}
 	
 	MusEGlobal::song->applyOperationGroup(operations);
+}
+
+bool merge_selected_parts()
+{
+	set<Part*> temp = get_all_selected_parts();
+	return merge_parts(temp);
+}
+
+bool merge_parts(const set<Part*>& parts)
+{
+	set<Track*> tracks;
+	for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+		tracks.insert( (*it)->track() );
+
+	Undo operations;
+	
+	// process tracks separately
+	for (set<Track*>::iterator t_it=tracks.begin(); t_it!=tracks.end(); t_it++)
+	{
+		Track* track=*t_it;
+
+		unsigned begin=MAXINT, end=0;
+		Part* first_part=NULL;
+		
+		// find begin of the first and end of the last part
+		for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+			if ((*it)->track()==track)
+			{
+				Part* p=*it;
+				if (p->tick() < begin)
+				{
+					begin=p->tick();
+					first_part=p;
+				}
+				
+				if (p->endTick() > end)
+					end=p->endTick();
+			}
+		
+		if (begin==MAXINT || end==0)
+		{
+			printf("THIS SHOULD NEVER HAPPEN: begin==MAXINT || end==0 in merge_parts()\n");
+			continue; // skip the actual work, as we cannot work under errornous conditions.
+		}
+		
+		// create and prepare the new part
+		Part* new_part = track->newPart(first_part); 
+		new_part->setTick(begin);
+		new_part->setLenTick(end-begin);
+		
+		EventList* new_el = new_part->events();
+		new_el->incARef(-1); // the later MusEGlobal::song->applyOperationGroup() will increment it
+		                     // so we must decrement it first :/
+		new_el->clear();
+		
+		// copy all events from the source parts into the new part
+		for (set<Part*>::iterator p_it=parts.begin(); p_it!=parts.end(); p_it++)
+			if ((*p_it)->track()==track)
+			{
+				EventList* old_el= (*p_it)->events();
+				for (iEvent ev_it=old_el->begin(); ev_it!=old_el->end(); ev_it++)
+				{
+					Event new_event=ev_it->second;
+					new_event.setTick( new_event.tick() + (*p_it)->tick() - new_part->tick() );
+					new_el->add(new_event);
+				}
+			}
+		
+		// delete all the source parts
+		for (set<Part*>::iterator it=parts.begin(); it!=parts.end(); it++)
+			if ((*it)->track()==track)
+				operations.push_back( UndoOp(UndoOp::DeletePart, *it) );
+		// and add the new one
+		operations.push_back( UndoOp(UndoOp::AddPart, new_part) );
+	}
+	
+	return MusEGlobal::song->applyOperationGroup(operations);
 }
 
 } // namespace MusECore

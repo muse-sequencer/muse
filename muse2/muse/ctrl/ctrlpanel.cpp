@@ -162,6 +162,9 @@ CtrlPanel::CtrlPanel(QWidget* parent, MidiEditor* e, CtrlCanvas* c, const char* 
 
 void CtrlPanel::heartBeat()
 {
+  if(editor->deleting())  // Ignore while while deleting to prevent crash.
+    return;
+  
   inHeartBeat = true;
   
   if(_track && _ctrl && _dnum != -1)

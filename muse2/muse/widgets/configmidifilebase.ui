@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>548</width>
-    <height>346</height>
+    <width>546</width>
+    <height>367</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,8 +28,8 @@
      <property name="title">
       <string>Import:</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
+     <layout class="QGridLayout">
+      <item row="0" column="0">
        <widget class="QCheckBox" name="splitPartsCheckBox">
         <property name="toolTip">
          <string>Split tracks into parts, or one single part</string>
@@ -42,7 +42,7 @@
         </property>
        </widget>
       </item>
-      <item>
+      <item row="1" column="0">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QRadioButton" name="newDrumsCheckbox">
@@ -78,10 +78,10 @@
       <string>Export:</string>
      </property>
      <layout class="QGridLayout">
-      <item row="2" column="1">
+      <item row="3" column="1">
        <widget class="QLineEdit" name="copyrightEdit"/>
       </item>
-      <item row="1" column="1">
+      <item row="2" column="1">
        <widget class="QComboBox" name="divisionCombo">
         <item>
          <property name="text">
@@ -100,7 +100,7 @@
         </item>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
+      <item row="4" column="0" colspan="2">
        <widget class="QCheckBox" name="extendedFormat">
         <property name="enabled">
          <bool>true</bool>
@@ -110,7 +110,7 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="0" colspan="2">
+      <item row="5" column="0" colspan="2">
        <widget class="QCheckBox" name="twoByteTimeSigs">
         <property name="text">
          <string>Use &amp;2-byte time signatures instead of standard 4</string>
@@ -120,7 +120,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="textLabel2">
         <property name="text">
          <string>Copyright:</string>
@@ -140,7 +140,23 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="1" column="0" colspan="2">
+       <widget class="QLabel" name="textLabel4">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Note: Format 0 uses the FIRST midi track's name/comment in the arranger</string>
+        </property>
+        <property name="wordWrap">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
        <widget class="QLabel" name="textLabel1">
         <property name="text">
          <string>Division:</string>
@@ -150,7 +166,7 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0" colspan="2">
+      <item row="6" column="0" colspan="2">
        <widget class="QCheckBox" name="optNoteOffs">
         <property name="text">
          <string>Save space by replacing note-offs with &amp;zero velocity note-ons</string>

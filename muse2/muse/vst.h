@@ -50,6 +50,7 @@ class VstSynth : public Synth {
             }
       
       virtual ~VstSynth() {}
+      virtual Type synthType() const { return VST_SYNTH; }
       virtual void incInstances(int val);
       virtual void* instantiate();
       //virtual SynthIF* createSIF() const;

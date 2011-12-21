@@ -74,6 +74,8 @@ class OscIF
       virtual bool oscInitGui() { return false; }
       virtual void oscShowGui(bool);
       virtual bool oscGuiVisible() const;
+      
+      virtual QString titlePrefix() const { return QString(); }
 };
  
 class OscEffectIF : public OscIF
@@ -95,6 +97,8 @@ class OscEffectIF : public OscIF
       virtual int oscConfigure(lo_arg**);
       
       virtual bool oscInitGui();
+      
+      virtual QString titlePrefix() const; 
 };
  
 #ifdef DSSI_SUPPORT
@@ -117,6 +121,8 @@ class OscDssiIF : public OscIF
       virtual int oscConfigure(lo_arg**);
       
       virtual bool oscInitGui();
+      
+      virtual QString titlePrefix() const; 
 };
 #endif // DSSI_SUPPORT
  

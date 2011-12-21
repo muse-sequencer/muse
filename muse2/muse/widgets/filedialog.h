@@ -3,6 +3,7 @@
 //  Linux Music Editor
 //    $Id: filedialog.h,v 1.2.2.2 2008/01/19 13:33:46 wschweer Exp $
 //  (C) Copyright 2000 Werner Schweer (ws@seh.de)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -23,8 +24,6 @@
 #include <QFileDialog>
 
 #include "ui_fdialogbuttons.h"
-
-class QStringList;
 
 namespace MusEGui {
 
@@ -91,14 +90,11 @@ class ContentsPreview : public QWidget, public Q3FilePreview {
       };
 */
 
-//QString getSaveFileName(const QString& startWidth, const char** filter,
-QString getSaveFileName(const QString& startWidth, const QStringList& filters,
+QString getSaveFileName(const QString& startWidth, const char** filters,
          QWidget* parent, const QString& name);
-//QString getOpenFileName(const QString& startWidth, const char** filter,
-QString getOpenFileName(const QString& startWidth, const QStringList& filters,
+QString getOpenFileName(const QString& startWidth, const char** filters,
                         QWidget* parent, const QString& name, bool* openAll, MFileDialog::ViewType viewType = MFileDialog::PROJECT_VIEW);
-//QString getImageFileName(const QString& startWith, const char** filters, 
-QString getImageFileName(const QString& startWith, const QStringList& filters, 
+QString getImageFileName(const QString& startWith, const char** filters, 
          QWidget* parent, const QString& name);
 
 FILE* fileOpen(QWidget*, QString, const QString&,
@@ -119,8 +115,7 @@ class MFile {
    public:
       MFile(const QString& path, const QString& ext);
       ~MFile();
-      //FILE* open(const char* mode, const char** pattern,
-      FILE* open(const char* mode, const QStringList& pattern,
+      FILE* open(const char* mode, const char** patterns,
          QWidget* parent, bool noError,
          bool warnIfOverwrite, const QString& caption);
       };

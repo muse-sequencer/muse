@@ -45,6 +45,7 @@
 #include "event.h"
 #include "midiport.h"
 #include "midictrl.h"
+#include "app.h"
 
 namespace MusEGui {
 
@@ -183,7 +184,8 @@ static QString midiMetaComment(const MusECore::Event& ev)
 
 void ListEdit::closeEvent(QCloseEvent* e)
       {
-      emit deleted(static_cast<TopWin*>(this));
+      _isDeleting = true;  // Set flag so certain signals like songChanged, which may cause crash during delete, can be ignored.
+      emit isDeleting(static_cast<TopWin*>(this));
       e->accept();
       }
 
@@ -193,6 +195,9 @@ void ListEdit::closeEvent(QCloseEvent* e)
 
 void ListEdit::songChanged(int type)
       {
+      if(_isDeleting)  // Ignore while while deleting to prevent crash.
+        return;
+        
       if (type == 0)
             return;
       if (type & (SC_PART_REMOVED | SC_PART_MODIFIED
@@ -465,6 +470,8 @@ QString EventListItem::text(int col) const
 ListEdit::ListEdit(MusECore::PartList* pl)
    : MidiEditor(TopWin::LISTE, 0, pl)
       {
+      selectedTick=0;
+      
       insertItems = new QActionGroup(this);
       insertItems->setExclusive(false);
       insertNote = new QAction(QIcon(*note1Icon), tr("insert Note"), insertItems);
@@ -587,7 +594,6 @@ ListEdit::ListEdit(MusECore::PartList* pl)
       mainGrid->setColumnStretch(0, 100);
       mainGrid->addWidget(liste, 1, 0, 2, 1);
       connect(MusEGlobal::song, SIGNAL(songChanged(int)), SLOT(songChanged(int)));
-      songChanged(-1);
 
       if(pl->empty())
       {
@@ -605,10 +611,14 @@ ListEdit::ListEdit(MusECore::PartList* pl)
           curPartId = -1;
         }
       }
+
+      songChanged(-1);
       
       initShortcuts();
       
       setWindowTitle("MusE: List Editor");
+      
+      MusEGlobal::muse->topwinMenuInited(this);
       }
 
 //---------------------------------------------------------

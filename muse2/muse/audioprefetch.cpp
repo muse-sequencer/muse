@@ -39,7 +39,11 @@ MusECore::AudioPrefetch* audioPrefetch;
 
 namespace MusECore {
 
-// Added by Tim. p3.3.20
+void initAudioPrefetch()  
+{
+  MusEGlobal::audioPrefetch = new AudioPrefetch("Prefetch");
+}
+
 //#define AUDIOPREFETCH_DEBUG
 
 enum { PREFETCH_TICK, PREFETCH_SEEK
@@ -140,6 +144,7 @@ void AudioPrefetch::msgTick()
       {
       PrefetchMsg msg;
       msg.id  = PREFETCH_TICK;
+      msg.pos = 0; // seems to be unused, was uninitalized.
       while (sendMsg1(&msg, sizeof(msg))) {
             printf("AudioPrefetch::msgTick(): send failed!\n");
             }

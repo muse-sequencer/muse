@@ -184,7 +184,7 @@ class ScoreEdit : public TopWin
 		void clipboard_changed();
 		
 	signals:
-		void deleted(MusEGui::TopWin*);
+		void isDeleting(MusEGui::TopWin*);
 		void name_changed();
 		void velo_changed(int);
 		void velo_off_changed(int);
@@ -275,6 +275,9 @@ class FloEvent
 			tick=ti;
 			source_event=event;
 			source_part=part;
+			
+			num=denom=0xdeadbeef; //unused, but valgrind complains if uninited
+			key=MusECore::KEY_C;
 		}
 		FloEvent(unsigned ti, typeEnum t, int num_, int denom_)
 		{
@@ -284,6 +287,9 @@ class FloEvent
 			tick=ti;
 			source_event=NULL;
 			source_part=NULL;
+			
+			len=vel=pitch=0xdeadbeef; //unused, but valgrind complains if uninited
+			key=MusECore::KEY_C;
 		}
 		FloEvent(unsigned ti, typeEnum t, MusECore::key_enum k)
 		{
@@ -292,6 +298,8 @@ class FloEvent
 			tick=ti;
 			source_event=NULL;
 			source_part=NULL;
+			
+			pitch=vel=len=num=denom=0xdeadbeef; //unused, but valgrind complains if uninited
 		}
 };
 class FloItem
@@ -345,6 +353,7 @@ class FloItem
 			begin_tick=beg;
 			source_event=event;
 			source_part=part;
+			is_active=false;
 		}
 		
 		FloItem(typeEnum t, int num_, int denom_)
@@ -659,8 +668,20 @@ class ScoreCanvas : public MusEGui::View
 		void move_staff_below(list<staff_t>::iterator dest, list<staff_t>::iterator src);
 		void cleanup_staves();
 		void maybe_close_if_empty();
-		
+
+// defaults  ----------------------------------------------------------
+	public:
+		enum coloring_mode_t {COLOR_MODE_BLACK, COLOR_MODE_PART, COLOR_MODE_VELO};
+		static int _quant_power2_init;
+		static int _pixels_per_whole_init;
+		static int note_velo_init, note_velo_off_init;
+		static int new_len_init;
+		static coloring_mode_t coloring_mode_init;
+		static bool preamble_contains_timesig_init;
+		static bool preamble_contains_keysig_init;
+
 // member variables ---------------------------------------------------
+	private:
 		int _quant_power2;
 		int _pixels_per_whole;
 
@@ -737,7 +758,7 @@ class ScoreCanvas : public MusEGui::View
 		bool srec;
 		bool held_notes[128];
 
-		enum {COLOR_MODE_BLACK, COLOR_MODE_PART, COLOR_MODE_VELO} coloring_mode;
+		coloring_mode_t coloring_mode;
 		bool preamble_contains_keysig;
 		bool preamble_contains_timesig;
 
@@ -767,38 +788,38 @@ class ScoreCanvas : public MusEGui::View
 		
 		void add_new_parts(const std::map< MusECore::Part*, std::set<MusECore::Part*> >&);
 
-   public slots:
-      void x_scroll_event(int);
-      void y_scroll_event(int);
-      void song_changed(int);
-      void fully_recalculate();
-			void goto_tick(int,bool);
-			void pos_changed(int i, unsigned u, bool b);
-			void heartbeat_timer_event();
-			
-			void set_tool(int);
-			void set_quant(int);
-			void menu_command(int);
-			void preamble_keysig_slot(bool);
-			void preamble_timesig_slot(bool);
-			void set_pixels_per_whole(int);
+	public slots:
+		void x_scroll_event(int);
+		void y_scroll_event(int);
+		void song_changed(int);
+		void fully_recalculate();
+		void goto_tick(int,bool);
+		void pos_changed(int i, unsigned u, bool b);
+		void heartbeat_timer_event();
 
-			void set_velo(int);
-			void set_velo_off(int);
+		void set_tool(int);
+		void set_quant(int);
+		void menu_command(int);
+		void preamble_keysig_slot(bool);
+		void preamble_timesig_slot(bool);
+		void set_pixels_per_whole(int);
 
-			void set_steprec(bool);
-			
-			void update_parts(); //re-populates the set<MusECore::Part*>s from the set<int>s
+		void set_velo(int);
+		void set_velo_off(int);
+
+		void set_steprec(bool);
+
+		void update_parts(); //re-populates the set<MusECore::Part*>s from the set<int>s
 	signals:
-			void xscroll_changed(int);
-			void yscroll_changed(int);
-			void viewport_width_changed(int);
-			void canvas_width_changed(int);
-			void preamble_width_changed(int);
-			void viewport_height_changed(int);
-			void canvas_height_changed(int);
-			void pixels_per_whole_changed(int);
-			void pos_add_changed();
+		void xscroll_changed(int);
+		void yscroll_changed(int);
+		void viewport_width_changed(int);
+		void canvas_width_changed(int);
+		void preamble_width_changed(int);
+		void viewport_height_changed(int);
+		void canvas_height_changed(int);
+		void pixels_per_whole_changed(int);
+		void pos_add_changed();
 			
 	protected:
 		virtual void draw(QPainter& p, const QRect& rect);

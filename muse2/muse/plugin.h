@@ -72,18 +72,6 @@ class Xml;
 
 class MidiController;
 
-/*
-//---------------------------------------------------------
-//   PluginBase
-//---------------------------------------------------------
-
-class PluginBase 
-{
-   protected:
-      void range(unsigned long i, float*, float*) const;
-};
-*/   
-   
 //---------------------------------------------------------
 //   Plugin
 //---------------------------------------------------------
@@ -155,13 +143,11 @@ class Plugin {
             if (plugin && plugin->cleanup)
                   plugin->cleanup(handle);
             }
-      //void connectPort(LADSPA_Handle handle, int port, float* value) {
-      void connectPort(LADSPA_Handle handle, unsigned long port, float* value) {     // p4.0.21
+      void connectPort(LADSPA_Handle handle, unsigned long port, float* value) {     
             if(plugin)
               plugin->connect_port(handle, port, value);
             }
-      //void apply(LADSPA_Handle handle, int n) {
-      void apply(LADSPA_Handle handle, unsigned long n) {                            // p4.0.21
+      void apply(LADSPA_Handle handle, unsigned long n) {                            
             if(plugin)
               plugin->run(handle, n);
             }
@@ -170,12 +156,10 @@ class Plugin {
       int oscConfigure(LADSPA_Handle /*handle*/, const char* /*key*/, const char* /*value*/);
       #endif
       
-      //int ports() { return plugin ? plugin->PortCount : 0; }
       unsigned long ports() { return _portCount; }
       
       LADSPA_PortDescriptor portd(unsigned long k) const {
             return plugin ? plugin->PortDescriptors[k] : 0;
-            //return _portDescriptors[k];
             }
       
       LADSPA_PortRangeHint range(unsigned long i) {
@@ -184,8 +168,7 @@ class Plugin {
             return plugin->PortRangeHints[i];
             }
 
-      //double defaultValue(unsigned long port) const;
-      float defaultValue(unsigned long port) const; // p4.0.21     
+      float defaultValue(unsigned long port) const; 
       void range(unsigned long i, float*, float*) const;
       CtrlValueType ctrlValueType(unsigned long /*i*/) const;
       CtrlList::Mode ctrlMode(unsigned long /*i*/) const;
@@ -202,20 +185,6 @@ class Plugin {
       unsigned long controlInPorts() const  { return _controlInPorts; }
       unsigned long controlOutPorts() const { return _controlOutPorts; }
       bool inPlaceCapable() const           { return _inPlaceCapable; }
-      
-      /*
-      bool isLog(int k) const {
-            LADSPA_PortRangeHint r = plugin->PortRangeHints[pIdx[k]];
-            return LADSPA_IS_HINT_LOGARITHMIC(r.HintDescriptor);
-            }
-      bool isBool(int k) const {
-            return LADSPA_IS_HINT_TOGGLED(plugin->PortRangeHints[pIdx[k]].HintDescriptor);
-            }
-      bool isInt(int k) const {
-            LADSPA_PortRangeHint r = plugin->PortRangeHints[pIdx[k]];
-            return LADSPA_IS_HINT_INTEGER(r.HintDescriptor);
-            }
-      */      
       };
 
 typedef std::list<Plugin>::iterator iPlugin;
@@ -266,21 +235,18 @@ class PluginIBase
       ~PluginIBase(); 
       virtual bool on() const = 0;       
       virtual void setOn(bool /*val*/) = 0;   
-      //virtual int pluginID() = 0;
-      virtual unsigned long pluginID() = 0;        // p4.0.21
+      virtual unsigned long pluginID() = 0;        
       virtual int id() = 0;
       virtual QString pluginLabel() const = 0;  
       virtual QString name() const = 0;
       virtual QString lib() const = 0;
       virtual QString dirPath() const = 0;
       virtual QString fileName() const = 0;
+      virtual QString titlePrefix() const = 0;
       
       virtual AudioTrack* track() = 0;          
       
-      //virtual void enableController(int /*i*/, bool /*v*/ = true) = 0; 
-      //virtual bool controllerEnabled(int /*i*/) const = 0;          
-      //virtual bool controllerEnabled2(int /*i*/) const = 0;          
-      virtual void enableController(unsigned long /*i*/, bool /*v*/ = true) = 0;   // p4.0.21
+      virtual void enableController(unsigned long /*i*/, bool /*v*/ = true) = 0;   
       virtual bool controllerEnabled(unsigned long /*i*/) const = 0;          
       virtual bool controllerEnabled2(unsigned long /*i*/) const = 0;          
       virtual void updateControllers() = 0;
@@ -288,12 +254,7 @@ class PluginIBase
       virtual void writeConfiguration(int /*level*/, Xml& /*xml*/) = 0;
       virtual bool readConfiguration(Xml& /*xml*/, bool /*readPreset*/=false) = 0;
       
-      //virtual int parameters() const = 0;          
-      //virtual void setParam(int /*i*/, double /*val*/) = 0; 
-      //virtual double param(int /*i*/) const = 0;        
-      //virtual const char* paramName(int /*i*/) = 0;     
-      //virtual LADSPA_PortRangeHint range(int /*i*/) = 0; 
-      virtual unsigned long parameters() const = 0;                  // p4.0.21
+      virtual unsigned long parameters() const = 0;                  
       virtual unsigned long parametersOut() const = 0;
       virtual void setParam(unsigned long /*i*/, float /*val*/) = 0;
       virtual float param(unsigned long /*i*/) const = 0;            
@@ -307,8 +268,6 @@ class PluginIBase
       virtual CtrlList::Mode ctrlMode(unsigned long /*i*/) const = 0;
       QString dssi_ui_filename() const;
       
-      //virtual void showGui(bool) = 0;         // p4.0.20
-      //virtual void showNativeGui(bool) = 0;   //
       MusEGui::PluginGui* gui() const { return _gui; }
       void deleteGui();
 };
@@ -353,7 +312,6 @@ class PluginBase
 #define AUDIO_IN (LADSPA_PORT_AUDIO  | LADSPA_PORT_INPUT)
 #define AUDIO_OUT (LADSPA_PORT_AUDIO | LADSPA_PORT_OUTPUT)
 
-//class PluginI {
 class PluginI : public PluginIBase {
       Plugin* _plugin;
       int channel;
@@ -365,10 +323,8 @@ class PluginI : public PluginIBase {
       Port* controls;
       Port* controlsOut;
 
-      //int controlPorts;
-      //int controlOutPorts;
-      unsigned long controlPorts;      // p4.0.21
-      unsigned long controlOutPorts;   // 
+      unsigned long controlPorts;      
+      unsigned long controlOutPorts;    
       
       ///PluginGui* _gui;
       bool _on;
@@ -400,26 +356,17 @@ class PluginI : public PluginIBase {
       
       void setTrack(AudioTrack* t)  { _track = t; }
       AudioTrack* track()           { return _track; }
-      //int pluginID()                { return _plugin->id(); }
-      unsigned long pluginID()           { return _plugin->id(); }    // p4.0.21
+      unsigned long pluginID()      { return _plugin->id(); }    
       void setID(int i);
       int id()                      { return _id; }
       void updateControllers();
       
       bool initPluginInstance(Plugin*, int channels);
       void setChannels(int);
-      //void connect(int ports, float** src, float** dst);
-      //void apply(int n);
-      //void connect(unsigned ports, float** src, float** dst);   
-      //void apply(unsigned n);   
-      void connect(unsigned long ports, unsigned long offset, float** src, float** dst); // p4.0.21
-      void apply(unsigned long n, unsigned long ports, float** bufIn, float** bufOut);   // 
+      void connect(unsigned long ports, unsigned long offset, float** src, float** dst); 
+      void apply(unsigned long n, unsigned long ports, float** bufIn, float** bufOut);    
 
-      //void enableController(int i, bool v = true)   { controls[i].enCtrl = v; }
-      //bool controllerEnabled(int i) const           { return controls[i].enCtrl; }
-      //void enable2Controller(int i, bool v = true)  { controls[i].en2Ctrl = v; }
-      //bool controllerEnabled2(int i) const          { return controls[i].en2Ctrl; }
-      void enableController(unsigned long i, bool v = true)   { controls[i].enCtrl = v; }      // p4.0.21
+      void enableController(unsigned long i, bool v = true)   { controls[i].enCtrl = v; }      
       bool controllerEnabled(unsigned long i) const           { return controls[i].enCtrl; }   
       void enable2Controller(unsigned long i, bool v = true)  { controls[i].en2Ctrl = v; }     
       bool controllerEnabled2(unsigned long i) const          { return controls[i].en2Ctrl; }  
@@ -434,6 +381,7 @@ class PluginI : public PluginIBase {
       QString lib() const            { return _plugin->lib(); }
       QString dirPath() const        { return _plugin->dirPath(); }
       QString fileName() const       { return _plugin->fileName(); }
+      QString titlePrefix() const;
 
       #ifdef OSC_SUPPORT
       OscEffectIF& oscIF() { return _oscif; }
@@ -453,8 +401,7 @@ class PluginI : public PluginIBase {
       void writeConfiguration(int level, Xml& xml);
       bool readConfiguration(Xml& xml, bool readPreset=false);
       bool loadControl(Xml& xml);
-      //bool setControl(const QString& s, double val);
-      bool setControl(const QString& s, float val);    // p4.0.21
+      bool setControl(const QString& s, float val);    
       void showGui();
       void showGui(bool);
       bool isDssiPlugin() const { return _plugin->isDssiPlugin(); }  
@@ -464,20 +411,8 @@ class PluginI : public PluginIBase {
       bool guiVisible();
       bool nativeGuiVisible();
 
-      //int parameters() const           { return controlPorts; }
-      //void setParam(int i, double val) { controls[i].tmpVal = val; }
-      //double param(int i) const        { return controls[i].val; }
-      //double defaultValue(unsigned int param) const;
-      //const char* paramName(int i)     { return _plugin->portName(controls[i].idx); }
-      //LADSPA_PortDescriptor portd(int i) const { return _plugin->portd(controls[i].idx); }
-      //void range(int i, float* min, float* max) const { _plugin->range(controls[i].idx, min, max); }
-      //bool isAudioIn(int k) { return (_plugin->portd(k) & AUDIO_IN) == AUDIO_IN; }
-      //bool isAudioOut(int k) { return (_plugin->portd(k) & AUDIO_OUT) == AUDIO_OUT; }
-      //LADSPA_PortRangeHint range(int i) { return _plugin->range(controls[i].idx); }
-      // p4.0.21
       unsigned long parameters() const           { return controlPorts; }    
       unsigned long parametersOut() const           { return controlOutPorts; }
-      //void setParam(unsigned i, float val) { controls[i].tmpVal = val; }
       void setParam(unsigned long i, float val);  
       float param(unsigned long i) const        { return controls[i].val; }       
       float paramOut(unsigned long i) const        { return controlsOut[i].val; }
@@ -499,8 +434,6 @@ class PluginI : public PluginIBase {
 //   Pipeline
 //    chain of connected efx inserts
 //---------------------------------------------------------
-
-//const int PipelineDepth = 4;  // Moved to globaldefs.h
 
 class Pipeline : public std::vector<PluginI*> {
       float* buffer[MAX_CHANNELS];
@@ -525,8 +458,7 @@ class Pipeline : public std::vector<PluginI*> {
       void deleteAllGuis();
       bool guiVisible(int);
       bool nativeGuiVisible(int);
-      //void apply(int ports, unsigned long nframes, float** buffer);
-      void apply(unsigned long ports, unsigned long nframes, float** buffer);  // p4.0.21
+      void apply(unsigned long ports, unsigned long nframes, float** buffer);  
       void move(int idx, bool up);
       bool empty(int idx) const;
       void setChannels(int);
@@ -537,11 +469,6 @@ typedef Pipeline::const_iterator ciPluginI;
 
 extern void initPlugins();
 
-//extern bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, int port, float* val);
-//extern void ladspaControlRange(const LADSPA_Descriptor* plugin, int i, float* min, float* max);
-//extern bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, int port, int ctlnum, int* min, int* max, int* def);
-//extern float midi2LadspaValue(const LADSPA_Descriptor* plugin, int port, int ctlnum, int val);
-// p4.0.21
 extern bool ladspaDefaultValue(const LADSPA_Descriptor* plugin, unsigned long port, float* val);
 extern void ladspaControlRange(const LADSPA_Descriptor* plugin, unsigned long port, float* min, float* max);
 extern bool ladspa2MidiControlValues(const LADSPA_Descriptor* plugin, unsigned long port, int ctlnum, int* min, int* max, int* def);
@@ -593,8 +520,7 @@ struct GuiWidgets {
             };
       QWidget* widget;
       int type;
-      //int param;
-      unsigned long param;   // p4.0.21
+      unsigned long param;   
       };
 
 //---------------------------------------------------------
@@ -604,13 +530,11 @@ struct GuiWidgets {
 class PluginGui : public QMainWindow {
       Q_OBJECT
 
-      //PluginI* plugin;        // plugin instance
       MusECore::PluginIBase* plugin;        // plugin instance
       
       GuiParam* params;
       GuiParam* paramsOut;
-      //int nobj;               
-      unsigned long nobj;             // number of widgets in gw      // p4.0.21
+      unsigned long nobj;             // number of widgets in gw      
       GuiWidgets* gw;
 
       QAction* onOff;
@@ -640,7 +564,6 @@ class PluginGui : public QMainWindow {
       void heartBeat();
 
    public:
-      //PluginGui(MusECore::PluginI*);
       PluginGui(MusECore::PluginIBase*);
       
       ~PluginGui();

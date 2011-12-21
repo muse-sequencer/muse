@@ -3,7 +3,7 @@
 //  Linux Music Editor
 //    $Id: pcanvas.cpp,v 1.48.2.26 2009/11/22 11:08:33 spamatica Exp $
 //  (C) Copyright 1999 Werner Schweer (ws@seh.de)
-//  (C) Copyright 2011 Tim E. Real (terminator356 on users DOT sourceforge DOT net)
+//  (C) Copyright 2011 Tim E. Real (terminator356 on sourceforge)
 //
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -54,6 +54,7 @@
 #include "shortcuts.h"
 #include "gconfig.h"
 #include "app.h"
+#include "functions.h"
 #include "filedialog.h"
 #include "marker/marker.h"
 #include "mpevent.h"
@@ -67,6 +68,8 @@
 //#define ABS(x)  ((x) < 0) ? -(x) : (x))
 //#define ABS(x) (x>=0?x:-x)
 #define ABS(x) (abs(x))
+
+#define EDITING_FINISHED_TIMEOUT 50 /* in milliseconds */
 
 using std::set;
 
@@ -181,6 +184,8 @@ void PartCanvas::returnPressed()
           MusEGlobal::audio->msgChangePart(oldPart, newPart, true, true, false);
           
           editMode = false;
+          
+          editingFinishedTime.start();
           }
       }
 
@@ -298,12 +303,9 @@ void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
     QPoint newpos = raster(QPoint(nx, ny));
     selectItem(ci, true);
     
-    MusECore::UndoOp operation=moveItem(ci, newpos, dtype);
-    if (operation.type != MusECore::UndoOp::DoNothing)
-    {
+    bool result=moveItem(operations, ci, newpos, dtype);
+    if (result)
     	ci->move(newpos);
-      operations.push_back(operation);
-    }
     
     if(moving.size() == 1) {
           itemReleased(curItem, newpos);
@@ -322,37 +324,41 @@ void PartCanvas::moveCanvasItems(CItemList& items, int dp, int dx, DragType dtyp
 //---------------------------------------------------------
 
 // Changed by T356.
-MusECore::UndoOp PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragType t)
+bool PartCanvas::moveItem(MusECore::Undo& operations, CItem* item, const QPoint& newpos, DragType t)
       {
-      MusECore::UndoOp result;
       NPart* npart    = (NPart*) item;
       MusECore::Part* spart     = npart->part();
       MusECore::Track* track    = npart->track();
+      MusECore::Track* dtrack=NULL;
       unsigned dtick  = newpos.x();
       unsigned ntrack = y2pitch(item->mp().y());
       MusECore::Track::TrackType type = track->type();
       if (tracks->index(track) == ntrack && (dtick == spart->tick())) {
-            return MusECore::UndoOp(MusECore::UndoOp::DoNothing);
+            return false;
             }
       if (ntrack >= tracks->size()) {
             ntrack = tracks->size();
             if (MusEGlobal::debugMsg)
                 printf("PartCanvas::moveItem - add new track\n");
-            MusECore::Track* newTrack = MusEGlobal::song->addTrack(type);  // Add at end of list.
+            dtrack = MusEGlobal::song->addTrack(operations, type);  // Add at end of list.
+
             if (type == MusECore::Track::WAVE) {
                   MusECore::WaveTrack* st = (MusECore::WaveTrack*) track;
-                  MusECore::WaveTrack* dt = (MusECore::WaveTrack*) newTrack;
+                  MusECore::WaveTrack* dt = (MusECore::WaveTrack*) dtrack;
                   dt->setChannels(st->channels());
                   }
             emit tracklistChanged();
             }
-      MusECore::Track* dtrack = tracks->index(ntrack);
-      if (dtrack->type() != type) {
-            QMessageBox::critical(this, QString("MusE"),
-               tr("Cannot copy/move/clone to different Track-Type"));
-            return MusECore::UndoOp(MusECore::UndoOp::DoNothing);
+      else
+      {      
+            dtrack = tracks->index(ntrack);
+            if (dtrack->type() != type) {
+                  QMessageBox::critical(this, QString("MusE"),
+                     tr("Cannot copy/move/clone to different Track-Type"));
+                  return false;
+                  }
             }
-
+      
       MusECore::Part* dpart;
       bool clone = (t == MOVE_CLONE || (t == MOVE_COPY && spart->events()->arefCount() > 1));
       
@@ -392,23 +398,25 @@ MusECore::UndoOp PartCanvas::moveItem(CItem* item, const QPoint& newpos, DragTyp
 
       if (t == MOVE_COPY || t == MOVE_CLONE) {
             // These will not increment ref count, and will not chain clones... 
-            // TODO: is comment this still correct (by flo93)? i doubt it!
-            result=MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart);
+            // TODO: is this comment still correct (by flo93)? i doubt it!
+            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::AddPart,dpart));
             }
       else if (t == MOVE_MOVE) {
             dpart->setSelected(spart->selected());
             // These will increment ref count if not a clone, and will chain clones...
             // TODO: is this comment still correct (by flo93)? i doubt it!
-            result=MusECore::UndoOp(MusECore::UndoOp::ModifyPart,spart, dpart, true, false);
+            operations.push_back(MusECore::UndoOp(MusECore::UndoOp::ModifyPart,spart, dpart, true, false));
             
             spart->setSelected(false);
             }
-      // else // will never happen -> result will always be defined
+      // else // will never happen -> operations will never be empty
       
       if (MusEGlobal::song->len() < (dpart->lenTick() + dpart->tick()))
-            MusEGlobal::song->setLen(dpart->lenTick() + dpart->tick());
-
-      return result;
+            operations.push_back(  MusECore::UndoOp(MusECore::UndoOp::ModifySongLen, 
+                                                    dpart->lenTick() + dpart->tick(),
+                                                    MusEGlobal::song->len() )  );
+      
+      return true;
       }
 
 //---------------------------------------------------------
@@ -427,6 +435,13 @@ QPoint PartCanvas::raster(const QPoint& p) const
       return QPoint(x, y);
       }
 
+
+void PartCanvas::songIsClearing()
+{
+  curItem=NULL;
+  items.clearDelete();
+}
+
 //---------------------------------------------------------
 //   partsChanged
 //---------------------------------------------------------
@@ -434,6 +449,10 @@ QPoint PartCanvas::raster(const QPoint& p) const
 void PartCanvas::partsChanged()
       {
       //items.clear();
+      int sn = -1;
+      if (curItem) sn=curItem->part()->sn();
+      curItem=NULL;      
+      
       items.clearDelete();
       for (MusECore::iTrack t = tracks->begin(); t != tracks->end(); ++t) {
             MusECore::PartList* pl = (*t)->parts();
@@ -441,6 +460,10 @@ void PartCanvas::partsChanged()
                   MusECore::Part* part = i->second;
                   NPart* np = new NPart(part);
                   items.add(np);
+                  
+                  if (np->part()->sn() == sn)
+                    curItem=np;
+                  
                   if (i->second->selected()) {
                         selectItem(np, true);
                         }
@@ -647,6 +670,8 @@ QMenu* PartCanvas::genItemPopup(CItem* item)
       act_split->setData(2);
       QAction *act_glue = partPopup->addAction(QIcon(*glueIcon), tr("glue"));
       act_glue->setData(3);
+      QAction *act_superglue = partPopup->addAction(QIcon(*glueIcon), tr("super glue (merge selection)"));
+      act_superglue->setData(6);
       QAction *act_declone = partPopup->addAction(tr("de-clone"));
       act_declone->setData(15);
 
@@ -736,6 +761,9 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
             case 5:
                   copy(pl);
                   break;
+            case 6:
+                  MusECore::merge_selected_parts();
+                  break;
 
             case 14:    // wave edit
                     emit startEditor(pl, 4);
@@ -756,7 +784,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                   // Indicate undo, and do port controller values but not clone parts. 
                   // changed by flo93: removed start and endUndo, instead changed first bool to true
                   MusEGlobal::audio->msgChangePart(spart, dpart, true, true, false);
-                  break; // Has to be break here, right?
+                  break;
                   }
             case 16: // Export to file
                   {
@@ -784,7 +812,7 @@ void PartCanvas::itemPopup(CItem* item, int n, const QPoint& pt)
                     for (MusECore::iEvent e = el->begin(); e != el->end(); ++e) 
                     {
                       MusECore::Event event = e->second;
-		      MusECore::SndFileR f  = event.sndFile();
+                      MusECore::SndFileR f  = event.sndFile();
                       if (f.isNull())
                         continue;
                       str.append(QString("\n@") + QString().setNum(event.tick()) + QString(" len:") + 
@@ -858,8 +886,8 @@ void PartCanvas::mousePress(QMouseEvent* event)
             default:
                   if (item)
                       emit trackChanged(item->part()->track());
-                  else
-                      emit trackChanged(NULL);
+                  //else -- don't see the point of removing track selection, commenting out (rj)
+                  //    emit trackChanged(NULL);
                   break;
             case CutTool:
                   if (item) splitItem(item, pt);
@@ -952,11 +980,14 @@ void PartCanvas::keyPress(QKeyEvent* event)
 //      }
       if (editMode)
             {
+            // this will probably never happen, as edit mode has been set
+            // to "false" some usec ago by returnPressed, called by editingFinished.
             if ( key == Qt::Key_Return || key == Qt::Key_Enter ) 
                   {
                   //returnPressed(); commented out by flo
                   return;
                   }
+            // the below CAN indeed happen.
             else if ( key == Qt::Key_Escape )
                   {
                   lineEditor->hide();
@@ -964,6 +995,11 @@ void PartCanvas::keyPress(QKeyEvent* event)
                   return;
                   }
             }
+      // if returnPressed, called by editingFinished, was executed
+      // a short time ago, ignore this keypress if it was enter or return
+      if (editingFinishedTime.elapsed() < EDITING_FINISHED_TIMEOUT &&
+          (key == Qt::Key_Return || key == Qt::Key_Enter) )
+        return;
 
       if (event->modifiers() &  Qt::ShiftModifier)
             key +=  Qt::SHIFT;
@@ -1160,7 +1196,7 @@ void PartCanvas::keyPress(QKeyEvent* event)
 
             //If we're at topmost, leave
             if (!track) {
-              printf("no track above!\n");
+              //printf("no track above!\n");
                   return;
                 }
             int middle = curItem->x() + curItem->part()->lenTick()/2;
@@ -1295,17 +1331,25 @@ void PartCanvas::keyPress(QKeyEvent* event)
             curItem = newItem;
             selectItem(newItem, true);
 
-            //Check if we've hit the upper or lower boundaries of the window. If so, set a new position
+            //Check if we've hit the left, right, upper or lower boundaries of the window. If so, scroll to new position.
             if (newItem->x() < mapxDev(0)) {
-                  int curpos = pos[0];
-                  setPos(0,newItem->x(),true);
-                  setPos(0,curpos,false); //Dummy to put the current position back once we've scrolled
+                  emit horizontalScroll(rmapx(newItem->x() - xorg) - 10);  // Leave some room.
                   }
-            else if (newItem->x() > mapxDev(width())) {
-                  int curpos = pos[0];
-                  setPos(0,newItem->x(),true);
-                  setPos(0,curpos,false); //Dummy to put the current position back once we've scrolled
+            else if (newItem->x() + newItem->width() > mapxDev(width())) {
+                  int mx = rmapx(newItem->x());
+                  int newx = mx + rmapx(newItem->width()) - width();
+                  emit horizontalScroll( (newx > mx ? mx - 10 : newx + 10) - rmapx(xorg) );
                   }
+                  
+            if (newItem->y() < mapyDev(0)) {
+                  int my = rmapy(newItem->y());
+                  int newy = my + rmapy(newItem->height()) - height();
+                  emit verticalScroll( (newy < my ? my - 10 : newy + 10) - rmapy(yorg) );
+                  }
+            else if (newItem->y() + newItem->height() > mapyDev(height())) {
+                  emit verticalScroll( rmapy(newItem->y() + newItem->height() - yorg) - height() + 10);
+                  }
+                  
             redraw();
             }
       }
@@ -2267,9 +2311,9 @@ void PartCanvas::drawMidiPart(QPainter& p, const QRect&, MusECore::EventList* ev
     //else
     //  color_brightness=64;  // otherwise use dark color 
     if (brightness >= 12000 && !pt->selected())
-      color_brightness=64; // 96;    // too bright: use dark color 
+      color_brightness=54; // 96;    // too bright: use dark color
     else
-      color_brightness=190; //160;   // too dark: use lighter color 
+      color_brightness=200; //160;   // too dark: use lighter color
   }
   else
     color_brightness=80;
@@ -3175,9 +3219,13 @@ void PartCanvas::viewDropEvent(QDropEvent* event)
 
                 if (!track) { // we need to create a track for this drop
                     if (text.endsWith(".mpt", Qt::CaseInsensitive)) {
-                        track = MusEGlobal::song->addTrack(MusECore::Track::MIDI);    // Add at end of list.
+                        MusECore::Undo operations;
+                        track = MusEGlobal::song->addTrack(operations, MusECore::Track::MIDI);    // Add at end of list.
+                        MusEGlobal::song->applyOperationGroup(operations);
                     } else {
-                        track = MusEGlobal::song->addTrack(MusECore::Track::WAVE);    // Add at end of list.
+                        MusECore::Undo operations;
+                        track = MusEGlobal::song->addTrack(operations, MusECore::Track::WAVE);    // Add at end of list.
+                        MusEGlobal::song->applyOperationGroup(operations);
                     }
                 }
                 if (track->type() == MusECore::Track::WAVE &&
@@ -3602,7 +3650,8 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
       {
         double y;   
         if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-          y = dbToVal(cl->curVal()); // represent volume between 0 and 1
+          //printf("log conversion val=%f min=%f max=%f\n", cl->curVal(), min, max);
+          y = logToVal(cl->curVal(), min, max); // represent volume between 0 and 1
           if (y < 0) y = 0.0;
         }
         else 
@@ -3615,7 +3664,8 @@ void PartCanvas::drawAutomation(QPainter& p, const QRect& rr, MusECore::AudioTra
         {
             double y = ic->second.val; 
             if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-              y = dbToVal(y); // represent volume between 0 and 1
+              //printf("log conversion val=%f min=%f max=%f\n", cl->curVal(), min, max);
+              y = logToVal(y, min, max); // represent volume between 0 and 1
               if (y < 0) y = 0.0;
             }
             else 
@@ -3714,7 +3764,7 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
         {
           double y;   
           if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-            y = dbToVal(cl->curVal()); // represent volume between 0 and 1
+            y = logToVal(cl->curVal(), min, max); // represent volume between 0 and 1
             if (y < 0) y = 0.0;
           }
           else 
@@ -3727,7 +3777,7 @@ void PartCanvas::checkAutomation(MusECore::Track * t, const QPoint &pointer, boo
           {
              double y = ic->second.val;
              if (cl->valueType() == MusECore::VAL_LOG ) { // use db scale for volume
-                y = dbToVal(y); // represent volume between 0 and 1
+                y = logToVal(y, min, max); // represent volume between 0 and 1
                if (y < 0) y = 0;
              }
              else 
@@ -3919,7 +3969,8 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
     automation.currentCtrlList->range(&min,&max);
     double cvval;    
     if (automation.currentCtrlList->valueType() == MusECore::VAL_LOG  ) { // use db scale for volume
-       cvval = valToDb(yfraction);
+       printf("log conversion val=%f min=%f max=%f\n", yfraction, min, max);
+       cvval = valToLog(yfraction, min, max);
        //printf("calc yfraction = %f v=%f ",yfraction,cvval);
        if (cvval< min) cvval=min;
        if (cvval>max) cvval=max;
@@ -3952,13 +4003,45 @@ void PartCanvas::processAutomationMovements(QPoint pos, bool addPoint)
 
 }
 
-double PartCanvas::dbToVal(double inDb)
+//---------------------------------------------------------
+//
+//  logToVal
+//   - represent logarithmic value on linear scale from 0 to 1
+//
+//---------------------------------------------------------
+double PartCanvas::logToVal(double inLog, double min, double max)
 {
-    return (20.0*MusECore::fast_log10(inDb)+60.0) / 70.0;
+    //printf("logToVal inLog %f :", inLog);
+    if (inLog < min) inLog = min;
+    if (inLog > max) inLog = max;
+    double linMin = 20.0*MusECore::fast_log10(min);
+    double linMax = 20.0*MusECore::fast_log10(max);
+    double linVal = 20.0*MusECore::fast_log10(inLog);
+
+    double outVal = (linVal-linMin) / (linMax - linMin);
+    // printf("inLog %f outVal %f linVal %f min %f max %f dbMin %f dbMax %f\n", inLog, outVal, linVal, min, max, linMin, linMax);
+
+    return outVal;
 }
-double PartCanvas::valToDb(double inV)
+
+//---------------------------------------------------------
+//
+//  valToLog
+//   - represent value from 0 to 1 as logarithmic value between min and max
+//
+//---------------------------------------------------------
+double PartCanvas::valToLog(double inV, double min, double max)
 {
-    return exp10((inV*70.0-60.0)/20.0);
+    double linMin = 20.0*MusECore::fast_log10(min);
+    double linMax = 20.0*MusECore::fast_log10(max);
+
+    double linVal = (inV * (linMax - linMin)) + linMin;
+    double outVal = exp10((linVal)/20.0);
+
+    //printf("::valToLog inV %f outVal %f linVal %f min %f max %f\n", inV, outVal, linVal, min, max);
+    if (outVal > max) outVal = max;
+    if (outVal < min) outVal = min;
+    return outVal;
 }
 
 //---------------------------------------------------------

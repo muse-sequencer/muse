@@ -177,6 +177,8 @@ class CtrlCanvas : public MusEGui::View {
       void updateItems();
       void updateSelections();
 
+      //virtual void closeEvent(QCloseEvent*);
+      
    private slots:
       void songChanged(int type);
       void configChanged();    

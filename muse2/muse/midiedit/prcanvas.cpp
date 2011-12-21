@@ -29,6 +29,8 @@
 #include <QDragMoveEvent>
 #include <QDropEvent>
 #include <QMouseEvent>
+#include <QList>
+#include <QPair>
 
 #include <set>
 
@@ -74,11 +76,11 @@ NEvent::NEvent(MusECore::Event& e, MusECore::Part* p, int y) : MusEGui::CItem(e,
 //   addItem
 //---------------------------------------------------------
 
-void PianoCanvas::addItem(MusECore::Part* part, MusECore::Event& event)
+CItem* PianoCanvas::addItem(MusECore::Part* part, MusECore::Event& event)
       {
       if (signed(event.tick())<0) {
             printf("ERROR: trying to add event before current part!\n");
-            return;
+            return NULL;
       }
 
       NEvent* ev = new NEvent(event, part, pitch2y(event.pitch()));
@@ -93,6 +95,8 @@ void PianoCanvas::addItem(MusECore::Part* part, MusECore::Event& event)
             //part = newPart;
             part->setLenTick(part->lenTick()+diff);
             }
+      
+      return ev;
       }
 
 //---------------------------------------------------------
@@ -1086,6 +1090,7 @@ void PianoCanvas::curPartChanged()
 
 void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int delta)
       {
+      QList< QPair<MusECore::EventList*,MusECore::Event> > already_done;
       MusEGlobal::audio->msgIdle(true);
       MusEGlobal::song->startUndo();
       for (MusEGui::iCItem i = items.begin(); i != items.end(); ++i) {
@@ -1097,6 +1102,10 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int delta)
                   continue;
 
             MusECore::MidiPart* part = (MusECore::MidiPart*)(e->part());
+            
+            if (already_done.contains(QPair<MusECore::EventList*,MusECore::Event>(part->events(), event)))
+              continue;
+            
             MusECore::Event newEvent = event.clone();
 
             switch (type) {
@@ -1151,6 +1160,8 @@ void PianoCanvas::modifySelected(MusEGui::NoteInfo::ValType type, int delta)
             // Indicate do not do port controller values and clone parts. 
             //MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part));
             MusEGlobal::song->addUndo(MusECore::UndoOp(MusECore::UndoOp::ModifyEvent, newEvent, event, part, false, false));
+
+            already_done.append(QPair<MusECore::EventList*,MusECore::Event>(part->events(), event));
             }
       MusEGlobal::song->endUndo(SC_EVENT_MODIFIED);
       MusEGlobal::audio->msgIdle(false);

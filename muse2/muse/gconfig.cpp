@@ -131,8 +131,8 @@ GlobalConfigValues config = {
       -60.0,                        // double minSlider;
       false,                        // use Jack freewheel
       20,                           // int guiRefresh;
-      QString(""),                  // userInstrumentsDir
-      //QString(""),                  // helpBrowser; // Obsolete
+      QString(""),                  // userInstrumentsDir  // Obsolete. Must keep for compatibility.
+      //QString(""),                // helpBrowser; // Obsolete
       true,                         // extendedMidi
       384,                          // division for smf export
       QString(""),                  // copyright string for smf export
@@ -191,7 +191,11 @@ GlobalConfigValues config = {
       false,                        // popupsDefaultStayOpen
       false,                        // leftMouseButtonCanDecrease
       false,                        // rangeMarkerWithoutMMB
-      MusECore::DONT_REC_MUTED_OR_HIDDEN
+      MusECore::DONT_REC_MUTED_OR_HIDDEN,
+      true,                         // addHiddenTracks
+      true                          // unhideTracks
     };
 
+//GlobalConfigValues globalConfig = config;
+    
 } // namespace MusEGlobal

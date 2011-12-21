@@ -37,7 +37,7 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QPushButton>
-#include <QResizeEvent>
+//#include <QResizeEvent>
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QSettings>
@@ -129,6 +129,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(muse, SIGNAL(configChanged()), arranger, SLOT(configChanged()));
   connect(arranger, SIGNAL(setUsedTool(int)), editTools, SLOT(set(int)));
   connect(arranger, SIGNAL(selectionChanged()), SLOT(selectionChanged()));
+  connect(MusEGlobal::song, SIGNAL(songChanged(int)), visTracks, SLOT(updateVisibleTracksButtons()));
 
 
 
@@ -167,8 +168,8 @@ ArrangerView::ArrangerView(QWidget* parent)
   scoreSubmenu = new QMenu(tr("Score"), this);
   scoreSubmenu->setIcon(QIcon(*scoreIconSet));
 
-  scoreAllInOneSubsubmenu = new QMenu(tr("all parts in one staff"), this);
-  scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("one staff per part"), this);
+  scoreAllInOneSubsubmenu = new QMenu(tr("all tracks in one staff"), this);
+  scoreOneStaffPerTrackSubsubmenu = new QMenu(tr("one staff per track"), this);
 
   scoreSubmenu->addMenu(scoreAllInOneSubsubmenu);
   scoreSubmenu->addMenu(scoreOneStaffPerTrackSubsubmenu);
@@ -192,6 +193,10 @@ ArrangerView::ArrangerView(QWidget* parent)
   strGlobalCutAction = new QAction(tr("Global Cut"), this);
   strGlobalInsertAction = new QAction(tr("Global Insert"), this);
   strGlobalSplitAction = new QAction(tr("Global Split"), this);
+
+  strGlobalCutSelAction = new QAction(tr("Global Cut - selected tracks"), this);
+  strGlobalInsertSelAction = new QAction(tr("Global Insert - selected tracks"), this);
+  strGlobalSplitSelAction = new QAction(tr("Global Split - selected tracks"), this);
 
 
 
@@ -246,7 +251,11 @@ ArrangerView::ArrangerView(QWidget* parent)
     menuStructure->addAction(strGlobalCutAction);
     menuStructure->addAction(strGlobalInsertAction);
     menuStructure->addAction(strGlobalSplitAction);
-  
+    menuStructure->addSeparator();
+    menuStructure->addAction(strGlobalCutSelAction);
+    menuStructure->addAction(strGlobalInsertSelAction);
+    menuStructure->addAction(strGlobalSplitSelAction);
+
   
   
   QMenu* functions_menu = menuBar()->addMenu(tr("Functions"));
@@ -341,6 +350,9 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(strGlobalCutAction, SIGNAL(activated()), SLOT(globalCut()));
   connect(strGlobalInsertAction, SIGNAL(activated()), SLOT(globalInsert()));
   connect(strGlobalSplitAction, SIGNAL(activated()), SLOT(globalSplit()));
+  connect(strGlobalCutSelAction, SIGNAL(activated()), SLOT(globalCutSel()));
+  connect(strGlobalInsertSelAction, SIGNAL(activated()), SLOT(globalInsertSel()));
+  connect(strGlobalSplitSelAction, SIGNAL(activated()), SLOT(globalSplitSel()));
 
 
 
@@ -351,7 +363,7 @@ ArrangerView::ArrangerView(QWidget* parent)
   connect(cb, SIGNAL(dataChanged()), SLOT(clipboardChanged()));
   connect(cb, SIGNAL(selectionChanged()), SLOT(clipboardChanged()));
 
-
+  MusEGlobal::muse->topwinMenuInited(this);
 
   // work around for probable QT/WM interaction bug.
   // for certain window managers, e.g xfce, this window is
@@ -368,7 +380,7 @@ ArrangerView::~ArrangerView()
 
 void ArrangerView::closeEvent(QCloseEvent* e)
 {
-  emit deleted(static_cast<TopWin*>(this));
+  emit isDeleting(static_cast<TopWin*>(this));
   emit closed();
   e->accept();
 }
@@ -629,7 +641,7 @@ void ArrangerView::clearScoreMenuMappers()
 
 void ArrangerView::populateAddTrack()
 {
-      QActionGroup *grp = MusEGui::populateAddTrack(addTrack);
+      QActionGroup *grp = MusEGui::populateAddTrack(addTrack, true);
       connect(addTrack, SIGNAL(triggered(QAction *)), SLOT(addNewTrack(QAction *)));
       
       trackMidiAction = grp->actions()[0];
@@ -730,5 +742,10 @@ void ArrangerView::updateVisibleTracksButtons()
 void ArrangerView::globalCut() { MusECore::globalCut(); }
 void ArrangerView::globalInsert() { MusECore::globalInsert(); }
 void ArrangerView::globalSplit() { MusECore::globalSplit(); }
+
+// variants only applicable for selected tracks
+void ArrangerView::globalCutSel() { MusECore::globalCut(true); }
+void ArrangerView::globalInsertSel() { MusECore::globalInsert(true); }
+void ArrangerView::globalSplitSel() { MusECore::globalSplit(true); }
 
 } // namespace MusEGui

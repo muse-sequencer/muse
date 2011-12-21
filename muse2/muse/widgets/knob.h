@@ -80,6 +80,7 @@ class Knob : public SliderBase, public ScaleIf
 
       virtual void paintEvent(QPaintEvent *);
       virtual void resizeEvent(QResizeEvent *e);
+      virtual void mousePressEvent(QMouseEvent *e);
       double getValue(const QPoint &p);
       void getScrollMode( QPoint &p, const Qt::MouseButton &button, int &scrollMode, int &direction );
       void scaleChange()             { repaint(); }

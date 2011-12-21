@@ -579,7 +579,8 @@ void MidiTrackInfo::setLabelText()
         //gradient.setColorAt(0, c.darker());
         //gradient.setColorAt(0, c);
         //gradient.setColorAt(1, c.darker());
-        gradient.setColorAt(0, c.lighter());
+        gradient.setColorAt(0, c);
+        gradient.setColorAt(0.5, c.lighter());
         gradient.setColorAt(1, c);
         //palette.setBrush(QPalette::Button, gradient);
         //palette.setBrush(QPalette::Window, gradient);
@@ -640,14 +641,17 @@ void MidiTrackInfo::iOutputPortChanged(int index)
       {
       if(!selected)
         return;
+      int port_num = iOutput->itemData(index).toInt();
+      if(port_num < 0 || port_num >= MIDI_PORTS)
+        return;
       MusECore::MidiTrack* track = (MusECore::MidiTrack*)selected;
-      if (index == track->outPort())
+      if (port_num == track->outPort())
             return;
       // Changed by T356.
-      //track->setOutPort(index);
+      //track->setOutPort(port_num);
       MusEGlobal::audio->msgIdle(true);
-      //audio->msgSetTrackOutPort(track, index);
-      track->setOutPortAndUpdate(index);
+      //audio->msgSetTrackOutPort(track, port_num);
+      track->setOutPortAndUpdate(port_num);
       MusEGlobal::audio->msgIdle(false);
       
       //MusEGlobal::song->update(SC_MIDI_TRACK_PROP);  
@@ -1086,11 +1090,9 @@ void MidiTrackInfo::instrPopup()
       //QMenu* pup = new QMenu;
       PopupMenu* pup = new PopupMenu(true);
       
-      //instr->populatePatchPopup(pop, channel, MusEGlobal::song->mtype(), track->isDrumTrack());
-      populatePatchPopup(instr, pup, channel, MusEGlobal::song->mtype(), track->isDrumTrack());
+      instr->populatePatchPopup(pup, channel, MusEGlobal::song->mtype(), track->isDrumTrack());
+      //populatePatchPopup(instr, pup, channel, MusEGlobal::song->mtype(), track->isDrumTrack());
 
-      //if(pop->actions().count() == 0)
-      //  return;
       if(pup->actions().count() == 0)
       {
         delete pup;
@@ -1100,7 +1102,6 @@ void MidiTrackInfo::instrPopup()
       connect(pup, SIGNAL(triggered(QAction*)), SLOT(instrPopupActivated(QAction*)));
       //connect(pup, SIGNAL(hovered(QAction*)), SLOT(instrPopupActivated(QAction*)));
       
-      //QAction *act = pop->exec(iPatch->mapToGlobal(QPoint(10,5)));
       QAction *act = pup->exec(iPatch->mapToGlobal(QPoint(10,5)));
       if(act) 
       {
@@ -1351,12 +1352,20 @@ void MidiTrackInfo::updateTrackInfo(int flags)
         //iInput->clear();
         iOutput->clear();
   
+        int item_idx = 0;
         for (int i = 0; i < MIDI_PORTS; ++i) {
+              MusECore::MidiDevice* md = MusEGlobal::midiPorts[i].device(); 
+              if(!md)  // In the case of this combo box, don't bother listing empty ports.             p4.0.41
+                continue;
+              //if(!(md->rwFlags() & 1 || md->isSynti()) && (i != outPort))  
+              if(!(md->rwFlags() & 1) && (i != outPort))   // Only writeable ports, or current one.    p4.0.41
+                continue;
               QString name;
               name.sprintf("%d:%s", i+1, MusEGlobal::midiPorts[i].portname().toLatin1().constData());
-              iOutput->insertItem(i, name);
+              iOutput->insertItem(item_idx, name, i);
               if (i == outPort)
-                    iOutput->setCurrentIndex(i);
+                    iOutput->setCurrentIndex(item_idx);
+              item_idx++;
               }
         iOutput->blockSignals(false);
         

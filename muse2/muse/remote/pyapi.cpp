@@ -1131,7 +1131,9 @@ bool Song::event(QEvent* _e)
                   break;
                   }
             case QPybridgeEvent::SONG_ADD_TRACK:
-                  MusEGlobal::song->addTrack((Track::TrackType)e->getP1());  // Add at end of list.
+                  MusECore::Undo operations;
+                  MusEGlobal::song->addTrack(operations, (Track::TrackType)e->getP1());  // Add at end of list.
+                  MusEGlobal::song->applyOperationGroup(operations);
                   break;
             case QPybridgeEvent::SONG_CHANGE_TRACKNAME: {
                   Track* t = this->findTrack(e->getS1());

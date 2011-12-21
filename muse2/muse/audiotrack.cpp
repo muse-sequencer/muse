@@ -42,10 +42,10 @@
 
 namespace MusECore {
 
-bool AudioAux::_isVisible=true;
-bool AudioInput::_isVisible=true;
-bool AudioOutput::_isVisible=true;
-bool AudioGroup::_isVisible = true;
+bool AudioAux::_isVisible=false;
+bool AudioInput::_isVisible=false;
+bool AudioOutput::_isVisible=false;
+bool AudioGroup::_isVisible =false;
 bool WaveTrack::_isVisible=true;
 
 // By T356. For caching jack in/out routing names BEFORE file save. 
@@ -107,7 +107,7 @@ AudioTrack::AudioTrack(TrackType t)
       _automationType = AUTO_OFF;
       //setChannels(1);
       setChannels(2);
-      addController(new CtrlList(AC_VOLUME,"Volume",0.0,3.16 /* roughly 10 db */, VAL_LOG));
+      addController(new CtrlList(AC_VOLUME,"Volume",0.001,3.163 /* roughly 10 db */, VAL_LOG));
       addController(new CtrlList(AC_PAN, "Pan", -1.0, 1.0, VAL_LINEAR));
       addController(new CtrlList(AC_MUTE,"Mute",0.0,1.0, VAL_LINEAR, true /*dont show in arranger */));
       
@@ -1610,8 +1610,40 @@ void AudioAux::read(Xml& xml)
 //   getData
 //---------------------------------------------------------
 
-bool AudioAux::getData(unsigned /*pos*/, int ch, unsigned /*samples*/, float** data)
+bool AudioAux::getData(unsigned pos, int ch, unsigned samples, float** data)
       {
+      // Make sure all the aux-supporting tracks are processed first so aux data is gathered.    p4.0.37
+      TrackList* tl = MusEGlobal::song->tracks();
+      AudioTrack* track;
+      for(ciTrack it = tl->begin(); it != tl->end(); ++it) 
+      {
+        if((*it)->isMidiTrack())
+          continue;
+        track = (AudioTrack*)(*it);
+        // If there are any Aux route paths to the track, defer processing until the second main track processing pass.  
+        if(!track->processed() && track->hasAuxSend() && !track->auxRefCount())
+        {
+          int chans = track->channels();
+          // Just a dummy buffer.
+          float* buff[chans];
+          float buff_data[samples * chans];
+          for (int i = 0; i < chans; ++i)
+                buff[i] = buff_data + i * samples;
+          
+          //printf("AudioAux::getData name:%s\n    calling copyData on:%s auxRefCount:%d\n", 
+          //       name().toLatin1().constData(), track->name().toLatin1().constData(), track->auxRefCount()); 
+          
+          track->copyData(pos, chans, -1, -1, samples, buff);
+          
+          /* float* buff[ch];
+          float buff_data[samples * ch];
+          for (int i = 0; i < ch; ++i)
+                buff[i] = buff_data + i * samples;
+          //printf("Audio::process1 calling track->copyData for track:%s\n", track->name().toLatin1());
+          track->copyData(pos, ch, -1, -1, samples, buff);  */
+        }
+      }      
+  
       for (int i = 0; i < ch; ++i)
             data[i] = buffer[i % channels()];
       return true;

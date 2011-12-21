@@ -149,15 +149,28 @@ void MusE::exportMidi()
             return;
       MusECore::MidiFile mf(fp);
 
-      MusECore::MidiTrackList* tl = MusEGlobal::song->midis();
-      int ntracks = tl->size();
+      //MusECore::MidiTrackList* tl = MusEGlobal::song->midis();
+      MusECore::TrackList* tl = MusEGlobal::song->tracks();       // Changed to full track list so user can rearrange tracks.
+      //int ntracks = tl->size();
       MusECore::MidiFileTrackList* mtl = new MusECore::MidiFileTrackList;
 
       int i = 0;
-      for (MusECore::iMidiTrack im = tl->begin(); im != tl->end(); ++im, ++i) {
-            MusECore::MidiTrack* track = *im;
-            MusECore::MidiFileTrack* mft = new MusECore::MidiFileTrack;
-            mtl->push_back(mft);
+      MusECore::MidiFileTrack* mft = 0;
+      //for (MusECore::iMidiTrack im = tl->begin(); im != tl->end(); ++im, ++i) {
+      for (MusECore::ciTrack im = tl->begin(); im != tl->end(); ++im) {
+        
+            if(!(*im)->isMidiTrack())
+              continue;
+              
+            MusECore::MidiTrack* track = (MusECore::MidiTrack*)(*im);
+
+            //MusECore::MidiFileTrack* mft = new MusECore::MidiFileTrack;
+            if (i == 0 || (i != 0 && MusEGlobal::config.smfFormat != 0))    // Changed to single track. Tim
+            {  
+              mft = new MusECore::MidiFileTrack;
+              mtl->push_back(mft);
+            }
+            
             MusECore::MPEventList* l   = &(mft->events);
             int port         = track->outPort();
             int channel      = track->outChannel();
@@ -200,14 +213,17 @@ void MusE::exportMidi()
                   //---------------------------------------------------
                   //    Write Coment
                   //
-                  QString comment = track->comment();
-                  if (!comment.isEmpty()) {
-                        int len = comment.length();
-                        MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (const unsigned char*)(comment.toLatin1().constData()), len);
-                        ev.setA(0x1);
-                        l->add(ev);
-                        }
-
+                  //if (MusEGlobal::config.smfFormat == 0)  // Only for smf 0 added by Tim. FIXME: Is this correct? See below.
+                  {
+                    QString comment = track->comment();
+                    if (!comment.isEmpty()) {
+                          int len = comment.length();
+                          MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (const unsigned char*)(comment.toLatin1().constData()), len);
+                          ev.setA(0x1);
+                          l->add(ev);
+                          }
+                  }
+                  
                   //---------------------------------------------------
                   //    Write Songtype SYSEX: GM/GS/XG
                   //
@@ -287,27 +303,38 @@ void MusE::exportMidi()
             //   track name
             //-----------------------------------
 
-            if (!track->name().isEmpty()) {
-                  QByteArray ba = track->name().toLatin1();
-                  const char* name = ba.constData();
-                  int len = strlen(name);
-                  MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (unsigned char*)name, len+1);
-                  ev.setA(0x3);    // Meta Sequence/Track Name
-                  l->add(ev);
-                  }
-
+            if (i == 0 || (i != 0 && MusEGlobal::config.smfFormat != 0))
+            {
+              if (!track->name().isEmpty()) {
+                    QByteArray ba = track->name().toLatin1();
+                    const char* name = ba.constData();
+                    int len = strlen(name);
+                    MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (unsigned char*)name, len+1);
+                    ev.setA(0x3);    // Meta Sequence/Track Name
+                    l->add(ev);
+                    }
+            }
+            
             //-----------------------------------
             //   track comment
             //-----------------------------------
 
-            if (!track->comment().isEmpty()) {
-                  QByteArray ba = track->comment().toLatin1();
-                  const char* comment = ba.constData();
-                  int len = strlen(comment);
-                  MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (unsigned char*)comment, len+1);
-                  ev.setA(0xf);    // Meta Text
-                  l->add(ev);
-                  }
+            // FIXME: What are these 0x0F? All I found was that they are unspecified part of the sixteen text meta events.
+            //        So why not use 0x01? And do we include it for all tracks, or only above 1?   Tim.
+            //if (i == 0 || (i != 0 && MusEGlobal::config.smfFormat != 0))
+            //if (i != 0 && MusEGlobal::config.smfFormat != 0)
+            if (MusEGlobal::config.smfFormat != 0)
+            {
+              if (!track->comment().isEmpty()) {
+                    QByteArray ba = track->comment().toLatin1();
+                    const char* comment = ba.constData();
+                    int len = strlen(comment);
+                    MusECore::MidiPlayEvent ev(0, port, MusECore::ME_META, (unsigned char*)comment, len+1);
+                    ev.setA(0xf);    // Meta Text
+                    l->add(ev);
+                    }
+            }
+            
             MusECore::PartList* parts = track->parts();
             for (MusECore::iPart p = parts->begin(); p != parts->end(); ++p) {
                   MusECore::MidiPart* part    = (MusECore::MidiPart*) (p->second);
@@ -315,7 +342,6 @@ void MusE::exportMidi()
                   for (MusECore::iEvent i = evlist->begin(); i != evlist->end(); ++i) {
                         MusECore::Event ev = i->second;
                         int tick = ev.tick() + part->tick();
-
                         switch (ev.type()) {
                               case MusECore::Note:
                                     {
@@ -400,11 +426,19 @@ void MusE::exportMidi()
                               }
                         }
                   }
+              ++i;  
+            
             }
       mf.setDivision(MusEGlobal::config.midiDivision);
       mf.setMType(MusEGlobal::song->mtype());
-      mf.setTrackList(mtl, ntracks);
+      //mf.setTrackList(mtl, ntracks);
+      mf.setTrackList(mtl, i);
       mf.write();
+      
+      // TESTING: Cleanup. I did not valgrind this feature in last memleak fixes, but I suspect it leaked. 
+      //for(MusECore::iMidiFileTrack imft = mtl->begin(); imft != mtl->end(); ++imft)
+      //  delete *imft;
+      //delete mtl;
       }
 
 } // namespace MusEGui

@@ -1,14 +1,33 @@
 #include "sigspinbox.h"
 #include "al/sig.h"
 #include <QKeyEvent>
+#include <QMouseEvent>
 #include <stdio.h>
+#include <QLineEdit>
+
+class MyLineEdit : public QLineEdit
+{
+  public:
+    MyLineEdit() : QLineEdit() {};
+    MyLineEdit(QWidget* parent) : QLineEdit(parent) {};
+    
+  protected:
+    virtual void mousePressEvent (QMouseEvent* e)
+    {
+      QLineEdit::mousePressEvent(e);
+      selectAll();
+    }
+};
+
 
 SigSpinBox::SigSpinBox(QWidget *parent) :
     QSpinBox(parent)
 {
   _denominator=false;
+  setLineEdit(new MyLineEdit(this));
 }
-void SigSpinBox::keyPressEvent(QKeyEvent*ev)
+
+void SigSpinBox::keyPressEvent(QKeyEvent* ev)
 {
     switch (ev->key()) {
       case Qt::Key_Return:

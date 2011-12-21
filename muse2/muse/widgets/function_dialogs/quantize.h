@@ -33,6 +33,7 @@ class Xml;
 
 namespace MusEGui {
 
+
 class Quantize : public QDialog, public Ui::QuantBase
 {
  	Q_OBJECT
@@ -50,18 +51,18 @@ class Quantize : public QDialog, public Ui::QuantBase
 		int range;
 		int strength;
 		int threshold;
-		int raster_power2;
+    int raster_index;
 		int swing;
 		bool quant_len;
 		
 		void read_configuration(MusECore::Xml& xml);
 		void write_configuration(int level, MusECore::Xml& xml);
 		
-		
 	public slots:
 		int exec();
 };
 
+extern int rasterVals[];
 } // namespace MusEGui
 
 #endif

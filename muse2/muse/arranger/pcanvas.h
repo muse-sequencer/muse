@@ -26,6 +26,7 @@
 
 #include <QVector>
 #include <set>
+#include <QTime>
 
 #include "song.h"
 #include "canvas.h"
@@ -93,6 +94,8 @@ class PartCanvas : public Canvas {
       NPart* editPart;
       int curColorIndex;
       bool editMode;
+      
+      QTime editingFinishedTime;
 
       AutomationObject automation;
 
@@ -116,7 +119,7 @@ class PartCanvas : public Canvas {
       virtual void newItem(CItem*,bool);
       virtual bool deleteItem(CItem*);
       virtual void moveCanvasItems(CItemList&, int, int, DragType);
-      virtual MusECore::UndoOp moveItem(CItem*, const QPoint&, DragType);
+      virtual bool moveItem(MusECore::Undo& operations, CItem*, const QPoint&, DragType);
 
       virtual void updateSong(DragType, int);
       virtual void startDrag(CItem*, DragType);
@@ -145,8 +148,8 @@ class PartCanvas : public Canvas {
 
       void checkAutomation(MusECore::Track * t, const QPoint& pointer, bool addNewCtrl);
       void processAutomationMovements(QPoint pos, bool addPoint);
-      double dbToVal(double inDb);
-      double valToDb(double inV);
+      double logToVal(double inLog, double min, double max);
+      double valToLog(double inV, double min, double max);
 
    protected:
       virtual void drawCanvas(QPainter&, const QRect&);
@@ -177,9 +180,11 @@ class PartCanvas : public Canvas {
       virtual ~PartCanvas();
       void partsChanged();
       void cmd(int);
+      void songIsClearing();
+      
    public slots:
-   void redirKeypress(QKeyEvent* e) { keyPress(e); }
-   void controllerChanged(MusECore::Track *t);
+      void redirKeypress(QKeyEvent* e) { keyPress(e); }
+      void controllerChanged(MusECore::Track *t);
 };
 
 } // namespace MusEGui

@@ -871,20 +871,17 @@ void EditCtrlDialog::instrPopup()
       int port    = track->outPort();
       MusECore::MidiInstrument* instr = MusEGlobal::midiPorts[port].instrument();
       
-      ///instr->populatePatchPopup(pop, channel, MusEGlobal::song->mtype(), track->type() == MusECore::Track::DRUM);
       //QMenu* pup = new QMenu(this);
       MusEGui::PopupMenu* pup = new MusEGui::PopupMenu(this);
-      populatePatchPopup(instr, pup, channel, MusEGlobal::song->mtype(), track->isDrumTrack());
+      //populatePatchPopup(instr, pup, channel, MusEGlobal::song->mtype(), track->isDrumTrack());
+      instr->populatePatchPopup(pup, channel, MusEGlobal::song->mtype(), track->isDrumTrack());
 
-      ///if(pop->actions().count() == 0)
-      ///  return;
       if(pup->actions().count() == 0)
       {
         delete pup;
         return;
       }  
       
-      ///QAction* rv = pop->exec(patchName->mapToGlobal(QPoint(10,5)));
       QAction* rv = pup->exec(patchName->mapToGlobal(QPoint(10,5)));
       if (rv) {
             val = rv->data().toInt();

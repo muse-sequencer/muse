@@ -23,7 +23,6 @@
 //=========================================================
 
 #include <stdio.h>
-#include <assert.h>
 #include <cmath>
 
 #include "song.h"
@@ -39,7 +38,7 @@
 
 namespace MusECore {
 
-int Part::snGen;
+int Part::snGen=0;
 
 //---------------------------------------------------------
 //   unchainClone
@@ -751,6 +750,18 @@ WavePart::WavePart(const WavePart& p) : Part(p)
 
 Part::~Part()
       {
+      if (_prevClone!=this || _nextClone!=this)
+      {
+        printf("THIS MIGHT BE A HINT FOR BUGS: Part isn't unchained in ~Part()! i'll do that now. this is\n"
+               "not an actual bug, actually that manual unchain should be unneccessary if this was coded\n"
+               "properly. but as it wasn't, and the unchain was always done manually, this might be an\n"
+               "indicator that it have been forgotten. either your computer will explode in 3..2..1..now,\n"
+               "or you can ignore this message.\n"
+               "\n");
+        
+        unchainClone(this);
+      }
+        
       _events->incRef(-1);
       if (_events->refCount() <= 0)
             delete _events;
@@ -805,7 +816,8 @@ void PartList::remove(Part* part)
                   break;
                   }
             }
-      assert(i != end());
+      if (i == end())
+        printf("THIS SHOULD NEVER HAPPEN: could not find the part in PartList::remove()!\n");
       }
 
 //---------------------------------------------------------

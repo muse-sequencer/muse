@@ -72,6 +72,8 @@ class Synth {
       QString _version;
 
    public:
+      enum Type { METRO_SYNTH=0, MESS_SYNTH, DSSI_SYNTH, VST_SYNTH, SYNTH_TYPE_END };
+
       //Synth(const QFileInfo& fi);
       //Synth(const QFileInfo& fi, QString label);
       Synth(const QFileInfo& fi, QString label, QString descr, QString maker, QString ver);
@@ -80,6 +82,7 @@ class Synth {
       //virtual const char* description() const { return ""; }
       //virtual const char* version() const { return ""; }
 
+      virtual Type synthType() const = 0;
       int instances() const                            { return _instances; }
       virtual void incInstances(int val)               { _instances += val; }
       QString completeBaseName()             /*const*/ { return info.completeBaseName(); } // ddskrjo
@@ -117,6 +120,8 @@ class MessSynth : public Synth {
       //virtual const char* description() const;
       //virtual const char* version() const;
       
+      virtual Type synthType() const { return MESS_SYNTH; }
+
       //virtual void* instantiate();
       virtual void* instantiate(const QString&);
       
@@ -363,6 +368,9 @@ class MessSynthIF : public SynthIF {
       virtual int getControllerInfo(int id, const char** name, int* ctrl, int* min, int* max, int* initval);
       };
 
+extern QString synthType2String(Synth::Type);
+extern Synth::Type string2SynthType(const QString&); 
+      
 } // namespace MusECore
 
 namespace MusEGlobal {

@@ -91,7 +91,7 @@ class MasterEdit : public MidiEditor {
 //      void tempoChanged(double);
 
    signals:
-      void deleted(MusEGui::TopWin*);
+      void isDeleting(MusEGui::TopWin*);
 
    public:
       MasterEdit();

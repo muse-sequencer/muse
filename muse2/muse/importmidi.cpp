@@ -21,7 +21,6 @@
 //
 //=========================================================
 
-#include <assert.h>
 #include <errno.h>
 #include <values.h>
 
@@ -418,7 +417,8 @@ void MusE::processTrack(MusECore::MidiTrack* track)
             i->second.dump();
             }
       // all events should be processed:
-      assert(tevents->empty());
+      if (!tevents->empty())
+        printf("THIS SHOULD NEVER HAPPEN: not all events processed at the end of MusE::processTrack()!\n");
       }
 
 //---------------------------------------------------------

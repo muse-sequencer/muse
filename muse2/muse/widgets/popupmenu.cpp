@@ -341,21 +341,38 @@ void PopupMenu::popHovered(QAction* action)
 
 void PopupMenu::mouseReleaseEvent(QMouseEvent *e)
 {
-    #ifdef POPUP_MENU_DISABLE_STAY_OPEN    
+    QAction* action = actionAt(e->pos());
+    if (!(action && action == activeAction() && !action->isSeparator() && action->isEnabled()))
+      action=NULL;
+
+    #ifdef POPUP_MENU_DISABLE_STAY_OPEN
+    if (action && action->menu() != NULL  &&  action->isCheckable())
+      action->activate(QAction::Trigger);
+
     QMenu::mouseReleaseEvent(e);
+    
+    if (action && action->menu() != NULL  &&  action->isCheckable())
+      close();
+      
     return;
     
     #else
     // Check for Ctrl to stay open.
     if(!_stayOpen || (!MusEGlobal::config.popupsDefaultStayOpen && (e->modifiers() & Qt::ControlModifier) == 0))  
     {
+      if (action && action->menu() != NULL  &&  action->isCheckable())
+        action->activate(QAction::Trigger);
+
       QMenu::mouseReleaseEvent(e);
+
+      if (action && action->menu() != NULL  &&  action->isCheckable())
+        close();
+
       return;
     }  
     
     //printf("PopupMenu::mouseReleaseEvent\n");  
-    QAction *action = actionAt(e->pos());
-    if (action && action == activeAction() && !action->isSeparator() && action->isEnabled()) 
+    if (action) 
       action->activate(QAction::Trigger);
     else 
       QMenu::mouseReleaseEvent(e);

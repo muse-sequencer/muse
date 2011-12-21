@@ -45,6 +45,9 @@ MTScaleFlo::MTScaleFlo(ScoreCanvas* parent_editor, QWidget* parent_widget)
 			pos[0] = MusEGlobal::song->cpos();
 			pos[1] = MusEGlobal::song->lpos();
 			pos[2] = MusEGlobal::song->rpos();
+      xpos=0;
+      xoffset=0;
+      
       button = Qt::NoButton;
       setMouseTracking(true);
       connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), SLOT(setPos(int, unsigned, bool)));

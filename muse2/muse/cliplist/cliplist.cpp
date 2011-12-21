@@ -32,6 +32,7 @@
 #include "wave.h"
 #include "xml.h"
 #include "ui_cliplisteditorbase.h"
+#include "app.h"
 
 
 namespace MusEGui {
@@ -168,6 +169,7 @@ ClipListEdit::ClipListEdit(QWidget* parent)
       connect(editor->len, SIGNAL(valueChanged(const MusECore::Pos&)), SLOT(lenChanged(const MusECore::Pos&)));
 
       updateList();
+      MusEGlobal::muse->topwinMenuInited(this);
       }
 
 ClipListEdit::~ClipListEdit()
@@ -194,7 +196,7 @@ void ClipListEdit::updateList()
 
 void ClipListEdit::closeEvent(QCloseEvent* e)
       {
-      emit deleted(static_cast<TopWin*>(this));
+      emit isDeleting(static_cast<TopWin*>(this));
       e->accept();
       }
 

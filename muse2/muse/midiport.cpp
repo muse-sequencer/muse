@@ -24,6 +24,7 @@
 //#include "config.h"
 
 #include <QMenu>
+#include <QApplication>
 
 #include "mididev.h"
 #include "midiport.h"
@@ -331,18 +332,18 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
       {
         MusECore::MidiDevice* md = MusEGlobal::midiPorts[pi].device();
         //if(md && !md->isSynti() && (md->rwFlags() & 1))
-        //if(md && (md->rwFlags() & 1))   
-        if(md && (md->rwFlags() & 1 || md->isSynti()) )  
+        if(md && (md->rwFlags() & 1))   
+        //if(md && (md->rwFlags() & 1 || md->isSynti()) )  // Revert. Hm, why synths? Only writeable ports.  p4.0.41
           break;
       }
       if(pi == MIDI_PORTS)
       {
-        act = p->addAction(p->tr("Warning: No output devices!"));
+        act = p->addAction(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Warning: No output devices!")));
         act->setCheckable(false);
         act->setData(-1);
         p->addSeparator();
       }
-      act = p->addAction(QIcon(*MusEGui::settings_midiport_softsynthsIcon), p->tr("Open midi config..."));
+      act = p->addAction(QIcon(*MusEGui::settings_midiport_softsynthsIcon), qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Open midi config...")));
       act->setCheckable(false);
       act->setData(MIDI_PORTS);  
       p->addSeparator();
@@ -351,8 +352,12 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
 
       for (int i = 0; i < MIDI_PORTS; ++i) {
             MidiPort* port = &MusEGlobal::midiPorts[i];
+            MusECore::MidiDevice* md = port->device();
+            //if(md && !(md->rwFlags() & 1 || md->isSynti()) && (i != checkPort))  
+            if(md && !(md->rwFlags() & 1) && (i != checkPort))                     // Only writeable ports, or current one.
+              continue;
             name.sprintf("%d:%s", port->portno()+1, port->portname().toLatin1().constData());
-            if(port->device() || (i == checkPort))   
+            if(md || (i == checkPort))   
             {  
               act = p->addAction(name);
               act->setData(i);
@@ -360,12 +365,12 @@ QMenu* midiPortsPopup(QWidget* parent, int checkPort)
               act->setChecked(i == checkPort);
             }  
 
-            if(!port->device())
+            if(!md)
             {
               if(!subp)                  // No submenu yet? Create it now.
               {
                 subp = new QMenu(p);
-                subp->setTitle(subp->tr("Empty ports"));
+                subp->setTitle(qApp->translate("@default", QT_TRANSLATE_NOOP("@default", "Empty ports")));
                 //subp->addAction(new MusEGui::MenuTitleItem("Empty Ports", subp));
               }  
               //act = subp->addAction(name);               // No need for all those "<None>" names. 
