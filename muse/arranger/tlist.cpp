@@ -585,10 +585,6 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
       switch(t->type()) {
             case MusECore::Track::MIDI:
             case MusECore::Track::DRUM:
-            // FINDMICHJETZT: this is a notice for flo's experimental
-            //                branch! don't forget NEW_DRUM here!
-            //                please don't remove this. i'll do it when
-            //                the time is there.
             case MusECore::Track::AUDIO_SOFTSYNTH: 
             {
                   MusECore::MidiTrack* track = (MusECore::MidiTrack*)t;
