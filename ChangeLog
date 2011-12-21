@@ -2,6 +2,7 @@
         - Litle break for some polish. Route button icons. Rebuild midi track info ui file - was 3 columns not 2. (Tim)
         * Fixed: Hopefully, finally: Non-appearing track info scroll bar.  (Tim)
                  Simple movement of recursive call of sb->setVisible() to end of TLLayout::setGeometry(). 
+        - Audio strip prefader now controls audio. (Tim)
 18.12.2011:
         * Fixed: Annoying ladspa browser issues. Leak: Dialog was not destroyed. Sorting. Save complete state. (Tim)
 17.12.2011:
