@@ -585,10 +585,6 @@ void TList::portsPopupMenu(MusECore::Track* t, int x, int y)
       switch(t->type()) {
             case MusECore::Track::MIDI:
             case MusECore::Track::DRUM:
-            // FINDMICHJETZT: this is a notice for flo's experimental
-            //                branch! don't forget NEW_DRUM here!
-            //                please don't remove this. i'll do it when
-            //                the time is there.
             case MusECore::Track::AUDIO_SOFTSYNTH: 
             {
                   MusECore::MidiTrack* track = (MusECore::MidiTrack*)t;
@@ -1136,10 +1132,11 @@ void TList::changeAutomationColor(QAction* act)
 //   colorMenu
 //---------------------------------------------------------
 //QMenu* TList::colorMenu(QColor c, int id)
-PopupMenu* TList::colorMenu(QColor c, int id)
+PopupMenu* TList::colorMenu(QColor c, int id, QWidget* parent)
 {
   //QMenu * m = new QMenu(this);
-  PopupMenu * m = new PopupMenu(this);  //, true);  TODO
+  //PopupMenu * m = new PopupMenu(this);  //, true);  TODO
+  PopupMenu * m = new PopupMenu(parent);  //, true);  //
   for (int i = 0; i< 6; i++) {
     QPixmap pix(10,10);
     QPainter p(&pix);
@@ -1301,7 +1298,8 @@ void TList::mousePressEvent(QMouseEvent* ev)
                       data += 150; // illegal color > 100
                       act->setData(data);
                       //QMenu *m = colorMenu(cl->color(), cl->id());
-                      PopupMenu *m = colorMenu(cl->color(), cl->id());
+                      //PopupMenu *m = colorMenu(cl->color(), cl->id());
+                      PopupMenu *m = colorMenu(cl->color(), cl->id(), p);
                       act->setMenu(m);
                     }
                     connect(p, SIGNAL(triggered(QAction*)), SLOT(changeAutomation(QAction*)));

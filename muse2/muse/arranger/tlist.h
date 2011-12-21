@@ -27,6 +27,7 @@
 
 #include <QWidget>
 
+class QWidget;
 class QKeyEvent;
 class QLineEdit;
 class QSpinBox;
@@ -109,7 +110,7 @@ class TList : public QWidget {
       MusECore::TrackList getRecEnabledTracks();
       void setHeaderToolTips();
       //QMenu* colorMenu(QColor c, int id);
-      PopupMenu* colorMenu(QColor c, int id);
+      PopupMenu* colorMenu(QColor c, int id, QWidget* parent);
 
    private slots:
       void returnPressed();

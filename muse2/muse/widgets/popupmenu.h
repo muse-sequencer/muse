@@ -75,8 +75,7 @@ class PopupMenu : public QMenu
     PopupMenu(bool stayOpen);
     PopupMenu(QWidget* parent=0, bool stayOpen = false);
     PopupMenu(const QString& title, QWidget* parent = 0, bool stayOpen = false);
-    ~PopupMenu();
-    void clear();
+    ///void clear();
     QAction* findActionFromData(const QVariant&) const;
     bool stayOpen() const { return _stayOpen; }
     void clearAllChecks() const;

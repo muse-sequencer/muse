@@ -130,12 +130,12 @@ Appearance::Appearance(Arranger* a, QWidget* parent)
       lastSelectedBgItem = 0;
       
       fontName0->setToolTip(tr("Main application font, and default font for any\n controls not defined here."));
-      fontName1->setToolTip(tr("For small controls like mixer strips.\nAlso timescale small numbers, arranger part name overlay,\n and effects rack."));
-      fontName2->setToolTip(tr("Midi track info panel. Transport controls."));
-      fontName3->setToolTip(tr("Controller graph and S/X buttons. Large numbers for time\n and tempo scale, and time signature."));
-      fontName4->setToolTip(tr("Time scale markers."));
-      fontName5->setToolTip(tr("List editor: meta event edit dialog multi-line edit box."));
-      fontName6->setToolTip(tr("Mixer label font. Auto-font-sizing up to chosen font size.\nWord-breaking but only with spaces."));
+      fontName1->setToolTip(tr("Mixer strips and effects racks. Midi track info panel.\nMidi control panel entry box."));
+      fontName2->setToolTip(tr("Transport controls."));
+      fontName3->setToolTip(tr("Time scale upper, and time signature.\nController graph and S/X buttons."));
+      fontName4->setToolTip(tr("Time scale lower, and arranger part name overlay."));
+      fontName5->setToolTip(tr("Tempo scale, and markers."));
+      fontName6->setToolTip(tr("Mixer labels. Auto-font-sizing up to chosen font size.\nWord-breaking but only with spaces."));
       fontSize6->setToolTip(tr("Maximum mixer label auto-font-sizing font size."));
       
       globalAlphaSlider->setToolTip(tr("Global opacity (opposite of transparency)."));

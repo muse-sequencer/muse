@@ -147,6 +147,10 @@ extern QPixmap* record_off_Icon;
 extern QPixmap* newmuteIcon;
 extern QPixmap* soloIcon;
 
+extern QPixmap* routesInIcon;
+extern QPixmap* routesOutIcon;
+extern QPixmap* routesMidiInIcon;
+extern QPixmap* routesMidiOutIcon;
 extern QPixmap* muteIconOn;
 extern QPixmap* muteIconOff;
 extern QPixmap* soloIconOn; 
@@ -156,6 +160,7 @@ extern QPixmap* soloblksqIconOff;
 //extern QIcon* soloIconSet1;
 //extern QIcon* soloIconSet2;
 
+extern QPixmap* toggle_small_Icon;
 extern QPixmap* redLedIcon;
 extern QPixmap* darkRedLedIcon;
 extern QPixmap* greendotIcon;

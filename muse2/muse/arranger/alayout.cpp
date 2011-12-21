@@ -138,7 +138,8 @@ void TLLayout::setGeometry(const QRect &rect)
             range = 0;
       // Note this appears to cause a single recursive call to this function - jumps to beginning,
       //  because now the scroll bar wants to be put in the layout.
-      sb->setVisible(range != 0);
+      // Moved below.   p4.0.44      
+      ///sb->setVisible(range != 0);
       if (range)
             sb->setMaximum(range);
 
@@ -153,6 +154,9 @@ void TLLayout::setGeometry(const QRect &rect)
       li[3]->setGeometry(QRect(x2, y1, aw,        ah));
       li[4]->setGeometry(QRect(0,  y2,  w,        s4.height()));
       li[5]->setGeometry(QRect(3,  y3,  s5.width(), s5.height()));
+      
+      /// Fix for non-appearing scrollbar. Yes, we must allow the recursive call, but try it here, not above.    p4.0.44 Tim
+      sb->setVisible(range != 0);
       
       //_inSetGeometry = false;
       }

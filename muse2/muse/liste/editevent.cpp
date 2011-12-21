@@ -330,7 +330,7 @@ EditMetaDialog::EditMetaDialog(int tick, const MusECore::Event& ev,
       connect(hexButton, SIGNAL(toggled(bool)), SLOT(toggled(bool)));
 
       edit = new QTextEdit;
-      edit->setFont(MusEGlobal::config.fonts[5]);
+      edit->setFont(MusEGlobal::config.fonts[0]);
 
       if (!ev.empty()) {
             epos->setValue(tick);

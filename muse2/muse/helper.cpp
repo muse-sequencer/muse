@@ -398,9 +398,10 @@ QString getUniqueUntitledName()
 
 // -------------------------------------------------------------------------------------------------------
 // populateMidiPorts()
-// This version creats separate devices for input and output ports. 
+// This version creats separate devices for Jack midi input and outputs. 
 // It does not attempt to pair them together.
 // -------------------------------------------------------------------------------------------------------
+
 void populateMidiPorts()
 {
   if(!MusEGlobal::checkAudioDevice())
@@ -409,6 +410,8 @@ void populateMidiPorts()
   MusECore::MidiDevice* dev = 0;
   
   int port_num = 0;
+
+  int jack_midis_found = 0;
   
   // If Jack is running, prefer Jack midi devices over ALSA.
   if(MusEGlobal::audioDevice->deviceType() == MusECore::AudioDevice::JACK_AUDIO)  
@@ -420,6 +423,7 @@ void populateMidiPorts()
       dev = MusECore::MidiJackDevice::createJackMidiDevice(*i, 1); 
       if(dev)
       {
+        ++jack_midis_found;
         //printf("populateMidiPorts Created jack writeable device: %s\n", dev->name().toLatin1().constData()); 
         //dev->setOpenFlags(1);
         MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[port_num], dev);
@@ -437,6 +441,7 @@ void populateMidiPorts()
       dev = MusECore::MidiJackDevice::createJackMidiDevice(*i, 2); 
       if(dev)
       {
+        ++jack_midis_found;
         //printf("populateMidiPorts Created jack readable device: %s\n", dev->name().toLatin1().constData()); 
         //dev->setOpenFlags(2);
         MusEGlobal::midiSeq->msgSetMidiDevice(&MusEGlobal::midiPorts[port_num], dev);
@@ -448,9 +453,13 @@ void populateMidiPorts()
       }  
     }
   }
-  else
+  //else
   // If Jack is not running, use ALSA devices.
-  if(MusEGlobal::audioDevice->deviceType() == MusECore::AudioDevice::DUMMY_AUDIO)  
+  //if(MusEGlobal::audioDevice->deviceType() == MusECore::AudioDevice::DUMMY_AUDIO)  
+  // Try to do the user a favour: If we still have no Jack devices, even if Jack is running, fill with ALSA.
+  // It is possible user has Jack running on ALSA back-end but without midi support.
+  // IE. They use Jack for audio but use ALSA for midi!
+  if(MusEGlobal::audioDevice->deviceType() == MusECore::AudioDevice::DUMMY_AUDIO || jack_midis_found == 0)  
   {
     for(MusECore::iMidiDevice i = MusEGlobal::midiDevices.begin(); i != MusEGlobal::midiDevices.end(); ++i) 
     {

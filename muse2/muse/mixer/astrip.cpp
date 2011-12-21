@@ -895,7 +895,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
             record->setToolTip(tr("record"));
             record->setChecked(t->recordFlag());
             record->setIcon(t->recordFlag() ? QIcon(*record_on_Icon) : QIcon(*record_off_Icon));
-            record->setIconSize(record_on_Icon->size());  
+            ///record->setIconSize(record_on_Icon->size());  
             connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
             }
 
@@ -906,7 +906,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       mute->setToolTip(tr("mute"));
       mute->setChecked(t->mute());
       mute->setIcon(t->mute() ? QIcon(*muteIconOff) : QIcon(*muteIconOn));
-      mute->setIconSize(muteIconOn->size());  
+      ///mute->setIconSize(muteIconOn->size());  
       mute->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
@@ -918,7 +918,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
         solo->setIcon(t->solo() ? QIcon(*soloblksqIconOn) : QIcon(*soloblksqIconOff));
       else
         solo->setIcon(t->solo() ? QIcon(*soloIconOn) : QIcon(*soloIconOff));
-      solo->setIconSize(soloIconOn->size());  
+      ///solo->setIconSize(soloIconOn->size());  
       solo->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
       if (type == MusECore::Track::AUDIO_OUTPUT) {
@@ -938,7 +938,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       off->setToolTip(tr("off"));
       off->setChecked(t->off());
       off->setIcon(t->off() ? QIcon(*exit1Icon) : QIcon(*exitIcon));
-      off->setIconSize(exit1Icon->size());  
+      ///off->setIconSize(exit1Icon->size());  
       connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
 
       grid->addWidget(off, _curGridRow, 0);
@@ -955,8 +955,10 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       if (type != MusECore::Track::AUDIO_AUX) {
             iR = new QToolButton();
             iR->setFont(MusEGlobal::config.fonts[1]);
-            iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-            iR->setText(tr("iR"));
+            iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
+            ///iR->setText(tr("iR"));
+            iR->setIcon(QIcon(*routesInIcon));
+            iR->setIconSize(routesInIcon->size());  
             iR->setCheckable(false);
             iR->setToolTip(tr("input routing"));
             grid->addWidget(iR, _curGridRow, 0);
@@ -965,8 +967,10 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       
       oR = new QToolButton();
       oR->setFont(MusEGlobal::config.fonts[1]);
-      oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      oR->setText(tr("oR"));
+      oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
+      ///oR->setText(tr("oR"));
+      oR->setIcon(QIcon(*routesOutIcon));
+      oR->setIconSize(routesOutIcon->size());  
       oR->setCheckable(false);
       oR->setToolTip(tr("output routing"));
       grid->addWidget(oR, _curGridRow++, 1);
@@ -1045,9 +1049,11 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
 
 void AudioStrip::iRoutePressed()
       {
-      MusEGui::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
-      iR->setDown(false);     
+      //MusEGui::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
+      RoutePopupMenu* pup = new RoutePopupMenu();
       pup->exec(QCursor::pos(), track, false);
+      delete pup;
+      iR->setDown(false);     
       }
       
 //---------------------------------------------------------
@@ -1056,9 +1062,11 @@ void AudioStrip::iRoutePressed()
 
 void AudioStrip::oRoutePressed()
 {
-      MusEGui::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
-      oR->setDown(false);     
+      //MusEGui::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
+      RoutePopupMenu* pup = new RoutePopupMenu();
       pup->exec(QCursor::pos(), track, true);
+      delete pup;
+      oR->setDown(false);     
 }
 
 } // namespace MusEGui

@@ -180,7 +180,7 @@ void DoubleLabel::setPrecision(int v)
 QSize DoubleLabel::sizeHint() const
       {
       QFontMetrics fm = fontMetrics();
-      int h           = fm.height() + 4;
+      int h           = fm.height() + 5;
       int n = _precision;
       
       ++n;  // For some reason I have to add one digit. Shouldn't have to.

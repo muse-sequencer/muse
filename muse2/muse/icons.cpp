@@ -43,8 +43,8 @@
 #include "xpm/midi_inputplugins_random_rhythm_generator.xpm"
 #include "xpm/midi_local_off.xpm"
 #include "xpm/midi_reset_instr.xpm"
-#include "xpm/midi_thru_off3.xpm"
-#include "xpm/midi_thru_on3.xpm"
+#include "xpm/midi_thru_off4.xpm"
+#include "xpm/midi_thru_on4.xpm"
 #include "xpm/settings_appearance_settings.xpm"
 #include "xpm/settings_configureshortcuts.xpm"
 #include "xpm/settings_follow_song.xpm"
@@ -119,6 +119,10 @@
 #include "xpm/mutebutton_off.xpm"
 #include "xpm/rec_echo_on.xpm"
 #include "xpm/rec_echo_off.xpm"
+#include "xpm/routing_input_button_slim_4.xpm"
+#include "xpm/routing_output_button_slim_4.xpm"
+#include "xpm/routing_midi_input_button_slim.xpm"
+#include "xpm/routing_midi_output_button_slim.xpm"
 
 #include "xpm/up.xpm"
 #include "xpm/down.xpm"
@@ -174,6 +178,7 @@
 #include "xpm/exit.xpm"
 #include "xpm/exit1.xpm"
 
+#include "xpm/toggle_small.xpm"
 #include "xpm/redled.xpm"
 #include "xpm/darkredled.xpm"
 #include "xpm/greendot.xpm"
@@ -239,6 +244,7 @@
 
 #include "xpm/sine.xpm"
 #include "xpm/saw.xpm"
+#include "icons.h"
 
 #if QT_VERSION >= 0x040600
 #define MPIXMAP(a,b) QPixmap(QIcon::fromTheme(b, QIcon(QPixmap(a))).pixmap(QPixmap(a).width(),QPixmap(a).height()))
@@ -283,6 +289,11 @@ QPixmap* exitIcon;
 QPixmap* exit1Icon;
 QPixmap* newmuteIcon;
 QPixmap* soloIcon;
+
+QPixmap* routesInIcon;
+QPixmap* routesOutIcon;
+QPixmap* routesMidiInIcon;
+QPixmap* routesMidiOutIcon;
 
 QPixmap* pointerIcon;
 QPixmap* pencilIcon;
@@ -396,6 +407,7 @@ QIcon* editpaste2TrackIcon;
 QIcon* editpasteClone2TrackIcon;
 */
 
+QPixmap* toggle_small_Icon;
 QPixmap* redLedIcon;
 QPixmap* darkRedLedIcon;
 QPixmap* greendotIcon;
@@ -595,6 +607,11 @@ void initIcons()
       newmuteIcon          = new MPIXMAP(newmutebutton_xpm, NULL);
       soloIcon             = new MPIXMAP(solobutton_xpm, NULL);
 
+      routesInIcon         = new MPIXMAP(routing_input_button_slim_4_xpm, NULL);
+      routesOutIcon        = new MPIXMAP(routing_output_button_slim_4_xpm, NULL);
+      routesMidiInIcon     = new MPIXMAP(routing_midi_input_button_slim_xpm, NULL);
+      routesMidiOutIcon    = new MPIXMAP(routing_midi_output_button_slim_xpm, NULL);
+
       recEchoIconOn        = new MPIXMAP(rec_echo_on_xpm, NULL);
       recEchoIconOff       = new MPIXMAP(rec_echo_off_xpm, NULL);
       muteIconOn           = new MPIXMAP(mutebutton_on_xpm, NULL);
@@ -610,6 +627,7 @@ void initIcons()
       //soloIconSet2->addPixmap(*soloblksqIconOn, QIcon::Normal, QIcon::On);
       //soloIconSet2->addPixmap(*soloblksqIconOff, QIcon::Normal, QIcon::Off);
       
+      toggle_small_Icon    = new MPIXMAP(toggle_small_xpm, NULL);
       redLedIcon           = new MPIXMAP(redled_xpm, NULL);
       darkRedLedIcon       = new MPIXMAP(darkredled_xpm, NULL);
       greendotIcon         = new MPIXMAP(greendot_xpm, NULL);
@@ -625,8 +643,8 @@ void initIcons()
       miditransformSIcon   = new MPIXMAP(miditransformS_xpm, NULL);
       midi_plugSIcon       = new MPIXMAP(midi_plugS_xpm, NULL);
       miditransposeSIcon   = new MPIXMAP(miditransposeS_xpm, NULL);
-      midiThruOnIcon       = new MPIXMAP(midi_thru_on3_xpm, NULL);      
-      midiThruOffIcon      = new MPIXMAP(midi_thru_off3_xpm, NULL);      
+      midiThruOnIcon       = new MPIXMAP(midi_thru_on4_xpm, NULL);      
+      midiThruOffIcon      = new MPIXMAP(midi_thru_off4_xpm, NULL);      
       
       mixerSIcon           = new MPIXMAP(mixerS_xpm, NULL);
       mustangSIcon         = new MPIXMAP(mustangS_xpm, NULL);

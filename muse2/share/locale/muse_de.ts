@@ -219,7 +219,7 @@ click on part to mute/unmute</source>
         <translation type="obsolete">Alle Dateien (*)</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="+189"/>
+        <location filename="../../muse/helper.cpp" line="+200"/>
         <source>Add Midi Track</source>
         <translation>Midispur hinzufügen</translation>
     </message>
@@ -295,7 +295,7 @@ click on part to mute/unmute</source>
         <translation type="obsolete">JACK:</translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="+1190"/>
+        <location filename="../../muse/midiport.cpp" line="+1194"/>
         <source>Route</source>
         <translation>Signalfluss</translation>
     </message>
@@ -330,7 +330,7 @@ click on part to mute/unmute</source>
         <translation type="obsolete">Anschlag</translation>
     </message>
     <message>
-        <location line="-857"/>
+        <location line="-861"/>
         <source>Warning: No output devices!</source>
         <translation>Warnung: Keine Ausgangsgeräte!</translation>
     </message>
@@ -340,7 +340,7 @@ click on part to mute/unmute</source>
         <translation>Öffne MIDI-Konfig...</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+27"/>
         <source>Empty ports</source>
         <translation>Leere Ports</translation>
     </message>
@@ -10120,42 +10120,69 @@ Knopf.</translation>
 hier nicht definiert ist.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>For small controls like mixer strips.
 Also timescale small numbers, arranger part name overlay,
  and effects rack.</source>
-        <translation>Für kleine Bedienelemente, wie Mixer-Strips.
+        <translation type="obsolete">Für kleine Bedienelemente, wie Mixer-Strips.
 Auch die kleinen Timescale-Nummern, Arranger-Partnamen
 und der Effekteinschub.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Midi track info panel. Transport controls.</source>
-        <translation>MIDI Spurinfo. Transportkontrollen.</translation>
+        <translation type="obsolete">MIDI Spurinfo. Transportkontrollen.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Controller graph and S/X buttons. Large numbers for time
  and tempo scale, and time signature.</source>
-        <translation>Controller-Graph und S/X Knöpfe. Große Zahlen für
+        <translation type="obsolete">Controller-Graph und S/X Knöpfe. Große Zahlen für
 Zeit- und Tempo-Skala und Taktsignaturen.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Time scale markers.</source>
-        <translation>Zeitskala-Marker.</translation>
+        <translation type="obsolete">Zeitskala-Marker.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>List editor: meta event edit dialog multi-line edit box.</source>
-        <translation>Listeneditor: Metaevent-Bearbeitungsdialog-Box.</translation>
+        <translation type="obsolete">Listeneditor: Metaevent-Bearbeitungsdialog-Box.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Mixer label font. Auto-font-sizing up to chosen font size.
 Word-breaking but only with spaces.</source>
-        <translation>Mixerschriftart. Automatisches Vergrößern bis zur gewählten
+        <translation type="obsolete">Mixerschriftart. Automatisches Vergrößern bis zur gewählten
 Größe. Zeilenumbruch aber nur mit Leerzeichen.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mixer strips and effects racks. Midi track info panel.
+Midi control panel entry box.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transport controls.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Time scale upper, and time signature.
+Controller graph and S/X buttons.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Time scale lower, and arranger part name overlay.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tempo scale, and markers.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mixer labels. Auto-font-sizing up to chosen font size.
+Word-breaking but only with spaces.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -12190,19 +12217,19 @@ click on part to mute/unmute</source>
     <name>MusEGui::MPConfig</name>
     <message>
         <location filename="../../muse/confmport.cpp" line="+101"/>
-        <location line="+176"/>
+        <location line="+179"/>
         <source>Default input connections</source>
         <translation>Standard-Eingangsverbindungen</translation>
     </message>
     <message>
-        <location line="-175"/>
+        <location line="-178"/>
         <location line="+66"/>
         <source>Are you sure you want to apply to all existing midi tracks now?</source>
         <translation>Sind Sie sicher, dass Sie das auf alle existierenden MIDI-Spuren anwenden wollen?</translation>
     </message>
     <message>
         <location line="-1"/>
-        <location line="+148"/>
+        <location line="+151"/>
         <source>Default output connections</source>
         <translation>Standard-Ausgangsverbindungen</translation>
     </message>
@@ -12226,18 +12253,18 @@ Möchten Sie sie jetzt auf alle existierende MIDI-Spuren anwenden?</translation>
     </message>
     <message>
         <location line="+72"/>
-        <location line="+859"/>
+        <location line="+957"/>
         <source>in</source>
         <translation>ein</translation>
     </message>
     <message>
-        <location line="-836"/>
-        <location line="+827"/>
+        <location line="-934"/>
+        <location line="+925"/>
         <source>out</source>
         <translation>aus</translation>
     </message>
     <message>
-        <location line="-771"/>
+        <location line="-869"/>
         <source>Show first aliases</source>
         <translation>Zeige erste Aliase</translation>
     </message>
@@ -12272,7 +12299,7 @@ Möchten Sie sie jetzt auf alle existierende MIDI-Spuren anwenden?</translation>
         <translation>Jack-Gerät erstellen</translation>
     </message>
     <message>
-        <location line="+229"/>
+        <location line="+326"/>
         <location line="+29"/>
         <source>Port Number</source>
         <translation>Anschlussnummer</translation>
@@ -12388,7 +12415,7 @@ Möchten Sie sie jetzt auf alle existierende MIDI-Spuren anwenden?</translation>
         <translation>Status: Ergebnis vom Öffnen des Gerätes</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+42"/>
         <source>Port</source>
         <translation>Anschluss</translation>
     </message>
@@ -13099,7 +13126,7 @@ Sync-Einstellungen anwenden?</translation>
     <name>MusEGui::MidiTrackInfo</name>
     <message>
         <location filename="../../muse/widgets/mtrackinfo.cpp" line="+335"/>
-        <location line="+1068"/>
+        <location line="+1083"/>
         <source>&lt;unknown&gt;</source>
         <translation>&lt;unbekannt&gt;</translation>
     </message>
@@ -13124,7 +13151,7 @@ Sync-Einstellungen anwenden?</translation>
 <context>
     <name>MusEGui::MusE</name>
     <message>
-        <location filename="../../muse/app.cpp" line="+141"/>
+        <location filename="../../muse/app.cpp" line="+144"/>
         <location line="+16"/>
         <source>Failed to start audio!</source>
         <translation>Audio konnte nicht gestartet werden!</translation>
@@ -13291,13 +13318,13 @@ Sync-Einstellungen anwenden?</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+1039"/>
-        <location line="+1257"/>
+        <location line="+1091"/>
+        <location line="+1248"/>
         <source>&amp;Save</source>
         <translation>&amp;Speichern</translation>
     </message>
     <message>
-        <location line="-2294"/>
+        <location line="-2337"/>
         <location line="+3"/>
         <source>Click this button to save the song you are editing.  You will be prompted for a file name.
 You can also select the Save command from the File menu.</source>
@@ -13621,7 +13648,7 @@ Alternativ das Lied mit dem Befehl &quot;Sichern&quot; im Menü &quot;Datei&quot
         <translation>&amp;Hilfe</translation>
     </message>
     <message>
-        <location line="+290"/>
+        <location line="+340"/>
         <source>Cannot read template</source>
         <translation>Vorlage nicht lesbar</translation>
     </message>
@@ -13642,13 +13669,13 @@ Alternativ das Lied mit dem Befehl &quot;Sichern&quot; im Menü &quot;Datei&quot
     </message>
     <message>
         <location line="+134"/>
-        <location line="+440"/>
-        <location line="+915"/>
+        <location line="+432"/>
+        <location line="+916"/>
         <source>MusE: Song: %1</source>
         <translation>MusE: Lied: %1</translation>
     </message>
     <message>
-        <location line="-1321"/>
+        <location line="-1314"/>
         <source>MusE: load project</source>
         <translation>Muse: Projekt laden</translation>
     </message>
@@ -13658,7 +13685,7 @@ Alternativ das Lied mit dem Befehl &quot;Sichern&quot; im Menü &quot;Datei&quot
         <translation>Muse: Vorlage laden</translation>
     </message>
     <message>
-        <location line="+64"/>
+        <location line="+66"/>
         <source>MusE: Write File failed</source>
         <translation>MusE: Datei schreiben schlug fehl</translation>
     </message>
@@ -13671,17 +13698,17 @@ Aktuelles Projekt sichern?</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+1257"/>
+        <location line="+1248"/>
         <source>S&amp;kip</source>
         <translation>&amp;Überspringen</translation>
     </message>
     <message>
-        <location line="-1257"/>
+        <location line="-1248"/>
         <source>&amp;Cancel</source>
         <translation>&amp;Abbrechen</translation>
     </message>
     <message>
-        <location line="+264"/>
+        <location line="+254"/>
         <source>MusE: Save As</source>
         <translation>MusE: Speichern unter</translation>
     </message>
@@ -13692,7 +13719,7 @@ Aktuelles Projekt sichern?</translation>
         <translation>Es gibt nichts zu editieren</translation>
     </message>
     <message>
-        <location line="+494"/>
+        <location line="+495"/>
         <location line="+10"/>
         <location line="+31"/>
         <location line="+34"/>
@@ -14464,7 +14491,7 @@ Wahrscheinlich hat die ausgewählte Spur den falschen Typ.</numerusform>
 <context>
     <name>MusEGui::ProjectCreateImpl</name>
     <message>
-        <location filename="../../muse/widgets/projectcreateimpl.cpp" line="+83"/>
+        <location filename="../../muse/widgets/projectcreateimpl.cpp" line="+105"/>
         <source>Select directory</source>
         <translation>Verzeichnis auswählen</translation>
     </message>
@@ -14472,32 +14499,32 @@ Wahrscheinlich hat die ausgewählte Spur den falschen Typ.</numerusform>
 <context>
     <name>MusEGui::RoutePopupMenu</name>
     <message>
-        <location filename="../../muse/widgets/routepopup.cpp" line="+230"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="+234"/>
         <location line="+2"/>
         <location line="+132"/>
         <location line="+78"/>
         <location line="+57"/>
         <location line="+60"/>
-        <location line="+685"/>
+        <location line="+883"/>
         <location line="+85"/>
         <source>Channel</source>
         <translation>Kanal</translation>
     </message>
     <message>
-        <location line="-270"/>
-        <location line="+220"/>
+        <location line="-292"/>
+        <location line="+242"/>
         <location line="+85"/>
         <source>Soloing chain</source>
         <translation>Solo-Kette</translation>
     </message>
     <message>
-        <location line="-303"/>
-        <location line="+220"/>
+        <location line="-325"/>
+        <location line="+242"/>
         <source>Audio returns</source>
         <translation>Audio-Rückkanäle</translation>
     </message>
     <message>
-        <location line="-182"/>
+        <location line="-204"/>
         <source>Warning: No input devices!</source>
         <translation>Warnung: Keine Eingangsgeräte!</translation>
     </message>
@@ -14507,18 +14534,18 @@ Wahrscheinlich hat die ausgewählte Spur den falschen Typ.</numerusform>
         <translation>Öffne MIDI-Konfig...</translation>
     </message>
     <message>
-        <location line="+42"/>
-        <location line="+33"/>
+        <location line="+61"/>
+        <location line="+36"/>
         <source>&lt;none&gt;</source>
         <translation>&lt;kein&gt;</translation>
     </message>
     <message>
-        <location line="-19"/>
+        <location line="-22"/>
         <source>Toggle all</source>
         <translation>Alles umwählen</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+14"/>
         <source>More...</source>
         <translation>Mehr...</translation>
     </message>
@@ -14942,29 +14969,29 @@ Titel ist nicht einzigartig</translation>
     </message>
     <message>
         <location line="+310"/>
-        <location line="+1161"/>
+        <location line="+1163"/>
         <source>Update drummap?</source>
         <translation>Drumbelegung aktualisieren?</translation>
     </message>
     <message>
-        <location line="-1160"/>
+        <location line="-1162"/>
         <source>Do you want to use same port for all instruments in the drummap?</source>
         <translation>Möchten Sie für alle Instrumente der Drumbelegung den selben Anschluss verwenden?</translation>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+1161"/>
+        <location line="+1163"/>
         <source>&amp;Yes</source>
         <translation>&amp;Ja</translation>
     </message>
     <message>
-        <location line="-1161"/>
-        <location line="+1161"/>
+        <location line="-1163"/>
+        <location line="+1163"/>
         <source>&amp;No</source>
         <translation>&amp;Nein</translation>
     </message>
     <message>
-        <location line="-1086"/>
+        <location line="-1088"/>
         <location line="+55"/>
         <source>show gui</source>
         <translation>GUI anzeigen</translation>
@@ -14976,7 +15003,7 @@ Titel ist nicht einzigartig</translation>
         <translation>Native GUI anzeigen</translation>
     </message>
     <message>
-        <location line="+347"/>
+        <location line="+348"/>
         <source>Treble clef</source>
         <translation>Violinschlüssel</translation>
     </message>
@@ -14996,7 +15023,7 @@ Titel ist nicht einzigartig</translation>
         <translation>Sichtbare Automatisierung</translation>
     </message>
     <message>
-        <location line="+137"/>
+        <location line="+138"/>
         <source>Delete Track</source>
         <translation>Spur löschen</translation>
     </message>
@@ -15026,7 +15053,7 @@ Titel ist nicht einzigartig</translation>
         <translation>Möchten Sie für alle Instrumente der Drumbelegung den selben Anschluss und Kanal verwenden?</translation>
     </message>
     <message>
-        <location line="-1250"/>
+        <location line="-1252"/>
         <source>Unused Devices</source>
         <translation>Ungenutzte Geräte</translation>
     </message>

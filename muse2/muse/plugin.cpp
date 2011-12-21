@@ -37,6 +37,7 @@
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
+#include <QHeaderView>
 #include <QLabel>
 #include <QMainWindow>
 #include <QMessageBox>
@@ -45,13 +46,13 @@
 #include <QSignalMapper>
 #include <QSizePolicy>
 #include <QScrollArea>
+#include <QSpacerItem>
 #include <QTimer>
 #include <QToolBar>
 #include <QToolButton>
 #include <QTreeWidget>
 #include <QVBoxLayout>
 #include <QWhatsThis>
-#include <QHeaderView>
 
 #include "globals.h"
 #include "globaldefs.h"
@@ -100,7 +101,10 @@ static const char* MusEGlobal::preset_file_save_pattern[] = {
 namespace MusEGui {
 int PluginDialog::selectedPlugType = 0;
 QStringList PluginDialog::sortItems = QStringList();
-
+///int PluginDialog::sortColumn = 0;
+///Qt::SortOrder PluginDialog::sortOrder = Qt::AscendingOrder;
+QRect PluginDialog::geometrySave = QRect();
+QByteArray PluginDialog::listSave = QByteArray();
 }
 
 namespace MusECore {
@@ -3145,11 +3149,18 @@ PluginDialog::PluginDialog(QWidget* parent)
   : QDialog(parent)
       {
       setWindowTitle(tr("MusE: select plugin"));
+
+      if(!geometrySave.isNull())
+        setGeometry(geometrySave);
+      
       QVBoxLayout* layout = new QVBoxLayout(this);
 
       pList  = new QTreeWidget(this);
       pList->setColumnCount(11);
-      pList->setSortingEnabled(true);
+      // "Note: In order to avoid performance issues, it is recommended that sorting 
+      //   is enabled after inserting the items into the tree. Alternatively, you could 
+      //   also insert the items into a list before inserting the items into the tree. "
+      //pList->setSortingEnabled(true);
       QStringList headerLabels;
       headerLabels << tr("Lib");
       headerLabels << tr("Label");
@@ -3163,25 +3174,17 @@ PluginDialog::PluginDialog(QWidget* parent)
       headerLabels << tr("Maker");
       headerLabels << tr("Copyright");
 
-      int sizes[] = { 110, 110, 0, 30, 30, 30, 30, 30, 40, 110, 110 };
-      for (int i = 0; i < 11; ++i) {
-            if (sizes[i] == 0) {
-                  pList->header()->setResizeMode(i, QHeaderView::Stretch);
-                  }
-            else {
-                  if (sizes[i] <= 40)     // hack alert!
-                        pList->header()->setResizeMode(i, QHeaderView::Custom);
-                  pList->header()->resizeSection(i, sizes[i]);
-                  }
-            }
-
       pList->setHeaderLabels(headerLabels);
 
       pList->setSelectionBehavior(QAbstractItemView::SelectRows);
       pList->setSelectionMode(QAbstractItemView::SingleSelection);
       pList->setAlternatingRowColors(true);
-
-      fillPlugs(selectedPlugType);
+      pList->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+      
+      //fillPlugs(selectedPlugType);
+      //pList->setSortingEnabled(true);
+      //pList->sortByColumn(sortColumn, sortOrder);
+      
       layout->addWidget(pList);
 
       //---------------------------------------------------
@@ -3191,42 +3194,56 @@ PluginDialog::PluginDialog(QWidget* parent)
       QBoxLayout* w5 = new QHBoxLayout;
       layout->addLayout(w5);
 
+      QBoxLayout* ok_lo = new QVBoxLayout;
+      w5->addLayout(ok_lo);
+      
       okB     = new QPushButton(tr("Ok"), this);
       okB->setDefault(true);
       QPushButton* cancelB = new QPushButton(tr("Cancel"), this);
       okB->setFixedWidth(80);
       okB->setEnabled(false);
       cancelB->setFixedWidth(80);
-      w5->addWidget(okB);
-      w5->addSpacing(12);
-      w5->addWidget(cancelB);
+      //ok_lo->addStretch(4);
+      //ok_lo->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Maximum));
+      ok_lo->addWidget(okB);
+      ok_lo->addSpacing(8);
+      ok_lo->addWidget(cancelB);
+      //ok_lo->addStretch(4);
+      //ok_lo->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Maximum));
 
-      QGroupBox* plugSelGroup = new QGroupBox;
+      QGroupBox* plugSelGroup = new QGroupBox(this);
       plugSelGroup->setTitle("Show plugs:");
-      QHBoxLayout* psl = new QHBoxLayout;
+      plugSelGroup->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+      //QHBoxLayout* psl = new QHBoxLayout;
+      QGridLayout* psl = new QGridLayout;
+      //psl->setRowStretch(0, 0);
       plugSelGroup->setLayout(psl);
 
       QButtonGroup* plugSel = new QButtonGroup(plugSelGroup);
-      onlySM  = new QRadioButton;
+      onlySM  = new QRadioButton(this);
       onlySM->setText(tr("Mono and Stereo"));
       onlySM->setCheckable(true);
       plugSel->addButton(onlySM);
-      psl->addWidget(onlySM);
-      onlyS = new QRadioButton;
+      //psl->addWidget(onlySM);
+      psl->addWidget(onlySM, 1, 0);
+      onlyS = new QRadioButton(this);
       onlyS->setText(tr("Stereo"));
       onlyS->setCheckable(true);
       plugSel->addButton(onlyS);
-      psl->addWidget(onlyS);
-      onlyM = new QRadioButton;
+      //psl->addWidget(onlyS);
+      psl->addWidget(onlyS, 0, 1);
+      onlyM = new QRadioButton(this);
       onlyM->setText(tr("Mono"));
       onlyM->setCheckable(true);
       plugSel->addButton(onlyM);
-      psl->addWidget(onlyM);
-      allPlug = new QRadioButton;
+      //psl->addWidget(onlyM);
+      psl->addWidget(onlyM, 0, 0);
+      allPlug = new QRadioButton(this);
       allPlug->setText(tr("Show All"));
       allPlug->setCheckable(true);
       plugSel->addButton(allPlug);
-      psl->addWidget(allPlug);
+      //psl->addWidget(allPlug);
+      psl->addWidget(allPlug, 1, 1);
       plugSel->setExclusive(true);
 
       switch(selectedPlugType) {
@@ -3240,14 +3257,18 @@ PluginDialog::PluginDialog(QWidget* parent)
                              "Note that using mono plugins on stereo tracks is not a problem, two will be used in parallell.<br>"
                              "Also beware that the 'all' alternative includes plugins that probably not are usable by MusE."));
 
-      w5->addSpacing(12);
+      w5->addSpacing(8);
       w5->addWidget(plugSelGroup);
-      w5->addSpacing(12);
+      w5->addSpacing(8);
 
-      QLabel *sortLabel = new QLabel;
+      QBoxLayout* srch_lo = new QVBoxLayout;
+      w5->addLayout(srch_lo);
+      
+      QLabel *sortLabel = new QLabel(this);
       sortLabel->setText(tr("Search in 'Label' and 'Name':"));
-      w5->addWidget(sortLabel);
-      w5->addSpacing(2);
+      srch_lo->addSpacing(8);
+      srch_lo->addWidget(sortLabel);
+      srch_lo->addSpacing(8);
 
       sortBox = new QComboBox(this);
       sortBox->setEditable(true);
@@ -3255,20 +3276,41 @@ PluginDialog::PluginDialog(QWidget* parent)
             sortBox->addItems(sortItems);
 
       sortBox->setMinimumSize(100, 10);
-      w5->addWidget(sortBox);
-      w5->addStretch(-1);
+      srch_lo->addWidget(sortBox);
+      //srch_lo->addStretch();
+      // FIXME: Adding this makes the whole bottom hlayout expand. Would like some space between lineedit and bottom.
+      //        Same thing if spacers added to group box or Ok Cancel box.
+      //srch_lo->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Maximum));
 
-      if (!sortBox->currentText().isEmpty())
-            fillPlugs(sortBox->currentText());
+      fillPlugs();
+      
+      pList->setSortingEnabled(true);
+      
+      if(listSave.isEmpty())
+      {
+        //int sizes[] = { 110, 110, 0, 30, 30, 30, 30, 30, 50, 110, 110 };
+        int sizes[] = { 110, 110, 110, 30, 30, 30, 30, 30, 50, 110, 110 };
+        for (int i = 0; i < 11; ++i) {
+              //if (sizes[i] == 0) {
+              //      pList->header()->setResizeMode(i, QHeaderView::Stretch);
+              //      }
+              //else {
+                    if (sizes[i] <= 50)     // hack alert!
+                          pList->header()->setResizeMode(i, QHeaderView::Fixed);
+                    pList->header()->resizeSection(i, sizes[i]);
+              //      }
+              }
+        pList->sortByColumn(0, Qt::AscendingOrder);
+      }
       else
-            fillPlugs(selectedPlugType);
+        pList->header()->restoreState(listSave);
 
       connect(pList,   SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), SLOT(accept()));
       connect(pList,   SIGNAL(itemClicked(QTreeWidgetItem*,int)), SLOT(enableOkB()));
       connect(cancelB, SIGNAL(clicked()), SLOT(reject()));
       connect(okB,     SIGNAL(clicked()), SLOT(accept()));
       connect(plugSel, SIGNAL(buttonClicked(QAbstractButton*)), SLOT(fillPlugs(QAbstractButton*)));
-      connect(sortBox, SIGNAL(editTextChanged(const QString&)),SLOT(fillPlugs(const QString&)));
+      connect(sortBox, SIGNAL(editTextChanged(const QString&)),SLOT(fillPlugs()));
       sortBox->setFocus();
       }
 
@@ -3295,21 +3337,51 @@ MusECore::Plugin* PluginDialog::value()
       }
 
 //---------------------------------------------------------
+//   saveSettings
+//---------------------------------------------------------
+
+void PluginDialog::saveSettings()
+{
+  if (!sortBox->currentText().isEmpty()) {
+        bool found = false;
+        foreach (QString item, sortItems)
+            if(item == sortBox->currentText()) {
+                found = true;
+                break;
+                }
+        if(!found)        
+          sortItems.push_front(sortBox->currentText());
+        }
+
+  ///sortColumn = pList->sortColumn();
+  QHeaderView* hdr = pList->header();
+  if(hdr)
+  {
+    ///sortOrder = hdr->sortIndicatorOrder();
+    listSave = hdr->saveState();
+  } 
+  geometrySave = geometry();      
+}
+
+//---------------------------------------------------------
 //   accept
 //---------------------------------------------------------
 
 void PluginDialog::accept()
       {
-      if (!sortBox->currentText().isEmpty()) {
-            foreach (QString item, sortItems)
-                if(item == sortBox->currentText()) {
-                    QDialog::accept();
-                    return;
-                    }
-            sortItems.push_front(sortBox->currentText());
-            }
+      saveSettings();
       QDialog::accept();
       }
+
+//---------------------------------------------------------
+//   reject
+//---------------------------------------------------------
+
+void PluginDialog::reject()
+{
+      saveSettings();
+      QDialog::reject();
+}
 
 //---------------------------------------------------------
 //    fillPlugs
@@ -3318,16 +3390,21 @@ void PluginDialog::accept()
 void PluginDialog::fillPlugs(QAbstractButton* ab)
       {
       if (ab == allPlug)
-            fillPlugs(SEL_ALL);
+            //fillPlugs(SEL_ALL);
+            selectedPlugType = SEL_ALL;
       else if (ab == onlyM)
-            fillPlugs(SEL_M);
+            //fillPlugs(SEL_M);
+            selectedPlugType = SEL_M;
       else if (ab == onlyS)
-            fillPlugs(SEL_S);
+            //fillPlugs(SEL_S);
+            selectedPlugType = SEL_S;
       else if (ab == onlySM)
-            fillPlugs(SEL_SM);
+            //fillPlugs(SEL_SM);
+            selectedPlugType = SEL_SM;
+      fillPlugs();
       }
 
-void PluginDialog::fillPlugs(int nbr)
+void PluginDialog::fillPlugs()
 {
     pList->clear();
     for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i) {
@@ -3339,8 +3416,13 @@ void PluginDialog::fillPlugs(int nbr)
           unsigned long ao = i->outports();
           unsigned long ci = i->controlInPorts();
           unsigned long co = i->controlOutPorts();
+          bool found = false;
+          QString sb_txt = sortBox->currentText().toLower();
+          if(sb_txt.isEmpty() || i->label().toLower().contains(sb_txt) || i->name().toLower().contains(sb_txt))
+                found = true;
+          
           bool addFlag = false;
-          switch (nbr) {
+          switch (selectedPlugType) {
                 case SEL_SM: // stereo & mono
                       if ((ai == 1 || ai == 2) && (ao == 1 || ao ==2)) {
                             addFlag = true;
@@ -3360,45 +3442,7 @@ void PluginDialog::fillPlugs(int nbr)
                       addFlag = true;
                       break;
                 }
-          if (addFlag) {
-                QTreeWidgetItem* item = new QTreeWidgetItem;
-                item->setText(0,  i->lib());
-                item->setText(1,  i->label());
-                item->setText(2,  i->name());
-                item->setText(3,  QString().setNum(ai));
-                item->setText(4,  QString().setNum(ao));
-                item->setText(5,  QString().setNum(ci));
-                item->setText(6,  QString().setNum(co));
-                item->setText(7,  QString().setNum(i->inPlaceCapable()));
-                item->setText(8,  QString().setNum(i->id()));
-                item->setText(9,  i->maker());
-                item->setText(10, i->copyright());
-                pList->addTopLevelItem(item);
-                }
-          }
-    selectedPlugType = nbr;
-}
-
-void PluginDialog::fillPlugs(const QString &sortValue)
-{
-    pList->clear();
-    for (MusECore::iPlugin i = MusEGlobal::plugins.begin(); i != MusEGlobal::plugins.end(); ++i) {
-          //int ai = i->inports();
-          //int ao = i->outports();
-          //int ci = i->controlInPorts();
-          //int co = i->controlOutPorts();
-          unsigned long ai = i->inports();          // p4.0.21
-          unsigned long ao = i->outports();
-          unsigned long ci = i->controlInPorts();
-          unsigned long co = i->controlOutPorts();
-
-          bool addFlag = false;
-
-          if (i->label().toLower().contains(sortValue.toLower()))
-                addFlag = true;
-          else if (i->name().toLower().contains(sortValue.toLower()))
-                addFlag = true;
-          if (addFlag) {
+          if (found && addFlag) {
                 QTreeWidgetItem* item = new QTreeWidgetItem;
                 item->setText(0,  i->lib());
                 item->setText(1,  i->label());
@@ -3415,7 +3459,7 @@ void PluginDialog::fillPlugs(const QString &sortValue)
                 }
           }
 }
-
+  
 //---------------------------------------------------------
 //   getPlugin
 //---------------------------------------------------------
@@ -3423,9 +3467,12 @@ void PluginDialog::fillPlugs(const QString &sortValue)
 MusECore::Plugin* PluginDialog::getPlugin(QWidget* parent)
       {
       PluginDialog* dialog = new PluginDialog(parent);
-      if (dialog->exec())
-            return dialog->value();
-      return 0;
+      MusECore::Plugin* p = 0;
+      int rv = dialog->exec();
+      if(rv)
+        p = dialog->value(); 
+      delete dialog;
+      return p;
       }
 
 // TODO: We need to use .qrc files to use icons in WhatsThis bubbles. See Qt 

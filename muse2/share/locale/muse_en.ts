@@ -4,57 +4,57 @@
 <context>
     <name>@default</name>
     <message>
-        <location filename="../../muse/helper.cpp" line="185"/>
+        <location filename="../../muse/helper.cpp" line="200"/>
         <source>Add Midi Track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="191"/>
+        <location filename="../../muse/helper.cpp" line="206"/>
         <source>Add Drum Track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="197"/>
+        <location filename="../../muse/helper.cpp" line="212"/>
         <source>Add Wave Track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="204"/>
+        <location filename="../../muse/helper.cpp" line="219"/>
         <source>Add Audio Output</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="211"/>
+        <location filename="../../muse/helper.cpp" line="226"/>
         <source>Add Audio Group</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="218"/>
+        <location filename="../../muse/helper.cpp" line="233"/>
         <source>Add Audio Input</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="225"/>
+        <location filename="../../muse/helper.cpp" line="240"/>
         <source>Add Aux Send</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="234"/>
+        <location filename="../../muse/helper.cpp" line="249"/>
         <source>Add Synth</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="1190"/>
+        <location filename="../../muse/midiport.cpp" line="1194"/>
         <source>Route</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="1197"/>
+        <location filename="../../muse/midiport.cpp" line="1201"/>
         <source>dest</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="1198"/>
+        <location filename="../../muse/midiport.cpp" line="1202"/>
         <source> name=&quot;%1&quot;/</source>
         <translation type="unfinished"></translation>
     </message>
@@ -69,17 +69,17 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="369"/>
+        <location filename="../../muse/midiport.cpp" line="373"/>
         <source>Empty ports</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="391"/>
+        <location filename="../../muse/midiport.cpp" line="395"/>
         <source>&lt;none&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="1192"/>
+        <location filename="../../muse/midiport.cpp" line="1196"/>
         <source> channelMask=&quot;%1&quot;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3598,204 +3598,219 @@ Songdata</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../../muse/widgets/gensetbase.ui" line="36"/>
+        <source>Project directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../../muse/widgets/gensetbase.ui" line="42"/>
+        <source>Projects:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/gensetbase.ui" line="55"/>
+        <source>...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/gensetbase.ui" line="71"/>
         <source>Views</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="48"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="95"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="132"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="276"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="332"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="77"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="124"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="161"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="305"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="361"/>
         <source>y-pos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="58"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="115"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="162"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="169"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="87"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="144"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="191"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="198"/>
         <source>show</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="65"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="105"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="122"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="286"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="342"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="94"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="134"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="151"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="315"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="371"/>
         <source>x-pos</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="75"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="152"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="256"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="312"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="104"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="181"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="285"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="341"/>
         <source>height</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="85"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="142"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="266"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="322"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="114"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="171"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="295"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="351"/>
         <source>width</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="182"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="211"/>
         <source>Mixer A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="198"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="227"/>
         <source>Mixer B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="214"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="243"/>
         <source>Big Time</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="230"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="259"/>
         <source>Main Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="246"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="275"/>
         <source>Transport</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="302"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="358"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="374"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="390"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="406"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="331"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="387"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="403"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="419"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="435"/>
         <source>set current values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="305"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="361"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="377"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="393"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="409"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="334"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="390"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="406"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="422"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="438"/>
         <source>Cur</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="419"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="448"/>
         <source>Start Muse</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="445"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="474"/>
         <source>start song:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="460"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="489"/>
         <source>Start song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="466"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="495"/>
         <source>start with last song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="482"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="511"/>
         <source>start with template: default.med</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="492"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="521"/>
         <source>start with song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="502"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="531"/>
         <source>On Launch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="508"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="537"/>
         <source>show splash screen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="515"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="544"/>
         <source>show &quot;Did you know?&quot; dialog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="544"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="573"/>
         <source>Audio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="550"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="579"/>
         <source>Mixer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="571"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="610"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="600"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="639"/>
         <source>dB</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="590"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="619"/>
         <source>min. Meter Value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="600"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="629"/>
         <source>min. Slider Val</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="629"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="658"/>
         <source>Try to use Jack Freewheel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="646"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="675"/>
         <source>Speeds bounce operations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="649"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="678"/>
         <source>Use Jack Freewheel mode if possible.
 This dramatically speeds bounce operations.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="660"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="689"/>
         <source>Enable denormal protection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="670"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="699"/>
         <source>Enable output limiter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="687"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="716"/>
         <source>VST in-place</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="697"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="726"/>
         <source>Enable VST in-place processing (restart required)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="700"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="729"/>
         <source>Enable VST in-place processing. Turn this off if 
  VST Ladspa effect rack plugins do not work or 
  feedback loudly, even if they are supposed to 
@@ -3803,18 +3818,18 @@ This dramatically speeds bounce operations.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="713"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="742"/>
         <source>Minimum control period</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="720"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="749"/>
         <source>Minimum audio controller process period (samples).
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="724"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="753"/>
         <source>Minimum audio controller process period (samples).
 Adjusts responsiveness of audio controls and 
  controller graphs. Set a low value for fast, smooth 
@@ -3823,270 +3838,265 @@ Adjusts responsiveness of audio controls and
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="735"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="764"/>
         <source>1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="740"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="769"/>
         <source>2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="745"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="774"/>
         <source>4</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="750"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="779"/>
         <source>8</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="755"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="949"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="784"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="978"/>
         <source>16</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="760"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="954"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="789"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="983"/>
         <source>32</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="765"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="959"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="794"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="988"/>
         <source>64</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="770"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="964"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="799"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="993"/>
         <source>128</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="775"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="969"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="804"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="998"/>
         <source>256</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="780"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="974"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="809"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1003"/>
         <source>512</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="785"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="979"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1026"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="814"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1008"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1055"/>
         <source>1024</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="790"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="984"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1031"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="819"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1013"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1060"/>
         <source>2048</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="801"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="830"/>
         <source>External Waveditor</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="826"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="855"/>
         <source>External Waveditor command</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="870"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="899"/>
         <source>Note: External editor opened from the internal editor.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="885"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="914"/>
         <source>Dummy Audio Driver (settings require restart)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="906"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="935"/>
         <source>Sample rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="916"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="945"/>
         <source>Hz</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="935"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="964"/>
         <source>Period size (Frames per period):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="945"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="974"/>
         <source>Shorter periods give better midi playback resolution.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="996"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1025"/>
         <source>Midi</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1008"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1037"/>
         <source>Ticks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1014"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1043"/>
         <source>RTC Resolution
 (Ticks/Sec)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1036"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1065"/>
         <source>4096</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1041"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1070"/>
         <source>8192</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1046"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1075"/>
         <source>16384</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1051"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1080"/>
         <source>32768</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1059"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1088"/>
         <source>Midi Resolution
 (Ticks/Quarternote)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1074"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1137"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1103"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1166"/>
         <source>48</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1079"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1142"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1108"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1171"/>
         <source>96</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1084"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1147"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1113"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1176"/>
         <source>192</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1089"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1152"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1118"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1181"/>
         <source>384</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1094"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1157"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1123"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1186"/>
         <source>768</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1099"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1162"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1128"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1191"/>
         <source>1536</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1104"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1167"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1133"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1196"/>
         <source>3072</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1109"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1172"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1138"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1201"/>
         <source>6144</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1114"/>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1177"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1143"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1206"/>
         <source>12288</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1122"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1151"/>
         <source>Displayed Resolution
 (Ticks/Quarternote)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1185"/>
-        <source>Instruments Directory</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1226"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1231"/>
         <source>GUI Behaviour</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1238"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1243"/>
         <source>Behavior</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1244"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1249"/>
         <source>GUI Refresh Rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1254"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1259"/>
         <source>/sec</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1270"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1275"/>
         <source>Use old-style stop shortcut:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1293"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1298"/>
         <source>Move single armed track with selection</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1316"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1321"/>
         <source>Use project save dialog</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1342"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1347"/>
         <source>Some popup menus stay open (else hold Ctrl)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1355"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1360"/>
         <source>Allows some popup menus to stay open.
 Otherwise, hold Ctrl to keep them open.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1366"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1371"/>
         <source>In some areas, the middle mouse button decreases
 values, while the right button increases. Users without a
 middle mouse button can select this option to make the
@@ -4094,67 +4104,67 @@ left button behave like the middle button in such areas.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1372"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1377"/>
         <source>Use left mouse button for decreasing values</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1405"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1410"/>
         <source>Shift + Right click sets left range marker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1432"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1437"/>
         <source>Allow adding hidden tracks in track list menu</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1439"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1444"/>
         <source>Unhide tracks when adding hidden tracks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1457"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1462"/>
         <source>GUI Style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1463"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1468"/>
         <source>MDI-subwindowness and sharing menus</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1474"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1479"/>
         <source>Presets:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1481"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1486"/>
         <source>traditional MusE SDI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1488"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1493"/>
         <source>Cakewalk-like MDI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1495"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1500"/>
         <source>Borland-/Mac-like MDI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1551"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1556"/>
         <source>&amp;Apply</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1558"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1563"/>
         <source>&amp;Ok</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/gensetbase.ui" line="1568"/>
+        <location filename="../../muse/widgets/gensetbase.ui" line="1573"/>
         <source>&amp;Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5959,6 +5969,14 @@ click on the Restart button.</source>
     </message>
 </context>
 <context>
+    <name>MusEGui</name>
+    <message>
+        <location filename="../../muse/helper.cpp" line="305"/>
+        <source>Select project directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MusEGui::Appearance</name>
     <message>
         <location filename="../../muse/appearance.cpp" line="132"/>
@@ -5968,35 +5986,34 @@ click on the Restart button.</source>
     </message>
     <message>
         <location filename="../../muse/appearance.cpp" line="133"/>
-        <source>For small controls like mixer strips.
-Also timescale small numbers, arranger part name overlay,
- and effects rack.</source>
+        <source>Mixer strips and effects racks. Midi track info panel.
+Midi control panel entry box.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../muse/appearance.cpp" line="134"/>
-        <source>Midi track info panel. Transport controls.</source>
+        <source>Transport controls.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../muse/appearance.cpp" line="135"/>
-        <source>Controller graph and S/X buttons. Large numbers for time
- and tempo scale, and time signature.</source>
+        <source>Time scale upper, and time signature.
+Controller graph and S/X buttons.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../muse/appearance.cpp" line="136"/>
-        <source>Time scale markers.</source>
+        <source>Time scale lower, and arranger part name overlay.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../muse/appearance.cpp" line="137"/>
-        <source>List editor: meta event edit dialog multi-line edit box.</source>
+        <source>Tempo scale, and markers.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../muse/appearance.cpp" line="138"/>
-        <source>Mixer label font. Auto-font-sizing up to chosen font size.
+        <source>Mixer labels. Auto-font-sizing up to chosen font size.
 Word-breaking but only with spaces.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7339,147 +7356,118 @@ Right-click to show GUI.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="411"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="423"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="454"/>
         <location filename="../../muse/instruments/editinstrument.cpp" line="703"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="715"/>
-        <source>MusE:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="412"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="704"/>
-        <source>The user instrument directory
-%1
-does not exist yet. Create it now?
-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="413"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="705"/>
-        <source>(You can change the user instruments directory at Settings-&gt;Global Settings-&gt;Midi)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="423"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="715"/>
-        <source>Unable to create user instrument directory &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="471"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="737"/>
         <source>MusE: Save Instrument Definition</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="472"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="738"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="455"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="704"/>
         <source>Instrument Definition (*.idf)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="584"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="613"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="567"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="596"/>
         <source>MusE: Save instrument as</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="584"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="567"/>
         <source>Enter a new unique instrument name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="614"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="597"/>
         <source>The user instrument &apos;%1&apos; already exists. This will overwrite its .idf instrument file.
 Are you sure?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="1140"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1106"/>
         <source>MusE: Bad instrument name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="1141"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1107"/>
         <source>Please choose a unique instrument name.
 (The name might be used by a hidden instrument.)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="1277"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1243"/>
         <source>MusE: Bad patch name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="1278"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1244"/>
         <source>Please choose a unique patch name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="1300"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1266"/>
         <source>MusE: Bad patchgroup name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="1301"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1267"/>
         <source>Please choose a unique patchgroup name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="1827"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1793"/>
         <source>MusE: Bad controller name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="1828"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="1794"/>
         <source>Please choose a unique controller name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3115"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3127"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3081"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3093"/>
         <source>MusE: Cannot add common controller</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3116"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3082"/>
         <source>A controller named &apos;%1&apos; already exists.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3128"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3094"/>
         <source>A controller number %1 already exists.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3411"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3416"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3377"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3382"/>
         <source>MusE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3412"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3417"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3378"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3383"/>
         <source>The current Instrument contains unsaved data
 Save Current Instrument?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3414"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3419"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3380"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3385"/>
         <source>&amp;Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3414"/>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3419"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3380"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3385"/>
         <source>&amp;Nosave</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/instruments/editinstrument.cpp" line="3414"/>
+        <location filename="../../muse/instruments/editinstrument.cpp" line="3380"/>
         <source>&amp;Abort</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7726,14 +7714,6 @@ click on part to mute/unmute</source>
     <message>
         <location filename="../../muse/mixer/rack.cpp" line="565"/>
         <source>Do you really want to replace the effect %1?</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>MusEGui::GlobalSettingsConfig</name>
-    <message>
-        <location filename="../../muse/widgets/genset.cpp" line="561"/>
-        <source>Selects instruments directory</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -8015,7 +7995,7 @@ click on part to mute/unmute</source>
     <name>MusEGui::MPConfig</name>
     <message>
         <location filename="../../muse/confmport.cpp" line="101"/>
-        <location filename="../../muse/confmport.cpp" line="277"/>
+        <location filename="../../muse/confmport.cpp" line="280"/>
         <source>Default input connections</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8027,245 +8007,245 @@ click on part to mute/unmute</source>
     </message>
     <message>
         <location filename="../../muse/confmport.cpp" line="167"/>
-        <location filename="../../muse/confmport.cpp" line="315"/>
+        <location filename="../../muse/confmport.cpp" line="318"/>
         <source>Default output connections</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="278"/>
-        <location filename="../../muse/confmport.cpp" line="316"/>
+        <location filename="../../muse/confmport.cpp" line="281"/>
+        <location filename="../../muse/confmport.cpp" line="319"/>
         <source>Setting will apply to new midi tracks.
 Do you want to apply to all existing midi tracks now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="355"/>
+        <location filename="../../muse/confmport.cpp" line="358"/>
         <source>MusE: bad device name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="356"/>
+        <location filename="../../muse/confmport.cpp" line="359"/>
         <source>please choose a unique device name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="428"/>
-        <location filename="../../muse/confmport.cpp" line="1287"/>
+        <location filename="../../muse/confmport.cpp" line="431"/>
+        <location filename="../../muse/confmport.cpp" line="1388"/>
         <source>in</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="451"/>
-        <location filename="../../muse/confmport.cpp" line="1278"/>
+        <location filename="../../muse/confmport.cpp" line="454"/>
+        <location filename="../../muse/confmport.cpp" line="1379"/>
         <source>out</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="507"/>
+        <location filename="../../muse/confmport.cpp" line="510"/>
         <source>Show first aliases</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="513"/>
+        <location filename="../../muse/confmport.cpp" line="516"/>
         <source>Show second aliases</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="643"/>
-        <location filename="../../muse/confmport.cpp" line="685"/>
+        <location filename="../../muse/confmport.cpp" line="646"/>
+        <location filename="../../muse/confmport.cpp" line="688"/>
         <source>Toggle all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="647"/>
-        <location filename="../../muse/confmport.cpp" line="690"/>
+        <location filename="../../muse/confmport.cpp" line="650"/>
+        <location filename="../../muse/confmport.cpp" line="693"/>
         <source>Change all tracks now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="733"/>
+        <location filename="../../muse/confmport.cpp" line="736"/>
         <source>Create Jack device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="962"/>
-        <location filename="../../muse/confmport.cpp" line="991"/>
+        <location filename="../../muse/confmport.cpp" line="1062"/>
+        <location filename="../../muse/confmport.cpp" line="1091"/>
         <source>Port Number</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="963"/>
+        <location filename="../../muse/confmport.cpp" line="1063"/>
         <source>Enable gui</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="964"/>
+        <location filename="../../muse/confmport.cpp" line="1064"/>
         <source>Enable reading</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="965"/>
+        <location filename="../../muse/confmport.cpp" line="1065"/>
         <source>Enable writing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="966"/>
+        <location filename="../../muse/confmport.cpp" line="1066"/>
         <source>Port instrument</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="967"/>
+        <location filename="../../muse/confmport.cpp" line="1067"/>
         <source>Midi device name. Click to edit (Jack)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="969"/>
+        <location filename="../../muse/confmport.cpp" line="1069"/>
         <source>Connections from Jack Midi outputs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="970"/>
+        <location filename="../../muse/confmport.cpp" line="1070"/>
         <source>Connections to Jack Midi inputs</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="971"/>
+        <location filename="../../muse/confmport.cpp" line="1071"/>
         <source>Auto-connect these channels to new midi tracks</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="974"/>
+        <location filename="../../muse/confmport.cpp" line="1074"/>
         <source>Auto-connect new midi tracks to these channels</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="976"/>
+        <location filename="../../muse/confmport.cpp" line="1076"/>
         <source>Auto-connect new midi tracks to this channel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="978"/>
+        <location filename="../../muse/confmport.cpp" line="1078"/>
         <source>Device state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="993"/>
+        <location filename="../../muse/confmport.cpp" line="1093"/>
         <source>Enable gui for device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="995"/>
+        <location filename="../../muse/confmport.cpp" line="1095"/>
         <source>Enable reading from device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="997"/>
+        <location filename="../../muse/confmport.cpp" line="1097"/>
         <source>Enable writing to device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="999"/>
+        <location filename="../../muse/confmport.cpp" line="1099"/>
         <source>Name of the midi device associated with this port number. Click to edit Jack midi name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1002"/>
+        <location filename="../../muse/confmport.cpp" line="1102"/>
         <source>Instrument connected to port</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1006"/>
+        <location filename="../../muse/confmport.cpp" line="1106"/>
         <source>Connections from Jack Midi output ports</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1008"/>
+        <location filename="../../muse/confmport.cpp" line="1108"/>
         <source>Connections to Jack Midi input ports</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1017"/>
+        <location filename="../../muse/confmport.cpp" line="1117"/>
         <source>Auto-connect these channels, on this port, to new midi tracks.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1021"/>
+        <location filename="../../muse/confmport.cpp" line="1121"/>
         <source>Connect new midi tracks to these channels, on this port.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1023"/>
+        <location filename="../../muse/confmport.cpp" line="1123"/>
         <source>Connect new midi tracks to this channel, on this port.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1026"/>
+        <location filename="../../muse/confmport.cpp" line="1126"/>
         <source>State: result of opening the device</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1067"/>
+        <location filename="../../muse/confmport.cpp" line="1168"/>
         <source>Port</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1068"/>
+        <location filename="../../muse/confmport.cpp" line="1169"/>
         <source>GUI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1069"/>
+        <location filename="../../muse/confmport.cpp" line="1170"/>
         <source>I</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1070"/>
+        <location filename="../../muse/confmport.cpp" line="1171"/>
         <source>O</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1071"/>
+        <location filename="../../muse/confmport.cpp" line="1172"/>
         <source>Instrument</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1072"/>
+        <location filename="../../muse/confmport.cpp" line="1173"/>
         <source>Device Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1073"/>
+        <location filename="../../muse/confmport.cpp" line="1174"/>
         <source>In routes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1074"/>
+        <location filename="../../muse/confmport.cpp" line="1175"/>
         <source>Out routes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1075"/>
+        <location filename="../../muse/confmport.cpp" line="1176"/>
         <source>Def in ch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1076"/>
+        <location filename="../../muse/confmport.cpp" line="1177"/>
         <source>Def out ch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1077"/>
+        <location filename="../../muse/confmport.cpp" line="1178"/>
         <source>State</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1161"/>
+        <location filename="../../muse/confmport.cpp" line="1262"/>
         <source>&lt;unknown&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/confmport.cpp" line="1248"/>
-        <location filename="../../muse/confmport.cpp" line="1319"/>
+        <location filename="../../muse/confmport.cpp" line="1349"/>
+        <location filename="../../muse/confmport.cpp" line="1420"/>
         <source>&lt;none&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8885,7 +8865,7 @@ Apply sync settings?</source>
     <name>MusEGui::MidiTrackInfo</name>
     <message>
         <location filename="../../muse/widgets/mtrackinfo.cpp" line="335"/>
-        <location filename="../../muse/widgets/mtrackinfo.cpp" line="1403"/>
+        <location filename="../../muse/widgets/mtrackinfo.cpp" line="1418"/>
         <source>&lt;unknown&gt;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8910,639 +8890,638 @@ Apply sync settings?</source>
 <context>
     <name>MusEGui::MusE</name>
     <message>
-        <location filename="../../muse/app.cpp" line="137"/>
-        <location filename="../../muse/app.cpp" line="153"/>
+        <location filename="../../muse/app.cpp" line="144"/>
+        <location filename="../../muse/app.cpp" line="160"/>
         <source>Failed to start audio!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="138"/>
+        <location filename="../../muse/app.cpp" line="145"/>
         <source>Was not able to start audio, check if jack is running.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="154"/>
+        <location filename="../../muse/app.cpp" line="161"/>
         <source>Timeout waiting for audio to run. Check if jack is running.
 </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="374"/>
+        <location filename="../../muse/app.cpp" line="370"/>
         <source>Und&amp;o</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="376"/>
+        <location filename="../../muse/app.cpp" line="372"/>
         <source>Re&amp;do</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="379"/>
+        <location filename="../../muse/app.cpp" line="375"/>
         <source>undo last change to song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="380"/>
+        <location filename="../../muse/app.cpp" line="376"/>
         <source>redo last undo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="394"/>
+        <location filename="../../muse/app.cpp" line="390"/>
         <source>Loop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="397"/>
+        <location filename="../../muse/app.cpp" line="393"/>
         <source>loop between left mark and right mark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="401"/>
+        <location filename="../../muse/app.cpp" line="397"/>
         <source>Punchin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="404"/>
+        <location filename="../../muse/app.cpp" line="400"/>
         <source>record starts at left mark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="408"/>
+        <location filename="../../muse/app.cpp" line="404"/>
         <source>Punchout</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="411"/>
+        <location filename="../../muse/app.cpp" line="407"/>
         <source>record stops at right mark</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="419"/>
+        <location filename="../../muse/app.cpp" line="415"/>
         <source>Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="421"/>
+        <location filename="../../muse/app.cpp" line="417"/>
         <source>rewind to start position</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="425"/>
+        <location filename="../../muse/app.cpp" line="421"/>
         <source>Rewind</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="427"/>
+        <location filename="../../muse/app.cpp" line="423"/>
         <source>rewind current position</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="431"/>
+        <location filename="../../muse/app.cpp" line="427"/>
         <source>Forward</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="433"/>
+        <location filename="../../muse/app.cpp" line="429"/>
         <source>move current position</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="437"/>
+        <location filename="../../muse/app.cpp" line="433"/>
         <source>Stop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="440"/>
+        <location filename="../../muse/app.cpp" line="436"/>
         <source>stop sequencer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="445"/>
+        <location filename="../../muse/app.cpp" line="441"/>
         <source>Play</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="448"/>
+        <location filename="../../muse/app.cpp" line="444"/>
         <source>start sequencer play</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="453"/>
+        <location filename="../../muse/app.cpp" line="449"/>
         <source>Record</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="455"/>
+        <location filename="../../muse/app.cpp" line="451"/>
         <source>to record press record and then play</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="459"/>
-        <location filename="../../muse/app.cpp" line="697"/>
+        <location filename="../../muse/app.cpp" line="455"/>
+        <location filename="../../muse/app.cpp" line="693"/>
         <source>Panic</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="461"/>
+        <location filename="../../muse/app.cpp" line="457"/>
         <source>send note off to all midi channels</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="471"/>
+        <location filename="../../muse/app.cpp" line="467"/>
         <source>&amp;New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="472"/>
-        <location filename="../../muse/app.cpp" line="473"/>
+        <location filename="../../muse/app.cpp" line="468"/>
+        <location filename="../../muse/app.cpp" line="469"/>
         <source>Create New Song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="475"/>
+        <location filename="../../muse/app.cpp" line="471"/>
         <source>&amp;Open</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="477"/>
-        <location filename="../../muse/app.cpp" line="479"/>
+        <location filename="../../muse/app.cpp" line="473"/>
+        <location filename="../../muse/app.cpp" line="475"/>
         <source>Click this button to open a &lt;em&gt;new song&lt;/em&gt;.&lt;br&gt;You can also select the &lt;b&gt;Open command&lt;/b&gt; from the File menu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="482"/>
+        <location filename="../../muse/app.cpp" line="478"/>
         <source>Open &amp;Recent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="484"/>
-        <location filename="../../muse/app.cpp" line="1514"/>
-        <location filename="../../muse/app.cpp" line="2769"/>
+        <location filename="../../muse/app.cpp" line="480"/>
+        <location filename="../../muse/app.cpp" line="1571"/>
+        <location filename="../../muse/app.cpp" line="2819"/>
         <source>&amp;Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="486"/>
-        <location filename="../../muse/app.cpp" line="489"/>
+        <location filename="../../muse/app.cpp" line="482"/>
+        <location filename="../../muse/app.cpp" line="485"/>
         <source>Click this button to save the song you are editing.  You will be prompted for a file name.
 You can also select the Save command from the File menu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="493"/>
+        <location filename="../../muse/app.cpp" line="489"/>
         <source>Save &amp;As</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="495"/>
+        <location filename="../../muse/app.cpp" line="491"/>
         <source>Import Midifile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="496"/>
+        <location filename="../../muse/app.cpp" line="492"/>
         <source>Export Midifile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="497"/>
+        <location filename="../../muse/app.cpp" line="493"/>
         <source>Import Part</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="499"/>
+        <location filename="../../muse/app.cpp" line="495"/>
         <location filename="../../muse/wave.cpp" line="1158"/>
         <source>Import Wave File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="500"/>
+        <location filename="../../muse/app.cpp" line="496"/>
         <source>Find unused wave files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="502"/>
+        <location filename="../../muse/app.cpp" line="498"/>
         <source>&amp;Quit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="504"/>
+        <location filename="../../muse/app.cpp" line="500"/>
         <source>Song Info</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="507"/>
+        <location filename="../../muse/app.cpp" line="503"/>
         <source>Transport Panel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="509"/>
+        <location filename="../../muse/app.cpp" line="505"/>
         <source>Bigtime Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="511"/>
+        <location filename="../../muse/app.cpp" line="507"/>
         <source>Mixer A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="513"/>
+        <location filename="../../muse/app.cpp" line="509"/>
         <source>Mixer B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="515"/>
+        <location filename="../../muse/app.cpp" line="511"/>
         <source>Cliplist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="517"/>
+        <location filename="../../muse/app.cpp" line="513"/>
         <source>Marker View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="519"/>
+        <location filename="../../muse/app.cpp" line="515"/>
         <source>Arranger View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="521"/>
+        <location filename="../../muse/app.cpp" line="517"/>
         <source>Fullscreen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="526"/>
+        <location filename="../../muse/app.cpp" line="522"/>
         <source>&amp;Plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="527"/>
+        <location filename="../../muse/app.cpp" line="523"/>
         <source>Edit Instrument</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="528"/>
+        <location filename="../../muse/app.cpp" line="524"/>
         <source>Input Plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="530"/>
+        <location filename="../../muse/app.cpp" line="526"/>
         <source>Transpose</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="531"/>
+        <location filename="../../muse/app.cpp" line="527"/>
         <source>Midi Input Transform</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="532"/>
+        <location filename="../../muse/app.cpp" line="528"/>
         <source>Midi Input Filter</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="533"/>
+        <location filename="../../muse/app.cpp" line="529"/>
         <source>Midi Remote Control</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="535"/>
+        <location filename="../../muse/app.cpp" line="531"/>
         <source>Rhythm Generator</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="537"/>
+        <location filename="../../muse/app.cpp" line="533"/>
         <source>Reset Instr.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="538"/>
+        <location filename="../../muse/app.cpp" line="534"/>
         <source>Init Instr.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="539"/>
+        <location filename="../../muse/app.cpp" line="535"/>
         <source>Local Off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="542"/>
+        <location filename="../../muse/app.cpp" line="538"/>
         <source>Bounce to Track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="543"/>
+        <location filename="../../muse/app.cpp" line="539"/>
         <source>Bounce to File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="544"/>
+        <location filename="../../muse/app.cpp" line="540"/>
         <source>Restart Audio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="547"/>
+        <location filename="../../muse/app.cpp" line="543"/>
         <source>Mixer Automation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="549"/>
+        <location filename="../../muse/app.cpp" line="545"/>
         <source>Take Snapshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="550"/>
+        <location filename="../../muse/app.cpp" line="546"/>
         <source>Clear Automation Data</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="555"/>
+        <location filename="../../muse/app.cpp" line="551"/>
         <source>Cascade</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="556"/>
+        <location filename="../../muse/app.cpp" line="552"/>
         <source>Tile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="557"/>
+        <location filename="../../muse/app.cpp" line="553"/>
         <source>In rows</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="558"/>
+        <location filename="../../muse/app.cpp" line="554"/>
         <source>In columns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="562"/>
+        <location filename="../../muse/app.cpp" line="558"/>
         <source>Global Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="563"/>
+        <location filename="../../muse/app.cpp" line="559"/>
         <source>Configure Shortcuts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="564"/>
+        <location filename="../../muse/app.cpp" line="560"/>
         <source>Follow Song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="565"/>
+        <location filename="../../muse/app.cpp" line="561"/>
         <source>Don&apos;t Follow Song</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="567"/>
+        <location filename="../../muse/app.cpp" line="563"/>
         <source>Follow Page</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="570"/>
+        <location filename="../../muse/app.cpp" line="566"/>
         <source>Follow Continuous</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="573"/>
+        <location filename="../../muse/app.cpp" line="569"/>
         <source>Metronome</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="574"/>
+        <location filename="../../muse/app.cpp" line="570"/>
         <source>Midi Sync</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="575"/>
+        <location filename="../../muse/app.cpp" line="571"/>
         <source>Midi File Import/Export</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="576"/>
+        <location filename="../../muse/app.cpp" line="572"/>
         <source>Appearance Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="577"/>
+        <location filename="../../muse/app.cpp" line="573"/>
         <source>Midi Ports / Soft Synth</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="580"/>
+        <location filename="../../muse/app.cpp" line="576"/>
         <source>&amp;Manual</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="581"/>
+        <location filename="../../muse/app.cpp" line="577"/>
         <source>&amp;MusE Homepage</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="582"/>
+        <location filename="../../muse/app.cpp" line="578"/>
         <source>&amp;Report Bug...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="583"/>
+        <location filename="../../muse/app.cpp" line="579"/>
         <source>&amp;About MusE</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="682"/>
+        <location filename="../../muse/app.cpp" line="678"/>
         <source>File Buttons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="689"/>
+        <location filename="../../muse/app.cpp" line="685"/>
         <source>Undo/Redo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="693"/>
+        <location filename="../../muse/app.cpp" line="689"/>
         <source>Transport</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="748"/>
+        <location filename="../../muse/app.cpp" line="745"/>
         <source>&amp;File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="777"/>
+        <location filename="../../muse/app.cpp" line="774"/>
         <source>&amp;View</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="796"/>
+        <location filename="../../muse/app.cpp" line="793"/>
         <source>&amp;Midi</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="825"/>
+        <location filename="../../muse/app.cpp" line="822"/>
         <source>&amp;Audio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="839"/>
+        <location filename="../../muse/app.cpp" line="836"/>
         <source>A&amp;utomation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="852"/>
+        <location filename="../../muse/app.cpp" line="849"/>
         <source>&amp;Windows</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="865"/>
+        <location filename="../../muse/app.cpp" line="862"/>
         <source>MusE Se&amp;ttings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="888"/>
+        <location filename="../../muse/app.cpp" line="885"/>
         <source>&amp;Help</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1177"/>
+        <location filename="../../muse/app.cpp" line="1225"/>
         <source>Cannot read template</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1208"/>
+        <location filename="../../muse/app.cpp" line="1257"/>
         <source>File open error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1221"/>
+        <location filename="../../muse/app.cpp" line="1270"/>
         <source>File read error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1234"/>
+        <location filename="../../muse/app.cpp" line="1283"/>
         <source>Unknown File Format: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1364"/>
-        <location filename="../../muse/app.cpp" line="1801"/>
-        <location filename="../../muse/app.cpp" line="2715"/>
+        <location filename="../../muse/app.cpp" line="1417"/>
+        <location filename="../../muse/app.cpp" line="1849"/>
+        <location filename="../../muse/app.cpp" line="2765"/>
         <source>MusE: Song: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1398"/>
+        <location filename="../../muse/app.cpp" line="1451"/>
         <source>MusE: load project</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1412"/>
+        <location filename="../../muse/app.cpp" line="1465"/>
         <source>MusE: load template</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1474"/>
+        <location filename="../../muse/app.cpp" line="1531"/>
         <source>MusE: Write File failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1512"/>
+        <location filename="../../muse/app.cpp" line="1569"/>
         <source>The current Project contains unsaved data
 Save Current Project?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1514"/>
-        <location filename="../../muse/app.cpp" line="2769"/>
+        <location filename="../../muse/app.cpp" line="1571"/>
+        <location filename="../../muse/app.cpp" line="2819"/>
         <source>S&amp;kip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1514"/>
+        <location filename="../../muse/app.cpp" line="1571"/>
         <source>&amp;Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1779"/>
-        <location filename="../../muse/app.cpp" line="1792"/>
+        <location filename="../../muse/app.cpp" line="1825"/>
         <source>MusE: Save As</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="1849"/>
-        <location filename="../../muse/app.cpp" line="2009"/>
+        <location filename="../../muse/app.cpp" line="1897"/>
+        <location filename="../../muse/app.cpp" line="2057"/>
         <source>Nothing to edit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2503"/>
-        <location filename="../../muse/app.cpp" line="2513"/>
-        <location filename="../../muse/app.cpp" line="2544"/>
-        <location filename="../../muse/app.cpp" line="2578"/>
-        <location filename="../../muse/app.cpp" line="2586"/>
+        <location filename="../../muse/app.cpp" line="2552"/>
+        <location filename="../../muse/app.cpp" line="2562"/>
+        <location filename="../../muse/app.cpp" line="2593"/>
+        <location filename="../../muse/app.cpp" line="2627"/>
+        <location filename="../../muse/app.cpp" line="2635"/>
         <source>MusE: Bounce to Track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2504"/>
+        <location filename="../../muse/app.cpp" line="2553"/>
         <source>No wave tracks found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2514"/>
-        <location filename="../../muse/app.cpp" line="2619"/>
+        <location filename="../../muse/app.cpp" line="2563"/>
+        <location filename="../../muse/app.cpp" line="2668"/>
         <source>No audio output tracks found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2545"/>
+        <location filename="../../muse/app.cpp" line="2594"/>
         <source>Select one audio output track,
 and one target wave track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2579"/>
+        <location filename="../../muse/app.cpp" line="2628"/>
         <source>Select one target wave track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2587"/>
+        <location filename="../../muse/app.cpp" line="2636"/>
         <source>Select one target wave track,
 and one audio output track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2618"/>
-        <location filename="../../muse/app.cpp" line="2643"/>
+        <location filename="../../muse/app.cpp" line="2667"/>
+        <location filename="../../muse/app.cpp" line="2692"/>
         <source>MusE: Bounce to File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2644"/>
+        <location filename="../../muse/app.cpp" line="2693"/>
         <source>Select one audio output track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2683"/>
+        <location filename="../../muse/app.cpp" line="2732"/>
         <source>MusE: Bounce</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2684"/>
+        <location filename="../../muse/app.cpp" line="2733"/>
         <source>set left/right marker for bounce range</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2766"/>
+        <location filename="../../muse/app.cpp" line="2816"/>
         <source>The current Project contains unsaved data
 Load overwrites current Project:
 Save Current Project?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/app.cpp" line="2769"/>
+        <location filename="../../muse/app.cpp" line="2819"/>
         <location filename="../../muse/importmidi.cpp" line="85"/>
         <source>&amp;Abort</source>
         <translation type="unfinished"></translation>
@@ -10094,102 +10073,102 @@ Likely the selected track is the wrong type.</numerusform>
 <context>
     <name>MusEGui::PluginDialog</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3137"/>
+        <location filename="../../muse/plugin.cpp" line="3147"/>
         <source>MusE: select plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3144"/>
+        <location filename="../../muse/plugin.cpp" line="3154"/>
         <source>Lib</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3145"/>
+        <location filename="../../muse/plugin.cpp" line="3155"/>
         <source>Label</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3146"/>
+        <location filename="../../muse/plugin.cpp" line="3156"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3147"/>
+        <location filename="../../muse/plugin.cpp" line="3157"/>
         <source>AI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3148"/>
+        <location filename="../../muse/plugin.cpp" line="3158"/>
         <source>AO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3149"/>
+        <location filename="../../muse/plugin.cpp" line="3159"/>
         <source>CI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3150"/>
+        <location filename="../../muse/plugin.cpp" line="3160"/>
         <source>CO</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3151"/>
+        <location filename="../../muse/plugin.cpp" line="3161"/>
         <source>IP</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3152"/>
+        <location filename="../../muse/plugin.cpp" line="3162"/>
         <source>id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3153"/>
+        <location filename="../../muse/plugin.cpp" line="3163"/>
         <source>Maker</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3154"/>
+        <location filename="../../muse/plugin.cpp" line="3164"/>
         <source>Copyright</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3184"/>
+        <location filename="../../muse/plugin.cpp" line="3194"/>
         <source>Ok</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3186"/>
+        <location filename="../../muse/plugin.cpp" line="3196"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3201"/>
+        <location filename="../../muse/plugin.cpp" line="3211"/>
         <source>Mono and Stereo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3206"/>
+        <location filename="../../muse/plugin.cpp" line="3216"/>
         <source>Stereo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3211"/>
+        <location filename="../../muse/plugin.cpp" line="3221"/>
         <source>Mono</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3216"/>
+        <location filename="../../muse/plugin.cpp" line="3226"/>
         <source>Show All</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3229"/>
+        <location filename="../../muse/plugin.cpp" line="3239"/>
         <source>Select which types of plugins should be visible in the list.&lt;br&gt;Note that using mono plugins on stereo tracks is not a problem, two will be used in parallell.&lt;br&gt;Also beware that the &apos;all&apos; alternative includes plugins that probably not are usable by MusE.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3238"/>
+        <location filename="../../muse/plugin.cpp" line="3248"/>
         <source>Search in &apos;Label&apos; and &apos;Name&apos;:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10197,102 +10176,110 @@ Likely the selected track is the wrong type.</numerusform>
 <context>
     <name>MusEGui::PluginGui</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3445"/>
+        <location filename="../../muse/plugin.cpp" line="3456"/>
         <source>File Buttons</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3447"/>
+        <location filename="../../muse/plugin.cpp" line="3458"/>
         <source>Load Preset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3451"/>
+        <location filename="../../muse/plugin.cpp" line="3462"/>
         <source>Save Preset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="3457"/>
-        <location filename="../../muse/plugin.cpp" line="3460"/>
+        <location filename="../../muse/plugin.cpp" line="3468"/>
+        <location filename="../../muse/plugin.cpp" line="3471"/>
         <source>bypass plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="4014"/>
+        <location filename="../../muse/plugin.cpp" line="4025"/>
         <source>MusE: load preset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="4039"/>
+        <location filename="../../muse/plugin.cpp" line="4050"/>
         <source>Error reading preset. Might not be right type for this plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/plugin.cpp" line="4080"/>
+        <location filename="../../muse/plugin.cpp" line="4091"/>
         <source>MusE: save preset</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MusEGui::ProjectCreateImpl</name>
+    <message>
+        <location filename="../../muse/widgets/projectcreateimpl.cpp" line="105"/>
+        <source>Select directory</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>MusEGui::RoutePopupMenu</name>
     <message>
-        <location filename="../../muse/widgets/routepopup.cpp" line="230"/>
-        <location filename="../../muse/widgets/routepopup.cpp" line="232"/>
-        <location filename="../../muse/widgets/routepopup.cpp" line="364"/>
-        <location filename="../../muse/widgets/routepopup.cpp" line="442"/>
-        <location filename="../../muse/widgets/routepopup.cpp" line="499"/>
-        <location filename="../../muse/widgets/routepopup.cpp" line="559"/>
-        <location filename="../../muse/widgets/routepopup.cpp" line="1244"/>
-        <location filename="../../muse/widgets/routepopup.cpp" line="1329"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="234"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="236"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="368"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="446"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="503"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="563"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="1446"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="1531"/>
         <source>Channel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/routepopup.cpp" line="1059"/>
-        <location filename="../../muse/widgets/routepopup.cpp" line="1279"/>
-        <location filename="../../muse/widgets/routepopup.cpp" line="1364"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="1239"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="1481"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="1566"/>
         <source>Soloing chain</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/routepopup.cpp" line="1061"/>
-        <location filename="../../muse/widgets/routepopup.cpp" line="1281"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="1241"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="1483"/>
         <source>Audio returns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/routepopup.cpp" line="1099"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="1279"/>
         <source>Warning: No input devices!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/routepopup.cpp" line="1104"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="1284"/>
         <source>Open midi config...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/routepopup.cpp" line="1146"/>
-        <location filename="../../muse/widgets/routepopup.cpp" line="1179"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="1345"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="1381"/>
         <source>&lt;none&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/routepopup.cpp" line="1160"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="1359"/>
         <source>Toggle all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/routepopup.cpp" line="1171"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="1373"/>
         <source>More...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/routepopup.cpp" line="1366"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="1568"/>
         <source>Audio sends</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/routepopup.cpp" line="1370"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="1572"/>
         <source>Midi port sends</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10663,122 +10650,132 @@ the selected title is not unique</source>
 <context>
     <name>MusEGui::TList</name>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="373"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="374"/>
         <source>&lt;none&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="404"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="396"/>
+        <source>visible</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/tlist.cpp" line="405"/>
         <source>no clef</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="406"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="407"/>
         <source>Treble</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="408"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="409"/>
         <source>Bass</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="410"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="411"/>
         <source>Grand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="457"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="458"/>
         <source>MusE: bad trackname</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="458"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="459"/>
         <source>please choose a unique track name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="630"/>
-        <location filename="../../muse/arranger/tlist.cpp" line="1779"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="681"/>
+        <source>Unused Devices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/arranger/tlist.cpp" line="769"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1932"/>
         <source>Update drummap?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="631"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="770"/>
         <source>Do you want to use same port for all instruments in the drummap?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="632"/>
-        <location filename="../../muse/arranger/tlist.cpp" line="1781"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="771"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1934"/>
         <source>&amp;Yes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="632"/>
-        <location filename="../../muse/arranger/tlist.cpp" line="1781"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="771"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1934"/>
         <source>&amp;No</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="707"/>
-        <location filename="../../muse/arranger/tlist.cpp" line="762"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="846"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="901"/>
         <source>show gui</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="716"/>
-        <location filename="../../muse/arranger/tlist.cpp" line="771"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="855"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="910"/>
         <source>show native gui</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1117"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1258"/>
         <source>Treble clef</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1118"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1259"/>
         <source>Bass clef</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1119"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1260"/>
         <source>Grand Staff</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1149"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1290"/>
         <source>Viewable automation</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1280"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1428"/>
         <source>Delete Track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1281"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1429"/>
         <source>Track Comment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1284"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1432"/>
         <source>Insert Track</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1729"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1882"/>
         <source>Midi</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1730"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1883"/>
         <source>Drum</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="1780"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="1933"/>
         <source>Do you want to use same port and channel for all instruments in the drummap?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11573,27 +11570,44 @@ to be expanded by more than </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/projectcreate.ui" line="22"/>
+        <location filename="../../muse/widgets/projectcreate.ui" line="24"/>
+        <source>Projects folder:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/projectcreate.ui" line="38"/>
+        <location filename="../../muse/widgets/projectcreate.ui" line="158"/>
+        <location filename="../../muse/widgets/projectcreate.ui" line="165"/>
+        <source>...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/projectcreate.ui" line="56"/>
         <source>Project Name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/projectcreate.ui" line="54"/>
+        <location filename="../../muse/widgets/projectcreate.ui" line="66"/>
+        <source>Project is a Template</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/projectcreate.ui" line="93"/>
+        <source>Project song file type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../../muse/widgets/projectcreate.ui" line="120"/>
         <source>Project Path to song file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/projectcreate.ui" line="74"/>
+        <location filename="../../muse/widgets/projectcreate.ui" line="140"/>
         <source>Create project folder (recommended for audio projects)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/projectcreate.ui" line="92"/>
-        <source>Browse</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../../muse/widgets/projectcreate.ui" line="101"/>
+        <location filename="../../muse/widgets/projectcreate.ui" line="174"/>
         <source>Song information:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11677,26 +11691,26 @@ Create it?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/filedialog.cpp" line="489"/>
+        <location filename="../../muse/widgets/filedialog.cpp" line="463"/>
         <source>File
 %1
 exists. Overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/filedialog.cpp" line="522"/>
+        <location filename="../../muse/widgets/filedialog.cpp" line="498"/>
         <source>Open File
 %1
 failed: %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/filedialog.cpp" line="503"/>
+        <location filename="../../muse/widgets/filedialog.cpp" line="477"/>
         <source>MusE: write</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/widgets/filedialog.cpp" line="523"/>
+        <location filename="../../muse/widgets/filedialog.cpp" line="499"/>
         <source>MusE: Open File</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12721,14 +12735,14 @@ Robert Jonsson
         <location filename="../../muse/globals.cpp" line="147"/>
         <location filename="../../muse/globals.cpp" line="158"/>
         <location filename="../../muse/globals.cpp" line="165"/>
-        <location filename="../../muse/globals.cpp" line="174"/>
-        <location filename="../../muse/globals.cpp" line="189"/>
-        <location filename="../../muse/globals.cpp" line="196"/>
-        <location filename="../../muse/globals.cpp" line="210"/>
-        <location filename="../../muse/globals.cpp" line="218"/>
+        <location filename="../../muse/globals.cpp" line="180"/>
+        <location filename="../../muse/globals.cpp" line="195"/>
+        <location filename="../../muse/globals.cpp" line="202"/>
+        <location filename="../../muse/globals.cpp" line="216"/>
         <location filename="../../muse/globals.cpp" line="224"/>
-        <location filename="../../muse/globals.cpp" line="232"/>
-        <location filename="../../muse/globals.cpp" line="240"/>
+        <location filename="../../muse/globals.cpp" line="230"/>
+        <location filename="../../muse/globals.cpp" line="238"/>
+        <location filename="../../muse/globals.cpp" line="246"/>
         <source>All Files (*)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12755,18 +12769,21 @@ Robert Jonsson
     <message>
         <location filename="../../muse/globals.cpp" line="154"/>
         <location filename="../../muse/globals.cpp" line="162"/>
+        <location filename="../../muse/globals.cpp" line="169"/>
         <source>Uncompressed med Files (*.med)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../muse/globals.cpp" line="155"/>
         <location filename="../../muse/globals.cpp" line="163"/>
+        <location filename="../../muse/globals.cpp" line="170"/>
         <source>gzip compressed med Files (*.med.gz)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../../muse/globals.cpp" line="156"/>
         <location filename="../../muse/globals.cpp" line="164"/>
+        <location filename="../../muse/globals.cpp" line="171"/>
         <source>bzip2 compressed med Files (*.med.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12776,97 +12793,97 @@ Robert Jonsson
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="170"/>
+        <location filename="../../muse/globals.cpp" line="176"/>
         <source>(*.jpg *.gif *.png)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="171"/>
+        <location filename="../../muse/globals.cpp" line="177"/>
         <source>(*.jpg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="172"/>
+        <location filename="../../muse/globals.cpp" line="178"/>
         <source>(*.gif)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="173"/>
+        <location filename="../../muse/globals.cpp" line="179"/>
         <source>(*.png)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="188"/>
+        <location filename="../../muse/globals.cpp" line="194"/>
         <source>part Files (*.mpt *.mpt.gz *.mpt.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="193"/>
+        <location filename="../../muse/globals.cpp" line="199"/>
         <source>part Files (*.mpt)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="194"/>
+        <location filename="../../muse/globals.cpp" line="200"/>
         <source>gzip compressed part Files (*.mpt.gz)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="195"/>
+        <location filename="../../muse/globals.cpp" line="201"/>
         <source>bzip2 compressed part Files (*.mpt.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="209"/>
+        <location filename="../../muse/globals.cpp" line="215"/>
         <source>Presets (*.pre *.pre.gz *.pre.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="215"/>
+        <location filename="../../muse/globals.cpp" line="221"/>
         <source>Presets (*.pre)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="216"/>
+        <location filename="../../muse/globals.cpp" line="222"/>
         <source>gzip compressed presets (*.pre.gz)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="217"/>
+        <location filename="../../muse/globals.cpp" line="223"/>
         <source>bzip2 compressed presets (*.pre.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="223"/>
+        <location filename="../../muse/globals.cpp" line="229"/>
         <source>Presets (*.map *.map.gz *.map.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="229"/>
+        <location filename="../../muse/globals.cpp" line="235"/>
         <source>Presets (*.map)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="230"/>
+        <location filename="../../muse/globals.cpp" line="236"/>
         <source>gzip compressed presets (*.map.gz)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="231"/>
+        <location filename="../../muse/globals.cpp" line="237"/>
         <source>bzip2 compressed presets (*.map.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="237"/>
+        <location filename="../../muse/globals.cpp" line="243"/>
         <source>Wave/Binary (*.wav *.ogg *.bin)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="238"/>
+        <location filename="../../muse/globals.cpp" line="244"/>
         <source>Wave (*.wav *.ogg)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../../muse/globals.cpp" line="239"/>
+        <location filename="../../muse/globals.cpp" line="245"/>
         <source>Binary (*.bin)</source>
         <translation type="unfinished"></translation>
     </message>

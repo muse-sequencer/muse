@@ -687,7 +687,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
     for(int c = 0; c < dstChannels; ++c) 
     {
       double v;
-      if(srcStartChan > 2)      // Don't apply pan or volume to extra channels above 2.
+      if(srcStartChan > 2 || _prefader) // Don't apply pan or volume to extra channels above 2. Or if prefader on.
         //v = _volume;
         v = 1.0;
       else
@@ -711,7 +711,7 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
     for(int c = 0; c < dstChannels; ++c) 
     {
       double v;
-      if(srcStartChan > 2)      // Don't apply pan or volume to extra channels above 2.
+      if(srcStartChan > 2 || _prefader)      // Don't apply pan or volume to extra channels above 2. Or if prefader on.
         //v = _volume;
         v = 1.0;
       else
@@ -729,10 +729,10 @@ void AudioTrack::copyData(unsigned pos, int dstChannels, int srcStartChan, int s
   }
   else if(srcChans == 2 && dstChannels == 1) 
   {
-    //double v1 = (srcStartChan > 2 ? _volume : vol[srcStartChan]);       // Don't apply pan to extra channels above 2.
+    //double v1 = (srcStartChan > 2 ? _volume : vol[srcStartChan]);       // 
     //double v2 = (srcStartChan > 2 ? _volume : vol[srcStartChan + 1]);   // 
-    double v1 = (srcStartChan > 2 ? 1.0 : vol[srcStartChan]);             // Don't apply pan or volume to extra channels above 2.
-    double v2 = (srcStartChan > 2 ? 1.0 : vol[srcStartChan + 1]);         // 
+    double v1 = ((srcStartChan > 2 || _prefader) ? 1.0 : vol[srcStartChan]);     // Don't apply pan or volume to extra channels above 2. Or if prefader on.
+    double v2 = ((srcStartChan > 2 || _prefader) ? 1.0 : vol[srcStartChan + 1]); // 
     float* dp = dstBuffer[0];
     float* sp1 = buffer[srcStartChan];
     float* sp2 = buffer[srcStartChan + 1];
@@ -1034,7 +1034,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
     for(int c = 0; c < dstChannels; ++c) 
     {
       double v;
-      if(srcStartChan > 2)      // Don't apply pan or volume to extra channels above 2.
+      if(srcStartChan > 2 || _prefader)      // Don't apply pan or volume to extra channels above 2. Or if prefader on.
         //v = _volume;
         v = 1.0;
       else
@@ -1058,7 +1058,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
     for(int c = 0; c < dstChannels; ++c) 
     {
       double v;
-      if(srcStartChan > 2)      // Don't apply pan or volume to extra channels above 2.
+      if(srcStartChan > 2 || _prefader)      // Don't apply pan or volume to extra channels above 2. Or if prefader on.
         //v = _volume;
         v = 1.0;
       else
@@ -1078,8 +1078,8 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
   {
     //double v1 = (srcStartChan > 2 ? _volume : vol[srcStartChan]);       // Don't apply pan to extra channels above 2.
     //double v2 = (srcStartChan > 2 ? _volume : vol[srcStartChan + 1]);   // 
-    double v1 = (srcStartChan > 2 ? 1.0 : vol[srcStartChan]);             // Don't apply pan or volume to extra channels above 2.
-    double v2 = (srcStartChan > 2 ? 1.0 : vol[srcStartChan + 1]);         // 
+    double v1 = ((srcStartChan > 2 || _prefader) ? 1.0 : vol[srcStartChan]);     // Don't apply pan or volume to extra channels above 2. Or if prefader on.
+    double v2 = ((srcStartChan > 2 || _prefader) ? 1.0 : vol[srcStartChan + 1]); // 
     float* sp1 = buffer[srcStartChan];
     float* sp2 = buffer[srcStartChan + 1];
     float* dp = dstBuffer[0];
@@ -1095,7 +1095,7 @@ void AudioTrack::addData(unsigned pos, int dstChannels, int srcStartChan, int sr
 
 void AudioTrack::readVolume(Xml& xml)
       {
-      int ch = 0;
+      //int ch = 0;
       for (;;) {
             Xml::Token token = xml.parse();
             switch (token) {
@@ -1110,7 +1110,8 @@ void AudioTrack::readVolume(Xml& xml)
                         break;
                   case Xml::Attribut:
                         if (xml.s1() == "ch")
-                              ch = xml.s2().toInt();
+                              //ch = xml.s2().toInt();
+                              xml.s2();
                         break;
                   case Xml::TagEnd:
                         if (xml.s1() == "volume")

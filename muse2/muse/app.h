@@ -85,7 +85,6 @@ class MidiSyncConfig;
 class MidiTransformerDialog;
 class PrinterConfig;
 class RhythmGen;
-class RoutePopupMenu;
 class ScoreEdit;
 class ShortcutConfig;
 class TopWin;
@@ -184,9 +183,6 @@ class MusE : public QMainWindow
       QMenu *menu_file, *menuView, *menuSettings, *menuWindows, *menu_help;
       QMenu* menu_audio, *menuAutomation, *menuUtils;
       QMenu* menu_functions, *menuScriptPlugins;
-
-      // Special common menu for routes. Used (so far) by audio and midi strip, and midi trackinfo.
-      RoutePopupMenu* routingPopupMenu; 
 
       QMenu* follow;
       QMenu* midiInputPlugins;
@@ -408,7 +404,6 @@ class MusE : public QMainWindow
       bool importWaveToTrack(QString& name, unsigned tick=0, MusECore::Track* track=NULL);
       void importPartToTrack(QString& filename, unsigned tick, MusECore::Track* track);
       void showTransport(bool flag);
-      RoutePopupMenu* getRoutingPopupMenu();
       
       const ToplevelList* getToplevels() { return &toplevels; }
       
