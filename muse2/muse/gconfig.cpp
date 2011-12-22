@@ -89,11 +89,11 @@ GlobalConfigValues config = {
       QColor(200, 192, 171),  // waveEditBackgroundColor;
       {
         QFont(QString("arial"), 10, QFont::Normal),
-        QFont(QString("arial"), 8,  QFont::Normal),
+        QFont(QString("arial"), 7,  QFont::Normal),    // Mixer strips and midi track info panel
         QFont(QString("arial"), 10, QFont::Normal),
         QFont(QString("arial"), 10, QFont::Bold),
-        QFont(QString("arial"), 8,  QFont::Bold),    // timescale numbers
-        QFont(QString("Lucidatypewriter"), 14,  QFont::Bold),
+        QFont(QString("arial"), 8,  QFont::Normal),    // Small numbers: Timescale and markers, part name overlay
+        QFont(QString("arial"), 8,  QFont::Bold),      // Small bold numbers such as marker text
         QFont(QString("arial"), 8,  QFont::Bold, true)  // Mixer strip labels. Looks and fits better with bold + italic than bold alone, 
                                                         //  at the price of only few more pixels than Normal mode.
         },
@@ -164,16 +164,15 @@ GlobalConfigValues config = {
       false,                        // BigTimeVisible;
       false,                        // mixer1Visible;
       false,                        // mixer2Visible;
-      
       false,                        // markerVisible;
-      true,                        // arrangerVisible;
+      true,                         // arrangerVisible;
       true,                         // showSplashScreen
       1,                            // canvasShowPartType 1 - names, 2 events
       5,                            // canvasShowPartEvent
-      true,                        // canvasShowGrid;
+      true,                         // canvasShowGrid;
       QString(""),                  // canvasBgPixmap;
       QStringList(),                // canvasCustomBgList
-      QString(":/style.qss"),       // default styleSheetFile
+      QString(""),                  // default styleSheetFile - For built-in set to ":/style.qss"
       QString(""),                  // style
       QString("sweep"),             // externalWavEditor
       false,                        // useOldStyleStopShortCut

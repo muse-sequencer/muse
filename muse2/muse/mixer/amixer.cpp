@@ -542,7 +542,7 @@ void AudioMixerApp::updateMixer(UpdateAction action)
 
 void AudioMixerApp::configChanged()    
 { 
-  songChanged(SC_CONFIG); 
+  songChanged(-1); // Catch when fonts change, do full rebuild.
 }
 
 //---------------------------------------------------------

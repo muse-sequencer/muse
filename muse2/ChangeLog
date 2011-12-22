@@ -1,3 +1,27 @@
+20.12.2011:
+        - Litle break for some polish. Route button icons. Rebuild midi track info ui file - was 3 columns not 2. (Tim)
+        * Fixed: Hopefully, finally: Non-appearing track info scroll bar.  (Tim)
+                 Simple movement of recursive call of sb->setVisible() to end of TLLayout::setGeometry(). 
+        - Audio strip prefader now controls audio. (Tim)
+18.12.2011:
+        * Fixed: Annoying ladspa browser issues. Leak: Dialog was not destroyed. Sorting. Save complete state. (Tim)
+17.12.2011:
+        - Fixed long-time graphics corruption issue: Large areas of desktop erased to background.  (Tim...) 
+          Fixed class RoutePopupMenu. Now a subclass of PopupMenu. Changed all usages to 'short-lived' ::exe(), 
+           no more single 'long-life' pointer in class MusE. That should allow multiple instances, using ::popup(). 
+          Also fixed class PopupMenu. Tested all submenu and item destructors - OK, everything destroyed on close. 
+        - Fixed TList::ColorMenu parenting. Pass it a parent from TList::mousePressEvent. 
+        - If Jack is running but no Jack midi devices were found at start, auto-fill with ALSA just to give something.
+        * Fixed: Some relief from mixer strip and midi track info bloated size. (Tim)
+          Changed default strip font size from 8 to 7. Changed icon sizing - just let strip layout do its thing, instead of forcing size. 
+          Changed default style sheet to blank. Was causing problems with track info font size. 
+          Fixed mixer: Rebuild mixer upon config font changes.
+          Re-arranged some font usages. Updated descriptive tooltips on font entry boxes.
+          Re-claimed font#5 as a 'small bold' font for things like markers.
+16.12.2011:
+        * New: Midi routing matrix! No more clumsy routing menu items. Currently for Midi Track iR and Audio Input iR solo routes. (Tim)
+14.12.2011:
+        - Corrected FSF address in ladspa.h and vam/COPYING. (Orcan)
 12.12.2011:
         * Improved: Midi ports list now fills automatically at start. (Marked as p4.0.41 Tim...)
           An effort to help new users and others. If auto-filling the mid ports proves too much or unpopular, a simple change

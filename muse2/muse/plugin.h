@@ -60,6 +60,8 @@ class QScrollArea;
 class QToolButton;
 class QToolButton;
 class QTreeWidget;
+class QRect;
+class QByteArray;
 
 namespace MusEGui {
 class PluginGui;
@@ -578,25 +580,28 @@ class PluginGui : public QMainWindow {
 enum { SEL_SM, SEL_S, SEL_M, SEL_ALL };
 
 class PluginDialog : public QDialog {
+      Q_OBJECT
+
       QTreeWidget* pList;
       QRadioButton* allPlug;
       QRadioButton* onlyM;
       QRadioButton* onlyS;
       QRadioButton* onlySM;
       QPushButton *okB;
-
-      Q_OBJECT
+      void saveSettings();
 
    public:
       PluginDialog(QWidget* parent=0);
       static MusECore::Plugin* getPlugin(QWidget* parent);
       MusECore::Plugin* value();
-      void accept();
 
    public slots:
+      void accept();
+      void reject();
       void fillPlugs(QAbstractButton*);
-      void fillPlugs(int i);
-      void fillPlugs(const QString& sortValue);
+      //void fillPlugs(int i);
+      //void fillPlugs(const QString& sortValue);
+      void fillPlugs();
 
    private slots:
       void enableOkB();
@@ -605,6 +610,10 @@ class PluginDialog : public QDialog {
       QComboBox *sortBox;
       static int selectedPlugType;
       static QStringList sortItems;
+      //static int sortColumn;
+      //static Qt::SortOrder sortOrder;
+      static QRect geometrySave;
+      static QByteArray listSave;
       };
 
 }

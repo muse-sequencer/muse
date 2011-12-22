@@ -23,7 +23,8 @@
 #ifndef __ROUTEPOPUPMENU_H__
 #define __ROUTEPOPUPMENU_H__
 
-#include <QObject>
+//#include <QObject>
+#include "popupmenu.h"
 
 namespace MusECore {
 class AudioTrack;
@@ -37,13 +38,14 @@ class QPoint;
 
 namespace MusEGui {
 
-class PopupMenu;
+//class PopupMenu;
 
-class RoutePopupMenu : public QObject
+//class RoutePopupMenu : public QObject
+class RoutePopupMenu : public PopupMenu
 {
   Q_OBJECT
   
-    PopupMenu* _pup;
+    //PopupMenu* _pup;
     MusECore::Track* _track;
     // Whether the route popup was shown by clicking the output routes button, or input routes button.
     bool _isOutMenu;
@@ -70,7 +72,6 @@ class RoutePopupMenu : public QObject
   public:
     RoutePopupMenu(QWidget* parent = 0, MusECore::Track* track = 0, bool isOutput = false);
     RoutePopupMenu(const QString& title, QWidget* parent = 0, MusECore::Track* track = 0, bool isOutput = false);
-    ~RoutePopupMenu();
     
     void updateRouteMenus();
     void exec(MusECore::Track* track = 0, bool isOutput = false);

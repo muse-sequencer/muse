@@ -99,13 +99,23 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   pan      = -65;
   volume   = -1;
   
-  setFont(MusEGlobal::config.fonts[2]);
+  setFont(MusEGlobal::config.fonts[1]);
   
   //iChanDetectLabel->setPixmap(*darkgreendotIcon);
   iChanDetectLabel->setPixmap(*darkRedLedIcon);
   
   recEchoButton->setIcon((selected && ((MusECore::MidiTrack*)selected)->recEcho()) ? QIcon(*midiThruOnIcon) : QIcon(*midiThruOffIcon));
   recEchoButton->setIconSize(midiThruOnIcon->size());  
+  //recEchoButton->setOffPixmap(midiThruOffIcon);
+  //recEchoButton->setOnPixmap(midiThruOnIcon);
+  
+  iRButton->setIcon(QIcon(*routesMidiInIcon));
+  iRButton->setIconSize(routesMidiInIcon->size());  
+  //iRButton->setOffPixmap(routesMidiInIcon);
+  
+  oRButton->setIcon(QIcon(*routesMidiOutIcon));
+  oRButton->setIconSize(routesMidiOutIcon->size());  
+  //oRButton->setOffPixmap(routesMidiOutIcon);
   
   // MusE-2: AlignCenter and WordBreak are set in the ui(3) file, but not supported by QLabel. Turn them on here.
   trackNameLabel->setAlignment(Qt::AlignCenter);
@@ -159,7 +169,7 @@ MidiTrackInfo::MidiTrackInfo(QWidget* parent, MusECore::Track* sel_track) : QWid
   
   connect(iPatch, SIGNAL(released()), SLOT(instrPopup()));
 
-  ///pop = new QMenu(iPatch);
+  //pop = new QMenu(iPatch);
   //pop->setCheckable(false); // not needed in Qt4
 
   // Removed by Tim. p3.3.9
@@ -529,7 +539,7 @@ void MidiTrackInfo::configChanged()
       //      canvas->setBg(QPixmap(MusEGlobal::config.canvasBgPixmap));
       //}
       
-      setFont(MusEGlobal::config.fonts[2]);
+      setFont(MusEGlobal::config.fonts[1]);
       //updateTrackInfo(type);
       }
 
@@ -671,9 +681,11 @@ void MidiTrackInfo::inRoutesPressed()
   if(!selected->isMidiTrack())
     return;
   
-  RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
-  iRButton->setDown(false);     
+  //RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
+  RoutePopupMenu* pup = new RoutePopupMenu();
   pup->exec(QCursor::pos(), selected, false);
+  delete pup;
+  iRButton->setDown(false);     
 }
 
 //---------------------------------------------------------
@@ -687,9 +699,11 @@ void MidiTrackInfo::outRoutesPressed()
   if(!selected->isMidiTrack())
     return;
   
-  RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
-  oRButton->setDown(false);     
+  //RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
+  RoutePopupMenu* pup = new RoutePopupMenu();
   pup->exec(QCursor::pos(), selected, true);
+  delete pup;
+  oRButton->setDown(false);     
 }
 
 //---------------------------------------------------------

@@ -204,7 +204,7 @@ click on part to mute/unmute</source>
         <translation type="obsolete">Все файлы (*)</translation>
     </message>
     <message>
-        <location filename="../../muse/helper.cpp" line="+185"/>
+        <location filename="../../muse/helper.cpp" line="+200"/>
         <source>Add Midi Track</source>
         <translation type="unfinished">Добавить Midi Трек</translation>
     </message>
@@ -280,7 +280,7 @@ click on part to mute/unmute</source>
         <translation type="obsolete">JACK:</translation>
     </message>
     <message>
-        <location filename="../../muse/midiport.cpp" line="+1190"/>
+        <location filename="../../muse/midiport.cpp" line="+1194"/>
         <source>Route</source>
         <translation>Маршрут</translation>
     </message>
@@ -315,7 +315,7 @@ click on part to mute/unmute</source>
         <translation type="obsolete">Скорость нажатия</translation>
     </message>
     <message>
-        <location line="-857"/>
+        <location line="-861"/>
         <source>Warning: No output devices!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -325,7 +325,7 @@ click on part to mute/unmute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+27"/>
         <source>Empty ports</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5440,7 +5440,7 @@ Configuration</source>
         <translation>MusE: Общие настройки</translation>
     </message>
     <message>
-        <location line="+1302"/>
+        <location line="+1307"/>
         <source>Use project save dialog</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5529,7 +5529,7 @@ left button behave like the middle button in such areas.</source>
         <translation>&amp;Отмена</translation>
     </message>
     <message>
-        <location line="-1024"/>
+        <location line="-1000"/>
         <source>Audio</source>
         <translation>Аудио</translation>
     </message>
@@ -5663,7 +5663,7 @@ left button behave like the middle button in such areas.</source>
         <translation type="obsolete">В чём читать справку:</translation>
     </message>
     <message>
-        <location line="+230"/>
+        <location line="+206"/>
         <source>GUI Refresh Rate</source>
         <translation>Частота обновления ГИП</translation>
     </message>
@@ -5673,12 +5673,12 @@ left button behave like the middle button in such areas.</source>
         <translation>/сек</translation>
     </message>
     <message>
-        <location line="-1224"/>
+        <location line="-1229"/>
         <source>Application</source>
         <translation>Приложение</translation>
     </message>
     <message>
-        <location line="+389"/>
+        <location line="+418"/>
         <source>Start Muse</source>
         <translation>Запустить Muse</translation>
     </message>
@@ -5898,7 +5898,22 @@ Shorter periods are desirable.</source>
         <translation>16</translation>
     </message>
     <message>
-        <location line="-719"/>
+        <location line="-942"/>
+        <source>Project directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Projects:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>...</source>
+        <translation type="unfinished">...</translation>
+    </message>
+    <message>
+        <location line="+204"/>
         <source>Main Window</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6039,12 +6054,7 @@ Adjusts responsiveness of audio controls and
 (Тиков/На четвертную ноту)</translation>
     </message>
     <message>
-        <location line="+126"/>
-        <source>Instruments Directory</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+41"/>
+        <location line="+143"/>
         <source>GUI Behaviour</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6059,12 +6069,12 @@ Adjusts responsiveness of audio controls and
         <translation>Назначать &quot;для записи&quot; выбранный трек</translation>
     </message>
     <message>
-        <location line="-791"/>
+        <location line="-767"/>
         <source>On Launch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+736"/>
+        <location line="+712"/>
         <source>Behavior</source>
         <translation type="unfinished"></translation>
     </message>
@@ -10968,6 +10978,14 @@ click on the Restart button.</source>
     </message>
 </context>
 <context>
+    <name>MusEGui</name>
+    <message>
+        <location filename="../../muse/helper.cpp" line="+56"/>
+        <source>Select project directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MusEGui::Appearance</name>
     <message>
         <location filename="../../muse/appearance.cpp" line="+132"/>
@@ -10977,41 +10995,68 @@ click on the Restart button.</source>
 для всех средств управления, здесь не определены.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>For small controls like mixer strips.
 Also timescale small numbers, arranger part name overlay,
  and effects rack.</source>
-        <translation type="unfinished">Для небольших средств контроля, типа линеек микшера.
+        <translation type="obsolete">Для небольших средств контроля, типа линеек микшера.
 Также для маленьких цифр на линейке времени, названий партий в компоновщике и рэка эффектов.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Midi track info panel. Transport controls.</source>
-        <translation type="unfinished">Инфо-панель Midi-трека. Управление транспортом.</translation>
+        <translation type="obsolete">Инфо-панель Midi-трека. Управление транспортом.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Controller graph and S/X buttons. Large numbers for time
  and tempo scale, and time signature.</source>
-        <translation type="unfinished">Диаграмма контроллера и S/X кнопки. Большие цифры для
+        <translation type="obsolete">Диаграмма контроллера и S/X кнопки. Большие цифры для
 линеек времени и темпа, а также для тактового размера.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Time scale markers.</source>
-        <translation type="unfinished">Маркеры на линейке времени.</translation>
+        <translation type="obsolete">Маркеры на линейке времени.</translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>List editor: meta event edit dialog multi-line edit box.</source>
-        <translation type="unfinished">Редактор списка: редактирование мета-события многострочное окно редактирования. </translation>
+        <translation type="obsolete">Редактор списка: редактирование мета-события многострочное окно редактирования. </translation>
     </message>
     <message>
-        <location line="+1"/>
         <source>Mixer label font. Auto-font-sizing up to chosen font size.
 Word-breaking but only with spaces.</source>
-        <translation type="unfinished">Шрифт метки микшера. Автоматическое изменение размера шрифта до выбранного размера.
+        <translation type="obsolete">Шрифт метки микшера. Автоматическое изменение размера шрифта до выбранного размера.
 Переносы только по пробелам.</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mixer strips and effects racks. Midi track info panel.
+Midi control panel entry box.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Transport controls.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Time scale upper, and time signature.
+Controller graph and S/X buttons.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Time scale lower, and arranger part name overlay.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Tempo scale, and markers.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Mixer labels. Auto-font-sizing up to chosen font size.
+Word-breaking but only with spaces.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+1"/>
@@ -12364,48 +12409,23 @@ Right-click to show GUI.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+32"/>
-        <location line="+12"/>
-        <location line="+280"/>
-        <location line="+12"/>
         <source>MusE:</source>
-        <translation type="unfinished">MusE:</translation>
+        <translation type="obsolete">MusE:</translation>
     </message>
     <message>
-        <location line="-303"/>
-        <location line="+292"/>
-        <source>The user instrument directory
-%1
-does not exist yet. Create it now?
-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-291"/>
-        <location line="+292"/>
-        <source>(You can change the user instruments directory at Settings-&gt;Global Settings-&gt;Midi)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-282"/>
-        <location line="+292"/>
-        <source>Unable to create user instrument directory &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-244"/>
-        <location line="+266"/>
+        <location line="+75"/>
+        <location line="+249"/>
         <source>MusE: Save Instrument Definition</source>
         <translation type="unfinished">MusE: Сохранить Определение Инструмента</translation>
     </message>
     <message>
-        <location line="-265"/>
-        <location line="+266"/>
+        <location line="-248"/>
+        <location line="+249"/>
         <source>Instrument Definition (*.idf)</source>
         <translation type="unfinished">Определение инструмента (*.idf)</translation>
     </message>
     <message>
-        <location line="-154"/>
+        <location line="-137"/>
         <location line="+29"/>
         <source>MusE: Save instrument as</source>
         <translation type="unfinished">MusE: Сохранить инструмент как</translation>
@@ -12422,7 +12442,7 @@ Are you sure?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+526"/>
+        <location line="+509"/>
         <source>MusE: Bad instrument name</source>
         <translation type="unfinished">MusE: Неверное имя инструмента</translation>
     </message>
@@ -12770,14 +12790,6 @@ click on part to mute/unmute</source>
     </message>
 </context>
 <context>
-    <name>MusEGui::GlobalSettingsConfig</name>
-    <message>
-        <location filename="../../muse/widgets/genset.cpp" line="+561"/>
-        <source>Selects instruments directory</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>MusEGui::Header</name>
     <message>
         <location filename="../../muse/widgets/header.cpp" line="+164"/>
@@ -13055,19 +13067,19 @@ click on part to mute/unmute</source>
     <name>MusEGui::MPConfig</name>
     <message>
         <location filename="../../muse/confmport.cpp" line="+101"/>
-        <location line="+176"/>
+        <location line="+179"/>
         <source>Default input connections</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-175"/>
+        <location line="-178"/>
         <location line="+66"/>
         <source>Are you sure you want to apply to all existing midi tracks now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-1"/>
-        <location line="+148"/>
+        <location line="+151"/>
         <source>Default output connections</source>
         <translation type="unfinished"></translation>
     </message>
@@ -13090,18 +13102,18 @@ Do you want to apply to all existing midi tracks now?</source>
     </message>
     <message>
         <location line="+72"/>
-        <location line="+859"/>
+        <location line="+957"/>
         <source>in</source>
         <translation type="unfinished">в</translation>
     </message>
     <message>
-        <location line="-836"/>
-        <location line="+827"/>
+        <location line="-934"/>
+        <location line="+925"/>
         <source>out</source>
         <translation type="unfinished">вне (из)</translation>
     </message>
     <message>
-        <location line="-771"/>
+        <location line="-869"/>
         <source>Show first aliases</source>
         <translation type="unfinished">Показать первые псевдонимы</translation>
     </message>
@@ -13136,7 +13148,7 @@ Do you want to apply to all existing midi tracks now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+229"/>
+        <location line="+326"/>
         <location line="+29"/>
         <source>Port Number</source>
         <translation type="unfinished">Номер порта</translation>
@@ -13252,7 +13264,7 @@ Do you want to apply to all existing midi tracks now?</source>
         <translation type="unfinished">Состояние: результат открытия устройства</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+42"/>
         <source>Port</source>
         <translation type="unfinished">Порт</translation>
     </message>
@@ -13963,7 +13975,7 @@ Apply sync settings?</source>
     <name>MusEGui::MidiTrackInfo</name>
     <message>
         <location filename="../../muse/widgets/mtrackinfo.cpp" line="+335"/>
-        <location line="+1068"/>
+        <location line="+1083"/>
         <source>&lt;unknown&gt;</source>
         <translation type="unfinished">&lt;неизвестно&gt;</translation>
     </message>
@@ -13988,7 +14000,7 @@ Apply sync settings?</source>
 <context>
     <name>MusEGui::MusE</name>
     <message>
-        <location filename="../../muse/app.cpp" line="+137"/>
+        <location filename="../../muse/app.cpp" line="+144"/>
         <location line="+16"/>
         <source>Failed to start audio!</source>
         <translation type="unfinished">Не могу воспроизводить аудио!</translation>
@@ -14008,7 +14020,7 @@ Apply sync settings?</source>
  </translation>
     </message>
     <message>
-        <location line="+220"/>
+        <location line="+209"/>
         <source>Und&amp;o</source>
         <translation type="unfinished">&amp;Отменить действие</translation>
     </message>
@@ -14157,13 +14169,13 @@ Apply sync settings?</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+1030"/>
-        <location line="+1255"/>
+        <location line="+1091"/>
+        <location line="+1248"/>
         <source>&amp;Save</source>
         <translation type="unfinished">&amp;Сохранить</translation>
     </message>
     <message>
-        <location line="-2283"/>
+        <location line="-2337"/>
         <location line="+3"/>
         <source>Click this button to save the song you are editing.  You will be prompted for a file name.
 You can also select the Save command from the File menu.</source>
@@ -14447,7 +14459,7 @@ You can also select the Save command from the File menu.</source>
         <translation type="unfinished">Транспорт</translation>
     </message>
     <message>
-        <location line="+55"/>
+        <location line="+56"/>
         <source>&amp;File</source>
         <translation type="unfinished">&amp;Файл</translation>
     </message>
@@ -14487,12 +14499,12 @@ You can also select the Save command from the File menu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+289"/>
+        <location line="+340"/>
         <source>Cannot read template</source>
         <translation type="unfinished">Не могу прочитать шаблон</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+32"/>
         <source>File open error</source>
         <translation type="unfinished">Ошибка при открытии файла</translation>
     </message>
@@ -14507,14 +14519,14 @@ You can also select the Save command from the File menu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+130"/>
-        <location line="+437"/>
-        <location line="+914"/>
+        <location line="+134"/>
+        <location line="+432"/>
+        <location line="+916"/>
         <source>MusE: Song: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1317"/>
+        <location line="-1314"/>
         <source>MusE: load project</source>
         <translation type="unfinished">MusE: Открыть проект</translation>
     </message>
@@ -14524,7 +14536,7 @@ You can also select the Save command from the File menu.</source>
         <translation type="unfinished">MusE: открыть шаблон</translation>
     </message>
     <message>
-        <location line="+62"/>
+        <location line="+66"/>
         <source>MusE: Write File failed</source>
         <translation type="unfinished"></translation>
     </message>
@@ -14537,29 +14549,28 @@ Save Current Project?</source>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+1255"/>
+        <location line="+1248"/>
         <source>S&amp;kip</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1255"/>
+        <location line="-1248"/>
         <source>&amp;Cancel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+265"/>
-        <location line="+13"/>
+        <location line="+254"/>
         <source>MusE: Save As</source>
         <translation type="unfinished">MusE: Сохранить как</translation>
     </message>
     <message>
-        <location line="+57"/>
+        <location line="+72"/>
         <location line="+160"/>
         <source>Nothing to edit</source>
         <translation type="unfinished">Нечего редактировать</translation>
     </message>
     <message>
-        <location line="+494"/>
+        <location line="+495"/>
         <location line="+10"/>
         <location line="+31"/>
         <location line="+34"/>
@@ -14619,7 +14630,7 @@ and one audio output track</source>
         <translation type="unfinished">настройте левый/правый маркеры для установки диапазона сведения</translation>
     </message>
     <message>
-        <location line="+82"/>
+        <location line="+83"/>
         <source>The current Project contains unsaved data
 Load overwrites current Project:
 Save Current Project?</source>
@@ -15172,7 +15183,7 @@ Likely the selected track is the wrong type.</source>
 <context>
     <name>MusEGui::PluginDialog</name>
     <message>
-        <location filename="../../muse/plugin.cpp" line="+3137"/>
+        <location filename="../../muse/plugin.cpp" line="+3147"/>
         <source>MusE: select plugin</source>
         <translation type="unfinished">MusE: выбрать плагин</translation>
     </message>
@@ -15275,7 +15286,7 @@ Likely the selected track is the wrong type.</source>
 <context>
     <name>MusEGui::PluginGui</name>
     <message>
-        <location line="+207"/>
+        <location line="+208"/>
         <source>File Buttons</source>
         <translation type="unfinished">Файловые кнопки</translation>
     </message>
@@ -15312,34 +15323,42 @@ Likely the selected track is the wrong type.</source>
     </message>
 </context>
 <context>
+    <name>MusEGui::ProjectCreateImpl</name>
+    <message>
+        <location filename="../../muse/widgets/projectcreateimpl.cpp" line="+105"/>
+        <source>Select directory</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>MusEGui::RoutePopupMenu</name>
     <message>
-        <location filename="../../muse/widgets/routepopup.cpp" line="+230"/>
+        <location filename="../../muse/widgets/routepopup.cpp" line="+234"/>
         <location line="+2"/>
         <location line="+132"/>
         <location line="+78"/>
         <location line="+57"/>
         <location line="+60"/>
-        <location line="+685"/>
+        <location line="+883"/>
         <location line="+85"/>
         <source>Channel</source>
         <translation type="unfinished">Канал</translation>
     </message>
     <message>
-        <location line="-270"/>
-        <location line="+220"/>
+        <location line="-292"/>
+        <location line="+242"/>
         <location line="+85"/>
         <source>Soloing chain</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-303"/>
-        <location line="+220"/>
+        <location line="-325"/>
+        <location line="+242"/>
         <source>Audio returns</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-182"/>
+        <location line="-204"/>
         <source>Warning: No input devices!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15349,18 +15368,18 @@ Likely the selected track is the wrong type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+42"/>
-        <location line="+33"/>
+        <location line="+61"/>
+        <location line="+36"/>
         <source>&lt;none&gt;</source>
         <translation type="unfinished">&lt;ничего&gt;</translation>
     </message>
     <message>
-        <location line="-19"/>
+        <location line="-22"/>
         <source>Toggle all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+14"/>
         <source>More...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15741,12 +15760,17 @@ the selected title is not unique</source>
 <context>
     <name>MusEGui::TList</name>
     <message>
-        <location filename="../../muse/arranger/tlist.cpp" line="+373"/>
+        <location filename="../../muse/arranger/tlist.cpp" line="+374"/>
         <source>&lt;none&gt;</source>
         <translation type="unfinished">&lt;ничего&gt;</translation>
     </message>
     <message>
-        <location line="+31"/>
+        <location line="+22"/>
+        <source>visible</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>no clef</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15776,30 +15800,35 @@ the selected title is not unique</source>
         <translation type="unfinished">Выберите неповторяющееся имя для трека</translation>
     </message>
     <message>
-        <location line="+172"/>
-        <location line="+1149"/>
+        <location line="+222"/>
+        <source>Unused Devices</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+88"/>
+        <location line="+1163"/>
         <source>Update drummap?</source>
         <translation type="unfinished">Обновить карту ударных?</translation>
     </message>
     <message>
-        <location line="-1148"/>
+        <location line="-1162"/>
         <source>Do you want to use same port for all instruments in the drummap?</source>
         <translation type="unfinished">Вы хотите использовать один и тот же порт для всех инструментов в списке ударных?</translation>
     </message>
     <message>
         <location line="+1"/>
-        <location line="+1149"/>
+        <location line="+1163"/>
         <source>&amp;Yes</source>
         <translation type="unfinished">&amp;Да</translation>
     </message>
     <message>
-        <location line="-1149"/>
-        <location line="+1149"/>
+        <location line="-1163"/>
+        <location line="+1163"/>
         <source>&amp;No</source>
         <translation type="unfinished">&amp;Нет</translation>
     </message>
     <message>
-        <location line="-1074"/>
+        <location line="-1088"/>
         <location line="+55"/>
         <source>show gui</source>
         <translation type="unfinished">показать ГИП</translation>
@@ -15811,7 +15840,7 @@ the selected title is not unique</source>
         <translation type="unfinished">показать ГИП</translation>
     </message>
     <message>
-        <location line="+346"/>
+        <location line="+348"/>
         <source>Treble clef</source>
         <translation type="unfinished"></translation>
     </message>
@@ -15831,7 +15860,7 @@ the selected title is not unique</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+131"/>
+        <location line="+138"/>
         <source>Delete Track</source>
         <translation type="unfinished">Удалить трек</translation>
     </message>
@@ -15846,7 +15875,7 @@ the selected title is not unique</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+445"/>
+        <location line="+450"/>
         <source>Midi</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17937,12 +17966,34 @@ to be expanded by more than </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+10"/>
+        <source>Projects folder:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <location line="+120"/>
+        <location line="+7"/>
+        <source>...</source>
+        <translation type="unfinished">...</translation>
+    </message>
+    <message>
+        <location line="-109"/>
         <source>Project Name:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location line="+10"/>
+        <source>Project is a Template</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+27"/>
+        <source>Project song file type:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+27"/>
         <source>Project Path to song file:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -17952,12 +18003,7 @@ to be expanded by more than </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+18"/>
-        <source>Browse</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
+        <location line="+34"/>
         <source>Song information:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -18189,14 +18235,14 @@ Create it?</source>
         <translation>создание каталога не удалось</translation>
     </message>
     <message>
-        <location line="+399"/>
+        <location line="+373"/>
         <source>File
 %1
 exists. Overwrite?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+35"/>
         <source>Open File
 %1
 failed: %2</source>
@@ -18214,7 +18260,7 @@ exists</source>
 существует</translation>
     </message>
     <message>
-        <location line="-19"/>
+        <location line="-21"/>
         <source>MusE: write</source>
         <translation>MusE: записать</translation>
     </message>
@@ -18238,7 +18284,7 @@ failed: </source>
 не удалось:</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+22"/>
         <source>MusE: Open File</source>
         <translation>MusE: Открыть файл</translation>
     </message>
@@ -20466,7 +20512,7 @@ is set to a valid editor.</source>
         <location line="+24"/>
         <location line="+11"/>
         <location line="+7"/>
-        <location line="+9"/>
+        <location line="+15"/>
         <location line="+15"/>
         <location line="+7"/>
         <location line="+14"/>
@@ -20478,7 +20524,7 @@ is set to a valid editor.</source>
         <translation type="unfinished">Все файлы (*)</translation>
     </message>
     <message>
-        <location line="-95"/>
+        <location line="-101"/>
         <source>Midi (*.mid)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -20500,28 +20546,31 @@ is set to a valid editor.</source>
     <message>
         <location line="+1"/>
         <location line="+8"/>
+        <location line="+7"/>
         <source>Uncompressed med Files (*.med)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-7"/>
+        <location line="-14"/>
         <location line="+8"/>
+        <location line="+7"/>
         <source>gzip compressed med Files (*.med.gz)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-7"/>
+        <location line="-14"/>
         <location line="+8"/>
+        <location line="+7"/>
         <source>bzip2 compressed med Files (*.med.bz2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-7"/>
+        <location line="-14"/>
         <source>mid Files (*.mid *.midi *.kar *.MID *.MIDI *.KAR)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location line="+19"/>
         <source>(*.jpg *.gif *.png)</source>
         <translation type="unfinished"></translation>
     </message>

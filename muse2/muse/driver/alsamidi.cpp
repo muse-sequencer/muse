@@ -79,6 +79,16 @@ int MidiAlsaDevice::selectWfd()
 QString MidiAlsaDevice::open()
 {
       _openFlags &= _rwFlags; // restrict to available bits
+
+      snd_seq_port_info_t *pinfo;
+      snd_seq_port_info_alloca(&pinfo);
+      int rv = snd_seq_get_any_port_info(alsaSeq, adr.client, adr.port, pinfo);
+      if(rv < 0)
+      {  
+        printf("MidiAlsaDevice::open Error getting port info: adr: %d:%d: %s\n", adr.client, adr.port, snd_strerror(rv));
+        return QString(snd_strerror(rv));
+      }
+      
       snd_seq_port_subscribe_t* subs;
       // Allocated on stack, no need to call snd_seq_port_subscribe_free() later.
       snd_seq_port_subscribe_alloca(&subs);
@@ -87,12 +97,9 @@ QString MidiAlsaDevice::open()
       int wer = 0;
       int rer = 0;
 
-      snd_seq_port_info_t *pinfo;
-      snd_seq_port_info_alloca(&pinfo);
-      //snd_seq_port_info_set_client(pinfo, snd_seq_client_info_get_client(cinfo));
-      snd_seq_port_info_set_addr(pinfo, &adr);
-
       int cap = snd_seq_port_info_get_capability(pinfo);
+
+      //printf("MidiAlsaDevice::open cap:%d\n", cap);  
       
       // subscribe for writing
       if (_openFlags & 1) 
@@ -151,6 +158,15 @@ QString MidiAlsaDevice::open()
 
 void MidiAlsaDevice::close()
 {
+      snd_seq_port_info_t *pinfo;
+      snd_seq_port_info_alloca(&pinfo);
+      int rv = snd_seq_get_any_port_info(alsaSeq, adr.client, adr.port, pinfo);
+      if(rv < 0)
+      {  
+        printf("MidiAlsaDevice::close Error getting port info: adr: %d:%d: %s\n", adr.client, adr.port, snd_strerror(rv));
+        return;
+      }
+      
       snd_seq_port_subscribe_t* subs;
       // Allocated on stack, no need to call snd_seq_port_subscribe_free() later.
       snd_seq_port_subscribe_alloca(&subs);
@@ -158,12 +174,9 @@ void MidiAlsaDevice::close()
       int wer = 0;
       int rer = 0;
 
-      snd_seq_port_info_t *pinfo;
-      snd_seq_port_info_alloca(&pinfo);
-      //snd_seq_port_info_set_client(pinfo, snd_seq_client_info_get_client(cinfo));
-      snd_seq_port_info_set_addr(pinfo, &adr);
-
       int cap = snd_seq_port_info_get_capability(pinfo);
+
+      //printf("MidiAlsaDevice::close cap:%d\n", cap);  
 
       // This function appears to be called only by MidiPort::setMidiDevice(), 
       //  which closes then opens the device.
@@ -881,10 +894,10 @@ void exitMidiAlsa()
     // Allocated on stack, no need to call snd_seq_port_subscribe_free() later.
     snd_seq_port_subscribe_alloca(&subs);
     
-    snd_seq_port_info_t *pinfo;
-    snd_seq_port_info_alloca(&pinfo);
+    //snd_seq_port_info_t *pinfo;
+    //snd_seq_port_info_alloca(&pinfo);
     //snd_seq_port_info_set_client(pinfo, snd_seq_client_info_get_client(cinfo));
-    snd_seq_port_info_set_addr(pinfo, &announce_adr);
+    //snd_seq_port_info_set_addr(pinfo, &announce_adr);
 
     snd_seq_port_subscribe_set_dest(subs, &musePort);
     snd_seq_port_subscribe_set_sender(subs, &announce_adr);

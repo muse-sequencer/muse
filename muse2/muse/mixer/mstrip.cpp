@@ -300,7 +300,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       record->setToolTip(tr("record"));
       record->setChecked(track->recordFlag());
       record->setIcon(track->recordFlag() ? QIcon(*record_on_Icon) : QIcon(*record_off_Icon));
-      record->setIconSize(record_on_Icon->size());  
+      ///record->setIconSize(record_on_Icon->size());  
       connect(record, SIGNAL(clicked(bool)), SLOT(recordToggled(bool)));
 
       mute  = new QToolButton();
@@ -308,7 +308,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       mute->setToolTip(tr("mute"));
       mute->setChecked(track->mute());
       mute->setIcon(track->mute() ? QIcon(*muteIconOff) : QIcon(*muteIconOn));
-      mute->setIconSize(muteIconOn->size());  
+      ///mute->setIconSize(muteIconOn->size());  
       mute->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       connect(mute, SIGNAL(clicked(bool)), SLOT(muteToggled(bool)));
 
@@ -322,7 +322,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
         solo->setIcon(track->solo() ? QIcon(*soloblksqIconOn) : QIcon(*soloblksqIconOff));
       else
         solo->setIcon(track->solo() ? QIcon(*soloIconOn) : QIcon(*soloIconOff));
-      solo->setIconSize(soloIconOn->size());  
+      ///solo->setIconSize(soloIconOn->size());  
       connect(solo, SIGNAL(clicked(bool)), SLOT(soloToggled(bool)));
       
       /*
@@ -368,7 +368,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       off->setToolTip(tr("off"));
       off->setChecked(track->off());
       off->setIcon(track->off() ? QIcon(*exit1Icon) : QIcon(*exitIcon));
-      off->setIconSize(exit1Icon->size());  
+      ///off->setIconSize(exit1Icon->size());  
       connect(off, SIGNAL(clicked(bool)), SLOT(offToggled(bool)));
 
       grid->addWidget(off, _curGridRow, 0);
@@ -382,16 +382,20 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
 
       iR = new QToolButton();
       iR->setFont(MusEGlobal::config.fonts[1]);
-      iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      iR->setText(tr("iR"));
+      iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
+      ///iR->setText(tr("iR"));
+      iR->setIcon(QIcon(*routesMidiInIcon));
+      iR->setIconSize(routesMidiInIcon->size());  
       iR->setCheckable(false);
       iR->setToolTip(tr("input routing"));
       grid->addWidget(iR, _curGridRow, 0);
       connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
       oR = new QToolButton();
       oR->setFont(MusEGlobal::config.fonts[1]);
-      oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
-      oR->setText(tr("oR"));
+      oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
+      ///oR->setText(tr("oR"));
+      oR->setIcon(QIcon(*routesMidiOutIcon));
+      oR->setIconSize(routesMidiOutIcon->size());  
       oR->setCheckable(false);
       // TODO: Works OK, but disabled for now, until we figure out what to do about multiple out routes and display values...
       // Enabled (for Midi Port to Audio Input routing). p4.0.14 Tim.
@@ -994,9 +998,11 @@ void MidiStrip::setReverbSend(double val)
 
 void MidiStrip::iRoutePressed()
 {
-  MusEGui::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
-  iR->setDown(false);     
+  //MusEGui::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
+  RoutePopupMenu* pup = new RoutePopupMenu();
   pup->exec(QCursor::pos(), track, false);
+  delete pup;
+  iR->setDown(false);     
 }
 
 //---------------------------------------------------------
@@ -1005,9 +1011,11 @@ void MidiStrip::iRoutePressed()
 
 void MidiStrip::oRoutePressed()
 {
-  MusEGui::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
-  oR->setDown(false);     
+  //MusEGui::RoutePopupMenu* pup = MusEGlobal::muse->getRoutingPopupMenu();
+  RoutePopupMenu* pup = new RoutePopupMenu();
   pup->exec(QCursor::pos(), track, true);
+  delete pup;
+  oR->setDown(false);     
 }
 
 } // namespace MusEGui
