@@ -10155,34 +10155,38 @@ Größe. Zeilenumbruch aber nur mit Leerzeichen.</translation>
         <location line="+1"/>
         <source>Mixer strips and effects racks. Midi track info panel.
 Midi control panel entry box.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mixer-Strips und Effekteinschübe. Midispur-Info-Panel.
+MIDI-Control-Panel Eintrag Box.</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Transport controls.</source>
-        <translation type="unfinished"></translation>
+        <translation>Transport-Bedienelemente.</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Time scale upper, and time signature.
 Controller graph and S/X buttons.</source>
-        <translation type="unfinished"></translation>
+        <translation>Zeitskala oben und Taktsignatur.
+Controllergraph und S/X-Knöpfe.</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Time scale lower, and arranger part name overlay.</source>
-        <translation type="unfinished"></translation>
+        <translation>Zeitskala unten und Arranger: Partnamen-Overlay.</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Tempo scale, and markers.</source>
-        <translation type="unfinished"></translation>
+        <translation>Temposkala und Marker.</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Mixer labels. Auto-font-sizing up to chosen font size.
 Word-breaking but only with spaces.</source>
-        <translation type="unfinished"></translation>
+        <translation>Mixer-Beschriftungen. Schriftgröße wird automatisch
+nach oben zur gewählten Größe hin angepasst.
+Zeilenumbruch aber nur bei Leerzeichen.</translation>
     </message>
     <message>
         <location line="+1"/>
