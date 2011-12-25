@@ -1470,7 +1470,7 @@ void DrumEdit::showAllInstruments()
       track->drummap_hidden()[i]=false;
   }
   
-  ((DrumCanvas*)(canvas))->rebuildOurDrumMap();
+  MusEGlobal::song->update(SC_DRUMMAP);
 }
 
 void DrumEdit::hideAllInstruments()
@@ -1489,7 +1489,7 @@ void DrumEdit::hideAllInstruments()
       track->drummap_hidden()[i]=true;
   }
   
-  ((DrumCanvas*)(canvas))->rebuildOurDrumMap();
+  MusEGlobal::song->update(SC_DRUMMAP);
 }
 
 void DrumEdit::hideUnusedInstruments()
@@ -1522,7 +1522,7 @@ void DrumEdit::hideUnusedInstruments()
       track->drummap_hidden()[i]=hide[i];
   }
   
-  ((DrumCanvas*)(canvas))->rebuildOurDrumMap();
+  MusEGlobal::song->update(SC_DRUMMAP);
 }
 
 void DrumEdit::hideEmptyInstruments()
@@ -1555,7 +1555,7 @@ void DrumEdit::hideEmptyInstruments()
       track->drummap_hidden()[i]=hide[i];
   }
   
-  ((DrumCanvas*)(canvas))->rebuildOurDrumMap();
+  MusEGlobal::song->update(SC_DRUMMAP);
 }
 
 

@@ -314,11 +314,10 @@ void resetGMDrumMap()
 //   operator ==
 //---------------------------------------------------------
 
-//bool const DrumMap::operator==(const DrumMap& map) const
 bool DrumMap::operator==(const DrumMap& map) const
       {
       return
-         (name == map.name)
+         name == map.name
          && vol == map.vol
          && quant == map.quant
          && len == map.len
