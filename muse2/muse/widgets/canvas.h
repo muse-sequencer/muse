@@ -172,7 +172,7 @@ class Canvas : public View {
       virtual void itemPressed(const CItem*) {}
       virtual void itemReleased(const CItem*, const QPoint&) {}
       virtual void itemMoved(const CItem*, const QPoint&) {}
-      virtual void curPartChanged() {}
+      virtual void curPartChanged() { emit curPartHasChanged(curPart); }
 
    public slots:
       void setTool(int t);
@@ -188,6 +188,8 @@ class Canvas : public View {
       void horizontalScrollNoLimit(unsigned);
       void horizontalZoomIn();
       void horizontalZoomOut();
+      void curPartHasChanged(MusECore::Part*);
+      
    public:
       Canvas(QWidget* parent, int sx, int sy, const char* name = 0);
       virtual ~Canvas();

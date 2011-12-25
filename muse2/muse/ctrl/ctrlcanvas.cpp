@@ -2041,4 +2041,11 @@ void CtrlCanvas::setCurDrumPitch(int instrument)
       //songChanged(-1);
 }
 
+void CtrlCanvas::curPartHasChanged(MusECore::Part*)
+{
+  setCurTrackAndPart();
+  setCurDrumPitch(editor->curDrumInstrument());
+  songChanged(SC_EVENT_MODIFIED);
+}
+
 } // namespace MusEGui

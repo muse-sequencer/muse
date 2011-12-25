@@ -1081,6 +1081,7 @@ void PianoCanvas::itemMoved(const MusEGui::CItem* item, const QPoint& pos)
 
 void PianoCanvas::curPartChanged()
       {
+      EventCanvas::curPartChanged();
       editor->setWindowTitle(getCaption());
       }
 

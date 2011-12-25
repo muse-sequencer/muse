@@ -1076,6 +1076,7 @@ CtrlEdit* DrumEdit::addCtrl()
       connect(tools2,   SIGNAL(toolChanged(int)),   ctrlEdit, SLOT(setTool(int)));
       connect(dlist,    SIGNAL(curDrumInstrumentChanged(int)), SLOT(setCurDrumInstrument(int)));
       connect(dlist,    SIGNAL(curDrumInstrumentChanged(int)), canvas, SLOT(setCurDrumInstrument(int)));
+      connect(canvas,    SIGNAL(curPartHasChanged(MusECore::Part*)), ctrlEdit, SLOT(curPartHasChanged(MusECore::Part*)));
 
       //printf("DrumEdit::addCtrl curDrumInstrument:%d\n", dlist->getSelectedInstrument());
       

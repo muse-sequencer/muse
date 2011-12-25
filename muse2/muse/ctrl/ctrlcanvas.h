@@ -188,6 +188,7 @@ class CtrlCanvas : public MusEGui::View {
       void setTool(int t);
       void setPos(int, unsigned, bool adjustScrollbar);
       void setController(int ctrl);
+      void curPartHasChanged(MusECore::Part*);
 
    signals:
       void followEvent(int);

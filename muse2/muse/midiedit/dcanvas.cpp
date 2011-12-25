@@ -1155,6 +1155,7 @@ void DrumCanvas::modifySelected(NoteInfo::ValType type, int delta)
 
 void DrumCanvas::curPartChanged()
       {
+      EventCanvas::curPartChanged();
       editor->setWindowTitle(getCaption());
       }
 

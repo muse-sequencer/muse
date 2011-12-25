@@ -60,6 +60,7 @@ class CtrlEdit : public QWidget {
       void setXMag(int val)           { canvas->setXMag(val); }
       void setCanvasWidth(int w);
       void setController(int /*n*/);
+      void curPartHasChanged(MusECore::Part*);
       
    signals:
       void timeChanged(unsigned);

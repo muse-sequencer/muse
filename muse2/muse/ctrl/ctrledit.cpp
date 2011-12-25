@@ -182,4 +182,9 @@ void CtrlEdit::setController(const QString& name)
   }
 }
 
+void CtrlEdit::curPartHasChanged(MusECore::Part* p)
+{
+  canvas->curPartHasChanged(p);
+}
+
 } // namespace MusEGui

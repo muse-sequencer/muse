@@ -4655,6 +4655,20 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
 //      every time something changes.
 
 
+/* STUFF I WANT TO WORK
+ * 
+ * x multiple new drum tracks can be displayed seperately in ONE drum 
+ *   editor
+ * x reorder drummap
+ * ? support and correctly map e-note on record and steprec
+ * ? only record nonmuted/whatever notes
+ * ? support drum controllers
+ * o refuse to mix up old-style and new-style drum tracks in ONE editor
+ * o drummap saving and loading (per-track)
+ * o drummap import/export
+ * o drummap automatically adapting to the chosen midi synth / patch
+ */
+
 /* BUGS and potential bugs
  *   o tied notes don't work properly when there's a key-change in
  *     between, for example, when a cis is tied to a des
@@ -4665,6 +4679,9 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  *
  * CURRENT TODO
+ *   o having the same drum track in two editors open, using "hide all"
+ *     on the first (while the second is in "only shown"-mode), this
+ *     has no effect in the second.
  *   o drum controllers
  *       update ctrlcanvas/panel
  *       test!
@@ -4675,9 +4692,9 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *   o quantize must round UP, not down when at 0.5
  *   o my record flag handling
  *   o option for disabling old-style / new-style drum tracks?
- * ! o using super glue while a score editor displaying the glued parts
- *     is open lets muse segfault. this may or may not be fixed in
- *     the release branch :/
+ * ! o once, using super glue while a score editor displaying the glued 
+ *     parts is open let muse segfault. this may or may not be fixed
+ *     now. check!
  * 
  * > o drum editor: channel-stuff
  *        o clearly state in the changelog: when having multiple drumeditors open,
