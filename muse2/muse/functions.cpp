@@ -177,7 +177,7 @@ bool quantize_notes(const set<Part*>& parts)
 {
 	if (!MusEGui::quantize_dialog->exec())
 		return false;
-//  (1<<MusEGui::quantize_dialog->raster_power2)
+
   int raster = MusEGui::rasterVals[MusEGui::quantize_dialog->raster_index];
   quantize_notes(parts, MusEGui::quantize_dialog->range, (MusEGlobal::config.division*4)/raster,
 	               MusEGui::quantize_dialog->quant_len, MusEGui::quantize_dialog->strength, MusEGui::quantize_dialog->swing,
@@ -568,16 +568,16 @@ unsigned quantize_tick(unsigned tick, unsigned raster, int swing)
 	int tick_dest2 = tick_dest1 + raster + raster*swing/100;
 	int tick_dest3 = tick_dest1 + raster*2;
 
-	int tick_diff1 = tick_dest1 - tick;
-	int tick_diff2 = tick_dest2 - tick;
-	int tick_diff3 = tick_dest3 - tick;
+	int tick_diff1 = abs(tick_dest1 - (int)tick);
+	int tick_diff2 = abs(tick_dest2 - (int)tick);
+	int tick_diff3 = abs(tick_dest3 - (int)tick);
 	
-	if ((abs(tick_diff1) <= abs(tick_diff2)) && (abs(tick_diff1) <= abs(tick_diff3))) //tick_dest1 is the nearest tick
-		return tick_dest1;
-	else if ((abs(tick_diff2) <= abs(tick_diff1)) && (abs(tick_diff2) <= abs(tick_diff3))) //tick_dest2 is the nearest tick
+	if ((tick_diff3 <= tick_diff1) && (tick_diff3 <= tick_diff2)) //tick_dest3 is the nearest tick
+		return tick_dest3;
+	else if ((tick_diff2 <= tick_diff1) && (tick_diff2 <= tick_diff3)) //tick_dest2 is the nearest tick
 		return tick_dest2;
 	else
-		return tick_dest3;
+		return tick_dest1;
 }
 
 bool quantize_notes(const set<Part*>& parts, int range, int raster, bool quant_len, int strength, int swing, int threshold)

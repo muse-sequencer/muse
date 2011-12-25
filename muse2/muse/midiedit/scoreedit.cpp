@@ -4663,7 +4663,7 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  * ? support and correctly map e-note on record and steprec
  * ? only record nonmuted/whatever notes
  * ? support drum controllers
- * o refuse to mix up old-style and new-style drum tracks in ONE editor
+ * x refuse to mix up old-style and new-style drum tracks in ONE editor
  * o drummap saving and loading (per-track)
  * o drummap import/export
  * o drummap automatically adapting to the chosen midi synth / patch
