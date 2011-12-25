@@ -299,10 +299,11 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
       int instrument = y / TH;
       if (instrument >= ourDrumMapSize) instrument=ourDrumMapSize-1;
       if (instrument < 0) instrument=0;
-      MusECore::DrumMap* dm = &ourDrumMap[instrument];
-      MusECore::DrumMap dm_old = *dm;
 
       setCurDrumInstrument(instrument);
+
+      MusECore::DrumMap* dm = &ourDrumMap[instrument];
+      MusECore::DrumMap dm_old = *dm;
 
       startY = y;
       sInstrument = instrument;
@@ -724,7 +725,8 @@ void DList::setCurDrumInstrument(int instr)
       if (currentlySelected != dm) {
             currentlySelected = dm;
             emit curDrumInstrumentChanged(instr);
-            MusEGlobal::song->update(SC_DRUMMAP);
+            //MusEGlobal::song->update(SC_DRUMMAP); //FINDMICHJETZT what for?? wtf?
+            redraw(); // FINDMICHJETZT using redraw() instead of the above.
             }
       }
 
@@ -1084,12 +1086,33 @@ int DList::getSelectedInstrument()
 void DList::ourDrumMapChanged(bool instrMapChanged)
 {
   int selIdx = currentlySelected - ourDrumMap;
+  int editIdx = editEntry ? (editEntry - ourDrumMap) : -1;
   
   ourDrumMap=dcanvas->getOurDrumMap();
   ourDrumMapSize=dcanvas->getOurDrumMapSize();
   
   if (instrMapChanged)
-    editEntry=NULL;
+  {
+    if (editEntry!=NULL)
+    {
+      printf("THIS SHOULD NEVER HAPPEN: DList::ourDrumMapChanged(true) caused editEntry to be\n"
+             "                          invalidated. The current active editor will have no\n"
+             "                          effect, expect potential breakage...\n");
+      editEntry=NULL;
+    }
+  }
+  else // that is: if (!instrMapChanged)
+  {
+    // if the instrumentMap has not changed, then its size and so
+    // ourDrumMapSize cannot have changed as well.
+    if (editIdx >= ourDrumMapSize)
+    {
+      printf("THIS SHOULD NEVER HAPPEN: editIdx got out of bounds although ourDrumMapSize\n"
+             "                          cannot have changed (actually)\n");
+      editIdx=-1;
+    }
+    editEntry=(editIdx>=0) ? &ourDrumMap[editIdx] : NULL;
+  }
   
   if (selIdx >= ourDrumMapSize) selIdx=ourDrumMapSize-1;
   if (selIdx < 0) selIdx=0;

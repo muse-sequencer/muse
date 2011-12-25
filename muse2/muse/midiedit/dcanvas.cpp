@@ -1605,7 +1605,7 @@ void DrumCanvas::rebuildOurDrumMap()
     
     if (instrument_map!=old_instrument_map)
     {
-    if (debugMsg) printf("rebuilt drummap and instrument map, size is now %i\n",size);
+      if (debugMsg) printf("rebuilt drummap and instrument map, size is now %i\n",size);
     
       songChanged(SC_EVENT_INSERTED); // force an update of the itemlist
       emit ourDrumMapChanged(true);
