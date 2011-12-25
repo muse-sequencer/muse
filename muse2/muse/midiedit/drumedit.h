@@ -96,6 +96,7 @@ class DrumEdit : public MidiEditor {
    private:
       group_mode_t _group_mode;
       bool _ignore_hide;
+      bool _old_style_drummap_mode;
       
       MusECore::Event selEvent;
       MusECore::MidiPart* selPart;
@@ -135,7 +136,7 @@ class DrumEdit : public MidiEditor {
 
       void setHeaderToolTips();
       void setHeaderWhatsThis();
-
+      
    private slots:
       void setRaster(int);
       void noteinfoChanged(MusEGui::NoteInfo::ValType type, int val);
@@ -159,6 +160,8 @@ class DrumEdit : public MidiEditor {
       void hideAllInstruments();
       void hideUnusedInstruments();
       void hideEmptyInstruments();
+      
+      void display_old_new_conflict_message();
 
    public slots:
       void setSelection(int, MusECore::Event&, MusECore::Part*);
@@ -180,7 +183,7 @@ class DrumEdit : public MidiEditor {
       static void readConfiguration(MusECore::Xml& xml);
       static void writeConfiguration(int, MusECore::Xml&);
       
-      bool old_style_drummap_mode();
+      bool old_style_drummap_mode() { return _old_style_drummap_mode; }
       group_mode_t group_mode() { return _group_mode; }
       bool ignore_hide() { return _ignore_hide; }
       

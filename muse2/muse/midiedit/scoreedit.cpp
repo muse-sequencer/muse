@@ -4684,12 +4684,10 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *       test!
  *   * drum editor is buggy. propagate_drum_map may operate on old values
  *     ("BUGGY! problem is: while changing entries, ourDrumMap
-        may be reallocated which causes abort()s and/or bugs.")
-        [ seems to work, needs further testing! ]
- *   o don't mix DRUM and NEW_DRUM in drumeditor!
+ *      may be reallocated which causes abort()s and/or bugs.")
+ *      [ seems to work, needs further testing! ]
  *   o quantize must round UP, not down when at 0.5
  *   o my record flag handling
- *   o option for disabling old-style / new-style drum tracks?
  * ! o once, using super glue while a score editor displaying the glued 
  *     parts is open let muse segfault. this may or may not be fixed
  *     now. check!

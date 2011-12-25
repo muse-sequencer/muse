@@ -233,6 +233,48 @@ DrumEdit::DrumEdit(MusECore::PartList* pl, QWidget* parent, const char* name, un
       menuFunctions = menuBar()->addMenu(tr("Fu&nctions"));
       
       menuFunctions->setTearOffEnabled(true);
+
+      
+      
+      // throw out new-style and midi tracks if there are old-style tracks present
+      bool has_old_style_tracks=false;
+      for (MusECore::ciPart p = parts()->begin(); p != parts()->end(); ++p)
+        if (p->second->track()->type()==MusECore::Track::DRUM)
+        {
+          has_old_style_tracks=true;
+          break;
+        }
+      
+      if (has_old_style_tracks)
+      {
+        bool thrown_out=false;
+        bool again;
+        do
+        {
+          again=false;
+          for (MusECore::ciPart p = parts()->begin(); p != parts()->end();p++)
+            if (p->second->track()->type()!=MusECore::Track::DRUM)
+            {
+              parts()->remove(p->second);
+              thrown_out=true;
+              again=true;
+              break;
+            }
+        } while (again);
+      
+        if (thrown_out)
+        {
+          QTimer* timer = new QTimer(this);
+          timer->setSingleShot(true);
+          connect(timer,SIGNAL(timeout()), this, SLOT(display_old_new_conflict_message()));
+          timer->start(10);
+        }
+      }
+
+      _old_style_drummap_mode=has_old_style_tracks;
+      
+      
+
       
       if (old_style_drummap_mode())
       {
@@ -1407,15 +1449,6 @@ void DrumEdit::setStep(QString v)
   canvas->setFocus();
 }
 
-bool DrumEdit::old_style_drummap_mode()
-{
-  for (MusECore::ciPart p = parts()->begin(); p != parts()->end(); ++p)
-    if (p->second->track()->type()==MusECore::Track::DRUM)
-      return true;
-  
-  return false;
-}
-
 void DrumEdit::ourDrumMapChanged(bool instrMapChanged)
 {
   if (instrMapChanged)
@@ -1558,5 +1591,10 @@ void DrumEdit::hideEmptyInstruments()
   MusEGlobal::song->update(SC_DRUMMAP);
 }
 
+
+void DrumEdit::display_old_new_conflict_message()
+{
+  QMessageBox::information(this, tr("Not all parts are displayed"), tr("You selected both old-style-drumtracks and others (that is: new-style or midi tracks), but they cannot displayed in the same drum edit.\nI'll only display the old-style drumtracks in this editor, dropping the others."));
+}
 
 } // namespace MusEGui
