@@ -184,6 +184,14 @@ Shorter periods are desirable.</string>
 
       addHiddenCheckBox->setChecked(MusEGlobal::config.addHiddenTracks);
       unhideTracksCheckBox->setChecked(MusEGlobal::config.unhideTracks);
+      
+      switch (MusEGlobal::config.drumTrackPreference)
+      {
+        case MusEGlobal::ONLY_NEW: onlyNewDrumBtn->setChecked(true); break;
+        case MusEGlobal::ONLY_OLD: onlyOldDrumBtn->setChecked(true); break;
+        case MusEGlobal::PREFER_NEW: preferNewDrumBtn->setChecked(true); break;
+        case MusEGlobal::PREFER_OLD: preferOldDrumBtn->setChecked(true); break;
+      }
 
       //updateSettings();    // TESTING
       
@@ -332,6 +340,14 @@ void GlobalSettingsConfig::updateSettings()
       addHiddenCheckBox->setChecked(MusEGlobal::config.addHiddenTracks);
       unhideTracksCheckBox->setChecked(MusEGlobal::config.unhideTracks);
 
+      switch (MusEGlobal::config.drumTrackPreference)
+      {
+        case MusEGlobal::ONLY_NEW: onlyNewDrumBtn->setChecked(true); break;
+        case MusEGlobal::ONLY_OLD: onlyOldDrumBtn->setChecked(true); break;
+        case MusEGlobal::PREFER_NEW: preferNewDrumBtn->setChecked(true); break;
+        case MusEGlobal::PREFER_OLD: preferOldDrumBtn->setChecked(true); break;
+      }
+
       updateMdiSettings();
 }
 
@@ -473,6 +489,16 @@ void GlobalSettingsConfig::apply()
 
       MusEGlobal::muse->setHeartBeat();        // set guiRefresh
       MusEGlobal::midiSeq->msgSetRtc();        // set midi tick rate
+      
+      if (onlyNewDrumBtn->isChecked())
+        MusEGlobal::config.drumTrackPreference=MusEGlobal::ONLY_NEW;
+      else if (onlyOldDrumBtn->isChecked())
+        MusEGlobal::config.drumTrackPreference=MusEGlobal::ONLY_OLD;
+      else if (preferOldDrumBtn->isChecked())
+        MusEGlobal::config.drumTrackPreference=MusEGlobal::PREFER_OLD;
+      else if (preferNewDrumBtn->isChecked())
+        MusEGlobal::config.drumTrackPreference=MusEGlobal::PREFER_NEW;
+
       
       applyMdiSettings();
       

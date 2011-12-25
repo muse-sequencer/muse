@@ -1442,19 +1442,6 @@ left button behave like the middle button in such areas.</string>
             </property>
            </widget>
           </item>
-          <item row="9" column="0">
-           <spacer name="verticalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
           <item row="7" column="1">
            <widget class="QCheckBox" name="addHiddenCheckBox">
             <property name="text">
@@ -1485,6 +1472,56 @@ left button behave like the middle button in such areas.</string>
           </item>
          </layout>
         </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>Drum tracks</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="0" column="0">
+           <widget class="QRadioButton" name="onlyOldDrumBtn">
+            <property name="text">
+             <string>Only offer old-style drumtracks</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QRadioButton" name="onlyNewDrumBtn">
+            <property name="text">
+             <string>Only offer new-style drumtracks</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QRadioButton" name="preferOldDrumBtn">
+            <property name="text">
+             <string>Prefer old-style drumtracks</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QRadioButton" name="preferNewDrumBtn">
+            <property name="text">
+             <string>Prefer new-style drumtracks</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>
@@ -1544,8 +1581,8 @@ left button behave like the middle button in such areas.</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>96</width>
-               <height>26</height>
+               <width>486</width>
+               <height>375</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">

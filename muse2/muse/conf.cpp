@@ -969,6 +969,8 @@ void readConfiguration(Xml& xml, bool readOnlySequencer, bool doReadGlobalConfig
                               MusEGlobal::config.rangeMarkerWithoutMMB = xml.parseInt();
                         else if (tag == "addHiddenTracks")
                               MusEGlobal::config.addHiddenTracks = xml.parseInt();
+                        else if (tag == "drumTrackPreference")
+                              MusEGlobal::config.drumTrackPreference = (MusEGlobal::drumTrackPreference_t) xml.parseInt();
                         else if (tag == "unhideTracks")
                               MusEGlobal::config.unhideTracks = xml.parseInt();
 
@@ -1312,6 +1314,7 @@ void MusE::writeGlobalConfiguration(int level, MusECore::Xml& xml) const
       
       xml.intTag(level, "unhideTracks", MusEGlobal::config.unhideTracks);
       xml.intTag(level, "addHiddenTracks", MusEGlobal::config.addHiddenTracks);
+      xml.intTag(level, "drumTrackPreference", MusEGlobal::config.drumTrackPreference);
 
       xml.intTag(level, "waveTracksVisible",  MusECore::WaveTrack::visible());
       xml.intTag(level, "auxTracksVisible",  MusECore::AudioAux::visible());

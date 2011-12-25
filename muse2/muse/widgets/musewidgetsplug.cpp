@@ -220,7 +220,8 @@ MusEGlobal::GlobalConfigValues config = {
       false,                        // rangeMarkerWithoutMMB
       MusECore::DONT_REC_MUTED_OR_HIDDEN,
       true,                         // addHiddenTracks
-      true                          // unhideTracks
+      true,                         // unhideTracks
+      MusEGlobal::PREFER_NEW        // drumTrackPreference
       };
 
 //---------------------------------------------------------

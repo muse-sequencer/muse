@@ -47,6 +47,13 @@ enum newDrumRecordCondition_t
 
 namespace MusEGlobal {
 
+enum drumTrackPreference_t
+{
+  PREFER_OLD = 0,
+  PREFER_NEW = 1,
+  ONLY_OLD = 2,
+  ONLY_NEW = 3
+};
 //---------------------------------------------------------
 //   MixerConfig
 //---------------------------------------------------------
@@ -180,6 +187,7 @@ struct GlobalConfigValues {
       MusECore::newDrumRecordCondition_t newDrumRecordCondition;
       bool addHiddenTracks;
       bool unhideTracks;
+      drumTrackPreference_t drumTrackPreference;
       };
 
 

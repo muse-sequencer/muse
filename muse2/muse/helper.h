@@ -53,7 +53,7 @@ QSet<Part*> parts_at_tick(unsigned tick, const QSet<Track*>& tracks);
 
 namespace MusEGui {
 QMenu* populateAddSynth(QWidget* parent);
-QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll=false);
+QActionGroup* populateAddTrack(QMenu* addTrack, bool populateAll=false, bool evenIgnoreDrumPreference=false);
 QStringList localizedStringListFromCharArray(const char** array, const char* context);
 QString getFilterExtension(const QString &filter);
 QString browseProjectFolder(QWidget* parent = 0);
