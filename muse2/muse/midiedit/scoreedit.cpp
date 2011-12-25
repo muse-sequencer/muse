@@ -4679,15 +4679,13 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *     from clipboard failed. ignoring this one... ) [ not reproducible ]
  *
  * CURRENT TODO
- *   o having the same drum track in two editors open, using "hide all"
- *     on the first (while the second is in "only shown"-mode), this
- *     has no effect in the second.
  *   o drum controllers
  *       update ctrlcanvas/panel
  *       test!
- *   o drum editor is buggy. propagate_drum_map may operate on old values
+ *   * drum editor is buggy. propagate_drum_map may operate on old values
  *     ("BUGGY! problem is: while changing entries, ourDrumMap
         may be reallocated which causes abort()s and/or bugs.")
+        [ seems to work, needs further testing! ]
  *   o don't mix DRUM and NEW_DRUM in drumeditor!
  *   o quantize must round UP, not down when at 0.5
  *   o my record flag handling

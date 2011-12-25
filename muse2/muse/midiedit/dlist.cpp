@@ -299,6 +299,7 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
       int instrument = y / TH;
       if (instrument >= ourDrumMapSize) instrument=ourDrumMapSize-1;
       if (instrument < 0) instrument=0;
+      if (ourDrumMapSize==0) return;
 
       setCurDrumInstrument(instrument);
 
@@ -593,6 +594,7 @@ void DList::lineEdit(int line, int section)
       {
             if (line >= ourDrumMapSize) line=ourDrumMapSize-1;
             if (line < 0) line=0;
+            if (ourDrumMapSize==0) return;
 
             MusECore::DrumMap* dm = &ourDrumMap[line];
             editEntry = dm;
@@ -664,6 +666,7 @@ void DList::pitchEdit(int line, int section)
       {
             if (line >= ourDrumMapSize) line=ourDrumMapSize-1;
             if (line < 0) line=0;
+            if (ourDrumMapSize==0) return;
 
             MusECore::DrumMap* dm = &ourDrumMap[line];
             editEntry = dm;
@@ -978,8 +981,16 @@ DList::DList(QHeaderView* h, QWidget* parent, int ymag, DrumCanvas* dcanvas_, bo
       editor = 0;
       pitch_editor = 0;
       editEntry = 0;
-      // always select a drum instrument
-      currentlySelected = &ourDrumMap[0];
+      if (ourDrumMapSize!=0)
+      {
+        // always select a drum instrument
+        currentlySelected = &ourDrumMap[0];
+      }
+      else
+      {
+        currentlySelected = NULL;
+      }
+      
       selectedColumn = -1;
       }
 
@@ -1000,7 +1011,7 @@ void DList::viewMouseMoveEvent(QMouseEvent* ev)
       curY = ev->y();
       int delta = curY - startY;
       switch (drag) {
-            case START_DRAG:
+            case START_DRAG: // this cannot happen if ourDrumMapSize==0
                   if (delta < 0)
                         delta = -delta;
                   if (delta <= 2)
@@ -1077,7 +1088,7 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
 
 int DList::getSelectedInstrument()
       {
-      if (currentlySelected == 0)
+      if (currentlySelected == NULL)
             return -1;
       return MusEGlobal::drumInmap[int(currentlySelected->enote)];
       }
@@ -1085,7 +1096,7 @@ int DList::getSelectedInstrument()
 
 void DList::ourDrumMapChanged(bool instrMapChanged)
 {
-  int selIdx = currentlySelected - ourDrumMap;
+  int selIdx = currentlySelected ? (currentlySelected - ourDrumMap) : -1;
   int editIdx = editEntry ? (editEntry - ourDrumMap) : -1;
   
   ourDrumMap=dcanvas->getOurDrumMap();
@@ -1116,7 +1127,10 @@ void DList::ourDrumMapChanged(bool instrMapChanged)
   
   if (selIdx >= ourDrumMapSize) selIdx=ourDrumMapSize-1;
   if (selIdx < 0) selIdx=0;
-  currentlySelected = &ourDrumMap[selIdx];
+  currentlySelected = (ourDrumMapSize!=0) ? &ourDrumMap[selIdx] : NULL;
+  
+  if (ourDrumMapSize==0)
+    drag = NORMAL;
 
   redraw();
 }
