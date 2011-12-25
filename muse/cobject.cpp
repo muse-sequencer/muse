@@ -572,6 +572,13 @@ void TopWin::resize(const QSize& s)
 	resize(s.width(), s.height());
 }
 
+void TopWin::setWindowTitle (const QString& title)
+{
+	QMainWindow::setWindowTitle(title);
+	muse->updateWindowMenu();
+}
+
+
 TopWin* ToplevelList::findType(TopWin::ToplevelType type) const
 {
 	for (ciToplevel i = begin(); i != end(); ++i) 
