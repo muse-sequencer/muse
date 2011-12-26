@@ -104,7 +104,6 @@ BigTime::BigTime(QWidget* parent)
       setWindowTitle(tr("MusE: Bigtime"));
       }
 
-
 //---------------------------------------------------------
 //   fmtButtonToggled
 //---------------------------------------------------------

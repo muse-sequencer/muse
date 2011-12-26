@@ -137,6 +137,7 @@ class TopWin : public QMainWindow
       void shareToolsAndMenu(bool);
       void restoreMainwinState();
       void storeInitialState() const;
+      virtual void setWindowTitle (const QString&);
       
       };
 

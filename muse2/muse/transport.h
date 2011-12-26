@@ -150,7 +150,6 @@ class Transport : public QWidget
 
    public:
       Transport(QWidget* parent, const char* name = 0);
-      ~Transport();
       QColor getHandleColor() const { return lefthandle->palette().color(QPalette::Window); }
       };
 

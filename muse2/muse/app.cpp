@@ -2442,7 +2442,10 @@ void MusE::configAppearance()
 void MusE::loadTheme(const QString& s)
       {
       if (style()->objectName() != s)
+      {
             QApplication::setStyle(s);
+            style()->setObjectName(s);   // p4.0.45
+      }      
       }
 
 //---------------------------------------------------------
@@ -3021,7 +3024,7 @@ void MusE::updateConfiguration()
 void MusE::showBigtime(bool on)
       {
       if (on && bigtime == 0) {
-            bigtime = new MusEGui::BigTime(0);
+            bigtime = new MusEGui::BigTime(this);
             bigtime->setPos(0, MusEGlobal::song->cpos(), false);
             connect(MusEGlobal::song, SIGNAL(posChanged(int, unsigned, bool)), bigtime, SLOT(setPos(int, unsigned, bool)));
             connect(MusEGlobal::muse, SIGNAL(configChanged()), bigtime, SLOT(configChanged()));
@@ -3136,12 +3139,10 @@ QWidget* MusE::bigtimeWindow()   { return bigtime; }
 
 void MusE::focusInEvent(QFocusEvent* ev)
       {
-      //if (audioMixer)
-      //      audioMixer->raise();
-      if (mixer1)
-            mixer1->raise();
-      if (mixer2)
-            mixer2->raise();
+      //if (mixer1)                // Removed p4.0.45
+      //      mixer1->raise();
+      //if (mixer2)
+      //      mixer2->raise();
       raise();
       QMainWindow::focusInEvent(ev);
       }
