@@ -4685,17 +4685,18 @@ void ScoreCanvas::add_new_parts(const std::map< MusECore::Part*, std::set<MusECo
  *   * drum editor is buggy. propagate_drum_map may operate on old values
  *     ("BUGGY! problem is: while changing entries, ourDrumMap
  *      may be reallocated which causes abort()s and/or bugs.")
- *      [ seems to work, needs further testing! ]
- *   o quantize must round UP, not down when at 0.5
- *   o my record flag handling
- * ! o once, using super glue while a score editor displaying the glued 
+ *      [ seems to work now, needs further testing! ]
+ * > o my record flag handling
+ *   o once, using super glue while a score editor displaying the glued 
  *     parts is open let muse segfault. this may or may not be fixed
  *     now. check!
+ *     state of revision #1337: no segfaults, but the score editors
+ *     close and lots of "ERROR" messages.
  * 
- * > o drum editor: channel-stuff
+ *   o drum editor: channel-stuff
  *        o clearly state in the changelog: when having multiple drumeditors open,
  *          the mute-column may not work, because another editor is overriding this.
- *        o respect "_drummap_tied_to_patch": IMPLEMENT
+ * >      o respect "_drummap_tied_to_patch": IMPLEMENT
  *        o whenever changing the patch and maintained_automatically==true,
  *          the drumlist is replaced by the according one (for example, "jazz" drum kit's list)
  *        o whenever changing the drumlist and maintained_automatically==true,

@@ -636,6 +636,8 @@ void MidiTrack::init_drummap(bool write_ordering)
   
   for (int i=0;i<128;i++)
     _drummap_hidden[i]=false;
+
+  _drummap_tied_to_patch=true;
 }
 
 void MidiTrack::update_drum_in_map()
