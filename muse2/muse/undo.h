@@ -122,8 +122,9 @@ struct UndoOp {
       };
 
 class Undo : public std::list<UndoOp> {
-      void undoOp(UndoOp::UndoType, int data);
-      };
+   public:
+      bool empty() const;
+};
 
 typedef Undo::iterator iUndoOp;
 typedef Undo::reverse_iterator riUndoOp;

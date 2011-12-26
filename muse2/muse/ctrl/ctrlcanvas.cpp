@@ -1927,8 +1927,8 @@ void CtrlCanvas::drawOverlay(QPainter& p)
       if (noEvents) {
            //p.setFont(MusEGlobal::config.fonts[3]);
            //p.setPen(Qt::black);
-           //p.drawText(width()/2-100,height()/2-10, "Use shift + pencil or line tool to draw new events");
-           p.drawText(2 , y * 2, "Drawing hint: Hold Ctrl to affect only existing events");
+           //p.drawText(width()/2-100,height()/2-10, tr("Use shift + pencil or line tool to draw new events"));
+           p.drawText(2 , y * 2, tr("Drawing hint: Hold Ctrl to affect only existing events"));
            }
       }
 
@@ -1948,7 +1948,7 @@ QRect CtrlCanvas::overlayRect() const
       r.translate(2, y);   
       if (noEvents) 
       {
-        QRect r2(fm.boundingRect(QString("Use shift + pencil or line tool to draw new events")));
+        QRect r2(fm.boundingRect(QString(tr("Use shift + pencil or line tool to draw new events"))));
         //r2.translate(width()/2-100, height()/2-10);   
         r2.translate(2, y * 2);   
         r |= r2;

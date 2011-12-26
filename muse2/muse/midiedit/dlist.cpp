@@ -291,8 +291,8 @@ void DList::viewMousePressEvent(QMouseEvent* ev)
                   val = dm->vol + incVal;
                   if (val < 0)
                         val = 0;
-                  else if (val > 200)
-                        val = 200;
+                  else if (val > 999)
+                        val = 999;
                   dm->vol = (unsigned char)val;      
                   break;
             case COL_QNT:
@@ -607,8 +607,8 @@ void DList::returnPressed()
             switch (selectedColumn)
             {
               case COL_VOL:
-                  if (val > 200) //Check bounds for volume
-                  val = 200;
+                  if (val > 999) //Check bounds for volume
+                  val = 999;
                   if (val < 0)
                   val = 0;
                   break;
@@ -826,7 +826,10 @@ void DList::viewMouseReleaseEvent(QMouseEvent* ev)
       {
       if (drag == DRAG) {
             int y = ev->y();
-            unsigned dPitch = y / TH;
+            int dPitch = y / TH;
+            if (dPitch < 0) dPitch=0;
+            if (dPitch >= DRUM_MAPSIZE) dPitch=DRUM_MAPSIZE-1;
+            
             setCursor(QCursor(Qt::ArrowCursor));
             currentlySelected = &MusEGlobal::drumMap[int(dPitch)];
             emit curDrumInstrumentChanged(dPitch);

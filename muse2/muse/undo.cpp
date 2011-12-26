@@ -789,6 +789,7 @@ void Song::doRedo2()
 
 UndoOp::UndoOp()
 {
+  type=UndoOp::DoNothing;
 }
 
 UndoOp::UndoOp(UndoType type_)
@@ -1086,5 +1087,17 @@ void Song::doRedo3()
       redoList->pop_back();
       dirty = true;
       }
+
+
+bool Undo::empty() const
+{
+  if (std::list<UndoOp>::empty()) return true;
+  
+  for (const_iterator it=begin(); it!=end(); it++)
+    if (it->type!=UndoOp::DoNothing)
+      return false;
+  
+  return true;
+}
 
 } // namespace MusECore

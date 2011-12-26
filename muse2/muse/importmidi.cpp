@@ -201,13 +201,13 @@ bool MusE::importMidi(const QString name, bool merge)
                         if (channel == 9 && MusEGlobal::song->mtype() != MT_UNKNOWN) {
                               track->setType(MusECore::Track::DRUM);
                               //
-                              // remap drum pitch with drumInmap
+                              // remap drum pitch with drumOutmap (was: Inmap. flo93 thought this was wrong)
                               //
                               MusECore::EventList* tevents = track->events();
                               for (MusECore::iEvent i = tevents->begin(); i != tevents->end(); ++i) {
                                     MusECore::Event ev  = i->second;
                                     if (ev.isNote()) {
-                                          int pitch = MusEGlobal::drumInmap[ev.pitch()];
+                                          int pitch = MusEGlobal::drumOutmap[ev.pitch()]; // flo93
                                           ev.setPitch(pitch);
                                           }
                                     else
@@ -216,7 +216,7 @@ bool MusE::importMidi(const QString name, bool merge)
                                       int ctl = ev.dataA();
                                       MusECore::MidiController *mc = mport->drumController(ctl);
                                       if(mc)
-                                        ev.setA((ctl & ~0xff) | MusEGlobal::drumInmap[ctl & 0x7f]);
+                                        ev.setA((ctl & ~0xff) | MusEGlobal::drumOutmap[ctl & 0x7f]); // flo93
                                     }
                                   }
                               }

@@ -512,13 +512,15 @@ void Song::remapPortDrumCtrlEvents(int mapidx, int newnote, int newchan, int new
     {
       MidiPart* part = (MidiPart*)(ip->second);
       const EventList* el = part->cevents();
-      unsigned len = part->lenTick();
+      // unsigned len = part->lenTick(); // unneeded, see below.
       for(ciEvent ie = el->begin(); ie != el->end(); ++ie)
       {
         const Event& ev = ie->second;
         // Added by T356. Do not handle events which are past the end of the part.
-        if(ev.tick() >= len)
-          break;
+        // Commented out by flo: yes, DO handle them! these are "hidden events"
+        //                       which may be revealed later again!
+        // if(ev.tick() >= len)
+        //   break;
                     
         if(ev.type() != Controller)
           continue;

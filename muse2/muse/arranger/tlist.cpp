@@ -1079,7 +1079,9 @@ MusECore::TrackList TList::getRecEnabledTracks()
 void TList::changeAutomation(QAction* act)
 {
   //printf("changeAutomation %d\n", act->data().toInt());
-  if (editAutomation->type() == MusECore::Track::MIDI) {
+  
+  //if (editAutomation->type() == MusECore::Track::MIDI) {  // commented out by flo93
+  if ( (editAutomation->type() == MusECore::Track::MIDI) || (editAutomation->type() == MusECore::Track::DRUM) ) {
     printf("this is wrong, we can't edit automation for midi tracks from arranger yet!\n");
     return;
   }
