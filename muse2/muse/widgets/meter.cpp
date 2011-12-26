@@ -217,6 +217,9 @@ void Meter::resetPeaks()
 
 void Meter::setRange(double min, double max)
       {
+      if(min == minScale && max == maxScale)   // p4.0.45
+        return;
+      
       minScale = min;
       maxScale = max;
       cur_yv = -1;  // Force re-initialization.

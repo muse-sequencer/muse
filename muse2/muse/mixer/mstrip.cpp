@@ -110,7 +110,7 @@ void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
       dl->setSpecialText(tr("off"));
       dl->setToolTip(tr("double click on/off"));
       controller[idx].dl = dl;
-      dl->setFont(MusEGlobal::config.fonts[1]);
+      ///dl->setFont(MusEGlobal::config.fonts[1]);
       dl->setBackgroundRole(QPalette::Mid);
       dl->setFrame(true);
       dl->setPrecision(0);
@@ -153,7 +153,7 @@ void MidiStrip::addKnob(int idx, const QString& tt, const QString& label,
       
       QLabel* lb = new QLabel(label, this);
       controller[idx].lb = lb;
-      lb->setFont(MusEGlobal::config.fonts[1]);
+      ///lb->setFont(MusEGlobal::config.fonts[1]);
       lb->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       lb->setAlignment(Qt::AlignCenter);
       lb->setEnabled(enabled);
@@ -178,6 +178,9 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       {
       inHeartBeat = true;
 
+      // Set the whole strip's font, except for the label.    p4.0.45
+      setFont(MusEGlobal::config.fonts[1]);
+      
       // Clear so the meters don't start off by showing stale values.
       t->setActivity(0);
       t->setLastActivity(0);
@@ -211,7 +214,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       slider->setCursorHoming(true);
       slider->setRange(double(mn), double(mx), 1.0);
       slider->setFixedWidth(20);
-      slider->setFont(MusEGlobal::config.fonts[1]);
+      ///slider->setFont(MusEGlobal::config.fonts[1]);
       slider->setId(MusECore::CTRL_VOLUME);
 
       meter[0] = new MusEGui::Meter(this, MusEGui::Meter::LinMeter);
@@ -226,7 +229,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       grid->addLayout(sliderGrid, _curGridRow++, 0, 1, 2); 
 
       sl = new MusEGui::DoubleLabel(0.0, -98.0, 0.0, this);
-      sl->setFont(MusEGlobal::config.fonts[1]);
+      ///sl->setFont(MusEGlobal::config.fonts[1]);
       sl->setBackgroundRole(QPalette::Mid);
       sl->setSpecialText(tr("off"));
       sl->setSuffix(tr("dB"));
@@ -381,7 +384,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       //---------------------------------------------------
 
       iR = new QToolButton();
-      iR->setFont(MusEGlobal::config.fonts[1]);
+      ///iR->setFont(MusEGlobal::config.fonts[1]);
       iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
       ///iR->setText(tr("iR"));
       iR->setIcon(QIcon(*routesMidiInIcon));
@@ -391,7 +394,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       grid->addWidget(iR, _curGridRow, 0);
       connect(iR, SIGNAL(pressed()), SLOT(iRoutePressed()));
       oR = new QToolButton();
-      oR->setFont(MusEGlobal::config.fonts[1]);
+      ///oR->setFont(MusEGlobal::config.fonts[1]);
       oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
       ///oR->setText(tr("oR"));
       oR->setIcon(QIcon(*routesMidiOutIcon));
@@ -409,7 +412,7 @@ MidiStrip::MidiStrip(QWidget* parent, MusECore::MidiTrack* t)
       //---------------------------------------------------
 
       autoType = new MusEGui::ComboBox();
-      autoType->setFont(MusEGlobal::config.fonts[1]);
+      ///autoType->setFont(MusEGlobal::config.fonts[1]);
       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       autoType->setEnabled(false);
       
@@ -466,6 +469,22 @@ void MidiStrip::updateOffState()
       }
 
 //---------------------------------------------------------
+//   configChanged
+//   Catch when config label font changes, viewable tracks etc.
+//---------------------------------------------------------
+
+void MidiStrip::configChanged()
+{
+  // Set the whole strip's font, except for the label.    p4.0.45
+  if(font() != MusEGlobal::config.fonts[1])
+    setFont(MusEGlobal::config.fonts[1]);
+  
+  // Set the strip label's font.
+  setLabelFont();
+  setLabelText();        
+}
+
+//---------------------------------------------------------
 //   songChanged
 //---------------------------------------------------------
 
@@ -501,13 +520,10 @@ void MidiStrip::songChanged(int val)
             
       }      
       
-      // Catch when label font changes. Tim. p3.3.9
+      // Catch when label font changes. 
       if (val & SC_CONFIG)
       {
-        // Set the strip label's font.
-        //label->setFont(MusEGlobal::config.fonts[1]);
-        setLabelFont();
-        setLabelText();        
+        // So far only 1 instance of sending SC_CONFIG in the entire app, in instrument editor when a new instrument is saved. 
       }  
     }
 

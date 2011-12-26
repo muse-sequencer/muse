@@ -82,7 +82,7 @@ VisibleTracks::VisibleTracks(QWidget* parent, const char*)
       // Note: Does not take ownership.
       addActions(action->actions());
 
-      connect(action, SIGNAL(selected(QAction*)), SLOT(visibilityChanged(QAction*)));
+      connect(action, SIGNAL(triggered(QAction*)), SLOT(visibilityChanged(QAction*)));
       }
 
 

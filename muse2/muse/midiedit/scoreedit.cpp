@@ -1287,7 +1287,7 @@ ScoreCanvas::ScoreCanvas(ScoreEdit* pr, QWidget* parent_widget) : View(parent_wi
 	_pixels_per_whole_init = _pixels_per_whole_init;
 
 	note_velo=note_velo_init;
-	note_velo_off_init=note_velo_off_init;
+	note_velo_off=note_velo_off_init;
 	
 	dragging_staff=false;
 	
@@ -3833,7 +3833,7 @@ void ScoreCanvas::mousePressEvent (QMouseEvent* event)
 							
 							MusEGlobal::audio->msgAddEvent(newevent, curr_part, true, false, false);
 							
-							dragged_event_part=curr_part;
+							set_dragged_event_part(curr_part);
 							dragged_event=newevent;
 							original_dragged_event=dragged_event.clone();
 

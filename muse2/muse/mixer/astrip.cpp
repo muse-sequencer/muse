@@ -116,11 +116,38 @@ void AudioStrip::heartBeat()
 
 //---------------------------------------------------------
 //   configChanged
+//   Catch when label font, or configuration min slider and meter values change, or viewable tracks etc.
 //---------------------------------------------------------
 
 void AudioStrip::configChanged()    
 { 
-  songChanged(SC_CONFIG); 
+  // Set the whole strip's font, except for the label.    
+  if(font() != MusEGlobal::config.fonts[1])
+    setFont(MusEGlobal::config.fonts[1]);
+  
+  // Set the strip label's font.
+  setLabelFont();
+  setLabelText();        
+  
+  // Adjust minimum volume slider and label values.
+  slider->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
+  sl->setRange(MusEGlobal::config.minSlider, 10.0);
+  
+  // Adjust minimum aux knob and label values.
+  int n = auxKnob.size();
+  for (int idx = 0; idx < n; ++idx) 
+  {
+    auxKnob[idx]->blockSignals(true);
+    auxLabel[idx]->blockSignals(true);
+    auxKnob[idx]->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
+    auxLabel[idx]->setRange(MusEGlobal::config.minSlider, 10.1);
+    auxKnob[idx]->blockSignals(false);
+    auxLabel[idx]->blockSignals(false);
+  }
+  
+  // Adjust minimum meter values.
+  for(int c = 0; c < channel; ++c) 
+    meter[c]->setRange(MusEGlobal::config.minMeter, 10.0);
 }
 
 //---------------------------------------------------------
@@ -142,32 +169,7 @@ void AudioStrip::songChanged(int val)
       // Catch when label font, or configuration min slider and meter values change.
       if (val & SC_CONFIG)
       {
-        // Added by Tim. p3.3.9
-        
-        // Set the strip label's font.
-        //label->setFont(MusEGlobal::config.fonts[1]);
-        setLabelFont();
-        setLabelText();        
-        
-        // Adjust minimum volume slider and label values.
-        slider->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
-        sl->setRange(MusEGlobal::config.minSlider, 10.0);
-        
-        // Adjust minimum aux knob and label values.
-        int n = auxKnob.size();
-        for (int idx = 0; idx < n; ++idx) 
-        {
-          auxKnob[idx]->blockSignals(true);
-          auxLabel[idx]->blockSignals(true);
-          auxKnob[idx]->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
-          auxLabel[idx]->setRange(MusEGlobal::config.minSlider, 10.1);
-          auxKnob[idx]->blockSignals(false);
-          auxLabel[idx]->blockSignals(false);
-        }
-        
-        // Adjust minimum meter values.
-        for(int c = 0; c < channel; ++c) 
-          meter[c]->setRange(MusEGlobal::config.minMeter, 10.0);
+        // So far only 1 instance of sending SC_CONFIG in the entire app, in instrument editor when a new instrument is saved.
       }
       
       if (mute && (val & SC_MUTE)) {      // mute && off
@@ -677,7 +679,7 @@ MusEGui::Knob* AudioStrip::addKnob(int type, int id, MusEGui::DoubleLabel** dlab
       if (dlabel)
             *dlabel = pl;
       pl->setSlider(knob);
-      pl->setFont(MusEGlobal::config.fonts[1]);
+      ///pl->setFont(MusEGlobal::config.fonts[1]);
       pl->setBackgroundRole(QPalette::Mid);
       pl->setFrame(true);
       if (type == 0)
@@ -694,7 +696,7 @@ MusEGui::Knob* AudioStrip::addKnob(int type, int id, MusEGui::DoubleLabel** dlab
             label.sprintf("Aux%d", id+1);
 
       QLabel* plb = new QLabel(label, this);
-      plb->setFont(MusEGlobal::config.fonts[1]);
+      ///plb->setFont(MusEGlobal::config.fonts[1]);
       plb->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       plb->setAlignment(Qt::AlignCenter);
 
@@ -751,6 +753,10 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       record        = 0;
       off           = 0;
       
+      // Set the whole strip's font, except for the label.    p4.0.45
+      setFont(MusEGlobal::config.fonts[1]);
+
+      
       MusECore::AudioTrack* t = (MusECore::AudioTrack*)track;
       channel       = at->channels();
       ///setMinimumWidth(STRIP_WIDTH);
@@ -774,7 +780,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       //---------------------------------------------------
 
       stereo  = new QToolButton();
-      stereo->setFont(MusEGlobal::config.fonts[1]);
+      ///stereo->setFont(MusEGlobal::config.fonts[1]);
       stereo->setCheckable(true);
       stereo->setToolTip(tr("1/2 channel"));
       stereo->setChecked(channel == 2);
@@ -788,7 +794,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
             stereo->setEnabled(false);
 
       pre = new QToolButton();
-      pre->setFont(MusEGlobal::config.fonts[1]);
+      ///pre->setFont(MusEGlobal::config.fonts[1]);
       pre->setCheckable(true);
       pre->setText(tr("Pre"));
       pre->setToolTip(tr("pre fader - post fader"));
@@ -841,7 +847,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       slider->setCursorHoming(true);
       slider->setRange(MusEGlobal::config.minSlider-0.1, 10.0);
       slider->setFixedWidth(20);
-      slider->setFont(MusEGlobal::config.fonts[1]);
+      ///slider->setFont(MusEGlobal::config.fonts[1]);
       slider->setValue(MusECore::fast_log10(t->volume())*20.0);
 
       sliderGrid->addWidget(slider, 0, 0, Qt::AlignHCenter);
@@ -859,7 +865,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
 
       sl = new MusEGui::DoubleLabel(0.0, MusEGlobal::config.minSlider, 10.0, this);
       sl->setSlider(slider);
-      sl->setFont(MusEGlobal::config.fonts[1]);
+      ///sl->setFont(MusEGlobal::config.fonts[1]);
       sl->setBackgroundRole(QPalette::Mid);
       sl->setSuffix(tr("dB"));
       sl->setFrame(true);
@@ -954,7 +960,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
 
       if (type != MusECore::Track::AUDIO_AUX) {
             iR = new QToolButton();
-            iR->setFont(MusEGlobal::config.fonts[1]);
+            ///iR->setFont(MusEGlobal::config.fonts[1]);
             iR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
             ///iR->setText(tr("iR"));
             iR->setIcon(QIcon(*routesInIcon));
@@ -966,7 +972,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
             }
       
       oR = new QToolButton();
-      oR->setFont(MusEGlobal::config.fonts[1]);
+      ///oR->setFont(MusEGlobal::config.fonts[1]);
       oR->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum));
       ///oR->setText(tr("oR"));
       oR->setIcon(QIcon(*routesOutIcon));
@@ -981,7 +987,7 @@ AudioStrip::AudioStrip(QWidget* parent, MusECore::AudioTrack* at)
       //---------------------------------------------------
 
       autoType = new MusEGui::ComboBox();
-      autoType->setFont(MusEGlobal::config.fonts[1]);
+      ///autoType->setFont(MusEGlobal::config.fonts[1]);
       autoType->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum));
       //autoType->setAutoFillBackground(true);
       
